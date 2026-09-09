@@ -3904,11 +3904,12 @@ namespace WindowsFormsApplication1
         //   HebeAltbestand(accdbPfad, out)   EINGEFRORENER ACCESS-ZWEIG. Fährt die
         //                                    unveraenderte Logik der Schritte 1-61 auf
         //                                    einer AUSDRUECKLICH benannten
-        //                                    ACE-Verbindung. Einziger kuenftiger Aufrufer
-        //                                    ist der Erststart-Assistent aus S8, der
-        //                                    einen Kundenbestand vor der Erstmigration
-        //                                    auf Stand 61 hebt (Implementierungskonzept
-        //                                    Abschnitt 5.1 und 8).
+        //                                    ACE-Verbindung. HAUSWERKZEUG seit W3
+        //                                    (#157-E-1, 09.09.2026): Der Erststart-
+        //                                    Assistent aus S8 ist gefallen; gehoben wird
+        //                                    ein eingeschickter Kundenbestand vor dem
+        //                                    Lauf des EposSqliteMigrator - von Hand, nicht
+        //                                    im Programmstart (BETRIEB_SQLITE.md 1.1/7).
         //
         // WARUM ZWEI SCHLEIFEN STATT EINER MIT WEICHE: Die beiden Zweige teilen zwar die
         // Marker-Semantik ("Nr <= Version -> bereits erledigt", Marker einzeln nach
@@ -4007,9 +4008,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// EINGEFRORENER ACCESS-ZWEIG: hebt einen Altbestand (<c>.accdb</c>) über die
-        /// Schritte 1-61 auf den Freeze-Stand <see cref="FREEZE_VERSION"/>. Der einzige        /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1); aufgerufen
-        /// wird er künftig aus dem Erststart-Assistenten (S8), VOR dem Lauf des
-        /// <c>EposSqliteMigrator</c>.
+        /// Schritte 1-61 auf den Freeze-Stand <see cref="FREEZE_VERSION"/>. Der einzige        /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1). <b>Seit W3
+        /// (#157‑E‑1, 09.09.2026) ist das ein HAUSWERKZEUG</b>: Der Erststart-Assistent
+        /// ist gefallen, gehoben wird ein eingeschickter Kundenbestand von Hand, VOR dem
+        /// Lauf des <c>EposSqliteMigrator</c> (BETRIEB_SQLITE.md 1.1 und 7).
         ///
         /// <para><b>Die Verbindung kommt ausdrücklich NICHT aus
         /// <see cref="DataRepository.GetConnectionString"/></b> - der liefert seit S4a den
@@ -4027,9 +4029,9 @@ namespace WindowsFormsApplication1
         ///
         /// <para><see cref="StandVorher"/>/<see cref="StandNachher"/> werden hingegen
         /// beschrieben (sie stecken in der eingefrorenen Schleife). Das ist unschädlich:
-        /// Sie werden nur innerhalb dieser Klasse gelesen, und im Ablauf des
-        /// Erststart-Assistenten läuft <see cref="Ausfuehren"/> hinterher und setzt sie
-        /// auf den Stand der SQLite-Datei.</para>
+        /// Sie werden nur innerhalb dieser Klasse gelesen, und beim nächsten
+        /// Programmstart auf der migrierten Datei läuft <see cref="Ausfuehren"/> und setzt
+        /// sie auf den Stand der SQLite-Datei.</para>
         /// </summary>
         /// <param name="accdbPfad">Vollständiger Pfad der zu hebenden Access-Datenbank.</param>
         /// <param name="bericht">Immer gefüllt - gleiche Form wie bei <see cref="Ausfuehren"/>.</param>

@@ -162,9 +162,17 @@ C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build
 
 Die Datenhaltung ist seit dem 02.09.2026 **SQLite** (`Kenndaten.sqlite`, siehe
 [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md)); die native Bibliothek bringt
-`Microsoft.Data.Sqlite` mit. Die Access-Engine (ACE OLEDB, 64-Bit-Fassung) wird nur noch für die
-**Erststart-Migration vorhandener `.accdb`-Bestände** gebraucht — für einen Neustand ist sie
-nicht mehr erforderlich.
+`Microsoft.Data.Sqlite` mit. **Seit dem Anwenderentscheid `#157‑E‑1` (Weg W3,
+09.09.2026) kommt die Access-Engine im ausgelieferten Programm nicht mehr vor:** Das
+Setup installiert sie nicht mehr nach, und der Erststart-Assistent ist gefallen. Eine
+Neuinstallation bekommt ihre Datenbank aus der ausgelieferten Vorlage
+`{app}\Vorlage\Kenndaten.sqlite`, die der Kern beim ersten Start in den Datenordner
+kopiert (`EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs`, gerufen aus
+`Program.DatenbankBereitstellen()`; auf iOS tut `EPOS.iOS/Datenbankbereitstellung.cs`
+dasselbe aus dem Anwendungspaket). Die Übernahme eines `.accdb`-Altbestands ist seither
+ein **Hauswerkzeug** — die Konsolenfassung `EposSqliteMigrator.exe` samt
+`SchemaMigration.HebeAltbestand`; sie braucht die ACE-Engine auf dem Rechner, auf dem sie
+läuft (BETRIEB_SQLITE.md Abschnitt 1.1 und 7).
 
 
 ## Datenhaltung

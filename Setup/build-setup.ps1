@@ -11,6 +11,12 @@
 
     Das Ergebnis liegt anschließend unter Setup\Ausgabe.
 
+    Seit dem Anwenderentscheid #157-E-1 (Weg W3, 09.09.2026) kommt ein dritter
+    Schritt DAVOR: die AUSLIEFERUNGSVORLAGE. Sie ist eine SQLite-Datei und wird
+    vor jedem ISCC-Lauf neu erzeugt (Werkzeuge\Auslieferungsvorlage), weil das
+    Setup sie nach {app}\Vorlage legt und die Anwendung sie beim ersten Start in
+    den Datenordner kopiert. Die Vorlage liegt NICHT im Repository.
+
     Geprüft wird vorher unter anderem, dass der Ordner VDI-3805-Daten in der
     Repowurzel liegt: Er wird seit dem 06.09.2026 (Anwenderentscheid W6-O-9)
     als vorgewählte, abwählbare Komponente "Herstellerdaten (VDI 3805, CEC)"
@@ -32,9 +38,25 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>, damit ist -p:Version
     am Publish-Aufruf wirkungslos.
 
+.PARAMETER Quelldatenbank
+    Die Datenbank, AUS DER die Auslieferungsvorlage erzeugt wird (ein gepflegter
+    Katalogstand). Ersatzweise die Umgebungsvariable EPOS_VORLAGE_QUELLE. Es gibt
+    bewusst KEINEN Rückgriff auf die Arbeitsdatenbank im Repository: Sie enthält
+    reale Projektdaten und darf nicht ausgeliefert werden (Konzept, Abschnitt 6.1).
+
+.PARAMETER Beispiele
+    Wird unverändert als --beispiele an Werkzeuge\Auslieferungsvorlage
+    durchgereicht (welche Beispielprojekte in der Auslieferung stehen sollen).
+    Ohne Angabe entscheidet das Werkzeug mit seiner Vorgabe.
+
+.PARAMETER VorlageNurPruefen
+    Ruft das Vorlagenwerkzeug mit --trocken auf: Es rechnet und meldet, schreibt
+    aber nichts. Nur sinnvoll zusammen mit einer bereits vorhandenen Vorlage.
+
 .PARAMETER SkipPublish
     Überspringt die Veröffentlichung und übersetzt nur das Setup — praktisch,
-    wenn nur am .iss gearbeitet wird.
+    wenn nur am .iss gearbeitet wird. Die Auslieferungsvorlage wird trotzdem
+    erzeugt: ISCC bricht ohne sie ab.
 
 .PARAMETER Schnell
     Übersetzt mit lzma2/normal statt lzma2/max. Etwa halbe Übersetzungszeit,
@@ -47,7 +69,7 @@
     Fingerabdruck des Codesignaturzertifikats im Zertifikatspeicher.
 
 .EXAMPLE
-    .\build-setup.ps1
+    .\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite
 
 .EXAMPLE
     .\build-setup.ps1 -SkipPublish -Schnell
@@ -56,6 +78,9 @@
 [CmdletBinding()]
 param(
     [string] $Configuration = 'Release',
+    [string] $Quelldatenbank,
+    [string[]] $Beispiele,
+    [switch] $VorlageNurPruefen,
     [switch] $SkipPublish,
     [switch] $Schnell,
     [switch] $Sign,
@@ -75,9 +100,8 @@ $Projekt    = Join-Path $RepoDir 'WindowsFormsApplication1\WindowsFormsApplicati
 $PublishDir = Join-Path $RepoDir 'artifacts\publish\win-x64'   # muss zu #define PublishDir passen
 $IssDatei   = Join-Path $SetupDir 'EPOS-Plan.iss'
 $AusgabeDir = Join-Path $SetupDir 'Ausgabe'
-$VorlageDb  = Join-Path $SetupDir 'Vorlage\Kenndaten.accdb'
-$AceZiel    = Join-Path $SetupDir 'Voraussetzungen\AccessDatabaseEngine_X64.exe'
-$AceQuelle  = Join-Path $RepoDir  'AccessDatabaseEngine_X64.exe'
+$VorlageDb  = Join-Path $SetupDir 'Vorlage\Kenndaten.sqlite'   # muss zu #define VorlageDb passen
+$VorlageWerkzeug = Join-Path $RepoDir 'Werkzeuge\Auslieferungsvorlage'
 $VdiOrdner  = Join-Path $RepoDir  'VDI-3805-Daten'            # muss zu #define HerstellerdatenDir passen
 $WvZiel     = Join-Path $SetupDir 'Voraussetzungen\MicrosoftEdgeWebview2Setup.exe'
 $WvQuelle   = Join-Path $RepoDir  'MicrosoftEdgeWebview2Setup.exe'
@@ -108,17 +132,45 @@ else {
 }
 Hinweis "Anwendung: $ExeName"
 
-# Auslieferungsdatenbank. Bewusst KEIN Rueckgriff auf die Arbeitsdatenbank im
-# Repository - die enthaelt reale Projektdaten und darf nicht ausgeliefert werden.
-if (-not (Test-Path $VorlageDb)) {
-    throw @"
-Auslieferungsdatenbank fehlt: $VorlageDb
+# Auslieferungsvorlage (Anwenderentscheid #157-E-1, Weg W3 vom 09.09.2026).
+# Sie wird weiter unten aus einer QUELLE erzeugt; hier wird nur frueh geprueft,
+# dass die Quelle ueberhaupt benannt und vorhanden ist - ein Abbruch nach dem
+# minutenlangen Publish waere aergerlich.
+#
+# Bewusst KEIN Rueckgriff auf die Arbeitsdatenbank im Repository: Die enthaelt
+# reale Projektdaten und darf nicht ausgeliefert werden (Konzept, Abschnitt 6.1).
+# Deshalb auch keine Vorgabe - wer nichts angibt, bekommt einen Abbruch und
+# keinen stillen Griff in die naechstbeste Datei.
+if (-not $Quelldatenbank) { $Quelldatenbank = $env:EPOS_VORLAGE_QUELLE }
 
-Sie ist nicht identisch mit WindowsFormsApplication1\Kenndaten.accdb - diese
-enthaelt Projektdaten aus der Entwicklung und darf nicht ausgeliefert werden.
-Erzeugung des Auslieferungsstands: siehe Konzept, Abschnitt 6.1.
+if (-not $Quelldatenbank) {
+    throw @"
+Es ist keine Quelle fuer die Auslieferungsvorlage angegeben.
+
+    .\build-setup.ps1 -Quelldatenbank <Pfad zur gepflegten Kenndaten.sqlite>
+
+oder die Umgebungsvariable EPOS_VORLAGE_QUELLE setzen. Aus dieser Datei erzeugt
+Werkzeuge\Auslieferungsvorlage den Auslieferungsstand
+$VorlageDb.
+
+Die Arbeitsdatenbank aus dem Repository ist ausdruecklich NICHT die Quelle: Sie
+enthaelt reale Projektdaten (Konzept, Abschnitt 6.1).
 "@
 }
+
+if (-not (Test-Path $Quelldatenbank)) {
+    throw "Quelle fuer die Auslieferungsvorlage nicht gefunden: $Quelldatenbank"
+}
+
+if (-not (Test-Path $VorlageWerkzeug)) {
+    throw @"
+Werkzeug fuer die Auslieferungsvorlage nicht gefunden: $VorlageWerkzeug
+
+Es gehoert zum Repository und erzeugt aus einem gepflegten Katalogstand die
+Datei, die das Setup nach {app}\Vorlage legt (Konzept, Abschnitt 6.1).
+"@
+}
+Hinweis "Vorlagenquelle: $Quelldatenbank"
 
 # Herstellerdaten (VDI 3805 und die zwei CEC-Listen). Anwenderentscheid W6-O-9 vom
 # 06.09.2026: Sie werden als eigene, vorgewaehlte Komponente ausgeliefert. Fehlt der
@@ -139,26 +191,17 @@ $VdiMb = [math]::Round(((Get-ChildItem $VdiOrdner -Recurse -File |
 Hinweis "Herstellerdaten: $VdiMb MB in $VdiOrdner"
 
 # Voraussetzungs-Installer bei Bedarf aus der Repowurzel uebernehmen.
-if (-not (Test-Path $AceZiel)) {
-    if (Test-Path $AceQuelle) {
-        Hinweis 'AccessDatabaseEngine_X64.exe wird nach Setup\Voraussetzungen kopiert'
-        New-Item -ItemType Directory -Force -Path (Split-Path $AceZiel) | Out-Null
-        Copy-Item $AceQuelle $AceZiel
-    }
-    else {
-        throw @"
-Access Database Engine (64 Bit) nicht gefunden - weder $AceZiel noch $AceQuelle
-
-Bezugsquelle: Microsoft-Download "Access Database Engine 2016 Redistributable,
-64 Bit" (AccessDatabaseEngine_X64.exe). Die Datei gehoert unveraendert in die
-Repowurzel; von dort uebernimmt dieses Skript sie nach Setup\Voraussetzungen.
-"@
-    }
-}
-
-# WebView2-Bootstrapper - dieselbe Mechanik wie bei der Access-Engine.
-# Gebraucht seit Paket iU8: Die neuen Dialoge sind Blazor-Komponenten und
-# laufen in einer WebView2.
+#
+# Die ACCESS DATABASE ENGINE ist mit dem Anwenderentscheid #157-E-1 (Weg W3,
+# 09.09.2026) ENTFALLEN: Access wurde beim Kunden nie produktiv eingesetzt, die
+# Uebernahme eines Altbestands ist ein Hauswerkzeug (EposSqliteMigrator) und kein
+# Kundenweg. AccessDatabaseEngine_X64.exe wird weder in Setup\Voraussetzungen
+# noch in der Repowurzel gebraucht; eine liegengebliebene Datei schadet nicht,
+# wird aber nicht mehr mitgepackt.
+#
+# WebView2-Bootstrapper: Gebraucht seit Paket iU8 - die neuen Dialoge sind
+# Blazor-Komponenten und laufen in einer WebView2; seit iU9-W15c startet die
+# Anwendung ohne die Laufzeit gar nicht.
 if (-not (Test-Path $WvZiel)) {
     if (Test-Path $WvQuelle) {
         Hinweis 'MicrosoftEdgeWebview2Setup.exe wird nach Setup\Voraussetzungen kopiert'
@@ -214,19 +257,21 @@ Hinweis "Inno Setup $IsccVersion : $Iscc"
 # 02.09.2026 haelt das Projekt keine COM-Referenzen mehr (Excel-Interop auf
 # ClosedXML umgestellt), das frueher noetige MSBuild aus Visual Studio
 # entfaellt damit.
-if (-not $SkipPublish) {
-    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-        throw @"
+#
+# Seit W3 wird dotnet AUCH BEI -SkipPublish gebraucht: Die Auslieferungsvorlage
+# entsteht ueber "dotnet run --project Werkzeuge\Auslieferungsvorlage", und ohne
+# sie bricht schon ISCC ab.
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    throw @"
 dotnet wurde nicht gefunden.
 
 Benoetigt wird das .NET SDK in der Fassung aus global.json - 10.0.400 oder
 hoeher im Band 10.0.x. Bezugsquelle: https://dotnet.microsoft.com/download
 "@
-    }
-
-    $DotnetVersion = & dotnet --version
-    Hinweis "dotnet SDK $DotnetVersion"
 }
+
+$DotnetVersion = & dotnet --version
+Hinweis "dotnet SDK $DotnetVersion"
 
 # ---------------------------------------------------------------------------
 #  Veroeffentlichung
@@ -267,6 +312,51 @@ Sie wird in WindowsFormsApplication1\Properties\AssemblyInfo.cs gepflegt
 $groesse = [math]::Round(((Get-ChildItem $PublishDir -Recurse -File |
             Measure-Object Length -Sum).Sum / 1MB), 1)
 Hinweis "Version $Version, $groesse MB in $PublishDir"
+
+# ---------------------------------------------------------------------------
+#  Auslieferungsvorlage erzeugen (#157-E-1, Weg W3)
+# ---------------------------------------------------------------------------
+#
+# VOR ISCC, weil das .iss die Datei mit #if !FileExists(VorlageDb) prueft und
+# sie sonst gar nicht erst uebersetzt. Erzeugt wird IMMER neu: Eine
+# liegengebliebene Vorlage aus einem frueheren Lauf waere der leiseste denkbare
+# Auslieferungsfehler.
+
+Schritt 'Auslieferungsvorlage erzeugen'
+
+New-Item -ItemType Directory -Force -Path (Split-Path $VorlageDb) | Out-Null
+
+# Der Trockenlauf schreibt nichts und braucht die vorhandene Datei noch.
+if ((-not $VorlageNurPruefen) -and (Test-Path $VorlageDb)) { Remove-Item $VorlageDb -Force }
+
+$vorlageArgs = @($Quelldatenbank, $VorlageDb)
+if ($Beispiele)          { $vorlageArgs += '--beispiele'; $vorlageArgs += $Beispiele }
+if ($VorlageNurPruefen)  { $vorlageArgs += '--trocken' }
+
+& dotnet run --project $VorlageWerkzeug -c Release -- @vorlageArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "Werkzeuge\Auslieferungsvorlage ist mit Code $LASTEXITCODE fehlgeschlagen - kein Setup gebaut."
+}
+
+if (-not $VorlageNurPruefen) {
+    if (-not (Test-Path $VorlageDb)) {
+        throw @"
+Das Werkzeug meldete Erfolg, aber die Auslieferungsvorlage fehlt: $VorlageDb
+
+Ohne sie laesst sich das Setup nicht uebersetzen (#define VorlageDb im .iss).
+"@
+    }
+
+    $vorlageMb = [math]::Round(((Get-Item $VorlageDb).Length / 1MB), 1)
+    Hinweis "Auslieferungsvorlage: $vorlageMb MB in $VorlageDb"
+}
+else {
+    Hinweis 'Trockenlauf - die vorhandene Vorlage bleibt, wie sie ist.'
+    if (-not (Test-Path $VorlageDb)) {
+        throw "Trockenlauf ohne vorhandene Vorlage: $VorlageDb - ISCC braeuchte sie."
+    }
+}
+
 
 # ---------------------------------------------------------------------------
 #  Setup uebersetzen

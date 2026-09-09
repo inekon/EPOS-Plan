@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Proben zum Erststart OHNE Altbestand (Auftrag #157).
+    Proben zum Erststart OHNE Altbestand (Auftrag #157, mit W3 vom 09.09.2026
+    fortgeschrieben).
 
-    Frage: Was tut der Kern, wenn im Datenbankordner WEDER Kenndaten.sqlite NOCH
-    Kenndaten.accdb liegt - also bei einer Neuinstallation auf einem frischen
-    Rechner? Program.ErststartAnbieten() bricht dort ab (START_DB_FEHLT); diese
-    Probe belegt, WAS der Kern bis dahin tut und was geschaehe, wenn der Startpfad
-    weiterliefe.
+    Frage: Was tut der Kern, wenn im Datenbankordner keine Kenndaten.sqlite liegt -
+    also bei einer Neuinstallation auf einem frischen Rechner? Bis W3 brach der
+    Start dort ab (START_DB_FEHLT); seither kopiert Erstbereitstellung die
+    ausgelieferte Vorlage in den Datenordner. Diese Probe belegt beides: den
+    Zustand davor (Faelle 1 und 2) und die vier Lagen der Bereitstellung (Fall 3).
 
     Eigenstaendiges Konsolenprojekt mit EIGENER Projektmappe: Es haengt per
     ProjectReference NUR an EPOS.Kern, gehoert aber bewusst NICHT in WP-Plan.sln -
@@ -15,10 +16,9 @@
     Proben/ZugriffsschichtProben und Proben/ChartProben).
 
     net10.0 OHNE Windows-Bindung: Der Erststartweg des Kerns laesst sich damit auch
-    auf Linux und in der CI nachstellen. ErststartMigration selbst liegt in
-    WindowsFormsApplication1 (net10.0-windows) und ist von hier aus NICHT
-    erreichbar - ihre Dateipruefung Pruefe() ist deshalb in Program.cs nachgebildet
-    und dort mit Datei und Zeile belegt.
+    auf Linux und in der CI nachstellen. Seit W3 liegt der ganze Weg im Kern
+    (EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs) - nachgebildet werden
+    muss hier nichts mehr; in Program.Main der Anwendung bleibt allein die Meldung.
   -->
 
   <PropertyGroup>

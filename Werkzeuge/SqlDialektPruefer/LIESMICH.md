@@ -110,13 +110,14 @@ Schema gehalten. Das ist die Regel aus `c288e1c`, jetzt automatisch.
 
 ## Was nicht geprüft wird
 
-**Der Access-Zweig der Erststart-Migration** — dort ist Access-SQL richtig, und die
-ACE-Engine führt es aus:
+**Der eingefrorene Access-Zweig der Schemapflege** — dort ist Access-SQL richtig, und
+die ACE-Engine führt es aus. Seit W3 (#157‑E‑1, 09.09.2026) ist er ein **Hauswerkzeug**:
+`ErststartMigration.cs` ist gelöscht, die Anwendung übernimmt keinen `.accdb`-Bestand
+mehr; was bleibt, hebt einen Altbestand für `EposSqliteMigrator` auf Stand 61.
 
 ```
 WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs
 WindowsFormsApplication1/Allgemein/Update/GeraeteWaisen.cs
-WindowsFormsApplication1/Allgemein/Update/ErststartMigration.cs
 WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs
 WindowsFormsApplication1/Allgemein/DbParamOleDb.cs
 ```

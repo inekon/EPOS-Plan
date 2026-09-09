@@ -1,12 +1,13 @@
 # Betrieb: die SQLite-Datenbank von EPOS-Plan
 
-**Stand:** 02.09.2026 · Arbeitspaket S8 des
+**Stand:** 09.09.2026 · Arbeitspaket S8 des
 [`Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md`](Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md)
-(dort Abschnitt 8)
+(dort Abschnitt 8), Abschnitt 1 neu nach dem Anwenderentscheid `#157‑E‑1` (Weg W3)
 
-Ab dem Cutover hält EPOS-Plan seine Daten in **einer** SQLite-Datei. Access und die
-ACE-Engine werden für den laufenden Betrieb nicht mehr gebraucht — nur noch für die
-einmalige Übernahme eines Altbestands.
+EPOS-Plan hält seine Daten in **einer** SQLite-Datei. **Access und die ACE-Engine kommen
+im Programm nicht mehr vor** (Weg W3, 09.09.2026): Eine Neuinstallation bekommt ihre
+Datenbank aus der ausgelieferten Vorlage (Abschnitt 1); die Übernahme eines
+`.accdb`-Altbestands ist ein Hauswerkzeug (Abschnitt 1.1 und 7).
 
 | | |
 |---|---|
@@ -19,89 +20,81 @@ einmalige Übernahme eines Altbestands.
 
 ---
 
-## 1. Erststart auf einem Bestandsrechner
+## 1. Erststart: Woher die Datenbank kommt
 
-Findet EPOS-Plan beim Start **keine** `Kenndaten.sqlite`, aber daneben eine
-`Kenndaten.accdb`, öffnet sich der Assistent **„Datenbankumstellung"**. Er nennt den
-Ordner und den Ablauf und wartet auf „Jetzt umstellen"; mit „Beenden" passiert nichts
-und der Altbestand bleibt unangetastet liegen.
+**Anwenderentscheid `#157‑E‑1`, Weg W3 (09.09.2026) — umgesetzt.** Auf einem frischen
+Rechner liegt im Datenordner nichts. Findet EPOS-Plan beim Start keine
+`Kenndaten.sqlite`, **kopiert es die ausgelieferte Vorlage dorthin** und startet danach
+normal weiter. Das ist der einzige Weg, auf dem eine Datenbank entsteht.
 
-Nach dem Start gibt es **kein Abbrechen mehr** — ein Abbruch mitten in der Übertragung
-hinterließe eine halbe Zieldatei. Das ist Absicht; der Ablauf räumt bei jedem Fehler
-selbst auf.
+| | |
+|---|---|
+| Vorlage (nur lesen) | `%ProgramFiles%\EPOS-Plan\Vorlage\Kenndaten.sqlite` |
+| Ziel (Arbeitsdatenbank) | `C:\ProgramData\EPOS_PLAN\Kenndaten.sqlite` |
+| Wer legt die Vorlage hin | das Setup (`Setup/EPOS-Plan.iss`, `#define VorlageDb`) |
+| Wer kopiert | `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs` |
+| Wer ruft | `WindowsFormsApplication1/Program.cs`, `DatenbankBereitstellen()` |
 
-Drei Schritte, in dieser Reihenfolge:
-
-1. **Alt-Hebung.** `Kenndaten.accdb` wird an Ort und Stelle auf den letzten
-   Access-Schemastand **61** gebracht — genau das, was die Access-Fassung von EPOS-Plan
-   bei jedem Start ohnehin tat. Protokoll: `migration_protokoll.txt` neben der
-   Datenbank.
-2. **Übertragung.** Alle 114 Tabellen wandern nach `Kenndaten.sqlite`. Jede Tabelle wird
-   auf beiden Seiten gezählt **und** über eine Inhaltsprüfsumme verglichen; dazu laufen
-   `PRAGMA integrity_check` und `PRAGMA foreign_key_check`. Daneben entsteht
-   `Migrationsbericht_Kenndaten_<Datum>_<Uhrzeit>.md` mit allen Zahlen.
-3. **Rückfallebene.** Erst nach nachgewiesenem Erfolg wird der Altbestand in
-   **`Kenndaten.vor-sqlite.accdb`** umbenannt. Die Datei bleibt liegen: Sie ist die
-   Rückfallebene und zugleich der Beleg, dass dieser Bestand umgestellt wurde.
-
-Anschließend stellt die Anwendung die gespeicherte Einstellung `DBName` einmalig auf
-`Kenndaten.sqlite` und startet normal weiter.
-
-**Bei einem Fehler** wird die halbfertige `Kenndaten.sqlite` gelöscht, die `.accdb`
-behält ihren Namen und bleibt gültig; die Meldung nennt den Grund und den Pfad des
-Berichts. Der nächste Start bietet die Umstellung erneut an.
-
-**Der Assistent läuft genau einmal je Bestand.** Liegt eine `Kenndaten.sqlite` da, gibt
-es nichts zu tun. Und liegt bereits eine `Kenndaten.vor-sqlite.accdb` da, verweigert er
-die Arbeit, statt die vorhandene Rückfallebene zu überschreiben.
-
-> **Der Ordner muss beschreibbar sein.** Umbenennen und Anlegen passieren im
-> Datenbankordner. Unter `C:\ProgramData` ist dafür die `icacls`-Zeile aus Abschnitt 4
-> nötig.
-
-### 1.1 Neuinstallation ohne Altbestand — Stand 09.09.2026
-
-**Rahmen (Anwender, 09.09.2026):** Access wurde beim Kunden **nie produktiv eingesetzt**.
-Der oben beschriebene Übernahmeweg ist damit ein **Werkzeug der Hausmigration**, kein
-Kundenweg; in der Anwenderdokumentation kommt Access nicht mehr vor. Was daraus für Setup
-und Erststart folgt, ist **Entscheid `#157‑E‑1` und noch offen**.
-
-**Was heute geschieht, wenn im Datenbankordner weder `Kenndaten.sqlite` noch
-`Kenndaten.accdb` liegt** — die Lage jeder Neuinstallation auf einem frischen Rechner:
-**Das Programm startet nicht.** Es erscheint die Meldung `START_DB_FEHLT`
-(„Datenbankdatei nicht gefunden/lesbar: …") und `Main` kehrt zurück. Der Weg dorthin,
-mit Datei und Zeile:
+Der Ablauf, mit Datei und Fundstelle:
 
 | Schritt | Fundstelle | Ergebnis |
 |---|---|---|
-| Startprüfung | `WindowsFormsApplication1/Program.cs:232` | `DataRepository.DatenbankVorhanden()` ist `false` |
-| Pfad | `EPOS.Kern/Allgemein/DataRepository.cs:376-402` | `%ProgramData%\EPOS_PLAN\Kenndaten.sqlite` |
-| Prüfung selbst | `EPOS.Kern/Allgemein/SqliteDatenzugriff.cs:103-121` | öffnet `Mode=ReadOnly` und **legt nichts an** |
-| Lagebild | `…/Update/ErststartMigration.cs:139-147` | `BeidesFehlt` |
-| Assistent | `WindowsFormsApplication1/Controller/ErststartCtrl.cs:36-37` | `UmstellungFaellig` = `false` |
-| Abbruch | `Program.cs:392-400` | Meldung `START_DB_FEHLT`, `return false` → `Main` endet |
+| Startprüfung | `Program.Main` → `DataRepository.DatenbankVorhanden()` | `false` — es gibt keine Datenbank |
+| Bereitstellung | `Program.DatenbankBereitstellen()` | ruft `Erstbereitstellung.Sicherstellen(Ziel, Vorlage)` |
+| Pfad der Vorlage | `EPOS.Kern/Allgemein/Dienste/StandardPfade.cs`, `Auslieferungsvorlage` | Aufstieg von `AppContext.BaseDirectory`, `Vorlage\Kenndaten.sqlite` bzw. `Setup\Vorlage\…` |
+| Kopie und Prüfung | `Erstbereitstellung.Sicherstellen` | `PRAGMA integrity_check` **und** `Tab_Applikation.SchemaVersion` |
+| zweite Startprüfung | `DataRepository.DatenbankVorhanden()` | erst `true` lässt den Start weiterlaufen |
+| Schemapflege | `SchemaMigration.Ausfuehren` | hebt eine ältere Vorlage auf den benötigten Stand |
 
-Es wird also **keine leere Datenbank angelegt** — der Start bricht vorher ab. Liefe er
-weiter, entstünde beim ersten gewöhnlichen Zugriff eine **wirklich leere** Datei: 0 Byte,
-`sqlite_master` ohne einen einzigen Eintrag, keine `Tab_*_STAMM`, kein Auslieferungskatalog.
-Die Schemapflege (`SchemaMigration.Ausfuehren`, `Program.cs:281`) hebt ein vorhandenes
-Schema an; sie erzeugt keines. Nachgestellt und belegt in
-[`Proben/ErststartProben`](Proben/ErststartProben/Program.cs) (9 Prüfungen, ohne Windows
-lauffähig):
+**Drei Zusicherungen.**
 
-```bash
-dotnet run --project Proben/ErststartProben -c Release
-```
+1. **Nie überschreiben.** Liegt am Ziel schon eine Datei, wird sie nicht angefasst — auch
+   dann nicht, wenn sie beschädigt ist. Dort stehen die Projekte des Anwenders; eine
+   „Reparatur" durch Überschreiben wäre Datenverlust.
+2. **Nie halb liegen lassen.** Bricht das Kopieren ab oder hält die Kopie der Prüfung
+   nicht stand, wird die Zieldatei wieder entfernt. Sonst stünde beim nächsten Start eine
+   Ruine da, die als „vorhanden" gälte und nie wieder ersetzt würde.
+3. **Erst prüfen, dann melden.** Beide Prüfungen zusammen belegen, dass die Vorlage eine
+   vollständige EPOS-Plan-Datenbank ist und nicht bloß eine Datei mit dem richtigen Namen.
 
-**Woher die Datenbank einer Neuinstallation kommen soll, ist damit offen.** Das Setup legt
-zwar `Setup\Vorlage\Kenndaten.accdb` nach `{app}\Vorlage`
-(`Setup/EPOS-Plan.iss`, `#define VorlageDb` und die `[Files]`-Zeile darauf) mit dem
-Kommentar „die Anwendung legt daraus beim ersten Start die Datenbank des Kontos an" —
-**kein Pfad im Quelltext liest diesen Ordner**.
-Die Erstkopie stammt aus dem Vorschlag `Konzept_Setup_InnoSetup_EPOS-Plan.md` 6.2 und ist
-nie gebaut worden. Die drei Wege stehen im Abschlussbericht zu Auftrag #157 (W1 Vorlage als
-`.accdb` + Übernahmeweg, W2 Vorlage als `.sqlite` + Übernahmeweg bleibt, W3 Vorlage als
-`.sqlite` und der Access-Weg fällt ganz).
+**Die Vorlage darf älter sein als der aktuelle Schemastand.** Sie wird beim Bauen des
+Setups eingefroren; bis zur Auslieferung können Schemaschritte dazugekommen sein.
+Angehoben wird sie beim selben Start von der Schemapflege — die Bereitstellung verlangt
+nur, dass der Schemamarker überhaupt da ist.
+
+**Fehlt auch die Vorlage**, bleibt es bei der bisherigen Meldung `START_DB_FEHLT`;
+sie nennt seither **beide** Orte — wo die Datenbank erwartet wurde und wo die Vorlage
+gesucht wurde (`START_VORLAGE_FEHLT`). Das Programm startet dann nicht.
+
+> **Der Ordner muss beschreibbar sein.** Die Kopie entsteht im Datenbankordner. Unter
+> `C:\ProgramData` sorgt dafür der `[Dirs]`-Eintrag des Setups (`users-modify`); bei einem
+> Altbestand hilft die `icacls`-Zeile aus Abschnitt 4.
+
+**Auf iOS gilt derselbe Gedanke.** `EPOS.iOS/Datenbankbereitstellung.cs` kopiert die
+mitgelieferte `Kenndaten.sqlite` beim ersten Start aus dem (schreibgeschützten)
+Anwendungspaket in die Sandbox — dieselbe Regel „liegt sie schon da, ist nichts zu tun",
+derselbe Ordnername `EPOS_PLAN`.
+
+### 1.1 Übernahme eines Access-Altbestands — Hauswerkzeug, kein Kundenweg
+
+**Rahmen (Anwender, 09.09.2026):** Access wurde beim Kunden **nie produktiv eingesetzt**.
+Mit dem Entscheid `#157‑E‑1` (Weg W3) sind deshalb **gefallen**: der Übernahme-Assistent
+im Programmstart, die Access-Engine im Setup und die `.accdb`-Vorlage. In der
+Anwenderdokumentation kommt Access nicht mehr vor.
+
+Wer trotzdem einen `.accdb`-Bestand übernehmen muss — eingeschickte Datenbanken,
+Prüfläufe, Wiederholungen —, nimmt das **Hauswerkzeug**: die Konsolenfassung
+`EposSqliteMigrator.exe` (Abschnitt 7). Sie enthält denselben Migrationskern, den der
+frühere Assistent benutzte, und braucht die 64-Bit-ACE-Engine auf dem Rechner, auf dem
+sie läuft. Die Alt-Hebung auf den letzten Access-Schemastand 61 besorgt weiterhin
+`SchemaMigration.HebeAltbestand`.
+
+**Was der frühere Assistent tat**, ist als Ablauf unverändert im Werkzeug abgebildet:
+Alt-Hebung auf Stand 61, Übertragung aller Tabellen mit Zeilen- und Prüfsummenvergleich,
+`integrity_check` und `foreign_key_check`, Migrationsbericht daneben; die Zieldatei
+entsteht erst nach nachgewiesenem Erfolg, die `.accdb` bleibt das Rollback. Der Schritt,
+den es NICHT mehr gibt, ist das automatische Umbenennen in `Kenndaten.vor-sqlite.accdb`
+beim Programmstart.
 
 ---
 
@@ -396,11 +389,11 @@ Nachziehen des Schemas ersetzt es nicht — es setzt es voraus.
 
 ---
 
-## 7. Kundenbestände außerhalb des Erststarts
+## 7. Kundenbestände: das Hauswerkzeug
 
-Derselbe Migrationskern steckt auch in einem Konsolenwerkzeug. Es ist der Weg für
-Bestände, die nicht am eigenen Rechner liegen — eingeschickte Datenbanken, Prüfläufe,
-Wiederholungen:
+**Seit Weg W3 (09.09.2026) ist das der EINZIGE Weg**, einen `.accdb`-Altbestand zu
+übernehmen — im Programm gibt es ihn nicht mehr (Abschnitt 1.1). Das Konsolenwerkzeug
+trägt denselben Migrationskern, den der frühere Erststart-Assistent benutzte:
 
 ```bash
 EposSqliteMigrator.exe --ziel D:\Uebernahme\Kenndaten.sqlite ^
@@ -424,8 +417,9 @@ Gebaut wird es aus `EposSqliteMigrator\` (eigene Projektmappe); das Ergebnis lie
 **Voraussetzungen und Zusicherungen**
 
 * Die Quelle muss auf **Schemastand 61** stehen. Sonst bricht der Lauf ab mit dem
-  Hinweis, zuerst die letzte Access-Fassung von EPOS-Plan zu starten. (Der
-  Erststart-Assistent erledigt genau diese Hebung selbst.)
+  Hinweis, zuerst die letzte Access-Fassung von EPOS-Plan zu starten. Die Hebung dorthin
+  besorgt `SchemaMigration.HebeAltbestand` — der eingefrorene Access-Zweig der
+  Schemapflege; er bleibt als Hauswerkzeug erhalten.
 * Liegt eine `.laccdb` neben der Quelle, ist der Bestand geöffnet — der Lauf bricht ab.
   EPOS-Plan und Access schließen, auch auf anderen Rechnern.
 * Die `.accdb` wird **ausschließlich gelesen** (nur `SELECT`, nach Möglichkeit sogar
@@ -446,7 +440,9 @@ sauber, wenn dort **„Datenbeweis bestanden"** steht.
 
 **Cutover je Rechner getrennt.** Jeder Bestand bekommt seinen eigenen Migrationslauf und
 seinen eigenen Bericht — eine an einem Rechner erzeugte `.sqlite` ist keine Vorlage für
-einen anderen.
+einen anderen. **Und sie ist erst recht keine AUSLIEFERUNGSVORLAGE:** Die entsteht aus
+einem gepflegten Katalogstand über `Werkzeuge/Auslieferungsvorlage` und enthält keine
+Kundenprojekte (`Setup/build-setup.ps1`, Parameter `-Quelldatenbank`).
 
 ---
 

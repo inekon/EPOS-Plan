@@ -94,14 +94,13 @@
          (net10.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
     <ProjectReference Include="..\KiKern\KiKern.csproj" />
 
-    <!-- Erststart-Assistent S8: derselbe Migrationskern, den auch die Konsolenfassung
-         EposSqliteMigrator.exe fuer Kundenbestaende benutzt (net10.0, x64, Schema als
-         eingebettete Ressource). EINE Migrationslogik fuer beide Wege - eine zweite
-         waere die Stelle, an der die Ergebnisse auseinanderlaufen.
-         Das Projekt liegt in der EIGENEN Projektmappe EposSqliteMigrator\; es ist
-         seit S8 zusaetzlich in WP-Plan.sln eingetragen, damit Visual Studio die
-         Referenz aufloest (MSBuild baut sie ueber diese ProjectReference ohnehin). -->
-    <ProjectReference Include="..\EposSqliteMigrator\Kern\EposSqliteMigrator.Kern.csproj" />
+    <!-- EposSqliteMigrator.Kern ist mit W3 (#157-E-1, 09.09.2026) NICHT MEHR
+         referenziert: Der Erststart-Assistent aus S8 ist gefallen, die Anwendung
+         uebernimmt keinen Access-Altbestand mehr. Die Uebernahme ist seither ein
+         HAUSWERKZEUG - die Konsolenfassung EposSqliteMigrator.exe aus der eigenen
+         Projektmappe EposSqliteMigrator\ (sie bleibt in WP-Plan.sln und wird
+         weitergebaut). Wer sie wieder in die Anwendung holt, holt sich die
+         ACE-Engine als Laufzeitvoraussetzung zurueck. -->
 
     <!-- DIE OBERFLAECHENBIBLIOTHEK (iU8). Razor-Komponenten ohne WinForms,
          ohne System.Drawing und ohne Datenbank; sie laufen hier in einer

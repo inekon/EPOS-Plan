@@ -41,8 +41,16 @@
 #endif
 
 ; Auslieferungsdatenbank — NICHT die Arbeitsdatenbank aus dem Repository!
-; Wie dieser Stand erzeugt wird, steht im Konzept, Abschnitt 6.1.
-#define VorlageDb      SetupDir + "Vorlage\Kenndaten.accdb"
+; Seit dem Anwenderentscheid #157-E-1 (Weg W3, 09.09.2026) ist sie eine
+; SQLITE-Datei; die Anwendung kopiert sie beim ersten Start in den Datenordner
+; (EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs). Erzeugt wird sie vor
+; jedem Uebersetzungslauf neu von build-setup.ps1 ueber das Werkzeug
+; Werkzeuge/Auslieferungsvorlage; sie liegt deshalb nicht im Repository
+; (.gitignore: Setup/Vorlage/*.sqlite). Konzept, Abschnitt 6.1.
+#define VorlageDb      SetupDir + "Vorlage\Kenndaten.sqlite"
+#if !FileExists(VorlageDb)
+  #error Die Auslieferungsvorlage Setup\Vorlage\Kenndaten.sqlite fehlt. Sie wird von build-setup.ps1 ueber Werkzeuge\Auslieferungsvorlage erzeugt und gehoert NICHT ins Repository; siehe Konzept, Abschnitt 6.1.
+#endif
 
 ; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
 ; vom 06.09.2026: „ja". Der Ordner liegt im Repository und wandert unveraendert
@@ -53,9 +61,6 @@
 #if !DirExists(HerstellerdatenDir)
   #error Der Ordner VDI-3805-Daten fehlt in der Repowurzel. Ohne ihn laesst sich die Komponente Herstellerdaten nicht packen; siehe Konzept, Entscheidung E10.
 #endif
-
-; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
-#define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine_X64.exe"
 
 ; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
 ; die passende Fassung selbst nachlaedt. Gebraucht seit Paket iU8: Die neuen
@@ -113,9 +118,8 @@ PrivilegesRequired=admin
 ; x64-Binärdateien ausführen kann, also x64-Windows und ARM64-Windows mit
 ; x64-Emulation.
 ArchitecturesAllowed=x64compatible
-; EPOS-Plan ist seit der Umstellung eine x64-Anwendung und braucht
-; Microsoft.ACE.OLEDB.12.0 als 64-Bit-Engine. Mit dem 64-Bit-Modus zeigt
-; {autopf} auf "Programme" und HKLM auf die 64-Bit-Registry-Sicht.
+; EPOS-Plan ist seit der Umstellung eine x64-Anwendung. Mit dem 64-Bit-Modus
+; zeigt {autopf} auf "Programme" und HKLM auf die 64-Bit-Registry-Sicht.
 ArchitecturesInstallIn64BitMode=x64compatible
 
 MinVersion=10.0
@@ -180,9 +184,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 
 [CustomMessages]
-german.AceInstallieren=Microsoft Access Database Engine (64 Bit) wird installiert …
-english.AceInstallieren=Installing Microsoft Access Database Engine (64-bit) …
-
 german.WebView2Installieren=Microsoft Edge WebView2 Runtime wird installiert …
 english.WebView2Installieren=Installing Microsoft Edge WebView2 Runtime …
 
@@ -198,36 +199,15 @@ english.Deinstallieren=Uninstall {#AppName}
 german.Dokumentation=Dokumentation im Internet
 english.Dokumentation=Online documentation
 
-german.UebernahmeTitel=Vorhandene Datenbank gefunden
-english.UebernahmeTitel=Existing database found
-german.UebernahmeKopf=Ihre Projekte bleiben erhalten
-english.UebernahmeKopf=Your projects will be kept
-; Die Seite erscheint nur, wenn wirklich eine Kenndaten.accdb im gemeinsamen
-; Datenordner liegt (ShouldSkipPage über G_LegacyDb). Der Text beschreibt seit
-; Auftrag #157 (09.09.2026) den umgesetzten Weg: Der Ordner bleibt
-; %ProgramData%\EPOS_PLAN, die Anwendung stellt den Bestand beim ersten Start
-; EINMALIG auf SQLite um und benennt die Altdatei in Kenndaten.vor-sqlite.accdb
-; um (BETRIEB_SQLITE.md Abschnitt 1). Die frühere Fassung versprach "eine
-; Datenbank je Windows-Konto ... in Ihr Benutzerprofil" — das war der Vorschlag
-; aus Konzept_Setup_InnoSetup_EPOS-Plan.md 6.2, den die SQLite-Umstellung nie
-; umgesetzt hat; DataRepository.GetDBPath kennt kein Benutzerprofil.
-german.UebernahmeText=Auf diesem Rechner liegt bereits eine Datenbank unter%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nAb dieser Version hält EPOS-Plan seine Daten in einer SQLite-Datei. Beim ersten Start bietet das Programm die einmalige Umstellung an: Projekte und Kataloge wandern im selben Ordner nach Kenndaten.sqlite und werden dabei Tabelle für Tabelle nachgezählt und geprüft. Danach heißt die bisherige Datei Kenndaten.vor-sqlite.accdb und bleibt als Rückfallebene liegen.%n%nDer Ablageort ändert sich nicht — EPOS-Plan arbeitet weiterhin unter C:\ProgramData\EPOS_PLAN.%n%nDas Setup selbst verändert Ihre Daten nicht.
-english.UebernahmeText=This computer already holds a database at%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nFrom this version on, EPOS-Plan keeps its data in a single SQLite file. On first start the application offers the one-time conversion: projects and catalogues move to Kenndaten.sqlite within the very same folder, each table being counted and verified on the way. The previous file is then renamed to Kenndaten.vor-sqlite.accdb and stays as a fallback.%n%nThe location does not change — EPOS-Plan keeps working under C:\ProgramData\EPOS_PLAN.%n%nSetup itself does not modify your data.
-
-german.Office32Hinweis=Auf diesem Rechner ist ein 32-Bit-Microsoft-Office installiert.%n%nDie 64-Bit-Access-Engine kann daneben von Microsoft offiziell nicht unterstützt installiert werden.%n%nDie Installation wird trotzdem versucht. Schlägt sie fehl, aktualisieren Sie Office auf 64 Bit oder folgen Sie dem Microsoft-Artikel KB 5004577.
-english.Office32Hinweis=A 32-bit Microsoft Office is installed on this computer.%n%nMicrosoft does not officially support installing the 64-bit Access engine alongside it.%n%nSetup will try anyway. Should it fail, update Office to 64-bit or follow Microsoft article KB 5004577.
-
-; Seit dem SQLite-Cutover (02.09.2026) betrifft ein Fehlschlag NUR die Übernahme
-; eines Access-Altbestands — der laufende Betrieb kommt ohne Fremdtreiber aus
-; (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Der Satz „Ohne sie
-; kann EPOS-Plan nicht auf seine Datenbank zugreifen" stammt aus der Zeit davor
-; und ist mit Auftrag #157 (09.09.2026) richtiggestellt. Ob die Engine ueberhaupt
-; noch mitgeliefert wird, haengt am offenen Entscheid #157-E-1 (W1/W2/W3).
-german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nIm laufenden Betrieb braucht EPOS-Plan sie nicht: Die Daten liegen in einer SQLite-Datei, und der Zugriff darauf kommt ohne Fremdtreiber aus. Gebraucht wird die Engine allein für die einmalige Übernahme einer vorhandenen Kenndaten.accdb. Fehlt sie, bleibt ein solcher Altbestand unangetastet liegen, bis die Engine nachinstalliert ist.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
-english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nEPOS-Plan does not need it for day-to-day operation: its data lives in a SQLite file, which is accessed without any third-party driver. The engine is required solely for the one-time conversion of an existing Kenndaten.accdb. Without it, such a legacy database is left untouched until the engine has been installed.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
-
 german.WebView2Fehlt=Die Microsoft Edge WebView2 Runtime konnte nicht installiert werden.%n%nOhne sie bleiben die neueren Dialoge von EPOS-Plan leer; alles Uebrige arbeitet weiter.%n%nHaeufigste Ursache ist eine fehlende Internetverbindung: Der mitgelieferte Installer laedt die Laufzeit nach. Sie laesst sich jederzeit nachtraeglich installieren — Bezugsquelle "Microsoft Edge WebView2" auf den Microsoft-Seiten. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
 english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed.%n%nWithout it the newer EPOS-Plan dialogs stay blank; everything else keeps working.%n%nThe most common cause is a missing internet connection: the bundled installer downloads the runtime. It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages. When in doubt, contact support.%n%nSetup will continue.
+
+; Die Uebernahme-Seite (UebernahmeTitel/Kopf/Text) und die drei ACE-Meldungen
+; (AceInstallieren, Office32Hinweis, AceFehlt) sind mit dem Anwenderentscheid
+; #157-E-1 (Weg W3, 09.09.2026) ENTFALLEN: Access wurde beim Kunden nie
+; produktiv eingesetzt, die Uebernahme eines Altbestands ist ein Hauswerkzeug
+; (EposSqliteMigrator) und kein Kundenweg. Das Setup liefert stattdessen
+; {app}\Vorlage\Kenndaten.sqlite aus.
 
 ; Seit Auftrag #161 (09.09.2026): Die Rückfrage zeigt den tatsächlichen, seit
 ; dem SQLite-Cutover für ALLE Windows-Konten dieses Rechners gemeinsamen
@@ -289,11 +269,14 @@ Name: "desktopicon"; Description: "{cm:DesktopSymbol}"; GroupDescription: "{cm:A
 [Dirs]
 ; Gemeinsamer Datenordner. Er IST der Datenbankordner: DataRepository.GetDBPath
 ; fällt ohne gesetzte Einstellung DBPath auf %ProgramData%\EPOS_PLAN zurück, und
-; dort erwartet auch der Erststart-Assistent den Bestand. (Bis Auftrag #157,
-; 09.09.2026, stand hier "die liegt je Konto" — eine Datenbank je Windows-Konto
-; war ein Vorschlag des Setup-Konzepts, den der Code nie umgesetzt hat.)
+; genau dorthin kopiert die Anwendung beim ersten Start die ausgelieferte Vorlage
+; {app}\Vorlage\Kenndaten.sqlite (Erstbereitstellung, #157-E-1 vom 09.09.2026).
+; (Bis Auftrag #157, 09.09.2026, stand hier "die liegt je Konto" — eine Datenbank
+; je Windows-Konto war ein Vorschlag des Setup-Konzepts, den der Code nie
+; umgesetzt hat.)
 ; users-modify vergibt der Gruppe Benutzer vererbende Änderungsrechte —
-; sprachneutral über die bekannte SID.
+; sprachneutral über die bekannte SID; ohne sie könnte die Anwendung die Vorlage
+; hier gar nicht ablegen.
 Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 
 
@@ -310,8 +293,11 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Flags: ignoreversion recursesubdirs createallsubdirs; \
     Components: programm
 
-; Auslieferungsdatenbank als Vorlage. Sie wird nie direkt benutzt — die
-; Anwendung legt daraus beim ersten Start die Datenbank des Kontos an.
+; Auslieferungsdatenbank als Vorlage. Sie wird nie direkt benutzt: Findet die
+; Anwendung beim Start keine Datenbank im Datenordner, kopiert sie diese Datei
+; einmalig dorthin und laesst sie danach unberuehrt liegen (Erstbereitstellung,
+; Anwenderentscheid #157-E-1 vom 09.09.2026). Der Datenordner ist und bleibt
+; %ProgramData%\EPOS_PLAN — der Ablageort aendert sich nicht.
 Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
     Components: programm
 
@@ -332,9 +318,6 @@ Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
     Components: herstellerdaten
 
 ; Voraussetzung: nur mitnehmen, wenn sie auf diesem Rechner fehlt.
-Source: "{#AceInstaller}"; DestDir: "{tmp}"; \
-    Flags: deleteafterinstall; Check: not AceVorhanden
-
 Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \
     Flags: deleteafterinstall; Check: not WebView2Vorhanden
 
@@ -379,15 +362,7 @@ Root: HKLM; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
 ; ---------------------------------------------------------------------------
 
 [Run]
-; 9.1 Datenbanktreiber. BeforeInstall warnt vor der Mischbitness mit einem
-;     vorhandenen 32-bit-Office, AfterInstall prüft den Erfolg nach.
-Filename: "{tmp}\AccessDatabaseEngine_X64.exe"; Parameters: "/quiet"; \
-    StatusMsg: "{cm:AceInstallieren}"; \
-    Check: not AceVorhanden; \
-    Flags: waituntilterminated skipifdoesntexist; \
-    BeforeInstall: Office32Hinweisen; AfterInstall: AceNachpruefen
-
-; 9.2 WebView2-Laufzeit. Der Bootstrapper laedt die passende Fassung online
+; 9.1 WebView2-Laufzeit. Der Bootstrapper laedt die passende Fassung online
 ;     nach und ist danach fertig; er bringt selbst keine Oberflaeche mit.
 ;     AfterInstall prueft den Erfolg nach — ohne die Laufzeit startet EPOS-Plan
 ;     zwar, aber jeder Blazor-Dialog bliebe leer.
@@ -397,7 +372,7 @@ Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"
     Flags: waituntilterminated skipifdoesntexist; \
     AfterInstall: WebView2Nachpruefen
 
-; 9.3 Rechte am gemeinsamen Datenordner reparieren.
+; 9.2 Rechte am gemeinsamen Datenordner reparieren.
 ;     [Dirs] setzt die vererbenden Rechte am Ordner; Dateien einer
 ;     Vorgängerinstallation, deren Vererbung unterbrochen wurde, erreicht
 ;     zuverlässig nur icacls mit /T. Läuft deshalb nur, wenn der Ordner
@@ -408,7 +383,7 @@ Filename: "{sys}\icacls.exe"; \
     Check: LegacyOrdnerVorhanden; \
     Flags: runhidden waituntilterminated
 
-; 9.4 Programmstart anbieten
+; 9.3 Programmstart anbieten
 Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
     WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
 
@@ -446,78 +421,22 @@ const
 
 var
   G_LegacyOrdner:  Boolean;   { C:\ProgramData\EPOS_PLAN gab es schon vor dieser Installation }
-  G_LegacyDb:      Boolean;   { … und darin lag eine Kenndaten.accdb }
-  G_HinweisSeite:  TOutputMsgWizardPage;
 
 
-{ ---- Voraussetzung: Microsoft.ACE.OLEDB.12.0 in der 64-Bit-Registrierung ----
-  Die Anwendung fordert ausdrücklich 12.0 an; ein vorhandenes 16.0 allein
-  genügt nicht. HKCR64 ist die 64-Bit-Sicht der zusammengeführten
-  Klassenregistrierung — dort registriert sich die 64-Bit-Engine.
-  Geprüft wird die ganze Kette ProgID → CLSID → InprocServer32 → Datei: Eine
-  ProgID allein kann als Leiche ohne Server dastehen, wenn eine Engine unsauber
-  entfernt wurde. }
-function AceVorhanden(): Boolean;
-var
-  Clsid, Server: String;
-begin
-  Result := False;
-  if RegQueryStringValue(HKCR64, 'Microsoft.ACE.OLEDB.12.0\CLSID', '', Clsid) then
-    if RegQueryStringValue(HKCR64, 'CLSID\' + Clsid + '\InprocServer32', '', Server) then
-    begin
-      Server := RemoveQuotes(Server);
-      { Pfade mit Umgebungsvariablen (REG_EXPAND_SZ) lassen sich hier nicht
-        auflösen — sie gelten als vorhanden, statt fälschlich zu fehlen. }
-      Result := (Pos('%', Server) > 0) or FileExists(Server);
-    end;
-end;
+{ ---- KEINE Access-Engine mehr (Anwenderentscheid #157-E-1, Weg W3, 09.09.2026) ----
+  Bis hierher standen an dieser Stelle AceVorhanden, Office32Vorhanden,
+  Office32Hinweisen und AceNachpruefen: Das Setup schleppte den 64-Bit-Redist der
+  Microsoft Access Database Engine mit und installierte ihn still nach, damit die
+  Anwendung eine vorhandene Kenndaten.accdb uebernehmen konnte.
 
+  Access wurde beim Kunden nie produktiv eingesetzt. Die Uebernahme eines
+  Altbestands ist damit ein HAUSWERKZEUG (EposSqliteMigrator, Konsolenfassung) und
+  kein Kundenweg; die Anwendung selbst kommt ohne Fremdtreiber aus
+  (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Die Datenbank einer
+  Neuinstallation entsteht aus {app}\Vorlage\Kenndaten.sqlite.
 
-{ 32-Bit-Microsoft-Office auf diesem Rechner? Click-to-Run hinterlegt die
-  Bitness in Configuration\Platform als 'x86' oder 'x64'. Je nachdem, welcher
-  Installer den Schlüssel geschrieben hat, steht er in der 32- oder in der
-  64-Bit-Sicht — deshalb beide prüfen. }
-function Office32Vorhanden(): Boolean;
-var
-  Plattform: String;
-begin
-  Result := False;
-  if RegQueryStringValue(HKLM32, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-                         'Platform', Plattform) then
-    Result := (CompareText(Plattform, 'x86') = 0);
-
-  if not Result then
-    if RegQueryStringValue(HKLM64, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-                           'Platform', Plattform) then
-      Result := (CompareText(Plattform, 'x86') = 0);
-end;
-
-
-{ Hinweis VOR dem stillen Lauf des Redistributables: Neben einem 32-Bit-Office
-  ist die 64-Bit-Engine offiziell nicht unterstützt, sie lässt sich nur über den
-  in KB 5004577 beschriebenen Weg daneben registrieren. Versucht wird es
-  trotzdem, abgebrochen wird nichts. Hängt an der [Run]-Zeile, deren Check
-  bereits sicherstellt, dass die Engine fehlt — die Meldung kommt daher genau
-  einmal. }
-procedure Office32Hinweisen();
-begin
-  if Office32Vorhanden() and (not AceVorhanden()) then
-    MsgBox(CustomMessage('Office32Hinweis'), mbInformation, MB_OK);
-end;
-
-
-{ Nach dem stillen Lauf des Redistributables prüfen, ob er tatsächlich
-  gegriffen hat. Häufigster Fehlschlag: installiertes 32-Bit-Office. Die
-  Installation wird nicht abgebrochen — und seit dem SQLite-Cutover ist das auch
-  folgenlos für den Betrieb: EPOS-Plan liest und schreibt seine Kenndaten.sqlite
-  ohne diese Engine. Betroffen ist allein die einmalige Übernahme einer
-  vorhandenen Kenndaten.accdb (Auftrag #157, 09.09.2026). }
-procedure AceNachpruefen();
-begin
-  if not AceVorhanden() then
-    MsgBox(CustomMessage('AceFehlt'), mbError, MB_OK);
-end;
-
+  Der WebView2-Bootstrapper darunter bleibt: Ohne die Laufzeit startet EPOS-Plan
+  seit iU9-W15c gar nicht. }
 
 { ---- Voraussetzung: Microsoft Edge WebView2 Runtime (iU8) ----
   Die Evergreen-Laufzeit traegt ihre Fassung unter der festen Produkt-GUID
@@ -532,7 +451,7 @@ end;
 
   '0.0.0.0' ist ausdruecklich AUSGESCHLOSSEN: Diesen Wert hinterlaesst eine
   entfernte Laufzeit — der Schluessel steht dann noch da, die Laufzeit nicht.
-  Derselbe Befund wie bei der ACE-Leiche oben. }
+  (Dieselbe Falle hatte die gefallene ACE-Pruefung: eine ProgID ohne Server.) }
 function WebView2Vorhanden(): Boolean;
 var
   Fassung: String;
@@ -574,7 +493,6 @@ begin
   { Zustand VOR der Installation festhalten — [Dirs] läuft vor [Run] und legt
     den Ordner sonst an, bevor die Check-Funktion ausgewertet wird. }
   G_LegacyOrdner := DirExists(ExpandConstant('{commonappdata}\EPOS_PLAN'));
-  G_LegacyDb     := FileExists(ExpandConstant('{commonappdata}\EPOS_PLAN\Kenndaten.accdb'));
   Result := True;
 end;
 
@@ -632,20 +550,11 @@ begin
 end;
 
 
-procedure InitializeWizard();
-begin
-  G_HinweisSeite := CreateOutputMsgPage(wpSelectTasks,
-    CustomMessage('UebernahmeTitel'),
-    CustomMessage('UebernahmeKopf'),
-    CustomMessage('UebernahmeText'));
-end;
-
-
-function ShouldSkipPage(PageID: Integer): Boolean;
-begin
-  { Die Übernahme-Seite nur zeigen, wenn es wirklich eine Bestandsdatenbank gibt. }
-  Result := (PageID = G_HinweisSeite.ID) and (not G_LegacyDb);
-end;
+{ InitializeWizard und ShouldSkipPage sind mit dem Anwenderentscheid #157-E-1
+  (Weg W3, 09.09.2026) ENTFALLEN. Beide gab es nur fuer die eine zusaetzliche
+  Assistentenseite "Vorhandene Datenbank gefunden", die den Anwender auf die
+  einmalige Umstellung seiner Kenndaten.accdb vorbereitete; die Umstellung ist
+  jetzt ein Hauswerkzeug und findet im Setup nicht mehr statt. }
 
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);

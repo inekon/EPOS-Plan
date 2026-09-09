@@ -162,9 +162,12 @@ public static class Erreichbarkeit
     /// </summary>
     /// <remarks>
     /// <b>Seit iU9-W15c haengt an dieser Wurzel keine MASKE mehr</b> (Auflage O-2):
-    /// Ihre beiden Zweige - der Erststart-Assistent und die Lizenzzustimmung - sind
-    /// Razor-Komponenten, und <c>Program.Main</c> ruft nur noch ihre Huellen
-    /// (<c>ErststartHuelle.Zeigen</c>, <c>LizenzHuelle.ZustimmungSicherstellen</c>).
+    /// Ihre beiden Zweige - der Erststart-Assistent und die Lizenzzustimmung - waren
+    /// Razor-Komponenten, und <c>Program.Main</c> rief nur noch ihre Huellen. Seit
+    /// <b>W3</b> (#157-E-1, 09.09.2026) ist es nur noch EIN Zweig
+    /// (<c>LizenzHuelle.ZustimmungSicherstellen</c>): Der Erststart-Assistent ist
+    /// gefallen, die Datenbank einer Neuinstallation entsteht OHNE Oberflaeche aus
+    /// der ausgelieferten Vorlage (<c>Erstbereitstellung</c> im Kern).
     /// Die Wurzel bleibt trotzdem richtig und bleibt stehen: Sie ist der Ort, an dem
     /// ein Weg VOR dem Hauptfenster beginnt, und der naechste solche Weg soll
     /// wiedergefunden werden statt als verwaist zu gelten.
