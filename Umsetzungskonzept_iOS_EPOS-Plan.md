@@ -2619,6 +2619,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > ändert sich — Abnahme auf Windows: **A‑W14a‑E10‑O12‑1** (die sieben Importmasken verhalten sich unverändert; beim
 > Stromspeicher zusätzlich: „Energie [kWh]" und „Leistung [kW]" mit **einer** Nachkommastelle und Zahlenausdruck
 > `10..60`).
+>
+> **W14a‑E‑10‑O‑14 (Anwenderentscheid 09.09.2026 „toten Code entfernen — nur wenn sinnvoll"), umgesetzt in `1a04aa9`,
+> zusammengeführt in `393b519`.** Der tote Filterweg `KatalogImportAblauf.Anzeigeindex(von, bis, suchtext)` — der Rumpf des
+> alten `FuelleListe` der VDI-Importe (Zahlenbereich plus Suchtext über Name und Firma, Welle W13) — hatte seit der
+> Katalogfilter-Stufe S3.4 keinen Aufrufer im Produktcode mehr; beide Importmasken filtern über `Katalogfilter.Anwenden`.
+> Einziger Nutzer war der Testfall `DerFilterVerbindetZahlenbereichUndSuchtext`, der die mit **O‑10** gestrichene
+> Vorbelegung „0 bis 1 000 Liter" prüfte. Methode und Testfall sind entfernt, die Abschnitte umnummeriert; die gleichnamigen
+> privaten Helfer `Anzeigeindex(Katalogfilterzeile)` der zwei Wirte sind etwas anderes und bleiben, ebenso
+> `KatalogImportSatz.Filterwert` (Hüllen, Daten, Tests) und `VdiAuswahlFilter.Passt` (`Katalogfilter` ruft die
+> `params`-Form selbst — eine zweite Überladung gab es nie). Suche und Zahlenausdruck bleiben belegt durch
+> `ZahlenausdruckTests.Bereich`, `KatalogspaltenfilterTests.Suche_ist_ODER_ueber_Spalten_und_UND_ueber_Begriffe` und den
+> Wirt-Test `KatalogImportDialogTests.Der_Zahlenfilter_und_der_Suchtext_wirken_zusammen`. Nachweis: Kern 2194 / UI 3362
+> grün, Referenzlauf 1030/1007/1017/1045 byte-gleich gegen R6 (Importpfad, kein Rechenweg); das Gate war bis auf EINEN
+> vorbestehenden Befund grün: Der SQL-Dialektprüfer meldet fünf Fundstellen, weil die Testdatenbank auf Schemastand 69
+> steht, `SchemaStand.Zielversion` aber seit den Schritten 70–72 (Wirtschaftlichkeit, `Ausleg_T_*`) auf 72 — schon auf
+> `a4bc691` vor diesem Merge, nicht Teil von O‑14; die Testdatenbank ist auf Stand 72 einzuspielen (Muster #150). Konzept
+> Katalogfilter Kapitel 9 (Entscheidzeile) und 10 (O‑14, Nachtrag an O‑12).
 
 > **Statusblock iU9 — Welle 14b umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `34cc691`; parallel zu W14a)**
 >
