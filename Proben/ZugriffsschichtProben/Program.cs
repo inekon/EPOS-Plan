@@ -10,9 +10,11 @@ using WindowsFormsApplication1;
 namespace ZugriffsschichtProben
 {
     /// <summary>
-    /// Proben zur umgebauten Zugriffsschicht (Arbeitspaket S4a), zur Schemapflege-
-    /// Gabelung (Arbeitspaket S6, Faelle 13 bis 15) und zum Erststart-Assistenten
-    /// (Arbeitspaket S8, Fall 16).
+    /// Proben zur umgebauten Zugriffsschicht (Arbeitspaket S4a) und zur
+    /// Schemapflege-Gabelung (Arbeitspaket S6, Faelle 13 bis 15).
+    ///
+    /// Fall 16 (Erststart-Assistent, Arbeitspaket S8) ist mit W3 vom 09.09.2026
+    /// entfallen - die Anwendung uebernimmt keinen Access-Altbestand mehr.
     ///
     /// AUFRUF:
     ///   ZugriffsschichtProben.exe --quelle=&lt;Pfad zur SQLite-Datei&gt; [--arbeit=&lt;Ordner&gt;]
@@ -104,8 +106,13 @@ namespace ZugriffsschichtProben
                 Fall14SqliteSchritt(quelle, arbeitsordner);
                 Fall15Altbestand(args, arbeitsordner);
 
-                // --- ARBEITSPAKET S8: der Erststart-Assistent -------------------------
-                Fall16Erststart(args, arbeitsordner);
+                // ARBEITSPAKET S8, Fall 16 - der Erststart-Assistent - ist mit W3
+                // (#157-E-1, 09.09.2026) ENTFALLEN: Die Anwendung uebernimmt keinen
+                // Access-Altbestand mehr; ErststartMigration ist geloescht. Die
+                // Uebernahme ist seither ein Hauswerkzeug (EposSqliteMigrator) mit
+                // eigener Konsolenfassung. Fall 15 (Alt-Hebung ueber
+                // SchemaMigration.HebeAltbestand) BLEIBT - der Access-Zweig der
+                // Schemapflege ist das Hauswerkzeug, das diese Probe deckt.
 
                 DataRepository.PfadUeberschreibung = kopie;
 
@@ -786,222 +793,6 @@ namespace ZugriffsschichtProben
             // Die 144-MB-Kopie geht sofort wieder weg; das Protokoll des Laufs bleibt
             // als Beleg liegen.
             DateiEntfernen(kopie);
-        }
-
-        /// <summary>
-        /// FALL 16 - der ERSTSTART-ASSISTENT (Arbeitspaket S8), kopfueber und ohne
-        /// Oberflaeche.
-        ///
-        /// Baut einen Wegwerf-Ordner mit einer KOPIE der Live-.accdb und faehrt darauf
-        /// den vollstaendigen Ablauf aus <see cref="ErststartMigration"/>:
-        /// Lagebild -> Alt-Hebung -> Migration -> Umbenennung. Geprueft wird
-        ///   * Pruefe() vorher   = NurAccdbVorhanden,
-        ///   * Fuehredurch()     = true, Kenndaten.sqlite entstanden, Bericht daneben,
-        ///                         Datenbeweis vollstaendig (alle Tabellen gleich),
-        ///   * die .accdb heisst danach Kenndaten.vor-sqlite.accdb,
-        ///   * Pruefe() nachher  = SqliteVorhanden,
-        ///   * ein ZWEITER Aufruf verweigert mit "Nichts zu tun" und fasst nichts an.
-        ///
-        /// <c>settingsFixup</c> ist hier IMMER <c>false</c> - die Einstellungen des
-        /// Anwenders werden von einer Probe nicht angefasst. Dass das eingehalten wurde,
-        /// wird am Ende gegen den gespeicherten <c>DBName</c> nachgemessen.
-        ///
-        /// Der Ordner geht danach vollstaendig weg (Kopie + SQLite + Bericht); die
-        /// Kennzahlen des Migrators stehen vorher in der Konsolenausgabe.
-        /// </summary>
-        private static void Fall16Erststart(string[] args, string arbeitsordner)
-        {
-            const string BEZEICHNUNG = "16 Erststart-Assistent auf einer Kopie der Live-.accdb (S8)";
-
-            string quelle = Argument(args, "--altbestand") ?? ALTBESTAND_VORGABE;
-            if (!File.Exists(quelle))
-            {
-                Ueberspringe(BEZEICHNUNG, "Altbestand nicht vorhanden: " + quelle +
-                                          " (mit --altbestand=<Pfad> setzen).");
-                return;
-            }
-
-            if (!AceVerfuegbar())
-            {
-                Ueberspringe(BEZEICHNUNG,
-                             "Microsoft.ACE.OLEDB.12.0 ist im Probenkontext nicht verfuegbar " +
-                             "(Provider nicht registriert oder Bitness passt nicht).");
-                return;
-            }
-
-            // Waechter: eine .laccdb neben der Quelle heisst, dass der Bestand gerade
-            // offen ist - eine Kopie davon waere ein halber Stand.
-            string sperre = Path.ChangeExtension(quelle, ".laccdb");
-            if (File.Exists(sperre))
-            {
-                Ueberspringe(BEZEICHNUNG,
-                             "Neben dem Altbestand liegt die Sperrdatei " + sperre +
-                             " - der Bestand ist geoeffnet. EPOS-Plan und Access schliessen.");
-                return;
-            }
-
-            string ordner = Path.Combine(arbeitsordner, "fall16");
-            string accdb = Path.Combine(ordner, "Kenndaten.accdb");
-            string sqlite = Path.Combine(ordner, "Kenndaten.sqlite");
-            string rueckfall = Path.Combine(ordner, "Kenndaten.vor-sqlite.accdb");
-
-            try
-            {
-                OrdnerLeeren(ordner);
-                Directory.CreateDirectory(ordner);
-                Console.WriteLine("       (Fall 16 kopiert " +
-                                  (new FileInfo(quelle).Length / (1024 * 1024)) +
-                                  " MB und migriert sie - das dauert einige Minuten.)");
-                File.Copy(quelle, accdb, true);
-                new FileInfo(accdb).IsReadOnly = false;
-            }
-            catch (Exception ex)
-            {
-                Ueberspringe(BEZEICHNUNG, "Wegwerf-Ordner liess sich nicht herrichten: " + ex.Message);
-                OrdnerLeeren(ordner);
-                return;
-            }
-
-            string dbNameVorher = GespeicherterDbName();
-
-            Fuehre(BEZEICHNUNG, fall =>
-            {
-                Gleich(fall, "Pruefe vor dem Lauf",
-                       ErststartLage.NurAccdbVorhanden, ErststartMigration.Pruefe(ordner));
-
-                Sammler sammler = new Sammler();
-                string bericht;
-                bool ok = ErststartMigration.Fuehredurch(ordner, sammler, false, out bericht);
-
-                fall.Muss(ok, "Fuehredurch lieferte false: " + ErststartMigration.LetzteMeldung);
-                fall.Muss(sammler.Zeilen.Count > 0, "der Assistent meldete keinen einzigen Fortschritt");
-
-                fall.Muss(File.Exists(sqlite), "Kenndaten.sqlite ist nicht entstanden: " + sqlite);
-                fall.Muss(!File.Exists(accdb), "Kenndaten.accdb liegt noch da - nicht umbenannt");
-                fall.Muss(File.Exists(rueckfall),
-                          "die Rueckfallebene Kenndaten.vor-sqlite.accdb fehlt: " + rueckfall);
-                fall.Muss(!string.IsNullOrEmpty(bericht) && File.Exists(bericht),
-                          "der Migrationsbericht fehlt: " + (bericht ?? "(kein Pfad)"));
-
-                fall.Muss(ErststartMigration.LetzteTabellen > 0, "kein Datenbeweis im Ergebnis");
-                Gleich(fall, "Datenbeweis (Tabellen mit gleicher Zeilenzahl und Pruefsumme)",
-                       ErststartMigration.LetzteTabellen, ErststartMigration.LetzteTabellenOk);
-
-                if (!string.IsNullOrEmpty(bericht) && File.Exists(bericht))
-                {
-                    string text = File.ReadAllText(bericht);
-                    fall.Muss(text.IndexOf("Datenbeweis bestanden", StringComparison.Ordinal) >= 0,
-                              "der Bericht meldet keinen bestandenen Datenbeweis");
-                    BerichtKennzahlen(bericht, text);
-                }
-
-                Console.WriteLine("        Migrator: " + ErststartMigration.LetzteTabellenOk + "/" +
-                                  ErststartMigration.LetzteTabellen +
-                                  " Tabellen bewiesen, " +
-                                  ErststartMigration.LetzteZeilen.ToString("N0", new CultureInfo("de-DE")) +
-                                  " Zeilen, Zieldatei " +
-                                  (new FileInfo(sqlite).Length / (1024 * 1024)) + " MB.");
-
-                Gleich(fall, "Pruefe nach dem Lauf",
-                       ErststartLage.SqliteVorhanden, ErststartMigration.Pruefe(ordner));
-
-                // --- der ZWEITE Aufruf muss verweigern und nichts anfassen ------------
-                long groesseVorher = new FileInfo(sqlite).Length;
-                DateTime standVorher = new FileInfo(sqlite).LastWriteTimeUtc;
-
-                string bericht2;
-                bool ok2 = ErststartMigration.Fuehredurch(ordner, null, false, out bericht2);
-
-                fall.Muss(!ok2, "der zweite Aufruf lief durch, statt zu verweigern");
-                fall.Muss(bericht2 == null, "der zweite Aufruf lieferte einen Berichtspfad: " + bericht2);
-                fall.Muss(ErststartMigration.LetzteMeldung
-                              .IndexOf("Nichts zu tun", StringComparison.Ordinal) >= 0,
-                          "die Verweigerung sagt nicht \"Nichts zu tun\": " +
-                          ErststartMigration.LetzteMeldung);
-                fall.Muss(new FileInfo(sqlite).Length == groesseVorher &&
-                          new FileInfo(sqlite).LastWriteTimeUtc == standVorher,
-                          "der zweite Aufruf hat die SQLite-Datei angefasst");
-                fall.Muss(File.Exists(rueckfall) && !File.Exists(accdb),
-                          "der zweite Aufruf hat an den Dateinamen gedreht");
-
-                // --- settingsFixup war false: der gespeicherte DBName ist unberuehrt ---
-                string dbNameNachher = GespeicherterDbName();
-                fall.Muss(dbNameVorher == dbNameNachher,
-                          "der gespeicherte DBName hat sich geaendert (\"" + dbNameVorher +
-                          "\" -> \"" + dbNameNachher + "\") - settingsFixup war false");
-                Console.WriteLine("        Settings.DBName unveraendert: " + (dbNameVorher ?? "(nicht lesbar)"));
-            });
-
-            OrdnerLeeren(ordner);
-        }
-
-        /// <summary>Fortschrittsempfaenger, der synchron in eine Liste schreibt.</summary>
-        /// <remarks>
-        /// Bewusst KEIN <see cref="Progress{T}"/>: Ohne Oberflaechen-Kontext wuerde der
-        /// seine Meldungen ueber den Threadpool zustellen - die Liste waere beim Pruefen
-        /// noch nicht fertig.
-        /// </remarks>
-        private sealed class Sammler : IProgress<string>
-        {
-            internal readonly List<string> Zeilen = new List<string>();
-
-            public void Report(string wert)
-            {
-                Zeilen.Add(wert ?? "");
-            }
-        }
-
-        /// <summary>
-        /// Zitiert die Kennzahlen aus dem Migrationsbericht in die Konsole - der Ordner
-        /// wird danach geloescht, das Protokoll des Probenlaufs bleibt der Beleg.
-        /// </summary>
-        private static void BerichtKennzahlen(string pfad, string text)
-        {
-            Console.WriteLine("        Bericht: " + pfad);
-            foreach (string z in text.Replace("\r\n", "\n").Split('\n'))
-            {
-                string t = z.Trim();
-                if (t.StartsWith("| Tabellen migriert", StringComparison.Ordinal) ||
-                    t.StartsWith("| Zeilen gesamt", StringComparison.Ordinal) ||
-                    t.StartsWith("| Schemastand", StringComparison.Ordinal) ||
-                    t.StartsWith("| Exit-Code", StringComparison.Ordinal) ||
-                    t.StartsWith("**Datenbeweis bestanden", StringComparison.Ordinal) ||
-                    t.StartsWith("- `PRAGMA", StringComparison.Ordinal))
-                    Console.WriteLine("          " + t);
-            }
-        }
-
-        /// <summary>
-        /// Liest den gespeicherten <c>DBName</c> per Reflexion aus den Einstellungen der
-        /// Anwendung (<c>Properties.Settings</c> ist <c>internal</c>). Nur LESEND - die
-        /// Proben schreiben nie in die Einstellungen des Anwenders.
-        /// Liefert <c>null</c>, wenn sich der Wert nicht lesen laesst; das ist kein
-        /// Fehlschlag, sondern macht den Vergleich lediglich wirkungslos.
-        /// </summary>
-        private static string GespeicherterDbName()
-        {
-            try
-            {
-                Type t = typeof(DataRepository).Assembly
-                    .GetType("WindowsFormsApplication1.Properties.Settings");
-                if (t == null) return null;
-
-                System.Reflection.PropertyInfo pDefault = t.GetProperty(
-                    "Default",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
-                    System.Reflection.BindingFlags.Static);
-                if (pDefault == null) return null;
-
-                object inst = pDefault.GetValue(null);
-                System.Reflection.PropertyInfo pName = t.GetProperty("DBName");
-                if (inst == null || pName == null) return null;
-
-                return Convert.ToString(pName.GetValue(inst));
-            }
-            catch (Exception)
-            {
-                return null;
-            }
         }
 
         /// <summary>Loescht einen Wegwerf-Ordner samt Inhalt, ohne je zu stoeren.</summary>

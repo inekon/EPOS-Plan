@@ -3,47 +3,47 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 
 namespace ErststartProben
 {
     /// <summary>
-    /// ErststartProben (Auftrag #157) — der Nachweis, WAS der Kern tut, wenn im
-    /// Datenbankordner weder <c>Kenndaten.sqlite</c> noch <c>Kenndaten.accdb</c>
-    /// liegt. Das ist die Lage einer Neuinstallation auf einem frischen Rechner:
-    /// Das Setup legt die Datenbank NICHT in den Datenordner, sondern nur eine
-    /// Vorlage nach <c>{app}\Vorlage</c>
-    /// (<c>Setup/EPOS-Plan.iss:45</c>, <c>:279-282</c>), und kein Pfad im Quelltext
-    /// liest diesen Ordner.
+    /// ErststartProben (Auftrag #157, mit <b>W3</b> vom 09.09.2026 fortgeschrieben) —
+    /// der Nachweis, WAS beim Zustand „keine Datenbank" geschieht: der Lage jeder
+    /// Neuinstallation auf einem frischen Rechner.
     ///
-    /// <para><b>Was hier NICHT geprueft werden kann.</b> Der Startpfad selbst
-    /// (<c>WindowsFormsApplication1/Program.cs:232</c> …<c>:429</c>) und
-    /// <c>ErststartMigration</c> liegen in der WinForms-Anwendung
-    /// (<c>net10.0-windows</c>) und laufen auf Linux nicht. Nachgestellt wird
-    /// deshalb der KERNANTEIL: <c>DataRepository.DatenbankVorhanden()</c>, die
-    /// Pfadaufloesung und der gewoehnliche Lesezugriff. Die reine Dateipruefung
-    /// <c>ErststartMigration.Pruefe</c>
-    /// (<c>WindowsFormsApplication1/Allgemein/Update/ErststartMigration.cs:139-147</c>)
-    /// ist hier NACHGEBILDET und als solche gekennzeichnet.</para>
+    /// <para><b>Was #157 fand.</b> Lag im Datenbankordner weder
+    /// <c>Kenndaten.sqlite</c> noch <c>Kenndaten.accdb</c>, startete das Programm
+    /// NICHT: Das Setup legte zwar eine Vorlage nach <c>{app}\Vorlage</c>, aber kein
+    /// Pfad im Quelltext las diesen Ordner.</para>
     ///
-    /// <para><b>Die drei Faelle.</b>
+    /// <para><b>Was W3 daraus gemacht hat</b> (Anwenderentscheid #157‑E‑1): Der Kern
+    /// kopiert die ausgelieferte Vorlage beim ersten Start in den Datenordner —
+    /// <c>EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs</c>, gerufen aus
+    /// <c>Program.DatenbankBereitstellen()</c> vor der Meldung <c>START_DB_FEHLT</c>.
+    /// Der Access-Weg (Übernahme-Assistent, ACE-Engine) ist damit gefallen.</para>
+    ///
+    /// <para><b>Die drei Fälle.</b>
     /// <list type="number">
     /// <item>Leerer Ordner: <c>DatenbankVorhanden()</c> ist false UND legt nichts an
-    /// (die Probe oeffnet <c>Mode=ReadOnly</c>).</item>
-    /// <item>Wuerde der Startpfad trotzdem weiterlaufen: der erste gewoehnliche
+    /// (die Probe öffnet <c>Mode=ReadOnly</c>). Das ist die Frage, die der Start
+    /// zuerst stellt.</item>
+    /// <item>Würde der Startpfad trotzdem weiterlaufen: der erste gewöhnliche
     /// Zugriff legt die Datei stillschweigend an — LEER, ohne eine einzige
-    /// Tabelle und damit ohne jeden Auslieferungskatalog.</item>
-    /// <item>Gegenprobe: liegt eine <c>Kenndaten.accdb</c> im Ordner, ist das
-    /// Lagebild ein anderes (<c>NurAccdbVorhanden</c>) — nur dann bietet der
-    /// Assistent ueberhaupt etwas an.</item>
+    /// Tabelle und damit ohne jeden Auslieferungskatalog. Das ist der Grund,
+    /// warum es die Erstbereitstellung überhaupt braucht.</item>
+    /// <item>Die Erstbereitstellung selbst, in vier Lagen: Vorlage kopiert
+    /// (byte-gleich), vorhandenes Ziel unberührt, fehlende Vorlage ohne Zieldatei,
+    /// kaputte Vorlage ohne Zieldatei.</item>
     /// </list></para>
     ///
-    /// <para>Rueckgabe 0, wenn alle Erwartungen zutreffen, sonst 1.</para>
+    /// <para>Rückgabe 0, wenn alle Erwartungen zutreffen, sonst 1.</para>
     /// </summary>
     internal static class Program
     {
         private const string SQLITE_DATEI = "Kenndaten.sqlite";
-        private const string ACCDB_DATEI = "Kenndaten.accdb";
+        private const string VORLAGE_DATEI = "Kenndaten.sqlite";
 
         private static int _verstoesse;
         private static int _pruefungen;
@@ -70,7 +70,7 @@ namespace ErststartProben
                 {
                     Fall1_LeererOrdner(Path.Combine(ziel, "fall1"));
                     Fall2_ErsterZugriff(Path.Combine(ziel, "fall2"));
-                    Fall3_GegenprobeAltbestand(Path.Combine(ziel, "fall3"));
+                    Fall3_Erstbereitstellung(Path.Combine(ziel, "fall3"));
                 }
             }
             catch (Exception ex)
@@ -95,8 +95,8 @@ namespace ErststartProben
 
         /// <summary>
         /// Die Lage einer Neuinstallation: Der Datenordner ist da (das Setup legt ihn
-        /// an, <c>EPOS-Plan.iss:263</c>), aber leer. Geprueft wird, was
-        /// <c>Program.cs:232</c> als erstes fragt.
+        /// an, <c>EPOS-Plan.iss</c>, Abschnitt <c>[Dirs]</c>), aber leer. Geprueft wird,
+        /// was der Start als erstes fragt.
         /// </summary>
         private static void Fall1_LeererOrdner(string ordner)
         {
@@ -108,14 +108,11 @@ namespace ErststartProben
             Muss(DataRepository.GetDBPath() == Path.Combine(ordner, SQLITE_DATEI),
                  "GetDBPath zeigt auf " + Path.Combine(ordner, SQLITE_DATEI));
 
-            // Nachgebildet: ErststartMigration.Pruefe - reine Dateipruefung, sie
-            // oeffnet nichts (ErststartMigration.cs:139-147).
+            // Reine Dateipruefung - sie oeffnet nichts.
             bool sqliteDa = File.Exists(Path.Combine(ordner, SQLITE_DATEI));
-            bool accdbDa = File.Exists(Path.Combine(ordner, ACCDB_DATEI));
-            Muss(!sqliteDa && !accdbDa,
-                 "Lagebild (nachgebildet) = BeidesFehlt: weder " + SQLITE_DATEI + " noch " + ACCDB_DATEI);
+            Muss(!sqliteDa, "Im Ordner liegt keine " + SQLITE_DATEI);
 
-            // Das ist die Frage aus Program.cs:232.
+            // Das ist die Frage, die der Start zuerst stellt (Program.cs).
             bool vorhanden = DataRepository.DatenbankVorhanden();
             Muss(!vorhanden, "DatenbankVorhanden() liefert false");
 
@@ -126,9 +123,10 @@ namespace ErststartProben
                  "Der Ordner ist danach immer noch leer (DatenbankVorhanden legt nichts an); gefunden: "
                  + danach.Length);
 
-            Console.WriteLine("  Folge im Programm: Program.cs:232 ruft ErststartAnbieten(); dort ist");
-            Console.WriteLine("  ErststartCtrl.UmstellungFaellig() false (ErststartCtrl.cs:36/37), es");
-            Console.WriteLine("  erscheint START_DB_FEHLT und Main kehrt zurueck - das Programm startet NICHT.");
+            Console.WriteLine("  Folge im Programm (seit W3): Program.DatenbankBereitstellen() ruft");
+            Console.WriteLine("  Erstbereitstellung.Sicherstellen(Zielpfad, Dienste.Pfade.Auslieferungsvorlage).");
+            Console.WriteLine("  Gibt es die Vorlage, entsteht die Datenbank hier; gibt es sie nicht,");
+            Console.WriteLine("  erscheint START_DB_FEHLT samt erwartetem Vorlagenpfad und Main kehrt zurueck.");
             Console.WriteLine();
         }
 
@@ -141,8 +139,9 @@ namespace ErststartProben
         /// Der Gegenbeweis zur Vermutung „dann legt der Kern eben eine leere Datenbank
         /// an": Er legt sie an — aber sie ist wirklich LEER. Kein Schema, keine
         /// <c>Tab_*_STAMM</c>, kein Auslieferungskatalog. Die Schemapflege
-        /// (<c>SchemaMigration.Ausfuehren</c>, <c>Program.cs:281</c>) hebt ein
-        /// vorhandenes Schema an, sie erzeugt keines.
+        /// (<c>SchemaMigration.Ausfuehren</c>) hebt ein vorhandenes Schema an, sie
+        /// erzeugt keines — GENAU deshalb muss die Erstbereitstellung eine gefuellte
+        /// Vorlage kopieren und nicht eine leere Datei anlegen.
         /// </summary>
         private static void Fall2_ErsterZugriff(string ordner)
         {
@@ -167,41 +166,148 @@ namespace ErststartProben
             Console.WriteLine("  Dateigroesse der entstandenen Datenbank: " + groesse + " Byte");
             Console.WriteLine("  Bedeutung: Keine Kataloge, keine Tab_*_STAMM, keine Beispielprojekte.");
             Console.WriteLine("  Fuer einen Neukunden waere dieser Stand unbrauchbar - genau deshalb");
-            Console.WriteLine("  bricht Program.ErststartAnbieten() vorher ab, statt ihn entstehen zu lassen.");
+            Console.WriteLine("  kopiert die Erstbereitstellung die AUSGELIEFERTE VORLAGE (Fall 3).");
             Console.WriteLine();
         }
 
 
         // =============================================================================
-        // Fall 3 - Gegenprobe: mit Altbestand sieht das Lagebild anders aus
+        // Fall 3 - die Erstbereitstellung aus der Auslieferungsvorlage (W3)
         // =============================================================================
 
         /// <summary>
-        /// Belegt, dass Fall 1 nicht an der Probe liegt, sondern am fehlenden Bestand:
-        /// Sobald eine <c>Kenndaten.accdb</c> im Ordner liegt, ist das Lagebild
-        /// <c>NurAccdbVorhanden</c> und der Erststart-Assistent hat einen Auftrag.
-        /// Die Umstellung selbst laeuft hier nicht - sie braucht die Access-Engine
-        /// und damit Windows.
+        /// Der Nachweis des Wegs, den <b>W3</b> gebaut hat: vier Lagen von
+        /// <c>Erstbereitstellung.Sicherstellen</c> auf jeweils eigenen Wegwerf-Ordnern.
+        ///
+        /// <list type="number">
+        /// <item><b>Vorlage kopiert</b> — die Zieldatei entsteht und ist BYTE-GLEICH zur
+        /// Vorlage; der gelesene Schemastand ist der der Vorlage.</item>
+        /// <item><b>Ziel vorhanden</b> — die Vorlage wird nicht angefasst, die vorhandene
+        /// Datei bleibt Byte für Byte, wie sie war.</item>
+        /// <item><b>Vorlage fehlt</b> — Lage <c>VorlageFehlt</c>, und es entsteht KEINE
+        /// Zieldatei (der Startpfad meldet dann <c>START_DB_FEHLT</c>).</item>
+        /// <item><b>Vorlage kaputt</b> — Lage <c>Fehler</c>, und die halb angelegte
+        /// Zieldatei ist wieder weg. Sonst stünde beim nächsten Start eine Ruine da, die
+        /// als „vorhanden" gälte.</item>
+        /// </list>
         /// </summary>
-        private static void Fall3_GegenprobeAltbestand(string ordner)
+        private static void Fall3_Erstbereitstellung(string ordner)
         {
-            Console.WriteLine("--- Fall 3: Gegenprobe mit Altbestand ----------------------------");
+            Console.WriteLine("--- Fall 3: Erstbereitstellung aus der Auslieferungsvorlage (W3) --");
             Directory.CreateDirectory(ordner);
 
-            File.WriteAllText(Path.Combine(ordner, ACCDB_DATEI), "Attrappe - kein echter Access-Bestand.");
-            DataRepository.PfadUeberschreibung = Path.Combine(ordner, SQLITE_DATEI);
+            // (1) Vorlage vorhanden -> kopiert und byte-gleich ------------------------
+            string vorlage = Path.Combine(ordner, "Vorlage", VORLAGE_DATEI);
+            VorlageBauen(vorlage, 71);
 
-            bool sqliteDa = File.Exists(Path.Combine(ordner, SQLITE_DATEI));
-            bool accdbDa = File.Exists(Path.Combine(ordner, ACCDB_DATEI));
+            string ziel1 = Path.Combine(ordner, "leer", SQLITE_DATEI);
+            Erstbereitstellungsergebnis e1 = Erstbereitstellung.Sicherstellen(ziel1, vorlage);
 
-            Muss(!sqliteDa && accdbDa,
-                 "Lagebild (nachgebildet) = NurAccdbVorhanden - nur hier ist eine Umstellung faellig");
-            Muss(!DataRepository.DatenbankVorhanden(),
-                 "DatenbankVorhanden() ist auch hier false - die .accdb ist keine Datenbank des Kerns");
+            Muss(e1.Lage == Erstbereitstellungslage.Kopiert,
+                 "Lage = Kopiert (gemeldet: " + e1.Lage + " - " + e1.Meldung + ")");
+            Muss(e1.Bereit, "Bereit = true");
+            Muss(File.Exists(ziel1), "die Datenbank ist entstanden: " + ziel1);
+            Muss(Gleich(vorlage, ziel1), "die Kopie ist BYTE-GLEICH zur Vorlage");
+            Muss(e1.Schemastand == 71,
+                 "der gelesene Schemastand ist der der Vorlage (71, gemeldet: " + e1.Schemastand + ")");
 
-            Console.WriteLine("  Folge im Programm: ErststartCtrl.UmstellungFaellig() ist true, der");
-            Console.WriteLine("  Assistent laeuft, danach steht Kenndaten.sqlite (Program.cs:406).");
+            // Und danach ist die Datenbank auch wirklich zu oeffnen - genau das
+            // fragt der Startpfad ein zweites Mal.
+            DataRepository.PfadUeberschreibung = ziel1;
+            Muss(DataRepository.DatenbankVorhanden(),
+                 "DatenbankVorhanden() liefert danach true - das Programm startet");
+
+            // (2) Ziel vorhanden -> nichts wird angefasst -----------------------------
+            string abdruck = Pruefsumme(ziel1);
+            Erstbereitstellungsergebnis e2 = Erstbereitstellung.Sicherstellen(ziel1, vorlage);
+
+            Muss(e2.Lage == Erstbereitstellungslage.VorhandenBelassen,
+                 "zweiter Aufruf: Lage = VorhandenBelassen (gemeldet: " + e2.Lage + ")");
+            Muss(Pruefsumme(ziel1) == abdruck,
+                 "die vorhandene Datenbank ist Byte fuer Byte unveraendert");
+
+            // (3) Vorlage fehlt -> keine Zieldatei ------------------------------------
+            string ziel3 = Path.Combine(ordner, "ohnevorlage", SQLITE_DATEI);
+            string fehlt = Path.Combine(ordner, "gibtsnicht", VORLAGE_DATEI);
+            Erstbereitstellungsergebnis e3 = Erstbereitstellung.Sicherstellen(ziel3, fehlt);
+
+            Muss(e3.Lage == Erstbereitstellungslage.VorlageFehlt,
+                 "ohne Vorlage: Lage = VorlageFehlt (gemeldet: " + e3.Lage + ")");
+            Muss(!e3.Bereit, "Bereit = false");
+            Muss(!File.Exists(ziel3), "es ist KEINE Zieldatei entstanden: " + ziel3);
+            Muss(e3.Vorlagepfad == fehlt,
+                 "das Ergebnis nennt den erwarteten Vorlagenpfad (fuer die Startmeldung)");
+
+            // (4) Vorlage kaputt -> Fehler, und das Ziel ist wieder weg ---------------
+            string kaputt = Path.Combine(ordner, "kaputt", VORLAGE_DATEI);
+            Directory.CreateDirectory(Path.GetDirectoryName(kaputt));
+            File.WriteAllText(kaputt, "Das ist keine SQLite-Datei, sondern Text.");
+
+            string ziel4 = Path.Combine(ordner, "kaputtziel", SQLITE_DATEI);
+            Erstbereitstellungsergebnis e4 = Erstbereitstellung.Sicherstellen(ziel4, kaputt);
+
+            Muss(e4.Lage == Erstbereitstellungslage.Fehler,
+                 "kaputte Vorlage: Lage = Fehler (gemeldet: " + e4.Lage + ")");
+            Muss(!File.Exists(ziel4),
+                 "die halb angelegte Zieldatei ist wieder entfernt: " + ziel4);
+
+            DataRepository.PfadUeberschreibung = null;
             Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Baut eine winzige, gueltige Auslieferungsvorlage: eine <c>Tab_Applikation</c>
+        /// mit dem Schemamarker. Mehr braucht <c>Erstbereitstellung</c> nicht — sie prueft
+        /// <c>PRAGMA integrity_check</c> und das VORHANDENSEIN des Markers, nicht seine
+        /// Zahl (die Schemapflege hebt eine aeltere Vorlage beim selben Start an).
+        /// </summary>
+        private static void VorlageBauen(string pfad, int schemastand)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(pfad));
+            if (File.Exists(pfad)) File.Delete(pfad);
+
+            using (var verbindung = new SqliteConnection("Data Source=" + pfad + ";Pooling=False"))
+            {
+                verbindung.Open();
+                using (SqliteCommand cmd = verbindung.CreateCommand())
+                {
+                    cmd.CommandText =
+                        "CREATE TABLE Tab_Applikation (ID INTEGER PRIMARY KEY, SchemaVersion INTEGER)";
+                    cmd.ExecuteNonQuery();
+                }
+                using (SqliteCommand cmd = verbindung.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO Tab_Applikation (ID, SchemaVersion) VALUES (1, $v)";
+                    cmd.Parameters.AddWithValue("$v", schemastand);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        /// <summary>Sind zwei Dateien byte-gleich?</summary>
+        private static bool Gleich(string a, string b)
+        {
+            try
+            {
+                byte[] x = File.ReadAllBytes(a);
+                byte[] y = File.ReadAllBytes(b);
+                if (x.Length != y.Length) return false;
+                for (int i = 0; i < x.Length; i++) if (x[i] != y[i]) return false;
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>Laenge und Zeitstempel als billiger Abdruck einer Datei.</summary>
+        private static string Pruefsumme(string pfad)
+        {
+            try
+            {
+                var f = new FileInfo(pfad);
+                return f.Length.ToString(CultureInfo.InvariantCulture) + "|" +
+                       f.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture);
+            }
+            catch { return "?"; }
         }
 
 

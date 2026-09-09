@@ -228,9 +228,15 @@ Drei Feinheiten, die beim Ändern leicht kippen:
 
 ## 5. Voraussetzungen und Prüfungen
 
-### 5.1 Microsoft Access Database Engine, 64 Bit
+### 5.1 Microsoft Access Database Engine, 64 Bit — GEFALLEN (W3, 09.09.2026)
 
-Die einzige echte Voraussetzung. Geprüft wird `Microsoft.ACE.OLEDB.12.0` in der
+> **Dieser Abschnitt beschreibt einen Stand, den es nicht mehr gibt.** Mit dem
+> Anwenderentscheid `#157-E-1` (Weg W3) liefert das Setup die Access-Engine nicht mehr
+> mit und prueft sie nicht mehr: Access wurde beim Kunden nie produktiv eingesetzt, und
+> die Anwendung liest ihre `Kenndaten.sqlite` ohne Fremdtreiber. Was aus dem Skript
+> verschwunden ist, steht in Abschnitt 6.3. Der Abschnitt bleibt zur Geschichte stehen.
+
+Die einzige echte Voraussetzung (bis 09.09.2026). Geprüft wird `Microsoft.ACE.OLEDB.12.0` in der
 **64-Bit-Sicht** (`HKCR64`) — genau die Kennung, die
 `DataRepository.GetConnectionString()` anfordert. Ein vorhandenes
 `Microsoft.ACE.OLEDB.16.0` allein genügt nicht; die 64-Bit-Redist registriert
@@ -354,102 +360,91 @@ Access-Engine).
 
 ## 6. Die Datenbank
 
+> **Stand 09.09.2026 — Anwenderentscheid `#157‑E‑1`, Weg W3.** Dieser Abschnitt ist
+> gebaut. Das Setup liefert `{app}\Vorlage\Kenndaten.sqlite` aus, der Kern kopiert sie
+> beim ersten Start in den Datenordner, und der Access-Weg (Übernahme-Assistent,
+> ACE-Engine, `.accdb`-Vorlage) ist gefallen. Der Betriebsstand steht in
+> [`../BETRIEB_SQLITE.md`](../BETRIEB_SQLITE.md), Abschnitt 1.
+
 ### 6.1 Den Auslieferungsstand erzeugen
 
-**Die Datenbank im Repository darf nicht ausgeliefert werden.**
-`WindowsFormsApplication1\Kenndaten.accdb` ist 92 MB groß und enthält reale
-Projekte aus der Entwicklung — also Kunden- und Objektdaten. Sie in ein Setup
-zu packen, das an Dritte geht, wäre eine Datenpanne.
+**Die Datenbank im Repository darf nicht ausgeliefert werden.** Die Arbeitsdatenbank
+enthält reale Projekte aus der Entwicklung — also Kunden- und Objektdaten. Sie in ein
+Setup zu packen, das an Dritte geht, wäre eine Datenpanne.
 
-Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.accdb` und
-entsteht in vier Schritten:
+Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.sqlite` und
+**entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICHT im Repository
+(`.gitignore`: `Setup/Vorlage/*.sqlite`). Erzeugt wird er vom Werkzeug
+`Werkzeuge/Auslieferungsvorlage`:
 
-1. Kopie der produktiven Datenbank ziehen (vorher prüfen, ob `Kenndaten.laccdb`
-   existiert — dann ist sie geöffnet)
-2. Alle Projektdaten löschen. Die Löschweitergaben tragen das meiste mit: Ein
-   `DELETE FROM Tab_Projekt` räumt über die 68 Beziehungen mit `DEL-CASCADE`
-   die abhängigen Tabellen ab. Die dokumentierten Ausnahmen —
-   `Tab_Pufferspeicher` hängt **nicht** an der Projektkaskade, `ID_PUFFER` hat
-   **keine** Beziehung — sind einzeln nachzuziehen
-3. In den `*_STAMM`-Tabellen behalten, was `ReadOnly = TRUE` trägt; das ist
-   laut Namenskonvention genau der Auslieferungskatalog
-4. „Komprimieren und reparieren", dann die Datei schreibgeschützt ablegen
-
-Dieser Schritt ist **noch nicht automatisiert** und gehört als Skript in
-`Setup\Vorlage\` (Aufwandsschätzung in Abschnitt 12). Bis dahin ist er von Hand
-zu gehen und das Ergebnis vor jeder Auslieferung gegenzuprüfen: Projektliste
-leer, Katalogzahlen plausibel, Dateigröße deutlich unter 92 MB.
-
-Das Build-Skript bricht ab, wenn `Setup\Vorlage\Kenndaten.accdb` fehlt — und
-greift bewusst **nicht** ersatzweise auf die Arbeitsdatenbank zurück.
-
-### 6.2 Erstkopie und Übernahme des Bestands
-
-Die Anwendung entscheidet, welche Datenbank sie benutzt — nicht das Setup. Der
-Vorschlag für `DataRepository`:
-
-```csharp
-public static string GetDBPath()
-{
-    // Ausdrücklich konfigurierter Ordner (Admin-Einstellungen) hat Vorrang.
-    // Das ist zugleich die Betriebsart "gemeinsame Datenbank".
-    string ordner = Properties.Settings.Default.DBPath;
-    if (!string.IsNullOrWhiteSpace(ordner))
-        return Path.Combine(ordner, DB_DATEINAME);
-
-    string benutzerOrdner = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "EPOS_PLAN");
-    string ziel = Path.Combine(benutzerOrdner, DB_DATEINAME);
-
-    if (!File.Exists(ziel))
-        DatenbankBereitstellen(benutzerOrdner, ziel);
-
-    return ziel;
-}
-
-private static void DatenbankBereitstellen(string ordner, string ziel)
-{
-    Directory.CreateDirectory(ordner);
-
-    // 1. Bestand aus der bisherigen gemeinsamen Ablage übernehmen -
-    //    der Anwender behält seine Projekte.
-    string alt = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-        "EPOS_PLAN", DB_DATEINAME);
-
-    // 2. sonst die Auslieferungsvorlage neben dem Programm.
-    string vorlage = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory, "Vorlage", DB_DATEINAME);
-
-    string quelle = File.Exists(alt) ? alt : vorlage;
-    if (!File.Exists(quelle))
-        throw new FileNotFoundException(
-            "Weder Bestandsdatenbank noch Auslieferungsvorlage gefunden.", quelle);
-
-    // Über eine Zwischendatei, damit ein Abbruch keine halbe
-    // Datenbank hinterlässt, die beim nächsten Start als gültig gilt.
-    string zwischen = ziel + ".neu";
-    File.Copy(quelle, zwischen, true);
-    File.SetAttributes(zwischen, File.GetAttributes(zwischen) & ~FileAttributes.ReadOnly);
-    File.Move(zwischen, ziel);
-}
+```powershell
+dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele …] [--trocken]
 ```
 
-Drei Punkte dazu:
+`build-setup.ps1` ruft es selbst auf, unmittelbar vor `ISCC`:
 
-- **Reihenfolge.** Das muss vor `SchemaMigration.Ausfuehren()` in `Program.Main`
-  greifen. Da die Migration ihren Pfad laut Entscheidung 13.2 des
-  Simulationskonzepts über `DataRepository.GetDBPath()` bezieht, geschieht das
-  von selbst — beim Umbau dieser Stelle aber mit prüfen.
-- **Dauer.** 92 MB kopieren dauert je nach Datenträger einige Sekunden. Der
-  erste Start braucht deshalb einen sichtbaren Hinweis, sonst wirkt das Programm
-  hängengeblieben.
-- **Der Altbestand bleibt liegen.** Bewusst: Erst wenn der Anwender bestätigt
-  hat, dass seine Projekte da sind, darf die alte Datei weg. Das gehört in die
-  Liesmich-Datei, nicht in eine automatische Löschung.
+```powershell
+.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite
+```
 
-### 6.3 Was das Setup mit der Datenbank nie tut
+Die Quelle kommt aus dem Parameter `-Quelldatenbank` oder aus der Umgebungsvariablen
+`EPOS_VORLAGE_QUELLE`. **Ohne Angabe bricht das Skript ab** und greift bewusst **nicht**
+ersatzweise auf die Arbeitsdatenbank zurück; ebenso bei einem Rückgabecode ≠ 0 des
+Werkzeugs oder einer fehlenden Zieldatei. Auch `ISCC` selbst prüft die Datei noch einmal
+(`#if !FileExists(VorlageDb)` im `.iss`).
+
+Was das Werkzeug tut — Projektdaten entfernen, den Auslieferungskatalog behalten,
+Beispielprojekte auswählen, verdichten —, steht bei ihm; hier zählt nur, dass es genau
+eine Quelle für diesen Stand gibt.
+
+### 6.2 Erstkopie beim ersten Programmstart
+
+**Gebaut, und zwar im Kern.** Die Anwendung entscheidet, welche Datenbank sie benutzt —
+nicht das Setup:
+
+| Schritt | Fundstelle |
+|---|---|
+| Startprüfung | `Program.Main` → `DataRepository.DatenbankVorhanden()` |
+| Bereitstellung | `Program.DatenbankBereitstellen()` → `Erstbereitstellung.Sicherstellen(Ziel, Vorlage)` |
+| Ablauf | `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs` |
+| Pfad der Vorlage | `IPfade.Auslieferungsvorlage` (`StandardPfade`, Aufstieg von `AppContext.BaseDirectory`) |
+
+**Der Ablageort ist und bleibt `%ProgramData%\EPOS_PLAN`.** Der Vorschlag der früheren
+Fassung dieses Abschnitts — eine Datenbank je Windows-Konto unter `%LOCALAPPDATA%` — ist
+nie gebaut worden; `DataRepository.GetDBPath()` kennt kein Benutzerprofil (Befund #157
+vom 09.09.2026). Der `[Dirs]`-Eintrag des Setups gibt der Gruppe Benutzer deshalb
+vererbende Änderungsrechte auf diesen Ordner (`users-modify`) — ohne sie könnte die
+Anwendung die Vorlage dort gar nicht ablegen.
+
+Drei Zusicherungen der Bereitstellung: **nie überschreiben** (eine vorhandene Datei bleibt
+unberührt, auch eine beschädigte — dort stehen die Projekte des Anwenders), **nie halb
+liegen lassen** (bei jedem Fehler wird die Zieldatei wieder entfernt), **erst prüfen, dann
+melden** (`PRAGMA integrity_check` und `Tab_Applikation.SchemaVersion`). Eine Vorlage mit
+älterem Schemastand ist zulässig; `SchemaMigration.Ausfuehren` hebt sie beim selben Start
+an.
+
+**Fehlt auch die Vorlage**, startet das Programm nicht: Meldung `START_DB_FEHLT`, ergänzt
+um den erwarteten Vorlagenpfad (`START_VORLAGE_FEHLT`).
+
+**Auf iOS gilt derselbe Gedanke** — `EPOS.iOS/Datenbankbereitstellung.cs` kopiert die
+mitgelieferte `Kenndaten.sqlite` aus dem Anwendungspaket in die Sandbox.
+
+### 6.3 Kein Access mehr im Setup
+
+Mit Weg W3 sind aus diesem Skript verschwunden: `#define AceInstaller`, die
+`[Files]`- und `[Run]`-Zeile des Redistributables, die vier Pascal-Funktionen
+`AceVorhanden`/`Office32Vorhanden`/`Office32Hinweisen`/`AceNachpruefen`, die drei
+Meldungen `AceInstallieren`/`Office32Hinweis`/`AceFehlt` (de+en) und die
+Assistentenseite „Vorhandene Datenbank gefunden" samt `G_LegacyDb`,
+`InitializeWizard` und `ShouldSkipPage`. Abschnitt 5.1 dieses Konzepts beschreibt
+damit einen Stand, den es nicht mehr gibt.
+
+Die Übernahme eines `.accdb`-Altbestands ist seither ein **Hauswerkzeug**
+(`EposSqliteMigrator.exe`); wer sie fährt, installiert die ACE-Engine dort, wo sie
+läuft — beim Anwender wird sie nicht mehr gebraucht. `AccessDatabaseEngine_X64.exe`
+gehört damit auch nicht mehr in `Setup\Voraussetzungen\`.
+
+### 6.4 Was das Setup mit der Datenbank nie tut
 
 Es überschreibt sie nicht, es migriert sie nicht, es löscht sie nicht (außer auf
 ausdrückliche Rückfrage bei der Deinstallation, und dann nur die des

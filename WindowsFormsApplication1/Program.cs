@@ -216,22 +216,22 @@ namespace WindowsFormsApplication1
             // Meldung in der eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
             // Einen registrierungspflichtigen Provider gibt es nach der Umstellung nicht
             // mehr; geprüft wird jetzt die Datei selbst.
-            // Der Meldungstext steht bewusst noch als Literal hier: Die Ressourcenschlüssel
-            // START_ACE_FEHLT_* beschreiben die Access-Engine und werden mit dem übrigen
-            // Textbestand in Arbeitspaket S8 nachgezogen.
             //
-            // ERSTSTART-ASSISTENT (S8, Implementierungskonzept Abschnitt 8): Auf einem
-            // Bestandsrechner gibt es die SQLite-Datei beim allerersten Start dieser
-            // Fassung noch gar nicht - DatenbankVorhanden() prüft aber genau sie. Der
-            // Assistent muss deshalb INNERHALB dieser Prüfung greifen, und zwar bevor
-            // ihre Fehlermeldung erscheint: Nur wenn die Datei fehlt, wird das Lagebild
-            // des Ordners erhoben; liegt dort ein Access-Altbestand, wird er einmalig
-            // umgestellt. Alles Weitere (Lizenz, Schemapflege, Oberfläche) läuft danach
-            // unverändert - insbesondere SchemaMigration.Ausfuehren, das dann auf der
-            // frischen SQLite-Datei aufsetzt.
+            // ERSTBEREITSTELLUNG (Anwenderentscheid #157-E-1, Weg W3 vom 09.09.2026):
+            // Auf einem frischen Rechner gibt es die SQLite-Datei beim allerersten Start
+            // noch gar nicht - DatenbankVorhanden() prüft aber genau sie. Bevor ihre
+            // Fehlermeldung erscheint, wird deshalb die AUSGELIEFERTE VORLAGE
+            // ({app}\Vorlage\Kenndaten.sqlite) in den Datenordner kopiert; danach läuft
+            // alles Weitere (Lizenz, Schemapflege, Oberfläche) unverändert - insbesondere
+            // SchemaMigration.Ausfuehren, das die frisch kopierte Vorlage auf den
+            // benötigten Stand hebt, falls sie älter ist.
+            //
+            // Der Access-Weg (Übernahme-Assistent, ACE-Engine) ist mit W3 GEFALLEN: Access
+            // wurde beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands
+            // ist seither ein Hauswerkzeug (EposSqliteMigrator), kein Kundenweg.
             if (!DataRepository.DatenbankVorhanden())
             {
-                if (!ErststartAnbieten()) return;
+                if (!DatenbankBereitstellen()) return;
             }
 
             // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
@@ -367,78 +367,62 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Gabelung des Erststarts (Arbeitspaket S8): Es gibt keine lesbare
-        /// SQLite-Datei — liegt daneben ein Access-Altbestand, wird er einmalig
-        /// umgestellt; sonst bleibt es bei der bisherigen Meldung.
+        /// Die Erstbereitstellung der Datenbank (Anwenderentscheid <b>#157‑E‑1 / W3</b>,
+        /// 09.09.2026): Es gibt keine lesbare SQLite-Datei — dann wird die ausgelieferte
+        /// Vorlage in den Datenordner kopiert.
         /// </summary>
         /// <returns><c>true</c> = weiterstarten, <c>false</c> = Programm beenden.</returns>
         /// <remarks>
         /// <para>
-        /// Der Settings-Fixup (N7) läuft hier mit <c>true</c>: Im Programmbetrieb soll der
-        /// gespeicherte <c>DBName</c> nach der Umstellung auf <c>Kenndaten.sqlite</c>
-        /// zeigen. Der Vorgriff in <see cref="DataRepository.GetDBPath"/> bleibt als Netz
-        /// bestehen, falls der Fixup nicht durchkommt.
+        /// <b>Der Access-Weg ist mit W3 gefallen.</b> Bis dahin stand hier der
+        /// Übernahme-Assistent aus Arbeitspaket S8: Lag im Datenordner eine
+        /// <c>Kenndaten.accdb</c>, wurde sie einmalig nach SQLite umgestellt. Access wurde
+        /// beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands ist
+        /// seither ein <b>Hauswerkzeug</b> (<c>EposSqliteMigrator</c>) und läuft nicht mehr
+        /// im Programmstart.
         /// </para>
         /// <para>
-        /// Nach erfolgreicher Umstellung wird die Startprüfung WIEDERHOLT — erst ein
-        /// zweites <c>DatenbankVorhanden()</c> beweist, dass die neue Datei auch wirklich
-        /// zu öffnen ist. Nur dann geht es weiter.
+        /// <b>Der Kern entscheidet, die Hülle meldet.</b> Kopieren, Prüfen und Aufräumen
+        /// stehen in <see cref="Erstbereitstellung"/> — plattformfrei, damit auf iOS
+        /// derselbe Gedanke gilt (dort kopiert
+        /// <c>EPOS.iOS/Datenbankbereitstellung</c> aus dem Anwendungspaket). Hier bleibt
+        /// nur die Meldung.
+        /// </para>
+        /// <para>
+        /// Nach dem Kopieren wird die Startprüfung WIEDERHOLT — erst ein zweites
+        /// <c>DatenbankVorhanden()</c> beweist, dass die neue Datei auch wirklich zu öffnen
+        /// ist. Nur dann geht es weiter; die Schemapflege
+        /// (<c>SchemaMigration.Ausfuehren</c>) hebt eine ältere Vorlage unmittelbar danach
+        /// auf den benötigten Stand.
         /// </para>
         /// </remarks>
-        private static bool ErststartAnbieten()
+        private static bool DatenbankBereitstellen()
         {
-            string ordner = ErststartCtrl.StandardOrdner();
+            string ziel = DataRepository.GetDBPath();
+            string vorlage = Dienste.Pfade.Auslieferungsvorlage;
 
-            if (!ErststartCtrl.UmstellungFaellig(ordner))
+            Erstbereitstellungsergebnis ergebnis = Erstbereitstellung.Sicherstellen(ziel, vorlage);
+
+            // Kopiert (oder wider Erwarten doch schon da): die Datei muss sich jetzt
+            // oeffnen lassen, sonst war die Bereitstellung wertlos.
+            if (ergebnis.Bereit && DataRepository.DatenbankVorhanden()) return true;
+
+            // Ab hier startet das Programm nicht. Die Meldung nennt IMMER beide Orte -
+            // wo die Datenbank erwartet wurde und wo die Vorlage gesucht wurde.
+            string text = string.Format(MyResource.Resource.START_DB_FEHLT, ziel) +
+                          Environment.NewLine + Environment.NewLine +
+                          string.Format(MyResource.Resource.START_VORLAGE_FEHLT, vorlage);
+
+            if (ergebnis.Lage != Erstbereitstellungslage.VorlageFehlt &&
+                !string.IsNullOrEmpty(ergebnis.Meldung))
             {
-                // Unverändert der bisherige Fall: keine Datenbank, kein Altbestand.
-                MessageBox.Show(
-                    string.Format(MyResource.Resource.START_DB_FEHLT, DataRepository.GetDBPath()),
-                    MyResource.Resource.START_DB_FEHLT_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                text += Environment.NewLine + Environment.NewLine + ergebnis.Meldung;
             }
 
-            // iU9-W15c.7: Der Assistent ist eine Razor-Komponente; die Hülle zeigt sie
-            // BESITZERLOS, mit Taskleisteneintrag und mit gesperrtem Schließen während
-            // des Laufs (die drei Zusätze aus W15c.6).
-            string berichtPfad;
-            bool umgestellt = ErststartHuelle.Zeigen(ordner, out berichtPfad);
-
-            if (!umgestellt)
-            {
-                MessageBox.Show(
-                    MyResource.Resource.START_UMSTELLUNG_ABGELEHNT +
-                    Environment.NewLine + Environment.NewLine +
-                    ErststartCtrl.LetzteMeldung + Bericht(berichtPfad),
-                    MyResource.Resource.START_UMSTELLUNG_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-
-            if (!DataRepository.DatenbankVorhanden())
-            {
-                MessageBox.Show(
-                    string.Format(MyResource.Resource.START_UMSTELLUNG_UNLESBAR,
-                                  DataRepository.GetDBPath()) + Bericht(berichtPfad),
-                    MyResource.Resource.START_DB_FEHLT_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Der Nachsatz „Bericht: &lt;Pfad&gt;" — zwei Leerzeilen davor, und nur, wenn
-        /// überhaupt ein Bericht entstanden ist (bitgleich zum Bestand).
-        /// </summary>
-        private static string Bericht(string berichtPfad)
-        {
-            return string.IsNullOrEmpty(berichtPfad)
-                ? ""
-                : Environment.NewLine + Environment.NewLine +
-                  string.Format(MyResource.Resource.START_BERICHT, berichtPfad);
+            MessageBox.Show(text,
+                            MyResource.Resource.START_DB_FEHLT_TITEL,
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
         }
 
         /// <summary>

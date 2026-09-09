@@ -382,6 +382,9 @@ dev/
 # Setup-Beilagen, GitHub_Sync committet sonst Redist/Vorlage
 Setup/Ausgabe/
 Setup/Vorlage/*.accdb
+# Seit W3 (#157-E-1, 09.09.2026) ist die Auslieferungsvorlage eine SQLite-Datei;
+# build-setup.ps1 erzeugt sie vor jedem ISCC-Lauf neu (Werkzeuge/Auslieferungsvorlage).
+Setup/Vorlage/*.sqlite
 Setup/Voraussetzungen/*.exe
 # ACE-Redist in der Repo-Wurzel (Ablageort fuer build-setup.ps1) nie committen
 /AccessDatabaseEngine*.exe

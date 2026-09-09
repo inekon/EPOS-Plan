@@ -88,15 +88,18 @@ public sealed class FenstermassTests
     // =====================================================================
 
     /// <summary>
-    /// Namensabfrage, Erststart, Lizenztext und die zwei KI-Masken bleiben bei
-    /// ihrem Wunschmaß — für sie gilt genau das, was vor dem 05.09.2026 für
-    /// alle galt.
+    /// Namensabfrage, Lizenztext und die zwei KI-Masken bleiben bei ihrem
+    /// Wunschmaß — für sie gilt genau das, was vor dem 05.09.2026 für alle galt.
+    ///
+    /// <para>Der fünfte Fall (760 × 560, <c>ErststartHuelle.MASS</c>) ist mit
+    /// W3 entfallen: Der Erststart-Assistent ist gefallen, die Datenbank einer
+    /// Neuinstallation entsteht ohne Oberfläche aus der ausgelieferten
+    /// Vorlage.</para>
     /// </summary>
     [Theory]
     [InlineData(520, 360)]      // NamensDialogHuelle.FENSTER
     [InlineData(620, 480)]      // KiEinstellungenHuelle.MASS
     [InlineData(700, 600)]      // KiHinweisHuelle.MASS
-    [InlineData(760, 560)]      // ErststartHuelle.MASS
     [InlineData(980, 760)]      // LizenzHuelle.MASS
     public void Eine_kleine_Maske_bleibt_bei_ihrem_Wunschmass(int wunschBreite, int wunschHoehe)
     {

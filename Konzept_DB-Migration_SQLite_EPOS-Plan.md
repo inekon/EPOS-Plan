@@ -1,5 +1,15 @@
 # Konzept: Datenhaltung von Access nach SQLite — Umsetzungskonzept
 
+
+> **Vermerk vom 09.09.2026 (Anwenderentscheid `#157‑E‑1`, Weg W3).** Der hier beschriebene
+> ÜBERNAHMEWEG aus Access ist kein Kundenweg mehr, sondern ein **Hauswerkzeug**: Access
+> wurde beim Kunden nie produktiv eingesetzt. Der Übernahme-Assistent im Programmstart,
+> die Access-Engine im Setup und die `.accdb`-Vorlage sind gefallen; eine Neuinstallation
+> bekommt ihre Datenbank aus der ausgelieferten `.sqlite`-Vorlage. Was von diesem Konzept
+> weiterlebt, ist der Migrationskern (`EposSqliteMigrator`) und der eingefrorene
+> Access-Zweig der Schemapflege (`SchemaMigration.HebeAltbestand`). Der laufende Betrieb
+> steht in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 1, 1.1 und 7.
+
 **Rev. 2 — Umsetzungskonzept (Plattform entschieden)** · 31.08.2026
 
 Rev. 1 (31.08.2026 vormittags) war eine ergebnisoffene Plattformprüfung mit **D1 offen**.

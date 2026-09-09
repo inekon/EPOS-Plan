@@ -1,11 +1,12 @@
 ﻿# CLAUDE.md — `EPOS.Kern`, der Rechenkern
 
-Der plattformfreie Kern von EPOS-Plan: **334 `.cs`-Dateien** (168 aus iU4, dazu
+Der plattformfreie Kern von EPOS-Plan: **392 `.cs`-Dateien** (168 aus iU4, dazu
 `IDatenzugriff`/`SqliteDatenzugriff` aus iU6, `ChartRenderer` aus iU7-5, die 22 Dienste-Dateien
 aus iU5, `EnergietraegerVarianteCtrl` aus iU8-8b, die **74 Dateien des zweiten Umzugs**
 iU5-U1…U5, die sechs Dateien der Ergebnisseite aus iU9‑W11a, die **acht Dateien der
-Importkette und der Lastspitzenkappung** aus iU9‑W12 und die **sechs Dateien des
-KI-Assistenten** aus iU9‑W15b), `net10.0` **ohne** `-windows`, AnyCPU.
+Importkette und der Lastspitzenkappung** aus iU9‑W12, die **sechs Dateien des
+KI-Assistenten** aus iU9‑W15b und `Allgemein/Datenbank/Erstbereitstellung.cs` aus W3),
+`net10.0` **ohne** `-windows`, AnyCPU.
 
 **Der KI-Assistent ist mit iU9‑W15b vollständig hier** (bis auf das, was an lebenden
 `Control`/`Form` hängt): `Allgemein/KI/KiChatService` (1 751 Z., der Gemini-Zugang),
@@ -76,7 +77,7 @@ Jede steht auf dieser Liste, weil der Kernbau sie ablehnt — nicht, weil sie ü
 |---|---|
 | `BaseForm`, `FensterEinpassung`, `GrafikTools/*`, `Hilfe/HilfeAutomatik`, `Hilfe/InfoKnopf`, `Hilfe/HelpCatalog` (mit `HelpExtender`), `Views/Help/Form_HelpPopup` | Oberflächenbausteine — WinForms und GDI+. **`Form_Hinweis` ist mit iU9‑W16b.3 GELÖSCHT** (Entscheid W15b‑E‑1b eingelöst): Sein Nachfolger `Warnbanner.Verfaellt` war seit W15b.1 gebaut und geprüft, seine drei Aufrufer lagen sämtlich in `Form_Start` — und die ist mit derselben Teilwelle gefallen. `SpeichernLeiste` fiel mit W14a. **`Form_HelpPopup` bleibt bis iU11** (Entscheid E‑2): Sein Ersatz ist nicht eine Razor-Fassung, sondern `IHilfeDienst` mit Windows- und iOS-Fassung — beide gebaut; die Maske fällt mit `HelpCatalog`/`HelpExtender`. Die Zeichenrechnung `BeschreibungUmbrechen` ist mit W15b.0e als `Allgemein/Hilfe/Kurzbeschreibung` in den Kern gezogen |
 | `Blazor/BlazorDialogForm`, `Blazor/BlazorDienste`, `Hilfe/WindowsHilfeDienst` | die Blazor-Hülle selbst (iU8-6/iU8-7): ein modales `Form` mit `BlazorWebView`, sein Dienstverzeichnis und die Windows-Fassung von `EPOS.UI.Dienste.IHilfeDienst`. Sie **sind** die Oberfläche und können nie in den Kern |
-| `Update/SchemaMigration`, `GeraeteWaisen`, `ErststartMigration`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb` |
+| `Update/SchemaMigration`, `GeraeteWaisen`, `SchemaVersionAccess`, `DbParamOleDb` | der eingefrorene Access-Zweig — `System.Data.OleDb`. **`ErststartMigration` ist mit W3 (#157‑E‑1, 09.09.2026) GELÖSCHT**: Der Übernahme-Assistent im Programmstart ist gefallen, der Rest ist Hauswerkzeug (`EposSqliteMigrator`, `SchemaMigration.HebeAltbestand`) |
 | `Bericht/BerichtsDatenSammler` | `EnergieMengen` aus `Views/Varianten/` |
 | `KI/KiDialogZugriff`, `KiAusfuehrer`, `HilfeKontext` | greifen auf lebende `Control`/`Form` zu. `KiAufrufKnopf` ist mit iU9‑W14a gefallen und mit iU9‑W15b.5 durch den Baustein `KiKnopf` ersetzt |
 | `KI/KiAktionen` (trägt `KiHilfe`), `KiAktionenDialog`, `-Energie`, `-Lastgang`, `-Projekt`, `-Schreiben`, `-Sitzung`, `-Uebernahme`, `-Wirtschaft` | hängen an den obigen, an `HelpEntry` oder an `OleDbException`. **`KiChatService` steht seit iU9‑W15b.0a HIER im Kern** (Befund W15b‑B1: 1 751 Zeilen ohne einen einzigen WinForms-, `Program.`-, `Registry`-, DPAPI- oder `SpecialFolder`-Bezug); die Naht zur Ausführungsschicht ist `IKiAusfuehrung`/`KiAusfuehrungsweg` |
@@ -144,9 +145,23 @@ Referenzlauf hängt daran) und die vier Bequemlichkeiten (`GetMaxID`,
 **Die Brücke nach OleDb steht in der ANWENDUNG**, nicht hier:
 `WindowsFormsApplication1/Allgemein/DbParamOleDb.cs` (`Aus`, `Von`, `Nach`,
 `[SupportedOSPlatform("windows")]`). Getragen wird sie nur noch vom eingefrorenen
-Access-Zweig der Erststart-Migration — `SchemaMigration`, `GeraeteWaisen` und
+Access-Zweig der Schemapflege — `SchemaMigration.HebeAltbestand`, `GeraeteWaisen` und
 `SchemaVersionAccess` (die aus `ApplikationCtrl` ausgelagerten Schemamarker-Methoden).
-Wer hier eine neue Zugriffsstelle schreibt, nimmt `DbParam` — sonst nichts.
+**Seit W3 (#157‑E‑1, 09.09.2026) ist das ein HAUSWERKZEUG, kein Kundenweg**: Der
+Erststart-Assistent samt `ErststartMigration` ist gelöscht, die Anwendung übernimmt
+keinen Access-Altbestand mehr. Wer hier eine neue Zugriffsstelle schreibt, nimmt
+`DbParam` — sonst nichts.
+
+**Die Datenbank einer Neuinstallation entsteht nur über
+`Allgemein/Datenbank/Erstbereitstellung.Sicherstellen`** (Anwenderentscheid `#157‑E‑1`,
+Weg W3, 09.09.2026). Sie kopiert die ausgelieferte Vorlage
+(`Dienste.Pfade.Auslieferungsvorlage` → `{app}\Vorlage\Kenndaten.sqlite`) in den
+Datenordner, prüft danach `PRAGMA integrity_check` und `Tab_Applikation.SchemaVersion`
+und **überschreibt nie** eine vorhandene Datei; bei jedem Fehler räumt sie die halb
+angelegte Zieldatei wieder weg. Gerufen wird sie aus `Program.DatenbankBereitstellen()`
+vor `DataRepository.DatenbankVorhanden()`; die iOS-Schale fährt denselben Gedanken für
+ihr Anwendungspaket (`EPOS.iOS/Datenbankbereitstellung.cs`). Wer eine zweite Stelle
+schreibt, an der eine Datenbank entsteht, baut den zweiten Auslieferungsweg.
 
 **Sicherungskopien nur über `Allgemein/Datenbank/Datenbanksicherung.KopieAnlegen`**
 (Auftrag #158). Sie zieht die Kopie über eine geöffnete SQLite-Verbindung (`VACUUM INTO`,
@@ -168,7 +183,7 @@ steht unten unter „Nachweis".
 | `Dialog` | Meldung, Warnung, Fehler, Rückfrage, Dreifachwahl, Wartekurve | `StilleDialoge` — Konsole; Rückfrage = nein |
 | `Datei` | Datei-/Ordnerwahl, Öffnen mit der Systemanwendung | `KeineDateiwahl` — `""` bzw. `false` |
 | ↳ *wartbare Zwillinge* | `DateiOeffnenAsync`, `DateiSpeichernAsync`, `OrdnerWaehlenAsync`, `MeldungAsync`, `WarnungAsync`, `FrageAsync` — **für Aufrufe aus einem Blazor-Ereignis** | Standardfassung in der Schnittstelle: fällt auf die synchrone Form zurück |
-| `Pfade` | `%APPDATA%\wp-plan`, `%APPDATA%\<Produkt>`, `LocalApplicationData[\WP-Plan]`, `CommonApplicationData\WP-Plan`, Dokumente | `StandardPfade` — `Environment.SpecialFolder` |
+| `Pfade` | `%APPDATA%\wp-plan`, `%APPDATA%\<Produkt>`, `LocalApplicationData[\WP-Plan]`, `CommonApplicationData\WP-Plan`, Dokumente, **`Herstellerdaten`** (`VDI-3805-Daten` neben dem Programm) und **`Auslieferungsvorlage`** (`Vorlage\Kenndaten.sqlite` neben dem Programm, W3) | `StandardPfade` — `Environment.SpecialFolder`; die zwei Auslieferungspfade über einen Aufstieg von `AppContext.BaseDirectory` (installiert Stufe 1, im Entwicklungsstand `Setup\Vorlage\`) — **keine Windows- und keine iOS-Sonderfassung nötig** |
 | `Einstellungen` | Schlüssel-Wert-Ablage, dazu ein maschinenweiter Leser | `FluechtigeEinstellungen` — Wörterbuch im Speicher |
 | `Lizenzablage` | Geheimnisse; Geltungsbereich Gerät **oder** Benutzer als Parameter | `KeineAblage` — merkt nichts |
 | `GeraeteId` | Gerätemerkmale für die Lizenzbindung | `KeineGeraeteId` — leer |

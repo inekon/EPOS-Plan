@@ -80,6 +80,26 @@
         /// </summary>
         string Herstellerdaten { get; }
 
+        /// <summary>
+        /// <b>Die AUSGELIEFERTE Vorlagendatenbank</b> <c>Vorlage\Kenndaten.sqlite</c> —
+        /// der Auslieferungsstand, aus dem der Kern beim Zustand „keine Datenbank" die
+        /// Arbeitsdatenbank anlegt (<c>Erstbereitstellung.Sicherstellen</c>,
+        /// Anwenderentscheid <b>#157‑E‑1 / W3</b> vom 09.09.2026).
+        ///
+        /// <para><b>Nur LESEN.</b> Sie liegt beim Anwender neben dem Programm
+        /// (<c>{app}\Vorlage\Kenndaten.sqlite</c>, so legt sie das Setup hin) und ist
+        /// damit schreibgeschützt — genau wie <see cref="Herstellerdaten"/>. Kopiert
+        /// wird sie genau einmal je Rechner; danach fasst sie niemand mehr an.</para>
+        ///
+        /// <para><b>Immer ein PFAD, nie leer.</b> Anders als
+        /// <see cref="Herstellerdaten"/> liefert diese Eigenschaft auch dann eine
+        /// Zeichenkette, wenn die Datei fehlt — nämlich den ERWARTETEN Ort neben dem
+        /// Programm. Der Grund steht in der Startmeldung: Fehlen Datenbank UND Vorlage,
+        /// muss die Meldung sagen, wo die Vorlage gesucht wurde. Ob es sie gibt,
+        /// entscheidet der Aufrufer mit <c>File.Exists</c>.</para>
+        /// </summary>
+        string Auslieferungsvorlage { get; }
+
         /// <summary>Setzt einen Pfad zusammen. Legt NICHTS an.</summary>
         string Verbinde(string wurzel, params string[] teile);
 
