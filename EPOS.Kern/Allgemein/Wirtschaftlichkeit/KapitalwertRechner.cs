@@ -12,8 +12,9 @@ namespace WindowsFormsApplication1
     ///
     /// Regeln der Ausbaustufe W1:
     ///  - Ersatzbeschaffung: Position mit Nutzungsdauer n &lt; T wird in t = n, 2n, …
-    ///    (t &lt; T) nominal unverändert erneut beschafft (keine Preissteigerung auf
-    ///    Investitionen — Vereinfachung W1, im Bericht ausgewiesen).
+    ///    (t &lt; T) erneut beschafft — seit Etappe W5‑B‑12 mit dem Preisänderungssatz
+    ///    der kapitalgebundenen Kosten p_I indiziert (bis dahin nominal unverändert,
+    ///    „Vereinfachung W1"; p_I = 0 rechnet unverändert so).
     ///  - Restwert linear: je Position Investition × Restnutzungsdauer/Nutzungsdauer
     ///    zum Zeitpunkt T, abgezinst (Entscheidung 11.08.2026).
     ///  - Nutzungsdauer &lt; 1 a wird wie n = T behandelt (keine Ersatzbeschaffung,
@@ -78,6 +79,33 @@ namespace WindowsFormsApplication1
     /// unangetastet. Die Zuordnung einer Position zu einem der beiden Töpfe trifft der
     /// Aufrufer (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>), nicht dieser
     /// Rechenkern.</para>
+    ///
+    /// <para><b>ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): die Ersatzbeschaffung wird
+    /// PREISINDIZIERT.</b> VDI 2067 Blatt 1 schreibt die kapitalgebundenen Kosten mit einem
+    /// EIGENEN Preisänderungsfaktor fort: Eine Ersatzbeschaffung nach n Jahren kostet
+    /// A_n = A_0 · r^n mit r = 1 + p_I. Bis hierher trug dieser Rechenkern den heutigen
+    /// Betrag unverändert in jedes Ersatzjahr — die Anlage, die in 18 Jahren gekauft wird,
+    /// kostete so viel wie die von heute. Das weist den Kapitalwert einer Variante mit
+    /// kurzlebigen Positionen systematisch zu günstig aus und war die Lücke G4 des
+    /// VALERI-Abgleichs (W5‑B‑10). Der dritte Preisänderungssatz
+    /// <c>preisstInvestProzent</c> schließt sie. Er gilt für ALLE kapitalgebundenen
+    /// Kosten gemeinsam, nicht je Zeile: Damit ist zugleich entschieden, wie weit die
+    /// Lücke G2 („Preisänderung je Kostenart") reicht — genau bis zu diesem dritten
+    /// Topf.</para>
+    ///
+    /// <para><b>Die ERSTbeschaffung bleibt nominal</b> — auch die nach KD6 verschobene.
+    /// Der eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt und kein auf heute
+    /// zurückgerechneter Preisstand; ihn zu indizieren hieße, eine Angabe zu verändern,
+    /// die der Anwender bereits für sein Startjahr gemacht hat. Der RESTWERT steht auf
+    /// derselben Preisbasis wie die LETZTE Beschaffung der Position (VDI 2067: der
+    /// Restwert bemisst sich am zuletzt gezahlten Preis), linear und abgezinst wie
+    /// bisher.</para>
+    ///
+    /// <para><b>p_I = 0 rechnet bitgleich</b> wie vor dieser Etappe: Der Indexfaktor wird
+    /// dann gar nicht erst gebildet und nirgends multipliziert. Dieselbe IEEE-754-Vorsicht
+    /// wie bei FX4‑c/FX5‑a im Aufrufer — ein zusätzlicher Multiplikationsschritt mit 1,0
+    /// ist zwar wertgleich, aber der Regellauf soll denselben Ausdruck durchlaufen wie
+    /// vorher und nicht einen umgeformten.</para>
     /// </summary>
     public static class KapitalwertRechner
     {
@@ -166,8 +194,14 @@ namespace WindowsFormsApplication1
             /// Investition. ≤ 1 = t0 (Bestand, zeichengleicher Rechenweg); Jahr
             /// X ≥ 2 = die Zahlung fällt erst im Jahr X (abgezinst über die
             /// Nominalreihe), Nutzungsdauer/Ersatz zählen ab X. Der Startzeitpunkt
-            /// VERSCHIEBT die Zahlung, er indexiert sie nicht (keine
-            /// Preissteigerung auf Investitionen).
+            /// VERSCHIEBT die Zahlung, er indexiert sie nicht.
+            ///
+            /// <para><b>ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): das gilt weiter.</b>
+            /// Auch bei gepflegtem Preisänderungssatz p_I bleibt die verschobene
+            /// ERSTbeschaffung nominal — der eingegebene Betrag ist der Betrag zum
+            /// Zahlungszeitpunkt (KD6). Indiziert werden allein die ERSATZbeschaffungen
+            /// dieser Position, mit (1 + p_I)^tj über dem ABSOLUTEN Jahr tj, nicht über
+            /// dem Abstand zum Startjahr: Preisstand des Rechenkerns ist immer t = 0.</para>
             /// </summary>
             public int StartJahr;
         }
@@ -265,7 +299,13 @@ namespace WindowsFormsApplication1
             /// <summary>CO₂-Abgabe nach BEHG je Jahr [€], mit p_E fortgeschrieben.</summary>
             public double[] BehgJeJahr;
 
-            /// <summary>Ersatzbeschaffungen je Jahr [€] (Index 0…T; nominal konstant).</summary>
+            /// <summary>
+            /// Ersatzbeschaffungen je Jahr [€] (Index 0…T). <b>ETAPPE W5‑B‑12</b>: seither mit
+            /// dem Preisänderungssatz der kapitalgebundenen Kosten indiziert —
+            /// A(tj) = A₀ · (1 + p_I)^tj (VDI 2067 Blatt 1). Die nach KD6 VERSCHOBENE
+            /// Erstbeschaffung steht ebenfalls hier und bleibt nominal. Bei p_I = 0 ist
+            /// die Reihe bitgleich die von vorher.
+            /// </summary>
             public double[] ErsatzJeJahr;
 
             /// <summary>Einspeiseerlös je Jahr [€] (nominal konstant, feste Vergütung).</summary>
@@ -358,6 +398,20 @@ namespace WindowsFormsApplication1
         /// Startjahr) wie <paramref name="betriebAbJahr"/>, nur eben im p_E-Topf.
         /// <c>null</c> = keine.
         /// </param>
+        /// <param name="preisstInvestProzent">
+        /// ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026, VALERI-Lücke G4): der
+        /// <b>Preisänderungssatz der kapitalgebundenen Kosten</b> p_I [%/a] — der dritte
+        /// Topf neben p_B und p_E. Er indiziert jede ERSATZbeschaffung auf ihr Zahlungsjahr
+        /// (VDI 2067 Blatt 1: A_n = A₀ · (1 + p_I)^n) und trägt den Restwert auf derselben
+        /// Preisbasis. Die Erstbeschaffung bleibt nominal, auch die nach KD6 verschobene.
+        /// <para><b>0 = wie vor W5‑B‑12</b>: Der Indexfaktor wird dann nicht gebildet und
+        /// nicht multipliziert, der Rechenweg ist bitgleich der von vorher. Der Parameter
+        /// steht deshalb am ENDE der Signatur — jeder bestehende Aufrufer bleibt
+        /// unverändert gültig und rechnet unverändert.</para>
+        /// <para><b>EIN Satz für alle Positionen</b>, nicht einer je Zeile: Genau so weit
+        /// und nicht weiter reicht der Entscheid zu G2. Welcher Satz je Szenario gilt
+        /// (Erwartet, Best, Worst), entscheidet der Aufrufer.</para>
+        /// </param>
         public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
                                           double betriebJahr, double energieJahr, double erloesJahr,
                                           double zinsProzent, int jahre,
@@ -368,12 +422,21 @@ namespace WindowsFormsApplication1
                                           double[] behgJeJahr = null,
                                           IList<KeyValuePair<double, int>> betriebAbJahr = null,
                                           double endenergieJahr = 0,
-                                          IList<KeyValuePair<double, int>> endenergieAbJahr = null)
+                                          IList<KeyValuePair<double, int>> endenergieAbJahr = null,
+                                          double preisstInvestProzent = 0)
         {
             double i = zinsProzent / 100.0;
             double pB = preisstBetriebProzent / 100.0;
             double pE = preisstEnergieProzent / 100.0;
             int T = Math.Max(1, jahre);
+
+            // ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): der dritte Preisänderungssatz.
+            // Die WEICHE steht hier und nicht in der Positionsschleife, damit der Regellauf
+            // (p_I = 0) den Indexfaktor kein einziges Mal bildet — gleiche IEEE-754-Vorsicht
+            // wie bei FX4‑c/FX5‑a: Eine Multiplikation mit 1,0 ist wertgleich, aber der
+            // Regellauf soll denselben Ausdruck durchlaufen wie vor dieser Etappe.
+            double pI = preisstInvestProzent / 100.0;
+            bool investIndiziert = preisstInvestProzent != 0.0;
 
             var z = new Zahlungsbild
             {
@@ -416,7 +479,12 @@ namespace WindowsFormsApplication1
                         continue;
                     }
 
+                    // ETAPPE W5‑B‑12: Preisbasis der LETZTEN Beschaffung dieser Position.
+                    // 1,0 für die Erst- und die verschobene Erstbeschaffung (KD6: der
+                    // eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt), sonst der
+                    // Indexfaktor des Ersatzjahres. Der Restwert unten liest ihn.
                     int letzteBeschaffung;
+                    double letzterFaktor = 1.0;
                     if (start == 0)
                     {
                         z.Investition += pos.Betrag;
@@ -431,18 +499,42 @@ namespace WindowsFormsApplication1
 
                     // Ersatz auf ganze Jahre gerundet: tj = round(start + k·n),
                     // 1 ≤ tj < T (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
+                    //
+                    // ETAPPE W5‑B‑12: Der Betrag der Position ist ein Preisstand von HEUTE
+                    // (t = 0); die Ersatzbeschaffung fällt aber im Jahr tj an und kostet dort
+                    // nach VDI 2067 Blatt 1 A(tj) = A₀ · (1 + p_I)^tj. Der Exponent ist das
+                    // ABSOLUTE Jahr, nicht der Abstand zum Startjahr — auch eine Position mit
+                    // Startjahr 5 wird 2041 zu den Preisen von 2041 ersetzt, nicht zu denen
+                    // von 2036. Ohne Satz läuft der Zweig von vorher, Zeichen für Zeichen.
                     for (double t = start + n; ; t += n)
                     {
                         int tj = (int)Math.Round(t);
                         if (tj >= T) break;
-                        if (tj >= 1) { ersatzJeJahr[tj] += pos.Betrag; letzteBeschaffung = tj; }
+                        if (tj < 1) continue;
+                        if (investIndiziert)
+                        {
+                            letzterFaktor = Math.Pow(1.0 + pI, tj);
+                            ersatzJeJahr[tj] += pos.Betrag * letzterFaktor;
+                        }
+                        else ersatzJeJahr[tj] += pos.Betrag;
+                        letzteBeschaffung = tj;
                     }
 
                     // Linearer Restwert der letzten Beschaffung zum Zeitpunkt T
                     // (konsistent zum gerundeten Buchungsjahr).
+                    //
+                    // ETAPPE W5‑B‑12: Er steht auf der PREISBASIS DER LETZTEN BESCHAFFUNG.
+                    // Alles andere wäre in sich widersprüchlich: Wenn die Anlage im Jahr 16
+                    // für A₀ · (1 + p_I)^16 gekauft wurde, ist die Hälfte ihrer Nutzungsdauer
+                    // am Ende von T auch die Hälfte DIESES Betrags wert und nicht die Hälfte
+                    // des heutigen. Blieb es bei der Erstbeschaffung, ist letzterFaktor 1,0
+                    // und der Ausdruck der von vorher — auch das der bitgleiche Regellauf.
                     double alter = T - letzteBeschaffung;
                     double rest = n - alter;
-                    if (rest > 1e-9) restwertT += pos.Betrag * (rest / n);
+                    if (rest > 1e-9)
+                        restwertT += letzterFaktor != 1.0
+                            ? pos.Betrag * letzterFaktor * (rest / n)
+                            : pos.Betrag * (rest / n);
                 }
             }
 

@@ -142,6 +142,13 @@ namespace EPOS.Kern.Tests
                 // aus DERSELBEN Quelle; kein DML, NULL heisst Vorgabe.
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter) SpalteSicherstellen(s);
 
+                // Schritt 72 (W5-B-12, 09.09.2026): die VALERI-Ergaenzung - drei Spalten
+                // fuer den Preisaenderungssatz der kapitalgebundenen Kosten p_I und eine
+                // Freitextspalte fuer die nicht monetaeren Wirkungen, ebenfalls an
+                // Tab_ProjektWirtschaftlichkeit. Wie in der Migration ueber ADD COLUMN,
+                // aus DERSELBEN Quelle; kein DML, NULL heisst bei p_I "wie p_B".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung) SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

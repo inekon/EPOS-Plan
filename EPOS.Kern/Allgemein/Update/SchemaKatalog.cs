@@ -3789,6 +3789,107 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_DAUER"/>
         public const string SPALTE_PW_SZEN_WORST_DAUER = "Szen_Worst_Dauer";
 
+        // -------------------------------------------------------------------------
+        // Schritt 72 - die Preisindizierung der Ersatzbeschaffung (p_I) und die
+        //              nicht monetaeren Wirkungen (W5-B-12, Entscheid 09.09.2026)
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE W5‑B‑12: die drei Spalten des <b>Preisänderungssatzes der
+        /// kapitalgebundenen Kosten</b> p_I an <c>Tab_ProjektWirtschaftlichkeit</c> — der
+        /// Projektwert und je einer für Best und Worst.
+        ///
+        /// <para><b>Wozu.</b> Der Rechenkern trug den heutigen Betrag einer Position
+        /// unverändert in jedes Ersatzjahr („Vereinfachung W1“). VDI 2067 Blatt 1 schreibt
+        /// die kapitalgebundenen Kosten dagegen mit einem EIGENEN Preisänderungsfaktor
+        /// fort — A_n = A₀ · (1 + p_I)^n —, und genau das war die Lücke <b>G4</b> des
+        /// VALERI-Abgleichs (W5‑B‑10). Der Anwender hat sie am 09.09.2026 geschlossen, und
+        /// zwar als EINEN Satz für alle kapitalgebundenen Kosten: Damit ist zugleich
+        /// entschieden, wie weit die Lücke <b>G2</b> („Preisänderung je Kostenart“) reicht —
+        /// genau bis zu diesem dritten Topf und nicht bis zu einer Spalte je Zeile.</para>
+        ///
+        /// <para><b>KEIN DML, und NULL heißt „wie p_B“</b> — nicht „0 %“. Der Bestand
+        /// führt seit jeher eine Preissteigerung der BETRIEBSkosten
+        /// (<c>Tab_ProjektWirtschaftlichkeit.Preissteigerung_Betrieb</c>); sie ist die
+        /// einzige gepflegte Angabe im Haus, die eine allgemeine Kostensteigerung
+        /// ausdrückt, und deshalb der
+        /// Rückfall. Eine 0 als Vorbelegung hieße dagegen „Investitionsgüter werden nie
+        /// teurer“ — eine Aussage, die niemand getroffen hat. Bei den zwei
+        /// Szenariospalten heißt NULL wie bei allen Spalten des Schritts 71 „Vorgabe“,
+        /// hier also: das WIRKSAME p_B desselben Szenarios.</para>
+        ///
+        /// <para><b>Kein Gegenstück für ERWARTET unter den Szenariospalten</b> — die erste
+        /// der drei Spalten IST der Erwartungswert, wortgleiche Begründung wie bei
+        /// <see cref="Schritt71_SzenarioBest"/>. Und kein <c>_STAMM</c>-Gegenstück:
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> ist eine reine Projekttabelle ohne
+        /// Katalogseite (Begründung bei <see cref="Schritt28_KwkgTatbestand"/>).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt72_PreisInvestition =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_PREIS_I,             "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_PREIS_I,   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_PREIS_I,  "DOUBLE"),
+        };
+
+        /// <summary>
+        /// ETAPPE W5‑B‑12: das Freitextfeld <b>„Nicht monetäre Wirkungen“</b> am Projekt —
+        /// die Lücke <b>G6</b> des VALERI-Abgleichs.
+        ///
+        /// <para>DIN EN 17463 verlangt zu jeder Bewertung eine qualitative Beschreibung
+        /// dessen, was sich nicht in Euro fassen lässt — Versorgungssicherheit,
+        /// Arbeitsschutz, Komfort, Außenwirkung, Erfüllung einer Auflage. EPOS-Plan hatte
+        /// dafür kein Feld, und ein Kapitalwert ohne diese Zeile behauptet mehr, als er
+        /// weiß.</para>
+        ///
+        /// <para><b>MEMO, nicht TEXT(n).</b> Ein Fließtext, dessen Länge niemand vorhersagen
+        /// kann; eine Längenprüfung schnitte ihn beim Speichern ab oder wiese ihn zurück.
+        /// <c>StilleDb.SqliteSpaltenTyp</c> übersetzt MEMO nach <c>TEXT</c> ohne
+        /// <c>CHECK</c> — dieselbe Wahl wie bei <c>WQ_Wochenwerte</c>. NULL = nichts
+        /// erfasst; der Berichtsbaustein lässt die Zeile dann weg, statt eine leere zu
+        /// drucken.</para>
+        ///
+        /// <para><b>Am Projekt, nicht an der Variante.</b> Nicht monetäre Wirkungen
+        /// beschreiben die MASSNAHME als Ganzes; sie je Variante zu führen hieße, denselben
+        /// Text mehrfach zu pflegen. <c>Tab_ProjektWirtschaftlichkeit</c> ist die Tabelle,
+        /// die schon die übrigen Bewertungsannahmen hält.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt72_NichtMonetaer =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_NICHT_MONETAER, "MEMO"),
+        };
+
+        /// <summary>Beide Blöcke des Schritts 72 in Anlegereihenfolge — EINE Quelle für
+        /// Migration, Testdatenbankschema, Testdatenbank und Nachweis.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt72_ValeriErgaenzung
+        {
+            get
+            {
+                foreach (SchemaSpalte s in Schritt72_PreisInvestition) yield return s;
+                foreach (SchemaSpalte s in Schritt72_NichtMonetaer) yield return s;
+            }
+        }
+
+        /// <summary>
+        /// Preisänderungssatz der kapitalgebundenen Kosten p_I [%/a] des Projekts — er
+        /// indiziert die Ersatzbeschaffungen und den Restwert
+        /// (<c>KapitalwertRechner.Rechne</c>, Parameter <c>preisstInvestProzent</c>).
+        /// <para><b>NULL = „wie p_B“</b> (<c>Preissteigerung_Betrieb</c>), nicht
+        /// „0 %“: Begründung bei <see cref="Schritt72_PreisInvestition"/>.</para>
+        /// </summary>
+        public const string SPALTE_PW_PREIS_I = "Preissteigerung_Investition";
+
+        /// <summary>p_I des BEST-Szenarios [%/a]; NULL = Vorgabe, also das WIRKSAME p_B
+        /// desselben Szenarios (<see cref="SPALTE_PW_SZEN_BEST_PREIS_B"/> bzw. dessen
+        /// eigene Vorgabe).</summary>
+        public const string SPALTE_PW_SZEN_BEST_PREIS_I = "Szen_Best_Preis_I";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_PREIS_I"/>
+        public const string SPALTE_PW_SZEN_WORST_PREIS_I = "Szen_Worst_Preis_I";
+
+        /// <summary>Freitext „Nicht monetäre Wirkungen“ (G6); NULL = nichts erfasst.
+        /// Begründung und Typwahl bei <see cref="Schritt72_NichtMonetaer"/>.</summary>
+        public const string SPALTE_PW_NICHT_MONETAER = "Nicht_Monetaer";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -4002,6 +4103,12 @@ namespace WindowsFormsApplication1
         /// der Simulation liest eine der zwölf Spalten, und die tolerante Vorsorge steht
         /// unmittelbar vor dem Zugriff in
         /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        ///
+        /// <see cref="Schritt72_ValeriErgaenzung"/> ist aus demselben Grund BEWUSST
+        /// NICHT aufgeführt: Auch die drei p_I-Spalten und der Freitext hängen an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, und der Preisänderungssatz erreicht den
+        /// <c>KapitalwertRechner</c> als PARAMETER, nicht über einen Lesezugriff aus einem
+        /// Simulationsrechenweg.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

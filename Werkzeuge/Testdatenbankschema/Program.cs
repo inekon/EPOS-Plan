@@ -203,6 +203,19 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 71, trocken);
 
+            // ---- Schritt 72: die VALERI-Ergaenzung (W5-B-12). Drei Spalten fuer den
+            //      Preisaenderungssatz der kapitalgebundenen Kosten p_I (Projektwert,
+            //      Best, Worst) und eine Freitextspalte fuer die nicht monetaeren
+            //      Wirkungen, alle an Tab_ProjektWirtschaftlichkeit; kein DML. Die
+            //      Quelle ist dieselbe, aus der sich SchemaMigration.Schritt_72_
+            //      ValeriErgaenzung bedient. Ergebnisneutral - NULL heisst bei p_I
+            //      "wie p_B" und wird erst wirksam, wenn der Parametersatz die Spalte
+            //      liest; ein Projekt ohne Ersatzbeschaffung bleibt auch dann
+            //      zahlengleich.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 72, trocken);
+
             if (!trocken)
             {
                 long ohnePraefix = Zahl(StromspeicherFirmaNachtrag.Zaehlung());

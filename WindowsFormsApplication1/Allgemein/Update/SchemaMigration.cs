@@ -2679,6 +2679,51 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_71_SZENARIOPARAMETER = 71;
 
+        /// <summary>
+        /// Schritt 72 — die <b>Preisindizierung der Ersatzbeschaffung</b> und die
+        /// <b>nicht monetären Wirkungen</b> (<b>W5‑B‑12</b>, Anwenderentscheid vom
+        /// 09.09.2026). Vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// der Preisänderungssatz der kapitalgebundenen Kosten p_I als Projektwert und je
+        /// einer für Best und Worst (<c>DOUBLE</c>) sowie ein Freitextfeld
+        /// (<c>MEMO</c>). DDL in <see cref="SchemaKatalog.Schritt72_PreisInvestition"/>
+        /// und <see cref="SchemaKatalog.Schritt72_NichtMonetaer"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Rechenkern trug den heutigen Betrag einer
+        /// Investitionsposition unverändert in jedes Ersatzjahr — die Wärmepumpe, die in
+        /// 18 Jahren ersetzt wird, kostete so viel wie die von heute. VDI 2067 Blatt 1
+        /// schreibt die kapitalgebundenen Kosten dagegen mit einem eigenen
+        /// Preisänderungsfaktor fort (A_n = A₀ · (1 + p_I)^n); das war die Lücke <b>G4</b>
+        /// des VALERI-Abgleichs W5‑B‑10. Das Freitextfeld schließt <b>G6</b>: DIN EN 17463
+        /// verlangt zu jeder Bewertung eine qualitative Beschreibung dessen, was sich
+        /// nicht in Euro fassen lässt.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle vier Spalten bleiben nach <c>ADD COLUMN</c> NULL.
+        /// Bei <c>Preissteigerung_Investition</c> heißt NULL <b>„wie p_B“</b> — nicht
+        /// „0 %“: Der einzige gepflegte Satz im Haus, der eine allgemeine
+        /// Kostensteigerung ausdrückt, ist die Preissteigerung der Betriebskosten, und
+        /// eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie teurer.
+        /// Bei den zwei Szenariospalten heißt NULL „Vorgabe“, also das wirksame p_B
+        /// desselben Szenarios; beim Freitext heißt NULL „nichts erfasst“.</para>
+        ///
+        /// <para><b>Wirkung auf die Rechnung, ausdrücklich.</b> DIESER Schritt ändert
+        /// KEINE Zahl — er legt Spalten an, und der Rechenkern bekommt p_I als Parameter,
+        /// der ohne den Lesepfad des Teils 12b auf 0 steht (dann rechnet er bitgleich wie
+        /// vorher). <b>Sobald der Parametersatz nachgezogen ist</b>, rechnen
+        /// Bestandsprojekte mit Ersatzbeschaffungen mit p_I = p_B, und ihre Kapitalwerte
+        /// sinken leicht. Das ist gewollt: Der bisherige Ausweis war der zu günstige.
+        /// Projekte ohne Ersatzbeschaffung (n ≥ T) bleiben in jedem Fall
+        /// zahlengleich.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 72
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 71
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_72_VALERI_ERGAENZUNG = 72;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4752,6 +4797,26 @@ namespace WindowsFormsApplication1
                         "Best- oder Worst-Case-Betrag pflegt - und das ist im Bestand " +
                         "bei nahezu jeder Position der Fall.",
                         Schritt_71_Szenarioparameter),
+
+            // ANWENDERENTSCHEID W5-B-12 vom 09.09.2026 ("Preisindizierung der
+            // Ersatzbeschaffung und nicht monetaere Wirkungen umsetzen", VALERI-Luecken
+            // G4 und G6). Begruendung, Nullsemantik ("NULL heisst wie p_B") und die
+            // Wirkung auf Bestandsprojekte stehen bei der Schrittkonstanten; die DDL
+            // steht in SchemaKatalog.Schritt72_PreisInvestition und
+            // ...Schritt72_NichtMonetaer - EINE Quelle fuer Migration, Testdatenbank
+            // und Nachweis.
+            new Schritt(SCHRITT_72_VALERI_ERGAENZUNG,
+                        "Die VALERI-Ergaenzung anlegen: den Preisaenderungssatz der " +
+                        "kapitalgebundenen Kosten p_I (Projektwert, Best, Worst) und das " +
+                        "Freitextfeld fuer die nicht monetaeren Wirkungen an " +
+                        "Tab_ProjektWirtschaftlichkeit (W5-B-12)",
+                        "Ersatzbeschaffungen wuerden dann weiter zum heutigen Preis " +
+                        "angesetzt - die Waermepumpe, die in 18 Jahren ersetzt wird, so " +
+                        "teuer wie die von heute (Vereinfachung W1). Der Kapitalwert " +
+                        "einer Variante mit kurzlebigen Positionen bliebe damit zu " +
+                        "guenstig, und die nicht monetaeren Wirkungen haetten weiter " +
+                        "kein Feld.",
+                        Schritt_72_ValeriErgaenzung),
         };
 
         /// <summary>
@@ -10959,6 +11024,56 @@ namespace WindowsFormsApplication1
                     "spiegelbildlich. ERWARTET bleibt zahlengleich - es bekommt keinen " +
                     "Satz. Ein gepflegter Best-/Worst-Wert je Kostenzeile behaelt " +
                     "Vorrang vor dem pauschalen Ausschlag.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 72 - Preisindizierung der Ersatzbeschaffung und nicht monetaere
+        //              Wirkungen (W5-B-12)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 72 — Anlass, Nullsemantik und Wirkung stehen bei
+        /// <see cref="SCHRITT_72_VALERI_ERGAENZUNG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt72_PreisInvestition"/> und
+        /// <see cref="SchemaKatalog.Schritt72_NichtMonetaer"/> (zusammengefasst in
+        /// <c>SchemaKatalog.Schritt72_ValeriErgaenzung</c>). Aus derselben Quelle bedienen
+        /// sich <c>Werkzeuge/Testdatenbankschema</c>, die Testdatenbank der Kern-Tests und
+        /// der Nachweis — wortgleiches Muster wie bei Schritt 71.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/></b>, und der Typ geht über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/>: <c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>, <c>MEMO</c> zu <c>TEXT</c> ohne Längenprüfung — dem einzigen
+        /// Texttyp, der einen Fließtext unbekannter Länge in einer STRICT-Tabelle
+        /// aufnimmt.</para>
+        /// </summary>
+        private static bool Schritt_72_ValeriErgaenzung(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("72: Die Wirtschaftlichkeit bekommt die VALERI-Ergaenzung " +
+                    "(Entscheid W5-B-12) - " +
+                    SchemaKatalog.Schritt72_PreisInvestition.Length +
+                    " Spalten fuer den Preisaenderungssatz der kapitalgebundenen Kosten " +
+                    "p_I (" + SchemaKatalog.SPALTE_PW_PREIS_I + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + ") und " +
+                    SchemaKatalog.Schritt72_NichtMonetaer.Length + " Freitextspalte (" +
+                    SchemaKatalog.SPALTE_PW_NICHT_MONETAER + ") an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". Alle vier bleiben NULL. Bei " +
+                    "p_I heisst NULL \"wie die Preissteigerung der Betriebskosten\" - " +
+                    "NICHT \"null Prozent\": Nach VDI 2067 werden Ersatzbeschaffungen " +
+                    "preisindiziert, und eine 0 haette behauptet, Investitionsgueter " +
+                    "wuerden nie teurer. DIESER Schritt aendert keine Zahl - er legt " +
+                    "Spalten an. Sobald der Parametersatz sie liest, rechnen " +
+                    "Bestandsprojekte MIT Ersatzbeschaffung mit p_I = p_B, und ihre " +
+                    "Kapitalwerte sinken leicht; das ist gewollt, denn der bisherige " +
+                    "Ausweis war der zu guenstige. Projekte ohne Ersatzbeschaffung " +
+                    "bleiben zahlengleich.");
             return true;
         }
 
