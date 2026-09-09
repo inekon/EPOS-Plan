@@ -202,14 +202,29 @@ german.UebernahmeTitel=Vorhandene Datenbank gefunden
 english.UebernahmeTitel=Existing database found
 german.UebernahmeKopf=Ihre Projekte bleiben erhalten
 english.UebernahmeKopf=Your projects will be kept
-german.UebernahmeText=Auf diesem Rechner liegt bereits eine Datenbank unter%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nAb dieser Version arbeitet EPOS-Plan mit einer Datenbank je Windows-Konto. Beim ersten Start übernimmt das Programm die vorhandene Datenbank einschließlich aller Projekte in Ihr Benutzerprofil. Die bisherige Datei bleibt unverändert liegen und kann nach einer Kontrolle von Hand entfernt werden.%n%nDas Setup selbst verändert Ihre Daten nicht.
-english.UebernahmeText=This computer already holds a database at%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nFrom this version on, EPOS-Plan uses one database per Windows account. On first start the application copies the existing database including all projects into your user profile. The previous file is left untouched and may be removed manually after verification.%n%nSetup itself does not modify your data.
+; Die Seite erscheint nur, wenn wirklich eine Kenndaten.accdb im gemeinsamen
+; Datenordner liegt (ShouldSkipPage über G_LegacyDb). Der Text beschreibt seit
+; Auftrag #157 (09.09.2026) den umgesetzten Weg: Der Ordner bleibt
+; %ProgramData%\EPOS_PLAN, die Anwendung stellt den Bestand beim ersten Start
+; EINMALIG auf SQLite um und benennt die Altdatei in Kenndaten.vor-sqlite.accdb
+; um (BETRIEB_SQLITE.md Abschnitt 1). Die frühere Fassung versprach "eine
+; Datenbank je Windows-Konto ... in Ihr Benutzerprofil" — das war der Vorschlag
+; aus Konzept_Setup_InnoSetup_EPOS-Plan.md 6.2, den die SQLite-Umstellung nie
+; umgesetzt hat; DataRepository.GetDBPath kennt kein Benutzerprofil.
+german.UebernahmeText=Auf diesem Rechner liegt bereits eine Datenbank unter%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nAb dieser Version hält EPOS-Plan seine Daten in einer SQLite-Datei. Beim ersten Start bietet das Programm die einmalige Umstellung an: Projekte und Kataloge wandern im selben Ordner nach Kenndaten.sqlite und werden dabei Tabelle für Tabelle nachgezählt und geprüft. Danach heißt die bisherige Datei Kenndaten.vor-sqlite.accdb und bleibt als Rückfallebene liegen.%n%nDer Ablageort ändert sich nicht — EPOS-Plan arbeitet weiterhin unter C:\ProgramData\EPOS_PLAN.%n%nDas Setup selbst verändert Ihre Daten nicht.
+english.UebernahmeText=This computer already holds a database at%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nFrom this version on, EPOS-Plan keeps its data in a single SQLite file. On first start the application offers the one-time conversion: projects and catalogues move to Kenndaten.sqlite within the very same folder, each table being counted and verified on the way. The previous file is then renamed to Kenndaten.vor-sqlite.accdb and stays as a fallback.%n%nThe location does not change — EPOS-Plan keeps working under C:\ProgramData\EPOS_PLAN.%n%nSetup itself does not modify your data.
 
 german.Office32Hinweis=Auf diesem Rechner ist ein 32-Bit-Microsoft-Office installiert.%n%nDie 64-Bit-Access-Engine kann daneben von Microsoft offiziell nicht unterstützt installiert werden.%n%nDie Installation wird trotzdem versucht. Schlägt sie fehl, aktualisieren Sie Office auf 64 Bit oder folgen Sie dem Microsoft-Artikel KB 5004577.
 english.Office32Hinweis=A 32-bit Microsoft Office is installed on this computer.%n%nMicrosoft does not officially support installing the 64-bit Access engine alongside it.%n%nSetup will try anyway. Should it fail, update Office to 64-bit or follow Microsoft article KB 5004577.
 
-german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nOhne sie kann EPOS-Plan nicht auf seine Datenbank zugreifen.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
-english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nWithout it EPOS-Plan cannot access its database.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
+; Seit dem SQLite-Cutover (02.09.2026) betrifft ein Fehlschlag NUR die Übernahme
+; eines Access-Altbestands — der laufende Betrieb kommt ohne Fremdtreiber aus
+; (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Der Satz „Ohne sie
+; kann EPOS-Plan nicht auf seine Datenbank zugreifen" stammt aus der Zeit davor
+; und ist mit Auftrag #157 (09.09.2026) richtiggestellt. Ob die Engine ueberhaupt
+; noch mitgeliefert wird, haengt am offenen Entscheid #157-E-1 (W1/W2/W3).
+german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nIm laufenden Betrieb braucht EPOS-Plan sie nicht: Die Daten liegen in einer SQLite-Datei, und der Zugriff darauf kommt ohne Fremdtreiber aus. Gebraucht wird die Engine allein für die einmalige Übernahme einer vorhandenen Kenndaten.accdb. Fehlt sie, bleibt ein solcher Altbestand unangetastet liegen, bis die Engine nachinstalliert ist.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
+english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nEPOS-Plan does not need it for day-to-day operation: its data lives in a SQLite file, which is accessed without any third-party driver. The engine is required solely for the one-time conversion of an existing Kenndaten.accdb. Without it, such a legacy database is left untouched until the engine has been installed.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
 
 german.WebView2Fehlt=Die Microsoft Edge WebView2 Runtime konnte nicht installiert werden.%n%nOhne sie bleiben die neueren Dialoge von EPOS-Plan leer; alles Uebrige arbeitet weiter.%n%nHaeufigste Ursache ist eine fehlende Internetverbindung: Der mitgelieferte Installer laedt die Laufzeit nach. Sie laesst sich jederzeit nachtraeglich installieren — Bezugsquelle "Microsoft Edge WebView2" auf den Microsoft-Seiten. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
 english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed.%n%nWithout it the newer EPOS-Plan dialogs stay blank; everything else keeps working.%n%nThe most common cause is a missing internet connection: the bundled installer downloads the runtime. It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages. When in doubt, contact support.%n%nSetup will continue.
@@ -255,11 +270,13 @@ Name: "desktopicon"; Description: "{cm:DesktopSymbol}"; GroupDescription: "{cm:A
 ; ---------------------------------------------------------------------------
 
 [Dirs]
-; Gemeinsamer Datenordner. Im Regelbetrieb wird er für die Datenbank nicht
-; mehr gebraucht (die liegt je Konto), bleibt aber für die Betriebsart
-; "eine gemeinsame Datenbank für alle Konten" und für maschinenweite
-; Protokolle bestehen. users-modify vergibt der Gruppe Benutzer vererbende
-; Änderungsrechte — sprachneutral über die bekannte SID.
+; Gemeinsamer Datenordner. Er IST der Datenbankordner: DataRepository.GetDBPath
+; fällt ohne gesetzte Einstellung DBPath auf %ProgramData%\EPOS_PLAN zurück, und
+; dort erwartet auch der Erststart-Assistent den Bestand. (Bis Auftrag #157,
+; 09.09.2026, stand hier "die liegt je Konto" — eine Datenbank je Windows-Konto
+; war ein Vorschlag des Setup-Konzepts, den der Code nie umgesetzt hat.)
+; users-modify vergibt der Gruppe Benutzer vererbende Änderungsrechte —
+; sprachneutral über die bekannte SID.
 Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 
 
@@ -474,8 +491,10 @@ end;
 
 { Nach dem stillen Lauf des Redistributables prüfen, ob er tatsächlich
   gegriffen hat. Häufigster Fehlschlag: installiertes 32-Bit-Office. Die
-  Installation wird nicht abgebrochen — ohne Treiber startet EPOS-Plan zwar,
-  meldet aber beim ersten Datenbankzugriff einen Fehler. }
+  Installation wird nicht abgebrochen — und seit dem SQLite-Cutover ist das auch
+  folgenlos für den Betrieb: EPOS-Plan liest und schreibt seine Kenndaten.sqlite
+  ohne diese Engine. Betroffen ist allein die einmalige Übernahme einer
+  vorhandenen Kenndaten.accdb (Auftrag #157, 09.09.2026). }
 procedure AceNachpruefen();
 begin
   if not AceVorhanden() then
@@ -548,11 +567,11 @@ end;
   der 64-Bit-Sicht an. Eine vorhandene 32-bit-Installation gilt damit NICHT als
   dieselbe Anwendung — es blieben zwei Einträge in "Apps und Features" und zwei
   Programmordner. Sie wird deshalb vorher still entfernt.
-  Die Nutzdaten sind davon nicht berührt: Datenbank unter %ProgramData%\EPOS_PLAN
-  bzw. je Windows-Konto, Lizenz und KI-Schlüssel unter %APPDATA%\wp-plan; der
-  alte Deinstallierer fasst laut seinem [UninstallDelete] nur den Programmordner
-  an. Seine Rückfrage nach den Kontodaten kommt mit Voreinstellung "Nein" und
-  ist beim Setup-Test zu erwarten. }
+  Die Nutzdaten sind davon nicht berührt: Datenbank unter %ProgramData%\EPOS_PLAN,
+  Lizenz und KI-Schlüssel unter %APPDATA%\wp-plan; der alte Deinstallierer fasst
+  laut seinem [UninstallDelete] nur den Programmordner an. Seine Rückfrage nach
+  den Kontodaten kommt mit Voreinstellung "Nein" und ist beim Setup-Test zu
+  erwarten. }
 procedure AlteX86InstallationEntfernen();
 var
   Befehl: String;

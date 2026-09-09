@@ -59,6 +59,50 @@ die Arbeit, statt die vorhandene Rückfallebene zu überschreiben.
 > Datenbankordner. Unter `C:\ProgramData` ist dafür die `icacls`-Zeile aus Abschnitt 4
 > nötig.
 
+### 1.1 Neuinstallation ohne Altbestand — Stand 09.09.2026
+
+**Rahmen (Anwender, 09.09.2026):** Access wurde beim Kunden **nie produktiv eingesetzt**.
+Der oben beschriebene Übernahmeweg ist damit ein **Werkzeug der Hausmigration**, kein
+Kundenweg; in der Anwenderdokumentation kommt Access nicht mehr vor. Was daraus für Setup
+und Erststart folgt, ist **Entscheid `#157‑E‑1` und noch offen**.
+
+**Was heute geschieht, wenn im Datenbankordner weder `Kenndaten.sqlite` noch
+`Kenndaten.accdb` liegt** — die Lage jeder Neuinstallation auf einem frischen Rechner:
+**Das Programm startet nicht.** Es erscheint die Meldung `START_DB_FEHLT`
+(„Datenbankdatei nicht gefunden/lesbar: …") und `Main` kehrt zurück. Der Weg dorthin,
+mit Datei und Zeile:
+
+| Schritt | Fundstelle | Ergebnis |
+|---|---|---|
+| Startprüfung | `WindowsFormsApplication1/Program.cs:232` | `DataRepository.DatenbankVorhanden()` ist `false` |
+| Pfad | `EPOS.Kern/Allgemein/DataRepository.cs:376-402` | `%ProgramData%\EPOS_PLAN\Kenndaten.sqlite` |
+| Prüfung selbst | `EPOS.Kern/Allgemein/SqliteDatenzugriff.cs:103-121` | öffnet `Mode=ReadOnly` und **legt nichts an** |
+| Lagebild | `…/Update/ErststartMigration.cs:139-147` | `BeidesFehlt` |
+| Assistent | `WindowsFormsApplication1/Controller/ErststartCtrl.cs:36-37` | `UmstellungFaellig` = `false` |
+| Abbruch | `Program.cs:392-400` | Meldung `START_DB_FEHLT`, `return false` → `Main` endet |
+
+Es wird also **keine leere Datenbank angelegt** — der Start bricht vorher ab. Liefe er
+weiter, entstünde beim ersten gewöhnlichen Zugriff eine **wirklich leere** Datei: 0 Byte,
+`sqlite_master` ohne einen einzigen Eintrag, keine `Tab_*_STAMM`, kein Auslieferungskatalog.
+Die Schemapflege (`SchemaMigration.Ausfuehren`, `Program.cs:281`) hebt ein vorhandenes
+Schema an; sie erzeugt keines. Nachgestellt und belegt in
+[`Proben/ErststartProben`](Proben/ErststartProben/Program.cs) (9 Prüfungen, ohne Windows
+lauffähig):
+
+```bash
+dotnet run --project Proben/ErststartProben -c Release
+```
+
+**Woher die Datenbank einer Neuinstallation kommen soll, ist damit offen.** Das Setup legt
+zwar `Setup\Vorlage\Kenndaten.accdb` nach `{app}\Vorlage`
+(`Setup/EPOS-Plan.iss`, `#define VorlageDb` und die `[Files]`-Zeile darauf) mit dem
+Kommentar „die Anwendung legt daraus beim ersten Start die Datenbank des Kontos an" —
+**kein Pfad im Quelltext liest diesen Ordner**.
+Die Erstkopie stammt aus dem Vorschlag `Konzept_Setup_InnoSetup_EPOS-Plan.md` 6.2 und ist
+nie gebaut worden. Die drei Wege stehen im Abschlussbericht zu Auftrag #157 (W1 Vorlage als
+`.accdb` + Übernahmeweg, W2 Vorlage als `.sqlite` + Übernahmeweg bleibt, W3 Vorlage als
+`.sqlite` und der Access-Weg fällt ganz).
+
 ---
 
 ## 2. Die drei Dateien — und warum man zwei davon nie einzeln anfasst
