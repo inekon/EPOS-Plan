@@ -4149,6 +4149,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > grün, SpeicherEngine 337, KiKern 469, Formularkarte 122, SQL 0, Designer 0, ChartProben 44, Gate grün, Referenzlauf
 > 1030/1007/1017/1045 byte‑gleich gegen R6. Abnahme auf Windows: **A‑W6‑B5‑1…9** — **Update-Hinweis: Schemastand 69,
 > die Produktivdatenbank wird beim nächsten Start mit Sicherung migriert, ein `.wpx` auf Stand 68 wird abgewiesen.**
+>
+> **Testdatenbank auf Schemastand 72 (Aufgabe #154, 09.09.2026, umgesetzt in `c176f12`, zusammengeführt in `91137e1`).**
+> Der Befund aus dem Statusblock O‑14: `SchemaStand.Zielversion` stand seit den Schritten 70 (PV-Strangprüfung, W6‑B‑10/11),
+> 71 (zwölf Szenario-Spalten, W5‑B‑9) und 72 (p_I und Freitext, W5‑B‑12) auf 72, `Kenndaten_Test.sqlite` aber auf 69 —
+> der SQL-Dialektprüfer meldete fünf Fundstellen, und `kern.yml` war seit Lauf 249 rot. Nachgezogen nach dem Muster von
+> Schritt 69 (#150) über `Werkzeuge/Testdatenbankschema`: 20 nullbare Spalten (`I_Sc_Max` an `Tab_Wechselrichter[_STAMM]`,
+> `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an `Tab_Einstellungen`, die zwölf `Szen_Best_*`/`Szen_Worst_*` sowie
+> `Preissteigerung_Investition`, `Szen_Best_Preis_I`, `Szen_Worst_Preis_I`, `Nicht_Monetaer` an
+> `Tab_ProjektWirtschaftlichkeit`); der zweite Lauf meldet 0 Spalten (idempotent). Eine Fundstelle blieb danach:
+> `Tab_ErgebnisWirtschaftlichkeit.ErsatzBarwert` — diese Tabelle führt `WirtschaftlichkeitCtrl.StelleTabellenSicher`
+> seit jeher selbst nach („doppelte Schema-Wahrheit"), das Werkzeug erreicht sie nicht; die Spalte ist einzeln als `REAL`
+> nachgetragen, ohne `StelleTabellenSicher` zu rufen, weil das den Gesetzeskatalog anstösst (Hinweis in
+> `BETRIEB_SQLITE.md` § 6.5). Nachweis: SQL-Dialektprüfer 5 → **0** Fundstellen (1 304 Texte, Selbsttest 32/32); STRICT
+> 117 und 70 012 928 Byte unverändert (NULL-Spalten brauchen keine Seite); im Vollvergleich aller 118 Tabellen ist
+> `Tab_Applikation.SchemaVersion` 69 → 72 der einzige Wertunterschied; **Referenzlauf aller zwölf Projekte der Basis R6
+> byte-gleich** (`diff -rq` 12/12, Toleranzvergleich 12/12) — keine neue Basis, R6 bleibt; Kern 2194 / UI 3362 grün.
+> `EPOS.Kern/CLAUDE.md` nennt die `Zielversion` seither mit 72. Abnahme: Ein Projektexport (`.wpx`) mit Schemastand 71
+> oder älter wird beim Import abgewiesen — das gilt seit den Schritten 70–72 und ist hier nur nachgezogen.
 
 > **Statusblock iU9 — Welle 5 umgesetzt (03.09.2026, Basis `740c73e`)**
 >
