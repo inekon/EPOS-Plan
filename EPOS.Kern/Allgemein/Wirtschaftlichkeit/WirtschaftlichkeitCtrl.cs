@@ -1668,7 +1668,10 @@ namespace WindowsFormsApplication1
             e.Zuschuss = zuschuss;
             // PAKET FX3 (R-2): zwei Töpfe statt einem — der Endenergie-Anteil wächst in
             // der Jahresreihe mit p_E (Begründung an BetriebsTopfe).
-            BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario);
+            // ETAPPE W5-B-11 (G11, 09.09.2026): Der Satz geht mit - die Zeilen
+            // "x % der Investitionssumme" bemessen sich damit an der Investition DIESES
+            // Szenarios statt immer an der des Erwartungsfalls.
+            BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz);
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -1698,7 +1701,7 @@ namespace WindowsFormsApplication1
             // Herleitung. Der SUMMENweg oben bleibt unangetastet — der Bericht liest
             // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
             // einen neuen Leseweg umzustellen.
-            e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario);
+            e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario, satz);
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;
@@ -5234,13 +5237,13 @@ namespace WindowsFormsApplication1
                 // gepflegten Szenariowert. Ohne Satz (ERWARTET, Anzeigen) wird der Zweig
                 // gar nicht betreten, und die zwei Zuweisungen sind wertgleich zum
                 // Bestand.
-                double betrag = z.Betrag;
+                // ETAPPE W5-B-11 (09.09.2026): Die BETRAGSregel steht seither in
+                // InvestKaskade.BetragImSzenario - dieselbe Methode, die jetzt auch die
+                // Bemessungsbasis der Prozent-Betriebskosten bildet (G11). Der Rechenweg
+                // ist unveraendert (z.Betrag * InvestFaktor, ohne Satz gar nichts).
+                double betrag = InvestKaskade.BetragImSzenario(z, satz);
                 double dauer = z.Dauer;
-                if (satz != null)
-                {
-                    if (!z.WertGepflegt) betrag *= satz.InvestFaktor;
-                    if (!z.DauerGepflegt) dauer = satz.DauerFuer(dauer);
-                }
+                if (satz != null && !z.DauerGepflegt) dauer = satz.DauerFuer(dauer);
 
                 liste.Add(new KapitalwertRechner.InvestPosition
                 {
@@ -5519,6 +5522,39 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario)
         {
+            return LiesBetriebskostenTopfe(idProjekt, szenario, null);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, VALERI-Lücke G11): dieselbe
+        /// Leseschleife, aber die Bemessungsbasis der Zeilen „x % der Investitionssumme"
+        /// folgt dem SZENARIO-Investitionsausschlag.
+        ///
+        /// <para><b>Der Befund.</b> Die Bezugsgröße kam bis dahin immer aus dem
+        /// Erwartungslauf der Kaskade (<c>BetriebskostenCtrl.Kaskadensummen</c> stand fest
+        /// auf ERWARTET). Eine Anlage, die im Worst-Fall 10 % mehr kostet, hatte damit
+        /// dieselbe Wartung wie im Erwartungsfall — während die Sensitivität denselben
+        /// Ausschlag längst mitzieht (PAKET FX5‑a, additive Korrektur über
+        /// <see cref="BetriebsTopfe.InvestGekoppeltSofort"/>). Der Anwender hat am
+        /// 09.09.2026 entschieden, die beiden Wege gleichzuziehen.</para>
+        ///
+        /// <para><b>Die Vorrangregel gilt auch hier.</b> Skaliert wird die Basis je Zeile,
+        /// und nur, wo kein Best-/Worst-Wert gepflegt ist: Eine gepflegte Zeile mit
+        /// 7.000 € im Worst-Fall bleibt Basis 7.000 €
+        /// (<see cref="InvestKaskade.BetragImSzenario"/>).</para>
+        ///
+        /// <para><b>Ohne Satz unverändert.</b> <paramref name="satz"/> = <c>null</c> ist
+        /// der Weg des Szenarios ERWARTET und jeder Anzeige — dann wird der neue Zweig
+        /// gar nicht erst betreten, und jede Zahl ist bitgenau die von vorher.</para>
+        ///
+        /// <para><b>Die Sensitivität bleibt, wo sie war.</b> Sie rechnet auf ERWARTET
+        /// (dort ist <paramref name="satz"/> null) und korrigiert ihren eigenen Ausschlag
+        /// weiterhin additiv in <see cref="RechneBild"/>. Beides zusammen wäre
+        /// Doppelzählung; beides trifft aber nie zusammen.</para>
+        /// </summary>
+        internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario,
+                                                             SzenarioSatz satz)
+        {
             var topfe = new BetriebsTopfe();
             double summe = 0;
             double summeEnde = 0;
@@ -5616,7 +5652,7 @@ namespace WindowsFormsApplication1
                             {
                                 double? frisch = RueckfallMenge(idProjekt, r, bem,
                                                                 ref endenergie, ref endenergieVersucht,
-                                                                ref investSummen);
+                                                                ref investSummen, satz);
                                 if (frisch.HasValue) menge = frisch;
                             }
 
@@ -5692,6 +5728,17 @@ namespace WindowsFormsApplication1
         internal static List<KostenPositionNachweis> LiesBetriebskostenPositionen(
             int idProjekt, string szenario)
         {
+            return LiesBetriebskostenPositionen(idProjekt, szenario, null);
+        }
+
+        /// <summary>ETAPPE W5‑B‑11 (G11): dieselbe Nachweisliste mit der
+        /// szenariogerechten Bemessungsbasis. Sie MUSS denselben Satz bekommen wie
+        /// <see cref="LiesBetriebskostenTopfe"/> — sonst wiese der Bericht im Best-/
+        /// Worst-Fall eine andere Summe aus als die, mit der gerechnet wurde (die
+        /// E7-Probe „Summe der Nachweisliste = Summe der Rechnung").</summary>
+        internal static List<KostenPositionNachweis> LiesBetriebskostenPositionen(
+            int idProjekt, string szenario, SzenarioSatz satz)
+        {
             var liste = new List<KostenPositionNachweis>();
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
@@ -5743,7 +5790,7 @@ namespace WindowsFormsApplication1
                     {
                         double? frisch = RueckfallMenge(idProjekt, r, bem,
                                                         ref endenergie, ref endenergieVersucht,
-                                                        ref investSummen);
+                                                        ref investSummen, satz);
                         if (frisch.HasValue) menge = frisch;
                     }
 
@@ -5967,15 +6014,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static double? RueckfallMenge(int idProjekt, DataRow r, string bem,
                                               ref EndenergieAufloeser aufloeser, ref bool versucht,
-                                              ref Dictionary<KeyValuePair<int, int>, double> investSummen)
+                                              ref Dictionary<KeyValuePair<int, int>, double> investSummen,
+                                              SzenarioSatz satz)
         {
             int komponente, idAnlage;
             KomponenteUndAnlage(r, out komponente, out idAnlage);
 
             if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
             {
+                // ETAPPE W5-B-11 (G11): Die Kaskade wird im SZENARIO des Satzes gelesen -
+                // mit gepflegten Zeilenwerten und pauschalem Ausschlag. satz = null ist
+                // der Erwartungslauf und damit der Weg von vor dieser Etappe.
                 if (investSummen == null)
-                    investSummen = BetriebskostenCtrl.Kaskadensummen(idProjekt);
+                    investSummen = BetriebskostenCtrl.Kaskadensummen(idProjekt, satz);
                 return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage,
                                                           investSummen);
             }
@@ -6059,7 +6110,7 @@ namespace WindowsFormsApplication1
                 menge = endenergie
                     ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
                     : RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
-                                     ref investSummen);
+                                     ref investSummen, null);   // W5-B-11: Ausweis = Erwartungslauf
 
                 var p = new DbParam("@m", DbParamTyp.Double);
                 p.Wert = menge.HasValue ? (object)menge.Value : DBNull.Value;

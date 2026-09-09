@@ -89,6 +89,19 @@
     }
     <Herleitungszeile Text="@_stand.Parameterzeile" />
 
+    @* W5-B-11 (VALERI G7 / G10 / G1,G3,G5): Der Nachweisblock sagt zusaetzlich,
+       wie der Betrachtungszeitraum zu den Nutzungsdauern steht, woher
+       Eigenverbrauchsquote und Einspeiseanteil kommen und welche Vereinfachungen
+       gelten. Leere Zeilen werden - wie die Szenariozeile - nicht gezeichnet. *@
+    @if (!string.IsNullOrEmpty(_stand.Zeitraumzeile))
+    {
+        <Herleitungszeile Text="@_stand.Zeitraumzeile" />
+    }
+    @if (!string.IsNullOrEmpty(_stand.Vereinfachungszeile))
+    {
+        <Herleitungszeile Text="@_stand.Vereinfachungszeile" />
+    }
+
     @* --------------------------------------------- Vergleichstabelle *@
     @if (_stand.Ansicht.Matrix.Zeilen.Count > 0)
     {
@@ -116,6 +129,14 @@
                 </tbody>
             </table>
         </div>
+    }
+
+    @* W5-B-11 (VALERI G9): der Vorschlag zur Entscheidung - unmittelbar unter der
+       Vergleichstabelle, aus der er sich ergibt. Ohne Variante mit Erwartet-Ergebnis
+       bleibt der Text leer, und die Zeile entfaellt ganz. *@
+    @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
+    {
+        <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
     }
 
     @if (_laeuft)

@@ -264,6 +264,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, VALERI-Lücke G11): der
+        /// WIRKSAME Betrag einer Zeile im Szenario — der pauschale
+        /// Investitionsausschlag des Parametersatzes, nach der Vorrangregel.
+        ///
+        /// <para><paramref name="satz"/> = <c>null</c> heißt „kein Ausschlag" und liefert
+        /// <see cref="Zeile.Betrag"/> unverändert — der Weg des Szenarios ERWARTET und
+        /// jeder Anzeige, die erfasste Zahlen zeigt. Eine Zeile mit gepflegtem Best-/
+        /// Worst-Wert (<see cref="Zeile.WertGepflegt"/>) bleibt ebenfalls unangetastet:
+        /// Wer 7.000 € als Worst-Case erfasst hat, meint diese Zahl, nicht diese Zahl
+        /// plus 10 % (§ 2.2 des Szenarienkonzepts).</para>
+        ///
+        /// <para><b>Warum es diese Methode gibt.</b> Bis W5‑B‑10 stand die Regel nur in
+        /// <c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>. Seit G11 braucht sie auch
+        /// <see cref="Summen"/> — die Bemessungsbasis der Betriebskostenzeilen
+        /// „x % der Investitionssumme". Zwei Stellen mit derselben Regel wären zwei
+        /// Stellen, an denen sie auseinanderlaufen kann.</para>
+        /// </summary>
+        internal static double BetragImSzenario(Zeile z, SzenarioSatz satz)
+        {
+            if (z == null) return 0.0;
+            if (satz == null || z.WertGepflegt) return z.Betrag;
+            return z.Betrag * satz.InvestFaktor;
+        }
+
+        /// <summary>
         /// Summen je Komponente und Anlage [€] — die Zahl, die die Anlagenzeile der
         /// Kostenseite und die Kostenzeile der Anlagendialoge zeigen.
         /// <para>Zuschusszeilen bleiben AUSSEN VOR, genau wie in
@@ -277,6 +302,28 @@ namespace WindowsFormsApplication1
         internal static Dictionary<KeyValuePair<int, int>, double> Summen(
             int idProjekt, string szenario)
         {
+            return Summen(idProjekt, szenario, null);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, G11): dieselben Summen, aber
+        /// mit dem pauschalen Investitionsausschlag des Szenarios.
+        ///
+        /// <para><b>Wozu.</b> Diese Karte ist die Bemessungsbasis der Betriebskosten-
+        /// zeilen „x % der Investitionssumme" (H4a). Bis W5‑B‑10 wurde sie IMMER
+        /// aus dem Erwartungslauf gebildet: Eine Anlage, die im Worst-Fall 10 % mehr
+        /// kostet, hatte dort dieselbe Wartung wie im Erwartungsfall — anders als in
+        /// der Sensitivität, die den Ausschlag längst mitzieht (FX5‑a). Der Anwender
+        /// hat am 09.09.2026 entschieden, ihn auch im Szenario mitzuziehen.</para>
+        ///
+        /// <para><b>Die Vorrangregel gilt hier genauso</b>
+        /// (<see cref="BetragImSzenario"/>): Eine Zeile mit gepflegtem Worst-Wert von
+        /// 7.000 € trägt 7.000 € zur Basis bei, nicht 7.700 €. Ohne
+        /// <paramref name="satz"/> ist diese Fassung Zeichen für Zeichen die von vorher.</para>
+        /// </summary>
+        internal static Dictionary<KeyValuePair<int, int>, double> Summen(
+            int idProjekt, string szenario, SzenarioSatz satz)
+        {
             var summen = new Dictionary<KeyValuePair<int, int>, double>();
             foreach (Zeile z in Lies(idProjekt, szenario))
             {
@@ -286,7 +333,7 @@ namespace WindowsFormsApplication1
                 // Der SCHLUESSEL entsteht auch fuer eine reine Zuschusszeile - die
                 // Kostenseite entscheidet an der Gruppe "hat Positionen" gegen "-";
                 // nur ihr BETRAG bleibt aussen vor.
-                summen[schluessel] = alt + (z.Zuschuss ? 0.0 : z.Betrag);
+                summen[schluessel] = alt + (z.Zuschuss ? 0.0 : BetragImSzenario(z, satz));
             }
             return summen;
         }

@@ -466,7 +466,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Dictionary<KeyValuePair<int, int>, double> Kaskadensummen(int projektID)
         {
-            try { return InvestKaskade.Summen(projektID, WirtschaftlichkeitSzenario.ERWARTET); }
+            return Kaskadensummen(projektID, null);
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID W5‑B‑11 (09.09.2026, VALERI-Lücke G11): dieselben
+        /// Kaskadensummen, aber im SZENARIO des Parametersatzes.
+        ///
+        /// <para>Der Satz trägt sein Szenario selbst mit (<see cref="SzenarioSatz.Szenario"/>);
+        /// <paramref name="satz"/> = <c>null</c> heißt deshalb „Erwartungslauf ohne
+        /// Ausschlag" und ist Zeichen für Zeichen der Weg von vorher. Mit Satz gelten
+        /// die gepflegten Best-/Worst-Zeilenwerte UND der pauschale Ausschlag auf die
+        /// nicht gepflegten Zeilen — dieselbe Vorrangregel wie in
+        /// <c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>, weil beide Wege dieselbe
+        /// Methode fragen (<see cref="InvestKaskade.BetragImSzenario"/>).</para>
+        /// </summary>
+        internal static Dictionary<KeyValuePair<int, int>, double> Kaskadensummen(
+            int projektID, SzenarioSatz satz)
+        {
+            string szenario = satz != null ? satz.Szenario : WirtschaftlichkeitSzenario.ERWARTET;
+            try { return InvestKaskade.Summen(projektID, szenario, satz); }
             catch { return new Dictionary<KeyValuePair<int, int>, double>(); }
         }
 

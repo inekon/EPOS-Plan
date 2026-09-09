@@ -75,6 +75,21 @@ public sealed class ErgebnisAnsicht
     /// Parameter waren nicht lesbar).</para>
     /// </summary>
     public string Szenariozeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, VALERI-Lücke G9): der
+    /// <b>Vorschlag zur Entscheidung</b> — welche Variante gegenüber dem Stammprojekt
+    /// empfohlen wird und wie belastbar das über die Bandbreite ist.
+    ///
+    /// <para>Sie steht an der <b>Ansicht</b> und nicht am Stand, obwohl sie vom
+    /// gewählten Szenario unabhängig ist: Sie hängt an der VERGLEICHSWAHL, und die
+    /// tauscht — wie der Szenariowechsel — genau dieses Objekt aus. Am Stand würde
+    /// sie einem Haken erst beim nächsten vollen Laden folgen.</para>
+    ///
+    /// <para>Leer = keine Variante mit Erwartet-Ergebnis gegenüber dem Stamm; dann
+    /// wird die Zeile gar nicht erst gezeichnet.</para>
+    /// </summary>
+    public string Empfehlungszeile { get; set; } = "";
 }
 
 /// <summary>
@@ -103,6 +118,22 @@ public sealed class WirtschaftlichkeitStand
 
     /// <summary>Der Parameternachweis als eine Zeile (L12/L13).</summary>
     public string Parameterzeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE W5‑B‑11 (VALERI-Lücke G7): der Betrachtungszeitraum gegen die
+    /// Nutzungsdauern — längste und kürzeste gepflegte Dauer und daraus, ob ein
+    /// Restwert am Ende steht und ob zwischendurch ersetzt wird. Leer = kein
+    /// Zeitraum lesbar.
+    /// </summary>
+    public string Zeitraumzeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE W5‑B‑11 (VALERI-Lücken G10 und G1/G3/G5): die Herleitung der
+    /// Eigennutzung (nur mit Photovoltaik in der Gruppe) und die offengelegten
+    /// Vereinfachungen. Eine Vereinfachung, die dasteht, ist eine Annahme; eine, die
+    /// nicht dasteht, ist ein Fehler.
+    /// </summary>
+    public string Vereinfachungszeile { get; set; } = "";
 
     /// <summary>Die Kennzahlen und die Tabelle des vorgewählten Szenarios.</summary>
     public ErgebnisAnsicht Ansicht { get; set; } = new();

@@ -203,6 +203,12 @@ namespace WindowsFormsApplication1
             stand.MitBhkw = flags != null && flags.Bhkw;
             stand.MitStrombezug = (flags != null && flags.Waermepumpe) || tarifAktiv;
 
+            // ETAPPE W5-B-11 (Anwenderentscheid 09.09.2026): die zwei VALERI-Ausweise
+            // des Nachweisblocks. Sie haengen am Projekt, nicht an der Wahl - deshalb
+            // stehen sie am Stand und nicht an der Ansicht.
+            stand.Zeitraumzeile = Zeitraumzeile();
+            stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
+
             return stand;
         }
 
@@ -214,6 +220,44 @@ namespace WindowsFormsApplication1
         private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
         {
             Vergleich.Setzen(gewaehlt, _gruppe, _idStamm);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (VALERI-Lücke G7): der Betrachtungszeitraum gegen die
+        /// Nutzungsdauern der Investitionspositionen — gelesen im Szenario ERWARTET,
+        /// also aus derselben Liste, mit der der Kapitalwert rechnet. Ein Lesefehler
+        /// lässt die Zeile still entfallen; sie ist Ausweis, kein Ergebnis.
+        /// </summary>
+        private string Zeitraumzeile()
+        {
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                var positionen = new List<KapitalwertRechner.InvestPosition>();
+                foreach (int id in _gruppe)
+                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
+                        id, WirtschaftlichkeitSzenario.ERWARTET));
+                return NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum, positionen,
+                                                     BerichtTexte.Kultur);
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (VALERI-Lücken G10 und G1/G3/G5): die Herleitung der
+        /// Eigennutzung — nur mit Photovoltaik in der Gruppe, denn ohne PV gibt es
+        /// keine Eigenverbrauchsquote — und die offengelegten Vereinfachungen.
+        /// </summary>
+        private static string Vereinfachungszeile(bool mitPhotovoltaik)
+        {
+            try
+            {
+                string s = ValeriAusweis.Vereinfachungen();
+                return mitPhotovoltaik
+                     ? ValeriAusweis.EigennutzungHerleitung() + " " + s
+                     : s;
+            }
+            catch { return ""; }
         }
 
         private string Parameterzeile()
@@ -268,7 +312,12 @@ namespace WindowsFormsApplication1
             var ansicht = new ErgebnisAnsicht
             {
                 Kacheln = Kacheln(zeilen, kultur),
-                Szenariozeile = Szenariozeile(szenario, kultur)   // W5-B-9
+                Szenariozeile = Szenariozeile(szenario, kultur),   // W5-B-9
+                // W5-B-11 (G9): Der Vorschlag urteilt ueber ALLE drei Szenarien der
+                // GEWAEHLTEN Versionen - nicht nur ueber das angezeigte. Deshalb geht
+                // hier _ergebnisse hinein, gefiltert auf die Wahl, und nicht die
+                // Zeilenliste des einen Szenarios.
+                Empfehlungszeile = Empfehlungszeile(gewaehlt, kultur)
             };
             if (zeilen.Count == 0) return ansicht;
 
@@ -367,6 +416,26 @@ namespace WindowsFormsApplication1
                     : T("WPAR_SZ_HERKUNFT_GEPFLEGT", "{0}: gepflegte Werte — {1}");
                 return T("WIRT_SZ_KOPF", "Szenario:") + " " +
                        string.Format(kultur, muster, name, satz.Nachweis(p, kultur));
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, VALERI-Lücke G9): der
+        /// Vorschlag zur Entscheidung über die GEWÄHLTEN Versionen.
+        ///
+        /// <para>Die Regel steht im Kern (<see cref="WirtschaftlichkeitEmpfehlung"/>) —
+        /// Seite, Word und Excel sollen denselben Satz zeigen. Leer heißt „keine
+        /// Variante mit Erwartet-Ergebnis"; dann zeichnet die Seite die Zeile nicht.</para>
+        /// </summary>
+        private string Empfehlungszeile(List<int> gewaehlt, CultureInfo kultur)
+        {
+            try
+            {
+                List<WirtschaftlichkeitErgebnis> quelle = gewaehlt != null && gewaehlt.Count > 0
+                    ? _ergebnisse.Where(x => gewaehlt.Contains(x.IdProjekt)).ToList()
+                    : _ergebnisse;
+                return WirtschaftlichkeitEmpfehlung.Vorschlagstext(quelle, kultur);
             }
             catch { return ""; }
         }

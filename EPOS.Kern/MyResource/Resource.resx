@@ -16355,4 +16355,73 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="PVS_LAUF_VORSPANN" xml:space="preserve">
     <value>PV-Anlage &#8222;{0}&#8220;: {1}</value>
   </data>
+  <data name="WIRT_EMPF_SATZ" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zum Stammprojekt {1} (Erwartet){2}.</value>
+  </data>
+  <data name="WIRT_EMPF_ALLE_POSITIV" xml:space="preserve">
+    <value>, in allen drei Szenarien positiv (Worst {0}, Best {1})</value>
+  </data>
+  <data name="WIRT_EMPF_NUR_ERWARTET" xml:space="preserve">
+    <value>, im ungünstigen Fall jedoch nicht (Worst {0}, Best {1})</value>
+  </data>
+  <data name="WIRT_EMPF_OHNE_BANDBREITE" xml:space="preserve">
+    <value>Bandbreite nicht berechnet</value>
+  </data>
+  <data name="WIRT_EMPF_KEINE" xml:space="preserve">
+    <value>Vorschlag zur Entscheidung: Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall).</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_JA" xml:space="preserve">
+    <value>empfohlen</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_BEDINGT" xml:space="preserve">
+    <value>bedingt empfohlen</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_NEIN" xml:space="preserve">
+    <value>nicht empfohlen</value>
+  </data>
+  <data name="WIRT_EMPF_SPALTE" xml:space="preserve">
+    <value>Einstufung</value>
+  </data>
+  <data name="WIRT_T_KOPF" xml:space="preserve">
+    <value>Betrachtungszeitraum T = {0} a · Nutzungsdauern {1} bis {2} a</value>
+  </data>
+  <data name="WIRT_T_OHNE_DAUER" xml:space="preserve">
+    <value>Betrachtungszeitraum T = {0} a · keine Nutzungsdauern gepflegt: kein Ersatz, kein Restwert.</value>
+  </data>
+  <data name="WIRT_T_RESTWERT" xml:space="preserve">
+    <value>T liegt unter der längsten Nutzungsdauer — Restwert am Ende angesetzt.</value>
+  </data>
+  <data name="WIRT_T_ERSATZ" xml:space="preserve">
+    <value>T liegt über der kürzesten Nutzungsdauer — Ersatzbeschaffung im Jahr {0}.</value>
+  </data>
+  <data name="WIRT_T_GLEICH" xml:space="preserve">
+    <value>deckungsgleich — weder Ersatzbeschaffung noch Restwert.</value>
+  </data>
+  <data name="WIRT_VEREINFACHUNGEN" xml:space="preserve">
+    <value>Vereinfachungen (VALERI): kein Endjahr je Kostenposition; keine Degradation außer beim PV-Ertrag; Energiekosten als Gesamtrechnung des Simulationslaufs ab Jahr 1 (FK10).</value>
+  </data>
+  <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
+    <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
+  </data>
+  <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
+    <value>Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios.</value>
+  </data>
+  <data name="WIRT_SZ_SP_VARIANTE" xml:space="preserve">
+    <value>Variante</value>
+  </data>
+  <data name="WIRT_SZ_SP_WORST" xml:space="preserve">
+    <value>ΔKW Worst [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_ERWARTET" xml:space="preserve">
+    <value>ΔKW Erwartet [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_BEST" xml:space="preserve">
+    <value>ΔKW Best [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
+    <value>Amortisation [a]</value>
+  </data>
+  <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
+    <value>ΔKW = Kapitalwert der Variante abzüglich Kapitalwert des Stammprojekts (Referenzfall); „—" = kein Stammprojekt in der Vergleichsgruppe oder Szenario nicht gerechnet.</value>
+  </data>
 </root>

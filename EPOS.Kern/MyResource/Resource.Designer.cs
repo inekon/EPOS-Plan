@@ -44200,6 +44200,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , in allen drei Szenarien positiv (Worst {0}, Best {1}) ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_ALLE_POSITIV {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_ALLE_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall). ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , im ungünstigen Fall jedoch nicht (Worst {0}, Best {1}) ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_NUR_ERWARTET {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_NUR_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bandbreite nicht berechnet ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_OHNE_BANDBREITE {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_OHNE_BANDBREITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zum Stammprojekt {1} (Erwartet){2}. ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstufung ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_SPALTE {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bedingt empfohlen ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_STUFE_BEDINGT {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_STUFE_BEDINGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die empfohlen ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_STUFE_JA {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_STUFE_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht empfohlen ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_STUFE_NEIN {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_STUFE_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} passt das Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses Berichts — Bericht erneut erstellen. ähnelt.
         /// </summary>
         public static string WIRT_ERGEBNIS_VERALTET {
@@ -45010,6 +45091,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt. ähnelt.
+        /// </summary>
+        public static string WIRT_PV_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_PV_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift ähnelt.
         /// </summary>
         public static string WIRT_REIHE_ENERGIESTEUER {
@@ -45136,6 +45226,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW = Kapitalwert der Variante abzüglich Kapitalwert des Stammprojekts (Referenzfall); „—&quot; = kein Stammprojekt in der Vergleichsgruppe oder Szenario nicht gerechnet. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_DELTA_FUSS {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_DELTA_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenario Erwartet: die Projektparameter unverändert. ähnelt.
         /// </summary>
         public static string WIRT_SZ_ERWARTET {
@@ -45154,11 +45253,119 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_QUELLEN {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation [a] ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_AMORT {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_AMORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Best [€] ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_BEST {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_BEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Erwartet [€] ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_ERWARTET {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_VARIANTE {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Worst [€] ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_WORST {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_WORST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463) ähnelt.
         /// </summary>
         public static string WIRT_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T liegt über der kürzesten Nutzungsdauer — Ersatzbeschaffung im Jahr {0}. ähnelt.
+        /// </summary>
+        public static string WIRT_T_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_T_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die deckungsgleich — weder Ersatzbeschaffung noch Restwert. ähnelt.
+        /// </summary>
+        public static string WIRT_T_GLEICH {
+            get {
+                return ResourceManager.GetString("WIRT_T_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T = {0} a · Nutzungsdauern {1} bis {2} a ähnelt.
+        /// </summary>
+        public static string WIRT_T_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_T_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T = {0} a · keine Nutzungsdauern gepflegt: kein Ersatz, kein Restwert. ähnelt.
+        /// </summary>
+        public static string WIRT_T_OHNE_DAUER {
+            get {
+                return ResourceManager.GetString("WIRT_T_OHNE_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die T liegt unter der längsten Nutzungsdauer — Restwert am Ende angesetzt. ähnelt.
+        /// </summary>
+        public static string WIRT_T_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_T_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vereinfachungen (VALERI): kein Endjahr je Kostenposition; keine Degradation außer beim PV-Ertrag; Energiekosten als Gesamtrechnung des Simulationslaufs ab Jahr 1 (FK10). ähnelt.
+        /// </summary>
+        public static string WIRT_VEREINFACHUNGEN {
+            get {
+                return ResourceManager.GetString("WIRT_VEREINFACHUNGEN", resourceCulture);
             }
         }
         

@@ -146,6 +146,71 @@ public class WirtschaftlichkeitSeiteTests : BunitContext
                               e => string.IsNullOrWhiteSpace(e.TextContent));
     }
 
+    /// <summary>
+    /// ETAPPE W5‑B‑11 (09.09.2026, VALERI-Lücken G7 / G10 / G1,G3,G5): Unter dem
+    /// Parameternachweis stehen zwei weitere Herleitungszeilen — der
+    /// Betrachtungszeitraum gegen die Nutzungsdauern und die offengelegten
+    /// Vereinfachungen samt der Herkunft von Eigenverbrauchsquote und Einspeiseanteil.
+    /// </summary>
+    [Fact]
+    public void Der_Nachweisblock_zeigt_Zeitraum_und_Vereinfachungen()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Zeitraumzeile = "Betrachtungszeitraum T = 20 a · Nutzungsdauern 15 bis 25 a";
+        stand.Vereinfachungszeile = "Vereinfachungen (VALERI): kein Endjahr je Kostenposition.";
+        var cut = Zeige(stand: stand);
+
+        var zeilen = cut.FindAll(".epos-herleitung-text").Select(e => e.TextContent).ToList();
+        Assert.Contains(zeilen, z => z.StartsWith("Betrachtungszeitraum T = 20 a"));
+        Assert.Contains(zeilen, z => z.StartsWith("Vereinfachungen (VALERI)"));
+
+        // Sie stehen UNTER dem Parameternachweis — erst die Parameter, dann ihre
+        // Einordnung.
+        int parameter = zeilen.FindIndex(z => z.StartsWith("Parameter:"));
+        Assert.True(parameter < zeilen.FindIndex(z => z.StartsWith("Betrachtungszeitraum")));
+        Assert.True(parameter < zeilen.FindIndex(z => z.StartsWith("Vereinfachungen")));
+    }
+
+    /// <summary>
+    /// ETAPPE W5‑B‑11 (VALERI-Lücke G9): Der Vorschlag zur Entscheidung steht
+    /// unmittelbar UNTER der Vergleichstabelle — dort, wo die Zahlen stehen, aus
+    /// denen er sich ergibt.
+    /// </summary>
+    [Fact]
+    public void Die_Empfehlungszeile_steht_unter_der_Vergleichstabelle()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht.Empfehlungszeile =
+            "Vorschlag zur Entscheidung: Variante „WP klein“ — " +
+            "Kapitalwertdifferenz zum Stammprojekt +12.300 € (Erwartet).";
+        var cut = Zeige(stand: stand);
+
+        var texte = cut.FindAll(".epos-herleitung-text").Select(e => e.TextContent).ToList();
+        Assert.Contains(texte, z => z.StartsWith("Vorschlag zur Entscheidung:"));
+
+        // Reihenfolge im gezeichneten Baum: erst die Matrix, dann die Zeile.
+        var knoten = cut.FindAll(".epos-matrix, .epos-herleitung-text");
+        int matrix = knoten.ToList().FindIndex(e => e.ClassList.Contains("epos-matrix"));
+        int satz = knoten.ToList().FindIndex(
+            e => e.TextContent.StartsWith("Vorschlag zur Entscheidung:"));
+        Assert.True(matrix >= 0 && satz > matrix);
+    }
+
+    /// <summary>
+    /// Ohne Variante mit Erwartet-Ergebnis bleibt der Text leer — dann wird die Zeile
+    /// gar nicht erst gezeichnet (dieselbe Regel wie bei der Szenariozeile: eine leere
+    /// Herleitungszeile ist kein Hinweis, sondern eine Lücke).
+    /// </summary>
+    [Fact]
+    public void Eine_leere_Empfehlungszeile_wird_nicht_gezeichnet()
+    {
+        var cut = Zeige();
+
+        Assert.Equal("", _stand.Ansicht.Empfehlungszeile);
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Vorschlag zur Entscheidung:"));
+    }
+
     [Fact]
     public void Die_Matrix_traegt_je_Version_eine_Spalte()
     {

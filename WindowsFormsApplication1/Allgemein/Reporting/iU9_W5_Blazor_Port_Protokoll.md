@@ -1457,3 +1457,203 @@ eine Zeile trifft statt sechs.
   dem Anwender aber bei der ersten Neuberechnung bewusst sein.
 - Die **elf VALERI-Lücken G1…G11** oben warten auf Entscheidungen; G4, G8 und G11 sind
   fachliche Entscheide, die übrigen Aufwandsfragen.
+
+---
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑11: VALERI-Gaps ohne Datenmodell
+
+Der VALERI-Abgleich der Etappe W5‑B‑10 hatte elf Lücken benannt (G1…G11). Der Anwender hat
+sie am 09.09.2026 entschieden. Diese Etappe setzt alles um, was **ohne neue Spalte**
+auskommt; G4, G2 und G6 gehören zu W5‑B‑12 (Migrationsschritt 72), G1, G3 und G5 werden
+nicht umgesetzt, aber **offengelegt**.
+
+### 1. Die Entscheidungstabelle
+
+| Nr. | Lücke | Entscheid 09.09.2026 | Wo umgesetzt |
+|---|---|---|---|
+| **G1** | Endjahr je Kostenposition | **nicht** — offenlegen | Hinweiszeile „Vereinfachungen (VALERI)" |
+| **G2** | Preisänderung je Kostenart | **W5‑B‑12** — nur als dritter Satz p_I | Etappe W5‑B‑12 |
+| **G3** | Degradation je Faktor | **nicht** — offenlegen | Hinweiszeile „Vereinfachungen (VALERI)" |
+| **G4** | Preisindizierung der Ersatzbeschaffung | **W5‑B‑12** — p_I | Etappe W5‑B‑12 |
+| **G5** | Startjahr der Energiekosten | **nicht** — offenlegen (FK10) | Hinweiszeile „Vereinfachungen (VALERI)" |
+| **G6** | Nicht monetisierbare Wirkungen | **W5‑B‑12** — Freitextfeld | Etappe W5‑B‑12 |
+| **G7** | Betrachtungszeitraum gegen die Nutzungsdauern | **jetzt** | `NutzungsdauerAbgleich` |
+| **G8** | Berichtsausgabe der Bandbreite | **jetzt** | `BausteineWirtschaftlichkeit`, `ExcelBerichtGenerator` |
+| **G9** | Entscheidungsempfehlung als Text | **jetzt** | `WirtschaftlichkeitEmpfehlung` |
+| **G10** | Eigennutzung/Einspeisung als Herleitung | **jetzt** | `ValeriAusweis.EigennutzungHerleitung` |
+| **G11** | Investitionsgekoppelte Betriebskosten im Szenario | **jetzt** | `InvestKaskade`, `BetriebskostenCtrl`, `WirtschaftlichkeitCtrl` |
+
+### 2. G11 — die Prozentzeilen folgen dem Szenario-Investitionsausschlag
+
+**Der Befund.** Eine Betriebskostenzeile „x % der Investitionssumme"
+(`DbWerte.BEMESSUNG_PROZENT_INVESTITION`, im Bestand die häufigste Kategorie‑2‑Bemessung:
+Wartung, Versicherung, Verwaltung) bemaß sich bis hierher IMMER an der Investition des
+**Erwartungsfalls**: `BetriebskostenCtrl.Kaskadensummen` stand fest auf
+`WirtschaftlichkeitSzenario.ERWARTET`. Kostet die Anlage im Worst-Fall 10 % mehr, kostete ihre
+Wartung trotzdem unverändert — während die **Sensitivität** denselben Ausschlag längst
+mitzieht (PAKET FX5‑a, additive Korrektur über `BetriebsTopfe.InvestGekoppelt`). Zwei Wege,
+zwei Antworten auf dieselbe Frage.
+
+**Der gewählte Weg — der bevorzugte, nicht der Notweg.** Die BASISBERECHNUNG bekommt den
+`SzenarioSatz`; skaliert wird **je Zeile** und nur dort, wo kein Best-/Worst-Wert gepflegt
+ist. Die Regel steht seither an EINER Stelle:
+
+* `InvestKaskade.BetragImSzenario(Zeile z, SzenarioSatz satz)` — `satz == null` oder
+  `z.WertGepflegt` → `z.Betrag` unverändert, sonst `z.Betrag × satz.InvestFaktor`.
+  `WirtschaftlichkeitCtrl.LiesInvestitionen` fragt seither dieselbe Methode; ihr Rechenweg
+  ist unverändert.
+* `InvestKaskade.Summen(idProjekt, szenario, satz)` — die Bemessungsbasis je
+  (Komponente, Anlage) mit dieser Regel.
+* `BetriebskostenCtrl.Kaskadensummen(projektID, satz)` — der Satz trägt sein Szenario selbst
+  (`SzenarioSatz.Szenario`); `null` heißt Erwartungslauf.
+* `WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe(…, satz)` und
+  `LiesBetriebskostenPositionen(…, satz)` — beide bekommen denselben Satz, damit die
+  E7‑Probe „Summe der Nachweisliste = Summe der Rechnung" auch im Szenario hält.
+  `BaueEingabe` reicht ihn durch.
+
+**Die Vorrangregel gilt auch für die Basis.** Eine Investitionszeile mit gepflegtem
+Worst-Wert von 50.000 € trägt genau 50.000 € zur Bemessungsbasis bei, nicht 55.000 €. Der
+Notweg „Basis pauschal × InvestFaktor" wurde damit NICHT genommen — er hätte die
+Doppelzählung erzeugt, die § 2.2 des Konzepts ausschließt.
+
+**Bitgleich ohne Satz.** `satz == null` (Szenario ERWARTET, jede Anzeige, Dialog
+Kostenverwaltung, Kostenseite) betritt den neuen Zweig gar nicht erst; die
+Zweiargument-Überladungen bleiben Zeichen für Zeichen die von vorher.
+
+**Die Sensitivität bleibt, wo sie war.** Sie rechnet auf ERWARTET — dort ist der Satz null —
+und korrigiert ihren eigenen Ausschlag weiterhin additiv in `RechneBild`. Beides zusammen
+wäre Doppelzählung; beides trifft aber nie zusammen. Wartungszeilen aus dem Gerätedialog
+(`TechnikPlanwertCtrl`, Hauptposition) sind unberührt.
+
+**Zahlenbeleg** (Projekt 1018, BHKW-Anlage 11327, Vorgabesatz Worst = + 10 %):
+
+| Größe | vor W5‑B‑11 | nach W5‑B‑11 |
+|---|---|---|
+| Bemessungsbasis der Betriebszeile | 58.049,84375 € | 63.854,828125 € |
+| Betriebskosten p. a. (2 %) | 1.160,996875 €/a | 1.277,096563 €/a |
+| Kapitalwert Worst (i = 4 %, T = 20 a) | − 125.315,69 € | **− 127.030,57 €** (Δ − 1.714,87 €) |
+
+Mit einer gepflegten Worst-Zeile (Hauptposition 50.000 €) ergibt die Vorrangregel eine Basis
+von 65.081,00 € und 1.301,62 €/a — der Notweg käme auf 70.081,00 € und 1.401,62 €/a.
+
+### 3. G8 — die Bandbreite im Bericht
+
+- Der Hinweistext über der Szenarientabelle nannte seit W5‑B‑9 nur die **Zeilenwerte**. Er
+  nennt jetzt **beide Quellen** (`WIRT_SZ_QUELLEN`): gepflegte Best-/Worst-Felder mit
+  Vorrang, sonst der pauschale Parametersatz — und dass die investitionsgekoppelten
+  Betriebskosten dem Investitionsausschlag folgen (G11).
+- Die drei Wertspalten führten schon immer `KapitalwertDiff`, hießen aber „KW Worst" — der
+  Name einer **anderen** Größe. Die Köpfe heißen jetzt **„ΔKW Worst/Erwartet/Best [€]"**,
+  stehen als Ressourcen (`WIRT_SZ_SP_*`, Kopfzellen ohne zweite Übersetzung) und eine
+  Fußzeile sagt, was Δ heißt und wann „—" erscheint (`WIRT_SZ_DELTA_FUSS`).
+- **Neue Spalte „Einstufung"** je Variante (G9). Sechs Spalten statt fünf; die Summe bleibt
+  `WordBerichtGenerator.INHALT_B` = 9 355 dxa (Beschriftung 2 455 + 5 × 1 380).
+- **Annahmenzeile je Szenario** unter der Tabelle: `SzenarioSatz.Nachweis(p, kultur)` mit
+  Herkunft („Vorgaben" / „gepflegte Werte", `WPAR_SZ_HERKUNFT_*` — dieselben Ressourcen wie
+  Dialog und Seite). Erwartet bekommt keine: Es IST der Projektparametersatz.
+- **Excel** zeigt dieselbe Annahmenzeile unmittelbar unter jeder Blocküberschrift
+  „Szenario: …" und den Vorschlag unter den drei Blöcken.
+
+### 4. G9 — die Entscheidungsempfehlung
+
+Neu: `EPOS.Kern/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitEmpfehlung.cs` mit
+`WirtschaftlichkeitEmpfehlung`, `VariantenEmpfehlung`, `EmpfehlungStufe` — **im Kern**, damit
+Seite, Word und Excel denselben Satz zeigen (Lehre aus E7, Divergenzen D1…D5).
+
+Maßstab ist die **Kapitalwertdifferenz zum Stamm**, nicht der absolute Kapitalwert: Der Stamm
+IST die Unterlassensalternative.
+
+| Stufe | Bedingung |
+|---|---|
+| **empfohlen** | ΔKW > 0 in Worst, Erwartet und Best |
+| **bedingt empfohlen** | ΔKW > 0 in Erwartet, aber ≤ 0 in Worst (oder in Best) |
+| **nicht empfohlen** | ΔKW ≤ 0 in Erwartet |
+| Zusatz „Bandbreite nicht berechnet" | Best oder Worst fehlt → Urteil allein nach Erwartet |
+
+**Gesamtvorschlag:** die höchste Erwartet-Differenz unter den empfohlenen, sonst unter den
+bedingt empfohlenen, sonst „Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich;
+Weiterbetrieb (Referenzfall)." **Ohne Variante mit Erwartet-Ergebnis bleibt der Text leer** —
+Seite und Bericht zeichnen die Zeile dann gar nicht erst.
+
+Ausgabe: Seite (`ErgebnisAnsicht.Empfehlungszeile`, Herleitungszeile unter der
+Vergleichstabelle), Word (Absatz nach der Szenarientabelle), Excel (Zelle unter den
+Szenarioblöcken). Auf der Seite hängt die Zeile an der **Ansicht** und nicht am Stand: Sie
+folgt der Vergleichswahl, und die tauscht — wie der Szenariowechsel — genau dieses Objekt aus.
+
+### 5. G7 — Betrachtungszeitraum gegen die Nutzungsdauern
+
+`NutzungsdauerAbgleich.Hinweis(T, positionen, kultur)` bildet aus T und den
+Investitionspositionen des ERWARTET-Laufs eine Zeile: kürzeste und längste **gepflegte**
+Nutzungsdauer (n < 1 heißt im Rechenkern „wie T" und zählt nicht), dazu
+
+- T < längste → „Restwert am Ende angesetzt",
+- T > kürzeste → „Ersatzbeschaffung im Jahr n" (dieselbe Rundung wie der Rechenkern:
+  `tj = round(start + n)`, nur innerhalb 1 ≤ tj < T),
+- weder noch → „deckungsgleich",
+- keine gepflegte Dauer → „kein Ersatz, kein Restwert".
+
+Kein Blocker, reiner Ausweis: Der `KapitalwertRechner` ist unberührt. Ausgabe im
+Parameternachweis der Seite (`WirtschaftlichkeitStand.Zeitraumzeile`) und im Word-Bericht
+unter „Parameter dieses Rechenlaufs".
+
+### 6. G10 und die Vereinfachungen G1/G3/G5
+
+`ValeriAusweis.EigennutzungHerleitung()` — nur mit Photovoltaik in der Gruppe
+(`ErzeugerDerGruppe`) — sagt, dass Eigenverbrauchsquote und Einspeiseanteil **aus der
+Stundensimulation abgeleitet** und nicht als Annahme gesetzt sind. Das ist fachlich besser
+als die VALERI-Vorlage, die sie erfragt; genau deshalb muss die Herleitung dastehen, sonst
+hält der Leser die Zahl für eine Schätzung. Kein neuer Rechenweg.
+
+`ValeriAusweis.Vereinfachungen()` benennt die drei nicht umgesetzten Lücken: kein Endjahr je
+Kostenposition (G1), keine Degradation außer beim PV-Ertrag (G3), Energiekosten als
+Gesamtrechnung des Simulationslaufs ab Jahr 1 (G5/FK10). Beides steht auf der Seite
+(`WirtschaftlichkeitStand.Vereinfachungszeile`) und im Word-Bericht bei den Parametern.
+
+### 7. Nachweise W5‑B‑11
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| Ohne Satz bleiben die Betriebskosten **bitgleich** | `ValeriLueckenTests.Ohne_Satz_bleiben_die_Betriebskosten_unveraendert` | grün |
+| Prozentzeile folgt dem Ausschlag (× 1,1 / × 0,9), Erwartet bleibt Erwartet | `…Die_Prozentzeile_folgt_dem_Investitionsausschlag_des_Szenarios` | grün |
+| **Vorrangregel in der Basis**: gepflegte 50.000 € → Basis 65.081,00 €, nicht 70.081,00 € | `…Ein_gepflegter_Zeilenwert_bleibt_auch_in_der_Bemessungsbasis_stehen` | grün |
+| E7‑Probe: Nachweisliste trifft die Summe auch im Szenario | `…Die_Nachweisliste_trifft_die_Summe_auch_im_Szenario` | grün |
+| **Regressionsbeleg**: KW Worst − 125.315,69 € → − 127.030,57 € | `…Der_Kapitalwert_im_Worst_Fall_wird_durch_G11_unguenstiger` | grün |
+| G9: drei positive Szenarien → „empfohlen", Satz nennt die Bandbreite | `…Drei_positive_Szenarien_ergeben_empfohlen` | grün |
+| G9: negativer Worst-Fall → „bedingt empfohlen" | `…Ein_negativer_Worst_Fall_ergibt_bedingt_empfohlen` | grün |
+| G9: Erwartet ≤ 0 → „nicht empfohlen", Satz nennt den Weiterbetrieb | `…Ein_nicht_positiver_Erwartungsfall_ergibt_nicht_empfohlen` | grün |
+| G9: ohne Bandbreite urteilt nur Erwartet, mit Zusatz | `…Ohne_Bandbreite_urteilt_nur_der_Erwartungsfall` | grün |
+| G9: höchste Differenz der **empfohlenen** gewinnt, sonst der bedingten | `…Der_Vorschlag_nimmt_die_hoechste_Differenz_der_empfohlenen` | grün |
+| G9: ohne Stamm / ohne Variante kein Satz | `…Ohne_Stamm_und_ohne_Variante_gibt_es_keinen_Satz` | grün |
+| G7: T < n → Restwert · T > n → Ersatz im Jahr n · T = n → deckungsgleich · keine Dauer | `…T_unter_…`, `…T_ueber_…`, `…T_gleich_…`, `…Ohne_gepflegte_Nutzungsdauer_…` | 4 Fälle grün |
+| Seite: Zeitraum- und Vereinfachungszeile unter dem Parameternachweis | `WirtschaftlichkeitSeiteTests.Der_Nachweisblock_zeigt_Zeitraum_und_Vereinfachungen` | grün |
+| Seite: Empfehlungszeile UNTER der Vergleichstabelle | `…Die_Empfehlungszeile_steht_unter_der_Vergleichstabelle` | grün |
+| Seite: leere Empfehlungszeile wird nicht gezeichnet | `…Eine_leere_Empfehlungszeile_wird_nicht_gezeichnet` | grün |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp\src` (Stand `7ade6e7f` + diese Etappe) | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 185/2 185** / **3 359/3 359** |
+
+Ausgangsstand derselben Sandbox ohne diese Etappe: 2 170 / 3 356 — die 15 neuen Kern- und
+3 neuen UI-Fälle sind vollständig zugeordnet.
+
+**Ein Referenzlauf war nicht nötig:** Diese Etappe fasst keinen Simulationswert an. An seine
+Stelle tritt die Bitgleichheitsprobe des Erwartungsfalls
+(`Ohne_Satz_bleiben_die_Betriebskosten_unveraendert`).
+
+**Bestehende Erwartungswerte angepasst:** keine. Kein vorhandener Fall greift die
+Szenario-Betriebskosten, die Spaltenköpfe der Szenarientabelle oder den Hinweistext darüber;
+die Word-/Excel-Bausteine haben keinen eigenen Prüffall (`grep -rn "BausteineWirtschaftlichkeit"
+EPOS.Kern.Tests` ist leer).
+
+### Offene Punkte
+
+- **Sichtabnahme**: Szenarientabelle im Word-Bericht (sechs Spalten, Umbruch der Köpfe
+  „ΔKW Erwartet [€]" und „bedingt empfohlen" auf schmalem Satzspiegel), die zwei
+  Annahmenzeilen darunter, der Vorschlagssatz; im Excel-Blatt die Annahmenzeile je Block und
+  die Vorschlagszelle; auf der Seite die drei neuen Herleitungszeilen (Zeitraum,
+  Vereinfachungen, Vorschlag).
+- **Best- und Worst-Kapitalwerte ändern sich** für jedes Projekt mit Betriebskostenzeilen
+  „x % der Investitionssumme" (G11) — Worst wird ungünstiger, Best günstiger. Das ist
+  gewollt, sollte dem Anwender aber bei der ersten Neuberechnung bewusst sein. Der
+  Erwartungsfall ist unberührt.
+- **W5‑B‑12** (p_I, Freitextfeld) bringt zwei weitere Zeilen in denselben Nachweisblock; die
+  Annahmenzeile des Szenarios wächst dann um p_I. Die Stellen sind dieselben
+  (`SzenarioSatz.Nachweis`, `SchreibeSzenarioAnnahmen`, `WIRT_SZ_QUELLEN`).

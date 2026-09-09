@@ -95,9 +95,10 @@ skaliert nur die zurückgefallenen Zeilen.
 * **Betriebskostenzeilen.** Für die Betriebsseite ist p_B der pauschale Hebel; eine
   zweite, multiplikative Unsicherheit auf denselben Zeilen wäre Doppelzählung.
   Die investitionsgekoppelten Zeilen („x % der Investitionssumme") folgen dem
-  Investitionsausschlag ohnehin nicht über den Szenariosatz, sondern über ihre
-  Bemessung — sie werden aus der **unskalierten** Kaskade abgeleitet
-  (dokumentierte Grenze, siehe § 7 G11).
+  Investitionsausschlag nicht über den Szenariosatz, sondern über ihre
+  **Bemessung** — seit Etappe W5‑B‑11 aus der Kaskade **mit** Ausschlag, nach
+  derselben Vorrangregel (§ 9.5; bis dahin aus der unskalierten Kaskade, das
+  war die dokumentierte Grenze G11).
 * **Gesetzliche Erlösreihen** (KWKG-Zuschlag, Energiesteuer, Stromsteuer). Sie
   hängen an Sätzen und Kontingenten des Gesetzeskatalogs, nicht an einer
   Ertragserwartung. Für das Regulierungsrisiko gibt es die eigene
@@ -248,19 +249,19 @@ offengelegten Annahmen.
 
 ### 7.3 Offen — Entscheidungsbedarf des Anwenders
 
-| Nr. | Lücke | Was VALERI verlangt | Aufwand |
-|---|---|---|---|
-| **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr je Kostenzeile, aber kein Endjahr. | VALERI führt je Faktor Start- **und** Endjahr (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell |
-| **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell |
-| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell |
-| **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** |
-| **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß |
-| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein |
-| **G7** | **Betrachtungszeitraum aus der Nutzungsdauer.** T ist frei wählbar und wird nicht gegen die längste Nutzungsdauer geprüft. | VALERI verlangt die Begründung des Zeitraums. | Prüfzeile; klein |
-| **G8** | **Berichtsausgabe der Bandbreite.** Der Word-/Excel-Bericht führt heute den Erwartungsfall. | VALERI-Bericht weist alle drei Szenarien nebeneinander aus. | Berichtsbaustein; **kein klarer Anker** — offen gelassen |
-| **G9** | **Kapitalwert je Version absolut.** Wird geführt, aber die Entscheidungsempfehlung („Vorschlag zur Entscheidung") fehlt als Text. | VALERI-Bericht formuliert eine Empfehlung. | Textbaustein; klein |
-| **G10** | **Aufteilung Eigennutzung/Einspeisung als Annahme.** EPOS leitet sie aus der Simulation ab — fachlich **besser** als VALERI, aber die Herleitung steht nicht im Bericht. | VALERI erfasst sie als Annahme. | Ausweis; klein |
-| **G11** | **Investitionsgekoppelte Betriebskosten im Szenario.** „x % der Investitionssumme" folgt dem Szenario-Investitionsausschlag **nicht** (anders als in der Sensitivität, FX5‑a). | Konsequenz wäre, den Ausschlag auch dort mitzuziehen. | klein; **fachlicher Entscheid** |
+| Nr. | Lücke | Was VALERI verlangt | Aufwand | **Entscheid 09.09.2026** |
+|---|---|---|---|---|
+| **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr je Kostenzeile, aber kein Endjahr. | VALERI führt je Faktor Start- **und** Endjahr (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell | **nicht umsetzen** — als Vereinfachung offenlegen (§ 9.4) |
+| **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell | **W5‑B‑12** — nur als dritter Satz p_I, nicht je Zeile |
+| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4) |
+| **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 |
+| **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß | **nicht umsetzen** — offenlegen (§ 9.4) |
+| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **W5‑B‑12** — Freitextfeld |
+| **G7** | **Betrachtungszeitraum aus der Nutzungsdauer.** T ist frei wählbar und wird nicht gegen die längste Nutzungsdauer geprüft. | VALERI verlangt die Begründung des Zeitraums. | Prüfzeile; klein | **W5‑B‑11 umgesetzt** (§ 9.3) |
+| **G8** | **Berichtsausgabe der Bandbreite.** Der Word-/Excel-Bericht führt heute den Erwartungsfall. | VALERI-Bericht weist alle drei Szenarien nebeneinander aus. | Berichtsbaustein; **kein klarer Anker** — offen gelassen | **W5‑B‑11 umgesetzt** (§ 9.2) |
+| **G9** | **Kapitalwert je Version absolut.** Wird geführt, aber die Entscheidungsempfehlung („Vorschlag zur Entscheidung") fehlt als Text. | VALERI-Bericht formuliert eine Empfehlung. | Textbaustein; klein | **W5‑B‑11 umgesetzt** (§ 9.1) |
+| **G10** | **Aufteilung Eigennutzung/Einspeisung als Annahme.** EPOS leitet sie aus der Simulation ab — fachlich **besser** als VALERI, aber die Herleitung steht nicht im Bericht. | VALERI erfasst sie als Annahme. | Ausweis; klein | **W5‑B‑11 umgesetzt** (§ 9.4) |
+| **G11** | **Investitionsgekoppelte Betriebskosten im Szenario.** „x % der Investitionssumme" folgt dem Szenario-Investitionsausschlag **nicht** (anders als in der Sensitivität, FX5‑a). | Konsequenz wäre, den Ausschlag auch dort mitzuziehen. | klein; **fachlicher Entscheid** | **W5‑B‑11 umgesetzt** — Ausschlag wird mitgezogen (§ 9.5) |
 
 **Bewusst nicht übernommen:** Die VALERI-Vorlage rechnet ihre Worst-/Best-Spalten
 über feste Formelfaktoren im Tabellenblatt (z. B. `=E44*1,3`). EPOS-Plan trennt
@@ -269,14 +270,99 @@ dieselbe Wirkung, aber nachvollziehbar, wo die Zahl herkommt.
 
 ---
 
-## 8 Grenzen dieser Etappe
+## 8 Grenzen der Etappen W5‑B‑9/10
 
-* Der `KapitalwertRechner` ist **unverändert**. Alle Szenariowirkungen entstehen in
-  der Eingabe bzw. im Parametersatz.
+* Der `KapitalwertRechner` ist in **W5‑B‑9/10/11 unverändert**. Alle
+  Szenariowirkungen entstehen in der Eingabe bzw. im Parametersatz. (Erst
+  Etappe **W5‑B‑12** fasst ihn an — für die Preisindizierung der
+  Ersatzbeschaffung, G4.)
 * Die Kostenseite und der Dialog „Kostenverwaltung" zeigen weiterhin die
   **gepflegten** Positionswerte ohne pauschalen Ausschlag — dort geht es um
-  erfasste Zahlen, nicht um eine Bandbreite.
+  erfasste Zahlen, nicht um eine Bandbreite. Das gilt auch nach W5‑B‑11: Der
+  Ausschlag auf die Bemessungsbasis wirkt in der Rechnung, nicht in der Anzeige.
 * Die Sensitivitätsanalyse bleibt am Szenario **Erwartet** und rechnet mit ihren
   eigenen Ausschlägen (± 1 %‑Pkt, ± 10 %). Sie beantwortet eine andere Frage als
   die Szenarien: „Wie empfindlich ist das Ergebnis?" statt „Wie sieht ein
-  ungünstiger Verlauf aus?".
+  ungünstiger Verlauf aus?". Ihre eigene Korrektur der investitionsgekoppelten
+  Betriebskosten (FX5‑a, additiv in `RechneBild`) und die Basisskalierung aus
+  W5‑B‑11 treffen deshalb **nie zusammen**: Auf Erwartet ist der Szenariosatz
+  null, im Szenario läuft keine Sensitivität.
+
+---
+
+## 9 Etappe W5‑B‑11 — Umsetzung der Entscheidungen
+
+Der Anwender hat die Gap-Liste § 7.3 am **09.09.2026** entschieden. Diese Etappe
+setzt alles um, was **ohne neue Spalte** auskommt (G11, G8, G9, G7, G10) und legt
+die drei bewusst nicht umgesetzten Lücken offen (G1, G3, G5). G4, G2 und G6 gehören
+zur Etappe **W5‑B‑12** (Preissteigerungssatz p_I und Freitextfeld,
+Migrationsschritt 72).
+
+### 9.1 G9 — die Empfehlungsregel
+
+Maßstab ist die **Kapitalwertdifferenz zum Stamm** (`KapitalwertDiff`), nicht der
+absolute Kapitalwert: Der Stamm ist die Unterlassensalternative (§ 7.1,
+Referenzfall).
+
+| Stufe | Bedingung |
+|---|---|
+| **empfohlen** | ΔKW > 0 in Worst, Erwartet und Best |
+| **bedingt empfohlen** | ΔKW > 0 in Erwartet, aber ≤ 0 in Worst (oder in Best) |
+| **nicht empfohlen** | ΔKW ≤ 0 in Erwartet |
+| Zusatz **„Bandbreite nicht berechnet"** | Best oder Worst fehlt → Urteil allein nach Erwartet |
+
+**Gesamtvorschlag:** die höchste Erwartet-Differenz unter den *empfohlenen*, sonst
+unter den *bedingt empfohlenen*, sonst der Satz „Keine Variante ist gegenüber dem
+Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall)." Ohne Variante mit
+Erwartet-Ergebnis bleibt der Text **leer** — ein Vorschlag ohne Zahlen wäre eine
+Behauptung.
+
+Die Regel steht **im Kern** (`WirtschaftlichkeitEmpfehlung`), damit Seite,
+Word-Bericht und Excel-Blatt denselben Satz zeigen; die Texte sind Ressourcen
+(`WIRT_EMPF_*`, deutsch und englisch).
+
+### 9.2 G8 — die Bandbreite im Bericht
+
+Die Szenarientabelle führte schon immer die Differenz, hieß aber „KW Worst". Sie
+heißt jetzt **„ΔKW Worst/Erwartet/Best [€]"**, bekommt eine Fußzeile zur Bedeutung
+von Δ und eine Spalte **„Einstufung"** (§ 9.1). Darunter stehen die **Annahmen**
+von Best und Worst — der wirksame Parametersatz mit seiner Herkunft
+(`SzenarioSatz.Nachweis`, „Vorgaben" / „gepflegte Werte") — und der Vorschlag zur
+Entscheidung. Excel führt dieselbe Annahmenzeile unter jeder Blocküberschrift und
+den Vorschlag unter den drei Blöcken.
+
+### 9.3 G7 — Betrachtungszeitraum gegen die Nutzungsdauern
+
+Aus T und den Investitionspositionen des Erwartet-Laufs entsteht eine Hinweiszeile:
+kürzeste und längste **gepflegte** Nutzungsdauer (n < 1 heißt „wie T" und zählt
+nicht), dazu „Restwert am Ende angesetzt" (T < längste), „Ersatzbeschaffung im
+Jahr n" (T > kürzeste, gerundet wie im Rechenkern) oder „deckungsgleich". Ohne
+gepflegte Dauer: „kein Ersatz, kein Restwert". **Kein Blocker, reiner Ausweis.**
+
+### 9.4 G10 und die Vereinfachungen G1/G3/G5
+
+Zwei Sätze im Nachweisblock (Seite und Word-Bericht):
+
+* **G10** — Eigenverbrauchsquote und Einspeiseanteil sind aus der
+  **Stundensimulation abgeleitet**, nicht als Annahme gesetzt (nur mit
+  Photovoltaik in der Gruppe). Kein neuer Rechenweg.
+* **G1/G3/G5** — „Vereinfachungen (VALERI): kein Endjahr je Kostenposition; keine
+  Degradation außer beim PV-Ertrag; Energiekosten als Gesamtrechnung des
+  Simulationslaufs ab Jahr 1 (FK10)." Eine Vereinfachung, die im Bericht steht,
+  ist eine Annahme; eine, die nicht dasteht, ist ein Fehler.
+
+### 9.5 G11 — die Basisregel der Prozentzeilen
+
+> **Im Szenario ist die Bemessungsbasis der Zeilen „x % der Investitionssumme" die
+> Kaskade MIT pauschalem Ausschlag auf die nicht gepflegten Investitionszeilen.**
+
+Skaliert wird **je Zeile** (`InvestKaskade.BetragImSzenario`) — dieselbe Methode,
+die auch `LiesInvestitionen` fragt, und damit dieselbe **Vorrangregel** wie § 2.2:
+Eine gepflegte Zeile mit 7.000 € im Worst-Fall bleibt Basis 7.000 €. Eine pauschale
+Multiplikation der Summe wäre die Doppelzählung, die § 2.2 ausschließt.
+
+`satz == null` (Erwartet, jede Anzeige) betritt den Zweig gar nicht: **Der
+Erwartungsfall bleibt bitgleich.** Best und Worst ändern sich für jedes Projekt mit
+solchen Zeilen — Worst wird ungünstiger, Best günstiger. Genau das war der Zweck
+des Entscheids; die Zahlen des Belegs stehen im Protokoll
+(`iU9_W5_Blazor_Port_Protokoll.md`, Abschnitt W5‑B‑11).

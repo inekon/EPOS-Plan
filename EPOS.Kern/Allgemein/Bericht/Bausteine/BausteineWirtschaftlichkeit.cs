@@ -73,6 +73,19 @@ namespace WindowsFormsApplication1
                       "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
                       "Rechenstand: " + alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", k.Kultur) + ".");
 
+            // ---------------- ETAPPE W5‑B‑11 (09.09.2026) — die VALERI-Ausweise ----------
+            //
+            // Drei Sätze, die keine Zahl ändern und ohne die der Bericht unvollständig
+            // ist (DIN EN 17463 verlangt die Offenlegung der Annahmen):
+            //   G7  — warum dieser Betrachtungszeitraum? Erst das Verhältnis von T zu den
+            //          Nutzungsdauern sagt, ob ein Restwert am Ende steht und ob
+            //          zwischendurch ersetzt wird.
+            //   G10 — Eigenverbrauchsquote und Einspeiseanteil sind ABGELEITET, nicht
+            //          angenommen. Ohne den Satz hält der Leser sie für eine Schätzung.
+            //   G1/G3/G5 — die drei bewusst NICHT umgesetzten Lücken, benannt statt
+            //          verschwiegen (Anwenderentscheid 09.09.2026).
+            SchreibeValeriAusweise(k, daten, provider, p);
+
             // Aktualität gegen den Simulationsstand prüfen. Nach der verbindlichen
             // Kette (Simulation → Wirtschaftlichkeit) darf hier nichts mehr auflaufen;
             // die Prüfung bleibt als Netz, falls doch etwas dazwischenkam.
@@ -111,9 +124,13 @@ namespace WindowsFormsApplication1
 
             // ---------------- Szenarienübersicht (Worst / Erwartet / Best) ----------------
             k.Ueberschrift2("Szenarien Worst / Erwartet / Best");
-            k.Hinweis("Szenariowerte aus den Best-/Worst-Case-Feldern der Kostenpositionen " +
-                      "(Betrag und Nutzungsdauer); nicht gepflegte Felder übernehmen den Erwartungswert.");
-            SchreibeSzenarien(k, daten, alle);
+            // ETAPPE W5‑B‑11 (G8): Der Satz nannte bis hierher nur die ZEILENwerte —
+            // seit W5‑B‑9 gibt es die zweite Quelle, den pauschalen Parametersatz je
+            // Szenario, und seit W5‑B‑11 zieht er auch die investitionsgekoppelten
+            // Betriebskosten mit (G11). Ein Bericht, der nur eine der beiden Quellen
+            // nennt, erklärt seine eigenen Zahlen nicht.
+            k.HinweisRoh(MyResource.Resource.WIRT_SZ_QUELLEN);
+            SchreibeSzenarien(k, daten, alle, p);
 
             // ---------------- Sensitivitätsanalyse (W2, Normanforderung) ----------------
             List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);
@@ -803,9 +820,27 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Szenarienübersicht: je Variante der Kapitalwert vs. Stamm in W/E/B.</summary>
+        /// <summary>
+        /// Szenarienübersicht: je Variante die Kapitalwert-DIFFERENZ zum Stamm in
+        /// W/E/B, die Amortisation und — seit W5‑B‑11 — die Einstufung.
+        ///
+        /// <para><b>ETAPPE W5‑B‑11 (G8/G9, 09.09.2026).</b> Die drei Wertspalten führten
+        /// schon immer <see cref="WirtschaftlichkeitErgebnis.KapitalwertDiff"/>, waren
+        /// aber mit „KW Worst" überschrieben — also mit dem Namen einer anderen Größe
+        /// (der absolute Kapitalwert steht in der Kennzahlentabelle darüber). Die
+        /// Köpfe sagen jetzt ΔKW und stehen als Ressourcen; darunter erklärt eine
+        /// Fußzeile, was Δ heißt und wann „—" erscheint. Die neue Spalte
+        /// „Einstufung" zeigt die Grundlage des Vorschlags, der unter der Tabelle
+        /// steht — sonst müsste der Leser die Regel aus drei Zahlen selbst
+        /// zurückrechnen.</para>
+        ///
+        /// <para>Unter der Tabelle stehen die ANNAHMEN von Best und Worst (der
+        /// wirksame Parametersatz mit seiner Herkunft) und der Vorschlag zur
+        /// Entscheidung. Beides ist Ausgabe; gerechnet wird hier nichts.</para>
+        /// </summary>
         private static void SchreibeSzenarien(WordKontext k, BerichtsDaten daten,
-                                              List<WirtschaftlichkeitErgebnis> alle)
+                                              List<WirtschaftlichkeitErgebnis> alle,
+                                              WirtschaftlichkeitParameter p)
         {
             List<VariantenDaten> varianten = daten.Varianten.Where(v => !v.IstStamm).ToList();
             if (varianten.Count == 0)
@@ -814,17 +849,22 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            int wLabel = 3100;
-            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 4;
-            int[] w = { wLabel, wCol, wCol, wCol, wCol };
+            // W5‑B‑11: sechs Spalten statt fünf. Die Summe bleibt INHALT_B — die
+            // Beschriftungsspalte gibt die Breite ab, die die Einstufung braucht.
+            int wLabel = 2455;
+            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 5;
+            int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol };
+
+            List<VariantenEmpfehlung> urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
 
             Table t = k.NeueTabelle(w);
             var kopf = new TableRow();
-            kopf.Append(k.Zelle("Variante", w[0], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
-            kopf.Append(k.Zelle("KW Worst [€]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("KW Erwartet [€]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("KW Best [€]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
-            kopf.Append(k.Zelle("Amortisation [a]", w[4], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_VARIANTE, w[0], JustificationValues.Left));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_WORST, w[1], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_ERWARTET, w[2], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_BEST, w[3], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_AMORT, w[4], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_EMPF_SPALTE, w[5], JustificationValues.Center));
             t.Append(kopf);
 
             foreach (VariantenDaten v in varianten)
@@ -848,10 +888,100 @@ namespace WindowsFormsApplication1
                 string am = erw == null ? "—" : k.FW(erw.AmortisationJahre, "N1");
                 tr.Append(k.Zelle(am, w[4], false, null,
                     am == "—" ? JustificationValues.Center : JustificationValues.Right));
+
+                // W5‑B‑11 (G9): die Einstufung derselben Variante. „—", solange kein
+                // Erwartet-Ergebnis vorliegt — ein Urteil ohne Zahl gibt es nicht.
+                VariantenEmpfehlung u = urteile.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                tr.Append(k.Zelle(u == null ? "—" : u.StufeText, w[5], false, null,
+                    u == null ? JustificationValues.Center : JustificationValues.Left));
                 t.Append(tr);
             }
             k.Fuege(t);
+            k.HinweisRoh(MyResource.Resource.WIRT_SZ_DELTA_FUSS);
+
+            // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----
+            //
+            // Der Nachweis nennt den WIRKSAMEN Satz (i, p_E, p_B, Investition, Erträge,
+            // Nutzungsdauer) und seine Herkunft: „Vorgaben", solange niemand ein Feld
+            // gepflegt hat, sonst „gepflegte Werte". Dieselben Ressourcen wie Dialog und
+            // Seite — drei Formulierungen derselben Auskunft wären drei Wahrheiten.
+            SchreibeSzenarioAnnahmen(k, p);
+
+            // ---- W5‑B‑11 (G9): der Vorschlag zur Entscheidung ----------------------
+            string vorschlag = WirtschaftlichkeitEmpfehlung.Vorschlagstext(urteile, k.Kultur);
+            if (!string.IsNullOrEmpty(vorschlag)) k.TextRoh(vorschlag);
             k.Beschriftung(" ");
+        }
+
+        /// <summary>W5‑B‑11: Kopfzelle mit einem Text, der bereits aus
+        /// <c>MyResource</c> kommt — er darf nicht noch einmal durch
+        /// <c>BerichtTexte.T()</c> laufen (Etappe E7, Doppelübersetzung).</summary>
+        private static TableCell Kopfzelle(WordKontext k, string text, int breite,
+                                           JustificationValues just)
+        {
+            return k.Zelle(text, breite, true, WordBerichtGenerator.HEAD_FILL, just, false,
+                           WordBerichtGenerator.SCHRIFT_TABELLE);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (G8): die Annahmenzeile je Szenario — Best und Worst, in
+        /// dieser Reihenfolge. Erwartet bekommt keine: Es IST der Projektparametersatz,
+        /// und der steht bereits in „Parameter dieses Rechenlaufs".
+        /// </summary>
+        private static void SchreibeSzenarioAnnahmen(WordKontext k, WirtschaftlichkeitParameter p)
+        {
+            if (p == null) return;
+            foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST,
+                                          WirtschaftlichkeitSzenario.BEST })
+            {
+                SzenarioSatz satz = p.SatzFuer(sz);
+                if (satz == null) continue;
+                string name = sz == WirtschaftlichkeitSzenario.BEST
+                            ? MyResource.Resource.WIRT_SZEN_BEST
+                            : MyResource.Resource.WIRT_SZEN_WORST;
+                string muster = satz.NurVorgaben
+                              ? MyResource.Resource.WPAR_SZ_HERKUNFT_VORGABE
+                              : MyResource.Resource.WPAR_SZ_HERKUNFT_GEPFLEGT;
+                k.HinweisRoh(string.Format(k.Kultur, muster, name, satz.Nachweis(p, k.Kultur)));
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026): die drei VALERI-Ausweise
+        /// unter dem Parameternachweis — Nutzungsdauer-Abgleich (G7),
+        /// Herleitung der Eigennutzung (G10) und die offengelegten Vereinfachungen
+        /// (G1/G3/G5).
+        ///
+        /// <para><b>Alles reine Ausgabe.</b> Gelesen werden die Investitionspositionen
+        /// des ERWARTET-Laufs — dieselbe Liste, mit der der Kapitalwert gerechnet hat.
+        /// Ein Lesefehler darf den Bericht nicht kippen; die Zeile entfällt dann
+        /// still, denn sie ist Beiwerk, kein Ergebnis.</para>
+        /// </summary>
+        private static void SchreibeValeriAusweise(WordKontext k, BerichtsDaten daten,
+                                                   WirtschaftlichkeitCtrl provider,
+                                                   WirtschaftlichkeitParameter p)
+        {
+            try
+            {
+                var positionen = new List<KapitalwertRechner.InvestPosition>();
+                foreach (VariantenDaten v in daten.Varianten)
+                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
+                        v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET));
+                string zeitraum = NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum,
+                                                                positionen, k.Kultur);
+                if (!string.IsNullOrEmpty(zeitraum)) k.HinweisRoh(zeitraum);
+            }
+            catch { }
+
+            try
+            {
+                WirtschaftlichkeitCtrl.ErzeugerFlags flags = provider.ErzeugerDerGruppe(daten.IdStamm);
+                if (flags != null && flags.Photovoltaik)
+                    k.HinweisRoh(ValeriAusweis.EigennutzungHerleitung());
+            }
+            catch { }
+
+            k.HinweisRoh(ValeriAusweis.Vereinfachungen());
         }
     }
 }

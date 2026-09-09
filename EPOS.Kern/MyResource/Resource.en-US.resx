@@ -16348,4 +16348,73 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="PVS_LAUF_VORSPANN" xml:space="preserve">
     <value>PV system &#8220;{0}&#8221;: {1}</value>
   </data>
+  <data name="WIRT_EMPF_SATZ" xml:space="preserve">
+    <value>Decision proposal: variant “{0}” — net present value difference to the base project {1} (expected){2}.</value>
+  </data>
+  <data name="WIRT_EMPF_ALLE_POSITIV" xml:space="preserve">
+    <value>, positive in all three scenarios (worst {0}, best {1})</value>
+  </data>
+  <data name="WIRT_EMPF_NUR_ERWARTET" xml:space="preserve">
+    <value>, but not in the unfavourable case (worst {0}, best {1})</value>
+  </data>
+  <data name="WIRT_EMPF_OHNE_BANDBREITE" xml:space="preserve">
+    <value>range not calculated</value>
+  </data>
+  <data name="WIRT_EMPF_KEINE" xml:space="preserve">
+    <value>Decision proposal: no variant is economical compared with the base project; continued operation (reference case).</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_JA" xml:space="preserve">
+    <value>recommended</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_BEDINGT" xml:space="preserve">
+    <value>conditionally recommended</value>
+  </data>
+  <data name="WIRT_EMPF_STUFE_NEIN" xml:space="preserve">
+    <value>not recommended</value>
+  </data>
+  <data name="WIRT_EMPF_SPALTE" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="WIRT_T_KOPF" xml:space="preserve">
+    <value>Review period T = {0} yrs · service lives {1} to {2} yrs</value>
+  </data>
+  <data name="WIRT_T_OHNE_DAUER" xml:space="preserve">
+    <value>Review period T = {0} yrs · no service lives maintained: no replacement, no residual value.</value>
+  </data>
+  <data name="WIRT_T_RESTWERT" xml:space="preserve">
+    <value>T is shorter than the longest service life — residual value applied at the end.</value>
+  </data>
+  <data name="WIRT_T_ERSATZ" xml:space="preserve">
+    <value>T exceeds the shortest service life — replacement investment in year {0}.</value>
+  </data>
+  <data name="WIRT_T_GLEICH" xml:space="preserve">
+    <value>congruent — neither replacement investment nor residual value.</value>
+  </data>
+  <data name="WIRT_VEREINFACHUNGEN" xml:space="preserve">
+    <value>Simplifications (ValERI): no end year per cost item; no degradation other than the PV yield; energy costs as the overall result of the simulation run from year 1 (FK10).</value>
+  </data>
+  <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
+    <value>The self-consumption rate and the feed-in share of the photovoltaic system are derived from the hourly simulation, not set as an assumption.</value>
+  </data>
+  <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
+    <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario.</value>
+  </data>
+  <data name="WIRT_SZ_SP_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="WIRT_SZ_SP_WORST" xml:space="preserve">
+    <value>ΔNPV worst [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_ERWARTET" xml:space="preserve">
+    <value>ΔNPV expected [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_BEST" xml:space="preserve">
+    <value>ΔNPV best [€]</value>
+  </data>
+  <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
+    <value>Payback [yrs]</value>
+  </data>
+  <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
+    <value>ΔNPV = net present value of the variant less the net present value of the base project (reference case); “—" = no base project in the comparison group or scenario not calculated.</value>
+  </data>
 </root>

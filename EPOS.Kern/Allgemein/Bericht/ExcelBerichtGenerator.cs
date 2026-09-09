@@ -429,6 +429,24 @@ namespace WindowsFormsApplication1
                 ws.Range(r, 1, r, 1 + daten.Varianten.Count).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
 
+                // ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, G8): die ANNAHMEN des
+                // Szenarios unmittelbar unter seiner Blöcküberschrift — der wirksame
+                // Parametersatz und seine Herkunft (Vorgaben/gepflegt). Erwartet bekommt
+                // keine Zeile: Es IST der Projektparametersatz, und der steht oben.
+                SzenarioSatz satz = p.SatzFuer(szenario);
+                if (satz != null)
+                {
+                    string name = szenario == WirtschaftlichkeitSzenario.BEST
+                                ? MyResource.Resource.WIRT_SZEN_BEST
+                                : MyResource.Resource.WIRT_SZEN_WORST;
+                    ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
+                        satz.NurVorgaben ? MyResource.Resource.WPAR_SZ_HERKUNFT_VORGABE
+                                         : MyResource.Resource.WPAR_SZ_HERKUNFT_GEPFLEGT,
+                        name, satz.Nachweis(p, BerichtTexte.Kultur));
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+
                 int kopfZeile = r;
                 int stammSpalte = -1;
                 ws.Cell(r, 1).Value = BerichtTexte.T("Kennzahl");
@@ -502,6 +520,20 @@ namespace WindowsFormsApplication1
                     r++;
                 }
                 r++;   // Leerzeile zwischen den Szenarien
+            }
+
+            // ---------------- ETAPPE W5‑B‑11 (G9): Vorschlag zur Entscheidung ----------
+            //
+            // EINE Zelle unter den drei Szenarioblöcken — dieselbe Regel und derselbe
+            // Satz wie in Word und auf der Seite (WirtschaftlichkeitEmpfehlung). Leer
+            // bleibt sie, solange keine Variante ein Erwartet-Ergebnis gegenüber dem
+            // Stamm hat; ein Vorschlag ohne Zahlen wäre eine Behauptung.
+            string empfehlung = WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, BerichtTexte.Kultur);
+            if (!string.IsNullOrEmpty(empfehlung))
+            {
+                ws.Cell(r, 1).Value = empfehlung;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                r += 2;
             }
 
             // ---------------- Hinweise dieses Laufs (ETAPPE E7, Divergenz D2) ----------------
