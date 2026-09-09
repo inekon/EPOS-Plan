@@ -337,5 +337,74 @@ namespace EPOS.Kern.Tests
             stand.Sortieren(Katalogfilterprofil.SpVerwendet);
             Assert.Equal("", stand.Sortierspalte);
         }
+
+        // =================================================================
+        //  3 - Die Kultur des Zahlenfilters (Befund W13-B-6, dritte Frage)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Was dasteht, ist auch das, was man tippen kann.</b> Zum Befund W13-B-6
+        /// gehoerte die Frage, ob der Zahlenfilter „9,6" ueberhaupt versteht — die
+        /// Oberflaeche laeuft in einer <c>BlazorWebView</c>, und
+        /// <c>StandardSprache.KulturUebernehmen</c> setzt ausdruecklich NUR die
+        /// Anzeigesprache (<c>CurrentUICulture</c>); die RECHENkultur bleibt die des
+        /// Betriebssystems (Drei-Schichten-Regel, Konzept 13.6).
+        ///
+        /// <para><b>Die Antwort ist: immer.</b> Beide Seiten haengen an DERSELBEN
+        /// Groesse. <see cref="Katalogwert.AusZahl"/> formatiert mit
+        /// <c>CultureInfo.CurrentCulture</c>, und <c>Katalogfilter.PasstSpalte</c>
+        /// liest ueber <see cref="Zahlenausdruck.Lesen(string, CultureInfo)"/> ohne
+        /// ausdrueckliche Kultur, also ebenfalls mit <c>CurrentCulture</c>. Eine
+        /// englische Oberflaeche auf einem deutschen Windows aendert daran nichts —
+        /// dann steht „9,6" da, und „9,6" trifft.</para>
+        ///
+        /// <para><b>Und die fremde Schreibweise ist kein stiller Fehltreffer:</b> Sie
+        /// ist UNVERSTANDEN, und ein unverstandener Ausdruck ist kein Filter (dieselbe
+        /// Regel wie beim halb getippten Bereich). Die Liste bleibt also vollstaendig
+        /// stehen, statt leer zu werden.</para>
+        ///
+        /// <para>Der Faden wird hier bewusst nur ueber
+        /// <c>Thread.CurrentThread.CurrentCulture</c> umgestellt und nicht ueber
+        /// <c>DefaultThreadCurrentCulture</c>: Letzteres gilt prozessweit, und xunit
+        /// faehrt Testsammlungen nebenlaeufig.</para>
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE", "9,6", "9.6")]
+        [InlineData("en-US", "9.6", "9,6")]
+        public void Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur(
+            string kuerzel, string eigene, string fremde)
+        {
+            CultureInfo vorher = Thread.CurrentThread.CurrentCulture;
+            try
+            {
+                var kultur = new CultureInfo(kuerzel);
+                Thread.CurrentThread.CurrentCulture = kultur;
+
+                // Die Zeile entsteht UNTER dieser Kultur - so wie im Programm auch.
+                var zeile = new Katalogfilterzeile(1, "Speicher A")
+                    .MitZahl(Katalogfilterprofil.SpPtherm, 9.6);
+
+                // 1. So SCHREIBT die Spalte.
+                Assert.Equal(eigene, zeile.Text(Katalogfilterprofil.SpPtherm));
+
+                Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Heizkessel, s => s);
+                Katalogspalte spalte = profil.Spalte(Katalogfilterprofil.SpPtherm);
+                Katalogwert wert = zeile.Wert(Katalogfilterprofil.SpPtherm);
+
+                // 2. Und genau so LIEST der Filter - in allen Schreibweisen des Popovers.
+                Assert.True(Katalogfilter.PasstSpalte(spalte, wert, "=" + eigene));
+                Assert.True(Katalogfilter.PasstSpalte(spalte, wert, eigene));
+                Assert.True(Katalogfilter.PasstSpalte(spalte, wert, ">" + eigene.Replace("6", "5")));
+                Assert.False(Katalogfilter.PasstSpalte(spalte, wert, "<" + eigene.Replace("6", "5")));
+
+                // 3. Die fremde Schreibweise ist unverstanden - also KEIN Filter.
+                Assert.Null(Zahlenausdruck.Lesen("=" + fremde, kultur));
+                Assert.True(Katalogfilter.PasstSpalte(spalte, wert, "=" + fremde));
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = vorher;
+            }
+        }
     }
 }

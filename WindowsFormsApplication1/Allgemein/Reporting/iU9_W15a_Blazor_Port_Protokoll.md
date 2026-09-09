@@ -1112,3 +1112,238 @@ die Änderung im Kern liegt.
 | `EPOS.UI/Dialoge/Import/KatalogImportDaten.cs` | −6 |
 | `EPOS.Kern.Tests` (3 Dateien) | +3 |
 | **Summe** | **−146** |
+
+## W13‑B‑6 (09.09.2026) — „die Liste blinkt und ist nicht sichtbar" (6 654 Stromspeicher)
+
+### Befund
+
+Windows-Abnahme 09.09.2026, **Administration → Daten & Import → Stromspeicher**
+(`KatalogImportDialog` mit `Art = Stromspeicher`). Nach „CEC-Liste abrufen" stehen
+6 654 Sätze in der Liste. Der Anwender meldet zweierlei:
+
+1. **„Die Liste blinkt und ist nicht sichtbar."** Auf dem Bildschirmfoto steht die
+   Trefferzeile richtig auf „6.654 von 6.654 Sätzen", die Kopfzeile ist heil, rechts
+   steht eine Bildlaufleiste — und im Körper stehen rund acht Zeilen, die in **jeder
+   Zelle nur „…"** tragen. Auf einem zweiten Foto (Filter-Popover offen) stehen
+   dahinter ECHTE Zeilen („9,6 kW · Lithium-Eisen-Phosphat"): Die Liste ist also
+   zeitweise da.
+2. **„Der Filter funktioniert nicht."** Im Trichter der kW-Spalte greift die Eingabe
+   nicht erkennbar.
+
+Nicht Teil des Befundes: „bslib laden" zeigt wenige Einträge — die mitgelieferte
+`bslib_database.csv` führt laut `LIESMICH_bslib.md` genau 7 Datensätze (4 Speicher).
+
+### Ursache
+
+**Eine einzige Stelle im Markup der Katalogliste**, und QuickGrids Vergleich seiner
+Datenquelle. `Katalogliste.razor` reichte dem Raster
+
+```
+<Raster TZeile="Katalogfilterzeile" Zeilen="@_gefiltert.AsQueryable()" …>
+```
+
+— also **bei jedem Zeichenlauf ein frisches `EnumerableQuery`**, und dazu über
+`OnParametersSet() => Neuberechnen()` eine jedes Mal frisch gebaute Trefferliste
+(`Katalogfilter.Anwenden` legt `new List<>` an). Der Kopfkommentar von `Raster.razor`
+nannte das seit W6‑B‑2 sogar beiläufig („Die Wirte reichen bei jedem Render ein
+frisches AsQueryable() herein") — für den FLACHEN Zweig ist es nur Arbeit, für den
+virtualisierten ist es der Fehler.
+
+**Beleg aus QuickGrid 10.0.11** (Paketquelle `QuickGrid.razor.cs`; die Feld- und
+Methodennamen sind in der ausgelieferten
+`Microsoft.AspNetCore.Components.QuickGrid.dll` nachgelesen — `_lastAssignedItemsOrProvider`,
+`_pendingDataLoadCancellationTokenSource`, `RefreshDataCoreAsync`,
+`ProvideVirtualizedItems`, `RenderPlaceholderRow` stehen dort alle):
+
+```csharp
+// OnParametersSetAsync
+var _newItemsOrItemsProvider = Items ?? (object?)ItemsProvider;
+var dataSourceHasChanged = _newItemsOrItemsProvider != _lastAssignedItemsOrProvider;
+…
+return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
+
+// RefreshDataCoreAsync
+_pendingDataLoadCancellationTokenSource?.Cancel();
+var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
+if (_virtualizeComponent is not null) { await _virtualizeComponent.RefreshDataAsync(); … }
+
+// ProvideVirtualizedItems
+// "Debounce the requests. This eliminates a lot of redundant queries …"
+await Task.Delay(100);
+if (request.CancellationToken.IsCancellationRequested) { return default; }
+```
+
+Der Vergleich ist ein **Referenzvergleich** (`!=` auf `object`). Ein frisches
+`AsQueryable()` über DERSELBEN Liste ist damit eine neue Datenquelle; QuickGrid bricht
+die laufende Ladung ab und stellt hinter der 100‑ms‑Entprellung eine neue an. Kommt
+der nächste Zeichenlauf schneller als diese 100 ms, ist auch sie hinfällig.
+`Virtualize.RefreshDataCoreAsync` übernimmt sein Ergebnis nämlich nur bei
+NICHT abgebrochener Ladung:
+
+```csharp
+var result = await _itemsProvider(request);
+if (!cancellationToken.IsCancellationRequested)
+{
+    _itemCount = result.TotalItemCount;
+    _loadedItems = result.Items;
+    _loadedItemsStartIndex = request.StartIndex;
+    _loading = false;
+    …
+}
+```
+
+Und **beide gemeldeten Bilder stehen wörtlich in QuickGrids eigenem Stilblatt**
+(`Microsoft.AspNetCore.Components.QuickGrid.boiwgh0w5b.bundle.scp.css`):
+
+```css
+.quickgrid[theme=default].loading > tbody {
+    opacity: 0.25;
+    transition: opacity linear 100ms;
+    transition-delay: 25ms; /* Don't want flicker if the queries are resolving almost immediately */
+}
+.quickgrid[theme=default] > tbody > tr > td.grid-cell-placeholder:after {
+    content: '\2026';
+    opacity: 0.75;
+}
+```
+
+* Die Klasse `loading` hängt an genau dieser Kennung
+  (`GridClass()`: `_pendingDataLoadCancellationTokenSource is null ? null : "loading"`).
+  Eine Kette abgebrochener Ladungen lässt sie stehen und wieder gehen — der Körper
+  blendet auf ein Viertel ab und zurück: **das „Blinken"**.
+* `content: '\2026'` IST der Halbgeviertpunkt „…" in jeder Zelle. Er kommt aus
+  `RenderPlaceholderRow`, also aus dem Zweig, den `Virtualize` zeichnet, solange
+  `_loadedItems` leer ist.
+
+Der gemeldete Anfangszustand ergibt sich daraus zwanglos: Die erste Ladung läuft, bevor
+das JavaScript gemessen hat — mit `_visibleItemCapacity == 0` liefert sie 0 Zeilen, setzt
+aber `_itemCount = 6654`. Die zweite, die nach der Messung die sichtbaren ~10 Zeilen
+holen soll, fällt der Abbruchkette zum Opfer. `Virtualize` zeichnet dann `_itemCount`
+Zeilen Abstandhalter (daher die Bildlaufleiste über 6 654 × 44 px) und im Fenster
+`_visibleItemCapacity` **Platzhalter** — im 420‑px‑Rahmen rund neun. Genau das Foto.
+
+**Der zweite Teil des Befundes ist derselbe Fehler.** Ein Spaltenfilter ändert die
+Zeilenzahl, der `@key`-Fix W6‑B‑2 baut deshalb ein NEUES QuickGrid auf — mit leerem
+`_loadedItems`. Bleibt die gefilterte Menge über der Schwelle von 120 (6 654 → einige
+tausend), virtualisiert es weiter, und die erste Ladung der neuen Instanz gerät in
+dieselbe Abbruchkette: Die Trefferzeile rechnet richtig, die Liste zeigt nichts.
+„Der Filter funktioniert nicht" ist die richtige Beschreibung dessen, was man sieht.
+
+Der Fall W6‑B‑2 deckte den Übergang auf den FLACHEN Zweig ab (20 749 → 15); **beidseits
+der Schwelle virtualisiert** war bisher nicht geprüft.
+
+### Messungen (bunit, Wegwerf-Prüfstand, nach der Messung gelöscht)
+
+| Messung | vorher | nachher |
+|---|---|---|
+| `QuickGrid.Items` über 10 Zeichenläufe der `Katalogliste` (6 654 Zeilen) | **10 verschiedene Instanzen** | **1 Instanz** (`Assert.Same`) |
+| gefilterte Menge (`Angezeigt`) über dieselben 10 Läufe | 10 neue Listen | **1 Liste** |
+| vollständige Filterrechnungen (500 Zeilen, gezählt am Indexer der Quellliste) | **1 je Zeichenlauf** | 1 je Zeichenlauf (**absichtlich**, siehe unten) |
+| Klasse `loading` an der Tabelle, 10 Läufe im Abstand von 20 ms | **10 von 10** | **0 von 10** |
+| überlebende virtualisierte Ladungen bei 10 Läufen | **2 von 10** | 10 von 10 |
+| volle Durchläufe über die Menge für den `@key` (`Raster.Zeilenzahl`, 6 654 Zeilen, 10 Läufe) | **10** | **0** |
+
+Was bunit **nicht** zeigen kann: den Platzhalterzustand selbst. Ohne echten
+`IntersectionObserver` treibt bunit `Virtualize` anders an und behält geladene Zeilen;
+die 100‑ms‑Entprellung und der Abbruch sind dagegen voll sichtbar (Zeile 4 und 5 der
+Tabelle). Der fehlende Teil ist eine gerade Folge der oben zitierten acht Zeilen aus
+`Virtualize.RefreshDataCoreAsync`/`BuildRenderTree`; ein Playwright-Prüfstand hätte dafür
+einen eigenen Blazor-Server-Wirt gebraucht und wäre am Zeitverhalten des Browsers
+ohnehin nur so belastbar wie das Foto des Anwenders, das dieses Bild bereits zeigt.
+**Er ist deshalb nicht gebaut worden**; statt dessen steht unten eine gezielte
+Sichtabnahme.
+
+### Fix
+
+**`EPOS.UI/Bausteine/Katalogliste.razor` — die Datenquelle behält ihre Instanz.**
+Das Markup reicht jetzt ein Feld `_rasterzeilen` herein statt eines Ausdrucks, und
+`Neuberechnen` legt es nur neu an, wenn WIRKLICH eine andere Menge herauskommt:
+
+```csharp
+IReadOnlyList<Katalogfilterzeile> neu = Profil is null
+    ? Zeilen : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
+if (GleicheMenge(neu, _gefiltert)) return;
+_gefiltert = neu;
+_rasterzeilen = neu.AsQueryable();
+```
+
+**Gerechnet wird weiter bei JEDEM Zeichenlauf, und das ist der Kern der Sache.** Der
+erste Anlauf sparte die Rechnung und hängte sie an die REFERENZ von `Zeilen`, an
+`Profil` und an einen neuen Zählstand im `Katalogfilterstand`. Er war schneller und
+**falsch**: Mehrere Wirte ändern ihre Zeilenliste an Ort und Stelle — der
+Ganglinienverwalter löscht mit `RemoveAll` aus derselben Liste, die er hereinreicht.
+Vier Fälle fielen darüber (`SolarganglinieAdminDialogTests.Ja_loescht_und_meldet`
+„Expected 2, Actual 3", `…Ein_erfolgreicher_Import_laedt_den_Katalog_neu`,
+zwei in `StromganglinieDialogTests`). Der Zählstand im Kern ist mit diesem Anlauf
+wieder zurückgenommen worden; festgehalten wird das ERGEBNIS, nicht die Vermutung, dass
+sich nichts geändert habe. Der Vergleich ist ein Referenzvergleich Zeile für Zeile — für
+20 749 PV‑Module 20 749 Zeigervergleiche, billiger als die Filterrechnung davor.
+
+**`EPOS.UI/Standards/Raster.razor` — die Zeilenzahl wird je Menge einmal geholt.**
+Sie steht im `@key` und wurde deshalb bei jedem Zeichenlauf berechnet; ein
+`AsQueryable()` über einer Liste ist keine `ICollection`, sein `Count()` läuft
+also wirklich über alle Zeilen. Der Zwischenspeicher hängt an der Referenz der Menge —
+derselbe Maßstab, den QuickGrid an seine Datenquelle legt. Dazu ein Absatz im
+Kopfkommentar, der die Regel benennt: **wer `Virtualisiert` setzt, reicht eine STABILE
+Instanz herein.** Geglättet wird im Raster ausdrücklich nichts — ein Raster, das eine
+neue Menge stillschweigend für die alte hielte, wäre die nächste Fehlerquelle.
+
+**Die Schranke sitzt damit an EINER Stelle für alle 21 Wirte:** `Katalogliste.razor`
+ist die einzige Komponente des Hauses, die `Virtualisiert` überhaupt setzt
+(`grep -rn "Virtualisiert=" EPOS.UI --include=*.razor` findet außerhalb von
+`Raster.razor` genau eine Fundstelle). Die 20 749 PV‑Module des `ModulImportDialog`,
+der Wärmepumpenkatalog, der Heizkessel-/Katalogbrowser und die übrigen achtzehn Wirte
+tragen denselben Fehler und sind mit derselben Änderung mit erledigt.
+
+### Die Kultur des Zahlenfilters — kein Fehler
+
+Zum Befund gehörte die Frage, ob der Filter „9,6" überhaupt versteht: Die Oberfläche
+läuft in einer `BlazorWebView`, und `StandardSprache.KulturUebernehmen` setzt
+**ausdrücklich nur** `CurrentUICulture`/`DefaultThreadCurrentUICulture` — die
+Rechenkultur bleibt die des Betriebssystems (Drei-Schichten-Regel, Konzept 13.6).
+
+Die Antwort ist: **immer**, denn beide Seiten hängen an DERSELBEN Größe.
+`Katalogwert.AusZahl` schreibt mit `CultureInfo.CurrentCulture` („N1"), und
+`Katalogfilter.PasstSpalte` liest über `Zahlenausdruck.Lesen` ohne ausdrückliche Kultur,
+also ebenfalls mit `CurrentCulture`. Was dasteht, ist damit auch das, was man tippen
+kann — eine englische Oberfläche auf deutschem Windows ändert daran nichts. Die fremde
+Schreibweise ist kein stiller Fehltreffer, sondern **unverstanden**, und ein
+unverstandener Ausdruck ist kein Filter: Die Liste bleibt vollständig stehen, statt
+leer zu werden. Beides ist jetzt festgeschrieben
+(`KatalogfilterstandTests.Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur`, de‑DE und
+en‑US). Der Fall stellt bewusst nur `Thread.CurrentThread.CurrentCulture` um und nicht
+`DefaultThreadCurrentCulture`: Letzteres gilt prozessweit, und xunit fährt
+Testsammlungen nebenläufig.
+
+Eine Eigenheit bleibt und ist so gewollt: Die Spalte schreibt mit Tausendertrennzeichen
+(„1.200,0"), `Zahlenausdruck` liest ohne `AllowThousands` — wer nach 1 200 kWh sucht,
+tippt `1200`. Die Begründung steht bei `Zahlenausdruck.Zahl`; ohne sie wäre `1.5` unter
+de‑DE die Zahl 15.
+
+### Nachweis
+
+| Lauf | Ausgang (HEAD `7a45d8e6`) | nachher |
+|---|---|---|
+| `MSBuild WP-Plan.sln -p:Configuration=Debug -p:Platform=x64` | 0 Fehler | **0 Fehler** |
+| `EPOS.Kern.Tests` | 2 195 | **2 197 / 2 197 grün** (+2) |
+| `EPOS.UI.Tests` | 3 362 | **3 368 / 3 368 grün** (+6) |
+| `EPOS.UI.Tests`, zwei Wiederholungsläufe | — | **2 × 3 368 grün** |
+
+Neue Fälle:
+
+| Fall | was er festhält |
+|---|---|
+| `KataloglisteTests.Die_Datenquelle_des_Rasters_bleibt_ueber_Zeichenlaeufe_dieselbe` | 6 654 Zeilen, zehn Zeichenläufe: `QuickGrid.Items` und `Angezeigt` bleiben dieselbe Instanz, die Tabelle trägt kein `loading` |
+| `KataloglisteTests.Ein_Filterwechsel_gibt_dem_Raster_eine_neue_Datenquelle` | die Gegenprobe — eine WIRKLICHE Änderung kommt durch |
+| `KataloglisteTests.Eine_an_Ort_und_Stelle_geaenderte_Liste_wird_bemerkt` | die zweite Gegenprobe: dieselbe Listeninstanz, anderer Inhalt (der Fall, über den der erste Anlauf fiel) |
+| `KataloglisteTests.Der_Zahlenfilter_greift_auch_wenn_die_Liste_virtualisiert_bleibt` | 500 → 224 über `>50` in der kW-Spalte, **beidseits virtualisiert**; keine Platzhalter, kein `loading` |
+| `RasterTests.Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen` | der Wächter gegen QuickGrids Referenzvergleich: `loading` in 10/10 Läufen mit frischem `AsQueryable`, in 0/10 mit stabiler Instanz |
+| `RasterTests.Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` | der `@key` kostet keinen weiteren Durchlauf über 6 654 Zeilen |
+| `KatalogfilterstandTests.Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur` (2) | Anzeige und Filter teilen sich `CurrentCulture`; die fremde Schreibweise ist kein Filter |
+
+### Offene Punkte
+
+| Nr. | offen |
+|---|---|
+| **W13‑B‑6‑O‑1** | **Sichtabnahme am Programm** (der Anwender): „Stromspeicher Einlesen" → „CEC-Liste abrufen" → stehen die 6 654 Sätze SOFORT und ruhig da (keine „…"-Zeilen, kein Ab- und Aufblenden des Körpers)? Dann im Trichter der kW-Spalte `>10` eingeben: Ändert sich die Trefferzeile UND zeigt die Liste die gefilterten Zeilen? Zur Gegenprobe `10..60` und `=9,6`. Dasselbe im PV-Modulimport (20 749 Sätze) und im Wärmepumpenkatalog |
+| **W13‑B‑6‑O‑2** | Beim Filtern springt der Eingabepunkt aus dem Popover: Ändert sich die Zeilenzahl, baut der `@key`-Fix W6‑B‑2 das QuickGrid samt Kopfzeile neu auf, und das Feld im Trichter ist ein neues Element. Nicht Teil dieses Befundes (das Popover bleibt offen, und `onfocusout` übernimmt den Wert), aber beim Nachtippen eines zweiten Ausdrucks lästig. Erst ansehen, wenn der Anwender es meldet — der Weg dorthin führt an den `@key`, und der trägt den Fehler W6‑B‑2 |

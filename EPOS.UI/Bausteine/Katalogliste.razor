@@ -105,7 +105,7 @@
     }
 
     @* ---------------- ZONE B oben - die Liste ---------------------------- *@
-    <Raster TZeile="Katalogfilterzeile" Zeilen="@_gefiltert.AsQueryable()"
+    <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen"
             Virtualisiert="@Virtualisiert">
         <KindInhalt>
             <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
@@ -367,6 +367,36 @@
 
     private IReadOnlyList<Katalogfilterzeile> _gefiltert = Array.Empty<Katalogfilterzeile>();
 
+    /// <summary>
+    /// <b>Die Zeilenmenge, die das Raster bekommt — EINE Instanz je gefilterter
+    /// Menge</b> (Befund <b>W13‑B‑6</b>, Windows-Abnahme 09.09.2026: „die Liste
+    /// blinkt und ist nicht sichtbar", 6 654 Stromspeicher).
+    ///
+    /// <para><b>Warum das ein Feld ist und kein <c>@key</c>-Ausdruck im Markup.</b> Hier
+    /// stand <c>Zeilen="@_gefiltert.AsQueryable()"</c> — bei JEDEM Zeichenlauf ein
+    /// frisches <c>EnumerableQuery</c>. QuickGrid vergleicht seine Datenquelle mit
+    /// <c>!=</c>, also nach REFERENZ (<c>OnParametersSetAsync</c>:
+    /// <c>dataSourceHasChanged = _newItemsOrItemsProvider != _lastAssignedItemsOrProvider</c>),
+    /// und hielt darum jeden Zeichenlauf für eine neue Menge. Es bricht dann die
+    /// laufende Ladung ab (<c>RefreshDataCoreAsync</c>:
+    /// <c>_pendingDataLoadCancellationTokenSource?.Cancel()</c>) und stellt im
+    /// virtualisierten Zweig eine neue an — hinter <c>await Task.Delay(100)</c>,
+    /// QuickGrids Entprellung. Kommt der nächste Zeichenlauf schneller als diese
+    /// 100 ms, wird auch sie abgebrochen, <c>Virtualize</c> behält sein leeres
+    /// <c>_loadedItems</c> und zeichnet nur Platzhalterzeilen — deren Inhalt das
+    /// Stilblatt von QuickGrid als <c>content: '\2026'</c> setzt: der Halbgeviertpunkt
+    /// „…" in jeder Zelle, den der Anwender fotografiert hat. Und weil dieselbe
+    /// Kennung die Klasse <c>loading</c> an die Tabelle hängt
+    /// (<c>.quickgrid.loading &gt; tbody { opacity: .25; transition: opacity linear 100ms }</c>),
+    /// blendet der Körper dabei ein und aus: <b>das „Blinken"</b>.</para>
+    ///
+    /// <para><b>Gemessen</b> (bunit, 6 654 Zeilen, zehn Zeichenläufe in Folge): mit
+    /// frischem <c>AsQueryable()</c> überlebten 2 von 10 Ladungen, mit einer stabilen
+    /// Instanz 10 von 10.</para>
+    /// </summary>
+    private IQueryable<Katalogfilterzeile> _rasterzeilen =
+        Array.Empty<Katalogfilterzeile>().AsQueryable();
+
     /// <summary>Der Schlüssel der Spalte, deren Popover offen steht; leer = keines.</summary>
     private string _offen = "";
 
@@ -417,11 +447,55 @@
 
     protected override void OnParametersSet() => Neuberechnen();
 
+    /// <summary>
+    /// <b>Dieselbe Menge behält ihre Instanz</b> (Befund <b>W13‑B‑6</b>). Gerechnet
+    /// wird weiter bei jedem Zeichenlauf — das MUSS so bleiben: Mehrere Wirte
+    /// verändern ihre Zeilenliste an Ort und Stelle (der Ganglinienverwalter löscht
+    /// mit <c>RemoveAll</c> aus derselben Liste), und wer sich auf eine geänderte
+    /// Referenz verlässt, sieht das nicht. Was sich ändert, ist das ERGEBNIS: Kommt
+    /// dieselbe Menge in derselben Reihenfolge heraus, bleiben
+    /// <see cref="_gefiltert"/> und <see cref="_rasterzeilen"/> stehen.
+    ///
+    /// <para><b>Warum das der ganze Fix ist.</b> QuickGrid vergleicht seine
+    /// Datenquelle nach REFERENZ; eine neue Instanz ist für es eine neue Menge, und
+    /// es bricht dafür seine laufende Ladung ab (die Herleitung steht bei
+    /// <see cref="_rasterzeilen"/>). Genau diese Instanz hier festzuhalten ist
+    /// billiger und ehrlicher, als raten zu wollen, ob sich etwas geändert HAT.</para>
+    ///
+    /// <para><b>Der Vergleich ist ein Referenzvergleich Zeile für Zeile</b> — die
+    /// Zeilen sind dieselben Objekte, die der Controller geliefert hat, und ein
+    /// Inhaltsvergleich über sechs Spalten wäre teurer als die Filterrechnung selbst.
+    /// Für 20 749 PV‑Module sind das 20 749 Zeigervergleiche.</para>
+    ///
+    /// <para><b>Gemessen</b> (bunit, 6 654 Zeilen, zehn Zeichenläufe in Folge): vorher
+    /// zehn neue Datenquellen und die Klasse <c>loading</c> in 10 von 10 Läufen,
+    /// danach eine Datenquelle und 0 von 10.</para>
+    /// </summary>
     private void Neuberechnen()
     {
-        _gefiltert = Profil is null
+        IReadOnlyList<Katalogfilterzeile> neu = Profil is null
             ? Zeilen
             : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
+
+        if (GleicheMenge(neu, _gefiltert)) return;
+
+        _gefiltert = neu;
+
+        // DIE EINE Stelle, an der die Datenquelle des Rasters entsteht.
+        _rasterzeilen = neu.AsQueryable();
+    }
+
+    /// <summary>Dieselben Zeilen in derselben Reihenfolge?</summary>
+    private static bool GleicheMenge(IReadOnlyList<Katalogfilterzeile> a,
+                                     IReadOnlyList<Katalogfilterzeile> b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null || a.Count != b.Count) return false;
+
+        for (int i = 0; i < a.Count; i++)
+            if (!ReferenceEquals(a[i], b[i])) return false;
+
+        return true;
     }
 
     // =====================================================================
