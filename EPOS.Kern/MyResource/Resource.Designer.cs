@@ -45073,6 +45073,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen ähnelt.
+        /// </summary>
+        public static string WIRT_NM_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_NM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_NM_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_NM_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter: ähnelt.
         /// </summary>
         public static string WIRT_PARAM_KOPF {
@@ -45253,7 +45271,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eige [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WIRT_SZ_QUELLEN {
             get {
@@ -45930,6 +45948,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung nach DIN EN 17463 ähnelt.
+        /// </summary>
+        public static string WPAR_G_BEWERTUNG {
+            get {
+                return ResourceManager.GetString("WPAR_G_BEWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff — BEHG und Emissionsbilanz (BHKW/Kessel) ähnelt.
         /// </summary>
         public static string WPAR_G_BRENNSTOFF {
@@ -45993,6 +46020,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen: ähnelt.
+        /// </summary>
+        public static string WPAR_NICHT_MONETAER {
+            get {
+                return ResourceManager.GetString("WPAR_NICHT_MONETAER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN EN 17463 verlangt zu jeder Bewertung eine Beschreibung dessen, was sich nicht in Euro fassen lässt. Der Text gehört zur Maßnahme als Ganzes und steht deshalb am Projekt, nicht je Variante; er erscheint im Bericht und auf der Seite unter „Nicht monetäre Wirkungen“. Bleibt er leer, entfällt die Zeile — eine leere Überschrift wäre keine Aussage. ähnelt.
+        /// </summary>
+        public static string WPAR_NICHT_MONETAER_HINWEIS {
+            get {
+                return ResourceManager.GetString("WPAR_NICHT_MONETAER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die z. B. Versorgungssicherheit, Arbeitssicherheit, Komfort, Außenwirkung, Erfüllung einer Auflage ähnelt.
+        /// </summary>
+        public static string WPAR_NICHT_MONETAER_PLATZ {
+            get {
+                return ResourceManager.GetString("WPAR_NICHT_MONETAER_PLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Referenz-Kraftwerkspark: ähnelt.
         /// </summary>
         public static string WPAR_PARK {
@@ -46025,6 +46079,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_PREIS_E {
             get {
                 return ResourceManager.GetString("WPAR_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Investition/Ersatz p_I [%/a] (leer = wie Betrieb): ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_I {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_I", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_I_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_I_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Betrieb ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_I_WIE_B {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_I_WIE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die p_I wirksam: {0} %/a ({1}). Der Satz indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts (VDI 2067 Blatt 1). Ein leeres Feld heißt „wie Betrieb“, nicht „0 %/a“. ähnelt.
+        /// </summary>
+        public static string WPAR_PREIS_I_ZEILE {
+            get {
+                return ResourceManager.GetString("WPAR_PREIS_I_ZEILE", resourceCulture);
             }
         }
         
@@ -46133,6 +46223,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_SZ_PREIS_E {
             get {
                 return ResourceManager.GetString("WPAR_SZ_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Investition ähnelt.
+        /// </summary>
+        public static string WPAR_SZ_PREIS_I {
+            get {
+                return ResourceManager.GetString("WPAR_SZ_PREIS_I", resourceCulture);
             }
         }
         

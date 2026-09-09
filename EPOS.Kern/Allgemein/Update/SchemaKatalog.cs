@@ -3878,9 +3878,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_PW_PREIS_I = "Preissteigerung_Investition";
 
-        /// <summary>p_I des BEST-Szenarios [%/a]; NULL = Vorgabe, also das WIRKSAME p_B
-        /// desselben Szenarios (<see cref="SPALTE_PW_SZEN_BEST_PREIS_B"/> bzw. dessen
-        /// eigene Vorgabe).</summary>
+        /// <summary>p_I des BEST-Szenarios [%/a]; NULL = Vorgabe, also das wirksame
+        /// ERWARTET-p_I ∓ 1 %-Punkt — dieselbe Regel wie bei p_E und p_B, angewandt auf
+        /// den Erwartungswert der eigenen Größe.
+        /// <para><b>Präzisiert in Teil b (W5‑B‑12):</b> Bis dahin stand hier „das wirksame
+        /// p_B desselben Szenarios". Im Regelfall — p_I des Projekts nicht gepflegt
+        /// (= „wie p_B") und das Szenario-p_B ebenfalls nicht gepflegt — ist das
+        /// dieselbe Zahl. Ist dagegen Erwartet-p_I gepflegt, spannt sich die Bandbreite
+        /// um DIESEN Wert; und ist umgekehrt nur das Szenario-p_B gepflegt, folgt p_I
+        /// ihm NICHT — sonst zöge eine Betriebskostenannahme still die
+        /// Ersatzbeschaffung mit.</para></summary>
         public const string SPALTE_PW_SZEN_BEST_PREIS_I = "Szen_Best_Preis_I";
 
         /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_PREIS_I"/>

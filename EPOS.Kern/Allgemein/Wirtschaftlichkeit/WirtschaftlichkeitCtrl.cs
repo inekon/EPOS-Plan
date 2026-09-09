@@ -260,6 +260,16 @@ namespace WindowsFormsApplication1
                                   "\"KWKG_Anlagenart\" TEXT CHECK (length(\"KWKG_Anlagenart\") <= 20), " +
                                   "\"KWKG_Kostenanteil\" REAL, " +
                                   "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
+                                  // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): die vier
+                                  // Spalten des Schritts 72 auch im CREATE - dieselbe
+                                  // Begruendung wie bei K6 daruber. Der Freitext steht ohne
+                                  // Laengenpruefung da (MEMO -> TEXT): Ein Fliesstext,
+                                  // dessen Laenge niemand vorhersagen kann, darf beim
+                                  // Speichern nicht abgeschnitten werden.
+                                  "\"" + SchemaKatalog.SPALTE_PW_PREIS_I + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "\" TEXT, " +
                                   "\"GeaendertAm\" TEXT)");
                         Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
@@ -443,6 +453,17 @@ namespace WindowsFormsApplication1
                     // WERTE-Vorbelegung gibt es weder hier noch in Schritt 71: NULL
                     // heißt „Vorgabe“, und die Leseseite macht daraus die Vorgabe.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE W5-B-12 - die vier Spalten der VALERI-Ergaenzung: der
+                    // Preisaenderungssatz der kapitalgebundenen Kosten p_I (Projektwert
+                    // und je einer fuer Best und Worst) und der Freitext "Nicht monetaere
+                    // Wirkungen". Sie entstehen regulaer ueber Migrationsschritt 72; das
+                    // hier ist die tolerante VORSORGE unmittelbar vor dem Zugriff -
+                    // wortgleiche Begruendung wie bei Schritt 71 darueber. Und ebenso
+                    // KEINE Werte-Vorbelegung: NULL heisst bei p_I "wie p_B", bei den
+                    // zwei Szenariospalten "Vorgabe" und beim Freitext "nichts erfasst".
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die
@@ -643,14 +664,22 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_B,
                         SchemaKatalog.SPALTE_PW_SZEN_BEST_INVEST,
                         SchemaKatalog.SPALTE_PW_SZEN_BEST_ERTRAG,
-                        SchemaKatalog.SPALTE_PW_SZEN_BEST_DAUER);
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_DAUER,
+                        SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I);
                     p.SatzWorst = LiesSatz(r, WirtschaftlichkeitSzenario.WORST,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_ZINS,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_E,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_B,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST,
                         SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG,
-                        SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER);
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER,
+                        SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I);
+
+                    // ETAPPE W5-B-12 - p_I und die nicht monetaeren Wirkungen. Auch hier
+                    // bewusst KEIN "?? 0": NULL heisst bei p_I "wie p_B" und nicht
+                    // "0 %/a", und ein leerer Freitext ist "nichts erfasst".
+                    p.PreissteigerungInvestition = D(r, SchemaKatalog.SPALTE_PW_PREIS_I);
+                    p.NichtMonetaer = Text(r, SchemaKatalog.SPALTE_PW_NICHT_MONETAER);
 
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
@@ -681,7 +710,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static SzenarioSatz LiesSatz(DataRow r, string szenario, string sZins,
                                              string sPreisE, string sPreisB, string sInvest,
-                                             string sErtrag, string sDauer)
+                                             string sErtrag, string sDauer, string sPreisI)
         {
             return new SzenarioSatz
             {
@@ -691,7 +720,9 @@ namespace WindowsFormsApplication1
                 PreissteigerungBetrieb = D(r, sPreisB),
                 InvestitionAenderung = D(r, sInvest),
                 ErtragAenderung = D(r, sErtrag),
-                NutzungsdauerAenderung = D(r, sDauer)
+                NutzungsdauerAenderung = D(r, sDauer),
+                // ETAPPE W5-B-12: die siebte Groesse des Satzes (Schritt 72).
+                PreissteigerungInvestition = D(r, sPreisI)
             };
         }
 
@@ -890,6 +921,12 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER + "] = ?, " +
+                    // ETAPPE W5-B-12 - p_I (Projekt, Best, Worst) und der Freitext.
+                    // Reihenfolge wie in SchemaKatalog.Schritt72_ValeriErgaenzung.
+                    "[" + SchemaKatalog.SPALTE_PW_PREIS_I + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "] = ?, " +
+                    "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new DbParam("@z", p.Zinssatz),
                     new DbParam("@t", p.Betrachtungszeitraum),
@@ -954,6 +991,17 @@ namespace WindowsFormsApplication1
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).InvestitionAenderung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).ErtragAenderung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).NutzungsdauerAenderung),
+                    // ETAPPE W5-B-12: dieselbe Nullregel wie bei den zwoelf Spalten
+                    // darueber - "nicht gepflegt" muss LEER in die Datenbank. Bei p_I
+                    // waere eine geschriebene 0 die Aussage "Investitionsgueter werden
+                    // nie teurer" statt "wie p_B".
+                    SzenParam(p.PreissteigerungInvestition),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungInvestition),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungInvestition),
+                    // LongVarWChar wie bei WQ_Wochenwerte: MEMO, nicht TEXT(n) - der
+                    // Access-Rueckweg schnitte einen langen Freitext bei VarWChar ab.
+                    new DbParam("@nm", DbParamTyp.LongVarWChar)
+                    { Wert = LeerAlsNull(p.NichtMonetaer) },
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -995,9 +1043,15 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_INVEST + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ERTRAG + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_DAUER + "], " +
+                    // ETAPPE W5-B-12 - die vier Spalten des Schritts 72, Reihenfolge
+                    // wie im UPDATE darueber.
+                    "[" + SchemaKatalog.SPALTE_PW_PREIS_I + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "], " +
+                    "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1060,6 +1114,13 @@ namespace WindowsFormsApplication1
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).InvestitionAenderung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).ErtragAenderung),
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).NutzungsdauerAenderung),
+                    // ETAPPE W5-B-12 - Reihenfolge wie im UPDATE darueber; nicht
+                    // gepflegt heisst LEER, nicht 0 bzw. nicht Leerstring.
+                    SzenParam(p.PreissteigerungInvestition),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.BEST).PreissteigerungInvestition),
+                    SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungInvestition),
+                    new DbParam("@nm", DbParamTyp.LongVarWChar)
+                    { Wert = LeerAlsNull(p.NichtMonetaer) },
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
@@ -4778,12 +4839,20 @@ namespace WindowsFormsApplication1
                 endenergieAbJahr = skaliert;
             }
 
+            // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): der dritte Preisaenderungssatz
+            // p_I. Er steht am ENDE der Signatur und kommt aus DEM Parametersatz, mit dem
+            // dieser Lauf rechnet - fuer Best/Worst hat FuerSzenario ihn dort bereits
+            // ersetzt, fuer Erwartet ist es der Projektwert (bzw. p_B, wenn p_I nicht
+            // gepflegt ist). Die EINZIGE Aufrufstelle des Rechenkerns, also auch die
+            // einzige, die den Satz durchreichen muss: Hauptlauf, Verlaufsdialog und
+            // Sensitivitaet gehen alle hier durch.
             return KapitalwertRechner.Rechne(invest, betrieb,
                 (e.Energie ?? 0) * energieFaktor, e.Erloes,
                 zinsProzent, p.Betrachtungszeitraum,
                 p.PreissteigerungBetrieb, preisstEnergie,
                 e.Behg * energieFaktor, e.ErloesReihen, e.Zuschuss, behgReihe,
-                betriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr);
+                betriebAbJahr, e.Endenergie * energieFaktor, endenergieAbJahr,
+                p.PreisInvestWirksam);
         }
 
         /// <summary>Sensitivitätszeilen einer Variante (W2): 4 Parameter, ±Δ → KW vs. Stamm.</summary>

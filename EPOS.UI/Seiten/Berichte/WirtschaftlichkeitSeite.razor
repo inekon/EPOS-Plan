@@ -102,6 +102,15 @@
         <Herleitungszeile Text="@_stand.Vereinfachungszeile" />
     }
 
+    @* W5-B-12 (VALERI G6): die nicht monetaeren Wirkungen - was sich nicht in
+       Euro fassen laesst, steht neben der Zahl (DIN EN 17463). Gepflegt wird der
+       Text im Parameterdialog; ohne ihn entfaellt die Zeile wie jede andere im
+       Nachweisblock. *@
+    @if (!string.IsNullOrEmpty(_stand.Wirkungszeile))
+    {
+        <Herleitungszeile Text="@_stand.Wirkungszeile" />
+    }
+
     @* --------------------------------------------- Vergleichstabelle *@
     @if (_stand.Ansicht.Matrix.Zeilen.Count > 0)
     {

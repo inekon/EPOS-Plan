@@ -68,7 +68,14 @@ namespace WindowsFormsApplication1
             k.Hinweis("Parameter dieses Rechenlaufs: " + p.Nachweis(k.Kultur) +
                       " · " + tarifP.Nachweis(k.Kultur) +
                       " · " + BilanzKonvention.Bestimme(p, new GesetzKatalog()).Ausweis(k.Kultur) +
-                      " · Restwert linear · Ersatzbeschaffungen nominal konstant. " +
+                      // ETAPPE W5‑B‑12: „Ersatzbeschaffungen nominal konstant" war bis
+                      // hierher richtig und ist es jetzt nur noch bei p_I = 0. Der Satz
+                      // sagt deshalb, was TATSÄCHLICH gerechnet wurde — der wirksame
+                      // Satz selbst steht mit seiner Herkunft im Parameternachweis davor.
+                      " · Restwert linear · " +
+                      (p.PreisInvestWirksam != 0
+                          ? "Ersatzbeschaffungen preisindiziert mit p_I (VDI 2067). "
+                          : "Ersatzbeschaffungen nominal konstant (p_I = 0). ") +
                       "Energie-/Strompreise aus der Kostenmaske des jeweiligen Projekts; " +
                       "Investitions- und Betriebskosten aus den Kostenpositionen (Tab_ProjektWerte). " +
                       "Rechenstand: " + alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", k.Kultur) + ".");
@@ -131,6 +138,20 @@ namespace WindowsFormsApplication1
             // nennt, erklärt seine eigenen Zahlen nicht.
             k.HinweisRoh(MyResource.Resource.WIRT_SZ_QUELLEN);
             SchreibeSzenarien(k, daten, alle, p);
+
+            // ---- ETAPPE W5‑B‑12 (VALERI-Lücke G6): die nicht monetären Wirkungen ----
+            //
+            // Unmittelbar NACH dem Vorschlag zur Entscheidung: Erst die Zahl mit ihrer
+            // Bandbreite und der Empfehlung, dann das, was die Zahl nicht fassen kann.
+            // DIN EN 17463 verlangt beides nebeneinander.
+            //
+            // OHNE GEPFLEGTEN TEXT ENTFÄLLT DER GANZE BLOCK — Überschrift eingeschlossen.
+            // Eine leere Überschrift wäre keine Aussage, sondern eine Lücke mit Titel.
+            if (p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer))
+            {
+                k.Ueberschrift2Roh(MyResource.Resource.WIRT_NM_TITEL);
+                k.TextRoh(p.NichtMonetaer.Trim());
+            }
 
             // ---------------- Sensitivitätsanalyse (W2, Normanforderung) ----------------
             List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);

@@ -66,13 +66,26 @@
                     <Zahlenfeld Bezeichnung="@_t.PreisBetrieb" Wert="@Parameter.PreissteigerungBetrieb"
                                 WertChanged="@(w => Parameter.PreissteigerungBetrieb = w ?? Parameter.PreissteigerungBetrieb)"
                                 Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
+
+                    @* ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): p_I neben p_B.
+                       LEER IST HIER ERLAUBT und bedeutet "wie Betrieb" - deshalb wird
+                       der Wert OHNE Rueckfall auf den alten Wert uebernommen, anders
+                       als bei den drei Feldern darueber. Eine 0 waere die Aussage
+                       "Investitionsgueter werden nie teurer"; die hat niemand
+                       getroffen. *@
+                    <Zahlenfeld Bezeichnung="@_t.PreisInvest"
+                                Wert="@Parameter.PreissteigerungInvestition"
+                                WertChanged="@(w => Parameter.PreissteigerungInvestition = w)"
+                                Min="-10" Max="20" Nachkommastellen="2" Einheit="%/a" />
                 </KindInhalt>
             </Formularraster>
+            <Herleitungszeile Text="@PreisInvestZeile" />
         </KindInhalt>
     </Gruppenkopf>
 
     @* -------------------------------------------------------- Szenarien *@
-    @* ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026). Drei Spalten, sechs Zeilen.
+    @* ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026). Drei Spalten, seit
+       W5-B-12 sieben Zeilen.
 
        WARUM EINE TABELLE UND KEIN FORMULARRASTER. Das Raster stellt Beschriftung
        neben EIN Feld; hier gehoert eine Beschriftung zu DREI Werten, und der
@@ -88,7 +101,7 @@
 
        DIE FELDER ZEIGEN DEN WIRKSAMEN WERT, nicht den gepflegten. Ein leeres
        Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
-       wird. Wer tippt, pflegt; "Vorgaben" setzt alle zwoelf Felder zurueck. Ob
+       wird. Wer tippt, pflegt; "Vorgaben" setzt alle vierzehn Felder zurueck. Ob
        ein Satz aus Vorgaben oder gepflegten Werten besteht, sagt die
        Herleitungszeile darunter. *@
     <Gruppenkopf Titel="@_t.GSzenarien" Symbol="⚖">
@@ -152,6 +165,26 @@
                                             WertChanged="@(w => Worst.PreissteigerungBetrieb = w)" />
                             </td>
                         </tr>
+                        @* ETAPPE W5-B-12: die siebte Groesse. Die Erwartet-Spalte zeigt
+                           den WIRKSAMEN Erwartet-Satz (gepflegtes p_I oder p_B) - genau
+                           den Wert, um den sich die Vorgaben von Best und Worst
+                           spannen. *@
+                        <tr>
+                            <th scope="row" class="epos-matrix-titel">@_t.SzPreisI</th>
+                            <td class="epos-matrix-zelle">@Zahl(Parameter.PreisInvestWirksam, 2) %/a</td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Best.PreisInvestWirksam(Parameter.PreisInvestWirksam)"
+                                            WertChanged="@(w => Best.PreissteigerungInvestition = w)" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Bezeichnung="" Einheit="%/a" Nachkommastellen="2"
+                                            Min="-10" Max="20"
+                                            Wert="@Worst.PreisInvestWirksam(Parameter.PreisInvestWirksam)"
+                                            WertChanged="@(w => Worst.PreissteigerungInvestition = w)" />
+                            </td>
+                        </tr>
                         <tr>
                             <th scope="row" class="epos-matrix-titel">@_t.SzInvest</th>
                             <td class="epos-matrix-zelle">0 %</td>
@@ -203,6 +236,31 @@
             <Herleitungszeile Text="@SzenarioZeileBest" />
             <Herleitungszeile Text="@SzenarioZeileWorst" />
             <Herleitungszeile Text="@_t.SzHinweis" />
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------- Bewertung (DIN EN 17463) *@
+    @* ETAPPE W5-B-12 (VALERI-Luecke G6, Anwenderentscheid 09.09.2026). Der
+       Kapitalwert ist nur die eine Haelfte der Norm; die andere ist die
+       BESCHREIBUNG dessen, was sich nicht in Euro fassen laesst. Bis hierher
+       gab es dafuer kein Feld - und ein Kapitalwert ohne diese Zeile behauptet
+       mehr, als er weiss.
+
+       EIGENER ABSCHNITT, nicht "Allgemein": Dort stehen Rechengroessen. Der
+       Text rechnet nichts; er steht neben der Zahl, so wie die Norm es
+       verlangt. Mehrzeilig ueber den Hausbaustein Textfeld - ein zweiter
+       Baustein waere ein zweiter Ort fuer dieselben Regeln. *@
+    <Gruppenkopf Titel="@_t.GBewertung" Symbol="📋">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@_t.NichtMonetaer" Mehrzeilig="true" Zeilen="5"
+                              Platzhalter="@_t.NichtMonetaerPlatz"
+                              Wert="@(Parameter.NichtMonetaer ?? "")"
+                              WertChanged="@(w => Parameter.NichtMonetaer = w)" />
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@_t.NichtMonetaerHinweis" />
         </KindInhalt>
     </Gruppenkopf>
 
@@ -460,9 +518,19 @@
         wert.ToString("N" + stellen.ToString(CultureInfo.InvariantCulture), Kultur);
 
     /// <summary>
-    /// „Vorgaben“ — alle zwölf Felder auf <c>null</c> zurück. Das ist NICHT dasselbe wie
-    /// „auf die heutigen Vorgabezahlen setzen“: Ein leeres Feld zieht bei einer
-    /// geänderten Projektangabe mit, eine eingetragene Zahl nicht.
+    /// ETAPPE W5‑B‑12: die Herleitungszeile unter „Allgemein“ — sie nennt den WIRKSAMEN
+    /// p_I und seine Herkunft. Ohne sie wäre ein leeres Feld eine offene Frage: 0 %/a
+    /// oder „wie Betrieb“?
+    /// </summary>
+    public string PreisInvestZeile => string.Format(Kultur, _t.PreisInvestZeile,
+        Zahl(Parameter.PreisInvestWirksam, 2),
+        Parameter.PreissteigerungInvestition.HasValue
+            ? _t.PreisInvestGepflegt : _t.PreisInvestWieB);
+
+    /// <summary>
+    /// „Vorgaben“ — alle vierzehn Felder auf <c>null</c> zurück (seit W5‑B‑12 mit p_I).
+    /// Das ist NICHT dasselbe wie „auf die heutigen Vorgabezahlen setzen“: Ein leeres
+    /// Feld zieht bei einer geänderten Projektangabe mit, eine eingetragene Zahl nicht.
     /// </summary>
     private void VorgabenKlick()
     {

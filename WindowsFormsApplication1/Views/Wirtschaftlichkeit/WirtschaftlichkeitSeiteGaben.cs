@@ -209,6 +209,11 @@ namespace WindowsFormsApplication1
             stand.Zeitraumzeile = Zeitraumzeile();
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
+            // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026, VALERI-Luecke G6): der
+            // Freitext "Nicht monetaere Wirkungen". Er haengt wie die zwei Zeilen
+            // darueber am PROJEKT und nicht an der Szenario- oder Vergleichswahl.
+            stand.Wirkungszeile = Wirkungszeile();
+
             return stand;
         }
 
@@ -256,6 +261,25 @@ namespace WindowsFormsApplication1
                 return mitPhotovoltaik
                      ? ValeriAusweis.EigennutzungHerleitung() + " " + s
                      : s;
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑12 (VALERI-Lücke G6): die nicht monetären Wirkungen als fertige
+        /// Zeile. Leer bleibt sie, solange niemand etwas erfasst hat — eine Überschrift
+        /// ohne Inhalt wäre die Behauptung, es gäbe keine. Ein Lesefehler lässt sie
+        /// still entfallen; sie ist Ausweis, kein Ergebnis.
+        /// </summary>
+        private string Wirkungszeile()
+        {
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                string text = p != null ? p.NichtMonetaer : null;
+                if (string.IsNullOrWhiteSpace(text)) return "";
+                return string.Format(BerichtTexte.Kultur,
+                                     MyResource.Resource.WIRT_NM_ZEILE, text.Trim());
             }
             catch { return ""; }
         }

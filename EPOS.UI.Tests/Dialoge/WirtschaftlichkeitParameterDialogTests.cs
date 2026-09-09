@@ -17,11 +17,15 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Designer):
 ///
 /// <list type="bullet">
-/// <item>Allgemein (immer): Zins, T, Preissteigerung Energie und Betrieb (4)</item>
-/// <item>Szenarien (immer, ETAPPE W5‑B‑9 vom 09.09.2026): sechs Größen × Best und
-///       Worst = 12 Zahlenfelder, dazu der Knopf „Vorgaben“. Die Erwartet-Spalte ist
-///       Anzeige. Die Felder stehen im Feldbestand ZWISCHEN Allgemein und Strom —
-///       daher die verschobenen Indizes der Zahlenfelder unten.</item>
+/// <item>Allgemein (immer): Zins, T, Preissteigerung Energie, Betrieb und — seit
+///       W5‑B‑12 — Investition/Ersatz p_I (5, davon 4 Dezimalfelder)</item>
+/// <item>Szenarien (immer, ETAPPE W5‑B‑9 vom 09.09.2026, seit W5‑B‑12 mit p_I):
+///       sieben Größen × Best und Worst = 14 Zahlenfelder, dazu der Knopf
+///       „Vorgaben“. Die Erwartet-Spalte ist Anzeige. Die Felder stehen im
+///       Feldbestand ZWISCHEN Allgemein und Strom — daher die verschobenen Indizes
+///       der Zahlenfelder unten.</item>
+/// <item>Bewertung nach DIN EN 17463 (immer, ETAPPE W5‑B‑12): das mehrzeilige
+///       Freitextfeld „Nicht monetäre Wirkungen“ (VALERI-Lücke G6)</item>
 /// <item>Strom (immer): Einspeisung PV, Einspeisung KWK, Aufschläge-Anzeige (3)</item>
 /// <item>BHKW (nur mit BHKW): Verweis + Sprungknopf</item>
 /// <item>Brennstoff (nur mit Brennstoff-Erzeuger): CO₂ + Katalogknopf + Park +
@@ -57,14 +61,18 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
     }
 
     // ETAPPE W5-B-9 (09.09.2026): Der Szenarioblock steht ZWISCHEN Allgemein und
-    // Strom und bringt zwoelf Zahlenfelder mit. Die Indizes der uebrigen Felder
+    // Strom und bringt seine Zahlenfelder mit. Die Indizes der uebrigen Felder
     // haben sich dadurch verschoben - sie stehen hier als Konstanten, damit der
     // naechste Umbau nur eine Zeile trifft statt sieben.
-    private const int SZENARIO_FELDER = 12;
-    private const int EINSPEISUNG_PV = 3 + SZENARIO_FELDER;
+    // ETAPPE W5-B-12 (09.09.2026): p_I bringt ein viertes Dezimalfeld nach
+    // "Allgemein" und eine siebte Zeile in die Szenariotabelle - genau diese zwei
+    // Zahlen aendern sich hier, der Rest rechnet sich daraus.
+    private const int ALLGEMEIN_FELDER = 4;
+    private const int SZENARIO_FELDER = 14;
+    private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_FELDER;
     private const int EINSPEISUNG_KWK = EINSPEISUNG_PV + 1;
     private const int CO2 = EINSPEISUNG_KWK + 1;
-    private const int FELDER_OHNE_ERZEUGER = 3 + SZENARIO_FELDER + 2;
+    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_FELDER + 2;
 
     private static WirtschaftlichkeitParameter Satz() => new WirtschaftlichkeitParameter
     {
@@ -116,10 +124,11 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
 
         Assert.Equal(new[] { "Allgemein",
                              "Szenarien — Best und Worst gegen den Erwartungsfall",
+                             "Bewertung nach DIN EN 17463",
                              "Strom — Einspeisung und Bezug" },
                      cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToArray());
 
-        // Zins, PreisE, PreisB (3) + Szenarien 6×2 (12) + Einspeisung PV, KWK (2)
+        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 7×2 (14) + Einspeisung PV, KWK (2)
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // T
         Assert.Single(cut.FindAll("input[type=checkbox]"));       // Aufschlaege (Anzeige)
@@ -189,12 +198,13 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Tabelle trägt drei Wertspalten über sechs Zeilen. Die Erwartet-Spalte ist
+    /// Die Tabelle trägt drei Wertspalten über sieben Zeilen (seit W5‑B‑12 mit p_I,
+    /// unmittelbar hinter den beiden anderen Preissteigerungen). Die Erwartet-Spalte ist
     /// ANZEIGE — sie wiederholt die Projektparameter und trägt kein Eingabefeld
     /// („Kein Delegat ist kein Knopf“).
     /// </summary>
     [Fact]
-    public void Die_Szenariotabelle_zeigt_drei_Spalten_und_sechs_Groessen()
+    public void Die_Szenariotabelle_zeigt_drei_Spalten_und_sieben_Groessen()
     {
         var cut = Aufbauen(Satz());
         var tabelle = cut.FindAll("table.epos-matrix")[0];
@@ -203,10 +213,10 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
                      tabelle.QuerySelectorAll("thead th").Select(e => e.TextContent).ToArray());
 
         var zeilen = tabelle.QuerySelectorAll("tbody tr");
-        Assert.Equal(6, zeilen.Length);
+        Assert.Equal(7, zeilen.Length);
         Assert.Equal(new[] { "Kalkulationszins", "Preissteigerung Energie",
-                             "Preissteigerung Betrieb", "Investition", "Erträge",
-                             "Nutzungsdauer" },
+                             "Preissteigerung Betrieb", "Preissteigerung Investition",
+                             "Investition", "Erträge", "Nutzungsdauer" },
                      zeilen.Select(z => z.QuerySelector(".epos-matrix-titel")!.TextContent).ToArray());
 
         // Je Zeile genau ZWEI Eingabefelder - Best und Worst.
@@ -230,20 +240,24 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Assert.Equal("2,50", Feld(zeilen[0], 0).GetAttribute("value"));   // Best  = 3,5 - 1
         Assert.Equal("4,50", Feld(zeilen[0], 1).GetAttribute("value"));   // Worst = 3,5 + 1
         Assert.Equal("1,50", Feld(zeilen[1], 0).GetAttribute("value"));   // p_E Best
-        Assert.Equal("-10,0", Feld(zeilen[3], 0).GetAttribute("value"));  // Investition Best
-        Assert.Equal("10,0", Feld(zeilen[3], 1).GetAttribute("value"));   // Investition Worst
-        Assert.Equal("10,0", Feld(zeilen[4], 0).GetAttribute("value"));   // Erträge Best
-        Assert.Equal("2,0", Feld(zeilen[5], 0).GetAttribute("value"));    // Nutzungsdauer Best
+        // W5-B-12: p_I ohne eigene Pflege ist p_B = 1,5 -> Best 0,50 / Worst 2,50,
+        // also genau das wirksame p_B des jeweiligen Szenarios (Zeile 2).
+        Assert.Equal("0,50", Feld(zeilen[3], 0).GetAttribute("value"));   // p_I Best
+        Assert.Equal("2,50", Feld(zeilen[3], 1).GetAttribute("value"));   // p_I Worst
+        Assert.Equal("-10,0", Feld(zeilen[4], 0).GetAttribute("value"));  // Investition Best
+        Assert.Equal("10,0", Feld(zeilen[4], 1).GetAttribute("value"));   // Investition Worst
+        Assert.Equal("10,0", Feld(zeilen[5], 0).GetAttribute("value"));   // Erträge Best
+        Assert.Equal("2,0", Feld(zeilen[6], 0).GetAttribute("value"));    // Nutzungsdauer Best
     }
 
     /// <summary>
-    /// Wer tippt, pflegt — und die Herleitungszeile sagt es. „Vorgaben“ setzt alle zwölf
-    /// Felder wieder auf <c>null</c>; das ist NICHT dasselbe wie „auf die heutigen
-    /// Vorgabezahlen setzen“, denn ein leeres Feld zieht bei einer geänderten
-    /// Projektangabe mit.
+    /// Wer tippt, pflegt — und die Herleitungszeile sagt es. „Vorgaben“ setzt alle
+    /// vierzehn Felder wieder auf <c>null</c> (seit W5‑B‑12 mit p_I); das ist NICHT
+    /// dasselbe wie „auf die heutigen Vorgabezahlen setzen“, denn ein leeres Feld zieht
+    /// bei einer geänderten Projektangabe mit.
     /// </summary>
     [Fact]
-    public void Vorgaben_setzt_die_zwoelf_Felder_zurueck()
+    public void Vorgaben_setzt_die_vierzehn_Felder_zurueck()
     {
         WirtschaftlichkeitParameter satz = Satz();
         var cut = Aufbauen(satz);
@@ -256,9 +270,15 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Assert.False(satz.SatzBest.NurVorgaben);
         Assert.Contains("Best: gepflegte Werte", cut.Instance.SzenarioZeileBest);
 
+        // W5-B-12: auch das siebte Feld zaehlt - NurVorgaben kennt es.
+        Feld(cut.FindAll("table.epos-matrix tbody tr")[3], 1).Input("4,00");
+        Assert.Equal(4.0, satz.SatzWorst.PreissteigerungInvestition);
+        Assert.False(satz.SatzWorst.NurVorgaben);
+
         cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Vorgaben").Click();
 
         Assert.Null(satz.SatzBest.Zinssatz);
+        Assert.Null(satz.SatzWorst.PreissteigerungInvestition);
         Assert.True(satz.SatzBest.NurVorgaben);
         Assert.True(satz.SatzWorst.NurVorgaben);
     }
@@ -273,6 +293,75 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         Assert.Contains("Investition -10 %", cut.Instance.SzenarioZeileBest);
         Assert.Contains("i = 4,5 %", cut.Instance.SzenarioZeileWorst);
         Assert.Contains("Nutzungsdauer -2 a", cut.Instance.SzenarioZeileWorst);
+        // W5-B-12: p_I steht mit in der Annahmenzeile - p_B = 1,5 ∓ 1.
+        Assert.Contains("p_I = 0,5 %/a", cut.Instance.SzenarioZeileBest);
+        Assert.Contains("p_I = 2,5 %/a", cut.Instance.SzenarioZeileWorst);
+    }
+
+    // =====================================================================
+    // p_I und die nicht monetären Wirkungen (ETAPPE W5-B-12, 09.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein LEERES p_I-Feld ist keine 0, sondern die Aussage „wie Betrieb“ — und die
+    /// Herleitungszeile sagt beides: den wirksamen Wert und seine Herkunft. Wer eine Zahl
+    /// einträgt, pflegt; wer sie wieder löscht, ist zurück bei p_B.
+    /// </summary>
+    [Fact]
+    public void Ein_leeres_p_I_rechnet_wie_die_Preissteigerung_Betrieb()
+    {
+        WirtschaftlichkeitParameter satz = Satz();          // p_B = 1,5 %/a
+        var cut = Aufbauen(satz);
+
+        Assert.Null(satz.PreissteigerungInvestition);
+        Assert.Equal(1.5, satz.PreisInvestWirksam, 9);
+        Assert.Contains("1,50 %/a (wie Betrieb)", cut.Instance.PreisInvestZeile);
+
+        // Das vierte Dezimalfeld des Blocks "Allgemein" ist p_I.
+        cut.FindAll("input[inputmode=decimal]")[ALLGEMEIN_FELDER - 1].Input("3,00");
+        Assert.Equal(3.0, satz.PreissteigerungInvestition);
+        Assert.Equal(3.0, satz.PreisInvestWirksam, 9);
+        Assert.Contains("3,00 %/a (gepflegt)", cut.Instance.PreisInvestZeile);
+
+        cut.FindAll("input[inputmode=decimal]")[ALLGEMEIN_FELDER - 1].Input("");
+        Assert.Null(satz.PreissteigerungInvestition);
+        Assert.Contains("1,50 %/a (wie Betrieb)", cut.Instance.PreisInvestZeile);
+    }
+
+    /// <summary>
+    /// Ist p_I gepflegt, spannt sich die Szenario-Vorgabe um DIESEN Wert und nicht mehr
+    /// um p_B — dieselbe ∓1-%-Punkt-Regel wie bei p_E und p_B, angewandt auf den
+    /// Erwartungswert der eigenen Größe.
+    /// </summary>
+    [Fact]
+    public void Ein_gepflegtes_p_I_verschiebt_die_Szenariovorgaben()
+    {
+        WirtschaftlichkeitParameter satz = Satz();          // p_B = 1,5 %/a
+        satz.PreissteigerungInvestition = 4.0;
+        var cut = Aufbauen(satz);
+
+        var zeile = cut.FindAll("table.epos-matrix tbody tr")[3];
+        Assert.Equal("4,00", Zelle(zeile, 0).TextContent.Trim().Split(' ')[0]);
+        Assert.Equal("3,00", Feld(zeile, 0).GetAttribute("value"));   // Best  = 4 - 1
+        Assert.Equal("5,00", Feld(zeile, 1).GetAttribute("value"));   // Worst = 4 + 1
+    }
+
+    /// <summary>
+    /// VALERI-Lücke G6: Das mehrzeilige Freitextfeld nimmt die nicht monetären Wirkungen
+    /// auf und schreibt sie in den Parametersatz — von dort holen Bericht und Seite sie.
+    /// </summary>
+    [Fact]
+    public void Der_Freitext_der_nicht_monetaeren_Wirkungen_wird_uebernommen()
+    {
+        WirtschaftlichkeitParameter satz = Satz();
+        var cut = Aufbauen(satz);
+
+        var feld = cut.Find("textarea");
+        Assert.Equal("", feld.TextContent);
+
+        feld.Input("Versorgungssicherheit, Arbeitsschutz");
+
+        Assert.Equal("Versorgungssicherheit, Arbeitsschutz", satz.NichtMonetaer);
     }
 
     private static IElement Zelle(IElement zeile, int nummer) =>

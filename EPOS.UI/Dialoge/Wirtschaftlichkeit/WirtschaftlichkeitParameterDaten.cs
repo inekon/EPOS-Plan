@@ -29,6 +29,19 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string PreisEnergie { get; } = T("WPAR_PREIS_E", "Preissteigerung Energie [%/a]:");
     public string PreisBetrieb { get; } = T("WPAR_PREIS_B", "Preissteigerung Betrieb [%/a]:");
 
+    // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): p_I steht NEBEN p_B, weil es
+    // sein Rueckfall ist - ein leeres Feld heisst "wie Betrieb", nicht "0 %/a".
+    // Die Herleitungszeile darunter nennt deshalb immer den WIRKSAMEN Wert und
+    // seine Herkunft; sonst saehe niemand, womit gerechnet wird.
+    public string PreisInvest { get; } = T("WPAR_PREIS_I",
+        "Preissteigerung Investition/Ersatz p_I [%/a] (leer = wie Betrieb):");
+    public string PreisInvestZeile { get; } = T("WPAR_PREIS_I_ZEILE",
+        "p_I wirksam: {0} %/a ({1}). Der Satz indiziert die Ersatzbeschaffungen und die " +
+        "Preisbasis des Restwerts (VDI 2067 Blatt 1). Ein leeres Feld heißt „wie Betrieb“, " +
+        "nicht „0 %/a“.");
+    public string PreisInvestWieB { get; } = T("WPAR_PREIS_I_WIE_B", "wie Betrieb");
+    public string PreisInvestGepflegt { get; } = T("WPAR_PREIS_I_GEPFLEGT", "gepflegt");
+
     // ---------------------------------------------------------- Szenarien
     // ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026): der Abschnitt "Szenarien" -
     // drei Spalten Erwartet | Best | Worst ueber sechs Groessen. Die
@@ -46,12 +59,31 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string SzInvest { get; } = T("WPAR_SZ_INVEST", "Investition");
     public string SzErtrag { get; } = T("WPAR_SZ_ERTRAG", "Erträge");
     public string SzDauer { get; } = T("WPAR_SZ_DAUER", "Nutzungsdauer");
+    /// <summary>ETAPPE W5-B-12: die siebte Zeile der Szenariotabelle.</summary>
+    public string SzPreisI { get; } = T("WPAR_SZ_PREIS_I", "Preissteigerung Investition");
     public string SzVorgaben { get; } = T("WPAR_SZ_VORGABEN", "Vorgaben");
     public string SzHinweis { get; } = T("WPAR_SZ_HINWEIS", "");
     public string SzHerkunftVorgabe { get; } = T("WPAR_SZ_HERKUNFT_VORGABE",
         "{0}: Vorgaben — {1}");
     public string SzHerkunftGepflegt { get; } = T("WPAR_SZ_HERKUNFT_GEPFLEGT",
         "{0}: gepflegte Werte — {1}");
+
+    // -------------------------------------------- Bewertung (DIN EN 17463)
+    // ETAPPE W5-B-12 (VALERI-Luecke G6): das Freitextfeld "Nicht monetaere
+    // Wirkungen". Es steht in einem EIGENEN Abschnitt und nicht unter
+    // "Allgemein": Dort stehen Rechengroessen, hier steht eine Beschreibung -
+    // und die Norm verlangt sie ausdruecklich neben der Zahl.
+    public string GBewertung { get; } = T("WPAR_G_BEWERTUNG", "Bewertung nach DIN EN 17463");
+    public string NichtMonetaer { get; } = T("WPAR_NICHT_MONETAER", "Nicht monetäre Wirkungen:");
+    public string NichtMonetaerPlatz { get; } = T("WPAR_NICHT_MONETAER_PLATZ",
+        "z. B. Versorgungssicherheit, Arbeitssicherheit, Komfort, Außenwirkung, " +
+        "Erfüllung einer Auflage");
+    public string NichtMonetaerHinweis { get; } = T("WPAR_NICHT_MONETAER_HINWEIS",
+        "DIN EN 17463 verlangt zu jeder Bewertung eine Beschreibung dessen, was sich " +
+        "nicht in Euro fassen lässt. Der Text gehört zur Maßnahme als Ganzes und steht " +
+        "deshalb am Projekt, nicht je Variante; er erscheint im Bericht und auf der Seite " +
+        "unter „Nicht monetäre Wirkungen“. Bleibt er leer, entfällt die Zeile — eine " +
+        "leere Überschrift wäre keine Aussage.");
 
     // -------------------------------------------------------------- Strom
     public string GStrom { get; } = T("WPAR_G_STROM", "Strom — Einspeisung und Bezug");

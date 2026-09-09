@@ -108,6 +108,15 @@ namespace WindowsFormsApplication1
                         "betrachtungszeitraum_a", p.Betrachtungszeitraum,
                         "preissteigerung_energie_prozent", KiHilfe.Wert(p.PreissteigerungEnergie),
                         "preissteigerung_betrieb_prozent", KiHilfe.Wert(p.PreissteigerungBetrieb),
+                        // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): p_I - der Satz,
+                        // mit dem die Ersatzbeschaffungen fortgeschrieben werden. Gemeldet
+                        // wird der WIRKSAME Wert samt Herkunft: Ein leeres Feld heisst
+                        // "wie p_B" und nicht "0 %/a", und ohne die Herkunft koennte der
+                        // Assistent beides nicht auseinanderhalten.
+                        "preissteigerung_investition_prozent", KiHilfe.Wert(p.PreisInvestWirksam),
+                        "preissteigerung_investition_herkunft",
+                        p.PreissteigerungInvestition.HasValue ? "gepflegt" : "wie_betrieb",
+                        "nicht_monetaere_wirkungen", KiHilfe.Text(p.NichtMonetaer),
                         "einspeiseverguetung_eur_kwh", KiHilfe.Wert(p.Einspeiseverguetung),
                         "co2_preis_eur_t", KiHilfe.Wert(p.CO2Preis),
                         "kwkg_bonus_ct_kwh", KiHilfe.Wert(p.KwkgBonus),

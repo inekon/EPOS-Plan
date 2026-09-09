@@ -46,6 +46,12 @@ Parametersatz** — `SzenarioSatz`, abgelegt an
 ist ungünstig, ein höherer Ertrag günstig, eine längere Nutzungsdauer günstig —
 die Vorgaben tragen dem Rechnung.
 
+**Seit Etappe W5‑B‑12** kommt als **siebte** Größe die Preissteigerung der
+kapitalgebundenen Kosten p_I hinzu (`PreissteigerungInvestition`, %/a; sie
+indiziert Ersatzbeschaffungen und Restwert-Preisbasis). Ihre Nullsemantik und ihre
+Vorgaberegel stehen in § 10.2 und § 10.4 — sie sind eine Spur anders als bei den
+sechs Größen hier, weil ihr Erwartungswert selbst einen Rückfall hat.
+
 ### 2.1 Vorbelegung (Vorgaben)
 
 **Erwartet** bekommt **keinen** Parametersatz. Es rechnet unverändert mit den
@@ -165,20 +171,27 @@ Szen_Worst_Invest Szen_Worst_Ertrag    Szen_Worst_Dauer
 
 ## 4 Dialog „Parameter…" — Abschnitt „Szenarien"
 
-Drei Spalten, sechs Zeilen:
+Drei Spalten, **sieben Zeilen** (seit W5‑B‑12 mit p_I):
 
 | | Erwartet | Best | Worst |
 |---|---|---|---|
 | Kalkulationszins [%] | *Projektwert, nur Anzeige* | Feld | Feld |
 | Preissteigerung Energie [%/a] | *Projektwert* | Feld | Feld |
 | Preissteigerung Betrieb [%/a] | *Projektwert* | Feld | Feld |
+| Preissteigerung Investition [%/a] | *wirksames p_I (§ 10.2)* | Feld | Feld |
 | Investition [%] | 0 | Feld | Feld |
 | Erträge [%] | 0 | Feld | Feld |
 | Nutzungsdauer [a] | 0 | Feld | Feld |
 
+Die p_I-Zeile steht **bei den beiden anderen Preissteigerungen** und nicht am Ende
+der Tabelle — dieselbe Reihenfolge, in der `SzenarioSatz.Nachweis` die Größen
+aufzählt (i · p_E · p_B · p_I · Investition · Erträge · Nutzungsdauer). Ihre
+Erwartet-Zelle zeigt das **wirksame** p_I, nicht das gepflegte: Bei leerem Feld ist
+das p_B, und genau um diesen Wert spannen sich die Vorgaben daneben.
+
 Die Erwartet-Spalte ist **Anzeige, kein Eingabefeld** — sie wiederholt, was im
 Abschnitt „Allgemein" gepflegt wird („Kein Delegat ist kein Knopf"). Der Knopf
-**„Vorgaben"** setzt alle zwölf Felder auf NULL zurück; die Herleitungszeile
+**„Vorgaben"** setzt alle **vierzehn** Felder auf NULL zurück; die Herleitungszeile
 nennt die geltende Regel und ob der Satz aus Vorgaben oder aus gepflegten Werten
 besteht.
 
@@ -252,11 +265,11 @@ offengelegten Annahmen.
 | Nr. | Lücke | Was VALERI verlangt | Aufwand | **Entscheid 09.09.2026** |
 |---|---|---|---|---|
 | **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr je Kostenzeile, aber kein Endjahr. | VALERI führt je Faktor Start- **und** Endjahr (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell | **nicht umsetzen** — als Vereinfachung offenlegen (§ 9.4) |
-| **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell | **W5‑B‑12** — nur als dritter Satz p_I, nicht je Zeile |
+| **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell | **umgesetzt W5‑B‑12** — nur als dritter Satz p_I, nicht je Zeile (§ 10) |
 | **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4) |
-| **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 |
+| **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **umgesetzt W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 (§ 10) |
 | **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß | **nicht umsetzen** — offenlegen (§ 9.4) |
-| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **W5‑B‑12** — Freitextfeld |
+| **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **umgesetzt W5‑B‑12** — Freitextfeld (§ 10.5) |
 | **G7** | **Betrachtungszeitraum aus der Nutzungsdauer.** T ist frei wählbar und wird nicht gegen die längste Nutzungsdauer geprüft. | VALERI verlangt die Begründung des Zeitraums. | Prüfzeile; klein | **W5‑B‑11 umgesetzt** (§ 9.3) |
 | **G8** | **Berichtsausgabe der Bandbreite.** Der Word-/Excel-Bericht führt heute den Erwartungsfall. | VALERI-Bericht weist alle drei Szenarien nebeneinander aus. | Berichtsbaustein; **kein klarer Anker** — offen gelassen | **W5‑B‑11 umgesetzt** (§ 9.2) |
 | **G9** | **Kapitalwert je Version absolut.** Wird geführt, aber die Entscheidungsempfehlung („Vorschlag zur Entscheidung") fehlt als Text. | VALERI-Bericht formuliert eine Empfehlung. | Textbaustein; klein | **W5‑B‑11 umgesetzt** (§ 9.1) |
@@ -395,12 +408,30 @@ wie weit Lücke **G2** reicht: genau bis zu diesem dritten Topf neben p_B und p_
 | Feld | NULL heißt |
 |---|---|
 | `Preissteigerung_Investition` (Erwartet) | **wie p_B** (`Preissteigerung_Betrieb`) — nicht „0 %“ |
-| `Szen_Best_Preis_I` / `Szen_Worst_Preis_I` | Vorgabe = das **wirksame p_B** desselben Szenarios |
+| `Szen_Best_Preis_I` / `Szen_Worst_Preis_I` | Vorgabe = **Erwartet‑p_I ∓ 1 %‑Punkt** (Best −, Worst +) |
 | `Nicht_Monetaer` | nichts erfasst (Berichtszeile entfällt) |
 
 Eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie teurer — eine
 Aussage, die niemand getroffen hat. Der einzige gepflegte Satz im Haus, der eine
 allgemeine Kostensteigerung ausdrückt, ist p_B; deshalb der Rückfall dorthin.
+
+> **Die Vorgaberegel je Szenario, ausgeschrieben** (präzisiert in Teil b):
+> wirksames p_I(Szenario) =
+> `satz.PreissteigerungInvestition ?? (p_I_erwartet + Richtung × 1 %‑Punkt)` mit
+> `p_I_erwartet = p.PreissteigerungInvestition ?? p.PreissteigerungBetrieb`.
+
+Der Bezugswert ist also das **Erwartet‑p_I**, nicht das p_B des Szenarios — dieselbe
+∓1‑%‑Punkt-Regel wie bei p_E und p_B, angewandt auf den Erwartungswert der **eigenen**
+Größe. Daraus folgen drei Fälle:
+
+* **Regelfall** (p_I ungepflegt, Szenario‑p_B ungepflegt): Die Vorgabe ist genau das
+  wirksame p_B des Szenarios. Bis Teil a stand hier nur dieser Satz — er ist die
+  Wirkung, nicht die Regel.
+* **Erwartet‑p_I gepflegt:** Die Bandbreite spannt sich um diesen Wert (p_I = 5 %/a →
+  Best 4, Worst 6), unabhängig von p_B.
+* **Nur das Szenario‑p_B gepflegt:** p_I folgt ihm **nicht**. Sonst zöge eine
+  Betriebskostenannahme still die Ersatzbeschaffung mit — und niemand hätte das
+  angegeben.
 
 ### 10.3 Ablage und Migrationsschritt 72
 
@@ -431,3 +462,74 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   nicht berührt.
 * **Zielstand:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
   `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab.
+
+### 10.4 Parametersatz und Dialog (Teil b)
+
+`WirtschaftlichkeitParameter` führt seit Teil b `PreissteigerungInvestition`
+(`double?`) und `NichtMonetaer` (`string`); die Nullsemantik steht an **einer**
+Stelle: `PreisInvestWirksam => PreissteigerungInvestition ?? PreissteigerungBetrieb`.
+`SzenarioSatz` bekommt dieselbe Größe als **siebte**; `NurVorgaben`, `Kopie`,
+`Vorgabe(szenario)` und `Nachweis(p, kultur)` führen sie mit.
+
+`FuerSzenario` ersetzt p_I wie Zins, p_E und p_B — und zwar als **gepflegten** Wert in
+der Kopie. Bliebe das Feld dort `null`, fiele die Kopie über `PreisInvestWirksam` auf
+ihr eigenes, bereits ersetztes p_B zurück; das Szenario rechnete an seinem eigenen Satz
+vorbei. In den Rechenkern kommt der Satz an **einer** Stelle:
+`WirtschaftlichkeitCtrl.RechneBild` übergibt `p.PreisInvestWirksam` als letzten
+Parameter an `KapitalwertRechner.Rechne`. Das ist der einzige Aufrufer — Hauptlauf,
+Verlaufsdialog und Sensitivität gehen alle dort durch.
+
+Gelesen und geschrieben werden die vier Spalten im vorhandenen Weg (`LadeParameter`,
+`LiesSatz`, UPDATE und INSERT von `SpeichereParameter`); der Freitext geht als
+`LongVarWChar` (MEMO) und nicht als `VarWChar` — sonst schnitte ihn der Access-Rückweg
+bei 255 Zeichen ab. `StelleTabellenSicher` bekommt die Schleife über
+`Schritt72_ValeriErgaenzung` neben der für Schritt 71 und die vier Spalten im
+`CREATE TABLE` von `Tab_ProjektWirtschaftlichkeit` (Muster K6).
+
+> **Grenze, bewusst gezogen:** `Tab_ErgebnisWirtschaftlichkeit` bekommt **keine**
+> p_I-Spalte. Die Annahmenzeile der Berichte entsteht aus dem **Parametersatz**, nicht
+> aus der Ergebniszeile; eine Ergebnisspalte wäre eine zweite Wahrheit für dieselbe
+> Zahl. Das unterscheidet p_I bewusst von Zins, p_E und p_B (§ 2.4, V3): Die drei
+> werden je Ergebniszeile persistiert, weil sie dort schon Spalten hatten.
+
+Im **Dialog** steht p_I unter „Allgemein" neben p_B — als einziges Zahlenfeld des
+Blocks **ohne** Rückfall auf den alten Wert, denn ein leeres Feld ist hier eine Aussage.
+Die Herleitungszeile darunter nennt immer den wirksamen Wert und seine Herkunft
+(„wie Betrieb" / „gepflegt"); ohne sie bliebe offen, ob leer „0 %/a" oder „wie p_B"
+heißt. In der Szenariotabelle kommt die siebte Zeile dazu (§ 4).
+
+Das Freitextfeld **„Nicht monetäre Wirkungen"** steht in einem eigenen Abschnitt
+„Bewertung nach DIN EN 17463" und nicht unter „Allgemein": Dort stehen Rechengrößen —
+dieser Text rechnet nichts, er steht neben der Zahl, so wie die Norm es verlangt.
+Gebaut ist er aus dem Hausbaustein `Textfeld` (mehrzeilig); ein zweiter Baustein wäre
+ein zweiter Ort für dieselben Regeln, und ein eigener CSS-Block war nicht nötig.
+
+### 10.5 Bericht, Seite und Freitext (Teil b)
+
+* **`WIRT_SZ_QUELLEN`** (Hinweis über der Szenarientabelle) nennt p_I als dritte
+  Quelle samt Nullsemantik — deutsch und englisch.
+* **Annahmenzeilen.** `SzenarioSatz.Nachweis` führt „· p_I = x,x %/a",
+  `WirtschaftlichkeitParameter.Nachweis` führt „Investition/Ersatz x,x %/a (gepflegt |
+  wie Betrieb)". Dialog, Seite, Word und Excel wachsen dadurch aus **einer** Quelle mit.
+* **Der Satz „Ersatzbeschaffungen nominal konstant"** im Parameternachweis des
+  Word-Berichts war bis Teil a richtig und ist es jetzt nur noch bei p_I = 0. Er heißt
+  deshalb „Ersatzbeschaffungen preisindiziert mit p_I (VDI 2067)" bzw. „… nominal
+  konstant (p_I = 0)". Eine Annahme, die im Bericht steht, ist eine Annahme; eine, die
+  falsch dasteht, ist ein Fehler.
+* **G6 — der Freitext erscheint dreimal, jedes Mal nur wenn gepflegt:** im Word-Bericht
+  als Überschrift 2 + Absatz unmittelbar **nach dem Vorschlagssatz** (erst die Zahl mit
+  ihrer Bandbreite und der Empfehlung, dann das, was die Zahl nicht fassen kann), in
+  Excel als Zelle unter der Vorschlagszelle, auf der Seite als eigene Herleitungszeile
+  im Nachweisblock (`WirtschaftlichkeitStand.Wirkungszeile`, Muster
+  `Vereinfachungszeile`). Sie hängt am **Stand** und nicht an der Ansicht: Der Text
+  beschreibt die Maßnahme, nicht ein Szenario und nicht eine Vergleichswahl.
+* **Ohne gepflegten Text entfällt der ganze Block**, Überschrift eingeschlossen. Eine
+  leere Überschrift wäre keine Aussage, sondern eine Lücke mit Titel.
+
+### 10.6 Wirkung auf den Bestand
+
+Mit Teil b rechnen Bestandsprojekte **mit Ersatzbeschaffung und p_B ≠ 0** erstmals mit
+p_I = p_B; ihre Kapitalwerte sinken leicht. Das ist gewollt — der bisherige Ausweis war
+der zu günstige. **Projekte ohne Ersatzbeschaffung und alle Projekte mit p_B = 0 bleiben
+bitgleich**; wer den alten Ausweis behalten will, trägt p_I ausdrücklich mit 0 ein. Der
+Referenzlauf ist nicht berührt: Er rechnet Simulationen, keine Wirtschaftlichkeit.

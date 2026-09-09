@@ -1719,3 +1719,150 @@ Stelle tritt die Bitgleichheitsprobe bei p_I = 0 — sie vergleicht ohne Toleran
 - **Sichtabnahme** steht aus (Teil b bringt erst die Oberfläche).
 - Die Doku-Aufzählung in `SchemaMigration.SCHRITTE_SQLITE` listet die Schritte nur bis 69
   auf — 70, 71 und 72 fehlen dort; Nachzug bei Gelegenheit.
+
+---
+
+## Anwenderentscheid 09.09.2026 — W5‑B‑12 Teil b: p_I im Parametersatz, Dialog, Bericht und Freitext „Nicht monetäre Wirkungen"
+
+Teil a hatte den Rechenweg gelegt (`KapitalwertRechner.Rechne` nimmt p_I entgegen) und die vier
+Spalten des Migrationsschritts **72** angelegt — mehr nicht: p_I stand auf 0, und **keine Zahl
+änderte sich**. Teil b schließt die Kette. Er füllt den Parametersatz, reicht ihn in den
+Rechenkern, macht ihn im Dialog pflegbar und weist ihn in Bericht und Seite aus; dazu kommt das
+Freitextfeld der VALERI-Lücke **G6**.
+
+### 1. Der Parametersatz
+
+- `WirtschaftlichkeitParameter.PreissteigerungInvestition` (`double?`) und
+  `NichtMonetaer` (`string`). Die Nullsemantik steht an **einer** Stelle:
+  `PreisInvestWirksam => PreissteigerungInvestition ?? PreissteigerungBetrieb`. NULL heißt
+  „wie p_B", nicht „0 %" — eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie
+  teurer.
+- `SzenarioSatz.PreissteigerungInvestition` (`double?`) ist die **siebte** Größe des Satzes;
+  `NurVorgaben`, `Kopie`, `Vorgabe(szenario)` und `Nachweis(p, kultur)` führen sie mit.
+
+> **Die Vorgaberegel je Szenario.** wirksames p_I(Szenario) =
+> `satz.PreissteigerungInvestition ?? (p_I_erwartet ± 1 %‑Punkt)` mit
+> `p_I_erwartet = p.PreissteigerungInvestition ?? p.PreissteigerungBetrieb`
+> (Best −, Worst +). Der Bezug ist also das **Erwartet‑p_I**, nicht das p_B des Szenarios —
+> dieselbe ∓1‑%‑Punkt-Regel wie bei p_E und p_B, angewandt auf den Erwartungswert der eigenen
+> Größe. Im Regelfall (p_I ungepflegt, Szenario‑p_B ungepflegt) ist das **genau das wirksame p_B
+> des Szenarios**; ist Erwartet‑p_I gepflegt, spannt sich die Bandbreite um diesen Wert; und ist
+> nur das Szenario‑p_B gepflegt, folgt p_I ihm **nicht** — sonst zöge eine Betriebskostenannahme
+> still die Ersatzbeschaffung mit.
+
+- `FuerSzenario` ersetzt p_I wie Zins, p_E und p_B — und zwar als **gepflegten** Wert in der
+  Kopie. Bliebe das Feld dort `null`, fiele die Kopie über `PreisInvestWirksam` auf ihr eigenes
+  (bereits ersetztes) p_B zurück und das Szenario rechnete an seinem Satz vorbei.
+- `RechneBild` übergibt `p.PreisInvestWirksam` als letzten Parameter an `Rechne`. Das ist die
+  **einzige** Aufrufstelle des Rechenkerns; Hauptlauf, Verlaufsdialog und Sensitivität gehen alle
+  dort durch, es fehlt also keine Stelle.
+- Lade-/Speicherweg: `LadeParameter` (ohne `?? 0`), `LiesSatz` um die siebte Spalte, UPDATE und
+  INSERT um `Preissteigerung_Investition`, `Szen_Best_Preis_I`, `Szen_Worst_Preis_I` und
+  `Nicht_Monetaer` (Freitext als `LongVarWChar` wie `WQ_Wochenwerte` — VarWChar schnitte ihn auf
+  dem Access-Rückweg ab). `StelleTabellenSicher` bekommt die Schleife über
+  `SchemaKatalog.Schritt72_ValeriErgaenzung` neben der für Schritt 71 **und** die vier Spalten im
+  `CREATE TABLE` von `Tab_ProjektWirtschaftlichkeit` (Muster K6).
+- **Bewusst nicht:** p_I je Ergebniszeile in `Tab_ErgebnisWirtschaftlichkeit`. Die Annahmenzeile
+  des Berichts entsteht aus dem **Parametersatz**, nicht aus der Ergebniszeile; eine fünfte
+  Ergebnisspalte wäre eine zweite Wahrheit für dieselbe Zahl. Der `CREATE TABLE`-Text der
+  Ergebnistabelle bleibt deshalb unangetastet.
+- `KiAktionenWirtschaft.ParameterLesen` meldet `preissteigerung_investition_prozent` (den
+  **wirksamen** Wert), `preissteigerung_investition_herkunft` (`gepflegt` / `wie_betrieb`) und
+  `nicht_monetaere_wirkungen`.
+
+### 2. Dialog „Parameter…"
+
+- **Allgemein**: das Zahlenfeld „Preissteigerung Investition/Ersatz p_I [%/a] (leer = wie
+  Betrieb)" neben p_B — als einziges Feld des Blocks **ohne** Rückfall auf den alten Wert, denn
+  leer ist hier eine Aussage. Darunter eine Herleitungszeile mit dem wirksamen Wert und seiner
+  Herkunft (`WPAR_PREIS_I_ZEILE`).
+- **Szenarien**: eine siebte Zeile „Preissteigerung Investition", unmittelbar hinter den beiden
+  anderen Preissteigerungen (dieselbe Reihenfolge wie in `Nachweis`: i · p_E · p_B · p_I ·
+  Investition · Erträge · Nutzungsdauer). Erwartet = Anzeige des wirksamen Werts, Best/Worst =
+  Felder mit der wirksamen Vorgabe. „Vorgaben" setzt jetzt **vierzehn** Felder zurück (der Knopf
+  legt beide Sätze neu an und trifft das neue Feld dadurch von selbst).
+- **Neuer Abschnitt „Bewertung nach DIN EN 17463"** mit dem mehrzeiligen Freitextfeld „Nicht
+  monetäre Wirkungen" (Hausbaustein `Textfeld Mehrzeilig`, kein neuer Baustein und **kein neuer
+  CSS-Block**). Ein eigener Abschnitt, weil unter „Allgemein" Rechengrößen stehen; dieser Text
+  rechnet nichts, sondern steht neben der Zahl, so wie die Norm es verlangt.
+- Die Hülle `WirtschaftlichkeitParameterHuelle` blieb **unverändert**: Der Parametersatz kommt
+  vollständig herein und geht vollständig zurück, jeder neue Gabenschlüssel wäre überflüssig
+  gewesen.
+
+### 3. Bericht und Seite
+
+- `WIRT_SZ_QUELLEN` (Hinweis über der Szenarientabelle) nennt jetzt als dritte Quelle p_I mit
+  seiner Nullsemantik — deutsch und englisch.
+- `p.Nachweis(kultur)` führt „Investition/Ersatz x,x %/a (gepflegt | wie Betrieb)";
+  `SzenarioSatz.Nachweis` führt „· p_I = x,x %/a". Damit wachsen die Annahmenzeilen von Word,
+  Excel, Dialog und Seite aus **einer** Quelle mit.
+- Der Satz „Ersatzbeschaffungen nominal konstant" im Parameternachweis des Word-Berichts war bis
+  hierher richtig und ist es jetzt nur noch bei p_I = 0. Er heißt deshalb „Ersatzbeschaffungen
+  preisindiziert mit p_I (VDI 2067)" bzw. „… nominal konstant (p_I = 0)".
+- **G6** — der Freitext erscheint dreimal, jedes Mal **nur wenn gepflegt**: im Word-Bericht als
+  Überschrift 2 + Absatz unmittelbar nach dem Vorschlagssatz (`WIRT_NM_TITEL`), in Excel als
+  Zelle unter der Vorschlagszelle (`WIRT_NM_ZEILE`) und auf der Seite als eigene
+  Herleitungszeile im Nachweisblock (`WirtschaftlichkeitStand.Wirkungszeile`, Muster
+  `Vereinfachungszeile`). Eine leere Überschrift wäre keine Aussage, sondern eine Lücke mit
+  Titel. Die Zeile hängt am **Stand** und nicht an der Ansicht: Sie folgt weder der Szenario-
+  noch der Vergleichswahl.
+
+### 4. Nachweise W5‑B‑12 Teil b
+
+| Prüfung | Ort | Ergebnis |
+|---|---|---|
+| p_I ungepflegt → wirksam = p_B; das leere Feld zieht bei geändertem p_B mit, ein gepflegtes nicht | `PreisInvestitionTests.Ohne_eigenen_Satz_gilt_die_Preissteigerung_Betrieb` | grün (1,5 → 2,75 → 3,0) |
+| Szenariovorgabe = Erwartet‑p_I ∓ 1 %‑Pkt — ohne gepflegtes p_I (p_B = 2 → Best 1,0 / Worst 3,0, **gleich dem wirksamen p_B**) und mit (p_I = 5 → Best 4,0 / Worst 6,0) | `…Die_Szenariovorgabe_spannt_sich_um_das_wirksame_Erwartet_p_I` | grün |
+| gepflegter Szenariowert hat Vorrang und bleibt bei geändertem p_B stehen (7,5 %) | `…Ein_gepflegter_Szenariowert_schlaegt_die_Vorgabe` | grün |
+| `NurVorgaben` kennt die siebte Größe; `Kopie` trägt sie mit | `…NurVorgaben_beruecksichtigt_das_neue_Feld` | grün |
+| Nachweiszeilen: „p_I = 2,0 %/a" im Satz, „Investition/Ersatz 1,0 %/a (wie Betrieb)" bzw. „4,0 %/a (gepflegt)" im Parametersatz | `…Die_Nachweiszeilen_nennen_p_I` | grün |
+| Speichern/Laden der vier Spalten über den echten Weg: 2,5 · „Versorgungssicherheit, Arbeitsschutz, Komfort" · Worst 4,25 · Best bleibt NULL — und zurück ins Leere | `…Die_vier_Spalten_ueberleben_Speichern_und_Laden` | grün |
+| `StelleTabellenSicher` legt die vier Spalten nach einem `DROP COLUMN` wieder an | `…StelleTabellenSicher_legt_die_Spalten_des_Schritts_72_an` | grün |
+| **Ende zu Ende über `Berechne`** (10.000 €, n = 8 a, T = 20 a, i = 3 %, p_B = 2 %): KW Erwartet **− 85.965,31 €** bei p_I = 0 gegen **− 88.611,47 €** bei p_I = p_B = 2 % — Δ **− 2.646,16 €** aus zwei indizierten Ersatzbeschaffungen (t = 8/16) und der höheren Restwert-Preisbasis | `…Mit_Ersatzbeschaffung_senkt_p_I_den_Erwartet_Kapitalwert` | grün |
+| ohne Ersatzbeschaffung (n < 1) ändert p_I nichts: **− 74.607,92458136652 €** beidseitig, **bitgleich** | `…Ohne_Ersatzbeschaffung_aendert_p_I_nichts` | grün |
+| **Regression**: p_B = 0 und p_I NULL → wirksames p_I = 0 → **− 85.965,30754577533 €** beidseitig, bitgleich zum Stand vor W5‑B‑12 (mit Ersatz!) | `…Ohne_Preissteigerung_Betrieb_bleibt_der_Erwartungsfall_bitgleich` | grün |
+| Dialog: sieben Zeilen × drei Spalten, 14 Eingabefelder | `WirtschaftlichkeitParameterDialogTests.Die_Szenariotabelle_zeigt_drei_Spalten_und_sieben_Groessen` | grün |
+| Dialog: p_I-Vorgaben Best 0,50 / Worst 2,50 bei p_B = 1,5 | `…Die_Szenariofelder_zeigen_die_wirksamen_Vorgaben` | grün |
+| Dialog: leeres p_I zeigt „1,50 %/a (wie Betrieb)", gepflegtes „3,00 %/a (gepflegt)", Leeren führt zurück | `…Ein_leeres_p_I_rechnet_wie_die_Preissteigerung_Betrieb` | grün |
+| Dialog: gepflegtes p_I = 4,0 verschiebt die Szenariofelder auf 3,00 / 5,00 | `…Ein_gepflegtes_p_I_verschiebt_die_Szenariovorgaben` | grün |
+| Dialog: „Vorgaben" setzt vierzehn Felder zurück, p_I eingeschlossen | `…Vorgaben_setzt_die_vierzehn_Felder_zurueck` | grün |
+| Dialog: Herleitungszeilen nennen p_I (Best 0,5 / Worst 2,5 %/a) | `…Die_Herleitungszeilen_nennen_beide_Saetze` | grün |
+| Dialog: der Freitext landet im Parametersatz | `…Der_Freitext_der_nicht_monetaeren_Wirkungen_wird_uebernommen` | grün |
+| Sandbox-Bau `WP-Plan.sln` x64 Debug | `K:\imp2\src` (= HEAD `4a1216b8` + 16 Dateien) | **0 Fehler** |
+| `EPOS.Kern.Tests` / `EPOS.UI.Tests` | `dotnet test --no-build` | **2 195/2 195** / **3 362/3 362** |
+
+Ausgangsstand derselben Sandbox ohne diese Etappe: 2 185 / 3 359 — die 10 neuen Kern- und
+3 neuen UI-Fälle sind vollständig zugeordnet.
+
+**Ein Referenzlauf war nicht nötig:** Die Etappe fasst keinen Simulationswert an. An seine Stelle
+tritt die Bitgleichheitsprobe des Erwartungsfalls bei p_B = 0 (12 gültige Stellen, ohne
+Toleranzfenster) und die zweite ohne Ersatzbeschaffung.
+
+**Bestehende Erwartungswerte angepasst:** keine Zahl. Angepasst wurden ausschließlich
+**Feldzählungen und Indizes** im Parameterdialog (`WirtschaftlichkeitParameterDialogTests`):
+`SZENARIO_FELDER` 12 → 14, dazu die neue Konstante `ALLGEMEIN_FELDER = 4`, die Gruppenliste um
+„Bewertung nach DIN EN 17463" und die Zeilenindizes der Szenariotabelle um eins nach unten
+(Investition 3 → 4, Erträge 4 → 5, Nutzungsdauer 5 → 6). Der Fall
+`Die_Szenariotabelle_zeigt_drei_Spalten_und_sechs_Groessen` heißt jetzt
+`…_und_sieben_Groessen`, `Vorgaben_setzt_die_zwoelf_Felder_zurueck` heißt
+`Vorgaben_setzt_die_vierzehn_Felder_zurueck`.
+
+**`SzenarioParameterTests` blieb unberührt** — insbesondere
+`Erwartet_bleibt_zahlengleich` und `Best_Erwartet_und_Worst_liegen_auseinander`. Beide rufen
+`KapitalwertRechner.Rechne` unmittelbar auf (ohne den p_I-Parameter) und vergleichen zwei Läufe
+DERSELBEN Fassung; p_I kann dort weder wirken noch die Erwartung verschieben.
+
+### Offene Punkte
+
+- **Sichtabnahme**: im Parameterdialog das p_I-Feld samt Herleitungszeile unter „Allgemein", die
+  siebte Zeile der Szenariotabelle (Spaltenbreiten auf schmalen Fenstern) und der neue Abschnitt
+  „Bewertung nach DIN EN 17463" mit dem mehrzeiligen Feld; im Word-Bericht der Block „Nicht
+  monetäre Wirkungen" nach dem Vorschlagssatz und der geänderte Satz im Parameternachweis; im
+  Excel-Blatt die Zelle unter der Vorschlagszelle; auf der Seite die neue Herleitungszeile.
+- **Bestandsprojekte MIT Ersatzbeschaffung und p_B ≠ 0 rechnen ab jetzt mit p_I = p_B**; ihre
+  Kapitalwerte sinken leicht (im Nachweis oben − 2.646,16 € bei 10.000 € und zwei Ersätzen). Das
+  ist gewollt — der bisherige Ausweis war der zu günstige (Vereinfachung W1, Lücke G4). Projekte
+  **ohne** Ersatzbeschaffung und alle Projekte mit p_B = 0 bleiben zahlengleich. Wer den alten
+  Ausweis will, trägt p_I ausdrücklich mit 0 ein.
+- Die Doku-Aufzählung in `SchemaMigration.SCHRITTE_SQLITE` listet die Schritte weiterhin nur bis
+  69 — 70, 71 und 72 fehlen dort; Nachzug bei Gelegenheit (schon in Teil a vermerkt).

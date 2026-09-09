@@ -536,6 +536,20 @@ namespace WindowsFormsApplication1
                 r += 2;
             }
 
+            // ---------------- ETAPPE W5‑B‑12 (G6): nicht monetäre Wirkungen ----------
+            //
+            // EINE Zelle UNTER der Vorschlagszelle — dieselbe Stelle wie in Word (dort
+            // Überschrift + Absatz nach dem Vorschlag). Ohne gepflegten Text entfällt
+            // sie ganz: Eine Zeile „Nicht monetäre Wirkungen:" ohne Inhalt wäre die
+            // Behauptung, es gäbe keine.
+            if (p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer))
+            {
+                ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
+                    MyResource.Resource.WIRT_NM_ZEILE, p.NichtMonetaer.Trim());
+                ws.Cell(r, 1).Style.Alignment.WrapText = true;
+                r += 2;
+            }
+
             // ---------------- Hinweise dieses Laufs (ETAPPE E7, Divergenz D2) ----------------
             //
             // e.Hinweis erschien in Excel BISHER NIRGENDS. Darin stehen sämtliche

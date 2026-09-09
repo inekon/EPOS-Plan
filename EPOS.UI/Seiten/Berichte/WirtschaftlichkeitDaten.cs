@@ -135,6 +135,18 @@ public sealed class WirtschaftlichkeitStand
     /// </summary>
     public string Vereinfachungszeile { get; set; } = "";
 
+    /// <summary>
+    /// ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026, VALERI-Lücke G6): die
+    /// <b>nicht monetären Wirkungen</b> als fertige Zeile — Komfort,
+    /// Versorgungssicherheit, Arbeitssicherheit und was sich sonst nicht in Euro fassen
+    /// lässt. Gepflegt wird der Text im Parameterdialog; er hängt am Projekt, nicht an
+    /// der Szenario- oder Vergleichswahl, und steht deshalb am Stand.
+    ///
+    /// <para>Leer = nichts erfasst; dann wird die Zeile gar nicht erst gezeichnet —
+    /// dieselbe Regel wie im Word- und Excel-Bericht.</para>
+    /// </summary>
+    public string Wirkungszeile { get; set; } = "";
+
     /// <summary>Die Kennzahlen und die Tabelle des vorgewählten Szenarios.</summary>
     public ErgebnisAnsicht Ansicht { get; set; } = new();
 

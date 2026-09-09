@@ -94,6 +94,13 @@ namespace WindowsFormsApplication1
         /// Sie greift NUR auf Positionen ohne gepflegte Szenario-Nutzungsdauer.</summary>
         public double? NutzungsdauerAenderung;
 
+        /// <summary>
+        /// ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): Preissteigerung der
+        /// kapitalgebundenen Kosten p_I [%/a] dieses Szenarios; <c>null</c> = Vorgabe
+        /// (Erwartet-p_I ∓ 1 %-Pkt, siehe <see cref="PreisInvestWirksam"/>).
+        /// </summary>
+        public double? PreissteigerungInvestition;
+
         /// <summary>true, wenn kein einziges Feld gepflegt ist — dann gelten durchweg die
         /// Vorgaben (Statuszeile der Seite und Herleitungszeile des Dialogs).</summary>
         public bool NurVorgaben
@@ -102,7 +109,8 @@ namespace WindowsFormsApplication1
             {
                 return !Zinssatz.HasValue && !PreissteigerungEnergie.HasValue &&
                        !PreissteigerungBetrieb.HasValue && !InvestitionAenderung.HasValue &&
-                       !ErtragAenderung.HasValue && !NutzungsdauerAenderung.HasValue;
+                       !ErtragAenderung.HasValue && !NutzungsdauerAenderung.HasValue &&
+                       !PreissteigerungInvestition.HasValue;
             }
         }
 
@@ -135,6 +143,24 @@ namespace WindowsFormsApplication1
         public double PreisBetriebWirksam(double projektwert)
         {
             return PreissteigerungBetrieb ?? (projektwert + Richtung * VORGABE_PREIS_PUNKTE);
+        }
+
+        /// <summary>
+        /// ETAPPE W5‑B‑12: wirksame Preissteigerung der kapitalgebundenen Kosten
+        /// p_I [%/a] dieses Szenarios.
+        ///
+        /// <para><b>Der Bezugswert ist das ERWARTET-p_I</b>
+        /// (<see cref="WirtschaftlichkeitParameter.PreisInvestWirksam"/>), nicht das
+        /// p_B des Szenarios. Im Regelfall — p_I des Projekts nicht gepflegt, also
+        /// „wie p_B", und das Szenario-p_B ebenfalls nicht gepflegt — kommt dabei
+        /// genau das wirksame p_B dieses Szenarios heraus; ist Erwartet-p_I dagegen
+        /// gepflegt, spannt sich die Bandbreite um DIESEN Wert. Beides ist dieselbe
+        /// ∓1‑%‑Punkt-Regel wie bei p_E und p_B — der Satz greift immer am
+        /// Erwartungswert seiner eigenen Größe an.</para>
+        /// </summary>
+        public double PreisInvestWirksam(double erwartetWert)
+        {
+            return PreissteigerungInvestition ?? (erwartetWert + Richtung * VORGABE_PREIS_PUNKTE);
         }
 
         /// <summary>Wirksame Investitionsänderung [%], + = teurer.</summary>
@@ -197,9 +223,14 @@ namespace WindowsFormsApplication1
             double zins = p != null ? p.Zinssatz : 0;
             double pe = p != null ? p.PreissteigerungEnergie : 0;
             double pb = p != null ? p.PreissteigerungBetrieb : 0;
+            // ETAPPE W5‑B‑12: p_I gehört in die Annahmenzeile, sobald es sie gibt — der
+            // Satz indiziert die Ersatzbeschaffungen, und eine Bandbreite, deren
+            // Annahmen nicht vollständig dastehen, ist keine offengelegte Annahme.
+            double pi = p != null ? p.PreisInvestWirksam : 0;
             return "i = " + ZinsWirksam(zins).ToString("N1", kultur) + " % · p_E = " +
                    PreisEnergieWirksam(pe).ToString("N1", kultur) + " %/a · p_B = " +
-                   PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · Investition " +
+                   PreisBetriebWirksam(pb).ToString("N1", kultur) + " %/a · p_I = " +
+                   PreisInvestWirksam(pi).ToString("N1", kultur) + " %/a · Investition " +
                    InvestWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Erträge " +
                    ErtragWirksam.ToString("+0.#;-0.#;0", kultur) + " % · Nutzungsdauer " +
                    DauerWirksam.ToString("+0.#;-0.#;0", kultur) + " a";
@@ -410,6 +441,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool KwkgPauschalmodus;
 
+        // ---- ETAPPE W5‑B‑12 — p_I und die nicht monetären Wirkungen (Schritt 72) ----
+
+        /// <summary>
+        /// Preisänderungssatz der KAPITALGEBUNDENEN Kosten p_I [%/a] (VDI 2067 Blatt 1):
+        /// Er indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts
+        /// (<c>KapitalwertRechner.Rechne</c>, Parameter <c>preisstInvestProzent</c>).
+        ///
+        /// <para><b><c>null</c> heißt „wie p_B" — nicht „0 %".</b> Eine 0 als Vorbelegung
+        /// hätte behauptet, Investitionsgüter würden nie teurer; diese Aussage hat
+        /// niemand getroffen. Der einzige gepflegte Satz im Haus, der eine allgemeine
+        /// Kostensteigerung ausdrückt, ist <see cref="PreissteigerungBetrieb"/> —
+        /// deshalb der Rückfall dorthin (<see cref="PreisInvestWirksam"/>).</para>
+        /// </summary>
+        public double? PreissteigerungInvestition;
+
+        /// <summary>
+        /// VALERI-Lücke G6: die NICHT MONETÄREN Wirkungen der Maßnahme als Freitext —
+        /// Versorgungssicherheit, Arbeitsschutz, Komfort, Außenwirkung, Erfüllung einer
+        /// Auflage. DIN EN 17463 verlangt diese qualitative Beschreibung; ein
+        /// Kapitalwert ohne sie behauptet mehr, als er weiß.
+        ///
+        /// <para><c>null</c> bzw. leer = nichts erfasst; Bericht und Seite lassen die
+        /// Zeile dann weg, statt eine leere zu drucken.</para>
+        /// </summary>
+        public string NichtMonetaer;
+
+        /// <summary>
+        /// Das WIRKSAME p_I [%/a] des Erwartungsfalls: der gepflegte Satz, sonst p_B.
+        /// Diese eine Stelle trägt die Nullsemantik — Rechenlauf, Dialog, Bericht und
+        /// die Szenariovorgaben fragen sie, statt den Rückfall je Ort zu wiederholen.
+        /// </summary>
+        public double PreisInvestWirksam
+        {
+            get { return PreissteigerungInvestition ?? PreissteigerungBetrieb; }
+        }
+
         public DateTime? GeaendertAm;
 
         /// <summary>
@@ -458,16 +525,27 @@ namespace WindowsFormsApplication1
             k.Zinssatz = s.ZinsWirksam(Zinssatz);
             k.PreissteigerungEnergie = s.PreisEnergieWirksam(PreissteigerungEnergie);
             k.PreissteigerungBetrieb = s.PreisBetriebWirksam(PreissteigerungBetrieb);
+            // ETAPPE W5‑B‑12: p_I wird wie Zins und die beiden anderen Preissätze
+            // ERSETZT — und zwar als GEPFLEGTER Wert. Bliebe das Feld null, fiele die
+            // Kopie über PreisInvestWirksam auf ihr eigenes (schon ersetztes) p_B
+            // zurück und das Szenario rechnete an seinem Satz vorbei.
+            k.PreissteigerungInvestition = s.PreisInvestWirksam(PreisInvestWirksam);
             return k;
         }
 
         /// <summary>Kurzdarstellung als Nachweiszeile (Reiter + Bericht).</summary>
         public string Nachweis(System.Globalization.CultureInfo kultur)
         {
+            // ETAPPE W5‑B‑12: p_I steht IMMER da, auch ungepflegt — dann mit seiner
+            // Herkunft „wie Betrieb". Ein Satz, der die Ersatzbeschaffungen fortschreibt,
+            // gehört zu den Annahmen des Laufs; ihn nur bei Pflege zu nennen hieße, den
+            // Regelfall zu verschweigen.
             string t = "i = " + Zinssatz.ToString("N1", kultur) + " % · T = " + Betrachtungszeitraum +
                    " a · Preissteigerung Energie " + PreissteigerungEnergie.ToString("N1", kultur) +
                    " %/a, Betrieb " + PreissteigerungBetrieb.ToString("N1", kultur) +
-                   " %/a · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
+                   " %/a, Investition/Ersatz " + PreisInvestWirksam.ToString("N1", kultur) +
+                   " %/a (" + (PreissteigerungInvestition.HasValue ? "gepflegt" : "wie Betrieb") +
+                   ") · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
             if (CO2Preis > 0)
                 t += " · CO₂ (BEHG) " + CO2Preis.ToString("N0", kultur) + " €/t";
             if (KwkgBonus > 0 || KwkgBonusEinspeisung > 0)

@@ -10929,7 +10929,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>{0}: defaults — {1}</value>
   </data>
   <data name="WPAR_SZ_HINWEIS" xml:space="preserve">
-    <value>Expected uses the project parameters above unchanged — that column is display only. Best and worst deviate from it: discount rate and price escalations are absolute, investment and revenues are relative changes in percent, service life is a change in years; + always means more or longer. A best/worst value maintained on a cost line takes PRECEDENCE — the flat deviation only applies where none is maintained. „Defaults“ restores the proposal (rate and escalations ∓ 1 percentage point, investment ∓ 10 %, revenues ± 10 %, service life ± 2 years).</value>
+    <value>The expected case still uses the project parameters above — that column is display only. Best and worst deviate from it: interest rate and price escalations apply in absolute terms, investment and revenues as a change in percent, the service life as a change in years; + always means more or longer. A best/worst value maintained on a cost item takes PRECEDENCE — the flat deviation only applies where none is given. “Defaults” restores the proposal (interest rate and price escalations ∓ 1 percentage point, investment ∓ 10 %, revenues ± 10 %, service life ± 2 years). The default for p_I is spread around the p_I IN EFFECT for the expected case: if p_I follows the operating rate — the regular case — that is exactly the p_B of this scenario.</value>
   </data>
   <data name="WPAR_SZ_INVEST" xml:space="preserve">
     <value>Investment</value>
@@ -10957,6 +10957,33 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPAR_SZ_ZINS" xml:space="preserve">
     <value>Discount rate</value>
+  </data>
+  <data name="WPAR_PREIS_I" xml:space="preserve">
+    <value>Capital cost escalation p_I [%/a] (empty = as operating):</value>
+  </data>
+  <data name="WPAR_PREIS_I_ZEILE" xml:space="preserve">
+    <value>p_I in effect: {0} %/a ({1}). The rate indexes the replacement investments and the price basis of the residual value (VDI 2067 sheet 1). An empty field means “as operating”, not “0 %/a”.</value>
+  </data>
+  <data name="WPAR_PREIS_I_WIE_B" xml:space="preserve">
+    <value>as operating</value>
+  </data>
+  <data name="WPAR_PREIS_I_GEPFLEGT" xml:space="preserve">
+    <value>maintained</value>
+  </data>
+  <data name="WPAR_SZ_PREIS_I" xml:space="preserve">
+    <value>Capital cost escalation</value>
+  </data>
+  <data name="WPAR_G_BEWERTUNG" xml:space="preserve">
+    <value>Assessment according to EN 17463</value>
+  </data>
+  <data name="WPAR_NICHT_MONETAER" xml:space="preserve">
+    <value>Non-monetary effects:</value>
+  </data>
+  <data name="WPAR_NICHT_MONETAER_PLATZ" xml:space="preserve">
+    <value>e.g. security of supply, occupational safety, comfort, public perception, compliance with a requirement</value>
+  </data>
+  <data name="WPAR_NICHT_MONETAER_HINWEIS" xml:space="preserve">
+    <value>EN 17463 requires a description of everything that cannot be expressed in euros. The text belongs to the measure as a whole and is therefore kept with the project, not per variant; it appears in the report and on the page under “Non-monetary effects”. If it stays empty, the line is omitted — an empty heading would say nothing.</value>
   </data>
   <data name="WPAR_ZINS" xml:space="preserve">
     <value>Discount rate i [%]:</value>
@@ -16397,7 +16424,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>The self-consumption rate and the feed-in share of the photovoltaic system are derived from the hourly simulation, not set as an assumption.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
-    <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario.</value>
+    <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario. The capital cost escalation p_I indexes the replacement investments and the price basis of the residual value; if it is not maintained separately it follows the operating rate (p_B), in the scenario at the same distance of 1 percentage point as p_E and p_B.</value>
   </data>
   <data name="WIRT_SZ_SP_VARIANTE" xml:space="preserve">
     <value>Variant</value>
@@ -16416,5 +16443,11 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
     <value>ΔNPV = net present value of the variant less the net present value of the base project (reference case); “—" = no base project in the comparison group or scenario not calculated.</value>
+  </data>
+  <data name="WIRT_NM_TITEL" xml:space="preserve">
+    <value>Non-monetary effects</value>
+  </data>
+  <data name="WIRT_NM_ZEILE" xml:space="preserve">
+    <value>Non-monetary effects: {0}</value>
   </data>
 </root>
