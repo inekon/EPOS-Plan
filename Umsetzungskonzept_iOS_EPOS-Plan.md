@@ -1934,6 +1934,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Access-Zweig bleibt, wie er ist. Nachweise: Kern und UI 0 Fehler/keine neue Warnung, `EPOS.Kern.Tests` 1 348 →
 > 1 372 grün, `EPOS.UI.Tests` 2 724 → 2 728 grün, Designer-Prüfung „abweichend 0", beide Kern-Wächter leer, Gate grün,
 > Referenzlauf byte-gleich. Protokoll: § 5.1, § 6-Nachtrag und § 8 in `iF30_Lesemodus_Protokoll.md`; Abnahme A‑iF30‑11.
+>
+> **#157 Erststart ohne Altbestand (Befund des Wiki-Agenten #155, 09.09.2026, umgesetzt in `18f6b11`, zusammengeführt in
+> `ed2b8b6`).** Fehlen im Datenbankordner `Kenndaten.sqlite` UND `Kenndaten.accdb` — die Lage jeder Neuinstallation auf
+> einem frischen Rechner —, **startet das Programm nicht**: `DataRepository.DatenbankVorhanden()` ist falsch
+> (`SqliteDatenzugriff` öffnet `Mode=ReadOnly` und legt nichts an), `ErststartMigration.Pruefe` meldet `BeidesFehlt`, und
+> `Program.cs:392–400` endet mit der Meldung `START_DB_FEHLT`; eine leere Datenbank entsteht nicht, und das vom Setup nach
+> `{app}\Vorlage` gelegte `Kenndaten.accdb` liest kein Pfad im Quelltext (die Erstkopie war ein Vorschlag des
+> Setup-Konzepts § 6.2, nie gebaut). Belegt durch `Proben/ErststartProben` (9/9, ohne Windows, nicht in `WP-Plan.sln`).
+> Richtiggestellt: `UebernahmeText` und `AceFehlt` in `Setup/EPOS-Plan.iss` (de+en) samt drei Kommentaren — die Aussage
+> „eine Datenbank je Windows-Konto im Benutzerprofil" kannte der Code nie; `BETRIEB_SQLITE.md` § 1.1 neu. Anwenderrahmen
+> vom selben Tag: Access wurde nie produktiv verwendet, der Übernahmeweg ist Hauswerkzeug, kein Kundenweg; die
+> Anwenderdokumentation (Wiki, Website) nennt Access nicht mehr. **Offen: Entscheid #157‑E‑1** — W1 `.accdb`-Vorlage +
+> Übernahme auf jedem neuen Rechner, W2 `.sqlite`-Vorlage (Übernahmeweg bleibt), **W3 `.sqlite`-Vorlage und Access-Weg
+> samt Engine aus Setup und Erststart (empfohlen; deckungsgleich mit der iOS-Schale, die die Seed-Kopie schon so
+> fährt)** —, dazu #157‑E‑2 (Erzeugung der ausgelieferten Vorlage, mit oder ohne Beispielprojekte) und #157‑E‑3
+> (Deinstallations-Rückfrage zeigt auf `{localappdata}\EPOS_PLAN`, das nichts anlegt). Gate: Kern 2194 / UI 3362
+> grün, kein Rechenweg berührt.
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
