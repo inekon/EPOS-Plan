@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Proben zum Werkzeug Auslieferungsvorlage (Auftrag #160).
+
+    Sie laufen gegen eine KOPIE von Referenzlaeufe\Kenndaten_Test.sqlite - nie gegen die
+    Datei selbst: Sie ist die Quelle jedes Referenzlaufs und die Messlatte des
+    SQL-Dialektpruefers, und schon das Oeffnen im WAL-Modus legt Beidateien daneben. Fehlt
+    die Datei, ueberspringen die Faelle still (Muster: EPOS.Kern.Tests\TestDatenbank).
+
+    KEIN ProjectReference auf das Werkzeug, sondern der Aufruf des gebauten Programms
+    ueber "dotnet run": Geprueft wird das, was auch das Setup aufruft - Kommandozeile,
+    Rueckgabecode, Zieldatei, Prueflauf. Ein Test, der die Klassen von innen aufruft,
+    liesse genau die Naht ungeprueft, an der W2/W3 ansetzen.
+
+    Gehoert bewusst NICHT in WP-Plan.sln. Gebaut und ausgefuehrt wird ueber
+    Werkzeuge\Auslieferungsvorlage\Auslieferungsvorlage.sln.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Auslieferungsvorlage.Tests</AssemblyName>
+    <RootNamespace>Auslieferungsvorlage.Tests</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Der Kern, um die erzeugte Vorlage zu LESEN (ProjektCtrl.NamenListe, SchemaStand)
+         und um das Beispielpaket zu erzeugen (ProjektExportImportCtrl). -->
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+    <!-- Nur, damit das Werkzeug vor den Proben gebaut ist; aufgerufen wird es als Programm. -->
+    <ProjectReference Include="..\Auslieferungsvorlage\Auslieferungsvorlage.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Auslieferungsvorlage - erzeugt aus einer produktiven Kenndaten.sqlite die
+    BEREINIGTE Auslieferungsdatenbank samt Beispielprojekten (Auftrag #160,
+    Anwenderentscheid #157-E-2 vom 09.09.2026).
+
+    WARUM ES DAS GIBT. Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md 6.1 beschrieb den
+    Auslieferungsstand bis hierher als HANDARBEIT in vier Schritten ("noch nicht
+    automatisiert"). Von Hand ist das der gefaehrlichste Schritt der ganzen Freigabe:
+    Die Entwicklungsdatenbank enthaelt reale Kunden- und Objektdaten, und ein
+    vergessenes DELETE ist eine Datenpanne, die niemand mehr einsammelt. Ein Skript
+    macht die Bereinigung nachvollziehbar, wiederholbar und pruefbar - der Prueflauf
+    neben der Zieldatei ist der Beleg, den man vor der Auslieferung liest.
+
+    DIESELBE BEREINIGUNG BRAUCHT DIE BEISPIELDATENBANK. Konzept_Projektbeispiele_
+    Dokumentation.md, Entscheid E6: "Eigene Beispieldatenbank, aus der bereinigten
+    Auslieferungsdatenbank plus Beispielprojekte ... Nutzt dieselbe Bereinigung wie das
+    Setup (dort Abschnitt 6.1)". Beide Zwecke werden mit diesem einen Werkzeug bedient;
+    der Unterschied liegt allein im Schalter fuer die Beispielpakete.
+
+    DAS VORBILD IST sql/tools/Reduziere-Testdatenbank.sql. Jenes Skript reduziert eine
+    Kopie auf dreizehn Referenzprojekte; hier fallen ALLE Projekte. Die Stufen sind
+    dieselben (Kaskade, Tabellen mit Projektspalte ohne Fremdschluessel, Detailtabellen
+    zweiter und dritter Ebene, PRAGMA defer_foreign_keys innerhalb der Transaktion), nur
+    kommt die Tabellenliste hier nicht aus einem von Hand gepflegten Text, sondern aus
+    dem SCHEMA DER GEOEFFNETEN DATEI - siehe Projektsicht.cs. Ein Schemaschritt, der eine
+    neue Projekttabelle anlegt (zuletzt 65/66: Tab_Wechselrichter, Z_AnlageStrang), waere
+    in einer festen Liste vergessen worden.
+
+    net10.0 ohne Windows-Bindung - laeuft damit auch auf Linux und in der CI.
+    Gehoert bewusst NICHT in WP-Plan.sln (Muster: Werkzeuge\Testdatenbankschema,
+    Werkzeuge\Formularkarte). Gebaut und geprueft wird ueber die eigene Projektmappe
+    Auslieferungsvorlage.sln, die auch das Testprojekt fuehrt.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Auslieferungsvorlage</AssemblyName>
+    <RootNamespace>Auslieferungsvorlage</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\EPOS.Kern\EPOS.Kern.csproj" />
+  </ItemGroup>
+
+</Project>

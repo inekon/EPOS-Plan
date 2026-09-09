@@ -208,6 +208,7 @@ Arbeitsspeicher (`-shm`) und funktioniert auf SMB-Freigaben nicht zuverlässig.
 | **SQLiteStudio** | liegt bereits unter `C:\Program Files (x86)\SQLiteStudio`; kommt der Access-Datenblatt- und Einzelsatzansicht am nächsten |
 | **DBeaver** | stärker bei ER-Diagramm und Datenexport; das ER-Fenster ist der Ersatz für das Access-Beziehungsfenster |
 | **`sqlite3.exe`** | Befehlszeile, u. a. für `VACUUM INTO` |
+| **`Werkzeuge/Auslieferungsvorlage`** | erzeugt aus einer produktiven `Kenndaten.sqlite` die **bereinigte Auslieferungsdatenbank** samt Beispielprojekten (`.wpx`) und legt einen Prüfbericht daneben: Projektdaten entfernt, Kataloge auf den Auslieferungsstand, `Tab_Applikation` ohne Kundennamen, `VACUUM`, `journal_mode = WAL`, Schemastand, `integrity_check`, Datenschutzwächter. Die Quelle bleibt byte-gleich (`VACUUM INTO` über `Datenbanksicherung.KopieAnlegen`). Aufruf: `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]`; Rückgabe 0 = erzeugt und abgenommen, alles andere ein Abbruch mit Grund auf `stderr`. Einzelheiten in [`Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md`](Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md) § 6.1 |
 
 **Mindestens SQLite 3.37** — darunter versteht das Werkzeug die `STRICT`-Tabellen des
 Zielschemas nicht. `VACUUM INTO` gibt es ab 3.27.

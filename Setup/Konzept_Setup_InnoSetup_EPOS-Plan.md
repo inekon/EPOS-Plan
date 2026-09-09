@@ -378,27 +378,96 @@ Access-Engine).
 Projekte aus der Entwicklung — also Kunden- und Objektdaten. Sie in ein Setup
 zu packen, das an Dritte geht, wäre eine Datenpanne.
 
-Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.accdb` und
-entsteht in vier Schritten:
+Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.sqlite`.
+**Seit dem 09.09.2026 erzeugt ihn ein Werkzeug** — Anwenderentscheid
+**#157‑E‑2** („Empfehlung" angenommen: automatisieren, und die Vorlage enthält
+Beispielprojekte), umgesetzt als `Werkzeuge\Auslieferungsvorlage` (Auftrag
+#160). Die vier Handgriffe von früher sind damit fünf Schritte des Werkzeugs;
+sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
 
-1. Kopie der produktiven Datenbank ziehen (vorher prüfen, ob `Kenndaten.laccdb`
-   existiert — dann ist sie geöffnet)
-2. Alle Projektdaten löschen. Die Löschweitergaben tragen das meiste mit: Ein
-   `DELETE FROM Tab_Projekt` räumt über die 68 Beziehungen mit `DEL-CASCADE`
-   die abhängigen Tabellen ab. Die dokumentierten Ausnahmen —
-   `Tab_Pufferspeicher` hängt **nicht** an der Projektkaskade, `ID_PUFFER` hat
-   **keine** Beziehung — sind einzeln nachzuziehen
-3. In den `*_STAMM`-Tabellen behalten, was `ReadOnly = TRUE` trägt; das ist
-   laut Namenskonvention genau der Auslieferungskatalog
-4. „Komprimieren und reparieren", dann die Datei schreibgeschützt ablegen
+1. **Arbeitskopie** über `Datenbanksicherung.KopieAnlegen` — die eine
+   Sicherungswahrheit des Kerns seit Auftrag #158, ein `VACUUM INTO` über eine
+   frisch geöffnete Verbindung. Es liest durch das WAL hindurch und lässt die
+   Quelle byte-gleich, auch wenn EPOS-Plan gerade läuft; eine reine Dateikopie
+   griffe nur den letzten Checkpoint ab (`BETRIEB_SQLITE.md` § 2 und § 3.2).
+   Die alte Prüfung auf `Kenndaten.laccdb` entfällt mit Access.
+2. **Alle Projektdaten löschen.** Ein `DELETE FROM Tab_Projekt` räumt über die
+   Beziehungen mit `ON DELETE CASCADE` das meiste mit ab; die Tabellen ohne
+   Fremdschlüssel und die Detailtabellen darunter räumt das Werkzeug einzeln
+   nach — in **einer** Transaktion mit `PRAGMA defer_foreign_keys = ON`, damit
+   die Reihenfolge unkritisch ist (dieselbe Bauart wie
+   `sql\tools\Reduziere-Testdatenbank.sql`). Die dokumentierte Ausnahme
+   `Tab_Pufferspeicher` ist damit erledigt: Sie hängt seit der SQLite-Migration
+   **doch** an der Projektkaskade, und `Tab_Energieanlagen.ID_PUFFER` ist ein
+   `NO ACTION`-Verweis, den die aufgeschobene Prüfung abfängt. **Die
+   Tabellenliste wird nicht gepflegt, sondern abgeleitet** — aus dem Schema der
+   geöffneten Datei: jede Tabelle mit Spalte `ID_Projekt`/`ProjektID` (47) plus
+   die transitive Hülle darunter (25) plus `Tab_Projekt`. Ein Schemaschritt, der
+   eine Projekttabelle ergänzt (zuletzt 65/66 mit `Tab_Wechselrichter` und
+   `Z_AnlageStrang`), wird damit von selbst erfasst.
+3. **Kataloge und Personenbezug.** In den `*_STAMM`-Tabellen bleibt, was
+   `ReadOnly = TRUE` trägt (`--kataloge readonly`, Vorgabe) — siehe aber den
+   **Befund** unten. Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
+   `Beschreibung`, `Icon` und `ID_Projekt` (auf 0, der Zustand „kein Projekt
+   geöffnet", den auch `ProjektCtrl.LoeschenMitVorarbeiten` schreibt). Nötig ist
+   das, weil diese Tabelle an keinem Projekt hängt und sonst den Namen des
+   zuletzt geöffneten **Kunden**projekts mit ausliefern würde. Lizenztoken,
+   Zeitanker und KI-Schlüssel liegen nicht in der Datenbank, sondern über
+   `Dienste.Lizenzablage` im Anmeldeinformationsspeicher.
+4. **Beispielprojekte einspielen** als `.wpx`-Pakete über
+   `ProjektExportImportCtrl` (`--beispiele <ordner-oder-liste>`). Damit ist der
+   offene Punkt aus `Konzept_Projektbeispiele_Dokumentation.md` § 6.2 („ein
+   Projektexport existiert nicht") geschlossen; Katalogbezüge lösen sich beim
+   Import über die fachlichen Schlüssel neu auf, nicht über IDs — genau so, wie
+   es das Beispielkonzept verlangt. Ohne `--beispiele` bleibt die Vorlage
+   projektfrei.
+5. **Verdichten und prüfen.** `VACUUM`, dann `PRAGMA journal_mode = WAL` (die
+   Betriebserwartung aus `BETRIEB_SQLITE.md`; `VACUUM INTO` liefert sonst eine
+   Datei im Standardmodus). Danach Schemastand, STRICT-Tabellenzahl,
+   `integrity_check`, `foreign_key_check`, Projektliste, Datenschutzwächter und
+   die Frage, ob wirklich nur **eine** Datei entstanden ist.
 
-Dieser Schritt ist **noch nicht automatisiert** und gehört als Skript in
-`Setup\Vorlage\` (Aufwandsschätzung in Abschnitt 12). Bis dahin ist er von Hand
-zu gehen und das Ergebnis vor jeder Auslieferung gegenzuprüfen: Projektliste
-leer, Katalogzahlen plausibel, Dateigröße deutlich unter 92 MB.
+```bash
+dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
+    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]
+```
 
-Das Build-Skript bricht ab, wenn `Setup\Vorlage\Kenndaten.accdb` fehlt — und
-greift bewusst **nicht** ersatzweise auf die Arbeitsdatenbank zurück.
+Rückgabe `0` = erzeugt und abgenommen. Jeder andere Wert ist ein Abbruch mit
+Grund auf `stderr`, und dann entsteht **keine** Zieldatei: `2` Aufruf oder Quelle,
+`3` Ziel im Repository außerhalb von `Setup\Vorlage\`, `4` Katalogwächter,
+`5` fachlicher Abbruch, `1` unerwartet. Neben der Vorlage entsteht
+`<ziel>.bericht.txt` — der **Prüfbericht**, der die frühere Gegenprüfung von Hand
+ersetzt: je Tabelle die Zeilen vorher und nachher, Katalogzahlen, geleerte Felder,
+Projektliste, Größe vorher/nachher und jede Prüfzeile. Er ist vor jeder
+Auslieferung zu lesen; `Setup\Vorlage\LIESMICH.md` nennt die drei Zeilen, auf die
+es ankommt.
+
+> **Befund #160‑F‑1 — die Marke `ReadOnly` trägt die Regel heute nicht.**
+> Schritt 3 in seiner ursprünglichen Fassung („in `*_STAMM` bleibt nur
+> `ReadOnly = TRUE`") leert am Bestand der Testdatenbank **22 der 28
+> Katalogtabellen: 419 722 Zeilen bleiben 101.** Betroffen sind unter anderem
+> `Tab_Kenndaten_STAMM` (1 960 Wärmepumpen-Kennfelder), `Tab_Heizkessel_STAMM`
+> (63), `Tab_Gebaeude_STAMM` (277) und `Tab_PV_STAMM` (6 — dieselben Module,
+> deren Koeffizienten Schemaschritt 69 gerade erst repariert hat). Drei weitere
+> Tabellen **ohne** Spalte `ReadOnly` reißt die Kaskade mit:
+> `Tab_Klimaregion_STAMM` nimmt `Tab_Klimadaten_STAMM` (11 680) und
+> `Tab_Solar_STAMM` (280 320) mit, `Tab_WP_STAMM` nimmt
+> `Tab_Kenndaten_Kuehlung_STAMM` (174) mit. Ursache: Im Code ist `ReadOnly` ein
+> **Schreibschutz der Oberfläche** (`HeizkesselStammCtrl`, `GebaeudeStammCtrl`,
+> `KostenVorlagenCtrl` verweigern damit das Ändern), nicht die
+> Auslieferungsmarke, als die die Namenskonvention sie beschreibt.
+> **Deshalb bricht das Werkzeug mit Code 4 ab**, statt eine Vorlage mit leerem
+> Katalog abzulegen — das fiele erst beim Kunden auf. Zwei Wege stehen offen und
+> beide sind ausdrücklich zu wählen: `--kataloge alle` liefert den vollständigen
+> Katalog aus (heute der einzige brauchbare Stand), `--katalogleerung-zulassen`
+> setzt die Regel trotzdem durch. Dauerhaft ist zu entscheiden, ob die Marke im
+> Bestand nachgepflegt wird oder ob die Regel fällt.
+
+Das Build-Skript bricht ab, wenn `Setup\Vorlage\Kenndaten.sqlite` fehlt — und
+greift bewusst **nicht** ersatzweise auf die Arbeitsdatenbank zurück. Wie das
+Setup die Vorlage ausliefert und wie die Anwendung sie beim Erststart aufgreift,
+ist Entscheid **#157‑E‑1** (Weg **W3**: Vorlage als `.sqlite`, der Access-Weg
+fällt) und wird in `build-setup.ps1` und `EPOS-Plan.iss` verdrahtet.
 
 ### 6.2 Erstkopie und Übernahme des Bestands
 
@@ -657,7 +726,7 @@ Verpacken und das Setup danach.
 | S9 | `.gitignore` deckt `/AccessDatabaseEngine*.exe` ab, den WebView2-Bootstrapper in der Repo-Wurzel aber **nicht** — `GitHub_Sync.bat` committet mit `git add -A` | Zeile `/MicrosoftEdgeWebview2Setup.exe` in `.gitignore` ergänzen |
 | S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | **Entschieden 03.09.2026 (iF20): Bootstrapper.** Der Standalone-Installer wird erst beigelegt, wenn ein Kunde ohne Internet installiert |
 | S4 | Herausgebername: „INEKON" oder die vollständige Firmierung? Steht in Setup, Softwareliste und später im Zertifikat | Festlegen, danach `#define AppPublisher` |
-| S5 | Automatisierte Erzeugung der Auslieferungsdatenbank (6.1) | Skript schreiben; bis dahin Handlauf mit Gegenprüfung |
+| S5 | ~~Automatisierte Erzeugung der Auslieferungsdatenbank (6.1)~~ **Erledigt 09.09.2026 (Entscheid #157‑E‑2, Auftrag #160):** `Werkzeuge/Auslieferungsvorlage`, 17 Proben, Prüfbericht neben der Zieldatei | Offen bleibt allein **Befund #160‑F‑1**: Die Marke `ReadOnly` trägt die Katalogregel aus 6.1 Schritt 3 heute nicht (22 von 28 Katalogtabellen würden leer). Bis zur Entscheidung läuft die Freigabe mit `--kataloge alle` |
 | S6 | `Settings.Default.Upgrade()` beim Versionswechsel vorhanden? (7.7) | Im Code nachsehen |
 | S7 | ~~Wird noch ein 64-Bit-Stand gebraucht?~~ **Erledigt 22.08.2026:** ja — EPOS-Plan ist vollständig auf x64 umgestellt, einen x86-Stand gibt es nicht mehr | Keiner. Herleitung und Abnahmeplan in [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md) |
 
@@ -669,7 +738,7 @@ Verpacken und das Setup danach.
 |---|---|---|
 | S-1 | Setup-Skript einrichten, Symbol, Lizenz- und Liesmich-Text, erster Übersetzungslauf | 0,5 |
 | S-2 | Änderungen an der Anwendung 7.1, 7.2, 7.5, 7.6 | 1,0 |
-| S-3 | Auslieferungsdatenbank: Bereinigung festlegen und einmal durchführen (6.1) | 1,0 |
+| S-3 | ~~Auslieferungsdatenbank: Bereinigung festlegen und einmal durchführen (6.1)~~ **erledigt 09.09.2026 als Werkzeug** (#160) | 1,0 |
 | S-4 | Freigabeprobe auf frischer Windows-Installation, neun Fälle (Abschnitt 8) | 1,0 |
 | S-5 | Assemblyumbenennung 7.3 mit Regressionsprobe | 0,5 |
 | S-6 | Mutex 7.4, `Settings.Upgrade()` 7.7 | 0,5 |
