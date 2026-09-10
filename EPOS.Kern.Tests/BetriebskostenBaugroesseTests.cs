@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -22,6 +23,31 @@ namespace EPOS.Kern.Tests
     /// Fälle legen deshalb in der ARBEITSKOPIE ein eigenes Projekt mit je einer Anlage
     /// je Gewerk an — mit runden Zahlen, damit jedes Ergebnis von Hand nachrechenbar
     /// bleibt. Der Gerätestand des Befundes ist übernommen: Growatt 100 kW / 129 kWh.</para>
+    ///
+    /// <para><b>Warum die Verweisspalten ausdrücklich NULL sind</b> (#166, 10.09.2026).
+    /// <see cref="Anlage"/> setzt ALLE SIEBEN Verweisspalten von
+    /// <c>Tab_Energieanlagen</c> — <c>ID_WP, ID_Solar, ID_PV, ID_SP, ID_Kessel,
+    /// ID_BHKW, ID_PUFFER</c> —, den einen benutzten mit der Geräte-ID, die sechs
+    /// übrigen mit <c>NULL</c>. Das ist keine Schreibfreude, sondern die Bedingung
+    /// dafür, dass überhaupt eine Anlagenzeile landet: Die sieben Spalten stehen im
+    /// Schema auf <c>DEFAULT 0</c> (<c>sql/schema/001_grundschema.sql</c>), und wer
+    /// eine weglässt, schreibt damit eine 0 statt nichts. Die 0 fällt zweimal.
+    /// <b>Erstens am Fremdschlüssel:</b> Jede der sieben Spalten trägt einen FOREIGN
+    /// KEY auf ihre Gerätetabelle, und die Verbindung des Kerns schaltet
+    /// <c>PRAGMA foreign_keys = ON</c> (<c>SqliteDatenzugriff.cs</c>) — ein
+    /// Gerät mit der ID 0 gibt es nirgends, also fällt schon die ERSTE Zeile mit
+    /// „FOREIGN KEY constraint failed". <b>Zweitens am UNIQUE-Index:</b>
+    /// <c>idx_Anlage_ID_WP/ID_Kessel/ID_PUFFER/ID_BHKW</c> stehen je auf
+    /// <c>(ID_Projekt, &lt;Verweis&gt;)</c> (<c>sql/schema/003_indizes_fk.sql</c>, in
+    /// Bestandsdatenbanken nachgezogen von
+    /// <c>EPOS.Kern/Allgemein/Update/AnlagenEindeutigkeit.cs</c>) — ab der ZWEITEN
+    /// Anlage desselben Projekts kollidiert 0 mit 0. NULL kollidiert dagegen weder
+    /// mit einem Fremdschlüssel noch in SQLite mit NULL. Der Bestand der
+    /// Testdatenbank trägt für nicht belegte Verweise deshalb ausnahmslos NULL (die 0
+    /// kommt in <c>Tab_Energieanlagen</c> 0-mal vor), und der Produktweg setzt alle
+    /// sieben Spalten ausdrücklich: <c>AnlagenSql.AnlagenParameter</c> übergibt
+    /// <c>DBNull.Value</c> für jeden Verweis, den der Anlagentyp nicht meint. Wer
+    /// diese Datei anfasst, hält es genauso.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class BetriebskostenBaugroesseTests
@@ -86,15 +112,15 @@ namespace EPOS.Kern.Tests
 
             // --- Geräte ---
             Sql("INSERT INTO Tab_Stromspeicher (ID, ID_Projekt, Bezeichner, Leistung, Energie) VALUES (" +
-                G_SPEICHER + ", " + PROJEKT + ", 'Growatt 100/129', " + SP_LEISTUNG + ", " + SP_ENERGIE + ")");
+                G_SPEICHER + ", " + PROJEKT + ", 'Growatt 100/129', " + Z(SP_LEISTUNG) + ", " + Z(SP_ENERGIE) + ")");
             Sql("INSERT INTO Tab_PV (ID, ID_Projekt, Bezeichner, Leistung) VALUES (" +
-                G_PV + ", " + PROJEKT + ", 'Modul 400', " + PV_MODUL_W + ")");
+                G_PV + ", " + PROJEKT + ", 'Modul 400', " + Z(PV_MODUL_W) + ")");
             Sql("INSERT INTO Tab_WP (ID, ID_Projekt, Bezeichner, Nennleistung) VALUES (" +
-                G_WP + ", " + PROJEKT + ", 'WP 12', " + WP_NENNLEISTUNG + ")");
+                G_WP + ", " + PROJEKT + ", 'WP 12', " + Z(WP_NENNLEISTUNG) + ")");
             Sql("INSERT INTO Tab_Solarkollektoren (ID, ID_Projekt, Bezeichner, Aperturflaeche) VALUES (" +
-                G_SOLAR + ", " + PROJEKT + ", 'Kollektor 2,5', " + SOLAR_APERTUR + ")");
+                G_SOLAR + ", " + PROJEKT + ", 'Kollektor 2,5', " + Z(SOLAR_APERTUR) + ")");
             Sql("INSERT INTO Tab_Heizkessel (ID, ID_Projekt, Bezeichner, Ptherm) VALUES (" +
-                G_KESSEL + ", " + PROJEKT + ", 'Kessel 40', " + KESSEL_PTHERM + ")");
+                G_KESSEL + ", " + PROJEKT + ", 'Kessel 40', " + Z(KESSEL_PTHERM) + ")");
 
             // --- Anlagen (ID_Type wie im Assistenten, sonst zählt die PV nicht mit) ---
             Anlage(A_SPEICHER, "Speicher", WizardItemClass.SP_TYP, "ID_SP", G_SPEICHER, null, 0);
@@ -122,14 +148,33 @@ namespace EPOS.Kern.Tests
             Sql("INSERT INTO Tab_ErgebnisStromspeicher " +
                 "(ID, ID_Ergebnis, ID_Energieanlage, Bezeichner, Entladung_Gesamt, Ladung_Gesamt) VALUES (" +
                 ERGEBNIS + ", " + ERGEBNIS + ", " + A_SPEICHER + ", 'Speicher', " +
-                entladungKwh + ", " + (entladungKwh * 1.1) + ")");
+                Z(entladungKwh) + ", " + Z(entladungKwh * 1.1) + ")");
         }
 
+        /// <summary>Die sieben Verweisspalten von <c>Tab_Energieanlagen</c>, in der
+        /// Reihenfolge von <c>AnlagenSql.SQL_ANLAGE_INSERT</c>.</summary>
+        private static readonly string[] VERWEISSPALTEN =
+            { "ID_WP", "ID_Solar", "ID_PV", "ID_SP", "ID_Kessel", "ID_BHKW", "ID_PUFFER" };
+
+        /// <summary>
+        /// Eine Anlagenzeile — mit ALLEN SIEBEN Verweisspalten ausdrücklich: die eine
+        /// benutzte trägt die Geräte-ID, die sechs übrigen <c>NULL</c>.
+        ///
+        /// <para><b>Warum ausdrücklich NULL.</b> Siehe den Absatz „Warum die
+        /// Verweisspalten ausdrücklich NULL sind" im Klassenkopf: weggelassen heißt
+        /// <c>DEFAULT 0</c>, und die 0 fällt zweimal — am Fremdschlüssel und am
+        /// UNIQUE-Index.</para>
+        /// </summary>
         private static void Anlage(int id, string name, int typ, string verweisSpalte, int geraet,
                                    string mengenSpalte, int menge)
         {
-            string spalten = "ID, ID_Projekt, Bezeichner, ID_Type, [" + verweisSpalte + "]";
-            string werte = id + ", " + PROJEKT + ", '" + name + "', " + typ + ", " + geraet;
+            string spalten = "ID, ID_Projekt, Bezeichner, ID_Type";
+            string werte = id + ", " + PROJEKT + ", '" + name + "', " + typ;
+            foreach (string spalte in VERWEISSPALTEN)
+            {
+                spalten += ", [" + spalte + "]";
+                werte += ", " + (spalte == verweisSpalte ? geraet.ToString() : "NULL");
+            }
             if (mengenSpalte != null)
             {
                 spalten += ", [" + mengenSpalte + "]";
@@ -147,10 +192,38 @@ namespace EPOS.Kern.Tests
                 " Kostenart, Bemessung, Einheitpreis, ID_Anlage) VALUES (" +
                 id + ", " + PROJEKT + ", " + STAMM_ID + ", " + komponente + ", " +
                 DbWerte.KOSTEN_KATEGORIE_BETRIEB + ", 0.0, '" +
-                DbWerte.KOSTENART_BETRIEBSGEBUNDEN + "', '" + bemessung + "', " + satz + ", " + anlage + ")");
+                DbWerte.KOSTENART_BETRIEBSGEBUNDEN + "', '" + bemessung + "', " + Z(satz) + ", " + anlage + ")");
         }
 
-        private static void Sql(string sql) { DataRepository.ExecuteSQL(sql); }
+        /// <summary>
+        /// Eine Zahl als SQL-LITERAL — mit Punkt, unabhängig von der laufenden Kultur.
+        ///
+        /// <para><b>Warum das nötig ist</b> (#166, 10.09.2026). SQL kennt nur den Punkt.
+        /// <c>double.ToString()</c> nimmt dagegen die Kultur des Threads, und die ist in
+        /// diesem Testprojekt nicht verlässlich Invariant: <c>CecWechselrichterAuslieferungTests</c>
+        /// setzt im Konstruktor <c>CultureInfo.DefaultThreadCurrentCulture</c> auf
+        /// <c>de-DE</c> und stellt sie nicht zurück — sie gilt danach PROZESSWEIT für
+        /// jeden Thread, den xunit neu aufmacht. Lief diese Klasse allein, war die
+        /// Kultur Invariant und alles ging gut; im vollen Lauf wurde aus den 2,5 m²
+        /// Aperturfläche das Literal <c>2,5</c> — ein Komma, das SQL als
+        /// WERTETRENNER liest, also fünf Werte für vier Spalten. Deshalb hier
+        /// ausdrücklich <see cref="CultureInfo.InvariantCulture"/> statt einer Annahme
+        /// über die Kultur des Läufers.</para>
+        /// </summary>
+        private static string Z(double wert)
+        {
+            return wert.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Setzt ab — und sagt es, wenn es nicht klappt.
+        /// <c>DataRepository.ExecuteSQL</c> schluckt jeden Datenbankfehler und gibt nur
+        /// <c>false</c> zurück; ohne diese Prüfung fiele ein misslungener INSERT erst
+        /// drei Schritte später als „Nullable object must have a value" auf, ohne den
+        /// SQL-Text zu nennen.</summary>
+        private static void Sql(string sql)
+        {
+            Assert.True(DataRepository.ExecuteSQL(sql), "SQL fehlgeschlagen: " + sql);
+        }
 
         /// <summary>Der Jahresbetrag EINER Zeile aus dem Rechenweg des Kerns.</summary>
         private static double Betrag(int positionsId)
