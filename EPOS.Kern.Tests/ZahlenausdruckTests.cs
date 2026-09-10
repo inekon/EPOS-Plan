@@ -25,17 +25,22 @@ namespace EPOS.Kern.Tests
 
         private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
         private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
 
         /// <summary>
         /// Die Kultur ist PROZESSWEIT; sie wird nach der Klasse zurueckgestellt, damit
         /// der en-US-Fall keinem folgenden Test das Dezimaltrennzeichen wegnimmt.
+        /// Rueckstellung (iU9-#167): die Thread-Kultur wird aus einem EIGENEN gemerkten
+        /// Wert zurueckgestellt statt aus der DefaultThreadCurrentCulture-Momentaufnahme —
+        /// beide muessen nicht uebereinstimmen.
         /// </summary>
         public void Dispose()
         {
             CultureInfo.DefaultThreadCurrentCulture = _vorher;
             CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
-            Thread.CurrentThread.CurrentCulture = _vorher ?? CultureInfo.InvariantCulture;
-            Thread.CurrentThread.CurrentUICulture = _vorherUi ?? CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         // =================================================================

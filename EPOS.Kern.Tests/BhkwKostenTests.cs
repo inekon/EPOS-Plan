@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 using WindowsFormsApplication1;
 using Xunit;
@@ -18,13 +19,27 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>Die Kultur ist auf de-DE gepinnt. Gerechnet wird zwar kulturfrei, aber ein
     /// Testlauf unter einer anderen Kultur soll dieselben Zahlen sehen wie der Anwender.</para>
+    ///
+    /// <para><b>Rückstellung (iU9‑#167):</b> <c>CultureInfo.CurrentCulture</c> ist
+    /// threadgebunden — xunit kann denselben Pool-Thread später für eine andere Klasse
+    /// wiederverwenden, die selbst keine Kultur setzt. Ohne <see cref="Dispose"/> bliebe
+    /// de-DE auf diesem Thread stehen.</para>
     /// </summary>
-    public class BhkwKostenTests
+    public class BhkwKostenTests : IDisposable
     {
+        private readonly CultureInfo _kulturVorher = CultureInfo.CurrentCulture;
+        private readonly CultureInfo _uiKulturVorher = CultureInfo.CurrentUICulture;
+
         public BhkwKostenTests()
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
+        }
+
+        public void Dispose()
+        {
+            CultureInfo.CurrentCulture = _kulturVorher;
+            CultureInfo.CurrentUICulture = _uiKulturVorher;
         }
 
         // =============================================================================

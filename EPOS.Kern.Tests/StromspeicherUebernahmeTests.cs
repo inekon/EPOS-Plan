@@ -32,9 +32,13 @@ namespace EPOS.Kern.Tests
     /// 8,85 kWh je nach Rechner 885. Genau dort, wo es auffliegt.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class StromspeicherUebernahmeTests : IClassFixture<TestDatenbank>
+    public class StromspeicherUebernahmeTests : IClassFixture<TestDatenbank>, IDisposable
     {
         private readonly TestDatenbank _db;
+        private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
 
         public StromspeicherUebernahmeTests(TestDatenbank db)
         {
@@ -45,6 +49,17 @@ namespace EPOS.Kern.Tests
             CultureInfo.DefaultThreadCurrentUICulture = de;
             Thread.CurrentThread.CurrentCulture = de;
             Thread.CurrentThread.CurrentUICulture = de;
+        }
+
+        // Ruckstellung (iU9-#167, Muster KatalogfilterZeitreihenTests): alle vier Werte
+        // gemerkt und zurueckgestellt, damit kein spaeterer Test in einem fremden Projekt
+        // (oder auf einem neu gestarteten Thread) unbeabsichtigt in de-DE rechnet.
+        public void Dispose()
+        {
+            CultureInfo.DefaultThreadCurrentCulture = _vorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         private static string Probe(string name)

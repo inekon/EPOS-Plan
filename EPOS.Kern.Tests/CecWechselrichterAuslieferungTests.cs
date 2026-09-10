@@ -27,10 +27,21 @@ namespace EPOS.Kern.Tests
     /// <para><b>Fehlt die Datei, schweigen die Fälle</b> — dieselbe Regel wie bei den
     /// Prüfdatenbanken: Ein Arbeitsplatz ohne den Herstellerdatenordner soll deshalb
     /// nicht rot werden. Die Zeilenzahl steht im LIESMICH neben der Datei.</para>
+    ///
+    /// <para><b>Rückstellung (Befund iU9‑#166, behoben in #167).</b> Alle vier Werte
+    /// werden vor dem Setzen gemerkt und in <see cref="Dispose"/> zurückgestellt (Muster
+    /// <c>KatalogfilterZeitreihenTests</c>). Die Klasse startet selbst keine eigenen
+    /// Threads oder Tasks — die Thread-Kultur allein reichte ihr; <c>DefaultThreadCurrentCulture</c>
+    /// wird trotzdem gesetzt UND zurückgestellt, weil genau dieser ungepinnte Rest sonst
+    /// prozessweit auf den nächsten neu gestarteten Thread eines fremden Tests wirkt.</para>
     /// </summary>
-    public class CecWechselrichterAuslieferungTests
+    public class CecWechselrichterAuslieferungTests : IDisposable
     {
         private readonly ITestOutputHelper _ausgabe;
+        private readonly CultureInfo _kulturVorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _uiKulturVorher = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadKulturVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadUiKulturVorher = Thread.CurrentThread.CurrentUICulture;
 
         public CecWechselrichterAuslieferungTests(ITestOutputHelper ausgabe)
         {
@@ -41,6 +52,14 @@ namespace EPOS.Kern.Tests
             CultureInfo.DefaultThreadCurrentUICulture = de;
             Thread.CurrentThread.CurrentCulture = de;
             Thread.CurrentThread.CurrentUICulture = de;
+        }
+
+        public void Dispose()
+        {
+            CultureInfo.DefaultThreadCurrentCulture = _kulturVorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _uiKulturVorher;
+            Thread.CurrentThread.CurrentCulture = _threadKulturVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadUiKulturVorher;
         }
 
         /// <summary>Die Zahl der Geräte, die die Datei vom 06.09.2026 führt.</summary>

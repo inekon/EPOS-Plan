@@ -33,6 +33,9 @@ namespace EPOS.Kern.Tests
     public class KatalogfilterstandTests : IDisposable
     {
         private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
 
         public KatalogfilterstandTests()
         {
@@ -45,11 +48,16 @@ namespace EPOS.Kern.Tests
             Katalogfilterregister.Leeren();
         }
 
+        // Ruckstellung (iU9-#167): DefaultThreadCurrentUICulture stellte vorher faelschlich
+        // aus _vorher (der KULTUR, nicht der UI-Kultur) zurueck; Thread.CurrentThread.Current(UI)Culture
+        // fehlte ganz. Beides jetzt aus je einem eigenen gemerkten Wert.
         public void Dispose()
         {
             Katalogfilterregister.Leeren();
             CultureInfo.DefaultThreadCurrentCulture = _vorher;
-            CultureInfo.DefaultThreadCurrentUICulture = _vorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         // =================================================================
