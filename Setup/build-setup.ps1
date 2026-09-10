@@ -49,6 +49,14 @@
     durchgereicht (welche Beispielprojekte in der Auslieferung stehen sollen).
     Ohne Angabe entscheidet das Werkzeug mit seiner Vorgabe.
 
+.PARAMETER Kataloge
+    'readonly' oder 'alle' - wird als --kataloge <Wert> an
+    Werkzeuge\Auslieferungsvorlage durchgereicht. Ohne Angabe entscheidet das
+    Werkzeug selbst; dessen Katalogwächter (#160-F-1) bricht dabei mit Code 4
+    ab, sobald die Quelle Katalogzeilen ohne ReadOnly = TRUE führt - also bei
+    praktisch jeder echten Quelle. Bis zum Entscheid #160-E-1 deshalb mit
+    -Kataloge alle aufrufen.
+
 .PARAMETER VorlageNurPruefen
     Ruft das Vorlagenwerkzeug mit --trocken auf: Es rechnet und meldet, schreibt
     aber nichts. Nur sinnvoll zusammen mit einer bereits vorhandenen Vorlage.
@@ -61,6 +69,15 @@
 .PARAMETER Schnell
     Übersetzt mit lzma2/normal statt lzma2/max. Etwa halbe Übersetzungszeit,
     größere Datei. Nur für Testläufe.
+
+.PARAMETER Iscc
+    Pfad zu ISCC.exe oder zu dessen Ordner - für Anwender, die Inno Setup nicht
+    zentral installiert haben, sondern z. B. im Setup-Ordner ihres
+    Repository-Klons vorhalten (etwa C:\Waermeplan\WP_Plan\Setup). Suchreihenfolge:
+    dieser Parameter, dann die Umgebungsvariable EPOS_ISCC, dann neben diesem
+    Skript ($PSScriptRoot\ISCC.exe, $PSScriptRoot\Inno Setup 6\ISCC.exe oder ein
+    Unterordner, der mit "Inno Setup" beginnt), dann
+    %ProgramFiles%/%ProgramFiles(x86)%, dann die Registry. Ohne Angabe wie bisher.
 
 .PARAMETER Sign
     Signiert das fertige Setup mit signtool. Setzt -Thumbprint voraus.
@@ -80,9 +97,11 @@ param(
     [string] $Configuration = 'Release',
     [string] $Quelldatenbank,
     [string[]] $Beispiele,
+    [ValidateSet('readonly', 'alle')] [string] $Kataloge,
     [switch] $VorlageNurPruefen,
     [switch] $SkipPublish,
     [switch] $Schnell,
+    [string] $Iscc,
     [switch] $Sign,
     [string] $Thumbprint
 )
@@ -225,8 +244,26 @@ und im Konzept unter 5.5 offen vermerkt.
     }
 }
 
-# Inno-Setup-Uebersetzer suchen
+# Inno-Setup-Uebersetzer suchen. Reihenfolge (Anwender fuehrt Inno Setup u. a. im
+# Setup-Ordner seines Repository-Klons, z. B. C:\Waermeplan\WP_Plan\Setup, nicht
+# zentral installiert): -Iscc-Parameter -> Umgebungsvariable EPOS_ISCC -> neben
+# diesem Skript -> Program Files -> Registry. Parameter und Umgebungsvariable
+# duerfen auf die EXE selbst ODER auf deren Ordner zeigen.
+function ZuIsccPfad([string] $Pfad) {
+    if (-not $Pfad) { return $null }
+    if ($Pfad -like '*.exe') { return $Pfad }
+    return (Join-Path $Pfad 'ISCC.exe')
+}
+
 $Kandidaten = @()
+if ($Iscc)          { $Kandidaten += (ZuIsccPfad $Iscc) }
+if ($env:EPOS_ISCC) { $Kandidaten += (ZuIsccPfad $env:EPOS_ISCC) }
+
+$Kandidaten += (Join-Path $PSScriptRoot 'ISCC.exe')
+$Kandidaten += (Join-Path $PSScriptRoot 'Inno Setup 6\ISCC.exe')
+Get-ChildItem $PSScriptRoot -Directory -Filter 'Inno Setup*' -ErrorAction SilentlyContinue |
+    ForEach-Object { $Kandidaten += (Join-Path $_.FullName 'ISCC.exe') }
+
 foreach ($pf in @(${env:ProgramFiles(x86)}, $env:ProgramFiles)) {
     if ($pf) { $Kandidaten += (Join-Path $pf 'Inno Setup 6\ISCC.exe') }
 }
@@ -242,7 +279,18 @@ if (Test-Path $RegPfad) {
 
 $Iscc = $Kandidaten | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $Iscc) {
-    throw 'ISCC.exe nicht gefunden. Inno Setup 6.3 oder neuer installieren: https://jrsoftware.org/isdl.php'
+    $KandidatenListe = ($Kandidaten | ForEach-Object { "  - $_" }) -join "`n"
+    throw @"
+ISCC.exe nicht gefunden. Geprueft wurden:
+$KandidatenListe
+
+Inno Setup 6.3 oder neuer installieren (https://jrsoftware.org/isdl.php) oder den
+Pfad angeben - als Parameter:
+
+    .\build-setup.ps1 ... -Iscc <Pfad zu ISCC.exe oder dessen Ordner>
+
+oder ueber die Umgebungsvariable EPOS_ISCC.
+"@
 }
 
 # 6.3 ist Pflicht: davor gibt es weder den Architekturbezeichner x64compatible
@@ -331,10 +379,18 @@ if ((-not $VorlageNurPruefen) -and (Test-Path $VorlageDb)) { Remove-Item $Vorlag
 
 $vorlageArgs = @($Quelldatenbank, $VorlageDb)
 if ($Beispiele)          { $vorlageArgs += '--beispiele'; $vorlageArgs += $Beispiele }
+if ($Kataloge)           { $vorlageArgs += '--kataloge'; $vorlageArgs += $Kataloge }
 if ($VorlageNurPruefen)  { $vorlageArgs += '--trocken' }
 
 & dotnet run --project $VorlageWerkzeug -c Release -- @vorlageArgs
 if ($LASTEXITCODE -ne 0) {
+    if ($LASTEXITCODE -eq 4) {
+        throw @"
+Werkzeuge\Auslieferungsvorlage ist mit Code 4 fehlgeschlagen (Katalogwaechter,
+#160-F-1): Die Quelle fuehrt Katalogzeilen ohne ReadOnly = TRUE. Bis zum
+Entscheid #160-E-1 mit -Kataloge alle aufrufen.
+"@
+    }
     throw "Werkzeuge\Auslieferungsvorlage ist mit Code $LASTEXITCODE fehlgeschlagen - kein Setup gebaut."
 }
 
