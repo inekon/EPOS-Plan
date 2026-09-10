@@ -2334,6 +2334,11 @@ namespace WindowsFormsApplication1
                                            string y2Titel = null, bool sortiert = false)
         {
             int W = 1240, H = 560;
+
+            // W11b-B-28: Anschlag und Hoehe der Legende stehen als Namen da - das
+            // Rechteck unten rechnet mit denselben Werten.
+            const float LEGENDE_X = 100f, LEGENDE_Y = 66f;
+
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
@@ -2361,7 +2366,17 @@ namespace WindowsFormsApplication1
 
                 var leg = gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
                 if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
-                Legende(g, leg, 100f, 66f, W - 30f);
+
+                // W11b-B-28: DIE LEGENDE MACHT SICH SELBST PLATZ. Bei vier Eintraegen
+                // (Bezug ohne, Bezug mit, Speicherleistung, Ladezustand) bricht sie in
+                // eine ZWEITE Zeile um - und die lag bis dahin auf dem Achsentitel, der
+                // 24 px ueber der Zeichenflaeche steht. Jede Zeile ueber der ersten
+                // schiebt das Rechteck um genau ihre Hoehe nach unten; die Flaeche wird
+                // dabei niedriger und nicht der Platz unter der x-Achse aufgezehrt, wo
+                // deren Beschriftung steht.
+                float legendenhoehe = Legende(g, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
+                float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
+                if (schub > 0f) rc = SKRect.Create(rc.Left, rc.Top + schub, rc.Width, rc.Height - schub);
 
                 // Die LINKE Achse spannt sich ueber die Reihen der linken Achse; die Reihe
                 // rechts hat ihre eigene Skala und darf sie nicht mitziehen. Ohne eine
@@ -2445,7 +2460,16 @@ namespace WindowsFormsApplication1
                             Text(g, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
-                        Text(g, y2Titel ?? "", f, zweiteAchse.Farbe, rc.Right - 40f, rc.Top - 24f);
+
+                        // W11b-B-28: RECHTSBUENDIG statt "rc.Right - 40f". Der feste
+                        // Einzug war auf kurze Titel gerechnet; "Ladezustand [kWh]"
+                        // lief ueber den rechten Bildrand hinaus und wurde
+                        // abgeschnitten ("Ladezustand [kW"). Gemessen steht er im
+                        // Bild - und weil er rechts endet, kommt er dem linken
+                        // Achsentitel bei rc.Left nicht in die Quere.
+                        string t2 = y2Titel ?? "";
+                        Text(g, t2, f, zweiteAchse.Farbe,
+                             W - 20f - f.MeasureText(t2), rc.Top - 24f);
                     }
                 }
 
@@ -3220,22 +3244,81 @@ namespace WindowsFormsApplication1
             return new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
         }
 
-        private static void Legende(SKCanvas g, List<Segment> eintraege, float x, float y,
-                                    float umbruchBei = 0)
+        /// <summary>Höhe EINER Legendenzeile [px] — der Schritt des Umbruchs.</summary>
+        public const float LEGENDE_ZEILE = 30f;
+
+        /// <summary>
+        /// Zeichnet die Legende und liefert die Höhe, die sie belegt hat [px]
+        /// (Anzahl Zeilen × <see cref="LEGENDE_ZEILE"/>).
+        ///
+        /// <para><b>Warum sie ihre Höhe zurückgibt</b> (W11b‑B‑28): Bis dahin nahm jeder
+        /// Aufrufer EINE Zeile an und setzte sein Zeichenrechteck auf einen festen
+        /// Abstand darunter. Bei vier Serien bricht die Legende in eine zweite Zeile um
+        /// (Befund am Bild „Lastgang und Speicherbetrieb"), und die lag dann auf dem
+        /// Achsentitel. Wer den Platz kennt, kann ihn räumen.</para>
+        /// </summary>
+        private static float Legende(SKCanvas g, List<Segment> eintraege, float x, float y,
+                                     float umbruchBei = 0)
         {
             float startX = x;
+            int zeilen = 1;
             using (var f = Schrift(16f))
             using (var rahmen = Strich(SKColors.Gray, 1f))
                 foreach (Segment s in eintraege)
                 {
                     float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
-                    { x = startX; y += 30f; }   // Umbruch bei vielen Serien (Review 11)
+                    { x = startX; y += LEGENDE_ZEILE; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
                     using (var b = Fuellung(s.Farbe)) g.DrawRect(x, y, 22f, 22f, b);
                     g.DrawRect(x, y, 22f, 22f, rahmen);
                     Text(g, s.Label, f, SKColors.Black, x + 28f, y + 1f);
                     x += breite;
                 }
+            return zeilen * LEGENDE_ZEILE;
+        }
+
+        /// <summary>
+        /// Die Höhe, die eine Legende dieser Eintragsbreiten belegt [px] — DIESELBE
+        /// Umbruchregel wie <see cref="Legende"/>, nur ohne Zeichenfläche (W11b‑B‑28).
+        ///
+        /// <para>Sie ist die prüfbare Fassung der Regel: Ein bunit- oder xUnit-Fall kann
+        /// keine Bildpunkte lesen, wohl aber diese Funktion mit vier gleich breiten
+        /// Einträgen aufrufen und feststellen, dass sie bei zu schmalem Band auf zwei
+        /// Zeilen geht. Die Breite eines Eintrags ist im Bild
+        /// <c>40 + Textbreite + 24</c>.</para>
+        /// </summary>
+        /// <param name="eintragsbreiten">Breite je Eintrag [px], in Zeichenreihenfolge.</param>
+        /// <param name="x">Linke Kante der Legende — zugleich der Anschlag nach einem Umbruch.</param>
+        /// <param name="umbruchBei">
+        /// Rechte Kante; <c>0</c> oder kleiner heisst „kein Umbruch" und damit genau eine Zeile.
+        /// </param>
+        public static float LegendenHoehe(IReadOnlyList<float> eintragsbreiten, float x, float umbruchBei)
+        {
+            if (eintragsbreiten == null || eintragsbreiten.Count == 0) return LEGENDE_ZEILE;
+
+            float startX = x;
+            int zeilen = 1;
+            foreach (float breite in eintragsbreiten)
+            {
+                if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
+                { x = startX; zeilen++; }
+                x += breite;
+            }
+            return zeilen * LEGENDE_ZEILE;
+        }
+
+        /// <summary>
+        /// Die Höhe einer Legende mit <paramref name="anzahl"/> GLEICH breiten Einträgen
+        /// (W11b‑B‑28) — die bequeme Fassung von
+        /// <see cref="LegendenHoehe(IReadOnlyList{float}, float, float)"/> für Prüfungen
+        /// und Abschätzungen.
+        /// </summary>
+        public static float LegendenHoehe(int anzahl, float eintragsbreite,
+                                          float x, float breiteVerfuegbar)
+        {
+            var breiten = new List<float>(Math.Max(0, anzahl));
+            for (int i = 0; i < anzahl; i++) breiten.Add(eintragsbreite);
+            return LegendenHoehe(breiten, x, x + breiteVerfuegbar);
         }
 
         private static byte[] Png(SKSurface flaeche)

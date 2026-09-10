@@ -80,10 +80,11 @@
 
                 <Reiterblatt Schluessel="@Blatt.Parameter" Titel="@Resource.SIMERG_TAB_PARAMETER">
                     <KindInhalt>
+                        @* W11b-B-28: OHNE Optimierung/OptimierungMoeglich - der Knopf
+                           steht mit dem Speicherparameterblock im Ergebnisreiter
+                           "Stromspeicher". *@
                         <ParameterReiter Daten="@_daten.Parameter" Dienste="@Dienste"
-                                         Gesperrt="@_daten.Gesperrt"
-                                         OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null)"
-                                         Optimierung="Optimierung" />
+                                         Gesperrt="@_daten.Gesperrt" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -165,7 +166,17 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Stromspeicher" Titel="@Resource.SIM_STROMSPEICHER">
                         <KindInhalt>
+                            @* W11b-B-28: Parameter, Dienste und der Optimierungsknopf
+                               kommen aus dem Reiter "Parameter" hierher. Der Block
+                               puffert und schreibt auf Knopfdruck - die Seite laedt
+                               nach einem Lauf ohnehin neu, und der Block folgt der
+                               neuen Uebergabe, solange nichts Ungespeichertes offen
+                               ist. *@
                             <StromspeicherReiter Daten="@_daten.Speicher" Bild="BildHolen"
+                                                 Parameter="@_daten.Parameter.Speicher"
+                                                 Dienste="@Dienste" Gesperrt="@_daten.Gesperrt"
+                                                 OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null)"
+                                                 Optimierung="Optimierung"
                                                  Csv="@Rueckruf(Dienste?.CsvSpeicher)"
                                                  Vergleich="@(Dienste?.VergleichRechnen is null ? default : EventCallback.Factory.Create(this, VergleichOeffnen))" />
                         </KindInhalt>
@@ -567,11 +578,23 @@
         _optimierungOffen = true;
     }
 
+    /// <summary>
+    /// Schliesst die Ueberlagerung UND liest neu (W11b-B-28).
+    ///
+    /// <para>Der Dialog schreibt den Leistungspreis L_P sofort in die aktive Variante
+    /// (W11b-E-3) und kann ueber "Uebernehmen" die Geraetegroesse geaendert haben. Der
+    /// Parameterblock des Reiters "Stromspeicher" zeigt beides erst, wenn er einen
+    /// neuen Lesestand bekommt - ohne dieses Neuladen stuende dort bis zum naechsten
+    /// Lauf der alte Wert. Hat der Anwender im Block etwas Ungespeichertes stehen,
+    /// behaelt der Block seinen Puffer und sagt es in der Statuszeile; das entscheidet
+    /// er selbst (SpeicherParameterBlock.OnParametersSet).</para>
+    /// </summary>
     private void OptimierungSchliessen()
     {
         _optimierungOffen = false;
         _optimierungMeldung = "";
         _optimierungErfolg = false;
+        Neuladen();
     }
 
     /// <summary>

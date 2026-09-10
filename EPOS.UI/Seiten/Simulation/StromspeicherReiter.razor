@@ -18,8 +18,15 @@
    (SpVergleichsspalteSetzen :7287-7306); eine Tabelle laesst die Spalte
    einfach weg.
 
-   DER OPTIMIERUNGSKNOPF steht - woertlich wie im Vorlaeufer - auf der
-   PARAMETERSEITE (P3) und nicht hier.
+   DIE PARAMETER STEHEN SEIT W11b-B-28 HIER (Anwenderwunsch 10.09.2026):
+   "bringe den Tab Parameter -> Stromspeicher aus Dialog 'Detaillierte
+   Simulation' in den Tab 'Stromspeicher'. Die Felder mit Parametern sollen
+   aenderbar sein (und die Moeglichkeit die geaenderten Parameter zu
+   Speichern)." Der Baustein SpeicherParameterBlock steht DIREKT UNTER DER
+   KOPFZEILE und VOR den Kacheln - auch OHNE Lauf: Parameter zu setzen ist
+   gerade vor dem ersten Lauf noetig. Mit ihm kam der OPTIMIERUNGSKNOPF, der
+   bis dahin - woertlich wie im Vorlaeufer - auf der Parameterseite (P3)
+   stand.
 
    EIN BILD STATT DES LADEZUSTANDS (Anwenderwunsch 10.09.2026, W11b-B-26):
    "Der Lastgang und die Kappung durch den Stromspeicher sowie der Ladezustand
@@ -40,6 +47,14 @@
     <p class="@(Daten.LaufVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">
         @Daten.Kopf
     </p>
+
+    @* W11b-B-28: DIE PARAMETER, gepuffert und mit eigenem Speichern-Knopf. Sie
+       stehen VOR den Kacheln und OHNE Bedingung: Ein Projekt ohne Lauf zeigt
+       sonst eine Warnzeile und sonst nichts - und gerade dann will der Anwender
+       die Betriebsfuehrung einstellen, bevor er rechnet. *@
+    <SpeicherParameterBlock Daten="@Parameter" Dienste="@Dienste" Gesperrt="@Gesperrt"
+                            OptimierungMoeglich="@OptimierungMoeglich"
+                            Optimierung="@Optimierung" />
 
     @if (Daten.LaufVorhanden)
     {
@@ -184,6 +199,21 @@
 
     /// <summary>Kopf, Kacheln, Kennzahlen, Ampel und Warnzeile.</summary>
     [Parameter] public SpeicherErgebnisDaten Daten { get; set; } = new SpeicherErgebnisDaten();
+
+    /// <summary>Der gelesene Stand der Speicherparameter (W11b-B-28); der Block puffert ihn.</summary>
+    [Parameter] public SpeicherParameterDaten Parameter { get; set; } = new SpeicherParameterDaten();
+
+    /// <summary>Die Datenseite; ohne Schreibdienst hat der Parameterblock keinen Speichern-Knopf.</summary>
+    [Parameter] public SimulationErgebnisDienste? Dienste { get; set; }
+
+    /// <summary>Gesperrt (Schemamigration) — die Parameterfelder bleiben sichtbar und lesbar.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Ruft die Auslegungsoptimierung (Überlagerung); ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Optimierung { get; set; }
+
+    /// <summary>Zeigt die Auslegungsoptimierung an? Ohne Rechendelegat bleibt sie weg.</summary>
+    [Parameter] public bool OptimierungMoeglich { get; set; }
 
     /// <summary>Liefert das Bild „Lastgang und Speicherbetrieb"; ohne ihn bleibt es leer.</summary>
     [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }

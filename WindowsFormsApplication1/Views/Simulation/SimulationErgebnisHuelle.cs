@@ -220,6 +220,13 @@ namespace WindowsFormsApplication1
 
                 SpeicherfeldSchreiben = SpeicherfeldSchreiben,
 
+                // W11b-B-28: der GEPUFFERTE Weg des Ergebnisreiters "Stromspeicher".
+                // SpeicherfeldSchreiben daneben bleibt - die Auslegungsoptimierung
+                // schreibt ihren Leistungspreis weiterhin sofort (W11b-E-3).
+                SpeicherparameterSchreiben = SpeicherparameterSchreiben,
+                SpeicherparameterLesen = SpeicherParameter,
+                SpeicherPreisreihen = SpeicherPreisreihen,
+
                 KonfigurationGaben = () => SimulationKonfigHuelle.Gaben(m_ID_Projekt),
                 BedarfGaben = waerme => waerme
                     ? BedarfErgebnisHuelle.Gaben(_waermebedarf, true, 1, "")
@@ -392,10 +399,20 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// Das Parameterblatt zu einem Erzeuger; <c>null</c> = keines.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Stromspeicher hat hier seit W11b‑B‑28 keines mehr</b> (Anwenderwunsch
+        /// 10.09.2026). Seine Parameter stehen als <c>SpeicherParameterBlock</c> im
+        /// ERGEBNISreiter „Stromspeicher"; ein Blatt gleichen Namens im Reiter
+        /// „Parameter" waere die zweite Pflegestelle desselben Satzes. Der Reiter
+        /// „Stromspeicher" selbst haengt unveraendert an <c>d.ReiterStromspeicher</c>
+        /// (Tool_6 bzw. irgendein Toolplatz), nicht an dieser Abbildung.
+        /// </remarks>
         private static string BlattZuTool(string tool)
         {
             if (tool == DbWerte.ERZEUGER_BHKW) return ParameterBlatt.Bhkw;
-            if (tool == DbWerte.ERZEUGER_STROMSPEICHER) return ParameterBlatt.Stromspeicher;
             if (tool == DbWerte.ERZEUGER_WAERMEPUMPE) return ParameterBlatt.Waermepumpe;
             if (tool == DbWerte.ERZEUGER_HEIZKESSEL) return ParameterBlatt.Heizkessel;
             return null;
@@ -469,6 +486,13 @@ namespace WindowsFormsApplication1
             var d = new SpeicherParameterDaten
             {
                 VarianteVorhanden = vorhanden,
+
+                // W11b-B-28: Kapazitaet und Leistung sind aenderbar - aber nur bei GENAU
+                // EINER Speicheranlage. Varianten desselben Speichers teilen sich EINE
+                // Geraetekopie in Tab_Stromspeicher; dieselbe Grenze zieht auch
+                // StromspeicherSimCtrl.UebernehmeAuslegung, ueber das hier geschrieben
+                // wird.
+                GeraetegroesseAenderbar = StromspeicherStammCtrl.AnlagenAnzahl(m_ID_Projekt) == 1,
                 Variantenstatus = vorhanden
                     ? string.Format(MyResource.Resource.SP_PARAM_STATUS_VARIANTE, Variantenname(v))
                     : MyResource.Resource.SP_PARAM_STATUS_KEINE_VARIANTE,
@@ -622,10 +646,186 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Reihenauswahl zu EINER Preisquelle (W11b‑B‑28) — derselbe Auszug, den
+        /// <see cref="Preisreihen"/> beim Lesen macht, aber OHNE zu schreiben.
+        /// </summary>
+        /// <remarks>
+        /// Der gepufferte Parameterblock wechselt die Preisquelle, ohne die Variante
+        /// anzufassen; die Reihenliste und ihre Beschriftung müssen trotzdem sofort
+        /// umspringen (aus „Spotmarkt" wird „Preisreihe", aus „Profil" wird
+        /// „Kostenprofil", beim Fixpreis ist die Liste leer und gesperrt). Gelesen wird
+        /// dabei die AKTUELLE Variante nur für die vorbelegte Id — sie bleibt stehen,
+        /// solange der Anwender nicht speichert.
+        /// </remarks>
+        private SpeicherPreisreihenDaten SpeicherPreisreihen(string quelle)
+        {
+            StromspeicherVarianteModel v = _speicherVariante ?? new StromspeicherVarianteModel();
+
+            // Preisreihen(d, v) liest die Quelle AUS DER VARIANTE; hier gilt die
+            // gewaehlte. Eine Kopie waere ein zweiter Zustand daneben - stattdessen
+            // wird das eine Feld gesetzt, gelesen und wieder zurueckgestellt.
+            string vorher = v.Preisquelle;
+            var d = new SpeicherParameterDaten();
+            try
+            {
+                v.Preisquelle = quelle;
+                Preisreihen(d, v);
+            }
+            finally
+            {
+                v.Preisquelle = vorher;
+            }
+
+            return new SpeicherPreisreihenDaten
+            {
+                Label = d.PreisreiheLabel,
+                Moeglich = d.PreisreiheMoeglich,
+                Reihen = d.Preisreihen,
+                Id = d.PreisreiheId
+            };
+        }
+
+        /// <summary>
+        /// Schreibt den GANZEN Satz Speicherparameter in einem Zug (W11b‑B‑28,
+        /// Anwenderwunsch 10.09.2026: „und die Möglichkeit die geänderten Parameter zu
+        /// Speichern").
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Erst prüfen, dann schreiben.</b> Die Regeln stehen als reine Funktion
+        /// im Kern (<see cref="SpeicherParameterPruefung"/>) und sind dort geprüft; ein
+        /// Verstoß führt zu einer Abweisung, und es geht KEINE Zeile in die Datenbank —
+        /// auch nicht die Hälfte, die für sich genommen gültig wäre.</para>
+        /// <para><b>Zwei Ziele, zwei Schreibvorgänge.</b> Die Betriebsführung geht in
+        /// <c>Tab_StromspeicherVariante</c> (EIN <c>Update</c> mit allen Feldern), die
+        /// Gerätegröße in <c>Tab_Stromspeicher</c> — und die nur, wenn sie überhaupt
+        /// änderbar ist und sich geändert hat. Geschrieben wird sie über denselben Weg,
+        /// den die Auslegungsoptimierung nimmt
+        /// (<c>StromspeicherSimCtrl.UebernehmeAuslegung</c>), samt seiner Bedingung
+        /// „genau eine SP-Anlage" und seinem <c>LetzterHinweis</c>.</para>
+        /// <para><b>Nicht neu gerechnet.</b> Wörtlich wie überall sonst: Die Meldung sagt,
+        /// dass der nächste Lauf mit diesen Werten rechnet; wann er läuft, entscheidet
+        /// der Anwender.</para>
+        /// </remarks>
+        private EPOS.UI.Seiten.Simulation.Rueckmeldung SpeicherparameterSchreiben(
+            SpeicherParameterDaten d)
+        {
+            if (d == null)
+                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                    false, MyResource.Resource.SP_PARAM_MSG_KEINE_VARIANTE);
+
+            string fehler = SpeicherParameterPruefung.Pruefen(
+                d.SoCMinProzent, d.SoCMaxProzent,
+                d.GeraetegroesseAenderbar, d.KapazitaetKwh, d.LadeleistungKw,
+                d.Nutzungsdauer, d.Kapitalzins, d.Leistungspreis, d.Netzladeaufschlag);
+
+            if (fehler != null)
+                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, fehler);
+
+            // Die aktive Variante - und, wenn es keine gibt, das Nachziehen der Regel
+            // "jede Speicheranlage fuehrt eine Variante" (W11b-B-27).
+            VarianteLesen();
+            if (_speicherVariante == null)
+                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                    false, MyResource.Resource.SP_PARAM_MSG_KEINE_VARIANTE);
+
+            double kapazitaetVorher = 0.0, leistungVorher = 0.0;
+            if (d.GeraetegroesseAenderbar)
+            {
+                var geraet = StromspeicherStammCtrl.KapazitaetUndLeistung(
+                    m_ID_Projekt, _speicherVariante.ID_Energieanlage);
+                kapazitaetVorher = geraet.Kwh;
+                leistungVorher = geraet.Kw;
+            }
+
+            try
+            {
+                VarianteAusDaten(d, _speicherVariante);
+                new StromspeicherVarianteCtrl().Update(_speicherVariante);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Speichervariante konnte nicht geschrieben werden: " + ex.Message);
+                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                    false, string.Format(MyResource.Resource.SP_PARAM_MSG_FEHLER, ex.Message));
+            }
+
+            if (d.GeraetegroesseAenderbar
+                && (d.KapazitaetKwh != kapazitaetVorher || d.LadeleistungKw != leistungVorher))
+            {
+                StromspeicherSimCtrl simCtrl = new StromspeicherSimCtrl();
+                bool ok;
+                try
+                {
+                    ok = simCtrl.UebernehmeAuslegung(m_ID_Projekt, d.KapazitaetKwh, d.LadeleistungKw);
+                }
+                catch (Exception ex)
+                {
+                    return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                        false, string.Format(MyResource.Resource.SP_PARAM_MSG_FEHLER, ex.Message));
+                }
+
+                if (!ok)
+                    return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                        false, string.IsNullOrEmpty(simCtrl.LetzterHinweis)
+                            ? MyResource.Resource.OPT_MSG_UEBERNAHME_FEHLER
+                            : simCtrl.LetzterHinweis);
+            }
+
+            return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
+                true, MyResource.Resource.SP_PARAM_MSG_GESPEICHERT);
+        }
+
+        /// <summary>
+        /// Traegt alle Variantenfelder eines Parametersatzes in das Modell — dieselbe
+        /// Abbildung, die <see cref="SpeicherfeldSchreiben"/> feldweise vornimmt, nur in
+        /// einem Zug (W11b‑B‑28).
+        /// </summary>
+        /// <remarks>
+        /// Die Preisreihe folgt der QUELLE dieses Satzes und nicht der bisher
+        /// gespeicherten: Wer im selben Zug von „Spotmarkt" auf „Profil" wechselt und
+        /// ein Profil wählt, meint <c>ID_Kostenprofil</c>. Die jeweils andere Id bleibt
+        /// unangetastet stehen — sie ist die Merkstelle für den Rückwechsel, genau wie
+        /// im Einzelweg.
+        /// </remarks>
+        private static void VarianteAusDaten(SpeicherParameterDaten d, StromspeicherVarianteModel v)
+        {
+            v.SoC_Min_Prozent = d.SoCMinProzent;
+            v.SoC_Max_Prozent = d.SoCMaxProzent;
+            v.Ladeschwellwert = d.Ladeschwellwert;
+
+            v.Betriebsart = d.Betriebsart;
+            v.Berechnungsart = d.Berechnungsart;
+            v.Kompatibilitaetsmodus = d.Kompatibilitaet;
+
+            v.PV_Zulaessig = d.LadenAusPv;
+            v.BHKW_Ueberschuss_Zulaessig = d.LadenAusBhkw;
+            v.Netzentladung = d.Netzentladung;
+
+            v.Kapitalzins = d.Kapitalzins;
+            v.Nutzungsdauer = d.Nutzungsdauer;
+            v.L_P = d.Leistungspreis;
+            v.A_Netzlade = d.Netzladeaufschlag;
+
+            v.Preisquelle = d.Preisquelle;
+            v.Aufschlag_Anwenden = d.Aufschlag;
+
+            if (d.Preisquelle == DbWerte.SP_PREISQUELLE_SPOTMARKT) v.ID_Preisreihe = d.PreisreiheId;
+            else if (d.Preisquelle == DbWerte.SP_PREISQUELLE_PROFIL) v.ID_Kostenprofil = d.PreisreiheId;
+        }
+
+        /// <summary>
         /// Ein Feld der Speichervariante schreiben — sofort, wie im Vorläufer
         /// (<c>SpeichereVariantenAenderung</c> :6379). Eine Fehleingabe kommt gar nicht
         /// erst an: Das Zahlenfeld färbt und meldet nichts nach außen.
         /// </summary>
+        /// <remarks>
+        /// <b>Er bleibt neben dem Blockweg</b> (W11b‑B‑28): Die Auslegungsoptimierung
+        /// schreibt ihren Leistungspreis L_P weiterhin über diesen Weg
+        /// (<c>OptimierungLeistungspreis</c>, W11b‑E‑3) — dort ist es EIN Feld, das der
+        /// Dialog gerade gerechnet hat. Die Feldabbildung selbst steht nur einmal:
+        /// Der Einzelweg hat seinen <c>switch</c>, der Blockweg
+        /// <see cref="VarianteAusDaten"/>; beide setzen dieselben Modellfelder.
+        /// </remarks>
         private void SpeicherfeldSchreiben(string feld, string wert)
         {
             if (_speicherVariante == null) return;

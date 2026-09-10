@@ -335,6 +335,56 @@ public class SimulationErgebnisSeiteTests : BunitContext
         Assert.Equal(nachErstemBetreten, _auftraege.Count);
     }
 
+    // =====================================================================
+    //  W11b-B-28: die Speicherparameter im Ergebnisreiter "Stromspeicher"
+    // =====================================================================
+
+    /// <summary>
+    /// Die Seite reicht <c>Parameter.Speicher</c>, die Dienste, den Sperrzustand und
+    /// den Optimierungsknopf an den Reiter „Stromspeicher" durch — dort sitzt seit
+    /// dem Anwenderwunsch vom 10.09.2026 der Parameterblock.
+    /// </summary>
+    [Fact]
+    public void Die_Speicherparameter_gehen_an_den_Stromspeicherreiter()
+    {
+        _daten = Voll();
+        _daten.Parameter.Speicher = new SpeicherParameterDaten
+        {
+            VarianteVorhanden = true,
+            Variantenstatus = "Aktive Variante: Speicher 1",
+            SoCMinProzent = 10,
+            SoCMaxProzent = 90
+        };
+
+        var seite = Zeichnen();
+        seite.Find("button[role='tab'][id='reiter-STROMSPEICHER']").Click();
+
+        var reiter = seite.FindComponent<StromspeicherReiter>().Instance;
+        Assert.Same(_daten.Parameter.Speicher, reiter.Parameter);
+        Assert.NotNull(reiter.Dienste);
+
+        var block = seite.FindComponent<SpeicherParameterBlock>().Instance;
+        Assert.Equal(10.0, block.Arbeitskopie.SoCMinProzent);
+        Assert.False(block.HatAenderungen);
+    }
+
+    /// <summary>
+    /// Der Reiter „Parameter" fuehrt das Speicherblatt nicht mehr — und der
+    /// Optimierungsknopf steht nicht mehr dort, sondern im Ergebnisreiter.
+    /// </summary>
+    [Fact]
+    public void Der_Parameterreiter_fuehrt_kein_Speicherblatt_mehr()
+    {
+        var seite = Zeichnen();
+
+        Assert.DoesNotContain(
+            seite.FindComponent<ParameterReiter>().FindAll("button[role='tab']"),
+            k => k.TextContent == WindowsFormsApplication1.MyResource.Resource.SIM_STROMSPEICHER);
+
+        Assert.DoesNotContain(seite.FindComponent<ParameterReiter>().FindAll("button"),
+                              b => b.TextContent.Contains("optimieren"));
+    }
+
     /// <summary>Ohne Datenseite zeichnet die Seite eine leere Ergebnisansicht.</summary>
     [Fact]
     public void Ohne_Dienste_bleibt_die_Seite_leer_aber_bedienbar()

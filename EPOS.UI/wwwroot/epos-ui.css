@@ -3407,6 +3407,20 @@ body {
 
 .epos-simerg-speicherparameter { display: flex; flex-direction: column; gap: 8px; }
 
+/* W11b-B-28: DIE KNOPFZEILE des Speicherparameterblocks ("Parameter speichern",
+   "Aenderungen verwerfen", "Nach Auslegung optimieren"). Sie steht unter den
+   Feldern und ueber der Statuszeile; mehr als drei Knoepfe hat sie nie, und bei
+   schmalem Fenster bricht sie um statt die Spalte zu sprengen. Eigene Klasse
+   statt epos-simerg-schalter: Jene ordnet SCHALTER ueber einem Bild, diese
+   KNOEPFE unter einem Formular - gleicher Fluss, andere Aussage. */
+.epos-simerg-knopfzeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-top: 6px;
+}
+
 /* Die Kennzahlenliste des Stromspeichers: drei Gruppen, vier Spalten, die
    Vergleichsspalte nur mit Vergleichslauf. Die Warnstufe faerbt die Zeile -
    dieselben Werte wie SpWarnfarbe im Vorlaeufer.

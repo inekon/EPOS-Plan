@@ -40780,6 +40780,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter speichern ähnelt.
+        /// </summary>
+        public static string SP_PARAM_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("SP_PARAM_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Änderungen verwerfen ähnelt.
+        /// </summary>
+        public static string SP_PARAM_BTN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("SP_PARAM_BTN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Überschuss ähnelt.
         /// </summary>
         public static string SP_PARAM_CHK_BHKW {
@@ -41005,6 +41023,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherparameter konnten nicht geschrieben werden: {0} ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität und Lade-/Entladeleistung müssen größer als null sein. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_GERAET_POSITIV {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_GERAET_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherparameter sind gespeichert. Der nächste Simulationslauf rechnet mit diesen Werten. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne aktive Speichervariante gibt es kein Ziel für die Parameter — es wurde nichts geschrieben. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_KEINE_VARIANTE {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_KEINE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer, Kapitalzins, Leistungspreis und Netzladeaufschlag dürfen nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_NEGATIV {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ladezustand braucht ein Band: 0 % ≤ Minimum &lt; Maximum ≤ 100 %. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_MSG_SOC_BAND {
+            get {
+                return ResourceManager.GetString("SP_PARAM_MSG_SOC_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die = {0} kWh ähnelt.
         /// </summary>
         public static string SP_PARAM_SOC_KWH {
@@ -41019,6 +41091,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_PARAM_STATUS_KEINE_VARIANTE {
             get {
                 return ResourceManager.GetString("SP_PARAM_STATUS_KEINE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungespeicherte Änderungen — sie wirken erst nach „Parameter speichern“. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_STATUS_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("SP_PARAM_STATUS_UNGESPEICHERT", resourceCulture);
             }
         }
         

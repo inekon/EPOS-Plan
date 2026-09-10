@@ -24,6 +24,13 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
 /// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
 /// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
+///
+/// <para><b>Seit W11b‑B‑28 steht der SPEICHERPARAMETERBLOCK ganz oben</b>
+/// (Anwenderwunsch 10.09.2026). Er bringt eigene Kontrollkästchen, eigene
+/// Hinweisabsätze und — mit Diensten — eigene Knöpfe mit. Die Fälle, die den
+/// BILDbereich meinen, greifen deshalb ausdrücklich in
+/// <c>section.epos-simerg-diagrammzeile</c>; was der Block selbst tut, steht in
+/// <c>SpeicherParameterBlockTests</c>.</para>
 /// </summary>
 public class StromspeicherReiterTests : BunitContext
 {
@@ -91,14 +98,34 @@ public class StromspeicherReiterTests : BunitContext
     private IRenderedComponent<StromspeicherReiter> Zeichnen(SpeicherErgebnisDaten daten,
                                                              Action? csv = null,
                                                              Action? vergleich = null,
-                                                             bool mitBild = true)
+                                                             bool mitBild = true,
+                                                             SpeicherParameterDaten? parameter = null,
+                                                             bool optimierung = false)
         => Render<StromspeicherReiter>(p =>
         {
             p.Add(x => x.Daten, daten);
+            p.Add(x => x.Parameter, parameter ?? new SpeicherParameterDaten());
+            if (optimierung)
+            {
+                p.Add(x => x.OptimierungMoeglich, true);
+                p.Add(x => x.Optimierung, EventCallback.Factory.Create(this, () => _optimierungen++));
+            }
             if (mitBild) p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
             if (vergleich is not null) p.Add(x => x.Vergleich, EventCallback.Factory.Create(this, vergleich));
         });
+
+    private int _optimierungen;
+
+    /// <summary>Die Kontrollkästchen DES BILDES — nicht die des Parameterblocks.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Bildschalter(
+        IRenderedComponent<StromspeicherReiter> seite)
+        => seite.FindAll("section.epos-simerg-diagrammzeile input[type='checkbox']");
+
+    /// <summary>Die Knöpfe DES BILDES (CSV, Vergleich) — nicht die des Parameterblocks.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Bildknoepfe(
+        IRenderedComponent<StromspeicherReiter> seite)
+        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
 
     /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
     private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);
@@ -125,6 +152,63 @@ public class StromspeicherReiterTests : BunitContext
         Assert.Empty(seite.FindAll("img"));
         Assert.Empty(seite.FindAll("table"));
         Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
+    }
+
+    /// <summary>
+    /// <b>W11b‑B‑28: Der Parameterblock steht ÜBER den Kacheln.</b> Geprüft wird die
+    /// Reihenfolge im Markup — die Kopfzeile, dann der Block, dann das Kachelraster;
+    /// so, wie der Anwender es beschrieben hat („bringe den Tab Parameter →
+    /// Stromspeicher … in den Tab ‚Stromspeicher‘").
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_steht_ueber_den_Kacheln()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
+
+        string markup = seite.Markup;
+        Assert.True(markup.IndexOf("epos-simerg-speicherparameter", StringComparison.Ordinal)
+                    < markup.IndexOf("epos-kachelraster", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Und er steht auch OHNE Lauf da. Bis W11b‑B‑28 zeigte der Reiter dann nur eine
+    /// Warnzeile — gerade vor dem ERSTEN Lauf will der Anwender aber die
+    /// Betriebsführung einstellen.
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_steht_auch_ohne_Lauf()
+    {
+        var seite = Zeichnen(Daten(lauf: false),
+                             parameter: new SpeicherParameterDaten
+                             {
+                                 VarianteVorhanden = true,
+                                 Variantenstatus = "Aktive Variante: Speicher 1"
+                             });
+
+        Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_LABEL_SOC_MIN,
+                        seite.Markup);
+        Assert.Empty(seite.FindAll(".epos-kennzahlkachel"));
+    }
+
+    /// <summary>
+    /// <b>Der Optimierungsknopf steht jetzt HIER</b> (W11b‑B‑28) und nicht mehr auf der
+    /// Parameterseite — er gehört zu den Parametern, und die sind umgezogen. Ohne
+    /// Delegat bleibt er weg (Regel seit W2.2).
+    /// </summary>
+    [Fact]
+    public void Der_Optimierungsknopf_steht_im_Parameterblock()
+    {
+        Assert.DoesNotContain(Zeichnen(Daten()).FindAll("button"),
+                              b => b.TextContent.Contains("optimieren"));
+
+        var mit = Zeichnen(Daten(), optimierung: true);
+        var knopf = mit.FindAll("button").First(b => b.TextContent.Contains("optimieren"));
+        knopf.Click();
+
+        Assert.Equal(1, _optimierungen);
     }
 
     [Fact]
@@ -170,7 +254,7 @@ public class StromspeicherReiterTests : BunitContext
                            .Where(l => l.TextContent.Trim() == "sortiert"));
 
         _auftraege.Clear();
-        seite.FindAll("input[type='checkbox']")[0].Change(true);
+        Bildschalter(seite)[0].Change(true);
 
         Assert.True(seite.Instance.Sortiert);
         Assert.True(Letzter.Sortiert);
@@ -186,8 +270,10 @@ public class StromspeicherReiterTests : BunitContext
     {
         var seite = Zeichnen(Daten());
 
-        // [0] sortiert, [1..4] die vier Reihen - mehr Kaestchen hat der Reiter nicht.
-        var kaesten = seite.FindAll("input[type='checkbox']");
+        // [0] sortiert, [1..4] die vier Reihen - mehr Kaestchen hat die Diagrammzeile
+        // nicht. Der Parameterblock darueber bringt eigene mit (W11b-B-28); sie
+        // gehoeren nicht zu diesem Fall und stehen deshalb ausserhalb des Selektors.
+        var kaesten = Bildschalter(seite);
         Assert.Equal(5, kaesten.Count);
 
         var namen = seite.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()).ToArray();
@@ -195,7 +281,7 @@ public class StromspeicherReiterTests : BunitContext
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_CHART_Y2, namen);
 
         _auftraege.Clear();
-        kaesten[4].Change(false);   // der Ladezustand geht weg
+        Bildschalter(seite)[4].Change(false);   // der Ladezustand geht weg
 
         Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, seite.Instance.GewaehlteReihen);
         Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, Letzter.Reihen!);
@@ -211,8 +297,7 @@ public class StromspeicherReiterTests : BunitContext
     {
         var seite = Zeichnen(Daten());
 
-        var kaesten = seite.FindAll("input[type='checkbox']");
-        for (int i = 1; i <= 4; i++) seite.FindAll("input[type='checkbox']")[i].Change(false);
+        for (int i = 1; i <= 4; i++) Bildschalter(seite)[i].Change(false);
 
         Assert.NotNull(Letzter.Reihen);
         Assert.Empty(Letzter.Reihen!);
@@ -227,7 +312,7 @@ public class StromspeicherReiterTests : BunitContext
     {
         var seite = Zeichnen(Daten(), mitBild: false);
 
-        Assert.Empty(seite.FindAll("input[type='checkbox']"));
+        Assert.Empty(Bildschalter(seite));
         Assert.Empty(_auftraege);
     }
 
@@ -276,10 +361,10 @@ public class StromspeicherReiterTests : BunitContext
     public void Der_Vergleichsknopf_erscheint_erst_ab_zwei_Varianten()
     {
         var eine = Zeichnen(Daten(mehrere: false), csv: () => { }, vergleich: () => { });
-        Assert.Single(eine.FindAll("button.epos-simerg-knopf"));
+        Assert.Single(Bildknoepfe(eine));
 
         var zwei = Zeichnen(Daten(), csv: () => { }, vergleich: () => { });
-        Assert.Equal(2, zwei.FindAll("button.epos-simerg-knopf").Count);
+        Assert.Equal(2, Bildknoepfe(zwei).Count);
     }
 
     /// <summary>Die Warnzeile eines Laufs ohne jede Erzeugung (Abnahmebefund 2).</summary>
@@ -297,7 +382,7 @@ public class StromspeicherReiterTests : BunitContext
         int csv = 0, vgl = 0;
         var seite = Zeichnen(Daten(), () => csv++, () => vgl++);
 
-        var knoepfe = seite.FindAll("button.epos-simerg-knopf");
+        var knoepfe = Bildknoepfe(seite);
         knoepfe[0].Click();
         knoepfe[1].Click();
 
@@ -407,8 +492,9 @@ public class StromspeicherReiterTests : BunitContext
         Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[0].InnerHtml);
         Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[2].InnerHtml);
 
-        // Kein loser Absatz mehr.
-        Assert.Empty(seite.FindAll("p.epos-simerg-hinweis"));
+        // Kein loser Absatz mehr. Der Parameterblock hat eigene Hinweisabsaetze
+        // (W11b-B-28) - gemeint ist die Spaltenzeile mit Bild und Tabelle.
+        Assert.Empty(seite.FindAll("div.epos-simerg-spalten p.epos-simerg-hinweis"));
     }
 
     /// <summary>Ohne Ampeltext gibt es die Zeile gar nicht.</summary>

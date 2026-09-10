@@ -423,6 +423,44 @@ namespace WindowsFormsApplication1
             return (0.0, 0.0);
         }
 
+        /// <summary>
+        /// Wie viele SPEICHERANLAGEN das Projekt führt (W11b‑B‑28) — dieselbe Zählung, die
+        /// <c>StromspeicherSimCtrl.UebernehmeAuslegung</c> vor dem Schreiben anstellt.
+        ///
+        /// <para><b>Wozu.</b> Kapazität und Lade-/Entladeleistung stehen in
+        /// <c>Tab_Stromspeicher</c> und gehören der ANLAGE, nicht der Variante; Varianten
+        /// desselben Speichers teilen sich EINE Gerätekopie. Ein Schreibzugriff änderte
+        /// bei mehreren Anlagen still die Auslegung der Geschwister — deshalb lässt der
+        /// Parameterblock die beiden Felder nur bei GENAU EINER Anlage ändern und zeigt
+        /// sie sonst wie bisher gesperrt an (<c>SP_PARAM_HINWEIS_LADELEISTUNG</c>).</para>
+        ///
+        /// <para>Gezählt wird über <c>Tab_Energieanlagen</c> mit
+        /// <c>WizardItemClass.SP_TYP</c>; die Referenzliste (<c>REF_SP_TYP</c>) bleibt
+        /// draußen, sie führt den Vergleichsfall und keine Planvariante. Jeder Fehlschlag
+        /// ist eine Konsolenmeldung und <c>0</c> — sie wirft nie.</para>
+        /// </summary>
+        public static int AnlagenAnzahl(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT COUNT(*) AS N FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND ID_Type = ?",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP));
+
+                if (dt == null || dt.Rows.Count == 0 || dt.Rows[0]["N"] == DBNull.Value) return 0;
+                return Convert.ToInt32(dt.Rows[0]["N"]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Speicheranlagen konnten nicht gezaehlt werden: " + ex.Message);
+                return 0;
+            }
+        }
+
         /// <summary>Die Summenzeile einer der beiden Abfragen; <c>null</c>, wenn nichts steht.</summary>
         private static (double Kwh, double Kw)? Summenzeile(DataTable dt)
         {

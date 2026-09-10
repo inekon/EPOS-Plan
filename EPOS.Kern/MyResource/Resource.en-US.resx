@@ -5591,6 +5591,33 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="SP_PARAM_HINWEIS_SOC_KWH" xml:space="preserve">
     <value>kWh equivalent of the percentage, referred to the capacity shown above</value>
   </data>
+  <data name="SP_PARAM_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save parameters</value>
+  </data>
+  <data name="SP_PARAM_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard changes</value>
+  </data>
+  <data name="SP_PARAM_STATUS_UNGESPEICHERT" xml:space="preserve">
+    <value>Unsaved changes — they take effect only after “Save parameters”.</value>
+  </data>
+  <data name="SP_PARAM_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The storage parameters are saved. The next simulation run uses these values.</value>
+  </data>
+  <data name="SP_PARAM_MSG_SOC_BAND" xml:space="preserve">
+    <value>The state of charge needs a band: 0 % ≤ minimum &lt; maximum ≤ 100 %.</value>
+  </data>
+  <data name="SP_PARAM_MSG_GERAET_POSITIV" xml:space="preserve">
+    <value>Capacity and charge/discharge power must be greater than zero.</value>
+  </data>
+  <data name="SP_PARAM_MSG_NEGATIV" xml:space="preserve">
+    <value>Service life, interest rate, demand charge and grid-charging surcharge must not be negative.</value>
+  </data>
+  <data name="SP_PARAM_MSG_KEINE_VARIANTE" xml:space="preserve">
+    <value>Without an active storage variant there is no target for the parameters — nothing was written.</value>
+  </data>
+  <data name="SP_PARAM_MSG_FEHLER" xml:space="preserve">
+    <value>The storage parameters could not be written: {0}</value>
+  </data>
   <data name="SP_ERG_LAST" xml:space="preserve">
     <value>Electricity demand (load)</value>
   </data>

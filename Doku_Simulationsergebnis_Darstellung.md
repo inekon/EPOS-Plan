@@ -1,6 +1,6 @@
 ﻿# Darstellung der Reiter „Detaillierte Simulation"
 
-Stand 09.09.2026 (W11b‑B‑23). Dieses Blatt ist das **Muster**, dem jeder Reiter von
+Stand 10.09.2026 (W11b‑B‑28). Dieses Blatt ist das **Muster**, dem jeder Reiter von
 `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite.razor` folgt — und dem ein neuer Reiter
 folgen muß. Es beschreibt nur die **Darstellung**; welche Zahl woher kommt, sagt das
 Fachkonzept, und die Begründungen der einzelnen Schritte stehen in
@@ -14,10 +14,33 @@ Von oben nach unten, immer:
 1. **Leerhinweis**, wenn der Lauf die Komponente nicht führt — `<p class="epos-simerg-hinweis">`
    mit einem Text, der die **fehlende Komponente nennt**
    (`SIM_MSG_KEINE_DATEN_<KOMPONENTE>`). Dann steht sonst nichts da.
-2. **Kennzahlenblöcke** (Abschnitt 2).
-3. **Tabellen** über die volle Breite (Abschnitt 4).
-4. **Diagramme**, jedes mit derselben Steuerzeile darüber (Abschnitt 5).
-5. **Export- und Sprungknöpfe** am Blockende: `<button class="epos-simerg-knopf">`.
+2. **Parameterblock**, wenn der Reiter einen führt (bislang nur „Stromspeicher", § 1.1).
+3. **Kennzahlenblöcke** (Abschnitt 2).
+4. **Tabellen** über die volle Breite (Abschnitt 4).
+5. **Diagramme**, jedes mit derselben Steuerzeile darüber (Abschnitt 5).
+6. **Export- und Sprungknöpfe** am Blockende: `<button class="epos-simerg-knopf">`.
+
+### 1.1 Parameter auf einem Ergebnisreiter (W11b‑B‑28)
+
+**Wortlaut des Anwenders (10.09.2026):** „bringe den Tab Parameter → Stromspeicher aus
+Dialog ‚Detaillierte Simulation‘ in den Tab ‚Stromspeicher‘. Die Felder mit Parametern
+sollen änderbar sein (und die Möglichkeit die geänderten Parameter zu Speichern)."
+
+* Der Block steht **unter der Kopfzeile und über den Kacheln**, und zwar **auch ohne
+  Lauf**: Gerade vor dem ersten Lauf will der Anwender die Betriebsführung einstellen.
+* Er nimmt dieselben Bausteine wie ein Parameterblatt: `epos-simerg-felder` mit
+  `<Formularraster Einspaltig="true">`, `<Gruppenkopf>` je Abschnitt, Hinweisabsätze
+  darunter.
+* **Er PUFFERT** — und ist damit die **benannte Ausnahme** von der Regel „jedes Feld
+  schreibt sofort" (§ 7). Die Regel gilt für den Reiter „Parameter" unverändert weiter.
+* Abschluss: eine `<div class="epos-simerg-knopfzeile">` mit **„Parameter speichern"**
+  (nur aktiv bei Änderung), **„Änderungen verwerfen"** (nur bei Änderung) und den
+  Sprungknöpfen, die zu den Parametern gehören („Nach Auslegung optimieren").
+* Darunter die Statuszeilen (§ 6): erst der Zustand („Aktive Variante: …"), dann — solange
+  etwas offen ist — `SP_PARAM_STATUS_UNGESPEICHERT` in Warnfarbe, dann die Rückmeldung des
+  Speicherns (Warnfarbe nur bei Fehlschlag).
+* Ein **Gerätedatum** ist nur dann ein Eingabefeld, wenn es **eindeutig einem Gerät
+  gehört**; sonst bleibt es gesperrt und trägt den Hinweis, woher es kommt.
 
 ## 2. Kennzahlen: Hauptgruppen nebeneinander
 
@@ -195,6 +218,14 @@ Grafik daneben und nicht mehr zweimal auf demselben Reiter.
 
 ## 7. Was ausdrücklich NICHT vereinheitlicht ist
 
+* **Jedes Feld schreibt sofort** — auf dem Reiter „Parameter" (wörtlich wie der
+  Vorläufer: `SpeichereKonfigurationsAenderung`, `SpeichereVariantenAenderung`; dort steht
+  ein Feld je Erzeuger, und es gab dort nie einen Speichernknopf). **Die eine Ausnahme**
+  ist der Speicherparameterblock im Ergebnisreiter (§ 1.1): Der Anwender hat den
+  Speichernknopf ausdrücklich verlangt, es sind achtzehn Felder mit Abhängigkeiten
+  untereinander, und der Satz wird als Ganzes geprüft, bevor eine Zeile geschrieben wird.
+  Wer einen weiteren Puffer bauen will, braucht denselben Grund — und nennt ihn im
+  Dateikopf.
 * **Datenzoom** („Bereich"): an **jedem** Bild mit Zeitachse, aber an keinem ohne — die
   Streuwolke, die Monatssäulen, Kuchen und Ringe bleiben beim Bildzoom (§ 5.1). Die
   Zoomleiste selbst hat jedes Bild.

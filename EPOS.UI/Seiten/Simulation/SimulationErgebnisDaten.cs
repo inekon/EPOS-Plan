@@ -31,13 +31,18 @@ public sealed record Rasterzeile(IReadOnlyList<string> Zellen, string Hinweis = 
 public sealed record Brennstoffzeile(string Bezeichnung, double Wert, bool Sichtbar);
 
 // =========================================================================
-//  Die Parameterseite (R1 samt P1…P5)
+//  Die Parameterseite (R1 samt P1, P2, P4, P5) und der Speicherparameterblock
 // =========================================================================
 
 /// <summary>
-/// Die Felder des Stromspeicher-Parameterblatts P3 (Vorlaeufer
+/// Die Felder des Stromspeicher-Parameterblatts (Vorlaeufer
 /// <c>InitStromspeicherParameter</c> :5690-5990, 302 Zeilen mit 29 programmatischen
 /// Steuerelementen).
+///
+/// <para><b>Sie stehen seit W11b‑B‑28 im ERGEBNISreiter „Stromspeicher"</b>
+/// (<c>SpeicherParameterBlock.razor</c>) und nicht mehr als Blatt P3 im Reiter
+/// „Parameter" — Anwenderwunsch 10.09.2026. Der Weg der Daten bleibt derselbe: Die
+/// Huelle fuellt sie in <c>ParameterDaten.Speicher</c>, die Seite reicht sie durch.</para>
 /// </summary>
 public sealed class SpeicherParameterDaten
 {
@@ -56,11 +61,24 @@ public sealed class SpeicherParameterDaten
 
     public double Ladeschwellwert;
 
-    /// <summary>Geraetedatum, nur Anzeige.</summary>
+    /// <summary>Lade-/Entladeleistung [kW] — Gerätedatum aus <c>Tab_Stromspeicher</c>.</summary>
     public double LadeleistungKw;
 
-    /// <summary>Geraetedatum, nur Anzeige.</summary>
+    /// <summary>Nennkapazität [kWh] — Gerätedatum aus <c>Tab_Stromspeicher</c>.</summary>
     public double KapazitaetKwh;
+
+    /// <summary>
+    /// Dürfen <see cref="LadeleistungKw"/> und <see cref="KapazitaetKwh"/> geändert
+    /// werden? (W11b‑B‑28)
+    ///
+    /// <para>Sie gehören der ANLAGE und nicht der Variante: Varianten desselben
+    /// Speichers teilen sich EINE Gerätekopie in <c>Tab_Stromspeicher</c>. Deshalb
+    /// setzt die Hülle das Feld auf dieselbe Bedingung, unter der auch
+    /// <c>StromspeicherSimCtrl.UebernehmeAuslegung</c> schreibt: <b>genau eine</b>
+    /// <c>SP_TYP</c>-Anlage im Projekt. Sonst bleiben die Felder gesperrt und tragen
+    /// den bisherigen Hinweis <c>SP_PARAM_HINWEIS_LADELEISTUNG</c>.</para>
+    /// </summary>
+    public bool GeraetegroesseAenderbar;
 
     public string Betriebsart = "";
     public string Berechnungsart = "";
@@ -99,9 +117,36 @@ public sealed class SpeicherParameterDaten
 }
 
 /// <summary>
-/// Der Stand der Parameterseite (R1). Die fuenf Unterblaetter haengen an
+/// Die Reihenauswahl zu EINER Preisquelle (W11b‑B‑28) — Beschriftung, Wählbarkeit,
+/// Liste und vorbelegte Id.
+///
+/// <para><b>Wozu ein eigener Datensatz.</b> Im Parameterblock ist der Wechsel der
+/// Preisquelle keine Schreib-, sondern eine ANZEIGEfrage: Aus „Spotmarkt" wird
+/// „Preisreihe" mit den Reihen aus <c>Tab_Preisreihe</c>, aus „Profil" wird
+/// „Kostenprofil" mit denen aus <c>Tab_Kostenprofil</c>, und beim Fixpreis ist die
+/// Liste leer und gesperrt. Bis W11b‑B‑28 kam diese Umstellung nur mit dem nächsten
+/// vollständigen Lesen der Seite — im gepufferten Block, der erst auf Knopfdruck
+/// schreibt, gäbe es das Lesen gar nicht.</para>
+/// </summary>
+public sealed class SpeicherPreisreihenDaten
+{
+    /// <summary>Beschriftung der Reihenauswahl — „Preisreihe" oder „Kostenprofil".</summary>
+    public string Label = "";
+
+    /// <summary>Ist die Liste überhaupt wählbar? (Beim Fixpreis nicht.)</summary>
+    public bool Moeglich;
+
+    public IReadOnlyList<(int Id, string Text)> Reihen = Array.Empty<(int, string)>();
+
+    /// <summary>Die zu dieser Quelle gepflegte Id (Preisreihe bzw. Kostenprofil); 0 = keine.</summary>
+    public int Id;
+}
+
+/// <summary>
+/// Der Stand der Parameterseite (R1). Die Unterblaetter haengen an
 /// <c>Tab_Einstellungen.Tool_1..6</c> — „Bedarf" ist immer dabei
-/// (<c>UpdateTabPages</c> :2843-2865).
+/// (<c>UpdateTabPages</c> :2843-2865); das Blatt „Stromspeicher" ist mit W11b‑B‑28
+/// in den Ergebnisreiter gezogen und steht nicht mehr darunter.
 /// </summary>
 public sealed class ParameterDaten
 {
@@ -124,7 +169,10 @@ public sealed class ParameterDaten
     public int Betriebsart;
     public int UntersteLeistungsgrenze;
 
-    // ---- P3: Stromspeicher ----
+    // ---- Stromspeicher: kein Blatt dieses Reiters mehr (W11b-B-28), aber
+    //      weiterhin Teil DIESES Datensatzes - die Huelle liest die Parameterseite
+    //      in einem Zug, und der Ergebnisreiter "Stromspeicher" bekommt sie von der
+    //      Seite durchgereicht.
     public SpeicherParameterDaten Speicher = new SpeicherParameterDaten();
 
     // ---- P4: Wärmepumpe ----
@@ -135,15 +183,22 @@ public sealed class ParameterDaten
 }
 
 /// <summary>
-/// Die sprachneutralen Schluessel der fuenf Parameter-Unterblaetter (Befund
-/// W11-B1: es sind FUENF, nicht vier). Sie ersetzen die <c>TabPage</c>-Namen des
-/// Vorlaeufers und tragen keinen Umlaut mehr (Befund W11-B30).
+/// Die sprachneutralen Schluessel der Parameter-Unterblaetter. Sie ersetzen die
+/// <c>TabPage</c>-Namen des Vorlaeufers und tragen keinen Umlaut mehr (Befund
+/// W11-B30).
+///
+/// <para><b>Es sind VIER</b> (W11b‑B‑28, Anwenderwunsch 10.09.2026). Der Vorlaeufer
+/// fuehrte fuenf (Befund W11-B1), und der Reiter fuehrte sie bis dahin auch:
+/// Bedarf, BHKW, <b>Stromspeicher</b>, Waermepumpe, Heizkessel. Das
+/// Stromspeicherblatt ist als <c>SpeicherParameterBlock</c> in den ERGEBNISreiter
+/// „Stromspeicher" gezogen — dorthin, wo die Zahlen stehen, zu denen es gehoert.
+/// Sein Schluessel entfaellt ersatzlos; <c>BlattZuTool</c> der Huelle liefert fuer
+/// <c>ERZEUGER_STROMSPEICHER</c> kein Blatt mehr.</para>
 /// </summary>
 public static class ParameterBlatt
 {
     public const string Bedarf = "BEDARF";
     public const string Bhkw = "BHKW";
-    public const string Stromspeicher = "STROMSPEICHER";
     public const string Waermepumpe = "WAERMEPUMPE";
     public const string Heizkessel = "HEIZKESSEL";
 }
@@ -504,7 +559,44 @@ public sealed class SimulationErgebnisDienste
     /// Ein Feld der Speichervariante — der Schluessel benennt das Feld
     /// (<see cref="SpeicherFeld"/>), der Wert steht als Zeichenkette darin.
     /// </summary>
+    /// <remarks>
+    /// <b>Der Einzelweg bleibt</b> (W11b‑B‑28): Die Auslegungsoptimierung schreibt
+    /// ihren Leistungspreis L_P weiterhin SOFORT ueber diesen Weg
+    /// (<c>OptimierungLeistungspreis</c>, W11b‑E‑3) — dort ist es EIN Feld, das der
+    /// Dialog gerade gerechnet hat, und kein Formular. Der Parameterblock des
+    /// Ergebnisreiters puffert dagegen und schreibt ueber
+    /// <see cref="SpeicherparameterSchreiben"/>.
+    /// </remarks>
     public Action<string, string>? SpeicherfeldSchreiben;
+
+    // ---- Der gepufferte Speicherparameterblock (W11b-B-28) ----
+    //
+    // ANWENDERWUNSCH 10.09.2026: "bringe den Tab Parameter -> Stromspeicher aus
+    // Dialog 'Detaillierte Simulation' in den Tab 'Stromspeicher'. Die Felder mit
+    // Parametern sollen aenderbar sein (und die Moeglichkeit die geaenderten
+    // Parameter zu Speichern)." Damit ist der Speicherblock die BENANNTE AUSNAHME
+    // von der Hausregel "jedes Feld schreibt sofort": Er sammelt in einer
+    // Arbeitskopie und schreibt auf Knopfdruck.
+
+    /// <summary>
+    /// Schreibt den GANZEN Satz Speicherparameter in EINEM Zug. Die Rueckmeldung
+    /// traegt den Grund einer Abweisung (Pruefung) oder die Bestaetigung.
+    /// OHNE Delegat gibt es keinen Speichern-Knopf.
+    /// </summary>
+    public Func<SpeicherParameterDaten, Rueckmeldung>? SpeicherparameterSchreiben;
+
+    /// <summary>
+    /// Liest die Speicherparameter frisch aus der Datenbank — fuer „Aenderungen
+    /// verwerfen" und fuer den Stand nach dem Speichern. Ohne Delegat faellt der
+    /// Block auf den zuletzt uebergebenen Stand zurueck.
+    /// </summary>
+    public Func<SpeicherParameterDaten>? SpeicherparameterLesen;
+
+    /// <summary>
+    /// Die Reihenauswahl zu einer Preisquelle — sie LIEST nur (kein Schreibweg).
+    /// Ohne Delegat bleibt die Liste so stehen, wie sie geliefert wurde.
+    /// </summary>
+    public Func<string, SpeicherPreisreihenDaten>? SpeicherPreisreihen;
 
     // ---- Was die Seite oeffnet ----
 
