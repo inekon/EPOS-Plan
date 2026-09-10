@@ -5122,7 +5122,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Achtung: Annuität und Verschleißkosten bepreisen denselben Sachverhalt. Solange c_ver aus der Investition abgeleitet ist, ist die Einrechnung eine Doppelzählung.</value>
   </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
-    <value>Vorschlag des Fachkonzepts: 500 … 5.000 kWh mit 10 Stützstellen, 0,5 … 3,0 C in 0,5er-Schritten.</value>
+    <value>Vorbelegung: 500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität. C-Rate 0,5 … 3,0 in 0,5er-Schritten.</value>
   </data>
   <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
     <value>Auslegung optimieren …</value>
@@ -5197,7 +5197,16 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>C-Rate an der Obergrenze</value>
   </data>
   <data name="OPT_WARN_CPOW" xml:space="preserve">
-    <value>Die leistungsbezogene Investition c_pow ist 0 — die C-Rate-Achse ist kostenneutral, das Optimum wandert zwangsläufig an die obere C-Raten-Grenze.</value>
+    <value>Die leistungsbezogene Investition c_pow ist 0 — die C-Raten-Achse ist kostenneutral. Welche C-Rate gewinnt, entscheidet dann allein der Nutzen; bringt mehr Leistung keinen, gewinnt bei Gleichstand die KLEINSTE C-Rate, weil der Bestpunkt in fester Reihenfolge gesucht wird.</value>
+  </data>
+  <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
+    <value>Das Projekt führt weder PV- noch BHKW-Erzeugung. Dauernutzung und Nachtnutzung bewerten den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende.</value>
+  </data>
+  <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
+    <value>Die kapazitätsbezogene Investition c_cap ist 0 — größere Speicher kosten dann nichts, und die Kapazitätsachse trägt keine Entscheidung. Modulkosten am Speichergerät pflegen (Dialog Stromspeicher, Feld „Modulkosten [€/kWh]“).</value>
+  </data>
+  <data name="OPT_WARN_ALLE_GLEICH" xml:space="preserve">
+    <value>Alle Rasterpunkte liefern denselben Wert, es gibt kein Optimum — die angezeigte Auslegung ist nur der erste Punkt des Rasters.</value>
   </data>
   <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
     <value>K_ver ist in ΔJ eingerechnet (Fachkonzept 5.4).</value>

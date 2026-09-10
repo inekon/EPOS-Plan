@@ -675,7 +675,16 @@ namespace WindowsFormsApplication1
                 OptimiererErgebnis roh = StromspeicherSimCtrl.FuehreOptimierungAus(
                     vorbereitung, optionen, drossel, abbruch);
 
-                return Auswerten(roh);
+                SpeicherOptimierungErgebnis ergebnis = Auswerten(roh);
+
+                // Die Hinweise aus den EINGANGSDATEN stehen VORN: Sie erklären, warum
+                // ein Raster aussieht, wie es aussieht, und sind schon vor dem Lauf
+                // bekannt (Befund W11b‑B‑25, Windows-Abnahme 09.09.2026).
+                var alle = new List<string>(Vorhinweise(vorbereitung, eingaben));
+                alle.AddRange(ergebnis.Hinweise);
+                ergebnis.Hinweise = alle;
+
+                return ergebnis;
             }
             catch (OperationCanceledException)
             {
@@ -694,6 +703,61 @@ namespace WindowsFormsApplication1
                     Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message)
                 };
             }
+        }
+
+        /// <summary>
+        /// Die Hinweise, die schon VOR dem Lauf feststehen — sie stehen in den
+        /// Eingangsdaten und nicht im Raster (Befund W11b‑B‑25, Windows-Abnahme
+        /// 09.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum es sie gibt.</b> Projekt 1050 rechnete 120 Rasterpunkte, alle
+        /// mit ΔJ = 0, und zeigte eine einfarbige Karte samt der irreführenden Warnung
+        /// „Optimum am Rand". Beide Ursachen sind aus den Eingangsdaten ablesbar,
+        /// bevor der erste Jahreslauf beginnt: keine Erzeugung (a) und Modulkosten 0
+        /// (b). Der Anwender soll das lesen können, statt ein leeres Bild zu deuten.</para>
+        ///
+        /// <para><b>Sie SPERREN den Lauf nicht.</b> Ein Raster ohne Unterschiede ist
+        /// eine gültige Auskunft; verschwiegen werden darf nur der Grund nicht.</para>
+        /// </remarks>
+        public static IReadOnlyList<string> Vorhinweise(
+            StromspeicherOptimierungVorbereitung vorbereitung,
+            SpeicherOptimierungEingaben eingaben)
+        {
+            var zeilen = new List<string>();
+            if (vorbereitung == null) return zeilen;
+
+            OptimiererStrategie strategie = eingaben != null
+                ? eingaben.Strategie
+                : OptimiererStrategie.Dauernutzung;
+
+            if (strategie != OptimiererStrategie.Lastspitzenkappung &&
+                !ErzeugungVorhanden(vorbereitung.Eingang))
+                zeilen.Add(MyResource.Resource.OPT_WARN_KEINE_ERZEUGUNG);
+
+            if (vorbereitung.Basis != null && vorbereitung.Basis.CCapEurProKwh == 0.0)
+                zeilen.Add(MyResource.Resource.OPT_WARN_CCAP_NULL);
+
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Führt der Lauf überhaupt Erzeugung? Geprüft wird auf einen POSITIVEN Wert in
+        /// <c>PvKw</c> oder <c>BhkwKw</c> — eine Reihe aus lauter Nullen ist dasselbe
+        /// wie keine Reihe.
+        /// </summary>
+        private static bool ErzeugungVorhanden(SpeicherEingang eingang)
+        {
+            if (eingang == null) return false;
+            if (Positiv(eingang.PvKw)) return true;
+            return Positiv(eingang.BhkwKw);
+        }
+
+        private static bool Positiv(double[] reihe)
+        {
+            if (reihe == null) return false;
+            for (int i = 0; i < reihe.Length; i++) if (reihe[i] > 0.0) return true;
+            return false;
         }
 
         /// <summary>
@@ -726,7 +790,7 @@ namespace WindowsFormsApplication1
                 ZielfunktionEur = best.ZielfunktionEur,
                 PunkteGerechnet = roh.PunkteGerechnet,
                 DauerSekunden = roh.Dauer.TotalSeconds,
-                Randlage = roh.Randlage.Vorhanden,
+                Randlage = roh.Randlage.Vorhanden && !AlleRasterpunkteGleich(roh),
                 Hinweise = Hinweise(roh),
                 Kennzahlen = Kennzahlen(roh),
                 RasterCsv = RasterCsvText(roh),
@@ -791,8 +855,17 @@ namespace WindowsFormsApplication1
             CultureInfo k = CultureInfo.CurrentCulture;
             List<string> zeilen = new List<string>();
 
+            // GLEICHSTAND ZUERST: Liegen alle Rasterpunkte auf demselben Wert, ist der
+            // „Bestpunkt" nur der zuerst besuchte — und der liegt per Suchreihenfolge
+            // immer an der unteren Kante. Die Randwarnung wäre dann eine Aussage über
+            // die Suchreihenfolge und nicht über den Suchraum; genau so ist sie im
+            // Befund W11b‑B‑25 gelesen worden („Optimum am Rand" bei einer einfarbigen
+            // Karte). Sie entfällt deshalb, und an ihre Stelle tritt der Grund.
+            bool gleich = AlleRasterpunkteGleich(roh);
+            if (gleich) zeilen.Add(MyResource.Resource.OPT_WARN_ALLE_GLEICH);
+
             OptimiererRandlage rand = roh.Randlage;
-            if (rand.Vorhanden)
+            if (rand.Vorhanden && !gleich)
             {
                 List<string> kanten = new List<string>();
                 if (rand.KapazitaetUnten) kanten.Add(MyResource.Resource.OPT_WARN_RAND_C_UNTEN);
@@ -862,6 +935,33 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        /// <summary>
+        /// Tragen ALLE Rasterpunkte denselben Zielfunktionswert? Verglichen wird die
+        /// Spannweite über beide Phasen mit relativer Toleranz 1e-9.
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Toleranzform wie bei den Achsenendpunkten der Randlage: Die Werte
+        /// stammen aus einer Summe über bis zu 35.040 Intervalle und treffen einander
+        /// nur bis auf wenige ULP. Ein absoluter Vergleich auf 0 fände den Gleichstand
+        /// des Befunds (dort exakt 0,0) zwar, einen Gleichstand auf einem anderen Wert
+        /// aber nicht.
+        /// </remarks>
+        private static bool AlleRasterpunkteGleich(OptimiererErgebnis roh)
+        {
+            double min, max, min2, max2;
+            roh.Grobraster.Wertebereich(out min, out max);
+
+            if (roh.Feinraster != null)
+            {
+                roh.Feinraster.Wertebereich(out min2, out max2);
+                if (min2 < min) min = min2;
+                if (max2 > max) max = max2;
+            }
+
+            double schranke = 1e-9 * Math.Max(1.0, Math.Max(Math.Abs(min), Math.Abs(max)));
+            return max - min <= schranke;
         }
 
         private static void Zahl(List<SpeicherOptimierungKennzahl> liste, string gruppe,

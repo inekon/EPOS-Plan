@@ -97,6 +97,10 @@ namespace WindowsFormsApplication1
                 ["SpalteSumme"] = MyResource.Resource.BK_KOSTEN_SP_SUMME,
                 ["SpalteBetrieb"] = T("BK_KOSTEN_SP_BETRIEB", "Betrieb [€/a]"),
                 ["VerwaltungText"] = MyResource.Resource.BK_KOSTEN_BTN_VERWALTUNG,
+                // Ä25 (10.09.2026): Der Bereichskopf trägt den Namen der Maske —
+                // derselbe Schlüssel, mit dem sie als eigenes Fenster überschrieben ist
+                // (KostenKomponenteHuelle), ohne den Gewerke-Platzhalter.
+                ["VerwaltungTitel"] = T("KDLG_TITEL", "Kostenverwaltung {0}").Replace(" {0}", ""),
                 ["TraegerText"] = T("BK_KOSTEN_BTN_TRAEGER", "Energieträgerverwaltung…"),
                 ["WahlKurztext"] = T("BKS_WAHL_ANLAGE", "Anlage wählen"),
                 ["LoeschenKurztext"] = T("BK_KOSTEN_LOSE_TITEL", "Positionen ohne Anlagenzuordnung"),
