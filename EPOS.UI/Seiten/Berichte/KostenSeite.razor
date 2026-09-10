@@ -205,8 +205,13 @@
     }
 
     @* --------------------------------------------------- Unterdialoge *@
+    @* ANWENDERBEFUND 10.09.2026 (Ae25): Der Rahmen traegt den Namen der MASKE,
+       nicht den Text des Knopfes, der sie geoeffnet hat. Bis hierher stand ueber
+       der Kostenverwaltung — und damit auch ueber jedem ihrer Unterdialoge —
+       „Kostenverwaltung oeffnen…". Der volle Titel samt Gewerk und Projekt steht
+       in der Maske selbst; hier waere er ein zweites Mal dasselbe. *@
     <Ueberlagerung Offen="@(_offen == Unterdialog.Verwaltung)" Schliessbar="false"
-                   Titel="@VerwaltungText" Geschlossen="() => Fertig(false)">
+                   Titel="@VerwaltungTitel" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
@@ -295,6 +300,10 @@
     [Parameter] public string SpalteSumme { get; set; } = "Summe [€]";
     [Parameter] public string SpalteBetrieb { get; set; } = "Betrieb [€/a]";
     [Parameter] public string VerwaltungText { get; set; } = "Kostenverwaltung öffnen…";
+
+    /// <summary>Ae25: Ueberschrift des Bereichs, in dem die Kostenverwaltung steht —
+    /// der Name der Maske, nicht der des Knopfes.</summary>
+    [Parameter] public string VerwaltungTitel { get; set; } = "Kostenverwaltung";
     [Parameter] public string TraegerText { get; set; } = "Energieträgerverwaltung…";
     [Parameter] public string WahlKurztext { get; set; } = "Anlage wählen";
     [Parameter] public string LoeschenKurztext { get; set; }

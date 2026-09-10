@@ -10,7 +10,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Uebernahme Stamm -> Projekt (iU9-W1.4). Soll ist die Feldkarte von
 /// <c>Form_VorlagenUebernahme</c>: Kontextzeile, Zielprojekt, Quellgruppe
-/// (2 Optionen), drei Quelllisten, Vorschau, Uebernehmen/Abbrechen.
+/// (2 Optionen), drei Quelllisten, Vorschau, OK/Abbrechen.
+///
+/// <para><b>ANWENDERENTSCHEID 10.09.2026 (Ae25):</b> „OK = aus der Maske heraus und
+/// uebernehmen, Abbrechen = aus der Maske raus, nicht speichern." Die Faelle der
+/// Schlussleiste pruefen seither genau das — und die eine benannte Ausnahme, dass ein
+/// FEHLSCHLAG die Maske offen haelt.</para>
 /// </summary>
 public class VorlagenUebernahmeDialogTests : BunitContext
 {
@@ -72,7 +77,26 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal("Zielprojekt:", texte[0].TextContent);
         Assert.Equal("Aus Vorlage/Variante:", texte[1].TextContent);
         Assert.Equal("Aus Projekt/Anlage:", texte[2].TextContent);
-        Assert.Equal("Übernehmen", cut.Find(".epos-knopf--primaer").TextContent);
+        Assert.Equal("OK", cut.Find(".epos-knopf--primaer").TextContent);
+        Assert.Equal("Abbrechen", cut.FindAll("button.epos-knopf")[1].TextContent);
+    }
+
+    /// <summary>
+    /// <b>Ae25 (10.09.2026):</b> Die Ueberschrift steht nur EINMAL. Als Bereich einer
+    /// Ueberlagerung traegt deren Kopf den Titel; die Huelle setzt TitelText dann leer,
+    /// und der h1 der Maske entfaellt — der Hilfeknopf bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titeltext_bleibt_die_Ueberschrift_der_Ueberlagerung_die_einzige()
+    {
+        var cut = Render<VorlagenUebernahmeDialog>(p => p
+            .Add(x => x.TitelText, "")
+            .Add(x => x.Zielprojekte, Projekte)
+            .Add(x => x.Quellvorlagen, Vorlagen)
+            .Add(x => x.Quellprojekte, Projekte));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-infoknopf"));
     }
 
     [Fact]
@@ -182,6 +206,26 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.True(cut.Find(".epos-knopf--primaer").HasAttribute("disabled"));
     }
 
+    /// <summary><b>Ae25:</b> Ein gesperrtes OK schreibt auch dann nicht, wenn es
+    /// betaetigt wird — die Vorschau hat nichts anzulegen gefunden.</summary>
+    [Fact]
+    public void Ohne_anlegbare_Positionen_schreibt_OK_nicht_und_schliesst_nicht()
+    {
+        int laeufe = 0;
+        bool geschlossen = false;
+        var cut = Aufbauen(beimSchliessen: _ => geschlossen = true,
+                           vorschau: _ => new VorlagenUebernahmeVorschau("Die Quelle enthält 0 Positionen.", false),
+                           uebernehmen: _ => { laeufe++; return new VorlagenUebernahmeAntwort(false, "x"); });
+
+        Assert.False(cut.Instance.UebernahmeMoeglich);
+        Assert.True(cut.Find(".epos-knopf--primaer").HasAttribute("disabled"));
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal(0, laeufe);
+        Assert.False(geschlossen);
+    }
+
     [Fact]
     public void Uebernehmen_gibt_der_Huelle_die_ganze_Wahl()
     {
@@ -202,17 +246,30 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal(9, erhalten.QuellVorlageId);
     }
 
+    /// <summary>
+    /// <b>Ae25 (10.09.2026):</b> OK uebernimmt UND verlaesst die Maske; gemeldet wird
+    /// <c>true</c>. Die Erfolgsmeldung des Controllers steht nicht mehr im Dialog —
+    /// sie erschiene dort in dem Augenblick, in dem er verschwindet; bestaetigt wird in
+    /// der Kostenverwaltung (<c>KostenKomponenteDialog.UebernahmeFertigMachen</c>).
+    /// Bis zum 10.09.2026 blieb die Maske stehen (A-7 aus B5b).
+    /// </summary>
     [Fact]
-    public void Die_Meldung_des_Laufs_erscheint_im_Dialog()
+    public void OK_uebernimmt_und_schliesst_mit_true()
     {
-        var cut = Aufbauen(uebernehmen: _ =>
-            new VorlagenUebernahmeAntwort(false, "7 Positionen angelegt, 2 übersprungen."));
+        int laeufe = 0;
+        bool? erfolg = null;
+        var cut = Aufbauen(beimSchliessen: e => erfolg = e,
+                           uebernehmen: _ =>
+                           {
+                               laeufe++;
+                               return new VorlagenUebernahmeAntwort(false, "7 Positionen angelegt, 2 übersprungen.");
+                           });
 
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal("7 Positionen angelegt, 2 übersprungen.",
-                     cut.Find(".epos-warnbanner-text").TextContent);
-        Assert.Contains("hinweis", cut.Find(".epos-warnbanner").ClassName);
+        Assert.Equal(1, laeufe);
+        Assert.True(erfolg);
+        Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
 
     [Fact]
@@ -228,25 +285,27 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Contains("fehler", cut.Find(".epos-warnbanner").ClassName);
     }
 
+    /// <summary><b>Ae25:</b> Abbrechen verlaesst die Maske ohne jeden Schreibweg und
+    /// meldet <c>false</c> — auch das ist eine Antwort, keine Unterlassung.</summary>
     [Fact]
-    public void Schliessen_meldet_ob_uebernommen_wurde()
+    public void Abbrechen_schliesst_mit_false_und_schreibt_nicht()
     {
+        int laeufe = 0;
         bool? erfolg = null;
-        var cut = Aufbauen(beimSchliessen: e => erfolg = e);
+        var cut = Aufbauen(beimSchliessen: e => erfolg = e,
+                           uebernehmen: _ => { laeufe++; return new VorlagenUebernahmeAntwort(false, "x"); });
 
         cut.FindAll("button.epos-knopf")[1].Click();
-        Assert.False(erfolg);
 
-        var zweiter = Aufbauen(beimSchliessen: e => erfolg = e);
-        zweiter.Find(".epos-knopf--primaer").Click();
-        zweiter.FindAll("button.epos-knopf")[1].Click();
-        Assert.True(erfolg);
+        Assert.Equal(0, laeufe);
+        Assert.False(erfolg);
     }
 
     [Fact]
     public void Esc_schliesst_Enter_nicht()
     {
-        // A-7 aus B5b: Uebernehmen schreibt sofort, Enter bleibt unbelegt.
+        // A-7 aus B5b: OK schreibt sofort, Enter bleibt unbelegt (Ae25 aendert daran
+        // nichts - Esc ist Abbrechen und meldet deshalb false).
         int gemeldet = 0;
         var cut = Aufbauen(beimSchliessen: _ => gemeldet++);
 

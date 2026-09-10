@@ -24640,7 +24640,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag des Fachkonzepts: 500 … 5.000 kWh mit 10 Stützstellen, 0,5 … 3,0 C in 0,5er-Schritten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorbelegung: 500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität. C-Rate 0,5 … 3,0 in 0,5er-Schritten. ähnelt.
         /// </summary>
         public static string OPT_HINWEIS_SUCHRAUM {
             get {
@@ -25299,11 +25299,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die leistungsbezogene Investition c_pow ist 0 — die C-Rate-Achse ist kostenneutral, das Optimum wandert zwangsläufig an die obere C-Raten-Grenze. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Rasterpunkte liefern denselben Wert, es gibt kein Optimum — die angezeigte Auslegung ist nur der erste Punkt des Rasters. ähnelt.
+        /// </summary>
+        public static string OPT_WARN_ALLE_GLEICH {
+            get {
+                return ResourceManager.GetString("OPT_WARN_ALLE_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogene Investition c_cap ist 0 — größere Speicher kosten dann nichts, und die Kapazitätsachse trägt keine Entscheidung. Modulkosten am Speichergerät pflegen (Dialog Stromspeicher, Feld „Modulkosten [€/kWh]“). ähnelt.
+        /// </summary>
+        public static string OPT_WARN_CCAP_NULL {
+            get {
+                return ResourceManager.GetString("OPT_WARN_CCAP_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die leistungsbezogene Investition c_pow ist 0 — die C-Raten-Achse ist kostenneutral. Welche C-Rate gewinnt, entscheidet dann allein der Nutzen; bringt mehr Leistung keinen, gewinnt bei Gleichstand die KLEINSTE C-Rate, weil der Bestpunkt in fester Reihenfolge gesucht wird. ähnelt.
         /// </summary>
         public static string OPT_WARN_CPOW {
             get {
                 return ResourceManager.GetString("OPT_WARN_CPOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt weder PV- noch BHKW-Erzeugung. Dauernutzung und Nachtnutzung bewerten den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende. ähnelt.
+        /// </summary>
+        public static string OPT_WARN_KEINE_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("OPT_WARN_KEINE_ERZEUGUNG", resourceCulture);
             }
         }
         

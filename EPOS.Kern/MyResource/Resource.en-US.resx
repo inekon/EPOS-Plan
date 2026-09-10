@@ -5106,7 +5106,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>Caution: annuity and wear cost price the same thing. As long as c_ver is derived from the investment, including it double counts.</value>
   </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
-    <value>Proposal of the specification: 500 … 5,000 kWh with 10 grid points, 0.5 … 3.0 C in 0.5 steps.</value>
+    <value>Default: 500 … 5,000 kWh with 10 grid points; if the current capacity is outside, 0.25 … 2.5 × the current capacity instead. C rate 0.5 … 3.0 in 0.5 steps.</value>
   </data>
   <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
     <value>Optimise sizing …</value>
@@ -5181,7 +5181,16 @@ Please run the simulation with photovoltaics first.</value>
     <value>C rate at the upper bound</value>
   </data>
   <data name="OPT_WARN_CPOW" xml:space="preserve">
-    <value>The power related investment c_pow is 0 — the C rate axis is cost neutral, so the optimum inevitably moves to the upper C rate bound.</value>
+    <value>The power related investment c_pow is 0 — the C rate axis is cost neutral. Which C rate wins is then decided by the benefit alone; if more power brings none, a tie goes to the SMALLEST C rate, because the best point is searched in a fixed order.</value>
+  </data>
+  <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
+    <value>The project has neither PV nor CHP generation. Continuous use and night use value the generation surplus actually used — without generation it is 0, and every grid point yields the same return. For this project the calculation mode „peak shaving“ is the fitting one.</value>
+  </data>
+  <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
+    <value>The capacity related investment c_cap is 0 — larger storages then cost nothing and the capacity axis carries no decision. Maintain the module cost at the storage device (storage dialog, field „module cost [€/kWh]“).</value>
+  </data>
+  <data name="OPT_WARN_ALLE_GLEICH" xml:space="preserve">
+    <value>All grid points yield the same value, there is no optimum — the design shown is merely the first point of the grid.</value>
   </data>
   <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
     <value>K_ver is included in ΔJ (specification 5.4).</value>
