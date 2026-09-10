@@ -143,9 +143,13 @@ public class KlimadatenDialogTests : BunitContext
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
 
+        // W16b-O-2 (Gate 10.09.2026): bunits Click() gibt das Ereignis nur an
+        // den Zeichner ab und wartet nicht auf den Ereignisbehandler - erst
+        // das gezeichnete Markup belegt, dass Waehlen/AnsichtLaden fertig sind.
+        cut.WaitForAssertion(() => Assert.Contains("PVGIS-SARAH3", cut.Markup),
+                             TimeSpan.FromSeconds(10));
         Assert.Equal("Berlin", gefragt);
         Assert.Equal("Berlin", cut.Instance.Gewaehlt);
-        Assert.Contains("PVGIS-SARAH3", cut.Markup);
 
         // Der Baustein Reiter zeichnet nur das AKTIVE Blatt - erst das
         // Temperaturbild, nach dem Wechsel das Sonnenwinkelbild.
@@ -154,8 +158,9 @@ public class KlimadatenDialogTests : BunitContext
                      cut.FindComponent<EPOS.UI.Standards.ChartBild>().Instance.Alt);
 
         cut.FindAll(".epos-reiter-knopf")[1].Click();
-        Assert.Equal("Sonnenwinkel Verlauf",
-                     cut.FindComponent<EPOS.UI.Standards.ChartBild>().Instance.Alt);
+        cut.WaitForAssertion(() => Assert.Equal("Sonnenwinkel Verlauf",
+                     cut.FindComponent<EPOS.UI.Standards.ChartBild>().Instance.Alt),
+                             TimeSpan.FromSeconds(10));
     }
 
     /// <summary>
@@ -171,7 +176,11 @@ public class KlimadatenDialogTests : BunitContext
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
 
-        Assert.Contains("keine Stundenwerte", cut.Instance.Meldung);
+        // W16b-O-2 (Gate 10.09.2026): erst auf die gezeichnete Meldung warten,
+        // statt sofort nach dem Click zu pruefen - siehe die Begruendung unten
+        // bei Der_Fortschritt_meldet_die_Schritte_und_laesst_sich_abbrechen.
+        cut.WaitForAssertion(() => Assert.Contains("keine Stundenwerte", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
     }
 
     // =====================================================================
@@ -200,19 +209,23 @@ public class KlimadatenDialogTests : BunitContext
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
 
+        // W16b-O-2 (Gate 10.09.2026): bunits Click() wartet nicht auf den
+        // Ereignisbehandler - erst auf die gezeichnete Rueckfrage warten.
+        cut.WaitForState(() => cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>().Instance.Offen,
+                         TimeSpan.FromSeconds(10));
         var frage = cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>();
-        Assert.True(frage.Instance.Offen);
         Assert.True(frage.Instance.VorgabeNein);
         Assert.Contains("Berlin", frage.Instance.Frage);
         Assert.Contains("Tageswerte", frage.Instance.Frage);      // die Kaskade steht im Text
 
         frage.FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
-        Assert.Empty(geloescht);
+        Assert.Empty(geloescht);        // BeiLoeschen ruft den Delegaten auf diesem Weg nie - kein Wettlauf
 
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
         cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
            .FindAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
-        Assert.Equal(new[] { "Berlin" }, geloescht);
+        cut.WaitForAssertion(() => Assert.Equal(new[] { "Berlin" }, geloescht),
+                             TimeSpan.FromSeconds(10));
     }
 
     [Fact]
@@ -224,8 +237,12 @@ public class KlimadatenDialogTests : BunitContext
         cut.FindAll("button.epos-anlagenwahl")[2].Click();       // "Auslieferung Nord"
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
 
+        // W16b-O-2 (Gate 10.09.2026): BeiLoeschen setzt die Meldung synchron,
+        // aber der Ereignisbehandler laeuft erst, nachdem bunits Click()
+        // zurueckgekehrt ist - deshalb auf das gezeichnete Ergebnis warten.
+        cut.WaitForAssertion(() => Assert.Contains("schreibgeschützt", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
         Assert.Equal(0, geloescht);
-        Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
         Assert.False(cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>().Instance.Offen);
     }
 
@@ -258,7 +275,10 @@ public class KlimadatenDialogTests : BunitContext
         cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen").Click();
 
-        Assert.NotNull(auftrag);
+        // W16b-O-2 (Gate 10.09.2026): der Auftrag entsteht im Ereignisbehandler
+        // von BeiImport - bunits Click() wartet nicht darauf, also auf das
+        // Ergebnis warten statt sofort zu pruefen.
+        cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
         Assert.Equal(KlimaImportArt.AusOrtsname, auftrag!.Art);
         Assert.Equal("Lyon", auftrag.Ortsname);
     }
@@ -292,7 +312,9 @@ public class KlimadatenDialogTests : BunitContext
         cut.FindAll("input[type=text]").Last().Input("Eigen");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen").Click();
 
-        Assert.NotNull(auftrag);
+        // W16b-O-2 (Gate 10.09.2026): siehe Ein_Ortsname_reicht_fuer_den_Import -
+        // erst auf den Auftrag warten statt sofort nach dem Click zu pruefen.
+        cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
         Assert.Equal(KlimaImportArt.AusKoordinaten, auftrag!.Art);
         Assert.Equal("Eigen", auftrag.Bezeichnung);
         Assert.Equal(9.18, auftrag.Longitude);
@@ -311,7 +333,10 @@ public class KlimadatenDialogTests : BunitContext
         cut.Find("input[list=epos-klimaregion-orte]").Input("Berlin");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen").Click();
 
-        Assert.Contains("gibt es bereits", cut.Instance.Meldung);
+        // W16b-O-2 (Gate 10.09.2026): BeiImport meldet und setzt _laeuft im
+        // finally-Block - erst auf das gezeichnete Ergebnis warten.
+        cut.WaitForAssertion(() => Assert.Contains("gibt es bereits", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
         Assert.False(cut.Instance.Laeuft);
     }
 
@@ -343,7 +368,10 @@ public class KlimadatenDialogTests : BunitContext
         cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen").Click();
 
-        Assert.True(cut.Instance.Laeuft);
+        // W16b-O-2 (Gate 10.09.2026): bunits Click() gibt das Ereignis nur an
+        // den Zeichner ab und wartet nicht auf BeiImport - "_laeuft" steht erst,
+        // wenn der Ereignisbehandler wirklich durchgelaufen ist.
+        cut.WaitForState(() => cut.Instance.Laeuft, TimeSpan.FromSeconds(10));
 
         // Progress<T> meldet ueber den Synchronisationskontext - der Text steht
         // erst nach dem naechsten Zeichnen da. Die bunit-Vorgabe von einer Sekunde
@@ -354,7 +382,16 @@ public class KlimadatenDialogTests : BunitContext
                              TimeSpan.FromSeconds(10));
 
         cut.Find(".epos-fortschritt button").Click();
-        Assert.Equal(1, abgebrochen);
+
+        // W16b-O-2 (Gate 10.09.2026): Fortschritt.AbbruchGeklickt ruft den
+        // Abbruch ueber EventCallback.InvokeAsync auf dem Renderer-Dispatcher -
+        // bunits synchrones Click() gibt das Ereignis nur an den Zeichner ab
+        // und wartet NICHT auf den Ereignisbehandler (nur ClickAsync taete
+        // das, vgl. ProjektTransferDialogTests, W16b-O-2). Im vollen Lauf
+        // (3 360 Faelle, zwei Threads) stand der Abbruchzaehler direkt nach
+        // dem Click() deshalb noch auf 0 - jetzt wird auf das Ergebnis
+        // gewartet statt sofort geprueft.
+        cut.WaitForAssertion(() => Assert.Equal(1, abgebrochen), TimeSpan.FromSeconds(10));
 
         tcs.SetResult(new KlimaImportErgebnis
         {
@@ -377,7 +414,10 @@ public class KlimadatenDialogTests : BunitContext
 
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Beenden").Click();
 
-        Assert.True(antwort);
+        // W16b-O-2 (Gate 10.09.2026): BeiSchliessen ruft Geschlossen.InvokeAsync
+        // ueber den Renderer-Dispatcher - bunits Click() wartet nicht darauf
+        // (Vorbild ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist).
+        cut.WaitForAssertion(() => Assert.True(antwort), TimeSpan.FromSeconds(10));
     }
 
     [Fact]
@@ -389,11 +429,14 @@ public class KlimadatenDialogTests : BunitContext
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
         cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.Null(antwort);
+        Assert.Null(antwort);      // BeiTaste liefert bei offener Rueckfrage nichts - kein Wettlauf
 
         cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
            .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
         cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.False(antwort);
+
+        // W16b-O-2 (Gate 10.09.2026): BeiTaste ruft hier Geschlossen.InvokeAsync(false)
+        // ueber den Renderer-Dispatcher - derselbe Wettlauf wie bei Beenden_liefert_OK.
+        cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
     }
 }
