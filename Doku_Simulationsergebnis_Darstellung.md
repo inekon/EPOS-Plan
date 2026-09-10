@@ -137,6 +137,27 @@ bleibt und die Skala eine Leistungsskala ist — also im `ErzeugerStapel` und im
 `Jahresverlauf`. `GanglinieNormiert` (0…100 % der Jahresspitze) und `Temperaturverlauf`
 (Achse ohne Nullpunkt) übergehen ihn.
 
+### 5.2 Der Optimierungsdialog folgt denselben Regeln (W11b‑B‑25)
+
+Die Auslegungsoptimierung (`EPOS.UI/Dialoge/Strom/SpeicherOptimierungDialog.razor`) ist kein
+Reiter der Ergebnisseite, übernimmt seit dem Befund W11b‑B‑25 (Windows-Abnahme 09.09.2026:
+„Grafik zu groß, Dialog übersichtlicher, Lastgang und Speicherung in einer Grafik") aber
+dessen Sprache:
+
+* **Kennzahlen** als `dl.epos-simerg-werte` je Gruppe, nebeneinander im
+  `.epos-simerg-spalten` — nicht mehr als eine lange Tabelle. Eine Gruppe ohne Zeilen
+  entfällt ganz (die Gruppe „Lastspitzenkappung" gibt es nur bei dieser Berechnungsart).
+* **Schalter über dem Bild**, in der Reihenfolge aus § 5: erst die Darstellungsart
+  („Ganzes Jahr" statt der Woche um die Jahresspitze), dann je Reihe ein Schalter, dann
+  das `ChartBild` mit `BereichGewaehlt`/`Zurueckgesetzt` (Datenzoom, § 5.1).
+* **Reihenwahl** nach derselben Regel: `null` = alle, leere Liste = keine.
+* **Zwei Ausnahmen**, beide im Stilblatt und je begründet: Rasterkarte und Schnittkurve
+  stehen NEBENEINANDER (`.epos-speicheropt-diagramme`) statt jede in einer eigenen
+  `epos-simerg-diagrammzeile` — die Kurve ist der Schnitt durch die Karte, und
+  untereinander sah der Anwender nie beide zugleich; und die Anzeigehöhe ist auf 320 px
+  gedeckelt. Gedeckelt ist die ANZEIGE, nicht das PNG: Der Zeichner liefert weiter
+  860 × 560 und 720 × 460, sonst wäre auch das Gezoomte grob.
+
 ## 6. Hinweise, Warnungen, Kacheln
 
 * Leiser Hinweis: `<p class="epos-simerg-hinweis">`. Warnung mit Rolle: `<Warnbanner Stufe="…">`.

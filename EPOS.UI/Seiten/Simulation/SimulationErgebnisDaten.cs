@@ -567,6 +567,21 @@ public sealed class SimulationErgebnisDienste
     public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
 
     /// <summary>
+    /// Zeichnet das Bild „Lastgang und Speicherbetrieb" des Bestpunkts NEU
+    /// (Befund W11b-B-25, Windows-Abnahme 09.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Die drei Angaben sind die drei Schalterstellungen des Bildes: ganzes Jahr
+    /// statt der Woche um die Jahresspitze, die gewaehlten Reihen
+    /// (<c>SpeicherOptimierungCtrl.REIHE_*</c>; leer = alle) und der Datenzoom
+    /// (W11b-B-24). Neu gerechnet wird dabei EIN Jahreslauf des Bestpunkts, nicht
+    /// das Raster. OHNE Delegat zeigt der Dialog das Bild des Laufs und bietet
+    /// keine Umschalter an.
+    /// </remarks>
+    public Func<bool, IReadOnlyList<string>, Diagrammbereich?,
+                SpeicherOptimierungBetriebsbild>? OptimierungBetrieb;
+
+    /// <summary>
     /// Schreibt den Leistungspreis L_P [EUR/(kW*a)] SOFORT in die aktive
     /// Speichervariante (Anwenderentscheid W11b-E-3, 10.09.2026).
     /// </summary>

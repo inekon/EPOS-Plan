@@ -278,6 +278,9 @@
                                    : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, OptimierungUebernehmen))"
                     Csv="@(Dienste?.OptimierungCsv is null ? default
                            : EventCallback.Factory.Create<string>(this, OptimierungCsv))"
+                    LeistungspreisSchreiben="@(Dienste?.OptimierungLeistungspreis is null ? default
+                                               : EventCallback.Factory.Create<double>(this, Dienste.OptimierungLeistungspreis))"
+                    Betrieb="@Dienste?.OptimierungBetrieb"
                     Meldung="@_optimierungMeldung"
                     MeldungErfolg="@_optimierungErfolg"
                     Geschlossen="OptimierungSchliessen" />

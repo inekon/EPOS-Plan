@@ -1,6 +1,7 @@
 # Fach- und Umsetzungskonzept: Stromspeicher-Modul EPOS-Plan
 
-Stand: 2026-08-16, Rev. 4 — Integrationspunkte am Code verifiziert; Peak-Shaving als separate Funktionalität ·
+Stand: 2026-09-10, Rev. 5 — Lastspitzenkappung als dritte Berechnungsart der Auslegungsoptimierung
+(Anwenderentscheid W11b‑E‑3) · Rev. 4: Integrationspunkte am Code verifiziert; Peak-Shaving als separate Funktionalität ·
 Auftraggeber: Philipp (INEKON) ·
 Grundlagen: verifizierte Analyse der Excel-Referenz „Wirtschaftlichkeitsbetrachtung Batteriespeicher V7"
 (`notes/verifikation.md`, `notes/vba.md`, `notes/struktur.md`, Portierungsreferenz `speicher_sim.py`), die
@@ -22,6 +23,16 @@ Abschnitt 1.4). In dieser Fassung nachgeführt: Migrationsweg auf die versionier
 ADR-001 umgestellt (5.6, 8.4), Lastdefinition präzisiert (3.1: Elektrokessel-Stromverbrauch), Grafik- und
 Exporthinweise aktualisiert (7.2). Die SpeicherEngine samt bitgenauem Referenztest ist umgesetzt —
 **Etappe 1 erledigt, Meilenstein M1 erreicht** (48 Tests grün).
+
+**Änderungen gegenüber Rev. 4.** Die **Lastspitzenkappung ist zusätzlich eine Berechnungsart der
+Auslegungsoptimierung** (6.3, 6.4) — Anwenderentscheid vom 10.09.2026: *„Nehme auf: Lastspitzenkappung —
+Leistungspreis in Maske und alternativ aus Leistungspreis Tarifstruktur/Energieträger Strom (Übernahme in die
+Maske als Auswahl)."* Anlass war der Befund W11b‑B‑25 der Windows-Abnahme vom 09.09.2026: Projekt 1050 führt
+genau einen Stromspeicher, keine PV und kein BHKW; Dauer- und Nachtnutzung bewerten den genutzten
+Erzeugungsüberschuss, der ohne Erzeugung 0 ist, und die Rasterkarte war einfarbig (alle 120 Punkte ΔJ = 0).
+Die separate Peak-Shaving-Maske bleibt bestehen (6.4); geteilt wird der Parametersatz. Ergänzt sind außerdem
+die **Quellen des Leistungspreises L_P** (4.4, 5.1) und das Ergebnisbild **„Lastgang und Speicherbetrieb"**
+(7.2). Alle übrigen Festlegungen bleiben unverändert.
 
 **Änderungen gegenüber Rev. 3.** Peak-Shaving ist von der vierten Berechnungsart des Speichermoduls zur
 **separaten Funktionalität** aufgewertet: eigener Einstieg mit eigener Maske, direkt auf dem Lastgang nutzbar,
@@ -368,6 +379,20 @@ Auslese-Eigenschaft `LeistungspreisEurYear` heißt. Faktisch ist es ein freies Z
 Einheitensemantik. Das Konzept deutet dieses Feld **nicht** um, sondern führt `L_P` als eigenes, explizit in
 **€/(kW·a)** deklariertes Feld ein, das aus dem Kostenmodul lediglich vorbelegt werden kann.
 
+**Die drei Quellen von L_P (Rev. 5, Anwenderentscheid W11b‑E‑3 vom 10.09.2026).** Gepflegt wird L_P an
+**einer** Stelle — `Tab_StromspeicherVariante.L_P` der aktiven Variante; Reiter „Parameter", Peak-Shaving-Maske
+und die Auslegungsoptimierung schreiben dasselbe Feld. Daneben bietet die Maske die **Übernahme** aus zwei
+weiteren Quellen an, jede mit Wert und Begründung im Klartext:
+
+| Quelle | Herkunft | Einheit | Regel |
+|---|---|---|---|
+| Speichervariante | `Tab_StromspeicherVariante.L_P` | €/(kW·a) | die Vorbelegung; sie ist der gültige Wert |
+| Tarifstruktur (Wirtschaftlichkeit) | `Tab_ProjektTarif.Staffel_Grenze / _Preis1 / _Preis2` des Stammprojekts | €/(kW·a) | angeboten wird der Preis der **Stufe, in der die Bezugsspitze liegt**: Eine Kappung nimmt die Leistung immer von oben weg, die erste eingesparte Kilowatt ist also die der obersten Stufe. Reicht die Kappung unter die Staffelgrenze, ist der so bewertete Ertrag zu hoch — der Text sagt es |
+| Energieträger Strom | `energy_project_settings.custom_price_power`, sonst der jüngste `energy_price.leistungspreis` | €/(kW·a) **oder** €/(kW·Monat) | der Modus des Trägers entscheidet (`price_power_modus`, KD4/FK6): JAHR geht unverändert ein, MONAT wird mit zwölf multipliziert |
+
+Angeboten wird nur, was gepflegt ist; eine Auswahlliste mit Nullen wäre keine Auswahl. Die Übernahme **setzt
+und schreibt** — sie ist kein Vorschlag.
+
 ---
 
 ## 5. Speicherkonfiguration (Anforderung 6)
@@ -391,7 +416,7 @@ Einheitensemantik. Das Konzept deutet dieses Feld **nicht** um, sondern führt `
 | Investition Kapazitätsanteil | c_cap | €/kWh | 250 | **Kandidat** `Modulkosten` (Einheit unklar, s. u.) |
 | Investition Leistungsanteil | c_pow | €/kW | 0 | fehlt |
 | Investition Festanteil | I_fix | € | 0 | fehlt |
-| Leistungspreis Netz (Peak-Shaving) | L_P | €/(kW·a) | offen (Frage 3) | fehlt hier, Vorbelegung aus Kostenmodul (4.4) |
+| Leistungspreis Netz (Peak-Shaving und Auslegungsoptimierung) | L_P | €/(kW·a) | offen (Frage 3) | `Tab_StromspeicherVariante.L_P`; **drei Quellen**, siehe 4.4 |
 | Aufschlag Netzladestrom | a_netzlade | ct/kWh | 0 | fehlt |
 | Kapitalzins | i_z | %/a | 3 | fehlt |
 | Nutzungsdauer | N | a | 20 | fehlt |
@@ -690,13 +715,49 @@ Umlauf, Ergebnisse waren dadurch nicht interpretierbar. Die Amortisationszeit wi
 verwendet, weil sie die Nutzungsdauer ignoriert und systematisch zu kleine Speicher liefert; sie erscheint als
 Sekundärkennzahl.
 
+**Betriebsstrategie je Rasterpunkt — drei zur Wahl (Rev. 5).** Gerechnet wird jeder Rasterpunkt mit
+(a) Dauernutzung, (b) Nachtnutzung oder (c) **Lastspitzenkappung** (Anwenderentscheid W11b‑E‑3 vom 10.09.2026).
+Die dritte Wahl ist keine Bequemlichkeit, sondern die Antwort auf Befund W11b‑B‑25: Dauer- und Nachtnutzung
+bewerten den genutzten **Erzeugungsüberschuss**; führt ein Projekt weder PV noch BHKW, ist der 0, jeder
+Rasterpunkt trägt denselben Ertrag, und die Karte ist einfarbig. Die Lastspitzenkappung bewertet stattdessen
+den gesparten **Leistungspreis** und braucht dafür keine Erzeugung.
+
+Die Kappung rechnet mit der **nachziehenden Schwelle** (6.4) — dieselbe Betriebsweise wie die separate Maske,
+und der Parametersatz entsteht an einer Stelle (`PeakShavingParameter.Nachziehend`). Eine feste Zielschwelle
+kann die Rastersuche nicht brauchen: Jeder Rasterpunkt hat eine andere Auslegung und damit eine andere haltbare
+Spitze. Die Zielfunktion bleibt formal dieselbe; nur der Ertrag des Referenzjahres ist ein anderer:
+
+```
+E_a,1 = (P_alt,max − P_neu,max) · L_P  −  (E_lade − E_entlade) · p_bezug,mittel/100        [6.4]
+
+max  ΔJ(C, P) = E_a,1 · rbf_deg · a(i_z, N) − [ c_cap·C + c_pow·P + I_fix ] · a(i_z, N)  [ − K_ver ]
+```
+
+Der mittlere Bezugspreis kommt aus der Preisreihe des Laufs. **Ohne L_P > 0 startet die Suche nicht** — mit
+L_P = 0 wäre die Leistungspreisersparnis jedes Punktes 0 und das Optimum zwangsläufig der kleinste Speicher,
+ohne dass die Anzeige den Grund nennen könnte.
+
 **Sekundärkennzahlen je Rasterpunkt:** statische und dynamische Amortisation, Kapitalwert, äquivalente Vollzyklen
 pro Jahr, Zyklen über die Nutzungsdauer im Verhältnis zu N_zyk, Verschleißkosten K_ver, Eigenverbrauchsquote,
-Autarkiegrad.
+Autarkiegrad. **Bei der Lastspitzenkappung zusätzlich** (Rev. 5): Lastspitze ohne und mit Speicher [kW],
+Kappung ΔP_max [kW], Leistungspreisersparnis [€/a], erreichte Schwelle [kW] und die Marke „Schwelle gerissen".
+Sie stehen als eigene Kennzahlengruppe und in der CSV-Ausgabe; bei den anderen Berechnungsarten bleiben sie
+leer und die Gruppe entfällt.
 
 **Ausgabe:** Heatmap Kapazität × C-Rate mit Dreifarbskala und markiertem Optimum, dazu die Schnittkurve ΔJ(C) bei
-der besten C-Rate. Liegt das Optimum auf dem Rand des Suchbereichs, erscheint die Warnung „Optimum am Rand —
-Suchbereich erweitern". Das ist keine Kosmetik: die gespeicherte Excel-Heatmap zeigte eine reine Randlösung bei
+der besten C-Rate — seit Rev. 5 **nebeneinander in einer Zeile** mit begrenzter Anzeigehöhe, dazu das Bild
+„Lastgang und Speicherbetrieb" des Bestpunkts (7.2). Liegt das Optimum auf dem Rand des Suchbereichs, erscheint
+die Warnung „Optimum am Rand — Suchbereich erweitern".
+
+**Hinweise statt stummer Nullfläche (Rev. 5, Befund W11b‑B‑25).** Vier Aussagen sind ergänzt beziehungsweise
+richtiggestellt: (a) führt das Projekt weder PV noch BHKW und ist eine erzeugungsgestützte Berechnungsart
+gewählt, sagt die Anzeige es **vor** dem Lauf und verweist auf die Lastspitzenkappung; (b) c_cap = 0 nennt
+seinen Pflegeort (Modulkosten am Speichergerät); (c) tragen **alle** Rasterpunkte denselben Wert (relative
+Spannweite ≤ 1e‑9), erscheint „Alle Rasterpunkte liefern denselben Wert, es gibt kein Optimum" und die
+Randwarnung entfällt — sie wäre dort eine Aussage über die Suchreihenfolge, nicht über den Suchraum; (d) die
+c_pow-Warnung behauptet nicht mehr die obere C-Raten-Grenze: Bei kostenneutraler Leistungsachse entscheidet
+allein der Nutzen, und bei Gleichstand gewinnt die **kleinste** C-Rate, weil der Bestpunkt in fester
+Reihenfolge gesucht wird. Das ist keine Kosmetik: die gespeicherte Excel-Heatmap zeigte eine reine Randlösung bei
 5.000 kWh, während dieselbe Zielfunktion mit den heutigen Daten ein inneres Maximum bei rund 1.500 bis 2.500 kWh
 liefert.
 
@@ -755,6 +816,13 @@ Ertrag_PS = (P_alt_max − P_neu_max) · L_P  −  (E_lade − E_entlade) · p_b
 Der erste Term ist die Leistungspreisersparnis über den Parameter **L_P [€/(kW·a)]** (4.4), der zweite bewertet
 die Umwandlungsverluste, weil Peak-Shaving Energie nur verschiebt und dabei verliert. Beide Terme fließen als
 E_a,1 in die Wirtschaftlichkeitsrechnung aus 6.2.
+
+**Abgrenzung (Rev. 5): Peak-Shaving bleibt eine separate Funktion — und seine Strategie steht seit Rev. 5
+auch dem Optimierer zur Verfügung.** Der eigene Einstieg mit eigener Maske bleibt unverändert (Absatz unten);
+zusätzlich ist die Lastspitzenkappung die dritte Berechnungsart der Auslegungsoptimierung (6.3,
+Anwenderentscheid W11b‑E‑3 vom 10.09.2026). Beide Wege rechnen **dieselbe** Betriebsweise: nachziehende
+Schwelle, Parametersatz aus `PeakShavingParameter.Nachziehend`. Der Unterschied liegt allein in der Frage —
+die Maske fragt „was leistet DIESER Speicher", der Optimierer „welcher Speicher wäre der beste".
 
 **Abgrenzung (Rev. 4): Peak-Shaving ist eine separate Funktionalität, nicht nur eine Berechnungsart.** Es
 erhält einen eigenen Einstieg mit eigener Maske: Eingang ist der Lastgang nach 3.1 (bevorzugt importiert,
@@ -854,6 +922,15 @@ den `ChartManager` (Hausstandard, kein Bestandsdiagramm angefasst). Erfahrung au
 WinForms-Host ohne Hürden (`Plot.Add.Heatmap`, `Colormaps.CustomInterpolated` für die Dreifarbskala,
 `Panels.ColorBar`, `TickGenerators.NumericManual`, `Plot.GetCoordinates` für die Zellanzeige); ein Fallback auf
 eine DataGridView-Farbmatrix war nicht nötig.
+
+**Das Bild „Lastgang und Speicherbetrieb“ (Rev. 5, Befund W11b‑B‑25).** Die Auslegungsoptimierung zeigt zum
+Bestpunkt EIN Bild statt zweier: Netzbezug ohne Speicher, Netzbezug mit Speicher, bei der Lastspitzenkappung
+die erreichte Schwelle, dazu die Speicherleistung (Entladen positiv, Laden negativ). Alle vier Größen sind
+Leistungen und teilen deshalb **eine** kW-Achse — eine zweite Achse behäuptete eine zweite Einheit und machte
+die eigentliche Aussage unlesbar: um wie viel der Speicher die Bezugsspitze senkt. Gerechnet wird dafür EIN
+Jahreslauf des Bestpunkts nach (der Rasterpunkt hält bewusst keine Zeitreihen). Vorgabe ist die **Woche um die
+Jahresspitze** — ein ganzes Jahr im Viertelstundenraster legt rund 40 Werte auf einen Bildpunkt und zeigt
+keinen einzigen Zyklus —, umschaltbar auf das ganze Jahr, mit Reihenwahl und Datenzoom (W11b‑B‑24).
 
 **Zyklendefinition:** äquivalenter Vollzyklus (aus dem Speicher entnommene Energie bezogen auf C_nutz).
 

@@ -49,7 +49,15 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
-    @* ---------------------------------------------------------- Suchraum *@
+    @* ---------------------------------------------------------- Suchraum
+
+       KOMPAKTER (Befund W11b-B-25, Windows-Abnahme 09.09.2026: „Dialog
+       uebersichtlicher"). Der Formularraster stand auf der Hausvorgabe
+       auto-fill und ergab auf breitem Schirm zwei Spalten mit einer leeren
+       dritten Spaltenbreite dahinter; .epos-speicheropt-suchraum stellt ihn auf
+       DREI Spalten und engere Zeilen. Die Feldbausteine bleiben unveraendert -
+       die Enge kommt aus dem Stilblatt, nicht aus neuen Feldern. *@
+    <div class="epos-speicheropt-suchraum">
     <Formularraster>
         <KindInhalt>
             <Formulargruppe Titel="@Resource.OPT_GRP_SUCHRAUM">
@@ -95,11 +103,59 @@
             </Formulargruppe>
         </KindInhalt>
     </Formularraster>
+    </div>
+
+    @* DER LEISTUNGSPREIS - nur bei der Lastspitzenkappung (Anwenderentscheid
+       W11b-E-3, 10.09.2026: „Lastspitzenkappung — Leistungspreis in Maske und
+       alternativ aus Leistungspreis Tarifstruktur/Energietraeger Strom
+       (Uebernahme in die Maske als Auswahl)").
+
+       Er steht in einer EIGENEN Zeile und nicht zwischen den Achsen: Er gehoert
+       nicht zum Suchraum, sondern zur Bewertung - und er erscheint nur, wo er
+       etwas bewirkt. Bei Dauer- und Nachtnutzung waere er ein Feld ohne Wirkung.
+
+       Das Feld schreibt SOFORT in L_P der aktiven Variante (Muster
+       ParameterReiter) - dieselbe Pflegestelle wie der Reiter „Parameter" und
+       die Peak-Shaving-Maske. Ohne Schreibdelegat bleibt es Anzeige: „Kein
+       Delegat ist kein Knopf".
+
+       Die Klappliste bietet NUR gepflegte Quellen an; eine Liste mit Nullen
+       waere keine Auswahl, sondern eine Falle. *@
+    @if (Kappung)
+    {
+        <div class="epos-speicheropt-suchraum">
+        <Formularraster>
+            <KindInhalt>
+                <Formulargruppe Titel="@Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG">
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_LEISTUNGSPREIS"
+                                    Einheit="€/(kW·a)" Min="0"
+                                    Wert="@_eingaben.LeistungspreisEurProKwA"
+                                    Aktiv="@(!_laeuft && LeistungspreisSchreiben.HasDelegate)"
+                                    WertChanged="LeistungspreisGesetzt" />
+
+                        @if (_quellen.Count > 0)
+                        {
+                            <Auswahlfeld Bezeichnung="@Resource.OPT_LBL_LP_QUELLE"
+                                         Eintraege="@Quellenliste" Auswahl="@_quelle"
+                                         Platzhalter="@Resource.OPT_LBL_LP_QUELLE"
+                                         Aktiv="@(!_laeuft && LeistungspreisSchreiben.HasDelegate)"
+                                         AuswahlChanged="QuelleGewaehlt" />
+                        }
+                    </KindInhalt>
+                </Formulargruppe>
+            </KindInhalt>
+        </Formularraster>
+        </div>
+    }
 
     @* DIE ERKLAERUNG STEHT UNTER DER GRUPPE, nicht neben der Klappliste — genau
-       das war Befund 1 der Abnahme V2. *@
-    <Herleitungszeile Text="@Resource.OPT_HINWEIS_SUCHRAUM" />
-    <Herleitungszeile Text="@Resource.OPT_HINWEIS_ZIELFUNKTION" />
+       das war Befund 1 der Abnahme V2. Seit W11b-B-25 ist es EINE Zeile statt
+       zweier: Suchraumregel und Zielfunktion sind ein Gedanke, und zwei
+       untereinander stehende Erklaerbaender waren genau der Leerraum, den der
+       Anwender beanstandet hat. Die Zielfunktion wechselt mit der
+       Berechnungsart. *@
+    <Herleitungszeile Text="@Herleitung" />
 
     @if (_eingaben.KVerInZielfunktion)
     {
@@ -145,46 +201,91 @@
             <Warnbanner Stufe="WarnStufe.Warnung" Text="@hinweis" />
         }
 
+        @* HEATMAP UND SCHNITTKURVE NEBENEINANDER, mit gedeckelter Hoehe
+           (Befund W11b-B-25: „Grafik zu gross", „Dialog uebersichtlicher").
+           Die Kurve ist der SCHNITT DURCH die Karte - untereinander schob die
+           Karte sie aus dem sichtbaren Bereich, und der Anwender sah nie beide
+           zugleich. Gedeckelt ist die ANZEIGE (max. 320 px hoch), nicht das
+           PNG: Die Zeichenmasse bleiben 860 x 560 und 720 x 460, sonst waere
+           auch das Gezoomte grob. Den Zoom bringt ChartBild mit (Hausregel
+           A-1). *@
+        <div class="epos-speicheropt-diagramme">
+            <ChartBild Png="@_ergebnis.RasterBild" Alt="@Resource.OPT_CHART_HEATMAP_TITEL" />
+            <ChartBild Png="@_ergebnis.SchnittBild" Alt="@_ergebnis.SchnittTitel" />
+        </div>
+
+        @* DAS EINE BILD „LASTGANG UND SPEICHERBETRIEB" (Befund W11b-B-25,
+           Windows-Abnahme 09.09.2026: „Lastgang und Speicherung in einer
+           Grafik").
+
+           Es zeigt, was der BESTPUNKT tatsaechlich tut: Netzbezug ohne und mit
+           Speicher, bei der Lastspitzenkappung die erreichte Schwelle, dazu die
+           Speicherleistung mit Vorzeichen. Alles in kW und auf EINER Achse -
+           die Frage „um wie viel senkt der Speicher die Spitze" ist nur so zu
+           lesen.
+
+           Vorgabe ist die Woche um die Jahresspitze; ein Jahr im
+           Viertelstundenraster legte 40 Werte auf einen Bildpunkt und zeigte
+           keinen einzigen Zyklus. Umschalter, Reihenwahl und Datenzoom
+           erscheinen nur MIT Neuzeichnen-Delegat („Kein Delegat ist kein
+           Knopf"); ohne ihn bleibt das Bild des Laufs stehen. *@
+        @if (_betriebBild is { Length: > 0 })
+        {
+            <section class="epos-simerg-block epos-speicheropt-betrieb">
+                @if (Betrieb is null)
+                {
+                    <ChartBild Png="@_betriebBild" Alt="@_betriebTitel" />
+                }
+                else
+                {
+                    @* DIE SCHALTER STEHEN UEBER DEM BILD - Hausregel der Ergebnisseite
+                       (Doku_Simulationsergebnis_Darstellung.md, 5): erst die
+                       Darstellungsart, dann je Reihe ein Schalter, dann das Bild. *@
+                    <div class="epos-simerg-schalter">
+                        <Schalter Bezeichnung="@Resource.OPT_BETRIEB_CHK_JAHR" Wert="@_betriebJahr"
+                                  WertChanged="BetriebJahrGesetzt" />
+                    </div>
+
+                    <div class="epos-simerg-schalter">
+                        @foreach (var reihe in Betriebsreihen)
+                        {
+                            string schluessel = reihe.Schluessel;
+                            <Schalter Bezeichnung="@reihe.Text" Wert="@ReiheAn(schluessel)"
+                                      WertChanged="@(w => BetriebsreiheGesetzt(schluessel, w))" />
+                        }
+                    </div>
+
+                    <ChartBild Png="@_betriebBild" Alt="@_betriebTitel"
+                               BereichGewaehlt="BetriebBereich" Zurueckgesetzt="BetriebBereichZurueck" />
+                }
+            </section>
+        }
+
+        @* DIE KENNZAHLEN ALS WERTELISTEN (dl.epos-simerg-werte) statt als eine
+           lange Tabelle - dieselbe Sprache wie auf allen Reitern der
+           Ergebnisseite. Die Tabelle trug drei Spaltenkoepfe und je Gruppe eine
+           eigene Kopfzeile; die Wertelisten stehen NEBENEINANDER und brauchen
+           damit ein Drittel der Hoehe. Eine Gruppe ohne Zeilen entfaellt ganz -
+           die Gruppe „Lastspitzenkappung" gibt es nur bei dieser
+           Berechnungsart. *@
         <div class="epos-simerg-spalten">
+            @foreach (string gruppe in GRUPPEN)
+            {
+                string g = gruppe;
+                if (!Zeilen(g).Any()) { continue; }
 
-            @* Beide Bilder stehen ueber die volle Breite (Befund W11b-B-2 der
-               Abnahme vom 05.09.2026: ein Diagramm in einer halben Rasterspalte
-               ist nicht mehr zu lesen). ChartBild bringt den Zoom mit. *@
-            <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                <ChartBild Png="@_ergebnis.RasterBild" Alt="@Resource.OPT_CHART_HEATMAP_TITEL" />
-            </section>
-
-            <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                <ChartBild Png="@_ergebnis.SchnittBild" Alt="@_ergebnis.SchnittTitel" />
-            </section>
-
-            <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                <table class="epos-simerg-kennzahlen epos-speicheropt-kennzahlen">
-                    <thead>
-                        <tr>
-                            <th scope="col">@Resource.OPT_SP_GROESSE</th>
-                            <th scope="col">@Resource.OPT_SP_WERT</th>
-                            <th scope="col">@Resource.OPT_SP_EINHEIT</th>
-                        </tr>
-                    </thead>
-                    @foreach (string gruppe in GRUPPEN)
-                    {
-                        string g = gruppe;
-                        <tbody>
-                            <tr><th colspan="3" scope="colgroup">@Gruppentitel(g)</th></tr>
-                            @foreach (SpeicherOptimierungKennzahl z in Zeilen(g))
-                            {
-                                <tr>
-                                    <td>@z.Bezeichnung</td>
-                                    <td class="@(z.Negativ ? "epos-simerg-zahl epos-simerg-warn" : "epos-simerg-zahl")">@z.Wert</td>
-                                    <td>@z.Einheit</td>
-                                </tr>
-                            }
-                        </tbody>
-                    }
-                </table>
-            </section>
-
+                <section class="epos-simerg-block">
+                    <Gruppenkopf Titel="@Gruppentitel(g)" />
+                    <dl class="epos-simerg-werte">
+                        @foreach (SpeicherOptimierungKennzahl z in Zeilen(g))
+                        {
+                            <dt>@z.Bezeichnung</dt>
+                            <dd class="@(z.Negativ ? "epos-simerg-warn" : null)">@z.Wert</dd>
+                            <dd class="epos-simerg-einheit">@z.Einheit</dd>
+                        }
+                    </dl>
+                </section>
+            }
         </div>
     }
 
@@ -227,7 +328,8 @@
     {
         SpeicherOptimierungCtrl.GRUPPE_AUSLEGUNG,
         SpeicherOptimierungCtrl.GRUPPE_WIRTSCHAFT,
-        SpeicherOptimierungCtrl.GRUPPE_SPEICHER
+        SpeicherOptimierungCtrl.GRUPPE_SPEICHER,
+        SpeicherOptimierungCtrl.GRUPPE_KAPPUNG
     };
 
     // =====================================================================
@@ -261,6 +363,30 @@
     /// <summary>Schreibt das Raster als CSV; ohne Rueckruf kein Knopf.</summary>
     [Parameter] public EventCallback<string> Csv { get; set; }
 
+    /// <summary>
+    /// Schreibt den Leistungspreis L_P [€/(kW·a)] SOFORT in die aktive
+    /// Speichervariante (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Es ist dasselbe Feld <c>Tab_StromspeicherVariante.L_P</c>, das der Reiter
+    /// „Parameter" und die Peak-Shaving-Maske pflegen — EINE Pflegestelle. OHNE
+    /// Rueckruf bleibt das Feld Anzeige („Kein Delegat ist kein Knopf"); der Suchlauf
+    /// rechnet dann mit dem vorbelegten Wert.
+    /// </remarks>
+    [Parameter] public EventCallback<double> LeistungspreisSchreiben { get; set; }
+
+    /// <summary>
+    /// Zeichnet das Bild „Lastgang und Speicherbetrieb" NEU — anderer Ausschnitt,
+    /// andere Reihenwahl, anderer Datenzoom (Befund W11b‑B‑25, 09.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Gerechnet wird dabei EIN Jahreslauf des Bestpunkts, nicht die Rastersuche.
+    /// OHNE Delegat bleibt das Bild des Laufs stehen und es gibt keine Umschalter.
+    /// </remarks>
+    [Parameter]
+    public Func<bool, IReadOnlyList<string>, Diagrammbereich?,
+                SpeicherOptimierungBetriebsbild>? Betrieb { get; set; }
+
     /// <summary>Die Ueberlagerung moechte geschlossen werden.</summary>
     [Parameter] public EventCallback Geschlossen { get; set; }
 
@@ -282,6 +408,42 @@
     private SpeicherOptimierungEingaben _eingaben = new SpeicherOptimierungEingaben();
     private string _aktuelleAuslegung = "";
 
+    /// <summary>Die angebotenen Leistungspreis-Quellen; leer = keine gepflegt.</summary>
+    private IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> _quellen =
+        new List<SpeicherOptimierungLeistungspreisQuelle>();
+
+    /// <summary>Die zuletzt gewaehlte Quelle (Index) — <c>null</c> = keine.</summary>
+    private int? _quelle;
+
+    /// <summary>Das Bild „Lastgang und Speicherbetrieb"; leer = keines.</summary>
+    private byte[]? _betriebBild;
+
+    /// <summary>Die Ueberschrift dazu — sie nennt den gezeigten Ausschnitt.</summary>
+    private string _betriebTitel = "";
+
+    /// <summary><c>true</c> = ganzes Jahr statt der Woche um die Jahresspitze.</summary>
+    private bool _betriebJahr;
+
+    /// <summary>Der aufgezogene Datenzoom; <c>null</c> = volle Ansicht.</summary>
+    private Diagrammbereich? _betriebBereich;
+
+    /// <summary>
+    /// Die gewaehlten Reihen. Sie startet mit ALLEN; waehlt der Anwender alles ab,
+    /// bleibt sie LEER und das Bild zeigt den Leerhinweis des Zeichners — die
+    /// Hausregel der Ergebnisseite (Doku_Simulationsergebnis_Darstellung.md, § 5),
+    /// ohne Rueckfall auf „alle".
+    /// </summary>
+    private readonly List<string> _betriebReihen = new List<string>
+    {
+        SpeicherOptimierungCtrl.REIHE_OHNE,
+        SpeicherOptimierungCtrl.REIHE_MIT,
+        SpeicherOptimierungCtrl.REIHE_SCHWELLE,
+        SpeicherOptimierungCtrl.REIHE_SPEICHER
+    };
+
+    /// <summary>Die Berechnungsart des zuletzt gerechneten Laufs.</summary>
+    private OptimiererStrategie _gelaufen = OptimiererStrategie.Dauernutzung;
+
     private bool _laeuft;
     private double? _anteil;
     private string _fortschrittText = "";
@@ -300,6 +462,12 @@
 
     /// <summary>Das Ergebnis des letzten Laufs (Pruefhilfe); <c>null</c> = keines.</summary>
     public SpeicherOptimierungErgebnis? Ergebnis => _ergebnis;
+
+    /// <summary>Das gezeigte Betriebsbild (Pruefhilfe); <c>null</c> = keines.</summary>
+    public byte[]? Betriebsbild => _betriebBild;
+
+    /// <summary>Zeigt das Betriebsbild das ganze Jahr? (Pruefhilfe)</summary>
+    public bool BetriebGanzesJahr => _betriebJahr;
 
     private bool LaufMoeglich => Rechnen is not null;
 
@@ -321,7 +489,60 @@
 
         _eingaben = vorgaben.Eingaben.Kopie();
         _aktuelleAuslegung = vorgaben.AktuelleAuslegung;
+        _quellen = vorgaben.Leistungspreisquellen
+                   ?? (IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle>)
+                      new List<SpeicherOptimierungLeistungspreisQuelle>();
     }
+
+    // =====================================================================
+    // Der Leistungspreis (W11b‑E‑3)
+    // =====================================================================
+
+    /// <summary>Steht die Klappliste auf der Lastspitzenkappung?</summary>
+    private bool Kappung => _eingaben.Strategie == OptimiererStrategie.Lastspitzenkappung;
+
+    /// <summary>Die Quellen als Eintraege der Klappliste; die Id ist der Listenindex.</summary>
+    private IReadOnlyList<(int Id, string Text)> Quellenliste =>
+        _quellen.Select((q, i) => (Id: i, Text: q.Bezeichnung)).ToList();
+
+    /// <summary>
+    /// Das Feld hat geschrieben: erst in den Suchraum, dann SOFORT in die Variante.
+    /// </summary>
+    private async Task LeistungspreisGesetzt(double? wert)
+    {
+        if (!wert.HasValue) return;
+
+        _eingaben.LeistungspreisEurProKwA = wert.Value;
+        _quelle = null;                    // von Hand geaendert - keine Quelle mehr
+        Nachrechnen();
+
+        if (LeistungspreisSchreiben.HasDelegate)
+            await LeistungspreisSchreiben.InvokeAsync(wert.Value);
+    }
+
+    /// <summary>
+    /// Eine Quelle wurde gewaehlt: Ihr Wert geht ins Feld UND in die Variante — die
+    /// Uebernahme ist ein Schreibvorgang, kein Vorschlag (Anwenderentscheid W11b‑E‑3).
+    /// </summary>
+    private async Task QuelleGewaehlt(int? index)
+    {
+        _quelle = index;
+        if (!index.HasValue || index.Value < 0 || index.Value >= _quellen.Count) return;
+
+        double wert = _quellen[index.Value].WertEurProKwA;
+        _eingaben.LeistungspreisEurProKwA = wert;
+        Nachrechnen();
+
+        if (LeistungspreisSchreiben.HasDelegate)
+            await LeistungspreisSchreiben.InvokeAsync(wert);
+    }
+
+    /// <summary>
+    /// Suchraumregel und Zielfunktion in EINER Zeile — die Zielfunktion wechselt mit
+    /// der Berechnungsart (W11b‑B‑25 / W11b‑E‑3).
+    /// </summary>
+    private string Herleitung => Resource.OPT_HINWEIS_SUCHRAUM + " " +
+        (Kappung ? Resource.OPT_HINWEIS_ZIEL_LASTSPITZE : Resource.OPT_HINWEIS_ZIELFUNKTION);
 
     // =====================================================================
     // Eingaben
@@ -346,8 +567,15 @@
 
     private void StrategieGewaehlt(int? index)
     {
-        _eingaben.Strategie = index == 1 ? OptimiererStrategie.Nachtnutzung
-                                         : OptimiererStrategie.Dauernutzung;
+        // Der Zahlenwert der Klappliste IST der der Aufzaehlung (W11b‑E‑3): 0 = Dauer-,
+        // 1 = Nachtnutzung, 2 = Lastspitzenkappung. Ein unbekannter Index faellt auf
+        // die Dauernutzung zurueck.
+        _eingaben.Strategie = index switch
+        {
+            1 => OptimiererStrategie.Nachtnutzung,
+            2 => OptimiererStrategie.Lastspitzenkappung,
+            _ => OptimiererStrategie.Dauernutzung
+        };
         Nachrechnen();
     }
 
@@ -393,13 +621,93 @@
         {
             _ergebnis = null;
             _fehler = antwort?.Meldung ?? Resource.OPT_MSG_KEIN_ERGEBNIS;
+            _betriebBild = null;
+            _betriebTitel = "";
         }
         else
         {
             _ergebnis = antwort;
+
+            // Ein neuer Lauf setzt die Schalterstellungen des Betriebsbildes zurueck:
+            // Der Ausschnitt eines FRUEHEREN Bestpunkts hat mit diesem nichts zu tun.
+            _gelaufen = _eingaben.Strategie;
+            _betriebJahr = false;
+            _betriebBereich = null;
+            _betriebBild = antwort.BetriebBild;
+            _betriebTitel = antwort.BetriebTitel;
         }
 
         StateHasChanged();
+    }
+
+    // =====================================================================
+    // Das Bild „Lastgang und Speicherbetrieb" (W11b‑B‑25)
+    // =====================================================================
+
+    /// <summary>
+    /// Die waehlbaren Reihen des Betriebsbildes. Die SCHWELLE gibt es nur bei der
+    /// Lastspitzenkappung — bei den anderen Berechnungsarten waere sie eine Linie
+    /// ohne Bedeutung.
+    /// </summary>
+    private IEnumerable<(string Schluessel, string Text)> Betriebsreihen
+    {
+        get
+        {
+            yield return (SpeicherOptimierungCtrl.REIHE_OHNE, Resource.OPT_BETRIEB_R_OHNE);
+            yield return (SpeicherOptimierungCtrl.REIHE_MIT, Resource.OPT_BETRIEB_R_MIT);
+            if (_gelaufen == OptimiererStrategie.Lastspitzenkappung)
+                yield return (SpeicherOptimierungCtrl.REIHE_SCHWELLE, Resource.OPT_BETRIEB_R_SCHWELLE);
+            yield return (SpeicherOptimierungCtrl.REIHE_SPEICHER, Resource.OPT_BETRIEB_R_LEISTUNG);
+        }
+    }
+
+    private bool ReiheAn(string schluessel) => _betriebReihen.Contains(schluessel);
+
+    private void BetriebJahrGesetzt(bool wert)
+    {
+        _betriebJahr = wert;
+        // Ein anderer Ausschnitt entwertet den aufgezogenen Bereich - er war in
+        // Anteilen des ALTEN Bildes gemessen.
+        _betriebBereich = null;
+        BetriebZeichnen();
+    }
+
+    private void BetriebsreiheGesetzt(string schluessel, bool an)
+    {
+        if (an)
+        {
+            if (!_betriebReihen.Contains(schluessel)) _betriebReihen.Add(schluessel);
+        }
+        else
+        {
+            _betriebReihen.Remove(schluessel);
+        }
+
+        BetriebZeichnen();
+    }
+
+    private void BetriebBereich(Diagrammbereich bereich)
+    {
+        _betriebBereich = bereich;
+        BetriebZeichnen();
+    }
+
+    private void BetriebBereichZurueck()
+    {
+        _betriebBereich = null;
+        BetriebZeichnen();
+    }
+
+    /// <summary>Holt das Bild neu — EIN Jahreslauf des Bestpunkts, kein Raster.</summary>
+    private void BetriebZeichnen()
+    {
+        if (Betrieb is null) return;
+
+        SpeicherOptimierungBetriebsbild neu = Betrieb(_betriebJahr, _betriebReihen, _betriebBereich);
+        if (neu is null) return;
+
+        _betriebBild = neu.Png;
+        _betriebTitel = neu.Titel;
     }
 
     /// <summary>

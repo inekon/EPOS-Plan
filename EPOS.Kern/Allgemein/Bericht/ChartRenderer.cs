@@ -2271,6 +2271,39 @@ namespace WindowsFormsApplication1
         /// </param>
         public static byte[] Temperaturverlauf(string titel, IReadOnlyList<Reihe> reihen, bool minAuto,
                                                Achsenfenster fenster = null)
+            => Verlaufsbild(titel, reihen, minAuto, TEMPERATUR_MINDESTSPANNE, fenster);
+
+        /// <summary>
+        /// <b>B10 — LASTGANG UND SPEICHERBETRIEB</b> (Befund W11b‑B‑25, Windows-Abnahme
+        /// 09.09.2026: „Lastgang und Speicherung in einer Grafik").
+        ///
+        /// <para><b>Alles in EINER Achse, und zwar in kW.</b> Netzbezug ohne Speicher,
+        /// Netzbezug mit Speicher, die erreichte Kappungsschwelle und die
+        /// Speicherleistung sind VIER LEISTUNGEN. Eine zweite Achse behauptete eine
+        /// zweite Einheit, wo keine ist, und machte die entscheidende Aussage des
+        /// Bildes unlesbar: um wie viel die Speicherleistung die Bezugsspitze senkt.
+        /// Die Speicherleistung trägt ihr Vorzeichen — Entladen positiv, Laden negativ —
+        /// und liegt damit von selbst um die Nulllinie.</para>
+        ///
+        /// <para>Gezeichnet wird wie beim <see cref="Temperaturverlauf"/>: vorzeichen-
+        /// fähige Achse von Min bis Max des ANGEZEIGTEN Ausschnitts, Legende oben,
+        /// Datenzoom über <paramref name="fenster"/> (W11b‑B‑24). Ohne Mindestspanne —
+        /// die gibt es nur für Temperaturen.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Lastgang und Speicherbetrieb [kW] — Woche der Jahresspitze".</param>
+        /// <param name="reihen">Die Reihen in Zeichenreihenfolge; leere entfallen still.</param>
+        /// <param name="fenster">Der Zeitausschnitt; <c>null</c> = die volle Reihe.</param>
+        public static byte[] Speicherbetrieb(string titel, IReadOnlyList<Reihe> reihen,
+                                             Achsenfenster fenster = null)
+            => Verlaufsbild(titel, reihen, true, 0.0, fenster);
+
+        /// <summary>
+        /// Die gemeinsame Zeichnung von <see cref="Temperaturverlauf"/> und
+        /// <see cref="Speicherbetrieb"/> — beide zeigen mehrere gleich skalierte
+        /// Reihen über der Zeit, nur die Mindestspanne der Achse unterscheidet sie.
+        /// </summary>
+        private static byte[] Verlaufsbild(string titel, IReadOnlyList<Reihe> reihen, bool minAuto,
+                                           double mindestspanne, Achsenfenster fenster)
         {
             int W = 1240, H = 560;
             using (var flaeche = Start(W, H))
@@ -2297,13 +2330,19 @@ namespace WindowsFormsApplication1
                 double min = minAuto ? gueltig.Min(r => r.Werte.Min()) : 0;
                 double max = gueltig.Max(r => r.Werte.Max());
 
-                // MINDESTSPANNE 5 K, woertlich aus SpeichertemperaturAnzeigen :2607-2620.
-                if (max - min < TEMPERATUR_MINDESTSPANNE)
+                // MINDESTSPANNE (Temperatur: 5 K, woertlich aus
+                // SpeichertemperaturAnzeigen :2607-2620; Leistungsbilder: keine).
+                if (mindestspanne > 0.0 && max - min < mindestspanne)
                 {
                     double mitte = (max + min) / 2.0;
-                    min = mitte - TEMPERATUR_MINDESTSPANNE / 2.0;
-                    max = mitte + TEMPERATUR_MINDESTSPANNE / 2.0;
+                    min = mitte - mindestspanne / 2.0;
+                    max = mitte + mindestspanne / 2.0;
                 }
+
+                // Eine Reihe aus lauter gleichen Werten (eine waagerechte Schwelle als
+                // einzige gewaehlte Reihe) haette sonst eine Spanne von 0 und teilte
+                // spaeter durch null.
+                if (max - min <= 0.0) { min -= 0.5; max += 0.5; }
                 min = Math.Floor(min);
                 max = Math.Ceiling(max);
 

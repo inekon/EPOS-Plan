@@ -4,7 +4,9 @@ using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
+using EPOS.UI.Bausteine;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -50,6 +52,29 @@ public class SpeicherOptimierungDialogTests : BunitContext
     {
         Eingaben = new SpeicherOptimierungEingaben(),
         AktuelleAuslegung = "Aktuelle Auslegung: 250 kWh / 125 kW (0,5 C)"
+    };
+
+    /// <summary>
+    /// Dieselben Gaben MIT zwei Leistungspreis-Quellen (Anwenderentscheid W11b‑E‑3,
+    /// 10.09.2026) — Tarifstruktur und Energieträger Strom.
+    /// </summary>
+    private static SpeicherOptimierungVorgaben VorgabenMitQuellen() => new()
+    {
+        Eingaben = new SpeicherOptimierungEingaben(),
+        AktuelleAuslegung = "Aktuelle Auslegung: 250 kWh / 125 kW (0,5 C)",
+        Leistungspreisquellen = new[]
+        {
+            new SpeicherOptimierungLeistungspreisQuelle
+            {
+                Bezeichnung = "Tarifstruktur (Wirtschaftlichkeit): 120 €/(kW·a) — Stufe 2",
+                WertEurProKwA = 120.0
+            },
+            new SpeicherOptimierungLeistungspreisQuelle
+            {
+                Bezeichnung = "Energieträger Strom: 95 €/(kW·a)",
+                WertEurProKwA = 95.0
+            }
+        }
     };
 
     /// <summary>Ein fertiges Ergebnis — zwei Bilder, drei Kennzahlen, ein Hinweis.</summary>
@@ -109,10 +134,17 @@ public class SpeicherOptimierungDialogTests : BunitContext
         Action<string>? csv = null,
         Action? geschlossen = null,
         string meldung = "",
-        bool meldungErfolg = false)
+        bool meldungErfolg = false,
+        Func<SpeicherOptimierungVorgaben>? vorgaben = null,
+        Action<double>? leistungspreis = null,
+        Func<bool, IReadOnlyList<string>, Diagrammbereich?,
+             SpeicherOptimierungBetriebsbild>? betrieb = null)
     {
         return Render<SpeicherOptimierungDialog>(p => p
-            .Add(x => x.Vorgaben, Vorgaben)
+            .Add(x => x.Vorgaben, vorgaben ?? Vorgaben)
+            .Add(x => x.Betrieb, betrieb)
+            .Add(x => x.LeistungspreisSchreiben,
+                 leistungspreis is null ? default : EventCallbackVon(leistungspreis))
             .Add(x => x.Rechnen, rechnen ?? ((_, _) => Task.FromResult(Ergebnis())))
             .Add(x => x.Abbrechen, abbrechen is null ? default : EventCallbackVon(abbrechen))
             .Add(x => x.Uebernehmen, uebernehmen is null ? default : EventCallbackVon(uebernehmen))
@@ -571,5 +603,306 @@ public class SpeicherOptimierungDialogTests : BunitContext
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_GRP_SUCHRAUM,
                         cut.Markup, StringComparison.Ordinal);
         Assert.True(cut.Find("button.epos-simerg-knopf").HasAttribute("disabled"));
+    }
+
+    // =================================================================================
+    //  ANWENDERENTSCHEID W11b‑E‑3 (10.09.2026) — die Lastspitzenkappung
+    // =================================================================================
+
+    /// <summary>Die Klappliste „Berechnungsart" ist die ERSTE Auswahl des Dialogs.</summary>
+    private static IElement Berechnungsart(IRenderedComponent<SpeicherOptimierungDialog> cut)
+        => cut.FindAll("select")[0];
+
+    /// <summary>Stellt die Klappliste auf die Lastspitzenkappung (Aufzählungswert 2).</summary>
+    private static void KappungWaehlen(IRenderedComponent<SpeicherOptimierungDialog> cut)
+        => Berechnungsart(cut).Change("2");
+
+    [Fact]
+    public void Die_Klappliste_bietet_drei_Berechnungsarten()
+    {
+        var cut = Aufbauen();
+        var eintraege = Berechnungsart(cut).QuerySelectorAll("option");
+
+        Assert.Equal(3, eintraege.Length);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG,
+                     eintraege[2].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Der Leistungspreis erscheint NUR bei der Lastspitzenkappung — bei Dauer- und
+    /// Nachtnutzung wäre er ein Feld ohne Wirkung.
+    /// </summary>
+    [Fact]
+    public void Das_Leistungspreisfeld_erscheint_erst_mit_der_Kappung()
+    {
+        var cut = Aufbauen(vorgaben: VorgabenMitQuellen, leistungspreis: _ => { });
+
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_LBL_LEISTUNGSPREIS,
+                              cut.Markup, StringComparison.Ordinal);
+
+        KappungWaehlen(cut);
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_LBL_LEISTUNGSPREIS,
+                        cut.Markup, StringComparison.Ordinal);
+        Assert.Equal(OptimiererStrategie.Lastspitzenkappung, cut.Instance.Eingaben.Strategie);
+    }
+
+    /// <summary>Die Zielfunktionszeile wechselt mit der Berechnungsart.</summary>
+    [Fact]
+    public void Die_Herleitung_nennt_die_Zielfunktion_der_Kappung()
+    {
+        var cut = Aufbauen(vorgaben: VorgabenMitQuellen, leistungspreis: _ => { });
+        KappungWaehlen(cut);
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_HINWEIS_ZIEL_LASTSPITZE,
+                        cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_HINWEIS_ZIELFUNKTION,
+                              cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Die Übernahme aus einer Quelle SETZT das Feld und SCHREIBT — sie ist kein
+    /// Vorschlag (Anwenderentscheid W11b‑E‑3).
+    /// </summary>
+    [Fact]
+    public void Die_Uebernahme_aus_einer_Quelle_setzt_das_Feld_und_schreibt()
+    {
+        var geschrieben = new List<double>();
+        var cut = Aufbauen(vorgaben: VorgabenMitQuellen, leistungspreis: geschrieben.Add);
+
+        KappungWaehlen(cut);
+
+        // Die zweite Auswahl des Dialogs ist die Quellenliste; Id = Listenindex.
+        var quellen = cut.FindAll("select")[1];
+        Assert.Equal(3, quellen.QuerySelectorAll("option").Length);   // Platzhalter + zwei Quellen
+
+        quellen.Change("1");                                          // Energietraeger Strom
+
+        Assert.Equal(95.0, cut.Instance.Eingaben.LeistungspreisEurProKwA);
+        Assert.Equal(new[] { 95.0 }, geschrieben);
+    }
+
+    /// <summary>Jedes Feld schreibt sofort — auch die Zahl von Hand.</summary>
+    [Fact]
+    public void Das_Leistungspreisfeld_schreibt_sofort()
+    {
+        var geschrieben = new List<double>();
+        var cut = Aufbauen(vorgaben: VorgabenMitQuellen, leistungspreis: geschrieben.Add);
+
+        KappungWaehlen(cut);
+
+        // Sechs Zahlenfelder des Suchraums, dann der Leistungspreis.
+        cut.FindAll("input[type=text]")[6].Input("142,5");
+
+        Assert.Equal(142.5, cut.Instance.Eingaben.LeistungspreisEurProKwA);
+        Assert.Equal(new[] { 142.5 }, geschrieben);
+    }
+
+    /// <summary>Ohne gepflegte Quelle gibt es keine Klappliste — keine Liste mit Nullen.</summary>
+    [Fact]
+    public void Ohne_Quellen_bleibt_die_Uebernahme_weg()
+    {
+        var cut = Aufbauen(leistungspreis: _ => { });
+        KappungWaehlen(cut);
+
+        Assert.Single(cut.FindAll("select"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_LBL_LP_QUELLE,
+                              cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Ohne Schreibdelegat bleibt das Feld Anzeige („Kein Delegat ist kein Knopf").</summary>
+    [Fact]
+    public void Ohne_Schreibweg_ist_das_Feld_nur_Anzeige()
+    {
+        var cut = Aufbauen(vorgaben: VorgabenMitQuellen);
+        KappungWaehlen(cut);
+
+        Assert.True(cut.FindAll("input[type=text]")[6].HasAttribute("disabled"));
+        Assert.True(cut.FindAll("select")[1].HasAttribute("disabled"));
+    }
+
+    // =================================================================================
+    //  BEFUND W11b‑B‑25 (09.09.2026) — „Grafik zu gross", „Dialog uebersichtlicher"
+    // =================================================================================
+
+    /// <summary>
+    /// Rasterkarte und Schnittkurve stehen in EINER Zeile nebeneinander; untereinander
+    /// schob die Karte die Kurve aus dem sichtbaren Bereich.
+    /// </summary>
+    [Fact]
+    public async Task Beide_Bilder_stehen_nebeneinander_in_einer_Zeile()
+    {
+        var cut = Aufbauen();
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        var zeile = cut.Find("div.epos-speicheropt-diagramme");
+        Assert.Equal(2, zeile.QuerySelectorAll("img.epos-chartbild").Length);
+        Assert.Empty(cut.FindAll("section.epos-simerg-diagrammzeile"));
+    }
+
+    /// <summary>
+    /// Die Kennzahlen stehen als Wertelisten nebeneinander statt als eine lange
+    /// Tabelle — je Gruppe eine Liste, leere Gruppen entfallen.
+    /// </summary>
+    [Fact]
+    public async Task Die_Kennzahlen_stehen_als_Wertelisten()
+    {
+        var cut = Aufbauen();
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        Assert.Empty(cut.FindAll("table.epos-speicheropt-kennzahlen"));
+        Assert.Equal(3, cut.FindAll("dl.epos-simerg-werte").Count);   // drei belegte Gruppen
+        Assert.Contains("Nennkapazität C_nom", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Die Hinweise des Kerns stehen als Warnbänder, nicht als Fließtext.</summary>
+    [Fact]
+    public async Task Die_Hinweise_stehen_als_Warnbaender()
+    {
+        var cut = Aufbauen();
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        var baender = cut.FindAll(".epos-warnbanner-text");
+        Assert.Contains(baender, b => b.TextContent.Contains("Optimum am Rand", StringComparison.Ordinal));
+    }
+
+    // =================================================================================
+    //  BEFUND W11b‑B‑25 — „Lastgang und Speicherung in einer Grafik"
+    // =================================================================================
+
+    /// <summary>Dasselbe Ergebnis, aber MIT dem Bild des Bestpunkts.</summary>
+    private static SpeicherOptimierungErgebnis ErgebnisMitBetrieb()
+    {
+        var e = Ergebnis();
+        e.BetriebBild = Bild(7);
+        e.BetriebTitel = "Lastgang und Speicherbetrieb [kW] — Woche der Jahresspitze";
+        return e;
+    }
+
+    /// <summary>Ein Neuzeichnen-Weg, der jede Anfrage mitschreibt.</summary>
+    private sealed class Zeichner
+    {
+        internal readonly List<(bool Jahr, string[] Reihen, bool Bereich)> Anfragen = new();
+        private byte kennung = 20;
+
+        internal SpeicherOptimierungBetriebsbild Zeichne(
+            bool jahr, IReadOnlyList<string> reihen, Diagrammbereich? bereich)
+        {
+            Anfragen.Add((jahr, reihen is null ? Array.Empty<string>() : reihen.ToArray(),
+                          bereich is not null));
+            kennung++;
+            return new SpeicherOptimierungBetriebsbild
+            {
+                Png = Bild(kennung),
+                Titel = jahr ? "ganzes Jahr" : "Woche der Jahresspitze",
+                Stuetzstellen = jahr ? 8760 : 168
+            };
+        }
+    }
+
+    /// <summary>
+    /// Ohne Betriebsbild bleibt es bei den zwei Rasterbildern — der Dialog erfindet
+    /// keines („Bild nur mit BetriebBild").
+    /// </summary>
+    [Fact]
+    public async Task Ohne_Betriebsbild_bleibt_es_bei_zwei_Bildern()
+    {
+        var cut = Aufbauen();
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        Assert.Null(cut.Instance.Betriebsbild);
+        Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Empty(cut.FindAll("section.epos-speicheropt-betrieb"));
+    }
+
+    [Fact]
+    public async Task Mit_Betriebsbild_erscheint_das_dritte_Bild()
+    {
+        var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()));
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
+        var abschnitt = cut.Find("section.epos-speicheropt-betrieb");
+        Assert.Single(abschnitt.QuerySelectorAll("img.epos-chartbild"));
+        Assert.False(cut.Instance.BetriebGanzesJahr);
+    }
+
+    /// <summary>Ohne Neuzeichnen-Weg gibt es keine Umschalter („Kein Delegat ist kein Knopf").</summary>
+    [Fact]
+    public async Task Ohne_Neuzeichnen_gibt_es_keine_Umschalter()
+    {
+        var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()));
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        // Nur die zwei Schalter des Suchraums (Feinraster, K_ver).
+        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
+    }
+
+    /// <summary>
+    /// Der Umschalter „Ganzes Jahr" zeichnet das Bild neu — mit EINEM Jahreslauf des
+    /// Bestpunkts, nicht mit einer neuen Rastersuche.
+    /// </summary>
+    [Fact]
+    public async Task Der_Umschalter_auf_das_ganze_Jahr_zeichnet_neu()
+    {
+        var zeichner = new Zeichner();
+        var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
+                           betrieb: zeichner.Zeichne);
+
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        byte[] vorher = cut.Instance.Betriebsbild!;
+        cut.FindAll("input[type=checkbox]")[2].Change(true);   // „Ganzes Jahr"
+
+        Assert.Single(zeichner.Anfragen);
+        Assert.True(zeichner.Anfragen[0].Jahr);
+        Assert.True(cut.Instance.BetriebGanzesJahr);
+        Assert.NotEqual(vorher, cut.Instance.Betriebsbild);
+    }
+
+    /// <summary>Eine abgewählte Reihe fehlt in der nächsten Anfrage.</summary>
+    [Fact]
+    public async Task Eine_abgewaehlte_Reihe_faellt_aus_der_Anfrage()
+    {
+        var zeichner = new Zeichner();
+        var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
+                           betrieb: zeichner.Zeichne);
+
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        // Schalter 2 = „Ganzes Jahr", 3 = Netzbezug ohne Speicher.
+        cut.FindAll("input[type=checkbox]")[3].Change(false);
+
+        Assert.Single(zeichner.Anfragen);
+        Assert.DoesNotContain(SpeicherOptimierungCtrl.REIHE_OHNE, zeichner.Anfragen[0].Reihen);
+        Assert.Contains(SpeicherOptimierungCtrl.REIHE_MIT, zeichner.Anfragen[0].Reihen);
+    }
+
+    /// <summary>
+    /// Alles abgewählt heißt KEINE Reihe — die Hausregel der Ergebnisseite
+    /// (<c>Doku_Simulationsergebnis_Darstellung.md</c>, § 5): eine leere Liste fällt
+    /// NICHT auf „alle" zurück, das Bild zeigt den Leerhinweis des Zeichners.
+    /// </summary>
+    [Fact]
+    public async Task Alles_abgewaehlt_liefert_eine_leere_Reihenwahl()
+    {
+        var zeichner = new Zeichner();
+        var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
+                           betrieb: zeichner.Zeichne);
+
+        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+
+        // Der Lauf stand auf Dauernutzung: drei Reihenschalter (ohne die Schwelle).
+        Assert.Equal(6, cut.FindAll("input[type=checkbox]").Count);   // 2 Suchraum + Jahr + 3 Reihen
+
+        cut.FindAll("input[type=checkbox]")[3].Change(false);
+        cut.FindAll("input[type=checkbox]")[4].Change(false);
+        cut.FindAll("input[type=checkbox]")[5].Change(false);
+
+        Assert.Equal(3, zeichner.Anfragen.Count);
+
+        // Die SCHWELLE steht noch in der Wahl - sie hat ohne Kappung keinen Schalter.
+        Assert.Equal(new[] { SpeicherOptimierungCtrl.REIHE_SCHWELLE },
+                     zeichner.Anfragen[^1].Reihen);
     }
 }

@@ -1633,3 +1633,193 @@ steht aus.
 
 Sandbox: Build **0 Fehler**, Kern **2141/2141** (vorher 2137; +4), UI **3350/3350** (vorher 3337;
 +13). Kein Rechenweg berührt — derselbe Lauf, nur ein anderer Achsenbereich beim Zeichnen.
+
+## Anwenderentscheid 10.09.2026 — W11b‑E‑3: Lastspitzenkappung in der Auslegungsoptimierung; W11b‑B‑25: Nullfläche erklärt, Dialog kompakt, Lastgang und Speicherbetrieb in einem Bild
+
+**Wortlaut (10.09.2026):** „Nehme auf: Lastspitzenkappung — Leistungspreis in Maske und alternativ
+aus Leistungspreis Tarifstruktur/Energieträger Strom (Übernahme in die Maske als Auswahl)."
+**Vorausgegangener Befund (Windows-Abnahme 09.09.2026, W11b‑B‑25):** „Auslegung scheint nicht zu
+funktionieren, Grafik zu groß, Dialog übersichtlicher, Lastgang und Speicherung in einer Grafik."
+
+### Der Befund, nachgestellt
+
+Projekt 1050 („Stromspeicher Optimierung") führt **genau eine** Anlage: einen Stromspeicher
+Growatt 100 kW / 129 kWh (`Tab_Stromspeicher` 1017062) mit **Modulkosten 0**. Keine PV, kein BHKW,
+keine Preisreihe; Stromganglinie „Kauffmann_2025" (15-min-Werte, 2 850 MWh, Spitze 751 kW). Der
+Dialog rechnete 120 Rasterpunkte, **alle mit ΔJ = 0** — einfarbige Karte, „Optimum 32,3 kWh /
+0,5 C", dazu zwei Warnungen: „Optimum am Rand" und „c_pow ist 0".
+
+**Ursache.** Die zwei vorhandenen Berechnungsarten `Dauernutzung` und `Nachtnutzung` bewerten den
+**genutzten Erzeugungsüberschuss**. Ohne PV und BHKW ist `ErtragReferenzjahrEur` 0; mit
+Modulkosten 0 (und daraus c_cap = 0, c_pow = 0) ist auch der Kapitaldienst 0, und damit ist
+ΔJ ≡ 0 für jeden Punkt des Rasters. Die Anzeige war also rechnerisch richtig und in ihrer Aussage
+trotzdem irreführend: Der „Bestpunkt" war bei lauter gleichen Werten nur der ZUERST BESUCHTE
+(kleinste Kapazität, kleinste C-Rate), die Randwarnung eine Aussage über die Suchreihenfolge statt
+über den Suchraum, und die c_pow-Warnung behauptete die obere C-Raten-Grenze, während das
+angezeigte Optimum an der unteren lag.
+
+### Umsetzung
+
+**Teil 1 — die dritte Berechnungsart (Engine und Kern).**
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| `OptimiererStrategie` | `Dauernutzung = 0`, `Nachtnutzung = 1` | dazu `Lastspitzenkappung = 2` |
+| Parametersatz der Kappung | nur in `PeakShavingEingaben.AlsPeakShavingParameter` | `PeakShavingParameter.Nachziehend(L_P, p_bezug)` — **eine** Stelle; die Maske ruft sie jetzt ebenfalls |
+| Schwellenmodus | — | **nachziehend** wie in der Maske. Eine feste Zielschwelle kann die Rastersuche nicht brauchen: Jeder Rasterpunkt hat eine andere Auslegung und damit eine andere haltbare Spitze |
+| Zielfunktion | `E_a,äq − I·a` | unverändert; nur E_a,1 ist ein anderer: `(P_alt,max − P_neu,max)·L_P − (E_lade − E_entlade)·p_bezug,mittel/100` (Fachkonzept 6.4) |
+| Sekundärkennzahlen je Punkt | — | `SpitzeOhneSpeicherKw`, `SpitzeMitSpeicherKw`, `KappungKw`, `LeistungspreisersparnisEur`, `ErreichteSchwelleKw`, `SchwelleGerissen` — bei den anderen Strategien 0 |
+| `OptimiererOptionen.Pruefe` | — | Lastspitzenkappung ohne `LeistungspreisEurProKwA > 0` wirft; ein negativer Wert wirft immer |
+| Strategiewahl | `private BaueStrategie(OptimiererStrategie)` | `public static BaueStrategie(OptimiererOptionen, SpeicherEingang)` — das Betriebsbild (Teil 4) muss dieselbe Strategie bekommen wie das Raster |
+| `Strategien()` | zwei Einträge | drei; `SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG` |
+| Kennzahlen / CSV | 20 Zeilen, 21 Spalten | dazu die Gruppe `GRUPPE_KAPPUNG` (nur bei dieser Berechnungsart) und **immer** fünf CSV-Spalten — eine je Berechnungsart andere Spaltenzahl machte aus einer Auswertungsdatei zwei Formate |
+
+**Der Leistungspreis L_P hat EINE Pflegestelle** — `Tab_StromspeicherVariante.L_P` der aktiven
+Variante. Das Feld im Dialog schreibt sofort dorthin, und zwar über denselben Weg wie der Reiter
+„Parameter": `SimulationErgebnisDienste.OptimierungLeistungspreis` →
+`SimulationErgebnisHuelle.OptimierungLeistungspreis` → `SpeicherfeldSchreiben(SpeicherFeld.Leistungspreis, …)`
+→ `StromspeicherVarianteCtrl.Update`. Ohne Delegat bleibt das Feld Anzeige.
+
+**Die zwei Alternativquellen** (`SpeicherOptimierungCtrl.Leistungspreisquellen`) werden nur
+angeboten, wenn sie gepflegt sind:
+
+* **Tarifstruktur (Wirtschaftlichkeit)** — `Tab_ProjektTarif` des STAMMPROJEKTS
+  (`VariantenCtrl.StammRefDerVariante`, sonst das Projekt selbst). Angeboten wird der Preis der
+  **Stufe, in der die Bezugsspitze liegt**: Eine Kappung nimmt die Leistung immer von oben weg,
+  die erste eingesparte Kilowatt ist also die der obersten Stufe. Die Bezugsspitze kommt aus dem
+  gerechneten Strombedarf (`SimulationErgebnisHuelle.BezugsspitzeKw`), nicht aus der Datenbank;
+  ohne Lauf wird die untere Stufe angeboten und der Text sagt es. Die Stufenwahl steht als
+  eigene, datenbankfreie Methode `TarifQuelle` — deshalb ist sie einzeln geprüft.
+* **Energieträger Strom** — `Emissionsquelle.StromTraeger`, dann vorrangig die
+  Projektübersteuerung `custom_price_power`, sonst der jüngste Katalogstand
+  `energy_price.leistungspreis`. **Die Einheit hängt am Modus des Trägers** (`price_power_modus`,
+  KD4/FK6): JAHR ist €/(kW·a) und geht unverändert ein, MONAT ist €/(kW·Monat) und wird mit zwölf
+  multipliziert — dieselbe Umrechnung wie in `KostenEmissionRechner`. Ohne diese Wache stünde in
+  der Maske ein Zwölftel des richtigen Wertes.
+
+**Teil 2 — Hinweise statt stummer Nullfläche.**
+
+| Fall | Hinweis |
+|---|---|
+| (a) keine Erzeugung, erzeugungsgestützte Berechnungsart | „Das Projekt führt weder PV- noch BHKW-Erzeugung … Für dieses Projekt ist die Berechnungsart ‚Lastspitzenkappung' die passende." — **vor** dem Lauf, aus den Eingangsdaten |
+| (b) c_cap = 0 | „Die kapazitätsbezogene Investition c_cap ist 0 … Modulkosten am Speichergerät pflegen (Dialog Stromspeicher, Feld ‚Modulkosten [€/kWh]')." |
+| (c) alle Rasterpunkte gleich (relative Spannweite ≤ 1e‑9) | „Alle Rasterpunkte liefern denselben Wert, es gibt kein Optimum …" — und die **Randwarnung entfällt**, weil sie dort eine Aussage über die Suchreihenfolge wäre |
+| (d) c_pow = 0 | richtiggestellt: nicht mehr „das Optimum wandert an die obere C-Raten-Grenze", sondern „Welche C-Rate gewinnt, entscheidet dann allein der Nutzen; … bei Gleichstand die KLEINSTE C-Rate, weil der Bestpunkt in fester Reihenfolge gesucht wird" |
+| (d) Suchraumhinweis | richtiggestellt auf die **tatsächliche** Vorbelegungsregel: „500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität." |
+
+**Teil 3 — Dialog übersichtlicher, Grafik kleiner.**
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| Suchraum | Formularraster auf der Hausvorgabe `auto-fill` — zwei Spalten, dahinter eine leere dritte Spaltenbreite | `.epos-speicheropt-suchraum` stellt ihn auf **drei** Spalten mit engeren Zeilen; unter 900 px eine Spalte. Die Ausnahme steht am ENDE des Stilblatts, hinter der Hausregel, die sie überschreibt |
+| Leistungspreiszeile | — | eigene Zeile, **nur** bei Lastspitzenkappung: Zahlenfeld „Leistungspreis L_P [€/(kW·a)]" + Klappliste „Übernehmen aus" mit den gepflegten Quellen |
+| Herleitung | zwei Zeilen untereinander | **eine**; die Zielfunktion wechselt mit der Berechnungsart |
+| Rasterkarte / Schnittkurve | je eine `epos-simerg-diagrammzeile` untereinander, volle Breite | **nebeneinander** in `.epos-speicheropt-diagramme`, Anzeigehöhe auf 320 px gedeckelt |
+| Kennzahlen | eine Tabelle mit drei Spaltenköpfen und je Gruppe einer Kopfzeile | je Gruppe eine `dl.epos-simerg-werte`, nebeneinander; leere Gruppen entfallen |
+| Zeichenmaße | 860 × 560 / 720 × 460 | **unverändert** — gedeckelt ist die ANZEIGE, nicht das PNG; ein kleineres PNG hätte auch das Gezoomte grob gemacht |
+
+**Teil 4 — EIN Bild „Lastgang und Speicherbetrieb".** Nach dem Lauf rechnet der Kern den
+Bestpunkt **einmal** nach (`OptimiererErgebnis.BestParameter` + `SpeicherOptimierer.BaueStrategie`
+— derselbe Parametersatz und dieselbe Strategie wie im Raster) und zeichnet daraus ein Bild:
+Netzbezug ohne Speicher, Netzbezug mit Speicher, bei der Lastspitzenkappung die erreichte
+Schwelle (gestrichelt), dazu die Speicherleistung mit Vorzeichen (Entladen positiv, Laden
+negativ). **Alles auf EINER kW-Achse**: Vier Leistungen; eine zweite Achse behauptete eine zweite
+Einheit und machte die eigentliche Aussage unlesbar. Der Zeichner ist
+`ChartRenderer.Speicherbetrieb` — dieselbe Zeichnung wie `Temperaturverlauf`, die dafür in eine
+gemeinsame `Verlaufsbild`-Methode gezogen wurde (Unterschied: keine Mindestspanne, dafür eine
+Wache gegen die Spanne 0, wenn nur die waagerechte Schwelle gewählt ist).
+
+Vorgabe ist die **Woche um die Jahresspitze**, die Spitze in der Mitte — ein Jahr im
+Viertelstundenraster legt rund 40 Werte auf einen Bildpunkt und zeigt keinen einzigen Zyklus, und
+was der Speicher VOR der Spitze tut (vorladen), gehört zur Aussage. Umschaltbar auf das ganze
+Jahr, mit Reihenwahl und Datenzoom (W11b‑B‑24) — alles über
+`SimulationErgebnisDienste.OptimierungBetrieb`, das EINEN Jahreslauf nachrechnet statt der
+Rastersuche. Die Reihenwahl folgt der Hausregel (`Doku_Simulationsergebnis_Darstellung.md`, § 5):
+`null` = alle, **leere Liste = keine** (Leerhinweis des Zeichners), und die Schalter stehen ÜBER
+dem Bild.
+
+### Nachweis
+
+**Engine**, `OptimiererLastspitzenkappungTests` — neu (10). Prüfstand: ein Jahr in Stundenwerten,
+nachts 100 kW, tags 300 kW, EINE Stunde 700 kW; verlustfrei, Preisreihe 0, Zins 0, N = 20 a,
+L_P = 100 €/(kW·a), c_cap = 300 €/kWh, c_pow = 100 €/kW. Die eine Spitzenstunde ist Absicht: Bei
+einem mehrstündigen Spitzenblock springt die nachziehende Schwelle, sobald der Speicher leer ist,
+auf den vollen Spitzenwert — die Kappung wäre eine Stufe (0 oder alles) statt einer Kurve, und ein
+inneres Optimum gäbe es nicht.
+
+* `Optimum_Liegt_Innen_Bei_400_kWh_Und_1_C` — **inneres Optimum** bei 400 kWh / 1,0 C /
+  400 kW mit ΔJ = **32 000 €/a**, im Suchraum 100 … 1 000 kWh × 0,5 … 3,0 C.
+* `Am_Inneren_Optimum_Warnt_Keine_Randlage` — alle vier Kanten `false`.
+* `Die_Zielfunktion_Steigt_Bis_Zur_Kappung_Und_Faellt_Danach` — Schnittkurve bei 1 C:
+  8 000 / 16 000 / 24 000 / **32 000** / 30 000 … 20 000 €/a; streng steigend bis 400 kWh,
+  streng fallend danach.
+* `Jeder_Rasterpunkt_Trifft_Die_Handrechnung` — alle 60 Punkte gegen
+  `ΔJ = 100·min(r·C, C, 400) − 0,05·(300·C + 100·r·C)`.
+* `Der_Bestpunkt_Traegt_Spitze_Kappung_Und_Ersparnis` — 700 / 300 kW, Kappung 400 kW,
+  40 000 €/a, Schwelle 300 kW, nicht gerissen; E_a,1 = E_a,äq = 40 000 €/a.
+* `Ein_Zu_Kleiner_Speicher_Kappt_Nur_Seinen_Energieinhalt` — 200 kWh bei 1 C kappt 200 kW.
+* `Dauernutzung_Ohne_Erzeugung_Liefert_Ueberall_Null` — **der Befund selbst**: ohne Erzeugung und
+  ohne Kosten trägt jeder Rasterpunkt ΔJ = 0.
+* `Ohne_Leistungspreis_Wirft_Pruefe`, `Ein_Negativer_Leistungspreis_Wirft_Auch_Ohne_Kappung`,
+  `Die_Kappung_Nutzt_Denselben_Parametersatz_Wie_Die_Maske`.
+
+**Kern**, `SpeicherOptimierungLastspitzeTests` — neu (13): Prüfregel und Durchreichung des
+Leistungspreises, der Lauf über zwei Tage (Bestpunkt 400 kWh, ΔJ = 32 000 €/a), die fünf
+Kennzahlen der Gruppe (`700`/`300`/`400` kW, `40000,00` €/a, `300` kW), die fünf CSV-Spalten
+(26 Felder je Zeile), und fünf Fälle der Staffelstufe (`Eine_Spitze_Ueber_Der_Grenze_Nimmt_Die_Zweite_Stufe`,
+`…Innerhalb_Der_Grenze_Nimmt_Die_Erste_Stufe`, `Ohne_Zweite_Stufe_Gilt_Die_Erste_Auch_Oberhalb`,
+`Ohne_Bekannte_Spitze_Sagt_Der_Text_Es`, `Ohne_Gepflegte_Staffel_Gibt_Es_Keine_Quelle`).
+
+`SpeicherOptimierungHinweiseTests` — neu (10): die vier Hinweisfälle (a) bis (d), dazu
+`Ein_Raster_Ohne_Unterschiede_Sagt_Es_Und_Warnt_Nicht_Vor_Dem_Rand` (die Lage aus Projekt 1050:
+Hinweis da, Randwarnung weg, `Randlage == false`, und die zwei Vorhinweise ganz vorn).
+
+`SpeicherOptimierungBetriebsbildTests` — neu (9): das Bild entsteht (1 240 × 560), die Woche um
+die Jahresspitze liegt richtig (`VonIntervall`/`BisIntervall`, Spitze in der Mitte), der
+Umschalter zeigt das ganze Jahr, eine einzelne Reihe bringt es nicht zu Fall, eine leere
+Reihenwahl zeigt den Leerhinweis, zweimal dasselbe Bild ist **bitgleich**.
+
+**UI**, `SpeicherOptimierungDialogTests` — neu (16): drei Berechnungsarten in der Klappliste; das
+Leistungspreisfeld erscheint erst mit der Kappung; die Herleitung wechselt; die Übernahme aus
+einer Quelle setzt das Feld UND ruft den Schreibweg (95 €/(kW·a)); das Feld schreibt sofort
+(142,5); ohne Quellen keine Klappliste; ohne Schreibweg nur Anzeige; beide Rasterbilder
+nebeneinander in einer Zeile; Kennzahlen als Wertelisten; Hinweise als Warnbänder; das dritte
+Bild nur mit `BetriebBild`; keine Umschalter ohne Neuzeichnen-Weg; der Umschalter „Ganzes Jahr"
+zeichnet neu; eine abgewählte Reihe fällt aus der Anfrage; alles abgewählt liefert eine leere
+Wahl.
+
+**Bestehende Erwartungswerte angepasst** (zwei, beide in `SpeicherOptimierungCtrlTests`):
+
+* `Die_zwei_Strategien_stehen_in_der_Reihenfolge_der_Klappliste` → `Die_drei_Strategien_…`;
+  2 → 3 Einträge, der dritte ist die Lastspitzenkappung.
+* `Die_CSV_traegt_je_Rasterpunkt_eine_Zeile`: 20 → **25** Semikola je Zeile (21 Spalten wie
+  bisher, dazu die fünf der Lastspitzenkappung).
+
+**Nicht durch Tests gedeckt:** der Leseweg zu Variante, Tarifsatz und Energieträger
+(`Leistungspreisquellen`), die Bezugsspitze aus dem Lauf und der Schreibweg in der Hülle —
+`SimulationErgebnisHuelle.*` liegt in `WindowsFormsApplication1`, und es gibt kein Testprojekt,
+das dort die Datenbank anfasst (dieselbe Lage wie bei W11b‑B‑17/19/21/24). Die Fachentscheidung
+darin — welche Staffelstufe greift — ist als `TarifQuelle` herausgezogen und einzeln geprüft.
+
+### Zahlen
+
+Sandbox: Build **0 Fehler**, Kern **2247/2247**, UI **3370/3374**, Engine **347/347**.
+
+**Zwei Fehlschläge gehören NICHT zu dieser Arbeit** und stehen schon auf dem Ausgangsstand:
+`VorlagenUebernahmeDialogTests` (drei Fälle, „Übernehmen" gegen „OK" und ein fehlendes
+Warnbanner — Aufgabe #162, im Arbeitsbaum bereits in Arbeit) und `RasterTests`
+(`Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt`,
+`Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen`) — die laufen einzeln
+grün und fallen nur unter paralleler Last (Zeichenlaufzählung, W13‑B‑6).
+
+### Offene Punkte
+
+1. **Sichtabnahme am Projekt 1050**: Modulkosten am Speichergerät pflegen, L_P setzen (oder aus
+   einer Quelle übernehmen), Lauf mit der Berechnungsart „Lastspitzenkappung" — erwartet wird
+   eine Karte mit Verlauf, ein inneres Optimum und das Betriebsbild der Spitzenwoche.
+2. **Sichtabnahme des Dialogs**: dreispaltiger Suchraum, beide Rasterbilder nebeneinander,
+   Kennzahlen als Wertelisten, Umschalter und Datenzoom am Betriebsbild.
+3. **Erfahrungswert für L_P** bleibt offener Punkt 3 des Fachkonzepts — das Programm erfindet
+   keinen Default.
+4. Die **Kombination** Lastspitzenkappung + Eigenverbrauch bleibt Ausbaustufe (Fachkonzept 6.4):
+   Beide Strategien konkurrieren um denselben Ladezustand.

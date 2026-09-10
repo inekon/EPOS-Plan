@@ -37,6 +37,20 @@ namespace WindowsFormsApplication1
         private CancellationTokenSource _optimierungAbbruch;
 
         /// <summary>
+        /// Zeitreihen und Basisauslegung des LETZTEN Suchlaufs — sie tragen das
+        /// Nachzeichnen des Betriebsbildes (Befund W11b‑B‑25, 09.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// Sie bleiben hier stehen, damit ein Umschalten des Ausschnitts nicht die
+        /// Datenbank anfassen muss: <c>BereiteOptimierungVor</c> ist der einzige
+        /// Datenbankteil der Optimierung, und er lief bereits auf dem Bedienfaden.
+        /// </remarks>
+        private StromspeicherOptimierungVorbereitung _optimierungVorbereitung;
+
+        /// <summary>Das rohe Rasterergebnis des letzten Laufs; <c>null</c> = keiner.</summary>
+        private SpeicherEngine.OptimiererErgebnis _optimierungRoh;
+
+        /// <summary>
         /// Vorbelegung des Suchraums samt der aktuellen Auslegung — <b>Datenbankzugriff</b>,
         /// deshalb auf dem Bedienfaden.
         /// </summary>
@@ -120,6 +134,8 @@ namespace WindowsFormsApplication1
             try
             {
                 vorbereitung = ctrl.BereiteOptimierungVor(sim, m_ID_Projekt);
+                _optimierungVorbereitung = vorbereitung;
+                _optimierungRoh = null;
             }
             catch (Exception ex)
             {
@@ -149,8 +165,13 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return await Task.Run(
+                SpeicherOptimierungErgebnis ergebnis = await Task.Run(
                     () => SpeicherOptimierungCtrl.Rechnen(vorbereitung, eingaben, fortschritt, marke));
+
+                // Das rohe Raster bleibt hier: Ein Umschalten des Betriebsbildes
+                // rechnet damit EINEN Jahreslauf nach statt der ganzen Rastersuche.
+                _optimierungRoh = ergebnis != null ? ergebnis.Roh : null;
+                return ergebnis;
             }
             catch (Exception ex)
             {
@@ -165,6 +186,42 @@ namespace WindowsFormsApplication1
                 CancellationTokenSource quelle = _optimierungAbbruch;
                 _optimierungAbbruch = null;
                 if (quelle != null) quelle.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Zeichnet das Bild „Lastgang und Speicherbetrieb" neu — anderer Ausschnitt,
+        /// andere Reihenwahl, anderer Datenzoom (Befund W11b‑B‑25, 09.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ohne Datenbank und ohne neue Rastersuche.</b> Gerechnet wird EIN
+        /// Jahreslauf des Bestpunkts aus dem gemerkten Raster; bei 120 gerechneten
+        /// Punkten kostet das unter einem Prozent des Laufs, und der Bedienfaden
+        /// bleibt kurz genug. Ohne Lauf gibt es nichts zu zeichnen — dann kommt ein
+        /// leeres Bild zurück, und der Dialog zeigt es nicht.
+        /// </remarks>
+        private SpeicherOptimierungBetriebsbild OptimierungBetrieb(
+            bool ganzesJahr,
+            System.Collections.Generic.IReadOnlyList<string> reihen,
+            EPOS.UI.Bausteine.Diagrammbereich bereich)
+        {
+            if (_optimierungVorbereitung == null || _optimierungRoh == null)
+                return new SpeicherOptimierungBetriebsbild();
+
+            ChartRenderer.Bildausschnitt ausschnitt = bereich == null
+                ? null
+                : new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
+                                                   bereich.YVon, bereich.YBis);
+
+            try
+            {
+                return SpeicherOptimierungCtrl.Betriebsbild(
+                    _optimierungVorbereitung, _optimierungRoh, ganzesJahr, reihen, ausschnitt);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Das Betriebsbild konnte nicht gezeichnet werden: " + ex.Message);
+                return new SpeicherOptimierungBetriebsbild();
             }
         }
 

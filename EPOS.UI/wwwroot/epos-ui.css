@@ -7456,6 +7456,50 @@ body {
 
 .epos-speicheropt-kennzahlen { width: 100%; }
 
+
+/* HEATMAP UND SCHNITTKURVE NEBENEINANDER UND FLACH (Befund W11b-B-25:        */
+/* "Grafik zu gross").                                                        */
+/*                                                                            */
+/* Beide standen als eigene .epos-simerg-diagrammzeile untereinander, jede in  */
+/* voller Zeilenbreite: Die Karte fuellte den sichtbaren Bereich, die          */
+/* Schnittkurve lag darunter ausserhalb. Sie gehoeren aber zusammen - die      */
+/* Kurve IST der Schnitt durch die Karte. Nebeneinander und auf 320 px Hoehe   */
+/* gedeckelt stehen beide zugleich im Bild.                                   */
+/*                                                                            */
+/* GEDECKELT IST DIE ANZEIGE, NICHT DAS PNG. Der Zeichner liefert weiter       */
+/* 860 x 560 (Rasterkarte) und 720 x 460 (Schnittkurve); wer mehr sehen will,  */
+/* nimmt den Zoom des Bausteins Diagramm (Hausregel A-1), und der braucht die  */
+/* Bildpunkte. Ein kleineres PNG haette auch das Gezoomte grob gemacht.        */
+.epos-speicheropt-diagramme {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+/* width: auto hebt die Vorgabe width: 100 % von .epos-chartbild auf - sonst
+   zoege die Breite das Bild wieder ueber die Hoehengrenze hinaus. Das
+   Seitenverhaeltnis bleibt erhalten (ersetztes Element mit height: auto). */
+.epos-speicheropt-diagramme .epos-chartbild {
+    width: auto;
+    max-width: 100%;
+    max-height: 320px;
+    margin: 0 auto;
+}
+
+/* DAS BILD "LASTGANG UND SPEICHERBETRIEB" (Befund W11b-B-25) steht ueber
+   die volle Breite - es zeigt eine Woche im Viertelstundenraster (672
+   Werte) oder ein ganzes Jahr, und dafuer zaehlt jeder Bildpunkt (Befund
+   W11b-B-2 bleibt gewahrt). Gedeckelt ist nur die HOEHE: dieselben 320 px
+   wie bei den zwei Rasterbildern darueber, damit der Ergebnisteil in einen
+   Schirm passt. Mehr holt der Zoom des Bausteins Diagramm. */
+.epos-speicheropt-betrieb .epos-chartbild {
+    max-height: 320px;
+    width: auto;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
 /* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
@@ -7634,4 +7678,38 @@ body {
 .epos-formularraster > .epos-herleitung,
 .epos-formularraster > .epos-formulargruppe > .epos-herleitung {
     grid-column: 1 / -1;
+}
+
+/* ==================================================================== */
+/* DER SUCHRAUM DER AUSLEGUNGSOPTIMIERUNG STEHT DREISPALTIG             */
+/* (Befund W11b-B-25, Windows-Abnahme 09.09.2026: "Dialog              */
+/* uebersichtlicher")                                                   */
+/*                                                                      */
+/* Der Formularraster laeuft im Haus auf auto-fill/minmax; in der       */
+/* Breite des Optimierungsdialogs ergab das ZWEI Spalten und dahinter   */
+/* eine leere dritte Spaltenbreite - neun Felder in fuenf Zeilen mit    */
+/* Luft rechts. Drei feste Spalten fuellen dieselbe Breite in vier      */
+/* Zeilen.                                                              */
+/*                                                                      */
+/* DIE AUSNAHME STEHT HINTER DER REGEL, die sie ueberschreibt - und     */
+/* zwar aus zwei Gruenden. Fachlich: Eine Ausnahme, die vor ihrer Regel */
+/* steht, gewinnt nur ueber die Spezifitaet und ist beim Lesen nicht    */
+/* zu finden. Praktisch: FormularrasterTests liest den Hausblock ueber  */
+/* die ERSTE Fundstelle von ".epos-formularraster {" - stuende die      */
+/* Ausnahme davor, pruefte der Test sie statt der Hausregel.            */
+/*                                                                      */
+/* Sie greift NUR in diesem Dialog (.epos-speicheropt-suchraum); die    */
+/* Hausvorgabe des Formularrasters bleibt unveraendert.                 */
+/* ==================================================================== */
+.epos-speicheropt-suchraum .epos-formularraster {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 2px;
+}
+
+/* Unter der Umbruchbreite des Hauses faellt er wieder auf eine Spalte -
+   dieselbe Schwelle, bei der die Beschriftung ueber das Feld rutscht. */
+@media (max-width: 900px) {
+    .epos-speicheropt-suchraum .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }

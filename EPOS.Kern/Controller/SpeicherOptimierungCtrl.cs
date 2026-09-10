@@ -219,6 +219,50 @@ namespace WindowsFormsApplication1
 
         /// <summary>Beide Rasterphasen in der langen CSV-Form (Semikolon, Dezimalkomma).</summary>
         public string RasterCsv { get; set; } = "";
+
+        /// <summary>
+        /// Das EINE Bild „Lastgang und Speicherbetrieb" des Bestpunkts als PNG;
+        /// <c>null</c> = keines (Befund W11b‑B‑25, Windows-Abnahme 09.09.2026:
+        /// „Lastgang und Speicherung in einer Grafik").
+        /// </summary>
+        public byte[] BetriebBild { get; set; }
+
+        /// <summary>Titel des Betriebsbildes — er nennt den gezeigten Ausschnitt.</summary>
+        public string BetriebTitel { get; set; } = "";
+
+        /// <summary>
+        /// Das ROHE Rasterergebnis — ausschließlich, damit die Hülle das Betriebsbild
+        /// neu zeichnen kann (Ausschnitt umschalten, Reihen wählen, Datenzoom), ohne
+        /// die Rastersuche zu wiederholen.
+        /// </summary>
+        /// <remarks>
+        /// Es steht bewusst NICHT in der Anzeige: Der Dialog liest daraus nichts. Ein
+        /// zweiter Weg vom Dialog in die Engine wäre genau die Vermischung, die dieser
+        /// Controller auflöst.
+        /// </remarks>
+        public OptimiererErgebnis Roh { get; set; }
+    }
+
+    /// <summary>
+    /// Das Bild „Lastgang und Speicherbetrieb" samt dem Ausschnitt, den es zeigt
+    /// (Befund W11b‑B‑25, Windows-Abnahme 09.09.2026).
+    /// </summary>
+    public sealed class SpeicherOptimierungBetriebsbild
+    {
+        /// <summary>Das fertige PNG; <c>null</c> = keines zu zeichnen.</summary>
+        public byte[] Png { get; set; }
+
+        /// <summary>Die Überschrift — sie nennt den gezeigten Ausschnitt.</summary>
+        public string Titel { get; set; } = "";
+
+        /// <summary>Erstes gezeigtes Intervall (einschließlich).</summary>
+        public int VonIntervall { get; set; }
+
+        /// <summary>Erstes NICHT mehr gezeigtes Intervall.</summary>
+        public int BisIntervall { get; set; }
+
+        /// <summary>Anzahl der gezeigten Stützstellen — die Bezugsgröße des Datenzooms.</summary>
+        public int Stuetzstellen { get; set; }
     }
 
     /// <summary>
@@ -277,6 +321,22 @@ namespace WindowsFormsApplication1
         /// dort fünf Nullen ohne Aussage.
         /// </summary>
         public const string GRUPPE_KAPPUNG = "KAPPUNG";
+
+        // Die sprachneutralen REIHENSCHLUESSEL des Betriebsbildes (W11b‑B‑25) —
+        // dieselbe Bauart wie die Serienschlüssel der Ergebnisreiter: Der Dialog wählt
+        // über den Schlüssel, die Beschriftung kommt aus den Ressourcen.
+
+        /// <summary>Reihenschlüssel: Netzbezug ohne Speicher.</summary>
+        public const string REIHE_OHNE = "OHNE_SPEICHER";
+
+        /// <summary>Reihenschlüssel: Netzbezug mit Speicher.</summary>
+        public const string REIHE_MIT = "MIT_SPEICHER";
+
+        /// <summary>Reihenschlüssel: die erreichte Kappungsschwelle (nur Lastspitzenkappung).</summary>
+        public const string REIHE_SCHWELLE = "SCHWELLE";
+
+        /// <summary>Reihenschlüssel: Speicherleistung, Entladen positiv.</summary>
+        public const string REIHE_SPEICHER = "SPEICHERLEISTUNG";
 
         /// <summary>Kleinste zulässige Stützstellenzahl der Kapazitätsachse.</summary>
         public const int STUETZSTELLEN_MIN = 2;
@@ -684,6 +744,16 @@ namespace WindowsFormsApplication1
                 alle.AddRange(ergebnis.Hinweise);
                 ergebnis.Hinweise = alle;
 
+                // Das Betriebsbild kostet EINEN weiteren Jahreslauf - bei 120 gerechneten
+                // Rasterpunkten also unter einem Prozent. Dafuer zeigt es, was der
+                // Bestpunkt tatsaechlich tut, statt es nur in Zahlen zu behaupten
+                // (Befund W11b-B-25). Vorgabe ist die Woche der Jahresspitze.
+                ergebnis.Roh = roh;
+                SpeicherOptimierungBetriebsbild betrieb =
+                    Betriebsbild(vorbereitung, roh, false, null, null);
+                ergebnis.BetriebBild = betrieb.Png;
+                ergebnis.BetriebTitel = betrieb.Titel;
+
                 return ergebnis;
             }
             catch (OperationCanceledException)
@@ -827,6 +897,225 @@ namespace WindowsFormsApplication1
                 raster.KapazitaetenKwh, schnitt, best.CNomKwh, best.ZielfunktionEur);
 
             return ergebnis;
+        }
+
+        // =================================================================
+        // Das Bild „Lastgang und Speicherbetrieb" (Befund W11b‑B‑25)
+        // =================================================================
+
+        /// <summary>
+        /// Rechnet den BESTPUNKT einmal nach und macht daraus EIN Bild: Netzbezug ohne
+        /// Speicher, Netzbezug mit Speicher, bei der Lastspitzenkappung die erreichte
+        /// Schwelle, dazu die Speicherleistung (Entladen positiv, Laden negativ).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum EIN Bild.</b> Der Anwender hat es so verlangt („Lastgang und
+        /// Speicherung in einer Grafik", 09.09.2026). Zwei Bilder untereinander
+        /// beantworten die eigentliche Frage nicht: Um wie viel senkt der Speicher die
+        /// Bezugsspitze, und wann tut er es? Das steht erst da, wo beide Kurven
+        /// dieselbe Achse teilen.</para>
+        ///
+        /// <para><b>Warum ein zweiter Lauf.</b> Der <see cref="OptimiererPunkt"/> hält
+        /// bewusst KEINE Zeitreihen — 120 Jahresläufe zu je 35.040 Werten wären rund
+        /// 270 MB. Nachgerechnet wird deshalb genau ein Punkt, und zwar mit
+        /// <see cref="OptimiererErgebnis.BestParameter"/> und
+        /// <see cref="SpeicherOptimierer.BaueStrategie"/> — derselbe Parametersatz und
+        /// dieselbe Strategie wie im Raster, sonst zeigte das Bild einen anderen
+        /// Betrieb als die Kennzahlen daneben.</para>
+        ///
+        /// <para><b>Alles in kW.</b> Vier Leistungen auf einer Achse; die
+        /// Speicherleistung trägt ihr Vorzeichen und liegt damit um die Nulllinie.
+        /// Begründung siehe <see cref="ChartRenderer.Speicherbetrieb"/>.</para>
+        ///
+        /// <para><b>Sie wirft nicht.</b> Ein fehlgeschlagenes Bild darf ein gültiges
+        /// Raster nicht entwerten; dann bleibt <see cref="SpeicherOptimierungBetriebsbild.Png"/>
+        /// leer und der Dialog zeigt es einfach nicht.</para>
+        /// </remarks>
+        /// <param name="vorbereitung">Zeitreihen und Basisauslegung des Laufs.</param>
+        /// <param name="roh">Das Rasterergebnis — daraus kommen Bestpunkt und Optionen.</param>
+        /// <param name="ganzesJahr"><c>false</c> = die Woche der Jahresspitze (Vorgabe).</param>
+        /// <param name="reihen">Die gewählten Reihenschlüssel; <c>null</c> oder leer = alle.</param>
+        /// <param name="ausschnitt">Der Datenzoom (W11b‑B‑24); <c>null</c> = die volle Ansicht.</param>
+        public static SpeicherOptimierungBetriebsbild Betriebsbild(
+            StromspeicherOptimierungVorbereitung vorbereitung,
+            OptimiererErgebnis roh,
+            bool ganzesJahr,
+            IReadOnlyList<string> reihen,
+            ChartRenderer.Bildausschnitt ausschnitt)
+        {
+            var bild = new SpeicherOptimierungBetriebsbild();
+            if (vorbereitung == null || roh == null) return bild;
+
+            SpeicherEingang eingang = vorbereitung.Eingang;
+            if (eingang == null || eingang.LastKw == null || eingang.LastKw.Length == 0) return bild;
+
+            SpeicherParameter p = roh.BestParameter;
+            int n = eingang.LastKw.Length;
+            double dt = p != null && p.DtH > 0.0 ? p.DtH : 0.25;
+
+            double[] ohne = new double[n];
+            double[] mit = new double[n];
+            double[] speicher = new double[n];
+            double schwelleKw = 0.0;
+            bool mitSchwelle = false;
+
+            try
+            {
+                ISpeicherStrategie strategie = SpeicherOptimierer.BaueStrategie(roh.Optionen, eingang);
+                PeakShaving kappung = strategie as PeakShaving;
+
+                if (kappung != null)
+                {
+                    PeakShavingErgebnis ps = kappung.BerechnePeakShaving(eingang, p);
+                    Array.Copy(ps.PAltKw, ohne, n);
+                    Array.Copy(ps.PNeuKw, mit, n);
+                    Speicherleistung(speicher, ps.Basis, dt);
+                    schwelleKw = ps.ErreichteSchwelleKw;
+                    mitSchwelle = true;
+                }
+                else
+                {
+                    SpeicherErgebnis erg = strategie.Berechne(eingang, p);
+                    Speicherleistung(speicher, erg, dt);
+
+                    // „Ohne Speicher" ist die RESIDUALLAST - Last abzueglich der
+                    // Erzeugung, die ohnehin da waere. Bewusst NICHT bei 0 gekappt:
+                    // Ein Ueberschuss ist eine Aussage des Bildes, keine Stoerung.
+                    for (int i = 0; i < n; i++)
+                    {
+                        double erzeugung = Wert(eingang.PvKw, i) + Wert(eingang.BhkwKw, i);
+                        ohne[i] = eingang.LastKw[i] - erzeugung;
+                        mit[i] = ohne[i] - speicher[i];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Das Betriebsbild konnte nicht gerechnet werden: " + ex.Message);
+                return bild;
+            }
+
+            int von, bis;
+            Spitzenfenster(ohne, dt, ganzesJahr, out von, out bis);
+            int laenge = bis - von;
+            if (laenge < 2) return bild;
+
+            var liste = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(reihen, REIHE_OHNE))
+                liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_OHNE,
+                                                  Teil(ohne, von, laenge), ChartRenderer.C_BEDARF));
+            if (Gewaehlt(reihen, REIHE_MIT))
+                liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_MIT,
+                                                  Teil(mit, von, laenge), ChartRenderer.C_NETZ));
+            if (mitSchwelle && Gewaehlt(reihen, REIHE_SCHWELLE))
+                liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_SCHWELLE,
+                                                  Konstante(schwelleKw, laenge),
+                                                  ChartRenderer.C_RASTER_SCHLECHT) { Gestrichelt = true });
+            if (Gewaehlt(reihen, REIHE_SPEICHER))
+                liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_LEISTUNG,
+                                                  Teil(speicher, von, laenge), ChartRenderer.C_WP));
+
+            bild.VonIntervall = von;
+            bild.BisIntervall = bis;
+            bild.Stuetzstellen = laenge;
+            bild.Titel = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.OPT_CHART_BETRIEB_TITEL,
+                ganzesJahr ? MyResource.Resource.OPT_BETRIEB_JAHR
+                           : MyResource.Resource.OPT_BETRIEB_WOCHE);
+
+            // Der Datenzoom bezieht sich auf das GEZEIGTE Fenster, nicht auf das Jahr -
+            // der Anwender zieht ein Rechteck in dem Bild, das vor ihm steht.
+            bild.Png = ChartRenderer.Speicherbetrieb(bild.Titel, liste,
+                ausschnitt == null ? null : ChartRenderer.FensterAusBild(ausschnitt, laenge));
+
+            return bild;
+        }
+
+        /// <summary>
+        /// Speicherleistung je Intervall [kW]: <b>Entladen positiv, Laden negativ</b>.
+        /// </summary>
+        /// <remarks>
+        /// Das Vorzeichen folgt der Wirkung auf den Netzbezug: Entladen senkt ihn,
+        /// Laden hebt ihn. Damit liegt die Kurve genau dort, wo die beiden
+        /// Netzbezugskurven auseinanderlaufen.
+        /// </remarks>
+        private static void Speicherleistung(double[] ziel, SpeicherErgebnis erg, double dt)
+        {
+            if (erg == null) return;
+            double[] laden = erg.LadungAcKwh;
+            double[] entladen = erg.EntladungAcKwh;
+
+            for (int i = 0; i < ziel.Length; i++)
+                ziel[i] = (Wert(entladen, i) - Wert(laden, i)) / dt;
+        }
+
+        /// <summary>
+        /// Das gezeigte Fenster: das ganze Jahr, oder die WOCHE UM DIE JAHRESSPITZE.
+        /// </summary>
+        /// <remarks>
+        /// Die Spitze steht in der Mitte des Fensters, nicht an seinem Anfang: Was der
+        /// Speicher VOR der Spitze tut (vorladen) ist genauso Teil der Aussage wie das
+        /// Entladen selbst. Reicht die Reihe nicht für eine ganze Woche, wird sie
+        /// vollständig gezeigt.
+        /// </remarks>
+        private static void Spitzenfenster(double[] werte, double dt, bool ganzesJahr,
+                                           out int von, out int bis)
+        {
+            int n = werte.Length;
+            von = 0;
+            bis = n;
+            if (ganzesJahr) return;
+
+            int proTag = dt > 0.0 ? (int)Math.Round(24.0 / dt) : 0;
+            int woche = 7 * proTag;
+            if (woche < 2 || woche >= n) return;
+
+            int spitze = 0;
+            for (int i = 1; i < n; i++) if (werte[i] > werte[spitze]) spitze = i;
+
+            von = spitze - woche / 2;
+            if (von < 0) von = 0;
+            bis = von + woche;
+            if (bis > n) { bis = n; von = bis - woche; }
+        }
+
+        /// <summary>Ein Ausschnitt der Reihe als eigenes Feld.</summary>
+        private static double[] Teil(double[] werte, int von, int laenge)
+        {
+            double[] ziel = new double[laenge];
+            Array.Copy(werte, von, ziel, 0, laenge);
+            return ziel;
+        }
+
+        /// <summary>Eine waagerechte Linie als Reihe — die Schwelle hat kein Zeitprofil.</summary>
+        private static double[] Konstante(double wert, int laenge)
+        {
+            double[] ziel = new double[laenge];
+            for (int i = 0; i < laenge; i++) ziel[i] = wert;
+            return ziel;
+        }
+
+        /// <summary>Ein Wert der Reihe, oder 0, wenn es die Reihe nicht gibt.</summary>
+        private static double Wert(double[] reihe, int i)
+            => reihe != null && i < reihe.Length ? reihe[i] : 0.0;
+
+        /// <summary>
+        /// Ist die Reihe gewählt? <c>null</c> heißt „keine Angabe" und damit ALLE; eine
+        /// LEERE Liste heißt „der Anwender hat alles abgewählt" und damit KEINE.
+        /// </summary>
+        /// <remarks>
+        /// Die Unterscheidung ist die Hausregel der Ergebnisseite
+        /// (<c>Doku_Simulationsergebnis_Darstellung.md</c>, § 5) und steht dort
+        /// ausdrücklich OHNE <c>wahl.Count == 0</c>-Rückfall: Ein Bild ohne gewählte
+        /// Reihe zeigt den Leerhinweis des Zeichners und nicht wieder alles — sonst
+        /// hätte der letzte Haken die umgekehrte Wirkung.
+        /// </remarks>
+        private static bool Gewaehlt(IReadOnlyList<string> wahl, string schluessel)
+        {
+            if (wahl == null) return true;
+            for (int i = 0; i < wahl.Count; i++)
+                if (string.Equals(wahl[i], schluessel, StringComparison.Ordinal)) return true;
+            return false;
         }
 
         /// <summary>Index der Kapazitätsachse, die dem Wert am nächsten liegt; -1 bei leerem Raster.</summary>

@@ -243,6 +243,7 @@ namespace WindowsFormsApplication1
                 OptimierungUebernehmen = OptimierungUebernehmen,
                 OptimierungCsv = OptimierungCsv,
                 OptimierungLeistungspreis = OptimierungLeistungspreis,
+                OptimierungBetrieb = OptimierungBetrieb,
 
                 CsvBedarf = CsvBedarf,
                 CsvWaermepumpe = CsvWaermepumpe,

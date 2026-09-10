@@ -368,12 +368,23 @@ namespace SpeicherEngine
         /// Produktivmodus.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Der Excel-Kompatibilitaetsmodus wird bewusst nicht angeboten: Er rechnet
         /// ohne Verlustmodell, mit Start-SoC 0 und ohne Quellen-Matrix und ist damit
         /// keine Grundlage fuer eine Auslegungsentscheidung. Sein Zweck ist der
         /// Nachweis gegen die V7-Mappe, nicht die Planung.
+        /// </para>
+        /// <para>
+        /// <b>Oeffentlich seit W11b-B-25 (10.09.2026).</b> Wer den Bestpunkt fuer das
+        /// Bild "Lastgang und Speicherbetrieb" nachrechnet, muss GENAU DIESELBE
+        /// Strategie bekommen wie die Rastersuche - andernfalls zeigte das Bild einen
+        /// anderen Betrieb als die Kennzahlen daneben. Deshalb entsteht die Strategie
+        /// weiterhin an genau einer Stelle, nur ist die jetzt von aussen erreichbar.
+        /// </para>
         /// </remarks>
-        private static ISpeicherStrategie BaueStrategie(OptimiererOptionen opt, SpeicherEingang eingang)
+        /// <param name="opt">Die Optionen des Laufs (Strategie und Leistungspreis).</param>
+        /// <param name="eingang">Die Zeitreihen des Laufs - die Kappung liest daraus den mittleren Bezugspreis.</param>
+        public static ISpeicherStrategie BaueStrategie(OptimiererOptionen opt, SpeicherEingang eingang)
         {
             switch (opt.Strategie)
             {
