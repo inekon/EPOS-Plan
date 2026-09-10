@@ -4457,6 +4457,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > UI 3 360, Referenzlauf byte-gleich; die Warnungsschranke bleibt allein durch die vorbestehende CS8602 (`RasterTests.cs:335`,
 > `97a7fec`) gerissen. Hinweis an die Windows-Seite: Ein Testhelfer, der `Tab_Energieanlagen` direkt beschreibt,
 > muss die Verweisspalten setzen — oder über den Produktweg gehen.
+>
+> **#167 (10.09.2026) — Kultur-Leck in `EPOS.Kern.Tests` geschlossen.** Befund aus #166: `CecWechselrichterAuslieferungTests`
+> setzte `CultureInfo.DefaultThreadCurrentCulture` und `…UICulture` im Konstruktor prozessweit auf de-DE und stellte nichts
+> zurück — jeder danach gestartete xunit-Thread eines FREMDEN Tests rechnete in de-DE, im Projektlauf fielen Klassen, die
+> allein grün sind. Der Durchgang über alle Setzer fand elf weitere Klassen mit derselben oder einer verwandten Lücke:
+> `BhkwKostenTests` (Thread-Kultur nie zurück), die vier Katalogfilter-Klassen (`Dispose` stellte die UI-Kultur aus dem
+> Merkwert der Kultur zurück, Thread-Kultur fehlte), `OndImportTests`, `StromspeicherImportTests`,
+> `StromspeicherUebernahmeTests` (Konstruktor-Leck), `WechselrichterKatalogTests`, `ZahlenausdruckTests` (Thread-Kultur
+> fehlte), `StrangAuslegungTests` (falscher Merkwert). `DiensteTests` ist kein Leck (rechnet die UI-Kultur im `finally` neu).
+> Fix (`a8af0c5`, nur Testcode, 13 Dateien): je ein gemerkter Wert je Ziel, Rückstellung in `Dispose`/`finally`; neuer
+> Wächter `KulturwaechterTests` (vier Fälle) prüft jede Datei mit Default-Kultur-Setzer auf eine Rückstellung auf dasselbe
+> Ziel. **Offen #167‑O‑1 (Anwenderentscheid):** ~65 bunit-Klassen in `EPOS.UI.Tests` pinnen die Kultur im Konstruktor ohne
+> Rückstellung — eigener Testprozess, jede Klasse pinnt selbst neu, kein beobachteter Fehler; Empfehlung: gemeinsame
+> Vorrichtung statt 65 Handgriffe, Wächter ausweiten (#168, nur auf Wunsch). Gate auf `fd78124`: Kern 2 277 grün (vier neue Wächterfälle), UI 3 359 von 3 360 — der eine rote Fall `KlimadatenDialogTests.Der_Fortschritt_meldet_die_Schritte_und_laesst_sich_abbrechen` (Zeile 357, Abbruchzähler 0 statt 1) ist bunit-Flattern: #167 berührt `EPOS.UI.Tests` nicht, im Gate zu #166 und in drei Wiederholungen der Klasse (16/16) grün → #169 nach dem Muster W16b‑O‑2,
+> Referenzlauf byte-gleich; Warnungsschranke weiter allein durch die vorbestehende CS8602 (`RasterTests.cs:335`) gerissen.
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
