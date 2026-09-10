@@ -1981,3 +1981,165 @@ Neue Fälle, UI (`EPOS.UI.Tests/Seiten/StromspeicherReiterTests.cs`, 4 neue, 3 a
    CSV-Export daneben stehen. Wenn der Anwender Prozent will, ist es der Bezug auf `C_nom`.
 3. **`SP_CHART_TITEL_SOC` / `SP_CHART_ACHSE_SOC`** haben keinen Verwender mehr; sie stehen im
    Katalog, bis jemand den Katalog aufräumt.
+
+## Anwenderbefund 10.09.2026 — W11b‑B‑27: Speicheranlage ohne Variantenzeile (Reiter gesperrt, Leistungspreis nicht gespeichert)
+
+**Wortlaut (10.09.2026):** „Simulation → Detaillierte Simulation → Parameter → Stromspeicher: Nach
+Auslegung optimieren: Keine aktive Speichervariante – die Eingaben sind gesperrt."
+
+### Was war
+
+Projekt 1050 „Stromspeicher Optimierung" (Erstelldatum 09.09.2026 22:45, über die Razor-Oberfläche
+angelegt) führt **eine Speicheranlage** — `Tab_Energieanlagen` ID 14992, `ID_Type` 4
+(`WizardItemClass.SP_TYP`), Gerätekopie 1017062 „Growatt 100 kW / 129 kWh" — und **keine Zeile in
+`Tab_StromspeicherVariante`**. Alle älteren Speicherprojekte (1007, 1011, 1017, 1026, 1028, 1029)
+haben ihre Zeile aus **Migrationsschritt 11d**; ein Projekt, das NACH der Migration entsteht, bekommt
+sie nur über den Anlagepfad.
+
+Drei Folgen, davon zwei stumm:
+
+| Folge | wo |
+|---|---|
+| Reiter „Parameter" zeigt `SP_PARAM_STATUS_KEINE_VARIANTE` und **sperrt die Eingaben** | `ParameterReiter.razor:224` — `SpAktiv => !Gesperrt && Sp.VarianteVorhanden` |
+| Der Leistungspreis aus dem Optimierungsdialog (W11b‑E‑3) wird **still nicht gespeichert** | `SimulationErgebnisHuelle.Optimierung.cs` → `OptimierungLeistungspreis` → `VarianteLesen()` → `null` → `SpeicherfeldSchreiben` kehrt bei `_speicherVariante == null` sofort zurück |
+| Die Gesamtsimulation fällt auf die **Aggregation über alle SP‑Anlagen** mit Vorgabe-Betriebsführung zurück | `StromspeicherSimCtrl.LeseParameter` |
+
+### Ursache — zwei Gründe
+
+**1. Der Anlagepfad rettet nur, was schon da ist.** Startseite und Assistent speichern Anlagen als
+**Del + Add**: `WizardCtrl.Del_Projekt_Waermeerzeuger` sichert über `SpVariantenSichern` die
+vorhandenen Variantenzeilen im Arbeitsspeicher, `Add_WP_Waermeerzeuger` schreibt sie am Ende über
+`SpVariantenWiederherstellen` auf die NEUEN Anlagen-Ids zurück (AP9b). Genau dort stand
+
+```csharp
+if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+```
+
+— und wer den **ERSTEN** Speicher eines Projekts anlegt, hat nichts zu sichern. Der Zweig „Ohne
+Treffer ist die Anlage im Dialog NEU hinzugekommen: Sie bekommt die Vorbelegung des Modells" wurde
+nie erreicht, `SetzeAktiv` lief nicht. Ergebnis: Anlage ohne Variantenzeile.
+
+**2. Die Selbstheilung ist entfallen.** Der WinForms-Altzweig trug in
+`WindowsFormsApplication1/Controller/StromspeicherKontextMenuCtrl.cs` zwei Methoden, die den Zustand
+bis dahin abfingen: `VarianteSicherstellen(ctrl, idAnlage)` (fehlende Zeile → Insert mit Vorbelegung)
+und `AktiveVarianteSicherstellen(idProjekt)` (keine aktive → erste in Anlagenreihenfolge, „dieselbe
+Wahl wie Migrationsschritt 11d"). Beide fielen mit **Commit `55a3f0ec`** (iU9‑W16b.1, Stilllegung des
+Altzweigs K6‑a). Der Razor-Weg — `SimulationErgebnisHuelle.VarianteLesen()` mit
+`new StromspeicherVarianteCtrl().ReadAktiveVariante(m_ID_Projekt)` — hatte **keinen Ersatz**: Er las
+nur noch.
+
+### Umsetzung
+
+**A — Kern: die Regel bekommt eine Stelle** (`EPOS.Kern/Controller/StromspeicherVarianteCtrl.cs`).
+Neu ist `public StromspeicherVarianteModel AktiveVarianteSicherstellen(int idProjekt)`. Sie zieht die
+Zusage „**jede Speicheranlage führt eine Variante, genau eine ist aktiv**" nach:
+
+| Ausgangslage | was passiert |
+|---|---|
+| `idProjekt <= 0` | `null`, nichts geschrieben |
+| es gibt eine aktive Variante | sie wird zurückgegeben, **nichts geschrieben** (idempotent) |
+| SP‑Anlagen ohne Zeile | je eine Zeile mit der **Vorbelegung des Modells**, `Aktiv = false` |
+| danach | aktiv wird die Variante der **ersten** SP‑Anlage (`ORDER BY ID`) — ausschließlich über `SetzeAktiv` |
+| keine SP‑Anlage | `null`, nichts geschrieben |
+| Insert ≤ 0, `SetzeAktiv` false, Ausnahme | Konsolenmeldung mit Grund und `null` — **sie wirft nie** |
+
+`REF_SP_TYP` bleibt draußen: Die Referenzliste führt den VERGLEICHSFALL des Projekts, keine
+Planvariante — dieselbe Grenze, die die Ersatzwahl in `SpVariantenWiederherstellen` schon zieht.
+
+**B — Kern: der Frühausstieg entfällt** (`WizardCtrl.SpVariantenWiederherstellen`).
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| leere/fehlende Sicherung | sofortiger Ausstieg | wie eine **leere Liste** — die Schleife läuft, jede Anlage ohne Zeile bekommt die Vorbelegung |
+| Projektprobe `projektDerSicherung != projektID` | immer | **nur bei nicht leerer Sicherung** — ohne geretteten Satz kann nichts ins falsche Projekt geraten, und `m_SpVariantenProjekt` steht dann ohnehin auf 0 |
+| Aktivsetzung | immer am Ende | **nur wenn das Projekt danach keine aktive Variante führt** (`ReadAktiveVariante(projektID) == null`); die Reihenfolge der Wahl bleibt: gerettete aktive → sonst erste neue SP‑Variante |
+| Konsolentext | „0 Betriebsparametersaetze uebernommen, 1 neue Anlage(n) …" | „**nichts gesichert**, 1 neue Anlage(n) mit Vorgabewerten, aktiv = Variante …" — eine Rettung, die es nie gab, heißt nicht mehr so |
+
+Der Fall „ein ZWEITER Speicher kommt zu einem Projekt mit aktiver Variante" ist über den Del+Add-Weg
+heute unmöglich (die Löschweitergabe nimmt jede Zeile mit) — auf einer Datenbank **ohne** die
+Beziehung `FK_SpVariante_Anlage` bliebe die Sicherung aber leer und die alte Zeile stehen; dann
+gewinnt die bestehende Wahl des Anwenders.
+
+**Eine Grenze bleibt, mit Absicht:** Hat der Rettungslauf KEINE Zeile geschrieben (jede Anlage
+führte schon eine), steigt er wie bisher vor der Aktivsetzung aus — ein Projekt mit Zeilen, aber
+ohne aktive, heilt über den LESEWEG (Teil C), nicht über den Speicherweg. Der Speicherweg soll
+die Aktivmarkierung nur dort setzen, wo er sie selbst mitgenommen hat.
+
+`m_SpVariantenSicherung` hat damit eine **engere Bedeutung**: Es sagt nur noch, ob Betriebsparameter
+zu RETTEN sind — nicht mehr, ob überhaupt etwas zu tun ist. In `SpVariantenVerwerfen` bleibt
+`null` = „nichts zu tun" richtig und ist dort jetzt als Ausnahme vermerkt: Diese Methode verhindert
+einen Schreibvorgang und meldet den Verlust geretteter Parameter; ohne Sicherung gibt es beides
+nicht, und ein gescheitertes Add hat keine Anlagenzeile hinterlassen, die eine Variante bräuchte.
+
+**C — Hülle: der Leseweg zieht nach** (`SimulationErgebnisHuelle.VarianteLesen()`).
+`ReadAktiveVariante` → **`AktiveVarianteSicherstellen`**. Damit ist der **Bestand** abgedeckt (Projekt
+1050 heilt beim nächsten Öffnen der Maske) und der **Leistungspreis-Weg** der Optimierung gleich mit
+— `OptimierungLeistungspreis` ruft `VarianteLesen()` bereits davor. Warum ein Leseweg schreibt, steht
+an Ort und Stelle: Eine Anlage ohne Variantenzeile ist kein Zustand, den der Anwender gewählt hat,
+sondern einer, den der Anlagepfad hinterlassen kann; sichtbar wird er erst hier. Der Aufruf ist
+idempotent und still — genau so hielt es der abgelöste `StromspeicherKontextMenuCtrl`. Sonst ist an
+der Hülle nichts geändert.
+
+**Kein neuer Ressourcentext.** `SP_PARAM_STATUS_KEINE_VARIANTE` bleibt — der Zustand ist nach diesem
+Paket seltener, aber nicht unmöglich (Projekt ohne Speicheranlage, misslungenes Nachziehen).
+
+### Nachweis
+
+Sandbox 3 auf `975e5fc3`, x64 Debug (kein Hauptbaum-Bau — die Anwendung lief):
+
+| Lauf | Ausgang | nachher |
+|---|---|---|
+| `MSBuild WP-Plan.sln -p:Configuration=Debug -p:Platform=x64` | 0 Fehler | **0 Fehler** |
+| `EPOS.Kern.Tests` | 2 303 / 2 303 | **2 313 / 2 313 grün** (+10) |
+| `EPOS.UI.Tests` | 3 380 / 3 380 | **3 380 / 3 380 grün** (unberührt) |
+
+Neue Fälle, Kern (`EPOS.Kern.Tests/SpeichervarianteSicherstellenTests.cs`, 10). Prüfstand ist ein
+**synthetisches Projekt in der Arbeitskopie** (Schlüssel ab 191001, wie in
+`BetriebskostenBaugroesseTests`): Die Testdatenbank führt keine Speicheranlage OHNE Variantenzeile —
+Migrationsschritt 11d hat jede Bestandsanlage versorgt.
+
+| Fall | was er festhält |
+|---|---|
+| `Eine_Speicheranlage_ohne_Zeile_bekommt_eine_aktive_Variante` | der Befund als Kernprobe: Zeile entsteht, ist aktiv, trägt die Vorbelegung des Modells |
+| `Zwei_Anlagen_ohne_Zeile_bekommen_zwei_Zeilen_und_die_erste_wird_aktiv` | zwei Zeilen, genau eine aktiv — die der ersten Anlage in `ORDER BY ID` |
+| `Vorhandene_Zeilen_ohne_aktive_bekommen_keine_neue_Zeile` | erste wird aktiviert, Zeilenzahl unverändert |
+| `Ohne_Speicheranlage_bleibt_die_Variantentabelle_unberuehrt` | `null`, kein Schreibversuch (Projekt mit Wärmepumpe) |
+| `Eine_Referenzanlage_allein_bekommt_keine_Variante` | `REF_SP_TYP` ist der Vergleichsfall, keine Planvariante |
+| `Der_zweite_Aufruf_laesst_die_Zeilen_bitgleich` | Idempotenz — Abbild ALLER Spalten ALLER Zeilen |
+| `Ohne_Projekt_wird_nichts_geschrieben` | `idProjekt` 0 und −3: `null`, keine Ausnahme |
+| `Der_erste_Speicher_eines_Projekts_bekommt_seine_Variante` | **der Befund am Speicherweg**: `Del_Projekt_Waermeerzeuger(p, SP_TYP)` + `Add_WP_Waermeerzeuger(p, [SP])` → genau eine Zeile, aktiv, an der neuen Anlage |
+| `Der_Speicherweg_traegt_Betriebsparameter_und_Aktivmarkierung_weiter` | Regressionsschutz für AP9b: gepflegte Werte (SoC‑Min 42 %, Nutzungsdauer 17 a) stehen nach Del+Add an der NEUEN Zeile, und sie ist wieder aktiv |
+| `Ein_zweiter_Speicher_nimmt_der_aktiven_Variante_die_Markierung_nicht` | der neue Eintrag steht in der Dialogliste VORNE (kleinere Anlagen-Id, die Ersatzwahl zöge auf ihn) — maßgeblich bleibt die gerettete Markierung, zugeordnet über den Bezeichner |
+
+Der Wizard-Schreibweg braucht **Bezeichner aus dem Katalog** `Tab_Stromspeicher_STAMM` („BYD B-Box
+HVM 11.0", „VARTA pulse neo"): `StromspeicherCtrl.CopyFromStamm(Bezeichner, Projekt)` löst die
+Gerätekopie darüber auf, und ein Phantasiename ließe `ID_SP` auf 0 stehen — der Fremdschlüssel der
+Anlagenzeile liest die 0 als Verweis auf ein Gerät, das es nicht gibt. Einen bestehenden Aufruf des
+Wizard-Schreibwegs in `EPOS.Kern.Tests` gab es nur für PV (`AnlageStrangTests`); die Vorbedingungen
+sind hier minimal nachgebaut und im Test vermerkt.
+
+**Kein bestehender Fall musste geändert werden.** Keiner baute auf dem Frühausstieg auf:
+`SpVariantenWiederherstellen` ist privat und wird nur über `Add_WP_Waermeerzeuger` erreicht; die
+zwei Testklassen, die diesen Schreibweg fahren, arbeiten auf **PV** (`AnlageStrangTests`) und
+**BHKW** (`AnlagenTemperaturenTests`) — dort gibt es keine Speicheranlage, die eine Variante
+bräuchte, und die Nachführung schreibt nichts. Der einzige weitere SP-Bezug im Testbestand
+(`AssistentCtrlTests.Eine_abgewaehlte_Anlage_faellt_aus_der_Liste` mit `SP_TYP`) prüft den
+Listenfilter im Arbeitsspeicher und fasst die Datenbank nicht an.
+
+**Nicht durch Tests gedeckt:** der Weg der Hülle selbst (`SimulationErgebnisHuelle.VarianteLesen`)
+— `WindowsFormsApplication1` hat kein Testprojekt, das dort die Datenbank anfasst (dieselbe Lage wie
+bei W11b‑B‑17/19/21/24/25/26). Geprüft ist der Kern darunter.
+
+### Offene Punkte
+
+1. **Sichtabnahme am Programm** (Projekt 1050): Simulation → Detaillierte Simulation → Parameter →
+   Stromspeicher. Erwartet: der Reiter nennt die Variante statt „Keine aktive Speichervariante", die
+   Eingaben sind offen; „Nach Auslegung optimieren" übernimmt den Leistungspreis, und er steht nach
+   dem Schließen des Dialogs im Feld „Leistungspreis" des Reiters.
+2. **Gegenprobe am Anlagepfad**: neues Projekt, Assistent, erster Stromspeicher — der Parameterreiter
+   muss ohne Zwischenschritt offen sein.
+3. Die Heilung des Bestands geschieht **beim Öffnen der Maske**, nicht beim Programmstart. Ein Projekt,
+   das nie über den Simulationsweg geöffnet wird, behält seinen Zustand — ohne Wirkung, denn dort
+   fällt er auch nicht auf. Ein Migrationsschritt „11d nachziehen" ist bewusst **nicht** gebaut: Er
+   träfe eine Datenbank, deren Zustand von einem behobenen Fehler stammt, und die Nachführung erledigt
+   ihn an der Stelle, an der er sich zeigt.

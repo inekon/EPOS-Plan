@@ -239,6 +239,116 @@ namespace WindowsFormsApplication1
                 new DbParam("@id", idVariante));
         }
 
+        /// <summary>
+        /// Zieht die Regel "jede Speicheranlage fuehrt eine Variante, genau eine ist
+        /// aktiv" fuer ein Projekt NACH und liefert dessen aktive Variante.
+        ///
+        /// <para>
+        /// WARUM ES DIESEN WEG BRAUCHT. Eine Speicheranlage OHNE Variantenzeile ist
+        /// ein Zustand, den der ANLAGEPFAD seit iU9-W16b.1 hinterlassen kann: Der
+        /// Del+Add-Speicherweg rettet die vorhandenen Zeilen ueber
+        /// <c>WizardCtrl.SpVariantenSichern</c> / <c>SpVariantenWiederherstellen</c> -
+        /// beim ERSTEN Speicher eines Projekts gibt es aber nichts zu sichern. Die
+        /// Selbstheilung, die den Fall bis dahin abfing, fiel mit dem WinForms-Altzweig
+        /// (<c>StromspeicherKontextMenuCtrl.VarianteSicherstellen</c> /
+        /// <c>AktiveVarianteSicherstellen</c>, Commit 55a3f0ec); der Razor-Weg hatte
+        /// keinen Ersatz. Ohne Variantenzeile sperrt der Reiter "Parameter" seine
+        /// Eingaben, und der Leistungspreis der Auslegungsoptimierung findet nichts,
+        /// wohin er geschrieben werden koennte (Anwenderbefund 10.09.2026, Projekt 1050).
+        /// </para>
+        ///
+        /// <para>
+        /// WAS SIE TUT. Gibt es bereits eine aktive Variante, wird NICHTS geschrieben.
+        /// Sonst bekommt jede Speicheranlage ohne Variantenzeile eine mit der
+        /// Vorbelegung des Modells, und aktiv wird die Variante der ERSTEN Anlage in
+        /// Anlagenreihenfolge - dieselbe Wahl wie Migrationsschritt 11d und wie der
+        /// fruehere <c>StromspeicherKontextMenuCtrl</c>. Eingefuegt wird mit
+        /// <c>Aktiv = false</c>; die Markierung setzt allein <see cref="SetzeAktiv"/>
+        /// (Hausregel der Klasse, siehe <see cref="Update"/>).
+        /// </para>
+        ///
+        /// <para>
+        /// NUR <c>WizardItemClass.SP_TYP</c>. Die Referenzliste (<c>REF_SP_TYP</c>)
+        /// fuehrt den VERGLEICHSFALL des Projekts, keine Planvariante - dieselbe Grenze,
+        /// die auch die Ersatzwahl in <c>WizardCtrl.SpVariantenWiederherstellen</c> zieht.
+        /// </para>
+        ///
+        /// <para>
+        /// SIE WIRFT NICHT und ist IDEMPOTENT. Aufgerufen wird sie aus LESEWEGEN
+        /// (Parameterreiter, Optimierungsdialog); jeder Fehlschlag ist eine
+        /// Konsolenmeldung und <c>null</c> - derselbe Zustand wie ohne Nachziehen, den
+        /// <c>StromspeicherSimCtrl</c> als Rueckfall traegt, und nicht ein Abbruch der
+        /// Maske. Der zweite Aufruf findet die aktive Variante vor und schreibt nichts.
+        /// </para>
+        /// </summary>
+        public StromspeicherVarianteModel AktiveVarianteSicherstellen(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            try
+            {
+                StromspeicherVarianteModel aktiv = ReadAktiveVariante(idProjekt);
+                if (aktiv != null) return aktiv;
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID FROM " + TAB_ANLAGEN + " WHERE ID_Projekt = ? AND ID_Type = ? ORDER BY ID",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", WizardItemClass.SP_TYP));
+
+                if (dt == null || dt.Rows.Count == 0) return null;   // kein Speicher, keine Variante
+
+                int idErsteAnlage = 0;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    int idAnlage = I(r, "ID");
+                    if (idAnlage <= 0) continue;
+                    if (idErsteAnlage == 0) idErsteAnlage = idAnlage;
+
+                    // Vorhandene Zeile bleibt unangetastet: Sie traegt die gepflegten
+                    // Betriebsparameter, die Vorbelegung waere ein Rueckschritt.
+                    if (ReadByEnergieanlage(idAnlage) != null) continue;
+
+                    StromspeicherVarianteModel neu =
+                        new StromspeicherVarianteModel { ID_Energieanlage = idAnlage };
+                    neu.Aktiv = false;            // SetzeAktiv ist die einzige Schreibstelle
+
+                    if (Insert(neu) <= 0)
+                    {
+                        Console.WriteLine("Die Speichervariante der Anlage " + idAnlage +
+                                          " konnte nicht angelegt werden - Projekt " + idProjekt +
+                                          " bleibt ohne aktive Variante.");
+                        return null;
+                    }
+                }
+
+                StromspeicherVarianteModel erste = ReadByEnergieanlage(idErsteAnlage);
+                if (erste == null)
+                {
+                    Console.WriteLine("Die Speichervariante der ersten Anlage des Projekts " +
+                                      idProjekt + " ist nicht auffindbar - es bleibt ohne aktive Variante.");
+                    return null;
+                }
+
+                if (!SetzeAktiv(idProjekt, erste.ID))
+                {
+                    Console.WriteLine("Die aktive Speichervariante des Projekts " + idProjekt +
+                                      " konnte nicht gesetzt werden.");
+                    return null;
+                }
+
+                return ReadAktiveVariante(idProjekt);
+            }
+            catch (Exception ex)
+            {
+                // Wortgleich zum abgeloesten StromspeicherKontextMenuCtrl: Eine misslungene
+                // Nachfuehrung fuehrt zurueck auf den Zustand davor, nicht auf einen Fehler.
+                Console.WriteLine("Die aktive Speichervariante konnte nicht nachgezogen werden: " +
+                                  ex.Message);
+                return null;
+            }
+        }
+
         public bool Delete(int idVariante)
         {
             if (idVariante <= 0) return false;

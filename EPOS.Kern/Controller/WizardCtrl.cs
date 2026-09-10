@@ -345,8 +345,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Sicherung des laufenden Speichervorgangs. <c>null</c> heisst „dieser
-        /// Loeschbefehl hat keine Speicheranlage betroffen" - dann ruehrt das
-        /// anschliessende Add die Variantentabelle nicht an.
+        /// Loeschbefehl hat keine Variantenzeile mitgenommen" - entweder weil er keine
+        /// Speicheranlage betraf oder weil die Anlagen noch keine Zeile fuehrten.
+        ///
+        /// <para>
+        /// <b>Das ist NICHT dasselbe wie „nichts zu tun"</b> (W11b-B-27). Bis zum
+        /// Anwenderbefund vom 10.09.2026 stieg <see cref="SpVariantenWiederherstellen"/>
+        /// bei einer leeren Sicherung sofort aus - und der ERSTE Speicher eines Projekts,
+        /// der nichts zu sichern hat, bekam so nie eine Variantenzeile. Das Feld sagt
+        /// seither nur noch, ob Betriebsparameter zu RETTEN sind; ob eine Anlage eine
+        /// Zeile braucht, entscheidet der Anlagenbestand nach dem Add.
+        /// </para>
         /// </summary>
         private List<SpVariantenSicherung> m_SpVariantenSicherung;
 
@@ -482,6 +491,15 @@ namespace WindowsFormsApplication1
         /// die Zusage „hoechstens eine aktive Variante je Projekt" traegt. Zwischenstaende
         /// mit zwei aktiven Varianten kann es dadurch nicht geben.
         /// </para>
+        /// <para>
+        /// <b>Eine LEERE Sicherung ist kein Grund auszusteigen</b> (W11b-B-27,
+        /// Anwenderbefund 10.09.2026). Wer den ERSTEN Speicher eines Projekts anlegt, hat
+        /// nichts zu retten - die neue Anlagenzeile braucht ihre Variante trotzdem, sonst
+        /// sperrt der Reiter „Parameter" seine Eingaben und der Leistungspreis der
+        /// Auslegungsoptimierung findet nichts, wohin er geschrieben werden koennte
+        /// (Projekt 1050). Ohne gesicherte Zeile bekommt jede Anlage die Vorbelegung des
+        /// Modells - dieselben Werte wie aus Migrationsschritt 11d.
+        /// </para>
         /// </remarks>
         private void SpVariantenWiederherstellen(int projektID)
         {
@@ -491,9 +509,19 @@ namespace WindowsFormsApplication1
             m_SpVariantenSicherung = null;            // eine Sicherung, ein Wiederherstellen
             m_SpVariantenProjekt = 0;
 
-            if (sicherung == null || sicherung.Count == 0 || projektID <= 0) return;
+            if (projektID <= 0) return;
 
-            if (projektDerSicherung != projektID)
+            // W11b-B-27: "nichts gesichert" wird wie eine LEERE Liste behandelt - die
+            // Schleife unten laeuft trotzdem und gibt jeder Anlage ohne Variantenzeile
+            // die Vorbelegung. Vorher stand hier ein Fruehausstieg, und genau er liess
+            // den ersten Speicher eines Projekts ohne Zeile zurueck.
+            if (sicherung == null) sicherung = new List<SpVariantenSicherung>();
+
+            // Die Projektprobe gilt nur fuer eine NICHT LEERE Sicherung: Ohne geretteten
+            // Satz gibt es nichts, was in ein fremdes Projekt geraten koennte - und
+            // m_SpVariantenProjekt steht dann ohnehin auf 0, weil SpVariantenSichern sich
+            // nur eine Sicherung MIT Inhalt merkt.
+            if (sicherung.Count > 0 && projektDerSicherung != projektID)
             {
                 Console.WriteLine("Speichervarianten-Rettung nicht ausgefuehrt: Die Sicherung " +
                                   "gehoert zu Projekt " + projektDerSicherung + ", geschrieben wird " +
@@ -569,14 +597,31 @@ namespace WindowsFormsApplication1
 
                 // Genau eine aktive Variante - ohne sie faellt die Gesamtsimulation auf die
                 // Aggregation ueber alle Speicheranlagen zurueck (StromspeicherSimCtrl).
-                int idAktiv = idVarianteAktiv > 0 ? idVarianteAktiv : idVarianteErsatz;
-                if (idAktiv > 0 && !ctrl.SetzeAktiv(projektID, idAktiv))
-                    Console.WriteLine("Speichervarianten-Rettung: Die aktive Variante des " +
-                                      "Projekts " + projektID + " konnte nicht gesetzt werden.");
+                //
+                // W11b-B-27: gesetzt wird sie NUR, wenn das Projekt danach keine fuehrt. Ueber
+                // den Del+Add-Weg ist das immer der Fall (die Loeschweitergabe nimmt jede Zeile
+                // mit). Bleibt sie auf einer Datenbank OHNE die Beziehung stehen, kaeme ein
+                // hinzugefuegter ZWEITER Speicher daher und riss die Markierung an sich - die
+                // bestehende Wahl des Anwenders gewinnt.
+                StromspeicherVarianteModel schonAktiv = ctrl.ReadAktiveVariante(projektID);
+                int idAktiv = schonAktiv != null ? schonAktiv.ID : 0;
 
-                Console.WriteLine("Speichervarianten-Rettung: " + uebernommen +
-                                  " Betriebsparametersaetze uebernommen, " + neu +
-                                  " neue Anlage(n) mit Vorgabewerten, aktiv = Variante " + idAktiv + ".");
+                if (schonAktiv == null)
+                {
+                    idAktiv = idVarianteAktiv > 0 ? idVarianteAktiv : idVarianteErsatz;
+                    if (idAktiv > 0 && !ctrl.SetzeAktiv(projektID, idAktiv))
+                        Console.WriteLine("Speichervarianten-Rettung: Die aktive Variante des " +
+                                          "Projekts " + projektID + " konnte nicht gesetzt werden.");
+                }
+
+                // Der Text nennt beide Faelle beim Namen - "0 Betriebsparametersaetze
+                // uebernommen" waere fuer einen Erstspeicher eine Rettung, die es nie gab.
+                Console.WriteLine("Speichervarianten-Rettung: " +
+                                  (sicherung.Count == 0
+                                       ? "nichts gesichert"
+                                       : uebernommen + " Betriebsparametersaetze uebernommen") +
+                                  ", " + neu + " neue Anlage(n) mit Vorgabewerten, aktiv = Variante " +
+                                  idAktiv + ".");
             }
             catch (Exception ex)
             {
@@ -614,6 +659,13 @@ namespace WindowsFormsApplication1
         /// Verwirft eine Sicherung, ohne sie zu schreiben - der Weg bei einem
         /// gescheiterten <see cref="Add_WP_Waermeerzeuger"/>.
         /// </summary>
+        /// <remarks>
+        /// <b>Hier bleibt <c>null</c> „nichts zu tun"</b> - anders als in
+        /// <see cref="SpVariantenWiederherstellen"/> seit W11b-B-27. Diese Methode
+        /// verhindert einen SCHREIBVORGANG und meldet den Verlust geretteter Parameter;
+        /// ohne Sicherung gibt es beides nicht. Und ein gescheitertes Add hat keine
+        /// Anlagenzeile hinterlassen, die eine Variante brauchte.
+        /// </remarks>
         private void SpVariantenVerwerfen(string grund)
         {
             if (m_SpVariantenSicherung == null) return;

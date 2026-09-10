@@ -422,11 +422,30 @@ namespace WindowsFormsApplication1
         // Die Speichervariante (P3)
         // =================================================================
 
+        /// <summary>
+        /// Die aktive Speichervariante des Projekts — und, wenn es keine gibt, das
+        /// <b>Nachziehen</b> der Regel „jede Speicheranlage führt eine Variante, genau eine
+        /// ist aktiv" (W11b‑B‑27, Anwenderbefund 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum ein LESEWEG schreibt.</b> Eine Speicheranlage ohne Variantenzeile
+        /// ist kein Zustand, den der Anwender gewählt hat, sondern einer, den der
+        /// Anlagepfad hinterlassen kann (erster Speicher eines Projekts, siehe
+        /// <c>StromspeicherVarianteCtrl.AktiveVarianteSicherstellen</c>). Sichtbar wird er
+        /// erst hier — der Reiter „Parameter" sperrt dann seine Eingaben, und der
+        /// Leistungspreis der Auslegungsoptimierung hätte kein Ziel. Nachgezogen wird
+        /// deshalb an der Stelle, an der es auffällt; genau so hielt es der frühere
+        /// WinForms-Weg (<c>StromspeicherKontextMenuCtrl</c>), der mit Commit 55a3f0ec
+        /// gefallen ist.</para>
+        /// <para><b>Idempotent und still.</b> Gibt es eine aktive Variante, schreibt der
+        /// Aufruf nichts; jeder Fehlschlag ist eine Konsolenmeldung und <c>null</c> —
+        /// derselbe Ausgang wie bisher, und die Maske bleibt stehen.</para>
+        /// </remarks>
         private void VarianteLesen()
         {
             try
             {
-                _speicherVariante = new StromspeicherVarianteCtrl().ReadAktiveVariante(m_ID_Projekt);
+                _speicherVariante = new StromspeicherVarianteCtrl().AktiveVarianteSicherstellen(m_ID_Projekt);
             }
             catch (Exception ex)
             {
