@@ -566,6 +566,18 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Schreibt den uebergebenen CSV-Text in eine Datei; ohne Delegat kein Knopf.</summary>
     public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
 
+    /// <summary>
+    /// Schreibt den Leistungspreis L_P [EUR/(kW*a)] SOFORT in die aktive
+    /// Speichervariante (Anwenderentscheid W11b-E-3, 10.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Es ist dasselbe Feld <c>Tab_StromspeicherVariante.L_P</c>, das der Reiter
+    /// „Parameter" und die Peak-Shaving-Maske pflegen - EINE Pflegestelle, kein
+    /// zweiter Wert daneben. OHNE Delegat zeigt der Dialog das Feld nur an und
+    /// schreibt nichts („Kein Delegat ist kein Knopf").
+    /// </remarks>
+    public Action<double>? OptimierungLeistungspreis;
+
     // ---- Die vier CSV-Exporte ----
 
     public Action? CsvBedarf;

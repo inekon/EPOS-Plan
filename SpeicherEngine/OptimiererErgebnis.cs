@@ -108,6 +108,41 @@ namespace SpeicherEngine
 
         /// <summary>Speicherverluste des Jahres [kWh/a].</summary>
         public double SpeicherverlusteKwh { get; init; }
+
+        // ------------------------------------------------------ Lastspitzenkappung
+
+        // Die vier Groessen fuellt AUSSCHLIESSLICH die Berechnungsart
+        // Lastspitzenkappung (Anwenderentscheid W11b-E-3, 10.09.2026); bei
+        // Dauer- und Nachtnutzung bleiben sie 0 beziehungsweise false. Sie stehen
+        // hier und nicht in einem eigenen Typ, weil der Rasterpunkt EINE Zeile der
+        // Kennzahlentabelle und der CSV-Ausgabe ist - ein zweiter Typ zwaenge Anzeige
+        // und Export zu einer Fallunterscheidung, die nichts erklaert.
+
+        /// <summary>Lastspitze ohne Speicher P_alt,max [kW].</summary>
+        public double SpitzeOhneSpeicherKw { get; init; }
+
+        /// <summary>Lastspitze mit Speicher P_neu,max [kW].</summary>
+        public double SpitzeMitSpeicherKw { get; init; }
+
+        /// <summary>Kappung der Jahresspitze <c>P_alt,max - P_neu,max</c> [kW].</summary>
+        public double KappungKw => SpitzeOhneSpeicherKw - SpitzeMitSpeicherKw;
+
+        /// <summary>
+        /// Leistungspreisersparnis <c>Kappung * L_P</c> [EUR/a] - der erste Term der
+        /// Monetarisierung nach Fachkonzept 6.4 und damit der ganze Ertrag dieser
+        /// Berechnungsart, bevor die Verschiebeverluste abgezogen sind.
+        /// </summary>
+        public double LeistungspreisersparnisEur { get; init; }
+
+        /// <summary>Am Ende des Laufs gueltige Schwelle [kW].</summary>
+        public double ErreichteSchwelleKw { get; init; }
+
+        /// <summary>
+        /// <c>true</c>, wenn die Schwelle gerissen wurde. Im nachziehenden Modus, mit
+        /// dem die Rastersuche rechnet, immer <c>false</c> - der Wert bleibt trotzdem
+        /// im Punkt, damit ein spaeterer fester Modus ihn nicht nachtragen muss.
+        /// </summary>
+        public bool SchwelleGerissen { get; init; }
     }
 
     /// <summary>

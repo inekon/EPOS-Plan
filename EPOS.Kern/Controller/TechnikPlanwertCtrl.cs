@@ -657,6 +657,13 @@ namespace WindowsFormsApplication1
         /// bewusst KEINE kWh-Kapazität hier: Ohne Temperaturpaar gibt es keine
         /// belastbare Umrechnung des Volumens (Speicher-Registry-Warnung) — die
         /// Definition gehört zur Speicherrechnung, nicht in eine Kostenformel.</para>
+        /// <para><b>ANWENDERBEFUND 10.09.2026 (H4c):</b> Die Zuordnung Art↔Gewerk stand
+        /// bis dahin je Gewerk auf GENAU EINER Art — dem Stromspeicher fehlte damit
+        /// jede Leistungsgröße, und ein Satz „je kW" blieb dort ohne Bezugsgröße
+        /// (Betrag 0). Die Zuordnung steht seither in
+        /// <see cref="Geraetespalte"/> und folgt einer Regel statt einer Liste: Eine
+        /// Kombination rechnet, wenn das Gewerk GENAU EINE Größe führt, die die Art
+        /// meint.</para>
         /// </summary>
         internal static double? BaugroesseSumme(int projektID, int komponentenID,
                                                 string bemessung, int idAnlage)
@@ -681,27 +688,19 @@ namespace WindowsFormsApplication1
             // Anlagenzeile eingegrenzt. Die Art↔Gewerk-Kreuzprüfung bleibt: „je kWp"
             // an einem anderen Gewerk fällt weiter unten durch die Kette auf null,
             // und Summe ≤ 0 liefert wie überall null statt einer Fantasiezahl.
-            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal)
-                && komponentenID == 3)
+            //
+            // H4c (10.09.2026): Derselbe Weg gilt für „je kW elektrisch" an der
+            // Photovoltaik — kWp IST ihre elektrische Leistung. Zwei Namen für eine
+            // Größe dürfen nicht zwei Zahlen ergeben.
+            if (IstPvLeistungsart(komponentenID, bemessung))
             {
                 double kwp = PhotovoltaikCtrl.KwpSumme(projektID, idAnlage);
                 return kwp > 0 ? kwp : (double?)null;
             }
 
-            string geraetespalte = null;
-            bool malModulanzahl = false;  // Gerätewert × Stückzahl der Anlagenzeile
-
-            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal)
-                && komponentenID == 1) geraetespalte = "Nennleistung";
-            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal)
-                && komponentenID == 2) geraetespalte = "Ptherm";
-            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal)
-                && komponentenID == 7) geraetespalte = "Pel";
-            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal)
-                && komponentenID == 5) geraetespalte = "Energie";
-            else if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal)
-                && komponentenID == 4) { geraetespalte = "Aperturflaeche"; malModulanzahl = true; }
-            else return null;
+            bool malModulanzahl;          // Gerätewert × Stückzahl der Anlagenzeile
+            string geraetespalte = Geraetespalte(komponentenID, bemessung, out malModulanzahl);
+            if (geraetespalte == null) return null;
 
             try
             {
@@ -725,6 +724,99 @@ namespace WindowsFormsApplication1
                 return summe > 0 ? summe : (double?)null;
             }
             catch { return null; }
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 10.09.2026 (H4c): Die Gerätespalte, in der die Baugröße einer
+        /// Bemessungsart steht — <c>null</c>, wenn das Gewerk die Größe nicht führt.
+        ///
+        /// <para><b>Die Regel statt der Liste.</b> Eine Kombination Art↔Gewerk rechnet,
+        /// wenn das Gewerk GENAU EINE Größe führt, die die Art meint. Deshalb rechnen
+        /// die Doppelungen mit: Die Wärmepumpe hat nur EINE Nennleistung, also meint
+        /// „je kW Leistung" dort dasselbe wie „je kW Heizleistung"; der Kessel führt nur
+        /// <c>Ptherm</c>, also ist das seine Heizleistung; die kWp der Photovoltaik SIND
+        /// ihre elektrische Leistung. Deshalb bleibt umgekehrt das BHKW bei
+        /// „je kW Leistung" ohne Bezugsgröße: Es führt <c>Pel</c> UND <c>Ptherm</c> —
+        /// welche gemeint ist, sagt erst die qualifizierte Art.</para>
+        ///
+        /// <para><b>Der Stromspeicher war die Lücke des Befundes.</b> Er führte hier nur
+        /// seine Kapazität; ein Satz „je kW" traf keine Zeile und ergab über den
+        /// Anwenderentscheid I-2 den erfassten Betrag — bei einer satzbasierten Zeile
+        /// also 0. <c>Tab_Stromspeicher.Leistung</c> [kW] ist seine einzige Leistung und
+        /// ist elektrisch; sie gilt für „je kW Leistung" wie für „je kW elektrisch".</para>
+        ///
+        /// <para>„je kWp" der Photovoltaik steht NICHT hier: Sie wird gerechnet
+        /// (Modulanzahl × Modulleistung) statt gelesen und läuft deshalb in
+        /// <see cref="BaugroesseSumme"/> über <see cref="PhotovoltaikCtrl.KwpSumme"/>;
+        /// <see cref="KenntBaugroesse"/> nimmt sie eigens dazu.</para>
+        /// </summary>
+        private static string Geraetespalte(int komponentenID, string bemessung,
+                                            out bool malModulanzahl)
+        {
+            malModulanzahl = false;
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal))
+            {
+                if (komponentenID == 1) return "Nennleistung";   // WP: die eine Nennleistung
+                if (komponentenID == 2) return "Ptherm";         // Kessel: seine Heizleistung
+                if (komponentenID == 7) return "Ptherm";         // BHKW: die thermische Seite
+                return null;
+            }
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal))
+            {
+                if (komponentenID == 2) return "Ptherm";         // Kessel: nur diese eine
+                if (komponentenID == 1) return "Nennleistung";   // WP: nur diese eine
+                if (komponentenID == 5) return "Leistung";       // Speicher: nur diese eine [kW]
+                return null;                                     // BHKW: Pel ODER Ptherm — offen
+            }
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal))
+            {
+                if (komponentenID == 7) return "Pel";            // BHKW
+                if (komponentenID == 5) return "Leistung";       // Speicher: seine Leistung ist elektrisch
+                return null;                                     // PV: über KwpSumme, siehe BaugroesseSumme
+            }
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal))
+                return komponentenID == 5 ? "Energie" : null;
+
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, StringComparison.Ordinal)
+                && komponentenID == 4)
+            {
+                malModulanzahl = true;
+                return "Aperturflaeche";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// H4c: Führt dieses Gewerk überhaupt eine Baugröße zu dieser Bemessungsart?
+        /// Das unterscheidet „die Art passt nicht zum Gewerk" von „das Gerät fehlt oder
+        /// ist mit 0 gepflegt" — beides ergibt in <see cref="BaugroesseSumme"/> null,
+        /// aber nur das zweite lässt sich durch Pflege beheben. Der Dialog sagt das dem
+        /// Anwender, statt still 0 zu zeigen.
+        /// </summary>
+        internal static bool KenntBaugroesse(int komponentenID, string bemessung)
+        {
+            if (IstPvLeistungsart(komponentenID, bemessung)) return true;
+
+            bool egal;
+            return Geraetespalte(komponentenID, bemessung, out egal) != null;
+        }
+
+        /// <summary>
+        /// H4c: Der PV-Sonderweg als Art↔Gewerk-Frage — „je kW elektrisch" an der
+        /// Photovoltaik meint dieselbe installierte Leistung wie „je kWp"
+        /// (Anwenderbefund 10.09.2026: zwei Namen, EINE Größe, deshalb auch nur EINE
+        /// Rechnung — <see cref="PhotovoltaikCtrl.KwpSumme"/>).
+        /// </summary>
+        private static bool IstPvLeistungsart(int komponentenID, string bemessung)
+        {
+            return komponentenID == 3 &&
+                   (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal));
         }
 
         /// <summary>Anzeigename einer Kostenbasis (lokalisiert).</summary>

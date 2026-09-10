@@ -71,6 +71,34 @@ namespace SpeicherEngine
         public double BezugspreisMittelCtKwh { get; init; }
 
         /// <summary>
+        /// Der Parametersatz der NACHZIEHENDEN Schwelle - P_ziel = 0 und
+        /// <see cref="Adaptiv"/>, also genau die Betriebsweise, mit der die
+        /// Peak-Shaving-Maske rechnet.
+        /// </summary>
+        /// <remarks>
+        /// Anwenderentscheid W11b-E-3 (10.09.2026): Die Lastspitzenkappung ist seither
+        /// auch eine Berechnungsart der Auslegungsoptimierung. Beide Einstiege muessen
+        /// dieselbe Betriebsweise rechnen, sonst waere der Bestpunkt der Rastersuche in
+        /// der eigenen Maske nicht wiederzufinden - der Parametersatz entsteht deshalb
+        /// an EINER Stelle. Eine feste Zielschwelle kann die Rastersuche ohnehin nicht
+        /// brauchen: Jeder Rasterpunkt hat eine andere Auslegung und damit eine andere
+        /// haltbare Spitze.
+        /// </remarks>
+        /// <param name="leistungspreisEurProKwA">Leistungspreis L_P [EUR/(kW*a)].</param>
+        /// <param name="bezugspreisMittelCtKwh">Mittlerer Bezugspreis [ct/kWh].</param>
+        public static PeakShavingParameter Nachziehend(double leistungspreisEurProKwA,
+                                                       double bezugspreisMittelCtKwh)
+        {
+            return new PeakShavingParameter
+            {
+                PZielKw = 0.0,
+                Adaptiv = true,
+                LeistungspreisEurProKwA = leistungspreisEurProKwA,
+                BezugspreisMittelCtKwh = bezugspreisMittelCtKwh
+            };
+        }
+
+        /// <summary>
         /// Prueft die Parameter auf Plausibilitaet und wirft bei Verstoss.
         /// Wird von <see cref="PeakShaving"/> vor der Simulation aufgerufen.
         /// </summary>

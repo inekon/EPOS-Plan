@@ -244,6 +244,8 @@ namespace WindowsFormsApplication1
                 ["EditorTitel"] = T("VPOS_TITEL", "Position bearbeiten"),
                 ["VarianteTitel"] = T("KDLG_MSG_NEU_TITEL", "Neue Variante"),
                 ["UebernahmeTitel"] = T("KUEB_TITEL", "Übernahme ins Projekt"),
+                ["MeldungUebernommen"] = T("KUEB_MSG_UEBERNOMMEN",
+                    "Die fehlenden Positionen der Quelle wurden angelegt."),
                 ["KatalogTitel"] = T("KFAK_TITEL", "Administration Kostenfaktoren"),
                 ["VorlagePositionLoeschen"] = T("KDLG_MSG_POS_LOESCHEN", "Position „{0}\" löschen?"),
                 ["VorlagePflichtLoeschen"] = T("KDLG_MSG_PFLICHT_LOESCHEN",
@@ -553,6 +555,19 @@ namespace WindowsFormsApplication1
         {
             string bestand = T("KDLG_TT_BETRAG_PROJEKT",
                 "Aus Satz und Bezugsgröße des Projekts berechnet.");
+
+            // ANWENDERBEFUND 10.09.2026 (H4c): Ohne Bezugsgröße nennt der Werkzeugtipp
+            // den GRUND. Bis hierher stand dort derselbe Satz wie bei einer gerechneten
+            // Zeile — und im Feld die 0 des Anwenderentscheids I-2; wer den Satz
+            // gepflegt hatte, konnte nicht sehen, woran es lag.
+            if (pz != null && !pz.Basis.HasValue)
+            {
+                string grund = GrundText(pz.BasisGrund);
+                if (grund.Length > 0)
+                    return string.Format(T("KDLG_TT_OHNE_BASIS",
+                        "Keine Bezugsgröße: {0}. Es gilt der erfasste Betrag."), grund);
+            }
+
             if (pz == null || !pz.Basis.HasValue || p == null || !p.Satz.HasValue || info == null)
                 return bestand;
 
@@ -571,6 +586,35 @@ namespace WindowsFormsApplication1
                     : T("KDLG_TT_BETRAG_BASIS_MENGE",
                         "Aus Satz und Bezugsgröße des Projekts berechnet: {0} × {1}."),
                 satz, basis);
+        }
+
+        /// <summary>
+        /// H4c: Der Klartext zum Steuerwert <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>.
+        /// Die Zuordnung Art↔Gewerk kennt der Kern, die Sprache kennt die Oberfläche
+        /// (Drei-Schichten-Regel, Konzept 13.6). Leerer Steuerwert = die Bemessungsart
+        /// braucht überhaupt keine Bezugsgröße; dann bleibt der Bestandssatz stehen.
+        /// </summary>
+        private string GrundText(string grund)
+        {
+            switch (grund)
+            {
+                case WirtschaftlichkeitCtrl.BASISGRUND_GEWERK:
+                    return T("KDLG_BASIS_GRUND_GEWERK",
+                             "Die Bemessungsart passt nicht zu diesem Gewerk");
+                case WirtschaftlichkeitCtrl.BASISGRUND_GERAET:
+                    return T("KDLG_BASIS_GRUND_GERAET",
+                             "kein Gerät mit dieser Baugröße im Projekt");
+                case WirtschaftlichkeitCtrl.BASISGRUND_LAUF:
+                    return T("KDLG_BASIS_GRUND_LAUF", "kein Simulationslauf");
+                case WirtschaftlichkeitCtrl.BASISGRUND_INVEST:
+                    return T("KDLG_BASIS_GRUND_INVEST",
+                             "keine Investitionskosten für diese Anlage erfasst");
+                case WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE:
+                    return T("KDLG_BASIS_GRUND_KONSERVE",
+                             "die Bezugsgröße dieser Art wird nicht ermittelt, sie ist zu pflegen");
+                default:
+                    return "";
+            }
         }
 
         private static string EmpfehlungText(KostenVorlagenPosition p, string einheit)
@@ -663,6 +707,16 @@ namespace WindowsFormsApplication1
             BemessungKatalog.Info info = BemessungAus(z.BemessungId);
             if (info != null)
             {
+                // ANWENDERBEFUND 10.09.2026 (H4c): Bei einem Wechsel der BEMESSUNG muss
+                // auch die Bezugsgröße gewechselt werden — sonst rechnete der Dialog
+                // bis zum Speichern mit der Basis der alten Art weiter (die Kapazität
+                // eines Speichers als Grundlage eines €/kW-Satzes). Gefragt wird NUR
+                // beim Wechsel: Nachziehen läuft bei jedem Tastendruck, ein Lesen je
+                // Zeichen wäre eine Datenbankabfrage zu viel.
+                if (ProjektModus && b.Projektzeile != null &&
+                    !string.Equals(p.Bemessung, info.Persistenz, StringComparison.Ordinal))
+                    KostenProjektPositionenCtrl.BasisNachziehen(b.Projektzeile, info.Persistenz);
+
                 p.Bemessung = info.Persistenz;
                 z.Einheit = info.Einheit;
             }

@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
         ///
         /// <para><c>Geschlossen</c> steht bewusst NICHT im Satz — den Rückruf
         /// setzt der Wirt, der auch das Fenster hält.</para>
+        ///
+        /// <para><b>ANWENDERENTSCHEID 10.09.2026 (Ä25):</b> Der Primärknopf heißt jetzt
+        /// OK, übernimmt und schließt; der zweite bricht ab. Für die Datenseite ändert
+        /// das nichts — dieselben Controller, dieselben Filter —, wohl aber für den
+        /// Rückruf: <c>Geschlossen(true)</c> heißt seither „übernommen", nicht mehr
+        /// „irgendwann während der Sitzung einmal übernommen".</para>
         /// </summary>
         /// <param name="komponentenId">Kostenkomponente (Ä7-Auswahl).</param>
         /// <param name="komponentenName">Anzeigename der Komponente — zugleich der
@@ -92,15 +98,21 @@ namespace WindowsFormsApplication1
                 ["Uebernehmen"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>(
                     wahl => Uebernehmen(wahl, vorlagen, komponentenId, kategorieId, zielAnlageId)),
 
-                ["TitelText"] = Text_("KUEB_TITEL", "Übernahme ins Projekt"),
+                // ANWENDERENTSCHEID 10.09.2026 (Ä25): KEIN eigener Titel. Die Maske
+                // erscheint ausschließlich als Bereich einer Überlagerung, und deren
+                // Kopf trägt „Übernahme ins Projekt" (KUEB_TITEL) bereits — bis hierher
+                // stand die Überschrift zweimal übereinander.
+                ["TitelText"] = "",
                 ["LabelZielProjekt"] = Text_("KUEB_LBL_ZIEL", "Zielprojekt:"),
                 ["LabelQuelleVorlage"] = Text_("KDLG_UEB_QUELLE_VORLAGE", "Aus Vorlage/Variante:"),
                 ["LabelQuelleProjekt"] = Text_("KDLG_UEB_QUELLE_PROJEKT", "Aus Projekt/Anlage:"),
                 ["LabelQuellVorlage"] = Text_("KUEB_LBL_QUELLVORLAGE", "Vorlage/Variante:"),
                 ["LabelQuellProjekt"] = Text_("KUEB_LBL_QUELLPROJEKT", "Quellprojekt:"),
                 ["LabelQuellAnlage"] = Text_("KUEB_LBL_QUELLANLAGE", "Quellanlage:"),
-                ["UebernehmenText"] = Text_("KDLG_ET_BTN_UEBERNEHMEN", "Übernehmen"),
-                ["SchliessenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+                // Ä25: OK/Abbrechen statt „Übernehmen"/„Abbrechen" — die beiden
+                // allgemeinen Beschriftungen, keine eigenen Schlüssel.
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
         }
 

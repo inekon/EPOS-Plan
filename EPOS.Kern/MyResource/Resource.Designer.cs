@@ -24757,6 +24757,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximiert wird ΔJ = L_P · ΔP_max · rbf_deg − Verschiebeverluste − (c_cap·C + c_pow·P + I_fix) · a(i_z, N): die jährliche Leistungspreisersparnis abzüglich der Kosten der verschobenen Energie und des Kapitaldienstes. Die Schwelle wird je Rasterpunkt nachgezogen — wie in der Maske Lastspitzenkappung. ähnelt.
+        /// </summary>
+        public static string OPT_HINWEIS_ZIEL_LASTSPITZE {
+            get {
+                return ResourceManager.GetString("OPT_HINWEIS_ZIEL_LASTSPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
         /// </summary>
         public static string OPT_KZ_AMORT_DYN {
@@ -24847,6 +24856,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
+        /// </summary>
+        public static string OPT_KZ_GRUPPE_KAPPUNG {
+            get {
+                return ResourceManager.GetString("OPT_KZ_GRUPPE_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicher und Energie ähnelt.
         /// </summary>
         public static string OPT_KZ_GRUPPE_SPEICHER {
@@ -24883,6 +24901,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappung ΔP_max ähnelt.
+        /// </summary>
+        public static string OPT_KZ_KAPPUNG {
+            get {
+                return ResourceManager.GetString("OPT_KZ_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten K_ver ähnelt.
         /// </summary>
         public static string OPT_KZ_KVER {
@@ -24910,11 +24937,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreisersparnis ähnelt.
+        /// </summary>
+        public static string OPT_KZ_LP_ERSPARNIS {
+            get {
+                return ResourceManager.GetString("OPT_KZ_LP_ERSPARNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert NPV ähnelt.
         /// </summary>
         public static string OPT_KZ_NPV {
             get {
                 return ResourceManager.GetString("OPT_KZ_NPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichte Schwelle ähnelt.
+        /// </summary>
+        public static string OPT_KZ_SCHWELLE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitze mit Speicher ähnelt.
+        /// </summary>
+        public static string OPT_KZ_SPITZE_MIT {
+            get {
+                return ResourceManager.GetString("OPT_KZ_SPITZE_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitze ohne Speicher ähnelt.
+        /// </summary>
+        public static string OPT_KZ_SPITZE_OHNE {
+            get {
+                return ResourceManager.GetString("OPT_KZ_SPITZE_OHNE", resourceCulture);
             }
         }
         
@@ -24987,6 +25050,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string OPT_LBL_CMIN {
             get {
                 return ResourceManager.GetString("OPT_LBL_CMIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis L_P ähnelt.
+        /// </summary>
+        public static string OPT_LBL_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("OPT_LBL_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen aus ähnelt.
+        /// </summary>
+        public static string OPT_LBL_LP_QUELLE {
+            get {
+                return ResourceManager.GetString("OPT_LBL_LP_QUELLE", resourceCulture);
             }
         }
         
@@ -25090,6 +25171,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis fehlt — eingeben oder aus einer Quelle übernehmen. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_LP_FEHLT {
+            get {
+                return ResourceManager.GetString("OPT_MSG_LP_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt mehrere Speicheranlagen. Die Optimierung rechnet mit ihrer Summe; die Aufteilung eines Optimums auf mehrere Geräte ist nicht eindeutig. Bitte die Werte von Hand eintragen. ähnelt.
         /// </summary>
         public static string OPT_MSG_MEHRERE_ANLAGEN {
@@ -25178,6 +25268,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string OPT_MSG_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("OPT_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger Strom: {0} €/(kW·a) ähnelt.
+        /// </summary>
+        public static string OPT_QUELLE_ENERGIETRAEGER {
+            get {
+                return ResourceManager.GetString("OPT_QUELLE_ENERGIETRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur (Wirtschaftlichkeit): {0} €/(kW·a) — {1} ähnelt.
+        /// </summary>
+        public static string OPT_QUELLE_TARIF {
+            get {
+                return ResourceManager.GetString("OPT_QUELLE_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Bezugsspitze nicht bekannt ähnelt.
+        /// </summary>
+        public static string OPT_QUELLE_TARIF_OHNE_SPITZE {
+            get {
+                return ResourceManager.GetString("OPT_QUELLE_TARIF_OHNE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW ähnelt.
+        /// </summary>
+        public static string OPT_QUELLE_TARIF_STUFE1 {
+            get {
+                return ResourceManager.GetString("OPT_QUELLE_TARIF_STUFE1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet ähnelt.
+        /// </summary>
+        public static string OPT_QUELLE_TARIF_STUFE2 {
+            get {
+                return ResourceManager.GetString("OPT_QUELLE_TARIF_STUFE2", resourceCulture);
             }
         }
         
@@ -25322,6 +25457,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string OPT_WARN_RAND_R_UNTEN {
             get {
                 return ResourceManager.GetString("OPT_WARN_RAND_R_UNTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zielschwelle wurde gerissen — der Speicher hält sie nicht. ähnelt.
+        /// </summary>
+        public static string OPT_WARN_SCHWELLE {
+            get {
+                return ResourceManager.GetString("OPT_WARN_SCHWELLE", resourceCulture);
             }
         }
         
@@ -39624,6 +39768,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG {
             get {
                 return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG", resourceCulture);
             }
         }
         

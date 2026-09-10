@@ -11,17 +11,35 @@
    mit denselben Filterparametern wie der Vorlaeufer (Regel F4/F5). Die
    Komponente kennt nur drei Delegaten: AnlagenZu, Vorschau, Uebernehmen.
 
-   UEBERNEHMEN SCHREIBT SOFORT. Deshalb bleibt der Dialog nach dem Lauf offen
-   und zeigt die Meldungen des Controllers dort, wo sie entstanden sind — der
-   Vorlaeufer schloss unmittelbar nach einer MessageBox, und wer sie weggeklickt
-   hatte, sah nicht mehr, was uebernommen wurde. *@
+   ANWENDERENTSCHEID 10.09.2026 (Ae25) — OK UND ABBRECHEN. "OK = aus der Maske
+   heraus und uebernehmen, Abbrechen = aus der Maske raus, nicht speichern."
+   Bis dahin galt A-7 aus B5b: Der Primaerknopf hiess "Uebernehmen", schrieb
+   sofort und LIESS DIE MASKE STEHEN, um die Meldung des Controllers dort zu
+   zeigen, wo sie entstanden war. Der Anwender hat das am 10.09.2026 verworfen —
+   eine Maske mit einem Knopf, der schreibt, und einem zweiten, der nur
+   schliesst, sagt nicht, wie man sie ohne Wirkung wieder verlaesst.
+
+   Geblieben ist die Entscheidungsgrundlage VOR dem Schreiben: Die Vorschauzeile
+   zaehlt, was angelegt wuerde, und OK ist gesperrt, solange das nichts ist.
+
+   DIE EINE AUSNAHME: ein FEHLSCHLAG haelt die Maske offen. Ein Lauf, der nicht
+   geschrieben hat, muss seinen Grund zeigen koennen, und er muss sich
+   korrigieren lassen; wegzuschliessen, was man noch braucht, waere kein
+   Abbrechen, sondern ein Verlust (dieselbe Ueberlegung wie beim
+   Hintergrundklick der Ueberlagerung). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
+    @* Ae25: Die Ueberschrift steht nur, wo sie nicht schon ueber der Maske
+       steht. Als Bereich einer Ueberlagerung traegt DEREN Kopf den Titel; der
+       Wirt setzt TitelText dann leer, und hier bleibt der Hilfeknopf. *@
     <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -75,8 +93,8 @@
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                disabled="@(!_uebernahmeMoeglich)" @onclick="BeiUebernehmen">@UebernehmenText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+                disabled="@(!_uebernahmeMoeglich)" @onclick="BeiOk">@OkText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
     </div>
 </div>
 
@@ -128,12 +146,13 @@
     [Parameter] public Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>? Uebernehmen { get; set; }
 
     /// <summary>
-    /// Der Dialog ist zu Ende. <c>true</c> = es wurde mindestens einmal
-    /// erfolgreich uebernommen.
+    /// Der Dialog ist zu Ende. <c>true</c> = die Uebernahme lief und hat
+    /// geschrieben (Ae25: der Rueckgabewert von OK), <c>false</c> = abgebrochen.
     /// </summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
-    /// <summary>Fenstertitel (Designer: lblKopfTitel).</summary>
+    /// <summary>Fenstertitel (Designer: lblKopfTitel); leer = die Ueberschrift
+    /// steht schon ueber der Maske (Ae25, Ueberlagerungskopf).</summary>
     [Parameter] public string TitelText { get; set; } = "Übernahme ins Projekt";
 
     /// <summary>Kontextzeile „‹Komponente› · ‹Kategorie›" (Designer: lblKontext).</summary>
@@ -161,11 +180,11 @@
     /// <summary>Beschriftung der Quellanlagenliste (A-11).</summary>
     [Parameter] public string LabelQuellAnlage { get; set; } = "Quellanlage:";
 
-    /// <summary>Beschriftung des Uebernehmen-Knopfes.</summary>
-    [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
+    /// <summary>Ae25: Beschriftung des Primaerknopfes — uebernehmen UND schliessen.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
 
-    /// <summary>Beschriftung des schliessenden Knopfes.</summary>
-    [Parameter] public string SchliessenText { get; set; } = "Abbrechen";
+    /// <summary>Ae25: Beschriftung des Knopfes, der ohne Wirkung schliesst.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
     /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_VorlagenUebernahme.btn_Help";
@@ -179,7 +198,6 @@
     private int? _quellAnlage;
     private bool _ausVorlage = true;
     private bool _uebernahmeMoeglich;
-    private bool _etwasUebernommen;
 
     private string _vorschau = "";
     private string _meldung = "";
@@ -297,25 +315,39 @@
         _quellProjekt ?? 0,
         _quellAnlage ?? 0);
 
-    private void BeiUebernehmen()
+    /// <summary>
+    /// ANWENDERENTSCHEID 10.09.2026 (Ae25): OK uebernimmt die aktuelle Wahl UND
+    /// verlaesst die Maske. Der Erfolg wird nicht mehr in der Maske gemeldet — die
+    /// Kostenverwaltung laedt danach ohnehin neu und zeigt die angelegten Zeilen.
+    ///
+    /// <para>Ein FEHLSCHLAG haelt die Maske offen (Begruendung im Kopfkommentar):
+    /// Er traegt einen Grund, den niemand mehr lesen koennte, und eine Wahl, die
+    /// sich noch korrigieren laesst.</para>
+    /// </summary>
+    private Task BeiOk()
     {
-        if (!_uebernahmeMoeglich || Uebernehmen is null) return;
+        if (!_uebernahmeMoeglich || Uebernehmen is null) return Task.CompletedTask;
 
         VorlagenUebernahmeAntwort antwort = Uebernehmen(Wahl());
-        _meldung = antwort.Meldung;
-        _meldungIstFehler = antwort.Fehler;
-        if (!antwort.Fehler) _etwasUebernommen = true;
+        if (antwort.Fehler)
+        {
+            _meldung = antwort.Meldung;
+            _meldungIstFehler = true;
+            // Nach einem Teillauf stimmt die Vorschau nicht mehr — sie zaehlt neu.
+            VorschauAktualisieren();
+            return Task.CompletedTask;
+        }
 
-        // Nach dem Schreiben stimmt die Vorschau nicht mehr — sie zaehlt neu.
-        VorschauAktualisieren();
+        return Geschlossen.InvokeAsync(true);
     }
 
-    private Task BeiSchliessen() => Geschlossen.InvokeAsync(_etwasUebernommen);
+    /// <summary>Ae25: Abbrechen verlaesst die Maske, ohne zu schreiben.</summary>
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {
-        // Enter ist NICHT belegt: Uebernehmen schreibt sofort (A-7 aus B5b).
-        "Escape" => BeiSchliessen(),
+        // Enter bleibt unbelegt: OK schreibt (A-7 aus B5b, von Ae25 nicht beruehrt).
+        "Escape" => BeiAbbrechen(),
         _ => Task.CompletedTask
     };
 }

@@ -152,12 +152,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Kappungsparametersatz der Engine.</summary>
+        /// <remarks>
+        /// Der nachziehende Fall entsteht seit dem Anwenderentscheid W11b‑E‑3
+        /// (10.09.2026) in <see cref="PeakShavingParameter.Nachziehend"/> — die
+        /// Auslegungsoptimierung kennt die Lastspitzenkappung jetzt als dritte
+        /// Berechnungsart und muss dieselbe Betriebsweise rechnen wie diese Maske.
+        /// Zwei getrennte Abbildungen hätten genau die Abweichung erzeugt, die die
+        /// Ergebnisse unvergleichbar macht.
+        /// </remarks>
         public PeakShavingParameter AlsPeakShavingParameter()
         {
+            if (Adaptiv)
+                return PeakShavingParameter.Nachziehend(
+                    LeistungspreisEurProKwA, BezugspreisMittelCtKwh);
+
             return new PeakShavingParameter
             {
-                PZielKw = Adaptiv ? 0.0 : ZielschwelleKw,
-                Adaptiv = Adaptiv,
+                PZielKw = ZielschwelleKw,
+                Adaptiv = false,
                 LeistungspreisEurProKwA = LeistungspreisEurProKwA,
                 BezugspreisMittelCtKwh = BezugspreisMittelCtKwh
             };

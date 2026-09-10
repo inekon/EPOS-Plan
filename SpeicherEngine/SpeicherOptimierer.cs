@@ -113,7 +113,7 @@ namespace SpeicherEngine
                     "Die Basisauslegung braucht eine Kapazitaet groesser 0 - das SoC-Band wird anteilig dazu skaliert.");
 
             Stopwatch uhr = Stopwatch.StartNew();
-            ISpeicherStrategie strategie = BaueStrategie(opt.Strategie);
+            ISpeicherStrategie strategie = BaueStrategie(opt, eingang);
             double[] cRaten = opt.CRaten();
 
             int erledigt = 0;
@@ -306,7 +306,15 @@ namespace SpeicherEngine
             ISpeicherStrategie strategie, double cNomKwh, double cRate)
         {
             SpeicherParameter p = Rasterpunkt(basis, cNomKwh, cRate);
-            SpeicherErgebnis erg = strategie.Berechne(eingang, p);
+
+            // Die Lastspitzenkappung braucht ihr VOLLES Ergebnis: Spitze, Kappung und
+            // Leistungspreisersparnis stehen nur dort, und sie sind die
+            // Sekundaerkennzahlen dieser Berechnungsart (Anwenderentscheid W11b-E-3,
+            // 10.09.2026). Der Wirtschaftlichkeitsblock ist derselbe -
+            // PeakShaving.Berechne liefert genau die Basis, die hier auch entsteht.
+            PeakShaving? kappung = strategie as PeakShaving;
+            PeakShavingErgebnis? ps = kappung != null ? kappung.BerechnePeakShaving(eingang, p) : null;
+            SpeicherErgebnis erg = ps != null ? ps.Basis : strategie.Berechne(eingang, p);
 
             WirtschaftlichkeitErgebnis w = erg.Wirtschaftlichkeit;
             SpeicherKennzahlen k = erg.Kennzahlen;
@@ -345,7 +353,13 @@ namespace SpeicherEngine
                 AutarkiegradMitSpeicher = k.AutarkiegradMitSpeicher,
                 LadeenergieKwh = erg.LadeenergieKwh,
                 EntladeenergieKwh = erg.EntladeenergieKwh,
-                SpeicherverlusteKwh = k.SpeicherverlusteKwh
+                SpeicherverlusteKwh = k.SpeicherverlusteKwh,
+
+                SpitzeOhneSpeicherKw = ps != null ? ps.PAltMaxKw : 0.0,
+                SpitzeMitSpeicherKw = ps != null ? ps.PNeuMaxKw : 0.0,
+                LeistungspreisersparnisEur = ps != null ? ps.LeistungspreisersparnisEur : 0.0,
+                ErreichteSchwelleKw = ps != null ? ps.ErreichteSchwelleKw : 0.0,
+                SchwelleGerissen = ps != null && ps.SchwelleGerissen
             };
         }
 
@@ -359,18 +373,46 @@ namespace SpeicherEngine
         /// keine Grundlage fuer eine Auslegungsentscheidung. Sein Zweck ist der
         /// Nachweis gegen die V7-Mappe, nicht die Planung.
         /// </remarks>
-        private static ISpeicherStrategie BaueStrategie(OptimiererStrategie strategie)
+        private static ISpeicherStrategie BaueStrategie(OptimiererOptionen opt, SpeicherEingang eingang)
         {
-            switch (strategie)
+            switch (opt.Strategie)
             {
                 case OptimiererStrategie.Nachtnutzung:
                     return new Nachtnutzung(SpeicherModus.Energetisch);
                 case OptimiererStrategie.Dauernutzung:
                     return new Dauernutzung(SpeicherModus.Energetisch);
+                case OptimiererStrategie.Lastspitzenkappung:
+                    // Derselbe Parametersatz wie in der Peak-Shaving-Maske: NACHZIEHENDE
+                    // Schwelle. Eine feste Zielschwelle waere hier nicht zu halten - jeder
+                    // Rasterpunkt hat eine andere Auslegung und damit eine andere haltbare
+                    // Spitze; eine fuer alle Punkte gemeinsame Vorgabe machte die grossen
+                    // Speicher kuenstlich gleich gut. Der mittlere Bezugspreis bewertet die
+                    // Verschiebeverluste (Fachkonzept 6.4, zweiter Term) und kommt aus der
+                    // Preisreihe des Laufs - dieselbe Reihe, mit der die anderen Strategien
+                    // rechnen.
+                    return new PeakShaving(
+                        PeakShavingParameter.Nachziehend(
+                            opt.LeistungspreisEurProKwA, MittlererPreisCtKwh(eingang)),
+                        SpeicherModus.Energetisch);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(strategie), strategie,
+                    throw new ArgumentOutOfRangeException(nameof(opt), opt.Strategie,
                         "Fuer die Rastersuche ist diese Strategie nicht vorgesehen.");
             }
+        }
+
+        /// <summary>
+        /// Mittlerer Bezugspreis der Preisreihe [ct/kWh]; 0 bei leerer Reihe.
+        /// </summary>
+        /// <remarks>
+        /// Sequenziell summiert (<see cref="Numerik.SummeSequenziell(double[])"/>), damit
+        /// der Wert unabhaengig von der Parallelitaet bitgleich bleibt - er geht ueber die
+        /// Verlustbewertung in jede Zielfunktion ein.
+        /// </remarks>
+        private static double MittlererPreisCtKwh(SpeicherEingang eingang)
+        {
+            double[] preis = eingang.PreisCtKwh;
+            if (preis == null || preis.Length == 0) return 0.0;
+            return Numerik.SummeSequenziell(preis) / preis.Length;
         }
 
         // ==================================================================

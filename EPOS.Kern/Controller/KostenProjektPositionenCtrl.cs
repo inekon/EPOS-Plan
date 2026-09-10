@@ -43,6 +43,14 @@ namespace WindowsFormsApplication1
             /// schreibt <c>WirtschaftlichkeitCtrl.MengeAusweisen</c> bewusst nichts).</summary>
             public double? Basis;
 
+            /// <summary>ANWENDERBEFUND 10.09.2026 (H4c): WARUM es keine
+            /// <see cref="Basis"/> gibt — einer der Steuerwerte
+            /// <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>, leer bei absoluten Arten und
+            /// überall dort, wo eine Basis steht. Der Anwender sah bis dahin nur die 0,
+            /// die der Anwenderentscheid I-2 daraus macht; den Satz dazu baut die
+            /// Oberfläche (Drei-Schichten-Regel).</summary>
+            public string BasisGrund = "";
+
             /// <summary>Projekt und Kategorie der Zeile — damit
             /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
             /// nachziehen kann wie <see cref="Lies(int,int,int,int)"/>.</summary>
@@ -184,6 +192,12 @@ namespace WindowsFormsApplication1
                     z.Basis = n.Menge;
                 }
 
+                // ANWENDERBEFUND 10.09.2026 (H4c): Steht keine Bezugsgröße, wird der
+                // GRUND mitgegeben. Ohne ihn zeigt das Raster nur die 0 des
+                // Anwenderentscheids I-2 — und der Anwender sucht den Fehler bei sich.
+                z.BasisGrund = z.Basis.HasValue
+                    ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, komponentenId);
+
                 liste.Add(z);
             }
             return liste;
@@ -282,6 +296,40 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { }
+
+            // H4c: derselbe Grundausweis wie beim Laden.
+            z.BasisGrund = z.Basis.HasValue
+                ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, KomponenteDerZeile(z));
+        }
+
+        /// <summary>H4c: die Komponente der Zeile — <see cref="Speichern"/> kennt sie
+        /// nicht als Parameter, der Grundausweis braucht sie. 0 = unbekannt (dann nennt
+        /// der Grund die Art, nicht das Gewerk).</summary>
+        private static int KomponenteDerZeile(Zeile z)
+        {
+            if (z == null || z.Raster.Id <= 0) return 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT KomponentenID FROM Tab_ProjektWerte WHERE ID = ?",
+                    new DbParam("@id", z.Raster.Id));
+                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+            }
+            catch { return 0; }
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 10.09.2026 (H4c): die frische Bezugsgröße einer Zeile zu einer
+        /// NOCH NICHT gespeicherten Bemessungsart — für die Sofortrechnung des Dialogs
+        /// beim Wechsel der Bemessung. Gerechnet wird im Kern
+        /// (<see cref="WirtschaftlichkeitCtrl.FrischeBasis"/>), geschrieben nichts.
+        /// </summary>
+        internal static void BasisNachziehen(Zeile z, string bemessung)
+        {
+            if (z == null || z.Raster.Id <= 0) return;
+            string grund;
+            z.Basis = WirtschaftlichkeitCtrl.FrischeBasis(z.Raster.Id, bemessung, out grund);
+            z.BasisGrund = grund;
         }
 
         /// <summary>Bestandssignatur — Position ohne Anlagenbezug.</summary>

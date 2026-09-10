@@ -56,6 +56,9 @@ namespace WindowsFormsApplication1
         internal const int KOMPONENTE_PHOTOVOLTAIK = 3;
         internal const int KOMPONENTE_SOLARTHERMIE = 4;
 
+        /// <summary>ANWENDERBEFUND 10.09.2026 (H4c): Stromspeicher (5) — Quelle wie oben.</summary>
+        internal const int KOMPONENTE_STROMSPEICHER = 5;
+
         /// <summary>Endenergie einer Position — das Ergebnis des Auflösers.</summary>
         internal sealed class Groesse
         {
@@ -319,12 +322,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Strommenge [kWh/a] der Komponente bzw. Anlage — erzeugt bei
-        /// BHKW/Photovoltaik, bezogen bei der Wärmepumpe (Stromverbrauch + Heizstab);
-        /// null = keine Basis.</summary>
+        /// BHKW/Photovoltaik, bezogen bei der Wärmepumpe (Stromverbrauch + Heizstab),
+        /// ENTLADEN beim Stromspeicher (H4c); null = keine Basis.</summary>
         internal double? StromgroesseKwh(int komponentenID, int idAnlage)
         {
             string anlagenName = null;
             if (idAnlage > 0 && !_anlagenName.TryGetValue(idAnlage, out anlagenName)) return null;
+
+            // ANWENDERBEFUND 10.09.2026 (H4c): Der Stromspeicher hat eine Strommenge —
+            // aber keine Modulliste und keine MWh. Er geht deshalb einen eigenen Weg,
+            // NICHT durch SummeKwh (Begründung an SpeicherEntladungKwh).
+            if (komponentenID == KOMPONENTE_STROMSPEICHER) return SpeicherEntladungKwh(idAnlage);
 
             var zeilen = new List<Brennstoffzeile>();
             switch (komponentenID)
@@ -349,6 +357,45 @@ namespace WindowsFormsApplication1
             }
 
             return SummeKwh(zeilen, anlagenName);
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 10.09.2026 (H4c): die ENTLADENE Jahresenergie [kWh/a] des
+        /// Stromspeichers aus dem jüngsten Lauf — die Bezugsgröße von „je kWh
+        /// elektrisch" an diesem Gewerk.
+        ///
+        /// <para><b>Warum die Entladung und nicht die Ladung.</b> Ein Wartungssatz
+        /// „€ je kWh" bemisst sich an der NUTZBAREN Arbeit des Speichers; die Ladung
+        /// enthält zusätzlich die Verluste (<c>Ladung_Gesamt</c> =
+        /// <c>Entladung_Gesamt</c> + <c>Verluste_Gesamt</c>, Fachkonzept Stromspeicher
+        /// 7.1). Der Anwender wollte „was der Speicher im Jahr geleistet hat".</para>
+        ///
+        /// <para><b>Warum ein eigener Weg statt <see cref="SummeKwh"/>.</b> Zwei
+        /// Unterschiede zu den Erzeugerzeilen, beide erhoben statt vermutet: Die
+        /// Speicherzeile trägt ihre Anlage als SCHLÜSSEL
+        /// (<c>Tab_ErgebnisStromspeicher.ID_Energieanlage</c>) statt als Bezeichner —
+        /// die Zuordnung ist also genauer als der Namensvergleich der anderen Gewerke —,
+        /// und ihre Energien stehen in <b>kWh/a</b>, nicht in MWh/a. Durch
+        /// <see cref="SummeKwh"/> geschickt wäre die Zahl tausendfach zu groß.</para>
+        ///
+        /// <para>null = kein Lauf, keine Speicherzeile im Lauf, diese Anlage nicht im
+        /// Lauf oder Summe 0 — dann greift der Anwenderentscheid I-2 wie überall.</para>
+        /// </summary>
+        private double? SpeicherEntladungKwh(int idAnlage)
+        {
+            if (_ergebnis == null || _ergebnis.Stromspeicher == null) return null;
+
+            double kwh = 0;
+            int getroffen = 0;
+            foreach (ErgebnisStromspeicherModel s in _ergebnis.Stromspeicher)
+            {
+                if (idAnlage > 0 && s.ID_Energieanlage != idAnlage) continue;
+                getroffen++;
+                if (s.Entladung_Gesamt > 0) kwh += s.Entladung_Gesamt;
+            }
+
+            if (idAnlage > 0 && getroffen == 0) return null;   // Anlage nicht im Lauf
+            return kwh > 0 ? kwh : (double?)null;
         }
 
         /// <summary>Anlagen-/Komponentensumme in kWh nach den H2-Filterregeln.</summary>
