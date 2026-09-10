@@ -118,7 +118,8 @@ Der Weg ist überall derselbe und in **drei** Schritten fertig:
 
 **Wer ihn bekommt** — jedes Bild mit **Zeitachse**: Bedarf (Wärme, Strom), Wärmegang,
 Stromgang, Wärmepumpe (Wärmelast, Stromverbrauch, Speichertemperaturen), Heizkessel,
-Solarthermie, BHKW, Photovoltaik, Ladezustand des Stromspeichers.
+Solarthermie, BHKW, Photovoltaik, Lastgang und Speicherbetrieb des Stromspeichers
+(bis W11b‑B‑26 dessen blosser Ladezustand, siehe § 5.3).
 
 **Wer ihn nicht bekommt** — jedes Bild **ohne** Zeitachse: die Streuwolke
 „Leistung über Außentemperatur" (x = Temperatur), die Monatssäulen der Autarkie, Kuchen
@@ -157,6 +158,32 @@ dessen Sprache:
   untereinander sah der Anwender nie beide zugleich; und die Anzeigehöhe ist auf 320 px
   gedeckelt. Gedeckelt ist die ANZEIGE, nicht das PNG: Der Zeichner liefert weiter
   860 × 560 und 720 × 460, sonst wäre auch das Gezoomte grob.
+
+### 5.3 Zwei Achsen in EINEM Bild (W11b‑B‑26)
+
+Zwei Größen gehören in dasselbe Bild, wenn der Anwender sie **zusammen** lesen muss —
+und auf **zwei Achsen**, wenn sie verschiedene Einheiten haben. Beides ist eine
+Fachaussage, keine Geschmacksfrage:
+
+| Fall | Achse |
+|---|---|
+| mehrere Größen **derselben** Einheit (vier Leistungen in kW) | **EINE** Achse. Eine zweite behauptete eine zweite Einheit, wo keine ist — und die Frage „um wie viel senkt der Speicher die Spitze" ist nur über einer gemeinsamen Skala zu beantworten |
+| eine Größe **anderer** Einheit daneben (Ladezustand in kWh) | **zweite** Achse rechts. Auf der kW-Skala lägen bei 400 kWh Inhalt und 40 kW Bezug die Leistungen platt auf der Nulllinie |
+
+Die zweite Achse fängt **unten bei null** an, trägt Zahlen und Beschriftung in der
+**Farbe ihrer Reihe** und beschriftet die **Einheit**; ihre Null muss deshalb nicht auf
+der Null der linken liegen, die vorzeichenfähig sein kann. Der Reihenname in der
+**Legende nennt die Einheit ebenfalls** („Ladezustand [kWh]") — in einer Legende, in der
+drei Nachbarn in kW stehen, stellt die Achsenbeschriftung allein die Zuordnung nicht her.
+
+Zwei Renderer können das: `ChartRenderer.ErzeugerStapel` (B3, Parameter `zweiteAchse` /
+`y2Titel` — linke Achse ab null) und `ChartRenderer.Speicherbetrieb` (B10, seit
+W11b‑B‑26 — linke Achse **vorzeichenfähig**, für Reihen um die Nulllinie). Beide sortieren
+im Zweig „sortiert" **jede Reihe für sich**, die der zweiten Achse eingeschlossen.
+
+Wo das Bild eines Reiters eine zweite Größe aufnimmt, **entfällt deren eigenes Bild**:
+Der Stromspeicher-Reiter zeigte bis dahin den Ladezustand allein; jetzt steht er in der
+Grafik daneben und nicht mehr zweimal auf demselben Reiter.
 
 ## 6. Hinweise, Warnungen, Kacheln
 

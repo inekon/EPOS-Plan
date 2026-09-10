@@ -1823,3 +1823,161 @@ grün und fallen nur unter paralleler Last (Zeichenlaufzählung, W13‑B‑6).
    keinen Default.
 4. Die **Kombination** Lastspitzenkappung + Eigenverbrauch bleibt Ausbaustufe (Fachkonzept 6.4):
    Beide Strategien konkurrieren um denselben Ladezustand.
+
+## Anwenderwunsch 10.09.2026 — W11b‑B‑26: Stromspeicher-Reiter zeigt Lastgang, Kappung und Ladezustand in einem Bild
+
+**Wortlaut (10.09.2026):** „Simulation → Detaillierte Simulation → Parameter → Stromspeicher: Der
+Lastgang und die Kappung durch den Stromspeicher sowie der Ladezustand des Stromspeichers sollen
+in einer Grafik sichtbar sein (Umschaltung wie bisher Lastgang und sortierte Dauerlinie)."
+
+**Entscheid über den Ort:** Das Bild kommt in den **Reiter „Stromspeicher" der Ergebnisseite** —
+dort stand bisher das Bild; der Parameter-Reiter bleibt Formular. Der Anwender nennt den Weg,
+über den er den Speicher einstellt; gezeigt wird ein ERGEBNIS, und Ergebnisse stehen im
+Ergebnisreiter.
+
+### Was war
+
+`StromspeicherReiter.razor` zeigte **den blossen Ladezustand** — `ChartRenderer.Jahresverlauf`
+über `Speicherfuellstand_viertelstuendlich`, eine Kurve, seit W11b‑B‑24 mit Datenzoom. Sie sagt,
+wie voll der Speicher ist, aber nicht, **wogegen er arbeitet**: Weder der Netzbezug noch dessen
+Senkung durch den Speicher standen irgendwo im Reiter. Umschalter „sortiert" und Reihenwahl,
+die jeder andere Ergebnisreiter trägt, hatte er ebenfalls nicht.
+
+Das Gegenstück gab es seit dem Vortag schon einmal: `ChartRenderer.Speicherbetrieb` (B10,
+W11b‑B‑25) zeichnet für den **Bestpunkt der Auslegungsoptimierung** Netzbezug ohne/mit Speicher,
+die erreichte Kappungsschwelle und die Speicherleistung. Nur für den **gerechneten Lauf** gab es
+das nicht.
+
+### Umsetzung
+
+**Kern — der Zeichner bekommt eine zweite Achse** (`ChartRenderer.cs`).
+
+| Punkt | Was war | Was ist |
+|---|---|---|
+| `Speicherbetrieb(titel, reihen, fenster)` | vier Leistungen auf EINER Achse | dazu `yTitel`, `ladezustand`, `y2Titel`, `sortiert` — die Leistungen bleiben links und in kW, der **Ladezustand [kWh] geht auf die rechte Achse** |
+| `Verlaufsbild` (gemeinsam mit `Temperaturverlauf`) | eine Achse, keine Sortierung | rechte Achse ab null in der **Farbe ihrer Reihe** (wie `ErzeugerStapel`, B3), Achsenbeschriftung links, Dauerlinie **je Reihe für sich** — die Reihe der zweiten Achse eingeschlossen |
+| leere linke Achse | — | ohne eine einzige linke Reihe (nur der Ladezustand gewählt) bleibt die linke Skala **weg**: eine Achse ohne Reihe wäre eine Behauptung über nichts |
+| Linienzeichnung | zweimal derselbe Rumpf | `VerlaufLinie(…)` — eine Stelle für beide Achsen, samt Strichel und Klemmung an den Feldrand |
+
+**Der Grund für die zweite Achse steht im Quelltext**, und zwar als Ausnahme von der Regel, die
+W11b‑B‑25 aufgestellt hatte: Vier LEISTUNGEN teilen sich eine Achse, weil eine zweite eine
+zweite Einheit behauptete, wo keine ist. Der Ladezustand ist eine ENERGIE — auf der kW-Skala
+lägen bei 400 kWh Inhalt und 40 kW Bezug die Leistungen platt auf der Nulllinie.
+
+**Kern — ein Bauteil für beide Masken** (`EPOS.Kern/Allgemein/Bericht/SpeicherBetriebsbild.cs`, neu).
+Es baut die Reihen aus `SpeicherEingang` + `SpeicherErgebnis` und ruft den Zeichner. Damit steht
+die **Rechnung genau einmal**: das Vorzeichen der Speicherleistung (`LeistungKw` — Entladen
+positiv, Laden negativ) und der Netzbezug (`Netzbezug` — ohne Speicher = Last minus Erzeugung,
+NICHT bei null gekappt; mit Speicher = ohne minus Speicherleistung). `SpeicherOptimierungCtrl`
+ruft beide statt eigener Fassungen, und das **Reihenvokabular** (`REIHE_OHNE`, `REIHE_MIT`,
+`REIHE_SCHWELLE`, `REIHE_SPEICHER`, neu `REIHE_SOC`) wandert dorthin — ein Vokabular, das zwei
+Masken teilen, gehört zum Bild und nicht zu einem seiner Aufrufer. Die Namen bleiben unter
+`SpeicherOptimierungCtrl.REIHE_*` als Verweise stehen.
+
+**Kern — der Lauf-Kontext hält seinen Eingang** (`StromspeicherLaufKontext.Eingang`, gesetzt in
+`StromspeicherSimCtrl.RechneKern`). Das `SpeicherErgebnis` führt nur, was der Speicher TUT (SoC,
+Ladung, Entladung) — nicht, wogegen er es tut. Der Netzbezug ohne Speicher ist Last minus
+Erzeugung, und beide Reihen stehen nur im Eingang. Es sind **dieselben Feldverweise**, die die
+Engine bekommen hat: kein zweiter Satz Zeitreihen.
+
+**Hülle** (`SimulationErgebnisHuelle.Bilder.cs`): `BildSoc` → **`BildSpeicherBetrieb`**,
+Bildschlüssel `Bilder.SpeicherSoc` → **`Bilder.SpeicherBetrieb`**. Die Hülle sucht die zwei
+Bestandteile des Laufs zusammen (Eingang aus dem Kontext, Ergebnis aus der Simulation) und reicht
+Reihenwahl, Schalterstellung und Datenzoom weiter — **kein Zeichencode in der Hülle**, Muster
+W11b‑B‑24. Ohne einen der beiden Bestandteile gibt es kein Bild, und der Baustein sagt, dass
+keines da ist.
+
+**Reiter** (`StromspeicherReiter.razor`): Schalter **„sortiert"**, darunter **je Reihe ein
+Schalter** (beschriftet mit derselben Ressource wie die Legende), darunter das `ChartBild` mit
+`BereichGewaehlt`/`Zurueckgesetzt` — die Reihenfolge aus
+`Doku_Simulationsergebnis_Darstellung.md` § 5. Vorbelegt sind **alle vier Reihen**; gemerkt wird
+die ABWAHL, damit die Vorbelegung eine Aussage über die Reihenliste bleibt und keine zweite
+Liste. **Ohne Bilddelegat keine Schalter** („Kein Delegat ist kein Knopf") — es gäbe nichts neu
+zu zeichnen. Die Kennzahlen, Kacheln, die Ampel und die zwei Knöpfe bleiben unverändert.
+
+**Das Bild** — Vorgabe ist das **ganze Jahr** wie bei jeder anderen Jahresganglinie; für den
+einzelnen Zyklus gibt es den Datenzoom (W11b‑B‑24), der auch im sortierten Zweig gilt:
+Zugeschnitten wird zuerst, die Dauerlinie entsteht aus dem gezeigten Ausschnitt.
+
+| Reihe | Achse | Farbe | Schlüssel |
+|---|---|---|---|
+| Netzbezug ohne Speicher | links [kW] | `C_BEDARF` | `OHNE_SPEICHER` |
+| Netzbezug mit Speicher | links [kW] | `C_NETZ` | `MIT_SPEICHER` |
+| Speicherleistung (Entladen +, Laden −) | links [kW] | `C_WP` | `SPEICHERLEISTUNG` |
+| Ladezustand [kWh] | **rechts** | (120,130,140) — die Farbe des abgelösten SoC-Bildes | `LADEZUSTAND` |
+
+**Die Schwelle fehlt im Reiter — mit Grund.** „Kappung" gibt es dort, wo mit Lastspitzenkappung
+gerechnet wird: in der Auslegungsoptimierung (W11b‑E‑3) und in der eigenen Maske `PeakShaving`.
+Der **Simulationslauf** fährt Dauernutzung, Nachtnutzung oder Preissteuerung
+(`StromspeicherSimCtrl.BaueStrategie`) — eine waagerechte Linie ohne Bedeutung gehört nicht ins
+Bild. `SpeicherBetriebsbild.Zeichnen` nimmt eine Schwelle trotzdem entgegen (`double.NaN` =
+keine): So bräuchte eine künftige Berechnungsart mit Kappung keine Ausnahme von der Regel.
+
+**Eine Ressource ist neu**, `SP_CHART_TITEL_BETRIEB` („Lastgang und Speicherbetrieb" /
+„Load profile and storage operation"). Alles andere ist vorhanden und wird wiederverwendet:
+`OPT_BETRIEB_R_OHNE/_MIT/_LEISTUNG` (Legende **und** Schalterbeschriftung), `PEAK_CHART_Y`
+(„Leistung [kW]"), `PEAK_CHART_Y2` („Ladezustand [kWh]" — Achse, Legende **und** Schalter, weil
+der Name in einer Legende voller kW seine Einheit nennen muss). `SP_CHART_TITEL_SOC` und
+`SP_CHART_ACHSE_SOC` bleiben im Katalog stehen, tragen aber keinen Verwender mehr.
+
+### Nachweis
+
+| Lauf | Ausgang (`7e657267`) | nachher |
+|---|---|---|
+| `MSBuild WP-Plan.sln -p:Configuration=Debug -p:Platform=x64` | 0 Fehler | **0 Fehler** |
+| `EPOS.Kern.Tests` | 2 287 | **2 299 / 2 299 grün** (+12) |
+| `EPOS.UI.Tests` | 3 376 | **3 380 / 3 380 grün** (+4) |
+| `EPOS.UI.Tests`, sieben Wiederholungsläufe | — | **7 × 3 380 grün**, einer davon unter voller Parallellast (2 m 38 s) |
+
+**Schlusslauf auf dem Stand nach dem Merge vom anderen Gerät** (`e120c901`, bringt #166/#167/#169
+mit — vier weitere Kern-Fälle, keine Berührung mit dieser Arbeit): Build **0 Fehler**, Kern
+**2 303 / 2 303**, UI **3 380 / 3 380**.
+
+Neue Fälle, Kern (`EPOS.Kern.Tests/SpeicherBetriebsbildTests.cs`, 12) — Prüfstand ist ein
+**synthetischer Lauf**: acht Tage im Viertelstundenraster, tagsüber 40 kW Last gegen 60 kW
+Erzeugung (der Speicher lädt), nachts 30 kW ohne Erzeugung (er entlädt), gerechnet von der
+`Dauernutzung` der Engine:
+
+| Fall | was er festhält |
+|---|---|
+| `Das_Bild_Entsteht_Aus_Einem_Lauf` | 1 240 × 560, nicht leer |
+| `Ohne_Lauf_Gibt_Es_Kein_Bild` | ohne Eingang oder ohne Ergebnis: `null`, keine Ausnahme |
+| `Zweimal_Dasselbe_Bild_Ist_Bitgleich` | die Wache unter allen Bitvergleichen dieser Datei |
+| `Ohne_Speicher_Minus_Mit_Speicher_Ist_Die_Speicherleistung` | drei Reihen à 768 Werten; ohne − mit = Leistung; ohne = Last − Erzeugung (nicht bei null gekappt) |
+| `Die_Speicherleistung_Traegt_Ihr_Vorzeichen` | (Entladung − Ladung)/Δt, und **beide** Vorzeichen kommen vor |
+| `Der_Ladezustand_Ist_Die_Reihe_Der_Zweiten_Achse` | Werte = `SoCKwh`, Name nennt „kWh" |
+| `Ohne_Den_Ladezustand_Sieht_Das_Bild_Anders_Aus` | abgewählt → keine Reihe, anderes Bild |
+| `Der_Ladezustand_Allein_Ergibt_Ein_Bild` | nur die rechte Achse — das Bild trägt es |
+| `Sortiert_Ordnet_Jede_Reihe_Fuer_Sich_Absteigend` | das sortierte Bild ist **bitgleich** mit dem unsortierten über von Hand je Reihe geordneten Werten — und ungleich dem unsortierten |
+| `Eine_Leere_Reihenwahl_Zeigt_Den_Leerhinweis` | `null` = alle, leer = keine; kein Rückfall |
+| `Eine_Einzelne_Leistungsreihe_Bringt_Das_Bild_Nicht_Zu_Fall` | eine Reihe, Spanne klein — kein Teilen durch null |
+| `Mit_Schwelle_Kommt_Eine_Vierte_Reihe_Dazu` | die Kappungsschwelle als gestrichelte Waagerechte, wenn es sie gibt |
+
+Neue Fälle, UI (`EPOS.UI.Tests/Seiten/StromspeicherReiterTests.cs`, 4 neue, 3 angepasste):
+
+| Fall | was er festhält |
+|---|---|
+| `Das_Betriebsbild_wird_angefordert` (aus `Das_SoC_Bild_wird_angefordert`) | Schlüssel `SPEICHER_BETRIEB`, nicht sortiert, alle vier Reihen — und **genau EIN** Bild auf dem Reiter |
+| `Der_Schalter_sortiert_wechselt_den_Bildauftrag` | ein Schalter „sortiert"; sein Klick setzt `Sortiert` im Auftrag |
+| `Die_Reihenschalter_stehen_im_Bildauftrag` | fünf Kästchen (Umschalter + vier Reihen), Beschriftung = Legendenressource, eine Abwahl fällt aus dem Auftrag |
+| `Alles_abgewaehlt_ist_nicht_dasselbe_wie_keine_Angabe` | leere Liste statt `null` |
+| `Ohne_Bilddelegat_bleiben_die_Schalter_weg` | „Kein Delegat ist kein Knopf" |
+| `Das_Betriebsbild_traegt_den_aufgezogenen_Bereich` / `…_den_Bereichsknopf` | der Datenzoom aus W11b‑B‑24 hängt jetzt am neuen Bild |
+
+**Nicht durch Tests gedeckt:** der Weg der Hülle von `sim.Speicherkontext.Eingang` und
+`sim.Speicherergebnis` ins Bild — `SimulationErgebnisHuelle.*` liegt in
+`WindowsFormsApplication1`, und es gibt kein Testprojekt, das dort die Datenbank anfasst
+(dieselbe Lage wie bei W11b‑B‑17/19/21/24/25). Geprüft ist das Bauteil darunter
+(`SpeicherBetriebsbild`) und der Reiter darüber.
+
+### Offene Punkte
+
+1. **Sichtabnahme am Programm**: Projekt mit Stromspeicherlauf → Simulation → Detaillierte
+   Simulation → Ergebnis → Reiter „Stromspeicher". Erwartet: EIN Bild mit vier Reihen, links kW,
+   rechts „Ladezustand [kWh]"; „sortiert" macht vier Dauerlinien daraus; jede Reihe lässt sich
+   abwählen; ein aufgezogenes Rechteck zeigt einen einzelnen Tageszyklus, „1:1" das Jahr.
+2. **Der Ladezustand in Prozent** statt kWh wäre die Alternative (der Anwender lässt beides zu:
+   „kWh oder %"). Genommen ist **kWh** — dieselbe Einheit, in der die Kachel „SoC [kWh]" und der
+   CSV-Export daneben stehen. Wenn der Anwender Prozent will, ist es der Bezug auf `C_nom`.
+3. **`SP_CHART_TITEL_SOC` / `SP_CHART_ACHSE_SOC`** haben keinen Verwender mehr; sie stehen im
+   Katalog, bis jemand den Katalog aufräumt.

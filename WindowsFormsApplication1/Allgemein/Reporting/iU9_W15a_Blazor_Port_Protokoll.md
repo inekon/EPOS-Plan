@@ -1337,9 +1337,38 @@ Neue Fälle:
 | `KataloglisteTests.Ein_Filterwechsel_gibt_dem_Raster_eine_neue_Datenquelle` | die Gegenprobe — eine WIRKLICHE Änderung kommt durch |
 | `KataloglisteTests.Eine_an_Ort_und_Stelle_geaenderte_Liste_wird_bemerkt` | die zweite Gegenprobe: dieselbe Listeninstanz, anderer Inhalt (der Fall, über den der erste Anlauf fiel) |
 | `KataloglisteTests.Der_Zahlenfilter_greift_auch_wenn_die_Liste_virtualisiert_bleibt` | 500 → 224 über `>50` in der kW-Spalte, **beidseits virtualisiert**; keine Platzhalter, kein `loading` |
-| `RasterTests.Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen` | der Wächter gegen QuickGrids Referenzvergleich: `loading` in 10/10 Läufen mit frischem `AsQueryable`, in 0/10 mit stabiler Instanz |
-| `RasterTests.Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` | der `@key` kostet keinen weiteren Durchlauf über 6 654 Zeilen |
+| `RasterTests.Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen` | der Wächter gegen QuickGrids Referenzvergleich: mit frischem `AsQueryable` bekommt das QuickGrid in 10/10 Zeichenläufen eine ANDERE Datenquelle, mit stabiler Instanz in 0/10 (Fassung seit 10.09.2026, siehe Nachtrag) |
+| `RasterTests.Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` | der `@key` kostet keinen weiteren Durchlauf über 6 654 Zeilen — elf Zeichenläufe, EINE Zählung |
 | `KatalogfilterstandTests.Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur` (2) | Anzeige und Filter teilen sich `CurrentCulture`; die fremde Schreibweise ist kein Filter |
+
+### Nachtrag 10.09.2026 — die zwei Zählfälle messen nicht mehr über die Uhr
+
+Beide Fälle **flatterten unter Parallellast** und liefen allein grün (zweimal beobachtet,
+zuletzt am 10.09.2026: erwartet 3 Durchläufe, gemessen 5). Der Grund lag in der MESSART, nicht
+in der Aussage:
+
+* `Eine_stabile_Zeilenmenge_…` sah der Tabelle die Klasse `loading` nach — und zwar innerhalb
+  von QuickGrids Entprellung (`await Task.Delay(100)`). Zehn Zeichenläufe müssen dafür in
+  100 ms durchlaufen; unter Last taten sie das nicht.
+* `Dieselbe_Zeilenmenge_…` nahm ihren Ausgangsstand nach `WaitForAssertion` und zählte danach
+  ALLE Durchläufe — auch die, die QuickGrids asynchrone Ladung noch nachschob.
+
+**Neu wird die Ursache gemessen statt ihrer Folge**, und beide Fälle lösen ihre Zeichenläufe
+ausdrücklich aus (`cut.Render(…)`), ohne auf eine Frist zu warten:
+
+| Fall | misst jetzt |
+|---|---|
+| `Eine_stabile_Zeilenmenge_…` | die **Identität der Datenquelle** am QuickGrid (`QuickGrid.Items`) je Zeichenlauf — genau die Frage, die QuickGrid selbst stellt (`_newItemsOrItemsProvider != _lastAssignedItemsOrProvider`), und die Ursache des `loading`. Dazu: dieselbe Rasterinstanz über alle Läufe |
+| `Dieselbe_Zeilenmenge_…` | die **Zählungen des Rasters** über die Prüfhilfe `Zaehlmenge` — ein `IQueryable<Zeile>`, dessen eigenes `GetEnumerator` NUR der `Enumerable.Count`-Weg des Rasters trifft; QuickGrid fasst die Menge ausschliesslich über `Provider`/`Expression` an und läuft an der Zählung vorbei. Was die Prüfhilfe zählt, kann eine Ladung QuickGrids nicht mehr verändern. Dazu die Gegenprobe: eine ANDERE Menge wird wieder gezählt |
+
+Die **Aussage beider Fälle bleibt** — eine stabile Menge kommt unverändert am QuickGrid an und
+wird einmal gezählt, ein frisches `AsQueryable()` je Zeichenlauf ist jedes Mal eine neue.
+`WaitForAssertion` und die Zeitfenster sind aus beiden Fällen verschwunden. Nachweis:
+`EPOS.UI.Tests` **3 380 / 3 380 grün**, dazu sieben Wiederholungsläufe (einer davon unter voller
+Parallellast, 2 m 38 s) ohne Fehlschlag — auf dem Ausgangsstand fiel
+`Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` in genau so einem Lauf („erwartet 3,
+tatsächlich 5"). Geändert wurde nur die Testdatei `EPOS.UI.Tests/Standards/RasterTests.cs`;
+`Raster.razor` blieb unberührt.
 
 ### Offene Punkte
 
