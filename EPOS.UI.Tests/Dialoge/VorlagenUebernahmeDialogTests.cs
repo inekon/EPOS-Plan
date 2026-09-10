@@ -11,6 +11,19 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Uebernahme Stamm -> Projekt (iU9-W1.4). Soll ist die Feldkarte von
 /// <c>Form_VorlagenUebernahme</c>: Kontextzeile, Zielprojekt, Quellgruppe
 /// (2 Optionen), drei Quelllisten, Vorschau, Uebernehmen/Abbrechen.
+///
+/// <para>
+/// ANWENDERENTSCHEID 10.09.2026 (Ae25) — OK und Abbrechen: der Primaerknopf
+/// heisst seither <c>OkText</c> ("OK"), schreibt UND schliesst die Maske mit
+/// <c>true</c>; <c>AbbrechenText</c> schliesst ohne Wirkung mit <c>false</c>.
+/// Bis dahin galt A-7 aus B5b — der Primaerknopf hiess "Uebernehmen", schrieb
+/// sofort und liess die Maske STEHEN. Drei Faelle unten pruefen das neue
+/// Verhalten (<see cref="Ok_uebernimmt_und_schliesst"/>,
+/// <see cref="Abbrechen_schliesst_ohne_zu_schreiben"/>,
+/// <see cref="Ein_Fehlschlag_haelt_die_Maske_offen_und_zeigt_den_Grund"/>) —
+/// die eine Ausnahme bleibt ein Fehlschlag: Er haelt die Maske offen und zeigt
+/// seinen Grund im Warnbanner.
+/// </para>
 /// </summary>
 public class VorlagenUebernahmeDialogTests : BunitContext
 {
@@ -72,7 +85,9 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal("Zielprojekt:", texte[0].TextContent);
         Assert.Equal("Aus Vorlage/Variante:", texte[1].TextContent);
         Assert.Equal("Aus Projekt/Anlage:", texte[2].TextContent);
-        Assert.Equal("Übernehmen", cut.Find(".epos-knopf--primaer").TextContent);
+        // Ae25: der Primaerknopf heisst "OK" (vorher "Uebernehmen", A-7 aus B5b).
+        Assert.Equal("OK", cut.Find(".epos-knopf--primaer").TextContent);
+        Assert.Equal("Abbrechen", cut.FindAll("button.epos-knopf")[1].TextContent);
     }
 
     [Fact]
@@ -202,17 +217,32 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal(9, erhalten.QuellVorlageId);
     }
 
+    /// <summary>
+    /// Ae25, die EINE Ausnahme: Ein Fehlschlag des Laufs haelt die Maske offen
+    /// und zeigt seinen Grund im Warnbanner — Ersatz fuer den alten Fall
+    /// "Die_Meldung_des_Laufs_erscheint_im_Dialog" (A-7 aus B5b), der annahm,
+    /// JEDER Lauf (auch der erfolgreiche) bliebe im Dialog stehen und zeigte
+    /// seine Meldung dort. Seit Ae25 schliesst ein erfolgreicher Lauf sofort;
+    /// nur der Fehlschlag traegt noch eine Meldung im Dialog.
+    /// </summary>
     [Fact]
-    public void Die_Meldung_des_Laufs_erscheint_im_Dialog()
+    public void Ein_Fehlschlag_haelt_die_Maske_offen_und_zeigt_den_Grund()
     {
-        var cut = Aufbauen(uebernehmen: _ =>
-            new VorlagenUebernahmeAntwort(false, "7 Positionen angelegt, 2 übersprungen."));
+        bool? erfolg = null;
+        var cut = Aufbauen(
+            beimSchliessen: e => erfolg = e,
+            uebernehmen: _ => new VorlagenUebernahmeAntwort(true, "Zielprojekt gesperrt."));
 
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal("7 Positionen angelegt, 2 übersprungen.",
-                     cut.Find(".epos-warnbanner-text").TextContent);
-        Assert.Contains("hinweis", cut.Find(".epos-warnbanner").ClassName);
+        // W16b-O-2/W6-B-2-O-1: nach dem synchronen Click auf den gezeichneten
+        // Zustand warten, nicht sofort pruefen.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Equal("Zielprojekt gesperrt.", cut.Find(".epos-warnbanner-text").TextContent);
+            Assert.Contains("fehler", cut.Find(".epos-warnbanner").ClassName);
+        });
+        Assert.Null(erfolg);   // die Maske ist nicht zu - Geschlossen wurde nicht gerufen.
     }
 
     [Fact]
@@ -228,19 +258,54 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Contains("fehler", cut.Find(".epos-warnbanner").ClassName);
     }
 
+    /// <summary>
+    /// Ae25: OK uebernimmt die aktuelle Wahl UND verlaesst die Maske —
+    /// Rueckgabe <c>true</c> heisst "der Lauf ist gelaufen und hat
+    /// geschrieben". Vorher (A-7 aus B5b) schrieb "Uebernehmen" zwar sofort,
+    /// liess die Maske aber offen stehen; erst ein zweiter Knopf schloss sie.
+    /// </summary>
     [Fact]
-    public void Schliessen_meldet_ob_uebernommen_wurde()
+    public void Ok_uebernimmt_und_schliesst()
     {
+        bool geschrieben = false;
         bool? erfolg = null;
-        var cut = Aufbauen(beimSchliessen: e => erfolg = e);
+        var cut = Aufbauen(
+            beimSchliessen: e => erfolg = e,
+            uebernehmen: _ =>
+            {
+                geschrieben = true;
+                return new VorlagenUebernahmeAntwort(false, "7 Positionen angelegt.");
+            });
+
+        cut.Find(".epos-knopf--primaer").Click();
+
+        // W16b-O-2/W6-B-2-O-1: nach dem synchronen Click auf den gezeichneten
+        // Zustand warten, nicht sofort pruefen.
+        cut.WaitForAssertion(() => Assert.True(erfolg));
+        Assert.True(geschrieben);
+    }
+
+    /// <summary>
+    /// Ae25: Abbrechen verlaesst die Maske OHNE zu schreiben — Rueckgabe
+    /// <c>false</c>, und der Uebernehmen-Delegat wird gar nicht erst gerufen.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_schliesst_ohne_zu_schreiben()
+    {
+        bool geschrieben = false;
+        bool? erfolg = null;
+        var cut = Aufbauen(
+            beimSchliessen: e => erfolg = e,
+            uebernehmen: _ =>
+            {
+                geschrieben = true;
+                return new VorlagenUebernahmeAntwort(false, "7 Positionen angelegt.");
+            });
 
         cut.FindAll("button.epos-knopf")[1].Click();
-        Assert.False(erfolg);
 
-        var zweiter = Aufbauen(beimSchliessen: e => erfolg = e);
-        zweiter.Find(".epos-knopf--primaer").Click();
-        zweiter.FindAll("button.epos-knopf")[1].Click();
-        Assert.True(erfolg);
+        cut.WaitForAssertion(() => Assert.False(erfolg));
+        Assert.False(geschrieben);
     }
 
     [Fact]
