@@ -419,6 +419,10 @@
     /// <summary>Vorlage der Speicherbestätigung in der Statuszeile.</summary>
     [Parameter] public string VorlageGespeichert { get; set; } = "gespeichert {0} Uhr";
 
+    /// <summary>Ä25: Bestätigung nach einer Übernahme, die geschrieben hat.</summary>
+    [Parameter] public string MeldungUebernommen { get; set; }
+        = "Die fehlenden Positionen der Quelle wurden angelegt.";
+
     /// <summary>Schlüssel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_KostenKomponente.btn_Help";
 
@@ -691,9 +695,17 @@
         _uebernahmeGaben = UebernahmeGaben();
     }
 
+    /// <summary>
+    /// ANWENDERENTSCHEID 10.09.2026 (Ä25): Seit OK übernimmt UND schließt, sagt
+    /// <paramref name="geschrieben"/> etwas — es ist die Antwort des Laufs, nicht mehr
+    /// nur „irgendwann einmal übernommen". Der Erfolg wird deshalb HIER bestätigt: In
+    /// der Maske selbst könnte ihn niemand mehr lesen, und eine Liste, die sich
+    /// wortlos verlängert, ist keine Rückmeldung.
+    /// </summary>
     private void UebernahmeFertigMachen(bool geschrieben)
     {
         _uebernahmeGaben = null;
+        if (geschrieben) Melden(MeldungUebernommen, WarnStufe.Hinweis);
         // Wie btnUebernahme_Click: übernommene Positionen sofort zeigen.
         KontextLaden(_stand.VarianteId);
     }

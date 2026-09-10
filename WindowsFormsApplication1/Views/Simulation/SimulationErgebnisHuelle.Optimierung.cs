@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -41,7 +42,51 @@ namespace WindowsFormsApplication1
         /// </summary>
         private SpeicherOptimierungVorgaben OptimierungVorgaben()
         {
-            return SpeicherOptimierungCtrl.Vorbelegung(m_ID_Projekt);
+            return SpeicherOptimierungCtrl.Vorbelegung(m_ID_Projekt, BezugsspitzeKw());
+        }
+
+        /// <summary>
+        /// Die höchste Bezugsleistung des gerechneten Strombedarfs [kW]; 0, solange kein
+        /// Lauf vorliegt (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// Sie entscheidet, welche STUFE der Leistungspreis-Staffel an der Spitze greift
+        /// — und damit, welchen Wert die Tarifstruktur als Leistungspreis anbietet.
+        /// Genommen wird der Strombedarf des Laufs und nicht der Netzbezug: Der Speicher
+        /// soll die Spitze ja erst kappen, die Bezugsspitze OHNE ihn ist die
+        /// Bezugsgröße.
+        /// </remarks>
+        private double BezugsspitzeKw()
+        {
+            double[] werte = sim != null && sim.simulation_Strombedarf != null
+                ? sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte
+                : null;
+            if (werte == null) return 0.0;
+
+            double spitze = 0.0;
+            for (int i = 0; i < werte.Length; i++)
+                if (werte[i] > spitze) spitze = werte[i];
+            return spitze;
+        }
+
+        /// <summary>
+        /// Schreibt den Leistungspreis L_P SOFORT in die aktive Speichervariante
+        /// (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Über denselben Weg wie der Reiter „Parameter"</b>
+        /// (<c>SpeicherfeldSchreiben</c> mit <c>SpeicherFeld.Leistungspreis</c>) — L_P
+        /// hat EINE Pflegestelle, und ein zweiter Schreiber daneben wäre genau die
+        /// Doppelung, die zwei auseinanderlaufende Werte erzeugt. <c>VarianteLesen</c>
+        /// steht davor, weil der Anwender die Optimierung öffnen kann, ohne den Reiter
+        /// „Parameter" je gesehen zu haben; ohne den Aufruf wäre <c>_speicherVariante</c>
+        /// dann <c>null</c> und der Schreibversuch stumm wirkungslos.
+        /// </remarks>
+        private void OptimierungLeistungspreis(double leistungspreisEurProKwA)
+        {
+            VarianteLesen();
+            SpeicherfeldSchreiben(SpeicherFeld.Leistungspreis,
+                leistungspreisEurProKwA.ToString("R", CultureInfo.InvariantCulture));
         }
 
         /// <summary>

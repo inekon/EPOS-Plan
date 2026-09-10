@@ -49,6 +49,19 @@ namespace WindowsFormsApplication1
         /// <summary>Betriebsstrategie je Rasterpunkt.</summary>
         public OptimiererStrategie Strategie { get; set; } = OptimiererStrategie.Dauernutzung;
 
+        /// <summary>
+        /// Leistungspreis L_P [€/(kW·a)] der Berechnungsart
+        /// <see cref="OptimiererStrategie.Lastspitzenkappung"/>
+        /// (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// Vorbelegt aus <c>Tab_StromspeicherVariante.L_P</c> der aktiven Variante —
+        /// dasselbe Feld, das der Reiter „Parameter" und die Peak-Shaving-Maske pflegen.
+        /// Der Dialog schreibt eine Änderung SOFORT dorthin zurück; es gibt genau eine
+        /// Pflegestelle, nicht drei nebeneinanderher laufende Werte.
+        /// </remarks>
+        public double LeistungspreisEurProKwA { get; set; }
+
         /// <summary>Eine unabhängige Kopie — der Dialog schreibt in seine eigene.</summary>
         public SpeicherOptimierungEingaben Kopie()
         {
@@ -62,9 +75,32 @@ namespace WindowsFormsApplication1
                 RSchritt = RSchritt,
                 Feinraster = Feinraster,
                 KVerInZielfunktion = KVerInZielfunktion,
-                Strategie = Strategie
+                Strategie = Strategie,
+                LeistungspreisEurProKwA = LeistungspreisEurProKwA
             };
         }
+    }
+
+    /// <summary>
+    /// Eine QUELLE, aus der der Leistungspreis in die Maske übernommen werden kann
+    /// (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Der Anwender hat beides verlangt: „Leistungspreis in Maske und alternativ aus
+    /// Leistungspreis Tarifstruktur/Energieträger Strom (Übernahme in die Maske als
+    /// Auswahl)". Die Übernahme ist deshalb ein ANGEBOT und keine automatische
+    /// Vorbelegung — die drei Werte sind fachlich verschieden (die Variante trägt den
+    /// für den Speicher gültigen, die Tarifstruktur den der Wirtschaftlichkeitsrechnung,
+    /// der Energieträger den des Kostenmoduls), und welcher gilt, entscheidet der
+    /// Anwender.
+    /// </remarks>
+    public sealed class SpeicherOptimierungLeistungspreisQuelle
+    {
+        /// <summary>Der Anzeigetext: Herkunft, Wert und die Begründung der Staffelstufe.</summary>
+        public string Bezeichnung { get; set; } = "";
+
+        /// <summary>Der Leistungspreis dieser Quelle [€/(kW·a)].</summary>
+        public double WertEurProKwA { get; set; }
     }
 
     /// <summary>Vorbelegung des Suchraums samt der aktuellen Auslegung.</summary>
@@ -75,6 +111,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>„Aktuelle Auslegung: … kWh / … kW (… C)"; leer, wenn keine da ist.</summary>
         public string AktuelleAuslegung { get; set; } = "";
+
+        /// <summary>
+        /// Die verfügbaren Leistungspreis-Quellen (W11b‑E‑3). Leer heißt „keine
+        /// gepflegt" — dann bietet der Dialog keine Übernahme an, statt eine Liste mit
+        /// Nullen zu zeigen.
+        /// </summary>
+        public IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Leistungspreisquellen { get; set; }
+            = new List<SpeicherOptimierungLeistungspreisQuelle>();
     }
 
     /// <summary>
@@ -227,6 +271,13 @@ namespace WindowsFormsApplication1
         /// <summary>Gruppenschlüssel: Speicher und Energie.</summary>
         public const string GRUPPE_SPEICHER = "SPEICHER";
 
+        /// <summary>
+        /// Gruppenschlüssel: die Größen der Lastspitzenkappung (W11b‑E‑3). Die Gruppe
+        /// erscheint NUR bei dieser Berechnungsart — bei Dauer- und Nachtnutzung stünden
+        /// dort fünf Nullen ohne Aussage.
+        /// </summary>
+        public const string GRUPPE_KAPPUNG = "KAPPUNG";
+
         /// <summary>Kleinste zulässige Stützstellenzahl der Kapazitätsachse.</summary>
         public const int STUETZSTELLEN_MIN = 2;
 
@@ -267,6 +318,24 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static SpeicherOptimierungVorgaben Vorbelegung(int idProjekt)
         {
+            return Vorbelegung(idProjekt, 0.0);
+        }
+
+        /// <summary>
+        /// Wie <see cref="Vorbelegung(int)"/>, dazu die BEZUGSSPITZE des Lastgangs
+        /// [kW] — sie entscheidet, welche Stufe der Leistungspreis-Staffel an der Spitze
+        /// greift (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// Die Spitze kommt aus dem Lauf und nicht aus der Datenbank; ohne gelaufene
+        /// Simulation ist sie 0, und die Staffel wird dann mit der unteren Stufe
+        /// angeboten — mit ausgewiesener Begründung, damit der angebotene Wert nicht
+        /// falsch verstanden wird.
+        /// </remarks>
+        /// <param name="idProjekt">Das Projekt.</param>
+        /// <param name="bezugsspitzeKw">Höchste Bezugsleistung des Lastgangs [kW]; 0 = unbekannt.</param>
+        public static SpeicherOptimierungVorgaben Vorbelegung(int idProjekt, double bezugsspitzeKw)
+        {
             SpeicherOptimierungVorgaben vorgaben = new SpeicherOptimierungVorgaben();
             CultureInfo k = CultureInfo.CurrentCulture;
 
@@ -298,16 +367,177 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // Der Leistungspreis kommt aus der AKTIVEN VARIANTE — dieselbe Zeile, die der
+            // Reiter „Parameter" und die Peak-Shaving-Maske pflegen (W11b‑E‑3).
+            try
+            {
+                StromspeicherVarianteModel variante =
+                    new StromspeicherVarianteCtrl().ReadAktiveVariante(idProjekt);
+                if (variante != null && variante.L_P > 0.0)
+                    vorgaben.Eingaben.LeistungspreisEurProKwA = variante.L_P;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Leistungspreis der Variante konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            vorgaben.Leistungspreisquellen = Leistungspreisquellen(idProjekt, bezugsspitzeKw);
             return vorgaben;
         }
 
+        /// <summary>
+        /// Die verfügbaren ALTERNATIVQUELLEN des Leistungspreises, jede mit Wert und
+        /// erklärender Beschriftung (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>(1) Tarifstruktur der Wirtschaftlichkeit</b> —
+        /// <c>Tab_ProjektTarif</c> führt eine zweistufige Staffel je Stammprojekt:
+        /// bis <c>Staffel_Grenze</c> gilt <c>Staffel_Preis1</c>, darüber
+        /// <c>Staffel_Preis2</c> [€/(kW·a)]. Angeboten wird der Preis der Stufe, in der
+        /// die BEZUGSSPITZE liegt, und zwar aus einem fachlichen Grund: Eine Kappung
+        /// nimmt die Leistung IMMER von oben weg. Die erste eingesparte Kilowattstunde
+        /// Leistung ist deshalb die teuerste — die der obersten Stufe. Reicht die Kappung
+        /// unter die Staffelgrenze, ist der so bewertete Ertrag zu hoch; das nennt der
+        /// Text, und der Anwender kann den Wert von Hand ändern.</para>
+        ///
+        /// <para><b>(2) Energieträger Strom</b> — der Leistungspreis des im Projekt
+        /// verwendeten Stromträgers, vorrangig die Projektübersteuerung
+        /// (<c>energy_project_settings.custom_price_power</c>), sonst der jüngste
+        /// Katalogstand (<c>energy_price.leistungspreis</c>). <b>Die Einheit hängt am
+        /// Modus des Trägers</b> (KD4/FK6): JAHR ist €/(kW·a) und geht unverändert ein,
+        /// MONAT ist €/(kW·Monat) und wird mit zwölf multipliziert — dieselbe Umrechnung
+        /// wie in <c>KostenEmissionRechner</c>. Ohne diese Wache stünde in der Maske ein
+        /// Zwölftel des richtigen Wertes.</para>
+        ///
+        /// <para><b>Nur lesend, und jeder Fehler ist stumm.</b> Was diese Methode kann,
+        /// ist ein ANGEBOT machen; eine fehlende Tabelle darf den Dialog nicht
+        /// verhindern.</para>
+        /// </remarks>
+        public static IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Leistungspreisquellen(
+            int idProjekt, double bezugsspitzeKw)
+        {
+            var quellen = new List<SpeicherOptimierungLeistungspreisQuelle>();
+            if (idProjekt <= 0) return quellen;
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+
+            try
+            {
+                // Der Tarif hängt am STAMM der Vergleichsgruppe, nicht an der Variante.
+                int idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt);
+                if (idStamm <= 0) idStamm = idProjekt;
+
+                SpeicherOptimierungLeistungspreisQuelle ausTarif =
+                    TarifQuelle(new WirtschaftlichkeitCtrl().LadeTarif(idStamm), bezugsspitzeKw);
+                if (ausTarif != null) quellen.Add(ausTarif);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Tarifstruktur konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            try
+            {
+                int idTraeger = Emissionsquelle.StromTraeger(idProjekt);
+                if (idTraeger > 0)
+                {
+                    double? preis = null;
+
+                    EnergietraegerPreisCtrl.Projektpreis projekt =
+                        EnergietraegerPreisCtrl.ProjektpreisLesen(idProjekt, idTraeger);
+                    if (projekt != null && projekt.Leistungspreis.HasValue && projekt.Leistungspreis.Value > 0.0)
+                        preis = projekt.Leistungspreis.Value;
+
+                    if (!preis.HasValue)
+                    {
+                        // Historie kommt jüngste zuerst — der erste gepflegte Wert gilt.
+                        foreach (EnergietraegerPreisCtrl.Historienzeile zeile in
+                                 EnergietraegerPreisCtrl.Historie(idTraeger, null))
+                            if (zeile.Leistungspreis.HasValue && zeile.Leistungspreis.Value > 0.0)
+                            {
+                                preis = zeile.Leistungspreis.Value;
+                                break;
+                            }
+                    }
+
+                    if (preis.HasValue)
+                    {
+                        double wert = preis.Value;
+                        if (string.Equals(EnergietraegerPreisCtrl.LeistungsModus(idTraeger),
+                                          DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                            wert *= 12.0;
+
+                        quellen.Add(new SpeicherOptimierungLeistungspreisQuelle
+                        {
+                            WertEurProKwA = wert,
+                            Bezeichnung = string.Format(k, MyResource.Resource.OPT_QUELLE_ENERGIETRAEGER,
+                                wert.ToString("0.##", k))
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Leistungspreis des Stromträgers konnte nicht gelesen werden: " + ex.Message);
+            }
+
+            return quellen;
+        }
+
+        /// <summary>
+        /// Die Leistungspreis-Quelle „Tarifstruktur" aus einem Tarifsatz;
+        /// <c>null</c>, wenn keine Staffel gepflegt ist (W11b‑E‑3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ohne Datenbank prüfbar</b> — deshalb steht die Stufenwahl hier und nicht
+        /// mitten im Leseweg. Die Regel: Eine Kappung nimmt die Leistung IMMER von oben
+        /// weg, die erste eingesparte Kilowatt ist also die der obersten Stufe. Liegt
+        /// die Bezugsspitze über der Staffelgrenze und ist ein Preis der zweiten Stufe
+        /// gepflegt, gilt dieser; sonst der erste. Ist die Spitze unbekannt (kein
+        /// gelaufener Durchgang), wird die untere Stufe angeboten und der Text sagt es.
+        /// </remarks>
+        /// <param name="tarif">Der Tarifsatz des Stammprojekts; <c>null</c> ist zulässig.</param>
+        /// <param name="bezugsspitzeKw">Höchste Bezugsleistung [kW]; 0 = unbekannt.</param>
+        public static SpeicherOptimierungLeistungspreisQuelle TarifQuelle(
+            TarifParameter tarif, double bezugsspitzeKw)
+        {
+            if (tarif == null) return null;
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            double grenze = Math.Max(0.0, tarif.StaffelGrenzeKW);
+            bool stufe2 = bezugsspitzeKw > grenze && tarif.StaffelPreis2EurKW > 0.0;
+            double wert = stufe2 ? tarif.StaffelPreis2EurKW : tarif.StaffelPreis1EurKW;
+            if (!(wert > 0.0)) return null;
+
+            string grund = bezugsspitzeKw <= 0.0
+                ? MyResource.Resource.OPT_QUELLE_TARIF_OHNE_SPITZE
+                : string.Format(k,
+                    stufe2 ? MyResource.Resource.OPT_QUELLE_TARIF_STUFE2
+                           : MyResource.Resource.OPT_QUELLE_TARIF_STUFE1,
+                    bezugsspitzeKw.ToString("0.#", k), grenze.ToString("0.#", k));
+
+            return new SpeicherOptimierungLeistungspreisQuelle
+            {
+                WertEurProKwA = wert,
+                Bezeichnung = string.Format(k, MyResource.Resource.OPT_QUELLE_TARIF,
+                    wert.ToString("0.##", k), grund)
+            };
+        }
+
         /// <summary>Die Anzeigetexte der Betriebsstrategien, in der Reihenfolge der Klappliste.</summary>
+        /// <remarks>
+        /// Der DRITTE Eintrag kommt aus dem Anwenderentscheid W11b‑E‑3 (10.09.2026): Ein
+        /// Projekt ohne PV und ohne BHKW bekommt mit Dauer- und Nachtnutzung eine
+        /// einfarbige Rasterkarte, weil beide den genutzten Erzeugungsüberschuss
+        /// bewerten und der ohne Erzeugung 0 ist (Befund W11b‑B‑25, Projekt 1050).
+        /// </remarks>
         public static IReadOnlyList<string> Strategien()
         {
             return new List<string>
             {
                 MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG,
-                MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG
+                MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG,
+                MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG
             };
         }
 
@@ -340,6 +570,14 @@ namespace WindowsFormsApplication1
             if (!(eingaben.RMin > 0.0)) maengel.Add(MyResource.Resource.OPT_MSG_RMIN);
             if (eingaben.RMax < eingaben.RMin) maengel.Add(MyResource.Resource.OPT_MSG_RMAX);
             if (!(eingaben.RSchritt > 0.0)) maengel.Add(MyResource.Resource.OPT_MSG_RSCHRITT);
+
+            // Ohne L_P wäre die Leistungspreisersparnis jedes Rasterpunktes 0 und die
+            // Zielfunktion allein der negative Kapitaldienst — die Suche liefe und
+            // lieferte das kleinste Gerät, ohne dass die Anzeige den Grund nennt
+            // (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+            if (eingaben.Strategie == OptimiererStrategie.Lastspitzenkappung &&
+                !(eingaben.LeistungspreisEurProKwA > 0.0))
+                maengel.Add(MyResource.Resource.OPT_MSG_LP_FEHLT);
 
             if (maengel.Count > 0) return maengel;
 
@@ -382,7 +620,8 @@ namespace WindowsFormsApplication1
                 RSchritt = e.RSchritt,
                 Feinraster = e.Feinraster,
                 KVerInZielfunktion = e.KVerInZielfunktion,
-                Strategie = e.Strategie
+                Strategie = e.Strategie,
+                LeistungspreisEurProKwA = e.LeistungspreisEurProKwA
             };
         }
 
@@ -566,6 +805,8 @@ namespace WindowsFormsApplication1
             if (roh.CPowNeutral) zeilen.Add(MyResource.Resource.OPT_WARN_CPOW);
             if (roh.KVerInZielfunktion) zeilen.Add(MyResource.Resource.OPT_WARN_KVER_AKTIV);
 
+            if (roh.BestPunkt.SchwelleGerissen) zeilen.Add(MyResource.Resource.OPT_WARN_SCHWELLE);
+
             if (roh.BestPunkt.ZyklenbudgetUeberschritten)
                 zeilen.Add(string.Format(k, MyResource.Resource.OPT_WARN_ZYKLEN,
                     roh.BestPunkt.ZyklenNutzungsdauer.ToString("0", k),
@@ -607,6 +848,18 @@ namespace WindowsFormsApplication1
             Zahl(liste, GRUPPE_SPEICHER, MyResource.Resource.OPT_KZ_LADEENERGIE, p.LadeenergieKwh, "0", "kWh/a");
             Zahl(liste, GRUPPE_SPEICHER, MyResource.Resource.OPT_KZ_ENTLADEENERGIE, p.EntladeenergieKwh, "0", "kWh/a");
             Zahl(liste, GRUPPE_SPEICHER, MyResource.Resource.OPT_KZ_VERLUSTE, p.SpeicherverlusteKwh, "0", "kWh/a");
+
+            // NUR bei der Lastspitzenkappung: Bei den anderen Berechnungsarten stünden
+            // hier fünf Nullen, die nichts aussagen (W11b‑E‑3).
+            if (roh.Optionen.Strategie == OptimiererStrategie.Lastspitzenkappung)
+            {
+                Zahl(liste, GRUPPE_KAPPUNG, MyResource.Resource.OPT_KZ_SPITZE_OHNE, p.SpitzeOhneSpeicherKw, "0.#", "kW");
+                Zahl(liste, GRUPPE_KAPPUNG, MyResource.Resource.OPT_KZ_SPITZE_MIT, p.SpitzeMitSpeicherKw, "0.#", "kW");
+                Zahl(liste, GRUPPE_KAPPUNG, MyResource.Resource.OPT_KZ_KAPPUNG, p.KappungKw, "0.#", "kW");
+                Zahl(liste, GRUPPE_KAPPUNG, MyResource.Resource.OPT_KZ_LP_ERSPARNIS,
+                     p.LeistungspreisersparnisEur, "0.00", "€/a");
+                Zahl(liste, GRUPPE_KAPPUNG, MyResource.Resource.OPT_KZ_SCHWELLE, p.ErreichteSchwelleKw, "0.#", "kW");
+            }
 
             return liste;
         }
@@ -682,7 +935,12 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.OPT_KZ_AUTARKIE + " [%]",
                 MyResource.Resource.OPT_KZ_LADEENERGIE + " [kWh/a]",
                 MyResource.Resource.OPT_KZ_ENTLADEENERGIE + " [kWh/a]",
-                MyResource.Resource.OPT_KZ_VERLUSTE + " [kWh/a]"
+                MyResource.Resource.OPT_KZ_VERLUSTE + " [kWh/a]",
+                MyResource.Resource.OPT_KZ_SPITZE_OHNE + " [kW]",
+                MyResource.Resource.OPT_KZ_SPITZE_MIT + " [kW]",
+                MyResource.Resource.OPT_KZ_KAPPUNG + " [kW]",
+                MyResource.Resource.OPT_KZ_LP_ERSPARNIS + " [€/a]",
+                MyResource.Resource.OPT_KZ_SCHWELLE + " [kW]"
             };
             text.AppendLine(string.Join(";", kopf));
 
@@ -722,7 +980,16 @@ namespace WindowsFormsApplication1
                         (p.AutarkiegradMitSpeicher * 100.0).ToString("0.###", k),
                         p.LadeenergieKwh.ToString("0.###", k),
                         p.EntladeenergieKwh.ToString("0.###", k),
-                        p.SpeicherverlusteKwh.ToString("0.###", k)
+                        p.SpeicherverlusteKwh.ToString("0.###", k),
+
+                        // Die fünf Spalten der Lastspitzenkappung stehen IMMER in der Datei,
+                        // auch wenn sie 0 sind: Eine je Berechnungsart andere Spaltenzahl
+                        // machte aus einer Auswertungsdatei zwei Formate (W11b‑E‑3).
+                        p.SpitzeOhneSpeicherKw.ToString("0.###", k),
+                        p.SpitzeMitSpeicherKw.ToString("0.###", k),
+                        p.KappungKw.ToString("0.###", k),
+                        p.LeistungspreisersparnisEur.ToString("0.###", k),
+                        p.ErreichteSchwelleKw.ToString("0.###", k)
                     };
                     text.AppendLine(string.Join(";", felder));
                 }

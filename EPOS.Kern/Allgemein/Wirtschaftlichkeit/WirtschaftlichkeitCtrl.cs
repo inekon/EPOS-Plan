@@ -6125,6 +6125,146 @@ namespace WindowsFormsApplication1
                 : aufloeser.StromgroesseKwh(komponente, idAnlage);
         }
 
+        // =====================================================================
+        // ANWENDERBEFUND 10.09.2026 (H4c) — WARUM eine Zeile keine Bezugsgröße hat
+        //
+        // Der Befund lautete nicht nur „der Betrag ist 0", sondern „ich sehe nicht,
+        // warum". Eine Zeile ohne ermittelbare Menge fällt über den Anwenderentscheid
+        // I-2 auf den erfassten Betrag zurück — bei einer satzbasierten Zeile ist das
+        // die 0, und die steht dann stumm im Raster. Diese Weiche benennt den Grund.
+        //
+        // SPRACHNEUTRALE STEUERWERTE, kein Anzeigetext: Der Kern kennt die Quelle einer
+        // Bemessung, die Oberfläche kennt die Sprache (Drei-Schichten-Regel, Konzept
+        // 13.6). Den Satz baut KostenKomponenteHuelle.
+        // =====================================================================
+
+        /// <summary>H4c: Die Art passt nicht zu diesem Gewerk — kein Pflegefehler.</summary>
+        internal const string BASISGRUND_GEWERK = "GEWERK";
+
+        /// <summary>H4c: Die Art passt, aber das Gerät fehlt oder führt die Größe als 0.</summary>
+        internal const string BASISGRUND_GERAET = "GERAET";
+
+        /// <summary>H4c: Die Größe kommt aus dem jüngsten Lauf — und den gibt es nicht.</summary>
+        internal const string BASISGRUND_LAUF = "LAUF";
+
+        /// <summary>H4c: „% der Investition" ohne Investitionskosten in der Kaskade.</summary>
+        internal const string BASISGRUND_INVEST = "INVEST";
+
+        /// <summary>H4c: Die Art wird nicht ermittelt — ihre Menge ist Eingabe.</summary>
+        internal const string BASISGRUND_KONSERVE = "KONSERVE";
+
+        /// <summary>
+        /// ANWENDERBEFUND 10.09.2026 (H4c): Warum trägt diese Zeile keine Bezugsgröße?
+        /// Rückgabe ist einer der <c>BASISGRUND_*</c>-Steuerwerte, oder <c>""</c>, wenn
+        /// die Bemessungsart überhaupt keine Bezugsgröße braucht (absolute Arten).
+        ///
+        /// <para>Der Aufrufer fragt NUR, wenn keine Menge ermittelt wurde — die Methode
+        /// rechnet selbst nichts nach, sie liest allein die Landkarte Art↔Gewerk. Damit
+        /// bleibt sie frei von Datenbankzugriffen und kann im Zeichenlauf des Dialogs
+        /// stehen.</para>
+        /// </summary>
+        internal static string BasisGrund(string bem, int komponente)
+        {
+            if (string.IsNullOrEmpty(bem) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_JAHRESBETRAG, StringComparison.Ordinal))
+                return "";
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
+                return BASISGRUND_INVEST;
+
+            // Die Arten aus dem LAUF. Kennt das Gewerk die Größe gar nicht, ist ein
+            // Simulationslauf keine Abhilfe — dann ist die ART das Problem.
+            if (IstEndenergieArt(bem))
+                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW
+                    ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal))
+                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW
+                    ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal))
+                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW ||
+                       komponente == EndenergieAufloeser.KOMPONENTE_SOLARTHERMIE
+                    ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
+
+            if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal))
+                return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
+                       komponente == EndenergieAufloeser.KOMPONENTE_PHOTOVOLTAIK ||
+                       komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER ||
+                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW
+                    ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
+
+            // Die Arten aus der GERÄTEWELT. Hier unterscheidet die Landkarte selbst,
+            // ob die Art zum Gewerk passt (H4c).
+            if (IstRueckfallErmittelbareArt(bem))
+                return TechnikPlanwertCtrl.KenntBaugroesse(komponente, bem)
+                    ? BASISGRUND_GERAET : BASISGRUND_GEWERK;
+
+            // „je kWh", „% der Brennstoff-/Stromkosten", „% der Erzeugerkosten":
+            // ihre Menge ist gepflegte Eingabe, keine Ermittlung (FX2, Befund B-4).
+            return BASISGRUND_KONSERVE;
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 10.09.2026 (H4c): die frische Bezugsgröße EINER Position zu
+        /// einer — auch noch ungespeicherten — Bemessungsart, samt Grund, wenn es keine
+        /// gibt. Der Dialog braucht sie, sobald der Anwender die Bemessung wechselt: Bis
+        /// dahin rechnete er bis zum Speichern mit der Bezugsgröße der ALTEN Art weiter.
+        ///
+        /// <para><b>Kein zweiter Rechenweg.</b> Gelesen wird mit denselben zwei
+        /// Auflösern wie in der Summenschleife
+        /// (<see cref="EndenergieMenge"/>/<see cref="RueckfallMenge"/>) und im
+        /// Erwartungslauf, wie es der Ausweis in <see cref="MengeAusweisen"/> auch tut.
+        /// GESCHRIEBEN wird hier nichts — die Vorschau darf die Konserve nicht
+        /// anfassen, solange der Anwender nicht gespeichert hat.</para>
+        /// </summary>
+        internal static double? FrischeBasis(int positionsId, string bemessung, out string grund)
+        {
+            grund = "";
+            if (positionsId <= 0) return null;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT w.ProjektID, w.KomponentenID, " +
+                    "w.[" + SchemaKatalog.SPALTE_PW_BEMESSUNG + "]" +
+                    (AnlagenSpalteVorhanden()
+                        ? ", w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] "
+                        : " ") +
+                    "FROM Tab_ProjektWerte AS w WHERE w.ID = ?",
+                    new DbParam("@id", positionsId));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+
+                string bem = string.IsNullOrEmpty(bemessung)
+                    ? Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG) : bemessung;
+                int idProjekt = r["ProjektID"] == DBNull.Value ? 0 : Convert.ToInt32(r["ProjektID"]);
+
+                EndenergieAufloeser aufloeser = null;
+                bool versucht = false;
+                Dictionary<KeyValuePair<int, int>, double> investSummen = null;
+                double? menge = IstEndenergieArt(bem)
+                    ? EndenergieMenge(idProjekt, r, bem, ref aufloeser, ref versucht)
+                    : IstRueckfallErmittelbareArt(bem)
+                        ? RueckfallMenge(idProjekt, r, bem, ref aufloeser, ref versucht,
+                                         ref investSummen, null)
+                        : null;
+
+                if (menge.HasValue) return menge;
+
+                int komponente, idAnlage;
+                KomponenteUndAnlage(r, out komponente, out idAnlage);
+                grund = BasisGrund(bem, komponente);
+                return null;
+            }
+            catch { grund = ""; return null; }
+        }
+
         /// <summary>
         /// ETAPPE H2-1 (Konzept BHKW-Wirtschaftlichkeit § 4.5): AUSWEIS der frischen
         /// Bezugsgröße einer Position nach <c>Tab_ProjektWerte.Menge</c> — „Stand des

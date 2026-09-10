@@ -581,7 +581,9 @@ namespace EPOS.Kern.Tests
             // Kopfzeile + 2 Kapazitaeten x 1 C-Rate (kein Feinraster).
             Assert.Equal(3, zeilen.Length);
             Assert.StartsWith(WindowsFormsApplication1.MyResource.Resource.OPT_CSV_PHASE, zeilen[0], StringComparison.Ordinal);
-            Assert.All(zeilen, z => Assert.Equal(20, z.Count(c => c == ';')));
+            // 21 Spalten wie bisher, dazu die fuenf der Lastspitzenkappung
+            // (Anwenderentscheid W11b‑E‑3, 10.09.2026) — sie stehen IMMER in der Datei.
+            Assert.All(zeilen, z => Assert.Equal(25, z.Count(c => c == ';')));
 
             // Dezimalkomma der Kultur - so oeffnet die Datei in deutschem Excel richtig.
             Assert.Contains(",", zeilen[1], StringComparison.Ordinal);
@@ -624,13 +626,16 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_zwei_Strategien_stehen_in_der_Reihenfolge_der_Klappliste()
+        public void Die_drei_Strategien_stehen_in_der_Reihenfolge_der_Klappliste()
         {
             var namen = SpeicherOptimierungCtrl.Strategien();
 
-            Assert.Equal(2, namen.Count);
+            // Der dritte Eintrag kam mit dem Anwenderentscheid W11b‑E‑3 (10.09.2026)
+            // dazu; die Reihenfolge ist der Zahlenwert von OptimiererStrategie.
+            Assert.Equal(3, namen.Count);
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG, namen[0]);
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG, namen[1]);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG, namen[2]);
         }
 
         // =================================================================
