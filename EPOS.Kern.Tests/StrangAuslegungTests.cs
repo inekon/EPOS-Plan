@@ -201,6 +201,7 @@ namespace EPOS.Kern.Tests
         public void Die_Saetze_nennen_die_Bereiche()
         {
             CultureInfo alt = Thread.CurrentThread.CurrentCulture;
+            CultureInfo altUi = Thread.CurrentThread.CurrentUICulture;
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
             Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
             try
@@ -214,7 +215,7 @@ namespace EPOS.Kern.Tests
             finally
             {
                 Thread.CurrentThread.CurrentCulture = alt;
-                Thread.CurrentThread.CurrentUICulture = alt;
+                Thread.CurrentThread.CurrentUICulture = altUi;
             }
         }
 
@@ -379,6 +380,7 @@ namespace EPOS.Kern.Tests
         public void Die_Herleitung_nennt_die_vier_Zahlen()
         {
             CultureInfo alt = Thread.CurrentThread.CurrentCulture;
+            CultureInfo altUi = Thread.CurrentThread.CurrentUICulture;
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
             Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
             try
@@ -393,7 +395,7 @@ namespace EPOS.Kern.Tests
             finally
             {
                 Thread.CurrentThread.CurrentCulture = alt;
-                Thread.CurrentThread.CurrentUICulture = alt;
+                Thread.CurrentThread.CurrentUICulture = altUi;
             }
         }
 

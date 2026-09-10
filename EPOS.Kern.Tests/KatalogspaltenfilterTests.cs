@@ -33,6 +33,9 @@ namespace EPOS.Kern.Tests
     {
         private readonly TestDatenbank _db;
         private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
 
         public KatalogspaltenfilterTests(TestDatenbank db)
         {
@@ -45,10 +48,15 @@ namespace EPOS.Kern.Tests
             Thread.CurrentThread.CurrentUICulture = de;
         }
 
+        // Ruckstellung (iU9-#167): DefaultThreadCurrentUICulture stellte vorher faelschlich
+        // aus _vorher (der KULTUR, nicht der UI-Kultur) zurueck; Thread.CurrentThread.Current(UI)Culture
+        // fehlte ganz. Beides jetzt aus je einem eigenen gemerkten Wert.
         public void Dispose()
         {
             CultureInfo.DefaultThreadCurrentCulture = _vorher;
-            CultureInfo.DefaultThreadCurrentUICulture = _vorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         // =================================================================
