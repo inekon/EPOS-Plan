@@ -165,18 +165,24 @@ namespace WindowsFormsApplication1
         // ==================================================================
         //
         // Bis W15c wurde jeder Blazor-Dialog aus einem offenen Fenster heraus
-        // gezeigt. Der Erststart und die Lizenzzustimmung laufen dagegen in
+        // gezeigt. Der Erststart-Assistent und die Lizenzzustimmung liefen dagegen in
         // Program.Main, VOR Application.Run - es gibt kein Besitzerfenster, weil es
-        // noch keines gibt. Form_Erststart (die Maske, die dabei faellt) weicht in
-        // genau vier Punkten von dieser Huelle ab; die vier stehen hier als Schalter
-        // mit dem HEUTIGEN Vorgabewert. Fuer die vorhandenen Aufrufer aendert sich
-        // dadurch nichts (Befund W15c-B8).
+        // noch keines gibt. Die vier Abweichungen der damaligen Maske Form_Erststart
+        // stehen hier als Schalter mit dem HEUTIGEN Vorgabewert; fuer die vorhandenen
+        // Aufrufer aendert sich dadurch nichts (Befund W15c-B8).
+        //
+        // SEIT W3 (#157-E-1, 09.09.2026) ist der Erststart-Assistent gefallen - die
+        // Datenbank einer Neuinstallation entsteht ohne Oberflaeche aus der
+        // ausgelieferten Vorlage (EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs).
+        // Drei der vier Schalter traegt seither die Lizenzzustimmung (LizenzHuelle);
+        // SchliessenGesperrt hat KEINEN Aufrufer mehr und bleibt als Faehigkeit der
+        // Huelle stehen - der naechste besitzerlose Langlauf soll sie wiederfinden.
 
         /// <summary>
-        /// Eintrag in der Taskleiste. Vorgabe <c>false</c> wie bisher; der
-        /// besitzerlose Erststart braucht <c>true</c> — ein minutenlanger Lauf ohne
-        /// Elternfenster und ohne Taskleisteneintrag ist nicht wiederzufinden, sobald
-        /// er einmal hinter einem anderen Fenster liegt.
+        /// Eintrag in der Taskleiste. Vorgabe <c>false</c> wie bisher; ein
+        /// besitzerloser Dialog braucht <c>true</c> — ein Fenster ohne Elternfenster
+        /// und ohne Taskleisteneintrag ist nicht wiederzufinden, sobald es einmal
+        /// hinter einem anderen Fenster liegt.
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool ImTaskbar
@@ -203,9 +209,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Sperrt Kreuz, Alt+F4 und Esc, solange ein Lauf nicht zu Ende ist —
-        /// dieselbe Absicherung wie <c>Form_Erststart:195-200</c> und <c>:212/:263</c>:
+        /// Sperrt Kreuz, Alt+F4 und Esc, solange ein Lauf nicht zu Ende ist:
         /// <c>ControlBox</c> aus UND ein Riegel in <see cref="Form.OnFormClosing"/>.
+        ///
+        /// <para><b>Ohne Aufrufer seit W3</b> — der Erststart-Assistent war der
+        /// einzige. Die Fähigkeit bleibt, weil sie zur besitzerlosen Hülle gehört und
+        /// nirgends sonst noch einmal entstehen soll.</para>
         /// </summary>
         /// <remarks>
         /// <b>Warum beides.</b> <c>ControlBox = false</c> nimmt das Kreuz weg, nicht
@@ -237,8 +246,8 @@ namespace WindowsFormsApplication1
         private bool _schliessenGesperrt;
 
         /// <summary>
-        /// Das Kleinstmaß des Fensters. Vorgabe 520 × 360 wie bisher; der
-        /// Erststart braucht 600 × 400, sonst wird sein Protokollfenster unlesbar.
+        /// Das Kleinstmaß des Fensters. Vorgabe 520 × 360 wie bisher; die
+        /// Lizenzzustimmung setzt ihr eigenes.
         /// </summary>
         /// <remarks>
         /// Bewusst KEIN <c>new MinimumSize</c>: Eine geerbte Eigenschaft zu verdecken
@@ -257,7 +266,7 @@ namespace WindowsFormsApplication1
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             // Waehrend eines Laufs gibt es kein Zurueck - weder ueber das Kreuz noch
-            // ueber Alt+F4. Woertlich aus Form_Erststart:196-200.
+            // ueber Alt+F4.
             if (_schliessenGesperrt && e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;

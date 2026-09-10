@@ -291,25 +291,26 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Sicherungskopie der aktiven Datenbank — in den Ordner „DB-Backup" neben der
         /// Datei, falls es ihn gibt (der Migrationsstrang legt ihn an), sonst daneben;
-        /// Zweck und Zeitstempel im Namen. Bei SQLite reisen die Journal-Dateien
-        /// (-wal/-shm) mit, damit die Kopie den letzten Stand vollständig trägt.
-        /// Wirft bei Fehlern (der Aufrufer entscheidet, ob er fortfährt).
-        /// Gemeinsame Wahrheit für „Projekte löschen" und den Projektimport.
+        /// Zweck und Zeitstempel im Namen. Wirft bei Fehlern (der Aufrufer entscheidet, ob
+        /// er fortfährt). Gemeinsame Wahrheit für „Projekte löschen" und den Projektimport.
         /// </summary>
+        /// <remarks>
+        /// Zieht die Kopie seit Auftrag #158 über <see cref="Datenbanksicherung.KopieAnlegen"/> —
+        /// dieselbe EINE Sicherungswahrheit im Kern, die auch <c>KiSicherungspunkt</c> nutzt.
+        /// <c>VACUUM INTO</c> über eine geöffnete SQLite-Verbindung liest durch die
+        /// <c>-wal</c> hindurch und liefert eine in sich geschlossene Kopie ohne
+        /// Begleitdateien; das frühere manuelle Mitkopieren von <c>-wal</c>/<c>-shm</c> als
+        /// byteweise Dateikopie entfällt damit — eine reine Kopie der Hauptdatei allein
+        /// griff nur den letzten Checkpoint ab (BETRIEB_SQLITE.md § 2/§ 3.2).
+        /// </remarks>
         public static string DatenbankKopieAnlegen(string zweck)
         {
             string dbPfad = DataRepository.GetDBPath();
             string ordner = System.IO.Path.GetDirectoryName(dbPfad) ?? "";
             string backupOrdner = System.IO.Path.Combine(ordner, "DB-Backup");
             if (System.IO.Directory.Exists(backupOrdner)) ordner = backupOrdner;
-            string stamm = System.IO.Path.GetFileNameWithoutExtension(dbPfad) + "_" + zweck + "_" +
-                           DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string sicherung = System.IO.Path.Combine(ordner, stamm + System.IO.Path.GetExtension(dbPfad));
-            System.IO.File.Copy(dbPfad, sicherung, false);
-            foreach (string anhang in new[] { "-wal", "-shm" })
-                if (System.IO.File.Exists(dbPfad + anhang))
-                    System.IO.File.Copy(dbPfad + anhang, sicherung + anhang, true);
-            return sicherung;
+            string praefix = System.IO.Path.GetFileNameWithoutExtension(dbPfad) + "_" + zweck;
+            return Datenbanksicherung.KopieAnlegen(dbPfad, ordner, praefix);
         }
 
         // Sicherungskopie vor dem Löschen; false = der Anwender möchte nach einem

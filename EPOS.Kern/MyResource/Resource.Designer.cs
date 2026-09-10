@@ -8546,96 +8546,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
-        /// </summary>
-        public static string ERST_BTN_BEENDEN {
-            get {
-                return ResourceManager.GetString("ERST_BTN_BEENDEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jetzt umstellen ähnelt.
-        /// </summary>
-        public static string ERST_BTN_STARTEN {
-            get {
-                return ResourceManager.GetString("ERST_BTN_STARTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank dieses Rechners liegt noch im alten Access-Format vor und wird jetzt einmalig auf das neue Format umgestellt.
-        ///
-        ///Ordner: {0}
-        ///
-        ///Ablauf:
-        ///   1. {1} wird auf den letzten Access-Stand gebracht.
-        ///   2. Alle Daten werden nach {2} übertragen und Tabelle für Tabelle nachgezählt und geprüft.
-        ///   3. Die Altdatei bleibt als {3} liegen.
-        ///
-        ///Das dauert je nach Bestand einige Minuten. Bei einem Fehler wird die neue Datei wieder entfernt und die Altdatei bleibt unverändert gültig. ähnelt.
-        /// </summary>
-        public static string ERST_KOPF {
-            get {
-                return ResourceManager.GetString("ERST_KOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Protokoll ähnelt.
-        /// </summary>
-        public static string ERST_LBL_PROTOKOLL {
-            get {
-                return ResourceManager.GetString("ERST_LBL_PROTOKOLL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bereit. ähnelt.
-        /// </summary>
-        public static string ERST_STATUS_BEREIT {
-            get {
-                return ResourceManager.GetString("ERST_STATUS_BEREIT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung fehlgeschlagen. ähnelt.
-        /// </summary>
-        public static string ERST_STATUS_FEHLER {
-            get {
-                return ResourceManager.GetString("ERST_STATUS_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung abgeschlossen. ähnelt.
-        /// </summary>
-        public static string ERST_STATUS_FERTIG {
-            get {
-                return ResourceManager.GetString("ERST_STATUS_FERTIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellung läuft - bitte nicht abschalten. ähnelt.
-        /// </summary>
-        public static string ERST_STATUS_LAEUFT {
-            get {
-                return ResourceManager.GetString("ERST_STATUS_LAEUFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankumstellung ähnelt.
-        /// </summary>
-        public static string ERST_TITEL {
-            get {
-                return ResourceManager.GetString("ERST_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgervariante erfolgreich angelegt. ähnelt.
         /// </summary>
         public static string ETVAR_MSG_ANGELEGT {
@@ -20914,15 +20824,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SICH_FEHLGESCHLAGEN {
             get {
                 return ResourceManager.GetString("KI_SICH_FEHLGESCHLAGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank ist gerade geöffnet ({0}); die Sicherungskopie kann noch nicht geschriebene Änderungen nicht enthalten. ähnelt.
-        /// </summary>
-        public static string KI_SICH_GEOEFFNET {
-            get {
-                return ResourceManager.GetString("KI_SICH_GEOEFFNET", resourceCulture);
             }
         }
         
@@ -40988,35 +40889,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Microsoft Access Database Engine ({0}) ist auf diesem Rechner nicht verfügbar. EPOS-Plan kann ohne sie nicht auf die Datenbank zugreifen.
-        ///
-        ///Bitte führen Sie das EPOS-Plan-Setup erneut aus oder installieren Sie die Microsoft Access Database Engine ({0}). ähnelt.
-        /// </summary>
-        public static string START_ACE_FEHLT_TEXT {
-            get {
-                return ResourceManager.GetString("START_ACE_FEHLT_TEXT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbank-Komponente fehlt ähnelt.
-        /// </summary>
-        public static string START_ACE_FEHLT_TITEL {
-            get {
-                return ResourceManager.GetString("START_ACE_FEHLT_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht: {0} ähnelt.
-        /// </summary>
-        public static string START_BERICHT {
-            get {
-                return ResourceManager.GetString("START_BERICHT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ➕ Neue Variante anlegen… ähnelt.
         /// </summary>
         public static string START_BTN_VARIANTE_ANLEGEN {
@@ -41737,29 +41609,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank wurde nicht umgestellt — das Programm kann nicht starten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auch die ausgelieferte Vorlagendatenbank wurde nicht gefunden. Erwartet wird sie unter:
+        ///
+        ///{0}
+        ///
+        ///Bitte EPOS-Plan neu installieren; das Setup legt die Vorlage neben das Programm. ähnelt.
         /// </summary>
-        public static string START_UMSTELLUNG_ABGELEHNT {
+        public static string START_VORLAGE_FEHLT {
             get {
-                return ResourceManager.GetString("START_UMSTELLUNG_ABGELEHNT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Datenbankumstellung ähnelt.
-        /// </summary>
-        public static string START_UMSTELLUNG_TITEL {
-            get {
-                return ResourceManager.GetString("START_UMSTELLUNG_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Umstellung meldet Erfolg, die neue Datenbankdatei lässt sich aber nicht öffnen: {0} ähnelt.
-        /// </summary>
-        public static string START_UMSTELLUNG_UNLESBAR {
-            get {
-                return ResourceManager.GetString("START_UMSTELLUNG_UNLESBAR", resourceCulture);
+                return ResourceManager.GetString("START_VORLAGE_FEHLT", resourceCulture);
             }
         }
         

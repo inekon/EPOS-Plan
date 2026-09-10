@@ -1934,6 +1934,78 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Access-Zweig bleibt, wie er ist. Nachweise: Kern und UI 0 Fehler/keine neue Warnung, `EPOS.Kern.Tests` 1 348 →
 > 1 372 grün, `EPOS.UI.Tests` 2 724 → 2 728 grün, Designer-Prüfung „abweichend 0", beide Kern-Wächter leer, Gate grün,
 > Referenzlauf byte-gleich. Protokoll: § 5.1, § 6-Nachtrag und § 8 in `iF30_Lesemodus_Protokoll.md`; Abnahme A‑iF30‑11.
+>
+> **#157 Erststart ohne Altbestand (Befund des Wiki-Agenten #155, 09.09.2026, umgesetzt in `18f6b11`, zusammengeführt in
+> `ed2b8b6`).** Fehlen im Datenbankordner `Kenndaten.sqlite` UND `Kenndaten.accdb` — die Lage jeder Neuinstallation auf
+> einem frischen Rechner —, **startet das Programm nicht**: `DataRepository.DatenbankVorhanden()` ist falsch
+> (`SqliteDatenzugriff` öffnet `Mode=ReadOnly` und legt nichts an), `ErststartMigration.Pruefe` meldet `BeidesFehlt`, und
+> `Program.cs:392–400` endet mit der Meldung `START_DB_FEHLT`; eine leere Datenbank entsteht nicht, und das vom Setup nach
+> `{app}\Vorlage` gelegte `Kenndaten.accdb` liest kein Pfad im Quelltext (die Erstkopie war ein Vorschlag des
+> Setup-Konzepts § 6.2, nie gebaut). Belegt durch `Proben/ErststartProben` (9/9, ohne Windows, nicht in `WP-Plan.sln`).
+> Richtiggestellt: `UebernahmeText` und `AceFehlt` in `Setup/EPOS-Plan.iss` (de+en) samt drei Kommentaren — die Aussage
+> „eine Datenbank je Windows-Konto im Benutzerprofil" kannte der Code nie; `BETRIEB_SQLITE.md` § 1.1 neu. Anwenderrahmen
+> vom selben Tag: Access wurde nie produktiv verwendet, der Übernahmeweg ist Hauswerkzeug, kein Kundenweg; die
+> Anwenderdokumentation (Wiki, Website) nennt Access nicht mehr. **Offen: Entscheid #157‑E‑1** — W1 `.accdb`-Vorlage +
+> Übernahme auf jedem neuen Rechner, W2 `.sqlite`-Vorlage (Übernahmeweg bleibt), **W3 `.sqlite`-Vorlage und Access-Weg
+> samt Engine aus Setup und Erststart (empfohlen; deckungsgleich mit der iOS-Schale, die die Seed-Kopie schon so
+> fährt)** —, dazu #157‑E‑2 (Erzeugung der ausgelieferten Vorlage, mit oder ohne Beispielprojekte) und #157‑E‑3
+> (Deinstallations-Rückfrage zeigt auf `{localappdata}\EPOS_PLAN`, das nichts anlegt). Gate: Kern 2194 / UI 3362
+> grün, kein Rechenweg berührt.
+>
+> **#161 Deinstallations-Rückfrage (#157‑E‑3, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in `ae6d8c7`,
+> zusammengeführt in `e92589e`).** `CurUninstallStepChanged` fragte nach `{localappdata}\EPOS_PLAN` — einem Ordner, den
+> nichts anlegt (Vorschlag des Setup-Konzepts § 6.2, nie umgesetzt); die Rückfrage erschien de facto nie. Seither zielt
+> sie auf `{commonappdata}\EPOS_PLAN` (Datenbank samt `-wal`/`-shm` und `DB-Backup`), erscheint nur, wenn der Ordner
+> existiert, Voreinstellung „Nein" (`MB_DEFBUTTON2`); der Text de/en sagt, dass der Ordner ALLEN Windows-Konten des Rechners
+> gehört, dass es keinen Rückweg gibt und was NICHT gelöscht wird (die zwei `WP-Plan`-Datenverzeichnisse, die
+> Registrierungseinstellungen — die der alte Text als gelöscht versprach, ohne dass je Code dahinterstand). Ein
+> fehlgeschlagenes `DelTree` meldet sich jetzt (`DatenLoeschenFehlgeschlagen`, de/en) statt still zu bleiben. Nebenbefund
+> im Kommentar belegt: `{}`-Blockkommentare verschachteln in Pascal nicht — Ordnerkonstanten stehen dort ohne Klammern.
+> Doku: `Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md` 2.4/6.3, `BETRIEB_SQLITE.md` § 8. Nur Setup-Skript und Doku, kein
+> gebauter Code; der `ISCC`-Lauf auf Windows steht aus. Der Absatz „Deinstallation" in Wiki und Website wird mit W3 (#162)
+> nachgezogen.
+>
+> **#160 Auslieferungsvorlage als Werkzeug (#157‑E‑2, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in `f763f60`,
+> zusammengeführt in `1764653`).** `Werkzeuge/Auslieferungsvorlage` (eigene Projektmappe, nicht in `WP-Plan.sln`) erzeugt aus
+> einer produktiven `Kenndaten.sqlite` reproduzierbar die bereinigte Auslieferungsdatenbank: Arbeitskopie über
+> `Datenbanksicherung.KopieAnlegen` (Quelle bleibt byte-gleich), alle Projektdaten fallen — die **73 Tabellen mit
+> Projektbezug leitet das Werkzeug aus dem Schema der geöffneten Datei ab**, nicht aus einer gepflegten Liste (die
+> Handliste des Reduzierungsskripts kannte `Tab_Wechselrichter`/`Z_AnlageStrang` nicht) —, `Tab_Applikation` verliert
+> Projektname (dort stand ein Kundenname), Beschreibung, Icon, `ID_Projekt`; Beispielprojekte kommen als `.wpx`-Pakete
+> über `ProjektExportImportCtrl` (`--beispiele`, Beleg: Beispielkonzept § 6.2/E6), dann `VACUUM`, Prüflauf
+> (`integrity_check`, `foreign_key_check`, Schemastand, STRICT-Zahl, Datenschutzwächter: keine Zeile in einer Projekttabelle
+> außerhalb der Beispiele, keine Lizenz-/KI-Tabelle, keine Pfadangabe) und `<ziel>.bericht.txt`. Das Werkzeug schreibt im
+> Repository nur nach `Setup/Vorlage/` (Rückgabe 3 sonst; `.gitignore` deckt `*.sqlite` dort ab); Rückgabecodes 0/2/3/4/5
+> mit Grund auf stderr, bei ≠ 0 keine Zieldatei. Lauf gegen die Testdatenbank: 1 173 224 → 34 Projektzeilen, 66,8 → 23,7 MB,
+> Schemastand 72, 117 STRICT. 17 Proben (`Werkzeuge/Auslieferungsvorlage.Tests`, starten das Werkzeug als Programm), seit
+> diesem Stand als Schritt in `kern.yml` (nur ubuntu). Kern: zwei `InternalsVisibleTo`-Zeilen. **Befund #160‑F‑1, offen:**
+> Die Regel des Setup-Konzepts § 6.1 Schritt 3 („in `*_STAMM` bleibt nur `ReadOnly = TRUE`") würde 22 von 28 Katalogtabellen
+> leeren (419 722 → 101 Zeilen; `Tab_Kenndaten_STAMM` 1 960 Kennfelder, `Tab_Klimadaten_STAMM`, `Tab_Solar_STAMM` über die
+> Kaskade), weil `ReadOnly` im Code ein Schreibschutz der Oberfläche ist, keine Auslieferungsmarke — der Katalogwächter
+> bricht mit Code 4 ab, bis der Anwender entscheidet (`--kataloge alle` als ausdrücklicher Weg daran vorbei).
+> Setup-Verdrahtung (`build-setup.ps1`, `VorlageDb`) folgt mit W3 (#162).
+>
+> **#162 W3 — Erststart aus der Auslieferungsvorlage (#157‑E‑1, Anwenderentscheid 09.09.2026 „Empfehlung", umgesetzt in
+> `ba30d28`, zusammengeführt in `307bcba`).** Eine Neuinstallation startet wieder: `Program.DatenbankBereitstellen()` ruft den
+> neuen Kernbaustein `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs`, der `{app}\Vorlage\Kenndaten.sqlite` in den
+> Datenordner kopiert und danach `PRAGMA integrity_check` UND `Tab_Applikation.SchemaVersion` prüft — nie überschreibend,
+> nie halb (eine misslungene Kopie wird entfernt), eine ältere Vorlage hebt `SchemaMigration.Ausfuehren` beim selben Start
+> an; fehlt die Vorlage, nennt `START_VORLAGE_FEHLT` den erwarteten Ort. Gefunden wird sie über die neue `IPfade`-Eigenschaft
+> `Auslieferungsvorlage` (Aufstieg von `AppContext.BaseDirectory` wie `Herstellerdaten`; `IosPfade` erbt — kein iOS-Adapter
+> nötig, die iOS-Schale behält ihren Seed-Weg aus dem Paket). **Der Access-Weg ist gefallen:** `ErststartMigration` (434 Z.),
+> `ErststartCtrl` (74), `ErststartHuelle` (145), `ErststartDialog.razor` (167) mit 13 bunit-Fällen, 15 Ressourcenschlüssel
+> je Sprache, die `EposSqliteMigrator.Kern`-Referenz der Anwendung, Fall 16 der `ZugriffsschichtProben`; im Setup 34 von 43
+> Access-Fundstellen (ACE-Redist, vier Pascal-Funktionen, drei Meldungen, die Übernahme-Seite samt
+> `InitializeWizard`/`ShouldSkipPage`), `VorlageDb` → `Vorlage\Kenndaten.sqlite` mit Abbruch, wenn sie fehlt.
+> `build-setup.ps1` erzeugt die Vorlage vor jedem ISCC-Lauf über `Werkzeuge/Auslieferungsvorlage` (#160; Quelle aus
+> `-Quelldatenbank` oder `EPOS_VORLAGE_QUELLE`, ohne Angabe Abbruch — kein Rückgriff auf die Arbeitsdatenbank). Bleiben als
+> Hauswerkzeug: `EposSqliteMigrator`, `SchemaMigration.HebeAltbestand`, `SchemaVersionAccess`, `DbParamOleDb`. Doku:
+> `BETRIEB_SQLITE.md` § 1 neu (§ 1.1 „Übernahme = Hauswerkzeug"), Wurzel-`CLAUDE.md`, drei Projekt-`CLAUDE.md`, Setup-Konzept
+> § 6 (6.1–6.4). `Proben/ErststartProben` 9 → 21 Prüfungen. Gate nach dem Merge: Kern 2225 / UI 3358 grün (−13 bunit-Fälle
+> des gefallenen Dialogs, +20 `ErstbereitstellungTests`), SQL-Dialektprüfer 0, beide Kern-Wächter leer, Referenzlauf
+> byte-gleich. **Offen:** `ISCC`-Lauf und `build-setup.ps1` auf Windows (hier weder Inno Setup noch PowerShell), der erste
+> gemeinsame Lauf mit #160, und der Kommentar in `EPOS.iOS/Datenbankbereitstellung.cs:15`, der noch
+> `ErststartMigration.Pruefe` nennt (iOS hier nicht baubar).
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
@@ -2114,6 +2186,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rubrikstartseite) mit dem Bot-Zugang überschrieben (Zusammenfassung „Stand 07.09.2026, Sprungmarken je Abschnitt"),
 > die 18 Bezüge und die Rubrikzeile waren schon da; Nachprobe über `action=parse`: Anker gerendert (`class="epos-anker"`,
 > `id="rechenweg"` vorhanden), 0 Parserfehler, `<math>` unverändert (Wärmepumpe 155, Photovoltaik 324).
+>
+> **#158 Sicherungspunkt SQLite-fest (Befund des Wiki-Agenten #155, 09.09.2026, umgesetzt in `ad42a78`, zusammengeführt in
+> `e772799`).** `KiSicherungspunkt` kopierte vor der ersten ändernden Aktion einer Sitzung nur die Hauptdatei — unter SQLite
+> im WAL-Modus fehlten der Kopie die Änderungen aus der `-wal`, und die Prüfung auf eine `.laccdb`-Sperrdatei konnte nie
+> mehr treffen. Seither gibt es EINE Sicherungswahrheit im Kern: `Datenbanksicherung.KopieAnlegen(quellpfad, zielordner,
+> praefix)` (`EPOS.Kern/Allgemein/Datenbank/`) zieht die Kopie über `VACUUM INTO` auf einer geöffneten Verbindung — der Weg,
+> den `BETRIEB_SQLITE.md` § 3.2 nennt und den die iOS-Schale (`Datenbankbereitstellung.SicherungAnlegen`) schon fuhr —, mit
+> `Schreibnaht.GRUND_SICHERUNG`, damit Sicherungen auch im Lesemodus erlaubt bleiben; Ergebnis ist eine in sich
+> geschlossene Datei ohne `-wal`/`-shm`. `KiSicherungspunkt` (Ordner `DB-Backup`, Zeitstempelmuster, Sperre bei Fehlschlag
+> unverändert) und `MenueCtrl.DatenbankKopieAnlegen` (Projekte löschen, Projektimport) nutzen den Helfer; `File.Copy`
+> ist in beiden Dateien weg (Wächter als Testfall). `KI_SICH_GEOEFFNET` samt Ressourcenschlüssel entfällt — ein Zwischenstand
+> der Kopie ist mit `VACUUM INTO` strukturell ausgeschlossen, ein `SQLITE_BUSY` läuft über den vorhandenen Fehlerpfad
+> `KI_SICH_FEHLGESCHLAGEN`; `KiSicherungspunkt.Hinweis` bleibt für `KiAusfuehrer` erhalten und liefert `""`. Nebenwirkung:
+> Der Zeitstempel der Projektverwaltungs-Kopie trägt seither Bindestriche (`Kenndaten_<zweck>_JJJJ-MM-TT_hhmmss.sqlite`).
+> Tests: `DatenbanksicherungTests` (6, u. a. Kopie enthält nur in der `-wal` stehende Änderungen, keine Begleitdateien,
+> unbeschreibbares Ziel sperrt) und `KiSicherungspunktTests` (3); Hausregel in `EPOS.Kern/CLAUDE.md`, Satz in
+> `BETRIEB_SQLITE.md` § 3.2. Gate: Kern 2205 / UI 3372 grün, SQL-Dialektprüfer 0, Referenzlauf byte-gleich (kein Rechenweg
+> berührt); rot allein durch die Warnungsschranke — die siebte eindeutige Warnung `CS8602` in
+> `EPOS.UI.Tests/Standards/RasterTests.cs:335` kam mit `97a7fec` (Opus-Sitzung, W13‑B‑6) und ist nicht Teil von #158;
+> sie ist in der Katalogliste-Linie zu beheben, damit die Schranke von sechs wieder trägt.
 
 > **Statusblock iU9 — Welle 15a umgesetzt (04.09.2026, Basis `f7e2758` nach W14c, zusammengeführt mit `8651b0d` nach den W14c-Entscheiden)**
 >

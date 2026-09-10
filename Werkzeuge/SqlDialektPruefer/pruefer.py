@@ -872,10 +872,13 @@ def vorbereite(sql, fuellung="0"):
 # 6. Hauptlauf
 # =====================================================================================
 
+# Der eingefrorene Access-Zweig der Schemapflege spricht Access-SQL, und die
+# ACE-Engine fuehrt es aus. Seit W3 (#157-E-1, 09.09.2026) ist er ein HAUSWERKZEUG:
+# ErststartMigration.cs ist geloescht - die Anwendung uebernimmt keinen .accdb-Bestand
+# mehr -, der Rest hebt einen eingeschickten Altbestand auf Stand 61.
 AUSGENOMMEN = (
     "Allgemein/Update/SchemaMigration.cs",
     "Allgemein/Update/GeraeteWaisen.cs",
-    "Allgemein/Update/ErststartMigration.cs",
     "Allgemein/Update/SchemaVersionAccess.cs",
     "Allgemein/DbParamOleDb.cs",
 )

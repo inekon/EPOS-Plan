@@ -112,6 +112,7 @@ dem Auslösen nachfragen.
 | `EPOS.Referenzlauf` | der plattformfreie Rechennachweis gegen die eingefrorene Basis; läuft auf Linux, macOS und in der CI | `dotnet run --project EPOS.Referenzlauf -- lauf …` bzw. `… vergleich <ref> <neu>` |
 | `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen` (dazu `liste` und `migration`). Der frühere Modus `bildvergleich` ist mit iF23 (03.09.2026) samt dem GDI+-Renderer gelöscht | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` vollständig neu aus der neutralen `.resx` (Format des StronglyTypedResourceBuilder). **Nach jedem neuen Ressourcenschlüssel ziehen** statt die Designer-Datei von Hand zu ergänzen — ohne Visual Studio gibt es keinen anderen Generator. Der Lauf ist **wiederholbar** (seit #152, 07.09.2026): Ändert sich kein Schlüssel, lässt ein zweiter Lauf die Datei byte-gleich liegen, und jeder Aufruf prüft das selbst | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen — nennt die Zeichenbilanz) |
+| `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die **bereinigte Auslieferungsdatenbank** samt Beispielprojekten (#157‑E‑2, Auftrag #160) — Projektdaten weg, Kataloge auf Auslieferungsstand, `Tab_Applikation` ohne Kundennamen, `VACUUM`, `journal_mode = WAL`, Prüfbericht `<ziel>.bericht.txt` daneben. Die Tabellenliste kommt aus dem SCHEMA, nicht aus einer gepflegten Liste; die Quelle bleibt byte-gleich. **Vor jeder Auslieferung ziehen** statt die vier Handgriffe aus Setup-Konzept 6.1 zu wiederholen. Rückgabe 0 = erzeugt und abgenommen; 2 Aufruf, 3 Schreibort, 4 Katalogwächter, 5 fachlich | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]`, Proben mit `dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release` |
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
@@ -161,9 +162,17 @@ C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build
 
 Die Datenhaltung ist seit dem 02.09.2026 **SQLite** (`Kenndaten.sqlite`, siehe
 [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md)); die native Bibliothek bringt
-`Microsoft.Data.Sqlite` mit. Die Access-Engine (ACE OLEDB, 64-Bit-Fassung) wird nur noch für die
-**Erststart-Migration vorhandener `.accdb`-Bestände** gebraucht — für einen Neustand ist sie
-nicht mehr erforderlich.
+`Microsoft.Data.Sqlite` mit. **Seit dem Anwenderentscheid `#157‑E‑1` (Weg W3,
+09.09.2026) kommt die Access-Engine im ausgelieferten Programm nicht mehr vor:** Das
+Setup installiert sie nicht mehr nach, und der Erststart-Assistent ist gefallen. Eine
+Neuinstallation bekommt ihre Datenbank aus der ausgelieferten Vorlage
+`{app}\Vorlage\Kenndaten.sqlite`, die der Kern beim ersten Start in den Datenordner
+kopiert (`EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs`, gerufen aus
+`Program.DatenbankBereitstellen()`; auf iOS tut `EPOS.iOS/Datenbankbereitstellung.cs`
+dasselbe aus dem Anwendungspaket). Die Übernahme eines `.accdb`-Altbestands ist seither
+ein **Hauswerkzeug** — die Konsolenfassung `EposSqliteMigrator.exe` samt
+`SchemaMigration.HebeAltbestand`; sie braucht die ACE-Engine auf dem Rechner, auf dem sie
+läuft (BETRIEB_SQLITE.md Abschnitt 1.1 und 7).
 
 
 ## Datenhaltung

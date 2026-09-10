@@ -77,6 +77,14 @@
          Typuebersetzung wie die Migration - StilleDb.SqliteSpaltenTyp -, statt
          die DDL abzuschreiben. Ohne die Freigabe bliebe nur die Abschrift. -->
     <InternalsVisibleTo Include="Testdatenbankschema" />
+    <!-- Und fuer das Werkzeug, das den Auslieferungsstand der Datenbank erzeugt
+         (Auftrag #160): Es zieht seine Arbeitskopie ueber Datenbanksicherung.KopieAnlegen -
+         die EINE Sicherungswahrheit des Kerns seit #158 (VACUUM INTO durch das WAL
+         hindurch) - statt eine zweite Kopierweise danebenzustellen. Das Testprojekt liest
+         die eingespielten Beispiele ueber ProjektCtrl.NamenListe, also den Weg, ueber den
+         auch die Startseite ihre Projektliste holt; beide Typen sind internal. -->
+    <InternalsVisibleTo Include="Auslieferungsvorlage" />
+    <InternalsVisibleTo Include="Auslieferungsvorlage.Tests" />
   </ItemGroup>
 
   <ItemGroup>

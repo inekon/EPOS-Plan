@@ -110,6 +110,66 @@ namespace WindowsFormsApplication1
 
         private string _herstellerdaten;
 
+        /// <summary>Der Ordner, in dem die Auslieferungsvorlage liegt.</summary>
+        protected const string OrdnerVorlage = "Vorlage";
+
+        /// <summary>Dateiname der Auslieferungsvorlage — gleichlautend mit der Arbeitsdatenbank.</summary>
+        protected const string DateiVorlage = "Kenndaten.sqlite";
+
+        /// <summary>Der Ordner des Setups im Entwicklungsstand.</summary>
+        private const string OrdnerSetup = "Setup";
+
+        /// <summary>
+        /// <inheritdoc cref="IPfade.Auslieferungsvorlage"/>
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Derselbe Aufstieg wie bei <see cref="Herstellerdaten"/>, nur mit zwei
+        /// Kandidaten je Stufe.</b> Beim Anwender liegt die Vorlage unmittelbar neben der
+        /// Anwendung (<c>{app}\Vorlage\Kenndaten.sqlite</c>) — das trifft schon die erste
+        /// Stufe. Im Entwicklungsstand liegt sie unter <c>Setup\Vorlage\</c> in der Wurzel
+        /// des Repositorys, also einige Ebenen ÜBER dem Ausgabeordner; deshalb wird je
+        /// Stufe auch <c>Setup\Vorlage\Kenndaten.sqlite</c> geprüft. Acht Ebenen, dieselbe
+        /// Grenze wie oben: vom Prüfstand bis zur Repowurzel, nicht bis zum
+        /// Laufwerksstamm.</para>
+        ///
+        /// <para><b>Der Rückfall ist der erwartete Ort, nicht die leere Zeichenkette</b>
+        /// (siehe Schnittstelle): <c>&lt;Programmordner&gt;\Vorlage\Kenndaten.sqlite</c>.
+        /// So kann die Startmeldung immer sagen, wo gesucht wurde.</para>
+        ///
+        /// <para><b>Der Wert wird NICHT gemerkt.</b> Er wird genau einmal je
+        /// Programmstart geholt, und ein Merker würde in den Prüfständen zwischen den
+        /// Fällen hängen bleiben — anders als bei <see cref="Herstellerdaten"/>, das bei
+        /// jedem Öffnen eines Dateiwählers gefragt wird.</para>
+        /// </remarks>
+        public virtual string Auslieferungsvorlage
+        {
+            get
+            {
+                string grund = "";
+                try
+                {
+                    grund = AppContext.BaseDirectory ?? "";
+
+                    var d = new DirectoryInfo(grund);
+                    for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+                    {
+                        // Beim Anwender: {app}\Vorlage\Kenndaten.sqlite
+                        string neben = Path.Combine(d.FullName, OrdnerVorlage, DateiVorlage);
+                        if (File.Exists(neben)) return neben;
+
+                        // Im Entwicklungsstand: <Repowurzel>\Setup\Vorlage\Kenndaten.sqlite
+                        string imSetup = Path.Combine(d.FullName, OrdnerSetup, OrdnerVorlage, DateiVorlage);
+                        if (File.Exists(imSetup)) return imSetup;
+                    }
+                }
+                catch { }
+
+                // Nichts gefunden: der ERWARTETE Ort neben dem Programm.
+                try { return Path.Combine(grund, OrdnerVorlage, DateiVorlage); }
+                catch { return ""; }
+            }
+        }
+
         /// <inheritdoc/>
         public string Verbinde(string wurzel, params string[] teile)
         {
