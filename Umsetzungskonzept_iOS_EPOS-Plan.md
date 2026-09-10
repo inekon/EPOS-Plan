@@ -4442,6 +4442,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > handgebaute `epos-feldpaar` entfallen — der Raster misst die eigene Breite und legt unter `--epos-formularspalte`
 > selbst auf eine Spalte um. Preisblock (Schalter + Wert + Schnellwahl), Datenraster und das Suchfeld der Trägerliste
 > bleiben, wo sie waren; der Übernahmeknopf des Energieträgers steht in einer `epos-leiste`.
+>
+> **#166 (10.09.2026) — `BetriebskostenBaugroesseTests` (Anwenderbefund H4c, Sync-Commit `9eee87c`) auf Linux grün.**
+> Die 35 Fälle legen ein synthetisches Projekt (190001) mit fünf Anlagenzeilen an; 13 fielen mit „Nullable object must have
+> a value" bzw. Betrag 300 erwartet / 0 erhalten (Kern-CI 273 rot auf `9432329`). Ursache: `Tab_Energieanlagen` führt vier
+> UNIQUE-Indizes `idx_Anlage_ID_WP/ID_Kessel/ID_PUFFER/ID_BHKW` je auf (`ID_Projekt`, Verweis) — aus
+> `sql/schema/003_indizes_fk.sql` und `AnlagenEindeutigkeit.cs`, also auch produktiv —, die sieben Verweisspalten haben
+> `DEFAULT 0`, der Bestand trägt für unbenutzte Verweise aber NULL (der Produktweg `AnlagenSql.SQL_ANLAGE_INSERT` setzt alle
+> Spalten). Der Testhelfer `Anlage()` ließ die unbenutzten Verweise weg → 0 → ab der zweiten Anlagenzeile UNIQUE-Verstoß;
+> `SqliteDatenzugriff.ExecuteSQL` schluckt ihn (`false`), `Sql()` warf den Rückgabewert weg. Mit `PRAGMA foreign_keys = ON`
+> (setzt der Zugriff je Verbindung) fällt die 0 sogar schon am Fremdschlüssel — es landete keine einzige Anlagenzeile.
+> Zweite Ursache, erst durch das laute `Sql()` sichtbar: `CecWechselrichterAuslieferungTests` setzt `DefaultThreadCurrentCulture` prozessweit auf de-DE und stellt sie nicht zurück — im Projektlauf wurde `2.5` im SQL zu „2,5" (fünf Werte für vier Spalten); jede Zahl im SQL nun in `InvariantCulture`, das Leck selbst schließt #167. Fix (`3abbf1f`, nur Testcode): `Sql()` prüft den Rückgabewert (`Assert.True`, SQL-Text in der Meldung), `Anlage()` setzt
+> die sieben Verweisspalten ausdrücklich (Geräte-ID bzw. NULL), Klassenkopf erklärt den Grund. Gate auf `ed7af4e`: Kern 2 273 grün (vorher 2 260 von 2 273),
+> UI 3 360, Referenzlauf byte-gleich; die Warnungsschranke bleibt allein durch die vorbestehende CS8602 (`RasterTests.cs:335`,
+> `97a7fec`) gerissen. Hinweis an die Windows-Seite: Ein Testhelfer, der `Tab_Energieanlagen` direkt beschreibt,
+> muss die Verweisspalten setzen — oder über den Produktweg gehen.
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >
