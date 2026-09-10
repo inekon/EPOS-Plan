@@ -31,9 +31,13 @@ namespace EPOS.Kern.Tests
     /// <c>de-DE</c> — dort, wo ein kulturabhängiges <c>double.Parse</c>
     /// auffliegt.</para>
     /// </summary>
-    public class StromspeicherImportTests
+    public class StromspeicherImportTests : IDisposable
     {
         private readonly ITestOutputHelper _ausgabe;
+        private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
 
         public StromspeicherImportTests(ITestOutputHelper ausgabe)
         {
@@ -44,6 +48,17 @@ namespace EPOS.Kern.Tests
             CultureInfo.DefaultThreadCurrentUICulture = de;
             Thread.CurrentThread.CurrentCulture = de;
             Thread.CurrentThread.CurrentUICulture = de;
+        }
+
+        // Ruckstellung (iU9-#167, Muster KatalogfilterZeitreihenTests): alle vier Werte
+        // gemerkt und zurueckgestellt, damit kein spaeterer Test in einem fremden Projekt
+        // (oder auf einem neu gestarteten Thread) unbeabsichtigt in de-DE rechnet.
+        public void Dispose()
+        {
+            CultureInfo.DefaultThreadCurrentCulture = _vorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         /// <summary>Die Geräte der Probe <c>stromspeicher_cec_ess_23.csv</c>.</summary>

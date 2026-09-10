@@ -666,6 +666,8 @@ namespace EPOS.Kern.Tests
         {
             var vorherKultur = System.Globalization.CultureInfo.DefaultThreadCurrentCulture;
             var vorherUi = System.Globalization.CultureInfo.DefaultThreadCurrentUICulture;
+            var threadVorherKultur = System.Threading.Thread.CurrentThread.CurrentCulture;
+            var threadVorherUi = System.Threading.Thread.CurrentThread.CurrentUICulture;
             try
             {
                 var de = new System.Globalization.CultureInfo("de-DE");
@@ -692,6 +694,8 @@ namespace EPOS.Kern.Tests
             {
                 System.Globalization.CultureInfo.DefaultThreadCurrentCulture = vorherKultur;
                 System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = vorherUi;
+                System.Threading.Thread.CurrentThread.CurrentCulture = threadVorherKultur;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = threadVorherUi;
             }
         }
 

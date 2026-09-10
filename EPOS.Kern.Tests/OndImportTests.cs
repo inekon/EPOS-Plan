@@ -31,8 +31,13 @@ namespace EPOS.Kern.Tests
     /// <para>Die Kultur ist auf de-DE gepinnt: Die Datei führt den DEZIMALPUNKT, und
     /// ein Läufer in einer Kultur mit Komma darf daran nichts ändern.</para>
     /// </summary>
-    public class OndImportTests
+    public class OndImportTests : IDisposable
     {
+        private readonly CultureInfo _vorher = CultureInfo.DefaultThreadCurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.DefaultThreadCurrentUICulture;
+        private readonly CultureInfo _threadVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly CultureInfo _threadVorherUi = Thread.CurrentThread.CurrentUICulture;
+
         public OndImportTests()
         {
             var de = new CultureInfo("de-DE");
@@ -40,6 +45,17 @@ namespace EPOS.Kern.Tests
             CultureInfo.DefaultThreadCurrentUICulture = de;
             Thread.CurrentThread.CurrentCulture = de;
             Thread.CurrentThread.CurrentUICulture = de;
+        }
+
+        // Ruckstellung (iU9-#167, Muster KatalogfilterZeitreihenTests): alle vier Werte
+        // gemerkt und zurueckgestellt, damit kein spaeterer Test in einem fremden Projekt
+        // (oder auf einem neu gestarteten Thread) unbeabsichtigt in de-DE rechnet.
+        public void Dispose()
+        {
+            CultureInfo.DefaultThreadCurrentCulture = _vorher;
+            CultureInfo.DefaultThreadCurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentCulture = _threadVorher;
+            Thread.CurrentThread.CurrentUICulture = _threadVorherUi;
         }
 
         private const double GENAU = 1e-6;
