@@ -4579,6 +4579,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `VorlagenUebernahmeDialog`) und der BHKW-Wirtschaftlichkeitsdialog tragen den Raster; die Vorlagenübernahme ist die
 > Stelle, an der `Einspaltig` seinen Namen verdient — eine Kette von Wahlen bleibt eine Kette, die Beschriftung steht
 > trotzdem neben dem Feld. `VorlagenZeile` bleibt Bearbeitungszeile in der Tabelle.
+>
+> **Ae25 (Anwenderentscheid 10.09.2026, Windows-Seite) und #165 — `VorlagenUebernahmeDialog`: OK übernimmt und schließt,
+> Abbrechen schließt ohne Wirkung, ein Fehlschlag hält die Maske offen.** Der Sync-Commit `4beb37f` (08:21) brachte den
+> Dialog und die Hülle auf Ae25, die drei bunit-Fälle der alten Regel A‑7 („Übernehmen" schreibt und lässt die Maske stehen)
+> blieben rot — Kern-CI 269/271. #165 (`90097ee`) schrieb sie um; der zweite Sync-Commit `9eee87c` (08:45) brachte die
+> Windows-Fassung derselben Tests (19 Fälle, u. a. `OK_uebernimmt_und_schliesst_mit_true`,
+> `Abbrechen_schliesst_mit_false_und_schreibt_nicht`, `Ein_Fehler_erscheint_als_Fehlerbanner_und_der_Dialog_bleibt_offen`)
+> — **im Merge `89ee918` gilt die Windows-Fassung**, #165 ist damit überholt. Lehre: Vor einem Sync-Push von der Windows-Seite
+> `dotnet test EPOS.UI.Tests` fahren, sonst wird die CI mit jedem Sync rot. Gate: UI 3360 grün; Kern 2 260 von 2 273 — **13 Fälle der
+> neuen `BetriebskostenBaugroesseTests` (444 Zeilen, ebenfalls aus `9eee87c`) rot** („Nullable object must have a value",
+> Betrag 300 erwartet, 0 erhalten): vorbestehend auf dem Sync-Kopf `9432329` (Kern-CI 273 rot), nicht durch diesen Merge
+> verursacht — Aufgabe #166.
 
 > **Statusblock iU9 — Welle 0 umgesetzt (03.09.2026, Basis `908926a`)**
 >
