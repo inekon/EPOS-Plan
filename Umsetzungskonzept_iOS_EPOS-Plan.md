@@ -2006,6 +2006,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > byte-gleich. **Offen:** `ISCC`-Lauf und `build-setup.ps1` auf Windows (hier weder Inno Setup noch PowerShell), der erste
 > gemeinsame Lauf mit #160, und der Kommentar in `EPOS.iOS/Datenbankbereitstellung.cs:15`, der noch
 > `ErststartMigration.Pruefe` nennt (iOS hier nicht baubar).
+>
+> **#164 Build-Skript am Anwenderort (Anwenderhinweis 10.09.2026 „Inno Setup unter `C:\Waermeplan\WP_Plan\Setup`",
+> umgesetzt in `243dca2`, zusammengeführt in `151dcea`).** `build-setup.ps1` suchte `ISCC.exe` nur unter `%ProgramFiles%`
+> und in der Registry; seither Parameter `-Iscc` (Datei oder Ordner), Umgebungsvariable `EPOS_ISCC` und die Suche neben
+> dem Skript (`ISCC.exe`, `Inno Setup 6\ISCC.exe`, Unterordner „Inno Setup*"), die Fehlermeldung nennt alle Kandidaten.
+> Dazu `-Kataloge readonly|alle` → `--kataloge` an `Werkzeuge/Auslieferungsvorlage` (Rückgabe 4 = Katalogwächter → Hinweis
+> „bis #160‑E‑1 mit `-Kataloge alle`"). Laufanleitung Windows im Setup-Konzept § 8.1 (sechs Schritte, Rückmeldung:
+> Konsolenausgabe, Prüfbericht, ISCC-Meldungen). Nur Skript und Konzept, kein Gate; BOM/LF unverändert; der PowerShell-
+> Lauf auf Windows steht aus.
 
 > **Statusblock iU9 — Welle 15b umgesetzt (04.09.2026, Basis `c11f13d` nach W15a, zusammengeführt mit `08cbc2a` nach den W15a-Entscheiden)**
 >
