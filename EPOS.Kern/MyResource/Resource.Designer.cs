@@ -39880,6 +39880,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang und Speicherbetrieb ähnelt.
+        /// </summary>
+        public static string SP_CHART_TITEL_BETRIEB {
+            get {
+                return ResourceManager.GetString("SP_CHART_TITEL_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand – Jahresgang ähnelt.
         /// </summary>
         public static string SP_CHART_TITEL_SOC {

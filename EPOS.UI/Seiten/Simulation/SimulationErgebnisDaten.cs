@@ -447,7 +447,7 @@ public static class Bilder
     public const string Solarthermie = "SOLARTHERMIE";
     public const string Bhkw = "BHKW";
     public const string Photovoltaik = "PHOTOVOLTAIK";
-    public const string SpeicherSoc = "SPEICHER_SOC";
+    public const string SpeicherBetrieb = "SPEICHER_BETRIEB";
     public const string AutarkieMonate = "AUTARKIE_MONATE";
     public const string Waermegang = "WAERMEGANG";
     public const string Stromgang = "STROMGANG";

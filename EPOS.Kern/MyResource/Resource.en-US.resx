@@ -4054,6 +4054,9 @@ Please run the simulation with photovoltaics first.</value>
   <data name="SP_CHART_TITEL_SOC" xml:space="preserve">
     <value>State of charge - annual profile</value>
   </data>
+  <data name="SP_CHART_TITEL_BETRIEB" xml:space="preserve">
+    <value>Load profile and storage operation</value>
+  </data>
   <data name="SP_CHART_ACHSE_SOC" xml:space="preserve">
     <value>Storage [kWh]</value>
   </data>

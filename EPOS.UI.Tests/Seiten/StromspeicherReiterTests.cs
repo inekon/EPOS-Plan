@@ -14,7 +14,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// die Seite mit NULL Designer-Kindern, die im Vorlaeufer vollstaendig
 /// programmatisch entstand.
 ///
-/// <para>Soll: Kopfzeile mit bzw. ohne Lauf, zwoelf Kacheln, das SoC-Bild, die
+/// <para>Soll: Kopfzeile mit bzw. ohne Lauf, zwoelf Kacheln, das Bild „Lastgang
+/// und Speicherbetrieb" samt Umschalter und Reihenwahl (W11b‑B‑26), die
 /// 39 Kennzahlzeilen in drei Gruppen mit ihrer Warnstufe, die Vergleichsspalte
 /// nur mit Vergleichslauf, die Ampel, die Warnzeile „ohne Erzeugung" und der
 /// Vergleichsknopf erst ab zwei Varianten.</para>
@@ -89,14 +90,18 @@ public class StromspeicherReiterTests : BunitContext
 
     private IRenderedComponent<StromspeicherReiter> Zeichnen(SpeicherErgebnisDaten daten,
                                                              Action? csv = null,
-                                                             Action? vergleich = null)
+                                                             Action? vergleich = null,
+                                                             bool mitBild = true)
         => Render<StromspeicherReiter>(p =>
         {
             p.Add(x => x.Daten, daten);
-            p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
+            if (mitBild) p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
             if (vergleich is not null) p.Add(x => x.Vergleich, EventCallback.Factory.Create(this, vergleich));
         });
+
+    /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
+    private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);
 
     // =====================================================================
 
@@ -129,11 +134,101 @@ public class StromspeicherReiterTests : BunitContext
         Assert.Equal(12, seite.FindAll(".epos-kennzahlkachel").Count);
     }
 
+    /// <summary>
+    /// W11b‑B‑26: EIN Bild statt des blossen Ladezustands — vorbelegt mit ALLEN vier
+    /// Reihen und als Ganglinie (nicht sortiert).
+    /// </summary>
     [Fact]
-    public void Das_SoC_Bild_wird_angefordert()
+    public void Das_Betriebsbild_wird_angefordert()
     {
-        Zeichnen(Daten());
-        Assert.Contains(_auftraege, a => a.Bild == Bilder.SpeicherSoc);
+        var seite = Zeichnen(Daten());
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.SpeicherBetrieb);
+        Assert.False(Letzter.Sortiert);
+        Assert.Equal(new[]
+        {
+            SpeicherBetriebsbild.REIHE_OHNE,
+            SpeicherBetriebsbild.REIHE_MIT,
+            SpeicherBetriebsbild.REIHE_SPEICHER,
+            SpeicherBetriebsbild.REIHE_SOC
+        }, seite.Instance.GewaehlteReihen);
+
+        // Das SoC-Bild geht darin auf - es wird nicht daneben noch einmal angefordert.
+        Assert.Single(seite.FindAll("img"));
+    }
+
+    /// <summary>
+    /// Der Umschalter „sortiert" des Bedarfsreiters, hier fuer das eine Bild: Er
+    /// wechselt NUR den Bildauftrag — dieselbe Schalterstellung, derselbe Schluessel.
+    /// </summary>
+    [Fact]
+    public void Der_Schalter_sortiert_wechselt_den_Bildauftrag()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Single(seite.FindAll("label.epos-schalter")
+                           .Where(l => l.TextContent.Trim() == "sortiert"));
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.True(Letzter.Sortiert);
+    }
+
+    /// <summary>
+    /// Je Reihe ein Schalter, beschriftet mit DERSELBEN Ressource wie die Legende
+    /// (Doku_Simulationsergebnis_Darstellung.md, 5). Eine abgewaehlte Reihe faellt aus
+    /// dem Auftrag — und eine LEERE Liste ist etwas anderes als keine Angabe.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenschalter_stehen_im_Bildauftrag()
+    {
+        var seite = Zeichnen(Daten());
+
+        // [0] sortiert, [1..4] die vier Reihen - mehr Kaestchen hat der Reiter nicht.
+        var kaesten = seite.FindAll("input[type='checkbox']");
+        Assert.Equal(5, kaesten.Count);
+
+        var namen = seite.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()).ToArray();
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_BETRIEB_R_OHNE, namen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_CHART_Y2, namen);
+
+        _auftraege.Clear();
+        kaesten[4].Change(false);   // der Ladezustand geht weg
+
+        Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, seite.Instance.GewaehlteReihen);
+        Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, Letzter.Reihen!);
+        Assert.Equal(3, Letzter.Reihen!.Count);
+    }
+
+    /// <summary>
+    /// Alle vier abgewaehlt: Der Auftrag traegt eine LEERE Liste, nicht <c>null</c> —
+    /// der Renderer zeichnet dann seinen Leerhinweis (Hausregel der Ergebnisseite).
+    /// </summary>
+    [Fact]
+    public void Alles_abgewaehlt_ist_nicht_dasselbe_wie_keine_Angabe()
+    {
+        var seite = Zeichnen(Daten());
+
+        var kaesten = seite.FindAll("input[type='checkbox']");
+        for (int i = 1; i <= 4; i++) seite.FindAll("input[type='checkbox']")[i].Change(false);
+
+        Assert.NotNull(Letzter.Reihen);
+        Assert.Empty(Letzter.Reihen!);
+    }
+
+    /// <summary>
+    /// „Kein Delegat ist kein Knopf": Ohne Bilddelegat gaebe es nichts neu zu zeichnen —
+    /// dann stehen weder der Umschalter noch die Reihenwahl da.
+    /// </summary>
+    [Fact]
+    public void Ohne_Bilddelegat_bleiben_die_Schalter_weg()
+    {
+        var seite = Zeichnen(Daten(), mitBild: false);
+
+        Assert.Empty(seite.FindAll("input[type='checkbox']"));
+        Assert.Empty(_auftraege);
     }
 
     /// <summary>Drei Gruppen mit je einer Ueberschriftszeile.</summary>
@@ -340,8 +435,9 @@ public class StromspeicherReiterTests : BunitContext
     }
 
     // =====================================================================
-    //  W11b‑B‑24 — DER DATENZOOM AM SoC-BILD
-    //  (Anwenderentscheid 09.09.2026)
+    //  W11b‑B‑24 — DER DATENZOOM AM BILD DES REITERS
+    //  (Anwenderentscheid 09.09.2026; seit W11b‑B‑26 traegt ihn das Bild
+    //  „Lastgang und Speicherbetrieb", in dem das SoC-Bild aufgegangen ist)
     // =====================================================================
 
     /// <summary>
@@ -351,7 +447,7 @@ public class StromspeicherReiterTests : BunitContext
     /// auf einem Bildpunkt.
     /// </summary>
     [Fact]
-    public async Task Das_SoC_Bild_traegt_den_aufgezogenen_Bereich()
+    public async Task Das_Betriebsbild_traegt_den_aufgezogenen_Bereich()
     {
         var seite = Zeichnen(Daten());
         EPOS.UI.Bausteine.Diagramm rahmen =
@@ -360,14 +456,14 @@ public class StromspeicherReiterTests : BunitContext
         await seite.InvokeAsync(() => rahmen.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
 
         Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.SpeicherSoc).Bereich!.XBis);
+        Assert.Equal(0.5, Letzter.Bereich!.XBis);
 
         seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
              .FindAll("button.epos-diagramm-knopf")
              .First(k => k.TextContent.Trim() == "1:1").Click();
 
         Assert.Null(seite.Instance.Bereich);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.SpeicherSoc).Bereich);
+        Assert.Null(Letzter.Bereich);
     }
 
     /// <summary>
@@ -375,7 +471,7 @@ public class StromspeicherReiterTests : BunitContext
     /// Knopf. Vor W11b‑B‑24 stand an diesem Bild nur „1:1".
     /// </summary>
     [Fact]
-    public void Das_SoC_Bild_traegt_den_Bereichsknopf()
+    public void Das_Betriebsbild_traegt_den_Bereichsknopf()
     {
         var seite = Zeichnen(Daten());
 

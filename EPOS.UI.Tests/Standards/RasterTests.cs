@@ -268,28 +268,59 @@ public class RasterTests : BunitContext
     // Eine virtualisierte Liste braucht eine STABILE Menge (Befund W13-B-6)
     // =====================================================================
 
-    /// <summary>Zaehlt, wie oft ueber die Menge WIRKLICH gelaufen wird.</summary>
-    private sealed class Zaehlfolge : System.Collections.Generic.IEnumerable<Zeile>
+    /// <summary>
+    /// Eine Zeilenmenge, die MITZÄHLT, wer sie wie anfasst — die Prüfhilfe der beiden
+    /// Fälle zum Befund W13‑B‑6.
+    ///
+    /// <para><b>Sie trennt zwei Zugriffe, die sonst nicht zu unterscheiden sind.</b>
+    /// <see cref="Raster{TZeile}"/> zählt seine Zeilen über <see cref="IEnumerable{T}"/>
+    /// (<c>Zaehlen</c> → <c>Enumerable.Count</c>) und läuft damit über
+    /// <see cref="GetEnumerator"/> DIESER Klasse — jeder solche Durchlauf ist eine
+    /// Zählung des Rasters. QuickGrid dagegen fasst die Menge ausschliesslich als
+    /// <see cref="IQueryable{T}"/> an (<c>Items.Count()</c>, <c>Skip</c>/<c>Take</c>);
+    /// das läuft über <see cref="Provider"/> und <see cref="Expression"/> und damit
+    /// über die INNERE Menge, nicht hier vorbei.</para>
+    ///
+    /// <para><b>Und genau deshalb misst sie ohne Uhr.</b> Die Vorfassung dieser beiden
+    /// Fälle zählte Zeichenläufe innerhalb von QuickGrids Entprellung (100 ms) und
+    /// verglich einen vor der Messstrecke genommenen Ausgangsstand. Beides hängt daran,
+    /// dass QuickGrids ASYNCHRONE Ladung genau dann nichts tut — unter Parallellast tat
+    /// sie doch etwas, und die Fälle fielen (zuletzt: erwartet 3 Durchläufe, gemessen
+    /// 5). Was diese Prüfhilfe zählt, kann eine Ladung QuickGrids nicht verändern.</para>
+    /// </summary>
+    private sealed class Zaehlmenge : IQueryable<Zeile>
     {
-        private readonly System.Collections.Generic.List<Zeile> _quelle;
-        private int _durchlaeufe;
+        private readonly IQueryable<Zeile> _quelle;
+        private int _zaehlungen;
 
-        internal Zaehlfolge(int anzahl) =>
-            _quelle = Enumerable.Range(0, anzahl).Select(i => new Zeile(i, "Speicher " + i)).ToList();
+        internal Zaehlmenge(int anzahl)
+            => _quelle = Enumerable.Range(0, anzahl)
+                                   .Select(i => new Zeile(i, "Speicher " + i))
+                                   .ToList()
+                                   .AsQueryable();
 
-        internal int Durchlaeufe => System.Threading.Volatile.Read(ref _durchlaeufe);
+        /// <summary>Wie oft das Raster die Menge gezählt hat.</summary>
+        internal int Zaehlungen => System.Threading.Volatile.Read(ref _zaehlungen);
 
         public System.Collections.Generic.IEnumerator<Zeile> GetEnumerator()
         {
-            System.Threading.Interlocked.Increment(ref _durchlaeufe);
+            System.Threading.Interlocked.Increment(ref _zaehlungen);
             return _quelle.GetEnumerator();
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public Type ElementType => _quelle.ElementType;
+        public System.Linq.Expressions.Expression Expression => _quelle.Expression;
+        public IQueryProvider Provider => _quelle.Provider;
     }
 
+    /// <summary>Die Datenquelle, die das QuickGrid dieses Rasters gerade trägt.</summary>
+    private static IQueryable<Zeile>? Datenquelle(IRenderedComponent<Raster<Zeile>> cut)
+        => cut.FindComponent<QuickGrid<Zeile>>().Instance.Items;
+
     /// <summary>
-    /// <b>Der Waechter zum Befund W13‑B‑6</b> (Windows-Abnahme 09.09.2026: „die Liste
+    /// <b>Der Wächter zum Befund W13‑B‑6</b> (Windows-Abnahme 09.09.2026: „die Liste
     /// blinkt und ist nicht sichtbar", 6 654 Stromspeicher).
     ///
     /// <para><b>Was QuickGrid tut.</b> Es vergleicht seine Datenquelle nach REFERENZ
@@ -302,9 +333,12 @@ public class RasterTests : BunitContext
     /// QuickGrids Stilblatt blendet damit den Körper auf <c>opacity: .25</c> ab — das
     /// gemeldete BLINKEN.</para>
     ///
-    /// <para><b>Gemessen</b> (zehn Zeichenläufe im Abstand von 20 ms, also innerhalb
-    /// der Entprellung): mit frischem <c>AsQueryable()</c> stand <c>loading</c> in
-    /// 10 von 10 Läufen, mit einer stabilen Instanz in 0 von 10.</para>
+    /// <para><b>Gemessen wird deshalb die URSACHE, nicht ihre Folge</b> (10.09.2026,
+    /// W11b‑B‑26): ob die Datenquelle des QuickGrids je Zeichenlauf eine ANDERE
+    /// Instanz ist. Der Vorfassung sah man an der Klasse <c>loading</c> nach, und zwar
+    /// innerhalb von QuickGrids 100-ms-Entprellung — eine Messung über die Uhr, die
+    /// unter Parallellast kippte. Die Referenzfrage stellt sich ohne Uhr, und sie ist
+    /// genau die Frage, die QuickGrid selbst stellt.</para>
     ///
     /// <para>Der Fix sitzt im WIRT (<c>Katalogliste.razor</c>), nicht hier: Ein
     /// Raster, das eine neue Menge stillschweigend für die alte hielte, wäre die
@@ -323,26 +357,32 @@ public class RasterTests : BunitContext
             .Add(x => x.Zeilen, quelle.AsQueryable())
             .Add(x => x.Virtualisiert, true)
             .Add(x => x.KindInhalt, Bezeichnerspalte()));
-        frisch.WaitForAssertion(() => Assert.DoesNotContain("loading", frisch.Find("table").ClassName));
 
-        int laedt = 0;
+        IQueryable<Zeile>? zuletzt = Datenquelle(frisch);
+        int neue = 0;
         for (int i = 0; i < 10; i++)
         {
             frisch.Render(p => p
                 .Add(x => x.Zeilen, quelle.AsQueryable())
                 .Add(x => x.Virtualisiert, true)
                 .Add(x => x.KindInhalt, Bezeichnerspalte()));
-            if (frisch.Find("table").ClassName.Contains("loading")) laedt++;
-        }
-        Assert.Equal(10, laedt);
 
-        // (B) EINE Instanz ueber alle Zeichenlaeufe - der Stand nach dem Fix.
+            IQueryable<Zeile>? jetzt = Datenquelle(frisch);
+            if (!ReferenceEquals(zuletzt, jetzt)) neue++;
+            zuletzt = jetzt;
+        }
+        Assert.Equal(10, neue);
+
+        // (B) EINE Instanz ueber alle Zeichenlaeufe - der Stand nach dem Fix. Sie kommt
+        // unveraendert am QuickGrid an, und das Raster selbst bleibt dieselbe Instanz:
+        // Damit gibt es nichts abzubrechen und nichts neu anzustellen.
         var stabil = quelle.AsQueryable();
         var ruhig = Render<Raster<Zeile>>(p => p
             .Add(x => x.Zeilen, stabil)
             .Add(x => x.Virtualisiert, true)
             .Add(x => x.KindInhalt, Bezeichnerspalte()));
-        ruhig.WaitForAssertion(() => Assert.DoesNotContain("loading", ruhig.Find("table").ClassName));
+
+        QuickGrid<Zeile> raster = ruhig.FindComponent<QuickGrid<Zeile>>().Instance;
 
         for (int i = 0; i < 10; i++)
         {
@@ -350,7 +390,9 @@ public class RasterTests : BunitContext
                 .Add(x => x.Zeilen, stabil)
                 .Add(x => x.Virtualisiert, true)
                 .Add(x => x.KindInhalt, Bezeichnerspalte()));
-            Assert.DoesNotContain("loading", ruhig.Find("table").ClassName);
+
+            Assert.Same(raster, ruhig.FindComponent<QuickGrid<Zeile>>().Instance);
+            Assert.Same(stabil, Datenquelle(ruhig));
         }
     }
 
@@ -360,32 +402,48 @@ public class RasterTests : BunitContext
     /// <c>AsQueryable()</c> über einer Liste ist keine <c>ICollection</c>, sein
     /// <c>Count()</c> läuft WIRKLICH über alle 6 654 Zeilen. Gemessen: vorher zehn
     /// volle Durchläufe für zehn Zeichenläufe, danach keiner.
+    ///
+    /// <para><b>Gezählt wird über die <see cref="Zaehlmenge"/></b> (10.09.2026,
+    /// W11b‑B‑26) — sie sieht NUR die Zählungen des Rasters, nicht QuickGrids eigene
+    /// Zugriffe. Die Vorfassung nahm ihren Ausgangsstand über alles und musste deshalb
+    /// darauf hoffen, dass QuickGrid während der Messstrecke nichts mehr nachlädt; sie
+    /// fiel unter Parallellast. Elf Zeichenläufe, eine Zählung — das ist die Aussage,
+    /// und die hängt an keiner Uhr.</para>
     /// </summary>
     [Fact]
     public void Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
 
-        var folge = new Zaehlfolge(6654);
-        var stabil = folge.AsQueryable();
+        var folge = new Zaehlmenge(6654);
 
         var cut = Render<Raster<Zeile>>(p => p
-            .Add(x => x.Zeilen, stabil)
+            .Add(x => x.Zeilen, folge)
             .Add(x => x.Virtualisiert, true)
             .Add(x => x.KindInhalt, Bezeichnerspalte()));
-        cut.WaitForAssertion(() => Assert.DoesNotContain("loading", cut.Find("table").ClassName));
 
-        int nachDemAufbau = folge.Durchlaeufe;
-        Assert.True(nachDemAufbau > 0, "Ohne einen einzigen Durchlauf misst dieser Fall nichts.");
+        Assert.Equal(1, folge.Zaehlungen);
 
         for (int i = 0; i < 10; i++)
             cut.Render(p => p
-                .Add(x => x.Zeilen, stabil)
+                .Add(x => x.Zeilen, folge)
                 .Add(x => x.Virtualisiert, true)
                 .Add(x => x.KindInhalt, Bezeichnerspalte()));
 
-        Assert.Equal(nachDemAufbau, folge.Durchlaeufe);
+        Assert.Equal(1, folge.Zaehlungen);
         Assert.Equal((true, 6654), cut.Instance.Rasterstand);
+
+        // Und die Gegenprobe: Eine ANDERE Menge wird wieder gezaehlt - der
+        // Zwischenspeicher haengt an der Referenz, nicht an der Zahl.
+        var zweite = new Zaehlmenge(109);
+        cut.Render(p => p
+            .Add(x => x.Zeilen, zweite)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal(1, zweite.Zaehlungen);
+        Assert.Equal(1, folge.Zaehlungen);
+        Assert.Equal((true, 109), cut.Instance.Rasterstand);
     }
 
     private static RenderFragment Bezeichnerspalte() => bau =>

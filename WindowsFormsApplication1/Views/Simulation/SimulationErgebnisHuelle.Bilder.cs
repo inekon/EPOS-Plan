@@ -100,7 +100,7 @@ namespace WindowsFormsApplication1
                     case Bilder.Solarthermie: return BildSolar(a);
                     case Bilder.Bhkw: return BildBhkw(a);
                     case Bilder.Photovoltaik: return BildPv(a);
-                    case Bilder.SpeicherSoc: return BildSoc(a);
+                    case Bilder.SpeicherBetrieb: return BildSpeicherBetrieb(a);
                     case Bilder.AutarkieMonate: return BildAutarkie(a.Zahl);
                     case Bilder.Waermegang: return BildWaermegang(a);
                     case Bilder.Stromgang: return BildStromgang(a);
@@ -644,19 +644,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Ladezustand des Stromspeichers über dem Jahr, im Viertelstundenraster —
-        /// seit W11b‑B‑24 (09.09.2026) mit Datenzoom. Ein Speicher lädt und entlädt im
-        /// TAGESrhythmus; in der Vollansicht liegen rund 40 Viertelstunden auf einem
-        /// Bildpunkt, und erst der Ausschnitt zeigt einen einzelnen Zyklus.
+        /// <b>Lastgang und Speicherbetrieb in EINEM Bild</b> (Anwenderwunsch W11b‑B‑26,
+        /// 10.09.2026): Netzbezug ohne Speicher, Netzbezug mit Speicher, die
+        /// Speicherleistung mit Vorzeichen — und der LADEZUSTAND auf einer zweiten Achse
+        /// rechts.
+        ///
+        /// <para><b>Es löst das SoC-Bild ab</b> und zeigt es nicht daneben noch einmal:
+        /// Der Ladezustand allein beantwortet die Frage des Anwenders nicht („um wie viel
+        /// senkt der Speicher den Bezug, und wann tut er es"), und zweimal dieselbe Kurve
+        /// auf einem Reiter ist eine Kurve zu viel. Der Datenzoom aus W11b‑B‑24 bleibt —
+        /// ein Speicher lädt und entlädt im TAGESrhythmus, und in der Jahresansicht liegen
+        /// rund 40 Viertelstunden auf einem Bildpunkt.</para>
+        ///
+        /// <para><b>Gezeichnet wird im Kern</b> (<see cref="SpeicherBetriebsbild"/>) — die
+        /// Hülle sucht nur die zwei Bestandteile des Laufs zusammen: den EINGANG (Lastgang
+        /// und Erzeugung, seit W11b‑B‑26 im Lauf-Kontext) und das ERGEBNIS (SoC, Ladung,
+        /// Entladung). Ohne einen von beiden gibt es kein Bild, und der Baustein sagt, dass
+        /// keines da ist.</para>
         /// </summary>
-        private byte[] BildSoc(Bildauftrag a)
+        private byte[] BildSpeicherBetrieb(Bildauftrag a)
         {
-            double[] soc = sim.Speicherfuellstand_viertelstuendlich;
+            SpeicherErgebnis erg = sim.Speicherergebnis;
+            StromspeicherLaufKontext kontext = sim.Speicherkontext;
+            SpeicherEingang eingang = kontext == null ? null : kontext.Eingang;
+            if (erg == null || eingang == null) return null;
 
-            return ChartRenderer.Jahresverlauf(
-                MyResource.Resource.SP_CHART_TITEL_SOC, Kopie(soc),
-                MyResource.Resource.SP_CHART_ACHSE_SOC, F_SPEICHER,
-                Fenster(a, soc == null ? 0 : soc.Length));
+            SpeicherParameter p = kontext.Parameter;
+            double dt = p != null && p.DtH > 0.0 ? p.DtH : StromspeicherSimCtrl.INTERVALL_H;
+
+            return SpeicherBetriebsbild.Zeichnen(
+                MyResource.Resource.SP_CHART_TITEL_BETRIEB,
+                eingang, erg, dt, a.Reihen, a.Sortiert,
+                Fenster(a, eingang.Anzahl));
         }
 
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------

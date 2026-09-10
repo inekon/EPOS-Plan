@@ -19,7 +19,19 @@
    einfach weg.
 
    DER OPTIMIERUNGSKNOPF steht - woertlich wie im Vorlaeufer - auf der
-   PARAMETERSEITE (P3) und nicht hier. *@
+   PARAMETERSEITE (P3) und nicht hier.
+
+   EIN BILD STATT DES LADEZUSTANDS (Anwenderwunsch 10.09.2026, W11b-B-26):
+   "Der Lastgang und die Kappung durch den Stromspeicher sowie der Ladezustand
+   des Stromspeichers sollen in einer Grafik sichtbar sein (Umschaltung wie
+   bisher Lastgang und sortierte Dauerlinie)." Bis dahin stand hier NUR der
+   Ladezustand - eine Kurve, die zeigt, wie voll der Speicher ist, aber nicht,
+   wogegen er arbeitet. Jetzt zeigt das Bild den Netzbezug ohne und mit
+   Speicher und die Speicherleistung auf der linken Achse [kW] und den
+   Ladezustand auf der rechten [kWh]; das SoC-Bild geht darin auf und steht
+   nicht noch einmal daneben. Darueber die Hausregel der Ergebnisseite
+   (Doku_Simulationsergebnis_Darstellung.md, 5): erst der Schalter "sortiert",
+   dann je Reihe einer, dann das Bild mit dem Datenzoom aus W11b-B-24. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
@@ -44,10 +56,32 @@
 
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
+
+                @* DIE SCHALTER STEHEN UEBER DEM BILD und nur MIT Bilddelegat - ohne
+                   ihn gaebe es nichts neu zu zeichnen ("Kein Delegat ist kein
+                   Knopf"). *@
+                @if (Bild is not null)
+                {
+                    <div class="epos-simerg-schalter">
+                        <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                                  WertChanged="SortiertGesetzt" />
+                    </div>
+
+                    <div class="epos-simerg-schalter">
+                        @foreach ((string Schluessel, string Text) reihe in Reihenwahl)
+                        {
+                            string schluessel = reihe.Schluessel;
+                            <Schalter Bezeichnung="@reihe.Text" Wert="@ReiheAn(schluessel)"
+                                      WertChanged="@(w => ReiheGesetzt(schluessel, w))" />
+                        }
+                    </div>
+                }
+
                 @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
                    mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
-                   zurück. *@
-                <ChartBild Png="@BildSoc" Alt="@Resource.SP_CHART_TITEL_SOC"
+                   zurück. Er gilt in BEIDEN Zweigen: Auch die Dauerlinie entsteht aus
+                   dem zugeschnittenen Ausschnitt (Doku, 5.1). *@
+                <ChartBild Png="@BildBetrieb" Alt="@Resource.SP_CHART_TITEL_BETRIEB"
                            BereichGewaehlt="@(b => _bereich = b)"
                            Zurueckgesetzt="@(() => _bereich = null)" />
 
@@ -151,7 +185,7 @@
     /// <summary>Kopf, Kacheln, Kennzahlen, Ampel und Warnzeile.</summary>
     [Parameter] public SpeicherErgebnisDaten Daten { get; set; } = new SpeicherErgebnisDaten();
 
-    /// <summary>Liefert das SoC-Bild.</summary>
+    /// <summary>Liefert das Bild „Lastgang und Speicherbetrieb"; ohne ihn bleibt es leer.</summary>
     [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
 
     /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
@@ -160,8 +194,14 @@
     /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Vergleich { get; set; }
 
-    /// <summary>Der aufgezogene Zeitausschnitt des SoC-Bildes; <c>null</c> = ganzes Jahr.</summary>
+    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
     public Diagrammbereich? Bereich => _bereich;
+
+    /// <summary>Steht die Dauerlinie vorn? (Prüfhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    /// <summary>Die gewählten Reihenschlüssel in der Reihenfolge des Bildes (Prüfhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
     private int Spalten => Daten.MitVergleich ? 4 : 3;
 
@@ -170,8 +210,62 @@
     // Bildpunkt, und erst der Ausschnitt zeigt einen einzelnen Zyklus.
     private Diagrammbereich? _bereich;
 
-    private byte[]? BildSoc =>
-        Bild?.Invoke(new Bildauftrag(Bilder.SpeicherSoc, false, -1, null, 0.0, _bereich));
+    // W11b‑B‑26: Dauerlinie statt Ganglinie - derselbe Schalter wie im Bedarfsreiter
+    // (SIM_CHK_SORTIERT), und dieselbe Bedeutung: jede Reihe FUER SICH absteigend.
+    private bool _sortiert;
+
+    // Die abgewaehlten Reihen. Vorbelegt ist ALLES an (Hausregel der Ergebnisseite);
+    // gemerkt wird deshalb die Abwahl - so bleibt die Vorbelegung eine Aussage ueber
+    // die Reihenliste und nicht eine zweite Liste, die man mitpflegen muss.
+    private readonly HashSet<string> _abgewaehlt = new HashSet<string>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Die wählbaren Reihen in der Reihenfolge des Bildes, jede mit DERSELBEN
+    /// Ressource, die auch in der Legende steht (Doku_Simulationsergebnis_Darstellung.md,
+    /// 5). Die SCHWELLE fehlt: Sie gehört zur Lastspitzenkappung, und die ist eine
+    /// Berechnungsart der Auslegungsoptimierung — der Simulationslauf fährt
+    /// Dauernutzung, Nachtnutzung oder Preissteuerung.
+    /// </summary>
+    private static IEnumerable<(string Schluessel, string Text)> Reihenwahl
+    {
+        get
+        {
+            yield return (WindowsFormsApplication1.SpeicherBetriebsbild.REIHE_OHNE,
+                          Resource.OPT_BETRIEB_R_OHNE);
+            yield return (WindowsFormsApplication1.SpeicherBetriebsbild.REIHE_MIT,
+                          Resource.OPT_BETRIEB_R_MIT);
+            yield return (WindowsFormsApplication1.SpeicherBetriebsbild.REIHE_SPEICHER,
+                          Resource.OPT_BETRIEB_R_LEISTUNG);
+            yield return (WindowsFormsApplication1.SpeicherBetriebsbild.REIHE_SOC,
+                          Resource.PEAK_CHART_Y2);
+        }
+    }
+
+    private bool ReiheAn(string schluessel) => !_abgewaehlt.Contains(schluessel);
+
+    private void ReiheGesetzt(string schluessel, bool an)
+    {
+        if (an) _abgewaehlt.Remove(schluessel); else _abgewaehlt.Add(schluessel);
+    }
+
+    private void SortiertGesetzt(bool wert) => _sortiert = wert;
+
+    /// <summary>
+    /// Die Serienschlüssel des Bildes — eine LEERE Liste heißt „keine Reihe" und ist
+    /// etwas anderes als <c>null</c> („alle"); der Renderer zeichnet dann seinen
+    /// Leerhinweis.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        foreach ((string Schluessel, string Text) r in Reihenwahl)
+            if (ReiheAn(r.Schluessel)) liste.Add(r.Schluessel);
+        return liste;
+    }
+
+    private byte[]? BildBetrieb =>
+        Bild?.Invoke(new Bildauftrag(Bilder.SpeicherBetrieb, _sortiert, -1, Reihen(),
+                                     0.0, _bereich));
 
     /// <summary>
     /// Die Zeilen EINER Gruppe, jede mit der Ueberschrift des Unterabschnitts, den

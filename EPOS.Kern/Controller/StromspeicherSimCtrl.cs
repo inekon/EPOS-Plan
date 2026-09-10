@@ -237,6 +237,11 @@ namespace WindowsFormsApplication1
             SpeicherEingang eingang = BaueEingang(sim, idProjekt, kontext.Variante);
             ISpeicherStrategie strategie = BaueStrategie(kontext, parameter);
 
+            // Der Eingang geht MIT in den Kontext (W11b‑B‑26): Das Bild „Lastgang und
+            // Speicherbetrieb" des Ergebnisreiters zeigt den Netzbezug ohne Speicher,
+            // und der ist Last minus Erzeugung - beides steht nur hier.
+            kontext.Eingang = eingang;
+
             SpeicherErgebnis ergebnis;
             Arbitrage arbitrage = strategie as Arbitrage;
             if (arbitrage != null)

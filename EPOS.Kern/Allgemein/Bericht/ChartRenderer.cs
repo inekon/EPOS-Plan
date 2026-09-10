@@ -2277,116 +2277,215 @@ namespace WindowsFormsApplication1
         /// <b>B10 — LASTGANG UND SPEICHERBETRIEB</b> (Befund W11b‑B‑25, Windows-Abnahme
         /// 09.09.2026: „Lastgang und Speicherung in einer Grafik").
         ///
-        /// <para><b>Alles in EINER Achse, und zwar in kW.</b> Netzbezug ohne Speicher,
-        /// Netzbezug mit Speicher, die erreichte Kappungsschwelle und die
-        /// Speicherleistung sind VIER LEISTUNGEN. Eine zweite Achse behauptete eine
-        /// zweite Einheit, wo keine ist, und machte die entscheidende Aussage des
+        /// <para><b>Die LEISTUNGEN teilen sich EINE Achse, und zwar in kW.</b> Netzbezug
+        /// ohne Speicher, Netzbezug mit Speicher, die erreichte Kappungsschwelle und die
+        /// Speicherleistung sind VIER LEISTUNGEN. Eine zweite Achse für sie behauptete
+        /// eine zweite Einheit, wo keine ist, und machte die entscheidende Aussage des
         /// Bildes unlesbar: um wie viel die Speicherleistung die Bezugsspitze senkt.
         /// Die Speicherleistung trägt ihr Vorzeichen — Entladen positiv, Laden negativ —
         /// und liegt damit von selbst um die Nulllinie.</para>
         ///
-        /// <para>Gezeichnet wird wie beim <see cref="Temperaturverlauf"/>: vorzeichen-
-        /// fähige Achse von Min bis Max des ANGEZEIGTEN Ausschnitts, Legende oben,
-        /// Datenzoom über <paramref name="fenster"/> (W11b‑B‑24). Ohne Mindestspanne —
-        /// die gibt es nur für Temperaturen.</para>
+        /// <para><b>DER LADEZUSTAND BEKOMMT DIE RECHTE ACHSE</b> (Anwenderwunsch W11b‑B‑26,
+        /// 10.09.2026: „der Lastgang und die Kappung durch den Stromspeicher sowie der
+        /// Ladezustand sollen in einer Grafik sichtbar sein"). Er ist eine ENERGIE [kWh]
+        /// und damit der eine Fall, für den der Absatz darüber NICHT gilt: Auf der
+        /// kW-Skala lägen bei 400 kWh Speicherinhalt und 40 kW Bezug die Leistungen platt
+        /// auf der Nulllinie. Die rechte Achse fängt unten bei null an und trägt
+        /// Beschriftung und Zahlen in der FARBE ihrer Reihe — ihre Null muss deshalb nicht
+        /// auf der Null der linken liegen, die vorzeichenfähig ist. Genau so hält es
+        /// <see cref="ErzeugerStapel"/> mit seiner zweiten Achse (B3).</para>
+        ///
+        /// <para>Gezeichnet wird sonst wie beim <see cref="Temperaturverlauf"/>:
+        /// vorzeichenfähige linke Achse von Min bis Max des ANGEZEIGTEN Ausschnitts,
+        /// Legende oben, Datenzoom über <paramref name="fenster"/> (W11b‑B‑24). Ohne
+        /// Mindestspanne — die gibt es nur für Temperaturen.</para>
         /// </summary>
-        /// <param name="titel">Überschrift, z. B. „Lastgang und Speicherbetrieb [kW] — Woche der Jahresspitze".</param>
-        /// <param name="reihen">Die Reihen in Zeichenreihenfolge; leere entfallen still.</param>
+        /// <param name="titel">Überschrift, z. B. „Lastgang und Speicherbetrieb — ganzes Jahr".</param>
+        /// <param name="reihen">Die Reihen der LINKEN Achse in Zeichenreihenfolge; leere entfallen still.</param>
+        /// <param name="yTitel">Beschriftung der linken y-Achse; <c>null</c> = keine.</param>
+        /// <param name="ladezustand">Die Reihe der RECHTEN Achse; <c>null</c> = keine zweite Achse.</param>
+        /// <param name="y2Titel">Beschriftung der rechten y-Achse — sie nennt deren EINHEIT.</param>
+        /// <param name="sortiert">
+        /// Dauerlinie statt Ganglinie: jede Reihe FÜR SICH absteigend sortiert, die Reihe
+        /// der rechten Achse eingeschlossen — dieselbe Regel wie im
+        /// <see cref="ErzeugerStapel"/>. Zugeschnitten wird ZUERST, die Dauerlinie entsteht
+        /// also aus dem gezeigten Ausschnitt (Doku_Simulationsergebnis_Darstellung.md, 5.1).
+        /// </param>
         /// <param name="fenster">Der Zeitausschnitt; <c>null</c> = die volle Reihe.</param>
         public static byte[] Speicherbetrieb(string titel, IReadOnlyList<Reihe> reihen,
+                                             string yTitel = null, Reihe ladezustand = null,
+                                             string y2Titel = null, bool sortiert = false,
                                              Achsenfenster fenster = null)
-            => Verlaufsbild(titel, reihen, true, 0.0, fenster);
+            => Verlaufsbild(titel, reihen, true, 0.0, fenster, yTitel, ladezustand, y2Titel, sortiert);
 
         /// <summary>
         /// Die gemeinsame Zeichnung von <see cref="Temperaturverlauf"/> und
         /// <see cref="Speicherbetrieb"/> — beide zeigen mehrere gleich skalierte
         /// Reihen über der Zeit, nur die Mindestspanne der Achse unterscheidet sie.
+        ///
+        /// <para>Die RECHTE Achse, die Achsenbeschriftung und die Dauerlinie kommen mit
+        /// W11b‑B‑26 dazu und werden bislang nur vom Speicherbetrieb genutzt; der
+        /// Temperaturverlauf lässt alle drei weg und zeichnet Bild für Bild das, was er
+        /// vorher zeichnete.</para>
         /// </summary>
         private static byte[] Verlaufsbild(string titel, IReadOnlyList<Reihe> reihen, bool minAuto,
-                                           double mindestspanne, Achsenfenster fenster)
+                                           double mindestspanne, Achsenfenster fenster,
+                                           string yTitel = null, Reihe zweiteAchse = null,
+                                           string y2Titel = null, bool sortiert = false)
         {
             int W = 1240, H = 560;
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
                 Titel(g, titel ?? "", W);
-                var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
 
                 // Der Zuschnitt steht GANZ oben: Alles darunter rechnet mit dem Ausschnitt,
                 // ohne davon zu wissen. gesamt merkt sich die volle Laenge - die
                 // Achsenbeschriftung nennt Jahresstunden, nicht Fensterstunden.
                 List<Reihe> ganz = Brauchbare(reihen);
-                int gesamt = ganz.Count > 0 ? ganz[0].Werte.Length : 0;
+                int gesamt = ganz.Count > 0 ? ganz[0].Werte.Length
+                           : Brauchbar(zweiteAchse) ? zweiteAchse.Werte.Length : 0;
                 List<Reihe> gueltig = fenster == null ? ganz : Brauchbare(Zugeschnitten(ganz, fenster));
-                if (gueltig.Count == 0)
+                if (fenster != null) zweiteAchse = Zugeschnitten(zweiteAchse, fenster);
+
+                // W11b-B-26: Die zweite Achse braucht Platz fuer ihre Zahlen - dieselben
+                // 50 Bildpunkte, die der ErzeugerStapel ihr laesst (B3).
+                bool mitY2 = Brauchbar(zweiteAchse);
+                var rc = SKRect.Create(100f, 110f, W - (mitY2 ? 190f : 140f), 360f);
+
+                if (gueltig.Count == 0 && !mitY2)
                 {
                     Leerhinweis(g, rc);
                     return Png(flaeche);
                 }
 
-                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                        100f, 66f, W - 30f);
+                var leg = gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+                if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
+                Legende(g, leg, 100f, 66f, W - 30f);
 
-                double min = minAuto ? gueltig.Min(r => r.Werte.Min()) : 0;
-                double max = gueltig.Max(r => r.Werte.Max());
-
-                // MINDESTSPANNE (Temperatur: 5 K, woertlich aus
-                // SpeichertemperaturAnzeigen :2607-2620; Leistungsbilder: keine).
-                if (mindestspanne > 0.0 && max - min < mindestspanne)
+                // Die LINKE Achse spannt sich ueber die Reihen der linken Achse; die Reihe
+                // rechts hat ihre eigene Skala und darf sie nicht mitziehen. Ohne eine
+                // einzige linke Reihe (der Anwender hat alle Leistungen abgewaehlt und nur
+                // den Ladezustand stehen lassen) bleibt die linke Achse ganz weg - eine
+                // Skala 0..1 ohne Reihe waere eine Behauptung ueber nichts.
+                bool mitY1 = gueltig.Count > 0;
+                double min = 0.0, max = 1.0;
+                if (mitY1)
                 {
-                    double mitte = (max + min) / 2.0;
-                    min = mitte - mindestspanne / 2.0;
-                    max = mitte + mindestspanne / 2.0;
+                    min = minAuto ? gueltig.Min(r => r.Werte.Min()) : 0;
+                    max = gueltig.Max(r => r.Werte.Max());
+
+                    // MINDESTSPANNE (Temperatur: 5 K, woertlich aus
+                    // SpeichertemperaturAnzeigen :2607-2620; Leistungsbilder: keine).
+                    if (mindestspanne > 0.0 && max - min < mindestspanne)
+                    {
+                        double mitte = (max + min) / 2.0;
+                        min = mitte - mindestspanne / 2.0;
+                        max = mitte + mindestspanne / 2.0;
+                    }
+
+                    // Eine Reihe aus lauter gleichen Werten (eine waagerechte Schwelle als
+                    // einzige gewaehlte Reihe) haette sonst eine Spanne von 0 und teilte
+                    // spaeter durch null.
+                    if (max - min <= 0.0) { min -= 0.5; max += 0.5; }
+                    min = Math.Floor(min);
+                    max = Math.Ceiling(max);
+
+                    // Raster und y-Beschriftung ueber die vorzeichenfaehige Spanne.
+                    using (var raster = Strich(SKColors.Gainsboro, 1f))
+                    using (var f = Schrift(15f))
+                        for (int i = 0; i <= 5; i++)
+                        {
+                            double wert = min + (max - min) * i / 5.0;
+                            float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                            g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                            string lab = wert.ToString("N0", DE);
+                            Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                                 y - TextHoehe(f) / 2f);
+                        }
                 }
 
-                // Eine Reihe aus lauter gleichen Werten (eine waagerechte Schwelle als
-                // einzige gewaehlte Reihe) haette sonst eine Spanne von 0 und teilte
-                // spaeter durch null.
-                if (max - min <= 0.0) { min -= 0.5; max += 0.5; }
-                min = Math.Floor(min);
-                max = Math.Ceiling(max);
-
-                // Raster und y-Beschriftung ueber die vorzeichenfaehige Spanne.
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
-                    for (int i = 0; i <= 5; i++)
-                    {
-                        double wert = min + (max - min) * i / 5.0;
-                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
-                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
-                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
-                             y - TextHoehe(f) / 2f);
-                    }
                 using (var achse = Strich(SKColors.DimGray, 2f))
                 {
                     g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
                     g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
                 }
-                if (fenster == null) XAchse(g, rc, Achse.Jahresstunden, gueltig[0].Werte.Length);
+                if (!string.IsNullOrEmpty(yTitel))
+                    using (var f = Schrift(15f))
+                        Text(g, yTitel, f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+
+                int n = mitY1 ? gueltig[0].Werte.Length : zweiteAchse.Werte.Length;
+                if (fenster == null) XAchse(g, rc, Achse.Jahresstunden, n);
                 else XAchseFenster(g, rc, fenster, gesamt);
 
                 foreach (Reihe r in gueltig)
+                    VerlaufLinie(g, rc, sortiert ? AbsteigendKopie(r.Werte) : r.Werte,
+                                 min, max, r.Farbe, r.Breite > 0 ? r.Breite : 2f, r.Gestrichelt);
+
+                // W11b-B-26: die zweite Achse mit EIGENER Skala, von null bis zum
+                // geglaetteten Hoechstwert - wie im ErzeugerStapel (B3).
+                if (mitY2)
                 {
-                    int schrittweite = Math.Max(1, r.Werte.Length / (int)rc.Width);
-                    var punkte = new List<SKPoint>();
-                    for (int i = 0; i < r.Werte.Length; i += schrittweite)
+                    double[] w2 = sortiert ? AbsteigendKopie(zweiteAchse.Werte) : zweiteAchse.Werte;
+                    double max2 = Nice(w2.Max());
+                    if (max2 <= 0) max2 = 1;
+
+                    VerlaufLinie(g, rc, w2, 0, max2, zweiteAchse.Farbe,
+                                 zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f,
+                                 zweiteAchse.Gestrichelt);
+
+                    using (var achsenstift = Strich(zweiteAchse.Farbe, 2f))
+                        g.DrawLine(rc.Right, rc.Top, rc.Right, rc.Bottom, achsenstift);
+                    using (var f = Schrift(15f))
                     {
-                        float x = rc.Left + (float)i / (r.Werte.Length - 1) * rc.Width;
-                        float y = (float)(rc.Bottom - (r.Werte[i] - min) / (max - min) * rc.Height);
-                        punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
-                    }
-                    using (var strichel = r.Gestrichelt
-                               ? SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f) : null)
-                    using (var stift = Strich(r.Farbe, r.Breite > 0 ? r.Breite : 2f))
-                    {
-                        stift.StrokeJoin = SKStrokeJoin.Round;
-                        if (strichel != null) stift.PathEffect = strichel;
-                        Linienzug(g, punkte.ToArray(), stift);
+                        for (int i = 0; i <= 4; i++)
+                        {
+                            double wert = max2 * i / 4.0;
+                            float y = (float)(rc.Bottom - wert / max2 * rc.Height);
+                            Text(g, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
+                                 rc.Right + 8f, y - TextHoehe(f) / 2f);
+                        }
+                        Text(g, y2Titel ?? "", f, zweiteAchse.Farbe, rc.Right - 40f, rc.Top - 24f);
                     }
                 }
 
                 return Png(flaeche);
+            }
+        }
+
+        /// <summary>
+        /// EINE Linie des <see cref="Verlaufsbild"/>: vorzeichenfaehige Skala von
+        /// <paramref name="min"/> bis <paramref name="max"/>, untertastet auf die
+        /// Bildbreite und an den Feldraendern geklemmt, wahlweise gestrichelt.
+        /// </summary>
+        /// <remarks>
+        /// Sie steht neben <see cref="ZeichneLinie"/> und nicht darin: Diese hier kennt
+        /// den Strichel (die untere Speicherschicht, die erreichte Kappungsschwelle) und
+        /// klemmt Werte ausserhalb der Spanne an den Rand, statt sie aus dem Bild laufen
+        /// zu lassen - beides braucht der Verlauf, und beides braucht der Stapel nicht.
+        /// </remarks>
+        private static void VerlaufLinie(SKCanvas g, SKRect rc, double[] werte,
+                                         double min, double max, SKColor farbe,
+                                         float staerke, bool gestrichelt)
+        {
+            if (werte == null || werte.Length < 2 || max - min <= 0.0) return;
+
+            int schrittweite = Math.Max(1, werte.Length / (int)rc.Width);
+            var punkte = new List<SKPoint>();
+            for (int i = 0; i < werte.Length; i += schrittweite)
+            {
+                float x = rc.Left + (float)i / (werte.Length - 1) * rc.Width;
+                float y = (float)(rc.Bottom - (werte[i] - min) / (max - min) * rc.Height);
+                punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
+            }
+
+            using (var strichel = gestrichelt
+                       ? SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f) : null)
+            using (var stift = Strich(farbe, staerke))
+            {
+                stift.StrokeJoin = SKStrokeJoin.Round;
+                if (strichel != null) stift.PathEffect = strichel;
+                Linienzug(g, punkte.ToArray(), stift);
             }
         }
 

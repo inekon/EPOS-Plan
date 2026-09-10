@@ -18,6 +18,21 @@ namespace WindowsFormsApplication1
         public SpeicherParameter Parameter;
 
         /// <summary>
+        /// Die an die Engine übergebenen ZEITREIHEN — Lastgang, Erzeugung, Preise
+        /// (W11b‑B‑26, Anwenderwunsch 10.09.2026). <c>null</c>, solange kein Eingang
+        /// gebaut wurde.
+        /// </summary>
+        /// <remarks>
+        /// <b>Wozu.</b> Das <see cref="SpeicherErgebnis"/> führt nur, was der Speicher
+        /// TUT (SoC, Ladung, Entladung) — nicht, wogegen er es tut. Das Bild „Lastgang
+        /// und Speicherbetrieb" des Ergebnisreiters braucht beides: Der Netzbezug ohne
+        /// Speicher ist Last minus Erzeugung, und beide Reihen stehen hier. Es sind
+        /// dieselben Feldverweise, die die Engine bekommen hat — kein zweiter Satz
+        /// Zeitreihen, sondern der eine, mit dem gerechnet wurde.
+        /// </remarks>
+        public SpeicherEingang Eingang;
+
+        /// <summary>
         /// Die aktive Variante des Projekts, oder ein Modell mit den Vorbelegungen,
         /// wenn das Projekt keine führt. Nie <c>null</c>.
         /// </summary>

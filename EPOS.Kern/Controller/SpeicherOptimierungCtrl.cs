@@ -325,18 +325,24 @@ namespace WindowsFormsApplication1
         // Die sprachneutralen REIHENSCHLUESSEL des Betriebsbildes (W11b‑B‑25) —
         // dieselbe Bauart wie die Serienschlüssel der Ergebnisreiter: Der Dialog wählt
         // über den Schlüssel, die Beschriftung kommt aus den Ressourcen.
+        //
+        // Sie STEHEN seit W11b‑B‑26 in SpeicherBetriebsbild: Dasselbe Bild gibt es
+        // seither auch im Stromspeicher-Reiter der Ergebnisseite, und ein Vokabular,
+        // das zwei Masken teilen, gehört zum Bild und nicht zu einer von ihnen. Hier
+        // bleiben die Namen stehen, damit der Dialog sie weiter unter dem Namen seines
+        // Controllers findet.
 
         /// <summary>Reihenschlüssel: Netzbezug ohne Speicher.</summary>
-        public const string REIHE_OHNE = "OHNE_SPEICHER";
+        public const string REIHE_OHNE = SpeicherBetriebsbild.REIHE_OHNE;
 
         /// <summary>Reihenschlüssel: Netzbezug mit Speicher.</summary>
-        public const string REIHE_MIT = "MIT_SPEICHER";
+        public const string REIHE_MIT = SpeicherBetriebsbild.REIHE_MIT;
 
         /// <summary>Reihenschlüssel: die erreichte Kappungsschwelle (nur Lastspitzenkappung).</summary>
-        public const string REIHE_SCHWELLE = "SCHWELLE";
+        public const string REIHE_SCHWELLE = SpeicherBetriebsbild.REIHE_SCHWELLE;
 
         /// <summary>Reihenschlüssel: Speicherleistung, Entladen positiv.</summary>
-        public const string REIHE_SPEICHER = "SPEICHERLEISTUNG";
+        public const string REIHE_SPEICHER = SpeicherBetriebsbild.REIHE_SPEICHER;
 
         /// <summary>Kleinste zulässige Stützstellenzahl der Kapazitätsachse.</summary>
         public const int STUETZSTELLEN_MIN = 2;
@@ -978,15 +984,14 @@ namespace WindowsFormsApplication1
                     SpeicherErgebnis erg = strategie.Berechne(eingang, p);
                     Speicherleistung(speicher, erg, dt);
 
-                    // „Ohne Speicher" ist die RESIDUALLAST - Last abzueglich der
-                    // Erzeugung, die ohnehin da waere. Bewusst NICHT bei 0 gekappt:
-                    // Ein Ueberschuss ist eine Aussage des Bildes, keine Stoerung.
-                    for (int i = 0; i < n; i++)
-                    {
-                        double erzeugung = Wert(eingang.PvKw, i) + Wert(eingang.BhkwKw, i);
-                        ohne[i] = eingang.LastKw[i] - erzeugung;
-                        mit[i] = ohne[i] - speicher[i];
-                    }
+                    // Residuallast und Netzbezug rechnet seit W11b‑B‑26 das Bild selbst
+                    // (SpeicherBetriebsbild.Netzbezug) - der Ergebnisreiter braucht
+                    // dieselben zwei Zeilen, und zwei Fassungen derselben Vorzeichenregel
+                    // waeren eine zu viel.
+                    double[] rOhne, rMit;
+                    SpeicherBetriebsbild.Netzbezug(eingang, speicher, out rOhne, out rMit);
+                    Array.Copy(rOhne, ohne, n);
+                    Array.Copy(rMit, mit, n);
                 }
             }
             catch (Exception ex)
@@ -1026,7 +1031,7 @@ namespace WindowsFormsApplication1
             // Der Datenzoom bezieht sich auf das GEZEIGTE Fenster, nicht auf das Jahr -
             // der Anwender zieht ein Rechteck in dem Bild, das vor ihm steht.
             bild.Png = ChartRenderer.Speicherbetrieb(bild.Titel, liste,
-                ausschnitt == null ? null : ChartRenderer.FensterAusBild(ausschnitt, laenge));
+                fenster: ausschnitt == null ? null : ChartRenderer.FensterAusBild(ausschnitt, laenge));
 
             return bild;
         }
@@ -1042,11 +1047,11 @@ namespace WindowsFormsApplication1
         private static void Speicherleistung(double[] ziel, SpeicherErgebnis erg, double dt)
         {
             if (erg == null) return;
-            double[] laden = erg.LadungAcKwh;
-            double[] entladen = erg.EntladungAcKwh;
 
-            for (int i = 0; i < ziel.Length; i++)
-                ziel[i] = (Wert(entladen, i) - Wert(laden, i)) / dt;
+            // Die Formel steht seit W11b‑B‑26 in SpeicherBetriebsbild.LeistungKw: Der
+            // Stromspeicher-Reiter zeichnet dasselbe Bild aus dem Simulationslauf, und
+            // das Vorzeichen ist eine Aussage des Bildes, keine des Optimierers.
+            Array.Copy(SpeicherBetriebsbild.LeistungKw(erg, dt, ziel.Length), ziel, ziel.Length);
         }
 
         /// <summary>
