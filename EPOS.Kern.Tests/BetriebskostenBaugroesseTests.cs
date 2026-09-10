@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -86,15 +87,15 @@ namespace EPOS.Kern.Tests
 
             // --- Geräte ---
             Sql("INSERT INTO Tab_Stromspeicher (ID, ID_Projekt, Bezeichner, Leistung, Energie) VALUES (" +
-                G_SPEICHER + ", " + PROJEKT + ", 'Growatt 100/129', " + SP_LEISTUNG + ", " + SP_ENERGIE + ")");
+                G_SPEICHER + ", " + PROJEKT + ", 'Growatt 100/129', " + Z(SP_LEISTUNG) + ", " + Z(SP_ENERGIE) + ")");
             Sql("INSERT INTO Tab_PV (ID, ID_Projekt, Bezeichner, Leistung) VALUES (" +
-                G_PV + ", " + PROJEKT + ", 'Modul 400', " + PV_MODUL_W + ")");
+                G_PV + ", " + PROJEKT + ", 'Modul 400', " + Z(PV_MODUL_W) + ")");
             Sql("INSERT INTO Tab_WP (ID, ID_Projekt, Bezeichner, Nennleistung) VALUES (" +
-                G_WP + ", " + PROJEKT + ", 'WP 12', " + WP_NENNLEISTUNG + ")");
+                G_WP + ", " + PROJEKT + ", 'WP 12', " + Z(WP_NENNLEISTUNG) + ")");
             Sql("INSERT INTO Tab_Solarkollektoren (ID, ID_Projekt, Bezeichner, Aperturflaeche) VALUES (" +
-                G_SOLAR + ", " + PROJEKT + ", 'Kollektor 2,5', " + SOLAR_APERTUR + ")");
+                G_SOLAR + ", " + PROJEKT + ", 'Kollektor 2,5', " + Z(SOLAR_APERTUR) + ")");
             Sql("INSERT INTO Tab_Heizkessel (ID, ID_Projekt, Bezeichner, Ptherm) VALUES (" +
-                G_KESSEL + ", " + PROJEKT + ", 'Kessel 40', " + KESSEL_PTHERM + ")");
+                G_KESSEL + ", " + PROJEKT + ", 'Kessel 40', " + Z(KESSEL_PTHERM) + ")");
 
             // --- Anlagen (ID_Type wie im Assistenten, sonst zählt die PV nicht mit) ---
             Anlage(A_SPEICHER, "Speicher", WizardItemClass.SP_TYP, "ID_SP", G_SPEICHER, null, 0);
@@ -122,14 +123,28 @@ namespace EPOS.Kern.Tests
             Sql("INSERT INTO Tab_ErgebnisStromspeicher " +
                 "(ID, ID_Ergebnis, ID_Energieanlage, Bezeichner, Entladung_Gesamt, Ladung_Gesamt) VALUES (" +
                 ERGEBNIS + ", " + ERGEBNIS + ", " + A_SPEICHER + ", 'Speicher', " +
-                entladungKwh + ", " + (entladungKwh * 1.1) + ")");
+                Z(entladungKwh) + ", " + Z(entladungKwh * 1.1) + ")");
         }
+
+        /// <summary>Die sieben Geräte-Verweisspalten der Anlagenzeile. Sie müssen ALLE
+        /// gesetzt werden: Ihr Spaltenvorgabewert ist 0, und die Fremdschlüssel der
+        /// SQLite-Fassung lesen die 0 als echten Verweis auf ein Gerät, das es nicht
+        /// gibt (gemessen: „FOREIGN KEY constraint failed"). Der Bestand führt dort
+        /// NULL.</summary>
+        private static readonly string[] GERAETEVERWEISE =
+        { "ID_WP", "ID_Kessel", "ID_BHKW", "ID_PV", "ID_Solar", "ID_SP", "ID_PUFFER" };
 
         private static void Anlage(int id, string name, int typ, string verweisSpalte, int geraet,
                                    string mengenSpalte, int menge)
         {
-            string spalten = "ID, ID_Projekt, Bezeichner, ID_Type, [" + verweisSpalte + "]";
-            string werte = id + ", " + PROJEKT + ", '" + name + "', " + typ + ", " + geraet;
+            string spalten = "ID, ID_Projekt, Bezeichner, ID_Type";
+            string werte = id + ", " + PROJEKT + ", '" + name + "', " + typ;
+            foreach (string s in GERAETEVERWEISE)
+            {
+                spalten += ", [" + s + "]";
+                werte += ", " + (string.Equals(s, verweisSpalte, System.StringComparison.Ordinal)
+                                 ? geraet.ToString() : "NULL");
+            }
             if (mengenSpalte != null)
             {
                 spalten += ", [" + mengenSpalte + "]";
@@ -147,7 +162,16 @@ namespace EPOS.Kern.Tests
                 " Kostenart, Bemessung, Einheitpreis, ID_Anlage) VALUES (" +
                 id + ", " + PROJEKT + ", " + STAMM_ID + ", " + komponente + ", " +
                 DbWerte.KOSTEN_KATEGORIE_BETRIEB + ", 0.0, '" +
-                DbWerte.KOSTENART_BETRIEBSGEBUNDEN + "', '" + bemessung + "', " + satz + ", " + anlage + ")");
+                DbWerte.KOSTENART_BETRIEBSGEBUNDEN + "', '" + bemessung + "', " + Z(satz) + ", " + anlage + ")");
+        }
+
+        /// <summary>Eine Zahl als SQL-LITERAL. Zwingend invariant: Unter de-DE macht
+        /// <c>ToString()</c> aus 0,01 ein „0,01" — im INSERT wäre das eine Spalte zu viel,
+        /// die Anweisung scheitert, und <c>DataRepository.ExecuteSQL</c> schluckt den
+        /// Fehler still (gemessen am 10.09.2026: zwei von sieben Zeilen fehlten).</summary>
+        private static string Z(double wert)
+        {
+            return wert.ToString(CultureInfo.InvariantCulture);
         }
 
         private static void Sql(string sql) { DataRepository.ExecuteSQL(sql); }
@@ -372,6 +396,35 @@ namespace EPOS.Kern.Tests
             Assert.True(TechnikPlanwertCtrl.KenntBaugroesse(komponente, bemessung));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
                          WirtschaftlichkeitCtrl.BasisGrund(bemessung, komponente));
+        }
+
+        /// <summary>
+        /// H4c: Die beiden Prozentarten der KOSTENWELT bemessen sich an einem
+        /// Euro-Betrag der Investseite („% der Investition" an der Kaskadensumme,
+        /// „% der Erzeugerkosten" an der Hauptposition). Fehlt er, fehlen
+        /// Investitionskosten — nicht ein Lauf und nicht ein Gerät.
+        /// </summary>
+        [Theory]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_INVESTITION)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN)]
+        public void Die_Prozentarten_der_Kostenwelt_melden_fehlende_Investitionskosten(string bemessung)
+        {
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_INVEST,
+                         WirtschaftlichkeitCtrl.BasisGrund(bemessung, 5));
+        }
+
+        /// <summary>
+        /// H4c: Die drei Arten, die seit FX2 (Befund B-4) reine Konserve sind, verweisen
+        /// auf die PFLEGE — sie werden bewusst nicht ermittelt.
+        /// </summary>
+        [Theory]
+        [InlineData(DbWerte.BEMESSUNG_EUR_PRO_KWH)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN)]
+        public void Die_Konservenarten_verweisen_auf_die_Pflege(string bemessung)
+        {
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE,
+                         WirtschaftlichkeitCtrl.BasisGrund(bemessung, 5));
         }
 
         /// <summary>Ein fester Betrag braucht keine Bezugsgröße — dort gibt es auch

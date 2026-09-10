@@ -5156,6 +5156,30 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_CHART_SCHNITT_Y" xml:space="preserve">
     <value>ΔJ [EUR/a]</value>
   </data>
+  <data name="OPT_CHART_BETRIEB_TITEL" xml:space="preserve">
+    <value>Load profile and storage operation [kW] — {0}</value>
+  </data>
+  <data name="OPT_BETRIEB_WOCHE" xml:space="preserve">
+    <value>week of the annual peak</value>
+  </data>
+  <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
+    <value>whole year</value>
+  </data>
+  <data name="OPT_BETRIEB_CHK_JAHR" xml:space="preserve">
+    <value>Whole year</value>
+  </data>
+  <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
+    <value>Grid draw without storage</value>
+  </data>
+  <data name="OPT_BETRIEB_R_MIT" xml:space="preserve">
+    <value>Grid draw with storage</value>
+  </data>
+  <data name="OPT_BETRIEB_R_SCHWELLE" xml:space="preserve">
+    <value>Threshold reached</value>
+  </data>
+  <data name="OPT_BETRIEB_R_LEISTUNG" xml:space="preserve">
+    <value>Storage power (discharge +, charge −)</value>
+  </data>
   <data name="OPT_CHART_FARBSKALA" xml:space="preserve">
     <value>ΔJ [EUR/a]</value>
   </data>
@@ -10664,6 +10688,27 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="KUEB_LBL_QUELLANLAGE" xml:space="preserve">
     <value>Source unit:</value>
+  </data>
+  <data name="KUEB_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>The missing positions from the source have been created.</value>
+  </data>
+  <data name="KDLG_TT_OHNE_BASIS" xml:space="preserve">
+    <value>No reference quantity: {0}. The entered amount applies.</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_GEWERK" xml:space="preserve">
+    <value>the measurement basis does not fit this trade</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_GERAET" xml:space="preserve">
+    <value>no device with this size in the project</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_LAUF" xml:space="preserve">
+    <value>no simulation run</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_INVEST" xml:space="preserve">
+    <value>no investment costs recorded for this unit</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_KONSERVE" xml:space="preserve">
+    <value>the reference quantity of this type is not derived, it has to be maintained</value>
   </data>
   <data name="KFAK_TITEL" xml:space="preserve">
     <value>Cost factor administration</value>

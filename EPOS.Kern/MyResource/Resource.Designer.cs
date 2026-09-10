@@ -14331,6 +14331,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Gerät mit dieser Baugröße im Projekt ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_GERAET {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bemessungsart passt nicht zu diesem Gewerk ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_GEWERK {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_GEWERK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Investitionskosten für diese Anlage erfasst ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Bezugsgröße dieser Art wird nicht ermittelt, sie ist zu pflegen ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_KONSERVE {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_KONSERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Simulationslauf ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_LAUF {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KDLG_BTN_ABBRECHEN {
@@ -15634,6 +15679,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_TT_KETTE {
             get {
                 return ResourceManager.GetString("KDLG_TT_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Bezugsgröße: {0}. Es gilt der erfasste Betrag. ähnelt.
+        /// </summary>
+        public static string KDLG_TT_OHNE_BASIS {
+            get {
+                return ResourceManager.GetString("KDLG_TT_OHNE_BASIS", resourceCulture);
             }
         }
         
@@ -22473,6 +22527,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die fehlenden Positionen der Quelle wurden angelegt. ähnelt.
+        /// </summary>
+        public static string KUEB_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KUEB_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ins Projekt ähnelt.
         /// </summary>
         public static string KUEB_TITEL {
@@ -24422,6 +24485,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganzes Jahr ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_CHK_JAHR {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_CHK_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ganzes Jahr ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_JAHR {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherleistung (Entladen +, Laden −) ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_R_LEISTUNG {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_R_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit Speicher ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_R_MIT {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_R_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ohne Speicher ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_R_OHNE {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_R_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erreichte Schwelle ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_R_SCHWELLE {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_R_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche der Jahresspitze ähnelt.
+        /// </summary>
+        public static string OPT_BETRIEB_WOCHE {
+            get {
+                return ResourceManager.GetString("OPT_BETRIEB_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string OPT_BTN_ABBRUCH {
@@ -24472,6 +24598,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string OPT_BTN_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("OPT_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang und Speicherbetrieb [kW] — {0} ähnelt.
+        /// </summary>
+        public static string OPT_CHART_BETRIEB_TITEL {
+            get {
+                return ResourceManager.GetString("OPT_CHART_BETRIEB_TITEL", resourceCulture);
             }
         }
         

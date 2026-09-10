@@ -560,3 +560,54 @@ dass eine Kette von Wahlen eine Kette bleibt.
 `StilblattTests`, `ParametersatzTests`, `KatalograhmenTests` und `KatalogdialogTests`
 unverändert grün — das Stilblatt ist nicht angefasst worden, die Klammerbilanz also
 unberührt.
+
+---
+
+## Anwenderentscheid 10.09.2026 (Ä25) — W1.4: OK und Abbrechen statt „Übernehmen"
+
+**Der Wortlaut.** „OK = aus der Maske heraus und übernehmen, Abbrechen = aus der Maske raus,
+nicht speichern."
+
+**Was damit fällt.** Die Regel **A-7 aus B5b** hatte für diesen Dialog die Form: Der Primärknopf
+heißt „Übernehmen", schreibt sofort, und die Maske BLEIBT stehen — damit die Meldung des
+Controllers dort zu lesen ist, wo sie entstanden ist (der WinForms-Vorläufer schloss unmittelbar
+nach einer MessageBox, und wer sie weggeklickt hatte, sah nicht mehr, was übernommen wurde).
+Gemessen an der Bedienung war das eine Maske mit einem Knopf, der schreibt, und einem zweiten,
+der nur schließt — sie sagte nicht, wie man sie ohne Wirkung wieder verlässt.
+
+**Was jetzt gilt** (`EPOS.UI/Dialoge/Kosten/VorlagenUebernahmeDialog.razor`):
+
+| Bedienung | Wirkung |
+|---|---|
+| **OK** (`OkText`, `ALLG_BTN_OK`) | `Uebernehmen(Wahl())`, dann `Geschlossen(true)` — die Antwort erscheint NICHT mehr in der Maske |
+| **Abbrechen** (`AbbrechenText`, `ALLG_BTN_ABBRECHEN`) und **Esc** | `Geschlossen(false)`, kein Schreibweg |
+| OK bei leerer Vorschau | gesperrt (`_uebernahmeMoeglich`) — und schreibt auch dann nicht, wenn der Klick doch ankommt |
+| OK, aber der Lauf meldet einen Fehler | die Maske BLEIBT offen und zeigt das Fehlerbanner — die eine benannte Ausnahme |
+
+Die Erfolgsmeldung bestätigt seither die **Kostenverwaltung**: `UebernahmeFertigMachen(true)` setzt
+`MeldungUebernommen` (`KUEB_MSG_UEBERNOMMEN`) und lädt neu. In der Maske selbst stünde sie in dem
+Augenblick, in dem sie verschwindet; eine Liste, die sich wortlos verlängert, ist keine
+Rückmeldung. `Geschlossen(true)` heißt damit „übernommen", nicht mehr „irgendwann während der
+Sitzung einmal übernommen" — der Merker `_etwasUebernommen` ist entfallen.
+
+**Zwei Anzeige-Befunde derselben Meldung, mit erledigt.**
+
+1. **Die Überschrift stand doppelt.** Der Kopf der `Ueberlagerung` trägt „Übernahme ins Projekt"
+   (`KUEB_TITEL`, gesetzt von `KostenKomponenteHuelle`), und der `h1` der Maske trug denselben
+   Text noch einmal. Die Maske erscheint ausschließlich als Bereich einer Überlagerung; die Hülle
+   gibt deshalb `TitelText = ""`, und der `h1` entfällt (`@if` um die Überschrift, der Hilfeknopf
+   bleibt im Kopf). Als eigenständiges Fenster wäre die Komponente unverändert vollständig.
+2. **Der Rahmen trug den Text des Knopfes.** `EPOS.UI/Seiten/Berichte/KostenSeite.razor` gab
+   `VerwaltungText` („Kostenverwaltung öffnen…") sowohl dem Knopf ALS AUCH dem Titel der
+   Überlagerung, in der die Kostenverwaltung steht — und damit stand er auch über jedem ihrer
+   Unterdialoge. Die Seite führt dafür jetzt `VerwaltungTitel`; `KostenSeiteGaben` füllt ihn aus
+   `KDLG_TITEL` ohne den Gewerke-Platzhalter („Kostenverwaltung"). Der volle Titel samt Gewerk und
+   Projekt steht unverändert in der Maske selbst (`_stand.Titel`) — im Rahmen wäre er ein zweites
+   Mal dasselbe.
+
+**Nachweis.** `EPOS.UI.Tests/Dialoge/VorlagenUebernahmeDialogTests.cs`:
+`OK_uebernimmt_und_schliesst_mit_true`, `Abbrechen_schliesst_mit_false_und_schreibt_nicht`,
+`Ohne_anlegbare_Positionen_schreibt_OK_nicht_und_schliesst_nicht`,
+`Ohne_Titeltext_bleibt_die_Ueberschrift_der_Ueberlagerung_die_einzige`; die Fälle
+`Ein_Fehler_erscheint_als_Fehlerbanner_und_der_Dialog_bleibt_offen` und `Esc_schliesst_Enter_nicht`
+gelten unverändert weiter. **Offen: Sichtabnahme am Windows-Gerät.**

@@ -6170,7 +6170,12 @@ namespace WindowsFormsApplication1
                 string.Equals(bem, DbWerte.BEMESSUNG_JAHRESBETRAG, StringComparison.Ordinal))
                 return "";
 
-            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
+            // Beide Prozentarten der Kostenwelt: Ihre Basis ist ein EURO-Betrag der
+            // Investseite — „% der Investition" die Kaskadensumme (W5‑B‑8), „% der
+            // Erzeugerkosten" die Hauptposition (Kaskade, Runde 2). Fehlt sie, fehlen
+            // Investitionskosten, nicht ein Lauf und nicht ein Gerät.
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, StringComparison.Ordinal))
                 return BASISGRUND_INVEST;
 
             // Die Arten aus dem LAUF. Kennt das Gewerk die Größe gar nicht, ist ein
