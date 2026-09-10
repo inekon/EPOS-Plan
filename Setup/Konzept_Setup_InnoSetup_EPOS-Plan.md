@@ -683,6 +683,51 @@ scheitert aber vorerst an der Vorlagendatenbank: 92 MB Binärdatei mit
 Kundenbezug gehören nicht in ein Repository. Solange dieser Schritt manuell ist,
 bleibt die Kette es auch.
 
+### 8.1 Laufanleitung Windows
+
+Anlass (Anwender, 10.09.2026): Inno Setup läuft nicht zentral installiert,
+sondern im Ordner `Setup` des eigenen Repository-Klons — beim Anwender unter
+`C:\Waermeplan\WP_Plan\Setup`. `build-setup.ps1` findet `ISCC.exe` seit dem
+Parameter `-Iscc` auch dort (Auftrag #164); dieser Abschnitt beschreibt den
+vollständigen Handlauf.
+
+1. Klon aktualisieren: im Repository-Wurzelordner `git checkout ios_migration`,
+   dann `git pull`.
+2. PowerShell im Ordner `Setup` öffnen, z. B. `cd C:\Waermeplan\WP_Plan\Setup`.
+3. Aufruf:
+
+   ```powershell
+   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> -Kataloge alle [-Iscc <Pfad>]
+   ```
+
+   `-Kataloge alle` ist bis zum Entscheid #160‑E‑1 verpflichtend (Befund
+   #160‑F‑1, Abschnitt 6.1) — ohne den Schalter bricht
+   `Werkzeuge\Auslieferungsvorlage` mit Code 4 ab. `-Iscc` nur angeben, wenn das
+   Skript `ISCC.exe` nicht selbst findet (Suchreihenfolge: `-Iscc` →
+   Umgebungsvariable `EPOS_ISCC` → neben `build-setup.ps1` → Program Files →
+   Registry); Pfad zur `ISCC.exe` selbst oder zu deren Ordner, z. B.
+   `-Iscc C:\Waermeplan\WP_Plan\Setup\Inno Setup 6`.
+4. Was der Lauf ausgibt: die vier Schritte „Vorbedingungen prüfen",
+   „Veröffentlichung bauen", „Auslieferungsvorlage erzeugen" und „Setup
+   übersetzen" auf der Konsole (Abschnitt 4), dazwischen Version und Größe der
+   Veröffentlichung sowie der Vorlage. Der Prüfbericht der Vorlage entsteht
+   daneben als `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` (Abschnitt 6.1); das
+   fertige Setup liegt danach unter `Setup\Ausgabe`.
+5. Rückgabecode von `Werkzeuge\Auslieferungsvorlage` — `build-setup.ps1` bricht
+   in jedem Fall mit ab und gibt die Meldung des Werkzeugs weiter:
+   - **2** — Aufruf oder Quelle falsch: `-Quelldatenbank` und den angegebenen
+     Pfad prüfen.
+   - **3** — Ziel liegt im Repository außerhalb von `Setup\Vorlage\`: nicht
+     selbst eingreifen, den Pfad setzt das Skript.
+   - **4** — Katalogwächter (#160‑F‑1): mit `-Kataloge alle` erneut aufrufen
+     (siehe Schritt 3 oben).
+   - **5** — fachlicher Abbruch: Meldung auf der Konsole lesen, betrifft die
+     Quelle selbst (z. B. eine gescheiterte Prüfung).
+6. Nach dem Lauf zurückmelden: die vollständige Konsolenausgabe, der Inhalt von
+   `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` und — sobald `ISCC.exe` lief —
+   dessen Meldungen (Erfolg mit Pfad und Größe, oder der Fehlertext mit
+   Zeilennummer im `.iss`).
+
 ---
 
 ## 9. Code-Signierung
