@@ -2357,6 +2357,16 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > rechts). Der `GesetzeskatalogDialog` gibt seiner einen Liste die volle Höhe (`epos-katalog-fuellend`, wie die
 > ListView 916×424 in `Form_Gesetzesparameter`), der Zeileneditor bleibt Überlagerung; Dubletten und Einstellungen
 > gewinnen allein durch das größere Fenster. Protokoll ergänzt.
+>
+> **#169 (10.09.2026) — `KlimadatenDialogTests` deterministisch (W16b‑O‑2).** Im Gate zu #167 fiel
+> `Der_Fortschritt_meldet_die_Schritte_und_laesst_sich_abbrechen` (1 von 3 360): Zeile 357 prüfte den Abbruchzähler
+> unmittelbar nach dem synchronen `Click()`; der Abbruch läuft in `Bausteine/Fortschritt.razor` über
+> `EventCallback.InvokeAsync` auf dem Renderer-Dispatcher, bunits `Click()` wartet darauf nicht (derselbe Wettlauf wie in
+> `ProjektTransferDialogTests`, „5 von 12 Läufen"). Allein und in Wiederholungen grün, im vollen Lauf mit zwei Threads
+> nicht. Fix (`8a7ff0a`, nur Testcode): zehn Sofort-Asserts nach `.Click()`/`.Input()` derselben Klasse (Zähler, Markup,
+> Instanzzustand) auf `WaitForAssertion`/`WaitForState` (10 s) umgestellt; Abwesenheitsprüfungen bleiben. Nachweis: Klasse
+> zehnmal 16/16, Projektlauf 3 360 grün. Gate auf `a86d30e`: Kern 2 277 grün, UI 3 360 grün, Referenzlauf byte-gleich; Warnungsschranke
+> weiter allein durch die vorbestehende CS8602 (`RasterTests.cs:335`) gerissen.
 
 > **Statusblock iU9 — Welle 14a umgesetzt (04.09.2026, Basis `01c9933` nach W13, zusammengeführt mit `c9855b1` nach W14b)**
 >
