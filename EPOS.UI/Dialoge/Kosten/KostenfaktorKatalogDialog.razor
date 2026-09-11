@@ -25,8 +25,11 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 

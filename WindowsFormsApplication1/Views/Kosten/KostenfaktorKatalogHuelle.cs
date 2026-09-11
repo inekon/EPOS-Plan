@@ -38,7 +38,12 @@ namespace WindowsFormsApplication1
                 ["Rueckfrage"] = new Func<string, bool>(
                     text => Dienste.Dialog.Frage(text, Text_("KFAK_FRAGE_TITEL", "Kostenfaktoren"))),
 
-                ["TitelText"] = Text_("KFAK_TITEL", "Administration Kostenfaktoren"),
+                // Leer: Die Ueberlagerung (KostenKomponenteDialog) traegt den
+                // Titel schon (KatalogTitel, derselbe Schluessel KFAK_TITEL) -
+                // ein zweiter Kopf waere ein doppelter Titel (Hausregel
+                // W11b-B-9, #187). KostenfaktorKatalogHuelle hat heute keinen
+                // zweiten, eigenstaendigen Aufrufer.
+                ["TitelText"] = "",
                 ["EinleitungText"] = Text_("KFAK_EINLEITUNG", "Verwalten Sie hier die Kostenfaktoren"),
                 ["SpalteBezeichnung"] = Text_("KFAK_SP_BEZEICHNUNG", "Kostenfaktoren:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),

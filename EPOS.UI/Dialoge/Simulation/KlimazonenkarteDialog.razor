@@ -30,8 +30,11 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -76,6 +79,17 @@
     // --- Texte ------------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Klimazonen nach DIN 4710";
+
+    /// <summary>
+    /// #187: Zeigt den eigenen Kopf (<c>epos-dialog-titel</c>)? Vorgabe
+    /// <c>true</c>. <c>TitelText</c> bleibt dabei UNVERÄNDERT — er speist
+    /// auch die Bildbeschreibung der Karte (<c>Bildkarte.Bildbeschreibung</c>
+    /// unten) und darf deshalb nicht leer werden, nur weil eine Überlagerung
+    /// ihn schon im eigenen Kopf zeigt. Wer die Komponente einbettet und die
+    /// Überlagerung bereits einen Titel trägt, setzt <c>false</c>
+    /// (Hausregel W11b-B-9, hier die zweite Bauart neben „TitelText leer").
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Statuszeile mit gewählter Zone; <c>{0}</c> ist der Zonentext.</summary>
     [Parameter] public string GewaehltText { get; set; } = "Gewählte Zone: {0}";

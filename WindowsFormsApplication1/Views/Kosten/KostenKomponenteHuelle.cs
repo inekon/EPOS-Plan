@@ -200,8 +200,14 @@ namespace WindowsFormsApplication1
                 // Reiterblatt "Ertrag/Bonus" ueber die Sprungbruecke in das
                 // WinForms-Fenster Form_Gesetzesparameter; das Ziel ist jetzt selbst
                 // Razor (Risiko R2). Ohne diese Gaben bleibt der Knopf im Blatt weg.
+                // #187: Die Ueberlagerung traegt den Titel schon (GesetzeTitel,
+                // Vorgabewert Resource.GESETZ_TITEL, derselbe wie der Dialog
+                // selbst) - GesetzeskatalogHuelle.Gaben() bleibt UNVERAENDERT
+                // (sie liefert auch das eigenstaendige Fenster "Hilfe > ..."
+                // und den Aufruf aus WirtschaftlichkeitParameterDialog), nur
+                // HIER wird TitelText im geholten Satz auf leer gesetzt.
                 ["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => GesetzeskatalogHuelle.Gaben()),
+                    () => OhneTitel(GesetzeskatalogHuelle.Gaben())),
 
                 ["BannerText"] = T("KDLG_BANNER", "Alle Beträge und alle Bezugsgrößen sind NETTO."),
                 ["BannerZuKurztext"] = T("KKOMP_BANNER_ZU", "Hinweis ausblenden"),
@@ -865,7 +871,10 @@ namespace WindowsFormsApplication1
                 ["ZuschussMoeglich"] = false,
                 ["IstErloes"] = b.Position.IstErloes,
 
-                ["TitelText"] = T("KCASE_TITEL", "Eingabe Worst/Best Case"),
+                // Leer: Die Ueberlagerung traegt den Titel schon (CaseTitel,
+                // derselbe Schluessel KCASE_TITEL) - ein zweiter Kopf waere
+                // ein doppelter Titel (Hausregel W11b-B-9, #187).
+                ["TitelText"] = "",
                 ["LabelAbsolut"] = T("KOSTEN_CASE_ABSOLUT", "Eingabe absolut [€]"),
                 ["LabelProzent"] = T("KOSTEN_CASE_PROZENT", "Eingabe in % vom Erwartungswert"),
                 ["VorlageUmrechnung"] = T("KOSTEN_CASE_UMRECHNUNG",
@@ -955,7 +964,10 @@ namespace WindowsFormsApplication1
                 ["EmpfehlungVon"] = b.Position.EmpfehlungVon,
                 ["EmpfehlungBis"] = b.Position.EmpfehlungBis,
 
-                ["TitelText"] = T("VPOS_TITEL", "Position bearbeiten"),
+                // Leer: Die Ueberlagerung traegt den Titel schon (EditorTitel,
+                // derselbe Schluessel VPOS_TITEL) - ein zweiter Kopf waere
+                // ein doppelter Titel (Hausregel W11b-B-9, #187).
+                ["TitelText"] = "",
                 ["LabelBezeichnung"] = T("VPOS_LBL_BEZEICHNUNG", "Bezeichnung:"),
                 ["LabelKostenart"] = T("VPOS_LBL_KOSTENART", "Kostenart:"),
                 ["LabelErloes"] = T("VPOS_CHK_ERLOES", "Erlös/Zuschuss (negativer Ausweis)"),
@@ -1066,6 +1078,25 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>
+        /// #187: Nimmt einen fertigen Parametersatz (hier von
+        /// <see cref="GesetzeskatalogHuelle.Gaben"/>, der AUCH das
+        /// eigenstaendige Fenster und den zweiten Aufrufer bedient) und setzt
+        /// darin nur <c>TitelText</c> auf leer — die Ueberlagerung, in der
+        /// der Satz hier landet, traegt den Titel bereits selbst
+        /// (Hausregel W11b-B-9). <see cref="GesetzeskatalogHuelle.Gaben"/>
+        /// bleibt dafuer unangetastet, ihre anderen Aufrufer behalten ihren
+        /// eigenen Fenstertitel.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> OhneTitel(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            var kopie = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, object> kv in gaben) kopie[kv.Key] = kv.Value;
+            kopie["TitelText"] = "";
+            return kopie;
         }
     }
 }

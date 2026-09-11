@@ -524,6 +524,78 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     // =====================================================================
+    // #187 — "Ein Titel, eine Stelle" (W11b-B-9): der Titel einer
+    // Ueberlagerung mit eingebettetem Unterdialog erscheint GENAU EINMAL.
+    // Vor #187 trugen CaseEingabeDialog, VorlagenPositionDialog und
+    // KostenfaktorKatalogDialog ihren TitelText UNBEDINGT — bei gleichem
+    // Ressourcenschluessel wie CaseTitel/EditorTitel/KatalogTitel stand der
+    // Text zweimal uebereinander. Die Huelle liefert TitelText seither leer
+    // (KostenKomponenteHuelle.CaseGaben/EditorGaben,
+    // KostenfaktorKatalogHuelle.Gaben); hier wird das am gerenderten Markup
+    // nachgewiesen, nicht nur an der Huelle.
+    // =====================================================================
+
+    [Fact]
+    public void Der_Titel_des_Zeileneditors_erscheint_genau_einmal()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.EditorGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Bezeichnung"] = z.Bezeichnung,
+                    ["Kostenarten"] = (IReadOnlyList<(int, string)>)new[] { (0, "kapitalgebunden") },
+                    ["TitelText"] = ""            // wie KostenKomponenteHuelle.EditorGaben seit #187
+                }));
+
+        cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[0].Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Position bearbeiten", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+    }
+
+    [Fact]
+    public void Der_Titel_von_Worst_Best_erscheint_genau_einmal()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.CaseGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Betrag"] = 1200.0,
+                    ["TitelText"] = ""            // wie KostenKomponenteHuelle.CaseGaben seit #187
+                }),
+            stand: Standard(projekt: true));
+
+        cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[2].Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Eingabe Worst/Best Case", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+    }
+
+    [Fact]
+    public void Der_Titel_des_Kostenfaktorkatalogs_erscheint_genau_einmal()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.KatalogGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zeilen"] = (IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>)
+                        new[] { new KostenfaktorKatalogDialog.KostenfaktorZeile(1, "Faktor") },
+                    ["TitelText"] = ""            // wie KostenfaktorKatalogHuelle.Gaben seit #187
+                }));
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[2].Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Administration Kostenfaktoren", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+    }
+
+    // =====================================================================
     // Ertrag/Bonus
     // =====================================================================
 

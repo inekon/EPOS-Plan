@@ -480,8 +480,12 @@ namespace WindowsFormsApplication1
                         m.Ruecklauf = zeile.Ruecklauf ?? 0;
                     }),
 
+                // #187: Die Ueberlagerung traegt den Titel schon (EditorTitel,
+                // derselbe Schluessel HZKK_TITEL wie Gaben). Gaben(...) bleibt
+                // dafuer UNVERAENDERT - sie liefert auch das eigenstaendige
+                // Fenster ueber KatalogBearbeiten, das seinen Titel behalten muss.
                 ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => Gaben(name, "", neu: false)),
+                    name => OhneTitel(Gaben(name, "", neu: false))),
 
                 ["TraegerGaben"] = new Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>(
                     TraegerGaben),
@@ -698,6 +702,25 @@ namespace WindowsFormsApplication1
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
+        }
+
+        /// <summary>
+        /// #187: Nimmt einen fertigen Parametersatz (hier von
+        /// <see cref="Gaben(string, string, bool)"/>, die AUCH das
+        /// eigenständige Fenster <see cref="KatalogBearbeiten"/> bedient) und
+        /// setzt darin nur <c>TitelText</c> auf leer — die Überlagerung, in
+        /// der der Satz hier landet (<c>HeizkesselDialog</c>), trägt den
+        /// Titel bereits selbst (Hausregel W11b-B-9).
+        /// <see cref="Gaben(string, string, bool)"/> bleibt dafür
+        /// unangetastet, ihr anderer Aufrufer behält seinen Fenstertitel.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> OhneTitel(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            var kopie = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, object> kv in gaben) kopie[kv.Key] = kv.Value;
+            kopie["TitelText"] = "";
+            return kopie;
         }
 
         /// <summary>
