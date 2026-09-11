@@ -393,6 +393,28 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Views/Simulation/SimulationErgebnisHuelle.{cs,Anzeige.cs,Bilder.cs,Wege.cs}` —
   und in `EPOS.UI` die **Seite** `Seiten/Simulation/SimulationErgebnisSeite` mit
   ihren zwölf Reiterkomponenten.
+  **Mit Auftrag #208 (11.09.2026) sind die zwei DATENhüllen aus diesem Projekt
+  verschwunden** — `SimulationKonfigHuelle` (1 918 Z.) und `SimulationErgebnisHuelle.*`
+  (fünf Dateien, 3 572 Z.) liegen seither plattformfrei in `../EPOS.UI.Daten/Simulation/`,
+  und mit ihnen die sieben Unterdialoghüllen der Konfiguration
+  (`BetriebsmodusHuelle`, `QuelleErdreichHuelle`, `QuellePufferspeicherHuelle`,
+  `QuellprofilHuelle`, `WaermesenkeHuelle`, `ErzeugerKatalog`,
+  `../Pufferspeicher/PufferSpProjektHuelle`), `../Bedarf/BedarfErgebnisHuelle` und
+  `../Stromspeicher/StromspeicherAuslegungHuelle` — **18 Dateien, 8 115 Zeilen**.
+  Der Grund ist eine Messung: Von den 5 490 Zeilen der zwei Simulationshüllen waren genau
+  **sechs** Windows (ein `Func<Form>` und der Wärmepumpen-Assistent, der ein Fenster
+  braucht); alles andere ging seit iU5 über `Dienste.*`. **`Views/Simulation` führt
+  seither EINE Datei** — `SimulationHuelle.cs`, und die ist mit **64 Zeilen** (vorher 122)
+  nur noch der ADAPTER: Sie besorgt den Fensterbesitzer und legt ihn als benannten Weg
+  (`SimulationPlattformwege`) in die plattformfreie `SimulationAnsichtQuelle`.
+  `Program.Main` hängt dazu zwei Haken ein, die nur Windows beantworten kann:
+  `Katalogwege.PufferKatalogGaben` (der Auslieferungskatalog der Pufferspeicher, noch in
+  `KatalogBrowserHuelle`) und — über `HilfeKontext.Einhaengen` —
+  `KiChatKontext.BereichMelder`. **`BedarfErgebnisHuelle` hat dabei ihre tote Hälfte
+  verloren**: `Zeigen` und `Oeffnen` (samt `BlazorDialogForm` und `System.Drawing.Size`)
+  hatten im ganzen Bestand keinen Aufrufer mehr, nur die drei `Gaben`-Überladungen.
+  **Die Wache `EPOS.UI.Tests/ParametersatzTests` liest seither BEIDE Orte.**
+
   **Mit Auftrag #207 (11.09.2026) kommt die DRITTE Hülle des Bereichs dazu:**
   `Views/Simulation/SimulationHuelle.cs` fasst `SimulationKonfigHuelle` und
   `SimulationErgebnisHuelle` zu EINEM Parametersatz der freien Ansicht

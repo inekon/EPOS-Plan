@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -417,13 +417,19 @@ namespace EPOS.Kern.Tests
                 || s.StartsWith("@*", StringComparison.Ordinal);
         }
 
-        /// <summary>Die Dateien, über die Wächter 1 läuft: <c>EPOS.UI</c> und die Windows-Ansichten.</summary>
+        /// <summary>
+        /// Die Dateien, über die Wächter 1 läuft: <c>EPOS.UI</c>, die plattformfreie
+        /// Datenseite <c>EPOS.UI.Daten</c> (seit Auftrag #208 — die Simulationshüllen
+        /// liegen dort, und mit ihnen die drei begründeten Ausnahmen dieser Liste) und
+        /// die Windows-Ansichten.
+        /// </summary>
         private static string[] Anzeigedateien()
         {
             string wurzel = Arbeitsbaum();
             var ordner = new[]
             {
                 Path.Combine(wurzel, "EPOS.UI"),
+                Path.Combine(wurzel, "EPOS.UI.Daten"),
                 Path.Combine(wurzel, "WindowsFormsApplication1", "Views"),
             };
 

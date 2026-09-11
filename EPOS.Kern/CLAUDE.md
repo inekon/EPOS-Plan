@@ -728,6 +728,19 @@ Dieselben drei Projekte rechnet die CI (`.github/workflows/kern.yml`) auf `ubunt
 `macos-latest`. 1007 und 1017 führen aktive Stromspeicher-Varianten und decken damit den
 K8-Haken ab; ohne sie fiele ein stillgelegter Haken nicht auf.
 
+**Seit Auftrag #208 gibt es ein DRITTES plattformfreies Projekt: `EPOS.UI.Daten`** — die
+Datenseite der Oberfläche (die „Hüllen", die aus Kern-Controllern die DTO der Razor-Seiten
+bauen). Es referenziert `EPOS.UI` und damit transitiv diesen Kern; der Kern kennt es **nicht**
+und darf es nicht kennen. Zwei Dinge sind mit #208 hierher gezogen, weil sie hier hingehören
+und die Datenseite sie sonst nicht sähe: `Ladeordnung.Kreisziffer` (vorher
+`WindowsFormsApplication1/Allgemein/GrafikTools/KartenStil` — reine Zeichenarbeit an einer
+Ladeposition, aber in einer `System.Drawing`-Datei) und `KiChatKontext.BereichMelder` samt
+`BereichMelden` — der GEGENWEG zu `AktiverBereich`: Eine Maske MELDET ihren Bereich, Windows
+hängt `HilfeKontext.SetzeBereich` in `Program.Main` ein, und der gemeldete Text geht wie jeder
+andere durch `Freigegeben`. `EPOS.Kern.Tests` referenziert `EPOS.UI.Daten` (und nur deshalb
+auch `EPOS.UI`): `SimulationAnsichtQuelleTests` braucht die Testdatenbank, und die Vorrichtung
+dafür steht dort.
+
 **Der Plattform-Wächter — muss ebenfalls leer bleiben:**
 
 ```bash

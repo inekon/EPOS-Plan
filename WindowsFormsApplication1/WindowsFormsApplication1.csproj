@@ -109,6 +109,13 @@
          Dialog entsteht dort, diese Anwendung liefert nur noch die Huelle
          (Allgemein\Blazor\BlazorDialogForm.cs). -->
     <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+
+    <!-- DIE DATENSEITE DER OBERFLAECHE (Auftrag #208). Die Huellen, die aus
+         Kern-Controllern die DTO der Razor-Seiten bauen - plattformfrei, weil sie
+         sonst auf iOS fehlten. Sie laufen hier UND in EPOS.iOS; was die Plattform
+         beisteuern muss, kommt als benannte Naht herein
+         (Simulation\SimulationPlattformwege.cs, Katalogwege.cs). -->
+    <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->

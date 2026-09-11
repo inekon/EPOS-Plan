@@ -36,6 +36,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+
+    <!-- DIE DATENSEITE DER OBERFLAECHE (Auftrag #208). Sie ist plattformfrei wie
+         der Kern und wird hier geprueft: SimulationAnsichtQuelle baut aus
+         projektId + BedarfsZustand denselben Parametersatz, den Windows und iOS
+         der Ansicht SIMULATION hereinreichen. Die Faelle brauchen dafuer die
+         Testdatenbank - und die Vorrichtung dafuer steht nur hier. -->
+    <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
   <!-- ================================================================== -->

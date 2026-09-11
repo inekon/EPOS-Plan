@@ -72,6 +72,12 @@
          und laedt fuer die Projektliste ProjektCtrl - beides ist internal, genau wie in
          der Windows-Huelle. -->
     <InternalsVisibleTo Include="EPOS.iOS" />
+    <!-- Und fuer die DATENSEITE der plattformfreien Oberflaeche (Auftrag #208):
+         Die aus WindowsFormsApplication1 verlegten Huellen rufen dieselben
+         internal-Controller wie zuvor (ProjektCtrl, WErzeugerCtrl,
+         PhotovoltaikCtrl) - ohne die Freigabe waere der Umzug eine
+         Sichtbarkeitsaenderung am halben Bestand. -->
+    <InternalsVisibleTo Include="EPOS.UI.Daten" />
     <!-- Und fuer das Werkzeug, das Referenzlaeufe\Kenndaten_Test.sqlite auf den
          Zielschemastand nachzieht (Aufgabe 92): Es faehrt bewusst DIESELBE
          Typuebersetzung wie die Migration - StilleDb.SqliteSpaltenTyp -, statt

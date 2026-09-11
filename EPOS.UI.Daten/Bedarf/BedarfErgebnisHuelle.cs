@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
-using Microsoft.AspNetCore.Components;
 using SkiaSharp;
 
 namespace WindowsFormsApplication1
@@ -43,35 +40,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class BedarfErgebnisHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 568 × 346 bzw. 563 × 425).</summary>
-        private static readonly Size MASS = new Size(900, 640);
-
         /// <summary>Die vier Sichtfarben der Vorläufer — wörtlich aus den drei Masken.</summary>
         private static readonly SKColor FARBE_STROM = SKColors.YellowGreen;
         private static readonly SKColor FARBE_PROZESS = SKColors.Red;
         private static readonly SKColor FARBE_GEBAEUDE = SKColors.Blue;
         private static readonly SKColor FARBE_BRAUCHWASSER = SKColors.Orange;
         private static readonly SKColor FARBE_JAHR = SKColors.SteelBlue;
-
-        // =================================================================================
-        // Die beiden Einstiege
-        // =================================================================================
-
-        /// <summary>
-        /// Der Strombedarf (<c>Form_ErgStromverbraucher</c>). Der Startreiter ist
-        /// Vorgabesache des Aufrufers: Die meisten Wege setzten <c>SetPage(1)</c>, der
-        /// Weg aus <c>Form_Simulation_Detail</c> gar nichts (also Reiter 0).
-        /// </summary>
-        internal static void Zeigen(IWin32Window besitzer, SimulationStrombedarf simulation,
-                                   int startReiter = 0)
-        {
-            Oeffnen(besitzer, StromDaten(simulation, startReiter),
-                    Text_("BERG_REITER_STROM_ERG", "Strombedarf Ergebnisse"),
-                    Text_("BERG_REITER_STROM_MONAT", "Strombedarf monatlich"),
-                    Text_("BERG_REITER_STROM_GRAFIK", "Grafik Strombedarf"),
-                    Text_("BERG_GRP_STROM_MONAT", "Strombedarf monatlicher Verlauf:"),
-                    "Form_ErgStromverbraucher.btn_Help");
-        }
 
         /// <summary>
         /// Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.
@@ -175,29 +149,6 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>
-        /// Der Wärmebedarf (<c>Form_ErgProzesswaerme</c> ohne, <c>Form_ErgBrauchwasserwaerme</c>
-        /// mit Brauchwassersicht).
-        /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
-        /// <param name="simulation">Das Rechenobjekt; es wird nur GELESEN.</param>
-        /// <param name="mitBrauchwasser">
-        /// <c>true</c> = die dritte Sicht samt Jahresverlauf (Brauchwasserfassung).
-        /// </param>
-        /// <param name="startReiter">0 = Kennzahlen, 1 = Monatswerte, 2 = Grafik.</param>
-        /// <param name="titelZusatz">Zusatz hinter dem Titel; leer = ohne.</param>
-        internal static void Zeigen(IWin32Window besitzer, SimulationWaermebedarf simulation,
-                                    bool mitBrauchwasser, int startReiter = 0, string titelZusatz = "")
-        {
-            Oeffnen(besitzer, WaermeDaten(simulation, mitBrauchwasser, startReiter, titelZusatz),
-                    Text_("BERG_REITER_WAERME_ERG", "Wärmebedarf Ergebnisse"),
-                    Text_("BERG_REITER_MONAT", "Übersicht monatlich"),
-                    Text_("BERG_REITER_GRAFIK", "Grafik"),
-                    Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
-                    mitBrauchwasser ? "Form_ErgBrauchwasserwaerme.btn_Help"
-                                    : "Form_ErgProzesswaerme.btn_Help");
-        }
-
         /// <summary>Der Feldsatz des Wärmebedarfs — seit iU9-W9.5 eigene Methode.</summary>
         private static BedarfErgebnisDaten WaermeDaten(SimulationWaermebedarf simulation,
                                                        bool mitBrauchwasser, int startReiter,
@@ -290,30 +241,6 @@ namespace WindowsFormsApplication1
                 QuelleEinheit = quelle,
                 Art = art
             };
-        }
-
-        private static void Oeffnen(IWin32Window besitzer, BedarfErgebnisDaten daten,
-                                    string reiterKennzahlen, string reiterMonate, string reiterGrafik,
-                                    string gruppeMonate, string hilfeSchluessel)
-        {
-            BlazorDialogForm<BedarfErgebnisDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(
-                Gaben(daten, reiterKennzahlen, reiterMonate, reiterGrafik, gruppeMonate,
-                      hilfeSchluessel))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
-                    _ => { if (dlg != null) dlg.Schliessen(true); })
-            };
-
-            string titel = Text_("BERG_TITEL", "Simulation Ergebnisse");
-            if (!string.IsNullOrEmpty(daten.TitelZusatz)) titel += " - " + daten.TitelZusatz;
-
-            dlg = new BlazorDialogForm<BedarfErgebnisDialog>(titel, MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
         }
 
         /// <summary>

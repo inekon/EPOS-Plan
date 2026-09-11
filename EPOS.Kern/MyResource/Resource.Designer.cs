@@ -43400,6 +43400,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Weg steht auf diesem Gerät nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_WEG_NICHT_HIER {
+            get {
+                return ResourceManager.GetString("SIM_MSG_WEG_NICHT_HIER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Fehlermeldungen des Laufs: ähnelt.
         /// </summary>
         public static string SIM_MSG_WEITERE_FEHLERMELDUNGEN {

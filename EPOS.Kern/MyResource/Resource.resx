@@ -2679,6 +2679,9 @@ Bitte zuerst die Simulation ausführen. Ein abgebrochener oder noch nicht gerech
     <value>Keine Simulationsdaten vorhanden!
 Bitte zuerst den Energiebedarf berechnen.</value>
   </data>
+  <data name="SIM_MSG_WEG_NICHT_HIER" xml:space="preserve">
+    <value>Dieser Weg steht auf diesem Gerät nicht zur Verfügung.</value>
+  </data>
   <data name="SIM_MSG_KEINE_DATEN_SIMULATION" xml:space="preserve">
     <value>Keine Simulationsdaten vorhanden!
 Bitte zuerst die Simulation durchführen.</value>

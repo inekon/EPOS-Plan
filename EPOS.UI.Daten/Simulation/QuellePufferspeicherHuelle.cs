@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
 
