@@ -606,8 +606,10 @@ public sealed class SimulationErgebnisDienste
 
     // ---- Was die Seite oeffnet ----
 
-    /// <summary>Parametersatz der Konfigurationsseite (W10b) als Ueberlagerung.</summary>
-    public Func<IReadOnlyDictionary<string, object>>? KonfigurationGaben;
+    // Der Parametersatz der KONFIGURATIONSSEITE stand hier (W10b) - die Seite
+    // oeffnete sie als zweite Ueberlagerung in ihrer eigenen. Seit Auftrag #207
+    // ist die Konfiguration Schritt ① DERSELBEN Ansicht (SIM-Q1), und ihren
+    // Parametersatz legt SimulationHuelle unmittelbar an die Ansicht.
 
     /// <summary>Parametersatz des Bedarfsergebnis-Dialogs (W8); true = Wärme, false = Strom.</summary>
     public Func<bool, IReadOnlyDictionary<string, object>>? BedarfGaben;

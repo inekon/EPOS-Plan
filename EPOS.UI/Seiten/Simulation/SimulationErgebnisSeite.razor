@@ -197,17 +197,15 @@
 
     </fieldset>
 
+    @* AUFTRAG #207: Aus VIER Fussknoepfen sind ZWEI geworden. „Konfiguration ..."
+       und „Beenden" traegt seither die ABLAUFLEISTE der Ansicht SIMULATION - der
+       erste als Schritt ①, der zweite als das eine „← zurueck" im Kopf. Der
+       Laufknopf bleibt: Er ist der Zwilling von Schritt ②, und die Seite soll
+       auch ohne die Leiste ueber sich rechnen koennen (iOS, Stufe S2). *@
     <div class="epos-simerg-fuss">
         <button type="button" @onclick="LaufStarten" disabled="@(_laeuft || _daten.Gesperrt)">
             @Resource.SIMERG_BTN_SIMULATION
         </button>
-
-        @if (Dienste?.KonfigurationGaben is not null)
-        {
-            <button type="button" @onclick="KonfigurationOeffnen" disabled="@_laeuft">
-                @Resource.SIMERG_BTN_KONFIGURATION
-            </button>
-        }
 
         @* „Ergebnis speichern" nur nach einem VOLLSTAENDIGEN Lauf - die
            Zustandsmaschine aus Nacharbeit Paket 8, Befund N1. *@
@@ -215,11 +213,6 @@
                 disabled="@(_laeuft || !_daten.ErgebnisGueltig)">
             @Resource.SIM_TITEL_ERGEBNIS_SPEICHERN
         </button>
-
-        @if (Geschlossen.HasDelegate)
-        {
-            <button type="button" @onclick="Geschlossen">@Resource.SIMERG_BTN_BEENDEN</button>
-        }
     </div>
 
     @* ================================================================
@@ -237,15 +230,11 @@
         </Ueberlagerung>
     }
 
-    @if (_konfiguration is not null)
-    {
-        <Ueberlagerung Offen="true" Titel="@Resource.SIM_KONFIG_TITEL" Geschlossen="KonfigurationFertig">
-            <KindInhalt>
-                <SimulationKonfigSeite @attributes="_konfiguration"
-                                       Geschlossen="KonfigurationFertig" />
-            </KindInhalt>
-        </Ueberlagerung>
-    }
+    @* DIE KONFIGURATION STAND HIER als zweite UEBERLAGERUNG in der Ueberlagerung,
+       die diese Seite selbst war - Fenster im Fenster im Fenster. Seit Auftrag
+       #207 ist sie Schritt ① DERSELBEN Ansicht (Anwenderentscheid SIM-Q1); ein
+       Klick auf die Ablaufleiste bringt sie, und die Seite hier weiss nichts mehr
+       davon. *@
 
     @if (_bedarf is not null)
     {
@@ -320,14 +309,30 @@
     /// <summary>Das Projekt beim Aufbau, wenn kein <see cref="Zustand"/> gesetzt ist.</summary>
     [Parameter] public int StartProjekt { get; set; }
 
-    /// <summary>Die Seite moechte geschlossen werden („Beenden").</summary>
-    [Parameter] public EventCallback Geschlossen { get; set; }
-
     /// <summary>
     /// Startet der Lauf beim Oeffnen von selbst? Woertlich <c>true</c>
     /// (Befund W11-B48); die Proben schalten ihn ab.
     /// </summary>
+    /// <remarks>
+    /// <b>Die Ansicht SIMULATION schaltet ihn AB</b> (Auftrag #207): Dort ist der
+    /// Lauf Schritt ② der Ablaufleiste und damit ein bewusster Klick. Der
+    /// Automatikstart war die Antwort darauf, dass ein Ergebnisfenster ohne Lauf
+    /// leer gewesen waere; in der Ablaufansicht ist ③ ohne Lauf gar nicht erst
+    /// betretbar, und ein zweiter Lauf bei jeder Rueckkehr aus der
+    /// Stromspeicher-Auslegung waere reine Wartezeit.
+    /// </remarks>
     [Parameter] public bool Automatikstart { get; set; } = true;
+
+    /// <summary>
+    /// Das Reiterblatt, mit dem die Seite aufmacht (einer der Schluessel aus
+    /// <see cref="Blatt"/>); leer = die Vorgabe. Sie liest ihn EINMAL beim Aufbau.
+    /// </summary>
+    /// <remarks>
+    /// Die MARKE des Rueckwegstapels kommt hier an (Auftrag #207): Wer die
+    /// Stromspeicher-Auslegung verlaesst, steht wieder auf dem Reiter
+    /// „Stromspeicher" und liest dort das Banner „Flotte geaendert".
+    /// </remarks>
+    [Parameter] public string StartBlatt { get; set; } = "";
 
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Detail.btn_Help";
 
@@ -349,7 +354,6 @@
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
     private bool _volltext;
-    private IReadOnlyDictionary<string, object>? _konfiguration;
     private IReadOnlyDictionary<string, object>? _bedarf;
     private IReadOnlyDictionary<string, object>? _waermepumpe;
 
@@ -380,6 +384,7 @@
     protected override void OnInitialized()
     {
         if (Zustand is not null) Zustand.Geaendert += BeiZustand;
+        if (!string.IsNullOrEmpty(StartBlatt)) _blatt = StartBlatt;
         Neuladen();
     }
 
@@ -416,6 +421,8 @@
             return;
         }
 
+        // OHNE Automatikstart bleibt das Blatt stehen, mit dem die Seite aufgemacht
+        // hat - die Marke aus dem Rueckwegstapel (#207) oder die Vorgabe.
         if (!Automatikstart || Dienste?.Laufen is null) return;
 
         await LaufStarten();
@@ -430,11 +437,30 @@
         _blatt = schluessel;
     }
 
+    /// <summary>
+    /// Stellt das Reiterblatt von aussen ein (Auftrag #207) — der Weg der MARKE,
+    /// wenn die Seite schon steht und <see cref="StartBlatt"/> deshalb nicht mehr
+    /// gelesen wird. Ein unbekanntes Blatt lässt der Baustein <c>Reiter</c> von
+    /// selbst liegen.
+    /// </summary>
+    public void BlattWaehlen(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel)) return;
+
+        Blattwahl(schluessel);
+        StateHasChanged();
+    }
+
     // =====================================================================
     // Der Lauf
     // =====================================================================
 
-    private async Task LaufStarten()
+    /// <summary>
+    /// Startet den Lauf — der Fussknopf dieser Seite und Schritt ② der Ansicht
+    /// SIMULATION gehen denselben Weg (Auftrag #207). Ein laufender Lauf wird
+    /// nicht zweimal gestartet.
+    /// </summary>
+    public async Task LaufStarten()
     {
         if (_laeuft || Dienste?.Laufen is null) return;
 
@@ -506,19 +532,6 @@
     // =====================================================================
     // Die Ueberlagerungen
     // =====================================================================
-
-    private void KonfigurationOeffnen() => _konfiguration = Dienste?.KonfigurationGaben?.Invoke();
-
-    /// <summary>
-    /// Nach der Konfiguration: neu laden (die Reiterleiste haengt an
-    /// <c>Tool_1..6</c>) und auf dem gemerkten Blatt bleiben — genau der Grund,
-    /// aus dem der Vorlaeufer <c>mainTabPageIndex</c> fuehrte.
-    /// </summary>
-    private void KonfigurationFertig()
-    {
-        _konfiguration = null;
-        Neuladen();
-    }
 
     private void BedarfOeffnen(bool waerme) => _bedarf = Dienste?.BedarfGaben?.Invoke(waerme);
 

@@ -68,6 +68,14 @@ namespace EPOS.UI.Tests.Bausteine;
 /// 13 aufklappend). Er steht hinter dem Knoten „Photovoltaik" und vor
 /// „Import Solarkollektoren".</para>
 ///
+/// <para>ANWENDERENTSCHEID SIM-Q3 (11.09.2026, Auftrag #207): Der Punkt
+/// <b>„Simulation…"</b> (<c>MenuItem_Simulation</c>, MENU_SIMULATION) kommt in
+/// den Kopf „Projekt", unmittelbar hinter „Varianten und Bericht…". Er fuehrt
+/// auf die freie Ansicht <c>SIMULATION</c> und hat KEIN Untermenue (Regel
+/// W16c-E-6). Damit stehen <b>46 handelnde Punkte</b> (59 gesamt,
+/// 13 aufklappend) — bis dahin war die Startseite der EINZIGE Weg in die
+/// Simulation.</para>
+///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
 /// englisch. Der Zweisprachenfall setzt die Kultur selbst und stellt sie
@@ -139,7 +147,14 @@ public class MenuebandTests : EposBunitContext
         // ANWENDERWUNSCH W13-E-2 (07.09.2026): EIN handelnder Punkt kommt
         // hinzu - der Stromspeicherimport unter "Daten & Import". Also
         // 58 Punkte und 45 Handlungen.
-        Assert.Equal(58, Punkte.Count);
+        //
+        // ANWENDERENTSCHEID SIM-Q3 (11.09.2026, Auftrag #207): EIN handelnder
+        // Punkt kommt hinzu - „Simulation…" im Kopf „Projekt", unmittelbar
+        // hinter „Varianten und Bericht…". Er ist der erste MENUEWEG, den die
+        // Simulation ueberhaupt hat (bis dahin fuehrte nur die Startseite
+        // dorthin, Konzept „Simulationsablauf" 1.1). Also 59 Punkte und
+        // 46 Handlungen.
+        Assert.Equal(59, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -887,8 +902,12 @@ public class MenuebandTests : EposBunitContext
         // W13-E-2 (07.09.2026) legt dagegen einen ECHTEN neuen Weg an: den
         // Stromspeicherimport. Er ist - nach den zwei Punkten aus W6-E-2 - der
         // dritte Zuwachs dieser Zahl ueberhaupt (44 -> 45).
+        //
+        // SIM-Q3 (11.09.2026, Auftrag #207) legt den VIERTEN an: „Simulation…"
+        // im Kopf „Projekt" (45 -> 46). Die Zahl der aufklappenden bleibt 13 -
+        // der Punkt fuehrt kein Untermenue (Regel W16c-E-6).
         Assert.Equal(13, Punkte.Count(p => p.Klappt));
-        Assert.Equal(45, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(46, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]
@@ -1064,8 +1083,9 @@ public class MenuebandTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-menueband-klappe"));
         Assert.Equal("true", cut.Find("#menue-Projekte").GetAttribute("aria-expanded"));
 
-        // Sechs Punkte des Designers, zwei aus BaueVariantenMenue, sechs Trenner.
-        Assert.Equal(8, cut.FindAll(".epos-menueband-klappe .epos-menueband-zeile").Count);
+        // Sechs Punkte des Designers, zwei aus BaueVariantenMenue, seit SIM-Q3
+        // (Auftrag #207) „Simulation…" - also neun; dazu sechs Trenner.
+        Assert.Equal(9, cut.FindAll(".epos-menueband-klappe .epos-menueband-zeile").Count);
         Assert.Equal(6, cut.FindAll(".epos-menueband-klappe .epos-menueband-strich").Count);
     }
 

@@ -29087,6 +29087,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… ähnelt.
+        /// </summary>
+        public static string MENU_SIMULATION {
+            get {
+                return ResourceManager.GetString("MENU_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarkollektoren ähnelt.
         /// </summary>
         public static string MENU_SOLARKOLLEKTOREN {
@@ -38527,29 +38536,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
-        /// </summary>
-        public static string SIMERG_BTN_BEENDEN {
-            get {
-                return ResourceManager.GetString("SIMERG_BTN_BEENDEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Details... ähnelt.
         /// </summary>
         public static string SIMERG_BTN_DETAILS {
             get {
                 return ResourceManager.GetString("SIMERG_BTN_DETAILS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ... ähnelt.
-        /// </summary>
-        public static string SIMERG_BTN_KONFIGURATION {
-            get {
-                return ResourceManager.GetString("SIMERG_BTN_KONFIGURATION", resourceCulture);
             }
         }
         
@@ -41348,11 +41339,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ablauf der Simulation ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_ABLAUF {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_ABLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bleiben ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_BTN_BLEIBEN {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_BTN_BLEIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 2 Simulation starten ▶ ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_BTN_LAUF {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_BTN_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_BTN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_BTN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Projekt liegt noch kein gerechnetes Ergebnis vor — die Ansicht beginnt bei der Konfiguration. ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_ERGEBNIS_FEHLT {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_ERGEBNIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ergebnisschritt steht erst offen, wenn die Simulation einmal gelaufen ist. ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_ERGEBNIS_GESPERRT {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_ERGEBNIS_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht: ähnelt.
         /// </summary>
         public static string SIM_ANSICHT_LABEL {
             get {
                 return ResourceManager.GetString("SIM_ANSICHT_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration ist noch nicht gespeichert — bitte zuerst „Konfiguration speichern“. ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_LAUF_GESPERRT_KONFIG {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_LAUF_GESPERRT_KONFIG", resourceCulture);
             }
         }
         
@@ -41371,6 +41434,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_ANSICHT_SCHEMA {
             get {
                 return ResourceManager.GetString("SIM_ANSICHT_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Konfiguration ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_SCHRITT1 {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_SCHRITT1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 3 Ergebnis ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_SCHRITT3 {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_SCHRITT3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_TITEL {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Simulationskonfiguration hat ungespeicherte Änderungen. Sollen sie gespeichert werden? ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_VERLASSEN_FRAGE {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_VERLASSEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungespeicherte Konfiguration ähnelt.
+        /// </summary>
+        public static string SIM_ANSICHT_VERLASSEN_TITEL {
+            get {
+                return ResourceManager.GetString("SIM_ANSICHT_VERLASSEN_TITEL", resourceCulture);
             }
         }
         
@@ -42534,15 +42642,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_KESSEL_QUELLWAERME_TIP {
             get {
                 return ResourceManager.GetString("SIM_KESSEL_QUELLWAERME_TIP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
-        /// </summary>
-        public static string SIM_KONFIG_BTN_BEENDEN {
-            get {
-                return ResourceManager.GetString("SIM_KONFIG_BTN_BEENDEN", resourceCulture);
             }
         }
         

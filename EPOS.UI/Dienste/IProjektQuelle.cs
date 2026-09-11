@@ -117,7 +117,8 @@ public interface IProjektQuelle
     /// (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die Erweiterung nicht bricht:
     /// Wer sie nicht umsetzt, kennt die Seite eben nicht.</para>
     /// </summary>
-    IReadOnlyDictionary<string, object>? SimulationKonfigGaben(int idProjekt) => null;
+    IReadOnlyDictionary<string, object>? SimulationKonfigGaben(int idProjekt)
+        => SimulationGaben(idProjekt);
 
     /// <summary>
     /// Der fertige PARAMETERSATZ der Ergebnisseite zu einem Projekt
@@ -128,8 +129,30 @@ public interface IProjektQuelle
     /// <see cref="SimulationKonfigGaben"/> — ein Woerterbuch, das die Wurzel mit
     /// <c>@@attributes</c> hineinschuettet, und eine Standardumsetzung, damit eine
     /// vorhandene Quelle durch die Erweiterung nicht bricht.</para>
+    ///
+    /// <para><b>Seit Auftrag #207 ruft sie <see cref="SimulationGaben"/>:</b> Es
+    /// gibt nur noch EINE Ansicht, und die zwei alten Schluessel sind ihre
+    /// Einstiegsmarken.</para>
     /// </summary>
-    IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
+    IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt)
+        => SimulationGaben(idProjekt);
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der Ansicht „Simulation" (Auftrag #207, Stufe S1);
+    /// <c>null</c> = geht gerade nicht. Die Seite bleibt dann in der Liste stehen.
+    ///
+    /// <para><b>Er traegt beide Schritte.</b> Das Woerterbuch fuehrt einen
+    /// <c>SimulationAnsichtDienste</c>, und darin stehen die zwei fertigen
+    /// Parametersaetze der Konfigurations- und der Ergebnisseite samt den zwei
+    /// Auskuenften der Ablaufleiste (Sperrgrund, „gibt es einen Lauf?"). Unter
+    /// Windows baut ihn <c>Views/Simulation/SimulationHuelle.cs</c>; auf iOS ist er
+    /// der Rest, den Stufe S2 (Auftrag #208) zu liefern hat.</para>
+    ///
+    /// <para><b>Mit Standardumsetzung</b>, damit eine vorhandene Quelle
+    /// (<c>EPOS.iOS/Dienste/IosProjektQuelle</c>) durch die Erweiterung nicht
+    /// bricht: Wer sie nicht umsetzt, kennt die Ansicht eben nicht.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? SimulationGaben(int idProjekt) => null;
 
     /// <summary>
     /// Der fertige PARAMETERSATZ der Ansicht „Stromspeicher-Auslegung" (Paket P3,

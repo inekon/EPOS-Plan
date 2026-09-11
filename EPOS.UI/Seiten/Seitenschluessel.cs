@@ -45,6 +45,33 @@ public static class Seitenschluessel
     public const string SimulationKonfiguration = "SIMULATION_KONFIGURATION";
 
     /// <summary>
+    /// Der SIMULATIONSABLAUF als EINE Ansicht (<c>Simulation.SimulationSeite</c>,
+    /// Auftrag #207, Stufe S1 des Konzepts „Simulationsablauf ohne Dialog").
+    /// Argument: die MARKE (<c>"schritt=1"</c>, <c>"schritt=3;blatt=STROMSPEICHER"</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Sie löst zwei Ansichten ab.</b> Bis #207 waren
+    /// <see cref="SimulationKonfiguration"/> und <see cref="SimulationErgebnis"/> zwei
+    /// getrennte Zweige der <see cref="AppWurzel"/> — und unter Windows beide tot: Die
+    /// Startseite bettete die Konfiguration selbst ein und zeigte das Ergebnis als
+    /// <c>Ueberlagerung</c> („Der Simulationsdialog im Fenster ist nicht gut",
+    /// Anwenderrückmeldung 11.09.2026). Seither ist es EINE freie Ansicht mit
+    /// Ablaufleiste (Anwenderentscheid <b>SIM‑Q1</b>: drei Schritte, ② ist ein Knopf),
+    /// und die zwei alten Schlüssel bleiben als EINSTIEGSMARKEN gültig — sie öffnen
+    /// dieselbe Ansicht auf Schritt ① bzw. ③.
+    /// </para>
+    /// <para>
+    /// <b>Sie hat einen <c>Masken.*</c>-Zwilling</b> (<c>Masken.Simulation</c>, Muster
+    /// <see cref="KiAssistent"/>): Der Menüpunkt „Simulation…" (<b>SIM‑Q3</b>), der
+    /// Knopf „Simulation Konfiguration…" und die Kachel „Simulation" der Startseite
+    /// gehen alle über <c>Dienste.Navigation.OeffneMaske(Masken.Simulation, marke)</c> —
+    /// auf beiden Plattformen derselbe Weg.
+    /// </para>
+    /// </remarks>
+    public const string Simulation = WindowsFormsApplication1.Masken.Simulation;
+
+    /// <summary>
     /// Das Simulationsergebnis (<c>Simulation.SimulationErgebnisSeite</c>,
     /// iU9-W11b.13) — die zweite FACHSEITE, die iOS ueber <see cref="AppWurzel"/>
     /// erreicht. Unter Windows steht dieselbe Komponente bis W16 in einem modalen
@@ -350,7 +377,8 @@ public static class Seitenschluessel
     public static readonly IReadOnlyList<string> Alle = new[]
     {
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
-        SimulationKonfiguration, SimulationErgebnis, KiAssistent, Assistent,
+        SimulationKonfiguration, SimulationErgebnis, Simulation,
+        KiAssistent, Assistent,
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,

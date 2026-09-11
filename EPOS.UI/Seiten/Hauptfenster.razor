@@ -43,6 +43,7 @@
                BerichteKostenGaben="@BerichteKostenGaben"
                AssistentGaben="@AssistentGaben"
                StromspeicherAuslegungGaben="@StromspeicherAuslegungGaben"
+               SimulationGaben="@SimulationGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -163,6 +164,13 @@
     /// das Fenster wertet nichts davon aus.
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Ansicht „Simulation" (Windows:
+    /// <c>SimulationHuelle.AnsichtGaben</c>, Auftrag #207). Er wird nur
+    /// durchgereicht; das Fenster wertet nichts davon aus.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt

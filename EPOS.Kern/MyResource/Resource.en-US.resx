@@ -1651,9 +1651,6 @@ Please import a CSV file first or set all values alike.</value>
   <data name="SIM_KONFIG_BTN_SPEICHERN" xml:space="preserve">
     <value>Save configuration</value>
   </data>
-  <data name="SIM_KONFIG_BTN_BEENDEN" xml:space="preserve">
-    <value>Finish</value>
-  </data>
   <data name="SIM_KARTE_GRUPPE_WAERME" xml:space="preserve">
     <value>Heat generator</value>
   </data>
@@ -13621,12 +13618,6 @@ Please check all entries!</value>
   <data name="SIMERG_BTN_SIMULATION" xml:space="preserve">
     <value>Start simulation ▶</value>
   </data>
-  <data name="SIMERG_BTN_KONFIGURATION" xml:space="preserve">
-    <value>Configuration...</value>
-  </data>
-  <data name="SIMERG_BTN_BEENDEN" xml:space="preserve">
-    <value>Finish</value>
-  </data>
   <data name="SIMERG_BTN_DETAILS" xml:space="preserve">
     <value>Details...</value>
   </data>
@@ -18241,5 +18232,47 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>The form reports on this: {0}</value>
+  </data>
+  <data name="MENU_SIMULATION" xml:space="preserve">
+    <value>Simulation&#8230;</value>
+  </data>
+  <data name="SIM_ANSICHT_TITEL" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="SIM_ANSICHT_ABLAUF" xml:space="preserve">
+    <value>Simulation workflow</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHRITT1" xml:space="preserve">
+    <value>1 Configuration</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHRITT3" xml:space="preserve">
+    <value>3 Result</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_LAUF" xml:space="preserve">
+    <value>2 Start simulation &#9654;</value>
+  </data>
+  <data name="SIM_ANSICHT_LAUF_GESPERRT_KONFIG" xml:space="preserve">
+    <value>The configuration has not been saved yet &#8212; please use &#8220;Save configuration&#8221; first.</value>
+  </data>
+  <data name="SIM_ANSICHT_ERGEBNIS_GESPERRT" xml:space="preserve">
+    <value>The result step opens once the simulation has run.</value>
+  </data>
+  <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
+    <value>There is no computed result for this project yet &#8212; the view starts at the configuration.</value>
+  </data>
+  <data name="SIM_ANSICHT_VERLASSEN_TITEL" xml:space="preserve">
+    <value>Unsaved configuration</value>
+  </data>
+  <data name="SIM_ANSICHT_VERLASSEN_FRAGE" xml:space="preserve">
+    <value>The simulation configuration has unsaved changes. Should they be saved?</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_BLEIBEN" xml:space="preserve">
+    <value>Stay</value>
   </data>
 </root>

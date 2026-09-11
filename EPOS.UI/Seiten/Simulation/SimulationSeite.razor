@@ -1,0 +1,429 @@
+﻿@* DIE ANSICHT „SIMULATION" (Seitenschluessel SIMULATION, Auftrag #207,
+   Konzept „Simulationsablauf ohne Dialog" 2, Stufe S1).
+
+   ANLASS. Der Anwender gab am 11.09.2026 drei Saetze zurueck: „Der
+   Simulationsdialog im Fenster ist nicht gut. Evtl. wie bei ‚Speicherflotte
+   Auslegung'." — „Bei Dialog ‚Speicherflotte Auslegung' springt bei ‚Zurueck'
+   auf das Hauptfenster und geht nicht zurueck." — „Harmonisiere den Ablauf bei
+   Simulation, am besten ohne Dialog."
+
+   WAS SIE ABLOEST. Bis hierher hatten ZWEI fertige Razor-Seiten DREI Wirte: Die
+   Startseite bettete die Konfiguration in sich selbst ein (E-5) und zeigte das
+   Ergebnis als UEBERLAGERUNG (96 vw x 94 vh), und die Ergebnisseite oeffnete die
+   Konfiguration noch einmal als zweite Ueberlagerung darin — Fenster im Fenster
+   im Fenster. Die zwei Zweige der AppWurzel dagegen waren unter Windows tot: Es
+   gab keinen Wirt, der ihre Gaben gefuellt haette.
+
+   DREI SCHRITTE, ZWEI BLAETTER (Anwenderentscheid SIM-Q1). Die Ablaufleiste ist
+   dieselbe wie bei der Stromspeicher-Auslegung: ① Konfiguration ·
+   ② Simulation starten ▶ · ③ Ergebnis. SCHRITT ② IST EIN KNOPF, KEIN BLATT —
+   ein Lauf ist nichts, das man ansieht. Er ist gesperrt, solange die
+   Konfiguration ungespeichert ist oder die Vorpruefung rot ist, und nennt den
+   Grund am Knopf.
+
+   DIE ZWEI SEITEN BLEIBEN, WIE SIE SIND. Sie verlieren nur ihre eigenen
+   Ausgaenge: die Ergebnisseite die Fussknoepfe „Konfiguration ..." und
+   „Beenden" samt der Konfigurations-Ueberlagerung, die Konfigurationsseite
+   ihren „Beenden"-Knopf. Was sie ersetzt, ist die Leiste hier oben und das EINE
+   „← zurueck" im Kopf.
+
+   BEIDE BLAETTER BLEIBEN MONTIERT, sobald sie einmal standen — sichtbar ist
+   immer nur eines. Ein Schrittwechsel darf weder den gerechneten Lauf noch den
+   Bilderspeicher noch das offene Reiterblatt wegwerfen; genau das aber taete ein
+   @if, das die Komponente entsorgt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Die zwei Parametersaetze und die zwei
+   Auskuenfte der Leiste kommen als SimulationAnsichtDienste herein; unter
+   Windows baut sie Views/Simulation/SimulationHuelle.cs, die auch die zwei
+   Hülleninstanzen zwischen zwei Besuchen haelt. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+@using EPOS.UI.Seiten.Assistent
+@using EPOS.UI.Seiten.Strom
+
+<div class="epos-seite epos-simansicht">
+
+    @* ---------------------------------------------------------------- Kopf *@
+    <div class="epos-seite-kopf epos-simansicht-kopf">
+        <h1 class="epos-seite-titel">@TitelText</h1>
+        @if (!string.IsNullOrWhiteSpace(ProjektText))
+        {
+            <span class="epos-simansicht-kontext">@ProjektText</span>
+        }
+        <span class="epos-simansicht-kopfaktionen">
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+            <button type="button" class="epos-knopf" @onclick="Verlassen">@ZurueckText</button>
+        </span>
+    </div>
+
+    @* ------------------------------------------------------- Ablaufleiste *@
+    <Ablaufleiste Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
+                  Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
+                  RechnenText="@RechnenText" RechnenFrei="@RechnenFrei"
+                  RechnenGrund="@Rechensperre" Rechnen="Rechnen"
+                  Bezeichnung="@AblaufText" />
+
+    @if (Rechensperre.Length > 0)
+    {
+        @* Die weiche Auskunft zum gesperrten Rechenknopf (Hausregel W16b-E-6):
+           Der title am Knopf erreicht nur den Zeiger, das Banner jeden. *@
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Rechensperre" />
+    }
+
+    @if (_hinweis.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_hinweis" />
+    }
+
+    @* ------------------------------------------------------------ Blätter *@
+    @if (_konfigMontiert && Dienste?.Konfiguration is not null)
+    {
+        <div class="@Blattklasse(SimulationSchritt.Konfiguration)">
+            <SimulationKonfigSeite @ref="_konfigSeite" @attributes="Dienste.Konfiguration"
+                                   UngespeichertGeaendert="KonfigStandGemeldet" />
+        </div>
+    }
+
+    @if (_ergebnisMontiert && Dienste?.Ergebnis is not null)
+    {
+        <div class="@Blattklasse(SimulationSchritt.Ergebnis)">
+            <SimulationErgebnisSeite @ref="_ergebnisSeite" @attributes="Dienste.Ergebnis"
+                                     Automatikstart="false" StartBlatt="@_startBlatt" />
+        </div>
+    }
+
+    @* Die RUECKFRAGE beim Verlassen (Muster 62b-E-1): Speichern / Verwerfen /
+       Bleiben; Esc heisst „Bleiben", der vorsichtigste der drei. OHNE
+       ungespeicherte Konfiguration gibt es keine Rueckfrage. *@
+    <Rueckfrage Offen="@_frageOffen" TitelText="@VerlassenTitelText" Frage="@VerlassenFrageText"
+                MitAbbrechen="true" JaText="@SpeichernText" NeinText="@VerwerfenText"
+                AbbrechenText="@BleibenText" Beantwortet="VerlassenBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    //  Parameter
+    // =====================================================================
+
+    /// <summary>Die Datenseite; ohne sie steht nur der Kopf samt Ablaufleiste.</summary>
+    [Parameter] public SimulationAnsichtDienste? Dienste { get; set; }
+
+    /// <summary>
+    /// Die MARKE des Aufrufers — <c>"schritt=1"</c>, <c>"schritt=3"</c> oder
+    /// <c>"schritt=3;blatt=STROMSPEICHER"</c>. Angewandt wird sie, wenn sie sich
+    /// ÄNDERT; was der Anwender danach in der Ablaufleiste tut, gewinnt.
+    /// </summary>
+    [Parameter] public string Marke { get; set; } = "";
+
+    /// <summary>Projekt und Variante in einer Zeile; leer = keine Angabe.</summary>
+    [Parameter] public string ProjektText { get; set; } = "";
+
+    /// <summary>Die Ansicht möchte verlassen werden („← zurück").</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Der Hilfeschlüssel von Schritt ① — der der Konfigurationsseite.</summary>
+    [Parameter] public string HilfeSchluesselKonfiguration { get; set; }
+        = "Form_Simulation_Config.btn_Help";
+
+    /// <summary>Der Hilfeschlüssel von Schritt ③ — der der Ergebnisseite.</summary>
+    [Parameter] public string HilfeSchluesselErgebnis { get; set; }
+        = "Form_Simulation_Detail.btn_Help";
+
+    // ---- Texte: unmittelbar aus MyResource (Muster StromspeicherAuslegungSeite) ----
+
+    private static string TitelText => Resource.SIM_ANSICHT_TITEL;
+    private static string ZurueckText => Resource.FLOTTE_SEITE_ZURUECK;
+    private static string AblaufText => Resource.SIM_ANSICHT_ABLAUF;
+    private static string Schritt1Text => Resource.SIM_ANSICHT_SCHRITT1;
+    private static string Schritt3Text => Resource.SIM_ANSICHT_SCHRITT3;
+    private static string RechnenText => Resource.SIM_ANSICHT_BTN_LAUF;
+    private static string KonfigGesperrtText => Resource.SIM_ANSICHT_LAUF_GESPERRT_KONFIG;
+    private static string ErgebnisGesperrtText => Resource.SIM_ANSICHT_ERGEBNIS_GESPERRT;
+    private static string ErgebnisFehltText => Resource.SIM_ANSICHT_ERGEBNIS_FEHLT;
+    private static string VerlassenTitelText => Resource.SIM_ANSICHT_VERLASSEN_TITEL;
+    private static string VerlassenFrageText => Resource.SIM_ANSICHT_VERLASSEN_FRAGE;
+    private static string SpeichernText => Resource.SIM_ANSICHT_BTN_SPEICHERN;
+    private static string VerwerfenText => Resource.SIM_ANSICHT_BTN_VERWERFEN;
+    private static string BleibenText => Resource.SIM_ANSICHT_BTN_BLEIBEN;
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    private string _schritt = SimulationSchritt.Konfiguration;
+
+    /// <summary>Steht Schritt ① schon? Er bleibt danach stehen (siehe Kopfkommentar).</summary>
+    private bool _konfigMontiert = true;
+
+    /// <summary>Steht Schritt ③ schon? Er entsteht erst beim ersten Betreten.</summary>
+    private bool _ergebnisMontiert;
+
+    /// <summary>Das Reiterblatt aus der Marke — nur beim Aufbau von ③ wirksam.</summary>
+    private string _startBlatt = "";
+
+    /// <summary>Hat die Konfiguration ungespeicherte Änderungen?</summary>
+    private bool _konfigUngespeichert;
+
+    /// <summary>Ein Lauf soll starten, sobald ③ gezeichnet ist.</summary>
+    private bool _laufAnstossen;
+
+    private string _hinweis = "";
+    private bool _frageOffen;
+    private TaskCompletionSource<bool?>? _frageWartet;
+
+    private SimulationKonfigSeite? _konfigSeite;
+    private SimulationErgebnisSeite? _ergebnisSeite;
+
+    /// <summary>Der stehende Schritt (Prüfhilfe und Marke).</summary>
+    public string Schritt => _schritt;
+
+    /// <summary>Gibt es ungespeicherte Eingaben? Der Wirt fragt danach, bevor er wechselt.</summary>
+    public bool Ungespeichert => _konfigUngespeichert;
+
+    /// <summary>
+    /// Die MARKE dieser Ansicht, wie sie der Rückwegstapel der <c>AppWurzel</c>
+    /// ablegt: Schritt und — in ③ — das offene Reiterblatt.
+    /// </summary>
+    public string AktuelleMarke
+        => _schritt == SimulationSchritt.Ergebnis
+               ? SimulationMarke.Schreiben(3, _ergebnisSeite?.AktivesBlatt ?? _startBlatt)
+               : SimulationMarke.Schreiben(1, "");
+
+    private string HilfeSchluessel
+        => _schritt == SimulationSchritt.Ergebnis ? HilfeSchluesselErgebnis
+                                                  : HilfeSchluesselKonfiguration;
+
+    // =====================================================================
+    //  Die Ablaufleiste
+    // =====================================================================
+
+    private IReadOnlyList<Ablaufeintrag> Vorne => new[]
+    {
+        new Ablaufeintrag(SimulationSchritt.Konfiguration, Schritt1Text, true, false, "")
+    };
+
+    private IReadOnlyList<Ablaufeintrag> Hinten => new[]
+    {
+        new Ablaufeintrag(SimulationSchritt.Ergebnis, Schritt3Text, ErgebnisDa, false,
+                          ErgebnisGesperrtText)
+    };
+
+    /// <summary>
+    /// Ist Schritt ③ betretbar? Sobald er einmal stand, bleibt er offen — die
+    /// Seite dahinter lebt ja weiter.
+    /// </summary>
+    private bool ErgebnisDa => _ergebnisMontiert
+                            || (Dienste?.ErgebnisVorhanden?.Invoke() ?? false);
+
+    /// <summary>
+    /// Der Grund, aus dem ② gesperrt ist; leer = frei. ZUERST die rote
+    /// Vorprüfung (ohne sie läuft gar nichts), dann die ungespeicherte
+    /// Konfiguration (der Lauf läse sonst den alten Stand aus der Datenbank).
+    /// </summary>
+    private string Rechensperre
+    {
+        get
+        {
+            if (Dienste?.Ergebnis is null) return "";
+
+            string sperrgrund = Dienste?.Sperrgrund?.Invoke() ?? "";
+            if (sperrgrund.Length > 0) return sperrgrund;
+
+            return _konfigUngespeichert ? KonfigGesperrtText : "";
+        }
+    }
+
+    private bool RechnenFrei => Dienste?.Ergebnis is not null && Rechensperre.Length == 0;
+
+    private void SchrittGewaehlt(string schluessel)
+    {
+        _hinweis = "";
+        if (schluessel == SimulationSchritt.Ergebnis) _ergebnisMontiert = true;
+        if (schluessel == SimulationSchritt.Konfiguration) _konfigMontiert = true;
+        _schritt = schluessel;
+    }
+
+    private void SchrittVerweigert(string schluessel)
+    {
+        if (schluessel == SimulationSchritt.Ergebnis) _hinweis = ErgebnisGesperrtText;
+    }
+
+    /// <summary>Sichtbar ist genau ein Blatt; das andere bleibt stehen und schweigt.</summary>
+    private string Blattklasse(string schritt)
+        => schritt == _schritt ? "epos-simansicht-blatt"
+                               : "epos-simansicht-blatt epos-simansicht-blatt--aus";
+
+    // =====================================================================
+    //  Aufbau
+    // =====================================================================
+
+    /// <summary>
+    /// Die zuletzt ANGEWANDTE Marke. Der Sentinel ist kein gültiger Markentext und
+    /// heisst „noch keine" — eine leere Marke ist eine gültige (sie bedeutet ①).
+    /// </summary>
+    private string _markeAngewandt = "\u0000";
+
+    /// <summary>
+    /// Die Marke wird angewandt, wenn sie sich ÄNDERT — beim Aufbau und bei jedem
+    /// späteren Aufruf derselben, stehenden Ansicht.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum nicht nur beim Aufbau.</b> Die drei Schlüssel <c>SIMULATION</c>,
+    /// <c>SIMULATION_KONFIGURATION</c> und <c>SIMULATION_ERGEBNIS</c> führen auf
+    /// DIESE Ansicht; wer den Menüpunkt „Simulation…" drückt, während sie schon
+    /// steht, bekommt von der <c>AppWurzel</c> dieselbe Komponente mit einer neuen
+    /// Marke — und erwartet, dass sie wirkt. Was der ANWENDER danach in der Leiste
+    /// tut, gewinnt: Die Marke bleibt dann unverändert und wird nicht erneut
+    /// angewandt.
+    /// </remarks>
+    protected override void OnParametersSet()
+    {
+        if (string.Equals(Marke, _markeAngewandt, StringComparison.Ordinal)) return;
+
+        bool erste = _markeAngewandt == "\u0000";
+        _markeAngewandt = Marke;
+        MarkeAnwenden(SimulationMarke.Lesen(Marke), erste);
+    }
+
+    private void MarkeAnwenden((int Schritt, string Blatt) marke, bool erste)
+    {
+        _hinweis = "";
+
+        if (marke.Schritt == 1)
+        {
+            _schritt = SimulationSchritt.Konfiguration;
+            _konfigMontiert = true;
+            return;
+        }
+
+        if (marke.Schritt != 3) return;     // keine Angabe: es bleibt, wie es steht
+
+        if (!ErgebnisDa)
+        {
+            // „Ohne Ergebnis faellt die Seite selbst auf ① zurueck, mit Hinweis"
+            // (Konzept 2, Einstiegsmarke).
+            _schritt = SimulationSchritt.Konfiguration;
+            _konfigMontiert = true;
+            _hinweis = ErgebnisFehltText;
+            return;
+        }
+
+        _schritt = SimulationSchritt.Ergebnis;
+        _ergebnisMontiert = true;
+
+        if (marke.Blatt.Length > 0)
+        {
+            _startBlatt = marke.Blatt;
+            // Steht ③ schon, liest es seinen StartBlatt nicht noch einmal - dann
+            // wird das Blatt unmittelbar gesetzt.
+            _ergebnisSeite?.BlattWaehlen(marke.Blatt);
+        }
+
+        // BEIM ERSTEN Mal entsteht Schritt ① gar nicht erst: Sein Aufbau liest die
+        // Datenbank, und wer ins Ergebnis kommt, will es sehen. Steht er schon, wird
+        // er nicht wieder entsorgt - er kann ungespeicherte Eingaben tragen.
+        if (erste) _konfigMontiert = false;
+    }
+
+    // =====================================================================
+    //  Schritt ② — der Lauf
+    // =====================================================================
+
+    /// <summary>
+    /// „Simulation starten ▶": Der Lauf gehört der ERGEBNISSEITE — sie führt den
+    /// Fortschrittsbalken, den Abbruch und das Neuladen danach. Hier wird nur auf
+    /// ③ gewechselt und dort angestoßen.
+    /// </summary>
+    private void Rechnen()
+    {
+        if (!RechnenFrei) return;
+
+        _hinweis = "";
+        _schritt = SimulationSchritt.Ergebnis;
+        _ergebnisMontiert = true;
+        _laufAnstossen = true;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_laufAnstossen) return;
+
+        SimulationErgebnisSeite? seite = _ergebnisSeite;
+        if (seite is null) return;          // ③ zeichnet erst — beim nächsten Mal
+
+        _laufAnstossen = false;
+        await seite.LaufStarten();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // =====================================================================
+    //  Der Stand der Konfiguration
+    // =====================================================================
+
+    /// <summary>
+    /// Die Konfigurationsseite meldet, ob ihr Stand ungespeichert ist. Der Stand
+    /// lebt HIER und nicht dort, weil ② und die Rückfrage ihn auch dann brauchen,
+    /// wenn Schritt ① gerade nicht sichtbar ist.
+    /// </summary>
+    private void KonfigStandGemeldet(bool ungespeichert)
+    {
+        if (_konfigUngespeichert == ungespeichert) return;
+        _konfigUngespeichert = ungespeichert;
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    //  Verlassen (Muster 62b-E-1)
+    // =====================================================================
+
+    private async Task Verlassen()
+    {
+        if (await FrageVerlassen() == AssistentVerlassen.Bleiben) return;
+        await Geschlossen.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Fragt den Anwender, ob er die Ansicht verlassen will, und liefert den
+    /// gewählten Weg. <b>Ohne ungespeicherte Konfiguration gibt es keine
+    /// Rückfrage</b> (62b‑E‑1).
+    /// </summary>
+    /// <remarks>
+    /// Der Wirt ruft das, BEVOR er die Ansicht wechselt (<c>AppWurzel</c>) oder das
+    /// Programm schließt (<c>Hauptfensterrahmen.FormClosing</c>). Scheitert das
+    /// Speichern, bleibt die Ansicht stehen — die Antwort ist dann
+    /// <see cref="AssistentVerlassen.Bleiben"/>.
+    /// </remarks>
+    public async Task<AssistentVerlassen> FrageVerlassen()
+    {
+        if (_frageOffen) return AssistentVerlassen.Bleiben;      // sie steht schon
+        if (!_konfigUngespeichert) return AssistentVerlassen.Verwerfen;
+
+        _frageWartet = new TaskCompletionSource<bool?>();
+        _frageOffen = true;
+        await InvokeAsync(StateHasChanged);
+
+        bool? antwort = await _frageWartet.Task;
+        _frageWartet = null;
+        _frageOffen = false;
+
+        if (antwort is null) { await InvokeAsync(StateHasChanged); return AssistentVerlassen.Bleiben; }
+        if (antwort == false) { await InvokeAsync(StateHasChanged); return AssistentVerlassen.Verwerfen; }
+
+        SimulationKonfigSeite? konfig = _konfigSeite;
+        if (konfig is null || !konfig.Speichern())
+        {
+            await InvokeAsync(StateHasChanged);
+            return AssistentVerlassen.Bleiben;
+        }
+
+        await InvokeAsync(StateHasChanged);
+        return AssistentVerlassen.Gespeichert;
+    }
+
+    private void VerlassenBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        _frageWartet?.TrySetResult(antwort);
+    }
+}

@@ -196,6 +196,20 @@ namespace WindowsFormsApplication1
                     KiChatHuelle.Oeffnen(Form.ActiveForm, Aufrufkontext(argumente));
                     return true;
 
+                // AUFTRAG #207 (SIM-Q1): Die SIMULATION ist eine freie ANSICHT und
+                // kein Fenster - hier wird nichts geoeffnet, sondern der Schluessel
+                // samt MARKE an die gezeichnete Wurzel weitergereicht. Genau wie beim
+                // Projektassistenten seit #62b heisst „true" darum „die Ansicht ist
+                // gewechselt", nicht „mit OK beendet"; „false" heisst „es zeichnet
+                // gerade keine Oberflaeche".
+                //
+                // Die drei Aufrufer sind der Menuepunkt „Simulation…" (ueber
+                // HauptfensterHuelle.Weg), der Knopf „Simulation Konfiguration…" und
+                // die Kachel „Simulation" der Startseite. Auf iOS tut IosNavigation
+                // dasselbe - es ist derselbe Weg.
+                case Masken.Simulation:
+                    return SimulationZeigen(Marke(argumente));
+
             }
 
             return false;
@@ -256,6 +270,28 @@ namespace WindowsFormsApplication1
         {
             return EPOS.UI.Dienste.Navigationsziel.Aktuell?
                        .OeffneMaske(Masken.Assistent, betriebsart) ?? false;
+        }
+
+        /// <summary>
+        /// Die Ansicht „Simulation" (Auftrag #207) — ein ANSICHTSWECHSEL wie der
+        /// Projektassistent, kein Fenster.
+        /// </summary>
+        /// <param name="marke">
+        /// Schritt und Reiterblatt, mit denen die Ansicht aufmacht
+        /// (<c>"schritt=1"</c>, <c>"schritt=3;blatt=STROMSPEICHER"</c>); leer = die
+        /// Ansicht entscheidet selbst.
+        /// </param>
+        private static bool SimulationZeigen(string marke)
+        {
+            return EPOS.UI.Dienste.Navigationsziel.Aktuell?
+                       .OeffneMaske(Masken.Simulation, marke) ?? false;
+        }
+
+        /// <summary>Die MARKE aus dem ersten Argument; leer = keine.</summary>
+        private static string Marke(object[] argumente)
+        {
+            if (argumente == null || argumente.Length == 0) return "";
+            return argumente[0] as string ?? "";
         }
 
         // ==================================================================

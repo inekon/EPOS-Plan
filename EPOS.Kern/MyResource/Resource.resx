@@ -1651,9 +1651,6 @@ Bitte zuerst eine CSV-Datei einlesen oder alle Werte gleich setzen.</value>
   <data name="SIM_KONFIG_BTN_SPEICHERN" xml:space="preserve">
     <value>Konfiguration speichern</value>
   </data>
-  <data name="SIM_KONFIG_BTN_BEENDEN" xml:space="preserve">
-    <value>Beenden</value>
-  </data>
   <data name="SIM_KARTE_GRUPPE_WAERME" xml:space="preserve">
     <value>Wärmeerzeuger</value>
   </data>
@@ -13628,12 +13625,6 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_BTN_SIMULATION" xml:space="preserve">
     <value>Simulation starten ▶</value>
   </data>
-  <data name="SIMERG_BTN_KONFIGURATION" xml:space="preserve">
-    <value>Konfiguration ...</value>
-  </data>
-  <data name="SIMERG_BTN_BEENDEN" xml:space="preserve">
-    <value>Beenden</value>
-  </data>
   <data name="SIMERG_BTN_DETAILS" xml:space="preserve">
     <value>Details...</value>
   </data>
@@ -18248,5 +18239,47 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>Die Maske meldet dazu: {0}</value>
+  </data>
+  <data name="MENU_SIMULATION" xml:space="preserve">
+    <value>Simulation&#8230;</value>
+  </data>
+  <data name="SIM_ANSICHT_TITEL" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="SIM_ANSICHT_ABLAUF" xml:space="preserve">
+    <value>Ablauf der Simulation</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHRITT1" xml:space="preserve">
+    <value>1 Konfiguration</value>
+  </data>
+  <data name="SIM_ANSICHT_SCHRITT3" xml:space="preserve">
+    <value>3 Ergebnis</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_LAUF" xml:space="preserve">
+    <value>2 Simulation starten &#9654;</value>
+  </data>
+  <data name="SIM_ANSICHT_LAUF_GESPERRT_KONFIG" xml:space="preserve">
+    <value>Die Konfiguration ist noch nicht gespeichert &#8212; bitte zuerst &#8222;Konfiguration speichern&#8220;.</value>
+  </data>
+  <data name="SIM_ANSICHT_ERGEBNIS_GESPERRT" xml:space="preserve">
+    <value>Der Ergebnisschritt steht erst offen, wenn die Simulation einmal gelaufen ist.</value>
+  </data>
+  <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
+    <value>Zu diesem Projekt liegt noch kein gerechnetes Ergebnis vor &#8212; die Ansicht beginnt bei der Konfiguration.</value>
+  </data>
+  <data name="SIM_ANSICHT_VERLASSEN_TITEL" xml:space="preserve">
+    <value>Ungespeicherte Konfiguration</value>
+  </data>
+  <data name="SIM_ANSICHT_VERLASSEN_FRAGE" xml:space="preserve">
+    <value>Die Simulationskonfiguration hat ungespeicherte &#196;nderungen. Sollen sie gespeichert werden?</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="SIM_ANSICHT_BTN_BLEIBEN" xml:space="preserve">
+    <value>Bleiben</value>
   </data>
 </root>

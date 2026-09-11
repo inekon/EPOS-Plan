@@ -35,6 +35,7 @@ namespace WindowsFormsApplication1
     {
         private readonly Func<IWin32Window> _besitzer;
         private readonly StartseiteHuelle _startseite;
+        private readonly SimulationHuelle _simulation;
 
         /// <summary>
         /// Die Werte von <c>Masken</c> — über Reflexion, damit die Liste nicht
@@ -52,6 +53,12 @@ namespace WindowsFormsApplication1
         {
             _besitzer = besitzer ?? throw new ArgumentNullException(nameof(besitzer));
             _startseite = new StartseiteHuelle(besitzer, kontext);
+
+            // DIESELBEN zwei Bedarfsrechnungen wie die Startseite (Entscheid E-5):
+            // Ihr Reiter „Simulation" und die Ergebnisansicht schreiben sie beide
+            // fort, und zwei Saetze waeren zwei Wahrheiten ueber dasselbe Projekt.
+            _simulation = new SimulationHuelle(() => besitzer() as Form, kontext,
+                                               _startseite.Bedarf);
         }
 
         // =====================================================================
@@ -93,6 +100,16 @@ namespace WindowsFormsApplication1
                 ["StromspeicherAuslegungGaben"] =
                     new Func<IReadOnlyDictionary<string, object>>(
                         StromspeicherAuslegungHuelle.AnsichtGaben),
+
+                // DIE SIMULATION als EINE freie Ansicht (Auftrag #207, SIM-Q1).
+                // Wie die zwei darueber ein DELEGAT je Betreten: Der Satz bringt
+                // den Stand der zwei Huelleninstanzen mit - den gerechneten Lauf,
+                // die Bilder und die Gueltigkeitsmarke. Die INSTANZEN haelt
+                // SimulationHuelle; bis #207 baute StartseiteHuelle bei jedem
+                // Kachelklick neue, und deshalb ging der Rueckweg aus der
+                // Stromspeicher-Auslegung ins Leere.
+                ["SimulationGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(_simulation.AnsichtGaben),
 
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
