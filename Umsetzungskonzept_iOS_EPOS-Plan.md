@@ -3623,6 +3623,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Doku_Mehrspeicher_Konzept_und_Umsetzung.md` nachgezogen; der Satz „Offen: zweiter Wirt" im Statusblock #206 oben bleibt als Geschichte stehen.
 > Gate sept21 auf `33d2afb`: Kern 2643, UI 3689, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#211 (11.09.2026, `c6417bc`, Merge `8387deb`) — tote Markdown-Links und Schreibschutz-Kennzeichen für `feld_setzen` (Restpunkt #201,
+> Anwenderentscheid „Schreibschutz: Empfehlung mit #211 starten").** Teil A: die zwölf toten relativen Links (Befund #209) in
+> `Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md` (10), `Konzept_DB-Migration_SQLite_EPOS-Plan.md` (1) und
+> `Doku_Mehrspeicher_Konzept_und_Umsetzung.md` (1) sind 0 — neun Ziele auf ihren heutigen Ort unter `EPOS.Kern/` (per `git log --follow`), drei
+> entlinkt mit Klammerzusatz (`SpeicherFlottenDialog.razor` gefallen mit #192, `GebäudeKontextMenuCtrl.cs` mit W16b, `Kenndaten.cs` mit W7).
+> Teil B: `NurLesen` nach dem Muster der Wärmepumpe an `HeizkesselKatalogDaten`, `ErzeugerZeile` (Photovoltaik) und `PufferSpKatalogDaten`, befüllt
+> in den Hüllen aus `m_bReadOnly` bzw. `IsReadOnlyStatic` der Stamm-Controller; die drei Masken melden `Schreibgeschuetzt` in `KiHaken()`, der
+> Ablehnungsweg (`KI_FELD_SATZ_GESCHUETZT`) war vorhanden — der Assistent lehnt einen Auslieferungssatz jetzt VOR der Bestätigung ab statt erst
+> beim Speichern; der Speicherweg der Controller ist unverändert. Drei Fälle in `KiFeldSetzenTests`, `KiMaskenhakenTests` erweitert; Konzept
+> Dialogintegration 3.4/KI‑D‑Q3 „erledigt mit #211". Offen: `ErzeugerZeile.NurLesen` trägt die Bedeutung „Gerät schreibgeschützt" (Windows-Abnahme).
+> Gate sept22 auf `8387deb`: Kern 2643, UI 3692, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
