@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// ueber <c>Zahlen.Anzeigetext</c>, und der Trennzeichenvergleich waere sonst
 /// von der Umgebung des Laeufers abhaengig.</para>
 /// </summary>
-public class HeizkesselKatalogDialogTests : BunitContext
+public class HeizkesselKatalogDialogTests : EposBunitContext
 {
     private static readonly (int Id, string Text)[] Brennstoffe =
     {
@@ -32,8 +32,6 @@ public class HeizkesselKatalogDialogTests : BunitContext
 
     public HeizkesselKatalogDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

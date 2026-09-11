@@ -34,22 +34,12 @@ namespace EPOS.UI.Tests;
 /// muss. Denselben Weg geht
 /// <c>KostenSeiteTests.Die_Aktionszelle_traegt_im_Stilblatt_kein_display_flex</c>.</para>
 /// </summary>
-public class ListenrahmenTests : BunitContext
+public class ListenrahmenTests : EposBunitContext
 {
     public ListenrahmenTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     // =====================================================================

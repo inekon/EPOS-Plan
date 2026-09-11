@@ -31,31 +31,16 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8): Sie prüft die
 /// Zoomanzeige „×2,5" und damit ein Dezimalkomma.</para>
 /// </summary>
-public class DiagrammTests : BunitContext
+public class DiagrammTests : EposBunitContext
 {
     private const string MODUL = "./_content/EPOS.UI/epos-diagramm.js";
 
     public DiagrammTests()
     {
-        DeutscheOberflaeche();
-
         // Der Baustein lädt sein Modul dynamisch. In Loose-Mode beantwortet bunit
         // den import und jeden Aufruf mit dem Standardwert; die Fälle, die auf
         // einen bestimmten Aufruf zielen, setzen das Modul ausdrücklich auf.
         JSInterop.Mode = JSRuntimeMode.Loose;
-    }
-
-    /// <summary>
-    /// Kultur, UI-Kultur und die beiden Prozessvorgaben auf <c>de-DE</c> — sonst
-    /// hängt das Ergebnis daran, welche Testklasse zuerst lief.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
     }
 
     private static RenderFragment Inhalt(string text) => builder =>

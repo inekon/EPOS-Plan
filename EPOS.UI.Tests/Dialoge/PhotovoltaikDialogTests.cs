@@ -21,7 +21,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Panel-Beschriftungen falsch zu; maßgeblich ist der Designer (Neigung [°],
 /// Azimut [°], Anzahl Module).
 /// </summary>
-public class PhotovoltaikDialogTests : BunitContext
+public class PhotovoltaikDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -63,8 +63,6 @@ public class PhotovoltaikDialogTests : BunitContext
     public PhotovoltaikDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
@@ -345,8 +343,7 @@ public class PhotovoltaikDialogTests : BunitContext
     [Fact]
     public void Auf_englisch_heissen_die_zwei_Felder_W_und_kW()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("en-US");
-        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+        using var _ = new Kulturvorrichtung("en-US");
 
         var cut = Render<PhotovoltaikDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
@@ -601,8 +598,7 @@ public class PhotovoltaikDialogTests : BunitContext
     [Fact]
     public void Auf_englisch_zeigt_die_Komponente_was_die_Huelle_hereingibt()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("en-US");
-        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+        using var _ = new Kulturvorrichtung("en-US");
 
         var cut = Render<PhotovoltaikDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })

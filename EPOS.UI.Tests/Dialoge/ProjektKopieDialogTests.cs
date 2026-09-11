@@ -22,7 +22,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Dublettenpruefung (A-4), der abbrechbare Kopierlauf (A-2), der Doppelklick, der
 /// nur noch markiert (A-6), und die Fertig-Anzeige (A-5).</para>
 /// </summary>
-public class ProjektKopieDialogTests : BunitContext
+public class ProjektKopieDialogTests : EposBunitContext
 {
     private static readonly ProjektKopfZeile[] ZWEI =
     {
@@ -33,19 +33,7 @@ public class ProjektKopieDialogTests : BunitContext
     public ProjektKopieDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     /// <summary>Der Kern-Ersatz: er merkt sich, womit er gerufen wurde.</summary>

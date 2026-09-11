@@ -14,7 +14,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>FELDBESTAND laut Feldkarte: vier Steuerelemente - die Karte, eine
 /// Statuszeile, OK und Abbrechen. Dazu NEU der Hilfeknopf (A-2).</para>
 /// </summary>
-public class KlimazonenkarteDialogTests : BunitContext
+public class KlimazonenkarteDialogTests : EposBunitContext
 {
     /// <summary>
     /// Der Zonentext traegt die Volllaststunden mit Tausenderpunkt ("2.000 h/a") -
@@ -24,8 +24,6 @@ public class KlimazonenkarteDialogTests : BunitContext
     /// </summary>
     public KlimazonenkarteDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
     }
 
     /// <summary>

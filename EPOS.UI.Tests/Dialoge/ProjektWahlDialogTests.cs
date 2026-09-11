@@ -24,7 +24,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
 /// </summary>
-public class ProjektWahlDialogTests : BunitContext
+public class ProjektWahlDialogTests : EposBunitContext
 {
     private static readonly ProjektKopfZeile[] DREI =
     {
@@ -36,20 +36,7 @@ public class ProjektWahlDialogTests : BunitContext
     public ProjektWahlDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>Sprache auf de-DE pinnen (Muster <c>GebaeudeKatalogDialogTests</c>).</summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private IRenderedComponent<ProjektWahlDialog> Oeffnen(

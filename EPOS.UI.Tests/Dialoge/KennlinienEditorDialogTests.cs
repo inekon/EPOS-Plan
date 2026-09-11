@@ -15,13 +15,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// mit drei Feldern und vier Knöpfe (Daten übernehmen, Neue Vorlauftemperatur,
 /// OK, Abbruch).
 /// </summary>
-public class KennlinienEditorDialogTests : BunitContext
+public class KennlinienEditorDialogTests : EposBunitContext
 {
     public KennlinienEditorDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

@@ -25,12 +25,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Zahlen in der Anzeige: <c>de-DE</c> wie in <c>SpeichernLeisteTests</c> —
 /// die CI-Läufer laufen englisch.
 /// </summary>
-public class TarifstrukturDialogTests : BunitContext
+public class TarifstrukturDialogTests : EposBunitContext
 {
     public TarifstrukturDialogTests()
     {
-        Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

@@ -21,25 +21,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
 /// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
-public class BedarfReiterTests : BunitContext
+public class BedarfReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
     private readonly List<Bildauftrag> _auftraege = new();
 
     public BedarfReiterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     private static BedarfDaten Daten(bool prozess = false) => new BedarfDaten

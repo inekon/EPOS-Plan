@@ -18,23 +18,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Assistentenseite, der Beschreibungssatz und vor allem die <b>wörtliche</b>
 /// Rückfrage beim Abwählen einer belegten Komponente.</para>
 /// </summary>
-public class KomponentenauswahlDialogTests : BunitContext
+public class KomponentenauswahlDialogTests : EposBunitContext
 {
     public KomponentenauswahlDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // =====================================================================

@@ -31,16 +31,10 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 ///
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8).</para>
 /// </summary>
-public class KiChatDialogTests : BunitContext
+public class KiChatDialogTests : EposBunitContext
 {
     public KiChatDialogTests()
     {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
         JSInterop.Mode = JSRuntimeMode.Loose;
     }

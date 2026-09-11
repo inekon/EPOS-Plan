@@ -24,13 +24,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// (<c>StrangPlausibilitaet</c>, geprüft in <c>StrangPlausibilitaetTests</c> gegen
 /// Anhang A); hier kommt sie über einen Delegaten herein.</para>
 /// </summary>
-public class PvStraengeFelderTests : BunitContext
+public class PvStraengeFelderTests : EposBunitContext
 {
     public PvStraengeFelderTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
     }
 
     private static readonly (int Id, string Text)[] KATALOG =

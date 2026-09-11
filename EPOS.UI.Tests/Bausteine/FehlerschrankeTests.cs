@@ -28,22 +28,10 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8): Die Erwartungen
 /// sind deutsche Beschriftungen, und der Windows-Läufer läuft englisch.</para>
 /// </summary>
-public class FehlerschrankeTests : BunitContext
+public class FehlerschrankeTests : EposBunitContext
 {
     public FehlerschrankeTests()
     {
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // =====================================================================

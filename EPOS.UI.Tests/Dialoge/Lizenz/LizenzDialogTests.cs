@@ -29,16 +29,10 @@ namespace EPOS.UI.Tests.Dialoge.Lizenz;
 ///
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8).</para>
 /// </summary>
-public class LizenzDialogTests : BunitContext
+public class LizenzDialogTests : EposBunitContext
 {
     public LizenzDialogTests()
     {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-
         Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
 
         // window.print() ist der Druckweg (E-2); im Pruefstand gibt es keinen

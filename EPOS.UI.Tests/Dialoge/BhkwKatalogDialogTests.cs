@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// herum ruft, die Eingabe nicht zurueckspringt und das Ergebnis in den Posten
 /// landet.</para>
 /// </summary>
-public class BhkwKatalogDialogTests : BunitContext
+public class BhkwKatalogDialogTests : EposBunitContext
 {
     /// <summary>Die Id ist der 0-BASIERTE Listenindex - Bestand, siehe BhkwKatalogDaten.</summary>
     private static readonly (int Id, string Text)[] Brennstoffe =
@@ -30,8 +30,6 @@ public class BhkwKatalogDialogTests : BunitContext
 
     public BhkwKatalogDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

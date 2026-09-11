@@ -18,11 +18,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// „Ergebnis speichern" nur nach einem vollständigen Lauf, der Sperrzustand,
 /// der Zwischenspeicher der Bilder und die Überlagerungen.</para>
 /// </summary>
-public class SimulationErgebnisSeiteTests : BunitContext
+public class SimulationErgebnisSeiteTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
-
     private readonly List<Bildauftrag> _auftraege = new();
     private int _laeufe;
     private int _abbrueche;
@@ -34,15 +31,6 @@ public class SimulationErgebnisSeiteTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

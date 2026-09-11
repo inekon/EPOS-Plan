@@ -60,7 +60,7 @@ namespace EPOS.UI.Tests;
 /// <para>Keine Sprachbindung: geprüft werden Abschnittsüberschriften der Seiten
 /// (sie sind Teil des Wiki-Markups, nicht der Oberfläche) und Bezeichner.</para>
 /// </summary>
-public sealed class BerechnungshilfeTests : BunitContext
+public sealed class BerechnungshilfeTests : EposBunitContext
 {
     /// <summary>Der Ordner der Seiten, relativ zur Repowurzel.</summary>
     private static readonly string[] SeitenOrdner = { "EPOS.Kern", "Allgemein", "Hilfe", "Berechnung" };
@@ -139,7 +139,6 @@ public sealed class BerechnungshilfeTests : BunitContext
     public BerechnungshilfeTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
@@ -918,16 +917,5 @@ public sealed class BerechnungshilfeTests : BunitContext
         Type? t = typeof(InfoKnopf).Assembly.GetTypes().FirstOrDefault(x => x.Name == name);
         Assert.True(t is not null, "Die Komponente " + name + " gibt es in EPOS.UI nicht.");
         return t!;
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 }

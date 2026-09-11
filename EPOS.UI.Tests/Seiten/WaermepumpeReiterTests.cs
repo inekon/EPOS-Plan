@@ -25,25 +25,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// DATENZOOM an jedem Bild mit Zeitachse — aber nicht an der Streuwolke, deren
 /// x-Achse die Außentemperatur ist.</para>
 /// </summary>
-public class WaermepumpeReiterTests : BunitContext
+public class WaermepumpeReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
     private readonly List<Bildauftrag> _auftraege = new();
 
     public WaermepumpeReiterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     private static SimulationErgebnisCtrl.WaermepumpeErgebnis Erg(bool bivalenz = true,

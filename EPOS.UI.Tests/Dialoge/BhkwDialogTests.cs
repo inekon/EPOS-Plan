@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Pfeile, zwei Filter, die Leistungssumme, der Detailblock mit Trägerwahl und
 /// Grenzleistung sowie die drei Katalogknöpfe.
 /// </summary>
-public class BhkwDialogTests : BunitContext
+public class BhkwDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -68,8 +68,6 @@ public class BhkwDialogTests : BunitContext
     public BhkwDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

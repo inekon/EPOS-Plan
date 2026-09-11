@@ -28,11 +28,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Gerätegröße nur bei genau einer Speicheranlage, der Ausbaustufen-Schalter
 /// dauerhaft gesperrt.</para>
 /// </summary>
-public class SpeicherParameterBlockTests : BunitContext
+public class SpeicherParameterBlockTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
-
     private readonly List<SpeicherParameterDaten> _geschrieben = new();
     private int _gelesen;
     private int _optimierungen;
@@ -42,15 +39,6 @@ public class SpeicherParameterBlockTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

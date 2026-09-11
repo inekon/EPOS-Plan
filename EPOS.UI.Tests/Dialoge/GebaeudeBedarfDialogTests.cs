@@ -22,13 +22,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Zahlen und Beschriftungen.</para>
 /// </summary>
-public class GebaeudeBedarfDialogTests : BunitContext
+public class GebaeudeBedarfDialogTests : EposBunitContext
 {
     public GebaeudeBedarfDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

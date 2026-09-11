@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_Heizkessel</c>: zwei Listen, die beiden Pfeile, zwei Filter, der
 /// Detailblock mit Trägerwahl und die drei Katalogknöpfe.
 /// </summary>
-public class HeizkesselDialogTests : BunitContext
+public class HeizkesselDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -64,8 +64,6 @@ public class HeizkesselDialogTests : BunitContext
     public HeizkesselDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;   // QuickGrid laedt ein JS-Modul
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

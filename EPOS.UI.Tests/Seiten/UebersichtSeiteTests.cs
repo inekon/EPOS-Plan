@@ -24,30 +24,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>Auswahlfeld</c> gewichen; der Simulationsstand steht als leise Zeile
 /// darunter, die Unterschiedstabelle bekommt die frei gewordene Höhe.</para>
 /// </summary>
-public class UebersichtSeiteTests : BunitContext
+public class UebersichtSeiteTests : EposBunitContext
 {
     public UebersichtSeiteTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        DeutscheOberflaeche();
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
-    /// <c>ProjektListeTests</c>) — Kultur UND Thread-Kultur, damit ein Lauf unter
-    /// <c>LANG=en_US.UTF-8</c> dieselben Beschriftungen und dieselbe Zahlschreibweise
-    /// sieht.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // ---- Probendaten -----------------------------------------------------

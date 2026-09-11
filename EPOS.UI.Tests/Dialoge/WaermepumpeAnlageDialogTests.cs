@@ -16,7 +16,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Wizard_WPItem</c>: 47 Zeilen in drei Gruppen, zwei Reiterblätter mit den
 /// Kennlinienbildern, die Kostenzeile — und OHNE die Pufferspeichergruppe (Ä19).
 /// </summary>
-public class WaermepumpeAnlageDialogTests : BunitContext
+public class WaermepumpeAnlageDialogTests : EposBunitContext
 {
     private static readonly byte[] BildCop = { 1, 2, 3 };
     private static readonly byte[] BildLeistung = { 4, 5, 6 };
@@ -34,8 +34,6 @@ public class WaermepumpeAnlageDialogTests : BunitContext
     public WaermepumpeAnlageDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

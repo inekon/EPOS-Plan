@@ -16,21 +16,13 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Restzeile — beim Strom zusätzlich Override und die zwei
 /// Vergütungsfelder.</para>
 /// </summary>
-public class PreisbloeckeTests : BunitContext
+public class PreisbloeckeTests : EposBunitContext
 {
     // Der Arbeitspreis erscheint als Zahl in der Anzeige; die CI-Läufer laufen
     // englisch. Dieselbe Klemmung wie in SpeichernLeisteTests.
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentCulture;
 
     public PreisbloeckeTests()
     {
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentCulture = _kulturVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

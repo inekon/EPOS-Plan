@@ -22,24 +22,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// EINE Meldung (Entscheid E-4) und das linke Band steht nur in Betriebsart
 /// BEARBEITEN auf Schritt 0.</para>
 /// </summary>
-public class AssistentTests : BunitContext
+public class AssistentTests : EposBunitContext
 {
     public AssistentTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // =====================================================================

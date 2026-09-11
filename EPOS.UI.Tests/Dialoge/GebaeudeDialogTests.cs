@@ -19,7 +19,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
 /// </summary>
-public class GebaeudeDialogTests : BunitContext
+public class GebaeudeDialogTests : EposBunitContext
 {
     private static readonly string[] ARTEN_WOHN = { "Einfamilienhaus", "Mehrfamilienhaus" };
     private static readonly string[] ARTEN_SONST = { "Hotel", "Kaufhaus", "Industriehalle" };
@@ -44,8 +44,6 @@ public class GebaeudeDialogTests : BunitContext
     public GebaeudeDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

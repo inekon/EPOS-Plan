@@ -22,24 +22,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Gerechnet wird mit der echten Engine über einen synthetischen Lastgang —
 /// keine Datenbank, keine Oberfläche des Bestands.</para>
 /// </summary>
-public class PeakShavingDialogTests : BunitContext
+public class PeakShavingDialogTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
-
     public PeakShavingDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     // ---------------------------------------------------------------- Daten

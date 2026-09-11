@@ -18,7 +18,7 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
-public class KlimadatenDialogTests : BunitContext
+public class KlimadatenDialogTests : EposBunitContext
 {
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
 
@@ -32,17 +32,7 @@ public class KlimadatenDialogTests : BunitContext
     public KlimadatenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private IRenderedComponent<KlimadatenDialog> Zeige(

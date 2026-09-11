@@ -14,10 +14,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Bausteine daran haengen (dieselbe Begruendung wie in SpeichernLeisteTests -
 /// die CI-Laeufer auf macOS und Windows laufen englisch).
 /// </summary>
-public class ProjektlisteTests : BunitContext
+public class ProjektlisteTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     private static readonly ProjektZeile[] DreiProjekte =
     {
         new ProjektZeile(1030, "B3-Kaskade", "Region 12", "WP+BHKW"),
@@ -29,13 +27,6 @@ public class ProjektlisteTests : BunitContext
     {
         // QuickGrid (im Raster) laedt beim ersten Zeichnen ein JS-Modul.
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        base.Dispose(disposing);
     }
 
     [Fact]

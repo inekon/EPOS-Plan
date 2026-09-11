@@ -23,20 +23,16 @@ namespace EPOS.UI.Tests.Seiten;
 /// aus <c>HauptfensterHuelle</c>, auf iOS über <c>IProjektQuelle.Lizenzlage()</c>.
 /// Beide Wege stehen hier als eigene Fälle.</para>
 /// </summary>
-public class LizenzbannerTests : BunitContext
+public class LizenzbannerTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     public LizenzbannerTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
     protected override void Dispose(bool disposing)
     {
-        CultureInfo.CurrentUICulture = _kulturVorher;
         Navigationsziel.Aktuell = null;
         base.Dispose(disposing);
     }

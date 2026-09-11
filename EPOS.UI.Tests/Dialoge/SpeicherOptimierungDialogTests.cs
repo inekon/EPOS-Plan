@@ -34,13 +34,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Punktzahl und die Kennzahlen sind
 /// Text.</para>
 /// </summary>
-public class SpeicherOptimierungDialogTests : BunitContext
+public class SpeicherOptimierungDialogTests : EposBunitContext
 {
     public SpeicherOptimierungDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

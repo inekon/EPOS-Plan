@@ -17,15 +17,13 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_EingDBProzess</c>, <c>Form_EingDBBrauchwasser</c>. Geprüft wird je
 /// AUSPRÄGUNG (Risiko R-W8-1).
 /// </summary>
-public class TypStammDialogTests : BunitContext
+public class TypStammDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Buero", "Gewerbe", "Wohnen" };
 
     public TypStammDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

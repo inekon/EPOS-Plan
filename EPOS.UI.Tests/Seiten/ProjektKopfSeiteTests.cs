@@ -18,7 +18,7 @@ namespace EPOS.UI.Tests.Seiten;
 /// in das uebergebene <see cref="ProjektKopfDaten"/> — daraus liest
 /// <c>WizardParent</c> (Weg (a), Befund W15a-B42).</para>
 /// </summary>
-public class ProjektKopfSeiteTests : BunitContext
+public class ProjektKopfSeiteTests : EposBunitContext
 {
     private static readonly (int Id, string Text)[] REGIONEN =
     {
@@ -29,18 +29,6 @@ public class ProjektKopfSeiteTests : BunitContext
     public ProjektKopfSeiteTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private static ProjektKopfDaten Satz() => new ProjektKopfDaten
