@@ -418,7 +418,8 @@ der Bisektion und die Fragen PS‑Q1…PS‑Q4 stehen in `Spezifikation_Stromspe
 | **P4 Größen-Sicht** — **umgesetzt #193** (`e0c81b0`, Merge `8b2bfc8`) | Rasterkarte und Schnittkurve für die Flotte aus `FlottenKandidatZusammenfassung` (+ Durchsatz, Vollzyklen, Spitze, Ersparnis, „arbeitslos“, C-Rate und Rasterindex), `SpeicherFlottenAnzeigeCtrl.Rasterdaten`/`Schnittdaten`/`SchnittdatenLeistung` samt den drei Bildern, `ChartRenderer.Optimierungsraster` mit optionaler **Schraffur** und **SP‑O‑4-Fußzeile**, Baustein `SpeicherFlottenGroessenAnsicht` mit Kandidatentabelle (Filter, Sortierung, „übernehmen“). **Einbindung #196 (`47bdc8a`, Merge `bd9dbac`)** (11.09.2026): Schritt 5 der Ansicht `STROMSPEICHER_AUSLEGUNG` zeigt den Baustein, sobald ein Rastersuchergebnis vorliegt — VOR der Ergebnisansicht (Konzept 2.5); die einfache Kandidatentabelle der `SpeicherFlottenErgebnisAnsicht` ist damit gefallen (keine zwei Tabellen), Empfehlung und CSV-Export sind mitgewandert. „Kandidat übernehmen“ macht die Variante über `SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration` zur Flotte in Schritt 1 — für den besten Kandidaten ist das die Konfiguration des Optimierers, für jeden anderen eine Rückabbildung aus `FlottenKandidatEinheit` auf den Arbeitsstand —, markiert Schritt 5 als veraltet und führt nach Schritt 1 mit Hinweisbanner; ungespeicherte Eingaben werden vorher abgefragt (Muster 62b‑E‑1). Dazu bindet `EPOS.iOS/wwwroot/index.html` seither `epos-flotte.css` ein | Referenzlauf 1030/1046 byte-gleich gegen R7; ChartProben 49 (41 Bilder, 8 Gegenproben), die 39 vorhandenen Bilder byte-gleich. #196: EPOS.UI.Tests 3 569, EPOS.Kern.Tests 2 546, SQL-Prüfer 0 |
 | **P4a Achsen nach der Größenkopplung (Anwenderbefund 11.09.2026)** — **umgesetzt #226** | Der Befund: Eine Einheit mit Kopplung „Kapazität und Leistung", beide 20…500 in Schritten von 40 (13 × 13 = 169 Kandidaten), zeigte in Schritt 5 eine krumme C-Raten-Achse (0,04 · 0,16 · … · 17) und fast nur rote Zellen. Ursache: `Rasterdaten` baute die Spaltenachse IMMER aus `p.CRate` — in diesem Modus sind das 137 verschiedene Quotienten statt eines Gitters, über neun Zehntel der Zellen blieben leer, und `ChartRenderer.Rasterfarbe` gab jedem `NaN` die MINIMUMFARBE. Behoben: `FlottenAuslegungErgebnis.Achsenmodus` (vom `FlottenOptimierer` aus der ersten aktiven Suchachse gesetzt) ist die EINE Quelle; `FlottenRasterdaten` führt `Modus`, `Zeilenwerte`, `Spaltenwerte` samt `Zeilengroesse`/`Spaltengroesse`, die zwei Schnitte heißen `SchnittdatenBeiSpalte`/`SchnittdatenBeiZeile` (Bilder entsprechend) und legen ihre Achse je Kopplung (Spalten direkt, `P = E · C`, `E = P / C` — letztere aufsteigend umgelegt); Titel, Achsen-, Schieber- und `alt`-Texte kommen je Kopplung aus dem Kern (zehn neue Ressourcen de/en). `ChartRenderer.C_RASTER_LOCH` (0xF2F2F2) zeichnet ein Loch hellgrau — Schraffur und SP‑O‑4-Fußzeile unverändert. **Kein Rechenweg berührt** (`FlottenOptimierer` nur um das Merkfeld ergänzt) | Build 0 Fehler / 4 eindeutige Warnungen; EPOS.Kern.Tests 2 682, EPOS.UI.Tests 3 816, SpeicherEngine.Tests 412, KiKern.Tests 488, SpeicherPlanung.Tests 27; ChartProben 55 (0 Verstöße, +1 Bild „Kapazität × Leistung", +1 Gegenprobe „Loch ≠ Minimumfarbe"); SQL-Prüfer 0 von 1 343; Referenzlauf 1030/1046 byte-gleich gegen R7 |
 | **P5 Ein Weg statt zwei Modi (SD‑E‑8)** — **umgesetzt #206 (`8a382b6`+`7cecc6e`, Merge `4fcb6a1`)** (Wiki hochgeladen 11.09.2026: Stromspeicher Rev. 540, Berechnung/Stromspeicher Fassung 5 Rev. 541) | `AuslegungModus` und der Modus-Umschalter fallen; die Ansicht rechnet immer die Flotte, ein Einzelspeicher ist eine Flotte mit EINER Einheit (die Vorbelegung stand im Kern schon und legt seit #210 je Speicheranlage des Projekts eine Einheit an). Fünf Betriebsziele für jede Einheitenzahl, die **Verteilung erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.VerteilungZeigen`, ausgeblendet statt gesperrt, mit Erklärzeile), Schritt 4 heißt „Bewerten" bzw. „Größen optimieren". **Was der Einzelweg hierließ, bleibt:** das Rückschreiben in die Projektanlage in Schritt 5 (Knopf mit Rückfrage, für die eine Einheit mit Anlagenbezug — ohne ihn käme die ausgelegte Größe nie beim klassischen Projektlauf an, SD‑Q2) und der Leistungspreis als EINE Eingabe in Schritt 2 (`LeistungspreisBlock` → Suchraum, `FlottenTarif.LeistungspreisEuroProKw` und Projektvariante). **Gelöscht:** `EinzelspeicherSuchraum/-Betrieb/-Ergebnis`, der Suchraum-Teil des `SpeicherAuslegungEditor` samt `NurQuellenKostenProfile`, der `Modusknopf` der `Ablaufleiste`, der Einzelweg in `StromspeicherAuslegungCtrl` (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`) und **38 Ressourcenschlüssel** (17 der Ansicht, 21 verwaiste `OPT_*` der drei gefallenen Blätter; die Rückfrage vor dem Schreiben nimmt den vorhandenen Text `OPT_MSG_UEBERNAHME_FRAGE` statt eines zweiten mit derselben Aussage). **Nicht gelöscht:** `SpeicherOptimierungCtrl` und `SpeicherOptimierer` — sie tragen Bericht, Vorbelegung und die KI-Aktion `speicher_optimieren` | EPOS.UI.Tests 3 634, EPOS.Kern.Tests 2 609, SpeicherEngine.Tests 394, KiKern.Tests 474, ChartProben 49, SQL-Prüfer 0, Referenzlauf 1030/1046 byte-gleich zu R7 (kein Rechenwert geändert) |
-| **P6 Feinraster** (später) | Verfeinerung um interessante Kandidaten (Spezifikation 12.2) im `FlottenOptimierer` | eigener Entscheid, eigenes Prüfmuster |
+| **P6 Feinraster** — **umgesetzt #224** (im selben Auftrag wie P8, Entscheid SD‑E‑9 Option A) | Zweite Phase im `FlottenOptimierer`: nach dem Grobraster ein engeres Raster um das Grob-Optimum, NUR auf der Größenachse (SD‑Q10), Fenster `[max(von, E*−Δ), min(bis, E*+Δ)]` mit Mindestbreite 1 kWh, Schrittweite `Δ/9`; zweite Achse, Stückzahl, übrige Achsen und Betriebsziel bleiben beim Grob-Optimum. **Das Feinraster gewinnt nur bei STRIKT besserem Kapitalwert** (Phase 2 läuft nach Phase 1, der Vergleich ist `>`); jeder Kandidat trägt seine `Phase`, `FlottenOptimierer.Kandidatenzahl` ist die EINE Zählregel für Lauf und Kandidatenzeile, `MaximaleKandidaten` zählt beide Phasen, `IProgress` und Abbruch laufen über beide. `FlottenAuslegungErgebnis` führt dazu `FeinrasterGerechnet` und `Rechendauer` | 13 neue Fälle in `SpeicherEngine.Tests/FlottenFeinrasterTests` (Bereich, Randlage, Mindestbreite, Zählregel, Grenzfall, Phasenmarke, Gleichstand, Abbruch in Phase 2, Fortschritt); Referenzlauf unberührt — der Projektlauf betritt die Rastersuche nicht |
+| **P8 Station „4 Optimierung" (SD‑E‑9 Option A)** — **umgesetzt #224** | Zielbild 7.4 vollständig: `AuslegungSchritt.Optimierung` als fünftes BLATT (die Ablaufleiste verliert ihren Aktionsplatz, `MitAktion="false"`), `Seiten/Strom/OptimierungBlock` mit Ziel, Suchwahl, Suchraumtabelle je Einheit, LIVE-Kandidatenzeile, Feinraster-Schalter, Rechenknopf und dem Kasten „Bestes Ergebnis"; die Größen-Sicht zieht von Schritt 5 nach 4. Der Einheiteneditor trägt nur noch die Einheiten — „Netz und Planung" wird `SpeicherFlottenNetzBlock` (Schritt 3), die Jahresprojektion `SpeicherFlottenWirtschaftBlock` (Schritt 2, SD‑Q12) mit den drei Erklärzeilen aus 7.3, der Kostenblock bekommt die eigene Überschrift „Kosten dieser Einheit". Dazu 7.8: Stufenleiste mit nummerierten Kreisen, `Zahlenfeld` höchstens vier Nachkommastellen (hausweit), `Seiten/Strom/Hinweiszeilen` für die Vorprüfung, Herleitungszeile und neutrale Pille im Editorkopf, Kartenkopf ohne Zahlenzusatz | Build 0 Fehler / 4 eindeutige Warnungen; EPOS.Kern.Tests 2 682, EPOS.UI.Tests 3 887, SpeicherEngine.Tests 425, KiKern.Tests 488, SpeicherPlanung.Tests 27; ChartProben 57; SQL-Prüfer 0 von 1 343; Referenzlauf 1030/1007/1017/1045/1046 byte-gleich gegen R7 |
 | **P7 Adaptive Lastspitzenkappung (Ratsche, S‑A)** — Anwenderbefund 11.09.2026, Spezifikation 5.1.1 (Fassung 1.4), PS‑Q1…PS‑Q4 entschieden 11.09.2026 (Empfehlung) — **umgesetzt #215** (`4bd5c8c`, Merge `74a3bb1`; Wiki hochgeladen 11.09.2026: Berechnung/Stromspeicher Fassung 6 Rev. 543, Stromspeicher Rev. 544) | `FlottenSimulationOptionen`: Peak-Ziel „adaptiv (kausal) | fest", Startwert H0; Ratsche im `FlottenSimulator` (H als Zustand, D_t aus `Grenzen()`), Ganglinie von H, Diagnose „Nachzüge"; Schritt 3 der Ansicht, Ergebnisansicht „kausal erreicht" neben „mit Vorausschau erreichbar" (Bisektion bleibt); Prüfstand mit dem Excel-Makro als Referenzrechnung auf synthetischem Lastgang | Opus; 1046 (festes Ziel) byte-gleich; Wiki Rechenweg Fassung 6 |
 
 Reihenfolge P1 → P2 → P3 → P4 → P5; P1 und P2 können parallel laufen (P2 zeigt die Diagnose aus P1,
@@ -451,10 +452,21 @@ Ins Register § 8 des Umsetzungskonzepts (Block „Offene Punkte des Mehrspeiche
   **Offen bleibt daran nichts**; der Punkt steht hier als Beleg, dass der Befund nicht die
   Rastersuche selbst betraf (`FlottenOptimierer` unverändert, Referenzlauf byte-gleich),
   sondern nur ihre Anzeige.
+- **SP‑O‑15 Die Optimierung war versteckt** (Anwenderrückmeldung 11.09.2026, **behoben mit
+  #224**): Die Rastersuche gab es seit P4/P5 vollständig — erreichbar nur über DREI Schalter
+  an DREI Orten, und das Wort „Optimierung" kam in der Ablaufleiste nicht vor (Station 4 hieß
+  „Bewerten"). Seither ist sie die STATION 4 mit Suchraum, Kandidatenzeile, Feinraster und
+  dem Kasten „Bestes Ergebnis" (Kapitel 7). **Offen bleibt daran nichts.**
+- **SP‑O‑16 Feinraster** (P6, **geschlossen mit #224**): Der `FlottenOptimierer` rechnete nur
+  das Grobraster; die zweite Phase der Mappe V7 fehlte als einziger fachlicher Rest. Sie ist
+  portiert — Regel, Gewinnbedingung und Zählregel stehen in 7.7 und im Rechenweg-Wiki.
 
 ---
 
 ## 7. Optimierung als eigener Bereich — Anwenderrückmeldung 11.09.2026 (SD‑E‑9)
+
+> **Umgesetzt mit Auftrag #224.** Option A vollständig, samt P6 (Feinraster) und 7.8
+> (Darstellung). Was von diesem Kapitel abweicht, steht in 7.9.
 
 ### 7.1 Rückmeldung
 
@@ -598,3 +610,53 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
 | Zwei blaue Hinweisbänder (Betriebsaufwand, Start-Ladezustand) nehmen ein Drittel des Kopfes ein, jedes mit eigenem Link „erklären lassen". | Diagnosehinweise **kompakt**: eine Zeile je Hinweis mit Symbol, Text und dem Link inline; ab zwei Hinweisen ein aufklappbarer Block „2 Hinweise" (offen beim ersten Erscheinen, Zustand je Sitzung). Diagnosebanner-Konzept (2.4) bleibt, nur die Form ändert sich. |
 | Kopf „Speicherflotte — Physische Einheiten …" mit der roten Pille „1 Speicher" rechts und dem Satz über die Studie. | Der Erklärsatz wird Herleitungszeile (leise), die Pille zeigt die Einheitenzahl neutral (kein Rot ohne Fehler). |
 | Kartenkopf der Einheit `[100kW, 129.0kWh]` mit Punkt als Dezimaltrenner und ohne Leerzeichen. | Beschriftung nach Hauskultur: „129 kWh · 100/100 kW" (steht rechts schon so) — den Namen ohne den Klammerzusatz zeigen. |
+
+### 7.9 Was #224 umgesetzt hat — und wo es vom Vorschlag abweicht
+
+**Umgesetzt** (Zielbild 7.4 und 7.8, Anwenderentscheid SD‑E‑9 Option A):
+
+| Gegenstand | Wo es jetzt steht |
+|---|---|
+| Station „4 Optimierung" als BLATT | `AuslegungSchritt.Optimierung`, `EPOS.UI/Seiten/Strom/OptimierungBlock.razor` (397 Z.); die Ablaufleiste bekommt `MitAktion="false"` und führt fünf gleich gebaute Stationen |
+| Kopf: Ziel und die Wahl „bewerten" / „beste Größe suchen" | `OptimierungBlock`, `Optionsgruppe` → `Auslegung.FlottenGroessenOptimieren`; der Schalter `FLOTTE_DLG_CHK_OPTIMIEREN` in Schritt 1 ist gefallen |
+| Suchraum je Einheit als Tabelle | `table.epos-flotte-suchraum`, eine Zeile je `FlottenAuslegungsAchse`; dieselben Modellfelder wie bis #224 im Einheiteneditor |
+| Kandidatenzeile LIVE | `FlottenOptimierer.Kandidatenzahl` — dieselbe Zählregel, mit der der Lauf annimmt oder abweist; rot mit Wortlaut, wenn das Raster die Grenze reißt, und der Rechenknopf ist dann über `FlotteEingabenPruefen` gesperrt |
+| Phase 2 Feinraster | `FlottenAuslegungEingang.Feinraster` (Vorgabe an, serialisiert), `FlottenOptimierer.Feinrasterwerte`; Regel und Gewinnbedingung im Rechenweg-Wiki, Abschnitt „Rastersuche" |
+| Rechenknopf „Optimieren"/„Bewerten" | in der Seite von Schritt 4; `FLOTTE_SEITE_BTN_GROESSEN`/`_FLOTTE` tragen keine Ziffer mehr (die Stufenleiste zählt) |
+| Kasten „Bestes Ergebnis" | drei Karten: Kapitalwert + jährliche Ersparnis (SD‑Q11), Kapazität · C-Rate · Leistung + Einheitenzahl, geprüfte/zulässige Kandidaten + Rechendauer; daneben die Marke Grob/Fein |
+| Größen-Sicht von 5 nach 4 | `SpeicherFlottenGroessenAnsicht` steht im `OptimierungBlock`; Schritt 5 trägt stattdessen eine Hinweiszeile, welcher Kandidat dort bewertet ist |
+| Schritt 1 nur Einheiten | Größenbereich → Station 4, „Netz und Planung" → `SpeicherFlottenNetzBlock` (Schritt 3), Jahresprojektion → `SpeicherFlottenWirtschaftBlock` (Schritt 2, SD‑Q12); Kostenblock unter eigener Überschrift „Kosten dieser Einheit" |
+| Drei Erklärzeilen (7.3) | `FLOTTE_ED_AUSGLEICH_ERL`, `FLOTTE_ED_RESTWERT_ERL`, `FLOTTE_ED_KANDIDATEN_ERL` de/en |
+| Stufenleiste, Zahlenrundung, kompakte Hinweise, Herleitungszeile, neutrale Pille, Kartenkopf | 7.8 vollständig; `Zahlen.HOECHSTE_NACHKOMMASTELLEN` gilt hausweit, `Seiten/Strom/Hinweiszeilen.razor` trägt die Vorprüfung |
+
+**Abweichungen vom Vorschlag und vom Mockup — mit Grund:**
+
+1. **Das Feinraster verfeinert nur die ERSTE aktive Suchachse**, die übrigen bleiben beim Wert des
+   Grob-Optimums. Der Vorschlag sagte „auf der Größenachse" und meinte den Regelfall EINER Achse
+   (nur dann ist das Raster zweidimensional und als Karte zeichenbar — Auflage aus #193). Mit zwei
+   Achsen wäre „die Größenachse" mehrdeutig, und das volle Produkt aus feiner erster und ganzer
+   zweiter Achse vervielfachte die Kandidatenzahl.
+2. **Die Kandidatenzeile nennt für das Feinraster eine OBERGRENZE („bis zu n"), keine feste Zahl.**
+   Wie breit das Fenster wird, hängt an der Lage des Grob-Optimums — am Rand wird es einseitig
+   gekappt. Vor dem Lauf steht nur der größtmögliche Fall fest; gegen ihn wird die Grenze geprüft,
+   damit ein zu großes Raster nicht erst auffliegt, nachdem Phase 1 verrechnet ist.
+3. **Das Mockup zeigt 60 + 54 Kandidaten**, weil es das Feinraster über ALLE sechs C-Raten
+   wiederholt. Das widerspricht SD‑Q10 („nur auf der Größenachse"): Hier bleibt die zweite Achse
+   beim Wert des Grob-Optimums, das Feinraster hat deshalb so viele Punkte wie Stützstellen im
+   Fenster.
+4. **Grob- und Feinpunkte sind in der SCHNITTKURVE unterscheidbar, nicht in der Rasterkarte.**
+   `ChartRenderer.Schnittkurve` zeichnet einen Feinpunkt in `C_FEINRASTER` und kleiner (ChartProbe
+   `flottenschnitt_feinraster` samt Gegenprobe). Die Karte zeigt die Feinpunkte als eigene Zeilen —
+   dort wäre eine zweite Farbe neben Dreifarbskala und Schraffur eine dritte Aussage in derselben
+   Fläche.
+5. **Die Stationstitel geben ihre ZIFFER an den Kreis ab** („Speicher" statt „1 Speicher"), auch die
+   der Simulationsansicht. Sonst stünde die Nummer zweimal nebeneinander. Lage und Reihenfolge der
+   Simulationsleiste bleiben unverändert (`Kompakt`, #216).
+6. **Der Kasten „Bestes Ergebnis" nennt keine geschätzte Rechendauer VOR dem Lauf** (das Mockup
+   schreibt „geschätzt unter 1 min"). Eine Schätzung bräuchte ein Maß für die Laufzeit eines
+   Kandidaten, und das hängt an Jahreszahl, Betriebsziel und Solver — geraten wäre sie eine Zusage,
+   die niemand einlöst. Die GEMESSENE Dauer steht nach dem Lauf im Kasten.
+7. **„Netz und Planung" steht in Schritt 3 und nicht in Schritt 1** — der Vorschlag ließ das offen
+   („prüfen, heute steht es im Flotteneditor"). Bezugs- und Einspeisegrenze sind harte Grenzen des
+   Anschlusses, die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht: Beides
+   beschreibt den BETRIEB und nicht eine Einheit.

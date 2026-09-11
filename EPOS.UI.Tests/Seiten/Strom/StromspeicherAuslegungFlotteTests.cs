@@ -74,8 +74,11 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         Assert.Equal(Resource.FLOTTE_SEITE_BTN_FLOTTE,
                      Auslegungshilfe.Rechenknopf(cut).TextContent.Trim());
 
-        cut.FindAll("input[type=checkbox]")
-           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_DLG_CHK_OPTIMIEREN))
+        // SEIT AUFTRAG #224 waehlt die WAHL im Kopf von Station 4 zwischen „nur
+        // bewerten" und „beste Groesse suchen" — statt eines Schalters unter der
+        // Einheitenliste in Schritt 1 (Zielbild 7.4).
+        cut.FindAll("input[type=radio]")
+           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_SUCHE_AN))
            .Change(true);
 
         Assert.Equal(Resource.FLOTTE_SEITE_BTN_GROESSEN,

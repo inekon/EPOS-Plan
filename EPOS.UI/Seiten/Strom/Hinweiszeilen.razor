@@ -1,0 +1,110 @@
+@* DIE VORPRUEFUNGSHINWEISE als KOMPAKTE ZEILEN (Auftrag #224, Anwenderwunsch
+   11.09.2026, Konzept „Stromspeicher-Dialoge" 7.8).
+
+   DER BEFUND AM BILDSCHIRMFOTO: Zwei blaue Hinweisbaender — Betriebsaufwand und
+   Start-Ladezustand — nahmen ein Drittel des Kopfes ein, jedes mit eigenem Link
+   „erklaeren lassen", jedes mit eigenem Kasten und eigenem Rand. Die Hinweise
+   SPERREN nichts: Der Lauf startet trotzdem (Konzept 2.4 Punkt 3). Eine
+   Warnflaeche ueber die ganze Breite meldet aber einen FEHLER — dieselbe Lehre
+   wie beim Dauerbanner der Startseite (W16b-E-6).
+
+   DIE FORM, DIE STATTDESSEN GILT: EINE Zeile je Hinweis mit Symbol, Text und
+   dem Link INLINE. Ab ZWEI Hinweisen stehen sie in einem aufklappbaren Block
+   „n Hinweise" — beim ersten Erscheinen offen, der Zustand haelt die Sitzung.
+   Was die Hinweise SAGEN, aendert sich dabei nicht; nur ihre Form.
+
+   DAS DIAGNOSEBANNER DES ERGEBNISSES BLEIBT, WIE ES IST (Konzept 2.4): Es
+   meldet einen Zustand, den der Anwender beheben MUSS — eine Flotte, die nichts
+   getan hat —, und traegt dafuer seine drei Abhilfeknoepfe. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+@if (Hinweise.Count == 1)
+{
+    <div class="epos-flotte-hinweiszeilen" role="status">
+        @Zeile(Hinweise[0])
+    </div>
+}
+else if (Hinweise.Count > 1)
+{
+    <div class="epos-flotte-hinweiszeilen epos-flotte-hinweiszeilen--block" role="status">
+        <button type="button" class="epos-flotte-hinweiszeilen__kopf"
+                aria-expanded="@_offen" @onclick="Umschalten">
+            <span aria-hidden="true">@(_offen ? "▾" : "▸")</span>
+            <span>@string.Format(System.Globalization.CultureInfo.CurrentCulture, AnzahlFormat, Hinweise.Count)</span>
+        </button>
+        @if (_offen)
+        {
+            <div class="epos-flotte-hinweiszeilen__inhalt">
+                @foreach (FlottenHinweis hinweis in Hinweise)
+                {
+                    @Zeile(hinweis)
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Die Hinweise der Vorprüfung; leer = die Komponente zeichnet nichts.</summary>
+    [Parameter] public IReadOnlyList<FlottenHinweis> Hinweise { get; set; } = Array.Empty<FlottenHinweis>();
+
+    /// <summary>Der Hilfeschlüssel der Ansicht — daraus folgt der Bereich des Assistenten.</summary>
+    [Parameter] public string Hilfeschluessel { get; set; } = "";
+
+    /// <summary>Der Name der Ansicht für die Kontextzeile des Chats.</summary>
+    [Parameter] public string Dialogname { get; set; } = "";
+
+    /// <summary>Beschriftung des Erklärlinks.</summary>
+    [Parameter] public string ErklaerenText { get; set; } = Resource.KI_BANNER_ERKLAEREN;
+
+    /// <summary>Die Kopfzeile des Blocks — „{0} Hinweise".</summary>
+    [Parameter] public string AnzahlFormat { get; set; } = Resource.FLOTTE_BANNER_ANZAHL;
+
+    /// <summary>
+    /// Steht der Block offen? BEIM ERSTEN ERSCHEINEN ja (Konzept 7.8); danach
+    /// entscheidet der Anwender, und die Wahl hält die Sitzung — solange die Ansicht
+    /// steht, also solange diese Komponente lebt.
+    /// </summary>
+    private bool _offen = true;
+
+    /// <summary>Ist der Block aufgeklappt? (Prüfhilfe)</summary>
+    public bool Offen => _offen;
+
+    /// <summary>Steht der Erklärlink? (Prüfhilfe)</summary>
+    public bool ErklaerenMoeglich => EPOS.UI.Dienste.KiAssistentWeg.Moeglich;
+
+    private void Umschalten() => _offen = !_offen;
+
+    private RenderFragment Zeile(FlottenHinweis hinweis) => @<p class="@Zeilenklasse(hinweis)">
+        <span class="epos-flotte-hinweiszeile__zeichen" aria-hidden="true">@Zeichen(hinweis)</span>
+        <span>@hinweis.Text</span>
+        @if (ErklaerenMoeglich && Kennung(hinweis).Length > 0)
+        {
+            <button type="button" class="epos-warnbanner-erklaeren"
+                    @onclick="() => Erklaeren(Kennung(hinweis), hinweis.Text)">@ErklaerenText</button>
+        }
+    </p>;
+
+    private static string Zeilenklasse(FlottenHinweis hinweis)
+        => hinweis.Stufe == FlottenHinweisStufe.Warnung
+            ? "epos-flotte-hinweiszeile epos-flotte-hinweiszeile--warnung"
+            : "epos-flotte-hinweiszeile";
+
+    /// <summary>Das Zeichen trägt die Stufe MIT — Farbe allein trägt keine Aussage.</summary>
+    private static string Zeichen(FlottenHinweis hinweis)
+        => hinweis.Stufe == FlottenHinweisStufe.Warnung ? "⚠" : "ℹ";
+
+    private static string Kennung(FlottenHinweis hinweis)
+        => hinweis is null ? "" : KiMeldungskennung.Fuer(hinweis.Kennung);
+
+    private void Erklaeren(string kennung, string meldungstext)
+    {
+        if (string.IsNullOrWhiteSpace(kennung)) return;
+        EPOS.UI.Dienste.KiAssistentWeg.AusMeldung(
+            kennung, KiMeldungskennung.Frage(kennung, meldungstext),
+            Hilfeschluessel, Dialogname);
+    }
+}

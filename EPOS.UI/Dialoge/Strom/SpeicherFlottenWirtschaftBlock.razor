@@ -1,0 +1,100 @@
+@* DIE WIRTSCHAFTLICHE JAHRESPROJEKTION der Speicherflotte — Schritt 2
+   „Daten & Kosten" (Auftrag #224, Anwenderentscheid SD-Q12).
+
+   WARUM SIE UMGEZOGEN IST. Der Block stand in Schritt 1 unter der
+   Einheitenliste; die Wiki-Seite ordnet ihn seit jeher Schritt 2 zu („Fuer die
+   Flotte kommen hier die finanzielle Projektlaufzeit und der
+   Energie-Ausgleichswert dazu") — Programm und Doku widersprachen sich
+   (Konzept 7.2). Zins, Laufzeit und Restwert sind KOSTENSAETZE der Studie und
+   keine Eigenschaft einer Einheit.
+
+   DREI FELDER BEKOMMEN EINE ERKLAERZEILE (Anwenderrueckmeldung 11.09.2026,
+   Konzept 7.3): Energie-Ausgleichswert, Zusaetzlicher Restwert der Studie und
+   Maximale Auslegungskandidaten standen ohne jede Erklaerung neben Zins und
+   Laufzeit. Die Saetze stehen im Ressourcenkatalog, damit sie auch das Wiki
+   und der Hilfe-Assistent woertlich fuehren koennen.
+
+   DER AUSGLEICHSWERT ZEIGT VIER NACHKOMMASTELLEN, der GESPEICHERTE Wert bleibt
+   ganz (Konzept 7.8): Der Vorschlag entsteht als mittlerer Bezugspreis und
+   traegt deshalb einen Gleitkommarest (0,31746000000002055). Gerundet wird die
+   ANZEIGE — hausweit im Baustein Zahlenfeld —, nicht der Stand. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+
+<section class="epos-flotte-abschnitt" aria-labelledby="flotte-wirtschaft-titel">
+    <h3 id="flotte-wirtschaft-titel">@Resource.FLOTTE_ED_JAHRESPROJEKTION</h3>
+
+    <div class="epos-flotte-feldraster">
+        <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_AUSGLEICH" Einheit="€/kWh gespeichert"
+                    Wert="@Optionen.EnergieAusgleichEuroProKWh" Aktiv="@Aktiv"
+                    WertChanged="@(v => Setzen(() => Optionen.EnergieAusgleichEuroProKWh = v))" />
+    </div>
+    <Herleitungszeile Text="@Resource.FLOTTE_ED_AUSGLEICH_ERL" />
+
+    <p class="epos-flotte-hinweis">@Resource.FLOTTE_ED_PROJEKTION_HINWEIS</p>
+    <div class="epos-flotte-feldraster">
+        <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_ZINS" Einheit="%"
+                    Wert="@(Wirtschaft.Kalkulationszins * 100.0)" Min="0" Aktiv="@Aktiv"
+                    Nachkommastellen="2"
+                    WertChanged="@(v => ZahlSetzen(x => Wirtschaft.Kalkulationszins = x / 100.0, v))" />
+        <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_PROJEKTIONSART" Eintraege="@Projektionsarten"
+                     Auswahl="@(Wirtschaft.ReferenzjahrExplizitWiederholen ? 1 : 0)" Aktiv="@Aktiv"
+                     AuswahlChanged="ProjektionsartSetzen" />
+        <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_PROJEKTJAHRE" Einheit="Jahre"
+                      Wert="@Wirtschaft.ProjektjahreBeiWiederholung" Min="1" Aktiv="@Aktiv"
+                      WertChanged="@(v => GanzSetzen(x => Wirtschaft.ProjektjahreBeiWiederholung = x, v))" />
+    </div>
+
+    <div class="epos-flotte-feldraster">
+        <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_RESTWERT_GESAMT" Einheit="€"
+                    Wert="@Wirtschaft.RestwertEuro" Min="0" Aktiv="@Aktiv"
+                    WertChanged="@(v => ZahlSetzen(x => Wirtschaft.RestwertEuro = x, v))" />
+    </div>
+    <Herleitungszeile Text="@Resource.FLOTTE_ED_RESTWERT_ERL" />
+
+    <div class="epos-flotte-feldraster">
+        <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_MAX_KANDIDATEN"
+                      Wert="@Auslegung.MaximaleKandidaten" Min="1" Aktiv="@Aktiv"
+                      WertChanged="@(v => GanzSetzen(x => Auslegung.MaximaleKandidaten = x, v))" />
+    </div>
+    <Herleitungszeile Text="@Resource.FLOTTE_ED_KANDIDATEN_ERL" />
+</section>
+
+@code {
+    /// <summary>Die Studienkonfiguration — sie wird AN ORT UND STELLE beschrieben.</summary>
+    [Parameter] public FlottenStudieKonfiguration Wert { get; set; } = new();
+
+    /// <summary>Bedienbar?</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Etwas wurde geschrieben — der Wirt sichert und zeichnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Projektionsarten = new[]
+    {
+        (0, "Eingelesene Jahre einzeln bewerten"), (1, "Referenzjahr ausdrücklich wiederholen")
+    };
+
+    private FlottenSimulationOptionen Optionen => Wert.Optionen ??= new FlottenSimulationOptionen();
+    private FlottenWirtschaftlichkeitEingang Wirtschaft
+        => Wert.Wirtschaftlichkeit ??= new FlottenWirtschaftlichkeitEingang();
+    private FlottenAuslegungEingang Auslegung => Wert.Auslegung ??= new FlottenAuslegungEingang();
+
+    private Task Setzen(Action setzen)
+    {
+        setzen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task ZahlSetzen(Action<double> setzen, double? wert)
+        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+
+    private Task GanzSetzen(Action<int> setzen, int? wert)
+        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+
+    private Task ProjektionsartSetzen(int? wert)
+        => wert.HasValue
+            ? Setzen(() => Wirtschaft.ReferenzjahrExplizitWiederholen = wert.Value == 1)
+            : Task.CompletedTask;
+}

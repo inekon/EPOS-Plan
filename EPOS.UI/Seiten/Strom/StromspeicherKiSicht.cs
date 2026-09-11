@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -37,19 +37,43 @@ public sealed class StromspeicherKiSicht
     private readonly Func<SpeicherOptimierungEingaben?> _eingaben;
     private readonly Func<SpeicherFlottenErgebnis?> _ergebnis;
     private readonly Func<IReadOnlyList<FlottenHinweis>> _hinweise;
+    private readonly Func<string>? _schritt;
 
-    /// <summary>Legt die Sicht über die drei lebenden Stände der Ansicht.</summary>
+    /// <summary>Legt die Sicht über die lebenden Stände der Ansicht.</summary>
     /// <param name="eingaben">Der Arbeitsstand (Flotte, Betriebsführung).</param>
     /// <param name="ergebnis">Das Ergebnis des letzten Flottenlaufs; <c>null</c> = keines.</param>
     /// <param name="hinweise">Die Hinweise der Vorprüfung; nie <c>null</c>.</param>
+    /// <param name="schritt">
+    /// Der Name des stehenden Schritts der Ablaufleiste (Auftrag #224); <c>null</c> =
+    /// die Ansicht meldet ihn nicht, das Feld bleibt leer. Er ist WAHLFREI, damit ein
+    /// Prüfstand die Sicht weiterhin mit drei Delegaten anlegen kann.
+    /// </param>
     public StromspeicherKiSicht(Func<SpeicherOptimierungEingaben?> eingaben,
                                 Func<SpeicherFlottenErgebnis?> ergebnis,
-                                Func<IReadOnlyList<FlottenHinweis>> hinweise)
+                                Func<IReadOnlyList<FlottenHinweis>> hinweise,
+                                Func<string>? schritt = null)
     {
         _eingaben = eingaben ?? throw new ArgumentNullException(nameof(eingaben));
         _ergebnis = ergebnis ?? throw new ArgumentNullException(nameof(ergebnis));
         _hinweise = hinweise ?? throw new ArgumentNullException(nameof(hinweise));
+        _schritt = schritt;
     }
+
+    // =====================================================================
+    //  Wo der Anwender steht (Auftrag #224)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Name des stehenden Schritts der Ablaufleiste — „Speicher", „Daten &amp;
+    /// Kosten", „Betriebsführung", „Optimierung", „Ergebnis".
+    /// </summary>
+    /// <remarks>
+    /// Ohne ihn beantwortet der Assistent eine Frage wie „was soll ich hier tun?" ins
+    /// Blaue: Die Ansicht führt fünf Blätter mit ganz verschiedenen Feldern. Er ist
+    /// ABGELEITET und ohne Setzer — ein Schrittwechsel ist eine Bedienhandlung und kein
+    /// Feldwert.
+    /// </remarks>
+    public string Schritt => _schritt?.Invoke() ?? "";
 
     // =====================================================================
     //  Die Flotte
@@ -188,6 +212,83 @@ public sealed class StromspeicherKiSicht
     }
 
     // =====================================================================
+    //  Die Optimierung — Station 4 (Auftrag #224)
+    // =====================================================================
+
+    /// <summary>
+    /// Sucht der nächste Lauf die wirtschaftlich beste Größe, oder bewertet er nur die
+    /// eingestellte Flotte?
+    /// </summary>
+    public bool GroessenOptimieren
+    {
+        get => _eingaben()?.Auslegung?.FlottenGroessenOptimieren == true;
+        set
+        {
+            SpeicherAuslegungKonfiguration? a = _eingaben()?.Auslegung;
+            if (a is not null) a.FlottenGroessenOptimieren = value;
+        }
+    }
+
+    /// <summary>
+    /// Läuft nach dem Grobraster die zweite Phase — das Feinraster um das Grob-Optimum
+    /// (SD‑Q10)?
+    /// </summary>
+    public bool Feinraster
+    {
+        get => Auslegung?.Feinraster == true;
+        set { FlottenAuslegungEingang? a = Auslegung; if (a is not null) a.Feinraster = value; }
+    }
+
+    /// <summary>Obergrenze der Kandidatenzahl über BEIDE Phasen.</summary>
+    public int MaximaleKandidaten
+    {
+        get => Auslegung?.MaximaleKandidaten ?? 0;
+        set { FlottenAuslegungEingang? a = Auslegung; if (a is not null) a.MaximaleKandidaten = value; }
+    }
+
+    /// <summary>
+    /// Wie viele Kandidaten der eingestellte Suchraum ergibt — Grobraster plus
+    /// Feinraster-Obergrenze.
+    /// </summary>
+    /// <remarks>
+    /// Die Zahl kommt aus <see cref="FlottenOptimierer.Kandidatenzahl"/>, also aus
+    /// derselben Rechnung, mit der der Lauf sein Raster annimmt oder abweist; ein
+    /// unbrauchbarer Suchraum liefert 0 statt einer erfundenen Zahl. Sie ist
+    /// ABGELEITET — eingeben lässt sich nur der Bereich, aus dem sie folgt.
+    /// </remarks>
+    public int Kandidatenzahl
+    {
+        get
+        {
+            FlottenStudieKonfiguration? f = Flotte;
+            if (f is null) return 0;
+            FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(f);
+            return zahl.Gueltig ? (int)Math.Min(int.MaxValue, zahl.Gesamt) : 0;
+        }
+    }
+
+    /// <summary>
+    /// Kapitalwert [€] des besten Kandidaten der letzten Suche; <c>null</c> = keine
+    /// Suche gerechnet oder die Nullvariante hat gewonnen.
+    /// </summary>
+    public double? BesterKapitalwertEuro => BesterKandidat?.KapitalwertEuro;
+
+    /// <summary>Kapazität [kWh] des besten Kandidaten; <c>null</c> wie oben.</summary>
+    public double? BesteKapazitaetKWh => BesterKandidat?.KapazitaetKWh;
+
+    /// <summary>
+    /// Jährliche Betriebsersparnis [€/a] des besten Kandidaten, OHNE Kapitaldienst
+    /// (SD‑Q11 — die Zahl, mit der sich die Mappe V7 vergleichen lässt).
+    /// </summary>
+    public double? BesteErsparnisEuroJahr => BesterKandidat?.ErsparnisEuroJahr;
+
+    /// <summary>
+    /// Aus welcher Phase der beste Kandidat stammt — „Grob" oder „Fein"; leer ohne
+    /// Suche.
+    /// </summary>
+    public string BestePhase => BesterKandidat is { } k ? k.Phase.ToString() : "";
+
+    // =====================================================================
     //  Die Diagnose (nur lesend)
     // =====================================================================
 
@@ -256,6 +357,11 @@ public sealed class StromspeicherKiSicht
 
     private IReadOnlyList<FlottenEinheit> Einheiten
         => (IReadOnlyList<FlottenEinheit>?)Flotte?.Einheiten ?? Array.Empty<FlottenEinheit>();
+
+    private FlottenAuslegungEingang? Auslegung => Flotte?.Auslegung;
+
+    private FlottenKandidatZusammenfassung? BesterKandidat
+        => _ergebnis()?.Auslegung?.BesterKandidat;
 
     private FlottenSimulationErgebnis? Variante => _ergebnis()?.Studie?.Variante;
 

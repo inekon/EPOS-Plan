@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -283,7 +283,9 @@ public class HilfePilleTests : EposBunitContext
         EPOS.UI.Bausteine.InfoKnopf pille =
             cut.FindComponents<EPOS.UI.Bausteine.InfoKnopf>()[0].Instance;
 
-        Assert.StartsWith("Simulation · 3 Ergebnis", pille.Dialogname, StringComparison.Ordinal);
+        // SEIT AUFTRAG #224 traegt der Schrittname keine Ziffer mehr — sie steht im
+        // nummerierten Kreis der Stufenleiste (Konzept 7.8).
+        Assert.StartsWith("Simulation · Ergebnis", pille.Dialogname, StringComparison.Ordinal);
     }
 
     // =====================================================================

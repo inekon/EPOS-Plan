@@ -1,0 +1,133 @@
+@* NETZ UND PLANUNG der Speicherflotte — Schritt 3 „Betriebsfuehrung"
+   (Auftrag #224, Konzept „Stromspeicher-Dialoge" 7.4).
+
+   WARUM ER HIER STEHT UND NICHT MEHR IM EINHEITENEDITOR. Bezugs- und
+   Einspeisegrenze sind HARTE Grenzen des Anschlusses, und die Prognoseplanung
+   sagt, mit welchem Wissen ein Fahrplan entsteht: Beides beschreibt den
+   BETRIEB der Flotte, nicht eine Einheit. Bis #224 stand der Block unter den
+   Einheiten in Schritt 1, weil der Flotteneditor ihn geerbt hatte.
+
+   ER SCHREIBT AN ORT UND STELLE. Der Wirt haelt die Optionen, dieser Baustein
+   setzt darin und meldet ueber Geaendert; eine eigene Kopie waere die zweite
+   Wahrheit ueber denselben Stand, und der Wirt ersetzt sie ohnehin bei jeder
+   Aenderung (StromspeicherAuslegungSeite.FlotteNeuAufsetzen).
+
+   DIE PROGNOSEPLANUNG ERSCHEINT NUR BEI EINEM PLANENDEN ZIEL — ohne Planer gibt
+   es keinen Planungshorizont, und ein Feld ohne Wirkung ist eine Behauptung. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
+@using SpeicherEngine
+
+<section class="epos-flotte-abschnitt" aria-labelledby="flotte-netz-titel">
+    <h3 id="flotte-netz-titel">@Resource.FLOTTE_ED_NETZ_PLANUNG</h3>
+    <div class="epos-flotte-feldraster">
+        <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_BEZUGSGRENZE" Einheit="kW"
+                    Wert="@Wert.NetzbezugGrenzeKw" Min="0" Aktiv="@Aktiv"
+                    WertChanged="@(v => Setzen(() => Wert.NetzbezugGrenzeKw = v))" />
+        <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_EINSPEISEGRENZE" Einheit="kW"
+                    Wert="@Wert.NetzeinspeisungGrenzeKw" Min="0" Aktiv="@Aktiv"
+                    WertChanged="@(v => Setzen(() => Wert.NetzeinspeisungGrenzeKw = v))" />
+    </div>
+
+    @if (HatPrognoseplanung)
+    {
+        <div class="epos-flotte-untergruppe epos-flotte-untergruppe--innen">
+            <h4>@Resource.FLOTTE_ED_PROGNOSEPLANUNG</h4>
+            <div class="epos-flotte-feldraster">
+                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_INFORMATIONSSTAND" Eintraege="@Prognosearten"
+                             Auswahl="@((int)Wert.PrognoseArt)" Aktiv="@Aktiv"
+                             AuswahlChanged="PrognoseArtSetzen" />
+                <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_PLANUNGSHORIZONT" Einheit="Intervalle"
+                              Wert="@Wert.PlanungshorizontIntervalle" Min="1" Aktiv="@Aktiv"
+                              WertChanged="@(v => GanzSetzen(x => Wert.PlanungshorizontIntervalle = x, v))" />
+                <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_NEUPLANUNG" Einheit="Intervalle"
+                              Wert="@Wert.NeuplanungAlleIntervalle" Min="1" Aktiv="@Aktiv"
+                              WertChanged="@(v => GanzSetzen(x => Wert.NeuplanungAlleIntervalle = x, v))" />
+                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_ENDBEDINGUNG" Eintraege="@Endbedingungen"
+                             Auswahl="@((int)Wert.Endbedingung)" Aktiv="@Aktiv"
+                             AuswahlChanged="EndbedingungSetzen" />
+                <Schalter Bezeichnung="@Resource.FLOTTE_ED_FALLBACK" Wert="@Wert.PrognoseFallbackErlaubt"
+                          Aktiv="@Aktiv"
+                          WertChanged="@(v => Setzen(() => Wert.PrognoseFallbackErlaubt = v))" />
+            </div>
+            @if (Wert.Endbedingung == FlottenEndbedingung.JeSpeicherZiel)
+            {
+                <div class="epos-flotte-endziele" aria-label="@Resource.FLOTTE_ED_ENDENERGIE_ZIELE">
+                    @for (int index = 0; index < Ziele.Count; index++)
+                    {
+                        int zielIndex = index;
+                        <Zahlenfeld Bezeichnung="@string.Format(Kultur, Resource.FLOTTE_ED_ENDENERGIE_ZIEL, Einheitenname(index))"
+                                    Einheit="kWh" Wert="@Ziele[index]" Min="0" Aktiv="@Aktiv"
+                                    WertChanged="@(v => EndenergieSetzen(zielIndex, v))" />
+                    }
+                </div>
+            }
+            @if (Wert.PrognoseArt == PrognoseArt.Oracle)
+            {
+                <p class="epos-flotte-hinweis epos-flotte-hinweis--warnung">@Resource.FLOTTE_ED_ORACLE_HINWEIS</p>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private static CultureInfo Kultur => CultureInfo.CurrentCulture;
+
+    /// <summary>Die Betriebsoptionen — sie werden AN ORT UND STELLE beschrieben.</summary>
+    [Parameter] public FlottenSimulationOptionen Wert { get; set; } = new();
+
+    /// <summary>Die Einheiten; ihre Namen beschriften die Endenergieziele.</summary>
+    [Parameter] public IReadOnlyList<FlottenEinheit> Einheiten { get; set; } = Array.Empty<FlottenEinheit>();
+
+    /// <summary>Bedienbar?</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Etwas wurde geschrieben — der Wirt sichert und zeichnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Der Block zeigt sich nur bei einem PLANENDEN Betriebsziel (Prüfhilfe).</summary>
+    public bool HatPrognoseplanung => Wert.Betriebsziel
+        is FlottenBetriebsziel.PvPlanung or FlottenBetriebsziel.Arbitrage or FlottenBetriebsziel.MultiUse;
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Prognosearten = new[]
+    {
+        (0, "Archivierte Prognose-Snapshots"), (1, "Idealwissen (optimistische Vergleichsgrenze)")
+    };
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Endbedingungen = new[]
+    {
+        (0, "Keine Vorgabe"), (1, "Zielenergie je Speicher"), (2, "Endenergie wie Anfang")
+    };
+
+    private List<double> Ziele => Wert.EndenergieZielKWh ??= new List<double>();
+
+    private string Einheitenname(int index)
+    {
+        if (index < 0 || index >= Einheiten.Count) return (index + 1).ToString(Kultur);
+        FlottenEinheit e = Einheiten[index];
+        return string.IsNullOrWhiteSpace(e.Name) ? (index + 1).ToString(Kultur) : e.Name;
+    }
+
+    private Task Setzen(Action setzen)
+    {
+        setzen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task GanzSetzen(Action<int> setzen, int? wert)
+        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+
+    private Task PrognoseArtSetzen(int? wert)
+        => wert.HasValue ? Setzen(() => Wert.PrognoseArt = (PrognoseArt)wert.Value) : Task.CompletedTask;
+
+    private Task EndbedingungSetzen(int? wert)
+        => wert.HasValue ? Setzen(() => Wert.Endbedingung = (FlottenEndbedingung)wert.Value)
+                         : Task.CompletedTask;
+
+    private Task EndenergieSetzen(int index, double? wert)
+    {
+        if (!wert.HasValue || index < 0 || index >= Ziele.Count) return Task.CompletedTask;
+        return Setzen(() => Ziele[index] = wert.Value);
+    }
+}

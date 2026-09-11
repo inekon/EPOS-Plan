@@ -51,9 +51,13 @@ public sealed class StromspeicherAuslegungEinModusTests : EposBunitContext
         var cut = Ansicht(Dienste());
 
         Assert.Empty(cut.FindAll(".epos-ablaufleiste-modus"));
-        Assert.DoesNotContain(Resource.FLOTTE_SEITE_SCHRITT1, "Speicherparameter");
+        Assert.NotEqual("Speicherparameter", Resource.FLOTTE_SEITE_SCHRITT1);
+
+        // Seit #224 steht VOR dem Titel der nummerierte Kreis (Konzept 7.8) — der
+        // Titel selbst ist unveraendert der Ressourcentext.
         Assert.Equal(Resource.FLOTTE_SEITE_SCHRITT1,
                      Auslegungshilfe.Schrittknopf(cut, AuslegungSchritt.Speicher)
+                                    .QuerySelector(".epos-ablaufleiste-titel")!
                                     .TextContent.Trim());
     }
 
@@ -178,6 +182,8 @@ public sealed class StromspeicherAuslegungEinModusTests : EposBunitContext
         var cut = Ansicht(Dienste(flotte, ergebnis));
         Auslegungshilfe.Rechenknopf(cut).Click();
 
+        // Die Karte steht seit #224 in Station 4 (Auftrag #224, Zielbild 7.4).
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         Assert.Single(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
         Assert.Equal(1, cut.FindComponent<SpeicherFlottenGroessenAnsicht>().Instance.Einheiten);
     }

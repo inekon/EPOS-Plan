@@ -84,6 +84,9 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
 
         Start(cut);
         Assert.Contains(alterFehler, cut.Markup);
+        // Der Rechenknopf steht seit #224 in Station 4 — fuer das Profil geht es
+        // zurueck auf Blatt 2.
+        Datenreiter(cut);
         cut.FindAll("label").Single(x => x.TextContent.Contains("Profilname"))
             .QuerySelector("input")!.Input("Bestand");
         cut.FindAll("button").Single(x => x.TextContent.Contains("Profil speichern")).Click();

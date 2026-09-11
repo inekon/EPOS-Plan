@@ -134,4 +134,75 @@ public class ZahlenfeldTests : BunitContext
         Assert.True(cut.Find("input").HasAttribute("disabled"));
         Assert.Equal("0,2345", cut.Find("input").GetAttribute("value"));
     }
+
+    // =====================================================================
+    //  Hoechstens vier Nachkommastellen (Auftrag #224, Konzept 7.8)
+    // =====================================================================
+
+    /// <summary>
+    /// AUFTRAG #224 (Anwenderwunsch 11.09.2026): Das Bildschirmfoto der
+    /// Stromspeicher-Auslegung zeigte <c>94,86832980505137 %</c>,
+    /// <c>89,99999999999999 %</c> und <c>0,31746000000002055</c> — keine dieser Zahlen
+    /// hat jemand getippt; sie entstehen als Wurzel, als Quotient und als Mittelwert.
+    /// Ohne eigene Vorgabe zeigt das Feld seither HÖCHSTENS vier Stellen. Die Regel
+    /// gilt HAUSWEIT, nicht nur für diese Ansicht.
+    /// </summary>
+    [Theory]
+    [InlineData(0.31746000000002055, "0,3175")]
+    [InlineData(94.86832980505137, "94,8683")]
+    [InlineData(89.99999999999999, "90")]
+    [InlineData(1234.5, "1234,5")]
+    [InlineData(-0.00005, "-0,0001")]
+    [InlineData(42.0, "42")]
+    public void Ohne_Vorgabe_zeigt_das_Feld_hoechstens_vier_Nachkommastellen(double wert, string text)
+    {
+        var cut = Render<Zahlenfeld>(p => p.Add(x => x.Wert, wert));
+
+        Assert.Equal(text, cut.Find("input").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Der GESPEICHERTE Wert bleibt: Gerundet wird die Anzeige, nicht der Stand — erst
+    /// eine Eingabe ändert ihn. Ohne Eingabe meldet das Feld deshalb GAR NICHTS.
+    /// </summary>
+    [Fact]
+    public void Die_Rundung_aendert_den_gespeicherten_Wert_nicht()
+    {
+        double? gemeldet = null;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, 0.31746000000002055)
+            .Add(x => x.WertChanged, (double? w) => gemeldet = w));
+
+        Assert.Equal("0,3175", cut.Find("input").GetAttribute("value"));
+        Assert.Null(gemeldet);
+        Assert.Equal(0.31746000000002055, cut.Instance.Wert!.Value, 15);
+    }
+
+    /// <summary>
+    /// Eine EINGABE mit mehr Stellen bleibt stehen, solange der Anwender tippt — sonst
+    /// spränge ihm der Text unter den Fingern weg.
+    /// </summary>
+    [Fact]
+    public void Eine_laengere_Eingabe_wird_nicht_beschnitten()
+    {
+        double? gemeldet = null;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.WertChanged, (double? w) => gemeldet = w));
+
+        cut.Find("input").Input("0,123456");
+
+        Assert.Equal(0.123456, gemeldet);
+        Assert.Equal("0,123456", cut.Find("input").GetAttribute("value"));
+    }
+
+    /// <summary>Die eigene Vorgabe schlägt die Höchstzahl — Prozente stehen auf zwei.</summary>
+    [Fact]
+    public void Eine_eigene_Stellenzahl_gilt_weiterhin()
+    {
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, 94.86832980505137)
+            .Add(x => x.Nachkommastellen, 2));
+
+        Assert.Equal("94,87", cut.Find("input").GetAttribute("value"));
+    }
 }

@@ -1,10 +1,20 @@
-using Bunit;
+﻿using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using SpeicherEngine;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
+/// <summary>
+/// DER EINHEITENEDITOR DER SPEICHERFLOTTE.
+///
+/// <para><b>Seit Auftrag #224 trägt er nur noch die Einheiten</b> (Anwenderentscheid
+/// SD‑E‑9, Option A): Der Größenbereich steht als Tabelle in Station 4
+/// (<c>OptimierungStationTests</c>), „Netz und Planung" in Schritt 3
+/// (<c>SpeicherFlottenBloeckeTests</c>) und die wirtschaftliche Jahresprojektion in
+/// Schritt 2 (ebenda). Die Prüffälle dieser Blöcke sind mitgewandert — sie prüfen
+/// dieselben Felder an ihrem neuen Ort.</para>
+/// </summary>
 public sealed class SpeicherFlottenEditorTests : EposBunitContext
 {
     [Fact]
@@ -83,88 +93,116 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
         Auswahl(cut, "Betriebsziel:").Change(((int)FlottenBetriebsziel.MultiUse).ToString());
 
         Assert.Contains("Wirtschaftlicher Peak-Zielwert", cut.Markup);
-        Assert.Contains("Informationsstand", cut.Markup);
         Assert.Single(cut.FindAll("label"), x => x.TextContent.Contains("Wirtschaftlicher Peak-Zielwert"));
         Assert.Single(cut.FindAll("label"), x => x.TextContent.Contains("Laden aus dem Netz erlauben"));
         Assert.Single(cut.FindAll("label"), x => x.TextContent.Contains("Batterieexport ins Netz erlauben"));
-        Auswahl(cut, "Informationsstand:").Change(((int)PrognoseArt.Oracle).ToString());
-        Eingabe(cut, "Planungshorizont:").Input("96");
+        Assert.Equal(FlottenBetriebsziel.MultiUse, gemeldet!.Optionen.Betriebsziel);
 
-        Assert.Equal(PrognoseArt.Oracle, gemeldet!.Optionen.PrognoseArt);
-        Assert.Equal(96, gemeldet.Optionen.PlanungshorizontIntervalle);
-        Assert.Contains("Vergleichslauf", cut.Markup);
+        // DIE PROGNOSEPLANUNG IST MIT #224 AUSGEZOGEN (Zielbild 7.4): Sie steht in
+        // Schritt 3 „Betriebsfuehrung" — im SpeicherFlottenNetzBlock, und dort
+        // geprueft. Hier darf sie nicht ein zweites Mal stehen.
+        Assert.DoesNotContain("Informationsstand", cut.Markup);
+        Assert.DoesNotContain("Planungshorizont", cut.Markup);
     }
 
+    /// <summary>
+    /// DER GRÖSSENBEREICH IST MIT #224 AUSGEZOGEN (Zielbild 7.4): Er beschreibt die
+    /// SUCHE und nicht die Einheit und steht seither als Tabelle in Station 4
+    /// („Suchraum je Einheit", <c>OptimierungStationTests</c>). Die ACHSEN bleiben
+    /// trotzdem Sache dieses Editors — er legt je Einheit genau eine an und zieht ihre
+    /// Vorlage nach.
+    /// </summary>
     [Fact]
-    public void Auslegungsachse_wechselt_von_Leistung_auf_CRate()
-    {
-        FlottenStudieKonfiguration? gemeldet = null;
-        var cut = Render<SpeicherFlottenEditor>(p => p
-            .Add(x => x.Wert, KonfigurationMitEinheit())
-            .Add(x => x.WertChanged, x => gemeldet = x));
-
-        Auswahl(cut, "Größenkopplung:").Change(((int)FlottenAuslegungsmodus.KapazitaetUndCRate).ToString());
-
-        Assert.NotNull(Kategorie(cut, "Kapazität [kWh]"));
-        Assert.NotNull(Kategorie(cut, "C-Rate [1/h]"));
-        Assert.DoesNotContain(cut.FindAll("section.epos-flotte-auslegungskategorie"),
-            x => x.GetAttribute("aria-label") == "Leistung [kW]");
-        KategorieEingabe(cut, "C-Rate [1/h]", "Bis:").Input("1,75");
-        KategorieEingabe(cut, "Anzahl", "Bis:").Input("3");
-        Assert.Equal(1.75, gemeldet!.Auslegung.Achsen[0].CRateBis, 10);
-        Assert.Equal(3, gemeldet.Auslegung.Achsen[0].AnzahlBis);
-    }
-
-    [Fact]
-    public void Auslegungsbereich_gruppiert_Anzahl_Kapazitaet_und_Leistung()
+    public void Der_Groessenbereich_steht_nicht_mehr_im_Einheiteneditor()
     {
         var cut = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
 
-        var kategorien = cut.FindAll("section.epos-flotte-auslegungskategorie");
-        Assert.Contains(kategorien, x => x.GetAttribute("aria-label") == "Anzahl");
-        Assert.Contains(kategorien, x => x.GetAttribute("aria-label") == "Kapazität [kWh]");
-        Assert.Contains(kategorien, x => x.GetAttribute("aria-label") == "Leistung [kW]");
-        Assert.DoesNotContain(kategorien, x => x.GetAttribute("aria-label") == "C-Rate [1/h]");
-        Assert.Equal(3, Kategorie(cut, "Kapazität [kWh]").QuerySelectorAll("input").Length);
-        Assert.Equal(3, Kategorie(cut, "Leistung [kW]").QuerySelectorAll("input").Length);
+        Assert.Empty(cut.FindAll("section.epos-flotte-auslegungskategorie"));
+        Assert.DoesNotContain("Größenkopplung", cut.Markup);
+        Assert.DoesNotContain("In der Auslegung variieren", cut.Markup);
 
-        // AUFTRAG #225 NACHTRAG (Anwenderfrage 11.09.2026: "wozu steht hier schrittzahl,
-        // wenn diese nicht änderbar ist?"): Der Kasten "Anzahl" führt nur noch die ZWEI
-        // Ganzzahlfelder Von/Bis — das tote, dauerhaft deaktivierte dritte Feld "Schritt"
-        // (Wert immer 1, ohne Modellbindung) ist gefallen; an seiner Stelle steht die
-        // Erklaerzeile.
-        Assert.Equal(2, Kategorie(cut, "Anzahl").QuerySelectorAll("input").Length);
-        Assert.Empty(Kategorie(cut, "Anzahl").QuerySelectorAll("input[disabled]"));
-        Assert.DoesNotContain(Kategorie(cut, "Anzahl").QuerySelectorAll("label"),
-            x => x.TextContent.Contains("Schritt:"));
-        Assert.Single(Kategorie(cut, "Anzahl").QuerySelectorAll("p.epos-flotte-hinweis"));
-        Assert.Contains("gezählt wird in Einerschritten", Kategorie(cut, "Anzahl").TextContent);
+        // Die Achse selbst ist da — sonst haette Station 4 nichts zu bearbeiten.
+        Assert.Single(cut.Instance.AktuellerSnapshot.Auslegung.Achsen);
     }
 
+    /// <summary>
+    /// „Ersatz &amp; Restwert" bleibt beim Einheiteneditor — es ist die einzige
+    /// Kostenangabe, die wirklich an EINER Einheit hängt. Die wirtschaftliche
+    /// Jahresprojektion daneben ist mit #224 nach Schritt 2 gezogen (SD‑Q12).
+    /// </summary>
     [Fact]
-    public void Projektlaufzeit_ist_immer_sichtbar_und_bleibt_im_Snapshot()
+    public void Ersatz_und_Restwert_bleiben_bei_der_Einheit()
     {
         FlottenStudieKonfiguration? gemeldet = null;
         var cut = Render<SpeicherFlottenEditor>(p => p
             .Add(x => x.Wert, KonfigurationMitEinheit())
             .Add(x => x.WertChanged, x => gemeldet = x));
 
-        Assert.Contains("Ein bereitgestelltes Jahr kann einmal bewertet", cut.Markup);
-        Eingabe(cut, "Projektlaufzeit:").Input("1");
-        Assert.False(gemeldet!.Wirtschaftlichkeit.ReferenzjahrExplizitWiederholen);
-        Assert.Equal(1, gemeldet.Wirtschaftlichkeit.ProjektjahreBeiWiederholung);
-
-        Auswahl(cut, "Jahresprojektion:").Change("1");
-        Eingabe(cut, "Projektlaufzeit:").Input("15");
         Eingabe(cut, "Ersatzkosten:").Input("12000");
         Eingabe(cut, "Ersatzintervall:").Input("8");
         Eingabe(cut, "Restwert der Einheit:").Input("2500");
 
-        Assert.True(gemeldet!.Wirtschaftlichkeit.ReferenzjahrExplizitWiederholen);
-        Assert.Equal(15, gemeldet.Wirtschaftlichkeit.ProjektjahreBeiWiederholung);
-        Assert.Equal(12000, gemeldet.Einheiten[0].ErsatzkostenEuro);
+        Assert.Equal(12000, gemeldet!.Einheiten[0].ErsatzkostenEuro);
         Assert.Equal(8, gemeldet.Einheiten[0].ErsatzintervallJahre);
         Assert.Equal(2500, gemeldet.Einheiten[0].RestwertEuro);
+
+        // Die Jahresprojektion steht hier NICHT mehr (SD-Q12).
+        Assert.DoesNotContain("Projektlaufzeit", cut.Markup);
+        Assert.DoesNotContain("Kalkulationszins", cut.Markup);
+        Assert.DoesNotContain("Energie-Ausgleichswert", cut.Markup);
+        Assert.DoesNotContain("Maximale Auslegungskandidaten", cut.Markup);
+    }
+
+    /// <summary>
+    /// ZWEI KOSTENBLÖCKE STATT EINEM (Auftrag #224, Konzept 7.2): Die sieben
+    /// Kostenfelder standen unter der Überschrift „Ersatz und Restwert", weil der
+    /// Schalter „Eigene Kosten" dort eingehängt war.
+    /// </summary>
+    [Fact]
+    public void Die_eigenen_Kosten_stehen_unter_einer_eigenen_Ueberschrift()
+    {
+        var cut = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
+        Schalter(cut, "Eigene Kosten für diese Einheit verwenden").Change(true);
+
+        AngleSharp.Dom.IElement kosten = cut.FindAll("div.epos-flotte-untergruppe")
+            .Single(x => x.QuerySelector("h4")?.TextContent.Trim() == "Kosten dieser Einheit");
+        AngleSharp.Dom.IElement ersatz = cut.FindAll("div.epos-flotte-untergruppe")
+            .Single(x => x.QuerySelector("h4")?.TextContent.Trim() == "Ersatz und Restwert");
+
+        Assert.Contains("Investition Kapazität", kosten.TextContent);
+        Assert.Contains("Kosten je Entladung", kosten.TextContent);
+        Assert.DoesNotContain("Investition Kapazität", ersatz.TextContent);
+        Assert.Contains("Ersatzkosten", ersatz.TextContent);
+    }
+
+    /// <summary>
+    /// DER KARTENKOPF NENNT NUR DEN NAMEN (Konzept 7.8): Der Kurztext
+    /// <c>[100kW, 129.0kWh]</c> stand mit Punkt als Dezimaltrenner daneben; dieselben
+    /// Zahlen stehen aufgeklappt in Hauskultur im Technikblock.
+    /// </summary>
+    [Fact]
+    public void Der_Kartenkopf_traegt_keinen_Zahlenzusatz_mehr()
+    {
+        var cut = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
+
+        AngleSharp.Dom.IElement kopf = cut.Find("button.epos-flotte-einheit__umschalter");
+
+        Assert.Contains("Hauptspeicher", kopf.TextContent);
+        Assert.Empty(kopf.QuerySelectorAll(".epos-flotte-einheit__kurz"));
+        Assert.DoesNotContain("kWh", kopf.TextContent);
+    }
+
+    /// <summary>
+    /// Der Erklärsatz über der Einheitenliste ist eine HERLEITUNGSZEILE, die Pille
+    /// zeigt die Einheitenzahl NEUTRAL (Konzept 7.8: kein Rot ohne Fehler).
+    /// </summary>
+    [Fact]
+    public void Der_Kopf_traegt_eine_Herleitungszeile_und_eine_neutrale_Pille()
+    {
+        var cut = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, KonfigurationMitEinheit()));
+
+        Assert.Single(cut.FindAll(".epos-flotte-editor__kopf .epos-herleitung"));
+        Assert.Contains("1", cut.Find(".epos-flotte-editor__zaehler").TextContent);
     }
 
     [Fact]

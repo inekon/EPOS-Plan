@@ -61,11 +61,16 @@
     color: var(--epos-text-leise);
 }
 
+/* DIE EINHEITENPILLE IST NEUTRAL (Auftrag #224, Konzept 7.8): Sie zaehlt, sie
+   warnt nicht. Bis dahin trug sie den Rahmen --epos-rahmen-speicher und die
+   Schrift --epos-senke-text, also das Rot der Speicherkarten — der Anwender las
+   „1 Speicher" als Fehlermeldung. */
 .epos-flotte-editor__zaehler {
     padding: 0.35rem 0.7rem;
-    border: 1px solid var(--epos-rahmen-speicher);
+    border: 1px solid var(--epos-rahmen-leise);
     border-radius: var(--epos-ecke);
-    color: var(--epos-senke-text);
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
     font-weight: 600;
     white-space: nowrap;
 }
@@ -146,7 +151,7 @@
 
 .epos-flotte-einheit__umschalter {
     display: grid;
-    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    grid-template-columns: auto minmax(8rem, 1fr);
     align-items: center;
     gap: 0.55rem;
     min-height: var(--epos-touchziel);
@@ -160,11 +165,6 @@
 
 .epos-flotte-einheit__name {
     font-weight: 700;
-}
-
-.epos-flotte-einheit__kurz {
-    color: var(--epos-text-leise);
-    white-space: nowrap;
 }
 
 .epos-flotte-einheit__aktionen {
@@ -223,11 +223,6 @@
 @media (max-width: 680px) {
     .epos-flotte-einheit__umschalter {
         grid-template-columns: auto 1fr;
-    }
-
-    .epos-flotte-einheit__kurz {
-        grid-column: 2;
-        white-space: normal;
     }
 
     .epos-flotte-einheit__aktionen {
@@ -501,4 +496,186 @@
     .epos-flotte-groessen-tabelle tr.epos-flotte-groessen-optimum {
         border: 2px solid CanvasText;
     }
+}
+
+/* ==================================================================== */
+/* STATION 4 „OPTIMIERUNG" (Auftrag #224, Konzept „Stromspeicher-Dialoge" */
+/* 7.4). Aufbau wie das Mappenblatt V7: Kopf, Suchraumtabelle,           */
+/* Kandidatenzeile, Feinrasterschalter, Rechenknopf, „Bestes Ergebnis".  */
+/* ==================================================================== */
+
+.epos-flotte-optimierung {
+    display: grid;
+    gap: 1rem;
+}
+
+.epos-flotte-optimierung-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.epos-flotte-optimierung-ziel {
+    margin: 0;
+    display: grid;
+    gap: 0.2rem;
+}
+
+.epos-flotte-optimierung-ziel__name {
+    color: var(--epos-text-leise);
+}
+
+/* DIE SUCHRAUMTABELLE. Elastische Spalten stehen HINTEN und Zahlenfelder
+   bekommen eine feste kleine Breite (Hausregel aus Befund W6-B-4): Ohne sie
+   ist ein <input> rund 196 px breit und schiebt die drei Groessenspalten aus
+   dem Bild. Der Flexkasten steht IN der Zelle, nie auf ihr (W5-B-1). */
+.epos-flotte-suchraum-zelle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+}
+
+.epos-flotte-suchraum-zelle .epos-eingabe {
+    min-width: 0;
+    width: 5.5rem;
+}
+
+.epos-flotte-suchraum-zelle select.epos-eingabe {
+    width: 11rem;
+}
+
+.epos-flotte-suchraum-leer {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* DIE KANDIDATENZEILE — live gegen „Maximale Auslegungskandidaten". Rot ist
+   hier kein Schmuck: Ein Raster ueber der Grenze wird ABGEWIESEN und nicht
+   gekuerzt, und der Rechenknopf ist gesperrt. Die Aussage steht trotzdem in
+   WORTEN daneben, nicht nur in der Farbe (WCAG 1.4.1). */
+.epos-flotte-kandidatenzeile {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0;
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-kandidatenzeile strong {
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-flotte-kandidatenzeile--rot strong {
+    color: var(--epos-ampel-rot);
+}
+
+/* DER KASTEN „BESTES ERGEBNIS" — drei Karten nebeneinander (Mappe V7, Block
+   A3:B7: Zielwert, Groesse, Rechendauer). */
+.epos-flotte-bestes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+}
+
+.epos-flotte-bestes__karte {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+.epos-flotte-bestes__karte b {
+    font-size: 18px;
+    color: var(--epos-marke);
+}
+
+.epos-flotte-bestes__karte small {
+    color: var(--epos-text-leise);
+}
+
+/* DIE PHASENMARKE am Kasten: aus welcher Phase der beste Kandidat stammt. */
+.epos-flotte-phasenmarke {
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.5rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 10px;
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.epos-flotte-phasenmarke--fein {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+@media (forced-colors: active) {
+    .epos-flotte-bestes__karte,
+    .epos-flotte-phasenmarke {
+        border-color: CanvasText;
+    }
+}
+
+/* ==================================================================== */
+/* DIE VORPRUEFUNGSHINWEISE als kompakte Zeilen (Auftrag #224, 7.8).     */
+/*                                                                      */
+/* Eine Zeile je Hinweis mit Symbol, Text und dem Erklaerlink INLINE —   */
+/* kein Kasten ueber die ganze Breite. Ab zwei Hinweisen steht darueber  */
+/* ein aufklappbarer Kopf „n Hinweise".                                  */
+/* ==================================================================== */
+
+.epos-flotte-hinweiszeilen {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0.35rem 0;
+}
+
+.epos-flotte-hinweiszeilen--block {
+    padding: 0.35rem 0.5rem;
+    border-left: 3px solid var(--epos-rahmen-leise);
+}
+
+.epos-flotte-hinweiszeilen__kopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: var(--epos-touchziel);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--epos-text-leise);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-flotte-hinweiszeilen__inhalt {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.epos-flotte-hinweiszeile {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0;
+    color: var(--epos-text-leise);
+    line-height: 1.45;
+}
+
+.epos-flotte-hinweiszeile--warnung {
+    color: var(--epos-warn-text);
+}
+
+.epos-flotte-hinweiszeile__zeichen {
+    flex: none;
 }

@@ -1,6 +1,6 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Stromspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki
-     Stand: 2026-09-11 (Ansicht STROMSPEICHER_AUSLEGUNG, ein Weg statt zwei Modi - SD-E-8)
+     Stand: 2026-09-11 (Station 4 Optimierung als eigenes Blatt, Feinraster - SD-E-9 Option A)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
 Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
@@ -40,9 +40,11 @@ Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dies
 
 Über allem steht die '''Ablaufleiste''' mit fünf Stationen:
 
-  1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Berechnen · 5 Ergebnis
+  1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Optimierung · 5 Ergebnis
 
-Die Stationen 1, 2, 3 und 5 sind '''Blätter''' – ein Klick blättert um. '''Station 4 ist der Rechenknopf'''; er heißt je nach Schalter ''4 Bewerten'' oder ''4 Größen optimieren''. '''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
+'''Alle fünf Stationen sind Blätter''' – ein Klick blättert um. Die Nummer steht im '''Kreis''' vor dem Namen; eine erledigte Station trägt dort einen Haken. Einen '''Rechenknopf in der Leiste gibt es seit dem 11.09.2026 nicht mehr''': Station 4 hieß bis dahin ''4 Bewerten'' beziehungsweise ''4 Größen optimieren'' und war der einzige Platz, an dem gerechnet wurde. '''Sie ist jetzt das Blatt „Optimierung"''', und der Rechenknopf steht darauf – zusammen mit dem Suchraum, der Kandidatenzahl und dem Ergebnis der Suche.
+
+'''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
 
 Einen '''Modusschalter''' gibt es seit dem 11.09.2026 nicht mehr. Was er unterschied, entscheidet jetzt die '''Zahl der Einheiten''' in Schritt 1:
 
@@ -65,19 +67,24 @@ Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeins
 
 '''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier je Speicheranlage des Projekts bereits eine Einheit – mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Bei einer Anlage ist es genau eine Einheit; Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.
 
-Darunter steht der Schalter '''„Größen optimieren"'''. Aus ist er, wenn Sie '''diese''' Bestückung bewerten wollen; ein ist er, wenn ein '''Raster''' von Größen durchgerechnet werden soll – dann tragen Sie je Suchachse ein, welche Einheit sie ersetzt und welche Bereiche und Schrittweiten gelten.
+'''Hier steht seit dem 11.09.2026 nur noch, WAS für Speicher es gibt''' – nicht mehr, in welchen Größen gesucht wird und nicht mehr, wie das Netz begrenzt ist. Drei Blöcke sind aus diesem Blatt ausgezogen:
 
-==== Größe und C-Rate ====
-{{Anker|auslegung-groesse}}
+{| class="wikitable"
+! Was !! Wohin !! Warum
+|-
+| Suchbereiche (Anzahl, Kapazität, Leistung, C-Rate) und der Schalter ''Größen optimieren'' || '''Schritt 4 — Optimierung''' || Der Suchraum beschreibt die SUCHE, nicht eine Einheit
+|-
+| ''Netz und Planung'' (Bezugs- und Einspeisegrenze, Prognoseplanung, Endenergieziele) || '''Schritt 3 — Betriebsführung''' || Anschlussgrenzen und Planungswissen beschreiben den BETRIEB der Flotte
+|-
+| Zins, Projektionsart, Projektjahre, Ausgleichswert, Restwert, Kandidatengrenze || '''Schritt 2 — Daten & Kosten''' || Es ist die wirtschaftliche Jahresprojektion, und dort steht sie in dieser Dokumentation seit jeher
+|}
 
-Die Suchbereiche stehen '''je Einheit''' in deren Auslegungsbereich: Anzahl, Kapazität in kWh, Leistung in kW und C-Rate in 1/h, jeweils mit ''Von'', ''Bis'' und ''Schrittweite''. Der Auslegungsmodus sagt, welche zwei der drei Größen gerastert werden und welche sich daraus ergibt.
-
-Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
+Die Kostensätze '''einer Einheit''' bleiben hier und stehen unter der eigenen Überschrift '''„Kosten dieser Einheit"''' – damit sichtbar ist, dass sie nur diese eine Einheit betreffen und nicht die gemeinsamen Sätze aus Schritt 2.
 
 === Schritt 2 — Daten & Kosten ===
 {{Anker|auslegung-daten}}
 
-Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen, die Kostensätze und der Leistungspreis. Die Suchbereiche gehören zu Schritt 1, die Betriebsführung zu Schritt 3.
+Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen, die Kostensätze, der Leistungspreis und die '''wirtschaftliche Jahresprojektion'''. Der Suchraum gehört zu Schritt 4, die Betriebsführung zu Schritt 3.
 
 '''Leistungspreis.''' Das Feld ''Leistungspreis'' in €/(kW·a) bewertet die höchste Bezugsleistung des Jahres. Es ist '''eine''' Eingabe für beides: für die Auslegung und für die aktive Speichervariante des Projekts – dasselbe Feld, das der Reiter ''Parameter'' pflegt. Eine Änderung wird sofort geschrieben. Sind Leistungspreise im Projekt gepflegt, steht daneben eine Liste der '''Quellen'''; eine Auswahl daraus setzt den Wert ein und schreibt ihn ebenfalls.
 
@@ -104,7 +111,18 @@ Alle Sätze sind netto. Die Kosten werden für jeden untersuchten Speicher neu b
 
 Pauschalen, Prozentpositionen, Erlöse, Zuschüsse und erst später beginnende Kosten werden in diesem spezifischen Kostenmodell nicht übernommen. Die ausgelassenen Positionen erscheinen mit Hinweis. Die Auslegungsbewertung ist damit eine Bewertung der gewählten spezifischen Kosten; die vollständige Projektwirtschaftlichkeit wird separat geprüft. Derselbe Verschleißanteil darf nicht zusätzlich sowohl als entladeabhängige Betriebskosten als auch über den optionalen Verschleißterm angesetzt werden.
 
-Für die Flotte kommen hier die '''finanzielle Projektlaufzeit''' und der '''Energie-Ausgleichswert''' dazu. Die Laufzeit ist stets sichtbar und änderbar. Der Ausgleichswert bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende; ohne ihn wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst geänderte Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
+==== Wirtschaftliche Jahresprojektion ====
+{{Anker|auslegung-projektion}}
+
+Dieser Block sagt, '''über welchen Zeitraum und mit welchem Geld''' gerechnet wird. Er stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehört hierher: Er betrifft die Studie, nicht eine Einheit.
+
+* '''Energie-Ausgleichswert''' in €/kWh – er bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende des Jahres. Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat; ohne den Ausgleichswert wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst geänderte Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
+* '''Kalkulationszins''' in % – damit werden die Jahreswerte auf heute abgezinst.
+* '''Projektionsart''' – ''ein bereitgestelltes Jahr einmal bewerten'' oder ''das Referenzjahr über n Jahre wiederholen''. Die '''finanzielle Projektlaufzeit''' ist stets sichtbar und änderbar; sie ist es, über die sich die Investition amortisieren muss.
+* '''Restwert der Studie''' in € – ein Betrag, der am '''Ende''' der Laufzeit als Einnahme angesetzt und abgezinst in den Kapitalwert eingeht, '''zusätzlich''' zu den Restwerten der einzelnen Einheiten. Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket.
+* '''Maximale Auslegungskandidaten''' – die Obergrenze für die Rastersuche aus Schritt 4. Reißt ein Raster sie, wird der Lauf '''abgewiesen und nicht gekürzt'''; wo die Zahl steht, sagt Schritt 4 live.
+
+Unter den drei zuletzt genannten Feldern steht je '''eine Erklärzeile''' im Klartext – sie standen bis #224 ohne jede Erklärung neben Zins und Laufzeit.
 
 ==== Last, PV und Preis ====
 {{Anker|auslegung-quellen}}
@@ -176,10 +194,65 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 * '''Netzladung''' folgt dem Betriebsziel: Die Lastspitzenkappung bekommt sie, weil die Wiederaufladung unter dem Ziel genau das ist; PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. '''Der Schalter bleibt änderbar''', und eine gespeicherte Einstellung wird nicht überschrieben.
 * '''Start-Ladezustand.''' Für den Projektlauf steht er auf der unteren Marke. Ein leerer Speicher kann eine Spitze am 1. Januar nicht kappen – die Ansicht sagt es, statt den Standard still zu ändern.
 
-=== Schritt 4 — Berechnen ===
-{{Anker|auslegung-rechnen}}
+==== Netz und Planung ====
+{{Anker|auslegung-netz}}
 
-Station 4 startet den Lauf. Was sie rechnet, sagt ihre Beschriftung: ''Bewerten'' (diese eine Bestückung) oder ''Größen optimieren'' (das Raster).
+Dieser Block stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehört hierher: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
+
+* '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze".
+* '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Oracle'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
+* '''Endenergieziele''' – bei ''je Speicher ein Ziel'' eine Zeile je Einheit, mit dem '''Namen''' der Einheit davor.
+
+=== Schritt 4 — Optimierung ===
+{{Anker|auslegung-rechnen}}
+{{Anker|auslegung-optimierung}}
+
+'''Hier wird gerechnet''' – und hier steht seit dem 11.09.2026 alles, was die Suche nach der wirtschaftlich besten Größe ausmacht. Bis dahin war die Optimierung über drei Schalter an drei Orten verteilt, und das Wort kam in der Ablaufleiste nicht vor.
+
+Von oben nach unten:
+
+# '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
+# '''Suche''' – zwei Möglichkeiten: ''Nur die eingestellte Flotte bewerten'' oder '''''Wirtschaftlich beste Größe suchen'''''. Das ist der frühere Schalter ''Größen optimieren'' aus Schritt 1, an dem Ort, an dem er wirkt.
+# '''Suchraum je Einheit''' – eine Tabelle, eine Zeile je Einheit (siehe unten).
+# '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
+# '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile (siehe unten).
+# '''Der Rechenknopf''' – ''Optimieren'' beziehungsweise ''Bewerten'', je nach Suchwahl.
+# '''„Bestes Ergebnis"''' – drei Karten mit dem Besten des Laufs (siehe unten).
+# '''Ergebnisse über der Speichergröße''' – Rasterkarte, Schnittkurven und Kandidatentabelle, seit dem 11.09.2026 hier statt in Schritt 5 (siehe unten).
+
+==== Größe und C-Rate ====
+{{Anker|auslegung-groesse}}
+
+Der '''Suchraum''' steht je Einheit in einer Zeile: ein Häkchen '''variieren''', die '''Größenkopplung''' und dahinter ''Anzahl'', ''Kapazität [kWh]'', ''Leistung [kW]'' und ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt; die abgeleitete Spalte zeigt deshalb '''„—"''' statt leerer Felder.
+
+Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
+
+Gibt es noch keine Einheit, steht statt der Tabelle die Zeile ''„Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an."''
+
+==== Wie viele Kandidaten es werden ====
+{{Anker|auslegung-kandidatenzahl}}
+
+Unter der Tabelle steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
+
+  240 Kandidaten im Grobraster, bis zu 18 im Feinraster — zusammen 258 von höchstens 500.
+
+'''Es ist dieselbe Zählregel, mit der der Lauf annimmt oder abweist''' – nicht eine zweite Rechnung, die auseinanderlaufen könnte. Reißt das Raster die Grenze aus Schritt 2, färbt sich die Zeile, nennt den Grund im Klartext und '''sperrt den Rechenknopf''': Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze erhöhen. Ist ein Bereich leer, negativ oder ohne Schrittweite, sagt sie auch das.
+
+Für das '''Feinraster''' nennt sie eine '''Obergrenze''' („bis zu n") und keine feste Zahl: Wie breit sein Fenster wird, hängt an der Lage des Grob-Optimums, und die steht vor dem Lauf nicht fest. Geprüft wird gegen den größtmöglichen Fall – damit ein zu großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
+
+==== Phase 2: das Feinraster ====
+{{Anker|auslegung-feinraster}}
+
+Ein Raster findet nur, was auf seinen Stützstellen liegt. Deshalb rechnet die Suche danach eine '''zweite Phase''': ein engeres Raster '''um den besten Grobpunkt''' – und zwar '''nur auf der Größenachse'''. Die zweite Achse (etwa die C-Rate), die Stückzahl und das Betriebsziel bleiben beim Wert des Grob-Optimums.
+
+* Das Fenster reicht eine '''Grobschrittweite''' nach beiden Seiten, wird an den eingegebenen Grenzen '''gekappt''' (ein Optimum am Rand bekommt deshalb ein einseitiges Feinraster) und ist mindestens 1 kWh breit.
+* Gerechnet wird in Schritten von '''einem Neuntel''' der Grobschrittweite.
+* '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der Grobpunkt der Beste – der liegt auf einer Stützstelle, die Sie selbst gesetzt haben.
+
+Der Schalter ist '''vorbelegt an''' und wird mit dem Profil gespeichert. Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt; der Rechenweg steht auf ''[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung/Stromspeicher]]'' im Abschnitt ''Rastersuche''.
+
+==== Der Lauf ====
+{{Anker|auslegung-lauf}}
 
 '''Die Vorprüfung steht über der Ablaufleiste''' und läuft schon vor dem Start. Sie '''sperrt nicht''', sie warnt – der Lauf startet trotzdem:
 
@@ -201,10 +274,50 @@ Neben jeder Meldung steht '''„erklären lassen"''', sofern der Hilfe-Assistent
 
 Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusammenpasst, oder eine Projektlaufzeit von null Jahren machen den Lauf '''unmöglich'''. Solche Meldungen sperren den Rechenknopf.
 
-Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer). '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen.
+'''Steht mehr als ein Hinweis an''', fasst die Ansicht sie zu einem aufklappbaren Block ''„n Hinweise"'' zusammen – je eine Zeile mit Symbol statt je ein eigenes Band, damit die Leiste nicht unter den Meldungen verschwindet. Der Block ist zu Beginn offen.
+
+Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
+
+==== Bestes Ergebnis ====
+{{Anker|auslegung-bestes}}
+
+Nach dem Lauf steht der Kasten '''„Bestes Ergebnis"''' mit drei Karten:
+
+{| class="wikitable"
+! Karte !! Was darin steht
+|-
+| '''Kapitalwert gegenüber „ohne Speicher"''' || der Zielwert der Suche in €, darunter die '''jährliche Ersparnis''' in €/a
+|-
+| '''Kapazität · C-Rate · Leistung''' || die Größe des besten Kandidaten, darunter die Zahl der Einheiten
+|-
+| '''Geprüft''' || wie viele Kandidaten gerechnet wurden, davon wie viele '''zulässig''' waren, und die '''gemessene''' Rechendauer
+|}
+
+Neben der Überschrift steht die '''Marke''', aus welcher Phase der beste Kandidat stammt: ''Grobraster'' oder ''Feinraster''.
+
+'''Der Kapitalwert ist das Ziel, die jährliche Ersparnis steht daneben.''' Wer aus einer Tabellenkalkulation kommt, sucht oft den Jahresüberschuss nach Kapitaldienst – der ist hier die zweite Zahl derselben Karte; optimiert wird gegen den Kapitalwert, weil er Laufzeit und Zins enthält.
+
+Wurde noch nichts gerechnet, steht dort ''„Noch keine Suche gerechnet."''
+
+==== Ergebnisse über der Speichergröße ====
+{{Anker|auslegung-groessen}}
+
+Nach einer '''Rastersuche''' steht unter dem Kasten „Bestes Ergebnis" die Größen-Sicht:
+
+* die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
+* die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums. '''Punkte aus dem Feinraster''' zeichnet die Kurve kleiner und in einer eigenen Farbe – sie liegen zwischen den Stützstellen des Grobrasters;
+* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
+
+'''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
+
+'''Die Achsen folgen der Größenkopplung''' aus dem Suchraum: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
+
+'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird.
 
 === Schritt 5 — Ergebnis ===
 {{Anker|auslegung-ergebnis}}
+
+'''Schritt 5 bewertet EINE Bestückung''' – die eingestellte oder die beste gefundene. Welche es ist, sagt eine Zeile über den Kacheln: ''Gezeigt wird die Bewertung von: …''. Das '''Raster''' selbst steht seit dem 11.09.2026 in Schritt 4, bei der Suche, aus der es stammt.
 
 Von oben nach unten:
 
@@ -214,7 +327,6 @@ Von oben nach unten:
 # '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
 # '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf.
 # '''Kennzahlen je Einheit''' – Lade- und Entladeenergie, Vollzyklen, Anfangs- und Endenergie, Rainflow-Zyklen und Schaden.
-# '''Ergebnisse über der Speichergröße''' – nur nach einer Rastersuche (siehe unten).
 # '''Diagramme''' – siehe unten.
 
 '''Die Diagramme''' tragen über jedem Bild dieselbe Steuerung: den Schalter '''„sortiert"''' (Dauerlinie), '''je Reihe einen Schalter''' mit derselben Beschriftung wie die Legende, die '''Zeitraumwahl Jahr / Woche / Tag''' mit Vor- und Zurückschaltern und den '''Datenzoom''' durch Ziehen im Bild. Die Reihen gibt es je Einheit ''und'' als „Speicher gesamt"; der '''Ladezustand''' einer wählbaren Einheit steht als zweite Achse im Netzbild. Vorgabe ist die '''Woche''' – ein ganzes Jahr im Viertelstundenraster legt vierzig Werte auf einen Bildpunkt und zeigt keinen einzigen Ladezyklus.
@@ -239,21 +351,6 @@ Dazu bietet es die passende Abhilfe an:
 * '''„erklären lassen"''' – der Hilfe-Assistent mit einer vorbereiteten Frage zu genau diesem Befund.
 
 Ein Knopf erscheint nur, wenn seine Abhilfe an dieser Stelle überhaupt möglich ist.
-
-==== Ergebnisse über der Speichergröße ====
-{{Anker|auslegung-groessen}}
-
-Nach einer '''Rastersuche''' steht vor der Kandidatentabelle die Größen-Sicht:
-
-* die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
-* die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
-* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
-
-'''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
-
-'''Die Achsen folgen der Größenkopplung''' der Suchachse aus Schritt 1: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
-
-'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird.
 
 === Beim Verlassen ===
 {{Anker|auslegung-verlassen}}

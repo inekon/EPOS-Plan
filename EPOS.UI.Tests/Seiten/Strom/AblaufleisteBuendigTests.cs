@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Bunit;
@@ -60,10 +60,12 @@ public sealed class AblaufleisteBuendigTests : EposBunitContext
         // Fünf Stationen in EINER Reihe — kein zweiter Wirt schiebt die Kompakt-Klasse mit.
         Assert.Empty(cut.FindAll("nav.epos-ablaufleiste--kompakt"));
 
-        // Vier Blaetter (1 Speicher, 2 Daten & Kosten, 3 Betriebsfuehrung, 5 Ergebnis)
-        // und EIN Rechenknopf (4) — zusammen die fuenf Stationen aus dem Bildschirmfoto.
-        Assert.Equal(4, cut.FindAll("nav.epos-ablaufleiste--buendig button.epos-ablaufleiste-knopf").Count);
-        Assert.Single(cut.FindAll("nav.epos-ablaufleiste--buendig button.epos-ablaufleiste-rechnen"));
+        // SEIT AUFTRAG #224 sind es FUENF BLAETTER und KEIN Aktionsplatz (SD-E-9,
+        // Option A): Station 4 ist die Seite „Optimierung", ihr Rechenknopf steht in
+        // ihr. Jede Station traegt ihren nummerierten Kreis (Konzept 7.8).
+        Assert.Equal(5, cut.FindAll("nav.epos-ablaufleiste--buendig button.epos-ablaufleiste-knopf").Count);
+        Assert.Empty(cut.FindAll("nav.epos-ablaufleiste--buendig button.epos-ablaufleiste-rechnen"));
+        Assert.Equal(5, cut.FindAll("nav.epos-ablaufleiste--buendig span.epos-ablaufleiste-stufe").Count);
     }
 
     // =====================================================================

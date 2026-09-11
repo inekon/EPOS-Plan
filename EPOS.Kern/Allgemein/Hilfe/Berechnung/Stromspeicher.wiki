@@ -162,7 +162,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>w_j</math> || Grenzverschleiß je abgegebener AC-Kilowattstunde — Entscheidungspreis, keine Auszahlung || €/kWh || Flotteneditor
 |-
-| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (49) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (47)
+| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (52) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (50)
 |-
 | <math>G_{\mathrm{imp}}</math>, <math>G_{\mathrm{exp}}</math> || '''harte''' technische Anschlussgrenzen für Bezug und Einspeisung || kW || Flotteneditor; eine verbleibende Überschreitung macht die Variante unzulässig
 |-
@@ -286,11 +286,11 @@ Größen, die der Lauf je Intervall oder je Lauf bildet.
 |-
 | <math>\mathrm{NPV}_{\mathrm{F}}</math> || Kapitalwert der Flotte gegenüber „ohne Speicher" || € || (45)
 |-
-| <math>D(k)</math> || verfügbare Entladeleistung der ganzen Flotte im Intervall || kW || (48)
+| <math>D(k)</math> || verfügbare Entladeleistung der ganzen Flotte im Intervall || kW || (51)
 |-
-| <math>H(k)</math> || geltende Entladeschwelle der '''Ratsche''' — sie kann im Lauf nur steigen || kW || (49)
+| <math>H(k)</math> || geltende Entladeschwelle der '''Ratsche''' — sie kann im Lauf nur steigen || kW || (52)
 |-
-| <math>H_{\mathrm{end}}</math> || kausal erreichte Schwelle am Ende des Laufs || kW || (50)
+| <math>H_{\mathrm{end}}</math> || kausal erreichte Schwelle am Ende des Laufs || kW || (53)
 |}
 
 == Rechenweg ==
@@ -893,6 +893,47 @@ Null-Empfehlung.
 kann ein besserer Punkt liegen, den niemand gerechnet hat. Der Hinweis steht deshalb '''im Bild''' der
 Rasterkarte — das Bild wird exportiert, der Text daneben nicht.
 
+==== Phase 2: das Feinraster um das Grob-Optimum ====
+
+Genau gegen diesen Vorbehalt läuft die '''zweite Phase''': Nach dem Grobraster wird um seinen besten
+Punkt ein zweites, engeres Raster gerechnet — '''nur auf der Größenachse''' (Kapazität; bei der
+Kopplung „Leistung und C-Rate" die Leistung). Die zweite Achse, die Stückzahl und das Betriebsziel
+bleiben beim Wert des Grob-Optimums; die C-Rate ändert oberhalb von etwa 1,0 C nichts mehr, eine
+Verfeinerung dort kostete Kandidaten ohne Erkenntnis.
+
+: <math>\displaystyle u = \max(E_{\min},\; E^{*} - \Delta E)</math> &nbsp;&nbsp;(47)
+:: <math>u</math> – untere Grenze des Feinrasterfensters [kWh bzw. kW]
+:: <math>E^{*}</math> – Größe des Grob-Optimums [kWh bzw. kW]
+:: <math>\Delta E</math> – Schrittweite des Grobrasters auf dieser Achse [kWh bzw. kW]
+:: <math>E_{\min}</math> – untere Grenze des Suchraums, vom Anwender gesetzt [kWh bzw. kW]
+
+: <math>\displaystyle o = \min(E_{\max},\; E^{*} + \Delta E)</math> &nbsp;&nbsp;(48)
+:: <math>o</math> – obere Grenze des Feinrasterfensters [kWh bzw. kW]
+:: <math>E_{\max}</math> – obere Grenze des Suchraums, vom Anwender gesetzt [kWh bzw. kW]
+
+: <math>\displaystyle \Delta E_{\text{fein}} = \frac{\Delta E}{9}</math> &nbsp;&nbsp;(49)
+:: <math>\Delta E_{\text{fein}}</math> – Schrittweite des Feinrasters auf dieser Achse [kWh bzw. kW]
+
+Ist das Fenster schmaler als '''1 kWh''', wird es auf 1 kWh aufgeweitet. Die '''Klemmung''' auf
+<math>[E_{\min}, E_{\max}]</math> ist der Grund, warum ein Grob-Optimum am Rand ein '''einseitiges'''
+Feinraster bekommt: Die Suche läuft nicht über die gesetzten Grenzen hinaus.
+
+Drei Regeln gelten für die zweite Phase:
+
+* '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der
+  Grobpunkt der Beste — der Punkt, der ohnehin auf einer Stützstelle liegt, die der Anwender selbst
+  gesetzt hat.
+* '''Die Kandidatengrenze zählt beide Phasen.''' Vor dem Lauf steht nur die Obergrenze des
+  Feinrasters fest (sie hängt an der Lage des Grob-Optimums); geprüft wird gegen sie, damit ein zu
+  großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
+* '''Jeder Kandidat trägt seine Phase.''' Die Kandidatentabelle und die Schnittkurve unterscheiden
+  Grob- und Feinpunkte; ein Feinpunkt liegt zwischen den Stützstellen des Grobrasters und hat
+  deshalb keine Stelle im Grobgitter.
+
+Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt (Grobraster 10 × 6, danach
+zehn Stützstellen im Fenster einer Grobschrittweite), und dieselbe, die der Einzelspeicher-Optimierer
+seit jeher fährt.
+
 === Diagnose „arbeitslose Flotte" ===
 
 Eine Flotte kann ein ganzes Jahr rechnen, ohne ein einziges Mal zu laden oder zu entladen. Das
@@ -926,7 +967,7 @@ unteren Marke. Jede einzelne wäre erklärbar, zusammen ergeben sie eine Flotte,
 
 === Peak-Ziel: Vorschlag und Bestimmung ===
 
-: <math>\displaystyle H_0 = \max\left( P_{\mathrm{ref}} - \sum_{j=1}^{m} P_{\mathrm{d},j} , \max_{\mathrm{Tag}} \min_{k \in \mathrm{Tag}} n(k) \right)</math> &nbsp;&nbsp;(47)
+: <math>\displaystyle H_0 = \max\left( P_{\mathrm{ref}} - \sum_{j=1}^{m} P_{\mathrm{d},j} , \max_{\mathrm{Tag}} \min_{k \in \mathrm{Tag}} n(k) \right)</math> &nbsp;&nbsp;(50)
 :: <math>H_0</math> – vorgeschlagenes Peak-Ziel [kW]
 :: <math>P_{\mathrm{ref}}</math> – Bezugsspitze der Referenz ohne Speicher [kW]
 :: <math>P_{\mathrm{d},j}</math> – Entladeleistung der Einheit [kW]
@@ -972,7 +1013,7 @@ ob die Flotte die anstehende Netzlast überhaupt bis auf <math>H</math> drücken
 sie es nicht, wird <math>H</math> auf das Erreichbare nachgezogen. Erst danach gilt die Regel aus
 (33) und (34) unverändert — mit dem nachgezogenen <math>H</math>.
 
-: <math>\displaystyle D(k) = \sum_{j=1}^{m} \min\left( P_{\mathrm{d},j} \cdot v_j(k) , \frac{\left( E_j(k) - E_{\mathrm{min},j} \right) \cdot \eta_{\mathrm{dis},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(48)
+: <math>\displaystyle D(k) = \sum_{j=1}^{m} \min\left( P_{\mathrm{d},j} \cdot v_j(k) , \frac{\left( E_j(k) - E_{\mathrm{min},j} \right) \cdot \eta_{\mathrm{dis},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(51)
 :: <math>D(k)</math> – verfügbare Entladeleistung der ganzen Flotte im Intervall [kW]
 :: <math>P_{\mathrm{d},j}</math> – höchste Entladeleistung der Einheit [kW]
 :: <math>v_j(k)</math> – Verfügbarkeitsfaktor der Einheit, 0…1 [–]
@@ -981,12 +1022,12 @@ sie es nicht, wird <math>H</math> auf das Erreichbare nachgezogen. Erst danach g
 :: <math>\eta_{\mathrm{dis},j}</math> – Entladewirkungsgrad der Einheit [–]
 :: <math>\Delta t</math> – Länge des Intervalls, 0,25 [h]
 
-: <math>\displaystyle H(k) = \max\left( H(k-1) , n(k) - D(k) \right) , \quad H(0) = H_{\mathrm{start}}</math> &nbsp;&nbsp;(49)
+: <math>\displaystyle H(k) = \max\left( H(k-1) , n(k) - D(k) \right) , \quad H(0) = H_{\mathrm{start}}</math> &nbsp;&nbsp;(52)
 :: <math>H(k)</math> – die in diesem Intervall geltende Entladeschwelle [kW]
 :: <math>H(k-1)</math> – die Schwelle des vorigen Intervalls [kW]
 :: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
-:: <math>D(k)</math> – verfügbare Entladeleistung aus (48) [kW]
-:: <math>H_{\mathrm{start}}</math> – Startwert der Ratsche; Vorgabe ist die Grundlast, das Maximum der Tagesminima aus (47) [kW]
+:: <math>D(k)</math> – verfügbare Entladeleistung aus (51) [kW]
+:: <math>H_{\mathrm{start}}</math> – Startwert der Ratsche; Vorgabe ist die Grundlast, das Maximum der Tagesminima aus (50) [kW]
 
 <math>D(k)</math> ist '''genau''' die Entladegrenze der Ausführung — Leistung mal Verfügbarkeit,
 nutzbare Energie über der unteren Marke, Entladewirkungsgrad. Die '''Peak-Reserve''' ist bei
@@ -994,12 +1035,12 @@ nutzbare Energie über der unteren Marke, Entladewirkungsgrad. Die '''Peak-Reser
 untere Marke ist dort <math>E_{\mathrm{min},j}</math> und nicht die um die Reserve angehobene
 Untergrenze aus (27).
 
-: <math>\displaystyle M^{*} \le H_{\mathrm{end}} = H(K)</math> &nbsp;&nbsp;(50)
+: <math>\displaystyle M^{*} \le H_{\mathrm{end}} = H(K)</math> &nbsp;&nbsp;(53)
 :: <math>M^{*}</math> – kleinstes FESTES Ziel, das ein Jahr mit vollem Wissen gehalten wird (Bisektion) [kW]
 :: <math>H_{\mathrm{end}}</math> – die kausal erreichte Schwelle am Ende des Laufs [kW]
 :: <math>K</math> – Zahl der Intervalle des Rechenzeitraums [–]
 
-(50) gilt immer, und zwar aus einem einfachen Grund: Ein festes <math>M^{*}</math> ab dem ersten
+(53) gilt immer, und zwar aus einem einfachen Grund: Ein festes <math>M^{*}</math> ab dem ersten
 Intervall entlädt in jedem Intervall höchstens so viel wie die Ratsche — deren Schwelle liegt
 nie über <math>M^{*}</math>, solange sie nicht scheitert — und lädt mindestens so viel; sein
 Ladezustand liegt deshalb nie unter dem der Ratsche, und was <math>M^{*}</math> hält, hält sie
@@ -1016,9 +1057,9 @@ Jahresspitze nicht mehr senken. Sie ist das Verhalten eines realen Reglers ohne 
 |-
 | Bedeutung der eingegebenen Zahl || '''Startwert''' <math>H_{\mathrm{start}}</math> der Schwelle || das Ziel des ganzen Zeitraums
 |-
-| Vorgabe im Feld || die '''Grundlast''' (Maximum der Tagesminima) || der Vorschlag <math>H_0</math> nach (47)
+| Vorgabe im Feld || die '''Grundlast''' (Maximum der Tagesminima) || der Vorschlag <math>H_0</math> nach (50)
 |-
-| Schwelle im Lauf || steigt nach (49), wenn <math>n(k) - D(k) > H</math> || bleibt
+| Schwelle im Lauf || steigt nach (52), wenn <math>n(k) - D(k) > H</math> || bleibt
 |-
 | Ergebnis || <math>H_{\mathrm{end}}</math> — „kausal erreicht“ || die Bezugsspitze wird gegen <math>H</math> gehalten
 |-

@@ -2588,6 +2588,18 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public static readonly SKColor C_RASTER_LOCH = new SKColor(0xF2, 0xF2, 0xF2);
 
+        /// <summary>
+        /// Die Punkte der ZWEITEN Phase einer Rastersuche (Auftrag #224) — Bernstein.
+        /// </summary>
+        /// <remarks>
+        /// Die Mappe V7 zeichnet Grob- und Feinraster als zwei Punktreihen; das Bild soll
+        /// dieselbe Frage beantworten — „wo ist grob gerastert, wo ist nachgeschaerft?".
+        /// Der Farbunterschied zu <see cref="C_STAMM"/> ist gross genug, um auch in
+        /// Graustufen zu tragen (Helligkeit 0x8A gegen 0x4E), und die Feinpunkte werden
+        /// zusaetzlich KLEINER gezeichnet: Farbe allein traegt keine Aussage.
+        /// </remarks>
+        public static readonly SKColor C_FEINRASTER = new SKColor(0xE0, 0x8A, 0x00);
+
         /// <summary>Stufen der Farbskala rechts. UNGERADE, damit die Mitte exakt Gold trifft.</summary>
         private const int FARBSKALA_STUFEN = 21;
 
@@ -2907,10 +2919,17 @@ namespace WindowsFormsApplication1
         /// <param name="werte">Die Zielfunktionswerte [€/a] dazu.</param>
         /// <param name="optimumKwh">Kapazität des Optimums; wird als Kreis markiert.</param>
         /// <param name="optimumEur">Zielfunktionswert des Optimums.</param>
+        /// <param name="feinpunkte">
+        /// Je Stützstelle: Sie stammt aus der ZWEITEN Phase der Rastersuche (Auftrag
+        /// #224). Ein Feinpunkt wird in <see cref="C_FEINRASTER"/> und kleiner
+        /// gezeichnet. <c>null</c> — der Regelfall vor #224 — lässt das Bild
+        /// byte-gleich.
+        /// </param>
         public static byte[] Schnittkurve(string titel, string xTitel, string yTitel,
                                           IReadOnlyList<double> kapazitaetenKwh,
                                           IReadOnlyList<double> werte,
-                                          double optimumKwh, double optimumEur)
+                                          double optimumKwh, double optimumEur,
+                                          IReadOnlyList<bool> feinpunkte = null)
         {
             int W = 720, H = 460;
             using (var flaeche = Start(W, H))
@@ -2923,12 +2942,14 @@ namespace WindowsFormsApplication1
                 int n = Math.Min(kapazitaetenKwh?.Count ?? 0, werte?.Count ?? 0);
                 var xw = new List<double>();
                 var yw = new List<double>();
+                var fein = new List<bool>();
                 for (int i = 0; i < n; i++)
                 {
                     double x = kapazitaetenKwh[i], y = werte[i];
                     if (double.IsNaN(x) || double.IsInfinity(x)) continue;
                     if (double.IsNaN(y) || double.IsInfinity(y)) continue;
                     xw.Add(x); yw.Add(y);
+                    fein.Add(feinpunkte != null && i < feinpunkte.Count && feinpunkte[i]);
                 }
 
                 if (xw.Count < 2)
@@ -2998,7 +3019,10 @@ namespace WindowsFormsApplication1
                     Linienzug(g, punkte, stift);
                 }
                 using (var b = Fuellung(C_STAMM))
-                    foreach (SKPoint p in punkte) g.DrawCircle(p.X, p.Y, 3.5f, b);
+                using (var bFein = Fuellung(C_FEINRASTER))
+                    for (int i = 0; i < punkte.Length; i++)
+                        if (fein[i]) g.DrawCircle(punkte[i].X, punkte[i].Y, 2.5f, bFein);
+                        else g.DrawCircle(punkte[i].X, punkte[i].Y, 3.5f, b);
 
                 if (!double.IsNaN(optimumKwh) && !double.IsInfinity(optimumKwh)
                     && !double.IsNaN(optimumEur) && !double.IsInfinity(optimumEur))

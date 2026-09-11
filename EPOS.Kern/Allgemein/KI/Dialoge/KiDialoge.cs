@@ -397,6 +397,11 @@ namespace WindowsFormsApplication1
                 anzeigename: KiDialogTexte.MaskeSpeicherauslegung,
                 felder: new[]
                 {
+                    // ---- Wo der Anwender steht (Auftrag #224) -----------------------
+                    new KiDialogFeld("schritt", "StromspeicherKiSicht.Schritt",
+                                     KiDialogTexte.SpaSchrittName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaSchrittErl, leerErlaubt: true),
+
                     // ---- Die Flotte -------------------------------------------------
                     new KiDialogFeld("einheiten", "StromspeicherKiSicht.Einheitenzahl",
                                      KiDialogTexte.SpaEinheitenName, KiParameterTyp.Ganzzahl,
@@ -440,6 +445,37 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SpaReserveName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SpaReserveErl,
                                      einheit: KiDialogTexte.EINHEIT_KWH),
+
+                    // ---- Station 4 „Optimierung" (Auftrag #224) ---------------------
+                    new KiDialogFeld("groessen_optimieren", "StromspeicherKiSicht.GroessenOptimieren",
+                                     KiDialogTexte.SpaSucheName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaSucheErl),
+                    new KiDialogFeld("feinraster", "StromspeicherKiSicht.Feinraster",
+                                     KiDialogTexte.SpaFeinrasterName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaFeinrasterErl),
+                    new KiDialogFeld("maximale_kandidaten", "StromspeicherKiSicht.MaximaleKandidaten",
+                                     KiDialogTexte.SpaMaxKandidatenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SpaMaxKandidatenErl),
+                    new KiDialogFeld("kandidatenzahl", "StromspeicherKiSicht.Kandidatenzahl",
+                                     KiDialogTexte.SpaKandidatenzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SpaKandidatenzahlErl),
+
+                    // ---- Das beste Ergebnis der Suche (nur lesend) ------------------
+                    new KiDialogFeld("bestes_kapitalwert", "StromspeicherKiSicht.BesterKapitalwertEuro",
+                                     KiDialogTexte.SpaBestwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaBestwertErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("bestes_kapazitaet", "StromspeicherKiSicht.BesteKapazitaetKWh",
+                                     KiDialogTexte.SpaBestkapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaBestkapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("bestes_ersparnis", "StromspeicherKiSicht.BesteErsparnisEuroJahr",
+                                     KiDialogTexte.SpaBestersparnisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaBestersparnisErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("bestes_phase", "StromspeicherKiSicht.BestePhase",
+                                     KiDialogTexte.SpaBestphaseName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaBestphaseErl, leerErlaubt: true),
 
                     // ---- Die Diagnose (nur lesend) ----------------------------------
                     new KiDialogFeld("diagnose_arbeitslos", "StromspeicherKiSicht.Arbeitslos",
