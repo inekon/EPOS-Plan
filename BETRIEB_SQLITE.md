@@ -122,6 +122,14 @@ Solange EPOS-Plan läuft, ist der **aktuelle Datenstand die Summe aus `.sqlite` 
 
 ## 3. Sicherung
 
+Gesichert wird immer die **ganze Datei**: Kataloge und Projektdaten stehen in derselben
+`Kenndaten.sqlite`, und dazu gehören seit Schemastand 73 auch die gespeicherten
+Speicherauslegungsprofile in `Tab_SpeicherAuslegung` (Kostensätze, Suchbereiche und die
+zugeordneten CSV-Zeitreihen als Projektdaten, mit `ON DELETE CASCADE` am Projekt und an der
+Energieanlage). Einen getrennten Export einzelner Tabellen gibt es nicht — wer ein Profil
+retten will, sichert die Datei. Dasselbe gilt umgekehrt für Abschnitt 8: Wer eine ältere
+Sicherung zurücklegt, nimmt den Auslegungsstand von damals mit.
+
 ### 3.1 Anwendung geschlossen — Dateikopie genügt
 
 Das ist der Normalfall und der einfachste Weg:
