@@ -24,6 +24,19 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
+    <!-- Programmsymbol (Auftrag #229, Anwenderwunsch 11.09.2026: "nehme das
+         EPOS-ICON als Programm-Symbol"). Die EINE Quelle: die EPOS-Plan-Marke
+         (Variante C, drei Farbfelder, weisser Kern, Blitz - dieselbe wie in
+         EPOS.UI/Bausteine/InfoKnopf.razor/KiKnopf.razor), als mehrstufiges ICO
+         (16/24/32/48/64/128/256, PNG-komprimiert) unter Resources/EPOS-Plan.ico.
+         Setup/EPOS-Plan.iss nutzt dieselbe Datei fuer SetupIconFile - eine
+         Quelle, kein zweites Bild, das auseinanderlaufen koennte. Ein Fenster
+         bekommt das Symbol trotzdem nicht von selbst (Form.Icon faellt ohne
+         eigene Zuweisung auf das .NET-Standardsymbol zurueck) - dafuer laedt
+         Allgemein/Programmsymbol.cs es aus der laufenden EXE und jede Huelle
+         ruft Programmsymbol.Anwenden(this) in ihrem Konstruktor. -->
+    <ApplicationIcon>Resources\EPOS-Plan.ico</ApplicationIcon>
+
     <RootNamespace>WindowsFormsApplication1</RootNamespace>
     <!-- Umbenennung Stufe 0 (Anwenderauftrag 29.08.2026): Die Anwendung heisst
          nach aussen EPOS_Plan - EXE, DLL und Prozessname. Der RootNamespace

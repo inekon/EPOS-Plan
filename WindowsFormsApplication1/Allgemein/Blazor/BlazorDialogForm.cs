@@ -101,6 +101,12 @@ namespace WindowsFormsApplication1
             ClientSize = Vorgabemass(groesse, art);
             BackColor = Themaflaeche;
 
+            // Programmsymbol (Auftrag #229): die EINE Form-Unterklasse aller
+            // Blazor-Dialoge - ein Aufruf hier gibt jedem, auch KiChatHuelle
+            // (baut intern eine BlazorDialogForm<KiChatDialog>), das Symbol der
+            // EXE statt des .NET-Standardsymbols.
+            Programmsymbol.Anwenden(this);
+
             _web = new BlazorWebView
             {
                 Dock = DockStyle.Fill,

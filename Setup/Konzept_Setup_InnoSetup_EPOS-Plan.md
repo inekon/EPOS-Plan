@@ -574,7 +574,7 @@ Weitere macht die Anwendung, die den Schema- und Lizenzzustand kennt.
 | 7.3 | `AssemblyName` von `WindowsFormsApplication1` auf `EPOS-Plan` | empfohlen | 0,5 PT + Regressionsprobe |
 | 7.4 | Benannter Mutex `Global\EPOS-Plan` beim Start | empfohlen | 0,25 PT |
 | 7.5 | Versionsnummer in `Properties\AssemblyInfo.cs` pflegen | **Pflicht** | — |
-| 7.6 | `<ApplicationIcon>` im Projekt setzen | empfohlen | 0,1 PT |
+| 7.6 | `<ApplicationIcon>` im Projekt setzen | **erledigt** (Auftrag #229, 11.09.2026 — `WindowsFormsApplication1/Resources/EPOS-Plan.ico`, dieselbe Datei nutzt `SetupIconFile`) | 0,1 PT |
 | 7.7 | `Settings.Default.Upgrade()` beim Versionswechsel — **prüfen, ob vorhanden** | zu klären | 0,25 PT |
 
 **7.3 Assembly- und Dateiname.** Die ausführbare Datei heißt heute
@@ -615,7 +615,6 @@ Aufruf vorhanden ist, wurde nicht geprüft; er gehört mit in dieselbe Runde wie
 Setup\
   EPOS-Plan.iss                        Setup-Skript (versioniert)
   build-setup.ps1                      Veröffentlichen + Übersetzen
-  EPOS-Plan.ico                        aus Resources\wpplan.ico ableiten
   Lizenz.rtf                           Lizenzvereinbarung
   Liesmich.rtf                         Neuerungen, ACE-Supportfall, DB-Übernahme
   Vorlage\Kenndaten.accdb              Auslieferungsstand (NICHT versionieren)
@@ -629,6 +628,11 @@ Setup\
 
 Nach `.gitignore`: `Setup/Ausgabe/`, `Setup/Vorlage/*.accdb`,
 `Setup/Voraussetzungen/*.exe`, `artifacts/`.
+
+Seit Auftrag #229 (11.09.2026) gibt es kein eigenes `Setup\EPOS-Plan.ico` mehr: `SetupIconFile`
+nimmt dieselbe Datei wie das `<ApplicationIcon>` der Anwendung,
+`WindowsFormsApplication1\Resources\EPOS-Plan.ico` (die EPOS-Plan-Marke, nicht mehr das alte
+`wpplan.ico`) — eine Quelle für Installer-, Programm- und Fenstersymbol.
 
 Ein Durchlauf:
 

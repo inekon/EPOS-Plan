@@ -32,6 +32,11 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
 
+            // Programmsymbol (Auftrag #229) — die letzte WinForms-Fachmaske neben
+            // dem Hauptfensterrahmen traegt seither ebenfalls das EPOS-Symbol
+            // statt des .NET-Standardsymbols.
+            Programmsymbol.Anwenden(this);
+
             this.TopMost = true;
             this.FormBorderStyle = FormBorderStyle.None; // Falls nicht schon im Designer gesetzt
 

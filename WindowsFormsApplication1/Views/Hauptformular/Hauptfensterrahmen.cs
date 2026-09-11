@@ -73,6 +73,11 @@ namespace WindowsFormsApplication1
             StartPosition = FormStartPosition.CenterScreen;
             Text = PRODUKTNAME;
 
+            // Programmsymbol (Auftrag #229): DAS Fenster der Taskleiste und des
+            // Alt-Tab-Wechslers — ohne diese Zeile zeigt es das .NET-Standardsymbol,
+            // obwohl die EXE seit demselben Auftrag ihr eigenes ApplicationIcon traegt.
+            Programmsymbol.Anwenden(this);
+
             // F1 auch unabhängig vom Menü: Die WebView fängt die Taste nicht ab,
             // und der Menüpunkt allein wäre in einer Razor-Oberfläche kein
             // Tastenkürzel mehr (im Bestand InitKiHilfe :357-374).
