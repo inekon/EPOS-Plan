@@ -810,6 +810,9 @@ Fassung 5 Revision 541, vermerkt in `Projekte/Konzept_Stromspeicher_Dialoge_EPOS
 **#201** (`Hilfe-Assistent` Revision 542 — Abschnitt „Der Assistent setzt Felder und rechnet" mit
 Anker `setzen-und-rechnen`, Absatz zum Schalter „Feldwerte mitsenden"; Diff 22+/3− gegen Revision 539,
 byte-gleich zur Repo-Quelle, keine Parse-Fehler).
+Dazu **#215** (`Berechnung/Stromspeicher` **Fassung 6** Revision 543 — Abschnitt zur kausalen Ratsche mit Anker
+`peak-ratsche`, Gleichungen 48–50, 515 gerenderte Formeln; `Stromspeicher` Revision 544 — Schritt 3 und 5; beide
+byte-gleich, keine Parse-Fehler).
 
 **Die dritte Seite kam am 11.09.2026 mit Auftrag #207 dazu** — `Programm Dokumentation/Simulation`.
 Sie hatte bis dahin KEINE Repo-Quelle; angelegt wurde sie nach Regel 3 aus dem gelesenen
