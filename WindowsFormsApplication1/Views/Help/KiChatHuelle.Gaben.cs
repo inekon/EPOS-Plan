@@ -43,6 +43,10 @@ namespace WindowsFormsApplication1
                 ["Dialogname"] = _aufruf.Dialogname ?? "",
                 ["Kennung"] = _aufruf.Kennung ?? "",
                 ["Vorbelegung"] = _aufruf.Frage ?? "",
+                // Auftrag #227: nicht leer heisst "aus einem Dialog/einer Ansicht
+                // gerufen" - daran haengt die STARTZEILE des Chats, der Menueweg
+                // "Hilfe > Assistent" bringt keinen Hilfeschluessel mit.
+                ["Hilfeschluessel"] = _aufruf.Hilfeschluessel ?? "",
                 ["HilfeBetrieb"] = _hilfeBetrieb,
                 ["Eingerichtet"] = KiChatService.IstEingerichtet,
                 ["AnfragenHeute"] = KiChatService.AnfragenHeute,
@@ -653,7 +657,15 @@ namespace WindowsFormsApplication1
                 LaufLaeuft = MyResource.Resource.KI_LAUF_LAEUFT,
                 LaufAbbruch = MyResource.Resource.KI_LAUF_ABBRUCH,
                 LaufFertig = MyResource.Resource.KI_LAUF_FERTIG,
-                LaufAbgebrochen = MyResource.Resource.KI_LAUF_ABGEBROCHEN
+                LaufAbgebrochen = MyResource.Resource.KI_LAUF_ABGEBROCHEN,
+
+                // ---- Die Startzeile (Auftrag #227) -----------------------------
+                StartzeileErklaeren = MyResource.Resource.KI_CHAT_STARTZEILE_ERKLAEREN,
+                StartzeileMoeglich = MyResource.Resource.KI_CHAT_STARTZEILE_MOEGLICH,
+                StartzeileFrageErklaerenFormat = MyResource.Resource.KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN,
+                StartzeileFrageMoeglichFormat = MyResource.Resource.KI_CHAT_STARTZEILE_FRAGE_MOEGLICH,
+                StartzeileBildschirm = MyResource.Resource.KI_CHAT_STARTZEILE_BILDSCHIRM,
+                StartzeileGesperrt = MyResource.Resource.KI_CHAT_STARTZEILE_GESPERRT
             };
         }
 

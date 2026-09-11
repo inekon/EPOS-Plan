@@ -2,7 +2,8 @@
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
      Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3;
      Auftrag #218 - die Hilfepille, Anwenderentscheid "KI-Knopf: Variante C + Variante D";
-     Auftrag #221 - eine Pille je Bildschirm, Anwenderentscheid KI-D-E-1)
+     Auftrag #221 - eine Pille je Bildschirm, Anwenderentscheid KI-D-E-1;
+     Auftrag #227 - die Startzeile, Anwenderhinweis 11.09.2026)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
 
@@ -43,6 +44,13 @@ Vier Masken führen ihn bewusst nicht: das Chatfenster selbst, seine Werkzeuglis
 Kommen Sie aus einer '''Ansicht mit mehreren Schritten''', nennt die Zeile auch die Stelle: „Simulation · 3 Ergebnis · Stromspeicher". Und für die Ansicht ''Simulation'' ist bereits eine Frage vorbereitet – Sie können sie abschicken oder überschreiben.
 
 Auf dem iPad wechselt das Programm dafür die Ansicht und kehrt anschließend dorthin zurück, woher Sie kamen.
+
+=== Die Startzeile: was Sie sofort fragen können ===
+{{Anker|startzeile}}
+
+Kommen Sie über die Marke aus einem Dialog oder einer Ansicht, steht über dem noch leeren Eingabefeld eine '''Startzeile''': links derselbe erkannte Bereich beziehungsweise Dialogname wie in der Kontextzeile, rechts zwei Knöpfe – '''„Aktuellen Dialog erklären"''' und '''„Was kann ich hier tun?"'''. Ein Klick schickt die passende Frage sofort als Ihre Nachricht ab: „Aktuellen Dialog erklären" stellt die für diese Ansicht vorbereitete Frage, wenn es eine gibt (wie für ''Simulation''), sonst eine allgemeine Erklärfrage mit dem Namen des Bildschirms; „Was kann ich hier tun?" stellt eine eigene, zweite Frage. Die Startzeile ist der Grund, warum die Marke „nicht einsichtig" wirkende Buttons erst zeigt, was sie können – sobald der Verlauf eine erste Nachricht führt, verschwindet sie. Über das Menü „Hilfe › Assistent" öffnet sich der Chat dagegen ohne Bildschirmbezug, und dort steht keine Startzeile.
+
+Ist noch kein Zugangsschlüssel hinterlegt, bleiben die beiden Knöpfe der Startzeile sichtbar, aber gesperrt – mit einem Hinweis, zuerst die '''Einstellungen…''' zu öffnen.
 
 === „Erklären lassen" an einer Meldung ===
 {{Anker|erklaeren-lassen}}

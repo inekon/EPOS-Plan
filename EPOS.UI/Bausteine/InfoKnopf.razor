@@ -69,7 +69,7 @@
     {
         <button type="button"
                 class="epos-kiknopf epos-hilfepille__feld @(Aktiv ? "epos-hilfepille__feld--aktiv" : "")"
-                tabindex="-1" title="@AssistentKurztext" aria-label="@AssistentKurztext"
+                tabindex="-1" title="@AssistentKurztextAktuell" aria-label="@AssistentKurztextAktuell"
                 @onmousedown:preventDefault="true" @onclick="AssistentGewaehlt">
             @if (Aktiv)
             {
@@ -125,6 +125,24 @@
     /// <summary>Kurztext des KI-Knopfes (<c>KI_KNOPF_DIALOG_TOOLTIP</c>).</summary>
     [Parameter] public string AssistentKurztext { get; set; } =
         Text("KI_KNOPF_DIALOG_TOOLTIP", "Diesen Dialog vom Hilfe-Assistenten erklären lassen");
+
+    /// <summary>
+    /// Der Kurztext, wie er tatsächlich am rechten Feld steht (Auftrag #227): trägt
+    /// den NAMEN des Bildschirms, sobald <see cref="Dialogname"/> gesetzt ist
+    /// („Simulation vom Hilfe-Assistenten erklären lassen") — sonst
+    /// <see cref="AssistentKurztext"/> unverändert.
+    /// </summary>
+    /// <remarks>
+    /// Wer die Pille drückt, soll schon am Tooltip sehen, dass der Assistent WEISS,
+    /// wo er steht — der Anwenderhinweis vom 11.09.2026 nannte genau das als Grund,
+    /// warum die beiden KI-Knöpfe „nicht einsichtig" seien.
+    /// </remarks>
+    private string AssistentKurztextAktuell => string.IsNullOrWhiteSpace(Dialogname)
+        ? AssistentKurztext
+        : string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        Text("KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME",
+                             "{0} vom Hilfe-Assistenten erklären lassen"),
+                        Dialogname);
 
     /// <summary>
     /// Steht die Ansicht <c>KI_ASSISTENT</c> gerade? Vorgabe <c>false</c>. Ein Wirt, der

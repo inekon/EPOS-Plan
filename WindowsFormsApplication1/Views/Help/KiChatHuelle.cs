@@ -187,13 +187,14 @@ namespace WindowsFormsApplication1
             try { s.Kontext(Kontextangabe()); } catch (Exception) { }
         }
 
-        /// <summary>Die vier Kontextangaben für die Komponente (Auftrag #199).</summary>
+        /// <summary>Die Kontextangaben für die Komponente (Auftrag #199, seit #227 fünf).</summary>
         private KiKontextangabe Kontextangabe()
         {
             return new KiKontextangabe(HilfeKontext.Beschreibung(),
                                        _aufruf.Dialogname ?? "",
                                        _aufruf.Kennung ?? "",
-                                       _aufruf.Frage ?? "");
+                                       _aufruf.Frage ?? "",
+                                       _aufruf.Hilfeschluessel ?? "");
         }
 
         // ==================================================================

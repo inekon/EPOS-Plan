@@ -121,6 +121,23 @@ desselben Hakens statt zur einzigen Quelle.
 **Ohne Einrichtung.** Der Knopf bleibt sichtbar; ohne API-Schlüssel oder ohne Einwilligung führt er in den
 `KiEinstellungenDialog` mit dem Hinweis, was fehlt (KI‑D‑Q1). Ein unsichtbarer Knopf wäre nicht erklärbar.
 
+**Die Startzeile (Auftrag #227, Anwenderhinweis 11.09.2026).** Der Knopf allein sagt nicht, WOZU er gut ist — der
+Anwender hat genau das bemängelt: „Es könnte im Hilfedialog ‚erkläre aktuellen Dialog' oder ähnliches stehen. Sonst
+sind die beiden KI Buttons nicht einsichtig." Öffnet sich `KiChatDialog` mit einem Aufrufkontext (der
+`Hilfeschluessel`-Parameter der Komponente ist gesetzt — beim Menüweg „Hilfe › Assistent" bleibt er leer, obwohl auch
+er einen `Bereich` mitbringt), zeigt der leere Verlauf über dem Eingabefeld eine STARTZEILE: links dieselbe
+Kontextzeile, rechts die zwei Knöpfe „Aktuellen Dialog erklären" und „Was kann ich hier tun?". Ein Klick schickt sofort
+eine Anwendernachricht ab — „Aktuellen Dialog erklären" die vorbereitete `KI_FRAGE_*` des Kontexts, wenn es eine gibt,
+sonst die neue, mit dem Bildschirmnamen formatierte Ressource `KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN`; „Was kann ich hier
+tun?" immer die zweite neue Ressource `KI_CHAT_STARTZEILE_FRAGE_MOEGLICH`. Die Startzeile verschwindet, sobald der
+Verlauf eine erste Nachricht führt, und bleibt beim Menüweg ganz weg. Ohne Einrichtung (KI‑D‑Q1) tragen beide Knöpfe
+dieselbe WEICHE Sperre wie andere gesperrte Bedienelemente des Hauses (`aria-disabled` + `title`, kein `disabled`) —
+der bestehende Weg über den Fußleistenknopf „Einstellungen…" bleibt unverändert. Dieselbe Pille bekommt an ihrem
+rechten Feld außerdem einen `title`/`aria-label` mit dem Bildschirmnamen, sobald einer bekannt ist („Simulation vom
+Hilfe-Assistenten erklären lassen", Ressource `KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME`) — vorher trug sie nur den
+allgemeinen Satz. Wache: `EPOS.UI.Tests/Dialoge/Hilfe/KiChatStartzeileTests` und zwei Fälle in
+`EPOS.UI.Tests/Bausteine/KiDialogwegTests`.
+
 ### 3.2 Weg 2 — „erklären lassen" an Warn- und Diagnosebannern (Stufe 1)
 
 **Wo.** `Warnbanner` bekommt den optionalen Parameter `Kennung`. Ist er gesetzt und der Assistent möglich, zeigt das
