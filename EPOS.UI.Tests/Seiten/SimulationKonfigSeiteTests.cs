@@ -289,6 +289,114 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Contains("ausblenden", cut.Find("button.epos-simkonfig-verfuegbar").TextContent);
     }
 
+    // ============================================== Erzeuger ohne Kaskadenplatz (#190)
+
+    /// <summary>
+    /// Die Probendaten führen NUR Platzhalter (keine Anlage im Projekt) — dann bleibt
+    /// alles wie bisher: keine Leiste, die Spalte startet zugeklappt. Ohne diese
+    /// Gegenprobe stünde die Leiste in jedem Projekt, und der Abnahmebefund 1
+    /// („Platzhalter verbergen") wäre zurückgenommen.
+    /// </summary>
+    [Fact]
+    public void Ein_blosser_Platzhalter_loest_keine_Hinweisleiste_aus()
+    {
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("div.epos-simkonfig-luecke"));
+        Assert.Empty(cut.FindAll("div.epos-erzeugerkachel--verfuegbar"));
+    }
+
+    /// <summary>
+    /// #190, Abnahmeliste „PV mit Heizkessel": Ist ein Erzeuger im Projekt ANGELEGT,
+    /// steht aber auf keinem Platz, meldet die Seite ihn — und blendet die verfügbaren
+    /// Karten von sich aus ein. Aufgenommen wird weiterhin von Hand (HK-E-1a).
+    /// </summary>
+    [Fact]
+    public void Ein_angelegter_Erzeuger_ohne_Platz_bekommt_die_Hinweisleiste()
+    {
+        var cut = Zeige(MitLuecke(1));
+
+        var leiste = cut.Find("div.epos-simkonfig-luecke");
+        Assert.Contains("nicht in der Simulation", leiste.TextContent);
+
+        // Die Karten stehen da - der Anwender kommt ohne Umweg an „+ aufnehmen".
+        Assert.Equal(3, cut.FindAll("div.epos-erzeugerkachel--verfuegbar").Count);
+        Assert.NotEmpty(cut.FindAll("button.epos-erzeugerkachel-aufnehmen"));
+
+        // Und sie ist NICHT von selbst aufgenommen worden.
+        Assert.Empty(_aufgenommen);
+        Assert.Empty(_strom);
+    }
+
+    /// <summary>Mehrzahl: die Leiste nennt die Zahl.</summary>
+    [Fact]
+    public void Die_Hinweisleiste_nennt_bei_mehreren_ihre_Zahl()
+    {
+        var cut = Zeige(MitLuecke(2));
+
+        Assert.Contains("2 Erzeuger", cut.Find("div.epos-simkonfig-luecke").TextContent);
+    }
+
+    /// <summary>
+    /// Der Knopf der Leiste erscheint erst, wenn die Karten wieder verborgen sind —
+    /// er holt sie zurück, ohne etwas aufzunehmen.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_der_Leiste_blendet_die_Karten_wieder_ein()
+    {
+        var cut = Zeige(MitLuecke(1));
+
+        // Von selbst offen: kein Knopf in der Leiste.
+        Assert.Empty(cut.Find("div.epos-simkonfig-luecke").QuerySelectorAll("button"));
+
+        cut.Find("button.epos-simkonfig-verfuegbar").Click();     // zuklappen
+        Assert.Empty(cut.FindAll("div.epos-erzeugerkachel--verfuegbar"));
+
+        cut.Find("button.epos-simkonfig-luecke-knopf").Click();   // einblenden
+        Assert.Equal(3, cut.FindAll("div.epos-erzeugerkachel--verfuegbar").Count);
+        Assert.Empty(_aufgenommen);
+    }
+
+    /// <summary>
+    /// Probendaten mit <paramref name="anzahl"/> ANGELEGTEN, aber nicht aufgenommenen
+    /// Erzeugern — der Fall des Projekts 1007.
+    /// </summary>
+    private static SimulationKonfigDaten MitLuecke(int anzahl) => new SimulationKonfigDaten
+    {
+        IdProjekt = 1007,
+        Gruppen = new List<KachelGruppe>
+        {
+            new KachelGruppe
+            {
+                Titel = "Wärmeerzeuger",
+                Zeilen = new List<ErzeugerZeile>
+                {
+                    Verfuegbar("Heizkessel", 10, "Heizkessel · ecoTEC plus", hatAnlage: true),
+                    Verfuegbar("BHKW", 11, "BHKW", hatAnlage: anzahl > 1),
+                    Verfuegbar("Solarthermie", 2, "Solarthermie", hatAnlage: false)
+                }
+            }
+        },
+        SpeicherLeerText = "Dieses Projekt führt keinen Pufferspeicher."
+    };
+
+    private static ErzeugerZeile Verfuegbar(string dbWert, int idType, string titel,
+                                            bool hatAnlage) => new ErzeugerZeile
+    {
+        DbWert = dbWert,
+        IdType = idType,
+        Verfuegbar = true,
+        HatAnlage = hatAnlage,
+        Kachel = new ErzeugerKachelDaten
+        {
+            Schluessel = dbWert,
+            Titel = titel,
+            Zustand = Kachelzustand.Verfuegbar,
+            Umschaltbar = true,
+            Chips = new[] { new ChipDaten("nicht in der Simulation", ChipStil.Flaeche) }
+        }
+    };
+
     // ================================================================== Kaskade
 
     [Fact]

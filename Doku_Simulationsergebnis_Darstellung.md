@@ -226,6 +226,51 @@ Grafik daneben und nicht mehr zweimal auf demselben Reiter.
 * Kennzahlkacheln stehen im `<Kachelraster>`; ihre Zahlen folgen derselben Regel wie die
   Listen (`N2`, `N0`).
 
+### 6.1 Erzeuger ohne Kaskadenplatz (#190)
+
+**Der Befund** (Abnahmeliste, Projekt „PV mit Heizkessel"): Der Anwender legt einen
+Heizkessel an, die Übersicht zeigt „Wärmeproduktion der Spitzenkessel 0,00", der
+Restwärmebedarf bleibt der ganze Bedarf — und **nichts sagte warum**. Ein Wärmeerzeuger
+rechnet nur, wenn seine Technologie in einem der vier Kaskadenplätze
+`Tab_Einstellungen.Tool_1..4` steht (Photovoltaik und Stromspeicher ebenso auf `Tool_5`
+bzw. `Tool_6`); einen Erzeuger im Assistenten oder im Erzeugerdialog ANZULEGEN legt aber
+keinen Platz an — das tut allein „+ aufnehmen" auf der verfügbaren Karte der
+Simulationskonfiguration. Referenzprojekt 1007 ist genau dieser Fall.
+
+**Anwenderentscheid HK‑E‑1a (11.09.2026): Erzeuger ohne Kaskadenplatz werden gemeldet,
+nicht automatisch aufgenommen; die Referenzbasis R7 bleibt.** Ein automatisches
+Aufnehmen änderte die Ergebnisse jedes Bestandsprojekts mit einer solchen Lücke und
+verlangte eine neue Basis. Gemeldet wird an **drei** Stellen, und alle drei lesen
+DIESELBE Vorprüfung `SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`:
+
+1. **Die Vorprüfung** liefert je nicht platzierter Anlage einen `Warnbefund` mit
+   sprachneutraler Kennung — `LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ` für die vier
+   Wärmeerzeuger, `LAUF_W_ERZEUGER_OHNE_STROMPLATZ` für Photovoltaik und Stromspeicher —,
+   dem Steuerwert der Technologie, der Anlagen-Id und dem fertigen Text
+   (`SIM_W_ERZEUGER_OHNE_KASKADENPLATZ` / `…_STROMPLATZ`): Erzeugerart, Bezeichner und
+   der Weg zurück. Sie **sperrt nicht** — `Vorpruefen` bleibt unverändert bei seinen drei
+   Abbruchgründen.
+2. **Das Laufprotokoll** wiederholt sie als `Protokoll.WarnungEinmal`, geprüft gegen
+   `tool[]` — also gegen die Belegung, die DIESER Lauf wirklich gerechnet hat. Ohne sie
+   bliebe der unbeaufsichtigte Referenz- und CI-Lauf stumm. Das Protokoll gehört **nicht**
+   zum Referenzexport: `aggregate.csv` und die Ganglinien sind unverändert
+   (13/13 byte-gleich gegen R7).
+3. **Die Übersichtszeile** trägt den Zusatz „(nicht in der Kaskade)"
+   (`SIMERG_ZUSATZ_NICHT_IN_KASKADE`) — die kürzeste Antwort auf die 0,00 daneben. Die
+   Zeile selbst bleibt stehen: Die Präsenzregel (Punkt 4, „eine vorhandene Anlage mit
+   0‑kWh‑Ergebnis bleibt sichtbar") ist genau für diesen Fall gebaut, ihr fehlte nur der
+   Grund.
+
+**Die Simulationskonfiguration versteckt die Lücke nicht mehr still.** Die verfügbaren
+Karten sind seit dem Abnahmebefund 1 standardmäßig ausgeblendet; das ist richtig für einen
+bloßen Katalog-PLATZHALTER („Solarthermie wäre wählbar, das Projekt hat keine") und falsch
+für eine LÜCKE („der angelegte Kessel steht auf keinem Platz"). `ErzeugerZeile.HatAnlage`
+trennt beides: Gibt es mindestens eine Lücke, steht über der Erzeugerspalte eine
+Hinweisleiste („n Erzeuger sind im Projekt angelegt, aber nicht in der Simulation"), und
+die Spalte klappt beim ersten Blick auf das Projekt von selbst auf. Danach gehört der
+Schalter dem Anwender — ein „+ aufnehmen" setzt ihn nicht zurück. **Aufgenommen wird
+weiterhin von Hand**; die Seite nimmt nichts selbst auf.
+
 ## 7. Was ausdrücklich NICHT vereinheitlicht ist
 
 * **Jedes Feld schreibt sofort** — auf dem Reiter „Parameter" (wörtlich wie der

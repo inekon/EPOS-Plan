@@ -16595,4 +16595,22 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_MSG_LAUF_GESCHEITERT" xml:space="preserve">
     <value>The storage fleet for this project run is invalid or could not be scheduled: {0} Way out: deactivate the fleet in the sizing dialog or complete the inputs.</value>
   </data>
+  <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>{0} “{1}” exists in the project but is not part of the cascade — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>{0} “{1}” exists in the project but has not been added to the simulation — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_EINER" xml:space="preserve">
+    <value>One generator exists in the project but is not part of the simulation — it is not calculated.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE" xml:space="preserve">
+    <value>{0} generators exist in the project but are not part of the simulation — they are not calculated.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF" xml:space="preserve">
+    <value>show</value>
+  </data>
+  <data name="SIMERG_ZUSATZ_NICHT_IN_KASKADE" xml:space="preserve">
+    <value> (not in the cascade)</value>
+  </data>
 </root>

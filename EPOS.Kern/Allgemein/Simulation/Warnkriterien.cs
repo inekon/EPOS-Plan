@@ -31,6 +31,16 @@ namespace WindowsFormsApplication1
         /// <summary>Betroffene <c>Tab_Pufferspeicher.ID</c>; 0, wenn der Befund an keinem Speicher haengt.</summary>
         public int ID_Puffer;
 
+        /// <summary>
+        /// Der Steuerwert der betroffenen Technologie (<c>DbWerte.ERZEUGER_*</c>); "",
+        /// wenn der Befund an keiner Technologie haengt (#190).
+        ///
+        /// <para>Sprachneutral wie <see cref="Kriterium"/> — er dient dem Aufrufer zum
+        /// ZUORDNEN, nicht zum Anzeigen. Die Ergebnisuebersicht setzt damit ihren Zusatz
+        /// „(nicht in der Kaskade)" an die richtige Zeile.</para>
+        /// </summary>
+        public string Steuerwert = "";
+
         /// <summary>Fertiger, lokalisierter Anzeigetext.</summary>
         public string Text = "";
     }

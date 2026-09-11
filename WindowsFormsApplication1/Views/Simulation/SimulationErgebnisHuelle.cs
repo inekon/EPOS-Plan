@@ -309,7 +309,7 @@ namespace WindowsFormsApplication1
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
 
             d.Kennzahlen = SimulationErgebnisCtrl.Uebersicht(sim, _waermebedarf, _strombedarf);
-            d.Uebersicht = UebersichtDaten(d.Kennzahlen, p);
+            d.Uebersicht = UebersichtDaten(d.Kennzahlen, p, tool);
 
             if (sim.bSimulationWP)
                 d.Waermepumpe = SimulationErgebnisCtrl.Waermepumpe(sim, _waermebedarf);

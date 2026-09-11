@@ -23,6 +23,7 @@
    wichen um den BHKW-Term voneinander ab; hier kommt EIN DTO herein. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1   @* DbWerte.ERZEUGER_* - der Zusatz „nicht in der Kaskade" (#190) *@
 
 <div class="epos-simerg-block">
 
@@ -56,19 +57,19 @@
                        (UebersichtZeilenVorbereiten :4067-4072). *@
                     @if (Daten.Waermepumpe)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, K.WpWaermeproduktionMwh, MWH)
+                        @Wertzeile(Beschriftung(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, DbWerte.ERZEUGER_WAERMEPUMPE), K.WpWaermeproduktionMwh, MWH)
                     }
                     @if (Daten.Bhkw)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_BHKW, K.BhkwWaermeproduktionMwh, MWH)
+                        @Wertzeile(Beschriftung(Resource.SIMERG_LBL_WAERMEPRODUKTION_BHKW, DbWerte.ERZEUGER_BHKW), K.BhkwWaermeproduktionMwh, MWH)
                     }
                     @if (Daten.Solarthermie)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_SOLARE_WAERME, K.SolarWaermeproduktionMwh, MWH)
+                        @Wertzeile(Beschriftung(Resource.SIMERG_LBL_SOLARE_WAERME, DbWerte.ERZEUGER_SOLARTHERMIE), K.SolarWaermeproduktionMwh, MWH)
                     }
                     @if (Daten.Heizkessel)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, K.KesselWaermeproduktionMwh, MWH)
+                        @Wertzeile(Beschriftung(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, DbWerte.ERZEUGER_HEIZKESSEL), K.KesselWaermeproduktionMwh, MWH)
                     }
 
                     @* Die Restzeile beschreibt das PROJEKT und nicht eine Komponente -
@@ -110,7 +111,7 @@
                     }
                     @if (Daten.Photovoltaik)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_PV, K.PvStromproduktionMwh, MWH)
+                        @Wertzeile(Beschriftung(Resource.SIMERG_LBL_STROMPRODUKTION_PV, DbWerte.ERZEUGER_PHOTOVOLTAIK), K.PvStromproduktionMwh, MWH)
                     }
 
                     @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH, betont: true)
@@ -249,6 +250,21 @@
     /// ohne den Schalter bleibt die Zeile ohne Klasse, das Markup also
     /// unveraendert.
     /// </param>
+    /// <summary>
+    /// Die Beschriftung einer Erzeugerzeile — mit dem Zusatz „(nicht in der Kaskade)",
+    /// wenn das Projekt diese Technologie zwar ANGELEGT hat, sie aber auf keinem Platz
+    /// der Simulation steht (#190, Abnahmeliste „PV mit Heizkessel").
+    ///
+    /// <para>Ohne ihn steht in der Uebersicht eine 0,00 ohne Grund: Die Praesenzregel
+    /// laesst die Zeile stehen, weil die Anlage da ist, gerechnet hat sie aber nie.
+    /// Der Zusatz ist die kuerzeste Antwort auf „warum liefert mein Kessel nichts?";
+    /// die vollstaendige Meldung samt Abhilfe steht in den Hinweisen zum Lauf.</para>
+    /// </summary>
+    private string Beschriftung(string text, string dbWert)
+        => Daten.OhneKaskadenplatz.Contains(dbWert)
+            ? text + Resource.SIMERG_ZUSATZ_NICHT_IN_KASKADE
+            : text;
+
     private RenderFragment Wertzeile(string text, double wert, string einheit,
                                      bool betont = false) => @<text>
         <dt class="@Zeilenklasse(betont)">@text</dt>

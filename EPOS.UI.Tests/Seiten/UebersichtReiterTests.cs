@@ -314,6 +314,40 @@ public class UebersichtReiterTests : EposBunitContext
     }
 
     /// <summary>
+    /// #190 (Abnahmeliste „PV mit Heizkessel"): Steht der Kessel des Projekts auf
+    /// keinem Platz der Simulation, bekommt seine Zeile den Zusatz „(nicht in der
+    /// Kaskade)" — die kürzeste Antwort auf die 0,00 daneben. Die Zeile selbst bleibt
+    /// stehen (Präsenzregel Punkt 4), und alle anderen bleiben unberührt.
+    /// </summary>
+    [Fact]
+    public void Ein_Erzeuger_ohne_Kaskadenplatz_traegt_den_Zusatz()
+    {
+        UebersichtDaten daten = Daten();
+        daten.OhneKaskadenplatz = new[] { "Heizkessel" };
+
+        var listen = Zeichnen(daten).FindAll("dl.epos-simerg-werte");
+
+        Assert.Equal(
+            new[] { "Wärmebedarf des Nahwärmenetzes:", "Wärmeproduktion WP:",
+                    "Wärmeproduktion der Spitzenkessel: (nicht in der Kaskade)",
+                    "Restwärmebedarf:" },
+            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Die WP steht auf einem Platz - ihre Zeile bleibt, wie sie war.
+        Assert.DoesNotContain("Wärmeproduktion WP: (", listen[0].TextContent);
+    }
+
+    /// <summary>
+    /// Die Gegenprobe: Ohne Lücke trägt keine Zeile den Zusatz — sonst bestünde eine
+    /// Anzeige, die ihn IMMER anhängt, den Fall darüber ebenso.
+    /// </summary>
+    [Fact]
+    public void Ohne_Luecke_traegt_keine_Zeile_den_Zusatz()
+    {
+        Assert.DoesNotContain("nicht in der Kaskade", Zeichnen(Daten()).Markup);
+    }
+
+    /// <summary>
     /// Die Stromgruppe: BEDARF, die drei Verbraucher, die Erzeuger, REST. Der
     /// Stromverbrauch SPK stand vorher HINTER den Erzeugerzeilen; er gehört zu
     /// den Verbrauchern, aus denen sich die Restzahl ergibt.

@@ -37,6 +37,18 @@ public sealed class ErzeugerZeile
     /// <summary>true = nicht aufgenommen (die gestrichelte Karte).</summary>
     public bool Verfuegbar;
 
+    /// <summary>
+    /// true = das Projekt fuehrt mindestens eine Anlage dieser Technologie
+    /// (<c>Tab_Energieanlagen</c>) — #190.
+    ///
+    /// <para>Er trennt die beiden Arten von gestrichelter Karte: den blossen
+    /// PLATZHALTER („Solarthermie waere waehlbar, es gibt aber keine Anlage") von der
+    /// LUECKE („der angelegte Heizkessel steht auf keinem Platz und rechnet deshalb
+    /// nicht"). Nur die zweite ist eine Meldung wert — die Hinweisleiste der Seite
+    /// zaehlt sie.</para>
+    /// </summary>
+    public bool HatAnlage;
+
     /// <summary>Bezeichner der Anlage — er steht in den Meldungen der Vorpruefungen.</summary>
     public string Bezeichner = "";
 

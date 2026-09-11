@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -214,6 +216,160 @@ namespace WindowsFormsApplication1
 
             ErgebnisModel m = SimulationRunner.BaueErgebnis(idProjekt, waerme, strom, sim);
             return new ErgebnisCtrl().Save(m) > 0;
+        }
+
+        // =================================================================
+        // #190 - ERZEUGER OHNE KASKADENPLATZ (Abnahmeliste „PV mit Heizkessel")
+        // =================================================================
+
+        /// <summary>
+        /// Sprachneutrale Kennung des Befunds „Waermeerzeuger angelegt, aber in keinem
+        /// Kaskadenplatz <c>Tool_1..4</c>" (#190).
+        /// </summary>
+        public const string KRIT_ERZEUGER_OHNE_KASKADENPLATZ = "LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ";
+
+        /// <summary>
+        /// Sprachneutrale Kennung des Befunds „Stromerzeuger bzw. Energiespeicher
+        /// angelegt, aber nicht auf seinem Platz <c>Tool_5</c>/<c>Tool_6</c>" (#190).
+        /// </summary>
+        public const string KRIT_ERZEUGER_OHNE_STROMPLATZ = "LAUF_W_ERZEUGER_OHNE_STROMPLATZ";
+
+        /// <summary>
+        /// Die Erzeugeranlagen des Projekts, die in KEINEM Platz der Simulation stehen —
+        /// die Vorpruefung zum Abnahmebefund „PV mit Heizkessel: die Simulation
+        /// beruecksichtigt den Heizkessel nicht" (#190). Nie <c>null</c>; leer = alles
+        /// Angelegte rechnet auch.
+        ///
+        /// <para><b>Der Befund.</b> Ein Waermeerzeuger rechnet ausschliesslich dann,
+        /// wenn seine Technologie in einem der vier Kaskadenplaetze
+        /// <c>Tab_Einstellungen.Tool_1..4</c> steht (<c>SimulationControl</c>,
+        /// Erzeugerdurchlauf ueber <c>tool[]</c>); Photovoltaik und Stromspeicher
+        /// haengen ebenso an ihren Plaetzen <c>Tool_5</c>/<c>Tool_6</c>. Einen Kessel im
+        /// Assistenten oder im Erzeugerdialog ANZULEGEN legt aber keinen Platz an —
+        /// <see cref="Kaskade.Aufnehmen"/> hat genau einen Aufrufer, das „+ aufnehmen"
+        /// der verfuegbaren Karte. Bis hierher rechnete die Anlage deshalb STILL nicht:
+        /// keine Meldung, kein Protokolleintrag, nur eine Null in der Ergebnisuebersicht.
+        /// Genau so sieht das Referenzprojekt 1007 aus (Kessel angelegt,
+        /// <c>Tool_1..4 = ('', Solarthermie, Waermepumpe, '')</c>).</para>
+        ///
+        /// <para><b>Sie MELDET, sie aendert nichts</b> — Anwenderentscheid <b>HK-E-1a</b>
+        /// vom 11.09.2026: Erzeuger ohne Kaskadenplatz werden gemeldet, nicht automatisch
+        /// aufgenommen; die Referenzbasis R7 bleibt. Kein Platz wird hier belegt, das
+        /// waere eine Ergebnisaenderung an jedem Bestandsprojekt mit einer solchen
+        /// Luecke. Der Weg zurueck steht im Text: die Simulationskonfiguration blendet
+        /// ihre verfuegbaren Karten ein, „+ aufnehmen" bleibt der Handgriff des
+        /// Anwenders.</para>
+        ///
+        /// <para>Gelesen wird ueber <see cref="StilleDb"/> — dialogfrei, weil derselbe
+        /// Weg im unbeaufsichtigten Referenz- und CI-Lauf benutzt wird.</para>
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt.</param>
+        /// <param name="konfig">
+        /// Die gelesene Konfiguration; <c>null</c> heisst „kein Platz belegt".
+        /// </param>
+        public static List<Warnbefund> ErzeugerOhneKaskadenplatz(int idProjekt,
+                                                                 KonfigurationModel konfig)
+        {
+            List<string> plaetze = Kaskade.Lesen(konfig);
+            plaetze.Add(Kaskade.StromWert(konfig, Kaskade.PLATZ_STROMERZEUGER));
+            plaetze.Add(Kaskade.StromWert(konfig, Kaskade.PLATZ_ENERGIESPEICHER));
+
+            return ErzeugerOhneKaskadenplatz(idProjekt, plaetze);
+        }
+
+        /// <summary>
+        /// Dieselbe Pruefung gegen die Platzbelegung EINES LAUFS
+        /// (<c>SimulationControl.tool</c>) statt gegen die gespeicherte Konfiguration —
+        /// so meldet der Lauf, was er wirklich gerechnet hat (#190).
+        /// </summary>
+        /// <param name="plaetze">
+        /// Die belegten Plaetze in beliebiger Reihenfolge; leere Eintraege und
+        /// <c>null</c> werden uebergangen.
+        /// </param>
+        public static List<Warnbefund> ErzeugerOhneKaskadenplatz(int idProjekt,
+                                                                 IList<string> plaetze)
+        {
+            List<Warnbefund> befunde = new List<Warnbefund>();
+            if (idProjekt <= 0) return befunde;
+
+            List<string> belegt = new List<string>();
+            if (plaetze != null)
+                foreach (string p in plaetze)
+                    if (!string.IsNullOrEmpty(p) && !belegt.Contains(p)) belegt.Add(p);
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, ID_Type, Bezeichner FROM Tab_Energieanlagen " +
+                "WHERE ID_Projekt = ? ORDER BY ID_Type, ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            if (dt == null) return befunde;   // stiller Fehler - lieber nichts melden
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"), -1);
+
+                string dbWert = ErzeugerDbWert(idType);
+                if (dbWert == null) continue;                 // Puffer, Referenzanlagen …
+                if (belegt.Contains(dbWert)) continue;        // steht auf einem Platz
+
+                string bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
+                bool strom = idType == WizardItemClass.PV_TYP ||
+                             idType == WizardItemClass.SP_TYP;
+
+                befunde.Add(new Warnbefund
+                {
+                    Kriterium = strom ? KRIT_ERZEUGER_OHNE_STROMPLATZ
+                                      : KRIT_ERZEUGER_OHNE_KASKADENPLATZ,
+                    Hart = false,
+                    ID_Anlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"), 0),
+                    Steuerwert = dbWert,
+                    Text = string.Format(
+                        strom ? MyResource.Resource.SIM_W_ERZEUGER_OHNE_STROMPLATZ
+                              : MyResource.Resource.SIM_W_ERZEUGER_OHNE_KASKADENPLATZ,
+                        ErzeugerAnzeige(idType), bezeichner)
+                });
+            }
+
+            return befunde;
+        }
+
+        /// <summary>
+        /// Der Steuerwert (<c>DbWerte.ERZEUGER_*</c>) zu einem
+        /// <c>Tab_Energieanlagen.ID_Type</c>; <c>null</c> = kein Erzeuger mit eigenem
+        /// Platz (Pufferspeicher, Referenzanlagen des Vergleichsfalls).
+        /// </summary>
+        private static string ErzeugerDbWert(int idType)
+        {
+            switch (idType)
+            {
+                case WizardItemClass.WP_TYP: return DbWerte.ERZEUGER_WAERMEPUMPE;
+                case WizardItemClass.SOLAR_TYP: return DbWerte.ERZEUGER_SOLARTHERMIE;
+                case WizardItemClass.PV_TYP: return DbWerte.ERZEUGER_PHOTOVOLTAIK;
+                case WizardItemClass.SP_TYP: return DbWerte.ERZEUGER_STROMSPEICHER;
+                case WizardItemClass.KESSEL_TYP: return DbWerte.ERZEUGER_HEIZKESSEL;
+                case WizardItemClass.BHKW_TYP: return DbWerte.ERZEUGER_BHKW;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Der ANZEIGENAME der Erzeugerart — dieselben sechs Ressourcen, die
+        /// <c>ErzeugerKatalog.Anzeige</c> der Oberflaeche liefert. Er steht hier ein
+        /// zweites Mal, weil <c>ErzeugerKatalog</c> in der Windows-Anwendung liegt und
+        /// der Kern sie nicht kennt.
+        /// </summary>
+        private static string ErzeugerAnzeige(int idType)
+        {
+            switch (idType)
+            {
+                case WizardItemClass.WP_TYP: return MyResource.Resource.KONFIG_WAERMEPUMPE;
+                case WizardItemClass.SOLAR_TYP: return MyResource.Resource.KONFIG_SOLARTHERMIE;
+                case WizardItemClass.PV_TYP: return MyResource.Resource.KONFIG_PHOTOVOLTAIK;
+                case WizardItemClass.SP_TYP: return MyResource.Resource.KONFIG_STROMSPEICHER;
+                case WizardItemClass.KESSEL_TYP: return MyResource.Resource.KONFIG_HEIZKESSEL;
+                case WizardItemClass.BHKW_TYP: return MyResource.Resource.KONFIG_BHKW;
+                default: return "";
+            }
         }
     }
 }
