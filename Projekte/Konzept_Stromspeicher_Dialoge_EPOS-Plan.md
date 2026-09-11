@@ -1,7 +1,6 @@
 # Konzept: Stromspeicher-Dialoge — eine Ansicht statt Fenster in Fenster
 
-Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #179 · Ablage `Projekte/` (Anwenderhinweis 11.09.2026, Heimat der Stromspeicherunterlagen) · Status: **Vorschlag, wartet auf
-Anwenderentscheide SD‑Q1 bis SD‑Q7** (Abschnitt 4). Keine Umsetzung vor dem Entscheid.
+Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #179 · Ablage `Projekte/` (Anwenderhinweis 11.09.2026, Heimat der Stromspeicherunterlagen) · Status: **entschieden am 11.09.2026, SD‑Q1 bis SD‑Q7 nach Empfehlung** (Anwender: „SD-Q1 bis SD-Q7: Empfehlung"). Umsetzung nach dem Stufenplan in Abschnitt 5: P1 = Aufgabe #183 und P2 = #184 parallel, danach P3 und P4; dazu der Befund #185 (Projektlauf bricht mit „Im Dialog fehlen die Investitionskoeffizienten" ab).
 
 Anlass ist die Anwenderrückmeldung vom 11.09.2026 zum Dialog „Auslegung optimieren" der
 Speicherflotte, mit zwei Bildschirmfotos:
@@ -247,7 +246,7 @@ nicht global optimal") wird im Bild benannt.
 | **SD‑Q6** | Ergebnis: Kacheln + Δ-Spalte + Jahresprojektion als Bild (2.2) — oder nur die Tabelle aus dem Dialog herauslösen? | **Vollfassung 2.2**; sie folgt der Regel, die alle anderen Ergebnisreiter schon haben |
 | **SD‑Q7** | Diagramm-Zeitraum: Jahr / Woche / Tag mit Navigator (Muster Jahresverlauf W8‑E‑2) zusätzlich zum Datenzoom? | **Ja**; heute ist der Ausschnitt fest sieben Tage ab dem 1. Januar |
 
-Antwortform wie gewohnt: `SD‑Q1: Empfehlung` oder eine Abweichung in einem Satz.
+**Entscheid 11.09.2026: alle sieben nach Empfehlung.**
 
 ---
 
