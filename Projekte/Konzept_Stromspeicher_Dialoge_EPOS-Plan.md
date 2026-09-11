@@ -549,3 +549,11 @@ Feinraster gewinnt nur bei strikt besserem Wert, wie `SpeicherOptimierer.cs:143`
 **Stufenplan:** **P8 Struktur** (A oder C, ein Opus-Agent) und **P6 Feinraster** (bei A im selben
 Auftrag, sonst später). Start nach dem Merge von #220 (Startseiten-Reiter Simulation), weil beide
 `AppWurzel.razor` anfassen.
+
+### 7.7 Anwenderentscheid SD‑E‑9 (11.09.2026): „Empfehlung"
+
+**Option A** (Station „4 Optimierung" als Seite, Feinraster P6 im selben Auftrag), **SD‑Q10** Feinraster nur auf der
+Größenachse, **SD‑Q11** Zielgröße bleibt der Kapitalwert und der Kasten „Bestes Ergebnis" nennt die jährliche Ersparnis
+dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach Schritt 2. Umsetzung als **Auftrag #224**
+(Opus, eigener Worktree) nach den Merges von #220 (AppWurzel), #225 (Ablaufleiste bündig, Anzahl-Schritt fällt) und #226
+(Rasterkarte folgt der Größenkopplung), weil alle drei die Auslegungsseite, den Editor oder die Größen-Sicht anfassen.
