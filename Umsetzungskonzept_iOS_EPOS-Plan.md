@@ -3151,6 +3151,38 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Abnahme auf Windows: A‑W11b‑B5‑1…11 (Überlagerung im selben Fenster; sechs Felder ohne Überdeckung bei 125/150 %; Lauf mit
 > Fortschritt und Sperre; Abbrechen ohne halbes Bild; Rand-Hinweis; Eingabefehler sperrt den Start; Zoom in beiden Bildern;
 > „Bestpunkt übernehmen" mit Rückfrage; CSV in deutschem Excel; **kein Absturz nach fünf Läufen**, Bilder gleich groß; ✕/Esc).
+>
+> **#170 (11.09.2026) — Mehrspeicherkonzept vom Windows-Rechner auf `ios_migration_september` integriert.** Der Sync `4c3b521`
+> (162 Dateien, +48 617 Zeilen) brachte die Spezifikation „Simulation mehrerer Stromspeicher" v1.2
+> (`Projekte/Spezifikation_Stromspeicher_Optimierung.md`, 15 Kapitel), den Python-Referenzkern `Projekte/Speichersimulation/code/`
+> und die fertige C#-Umsetzung: `SpeicherEngine/Flotten*.cs` (Modell, Simulator, Wirtschaftlichkeit, Rainflow, Optimierer), das
+> neue Projekt `SpeicherPlanung` (Google.OrTools 9.15.6755/SCIP hinter `IFlottenPlaner`, referenziert nur von der
+> WinForms-Anwendung), acht neue Kern-Dateien (u. a. `SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl`,
+> `SpeicherAuslegungCtrl`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), fünf Razor-Dialoge unter
+> `EPOS.UI/Dialoge/Strom/`, den Reiter `StromspeicherReiter` und **Schemaschritt 73** (`Tab_SpeicherAuslegung`); die
+> Testdatenbank steht auf 73 (119 Tabellen, 117 STRICT, 70 025 216 Byte), die Basis R6 bleibt. Anwenderentscheide: Zweig
+> `ios_migration_september` als Integrationszweig, „docx behalten", „Wurzel bleibt Heimat", „.work behalten".
+> Integration in vier Schritten: Merge von `ios_migration` (#62a, #166–#169, #168) mit einem Konflikt in
+> `SpeicherParameterBlockTests` (`c51e839`); **#170b** Doku-Einordnung (`CLAUDE.md`, `EPOS.Kern/CLAUDE.md`, `BETRIEB_SQLITE.md`
+> § 3, `LIESMICH`, `kern.yml`, Nachweisdokument; `8d5099c`); **#170a** acht Testklassen auf `EposBunitContext` (der rote
+> Rainflow-Fall war Kulturabhängigkeit), fünf Dubletten zu Verweisdateien, lokale Pfade ersetzt (`11bccf8`); **#171** 291 ×
+> CS1591 durch echte Dokumentation der Flotten-Verträge, `ModuleInitializer` (CA2255, AOT-Risiko) durch
+> `StromspeicherzweigEinhaengen()` am Laufeinstieg ersetzt, zwei Null-Warnungen (`656e3a0`). Gate auf `656e3a0`: Kern 2 418 grün,
+> UI 3 453 grün, SpeicherEngine 382, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL-Prüfer 0 von 1 319, ChartProben 44,
+> Referenzlauf 1030/1007/1017/1045 byte-gleich gegen R6, **OR-Tools baut und rechnet auf ubuntu**. Offen: #170c (Verhalten
+> ohne Planer auf iOS), #172 (tote Links in `LIESMICH`), #173 (xUnit-Analysewarnungen), Zusammenführung mit `ios_migration`
+> nach #62b.
+> **Offene Punkte des Mehrspeicherkonzepts (aus „Ehrliche Grenzen", Doku_Mehrspeicher_Konzept_und_Umsetzung.md, 11.09.2026)** —
+> zur Aufnahme ins Register § 8 des Umsetzungskonzepts bei der Zusammenführung von `ios_migration_september`:
+> - **SP‑O‑1 Oracle-Jahreslauf:** 35 040 Intervalle mit Horizont 192 / Neuplanung 96 brechen nach > 60 s ab (Test übersprungen); Laufzeit und Dialogtauglichkeit unbelegt. Entscheid: Grenze für den Dialog (Kandidatenzahl × Horizont) oder Hintergrundlauf mit Fortschritt.
+> - **SP‑O‑2 Rainflow ohne Alterungswirkung:** Miner-Schaden wird ausgewiesen, aber Kapazität/Leistung altern im Lauf nicht; kein Kalender-, Temperatur- oder Ersatzmodell.
+> - **SP‑O‑3 Solver nur Windows:** Google.OrTools/SCIP hängt an `SpeicherPlanung` (WinForms). iOS und jede andere Schale ohne registrierten `IFlottenPlaner` haben nur die reaktiven Ziele PvGreedy/PeakShaving; PvPlanung/Arbitrage/MultiUse müssen dort als „nicht verfügbar" erscheinen (#170c prüft).
+> - **SP‑O‑4 Optimalität:** MILP-Optimum gilt je Horizont; rollierender Jahreslauf und endliches Größenraster sind nicht global optimal — im Ergebnis so benennen (steht im Dialog).
+> - **SP‑O‑5 Tarife:** keine Monatspeaks, Tarifstaffeln, Steuern, mehrere Abrechnungsperioden; eine Abrechnungsperiode je Variante.
+> - **SP‑O‑6 Mehrjahresalterung:** Projektjahre und SoC-Mitnahme umgesetzt; Degradation, Ausfall, Reparatur fehlen (spätere Zustandsmodelle).
+> - **SP‑O‑7 Wärmekopplung:** BHKW-Fahrplan und elektrische Zusatzlast sind Eingaben; keine gemeinsame Wärme/Strom-MILP (bewusst, Kap. 13.5).
+> - **SP‑O‑8 Referenzlauf:** Linux-Gate 11.09.2026 byte-gleich für 1030/1007/1017/1045; die vier Projekte führen keine Flotte — ein Referenzprojekt MIT Flotte (Basis R7) fehlt, sonst ist der Flottenpfad ohne Regressionsnetz.
+> - **SP‑O‑9 Repository:** `.work/` (73-MB-Datenbankkopie) und fünf docx auf Anwenderwunsch im Zweig belassen (11.09.2026); Klongröße + ~80 MB.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
