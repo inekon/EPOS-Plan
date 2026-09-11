@@ -51,11 +51,12 @@
 
 .PARAMETER Kataloge
     'readonly' oder 'alle' - wird als --kataloge <Wert> an
-    Werkzeuge\Auslieferungsvorlage durchgereicht. Ohne Angabe entscheidet das
-    Werkzeug selbst; dessen Katalogwächter (#160-F-1) bricht dabei mit Code 4
-    ab, sobald die Quelle Katalogzeilen ohne ReadOnly = TRUE führt - also bei
-    praktisch jeder echten Quelle. Bis zum Entscheid #160-E-1 deshalb mit
-    -Kataloge alle aufrufen.
+    Werkzeuge\Auslieferungsvorlage durchgereicht. Vorgabe seit Anwenderentscheid
+    #160-E-1a (11.09.2026, "a"): 'alle' - der Katalog wird vollständig
+    ausgeliefert, ohne dass dieser Parameter eigens gesetzt werden müsste.
+    'readonly' bleibt ausdrücklich wählbar; dessen Katalogwächter (#160-F-1)
+    bricht dann mit Code 4 ab, sobald die Quelle Katalogzeilen ohne
+    ReadOnly = TRUE führt - also bei praktisch jeder echten Quelle.
 
 .PARAMETER VorlageNurPruefen
     Ruft das Vorlagenwerkzeug mit --trocken auf: Es rechnet und meldet, schreibt
@@ -113,7 +114,7 @@ param(
     [string] $Configuration = 'Release',
     [string] $Quelldatenbank,
     [string[]] $Beispiele,
-    [ValidateSet('readonly', 'alle')] [string] $Kataloge,
+    [ValidateSet('readonly', 'alle')] [string] $Kataloge = 'alle',
     [switch] $VorlageNurPruefen,
     [switch] $SkipPublish,
     [switch] $Schnell,
@@ -628,8 +629,9 @@ if ($LASTEXITCODE -ne 0) {
     if ($LASTEXITCODE -eq 4) {
         throw @"
 Werkzeuge\Auslieferungsvorlage ist mit Code 4 fehlgeschlagen (Katalogwaechter,
-#160-F-1): Die Quelle fuehrt Katalogzeilen ohne ReadOnly = TRUE. Bis zum
-Entscheid #160-E-1 mit -Kataloge alle aufrufen.
+#160-F-1): Die Quelle fuehrt Katalogzeilen ohne ReadOnly = TRUE. Das tritt nur
+bei ausdruecklichem -Kataloge readonly auf - die Vorgabe ist seit Entscheid
+#160-E-1a bereits 'alle'; -Kataloge weglassen oder auf 'alle' setzen.
 "@
     }
     throw "Werkzeuge\Auslieferungsvorlage ist mit Code $LASTEXITCODE fehlgeschlagen - kein Setup gebaut."

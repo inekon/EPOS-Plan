@@ -48,9 +48,11 @@
 # wird. Das Ergebnis ist damit ein PRUEFSTUECK, kein Auslieferungsstand: Fuer eine echte
 # Auslieferung ist die Quelle ein gepflegter Katalogstand vom Arbeitsplatz (8.1, Schritt 3).
 #
-# -Kataloge alle ist gesetzt, weil der Katalogwaechter (#160-F-1) sonst mit Code 4 abbricht.
-# Der Entscheid #160-E-1 zur ReadOnly-Regel selbst ist damit NICHT vorweggenommen: Der Job
-# uebergibt den Schalter ausdruecklich, die Vorgabe des Werkzeugs bleibt "readonly".
+# KEIN -Kataloge-Schalter im Aufruf unten: Seit Anwenderentscheid #160-E-1a (11.09.2026,
+# "a") ist "alle" die VORGABE von Werkzeuge/Auslieferungsvorlage - der Katalogwaechter
+# (#160-F-1) bricht damit nicht mehr ab, ohne dass der Job etwas dafuer tun muesste. Der
+# Lauf ist damit zugleich der Nachweis der Vorgabe; "-Kataloge readonly" bleibt ein
+# ausdruecklich zu waehlender Schalter, den dieser Job nicht setzt.
 # =====================================================================================
 name: Windows
 
@@ -221,7 +223,7 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $false
 
           $quelle = Join-Path $env:GITHUB_WORKSPACE 'Referenzlaeufe\Kenndaten_Test.sqlite'
-          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle, '-Kataloge', 'alle')
+          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle)
           if ('${{ inputs.schnell }}' -eq 'true') { $aufruf += '-Schnell' }
           Write-Host ("Aufruf: pwsh " + ($aufruf -join ' '))
 

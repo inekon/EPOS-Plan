@@ -416,9 +416,11 @@ sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
    die transitive Hülle darunter (25) plus `Tab_Projekt`. Ein Schemaschritt, der
    eine Projekttabelle ergänzt (zuletzt 65/66 mit `Tab_Wechselrichter` und
    `Z_AnlageStrang`), wird damit von selbst erfasst.
-3. **Kataloge und Personenbezug.** In den `*_STAMM`-Tabellen bleibt, was
-   `ReadOnly = TRUE` trägt (`--kataloge readonly`, Vorgabe) — siehe aber den
-   **Befund** unten. Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
+3. **Kataloge und Personenbezug.** Der Katalog wird vollständig ausgeliefert
+   (`--kataloge alle`, Vorgabe seit Anwenderentscheid **#160‑E‑1a**,
+   11.09.2026) — siehe den **Befund** unten. `--kataloge readonly` bleibt als
+   ausdrücklich wählbarer Schalter: Dann bleibt in den `*_STAMM`-Tabellen nur,
+   was `ReadOnly = TRUE` trägt. Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
    `Beschreibung`, `Icon` und `ID_Projekt` (auf 0, der Zustand „kein Projekt
    geöffnet", den auch `ProjektCtrl.LoeschenMitVorarbeiten` schreibt). Nötig ist
    das, weil diese Tabelle an keinem Projekt hängt und sonst den Namen des
@@ -445,8 +447,8 @@ dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
 
 Rückgabe `0` = erzeugt und abgenommen. Jeder andere Wert ist ein Abbruch mit
 Grund auf `stderr`, und dann entsteht **keine** Zieldatei: `2` Aufruf oder Quelle,
-`3` Ziel im Repository außerhalb von `Setup\Vorlage\`, `4` Katalogwächter,
-`5` fachlicher Abbruch, `1` unerwartet. Neben der Vorlage entsteht
+`3` Ziel im Repository außerhalb von `Setup\Vorlage\`, `4` Katalogwächter (nur bei
+`--kataloge readonly`), `5` fachlicher Abbruch, `1` unerwartet. Neben der Vorlage entsteht
 `<ziel>.bericht.txt` — der **Prüfbericht**, der die frühere Gegenprüfung von Hand
 ersetzt: je Tabelle die Zeilen vorher und nachher, Katalogzahlen, geleerte Felder,
 Projektliste, Größe vorher/nachher und jede Prüfzeile. Er ist vor jeder
@@ -468,11 +470,19 @@ es ankommt.
 > `KostenVorlagenCtrl` verweigern damit das Ändern), nicht die
 > Auslieferungsmarke, als die die Namenskonvention sie beschreibt.
 > **Deshalb bricht das Werkzeug mit Code 4 ab**, statt eine Vorlage mit leerem
-> Katalog abzulegen — das fiele erst beim Kunden auf. Zwei Wege stehen offen und
-> beide sind ausdrücklich zu wählen: `--kataloge alle` liefert den vollständigen
-> Katalog aus (heute der einzige brauchbare Stand), `--katalogleerung-zulassen`
-> setzt die Regel trotzdem durch. Dauerhaft ist zu entscheiden, ob die Marke im
-> Bestand nachgepflegt wird oder ob die Regel fällt.
+> Katalog abzulegen — das fiele erst beim Kunden auf. Zwei Wege standen offen und
+> beide waren ausdrücklich zu wählen: `--kataloge alle` liefert den vollständigen
+> Katalog aus, `--katalogleerung-zulassen` setzt die Regel trotzdem durch.
+>
+> **Entscheid #160‑E‑1a (Anwender, 11.09.2026, „a").** Der Katalog wird
+> vollständig ausgeliefert: Die **Vorgabe** des Werkzeugs wird `alle`,
+> `--kataloge readonly` bleibt als ausdrücklich wählbarer Schalter samt
+> Katalogwächter (Code 4) und `--katalogleerung-zulassen` — verworfen wurde Weg
+> b, die Marke `ReadOnly` im Bestand nachzupflegen. Begründung: Die Trennung
+> zwischen „gehört zur Auslieferung" und „ist in der Oberfläche gesperrt" hat
+> heute keinen Abnehmer — kein Bericht, keine Prüfung und kein Anwender
+> unterscheidet danach, und eine Marke zu pflegen, die niemand liest, wäre reine
+> Mehrarbeit ohne Nutzen. Umgesetzt in Auftrag #182.
 
 Der Stand **entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICHT im Repository
 (`.gitignore`: `Setup/Vorlage/*.sqlite`, dazu `-wal`/`-shm` und der Prüfbericht `*.bericht.txt`). Aufruf des
@@ -706,12 +716,14 @@ vollständigen Handlauf.
 3. Aufruf:
 
    ```powershell
-   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> -Kataloge alle [-Iscc <Pfad>]
+   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> [-Iscc <Pfad>]
    ```
 
-   `-Kataloge alle` ist bis zum Entscheid #160‑E‑1 verpflichtend (Befund
-   #160‑F‑1, Abschnitt 6.1) — ohne den Schalter bricht
-   `Werkzeuge\Auslieferungsvorlage` mit Code 4 ab. `-Iscc` nur angeben, wenn das
+   Kein `-Kataloge` nötig: Seit Anwenderentscheid **#160‑E‑1a** (Befund
+   #160‑F‑1, Abschnitt 6.1) ist die Vorgabe von `Werkzeuge\Auslieferungsvorlage`
+   bereits `alle` — der Katalog wird vollständig ausgeliefert. `-Kataloge
+   readonly` bleibt als ausdrücklich wählbarer Schalter; nur damit bricht das
+   Werkzeug mit Code 4 ab. `-Iscc` nur angeben, wenn das
    Skript `ISCC.exe` nicht selbst findet (Suchreihenfolge: `-Iscc` →
    Umgebungsvariable `EPOS_ISCC` → neben `build-setup.ps1` → Program Files →
    Registry); Pfad zur `ISCC.exe` selbst oder zu deren Ordner, z. B.
@@ -728,8 +740,9 @@ vollständigen Handlauf.
      Pfad prüfen.
    - **3** — Ziel liegt im Repository außerhalb von `Setup\Vorlage\`: nicht
      selbst eingreifen, den Pfad setzt das Skript.
-   - **4** — Katalogwächter (#160‑F‑1): mit `-Kataloge alle` erneut aufrufen
-     (siehe Schritt 3 oben).
+   - **4** — Katalogwächter (#160‑F‑1): tritt nur bei ausdrücklichem `-Kataloge
+     readonly` auf — ohne `-Kataloge` (Vorgabe seit #160‑E‑1a: `alle`) erneut
+     aufrufen (siehe Schritt 3 oben).
    - **5** — fachlicher Abbruch: Meldung auf der Konsole lesen, betrifft die
      Quelle selbst (z. B. eine gescheiterte Prüfung).
 6. Nach dem Lauf zurückmelden: die vollständige Konsolenausgabe, der Inhalt von
@@ -757,9 +770,10 @@ weiterhin nur der bisherige Job `build-test` — die zwei Jobs schließen sich
 zusätzlich die Testkette. Der Job `installer` lädt den WebView2-Bootstrapper
 nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
 Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
-Referenzlaeufe/Kenndaten_Test.sqlite -Kataloge alle`, ohne `-Beispiele` — das
-Repository führt keinen gepflegten Beispielsatz, und ohne den Schalter bleibt
-die Vorlage projektfrei (6.1, Schritt 4). Zurück kommen drei Dinge, 14 Tage
+Referenzlaeufe/Kenndaten_Test.sqlite`, ohne `-Kataloge` (Vorgabe seit
+#160‑E‑1a: `alle`) und ohne `-Beispiele` — das Repository führt keinen
+gepflegten Beispielsatz, und ohne diesen Schalter bleibt die Vorlage
+projektfrei (6.1, Schritt 4). Zurück kommen drei Dinge, 14 Tage
 lang: der übersetzte Installer aus `Setup\Ausgabe`, der Prüfbericht der
 Vorlage (er steht zusätzlich im Lauf selbst — er ist der Beleg, dass keines
 der 24 Prüfprojekte in den Installer gewandert ist) und das Skriptprotokoll.
@@ -812,9 +826,12 @@ Versionsquelle trug:** Das Runner-Image führt `ISCC.exe` und `Compil32.exe` von
 meldet „Inno Setup 6.7.1 (Registry DisplayVersion)". Die Vier-Quellen-Ermittlung aus #180
 war also keine Vorsicht, sondern nötig. Damit ist der Anwenderentscheid „#160‑E‑1: CI"
 eingelöst (Aufgabe #176; Zwischenbefunde #177 Registrierung nur vom Standardzweig, #180
-Versionsquelle, #181 Kommentarklammer); die Vorgabe `-Kataloge readonly` des Werkzeugs
-blieb dabei unverändert — der Lauf übergibt `alle` ausdrücklich (6.1, #160‑F‑1), die
-Grundsatzfrage liegt beim Anwender.
+Versionsquelle, #181 Kommentarklammer); zum Zeitpunkt dieses Laufs blieb die Vorgabe
+`-Kataloge readonly` des Werkzeugs unverändert — der Lauf übergab `alle` ausdrücklich
+(6.1, #160‑F‑1). **Seit Anwenderentscheid #160‑E‑1a** (11.09.2026, Auftrag #182) ist die
+Grundsatzfrage entschieden: Die Vorgabe des Werkzeugs ist jetzt `alle`, und der Job
+übergibt seither keinen `-Kataloge`-Schalter mehr — Schritt 3 oben und `windows.yml`
+zeigen den aktuellen Aufruf.
 
 ---
 
@@ -869,7 +886,7 @@ Verpacken und das Setup danach.
 | S9 | `.gitignore` deckt `/AccessDatabaseEngine*.exe` ab, den WebView2-Bootstrapper in der Repo-Wurzel aber **nicht** — `GitHub_Sync.bat` committet mit `git add -A` | Zeile `/MicrosoftEdgeWebview2Setup.exe` in `.gitignore` ergänzen |
 | S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | **Entschieden 03.09.2026 (iF20): Bootstrapper.** Der Standalone-Installer wird erst beigelegt, wenn ein Kunde ohne Internet installiert |
 | S4 | Herausgebername: „INEKON" oder die vollständige Firmierung? Steht in Setup, Softwareliste und später im Zertifikat | Festlegen, danach `#define AppPublisher` |
-| S5 | ~~Automatisierte Erzeugung der Auslieferungsdatenbank (6.1)~~ **Erledigt 09.09.2026 (Entscheid #157‑E‑2, Auftrag #160):** `Werkzeuge/Auslieferungsvorlage`, 17 Proben, Prüfbericht neben der Zieldatei | Offen bleibt allein **Befund #160‑F‑1**: Die Marke `ReadOnly` trägt die Katalogregel aus 6.1 Schritt 3 heute nicht (22 von 28 Katalogtabellen würden leer). Bis zur Entscheidung läuft die Freigabe mit `--kataloge alle` |
+| S5 | ~~Automatisierte Erzeugung der Auslieferungsdatenbank (6.1)~~ **Erledigt 09.09.2026 (Entscheid #157‑E‑2, Auftrag #160):** `Werkzeuge/Auslieferungsvorlage`, 17 Proben, Prüfbericht neben der Zieldatei. ~~Befund #160‑F‑1~~ **entschieden 11.09.2026 (Entscheid #160‑E‑1a, Auftrag #182):** Die Vorgabe des Werkzeugs ist jetzt `alle` — der Katalog wird vollständig ausgeliefert, `--kataloge readonly` bleibt als Schalter wählbar | Keiner |
 | S6 | `Settings.Default.Upgrade()` beim Versionswechsel vorhanden? (7.7) | Im Code nachsehen |
 | S7 | ~~Wird noch ein 64-Bit-Stand gebraucht?~~ **Erledigt 22.08.2026:** ja — EPOS-Plan ist vollständig auf x64 umgestellt, einen x86-Stand gibt es nicht mehr | Keiner. Herleitung und Abnahmeplan in [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md) |
 
