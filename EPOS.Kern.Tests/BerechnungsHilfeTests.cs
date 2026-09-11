@@ -438,16 +438,45 @@ namespace EPOS.Kern.Tests
         /// <b>Fassung 3:</b> Der Kopfblock der Seiten dieses Teils nennt die Fassung.
         /// Ohne diesen Zusatz stünde im Wiki eine Seite mit LaTeX-Formeln und einem
         /// Stand, der genauso gut die Unicode-Fassung meinen könnte.
+        ///
+        /// <para><b>Nachtrag Auftrag #203 (11.09.2026).</b> Der Stand ist seither
+        /// nicht mehr für alle dreizehn Seiten DERSELBE: Die Stromspeicherseite
+        /// trägt die <b>Fassung 4</b> mit dem zweiten Hauptteil „Mehrere Speicher
+        /// (Speicherflotte)". Geprüft wird deshalb je Seite gegen den Stand, den sie
+        /// führen SOLL — eine Seite ohne Eintrag bleibt bei der Fassung 3. Der
+        /// Gedanke des Falls ist unverändert: Der Stand einer Seite ist eine Zusage
+        /// und keine Nebensache, und wer eine Seite überarbeitet, ohne ihn
+        /// mitzuziehen, sieht es hier.</para>
         /// </summary>
         [Theory]
         [MemberData(nameof(AlleSeitenDerRubrik))]
-        public void Der_Stand_nennt_die_Fassung_3(string seitenname)
+        public void Der_Stand_nennt_die_Fassung(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
 
-            Assert.Equal("2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden)", seite!.Stand);
+            string erwartet = StandDerSeite.TryGetValue(seitenname, out string eigener)
+                ? eigener
+                : STAND_FASSUNG_3;
+
+            Assert.Equal(erwartet, seite!.Stand);
         }
+
+        /// <summary>Der Stand, den die Seiten der Fassung 3 tragen.</summary>
+        private const string STAND_FASSUNG_3 = "2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden)";
+
+        /// <summary>
+        /// Die Seiten, die einen EIGENEN Stand führen — jede mit ihrem Grund. Wer
+        /// eine Seite fortschreibt, trägt sie hier ein; wer sie vergisst, bekommt
+        /// den Fall rot und sieht sofort, welcher Stand fehlt.
+        /// </summary>
+        private static readonly Dictionary<string, string> StandDerSeite =
+            new(StringComparer.Ordinal)
+            {
+                // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen und um den
+                // zweiten Hauptteil "Mehrere Speicher (Speicherflotte)" ergaenzt.
+                { "Stromspeicher", "2026-09-11 (Fassung 4: Speicherflotte)" }
+            };
 
         /// <summary>
         /// <b>Fassung 2:</b> Jede Seite trägt mindestens EINE nummerierte Anzeige-Formel.

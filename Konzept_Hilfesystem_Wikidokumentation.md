@@ -746,3 +746,52 @@ Schätzung nur als Gerüst enthalten.
 Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.
 
 Lokale Beschreibung: [Doku_Speicherauslegung_Kosten_Zeitreihen.md](Doku_Speicherauslegung_Kosten_Zeitreihen.md).
+
+## Bedienungsseiten mit Repo-Quelle unter `Projekte/Wiki/` — 11.09.2026 (Auftrag #203)
+
+**Hausregel: Eine Bedienungsseite, die im Repository eine Quelle hat, wird ZUERST dort
+geändert und danach hochgeladen — nie umgekehrt.**
+
+Für die Rubrik **Berechnung** galt das von Anfang an: Ihre dreizehn Seiten liegen als
+`EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki` im Quellbaum, sind in den Kern eingebettet
+(der Hilfe-Assistent liest sie ohne Netz) und werden von den H13-Wächtern gehalten. Für die
+**Bedienungsseiten** der Rubrik „Programm Dokumentation" galt es nicht: Sie entstanden nach
+Abschnitt 6 unmittelbar im Wiki, und ihr Text stand nirgendwo sonst.
+
+Das ist genau einmal gutgegangen und beim zweiten Mal nicht mehr. Am 11.09.2026 war die
+Rechenwegseite `Berechnung/Stromspeicher` **im Wiki neuer als im Repository** — die
+Erweiterung vom 10.09. und zwei Bearbeitungen vom 11.09., eine davon vom Anwender, 79 Zeilen
+Abweichung. Beim nächsten Hochladen aus dem Quellbaum wären sie stillschweigend
+überschrieben worden. Die Gegenrichtung ist genauso teuer: Wer eine Bedienungsseite nur im
+Wiki pflegt, hat keinen Stand, gegen den ein Umbau der Maske geprüft werden könnte.
+
+Deshalb gilt seither:
+
+1. **Jede Bedienungsseite, die zu einem Dialog oder einer Ansicht des Programms gehört und
+   fortgeschrieben wird, bekommt eine Quelle unter `Projekte/Wiki/`.** Der Dateiname ist der
+   Wikititel mit ` - ` statt `/`, also
+   `Projekte/Wiki/Programm Dokumentation - <Kurzname>.wiki`.
+2. **Der Kopf der Datei ist ein Wiki-Kommentar** und nennt Wikititel, Repo-Pfad, Stand und die
+   Pflegeregel. Er ist auf der Wikiseite unsichtbar und beantwortet trotzdem die Frage, die
+   sonst niemand beantworten kann: *Wo ist die Quelle dieses Textes?*
+3. **Vor dem Hochladen wird der Live-Stand gelesen und verglichen.** Ist er neuer, wird er
+   ZUERST in die Repo-Quelle übernommen; erst dann wird ergänzt. Der Diff gehört in den
+   Bericht des Auftrags.
+4. **Kategorie und Titel bleiben, Anker bleiben.** Ein Anker steht in `help_mapping.txt` und in
+   einem ausgelieferten Programm, das bis zum nächsten Release altert; er darf eine
+   Überarbeitung überleben. Eine umbenannte Überschrift behält deshalb ihren alten Anker
+   zusätzlich zum neuen.
+5. **Hochgeladen wird nicht vom Agenten**, sondern von der Orchestrierung. Ein Auftrag liefert
+   die Upload-Liste *Seitentitel → Quelldatei* im Abschlussbericht; damit ist nachvollziehbar,
+   welche Datei welche Wikiseite ersetzt.
+
+Die Rubrik **Berechnung** bleibt davon unberührt: Ihre Quellen liegen weiterhin im Kern, weil
+sie dort ausgeliefert und geprüft werden. `Projekte/Wiki/` ist ausdrücklich **kein** zweiter
+Ablageort für sie.
+
+Die ersten zwei Seiten dieser Art (Auftrag #203):
+
+| Wikititel | Repo-Quelle |
+|---|---|
+| `Programm Dokumentation/Stromspeicher` | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` |
+| `Programm Dokumentation/Hilfe-Assistent` | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` |

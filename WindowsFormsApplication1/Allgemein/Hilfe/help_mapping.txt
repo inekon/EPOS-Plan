@@ -287,7 +287,15 @@ Form_Stromganglinie_Admin.btn_Help = Strombedarf
 Form_AdminStromspeicher.btn_Help = Stromspeicher
 Form_Stromspeicher_einlesen.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher
-Form_SpeicherOptimierung.btn_Help = Stromspeicher
+# Auftrag #203 (11.09.2026): Der Schluessel Form_SpeicherOptimierung.btn_Help
+# traegt seit #192 die ANSICHT "Stromspeicher-Auslegung" (Seitenschluessel
+# STROMSPEICHER_AUSLEGUNG) - er sitzt im Kopf der Ansicht und wird von ihren
+# Bausteinen (Vorpruefungsbanner, Diagnosebanner, Groessen-Sicht) durchgereicht.
+# Die Bedienungsseite fuehrt seither einen eigenen Abschnitt dafuer; der Anker
+# springt dorthin, statt den Leser am Seitenanfang beim Katalogdialog abzusetzen.
+# Die Flottenbausteine bekommen KEINEN eigenen Schluessel: Sie fuehren keinen
+# eigenen Infoknopf, und eine Zeile ohne Knopf waere eine tote Zuordnung.
+Form_SpeicherOptimierung.btn_Help = Stromspeicher#auslegung-ansicht
 Form_SpeicherVariantenVergleich.btn_Help = Stromspeicher
 Form_EingDBStromverbraucher.btn_Help = Stromverbraucher
 Form_EingStromTyp.btn_Help = Stromverbraucher
