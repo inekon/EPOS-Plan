@@ -200,6 +200,40 @@ entgegen — sie ist damit austauschbar.
   `EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests` (jeder Eigenschaftsname existiert
   am Daten-Objekt, mit Gegenprobe) und `KiFeldwerteTests` (Anmelden, Schalter, Vorschau,
   „ohne Einwilligung nichts").
+- **Ein Dialog, in dem der Assistent MITARBEITEN soll, meldet seine HAKEN mit an.**
+  Hausregel seit Auftrag **#201** (Stufe S3, Weg 5). Die Feldliste allein reicht zum
+  Setzen nicht: Der neue Wert muss SICHTBAR werden, der Dialog prüft seine Eingaben
+  SELBST, ein Katalogsatz kann schreibgeschützt sein, und Speichern und Rechnen sind
+  Wege der Maske. Das alles steuert `KiMaskenhaken` bei — ein zweiter Parameter an
+  derselben Zeile:
+  ```csharp
+  protected override void OnInitialized()
+      => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten, KiHaken());
+
+  private KiMaskenhaken KiHaken() => new KiMaskenhaken
+  {
+      Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+      Pruefen     = () => EingabenPruefen() ? "" : _meldung,
+      Speichern   = KiSpeichern
+  };
+  ```
+  **Alles ist freiwillig, aber nichts ist beliebig.** Ohne `Auffrischen` stünde in der
+  Maske die alte Zahl, während der Assistent „gesetzt" meldet. `Pruefen` ist **dieselbe**
+  Prüfung, die der Speicherknopf ruft — der Assistent ersetzt sie nicht, er löst sie aus,
+  und ihr Befund geht als Meldung in den Chat. `Schreibgeschuetzt` meldet das `ReadOnly`
+  des Auslieferungskatalogs (heute nur `WaermepumpeStammDaten.NurLesen`), und dann lehnt
+  schon `feld_setzen` ab statt erst der Speicherknopf. Wer keinen `Speichern`-Haken
+  anmeldet, bekommt eine benannte Ablehnung statt eines stillen Nichts. **Ein Rechenweg
+  trägt den AKTIONSNAMEN als Schlüssel** (`Rechenweg("flotte_bewerten", …)`), nicht einen
+  eigenen — zwei Namensräume für dieselbe Sache laufen auseinander; er ruft denselben Weg
+  wie der Knopf daneben, damit der Assistent nicht etwas anderes rechnet als die Ansicht.
+  **Der Wert landet in der Eigenschaft, nicht an ihr vorbei:** Der Setzer der Anmeldung
+  schreibt über dieselbe `PropertyInfo`, an der das Eingabefeld hängt, und die Umsetzung
+  Text → Wert macht der Kern (`KiFeldwandler`, nach `ZahlText.Parsen`) — dafür geht der
+  `PropertyType` mit in den `KiFeldzugang`. Wächter:
+  `EPOS.UI.Tests/Dialoge/Hilfe/KiMaskenhakenTests` (jede der fünf Masken meldet ihre
+  Haken) und `KiFeldSetzenTests` (Bestätigung → Feld geändert, je ein Fall pro Maske,
+  dazu die Ablehnungen: abgeleitetes Feld, Typfehler, Schreibschutz, ohne Bestätigung).
 - **Ein dauerhaftes Banner nur für einen Zustand, den der Anwender beheben MUSS und
   sonst nicht sieht.** Anwenderwunsch **W16b‑E‑6** vom 05.09.2026: Über der Startseite
   stand, solange kein Projekt offen war, ein `Warnbanner` mit den zwei Sätzen der

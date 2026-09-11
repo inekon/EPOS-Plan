@@ -1025,6 +1025,107 @@ angehängt über `KiMaskenbruecke.Protokollsenke` — unter Windows an
 den Semantikindex, den Rechenweg. Der Referenzlauf ist unberührt (1030 und 1046 byte-gleich gegen
 `2026-09-11_R7_Speicherflotte`).
 
+### Etappe S3 umgesetzt (#201) — der Assistent steuert den Dialog, Weg 5
+
+Stand 11.09.2026, Zweig `w201-ki-dialog-s3`. Grundlage ist
+[`Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
+(Abschnitt 3.4, Zeile S3). Sie löst drei Zusagen dieses Konzepts ein: das **Aktionsregister
+im Kern** (3.7 — die Begründung „nur im App-Projekt darf DB-Code stehen" ist mit iU4
+hinfällig geworden, die Controller liegen längst dort), die **Formularsteuerung** aus 11.4
+und die **Rechenaktionen** aus 5.3.
+
+**Das Register liegt im Kern — und damit steht es auf BEIDEN Plattformen.** Die neun
+Dateien aus `WindowsFormsApplication1/Allgemein/KI/Aktionen/` sind per `git mv` nach
+`EPOS.Kern/Allgemein/KI/Aktionen/` gezogen; `KiAusfuehrer` (995 Zeilen, statisch) ist
+`EPOS.Kern/Allgemein/KI/KiAusfuehrung.cs` geworden und erfüllt `IKiAusfuehrung`. **Zustand
+als Instanz, nicht statisch mit `Zuruecksetzen()`:** Einläufigkeit, Laufmarke,
+Sitzungsgedächtnis und das gebaute Register gehören einem Ausführer, und ein Prüfling legt
+sich einen frischen an — ein Rücksetzer, den jemand vergisst, wäre genau die Art Fehler,
+die nur sporadisch auffällt. Der prozessweite Halter bleibt `KiAusfuehrungsweg.Aktuell`, wie
+er war. **iOS und die Razor-Dialoge bekommen damit dasselbe Register**: Die `AppWurzel`
+legt die Kern-Ausführung ein, sobald noch `KeineAusfuehrung` steht (leeres Register, jede
+Aktion abgelehnt — genau der Zustand, den S3 beendet).
+
+**Was in der Windows-Hülle blieb, sind zwei Haken und eine Zeile Fensterwechsel**
+(`WindowsFormsApplication1/Allgemein/KI/KiAusfuehrungWindows.cs`, 120 Zeilen): die
+Modalitätsfrage `Form.ActiveForm.Modal` und der Hilfetext eines Katalogfeldes über
+`WikiHelpCatalog` (im Kern als Naht `KiFeldhilfe` mit stiller Standardfassung). Der dritte
+plattformgebundene Weg — „führe diese Arbeit auf dem Oberflächenfaden aus" — steht dort, wo
+die Oberfläche lebt: `KiChatHuelle` belegt `KiAusfuehrung.AufOberflaeche`, solange das
+Chatfenster steht. **Der frühere Rückfall über `Application.OpenForms` ist ersatzlos
+entfallen**, und `KiDialogZugriff.cs` (567 Zeilen Controlsuche) samt `KiAusfuehrungAdapter`
+ist gelöscht — der Weg war seit iU9 tot.
+
+**`feld_setzen` läuft über die MASKENBRÜCKE.** Der Setzer eines `KiFeldzugang` schreibt in
+dieselbe Eigenschaft, an der auch das Eingabefeld hängt; dazwischen steht genau eine
+Umsetzung, `KiFeldwandler` — Text → Wert nach der EINEN Zahlregel des Hauses
+(`ZahlText.Parsen`: Komma ODER Punkt, kein Tausendertrennzeichen), Wahrheitswerte auch als
+„Ja"/„Nein" (dieselben Wörter, die der Feldblock selbst gesendet hat), leer nur, wo der
+Katalog es erlaubt. Der Zieltyp kommt aus der Anmeldung (`PropertyInfo.PropertyType`), weil
+nur die Oberfläche ihn kennt. **Mehrere Felder in EINER Bestätigung** bleiben
+`formular_ausfuellen` mit `feld=wert; feld=wert` — ein zweiter Weg für dieselbe Sache wäre
+ein zweiter Namensraum.
+
+**Der Dialog steuert mehr bei als seine Felder** — `KiMaskenhaken`, angemeldet zusammen mit
+ihnen: `Auffrischen` (ohne `StateHasChanged` stünde in der Maske die alte Zahl, während der
+Assistent „gesetzt" meldet), `Pruefen` (**dieselbe** Prüfung, die der Speicherknopf ruft —
+ihr Befund geht als Meldung zurück; der Assistent ersetzt sie nicht, er löst sie aus),
+`Schreibgeschuetzt` (heute nur die Wärmepumpenverwaltung: `WaermepumpeStammDaten.NurLesen`
+trägt das `ReadOnly` des Auslieferungskatalogs), `Speichern` und `Rechenweg(name)`.
+
+**Fünf Ablehnungen im Klartext**, und jede nennt, was es gibt: Maske nicht offen, Feld nicht
+deklariert, Feld nicht setzbar (die sechs abgeleiteten Größen der Stromspeicher-Ansicht),
+Lesemodus (iF30, über `SimulationLaufCtrl.LesemodusGrund` — die Frage steht hier ein ZWEITES
+Mal, weil sie näher am Anwender die bessere Meldung gibt), schreibgeschützter Katalogsatz
+und Typfehler.
+
+**`dialog_oeffnen`** (Stufe 1) führt über `Dienste.Navigation.OeffneMaske`; die Zuordnung
+Katalogmaske → Navigationsschlüssel ist DATEN (`KiMaskenziele`), und ein Wächter verlangt zu
+jedem Katalogeintrag ein Ziel. Drei der vier Katalogmasken sind Editoren aus einer Liste
+heraus und brauchen einen gewählten Satz — das Ziel ist deshalb ihre VERWALTUNG, der Weg, den
+der Anwender auch von Hand ginge. Stufe 1 trotz allem, was danach möglich wird: „Die
+Verantwortung geht mit dem Öffnen an ihn über" (4.1).
+
+**`dialog_speichern`** (Stufe 2, Anwenderentscheid KI‑D‑Q4) ruft den Speicherweg der offenen
+Maske — und ist die EINZIGE Dialogaktion mit `datenbankwirksam: true`, also mit
+Sicherungspunkt. Der entsteht VOR der Bestätigung (der Anwender soll vor der Entscheidung
+sehen, wohin der Vorzustand gesichert ist) und steht danach noch einmal im Ergebnis.
+Ohne Freigabe wird der Speicherweg nicht einmal gerufen.
+
+**Stufe 3 ist frei — der Klick nicht.** `KiRiegel.HoechsteStufe` steht seither auf
+`Rechnen`; `OhneBestaetigung` bleibt bei `Lesen`. Drei Rechenaktionen:
+`simulation_rechnen` (im Kern über `SimulationRunner`, mit `speichern` als Parameter — die
+Wirkung nennt wörtlich „der vorhandene Ergebnisstand wird überschrieben"),
+`peak_ziel_bestimmen` und `flotte_bewerten`. Die zwei letzten rechnen **in der offenen
+Ansicht** über ihren angemeldeten `Rechenweg`: Sie gehen denselben Weg wie der Knopf
+daneben — mit derselben Vorprüfung, demselben Fortschritt, demselben Abbruch —, und ihr
+Ergebnis steht danach dort, wo der Anwender es erwartet. Im Kern nachgebaut wären es zwei
+Rechnungen, die auseinanderlaufen können. Dafür trägt `KiAktion` einen zweiten Delegaten
+`AusfuehrenLang` mit `KiLaufumgebung` (Fortschritt + Abbruchmarke); die 19 Aktionen der
+Stufen 1 und 2 behalten ihre Signatur wörtlich.
+
+**`dialog_aktion_ausfuehren` bleibt im Register und lehnt ab.** Aus dem Register wird nichts
+gelöscht (5.4 nennt, was NIE hineingehört — nicht, was wieder hinaus soll): Der
+Werkzeugvertrag des Modells ist stabil, und eine benannte Ablehnung, die den Weg nennt
+(`dialog_speichern`), ist besser als ein Aufruf ins Leere. Ihr Andockpunkt war
+`Button.PerformClick` — ein Razor-Dialog hat keinen Knopf, den man von außen drücken könnte,
+und er soll keinen bekommen (das wäre die Reflexion, die 3.2 ausschließt).
+
+**Protokoll.** Unverändert genau EINE Zeile je Versuch, auch für abgewiesene (3.6). Die
+Feldsetzung nennt alt und neu im Ergebnistext, das Speichern den Sicherungspfad, der
+Rechenlauf seine Dauer; Dialogname und Kennung des `KiAufrufkontext` stehen seit #199 in der
+Kontextzeile jeder Anfrage.
+
+**Register: 29 Aktionen** (24 aus Etappe 3b, fünf neu). Der Wächter dazu ist neu und war bis
+#201 nicht möglich: `EPOS.Kern.Tests/KiRegisterS3Tests` prüft das ECHTE Register — Zahl,
+Namen, kein Doppelter, die Verbotsliste aus 5.4 an Name UND Andockpunkt, Vorschaupflicht ab
+Stufe 2, Ausführbarkeit. `KiKern.Tests/Registerabbild` bleibt für die Abbildung
+Modellantwort → Aufruf, aber die Vollständigkeit prüft seither der Kern.
+
+**Was S3 NICHT anfasst:** `KiChatService` über die Werkzeugliste hinaus, den Semantikindex,
+die Wissensbasis-Formate, `SpeicherEngine` und den Rechenweg. Der Referenzlauf ist unberührt
+(1030 und 1046 byte-gleich gegen `2026-09-11_R7_Speicherflotte`).
+
 
 ---
 

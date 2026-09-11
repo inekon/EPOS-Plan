@@ -18185,4 +18185,163 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>The assistant cannot trigger buttons in this version yet.</value>
   </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Opens one of the released forms; the user then continues working in it.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Open form</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Open the boiler administration.</value>
+  </data>
+  <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
+    <value>Name of the form from the dialog catalogue that is to be opened.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Saves the entries of the open form to the database through the form's own save path.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Save form</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Save the boiler as it now stands in the form.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>The record of the form is written. A backup copy of the database is made first; the write can only be undone by restoring that copy.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Runs the simulation of a project; on request the result is saved.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Run simulation</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Run the project Musterhaus and save the result.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>The run occupies the calculation core for its duration. With „save“ the existing result of the project is overwritten.</value>
+  </data>
+  <data name="KI_AKTION_ERL_SIM_SPEICHERN" xml:space="preserve">
+    <value>Should the result be saved? Without an entry the run only calculates.</value>
+  </data>
+  <data name="KI_AKTION_SIM_SPEICHERN_NAME" xml:space="preserve">
+    <value>Save result</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_PEAKZIEL" xml:space="preserve">
+    <value>Determines the economic peak target in the open electricity storage view.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_PEAKZIEL" xml:space="preserve">
+    <value>Determine peak target</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_PEAKZIEL" xml:space="preserve">
+    <value>Determine the economic peak target for the configured fleet.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_PEAKZIEL" xml:space="preserve">
+    <value>The peak target that was found then stands in the view; the previous value is replaced.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluates the fleet of the open electricity storage view — the same path as the „Calculate“ button.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluate fleet</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluate the configured storage fleet.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>The result of the evaluation then stands in the view; a previous result is replaced.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_UEBER_SPEICHERN" xml:space="preserve">
+    <value>The assistant does not trigger this button; for writing there is the action dialog_speichern.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_KEIN_WEG" xml:space="preserve">
+    <value>The assistant cannot trigger buttons of a form. For writing there is dialog_speichern, for filling fields feld_setzen and formular_ausfuellen.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OK" xml:space="preserve">
+    <value>The form „{0}“ is open.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_KEIN_WEG" xml:space="preserve">
+    <value>The form „{0}“ cannot be opened from here (target {1}). On this platform there is no path to it.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OHNE_ZIEL" xml:space="preserve">
+    <value>No opening path is stored for the form „{0}“.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>The form „{0}“ could not be opened: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_VORSCHAU" xml:space="preserve">
+    <value>The form „{0}“ is saved with its {1} fields. The record is written; a backup copy of the database is made first.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_KEIN_WEG" xml:space="preserve">
+    <value>The form „{0}“ offers the assistant no save path.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The form „{0}“ could not be saved: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_SICHERUNG" xml:space="preserve">
+    <value>The previous state is backed up: {0}</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU" xml:space="preserve">
+    <value>The project „{0}“ is calculated. The saved result remains untouched.</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU_SPEICHERN" xml:space="preserve">
+    <value>The project „{0}“ is calculated and the result is saved. The existing result of the project is overwritten.</value>
+  </data>
+  <data name="KI_AKTION_SIM_LAEUFT" xml:space="preserve">
+    <value>Calculating project „{0}“ …</value>
+  </data>
+  <data name="KI_AKTION_SIM_FERTIG" xml:space="preserve">
+    <value>The run has finished.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK" xml:space="preserve">
+    <value>The project „{0}“ has been calculated.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK_GESPEICHERT" xml:space="preserve">
+    <value>The project „{0}“ has been calculated and the result saved.</value>
+  </data>
+  <data name="KI_AKTION_SIM_FEHLER" xml:space="preserve">
+    <value>The project „{0}“ could not be calculated: {1}</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_VORSCHAU" xml:space="preserve">
+    <value>The economic peak target is determined in the view „{0}“. The run can take several minutes; the target that is found then replaces the configured value.</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_LAEUFT" xml:space="preserve">
+    <value>Determining the economic peak target …</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_VORSCHAU" xml:space="preserve">
+    <value>The fleet of the view „{0}“ is evaluated. The run can take several minutes; a previous result is replaced.</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
+    <value>Evaluating the fleet …</value>
+  </data>
+  <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
+    <value>The view „{0}“ is not open; this calculation only runs there.</value>
+  </data>
+  <data name="KI_AKTION_KEIN_RECHENWEG" xml:space="preserve">
+    <value>The view „{1}“ does not currently offer the calculation path „{0}“.</value>
+  </data>
+  <data name="KI_FELD_NICHT_SETZBAR" xml:space="preserve">
+    <value>The field „{0}“ is a derived value and cannot be set.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT" xml:space="preserve">
+    <value>The record being edited in „{0}“ belongs to the delivery and is write-protected.</value>
+  </data>
+  <data name="KI_FELD_LEER_VERBOTEN" xml:space="preserve">
+    <value>The field „{0}“ is mandatory and must not be left empty.</value>
+  </data>
+  <data name="KI_FELD_LEER_UNMOEGLICH" xml:space="preserve">
+    <value>The field „{0}“ always carries a value; it cannot be emptied.</value>
+  </data>
+  <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
+    <value>The field „{0}“ expects a number; „{1}“ is not one.</value>
+  </data>
+  <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
+    <value>The field „{0}“ expects yes or no; „{1}“ is neither.</value>
+  </data>
+  <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
+    <value>The field „{0}“ could not be set: {1}</value>
+  </data>
+  <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
+    <value>The form reports on this: {0}</value>
+  </data>
 </root>

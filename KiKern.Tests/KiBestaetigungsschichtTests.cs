@@ -85,19 +85,35 @@ namespace KiKern.Tests
             Assert.Equal(Schutzstufe.Lesen, KiRiegel.OhneBestaetigung);
         }
 
+        /// <summary>
+        /// Seit Etappe S3 (Auftrag #201) reicht die Obergrenze bis
+        /// <see cref="Schutzstufe.Rechnen"/> — die drei Rechenaktionen
+        /// <c>simulation_rechnen</c>, <c>peak_ziel_bestimmen</c> und
+        /// <c>flotte_bewerten</c> gibt es seither. Was OHNE Klick laeuft, ist damit
+        /// NICHT gewachsen; das haelt der Fall darueber fest.
+        /// </summary>
         [Fact]
-        public void HoechsteStufeIstMitEtappeDreiSchreiben()
-            => Assert.Equal(Schutzstufe.Schreiben, KiRiegel.HoechsteStufe);
+        public void HoechsteStufeIstMitEtappeS3Rechnen()
+            => Assert.Equal(Schutzstufe.Rechnen, KiRiegel.HoechsteStufe);
 
         [Fact]
         public void PruefeStufeLaesstStufeZweiDurch()
             => Assert.Null(KiRiegel.PruefeStufe(Schreibaufruf()));
 
+        /// <summary>
+        /// Stufe 3 kommt seit Etappe S3 durch den Riegel — aber NICHT ohne
+        /// Bestaetigung: Sie liegt ueber <see cref="KiRiegel.OhneBestaetigung"/> und
+        /// braucht damit dieselbe ausdrueckliche Freigabe wie jede Schreibaktion.
+        /// </summary>
         [Fact]
-        public void PruefeStufeHaeltStufeDreiAn()
+        public void PruefeStufeLaesstStufeDreiDurchAberNichtOhneKlick()
         {
-            string? grund = KiRiegel.PruefeStufe(Aufruf("simulation_rechnen", "{\"projekt_id\":7}"));
+            KiAufruf aufruf = Aufruf("simulation_rechnen", "{\"projekt_id\":7}");
 
+            Assert.Null(KiRiegel.PruefeStufe(aufruf));
+            Assert.True(KiRiegel.BrauchtBestaetigung(aufruf));
+
+            string? grund = KiRiegel.Pruefe(aufruf);
             Assert.NotNull(grund);
             Assert.Contains("simulation_rechnen", grund!);
             Assert.Contains(KiTexte.StufeRechnen, grund!);

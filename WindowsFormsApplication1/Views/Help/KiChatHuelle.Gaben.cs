@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
                 ["Rechtshinweis"] = (Func<Task>)RechtshinweisAsync,
 
                 // ---- Zustandsanzeige ------------------------------------------
-                ["Belegt"] = (Func<bool>)(() => KiAusfuehrer.Belegt),
+                ["Belegt"] = (Func<bool>)(() => KiAusfuehrungWindows.Aktuell.Belegt),
                 ["SemantikZeile"] = (Func<string>)Semantikzeile,
                 ["Aktionen"] = KiAusfuehrungsweg.Aktuell.Register.Alle,
 
@@ -247,7 +247,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Task<string> ProtokollAsync()
         {
-            string pfad = KiAusfuehrer.ProtokollPfad();
+            string pfad = KiAusfuehrungWindows.Aktuell.ProtokollPfad();
 
             if (string.IsNullOrEmpty(pfad) || !File.Exists(pfad))
                 return Task.FromResult(
@@ -430,7 +430,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void UeberlagerungGemeldet(bool offen)
         {
-            KiAusfuehrer.Ueberlagerung = offen ? (Func<bool>)(() => true) : null;
+            KiAusfuehrungWindows.Aktuell.Ueberlagerung = offen ? (Func<bool>)(() => true) : null;
         }
 
         /// <summary>

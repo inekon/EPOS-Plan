@@ -1,6 +1,6 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Hilfe-Assistent
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
-     Stand: 2026-09-11 (Absatz "Der Assistent aus einem Dialog heraus", Stufe S1)
+     Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
 
@@ -50,9 +50,28 @@ Zu jeder dieser Meldungen liegt ein '''Abschnitt im eingebauten Wissen''': Bedeu
 
 Beim Öffnen aus einem Dialog gehen mit: der '''Programmbereich''', der '''Name des Dialogs''', die '''Kennung''' der Meldung und – bei „erklären lassen" – der '''Text des Banners'''.
 
-'''Keine Projektdaten und keine Feldwerte.''' Was in den Eingabefeldern steht, verlässt das Programm nicht. Ein Assistent, der die eingegebenen Werte mitliest, ist ein eigener Ausbauschritt und bekommt eine eigene Einwilligung.
+'''Die Feldwerte gehen nur mit, wenn Sie es anhaken.''' Im Chatfenster steht dafür der Schalter '''„Feldwerte mitsenden"'''. Er erscheint nur, solange eine der dafür freigegebenen Masken offen ist, und beim ersten Einschalten werden Sie einmal gefragt – die Zustimmung zum Rechtshinweis ist damit ''nicht'' erteilt. Zurücknehmen können Sie sie jederzeit unter '''Einstellungen…'''.
 
-Wie bisher gilt: '''„Was wird gesendet?"''' zeigt vor dem Absenden genau den Text, der übertragen würde, und '''„Nur suchen"''' überträgt gar nichts.
+Wie bisher gilt: '''„Was wird gesendet?"''' zeigt vor dem Absenden genau den Text, der übertragen würde – mit Schalter also einschließlich der Feldwerte –, und '''„Nur suchen"''' überträgt gar nichts.
+
+=== Der Assistent setzt Felder und rechnet ===
+{{Anker|setzen-und-rechnen}}
+
+Seit dem 11.09.2026 kann der Assistent in der offenen Maske '''mitarbeiten''': einen Wert eintragen, mehrere Felder auf einmal füllen, die Maske speichern, eine Maske öffnen und eine Rechnung anstoßen. Freigegeben sind dafür fünf Masken: '''Heizkessel bearbeiten''', '''Photovoltaik''', '''Pufferspeicher bearbeiten''', '''Wärmepumpen verwalten''' und die Ansicht '''Stromspeicher-Auslegung'''.
+
+'''Nichts geschieht ohne Ihren Klick.''' Vor jeder Änderung zeigt der Chat einen '''Bestätigungsblock''': welches Feld, welcher Wert bisher, welcher künftig – Feld für Feld im Klartext. Erst „Ausführen" trägt den Wert ein; „Abbrechen" verwirft ihn, und nach einer Minute verfällt die Freigabe von selbst. Ein Klick gilt für genau einen Vorgang, es gibt kein „ab jetzt immer".
+
+'''Der Wert landet in der Maske, nicht in der Datenbank.''' Sie sehen ihn sofort im Eingabefeld und können ihn überschreiben, ergänzen oder verwerfen; gespeichert wird erst, wenn Sie speichern – oder wenn Sie den Assistenten ausdrücklich darum bitten.
+
+'''Die Maske prüft den Wert wie eine Eingabe von Hand.''' Ist die Zahl unbrauchbar oder fällt die Plausibilitätsprüfung des Dialogs darüber, meldet der Assistent genau das, was die Maske sagt. Er ersetzt die Prüfung nicht, er löst sie aus.
+
+'''Was er ablehnt, sagt er.''' Abgelehnt wird – jeweils mit Begründung im Klartext –, wenn die Maske nicht offen ist, das Feld nicht zu den freigegebenen gehört, es sich um eine ''errechnete'' Angabe handelt (die Diagnose und die Ergebniswerte der Stromspeicher-Ansicht lassen sich lesen, aber nicht setzen), wenn die Lizenz nur den Lesemodus erlaubt oder wenn der bearbeitete Satz zum Auslieferungskatalog gehört und damit schreibgeschützt ist.
+
+'''Speichern gibt es nur mit Sicherungskopie.''' Bittet man den Assistenten, die Maske zu speichern, legt das Programm '''vorher''' eine datierte Kopie der Datenbank in den Ordner ''DB-Backup'' neben der Datenbank; der Pfad steht in der Bestätigung und noch einmal im Ergebnis. Gelingt die Kopie nicht, wird nicht gespeichert.
+
+'''Rechnen dauert und lässt sich abbrechen.''' Ein Simulationslauf, das Bestimmen des wirtschaftlichen Peak-Ziels und das Bewerten einer Speicherflotte laufen denselben Weg wie der jeweilige Knopf: mit Fortschrittsanzeige, mit Abbruch – und das Ergebnis steht danach '''in der Ansicht''', nicht nur im Chat. Es läuft immer nur eine Anforderung; eine zweite wird mit Hinweis abgelehnt, statt sich anzustellen.
+
+'''Im Protokoll steht jeder Versuch.''' '''Protokoll anzeigen''' führt jede Feldsetzung mit Maske, Feld, altem und neuem Wert, jedes Speichern mit dem Pfad der Sicherungskopie und jeden Rechenlauf mit Dauer – auch die abgelehnten und die abgebrochenen.
 
 === Menü und F1 bleiben ===
 {{Anker|menue-und-f1}}

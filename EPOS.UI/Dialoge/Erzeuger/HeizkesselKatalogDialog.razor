@@ -375,7 +375,47 @@
     protected override void OnInitialized()
     {
         _hinweis = HinweisBeimOeffnen ?? "";
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3):
+    /// zeichnen nach dem Setzen, die eigene Zahlenprüfung, der Speicherweg.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
+    /// (<see cref="EingabenPruefen"/>). Der Assistent ersetzt sie nicht, er löst sie aus —
+    /// und ihr Befund geht als Meldung an den Chat zurück.</para>
+    /// <para><b>Der Speicherweg folgt dem MODUS</b>, genau wie die Knopfleiste: Im Modus
+    /// Bearbeiten schreibt „Überschreiben" den geladenen Satz zurück, im Modus Neu legt
+    /// „Speichern" ihn unter seinem Namen an. Ein dritter Weg („Speichern unter") fragt
+    /// einen NAMEN ab — den kann der Assistent nicht beisteuern, und er bietet ihn
+    /// deshalb nicht an.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Speichern = KiSpeichern
+    };
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (!EingabenPruefen())
+            return KiKern.KiErgebnis.Abgelehnt(_meldung);
+
+        KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
+            ? Ueberschreiben?.Invoke(Daten)
+            : Anlegen?.Invoke(Daten, Daten.Name);
+
+        if (ergebnis is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        await NachDemSchreiben(ergebnis);
+        return ergebnis.Ok
+            ? KiKern.KiErgebnis.Ok(ergebnis.Meldung, anzahl: 1)
+            : KiKern.KiErgebnis.Fehlgeschlagen(ergebnis.Meldung);
     }
 
     /// <inheritdoc/>

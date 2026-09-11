@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
             // Und die SENKE der Protokollzeile (Konzept 4, "Protokoll"): Die Zeile baut
             // der Kern - sie hat das Format jeder anderen Aktionszeile -, angehaengt
             // wird sie an dieselbe Datei wie jeder Ausfuehrungsversuch.
-            KiMaskenbruecke.Protokollsenke = KiAusfuehrer.ProtokollzeileAnhaengen;
+            KiMaskenbruecke.Protokollsenke = KiAusfuehrungWindows.Aktuell.ProtokollzeileAnhaengen;
         }
 
         /// <summary>
