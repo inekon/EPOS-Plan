@@ -163,6 +163,18 @@ public static class FlottenSimulator
         var diagnose = ergebnis.Diagnose;
         var einheitDiagnose = einheiten.Select(x => new FlottenEinheitDiagnose { SpeicherId = x.Id }).ToArray();
 
+        // DIE KAUSALE RATSCHE (Spezifikation 5.1.1, Regel R; Aufgabe #215). Die Schwelle
+        // H ist dann kein Parameter, sondern ein Zustand des Laufs, der nur steigen kann.
+        // Sie gilt nur fuer die zwei Ziele MIT Peak-Ziel und nur fuer den Lauf MIT
+        // Flotte: Ohne Einheiten ist die verfuegbare Entladeleistung D stets 0, und die
+        // Ratsche zoege die Schwelle stur auf die Spitze der Referenz.
+        var ratsche = o.PeakZielAdaptiv && einheiten.Count > 0 &&
+            o.Betriebsziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse;
+        // OHNE Ratsche ist das genau der bisherige feste Wert — Bit fuer Bit.
+        double? peakZiel = ratsche
+            ? o.WirtschaftlicherPeakZielwertKw ?? 0.0
+            : o.WirtschaftlicherPeakZielwertKw;
+
         for (var t = 0; t < input.Istwerte.Count; t++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -210,7 +222,27 @@ public static class FlottenSimulator
             }
 
             var nOhneSpeicher = row.LastKw - row.PvKw - row.BhkwKw + hilfsleistung;
-            var release = o.WirtschaftlicherPeakZielwertKw.HasValue && nOhneSpeicher > o.WirtschaftlicherPeakZielwertKw.Value;
+
+            // REGEL R, Schritt 1: Kann die Flotte die anstehende Netzlast bis auf H
+            // druecken? D_t ist genau die Entladegrenze der Ausfuehrung — Leistung mal
+            // Verfuegbarkeit, nutzbare Energie ueber der SoC-Untergrenze,
+            // Entladewirkungsgrad —, und die Peak-Reserve ist bei N > H
+            // definitionsgemaess freigegeben (release = true). Kann sie es nicht, wird H
+            // auf das Erreichbare nachgezogen; erst DANACH gilt die Regel aus 5.1.
+            if (ratsche)
+            {
+                var verfuegbar = AktuelleVerfuegbarkeit(input, einheiten, t);
+                var abgebbar = 0.0;
+                for (var j = 0; j < einheiten.Count; j++)
+                    abgebbar += Grenzen(einheiten[j], energie[j], true, verfuegbar[j]).Discharge;
+                if (nOhneSpeicher - abgebbar > peakZiel!.Value)
+                {
+                    peakZiel = nOhneSpeicher - abgebbar;
+                    diagnose.IntervalleSchwelleNachgezogen++;
+                }
+            }
+
+            var release = peakZiel.HasValue && nOhneSpeicher > peakZiel.Value;
             var soll = new double[einheiten.Count];
             var curtailRequest = 0.0;
             // Die ROHanforderung vor der Verteilung; nur die Diagnose liest sie.
@@ -226,7 +258,9 @@ public static class FlottenSimulator
                 curtailRequest = pi.PvAbregelungKw;
                 if (ziel == FlottenBetriebsziel.MultiUse && release)
                 {
-                    var peakBedarf = nOhneSpeicher - o.WirtschaftlicherPeakZielwertKw!.Value;
+                    // Multi Use mit Peak-Prioritaet (Spezifikation 6.5) nutzt DIESELBE
+                    // H-Logik: bei aktiver Ratsche die nachgezogene Schwelle.
+                    var peakBedarf = nOhneSpeicher - peakZiel!.Value;
                     if (soll.Sum() < peakBedarf - Eps)
                         soll = Verteile(Math.Max(soll.Sum(), peakBedarf), einheiten, energie, o.Verteilung,
                             true, row.Zeitstempel, AktuelleVerfuegbarkeit(input, einheiten, t));
@@ -237,7 +271,7 @@ public static class FlottenSimulator
             {
                 var effektivesZiel = ziel == FlottenBetriebsziel.MultiUse ? FlottenBetriebsziel.PeakShaving
                     : planend ? FlottenBetriebsziel.PvGreedy : ziel;
-                var request = BestimmeReaktiveAnforderung(effektivesZiel, nOhneSpeicher, row, o);
+                var request = BestimmeReaktiveAnforderung(effektivesZiel, nOhneSpeicher, row, o, peakZiel);
                 anforderungKw = request;
                 soll = Verteile(request, einheiten, energie, o.Verteilung, release, row.Zeitstempel,
                     AktuelleVerfuegbarkeit(input, einheiten, t));
@@ -245,9 +279,9 @@ public static class FlottenSimulator
 
             if (einheiten.Count > 0)
                 ZaehleAnforderung(diagnose, einheitDiagnose, einheiten, energie, soll, anforderungKw,
-                    nOhneSpeicher, release, o, AktuelleVerfuegbarkeit(input, einheiten, t));
+                    nOhneSpeicher, release, peakZiel, AktuelleVerfuegbarkeit(input, einheiten, t));
 
-            var interval = FuehreAus(row, einheiten, energie, soll, curtailRequest, o,
+            var interval = FuehreAus(row, einheiten, energie, soll, curtailRequest, o, peakZiel,
                 AktuelleVerfuegbarkeit(input, einheiten, t),
                 out var peakregelSperrtLaden, out var netzladeverbotSperrtLaden);
             if (einheiten.Count > 0)
@@ -294,6 +328,10 @@ public static class FlottenSimulator
             }
         }
 
+        // H_end — die KAUSAL ERREICHTE Schwelle. Nur die Ratsche erreicht eine; ein
+        // festes Ziel ist gesetzt und wird hier nicht als Ergebnis ausgegeben.
+        if (ratsche) ergebnis.ErreichtesPeakZielKw = peakZiel;
+
         for (var j = 0; j < einheiten.Count; j++)
         {
             var ziel = o.Endbedingung == FlottenEndbedingung.JeSpeicherWieAnfang ? anfang[j]
@@ -338,11 +376,11 @@ public static class FlottenSimulator
         double anforderungKw,
         double nettolastKw,
         bool release,
-        FlottenSimulationOptionen o,
+        double? peakZiel,
         IReadOnlyList<double> verfuegbarkeit)
     {
         diagnose.IntervalleGesamt++;
-        if (o.WirtschaftlicherPeakZielwertKw is double h && nettolastKw > h)
+        if (peakZiel is double h && nettolastKw > h)
             diagnose.IntervalleLastUeberPeakZiel++;
 
         var entladeanforderung = anforderungKw > Eps;
@@ -411,6 +449,7 @@ public static class FlottenSimulator
         IReadOnlyList<double> commands,
         double curtailRequest,
         FlottenSimulationOptionen o,
+        double? peakZiel,
         IReadOnlyList<double> verfuegbarkeit,
         out bool peakregelSperrtLaden,
         out bool netzladeverbotSperrtLaden)
@@ -428,7 +467,7 @@ public static class FlottenSimulator
         var maxCurtail = Math.Max(0, row.PvKw - vorPvVerbrauch);
         var curtail = Math.Min(Math.Max(0, curtailRequest), maxCurtail);
         var n = row.LastKw - row.PvKw - row.BhkwKw + aux + curtail;
-        var release = o.WirtschaftlicherPeakZielwertKw.HasValue && n > o.WirtschaftlicherPeakZielwertKw.Value;
+        var release = peakZiel.HasValue && n > peakZiel.Value;
         var ist = new double[einheiten.Count];
         for (var j = 0; j < einheiten.Count; j++)
         {
@@ -440,12 +479,12 @@ public static class FlottenSimulator
         var importLimit = o.NetzbezugGrenzeKw ?? double.MaxValue / 4;
         var exportLimit = o.NetzeinspeisungGrenzeKw ?? double.MaxValue / 4;
         var chargeCeiling = Math.Max(0, importLimit - n);
-        if (o.WirtschaftlicherPeakZielwertKw.HasValue)
-            chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, o.WirtschaftlicherPeakZielwertKw.Value - n));
+        if (peakZiel.HasValue)
+            chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, peakZiel.Value - n));
         if (!o.NetzladungErlaubt) chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, -n));
         // Diagnose: WELCHE der beiden Regeln den Ladedeckel auf 0 gezogen hat.
-        peakregelSperrtLaden = o.WirtschaftlicherPeakZielwertKw.HasValue &&
-            Math.Max(0, o.WirtschaftlicherPeakZielwertKw.Value - n) <= Eps;
+        peakregelSperrtLaden = peakZiel.HasValue &&
+            Math.Max(0, peakZiel.Value - n) <= Eps;
         netzladeverbotSperrtLaden = !o.NetzladungErlaubt && Math.Max(0, -n) <= Eps;
         var allowed = Math.Max(total, -chargeCeiling);
         if (!o.BatterieexportErlaubt) allowed = Math.Min(allowed, Math.Max(0, n));
@@ -504,8 +543,9 @@ public static class FlottenSimulator
                 ? Math.Max(0, grid - o.NetzbezugGrenzeKw.Value) : 0,
             TechnischeExportverletzungKw = o.NetzeinspeisungGrenzeKw.HasValue
                 ? Math.Max(0, -grid - o.NetzeinspeisungGrenzeKw.Value) : 0,
-            WirtschaftlichePeakverletzungKw = o.WirtschaftlicherPeakZielwertKw.HasValue
-                ? Math.Max(0, grid - o.WirtschaftlicherPeakZielwertKw.Value) : 0,
+            WirtschaftlichePeakverletzungKw = peakZiel.HasValue
+                ? Math.Max(0, grid - peakZiel.Value) : 0,
+            PeakZielKw = peakZiel,
             SollleistungKwJeSpeicher = commands.ToList(),
             IstleistungKwJeSpeicher = ist.ToList(),
             EnergieStartKWhJeSpeicher = energie.ToList(),
@@ -533,11 +573,11 @@ public static class FlottenSimulator
     }
 
     private static double BestimmeReaktiveAnforderung(FlottenBetriebsziel ziel, double n,
-        FlottenNetzintervall row, FlottenSimulationOptionen o)
+        FlottenNetzintervall row, FlottenSimulationOptionen o, double? peakZiel)
     {
         return ziel switch
         {
-            FlottenBetriebsziel.PeakShaving => n - (o.WirtschaftlicherPeakZielwertKw
+            FlottenBetriebsziel.PeakShaving => n - (peakZiel
                 ?? throw new InvalidOperationException("Peak Shaving benoetigt einen wirtschaftlichen Peak-Zielwert.")),
             FlottenBetriebsziel.PvGreedy => n,
             FlottenBetriebsziel.Arbitrage when o.ArbitrageLadepreisSchwelle.HasValue &&
@@ -813,6 +853,7 @@ internal static class FlottenKopie
         Betriebsziel = x.Betriebsziel, Verteilung = x.Verteilung, NetzbezugGrenzeKw = x.NetzbezugGrenzeKw,
         NetzeinspeisungGrenzeKw = x.NetzeinspeisungGrenzeKw, NetzladungErlaubt = x.NetzladungErlaubt,
         BatterieexportErlaubt = x.BatterieexportErlaubt, WirtschaftlicherPeakZielwertKw = x.WirtschaftlicherPeakZielwertKw,
+        PeakZielAdaptiv = x.PeakZielAdaptiv,
         ArbitrageLadepreisSchwelle = x.ArbitrageLadepreisSchwelle,
         ArbitrageEntladepreisSchwelle = x.ArbitrageEntladepreisSchwelle, PrognoseArt = x.PrognoseArt,
         ErzeugerPrioritaet = x.ErzeugerPrioritaet, PlanungshorizontIntervalle = x.PlanungshorizontIntervalle,

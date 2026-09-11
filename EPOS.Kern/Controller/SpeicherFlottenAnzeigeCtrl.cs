@@ -203,9 +203,14 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                 ChartRenderer.C_SERIEN[i % ChartRenderer.C_SERIEN.Length]));
         }
 
-        if (PeakZiel(ergebnis) is double peak && Gewaehlt(reihen, REIHE_PEAKZIEL))
+        // DIE PEAK-ZIEL-REIHE IST SEIT #215 EINE TREPPE (Spezifikation 5.1.1). Die Werte
+        // kommen aus der GANGLINIE des Laufs statt aus der Konfiguration: Bei festem Ziel
+        // ist das dieselbe Waagerechte wie bisher — Zahl für Zahl —, bei der kausalen
+        // Ratsche steigt sie dort, wo die Flotte die Spitze nicht halten konnte. Nur ein
+        // Lauf ohne Ganglinie (Altstand) fällt auf den Zielwert des Standes zurück.
+        if (Gewaehlt(reihen, REIHE_PEAKZIEL) && Peakganglinie(teil, PeakZiel(ergebnis)) is double[] treppe)
             reihenliste.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_PEAKZIEL,
-                Enumerable.Repeat(peak, anzahl).ToArray(), ChartRenderer.C_BHKW) { Gestrichelt = true });
+                treppe, ChartRenderer.C_BHKW) { Gestrichelt = true });
 
         // DIE ZWEITE ACHSE (Hausregel 5.3): der Ladezustand EINER Einheit im Netzbild.
         // Auf der kW-Skala laege er bei 24 kWh Inhalt und 10 kW Bezug nicht dort, wo er
@@ -400,6 +405,48 @@ public static partial class SpeicherFlottenAnzeigeCtrl
 
     private static double? PeakZiel(SpeicherFlottenErgebnis e)
         => e?.Konfiguration?.Optionen?.WirtschaftlicherPeakZielwertKw;
+
+    /// <summary>
+    /// Die KAUSAL ERREICHTE Schwelle H_end [kW] der Ratsche; <c>null</c>, wenn der Lauf
+    /// ein festes Ziel gefahren hat (Spezifikation 5.1.1, Anwenderentscheid PS‑Q2).
+    /// </summary>
+    /// <remarks>
+    /// Sie steht in der Ergebnisansicht NEBEN dem Wert „mit Vorausschau erreichbar" der
+    /// Bisektion; die Differenz der beiden ist der Wert einer Prognose.
+    /// </remarks>
+    /// <param name="ergebnis">Der fertig gerechnete Flottenlauf.</param>
+    /// <returns>H_end [kW] oder <c>null</c>.</returns>
+    public static double? KausalErreichtesPeakZielKw(SpeicherFlottenErgebnis ergebnis)
+        => ergebnis?.Studie?.Variante?.ErreichtesPeakZielKw;
+
+    /// <summary>
+    /// Zahl der Intervalle, in denen die Ratsche die Schwelle nachgezogen hat
+    /// (<c>N − D &gt; H</c>); 0 bei festem Peak-Ziel.
+    /// </summary>
+    /// <param name="ergebnis">Der fertig gerechnete Flottenlauf.</param>
+    /// <returns>Die Zahl der Nachzüge.</returns>
+    public static int SchwelleNachgezogen(SpeicherFlottenErgebnis ergebnis)
+        => ergebnis?.Studie?.Variante?.Diagnose?.IntervalleSchwelleNachgezogen ?? 0;
+
+    /// <summary>
+    /// Die Ganglinie des Peak-Ziels über dem gezeigten Ausschnitt — die TREPPE der
+    /// Ratsche oder die Waagerechte des festen Ziels.
+    /// </summary>
+    /// <param name="teil">Der gezeigte Ausschnitt der Intervalle.</param>
+    /// <param name="ausKonfiguration">Der Zielwert des Standes als Rückfall; <c>null</c> = keiner.</param>
+    /// <returns>Die Werte [kW] oder <c>null</c>, wenn es kein Peak-Ziel gibt.</returns>
+    private static double[] Peakganglinie(IReadOnlyList<FlottenIntervallErgebnis> teil,
+        double? ausKonfiguration)
+    {
+        if (teil == null || teil.Count == 0) return null;
+        if (teil[0].PeakZielKw.HasValue)
+        {
+            var werte = new double[teil.Count];
+            for (int i = 0; i < teil.Count; i++) werte[i] = teil[i].PeakZielKw ?? 0.0;
+            return werte;
+        }
+        return ausKonfiguration is double h ? Enumerable.Repeat(h, teil.Count).ToArray() : null;
+    }
 
     /// <summary>
     /// Der Reihenname EINER Einheit: der Platzhalter {0} nimmt den Anzeigenamen, und wenn

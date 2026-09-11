@@ -138,11 +138,12 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_sechzehn_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_siebzehn_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
-        Assert.Equal(16, d.Felder.Count);
+        // Seit #215 siebzehn: „Peak-Ziel adaptiv" (kausale Ratsche, Spezifikation 5.1.1).
+        Assert.Equal(17, d.Felder.Count);
 
         // KEINE Knöpfe: „Berechnen", „Peak-Ziel bestimmen…" und „Speichern" sind
         // rechnende bzw. datenbankwirksame Aktionen und gehören in das Aktionsregister
@@ -158,6 +159,7 @@ public class KiDialogkatalogTests
     [InlineData("entladeleistung_gesamt")]
     [InlineData("betriebsziel")]
     [InlineData("peak_ziel")]
+    [InlineData("peak_ziel_adaptiv")]
     [InlineData("netzladung")]
     [InlineData("start_soc")]
     [InlineData("peak_reserve")]
@@ -178,7 +180,7 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Nur_die_fuenf_Felder_der_Betriebsfuehrung_sind_SETZBAR()
+    public void Nur_die_sechs_Felder_der_Betriebsfuehrung_sind_SETZBAR()
     {
         // Die übrigen elf sind ABGELEITET: die Summen der Flotte (eine Zahl je Feld,
         // aber viele Einheiten dahinter), die Diagnose und das Ergebnis des letzten
@@ -186,7 +188,8 @@ public class KiDialogkatalogTests
         // hängt an der Schreibbarkeit der Eigenschaft (KiFeldzugang.Setzbar).
         string[] setzbar =
         {
-            "betriebsziel", "peak_ziel", "netzladung", "start_soc", "peak_reserve"
+            "betriebsziel", "peak_ziel", "peak_ziel_adaptiv", "netzladung", "start_soc",
+            "peak_reserve"
         };
 
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;

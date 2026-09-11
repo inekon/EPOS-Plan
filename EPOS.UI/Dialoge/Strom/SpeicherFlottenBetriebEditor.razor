@@ -42,9 +42,16 @@
         <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PRIORITAET" Eintraege="@ErzeugerPrioritaeten"
                        Auswahl="@((int)_wert.ErzeugerPrioritaet)" Aktiv="@Aktiv"
                        AuswahlChanged="ErzeugerPrioritaetSetzen" />
+        @* DIE WAHL „adaptiv (kausal) | fest" (Spezifikation 5.1.1, Anwenderentscheid
+           PS-Q1 vom 11.09.2026, #215). Sie steht VOR dem Zahlenfeld, weil sie dessen
+           Bedeutung bestimmt: adaptiv ist die Zahl der STARTWERT einer Schwelle, die im
+           Lauf steigen darf, fest ist sie das Ziel des ganzen Zeitraums. *@
         @if (HatPeakZiel)
         {
-            <Zahlenfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PEAKZIEL" Einheit="kW"
+            <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PEAKMODUS" Eintraege="@Peakmodi"
+                           Auswahl="@(_wert.PeakZielAdaptiv ? 1 : 0)" Aktiv="@Aktiv"
+                           AuswahlChanged="PeakModusSetzen" />
+            <Zahlenfeld Bezeichnung="@PeakZielBezeichnung" Einheit="kW"
                         Wert="@_wert.WirtschaftlicherPeakZielwertKw" Min="0" Aktiv="@Aktiv"
                         WertChanged="PeakZielSetzen" />
         }
@@ -65,6 +72,10 @@
     @if (!VerteilungZeigen)
     {
         <p class="epos-flotte-hinweis">@Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE</p>
+    }
+    @if (HatPeakZiel)
+    {
+        <p class="epos-flotte-hinweis">@PeakModusHinweis</p>
     }
     <p class="epos-flotte-hinweis">@ZielHinweis</p>
 </section>
@@ -125,7 +136,26 @@
         (0, Resource.FLOTTE_PRIO_PV_VOR_BHKW), (1, Resource.FLOTTE_PRIO_BHKW_VOR_PV)
     };
 
+    /// <summary>0 = fest (Bestand), 1 = adaptiv (kausale Ratsche, Spezifikation 5.1.1).</summary>
+    private static IReadOnlyList<(int Id, string Text)> Peakmodi => new[]
+    {
+        (0, Resource.FLOTTE_PEAKMODUS_FEST), (1, Resource.FLOTTE_PEAKMODUS_ADAPTIV)
+    };
+
     private bool HatPeakZiel => _wert.Betriebsziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse;
+
+    /// <summary>
+    /// Die Beschriftung des Zahlenfeldes: bei der Ratsche ist die Zahl der STARTWERT der
+    /// Schwelle und nicht das Ziel des Zeitraums (Prüfhilfe).
+    /// </summary>
+    public string PeakZielBezeichnung => _wert.PeakZielAdaptiv
+        ? Resource.FLOTTE_BETRIEB_LBL_PEAKSTART
+        : Resource.FLOTTE_BETRIEB_LBL_PEAKZIEL;
+
+    /// <summary>Die Erklärzeile zur gewählten Betriebsart der Schwelle (Prüfhilfe).</summary>
+    public string PeakModusHinweis => _wert.PeakZielAdaptiv
+        ? Resource.FLOTTE_PEAK_RATSCHE_JA
+        : Resource.FLOTTE_PEAK_RATSCHE_NEIN;
     private string ZielHinweis => _wert.Betriebsziel switch
     {
         FlottenBetriebsziel.PeakShaving => Resource.FLOTTE_BETRIEB_HINWEIS_PEAK,
@@ -171,6 +201,12 @@
         await Melden();
     }
 
+    private async Task PeakModusSetzen(int? wert)
+    {
+        if (wert.HasValue) _wert.PeakZielAdaptiv = wert.Value == 1;
+        await Melden();
+    }
+
     private async Task NetzladungSetzen(bool wert)
     {
         _wert.NetzladungErlaubt = wert;
@@ -194,6 +230,7 @@
         NetzladungErlaubt = q.NetzladungErlaubt,
         BatterieexportErlaubt = q.BatterieexportErlaubt,
         WirtschaftlicherPeakZielwertKw = q.WirtschaftlicherPeakZielwertKw,
+        PeakZielAdaptiv = q.PeakZielAdaptiv,
         ArbitrageLadepreisSchwelle = q.ArbitrageLadepreisSchwelle,
         ArbitrageEntladepreisSchwelle = q.ArbitrageEntladepreisSchwelle,
         PrognoseArt = q.PrognoseArt,

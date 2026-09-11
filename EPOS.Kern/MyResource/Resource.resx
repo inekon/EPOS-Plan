@@ -17820,6 +17820,45 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_PEAK_NETZLADUNG_NEIN" xml:space="preserve">
     <value>Vorgabe zu diesem Betriebsziel: Netzladung NICHT erlaubt — der Speicher nimmt nur den eigenen Überschuss auf. Der Schalter bleibt änderbar.</value>
   </data>
+  <data name="FLOTTE_BETRIEB_LBL_PEAKMODUS" xml:space="preserve">
+    <value>Peak-Ziel:</value>
+  </data>
+  <data name="FLOTTE_PEAKMODUS_ADAPTIV" xml:space="preserve">
+    <value>adaptiv (kausal)</value>
+  </data>
+  <data name="FLOTTE_PEAKMODUS_FEST" xml:space="preserve">
+    <value>fest</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_PEAKSTART" xml:space="preserve">
+    <value>Startwert der Schwelle:</value>
+  </data>
+  <data name="FLOTTE_PEAK_RATSCHE_JA" xml:space="preserve">
+    <value>Adaptiv (kausal): Die Schwelle startet auf dem Startwert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann — sie kann nur steigen. Damit bleibt der Speicher für die große Spitze geladen, statt an kleineren leerzulaufen (Spezifikation 5.1.1).</value>
+  </data>
+  <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
+    <value>Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026).</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
+    <value>Grundlast als Startwert übernehmen</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_VORAUSSCHAU" xml:space="preserve">
+    <value>Mit Vorausschau erreichbares Ziel bestimmen…</value>
+  </data>
+  <data name="FLOTTE_PEAK_STARTWERT_HERLEITUNG" xml:space="preserve">
+    <value>Startwert der Ratsche: die Grundlast {0} kW (Maximum der Tagesminima). Die Schwelle steigt im Lauf selbst auf das Erreichbare; ein tieferer Startwert schadet nicht.</value>
+  </data>
+  <data name="FLOTTE_ERG_PEAK_KAUSAL" xml:space="preserve">
+    <value>Kausal erreicht: {0} kW — Schwelle in {1} von {2} Intervallen nachgezogen.</value>
+  </data>
+  <data name="FLOTTE_ERG_PEAK_VORAUSSCHAU" xml:space="preserve">
+    <value>Mit Vorausschau erreichbar: {0} kW · Wert der Vorausschau {1} kW.</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE_KAUSAL" xml:space="preserve">
+    <value>Kausale Ratsche · Startwert {0} kW · erreicht {1} kW</value>
+  </data>
+  <data name="FLOTTE_REITER_PEAKMODUS" xml:space="preserve">
+    <value>Peak-Ziel: {0}</value>
+  </data>
   <data name="FLOTTE_DLG_MSG_LAEUFT" xml:space="preserve">
     <value>Es läuft bereits eine Speicherberechnung.</value>
   </data>
@@ -18017,6 +18056,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_SPA_NETZLADUNG_ERL" xml:space="preserve">
     <value>Ohne diese Freigabe darf nur verbleibender PV-Überschuss geladen werden.</value>
+  </data>
+  <data name="KI_DLG_SPA_ADAPTIV_NAME" xml:space="preserve">
+    <value>Peak-Ziel adaptiv</value>
+  </data>
+  <data name="KI_DLG_SPA_ADAPTIV_ERL" xml:space="preserve">
+    <value>Adaptiv (kausale Ratsche): Die Schwelle startet auf dem eingegebenen Wert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann. Fest: Die Schwelle steht den ganzen Zeitraum.</value>
   </data>
   <data name="KI_DLG_SPA_STARTSOC_NAME" xml:space="preserve">
     <value>Start-Ladezustand</value>

@@ -207,6 +207,59 @@ namespace EPOS.Kern.Tests
             Assert.False(new FlottenSimulationOptionen().NetzladungErlaubt);
         }
 
+        // ============================================== PS‑Q1 (#215)
+
+        [Theory]
+        [InlineData(FlottenBetriebsziel.PeakShaving, true)]
+        [InlineData(FlottenBetriebsziel.MultiUse, true)]
+        [InlineData(FlottenBetriebsziel.PvGreedy, false)]
+        [InlineData(FlottenBetriebsziel.PvPlanung, false)]
+        [InlineData(FlottenBetriebsziel.Arbitrage, false)]
+        public void VorgabePeakZielAdaptiv_HaengtAmBetriebsziel(FlottenBetriebsziel ziel, bool erwartet)
+        {
+            Assert.Equal(erwartet, FlottenVorgaben.PeakZielAdaptivFuer(ziel));
+        }
+
+        [Fact]
+        public void DieSerialisierteVorgabeDerRatsche_IstFalsch()
+        {
+            // Muster #183, Anwenderentscheid PS‑Q1: Die Ratsche ist die Vorgabe NEUER
+            // Stände; ein GESPEICHERTER Stand trägt „fest" und rechnet unverändert.
+            Assert.False(new FlottenSimulationOptionen().PeakZielAdaptiv);
+        }
+
+        [Fact]
+        public void EinGespeicherterStandOhneDieEigenschaft_LiestSichAlsFest()
+        {
+            // Genau so steht der Stand @Projektflotte des Prüfprojekts 1046 in
+            // Tab_SpeicherAuslegung: als JSON, das die Eigenschaft nicht kennt.
+            const string alt = "{\"Betriebsziel\":1,\"WirtschaftlicherPeakZielwertKw\":16," +
+                               "\"NetzladungErlaubt\":true}";
+
+            FlottenSimulationOptionen gelesen =
+                System.Text.Json.JsonSerializer.Deserialize<FlottenSimulationOptionen>(alt)!;
+
+            Assert.False(gelesen.PeakZielAdaptiv);
+            Assert.Equal(16, gelesen.WirtschaftlicherPeakZielwertKw);
+            Assert.Equal(FlottenBetriebsziel.PeakShaving, gelesen.Betriebsziel);
+        }
+
+        [Fact]
+        public void DieBisektion_RechnetAusdruecklichOhneRatsche()
+        {
+            // Spezifikation 5.1.1, Alternative S‑C: Gesucht ist das kleinste FESTE H.
+            // Mit der Ratsche fände die Bisektion immer ihre untere Schranke.
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 80, netzladung: true);
+            f.Optionen.PeakZielAdaptiv = true;
+
+            FlottenPeakZielErgebnis e = FlottenPeakZiel.PeakZielBestimmen(
+                Eingang(100, 50, 100, 60), f, null, null, CancellationToken.None);
+
+            // Der übergebene Stand bleibt unangetastet — gerechnet wird auf einer Kopie.
+            Assert.True(f.Optionen.PeakZielAdaptiv);
+            Assert.Contains("mit Vorausschau erreichbar", e.Herleitung);
+        }
+
         // ================================================================= Prüfstand
 
         private static FlottenEingang Eingang(params double[] lasten) => new()

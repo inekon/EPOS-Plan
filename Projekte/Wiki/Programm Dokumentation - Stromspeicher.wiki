@@ -168,8 +168,11 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 
 '''Peak-Ziel.''' Bei der Lastspitzenkappung erscheint der Peak-Ziel-Block:
 
-* Der '''Vorschlag''' wird aus der Referenzreihe hergeleitet, nicht geraten. Unter dem Feld steht die Herleitung im Klartext; '''„Vorschlag übernehmen"''' setzt ihn ein.
-* '''„Peak-Ziel bestimmen…"''' sucht das '''kleinste''' Ziel, das diese Flotte tatsächlich hält – höchstens zwölf Jahresläufe, mit Fortschrittsanzeige und Abbruch, am Ende eine Rückfrage mit Ziel, verbleibender Spitze und Zahl der Läufe. Der Knopf ist '''schwach gesperrt''', solange ein planendes Betriebsziel eingestellt ist; der Kurzhinweis nennt den Grund.
+* '''Die Wahl „adaptiv (kausal)" oder „fest"''' steht über dem Zahlenfeld und bestimmt, was die eingegebene Zahl bedeutet.
+** '''adaptiv (kausal)''' – die '''Vorgabe neuer Stände'''. Die Zahl ist dann der '''Startwert''' einer Schwelle, die im Lauf nur '''steigen''' kann: Kann die Anlage eine Spitze nicht halten, wird die Schwelle auf das Erreichbare nachgezogen – und bleibt dort. Damit läuft der Speicher nicht mehr an kleinen Spitzen leer, bevor die große kommt. Vorbelegt ist der Startwert mit der '''Grundlast''' (dem Maximum der Tagesminima); ein tieferer Startwert schadet nicht.
+** '''fest''' – die Schwelle steht den ganzen Zeitraum auf Ihrem Wert. '''So rechnet jeder gespeicherte Stand weiter'''; wer die Ratsche will, schaltet um.
+* Der '''Vorschlag''' wird aus der Referenzreihe hergeleitet, nicht geraten. Unter dem Feld steht die Herleitung im Klartext; '''„Vorschlag übernehmen"''' setzt ihn ein – bei '''adaptiv''' heißt der Knopf '''„Grundlast als Startwert übernehmen"''' und setzt genau die ein.
+* '''„Peak-Ziel bestimmen…"''' sucht das '''kleinste''' Ziel, das diese Flotte tatsächlich hält – höchstens zwölf Jahresläufe, mit Fortschrittsanzeige und Abbruch, am Ende eine Rückfrage mit Ziel, verbleibender Spitze und Zahl der Läufe. Der Knopf ist '''schwach gesperrt''', solange ein planendes Betriebsziel eingestellt ist; der Kurzhinweis nennt den Grund. '''Bei „adaptiv" heißt er „Mit Vorausschau erreichbares Ziel bestimmen…"''' – und genau das ist er: Er rechnet ausdrücklich mit einem '''festen''' Ziel und sagt Ihnen, wie tief ein Regler '''mit''' Kenntnis des ganzen Jahres käme. Der Unterschied zur kausal erreichten Schwelle aus Schritt 5 ist der '''Wert einer Prognose'''.
 * '''Netzladung''' folgt dem Betriebsziel: Die Lastspitzenkappung bekommt sie, weil die Wiederaufladung unter dem Ziel genau das ist; PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. '''Der Schalter bleibt änderbar''', und eine gespeicherte Einstellung wird nicht überschrieben.
 * '''Start-Ladezustand.''' Für den Projektlauf steht er auf der unteren Marke. Ein leerer Speicher kann eine Spitze am 1. Januar nicht kappen – die Ansicht sagt es, statt den Standard still zu ändern.
 
@@ -206,7 +209,8 @@ Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei
 Von oben nach unten:
 
 # '''Diagnosebanner''' – nur, wenn es etwas zu sagen gibt (siehe unten).
-# '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze vorher → nachher (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie.
+# '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze vorher → nachher (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie. Bei '''adaptivem''' Peak-Ziel nennt die Spitzenkachel statt „erreicht / nicht erreicht" den '''Startwert''' und die '''erreichte''' Schwelle – eine Schwelle, die auf das Erreichbare nachgezogen wird, kann nicht verfehlt werden.
+# '''Die zwei Schwellen''' – darunter steht „'''kausal erreicht'''" mit der Zahl der Nachzüge (Intervalle, in denen die Anlage die Spitze nicht halten konnte). Haben Sie in Schritt 3 „Mit Vorausschau erreichbares Ziel bestimmen…" gefahren, steht daneben „'''mit Vorausschau erreichbar'''" und die Differenz der beiden: der '''Wert der Vorausschau'''. Ist er klein, würde ein Prognoseregler wenig bringen.
 # '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
 # '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf.
 # '''Kennzahlen je Einheit''' – Lade- und Entladeenergie, Vollzyklen, Anfangs- und Endenergie, Rainflow-Zyklen und Schaden.
@@ -276,5 +280,6 @@ Die Rechenwege dieser Ansicht im Einzelnen:
 
 * [[Programm Dokumentation/Berechnung/Stromspeicher#auslegung-kosten-zeitreihen|Erweiterte Auslegung mit Kosten und Zeitreihen]] – Größenachse, Kostensätze, Zeitreihen aus Dateien
 * [[Programm Dokumentation/Berechnung/Stromspeicher#flotte|Mehrere Speicher (Speicherflotte)]] – Modell je Einheit, die fünf Betriebsziele, Verteilung, Prognoseplanung, Alterung, Kapitalwert, Rastersuche, Diagnose und Peak-Ziel
+* [[Programm Dokumentation/Berechnung/Stromspeicher#peak-ratsche|Adaptive Entladeschwelle – die kausale Ratsche]] – wie die Schwelle im Lauf nachgezogen wird und warum sie nie unter das Vorausschau-Optimum kommt
 * [[Programm Dokumentation/Berechnung/Stromspeicher#grenzen|Grenzen und Annahmen]] – was der Rechenweg ausdrücklich nicht tut
 * [[Programm Dokumentation/Berechnung/Stromspeicher#ergebnisse|Ergebnisse und wo sie stehen]] – welche Größe wo erscheint

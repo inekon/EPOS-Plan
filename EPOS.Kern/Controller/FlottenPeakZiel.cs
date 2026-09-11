@@ -285,6 +285,12 @@ namespace WindowsFormsApplication1
 
             FlottenStudieKonfiguration probe = SpeicherAuslegungKopie.Von(konfiguration);
             probe.Optionen.Betriebsziel = FlottenBetriebsziel.PeakShaving;
+            // AUSDRÜCKLICH OHNE RATSCHE (Spezifikation 5.1.1, Alternative S‑C): Gesucht
+            // ist das kleinste FESTE H, das ein Jahr mit vollem Wissen gehalten wird —
+            // M*, „mit Vorausschau erreichbar". Mit der Ratsche wäre die Frage sinnlos:
+            // Sie zöge jedes zu tiefe H selbst nach oben, und die Bisektion fände immer
+            // ihre untere Schranke. Die Kopie schützt den Stand des Anwenders.
+            probe.Optionen.PeakZielAdaptiv = false;
             // Ohne Endenergiegleichheit verlangt der Simulator einen offengelegten
             // Ausgleichswert. Für die Suche zählt allein die verbleibende Spitze; der
             // Wert bewertet nur die Bestandsänderung und wird hier nicht gelesen.
@@ -319,8 +325,10 @@ namespace WindowsFormsApplication1
 
             ergebnis.Konvergiert = oben - unten <= schranke;
             ergebnis.Herleitung = string.Format(k,
-                "Bisektion zwischen Grundlast {0} kW und Bezugsspitze {1} kW: kleinstes gehaltenes Peak-Ziel " +
-                "{2} kW, verbleibende Bezugsspitze {3} kW, {4} Jahresläufe{5}.",
+                "Bisektion zwischen Grundlast {0} kW und Bezugsspitze {1} kW: mit Vorausschau erreichbar " +
+                "{2} kW, verbleibende Bezugsspitze {3} kW, {4} Jahresläufe{5}. " +
+                "Das ist das kleinste FESTE Ziel, das ein Jahr mit vollem Wissen gehalten wird; " +
+                "die kausale Ratsche kommt ohne Prognose nicht tiefer.",
                 grundlast.ToString("0.#", k), referenzspitze.ToString("0.#", k),
                 ergebnis.PeakZielKw.ToString("0.#", k), ergebnis.VerbleibendeSpitzeKw.ToString("0.#", k),
                 ergebnis.Laeufe.ToString(k),

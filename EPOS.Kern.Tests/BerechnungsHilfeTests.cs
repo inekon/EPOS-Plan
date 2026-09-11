@@ -475,7 +475,9 @@ namespace EPOS.Kern.Tests
             {
                 // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen und um den
                 // zweiten Hauptteil "Mehrere Speicher (Speicherflotte)" ergaenzt.
-                { "Stromspeicher", "2026-09-11 (Fassung 5: ein Weg in der Ansicht)" }
+                // Auftrag #215: Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle
+                // - die kausale Ratsche" (Spezifikation 5.1.1).
+                { "Stromspeicher", "2026-09-11 (Fassung 6: adaptive Entladeschwelle)" }
             };
 
         /// <summary>

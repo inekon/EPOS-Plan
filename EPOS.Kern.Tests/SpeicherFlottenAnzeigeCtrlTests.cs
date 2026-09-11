@@ -87,6 +87,51 @@ namespace EPOS.Kern.Tests
                 SpeicherFlottenAnzeigeCtrl.Betriebsreihen(e).Select(r => r.Schluessel));
         }
 
+        /// <summary>
+        /// #215: Die Reihe „Peak-Ziel" kommt aus der GANGLINIE des Laufs. Bei festem Ziel
+        /// ist das dieselbe Waagerechte wie bisher — Zahl für Zahl —, bei der kausalen
+        /// Ratsche eine TREPPE, und dann sieht das Bild anders aus.
+        /// </summary>
+        [Fact]
+        public void Die_Peak_Ziel_Reihe_zeichnet_die_Treppe_der_Ratsche()
+        {
+            SpeicherFlottenErgebnis fest = Ergebnis();
+            foreach (FlottenIntervallErgebnis x in fest.Studie.Variante.Intervalle) x.PeakZielKw = 100;
+
+            SpeicherFlottenErgebnis treppe = Ergebnis();
+            treppe.Studie.Variante.ErreichtesPeakZielKw = 140;
+            var werte = treppe.Studie.Variante.Intervalle;
+            for (int i = 0; i < werte.Count; i++) werte[i].PeakZielKw = i < werte.Count / 2 ? 100 : 140;
+
+            var nurZiel = new[] { SpeicherFlottenAnzeigeCtrl.REIHE_PEAKZIEL };
+            byte[] bildFest = SpeicherFlottenAnzeigeCtrl.Bilder(fest, 0, 7, 0, nurZiel).Netz;
+            byte[] bildTreppe = SpeicherFlottenAnzeigeCtrl.Bilder(treppe, 0, 7, 0, nurZiel).Netz;
+
+            Assert.NotNull(bildFest);
+            Assert.NotNull(bildTreppe);
+            Assert.False(bildFest.SequenceEqual(bildTreppe), "Die Treppe erreicht den Renderer nicht.");
+            Assert.Equal(140, SpeicherFlottenAnzeigeCtrl.KausalErreichtesPeakZielKw(treppe));
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.KausalErreichtesPeakZielKw(fest));
+        }
+
+        /// <summary>
+        /// Ohne Ganglinie — ein Laufstand aus der Zeit vor #215 — bleibt es beim Zielwert
+        /// des Standes; das Bild ist dasselbe wie mit einer konstanten Ganglinie.
+        /// </summary>
+        [Fact]
+        public void Ohne_Ganglinie_faellt_die_Reihe_auf_den_Zielwert_des_Standes_zurueck()
+        {
+            SpeicherFlottenErgebnis ohne = Ergebnis();
+            SpeicherFlottenErgebnis mit = Ergebnis();
+            foreach (FlottenIntervallErgebnis x in mit.Studie.Variante.Intervalle) x.PeakZielKw = 100;
+
+            var nurZiel = new[] { SpeicherFlottenAnzeigeCtrl.REIHE_PEAKZIEL };
+            byte[] bildOhne = SpeicherFlottenAnzeigeCtrl.Bilder(ohne, 0, 7, 0, nurZiel).Netz;
+            byte[] bildMit = SpeicherFlottenAnzeigeCtrl.Bilder(mit, 0, 7, 0, nurZiel).Netz;
+
+            Assert.True(bildOhne.SequenceEqual(bildMit));
+        }
+
         [Fact]
         public void Eine_abgewaehlte_Reihe_aendert_das_Bild()
         {

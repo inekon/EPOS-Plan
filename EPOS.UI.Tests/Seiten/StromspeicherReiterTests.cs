@@ -256,6 +256,41 @@ public class StromspeicherReiterTests : EposBunitContext
     }
 
     /// <summary>
+    /// #215: Die BETRIEBSZEILE nennt den Modus der Entladeschwelle. Ein gespeicherter
+    /// Stand aus der Zeit vor der Ratsche trägt „fest" — und das steht da, statt stumm
+    /// zu bleiben (Spezifikation 5.1.1, Anwenderentscheid PS‑Q1).
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Die_Betriebszeile_nennt_den_Modus_der_Entladeschwelle(bool adaptiv)
+    {
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new()
+            {
+                new() { Id = "a", Name = "Hauptspeicher", KapazitaetKWh = 120, LadeleistungKw = 42, EntladeleistungKw = 57 }
+            },
+            Optionen = new FlottenSimulationOptionen
+            {
+                Betriebsziel = FlottenBetriebsziel.PeakShaving,
+                WirtschaftlicherPeakZielwertKw = 200,
+                PeakZielAdaptiv = adaptiv
+            }
+        };
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(daten.AktiveFlotte));
+
+        string erwartet = adaptiv
+            ? WindowsFormsApplication1.MyResource.Resource.FLOTTE_PEAKMODUS_ADAPTIV
+            : WindowsFormsApplication1.MyResource.Resource.FLOTTE_PEAKMODUS_FEST;
+        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.FLOTTE_REITER_PEAKMODUS, erwartet), seite.Markup);
+    }
+
+    /// <summary>
     /// ANWENDERBEFUND #210 (11.09.2026): Der Eingabestand <c>@Aktuell</c> führte EINE
     /// Einheit, obwohl das Projekt ZWEI Speicheranlagen hat — und der Abschnitt
     /// „Kennzahlen je Speicher" zeigte dieselbe eine. Die Ursache lag in der Vorbelegung

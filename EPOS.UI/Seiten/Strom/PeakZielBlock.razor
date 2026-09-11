@@ -42,11 +42,11 @@
         @if (Vorschlag is { AusReihe: true })
         {
             <div class="epos-flotte-peakziel-vorschlag">
-                <Herleitungszeile Text="@Vorschlag.Herleitung" />
+                <Herleitungszeile Text="@VorschlagHerleitung" />
                 @if (VorschlagUebernehmen.HasDelegate)
                 {
                     <button type="button" class="epos-knopf" disabled="@(!Aktiv)"
-                            @onclick="VorschlagUebernehmen">@VorschlagText</button>
+                            @onclick="VorschlagUebernehmen">@UebernahmeText</button>
                 }
             </div>
         }
@@ -60,7 +60,7 @@
                         aria-disabled="@(Moeglich ? null : "true")"
                         title="@(Moeglich ? null : GesperrtText)"
                         disabled="@(!Aktiv)"
-                        @onclick="BestimmenGeklickt">@BestimmenText</button>
+                        @onclick="BestimmenGeklickt">@BestimmenBeschriftung</button>
                 @if (!Moeglich)
                 {
                     <span class="epos-flotte-hinweis">@GesperrtText</span>
@@ -104,6 +104,26 @@
     [Parameter] public string VorschlagText { get; set; } = "Vorschlag übernehmen";
     [Parameter] public string BestimmenText { get; set; } = "Peak-Ziel bestimmen…";
 
+    /// <summary>
+    /// Die Beschriftung des Übernahmeknopfes im ADAPTIVEN Modus: Übernommen wird dann die
+    /// Grundlast als STARTWERT und nicht der Vorschlag für ein festes Ziel (PS‑Q1).
+    /// </summary>
+    [Parameter] public string GrundlastText { get; set; } = "Grundlast als Startwert übernehmen";
+
+    /// <summary>
+    /// Die Beschriftung des Bisektionsknopfes, wenn die Ratsche läuft: Er beantwortet
+    /// dann nicht mehr „welches Ziel setze ich?", sondern „was wäre MIT VORAUSSCHAU
+    /// erreichbar?" (Anwenderentscheid PS‑Q2).
+    /// </summary>
+    [Parameter] public string VorausschauText { get; set; } = "Mit Vorausschau erreichbares Ziel bestimmen…";
+
+    /// <summary>
+    /// Die Herleitung des Startwerts im ADAPTIVEN Modus; <c>{0}</c> nimmt die Grundlast.
+    /// </summary>
+    [Parameter] public string StartwertHerleitung { get; set; } =
+        "Startwert der Ratsche: die Grundlast {0} kW (Maximum der Tagesminima). " +
+        "Die Schwelle steigt im Lauf selbst auf das Erreichbare.";
+
     /// <summary>Der Grund, warum die Bestimmung bei einem planenden Ziel nicht angeboten wird.</summary>
     [Parameter] public string GesperrtText { get; set; } =
         "Das Peak-Ziel lässt sich nur für die reaktiven Betriebsziele Lastspitzenkappung und " +
@@ -125,6 +145,26 @@
 
     /// <summary>Lässt sich das Peak-Ziel bestimmen? (Prüfhilfe)</summary>
     public bool Moeglich => !FlottenPlanerLage.IstPlanend(Wert.Betriebsziel);
+
+    /// <summary>Läuft die Schwelle als kausale Ratsche? (Prüfhilfe)</summary>
+    public bool Adaptiv => Wert.PeakZielAdaptiv;
+
+    /// <summary>Die Beschriftung des Übernahmeknopfes — sie hängt am Modus (Prüfhilfe).</summary>
+    public string UebernahmeText => Adaptiv ? GrundlastText : VorschlagText;
+
+    /// <summary>Die Beschriftung des Bisektionsknopfes — sie hängt am Modus (Prüfhilfe).</summary>
+    public string BestimmenBeschriftung => Adaptiv ? VorausschauText : BestimmenText;
+
+    /// <summary>
+    /// Die Herleitungszeile unter dem Feld: bei der Ratsche die des STARTWERTS, sonst die
+    /// des vorgeschlagenen festen Ziels (Prüfhilfe).
+    /// </summary>
+    public string VorschlagHerleitung => Vorschlag is null
+        ? ""
+        : Adaptiv
+            ? string.Format(CultureInfo.CurrentCulture, StartwertHerleitung,
+                Vorschlag.TagesminimumMaxKw.ToString("0.#", CultureInfo.CurrentCulture))
+            : Vorschlag.Herleitung;
 
     private string NetzladungText => FlottenVorgaben.NetzladungFuer(Wert.Betriebsziel)
         ? NetzladungErlaubtText

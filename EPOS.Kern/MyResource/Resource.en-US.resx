@@ -17813,6 +17813,45 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_PEAK_NETZLADUNG_NEIN" xml:space="preserve">
     <value>Default for this operating goal: grid charging NOT allowed — the storage only takes up its own surplus. The switch stays editable.</value>
   </data>
+  <data name="FLOTTE_BETRIEB_LBL_PEAKMODUS" xml:space="preserve">
+    <value>Peak target:</value>
+  </data>
+  <data name="FLOTTE_PEAKMODUS_ADAPTIV" xml:space="preserve">
+    <value>adaptive (causal)</value>
+  </data>
+  <data name="FLOTTE_PEAKMODUS_FEST" xml:space="preserve">
+    <value>fixed</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_PEAKSTART" xml:space="preserve">
+    <value>Threshold start value:</value>
+  </data>
+  <data name="FLOTTE_PEAK_RATSCHE_JA" xml:space="preserve">
+    <value>Adaptive (causal): the threshold starts at the start value and is raised during the run as soon as the fleet cannot hold a peak — it can only rise. The storage therefore stays charged for the large peak instead of running empty on smaller ones (specification 5.1.1).</value>
+  </data>
+  <data name="FLOTTE_PEAK_RATSCHE_NEIN" xml:space="preserve">
+    <value>Fixed: the threshold stays at the entered value for the whole period. Once the annual peak is missed, the fleet still discharges on every smaller peak (finding of 11.09.2026).</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_GRUNDLAST" xml:space="preserve">
+    <value>Apply base load as start value</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_VORAUSSCHAU" xml:space="preserve">
+    <value>Determine target reachable with foresight…</value>
+  </data>
+  <data name="FLOTTE_PEAK_STARTWERT_HERLEITUNG" xml:space="preserve">
+    <value>Start value of the ratchet: the base load {0} kW (maximum of the daily minima). The threshold rises during the run to what is reachable; a lower start value does no harm.</value>
+  </data>
+  <data name="FLOTTE_ERG_PEAK_KAUSAL" xml:space="preserve">
+    <value>Causally reached: {0} kW — threshold raised in {1} of {2} intervals.</value>
+  </data>
+  <data name="FLOTTE_ERG_PEAK_VORAUSSCHAU" xml:space="preserve">
+    <value>Reachable with foresight: {0} kW · value of foresight {1} kW.</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE_KAUSAL" xml:space="preserve">
+    <value>Causal ratchet · start {0} kW · reached {1} kW</value>
+  </data>
+  <data name="FLOTTE_REITER_PEAKMODUS" xml:space="preserve">
+    <value>Peak target: {0}</value>
+  </data>
   <data name="FLOTTE_DLG_MSG_LAEUFT" xml:space="preserve">
     <value>A storage computation is already running.</value>
   </data>
@@ -18010,6 +18049,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_SPA_NETZLADUNG_ERL" xml:space="preserve">
     <value>Without this permission only remaining PV surplus may be charged.</value>
+  </data>
+  <data name="KI_DLG_SPA_ADAPTIV_NAME" xml:space="preserve">
+    <value>Adaptive peak target</value>
+  </data>
+  <data name="KI_DLG_SPA_ADAPTIV_ERL" xml:space="preserve">
+    <value>Adaptive (causal ratchet): the threshold starts at the entered value and is raised during the run as soon as the fleet cannot hold a peak. Fixed: the threshold stays for the whole period.</value>
   </data>
   <data name="KI_DLG_SPA_STARTSOC_NAME" xml:space="preserve">
     <value>Initial state of charge</value>

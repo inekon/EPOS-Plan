@@ -216,7 +216,7 @@ Verbindlich sind daraus drei Forderungen an die Umsetzung:
 2. **Die Simulation weist die Sperren aus.** Je Einheit und für die Flotte werden gezählt: Intervalle mit `N > H`, Intervalle mit Lade- und mit Entladeanforderung, Intervalle mit Ladedeckel 0 durch die Peak-Regel, Intervalle mit Ladedeckel 0 durch das Netzladeverbot und Intervalle mit Entladeanforderung an einen leeren Speicher. Aus Lade- und Entladeenergie folgt die Aussage „arbeitslos". Die Gründe sind sprachneutral zu benennen und mit ihren Zahlen auszugeben.
 3. **Der Start-Ladezustand wird genannt, nicht stillschweigend geändert.** Bleibt er auf der unteren SoC-Marke, ist am Anfang des Rechenzeitraums nichts zu entladen; eine Spitze in den ersten Stunden kann die Flotte deshalb nicht kappen. Ein voller Start würde diese Spitze schöner rechnen, als sie im Betrieb wäre.
 
-### 5.1.1 Adaptive Entladeschwelle — die kausale Ratsche (ergänzt in Version 1.4, Anwenderbefund 11.09.2026)
+### 5.1.1 Adaptive Entladeschwelle — die kausale Ratsche (ergänzt in Version 1.4, Anwenderbefund 11.09.2026; **umgesetzt #215**)
 
 **Befund.** Die Regel aus 5.1 hält den Zielwert H das ganze Jahr fest. Kann die Flotte eine Spitze nicht
 halten (`N − D > H` mit D = verfügbare Entladeleistung), ist die Jahresspitze verloren — die Regel entlädt
@@ -281,6 +281,8 @@ Stände tragen die Vorgabe „fest" und rechnen unverändert — das Prüfprojek
 byte-gleich zur Basis R7 (Muster #183: Vorgaben nur für neue Stände).
 
 **Fragen an den Anwender (PS‑Q1 … PS‑Q4) — entschieden am 11.09.2026 („PS‑Q1 bis Q4, Empfehlung"); Umsetzung Paket P7 (#215).**
+
+**Stand der Umsetzung (#215).** Die Regel R steht im `FlottenSimulator`: `FlottenSimulationOptionen.PeakZielAdaptiv` schaltet sie ein (serialisierte Vorgabe `false`, Vorgabe NEUER Stände über `FlottenVorgaben.PeakZielAdaptivFuer`), `WirtschaftlicherPeakZielwertKw` ist dann der Startwert H₀. Das Ergebnis führt `FlottenSimulationErgebnis.ErreichtesPeakZielKw` (H_end), die Ganglinie `FlottenIntervallErgebnis.PeakZielKw` (Treppe) und der Diagnosezähler `FlottenDiagnose.IntervalleSchwelleNachgezogen`. `FlottenPeakZiel.PeakZielBestimmen` rechnet ausdrücklich ohne Ratsche und heißt in der Anzeige „mit Vorausschau erreichbar"; die Ergebnisansicht stellt beide Werte nebeneinander. Der Prüfstand `SpeicherEngine.Tests/FlottenPeakRatscheTests` hält den Simulator gegen den **Port des Excel-Makros** auf einem synthetischen Viertelstundenlastgang (7 Tage, Grundlast 60 kW, Spitze 740 kW, 400 kW / 400 kWh): Jahresspitze **740 → 540 kW**, M* = 340 kW, H_end − M* = 200 kW. Bei `PeakZielAdaptiv = false` ist der Rechenweg unverändert — Projekt 1046 bleibt byte-gleich zur Basis R7.
 
 | Frage | Empfehlung |
 |---|---|

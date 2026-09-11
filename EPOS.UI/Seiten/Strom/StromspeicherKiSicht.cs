@@ -127,6 +127,20 @@ public sealed class StromspeicherKiSicht
         set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.WirtschaftlicherPeakZielwertKw = value; }
     }
 
+    /// <summary>
+    /// Läuft die Entladeschwelle als kausale Ratsche (Spezifikation 5.1.1) oder steht sie
+    /// den ganzen Zeitraum fest?
+    /// </summary>
+    /// <remarks>
+    /// Bei <c>true</c> ist <see cref="PeakZielKw"/> der STARTWERT H₀, und die Schwelle
+    /// wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann.
+    /// </remarks>
+    public bool PeakZielAdaptiv
+    {
+        get => Optionen?.PeakZielAdaptiv == true;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PeakZielAdaptiv = value; }
+    }
+
     /// <summary>Ist das Laden aus dem Netz freigegeben?</summary>
     public bool NetzladungErlaubt
     {
