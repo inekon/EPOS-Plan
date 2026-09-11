@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>SpeicherPlanung</RootNamespace>
+    <AssemblyName>SpeicherPlanung</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.OrTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+  </ItemGroup>
+
+</Project>

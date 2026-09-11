@@ -1,0 +1,129 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+
+<section class="epos-flotte-abschnitt epos-flotte-betrieb" aria-labelledby="flotte-betrieb-titel">
+    <h3 id="flotte-betrieb-titel">Betrieb und Leistungsverteilung</h3>
+    <div class="epos-flotte-feldraster epos-flotte-feldraster--kompakt">
+        <Auswahlfeld Bezeichnung="Betriebsziel:" Eintraege="@Betriebsziele"
+                       Auswahl="@((int)_wert.Betriebsziel)" Aktiv="@Aktiv"
+                       AuswahlChanged="BetriebszielSetzen" />
+        <Auswahlfeld Bezeichnung="Leistungsverteilung:" Eintraege="@Verteilungen"
+                       Auswahl="@((int)_wert.Verteilung)" Aktiv="@Aktiv"
+                       AuswahlChanged="VerteilungSetzen" />
+        <Auswahlfeld Bezeichnung="Erzeuger-Reihenfolge:" Eintraege="@ErzeugerPrioritaeten"
+                       Auswahl="@((int)_wert.ErzeugerPrioritaet)" Aktiv="@Aktiv"
+                       AuswahlChanged="ErzeugerPrioritaetSetzen" />
+        @if (HatPeakZiel)
+        {
+            <Zahlenfeld Bezeichnung="Wirtschaftlicher Peak-Zielwert:" Einheit="kW"
+                        Wert="@_wert.WirtschaftlicherPeakZielwertKw" Min="0" Aktiv="@Aktiv"
+                        WertChanged="PeakZielSetzen" />
+        }
+        <Schalter Bezeichnung="Laden aus dem Netz erlauben" Wert="@_wert.NetzladungErlaubt"
+                   Aktiv="@Aktiv" WertChanged="NetzladungSetzen" />
+        <Schalter Bezeichnung="Batterieexport ins Netz erlauben" Wert="@_wert.BatterieexportErlaubt"
+                   Aktiv="@Aktiv" WertChanged="BatterieexportSetzen" />
+    </div>
+    <p class="epos-flotte-hinweis">@ZielHinweis</p>
+</section>
+
+@code {
+    [Parameter] public FlottenSimulationOptionen Wert { get; set; } = new();
+    [Parameter] public EventCallback<FlottenSimulationOptionen> WertChanged { get; set; }
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    private FlottenSimulationOptionen _wert = new();
+    private FlottenSimulationOptionen? _eingangReferenz;
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Betriebsziele = new[]
+    {
+        (0, "PV-Eigenverbrauch (reaktiv)"), (1, "Lastspitzenkappung"),
+        (2, "PV-Prognoseplanung"), (3, "Preisoptimierung / Arbitrage"),
+        (4, "Multi Use mit Peak-Priorität")
+    };
+    private static readonly IReadOnlyList<(int Id, string Text)> Verteilungen = new[]
+    {
+        (0, "Nach verfügbarer Kapazität"), (1, "Kaskade"),
+        (2, "Nach Grenzkosten und Wirkungsgrad")
+    };
+    private static readonly IReadOnlyList<(int Id, string Text)> ErzeugerPrioritaeten = new[]
+    {
+        (0, "PV vor BHKW"), (1, "BHKW vor PV")
+    };
+
+    private bool HatPeakZiel => _wert.Betriebsziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse;
+    private string ZielHinweis => _wert.Betriebsziel switch
+    {
+        FlottenBetriebsziel.PeakShaving => "Die Flotte begrenzt den Netzbezug auf das wirtschaftliche Peak-Ziel, soweit Energie, Leistung und Anschlussgrenzen reichen.",
+        FlottenBetriebsziel.PvPlanung => "Die Planung verschiebt PV-Energie mit dem im Auslegungsprofil gewählten Informationsstand.",
+        FlottenBetriebsziel.Arbitrage => "Die Planung bewertet Bezug und Verkauf getrennt; Netzladung und Batterieexport bleiben ausdrückliche Freigaben.",
+        FlottenBetriebsziel.MultiUse => "Peak-Schutz hat Vorrang; verbleibende Freiheitsgrade werden wirtschaftlich genutzt.",
+        _ => "Die reaktive Führung lädt Erzeugungsüberschüsse und entlädt bei Nettobedarf ohne Zukunftsinformation."
+    };
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_eingangReferenz, Wert)) return;
+        _eingangReferenz = Wert;
+        _wert = Kopie(Wert ?? new FlottenSimulationOptionen());
+    }
+
+    private async Task BetriebszielSetzen(int? wert)
+    {
+        if (wert.HasValue) _wert.Betriebsziel = (FlottenBetriebsziel)wert.Value;
+        await Melden();
+    }
+
+    private async Task VerteilungSetzen(int? wert)
+    {
+        if (wert.HasValue) _wert.Verteilung = (FlottenVerteilung)wert.Value;
+        await Melden();
+    }
+
+    private async Task ErzeugerPrioritaetSetzen(int? wert)
+    {
+        if (wert.HasValue) _wert.ErzeugerPrioritaet = (FlottenErzeugerPrioritaet)wert.Value;
+        await Melden();
+    }
+
+    private async Task PeakZielSetzen(double? wert)
+    {
+        _wert.WirtschaftlicherPeakZielwertKw = wert;
+        await Melden();
+    }
+
+    private async Task NetzladungSetzen(bool wert)
+    {
+        _wert.NetzladungErlaubt = wert;
+        await Melden();
+    }
+
+    private async Task BatterieexportSetzen(bool wert)
+    {
+        _wert.BatterieexportErlaubt = wert;
+        await Melden();
+    }
+
+    private Task Melden() => WertChanged.InvokeAsync(Kopie(_wert));
+
+    private static FlottenSimulationOptionen Kopie(FlottenSimulationOptionen q) => new()
+    {
+        Betriebsziel = q.Betriebsziel,
+        Verteilung = q.Verteilung,
+        NetzbezugGrenzeKw = q.NetzbezugGrenzeKw,
+        NetzeinspeisungGrenzeKw = q.NetzeinspeisungGrenzeKw,
+        NetzladungErlaubt = q.NetzladungErlaubt,
+        BatterieexportErlaubt = q.BatterieexportErlaubt,
+        WirtschaftlicherPeakZielwertKw = q.WirtschaftlicherPeakZielwertKw,
+        ArbitrageLadepreisSchwelle = q.ArbitrageLadepreisSchwelle,
+        ArbitrageEntladepreisSchwelle = q.ArbitrageEntladepreisSchwelle,
+        PrognoseArt = q.PrognoseArt,
+        ErzeugerPrioritaet = q.ErzeugerPrioritaet,
+        PlanungshorizontIntervalle = q.PlanungshorizontIntervalle,
+        NeuplanungAlleIntervalle = q.NeuplanungAlleIntervalle,
+        Endbedingung = q.Endbedingung,
+        EndenergieZielKWh = new List<double>(q.EndenergieZielKWh ?? new List<double>()),
+        EnergieAusgleichEuroProKWh = q.EnergieAusgleichEuroProKWh,
+        PrognoseFallbackErlaubt = q.PrognoseFallbackErlaubt
+    };
+}

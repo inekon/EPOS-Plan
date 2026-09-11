@@ -2418,3 +2418,197 @@ W11b‑B‑17/19/21/24/25/26/27). Geprüft sind die Prüfregeln darunter und die
 6. **`SP_PARAM_HINWEIS_KAPAZITAET`** ist nach wie vor ungenutzt (Bestand vor diesem Paket) — der
    Block zeigt bei gesperrter Gerätegröße nur `SP_PARAM_HINWEIS_LADELEISTUNG`, wie das Blatt P3 es
    tat.
+
+---
+
+## Anwenderbefund 10.09.2026 — W11b‑B‑29: Speicherparameter schreiben sofort (Entscheid 1)
+
+**Wortlaut des Anwenders:** „die Eingaben in die Dialogfelder werden nicht gespeichert" und
+‚‚Auslegung optimieren …’ steht nicht ganz unten im Block".
+
+**Sein Entscheid dazu, nach der Gegenüberstellung der zwei Wege:** „**Sofort schreiben, wie überall
+sonst im Programm.**"
+
+### Der Befund
+
+Der Datenbankbefund war eindeutig. Variantenzeile **14** (Anlage 14993, Projekt 1050) trug nach
+einer Sitzung voller Eingaben nur die **Vorgabewerte**: SoC 10/90, `L_P` 0, Kapitalzins 3, Nutzungs­
+dauer 20 a. Die Eingaben kamen nie an — und der Block hatte trotzdem „gespeichert" gemeldet.
+
+Drei Ursachen, alle drei im Aufbau von W11b‑B‑28:
+
+| # | Ursache | Warum sie trägt |
+|---|---|---|
+| 1 | **Der Knopf stand ganz unten** — nach fünf Feldgruppen, den Hinweisabsätzen und der Preisvorschau | Der Anwender hat ihn nicht gefunden. Er hat es auch gesagt: „steht nicht ganz unten im Block" — gemeint war der Optimierungsknopf, der dieselbe Zeile teilte |
+| 2 | **Der Puffer starb beim Reiterwechsel** | `Reiterblatt` zeichnet nur das AKTIVE Blatt (`@if (Sichtbar)`). Wer den Reiter wechselt, entsorgt die Komponente samt `_puffer` — und beim Rückkehren steht ein frisch gelesener Stand da. Dasselbe beim Schließen der Seite |
+| 3 | **Ein fehlgeschlagenes `Update` meldete Erfolg** | `StromspeicherVarianteCtrl.Update` liefert `bool`; der Schreibweg warf den Rückgabewert weg und gab in jedem Fall `SP_PARAM_MSG_GESPEICHERT` zurück |
+
+Ursache 2 ist die tragende: Sie macht JEDEN Puffer auf einem Reiterblatt zu einer Falle, unabhängig
+davon, wie gut der Knopf zu finden ist. Genau deshalb heißt die Hausregel „jedes Feld schreibt
+sofort" — und deshalb hat W11b‑B‑28 ihre Ausnahme nicht überlebt.
+
+### Der Entscheid und was er zurücknimmt
+
+Die in W11b‑B‑28 **benannte Ausnahme entfällt**. Jede Eingabe geht sofort in die Datenbank, die
+Statuszeile bestätigt sie, es gibt keinen Speichern- und keinen Verwerfen-Knopf, und nichts kann beim
+Reiterwechsel verlorengehen. Der Dateikopf von `SpeicherParameterBlock.razor`, der Kopf von
+`StromspeicherReiter.razor` und `Doku_Simulationsergebnis_Darstellung.md` (§ 1.1 und § 7) sagen das
+jetzt — samt dem Grund, damit der nächste Puffer nicht denselben Weg nimmt.
+
+### Umsetzung je Datei
+
+**A — `EPOS.UI/Seiten/Simulation/SpeicherParameterBlock.razor`** (466 → 377 Z.). Der Block arbeitet
+direkt auf `Daten`, wie `ParameterReiter` es mit `Sp` tat, und schreibt JEDES Feld sofort über
+`Dienste.SpeicherfeldSchreiben` — mit den bestehenden `SpeicherFeld`-Schlüsseln und invarianten
+Zahlentexten (`SpZahl`/`SpSchalter`/`SpWahl`/`PreisreiheGesetzt` aus dem Vorläufer, Wort für Wort).
+
+Weg sind `_puffer`, `_stand`, `_quelle`, der Referenzvergleich in `OnParametersSet`, `Speichern`,
+`Verwerfen`, `Kopie` und `Gleich` — rund 130 Zeilen, die es nur gab, damit ein Puffer nicht
+auseinanderläuft.
+
+| Sache | Regel |
+|---|---|
+| Reihenfolge im Block | **Statuszeile, Rückmeldung, Knopfzeile, dann die Felder.** Der Optimierungsknopf steht damit dort, wo der Anwender ihn sucht |
+| Rückmeldung | `_meldung`/`_meldungWarnung` aus der Antwort des Schreibdienstes; die Warnklasse nur bei Fehlschlag. Öffentlich als `Meldung` (Prüfhilfe) |
+| Kompatibilität | folgt weiter der Berechnungsart (nur `SP_BERECHNUNG_NACHTNUTZUNG`) — die Regel muß im Bild mitlaufen, sonst bliebe der Schalter bis zum nächsten Lesen falsch gesperrt |
+| Preisquelle | schreibt die Quelle UND holt Beschriftung und Liste über `SpeicherPreisreihen`. Die Reihen-Id kommt aus der gespeicherten Variante und wird nicht noch einmal geschrieben |
+| kWh‑Äquivalent | `AequivalenteNachziehen()` nach SoC min, SoC max und Kapazität — dieselbe Formel und dasselbe Format wie `SimulationErgebnisHuelle.SoCText`, die es beim Lesen setzt |
+| Ohne Schreibdienst | schreibt kein Feld, und die Felder sind **gesperrt**: Ein Eingabefeld, das nirgendwo ankommt, ist eine Attrappe |
+
+**B — Die Gerätegröße schreibt sofort** über zwei neue Schlüssel `SpeicherFeld.Kapazitaet` und
+`SpeicherFeld.Leistung`. Sie benennen ein Feld der **Anlage** (`Tab_Stromspeicher`) und nicht der
+Variante; die Hülle schreibt sie über `StromspeicherSimCtrl.UebernehmeAuslegung(projekt, kwh, kw)`,
+den jeweils anderen Wert aus `StromspeicherStammCtrl.KapazitaetUndLeistung`. Die Wache „genau eine
+SP‑Anlage" liegt in `UebernehmeAuslegung` selbst und begründet sich dort; ihr `LetzterHinweis` wird
+zur Rückmeldung. Die Felder sind wie bisher nur bei `Daten.GeraetegroesseAenderbar` aktiv, sonst
+gesperrt mit `SP_PARAM_HINWEIS_LADELEISTUNG`.
+
+**C — Datenseite** (`EPOS.UI/Seiten/Simulation/SimulationErgebnisDaten.cs`).
+
+| Änderung | wozu |
+|---|---|
+| `SpeicherfeldSchreiben` wird `Func<string, string, Rueckmeldung>` | **kein stummer Schreibweg mehr** — jeder Aufruf sagt, was daraus geworden ist |
+| `SpeicherparameterSchreiben` **entfällt** | ein Schreibweg, nicht zwei |
+| `SpeicherparameterLesen` **entfällt** | seine einzigen Verwender waren `Speichern`/`Verwerfen` des Puffers. `OptimierungSchliessen` lädt weiter über `Neuladen()` und `Dienste.Laden` — der Leistungspreis der Optimierung steht danach im Feld |
+| `SpeicherFeld.Kapazitaet`, `SpeicherFeld.Leistung` | die zwei Gerätefelder (siehe B) |
+
+**D — Die Hülle prüft und meldet** (`WindowsFormsApplication1/Views/Simulation/SimulationErgebnisHuelle.cs`).
+
+| Methode | was sie tut |
+|---|---|
+| `SpeicherfeldSchreiben(feld, wert)` | **erst prüfen, dann schreiben.** Ohne Variante `SP_PARAM_MSG_KEINE_VARIANTE`; Gerätefelder gehen an `GeraetegroesseSchreiben`; sonst `FeldPruefen`, dann die Feldabbildung und **ein** `Update`. `false` und Ausnahmen werden zu `SP_PARAM_MSG_FEHLER` (Einzelheiten in die Konsole), Erfolg zu `SP_PARAM_MSG_GESPEICHERT`. Ein unbekannter Schlüssel ist ein Programmierfehler und meldet `Rueckmeldung.Still` |
+| `FeldPruefen(feld, zahl)` | die Regel, die zu DIESEM Feld gehört: SoC min/max gegen den jeweils anderen **gespeicherten** Wert, die vier Wirtschaftswerte je für sich; alle übrigen Felder haben keine |
+| `GeraetegroesseSchreiben(feld, zahl)` | den anderen Gerätewert lesen, `SpeicherParameterPruefung.Geraet` prüfen, `UebernehmeAuslegung` schreiben, `LetzterHinweis` melden |
+| `SpeicherparameterSchreiben`, `VarianteAusDaten` | **entfallen** — die Feldabbildung steht wieder nur einmal |
+
+`OptimierungLeistungspreis` (W11b‑E‑3) nimmt denselben Weg wie bisher; neu ist, dass ein Fehlschlag
+in der Konsole steht statt ins Leere zu gehen. `SpeicherParameter()` bleibt der LESEweg der Seite —
+er füllt `ParameterDaten.Speicher` und setzt `GeraetegroesseAenderbar`.
+
+**E — Kern: die Prüfregeln je Regel** (`EPOS.Kern/Controller/SpeicherParameterPruefung.cs`). Aus der
+Gesamtprüfung `Pruefen(9 Parameter)` werden drei reine Funktionen; die Gesamtprüfung hätte nach der
+Umstellung **keinen Verwender mehr** und ist deshalb entfallen (kein toter Code).
+
+| Funktion | Regel | Meldung |
+|---|---|---|
+| `SoCBand(min, max)` | 0 ≤ min **<** max ≤ 100, NaN/∞ ausgeschlossen | `SP_PARAM_MSG_SOC_BAND` |
+| `Geraet(kwh, kw)` | beide > 0 | `SP_PARAM_MSG_GERAET_POSITIV` |
+| `NichtNegativ(wert)` | ≥ 0 | `SP_PARAM_MSG_NEGATIV` |
+
+Die Bedingung „nur bei änderbarer Gerätegröße" liegt jetzt beim Aufrufer und nicht mehr als
+Parameter in der Regel: Sie ist eine Frage des Projekts, nicht der Zahl.
+
+**F — Ressourcen** (`EPOS.Kern/MyResource/Resource.resx`, `Resource.en-US.resx`, danach
+`python Werkzeuge/ResourceDesigner/designer_neu.py schreiben`; 5 376 → 5 373 Einträge im Designer,
+wiederholbar).
+
+| Eintrag | Änderung |
+|---|---|
+| `SP_PARAM_BTN_SPEICHERN`, `SP_PARAM_BTN_VERWERFEN`, `SP_PARAM_STATUS_UNGESPEICHERT` | **entfernt** — ohne Verwender |
+| `SP_PARAM_MSG_GESPEICHERT` | „Gespeichert — der nächste Simulationslauf rechnet mit diesen Werten." (vorher: „Die Speicherparameter sind gespeichert …") — sie steht jetzt nach EINEM Feld und nicht nach einem Satz |
+| `SP_PARAM_MSG_FEHLER` | ohne Platzhalter: „Der Wert konnte nicht geschrieben werden — er steht nicht in der Datenbank." Die Einzelheiten der Ausnahme gehören in die Konsole und nicht in eine Statuszeile |
+
+`.epos-simerg-knopfzeile` bleibt — sie trägt weiterhin den Optimierungsknopf, nur oben statt unten.
+
+### Nachweis
+
+Sandbox 3 auf `fbca6e07`, x64 Debug (kein Hauptbaum-Bau):
+
+| Lauf | Ausgang | nachher |
+|---|---|---|
+| `MSBuild WP-Plan.sln -p:Configuration=Debug -p:Platform=x64` | 0 Fehler | **0 Fehler** |
+| `EPOS.Kern.Tests` | 2 339 / 2 339 | **2 341 / 2 341 grün** (+2) |
+| `EPOS.UI.Tests` | 3 403 / 3 403 | **3 403 / 3 403 grün** (±0) |
+
+**Kern** (`EPOS.Kern.Tests/SpeicherParameterPruefungTests.cs`): die Satzprüfung wird zu den drei
+Regelfunktionen; der Legendenteil der Datei bleibt Wort für Wort stehen.
+
+| Fall | was er festhält |
+|---|---|
+| `Ein_gueltiges_SoC_Band_wird_nicht_beanstandet` | der Regelfall geht durch |
+| `Die_Grenzfaelle_null_und_hundert_sind_erlaubt` | 0 und 100 sind das Band, nicht sein Rand |
+| `Min_gleich_Max_ist_kein_Band` · `Min_ueber_Max_wird_abgewiesen` | ein Band ohne Hub ist keines |
+| `Werte_ausserhalb_von_null_bis_hundert_werden_abgewiesen` (3) · `NaN_im_SoC_Band_wird_abgewiesen` | die Kanten und die Rechenunfälle |
+| `Eine_Kante_wird_gegen_die_gespeicherte_andere_geprueft` | **neu:** wer eine Kante eingibt, gibt sie gegen die andere GESPEICHERTE ein |
+| `Eine_positive_Geraetegroesse_wird_nicht_beanstandet` · `Die_Geraetegroesse_muss_positiv_sein` (4) · `NaN_in_der_Geraetegroesse_wird_abgewiesen` | die Geräteregel, ohne den früheren Erlaubnisparameter |
+| `Null_ist_ein_erlaubter_Wirtschaftswert` · `Negative_Wirtschaftswerte_werden_abgewiesen` (3) · `NaN_als_Wirtschaftswert_wird_abgewiesen` | null ja, negativ nein — je Wert einzeln |
+| `Jede_Regel_hat_ihre_eigene_Meldung` | **neu:** drei Regeln, drei Gründe; die Statuszeile nennt das Feld, an dem es hängt |
+
+Entfallen sind `Ohne_Erlaubnis_bleibt_die_Geraetegroesse_ungeprueft` (die Erlaubnis ist kein
+Regelparameter mehr) und `Der_erste_Verstoss_gewinnt` (es gibt keine Reihenfolge mehr — es kommt EIN
+Feld an).
+
+**Oberfläche** (`EPOS.UI.Tests/Seiten/SpeicherParameterBlockTests.cs`, neu auf Sofort-Semantik):
+
+| Fall | was er festhält |
+|---|---|
+| `Eine_Feldaenderung_schreibt_sofort_und_genau_einmal` | **der Kernfall** — ein Aufruf, richtiger Schlüssel, invarianter Wert („12,5" → „12.5") |
+| `Jedes_Feld_schreibt_mit_seinem_eigenen_Schluessel` | die **Vollständigkeitsprobe**: alle achtzehn Felder, in Markupreihenfolge, mit ihren Schlüsseln und Werten |
+| `Die_Uebergabe_traegt_den_geschriebenen_Wert` | die Übergabe IST der Arbeitsstand |
+| `Ohne_Schreibdienst_sind_die_Felder_gesperrt` | ein Feld, das nirgendwo ankommt, ist eine Attrappe |
+| `Die_Bestaetigung_steht_ohne_Warnfarbe_in_der_Statuszeile` | jeder Schreibvorgang meldet sich |
+| `Ein_Fehlschlag_steht_in_der_Warnfarbe_und_der_Wert_bleibt` | die Meldung färbt sich, die Eingabe bleibt stehen |
+| `Der_naechste_gueltige_Wert_loest_die_Warnung_ab` | die Meldung geht mit dem nächsten gültigen Wert |
+| `Ohne_Schreibvorgang_steht_keine_Meldung` | vorher steht nur der Variantenstatus da |
+| `Der_Optimierungsknopf_steht_oben_unter_der_Statuszeile` | **der zweite Befund** — Statuszeile, Knopfzeile, dann die Felder |
+| `Ohne_Delegat_bleibt_der_Optimierungsknopf_weg` · `Der_Block_hat_ausser_der_Optimierung_keinen_Knopf` | „Kein Delegat ist kein Knopf"; und Speichern/Verwerfen gibt es nicht mehr |
+| `Ohne_aktive_Variante_sind_die_Felder_gesperrt` · `Der_Sperrzustand_sperrt_alle_Felder` | die zwei übrigen Sperrgründe |
+| `Die_Geraetegroesse_ist_nur_mit_der_Erlaubnis_aenderbar` · `Die_Geraetegroesse_schreibt_ueber_Kapazitaet_und_Leistung` | die zwei neuen Schlüssel und ihre Bedingung |
+| `Das_kWh_Aequivalent_folgt_der_geaenderten_Kapazitaet` · `…_dem_geaenderten_Prozentwert` | die Nachrechnung im Bild |
+| `Der_Preisquellenwechsel_schreibt_und_holt_Label_und_Liste` · `Ohne_Preisreihendienst_bleibt_die_Liste_stehen` | der Schreibvorgang UND der Lesedienst |
+| `Die_Kompatibilitaet_haengt_an_der_Berechnungsart` · `Der_Ausbaustufen_Schalter_bleibt_gesperrt` | die zwei Schalterregeln |
+| `Der_Block_steht_im_einspaltigen_Formularraster` | fünf Raster, alle einspaltig |
+
+**Geändert:** `SimulationErgebnisSeiteTests.Die_Speicherparameter_gehen_an_den_Stromspeicherreiter`
+prüft statt `Arbeitskopie`/`HatAenderungen` jetzt, dass der Block auf der durchgereichten Übergabe
+selbst arbeitet (`Assert.Same`) und ohne Schreibvorgang keine Meldung trägt.
+`StromspeicherReiterTests` blieb unverändert — seine drei Blockfälle
+(`Der_Parameterblock_steht_ueber_den_Kacheln`, `…_steht_auch_ohne_Lauf`,
+`Der_Optimierungsknopf_steht_im_Parameterblock`) prüfen die Einbettung und nicht das Speichern.
+
+**Nicht durch Tests gedeckt:** der Schreibweg der Hülle selbst (`SpeicherfeldSchreiben`,
+`FeldPruefen`, `GeraetegroesseSchreiben`) — `WindowsFormsApplication1` hat kein Testprojekt, das dort
+die Datenbank anfaßt (dieselbe Lage wie bei W11b‑B‑17/19/21/24/25/26/27/28). Geprüft sind die
+Prüfregeln darunter und die Oberfläche darüber.
+
+### Offene Punkte
+
+1. **Sichtabnahme am Programm, Projekt 1050.** Simulation → Detaillierte Simulation → Reiter
+   „Stromspeicher": Eine Eingabe in JEDES Feld, dann der Reiter gewechselt und zurück — der Wert
+   muß stehen. Die Statuszeile muß jeden Schreibvorgang bestätigen. „Auslegung optimieren …" steht
+   oben unter der Statuszeile.
+2. **Gegenprobe in der Datenbank.** Variantenzeile 14 (Anlage 14993) nach der Sitzung: SoC, `L_P`,
+   Kapitalzins und Nutzungsdauer müssen die eingegebenen Werte tragen — der Befund, mit dem dieses
+   Paket begann.
+3. **Sichtabnahme der Prüfmeldungen.** SoC min über SoC max eingeben: Die Bandmeldung erscheint in
+   Warnfarbe, der getippte Wert bleibt stehen, und ein gültiger Wert danach löst sie ab. Ein
+   negativer Zins ebenso.
+4. **Sichtabnahme der Gerätegröße** an einem Projekt mit **einer** Speicheranlage (Felder offen, der
+   geänderte Wert steht sofort in `Tab_Stromspeicher`) und an einem mit **mehreren** (Felder
+   gesperrt, Hinweis steht).
+5. **Das Tippen während der Eingabe.** Das Zahlenfeld meldet jede Taste, also schreibt jede Taste.
+   Bei einer SQLite-Datei auf der Platte ist das ein `UPDATE` je Anschlag — in der Bedienung bisher
+   nicht aufgefallen (der Reiter „Parameter" hält es seit jeher so), gehört aber in die Sichtabnahme.
+   Wenn es stört, ist die Antwort eine Verzögerung IM Zahlenfeld und kein Puffer im Block.
+6. **`SP_PARAM_HINWEIS_KAPAZITAET`** ist nach wie vor ungenutzt (Bestand vor W11b‑B‑28) — der Block
+   zeigt bei gesperrter Gerätegröße nur `SP_PARAM_HINWEIS_LADELEISTUNG`, wie das Blatt P3 es tat.

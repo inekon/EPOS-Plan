@@ -815,3 +815,9 @@ Betrag von 0 auf Menge × Satz — auf der Betriebs- und auf der Investitionssei
 Auftrag. Nachweis, Matrix Bemessung × Gewerk und Testliste:
 `WindowsFormsApplication1/Allgemein/Reporting/H4a_Bezugsgroessen_Protokoll.md`, Abschnitt
 „3b Nachtrag 10.09.2026 (H4c)".
+
+## Spezifische Kosten in der Speicherauslegung – 11.09.2026
+
+Die aktive Speicheranlage liefert ihre geeigneten spezifischen Kostenpositionen an den Auslegungsdialog. Investition und Betrieb wählen ihre Quelle unabhängig; die direkte Eingabe ersetzt die jeweilige Kategorie für die Auslegungsbewertung. EUR_PRO_KWH_KAPAZITAET und EUR_PRO_KWH_ELEKTRISCH bleiben getrennte Mengenbasen. Bei jedem Kandidaten werden Baugröße und AC-Entladung neu verwendet. Benannte Auslegungsprofile speichern Sätze, Bereiche, Preisprofil und Zeitreihen.
+
+Übernahmefilter, Rechenansatz und Grenzen: [Doku_Speicherauslegung_Kosten_Zeitreihen.md](Doku_Speicherauslegung_Kosten_Zeitreihen.md).

@@ -1283,9 +1283,24 @@ namespace WindowsFormsApplication1
                 new KeyValuePair<string, string>(ZeitreihenSatz.STROMBEDARF, "Strombedarf"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.PV_GENUTZT, "PV-Eigenverbrauch"),
                 new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_STROM, "BHKW-Strom"),
-                new KeyValuePair<string, string>(ZeitreihenSatz.PV_UEBERSCHUSS, "Einspeisung"),
-                new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"),
-            }.Where(s => z.Hat(s.Key)).ToList();
+            };
+            if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
+            {
+                // Flottenbericht: Komponenten und kontrollierende Gesamtsumme stehen
+                // getrennt nebeneinander. Keine davon fließt hier erneut in Kosten ein.
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_UEBERSCHUSS, "PV-Einspeisung"));
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BHKW_UEBERSCHUSS, "BHKW-Einspeisung"));
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.BATTERIE_EINSPEISUNG, "Batterie-Einspeisung"));
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZEINSPEISUNG, "Netzeinspeisung gesamt"));
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_ABREGELUNG, "PV-Abregelung"));
+            }
+            else
+            {
+                // Bestandspfad und sein bisheriger Bericht bleiben unverändert.
+                spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.PV_UEBERSCHUSS, "Einspeisung"));
+            }
+            spalten.Add(new KeyValuePair<string, string>(ZeitreihenSatz.NETZBEZUG, "Netzbezug"));
+            spalten = spalten.Where(s => z.Hat(s.Key)).ToList();
             if (spalten.Count == 0) return r;
 
             ws.Cell(r, 1).Value = "Monatswerte [MWh] (aus dem Simulationslauf dieses Berichts)";

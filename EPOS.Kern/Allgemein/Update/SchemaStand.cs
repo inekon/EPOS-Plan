@@ -65,11 +65,12 @@ namespace WindowsFormsApplication1
         /// der Ersatzbeschaffung und den nicht monetären Wirkungen (Schritt 72 — der
         /// Preisänderungssatz der kapitalgebundenen Kosten p_I in drei Spalten und das
         /// Freitextfeld, Anwenderentscheid W5-B-12 vom 09.09.2026, VALERI-Lücken G4
-        /// und G6) auf <b>72</b>. Der Freeze-Stand
+        /// und G6) auf 72; mit den gespeicherten Speicherauslegungsprofilen und
+        /// Zeitreihen (Schritt 73 vom 11.09.2026) auf <b>73</b>. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 72;
+        public const int Zielversion = 73;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -1,0 +1,129 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" role="dialog" aria-modal="true">
+    <div class="epos-dialog-kopf"><h1 class="epos-dialog-titel">@Titel</h1></div>
+    <Herleitungszeile Text="@Datei.Dateiname" />
+
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="CSV-Format">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="Trennzeichen:" Eintraege="@Trennzeichen"
+                                 Auswahl="@TrennzeichenIndex" AuswahlChanged="TrennzeichenSetzen" />
+                    <Auswahlfeld Bezeichnung="Dezimaltrenner:" Eintraege="@Dezimaltrenner"
+                                 Auswahl="@DezimalIndex" AuswahlChanged="DezimalSetzen" />
+                    <Auswahlfeld Bezeichnung="Kodierung:" Eintraege="@Kodierungen"
+                                 Auswahl="@((int)_optionen.Encoding)" AuswahlChanged="KodierungSetzen" />
+                    <Schalter Bezeichnung="Erste Datenzeile ist eine Kopfzeile" Wert="@_optionen.Kopfzeile"
+                              WertChanged="KopfzeileSetzen" />
+                    <Ganzzahlfeld Bezeichnung="Zeilen davor überspringen:" Wert="@_optionen.ZuUeberspringendeZeilen"
+                                  Min="0" WertChanged="UeberspringenSetzen" />
+                </KindInhalt>
+            </Formulargruppe>
+            <Formulargruppe Titel="Spalten und Zeit">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="Zeitangabe:" Eintraege="@Zeitarten" Auswahl="@(_getrennteZeit ? 1 : 0)"
+                                 AuswahlChanged="ZeitartSetzen" />
+                    @if (!_getrennteZeit)
+                    {
+                        <Auswahlfeld Bezeichnung="Zeitstempelspalte:" Eintraege="@Spalten" Auswahl="@_optionen.ZeitstempelSpalte"
+                                     AuswahlChanged="ZeitstempelSpalteSetzen" />
+                        <Textfeld Bezeichnung="Zeitstempelformat (leer = Standard):" Wert="@_optionen.ZeitstempelFormat"
+                                  WertChanged="ZeitstempelFormatSetzen" />
+                    }
+                    else
+                    {
+                        <Auswahlfeld Bezeichnung="Datumsspalte:" Eintraege="@Spalten" Auswahl="@_optionen.DatumSpalte"
+                                     AuswahlChanged="DatumSpalteSetzen" />
+                        <Auswahlfeld Bezeichnung="Uhrzeitspalte:" Eintraege="@Spalten" Auswahl="@_optionen.UhrzeitSpalte"
+                                     AuswahlChanged="UhrzeitSpalteSetzen" />
+                        <Textfeld Bezeichnung="Datumsformat (leer = Standard):" Wert="@_optionen.DatumFormat"
+                                  WertChanged="DatumFormatSetzen" />
+                        <Textfeld Bezeichnung="Uhrzeitformat (leer = Standard):" Wert="@_optionen.UhrzeitFormat"
+                                  WertChanged="UhrzeitFormatSetzen" />
+                    }
+                    <Auswahlfeld Bezeichnung="Wertspalte:" Eintraege="@Spalten" Auswahl="@_optionen.WertSpalte"
+                                 AuswahlChanged="WertSpalteSetzen" />
+                    <Textfeld Bezeichnung="Zeitzone:" Wert="@_optionen.ZeitzoneId" WertChanged="ZeitzoneSetzen" />
+                    <Auswahlfeld Bezeichnung="Zeitstempel bezeichnet Intervall:" Eintraege="@Konventionen"
+                                 Auswahl="@((int)_optionen.Konvention)" AuswahlChanged="KonventionSetzen" />
+                    <Auswahlfeld Bezeichnung="Einheit:" Eintraege="@Einheiten"
+                                 Auswahl="@((int)_optionen.Einheit)" AuswahlChanged="EinheitSetzen" />
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+
+    @if (!string.IsNullOrEmpty(_fehler)) { <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" /> }
+
+    @if (_vorschau is not null)
+    {
+        <section><Gruppenkopf Titel="Vorschau" />
+            <div class="epos-raster-huelle"><table class="epos-tabelle"><tbody>
+                @foreach (string[] zeile in _vorschau.Zeilen)
+                { <tr>@foreach (string feld in zeile) { <td>@feld</td> }</tr> }
+            </tbody></table></div>
+        </section>
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="Geschlossen">Abbrechen</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(_vorschau is null || !string.IsNullOrEmpty(_fehler))" @onclick="Uebernehmen">Übernehmen</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SpeicherImportDatei Datei { get; set; } = new();
+    [Parameter] public SpeicherZeitreihenRolle Rolle { get; set; }
+    [Parameter] public EventCallback<SpeicherZeitreihe> Uebernommen { get; set; }
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    private SpeicherZeitreihenOptionen _optionen = new();
+    private SpeicherZeitreihenVorschau? _vorschau;
+    private string _fehler = "";
+    private bool _getrennteZeit;
+    private bool _initialisiert;
+    private string Titel => Rolle switch { SpeicherZeitreihenRolle.Last=>"Last-Zeitreihe importieren", SpeicherZeitreihenRolle.Pv=>"PV-Zeitreihe importieren", _=>"Bezugspreise importieren" };
+    private static readonly IReadOnlyList<(int Id,string Text)> Trennzeichen=new[]{(0,"Semikolon (;)"),(1,"Komma (,)"),(2,"Tabulator")};
+    private static readonly IReadOnlyList<(int Id,string Text)> Dezimaltrenner=new[]{(0,"Komma (,)"),(1,"Punkt (.)")};
+    private static readonly IReadOnlyList<(int Id,string Text)> Kodierungen=new[]{(0,"UTF-8"),(1,"Windows-1252")};
+    private static readonly IReadOnlyList<(int Id,string Text)> Zeitarten=new[]{(0,"Eine Zeitstempelspalte"),(1,"Getrennte Datums- und Uhrzeitspalten")};
+    private static readonly IReadOnlyList<(int Id,string Text)> Konventionen=new[]{(0,"Anfang"),(1,"Ende")};
+    private IReadOnlyList<(int Id,string Text)> Einheiten => Rolle==SpeicherZeitreihenRolle.Bezug
+        ? new[]{(3,"€/kWh"),(4,"ct/kWh"),(5,"€/MWh")}
+        : new[]{(0,"kW"),(1,"MW"),(2,"kWh je Intervall")};
+    private IReadOnlyList<(int Id,string Text)> Spalten => Enumerable.Range(0,Math.Max(1,_vorschau?.Spaltenzahl??2)).Select(i=>(i,$"Spalte {i+1}")).ToArray();
+    private int TrennzeichenIndex => _optionen.Trennzeichen switch {','=>1,'\t'=>2,_=>0};
+    private int DezimalIndex => _optionen.Dezimaltrenner=='.'?1:0;
+
+    protected override void OnParametersSet()
+    {
+        if (_initialisiert) return;
+        _initialisiert=true;
+        _optionen.Rolle=Rolle;
+        _optionen.Einheit=Rolle==SpeicherZeitreihenRolle.Bezug?SpeicherZeitreihenEinheit.EuroJeKilowattstunde:SpeicherZeitreihenEinheit.Kilowatt;
+        VorschauLesen();
+    }
+
+    private void VorschauLesen(){try{_vorschau=SpeicherZeitreihenImport.Vorschau(Datei.Inhalt,_optionen);_fehler="";}catch(Exception ex){_vorschau=null;_fehler=ex.Message;}}
+    private void Geaendert(){VorschauLesen();}
+    private void TrennzeichenSetzen(int? v){_optionen.Trennzeichen=v switch{1=>',',2=>'\t',_=>';'};Geaendert();}
+    private void DezimalSetzen(int? v){_optionen.Dezimaltrenner=v==1?'.':',';Geaendert();}
+    private void KodierungSetzen(int? v){_optionen.Encoding=(SpeicherZeitreihenEncoding)(v??0);Geaendert();}
+    private void KopfzeileSetzen(bool v){_optionen.Kopfzeile=v;Geaendert();}
+    private void UeberspringenSetzen(int? v){if(v.HasValue)_optionen.ZuUeberspringendeZeilen=v.Value;Geaendert();}
+    private void ZeitartSetzen(int? v){_getrennteZeit=v==1;if(_getrennteZeit){_optionen.ZeitstempelSpalte=-1;_optionen.DatumSpalte=0;_optionen.UhrzeitSpalte=1;}else{_optionen.ZeitstempelSpalte=0;_optionen.DatumSpalte=-1;_optionen.UhrzeitSpalte=-1;}Geaendert();}
+    private void ZeitstempelSpalteSetzen(int? v){_optionen.ZeitstempelSpalte=v??0;Geaendert();}
+    private void DatumSpalteSetzen(int? v){_optionen.DatumSpalte=v??0;Geaendert();}
+    private void UhrzeitSpalteSetzen(int? v){_optionen.UhrzeitSpalte=v??1;Geaendert();}
+    private void WertSpalteSetzen(int? v){_optionen.WertSpalte=v??1;Geaendert();}
+    private void ZeitstempelFormatSetzen(string v){_optionen.ZeitstempelFormat=v;Geaendert();}
+    private void DatumFormatSetzen(string v){_optionen.DatumFormat=v;Geaendert();}
+    private void UhrzeitFormatSetzen(string v){_optionen.UhrzeitFormat=v;Geaendert();}
+    private void ZeitzoneSetzen(string v){_optionen.ZeitzoneId=v;Geaendert();}
+    private void KonventionSetzen(int? v){_optionen.Konvention=v==1?IntervallKonvention.Ende:IntervallKonvention.Anfang;Geaendert();}
+    private void EinheitSetzen(int? v){_optionen.Einheit=(SpeicherZeitreihenEinheit)(v??0);Geaendert();}
+    private async Task Uebernehmen(){try{var reihe=SpeicherZeitreihenImport.Lesen(Datei.Inhalt,Datei.Dateiname,_optionen);_fehler="";await Uebernommen.InvokeAsync(reihe);}catch(Exception ex){_fehler=ex.Message;}}
+}

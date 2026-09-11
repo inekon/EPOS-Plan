@@ -1,11 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Vollständige, nichtnegative Netzbilanz der aktivierten Speicherflotte im
+    /// Viertelstundenraster. Bezug und Einspeisung bleiben getrennt; die drei
+    /// Einspeisequellen ergeben zusammen die gesamte Netzeinspeisung.
+    /// </summary>
+    public sealed class SpeicherFlottenNetzbilanz
+    {
+        public double[] NetzbezugKw { get; init; } = Array.Empty<double>();
+        public double[] NetzeinspeisungKw { get; init; } = Array.Empty<double>();
+        public double[] PvNetzeinspeisungKw { get; init; } = Array.Empty<double>();
+        public double[] BhkwNetzeinspeisungKw { get; init; } = Array.Empty<double>();
+        public double[] BatterieNetzeinspeisungKw { get; init; } = Array.Empty<double>();
+        public double[] PvAbregelungKw { get; init; } = Array.Empty<double>();
+
+        public double NetzbezugKwh => NetzbezugKw.Sum() * 0.25;
+        public double NetzeinspeisungKwh => NetzeinspeisungKw.Sum() * 0.25;
+        public double PvNetzeinspeisungKwh => PvNetzeinspeisungKw.Sum() * 0.25;
+        public double BhkwNetzeinspeisungKwh => BhkwNetzeinspeisungKw.Sum() * 0.25;
+        public double BatterieNetzeinspeisungKwh => BatterieNetzeinspeisungKw.Sum() * 0.25;
+        public double PvAbregelungKwh => PvAbregelungKw.Sum() * 0.25;
+    }
+
     /// <summary>
     /// Anbindung des Stromspeicher-Moduls an die Simulation: beschafft Zeitreihen und
     /// Parameter und übergibt sie an die <c>SpeicherEngine</c>.
@@ -552,6 +576,81 @@ namespace WindowsFormsApplication1
             {
                 Basis = basis,
                 Eingang = BaueEingang(sim, idProjekt, kontext.Variante),
+                Kontext = kontext
+            };
+        }
+
+        /// <summary>
+        /// Bereitet den Laufkontext einer Speicherflottenstudie ohne eine einzelne
+        /// <c>SP_TYP</c>-Anlage vor. Die physischen Geräte stehen vollständig in der
+        /// Flottenkonfiguration; der aggregierte Parametersatz dient ausschließlich
+        /// dem bestehenden Laufkontext und erzeugt keinen Anlagen- oder
+        /// Datenbankdatensatz. Bei reinen Dateiquellen darf <paramref name="sim"/>
+        /// <c>null</c> sein; dann werden hier noch keine EPOS-Reihen gebaut.
+        /// </summary>
+        public StromspeicherOptimierungVorbereitung BereiteProjektflotteVor(
+            SimulationControl sim, int idProjekt, FlottenStudieKonfiguration flotte)
+        {
+            ArgumentNullException.ThrowIfNull(flotte);
+            if (flotte.Einheiten == null || flotte.Einheiten.Count == 0)
+                throw new ArgumentException("Die Projektflotte enthält keine physischen Speicher.", nameof(flotte));
+
+            LetzterHinweis = string.Empty;
+            LetzterKontext = null;
+
+            double kapazitaet = flotte.Einheiten.Sum(x => x.KapazitaetKWh);
+            double leistung = flotte.Einheiten.Sum(x =>
+                Math.Max(x.LadeleistungKw, x.EntladeleistungKw));
+            if (!double.IsFinite(kapazitaet) || kapazitaet <= 0 ||
+                !double.IsFinite(leistung) || leistung <= 0)
+                throw new ArgumentException(
+                    "Kapazität und Leistung der Projektflotte müssen positiv und endlich sein.", nameof(flotte));
+
+            double socMin = flotte.Einheiten.Sum(x => x.KapazitaetKWh * x.SocMin);
+            double socMax = flotte.Einheiten.Sum(x => x.KapazitaetKWh * x.SocMax);
+            double socStart = flotte.Einheiten.Sum(x => x.KapazitaetKWh * x.SocStart);
+            double etaRt = flotte.Einheiten.Sum(x => x.KapazitaetKWh *
+                x.Ladewirkungsgrad * x.Entladewirkungsgrad) / kapazitaet;
+            if (!double.IsFinite(socMin) || !double.IsFinite(socMax) ||
+                !double.IsFinite(socStart) || !double.IsFinite(etaRt) ||
+                socMin < 0 || socMax <= socMin || socStart < socMin ||
+                socStart > socMax || etaRt <= 0 || etaRt > 1)
+                throw new ArgumentException(
+                    "Die technischen Grenzen der Projektflotte sind ungültig.", nameof(flotte));
+
+            var variante = new StromspeicherVarianteModel
+            {
+                Aktiv = true,
+                Netzentladung = flotte.Optionen?.BatterieexportErlaubt == true,
+                Betriebsart = flotte.Optionen?.NetzladungErlaubt == true
+                    ? DbWerte.SP_BETRIEBSART_GRAUSTROM
+                    : DbWerte.SP_BETRIEBSART_GRUENSTROM,
+                SoC_Min_Prozent = socMin * 100.0 / kapazitaet,
+                SoC_Max_Prozent = socMax * 100.0 / kapazitaet
+            };
+            SpeicherParameter basis = StandardParameter(kapazitaet, leistung) with
+            {
+                SoCMinKwh = socMin,
+                SoCMaxKwh = socMax,
+                StartSoCKwh = socStart,
+                RoundTripWirkungsgrad = etaRt,
+                Betriebsart = variante.Betriebsart == DbWerte.SP_BETRIEBSART_GRAUSTROM
+                    ? SpeicherBetriebsart.Graustrom
+                    : SpeicherBetriebsart.Gruenstrom
+            };
+            var kontext = new StromspeicherLaufKontext
+            {
+                Parameter = basis,
+                Variante = variante,
+                ID_Energieanlage = 0,
+                Bezeichner = "Speicherflotte"
+            };
+            LetzterKontext = kontext;
+
+            return new StromspeicherOptimierungVorbereitung
+            {
+                Basis = basis,
+                Eingang = sim == null ? null : BaueEingang(sim, idProjekt, variante),
                 Kontext = kontext
             };
         }
@@ -1403,6 +1502,194 @@ namespace WindowsFormsApplication1
         /// Parametersatz und Anlagenbezug des Laufs (<see cref="LetzterKontext"/>).
         /// Darf <c>null</c> sein — dann bleiben die bandabhängigen Größen leer.
         /// </param>
+        /// <summary>Liest den vollständigen vorzeichenbehafteten Netzfluss eines Flottenlaufs.</summary>
+        public static double[] NetzleistungKw(FlottenStudienErgebnis studie)
+        {
+            ArgumentNullException.ThrowIfNull(studie);
+            return studie.Variante.Intervalle.Select(x => x.NetzleistungKw).ToArray();
+        }
+
+        /// <summary>
+        /// Trennt den vorzeichenbehafteten Flotten-Netzsaldo in Bezug und Einspeisung
+        /// und übernimmt die bereits von der Engine bilanzierten Einspeisequellen.
+        /// Inkonsistente Flüsse werden nicht still in den Projektbericht übernommen.
+        /// </summary>
+        public static SpeicherFlottenNetzbilanz ProjektNetzbilanz(FlottenStudienErgebnis studie)
+        {
+            ArgumentNullException.ThrowIfNull(studie);
+            IReadOnlyList<FlottenIntervallErgebnis> intervalle = studie.Variante.Intervalle;
+            int n = intervalle.Count;
+            var bezug = new double[n];
+            var einspeisung = new double[n];
+            var pv = new double[n];
+            var bhkw = new double[n];
+            var batterie = new double[n];
+            var abregelung = new double[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                FlottenIntervallErgebnis x = intervalle[i];
+                PruefeFluss(x.NetzbezugKw, nameof(x.NetzbezugKw), i);
+                PruefeFluss(x.NetzeinspeisungKw, nameof(x.NetzeinspeisungKw), i);
+                PruefeFluss(x.PvNetzeinspeisungKw, nameof(x.PvNetzeinspeisungKw), i);
+                PruefeFluss(x.BhkwNetzeinspeisungKw, nameof(x.BhkwNetzeinspeisungKw), i);
+                PruefeFluss(x.BatterieNetzeinspeisungKw, nameof(x.BatterieNetzeinspeisungKw), i);
+                PruefeFluss(x.PvAbregelungKw, nameof(x.PvAbregelungKw), i);
+
+                double komponenten = x.PvNetzeinspeisungKw + x.BhkwNetzeinspeisungKw
+                    + x.BatterieNetzeinspeisungKw;
+                double toleranz = 1e-8 * Math.Max(1.0, Math.Max(x.NetzeinspeisungKw, komponenten));
+                if (Math.Abs(x.NetzeinspeisungKw - komponenten) > toleranz)
+                    throw new InvalidOperationException($"Die Einspeisekomponenten der Speicherflotte sind in Intervall {i + 1} nicht bilanziert.");
+                if (x.NetzbezugKw > toleranz && x.NetzeinspeisungKw > toleranz)
+                    throw new InvalidOperationException($"Die Speicherflotte bezieht und speist in Intervall {i + 1} gleichzeitig ein.");
+
+                bezug[i] = x.NetzbezugKw;
+                einspeisung[i] = x.NetzeinspeisungKw;
+                pv[i] = x.PvNetzeinspeisungKw;
+                bhkw[i] = x.BhkwNetzeinspeisungKw;
+                batterie[i] = x.BatterieNetzeinspeisungKw;
+                abregelung[i] = x.PvAbregelungKw;
+            }
+
+            return new SpeicherFlottenNetzbilanz
+            {
+                NetzbezugKw = bezug,
+                NetzeinspeisungKw = einspeisung,
+                PvNetzeinspeisungKw = pv,
+                BhkwNetzeinspeisungKw = bhkw,
+                BatterieNetzeinspeisungKw = batterie,
+                PvAbregelungKw = abregelung
+            };
+        }
+
+        private static void PruefeFluss(double wert, string name, int index)
+        {
+            if (!double.IsFinite(wert) || wert < 0)
+                throw new InvalidOperationException($"{name} der Speicherflotte ist in Intervall {index + 1} ungültig.");
+        }
+
+        /// <summary>
+        /// Verdichtet die Flotte ausschließlich für bestehende Speichercharts und KPIs.
+        /// Der Geldwert ist die Differenz der Netzabrechnungen je Intervall; ein
+        /// Batterieexport wird dadurch genau einmal gezählt.
+        /// </summary>
+        public static SpeicherErgebnis AlsKompatibilitaetsergebnis(
+            FlottenStudienErgebnis studie, FlottenEingang input,
+            FlottenStudieKonfiguration config)
+        {
+            ArgumentNullException.ThrowIfNull(studie);
+            ArgumentNullException.ThrowIfNull(input);
+            ArgumentNullException.ThrowIfNull(config);
+            int n = input.Istwerte.Count;
+            if (studie.Variante.Intervalle.Count != n || studie.ReferenzOhneSpeicher.Intervalle.Count != n)
+                throw new ArgumentException("Flottenresultat und Eingang haben verschiedene Längen.");
+
+            const double dt = 0.25;
+            double[] soc = new double[n], ladung = new double[n], entladung = new double[n], geldwert = new double[n];
+            double pvLadung = 0, bhkwLadung = 0;
+            for (int i = 0; i < n; i++)
+            {
+                FlottenIntervallErgebnis variante = studie.Variante.Intervalle[i];
+                FlottenIntervallErgebnis referenz = studie.ReferenzOhneSpeicher.Intervalle[i];
+                FlottenNetzintervall quelle = input.Istwerte[i];
+                soc[i] = variante.EnergieEndeKWhJeSpeicher.Sum();
+                double leistung = variante.IstleistungKwJeSpeicher.Sum();
+                ladung[i] = Math.Max(0, -leistung) * dt;
+                entladung[i] = Math.Max(0, leistung) * dt;
+
+                double batteriepreis = config.Tarif.BatterieVerkaufspreisEuroProKWh
+                    ?? quelle.BatterieVerkaufspreisEuroProKWh;
+                double kostenReferenz = dt * (referenz.NetzbezugKw * quelle.BezugspreisEuroProKWh
+                    - referenz.PvNetzeinspeisungKw * quelle.PvVerkaufspreisEuroProKWh
+                    - referenz.BhkwNetzeinspeisungKw * quelle.BhkwVerkaufspreisEuroProKWh
+                    - referenz.BatterieNetzeinspeisungKw * batteriepreis);
+                double kostenVariante = dt * (variante.NetzbezugKw * quelle.BezugspreisEuroProKWh
+                    - variante.PvNetzeinspeisungKw * quelle.PvVerkaufspreisEuroProKWh
+                    - variante.BhkwNetzeinspeisungKw * quelle.BhkwVerkaufspreisEuroProKWh
+                    - variante.BatterieNetzeinspeisungKw * batteriepreis);
+                geldwert[i] = kostenReferenz - kostenVariante;
+
+                (double pv, double bhkw) = Ladequellen(quelle, variante.HilfsverbrauchKw,
+                    ladung[i], config.Optionen.ErzeugerPrioritaet);
+                pvLadung += pv;
+                bhkwLadung += bhkw;
+            }
+
+            double ladeenergie = ladung.Sum(), entladeenergie = entladung.Sum(), entladungDc = 0;
+            foreach (FlottenSpeicherKennzahlen k in studie.Variante.SpeicherKennzahlen)
+            {
+                FlottenEinheit einheit = config.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId);
+                entladungDc += k.EntladeenergieAcKWh / (einheit?.Entladewirkungsgrad ?? 1.0);
+            }
+            double nutzbar = config.Einheiten.Sum(x => x.KapazitaetKWh * (x.SocMax - x.SocMin));
+            double erzeugungPv = input.Istwerte.Sum(x => x.PvKw) * dt;
+            double erzeugungBhkw = input.Istwerte.Sum(x => x.BhkwKw) * dt;
+            double direkt = Math.Max(0, erzeugungPv + erzeugungBhkw
+                - studie.ReferenzOhneSpeicher.NetzeinspeisungKWh
+                - studie.ReferenzOhneSpeicher.PvAbregelungKWh);
+            double verschleiss = studie.Variante.SpeicherKennzahlen.Sum(k =>
+            {
+                FlottenEinheit e = config.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId);
+                return k.EntladeenergieAcKWh * (e?.DurchsatzkostenEuroProKWhEntladung ?? 0);
+            });
+            var kennzahlen = new SpeicherKennzahlen
+            {
+                LadeenergiePvKwh = pvLadung, LadeenergieBhkwKwh = bhkwLadung,
+                EntladeenergieDcKwh = entladungDc,
+                AequivalenteVollzyklen = nutzbar > 0 ? entladungDc / nutzbar : 0,
+                VerschleisskostenEurProA = verschleiss,
+                SpeicherverlusteKwh = studie.Variante.VerlusteKWh,
+                LastKwh = input.Istwerte.Sum(x => x.LastKw) * dt,
+                ErzeugungPvKwh = erzeugungPv, ErzeugungBhkwKwh = erzeugungBhkw,
+                DirektverbrauchKwh = direkt,
+                NetzbezugOhneSpeicherKwh = studie.ReferenzOhneSpeicher.NetzbezugKWh,
+                NetzbezugMitSpeicherKwh = studie.Variante.NetzbezugKWh,
+                EinspeisungOhneSpeicherKwh = studie.ReferenzOhneSpeicher.NetzeinspeisungKWh,
+                EinspeisungMitSpeicherKwh = studie.Variante.NetzeinspeisungKWh
+            };
+
+            double invest = config.Einheiten.Sum(x => x.InvestitionEuro
+                + x.InvestitionEuroProKWh * x.KapazitaetKWh
+                + x.InvestitionEuroProKw * Math.Max(x.LadeleistungKw, x.EntladeleistungKw));
+            double opex = config.Einheiten.Sum(x => x.JaehrlicheFixeOpexEuro
+                + x.JaehrlicheOpexEuroProKWhKapazitaet * x.KapazitaetKWh
+                + x.JaehrlicheOpexEuroProKw * Math.Max(x.LadeleistungKw, x.EntladeleistungKw));
+            double jahresnutzen = studie.Referenzrechnung.GesamtEuro
+                - studie.Variantenrechnung.GesamtEuro - opex - verschleiss;
+            int jahre = Math.Max(1, config.Wirtschaftlichkeit.ProjektjahreBeiWiederholung);
+            double zins = double.IsFinite(config.Wirtschaftlichkeit.Kalkulationszins)
+                ? config.Wirtschaftlichkeit.Kalkulationszins : 0;
+            SpeicherEngine.WirtschaftlichkeitErgebnis wirtschaftlichkeit =
+                SpeicherEngine.Wirtschaftlichkeit.Berechne(
+                new SpeicherEngine.WirtschaftlichkeitEingang
+                {
+                    ErtragReferenzjahrEur = jahresnutzen, InvestitionEur = invest,
+                    Kapitalzins = zins, NutzungsdauerA = jahre, DegradationProA = 0
+                });
+
+            return new SpeicherErgebnis(soc, geldwert, geldwert.Sum(), ladeenergie,
+                entladeenergie, SpeicherModus.Energetisch, wirtschaftlichkeit,
+                kennzahlen, ladung, entladung);
+        }
+
+        private static (double PvKwh, double BhkwKwh) Ladequellen(
+            FlottenNetzintervall x, double hilfsleistungKw, double ladungKwh,
+            FlottenErzeugerPrioritaet prioritaet)
+        {
+            double lastKw = x.LastKw + hilfsleistungKw;
+            double pvUeberschussKwh = Math.Max(0, x.PvKw - lastKw) * 0.25;
+            double restlastKw = Math.Max(0, lastKw - x.PvKw);
+            double bhkwUeberschussKwh = Math.Max(0, x.BhkwKw - restlastKw) * 0.25;
+            if (prioritaet == FlottenErzeugerPrioritaet.PvVorBhkw)
+            {
+                double pv = Math.Min(ladungKwh, pvUeberschussKwh);
+                return (pv, Math.Min(ladungKwh - pv, bhkwUeberschussKwh));
+            }
+            double bhkw = Math.Min(ladungKwh, bhkwUeberschussKwh);
+            return (Math.Min(ladungKwh - bhkw, pvUeberschussKwh), bhkw);
+        }
+
         public static ErgebnisStromspeicherModel AlsErgebnismodell(
             SpeicherErgebnis ergebnis, StromspeicherLaufKontext kontext)
         {
@@ -1576,5 +1863,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>Variante, Anlagenbezug, N_zyk und Preisversion des Laufs.</summary>
         public StromspeicherLaufKontext Kontext;
+
+        /// <summary>
+        /// Unabhaengiger Eingabesnapshot dieses Laufs, einschliesslich der einmalig
+        /// aufgeloesten Kosten. Der Hintergrundlauf verwendet genau diese Kopie.
+        /// </summary>
+        public SpeicherOptimierungEingaben Eingaben;
+
+        /// <summary>
+        /// Wirkliche UTC-Zeitachse der effektiven Reihen. <c>null</c> bezeichnet das
+        /// zeitstempellose EPOS-Modelljahr.
+        /// </summary>
+        public DateTimeOffset[] ZeitstempelUtc;
+
+        /// <summary>
+        /// Sichtbarer Hinweis auf eine ausdruecklich gewaehlte Modelljahrzuordnung,
+        /// insbesondere Schalt- und Sommerzeitbehandlung.
+        /// </summary>
+        public string ZeitachsenHinweis = "";
     }
 }

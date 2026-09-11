@@ -1,0 +1,94 @@
+{
+  "tests_run": 28,
+  "failures": 0,
+  "errors": 0,
+  "log": "test_bill_savings_can_be_negative (test_ems.DataFinanceTests.test_bill_savings_can_be_negative) ... ok\ntest_daylight_saving_lengths (test_ems.DataFinanceTests.test_daylight_saving_lengths) ... ok\ntest_duplicate_timestamp_rejected (test_ems.DataFinanceTests.test_duplicate_timestamp_rejected) ... ok\ntest_forecast_leakage_falls_back (test_ems.DataFinanceTests.test_forecast_leakage_falls_back) ... ok\ntest_hour_price_not_divided_by_four (test_ems.DataFinanceTests.test_hour_price_not_divided_by_four) ... ok\ntest_nan_rejected (test_ems.DataFinanceTests.test_nan_rejected) ... ok\ntest_npv_known_result (test_ems.DataFinanceTests.test_npv_known_result) ... ok\ntest_pv_opportunity_cost_with_losses (test_ems.DataFinanceTests.test_pv_opportunity_cost_with_losses) ... ok\ntest_rainflow_half_cycles (test_ems.DataFinanceTests.test_rainflow_half_cycles) ... ok\ntest_resampling_gap_rejected (test_ems.DataFinanceTests.test_resampling_gap_rejected) ... ok\ntest_economic_curtailment_replayed (test_ems.OptimizerTests.test_economic_curtailment_replayed) ... ok\ntest_infeasible_is_not_reported_optimal (test_ems.OptimizerTests.test_infeasible_is_not_reported_optimal) ... ok\ntest_negative_prices_no_artificial_cycle (test_ems.OptimizerTests.test_negative_prices_no_artificial_cycle) ... ok\ntest_plan_replay_keeps_individual_energy (test_ems.OptimizerTests.test_plan_replay_keeps_individual_energy) ... ok\ntest_predictive_pv_is_chronological (test_ems.OptimizerTests.test_predictive_pv_is_chronological) ... ok\ntest_profitable_shift_and_terminal (test_ems.OptimizerTests.test_profitable_shift_and_terminal) ... ok\ntest_two_batteries_dispatch_and_peak (test_ems.OptimizerTests.test_two_batteries_dispatch_and_peak) ... ok\ntest_allocation_resaturates (test_ems.PhysicsTests.test_allocation_resaturates) ... ok\ntest_balance_many_steps (test_ems.PhysicsTests.test_balance_many_steps) ... ok\ntest_charge_boundary (test_ems.PhysicsTests.test_charge_boundary) ... ok\ntest_no_battery_export_but_pv_export (test_ems.PhysicsTests.test_no_battery_export_but_pv_export) ... ok\ntest_no_grid_charge (test_ems.PhysicsTests.test_no_grid_charge) ... ok\ntest_opposing_commands_rejected (test_ems.PhysicsTests.test_opposing_commands_rejected) ... ok\ntest_peak_uses_net_load (test_ems.PhysicsTests.test_peak_uses_net_load) ... ok\ntest_pv_curtailment (test_ems.PhysicsTests.test_pv_curtailment) ... ok\ntest_reserve_release_only_for_peak (test_ems.PhysicsTests.test_reserve_release_only_for_peak) ... ok\ntest_residual_peak_recorded (test_ems.PhysicsTests.test_residual_peak_recorded) ... ok\ntest_round_trip (test_ems.PhysicsTests.test_round_trip) ... ok\n\n----------------------------------------------------------------------\nRan 28 tests in 0.327s\n\nOK\n",
+  "integration_examples": [
+    {
+      "strategy": "peak",
+      "fallbacks": 0,
+      "hours": 72.0,
+      "inventory_change_kwh": [
+        40.0,
+        20.0
+      ],
+      "peak_kw": 80.0,
+      "energy_cost_eur": 426.7784429734692
+    },
+    {
+      "strategy": "pv_greedy",
+      "fallbacks": 0,
+      "hours": 72.0,
+      "inventory_change_kwh": [
+        -40.0,
+        -20.0
+      ],
+      "peak_kw": 71.99535699999998,
+      "energy_cost_eur": 321.8983863357363
+    },
+    {
+      "strategy": "pv_predictive",
+      "fallbacks": 0,
+      "hours": 72.0,
+      "inventory_change_kwh": [
+        -6.250002115848474e-08,
+        -5.2201670541762724e-08
+      ],
+      "peak_kw": 71.99535699999998,
+      "energy_cost_eur": 343.6000814750749
+    },
+    {
+      "strategy": "arbitrage",
+      "fallbacks": 0,
+      "hours": 72.0,
+      "inventory_change_kwh": [
+        8.749999835799827e-08,
+        5.000000413701855e-09
+      ],
+      "peak_kw": 146.99535699999998,
+      "energy_cost_eur": 295.7204881078003
+    },
+    {
+      "strategy": "multi_use",
+      "fallbacks": 0,
+      "hours": 72.0,
+      "inventory_change_kwh": [
+        -8.312950114941486e-07,
+        -4.958765238427532e-07
+      ],
+      "peak_kw": 80.000001,
+      "energy_cost_eur": 300.5766991043962
+    }
+  ],
+  "downloads_checked": [
+    {
+      "source": "Energy-Charts prices",
+      "rows": 96,
+      "date": "2025-10-01"
+    },
+    {
+      "source": "Open-Meteo historical PV model",
+      "rows": 96,
+      "date": "2025-06-01",
+      "location": "Berlin example"
+    },
+    {
+      "source": "Forecast.Solar current forecast samples",
+      "rows": 30,
+      "retrieved_date": "2026-09-10",
+      "location": "Berlin example"
+    }
+  ],
+  "validation_date": "2026-09-10",
+  "document_pages_reviewed": 26,
+  "code_sha256": {
+    "degradation.py": "878497aa1613ffdc9460a35710393aa990e663496cec5a90b1fd213aeef0d78a",
+    "downloads.py": "c8b2e74875d5043071a78f2db75d1335bc73a754a10301163a7f335012a1d670",
+    "ems.py": "023da5393078e99fbf81f8c0c8d41ddda90d933156db6911b56f7d1de031311a",
+    "make_demo.py": "3b367d6ee38b64163fa7a1578df7393058e94bdaa8f9d7999eec65233651c5d3",
+    "prepare_inputs.py": "26bbaabab52ef2c9f2f3e6e01723593cbfca37fcb5dea93c5fd222d36b35a91c",
+    "project_value.py": "29ee047dc2e3dee4fdbd3c90ee879f6b54d380df893820b1a2f937892d810006",
+    "run.py": "c1841d85738b9fbb0b99be0735030f21dce0864f84c4193ec836a6fc5b1d24a0",
+    "test_ems.py": "ec40822fc5b2cadf146da4f0886fd44e1f9c781a030d6ce2723de44d163c1f08"
+  }
+}

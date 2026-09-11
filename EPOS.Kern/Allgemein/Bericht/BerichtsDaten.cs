@@ -236,6 +236,12 @@ namespace WindowsFormsApplication1
         public const string SOLAR_WAERME = "Solar_Waerme";
         public const string PV_GENUTZT = "PV_Genutzt";
         public const string PV_UEBERSCHUSS = "PV_Ueberschuss";
+        /// <summary>Gesamte tatsächliche Netzeinspeisung einer aktivierten Speicherflotte.</summary>
+        public const string NETZEINSPEISUNG = "Netzeinspeisung";
+        /// <summary>Davon direkt aus der Batterie; nicht als PV- oder BHKW-Einspeisung zählen.</summary>
+        public const string BATTERIE_EINSPEISUNG = "Batterie_Einspeisung";
+        /// <summary>Von der aktivierten Flotte tatsächlich abgeregelte PV-Energie.</summary>
+        public const string PV_ABREGELUNG = "PV_Abregelung";
         public const string NETZBEZUG = "Netzbezug";
         public const string WAERMEREST = "Waermerest";
         public const string PV_SPEICHER_SOC = "PVSpeicher_SOC";

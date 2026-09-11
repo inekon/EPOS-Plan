@@ -763,10 +763,14 @@ namespace WindowsFormsApplication1
 
             e.StromproduktionMwh = erzeugungKwh / 1000.0;
             e.GenutztMwh = genutztKwh / 1000.0;
-            e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
+            e.UeberschussMwh = sim.Speicherflottennetzbilanz != null
+                ? sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0
+                : pv.Ueberschuss.Sum() / 1000.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             e.StrombedarfMwh = pv.Strombedarf.Sum() / 4000.0;
-            e.ReststrombedarfMwh = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
+            e.ReststrombedarfMwh = sim.Speicherflottennetzbilanz != null
+                ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
+                : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
             e.MaxEinstrahlungWm2 = pv.MaxPSolar;
 
             if (pv.Modul_Ergebnisse != null)

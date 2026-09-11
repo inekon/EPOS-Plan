@@ -1,0 +1,250 @@
+.epos-flotte-editor {
+    display: grid;
+    gap: 1rem;
+    color: var(--epos-text);
+}
+
+.epos-flotten-dialog { min-width: 0; }
+.epos-flotten-dialog .epos-speicheropt-suchraum .epos-formularraster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.epos-flotten-aktionen {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.8rem 0;
+    margin-top: 1rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+}
+.epos-flotten-dialog .epos-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+.epos-flotten-dialog .epos-tabelle th,
+.epos-flotten-dialog .epos-tabelle td {
+    text-align: left;
+    padding: 0.45rem;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+    .epos-flotten-dialog .epos-speicheropt-suchraum .epos-formularraster {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.epos-flotte-editor__kopf,
+.epos-flotte-abschnitt__kopf,
+.epos-flotte-einheit__kopf,
+.epos-flotte-untergruppe__kopf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.epos-flotte-editor__kopf h2,
+.epos-flotte-abschnitt h3,
+.epos-flotte-untergruppe h4,
+.epos-flotte-editor__kopf p,
+.epos-flotte-abschnitt__kopf p {
+    margin: 0;
+}
+
+.epos-flotte-editor__kopf p,
+.epos-flotte-abschnitt__kopf p,
+.epos-flotte-hinweis {
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-editor__zaehler {
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    color: var(--epos-senke-text);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epos-flotte-abschnitt {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-flotte-feldraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.65rem 1rem;
+    align-items: end;
+}
+
+.epos-flotte-feldraster--kompakt {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.epos-flotte-endziele {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.65rem 1rem;
+    padding-top: 0.65rem;
+}
+
+.epos-flotte-auslegungskopplung {
+    max-width: 32rem;
+}
+
+.epos-flotte-auslegungsgruppen {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: 0.75rem;
+    align-items: start;
+}
+
+.epos-flotte-auslegungskategorie {
+    display: grid;
+    gap: 0.55rem;
+    min-width: 0;
+    padding: 0.7rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+.epos-flotte-auslegungskategorie h5 {
+    margin: 0;
+    color: var(--epos-text);
+}
+
+.epos-flotte-auslegungskategorie .epos-flotte-auslegungskategorie__felder {
+    grid-template-columns: repeat(3, minmax(5.5rem, 1fr));
+}
+
+.epos-flotte-einheiten {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.epos-flotte-einheit {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-left: 4px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    overflow: clip;
+}
+
+.epos-flotte-einheit__kopf {
+    padding: 0.45rem 0.55rem;
+}
+
+.epos-flotte-einheit__umschalter {
+    display: grid;
+    grid-template-columns: auto minmax(8rem, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: var(--epos-touchziel);
+    flex: 1 1 28rem;
+    border: 0;
+    background: transparent;
+    color: var(--epos-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-flotte-einheit__name {
+    font-weight: 700;
+}
+
+.epos-flotte-einheit__kurz {
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+}
+
+.epos-flotte-einheit__aktionen {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.epos-flotte-aktion {
+    min-height: var(--epos-touchziel);
+}
+
+.epos-flotte-einheit__inhalt {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.8rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-flotte-untergruppe {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.epos-flotte-untergruppe + .epos-flotte-untergruppe {
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-flotte-untergruppe--innen {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-flotte-hinweis,
+.epos-flotte-leer {
+    margin: 0;
+    line-height: 1.45;
+}
+
+.epos-flotte-hinweis--warnung {
+    padding: 0.55rem 0.7rem;
+    border-left: 4px solid var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-flotte-leer {
+    padding: 1rem;
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    color: var(--epos-text-leise);
+}
+
+@media (max-width: 680px) {
+    .epos-flotte-einheit__umschalter {
+        grid-template-columns: auto 1fr;
+    }
+
+    .epos-flotte-einheit__kurz {
+        grid-column: 2;
+        white-space: normal;
+    }
+
+    .epos-flotte-einheit__aktionen {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .epos-flotte-auslegungskategorie .epos-flotte-auslegungskategorie__felder {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-flotte-einheit,
+    .epos-flotte-editor__zaehler,
+    .epos-flotte-hinweis--warnung {
+        border-color: CanvasText;
+    }
+}

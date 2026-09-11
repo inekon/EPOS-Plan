@@ -24,7 +24,9 @@ namespace WindowsFormsApplication1
         [ModuleInitializer]
         internal static void HakenSetzen()
         {
-            Speicherlauf = (sim, idProjekt) => sim.SpeicherlaufAusfuehren(idProjekt);
+            Speicherlauf = (sim, idProjekt, abbruch) =>
+                sim.SpeicherlaufAusfuehren(idProjekt, abbruch);
+            SpeicherflotteAktiv = SpeicherFlottenProjektCtrl.IstAktiv;
             SimulationRunner.Speicherergebnismodell = StromspeicherSimCtrl.AlsErgebnismodell;
         }
 
@@ -52,8 +54,58 @@ namespace WindowsFormsApplication1
         /// <see cref="DataRepository.EngineModus"/>, Verschachtelung ist zulässig).
         /// </para>
         /// </remarks>
-        private double[] SpeicherlaufAusfuehren(int ID_Projekt)
+        internal double[] SpeicherlaufAusfuehren(int ID_Projekt,
+            System.Threading.CancellationToken abbruch = default)
         {
+            if (SpeicherflottenEingaben != null || SpeicherFlottenProjektCtrl.IstAktiv(ID_Projekt))
+            {
+                try
+                {
+                    SpeicherFlottenProjektLauf lauf = SpeicherflottenEingaben != null
+                        ? SpeicherFlottenProjektCtrl.Rechnen(this, ID_Projekt,
+                            SpeicherflottenEingaben, abbruch)
+                        : SpeicherFlottenProjektCtrl.Rechnen(this, ID_Projekt, abbruch);
+                    if (lauf.NetzleistungKw.Length != Rest_Strombedarf_viertelstuendlich.Length)
+                        throw new InvalidOperationException(string.Format(
+                            MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
+                            lauf.NetzleistungKw.Length, Rest_Strombedarf_viertelstuendlich.Length));
+
+                    Speicherergebnis = lauf.Kompatibilitaetsergebnis;
+                    Speicherkontext = lauf.Kontext;
+                    Speicherflottenergebnis = lauf.Studie;
+                    Speicherflottenkonfiguration = lauf.Konfiguration;
+                    Speicherflottenlauf = lauf;
+                    if (!string.IsNullOrWhiteSpace(lauf.Hinweis)) Protokoll.Hinweis(lauf.Hinweis);
+                    Speicherfuellstand_viertelstuendlich = SpeicherEngine.RasterAdapter.Kopie(
+                        lauf.Kompatibilitaetsergebnis.SoCKwh);
+                    Speicherfuellstand_stuendlich = Viertelstunden_zu_Stundenwerte_Mittelwert(
+                        Speicherfuellstand_viertelstuendlich);
+
+                    // Der übrige Projektlauf liest Rest_Strombedarf ausschließlich als
+                    // nichtnegativen Netzbezug. Der vorzeichenbehaftete Saldo darf hier
+                    // deshalb nicht stehen: Einspeisung würde sonst den Jahresbezug
+                    // mindern. Die vollständige Einspeisung bleibt getrennt nach PV,
+                    // BHKW und Batterie in der Flottenbilanz erhalten.
+                    Speicherflottennetzbilanz = StromspeicherSimCtrl.ProjektNetzbilanz(lauf.Studie);
+                    if (Speicherflottennetzbilanz.NetzbezugKw.Length != Rest_Strombedarf_viertelstuendlich.Length)
+                        throw new InvalidOperationException(string.Format(
+                            MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
+                            Speicherflottennetzbilanz.NetzbezugKw.Length,
+                            Rest_Strombedarf_viertelstuendlich.Length));
+                    Rest_Strombedarf_viertelstuendlich =
+                        (double[])Speicherflottennetzbilanz.NetzbezugKw.Clone();
+                    SpeicherflotteErsetztReststrom = true;
+                    return new double[Rest_Strombedarf_viertelstuendlich.Length];
+                }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex)
+                {
+                    Protokoll.Warnung("Die Speicherflotte für diesen Projektlauf konnte nicht gerechnet werden: " + ex.Message);
+                    throw new InvalidOperationException(
+                        "Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: " + ex.Message, ex);
+                }
+            }
+
             StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
             SpeicherEngine.SpeicherErgebnis ergebnis;
 

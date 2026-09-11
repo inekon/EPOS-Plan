@@ -89,6 +89,7 @@
          Bleibt hier eingetragen, obwohl EPOS.Kern sie ebenfalls referenziert -
          Views\ spricht sie direkt an. -->
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+    <ProjectReference Include="..\SpeicherPlanung\SpeicherPlanung.csproj" />
 
     <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
          (net10.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->

@@ -105,6 +105,7 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
+            SpeicherFlottenProjektCtrl.PlanerFactory = () => new SpeicherPlanung.OrToolsFlottenPlaner();
             // Die Feldsicherung wird VOR allem anderen ausgewertet - vor der ersten
             // Meldung und vor dem ersten Fenster. Sonst könnte eine Maske aufgehen und
             // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.

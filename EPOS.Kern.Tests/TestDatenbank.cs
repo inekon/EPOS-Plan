@@ -148,6 +148,7 @@ namespace EPOS.Kern.Tests
                 // Tab_ProjektWirtschaftlichkeit. Wie in der Migration ueber ADD COLUMN,
                 // aus DERSELBEN Quelle; kein DML, NULL heisst bei p_I "wie p_B".
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung) SpalteSicherstellen(s);
+                SpeicherAuslegungCtrl.SchemaSicherstellen();
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

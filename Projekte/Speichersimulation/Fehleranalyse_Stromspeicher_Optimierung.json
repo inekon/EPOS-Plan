@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "titel": "Fehleranalyse Stromspeicher Optimierung",
+  "pruefdatum": "2026-09-11",
+  "status": "Reale Fehlermeldung reproduziert; getrenntes Gültigszenario und Aktivierung nur auf Arbeitskopie erfolgreich",
+  "datenschutz": {
+    "originalVeraendert": false,
+    "originalNurLesendGeoeffnet": true,
+    "enthaeltNurPruefrelevanteProjektdaten": true
+  },
+  "datenbank": {
+    "standardpfadBegruendung": "Settings.DBPath leer => %ProgramData%/EPOS_PLAN; Settings.DBName=Kenndaten.sqlite",
+    "original": "C:\\ProgramData\\EPOS_PLAN\\Kenndaten.sqlite",
+    "arbeitskopie": "C:\\Users\\DirkEngelmann\\Documents\\WP-Plan\\.work\\realprojekt\\Kenndaten_StromspeicherOptimierung_20260911_092816.sqlite",
+    "kopierverfahren": "SQLite backup API; Quelle mit mode=ro; WAL-konsistenter Stand",
+    "integrityCheckOriginal": "ok",
+    "integrityCheckKopie": "ok",
+    "originalProfileNachPruefung": [
+      {
+        "id": 1,
+        "name": "@Aktuell",
+        "anlageId": 14993,
+        "standUtc": "2026-09-11T07:27:18.1475121+00:00",
+        "datenlaenge": 2316
+      }
+    ],
+    "kopieZusaetzlich": {
+      "name": "@Projektflotte",
+      "anlageId": null,
+      "aktivierungNurFuerTestszenario": true
+    }
+  },
+  "projekt": {
+    "id": 1050,
+    "name": "Stromspeicher Optimierung",
+    "aktuelleEinzelanlageId": 14993,
+    "profil": "@Aktuell",
+    "flotte": {
+      "einheiten": 1,
+      "kapazitaetKWh": 129.0,
+      "ladeleistungKw": 100.0,
+      "entladeleistungKw": 100.0,
+      "socMin": 0.1,
+      "socStart": 0.1,
+      "socMax": 0.9,
+      "betriebsziel": "PeakShaving",
+      "wirtschaftlicherPeakZielwertKw": 50.0,
+      "batterieexportErlaubt": false
+    },
+    "quellen": {
+      "last": "Epos",
+      "pv": "Epos",
+      "preis": "Epos",
+      "modelljahr": 2026
+    },
+    "wirtschaftlichkeit": {
+      "projektlaufzeitJahre": 20,
+      "eingeleseneProjektjahre": 0,
+      "referenzjahrExplizitWiederholen": false,
+      "endbedingung": "KeineVorgabe",
+      "energieAusgleichEuroProKWh": null
+    }
+  },
+  "unveraenderterNutzerlauf": {
+    "projektlaufErfolgreich": true,
+    "projektintervalle": 35040,
+    "flottenvorbereitungErfolgreich": true,
+    "flottenintervalle": 35040,
+    "studienlaufErfolgreich": false,
+    "exceptionTyp": "System.ArgumentException",
+    "exception": "Die finanzielle Projektlaufzeit umfasst 20 Jahre, es wurde aber nur ein Referenzjahr bereitgestellt. Weitere Projektjahre müssen eingelesen oder die Referenzjahr-Wiederholung ausdrücklich gewählt werden.",
+    "exceptionUrsprung": "SpeicherFlottenStudieCtrl.PruefeProjektjahresAbdeckung",
+    "naechsterValidierungsbefund": "Keine Endenergie-Vorgabe erfordert einen expliziten Energie-Ausgleichswert; gespeichert ist null",
+    "projektHinweise": [
+      "Zeitbasis Klimadaten: UTC -> MEZ/MESZ, Referenzjahr 2025, Umstellung 30.03./26.10.",
+      "Photovoltaik ist im Lauf nicht aufgenommen; Einspeisung und Ladung aus Erzeugung bleiben ohne Aussage.",
+      "Einzelvariante steht auf Kostenprofil, aber kein Profil ist gewählt; Legacy-Pfad verwendet Fixpreis.",
+      "Zum 01.01.2026 fehlt eine Preisversion; älteste Version und danach Arbeitspreis-Rückfall werden verwendet."
+    ]
+  },
+  "preisaufbau": {
+    "status": "fachlich erklärt; kein Rechenfehler",
+    "legacyArbeitspreisRueckfallCtProKWh": 20.0,
+    "aufschlaegeCtProKWh": {
+      "netzentgelt": 6.44,
+      "umlagen": 2.946,
+      "stromsteuer": 2.05,
+      "konzession": 0.11,
+      "vertrieb": 0.2,
+      "summe": 11.746
+    },
+    "effektiverFlottenpreisCtProKWh": {
+      "minimum": 31.746,
+      "maximum": 31.746,
+      "mittelwert": 31.746
+    },
+    "erklaerung": "20,000 ct/kWh Energieanteil plus 11,746 ct/kWh Aufschläge ergeben 31,746 ct/kWh effektiven Bezugspreis."
+  },
+  "gueltigesTestszenario": {
+    "istNutzereingabe": false,
+    "nurArbeitskopie": true,
+    "annahmen": {
+      "referenzjahrExplizit20MalWiederholen": true,
+      "energieAusgleichEuroProKWh": 0.31746,
+      "ableitungEnergieAusgleich": "Mittelwert des tatsächlichen effektiven Flotteneingangs"
+    },
+    "technisch": {
+      "erfolg": true,
+      "zulaessig": true,
+      "unzulaessigkeitsgrund": null,
+      "netzbezugReferenzKWh": 2850198.3999999883,
+      "netzbezugVarianteKWh": 2850198.3999999883,
+      "peakReferenzKw": 789.36,
+      "peakVarianteKw": 789.36,
+      "endenergieKWhJeSpeicher": [
+        12.9
+      ],
+      "endenergieAusgleichEuro": 0.0
+    },
+    "rechnungEuro": {
+      "referenz": {
+        "energiekosten": 904823.984064006,
+        "leistungskosten": 94723.2,
+        "fixkosten": 0.0,
+        "gesamt": 999547.184064006
+      },
+      "variante": {
+        "energiekosten": 904823.984064006,
+        "leistungskosten": 94723.2,
+        "fixkosten": 0.0,
+        "gesamt": 999547.184064006
+      },
+      "investition": 15000.0,
+      "opexJahr1": 100.0,
+      "durchsatzkostenJahr1": 0.0,
+      "ersatzkostenJahr1": 0.0,
+      "nettoCashflowJahr1": -100.0,
+      "kapitalwert20Jahre": -16487.74748604555
+    },
+    "wirkungErklaerung": "Keine aufgenommene PV-Erzeugungsreihe, Netzladung nicht erlaubt und Start bereits bei SoC min; daher keine Änderung von Bezug oder Peak."
+  },
+  "aktivierungAufKopie": {
+    "aktiviert": true,
+    "originalProfilAktuellUnveraendert": true,
+    "vollstaendigerProjektlaufErfolgreich": true,
+    "intervalle": 35040,
+    "netzbilanzKWh": {
+      "bezug": 2850198.3999999883,
+      "gesamtexport": 0.0,
+      "pvExport": 0.0,
+      "bhkwExport": 0.0,
+      "batterieexport": 0.0,
+      "pvAbregelung": 0.0
+    },
+    "maxAbweichungAllgemeinerReststromZuFlottenbezugKw": 0.0,
+    "maxAbweichungGesamtexportZuQuellensummeKw": 0.0,
+    "doppelzaehlungNachgewiesen": false,
+    "einschraenkung": "Realer Projektstand ist ein Export-Nullfall; nichttrivialer Exportfall wird separat durch SpeicherFlottenNetzbilanzTests geprüft."
+  },
+  "harness": {
+    "projektdatei": "C:\\Users\\DirkEngelmann\\Documents\\WP-Plan\\.work\\RealFleetHarness\\RealFleetHarness.csproj",
+    "exitCode": 0,
+    "buildProjectReferences": false
+  }
+}

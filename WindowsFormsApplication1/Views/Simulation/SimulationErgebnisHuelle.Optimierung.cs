@@ -56,7 +56,66 @@ namespace WindowsFormsApplication1
         /// </summary>
         private SpeicherOptimierungVorgaben OptimierungVorgaben()
         {
-            return SpeicherOptimierungCtrl.Vorbelegung(m_ID_Projekt, BezugsspitzeKw());
+            // L_P kann im Parameterreiter unmittelbar geschrieben worden sein. Vor der
+            // Vorbelegung wird deshalb der aktive Variantensatz frisch gelesen.
+            VarianteLesen();
+            SpeicherOptimierungVorgaben vorgaben =
+                SpeicherFlottenStudieCtrl.Vorbelegung(m_ID_Projekt, BezugsspitzeKw(), sim);
+            if (_speicherVariante != null)
+                vorgaben.Eingaben.LeistungspreisEurProKwA = _speicherVariante.L_P;
+            return vorgaben;
+        }
+
+        /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung.</summary>
+        private Task<string> OptimierungEinstellungenSpeichern(SpeicherOptimierungEingaben eingaben)
+        {
+            try
+            {
+                var snapshot = eingaben.Kopie();
+                snapshot.Auslegung.FlottenProjektbetriebDeaktiviert = false;
+                SpeicherAuslegungCtrl.Speichern(m_ID_Projekt, SpeicherAuslegungCtrl.Anlage(m_ID_Projekt),
+                    SpeicherAuslegungCtrl.AktuellerStand, snapshot);
+                _flotteProjektGeaendert = true;
+                _ergebnisGueltig = false;
+                return Task.FromResult("");
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(ex.Message);
+            }
+        }
+
+        /// <summary>Speichert ein benanntes Profil und liest die Profilliste anschliessend neu.</summary>
+        private Task<SpeicherOptimierungVorgaben> OptimierungProfilSpeichern(
+            SpeicherOptimierungEingaben eingaben, string name)
+        {
+            name = (name ?? "").Trim();
+            if (name.StartsWith("@", StringComparison.Ordinal))
+                throw new ArgumentException("Profilnamen mit '@' sind für interne Stände reserviert.");
+
+            SpeicherAuslegungCtrl.Speichern(m_ID_Projekt, SpeicherAuslegungCtrl.Anlage(m_ID_Projekt),
+                name, eingaben.Kopie());
+            return Task.FromResult(OptimierungVorgaben());
+        }
+
+        /// <summary>Waehlt eine CSV-Datei und uebergibt ihren Inhalt pfadfrei an Razor.</summary>
+        private async Task<SpeicherImportDatei> OptimierungDateiWaehlen()
+        {
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
+                "Zeitreihe oder Prognosen importieren", "CSV-Zeitreihen (*.csv)|*.csv",
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+            if (string.IsNullOrEmpty(pfad)) return new SpeicherImportDatei();
+            if (!string.Equals(Path.GetExtension(pfad), ".csv", StringComparison.OrdinalIgnoreCase))
+                throw new IOException("Bitte eine CSV-Datei auswählen. JSON-Dateien werden nicht importiert.");
+
+            const long maximal = 20L * 1024L * 1024L;
+            var info = new FileInfo(pfad);
+            if (!info.Exists) throw new FileNotFoundException("Die gewählte Datei wurde nicht gefunden.", pfad);
+            if (info.Length > maximal) throw new IOException("Die CSV-Datei ist größer als 20 MiB.");
+
+            byte[] inhalt = await Task.Run(() => File.ReadAllBytes(pfad));
+            if (inhalt.LongLength > maximal) throw new IOException("Die CSV-Datei ist größer als 20 MiB.");
+            return new SpeicherImportDatei { Dateiname = Path.GetFileName(pfad), Inhalt = inhalt };
         }
 
         /// <summary>
@@ -93,14 +152,22 @@ namespace WindowsFormsApplication1
         /// hat EINE Pflegestelle, und ein zweiter Schreiber daneben wäre genau die
         /// Doppelung, die zwei auseinanderlaufende Werte erzeugt. <c>VarianteLesen</c>
         /// steht davor, weil der Anwender die Optimierung öffnen kann, ohne den Reiter
-        /// „Parameter" je gesehen zu haben; ohne den Aufruf wäre <c>_speicherVariante</c>
-        /// dann <c>null</c> und der Schreibversuch stumm wirkungslos.
+        /// „Stromspeicher" je gesehen zu haben; ohne den Aufruf wäre
+        /// <c>_speicherVariante</c> dann <c>null</c> und der Schreibversuch wirkungslos.
+        /// <para><b>Nicht mehr stumm</b> (W11b‑B‑29): Der Weg liefert seit dem
+        /// Anwenderentscheid 1 eine Rückmeldung. Der Dialog hat keine Zeile dafür — er
+        /// zeigt seine eigene Meldung —, aber ein Fehlschlag geht wenigstens in die
+        /// Konsole und nicht mehr ins Leere.</para>
         /// </remarks>
         private void OptimierungLeistungspreis(double leistungspreisEurProKwA)
         {
             VarianteLesen();
-            SpeicherfeldSchreiben(SpeicherFeld.Leistungspreis,
+            EPOS.UI.Seiten.Simulation.Rueckmeldung antwort = SpeicherfeldSchreiben(
+                SpeicherFeld.Leistungspreis,
                 leistungspreisEurProKwA.ToString("R", CultureInfo.InvariantCulture));
+
+            if (!antwort.Erfolg)
+                Console.WriteLine("Der Leistungspreis konnte nicht geschrieben werden: " + antwort.Text);
         }
 
         /// <summary>
@@ -121,19 +188,16 @@ namespace WindowsFormsApplication1
         private async Task<SpeicherOptimierungErgebnis> OptimierungRechnen(
             SpeicherOptimierungEingaben eingaben, Action<double?, string> melder)
         {
-            if (sim == null || sim.simulation_Strombedarf == null)
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = MyResource.Resource.OPT_MSG_KEIN_LAUF
-                };
+            // Die Dialogkopie wird nie waehrend eines laufenden Hintergrundlaufs
+            // weiterbearbeitet. Vorbereiten loest EPOS-, Datei- und Kostenquellen auf
+            // und dokumentiert die wirklich verwendeten Saetze in dieser Laufkopie.
+            SpeicherOptimierungEingaben laufEingaben = eingaben.Kopie();
 
-            // ---- Datenbank, Bedienfaden -----------------------------------
-            StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
+            // ---- Datenbank und Quellen, Bedienfaden -----------------------
             StromspeicherOptimierungVorbereitung vorbereitung;
             try
             {
-                vorbereitung = ctrl.BereiteOptimierungVor(sim, m_ID_Projekt);
+                vorbereitung = SpeicherAuslegungCtrl.Vorbereiten(sim, m_ID_Projekt, laufEingaben);
                 _optimierungVorbereitung = vorbereitung;
                 _optimierungRoh = null;
             }
@@ -150,9 +214,18 @@ namespace WindowsFormsApplication1
                 return new SpeicherOptimierungErgebnis
                 {
                     Erfolg = false,
-                    Meldung = string.IsNullOrEmpty(ctrl.LetzterHinweis)
-                        ? MyResource.Resource.SIMENG_SPEICHER_KEIN_SPEICHER
-                        : ctrl.LetzterHinweis
+                    Meldung = MyResource.Resource.SIMENG_SPEICHER_KEIN_SPEICHER
+                };
+
+            // Die Vorbereitung friert die Eingaben samt der wirklich verwendeten
+            // Kostensaetze ein. Genau dieser Stand wird gespeichert und gerechnet.
+            SpeicherOptimierungEingaben laufstand = vorbereitung.Eingaben;
+            string speicherfehler = await OptimierungEinstellungenSpeichern(laufstand);
+            if (!string.IsNullOrEmpty(speicherfehler))
+                return new SpeicherOptimierungErgebnis
+                {
+                    Erfolg = false,
+                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, speicherfehler)
                 };
 
             // ---- Rechnung, Hintergrund-Task -------------------------------
@@ -166,7 +239,15 @@ namespace WindowsFormsApplication1
             try
             {
                 SpeicherOptimierungErgebnis ergebnis = await Task.Run(
-                    () => SpeicherOptimierungCtrl.Rechnen(vorbereitung, eingaben, fortschritt, marke));
+                    () => SpeicherOptimierungCtrl.Rechnen(vorbereitung, laufstand, fortschritt, marke));
+
+                if (ergebnis != null && !string.IsNullOrWhiteSpace(vorbereitung.ZeitachsenHinweis))
+                {
+                    var hinweise = new System.Collections.Generic.List<string>();
+                    hinweise.Add(vorbereitung.ZeitachsenHinweis);
+                    if (ergebnis.Hinweise != null) hinweise.AddRange(ergebnis.Hinweise);
+                    ergebnis.Hinweise = hinweise;
+                }
 
                 // Das rohe Raster bleibt hier: Ein Umschalten des Betriebsbildes
                 // rechnet damit EINEN Jahreslauf nach statt der ganzen Rastersuche.

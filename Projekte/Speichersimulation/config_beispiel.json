@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "description": "Fiktives Beispiel fuer Funktionspruefungen; keine Anlagenauslegung oder Preisprognose",
+  "timezone": "Europe/Berlin",
+  "batteries": [
+    {"id": "A", "capacity_kwh": 100, "charge_kw": 50, "discharge_kw": 50, "eta_charge": 0.95, "eta_discharge": 0.95, "soc_min": 0.10, "soc_max": 0.90, "initial_soc": 0.50, "reserve_kwh": 0, "aux_kw": 0.04, "wear_eur_per_kwh_out": 0.03},
+    {"id": "B", "capacity_kwh": 50, "charge_kw": 25, "discharge_kw": 25, "eta_charge": 0.94, "eta_discharge": 0.94, "soc_min": 0.10, "soc_max": 0.90, "initial_soc": 0.50, "reserve_kwh": 0, "aux_kw": 0.03, "wear_eur_per_kwh_out": 0.04}
+  ],
+  "connection": {"grid_charge": true, "battery_export": false, "import_limit_kw": 200, "export_limit_kw": 50},
+  "control": {"peak_target_kw": 80, "allocation": "balanced"},
+  "planning": {"horizon_steps": 192, "replan_steps": 96, "solver_time_limit_s": 60},
+  "tariff": {"billing_scope": "Dreitaegiger Funktionstest ohne Leistungspreis; fuer Jahresbewertung vollstaendiges Abrechnungsjahr und echten Tarif einsetzen", "demand_eur_kw_period": 0, "buy_spot_factor": 1.0, "buy_addition_eur_kwh": 0.18, "fixed_export_eur_kwh": 0.08, "sell_spot_factor": 1.0, "sell_addition_eur_kwh": 0.0}
+}

@@ -672,3 +672,13 @@ Aus dieser Prüfung:
 | Solution/Pakete | `WP-Plan.sln`; `WindowsFormsApplication1.csproj:5, 22, 41, 44, 66-96` |
 | CSV-Basis | `Allgemein\Import\CsvReader.cs` (NReco.Csv, MIT) |
 | Referenz-Assets | `Documents\Stromspeicher\Claude_Analyse_V7\{referenzdaten, vba_quelltext, speicher_sim.py}` |
+
+## Umgesetzte Speicherauslegung mit Kostenprofilen – 11.09.2026
+
+Der Ausbau für spezifische Investitions- und Betriebskosten, alternative Leistungsraster, persistente Auslegungsprofile und getrennte CSV-Zeitreihen ist umgesetzt. Der Datenadapter friert vor dem Kandidatenlauf einen unabhängigen Eingabestand ein. CSV-Achsen bleiben in UTC vollständig erhalten; EPOS-Modellwerte werden nur nach ausdrücklicher Wahl darauf zugeordnet. Die erweiterte Peak-Shaving-Auslegung verwendet die Residuallast und tatsächliche Intervallpreise.
+
+Details: [Doku_Speicherauslegung_Kosten_Zeitreihen.md](Doku_Speicherauslegung_Kosten_Zeitreihen.md). Der Nachweis umfasst 6.622 bestandene Tests und zwölf unverändert nachgerechnete Referenzprojekte; Schema 73 speichert die Profile.
+
+## Mehrspeicherumsetzung vom 11 September 2026
+
+Der aktuelle Stand ist in [Mehrspeicher Konzept und Umsetzung](Doku_Mehrspeicher_Konzept_und_Umsetzung.md) beschrieben. Er umfasst physisch gleichzeitig betriebene Einheiten, Strategien, rollierende Planung, Kapitalwertauslegung und den Anschluss an die Detaillierte Simulation. Die vorangehenden Abschnitte bleiben als Entwicklungsschritte datiert erhalten.

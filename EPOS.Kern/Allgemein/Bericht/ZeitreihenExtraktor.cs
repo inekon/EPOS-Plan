@@ -53,6 +53,8 @@ namespace WindowsFormsApplication1
                 {
                     z.Reihen[ZeitreihenSatz.PV_GENUTZT] = D(sim.simulation_pv.Stromproduktion);
 
+                    if (sim.Speicherflottennetzbilanz == null)
+                    {
                     // V2 (PV-Konzept § 2.3, Etappe P1): Die Einspeisereihe ist der
                     // Überschuss NACH der Speicherladung — geladene Energie wirkt als
                     // vermiedener Netzbezug, nicht als Einspeisung. Ladung je Stunde =
@@ -77,6 +79,26 @@ namespace WindowsFormsApplication1
                     if (sim.simulation_pv.BhkwUeberschussGesamtKwh > 0.5)
                         z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] =
                             D(sim.simulation_pv.BhkwUeberschuss);
+                    }
+                }
+
+                // Eine aktivierte Flotte führt alle Netzausgänge bereits nach ihrer
+                // tatsächlichen Quelle. Die alte Näherung „PV-Überschuss minus gesamte
+                // Speicherladung" würde Netz- und BHKW-Ladung falsch als PV abziehen
+                // und Batterieexport als PV-Einspeisung etikettieren.
+                if (sim.Speicherflottennetzbilanz != null)
+                {
+                    SpeicherFlottenNetzbilanz f = sim.Speicherflottennetzbilanz;
+                    z.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = Stunden(sim, f.PvNetzeinspeisungKw);
+                    z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = Stunden(sim, f.BhkwNetzeinspeisungKw);
+                    z.Reihen[ZeitreihenSatz.BATTERIE_EINSPEISUNG] = Stunden(sim, f.BatterieNetzeinspeisungKw);
+                    z.Reihen[ZeitreihenSatz.NETZEINSPEISUNG] = Stunden(sim, f.NetzeinspeisungKw);
+                    z.Reihen[ZeitreihenSatz.PV_ABREGELUNG] = Stunden(sim, f.PvAbregelungKw);
+                    z.Beschriftungen[ZeitreihenSatz.PV_UEBERSCHUSS] = "PV-Einspeisung";
+                    z.Beschriftungen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = "BHKW-Einspeisung";
+                    z.Beschriftungen[ZeitreihenSatz.BATTERIE_EINSPEISUNG] = "Batterie-Einspeisung";
+                    z.Beschriftungen[ZeitreihenSatz.NETZEINSPEISUNG] = "Netzeinspeisung gesamt";
+                    z.Beschriftungen[ZeitreihenSatz.PV_ABREGELUNG] = "PV-Abregelung";
                 }
 
                 // Stromspeicher: seit AP2b eigenes Gewerk mit eigenem Flag - der SOC

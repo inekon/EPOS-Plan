@@ -167,15 +167,14 @@
                     <Reiterblatt Schluessel="@Blatt.Stromspeicher" Titel="@Resource.SIM_STROMSPEICHER">
                         <KindInhalt>
                             @* W11b-B-28: Parameter, Dienste und der Optimierungsknopf
-                               kommen aus dem Reiter "Parameter" hierher. Der Block
-                               puffert und schreibt auf Knopfdruck - die Seite laedt
-                               nach einem Lauf ohnehin neu, und der Block folgt der
-                               neuen Uebergabe, solange nichts Ungespeichertes offen
-                               ist. *@
+                               kommen aus dem Reiter "Parameter" hierher. Seit
+                               W11b-B-29 schreibt der Block jedes Feld sofort - die
+                               Uebergabe IST sein Arbeitsstand, und ein neuer
+                               Lesestand nach einem Lauf loest ihn schlicht ab. *@
                             <StromspeicherReiter Daten="@_daten.Speicher" Bild="BildHolen"
                                                  Parameter="@_daten.Parameter.Speicher"
                                                  Dienste="@Dienste" Gesperrt="@_daten.Gesperrt"
-                                                 OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null)"
+                                                 OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null || Dienste?.OptimierungFlottenRechnen is not null)"
                                                  Optimierung="Optimierung"
                                                  Csv="@Rueckruf(Dienste?.CsvSpeicher)"
                                                  Vergleich="@(Dienste?.VergleichRechnen is null ? default : EventCallback.Factory.Create(this, VergleichOeffnen))" />
@@ -282,6 +281,10 @@
             <KindInhalt>
                 <EPOS.UI.Dialoge.Strom.SpeicherOptimierungDialog
                     Vorgaben="@Dienste?.OptimierungVorgaben"
+                    FlottenRechnen="@Dienste?.OptimierungFlottenRechnen"
+                    FlottenProjektAktiv="@Dienste?.FlottenProjektAktiv"
+                    FlottenProjektUebernehmen="@Dienste?.FlottenProjektUebernehmen"
+                    FlottenProjektDeaktivieren="@Dienste?.FlottenProjektDeaktivieren"
                     Rechnen="@Dienste?.OptimierungRechnen"
                     Abbrechen="@(Dienste?.OptimierungAbbrechen is null ? default
                                  : EventCallback.Factory.Create(this, Dienste.OptimierungAbbrechen))"
@@ -289,6 +292,9 @@
                                    : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, OptimierungUebernehmen))"
                     Csv="@(Dienste?.OptimierungCsv is null ? default
                            : EventCallback.Factory.Create<string>(this, OptimierungCsv))"
+                    EinstellungenSpeichern="@Dienste?.OptimierungEinstellungenSpeichern"
+                    ProfilSpeichern="@Dienste?.OptimierungProfilSpeichern"
+                    DateiWaehlen="@Dienste?.OptimierungDateiWaehlen"
                     LeistungspreisSchreiben="@(Dienste?.OptimierungLeistungspreis is null ? default
                                                : EventCallback.Factory.Create<double>(this, Dienste.OptimierungLeistungspreis))"
                     Betrieb="@Dienste?.OptimierungBetrieb"
@@ -571,7 +577,7 @@
     /// </summary>
     private void Optimierung()
     {
-        if (Dienste?.OptimierungRechnen is null) return;
+        if (Dienste?.OptimierungRechnen is null && Dienste?.OptimierungFlottenRechnen is null) return;
 
         _optimierungMeldung = "";
         _optimierungErfolg = false;
@@ -585,9 +591,8 @@
     /// (W11b-E-3) und kann ueber "Uebernehmen" die Geraetegroesse geaendert haben. Der
     /// Parameterblock des Reiters "Stromspeicher" zeigt beides erst, wenn er einen
     /// neuen Lesestand bekommt - ohne dieses Neuladen stuende dort bis zum naechsten
-    /// Lauf der alte Wert. Hat der Anwender im Block etwas Ungespeichertes stehen,
-    /// behaelt der Block seinen Puffer und sagt es in der Statuszeile; das entscheidet
-    /// er selbst (SpeicherParameterBlock.OnParametersSet).</para>
+    /// Lauf der alte Wert. Seit W11b-B-29 ist das der einzige Weg, auf dem der Block
+    /// nachzieht: Er puffert nichts mehr, was dabei verlorengehen koennte.</para>
     /// </summary>
     private void OptimierungSchliessen()
     {

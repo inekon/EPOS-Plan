@@ -1,0 +1,122 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using WindowsFormsApplication1
+@using SpeicherEngine
+
+@if (Ergebnis is not null)
+{
+    @if (Veraltet) { <Warnbanner Stufe="WarnStufe.Warnung" Text="Eingaben geändert: Diese Ergebnisse gehören zum vorherigen Stand. Bitte neu berechnen." /> }
+    @foreach (var hinweis in Ergebnis.Hinweise) { <p class="epos-herleitung">@hinweis</p> }
+    @if (Ergebnis.Auslegung is not null)
+    {
+        <p><strong>@AuslegungEmpfehlung</strong></p>
+        <p>@Ergebnis.Auslegung.Aussage</p>
+        <table class="epos-tabelle"><thead><tr><th>Variante</th><th>Betriebsziel</th><th>Zulässig</th><th>Kapazität kWh</th><th>Laden / Entladen kW</th><th>Kapitalwert €</th><th>Hinweis</th></tr></thead><tbody>
+            @foreach (var k in Ergebnis.Auslegung.Kandidaten.OrderByDescending(x => x.Zulaessig).ThenByDescending(x => x.KapitalwertEuro).Take(50))
+            { <tr><td>@k.KandidatId</td><td>@k.Betriebsziel</td><td>@(k.Zulaessig ? "Ja" : "Nein")</td><td>@N(k.KapazitaetKWh)</td><td>@N(k.LadeleistungKw) / @N(k.EntladeleistungKw)</td><td>@N(k.KapitalwertEuro)</td><td>@k.Grund</td></tr> }
+        </tbody></table>
+        <p>@Ergebnis.Auslegung.Kandidaten.Count Varianten geprüft; die Tabelle zeigt höchstens 50, der CSV-Export enthält alle.</p>
+        <button type="button" class="epos-knopf" disabled="@(!Csv.HasDelegate)" @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.VergleichCsv(Ergebnis)))">Variantenvergleich als CSV</button>
+    }
+    @if (Ergebnis.Studie is { } s)
+    {
+        @if (Ergebnis.Konfiguration?.Optionen is { } o)
+        {
+            <p><strong>Berechnete Betriebsführung:</strong> @Zieltext(o.Betriebsziel) · @Verteilungstext(o.Verteilung).</p>
+            @if ((o.Betriebsziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse) && o.WirtschaftlicherPeakZielwertKw is { } peak)
+            {
+                <p><strong>Peak-Ziel:</strong> @N(peak) kW · <strong>Erreichte Bezugsspitze:</strong> @N(s.Variante.MaximalerNetzbezugKw) kW.</p>
+                @if (s.Variante.MaximalerNetzbezugKw > peak + 0.00001)
+                { <Warnbanner Stufe="WarnStufe.Warnung" Text="Das wirtschaftliche Peak-Ziel wurde nicht erreicht. Verfügbare Energie, Ladebedingungen und Speicherleistung prüfen; der Zielwert ist keine zugesicherte Anschlussgrenze." /> }
+            }
+        }
+        @if (Ergebnis.ReaktiveReferenz is { } pv)
+        {
+            <p><strong>Reaktive PV-Referenz mit derselben Flotte:</strong> Stromrechnung @N(pv.Variantenrechnung.GesamtEuro) €, Bezugsspitze @N(pv.Variante.MaximalerNetzbezugKw) kW, Kapitalwert @Kapitalwert(pv.Wirtschaftlichkeit) €.</p>
+        }
+        @if (!s.Variante.Zulaessig) { <Warnbanner Stufe="WarnStufe.Warnung" Text="@(s.Variante.Unzulaessigkeitsgrund ?? "Die Flotte verletzt technische Grenzen.")" /> }
+        <table class="epos-tabelle"><thead><tr><th>Kennzahl</th><th>Ohne Speicher</th><th>Mit Flotte</th></tr></thead><tbody>
+            <tr><th>Stromrechnung im Datenzeitraum €</th><td>@N(s.Referenzrechnung.GesamtEuro)</td><td>@N(s.Variantenrechnung.GesamtEuro)</td></tr>
+            <tr><th>Bezugskosten abzüglich Einspeiseerlöse €</th><td>@N(s.Referenzrechnung.EnergiekostenEuro)</td><td>@N(s.Variantenrechnung.EnergiekostenEuro)</td></tr>
+            <tr><th>Leistungskosten €</th><td>@N(s.Referenzrechnung.LeistungskostenEuro)</td><td>@N(s.Variantenrechnung.LeistungskostenEuro)</td></tr>
+            <tr><th>Netzbezug kWh</th><td>@N(s.ReferenzOhneSpeicher.NetzbezugKWh)</td><td>@N(s.Variante.NetzbezugKWh)</td></tr>
+            <tr><th>Verbleibende Bezugsspitze kW</th><td>@N(s.ReferenzOhneSpeicher.MaximalerNetzbezugKw)</td><td>@N(s.Variante.MaximalerNetzbezugKw)</td></tr>
+            <tr><th>Einspeisung kWh</th><td>@N(s.ReferenzOhneSpeicher.NetzeinspeisungKWh)</td><td>@N(s.Variante.NetzeinspeisungKWh)</td></tr>
+            <tr><th>Davon PV-Einspeisung kWh</th><td>@N(s.ReferenzOhneSpeicher.Intervalle.Sum(x => x.PvNetzeinspeisungKw) * .25)</td><td>@N(s.Variante.Intervalle.Sum(x => x.PvNetzeinspeisungKw) * .25)</td></tr>
+            <tr><th>Davon BHKW-Einspeisung kWh</th><td>@N(s.ReferenzOhneSpeicher.Intervalle.Sum(x => x.BhkwNetzeinspeisungKw) * .25)</td><td>@N(s.Variante.Intervalle.Sum(x => x.BhkwNetzeinspeisungKw) * .25)</td></tr>
+            <tr><th>Davon Batterie-Einspeisung kWh</th><td>0</td><td>@N(s.Variante.Intervalle.Sum(x => x.BatterieNetzeinspeisungKw) * .25)</td></tr>
+            <tr><th>PV-Abregelung kWh</th><td>@N(s.ReferenzOhneSpeicher.PvAbregelungKWh)</td><td>@N(s.Variante.PvAbregelungKWh)</td></tr>
+            <tr><th>Umwandlungsverluste kWh</th><td>0</td><td>@N(s.Variante.VerlusteKWh)</td></tr>
+        </tbody></table>
+        @if (s.Wirtschaftlichkeit is { } w)
+        {
+            <p><strong>Investition: @N(w.InvestitionEuro) € · Kapitalwert gegenüber „ohne Speicher“: @N(w.KapitalwertEuro) €</strong></p>
+            <p>@(w.IstWiederholteReferenzjahrProjektion ? "Projektion: Das Referenzjahr wird ausdrücklich über die gewählte Laufzeit wiederholt." : "Bewertung anhand der angegebenen Jahreskonten.")</p>
+            <table class="epos-tabelle"><thead><tr><th>Jahr</th><th>Betrieb €</th><th>Durchsatz €</th><th>Ersatz €</th><th>Energieausgleich €</th><th>Netto-Cashflow €</th></tr></thead><tbody>
+                @foreach (var j in w.Jahreskonten) { <tr><td>@j.Jahr</td><td>@N(j.OpexEuro)</td><td>@N(j.DurchsatzkostenEuro)</td><td>@N(j.ErsatzkostenEuro)</td><td>@N(j.EndenergieAusgleichEuro)</td><td>@N(j.NettoCashflowEuro)</td></tr> }
+            </tbody></table>
+            <button type="button" class="epos-knopf" disabled="@(!Csv.HasDelegate)" @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.JahreskontenCsv(Ergebnis)))">Jahreskonten als CSV</button>
+        }
+        else
+        {
+            <p><strong>Kapitalwert gegenüber „ohne Speicher“: —</strong> Keine Jahreskonten oder ausdrücklich gewählte Referenzjahrprojektion vorhanden.</p>
+        }
+        <table class="epos-tabelle"><thead><tr><th>Speicher</th><th>Ladung AC kWh</th><th>Entladung AC kWh</th><th>Anfang / Ende kWh</th><th>Vollzyklen</th><th>Rainflow-Schaden</th></tr></thead><tbody>
+            @foreach (var k in s.Variante.SpeicherKennzahlen)
+            { <tr><td>@(Ergebnis.Konfiguration.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId)?.Name ?? k.SpeicherId)</td><td>@N(k.LadeenergieAcKWh)</td><td>@N(k.EntladeenergieAcKWh)</td><td>@N(k.AnfangsenergieKWh) / @N(k.EndenergieKWh)</td><td>@N(k.AequivalenteVollzyklen)</td><td>@Rainflow(k)</td></tr> }
+        </tbody></table>
+        <Formularraster><KindInhalt>
+            <Ganzzahlfeld Bezeichnung="Start ab Tag (0 = Beginn)" Wert="@_startTag" Min="0" WertChanged="TagSetzen" />
+            <Auswahlfeld Bezeichnung="Zeitraum" Eintraege="Zeitraeume" Auswahl="@_tage" AuswahlChanged="ZeitraumSetzen" />
+            <Auswahlfeld Bezeichnung="Ladezustand des Speichers" Eintraege="Speicher" Auswahl="@_speicher" AuswahlChanged="SpeicherSetzen" />
+        </KindInhalt></Formularraster>
+        <p>@_zeitraum</p>
+        @if (_netz is { Length: > 0 }) { <ChartBild Png="_netz" Alt="Netzleistung vor und nach Speicherung, mit Peak-Ziel" /> }
+        @if (_soc is { Length: > 0 }) { <ChartBild Png="_soc" Alt="Individueller Ladezustand und Energiegrenzen" /> }
+        <button type="button" class="epos-knopf" disabled="@(!Csv.HasDelegate)" @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.ZeitreihenCsv(Ergebnis)))">Alle Zeitreihen und Speicher als CSV</button>
+    }
+}
+
+@code {
+    [Parameter] public SpeicherFlottenErgebnis? Ergebnis { get; set; }
+    [Parameter] public bool Veraltet { get; set; }
+    [Parameter] public EventCallback<string> Csv { get; set; }
+    private SpeicherFlottenErgebnis? _gezeichnet;
+    private byte[]? _netz, _soc;
+    private string _zeitraum = "";
+    private int _startTag, _tage = 7, _speicher;
+    private static readonly IReadOnlyList<(int Id, string Text)> Zeitraeume = new[] { (1,"24 Stunden"), (7,"7 Tage"), (31,"31 Tage") };
+    private IReadOnlyList<(int Id, string Text)> Speicher => Ergebnis?.Konfiguration.Einheiten.Select((s,i) => (i,s.Name)).ToArray() ?? Array.Empty<(int,string)>();
+    private string AuslegungEmpfehlung => Ergebnis?.Auslegung is not { } a
+        ? "Keine Auslegung vorhanden"
+        : a.NullvarianteGewonnen
+            ? "Empfehlung: kein zusätzlicher Speicher"
+            : a.BesterKandidat?.Zulaessig == true
+                ? "Beste technisch zulässige Flotte im geprüften Suchraum"
+                : "Keine technisch zulässige Flotte im geprüften Suchraum";
+    protected override void OnParametersSet() { if (!ReferenceEquals(_gezeichnet, Ergebnis)) { _gezeichnet = Ergebnis; _startTag = 0; _speicher = 0; Zeichnen(); } }
+    private void Zeichnen() { if (Ergebnis is not null) (_netz, _soc, _zeitraum) = SpeicherFlottenAnzeigeCtrl.Bilder(Ergebnis, _startTag, _tage, _speicher); }
+    private void TagSetzen(int? wert) { if (wert.HasValue) { _startTag = wert.Value; Zeichnen(); } }
+    private void ZeitraumSetzen(int? wert) { _tage = wert ?? 7; Zeichnen(); }
+    private void SpeicherSetzen(int? wert) { _speicher = wert ?? 0; Zeichnen(); }
+    private static string N(double w) => w.ToString("N2", System.Globalization.CultureInfo.CurrentCulture);
+    private static string Zieltext(FlottenBetriebsziel ziel) => ziel switch
+    {
+        FlottenBetriebsziel.PvGreedy => "PV-Eigenverbrauch reaktiv",
+        FlottenBetriebsziel.PeakShaving => "Lastspitzenkappung",
+        FlottenBetriebsziel.PvPlanung => "PV-Planung",
+        FlottenBetriebsziel.Arbitrage => "Preisarbitrage",
+        FlottenBetriebsziel.MultiUse => "Multi Use",
+        _ => ziel.ToString()
+    };
+    private static string Verteilungstext(FlottenVerteilung verteilung) => verteilung switch
+    {
+        FlottenVerteilung.KapazitaetsProportional => "Nach verfügbarer Kapazität",
+        FlottenVerteilung.Kaskade => "Kaskade",
+        FlottenVerteilung.Grenzkosten => "Nach Grenzkosten",
+        _ => verteilung.ToString()
+    };
+    private static string Kapitalwert(FlottenWirtschaftlichkeitErgebnis? w) => w is null ? "—" : N(w.KapitalwertEuro);
+    private string Rainflow(FlottenSpeicherKennzahlen k) =>
+        Ergebnis?.Konfiguration.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId)?.RainflowKurve?.Count > 0
+            ? N(k.RainflowSchaden) : "—";
+}

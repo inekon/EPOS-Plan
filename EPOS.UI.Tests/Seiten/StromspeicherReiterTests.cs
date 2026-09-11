@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
 using Bunit;
 using EPOS.UI.Dienste;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -100,11 +102,13 @@ public class StromspeicherReiterTests : BunitContext
                                                              Action? vergleich = null,
                                                              bool mitBild = true,
                                                              SpeicherParameterDaten? parameter = null,
-                                                             bool optimierung = false)
+                                                             bool optimierung = false,
+                                                             SimulationErgebnisDienste? dienste = null)
         => Render<StromspeicherReiter>(p =>
         {
             p.Add(x => x.Daten, daten);
             p.Add(x => x.Parameter, parameter ?? new SpeicherParameterDaten());
+            if (dienste is not null) p.Add(x => x.Dienste, dienste);
             if (optimierung)
             {
                 p.Add(x => x.OptimierungMoeglich, true);
@@ -194,22 +198,175 @@ public class StromspeicherReiterTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Der Optimierungsknopf steht jetzt HIER</b> (W11b‑B‑28) und nicht mehr auf der
-    /// Parameterseite — er gehört zu den Parametern, und die sind umgezogen. Ohne
-    /// Delegat bleibt er weg (Regel seit W2.2).
+    /// Der alte Optimierungsknopf im Einzelparameterblock ist entfallen. Der gemeinsame
+    /// Einstieg für Einzel- und Mehrspeicherauslegung steht in einer eigenen Karte.
     /// </summary>
     [Fact]
-    public void Der_Optimierungsknopf_steht_im_Parameterblock()
+    public void Der_alte_Optimierungsknopf_bleibt_im_Parameterblock_ausgeblendet()
     {
         Assert.DoesNotContain(Zeichnen(Daten()).FindAll("button"),
                               b => b.TextContent.Contains("optimieren"));
 
-        var mit = Zeichnen(Daten(), optimierung: true);
-        var knopf = mit.FindAll("button").First(b => b.TextContent.Contains("optimieren"));
-        knopf.Click();
-
-        Assert.Equal(1, _optimierungen);
+        var mit = Zeichnen(Daten(), optimierung: true, dienste: Flottendienste());
+        Assert.Empty(mit.FindComponents<SpeicherParameterBlock>());
     }
+
+    [Fact]
+    public void Flottendienst_zeigt_den_gemeinsamen_Einstieg_auch_im_Einzelbetrieb()
+    {
+        var dienste = Flottendienste();
+        var seite = Zeichnen(Daten(), optimierung: true, dienste: dienste);
+
+        Assert.Contains("Speicherflotte und Auslegung", seite.Markup);
+        Assert.Contains("Eingabestand @Aktuell", seite.Markup);
+        Assert.Empty(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.Single(seite.FindComponents<SpeicherFlottenBetriebEditor>());
+        var knopf = seite.FindAll("button").Single(b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
+        knopf.Click();
+        Assert.Equal(1, _optimierungen);
+        Assert.Contains("Last EPOS-Projektreihe", seite.Markup);
+        Assert.Contains("Kosten Investition direkte Eingabe", seite.Markup);
+    }
+
+    [Fact]
+    public void Aktivierte_Flotte_ersetzt_Altkopf_und_Einzelparameter()
+    {
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.Kopf = "Growatt · Grünstrom · Dauernutzung";
+        daten.FlottenAenderungOhneNeuenLauf = true;
+        daten.AktiveFlotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new()
+            {
+                new() { Id = "a", Name = "Hauptspeicher", KapazitaetKWh = 120, LadeleistungKw = 42, EntladeleistungKw = 57 },
+                new() { Id = "b", Name = "Schnellspeicher", KapazitaetKWh = 36, LadeleistungKw = 28, EntladeleistungKw = 33 }
+            },
+            Optionen = new FlottenSimulationOptionen
+            {
+                Betriebsziel = FlottenBetriebsziel.MultiUse,
+                Verteilung = FlottenVerteilung.Grenzkosten,
+                WirtschaftlicherPeakZielwertKw = 88
+            }
+        };
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(daten.AktiveFlotte));
+
+        Assert.Contains("Mehrspeicherbetrieb aktiviert", seite.Markup);
+        Assert.DoesNotContain("Growatt · Grünstrom · Dauernutzung", seite.Markup);
+        Assert.Empty(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.Single(seite.FindAll("button"), b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
+        Assert.Contains("Multi Use", seite.Markup);
+        Assert.Contains("Grenzkosten", seite.Markup);
+        Assert.Equal(88, seite.FindComponent<SpeicherFlottenBetriebEditor>()
+            .Instance.Wert.WirtschaftlicherPeakZielwertKw);
+        Assert.Contains("Hauptspeicher", seite.Markup);
+        Assert.Contains("Schnellspeicher", seite.Markup);
+        Assert.Contains("120,00", seite.Markup);
+        Assert.Contains("Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf.", seite.Markup);
+    }
+
+    [Fact]
+    public void Ohne_vollstaendigen_Flottendienst_bleibt_der_Legacyblock_erhalten()
+    {
+        var unvollstaendig = new SimulationErgebnisDienste
+        {
+            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        };
+
+        Assert.Single(Zeichnen(Daten(), dienste: unvollstaendig)
+            .FindComponents<SpeicherParameterBlock>());
+    }
+
+    [Fact]
+    public void Ausdrueckliche_Deaktivierung_bleibt_im_erhaltenen_Aktuellstand_sichtbar()
+    {
+        SpeicherOptimierungEingaben eingaben = FlottenEingaben();
+        eingaben.Auslegung.FlottenProjektbetriebDeaktiviert = true;
+        var dienste = new SimulationErgebnisDienste
+        {
+            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
+            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = eingaben.Kopie() },
+            OptimierungEinstellungenSpeichern = _ => Task.FromResult("")
+        };
+
+        Assert.Contains("Projektflottenbetrieb ausdrücklich deaktiviert",
+            Zeichnen(Daten(), dienste: dienste).Markup);
+    }
+
+    [Fact]
+    public async Task Betriebsoptionen_werden_im_Aktuellstand_gespeichert_und_frisch_gelesen()
+    {
+        SpeicherOptimierungEingaben stand = FlottenEingaben();
+        SpeicherOptimierungEingaben? gespeichert = null;
+        var dienste = new SimulationErgebnisDienste
+        {
+            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
+            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = stand.Kopie() },
+            OptimierungEinstellungenSpeichern = e =>
+            {
+                gespeichert = e.Kopie();
+                stand = e.Kopie();
+                stand.Auslegung.Revision++;
+                return Task.FromResult("");
+            }
+        };
+        var seite = Zeichnen(Daten(), dienste: dienste);
+        var optionen = SpeicherAuslegungKopie.Von(
+            seite.FindComponent<SpeicherFlottenBetriebEditor>().Instance.Wert);
+        optionen.Betriebsziel = FlottenBetriebsziel.MultiUse;
+        optionen.Verteilung = FlottenVerteilung.Grenzkosten;
+        optionen.ErzeugerPrioritaet = FlottenErzeugerPrioritaet.BhkwVorPv;
+        optionen.WirtschaftlicherPeakZielwertKw = 73;
+        optionen.NetzladungErlaubt = true;
+        optionen.BatterieexportErlaubt = true;
+
+        await seite.InvokeAsync(() => seite.FindComponent<SpeicherFlottenBetriebEditor>()
+            .Instance.WertChanged.InvokeAsync(optionen));
+
+        Assert.NotNull(gespeichert);
+        Assert.Equal(FlottenBetriebsziel.MultiUse, gespeichert!.Auslegung.Flotte.Optionen.Betriebsziel);
+        Assert.Equal(FlottenVerteilung.Grenzkosten, gespeichert.Auslegung.Flotte.Optionen.Verteilung);
+        Assert.Equal(FlottenErzeugerPrioritaet.BhkwVorPv, gespeichert.Auslegung.Flotte.Optionen.ErzeugerPrioritaet);
+        Assert.Equal(73, gespeichert.Auslegung.Flotte.Optionen.WirtschaftlicherPeakZielwertKw);
+        Assert.True(gespeichert.Auslegung.Flotte.Optionen.NetzladungErlaubt);
+        Assert.True(gespeichert.Auslegung.Flotte.Optionen.BatterieexportErlaubt);
+        Assert.Contains("Revision 8", seite.Markup);
+        Assert.Contains("Flotte geändert", seite.Markup);
+    }
+
+    private static SimulationErgebnisDienste Flottendienste(FlottenStudieKonfiguration? flotte = null)
+    {
+        SpeicherOptimierungEingaben eingaben = FlottenEingaben(flotte);
+        return new SimulationErgebnisDienste
+        {
+            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
+            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = eingaben.Kopie() },
+            OptimierungEinstellungenSpeichern = _ => Task.FromResult("")
+        };
+    }
+
+    private static SpeicherOptimierungEingaben FlottenEingaben(FlottenStudieKonfiguration? flotte = null)
+        => new()
+        {
+            Auslegung = new SpeicherAuslegungKonfiguration
+            {
+                Flotte = SpeicherAuslegungKopie.Von(flotte) ?? new FlottenStudieKonfiguration
+                {
+                    Einheiten = new()
+                    {
+                        new() { Id = "s1", Name = "Speicher 1", KapazitaetKWh = 100,
+                                LadeleistungKw = 40, EntladeleistungKw = 50 }
+                    }
+                },
+                Lastquelle = SpeicherAuslegungQuelle.Epos,
+                PvQuelle = SpeicherAuslegungQuelle.Epos,
+                Preisquelle = SpeicherAuslegungQuelle.Epos,
+                Investitionsquelle = SpeicherKostenQuelle.Dialog,
+                Betriebsquelle = SpeicherKostenQuelle.Dialog,
+                Revision = 7
+            }
+        };
 
     [Fact]
     public void Zwoelf_Kacheln_stehen_im_Kachelraster()

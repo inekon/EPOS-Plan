@@ -218,6 +218,33 @@ namespace WindowsFormsApplication1
         public StromspeicherLaufKontext Speicherkontext = null;
 
         /// <summary>
+        /// Optionaler, ausschließlich an diese Simulationsinstanz gebundener
+        /// Flottenstand. Er hat im Speicherzweig Vorrang vor Datenbank-Projektflotte
+        /// und Einzelspeicher und wird durch den Lauf nicht persistiert.
+        /// </summary>
+        public SpeicherOptimierungEingaben SpeicherflottenEingaben { get; set; }
+
+        /// <summary>Vollständiger Lauf zum instanzbezogenen Flottenstand.</summary>
+        public SpeicherFlottenProjektLauf Speicherflottenlauf { get; internal set; }
+
+        /// <summary>Vollständige Referenz- und Variantenrechnung der übernommenen Speicherflotte.</summary>
+        public SpeicherEngine.FlottenStudienErgebnis Speicherflottenergebnis = null;
+
+        /// <summary>Für diesen Projektlauf eingefrorene Konfiguration der Speicherflotte.</summary>
+        public SpeicherEngine.FlottenStudieKonfiguration Speicherflottenkonfiguration = null;
+
+        /// <summary>
+        /// Getrennte Netz- und Einspeisereihen der aktivierten Speicherflotte.
+        /// <c>null</c> hält den gesamten bisherigen Einzel- und Ohne-Speicherpfad
+        /// unverändert.
+        /// </summary>
+        public SpeicherFlottenNetzbilanz Speicherflottennetzbilanz = null;
+
+        // Der Flottenzweig setzt den vollständigen Netzfluss selbst; der äußere Altpfad
+        // darf anschließend nicht ein zweites Mal eine Entladung abziehen.
+        private bool SpeicherflotteErsetztReststrom = false;
+
+        /// <summary>
         /// Ladezustandsganglinie des Stromspeichers [kWh] im Viertelstundenraster
         /// (35.040) — Nullvektor, solange kein Speicher gerechnet hat.
         /// </summary>
@@ -475,6 +502,11 @@ namespace WindowsFormsApplication1
             // Speicherergebnis des Vorlaufs verwerfen - sonst zeigten Chart und
             // Kennzahlen die Werte eines früheren Projekts an.
             Speicherergebnis = null;
+            Speicherflottenergebnis = null;
+            Speicherflottenkonfiguration = null;
+            Speicherflottennetzbilanz = null;
+            Speicherflottenlauf = null;
+            SpeicherflotteErsetztReststrom = false;
             Array.Clear(Speicherfuellstand_viertelstuendlich, 0, Speicherfuellstand_viertelstuendlich.Length);
             Array.Clear(Speicherfuellstand_stuendlich, 0, Speicherfuellstand_stuendlich.Length);
 
@@ -542,12 +574,15 @@ namespace WindowsFormsApplication1
             // Beschaffen der Lastreihe auswertet.
             // ***********************************************************************
             Phase(fortschritt, abbruch, Laufphase.Stromspeicher, 0.75);
-            if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER)
+            if (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER ||
+                SpeicherflottenEingaben != null ||
+                (SpeicherflotteAktiv != null && SpeicherflotteAktiv(m_ID_Projekt)))
             {
-                temp = Simulation_Stromspeicher_Ctrl(m_ID_Projekt);
+                temp = Simulation_Stromspeicher_Ctrl(m_ID_Projekt, abbruch);
                 if (temp != null)
                 {
-                    Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
+                    if (!SpeicherflotteErsetztReststrom)
+                        Rest_Strombedarf_viertelstuendlich = SubVectors(Rest_Strombedarf_viertelstuendlich, temp);
                     bSimulationSSP = true;
                 }
             }
@@ -559,7 +594,9 @@ namespace WindowsFormsApplication1
 
             // ReststromMwh mathematisch korrekt aus dem finalen Ergebnis-Vektor berechnen
             // Falls deine Quell-Vektoren stündliche kW-Mittelwerte/kWh enthalten:
-            ReststromMwh = Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
+            ReststromMwh = Speicherflottennetzbilanz != null
+                ? Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
+                : Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
 
             // ***********************************************************************
             // Nachlauf (Paket 7): Kennzahlen aller beteiligten Speicher aus ihren
@@ -4305,13 +4342,16 @@ namespace WindowsFormsApplication1
         /// eine Warnung ins Protokoll, Rückgabe <c>null</c> — „die Kette rechnet ohne
         /// Speicherwirkung weiter". Der Speicher darf den Lauf nicht kippen.</para>
         /// </summary>
-        public static Func<SimulationControl, int, double[]> Speicherlauf;
+        public static Func<SimulationControl, int, CancellationToken, double[]> Speicherlauf;
+
+        /// <summary>Erkennt eine ausdrücklich für den Projektlauf aktivierte Flotte.</summary>
+        public static Func<int, bool> SpeicherflotteAktiv;
 
         /// <summary>
         /// Ruft den Speicherlauf über <see cref="Speicherlauf"/> — oder meldet, dass es
         /// ihn in diesem Programm nicht gibt.
         /// </summary>
-        private double[] Simulation_Stromspeicher_Ctrl(int ID_Projekt)
+        private double[] Simulation_Stromspeicher_Ctrl(int ID_Projekt, CancellationToken abbruch)
         {
             if (Speicherlauf == null)
             {
@@ -4321,7 +4361,7 @@ namespace WindowsFormsApplication1
                 return null;
             }
 
-            return Speicherlauf(this, ID_Projekt);
+            return Speicherlauf(this, ID_Projekt, abbruch);
         }
 
     }

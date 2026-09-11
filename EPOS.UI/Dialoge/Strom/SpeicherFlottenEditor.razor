@@ -1,0 +1,632 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
+@using SpeicherEngine
+
+<section class="epos-flotte-editor" aria-label="@Texte.Titel">
+    <div class="epos-flotte-editor__kopf">
+        <div>
+            <h2>@Texte.Titel</h2>
+            <p>@Texte.Erlaeuterung</p>
+        </div>
+        <span class="epos-flotte-editor__zaehler">@EinheitenText</span>
+    </div>
+
+    <SpeicherFlottenBetriebEditor Wert="@_wert.Optionen" WertChanged="BetriebsoptionenSetzen" Aktiv="@Aktiv" />
+
+    <section class="epos-flotte-abschnitt" aria-labelledby="flotte-einheiten-titel">
+        <div class="epos-flotte-abschnitt__kopf">
+            <div>
+                <h3 id="flotte-einheiten-titel">@Texte.PhysischeEinheiten</h3>
+                <p>@Texte.EinheitenHinweis</p>
+            </div>
+            <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                    @onclick="EinheitHinzufuegen">@Texte.Hinzufuegen</button>
+        </div>
+
+        @if (_wert.Einheiten.Count == 0)
+        {
+            <p class="epos-flotte-leer">@Texte.KeineEinheit</p>
+        }
+        else
+        {
+            <div class="epos-flotte-einheiten">
+                @foreach (FlottenEinheit einheit in _wert.Einheiten)
+                {
+                    FlottenAuslegungsAchse achse = AchseZu(einheit);
+                    bool offen = _offeneEinheiten.Contains(einheit.Id);
+                    <article class="epos-flotte-einheit" @key="einheit.Id" data-einheit-id="@einheit.Id">
+                        <div class="epos-flotte-einheit__kopf">
+                            <button type="button" class="epos-flotte-einheit__umschalter"
+                                    aria-expanded="@offen" aria-controls="@InhaltId(einheit)"
+                                    @onclick="@(() => OffenUmschalten(einheit))">
+                                <span aria-hidden="true">@(offen ? "▾" : "▸")</span>
+                                <span class="epos-flotte-einheit__name">@EinheitName(einheit)</span>
+                                <span class="epos-flotte-einheit__kurz">@EinheitKurztext(einheit)</span>
+                            </button>
+                            <div class="epos-flotte-einheit__aktionen" aria-label="@Texte.EinheitAktionen">
+                                <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                                        aria-label="@string.Format(Texte.KopierenAria, EinheitName(einheit))"
+                                        @onclick="@(() => EinheitKopieren(einheit))">@Texte.Kopieren</button>
+                                <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                                        aria-label="@string.Format(Texte.EntfernenAria, EinheitName(einheit))"
+                                        @onclick="@(() => EinheitEntfernen(einheit))">@Texte.Entfernen</button>
+                            </div>
+                        </div>
+
+                        @if (offen)
+                        {
+                            <div id="@InhaltId(einheit)" class="epos-flotte-einheit__inhalt">
+                                <div class="epos-flotte-untergruppe">
+                                    <h4>@Texte.Technik</h4>
+                                    <div class="epos-flotte-feldraster">
+                                        <Textfeld Bezeichnung="@Texte.Name" Wert="@einheit.Name" NurLesen="@(!Aktiv)"
+                                                  WertChanged="@(v => EinheitNameSetzen(einheit, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Kapazitaet" Einheit="kWh" Wert="@einheit.KapazitaetKWh" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.KapazitaetKWh = x, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Ladeleistung" Einheit="kW" Wert="@einheit.LadeleistungKw" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.LadeleistungKw = x, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Entladeleistung" Einheit="kW" Wert="@einheit.EntladeleistungKw" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.EntladeleistungKw = x, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Ladewirkungsgrad" Einheit="%" Wert="@(einheit.Ladewirkungsgrad * 100.0)" Min="0.01" Max="100" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.Ladewirkungsgrad = x / 100.0, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Entladewirkungsgrad" Einheit="%" Wert="@(einheit.Entladewirkungsgrad * 100.0)" Min="0.01" Max="100" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.Entladewirkungsgrad = x / 100.0, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.SocMin" Einheit="%" Wert="@(einheit.SocMin * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.SocMin = x / 100.0, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.SocMax" Einheit="%" Wert="@(einheit.SocMax * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.SocMax = x / 100.0, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.SocStart" Einheit="%" Wert="@(einheit.SocStart * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.SocStart = x / 100.0, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.PeakReserve" Einheit="kWh" Wert="@einheit.PeakReserveKWh" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.PeakReserveKWh = x, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.Hilfsverbrauch" Einheit="kW" Wert="@einheit.HilfsverbrauchKw" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.HilfsverbrauchKw = x, v))" />
+                                    </div>
+                                </div>
+
+                                <div class="epos-flotte-untergruppe">
+                                    <h4>@Texte.AlterungUndGrenzkosten</h4>
+                                    <div class="epos-flotte-feldraster">
+                                        <Zahlenfeld Bezeichnung="@Texte.Grenzverschleiss" Einheit="€/kWh" Wert="@einheit.GrenzverschleissEuroProKWhEntladung" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.GrenzverschleissEuroProKWhEntladung = x, v))" />
+                                    </div>
+                                    <p class="epos-flotte-hinweis">@Texte.RainflowHinweis</p>
+                                    @if (einheit.RainflowKurve.Count == 0)
+                                    {
+                                        <p class="epos-flotte-leer">@Texte.KeineRainflowKennlinie</p>
+                                    }
+                                    @for (int rainIndex = 0; rainIndex < einheit.RainflowKurve.Count; rainIndex++)
+                                    {
+                                        int index = rainIndex;
+                                        FlottenRainflowPunkt punkt = einheit.RainflowKurve[index];
+                                        <div class="epos-flotte-feldraster" @key="punkt">
+                                            <Zahlenfeld Bezeichnung="@string.Format(Texte.Entladetiefe, index + 1)" Einheit="%" Wert="@(punkt.Entladetiefe * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => RainflowZahlSetzen(einheit, punkt, x => punkt.Entladetiefe = x / 100.0, v))" />
+                                            <Zahlenfeld Bezeichnung="@string.Format(Texte.ZyklenBisEol, index + 1)" Einheit="Zyklen" Wert="@punkt.ZyklenBisEol" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => RainflowZahlSetzen(einheit, punkt, x => punkt.ZyklenBisEol = x, v))" />
+                                            <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                                                    aria-label="@string.Format(Texte.RainflowPunktEntfernenAria, index + 1)"
+                                                    @onclick="@(() => RainflowPunktEntfernen(einheit, punkt))">@Texte.PunktEntfernen</button>
+                                        </div>
+                                    }
+                                    <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                                            @onclick="@(() => RainflowPunktHinzufuegen(einheit))">@Texte.PunktHinzufuegen</button>
+                                </div>
+
+                                <div class="epos-flotte-untergruppe">
+                                    <div class="epos-flotte-untergruppe__kopf">
+                                        <h4>@Texte.Auslegungsbereich</h4>
+                                        <Schalter Bezeichnung="@Texte.InAuslegungVariieren" Wert="@achse.Aktiv" Aktiv="@Aktiv"
+                                                   WertChanged="@(v => AchseBoolSetzen(achse, v))" />
+                                    </div>
+                                    <div class="epos-flotte-auslegungskopplung">
+                                        <Auswahlfeld Bezeichnung="@Texte.Auslegungsmodus" Eintraege="@Auslegungsmodi"
+                                                       Auswahl="@((int)achse.Modus)" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                       AuswahlChanged="@(v => AchsenmodusSetzen(achse, v))" />
+                                    </div>
+                                    <div class="epos-flotte-auslegungsgruppen">
+                                        <section class="epos-flotte-auslegungskategorie" aria-label="@Texte.AnzahlKategorie">
+                                            <h5>@Texte.AnzahlKategorie</h5>
+                                            <div class="epos-flotte-feldraster epos-flotte-auslegungskategorie__felder">
+                                                <Ganzzahlfeld Bezeichnung="@Texte.Von" Wert="@achse.AnzahlVon" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                               WertChanged="@(v => AchseGanzSetzen(achse, x => achse.AnzahlVon = x, v))" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.Bis" Wert="@achse.AnzahlBis" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                               WertChanged="@(v => AchseGanzSetzen(achse, x => achse.AnzahlBis = x, v))" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.Schritt" Wert="1" Aktiv="false" />
+                                            </div>
+                                        </section>
+                                        @if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
+                                        {
+                                            <section class="epos-flotte-auslegungskategorie" aria-label="@Texte.KapazitaetKategorie">
+                                                <h5>@Texte.KapazitaetKategorie</h5>
+                                                <div class="epos-flotte-feldraster epos-flotte-auslegungskategorie__felder">
+                                                    <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kWh" Wert="@achse.KapazitaetVonKWh" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.KapazitaetVonKWh = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kWh" Wert="@achse.KapazitaetBisKWh" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.KapazitaetBisKWh = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kWh" Wert="@achse.KapazitaetSchrittKWh" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.KapazitaetSchrittKWh = x, v))" />
+                                                </div>
+                                            </section>
+                                        }
+                                        @if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate)
+                                        {
+                                            <section class="epos-flotte-auslegungskategorie" aria-label="@Texte.LeistungKategorie">
+                                                <h5>@Texte.LeistungKategorie</h5>
+                                                <div class="epos-flotte-feldraster epos-flotte-auslegungskategorie__felder">
+                                                    <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kW" Wert="@achse.LeistungVonKw" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.LeistungVonKw = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kW" Wert="@achse.LeistungBisKw" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.LeistungBisKw = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kW" Wert="@achse.LeistungSchrittKw" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.LeistungSchrittKw = x, v))" />
+                                                </div>
+                                            </section>
+                                        }
+                                        @if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung)
+                                        {
+                                            <section class="epos-flotte-auslegungskategorie" aria-label="@Texte.CRateKategorie">
+                                                <h5>@Texte.CRateKategorie</h5>
+                                                <div class="epos-flotte-feldraster epos-flotte-auslegungskategorie__felder">
+                                                    <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="1/h" Wert="@achse.CRateVon" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.CRateVon = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="1/h" Wert="@achse.CRateBis" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.CRateBis = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="1/h" Wert="@achse.CRateSchritt" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
+                                                                WertChanged="@(v => AchseZahlSetzen(achse, x => achse.CRateSchritt = x, v))" />
+                                                </div>
+                                            </section>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="epos-flotte-untergruppe">
+                                    <h4>@Texte.ErsatzUndRestwert</h4>
+                                    <div class="epos-flotte-feldraster">
+                                        <Schalter Bezeichnung="@Texte.EigeneKosten" Wert="@einheit.EigeneKosten" Aktiv="@Aktiv"
+                                                   WertChanged="@(v => EinheitBoolSetzen(einheit, x => einheit.EigeneKosten = x, v))" />
+                                        @if (einheit.EigeneKosten)
+                                        {
+                                            <Zahlenfeld Bezeichnung="@Texte.InvestitionFix" Einheit="€" Wert="@einheit.InvestitionEuro" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.InvestitionEuro = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.InvestitionKapazitaet" Einheit="€/kWh" Wert="@einheit.InvestitionEuroProKWh" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.InvestitionEuroProKWh = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.InvestitionLeistung" Einheit="€/kW" Wert="@einheit.InvestitionEuroProKw" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.InvestitionEuroProKw = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.OpexFix" Einheit="€/a" Wert="@einheit.JaehrlicheFixeOpexEuro" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.JaehrlicheFixeOpexEuro = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.OpexKapazitaet" Einheit="€/(kWh·a)" Wert="@einheit.JaehrlicheOpexEuroProKWhKapazitaet" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.JaehrlicheOpexEuroProKWhKapazitaet = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.OpexLeistung" Einheit="€/(kW·a)" Wert="@einheit.JaehrlicheOpexEuroProKw" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.JaehrlicheOpexEuroProKw = x, v))" />
+                                            <Zahlenfeld Bezeichnung="@Texte.Durchsatzkosten" Einheit="€/kWh" Wert="@einheit.DurchsatzkostenEuroProKWhEntladung" Min="0" Aktiv="@Aktiv"
+                                                        WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.DurchsatzkostenEuroProKWhEntladung = x, v))" />
+                                        }
+                                        <Zahlenfeld Bezeichnung="@Texte.Ersatzkosten" Einheit="€" Wert="@einheit.ErsatzkostenEuro" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.ErsatzkostenEuro = x, v))" />
+                                        <Ganzzahlfeld Bezeichnung="@Texte.Ersatzintervall" Einheit="Jahre" Wert="@einheit.ErsatzintervallJahre" Min="0" Aktiv="@Aktiv"
+                                                       WertChanged="@(v => EinheitGanzSetzen(einheit, x => einheit.ErsatzintervallJahre = x, v))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.RestwertEinheit" Einheit="€" Wert="@einheit.RestwertEuro" Min="0" Aktiv="@Aktiv"
+                                                    WertChanged="@(v => EinheitZahlSetzen(einheit, x => einheit.RestwertEuro = x, v))" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="epos-flotte-abschnitt" aria-labelledby="flotte-netz-titel">
+        <h3 id="flotte-netz-titel">@Texte.NetzUndPlanung</h3>
+        <div class="epos-flotte-feldraster">
+            <Zahlenfeld Bezeichnung="@Texte.NetzbezugGrenze" Einheit="kW" Wert="@_wert.Optionen.NetzbezugGrenzeKw" Min="0" Aktiv="@Aktiv"
+                        WertChanged="@(v => OptionSetzen(() => _wert.Optionen.NetzbezugGrenzeKw = v))" />
+            <Zahlenfeld Bezeichnung="@Texte.NetzeinspeisungGrenze" Einheit="kW" Wert="@_wert.Optionen.NetzeinspeisungGrenzeKw" Min="0" Aktiv="@Aktiv"
+                        WertChanged="@(v => OptionSetzen(() => _wert.Optionen.NetzeinspeisungGrenzeKw = v))" />
+        </div>
+
+        @if (HatPrognoseplanung)
+        {
+            <div class="epos-flotte-untergruppe epos-flotte-untergruppe--innen">
+                <h4>@Texte.Prognoseplanung</h4>
+                <div class="epos-flotte-feldraster">
+                    <Auswahlfeld Bezeichnung="@Texte.Informationsstand" Eintraege="@Prognosearten"
+                                   Auswahl="@((int)_wert.Optionen.PrognoseArt)" Aktiv="@Aktiv"
+                                   AuswahlChanged="PrognoseArtSetzen" />
+                    <Ganzzahlfeld Bezeichnung="@Texte.Planungshorizont" Einheit="Intervalle" Wert="@_wert.Optionen.PlanungshorizontIntervalle" Min="1" Aktiv="@Aktiv"
+                                   WertChanged="@(v => OptionGanzSetzen(x => _wert.Optionen.PlanungshorizontIntervalle = x, v))" />
+                    <Ganzzahlfeld Bezeichnung="@Texte.Neuplanung" Einheit="Intervalle" Wert="@_wert.Optionen.NeuplanungAlleIntervalle" Min="1" Aktiv="@Aktiv"
+                                   WertChanged="@(v => OptionGanzSetzen(x => _wert.Optionen.NeuplanungAlleIntervalle = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Endbedingung" Eintraege="@Endbedingungen"
+                                   Auswahl="@((int)_wert.Optionen.Endbedingung)" Aktiv="@Aktiv"
+                                   AuswahlChanged="EndbedingungSetzen" />
+                    <Schalter Bezeichnung="@Texte.Fallback" Wert="@_wert.Optionen.PrognoseFallbackErlaubt" Aktiv="@Aktiv"
+                               WertChanged="@(v => OptionSetzen(() => _wert.Optionen.PrognoseFallbackErlaubt = v))" />
+                </div>
+                @if (_wert.Optionen.Endbedingung == FlottenEndbedingung.JeSpeicherZiel)
+                {
+                    <div class="epos-flotte-endziele" aria-label="@Texte.EndenergieZiele">
+                        @for (int index = 0; index < _wert.Einheiten.Count; index++)
+                        {
+                            int zielIndex = index;
+                            <Zahlenfeld Bezeichnung="@string.Format(Texte.EndenergieZiel, EinheitName(_wert.Einheiten[index]))"
+                                        Einheit="kWh" Wert="@_wert.Optionen.EndenergieZielKWh[index]" Min="0" Aktiv="@Aktiv"
+                                        WertChanged="@(v => EndenergieSetzen(zielIndex, v))" />
+                        }
+                    </div>
+                }
+                @if (_wert.Optionen.PrognoseArt == PrognoseArt.Oracle)
+                {
+                    <p class="epos-flotte-hinweis epos-flotte-hinweis--warnung">@Texte.OracleHinweis</p>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="epos-flotte-abschnitt" aria-labelledby="flotte-wirtschaft-titel">
+        <h3 id="flotte-wirtschaft-titel">@Texte.Jahresprojektion</h3>
+        <p class="epos-flotte-hinweis">@Texte.EnergieausgleichHinweis</p>
+        <Zahlenfeld Bezeichnung="Energie-Ausgleichswert" Einheit="€/kWh gespeichert" Wert="@_wert.Optionen.EnergieAusgleichEuroProKWh" Aktiv="@Aktiv"
+            WertChanged="@(v => OptionSetzen(() => _wert.Optionen.EnergieAusgleichEuroProKWh = v))" />
+        <p class="epos-flotte-hinweis">@Texte.JahresprojektionHinweis</p>
+        <div class="epos-flotte-feldraster">
+            <Zahlenfeld Bezeichnung="@Texte.Kalkulationszins" Einheit="%" Wert="@(_wert.Wirtschaftlichkeit.Kalkulationszins * 100.0)" Min="0" Aktiv="@Aktiv"
+                        WertChanged="@(v => WirtschaftZahlSetzen(x => _wert.Wirtschaftlichkeit.Kalkulationszins = x / 100.0, v))" />
+            <Auswahlfeld Bezeichnung="@Texte.Projektionsart" Eintraege="@Projektionsarten"
+                           Auswahl="@(_wert.Wirtschaftlichkeit.ReferenzjahrExplizitWiederholen ? 1 : 0)" Aktiv="@Aktiv"
+                           AuswahlChanged="ProjektionsartSetzen" />
+            <Ganzzahlfeld Bezeichnung="@Texte.Projektjahre" Einheit="Jahre" Wert="@_wert.Wirtschaftlichkeit.ProjektjahreBeiWiederholung" Min="1" Aktiv="@Aktiv"
+                           WertChanged="@(v => WirtschaftGanzSetzen(x => _wert.Wirtschaftlichkeit.ProjektjahreBeiWiederholung = x, v))" />
+            <Zahlenfeld Bezeichnung="@Texte.RestwertGesamt" Einheit="€" Wert="@_wert.Wirtschaftlichkeit.RestwertEuro" Min="0" Aktiv="@Aktiv"
+                        WertChanged="@(v => WirtschaftZahlSetzen(x => _wert.Wirtschaftlichkeit.RestwertEuro = x, v))" />
+            <Ganzzahlfeld Bezeichnung="@Texte.MaximaleKandidaten" Wert="@_wert.Auslegung.MaximaleKandidaten" Min="1" Aktiv="@Aktiv"
+                           WertChanged="@(v => AuslegungGanzSetzen(x => _wert.Auslegung.MaximaleKandidaten = x, v))" />
+        </div>
+    </section>
+</section>
+
+@code {
+    [Parameter] public FlottenStudieKonfiguration Wert { get; set; } = new();
+    [Parameter] public EventCallback<FlottenStudieKonfiguration> WertChanged { get; set; }
+    [Parameter] public bool Aktiv { get; set; } = true;
+    [Parameter] public Beschriftungen Texte { get; set; } = new();
+
+    private FlottenStudieKonfiguration _wert = new();
+    private FlottenStudieKonfiguration? _eingangReferenz;
+    private readonly HashSet<string> _offeneEinheiten = new(StringComparer.Ordinal);
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Prognosearten = new[]
+    {
+        (0, "Archivierte Prognose-Snapshots"), (1, "Idealwissen (optimistische Vergleichsgrenze)")
+    };
+    private static readonly IReadOnlyList<(int Id, string Text)> Endbedingungen = new[]
+    {
+        (0, "Keine Vorgabe"), (1, "Zielenergie je Speicher"), (2, "Endenergie wie Anfang")
+    };
+    private static readonly IReadOnlyList<(int Id, string Text)> Auslegungsmodi = new[]
+    {
+        (0, "Kapazität und Leistung"), (1, "Kapazität und C-Rate"), (2, "Leistung und C-Rate")
+    };
+    private static readonly IReadOnlyList<(int Id, string Text)> Projektionsarten = new[]
+    {
+        (0, "Eingelesene Jahre einzeln bewerten"), (1, "Referenzjahr ausdrücklich wiederholen")
+    };
+
+    public FlottenStudieKonfiguration AktuellerSnapshot => Kopie(_wert);
+    public int EinheitenAnzahl => _wert.Einheiten.Count;
+
+    private bool HatPrognoseplanung => _wert.Optionen.Betriebsziel is FlottenBetriebsziel.PvPlanung or FlottenBetriebsziel.Arbitrage or FlottenBetriebsziel.MultiUse;
+    private string EinheitenText => string.Format(CultureInfo.CurrentCulture, Texte.EinheitenAnzahl, _wert.Einheiten.Count);
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_eingangReferenz, Wert)) return;
+        _eingangReferenz = Wert;
+        _wert = Kopie(Wert ?? new FlottenStudieKonfiguration());
+        Normalisieren();
+        if (_wert.Einheiten.Count > 0 && _offeneEinheiten.Count == 0)
+            _offeneEinheiten.Add(_wert.Einheiten[0].Id);
+    }
+
+    private void Normalisieren()
+    {
+        _wert.Einheiten ??= new();
+        _wert.Optionen ??= new();
+        _wert.Wirtschaftlichkeit ??= new();
+        _wert.Auslegung ??= new();
+        _wert.Auslegung.Achsen ??= new();
+        _wert.Auslegung.Betriebsziele ??= new();
+        for (int i = 0; i < _wert.Einheiten.Count; i++)
+        {
+            FlottenEinheit e = _wert.Einheiten[i];
+            if (string.IsNullOrWhiteSpace(e.Id)) e.Id = NeueId();
+            if (string.IsNullOrWhiteSpace(e.Name)) e.Name = string.Format(CultureInfo.CurrentCulture, Texte.StandardEinheit, i + 1);
+            FlottenAuslegungsAchse? a = _wert.Auslegung.Achsen.FirstOrDefault(x => x.Vorlage?.Id == e.Id);
+            if (a is null && i < _wert.Auslegung.Achsen.Count &&
+                string.IsNullOrWhiteSpace(_wert.Auslegung.Achsen[i].Vorlage?.Id))
+                a = _wert.Auslegung.Achsen[i];
+            if (a is null)
+            {
+                a = NeueAchse(e);
+                _wert.Auslegung.Achsen.Add(a);
+            }
+            else a.Vorlage = Kopie(e);
+        }
+        _wert.Auslegung.Achsen.RemoveAll(a => a.Vorlage is null || !_wert.Einheiten.Any(e => e.Id == a.Vorlage.Id));
+        SpiegelEinheiten();
+        EndzieleAnpassen();
+    }
+
+    private async Task Melden()
+    {
+        SpiegelEinheiten();
+        foreach (FlottenEinheit e in _wert.Einheiten) AchseZu(e).Vorlage = Kopie(e);
+        EndzieleAnpassen();
+        await WertChanged.InvokeAsync(Kopie(_wert));
+    }
+
+    private void SpiegelEinheiten() => _wert.Wirtschaftlichkeit.Einheiten = _wert.Einheiten.Select(Kopie).ToList();
+
+    private void EndzieleAnpassen()
+    {
+        _wert.Optionen.EndenergieZielKWh ??= new();
+        while (_wert.Optionen.EndenergieZielKWh.Count < _wert.Einheiten.Count)
+            _wert.Optionen.EndenergieZielKWh.Add(_wert.Einheiten[_wert.Optionen.EndenergieZielKWh.Count].KapazitaetKWh * _wert.Einheiten[_wert.Optionen.EndenergieZielKWh.Count].SocStart);
+        if (_wert.Optionen.EndenergieZielKWh.Count > _wert.Einheiten.Count)
+            _wert.Optionen.EndenergieZielKWh.RemoveRange(_wert.Einheiten.Count, _wert.Optionen.EndenergieZielKWh.Count - _wert.Einheiten.Count);
+    }
+
+    private async Task EinheitHinzufuegen()
+    {
+        var e = NeueEinheit(_wert.Einheiten.Count + 1);
+        _wert.Einheiten.Add(e);
+        _wert.Auslegung.Achsen.Add(NeueAchse(e));
+        _offeneEinheiten.Add(e.Id);
+        await Melden();
+    }
+
+    private async Task EinheitKopieren(FlottenEinheit quelle)
+    {
+        FlottenEinheit e = Kopie(quelle);
+        e.Id = NeueId();
+        e.AnlageId = null;
+        e.Name = EinheitName(quelle) + " – Kopie";
+        int index = _wert.Einheiten.IndexOf(quelle) + 1;
+        _wert.Einheiten.Insert(index, e);
+        FlottenAuslegungsAchse a = Kopie(AchseZu(quelle));
+        a.Vorlage = Kopie(e);
+        _wert.Auslegung.Achsen.Insert(Math.Min(index, _wert.Auslegung.Achsen.Count), a);
+        _offeneEinheiten.Add(e.Id);
+        await Melden();
+    }
+
+    private async Task EinheitEntfernen(FlottenEinheit einheit)
+    {
+        _wert.Einheiten.Remove(einheit);
+        _wert.Auslegung.Achsen.RemoveAll(x => x.Vorlage?.Id == einheit.Id);
+        _offeneEinheiten.Remove(einheit.Id);
+        await Melden();
+    }
+
+    private void OffenUmschalten(FlottenEinheit einheit)
+    {
+        if (!_offeneEinheiten.Add(einheit.Id)) _offeneEinheiten.Remove(einheit.Id);
+    }
+
+    private async Task EinheitNameSetzen(FlottenEinheit e, string wert) { e.Name = wert; await Melden(); }
+    private async Task EinheitBoolSetzen(FlottenEinheit e, Action<bool> setzen, bool wert) { setzen(wert); await Melden(); }
+    private async Task EinheitZahlSetzen(FlottenEinheit e, Action<double> setzen, double? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task EinheitGanzSetzen(FlottenEinheit e, Action<int> setzen, int? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task RainflowZahlSetzen(FlottenEinheit e, FlottenRainflowPunkt p, Action<double> setzen, double? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task RainflowPunktHinzufuegen(FlottenEinheit e) { e.RainflowKurve ??= new(); e.RainflowKurve.Add(new FlottenRainflowPunkt()); await Melden(); }
+    private async Task RainflowPunktEntfernen(FlottenEinheit e, FlottenRainflowPunkt p) { e.RainflowKurve.Remove(p); await Melden(); }
+    private async Task AchseZahlSetzen(FlottenAuslegungsAchse a, Action<double> setzen, double? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task AchseGanzSetzen(FlottenAuslegungsAchse a, Action<int> setzen, int? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task AchseBoolSetzen(FlottenAuslegungsAchse a, bool wert) { a.Aktiv = wert; await Melden(); }
+    private async Task OptionSetzen(Action setzen) { setzen(); await Melden(); }
+    private async Task OptionGanzSetzen(Action<int> setzen, int? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task WirtschaftSetzen(Action setzen) { setzen(); await Melden(); }
+    private async Task WirtschaftZahlSetzen(Action<double> setzen, double? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task WirtschaftGanzSetzen(Action<int> setzen, int? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+    private async Task AuslegungGanzSetzen(Action<int> setzen, int? wert) { if (wert.HasValue) setzen(wert.Value); await Melden(); }
+
+    private async Task BetriebsoptionenSetzen(FlottenSimulationOptionen wert) { _wert.Optionen = Kopie(wert ?? new()); await Melden(); }
+    private async Task PrognoseArtSetzen(int? wert) { if (wert.HasValue) _wert.Optionen.PrognoseArt = (PrognoseArt)wert.Value; await Melden(); }
+    private async Task EndbedingungSetzen(int? wert) { if (wert.HasValue) _wert.Optionen.Endbedingung = (FlottenEndbedingung)wert.Value; await Melden(); }
+    private async Task AchsenmodusSetzen(FlottenAuslegungsAchse a, int? wert) { if (wert.HasValue) a.Modus = (FlottenAuslegungsmodus)wert.Value; await Melden(); }
+    private async Task ProjektionsartSetzen(int? wert) { if (wert.HasValue) _wert.Wirtschaftlichkeit.ReferenzjahrExplizitWiederholen = wert.Value == 1; await Melden(); }
+    private async Task EndenergieSetzen(int index, double? wert) { if (wert.HasValue) _wert.Optionen.EndenergieZielKWh[index] = wert.Value; await Melden(); }
+
+    private FlottenAuslegungsAchse AchseZu(FlottenEinheit e) =>
+        _wert.Auslegung.Achsen.First(x => x.Vorlage?.Id == e.Id);
+
+    private FlottenEinheit NeueEinheit(int nummer) => new()
+    {
+        Id = NeueId(), Name = string.Format(CultureInfo.CurrentCulture, Texte.StandardEinheit, nummer),
+        KapazitaetKWh = 100, LadeleistungKw = 50, EntladeleistungKw = 50,
+        Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+        SocMin = 0.10, SocMax = 0.90, SocStart = 0.50
+    };
+
+    private static FlottenAuslegungsAchse NeueAchse(FlottenEinheit e) => new()
+    {
+        Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+        AnzahlVon = 1, AnzahlBis = 1,
+        KapazitaetVonKWh = e.KapazitaetKWh, KapazitaetBisKWh = e.KapazitaetKWh, KapazitaetSchrittKWh = 1,
+        LeistungVonKw = e.LadeleistungKw, LeistungBisKw = e.LadeleistungKw, LeistungSchrittKw = 1,
+        CRateVon = 0.5, CRateBis = 2.0, CRateSchritt = 0.5, Vorlage = Kopie(e)
+    };
+
+    private static string NeueId() => "sp-" + Guid.NewGuid().ToString("N");
+    private string EinheitName(FlottenEinheit e) => string.IsNullOrWhiteSpace(e.Name) ? Texte.Unbenannt : e.Name;
+    private static string InhaltId(FlottenEinheit e) => "flotte-einheit-" +
+        string.Concat(e.Id.Select(c => char.IsLetterOrDigit(c) || c == '-' ? c : '-'));
+    private static string EinheitKurztext(FlottenEinheit e) => string.Format(CultureInfo.CurrentCulture,
+        "{0:0.###} kWh · {1:0.###}/{2:0.###} kW", e.KapazitaetKWh, e.LadeleistungKw, e.EntladeleistungKw);
+
+    private static FlottenStudieKonfiguration Kopie(FlottenStudieKonfiguration q) => new()
+    {
+        Einheiten = (q.Einheiten ?? new()).Select(Kopie).ToList(),
+        Optionen = Kopie(q.Optionen ?? new()), Tarif = Kopie(q.Tarif ?? new()),
+        Wirtschaftlichkeit = Kopie(q.Wirtschaftlichkeit ?? new()), Auslegung = Kopie(q.Auslegung ?? new())
+    };
+    private static FlottenEinheit Kopie(FlottenEinheit q) => new()
+    {
+        Id=q.Id, Name=q.Name, AnlageId=q.AnlageId, EigeneKosten=q.EigeneKosten,
+        KapazitaetKWh=q.KapazitaetKWh, LadeleistungKw=q.LadeleistungKw, EntladeleistungKw=q.EntladeleistungKw,
+        Ladewirkungsgrad=q.Ladewirkungsgrad, Entladewirkungsgrad=q.Entladewirkungsgrad,
+        SocMin=q.SocMin, SocMax=q.SocMax, SocStart=q.SocStart, PeakReserveKWh=q.PeakReserveKWh,
+        HilfsverbrauchKw=q.HilfsverbrauchKw, GrenzverschleissEuroProKWhEntladung=q.GrenzverschleissEuroProKWhEntladung,
+        InvestitionEuro=q.InvestitionEuro, InvestitionEuroProKWh=q.InvestitionEuroProKWh, InvestitionEuroProKw=q.InvestitionEuroProKw,
+        JaehrlicheFixeOpexEuro=q.JaehrlicheFixeOpexEuro, JaehrlicheOpexEuroProKWhKapazitaet=q.JaehrlicheOpexEuroProKWhKapazitaet,
+        JaehrlicheOpexEuroProKw=q.JaehrlicheOpexEuroProKw, DurchsatzkostenEuroProKWhEntladung=q.DurchsatzkostenEuroProKWhEntladung,
+        ErsatzkostenEuro=q.ErsatzkostenEuro, ErsatzintervallJahre=q.ErsatzintervallJahre, RestwertEuro=q.RestwertEuro,
+        RainflowKurve=(q.RainflowKurve ?? new()).Select(x => new FlottenRainflowPunkt { Entladetiefe=x.Entladetiefe, ZyklenBisEol=x.ZyklenBisEol }).ToList()
+    };
+    private static FlottenSimulationOptionen Kopie(FlottenSimulationOptionen q) => new()
+    {
+        Betriebsziel=q.Betriebsziel, Verteilung=q.Verteilung, NetzbezugGrenzeKw=q.NetzbezugGrenzeKw,
+        NetzeinspeisungGrenzeKw=q.NetzeinspeisungGrenzeKw, NetzladungErlaubt=q.NetzladungErlaubt,
+        BatterieexportErlaubt=q.BatterieexportErlaubt, WirtschaftlicherPeakZielwertKw=q.WirtschaftlicherPeakZielwertKw,
+        ArbitrageLadepreisSchwelle=q.ArbitrageLadepreisSchwelle, ArbitrageEntladepreisSchwelle=q.ArbitrageEntladepreisSchwelle,
+        PrognoseArt=q.PrognoseArt, ErzeugerPrioritaet=q.ErzeugerPrioritaet,
+        PlanungshorizontIntervalle=q.PlanungshorizontIntervalle, NeuplanungAlleIntervalle=q.NeuplanungAlleIntervalle,
+        Endbedingung=q.Endbedingung, EndenergieZielKWh=new(q.EndenergieZielKWh ?? new()),
+        EnergieAusgleichEuroProKWh=q.EnergieAusgleichEuroProKWh, PrognoseFallbackErlaubt=q.PrognoseFallbackErlaubt
+    };
+    private static FlottenTarif Kopie(FlottenTarif q) => new()
+    {
+        LeistungspreisEuroProKw=q.LeistungspreisEuroProKw, FixkostenEuro=q.FixkostenEuro,
+        BatterieVerkaufspreisEuroProKWh=q.BatterieVerkaufspreisEuroProKWh
+    };
+    private static FlottenWirtschaftlichkeitEingang Kopie(FlottenWirtschaftlichkeitEingang q) => new()
+    {
+        Einheiten=(q.Einheiten ?? new()).Select(Kopie).ToList(), Jahreskonten=(q.Jahreskonten ?? new()).Select(Kopie).ToList(),
+        Kalkulationszins=q.Kalkulationszins, RestwertEuro=q.RestwertEuro,
+        ReferenzjahrExplizitWiederholen=q.ReferenzjahrExplizitWiederholen, ProjektjahreBeiWiederholung=q.ProjektjahreBeiWiederholung
+    };
+    private static FlottenAuslegungEingang Kopie(FlottenAuslegungEingang q) => new()
+    {
+        Achsen=(q.Achsen ?? new()).Select(Kopie).ToList(), Betriebsziele=new(q.Betriebsziele ?? new()), MaximaleKandidaten=q.MaximaleKandidaten
+    };
+    private static FlottenAuslegungsAchse Kopie(FlottenAuslegungsAchse q) => new()
+    {
+        Aktiv=q.Aktiv, Modus=q.Modus, AnzahlVon=q.AnzahlVon, AnzahlBis=q.AnzahlBis,
+        KapazitaetVonKWh=q.KapazitaetVonKWh, KapazitaetBisKWh=q.KapazitaetBisKWh, KapazitaetSchrittKWh=q.KapazitaetSchrittKWh,
+        LeistungVonKw=q.LeistungVonKw, LeistungBisKw=q.LeistungBisKw, LeistungSchrittKw=q.LeistungSchrittKw,
+        CRateVon=q.CRateVon, CRateBis=q.CRateBis, CRateSchritt=q.CRateSchritt, Vorlage=Kopie(q.Vorlage ?? new())
+    };
+    private static FlottenJahreskonto Kopie(FlottenJahreskonto q) => new()
+    {
+        Jahr=q.Jahr, Referenzrechnung=Kopie(q.Referenzrechnung ?? new()), Variantenrechnung=Kopie(q.Variantenrechnung ?? new()),
+        OpexEuro=q.OpexEuro, DurchsatzkostenEuro=q.DurchsatzkostenEuro, ErsatzkostenEuro=q.ErsatzkostenEuro,
+        EndenergieAusgleichEuro=q.EndenergieAusgleichEuro, NettoCashflowEuro=q.NettoCashflowEuro,
+        IstVollstaendigesJahr=q.IstVollstaendigesJahr, Projektionskennzeichnung=q.Projektionskennzeichnung
+    };
+    private static FlottenRechnung Kopie(FlottenRechnung q) => new()
+    {
+        EnergiekostenEuro=q.EnergiekostenEuro, LeistungskostenEuro=q.LeistungskostenEuro,
+        FixkostenEuro=q.FixkostenEuro, PeakKw=q.PeakKw, GesamtEuro=q.GesamtEuro
+    };
+
+    public sealed class Beschriftungen
+    {
+        public string Titel { get; set; } = "Speicherflotte";
+        public string Erlaeuterung { get; set; } = "Physische Einheiten, Betriebsziel, Verteilung, Planung und Lebenszyklus werden gemeinsam als Studie gespeichert.";
+        public string BetriebUndVerteilung { get; set; } = "Betrieb und Leistungsverteilung";
+        public string Betriebsziel { get; set; } = "Betriebsziel:";
+        public string Verteilung { get; set; } = "Leistung auf Speicher verteilen:";
+        public string ErzeugerPrioritaet { get; set; } = "Erzeuger-Reihenfolge:";
+        public string PhysischeEinheiten { get; set; } = "Physische Speichereinheiten";
+        public string EinheitenHinweis { get; set; } = "Jede Zeile ist ein gleichzeitig betriebener Speicher mit eigenem Zustand und eigenen Grenzen.";
+        public string Hinzufuegen { get; set; } = "+ Speicher hinzufügen";
+        public string KeineEinheit { get; set; } = "Noch keine Speichereinheit angelegt.";
+        public string EinheitAktionen { get; set; } = "Aktionen für diese Speichereinheit";
+        public string Kopieren { get; set; } = "Kopieren";
+        public string Entfernen { get; set; } = "Entfernen";
+        public string KopierenAria { get; set; } = "{0} kopieren";
+        public string EntfernenAria { get; set; } = "{0} entfernen";
+        public string Technik { get; set; } = "Technik und Zustand";
+        public string Name { get; set; } = "Bezeichnung:";
+        public string Kapazitaet { get; set; } = "Nennkapazität:";
+        public string Ladeleistung { get; set; } = "Maximale Ladeleistung:";
+        public string Entladeleistung { get; set; } = "Maximale Entladeleistung:";
+        public string Ladewirkungsgrad { get; set; } = "Ladewirkungsgrad:";
+        public string Entladewirkungsgrad { get; set; } = "Entladewirkungsgrad:";
+        public string SocMin { get; set; } = "SoC-Untergrenze:";
+        public string SocMax { get; set; } = "SoC-Obergrenze:";
+        public string SocStart { get; set; } = "SoC zu Beginn:";
+        public string PeakReserve { get; set; } = "Peak-Reserve:";
+        public string Hilfsverbrauch { get; set; } = "AC-Hilfsverbrauch:";
+        public string AlterungUndGrenzkosten { get; set; } = "Alterung und Grenzkosten";
+        public string Grenzverschleiss { get; set; } = "Marginale Verschleißkosten der Entladung:";
+        public string RainflowHinweis { get; set; } = "Optional: belegte Herstellerkennlinie aus Entladetiefe und Zyklen bis Lebensdauerende. Ohne Punkte bleibt der Rainflow-Schaden unbekannt.";
+        public string KeineRainflowKennlinie { get; set; } = "Keine Rainflow-Kennlinie hinterlegt.";
+        public string Entladetiefe { get; set; } = "Entladetiefe Punkt {0}:";
+        public string ZyklenBisEol { get; set; } = "Zyklen bis EOL Punkt {0}:";
+        public string PunktHinzufuegen { get; set; } = "+ Kennlinienpunkt";
+        public string PunktEntfernen { get; set; } = "Punkt entfernen";
+        public string RainflowPunktEntfernenAria { get; set; } = "Rainflow-Kennlinienpunkt {0} entfernen";
+        public string Auslegungsbereich { get; set; } = "Größenbereich dieser Einheit";
+        public string InAuslegungVariieren { get; set; } = "In der Auslegung variieren";
+        public string Auslegungsmodus { get; set; } = "Größenkopplung:";
+        public string AnzahlKategorie { get; set; } = "Anzahl";
+        public string KapazitaetKategorie { get; set; } = "Kapazität [kWh]";
+        public string LeistungKategorie { get; set; } = "Leistung [kW]";
+        public string CRateKategorie { get; set; } = "C-Rate [1/h]";
+        public string Von { get; set; } = "Von:";
+        public string Bis { get; set; } = "Bis:";
+        public string Schritt { get; set; } = "Schritt:";
+        public string AnzahlVon { get; set; } = "Anzahl von:";
+        public string AnzahlBis { get; set; } = "Anzahl bis:";
+        public string KapazitaetVon { get; set; } = "Kapazität von:";
+        public string KapazitaetBis { get; set; } = "Kapazität bis:";
+        public string KapazitaetSchritt { get; set; } = "Kapazität Schritt:";
+        public string LeistungVon { get; set; } = "Leistung von:";
+        public string LeistungBis { get; set; } = "Leistung bis:";
+        public string LeistungSchritt { get; set; } = "Leistung Schritt:";
+        public string CRateVon { get; set; } = "C-Rate von:";
+        public string CRateBis { get; set; } = "C-Rate bis:";
+        public string CRateSchritt { get; set; } = "C-Rate Schritt:";
+        public string ErsatzUndRestwert { get; set; } = "Ersatz und Restwert";
+        public string EigeneKosten { get; set; } = "Eigene Kosten für diese Einheit verwenden";
+        public string InvestitionFix { get; set; } = "Feste Investition:";
+        public string InvestitionKapazitaet { get; set; } = "Investition Kapazität:";
+        public string InvestitionLeistung { get; set; } = "Investition Leistung:";
+        public string OpexFix { get; set; } = "Feste Betriebskosten:";
+        public string OpexKapazitaet { get; set; } = "Betriebskosten Kapazität:";
+        public string OpexLeistung { get; set; } = "Betriebskosten Leistung:";
+        public string Durchsatzkosten { get; set; } = "Kosten je Entladung:";
+        public string Ersatzkosten { get; set; } = "Ersatzkosten:";
+        public string Ersatzintervall { get; set; } = "Ersatzintervall:";
+        public string RestwertEinheit { get; set; } = "Restwert der Einheit:";
+        public string NetzUndPlanung { get; set; } = "Netzgrenzen und Fahrplanung";
+        public string NetzbezugGrenze { get; set; } = "Harte Bezugsgrenze:";
+        public string NetzeinspeisungGrenze { get; set; } = "Harte Einspeisegrenze:";
+        public string WirtschaftlichesPeakZiel { get; set; } = "Wirtschaftlicher Peak-Zielwert:";
+        public string Netzladung { get; set; } = "Laden aus dem Netz erlauben";
+        public string Batterieexport { get; set; } = "Batterieexport ins Netz erlauben";
+        public string Prognoseplanung { get; set; } = "Prognose und rollierender Horizont";
+        public string Informationsstand { get; set; } = "Informationsstand:";
+        public string Planungshorizont { get; set; } = "Planungshorizont:";
+        public string Neuplanung { get; set; } = "Neu planen alle:";
+        public string Endbedingung { get; set; } = "Horizont-Endbedingung:";
+        public string EndenergieZiele { get; set; } = "Endenergie-Ziele je Speicher";
+        public string EndenergieZiel { get; set; } = "Endenergie {0}:";
+        public string Fallback { get; set; } = "Protokollierten reaktiven Rückfall erlauben";
+        public string OracleHinweis { get; set; } = "Perfekte Information ist ein Vergleichslauf und muss im Ergebnis als Oracle gekennzeichnet bleiben.";
+        public string Jahresprojektion { get; set; } = "Wirtschaftliche Jahresprojektion";
+        public string EnergieausgleichHinweis { get; set; } = "Der Energie-Ausgleichswert bewertet die Differenz zwischen Start- und Endenergie. Der editierbare Wert ist ein Vorschlag aus dem effektiven Strompreis und verhindert, dass entnommene Anfangsenergie als kostenloser Ertrag erscheint.";
+        public string JahresprojektionHinweis { get; set; } = "Ein bereitgestelltes Jahr kann einmal bewertet oder für die gewählte Laufzeit wiederholt werden. Die Wiederholung bildet ein konstantes Szenario; künftige Preisänderungen werden nicht automatisch prognostiziert. Für unterschiedliche Jahresverläufe Jahresdaten importieren.";
+        public string Kalkulationszins { get; set; } = "Kalkulationszins:";
+        public string Projektionsart { get; set; } = "Jahresprojektion:";
+        public string Projektjahre { get; set; } = "Projektlaufzeit:";
+        public string RestwertGesamt { get; set; } = "Zusätzlicher Restwert der Studie:";
+        public string MaximaleKandidaten { get; set; } = "Maximale Auslegungskandidaten:";
+        public string EinheitenAnzahl { get; set; } = "{0} Speicher";
+        public string StandardEinheit { get; set; } = "Speicher {0}";
+        public string Unbenannt { get; set; } = "Unbenannter Speicher";
+    }
+}

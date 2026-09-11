@@ -7,15 +7,15 @@ namespace SpeicherEngine
 {
     /// <summary>
     /// Auslegungsoptimierung (Fachkonzept 6.3): zweistufige Rastersuche ueber
-    /// Kapazitaet C und C-Rate r, mit dem Jahresueberschuss nach Kapitaldienst als
-    /// Zielfunktion.
+    /// einer waehlbaren Groessenachse (Kapazitaet C oder Leistung P) und C-Rate r,
+    /// mit dem Jahresueberschuss nach Kapitaldienst und Betriebskosten als Zielfunktion.
     /// </summary>
     /// <remarks>
     /// <para>
     /// <b>Zielfunktion - eindeutig festgelegt.</b>
     /// </para>
     /// <code>
-    /// max  dJ(C, P) = E_a,aeq(C, P) - [ c_cap*C + c_pow*P + I_fix ] * a(i_z, N)  [ - K_ver(C,P) ]
+    /// max dJ(C,P) = E_a,aeq - [c_cap*C + c_pow*P + I_fix]*a - K_betrieb [ - K_ver ]
     /// </code>
     /// <para>
     /// also der degradationsbereinigte Jahresueberschuss nach Kapitaldienst in EUR/a.
@@ -28,11 +28,9 @@ namespace SpeicherEngine
     /// </para>
     /// <para>
     /// <b>Zweistufig.</b> Erst das Grobraster ueber den vollen Suchraum, dann ein
-    /// Feinraster um das Grob-Optimum. Die Bereichslogik der zweiten Stufe ist
-    /// zeichengetreu aus <c>speicher_sim.py:optimiere_speicher</c> uebernommen
-    /// (plus/minus ein Groessenschritt, auf den Suchraum geklemmt, Mindestbreite
-    /// 1 kWh); verfeinert wird ausschliesslich die <b>Kapazitaets</b>achse, die
-    /// C-Raten-Achse bleibt in beiden Phasen dieselbe.
+    /// Feinraster um das Grob-Optimum. Verfeinert wird ausschliesslich die gewaehlte
+    /// Groessenachse; sie bleibt innerhalb ihrer Anwendergrenzen. Die C-Raten-Achse
+    /// ist in beiden Phasen identisch.
     /// </para>
     /// <para>
     /// <b>Nebenlaeufigkeit.</b> Die Rasterpunkte sind unabhaengig und laufen ueber
@@ -115,22 +113,27 @@ namespace SpeicherEngine
             Stopwatch uhr = Stopwatch.StartNew();
             ISpeicherStrategie strategie = BaueStrategie(opt, eingang);
             double[] cRaten = opt.CRaten();
+            double[] groessenwerte = opt.Groessenwerte();
 
             int erledigt = 0;
             int gesamt = opt.PunkteGesamt;
 
             OptimiererRaster grob = RechnePhase(
-                false, opt.CMinKwh, opt.CMaxKwh, cRaten,
+                false, groessenwerte, cRaten,
                 eingang, basis, opt, strategie, fortschritt, ref erledigt, gesamt, abbruch);
 
             OptimiererRaster? fein = null;
             if (opt.Feinraster)
             {
-                double untenKwh, obenKwh;
-                FeinrasterBereich(opt, grob.BestPunkt.CNomKwh, out untenKwh, out obenKwh);
+                double bestGroesse = opt.Groessenachse == OptimiererGroessenachse.LeistungKw
+                    ? grob.BestPunkt.PKw
+                    : grob.BestPunkt.CNomKwh;
+                double unten, oben;
+                GroessenFeinrasterBereich(opt, bestGroesse, out unten, out oben);
+                double[] feinwerte = GleichmaessigeWerte(unten, oben, groessenwerte.Length);
 
                 fein = RechnePhase(
-                    true, untenKwh, obenKwh, cRaten,
+                    true, feinwerte, cRaten,
                     eingang, basis, opt, strategie, fortschritt, ref erledigt, gesamt, abbruch);
             }
 
@@ -145,9 +148,11 @@ namespace SpeicherEngine
 
             return new OptimiererErgebnis(
                 grob, fein, best,
-                Rasterpunkt(basis, best.CNomKwh, best.CRate),
+                opt.Groessenachse == OptimiererGroessenachse.LeistungKw
+                    ? RasterpunktNachLeistung(basis, best.PKw, best.CRate)
+                    : Rasterpunkt(basis, best.CNomKwh, best.CRate),
                 Randlage(best, opt, cRaten),
-                basis.CPowEurProKw == 0.0,
+                basis.CPowEurProKw == 0.0 && opt.BetriebEurProKwJahr == 0.0,
                 opt, erledigt, uhr.Elapsed);
         }
 
@@ -185,6 +190,45 @@ namespace SpeicherEngine
 
             if (obenKwh - untenKwh < FeinrasterMindestbreiteKwh)
                 obenKwh = untenKwh + FeinrasterMindestbreiteKwh;
+        }
+
+        /// <summary>Begrenzter Feinrasterbereich auf der gewaehlten Groessenachse.</summary>
+        public static void GroessenFeinrasterBereich(OptimiererOptionen optionen, double bestGroesse,
+                                                     out double unten, out double oben)
+        {
+            if (optionen == null) throw new ArgumentNullException(nameof(optionen));
+
+            double min = optionen.Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? optionen.PMinKw
+                : optionen.CMinKwh;
+            double max = optionen.Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? optionen.PMaxKw
+                : optionen.CMaxKwh;
+            double? vorgabe = optionen.Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? optionen.PSchrittKw
+                : optionen.CSchrittKwh;
+
+            if (min == max)
+            {
+                unten = min;
+                oben = max;
+                return;
+            }
+
+            double schritt = vorgabe ?? (max - min) / (optionen.Stuetzstellen - 1);
+            unten = Math.Max(min, bestGroesse - schritt);
+            oben = Math.Min(max, bestGroesse + schritt);
+        }
+
+        private static double[] GleichmaessigeWerte(double min, double max, int anzahl)
+        {
+            if (anzahl <= 1 || min == max) return new[] { min };
+
+            double[] werte = new double[anzahl];
+            for (int i = 0; i < anzahl; i++)
+                werte[i] = min + (max - min) * i / (anzahl - 1);
+            werte[werte.Length - 1] = max;
+            return werte;
         }
 
         /// <summary>
@@ -234,6 +278,28 @@ namespace SpeicherEngine
             };
         }
 
+        /// <summary>
+        /// Parametersatz eines Punkts der Leistungsachse: P bleibt exakt der
+        /// Achsenwert, die Kapazitaet folgt aus C = P / r.
+        /// </summary>
+        public static SpeicherParameter RasterpunktNachLeistung(
+            SpeicherParameter basis, double pKw, double cRate)
+        {
+            if (!double.IsFinite(pKw) || !(pKw > 0.0))
+                throw new ArgumentOutOfRangeException(nameof(pKw), pKw,
+                    "Die Leistung muss endlich und groesser 0 sein.");
+            if (!double.IsFinite(cRate) || !(cRate > 0.0))
+                throw new ArgumentOutOfRangeException(nameof(cRate), cRate,
+                    "Die C-Rate muss endlich und groesser 0 sein.");
+
+            double cNomKwh = pKw / cRate;
+            if (!double.IsFinite(cNomKwh))
+                throw new ArgumentOutOfRangeException(nameof(cRate), cRate,
+                    "Die abgeleitete Kapazitaet muss endlich sein.");
+
+            return Rasterpunkt(basis, cNomKwh, cRate) with { PKw = pKw };
+        }
+
         // ==================================================================
         // Rasterlauf
         // ==================================================================
@@ -243,17 +309,13 @@ namespace SpeicherEngine
         /// <c>Parallel.For</c>.
         /// </summary>
         private static OptimiererRaster RechnePhase(
-            bool istFeinraster, double cUntenKwh, double cObenKwh, double[] cRaten,
+            bool istFeinraster, double[] groessenwerte, double[] cRaten,
             SpeicherEingang eingang, SpeicherParameter basis, OptimiererOptionen opt,
             ISpeicherStrategie strategie, IProgress<OptimiererFortschritt>? fortschritt,
             ref int erledigt, int gesamt, CancellationToken abbruch)
         {
-            int zeilen = opt.Stuetzstellen;
+            int zeilen = groessenwerte.Length;
             int spalten = cRaten.Length;
-
-            double[] kapazitaeten = new double[zeilen];
-            for (int i = 0; i < zeilen; i++)
-                kapazitaeten[i] = cUntenKwh + (cObenKwh - cUntenKwh) * i / (zeilen - 1);
 
             OptimiererPunkt[][] punkte = new OptimiererPunkt[zeilen][];
             for (int i = 0; i < zeilen; i++) punkte[i] = new OptimiererPunkt[spalten];
@@ -275,7 +337,7 @@ namespace SpeicherEngine
                 int iCRate = index - iKapazitaet * spalten;
 
                 punkte[iKapazitaet][iCRate] = RechnePunkt(
-                    eingang, basis, opt, strategie, kapazitaeten[iKapazitaet], cRaten[iCRate]);
+                    eingang, basis, opt, strategie, groessenwerte[iKapazitaet], cRaten[iCRate]);
 
                 if (fortschritt != null)
                 {
@@ -294,7 +356,8 @@ namespace SpeicherEngine
             });
 
             erledigt = zaehler;
-            return new OptimiererRaster(istFeinraster, cUntenKwh, cObenKwh, kapazitaeten, cRaten, punkte);
+            return new OptimiererRaster(istFeinraster, opt.Groessenachse,
+                groessenwerte[0], groessenwerte[groessenwerte.Length - 1], groessenwerte, cRaten, punkte);
         }
 
         /// <summary>
@@ -303,9 +366,12 @@ namespace SpeicherEngine
         /// </summary>
         private static OptimiererPunkt RechnePunkt(
             SpeicherEingang eingang, SpeicherParameter basis, OptimiererOptionen opt,
-            ISpeicherStrategie strategie, double cNomKwh, double cRate)
+            ISpeicherStrategie strategie, double groesse, double cRate)
         {
-            SpeicherParameter p = Rasterpunkt(basis, cNomKwh, cRate);
+            SpeicherParameter p = opt.Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? RasterpunktNachLeistung(basis, groesse, cRate)
+                : Rasterpunkt(basis, groesse, cRate);
+            double cNomKwh = p.CNomKwh;
 
             // Die Lastspitzenkappung braucht ihr VOLLES Ergebnis: Spitze, Kappung und
             // Leistungspreisersparnis stehen nur dort, und sie sind die
@@ -320,9 +386,18 @@ namespace SpeicherEngine
             SpeicherKennzahlen k = erg.Kennzahlen;
 
             double kVer = k.VerschleisskostenEurProA;
+            double betriebLeistung = p.PKw * opt.BetriebEurProKwJahr;
+            double betriebKapazitaet = p.CNomKwh * opt.BetriebEurProKwhJahr;
+            double betriebEntladung = erg.EntladeenergieKwh * opt.BetriebEurProKwhEntladen;
+            double betrieb = betriebLeistung + betriebKapazitaet + betriebEntladung;
+            double jahresueberschuss = w.JahresueberschussEur - betrieb;
             double ziel = opt.KVerInZielfunktion
-                ? w.JahresueberschussEur - kVer
-                : w.JahresueberschussEur;
+                ? jahresueberschuss - kVer
+                : jahresueberschuss;
+
+            double ertragNachBetrieb = w.ErtragAequivalentEur - betrieb;
+            double kapitalwertNachBetrieb = w.KapitalwertEur
+                - betrieb * Wirtschaftlichkeit.Rentenbarwertfaktor(p.Kapitalzins, p.NutzungsdauerA);
 
             double zyklenNutzungsdauer = k.AequivalenteVollzyklen * p.NutzungsdauerA;
 
@@ -333,15 +408,23 @@ namespace SpeicherEngine
                 PKw = p.PKw,
 
                 ZielfunktionEur = ziel,
-                JahresueberschussEur = w.JahresueberschussEur,
+                JahresueberschussEur = jahresueberschuss,
+                JahresueberschussVorBetriebskostenEur = w.JahresueberschussEur,
+                BetriebskostenLeistungEurProA = betriebLeistung,
+                BetriebskostenKapazitaetEurProA = betriebKapazitaet,
+                BetriebskostenEntladungEurProA = betriebEntladung,
+                BetriebskostenEurProA = betrieb,
 
                 ErtragReferenzjahrEur = w.ErtragReferenzjahrEur,
                 ErtragAequivalentEur = w.ErtragAequivalentEur,
+                ErtragAequivalentNachBetriebskostenEur = ertragNachBetrieb,
                 InvestitionEur = w.InvestitionEur,
                 AnnuitaetEur = w.AnnuitaetEur,
-                KapitalwertEur = w.KapitalwertEur,
-                StatischeAmortisation = w.StatischeAmortisation,
-                DynamischeAmortisation = w.DynamischeAmortisation,
+                KapitalwertEur = kapitalwertNachBetrieb,
+                KapitalwertVorBetriebskostenEur = w.KapitalwertEur,
+                StatischeAmortisation = Wirtschaftlichkeit.StatischeAmortisation(ertragNachBetrieb, w.InvestitionEur),
+                DynamischeAmortisation = Wirtschaftlichkeit.DynamischeAmortisation(
+                    ertragNachBetrieb, w.InvestitionEur, p.Kapitalzins, p.NutzungsdauerA),
 
                 AequivalenteVollzyklen = k.AequivalenteVollzyklen,
                 ZyklenNutzungsdauer = zyklenNutzungsdauer,
@@ -404,7 +487,8 @@ namespace SpeicherEngine
                     return new PeakShaving(
                         PeakShavingParameter.Nachziehend(
                             opt.LeistungspreisEurProKwA, MittlererPreisCtKwh(eingang)),
-                        SpeicherModus.Energetisch);
+                        SpeicherModus.Energetisch,
+                        opt.NetzanschlussAuslegung);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(opt), opt.Strategie,
                         "Fuer die Rastersuche ist diese Strategie nicht vorgesehen.");
@@ -444,10 +528,13 @@ namespace SpeicherEngine
         /// </remarks>
         private static OptimiererRandlage Randlage(OptimiererPunkt best, OptimiererOptionen opt, double[] cRaten)
         {
+            double groesse = opt.Groessenachse == OptimiererGroessenachse.LeistungKw ? best.PKw : best.CNomKwh;
+            double min = opt.Groessenachse == OptimiererGroessenachse.LeistungKw ? opt.PMinKw : opt.CMinKwh;
+            double max = opt.Groessenachse == OptimiererGroessenachse.LeistungKw ? opt.PMaxKw : opt.CMaxKwh;
             return new OptimiererRandlage
             {
-                KapazitaetUnten = FastGleich(best.CNomKwh, opt.CMinKwh),
-                KapazitaetOben = FastGleich(best.CNomKwh, opt.CMaxKwh),
+                GroesseUnten = FastGleich(groesse, min),
+                GroesseOben = FastGleich(groesse, max),
                 CRateUnten = FastGleich(best.CRate, cRaten[0]),
                 CRateOben = FastGleich(best.CRate, cRaten[cRaten.Length - 1])
             };

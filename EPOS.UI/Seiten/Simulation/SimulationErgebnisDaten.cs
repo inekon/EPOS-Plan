@@ -125,8 +125,8 @@ public sealed class SpeicherParameterDaten
 /// „Preisreihe" mit den Reihen aus <c>Tab_Preisreihe</c>, aus „Profil" wird
 /// „Kostenprofil" mit denen aus <c>Tab_Kostenprofil</c>, und beim Fixpreis ist die
 /// Liste leer und gesperrt. Bis W11b‑B‑28 kam diese Umstellung nur mit dem nächsten
-/// vollständigen Lesen der Seite — im gepufferten Block, der erst auf Knopfdruck
-/// schreibt, gäbe es das Lesen gar nicht.</para>
+/// vollständigen Lesen der Seite — der Block bleibt beim Wechsel der Quelle aber
+/// stehen, und eine falsch beschriftete Liste wäre schlimmer als eine unveränderte.</para>
 /// </summary>
 public sealed class SpeicherPreisreihenDaten
 {
@@ -322,6 +322,11 @@ public sealed class StromgangDaten
 /// </summary>
 public sealed class SpeicherErgebnisDaten
 {
+    /// <summary>Übernommene Projektflotte und tatsächlicher letzter Flottenlauf.</summary>
+    public bool FlotteImProjektAktiv;
+    public SpeicherEngine.FlottenStudieKonfiguration? AktiveFlotte;
+    public bool FlottenAenderungOhneNeuenLauf;
+    public SpeicherFlottenErgebnis? Flottenergebnis;
     /// <summary>Gab es ueberhaupt einen Speicherlauf?</summary>
     public bool LaufVorhanden;
 
@@ -538,7 +543,7 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Rendert EIN Bild — erst beim Betreten des Reiters, dann zwischengespeichert.</summary>
     public Func<Bildauftrag, byte[]?>? Bild;
 
-    // ---- Die Parameterseite schreibt SOFORT, feldweise (wie der Vorlaeufer) ----
+    // ---- Die Parameter schreiben SOFORT, feldweise (wie der Vorlaeufer) ----
 
     /// <summary>Netzverluste und ihre Einheit.</summary>
     public Action<double, string>? NetzverlusteSchreiben;
@@ -556,41 +561,26 @@ public sealed class SimulationErgebnisDienste
     public Action<double>? BereitschaftSchreiben;
 
     /// <summary>
-    /// Ein Feld der Speichervariante — der Schluessel benennt das Feld
-    /// (<see cref="SpeicherFeld"/>), der Wert steht als Zeichenkette darin.
+    /// Ein Feld der Speichervariante bzw. der Speicheranlage — der Schluessel benennt
+    /// das Feld (<see cref="SpeicherFeld"/>), der Wert steht als Zeichenkette darin
+    /// (Zahlen invariant, Schalter "1"/"0"). Die Rueckmeldung traegt den Grund einer
+    /// Abweisung (Pruefung) oder eines Fehlschlags — sonst die Bestaetigung.
     /// </summary>
     /// <remarks>
-    /// <b>Der Einzelweg bleibt</b> (W11b‑B‑28): Die Auslegungsoptimierung schreibt
-    /// ihren Leistungspreis L_P weiterhin SOFORT ueber diesen Weg
-    /// (<c>OptimierungLeistungspreis</c>, W11b‑E‑3) — dort ist es EIN Feld, das der
-    /// Dialog gerade gerechnet hat, und kein Formular. Der Parameterblock des
-    /// Ergebnisreiters puffert dagegen und schreibt ueber
-    /// <see cref="SpeicherparameterSchreiben"/>.
+    /// <b>Der EINZIGE Schreibweg der Speicherparameter</b> (W11b‑B‑29,
+    /// Anwenderentscheid 1 vom 10.09.2026: "Sofort schreiben, wie ueberall sonst im
+    /// Programm."). Ihn nehmen der Parameterblock des Ergebnisreiters
+    /// (<c>SpeicherParameterBlock</c>, jedes Feld einzeln und sofort) UND die
+    /// Auslegungsoptimierung fuer ihren Leistungspreis L_P
+    /// (<c>OptimierungLeistungspreis</c>, W11b‑E‑3). Der gepufferte Satzweg aus
+    /// W11b‑B‑28 ist ersatzlos entfallen: Sein Puffer starb beim Reiterwechsel, und
+    /// der Anwender fand den Knopf am Blockende nicht.
+    /// <para><b>Geprueft wird VOR dem Schreiben</b>, je Feld die Regel, die zu ihm
+    /// gehoert (<c>SpeicherParameterPruefung</c> im Kern). Ein Verstoss weist ab, und
+    /// es geht nichts in die Datenbank; der Wert bleibt im Feld stehen, damit der
+    /// Anwender zu Ende tippen kann.</para>
     /// </remarks>
-    public Action<string, string>? SpeicherfeldSchreiben;
-
-    // ---- Der gepufferte Speicherparameterblock (W11b-B-28) ----
-    //
-    // ANWENDERWUNSCH 10.09.2026: "bringe den Tab Parameter -> Stromspeicher aus
-    // Dialog 'Detaillierte Simulation' in den Tab 'Stromspeicher'. Die Felder mit
-    // Parametern sollen aenderbar sein (und die Moeglichkeit die geaenderten
-    // Parameter zu Speichern)." Damit ist der Speicherblock die BENANNTE AUSNAHME
-    // von der Hausregel "jedes Feld schreibt sofort": Er sammelt in einer
-    // Arbeitskopie und schreibt auf Knopfdruck.
-
-    /// <summary>
-    /// Schreibt den GANZEN Satz Speicherparameter in EINEM Zug. Die Rueckmeldung
-    /// traegt den Grund einer Abweisung (Pruefung) oder die Bestaetigung.
-    /// OHNE Delegat gibt es keinen Speichern-Knopf.
-    /// </summary>
-    public Func<SpeicherParameterDaten, Rueckmeldung>? SpeicherparameterSchreiben;
-
-    /// <summary>
-    /// Liest die Speicherparameter frisch aus der Datenbank — fuer „Aenderungen
-    /// verwerfen" und fuer den Stand nach dem Speichern. Ohne Delegat faellt der
-    /// Block auf den zuletzt uebergebenen Stand zurueck.
-    /// </summary>
-    public Func<SpeicherParameterDaten>? SpeicherparameterLesen;
+    public Func<string, string, Rueckmeldung>? SpeicherfeldSchreiben;
 
     /// <summary>
     /// Die Reihenauswahl zu einer Preisquelle — sie LIEST nur (kein Schreibweg).
@@ -637,6 +627,11 @@ public sealed class SimulationErgebnisDienste
     /// Fachkonzepts da.
     /// </summary>
     public Func<SpeicherOptimierungVorgaben>? OptimierungVorgaben;
+    public Func<bool>? FlottenProjektAktiv;
+    public Func<SpeicherFlottenErgebnis, Task<string>>? FlottenProjektUebernehmen;
+    public Func<Task<string>>? FlottenProjektDeaktivieren;
+    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
+                Task<SpeicherFlottenErgebnis>>? OptimierungFlottenRechnen;
 
     /// <summary>
     /// Rechnet die Rastersuche im Hintergrund; <paramref name="melder"/> bekommt
@@ -657,6 +652,16 @@ public sealed class SimulationErgebnisDienste
 
     /// <summary>Schreibt den uebergebenen CSV-Text in eine Datei; ohne Delegat kein Knopf.</summary>
     public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
+
+    /// <summary>Speichert den aktuellen Auslegungsauftrag unter dem reservierten Standnamen.</summary>
+    public Func<SpeicherOptimierungEingaben, Task<string>>? OptimierungEinstellungenSpeichern;
+
+    /// <summary>Speichert ein benanntes Auslegungsprofil und liefert die frisch gelesenen Vorgaben.</summary>
+    public Func<SpeicherOptimierungEingaben, string,
+                Task<SpeicherOptimierungVorgaben>>? OptimierungProfilSpeichern;
+
+    /// <summary>Waehlt und liest eine CSV-Datei in der Plattformhuelle.</summary>
+    public Func<Task<SpeicherImportDatei>>? OptimierungDateiWaehlen;
 
     /// <summary>
     /// Zeichnet das Bild „Lastgang und Speicherbetrieb" des Bestpunkts NEU
@@ -703,15 +708,31 @@ public sealed class SimulationErgebnisDienste
 }
 
 /// <summary>
-/// Die Feldschluessel der Speichervariante — sprachneutral und ASCII
+/// Die Feldschluessel der Speicherparameter — sprachneutral und ASCII
 /// (Drei-Schichten-Regel). Sie benennen das Feld, das
 /// <see cref="SimulationErgebnisDienste.SpeicherfeldSchreiben"/> setzt.
+///
+/// <para><b>Zwei Ziele.</b> Die meisten Schluessel benennen ein Feld der aktiven
+/// VARIANTE (<c>Tab_StromspeicherVariante</c>); <see cref="Kapazitaet"/> und
+/// <see cref="Leistung"/> dagegen die Groesse der ANLAGE
+/// (<c>Tab_Stromspeicher</c>, W11b‑B‑29). Der Unterschied ist keine Feinheit: Die
+/// Geraetegroesse gehoert allen Varianten desselben Speichers gemeinsam, und die
+/// Huelle schreibt sie deshalb ueber denselben Weg wie die Auslegungsoptimierung
+/// (<c>StromspeicherSimCtrl.UebernehmeAuslegung</c>) samt seiner Wache "genau eine
+/// SP-Anlage im Projekt".</para>
 /// </summary>
 public static class SpeicherFeld
 {
     public const string SoCMin = "SOC_MIN";
     public const string SoCMax = "SOC_MAX";
     public const string Ladeschwelle = "LADESCHWELLE";
+
+    /// <summary>Nennkapazitaet [kWh] — Geraetedatum der ANLAGE, nicht der Variante.</summary>
+    public const string Kapazitaet = "KAPAZITAET";
+
+    /// <summary>Lade-/Entladeleistung [kW] — Geraetedatum der ANLAGE, nicht der Variante.</summary>
+    public const string Leistung = "LEISTUNG";
+
     public const string Betriebsart = "BETRIEBSART";
     public const string Berechnungsart = "BERECHNUNGSART";
     public const string Kompatibilitaet = "KOMPATIBILITAET";

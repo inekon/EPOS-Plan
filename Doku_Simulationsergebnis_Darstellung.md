@@ -1,6 +1,6 @@
 ﻿# Darstellung der Reiter „Detaillierte Simulation"
 
-Stand 10.09.2026 (W11b‑B‑28). Dieses Blatt ist das **Muster**, dem jeder Reiter von
+Stand 10.09.2026 (W11b‑B‑29). Dieses Blatt ist das **Muster**, dem jeder Reiter von
 `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite.razor` folgt — und dem ein neuer Reiter
 folgen muß. Es beschreibt nur die **Darstellung**; welche Zahl woher kommt, sagt das
 Fachkonzept, und die Begründungen der einzelnen Schritte stehen in
@@ -20,25 +20,35 @@ Von oben nach unten, immer:
 5. **Diagramme**, jedes mit derselben Steuerzeile darüber (Abschnitt 5).
 6. **Export- und Sprungknöpfe** am Blockende: `<button class="epos-simerg-knopf">`.
 
-### 1.1 Parameter auf einem Ergebnisreiter (W11b‑B‑28)
+### 1.1 Parameter auf einem Ergebnisreiter (W11b‑B‑28, W11b‑B‑29)
 
 **Wortlaut des Anwenders (10.09.2026):** „bringe den Tab Parameter → Stromspeicher aus
 Dialog ‚Detaillierte Simulation‘ in den Tab ‚Stromspeicher‘. Die Felder mit Parametern
 sollen änderbar sein (und die Möglichkeit die geänderten Parameter zu Speichern)."
+
+**Und sein Entscheid dazu (10.09.2026, nach der ersten Fassung):** „Sofort schreiben, wie
+überall sonst im Programm."
 
 * Der Block steht **unter der Kopfzeile und über den Kacheln**, und zwar **auch ohne
   Lauf**: Gerade vor dem ersten Lauf will der Anwender die Betriebsführung einstellen.
 * Er nimmt dieselben Bausteine wie ein Parameterblatt: `epos-simerg-felder` mit
   `<Formularraster Einspaltig="true">`, `<Gruppenkopf>` je Abschnitt, Hinweisabsätze
   darunter.
-* **Er PUFFERT** — und ist damit die **benannte Ausnahme** von der Regel „jedes Feld
-  schreibt sofort" (§ 7). Die Regel gilt für den Reiter „Parameter" unverändert weiter.
-* Abschluss: eine `<div class="epos-simerg-knopfzeile">` mit **„Parameter speichern"**
-  (nur aktiv bei Änderung), **„Änderungen verwerfen"** (nur bei Änderung) und den
-  Sprungknöpfen, die zu den Parametern gehören („Nach Auslegung optimieren").
-* Darunter die Statuszeilen (§ 6): erst der Zustand („Aktive Variante: …"), dann — solange
-  etwas offen ist — `SP_PARAM_STATUS_UNGESPEICHERT` in Warnfarbe, dann die Rückmeldung des
-  Speicherns (Warnfarbe nur bei Fehlschlag).
+* **Jedes Feld schreibt sofort** — wie überall sonst (§ 7). Die in W11b‑B‑28 benannte
+  Ausnahme („er puffert und schreibt auf Knopfdruck") ist **zurückgenommen**: Der Puffer
+  starb beim Reiterwechsel (`Reiterblatt` zeichnet nur das aktive Blatt), ein
+  fehlgeschlagenes Schreiben meldete sich als Erfolg, und den Knopf am Blockende fand der
+  Anwender nicht.
+* **Am KOPF des Blocks**, vor den Feldern und in dieser Reihenfolge: der Zustand
+  („Aktive Variante: …", Warnfarbe ohne Variante), die **Rückmeldung des letzten
+  Schreibvorgangs** (Warnfarbe nur bei Fehlschlag), dann eine
+  `<div class="epos-simerg-knopfzeile">` mit den Sprungknöpfen, die zu den Parametern
+  gehören („Nach Auslegung optimieren"). Speichern- und Verwerfen-Knöpfe gibt es nicht.
+* **Geprüft wird vor dem Schreiben**, je Feld die Regel, die zu ihm gehört. Ein Verstoß
+  weist ab, und der Wert bleibt im Feld stehen: Das Zahlenfeld meldet jede Taste, und ein
+  Zwischenzustand ist keine Fehleingabe.
+* **Ohne Schreibdienst sind die Felder gesperrt.** Ein Eingabefeld, das nirgendwo ankommt,
+  ist eine Attrappe.
 * Ein **Gerätedatum** ist nur dann ein Eingabefeld, wenn es **eindeutig einem Gerät
   gehört**; sonst bleibt es gesperrt und trägt den Hinweis, woher es kommt.
 
@@ -219,13 +229,13 @@ Grafik daneben und nicht mehr zweimal auf demselben Reiter.
 ## 7. Was ausdrücklich NICHT vereinheitlicht ist
 
 * **Jedes Feld schreibt sofort** — auf dem Reiter „Parameter" (wörtlich wie der
-  Vorläufer: `SpeichereKonfigurationsAenderung`, `SpeichereVariantenAenderung`; dort steht
-  ein Feld je Erzeuger, und es gab dort nie einen Speichernknopf). **Die eine Ausnahme**
-  ist der Speicherparameterblock im Ergebnisreiter (§ 1.1): Der Anwender hat den
-  Speichernknopf ausdrücklich verlangt, es sind achtzehn Felder mit Abhängigkeiten
-  untereinander, und der Satz wird als Ganzes geprüft, bevor eine Zeile geschrieben wird.
-  Wer einen weiteren Puffer bauen will, braucht denselben Grund — und nennt ihn im
-  Dateikopf.
+  Vorläufer: `SpeichereKonfigurationsAenderung`, `SpeichereVariantenAenderung`) UND im
+  Speicherparameterblock des Ergebnisreiters (§ 1.1). Das ist seit W11b‑B‑29 **keine
+  Regel mit Ausnahme mehr**, sondern schlicht die Regel: W11b‑B‑28 hatte den Block
+  gepuffert, weil der Anwender „die Möglichkeit … zu Speichern" verlangt hatte — und
+  bekam dafür Eingaben, die beim Reiterwechsel verschwanden. **Wer einen Puffer bauen
+  will, hat es hier schon einmal schiefgehen sehen** und braucht einen Grund, der den
+  Reiterwechsel und das Schließen der Seite übersteht.
 * **Datenzoom** („Bereich"): an **jedem** Bild mit Zeitachse, aber an keinem ohne — die
   Streuwolke, die Monatssäulen, Kuchen und Ringe bleiben beim Bildzoom (§ 5.1). Die
   Zoomleiste selbst hat jedes Bild.
@@ -234,3 +244,9 @@ Grafik daneben und nicht mehr zweimal auf demselben Reiter.
   Schreibweisen.
 * **Gruppenbalken über Tabellen**: nur die Kesseltabelle trägt einen; die übrigen
   Modultabellen nennen sich in ihrer ersten Spaltenüberschrift.
+
+## Speicherauslegung mit Kosten und Zeitreihen – 11.09.2026
+
+Die Auslegungsoptimierung der aktiven Speicheranlage bietet jetzt kWh- oder kW-Suchbereiche, feste oder variable C-Raten, unabhängige Investitions- und Betriebskostenquellen sowie Last, PV und effektive Bezugspreise aus EPOS oder getrennten CSV-Dateien. Gespeicherte Profile enthalten auch die importierten Zeitreihen. Änderungen kennzeichnen alte Ergebnisse; die Übernahme eines veralteten Bestpunkts bleibt gesperrt.
+
+Bedienung, Einheiten und Grenzen: [Doku_Speicherauslegung_Kosten_Zeitreihen.md](Doku_Speicherauslegung_Kosten_Zeitreihen.md). Nachweis: [Doku_Speicherauslegung_Pruefnachweis.md](Doku_Speicherauslegung_Pruefnachweis.md).

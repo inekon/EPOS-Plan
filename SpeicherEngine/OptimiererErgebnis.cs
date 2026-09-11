@@ -39,7 +39,7 @@ namespace SpeicherEngine
 
         /// <summary>
         /// Jahresueberschuss nach Kapitaldienst dJ = E_a,aeq - A [EUR/a] <b>ohne</b>
-        /// Verschleissterm - der Wert des Wirtschaftlichkeitsblocks.
+        /// Verschleissterm, nach Abzug der laufenden Betriebskosten.
         /// </summary>
         /// <remarks>
         /// Identisch mit <see cref="ZielfunktionEur"/>, solange die Option
@@ -49,6 +49,21 @@ namespace SpeicherEngine
         /// </remarks>
         public double JahresueberschussEur { get; init; }
 
+        /// <summary>Jahresueberschuss des Wirtschaftlichkeitsblocks vor laufenden Betriebskosten [EUR/a].</summary>
+        public double JahresueberschussVorBetriebskostenEur { get; init; }
+
+        /// <summary>Jaehrliche Betriebskosten aus installierter AC-Nennleistung [EUR/a].</summary>
+        public double BetriebskostenLeistungEurProA { get; init; }
+
+        /// <summary>Jaehrliche Betriebskosten aus installierter Nennkapazitaet [EUR/a].</summary>
+        public double BetriebskostenKapazitaetEurProA { get; init; }
+
+        /// <summary>Variable Betriebskosten der AC-seitig entladenen Energie [EUR/a].</summary>
+        public double BetriebskostenEntladungEurProA { get; init; }
+
+        /// <summary>Summe aller laufenden Betriebskosten [EUR/a].</summary>
+        public double BetriebskostenEurProA { get; init; }
+
         // ---------------------------------------------------------- Wirtschaftlichkeit
 
         /// <summary>Ertrag des Referenzjahres E_a,1 [EUR/a] (unskaliert).</summary>
@@ -56,6 +71,9 @@ namespace SpeicherEngine
 
         /// <summary>Degradationsaequivalenter Jahresertrag E_a,aeq [EUR/a].</summary>
         public double ErtragAequivalentEur { get; init; }
+
+        /// <summary>Degradationsaequivalenter Jahresertrag nach laufenden Betriebskosten [EUR/a].</summary>
+        public double ErtragAequivalentNachBetriebskostenEur { get; init; }
 
         /// <summary>Investition I = c_cap*C + c_pow*P + I_fix [EUR].</summary>
         public double InvestitionEur { get; init; }
@@ -65,6 +83,9 @@ namespace SpeicherEngine
 
         /// <summary>Kapitalwert NPV = E_a,1 * RBF_deg - I [EUR].</summary>
         public double KapitalwertEur { get; init; }
+
+        /// <summary>Kapitalwert vor laufenden Betriebskosten [EUR].</summary>
+        public double KapitalwertVorBetriebskostenEur { get; init; }
 
         /// <summary>Statische Amortisation [a] (Sekundaerkennzahl, nie Zielgroesse).</summary>
         public Amortisation StatischeAmortisation { get; init; }
@@ -149,14 +170,26 @@ namespace SpeicherEngine
     /// Ein vollstaendig gerechnetes Raster (eine Phase der zweistufigen Suche).
     /// </summary>
     /// <remarks>
-    /// Die Punkte liegen als <c>Punkte[iKapazitaet][iCRate]</c> - dieselbe
+    /// Die Punkte liegen als <c>Punkte[iGroesse][iCRate]</c> - dieselbe
     /// Indexordnung wie <c>heat[i_size][i_c]</c> der Vorlage <c>speicher_sim.py</c>.
-    /// Zeilen sind Kapazitaeten, Spalten C-Raten; genau so zeichnet die Heatmap.
+    /// Zeilen sind Kapazitaeten oder Leistungen, Spalten C-Raten.
     /// </remarks>
     public sealed class OptimiererRaster
     {
         /// <summary><c>true</c> fuer die zweite Stufe (Feinraster), <c>false</c> fuer das Grobraster.</summary>
         public bool IstFeinraster { get; }
+
+        /// <summary>Physikalische Groesse der Zeilenachse.</summary>
+        public OptimiererGroessenachse Groessenachse { get; }
+
+        /// <summary>Untere Grenze der Zeilenachse in deren Einheit.</summary>
+        public double GroessenMin { get; }
+
+        /// <summary>Obere Grenze der Zeilenachse in deren Einheit.</summary>
+        public double GroessenMax { get; }
+
+        /// <summary>Werte der Zeilenachse [kWh] oder [kW], abhaengig von <see cref="Groessenachse"/>.</summary>
+        public IReadOnlyList<double> Groessenwerte { get; }
 
         /// <summary>Untere Kapazitaetsgrenze dieses Rasters [kWh].</summary>
         public double CMinKwh { get; }
@@ -166,6 +199,11 @@ namespace SpeicherEngine
 
         /// <summary>Die Kapazitaetswerte der Achse [kWh], aufsteigend.</summary>
         public IReadOnlyList<double> KapazitaetenKwh { get; }
+
+        /// <summary>
+        /// Leistungswerte der Zeilenachse [kW]; leer bei einer Kapazitaetsachse.
+        /// </summary>
+        public IReadOnlyList<double> LeistungenKw { get; }
 
         /// <summary>Die C-Raten der Achse [1/h], aufsteigend.</summary>
         public IReadOnlyList<double> CRaten { get; }
@@ -185,23 +223,50 @@ namespace SpeicherEngine
         /// </remarks>
         public OptimiererPunkt BestPunkt { get; }
 
-        /// <summary>Zeilenzahl (Kapazitaetsstuetzstellen).</summary>
-        public int Zeilen => KapazitaetenKwh.Count;
+        /// <summary>Zeilenzahl (Stuetzstellen der gewaehlten Groessenachse).</summary>
+        public int Zeilen => Groessenwerte.Count;
 
         /// <summary>Spaltenzahl (C-Raten).</summary>
         public int Spalten => CRaten.Count;
 
         /// <summary>Erzeugt das Raster. Wird ausschliesslich vom <see cref="SpeicherOptimierer"/> aufgerufen.</summary>
-        public OptimiererRaster(bool istFeinraster, double cMinKwh, double cMaxKwh,
-                                double[] kapazitaetenKwh, double[] cRaten, OptimiererPunkt[][] punkte)
+        public OptimiererRaster(bool istFeinraster, OptimiererGroessenachse groessenachse,
+                                double groessenMin, double groessenMax,
+                                double[] groessenwerte, double[] cRaten, OptimiererPunkt[][] punkte)
         {
             IstFeinraster = istFeinraster;
-            CMinKwh = cMinKwh;
-            CMaxKwh = cMaxKwh;
-            KapazitaetenKwh = kapazitaetenKwh ?? throw new ArgumentNullException(nameof(kapazitaetenKwh));
+            Groessenachse = groessenachse;
+            GroessenMin = groessenMin;
+            GroessenMax = groessenMax;
+            Groessenwerte = groessenwerte ?? throw new ArgumentNullException(nameof(groessenwerte));
+            KapazitaetenKwh = groessenachse == OptimiererGroessenachse.KapazitaetKwh
+                ? groessenwerte
+                : Array.Empty<double>();
+            LeistungenKw = groessenachse == OptimiererGroessenachse.LeistungKw
+                ? groessenwerte
+                : Array.Empty<double>();
             CRaten = cRaten ?? throw new ArgumentNullException(nameof(cRaten));
             Punkte = punkte ?? throw new ArgumentNullException(nameof(punkte));
             BestPunkt = BestenSuchen(punkte);
+
+            double cMin = double.MaxValue;
+            double cMax = double.MinValue;
+            foreach (OptimiererPunkt[] zeile in punkte)
+                foreach (OptimiererPunkt punkt in zeile)
+                {
+                    if (punkt.CNomKwh < cMin) cMin = punkt.CNomKwh;
+                    if (punkt.CNomKwh > cMax) cMax = punkt.CNomKwh;
+                }
+            CMinKwh = cMin;
+            CMaxKwh = cMax;
+        }
+
+        /// <summary>Kompatibilitaetskonstruktor fuer ein Raster mit Kapazitaetsachse.</summary>
+        public OptimiererRaster(bool istFeinraster, double cMinKwh, double cMaxKwh,
+                                double[] kapazitaetenKwh, double[] cRaten, OptimiererPunkt[][] punkte)
+            : this(istFeinraster, OptimiererGroessenachse.KapazitaetKwh,
+                   cMinKwh, cMaxKwh, kapazitaetenKwh, cRaten, punkte)
+        {
         }
 
         /// <summary>
@@ -280,6 +345,20 @@ namespace SpeicherEngine
         /// <summary>Bestpunkt liegt auf C_max - groessere Speicher pruefen.</summary>
         public bool KapazitaetOben { get; init; }
 
+        /// <summary>Bestpunkt liegt auf der unteren Grenze der gewaehlten Groessenachse.</summary>
+        public bool GroesseUnten
+        {
+            get => KapazitaetUnten;
+            init => KapazitaetUnten = value;
+        }
+
+        /// <summary>Bestpunkt liegt auf der oberen Grenze der gewaehlten Groessenachse.</summary>
+        public bool GroesseOben
+        {
+            get => KapazitaetOben;
+            init => KapazitaetOben = value;
+        }
+
         /// <summary>Bestpunkt liegt auf r_min - kleinere C-Raten pruefen.</summary>
         public bool CRateUnten { get; init; }
 
@@ -287,7 +366,7 @@ namespace SpeicherEngine
         public bool CRateOben { get; init; }
 
         /// <summary><c>true</c>, wenn der Bestpunkt auf irgendeiner Kante liegt.</summary>
-        public bool Vorhanden => KapazitaetUnten || KapazitaetOben || CRateUnten || CRateOben;
+        public bool Vorhanden => GroesseUnten || GroesseOben || CRateUnten || CRateOben;
     }
 
     /// <summary>
@@ -320,9 +399,8 @@ namespace SpeicherEngine
         public OptimiererRandlage Randlage { get; }
 
         /// <summary>
-        /// <c>true</c>, wenn c_pow = 0 ist: Die Investition haengt dann nicht von der
-        /// Leistung ab, die C-Raten-Achse ist kostenneutral und das Optimum wandert
-        /// zwangslaeufig an die obere C-Raten-Grenze (Fachkonzept 6.3).
+        /// <c>true</c>, wenn weder Investition noch laufende Betriebskosten von der
+        /// installierten Leistung abhaengen.
         /// </summary>
         public bool CPowNeutral { get; }
 

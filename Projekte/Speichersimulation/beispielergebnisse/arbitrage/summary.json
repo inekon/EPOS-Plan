@@ -1,0 +1,31 @@
+{
+  "strategy": "arbitrage",
+  "hours": 72.0,
+  "billing_scope": "Dreitaegiger Funktionstest ohne Leistungspreis; fuer Jahresbewertung vollstaendiges Abrechnungsjahr und echten Tarif einsetzen",
+  "baseline": {
+    "energy_eur": 412.4157854325,
+    "demand_eur": 0.0,
+    "peak_kw": 146.925357,
+    "total_eur": 412.4157854325
+  },
+  "with_storage": {
+    "energy_eur": 295.7204881078003,
+    "demand_eur": 0.0,
+    "peak_kw": 146.99535699999998,
+    "total_eur": 295.7204881078003
+  },
+  "raw_bill_saving_eur": 116.69529732469971,
+  "inventory_change_kwh": [
+    8.749999835799827e-08,
+    5.000000413701855e-09
+  ],
+  "comparison_note": "Normalize start/end inventory before annual project valuation; no short-period annualization.",
+  "conversion_losses_kwh": 56.85700026763651,
+  "curtailed_kwh": 0.0,
+  "violating_intervals": 0,
+  "peak_violating_intervals": 0,
+  "forecasts": "perfect_foresight_upper_bound",
+  "fallback_count": 0,
+  "input_sha256": "d50bb1b93944746c8705806a0c645cdc9875509d5d95706c98354748beea1c78",
+  "config_sha256": "4b92763ff77847347152a341a2a6c2a6aa6be651028cebeb108b69aa4f7f5507"
+}

@@ -1,0 +1,317 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+
+namespace SpeicherEngine;
+
+/// <summary>Vollstaendige, begrenzte Rastersuche; die Aussage gilt nur fuer das gepruefte Raster.</summary>
+public static class FlottenOptimierer
+{
+    private const string NullId = "Nullvariante-ohne-Zusatzspeicher";
+    public static FlottenAuslegungErgebnis Rechne(
+        FlottenEingang input,
+        FlottenStudieKonfiguration config,
+        IFlottenPlaner? planer = null,
+        IProgress<FlottenFortschritt>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (input is null) throw new ArgumentNullException(nameof(input));
+        if (config is null) throw new ArgumentNullException(nameof(config));
+        var i = FlottenKopie.Eingang(input);
+        var basis = FlottenKopie.Konfiguration(config);
+        var hardware = BildeHardware(basis);
+        var ziele = basis.Auslegung.Betriebsziele.Count == 0
+            ? new[] { basis.Optionen.Betriebsziel }
+            : basis.Auslegung.Betriebsziele.Distinct().ToArray();
+        var totalLong = checked((long)hardware.Count * ziele.Length);
+        if (basis.Auslegung.MaximaleKandidaten <= 0 || totalLong > basis.Auslegung.MaximaleKandidaten)
+            throw new ArgumentException($"Das vollstaendige Raster umfasst {totalLong} Kandidaten und ueberschreitet die Grenze " +
+                $"{basis.Auslegung.MaximaleKandidaten}. Das Raster wurde nicht gekuerzt.");
+
+        var result = new FlottenAuslegungErgebnis();
+        var done = 0;
+        var bestValue = double.NegativeInfinity;
+        bool? nullFeasible = null;
+        var successfulEvaluations = 0;
+        Exception? firstConfigurationError = null;
+        FlottenStudienErgebnis? nullStudy = null;
+        foreach (var units in hardware)
+        foreach (var ziel in ziele)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var candidate = FlottenKopie.Konfiguration(basis);
+            candidate.Einheiten = units.Select(FlottenKopie.Einheit).ToList();
+            candidate.Optionen.Betriebsziel = ziel;
+            candidate.Wirtschaftlichkeit.Einheiten = candidate.Einheiten.Select(FlottenKopie.Einheit).ToList();
+            var id = KandidatId(candidate.Einheiten, ziel);
+            i.KonfigurationId = id;
+            FlottenStudienErgebnis? displayStudy = null;
+            var accounts = new List<FlottenJahreskonto>();
+            var feasible = true;
+            string? reason = null;
+            try
+            {
+                if (i.Projektjahre.Count > 0)
+                {
+                    var ordered = i.Projektjahre.OrderBy(x => x.Jahr).ToArray();
+                    var laufConfig = FlottenKopie.Konfiguration(candidate);
+                    for (var yearIndex = 0; yearIndex < ordered.Length; yearIndex++)
+                    {
+                        var y = ordered[yearIndex];
+                        if (!y.IstVollstaendigesJahr)
+                            throw new ArgumentException($"Projektjahr {y.Jahr} ist kein vollstaendiges Jahreskonto.");
+                        var yearInput = new FlottenEingang
+                        {
+                            KonfigurationId = i.KonfigurationId,
+                            DatenId = $"{i.DatenId}:{y.Jahr}",
+                            Istwerte = y.Istwerte.Select(FlottenKopie.Netzintervall).ToList(),
+                            VerfuegbarkeitsfaktorNachEinheitId = y.VerfuegbarkeitsfaktorNachEinheitId
+                                .ToDictionary(p => p.Key, p => new List<double>(p.Value), StringComparer.Ordinal),
+                            Prognosen = y.Prognosen.Select(p => new FlottenPrognoseSnapshot(p.Id, p.BekanntSeit,
+                                p.Entscheidungszeitpunkt, p.Art, p.Intervalle)).ToList()
+                        };
+                        var study = FlottenSimulator.Simuliere(yearInput, laufConfig, planer, cancellationToken);
+                        displayStudy ??= study;
+                        nullFeasible = (nullFeasible ?? true) && study.ReferenzOhneSpeicher.Zulaessig;
+                        feasible &= study.Variante.Zulaessig;
+                        reason ??= study.Variante.Unzulaessigkeitsgrund;
+                        accounts.Add(FlottenWirtschaftlichkeit.ErzeugeJahreskonto(yearIndex + 1, study,
+                            candidate.Einheiten, candidate.Optionen.EnergieAusgleichEuroProKWh, true,
+                            $"Tatsaechlich simuliertes Projektjahr {y.Jahr}"));
+                        for (var unit = 0; unit < laufConfig.Einheiten.Count; unit++)
+                            laufConfig.Einheiten[unit].SocStart = study.Variante.SpeicherKennzahlen[unit].EndenergieKWh
+                                / laufConfig.Einheiten[unit].KapazitaetKWh;
+                    }
+                }
+                else
+                {
+                    if (!IstVollstaendigesJahr(i.Istwerte))
+                        throw new ArgumentException("Auslegung mit Kapitalwert benoetigt ein vollstaendiges Jahr; " +
+                            "eine Referenzjahr-Wiederholung muss explizit konfiguriert sein.");
+                    displayStudy = FlottenSimulator.Simuliere(i, candidate, planer, cancellationToken);
+                    nullFeasible = (nullFeasible ?? true) && displayStudy.ReferenzOhneSpeicher.Zulaessig;
+                    feasible = displayStudy.Variante.Zulaessig;
+                    reason = displayStudy.Variante.Unzulaessigkeitsgrund;
+                    accounts.Add(FlottenWirtschaftlichkeit.ErzeugeJahreskonto(1, displayStudy,
+                        candidate.Einheiten, candidate.Optionen.EnergieAusgleichEuroProKWh, true));
+                }
+
+                var economicsInput = FlottenWirtschaftlichkeit.Kopiere(candidate.Wirtschaftlichkeit);
+                economicsInput.Einheiten = candidate.Einheiten.Select(FlottenKopie.Einheit).ToList();
+                economicsInput.Jahreskonten = accounts;
+                if (i.Projektjahre.Count > 0) economicsInput.ReferenzjahrExplizitWiederholen = false;
+                var economics = FlottenWirtschaftlichkeit.Bewerte(economicsInput);
+                successfulEvaluations++;
+                displayStudy!.Wirtschaftlichkeit = economics;
+                nullStudy ??= Nullstudie(displayStudy);
+                var summary = Zusammenfassung(id, ziel, candidate.Einheiten, feasible,
+                    economics.KapitalwertEuro, reason);
+                result.Kandidaten.Add(summary);
+                if (feasible && economics.KapitalwertEuro > bestValue)
+                {
+                    bestValue = economics.KapitalwertEuro;
+                    result.BesterKandidat = summary;
+                    result.BesteKonfiguration = FlottenKopie.Konfiguration(candidate);
+                    result.BesteStudie = displayStudy;
+                    result.BesteZeitreihe = displayStudy.Variante;
+                }
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                firstConfigurationError ??= ex;
+                result.Kandidaten.Add(Zusammenfassung(id, ziel, candidate.Einheiten, false,
+                    double.NegativeInfinity, ex.Message));
+            }
+            done++;
+            progress?.Report(new FlottenFortschritt { Abgeschlossen = done, Gesamt = (int)totalLong, KandidatId = id });
+        }
+        if (successfulEvaluations == 0)
+            throw new InvalidOperationException("Kein Kandidat konnte fachlich ausgewertet werden; Eingaben, Prognosen und Endenergiebewertung pruefen.",
+                firstConfigurationError);
+        result.NullvarianteZulaessig = nullFeasible == true;
+        result.Kandidaten.Insert(0, new FlottenKandidatZusammenfassung
+        {
+            KandidatId = NullId,
+            Betriebsziel = basis.Optionen.Betriebsziel,
+            Zulaessig = result.NullvarianteZulaessig,
+            KapitalwertEuro = 0,
+            Grund = result.NullvarianteZulaessig ? null : "Die technische Anschlussgrenze wird bereits ohne Speicher verletzt."
+        });
+        if (result.NullvarianteZulaessig && bestValue <= 0)
+        {
+            result.NullvarianteGewonnen = true;
+            result.BesterKandidat = null;
+            var empty = FlottenKopie.Konfiguration(basis);
+            empty.Einheiten.Clear();
+            empty.Wirtschaftlichkeit.Einheiten.Clear();
+            result.BesteKonfiguration = empty;
+            result.BesteStudie = nullStudy;
+            result.BesteZeitreihe = nullStudy?.Variante;
+        }
+        else
+        {
+            result.NullvarianteGewonnen = false;
+        }
+        return result;
+    }
+
+    private static FlottenKandidatZusammenfassung Zusammenfassung(string id, FlottenBetriebsziel ziel,
+        IReadOnlyList<FlottenEinheit> units, bool feasible, double npv, string? reason) => new()
+    {
+        KandidatId = id,
+        Betriebsziel = ziel,
+        Zulaessig = feasible,
+        KapitalwertEuro = npv,
+        KapazitaetKWh = units.Sum(x => x.KapazitaetKWh),
+        LadeleistungKw = units.Sum(x => x.LadeleistungKw),
+        EntladeleistungKw = units.Sum(x => x.EntladeleistungKw),
+        Grund = reason
+    };
+
+    private static FlottenStudienErgebnis Nullstudie(FlottenStudienErgebnis source)
+    {
+        var reference = new FlottenSimulationErgebnis
+        {
+            KonfigurationId = NullId,
+            DatenId = source.ReferenzOhneSpeicher.DatenId,
+            Zulaessig = source.ReferenzOhneSpeicher.Zulaessig,
+            Unzulaessigkeitsgrund = source.ReferenzOhneSpeicher.Unzulaessigkeitsgrund,
+            Intervalle = source.ReferenzOhneSpeicher.Intervalle,
+            SpeicherKennzahlen = source.ReferenzOhneSpeicher.SpeicherKennzahlen,
+            NetzbezugKWh = source.ReferenzOhneSpeicher.NetzbezugKWh,
+            NetzeinspeisungKWh = source.ReferenzOhneSpeicher.NetzeinspeisungKWh,
+            PvAbregelungKWh = source.ReferenzOhneSpeicher.PvAbregelungKWh,
+            VerlusteKWh = source.ReferenzOhneSpeicher.VerlusteKWh,
+            MaximalerNetzbezugKw = source.ReferenzOhneSpeicher.MaximalerNetzbezugKw,
+            PlanFallbackIntervalle = 0
+        };
+        return new FlottenStudienErgebnis
+        {
+            ReferenzOhneSpeicher = reference,
+            Variante = reference,
+            Referenzrechnung = source.Referenzrechnung,
+            Variantenrechnung = source.Referenzrechnung,
+            Wirtschaftlichkeit = new FlottenWirtschaftlichkeitErgebnis
+            {
+                InvestitionEuro = 0,
+                KapitalwertEuro = 0,
+                JahresCashflowsEuro = new List<double>()
+            }
+        };
+    }
+
+    private static List<List<FlottenEinheit>> BildeHardware(FlottenStudieKonfiguration config)
+    {
+        var active = config.Auslegung.Achsen.Where(x => x.Aktiv).ToArray();
+        if (active.Length == 0)
+            return new List<List<FlottenEinheit>> { config.Einheiten.Select(FlottenKopie.Einheit).ToList() };
+        var axisChoices = active.Select((axis, index) => BildeAchse(axis, index)).ToArray();
+        long count = 1;
+        foreach (var choices in axisChoices) count = checked(count * choices.Count);
+        if (count > config.Auslegung.MaximaleKandidaten)
+            throw new ArgumentException($"Hardware-Raster umfasst {count} Kombinationen; keine stille Kuerzung.");
+        var replacedIds = new HashSet<string>(active.Select(a => a.ErsetztEinheitId ?? a.Vorlage.Id)
+            .Where(id => !string.IsNullOrWhiteSpace(id)), StringComparer.Ordinal);
+        var fixedUnits = config.Einheiten.Where(x => !replacedIds.Contains(x.Id)).Select(FlottenKopie.Einheit).ToList();
+        var result = new List<List<FlottenEinheit>>((int)count) { fixedUnits };
+        foreach (var choices in axisChoices)
+        {
+            var next = new List<List<FlottenEinheit>>(result.Count * choices.Count);
+            foreach (var prefix in result)
+            foreach (var choice in choices)
+            {
+                var combined = prefix.Select(FlottenKopie.Einheit).ToList();
+                combined.AddRange(choice.Select(FlottenKopie.Einheit));
+                next.Add(combined);
+            }
+            result = next;
+        }
+        return result;
+    }
+
+    private static List<List<FlottenEinheit>> BildeAchse(FlottenAuslegungsAchse axis, int axisIndex)
+    {
+        if (axis.AnzahlVon < 0 || axis.AnzahlBis < axis.AnzahlVon)
+            throw new ArgumentException("Ungueltiger Anzahlbereich in Auslegungsachse.");
+        var firstAxis = axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate
+            ? Raster(axis.LeistungVonKw, axis.LeistungBisKw, axis.LeistungSchrittKw, "Leistung")
+            : Raster(axis.KapazitaetVonKWh, axis.KapazitaetBisKWh, axis.KapazitaetSchrittKWh, "Kapazitaet");
+        var secondAxis = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung
+            ? Raster(axis.LeistungVonKw, axis.LeistungBisKw, axis.LeistungSchrittKw, "Leistung")
+            : Raster(axis.CRateVon, axis.CRateBis, axis.CRateSchritt, "C-Rate");
+        var result = new List<List<FlottenEinheit>>();
+        for (var count = axis.AnzahlVon; count <= axis.AnzahlBis; count++)
+        {
+            if (count == 0)
+            {
+                result.Add(new List<FlottenEinheit>());
+                continue;
+            }
+            foreach (var first in firstAxis)
+            foreach (var second in secondAxis)
+            {
+                var capacity = axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first / second : first;
+                var power = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndCRate ? first * second :
+                    axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first : second;
+                var templatePower = Math.Max(axis.Vorlage.LadeleistungKw, axis.Vorlage.EntladeleistungKw);
+                if (!double.IsFinite(templatePower) || templatePower <= 0)
+                    throw new ArgumentException("Die Auslegungsvorlage braucht mindestens eine positive Richtungsleistung.");
+                var powerScale = power / templatePower;
+                var units = new List<FlottenEinheit>(count);
+                for (var n = 0; n < count; n++)
+                {
+                    var b = FlottenKopie.Einheit(axis.Vorlage);
+                    b.Id = $"{(string.IsNullOrWhiteSpace(b.Id) ? "Speicher" : b.Id)}-A{axisIndex + 1}-N{n + 1}";
+                    b.Name = $"{(string.IsNullOrWhiteSpace(b.Name) ? "Speicher" : b.Name)} {n + 1}";
+                    b.KapazitaetKWh = capacity;
+                    b.LadeleistungKw = axis.Vorlage.LadeleistungKw * powerScale;
+                    b.EntladeleistungKw = axis.Vorlage.EntladeleistungKw * powerScale;
+                    units.Add(b);
+                }
+                result.Add(units);
+            }
+        }
+        return result;
+    }
+
+    private static List<double> Raster(double from, double to, double step, string name)
+    {
+        if (!double.IsFinite(from) || !double.IsFinite(to) || from <= 0 || to < from)
+            throw new ArgumentException($"Ungueltiger {name}sbereich.");
+        if (Math.Abs(to - from) <= 1e-12) return new List<double> { from };
+        if (!double.IsFinite(step) || step <= 0) throw new ArgumentException($"{name}sschritt muss positiv sein.");
+        var count = (int)Math.Floor((to - from) / step + 1e-9) + 1;
+        var result = new List<double>(count);
+        for (var n = 0; n < count; n++) result.Add(from + n * step);
+        if (result[^1] < to - 1e-9) result.Add(to);
+        return result;
+    }
+
+    private static string KandidatId(IReadOnlyList<FlottenEinheit> units, FlottenBetriebsziel ziel) =>
+        $"{ziel}:{string.Join(";", units.Select(x =>
+            $"{x.Id}:{x.KapazitaetKWh:G9}kWh:{x.LadeleistungKw:G9}kWladen:{x.EntladeleistungKw:G9}kWentladen"))}";
+
+    private static bool IstVollstaendigesJahr(IReadOnlyList<FlottenNetzintervall> rows)
+    {
+        if (rows.Count is not (35040 or 35136)) return false;
+        return rows[^1].Zeitstempel - rows[0].Zeitstempel == TimeSpan.FromMinutes(15 * (rows.Count - 1));
+    }
+
+    internal static FlottenAuslegungEingang Kopiere(FlottenAuslegungEingang x) => new()
+    {
+        MaximaleKandidaten = x.MaximaleKandidaten,
+        Betriebsziele = new List<FlottenBetriebsziel>(x.Betriebsziele),
+        Achsen = x.Achsen.Select(a => new FlottenAuslegungsAchse
+        {
+            Aktiv = a.Aktiv, ErsetztEinheitId = a.ErsetztEinheitId, Modus = a.Modus,
+            AnzahlVon = a.AnzahlVon, AnzahlBis = a.AnzahlBis,
+            KapazitaetVonKWh = a.KapazitaetVonKWh, KapazitaetBisKWh = a.KapazitaetBisKWh,
+            KapazitaetSchrittKWh = a.KapazitaetSchrittKWh, LeistungVonKw = a.LeistungVonKw,
+            LeistungBisKw = a.LeistungBisKw, LeistungSchrittKw = a.LeistungSchrittKw,
+            CRateVon = a.CRateVon, CRateBis = a.CRateBis, CRateSchritt = a.CRateSchritt,
+            Vorlage = FlottenKopie.Einheit(a.Vorlage)
+        }).ToList()
+    };
+}

@@ -1,0 +1,255 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-speicherauslegung epos-speicheropt-suchraum">
+    <Formularraster>
+        <KindInhalt>
+            @if (!NurQuellenKostenProfile)
+            {
+            <Formulargruppe Titel="@Texte.Suchraum">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Groessenachse" Eintraege="@Achsen"
+                                 Auswahl="@((int)_wert.Groessenachse)" Aktiv="@Aktiv"
+                                 AuswahlChanged="AchseSetzen" />
+                    @if (_wert.Groessenachse == OptimiererGroessenachse.KapazitaetKwh)
+                    {
+                        <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kWh" Wert="@_wert.CMinKwh"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.CMinKwh = x))" />
+                        <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kWh" Wert="@_wert.CMaxKwh"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.CMaxKwh = x))" />
+                        <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kWh" Wert="@_wert.CSchrittKwh"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => NullableSetzen(v, x => _wert.CSchrittKwh = x))" />
+                    }
+                    else
+                    {
+                        <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kW" Wert="@_wert.PMinKw"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.PMinKw = x))" />
+                        <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kW" Wert="@_wert.PMaxKw"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.PMaxKw = x))" />
+                        <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kW" Wert="@_wert.PSchrittKw"
+                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => NullableSetzen(v, x => _wert.PSchrittKw = x))" />
+                    }
+                    <Ganzzahlfeld Bezeichnung="@Texte.Stuetzstellen" Wert="@_wert.Stuetzstellen" Aktiv="@Aktiv"
+                                  Min="@SpeicherOptimierungCtrl.STUETZSTELLEN_MIN" Max="@SpeicherOptimierungCtrl.STUETZSTELLEN_MAX"
+                                  WertChanged="StuetzstellenSetzen" />
+                    <Zahlenfeld Bezeichnung="@Texte.CRateVon" Wert="@_wert.RMin" Einheit="1/h"
+                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RMin = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.CRateBis" Wert="@_wert.RMax" Einheit="1/h"
+                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RMax = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.CRateSchritt" Wert="@_wert.RSchritt" Einheit="1/h"
+                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RSchritt = x))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Strategie" Eintraege="@Strategien"
+                                 Auswahl="@((int)_wert.Strategie)" Aktiv="@Aktiv" AuswahlChanged="StrategieSetzen" />
+                    <Schalter Bezeichnung="@Texte.Feinraster" Wert="@_wert.Feinraster" Aktiv="@Aktiv"
+                              WertChanged="@(v => BoolSetzen(v, x => _wert.Feinraster = x))" />
+                    <Schalter Bezeichnung="@Texte.Verschleiss" Wert="@_wert.KVerInZielfunktion" Aktiv="@Aktiv"
+                              WertChanged="@(v => BoolSetzen(v, x => _wert.KVerInZielfunktion = x))" />
+                </KindInhalt>
+            </Formulargruppe>
+
+            }
+            <Formulargruppe Titel="@Texte.Zeitreihen">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Lastquelle" Eintraege="@LastQuellen" Auswahl="@((int)Auslegung.Lastquelle)"
+                                 Aktiv="@Aktiv" AuswahlChanged="@(v => QuelleSetzen(v, x => Auslegung.Lastquelle = x))" />
+                    <Auswahlfeld Bezeichnung="@Texte.PvQuelle" Eintraege="@PvQuellen" Auswahl="@((int)Auslegung.PvQuelle)"
+                                 Aktiv="@Aktiv" AuswahlChanged="@(v => QuelleSetzen(v, x => Auslegung.PvQuelle = x))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Preisquelle" Eintraege="@PreisQuellen" Auswahl="@((int)Auslegung.Preisquelle)"
+                                 Aktiv="@Aktiv" AuswahlChanged="@(v => QuelleSetzen(v, x => Auslegung.Preisquelle = x))" />
+                    @if (Auslegung.Preisquelle == SpeicherAuslegungQuelle.Preisprofil && Strompreisprofile.Count > 0)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.Preisprofil" Eintraege="@Preisprofile" Auswahl="@PreisprofilIndex"
+                                     Aktiv="@Aktiv" AuswahlChanged="PreisprofilSetzen" />
+                    }
+                    @if (GemischteZeitbasis)
+                    {
+                        <Schalter Bezeichnung="@Texte.EposModelljahrZuordnen" Wert="@EposModelljahrZuordnen"
+                                  Aktiv="@Aktiv" WertChanged="EposModelljahrSetzen" />
+                    }
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+
+    <div class="epos-leiste">
+        @if (Auslegung.Lastquelle == SpeicherAuslegungQuelle.Datei)
+        { <button type="button" class="epos-knopf" disabled="@(!Aktiv || DateiWaehlen is null)" @onclick="@(() => DateiOeffnen(SpeicherZeitreihenRolle.Last))">@DateiText(Texte.LastDatei, Auslegung.LastDatei)</button> }
+        @if (Auslegung.PvQuelle == SpeicherAuslegungQuelle.Datei)
+        { <button type="button" class="epos-knopf" disabled="@(!Aktiv || DateiWaehlen is null)" @onclick="@(() => DateiOeffnen(SpeicherZeitreihenRolle.Pv))">@DateiText(Texte.PvDatei, Auslegung.PvDatei)</button> }
+        @if (Auslegung.Preisquelle == SpeicherAuslegungQuelle.Datei)
+        { <button type="button" class="epos-knopf" disabled="@(!Aktiv || DateiWaehlen is null)" @onclick="@(() => DateiOeffnen(SpeicherZeitreihenRolle.Bezug))">@DateiText(Texte.PreisDatei, Auslegung.PreisDatei)</button> }
+        @if (Auslegung.Preisquelle == SpeicherAuslegungQuelle.Preisprofil)
+        { <button type="button" class="epos-knopf" disabled="@(!Aktiv)" @onclick="PreisprofilOeffnen">@(Auslegung.Strompreisprofil is null ? Texte.PreisprofilAnlegen : Texte.PreisprofilBearbeiten)</button> }
+    </div>
+
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="@Texte.Kosten">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Investitionsquelle" Eintraege="@KostenQuellen"
+                                 Auswahl="@((int)Auslegung.Investitionsquelle)" Aktiv="@Aktiv"
+                                 AuswahlChanged="@(v => KostenQuelleSetzen(v, x => Auslegung.Investitionsquelle = x))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Betriebsquelle" Eintraege="@KostenQuellen"
+                                 Auswahl="@((int)Auslegung.Betriebsquelle)" Aktiv="@Aktiv"
+                                 AuswahlChanged="@(v => KostenQuelleSetzen(v, x => Auslegung.Betriebsquelle = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.InvestKw" Einheit="€/kW" Wert="@InvestAnzeige.InvestEurProKw"
+                                Min="0" Aktiv="@(Aktiv && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)"
+                                WertChanged="@(v => InvestitionSetzen(v, x => Auslegung.DirekteKosten.InvestEurProKw = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.InvestKwh" Einheit="€/kWh" Wert="@InvestAnzeige.InvestEurProKwh"
+                                Min="0" Aktiv="@(Aktiv && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)"
+                                WertChanged="@(v => InvestitionSetzen(v, x => Auslegung.DirekteKosten.InvestEurProKwh = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.BetriebKw" Einheit="€/(kW·a)" Wert="@BetriebAnzeige.BetriebEurProKwJahr"
+                                Min="0" Aktiv="@(Aktiv && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)"
+                                WertChanged="@(v => BetriebSetzen(v, x => Auslegung.DirekteKosten.BetriebEurProKwJahr = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.BetriebKwh" Einheit="€/(kWh·a)" Wert="@BetriebAnzeige.BetriebEurProKwhJahr"
+                                Min="0" Aktiv="@(Aktiv && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)"
+                                WertChanged="@(v => BetriebSetzen(v, x => Auslegung.DirekteKosten.BetriebEurProKwhJahr = x))" />
+                    <Zahlenfeld Bezeichnung="@Texte.BetriebEntladen" Einheit="€/kWh" Wert="@BetriebAnzeige.BetriebEurProKwhEntladen"
+                                Min="0" Aktiv="@(Aktiv && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)"
+                                WertChanged="@(v => BetriebSetzen(v, x => Auslegung.DirekteKosten.BetriebEurProKwhEntladen = x))" />
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+
+    @if (!InvestAnzeige.InvestVorhanden || !BetriebAnzeige.BetriebVorhanden)
+    {
+        <p>Fehlende Kostensätze werden nicht als kostenlose Anlage bewertet. Bitte Kostensätze eingeben oder die angezeigten Nullkosten ausdrücklich bestätigen.</p>
+        @if (!InvestAnzeige.InvestVorhanden && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)
+        { <Schalter Bezeichnung="Investitionskosten mit 0 € ansetzen" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.InvestVorhanden = v; await Geaendert(); })" /> }
+        @if (!BetriebAnzeige.BetriebVorhanden && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)
+        { <Schalter Bezeichnung="Betriebskosten mit 0 € ansetzen" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.BetriebVorhanden = v; await Geaendert(); })" /> }
+    }
+    @if (KostenmodulSichtbar)
+    {
+        <Herleitungszeile Text="@KostenmodulText" />
+        @if (Modulkosten.AusgelassenePositionen.Count > 0)
+        {
+            <ul>@foreach (string position in Modulkosten.AusgelassenePositionen) { <li>@position</li> }</ul>
+        }
+    }
+    @if (GemischteZeitbasis)
+    {
+        <Herleitungszeile Text="@Texte.EposModelljahrHinweis" />
+    }
+
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="@Texte.Profile">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.ProfilLaden" Eintraege="@Profile" Auswahl="@_profilIndex"
+                                 Platzhalter="@Texte.ProfilWaehlen" Aktiv="@(Aktiv && Auslegungsprofile.Count > 0)"
+                                 AuswahlChanged="ProfilLaden" />
+                    <Textfeld Bezeichnung="@Texte.Profilname" Wert="@_profilname"
+                              WertChanged="@(v => _profilname = v)" />
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" disabled="@(!Aktiv || EinstellungenSpeichern is null)" @onclick="EinstellungenSichern">@Texte.EinstellungenSpeichern</button>
+        <button type="button" class="epos-knopf" disabled="@(!Aktiv || ProfilSpeichern is null || string.IsNullOrWhiteSpace(_profilname))" @onclick="ProfilSichern">@Texte.ProfilSpeichern</button>
+        <button type="button" class="epos-knopf" disabled="@(!Aktiv || !_profilIndex.HasValue)" @onclick="Duplizieren">@Texte.Duplizieren</button>
+    </div>
+    @if (!string.IsNullOrEmpty(_fehler)) { <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" /> }
+    @if (!string.IsNullOrEmpty(_erfolg)) { <Warnbanner Stufe="WarnStufe.Erfolg" Text="@_erfolg" /> }
+</div>
+
+@if (_importDatei is not null)
+{
+    <Ueberlagerung Offen="true" Titel="@_importDatei.Dateiname" Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="@(() => _importDatei = null)">
+        <KindInhalt><SpeicherZeitreihenDialog Datei="@_importDatei" Rolle="@_importRolle" Uebernommen="ImportUebernehmen" Geschlossen="@(() => _importDatei = null)" /></KindInhalt>
+    </Ueberlagerung>
+}
+
+@if (_kostenprofilOffen && Auslegung.Strompreisprofil is not null)
+{
+    <Ueberlagerung Offen="true" Titel="@Texte.PreisprofilBearbeiten" Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="@(() => _kostenprofilOffen = false)">
+        <KindInhalt><EPOS.UI.Dialoge.Kosten.KostenprofilDialog Bezeichner="@Auslegung.Strompreisprofil.Bezeichner"
+            Monatswerte="@Zahlen(Auslegung.Strompreisprofil.Monatswerte)" Wochenwerte="@Zahlen(Auslegung.Strompreisprofil.Wochenwerte)"
+            Speichern="KostenprofilSpeichern" Geschlossen="KostenprofilGeschlossen" /></KindInhalt>
+    </Ueberlagerung>
+}
+
+@code {
+    [Parameter] public SpeicherOptimierungEingaben Wert { get; set; } = new();
+    [Parameter] public EventCallback<SpeicherOptimierungEingaben> WertChanged { get; set; }
+    [Parameter] public bool Aktiv { get; set; } = true;
+    [Parameter] public bool NurQuellenKostenProfile { get; set; }
+    [Parameter] public IReadOnlyList<SpeicherAuslegungProfil> Auslegungsprofile { get; set; } = Array.Empty<SpeicherAuslegungProfil>();
+    [Parameter] public IReadOnlyList<KostenprofilModel> Strompreisprofile { get; set; } = Array.Empty<KostenprofilModel>();
+    [Parameter] public SpeicherKostensaetze Modulkosten { get; set; } = new();
+    [Parameter] public Func<SpeicherOptimierungEingaben, Task<string>>? EinstellungenSpeichern { get; set; }
+    [Parameter] public Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>>? ProfilSpeichern { get; set; }
+    [Parameter] public Func<Task<SpeicherImportDatei>>? DateiWaehlen { get; set; }
+    [Parameter] public SpeicherAuslegungTexte Texte { get; set; } = new();
+
+    private const double KLEINSTER_POSITIVER_WERT = double.Epsilon;
+
+    private SpeicherOptimierungEingaben _wert = new();
+    private int? _profilIndex;
+    private string _profilname = "";
+    private string _fehler = "";
+    private string _erfolg = "";
+    private SpeicherImportDatei? _importDatei;
+    private SpeicherZeitreihenRolle _importRolle;
+    private bool _kostenprofilOffen;
+
+    private SpeicherAuslegungKonfiguration Auslegung => _wert.Auslegung ??= new();
+    private static readonly IReadOnlyList<(int Id, string Text)> Achsen = new[] { (0, "Kapazität [kWh]"), (1, "Leistung [kW]") };
+    private static readonly IReadOnlyList<(int Id, string Text)> Strategien = SpeicherOptimierungCtrl.Strategien().Select((x,i)=>(i,x)).ToArray();
+    private static readonly IReadOnlyList<(int Id, string Text)> LastQuellen = new[] { (0,"EPOS: Strombedarf / Stromlastgang"), (1,"Separate CSV-Datei") };
+    private static readonly IReadOnlyList<(int Id, string Text)> PvQuellen = new[] { (0,"EPOS: PV-Simulation"), (1,"Separate CSV-Datei"), (2,"Keine PV") };
+    private static readonly IReadOnlyList<(int Id, string Text)> PreisQuellen = new[] { (0,"EPOS: Stromtarif"), (1,"Separate CSV-Datei"), (3,"Editierbares Strompreisprofil") };
+    private static readonly IReadOnlyList<(int Id, string Text)> KostenQuellen = new[] { (0,"Im Dialog"), (1,"Kostenmodul") };
+    private IReadOnlyList<(int Id,string Text)> Profile => Auslegungsprofile.Select((x,i)=>(i,x.Name)).ToArray();
+    private IReadOnlyList<(int Id,string Text)> Preisprofile => Strompreisprofile.Select((x,i)=>(i,x.Bezeichner)).ToArray();
+    private int? PreisprofilIndex { get { int i=Strompreisprofile.ToList().FindIndex(x => Auslegung.Strompreisprofil is not null && x.ID == Auslegung.Strompreisprofil.ID); return i < 0 ? null : i; } }
+    private bool KostenmodulSichtbar => Auslegung.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul || Auslegung.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul;
+    private SpeicherKostensaetze InvestAnzeige => Auslegung.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul ? Modulkosten : Auslegung.DirekteKosten;
+    private SpeicherKostensaetze BetriebAnzeige => Auslegung.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul ? Modulkosten : Auslegung.DirekteKosten;
+    private bool GemischteZeitbasis =>
+        (Auslegung.Lastquelle == SpeicherAuslegungQuelle.Datei || Auslegung.PvQuelle == SpeicherAuslegungQuelle.Datei || Auslegung.Preisquelle == SpeicherAuslegungQuelle.Datei) &&
+        (Auslegung.Lastquelle == SpeicherAuslegungQuelle.Epos || Auslegung.PvQuelle == SpeicherAuslegungQuelle.Epos ||
+         Auslegung.Preisquelle == SpeicherAuslegungQuelle.Epos || Auslegung.Preisquelle == SpeicherAuslegungQuelle.Preisprofil);
+    private bool EposModelljahrZuordnen => Auslegung.EposModelljahrZuordnen;
+    private string KostenmodulText => $"{Texte.KostenmodulHerkunft}: {Modulkosten.Herkunft}; {Modulkosten.InvestEurProKw:g} €/kW, {Modulkosten.InvestEurProKwh:g} €/kWh, {Modulkosten.BetriebEurProKwJahr:g} €/(kW·a), {Modulkosten.BetriebEurProKwhJahr:g} €/(kWh·a), {Modulkosten.BetriebEurProKwhEntladen:g} €/kWh";
+
+    protected override void OnParametersSet() { if (!ReferenceEquals(Wert, _wert)) _wert = Wert.Kopie(); }
+    private async Task Geaendert() { _fehler=""; _erfolg=""; await WertChanged.InvokeAsync(_wert.Kopie()); }
+    private async Task ZahlSetzen(double? v, Action<double> set) { if(v.HasValue)set(v.Value); await Geaendert(); }
+    private async Task NullableSetzen(double? v, Action<double?> set) { set(v); await Geaendert(); }
+    private async Task BoolSetzen(bool v, Action<bool> set) { set(v); await Geaendert(); }
+    private async Task StuetzstellenSetzen(int? v) { if(v.HasValue)_wert.Stuetzstellen=v.Value; await Geaendert(); }
+    private async Task AchseSetzen(int? v) { _wert.Groessenachse=v==1?OptimiererGroessenachse.LeistungKw:OptimiererGroessenachse.KapazitaetKwh; await Geaendert(); }
+    private async Task StrategieSetzen(int? v) { _wert.Strategie=v switch {1=>OptimiererStrategie.Nachtnutzung,2=>OptimiererStrategie.Lastspitzenkappung,_=>OptimiererStrategie.Dauernutzung}; await Geaendert(); }
+    private async Task QuelleSetzen(int? v, Action<SpeicherAuslegungQuelle> set) { set((SpeicherAuslegungQuelle)(v??0)); await Geaendert(); }
+    private async Task KostenQuelleSetzen(int? v, Action<SpeicherKostenQuelle> set) { set((SpeicherKostenQuelle)(v??0)); await Geaendert(); }
+    private async Task EposModelljahrSetzen(bool v) { Auslegung.EposModelljahrZuordnen = v; await Geaendert(); }
+    private async Task InvestitionSetzen(double? v, Action<double> set) {if(v.HasValue){set(v.Value);Auslegung.DirekteKosten.InvestVorhanden=true;}await Geaendert();}
+    private async Task BetriebSetzen(double? v, Action<double> set) {if(v.HasValue){set(v.Value);Auslegung.DirekteKosten.BetriebVorhanden=true;}await Geaendert();}
+    private async Task PreisprofilSetzen(int? v) { if(v is >=0 && v<Strompreisprofile.Count) Auslegung.Strompreisprofil=SpeicherAuslegungKopie.Von(Strompreisprofile[v.Value]); await Geaendert(); }
+    private async Task ProfilLaden(int? v) { _profilIndex=v; if(v is >=0 && v<Auslegungsprofile.Count){_wert=Auslegungsprofile[v.Value].Eingaben.Kopie();_profilname=Auslegungsprofile[v.Value].Name;await Geaendert();} }
+    private void Duplizieren(){ _profilIndex=null; _profilname=string.IsNullOrWhiteSpace(_profilname)?Texte.Kopie:$"{_profilname} ({Texte.Kopie})"; }
+    private async Task EinstellungenSichern(){if(EinstellungenSpeichern is null)return;try{_fehler=await EinstellungenSpeichern(_wert.Kopie())??"";_erfolg=_fehler.Length==0?Texte.Gespeichert:"";}catch(Exception ex){_erfolg="";_fehler=ex.Message;}}
+    private async Task ProfilSichern(){if(ProfilSpeichern is null)return;try{var gespeichert=_wert.Kopie();var v=await ProfilSpeichern(gespeichert.Kopie(),_profilname.Trim());if(v is not null){Auslegungsprofile=v.Auslegungsprofile;Strompreisprofile=v.Strompreisprofile;Modulkosten=v.Modulkosten;_wert=gespeichert;await WertChanged.InvokeAsync(_wert.Kopie());_fehler="";_erfolg=Texte.ProfilGespeichert;}}catch(Exception ex){_erfolg="";_fehler=ex.Message;}}
+    private async Task DateiOeffnen(SpeicherZeitreihenRolle rolle){if(DateiWaehlen is null)return;try{_importRolle=rolle;_importDatei=await DateiWaehlen();if(_importDatei is null||_importDatei.Inhalt.Length==0)_importDatei=null;_fehler="";}catch(Exception ex){_importDatei=null;_fehler=ex.Message;}}
+    private async Task ImportUebernehmen(SpeicherZeitreihe reihe){if(reihe.Rolle==SpeicherZeitreihenRolle.Last)Auslegung.LastDatei=reihe;else if(reihe.Rolle==SpeicherZeitreihenRolle.Pv)Auslegung.PvDatei=reihe;else Auslegung.PreisDatei=reihe;_importDatei=null;await Geaendert();}
+    private void PreisprofilOeffnen(){Auslegung.Strompreisprofil??=new KostenprofilModel{Bezeichner=Texte.NeuesPreisprofil};_kostenprofilOffen=true;}
+    private static string DateiText(string text, SpeicherZeitreihe? reihe)=>reihe is null?text:$"{text}: {reihe.QuelleName} · {reihe.Werte.Length:N0} Intervalle · {(reihe.ZeitstempelUtc.Length > 0 ? reihe.ZeitstempelUtc[0].ToString("u") : "ohne Zeitachse")}";
+    private static IReadOnlyList<double> Zahlen(string text)=>text.Split(';',StringSplitOptions.RemoveEmptyEntries).Select(x=>double.TryParse(x,System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out var v)?v:0).ToArray();
+    private bool KostenprofilSpeichern(string name,IReadOnlyList<double> monate,IReadOnlyList<double> woche){var p=Auslegung.Strompreisprofil??new();p.Bezeichner=name;p.Monatswerte=string.Join(";",monate.Select(x=>x.ToString(System.Globalization.CultureInfo.InvariantCulture)));p.Wochenwerte=string.Join(";",woche.Select(x=>x.ToString(System.Globalization.CultureInfo.InvariantCulture)));Auslegung.Strompreisprofil=p;_kostenprofilOffen=false;_ = Geaendert();return true;}
+    private void KostenprofilGeschlossen(bool gespeichert){_kostenprofilOffen=false;}
+}
+
+@code {
+    public sealed class SpeicherAuslegungTexte {
+        public string Suchraum {get;set;}="Suchraum"; public string Groessenachse{get;set;}="Größenachse:"; public string Von{get;set;}="Von:"; public string Bis{get;set;}="Bis:"; public string Schritt{get;set;}="Schrittweite (leer = Stützstellen):"; public string Stuetzstellen{get;set;}="Stützstellen:";
+        public string CRateVon{get;set;}="C-Rate von:"; public string CRateBis{get;set;}="C-Rate bis:"; public string CRateSchritt{get;set;}="C-Rate Schritt:"; public string Strategie{get;set;}="Betriebsstrategie:"; public string Feinraster{get;set;}="Feinraster"; public string Verschleiss{get;set;}="Verschleißkosten berücksichtigen";
+        public string Zeitreihen{get;set;}="Zeitreihen"; public string Lastquelle{get;set;}="Last:"; public string PvQuelle{get;set;}="PV:"; public string Preisquelle{get;set;}="Bezugspreis:"; public string Preisprofil{get;set;}="Preisprofil:"; public string LastDatei{get;set;}="Lastdatei wählen"; public string PvDatei{get;set;}="PV-Datei wählen"; public string PreisDatei{get;set;}="Preisdatei wählen"; public string PreisprofilBearbeiten{get;set;}="Preisprofil bearbeiten"; public string PreisprofilAnlegen{get;set;}="Preisprofil anlegen"; public string NeuesPreisprofil{get;set;}="Neues Preisprofil";
+        public string EposModelljahrZuordnen{get;set;}="EPOS-Modelljahr auf die CSV-Zeitachse zuordnen"; public string EposModelljahrHinweis{get;set;}="Bei CSV-Reihen zusammen mit EPOS- oder Preisprofilwerten ist diese Zuordnung ausdrücklich zu bestätigen. Die CSV-Zeitachse bleibt vollständig erhalten: Für den 29. Februar wird der EPOS-Wert des 28. Februar wiederverwendet; doppelte lokale Stunden bei der Zeitumstellung erhalten denselben EPOS-Modellwert.";
+        public string Kosten{get;set;}="Kosten"; public string Investitionsquelle{get;set;}="Investitionskosten:"; public string Betriebsquelle{get;set;}="Betriebskosten:"; public string InvestKw{get;set;}="Investition Leistung:"; public string InvestKwh{get;set;}="Investition Kapazität:"; public string BetriebKw{get;set;}="Betrieb Leistung:"; public string BetriebKwh{get;set;}="Betrieb Kapazität:"; public string BetriebEntladen{get;set;}="Betrieb je entladener Energie:"; public string KostenmodulHerkunft{get;set;}="Kostenmodul";
+        public string Profile{get;set;}="Auslegungsprofile"; public string ProfilLaden{get;set;}="Profil laden:"; public string ProfilWaehlen{get;set;}="(Profil wählen)"; public string Profilname{get;set;}="Profilname:"; public string EinstellungenSpeichern{get;set;}="Einstellungen speichern"; public string ProfilSpeichern{get;set;}="Profil speichern"; public string Duplizieren{get;set;}="Duplizieren"; public string Kopie{get;set;}="Kopie"; public string Gespeichert{get;set;}="Einstellungen gespeichert."; public string ProfilGespeichert{get;set;}="Profil gespeichert.";
+    }
+}

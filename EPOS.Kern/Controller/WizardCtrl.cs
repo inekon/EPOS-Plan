@@ -341,6 +341,7 @@ namespace WindowsFormsApplication1
             public string Bezeichner = "";
             public bool Aktiv;
             public StromspeicherVarianteModel Parameter;
+            public IReadOnlyList<SpeicherAuslegungProfil> Auslegungsprofile;
         }
 
         /// <summary>
@@ -444,7 +445,8 @@ namespace WindowsFormsApplication1
                         ID_Type = idType,
                         Bezeichner = bezeichner,
                         Aktiv = v.Aktiv,
-                        Parameter = v
+                        Parameter = v,
+                        Auslegungsprofile = SpeicherAuslegungCtrl.Profile(projektID, idAnlage)
                     });
                 }
 
@@ -579,6 +581,10 @@ namespace WindowsFormsApplication1
                             "\") konnte nicht angelegt werden.");
 
                     geschrieben.Add(idVariante);
+
+                    if (treffer?.Auslegungsprofile != null)
+                        foreach (var profil in treffer.Auslegungsprofile)
+                            SpeicherAuslegungCtrl.Speichern(projektID, idAnlage, profil.Name, profil.Eingaben);
 
                     if (treffer != null) { uebernommen++; if (treffer.Aktiv) idVarianteAktiv = idVariante; }
                     else neu++;

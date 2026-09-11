@@ -2723,6 +2723,7 @@ namespace WindowsFormsApplication1
         /// nicht.</para>
         /// </summary>
         public const int SCHRITT_72_VALERI_ERGAENZUNG = 72;
+        public const int SCHRITT_73_SPEICHERAUSLEGUNG = 73;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -4819,6 +4820,10 @@ namespace WindowsFormsApplication1
                         "guenstig, und die nicht monetaeren Wirkungen haetten weiter " +
                         "kein Feld.",
                         Schritt_72_ValeriErgaenzung),
+            new Schritt(SCHRITT_73_SPEICHERAUSLEGUNG,
+                        "Speicherauslegung mit Kostenprofilen und importierten Zeitreihen speichern",
+                        "Auslegungsbereiche, Kostenquellen und CSV-Zuordnungen koennten nicht projektbezogen gespeichert werden.",
+                        Schritt_73_Speicherauslegung),
         };
 
         /// <summary>
@@ -11077,6 +11082,12 @@ namespace WindowsFormsApplication1
                     "Ausweis war der zu guenstige. Projekte ohne Ersatzbeschaffung " +
                     "bleiben zahlengleich.");
             return true;
+        }
+
+        private static bool Schritt_73_Speicherauslegung(Lauf l)
+        {
+            return SqliteDdl(l, SpeicherAuslegungCtrl.SQL_TABELLE, "Tabelle Tab_SpeicherAuslegung")
+                && SqliteDdl(l, SpeicherAuslegungCtrl.SQL_INDEX, "Index idx_SpeicherAuslegung");
         }
 
         // --- Hilfsmittel des Schritts 58 ---------------------------------------------

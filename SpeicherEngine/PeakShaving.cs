@@ -52,15 +52,19 @@ namespace SpeicherEngine
 
         private readonly SpeicherModus _modus;
         private readonly PeakShavingParameter _ps;
+        private readonly bool _netzanschlussAuslegung;
 
         /// <summary>Erzeugt die Strategie mit ihren Steuergroessen (Default: energetisch).</summary>
         /// <param name="psParameter">Schwelle/Adaptiv-Flag und Bewertungsgroessen.</param>
         /// <param name="modus">Rechenmodus.</param>
+        /// <param name="netzanschlussAuslegung">Beruecksichtigt Erzeugung und zeitvariable Energiepreise am Netzanschluss.</param>
         public PeakShaving(PeakShavingParameter psParameter,
-                           SpeicherModus modus = SpeicherModus.Energetisch)
+                           SpeicherModus modus = SpeicherModus.Energetisch,
+                           bool netzanschlussAuslegung = false)
         {
             _ps = psParameter ?? throw new ArgumentNullException(nameof(psParameter));
             _modus = modus;
+            _netzanschlussAuslegung = netzanschlussAuslegung;
         }
 
         /// <summary>Rechenmodus dieser Instanz.</summary>
@@ -96,7 +100,129 @@ namespace SpeicherEngine
         public PeakShavingErgebnis BerechnePeakShaving(SpeicherEingang eingang, SpeicherParameter p)
         {
             if (eingang == null) throw new ArgumentNullException(nameof(eingang));
-            return BerechnePeakShaving(eingang.LastKw, p);
+            return _netzanschlussAuslegung
+                ? BerechneAmNetzanschluss(eingang, p)
+                : BerechnePeakShaving(eingang.LastKw, p);
+        }
+
+        /// <summary>
+        /// Rechnet die optionale Auslegung am Netzanschluss. Die Regelung sieht die
+        /// Residuallast; ihr Energie-Cashflow wird aus tatsächlichem Bezug und
+        /// tatsächlicher Einspeisung je Intervall gebildet.
+        /// </summary>
+        private PeakShavingErgebnis BerechneAmNetzanschluss(
+            SpeicherEingang eingang, SpeicherParameter p)
+        {
+            int n = eingang.Anzahl;
+            double[] residualKw = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double bhkw = eingang.BhkwKw == null ? 0.0 : eingang.BhkwKw[i];
+                residualKw[i] = eingang.LastKw[i] - eingang.PvKw[i] - bhkw;
+            }
+
+            // Steuerung, SoC und Leistungsgrenzen bleiben genau dieselben wie im
+            // Referenzpfad. Nur Eingangsgröße und monetäre Bewertung unterscheiden sich.
+            PeakShavingErgebnis lauf = BerechnePeakShaving(residualKw, p);
+
+            double dt = p.DtH;
+            double[] geldwert = new double[n];
+            double summeLast = 0.0;
+            double summePv = 0.0;
+            double summeBhkw = 0.0;
+            double summeDirekt = 0.0;
+            double netzOhne = 0.0;
+            double netzMit = 0.0;
+            double einspeisungOhne = 0.0;
+            double einspeisungMit = 0.0;
+            double ladungPv = 0.0;
+            double ladungBhkw = 0.0;
+
+            for (int i = 0; i < n; i++)
+            {
+                double bhkw = eingang.BhkwKw == null ? 0.0 : eingang.BhkwKw[i];
+                IntervallEnergien e = Vorverarbeitung.Berechne(
+                    eingang.LastKw[i], eingang.PvKw[i], bhkw, dt, true, true);
+
+                double bezugNeu = Math.Max(0.0, lauf.PNeuKw[i]) * dt;
+                double exportNeu = Math.Max(0.0, -lauf.PNeuKw[i]) * dt;
+                double laden = lauf.LadungAcKwh[i];
+
+                // Beim Absorbieren von Erzeugungsüberschuss gilt dieselbe Merit-Order
+                // wie in der Dauernutzung: PV vor BHKW. Erst ein darüber hinausgehender
+                // Ladeanteil erhöht den Netzbezug und wird dort zum Bezugspreis bewertet.
+                double ausPv = Math.Min(laden, e.EPvFreiKwh);
+                double ausBhkw = Math.Min(Math.Max(0.0, laden - ausPv), e.EBhkwFreiKwh);
+                double vPv = eingang.VerguetungPvCtKwh == null
+                    ? p.VerguetungCtKwh
+                    : eingang.VerguetungPvCtKwh[i];
+                double vBhkw = eingang.VerguetungBhkwCtKwh == null
+                    ? p.VerguetungCtKwh
+                    : eingang.VerguetungBhkwCtKwh[i];
+
+                geldwert[i] = (e.EDefizitKwh - bezugNeu) * eingang.PreisCtKwh[i] / 100.0
+                               - ausPv * vPv / 100.0
+                               - ausBhkw * vBhkw / 100.0;
+
+                summeLast += e.ELastKwh;
+                summePv += e.EPvKwh;
+                summeBhkw += e.EBhkwKwh;
+                summeDirekt += e.EDirektKwh;
+                netzOhne += e.EDefizitKwh;
+                netzMit += bezugNeu;
+                einspeisungOhne += e.EUeberschussKwh;
+                einspeisungMit += exportNeu;
+                ladungPv += ausPv;
+                ladungBhkw += ausBhkw;
+            }
+
+            double energieCashflow = Numerik.SummeSequenziell(geldwert);
+            double pAltMax = Math.Max(0.0, lauf.PAltMaxKw);
+            double pNeuMax = Math.Max(0.0, lauf.PNeuMaxKw);
+            double leistungspreisersparnis = (pAltMax - pNeuMax) * _ps.LeistungspreisEurProKwA;
+            double ertrag = leistungspreisersparnis + energieCashflow;
+
+            WirtschaftlichkeitErgebnis wirtschaft = Wirtschaftlichkeit.Berechne(new WirtschaftlichkeitEingang
+            {
+                ErtragReferenzjahrEur = ertrag,
+                InvestitionEur = p.InvestitionEur,
+                Kapitalzins = p.Kapitalzins,
+                NutzungsdauerA = p.NutzungsdauerA,
+                DegradationProA = p.DegradationProA
+            });
+
+            SpeicherKennzahlen kennzahlen = lauf.Kennzahlen with
+            {
+                LadeenergiePvKwh = ladungPv,
+                LadeenergieBhkwKwh = ladungBhkw,
+                LastKwh = summeLast,
+                ErzeugungPvKwh = summePv,
+                ErzeugungBhkwKwh = summeBhkw,
+                DirektverbrauchKwh = summeDirekt,
+                NetzbezugOhneSpeicherKwh = netzOhne,
+                NetzbezugMitSpeicherKwh = netzMit,
+                EinspeisungOhneSpeicherKwh = einspeisungOhne,
+                EinspeisungMitSpeicherKwh = einspeisungMit
+            };
+
+            SpeicherErgebnis basis = new SpeicherErgebnis(
+                lauf.SoCKwh, geldwert, energieCashflow,
+                lauf.LadeenergieKwh, lauf.EntladeenergieKwh, lauf.Modus,
+                wirtschaft, kennzahlen, lauf.LadungAcKwh, lauf.EntladungAcKwh);
+
+            var monatsspitzen = new List<Monatsspitze>(lauf.Monatsspitzen.Count);
+            foreach (Monatsspitze monat in lauf.Monatsspitzen)
+                monatsspitzen.Add(monat with
+                {
+                    PAltMaxKw = Math.Max(0.0, monat.PAltMaxKw),
+                    PNeuMaxKw = Math.Max(0.0, monat.PNeuMaxKw)
+                });
+
+            return new PeakShavingErgebnis(
+                basis, residualKw, lauf.PNeuKw, pAltMax, pNeuMax,
+                Math.Max(0.0, lauf.ErreichteSchwelleKw), lauf.SchwelleGerissen,
+                monatsspitzen, leistungspreisersparnis,
+                -energieCashflow, ertrag);
         }
 
         /// <summary>

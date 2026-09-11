@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Bunit;
 using EPOS.UI.Dienste;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -363,9 +364,11 @@ public class SimulationErgebnisSeiteTests : BunitContext
         Assert.Same(_daten.Parameter.Speicher, reiter.Parameter);
         Assert.NotNull(reiter.Dienste);
 
+        // Der Block arbeitet seit W11b-B-29 auf der UEBERGABE selbst - was die Seite
+        // durchreicht, ist der Stand, den er zeigt und schreibt.
         var block = seite.FindComponent<SpeicherParameterBlock>().Instance;
-        Assert.Equal(10.0, block.Arbeitskopie.SoCMinProzent);
-        Assert.False(block.HatAenderungen);
+        Assert.Same(_daten.Parameter.Speicher, block.Daten);
+        Assert.Equal("", block.Meldung);
     }
 
     /// <summary>
@@ -383,6 +386,32 @@ public class SimulationErgebnisSeiteTests : BunitContext
 
         Assert.DoesNotContain(seite.FindComponent<ParameterReiter>().FindAll("button"),
                               b => b.TextContent.Contains("optimieren"));
+    }
+
+    [Fact]
+    public void Die_Auslegungswege_gehen_von_der_Seite_bis_in_den_Dialog()
+    {
+        var dienste = Dienste();
+        dienste.OptimierungVorgaben = () => new SpeicherOptimierungVorgaben();
+        dienste.OptimierungRechnen = (_, _) =>
+            Task.FromResult(new SpeicherOptimierungErgebnis { Erfolg = false });
+        Func<SpeicherOptimierungEingaben, Task<string>> einstellungen = _ => Task.FromResult("");
+        Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>> profil =
+            (_, _) => Task.FromResult(new SpeicherOptimierungVorgaben());
+        Func<Task<SpeicherImportDatei>> datei = () => Task.FromResult(new SpeicherImportDatei());
+        dienste.OptimierungEinstellungenSpeichern = einstellungen;
+        dienste.OptimierungProfilSpeichern = profil;
+        dienste.OptimierungDateiWaehlen = datei;
+
+        var seite = Zeichnen(dienste: dienste);
+        seite.Find("button[role='tab'][id='reiter-STROMSPEICHER']").Click();
+        seite.FindAll("button").Single(b => b.TextContent.Trim() ==
+            WindowsFormsApplication1.MyResource.Resource.OPT_BTN_OEFFNEN).Click();
+
+        var dialog = seite.FindComponent<SpeicherOptimierungDialog>().Instance;
+        Assert.Same(einstellungen, dialog.EinstellungenSpeichern);
+        Assert.Same(profil, dialog.ProfilSpeichern);
+        Assert.Same(datei, dialog.DateiWaehlen);
     }
 
     /// <summary>Ohne Datenseite zeichnet die Seite eine leere Ergebnisansicht.</summary>

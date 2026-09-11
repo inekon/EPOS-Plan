@@ -5591,17 +5591,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="SP_PARAM_HINWEIS_SOC_KWH" xml:space="preserve">
     <value>kWh equivalent of the percentage, referred to the capacity shown above</value>
   </data>
-  <data name="SP_PARAM_BTN_SPEICHERN" xml:space="preserve">
-    <value>Save parameters</value>
-  </data>
-  <data name="SP_PARAM_BTN_VERWERFEN" xml:space="preserve">
-    <value>Discard changes</value>
-  </data>
-  <data name="SP_PARAM_STATUS_UNGESPEICHERT" xml:space="preserve">
-    <value>Unsaved changes — they take effect only after “Save parameters”.</value>
-  </data>
   <data name="SP_PARAM_MSG_GESPEICHERT" xml:space="preserve">
-    <value>The storage parameters are saved. The next simulation run uses these values.</value>
+    <value>Saved — the next simulation run uses these values.</value>
   </data>
   <data name="SP_PARAM_MSG_SOC_BAND" xml:space="preserve">
     <value>The state of charge needs a band: 0 % ≤ minimum &lt; maximum ≤ 100 %.</value>
@@ -5616,7 +5607,7 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>Without an active storage variant there is no target for the parameters — nothing was written.</value>
   </data>
   <data name="SP_PARAM_MSG_FEHLER" xml:space="preserve">
-    <value>The storage parameters could not be written: {0}</value>
+    <value>The value could not be written — it is not stored in the database.</value>
   </data>
   <data name="SP_ERG_LAST" xml:space="preserve">
     <value>Electricity demand (load)</value>
@@ -16532,5 +16523,8 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Non-monetary effects: {0}</value>
+  </data>
+  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>The inputs have changed. The displayed result is out of date; please calculate again.</value>
   </data>
 </root>

@@ -242,7 +242,10 @@ namespace WindowsFormsApplication1
                 serien.Add(new Reihe("BHKW-Strom", MonatsSummenMWh(z.Hole(ZeitreihenSatz.BHKW_STROM)), C_BHKW));
             if (z.Hat(ZeitreihenSatz.NETZBEZUG))
                 serien.Add(new Reihe("Netzbezug", MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZBEZUG)), C_KESSEL));
-            if (z.Hat(ZeitreihenSatz.PV_UEBERSCHUSS))
+            if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
+                serien.Add(new Reihe("Netzeinspeisung gesamt",
+                    MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZEINSPEISUNG)), C_NETZ));
+            else if (z.Hat(ZeitreihenSatz.PV_UEBERSCHUSS))
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
             if (serien.Count == 0) return null;
 

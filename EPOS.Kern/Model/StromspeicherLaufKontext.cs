@@ -105,6 +105,12 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public ArbitrageErgebnis Arbitrageergebnis;
 
+        /// <summary>Vollständiges Ergebnis des Flottenlaufs, falls dieses Projekt eine übernommene Flotte nutzt.</summary>
+        public FlottenStudienErgebnis Flottenergebnis;
+
+        /// <summary>Im Lauf eingefrorene Flottenkonfiguration; unabhängig vom gespeicherten Profil.</summary>
+        public FlottenStudieKonfiguration Flottenkonfiguration;
+
         /// <summary>Kompatibilitätsmodus der Variante (Fachkonzept 5.2).</summary>
         public bool Kompatibilitaetsmodus => Variante != null && Variante.Kompatibilitaetsmodus;
     }

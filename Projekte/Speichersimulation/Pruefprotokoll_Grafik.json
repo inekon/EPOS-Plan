@@ -1,0 +1,42 @@
+{
+  "validation_date": "2026-09-10",
+  "python": "3.14.5",
+  "tests_run": 32,
+  "failures": 0,
+  "errors": 0,
+  "browser_checks": {
+    "runs": 6,
+    "chart_types": 4,
+    "config_export": true,
+    "percentage_conversion": true,
+    "soc_interval_end": true,
+    "mismatching_config_guard": true,
+    "mobile_width_px": 390,
+    "horizontal_page_overflow": false,
+    "year_intervals_rendered": 35040,
+    "browser_errors": []
+  },
+  "peak_target_regression": {
+    "inputTargetKw": 50,
+    "resultTargetKw": 50,
+    "actualPeakKw": 71.99535699999998,
+    "allTargetLineValuesCorrect": true,
+    "oldRunWarning": true,
+    "unsimulatedDraftWarning": true,
+    "browserErrors": []
+  },
+  "code_sha256": {
+    "degradation.py": "878497aa1613ffdc9460a35710393aa990e663496cec5a90b1fd213aeef0d78a",
+    "downloads.py": "c8b2e74875d5043071a78f2db75d1335bc73a754a10301163a7f335012a1d670",
+    "ems.py": "023da5393078e99fbf81f8c0c8d41ddda90d933156db6911b56f7d1de031311a",
+    "make_demo.py": "3b367d6ee38b64163fa7a1578df7393058e94bdaa8f9d7999eec65233651c5d3",
+    "prepare_inputs.py": "26bbaabab52ef2c9f2f3e6e01723593cbfca37fcb5dea93c5fd222d36b35a91c",
+    "project_value.py": "29ee047dc2e3dee4fdbd3c90ee879f6b54d380df893820b1a2f937892d810006",
+    "recalculate_example.py": "1f4b3e1bb7ec6fe04faae7f98561486798405a5b58fc8cd4b530b2f7b277b740",
+    "run.py": "51ce8e1b1c245fe3f53045ecef4dbe2e9e84b83642924d8bb25442ad5e178113",
+    "test_ems.py": "ec40822fc5b2cadf146da4f0886fd44e1f9c781a030d6ce2723de44d163c1f08",
+    "test_visualize_results.py": "de879659b225e9decf43174f57134ebd5ddde74b60ce2fa366a56edd6ece1b3f",
+    "visualization_template.html": "d87fd3cc636615ea17240fae9757dbd6ac2eafd182c6d2b5836f89457d3ce328",
+    "visualize_results.py": "4846312a02933e6a989b5b1b362d6434a7ba57d80caf498b6e37d4dc8e71cd69"
+  }
+}

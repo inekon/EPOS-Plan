@@ -12,16 +12,17 @@ namespace EPOS.UI.Tests.Seiten;
 
 /// <summary>
 /// Der SPEICHERPARAMETERBLOCK des Ergebnisreiters „Stromspeicher" (W11b‑B‑28),
-/// Anwenderwunsch 10.09.2026: „bringe den Tab Parameter → Stromspeicher aus
-/// Dialog ‚Detaillierte Simulation' in den Tab ‚Stromspeicher'. Die Felder mit
-/// Parametern sollen änderbar sein (und die Möglichkeit die geänderten Parameter
-/// zu Speichern)."
+/// nach dem ANWENDERENTSCHEID 1 vom 10.09.2026: „Sofort schreiben, wie überall
+/// sonst im Programm." (W11b‑B‑29).
 ///
-/// <para><b>Soll:</b> Der Block ist die BENANNTE AUSNAHME von der Hausregel
-/// „jedes Feld schreibt sofort" — er sammelt in einer Arbeitskopie und schreibt
-/// erst auf Knopfdruck, in EINEM Zug und mit ALLEN Werten. Ohne Änderung ist der
-/// Speichern-Knopf gesperrt, ohne Schreibdienst gibt es ihn gar nicht, und die
-/// Übergabe wird nie verändert.</para>
+/// <para><b>Soll:</b> JEDES Feld schreibt SOFORT über
+/// <c>Dienste.SpeicherfeldSchreiben</c> — einen Aufruf je Änderung, mit dem
+/// sprachneutralen Feldschlüssel und einem invarianten Wert. Die Rückmeldung des
+/// Dienstes steht in der Statuszeile am KOPF des Blocks, und dort steht auch der
+/// Optimierungsknopf. Es gibt keinen Speichern- und keinen Verwerfen-Knopf mehr:
+/// Der gepufferte Block aus W11b‑B‑28 verlor seine Eingaben beim Reiterwechsel,
+/// meldete einen fehlgeschlagenen Schreibvorgang als Erfolg, und seinen Knopf am
+/// Blockende fand der Anwender nicht.</para>
 ///
 /// <para>Die Felder selbst sind die des früheren Blatts P3 (siehe
 /// <c>ParameterReiterTests</c> bis W11b‑B‑27): ohne aktive Variante gesperrt, die
@@ -33,10 +34,10 @@ public class SpeicherParameterBlockTests : BunitContext
     private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
     private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
 
-    private readonly List<SpeicherParameterDaten> _geschrieben = new();
-    private int _gelesen;
+    /// <summary>Jeder Schreibvorgang: Feldschlüssel und Wert, in der Reihenfolge des Anfalls.</summary>
+    private readonly List<(string Feld, string Wert)> _geschrieben = new();
     private int _optimierungen;
-    private Rueckmeldung _antwort = new Rueckmeldung(true, "gespeichert");
+    private Rueckmeldung _antwort = new Rueckmeldung(true, Resource.SP_PARAM_MSG_GESPEICHERT);
 
     public SpeicherParameterBlockTests()
     {
@@ -100,16 +101,11 @@ public class SpeicherParameterBlockTests : BunitContext
     };
 
     private SimulationErgebnisDienste Dienste(bool mitSchreiben = true,
-                                              bool mitLesen = true,
-                                              bool mitPreisreihen = false,
-                                              SpeicherParameterDaten? lesestand = null)
+                                              bool mitPreisreihen = false)
         => new SimulationErgebnisDienste
         {
-            SpeicherparameterSchreiben = mitSchreiben
-                ? d => { _geschrieben.Add(d); return _antwort; }
-                : null,
-            SpeicherparameterLesen = mitLesen
-                ? () => { _gelesen++; return lesestand ?? Voll(); }
+            SpeicherfeldSchreiben = mitSchreiben
+                ? (feld, wert) => { _geschrieben.Add((feld, wert)); return _antwort; }
                 : null,
             SpeicherPreisreihen = mitPreisreihen ? Preisreihen : null
         };
@@ -160,201 +156,231 @@ public class SpeicherParameterBlockTests : BunitContext
         IRenderedComponent<SpeicherParameterBlock> block)
         => block.FindAll("input[type='text']");
 
-    private static AngleSharp.Dom.IElement Knopf(
-        IRenderedComponent<SpeicherParameterBlock> block, string text)
-        => block.FindAll("button.epos-simerg-knopf").First(b => b.TextContent.Trim() == text);
-
-    private static bool HatKnopf(IRenderedComponent<SpeicherParameterBlock> block, string text)
-        => block.FindAll("button.epos-simerg-knopf").Any(b => b.TextContent.Trim() == text);
+    private (string Feld, string Wert) Einziger => Assert.Single(_geschrieben);
 
     // =====================================================================
-    //  Die AUSNAHME: es wird gepuffert
+    //  Der Kernfall: jedes Feld schreibt SOFORT
     // =====================================================================
 
     /// <summary>
-    /// <b>Der Kernfall.</b> Eine Feldänderung schreibt NICHT — anders als auf der
-    /// Parameterseite, wo jedes Feld sofort schreibt. Der Anwender hat ausdrücklich
-    /// „die Möglichkeit die geänderten Parameter zu Speichern" verlangt.
+    /// <b>Der Kernfall</b> (W11b‑B‑29). Eine Feldänderung ruft den Schreibdienst
+    /// GENAU EINMAL — mit dem Schlüssel dieses Feldes und dem Wert INVARIANT
+    /// geschrieben, auch wenn der Anwender ihn mit Komma eingibt. Nichts wird
+    /// gesammelt, und es gibt keinen Knopf, den man dazu drücken müßte.
     /// </summary>
     [Fact]
-    public void Eine_Feldaenderung_schreibt_nicht_sofort()
+    public void Eine_Feldaenderung_schreibt_sofort_und_genau_einmal()
     {
         var block = Zeichnen();
-        Zahlen(block)[0].Input("15");
 
-        Assert.Empty(_geschrieben);
-        Assert.True(block.Instance.HatAenderungen);
-        Assert.Equal(15.0, block.Instance.Arbeitskopie.SoCMinProzent);
+        Zahlen(block)[0].Input("12,5");
+
+        Assert.Equal((SpeicherFeld.SoCMin, "12.5"), Einziger);
     }
 
-    /// <summary>Und die ÜBERGABE bleibt unangetastet — der Block arbeitet auf einer Kopie.</summary>
+    /// <summary>
+    /// Und zwar JEDES Feld — die neun Zahlen, die vier Schalter und die drei
+    /// Auswahllisten, jedes mit seinem eigenen Schlüssel. Der Fall ist die
+    /// Vollständigkeitsprobe: Ein vergessener Schreibweg fällt hier auf, nicht erst
+    /// dem Anwender.
+    /// </summary>
     [Fact]
-    public void Die_Uebergabe_bleibt_unveraendert()
+    public void Jedes_Feld_schreibt_mit_seinem_eigenen_Schluessel()
+    {
+        SpeicherParameterDaten d = Voll();
+        d.GeraetegroesseAenderbar = true;
+        var block = Zeichnen(d, Dienste(mitPreisreihen: true));
+
+        Zahlen(block)[0].Input("15");                            // SoC min
+        Zahlen(block)[1].Input("85");                            // SoC max
+        Zahlen(block)[2].Input("12");                            // Ladeleistung
+        Zahlen(block)[3].Input("200");                           // Kapazitaet
+        Zahlen(block)[4].Input("77");                            // Ladeschwelle
+        Zahlen(block)[5].Input("4");                             // Kapitalzins
+        Zahlen(block)[6].Input("20");                            // Nutzungsdauer
+        Zahlen(block)[7].Input("130");                           // Leistungspreis
+        Zahlen(block)[8].Input("3");                             // Netzladeaufschlag
+
+        block.FindAll("select")[0].Change("1");                  // Betriebsart -> Graustrom
+        block.FindAll("select")[1].Change("1");                  // Berechnungsart -> Nachtnutzung
+        block.FindAll("input[type='checkbox']")[0].Change(true); // Kompatibilitaet
+        block.FindAll("input[type='checkbox']")[1].Change(false);// Laden aus PV
+        block.FindAll("input[type='checkbox']")[2].Change(true); // Laden aus BHKW
+        block.FindAll("input[type='checkbox']")[3].Change(true); // Netzentladung
+        block.FindAll("input[type='checkbox']")[5].Change(true); // Aufschlag
+        block.FindAll("select")[2].Change("2");                  // Preisquelle -> Spotmarkt
+        block.FindAll("select")[3].Change("7");                  // Preisreihe
+
+        Assert.Equal(new List<(string, string)>
+        {
+            (SpeicherFeld.SoCMin, "15"),
+            (SpeicherFeld.SoCMax, "85"),
+            (SpeicherFeld.Leistung, "12"),
+            (SpeicherFeld.Kapazitaet, "200"),
+            (SpeicherFeld.Ladeschwelle, "77"),
+            (SpeicherFeld.Kapitalzins, "4"),
+            (SpeicherFeld.Nutzungsdauer, "20"),
+            (SpeicherFeld.Leistungspreis, "130"),
+            (SpeicherFeld.Netzladeaufschlag, "3"),
+            (SpeicherFeld.Betriebsart, DbWerte.SP_BETRIEBSART_GRAUSTROM),
+            (SpeicherFeld.Berechnungsart, DbWerte.SP_BERECHNUNG_NACHTNUTZUNG),
+            (SpeicherFeld.Kompatibilitaet, "1"),
+            (SpeicherFeld.LadenPv, "0"),
+            (SpeicherFeld.LadenBhkw, "1"),
+            (SpeicherFeld.Netzentladung, "1"),
+            (SpeicherFeld.Aufschlag, "1"),
+            (SpeicherFeld.Preisquelle, DbWerte.SP_PREISQUELLE_SPOTMARKT),
+            (SpeicherFeld.Preisreihe, "7")
+        }, _geschrieben);
+    }
+
+    /// <summary>
+    /// Die ÜbERGABE ist der Arbeitsstand — sie wird mitgeführt (anders als im
+    /// gepufferten Block, der sie unangetastet ließ). Nur so zeigt das Feld nach
+    /// dem Reiterwechsel noch, was geschrieben wurde.
+    /// </summary>
+    [Fact]
+    public void Die_Uebergabe_traegt_den_geschriebenen_Wert()
     {
         SpeicherParameterDaten uebergabe = Voll();
         var block = Zeichnen(uebergabe);
 
         Zahlen(block)[0].Input("15");
 
-        Assert.Equal(10.0, uebergabe.SoCMinProzent);
+        Assert.Equal(15.0, uebergabe.SoCMinProzent);
     }
 
     /// <summary>
-    /// Speichern ruft den Dienst GENAU EINMAL — mit ALLEN gepufferten Werten, auch
-    /// denen, die in demselben Zug geändert wurden. Ein halber Satz wäre schlimmer
-    /// als keiner.
+    /// <b>Ohne Schreibdienst schreibt kein Feld</b> — und dann sind die Felder auch
+    /// gesperrt: Ein Eingabefeld, das nirgendwo ankommt, ist eine Attrappe (und war
+    /// genau der Befund, der zu diesem Paket geführt hat).
     /// </summary>
     [Fact]
-    public void Speichern_uebergibt_alle_gepufferten_Werte_auf_einmal()
-    {
-        var block = Zeichnen();
-
-        Zahlen(block)[0].Input("15");
-        Zahlen(block)[4].Input("77");                       // Ladeschwellwert
-        block.FindAll("select")[0].Change("1");             // Betriebsart -> Graustrom
-        block.FindAll("input[type='checkbox']")[1].Change(false);   // Laden aus PV aus
-
-        Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).Click();
-
-        SpeicherParameterDaten satz = Assert.Single(_geschrieben);
-        Assert.Equal(15.0, satz.SoCMinProzent);
-        Assert.Equal(77.0, satz.Ladeschwellwert);
-        Assert.Equal(DbWerte.SP_BETRIEBSART_GRAUSTROM, satz.Betriebsart);
-        Assert.False(satz.LadenAusPv);
-
-        // Unberuehrtes faehrt unveraendert mit.
-        Assert.Equal(90.0, satz.SoCMaxProzent);
-        Assert.Equal(15.0, satz.Nutzungsdauer);
-    }
-
-    /// <summary>Nach dem Speichern gilt der FRISCHE Lesestand, nicht der Puffer.</summary>
-    [Fact]
-    public void Nach_dem_Speichern_liest_der_Block_neu()
-    {
-        var block = Zeichnen();
-        Zahlen(block)[0].Input("15");
-        Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).Click();
-
-        Assert.Equal(1, _gelesen);
-        Assert.False(block.Instance.HatAenderungen);
-        Assert.Equal(10.0, block.Instance.Arbeitskopie.SoCMinProzent);   // der Stand aus Voll()
-    }
-
-    /// <summary>„Änderungen verwerfen" holt den Lesestand zurück — über den Lesedienst.</summary>
-    [Fact]
-    public void Verwerfen_stellt_den_Lesestand_wieder_her()
-    {
-        var block = Zeichnen();
-        Zahlen(block)[0].Input("15");
-        Assert.True(block.Instance.HatAenderungen);
-
-        Knopf(block, Resource.SP_PARAM_BTN_VERWERFEN).Click();
-
-        Assert.Equal(1, _gelesen);
-        Assert.Empty(_geschrieben);
-        Assert.False(block.Instance.HatAenderungen);
-        Assert.Equal(10.0, block.Instance.Arbeitskopie.SoCMinProzent);
-    }
-
-    /// <summary>
-    /// Der Speichern-Knopf ist nur aktiv, wenn es etwas zu speichern gibt; „Verwerfen"
-    /// steht erst gar nicht da (dieselbe Regel wie in der <c>SpeichernLeiste</c> des
-    /// Hauses: markierter Satz UND Änderung).
-    /// </summary>
-    [Fact]
-    public void Ohne_Aenderung_ist_Speichern_gesperrt_und_Verwerfen_weg()
-    {
-        var block = Zeichnen();
-
-        Assert.True(Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).HasAttribute("disabled"));
-        Assert.False(HatKnopf(block, Resource.SP_PARAM_BTN_VERWERFEN));
-
-        Zahlen(block)[0].Input("15");
-
-        Assert.False(Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).HasAttribute("disabled"));
-        Assert.True(HatKnopf(block, Resource.SP_PARAM_BTN_VERWERFEN));
-    }
-
-    /// <summary>„Kein Delegat ist kein Knopf" (Regel seit W2.2).</summary>
-    [Fact]
-    public void Ohne_Schreibdienst_gibt_es_keinen_Speichern_Knopf()
+    public void Ohne_Schreibdienst_sind_die_Felder_gesperrt()
     {
         var block = Zeichnen(dienste: Dienste(mitSchreiben: false));
 
-        Assert.False(HatKnopf(block, Resource.SP_PARAM_BTN_SPEICHERN));
+        Assert.Empty(block.FindAll("input:not([disabled])"));
+        Assert.Empty(block.FindAll("select:not([disabled])"));
+        Assert.Empty(_geschrieben);
     }
+
+    // =====================================================================
+    //  Die Rückmeldung
+    // =====================================================================
 
     /// <summary>
-    /// Die Rückmeldung des Dienstes steht in der Statuszeile — bei einem Fehlschlag in
-    /// der Warnfarbe, und der Puffer bleibt stehen, damit die Eingabe nicht verloren
-    /// ist.
+    /// Jeder Schreibvorgang meldet sich — die Bestätigung steht ohne Warnfarbe in der
+    /// Statuszeile. „Stumm gespeichert" war der Zustand, in dem der Anwender nicht
+    /// merkte, dass nichts ankam.
     /// </summary>
     [Fact]
-    public void Die_Rueckmeldung_des_Speicherns_steht_in_der_Statuszeile()
+    public void Die_Bestaetigung_steht_ohne_Warnfarbe_in_der_Statuszeile()
     {
-        _antwort = new Rueckmeldung(false, Resource.SP_PARAM_MSG_SOC_BAND);
-
-        var block = Zeichnen();
-        Zahlen(block)[0].Input("95");
-        Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).Click();
-
-        var zeile = block.FindAll("p.epos-simerg-status")
-                         .First(p => p.TextContent.Contains(Resource.SP_PARAM_MSG_SOC_BAND));
-        Assert.Contains("epos-simerg-warn", zeile.ClassName);
-
-        Assert.Equal(0, _gelesen);                      // kein frisches Lesen nach Fehlschlag
-        Assert.True(block.Instance.HatAenderungen);     // die Eingabe steht noch da
-    }
-
-    /// <summary>Und bei Erfolg steht sie ohne Warnfarbe da.</summary>
-    [Fact]
-    public void Die_Bestaetigung_steht_ohne_Warnfarbe()
-    {
-        _antwort = new Rueckmeldung(true, Resource.SP_PARAM_MSG_GESPEICHERT);
-
         var block = Zeichnen();
         Zahlen(block)[0].Input("15");
-        Knopf(block, Resource.SP_PARAM_BTN_SPEICHERN).Click();
 
         var zeile = block.FindAll("p.epos-simerg-status")
                          .First(p => p.TextContent.Contains(Resource.SP_PARAM_MSG_GESPEICHERT));
         Assert.DoesNotContain("epos-simerg-warn", zeile.ClassName);
     }
 
-    /// <summary>Solange etwas offen ist, sagt es die Statuszeile.</summary>
+    /// <summary>
+    /// Ein Fehlschlag steht in der WARNFARBE da — und der eingegebene Wert bleibt im
+    /// Feld stehen. Das Zahlenfeld meldet jede Taste: Die „9" auf dem Weg zur „95"
+    /// ist ein Zwischenzustand, keine Fehleingabe; ein zurückgesetztes Feld risse dem
+    /// Anwender die Eingabe unter den Fingern weg.
+    /// </summary>
     [Fact]
-    public void Ungespeicherte_Aenderungen_stehen_in_der_Statuszeile()
+    public void Ein_Fehlschlag_steht_in_der_Warnfarbe_und_der_Wert_bleibt()
     {
-        var block = Zeichnen();
-        Assert.DoesNotContain(Resource.SP_PARAM_STATUS_UNGESPEICHERT, block.Markup);
+        _antwort = new Rueckmeldung(false, Resource.SP_PARAM_MSG_SOC_BAND);
 
-        Zahlen(block)[0].Input("15");
-        Assert.Contains(Resource.SP_PARAM_STATUS_UNGESPEICHERT, block.Markup);
+        SpeicherParameterDaten d = Voll();
+        var block = Zeichnen(d);
+        Zahlen(block)[0].Input("95");
+
+        var zeile = block.FindAll("p.epos-simerg-status")
+                         .First(p => p.TextContent.Contains(Resource.SP_PARAM_MSG_SOC_BAND));
+        Assert.Contains("epos-simerg-warn", zeile.ClassName);
+
+        Assert.Equal(95.0, d.SoCMinProzent);
+        Assert.Equal("95", Zahlen(block)[0].GetAttribute("value"));
     }
 
     /// <summary>
-    /// Ein neuer Lesestand (die Seite hat nach einem Lauf neu geladen) übernimmt den
-    /// Puffer — ABER NUR, solange nichts Ungespeichertes offen ist. Die Eingabe des
-    /// Anwenders wiegt schwerer als der Nachschlag.
+    /// Die nächste, gelungene Eingabe löst die Warnung ab — geprüft am TEXT der
+    /// Statuszeilen und an ihren Klassen (die Bandmeldung trägt ein „&lt;", das im
+    /// Markup maskiert steht).
     /// </summary>
     [Fact]
-    public void Eine_neue_Uebergabe_ersetzt_den_Puffer_nur_ohne_offene_Aenderung()
+    public void Der_naechste_gueltige_Wert_loest_die_Warnung_ab()
+    {
+        _antwort = new Rueckmeldung(false, Resource.SP_PARAM_MSG_SOC_BAND);
+
+        var block = Zeichnen();
+        Zahlen(block)[0].Input("95");
+        Assert.Equal(Resource.SP_PARAM_MSG_SOC_BAND, block.Instance.Meldung);
+
+        _antwort = new Rueckmeldung(true, Resource.SP_PARAM_MSG_GESPEICHERT);
+        Zahlen(block)[0].Input("15");
+
+        Assert.Equal(Resource.SP_PARAM_MSG_GESPEICHERT, block.Instance.Meldung);
+        Assert.DoesNotContain(block.FindAll("p.epos-simerg-status"),
+                              p => p.ClassName.Contains("epos-simerg-warn"));
+    }
+
+    /// <summary>Vor dem ersten Schreibvorgang steht keine Meldung da.</summary>
+    [Fact]
+    public void Ohne_Schreibvorgang_steht_keine_Meldung()
     {
         var block = Zeichnen();
 
-        SpeicherParameterDaten frisch = Voll();
-        frisch.SoCMinProzent = 20;
-        block.Render(p => p.Add(x => x.Daten, frisch));
-        Assert.Equal(20.0, block.Instance.Arbeitskopie.SoCMinProzent);
+        Assert.Single(block.FindAll("p.epos-simerg-status"));       // nur der Variantenstatus
+        Assert.Equal("", block.Instance.Meldung);
+    }
 
-        Zahlen(block)[0].Input("35");
+    // =====================================================================
+    //  Der Kopf des Blocks: Statuszeile, dann Knopf, dann Felder
+    // =====================================================================
 
-        SpeicherParameterDaten nochmal = Voll();
-        nochmal.SoCMinProzent = 44;
-        block.Render(p => p.Add(x => x.Daten, nochmal));
+    /// <summary>
+    /// <b>Der Optimierungsknopf steht OBEN</b> (W11b‑B‑29) — unter der Statuszeile und
+    /// VOR den Feldern. Am Blockende hat der Anwender ihn nicht gefunden.
+    /// </summary>
+    [Fact]
+    public void Der_Optimierungsknopf_steht_oben_unter_der_Statuszeile()
+    {
+        string markup = Zeichnen(optimierung: true).Markup;
 
-        Assert.Equal(35.0, block.Instance.Arbeitskopie.SoCMinProzent);
-        Assert.True(block.Instance.HatAenderungen);
+        int status = markup.IndexOf("epos-simerg-status", StringComparison.Ordinal);
+        int knopf = markup.IndexOf("epos-simerg-knopfzeile", StringComparison.Ordinal);
+        int felder = markup.IndexOf("epos-simerg-felder", StringComparison.Ordinal);
+
+        Assert.True(status >= 0 && status < knopf, "Die Statuszeile steht über der Knopfzeile.");
+        Assert.True(knopf < felder, "Die Knopfzeile steht über den Feldern.");
+    }
+
+    /// <summary>Kein Sprungdelegat = kein Knopf (Regel seit W2.2).</summary>
+    [Fact]
+    public void Ohne_Delegat_bleibt_der_Optimierungsknopf_weg()
+    {
+        Assert.Empty(Zeichnen().FindAll("button"));
+
+        var mit = Zeichnen(optimierung: true);
+        mit.FindAll("button").First(b => b.TextContent.Contains("optimieren")).Click();
+
+        Assert.Equal(1, _optimierungen);
+    }
+
+    /// <summary>
+    /// <b>Es gibt keine Speichern- und keine Verwerfen-Knöpfe mehr</b> (W11b‑B‑29):
+    /// Der Optimierungsknopf ist der EINZIGE Knopf des Blocks.
+    /// </summary>
+    [Fact]
+    public void Der_Block_hat_ausser_der_Optimierung_keinen_Knopf()
+    {
+        Assert.Single(Zeichnen(optimierung: true).FindAll("button"));
     }
 
     // =====================================================================
@@ -391,9 +417,9 @@ public class SpeicherParameterBlockTests : BunitContext
     }
 
     /// <summary>
-    /// <b>Die Gerätegröße ist neu änderbar</b> (W11b‑B‑28) — aber nur bei GENAU EINER
-    /// Speicheranlage. Sonst bleibt sie gesperrt und trägt den bisherigen Hinweis:
-    /// Varianten desselben Speichers teilen sich EINE Gerätekopie.
+    /// <b>Die Gerätegröße</b> ist nur bei GENAU EINER Speicheranlage änderbar. Sonst
+    /// bleibt sie gesperrt und trägt den bisherigen Hinweis: Varianten desselben
+    /// Speichers teilen sich EINE Gerätekopie.
     /// </summary>
     [Fact]
     public void Die_Geraetegroesse_ist_nur_mit_der_Erlaubnis_aenderbar()
@@ -410,6 +436,26 @@ public class SpeicherParameterBlockTests : BunitContext
         Assert.False(Zahlen(mit)[2].HasAttribute("disabled"));
         Assert.False(Zahlen(mit)[3].HasAttribute("disabled"));
         Assert.DoesNotContain(Resource.SP_PARAM_HINWEIS_LADELEISTUNG, mit.Markup);
+    }
+
+    /// <summary>
+    /// Und sie schreibt über ihre EIGENEN Schlüssel: Kapazität und Leistung gehen in
+    /// die ANLAGE (<c>Tab_Stromspeicher</c>) und nicht in die Variante — die Hülle
+    /// nimmt dafür denselben Weg wie die Auslegungsoptimierung.
+    /// </summary>
+    [Fact]
+    public void Die_Geraetegroesse_schreibt_ueber_Kapazitaet_und_Leistung()
+    {
+        SpeicherParameterDaten d = Voll();
+        d.GeraetegroesseAenderbar = true;
+        var block = Zeichnen(d);
+
+        Zahlen(block)[3].Input("200");
+        Assert.Equal((SpeicherFeld.Kapazitaet, "200"), Einziger);
+
+        _geschrieben.Clear();
+        Zahlen(block)[2].Input("50");
+        Assert.Equal((SpeicherFeld.Leistung, "50"), Einziger);
     }
 
     /// <summary>
@@ -444,21 +490,24 @@ public class SpeicherParameterBlockTests : BunitContext
     }
 
     /// <summary>
-    /// Der Wechsel der Preisquelle holt Beschriftung UND Liste über den Lesedienst —
-    /// aus „Preisreihe" wird „Kostenprofil". Geschrieben wird dabei nichts.
+    /// Der Wechsel der Preisquelle SCHREIBT die Quelle und holt Beschriftung UND Liste
+    /// über den Lesedienst — aus „Preisreihe" wird „Kostenprofil". Die Reihen-Id
+    /// selbst kommt aus der gespeicherten Variante und wird nicht noch einmal
+    /// geschrieben.
     /// </summary>
     [Fact]
-    public void Der_Preisquellenwechsel_holt_Label_und_Liste()
+    public void Der_Preisquellenwechsel_schreibt_und_holt_Label_und_Liste()
     {
-        var block = Zeichnen(dienste: Dienste(mitPreisreihen: true));
+        SpeicherParameterDaten d = Voll();
+        var block = Zeichnen(d, Dienste(mitPreisreihen: true));
 
         // [0] Betriebsart, [1] Berechnungsart, [2] Preisquelle, [3] Reihe
         block.FindAll("select")[2].Change("1");     // -> Kostenprofil
 
-        Assert.Empty(_geschrieben);
-        Assert.Equal("Kostenprofil", block.Instance.Arbeitskopie.PreisreiheLabel);
-        Assert.Equal(3, block.Instance.Arbeitskopie.PreisreiheId);
-        Assert.True(block.Instance.Arbeitskopie.PreisreiheMoeglich);
+        Assert.Equal((SpeicherFeld.Preisquelle, DbWerte.SP_PREISQUELLE_PROFIL), Einziger);
+        Assert.Equal("Kostenprofil", d.PreisreiheLabel);
+        Assert.Equal(3, d.PreisreiheId);
+        Assert.True(d.PreisreiheMoeglich);
         Assert.Contains("Profil Werk 1", block.Markup);
     }
 
@@ -466,34 +515,36 @@ public class SpeicherParameterBlockTests : BunitContext
     [Fact]
     public void Ohne_Preisreihendienst_bleibt_die_Liste_stehen()
     {
-        var block = Zeichnen();
+        SpeicherParameterDaten d = Voll();
+        var block = Zeichnen(d);
         block.FindAll("select")[2].Change("2");     // -> Spotmarkt
 
-        Assert.Equal(DbWerte.SP_PREISQUELLE_SPOTMARKT, block.Instance.Arbeitskopie.Preisquelle);
-        Assert.Equal("Preisreihe", block.Instance.Arbeitskopie.PreisreiheLabel);
-        Assert.False(block.Instance.Arbeitskopie.PreisreiheMoeglich);
+        Assert.Equal((SpeicherFeld.Preisquelle, DbWerte.SP_PREISQUELLE_SPOTMARKT), Einziger);
+        Assert.Equal("Preisreihe", d.PreisreiheLabel);
+        Assert.False(d.PreisreiheMoeglich);
     }
 
     /// <summary>
     /// Der Kompatibilitätsmodus ist nur bei NACHTNUTZUNG wählbar — dieselbe Regel, die
-    /// die Hülle beim Lesen anwendet. Im Puffer muss sie mitlaufen, sonst bliebe der
+    /// die Hülle beim Lesen anwendet. Sie muß hier mitlaufen, sonst bliebe der
     /// Schalter bis zum nächsten Lesen falsch gesperrt.
     /// </summary>
     [Fact]
-    public void Die_Kompatibilitaet_haengt_an_der_gepufferten_Berechnungsart()
+    public void Die_Kompatibilitaet_haengt_an_der_Berechnungsart()
     {
-        var block = Zeichnen();
+        SpeicherParameterDaten d = Voll();
+        var block = Zeichnen(d);
 
-        // [0] Kompatibilitaet, [1..3] Quellen, [4] Ausbaustufe
+        // [0] Kompatibilitaet, [1..3] Quellen, [4] Ausbaustufe, [5] Aufschlag
         Assert.True(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
 
         block.FindAll("select")[1].Change("1");     // Berechnungsart -> Nachtnutzung
 
-        Assert.True(block.Instance.Arbeitskopie.KompatibilitaetMoeglich);
+        Assert.True(d.KompatibilitaetMoeglich);
         Assert.False(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
 
         block.FindAll("select")[1].Change("2");     // -> Arbitrage
-        Assert.False(block.Instance.Arbeitskopie.KompatibilitaetMoeglich);
+        Assert.False(d.KompatibilitaetMoeglich);
         Assert.True(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
     }
 
@@ -508,19 +559,6 @@ public class SpeicherParameterBlockTests : BunitContext
         var block = Zeichnen();
 
         Assert.True(block.FindAll("input[type='checkbox']")[4].HasAttribute("disabled"));
-    }
-
-    /// <summary>Kein Sprungdelegat = kein Knopf (Regel seit W2.2).</summary>
-    [Fact]
-    public void Ohne_Delegat_bleibt_der_Optimierungsknopf_weg()
-    {
-        Assert.DoesNotContain(Zeichnen().FindAll("button"),
-                              b => b.TextContent.Contains("optimieren"));
-
-        var mit = Zeichnen(optimierung: true);
-        mit.FindAll("button").First(b => b.TextContent.Contains("optimieren")).Click();
-
-        Assert.Equal(1, _optimierungen);
     }
 
     /// <summary>

@@ -42,6 +42,15 @@
 @using WindowsFormsApplication1
 @using SpeicherEngine
 
+@if (FlottenRechnen is not null)
+{
+    <SpeicherFlottenDialog Vorgaben="Vorgaben" Rechnen="FlottenRechnen" Abbrechen="Abbrechen"
+        EinstellungenSpeichern="EinstellungenSpeichern" ProfilSpeichern="ProfilSpeichern"
+        DateiWaehlen="DateiWaehlen" Csv="Csv" Meldung="@Meldung" Geschlossen="Geschlossen"
+        ProjektAktiv="FlottenProjektAktiv" ProjektUebernehmen="FlottenProjektUebernehmen" ProjektDeaktivieren="FlottenProjektDeaktivieren" />
+}
+else
+{
 <div class="epos-speicheropt">
 
     <div class="epos-simerg-kopf">
@@ -57,53 +66,28 @@
        dritten Spaltenbreite dahinter; .epos-speicheropt-suchraum stellt ihn auf
        DREI Spalten und engere Zeilen. Die Feldbausteine bleiben unveraendert -
        die Enge kommt aus dem Stilblatt, nicht aus neuen Feldern. *@
+    @if (!ErweiterteAuslegung)
+    {
     <div class="epos-speicheropt-suchraum">
     <Formularraster>
         <KindInhalt>
             <Formulargruppe Titel="@Resource.OPT_GRP_SUCHRAUM">
                 <KindInhalt>
-                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMIN" Wert="@_eingaben.CMinKwh"
-                                Aktiv="@(!_laeuft)" Min="0"
-                                WertChanged="@(w => Setzen(v => _eingaben.CMinKwh = v, w))" />
-
-                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMAX" Wert="@_eingaben.CMaxKwh"
-                                Aktiv="@(!_laeuft)" Min="0"
-                                WertChanged="@(w => Setzen(v => _eingaben.CMaxKwh = v, w))" />
-
-                    <Ganzzahlfeld Bezeichnung="@Resource.OPT_LBL_STUETZSTELLEN"
-                                  Wert="@_eingaben.Stuetzstellen" Aktiv="@(!_laeuft)"
-                                  Min="@SpeicherOptimierungCtrl.STUETZSTELLEN_MIN"
-                                  Max="@SpeicherOptimierungCtrl.STUETZSTELLEN_MAX"
-                                  WertChanged="@(w => SetzenGanz(v => _eingaben.Stuetzstellen = v, w))" />
-
-                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMIN" Wert="@_eingaben.RMin"
-                                Aktiv="@(!_laeuft)" Min="0"
-                                WertChanged="@(w => Setzen(v => _eingaben.RMin = v, w))" />
-
-                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMAX" Wert="@_eingaben.RMax"
-                                Aktiv="@(!_laeuft)" Min="0"
-                                WertChanged="@(w => Setzen(v => _eingaben.RMax = v, w))" />
-
-                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RSCHRITT" Wert="@_eingaben.RSchritt"
-                                Aktiv="@(!_laeuft)" Min="0"
-                                WertChanged="@(w => Setzen(v => _eingaben.RSchritt = v, w))" />
-
-                    <Auswahlfeld Bezeichnung="@Resource.OPT_LBL_STRATEGIE"
-                                 Eintraege="@STRATEGIEN" Auswahl="@((int)_eingaben.Strategie)"
-                                 Aktiv="@(!_laeuft)" AuswahlChanged="StrategieGewaehlt" />
-
-                    <Schalter Bezeichnung="@Resource.OPT_CHK_FEINRASTER" Wert="@_eingaben.Feinraster"
-                              Aktiv="@(!_laeuft)"
-                              WertChanged="@(w => { _eingaben.Feinraster = w; Nachrechnen(); })" />
-
-                    <Schalter Bezeichnung="@Resource.OPT_CHK_KVER" Wert="@_eingaben.KVerInZielfunktion"
-                              Aktiv="@(!_laeuft)"
-                              WertChanged="@(w => { _eingaben.KVerInZielfunktion = w; Nachrechnen(); })" />
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMIN" Wert="@_eingaben.CMinKwh" Aktiv="@(!_laeuft)" Min="0" WertChanged="@(w => Setzen(v => _eingaben.CMinKwh = v, w))" />
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_CMAX" Wert="@_eingaben.CMaxKwh" Aktiv="@(!_laeuft)" Min="0" WertChanged="@(w => Setzen(v => _eingaben.CMaxKwh = v, w))" />
+                    <Ganzzahlfeld Bezeichnung="@Resource.OPT_LBL_STUETZSTELLEN" Wert="@_eingaben.Stuetzstellen" Aktiv="@(!_laeuft)" Min="@SpeicherOptimierungCtrl.STUETZSTELLEN_MIN" Max="@SpeicherOptimierungCtrl.STUETZSTELLEN_MAX" WertChanged="@(w => SetzenGanz(v => _eingaben.Stuetzstellen = v, w))" />
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMIN" Wert="@_eingaben.RMin" Aktiv="@(!_laeuft)" Min="0" WertChanged="@(w => Setzen(v => _eingaben.RMin = v, w))" />
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RMAX" Wert="@_eingaben.RMax" Aktiv="@(!_laeuft)" Min="0" WertChanged="@(w => Setzen(v => _eingaben.RMax = v, w))" />
+                    <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_RSCHRITT" Wert="@_eingaben.RSchritt" Aktiv="@(!_laeuft)" Min="0" WertChanged="@(w => Setzen(v => _eingaben.RSchritt = v, w))" />
+                    <Auswahlfeld Bezeichnung="@Resource.OPT_LBL_STRATEGIE" Eintraege="@STRATEGIEN" Auswahl="@((int)_eingaben.Strategie)" Aktiv="@(!_laeuft)" AuswahlChanged="StrategieGewaehlt" />
+                    <Schalter Bezeichnung="@Resource.OPT_CHK_FEINRASTER" Wert="@_eingaben.Feinraster" Aktiv="@(!_laeuft)" WertChanged="@(w => { _eingaben.Feinraster = w; Nachrechnen(); })" />
+                    <Schalter Bezeichnung="@Resource.OPT_CHK_KVER" Wert="@_eingaben.KVerInZielfunktion" Aktiv="@(!_laeuft)" WertChanged="@(w => { _eingaben.KVerInZielfunktion = w; Nachrechnen(); })" />
                 </KindInhalt>
             </Formulargruppe>
         </KindInhalt>
     </Formularraster>
     </div>
+    }
 
     @* DER LEISTUNGSPREIS - nur bei der Lastspitzenkappung (Anwenderentscheid
        W11b-E-3, 10.09.2026: „Lastspitzenkappung — Leistungspreis in Maske und
@@ -183,6 +167,21 @@
     @if (!string.IsNullOrEmpty(_fehler))
     {
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    @if (ErweiterteAuslegung)
+    {
+        <SpeicherAuslegungEditor Wert="@_eingaben" WertChanged="AuslegungGeaendert"
+            Aktiv="@(!_laeuft)" Auslegungsprofile="@_auslegungsprofile"
+            Strompreisprofile="@_strompreisprofile" Modulkosten="@_modulkosten"
+            EinstellungenSpeichern="@EinstellungenSpeichern"
+            ProfilSpeichern="@(ProfilSpeichern is null ? null : ProfilSpeichernUndAktualisieren)"
+            DateiWaehlen="@DateiWaehlen" />
+    }
+
+    @if (_ergebnisVeraltet)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.OPT_MSG_ERGEBNIS_VERALTET" />
     }
 
     @* Die Meldung der Huelle - „Die Auslegung wurde uebernommen" ist ein ERFOLG und
@@ -291,7 +290,7 @@
 
     <div class="epos-simerg-fuss">
         <button type="button" @onclick="UebernehmenFragen"
-                disabled="@(_laeuft || !ErgebnisDa || !Uebernehmen.HasDelegate)">
+                disabled="@(_laeuft || !ErgebnisDa || _ergebnisVeraltet || !Uebernehmen.HasDelegate)">
             @Resource.OPT_BTN_UEBERNEHMEN
         </button>
 
@@ -312,7 +311,13 @@
 
 </div>
 
+}
+
 @code {
+    [Parameter] public Func<bool>? FlottenProjektAktiv { get; set; }
+    [Parameter] public Func<SpeicherFlottenErgebnis, Task<string>>? FlottenProjektUebernehmen { get; set; }
+    [Parameter] public Func<Task<string>>? FlottenProjektDeaktivieren { get; set; }
+    [Parameter] public Func<SpeicherOptimierungEingaben, Action<double?, string>, Task<SpeicherFlottenErgebnis>>? FlottenRechnen { get; set; }
     /// <summary>
     /// Die zwei Betriebsstrategien als Eintraege der Klappliste. Die Id ist der
     /// Zahlenwert von <see cref="OptimiererStrategie"/> — Anzeigetext und Steuerwert
@@ -363,6 +368,15 @@
     /// <summary>Schreibt das Raster als CSV; ohne Rueckruf kein Knopf.</summary>
     [Parameter] public EventCallback<string> Csv { get; set; }
 
+    /// <summary>Speichert die aktuellen Auslegungseinstellungen; leerer Rueckgabewert bedeutet Erfolg.</summary>
+    [Parameter] public Func<SpeicherOptimierungEingaben, Task<string>>? EinstellungenSpeichern { get; set; }
+
+    /// <summary>Speichert ein benanntes, vollstaendiges Auslegungsprofil und liefert die aktualisierten Vorgaben.</summary>
+    [Parameter] public Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>>? ProfilSpeichern { get; set; }
+
+    /// <summary>Waehlt eine CSV-Datei plattformabhaengig in der Huelle.</summary>
+    [Parameter] public Func<Task<SpeicherImportDatei>>? DateiWaehlen { get; set; }
+
     /// <summary>
     /// Schreibt den Leistungspreis L_P [€/(kW·a)] SOFORT in die aktive
     /// Speichervariante (Anwenderentscheid W11b‑E‑3, 10.09.2026).
@@ -407,6 +421,10 @@
 
     private SpeicherOptimierungEingaben _eingaben = new SpeicherOptimierungEingaben();
     private string _aktuelleAuslegung = "";
+    private IReadOnlyList<SpeicherAuslegungProfil> _auslegungsprofile = Array.Empty<SpeicherAuslegungProfil>();
+    private IReadOnlyList<KostenprofilModel> _strompreisprofile = Array.Empty<KostenprofilModel>();
+    private SpeicherKostensaetze _modulkosten = new();
+    private bool _ergebnisVeraltet;
 
     /// <summary>Die angebotenen Leistungspreis-Quellen; leer = keine gepflegt.</summary>
     private IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> _quellen =
@@ -471,6 +489,10 @@
 
     private bool LaufMoeglich => Rechnen is not null;
 
+    private bool ErweiterteAuslegung => EinstellungenSpeichern is not null || ProfilSpeichern is not null ||
+        DateiWaehlen is not null || _auslegungsprofile.Count > 0 || _strompreisprofile.Count > 0 ||
+        _modulkosten.InvestVorhanden || _modulkosten.BetriebVorhanden;
+
     private bool ErgebnisDa => _ergebnis is not null && _ergebnis.Erfolg;
 
     private string Punktetext => string.Format(
@@ -484,11 +506,15 @@
     /// <inheritdoc />
     protected override void OnInitialized()
     {
+        if (FlottenRechnen is not null) return;
         SpeicherOptimierungVorgaben? vorgaben = Vorgaben?.Invoke();
         if (vorgaben is null) return;
 
         _eingaben = vorgaben.Eingaben.Kopie();
         _aktuelleAuslegung = vorgaben.AktuelleAuslegung;
+        _auslegungsprofile = vorgaben.Auslegungsprofile ?? Array.Empty<SpeicherAuslegungProfil>();
+        _strompreisprofile = vorgaben.Strompreisprofile ?? Array.Empty<KostenprofilModel>();
+        _modulkosten = vorgaben.Modulkosten ?? new SpeicherKostensaetze();
         _quellen = vorgaben.Leistungspreisquellen
                    ?? (IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle>)
                       new List<SpeicherOptimierungLeistungspreisQuelle>();
@@ -580,7 +606,34 @@
     }
 
     /// <summary>Ein geaenderter Suchraum entwertet den Fehlertext und die Punktzahl.</summary>
-    private void Nachrechnen() => _fehler = "";
+    private void Nachrechnen()
+    {
+        _fehler = "";
+        if (_ergebnis is not null) _ergebnisVeraltet = true;
+    }
+
+    private void AuslegungGeaendert(SpeicherOptimierungEingaben wert)
+    {
+        _eingaben = wert.Kopie();
+        Nachrechnen();
+    }
+
+    private async Task<SpeicherOptimierungVorgaben> ProfilSpeichernUndAktualisieren(
+        SpeicherOptimierungEingaben wert, string name)
+    {
+        SpeicherOptimierungVorgaben vorgaben =
+            await ProfilSpeichern!(wert.Kopie(), name) ?? new SpeicherOptimierungVorgaben
+            {
+                Eingaben = wert.Kopie(),
+                Auslegungsprofile = _auslegungsprofile,
+                Strompreisprofile = _strompreisprofile,
+                Modulkosten = _modulkosten
+            };
+        _auslegungsprofile = vorgaben.Auslegungsprofile ?? Array.Empty<SpeicherAuslegungProfil>();
+        _strompreisprofile = vorgaben.Strompreisprofile ?? Array.Empty<KostenprofilModel>();
+        _modulkosten = vorgaben.Modulkosten ?? new SpeicherKostensaetze();
+        return vorgaben;
+    }
 
     // =====================================================================
     // Der Lauf
@@ -627,6 +680,7 @@
         else
         {
             _ergebnis = antwort;
+            _ergebnisVeraltet = false;
 
             // Ein neuer Lauf setzt die Schalterstellungen des Betriebsbildes zurueck:
             // Der Ausschnitt eines FRUEHEREN Bestpunkts hat mit diesem nichts zu tun.

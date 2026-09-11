@@ -22,6 +22,12 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public sealed class SpeicherOptimierungEingaben
     {
+        public OptimiererGroessenachse Groessenachse { get; set; }
+        public double PMinKw { get; set; } = 50;
+        public double PMaxKw { get; set; } = 500;
+        public double? PSchrittKw { get; set; }
+        public double? CSchrittKwh { get; set; }
+        public SpeicherAuslegungKonfiguration Auslegung { get; set; }
         /// <summary>Untere Grenze der Kapazitätsachse C_min [kWh].</summary>
         public double CMinKwh { get; set; } = 500.0;
 
@@ -67,6 +73,12 @@ namespace WindowsFormsApplication1
         {
             return new SpeicherOptimierungEingaben
             {
+                Groessenachse = Groessenachse,
+                PMinKw = PMinKw,
+                PMaxKw = PMaxKw,
+                PSchrittKw = PSchrittKw,
+                CSchrittKwh = CSchrittKwh,
+                Auslegung = SpeicherAuslegungKopie.Von(Auslegung),
                 CMinKwh = CMinKwh,
                 CMaxKwh = CMaxKwh,
                 Stuetzstellen = Stuetzstellen,
@@ -106,6 +118,9 @@ namespace WindowsFormsApplication1
     /// <summary>Vorbelegung des Suchraums samt der aktuellen Auslegung.</summary>
     public sealed class SpeicherOptimierungVorgaben
     {
+        public IReadOnlyList<SpeicherAuslegungProfil> Auslegungsprofile { get; set; } = Array.Empty<SpeicherAuslegungProfil>();
+        public IReadOnlyList<KostenprofilModel> Strompreisprofile { get; set; } = Array.Empty<KostenprofilModel>();
+        public SpeicherKostensaetze Modulkosten { get; set; } = new();
         /// <summary>Der vorgeschlagene Suchraum.</summary>
         public SpeicherOptimierungEingaben Eingaben { get; set; } = new SpeicherOptimierungEingaben();
 
@@ -199,6 +214,12 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<SpeicherOptimierungKennzahl> Kennzahlen { get; set; }
             = new List<SpeicherOptimierungKennzahl>();
 
+        /// <summary>Die für Raster und Schnittkurve verwendete Größenachse.</summary>
+        public OptimiererGroessenachse Groessenachse { get; set; }
+
+        /// <summary>Wert des Bestpunkts auf der gewählten Größenachse [kWh] oder [kW].</summary>
+        public double Groessenwert { get; set; }
+
         /// <summary>Nennkapazität des Bestpunkts [kWh].</summary>
         public double KapazitaetKwh { get; set; }
 
@@ -263,6 +284,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Anzahl der gezeigten Stützstellen — die Bezugsgröße des Datenzooms.</summary>
         public int Stuetzstellen { get; set; }
+
+        /// <summary>
+        /// Tatsächliche UTC-Intervallanfänge des gezeigten Ausschnitts; leer bei
+        /// modelljähriger oder indexbasierter Zeitachse.
+        /// </summary>
+        public IReadOnlyList<DateTimeOffset> ZeitstempelUtc { get; set; } = Array.Empty<DateTimeOffset>();
+
+        /// <summary>Hinweis zur vom Quelladapter verwendeten Zeitachse.</summary>
+        public string ZeitachsenHinweis { get; set; } = "";
     }
 
     /// <summary>
@@ -628,14 +658,33 @@ namespace WindowsFormsApplication1
 
             CultureInfo k = CultureInfo.CurrentCulture;
 
-            if (!(eingaben.CMinKwh > 0.0)) maengel.Add(MyResource.Resource.OPT_MSG_CMIN);
-            if (!(eingaben.CMaxKwh > eingaben.CMinKwh)) maengel.Add(MyResource.Resource.OPT_MSG_CMAX);
+            if (!Enum.IsDefined(typeof(OptimiererGroessenachse), eingaben.Groessenachse))
+                maengel.Add("Die Größenachse ist ungültig.");
+
+            if (!EndlichPositiv(eingaben.CMinKwh)) maengel.Add(MyResource.Resource.OPT_MSG_CMIN);
+            if (!double.IsFinite(eingaben.CMaxKwh) || eingaben.CMaxKwh < eingaben.CMinKwh)
+                maengel.Add(MyResource.Resource.OPT_MSG_CMAX);
+            if (eingaben.CSchrittKwh.HasValue && !EndlichPositiv(eingaben.CSchrittKwh.Value))
+                maengel.Add("Der Kapazitätsschritt muss größer als 0 sein.");
+
+            if (!EndlichPositiv(eingaben.PMinKw))
+                maengel.Add("Die untere Leistungsgrenze muss größer als 0 sein.");
+            if (!double.IsFinite(eingaben.PMaxKw) || eingaben.PMaxKw < eingaben.PMinKw)
+                maengel.Add("Die obere Leistungsgrenze darf nicht unter der unteren liegen.");
+            if (eingaben.PSchrittKw.HasValue && !EndlichPositiv(eingaben.PSchrittKw.Value))
+                maengel.Add("Der Leistungsschritt muss größer als 0 sein.");
             if (eingaben.Stuetzstellen < STUETZSTELLEN_MIN) maengel.Add(MyResource.Resource.OPT_MSG_STUETZSTELLEN);
             else if (eingaben.Stuetzstellen > STUETZSTELLEN_MAX)
                 maengel.Add(string.Format(k, MyResource.Resource.OPT_MSG_STUETZSTELLEN_MAX, STUETZSTELLEN_MAX));
-            if (!(eingaben.RMin > 0.0)) maengel.Add(MyResource.Resource.OPT_MSG_RMIN);
-            if (eingaben.RMax < eingaben.RMin) maengel.Add(MyResource.Resource.OPT_MSG_RMAX);
-            if (!(eingaben.RSchritt > 0.0)) maengel.Add(MyResource.Resource.OPT_MSG_RSCHRITT);
+            if (!EndlichPositiv(eingaben.RMin)) maengel.Add(MyResource.Resource.OPT_MSG_RMIN);
+            if (!double.IsFinite(eingaben.RMax) || eingaben.RMax < eingaben.RMin)
+                maengel.Add(MyResource.Resource.OPT_MSG_RMAX);
+            if (!EndlichPositiv(eingaben.RSchritt)) maengel.Add(MyResource.Resource.OPT_MSG_RSCHRITT);
+
+            SpeicherKostensaetze kosten = Laufkosten(eingaben);
+            KostenPruefen(maengel, kosten.BetriebEurProKwJahr, "Betriebskosten je kW und Jahr");
+            KostenPruefen(maengel, kosten.BetriebEurProKwhJahr, "Betriebskosten je kWh und Jahr");
+            KostenPruefen(maengel, kosten.BetriebEurProKwhEntladen, "Betriebskosten je entladener kWh");
 
             // Ohne L_P wäre die Leistungspreisersparnis jedes Rasterpunktes 0 und die
             // Zielfunktion allein der negative Kapitaldienst — die Suche liefe und
@@ -661,14 +710,26 @@ namespace WindowsFormsApplication1
         public static int Punktzahl(SpeicherOptimierungEingaben eingaben)
         {
             if (eingaben == null) return 0;
-            if (!(eingaben.RSchritt > 0.0) || eingaben.RMax < eingaben.RMin) return 0;
+            if (!EndlichPositiv(eingaben.RSchritt) || !double.IsFinite(eingaben.RMax) ||
+                eingaben.RMax < eingaben.RMin) return 0;
             if (eingaben.Stuetzstellen < STUETZSTELLEN_MIN) return 0;
 
             double spanne = (eingaben.RMax - eingaben.RMin) / eingaben.RSchritt;
             if (double.IsNaN(spanne) || double.IsInfinity(spanne) || spanne > int.MaxValue / 4)
                 return int.MaxValue;
 
-            return Optionen(eingaben).PunkteGesamt;
+            try
+            {
+                return Optionen(eingaben).PunkteGesamt;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return int.MaxValue;
+            }
+            catch (OverflowException)
+            {
+                return int.MaxValue;
+            }
         }
 
         /// <summary>Die Eingaben als Optionssatz der Engine.</summary>
@@ -676,10 +737,17 @@ namespace WindowsFormsApplication1
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
 
+            SpeicherKostensaetze kosten = Laufkosten(e);
+
             return new OptimiererOptionen
             {
+                Groessenachse = e.Groessenachse,
                 CMinKwh = e.CMinKwh,
                 CMaxKwh = e.CMaxKwh,
+                CSchrittKwh = e.CSchrittKwh,
+                PMinKw = e.PMinKw,
+                PMaxKw = e.PMaxKw,
+                PSchrittKw = e.PSchrittKw,
                 Stuetzstellen = e.Stuetzstellen,
                 RMin = e.RMin,
                 RMax = e.RMax,
@@ -687,8 +755,28 @@ namespace WindowsFormsApplication1
                 Feinraster = e.Feinraster,
                 KVerInZielfunktion = e.KVerInZielfunktion,
                 Strategie = e.Strategie,
-                LeistungspreisEurProKwA = e.LeistungspreisEurProKwA
+                NetzanschlussAuslegung = e.Auslegung != null,
+                LeistungspreisEurProKwA = e.LeistungspreisEurProKwA,
+                BetriebEurProKwJahr = kosten.BetriebEurProKwJahr,
+                BetriebEurProKwhJahr = kosten.BetriebEurProKwhJahr,
+                BetriebEurProKwhEntladen = kosten.BetriebEurProKwhEntladen
             };
+        }
+
+        /// <summary>
+        /// Für diesen Lauf vorbereitete Kosten; leer im alten Aufrufweg ohne Auslegung.
+        /// </summary>
+        public static SpeicherKostensaetze Laufkosten(SpeicherOptimierungEingaben eingaben)
+            => eingaben != null && eingaben.Auslegung != null && eingaben.Auslegung.VerwendeteKosten != null
+                ? eingaben.Auslegung.VerwendeteKosten
+                : new SpeicherKostensaetze();
+
+        private static bool EndlichPositiv(double wert) => double.IsFinite(wert) && wert > 0.0;
+
+        private static void KostenPruefen(List<string> maengel, double wert, string bezeichnung)
+        {
+            if (!double.IsFinite(wert) || wert < 0.0)
+                maengel.Add(bezeichnung + " müssen endlich und nicht negativ sein.");
         }
 
         // =================================================================
@@ -856,10 +944,17 @@ namespace WindowsFormsApplication1
             CultureInfo k = CultureInfo.CurrentCulture;
             OptimiererPunkt best = roh.BestPunkt;
             OptimiererRaster raster = roh.BestRaster;
+            double bestGroesse = Groessenwert(raster.Groessenachse, best);
+            string groessenTitel = GroessenachsenTitel(raster.Groessenachse);
+            string statusFormat = raster.Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? MyResource.Resource.OPT_STATUS_FERTIG.Replace(" kWh", " kW")
+                : MyResource.Resource.OPT_STATUS_FERTIG;
 
             var ergebnis = new SpeicherOptimierungErgebnis
             {
                 Erfolg = true,
+                Groessenachse = raster.Groessenachse,
+                Groessenwert = bestGroesse,
                 KapazitaetKwh = best.CNomKwh,
                 CRate = best.CRate,
                 LeistungKw = best.PKw,
@@ -870,15 +965,15 @@ namespace WindowsFormsApplication1
                 Hinweise = Hinweise(roh),
                 Kennzahlen = Kennzahlen(roh),
                 RasterCsv = RasterCsvText(roh),
-                Statuszeile = string.Format(k, MyResource.Resource.OPT_STATUS_FERTIG,
+                Statuszeile = string.Format(k, statusFormat,
                     roh.PunkteGerechnet, roh.Dauer.TotalSeconds.ToString("0.0", k),
-                    best.CNomKwh.ToString("0.#", k), best.CRate.ToString("0.##", k)),
+                    bestGroesse.ToString("0.#", k), best.CRate.ToString("0.##", k)),
                 SchnittTitel = string.Format(k, MyResource.Resource.OPT_CHART_SCHNITT_TITEL,
                     best.CRate.ToString("0.##", k))
             };
 
             int besteSpalte = raster.IndexCRate(best.CRate);
-            int besteZeile = ZeileVon(raster, best.CNomKwh);
+            int besteZeile = ZeileVon(raster, bestGroesse);
 
             double[][] werte = new double[raster.Zeilen][];
             for (int i = 0; i < raster.Zeilen; i++)
@@ -891,16 +986,16 @@ namespace WindowsFormsApplication1
             ergebnis.RasterBild = ChartRenderer.Optimierungsraster(
                 MyResource.Resource.OPT_CHART_HEATMAP_TITEL,
                 MyResource.Resource.OPT_CHART_X_CRATE,
-                MyResource.Resource.OPT_CHART_Y_KAPAZITAET,
+                groessenTitel,
                 MyResource.Resource.OPT_CHART_FARBSKALA,
-                raster.CRaten, raster.KapazitaetenKwh, werte, besteZeile, besteSpalte);
+                raster.CRaten, raster.Groessenwerte, werte, besteZeile, besteSpalte);
 
             double[] schnitt = besteSpalte >= 0 ? raster.Schnittkurve(besteSpalte) : new double[0];
             ergebnis.SchnittBild = ChartRenderer.Schnittkurve(
                 ergebnis.SchnittTitel,
-                MyResource.Resource.OPT_CHART_Y_KAPAZITAET,
+                groessenTitel,
                 MyResource.Resource.OPT_CHART_SCHNITT_Y,
-                raster.KapazitaetenKwh, schnitt, best.CNomKwh, best.ZielfunktionEur);
+                raster.Groessenwerte, schnitt, bestGroesse, best.ZielfunktionEur);
 
             return ergebnis;
         }
@@ -1023,6 +1118,13 @@ namespace WindowsFormsApplication1
             bild.VonIntervall = von;
             bild.BisIntervall = bis;
             bild.Stuetzstellen = laenge;
+            bild.ZeitachsenHinweis = vorbereitung.ZeitachsenHinweis ?? "";
+            if (vorbereitung.ZeitstempelUtc != null && vorbereitung.ZeitstempelUtc.Length >= bis)
+            {
+                DateTimeOffset[] zeit = new DateTimeOffset[laenge];
+                Array.Copy(vorbereitung.ZeitstempelUtc, von, zeit, 0, laenge);
+                bild.ZeitstempelUtc = zeit;
+            }
             bild.Titel = string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.OPT_CHART_BETRIEB_TITEL,
                 ganzesJahr ? MyResource.Resource.OPT_BETRIEB_JAHR
@@ -1123,14 +1225,23 @@ namespace WindowsFormsApplication1
             return false;
         }
 
-        /// <summary>Index der Kapazitätsachse, die dem Wert am nächsten liegt; -1 bei leerem Raster.</summary>
-        private static int ZeileVon(OptimiererRaster raster, double kapazitaetKwh)
+        /// <summary>Beschriftung der gewählten Größenachse samt Einheit.</summary>
+        public static string GroessenachsenTitel(OptimiererGroessenachse achse)
+            => achse == OptimiererGroessenachse.LeistungKw
+                ? MyResource.Resource.OPT_KZ_LEISTUNG + " [kW]"
+                : MyResource.Resource.OPT_CHART_Y_KAPAZITAET;
+
+        private static double Groessenwert(OptimiererGroessenachse achse, OptimiererPunkt punkt)
+            => achse == OptimiererGroessenachse.LeistungKw ? punkt.PKw : punkt.CNomKwh;
+
+        /// <summary>Index der Größenachse, die dem Wert am nächsten liegt; -1 bei leerem Raster.</summary>
+        private static int ZeileVon(OptimiererRaster raster, double groesse)
         {
             int treffer = -1;
             double abstand = double.MaxValue;
-            for (int i = 0; i < raster.KapazitaetenKwh.Count; i++)
+            for (int i = 0; i < raster.Groessenwerte.Count; i++)
             {
-                double d = Math.Abs(raster.KapazitaetenKwh[i] - kapazitaetKwh);
+                double d = Math.Abs(raster.Groessenwerte[i] - groesse);
                 if (d < abstand) { abstand = d; treffer = i; }
             }
             return treffer;
@@ -1162,8 +1273,15 @@ namespace WindowsFormsApplication1
             if (rand.Vorhanden && !gleich)
             {
                 List<string> kanten = new List<string>();
-                if (rand.KapazitaetUnten) kanten.Add(MyResource.Resource.OPT_WARN_RAND_C_UNTEN);
-                if (rand.KapazitaetOben) kanten.Add(MyResource.Resource.OPT_WARN_RAND_C_OBEN);
+                bool leistung = roh.Optionen.Groessenachse == OptimiererGroessenachse.LeistungKw;
+                if (rand.GroesseUnten)
+                    kanten.Add(leistung
+                        ? MyResource.Resource.OPT_KZ_LEISTUNG + " an der Untergrenze"
+                        : MyResource.Resource.OPT_WARN_RAND_C_UNTEN);
+                if (rand.GroesseOben)
+                    kanten.Add(leistung
+                        ? MyResource.Resource.OPT_KZ_LEISTUNG + " an der Obergrenze"
+                        : MyResource.Resource.OPT_WARN_RAND_C_OBEN);
                 if (rand.CRateUnten) kanten.Add(MyResource.Resource.OPT_WARN_RAND_R_UNTEN);
                 if (rand.CRateOben) kanten.Add(MyResource.Resource.OPT_WARN_RAND_R_OBEN);
                 zeilen.Add(string.Format(k, MyResource.Resource.OPT_WARN_RAND, string.Join(", ", kanten)));
@@ -1199,6 +1317,18 @@ namespace WindowsFormsApplication1
             Zahl(liste, GRUPPE_WIRTSCHAFT, MyResource.Resource.OPT_KZ_ERTRAGAEQ, p.ErtragAequivalentEur, "0.00", "€/a");
             Zahl(liste, GRUPPE_WIRTSCHAFT, MyResource.Resource.OPT_KZ_INVEST, p.InvestitionEur, "0.00", "€");
             Zahl(liste, GRUPPE_WIRTSCHAFT, MyResource.Resource.OPT_KZ_ANNUITAET, p.AnnuitaetEur, "0.00", "€/a");
+            if (roh.Optionen.NetzanschlussAuslegung || p.BetriebskostenEurProA != 0.0)
+            {
+                string betriebName = BetriebskostenName();
+                Zahl(liste, GRUPPE_WIRTSCHAFT, betriebName,
+                     p.BetriebskostenEurProA, "0.00", "€/a");
+                Zahl(liste, GRUPPE_WIRTSCHAFT, betriebName + " (Leistung)",
+                     p.BetriebskostenLeistungEurProA, "0.00", "€/a");
+                Zahl(liste, GRUPPE_WIRTSCHAFT, betriebName + " (Kapazität)",
+                     p.BetriebskostenKapazitaetEurProA, "0.00", "€/a");
+                Zahl(liste, GRUPPE_WIRTSCHAFT, betriebName + " (Entladung)",
+                     p.BetriebskostenEntladungEurProA, "0.00", "€/a");
+            }
             Zahl(liste, GRUPPE_WIRTSCHAFT, MyResource.Resource.OPT_KZ_NPV, p.KapitalwertEur, "0.00", "€");
             Text(liste, GRUPPE_WIRTSCHAFT, MyResource.Resource.OPT_KZ_AMORT_STAT,
                  SpeicherAnzeigeCtrl.AmortisationText(p.StatischeAmortisation), "a");
@@ -1283,6 +1413,9 @@ namespace WindowsFormsApplication1
             });
         }
 
+        private static string BetriebskostenName()
+            => MyResource.Resource.WIRT_ZEILE_BETRIEBSKOSTEN.Replace(" [€/a]", "");
+
         // =================================================================
         // CSV
         // =================================================================
@@ -1306,8 +1439,9 @@ namespace WindowsFormsApplication1
 
             CultureInfo k = CultureInfo.CurrentCulture;
             StringBuilder text = new StringBuilder();
+            bool erweitert = roh.Optionen.NetzanschlussAuslegung;
 
-            string[] kopf =
+            var kopf = new List<string>
             {
                 MyResource.Resource.OPT_CSV_PHASE,
                 MyResource.Resource.OPT_KZ_KAPAZITAET + " [kWh]",
@@ -1336,23 +1470,33 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.OPT_KZ_LP_ERSPARNIS + " [€/a]",
                 MyResource.Resource.OPT_KZ_SCHWELLE + " [kW]"
             };
+            if (erweitert)
+            {
+                kopf.Insert(1, "Größenachse");
+                kopf.Insert(2, "Größenwert [kWh/kW]");
+                string betriebName = BetriebskostenName();
+                kopf.Add(betriebName + " Leistung [€/a]");
+                kopf.Add(betriebName + " Kapazität [€/a]");
+                kopf.Add(betriebName + " Entladung [€/a]");
+                kopf.Add(betriebName + " gesamt [€/a]");
+            }
             text.AppendLine(string.Join(";", kopf));
 
-            Rasterzeilen(text, roh.Grobraster, MyResource.Resource.OPT_CSV_PHASE_GROB, k);
+            Rasterzeilen(text, roh.Grobraster, MyResource.Resource.OPT_CSV_PHASE_GROB, k, erweitert);
             if (roh.Feinraster != null)
-                Rasterzeilen(text, roh.Feinraster, MyResource.Resource.OPT_CSV_PHASE_FEIN, k);
+                Rasterzeilen(text, roh.Feinraster, MyResource.Resource.OPT_CSV_PHASE_FEIN, k, erweitert);
 
             return text.ToString();
         }
 
         private static void Rasterzeilen(StringBuilder text, OptimiererRaster raster,
-                                         string phase, CultureInfo k)
+                                         string phase, CultureInfo k, bool erweitert)
         {
             for (int i = 0; i < raster.Zeilen; i++)
                 for (int s = 0; s < raster.Spalten; s++)
                 {
                     OptimiererPunkt p = raster.Punkte[i][s];
-                    string[] felder =
+                    var felder = new List<string>
                     {
                         phase,
                         p.CNomKwh.ToString("0.###", k),
@@ -1385,6 +1529,15 @@ namespace WindowsFormsApplication1
                         p.LeistungspreisersparnisEur.ToString("0.###", k),
                         p.ErreichteSchwelleKw.ToString("0.###", k)
                     };
+                    if (erweitert)
+                    {
+                        felder.Insert(1, raster.Groessenachse.ToString());
+                        felder.Insert(2, Groessenwert(raster.Groessenachse, p).ToString("0.###", k));
+                        felder.Add(p.BetriebskostenLeistungEurProA.ToString("0.###", k));
+                        felder.Add(p.BetriebskostenKapazitaetEurProA.ToString("0.###", k));
+                        felder.Add(p.BetriebskostenEntladungEurProA.ToString("0.###", k));
+                        felder.Add(p.BetriebskostenEurProA.ToString("0.###", k));
+                    }
                     text.AppendLine(string.Join(";", felder));
                 }
         }

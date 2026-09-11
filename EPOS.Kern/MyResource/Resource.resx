@@ -5607,17 +5607,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="SP_PARAM_HINWEIS_SOC_KWH" xml:space="preserve">
     <value>kWh-Äquivalent des Prozentwerts, bezogen auf die oben angezeigte Kapazität</value>
   </data>
-  <data name="SP_PARAM_BTN_SPEICHERN" xml:space="preserve">
-    <value>Parameter speichern</value>
-  </data>
-  <data name="SP_PARAM_BTN_VERWERFEN" xml:space="preserve">
-    <value>Änderungen verwerfen</value>
-  </data>
-  <data name="SP_PARAM_STATUS_UNGESPEICHERT" xml:space="preserve">
-    <value>Ungespeicherte Änderungen — sie wirken erst nach „Parameter speichern“.</value>
-  </data>
   <data name="SP_PARAM_MSG_GESPEICHERT" xml:space="preserve">
-    <value>Die Speicherparameter sind gespeichert. Der nächste Simulationslauf rechnet mit diesen Werten.</value>
+    <value>Gespeichert — der nächste Simulationslauf rechnet mit diesen Werten.</value>
   </data>
   <data name="SP_PARAM_MSG_SOC_BAND" xml:space="preserve">
     <value>Der Ladezustand braucht ein Band: 0 % ≤ Minimum &lt; Maximum ≤ 100 %.</value>
@@ -5632,7 +5623,7 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>Ohne aktive Speichervariante gibt es kein Ziel für die Parameter — es wurde nichts geschrieben.</value>
   </data>
   <data name="SP_PARAM_MSG_FEHLER" xml:space="preserve">
-    <value>Die Speicherparameter konnten nicht geschrieben werden: {0}</value>
+    <value>Der Wert konnte nicht geschrieben werden — er steht nicht in der Datenbank.</value>
   </data>
   <data name="SP_ERG_LAST" xml:space="preserve">
     <value>Strombedarf (Last)</value>
@@ -16539,5 +16530,8 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Nicht monetäre Wirkungen: {0}</value>
+  </data>
+  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
+    <value>Die Eingaben wurden geändert. Das angezeigte Ergebnis ist nicht mehr aktuell; bitte neu berechnen.</value>
   </data>
 </root>

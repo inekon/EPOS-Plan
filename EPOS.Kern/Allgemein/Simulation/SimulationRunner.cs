@@ -875,7 +875,15 @@ namespace WindowsFormsApplication1
                 // Viertelstunde; die Ladereihe (LadungAcKwh) hält die
                 // SpeicherEngine genau dafür vor. Ohne Speicherlauf bleibt die
                 // Formel der Bestand (Summe des Überschusses).
-                if (sim.Speicherergebnis != null &&
+                if (sim.Speicherflottennetzbilanz != null)
+                {
+                    // Im Flottenpfad ist dies die tatsächlich ausgeführte
+                    // PV-Netzeinspeisung. Gesamt- und Batterieeinspeisung werden
+                    // getrennt im Zeitreihensatz berichtet und hier nicht als PV
+                    // doppelt gezählt.
+                    pvm.Ueberschuss = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
+                }
+                else if (sim.Speicherergebnis != null &&
                     sim.Speicherergebnis.LadungAcKwh != null &&
                     sim.Speicherergebnis.LadungAcKwh.Length == pvs.Ueberschuss_viertelstunde.Length)
                 {
@@ -889,7 +897,9 @@ namespace WindowsFormsApplication1
                 else
                     pvm.Ueberschuss = pvs.Ueberschuss.Sum() / 1000.0;
                 pvm.Strombedarf = pvs.Strombedarf.Sum() / 4000.0;
-                pvm.Reststrombedarf = sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
+                pvm.Reststrombedarf = sim.Speicherflottennetzbilanz != null
+                    ? sim.Speicherflottennetzbilanz.NetzbezugKwh / 1000.0
+                    : sim.Rest_Strombedarf_viertelstuendlich.Sum() / 4000.0;
                 pvm.Strombedarfsdeckung = (pvs.Strombedarf_stuendlich.Sum() > 0)
                     ? pvs.Stromproduktion.Sum() * 100.0 / pvs.Strombedarf_stuendlich.Sum() : 0;
                 pvm.MaxSolareLeistung = pvs.MaxPSolar;

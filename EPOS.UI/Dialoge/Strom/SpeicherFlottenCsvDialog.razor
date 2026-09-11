@@ -1,0 +1,249 @@
+@namespace EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" role="dialog" aria-modal="true">
+    <div class="epos-dialog-kopf"><h1 class="epos-dialog-titel">@Titel</h1></div>
+    <Herleitungszeile Text="@Datei.Dateiname" />
+    <p class="epos-herleitung">@Texte.Hinweis</p>
+
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="@Texte.CsvFormat">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Trennzeichen" Eintraege="@Trennzeichen"
+                                   Auswahl="@TrennzeichenIndex" AuswahlChanged="TrennzeichenSetzen" />
+                    <Auswahlfeld Bezeichnung="@Texte.Dezimaltrenner" Eintraege="@Dezimaltrenner"
+                                   Auswahl="@DezimalIndex" AuswahlChanged="DezimalSetzen" />
+                    <Auswahlfeld Bezeichnung="@Texte.Kodierung" Eintraege="@Kodierungen"
+                                   Auswahl="@((int)_optionen.Zeitbasis.Encoding)" AuswahlChanged="KodierungSetzen" />
+                    <Schalter Bezeichnung="@Texte.Kopfzeile" Wert="@_optionen.Zeitbasis.Kopfzeile"
+                              WertChanged="KopfzeileSetzen" />
+                    <Ganzzahlfeld Bezeichnung="@Texte.Ueberspringen" Wert="@_optionen.Zeitbasis.ZuUeberspringendeZeilen"
+                                  Min="0" WertChanged="UeberspringenSetzen" />
+                </KindInhalt>
+            </Formulargruppe>
+
+            <Formulargruppe Titel="@Texte.Zeit">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Zeitangabe" Eintraege="@Zeitarten"
+                                   Auswahl="@(_getrennteZeit ? 1 : 0)" AuswahlChanged="ZeitartSetzen" />
+                    @if (!_getrennteZeit)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.Zeitstempelspalte" Eintraege="@Pflichtspalten"
+                                       Auswahl="@_optionen.Zeitbasis.ZeitstempelSpalte" AuswahlChanged="ZeitstempelSpalteSetzen" />
+                        <Textfeld Bezeichnung="@Texte.Zeitstempelformat" Wert="@_optionen.Zeitbasis.ZeitstempelFormat"
+                                  WertChanged="ZeitstempelFormatSetzen" />
+                    }
+                    else
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.Datumsspalte" Eintraege="@Pflichtspalten"
+                                       Auswahl="@_optionen.Zeitbasis.DatumSpalte" AuswahlChanged="DatumSpalteSetzen" />
+                        <Auswahlfeld Bezeichnung="@Texte.Uhrzeitspalte" Eintraege="@Pflichtspalten"
+                                       Auswahl="@_optionen.Zeitbasis.UhrzeitSpalte" AuswahlChanged="UhrzeitSpalteSetzen" />
+                        <Textfeld Bezeichnung="@Texte.Datumsformat" Wert="@_optionen.Zeitbasis.DatumFormat"
+                                  WertChanged="DatumFormatSetzen" />
+                        <Textfeld Bezeichnung="@Texte.Uhrzeitformat" Wert="@_optionen.Zeitbasis.UhrzeitFormat"
+                                  WertChanged="UhrzeitFormatSetzen" />
+                    }
+                    <Textfeld Bezeichnung="@Texte.Zeitzone" Wert="@_optionen.Zeitbasis.ZeitzoneId" WertChanged="ZeitzoneSetzen" />
+                    <Auswahlfeld Bezeichnung="@Texte.Intervalllage" Eintraege="@Konventionen"
+                                   Auswahl="@((int)_optionen.Zeitbasis.Konvention)" AuswahlChanged="KonventionSetzen" />
+                </KindInhalt>
+            </Formulargruppe>
+
+            <Formulargruppe Titel="@Texte.Wertspalten">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.Last" Eintraege="@Pflichtspalten" Auswahl="@_optionen.LastSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.LastSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Pv" Eintraege="@OptionaleSpalten" Auswahl="@_optionen.PvSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.PvSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Bhkw" Eintraege="@OptionaleSpalten" Auswahl="@_optionen.BhkwSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.BhkwSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.Bezug" Eintraege="@Pflichtspalten" Auswahl="@_optionen.BezugSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.BezugSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.PvPreis" Eintraege="@OptionaleSpalten" Auswahl="@_optionen.PvPreisSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.PvPreisSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.BhkwPreis" Eintraege="@OptionaleSpalten" Auswahl="@_optionen.BhkwPreisSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.BhkwPreisSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.BatteriePreis" Eintraege="@OptionaleSpalten" Auswahl="@_optionen.BatteriePreisSpalte"
+                                   AuswahlChanged="@(v => SpalteSetzen(x => _optionen.BatteriePreisSpalte = x, v))" />
+                    <Auswahlfeld Bezeichnung="@Texte.LeistungEinheit" Eintraege="@LeistungEinheiten"
+                                   Auswahl="@((int)_optionen.LeistungEinheit)" AuswahlChanged="LeistungEinheitSetzen" />
+                    <Auswahlfeld Bezeichnung="@Texte.PreisEinheit" Eintraege="@PreisEinheiten"
+                                   Auswahl="@((int)_optionen.PreisEinheit)" AuswahlChanged="PreisEinheitSetzen" />
+                </KindInhalt>
+            </Formulargruppe>
+
+            @if (Prognosen)
+            {
+                <Formulargruppe Titel="@Texte.Prognosezuordnung">
+                    <KindInhalt>
+                        <Auswahlfeld Bezeichnung="@Texte.SnapshotId" Eintraege="@Pflichtspalten" Auswahl="@_optionen.SnapshotIdSpalte"
+                                       AuswahlChanged="@(v => SpalteSetzen(x => _optionen.SnapshotIdSpalte = x, v))" />
+                        <Auswahlfeld Bezeichnung="@Texte.BekanntSeit" Eintraege="@Pflichtspalten" Auswahl="@_optionen.BekanntSeitSpalte"
+                                       AuswahlChanged="@(v => SpalteSetzen(x => _optionen.BekanntSeitSpalte = x, v))" />
+                        <Auswahlfeld Bezeichnung="@Texte.Entscheidung" Eintraege="@Pflichtspalten" Auswahl="@_optionen.EntscheidungSpalte"
+                                       AuswahlChanged="@(v => SpalteSetzen(x => _optionen.EntscheidungSpalte = x, v))" />
+                    </KindInhalt>
+                </Formulargruppe>
+            }
+        </KindInhalt>
+    </Formularraster>
+
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+    @if (_vorschau is not null)
+    {
+        <section aria-label="@Texte.Vorschau">
+            <Gruppenkopf Titel="@Texte.Vorschau" />
+            <div class="epos-raster-huelle">
+                <table class="epos-tabelle">
+                    <thead><tr>@for (int i = 0; i < _vorschau.Spaltenzahl; i++) { <th>Spalte @(i + 1)</th> }</tr></thead>
+                    <tbody>@foreach (string[] zeile in _vorschau.Zeilen) { <tr>@foreach (string feld in zeile) { <td>@feld</td> }</tr> }</tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf" @onclick="Geschlossen">@Texte.Abbrechen</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(_vorschau is null)" @onclick="Uebernehmen">@Texte.Uebernehmen</button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public SpeicherImportDatei Datei { get; set; } = new();
+    [Parameter] public bool Prognosen { get; set; }
+    [Parameter] public SpeicherFlottenCsvOptionen? Optionen { get; set; }
+    [Parameter] public Func<List<FlottenProjektjahr>, SpeicherFlottenCsvOptionen, Task>? JahresdatenUebernommen { get; set; }
+    [Parameter] public Func<List<FlottenPrognoseSnapshot>, SpeicherFlottenCsvOptionen, Task>? PrognosenUebernommen { get; set; }
+    [Parameter] public EventCallback Geschlossen { get; set; }
+    [Parameter] public SpeicherFlottenCsvTexte Texte { get; set; } = new();
+
+    private SpeicherFlottenCsvOptionen _optionen = new();
+    private SpeicherZeitreihenVorschau? _vorschau;
+    private string _fehler = "";
+    private bool _getrennteZeit;
+    private bool _initialisiert;
+
+    private string Titel => Prognosen ? Texte.PrognosenTitel : Texte.JahresdatenTitel;
+    private static readonly IReadOnlyList<(int Id, string Text)> Trennzeichen = new[] { (0, "Semikolon (;)"), (1, "Komma (,)"), (2, "Tabulator") };
+    private static readonly IReadOnlyList<(int Id, string Text)> Dezimaltrenner = new[] { (0, "Komma (,)"), (1, "Punkt (.)") };
+    private static readonly IReadOnlyList<(int Id, string Text)> Kodierungen = new[] { (0, "UTF-8"), (1, "Windows-1252") };
+    private static readonly IReadOnlyList<(int Id, string Text)> Zeitarten = new[] { (0, "Eine Zeitstempelspalte"), (1, "Getrennte Datums- und Uhrzeitspalten") };
+    private static readonly IReadOnlyList<(int Id, string Text)> Konventionen = new[] { (0, "Anfang"), (1, "Ende") };
+    private static readonly IReadOnlyList<(int Id, string Text)> LeistungEinheiten = new[] { (0, "kW"), (1, "MW"), (2, "kWh je Intervall") };
+    private static readonly IReadOnlyList<(int Id, string Text)> PreisEinheiten = new[] { (3, "€/kWh"), (4, "ct/kWh"), (5, "€/MWh") };
+    private IReadOnlyList<(int Id, string Text)> Pflichtspalten => Enumerable.Range(0, Math.Max(1, _vorschau?.Spaltenzahl ?? 2)).Select(i => (i, $"Spalte {i + 1}")).ToArray();
+    private IReadOnlyList<(int Id, string Text)> OptionaleSpalten => new[] { (-1, Texte.NichtVorhanden) }.Concat(Pflichtspalten).ToArray();
+    private int TrennzeichenIndex => _optionen.Zeitbasis.Trennzeichen switch { ',' => 1, '\t' => 2, _ => 0 };
+    private int DezimalIndex => _optionen.Zeitbasis.Dezimaltrenner == '.' ? 1 : 0;
+
+    protected override void OnParametersSet()
+    {
+        if (_initialisiert) return;
+        _initialisiert = true;
+        try
+        {
+            _optionen = Optionen is null
+                ? SpeicherFlottenCsvImport.Vorbelegung(Datei.Inhalt, Prognosen)
+                : SpeicherAuslegungKopie.Von(Optionen);
+            _getrennteZeit = _optionen.Zeitbasis.ZeitstempelSpalte < 0;
+            VorschauLesen();
+        }
+        catch (Exception ex)
+        {
+            _fehler = ex.Message;
+            _vorschau = null;
+        }
+    }
+
+    private void VorschauLesen()
+    {
+        try { _vorschau = SpeicherZeitreihenImport.Vorschau(Datei.Inhalt, _optionen.Zeitbasis); _fehler = ""; }
+        catch (Exception ex) { _vorschau = null; _fehler = ex.Message; }
+    }
+
+    private void FormatGeaendert() => VorschauLesen();
+    private void TrennzeichenSetzen(int? v) { _optionen.Zeitbasis.Trennzeichen = v switch { 1 => ',', 2 => '\t', _ => ';' }; FormatGeaendert(); }
+    private void DezimalSetzen(int? v) { _optionen.Zeitbasis.Dezimaltrenner = v == 1 ? '.' : ','; FormatGeaendert(); }
+    private void KodierungSetzen(int? v) { _optionen.Zeitbasis.Encoding = (SpeicherZeitreihenEncoding)(v ?? 0); FormatGeaendert(); }
+    private void KopfzeileSetzen(bool v) { _optionen.Zeitbasis.Kopfzeile = v; FormatGeaendert(); }
+    private void UeberspringenSetzen(int? v) { if (v.HasValue) _optionen.Zeitbasis.ZuUeberspringendeZeilen = v.Value; FormatGeaendert(); }
+    private void ZeitartSetzen(int? v) { _getrennteZeit = v == 1; if (_getrennteZeit) { _optionen.Zeitbasis.ZeitstempelSpalte = -1; _optionen.Zeitbasis.DatumSpalte = 0; _optionen.Zeitbasis.UhrzeitSpalte = 1; } else { _optionen.Zeitbasis.ZeitstempelSpalte = 0; _optionen.Zeitbasis.DatumSpalte = -1; _optionen.Zeitbasis.UhrzeitSpalte = -1; } EingabeGeaendert(); }
+    private void ZeitstempelSpalteSetzen(int? v) { _optionen.Zeitbasis.ZeitstempelSpalte = v ?? 0; EingabeGeaendert(); }
+    private void DatumSpalteSetzen(int? v) { _optionen.Zeitbasis.DatumSpalte = v ?? 0; EingabeGeaendert(); }
+    private void UhrzeitSpalteSetzen(int? v) { _optionen.Zeitbasis.UhrzeitSpalte = v ?? 1; EingabeGeaendert(); }
+    private void ZeitstempelFormatSetzen(string v) { _optionen.Zeitbasis.ZeitstempelFormat = v; EingabeGeaendert(); }
+    private void DatumFormatSetzen(string v) { _optionen.Zeitbasis.DatumFormat = v; EingabeGeaendert(); }
+    private void UhrzeitFormatSetzen(string v) { _optionen.Zeitbasis.UhrzeitFormat = v; EingabeGeaendert(); }
+    private void ZeitzoneSetzen(string v) { _optionen.Zeitbasis.ZeitzoneId = v; EingabeGeaendert(); }
+    private void KonventionSetzen(int? v) { _optionen.Zeitbasis.Konvention = v == 1 ? IntervallKonvention.Ende : IntervallKonvention.Anfang; EingabeGeaendert(); }
+    private void LeistungEinheitSetzen(int? v) { _optionen.LeistungEinheit = (SpeicherZeitreihenEinheit)(v ?? 0); EingabeGeaendert(); }
+    private void PreisEinheitSetzen(int? v) { _optionen.PreisEinheit = (SpeicherZeitreihenEinheit)(v ?? 3); EingabeGeaendert(); }
+    private void SpalteSetzen(Action<int> setzen, int? v) { setzen(v ?? -1); EingabeGeaendert(); }
+    private void EingabeGeaendert() => _fehler = "";
+
+    private async Task Uebernehmen()
+    {
+        try
+        {
+            if (Prognosen)
+            {
+                if (PrognosenUebernommen is null) throw new InvalidOperationException("Die Übernahme der Prognosen ist nicht verfügbar.");
+                await PrognosenUebernommen(SpeicherFlottenCsvImport.PrognosenLesen(Datei, _optionen), SpeicherAuslegungKopie.Von(_optionen));
+            }
+            else
+            {
+                if (JahresdatenUebernommen is null) throw new InvalidOperationException("Die Übernahme der Projektjahre ist nicht verfügbar.");
+                await JahresdatenUebernommen(SpeicherFlottenCsvImport.JahresdatenLesen(Datei, _optionen), SpeicherAuslegungKopie.Von(_optionen));
+            }
+            _fehler = "";
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    public sealed class SpeicherFlottenCsvTexte
+    {
+        public string PrognosenTitel { get; set; } = "Prognose-CSV importieren";
+        public string JahresdatenTitel { get; set; } = "Projektjahre-CSV importieren";
+        public string Hinweis { get; set; } = "Ordnen Sie Zeit, Last und Preise den CSV-Spalten zu. Last und Bezugspreis sind erforderlich; nicht vorhandene optionale Erzeugungs- und Verkaufspreisspalten werden mit 0 angesetzt.";
+        public string CsvFormat { get; set; } = "CSV-Format";
+        public string Trennzeichen { get; set; } = "Trennzeichen:";
+        public string Dezimaltrenner { get; set; } = "Dezimaltrenner:";
+        public string Kodierung { get; set; } = "Kodierung:";
+        public string Kopfzeile { get; set; } = "Erste Datenzeile ist eine Kopfzeile";
+        public string Ueberspringen { get; set; } = "Zeilen davor überspringen:";
+        public string Zeit { get; set; } = "Zeit und Intervall";
+        public string Zeitangabe { get; set; } = "Zeitangabe:";
+        public string Zeitstempelspalte { get; set; } = "Zeitstempelspalte:";
+        public string Datumsspalte { get; set; } = "Datumsspalte:";
+        public string Uhrzeitspalte { get; set; } = "Uhrzeitspalte:";
+        public string Zeitstempelformat { get; set; } = "Zeitstempelformat (leer = Standard):";
+        public string Datumsformat { get; set; } = "Datumsformat (leer = Standard):";
+        public string Uhrzeitformat { get; set; } = "Uhrzeitformat (leer = Standard):";
+        public string Zeitzone { get; set; } = "Zeitzone:";
+        public string Intervalllage { get; set; } = "Zeitstempel bezeichnet Intervall:";
+        public string Wertspalten { get; set; } = "Leistung und Preise";
+        public string Last { get; set; } = "Bruttolast:";
+        public string Pv { get; set; } = "PV-Leistung (optional):";
+        public string Bhkw { get; set; } = "BHKW-Leistung (optional):";
+        public string Bezug { get; set; } = "Bezugspreis:";
+        public string PvPreis { get; set; } = "PV-Verkaufspreis (optional):";
+        public string BhkwPreis { get; set; } = "BHKW-Verkaufspreis (optional):";
+        public string BatteriePreis { get; set; } = "Batterie-Verkaufspreis (optional):";
+        public string LeistungEinheit { get; set; } = "Einheit der Leistungsspalten:";
+        public string PreisEinheit { get; set; } = "Einheit der Preisspalten:";
+        public string Prognosezuordnung { get; set; } = "Prognose-Snapshots";
+        public string SnapshotId { get; set; } = "Snapshot-ID:";
+        public string BekanntSeit { get; set; } = "Bekannt seit:";
+        public string Entscheidung { get; set; } = "Entscheidungszeitpunkt:";
+        public string NichtVorhanden { get; set; } = "(nicht vorhanden – Wert 0)";
+        public string Vorschau { get; set; } = "CSV-Vorschau";
+        public string Abbrechen { get; set; } = "Abbrechen";
+        public string Uebernehmen { get; set; } = "CSV übernehmen";
+    }
+}

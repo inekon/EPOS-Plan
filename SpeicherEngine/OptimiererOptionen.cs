@@ -2,6 +2,16 @@ using System;
 
 namespace SpeicherEngine
 {
+    /// <summary>Physikalische Groesse der Zeilenachse der Auslegungsoptimierung.</summary>
+    public enum OptimiererGroessenachse
+    {
+        /// <summary>Nennkapazitaet des Speichers [kWh].</summary>
+        KapazitaetKwh = 0,
+
+        /// <summary>Nominale AC-Lade-/Entladeleistung des Speichers [kW].</summary>
+        LeistungKw = 1
+    }
+
     /// <summary>
     /// Betriebsstrategie, mit der die Rastersuche jeden Punkt rechnet
     /// (Fachkonzept 6.1 / 6.2).
@@ -55,13 +65,39 @@ namespace SpeicherEngine
     /// </remarks>
     public sealed record OptimiererOptionen
     {
+        private const int MaxAchsenwerte = 10000;
+        private const int MaxPunkteJePhaseIntern = 100000;
+
         // ---------------------------------------------------------- Kapazitaetsachse
+
+        /// <summary>Groesse der Zeilenachse; Default ist die bisherige Kapazitaetsachse.</summary>
+        public OptimiererGroessenachse Groessenachse { get; init; } = OptimiererGroessenachse.KapazitaetKwh;
 
         /// <summary>Untere Grenze der Kapazitaetsachse C_min [kWh], Default 500.</summary>
         public double CMinKwh { get; init; } = 500.0;
 
         /// <summary>Obere Grenze der Kapazitaetsachse C_max [kWh], Default 5.000.</summary>
         public double CMaxKwh { get; init; } = 5000.0;
+
+        /// <summary>
+        /// Optionale Schrittweite der Kapazitaetsachse [kWh]. <c>null</c> verwendet
+        /// weiterhin <see cref="Stuetzstellen"/> gleichmaessige Werte.
+        /// </summary>
+        public double? CSchrittKwh { get; init; }
+
+        // ------------------------------------------------------------- Leistungsachse
+
+        /// <summary>Untere Grenze der Leistungsachse [kW], Default 50.</summary>
+        public double PMinKw { get; init; } = 50.0;
+
+        /// <summary>Obere Grenze der Leistungsachse [kW], Default 500.</summary>
+        public double PMaxKw { get; init; } = 500.0;
+
+        /// <summary>
+        /// Optionale Schrittweite der Leistungsachse [kW]. <c>null</c> verwendet
+        /// <see cref="Stuetzstellen"/> gleichmaessige Werte.
+        /// </summary>
+        public double? PSchrittKw { get; init; }
 
         /// <summary>
         /// Anzahl der Stuetzstellen auf der Kapazitaetsachse, Default 10; mindestens 2.
@@ -117,6 +153,13 @@ namespace SpeicherEngine
         public OptimiererStrategie Strategie { get; init; } = OptimiererStrategie.Dauernutzung;
 
         /// <summary>
+        /// Lastspitzenkappung am Netzanschluss mit Last minus PV/BHKW und
+        /// intervallgenauer Energiebewertung. Default <c>false</c> bewahrt den
+        /// bisherigen reinen Lastgangpfad.
+        /// </summary>
+        public bool NetzanschlussAuslegung { get; init; }
+
+        /// <summary>
         /// Leistungspreis L_P [EUR/(kW*a)] der Berechnungsart
         /// <see cref="OptimiererStrategie.Lastspitzenkappung"/>, Vorgabe 0
         /// (Anwenderentscheid W11b-E-3, 10.09.2026).
@@ -132,6 +175,17 @@ namespace SpeicherEngine
         /// Speicher, ohne dass die Anzeige den Grund nennen koennte.
         /// </remarks>
         public double LeistungspreisEurProKwA { get; init; }
+
+        // ------------------------------------------------------- Laufende Betriebskosten
+
+        /// <summary>Jaehrliche Betriebskosten je installierter AC-Nennleistung [EUR/(kW*a)].</summary>
+        public double BetriebEurProKwJahr { get; init; }
+
+        /// <summary>Jaehrliche Betriebskosten je installierter Nennkapazitaet [EUR/(kWh*a)].</summary>
+        public double BetriebEurProKwhJahr { get; init; }
+
+        /// <summary>Variable Betriebskosten je AC-seitig entladener Energie [EUR/kWh].</summary>
+        public double BetriebEurProKwhEntladen { get; init; }
 
         /// <summary>
         /// Zugesicherte Volladezyklen N_zyk des Geraets [1]. 0 = nicht gepflegt; dann
@@ -170,13 +224,18 @@ namespace SpeicherEngine
         /// 0,5er-Schritten trotz der binaeren Ungenauigkeit von 0,1er-Schrittweiten
         /// verlaesslich 6 Werte ergibt.
         /// </remarks>
-        public int CRatenAnzahl => (int)((RMax - RMin) / RSchritt + 0.0000001) + 1;
+        public int CRatenAnzahl => AnzahlMitSchritt(RMin, RMax, RSchritt);
+
+        /// <summary>Anzahl der Werte auf der gewaehlten Groessenachse.</summary>
+        public int GroessenAnzahl => Groessenachse == OptimiererGroessenachse.LeistungKw
+            ? AnzahlGroessenwerte(PMinKw, PMaxKw, PSchrittKw)
+            : AnzahlGroessenwerte(CMinKwh, CMaxKwh, CSchrittKwh);
 
         /// <summary>Anzahl der Rasterpunkte je Phase.</summary>
-        public int PunkteJePhase => Stuetzstellen * CRatenAnzahl;
+        public int PunkteJePhase => checked(GroessenAnzahl * CRatenAnzahl);
 
         /// <summary>Anzahl aller Rasterpunkte (eine oder zwei Phasen).</summary>
-        public int PunkteGesamt => Feinraster ? 2 * PunkteJePhase : PunkteJePhase;
+        public int PunkteGesamt => Feinraster ? checked(2 * PunkteJePhase) : PunkteJePhase;
 
         /// <summary>Die C-Raten der Achse, aufsteigend.</summary>
         /// <remarks>
@@ -185,10 +244,15 @@ namespace SpeicherEngine
         /// </remarks>
         public double[] CRaten()
         {
-            int n = CRatenAnzahl;
-            double[] werte = new double[n];
-            for (int k = 0; k < n; k++) werte[k] = RMin + k * RSchritt;
-            return werte;
+            return WerteMitSchritt(RMin, RMax, RSchritt);
+        }
+
+        /// <summary>Die Werte der gewaehlten Groessenachse, einschliesslich Obergrenze.</summary>
+        public double[] Groessenwerte()
+        {
+            return Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? Groessenwerte(PMinKw, PMaxKw, PSchrittKw)
+                : Groessenwerte(CMinKwh, CMaxKwh, CSchrittKwh);
         }
 
         /// <summary>
@@ -197,28 +261,39 @@ namespace SpeicherEngine
         /// <exception cref="ArgumentOutOfRangeException">Bei unbrauchbaren Werten.</exception>
         public void Pruefe()
         {
-            if (!(CMinKwh > 0.0))
+            if (!Enum.IsDefined(typeof(OptimiererGroessenachse), Groessenachse))
+                throw new ArgumentOutOfRangeException(nameof(Groessenachse), Groessenachse,
+                    "Die Groessenachse ist nicht vorgesehen.");
+            if (!IstEndlichPositiv(CMinKwh))
                 throw new ArgumentOutOfRangeException(nameof(CMinKwh), CMinKwh,
                     "Die untere Kapazitaetsgrenze muss groesser 0 sein.");
-            if (!(CMaxKwh > CMinKwh))
+            if (!double.IsFinite(CMaxKwh) || CMaxKwh < CMinKwh)
                 throw new ArgumentOutOfRangeException(nameof(CMaxKwh), CMaxKwh,
-                    "Die obere Kapazitaetsgrenze muss ueber der unteren liegen.");
+                    "Die obere Kapazitaetsgrenze darf nicht unter der unteren liegen.");
+            PruefeOptionalenSchritt(CSchrittKwh, nameof(CSchrittKwh));
+            if (!IstEndlichPositiv(PMinKw))
+                throw new ArgumentOutOfRangeException(nameof(PMinKw), PMinKw,
+                    "Die untere Leistungsgrenze muss groesser 0 sein.");
+            if (!double.IsFinite(PMaxKw) || PMaxKw < PMinKw)
+                throw new ArgumentOutOfRangeException(nameof(PMaxKw), PMaxKw,
+                    "Die obere Leistungsgrenze darf nicht unter der unteren liegen.");
+            PruefeOptionalenSchritt(PSchrittKw, nameof(PSchrittKw));
             if (Stuetzstellen < 2)
                 throw new ArgumentOutOfRangeException(nameof(Stuetzstellen), Stuetzstellen,
                     "Die Kapazitaetsachse braucht mindestens 2 Stuetzstellen.");
-            if (!(RMin > 0.0))
+            if (!IstEndlichPositiv(RMin))
                 throw new ArgumentOutOfRangeException(nameof(RMin), RMin,
                     "Die untere C-Rate muss groesser 0 sein.");
-            if (RMax < RMin)
+            if (!double.IsFinite(RMax) || RMax < RMin)
                 throw new ArgumentOutOfRangeException(nameof(RMax), RMax,
                     "Die obere C-Rate darf nicht unter der unteren liegen.");
-            if (!(RSchritt > 0.0))
+            if (!IstEndlichPositiv(RSchritt))
                 throw new ArgumentOutOfRangeException(nameof(RSchritt), RSchritt,
                     "Die Schrittweite der C-Rate muss groesser 0 sein.");
             if (MaxParallel == 0 || MaxParallel < -1)
                 throw new ArgumentOutOfRangeException(nameof(MaxParallel), MaxParallel,
                     "MaxParallel muss -1 (Vorgabe) oder groesser 0 sein.");
-            if (LeistungspreisEurProKwA < 0.0)
+            if (!IstEndlichNichtNegativ(LeistungspreisEurProKwA))
                 throw new ArgumentOutOfRangeException(nameof(LeistungspreisEurProKwA), LeistungspreisEurProKwA,
                     "Der Leistungspreis darf nicht negativ sein.");
             // Die Lastspitzenkappung bewertet AUSSCHLIESSLICH gesparten Leistungspreis.
@@ -227,6 +302,88 @@ namespace SpeicherEngine
             if (Strategie == OptimiererStrategie.Lastspitzenkappung && !(LeistungspreisEurProKwA > 0.0))
                 throw new ArgumentOutOfRangeException(nameof(LeistungspreisEurProKwA), LeistungspreisEurProKwA,
                     "Die Lastspitzenkappung braucht einen Leistungspreis groesser 0.");
+            PruefeKosten(BetriebEurProKwJahr, nameof(BetriebEurProKwJahr));
+            PruefeKosten(BetriebEurProKwhJahr, nameof(BetriebEurProKwhJahr));
+            PruefeKosten(BetriebEurProKwhEntladen, nameof(BetriebEurProKwhEntladen));
+            if (!IstEndlichNichtNegativ(ZyklenZugesichert))
+                throw new ArgumentOutOfRangeException(nameof(ZyklenZugesichert), ZyklenZugesichert,
+                    "Die zugesicherten Zyklen muessen endlich und nicht negativ sein.");
+
+            int groessen = GroessenAnzahl;
+            int raten = CRatenAnzahl;
+            if (groessen > MaxAchsenwerte || raten > MaxAchsenwerte || (long)groessen * raten > MaxPunkteJePhaseIntern)
+                throw new ArgumentOutOfRangeException(nameof(Stuetzstellen),
+                    "Der Suchraum ist zu gross; hoechstens 100.000 Rasterpunkte je Phase sind zulaessig.");
+            double groessteKapazitaet = Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? PMaxKw / RMin
+                : CMaxKwh;
+            double groessteLeistung = Groessenachse == OptimiererGroessenachse.LeistungKw
+                ? PMaxKw
+                : CMaxKwh * RMax;
+            if (!double.IsFinite(groessteKapazitaet) || !double.IsFinite(groessteLeistung))
+                throw new ArgumentOutOfRangeException(nameof(Groessenachse),
+                    "Kapazitaet und Leistung der Rasterpunkte muessen endlich sein.");
+        }
+
+        private double[] Groessenwerte(double min, double max, double? schritt)
+        {
+            if (min == max) return new[] { min };
+            if (schritt.HasValue) return WerteMitSchritt(min, max, schritt.Value);
+
+            double[] werte = new double[Stuetzstellen];
+            for (int i = 0; i < werte.Length; i++)
+                werte[i] = min + (max - min) * i / (werte.Length - 1);
+            werte[werte.Length - 1] = max;
+            return werte;
+        }
+
+        private int AnzahlGroessenwerte(double min, double max, double? schritt)
+            => min == max ? 1 : schritt.HasValue ? AnzahlMitSchritt(min, max, schritt.Value) : Stuetzstellen;
+
+        private static int AnzahlMitSchritt(double min, double max, double schritt)
+        {
+            if (min == max) return 1;
+            double quotient = (max - min) / schritt;
+            if (!double.IsFinite(quotient) || quotient >= MaxAchsenwerte)
+                return MaxAchsenwerte + 1;
+
+            int ganzeSchritte = (int)Math.Floor(quotient + 1e-10);
+            double letzter = min + ganzeSchritte * schritt;
+            bool maxGetroffen = FastGleich(letzter, max);
+            return ganzeSchritte + 1 + (maxGetroffen ? 0 : 1);
+        }
+
+        private static double[] WerteMitSchritt(double min, double max, double schritt)
+        {
+            int n = AnzahlMitSchritt(min, max, schritt);
+            if (n > MaxAchsenwerte)
+                throw new ArgumentOutOfRangeException(nameof(schritt), schritt, "Die Achse enthaelt zu viele Werte.");
+
+            double[] werte = new double[n];
+            for (int i = 0; i < n - 1; i++) werte[i] = min + i * schritt;
+            werte[n - 1] = max;
+            return werte;
+        }
+
+        private static void PruefeOptionalenSchritt(double? wert, string name)
+        {
+            if (wert.HasValue && !IstEndlichPositiv(wert.Value))
+                throw new ArgumentOutOfRangeException(name, wert, "Die Schrittweite muss endlich und groesser 0 sein.");
+        }
+
+        private static void PruefeKosten(double wert, string name)
+        {
+            if (!IstEndlichNichtNegativ(wert))
+                throw new ArgumentOutOfRangeException(name, wert, "Betriebskosten muessen endlich und nicht negativ sein.");
+        }
+
+        private static bool IstEndlichPositiv(double wert) => double.IsFinite(wert) && wert > 0.0;
+        private static bool IstEndlichNichtNegativ(double wert) => double.IsFinite(wert) && wert >= 0.0;
+
+        private static bool FastGleich(double a, double b)
+        {
+            double schranke = 1e-10 * Math.Max(1.0, Math.Max(Math.Abs(a), Math.Abs(b)));
+            return Math.Abs(a - b) <= schranke;
         }
     }
 

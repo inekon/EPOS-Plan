@@ -1,0 +1,31 @@
+{
+  "strategy": "multi_use",
+  "hours": 72.0,
+  "billing_scope": "Dreitaegiger Funktionstest ohne Leistungspreis; fuer Jahresbewertung vollstaendiges Abrechnungsjahr und echten Tarif einsetzen",
+  "baseline": {
+    "energy_eur": 412.4157854325,
+    "demand_eur": 0.0,
+    "peak_kw": 146.925357,
+    "total_eur": 412.4157854325
+  },
+  "with_storage": {
+    "energy_eur": 300.5766991043962,
+    "demand_eur": 0.0,
+    "peak_kw": 80.000001,
+    "total_eur": 300.5766991043962
+  },
+  "raw_bill_saving_eur": 111.8390863281038,
+  "inventory_change_kwh": [
+    -8.312950114941486e-07,
+    -4.958765238427532e-07
+  ],
+  "comparison_note": "Normalize start/end inventory before annual project valuation; no short-period annualization.",
+  "conversion_losses_kwh": 65.42266947442849,
+  "curtailed_kwh": 9.99999905104687e-09,
+  "violating_intervals": 0,
+  "peak_violating_intervals": 0,
+  "forecasts": "perfect_foresight_upper_bound",
+  "fallback_count": 0,
+  "input_sha256": "d50bb1b93944746c8705806a0c645cdc9875509d5d95706c98354748beea1c78",
+  "config_sha256": "4b92763ff77847347152a341a2a6c2a6aa6be651028cebeb108b69aa4f7f5507"
+}

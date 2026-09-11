@@ -72,6 +72,18 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Die projektbezogenen Einspeiseverguetungen, unabhaengig von der gewaehlten
+    /// Bezugspreisquelle. Diese schmale Schnittstelle erlaubt Dateipreisreihen, ohne
+    /// dabei eine inaktive oder ungueltige Bezugspreiskonfiguration auszuwerten.
+    /// </summary>
+    public sealed class StromVerguetungsErgebnis
+    {
+        public double[] PvCtKwh;
+        public double[] BhkwCtKwh;
+        public string Hinweis = "";
+    }
+
+    /// <summary>
     /// Beschafft die Preis- und Verguetungsreihen einer Speichersimulation
     /// (Fachkonzept Stromspeicher 4.1 bis 4.3, Arbeitspaket AP4).
     /// </summary>
@@ -176,6 +188,49 @@ namespace WindowsFormsApplication1
             e.BezugspreisMittelCtKwh = mittel;
 
             // --- Verguetung (Fachkonzept 4.3) ----------------------------------
+            StromVerguetungsErgebnis verguetung = BaueVerguetungen(
+                idProjekt, aufschlagModel, anzahlIntervalle);
+            e.VerguetungPvCtKwh = verguetung.PvCtKwh;
+            e.VerguetungBhkwCtKwh = verguetung.BhkwCtKwh;
+
+            // --- Verkaufserloes (Fachkonzept 2.2 / 6.5, AP10) ------------------
+            // Kopiert, nicht verwiesen: Die Reihe geht in die ArbitrageOptionen und
+            // soll sich nicht mitaendern, wenn ein Aufrufer eine der anderen anfasst.
+            e.ErloesCtKwh = e.Quelle == DbWerte.SP_PREISQUELLE_SPOTMARKT
+                ? (double[])energiereihe.Clone()
+                : (double[])e.VerguetungPvCtKwh.Clone();
+
+            e.Hinweis = _hinweis;
+            return e;
+        }
+
+        /// <summary>
+        /// Liest ausschliesslich die projektbezogenen PV- und BHKW-Verguetungen.
+        /// Insbesondere wird keine Bezugspreisquelle und kein Preisprofil validiert.
+        /// </summary>
+        public StromVerguetungsErgebnis BaueVerguetungen(int idProjekt, int anzahlIntervalle)
+        {
+            if (anzahlIntervalle <= 0)
+                throw new ArgumentOutOfRangeException(nameof(anzahlIntervalle));
+
+            _hinweis = "";
+            StromAufschlagModel aufschlagModel;
+            using (DataRepository.EngineModus())
+            {
+                aufschlagModel = new StromAufschlagCtrl().ReadStrom(idProjekt);
+                if (!aufschlagModel.AusDatenbank)
+                    HinweisErgaenzen(MyResource.Resource.PREIS_HINWEIS_KEIN_STROMTRAEGER);
+            }
+
+            StromVerguetungsErgebnis ergebnis = BaueVerguetungen(
+                idProjekt, aufschlagModel, anzahlIntervalle);
+            ergebnis.Hinweis = _hinweis;
+            return ergebnis;
+        }
+
+        private StromVerguetungsErgebnis BaueVerguetungen(
+            int idProjekt, StromAufschlagModel aufschlagModel, int anzahlIntervalle)
+        {
             // ETAPPE P4 (Befund V4, Entscheidung F7): Ist der PV-Verguetungsdialog
             // AKTIV, ist ER die fuehrende Verguetungswahrheit - v_pv kommt aus dem
             // Dialogsatz (Stufe 1, mengenunabhaengig), nicht mehr aus Verguetung_PV
@@ -197,18 +252,13 @@ namespace WindowsFormsApplication1
                 }
             }
             catch { /* fuehrender Satz ist Komfort - der Lauf kippt daran nicht */ }
-            e.VerguetungPvCtKwh = SpeicherEingang.KonstanteReihe(vpvCt, anzahlIntervalle);
-            e.VerguetungBhkwCtKwh = SpeicherEingang.KonstanteReihe(aufschlagModel.Verguetung_BHKW, anzahlIntervalle);
 
-            // --- Verkaufserloes (Fachkonzept 2.2 / 6.5, AP10) ------------------
-            // Kopiert, nicht verwiesen: Die Reihe geht in die ArbitrageOptionen und
-            // soll sich nicht mitaendern, wenn ein Aufrufer eine der anderen anfasst.
-            e.ErloesCtKwh = e.Quelle == DbWerte.SP_PREISQUELLE_SPOTMARKT
-                ? (double[])energiereihe.Clone()
-                : (double[])e.VerguetungPvCtKwh.Clone();
-
-            e.Hinweis = _hinweis;
-            return e;
+            return new StromVerguetungsErgebnis
+            {
+                PvCtKwh = SpeicherEingang.KonstanteReihe(vpvCt, anzahlIntervalle),
+                BhkwCtKwh = SpeicherEingang.KonstanteReihe(
+                    aufschlagModel.Verguetung_BHKW, anzahlIntervalle)
+            };
         }
 
         // =================================================================

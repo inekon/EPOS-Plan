@@ -7,15 +7,21 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// Die EINGABEPRÜFUNG der Speicherparameter (W11b‑B‑28) und die LEGENDENHÖHE des
-    /// Verlaufsbildes — die zwei Regeln des Pakets, die ohne Oberfläche prüfbar sind.
+    /// Die EINGABEPRÜFUNG der Speicherparameter (W11b‑B‑28, je Regel einzeln seit
+    /// W11b‑B‑29) und die LEGENDENHÖHE des Verlaufsbildes — die zwei Regeln des
+    /// Pakets, die ohne Oberfläche prüfbar sind.
     ///
     /// <para><b>Warum die Prüfung im Kern steht.</b> Der Schreibweg selbst liegt in
-    /// <c>SimulationErgebnisHuelle.SpeicherparameterSchreiben</c>, und
+    /// <c>SimulationErgebnisHuelle.SpeicherfeldSchreiben</c>, und
     /// <c>WindowsFormsApplication1</c> hat kein Testprojekt. Die Regeln sind aber
     /// Fachregeln: ein SoC-Band braucht zwei verschiedene Kanten, eine Gerätegröße ist
-    /// positiv, ein Zins ist nicht negativ. Als reine Funktion sind sie hier prüfbar,
+    /// positiv, ein Zins ist nicht negativ. Als reine Funktionen sind sie hier prüfbar,
     /// und die Hülle ruft sie, bevor eine Zeile in die Datenbank geht.</para>
+    ///
+    /// <para><b>Je Regel eine Funktion</b> (W11b‑B‑29). Seit der Block jedes Feld sofort
+    /// schreibt, gibt es keinen Satz mehr, den man als Ganzes prüfen könnte: Es kommt
+    /// EIN Feld an, und geprüft wird die Regel, die zu ihm gehört. Die Gesamtprüfung
+    /// <c>Pruefen(…)</c> ist damit ohne Verwender und entfallen.</para>
     ///
     /// <para><b>Die Legendenhöhe</b> ist die prüfbare Fassung der Bildkorrektur aus
     /// demselben Paket: Bei vier Reihen bricht die Legende in eine zweite Zeile um, und
@@ -26,23 +32,21 @@ namespace EPOS.Kern.Tests
     public class SpeicherParameterPruefungTests
     {
         // =================================================================
-        //  Das SoC-Band
+        //  Das SoC-Band — SpeicherParameterPruefung.SoCBand(min, max)
         // =================================================================
 
         /// <summary>Der Regelfall geht durch — <c>null</c> heißt „in Ordnung".</summary>
         [Fact]
-        public void Ein_gueltiger_Satz_wird_nicht_beanstandet()
+        public void Ein_gueltiges_SoC_Band_wird_nicht_beanstandet()
         {
-            Assert.Null(SpeicherParameterPruefung.Pruefen(
-                10, 90, true, 129, 100, 15, 3.5, 120, 2.5));
+            Assert.Null(SpeicherParameterPruefung.SoCBand(10, 90));
         }
 
         /// <summary>Die Kanten 0 und 100 sind erlaubt — sie sind das Band, nicht sein Rand.</summary>
         [Fact]
         public void Die_Grenzfaelle_null_und_hundert_sind_erlaubt()
         {
-            Assert.Null(SpeicherParameterPruefung.Pruefen(
-                0, 100, false, 0, 0, 0, 0, 0, 0));
+            Assert.Null(SpeicherParameterPruefung.SoCBand(0, 100));
         }
 
         /// <summary>
@@ -53,14 +57,14 @@ namespace EPOS.Kern.Tests
         public void Min_gleich_Max_ist_kein_Band()
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(50, 50, false, 0, 0, 0, 0, 0, 0));
+                         SpeicherParameterPruefung.SoCBand(50, 50));
         }
 
         [Fact]
         public void Min_ueber_Max_wird_abgewiesen()
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(90, 10, false, 0, 0, 0, 0, 0, 0));
+                         SpeicherParameterPruefung.SoCBand(90, 10));
         }
 
         [Theory]
@@ -70,7 +74,7 @@ namespace EPOS.Kern.Tests
         public void Werte_ausserhalb_von_null_bis_hundert_werden_abgewiesen(double min, double max)
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(min, max, false, 0, 0, 0, 0, 0, 0));
+                         SpeicherParameterPruefung.SoCBand(min, max));
         }
 
         /// <summary>NaN und Unendlich sind keine Eingaben, sondern Rechenunfälle.</summary>
@@ -78,75 +82,103 @@ namespace EPOS.Kern.Tests
         public void NaN_im_SoC_Band_wird_abgewiesen()
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(double.NaN, 90, false, 0, 0, 0, 0, 0, 0));
+                         SpeicherParameterPruefung.SoCBand(double.NaN, 90));
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(10, double.PositiveInfinity,
-                                                           false, 0, 0, 0, 0, 0, 0));
+                         SpeicherParameterPruefung.SoCBand(10, double.PositiveInfinity));
         }
-
-        // =================================================================
-        //  Die Gerätegröße
-        // =================================================================
 
         /// <summary>
-        /// Kapazität und Leistung werden NUR geprüft, wenn der Block sie auch schreiben
-        /// darf. Ein Projekt mit mehreren Speicheranlagen zeigt sie gesperrt an — dort
-        /// wäre eine Sperre an einer nicht änderbaren Zahl eine Sackgasse.
+        /// <b>Die eine Kante gegen die andere</b> (W11b‑B‑29). Wer das Minimum eingibt,
+        /// gibt es gegen das GESPEICHERTE Maximum ein — deshalb nimmt die Regel beide
+        /// Kanten und nicht nur die geänderte. 95 % neben einem Maximum von 90 % ist
+        /// kein Band; unter 90 % ist es eines.
         /// </summary>
         [Fact]
-        public void Ohne_Erlaubnis_bleibt_die_Geraetegroesse_ungeprueft()
+        public void Eine_Kante_wird_gegen_die_gespeicherte_andere_geprueft()
         {
-            Assert.Null(SpeicherParameterPruefung.Pruefen(
-                10, 90, false, 0, 0, 15, 3.5, 120, 2.5));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
+                         SpeicherParameterPruefung.SoCBand(95, 90));
+            Assert.Null(SpeicherParameterPruefung.SoCBand(85, 90));
         }
 
+        // =================================================================
+        //  Die Gerätegröße — SpeicherParameterPruefung.Geraet(kwh, kw)
+        // =================================================================
+
+        [Fact]
+        public void Eine_positive_Geraetegroesse_wird_nicht_beanstandet()
+        {
+            Assert.Null(SpeicherParameterPruefung.Geraet(129, 100));
+        }
+
+        /// <summary>
+        /// Null und negativ sind keine Gerätegröße — je Feld einzeln geprüft, weil je
+        /// Feld einzeln eingegeben wird.
+        /// </summary>
         [Theory]
         [InlineData(0.0, 100.0)]
         [InlineData(129.0, 0.0)]
         [InlineData(-1.0, 100.0)]
         [InlineData(129.0, -0.5)]
-        public void Mit_Erlaubnis_muss_die_Geraetegroesse_positiv_sein(double kwh, double kw)
+        public void Die_Geraetegroesse_muss_positiv_sein(double kwh, double kw)
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_GERAET_POSITIV,
-                         SpeicherParameterPruefung.Pruefen(10, 90, true, kwh, kw, 15, 3.5, 120, 2.5));
+                         SpeicherParameterPruefung.Geraet(kwh, kw));
+        }
+
+        [Fact]
+        public void NaN_in_der_Geraetegroesse_wird_abgewiesen()
+        {
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_GERAET_POSITIV,
+                         SpeicherParameterPruefung.Geraet(double.NaN, 100));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_GERAET_POSITIV,
+                         SpeicherParameterPruefung.Geraet(129, double.PositiveInfinity));
         }
 
         // =================================================================
-        //  Die vier Wirtschaftswerte
+        //  Die vier Wirtschaftswerte — SpeicherParameterPruefung.NichtNegativ(wert)
         // =================================================================
 
         /// <summary>Null ist erlaubt — ein Projekt ohne Leistungspreis ist ein gültiger Fall.</summary>
         [Fact]
-        public void Nullwerte_der_Wirtschaft_sind_erlaubt()
+        public void Null_ist_ein_erlaubter_Wirtschaftswert()
         {
-            Assert.Null(SpeicherParameterPruefung.Pruefen(
-                10, 90, false, 0, 0, 0, 0, 0, 0));
+            Assert.Null(SpeicherParameterPruefung.NichtNegativ(0));
+            Assert.Null(SpeicherParameterPruefung.NichtNegativ(3.5));
         }
 
         [Theory]
-        [InlineData(-1.0, 3.5, 120.0, 2.5)]
-        [InlineData(15.0, -0.1, 120.0, 2.5)]
-        [InlineData(15.0, 3.5, -20.0, 2.5)]
-        [InlineData(15.0, 3.5, 120.0, -0.5)]
-        public void Negative_Wirtschaftswerte_werden_abgewiesen(double dauer, double zins,
-                                                                double leistungspreis,
-                                                                double aufschlag)
+        [InlineData(-1.0)]
+        [InlineData(-0.1)]
+        [InlineData(-20.0)]
+        public void Negative_Wirtschaftswerte_werden_abgewiesen(double wert)
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_NEGATIV,
-                         SpeicherParameterPruefung.Pruefen(10, 90, false, 0, 0,
-                                                           dauer, zins, leistungspreis, aufschlag));
+                         SpeicherParameterPruefung.NichtNegativ(wert));
+        }
+
+        [Fact]
+        public void NaN_als_Wirtschaftswert_wird_abgewiesen()
+        {
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_NEGATIV,
+                         SpeicherParameterPruefung.NichtNegativ(double.NaN));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_NEGATIV,
+                         SpeicherParameterPruefung.NichtNegativ(double.NegativeInfinity));
         }
 
         /// <summary>
-        /// Die Reihenfolge der Prüfungen ist eine Aussage: Zuerst das Band, dann das
-        /// Gerät, dann die Wirtschaft. Wer alles falsch hat, bekommt den ERSTEN Grund —
-        /// eine Meldung, die drei Dinge auf einmal nennt, liest niemand.
+        /// Die drei Regeln melden DREI verschiedene Gründe — die Statuszeile des Blocks
+        /// nennt damit das Feld, an dem es hängt, und nicht „irgendetwas stimmt nicht".
         /// </summary>
         [Fact]
-        public void Der_erste_Verstoss_gewinnt()
+        public void Jede_Regel_hat_ihre_eigene_Meldung()
         {
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_MSG_SOC_BAND,
-                         SpeicherParameterPruefung.Pruefen(90, 10, true, 0, 0, -1, -1, -1, -1));
+            Assert.NotEqual(SpeicherParameterPruefung.SoCBand(90, 10),
+                            SpeicherParameterPruefung.Geraet(0, 0));
+            Assert.NotEqual(SpeicherParameterPruefung.Geraet(0, 0),
+                            SpeicherParameterPruefung.NichtNegativ(-1));
+            Assert.NotEqual(SpeicherParameterPruefung.SoCBand(90, 10),
+                            SpeicherParameterPruefung.NichtNegativ(-1));
         }
 
         // =================================================================

@@ -25180,6 +25180,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eingaben wurden geändert. Das angezeigte Ergebnis ist nicht mehr aktuell; bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string OPT_MSG_ERGEBNIS_VERALTET {
+            get {
+                return ResourceManager.GetString("OPT_MSG_ERGEBNIS_VERALTET", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Optimierung ist fehlgeschlagen: {0} ähnelt.
         /// </summary>
         public static string OPT_MSG_FEHLER {
@@ -40780,24 +40789,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter speichern ähnelt.
-        /// </summary>
-        public static string SP_PARAM_BTN_SPEICHERN {
-            get {
-                return ResourceManager.GetString("SP_PARAM_BTN_SPEICHERN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Änderungen verwerfen ähnelt.
-        /// </summary>
-        public static string SP_PARAM_BTN_VERWERFEN {
-            get {
-                return ResourceManager.GetString("SP_PARAM_BTN_VERWERFEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Überschuss ähnelt.
         /// </summary>
         public static string SP_PARAM_CHK_BHKW {
@@ -41023,7 +41014,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherparameter konnten nicht geschrieben werden: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert konnte nicht geschrieben werden — er steht nicht in der Datenbank. ähnelt.
         /// </summary>
         public static string SP_PARAM_MSG_FEHLER {
             get {
@@ -41041,7 +41032,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherparameter sind gespeichert. Der nächste Simulationslauf rechnet mit diesen Werten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert — der nächste Simulationslauf rechnet mit diesen Werten. ähnelt.
         /// </summary>
         public static string SP_PARAM_MSG_GESPEICHERT {
             get {
@@ -41091,15 +41082,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_PARAM_STATUS_KEINE_VARIANTE {
             get {
                 return ResourceManager.GetString("SP_PARAM_STATUS_KEINE_VARIANTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ungespeicherte Änderungen — sie wirken erst nach „Parameter speichern“. ähnelt.
-        /// </summary>
-        public static string SP_PARAM_STATUS_UNGESPEICHERT {
-            get {
-                return ResourceManager.GetString("SP_PARAM_STATUS_UNGESPEICHERT", resourceCulture);
             }
         }
         

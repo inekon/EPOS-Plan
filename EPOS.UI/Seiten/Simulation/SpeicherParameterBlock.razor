@@ -1,7 +1,8 @@
-@* Die SPEICHERPARAMETER im Ergebnisreiter „Stromspeicher" (W11b‑B‑28).
+@* Die SPEICHERPARAMETER im Ergebnisreiter „Stromspeicher" (W11b‑B‑28,
+   Sofortschreiben seit W11b‑B‑29).
 
    ANWENDERWUNSCH 10.09.2026 (Philipp Engelmann): „bringe den Tab Parameter →
-   Stromspeicher aus Dialog ‚Detaillierte Simulation' in den Tab ‚Stromspeicher'.
+   Stromspeicher aus Dialog ‚Detaillierte Simulation’ in den Tab ‚Stromspeicher’.
    Die Felder mit Parametern sollen änderbar sein (und die Möglichkeit die
    geänderten Parameter zu Speichern)."
 
@@ -11,19 +12,24 @@
    Dort ist es entfallen; die Parameter stehen jetzt bei den Zahlen, zu denen sie
    gehören, und der Optimierungsknopf mit ihnen.
 
-   DIE BENANNTE AUSNAHME VON „JEDES FELD SCHREIBT SOFORT". Der Reiter „Parameter"
-   schreibt weiter feldweise und sofort — wörtlich wie der Vorläufer. DIESER Block
-   nicht: Der Anwender hat ausdrücklich „die Möglichkeit die geänderten Parameter
-   zu Speichern" verlangt. Er sammelt deshalb in einer ARBEITSKOPIE und schreibt
-   auf Knopfdruck. Die Übergabe (Parameter „Daten") wird dabei nie verändert.
+   JEDES FELD SCHREIBT SOFORT — die Hausregel gilt auch hier (W11b‑B‑29,
+   ANWENDERENTSCHEID 1 vom 10.09.2026: „Sofort schreiben, wie überall sonst im
+   Programm."). W11b‑B‑28 hatte den Block als benannte AUSNAHME gebaut: Er
+   sammelte in einer Arbeitskopie und schrieb auf Knopfdruck. Das ging schief,
+   und zwar dreifach — der Knopf stand ganz unten und wurde nicht gefunden, der
+   Puffer starb beim Reiterwechsel (Reiterblatt zeichnet nur das aktive Blatt,
+   „@@if (Sichtbar)") und beim Schließen der Seite, und ein fehlgeschlagenes
+   Update meldete trotzdem „gespeichert" (der Rückgabewert wurde weggeworfen).
+   Der Datenbankbefund war eindeutig: Variantenzeile 14 des Projekts 1050 trug
+   nach einer Sitzung voller Eingaben nur die Vorgabewerte.
 
-   WARUM DAS HIER RICHTIG IST UND DORT NICHT: Auf der Parameterseite steht EIN
-   Feld je Erzeuger; hier stehen achtzehn, und mehrere hängen voneinander ab
-   (SoC-Band, Preisquelle und Reihe, Berechnungsart und Kompatibilität). Sofort
-   schreibende Felder erzeugten dabei Zwischenstände, die als Ganzes nie gültig
-   waren — ein SoC-Minimum über dem noch nicht nachgezogenen Maximum etwa. Der
-   Speichern-Knopf prüft den Satz als Ganzes, bevor eine Zeile in die Datenbank
-   geht.
+   DAHER: Jede Änderung geht über Dienste.SpeicherfeldSchreiben SOFORT in die
+   Datenbank, und die Statuszeile am KOPF des Blocks meldet jeden Schreibvorgang
+   — auch seinen Fehlschlag. Geprüft wird VOR dem Schreiben, je Feld die Regel,
+   die zu ihm gehört (SpeicherParameterPruefung im Kern, gerufen von der Hülle);
+   der abgewiesene Wert bleibt im Feld stehen, damit der Anwender zu Ende tippen
+   kann. Ohne Schreibdienst schreibt kein Feld — dann sind sie gesperrt, wie
+   ohne Variante.
 
    EINSPALTIGER FORMULARRASTER wie im Herkunftsblatt (iU8‑E‑2, Paket P3): Unter
    mancher Zahl steht ihre Entsprechung („= 4,8 kWh") bzw. ein Hinweisabsatz, der
@@ -35,40 +41,64 @@
 
 <div class="epos-simerg-speicherparameter">
 
+    @* DIE STATUSZEILE STEHT OBEN (W11b‑B‑29) — erst der Zustand („Aktive Variante:
+       …"), dann die Rückmeldung des letzten Schreibvorgangs. Unten hat der
+       Anwender sie nicht gefunden. *@
+    <p class="@(Daten.VarianteVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">@Daten.Variantenstatus</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <p class="@(_meldungWarnung ? "epos-simerg-status epos-simerg-warn" : "epos-simerg-status")">@_meldung</p>
+    }
+
+    @* DIE KNOPFZEILE, ebenfalls OBEN. „Kein Delegat ist kein Knopf" (Regel seit
+       W2.2): ohne Sprungdelegat keine Optimierung. Speichern und Verwerfen gibt
+       es nicht mehr — es ist nichts offen, was man speichern oder verwerfen
+       könnte. *@
+    @if (OptimierungMoeglich)
+    {
+        <div class="epos-simerg-knopfzeile">
+            <button type="button" class="epos-simerg-knopf" @onclick="Optimierung" disabled="@Gesperrt"
+                    title="@Resource.OPT_HINWEIS_ZIELFUNKTION">@Resource.OPT_BTN_OEFFNEN</button>
+        </div>
+    }
+
     <div class="epos-simerg-felder">
         <Formularraster Einspaltig="true">
             <KindInhalt>
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MIN" Wert="@_puffer.SoCMinProzent"
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MIN" Wert="@Daten.SoCMinProzent"
                             Einheit="%" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.SoCMinProzent = v))" />
-                <span class="epos-simerg-aequivalent">@SoCText(_puffer.SoCMinProzent, true)</span>
+                            WertChanged="@(w => Zahl(SpeicherFeld.SoCMin, w, SoCMinGesetzt))" />
+                <span class="epos-simerg-aequivalent">@Daten.SoCMinKwh</span>
 
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MAX" Wert="@_puffer.SoCMaxProzent"
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_SOC_MAX" Wert="@Daten.SoCMaxProzent"
                             Einheit="%" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.SoCMaxProzent = v))" />
-                <span class="epos-simerg-aequivalent">@SoCText(_puffer.SoCMaxProzent, false)</span>
+                            WertChanged="@(w => Zahl(SpeicherFeld.SoCMax, w, SoCMaxGesetzt))" />
+                <span class="epos-simerg-aequivalent">@Daten.SoCMaxKwh</span>
 
                 @* GERÄTEGRÖSSE. Bis W11b‑B‑28 standen die beiden Felder in JEDEM Fall
                    gesperrt da (Befund W11-B10). Sie sind jetzt änderbar, aber nur bei
                    GENAU EINER Speicheranlage im Projekt: Varianten desselben Speichers
                    teilen sich EINE Gerätekopie, ein Schreibzugriff änderte sonst still
                    die Auslegung der Geschwister (dieselbe Grenze, die
-                   StromspeicherSimCtrl.UebernehmeAuslegung zieht). *@
+                   StromspeicherSimCtrl.UebernehmeAuslegung zieht). Sie schreiben nicht
+                   in die Variante, sondern in die Anlage — die Hülle nimmt dafür
+                   denselben Weg wie die Auslegungsoptimierung. *@
                 <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LADELEISTUNG"
-                            Wert="@_puffer.LadeleistungKw" Einheit="kW" Aktiv="@GeraetAktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.LadeleistungKw = v))" />
+                            Wert="@Daten.LadeleistungKw" Einheit="kW" Aktiv="@GeraetAktiv"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Leistung, w, v => Daten.LadeleistungKw = v))" />
                 <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPAZITAET"
-                            Wert="@_puffer.KapazitaetKwh" Einheit="kWh" Aktiv="@GeraetAktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.KapazitaetKwh = v))" />
+                            Wert="@Daten.KapazitaetKwh" Einheit="kWh" Aktiv="@GeraetAktiv"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Kapazitaet, w, KapazitaetGesetzt))" />
 
                 <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LADESCHWELLE"
-                            Wert="@_puffer.Ladeschwellwert" Einheit="kW" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.Ladeschwellwert = v))" />
+                            Wert="@Daten.Ladeschwellwert" Einheit="ct/kWh" Aktiv="@Aktiv"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Ladeschwelle, w, v => Daten.Ladeschwellwert = v))" />
             </KindInhalt>
         </Formularraster>
     </div>
 
-    @if (!_puffer.GeraetegroesseAenderbar)
+    @if (!Daten.GeraetegroesseAenderbar)
     {
         <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_LADELEISTUNG</p>
     }
@@ -78,21 +108,21 @@
         <Formularraster Einspaltig="true">
             <KindInhalt>
                 <Auswahlfeld Bezeichnung="@Resource.SP_PARAM_LABEL_BETRIEBSART"
-                             Eintraege="@Eintraege(_puffer.Betriebsarten)"
-                             Auswahl="@Index(_puffer.Betriebsarten, _puffer.Betriebsart)"
+                             Eintraege="@Eintraege(Daten.Betriebsarten)"
+                             Auswahl="@Index(Daten.Betriebsarten, Daten.Betriebsart)"
                              Aktiv="@Aktiv"
-                             AuswahlChanged="@(i => Wahl(_puffer.Betriebsarten, i, v => _puffer.Betriebsart = v))" />
+                             AuswahlChanged="@(i => Wahl(SpeicherFeld.Betriebsart, Daten.Betriebsarten, i, v => Daten.Betriebsart = v))" />
 
                 <Auswahlfeld Bezeichnung="@Resource.SP_PARAM_LABEL_BERECHNUNGSART"
-                             Eintraege="@Eintraege(_puffer.Berechnungsarten)"
-                             Auswahl="@Index(_puffer.Berechnungsarten, _puffer.Berechnungsart)"
+                             Eintraege="@Eintraege(Daten.Berechnungsarten)"
+                             Auswahl="@Index(Daten.Berechnungsarten, Daten.Berechnungsart)"
                              Aktiv="@Aktiv"
-                             AuswahlChanged="@(i => Wahl(_puffer.Berechnungsarten, i, BerechnungsartGesetzt))" />
+                             AuswahlChanged="@(i => Wahl(SpeicherFeld.Berechnungsart, Daten.Berechnungsarten, i, BerechnungsartGesetzt))" />
 
                 <Schalter Bezeichnung="@Resource.SP_PARAM_LABEL_KOMPATIBILITAET"
-                          Wert="@_puffer.Kompatibilitaet"
-                          Aktiv="@(Aktiv && _puffer.KompatibilitaetMoeglich)"
-                          WertChanged="@(w => Schalten(w, v => _puffer.Kompatibilitaet = v))" />
+                          Wert="@Daten.Kompatibilitaet"
+                          Aktiv="@(Aktiv && Daten.KompatibilitaetMoeglich)"
+                          WertChanged="@(w => Schalten(SpeicherFeld.Kompatibilitaet, w, v => Daten.Kompatibilitaet = v))" />
             </KindInhalt>
         </Formularraster>
     </div>
@@ -102,15 +132,15 @@
     <div class="epos-simerg-felder">
         <Formularraster Einspaltig="true">
             <KindInhalt>
-                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_PV" Wert="@_puffer.LadenAusPv" Aktiv="@Aktiv"
-                          WertChanged="@(w => Schalten(w, v => _puffer.LadenAusPv = v))" />
-                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW" Wert="@_puffer.LadenAusBhkw" Aktiv="@Aktiv"
-                          WertChanged="@(w => Schalten(w, v => _puffer.LadenAusBhkw = v))" />
-                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_NETZENTLADUNG" Wert="@_puffer.Netzentladung" Aktiv="@Aktiv"
-                          WertChanged="@(w => Schalten(w, v => _puffer.Netzentladung = v))" />
+                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_PV" Wert="@Daten.LadenAusPv" Aktiv="@Aktiv"
+                          WertChanged="@(w => Schalten(SpeicherFeld.LadenPv, w, v => Daten.LadenAusPv = v))" />
+                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW" Wert="@Daten.LadenAusBhkw" Aktiv="@Aktiv"
+                          WertChanged="@(w => Schalten(SpeicherFeld.LadenBhkw, w, v => Daten.LadenAusBhkw = v))" />
+                <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_NETZENTLADUNG" Wert="@Daten.Netzentladung" Aktiv="@Aktiv"
+                          WertChanged="@(w => Schalten(SpeicherFeld.Netzentladung, w, v => Daten.Netzentladung = v))" />
                 @* Ausbaustufe 11: sichtbar, aber ohne Rechenweg — dauerhaft gesperrt. *@
                 <Schalter Bezeichnung="@Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT"
-                          Wert="@_puffer.BhkwStromgefuehrt" Aktiv="false" />
+                          Wert="@Daten.BhkwStromgefuehrt" Aktiv="false" />
             </KindInhalt>
         </Formularraster>
     </div>
@@ -120,18 +150,18 @@
     <div class="epos-simerg-felder">
         <Formularraster Einspaltig="true">
             <KindInhalt>
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPITALZINS" Wert="@_puffer.Kapitalzins"
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_KAPITALZINS" Wert="@Daten.Kapitalzins"
                             Einheit="%" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.Kapitalzins = v))" />
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NUTZUNGSDAUER" Wert="@_puffer.Nutzungsdauer"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Kapitalzins, w, v => Daten.Kapitalzins = v))" />
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NUTZUNGSDAUER" Wert="@Daten.Nutzungsdauer"
                             Einheit="a" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.Nutzungsdauer = v))" />
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LEISTUNGSPREIS" Wert="@_puffer.Leistungspreis"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Nutzungsdauer, w, v => Daten.Nutzungsdauer = v))" />
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_LEISTUNGSPREIS" Wert="@Daten.Leistungspreis"
                             Einheit="€/(kW·a)" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.Leistungspreis = v))" />
-                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG" Wert="@_puffer.Netzladeaufschlag"
+                            WertChanged="@(w => Zahl(SpeicherFeld.Leistungspreis, w, v => Daten.Leistungspreis = v))" />
+                <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG" Wert="@Daten.Netzladeaufschlag"
                             Einheit="ct/kWh" Aktiv="@Aktiv"
-                            WertChanged="@(w => Zahl(w, v => _puffer.Netzladeaufschlag = v))" />
+                            WertChanged="@(w => Zahl(SpeicherFeld.Netzladeaufschlag, w, v => Daten.Netzladeaufschlag = v))" />
             </KindInhalt>
         </Formularraster>
     </div>
@@ -141,67 +171,34 @@
         <Formularraster Einspaltig="true">
             <KindInhalt>
                 <Auswahlfeld Bezeichnung="@Resource.PREIS_PARAM_LABEL_PREISQUELLE"
-                             Eintraege="@Eintraege(_puffer.Preisquellen)"
-                             Auswahl="@Index(_puffer.Preisquellen, _puffer.Preisquelle)"
+                             Eintraege="@Eintraege(Daten.Preisquellen)"
+                             Auswahl="@Index(Daten.Preisquellen, Daten.Preisquelle)"
                              Aktiv="@Aktiv"
-                             AuswahlChanged="@(i => Wahl(_puffer.Preisquellen, i, PreisquelleGesetzt))" />
+                             AuswahlChanged="@(i => Wahl(SpeicherFeld.Preisquelle, Daten.Preisquellen, i, PreisquelleGesetzt))" />
 
-                <Auswahlfeld Bezeichnung="@_puffer.PreisreiheLabel" Eintraege="@_puffer.Preisreihen"
-                             Auswahl="@(_puffer.PreisreiheId > 0 ? _puffer.PreisreiheId : (int?)null)"
-                             Aktiv="@(Aktiv && _puffer.PreisreiheMoeglich)"
+                <Auswahlfeld Bezeichnung="@Daten.PreisreiheLabel" Eintraege="@Daten.Preisreihen"
+                             Auswahl="@(Daten.PreisreiheId > 0 ? Daten.PreisreiheId : (int?)null)"
+                             Aktiv="@(Aktiv && Daten.PreisreiheMoeglich)"
                              AuswahlChanged="PreisreiheGesetzt" />
 
-                <Schalter Bezeichnung="@Resource.PREIS_PARAM_CHK_AUFSCHLAG" Wert="@_puffer.Aufschlag" Aktiv="@Aktiv"
-                          WertChanged="@(w => Schalten(w, v => _puffer.Aufschlag = v))" />
+                <Schalter Bezeichnung="@Resource.PREIS_PARAM_CHK_AUFSCHLAG" Wert="@Daten.Aufschlag" Aktiv="@Aktiv"
+                          WertChanged="@(w => Schalten(SpeicherFeld.Aufschlag, w, v => Daten.Aufschlag = v))" />
             </KindInhalt>
         </Formularraster>
     </div>
 
-    @if (!string.IsNullOrEmpty(_puffer.Preisinfo))
+    @if (!string.IsNullOrEmpty(Daten.Preisinfo))
     {
-        <p class="@(_puffer.PreisinfoWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">@_puffer.Preisinfo</p>
-    }
-
-    @* DIE KNOPFZEILE. „Kein Delegat ist kein Knopf" (Regel seit W2.2): ohne
-       Schreibdienst kein Speichern, ohne Sprungdelegat keine Optimierung.
-       „Verwerfen" gibt es nur, wenn es etwas zu verwerfen gibt. *@
-    <div class="epos-simerg-knopfzeile">
-        @if (Dienste?.SpeicherparameterSchreiben is not null)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Speichern"
-                    disabled="@(Gesperrt || !Geaendert)">@Resource.SP_PARAM_BTN_SPEICHERN</button>
-        }
-        @if (Geaendert)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Verwerfen"
-                    disabled="@Gesperrt">@Resource.SP_PARAM_BTN_VERWERFEN</button>
-        }
-        @if (OptimierungMoeglich)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Optimierung" disabled="@Gesperrt"
-                    title="@Resource.OPT_HINWEIS_ZIELFUNKTION">@Resource.OPT_BTN_OEFFNEN</button>
-        }
-    </div>
-
-    <p class="@(_puffer.VarianteVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">@_puffer.Variantenstatus</p>
-
-    @if (Geaendert)
-    {
-        <p class="epos-simerg-status epos-simerg-warn">@Resource.SP_PARAM_STATUS_UNGESPEICHERT</p>
-    }
-
-    @if (!string.IsNullOrEmpty(_meldung))
-    {
-        <p class="@(_meldungWarnung ? "epos-simerg-status epos-simerg-warn" : "epos-simerg-status")">@_meldung</p>
+        <p class="@(Daten.PreisinfoWarnung ? "epos-simerg-hinweis epos-simerg-warn" : "epos-simerg-hinweis")">@Daten.Preisinfo</p>
     }
 
 </div>
 
 @code {
-    /// <summary>Der gelesene Stand. Er wird NIE verändert — der Block arbeitet auf einer Kopie.</summary>
+    /// <summary>Der gelesene Stand — und zugleich das, was der Anwender bearbeitet.</summary>
     [Parameter] public SpeicherParameterDaten Daten { get; set; } = new SpeicherParameterDaten();
 
-    /// <summary>Die Datenseite; ohne Schreibdienst gibt es keinen Speichern-Knopf.</summary>
+    /// <summary>Die Datenseite; ohne Schreibdienst schreibt kein Feld.</summary>
     [Parameter] public SimulationErgebnisDienste? Dienste { get; set; }
 
     /// <summary>Gesperrt (Schemamigration) — die Felder bleiben sichtbar und lesbar.</summary>
@@ -213,164 +210,150 @@
     /// <summary>Zeigt die Auslegungsoptimierung an? Ohne Rechendelegat bleibt sie weg.</summary>
     [Parameter] public bool OptimierungMoeglich { get; set; }
 
-    /// <summary>Die Arbeitskopie (Prüfhilfe) — was beim nächsten Speichern geschrieben würde.</summary>
-    public SpeicherParameterDaten Arbeitskopie => _puffer;
-
-    /// <summary>Gibt es ungespeicherte Änderungen? (Prüfhilfe)</summary>
-    public bool HatAenderungen => Geaendert;
-
-    // Der PUFFER ist das, was der Anwender gerade sieht; der STAND das, was zuletzt
-    // gelesen bzw. geschrieben wurde. Die Differenz der beiden IST die Aussage
-    // "ungespeicherte Aenderungen" - sie braucht kein eigenes Merkmal, das man
-    // vergessen kann zu setzen.
-    private SpeicherParameterDaten _puffer = new SpeicherParameterDaten();
-    private SpeicherParameterDaten _stand = new SpeicherParameterDaten();
-
-    // Die zuletzt gesehene UEBERGABE (Referenz, nicht Inhalt): Ein neuer Lauf oder
-    // eine uebernommene Auslegung laesst die Seite neu laden, und dann kommt ein
-    // ANDERES Objekt herein.
-    private SpeicherParameterDaten? _quelle;
+    /// <summary>Die letzte Rückmeldung eines Schreibvorgangs (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
 
     private string _meldung = "";
     private bool _meldungWarnung;
 
-    /// <summary>Ohne aktive Variante gäbe es kein Ziel für das Schreiben — dann sind die Felder Attrappen.</summary>
-    private bool Aktiv => !Gesperrt && _puffer.VarianteVorhanden;
+    /// <summary>
+    /// Ohne aktive Variante gäbe es kein Ziel für das Schreiben, ohne Schreibdienst
+    /// keinen Weg dorthin — dann sind die Felder Attrappen.
+    /// </summary>
+    private bool Aktiv => !Gesperrt && Daten.VarianteVorhanden && Schreibbar;
 
     /// <summary>Die Gerätegröße zusätzlich nur bei genau einer Speicheranlage (siehe Markup).</summary>
-    private bool GeraetAktiv => Aktiv && _puffer.GeraetegroesseAenderbar;
+    private bool GeraetAktiv => Aktiv && Daten.GeraetegroesseAenderbar;
 
-    private bool Geaendert => !Gleich(_puffer, _stand);
+    private bool Schreibbar => Dienste?.SpeicherfeldSchreiben is not null;
+
+    // =====================================================================
+    // Die Feldwege — sie merken UND schreiben, in dieser Reihenfolge
+    // =====================================================================
 
     /// <summary>
-    /// Neue Übergabe = neuer Lesestand — ABER NUR OHNE ungespeicherte Änderungen.
-    ///
-    /// <para>Die Seite lädt <c>_daten</c> nach jedem Lauf und nach der Rückkehr aus der
-    /// Auslegungsoptimierung neu; dann steht hier ein anderes Objekt, und der Puffer
-    /// soll ihm folgen. Hat der Anwender aber etwas eingegeben und noch nicht
-    /// gespeichert, wiegt seine Eingabe schwerer als der Nachschlag: Der Puffer bleibt
-    /// stehen, und die Statuszeile sagt weiterhin, dass Änderungen offen sind. Der
-    /// Vergleich ist ein REFERENZvergleich — derselbe Inhalt in einem neuen Objekt ist
-    /// ein neues Lesen.</para>
+    /// Ein Feld schreiben und die Rückmeldung in die Statuszeile stellen.
     /// </summary>
-    protected override void OnParametersSet()
+    /// <remarks>
+    /// <b>Der Wert bleibt stehen, auch wenn die Prüfung ihn abweist.</b> Das Zahlenfeld
+    /// meldet jede Taste (<c>@@oninput</c>) — die „8" auf dem Weg zur „85" ist ein
+    /// Zwischenzustand, keine Fehleingabe. Die Meldung erscheint leise und verschwindet
+    /// mit dem nächsten gültigen Wert; ein zurückgesetztes Feld dagegen risse dem
+    /// Anwender die Eingabe unter den Fingern weg.
+    /// </remarks>
+    private void Schreiben(string feld, string wert)
     {
-        if (ReferenceEquals(_quelle, Daten)) return;
+        if (Dienste?.SpeicherfeldSchreiben is null) return;
 
-        bool offen = _quelle is not null && Geaendert;
-        _quelle = Daten;
-        if (offen) return;
-
-        Uebernehmen(Daten);
-        _meldung = "";
-        _meldungWarnung = false;
-    }
-
-    private void Uebernehmen(SpeicherParameterDaten stand)
-    {
-        _stand = Kopie(stand);
-        _puffer = Kopie(stand);
-    }
-
-    // =====================================================================
-    // Schreiben — erst auf Knopfdruck
-    // =====================================================================
-
-    private void Speichern()
-    {
-        if (Dienste?.SpeicherparameterSchreiben is null || !Geaendert) return;
-
-        Rueckmeldung antwort = Dienste.SpeicherparameterSchreiben(_puffer);
+        Rueckmeldung antwort = Dienste.SpeicherfeldSchreiben(feld, wert);
         _meldung = antwort.Text;
         _meldungWarnung = !antwort.Erfolg;
-        if (!antwort.Erfolg) return;
-
-        // Nach dem Schreiben gilt, was in der Datenbank steht - nicht, was im Puffer
-        // stand: Die Huelle kann Werte nachziehen (Preisvorschau, Variantenstatus,
-        // kWh-Aequivalent), und ohne das frische Lesen zeigte der Block sie erst nach
-        // dem naechsten Lauf.
-        SpeicherParameterDaten frisch = Dienste.SpeicherparameterLesen?.Invoke() ?? _puffer;
-        Uebernehmen(frisch);
     }
 
-    private void Verwerfen()
+    private void Zahl(string feld, double? wert, Action<double> merken)
     {
-        if (!Geaendert) return;
-
-        // Der frische Lesestand ist der bessere - er zeigt auch fremde Aenderungen.
-        // Ohne Lesedienst bleibt der Stand, den der Block bekommen hat.
-        Uebernehmen(Dienste?.SpeicherparameterLesen?.Invoke() ?? _stand);
-        _meldung = "";
-        _meldungWarnung = false;
+        double w = wert ?? 0.0;
+        merken(w);
+        Schreiben(feld, w.ToString(CultureInfo.InvariantCulture));
     }
 
-    // =====================================================================
-    // Die Feldwege — sie schreiben NICHT, sie merken
-    // =====================================================================
+    private void Schalten(string feld, bool wert, Action<bool> merken)
+    {
+        merken(wert);
+        Schreiben(feld, wert ? "1" : "0");
+    }
 
-    private void Zahl(double? wert, Action<double> merken) => merken(wert ?? 0.0);
-
-    private void Schalten(bool wert, Action<bool> merken) => merken(wert);
-
-    private void Wahl(IReadOnlyList<Steuerwahl> liste, int? index, Action<string> merken)
+    private void Wahl(string feld, IReadOnlyList<Steuerwahl> liste, int? index, Action<string> merken)
     {
         if (index is null || index < 0 || index >= liste.Count) return;
-        merken(liste[index.Value].Wert);
+
+        string wert = liste[index.Value].Wert;
+        merken(wert);
+        Schreiben(feld, wert);
     }
 
     /// <summary>
     /// Der Kompatibilitätsmodus hängt an der Berechnungsart — dieselbe Regel, die die
-    /// Hülle beim LESEN anwendet (nur bei Nachtnutzung). Im Puffer muss sie mitlaufen,
-    /// sonst bliebe der Schalter bis zum nächsten Lesen falsch gesperrt bzw. offen.
+    /// Hülle beim LESEN anwendet (nur bei Nachtnutzung). Sie muss hier mitlaufen, sonst
+    /// bliebe der Schalter bis zum nächsten Lesen falsch gesperrt bzw. offen.
     /// </summary>
     private void BerechnungsartGesetzt(string wert)
     {
-        _puffer.Berechnungsart = wert;
-        _puffer.KompatibilitaetMoeglich =
+        Daten.Berechnungsart = wert;
+        Daten.KompatibilitaetMoeglich =
             string.Equals(wert, DbWerte.SP_BERECHNUNG_NACHTNUTZUNG, StringComparison.Ordinal);
     }
 
     /// <summary>
+    /// SoC-Minimum, SoC-Maximum und Kapazität ziehen die kWh-Äquivalente unter dem
+    /// SoC-Band nach — sonst stünde darunter eine Zahl, die zu einem Prozentwert oder
+    /// einem Gerät gehört, das der Anwender gerade weggeschrieben hat.
+    /// </summary>
+    private void SoCMinGesetzt(double wert)
+    {
+        Daten.SoCMinProzent = wert;
+        AequivalenteNachziehen();
+    }
+
+    private void SoCMaxGesetzt(double wert)
+    {
+        Daten.SoCMaxProzent = wert;
+        AequivalenteNachziehen();
+    }
+
+    private void KapazitaetGesetzt(double wert)
+    {
+        Daten.KapazitaetKwh = wert;
+        AequivalenteNachziehen();
+    }
+
+    /// <summary>
     /// Der Wechsel der Preisquelle stellt Beschriftung UND Liste der Reihenauswahl um
-    /// („Preisreihe" ↔ „Kostenprofil", beim Fixpreis leer und gesperrt). Ohne den
-    /// Lesedienst bleibt die Liste, wie sie geliefert wurde — falsch beschriftet wäre
-    /// schlimmer als unverändert.
+    /// („Preisreihe" ↔ „Kostenprofil", beim Fixpreis leer und gesperrt). Geschrieben ist
+    /// die Quelle da schon; die Liste ist eine reine ANZEIGEfrage. Ohne den Lesedienst
+    /// bleibt sie, wie sie geliefert wurde — falsch beschriftet wäre schlimmer als
+    /// unverändert.
     /// </summary>
     private void PreisquelleGesetzt(string wert)
     {
-        _puffer.Preisquelle = wert;
+        Daten.Preisquelle = wert;
 
         SpeicherPreisreihenDaten? reihen = Dienste?.SpeicherPreisreihen?.Invoke(wert);
         if (reihen is null) return;
 
-        _puffer.PreisreiheLabel = reihen.Label;
-        _puffer.PreisreiheMoeglich = reihen.Moeglich;
-        _puffer.Preisreihen = reihen.Reihen;
-        _puffer.PreisreiheId = reihen.Id;
+        Daten.PreisreiheLabel = reihen.Label;
+        Daten.PreisreiheMoeglich = reihen.Moeglich;
+        Daten.Preisreihen = reihen.Reihen;
+        Daten.PreisreiheId = reihen.Id;
     }
 
-    private void PreisreiheGesetzt(int? id) => _puffer.PreisreiheId = id ?? 0;
+    private void PreisreiheGesetzt(int? id)
+    {
+        Daten.PreisreiheId = id ?? 0;
+        Schreiben(SpeicherFeld.Preisreihe,
+                  Daten.PreisreiheId.ToString(CultureInfo.InvariantCulture));
+    }
 
     // =====================================================================
     // Das kWh-Aequivalent des SoC-Bandes
     // =====================================================================
 
     /// <summary>
-    /// Das kWh-Äquivalent eines SoC-Prozentwerts. Solange Prozentwert UND Kapazität
-    /// unverändert sind, steht der Text der Hülle da (sie hat ihn schon formatiert);
-    /// sobald eines von beiden im Puffer abweicht, rechnet der Block nach — mit
-    /// derselben Formel und demselben Format wie <c>SimulationErgebnisHuelle.SoCText</c>.
-    /// Ohne Kapazität bleibt die Zeile leer statt eine Zahl zu erfinden.
+    /// Zieht die beiden Entsprechungen unter dem SoC-Band nach — mit derselben Formel
+    /// und demselben Format wie <c>SimulationErgebnisHuelle.SoCText</c>, die sie beim
+    /// Lesen setzt. Ohne Kapazität bleibt die Zeile leer statt eine Zahl zu erfinden.
     /// </summary>
-    private string SoCText(double prozent, bool minimum)
+    private void AequivalenteNachziehen()
     {
-        double stand = minimum ? _stand.SoCMinProzent : _stand.SoCMaxProzent;
-        if (prozent == stand && _puffer.KapazitaetKwh == _stand.KapazitaetKwh)
-            return minimum ? _stand.SoCMinKwh : _stand.SoCMaxKwh;
+        Daten.SoCMinKwh = SoCText(Daten.SoCMinProzent);
+        Daten.SoCMaxKwh = SoCText(Daten.SoCMaxProzent);
+    }
 
-        if (_puffer.KapazitaetKwh <= 0) return "";
+    private string SoCText(double prozent)
+    {
+        if (Daten.KapazitaetKwh <= 0) return "";
         return string.Format(Resource.SP_PARAM_SOC_KWH,
-                             (_puffer.KapazitaetKwh * prozent / 100.0)
+                             (Daten.KapazitaetKwh * prozent / 100.0)
                                  .ToString("N1", CultureInfo.CurrentCulture));
     }
 
@@ -391,76 +374,4 @@
             if (string.Equals(liste[i].Wert, wert, StringComparison.Ordinal)) return i;
         return null;
     }
-
-    // =====================================================================
-    // Arbeitskopie und Vergleich
-    // =====================================================================
-
-    /// <summary>
-    /// Eine flache Kopie. Die LISTEN werden geteilt und nicht kopiert: Sie sind
-    /// <c>IReadOnlyList</c> und werden im Block nie verändert, nur ausgetauscht.
-    /// </summary>
-    private static SpeicherParameterDaten Kopie(SpeicherParameterDaten q) => new SpeicherParameterDaten
-    {
-        VarianteVorhanden = q.VarianteVorhanden,
-        Variantenstatus = q.Variantenstatus,
-        SoCMinProzent = q.SoCMinProzent,
-        SoCMaxProzent = q.SoCMaxProzent,
-        SoCMinKwh = q.SoCMinKwh,
-        SoCMaxKwh = q.SoCMaxKwh,
-        Ladeschwellwert = q.Ladeschwellwert,
-        LadeleistungKw = q.LadeleistungKw,
-        KapazitaetKwh = q.KapazitaetKwh,
-        GeraetegroesseAenderbar = q.GeraetegroesseAenderbar,
-        Betriebsart = q.Betriebsart,
-        Berechnungsart = q.Berechnungsart,
-        Betriebsarten = q.Betriebsarten,
-        Berechnungsarten = q.Berechnungsarten,
-        Kompatibilitaet = q.Kompatibilitaet,
-        KompatibilitaetMoeglich = q.KompatibilitaetMoeglich,
-        LadenAusPv = q.LadenAusPv,
-        LadenAusBhkw = q.LadenAusBhkw,
-        Netzentladung = q.Netzentladung,
-        BhkwStromgefuehrt = q.BhkwStromgefuehrt,
-        Kapitalzins = q.Kapitalzins,
-        Nutzungsdauer = q.Nutzungsdauer,
-        Leistungspreis = q.Leistungspreis,
-        Netzladeaufschlag = q.Netzladeaufschlag,
-        Preisquelle = q.Preisquelle,
-        Preisquellen = q.Preisquellen,
-        PreisreiheLabel = q.PreisreiheLabel,
-        PreisreiheId = q.PreisreiheId,
-        Preisreihen = q.Preisreihen,
-        PreisreiheMoeglich = q.PreisreiheMoeglich,
-        Aufschlag = q.Aufschlag,
-        Preisinfo = q.Preisinfo,
-        PreisinfoWarnung = q.PreisinfoWarnung
-    };
-
-    /// <summary>
-    /// Verglichen werden die EINGABEFELDER — die achtzehn Werte, die der Speichern-Weg
-    /// in die Variante bzw. in die Gerätezeile schreibt. Anzeigetexte
-    /// (Variantenstatus, Preisvorschau, kWh-Äquivalent) und Listen bleiben draußen:
-    /// Sie ändert der Anwender nicht, und ein nachgezogener Text wäre sonst eine
-    /// „Änderung", die niemand gemacht hat.
-    /// </summary>
-    private static bool Gleich(SpeicherParameterDaten a, SpeicherParameterDaten b)
-        => a.SoCMinProzent == b.SoCMinProzent
-           && a.SoCMaxProzent == b.SoCMaxProzent
-           && a.Ladeschwellwert == b.Ladeschwellwert
-           && a.LadeleistungKw == b.LadeleistungKw
-           && a.KapazitaetKwh == b.KapazitaetKwh
-           && string.Equals(a.Betriebsart, b.Betriebsart, StringComparison.Ordinal)
-           && string.Equals(a.Berechnungsart, b.Berechnungsart, StringComparison.Ordinal)
-           && a.Kompatibilitaet == b.Kompatibilitaet
-           && a.LadenAusPv == b.LadenAusPv
-           && a.LadenAusBhkw == b.LadenAusBhkw
-           && a.Netzentladung == b.Netzentladung
-           && a.Kapitalzins == b.Kapitalzins
-           && a.Nutzungsdauer == b.Nutzungsdauer
-           && a.Leistungspreis == b.Leistungspreis
-           && a.Netzladeaufschlag == b.Netzladeaufschlag
-           && string.Equals(a.Preisquelle, b.Preisquelle, StringComparison.Ordinal)
-           && a.PreisreiheId == b.PreisreiheId
-           && a.Aufschlag == b.Aufschlag;
 }

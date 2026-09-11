@@ -740,3 +740,9 @@ Schätzung nur als Gerüst enthalten.
   `help_cache.json` — der heutige Katalogweg
 - `WindowsFormsApplication1\Allgemein\KI\KiChatService.cs`, `HilfeWissen.cs`,
   `HilfeKontext.cs` — der heutige Prompt-Aufbau
+
+## Dokumentationspflege Speicherauslegung – 11.09.2026
+
+Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.
+
+Lokale Beschreibung: [Doku_Speicherauslegung_Kosten_Zeitreihen.md](Doku_Speicherauslegung_Kosten_Zeitreihen.md).
