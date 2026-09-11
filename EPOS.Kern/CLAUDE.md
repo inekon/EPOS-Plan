@@ -326,8 +326,8 @@ räumt aber nur Plottables und keine Panels; die Zeichenfläche schrumpfte je La
 Problem nicht. **Nicht endliche Werte fallen hier weg** statt das Bild zu Fall zu
 bringen — ein einziges ±∞ in der Matrix beendete ScottPlot beim RENDERN („min must be a
 real number"), also im Anstrich des Steuerelements und damit unfangbar. Der Aufrufer ist
-`Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (38 Bilder,
-sechs Gegenproben) und in `EPOS.Kern.Tests/SpeicherOptimierungCtrlTests`.
+`Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (57 Bilder,
+dreizehn Gegenproben) und in `EPOS.Kern.Tests/SpeicherOptimierungCtrlTests`.
 
 **Ein LOCH im Raster ist seit Auftrag #226 (11.09.2026) hellgrau, nicht rot.**
 `Rasterfarbe` gab jedem nicht endlichen Wert die Minimumfarbe `C_RASTER_SCHLECHT` — an
@@ -340,6 +340,16 @@ harte Grenze" sind zwei verschiedene Dinge. Die Farbskala rechts ist unberührt 
 rechnet über `Farbstufe`), und jedes Bild ohne Loch bleibt byte-gleich. Gegenprobe:
 `ChartProben`-Fall `flottenraster_loch_ist_kein_minimum` — vor der Behebung waren Loch
 und Minimumwert byte-gleich.
+
+**Ein FEINRASTERPUNKT ist seit Auftrag #224 (11.09.2026) kleiner und andersfarbig.**
+Die zweite Phase der Rastersuche legt ihre Kandidaten ZWISCHEN die Stützstellen des
+Grobrasters; im Bild müssen sie zu unterscheiden sein, sonst liest man eine dichtere
+Kurve als ein feineres Grobraster. `Schnittkurve` nimmt dafür einen optionalen
+Parameter `IReadOnlyList<bool> feinpunkte` und zeichnet einen markierten Punkt mit
+Radius 2,5 in `C_FEINRASTER` (0xE08A00) statt mit 3,5 in `C_STAMM`. **Ohne den
+Parameter bleibt jedes Bild byte-gleich** zum Stand vor #224 — das ist der Grund für die
+Vorgabe `null`. Proben: `flottenschnitt_feinraster` und die Gegenprobe
+`flottenschnitt_feinpunkte_wirken` (dieselbe Kurve einmal ohne und einmal mit Marken).
 
 **Die vier BERICHTSBILDER bleiben unangetastet.** `JahresverlaufWaerme` und
 `DauerlinieWaerme` sind zwei feste Ausprägungen von `ErzeugerStapel`,
@@ -387,8 +397,8 @@ Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
 sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet seit iU9‑W11a.6 **dreißig** Bilder und
-prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet **57** Bilder (seit #224,
+vorher 55) und prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
 

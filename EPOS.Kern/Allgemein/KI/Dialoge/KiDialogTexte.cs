@@ -288,6 +288,27 @@
         internal static string SpaKapitalwertName => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_NAME;
         internal static string SpaKapitalwertErl => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_ERL;
 
+        // --- Station 4 „Optimierung" und der Schritt der Ansicht (Auftrag #224) ---
+
+        internal static string SpaSchrittName => MyResource.Resource.KI_DLG_SPA_SCHRITT_NAME;
+        internal static string SpaSchrittErl => MyResource.Resource.KI_DLG_SPA_SCHRITT_ERL;
+        internal static string SpaSucheName => MyResource.Resource.KI_DLG_SPA_SUCHE_NAME;
+        internal static string SpaSucheErl => MyResource.Resource.KI_DLG_SPA_SUCHE_ERL;
+        internal static string SpaFeinrasterName => MyResource.Resource.KI_DLG_SPA_FEINRASTER_NAME;
+        internal static string SpaFeinrasterErl => MyResource.Resource.KI_DLG_SPA_FEINRASTER_ERL;
+        internal static string SpaMaxKandidatenName => MyResource.Resource.KI_DLG_SPA_MAXKAND_NAME;
+        internal static string SpaMaxKandidatenErl => MyResource.Resource.KI_DLG_SPA_MAXKAND_ERL;
+        internal static string SpaKandidatenzahlName => MyResource.Resource.KI_DLG_SPA_KANDZAHL_NAME;
+        internal static string SpaKandidatenzahlErl => MyResource.Resource.KI_DLG_SPA_KANDZAHL_ERL;
+        internal static string SpaBestwertName => MyResource.Resource.KI_DLG_SPA_BESTWERT_NAME;
+        internal static string SpaBestwertErl => MyResource.Resource.KI_DLG_SPA_BESTWERT_ERL;
+        internal static string SpaBestkapazitaetName => MyResource.Resource.KI_DLG_SPA_BESTKAP_NAME;
+        internal static string SpaBestkapazitaetErl => MyResource.Resource.KI_DLG_SPA_BESTKAP_ERL;
+        internal static string SpaBestersparnisName => MyResource.Resource.KI_DLG_SPA_BESTERSPARNIS_NAME;
+        internal static string SpaBestersparnisErl => MyResource.Resource.KI_DLG_SPA_BESTERSPARNIS_ERL;
+        internal static string SpaBestphaseName => MyResource.Resource.KI_DLG_SPA_BESTPHASE_NAME;
+        internal static string SpaBestphaseErl => MyResource.Resource.KI_DLG_SPA_BESTPHASE_ERL;
+
         // ========================================= Simulation: Felder (Auftrag #221)
 
         internal static string SimSchrittName => MyResource.Resource.KI_DLG_SIM_SCHRITT_NAME;

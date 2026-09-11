@@ -63,12 +63,19 @@ public enum Flottenachsengroesse
 /// <param name="Unzulaessig">Je Stelle: Der dort stehende Kandidat verletzt eine harte Grenze.</param>
 /// <param name="BesteZeile">Zeile des Optimums, oder <c>-1</c>.</param>
 /// <param name="BesteSpalte">Spalte des Optimums, oder <c>-1</c>.</param>
+/// <param name="Feinraster">
+/// Je Stelle: Der dort stehende Kandidat stammt aus der ZWEITEN Phase (Auftrag #224);
+/// <c>null</c> = keine Auskunft, wie vor #224. Die zweite Phase legt ihre Punkte
+/// ZWISCHEN die Stuetzstellen des Grobrasters — sie bekommen deshalb eigene Zeilen, und
+/// die Schnittkurve zeichnet sie unterscheidbar.
+/// </param>
 public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
                                         IReadOnlyList<double> Spaltenwerte,
                                         IReadOnlyList<double> Zeilenwerte,
                                         double[][] Werte,
                                         bool[][] Unzulaessig,
-                                        int BesteZeile, int BesteSpalte)
+                                        int BesteZeile, int BesteSpalte,
+                                        bool[][] Feinraster = null)
 {
     /// <summary>Es gibt keine Karte — kein Kandidat, oder nur die Nullvariante.</summary>
     public bool IstLeer => Spaltenwerte.Count == 0 || Zeilenwerte.Count == 0;
@@ -96,9 +103,16 @@ public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
 /// <param name="Werte">Der Kapitalwert [€] dazu; <c>NaN</c> an einer Stelle ohne Kandidat.</param>
 /// <param name="OptimumAchse">Der Achsenwert des besten Punktes DIESES Schnitts; <c>NaN</c> = keine Marke.</param>
 /// <param name="OptimumWert">Sein Kapitalwert; <c>NaN</c> = keine Marke.</param>
+/// <param name="Feinpunkte">
+/// Je Stuetzstelle: Sie stammt aus der ZWEITEN Phase der Suche (Auftrag #224);
+/// <c>null</c> = keine Auskunft. Der Renderer zeichnet einen Feinpunkt in einer eigenen
+/// Farbe — „wo ist grob gerastert, wo ist nachgeschaerft?" ist genau die Frage, die die
+/// Mappe V7 mit ihren zwei Punktreihen beantwortet.
+/// </param>
 public sealed record FlottenSchnittdaten(IReadOnlyList<double> Achse,
                                          IReadOnlyList<double> Werte,
-                                         double OptimumAchse, double OptimumWert)
+                                         double OptimumAchse, double OptimumWert,
+                                         IReadOnlyList<bool> Feinpunkte = null)
 {
     /// <summary>Weniger als zwei Stützstellen ergeben keine Kurve.</summary>
     public bool IstLeer => Achse.Count < 2;
@@ -218,11 +232,13 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         int zeilen = zeilenwerte.Count, spalten = spaltenwerte.Count;
         var werte = new double[zeilen][];
         var unzulaessig = new bool[zeilen][];
+        var feinraster = new bool[zeilen][];
         var belegt = new Rasterpunkt[zeilen][];
         for (int i = 0; i < zeilen; i++)
         {
             werte[i] = new double[spalten];
             unzulaessig[i] = new bool[spalten];
+            feinraster[i] = new bool[spalten];
             belegt[i] = new Rasterpunkt[spalten];
             for (int s = 0; s < spalten; s++) werte[i][s] = double.NaN;
         }
@@ -238,6 +254,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             werte[zeile][spalte] = double.IsFinite(p.Kandidat.KapitalwertEuro)
                 ? p.Kandidat.KapitalwertEuro : double.NaN;
             unzulaessig[zeile][spalte] = !p.Kandidat.Zulaessig;
+            feinraster[zeile][spalte] = p.Kandidat.Phase == FlottenKandidatPhase.Fein;
         }
 
         int besteZeile = -1, besteSpalte = -1;
@@ -254,7 +271,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         }
 
         return new FlottenRasterdaten(modus, spaltenwerte, zeilenwerte, werte, unzulaessig,
-                                      besteZeile, besteSpalte);
+                                      besteZeile, besteSpalte, feinraster);
     }
 
     // =====================================================================
@@ -336,7 +353,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             Schnitttitel(raster.Zeilengroesse, raster.Spaltengroesse, spaltenwert),
             Achsentext(raster.Zeilengroesse),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
-            schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert);
+            schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert,
+            schnitt.Feinpunkte);
     }
 
     /// <summary>Die SCHNITTKURVE bei einem Zeilenwert als PNG; ohne Kurve <c>null</c>.</summary>
@@ -355,7 +373,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             Schnitttitel(Gegengroesse(raster.Modus), raster.Zeilengroesse, zeilenwert),
             Achsentext(Gegengroesse(raster.Modus)),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
-            schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert);
+            schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert,
+            schnitt.Feinpunkte);
     }
 
     // =====================================================================
@@ -786,8 +805,13 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         if (spalte < 0) return FlottenSchnittdaten.Leer;
 
         var werte = new double[raster.Zeilenwerte.Count];
-        for (int i = 0; i < werte.Length; i++) werte[i] = raster.Werte[i][spalte];
-        return Schnitt(raster.Zeilenwerte, werte);
+        var fein = new bool[raster.Zeilenwerte.Count];
+        for (int i = 0; i < werte.Length; i++)
+        {
+            werte[i] = raster.Werte[i][spalte];
+            fein[i] = raster.Feinraster is { } f && f[i][spalte];
+        }
+        return Schnitt(raster.Zeilenwerte, werte, fein);
     }
 
     /// <summary>Der Schnitt bei einem Zeilenwert auf einer BEREITS gebauten Karte.</summary>
@@ -797,7 +821,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         int zeile = Stelle(raster.Zeilenwerte, zeilenwert);
         if (zeile < 0) return FlottenSchnittdaten.Leer;
 
-        return Schnitt(Gegenachse(raster, raster.Zeilenwerte[zeile]), raster.Werte[zeile]);
+        return Schnitt(Gegenachse(raster, raster.Zeilenwerte[zeile]), raster.Werte[zeile],
+                       raster.Feinraster?[zeile]);
     }
 
     /// <summary>
@@ -829,8 +854,16 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// fällt damit über der aufsteigenden C-Rate. In den übrigen Fällen steht die Achse
     /// bereits aufsteigend, und die Ordnung lässt sie unberührt.
     /// </remarks>
+    /// <param name="achse">Die Stützstellen.</param>
+    /// <param name="werte">Der Kapitalwert je Stützstelle.</param>
+    /// <param name="fein">
+    /// Je Stützstelle: Sie stammt aus der zweiten Phase (Auftrag #224); <c>null</c> =
+    /// keine Auskunft. Sie wird MITSORTIERT — sonst zeigte die Marke auf die Stelle, an
+    /// der der Punkt vor dem Sortieren stand.
+    /// </param>
     private static FlottenSchnittdaten Schnitt(IReadOnlyList<double> achse,
-                                               IReadOnlyList<double> werte)
+                                               IReadOnlyList<double> werte,
+                                               IReadOnlyList<bool> fein = null)
     {
         int n = Math.Min(achse.Count, werte.Count);
         var stellen = Enumerable.Range(0, n)
@@ -839,11 +872,13 @@ public static partial class SpeicherFlottenAnzeigeCtrl
 
         var a = new double[n];
         var w = new double[n];
+        var f = fein is null ? null : new bool[n];
         double besteAchse = double.NaN, besterWert = double.NaN;
         for (int i = 0; i < n; i++)
         {
             a[i] = achse[stellen[i]];
             w[i] = werte[stellen[i]];
+            if (f is not null) f[i] = stellen[i] < fein.Count && fein[stellen[i]];
             if (!double.IsFinite(w[i])) continue;
             if (double.IsNaN(besterWert) || w[i] > besterWert)
             {
@@ -851,7 +886,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                 besteAchse = a[i];
             }
         }
-        return new FlottenSchnittdaten(a, w, besteAchse, besterWert);
+        return new FlottenSchnittdaten(a, w, besteAchse, besterWert, f);
     }
 
     /// <summary>Die Bildüberschrift — mit Einheitennamen, sobald eine gewählt ist.</summary>

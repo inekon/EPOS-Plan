@@ -107,7 +107,7 @@ Hinweise erläutern Eingaben und Annahmen. Vor dem Vergleich werden fehlende Jah
 
 Eine Suchachse ersetzt über `ErsetztEinheitId` genau ihre Einheit; andere bleiben fest. Anzahl kann auch null sein. Möglich sind Kapazität plus Leistung, Kapazität plus C-Rate (`P=E·C`) oder Leistung plus C-Rate (`E=P/C`). Beim Skalieren bleibt das Lade-/Entladeleistungsverhältnis der Vorlage erhalten; eine Nullrichtung bleibt null.
 
-Das vollständige endliche kartesische Raster wird mit den ausgewählten Zielen kombiniert. Übersteigt es `MaximaleKandidaten`, wird es abgewiesen und nicht gekürzt. Rangfolge: technisch zulässige Varianten nach höchstem NPV, daneben die technisch zulässige Nullvariante mit NPV 0. Ist die Referenz wegen einer harten Netzgrenze unzulässig, kann eine technisch nötige Variante trotz negativem NPV gewinnen. Sind alle Rechnungen fachlich ungültig, entsteht ein Konfigurationsfehler statt einer falschen Null-Empfehlung.
+Das vollständige endliche kartesische Raster wird mit den ausgewählten Zielen kombiniert. Übersteigt es `MaximaleKandidaten`, wird es abgewiesen und nicht gekürzt — **seit #224 zählt die Grenze BEIDE Phasen** (Grobraster plus Obergrenze des Feinrasters, siehe unten). Rangfolge: technisch zulässige Varianten nach höchstem NPV, daneben die technisch zulässige Nullvariante mit NPV 0. Ist die Referenz wegen einer harten Netzgrenze unzulässig, kann eine technisch nötige Variante trotz negativem NPV gewinnen. Sind alle Rechnungen fachlich ungültig, entsteht ein Konfigurationsfehler statt einer falschen Null-Empfehlung.
 
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
@@ -633,6 +633,70 @@ den löst nach der Regel vom 09.09.2026 der Anwender aus.
 **Der Referenzlauf ist unberührt:** Die Rastersuche liegt nicht im Projektlauf, und die neuen
 Felder ändern keinen Rechenwert (1030 und 1046 byte-gleich gegen
 `Referenzlaeufe/2026-09-11_R7_Speicherflotte`).
+
+## Station 4 „Optimierung" und das Feinraster (P6 + P8, #224)
+
+**Die Rastersuche war vollständig und trotzdem unauffindbar.** Sie hing an drei Schaltern an drei
+Orten — dem Häkchen „Größen optimieren" in Schritt 1, den Suchbereichen im Einheiteneditor und der
+Beschriftung der Ablaufstation 4 —, und das Wort „Optimierung" kam in der Ablaufleiste nicht vor.
+Der Anwenderentscheid **SD‑E‑9 (Option A)** macht sie zur eigenen **Station 4** der Ansicht
+`STROMSPEICHER_AUSLEGUNG`; die Leiste führt seither **fünf gleich gebaute Blätter** und keinen
+Rechenknopf mehr (`Ablaufleiste.MitAktion="false"`, nummerierte Kreise statt Ziffern im Titel).
+
+**Was Station 4 trägt** (`EPOS.UI/Seiten/Strom/OptimierungBlock.razor`): das genannte Ziel
+(Kapitalwert gegenüber „ohne Speicher"), die Wahl *bewerten* / *beste Größe suchen*, den
+**Suchraum je Einheit** als Tabelle (eine Zeile je `FlottenAuslegungsAchse`, „—" für die aus der
+Größenkopplung abgeleitete Spalte), die **live mitzählende Kandidatenzeile**, den
+Feinraster-Schalter, den Rechenknopf, den Kasten **„Bestes Ergebnis"** und darunter die
+Größen-Sicht aus P4 — die damit von Schritt 5 nach Schritt 4 zieht, zu der Suche, aus der sie
+stammt. Schritt 5 bewertet seither **eine** Bestückung und sagt in einer Zeile, welche.
+
+**Die Zählregel ist eine einzige.** `FlottenOptimierer.Kandidatenzahl(config)` liefert
+`(Grob, FeinHoechstens, Grenze, Gueltig)`; dieselbe Struktur prüft der Lauf, bevor er die erste
+Phase rechnet, und dieselbe schreibt die Oberfläche in ihre Zeile. Eine zweite Rechnung in der
+Maske könnte von der des Laufs abweichen — hier kann sie es nicht.
+
+**Phase 2 — das Feinraster** (`FlottenOptimierer.Feinrasterwerte`, Spezifikation 12.2, Vorbild ist
+das Makro `OptimiereSpeicher` der Anwendermappe V7):
+
+- Fenster `[max(von, E* − Δ), min(bis, E* + Δ)]` um die Größe `E*` des Grob-Optimums, geklemmt auf
+  die eingegebenen Grenzen; Mindestbreite **1 kWh** (`FEINRASTER_MINDESTBREITE`).
+- Schrittweite **Δ/9** (`FEINRASTER_TEILUNG`), also zehn Stützstellen je Grobschritt.
+- **Nur die erste aktive Suchachse** wird verfeinert; die übrigen Achsen, die Stückzahl und das
+  Betriebsziel bleiben beim Wert des Grob-Optimums. Die zweite Achse ist im Regelfall die C-Rate,
+  und oberhalb von etwa 1,0 C ändert sie nichts mehr.
+- **Der Gewinn ist strikt:** Phase 2 läuft nach Phase 1 gegen dasselbe `BestesZiel`, der Vergleich
+  ist `>`. Bei Gleichstand bleibt der Grobpunkt der Beste — er liegt auf einer Stützstelle, die
+  der Anwender selbst gesetzt hat.
+- Jeder Kandidat trägt seine `FlottenKandidatPhase`; `FlottenAuslegungErgebnis` führt
+  `FeinrasterGerechnet` und die gemessene `Rechendauer`. `IProgress` und `CancellationToken`
+  laufen über beide Phasen durch.
+- Vor dem Lauf steht nur die **Obergrenze** des Feinrasters fest (das Fenster hängt an der Lage des
+  Grob-Optimums, am Rand wird es einseitig gekappt). Geprüft wird gegen sie — ein zu großes Raster
+  fliegt damit auf, **bevor** Phase 1 verrechnet ist, und nicht danach.
+
+`FlottenAuslegungEingang.Feinraster` ist **vorbelegt an** und wird mit dem Profil gespeichert.
+
+**Sichtbar wird die Phase in der Schnittkurve**, nicht in der Rasterkarte:
+`ChartRenderer.Schnittkurve(..., IReadOnlyList<bool> feinpunkte)` zeichnet einen Feinpunkt kleiner
+und in `C_FEINRASTER`; ohne den Parameter bleibt jedes Bild byte-gleich zum Stand vor #224
+(ChartProbe `flottenschnitt_feinraster` samt Gegenprobe `flottenschnitt_feinpunkte_wirken`). In der
+Karte wäre eine zweite Farbe neben Dreifarbskala und Schraffur eine dritte Aussage in derselben
+Fläche; die Feinpunkte stehen dort als eigene Zeilen.
+
+**Drei Blöcke haben mit #224 den Ort gewechselt**, weil sie nie zu einer Einheit gehörten:
+„Netz und Planung" (Anschlussgrenzen, Prognoseplanung, Endenergieziele) wird
+`SpeicherFlottenNetzBlock` in Schritt 3, die wirtschaftliche Jahresprojektion (Zins,
+Projektionsart, Projektjahre, Ausgleichswert, Restwert, Kandidatengrenze) wird
+`SpeicherFlottenWirtschaftBlock` in Schritt 2 (SD‑Q12) samt drei Erklärzeilen, der Suchraum wird
+Station 4. Der Einheiteneditor schrumpft von 675 auf 540 Zeilen und trägt nur noch Einheiten.
+Weil nun **vier** Blätter denselben `FlottenStudieKonfiguration` beschreiben, der Editor aber eine
+eigene Kopie hält, setzt die Seite nach jeder Änderung von außen mit `FlotteGeschrieben()` eine
+frische Kopie ein — sonst überschriebe ein späteres Editor-Speichern die Eingaben der anderen
+Blätter.
+
+**Der Referenzlauf ist unberührt:** Die Rastersuche liegt nicht im Projektlauf
+(1030/1007/1017/1045/1046 byte-gleich gegen `Referenzlaeufe/2026-09-11_R7_Speicherflotte`).
 
 ## Testbelege vom 11.09.2026
 

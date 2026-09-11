@@ -231,6 +231,12 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
         config.Auslegung = new FlottenAuslegungEingang
         {
             MaximaleKandidaten = 100,
+            // OHNE die zweite Phase (Auftrag #224): Diese Prüffälle messen das GROBRASTER —
+            // seine Stellen, seine Kennzahlen und die Gegenrechnung je Rasterpunkt. Das
+            // Feinraster legt Kandidaten ZWISCHEN die Stützstellen und auf den Optimalpunkt
+            // noch einmal; „jede Stelle genau einmal" wäre danach keine Aussage mehr.
+            // Geprüft wird es in FlottenFeinrasterTests.
+            Feinraster = false,
             Achsen = new List<FlottenAuslegungsAchse>
             {
                 new()

@@ -11,26 +11,31 @@ namespace EPOS.UI.Seiten.Strom;
 /// Die sprachneutralen Schlüssel der Ablaufleiste (Konzept „Stromspeicher-Dialoge" 2.1).
 /// </summary>
 /// <remarks>
-/// <b>Schritt 4 ist KEIN Blatt</b> — er ist der Rechenknopf und steht deshalb nicht in
-/// dieser Liste. Die Ablaufleiste zeigt ihn trotzdem an vierter Stelle, weil der Ablauf
-/// genau dort seine Zäsur hat.
+/// <b>Seit Auftrag #224 sind es FÜNF Blätter</b> (Anwenderentscheid SD‑E‑9, Option A):
+/// Station 4 war bis dahin der Rechenknopf und stand deshalb nicht in dieser Liste; sie
+/// ist jetzt die SEITE „Optimierung" mit Suchraum, Kandidatenzeile, Feinraster-Schalter,
+/// Rechenknopf und dem Ergebnis der Suche. Der Rechenknopf steht IN ihr.
 /// </remarks>
 public static class AuslegungSchritt
 {
     /// <summary>Blatt 1 — die Speichereinheiten; eine Einheit ist der Einzelspeicher (SD‑E‑8).</summary>
     public const string Speicher = "SPEICHER";
 
-    /// <summary>Blatt 2 — Quellen, Kosten und Profile.</summary>
+    /// <summary>Blatt 2 — Quellen, Kosten, Profile und die wirtschaftliche Jahresprojektion (SD‑Q12).</summary>
     public const string Daten = "DATEN";
 
-    /// <summary>Blatt 3 — Betriebsführung und Peak-Ziel.</summary>
+    /// <summary>Blatt 3 — Betriebsführung, Peak-Ziel, Netz und Planung.</summary>
     public const string Betrieb = "BETRIEB";
+
+    /// <summary>Blatt 4 — die Optimierung: Suchraum, Kandidatenzahl, Lauf und bestes Ergebnis (#224).</summary>
+    public const string Optimierung = "OPTIMIERUNG";
 
     /// <summary>Blatt 5 — das Ergebnis; erst nach einem Lauf betretbar.</summary>
     public const string Ergebnis = "ERGEBNIS";
 
-    /// <summary>Die vier Blätter in der Reihenfolge der Leiste.</summary>
-    public static readonly IReadOnlyList<string> Alle = new[] { Speicher, Daten, Betrieb, Ergebnis };
+    /// <summary>Die fünf Blätter in der Reihenfolge der Leiste.</summary>
+    public static readonly IReadOnlyList<string> Alle =
+        new[] { Speicher, Daten, Betrieb, Optimierung, Ergebnis };
 }
 
 /// <summary>Ein Eintrag der Ablaufleiste.</summary>

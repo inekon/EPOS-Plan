@@ -172,10 +172,26 @@ public class SimulationSeiteTests : EposBunitContext
 
         var schritte = Schritte(cut);
         Assert.Equal(2, schritte.Count);
-        Assert.Equal("1 Konfiguration", schritte[0].TextContent.Trim());
-        Assert.Equal("3 Ergebnis", schritte[1].TextContent.Trim());
+
+        // SEIT AUFTRAG #224 traegt jede Station einen nummerierten KREIS (Konzept 7.8),
+        // und die Ressourcentexte geben ihre Ziffer an ihn ab — sonst stuende sie
+        // zweimal nebeneinander. Der Kreis ist aria-hidden und steht im TextContent
+        // trotzdem davor.
+        Assert.Equal("Konfiguration", Titel(schritte[0]));
+        Assert.Equal("Ergebnis", Titel(schritte[1]));
+        Assert.Equal("1", Stufe(schritte[0]));
+        Assert.Equal("3", Stufe(schritte[1]));
         Assert.Contains("Simulation starten", Rechnen(cut).TextContent);
+        Assert.Equal(3, cut.FindAll("span.epos-ablaufleiste-stufe").Count);
     }
+
+    /// <summary>Der Titel einer Station — ohne den nummerierten Kreis davor (#224).</summary>
+    private static string Titel(AngleSharp.Dom.IElement schritt)
+        => schritt.QuerySelector(".epos-ablaufleiste-titel")!.TextContent.Trim();
+
+    /// <summary>Die Nummer im Kreis einer Station (#224, Konzept 7.8).</summary>
+    private static string Stufe(AngleSharp.Dom.IElement schritt)
+        => schritt.QuerySelector(".epos-ablaufleiste-stufe")!.TextContent.Trim();
 
     /// <summary>Kopf: Titel, Projektzeile und das eine „← zurück" (Konzept 2).</summary>
     [Fact]

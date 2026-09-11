@@ -1194,7 +1194,63 @@ public sealed class FlottenAuslegungEingang
     public List<FlottenBetriebsziel> Betriebsziele { get; set; } = new();
 
     /// <summary>Obergrenze der Kandidatenzahl, Standard 10 000. Ein groesseres Raster wird ABGEWIESEN und nicht gekuerzt.</summary>
+    /// <remarks>Sie zaehlt BEIDE Phasen — Grobraster und Feinraster (Auftrag #224).</remarks>
     public int MaximaleKandidaten { get; set; } = 10000;
+
+    /// <summary>
+    /// PHASE 2 FEINRASTER: Nach dem Grobraster wird ein zweites, engeres Raster um das
+    /// Grob-Optimum gerechnet — nur auf der GROESSENACHSE (Auftrag #224, Anwenderentscheid
+    /// SD-Q10). Vorgabe <c>true</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum die Vorgabe an ist und warum sie ein Eigenschaftsinitialisierer ist.</b>
+    /// Die Mappe V7 rechnet die zweite Phase immer; ein Stand, der das Feld nicht fuehrt —
+    /// jeder vor #224 gespeicherte —, wird beim Einlesen ueber den Initialisierer auf
+    /// <c>true</c> gesetzt und verhaelt sich damit wie die Mappe. Ein
+    /// <c>bool</c>-Standardwert <c>false</c> waere die stille Abschaltung gewesen.</para>
+    /// <para><b>Die zweite Achse bleibt beim Wert des Grob-Optimums</b> (SD-Q10): Die Mappe
+    /// zeigt, dass die C-Rate ab 1,0 C nichts mehr aendert; eine Verfeinerung dort kostet
+    /// Kandidaten ohne Erkenntnis.</para>
+    /// </remarks>
+    public bool Feinraster { get; set; } = true;
+}
+
+/// <summary>Aus welcher Phase der Rastersuche ein Kandidat stammt (Auftrag #224).</summary>
+public enum FlottenKandidatPhase
+{
+    /// <summary>Phase 1 — das vollstaendige Grobraster aus den Suchachsen.</summary>
+    Grob = 0,
+
+    /// <summary>Phase 2 — das engere Raster um das Grob-Optimum auf der Groessenachse.</summary>
+    Fein = 1
+}
+
+/// <summary>
+/// Die ZAEHLREGEL der Rastersuche (Auftrag #224): wie viele Kandidaten ein Suchraum
+/// ergibt, ohne dass ein einziger gerechnet wuerde.
+/// </summary>
+/// <remarks>
+/// <para><b>Eine Wahrheit, keine zweite Formel in der Seite.</b> Die Kandidatenzeile der
+/// Station „4 Optimierung" zeigt dieselben Zahlen, mit denen
+/// <see cref="FlottenOptimierer.Rechne"/> das Raster annimmt oder abweist — sie kommen
+/// beide aus <see cref="FlottenOptimierer.Kandidatenzahl"/>.</para>
+/// <para><b><see cref="FeinHoechstens"/> ist eine OBERGRENZE.</b> Wie breit das Feinraster
+/// wird, haengt an der Lage des Grob-Optimums: Liegt es am Rand des Suchraums, wird das
+/// Fenster einseitig gekappt. Vor dem Lauf steht nur der groesstmoegliche Fall fest, und
+/// genau gegen ihn wird die Grenze geprueft — ein Lauf, der erst in Phase 2 auffliegt,
+/// haette die erste Phase schon verrechnet.</para>
+/// </remarks>
+/// <param name="Grob">Kandidaten des Grobrasters: Hardwarevarianten × Betriebsziele.</param>
+/// <param name="FeinHoechstens">Hoechstzahl der Kandidaten des Feinrasters; 0 = keines.</param>
+/// <param name="Grenze">Die eingestellte Obergrenze (<see cref="FlottenAuslegungEingang.MaximaleKandidaten"/>).</param>
+/// <param name="Gueltig">Der Suchraum ist lesbar; <c>false</c> = ein Bereich ist unbrauchbar und die Zahlen sagen nichts.</param>
+public readonly record struct FlottenKandidatenzahl(long Grob, long FeinHoechstens, int Grenze, bool Gueltig)
+{
+    /// <summary>Beide Phasen zusammen.</summary>
+    public long Gesamt => Grob + FeinHoechstens;
+
+    /// <summary>Haelt das Raster die Grenze ein?</summary>
+    public bool Zulaessig => Gueltig && Grenze > 0 && Gesamt <= Grenze;
 }
 
 /// <summary>
@@ -1291,6 +1347,18 @@ public sealed class FlottenKandidatZusammenfassung
     /// <summary>Die Stelle auf der ZWEITEN Suchachse (Leistung bzw. C-Rate); <c>-1</c> wie <see cref="Rasterzeile"/>.</summary>
     public int Rasterspalte { get; set; } = -1;
 
+    /// <summary>
+    /// Aus welcher PHASE der Suche dieser Kandidat stammt (Auftrag #224); Vorgabe
+    /// <see cref="FlottenKandidatPhase.Grob"/>.
+    /// </summary>
+    /// <remarks>
+    /// Ein Feinrasterpunkt liegt ZWISCHEN den Stuetzstellen des Grobrasters und traegt
+    /// deshalb <see cref="Rasterzeile"/> = <see cref="Rasterspalte"/> = <c>-1</c>: Er hat
+    /// keine Stelle im Grobgitter. Die Karte und die Schnitte ordnen ihn ueber seine WERTE
+    /// ein, nicht ueber einen Index.
+    /// </remarks>
+    public FlottenKandidatPhase Phase { get; set; } = FlottenKandidatPhase.Grob;
+
     // =====================================================================
     // Die Betriebskennzahlen des Kandidatenlaufs (Auftrag #193)
     // =====================================================================
@@ -1369,6 +1437,19 @@ public sealed class FlottenAuslegungErgebnis
     /// Quelle, das den Modus nicht setzt, wird damit gelesen wie vor #226.</para>
     /// </remarks>
     public FlottenAuslegungsmodus Achsenmodus { get; set; } = FlottenAuslegungsmodus.KapazitaetUndCRate;
+
+    /// <summary>
+    /// Die zweite Phase ist wirklich gelaufen (Auftrag #224) — <c>false</c>, wenn sie
+    /// abgeschaltet war, wenn es keine aktive Suchachse gab oder wenn das Grobraster
+    /// keinen zulaessigen Besten hatte, um den herum zu verfeinern waere.
+    /// </summary>
+    public bool FeinrasterGerechnet { get; set; }
+
+    /// <summary>
+    /// Die gemessene Rechendauer der ganzen Suche — der Wert, den der Kasten „Bestes
+    /// Ergebnis" neben der Kandidatenzahl nennt (Mappe V7, Zelle B7).
+    /// </summary>
+    public TimeSpan Rechendauer { get; set; }
 }
 
 /// <summary>Die Fortschrittsmeldung der Rastersuche.</summary>

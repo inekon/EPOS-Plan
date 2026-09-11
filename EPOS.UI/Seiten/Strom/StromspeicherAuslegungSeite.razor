@@ -101,23 +101,25 @@
     @* Die VORPRUEFUNG steht UEBER der Ablaufleiste (Konzept 2.4 Punkt 3): Sie
        gehoert zum Lauf, nicht zu einem Blatt — und sie SPERRT nicht, sie warnt.
        Der Lauf startet trotzdem; das ist ausdruecklich so gewollt. *@
-    @foreach (FlottenHinweis hinweis in _vorpruefung)
-    {
-        @* SEIT #199 MIT KENNUNG (Stufe S1, Weg 2): Die Vorpruefung sagt, WAS nicht
-           passt; „erklaeren lassen" sagt, WARUM und was zu tun ist. Die Kennung ist
-           die sprachneutrale FlottenHinweisKennung - nicht der Text, der mit jeder
-           Zahl darin wechselt. *@
-        <Warnbanner Stufe="@(hinweis.Stufe == FlottenHinweisStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis)"
-                    Text="@hinweis.Text"
-                    Kennung="@KiMeldungskennung.Fuer(hinweis.Kennung)"
-                    Hilfeschluessel="@HilfeSchluessel"
-                    Dialogname="@TitelText" />
-    }
+    @* SEIT #199 MIT KENNUNG (Stufe S1, Weg 2): Die Vorpruefung sagt, WAS nicht
+       passt; „erklaeren lassen" sagt, WARUM und was zu tun ist. Die Kennung ist die
+       sprachneutrale FlottenHinweisKennung - nicht der Text, der mit jeder Zahl
+       darin wechselt.
+
+       SEIT #224 KOMPAKT (Konzept 7.8): eine Zeile je Hinweis mit dem Link INLINE,
+       ab zwei Hinweisen ein aufklappbarer Block. Zwei Warnbaender ueber die ganze
+       Breite nahmen ein Drittel des Kopfes und meldeten einen Fehler, den es nicht
+       gibt — die Vorpruefung SPERRT nicht. *@
+    <Hinweiszeilen Hinweise="@_vorpruefung" Hilfeschluessel="@HilfeSchluessel"
+                   Dialogname="@TitelText" />
 
     @* ------------------------------------------------------- Ablaufleiste *@
+    @* FUENF STATIONEN, KEIN AKTIONSPLATZ (Auftrag #224, SD-E-9 Option A): Station 4
+       ist seither eine SEITE, und ihr Rechenknopf steht in ihr. Die Leiste zeigt
+       deshalb fuenf gleich gebaute Stufen — nummerierte Kreise nach Konzept 7.8. *@
     <Ablaufleiste Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
                   Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
-                  RechnenText="@RechnenText" RechnenFrei="@RechnenFrei" Rechnen="Starten"
+                  MitAktion="false"
                   Bezeichnung="@AblaufText" VeraltetText="@VeraltetText" Buendig="true" />
 
     @if (Eingabefehler.Length > 0)
@@ -167,11 +169,11 @@
                SoC-Band aus StromspeicherSimCtrl.LeseParameter(projekt, anlage), Name
                und AnlageId aus der Anlagenzeile. Ein Projekt mit EINER Speicheranlage
                bekommt damit genau eine Einheit — das ist der Einzelspeicher. *@
+            @* NUR NOCH DIE EINHEITEN (Auftrag #224): Der Groessenbereich und der
+               Schalter „optimieren" stehen in Station 4, die Jahresprojektion in
+               Schritt 2, „Netz und Planung" in Schritt 3. *@
             <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
                                    BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
-            <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN"
-                      Wert="@Auslegung.FlottenGroessenOptimieren" Aktiv="@(!_laeuft)"
-                      WertChanged="SuchlaufSetzen" />
         }
         else if (_schritt == AuslegungSchritt.Daten)
         {
@@ -198,6 +200,13 @@
                 <button type="button" class="epos-knopf" disabled="@_laeuft"
                         @onclick="PrognosenOeffnen">@PrognosenText</button>
             }
+
+            @* DIE WIRTSCHAFTLICHE JAHRESPROJEKTION steht seit #224 HIER (SD-Q12) und
+               nicht mehr unter der Einheitenliste: Zins, Laufzeit, Restwert und der
+               Energie-Ausgleichswert sind Kostensaetze der STUDIE. So ordnet sie auch
+               die Wiki-Seite — Programm und Doku widersprachen sich (Konzept 7.2). *@
+            <SpeicherFlottenWirtschaftBlock Wert="@Flotte" Aktiv="@(!_laeuft)"
+                                            Geaendert="FlotteGeschrieben" />
         }
         else if (_schritt == AuslegungSchritt.Betrieb)
         {
@@ -219,6 +228,27 @@
                            GesperrtText="@Resource.FLOTTE_PEAK_GESPERRT"
                            NetzladungErlaubtText="@Resource.FLOTTE_PEAK_NETZLADUNG_JA"
                            NetzladungVerbotenText="@Resource.FLOTTE_PEAK_NETZLADUNG_NEIN" />
+
+            @* NETZ UND PLANUNG gehoert zur BETRIEBSFUEHRUNG (Auftrag #224, Zielbild
+               7.4): Bezugs- und Einspeisegrenze sind harte Grenzen des Anschlusses,
+               die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
+               Bis #224 stand der Block unter den Einheiten in Schritt 1. *@
+            <SpeicherFlottenNetzBlock Wert="@Flotte.Optionen" Einheiten="@Flotte.Einheiten"
+                                      Aktiv="@(!_laeuft)" Geaendert="FlotteGeschrieben" />
+        }
+        else if (_schritt == AuslegungSchritt.Optimierung)
+        {
+            <OptimierungBlock Flotte="@Flotte" Suchen="@Auslegung.FlottenGroessenOptimieren"
+                              SuchenChanged="SuchlaufSetzen" Aktiv="@(!_laeuft)"
+                              Geaendert="FlotteGeschrieben"
+                              Ergebnis="@_flottenErgebnis?.Auslegung"
+                              Einheiten="@Einheitenzahl"
+                              KandidatUebernehmen="@(EventCallback.Factory
+                                  .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
+                              Csv="@(Dienste?.Csv is null ? default
+                                     : EventCallback.Factory.Create(this, KandidatenCsv))"
+                              Rechnen="Starten" RechnenFrei="@RechnenFrei"
+                              RechnenGrund="@Eingabefehler" RechnenText="@RechnenText" />
         }
         else if (_schritt == AuslegungSchritt.Ergebnis)
         {
@@ -244,23 +274,15 @@
                                        PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
                                        BetriebsfuehrungText="@ZuBetriebText" />
 
-                @* DIE GROESSEN-SICHT (Paket P4 / #193, eingebunden mit #196) steht
-                   VOR der Ergebnisansicht, weil Konzept 2.5 sie dort verlangt: Erst
-                   die Frage „welche GROESSE traegt sich?", dann die Auswertung der
-                   einen gerechneten Flotte. Bedingung ist das RASTERSUCHERGEBNIS und
-                   nicht der Schalter „Groessen optimieren": Der Schalter sagt, was
-                   der NAECHSTE Lauf tut — abgeschaltet nach einem Suchlauf verschwaende
-                   er die Karte, die gerade entstanden ist. Seit #196 traegt DIESER
-                   Baustein die Kandidatentabelle; die einfache Texttabelle in der
-                   Ergebnisansicht ist damit gefallen (keine zwei Tabellen). *@
-                @if (_flottenErgebnis.Auslegung is not null)
+                @* DIE GROESSEN-SICHT IST MIT #224 NACH STATION 4 GEZOGEN (Zielbild
+                   7.4): Schritt 5 bewertet die GEWAEHLTE Flotte — Kacheln, Delta-Tabelle,
+                   Diagramme, Jahresprojektion —, die Frage „welche Groesse traegt sich?"
+                   beantwortet die Optimierung. Zwei Orte fuer dieselbe Karte waeren zwei
+                   Wahrheiten. Die Hinweiszeile sagt, WELCHER Kandidat hier steht. *@
+                @if (_flottenErgebnis.Auslegung?.BesterKandidat is { } gezeigt)
                 {
-                    <SpeicherFlottenGroessenAnsicht Ergebnis="@_flottenErgebnis.Auslegung"
-                                                    Einheiten="@Einheitenzahl"
-                                                    KandidatUebernehmen="@(EventCallback.Factory
-                                                        .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
-                                                    Csv="@(Dienste?.Csv is null ? default
-                                                           : EventCallback.Factory.Create(this, KandidatenCsv))" />
+                    <p class="epos-flotte-hinweis">@string.Format(Kultur, ErgebnisKandidatFormat,
+                                                                  gezeigt.KandidatId)</p>
                 }
 
                 <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
@@ -426,6 +448,7 @@
     private static string Schritt1Text => Resource.FLOTTE_SEITE_SCHRITT1;
     private static string Schritt2Text => Resource.FLOTTE_SEITE_SCHRITT2;
     private static string Schritt3Text => Resource.FLOTTE_SEITE_SCHRITT3;
+    private static string Schritt4Text => Resource.FLOTTE_SEITE_SCHRITT4;
     private static string Schritt5Text => Resource.FLOTTE_SEITE_SCHRITT5;
     private static string RechnenFlotteText => Resource.FLOTTE_SEITE_BTN_FLOTTE;
     private static string RechnenGroessenText => Resource.FLOTTE_SEITE_BTN_GROESSEN;
@@ -453,6 +476,7 @@
     private static string KandidatTitelText => Resource.FLOTTE_SEITE_KANDIDAT_TITEL;
     private static string KandidatFrageText => Resource.FLOTTE_SEITE_KANDIDAT_FRAGE;
     private static string KandidatBannerFormat => Resource.FLOTTE_SEITE_KANDIDAT_BANNER;
+    private static string ErgebnisKandidatFormat => Resource.FLOTTE_SEITE_ERGEBNIS_KANDIDAT;
     private static string VerlassenTitelText => Resource.FLOTTE_SEITE_VERLASSEN_TITEL;
     private static string VerlassenFrageText => Resource.FLOTTE_SEITE_VERLASSEN_FRAGE;
     private static string SpeichernText => Resource.FLOTTE_SEITE_BTN_SPEICHERN;
@@ -484,6 +508,7 @@
         AuslegungSchritt.Speicher => Schritt1Text,
         AuslegungSchritt.Daten    => Schritt2Text,
         AuslegungSchritt.Betrieb  => Schritt3Text,
+        AuslegungSchritt.Optimierung => Schritt4Text,
         AuslegungSchritt.Ergebnis => Schritt5Text,
         _                         => ""
     };
@@ -612,7 +637,8 @@
     {
         new Ablaufeintrag(AuslegungSchritt.Speicher, Schritt1Text, true, false, ""),
         new Ablaufeintrag(AuslegungSchritt.Daten, Schritt2Text, true, false, ""),
-        new Ablaufeintrag(AuslegungSchritt.Betrieb, Schritt3Text, true, false, "")
+        new Ablaufeintrag(AuslegungSchritt.Betrieb, Schritt3Text, true, false, ""),
+        new Ablaufeintrag(AuslegungSchritt.Optimierung, Schritt4Text, true, false, "")
     };
 
     private IReadOnlyList<Ablaufeintrag> Hinten => new[]
@@ -663,7 +689,7 @@
         // ein SICHTMODELL und nicht der Eingabestand - der liegt drei bis fuenf Stufen
         // tief, und ein Katalogfeld ist genau zwei Stufen tief (KiEigenschaftspfad).
         _kiSicht = new StromspeicherKiSicht(() => _eingaben, () => _flottenErgebnis,
-                                            () => _vorpruefung);
+                                            () => _vorpruefung, () => SchrittText);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
                                           () => _kiSicht, KiHaken());
     }
@@ -872,6 +898,26 @@
         Geaendert();
     }
 
+    /// <summary>
+    /// Ein Blatt hat den Flottenstand AN ORT UND STELLE beschrieben (Auftrag #224).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum die Flotte danach neu aufgesetzt wird.</b> Seit #224 schreiben VIER
+    /// Stellen an derselben <see cref="FlottenStudieKonfiguration"/>: der Einheiteneditor
+    /// in Schritt 1, die Jahresprojektion in Schritt 2, „Netz und Planung" in Schritt 3
+    /// und der Suchraum in Station 4. Der Einheiteneditor hält eine eigene KOPIE und
+    /// frischt sie nur auf, wenn sich die REFERENZ ändert
+    /// (<c>SpeicherFlottenEditor.OnParametersSet</c>) — bliebe sie dieselbe, schriebe er
+    /// beim nächsten Feld seinen alten Stand zurück und löschte damit still, was die drei
+    /// anderen Blätter gesetzt haben. Eine frische Kopie ist die billigste Fassung von
+    /// „alle lesen denselben Stand".</para>
+    /// </remarks>
+    private void FlotteGeschrieben()
+    {
+        Auslegung.Flotte = SpeicherAuslegungKopie.Von(Flotte);
+        Geaendert();
+    }
+
     /// <summary>Die Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.</summary>
     private void Vorpruefen()
     {
@@ -1034,6 +1080,12 @@
 
         if (Auslegung.FlottenGroessenOptimieren)
         {
+            // DIE KANDIDATENGRENZE SPERRT SEIT #224 VORHER (Konzept 7.4 Punkt 3): Bis
+            // dahin flog ein zu grosses Raster erst beim START als Ausnahme auf. Die
+            // Zaehlregel kommt aus dem Kern — dieselbe, die die Kandidatenzeile zeigt.
+            FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(Flotte);
+            if (zahl.Gueltig && !zahl.Zulaessig) fehler.Add(Resource.FLOTTE_OPT_RASTER_ZUVIEL);
+
             foreach (FlottenAuslegungsAchse achse in Flotte.Auslegung.Achsen.Where(x => x.Aktiv))
             {
                 string name = string.IsNullOrWhiteSpace(achse.Vorlage.Name) ? achse.Vorlage.Id : achse.Vorlage.Name;

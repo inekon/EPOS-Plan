@@ -45,20 +45,52 @@ public static class Zahlen
     }
 
     /// <summary>
+    /// Hoechstens so viele Nachkommastellen zeigt ein Zahlenfeld ohne eigene
+    /// Vorgabe (Auftrag <b>#224</b>, Anwenderwunsch 11.09.2026, Konzept
+    /// „Stromspeicher-Dialoge" 7.8).
+    /// </summary>
+    /// <remarks>
+    /// <para>Der Befund am Bildschirmfoto: Ladewirkungsgrad
+    /// <c>94,86832980505137 %</c>, SoC-Obergrenze <c>89,99999999999999 %</c>,
+    /// Energie-Ausgleichswert <c>0,31746000000002055</c>. Keine dieser Zahlen
+    /// hat der Anwender getippt — sie entstehen als Wurzel, als Quotient oder
+    /// als Mittelwert, und <c>double.ToString()</c> schreibt den
+    /// Gleitkommarest aus.</para>
+    /// <para><b>Gerundet wird die ANZEIGE, nicht der Stand.</b> Der
+    /// gespeicherte Wert bleibt, bis jemand ins Feld schreibt; erst eine
+    /// Eingabe aendert ihn.</para>
+    /// </remarks>
+    public const int HOECHSTE_NACHKOMMASTELLEN = 4;
+
+    /// <summary>
     /// Der Anzeigetext einer Dezimalzahl: Komma als Trennzeichen, kein
     /// Tausenderpunkt - so, wie <see cref="ZahlParsen"/> ihn wieder annimmt.
     /// </summary>
+    /// <param name="dWert">Der Wert; <c>null</c> = leerer Text.</param>
     /// <param name="nNachkommastellen">Feste Stellenzahl; <c>null</c> = so
-    /// genau wie noetig.</param>
+    /// genau wie noetig, aber hoechstens
+    /// <see cref="HOECHSTE_NACHKOMMASTELLEN"/> Stellen.</param>
     public static string Anzeigetext(double? dWert, int? nNachkommastellen = null)
     {
         if (!dWert.HasValue) return "";
         string szRoh = nNachkommastellen.HasValue
             ? dWert.Value.ToString("F" + nNachkommastellen.Value.ToString(CultureInfo.InvariantCulture),
                                    CultureInfo.InvariantCulture)
-            : dWert.Value.ToString(CultureInfo.InvariantCulture);
+            : dWert.Value.ToString(Hoechstformat, CultureInfo.InvariantCulture);
         return szRoh.Replace('.', ',');
     }
+
+    /// <summary>
+    /// Das Format ohne feste Stellenzahl: bis zu
+    /// <see cref="HOECHSTE_NACHKOMMASTELLEN"/> Stellen, nachlaufende Nullen
+    /// weg - <c>"0.####"</c>.
+    /// </summary>
+    /// <remarks>
+    /// Es steht als Konstante da, weil es die Regel IST: Wer sie aendern will,
+    /// aendert eine Zahl und keine Zeichenkette an sechzig Stellen.
+    /// </remarks>
+    private static readonly string Hoechstformat =
+        "0." + new string('#', HOECHSTE_NACHKOMMASTELLEN);
 
     /// <summary>Anzeigetext einer Ganzzahl - ohne jedes Trennzeichen.</summary>
     public static string Anzeigetext(int? nWert)

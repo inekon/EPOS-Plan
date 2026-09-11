@@ -8094,11 +8094,75 @@ body {
 .epos-ablaufleiste-veraltet {
     padding: 0 6px;
     border: 1px solid var(--epos-warn-rahmen);
-    border-radius: 3px;
+    border-radius: 8px;
     background: var(--epos-warn-flaeche);
     color: var(--epos-warn-text);
-    font-size: var(--epos-schriftgroesse);
+    font-size: 11px;
     font-weight: 400;
+    line-height: 16px;
+}
+
+/* DIE STUFE — ein nummerierter Kreis von 28 px je Station (Auftrag #224,
+   Konzept „Stromspeicher-Dialoge" 7.8). Der Befund am Bildschirmfoto vom
+   11.09.2026: Die Stationen waren kleine Textreiter, nur der Rechenknopf war
+   ein Knopf — „was Schritt ist und was Knopf, sieht man nicht".
+
+   ALLE STATIONEN SIND GLEICH GEBAUT, auch die rechnende: derselbe Kreis,
+   dieselbe Groesse, dieselbe Lage vor dem Titel. Der Zustand steht in DREI
+   Merkmalen und nicht nur in der Farbe (WCAG 1.4.1): die aktive Station
+   ausgefuellt UND unterstrichen (die Unterstreichung traegt schon
+   .epos-ablaufleiste-knopf--aktiv), die erledigte mit einem HAKEN, die
+   kommende grau. */
+.epos-ablaufleiste-stufe {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 50%;
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.epos-ablaufleiste-knopf--aktiv .epos-ablaufleiste-stufe {
+    border-color: var(--epos-marke);
+    background: var(--epos-marke);
+    color: var(--epos-marke-text);
+}
+
+.epos-ablaufleiste-stufe--erledigt {
+    border-color: var(--epos-marke);
+    color: var(--epos-marke);
+}
+
+.epos-ablaufleiste-stufe--gesperrt {
+    border-color: var(--epos-rahmen-leise);
+    color: var(--epos-text-sehr-leise);
+}
+
+/* Der Kreis des Rechenknopfs steht auf DUNKLEM Grund: Er kehrt die Farben um,
+   damit er dieselbe Form behaelt statt zu verschwinden. */
+.epos-ablaufleiste-rechnen {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.epos-ablaufleiste-rechnen .epos-ablaufleiste-stufe {
+    border-color: var(--epos-gruppenkopf-text);
+    background: var(--epos-gruppenkopf-text);
+    color: var(--epos-karte-titel);
+}
+
+.epos-ablaufleiste-rechnen:disabled .epos-ablaufleiste-stufe {
+    border-color: var(--epos-text-sehr-leise);
+    background: transparent;
+    color: var(--epos-text-sehr-leise);
 }
 
 .epos-ablaufleiste-aktion {
@@ -8159,6 +8223,11 @@ body {
     }
 
     .epos-ablaufleiste-veraltet {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+
+    .epos-ablaufleiste-stufe {
         border-color: CanvasText;
         color: CanvasText;
     }

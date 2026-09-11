@@ -9185,6 +9185,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise ähnelt.
+        /// </summary>
+        public static string FLOTTE_BANNER_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BANNER_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Flotte hat im gesamten Zeitraum weder geladen noch entladen. ähnelt.
         /// </summary>
         public static string FLOTTE_BANNER_ARBEITSLOS {
@@ -10364,6 +10373,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Ausgleichswert ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSGLEICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat. Der Ausgleichswert bewertet die Differenz Endenergie − Startenergie mit einem Preis und bucht sie als Korrektur in die Jahresbilanz — positiv, wenn der Speicher voller endet. Vorschlag ist der mittlere Bezugspreis der Datenquelle; ein von Hand geänderter Wert bleibt stehen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSGLEICH_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSGLEICH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Energie-Ausgleichswert bewertet die Differenz zwischen Start- und Endenergie. Der editierbare Wert ist ein Vorschlag aus dem effektiven Strompreis und verhindert, dass entnommene Anfangsenergie als kostenloser Ertrag erscheint. ähnelt.
         /// </summary>
         public static string FLOTTE_ED_AUSGLEICH_HINWEIS {
@@ -10724,6 +10751,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Obergrenze für die Zahl der Rasterpunkte, die die Optimierung rechnet — Grob- und Feinraster zusammen. Jeder Kandidat ist ein vollständiger Jahreslauf über alle Projektjahre. Überschreitet das Raster die Grenze, wird der Lauf abgewiesen und nicht gekürzt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KANDIDATEN_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KANDIDATEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennkapazität: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_KAPAZITAET {
@@ -10828,6 +10864,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_KOPIEREN_ARIA {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_KOPIEREN_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten dieser Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KOSTEN_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KOSTEN_EINHEIT", resourceCulture);
             }
         }
         
@@ -11062,6 +11107,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_RESTWERT_EINHEIT {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_RESTWERT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Betrag, der am ENDE der Projektlaufzeit als Einnahme angesetzt und auf heute abgezinst in den Kapitalwert eingeht — zusätzlich zu den Restwerten der einzelnen Einheiten. Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RESTWERT_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RESTWERT_ERL", resourceCulture);
             }
         }
         
@@ -12263,6 +12317,303 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestes Ergebnis ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BESTES {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BESTES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einheiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_EINHEITEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die jährliche Ersparnis {0} €/a ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_ERSPARNIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_ERSPARNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geprüft ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_GEPRUEFT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_GEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität · C-Rate · Leistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_GROESSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_KANDIDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber „ohne Speicher&quot; ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_KAPITALWERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_KAPITALWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zulässig · Rechendauer {1} s ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_ZULAESSIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_ZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Phase 2: Feinraster um das Grob-Optimum ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_FEINRASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_FEINRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Das Feinraster gewinnt nur bei streng besserem Kapitalwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_FEINRASTER_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_FEINRASTER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KANDIDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten von höchstens {1}. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KANDIDATEN_OHNE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KANDIDATEN_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KEINE_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KEINE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Suche gerechnet. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_MARKE_FEIN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_MARKE_FEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grobraster ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_MARKE_GROB {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_MARKE_GROB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raster zulässig. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_RASTER_OK {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_RASTER_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Suchraum ist unvollständig — ein Bereich ist leer, negativ oder ohne Schrittweite. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_RASTER_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_RASTER_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Raster reißt die Grenze „Maximale Auslegungskandidaten&quot;. Der Lauf wird abgewiesen und nicht gekürzt: Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze in Schritt 2 erhöhen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_RASTER_ZUVIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_RASTER_ZUVIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl von–bis ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate [1/h] von–bis/Schritt ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] von–bis/Schritt ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenkopplung ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] von–bis/Schritt ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die variieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SP_VARIIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SP_VARIIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suche ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SUCHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlich beste Größe suchen ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SUCHE_AN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SUCHE_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur die eingestellte Flotte bewerten ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SUCHE_AUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SUCHE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchraum je Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_SUCHRAUM {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_SUCHRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher-Optimierung — wirtschaftlich beste Größe ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_ZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber „ohne Speicher&quot; [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_ZIEL_TEXT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_ZIEL_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die adaptiv (kausal) ähnelt.
         /// </summary>
         public static string FLOTTE_PEAKMODUS_ADAPTIV {
@@ -12695,7 +13046,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 4 Bewerten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewerten ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_BTN_FLOTTE {
             get {
@@ -12704,7 +13055,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 4 Größen optimieren ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optimieren ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_BTN_GROESSEN {
             get {
@@ -12754,6 +13105,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_SEITE_ERGEBNIS_GESPERRT {
             get {
                 return ResourceManager.GetString("FLOTTE_SEITE_ERGEBNIS_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt wird die Bewertung von: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_ERGEBNIS_KANDIDAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_ERGEBNIS_KANDIDAT", resourceCulture);
             }
         }
         
@@ -12821,7 +13181,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Speicher ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_SCHRITT1 {
             get {
@@ -12830,7 +13190,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 2 Daten &amp; Kosten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten &amp; Kosten ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_SCHRITT2 {
             get {
@@ -12839,7 +13199,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 3 Betriebsführung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsführung ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_SCHRITT3 {
             get {
@@ -12848,7 +13208,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 5 Ergebnis ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optimierung ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_SCHRITT4 {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_SCHRITT4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_SCHRITT5 {
             get {
@@ -23318,6 +23687,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsersparnis des besten Kandidaten OHNE Kapitaldienst — die Zahl, mit der sich die Tabellenkalkulation vergleichen lässt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTERSPARNIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTERSPARNIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jährliche Ersparnis des Besten ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTERSPARNIS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTERSPARNIS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität der Flotte des besten Kandidaten der letzten Suche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTKAP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTKAP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Kapazität ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTKAP_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTKAP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus welcher Phase der Suche der beste Kandidat stammt: Grob (das erste Raster) oder Fein (das engere Raster um das Grob-Optimum). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTPHASE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTPHASE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Phase des besten Kandidaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTPHASE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTPHASE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert des besten Kandidaten der letzten Suche gegenüber der Variante ohne Zusatzspeicher. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bester Kapitalwert ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_BESTWERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_BESTWERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Speichereinheiten die Flotte gleichzeitig betreibt. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_EINHEITEN_ERL {
@@ -23354,6 +23795,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Es gewinnt nur bei streng besserem Kapitalwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_FEINRASTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_FEINRASTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster (Phase 2) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_FEINRASTER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_FEINRASTER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gezählten Sperren des letzten Laufs — Last über dem Peak-Ziel, Ladedeckel 0, leerer Speicher. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_GRUENDE_ERL {
@@ -23386,6 +23845,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_HINWEISE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_HINWEISE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Kandidaten der eingestellte Suchraum ergibt — Grobraster plus Feinraster-Obergrenze. Jeder Kandidat ist ein vollständiger Jahreslauf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KANDZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KANDZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidaten des Suchraums ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KANDZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KANDZAHL_NAME", resourceCulture);
             }
         }
         
@@ -23462,6 +23939,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Obergrenze für die Zahl der Rasterpunkte über beide Phasen. Überschreitet das Raster sie, wird der Lauf abgewiesen und nicht gekürzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_MAXKAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_MAXKAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Auslegungskandidaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_MAXKAND_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_MAXKAND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die bezogene Energie über den Rechenzeitraum im Lauf mit Flotte. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_NETZBEZUG_ERL {
@@ -23534,6 +24029,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welcher der fünf Schritte der Ablaufleiste gerade vorn steht: Speicher, Daten &amp; Kosten, Betriebsführung, Optimierung oder Ergebnis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SCHRITT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SCHRITT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schritt der Ansicht ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SCHRITT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SCHRITT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Netzbezug eines Abrechnungsintervalls im Lauf mit Flotte. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_SPITZE_ERL {
@@ -23566,6 +24079,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_STARTSOC_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_STARTSOC_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja: Der nächste Lauf rastert den Suchraum ab und nennt die wirtschaftlich beste Größe. Nein: Er bewertet nur die in Schritt 1 eingestellte Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Größe suchen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SUCHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SUCHE_NAME", resourceCulture);
             }
         }
         
@@ -42284,7 +42815,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 2 Simulation starten ▶ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation starten ▶ ähnelt.
         /// </summary>
         public static string SIM_ANSICHT_BTN_LAUF {
             get {
@@ -42365,7 +42896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Konfiguration ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ähnelt.
         /// </summary>
         public static string SIM_ANSICHT_SCHRITT1 {
             get {
@@ -42374,7 +42905,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 3 Ergebnis ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
         /// </summary>
         public static string SIM_ANSICHT_SCHRITT3 {
             get {

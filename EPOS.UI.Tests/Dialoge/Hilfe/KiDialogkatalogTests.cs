@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -144,12 +144,15 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_siebzehn_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_sechsundzwanzig_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
-        // Seit #215 siebzehn: „Peak-Ziel adaptiv" (kausale Ratsche, Spezifikation 5.1.1).
-        Assert.Equal(17, d.Felder.Count);
+        // Seit #215 siebzehn („Peak-Ziel adaptiv", kausale Ratsche, Spezifikation
+        // 5.1.1); seit AUFTRAG #224 sechsundzwanzig: der SCHRITT der Ansicht, die vier
+        // Felder der Station 4 („beste Größe suchen", Feinraster, maximale Kandidaten,
+        // Kandidatenzahl des Suchraums) und die vier des Kastens „Bestes Ergebnis".
+        Assert.Equal(26, d.Felder.Count);
 
         // KEINE Knöpfe: „Berechnen", „Peak-Ziel bestimmen…" und „Speichern" sind
         // rechnende bzw. datenbankwirksame Aktionen und gehören in das Aktionsregister
@@ -175,6 +178,15 @@ public class KiDialogkatalogTests
     [InlineData("ergebnis_bezugsspitze")]
     [InlineData("ergebnis_netzbezug")]
     [InlineData("ergebnis_kapitalwert")]
+    [InlineData("schritt")]
+    [InlineData("groessen_optimieren")]
+    [InlineData("feinraster")]
+    [InlineData("maximale_kandidaten")]
+    [InlineData("kandidatenzahl")]
+    [InlineData("bestes_kapitalwert")]
+    [InlineData("bestes_kapazitaet")]
+    [InlineData("bestes_ersparnis")]
+    [InlineData("bestes_phase")]
     public void Die_Stromspeicher_Ansicht_kennt_dieses_Feld(string name)
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
@@ -186,16 +198,20 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Nur_die_sechs_Felder_der_Betriebsfuehrung_sind_SETZBAR()
+    public void Nur_die_neun_eingebbaren_Felder_sind_SETZBAR()
     {
-        // Die übrigen elf sind ABGELEITET: die Summen der Flotte (eine Zahl je Feld,
-        // aber viele Einheiten dahinter), die Diagnose und das Ergebnis des letzten
-        // Laufs. Die Stufe S3 muss ein feld_setzen darauf ablehnen können, und das
-        // hängt an der Schreibbarkeit der Eigenschaft (KiFeldzugang.Setzbar).
+        // Die übrigen siebzehn sind ABGELEITET: die Summen der Flotte (eine Zahl je
+        // Feld, aber viele Einheiten dahinter), der Schritt der Ansicht, die
+        // Kandidatenzahl des Suchraums, die Diagnose und das Ergebnis des letzten Laufs.
+        // Die Stufe S3 muss ein feld_setzen darauf ablehnen können, und das hängt an
+        // der Schreibbarkeit der Eigenschaft (KiFeldzugang.Setzbar).
+        //
+        // MIT AUFTRAG #224 kommen DREI setzbare dazu, alle aus Station 4: die Wahl
+        // „beste Größe suchen", der Feinraster-Schalter und die Kandidatengrenze.
         string[] setzbar =
         {
             "betriebsziel", "peak_ziel", "peak_ziel_adaptiv", "netzladung", "start_soc",
-            "peak_reserve"
+            "peak_reserve", "groessen_optimieren", "feinraster", "maximale_kandidaten"
         };
 
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;

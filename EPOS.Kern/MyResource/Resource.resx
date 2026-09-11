@@ -17722,22 +17722,22 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>veraltet</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
-    <value>1 Speicher</value>
+    <value>Speicher</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
-    <value>2 Daten &amp; Kosten</value>
+    <value>Daten &amp; Kosten</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT3" xml:space="preserve">
-    <value>3 Betriebsführung</value>
+    <value>Betriebsführung</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT5" xml:space="preserve">
-    <value>5 Ergebnis</value>
+    <value>Ergebnis</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Bewerten</value>
+    <value>Bewerten</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
-    <value>4 Größen optimieren</value>
+    <value>Optimieren</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>Der Ergebnisschritt steht erst offen, wenn einmal gerechnet wurde.</value>
@@ -18331,13 +18331,13 @@ Möchten Sie das zulassen?</value>
     <value>Ablauf der Simulation</value>
   </data>
   <data name="SIM_ANSICHT_SCHRITT1" xml:space="preserve">
-    <value>1 Konfiguration</value>
+    <value>Konfiguration</value>
   </data>
   <data name="SIM_ANSICHT_SCHRITT3" xml:space="preserve">
-    <value>3 Ergebnis</value>
+    <value>Ergebnis</value>
   </data>
   <data name="SIM_ANSICHT_BTN_LAUF" xml:space="preserve">
-    <value>2 Simulation starten &#9654;</value>
+    <value>Simulation starten &#9654;</value>
   </data>
   <data name="SIM_ANSICHT_LAUF_GESPERRT_KONFIG" xml:space="preserve">
     <value>Die Konfiguration ist noch nicht gespeichert &#8212; bitte zuerst &#8222;Konfiguration speichern&#8220;.</value>
@@ -18602,5 +18602,182 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="FLOTTE_GROESSEN_WERT_LEISTUNG" xml:space="preserve">
     <value>{0} kW</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT4" xml:space="preserve">
+    <value>Optimierung</value>
+  </data>
+  <data name="FLOTTE_SEITE_ERGEBNIS_KANDIDAT" xml:space="preserve">
+    <value>Gezeigt wird die Bewertung von: {0}</value>
+  </data>
+  <data name="FLOTTE_OPT_TITEL" xml:space="preserve">
+    <value>Stromspeicher-Optimierung — wirtschaftlich beste Größe</value>
+  </data>
+  <data name="FLOTTE_OPT_ZIEL" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="FLOTTE_OPT_ZIEL_TEXT" xml:space="preserve">
+    <value>Kapitalwert gegenüber „ohne Speicher" [€]</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE" xml:space="preserve">
+    <value>Suche</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE_AUS" xml:space="preserve">
+    <value>Nur die eingestellte Flotte bewerten</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE_AN" xml:space="preserve">
+    <value>Wirtschaftlich beste Größe suchen</value>
+  </data>
+  <data name="FLOTTE_OPT_FEINRASTER" xml:space="preserve">
+    <value>Phase 2: Feinraster um das Grob-Optimum</value>
+  </data>
+  <data name="FLOTTE_OPT_FEINRASTER_HINWEIS" xml:space="preserve">
+    <value>Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Das Feinraster gewinnt nur bei streng besserem Kapitalwert.</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHRAUM" xml:space="preserve">
+    <value>Suchraum je Einheit</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_VARIIEREN" xml:space="preserve">
+    <value>variieren</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_KOPPLUNG" xml:space="preserve">
+    <value>Größenkopplung</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_ANZAHL" xml:space="preserve">
+    <value>Anzahl von–bis</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh] von–bis/Schritt</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_LEISTUNG" xml:space="preserve">
+    <value>Leistung [kW] von–bis/Schritt</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_CRATE" xml:space="preserve">
+    <value>C-Rate [1/h] von–bis/Schritt</value>
+  </data>
+  <data name="FLOTTE_OPT_KEINE_EINHEIT" xml:space="preserve">
+    <value>Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an.</value>
+  </data>
+  <data name="FLOTTE_OPT_KANDIDATEN" xml:space="preserve">
+    <value>{0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}.</value>
+  </data>
+  <data name="FLOTTE_OPT_KANDIDATEN_OHNE" xml:space="preserve">
+    <value>{0} Kandidaten von höchstens {1}.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_OK" xml:space="preserve">
+    <value>Raster zulässig.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_ZUVIEL" xml:space="preserve">
+    <value>Das Raster reißt die Grenze „Maximale Auslegungskandidaten". Der Lauf wird abgewiesen und nicht gekürzt: Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze in Schritt 2 erhöhen.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>Der Suchraum ist unvollständig — ein Bereich ist leer, negativ oder ohne Schrittweite.</value>
+  </data>
+  <data name="FLOTTE_OPT_BESTES" xml:space="preserve">
+    <value>Bestes Ergebnis</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_KAPITALWERT" xml:space="preserve">
+    <value>Kapitalwert gegenüber „ohne Speicher"</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_ERSPARNIS" xml:space="preserve">
+    <value>jährliche Ersparnis {0} €/a</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_GROESSE" xml:space="preserve">
+    <value>Kapazität · C-Rate · Leistung</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_EINHEITEN" xml:space="preserve">
+    <value>{0} Einheiten</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_GEPRUEFT" xml:space="preserve">
+    <value>Geprüft</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_KANDIDATEN" xml:space="preserve">
+    <value>{0} Kandidaten</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_ZULAESSIG" xml:space="preserve">
+    <value>{0} zulässig · Rechendauer {1} s</value>
+  </data>
+  <data name="FLOTTE_OPT_MARKE_GROB" xml:space="preserve">
+    <value>Grobraster</value>
+  </data>
+  <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
+    <value>Feinraster</value>
+  </data>
+  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Noch keine Suche gerechnet.</value>
+  </data>
+  <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
+    <value>Kosten dieser Einheit</value>
+  </data>
+  <data name="FLOTTE_ED_AUSGLEICH_ERL" xml:space="preserve">
+    <value>Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat. Der Ausgleichswert bewertet die Differenz Endenergie − Startenergie mit einem Preis und bucht sie als Korrektur in die Jahresbilanz — positiv, wenn der Speicher voller endet. Vorschlag ist der mittlere Bezugspreis der Datenquelle; ein von Hand geänderter Wert bleibt stehen.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ERL" xml:space="preserve">
+    <value>Ein Betrag, der am ENDE der Projektlaufzeit als Einnahme angesetzt und auf heute abgezinst in den Kapitalwert eingeht — zusätzlich zu den Restwerten der einzelnen Einheiten. Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket.</value>
+  </data>
+  <data name="FLOTTE_ED_KANDIDATEN_ERL" xml:space="preserve">
+    <value>Obergrenze für die Zahl der Rasterpunkte, die die Optimierung rechnet — Grob- und Feinraster zusammen. Jeder Kandidat ist ein vollständiger Jahreslauf über alle Projektjahre. Überschreitet das Raster die Grenze, wird der Lauf abgewiesen und nicht gekürzt.</value>
+  </data>
+  <data name="FLOTTE_BANNER_ANZAHL" xml:space="preserve">
+    <value>{0} Hinweise</value>
+  </data>
+  <data name="FLOTTE_ED_AUSGLEICH" xml:space="preserve">
+    <value>Energie-Ausgleichswert</value>
+  </data>
+  <data name="KI_DLG_SPA_SCHRITT_NAME" xml:space="preserve">
+    <value>Schritt der Ansicht</value>
+  </data>
+  <data name="KI_DLG_SPA_SCHRITT_ERL" xml:space="preserve">
+    <value>Welcher der fünf Schritte der Ablaufleiste gerade vorn steht: Speicher, Daten &amp; Kosten, Betriebsführung, Optimierung oder Ergebnis.</value>
+  </data>
+  <data name="KI_DLG_SPA_SUCHE_NAME" xml:space="preserve">
+    <value>Beste Größe suchen</value>
+  </data>
+  <data name="KI_DLG_SPA_SUCHE_ERL" xml:space="preserve">
+    <value>Ja: Der nächste Lauf rastert den Suchraum ab und nennt die wirtschaftlich beste Größe. Nein: Er bewertet nur die in Schritt 1 eingestellte Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA_FEINRASTER_NAME" xml:space="preserve">
+    <value>Feinraster (Phase 2)</value>
+  </data>
+  <data name="KI_DLG_SPA_FEINRASTER_ERL" xml:space="preserve">
+    <value>Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Es gewinnt nur bei streng besserem Kapitalwert.</value>
+  </data>
+  <data name="KI_DLG_SPA_MAXKAND_NAME" xml:space="preserve">
+    <value>Maximale Auslegungskandidaten</value>
+  </data>
+  <data name="KI_DLG_SPA_MAXKAND_ERL" xml:space="preserve">
+    <value>Obergrenze für die Zahl der Rasterpunkte über beide Phasen. Überschreitet das Raster sie, wird der Lauf abgewiesen und nicht gekürzt.</value>
+  </data>
+  <data name="KI_DLG_SPA_KANDZAHL_NAME" xml:space="preserve">
+    <value>Kandidaten des Suchraums</value>
+  </data>
+  <data name="KI_DLG_SPA_KANDZAHL_ERL" xml:space="preserve">
+    <value>Wie viele Kandidaten der eingestellte Suchraum ergibt — Grobraster plus Feinraster-Obergrenze. Jeder Kandidat ist ein vollständiger Jahreslauf.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTWERT_NAME" xml:space="preserve">
+    <value>Bester Kapitalwert</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTWERT_ERL" xml:space="preserve">
+    <value>Kapitalwert des besten Kandidaten der letzten Suche gegenüber der Variante ohne Zusatzspeicher.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTKAP_NAME" xml:space="preserve">
+    <value>Beste Kapazität</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTKAP_ERL" xml:space="preserve">
+    <value>Kapazität der Flotte des besten Kandidaten der letzten Suche.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTERSPARNIS_NAME" xml:space="preserve">
+    <value>Jährliche Ersparnis des Besten</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTERSPARNIS_ERL" xml:space="preserve">
+    <value>Betriebsersparnis des besten Kandidaten OHNE Kapitaldienst — die Zahl, mit der sich die Tabellenkalkulation vergleichen lässt.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTPHASE_NAME" xml:space="preserve">
+    <value>Phase des besten Kandidaten</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTPHASE_ERL" xml:space="preserve">
+    <value>Aus welcher Phase der Suche der beste Kandidat stammt: Grob (das erste Raster) oder Fein (das engere Raster um das Grob-Optimum).</value>
   </data>
 </root>

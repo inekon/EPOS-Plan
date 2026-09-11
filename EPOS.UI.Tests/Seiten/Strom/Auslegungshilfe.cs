@@ -20,17 +20,23 @@ namespace EPOS.UI.Tests.Seiten.Strom;
 /// Modus-Umschalter gibt es seit #206 nicht mehr</b> (Anwenderentscheid SD‑E‑8): Die
 /// Ansicht rechnet immer die Flotte, ein Einzelspeicher ist eine Flotte mit einer
 /// Einheit.</para>
+///
+/// <para><b>Seit Auftrag #224 sind es FÜNF Blätter</b> (SD‑E‑9, Option A): Station 4
+/// ist die Seite „Optimierung", und der RECHENKNOPF steht in ihr statt in der
+/// Ablaufleiste. <see cref="Rechenknopf"/> wechselt deshalb zuerst auf dieses Blatt —
+/// jeder übernommene Prüffall, der „rechnen" sagt, findet ihn damit weiterhin in
+/// einer Zeile.</para>
 /// </summary>
 internal static class Auslegungshilfe
 {
-    /// <summary>Die vier Blätter in der Reihenfolge der Ablaufleiste.</summary>
+    /// <summary>Die fünf Blätter in der Reihenfolge der Ablaufleiste.</summary>
     private static readonly string[] Reihenfolge =
     {
         AuslegungSchritt.Speicher, AuslegungSchritt.Daten,
-        AuslegungSchritt.Betrieb, AuslegungSchritt.Ergebnis
+        AuslegungSchritt.Betrieb, AuslegungSchritt.Optimierung, AuslegungSchritt.Ergebnis
     };
 
-    /// <summary>Die Knöpfe der Ablaufleiste — drei vor dem Rechenknopf, einer dahinter.</summary>
+    /// <summary>Die fünf Knöpfe der Ablaufleiste — seit #224 ohne Aktionsplatz.</summary>
     internal static IElement Schrittknopf(IRenderedComponent<StromspeicherAuslegungSeite> cut,
                                           string schluessel)
     {
@@ -43,9 +49,16 @@ internal static class Auslegungshilfe
     internal static void Schritt(IRenderedComponent<StromspeicherAuslegungSeite> cut, string schluessel)
         => Schrittknopf(cut, schluessel).Click();
 
-    /// <summary>Der Rechenknopf (Schritt 4).</summary>
+    /// <summary>
+    /// Der Rechenknopf — er steht seit #224 IN Station 4 („Optimierung"), und die
+    /// Hilfe wechselt dorthin, bevor sie ihn sucht.
+    /// </summary>
     internal static IElement Rechenknopf(IRenderedComponent<StromspeicherAuslegungSeite> cut)
-        => cut.Find("button.epos-ablaufleiste-rechnen");
+    {
+        if (cut.Instance.Schritt != AuslegungSchritt.Optimierung)
+            Schritt(cut, AuslegungSchritt.Optimierung);
+        return cut.Find(".epos-flotte-optimierung-lauf button");
+    }
 
     /// <summary>Ein Knopf der Seite mit genau diesem Beschriftungstext.</summary>
     internal static IElement Knopf(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)

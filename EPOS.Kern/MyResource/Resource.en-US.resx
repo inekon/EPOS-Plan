@@ -17733,22 +17733,22 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>out of date</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
-    <value>1 Storage</value>
+    <value>Storage</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
-    <value>2 Data &amp; costs</value>
+    <value>Data &amp; costs</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT3" xml:space="preserve">
-    <value>3 Operating strategy</value>
+    <value>Operating strategy</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT5" xml:space="preserve">
-    <value>5 Result</value>
+    <value>Result</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Evaluate</value>
+    <value>Evaluate</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
-    <value>4 Optimise sizes</value>
+    <value>Optimise</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>The result step opens once a run has been computed.</value>
@@ -18324,13 +18324,13 @@ Do you want to allow this?</value>
     <value>Simulation workflow</value>
   </data>
   <data name="SIM_ANSICHT_SCHRITT1" xml:space="preserve">
-    <value>1 Configuration</value>
+    <value>Configuration</value>
   </data>
   <data name="SIM_ANSICHT_SCHRITT3" xml:space="preserve">
-    <value>3 Result</value>
+    <value>Result</value>
   </data>
   <data name="SIM_ANSICHT_BTN_LAUF" xml:space="preserve">
-    <value>2 Start simulation &#9654;</value>
+    <value>Start simulation &#9654;</value>
   </data>
   <data name="SIM_ANSICHT_LAUF_GESPERRT_KONFIG" xml:space="preserve">
     <value>The configuration has not been saved yet &#8212; please use &#8220;Save configuration&#8221; first.</value>
@@ -18595,5 +18595,182 @@ Do you want to allow this?</value>
   </data>
   <data name="FLOTTE_GROESSEN_WERT_LEISTUNG" xml:space="preserve">
     <value>{0} kW</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT4" xml:space="preserve">
+    <value>Optimisation</value>
+  </data>
+  <data name="FLOTTE_SEITE_ERGEBNIS_KANDIDAT" xml:space="preserve">
+    <value>Showing the evaluation of: {0}</value>
+  </data>
+  <data name="FLOTTE_OPT_TITEL" xml:space="preserve">
+    <value>Battery storage optimisation — the economically best size</value>
+  </data>
+  <data name="FLOTTE_OPT_ZIEL" xml:space="preserve">
+    <value>Objective</value>
+  </data>
+  <data name="FLOTTE_OPT_ZIEL_TEXT" xml:space="preserve">
+    <value>Net present value against „without storage" [€]</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE_AUS" xml:space="preserve">
+    <value>Only evaluate the configured fleet</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHE_AN" xml:space="preserve">
+    <value>Search for the economically best size</value>
+  </data>
+  <data name="FLOTTE_OPT_FEINRASTER" xml:space="preserve">
+    <value>Phase 2: fine grid around the coarse optimum</value>
+  </data>
+  <data name="FLOTTE_OPT_FEINRASTER_HINWEIS" xml:space="preserve">
+    <value>After the coarse grid a second, narrower grid is computed around the best coarse point — on the size axis only, in steps of one ninth of the step width. The fine grid only wins on a strictly better net present value.</value>
+  </data>
+  <data name="FLOTTE_OPT_SUCHRAUM" xml:space="preserve">
+    <value>Search space per unit</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_VARIIEREN" xml:space="preserve">
+    <value>vary</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_KOPPLUNG" xml:space="preserve">
+    <value>Size coupling</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_ANZAHL" xml:space="preserve">
+    <value>Count from–to</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh] from–to/step</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_LEISTUNG" xml:space="preserve">
+    <value>Power [kW] from–to/step</value>
+  </data>
+  <data name="FLOTTE_OPT_SP_CRATE" xml:space="preserve">
+    <value>C rate [1/h] from–to/step</value>
+  </data>
+  <data name="FLOTTE_OPT_KEINE_EINHEIT" xml:space="preserve">
+    <value>Without a storage unit there is nothing to vary — step 1 creates one.</value>
+  </data>
+  <data name="FLOTTE_OPT_KANDIDATEN" xml:space="preserve">
+    <value>{0} candidates in the coarse grid, up to {1} in the fine grid — {2} in total out of at most {3}.</value>
+  </data>
+  <data name="FLOTTE_OPT_KANDIDATEN_OHNE" xml:space="preserve">
+    <value>{0} candidates out of at most {1}.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_OK" xml:space="preserve">
+    <value>Grid within the limit.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_ZUVIEL" xml:space="preserve">
+    <value>The grid exceeds the limit „maximum design candidates". The run is rejected and never truncated: narrow the range or the step width, switch off the fine grid, or raise the limit in step 2.</value>
+  </data>
+  <data name="FLOTTE_OPT_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>The search space is incomplete — a range is empty, negative or has no step width.</value>
+  </data>
+  <data name="FLOTTE_OPT_BESTES" xml:space="preserve">
+    <value>Best result</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_KAPITALWERT" xml:space="preserve">
+    <value>Net present value against „without storage"</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_ERSPARNIS" xml:space="preserve">
+    <value>annual saving {0} €/a</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_GROESSE" xml:space="preserve">
+    <value>Capacity · C rate · power</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_EINHEITEN" xml:space="preserve">
+    <value>{0} units</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_GEPRUEFT" xml:space="preserve">
+    <value>Checked</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_KANDIDATEN" xml:space="preserve">
+    <value>{0} candidates</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_ZULAESSIG" xml:space="preserve">
+    <value>{0} feasible · computing time {1} s</value>
+  </data>
+  <data name="FLOTTE_OPT_MARKE_GROB" xml:space="preserve">
+    <value>Coarse grid</value>
+  </data>
+  <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
+    <value>Fine grid</value>
+  </data>
+  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>No search computed yet.</value>
+  </data>
+  <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
+    <value>Costs of this unit</value>
+  </data>
+  <data name="FLOTTE_ED_AUSGLEICH_ERL" xml:space="preserve">
+    <value>The storage rarely ends the year at the state of charge it started from. The balancing value prices the difference end energy − start energy and books it as a correction in the annual balance — positive when the storage ends fuller. The proposal is the mean purchase price of the data source; a value changed by hand is kept.</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_ERL" xml:space="preserve">
+    <value>An amount booked as income at the END of the project lifetime and discounted into the net present value — on top of the residual values of the individual units. Meant for everything that belongs to the study rather than to a unit: grid connection, building, site, resale as a package.</value>
+  </data>
+  <data name="FLOTTE_ED_KANDIDATEN_ERL" xml:space="preserve">
+    <value>Upper limit for the number of grid points the optimisation computes — coarse and fine grid together. Every candidate is a complete annual run across all project years. If the grid exceeds the limit, the run is rejected and never truncated.</value>
+  </data>
+  <data name="FLOTTE_BANNER_ANZAHL" xml:space="preserve">
+    <value>{0} notes</value>
+  </data>
+  <data name="FLOTTE_ED_AUSGLEICH" xml:space="preserve">
+    <value>Energy balancing value</value>
+  </data>
+  <data name="KI_DLG_SPA_SCHRITT_NAME" xml:space="preserve">
+    <value>Step of the view</value>
+  </data>
+  <data name="KI_DLG_SPA_SCHRITT_ERL" xml:space="preserve">
+    <value>Which of the five steps of the flow bar is currently in front: storage, data &amp; costs, operating strategy, optimisation or result.</value>
+  </data>
+  <data name="KI_DLG_SPA_SUCHE_NAME" xml:space="preserve">
+    <value>Search for the best size</value>
+  </data>
+  <data name="KI_DLG_SPA_SUCHE_ERL" xml:space="preserve">
+    <value>Yes: the next run scans the search space and names the economically best size. No: it only evaluates the fleet configured in step 1.</value>
+  </data>
+  <data name="KI_DLG_SPA_FEINRASTER_NAME" xml:space="preserve">
+    <value>Fine grid (phase 2)</value>
+  </data>
+  <data name="KI_DLG_SPA_FEINRASTER_ERL" xml:space="preserve">
+    <value>After the coarse grid a second, narrower grid is computed around the best coarse point — on the size axis only, in steps of one ninth of the step width. It only wins on a strictly better net present value.</value>
+  </data>
+  <data name="KI_DLG_SPA_MAXKAND_NAME" xml:space="preserve">
+    <value>Maximum design candidates</value>
+  </data>
+  <data name="KI_DLG_SPA_MAXKAND_ERL" xml:space="preserve">
+    <value>Upper limit for the number of grid points across both phases. If the grid exceeds it, the run is rejected and never truncated.</value>
+  </data>
+  <data name="KI_DLG_SPA_KANDZAHL_NAME" xml:space="preserve">
+    <value>Candidates of the search space</value>
+  </data>
+  <data name="KI_DLG_SPA_KANDZAHL_ERL" xml:space="preserve">
+    <value>How many candidates the configured search space yields — coarse grid plus the fine grid upper bound. Every candidate is a complete annual run.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTWERT_NAME" xml:space="preserve">
+    <value>Best net present value</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTWERT_ERL" xml:space="preserve">
+    <value>Net present value of the best candidate of the last search against the variant without additional storage.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTKAP_NAME" xml:space="preserve">
+    <value>Best capacity</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTKAP_ERL" xml:space="preserve">
+    <value>Capacity of the fleet of the best candidate of the last search.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTERSPARNIS_NAME" xml:space="preserve">
+    <value>Annual saving of the best</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTERSPARNIS_ERL" xml:space="preserve">
+    <value>Operating saving of the best candidate WITHOUT capital service — the figure that allows a comparison with the spreadsheet.</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTPHASE_NAME" xml:space="preserve">
+    <value>Phase of the best candidate</value>
+  </data>
+  <data name="KI_DLG_SPA_BESTPHASE_ERL" xml:space="preserve">
+    <value>Which phase of the search the best candidate comes from: coarse (the first grid) or fine (the narrower grid around the coarse optimum).</value>
   </data>
 </root>

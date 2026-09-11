@@ -650,7 +650,31 @@ namespace ChartProben
                             rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
             // =========================================================================
-            // 41 - die GROESSENKOPPLUNG "Kapazitaet und Leistung" (#226)
+            // 41 - die SCHNITTKURVE mit FEINRASTERPUNKTEN (#224)
+            // =========================================================================
+            //
+            // Die zweite Phase der Rastersuche legt ihre Punkte ZWISCHEN die
+            // Stuetzstellen des Grobrasters (Anwenderentscheid SD-E-9 / SD-Q10). Im
+            // Bild muessen sie zu UNTERSCHEIDEN sein - die Mappe V7 zeichnet dafuer
+            // zwei Punktreihen. Hier: neun Grobpunkte auf ganzen Kapazitaeten und acht
+            // Feinpunkte im Fenster um das Optimum am rechten Rand, zusammen auf EINER
+            // Kurve, die Feinpunkte in C_FEINRASTER und kleiner.
+            double[] feinAchse = Feinachse();
+            double[] feinWerte = Feinwerte(feinAchse);
+            bool[] feinMarken = Feinmarken(feinAchse);
+
+            Pruefe(ziel, "flottenschnitt_feinraster", 720, 460,
+                   new[] { ChartRenderer.C_STAMM, ChartRenderer.C_FEINRASTER,
+                           ChartRenderer.C_RASTER_SCHLECHT },
+                   () => ChartRenderer.Schnittkurve(
+                            "Kapitalwert über der Kapazität (Grob- und Feinraster)",
+                            "Kapazität [kWh]", "Kapitalwert [€]",
+                            feinAchse, feinWerte,
+                            feinAchse[feinAchse.Length - 1], feinWerte[feinWerte.Length - 1],
+                            feinMarken));
+
+            // =========================================================================
+            // 42 - die GROESSENKOPPLUNG "Kapazitaet und Leistung" (#226)
             // =========================================================================
             //
             // Der Fall des Anwenders vom 11.09.2026: 13 x 13 = 169 Kandidaten auf einem
@@ -814,6 +838,25 @@ namespace ChartProben
                         kapLeistungAchse, kapLeistungAchse,
                         MitStelle(kapLeistungWerte, 0, 0, loch),
                         LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE));
+
+            // Und dasselbe fuer die FEINRASTERPUNKTE (#224): Masse, Farben und
+            // Determinismus stimmen auch dann, wenn der Parameter stillschweigend
+            // ignoriert wuerde - alle Punkte staenden dann in C_STAMM. Die Gegenprobe
+            // stellt DIESELBE Kurve zweimal nebeneinander, einmal ohne und einmal mit
+            // der Phasenmarke; ohne Marke muss das Bild byte-gleich zu dem vor #224
+            // sein, mit Marke anders.
+            Unterschiedlich("flottenschnitt_feinpunkte_wirken",
+                () => ChartRenderer.Schnittkurve(
+                        "Kapitalwert über der Kapazität (Grob- und Feinraster)",
+                        "Kapazität [kWh]", "Kapitalwert [€]",
+                        feinAchse, feinWerte,
+                        feinAchse[feinAchse.Length - 1], feinWerte[feinWerte.Length - 1]),
+                () => ChartRenderer.Schnittkurve(
+                        "Kapitalwert über der Kapazität (Grob- und Feinraster)",
+                        "Kapazität [kWh]", "Kapitalwert [€]",
+                        feinAchse, feinWerte,
+                        feinAchse[feinAchse.Length - 1], feinWerte[feinWerte.Length - 1],
+                        feinMarken));
 
             // Dasselbe fuer die ERSATZJAHR-MARKE der Jahresprojektion (#184): Masse,
             // Farben und Determinismus stimmen auch dann, wenn die Marke stillschweigend
@@ -1031,6 +1074,41 @@ namespace ChartProben
         /// Die Leistungsachse einer Rasterzeile: P = E * C bei fester Kapazitaet - die
         /// zweite Lesart derselben Kurve (Konzept 2.5).
         /// </summary>
+        /// <summary>
+        /// Die Achse des Feinraster-Schnitts (Auftrag #224): neun GROBE Stuetzstellen
+        /// 500…4 500 kWh in Schritten von 500 und danach acht FEINE im Fenster
+        /// [4 500, 5 000] in Schritten von 500/9 — die Regel „Schrittweite / 9" der
+        /// Mappe V7 um ein Grob-Optimum am oberen Rand.
+        /// </summary>
+        private static double[] Feinachse()
+        {
+            var werte = new List<double>();
+            for (int i = 0; i < 9; i++) werte.Add(500.0 + 500.0 * i);
+            for (int i = 1; i <= 9; i++) werte.Add(4500.0 + 500.0 * i / 9.0);
+            return werte.Distinct().OrderBy(x => x).ToArray();
+        }
+
+        /// <summary>Eine flach auslaufende Kurve ueber dieser Achse — das Optimum liegt rechts.</summary>
+        private static double[] Feinwerte(double[] achse)
+        {
+            var werte = new double[achse.Length];
+            for (int i = 0; i < achse.Length; i++)
+                werte[i] = 70000.0 * (1.0 - Math.Exp(-achse[i] / 2200.0)) - 12000.0;
+            return werte;
+        }
+
+        /// <summary>
+        /// Je Stuetzstelle: Sie stammt aus der ZWEITEN Phase. Grob sind genau die
+        /// Vielfachen von 500 kWh.
+        /// </summary>
+        private static bool[] Feinmarken(double[] achse)
+        {
+            var marken = new bool[achse.Length];
+            for (int i = 0; i < achse.Length; i++)
+                marken[i] = Math.Abs(achse[i] / 500.0 - Math.Round(achse[i] / 500.0)) > 1e-9;
+            return marken;
+        }
+
         private static double[] Leistungsachse(double[] cRaten, double kapazitaetKwh)
         {
             var w = new double[cRaten.Length];

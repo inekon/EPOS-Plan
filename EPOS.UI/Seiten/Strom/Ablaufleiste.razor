@@ -1,5 +1,5 @@
 @* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
-   2.1, Paket P3 / Auftrag #192).
+   2.1, Paket P3 / Auftrag #192; STUFENLEISTE seit Auftrag #224, Konzept 7.8).
 
    WOZU. Der abgeloeste Flottendialog hatte vier REITER und in seiner Fussleiste
    einen Knopf „Speichervergleich berechnen". Der Anwender fragte darauf: „Wie
@@ -7,16 +7,32 @@
    und die Frage war berechtigt: Ein Reiterwerk sagt „waehle ein Blatt", ein
    Ablauf sagt „tue dies, dann das". Die fuenf Schritte sind der Ablauf, den der
    Code ohnehin fuehrt: Speicher anlegen → Daten und Kosten → Betriebsziel →
-   BERECHNEN → Ergebnis lesen.
+   OPTIMIERUNG → Ergebnis lesen.
 
-   SCHRITT 4 IST EIN KNOPF, KEIN BLATT. Er traegt seine Beschriftung aus dem
-   Zustand („Bewerten" / „Groessen optimieren") — das ist die zweite Haelfte der
-   Antwort auf Punkt 3: Ohne den Schalter „Speicheranzahl und Groessenbereiche
-   optimieren" rechnet derselbe Knopf EINE Konfiguration.
+   NUMMERIERTE KREISE STATT TEXTREITER (Anwenderwunsch 11.09.2026, Konzept 7.8).
+   Der Befund am Bildschirmfoto: Die Stationen waren kleine Textreiter, nur der
+   Rechenknopf war ein dunkler Knopf — „was Schritt ist und was Knopf, sieht man
+   nicht". Jede Station traegt seither einen Kreis von 28 px mit ihrer Nummer;
+   die AKTIVE ist in der Primaerfarbe ausgefuellt und unterstrichen, eine
+   ERLEDIGTE traegt einen Haken, eine kommende bleibt grau. Alle sind gleich
+   gebaut — auch die Station, die rechnet.
 
-   DER MODUS-UMSCHALTER IST MIT #206 GEFALLEN (Anwenderentscheid SD-E-8): Die
-   Ansicht kennt nur noch EINEN Weg, und eine Leiste, die zwischen zwei Wegen
-   umschaltet, hat nichts mehr umzuschalten.
+   DIE NUMMER ZAEHLT DER BAUSTEIN, nicht der Wirt: Sie ist die Stelle in der
+   Leiste, und genau deshalb darf sie nicht zweimal gepflegt werden. Aus
+   demselben Grund tragen die Ressourcentexte der Stationen seit #224 KEINE
+   Ziffer mehr („Speicher" statt „1 Speicher") — sonst stuende die Nummer
+   zweimal nebeneinander.
+
+   ERLEDIGT RECHNET DER BAUSTEIN EBENFALLS: Eine Station gilt als erledigt,
+   wenn sie VOR der aktiven steht und betretbar ist. Ein eigenes Kennzeichen je
+   Eintrag waere eine zweite Wahrheit ueber dieselbe Reihenfolge.
+
+   SCHRITT 4 IST SEIT #224 EIN SCHRITT, KEIN KNOPF (Anwenderentscheid SD-E-9,
+   Option A): Die Station „Optimierung" ist eine Seite mit Suchraum,
+   Kandidatenzeile und Rechenknopf, und die Leiste bekommt fuer diesen Wirt
+   MitAktion="false". Der Aktionsplatz BLEIBT: Die Simulationsansicht (#216)
+   fuehrt ihn weiter als „Simulation starten" — dort ist ein Lauf wirklich
+   nichts, das man ansieht.
 
    WEICHE SPERRE STATT disabled (Hausregel W16b-E-6). Schritt 5 ist vor dem
    ersten Lauf nicht betretbar — und genau dann will der Anwender wissen, warum.
@@ -31,20 +47,30 @@
 
 <nav class="@Leistenklasse" aria-label="@Bezeichnung">
     <ol class="epos-ablaufleiste-schritte">
+        @{ int nummer = 0; }
         @foreach (Ablaufeintrag eintrag in Vorne)
         {
-            @Schritt(eintrag)
+            nummer++;
+            @Schritt(eintrag, nummer)
         }
 
-        <li class="epos-ablaufleiste-aktion">
-            <button type="button" class="epos-knopf epos-knopf--primaer epos-ablaufleiste-rechnen"
-                    disabled="@(!RechnenFrei)" title="@Leer(RechnenGrund)"
-                    @onclick="RechnenGeklickt">@RechnenText</button>
-        </li>
+        @if (MitAktion)
+        {
+            nummer++;
+            <li class="epos-ablaufleiste-aktion">
+                <button type="button" class="epos-knopf epos-knopf--primaer epos-ablaufleiste-rechnen"
+                        disabled="@(!RechnenFrei)" title="@Leer(RechnenGrund)"
+                        @onclick="RechnenGeklickt">
+                    <span class="epos-ablaufleiste-stufe" aria-hidden="true">@nummer</span>
+                    <span class="epos-ablaufleiste-titel">@RechnenText</span>
+                </button>
+            </li>
+        }
 
         @foreach (Ablaufeintrag eintrag in Hinten)
         {
-            @Schritt(eintrag)
+            nummer++;
+            @Schritt(eintrag, nummer)
         }
     </ol>
 </nav>
@@ -91,11 +117,28 @@
     /// <summary>Der Rechenknopf wurde gedrückt.</summary>
     [Parameter] public EventCallback Rechnen { get; set; }
 
+    /// <summary>
+    /// Trägt die Leiste einen AKTIONSPLATZ — den Rechenknopf zwischen den Blättern?
+    /// Vorgabe <c>true</c> (Auftrag #224).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Stromspeicher-Auslegung setzt <c>false</c></b> (SD‑E‑9, Option A):
+    /// Ihre Station 4 ist seit #224 eine SEITE („Optimierung") mit Suchraum,
+    /// Kandidatenzeile und Rechenknopf — der Knopf steht IN der Seite, nicht in der
+    /// Leiste.</para>
+    /// <para><b>Die Simulationsansicht behält ihn</b> (#216): Dort ist Station ② der
+    /// Lauf selbst, und ein Lauf ist nichts, das man ansieht.</para>
+    /// </remarks>
+    [Parameter] public bool MitAktion { get; set; } = true;
+
     /// <summary>Beschriftung der Leiste für die Sprachausgabe.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "Ablauf";
 
     /// <summary>Die Marke „veraltet" hinter einem überholten Blatt.</summary>
     [Parameter] public string VeraltetText { get; set; } = "veraltet";
+
+    /// <summary>Das Zeichen einer erledigten Station — der Haken aus Konzept 7.8.</summary>
+    private const string HAKEN = "✓";
 
     /// <summary>
     /// KOMPAKT: die Leiste steht als Gruppe in einer Werkzeugleiste, nicht als
@@ -145,13 +188,14 @@
     /// EIN Schritt. Er ist immer ein <c>button</c> — auch der gesperrte, sonst
     /// erreichte ihn die Tastatur nicht und sein Grund bliebe unsagbar.
     /// </summary>
-    private RenderFragment Schritt(Ablaufeintrag eintrag) => @<li class="epos-ablaufleiste-schritt">
+    private RenderFragment Schritt(Ablaufeintrag eintrag, int nummer) => @<li class="epos-ablaufleiste-schritt">
         <button type="button"
                 class="@Klasse(eintrag)"
                 aria-current="@(IstAktiv(eintrag) ? "step" : null)"
                 aria-disabled="@(eintrag.Bedienbar ? null : "true")"
                 title="@(eintrag.Bedienbar ? null : Leer(eintrag.Sperrgrund))"
                 @onclick="@(() => Waehlen(eintrag))">
+            <span class="@Stufenklasse(eintrag, nummer)" aria-hidden="true">@Stufenzeichen(eintrag, nummer)</span>
             <span class="epos-ablaufleiste-titel">@eintrag.Titel</span>
             @if (eintrag.Veraltet)
             {
@@ -162,6 +206,45 @@
 
     private bool IstAktiv(Ablaufeintrag eintrag)
         => string.Equals(eintrag.Schluessel, Aktiv, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Die Stelle der AKTIVEN Station in der Leiste — <c>-1</c>, wenn keine steht
+    /// (dann gilt keine als erledigt).
+    /// </summary>
+    private int AktivStelle
+    {
+        get
+        {
+            int stelle = 0;
+            foreach (Ablaufeintrag e in Vorne)
+            {
+                stelle++;
+                if (IstAktiv(e)) return stelle;
+            }
+            if (MitAktion) stelle++;
+            foreach (Ablaufeintrag e in Hinten)
+            {
+                stelle++;
+                if (IstAktiv(e)) return stelle;
+            }
+            return -1;
+        }
+    }
+
+    /// <summary>Eine Station gilt als ERLEDIGT, wenn sie vor der aktiven steht und betretbar ist.</summary>
+    private bool Erledigt(Ablaufeintrag eintrag, int nummer)
+        => eintrag.Bedienbar && AktivStelle > 0 && nummer < AktivStelle && !IstAktiv(eintrag);
+
+    private string Stufenzeichen(Ablaufeintrag eintrag, int nummer)
+        => Erledigt(eintrag, nummer) ? HAKEN : nummer.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private string Stufenklasse(Ablaufeintrag eintrag, int nummer)
+    {
+        string klasse = "epos-ablaufleiste-stufe";
+        if (Erledigt(eintrag, nummer)) klasse += " epos-ablaufleiste-stufe--erledigt";
+        if (!eintrag.Bedienbar) klasse += " epos-ablaufleiste-stufe--gesperrt";
+        return klasse;
+    }
 
     private string Klasse(Ablaufeintrag eintrag)
     {

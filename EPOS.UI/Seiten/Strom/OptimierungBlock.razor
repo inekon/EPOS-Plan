@@ -1,0 +1,397 @@
+@* STATION 4 „OPTIMIERUNG" der Stromspeicher-Auslegung (Auftrag #224,
+   Anwenderentscheid SD-E-9 „Empfehlung" vom 11.09.2026, Konzept
+   „Stromspeicher-Dialoge" 7.4).
+
+   DER BEFUND, DER SIE VERLANGT (Konzept 7.1/7.2). Der Anwender gab die Seite
+   zurueck: „Es soll ein Bereich Stromspeicheroptimierung geben, der die
+   wirtschaftlich beste ‚Groesse' des Stromspeichers berechnet und auch grafisch
+   darstellt. Dies war schon einmal vorhanden." Die Rastersuche gab es die ganze
+   Zeit — erreichbar nur ueber DREI Schalter an DREI Orten, und das Wort
+   „Optimierung" kam in der Ablaufleiste nicht vor. Station 4 hiess „Bewerten".
+
+   DER AUFBAU FOLGT DEM MAPPENBLATT V7 („Optimierung Speicher"):
+     1. Kopf — Ziel und die Wahl „nur bewerten" / „beste Groesse suchen";
+     2. Suchraum je Einheit als TABELLE, eine Zeile je Einheit;
+     3. die KANDIDATENZEILE, live gegen „Maximale Auslegungskandidaten";
+     4. der Schalter „Phase 2 Feinraster";
+     5. der Rechenknopf;
+     6. das Ergebnis der Suche: der Kasten „Bestes Ergebnis", darunter die
+        Groessen-Sicht mit Rasterkarte, Schnitten und Kandidatentabelle.
+
+   DIE KANDIDATENZAHL KOMMT AUS DEM KERN. FlottenOptimierer.Kandidatenzahl ist
+   dieselbe Rechnung, mit der der Lauf sein Raster annimmt oder abweist — eine
+   zweite Formel hier liefe beim ersten neuen Achsenmodus auseinander. Bis #224
+   erfuhr der Anwender erst BEIM START, dass sein Raster zu gross ist; jetzt
+   steht es an der Zeile, und der Rechenknopf ist gesperrt (der Grund kommt vom
+   Wirt, der ihn ohnehin als Banner fuehrt).
+
+   DIE GROESSEN-SICHT ZIEHT VON SCHRITT 5 HIERHER (Konzept 7.4): Sie gehoert zur
+   SUCHE — erst die Frage „welche Groesse traegt sich?", dann die Auswertung der
+   einen gewaehlten Flotte. Schritt 5 zeigt seither nur noch diese eine. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+
+<div class="epos-flotte-optimierung">
+
+    @* ------------------------------------------------------------- Kopf *@
+    <Gruppenkopf Titel="@Resource.FLOTTE_OPT_TITEL" />
+
+    <div class="epos-flotte-optimierung-kopf">
+        <p class="epos-flotte-optimierung-ziel">
+            <span class="epos-flotte-optimierung-ziel__name">@Resource.FLOTTE_OPT_ZIEL</span>
+            <strong>@Resource.FLOTTE_OPT_ZIEL_TEXT</strong>
+        </p>
+        <Optionsgruppe Bezeichnung="@Resource.FLOTTE_OPT_SUCHE" Eintraege="@Suchwahl"
+                       Auswahl="@(Suchen ? 1 : 0)" Aktiv="@Aktiv" AuswahlChanged="SuchwahlGesetzt" />
+    </div>
+
+    @if (Suchen)
+    {
+        @* ------------------------------------------------ Suchraum je Einheit *@
+        <section class="epos-flotte-abschnitt" aria-labelledby="flotte-suchraum-titel">
+            <h3 id="flotte-suchraum-titel">@Resource.FLOTTE_OPT_SUCHRAUM</h3>
+
+            @if (Achsen.Count == 0)
+            {
+                <p class="epos-flotte-leer">@Resource.FLOTTE_OPT_KEINE_EINHEIT</p>
+            }
+            else
+            {
+                <div class="epos-raster-huelle epos-raster-huelle--frei">
+                    <table class="epos-raster epos-flotte-suchraum">
+                        <thead>
+                            <tr>
+                                <th>@Resource.FLOTTE_OPT_SP_EINHEIT</th>
+                                <th>@Resource.FLOTTE_OPT_SP_VARIIEREN</th>
+                                <th>@Resource.FLOTTE_OPT_SP_KOPPLUNG</th>
+                                <th>@Resource.FLOTTE_OPT_SP_ANZAHL</th>
+                                <th>@Resource.FLOTTE_OPT_SP_KAPAZITAET</th>
+                                <th>@Resource.FLOTTE_OPT_SP_LEISTUNG</th>
+                                <th>@Resource.FLOTTE_OPT_SP_CRATE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (FlottenAuslegungsAchse achse in Achsen)
+                            {
+                                FlottenAuslegungsAchse a = achse;
+                                bool frei = Aktiv && a.Aktiv;
+                                <tr @key="a">
+                                    <td>@Achsenname(a)</td>
+                                    <td>
+                                        <div class="epos-flotte-suchraum-zelle">
+                                            <Schalter Bezeichnung="" Wert="@a.Aktiv" Aktiv="@Aktiv"
+                                                      WertChanged="@(v => Setzen(() => a.Aktiv = v))" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="epos-flotte-suchraum-zelle">
+                                            <Auswahlfeld Bezeichnung="" Eintraege="@Kopplungen"
+                                                         Auswahl="@((int)a.Modus)" Aktiv="@frei"
+                                                         AuswahlChanged="@(v => KopplungGesetzt(a, v))" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="epos-flotte-suchraum-zelle">
+                                            <Ganzzahlfeld Bezeichnung="" Wert="@a.AnzahlVon" Min="0" Aktiv="@frei"
+                                                          WertChanged="@(v => GanzSetzen(x => a.AnzahlVon = x, v))" />
+                                            <Ganzzahlfeld Bezeichnung="" Wert="@a.AnzahlBis" Min="0" Aktiv="@frei"
+                                                          WertChanged="@(v => GanzSetzen(x => a.AnzahlBis = x, v))" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (a.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
+                                        {
+                                            <div class="epos-flotte-suchraum-zelle">
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetVonKWh" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetVonKWh = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetBisKWh" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetBisKWh = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetSchrittKWh" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetSchrittKWh = x, v))" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate)
+                                        {
+                                            <div class="epos-flotte-suchraum-zelle">
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungVonKw" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungVonKw = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungBisKw" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungBisKw = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungSchrittKw" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungSchrittKw = x, v))" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung)
+                                        {
+                                            <div class="epos-flotte-suchraum-zelle">
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateVon" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateVon = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateBis" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateBis = x, v))" />
+                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateSchritt" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateSchritt = x, v))" />
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="epos-flotte-hinweis">@Resource.FLOTTE_ED_ANZAHL_HINWEIS</p>
+            }
+
+            @* ------------------------------------------- die Kandidatenzeile *@
+            <p class="@Kandidatenklasse" role="status">
+                <span>@Kandidatentext</span>
+                <strong>@Rasterurteil</strong>
+            </p>
+
+            @* ------------------------------------------ Phase 2 Feinraster *@
+            <Schalter Bezeichnung="@Resource.FLOTTE_OPT_FEINRASTER" Wert="@Auslegung.Feinraster"
+                      Aktiv="@Aktiv" WertChanged="FeinrasterGesetzt" />
+            <Herleitungszeile Text="@Resource.FLOTTE_OPT_FEINRASTER_HINWEIS" />
+        </section>
+    }
+
+    @* ------------------------------------------------------- Rechenknopf *@
+    <div class="epos-leiste epos-flotte-optimierung-lauf">
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!RechnenFrei)"
+                title="@(string.IsNullOrWhiteSpace(RechnenGrund) ? null : RechnenGrund)"
+                @onclick="Starten">@RechnenText</button>
+    </div>
+
+    @* --------------------------------------------------- Ergebnis der Suche *@
+    @if (Ergebnis is null)
+    {
+        <p class="epos-flotte-leer">@Resource.FLOTTE_OPT_KEIN_ERGEBNIS</p>
+    }
+    else
+    {
+        <section class="epos-flotte-abschnitt" aria-labelledby="flotte-bestes-titel">
+            <h3 id="flotte-bestes-titel">
+                @Resource.FLOTTE_OPT_BESTES
+                @if (Bester is not null)
+                {
+                    <span class="@Phasenklasse">@Phasentext</span>
+                }
+            </h3>
+
+            @if (Bester is null)
+            {
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_EMPF_NULLVARIANTE" />
+            }
+            else
+            {
+                <div class="epos-flotte-bestes">
+                    <div class="epos-flotte-bestes__karte">
+                        <small>@Resource.FLOTTE_OPT_BEST_KAPITALWERT</small>
+                        <b>@Euro(Bester.KapitalwertEuro)</b>
+                        <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_ERSPARNIS,
+                                              Zahl(Bester.ErsparnisEuroJahr, "N0"))</small>
+                    </div>
+                    <div class="epos-flotte-bestes__karte">
+                        <small>@Resource.FLOTTE_OPT_BEST_GROESSE</small>
+                        <b>@Groessentext</b>
+                        <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_EINHEITEN,
+                                              Bester.Einheiten.Count)</small>
+                    </div>
+                    <div class="epos-flotte-bestes__karte">
+                        <small>@Resource.FLOTTE_OPT_BEST_GEPRUEFT</small>
+                        <b>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_KANDIDATEN, Geprueft)</b>
+                        <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_ZULAESSIG, Zulaessige,
+                                              Zahl(Ergebnis.Rechendauer.TotalSeconds, "N2"))</small>
+                    </div>
+                </div>
+            }
+        </section>
+
+        @* Die GROESSEN-SICHT — Rasterkarte, zwei Schnitte, Kandidatentabelle.
+           Sie ist derselbe Baustein wie bis #224 in Schritt 5 (Auftrag #193/#196),
+           nur an seinem fachlich richtigen Ort. *@
+        <SpeicherFlottenGroessenAnsicht Ergebnis="@Ergebnis" Einheiten="@Einheiten"
+                                        KandidatUebernehmen="@KandidatUebernehmen"
+                                        Csv="@Csv" />
+    }
+</div>
+
+@code {
+    private static CultureInfo Kultur => CultureInfo.CurrentCulture;
+
+    /// <summary>Was in einer Zelle steht, die die Größenkopplung RECHNET statt zu rastern.</summary>
+    private const string ABGELEITET = "—";
+
+    /// <summary>Die Studienkonfiguration; der Suchraum wird AN ORT UND STELLE beschrieben.</summary>
+    [Parameter] public FlottenStudieKonfiguration Flotte { get; set; } = new();
+
+    /// <summary>Sucht der nächste Lauf die beste Größe? (<c>Auslegung.FlottenGroessenOptimieren</c>)</summary>
+    [Parameter] public bool Suchen { get; set; }
+
+    /// <summary>Die Wahl „bewerten" / „suchen" wurde umgestellt.</summary>
+    [Parameter] public EventCallback<bool> SuchenChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c>, solange gerechnet wird.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Am Suchraum wurde etwas geschrieben.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Das Ergebnis der letzten Rastersuche; <c>null</c> = keine gerechnet.</summary>
+    [Parameter] public FlottenAuslegungErgebnis? Ergebnis { get; set; }
+
+    /// <summary>Wie viele Einheiten die Größen-Sicht je Kandidat anbieten darf.</summary>
+    [Parameter] public int Einheiten { get; set; }
+
+    /// <summary>„Kandidat übernehmen" — der Wirt schreibt ihn nach Schritt 1.</summary>
+    [Parameter] public EventCallback<FlottenKandidatZusammenfassung> KandidatUebernehmen { get; set; }
+
+    /// <summary>Der Variantenvergleich als CSV; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Der Rechenknopf wurde gedrückt.</summary>
+    [Parameter] public EventCallback Rechnen { get; set; }
+
+    /// <summary>Darf gerechnet werden?</summary>
+    [Parameter] public bool RechnenFrei { get; set; } = true;
+
+    /// <summary>Warum nicht — er steht als <c>title</c> am Knopf.</summary>
+    [Parameter] public string RechnenGrund { get; set; } = "";
+
+    /// <summary>Die Beschriftung des Rechenknopfs („Optimieren" bzw. „Bewerten").</summary>
+    [Parameter] public string RechnenText { get; set; } = "";
+
+    private FlottenAuslegungEingang Auslegung => Flotte.Auslegung ??= new FlottenAuslegungEingang();
+
+    private List<FlottenAuslegungsAchse> Achsen => Auslegung.Achsen ??= new List<FlottenAuslegungsAchse>();
+
+    private static readonly IReadOnlyList<(int Id, string Text)> Kopplungen = new[]
+    {
+        (0, "Kapazität und Leistung"), (1, "Kapazität und C-Rate"), (2, "Leistung und C-Rate")
+    };
+
+    private static IReadOnlyList<(int Id, string Text)> Suchwahl => new[]
+    {
+        (0, Resource.FLOTTE_OPT_SUCHE_AUS), (1, Resource.FLOTTE_OPT_SUCHE_AN)
+    };
+
+    // =====================================================================
+    //  Die Kandidatenzeile — die Zaehlregel kommt aus dem Kern
+    // =====================================================================
+
+    /// <summary>Die Zählregel des Optimierers; sie rechnet bei jedem Zeichenlauf neu.</summary>
+    public FlottenKandidatenzahl Kandidatenzahl => FlottenOptimierer.Kandidatenzahl(Flotte);
+
+    private string Kandidatentext
+    {
+        get
+        {
+            FlottenKandidatenzahl z = Kandidatenzahl;
+            if (!z.Gueltig) return "";
+            return z.FeinHoechstens > 0
+                ? string.Format(Kultur, Resource.FLOTTE_OPT_KANDIDATEN,
+                                z.Grob, z.FeinHoechstens, z.Gesamt, z.Grenze)
+                : string.Format(Kultur, Resource.FLOTTE_OPT_KANDIDATEN_OHNE, z.Grob, z.Grenze);
+        }
+    }
+
+    private string Rasterurteil
+    {
+        get
+        {
+            FlottenKandidatenzahl z = Kandidatenzahl;
+            if (!z.Gueltig) return Resource.FLOTTE_OPT_RASTER_UNGUELTIG;
+            return z.Zulaessig ? Resource.FLOTTE_OPT_RASTER_OK : Resource.FLOTTE_OPT_RASTER_ZUVIEL;
+        }
+    }
+
+    private string Kandidatenklasse => Kandidatenzahl.Zulaessig
+        ? "epos-flotte-kandidatenzeile"
+        : "epos-flotte-kandidatenzeile epos-flotte-kandidatenzeile--rot";
+
+    // =====================================================================
+    //  Der Kasten „Bestes Ergebnis"
+    // =====================================================================
+
+    private FlottenKandidatZusammenfassung? Bester => Ergebnis?.BesterKandidat;
+
+    private int Geprueft => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0) ?? 0;
+
+    private int Zulaessige => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0 && k.Zulaessig) ?? 0;
+
+    private string Phasentext => Bester?.Phase == FlottenKandidatPhase.Fein
+        ? Resource.FLOTTE_OPT_MARKE_FEIN : Resource.FLOTTE_OPT_MARKE_GROB;
+
+    private string Phasenklasse => Bester?.Phase == FlottenKandidatPhase.Fein
+        ? "epos-flotte-phasenmarke epos-flotte-phasenmarke--fein"
+        : "epos-flotte-phasenmarke";
+
+    private string Groessentext
+    {
+        get
+        {
+            FlottenKandidatZusammenfassung? k = Bester;
+            if (k is null) return "";
+            return string.Format(Kultur, "{0} kWh · {1} C · {2} kW",
+                Zahl(k.KapazitaetKWh, "N0"), Zahl(k.CRate, "0.##"), Zahl(k.EntladeleistungKw, "N0"));
+        }
+    }
+
+    private static string Zahl(double wert, string format)
+        => double.IsFinite(wert) ? wert.ToString(format, Kultur) : "—";
+
+    private static string Euro(double wert)
+        => double.IsFinite(wert) ? wert.ToString("N0", Kultur) + " €" : "—";
+
+    private string Achsenname(FlottenAuslegungsAchse a)
+    {
+        string name = a.Vorlage?.Name ?? "";
+        if (!string.IsNullOrWhiteSpace(name)) return name;
+        return string.IsNullOrWhiteSpace(a.Vorlage?.Id) ? Resource.FLOTTE_ED_UNBENANNT : a.Vorlage.Id;
+    }
+
+    // =====================================================================
+    //  Schreibwege
+    // =====================================================================
+
+    private Task Starten() => RechnenFrei ? Rechnen.InvokeAsync() : Task.CompletedTask;
+
+    private Task SuchwahlGesetzt(int? wert)
+        => wert.HasValue ? SuchenChanged.InvokeAsync(wert.Value == 1) : Task.CompletedTask;
+
+    private Task FeinrasterGesetzt(bool wert) => Setzen(() => Auslegung.Feinraster = wert);
+
+    private Task Setzen(Action setzen)
+    {
+        setzen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task ZahlSetzen(Action<double> setzen, double? wert)
+        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+
+    private Task GanzSetzen(Action<int> setzen, int? wert)
+        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+
+    private Task KopplungGesetzt(FlottenAuslegungsAchse a, int? wert)
+        => wert.HasValue ? Setzen(() => a.Modus = (FlottenAuslegungsmodus)wert.Value)
+                         : Task.CompletedTask;
+}
