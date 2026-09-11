@@ -174,6 +174,32 @@ entgegen — sie ist damit austauschbar.
   ohne Netz und ohne Modell bereit. Der Öffnungsweg ist auf beiden Plattformen derselbe
   (`EPOS.UI.Dienste.KiAssistentWeg`), und **keine Komponente ruft `KiChatHuelle` oder eine
   Ansicht unmittelbar**.
+- **Ein Dialog, der seine Feldwerte mitgeben soll, meldet sie an — in DREI Zeilen.**
+  Hausregel seit Auftrag **#200** (Stufe S2, Weg 4). Die Feldliste steht im Kern
+  (`KiDialoge`, der EINE Dialogkatalog), der Dialog steuert nur bei, WO seine Werte
+  liegen:
+  ```csharp
+  private KiMaskenanmeldung? _kiMaske;
+  protected override void OnInitialized()
+      => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten);
+  public void Dispose() => _kiMaske?.Dispose();
+  ```
+  Fünf Komponenten tun das heute: `HeizkesselKatalogDialog`, `PhotovoltaikDialog`,
+  `PufferSpKatalogDialog`, `WaermepumpeStammDialog` und `StromspeicherAuslegungSeite`.
+  **Die Quelle ist ein DELEGAT und keine Instanz** — der Photovoltaik-Dialog meldet die
+  GEWÄHLTE Zeile an, und die wechselt mit jedem Klick; ein festgehaltenes Objekt zeigte
+  dem Assistenten die Zeile von vorhin. **Der zweite Parameter des Katalogs ist der
+  Eigenschaftspfad** `Typ.Eigenschaft` (`HeizkesselKatalogDaten.Ptherm`), aufgelöst per
+  Reflection; genau zwei Stufen, weil ein tieferer Pfad über eine Kette von
+  `null`-Stellen liefe. Wo eine Ansicht Tiefe braucht, bekommt sie ein flaches
+  **Sichtmodell** (`Seiten/Strom/StromspeicherKiSicht`), das die Kette EINMAL an einer
+  benannten Stelle auflöst und bei jedem Zugriff neu rechnet. **Angemeldet heißt nicht
+  übertragen:** Ob ein Feldwert hinausgeht, entscheiden der Schalter „Feldwerte
+  mitsenden" im Chat und die Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2) — der Chat
+  bekommt beides als Delegaten und kennt die Brücke nicht. Wächter:
+  `EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests` (jeder Eigenschaftsname existiert
+  am Daten-Objekt, mit Gegenprobe) und `KiFeldwerteTests` (Anmelden, Schalter, Vorschau,
+  „ohne Einwilligung nichts").
 - **Ein dauerhaftes Banner nur für einen Zustand, den der Anwender beheben MUSS und
   sonst nicht sieht.** Anwenderwunsch **W16b‑E‑6** vom 05.09.2026: Über der Startseite
   stand, solange kein Projekt offen war, ein `Warnbanner` mit den zwei Sätzen der

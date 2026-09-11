@@ -52,6 +52,9 @@
         /// <summary>Einheit einer massenbezogenen Emission.</summary>
         internal const string EINHEIT_G_MWH = "g / MWh";
 
+        /// <summary>Einheit einer Energiemenge in Kilowattstunden (Auftrag #200).</summary>
+        internal const string EINHEIT_KWH = "kWh";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -61,6 +64,9 @@
         internal static string MaskePv => MyResource.Resource.KI_DLG_MASKE_PV;
         internal static string MaskePufferSp => MyResource.Resource.KI_DLG_MASKE_PUFFERSP;
         internal static string MaskeWp => MyResource.Resource.KI_DLG_MASKE_WP;
+
+        /// <summary>Die fuenfte Maske (Auftrag #200): die Stromspeicher-Ansicht.</summary>
+        internal static string MaskeSpeicherauslegung => MyResource.Resource.KI_DLG_MASKE_SPA;
 
         // ====================================================================== Knoepfe
 
@@ -181,6 +187,17 @@
         /// <summary>{0} = Anzeigename des Knopfes.</summary>
         internal static string KnopfGesperrt => MyResource.Resource.KI_DLG_KNOPF_GESPERRT;
 
+        /// <summary>
+        /// Hinweis an einem Feld, das <c>dialog_lesen</c> zwar liefert, aber nicht setzen
+        /// kann — eine abgeleitete Groesse (Auftrag #200).
+        /// </summary>
+        internal static string NichtSetzbar => MyResource.Resource.KI_DLG_NICHT_SETZBAR;
+
+        /// <summary>
+        /// Hinweis an einem Knopf: Ausloesen kommt mit Stufe S3 (Auftrag #201).
+        /// </summary>
+        internal static string KnopfSpaeter => MyResource.Resource.KI_DLG_KNOPF_SPAETER;
+
         /// <summary>{0} = Anzeigename des Feldes, {1} = gewuenschter Wert, {2} = Eintraege.</summary>
         internal static string AuswahlUnbekannt => MyResource.Resource.KI_DLG_AUSWAHL_UNBEKANNT;
 
@@ -219,6 +236,46 @@
         internal static string KnopfAusgeloest => MyResource.Resource.KI_DLG_KNOPF_AUSGELOEST;
 
         internal static string KnopfHinweis => MyResource.Resource.KI_DLG_KNOPF_HINWEIS;
+
+        // ========================================== Stromspeicher-Auslegung: Felder
+        //
+        // Die FUENFTE Deklaration (Auftrag #200, Konzept 3.3). Sie ist die einzige, die
+        // auch ABGELEITETE Groessen fuehrt - Diagnose und Ergebnis der letzten Bewertung.
+        // Genau die machen die Erklaerung stark: "Warum ist die Flotte arbeitslos?" wird
+        // damit mit den echten Zaehlern beantwortet und nicht mit einer Vermutung.
+
+        internal static string SpaEinheitenName => MyResource.Resource.KI_DLG_SPA_EINHEITEN_NAME;
+        internal static string SpaEinheitenErl => MyResource.Resource.KI_DLG_SPA_EINHEITEN_ERL;
+        internal static string SpaListeName => MyResource.Resource.KI_DLG_SPA_LISTE_NAME;
+        internal static string SpaListeErl => MyResource.Resource.KI_DLG_SPA_LISTE_ERL;
+        internal static string SpaKapazitaetName => MyResource.Resource.KI_DLG_SPA_KAPAZITAET_NAME;
+        internal static string SpaKapazitaetErl => MyResource.Resource.KI_DLG_SPA_KAPAZITAET_ERL;
+        internal static string SpaLadeleistungName => MyResource.Resource.KI_DLG_SPA_LADEN_NAME;
+        internal static string SpaLadeleistungErl => MyResource.Resource.KI_DLG_SPA_LADEN_ERL;
+        internal static string SpaEntladeleistungName => MyResource.Resource.KI_DLG_SPA_ENTLADEN_NAME;
+        internal static string SpaEntladeleistungErl => MyResource.Resource.KI_DLG_SPA_ENTLADEN_ERL;
+        internal static string SpaBetriebszielName => MyResource.Resource.KI_DLG_SPA_ZIEL_NAME;
+        internal static string SpaBetriebszielErl => MyResource.Resource.KI_DLG_SPA_ZIEL_ERL;
+        internal static string SpaPeakZielName => MyResource.Resource.KI_DLG_SPA_PEAK_NAME;
+        internal static string SpaPeakZielErl => MyResource.Resource.KI_DLG_SPA_PEAK_ERL;
+        internal static string SpaNetzladungName => MyResource.Resource.KI_DLG_SPA_NETZLADUNG_NAME;
+        internal static string SpaNetzladungErl => MyResource.Resource.KI_DLG_SPA_NETZLADUNG_ERL;
+        internal static string SpaStartSocName => MyResource.Resource.KI_DLG_SPA_STARTSOC_NAME;
+        internal static string SpaStartSocErl => MyResource.Resource.KI_DLG_SPA_STARTSOC_ERL;
+        internal static string SpaReserveName => MyResource.Resource.KI_DLG_SPA_RESERVE_NAME;
+        internal static string SpaReserveErl => MyResource.Resource.KI_DLG_SPA_RESERVE_ERL;
+        internal static string SpaArbeitslosName => MyResource.Resource.KI_DLG_SPA_ARBEITSLOS_NAME;
+        internal static string SpaArbeitslosErl => MyResource.Resource.KI_DLG_SPA_ARBEITSLOS_ERL;
+        internal static string SpaGruendeName => MyResource.Resource.KI_DLG_SPA_GRUENDE_NAME;
+        internal static string SpaGruendeErl => MyResource.Resource.KI_DLG_SPA_GRUENDE_ERL;
+        internal static string SpaHinweiseName => MyResource.Resource.KI_DLG_SPA_HINWEISE_NAME;
+        internal static string SpaHinweiseErl => MyResource.Resource.KI_DLG_SPA_HINWEISE_ERL;
+        internal static string SpaSpitzeName => MyResource.Resource.KI_DLG_SPA_SPITZE_NAME;
+        internal static string SpaSpitzeErl => MyResource.Resource.KI_DLG_SPA_SPITZE_ERL;
+        internal static string SpaNetzbezugName => MyResource.Resource.KI_DLG_SPA_NETZBEZUG_NAME;
+        internal static string SpaNetzbezugErl => MyResource.Resource.KI_DLG_SPA_NETZBEZUG_ERL;
+        internal static string SpaKapitalwertName => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_NAME;
+        internal static string SpaKapitalwertErl => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_ERL;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

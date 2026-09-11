@@ -4431,6 +4431,28 @@ body {
     margin-bottom: 0;
 }
 
+/* Die Einwilligungsstufe "Dialogdaten" (Auftrag #200): Erklaerung, Kaestchen,
+   Stand. Sie steht als eigener Block mit Trennlinie, weil sie etwas anderes ist
+   als die Einstellungen darueber - eine EINWILLIGUNG, die man erteilt und
+   zuruecknimmt, und nicht ein Wert, den man aendert. */
+.epos-kieinst-dialogdaten {
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 8px;
+}
+
+.epos-kieinst-hinweis-absatz {
+    margin: 0 0 8px 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.epos-kieinst-dialogdaten-stand {
+    margin: 4px 0 0 0;
+    color: var(--epos-text-leise);
+    font-size: 12px;
+}
+
 .epos-kieinst-fuss {
     display: flex;
     justify-content: flex-end;
@@ -4477,6 +4499,16 @@ body {
     gap: 4px;
     margin: 0;
     color: var(--epos-text-leise);
+}
+
+/* Der GRUND neben dem gesperrten Schalter "Feldwerte mitsenden" (Auftrag #200).
+   Er steht sichtbar da und nicht in einem title-Merkmal: Ein gesperrtes
+   Kaestchen nimmt keine Zeigerereignisse an, sein Tooltip erschiene nie
+   (Hausregel EPOS.UI/CLAUDE.md, "ein gesperrtes Bedienelement, das erklaeren
+   soll ..."). Leise Schrift, weil er eine Erlaeuterung ist und keine Warnung. */
+.epos-kichat-feldwerte-grund {
+    color: var(--epos-text-leise);
+    font-size: 12px;
 }
 
 /* Die Fussleiste: Links links, Status in der Mitte, Knoepfe rechts. */

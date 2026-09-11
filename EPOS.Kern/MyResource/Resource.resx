@@ -18033,4 +18033,163 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung?</value>
   </data>
+  <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
+    <value>Feldwerte mitsenden</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EIN" xml:space="preserve">
+    <value>Die Feldwerte der offenen Maske gehen ab jetzt mit der Frage hinaus.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_AUS" xml:space="preserve">
+    <value>Die Feldwerte bleiben hier; es geht nur die Frage hinaus.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FEHLT" xml:space="preserve">
+    <value>Ohne die Einwilligung „Dialogdaten“ wird kein Feldwert übertragen.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_GESPERRT" xml:space="preserve">
+    <value>Feldwerte lassen sich hier nicht mitsenden: Die Einwilligung „Dialogdaten“ kann nicht eingeholt werden.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_BLOCK_KOPF" xml:space="preserve">
+    <value>Werte der offenen Maske „{0}“ ({1} Felder):</value>
+  </data>
+  <data name="KI_DIALOGDATEN_LEER" xml:space="preserve">
+    <value>(leer)</value>
+  </data>
+  <data name="KI_DIALOGDATEN_JA" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="KI_DIALOGDATEN_NEIN" xml:space="preserve">
+    <value>Nein</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FRAGE_TITEL" xml:space="preserve">
+    <value>Feldwerte übertragen?</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FRAGE" xml:space="preserve">
+    <value>Der Assistent soll die Werte der gerade geöffneten Maske mit Ihrer Frage an den Modellanbieter übertragen.
+
+Übertragen werden ausschließlich die Felder, die im Dialogkatalog stehen — mit Anzeigename, Einheit und dem Wert, der gerade in der Maske steht. Projektname, Kundenname und die Datenbank selbst gehen nicht mit.
+
+Vor jeder Anfrage können Sie über „Was wird gesendet?“ wörtlich nachlesen, was hinausgeht, und der Schalter „Feldwerte mitsenden“ lässt sich jederzeit wieder ausschalten. Diese Einwilligung können Sie in den Einstellungen des Assistenten zurücknehmen.
+
+Möchten Sie das zulassen?</value>
+  </data>
+  <data name="KI_DIALOGDATEN_PROTOKOLL" xml:space="preserve">
+    <value>Feldwerte der Maske „{0}“ übertragen ({1} Felder).</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_SCHALTER" xml:space="preserve">
+    <value>Feldwerte offener Masken übertragen (Dialogdaten)</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_ERKLAERUNG" xml:space="preserve">
+    <value>Mit dieser Einwilligung darf der Assistent die Werte der gerade geöffneten Maske mitsenden — nur die Felder des Dialogkatalogs, nur auf Ihren Schalter hin und erst nach der Vorschau „Was wird gesendet?“. Ohne sie geht ausschließlich Ihre Frage hinaus.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_STAND" xml:space="preserve">
+    <value>Eingewilligt am {0} (Fassung {1}).</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_OHNE" xml:space="preserve">
+    <value>Noch keine Einwilligung erteilt.</value>
+  </data>
+  <data name="KI_DLG_MASKE_SPA" xml:space="preserve">
+    <value>Stromspeicher-Auslegung</value>
+  </data>
+  <data name="KI_DLG_SPA_EINHEITEN_NAME" xml:space="preserve">
+    <value>Einheiten der Flotte</value>
+  </data>
+  <data name="KI_DLG_SPA_EINHEITEN_ERL" xml:space="preserve">
+    <value>Wie viele Speichereinheiten die Flotte gleichzeitig betreibt.</value>
+  </data>
+  <data name="KI_DLG_SPA_LISTE_NAME" xml:space="preserve">
+    <value>Einheiten im Einzelnen</value>
+  </data>
+  <data name="KI_DLG_SPA_LISTE_ERL" xml:space="preserve">
+    <value>Je Einheit Kapazität, Ladeleistung und Entladeleistung in der Reihenfolge der Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPAZITAET_NAME" xml:space="preserve">
+    <value>Kapazität der Flotte</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Summe der Vollbereichskapazitäten aller Einheiten.</value>
+  </data>
+  <data name="KI_DLG_SPA_LADEN_NAME" xml:space="preserve">
+    <value>Ladeleistung der Flotte</value>
+  </data>
+  <data name="KI_DLG_SPA_LADEN_ERL" xml:space="preserve">
+    <value>Summe der höchsten Ladeleistungen aller Einheiten auf der Wechselstromseite.</value>
+  </data>
+  <data name="KI_DLG_SPA_ENTLADEN_NAME" xml:space="preserve">
+    <value>Entladeleistung der Flotte</value>
+  </data>
+  <data name="KI_DLG_SPA_ENTLADEN_ERL" xml:space="preserve">
+    <value>Summe der höchsten Entladeleistungen aller Einheiten auf der Wechselstromseite.</value>
+  </data>
+  <data name="KI_DLG_SPA_ZIEL_NAME" xml:space="preserve">
+    <value>Betriebsziel</value>
+  </data>
+  <data name="KI_DLG_SPA_ZIEL_ERL" xml:space="preserve">
+    <value>Die gefahrene Betriebsführung der Flotte, etwa PV-Eigenverbrauch oder Lastspitzenkappung.</value>
+  </data>
+  <data name="KI_DLG_SPA_PEAK_NAME" xml:space="preserve">
+    <value>Peak-Ziel</value>
+  </data>
+  <data name="KI_DLG_SPA_PEAK_ERL" xml:space="preserve">
+    <value>Der weiche wirtschaftliche Zielwert für den höchsten Netzbezug; leer heißt: keiner gesetzt.</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZLADUNG_NAME" xml:space="preserve">
+    <value>Netzladung erlaubt</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZLADUNG_ERL" xml:space="preserve">
+    <value>Ohne diese Freigabe darf nur verbleibender PV-Überschuss geladen werden.</value>
+  </data>
+  <data name="KI_DLG_SPA_STARTSOC_NAME" xml:space="preserve">
+    <value>Start-Ladezustand</value>
+  </data>
+  <data name="KI_DLG_SPA_STARTSOC_ERL" xml:space="preserve">
+    <value>Der Ladezustand zu Beginn des Rechenzeitraums, gemittelt über die Einheiten.</value>
+  </data>
+  <data name="KI_DLG_SPA_RESERVE_NAME" xml:space="preserve">
+    <value>Peak-Reserve</value>
+  </data>
+  <data name="KI_DLG_SPA_RESERVE_ERL" xml:space="preserve">
+    <value>Geschützte Energie oberhalb der technischen Mindestenergie, summiert über die Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA_ARBEITSLOS_NAME" xml:space="preserve">
+    <value>Flotte arbeitslos</value>
+  </data>
+  <data name="KI_DLG_SPA_ARBEITSLOS_ERL" xml:space="preserve">
+    <value>Ja heißt: Die Flotte hat im gesamten Zeitraum weder geladen noch entladen.</value>
+  </data>
+  <data name="KI_DLG_SPA_GRUENDE_NAME" xml:space="preserve">
+    <value>Gründe der Diagnose</value>
+  </data>
+  <data name="KI_DLG_SPA_GRUENDE_ERL" xml:space="preserve">
+    <value>Die gezählten Sperren des letzten Laufs — Last über dem Peak-Ziel, Ladedeckel 0, leerer Speicher.</value>
+  </data>
+  <data name="KI_DLG_SPA_HINWEISE_NAME" xml:space="preserve">
+    <value>Prüfhinweise</value>
+  </data>
+  <data name="KI_DLG_SPA_HINWEISE_ERL" xml:space="preserve">
+    <value>Die Hinweise der Vorprüfung und des letzten Laufs, untereinander als Text.</value>
+  </data>
+  <data name="KI_DLG_SPA_SPITZE_NAME" xml:space="preserve">
+    <value>Bezugsspitze (letzter Lauf)</value>
+  </data>
+  <data name="KI_DLG_SPA_SPITZE_ERL" xml:space="preserve">
+    <value>Der höchste Netzbezug eines Abrechnungsintervalls im Lauf mit Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZBEZUG_NAME" xml:space="preserve">
+    <value>Netzbezug (letzter Lauf)</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZBEZUG_ERL" xml:space="preserve">
+    <value>Die bezogene Energie über den Rechenzeitraum im Lauf mit Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPITALWERT_NAME" xml:space="preserve">
+    <value>Kapitalwert (letzter Lauf)</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPITALWERT_ERL" xml:space="preserve">
+    <value>Der Kapitalwert der Flotte gegenüber der Variante ohne Zusatzspeicher; leer heißt: nicht bewertet.</value>
+  </data>
+  <data name="KI_DLG_NICHT_SETZBAR" xml:space="preserve">
+    <value>Dieses Feld ist eine abgeleitete Größe; es lässt sich lesen, aber nicht setzen.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
+    <value>Knöpfe kann der Assistent in dieser Fassung noch nicht auslösen.</value>
+  </data>
 </root>

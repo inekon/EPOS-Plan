@@ -54,7 +54,7 @@ public class KiChatKontextzeileTests : EposBunitContext
         string dialogname = "",
         string kennung = "",
         string vorbelegung = "",
-        Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>? fragen = null)
+        Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>? fragen = null)
         => Render<KiChatDialog>(p =>
         {
             p.Add(x => x.Texte, Texte())
@@ -136,7 +136,7 @@ public class KiChatKontextzeileTests : EposBunitContext
     {
         var gefragt = new List<string>();
         var cut = Zeigen(vorbelegung: "Warum hat die Flotte nichts getan?",
-                         fragen: (f, _) =>
+                         fragen: (f, _, _) =>
                          {
                              gefragt.Add(f);
                              return Task.FromResult<IReadOnlyList<Gespraechszeile>>(
@@ -154,7 +154,7 @@ public class KiChatKontextzeileTests : EposBunitContext
     {
         var gefragt = new List<string>();
         var cut = Zeigen(vorbelegung: "Warum hat die Flotte nichts getan?",
-                         fragen: (f, _) =>
+                         fragen: (f, _, _) =>
                          {
                              gefragt.Add(f);
                              return Task.FromResult<IReadOnlyList<Gespraechszeile>>(

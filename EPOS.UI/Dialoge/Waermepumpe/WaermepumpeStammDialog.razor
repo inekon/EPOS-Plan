@@ -41,6 +41,7 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -501,7 +502,23 @@
         ListeNeuLaden();
         // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
         if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => Daten);
     }
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c> (Auftrag #200, Stufe S2): der Getter
+    /// auf <see cref="Daten"/>, der mit dem Dialog fällt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht, entscheiden
+    /// der Schalter „Feldwerte mitsenden" im Chat und die Einwilligungsstufe
+    /// „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

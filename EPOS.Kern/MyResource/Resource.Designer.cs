@@ -21559,6 +21559,154 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Feldwerte bleiben hier; es geht nur die Frage hinaus. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_AUS {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werte der offenen Maske „{0}“ ({1} Felder): ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_BLOCK_KOPF {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_BLOCK_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Feldwerte der offenen Maske gehen ab jetzt mit der Frage hinaus. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_EIN {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_EIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dieser Einwilligung darf der Assistent die Werte der gerade geöffneten Maske mitsenden — nur die Felder des Dialogkatalogs, nur auf Ihren Schalter hin und erst nach der Vorschau „Was wird gesendet?“. Ohne sie geht ausschließlich Ihre Frage hinaus. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_EINST_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_EINST_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Einwilligung erteilt. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_EINST_OHNE {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_EINST_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldwerte offener Masken übertragen (Dialogdaten) ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_EINST_SCHALTER {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_EINST_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingewilligt am {0} (Fassung {1}). ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_EINST_STAND {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_EINST_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne die Einwilligung „Dialogdaten“ wird kein Feldwert übertragen. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Assistent soll die Werte der gerade geöffneten Maske mit Ihrer Frage an den Modellanbieter übertragen.
+        ///
+        ///Übertragen werden ausschließlich die Felder, die im Dialogkatalog stehen — mit Anzeigename, Einheit und dem Wert, der gerade in der Maske steht. Projektname, Kundenname und die Datenbank selbst gehen nicht mit.
+        ///
+        ///Vor jeder Anfrage können Sie über „Was wird gesendet?“ wörtlich nachlesen, was hinausgeht, und der Schalter „Feldwerte mitsenden“ lässt sich jederzeit wieder ausschalten. Diese Einwilligung kö [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_FRAGE {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldwerte übertragen? ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldwerte lassen sich hier nicht mitsenden: Die Einwilligung „Dialogdaten“ kann nicht eingeholt werden. ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_JA {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (leer) ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_LEER {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_NEIN {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldwerte der Maske „{0}“ übertragen ({1} Felder). ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feldwerte mitsenden ähnelt.
+        /// </summary>
+        public static string KI_DIALOGDATEN_SCHALTER {
+            get {
+                return ResourceManager.GetString("KI_DIALOGDATEN_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
@@ -22000,6 +22148,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knöpfe kann der Assistent in dieser Fassung noch nicht auslösen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KNOPF_SPAETER {
+            get {
+                return ResourceManager.GetString("KI_DLG_KNOPF_SPAETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_SPEICHERN {
@@ -22081,6 +22238,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher-Auslegung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SPA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_UNBEKANNT {
@@ -22131,6 +22297,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NICHT_OFFEN {
             get {
                 return ResourceManager.GetString("KI_DLG_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Feld ist eine abgeleitete Größe; es lässt sich lesen, aber nicht setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NICHT_SETZBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_NICHT_SETZBAR", resourceCulture);
             }
         }
         
@@ -22212,6 +22387,294 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_NEIGUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja heißt: Die Flotte hat im gesamten Zeitraum weder geladen noch entladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ARBEITSLOS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ARBEITSLOS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flotte arbeitslos ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ARBEITSLOS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ARBEITSLOS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Speichereinheiten die Flotte gleichzeitig betreibt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_EINHEITEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_EINHEITEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten der Flotte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_EINHEITEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_EINHEITEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der höchsten Entladeleistungen aller Einheiten auf der Wechselstromseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ENTLADEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ENTLADEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung der Flotte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ENTLADEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ENTLADEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gezählten Sperren des letzten Laufs — Last über dem Peak-Ziel, Ladedeckel 0, leerer Speicher. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_GRUENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_GRUENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gründe der Diagnose ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_GRUENDE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_GRUENDE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hinweise der Vorprüfung und des letzten Laufs, untereinander als Text. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_HINWEISE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_HINWEISE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfhinweise ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_HINWEISE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_HINWEISE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Vollbereichskapazitäten aller Einheiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität der Flotte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KAPAZITAET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KAPAZITAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kapitalwert der Flotte gegenüber der Variante ohne Zusatzspeicher; leer heißt: nicht bewertet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KAPITALWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KAPITALWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert (letzter Lauf) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_KAPITALWERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_KAPITALWERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der höchsten Ladeleistungen aller Einheiten auf der Wechselstromseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_LADEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_LADEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung der Flotte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_LADEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_LADEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Einheit Kapazität, Ladeleistung und Entladeleistung in der Reihenfolge der Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_LISTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_LISTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten im Einzelnen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_LISTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_LISTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die bezogene Energie über den Rechenzeitraum im Lauf mit Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_NETZBEZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_NETZBEZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug (letzter Lauf) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_NETZBEZUG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_NETZBEZUG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne diese Freigabe darf nur verbleibender PV-Überschuss geladen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_NETZLADUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_NETZLADUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzladung erlaubt ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_NETZLADUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_NETZLADUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der weiche wirtschaftliche Zielwert für den höchsten Netzbezug; leer heißt: keiner gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_PEAK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_PEAK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_PEAK_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_PEAK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschützte Energie oberhalb der technischen Mindestenergie, summiert über die Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_RESERVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_RESERVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Reserve ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_RESERVE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_RESERVE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Netzbezug eines Abrechnungsintervalls im Lauf mit Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SPITZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SPITZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsspitze (letzter Lauf) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_SPITZE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_SPITZE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ladezustand zu Beginn des Rechenzeitraums, gemittelt über die Einheiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_STARTSOC_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_STARTSOC_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Start-Ladezustand ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_STARTSOC_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_STARTSOC_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gefahrene Betriebsführung der Flotte, etwa PV-Eigenverbrauch oder Lastspitzenkappung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ZIEL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ZIEL_NAME", resourceCulture);
             }
         }
         

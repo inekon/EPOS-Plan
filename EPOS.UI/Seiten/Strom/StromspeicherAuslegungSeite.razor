@@ -44,6 +44,7 @@
 @using EPOS.UI.Seiten.Simulation
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite epos-spauslegung">
 
@@ -590,7 +591,31 @@
             PeakVorschlagHolen();
         }
         catch (Exception ex) { _fehler = ex.Message; }
+
+        // Auftrag #200 (Stufe S2): die fuenfte Maske des Dialogkatalogs. Angemeldet wird
+        // ein SICHTMODELL und nicht der Eingabestand - der liegt drei bis fuenf Stufen
+        // tief, und ein Katalogfeld ist genau zwei Stufen tief (KiEigenschaftspfad).
+        _kiSicht = new StromspeicherKiSicht(() => _eingaben, () => _flottenErgebnis,
+                                            () => _vorpruefung);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                                          () => _kiSicht);
     }
+
+    /// <summary>
+    /// Das flache Abbild der Ansicht für den Hilfe-Assistenten; es rechnet bei jedem
+    /// Zugriff aus den drei lebenden Ständen.
+    /// </summary>
+    private StromspeicherKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. <b>Angemeldet heißt nicht
+    /// übertragen</b>: Ob ein Feldwert hinausgeht, entscheiden der Schalter „Feldwerte
+    /// mitsenden" im Chat und die Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </summary>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     // =====================================================================
     //  Eingaben

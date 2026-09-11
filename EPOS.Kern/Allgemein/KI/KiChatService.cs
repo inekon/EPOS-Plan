@@ -490,7 +490,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static async Task<KiAntwort> FrageAsync(string frage, string kontext,
                                                        List<string> verlauf = null,
-                                                       CancellationToken abbruch = default)
+                                                       CancellationToken abbruch = default,
+                                                       KiDialogdaten dialogdaten = null)
         {
             KiAntwort antwort = new KiAntwort();
 
@@ -556,7 +557,8 @@ namespace WindowsFormsApplication1
                 await AbschnitteBeschaffenAsync(frage, kontext, abbruch);
             antwort.Abschnitte = treffer2;
 
-            string prompt = PromptBauen(frage, kontext, treffer2, verlauf, false, null);
+            string prompt = PromptBauen(frage, kontext, treffer2, verlauf, false, null, dialogdaten);
+            KiMaskenbruecke.Vermerken(dialogdaten);
             antwort.TokenGeschaetzt = prompt.Length / 4;   // grobe Schätzung
 
             try
@@ -601,12 +603,13 @@ namespace WindowsFormsApplication1
                                                        List<string> verlauf = null,
                                                        bool mitAktionen = false,
                                                        KiRegister register = null,
-                                                       CancellationToken abbruch = default)
+                                                       CancellationToken abbruch = default,
+                                                       KiDialogdaten dialogdaten = null)
         {
             string f = string.IsNullOrWhiteSpace(frage) ? "(noch keine Frage eingegeben)" : frage.Trim();
             List<WissensAbschnitt> treffer = await AbschnitteBeschaffenAsync(f, kontext, abbruch);
 
-            if (!mitAktionen) return PromptBauen(f, kontext, treffer, verlauf, false, null);
+            if (!mitAktionen) return PromptBauen(f, kontext, treffer, verlauf, false, null, dialogdaten);
 
             // Mit Aktionen wird der VOLLSTÄNDIGE Anfragerumpf gezeigt, nicht nur der
             // Prompt: der Werkzeugkatalog ist der größte Teil dessen, was hinausgeht,
@@ -618,7 +621,8 @@ namespace WindowsFormsApplication1
             {
                 KiWerkzeuge.VerlaufseintragKnoten(KiWerkzeuge.RolleAnwender,
                     KiWerkzeuge.TextteilKnoten(PromptBauen(f, kontext, treffer, verlauf, true,
-                                                           wegB ? KiWerkzeuge.WegBAnweisung(reg) : null)))
+                                                           wegB ? KiWerkzeuge.WegBAnweisung(reg) : null,
+                                                           dialogdaten)))
             };
 
             var sb = new StringBuilder();
@@ -638,7 +642,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string PromptBauen(string frage, string kontext,
                                           List<WissensAbschnitt> abschnitte, List<string> verlauf,
-                                          bool mitAktionen, string wegBAnweisung)
+                                          bool mitAktionen, string wegBAnweisung,
+                                          KiDialogdaten dialogdaten = null)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -698,6 +703,24 @@ namespace WindowsFormsApplication1
                 sb.AppendLine("Der Benutzer befindet sich gerade hier:");
                 sb.AppendLine(kontext);
                 sb.AppendLine("Beziehe dich bevorzugt auf diesen Bereich.");
+                sb.AppendLine();
+            }
+
+            // DER FELDBLOCK der offenen Maske (Auftrag #200, Stufe S2). Er steht hier
+            // und nirgends sonst: unmittelbar nach dem Bereich, VOR den Hilfeabschnitten
+            // und vor der Frage - so liest das Modell erst, wo der Anwender steht, dann,
+            // was dort steht, und erst danach, was er wissen will.
+            //
+            // ER KOMMT NUR MIT, WENN DER AUFRUFER IHN MITGIBT. Der Weg dorthin ist der
+            // Schalter "Feldwerte mitsenden" UND die Einwilligungsstufe "Dialogdaten"
+            // (KiEinwilligung.SicherstellenDialogdatenAsync) - dieser Dienst prueft
+            // weder das eine noch das andere nach, sondern nimmt entgegen, was ihm
+            // gegeben wird. Genau deshalb zeigt die Vorschau denselben Text: Sie ruft
+            // dieselbe Methode mit demselben Block.
+            if (dialogdaten != null && dialogdaten.Belegt)
+            {
+                sb.AppendLine(dialogdaten.Text.TrimEnd());
+                sb.AppendLine("Diese Werte stehen gerade in der Maske und sind noch nicht gespeichert.");
                 sb.AppendLine();
             }
 
@@ -1180,7 +1203,8 @@ namespace WindowsFormsApplication1
                                                                   List<string> verlauf = null,
                                                                   KiPlatzhalter platzhalter = null,
                                                                   KiRegister register = null,
-                                                                  CancellationToken abbruch = default)
+                                                                  CancellationToken abbruch = default,
+                                                                  KiDialogdaten dialogdaten = null)
         {
             KiAntwort antwort = new KiAntwort();
 
@@ -1241,7 +1265,8 @@ namespace WindowsFormsApplication1
             foreach (WissensAbschnitt a in abschnitte) antwort.Quellen.Add(a.Titel);
 
             List<JsonObject> gespraech = new List<JsonObject>();
-            gespraech.Add(ErsteRunde(frage, kontext, abschnitte, verlauf, reg, wegB));
+            gespraech.Add(ErsteRunde(frage, kontext, abschnitte, verlauf, reg, wegB, dialogdaten));
+            KiMaskenbruecke.Vermerken(dialogdaten);
 
             KiRunden runden = new KiRunden();          // Deckel 3 (Fachkonzept 3.3, Festlegung 5)
             string schlusstext = "";
@@ -1290,7 +1315,8 @@ namespace WindowsFormsApplication1
                             modell = MODELL;
                             antwort.Hinweise.Add(MyResource.Resource.KI_AKT_WEGB_OHNE_MODELL);
                             gespraech.Clear();
-                            gespraech.Add(ErsteRunde(frage, kontext, abschnitte, verlauf, reg, true));
+                            gespraech.Add(ErsteRunde(frage, kontext, abschnitte, verlauf, reg, true,
+                                                     dialogdaten));
                         }
                         continue;   // dieselbe Frage, neue Runde
                     }
@@ -1573,10 +1599,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der erste Verlaufseintrag einer Äußerung.</summary>
         private static JsonObject ErsteRunde(string frage, string kontext,
                                              List<WissensAbschnitt> abschnitte, List<string> verlauf,
-                                             KiRegister register, bool wegB)
+                                             KiRegister register, bool wegB,
+                                             KiDialogdaten dialogdaten = null)
         {
             string prompt = PromptBauen(frage, kontext, abschnitte, verlauf, true,
-                                        wegB ? KiWerkzeuge.WegBAnweisung(register) : null);
+                                        wegB ? KiWerkzeuge.WegBAnweisung(register) : null,
+                                        dialogdaten);
             return KiWerkzeuge.VerlaufseintragKnoten(KiWerkzeuge.RolleAnwender,
                                                      KiWerkzeuge.TextteilKnoten(prompt));
         }

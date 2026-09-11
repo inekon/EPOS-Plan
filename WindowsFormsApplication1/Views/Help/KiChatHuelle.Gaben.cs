@@ -58,14 +58,23 @@ namespace WindowsFormsApplication1
                     mitZaehler: false)),
 
                 // ---- Die vier Wege nach draussen ------------------------------
-                ["Fragen"] = (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)FragenAsync,
+                ["Fragen"] = (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)FragenAsync,
                 ["Suchen"] = (Func<string, Task<IReadOnlyList<Gespraechszeile>>>)SuchenAsync,
                 ["Einwilligen"] = (Func<Task<bool>>)KiEinwilligung.SicherstellenAsync,
+
+                // "Feldwerte mitsenden" (Auftrag #200, Stufe S2): WAS mitgeht, holt der
+                // Kern aus der Maskenbruecke; die Komponente entscheidet nur das OB.
+                // Der Delegat wird bei JEDEM Zeichenlauf gefragt - das Chatfenster steht,
+                // waehrend der Anwender Dialoge oeffnet und schliesst.
+                ["Feldwerte"] = (Func<KiDialogdaten>)(() => KiMaskenbruecke.Dialogdaten()),
+                ["FeldwerteEinwilligen"] =
+                    (Func<Task<bool>>)KiEinwilligung.SicherstellenDialogdatenAsync,
+                ["FeldwerteGesperrt"] = !KiEinwilligung.DialogdatenMoeglich,
                 ["Ausfuehren"] = (Func<string, IReadOnlyDictionary<string, object>,
                                        Task<IReadOnlyList<Gespraechszeile>>>)AusfuehrenAsync,
 
                 // ---- Die vier Nebenwege ---------------------------------------
-                ["Vorschau"] = (Func<Task<string>>)VorschauAsync,
+                ["Vorschau"] = (Func<bool, Task<string>>)VorschauAsync,
                 ["Protokoll"] = (Func<Task<string>>)ProtokollAsync,
 
                 // W15b-B-1: Einstellungen und Rechtshinweis erscheinen als
@@ -107,17 +116,22 @@ namespace WindowsFormsApplication1
         /// Frage MIT Modell. Der Riegel steht im Kern, vor allem anderen (Regel S-4) —
         /// diese Hülle nimmt ihn nicht vorweg.
         /// </summary>
-        private async Task<IReadOnlyList<Gespraechszeile>> FragenAsync(string frage, bool mitAktionen)
+        private async Task<IReadOnlyList<Gespraechszeile>> FragenAsync(string frage, bool mitAktionen,
+                                                                       bool mitFeldwerten)
         {
             // Die PLATZGEHALTENE Fassung in die zweite Liste (H8) - sie geht bei der
             // naechsten Frage wieder in den Prompt.
             _verlauf.Add(KiVerlaufstexte.PromptEintragFrage(frage));
 
+            KiDialogdaten felder = Feldblock(mitFeldwerten);
+
             KiAntwort antwort = mitAktionen
                 ? await KiChatService.FrageMitAktionenAsync(frage, HilfeKontext.Beschreibung(),
-                                                            _verlauf, _platzhalter)
+                                                            _verlauf, _platzhalter,
+                                                            dialogdaten: felder)
                                      .ConfigureAwait(true)
-                : await KiChatService.FrageAsync(frage, HilfeKontext.Beschreibung(), _verlauf)
+                : await KiChatService.FrageAsync(frage, HilfeKontext.Beschreibung(), _verlauf,
+                                                 dialogdaten: felder)
                                      .ConfigureAwait(true);
 
             if (antwort.Erfolg)
@@ -194,9 +208,38 @@ namespace WindowsFormsApplication1
         /// PLATZGEHALTENE Fassung: Er dokumentiert, was tatsächlich übertragen wird,
         /// und darf deshalb nicht geschönt werden.
         /// </summary>
-        private Task<string> VorschauAsync()
+        private Task<string> VorschauAsync(bool mitFeldwerten)
             => KiChatService.SendeVorschau("", HilfeKontext.Beschreibung(), _verlauf,
-                                           KiChatService.AktionenZulassen);
+                                           KiChatService.AktionenZulassen,
+                                           dialogdaten: Feldblock(mitFeldwerten));
+
+        /// <summary>
+        /// Der Feldblock der offenen Maske — oder <c>null</c> (Auftrag #200, Stufe S2).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der EINE Weg fuer Frage und Vorschau.</b> Beide holen den Block hier, und
+        /// beide holen ihn aus der <see cref="KiMaskenbruecke"/> des Kerns — dieselbe
+        /// Quelle, aus der auf iOS der Chat liest. Ein zweiter Aufbau nur fuer die
+        /// Anzeige waere genau die Stelle, an der die Zusage „Sie sehen vorher, was
+        /// gesendet wird" unbemerkt auseinanderliefe.
+        /// </para>
+        /// <para>
+        /// <b>Der Riegel steht DOPPELT</b>, und das ist Absicht: Die Komponente zeigt
+        /// den Schalter nur mit angemeldeter Maske und schaltet ihn nur mit erteilter
+        /// Einwilligung ein — und hier wird die Einwilligung noch einmal gefragt. Sie
+        /// kann zwischen dem Anhaken und der Frage zurueckgenommen worden sein (die
+        /// Einstellungen stehen im selben Fenster), und dann darf nichts hinausgehen.
+        /// </para>
+        /// </remarks>
+        private static KiDialogdaten Feldblock(bool mitFeldwerten)
+        {
+            if (!mitFeldwerten) return null;
+            if (!KiEinwilligung.DialogdatenErteilt) return null;
+
+            KiDialogdaten daten = KiMaskenbruecke.Dialogdaten();
+            return daten != null && daten.Belegt ? daten : null;
+        }
 
         /// <summary>
         /// Das Aktionsprotokoll. Es liegt neben der Datenbank, damit Protokoll und
@@ -495,6 +538,13 @@ namespace WindowsFormsApplication1
                     ? MyResource.Resource.KI_HILFEBETRIEB_SUCHEN_BTN
                     : MyResource.Resource.KI_CHAT_BTN_SUCHEN,
                 Aktionen = MyResource.Resource.KI_AKT_SCHALTER,
+                Feldwerte = MyResource.Resource.KI_DIALOGDATEN_SCHALTER,
+                FeldwerteEin = MyResource.Resource.KI_DIALOGDATEN_EIN,
+                FeldwerteAus = MyResource.Resource.KI_DIALOGDATEN_AUS,
+                FeldwerteFehlt = KiEinwilligung.Abgeschaltet
+                    ? MyResource.Resource.KI_ABSCHALTER_MELDUNG
+                    : MyResource.Resource.KI_DIALOGDATEN_FEHLT,
+                FeldwerteGesperrt = MyResource.Resource.KI_DIALOGDATEN_GESPERRT,
                 AktionenEin = MyResource.Resource.KI_AKT_DATENSCHUTZ_EIN,
                 AktionenAus = MyResource.Resource.KI_AKT_DATENSCHUTZ_AUS,
                 EinwilligungFehlt = KiEinwilligung.Abgeschaltet

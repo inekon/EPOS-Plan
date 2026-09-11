@@ -39,6 +39,8 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -209,6 +211,27 @@
 
     /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
+
+    // =====================================================================
+    //  Der Hilfe-Assistent liest die Feldwerte (Auftrag #200, Stufe S2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>: der Getter auf
+    /// <see cref="Daten"/>, der mit dem Dialog fällt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht, entscheiden
+    /// der Schalter „Feldwerte mitsenden" im Chat und die Einwilligungsstufe
+    /// „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    protected override void OnInitialized()
+        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER, () => Daten);
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

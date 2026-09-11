@@ -71,6 +71,18 @@
 
     <Schalter Bezeichnung="@WegBText" Wert="@_wegB" WertChanged="WegBGeaendert" />
 
+    @* DIE EINWILLIGUNGSSTUFE „DIALOGDATEN" (Auftrag #200, Anwenderentscheid
+       KI-D-Q2). Sie steht HIER und nicht im Chat, weil sie zurueckgenommen werden
+       koennen muss - im Chat gibt es nur den Schalter fuer die naechste Anfrage.
+       Die Erklaerung steht UEBER dem Kaestchen und nicht dahinter: Wer einwilligt,
+       soll vorher gelesen haben, was uebertragen wird. *@
+    <div class="epos-kieinst-dialogdaten">
+        <p class="epos-kieinst-hinweis-absatz">@DialogdatenErklaerung</p>
+        <Schalter Bezeichnung="@DialogdatenText" Wert="@_dialogdaten"
+                  WertChanged="DialogdatenGeaendert" />
+        <p class="epos-kieinst-dialogdaten-stand">@DialogdatenStand</p>
+    </div>
+
     <div class="epos-kieinst-fuss">
         <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Ok">@OkText</button>
         <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
@@ -93,6 +105,13 @@
 
     /// <summary>Steht „Rueckfallweg B erzwingen"?</summary>
     [Parameter] public bool WegB { get; set; }
+
+    /// <summary>
+    /// Steht die Einwilligungsstufe „Dialogdaten" (Auftrag #200, KI‑D‑Q2)? Die Huelle
+    /// liest sie aus <c>KiEinwilligung.DialogdatenErteilt</c> und schreibt das Ergebnis
+    /// nach OK zurueck — dieser Dialog speichert wie alles andere nichts selbst.
+    /// </summary>
+    [Parameter] public bool Dialogdaten { get; set; }
 
     /// <summary>
     /// „Modell neu erkennen": nimmt den EINGETIPPTEN Schluessel entgegen, setzt ihn
@@ -136,6 +155,19 @@
     /// <summary>Beschriftung des Weg-B-Schalters (<c>KI_AKT_WEGB_EINSTELLUNG</c>).</summary>
     [Parameter] public string WegBText { get; set; } = "";
 
+    /// <summary>Beschriftung des Dialogdaten-Schalters (<c>KI_DIALOGDATEN_EINST_SCHALTER</c>).</summary>
+    [Parameter] public string DialogdatenText { get; set; } = "";
+
+    /// <summary>Was übertragen wird (<c>KI_DIALOGDATEN_EINST_ERKLAERUNG</c>).</summary>
+    [Parameter] public string DialogdatenErklaerung { get; set; } = "";
+
+    /// <summary>
+    /// Der Stand der Einwilligung, fertig formuliert — die Hülle setzt entweder
+    /// <c>KI_DIALOGDATEN_EINST_STAND</c> mit Datum und Fassung oder
+    /// <c>KI_DIALOGDATEN_EINST_OHNE</c>.
+    /// </summary>
+    [Parameter] public string DialogdatenStand { get; set; } = "";
+
     /// <summary>Beschriftung „OK" (<c>KI_EINST_BTN_OK</c>).</summary>
     [Parameter] public string OkText { get; set; } = "";
 
@@ -144,6 +176,7 @@
 
     private string _schluessel = "";
     private bool _wegB;
+    private bool _dialogdaten;
     private string _modellzeile = "";
 
     private string LimitWert => string.Format(TageslimitFormat, Tageslimit);
@@ -176,6 +209,7 @@
 
         _schluessel = Schluessel ?? "";
         _wegB = WegB;
+        _dialogdaten = Dialogdaten;
         _modellzeile = Modellzeile ?? "";
     }
 
@@ -183,6 +217,17 @@
         => _schluessel = e.Value?.ToString() ?? "";
 
     private void WegBGeaendert(bool wert) => _wegB = wert;
+
+    /// <summary>
+    /// Der Dialogdaten-Schalter fragt NICHT nach (Auftrag #200). Er ist die
+    /// Einwilligung selbst: Die Erklaerung steht unmittelbar darueber, und der Anwender
+    /// hat sie gelesen, bevor er das Kaestchen anhakt. Nachgefragt wird nur dort, wo sie
+    /// FEHLT und ploetzlich gebraucht wird - beim ersten Einschalten des Chatschalters.
+    /// </summary>
+    private void DialogdatenGeaendert(bool wert) => _dialogdaten = wert;
+
+    /// <summary>Der Stand des Dialogdaten-Schalters (Pruefhilfe fuer Tests).</summary>
+    public bool DialogdatenStandAktuell => _dialogdaten;
 
     /// <summary>
     /// Der SEITENEFFEKT vor OK (E-5): Der Delegat setzt den Schluessel und laesst
@@ -196,7 +241,8 @@
     }
 
     private Task Ok()
-        => Geschlossen.InvokeAsync(new KiEinstellungenErgebnis(_schluessel.Trim(), _wegB));
+        => Geschlossen.InvokeAsync(new KiEinstellungenErgebnis(_schluessel.Trim(), _wegB,
+                                                               _dialogdaten));
 
     private Task Abbrechen() => Geschlossen.InvokeAsync(null);
 }

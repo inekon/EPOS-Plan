@@ -128,8 +128,31 @@
                        Kaestchen angehakt. Der Vorlaeufer setzte _chkAktionen.Checked
                        einfach zurueck (Form_KiChat:824-826); hier wird der Schalter neu
                        aufgebaut. *@
-                    <Schalter @key="_schalterfassung" Bezeichnung="@Texte.Aktionen"
+                    <Schalter @key="AktionenSchluessel"
+                              Bezeichnung="@Texte.Aktionen"
                               Wert="@_aktionen" WertChanged="AktionenGeaendert" />
+
+                    @* "FELDWERTE MITSENDEN" (Auftrag #200, Stufe S2). Der Schalter
+                       erscheint NUR, wenn gerade eine Maske angemeldet ist - ohne offene
+                       Maske gaebe es nichts mitzusenden, und ein wirkungsloser Schalter
+                       ist schlechter als keiner. Dieselbe Bauart mit @key wie oben: Eine
+                       abgelehnte Einwilligung muss das Kaestchen zuruecknehmen. *@
+                    @if (FeldwerteMoeglich)
+                    {
+                        <Schalter @key="FeldwerteSchluessel"
+                                  Bezeichnung="@Texte.Feldwerte"
+                                  Wert="@_feldwerte" Aktiv="@(!FeldwerteGesperrt)"
+                                  WertChanged="FeldwerteGeaendert" />
+
+                        @if (FeldwerteGesperrt && !string.IsNullOrEmpty(Texte.FeldwerteGesperrt))
+                        {
+                            @* Der GRUND steht sichtbar daneben und nicht in einem
+                               title-Merkmal: Ein gesperrtes Kaestchen nimmt keine
+                               Zeigerereignisse an, sein Tooltip erschiene nie
+                               (Hausregel EPOS.UI/CLAUDE.md). *@
+                            <span class="epos-kichat-feldwerte-grund">@Texte.FeldwerteGesperrt</span>
+                        }
+                    }
                 }
             </Vorspann>
             <Zusatzknoepfe>
@@ -280,14 +303,55 @@
     //  Die vier Wege nach draussen (§ 15.3)
     // =====================================================================
 
-    /// <summary>Frage mit Modell; liefert die Zeilen, die anzuhaengen sind.</summary>
-    [Parameter] public Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>? Fragen { get; set; }
+    /// <summary>
+    /// Frage mit Modell; liefert die Zeilen, die anzuhaengen sind.
+    /// </summary>
+    /// <remarks>
+    /// Die drei Angaben sind <c>frage</c>, <c>mitAktionen</c> und — seit Auftrag #200 —
+    /// <c>mitFeldwerten</c>. <b>Die Komponente entscheidet nur das OB</b>: WAS der
+    /// Feldblock enthält, holt die Hülle aus der <c>KiMaskenbruecke</c> des Kerns, damit
+    /// Vorschau, Anfrage und Protokollzeile aus derselben Quelle stammen.
+    /// </remarks>
+    [Parameter] public Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>? Fragen { get; set; }
 
     /// <summary>Suche ohne Modell (Wiki + Einbauwissen).</summary>
     [Parameter] public Func<string, Task<IReadOnlyList<Gespraechszeile>>>? Suchen { get; set; }
 
     /// <summary>Einwilligung sicherstellen — zeigt notfalls den Rechtshinweis.</summary>
     [Parameter] public Func<Task<bool>>? Einwilligen { get; set; }
+
+    // ---- „Feldwerte mitsenden" (Auftrag #200, Stufe S2, Weg 4) -------------
+
+    /// <summary>
+    /// Die FELDWERTE der gerade offenen Maske — oder <c>null</c>, wenn keine angemeldet
+    /// ist. Ohne diesen Delegaten gibt es den Schalter nicht.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Ein Delegat und kein Wert</b>, weil das Chatfenster unter Windows STEHT,
+    /// während der Anwender Dialoge öffnet und schließt: Ein beim Öffnen abgeholter
+    /// Block zeigte die Maske von vorhin. Gefragt wird bei jedem Zeichenlauf und vor
+    /// jeder Anfrage.
+    /// </para>
+    /// <para>
+    /// <b>Die Hülle holt ihn aus dem KERN</b> (<c>KiMaskenbruecke.Dialogdaten</c>) —
+    /// dieselbe Funktion, aus der auch die Werkzeugaktion <c>dialog_lesen</c> liest.
+    /// Diese Komponente kennt die Brücke nicht; sie entscheidet nur das OB.
+    /// </para>
+    /// </remarks>
+    [Parameter] public Func<WindowsFormsApplication1.KiDialogdaten?>? Feldwerte { get; set; }
+
+    /// <summary>
+    /// Die Einwilligungsstufe „Dialogdaten" sicherstellen (KI‑D‑Q2) — gefragt wird
+    /// EINMAL, beim ersten Einschalten des Schalters.
+    /// </summary>
+    [Parameter] public Func<Task<bool>>? FeldwerteEinwilligen { get; set; }
+
+    /// <summary>
+    /// Lässt sich die Einwilligung hier nicht einholen? Dann bleibt der Schalter aus
+    /// und gesperrt, und der Grund steht sichtbar daneben.
+    /// </summary>
+    [Parameter] public bool FeldwerteGesperrt { get; set; }
 
     /// <summary>Aktion von Hand ausfuehren.</summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>,
@@ -297,8 +361,12 @@
     //  Die vier Nebenwege (§ 15.3)
     // =====================================================================
 
-    /// <summary>„Was wird gesendet?" — der vollstaendige Anfragerumpf.</summary>
-    [Parameter] public Func<Task<string>>? Vorschau { get; set; }
+    /// <summary>
+    /// „Was wird gesendet?" — der vollstaendige Anfragerumpf. Der Schalterstand
+    /// „Feldwerte mitsenden" geht mit hinein (Auftrag #200), damit die Vorschau den
+    /// Feldblock WOERTLICH zeigt, statt ihn zu verschweigen.
+    /// </summary>
+    [Parameter] public Func<bool, Task<string>>? Vorschau { get; set; }
 
     /// <summary>Das Aktionsprotokoll (Datei lesen).</summary>
     [Parameter] public Func<Task<string>>? Protokoll { get; set; }
@@ -407,6 +475,32 @@
     private bool _beschaeftigt;
     private bool _aktionen;
     private int _schalterfassung;
+
+    /// <summary>Steht „Feldwerte mitsenden"? (Auftrag #200, Stufe S2)</summary>
+    private bool _feldwerte;
+
+    /// <summary>Fassungsnummer des Feldwerteschalters — siehe <see cref="_schalterfassung"/>.</summary>
+    private int _feldfassung;
+
+    /// <summary>
+    /// Der Schlüssel des Aktionsschalters im Vorspann: Name plus Fassungsnummer.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Name muss mit hinein.</b> Seit Auftrag #200 stehen im Vorspann ZWEI
+    /// Schalter nebeneinander, und beide Fassungsnummern beginnen bei 0 — eine blanke
+    /// Zahl als <c>@@key</c> wäre damit zweimal dieselbe, und Blazor bricht mit „More
+    /// than one sibling has the same key value" ab. Der Schlüssel ist ein Text, weil
+    /// zwei gleiche Werte gleich SEIN müssen (ein Tupel-Objekt wäre je Zeichenlauf ein
+    /// neues und würde beide Schalter jedes Mal neu aufbauen).
+    /// </remarks>
+    private string AktionenSchluessel => "aktionen-" + Zahl(_schalterfassung);
+
+    /// <summary>Der Schlüssel des Feldwerteschalters.</summary>
+    private string FeldwerteSchluessel => "feldwerte-" + Zahl(_feldfassung);
+
+    private static string Zahl(int n)
+        => n.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     private string _status = "";
     private string _semantik = "";
     private Bereich _bereich = Bereich.Keiner;
@@ -626,8 +720,13 @@
 
         try
         {
+            // Der Feldblock geht NUR mit, wenn der Schalter steht UND eine Maske
+            // angemeldet ist: Der Schalter kann aus einem Dialog heraus angehakt worden
+            // sein, der inzwischen geschlossen ist.
+            bool mitFeldwerten = _feldwerte && FeldwerteMoeglich;
+
             IReadOnlyList<Gespraechszeile>? antwort = mitKi
-                ? (Fragen is null ? null : await Fragen(frage, _aktionen))
+                ? (Fragen is null ? null : await Fragen(frage, _aktionen, mitFeldwerten))
                 : (Suchen is null ? null : await Suchen(frage));
 
             Anhaengen(antwort);
@@ -682,6 +781,56 @@
         {
             new Gespraechszeile(Gespraechsrolle.AssistentKopf,
                                 wert ? Texte.AktionenEin : Texte.AktionenAus)
+        });
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    //  Der Schalter „Feldwerte mitsenden" (Auftrag #200, Stufe S2, Weg 4)
+    // =====================================================================
+
+    /// <summary>
+    /// Ist gerade eine Maske des Dialogkatalogs angemeldet? Nur dann gibt es den
+    /// Schalter. (Prüfhilfe für Tests.)
+    /// </summary>
+    /// <remarks>
+    /// Beides muss stimmen: ein Weg zu den Werten (den die Hülle aus
+    /// <c>KiMaskenbruecke</c> legt) UND eine Maske, die gerade etwas zu sagen hat. Ein
+    /// Schalter ohne offene Maske wäre wirkungslos, und ein wirkungsloser Schalter ist
+    /// schlechter als keiner.
+    /// </remarks>
+    public bool FeldwerteMoeglich
+        => !HilfeBetrieb && Feldwerte is not null && Feldwerte() is { Belegt: true };
+
+    /// <summary>Steht der Schalter? (Prüfhilfe für Tests.)</summary>
+    public bool FeldwerteStehen => _feldwerte;
+
+    /// <summary>
+    /// Beim EINschalten wird die Einwilligungsstufe „Dialogdaten" sichergestellt —
+    /// einmal je Installation (KI‑D‑Q2). Ohne sie bleibt der Schalter aus, und der
+    /// Verlauf sagt warum.
+    /// </summary>
+    /// <remarks>
+    /// Derselbe Ablauf wie beim Aktionsschalter, und aus demselben Grund: Der Riegel
+    /// liegt im Kern, VOR dem Modellkanal (Regel S‑4). Diese Komponente nimmt ihn nicht
+    /// vorweg — sie fragt ihn und richtet sich nach der Antwort.
+    /// </remarks>
+    private async Task FeldwerteGeaendert(bool wert)
+    {
+        if (wert && (FeldwerteEinwilligen is null || !await FeldwerteEinwilligen()))
+        {
+            _feldwerte = false;
+            _feldfassung++;
+            Anhaengen(new[] { new Gespraechszeile(Gespraechsrolle.Fehler, Texte.FeldwerteFehlt) });
+            StateHasChanged();
+            return;
+        }
+
+        _feldwerte = wert;
+        Anhaengen(new[]
+        {
+            new Gespraechszeile(Gespraechsrolle.AssistentKopf,
+                                wert ? Texte.FeldwerteEin : Texte.FeldwerteAus)
         });
         StateHasChanged();
     }

@@ -37,6 +37,17 @@ namespace WindowsFormsApplication1
     /// und liesse sich nicht darauf festnageln, WAS sie veraendert hat; sie ist damit weder
     /// vorschaufaehig noch protokollierbar.
     /// </para>
+    /// <para>
+    /// <b>Seit Auftrag #200 traegt diese Klasse nur noch den SETZWEG</b> (Stufe S3,
+    /// Auftrag #201). Das LESEN laeuft ueber die <see cref="KiMaskenbruecke"/> des Kerns:
+    /// Die vier Masken sind seit iU9 Razor-Komponenten, <c>Application.OpenForms</c>
+    /// fuehrt sie nicht mehr, und der Eigenschaftspfad eines Katalogfeldes
+    /// (<c>HeizkesselKatalogDaten.Ptherm</c>) loest hier folgerichtig kein Control mehr
+    /// auf. Die Feldwege, die das noch versuchen — <c>feld_setzen</c>,
+    /// <c>formular_ausfuellen</c>, <c>dialog_aktion_ausfuehren</c> —, lehnen deshalb im
+    /// Klartext ab, bis S3 sie auf die Bruecke umstellt; sie taten es schon vorher, nur
+    /// ohne dass es jemand aufgeschrieben haette.
+    /// </para>
     /// </remarks>
     internal static class KiDialogZugriff
     {
@@ -313,7 +324,7 @@ namespace WindowsFormsApplication1
         {
             if (steuerelement == null)
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ControlFehlt,
-                                     feld.Anzeigename, feld.Controlpfad);
+                                     feld.Anzeigename, feld.Eigenschaftspfad);
 
             if (Fremder(steuerelement))
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FalscherThread,

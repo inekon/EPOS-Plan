@@ -905,6 +905,30 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Haengt eine FERTIGE Protokollzeile an die Datei (Auftrag #200).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der einzige Weg von aussen in diese Datei — und er nimmt nur ZEILEN, keine
+        /// Freitexte.</b> Gebaut wird die Zeile im Kern
+        /// (<see cref="KiMaskenbruecke.Vermerken"/>) ueber <c>KiProtokoll.Zeile</c>, also
+        /// im selben Format wie jeder Ausfuehrungsversuch (Fachkonzept 3.6). Waere hier
+        /// ein Freitext moeglich, zerstoerte die erste solche Zeile das Format, das der
+        /// Leser erwartet.
+        /// </para>
+        /// <para>
+        /// <b>Warum der Kern die Zeile baut und nicht diese Huelle.</b> iOS hat keine
+        /// Huelle, die es koennte — und zwei Erzeugungsstellen fuer dieselbe Zeile waeren
+        /// zwei Formate.
+        /// </para>
+        /// </remarks>
+        public static void ProtokollzeileAnhaengen(string zeile)
+        {
+            if (string.IsNullOrEmpty(zeile)) return;
+            Schreibe(zeile);
+        }
+
         /// <summary>Pfad der Protokolldatei - neben der Datenbank (Fachkonzept 3.6).</summary>
         public static string ProtokollPfad()
         {
