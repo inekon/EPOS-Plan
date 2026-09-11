@@ -421,8 +421,9 @@ Tagesminimum.
 `:root`, es gibt keine CSS-Verschachtelung.
 
 **Was NICHT in diesem Paket steckt:** die Größen-Sicht mit Rasterkarte und Schnittkurve
-(P4, #193) — im Ergebnisblatt steht dafür die Marke `@* P4: SpeicherFlottenGroessenAnsicht
-(#193) *@`.
+(P4, #193) — im Ergebnisblatt stand dafür die Marke `@* P4: SpeicherFlottenGroessenAnsicht
+(#193) *@`; an ihrer Stelle steht seit **#196** der Baustein selbst (Abschnitt „Einbindung in
+die Ansicht").
 
 ## Größen-Sicht der Flotte (P4, #193)
 
@@ -488,9 +489,53 @@ KandidatUebernehmen`). **Gefiltert wird VOR der Tabelle** (W14a‑E‑10): Profi
 für die Kandidaten Zahlenausdruck (`>10`, `10..60`), Verknüpfung und Sortierzyklus der fünfzehn
 Katalogwirte.
 
-**Eingehängt ist der Baustein noch nicht** — die freie Ansicht `STROMSPEICHER_AUSLEGUNG` baut
-Paket P3 parallel; die Einbindung folgt nach beiden Merges. Die Verfeinerung um interessante
-Kandidaten (Spezifikation 12.2, „Feinraster") bleibt Paket P5.
+Die Verfeinerung um interessante Kandidaten (Spezifikation 12.2, „Feinraster") bleibt Paket P5.
+
+### Einbindung in die Ansicht (#196)
+
+Seit dem 11.09.2026 steht der Baustein dort, wofür er gebaut wurde: in **Schritt 5 der Ansicht
+`STROMSPEICHER_AUSLEGUNG`**, und zwar **vor** der Ergebnisansicht — so verlangt es Konzept 2.5
+(„Rasterkarte und Schnittkurve vor der Kandidatentabelle"). Bedingung ist das
+**Rastersuchergebnis** (`SpeicherFlottenErgebnis.Auslegung`) und nicht der Schalter „Größen
+optimieren": Der Schalter sagt, was der NÄCHSTE Lauf tut; abgeschaltet nach einem Suchlauf
+verschwände die Karte, die gerade entstanden ist. Den Weg dorthin nimmt das Rastersuchergebnis
+ohne Umweg — `StromspeicherAuslegungCtrl.FlotteRechnen` reicht es als Feld `Auslegung` des
+`SpeicherFlottenErgebnis` an die Seite, die es in `_flottenErgebnis` hält; es gibt keinen zweiten
+Kanal und keine zweite Abfrage.
+
+**Mit der Einbindung fällt die einfache Kandidatentabelle** der `SpeicherFlottenErgebnisAnsicht`
+(Texttabelle, höchstens 50 Zeilen, ohne Betriebskennzahlen). Zwei Tabellen derselben Kandidaten
+wären zwei Wahrheiten — die eine schneidet ab, die andere filtert, und der Anwender sähe nicht,
+welche seine Frage beantwortet. Mitgewandert sind die **Empfehlung** des Laufs
+(`FLOTTE_EMPF_BESTE` / `…_KEINE_ZULAESSIGE`, den Fall „Nullvariante" trug die Größen-Sicht schon)
+und der **CSV-Export** des Variantenvergleichs; den Text baut weiterhin
+`SpeicherFlottenAnzeigeCtrl.VergleichCsv` beim Wirt, weil er den ganzen Flottenlauf braucht und
+nicht nur das Rasterergebnis.
+
+**„Kandidat übernehmen" geht den Weg, den `BesteKonfiguration` seit jeher nimmt.** Beide Knöpfe
+laufen über dieselbe Stelle der Seite (`FlotteSetzen`): Suchachsen leeren, Suchlauf abschalten,
+Schritt 5 als **veraltet** markieren; danach steht die Ansicht auf Schritt 1 und meldet im Banner
+„Kandidat … übernommen — Flotte neu bewerten". Woher die Konfiguration kommt, entscheidet der
+**Kern**: `SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(ergebnis, arbeitsstand, kandidat)`
+gibt für den **besten** Kandidaten die `BesteKonfiguration` des Optimierers zurück — keine zweite
+Wahrheit für die Optimum-Zeile — und bildet jeden anderen **zurück**: Kapazität, Lade- und
+Entladeleistung je Einheit aus `FlottenKandidatEinheit`, das Betriebsziel aus dem Kandidaten,
+alles Übrige (Wirkungsgrade, SoC-Band, Kosten, Wirtschaftlichkeit) unverändert aus dem
+Arbeitsstand. Vorlage einer Einheit ist die gleichnamige Einheit des Arbeitsstands, sonst die
+Vorlage der ersten aktiven Suchachse — die Rastersuche ERSETZT Einheiten durch Abwandlungen ihrer
+Vorlage, und deren erzeugte Kennungen stehen im Kandidaten. Die Liste
+`Wirtschaftlichkeit.Einheiten` zieht mit, sonst rechnete der nächste Lauf die Kosten der alten
+Größen.
+
+**Ungespeicherte Eingaben werden vorher abgefragt** (Muster 62b‑E‑1): Speichern / Verwerfen /
+Bleiben, Esc heißt „Bleiben". Der Kandidat ersetzt die Speicher in Schritt 1, und das ist nicht
+rückgängig zu machen.
+
+**Die iOS-Hülle bindet seither `epos-flotte.css` ein** (`EPOS.iOS/wwwroot/index.html`). Das Blatt
+trägt seit P2 die Flottenstile und seit P3/P4 Diagnosebanner, Peak-Ziel und Größen-Sicht; die
+Windows-Hülle bindet es seit #184 ein, die iOS-Hülle nicht — die Ansicht hätte auf dem iPad
+ungestaltet dagestanden. **Der Beleg dafür steht aus**: Er braucht einen iOS-Lauf (Lauf 42), und
+den löst nach der Regel vom 09.09.2026 der Anwender aus.
 
 **Der Referenzlauf ist unberührt:** Die Rastersuche liegt nicht im Projektlauf, und die neuen
 Felder ändern keinen Rechenwert (1030 und 1046 byte-gleich gegen

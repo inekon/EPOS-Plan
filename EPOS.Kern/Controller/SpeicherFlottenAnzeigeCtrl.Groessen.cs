@@ -416,6 +416,97 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     };
 
     // =====================================================================
+    //  „Kandidat übernehmen" — vom Kandidaten zurück zur Flottenkonfiguration
+    // =====================================================================
+
+    /// <summary>
+    /// Baut aus EINEM Kandidaten der Rastersuche die Flottenkonfiguration, die der
+    /// Anwender damit übernimmt (Auftrag #196, Konzept „Stromspeicher-Dialoge" 2.5:
+    /// „Kandidat übernehmen" je Zeile).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Für den BESTEN Kandidaten wird nichts gebaut.</b> Der
+    /// <c>FlottenOptimierer</c> hat dessen Konfiguration selbst gebildet und legt sie als
+    /// <see cref="FlottenAuslegungErgebnis.BesteKonfiguration"/> bei — sie wird genommen.
+    /// Das ist derselbe Weg, den der Knopf „Beste Flotte übernehmen" seit jeher geht; für
+    /// die Optimum-Zeile der Kandidatentabelle darf es keine zweite Wahrheit geben.</para>
+    /// <para><b>Für jeden anderen Kandidaten ist es eine RÜCKABBILDUNG, keine zweite
+    /// Rastersuche.</b> Der Kandidat trägt seine Größen je Einheit
+    /// (<see cref="FlottenKandidatEinheit"/>) und sein Betriebsziel; alles Übrige —
+    /// Wirkungsgrade, SoC-Band, Kosten, Wirtschaftlichkeit, Betriebsoptionen — kommt
+    /// unverändert aus dem Arbeitsstand. Als Vorlage EINER Einheit dient die Einheit
+    /// gleicher Kennung, sonst die Vorlage der ersten aktiven Suchachse, sonst die erste
+    /// Einheit des Arbeitsstands: Die Rastersuche ERSETZT Einheiten durch Abwandlungen
+    /// ihrer Vorlage (<c>FlottenOptimierer.BildeAchse</c>), und genau deren Kennungen
+    /// stehen im Kandidaten.</para>
+    /// <para><b>Die Wirtschaftlichkeitsliste wird mitgezogen.</b>
+    /// <c>FlottenWirtschaftlichkeitEingang.Einheiten</c> trägt Investition, Betrieb,
+    /// Ersatz und Restwert; der Optimierer spiegelt sie je Kandidat, und der
+    /// <c>SpeicherFlottenEditor</c> tut dasselbe bei jeder Änderung. Bliebe sie hier
+    /// stehen, rechnete der nächste Lauf die Kosten der ALTEN Größen.</para>
+    /// <para>Die <b>Suchachsen</b> bleiben unberührt — ob sie nach der Übernahme geleert
+    /// werden, entscheidet der Aufrufer; der Weg „Beste Flotte übernehmen" tut es.</para>
+    /// </remarks>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche; <c>null</c> = kein Optimum bekannt.</param>
+    /// <param name="arbeitsstand">Die Flotte, wie sie in Schritt 1 steht; <c>null</c> = leer.</param>
+    /// <param name="kandidat">Der gewählte Kandidat.</param>
+    /// <returns>Die neue Konfiguration; <c>null</c>, wenn kein Kandidat vorliegt.</returns>
+    public static FlottenStudieKonfiguration KandidatKonfiguration(
+        FlottenAuslegungErgebnis ergebnis,
+        FlottenStudieKonfiguration arbeitsstand,
+        FlottenKandidatZusammenfassung kandidat)
+    {
+        if (kandidat == null) return null;
+
+        if (ergebnis != null && ReferenceEquals(kandidat, ergebnis.BesterKandidat) &&
+            ergebnis.BesteKonfiguration != null)
+            return SpeicherAuslegungKopie.Von(ergebnis.BesteKonfiguration);
+
+        FlottenStudieKonfiguration ziel =
+            SpeicherAuslegungKopie.Von(arbeitsstand) ?? new FlottenStudieKonfiguration();
+        ziel.Einheiten ??= new List<FlottenEinheit>();
+        ziel.Optionen ??= new FlottenSimulationOptionen();
+        ziel.Wirtschaftlichkeit ??= new FlottenWirtschaftlichkeitEingang();
+        ziel.Auslegung ??= new FlottenAuslegungEingang();
+
+        ziel.Optionen.Betriebsziel = kandidat.Betriebsziel;
+
+        var neue = new List<FlottenEinheit>(kandidat.Einheiten?.Count ?? 0);
+        foreach (FlottenKandidatEinheit teil in kandidat.Einheiten ?? new List<FlottenKandidatEinheit>())
+        {
+            FlottenEinheit einheit = SpeicherAuslegungKopie.Von(Einheitenvorlage(ziel, teil.Id))
+                                     ?? new FlottenEinheit();
+            einheit.Id = teil.Id;
+            if (string.IsNullOrWhiteSpace(einheit.Name)) einheit.Name = teil.Id;
+            einheit.KapazitaetKWh = teil.KapazitaetKWh;
+            einheit.LadeleistungKw = teil.LadeleistungKw;
+            einheit.EntladeleistungKw = teil.EntladeleistungKw;
+            neue.Add(einheit);
+        }
+
+        ziel.Einheiten = neue;
+        ziel.Wirtschaftlichkeit.Einheiten =
+            neue.Select(x => SpeicherAuslegungKopie.Von(x)).ToList();
+        return ziel;
+    }
+
+    /// <summary>
+    /// Die Vorlage für EINE Einheit des Kandidaten: die gleichnamige Einheit des
+    /// Arbeitsstands, sonst die Vorlage der ersten aktiven Suchachse, sonst die erste
+    /// Einheit. <c>null</c>, wenn es nichts davon gibt.
+    /// </summary>
+    private static FlottenEinheit Einheitenvorlage(FlottenStudieKonfiguration stand, string id)
+    {
+        FlottenEinheit gleich = stand.Einheiten
+            .FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.Ordinal));
+        if (gleich != null) return gleich;
+
+        FlottenEinheit vorlage = stand.Auslegung?.Achsen?
+            .FirstOrDefault(a => a.Aktiv && a.Vorlage != null)?.Vorlage;
+        return vorlage ?? stand.Einheiten.FirstOrDefault();
+    }
+
+    // =====================================================================
     //  Innenleben
     // =====================================================================
 

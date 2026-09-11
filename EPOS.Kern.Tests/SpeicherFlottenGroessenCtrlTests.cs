@@ -397,6 +397,161 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4000.0, sortiert[0].Zahl(SpeicherFlottenAnzeigeCtrl.SP_KAPITALWERT));
         }
 
+        // =================================================================
+        //  „Kandidat übernehmen" — die Rückabbildung (Auftrag #196)
+        // =================================================================
+
+        /// <summary>
+        /// Für den BESTEN Kandidaten wird nichts gebaut: Der Optimierer hat dessen
+        /// Konfiguration selbst gebildet und legt sie bei — sie wird genommen, damit die
+        /// Optimum-Zeile denselben Stand liefert wie „Beste Flotte übernehmen".
+        /// </summary>
+        [Fact]
+        public void Der_beste_Kandidat_liefert_die_Konfiguration_des_Optimierers()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            ergebnis.BesteKonfiguration = new FlottenStudieKonfiguration
+            {
+                Einheiten = { new FlottenEinheit { Id = "vom-Optimierer", KapazitaetKWh = 42 } }
+            };
+
+            FlottenStudieKonfiguration neu = SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(
+                ergebnis, Arbeitsstand(), ergebnis.BesterKandidat);
+
+            Assert.Equal("vom-Optimierer", Assert.Single(neu.Einheiten).Id);
+            Assert.Equal(42.0, neu.Einheiten[0].KapazitaetKWh, 9);
+
+            // Es ist eine KOPIE: Wer sie ändert, ändert das Laufergebnis nicht.
+            neu.Einheiten[0].KapazitaetKWh = 1;
+            Assert.Equal(42.0, ergebnis.BesteKonfiguration.Einheiten[0].KapazitaetKWh, 9);
+        }
+
+        /// <summary>
+        /// Jeder ANDERE Kandidat wird zurückabgebildet: Größen und Betriebsziel kommen
+        /// aus dem Kandidaten, alles Übrige — Wirkungsgrade, SoC-Band, Wirtschaftlichkeit —
+        /// unverändert aus dem Arbeitsstand.
+        /// </summary>
+        [Fact]
+        public void Ein_anderer_Kandidat_bekommt_seine_Groessen_und_den_Rest_des_Arbeitsstands()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-30-0,5");
+
+            FlottenStudieKonfiguration neu = SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(
+                ergebnis, Arbeitsstand(), kandidat);
+
+            FlottenEinheit einheit = Assert.Single(neu.Einheiten);
+            Assert.Equal("A", einheit.Id);
+            Assert.Equal(30.0, einheit.KapazitaetKWh, 9);
+            Assert.Equal(15.0, einheit.EntladeleistungKw, 9);
+
+            // Der Rest der Einheit stammt aus dem Arbeitsstand.
+            Assert.Equal("Speicher A", einheit.Name);
+            Assert.Equal(0.97, einheit.Ladewirkungsgrad, 9);
+            Assert.Equal(0.15, einheit.SocMin, 9);
+
+            // Und der Rest der Konfiguration ebenso.
+            Assert.Equal(FlottenBetriebsziel.PeakShaving, neu.Optionen.Betriebsziel);
+            Assert.Equal(7, neu.Wirtschaftlichkeit.ProjektjahreBeiWiederholung);
+        }
+
+        /// <summary>
+        /// Das BETRIEBSZIEL des Kandidaten schlägt das des Arbeitsstands — die
+        /// Rastersuche fährt je Ziel eigene Kandidaten, und wer einen davon übernimmt,
+        /// übernimmt sein Ziel mit.
+        /// </summary>
+        [Fact]
+        public void Das_Betriebsziel_kommt_aus_dem_Kandidaten()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-10-1,0-PV");
+
+            FlottenStudieKonfiguration neu = SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(
+                ergebnis, Arbeitsstand(), kandidat);
+
+            Assert.Equal(FlottenBetriebsziel.PvGreedy, neu.Optionen.Betriebsziel);
+        }
+
+        /// <summary>
+        /// Die Wirtschaftlichkeitsliste zieht mit: Sie trägt Investition, Betrieb, Ersatz
+        /// und Restwert. Bliebe sie stehen, rechnete der nächste Lauf die Kosten der
+        /// ALTEN Größen.
+        /// </summary>
+        [Fact]
+        public void Die_Wirtschaftlichkeitsliste_traegt_die_neuen_Groessen()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-30-0,5");
+
+            FlottenStudieKonfiguration neu = SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(
+                ergebnis, Arbeitsstand(), kandidat);
+
+            Assert.Equal(30.0, Assert.Single(neu.Wirtschaftlichkeit.Einheiten).KapazitaetKWh, 9);
+        }
+
+        /// <summary>
+        /// Eine Einheit, die der Arbeitsstand NICHT kennt (die Rastersuche erzeugt sie aus
+        /// der Achsenvorlage), bekommt genau diese Vorlage — und ihre Kennung aus dem
+        /// Kandidaten.
+        /// </summary>
+        [Fact]
+        public void Eine_erzeugte_Einheit_nimmt_die_Vorlage_der_Suchachse()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-20-0,5");
+            kandidat.Einheiten[0].Id = "A-A1-N1";
+
+            FlottenStudieKonfiguration stand = Arbeitsstand();
+            stand.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+            {
+                Aktiv = true,
+                Vorlage = new FlottenEinheit
+                {
+                    Id = "A", Name = "Vorlage", Ladewirkungsgrad = 0.5, SocMin = 0.25
+                }
+            });
+
+            FlottenStudieKonfiguration neu =
+                SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(ergebnis, stand, kandidat);
+
+            FlottenEinheit einheit = Assert.Single(neu.Einheiten);
+            Assert.Equal("A-A1-N1", einheit.Id);
+            Assert.Equal("Vorlage", einheit.Name);
+            Assert.Equal(0.5, einheit.Ladewirkungsgrad, 9);
+            Assert.Equal(0.25, einheit.SocMin, 9);
+            Assert.Equal(20.0, einheit.KapazitaetKWh, 9);
+        }
+
+        /// <summary>Ohne Kandidat gibt es nichts zu übernehmen.</summary>
+        [Fact]
+        public void Ohne_Kandidat_kommt_keine_Konfiguration()
+            => Assert.Null(SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(
+                Ergebnis(), Arbeitsstand(), null));
+
+        /// <summary>Der Arbeitsstand, den die Rückabbildung als Vorlage benutzt.</summary>
+        private static FlottenStudieKonfiguration Arbeitsstand() => new()
+        {
+            Einheiten =
+            {
+                new FlottenEinheit
+                {
+                    Id = "A", Name = "Speicher A", KapazitaetKWh = 5,
+                    LadeleistungKw = 2, EntladeleistungKw = 2,
+                    Ladewirkungsgrad = 0.97, Entladewirkungsgrad = 0.96,
+                    SocMin = 0.15, SocStart = 0.2, SocMax = 0.95
+                }
+            },
+            Optionen = new FlottenSimulationOptionen { Betriebsziel = FlottenBetriebsziel.MultiUse },
+            Wirtschaftlichkeit = new FlottenWirtschaftlichkeitEingang
+            {
+                ProjektjahreBeiWiederholung = 7
+            }
+        };
+
         // ================================================================= Prüfstand
 
         /// <summary>

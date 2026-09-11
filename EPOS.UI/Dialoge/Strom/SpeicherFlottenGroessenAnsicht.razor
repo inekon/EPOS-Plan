@@ -35,9 +35,13 @@
    SP-O-4 STEHT ZWEIMAL: als Fusszeile IM Bild (es wird exportiert) und als
    Hinweiszeile darueber, zusammen mit der Aussage des Laufs.
 
-   DIESER BAUSTEIN WIRD NOCH NIRGENDS EINGEHAENGT. Paket P3 (#192) baut die
-   freie Ansicht STROMSPEICHER_AUSLEGUNG und laesst in Schritt 5 die Markierung
-   stehen; die Einbindung folgt nach beiden Merges. *@
+   EINGEHAENGT SEIT AUFTRAG #196: Schritt 5 der Ansicht STROMSPEICHER_AUSLEGUNG
+   (Seiten/Strom/StromspeicherAuslegungSeite.razor) zeigt ihn, sobald ein
+   Rastersuchergebnis vorliegt — VOR der Ergebnisansicht, wie Konzept 2.5 es
+   verlangt. Mit der Einbindung ist die einfache Kandidatentabelle der
+   SpeicherFlottenErgebnisAnsicht gefallen: zwei Tabellen derselben Kandidaten
+   waeren zwei Wahrheiten. Mitgewandert sind die Empfehlung des Laufs und der
+   CSV-Export des Variantenvergleichs. *@
 
 @namespace EPOS.UI.Dialoge.Strom
 @using System.Globalization
@@ -60,6 +64,14 @@
         @if (Ergebnis.NullvarianteGewonnen)
         {
             <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_EMPF_NULLVARIANTE" />
+        }
+        else
+        {
+            @* DIE EMPFEHLUNG in einem Satz (bis #196 die Ueberschrift der einfachen
+               Kandidatentabelle in der Ergebnisansicht). Sie steht jetzt HIER, weil
+               die Tabelle hier steht — eine Empfehlung ohne die Varianten, auf die
+               sie sich beruft, haette keinen Ort mehr. *@
+            <p class="epos-flotte-hinweis">@Empfehlung</p>
         }
 
         @* ---------------------------------------------------------------- *@
@@ -249,6 +261,20 @@
         {
             <p class="epos-katalog-leer">@Resource.FLOTTE_GROESSEN_KEIN_TREFFER</p>
         }
+
+        @if (Csv.HasDelegate)
+        {
+            @* Der CSV-Export fuehrt ALLE Kandidaten, nicht die gefilterten: Der Filter
+               ist eine Lesehilfe fuer die Tabelle, die Datei eine Ausleitung des Laufs.
+               Den TEXT baut der Wirt (SpeicherFlottenAnzeigeCtrl.VergleichCsv braucht
+               den ganzen Flottenlauf, nicht nur das Rasterergebnis) — hier steht nur
+               der Knopf, und ohne Delegat steht auch der nicht. *@
+            <div class="epos-simerg-schalter">
+                <button type="button" class="epos-simerg-knopf" @onclick="@(() => Csv.InvokeAsync())">
+                    @Resource.FLOTTE_BTN_CSV_VERGLEICH
+                </button>
+            </div>
+        }
     }
 </div>
 
@@ -267,6 +293,13 @@
     /// bleiben die Knöpfe gesperrt (Hausregel „kein Delegat, kein Bedienelement").
     /// </summary>
     [Parameter] public EventCallback<FlottenKandidatZusammenfassung> KandidatUebernehmen { get; set; }
+
+    /// <summary>
+    /// „Variantenvergleich als CSV" — der Wirt schreibt die Datei. Ohne Delegat kein
+    /// Knopf (Hausregel „kein Delegat, kein Bedienelement"); der Text entsteht beim
+    /// Wirt, weil er den ganzen Flottenlauf kennt und nicht nur das Rasterergebnis.
+    /// </summary>
+    [Parameter] public EventCallback Csv { get; set; }
 
     // --- Prüfhilfen der Tests -------------------------------------------------
 
@@ -410,6 +443,17 @@
 
     private static double Achsenwert(IReadOnlyList<double> achse, int stelle)
         => stelle >= 0 && stelle < achse.Count ? achse[stelle] : double.NaN;
+
+    /// <summary>
+    /// Die Empfehlung des Laufs in einem Satz — dieselben drei Ressourcen, die bis #196
+    /// die Überschrift der einfachen Kandidatentabelle trugen. Den Fall
+    /// <c>NullvarianteGewonnen</c> nimmt das Markup selbst (als Warnbanner), den Fall
+    /// „kein Ergebnis" gibt es hier nicht: Ohne <c>Ergebnis</c> zeichnet der Baustein
+    /// seinen Leersatz und kommt gar nicht bis hierher.
+    /// </summary>
+    private string Empfehlung => Ergebnis?.BesterKandidat?.Zulaessig == true
+        ? Resource.FLOTTE_EMPF_BESTE
+        : Resource.FLOTTE_EMPF_KEINE_ZULAESSIGE;
 
     private string CRatentext => string.Format(Kultur, Resource.FLOTTE_GROESSEN_WERT_CRATE,
         Zahl(Achsenwert(_raster.CRaten, _spalte), "0.###"));

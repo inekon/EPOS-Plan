@@ -17958,4 +17958,13 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_DLG_DATEI_ZU_GROSS" xml:space="preserve">
     <value>Die CSV-Datei ist größer als 20 MiB.</value>
   </data>
+  <data name="FLOTTE_SEITE_KANDIDAT_TITEL" xml:space="preserve">
+    <value>Kandidat übernehmen</value>
+  </data>
+  <data name="FLOTTE_SEITE_KANDIDAT_FRAGE" xml:space="preserve">
+    <value>Der gewählte Kandidat ersetzt die Speicher in Schritt 1. Die dortigen Eingaben sind nicht gespeichert — sollen sie vorher gespeichert werden?</value>
+  </data>
+  <data name="FLOTTE_SEITE_KANDIDAT_BANNER" xml:space="preserve">
+    <value>Kandidat {0} übernommen — Flotte neu bewerten.</value>
+  </data>
 </root>

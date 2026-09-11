@@ -1,4 +1,4 @@
-@* DAS ERGEBNIS DER SPEICHERFLOTTE (Auftrag #184, Konzept „Stromspeicher-Dialoge"
+﻿@* DAS ERGEBNIS DER SPEICHERFLOTTE (Auftrag #184, Konzept „Stromspeicher-Dialoge"
    2.2/2.3, Anwenderentscheide SD-Q6 und SD-Q7 vom 11.09.2026).
 
    DIE REIHENFOLGE IST DIE DER HAUSREGEL (Doku_Simulationsergebnis_Darstellung.md,
@@ -240,50 +240,19 @@
     }
 
     @* -------------------------------------------------------------------- *@
-    @* Die Kandidaten der Rastersuche (P4 baut die Tabelle um)                *@
+    @* Die Kandidaten der Rastersuche stehen seit #196 in der GROESSEN-SICHT   *@
+    @*                                                                        *@
+    @* Hier stand bis Auftrag #196 eine Texttabelle mit hoechstens 50 Zeilen   *@
+    @* (Kapazitaet, Leistung, Kapitalwert, Grund) samt dem CSV-Export. Paket   *@
+    @* P4 hat daraus die Kandidatentabelle der SpeicherFlottenGroessenAnsicht  *@
+    @* gemacht - mit Durchsatz, Vollzyklen, Bezugsspitze, Ersparnis, Sortier-  *@
+    @* zyklus, Spaltenfilter und „uebernehmen" je Zeile -, und mit der         *@
+    @* Einbindung in Schritt 5 (#196) stuende sie hier ein zweites Mal. Zwei   *@
+    @* Tabellen derselben Kandidaten waeren zwei Wahrheiten: Die eine          *@
+    @* schneidet bei 50 ab, die andere filtert - und der Anwender saehe nicht, *@
+    @* welche seine Frage beantwortet. Empfehlung, Aussage, Trefferzeile und   *@
+    @* CSV-Export sind mit der Tabelle gewandert.                              *@
     @* -------------------------------------------------------------------- *@
-    @if (Ergebnis.Auslegung is { } a)
-    {
-        <Gruppenkopf Titel="@AuslegungEmpfehlung" />
-        <p class="epos-flotte-hinweis">@a.Aussage</p>
-        <table class="epos-raster">
-            <thead>
-                <tr>
-                    <th scope="col">@Resource.FLOTTE_KAND_SP_VARIANTE</th>
-                    <th scope="col">@Resource.FLOTTE_KAND_SP_BETRIEBSZIEL</th>
-                    <th scope="col">@Resource.FLOTTE_KAND_SP_ZULAESSIG</th>
-                    <th scope="col" class="epos-simerg-zahl">@Resource.FLOTTE_KAND_SP_KAPAZITAET</th>
-                    <th scope="col" class="epos-simerg-zahl">@Resource.FLOTTE_KAND_SP_LEISTUNG</th>
-                    <th scope="col" class="epos-simerg-zahl">@Resource.FLOTTE_KAND_SP_KAPITALWERT</th>
-                    <th scope="col">@Resource.FLOTTE_KAND_SP_HINWEIS</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (FlottenKandidatZusammenfassung k in a.Kandidaten
-                    .OrderByDescending(x => x.Zulaessig).ThenByDescending(x => x.KapitalwertEuro).Take(50))
-                {
-                    <tr>
-                        <td>@k.KandidatId</td>
-                        <td>@Zieltext(k.Betriebsziel)</td>
-                        <td>@(k.Zulaessig ? Resource.FLOTTE_KAND_JA : Resource.FLOTTE_KAND_NEIN)</td>
-                        <td class="epos-simerg-zahl">@N(k.KapazitaetKWh)</td>
-                        <td class="epos-simerg-zahl">@N(k.LadeleistungKw) / @N(k.EntladeleistungKw)</td>
-                        <td class="epos-simerg-zahl">@N(k.KapitalwertEuro)</td>
-                        <td>@k.Grund</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <p class="epos-flotte-hinweis">
-            @string.Format(Kultur, Resource.FLOTTE_KAND_ANZAHL, a.Kandidaten.Count)
-        </p>
-        <div class="epos-simerg-schalter">
-            <button type="button" class="epos-simerg-knopf" disabled="@(!Csv.HasDelegate)"
-                    @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.VergleichCsv(Ergebnis)))">
-                @Resource.FLOTTE_BTN_CSV_VERGLEICH
-            </button>
-        </div>
-    }
 
     @* -------------------------------------------------------------------- *@
     @* Die Diagramme mit der Steuerzeile der Hausregel 5                      *@
@@ -713,14 +682,6 @@
         => string.Format(Kultur, Resource.FLOTTE_ERG_REAKTIVE_REFERENZ,
             N(pv.Variantenrechnung.GesamtEuro), N(pv.Variante.MaximalerNetzbezugKw),
             pv.Wirtschaftlichkeit is null ? "—" : N(pv.Wirtschaftlichkeit.KapitalwertEuro));
-
-    private string AuslegungEmpfehlung => Ergebnis?.Auslegung is not { } a
-        ? Resource.FLOTTE_EMPF_KEINE
-        : a.NullvarianteGewonnen
-            ? Resource.FLOTTE_EMPF_NULLVARIANTE
-            : a.BesterKandidat?.Zulaessig == true
-                ? Resource.FLOTTE_EMPF_BESTE
-                : Resource.FLOTTE_EMPF_KEINE_ZULAESSIGE;
 
     private string Einheitenname(string id)
         => Ergebnis?.Konfiguration?.Einheiten.FirstOrDefault(x => x.Id == id) is { } e
