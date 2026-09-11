@@ -3445,6 +3445,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bunit-Fälle der Ansicht sind der Nachweis, ein Vergleich gegen den gelöschten Weg entfällt. Damit ist auch A‑W16a‑O1‑3
 > gegenstandslos; die übrigen Punkte A‑W16a‑O1‑1/2/4…8 bleiben Teil der Windows-Abnahme. Der Git-Tag `vor-W16` bleibt zur
 > Geschichte stehen.
+>
+> **#196 (11.09.2026, `47bdc8a`, Merge `bd9dbac`) — Größen-Sicht (P4) in der Ansicht (P3), iOS-Stilblatt.** Im Ergebnis-Schritt
+> der Ansicht `STROMSPEICHER_AUSLEGUNG` steht jetzt an der Marke aus P3 der Baustein `SpeicherFlottenGroessenAnsicht`,
+> sobald der Lauf ein Rastersuchergebnis trägt (`FlottenAuslegungErgebnis` im `SpeicherFlottenErgebnis` — Bedingung ist das
+> Ergebnis, nicht der Schalter, damit die Karte nicht verschwindet, wenn der Schalter nach dem Lauf umgelegt wird); die alte
+> einfache Kandidatentabelle in `SpeicherFlottenErgebnisAnsicht` fällt, Empfehlung und CSV-Export des Variantenvergleichs
+> wanderten mit. **„Kandidat übernehmen"** läuft über eine Stelle der Seite: `SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration`
+> gibt für den besten Kandidaten die `BesteKonfiguration` des Optimierers zurück (dieselbe Wahrheit wie „Beste Flotte
+> übernehmen") und bildet jeden anderen aus `FlottenKandidatEinheit` und dem Arbeitsstand zurück; danach Schritt 1, Banner,
+> Schritt 5 veraltet, bei ungespeicherten Eingaben die Dreifachfrage (62b‑E‑1). **iOS:** `EPOS.iOS/wwwroot/index.html` bindet
+> `epos-flotte.css` ein (seit P2 fehlend) — die eine Hüllenzeile, für die der Anwender den iOS-Lauf 42 freigegeben hat
+> („iOS-Lauf 42 nach #196 starten"). 17 neue Fälle (8 bunit Seite, 6 Kern, 3 Ergänzungen), drei Ressourcen. Gate auf `bd9dbac`:
+> Kern 2546, UI 3569, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
