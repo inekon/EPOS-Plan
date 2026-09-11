@@ -180,6 +180,11 @@ draußen. **Der Referenzlauf ist unberührt** — 1046 rechnet seinen gespeicher
 
 ---
 
+**Anwenderentscheid #210‑O‑1 (11.09.2026): „gleichzeitig".** Mehrere Stromspeicher-Anlagen eines Projekts
+sind gleichzeitig betriebene Einheiten, keine Vergleichsalternativen. Das Datenmodell braucht kein
+Unterscheidungsmerkmal; die Vorbelegung aus #210 (je `SP_TYP`-Anlage eine Einheit) ist damit die Regel.
+Wer eine Anlage nur zum Vergleich führt, nimmt sie in Schritt 1 der Auslegung aus der Flotte.
+
 ## 2. Zielbild
 
 ### 2.1 Eine Ansicht statt Fenster: „Stromspeicher-Auslegung" als freie Ansicht der `AppWurzel`
