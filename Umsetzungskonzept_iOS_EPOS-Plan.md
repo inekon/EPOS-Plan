@@ -3458,6 +3458,30 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `epos-flotte.css` ein (seit P2 fehlend) — die eine Hüllenzeile, für die der Anwender den iOS-Lauf 42 freigegeben hat
 > („iOS-Lauf 42 nach #196 starten"). 17 neue Fälle (8 bunit Seite, 6 Kern, 3 Ergänzungen), drei Ressourcen. Gate auf `bd9dbac`:
 > Kern 2546, UI 3569, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#199 (11.09.2026, `a3c33aa`, Merge `e975cf9`) — Assistent im Dialog, Stufe S1 (Anwenderentscheid 11.09.2026: Wege 1 + 2;
+> Konzept `Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`, #198).** Der KI-Knopf-Baustein aus W15b war nirgends
+> eingebaut, der Kontexthaken des Kerns wurde in keinem Produktcode gesetzt, auf iOS kannte der Assistent keinen Bereich. Jetzt:
+> **`InfoKnopf.MitAssistent`** (Vorgabe wahr) zeichnet den `KiKnopf` neben dem Info-Knopf — alle Dialoge und Überlagerungen mit
+> Info-Knopf in einem Schritt; Lizenz- und Lizenzverwaltungsdialog setzen ihn ab. Sichtbar ist er, sobald die Lizenz KI erlaubt
+> (`KiVerfuegbarkeit.Moeglich`); ohne Einrichtung führt er in die Einstellungen (KI‑D‑Q1). **Ein Öffnungsweg** `KiAssistentWeg.Oeffnen`
+> → `KiChatKontext.AufrufMelden(KiAufrufkontext {Bereich, Dialogname, Hilfeschluessel, Frage, Kennung})` →
+> `Dienste.Navigation.OeffneMaske(Masken.KiAssistent, kontext)`: Windows fängt den Schlüssel in `WinFormsNavigation` und öffnet die
+> nicht-modale `KiChatHuelle` mit Kontext (ein schon offenes Fenster bekommt ihn über `KiChatSteuerung.Kontext` nachgereicht);
+> die `AppWurzel` merkt die Herkunft, legt den Kontext über `IProjektQuelle.KiAssistentGaben` und kehrt dorthin zurück (Muster
+> #62b — die Wurzel stellt die Ansicht wieder her, nicht den inneren Zustand einer Komponente). **Bereich aus dem
+> Hilfeschlüssel:** `KiChatKontext.BereichFuerHilfeschluessel` mit 69 Maskenpräfixen, längstes Präfix gewinnt; ein Wächter hält
+> die Tabelle gegen alle 201 Schlüssel der `help_mapping.txt` (0 unbekannt); `HilfeKontext` der Windows-Hülle ist zweiter
+> Lieferant desselben Hakens. **„erklären lassen":** `Warnbanner.Kennung` zeigt den Link, der den Assistenten mit vorbelegter,
+> nicht abgeschickter Frage öffnet (`KI_FRAGE_<Kennung>`, sonst `KI_FRAGE_ALLGEMEIN` mit Bannertext); gesetzt am
+> `FlottenDiagnosebanner` (Kopf `FLOTTE_ARBEITSLOS` und je Prüfhinweis) und am Vorprüfungsbanner der Stromspeicher-Ansicht.
+> **Aktionswissen:** 15 Abschnitte in `HilfeWissen.Aktionswissen()` (fünf `FLOTTE_*`, zwei `LAUF_W_ERZEUGER_OHNE_*`, acht
+> `PV_STRANG_P1…P8`) mit Bedeutung, Ursache, Abhilfe, Wiki-Verweis; `Suchen` gibt der gemeldeten Kennung den Vorrang, ohne
+> `KiChatService` anzufassen. Kontextzeile des Chats nennt Bereich, Dialogname und Kennung. 22 Ressourcen de/en; 69 neue Fälle
+> (34 Kern, 35 bunit; die Tauscher von `Dienste.Navigation` in der seriellen Sammlung `KiDialogweg`). **Offen:** Laufwarnungen und
+> Strangampel laufen nicht über `Warnbanner` und tragen noch keinen Link (Aktionswissen liegt bereit); Weg 1 belegt keine Frage
+> vor. Wiki-Absatz „Der Assistent aus einem Dialog heraus" als Textvorschlag im Bericht (Upload mit #203). Gate auf `e975cf9`:
+> Kern 2580, UI 3604, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
