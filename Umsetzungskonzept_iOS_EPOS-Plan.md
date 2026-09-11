@@ -3482,6 +3482,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Strangampel laufen nicht über `Warnbanner` und tragen noch keinen Link (Aktionswissen liegt bereit); Weg 1 belegt keine Frage
 > vor. Wiki-Absatz „Der Assistent aus einem Dialog heraus" als Textvorschlag im Bericht (Upload mit #203). Gate auf `e975cf9`:
 > Kern 2580, UI 3604, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#203 (11.09.2026, `1a5fedb`, Merge `52f7fce`, Berichtigung `b8e59ae`; Wiki-Upload 11.09.2026 15:40 UTC, Revisionen 537–539) —
+> Wiki-Dokumentation Stromspeicher nachgezogen (Anwenderfrage 11.09.2026 „ist die dokumentation auf der wiki zum stromspeicher
+> aktualisiert?").** Befund: beide Stromspeicherseiten des Wikis kannten die Flotte nicht, und die Rechenwegseite war **im Wiki
+> neuer als im Repository** (Erweiterung vom 10.09. Kosten/Zeitreihen, zwei Bearbeitungen vom 11.09. „Grenzen und Annahmen", 79 Zeilen)
+> — ein Upload aus dem Quellbaum hätte sie stillschweigend überschrieben. Deshalb zuerst der Live-Stand in
+> `EPOS.Kern/Allgemein/Hilfe/Berechnung/Stromspeicher.wiki` übernommen, dann **Fassung 4 „Speicherflotte"** darauf gesetzt
+> (1 055 Zeilen; Hauptteil `{{Anker|flotte}}` mit Gleichungen 26–47 als `<math>` mit Legende: Physik je Einheit, fünf Betriebsziele,
+> drei Verteilungen, Planer nur auf Windows nach SP‑O‑3, Rainflow und Reserven, Kapitalwert, Rastersuche und Kandidaten, Diagnose
+> und Peak-Ziel, Größen-Sicht; 42 `Flotte.*`-Skalare und die Ganglinien je Einheit des Referenzexports benannt); die drei H13-Wächter
+> (`BerechnungsHilfeTests`, `BerechnungshilfeTests`, `BerechnungsknopfTests`) führen die Fassung je Seite. **Bedienungsseite neu**
+> auf die Ansicht `STROMSPEICHER_AUSLEGUNG` (271 Zeilen, Anker `auslegung-ansicht/-start/-ablauf/-speicher/-daten/-betrieb/-rechnen/
+> -ergebnis/-diagnose/-groessen/-verlassen/-ios`), dazu der Absatz **„Der Assistent aus einem Dialog heraus"** auf der Seite
+> Hilfe-Assistent (#199). Beide Bedienungsseiten haben seither eine **Repo-Quelle unter `Projekte/Wiki/`** — Hausregel im
+> Hilfesystem-Konzept: zuerst im Repository ändern, Live-Stand vor dem Hochladen vergleichen, Anker und Kategorie bleiben, Upload
+> durch die Orchestrierung. `help_mapping.txt`: `Form_SpeicherOptimierung.btn_Help` springt auf `Stromspeicher#auslegung-ansicht`
+> statt an den Seitenanfang. Nachprobe des Uploads: alle drei Seiten byte-gleich zur Quelle zurückgelesen, 474 Formeln gerendert,
+> 0 Parse-Fehler, Kategorien unverändert. Drei Textstellen, die der Upload vom 10.09. verdorben hatte (zwei Fettsätze über den
+> Zeilenumbruch, Protokollzeile ohne „Berechnungsart"), in `b8e59ae` berichtigt; Kern 2 580 und UI 3 604 grün auf diesem Stand
+> (reine Doku und Wächter, kein Gate nötig).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

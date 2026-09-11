@@ -795,3 +795,10 @@ Die ersten zwei Seiten dieser Art (Auftrag #203):
 |---|---|
 | `Programm Dokumentation/Stromspeicher` | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` |
 | `Programm Dokumentation/Hilfe-Assistent` | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` |
+
+Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
+als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
+`Hilfe-Assistent` 539, jeweils als vollständiger Ersatz mit `#203` in der Zusammenfassung.
+Nachprobe über `action=raw` und `action=parse`: alle drei Seiten byte-gleich zur Repo-Quelle,
+474 gerenderte Formeln, keine Parse-Fehler, Kategorien unverändert (die Rechenwegseiten tragen
+wie ihre zwölf Nachbarn keine).
