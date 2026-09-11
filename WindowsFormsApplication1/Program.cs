@@ -251,12 +251,13 @@ namespace WindowsFormsApplication1
             // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).
             KiTextlieferant.Einrichten();
 
-            // Ausfuehrungsschicht des KI-Assistenten einlegen (iU9-W15b.0a). KiChatService
-            // liegt seit dieser Welle im Kern und kennt KiAusfuehrer nicht mehr - der
-            // Ausfuehrer haengt an Control, Application.OpenForms und Form.ActiveForm.Modal
-            // und bleibt deshalb in der Windows-Anwendung. Ohne diesen Aufruf antwortet die
-            // stille Fassung KeineAusfuehrung: leeres Register, jede Aktion abgelehnt.
-            KiAusfuehrungsweg.Aktuell = new KiAusfuehrungAdapter();
+            // Ausfuehrungsschicht des KI-Assistenten einlegen. Sie LIEGT SEIT AUFTRAG
+            // #201 IM KERN (EPOS.Kern\Allgemein\KI\KiAusfuehrung.cs) - damit haben iOS
+            // und die Razor-Dialoge dasselbe Register; vorher stand dort die stille
+            // Fassung KeineAusfuehrung mit einem leeren. Hier bleiben die zwei Haken, die
+            // nur Windows beantworten kann: die Modalitaetsfrage (Form.ActiveForm.Modal)
+            // und der Hilfetext eines Katalogfeldes (WikiHelpCatalog).
+            KiAusfuehrungWindows.Einlegen();
 
             // Bedienkontext des Assistenten: Die ZUORDNUNG (Positivliste, Tabellen)
             // liegt seit iU9-W15b.0f im Kern, die ERMITTLUNG des aktiven Fensters

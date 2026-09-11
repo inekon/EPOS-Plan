@@ -269,6 +269,41 @@
         internal static string WirkungFormularAusfuellen => MyResource.Resource.KI_REG_WIRKUNG_FORMULAR_AUSFUELLEN;
         internal static string WirkungDialogAktion => MyResource.Resource.KI_REG_WIRKUNG_DIALOG_AKTION;
 
+        // ------------------------------- Etappe S3: Oeffnen, Speichern, Rechnen (#201)
+        //
+        // Die Schluessel tragen die Vorsilbe KI_AKTION_ und nicht KI_REG_ wie die
+        // aelteren: So verlangt es Auftrag #201 (Punkt 8), und es hat einen Nutzen -
+        // die Texte der Etappe S3 stehen am ENDE der resx beieinander und sind als
+        // Block zu uebersetzen, statt zwischen die Registertexte von Etappe 2 gemischt
+        // zu werden.
+
+        internal static string ZweckDialogOeffnen => MyResource.Resource.KI_AKTION_ZWECK_DIALOG_OEFFNEN;
+        internal static string TitelDialogOeffnen => MyResource.Resource.KI_AKTION_TITEL_DIALOG_OEFFNEN;
+        internal static string BeispielDialogOeffnen => MyResource.Resource.KI_AKTION_BEISPIEL_DIALOG_OEFFNEN;
+        internal static string ErlMaskeOeffnen => MyResource.Resource.KI_AKTION_ERL_MASKE_OEFFNEN;
+
+        internal static string ZweckDialogSpeichern => MyResource.Resource.KI_AKTION_ZWECK_DIALOG_SPEICHERN;
+        internal static string TitelDialogSpeichern => MyResource.Resource.KI_AKTION_TITEL_DIALOG_SPEICHERN;
+        internal static string BeispielDialogSpeichern => MyResource.Resource.KI_AKTION_BEISPIEL_DIALOG_SPEICHERN;
+        internal static string WirkungDialogSpeichern => MyResource.Resource.KI_AKTION_WIRKUNG_DIALOG_SPEICHERN;
+
+        internal static string ZweckSimulationRechnen => MyResource.Resource.KI_AKTION_ZWECK_SIMULATION_RECHNEN;
+        internal static string TitelSimulationRechnen => MyResource.Resource.KI_AKTION_TITEL_SIMULATION_RECHNEN;
+        internal static string BeispielSimulationRechnen => MyResource.Resource.KI_AKTION_BEISPIEL_SIMULATION_RECHNEN;
+        internal static string WirkungSimulationRechnen => MyResource.Resource.KI_AKTION_WIRKUNG_SIMULATION_RECHNEN;
+        internal static string ErlSimulationSpeichern => MyResource.Resource.KI_AKTION_ERL_SIM_SPEICHERN;
+        internal static string SimulationSpeichernName => MyResource.Resource.KI_AKTION_SIM_SPEICHERN_NAME;
+
+        internal static string ZweckPeakZiel => MyResource.Resource.KI_AKTION_ZWECK_PEAKZIEL;
+        internal static string TitelPeakZiel => MyResource.Resource.KI_AKTION_TITEL_PEAKZIEL;
+        internal static string BeispielPeakZiel => MyResource.Resource.KI_AKTION_BEISPIEL_PEAKZIEL;
+        internal static string WirkungPeakZiel => MyResource.Resource.KI_AKTION_WIRKUNG_PEAKZIEL;
+
+        internal static string ZweckFlotteBewerten => MyResource.Resource.KI_AKTION_ZWECK_FLOTTE_BEWERTEN;
+        internal static string TitelFlotteBewerten => MyResource.Resource.KI_AKTION_TITEL_FLOTTE_BEWERTEN;
+        internal static string BeispielFlotteBewerten => MyResource.Resource.KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN;
+        internal static string WirkungFlotteBewerten => MyResource.Resource.KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN;
+
         // ------------------------------------------- Energietraeger-Einheiten (K3)
 
         internal static string ZweckEnergietraegerPruefen => MyResource.Resource.KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN;

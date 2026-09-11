@@ -34,8 +34,8 @@ namespace KiKern
 
         /// <summary>
         /// Hoechste Schutzstufe, die der Assistent UEBERHAUPT ausfuehren kann - dann aber
-        /// nur mit Bestaetigung. Mit Etappe 3: bis einschliesslich
-        /// <see cref="Schutzstufe.Schreiben"/>.
+        /// nur mit Bestaetigung. Seit Etappe S3 (Auftrag #201): bis einschliesslich
+        /// <see cref="Schutzstufe.Rechnen"/>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -50,11 +50,22 @@ namespace KiKern
         /// worden, liefe jede Schreibaktion OHNE Rueckfrage durch - genau der Zustand, den
         /// diese Etappe verhindert. Angehoben wird deshalb die andere Grenze. Die
         /// Werkzeugrunde fragt seither ausschliesslich <see cref="PruefeStufe(KiAufruf)"/>
-        /// ab und traegt keine eigene Stufenangabe mehr; damit gibt es genau EINE
-        /// Fundstelle, die sich mit Etappe 4 auf <see cref="Schutzstufe.Rechnen"/> hebt.
+        /// ab und traegt keine eigene Stufenangabe mehr; damit gab es genau EINE
+        /// Fundstelle, und genau die ist mit Etappe S3 auf
+        /// <see cref="Schutzstufe.Rechnen"/> gehoben.
+        /// </para>
+        /// <para>
+        /// <b>Etappe S3 (Auftrag #201): Stufe 3 ist frei - der Klick nicht.</b> Die
+        /// Rechenaktionen <c>simulation_rechnen</c>, <c>peak_ziel_bestimmen</c> und
+        /// <c>flotte_bewerten</c> gehoeren zu <see cref="Schutzstufe.Rechnen"/> und
+        /// liegen damit UEBER <see cref="OhneBestaetigung"/>: Sie brauchen dieselbe
+        /// ausdrueckliche Freigabe wie jede Schreibaktion
+        /// (<see cref="BrauchtBestaetigung(KiAktion)"/> haengt allein an der Stufe).
+        /// Angehoben wurde also erneut nur, WAS es geben darf - nicht, was ohne
+        /// Rueckfrage laeuft.
         /// </para>
         /// </remarks>
-        public const Schutzstufe HoechsteStufe = Schutzstufe.Schreiben;
+        public const Schutzstufe HoechsteStufe = Schutzstufe.Rechnen;
 
         /// <summary>
         /// Klartextgrund, warum die Aktion nicht laufen darf; <c>null</c>, wenn nichts

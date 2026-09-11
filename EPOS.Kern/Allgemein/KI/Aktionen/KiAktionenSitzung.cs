@@ -15,14 +15,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die zuletzt ausgefuehrten Aktionen dieser Sitzung. Andockpunkt
-        /// <c>KiAusfuehrer.LetzteAktionen(int)</c>.
+        /// <c>KiAusfuehrung.LetzteAktionen(int)</c>.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// VORLAEUFIG: Die Quelle ist der schlanke In-Memory-Speicher des Ausfuehrers.
         /// Paket B6 bringt das gemeinsame Sitzungsgedaechtnis des Chats; diese Aktion
         /// wechselt dann die Quelle, nicht ihre Form.
+        /// </para>
+        /// <para>
+        /// <b>Seit Auftrag #201 nimmt sie den Ausfuehrer entgegen</b>, statt einen
+        /// statischen anzusprechen: <see cref="KiAusfuehrung"/> traegt seinen Zustand als
+        /// Instanz, damit ein Pruefling einen frischen anlegen kann. Das Register wird
+        /// vom Ausfuehrer selbst gebaut - er reicht sich hier durch.
+        /// </para>
         /// </remarks>
-        internal static KiAktion LetzteAktionen()
+        /// <param name="ausfuehrung">Der Ausfuehrer, dessen Gedaechtnis gelesen wird.</param>
+        internal static KiAktion LetzteAktionen(KiAusfuehrung ausfuehrung)
         {
             return new KiAktion(
                 name: "letzte_aktionen",
@@ -30,7 +39,7 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelLetzteAktionen,
                 beispiel: KiAktionsTexte.BeispielLetzteAktionen,
                 stufe: Schutzstufe.Lesen,
-                andockpunkt: "KiAusfuehrer.LetzteAktionen",
+                andockpunkt: "KiAusfuehrung.LetzteAktionen",
                 parameter: new[]
                 {
                     new KiParameter("anzahl", KiParameterTyp.Ganzzahl, KiAktionsTexte.ErlAnzahl,
@@ -42,7 +51,7 @@ namespace WindowsFormsApplication1
                     int anzahl = a.Id("anzahl", VORGABE_ANZAHL);
 
                     var zeilen = KiHilfe.Liste();
-                    foreach (KiSitzungseintrag e in KiAusfuehrer.LetzteAktionen(anzahl))
+                    foreach (KiSitzungseintrag e in ausfuehrung.LetzteAktionen(anzahl))
                     {
                         zeilen.Add(KiHilfe.Zeile(
                             "zeitpunkt", e.Zeitpunkt.ToString(KiProtokoll.Zeitformat,

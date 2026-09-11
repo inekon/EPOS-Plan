@@ -18090,4 +18090,163 @@ Möchten Sie das zulassen?</value>
   <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
     <value>Größe in die Projektanlage übernehmen…</value>
   </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Öffnet eine der freigegebenen Masken; der Anwender arbeitet danach selbst darin weiter.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Maske öffnen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Öffne die Heizkesselverwaltung.</value>
+  </data>
+  <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
+    <value>Name der Maske aus dem Dialogkatalog, die geöffnet werden soll.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Speichert die Eingaben der offenen Maske über deren eigenen Speicherweg in die Datenbank.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Maske speichern</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Speichere den Heizkessel so, wie er jetzt in der Maske steht.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Der Datensatz der Maske wird geschrieben. Vorher entsteht eine Sicherungskopie der Datenbank; rückgängig macht das Schreiben nur das Zurückspielen dieser Kopie.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Rechnet die Simulation eines Projekts durch; auf Wunsch wird das Ergebnis gespeichert.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Simulation rechnen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Rechne das Projekt Musterhaus und speichere das Ergebnis.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Der Lauf belegt den Rechenkern für die Dauer der Rechnung. Mit „speichern“ wird der vorhandene Ergebnisstand des Projekts überschrieben.</value>
+  </data>
+  <data name="KI_AKTION_ERL_SIM_SPEICHERN" xml:space="preserve">
+    <value>Soll das Ergebnis gespeichert werden? Ohne Angabe wird nur gerechnet.</value>
+  </data>
+  <data name="KI_AKTION_SIM_SPEICHERN_NAME" xml:space="preserve">
+    <value>Ergebnis speichern</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_PEAKZIEL" xml:space="preserve">
+    <value>Bestimmt in der offenen Stromspeicher-Ansicht das wirtschaftliche Peak-Ziel.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_PEAKZIEL" xml:space="preserve">
+    <value>Peak-Ziel bestimmen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_PEAKZIEL" xml:space="preserve">
+    <value>Bestimme das wirtschaftliche Peak-Ziel für die eingestellte Flotte.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_PEAKZIEL" xml:space="preserve">
+    <value>Das gefundene Peak-Ziel steht danach in der Ansicht; der bisherige Wert wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Rechnet die Flotte der offenen Stromspeicher-Ansicht durch — derselbe Weg wie der Knopf „Berechnen“.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Flotte bewerten</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Bewerte die eingestellte Speicherflotte.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Das Ergebnis der Bewertung steht danach in der Ansicht; ein vorheriges Ergebnis wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_UEBER_SPEICHERN" xml:space="preserve">
+    <value>Diesen Knopf löst der Assistent nicht aus; zum Schreiben gibt es die Aktion dialog_speichern.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_KEIN_WEG" xml:space="preserve">
+    <value>Knöpfe einer Maske kann der Assistent nicht auslösen. Zum Schreiben gibt es dialog_speichern, zum Füllen der Felder feld_setzen und formular_ausfuellen.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OK" xml:space="preserve">
+    <value>Die Maske „{0}“ ist geöffnet.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_KEIN_WEG" xml:space="preserve">
+    <value>Die Maske „{0}“ lässt sich von hier aus nicht öffnen (Ziel {1}). Auf dieser Plattform führt kein Weg dorthin.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OHNE_ZIEL" xml:space="preserve">
+    <value>Für die Maske „{0}“ ist kein Öffnungsweg hinterlegt.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Die Maske „{0}“ ließ sich nicht öffnen: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_VORSCHAU" xml:space="preserve">
+    <value>Die Maske „{0}“ wird mit ihren {1} Feldern gespeichert. Der Datensatz wird geschrieben; vorher entsteht eine Sicherungskopie der Datenbank.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_KEIN_WEG" xml:space="preserve">
+    <value>Die Maske „{0}“ bietet dem Assistenten keinen Speicherweg an.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Die Maske „{0}“ ließ sich nicht speichern: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_SICHERUNG" xml:space="preserve">
+    <value>Der Vorzustand ist gesichert: {0}</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet. Das gespeicherte Ergebnis bleibt unberührt.</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU_SPEICHERN" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet und das Ergebnis gespeichert. Der vorhandene Ergebnisstand des Projekts wird dabei überschrieben.</value>
+  </data>
+  <data name="KI_AKTION_SIM_LAEUFT" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet …</value>
+  </data>
+  <data name="KI_AKTION_SIM_FERTIG" xml:space="preserve">
+    <value>Der Lauf ist fertig.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist gerechnet.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK_GESPEICHERT" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist gerechnet und das Ergebnis gespeichert.</value>
+  </data>
+  <data name="KI_AKTION_SIM_FEHLER" xml:space="preserve">
+    <value>Das Projekt „{0}“ ließ sich nicht rechnen: {1}</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_VORSCHAU" xml:space="preserve">
+    <value>In der Ansicht „{0}“ wird das wirtschaftliche Peak-Ziel bestimmt. Der Lauf kann mehrere Minuten dauern; das gefundene Ziel ersetzt danach den eingestellten Wert.</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_LAEUFT" xml:space="preserve">
+    <value>Das wirtschaftliche Peak-Ziel wird bestimmt …</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_VORSCHAU" xml:space="preserve">
+    <value>Die Flotte der Ansicht „{0}“ wird bewertet. Der Lauf kann mehrere Minuten dauern; ein vorheriges Ergebnis wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
+    <value>Die Flotte wird bewertet …</value>
+  </data>
+  <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
+    <value>Die Ansicht „{0}“ ist nicht geöffnet; diese Rechnung läuft nur dort.</value>
+  </data>
+  <data name="KI_AKTION_KEIN_RECHENWEG" xml:space="preserve">
+    <value>Die Ansicht „{1}“ bietet den Rechenweg „{0}“ gerade nicht an.</value>
+  </data>
+  <data name="KI_FELD_NICHT_SETZBAR" xml:space="preserve">
+    <value>Das Feld „{0}“ ist eine abgeleitete Größe und lässt sich nicht setzen.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT" xml:space="preserve">
+    <value>Der in „{0}“ bearbeitete Satz gehört zur Auslieferung und ist schreibgeschützt.</value>
+  </data>
+  <data name="KI_FELD_LEER_VERBOTEN" xml:space="preserve">
+    <value>Das Feld „{0}“ ist ein Pflichtfeld und darf nicht leer bleiben.</value>
+  </data>
+  <data name="KI_FELD_LEER_UNMOEGLICH" xml:space="preserve">
+    <value>Das Feld „{0}“ führt immer einen Wert; leeren lässt es sich nicht.</value>
+  </data>
+  <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
+    <value>Das Feld „{0}“ erwartet eine Zahl; „{1}“ ist keine.</value>
+  </data>
+  <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
+    <value>Das Feld „{0}“ erwartet Ja oder Nein; „{1}“ ist keines von beiden.</value>
+  </data>
+  <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
+    <value>Das Feld „{0}“ ließ sich nicht setzen: {1}</value>
+  </data>
+  <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
+    <value>Die Maske meldet dazu: {0}</value>
+  </data>
 </root>

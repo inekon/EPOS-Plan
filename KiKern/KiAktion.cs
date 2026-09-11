@@ -35,6 +35,11 @@ namespace KiKern
         /// <param name="andockpunkt">Aufgerufene Bestandsmethode, z. B. <c>ProjektCtrl.ReadAll</c>. Nur fuers Protokoll.</param>
         /// <param name="parameter">Parameterdeklaration in Anzeigereihenfolge.</param>
         /// <param name="ausfuehren">Der eigentliche Aufruf des Bestands.</param>
+        /// <param name="ausfuehrenLang">
+        /// Der Aufruf einer LANG LAUFENDEN Aktion (Stufe 3, Etappe S3) - er bekommt
+        /// zusaetzlich <see cref="KiLaufumgebung"/> mit Fortschritt und Abbruchmarke.
+        /// Ist er gesetzt, hat er Vorrang vor <paramref name="ausfuehren"/>.
+        /// </param>
         /// <param name="vorbedingung">Liefert den Klartextgrund, warum es GERADE NICHT geht - sonst <c>null</c>.</param>
         /// <param name="vorschau">„Ich wuerde X tun" - schreibt nichts. Nur fuer Stufe 2 und 3 noetig.</param>
         /// <param name="wirkung">Ein Satz „was danach anders ist" fuer die Bestaetigung.</param>
@@ -64,6 +69,7 @@ namespace KiKern
                         string andockpunkt,
                         IReadOnlyList<KiParameter>? parameter = null,
                         Func<KiAufruf, KiErgebnis>? ausfuehren = null,
+                        Func<KiAufruf, KiLaufumgebung, KiErgebnis>? ausfuehrenLang = null,
                         Func<KiAufruf, string?>? vorbedingung = null,
                         Func<KiAufruf, string>? vorschau = null,
                         string? wirkung = null,
@@ -117,6 +123,7 @@ namespace KiKern
             Andockpunkt = andockpunkt ?? "";
             Parameter = parameter ?? Array.Empty<KiParameter>();
             Ausfuehren = ausfuehren;
+            AusfuehrenLang = ausfuehrenLang;
             Vorbedingung = vorbedingung;
             Vorschau = vorschau;
             Wirkung = wirkung ?? (stufe == Schutzstufe.Lesen ? KiTexte.WirkungLesen : "");
@@ -183,8 +190,24 @@ namespace KiKern
         /// <summary>Parameter in Anzeigereihenfolge.</summary>
         public IReadOnlyList<KiParameter> Parameter { get; }
 
-        /// <summary>Der eigentliche Aufruf des Bestands (im Anwendungsprojekt).</summary>
+        /// <summary>Der eigentliche Aufruf des Bestands (im Kern).</summary>
         public Func<KiAufruf, KiErgebnis>? Ausfuehren { get; }
+
+        /// <summary>
+        /// Der Aufruf einer LANG LAUFENDEN Aktion - mit Fortschritt und Abbruchmarke
+        /// (Stufe 3, Etappe S3). <c>null</c> = die Aktion laeuft ueber
+        /// <see cref="Ausfuehren"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Zwei Delegaten und nicht einer mit Vorgabewert.</b> Die 19 Aktionen der
+        /// Stufen 1 und 2 kennen keine Laufumgebung und sollen sie nicht kennen muessen;
+        /// ihre Signatur bleibt woertlich, wie sie war. Die Weiche steht an EINER Stelle,
+        /// im Ausfuehrer (<c>KiAusfuehrung.LaufMitEngineModus</c>).
+        /// </remarks>
+        public Func<KiAufruf, KiLaufumgebung, KiErgebnis>? AusfuehrenLang { get; }
+
+        /// <summary>Hat die Aktion ueberhaupt einen Ausfuehrungsweg?</summary>
+        public bool Ausfuehrbar => Ausfuehren != null || AusfuehrenLang != null;
 
         /// <summary>Klartextgrund, warum die Aktion gerade nicht geht; <c>null</c> = nichts spricht dagegen.</summary>
         public Func<KiAufruf, string?>? Vorbedingung { get; }

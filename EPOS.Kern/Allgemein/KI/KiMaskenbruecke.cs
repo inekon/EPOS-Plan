@@ -56,7 +56,12 @@ namespace WindowsFormsApplication1
         /// <param name="feld">Die Deklaration aus dem Dialogkatalog.</param>
         /// <param name="lesen">Liefert den aktuellen Wert aus dem Dialogzustand.</param>
         /// <param name="setzen">Schreibt einen Wert in den Dialog; <c>null</c> = nur lesbar.</param>
-        public KiFeldzugang(KiDialogFeld feld, Func<object> lesen, Action<object> setzen = null)
+        /// <param name="werttyp">
+        /// Der CLR-Typ, den <paramref name="setzen"/> entgegennimmt (Auftrag #201);
+        /// <c>null</c> = unbekannt, dann wird der Text unveraendert durchgereicht.
+        /// </param>
+        public KiFeldzugang(KiDialogFeld feld, Func<object> lesen, Action<object> setzen = null,
+                            Type werttyp = null)
         {
             if (feld == null) throw new ArgumentNullException(nameof(feld));
             if (lesen == null) throw new ArgumentNullException(nameof(lesen));
@@ -64,6 +69,7 @@ namespace WindowsFormsApplication1
             Feld = feld;
             Lesen = lesen;
             Setzen = setzen;
+            Werttyp = werttyp;
         }
 
         /// <summary>Die Deklaration aus dem Dialogkatalog.</summary>
@@ -74,6 +80,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Schreibt einen Wert in den Dialog; <c>null</c> = das Feld ist nur lesbar.</summary>
         public Action<object> Setzen { get; }
+
+        /// <summary>
+        /// Der CLR-Typ hinter dem Setzer — <c>double?</c>, <c>int</c>, <c>bool</c>,
+        /// <c>string</c> (Auftrag #201, Stufe S3). <c>null</c> = unbekannt.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum der Typ hier steht und nicht erst beim Setzen gesucht wird.</b> Der
+        /// Setzer ist ein <see cref="Action{T}"/> ueber <c>object</c>; wer ihm den
+        /// falschen CLR-Typ gibt, bekommt eine Ausnahme aus der Reflexion statt einer
+        /// Meldung. Der Wandler (<see cref="KiFeldwandler"/>) braucht den Zieltyp, um aus
+        /// dem TEXT des Modells den Wert zu machen, den die Eigenschaft annimmt — und der
+        /// steht dort fest, wo der Zugang gebaut wird (in <c>KiMaskenanmeldung</c> als
+        /// <c>PropertyInfo.PropertyType</c>), nicht im Kern.
+        /// </remarks>
+        public Type Werttyp { get; }
 
         /// <summary>Laesst sich dieses Feld setzen? (Stufe S3)</summary>
         public bool Setzbar => Setzen != null;
@@ -212,6 +233,7 @@ namespace WindowsFormsApplication1
             internal object Marke;
             internal KiDialog Dialog;
             internal List<KiFeldzugang> Felder;
+            internal KiMaskenhaken Haken;
         }
 
         private static readonly object _sperre = new object();
@@ -247,9 +269,14 @@ namespace WindowsFormsApplication1
         /// <param name="maskenname">Der Katalogschluessel der Maske.</param>
         /// <param name="dialog">Der Katalogeintrag (fuer Anzeigename und Feldliste).</param>
         /// <param name="felder">Die Zugaenge in Anzeigereihenfolge.</param>
+        /// <param name="haken">
+        /// Was der Dialog ausser seinen Feldern beisteuert (Auftrag #201): Auffrischen,
+        /// Plausibilitaetspruefung, Speicherweg, Rechenwege. <c>null</c> = nichts davon.
+        /// </param>
         /// <returns>Die Marke dieser Anmeldung; <c>null</c>, wenn nichts angemeldet wurde.</returns>
         public static object Anmelden(string maskenname, KiDialog dialog,
-                                      IReadOnlyList<KiFeldzugang> felder)
+                                      IReadOnlyList<KiFeldzugang> felder,
+                                      KiMaskenhaken haken = null)
         {
             if (string.IsNullOrWhiteSpace(maskenname)) return null;
             if (felder == null || felder.Count == 0) return null;
@@ -258,7 +285,8 @@ namespace WindowsFormsApplication1
             {
                 Marke = new object(),
                 Dialog = dialog,
-                Felder = new List<KiFeldzugang>(felder.Count)
+                Felder = new List<KiFeldzugang>(felder.Count),
+                Haken = haken ?? new KiMaskenhaken()
             };
 
             foreach (KiFeldzugang z in felder)
@@ -401,6 +429,16 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Die Haken einer angemeldeten Maske — nie <c>null</c>; eine unbekannte Maske
+        /// liefert einen leeren Satz (Auftrag #201).
+        /// </summary>
+        public static KiMaskenhaken Haken(string maskenname = null)
+        {
+            Eintrag eintrag = Finde(maskenname);
+            return eintrag?.Haken ?? KiMaskenhaken.Leer;
+        }
+
         // ==================================================================
         //  Der Block, der in die Anfrage geht
         // ==================================================================
@@ -503,6 +541,18 @@ namespace WindowsFormsApplication1
 
         private static string Schluessel(string maskenname)
             => string.IsNullOrWhiteSpace(maskenname) ? AktiveMaske() : maskenname.Trim();
+
+        /// <summary>
+        /// Der Wert als Anzeigetext in der Anwenderkultur — die OEFFENTLICHE Fassung von
+        /// <see cref="AlsText"/> (Auftrag #201).
+        /// </summary>
+        /// <remarks>
+        /// Der Setzweg der Stufe S3 liest einen Feldwert einzeln (fuer „alt → neu" im
+        /// Bestaetigungsblock) und muss ihn in DERSELBEN Schreibweise zeigen wie der
+        /// Feldblock, der an das Modell geht. Zwei Formatierungen desselben Wertes waeren
+        /// genau die Stelle, an der Vorschau und Ergebnis auseinanderliefen.
+        /// </remarks>
+        public static string Anzeigetext(object wert) => AlsText(wert);
 
         /// <summary>
         /// Der Wert als Anzeigetext in der Anwenderkultur — dieselbe Schreibweise, die

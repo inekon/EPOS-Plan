@@ -7,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using KiKern;
 
 namespace WindowsFormsApplication1
@@ -105,59 +104,59 @@ namespace WindowsFormsApplication1
     /// kommen seit Paket B5 aus <c>MyResource.Resource</c> - in beiden Sprachen.
     /// </para>
     /// </remarks>
-    public static class KiAusfuehrer
+    public sealed class KiAusfuehrung : IKiAusfuehrung
     {
         /// <summary>0 = frei, 1 = eine Aktion laeuft.</summary>
-        private static int _laeuft;
+        private int _laeuft;
 
         /// <summary>Zaehler der tatsaechlich gelaufenen Aktionen (Fachkonzept 3.5, Punkt 5).</summary>
-        private static long _laufmarke;
+        private long _laufmarke;
 
-        private static readonly object _sitzungSperre = new object();
-        private static readonly List<KiSitzungseintrag> _sitzung = new List<KiSitzungseintrag>();
+        private readonly object _sitzungSperre = new object();
+        private readonly List<KiSitzungseintrag> _sitzung = new List<KiSitzungseintrag>();
 
         /// <summary>Hoechstzahl der Eintraege im Sitzungsgedaechtnis - gegen unbegrenztes Wachsen.</summary>
         private const int MAX_SITZUNG = 200;
 
-        private static KiRegister _register;
-        private static readonly object _registerSperre = new object();
+        private KiRegister _register;
+        private readonly object _registerSperre = new object();
 
         /// <summary>Parameternamen, aus denen die Projekt-ID der Protokollzeile stammt.</summary>
-        private static readonly string[] PROJEKT_PARAMETER =
+        private readonly string[] PROJEKT_PARAMETER =
             { "projekt_id", "stamm_id", "nach_projekt", "von_projekt", "ganglinie_id" };
 
         // =================================================================== Register
 
         /// <summary>Das gefuellte Aktionsregister (einmal gebaut, dann fest).</summary>
-        public static KiRegister Register
+        public KiRegister Register
         {
             get
             {
                 if (_register != null) return _register;
                 lock (_registerSperre)
                 {
-                    if (_register == null) _register = KiAktionen.Erzeuge();
+                    if (_register == null) _register = KiAktionen.Erzeuge(this);
                 }
                 return _register;
             }
         }
 
         /// <summary>true, solange eine Assistentenaktion laeuft.</summary>
-        public static bool Belegt => Volatile.Read(ref _laeuft) != 0;
+        public bool Belegt => Volatile.Read(ref _laeuft) != 0;
 
         /// <summary>
         /// Stand des Aktionszaehlers. Jede tatsaechlich gelaufene Aktion erhoeht ihn; eine
         /// Freigabe, die einen aelteren Stand traegt, gilt als ueberholt
         /// (Fachkonzept 3.5, Punkt 5: „oder auf die eine andere Aktion folgte").
         /// </summary>
-        public static long Laufmarke => Interlocked.Read(ref _laufmarke);
+        public long Laufmarke => Interlocked.Read(ref _laufmarke);
 
         /// <summary>
         /// Zeitquelle der Freigaben. Im Betrieb <see cref="DateTime.Now"/>; der
         /// Aktionsharnisch rueckt sie vor, um den Verfall nachzuweisen, ohne eine Minute
         /// zu warten.
         /// </summary>
-        public static Func<DateTime> Uhr { get; set; } = () => DateTime.Now;
+        public Func<DateTime> Uhr { get; set; } = () => DateTime.Now;
 
         /// <summary>
         /// Die Schreibrechtsfrage. Im Betrieb <c>LizenzManager.DarfSchreiben()</c>
@@ -171,7 +170,7 @@ namespace WindowsFormsApplication1
         /// Prueffaden, kein Schalter fuer den Betrieb - das Modell kann ihn nicht
         /// erreichen, weil er kein Parameter irgendeiner Aktion ist.
         /// </remarks>
-        public static Func<bool> Schreibrecht { get; set; } = LizenzManager.DarfSchreiben;
+        public Func<bool> Schreibrecht { get; set; } = LizenzManager.DarfSchreiben;
 
         /// <summary>
         /// Die Modalitaetsfrage: Ist gerade ein modaler Dialog offen? Alles ausser reinem
@@ -184,10 +183,18 @@ namespace WindowsFormsApplication1
         /// Austauschbar aus demselben Grund wie <see cref="Schreibrecht"/>: Der
         /// Aktionsharnisch laeuft ohne Oberflaeche und koennte den Zustand „modaler Dialog
         /// offen" sonst gar nicht herstellen - ein Fenster, das er oeffnete, wuerde sein
-        /// eigener <c>DialogWaechter</c> sofort wieder schliessen. Die Vorgabe ist die
-        /// echte Abfrage ueber <c>Form.ActiveForm.Modal</c>.
+        /// eigener <c>DialogWaechter</c> sofort wieder schliessen.
+        /// <para>
+        /// <b>Seit Auftrag #201 OHNE Vorgabe.</b> Die echte Abfrage
+        /// <c>Form.ActiveForm.Modal</c> ist WinForms und hat im Kern nichts zu suchen;
+        /// sie steht seither in der Windows-Huelle
+        /// (<c>KiAusfuehrungWindows.ModalerDialogOffen</c>) und wird von
+        /// <c>Program.Main</c> hier eingelegt. Bleibt der Haken leer - iOS, Pruefstand,
+        /// Konsolenlauf -, sperrt keine Modalitaet; das ist richtig, denn dort gibt es
+        /// auch keine.
+        /// </para>
         /// </remarks>
-        public static Func<bool> ModalerDialog { get; set; } = ModalerDialogOffen;
+        public Func<bool> ModalerDialog { get; set; }
 
         /// <summary>
         /// Zweiter Haken derselben Frage: Steht in einer Razor-Oberflaeche eine
@@ -209,16 +216,16 @@ namespace WindowsFormsApplication1
         /// weiterhin nur <see cref="ModalerDialog"/>.
         /// </para>
         /// </remarks>
-        public static Func<bool> Ueberlagerung { get; set; }
+        public Func<bool> Ueberlagerung { get; set; }
 
         /// <summary>Pfad des Sicherungspunkts dieser Sitzung; leer, solange keiner noetig war.</summary>
-        public static string SicherungPfad => KiSicherungspunkt.Pfad;
+        public string SicherungPfad => KiSicherungspunkt.Pfad;
 
         /// <summary>Zusatzhinweis zum Sicherungspunkt (z. B. „Datenbank geoeffnet"); kann leer sein.</summary>
-        public static string SicherungHinweis => KiSicherungspunkt.Hinweis;
+        public string SicherungHinweis => KiSicherungspunkt.Hinweis;
 
         /// <summary>Vergisst den Sicherungspunkt der Sitzung (Sitzungswechsel, Prueflaeufe).</summary>
-        public static void SicherungZuruecksetzen() => KiSicherungspunkt.Zuruecksetzen();
+        public void SicherungZuruecksetzen() => KiSicherungspunkt.Zuruecksetzen();
 
         /// <summary>
         /// Der Wechsel auf den Oberflaechenfaden - seit iU9-W15b.0c plattformfrei
@@ -233,9 +240,11 @@ namespace WindowsFormsApplication1
         /// fertig ist". Genau das ist die Form <c>Func&lt;Func&lt;Task&gt;, Task&gt;</c>.
         /// </para>
         /// <para>
-        /// Bleibt der Weg leer, gilt der alte Rueckfall unveraendert: <see cref="UiAnker"/>
-        /// sucht das erste offene Formular; gibt es auch das nicht (Aktionsharnisch,
-        /// Konsolenlauf, iOS-Pruefmodus), laeuft die Aktion auf dem rufenden Thread.
+        /// Bleibt der Weg leer (Aktionsharnisch, Konsolenlauf, iOS-Pruefmodus), laeuft die
+        /// Aktion auf dem RUFENDEN Faden. Der fruehere Rueckfall ueber
+        /// <c>Application.OpenForms</c> ist mit Auftrag #201 entfallen - er war die letzte
+        /// WinForms-Stelle dieser Klasse, und er half nur dort, wo die Huelle ihren Weg
+        /// ohnehin einlegt.
         /// </para>
         /// <para>
         /// <b>Warum das noetig ist.</b> Die Bestandscontroller sind nicht threadsicher,
@@ -244,7 +253,27 @@ namespace WindowsFormsApplication1
         /// (Fachkonzept 3.4).
         /// </para>
         /// </remarks>
-        public static Func<Func<Task>, Task> AufOberflaeche { get; set; }
+        public Func<Func<Task>, Task> AufOberflaeche { get; set; }
+
+        /// <summary>
+        /// Der Empfaenger der Fortschrittsschritte lang laufender Aktionen (Stufe 3,
+        /// Etappe S3). <c>null</c> = niemand hoert zu.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Er gehoert der Huelle, nicht der Aktion.</b> Das Chatfenster legt ihn ein,
+        /// solange es steht, und nimmt ihn beim Schliessen wieder heraus - dieselbe
+        /// Bauart wie <see cref="AufOberflaeche"/> und <see cref="Ueberlagerung"/>. Eine
+        /// Aktion meldet immer, ob jemand zuhoert oder nicht
+        /// (<see cref="KiLaufumgebung.Melde"/> schluckt den fehlenden Empfaenger).
+        /// </para>
+        /// <para>
+        /// <b>Der Faden.</b> Ein <c>Progress&lt;T&gt;</c>, das auf dem Oberflaechenfaden
+        /// erzeugt wurde, marshallt selbst (Fachkonzept 3.4) - hier wird nichts von Hand
+        /// gewechselt.
+        /// </para>
+        /// </remarks>
+        public IProgress<KiFortschritt> Fortschritt { get; set; }
 
         // ============================================================== Vorbereiten
 
@@ -268,7 +297,7 @@ namespace WindowsFormsApplication1
         /// eine Kopie.
         /// </para>
         /// </remarks>
-        public static async Task<KiVorbereitung> VorbereitenAsync(KiAufruf aufruf,
+        public async Task<KiVorbereitung> VorbereitenAsync(KiAufruf aufruf,
                                                                   CancellationToken abbruch = default)
         {
             if (aufruf == null) throw new ArgumentNullException(nameof(aufruf));
@@ -310,7 +339,7 @@ namespace WindowsFormsApplication1
                     return Abweisen(beginn, aufruf, projektId,
                                     KiErgebnis.Abgebrochen(KiAusfuehrerTexte.Abgebrochen));
 
-                if (aktion.Ausfuehren == null)
+                if (!aktion.Ausfuehrbar)
                     return Abweisen(beginn, aufruf, projektId, KiErgebnis.Abgelehnt(
                         string.Format(CultureInfo.CurrentCulture, KiTexte.AktionOhneAusfuehrung, aktion.Name)));
 
@@ -375,7 +404,7 @@ namespace WindowsFormsApplication1
         /// Prueft die Rohwerte gegen das Register und fuehrt die Aktion aus.
         /// Das ist der Einstieg fuer Oberflaeche und Modellantwort.
         /// </summary>
-        public static Task<KiErgebnis> AusfuehrenAsync(string aktionsname,
+        public Task<KiErgebnis> AusfuehrenAsync(string aktionsname,
                                                          IReadOnlyDictionary<string, object> rohwerte,
                                                          CancellationToken abbruch = default)
         {
@@ -396,7 +425,7 @@ namespace WindowsFormsApplication1
         /// Fuehrt einen bereits gepruefen Aufruf OHNE Freigabe aus. Zulaessig ist damit
         /// nur, was keine Bestaetigung braucht (Stufe 1).
         /// </summary>
-        public static Task<KiErgebnis> AusfuehrenAsync(KiAufruf aufruf,
+        public Task<KiErgebnis> AusfuehrenAsync(KiAufruf aufruf,
                                                          CancellationToken abbruch = default)
             => AusfuehrenAsync(aufruf, null, abbruch);
 
@@ -407,7 +436,7 @@ namespace WindowsFormsApplication1
         /// Stufe 1 zulaessig.
         /// </param>
         /// <param name="abbruch">Abbruchmarke.</param>
-        public static async Task<KiErgebnis> AusfuehrenAsync(KiAufruf aufruf, KiFreigabe freigabe,
+        public async Task<KiErgebnis> AusfuehrenAsync(KiAufruf aufruf, KiFreigabe freigabe,
                                                                CancellationToken abbruch = default)
         {
             if (aufruf == null) throw new ArgumentNullException(nameof(aufruf));
@@ -466,7 +495,7 @@ namespace WindowsFormsApplication1
                     return weg;
                 }
 
-                if (aktion.Ausfuehren == null)
+                if (!aktion.Ausfuehrbar)
                 {
                     KiErgebnis ohne = KiErgebnis.Abgelehnt(
                         string.Format(CultureInfo.CurrentCulture, KiTexte.AktionOhneAusfuehrung, aktion.Name));
@@ -544,7 +573,7 @@ namespace WindowsFormsApplication1
         /// geprueft - zwischen Vorschau und Klick kann eine Minute liegen, und in dieser
         /// Minute kann eine Lizenz ablaufen oder die Sicherungsdatei verschwinden.
         /// </remarks>
-        private static string FreigabeEinloesen(KiAufruf aufruf, KiFreigabe freigabe)
+        private string FreigabeEinloesen(KiAufruf aufruf, KiFreigabe freigabe)
         {
             if (freigabe == null)
                 return string.Format(CultureInfo.CurrentCulture, KiTexte.FreigabeFehlt, aufruf.Name);
@@ -575,7 +604,7 @@ namespace WindowsFormsApplication1
         /// Minute kann eine Lizenz ablaufen oder die Sicherungsdatei verschwinden.
         /// </para>
         /// </remarks>
-        private static string Schreibvorbedingung(KiAktion aktion)
+        private string Schreibvorbedingung(KiAktion aktion)
         {
             if (aktion == null || aktion.Stufe == Schutzstufe.Lesen) return null;
 
@@ -590,7 +619,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Klartextgrund, wenn die Lizenz kein Schreiben erlaubt; sonst <c>null</c>.</summary>
-        private static string SchreibrechtPruefen()
+        private string SchreibrechtPruefen()
         {
             bool darf;
             try
@@ -625,7 +654,7 @@ namespace WindowsFormsApplication1
         /// Vorbedingung und Vorschau - beides LESEND, im dialogfreien Modus, auf dem
         /// UI-Thread.
         /// </summary>
-        private static Vorschaubefund VorschauLauf(KiAufruf aufruf)
+        private Vorschaubefund VorschauLauf(KiAufruf aufruf)
         {
             KiAktion aktion = aufruf.Aktion;
             var befund = new Vorschaubefund();
@@ -668,8 +697,15 @@ namespace WindowsFormsApplication1
         /// Vorbedingung, dialogfreier Modus, Aufruf des Bestands, stille Fehler abholen.
         /// Laeuft immer auf dem UI-Thread.
         /// </summary>
-        private static KiErgebnis LaufMitEngineModus(KiAufruf aufruf, CancellationToken abbruch)
+        /// <remarks>
+        /// <b>Die Weiche zwischen kurz und lang steht HIER und nur hier</b> (Etappe S3):
+        /// Eine Aktion mit <see cref="KiAktion.AusfuehrenLang"/> bekommt die
+        /// <see cref="KiLaufumgebung"/> mit Fortschritt und Abbruchmarke; die 19 uebrigen
+        /// behalten ihre Signatur woertlich.
+        /// </remarks>
+        private KiErgebnis LaufMitEngineModus(KiAufruf aufruf, CancellationToken abbruch)
         {
+            var umgebung = new KiLaufumgebung(Fortschritt, abbruch);
             KiAktion aktion = aufruf.Aktion;
             var uhr = Stopwatch.StartNew();
             KiErgebnis ergebnis;
@@ -684,7 +720,9 @@ namespace WindowsFormsApplication1
                     string grund = aktion.Vorbedingung != null ? aktion.Vorbedingung(aufruf) : null;
                     ergebnis = !string.IsNullOrWhiteSpace(grund)
                         ? KiErgebnis.Abgelehnt(grund)
-                        : aktion.Ausfuehren(aufruf);
+                        : aktion.AusfuehrenLang != null
+                            ? aktion.AusfuehrenLang(aufruf, umgebung)
+                            : aktion.Ausfuehren(aufruf);
 
                     if (ergebnis == null)
                         ergebnis = KiErgebnis.Fehlgeschlagen(
@@ -722,7 +760,7 @@ namespace WindowsFormsApplication1
         /// Fuehrt <paramref name="arbeit"/> auf dem UI-Thread aus. Gibt es keine
         /// Oberflaeche (Aktionsharnisch), laeuft sie auf dem rufenden Thread.
         /// </summary>
-        private static async Task<T> AufUiThread<T>(Func<T> arbeit)
+        private async Task<T> AufUiThread<T>(Func<T> arbeit)
         {
             Func<Func<Task>, Task> weg = AufOberflaeche;
             if (weg != null)
@@ -745,39 +783,20 @@ namespace WindowsFormsApplication1
                 return ergebnis;
             }
 
-            // Rueckfall ohne eingelegten Weg: das erste offene Formular.
-            Control anker = UiAnker();
-
-            if (anker == null || !anker.InvokeRequired)
-                return arbeit();
-
-            var quelle = new TaskCompletionSource<T>();
-            anker.BeginInvoke((MethodInvoker)delegate
-            {
-                try { quelle.SetResult(arbeit()); }
-                catch (Exception ex) { quelle.SetException(ex); }
-            });
-            return await quelle.Task.ConfigureAwait(true);
-        }
-
-        /// <summary>Das Steuerelement, ueber das der Wechsel auf den UI-Thread laeuft.</summary>
-        private static Control UiAnker()
-        {
-            // Hausmuster: ueber Application.OpenForms (u. a. Form_Stromspeicher.cs:103).
-            try
-            {
-                foreach (Form f in Application.OpenForms)
-                    if (f != null && !f.IsDisposed && f.IsHandleCreated) return f;
-            }
-            catch (InvalidOperationException)
-            {
-                // OpenForms kann sich waehrend des Durchlaufs aendern - dann eben ohne Anker.
-            }
-            return null;
+            // OHNE eingelegten Weg laeuft die Arbeit auf dem RUFENDEN Faden. Genau so
+            // verhaelt sich der Aktionsharnisch, der Konsolenlauf und der iOS-Pruefmodus:
+            // Wo keine Oberflaeche lebt, gibt es auch keinen zweiten Faden, auf den zu
+            // wechseln waere.
+            //
+            // Der frueher hier stehende Rueckfall ueber Application.OpenForms ist mit
+            // Auftrag #201 entfallen (Umzug in den Kern). Er half nur unter Windows, und
+            // dort legt die Huelle AufOberflaeche ohnehin ein.
+            await Task.CompletedTask.ConfigureAwait(true);
+            return arbeit();
         }
 
         /// <summary>Fragt die Modalitaet ueber den eingestellten Weg; im Zweifel frei.</summary>
-        private static bool ModalitaetSperrt()
+        private bool ModalitaetSperrt()
         {
             try
             {
@@ -794,27 +813,16 @@ namespace WindowsFormsApplication1
             catch { return false; }
         }
 
-        /// <summary>Ist gerade ein modaler Dialog offen? (Die echte Abfrage.)</summary>
-        private static bool ModalerDialogOffen()
-        {
-            try
-            {
-                Form aktiv = Form.ActiveForm;
-                return aktiv != null && aktiv.Modal;
-            }
-            catch { return false; }
-        }
-
         // ============================================================ Sitzung/Protokoll
 
         /// <summary>
         /// Die zuletzt geschriebene Protokollzeile - damit der Chat sie zeigen kann, ohne
         /// die Datei erneut zu lesen (Fachkonzept 3.6: die Zeile gehoert zum Ergebnis).
         /// </summary>
-        public static string LetzteProtokollzeile { get; private set; } = "";
+        public string LetzteProtokollzeile { get; private set; } = "";
 
         /// <summary>Die Aktionen dieser Sitzung, juengste zuerst (Fachkonzept 7.3).</summary>
-        public static IReadOnlyList<KiSitzungseintrag> LetzteAktionen(int anzahl)
+        public IReadOnlyList<KiSitzungseintrag> LetzteAktionen(int anzahl)
         {
             lock (_sitzungSperre)
             {
@@ -826,7 +834,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Leert das Sitzungsgedaechtnis (Sitzungswechsel, Tests).</summary>
-        public static void SitzungLeeren()
+        public void SitzungLeeren()
         {
             lock (_sitzungSperre) _sitzung.Clear();
         }
@@ -841,7 +849,7 @@ namespace WindowsFormsApplication1
         /// der einfachste aller Faelle - „niemand da, der bestaetigen koennte" -
         /// unprotokolliert.
         /// </remarks>
-        public static KiErgebnis AbweisenUndVermerken(KiAufruf aufruf, string grund)
+        public KiErgebnis AbweisenUndVermerken(KiAufruf aufruf, string grund)
         {
             if (aufruf == null) throw new ArgumentNullException(nameof(aufruf));
 
@@ -852,7 +860,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Protokolliert eine Abweisung der Vorbereitung und verpackt sie.</summary>
-        private static KiVorbereitung Abweisen(DateTime beginn, KiAufruf aufruf, int projektId,
+        private KiVorbereitung Abweisen(DateTime beginn, KiAufruf aufruf, int projektId,
                                                KiErgebnis ergebnis)
         {
             Vermerken(beginn, aufruf.Name, aufruf.Aktion.Stufe, aufruf.AlsJson(), projektId, ergebnis,
@@ -868,7 +876,7 @@ namespace WindowsFormsApplication1
         /// Ist die vermerkte Aktion eine Formularaktion? Nur sie traegt den Vermerk der
         /// abgeschalteten Feldsicherung - siehe unten.
         /// </param>
-        private static void Vermerken(DateTime zeitpunkt, string aktion, Schutzstufe stufe,
+        private void Vermerken(DateTime zeitpunkt, string aktion, Schutzstufe stufe,
                                       string parameterJson, int projektId, KiErgebnis ergebnis,
                                       bool formularaktion = false)
         {
@@ -923,14 +931,14 @@ namespace WindowsFormsApplication1
         /// zwei Formate.
         /// </para>
         /// </remarks>
-        public static void ProtokollzeileAnhaengen(string zeile)
+        public void ProtokollzeileAnhaengen(string zeile)
         {
             if (string.IsNullOrEmpty(zeile)) return;
             Schreibe(zeile);
         }
 
         /// <summary>Pfad der Protokolldatei - neben der Datenbank (Fachkonzept 3.6).</summary>
-        public static string ProtokollPfad()
+        public string ProtokollPfad()
         {
             try
             {
@@ -947,7 +955,7 @@ namespace WindowsFormsApplication1
         /// (<c>Allgemein\Update\SchemaMigration.cs:3465-3488</c>): ein nicht beschreibbarer
         /// Ordner darf die Aktion nicht scheitern lassen.
         /// </summary>
-        private static void Schreibe(string zeile)
+        private void Schreibe(string zeile)
         {
             try
             {
@@ -969,8 +977,21 @@ namespace WindowsFormsApplication1
 
         // ===================================================================== Hilfen
 
+        /// <summary>
+        /// Meldet Klarnamen an, die in freien Texten stehen koennen (H8) - der
+        /// Schnittstellenteil, der bis Auftrag #201 in der Windows-Huelle lag.
+        /// </summary>
+        /// <remarks>
+        /// Die Namensquellen sind Projekte und Kunden aus der Datenbank
+        /// (<see cref="KiHilfe.KlarnamenAnmelden"/>); der Kern erreicht sie seit dem
+        /// Umzug des Registers selbst. Ein Adapter in der Huelle waere nur noch eine
+        /// Weiterleitung.
+        /// </remarks>
+        public void KlarnamenAnmelden(KiPlatzhalter platzhalter, params string[] texte)
+            => KiHilfe.KlarnamenAnmelden(platzhalter, texte);
+
         /// <summary>Die Projekt-ID der Protokollzeile, aus den bekannten Parameternamen.</summary>
-        private static int ProjektAus(KiAufruf aufruf)
+        private int ProjektAus(KiAufruf aufruf)
         {
             foreach (string name in PROJEKT_PARAMETER)
                 if (aufruf.Hat(name)) return aufruf.Id(name);

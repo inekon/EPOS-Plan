@@ -20632,6 +20632,411 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ansicht „{0}“ ist nicht geöffnet; diese Rechnung läuft nur dort. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ANSICHT_NICHT_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ANSICHT_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffne die Heizkesselverwaltung. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_BEISPIEL_DIALOG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_BEISPIEL_DIALOG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichere den Heizkessel so, wie er jetzt in der Maske steht. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_BEISPIEL_DIALOG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_BEISPIEL_DIALOG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewerte die eingestellte Speicherflotte. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestimme das wirtschaftliche Peak-Ziel für die eingestellte Flotte. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_BEISPIEL_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("KI_AKTION_BEISPIEL_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechne das Projekt Musterhaus und speichere das Ergebnis. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_BEISPIEL_SIMULATION_RECHNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_BEISPIEL_SIMULATION_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Maske aus dem Dialogkatalog, die geöffnet werden soll. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ERL_MASKE_OEFFNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ERL_MASKE_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll das Ergebnis gespeichert werden? Ohne Angabe wird nur gerechnet. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ERL_SIM_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ERL_SIM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Flotte wird bewertet … ähnelt.
+        /// </summary>
+        public static string KI_AKTION_FLOTTE_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_AKTION_FLOTTE_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Flotte der Ansicht „{0}“ wird bewertet. Der Lauf kann mehrere Minuten dauern; ein vorheriges Ergebnis wird ersetzt. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_FLOTTE_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_AKTION_FLOTTE_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ansicht „{1}“ bietet den Rechenweg „{0}“ gerade nicht an. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_KEIN_RECHENWEG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_KEIN_RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knöpfe einer Maske kann der Assistent nicht auslösen. Zum Schreiben gibt es dialog_speichern, zum Füllen der Felder feld_setzen und formular_ausfuellen. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_KNOPF_KEIN_WEG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_KNOPF_KEIN_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Knopf löst der Assistent nicht aus; zum Schreiben gibt es die Aktion dialog_speichern. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_KNOPF_UEBER_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_KNOPF_UEBER_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ließ sich nicht öffnen: {1} ähnelt.
+        /// </summary>
+        public static string KI_AKTION_OEFFNEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_AKTION_OEFFNEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ lässt sich von hier aus nicht öffnen (Ziel {1}). Auf dieser Plattform führt kein Weg dorthin. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_OEFFNEN_KEIN_WEG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_OEFFNEN_KEIN_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Maske „{0}“ ist kein Öffnungsweg hinterlegt. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_OEFFNEN_OHNE_ZIEL {
+            get {
+                return ResourceManager.GetString("KI_AKTION_OEFFNEN_OHNE_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist geöffnet. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_OEFFNEN_OK {
+            get {
+                return ResourceManager.GetString("KI_AKTION_OEFFNEN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das wirtschaftliche Peak-Ziel wird bestimmt … ähnelt.
+        /// </summary>
+        public static string KI_AKTION_PEAKZIEL_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_AKTION_PEAKZIEL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Ansicht „{0}“ wird das wirtschaftliche Peak-Ziel bestimmt. Der Lauf kann mehrere Minuten dauern; das gefundene Ziel ersetzt danach den eingestellten Wert. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_PEAKZIEL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_AKTION_PEAKZIEL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ließ sich nicht rechnen: {1} ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf ist fertig. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_FERTIG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ wird gerechnet … ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist gerechnet. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_OK {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist gerechnet und das Ergebnis gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_OK_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_OK_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis speichern ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_SPEICHERN_NAME {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_SPEICHERN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ wird gerechnet. Das gespeicherte Ergebnis bleibt unberührt. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ wird gerechnet und das Ergebnis gespeichert. Der vorhandene Ergebnisstand des Projekts wird dabei überschrieben. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SIM_VORSCHAU_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SIM_VORSCHAU_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ließ sich nicht speichern: {1} ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SPEICHERN_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SPEICHERN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ bietet dem Assistenten keinen Speicherweg an. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SPEICHERN_KEIN_WEG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SPEICHERN_KEIN_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vorzustand ist gesichert: {0} ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SPEICHERN_SICHERUNG {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SPEICHERN_SICHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ wird mit ihren {1} Feldern gespeichert. Der Datensatz wird geschrieben; vorher entsteht eine Sicherungskopie der Datenbank. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_SPEICHERN_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_AKTION_SPEICHERN_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maske öffnen ähnelt.
+        /// </summary>
+        public static string KI_AKTION_TITEL_DIALOG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_TITEL_DIALOG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maske speichern ähnelt.
+        /// </summary>
+        public static string KI_AKTION_TITEL_DIALOG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_TITEL_DIALOG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flotte bewerten ähnelt.
+        /// </summary>
+        public static string KI_AKTION_TITEL_FLOTTE_BEWERTEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_TITEL_FLOTTE_BEWERTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel bestimmen ähnelt.
+        /// </summary>
+        public static string KI_AKTION_TITEL_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("KI_AKTION_TITEL_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation rechnen ähnelt.
+        /// </summary>
+        public static string KI_AKTION_TITEL_SIMULATION_RECHNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_TITEL_SIMULATION_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz der Maske wird geschrieben. Vorher entsteht eine Sicherungskopie der Datenbank; rückgängig macht das Schreiben nur das Zurückspielen dieser Kopie. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_WIRKUNG_DIALOG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_WIRKUNG_DIALOG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ergebnis der Bewertung steht danach in der Ansicht; ein vorheriges Ergebnis wird ersetzt. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gefundene Peak-Ziel steht danach in der Ansicht; der bisherige Wert wird ersetzt. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_WIRKUNG_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("KI_AKTION_WIRKUNG_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf belegt den Rechenkern für die Dauer der Rechnung. Mit „speichern“ wird der vorhandene Ergebnisstand des Projekts überschrieben. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_WIRKUNG_SIMULATION_RECHNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_WIRKUNG_SIMULATION_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet eine der freigegebenen Masken; der Anwender arbeitet danach selbst darin weiter. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ZWECK_DIALOG_OEFFNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ZWECK_DIALOG_OEFFNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichert die Eingaben der offenen Maske über deren eigenen Speicherweg in die Datenbank. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ZWECK_DIALOG_SPEICHERN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ZWECK_DIALOG_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Flotte der offenen Stromspeicher-Ansicht durch — derselbe Weg wie der Knopf „Berechnen“. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ZWECK_FLOTTE_BEWERTEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ZWECK_FLOTTE_BEWERTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestimmt in der offenen Stromspeicher-Ansicht das wirtschaftliche Peak-Ziel. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ZWECK_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ZWECK_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Simulation eines Projekts durch; auf Wunsch wird das Ergebnis gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_AKTION_ZWECK_SIMULATION_RECHNEN {
+            get {
+                return ResourceManager.GetString("KI_AKTION_ZWECK_SIMULATION_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anfrage wurde abgebrochen. ähnelt.
         /// </summary>
         public static string KI_AKT_ABGEBROCHEN {
@@ -22765,6 +23170,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_EINST_TITEL {
             get {
                 return ResourceManager.GetString("KI_EINST_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske meldet dazu: {0} ähnelt.
+        /// </summary>
+        public static string KI_FELD_DIALOGBEFUND {
+            get {
+                return ResourceManager.GetString("KI_FELD_DIALOGBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ erwartet eine Zahl; „{1}“ ist keine. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEINE_ZAHL {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ erwartet Ja oder Nein; „{1}“ ist keines von beiden. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEIN_WAHRHEITSWERT {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEIN_WAHRHEITSWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ führt immer einen Wert; leeren lässt es sich nicht. ähnelt.
+        /// </summary>
+        public static string KI_FELD_LEER_UNMOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_FELD_LEER_UNMOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist ein Pflichtfeld und darf nicht leer bleiben. ähnelt.
+        /// </summary>
+        public static string KI_FELD_LEER_VERBOTEN {
+            get {
+                return ResourceManager.GetString("KI_FELD_LEER_VERBOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist eine abgeleitete Größe und lässt sich nicht setzen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_NICHT_SETZBAR {
+            get {
+                return ResourceManager.GetString("KI_FELD_NICHT_SETZBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der in „{0}“ bearbeitete Satz gehört zur Auslieferung und ist schreibgeschützt. ähnelt.
+        /// </summary>
+        public static string KI_FELD_SATZ_GESCHUETZT {
+            get {
+                return ResourceManager.GetString("KI_FELD_SATZ_GESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ließ sich nicht setzen: {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_SETZEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KI_FELD_SETZEN_FEHLER", resourceCulture);
             }
         }
         

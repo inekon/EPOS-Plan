@@ -612,7 +612,37 @@
         // Auftrag #200: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden. Sie wechselt
         // mit jedem Klick in der Projektliste - deshalb ein Delegat und keine Instanz;
         // die Bruecke liest bei jedem Mal neu.
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => _projektZeile);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => _projektZeile,
+                                          KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier ÜBERNEHMEN.</b> Dieser Dialog schreibt nicht in
+    /// einen Katalog, er schreibt die gewählte Projektzeile in das Modell zurück —
+    /// derselbe Weg, den jedes geänderte Feld der Zeile von Hand geht
+    /// (<c>Uebernehmen?.Invoke(_projektZeile)</c>). Ohne gewählte Zeile gibt es nichts zu
+    /// übernehmen, und die Aktion lehnt benannt ab.</para>
+    /// <para><b>Keine eigene Prüfung.</b> Die drei angemeldeten Felder sind Zahlenfelder,
+    /// die sich selbst färben; eine Knopfprüfung wie in den Katalogeditoren hat dieser
+    /// Dialog nicht.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Speichern = () => Task.FromResult(KiUebernehmen())
+    };
+
+    private KiKern.KiErgebnis KiUebernehmen()
+    {
+        if (_projektZeile is null || Uebernehmen is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        Uebernehmen(_projektZeile);
+        return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
     }
 
     /// <summary>

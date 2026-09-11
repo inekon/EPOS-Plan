@@ -600,7 +600,84 @@
         _kiSicht = new StromspeicherKiSicht(() => _eingaben, () => _flottenErgebnis,
                                             () => _vorpruefung);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
-                                          () => _kiSicht);
+                                          () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3):
+    /// zeichnen, die Vorprüfung, der Speicherweg — und als einzige Maske ZWEI
+    /// Rechenwege.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Der Schlüssel eines Rechenwegs ist der AKTIONSNAME</b> und kein eigener
+    /// Katalog: <c>flotte_bewerten</c> ist der Knopf „Berechnen", <c>peak_ziel_bestimmen</c>
+    /// der Knopf „Peak-Ziel bestimmen…". Beide laufen DENSELBEN Weg wie der Knopf — mit
+    /// derselben Vorprüfung, demselben Fortschritt und demselben Abbruch —, damit der
+    /// Assistent nicht etwas anderes rechnet als die Ansicht daneben.</para>
+    /// <para><b>Das Ergebnis steht danach IN DER ANSICHT</b>, nicht nur im Chat: Die
+    /// gerufenen Methoden setzen ihre Stände (<c>_flottenErgebnis</c>, <c>_peakErgebnis</c>)
+    /// wie nach dem Knopfdruck; der Chat bekommt nur die Kurzfassung.</para>
+    /// <para><b>Das Peak-Ziel wird NICHT von selbst übernommen.</b> Der Knopfweg legt das
+    /// Ergebnis in eine Rückfrage („soll der Wert übernommen werden?"), und dabei bleibt
+    /// es — eine Rechnung ist kein Setzen. Wer den Wert will, bestätigt die Rückfrage
+    /// oder lässt ihn mit <c>feld_setzen</c> eintragen.</para>
+    /// <para><b>Seit #206 gibt es nur noch EINEN Weg zu rechnen</b> (Anwenderentscheid
+    /// SD‑E‑8: ein Einzelspeicher ist eine Flotte mit einer Einheit). <c>Starten()</c> ist
+    /// seither die dünne Weiche auf <c>FlotteStarten()</c>, und genau sie ruft auch der
+    /// Knopf „Berechnen" — der Assistent geht damit denselben Weg, ohne dass hier eine
+    /// Betriebsart zu unterscheiden wäre.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken()
+        => new KiMaskenhaken
+           {
+               Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+               Pruefen = KiVorpruefung,
+               Speichern = KiSpeichern
+           }
+           .Rechenweg("flotte_bewerten", KiBewerten)
+           .Rechenweg("peak_ziel_bestimmen", KiPeakZiel);
+
+    private string KiVorpruefung() => Eingabefehler;
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (Dienste?.EinstellungenSpeichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
+
+        string fehler = await EinstellungenSichern(_eingaben);
+        return fehler.Length == 0
+            ? KiKern.KiErgebnis.Ok(Resource.KI_AKTION_SIM_FERTIG, anzahl: 1)
+            : KiKern.KiErgebnis.Fehlgeschlagen(fehler);
+    }
+
+    private async Task<KiKern.KiErgebnis> KiBewerten(KiKern.KiLaufumgebung umgebung)
+    {
+        if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
+        if (!RechnenFrei) return KiKern.KiErgebnis.Abgelehnt(Eingabefehler);
+
+        await Starten();
+        await InvokeAsync(StateHasChanged);
+
+        if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
+
+        return KiKern.KiErgebnis.Ok(
+            string.Format(Kultur, Resource.KI_AKTION_FLOTTE_LAEUFT), anzahl: 1);
+    }
+
+    private async Task<KiKern.KiErgebnis> KiPeakZiel(KiKern.KiLaufumgebung umgebung)
+    {
+        if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
+        if (Dienste?.PeakZielBestimmen is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
+
+        await PeakZielBestimmen();
+        await InvokeAsync(StateHasChanged);
+
+        if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
+        if (_peakErgebnis is null)
+            return KiKern.KiErgebnis.Fehlgeschlagen(Resource.OPT_MSG_KEIN_ERGEBNIS);
+
+        return KiKern.KiErgebnis.Ok(PeakFrageText, anzahl: 1);
     }
 
     /// <summary>
