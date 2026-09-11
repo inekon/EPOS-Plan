@@ -655,8 +655,11 @@
         if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
         if (!RechnenFrei) return KiKern.KiErgebnis.Abgelehnt(Eingabefehler);
 
-        await Starten();
+        await KiLaufKlammer(umgebung, Starten);
         await InvokeAsync(StateHasChanged);
+
+        if (umgebung.Abbruch.IsCancellationRequested)
+            return KiKern.KiErgebnis.Abgebrochen(Resource.KI_AUS_ABGEBROCHEN);
 
         if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
 
@@ -670,14 +673,45 @@
         if (Dienste?.PeakZielBestimmen is null)
             return KiKern.KiErgebnis.Abgelehnt(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
 
-        await PeakZielBestimmen();
+        await KiLaufKlammer(umgebung, PeakZielBestimmen);
         await InvokeAsync(StateHasChanged);
+
+        if (umgebung.Abbruch.IsCancellationRequested)
+            return KiKern.KiErgebnis.Abgebrochen(Resource.KI_AUS_ABGEBROCHEN);
 
         if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
         if (_peakErgebnis is null)
             return KiKern.KiErgebnis.Fehlgeschlagen(Resource.OPT_MSG_KEIN_ERGEBNIS);
 
         return KiKern.KiErgebnis.Ok(PeakFrageText, anzahl: 1);
+    }
+
+    /// <summary>
+    /// Die Klammer um einen Lauf, den der ASSISTENT ausgelöst hat (Auftrag #214):
+    /// Fortschritt hinaus, Abbruch herein.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Warum eine Klammer und nicht zwei Zeilen je Rechenweg.</b> Beide Rechenwege
+    /// brauchen dasselbe, und beide dürfen es beim Verlassen nicht vergessen: Bliebe
+    /// <see cref="_kiLauf"/> stehen, meldete der nächste Knopfdruck der Ansicht seinen
+    /// Fortschritt an eine Laufumgebung, die längst abgeräumt ist.
+    /// </para>
+    /// <para>
+    /// <b>Der Abbruch geht denselben Weg wie der Knopf</b> — <see cref="Abbrechen"/>,
+    /// also <c>Dienste.Abbrechen</c> und damit die EINE Abbruchquelle der Hülle. Ein
+    /// zweiter Abbruchweg für den Assistenten könnte den Lauf der Ansicht nicht
+    /// anhalten, und der Lauf ist derselbe.
+    /// </para>
+    /// </remarks>
+    private async Task KiLaufKlammer(KiKern.KiLaufumgebung umgebung, Func<Task> lauf)
+    {
+        _kiLauf = umgebung;
+        using (umgebung.Abbruch.Register(Abbrechen))
+        {
+            try { await lauf(); }
+            finally { _kiLauf = null; }
+        }
     }
 
     /// <summary>
@@ -800,8 +834,19 @@
     //  Der Lauf
     // =====================================================================
 
+    /// <summary>
+    /// Ein Fortschrittsschritt der Ansicht — und, wenn der Assistent den Lauf ausgelöst
+    /// hat, DERSELBE Schritt an seine Laufumgebung (Auftrag #214).
+    /// </summary>
+    /// <remarks>
+    /// <b>Eine Meldung, zwei Zuhörer.</b> Die Ansicht zeigt ihren eigenen Balken; der
+    /// Chat zeigt denselben Stand in seinem. Ein zweiter Meldeweg für den Assistenten
+    /// liefe beim ersten Umbau auseinander — es ist dieselbe Rechnung.
+    /// </remarks>
     private void Melden(double? anteil, string text)
     {
+        _kiLauf?.Melde(anteil, text);
+
         _ = InvokeAsync(() =>
         {
             _anteil = anteil;
@@ -811,6 +856,11 @@
     }
 
     private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
+
+    /// <summary>
+    /// Die Laufumgebung des Assistenten, solange ER rechnen lässt; sonst <c>null</c>.
+    /// </summary>
+    private KiKern.KiLaufumgebung? _kiLauf;
 
     private async Task SimulationslaufStarten()
     {

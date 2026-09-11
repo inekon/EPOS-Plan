@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using EPOS.UI.Bausteine;
@@ -1059,6 +1060,239 @@ public class KiChatDialogTests : EposBunitContext
         cut.Find("textarea.epos-kieingabe-feld").KeyDown(new KeyboardEventArgs { Key = "Enter" });
 
         Assert.Single(fragen);
+    }
+
+    // ==================================================================
+    //  Der laufende Rechenvorgang (Auftrag #214)
+    // ==================================================================
+
+    /// <summary>Eine Aktion, die erst auf Kommando fertig wird.</summary>
+    private static TaskCompletionSource<IReadOnlyList<Gespraechszeile>> Haengend()
+        => new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>Werkzeugliste öffnen, die eine Aktion wählen, „Ausführen" drücken.</summary>
+    private static void VonHand(IRenderedComponent<KiChatDialog> cut)
+    {
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Werkzeuge...").Click();
+        cut.Find("button.epos-kiwerkzeuge-eintrag").Click();
+        cut.Find("div.epos-kiwerkzeuge-fuss button.epos-knopf--primaer").Click();
+    }
+
+    private IRenderedComponent<KiChatDialog> MitLauf(
+        TaskCompletionSource<IReadOnlyList<Gespraechszeile>> quelle,
+        Action<KiChatSteuerung>? anmelden = null,
+        Action<IReadOnlyDictionary<string, object>>? beimAufruf = null)
+    {
+        return Zeigen(aktionen: new[] { Schreibaktion() }, mehr: p =>
+        {
+            if (anmelden is not null) p.Add(x => x.Anmelden, anmelden);
+            p.Add(x => x.Ausfuehren,
+                  (Func<string, IReadOnlyDictionary<string, object>,
+                        Task<IReadOnlyList<Gespraechszeile>>>)((_, werte) =>
+                  {
+                      beimAufruf?.Invoke(werte);
+                      return quelle.Task;
+                  }));
+        });
+    }
+
+    /// <summary>
+    /// <b>Der Restpunkt aus #201.</b> Während einer lang laufenden Aktion steht der
+    /// Baustein <c>Fortschritt</c> — Balken, Schritttext und „Abbrechen" —, und nach
+    /// dem Lauf verschwindet er wieder. Vorher lief ein Simulationslauf über den
+    /// Assistenten minutenlang ohne jede Rückmeldung.
+    /// </summary>
+    [Fact]
+    public void Waehrend_einer_langen_Aktion_stehen_Balken_und_Abbrechen()
+    {
+        var quelle = Haengend();
+        var cut = MitLauf(quelle);
+
+        VonHand(cut);
+
+        Assert.True(cut.Instance.LaufSichtbar);
+        var balken = cut.Find("div.epos-fortschritt");
+        Assert.Contains("Variante anlegen läuft", balken.TextContent, StringComparison.Ordinal);
+        Assert.NotNull(balken.QuerySelector("button.epos-fortschritt-abbruch"));
+
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        Assert.Empty(cut.FindAll("div.epos-fortschritt"));
+    }
+
+    /// <summary>
+    /// <b>„Abbrechen" setzt die Abbruchmarke</b> — die, die der Wirt unmittelbar vor
+    /// dem Aufruf abholt und in den Kern hineinreicht. Ohne sie wäre der Knopf eine
+    /// Zusage, die niemand einlöst.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_setzt_die_Abbruchmarke_der_laufenden_Aktion()
+    {
+        var quelle = Haengend();
+        KiChatSteuerung? steuerung = null;
+        CancellationToken marke = CancellationToken.None;
+
+        var cut = MitLauf(quelle,
+                          anmelden: s => steuerung = s,
+                          beimAufruf: _ => marke = steuerung!.Abbruchmarke());
+
+        VonHand(cut);
+
+        Assert.True(marke.CanBeCanceled, "Der Wirt hat keine Marke bekommen.");
+        Assert.False(marke.IsCancellationRequested);
+
+        cut.Find("button.epos-fortschritt-abbruch").Click();
+
+        Assert.True(marke.IsCancellationRequested);
+    }
+
+    /// <summary>
+    /// Nach dem Abbruch steht die Sache BENANNT und MIT DAUER im Verlauf — „Variante
+    /// anlegen – abgebrochen nach n s." Ein Balken, der einfach verschwindet, ließe
+    /// den Anwender raten, was aus seiner Anforderung geworden ist.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Abbruch_steht_die_Aktion_benannt_im_Verlauf()
+    {
+        var quelle = Haengend();
+        var cut = MitLauf(quelle);
+
+        VonHand(cut);
+        cut.Find("button.epos-fortschritt-abbruch").Click();
+
+        // Der Lauf haelt erst an der naechsten Phasengrenze - das sagt die Zeile unter
+        // dem Balken, und der Knopf ist bis dahin gesperrt.
+        Assert.Contains("Abbruch angefordert",
+                        cut.Find("div.epos-fortschritt").TextContent, StringComparison.Ordinal);
+        Assert.True(cut.Find("button.epos-fortschritt-abbruch").HasAttribute("disabled"));
+
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        string verlauf = cut.Find("div.epos-verlauf").TextContent;
+        Assert.Contains("Variante anlegen", verlauf, StringComparison.Ordinal);
+        Assert.Contains("abgebrochen nach", verlauf, StringComparison.Ordinal);
+    }
+
+    /// <summary>Ohne Abbruch steht dort dieselbe Zeile als „fertig nach n s.".</summary>
+    [Fact]
+    public void Nach_dem_Lauf_steht_die_Aktion_mit_ihrer_Dauer_im_Verlauf()
+    {
+        var quelle = Haengend();
+        var cut = MitLauf(quelle);
+
+        VonHand(cut);
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        string verlauf = cut.Find("div.epos-verlauf").TextContent;
+        Assert.Contains("Variante anlegen", verlauf, StringComparison.Ordinal);
+        Assert.Contains("fertig nach", verlauf, StringComparison.Ordinal);
+        Assert.DoesNotContain("abgebrochen", verlauf, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Eine Aktion zur Zeit</b> (Auftrag #214, Punkt 2): Solange etwas läuft, sind
+    /// Eingabefeld, Senden und die Aktionsknöpfe gesperrt. Die Einläufigkeit selbst
+    /// steht im Ausführer; der Dialog spiegelt sie nur.
+    /// </summary>
+    [Fact]
+    public void Waehrend_eines_Laufs_sind_Eingabe_und_Knoepfe_gesperrt()
+    {
+        var quelle = Haengend();
+        var cut = MitLauf(quelle);
+
+        VonHand(cut);
+
+        Assert.True(cut.Find("textarea.epos-kieingabe-feld").HasAttribute("disabled"));
+        Assert.True(cut.FindAll("button.epos-knopf")
+                       .First(b => b.TextContent.Trim() == "Werkzeuge...")
+                       .HasAttribute("disabled"));
+
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        Assert.False(cut.Find("textarea.epos-kieingabe-feld").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Der Balken kommt erst, wenn wirklich gerechnet wird.</b> Eine gewöhnliche
+    /// Frage beantwortet der Verlauf mit „Der Assistent denkt nach…"; erst wenn die
+    /// Werkzeugrunde eine lange Aktion auslöst und der Kern seinen ersten Schritt
+    /// meldet, steht der Balken — dann aber mit Anteil, Text und Abbruch.
+    /// </summary>
+    [Fact]
+    public void Eine_Frage_zeigt_den_Balken_erst_mit_dem_ersten_gemeldeten_Schritt()
+    {
+        var quelle = Haengend();
+        KiChatSteuerung? steuerung = null;
+
+        var cut = Zeigen(p => p
+            .Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s))
+            .Add(x => x.Fragen,
+                 (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)
+                 ((_, _, _) => quelle.Task)));
+
+        cut.Find("textarea.epos-kieingabe-feld").Input("Rechne das Projekt Musterhaus");
+        cut.FindAll("button.epos-knopf").First(b => b.TextContent.Trim() == "Fragen").Click();
+
+        Assert.True(cut.Instance.Laeuft);
+        Assert.False(cut.Instance.LaufSichtbar);
+        Assert.Empty(cut.FindAll("div.epos-fortschritt"));
+
+        steuerung!.Fortschritt.Report(new KiFortschritt(0.6, "Die Kaskade rechnet …"));
+        cut.WaitForState(() => cut.Instance.LaufSichtbar);
+
+        Assert.Contains("Die Kaskade rechnet",
+                        cut.Find("div.epos-fortschritt").TextContent, StringComparison.Ordinal);
+        Assert.Equal("60", cut.Find("div.epos-fortschritt progress").GetAttribute("value"));
+
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        // Der Lauf hatte keinen eigenen Namen — den nennt der ERSTE gemeldete Schritt,
+        // ohne seine nachgestellten Auslassungspunkte.
+        Assert.Contains("Die Kaskade rechnet – fertig nach",
+                        cut.Find("div.epos-verlauf").TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Ein Schritt, der NACH dem Ende eintrifft, wird verworfen — er beschriebe einen
+    /// Lauf, den es nicht mehr gibt.
+    /// </summary>
+    [Fact]
+    public void Ein_Schritt_nach_dem_Ende_bringt_den_Balken_nicht_zurueck()
+    {
+        var quelle = Haengend();
+        KiChatSteuerung? steuerung = null;
+
+        var cut = MitLauf(quelle, anmelden: s => steuerung = s);
+
+        VonHand(cut);
+        quelle.SetResult(Array.Empty<Gespraechszeile>());
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+
+        steuerung!.Fortschritt.Report(new KiFortschritt(0.9, "zu spät"));
+        cut.Render();
+
+        Assert.False(cut.Instance.LaufSichtbar);
+        Assert.Empty(cut.FindAll("div.epos-fortschritt"));
+        Assert.DoesNotContain("zu spät", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ohne laufende Anforderung gibt es keine Marke</b>, die jemand setzen könnte:
+    /// <c>Abbruchmarke()</c> antwortet mit <c>CancellationToken.None</c>.
+    /// </summary>
+    [Fact]
+    public void Ohne_Lauf_gibt_es_keine_Abbruchmarke()
+    {
+        KiChatSteuerung? steuerung = null;
+        Zeigen(p => p.Add(x => x.Anmelden, (Action<KiChatSteuerung>)(s => steuerung = s)));
+
+        Assert.NotNull(steuerung);
+        Assert.False(steuerung!.Abbruchmarke().CanBeCanceled);
     }
 
     /// <summary>Umschalt+Enter sendet nicht — es bleibt der Zeilenumbruch.</summary>

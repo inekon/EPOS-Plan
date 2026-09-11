@@ -938,13 +938,24 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
   455 von 573 Dateien eine BOM, 118 nicht — das ist unschädlich (UTF-8 ohne BOM ist eindeutig),
   beim Bearbeiten den vorhandenen Zustand je Datei beibehalten. Die frühere Kodierungsfalle
   (cp1252 ohne BOM, Umlautschaden beim Speichern) ist damit Geschichte.
-- **Nebenläufigkeit: DREI Rechnungen laufen im Hintergrund, sonst keine.**
+- **Nebenläufigkeit: VIER Rechnungen laufen im Hintergrund, sonst keine.**
+  Die vierte kam mit **Auftrag #214** dazu und ist die einzige ohne eigene Hülle: Eine
+  Assistentenaktion mit `KiAktion.AusfuehrenLang` — heute die drei Rechenaktionen
+  `simulation_rechnen`, `peak_ziel_bestimmen`, `flotte_bewerten` — läuft in
+  `KiAusfuehrung.ImHintergrund` (`Task.Run`) statt über `KiAusfuehrung.AufOberflaeche`.
+  Der Grund ist derselbe wie bei den drei anderen und er ist hier zwingend: Auf dem
+  Bedienfaden wären Fortschrittsbalken und Abbruchknopf des Chats eine Zusage, die
+  niemand einlösen kann — der Faden ist für die Dauer des Laufs belegt. **Die 19
+  kurzen Aktionen bleiben auf dem Bedienfaden**; sie berühren die Bestandscontroller,
+  und die sind nicht threadsicher. Wache:
+  `EPOS.Kern.Tests/KiRegisterS3Tests.Eine_Rechenaktion_laeuft_nicht_auf_dem_Oberflaechenfaden`
+  samt Gegenprobe. Die drei übrigen:
   Die Rastersuche der Auslegungsoptimierung seit iF22 (seit W11b‑B‑5 in
   `SimulationErgebnisHuelle.Optimierung.cs`), seit **iU9‑W11a.4** der
   Simulationslauf der Ergebnisseite und seit **iU9‑W12.6** die
   Lastspitzenkappung (`PeakShavingHuelle`: Kappungslauf, Schwellensuche, das
   Lesen der Ganglinienwerte und das Zeichnen — Befund W12‑B22; in einer WebView
-  ist der Renderfaden derselbe Faden). Alle drei folgen derselben Aufteilung
+  ist der Renderfaden derselbe Faden). Diese drei folgen derselben Aufteilung
   (sie stammt aus dem Klassenkopf der abgelösten `Form_SpeicherOptimierung`):
   **Der Bedienfaden liest die
   Datenbank**, der Hintergrund rechnet, das Marshalling besorgt `Progress<T>` (auf

@@ -172,6 +172,12 @@ public partial class KiChatDialog
         });
 
         _beschaeftigt = true;
+
+        // Auftrag #214: Eine von Hand gewaehlte Aktion IST die Rechnung - der Balken
+        // steht sofort, und er traegt ihren Titel, bis der Kern seinen ersten Schritt
+        // meldet.
+        LaufBeginnen(wahl.Aktion.Titel.Length > 0 ? wahl.Aktion.Titel : wahl.Aktion.Name,
+                     zeigen: true);
         StateHasChanged();
         try
         {
@@ -180,6 +186,7 @@ public partial class KiChatDialog
         finally
         {
             _beschaeftigt = false;
+            LaufBeenden();
             StateHasChanged();
         }
     }

@@ -18203,6 +18203,33 @@ Do you want to allow this?</value>
   <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
     <value>Evaluating the fleet …</value>
   </data>
+  <data name="KI_LAUF_LAEUFT" xml:space="preserve">
+    <value>{0} is running …</value>
+  </data>
+  <data name="KI_LAUF_ABBRUCH" xml:space="preserve">
+    <value>Cancellation requested – the run stops at the next phase boundary.</value>
+  </data>
+  <data name="KI_LAUF_FERTIG" xml:space="preserve">
+    <value>{0} – finished after {1} s.</value>
+  </data>
+  <data name="KI_LAUF_ABGEBROCHEN" xml:space="preserve">
+    <value>{0} – cancelled after {1} s.</value>
+  </data>
+  <data name="KI_LAUF_PHASE_START" xml:space="preserve">
+    <value>Preparing the run …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_KASKADE" xml:space="preserve">
+    <value>Running the cascade …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_PV" xml:space="preserve">
+    <value>Running photovoltaics …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_SPEICHER" xml:space="preserve">
+    <value>Running battery storage …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_ABSCHLUSS" xml:space="preserve">
+    <value>Computing key figures …</value>
+  </data>
   <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
     <value>The view „{0}“ is not open; this calculation only runs there.</value>
   </data>

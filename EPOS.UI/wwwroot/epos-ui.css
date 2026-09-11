@@ -6653,6 +6653,14 @@ body {
     font-style: italic;
 }
 
+/* ---- Der laufende Rechenvorgang (Auftrag #214) -------------------------- */
+/* Er steht zwischen Verlauf und Eingabe und waechst nicht mit: Der Balken ist
+   eine Zeile, und er darf dem Verlauf keine Hoehe nehmen. */
+.epos-kichat-lauf {
+    flex: 0 0 auto;
+    margin: 6px 0 0 0;
+}
+
 /* ---- Eingabe: Feld, EINE Knopfreihe, kleiner Datenschutzsatz ------------ */
 .epos-kichat-eingabe {
     display: flex;

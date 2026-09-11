@@ -225,6 +225,13 @@ namespace WindowsFormsApplication1
 
             KiAusfuehrungWindows.Aktuell.Ueberlagerung = null;
 
+            // Die Fortschrittssenke gehoert der Komponente (Auftrag #214); mit dem
+            // Fenster faellt sie. Ein Melder auf eine Komponente, die es nicht mehr
+            // gibt, waere schlechter als gar keiner.
+            if (_steuerung != null &&
+                ReferenceEquals(KiAusfuehrungWindows.Aktuell.Fortschritt, _steuerung.Fortschritt))
+                KiAusfuehrungWindows.Aktuell.Fortschritt = null;
+
             // Der Aufrufkontext gilt fuer das FENSTER (Auftrag #199): Ist es zu,
             // beantwortet wieder die Fensterermittlung, in welchem Bereich der
             // Anwender arbeitet.

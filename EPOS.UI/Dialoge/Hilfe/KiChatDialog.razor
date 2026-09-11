@@ -109,6 +109,19 @@
                        AdresseGewaehlt="AdresseGewaehlt"
                        Fussbereich="@Bestaetigungsblock" />
 
+    @* --- Der laufende Rechenvorgang (Auftrag #214) ----------------------- *@
+    @if (LaufSichtbar)
+    {
+        @* Er steht ZWISCHEN Verlauf und Eingabe: dort, wo der Anwender gerade
+           hingeschaut hat, und unmittelbar ueber den Knoepfen, die er waehrend des
+           Laufs nicht bedienen kann. *@
+        <div class="epos-kichat-lauf">
+            <Fortschritt Anteil="@_laufAnteil" Text="@_laufText"
+                         AbbrechenText="@Texte.LaufAbbrechen"
+                         Abbrechen="@LaufAbbruchWeg" />
+        </div>
+    }
+
     @* --- Eingabe: Feld, EINE Knopfreihe, Datenschutzsatz ----------------- *@
     <div class="epos-kichat-eingabe">
         <KiEingabezeile Bezeichnung="@Texte.Eingabe"
@@ -522,7 +535,18 @@
     /// <summary>Steht eine Ueberlagerung offen?</summary>
     public bool UeberlagerungOffen => _bereich != Bereich.Keiner;
 
-    private bool Gesperrt => _beschaeftigt || (Belegt is not null && Belegt());
+    /// <summary>
+    /// Gesperrt sind Eingabe, Senden und die Aktionsknoepfe, solange etwas laeuft —
+    /// die eigene Anforderung (<see cref="_beschaeftigt"/>, <see cref="Laeuft"/>) und
+    /// die eines anderen Wegs (<see cref="Belegt"/>, der Ausfuehrer).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Dialog spiegelt die Einlaeufigkeit, er stellt sie nicht her</b> (Auftrag
+    /// #214, Punkt 2): Die Wahrheit steht im Ausfuehrer (Fachkonzept 3.4, Pflicht 1),
+    /// der einen zweiten Aufruf abweist statt ihn einzureihen. Hier wird nur dafuer
+    /// gesorgt, dass der Anwender gar nicht erst in eine Ablehnung laeuft.
+    /// </remarks>
+    private bool Gesperrt => _beschaeftigt || Laeuft || (Belegt is not null && Belegt());
 
     /// <summary>
     /// Die KONTEXTZEILE im Kopf: Bereich, Dialogname und — falls gesetzt — die
@@ -664,7 +688,13 @@
             Zeigen = BestaetigungZeigen,
             Verfall = VerfallSetzen,
             Beenden = BestaetigungBeenden,
-            Kontext = KontextSetzen
+            Kontext = KontextSetzen,
+
+            // Auftrag #214: Die zwei Enden des laufenden Rechenvorgangs. Die Huelle
+            // haengt die Senke an KiAusfuehrung.Fortschritt und fragt die Marke
+            // unmittelbar vor jedem Aufruf - dieselbe Bauart wie die drei darueber.
+            Fortschritt = Laufsenke,
+            Abbruchmarke = Abbruchmarke
         });
     }
 
@@ -716,6 +746,11 @@
 
         bool mitKi = eingabe.MitKi && !HilfeBetrieb;
         _beschaeftigt = true;
+
+        // Auftrag #214: Auch eine FRAGE bekommt ihre Abbruchquelle — die Werkzeugrunde
+        // des Modells kann eine Rechenaktion ausloesen, und die dauert Minuten. Der
+        // Balken kommt erst mit dem ersten gemeldeten Schritt (siehe LaufBeginnen).
+        LaufBeginnen("", zeigen: false);
         StateHasChanged();
 
         try
@@ -734,6 +769,7 @@
         finally
         {
             _beschaeftigt = false;
+            LaufBeenden();
             StatusSetzen();
             StateHasChanged();
         }
@@ -843,5 +879,16 @@
         // Eine offene Vorschau darf das Fenster nicht ueberleben: Wer schliesst, hat
         // nicht bestaetigt (Bestand OnFormClosed, :131-143).
         Entscheiden(false);
+
+        // Dasselbe fuer einen laufenden Rechenvorgang (Auftrag #214): Wer das Fenster
+        // zumacht, will das Ergebnis nicht mehr - und ein Lauf ohne Zuhoerer belegt den
+        // Rechenkern weiter. Abgebrochen wird, NICHT entsorgt: Die Quelle gehoert dem
+        // Lauf, und der laeuft noch.
+        CancellationTokenSource? quelle = _lauf;
+        if (quelle is not null)
+        {
+            try { if (!quelle.IsCancellationRequested) quelle.Cancel(); }
+            catch (ObjectDisposedException) { }
+        }
     }
 }
