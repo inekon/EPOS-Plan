@@ -265,6 +265,136 @@ namespace EPOS.Kern.Tests
             Assert.True(strom.StrombedarfGesamtMwh > 0);
         }
 
+        // ------------------------------------------- Erzeuger ohne Kaskadenplatz (#190)
+
+        /// <summary>Das Projekt des Abnahmebefunds: Kessel angelegt, kein Kaskadenplatz.</summary>
+        private const int PROJEKT_OHNE_PLATZ = 1007;
+
+        /// <summary>Die Gegenprobe: derselbe Aufbau, aber <c>Tool_2 = Heizkessel</c>.</summary>
+        private const int PROJEKT_MIT_PLATZ = 1040;
+
+        /// <summary>
+        /// Der Fall des Anwenders (#190, Abnahmeliste „PV mit Heizkessel"): Das Projekt
+        /// 1007 fuehrt einen Heizkessel in <c>Tab_Energieanlagen</c>, aber
+        /// <c>Tool_1..4 = ('', Solarthermie, Waermepumpe, '')</c> — der Kessel rechnet
+        /// nicht, und bis hierher sagte das niemand.
+        /// </summary>
+        [Fact]
+        public void Ein_Kessel_ohne_Kaskadenplatz_wird_mit_Kennung_gemeldet()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_OHNE_PLATZ);
+            Assert.NotNull(konfig);
+
+            var befunde = SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(PROJEKT_OHNE_PLATZ, konfig);
+
+            Warnbefund b = Assert.Single(befunde);
+            Assert.Equal(SimulationLaufCtrl.KRIT_ERZEUGER_OHNE_KASKADENPLATZ, b.Kriterium);
+            Assert.Equal(DbWerte.ERZEUGER_HEIZKESSEL, b.Steuerwert);
+            Assert.False(b.Hart);
+            Assert.True(b.ID_Anlage > 0);
+
+            // Der Text nennt die Anlage beim Namen und den Weg zurueck.
+            string bezeichner = WErzeugerCtrl.AnlagenBezeichner(b.ID_Anlage);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KONFIG_HEIZKESSEL, b.Text);
+            Assert.Contains(bezeichner, b.Text);
+            Assert.Contains("aufnehmen", b.Text);
+        }
+
+        /// <summary>
+        /// Die Gegenprobe: Projekt 1040 fuehrt denselben Bestand, hat den Kessel aber auf
+        /// <c>Tool_2</c> — kein Hinweis. Ohne sie wuerde eine Pruefung, die IMMER meldet,
+        /// den Fall darueber ebenso bestehen.
+        /// </summary>
+        [Fact]
+        public void Ein_Projekt_mit_belegten_Plaetzen_meldet_nichts()
+        {
+            if (!_db.Vorhanden) return;
+
+            KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_MIT_PLATZ);
+            Assert.NotNull(konfig);
+
+            Assert.Empty(SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(PROJEKT_MIT_PLATZ, konfig));
+        }
+
+        /// <summary>
+        /// Dieselbe Pruefung gegen die PLATZBELEGUNG EINES LAUFS: Derselbe Bestand
+        /// meldet den Kessel, sobald sein Platz fehlt — und schweigt, sobald er da ist.
+        /// Das ist der Weg, den <c>SimulationControl</c> nimmt (<c>tool[]</c>).
+        /// </summary>
+        [Fact]
+        public void Die_Pruefung_gegen_die_Platzbelegung_eines_Laufs_folgt_dem_Feld_tool()
+        {
+            if (!_db.Vorhanden) return;
+
+            string[] ohne = { "", DbWerte.ERZEUGER_SOLARTHERMIE, DbWerte.ERZEUGER_WAERMEPUMPE, "",
+                              DbWerte.ERZEUGER_PHOTOVOLTAIK, DbWerte.ERZEUGER_STROMSPEICHER };
+            var gemeldet = SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(PROJEKT_OHNE_PLATZ, ohne);
+            Assert.Equal(DbWerte.ERZEUGER_HEIZKESSEL, Assert.Single(gemeldet).Steuerwert);
+
+            string[] mit = { DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_SOLARTHERMIE,
+                             DbWerte.ERZEUGER_WAERMEPUMPE, "",
+                             DbWerte.ERZEUGER_PHOTOVOLTAIK, DbWerte.ERZEUGER_STROMSPEICHER };
+            Assert.Empty(SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(PROJEKT_OHNE_PLATZ, mit));
+        }
+
+        /// <summary>
+        /// Die Stromseite hat ihre eigenen Plaetze (<c>Tool_5</c>/<c>Tool_6</c>) und
+        /// dieselbe Luecke — sie bekommt deshalb eine eigene Kennung und einen eigenen
+        /// Text („nicht aufgenommen" statt „nicht in der Kaskade").
+        /// </summary>
+        [Fact]
+        public void Die_Stromplaetze_melden_mit_eigener_Kennung()
+        {
+            if (!_db.Vorhanden) return;
+
+            // Alles belegt AUSSER Tool_5/Tool_6: 1007 fuehrt zwei PV-Anlagen und vier
+            // Stromspeicher.
+            string[] plaetze = { DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "", "", "" };
+
+            var befunde = SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(PROJEKT_OHNE_PLATZ, plaetze);
+
+            Assert.NotEmpty(befunde);
+            foreach (Warnbefund b in befunde)
+            {
+                Assert.Equal(SimulationLaufCtrl.KRIT_ERZEUGER_OHNE_STROMPLATZ, b.Kriterium);
+                Assert.True(b.Steuerwert == DbWerte.ERZEUGER_PHOTOVOLTAIK ||
+                            b.Steuerwert == DbWerte.ERZEUGER_STROMSPEICHER);
+            }
+        }
+
+        /// <summary>
+        /// Der LAUF sagt es auch — sonst saehe der unbeaufsichtigte Referenz- und
+        /// CI-Lauf die Luecke nie (die Vorpruefung erreicht nur die Maske).
+        /// </summary>
+        [Fact]
+        public void Der_Lauf_meldet_den_nicht_platzierten_Kessel_im_Protokoll()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_OHNE_PLATZ, out fehler), fehler);
+
+            string bezeichner = WErzeugerCtrl.AnlagenBezeichner(
+                SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(
+                    PROJEKT_OHNE_PLATZ, laeufer.sim.tool)[0].ID_Anlage);
+
+            bool gefunden = false;
+            foreach (string zeile in SimulationProtokoll.Aktuell.Warnungen)
+                if (zeile.Contains(bezeichner) && zeile.Contains(WindowsFormsApplication1.MyResource.Resource.KONFIG_HEIZKESSEL))
+                    gefunden = true;
+
+            Assert.True(gefunden, "Die Protokollwarnung zum nicht platzierten Kessel fehlt.");
+
+            // Und der Kessel hat wirklich nicht gerechnet - das ist der Befund.
+            Assert.False(laeufer.sim.bSimulationKessel);
+        }
+
         /// <summary>Ein <c>IProgress&lt;T&gt;</c> ohne Marshalling — fuer den Prueffall.</summary>
         private sealed class SofortMelder : IProgress<LaufFortschritt>
         {

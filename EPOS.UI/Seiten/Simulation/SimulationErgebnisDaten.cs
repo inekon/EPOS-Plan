@@ -239,6 +239,22 @@ public sealed class UebersichtDaten
     /// <summary>Die Praesenzregel je Erzeuger — sie blendet Zeilen und Ringsegmente aus.</summary>
     public bool Waermepumpe, Heizstab, Heizkessel, Solarthermie, Bhkw, Photovoltaik, Stromspeicher;
 
+    /// <summary>
+    /// Die Steuerwerte (<c>DbWerte.ERZEUGER_*</c>) der Technologien, die das Projekt
+    /// ANGELEGT hat, die aber auf keinem Platz der Simulation stehen (#190).
+    ///
+    /// <para>Sie sind der Grund, warum eine Zeile dieser Uebersicht 0,00 zeigt, obwohl
+    /// das Projekt die Anlage fuehrt: Die Praesenzregel laesst sie stehen (Punkt 4 —
+    /// „eine vorhandene Anlage mit 0-kWh-Ergebnis bleibt sichtbar"), gerechnet hat sie
+    /// aber nie. Der Zusatz „(nicht in der Kaskade)" sagt das an der Zeile; die
+    /// vollstaendige Meldung samt Abhilfe steht in den Hinweisen zum Lauf.</para>
+    ///
+    /// <para>Die Liste kommt aus derselben Vorpruefung
+    /// (<c>SimulationLaufCtrl.ErzeugerOhneKaskadenplatz</c>), die auch das Laufprotokoll
+    /// speist — EINE Wahrheit, kein zweiter Vergleich in der Anzeige.</para>
+    /// </summary>
+    public IReadOnlyCollection<string> OhneKaskadenplatz = Array.Empty<string>();
+
     /// <summary>Der Mittelwert der beiden Ringe in Prozent.</summary>
     public double WaermedeckungProzent;
     public double StromdeckungProzent;

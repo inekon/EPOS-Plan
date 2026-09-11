@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
         /// <c>NavigatorUebersicht</c> in 148 Zeilen GDI zeichnete.
         /// </summary>
         private UebersichtDaten UebersichtDaten(SimulationErgebnisCtrl.UebersichtKennzahlen k,
-                                                ErgebnisPraesenz p)
+                                                ErgebnisPraesenz p, string[] tool)
         {
             double wbGesamt = _waermebedarf.Waermebedarf_Gesamt;
             double sbGesamt = k.StrombedarfMitEigenverbrauchMwh;
@@ -85,10 +85,29 @@ namespace WindowsFormsApplication1
                 RestwaermeMwh = k.RestwaermeMwh,
 
                 EigenanteilSpalten = EigenanteilSpalten(),
-                Eigenanteil = Eigenanteil(k, p)
+                Eigenanteil = Eigenanteil(k, p),
+
+                // #190: Warum steht hier 0,00, obwohl das Projekt den Kessel fuehrt?
+                // Weil er auf keinem Platz steht. Die Antwort kommt aus DERSELBEN
+                // Vorpruefung, die das Laufprotokoll speist.
+                OhneKaskadenplatz = OhneKaskadenplatz(tool)
             };
 
             return d;
+        }
+
+        /// <summary>
+        /// Die Steuerwerte der angelegten, aber nicht platzierten Erzeuger dieses
+        /// Projekts (#190) — leer, wenn alles Angelegte auch rechnet.
+        /// </summary>
+        private HashSet<string> OhneKaskadenplatz(string[] tool)
+        {
+            HashSet<string> ohne = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (Warnbefund b in SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(m_ID_Projekt, tool))
+                if (b != null && !string.IsNullOrEmpty(b.Steuerwert)) ohne.Add(b.Steuerwert);
+
+            return ohne;
         }
 
         /// <summary>

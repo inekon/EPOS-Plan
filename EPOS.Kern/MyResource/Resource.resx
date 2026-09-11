@@ -16561,4 +16561,22 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_PLANER_LAUF_GESPERRT" xml:space="preserve">
     <value>Ohne Fahrplan-Löser kann mit einem planenden Betriebsziel kein Speichervergleich gerechnet werden.</value>
   </data>
+  <data name="SIM_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in der Kaskade — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_EINER" xml:space="preserve">
+    <value>Ein Erzeuger ist im Projekt angelegt, aber nicht in der Simulation — er rechnet nicht.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE" xml:space="preserve">
+    <value>{0} Erzeuger sind im Projekt angelegt, aber nicht in der Simulation — sie rechnen nicht.</value>
+  </data>
+  <data name="SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF" xml:space="preserve">
+    <value>einblenden</value>
+  </data>
+  <data name="SIMERG_ZUSATZ_NICHT_IN_KASKADE" xml:space="preserve">
+    <value> (nicht in der Kaskade)</value>
+  </data>
 </root>

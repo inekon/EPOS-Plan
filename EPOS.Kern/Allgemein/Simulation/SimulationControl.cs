@@ -491,6 +491,12 @@ namespace WindowsFormsApplication1
             // Laufstart.
             WarnkriterienMelden();
 
+            // #190: Was angelegt ist, aber auf keinem Platz steht, rechnet nicht - und
+            // sagte das bis hierher nicht. Die Zeile steht unmittelbar hinter dem
+            // Katalog, damit beide Vorbefunde beieinander stehen, VOR den Meldungen der
+            // Module.
+            ErzeugerOhneKaskadenplatzMelden();
+
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             RestwaermeMwh = 0;
             ReststromMwh = simulation_Strombedarf.StrombedarfGesamtMwh; //MWh
@@ -3586,6 +3592,44 @@ namespace WindowsFormsApplication1
 
                 Protokoll.WarnungEinmal(
                     "warnkriterium-" + b.Kriterium + "-" + b.ID_Anlage + "-" + b.ID_Puffer,
+                    Zeilenumbruch.Einzeilig(b.Text));
+            }
+        }
+
+        /// <summary>
+        /// #190 — meldet jede Erzeugeranlage des Projekts, die in KEINEM Platz dieses
+        /// Laufs steht (Abnahmeliste „PV mit Heizkessel: die Simulation beruecksichtigt
+        /// den Heizkessel nicht").
+        ///
+        /// <para><b>Warum der Lauf es noch einmal sagt.</b> Die Vorpruefung
+        /// (<see cref="SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(int, KonfigurationModel)"/>)
+        /// erreicht den Anwender an der Maske. Der REFERENZ- und der CI-Lauf sehen sie
+        /// nie — sie rufen <see cref="Do_Simulation"/> unmittelbar. Ohne diese Zeile
+        /// bliebe ein Projekt, dessen Kessel gar nicht rechnet, im Laufprotokoll stumm;
+        /// genau das war der Befund.</para>
+        ///
+        /// <para><b>Gegen <c>tool</c>, nicht gegen die Konfiguration</b> — dasselbe
+        /// Feld, das der Erzeugerdurchlauf auswertet
+        /// (<c>if (tool[i] == DbWerte.ERZEUGER_HEIZKESSEL) …</c>). Die Maske darf
+        /// Plaetze anders gesetzt haben als die gespeicherte Zeile; gemeldet wird, was
+        /// DIESER Lauf wirklich rechnet.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Es wird kein Platz belegt (Anwenderentscheid
+        /// HK-E-1a vom 11.09.2026: melden, nicht automatisch aufnehmen), und das
+        /// Protokoll gehoert nicht zum Referenzexport — <c>Ergebnisexport</c> schreibt
+        /// ausschliesslich <c>Tab_Ergebnis*</c> und die Ganglinien.</para>
+        /// </summary>
+        private void ErzeugerOhneKaskadenplatzMelden()
+        {
+            List<Warnbefund> befunde =
+                SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(m_ID_Projekt, tool);
+
+            foreach (Warnbefund b in befunde)
+            {
+                if (b == null || string.IsNullOrEmpty(b.Text)) continue;
+
+                Protokoll.WarnungEinmal(
+                    "erzeuger-ohne-platz-" + b.ID_Anlage,
                     Zeilenumbruch.Einzeilig(b.Text));
             }
         }

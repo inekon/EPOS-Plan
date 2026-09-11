@@ -3179,6 +3179,31 @@ body {
     text-align: left;
 }
 
+/* #190 - die Hinweisleiste „angelegt, aber nicht in der Simulation". Warnklang wie
+   das Warnbanner, aber mit dem Textschalter in derselben Zeile. */
+.epos-simkonfig-luecke {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    margin: 0 0 8px 0;
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-warn-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-simkonfig-luecke-knopf {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    padding: 0;
+    font-size: var(--epos-schriftgroesse);
+    text-decoration: underline;
+}
+
 .epos-simkonfig-fuss {
     display: flex;
     flex-direction: column;

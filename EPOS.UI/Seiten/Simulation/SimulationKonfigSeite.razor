@@ -74,6 +74,26 @@
                                    StandardKurztext="@HilfeKurztextBerechnung" />
                     </p>
 
+                    @* #190 - DIE LUECKE WIRD SICHTBAR (Abnahmeliste „PV mit
+                       Heizkessel"). Bis hierher verschwand ein angelegter, aber nicht
+                       aufgenommener Erzeuger STILL hinter dem Schalter am Spaltenende:
+                       Der Anwender legte einen Heizkessel an, die Simulation rechnete
+                       ihn nie, und nichts auf dieser Seite sagte warum. Die Leiste
+                       nennt die Zahl; AUFGENOMMEN wird weiterhin von Hand
+                       (Anwenderentscheid HK-E-1a vom 11.09.2026 - kein automatisches
+                       Aufnehmen, sonst aenderten sich Ergebnisse im Bestand). *@
+                    @if (LueckeAnzahl > 0)
+                    {
+                        <div class="epos-simkonfig-luecke" role="alert">
+                            <span class="epos-simkonfig-luecke-text">@LueckeText</span>
+                            @if (!_verfuegbareZeigen)
+                            {
+                                <button type="button" class="epos-simkonfig-luecke-knopf"
+                                        @onclick="VerfuegbareUmschalten">@NichtAufgenommenKnopf</button>
+                            }
+                        </div>
+                    }
+
                     @foreach (KachelGruppe gruppe in _daten.Gruppen)
                     {
                         <h3 class="epos-simkonfig-gruppe">@gruppe.Titel</h3>
@@ -354,6 +374,17 @@
     [Parameter] public string VerfuegbarAusblenden { get; set; }
         = "− Nicht gewählte Komponenten ausblenden";
 
+    /// <summary>SIM_KARTE_NICHT_AUFGENOMMEN_EINER (#190).</summary>
+    [Parameter] public string NichtAufgenommenEiner { get; set; }
+        = "Ein Erzeuger ist im Projekt angelegt, aber nicht in der Simulation — er rechnet nicht.";
+
+    /// <summary>SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE ({0} = Anzahl, #190).</summary>
+    [Parameter] public string NichtAufgenommenMehrere { get; set; }
+        = "{0} Erzeuger sind im Projekt angelegt, aber nicht in der Simulation — sie rechnen nicht.";
+
+    /// <summary>SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF (#190).</summary>
+    [Parameter] public string NichtAufgenommenKnopf { get; set; } = "einblenden";
+
     [Parameter] public string AufnehmenText { get; set; } = "+ aufnehmen";
     [Parameter] public string TipHoch { get; set; } = "In der Kaskade nach vorn";
     [Parameter] public string TipRunter { get; set; } = "In der Kaskade nach hinten";
@@ -467,10 +498,24 @@
     private string _auswahl = "";
 
     /// <summary>
-    /// Stehen die NICHT gewaehlten Komponenten in der Spalte? Vorbelegung
-    /// <c>false</c>; Sitzungszustand, bewusst nicht persistiert.
+    /// Stehen die NICHT gewaehlten Komponenten in der Spalte? Sitzungszustand, bewusst
+    /// nicht persistiert.
+    ///
+    /// <para>Vorbelegung <c>false</c> — mit EINER Ausnahme seit #190: Fuehrt das
+    /// Projekt einen angelegten, aber nicht aufgenommenen Erzeuger, steht die Spalte
+    /// beim Oeffnen offen (<see cref="AnsichtszustandAnwenden"/>). Ein Platzhalter ohne
+    /// Anlage loest das NICHT aus; sonst stuende die Spalte in jedem Projekt offen und
+    /// der Abnahmebefund 1 („Platzhalter verbergen") waere zurueckgenommen.</para>
     /// </summary>
     private bool _verfuegbareZeigen;
+
+    /// <summary>
+    /// Das Projekt, fuer das die Spalte zuletzt selbsttaetig aufgeklappt wurde (#190);
+    /// −1 = noch keines. Er haelt die Vorbelegung davon ab, den Schalter des Anwenders
+    /// bei jeder Auffrischung zu ueberschreiben — nach einem „+ aufnehmen" bleibt
+    /// stehen, was er eingestellt hat.
+    /// </summary>
+    private int _lueckeGeprueft = -1;
 
     /// <summary>Aufgeklappte Speicherkachel (<c>Tab_Pufferspeicher.ID</c>); 0 = keine.</summary>
     private int _offenerSpeicher;
@@ -536,6 +581,14 @@
     /// </summary>
     private void AnsichtszustandAnwenden()
     {
+        // #190: Beim ERSTEN Blick auf ein Projekt entscheidet die Luecke, ob die
+        // verfuegbaren Karten offen stehen. Danach gehoert der Schalter dem Anwender.
+        if (_lueckeGeprueft != IdProjekt)
+        {
+            _lueckeGeprueft = IdProjekt;
+            if (LueckeAnzahl > 0) _verfuegbareZeigen = true;
+        }
+
         int idAnlage = IdAusSchluessel(_auswahl, PRAEFIX_ERZEUGER);
         if (idAnlage == 0) idAnlage = IdAusSchluessel(_auswahl, PRAEFIX_QUELLE);
         int idPuffer = IdAusSchluessel(_auswahl, PRAEFIX_SPEICHER);
@@ -612,6 +665,33 @@
     private void VerfuegbareUmschalten()
     {
         _verfuegbareZeigen = !_verfuegbareZeigen;
+    }
+
+    /// <summary>
+    /// Wie viele ANGELEGTE Erzeuger auf keinem Platz stehen (#190) — die Zahl der
+    /// Hinweisleiste. Gezaehlt werden nur verfuegbare Zeilen MIT Anlage; die reinen
+    /// Katalog-Platzhalter bleiben aussen vor.
+    /// </summary>
+    private int LueckeAnzahl
+    {
+        get
+        {
+            int n = 0;
+            foreach (KachelGruppe g in _daten.Gruppen)
+                foreach (ErzeugerZeile z in g.Zeilen)
+                    if (z.Verfuegbar && z.HatAnlage) n++;
+            return n;
+        }
+    }
+
+    /// <summary>Der Text der Hinweisleiste — Einzahl und Mehrzahl (#190).</summary>
+    private string LueckeText
+    {
+        get
+        {
+            int n = LueckeAnzahl;
+            return n == 1 ? NichtAufgenommenEiner : string.Format(NichtAufgenommenMehrere, n);
+        }
     }
 
     private void Verschieben(ErzeugerZeile z, int richtung)

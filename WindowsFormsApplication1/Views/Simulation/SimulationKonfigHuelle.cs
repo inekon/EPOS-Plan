@@ -215,6 +215,11 @@ namespace WindowsFormsApplication1
                 ["VerfuegbarEinblenden"] = MyResource.Resource.SIM_KARTE_VERFUEGBAR_EINBLENDEN,
                 ["VerfuegbarAusblenden"] = MyResource.Resource.SIM_KARTE_VERFUEGBAR_AUSBLENDEN,
 
+                // #190 - die Hinweisleiste „angelegt, aber nicht in der Simulation".
+                ["NichtAufgenommenEiner"] = MyResource.Resource.SIM_KARTE_NICHT_AUFGENOMMEN_EINER,
+                ["NichtAufgenommenMehrere"] = MyResource.Resource.SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE,
+                ["NichtAufgenommenKnopf"] = MyResource.Resource.SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF,
+
                 ["AufnehmenText"] = MyResource.Resource.SIM_KARTE_AUFNEHMEN,
                 ["TipHoch"] = MyResource.Resource.SIM_KARTE_TIP_HOCH,
                 ["TipRunter"] = MyResource.Resource.SIM_KARTE_TIP_RUNTER,
@@ -602,6 +607,11 @@ namespace WindowsFormsApplication1
                 IstStrom = strom,
                 StromPlatz = platz,
                 Verfuegbar = true,
+                // #190: Eine gestrichelte Karte MIT Anlagen ist die Luecke, die der
+                // Abnahmebefund meint - das Projekt fuehrt den Erzeuger, aber kein Platz
+                // nimmt ihn auf, also rechnet er nicht. Ohne Anlagen ist sie nur ein
+                // Platzhalter des Katalogs und bleibt stumm.
+                HatAnlage = namen.Count > 0,
                 Kachel = new ErzeugerKachelDaten
                 {
                     Schluessel = dbWert,

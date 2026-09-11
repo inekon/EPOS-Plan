@@ -34409,6 +34409,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (nicht in der Kaskade) ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSATZ_NICHT_IN_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSATZ_NICHT_IN_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlage {0} ähnelt.
         /// </summary>
         public static string SIMQ_ANLAGE_ERSATZNAME {
@@ -37060,6 +37069,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Erzeuger ist im Projekt angelegt, aber nicht in der Simulation — er rechnet nicht. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_NICHT_AUFGENOMMEN_EINER {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_NICHT_AUFGENOMMEN_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die einblenden ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Erzeuger sind im Projekt angelegt, aber nicht in der Simulation — sie rechnen nicht. ähnelt.
+        /// </summary>
+        public static string SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE {
+            get {
+                return ResourceManager.GetString("SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Anlage im Projekt ähnelt.
         /// </summary>
         public static string SIM_KARTE_OHNE_ANLAGE {
@@ -39227,6 +39263,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_WPPRIO_DIALOG_TITEL {
             get {
                 return ResourceManager.GetString("SIM_WPPRIO_DIALOG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“ ist im Projekt angelegt, aber nicht in der Kaskade — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_W_ERZEUGER_OHNE_KASKADENPLATZ {
+            get {
+                return ResourceManager.GetString("SIM_W_ERZEUGER_OHNE_KASKADENPLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_W_ERZEUGER_OHNE_STROMPLATZ {
+            get {
+                return ResourceManager.GetString("SIM_W_ERZEUGER_OHNE_STROMPLATZ", resourceCulture);
             }
         }
         
