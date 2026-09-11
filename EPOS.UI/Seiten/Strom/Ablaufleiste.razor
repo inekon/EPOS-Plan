@@ -1,4 +1,4 @@
-@* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
+﻿@* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
    2.1, Paket P3 / Auftrag #192).
 
    WOZU. Der abgeloeste Flottendialog hatte vier REITER und in seiner Fussleiste
@@ -39,7 +39,8 @@
             }
 
             <button type="button" class="epos-knopf epos-knopf--primaer epos-ablaufleiste-rechnen"
-                    disabled="@(!RechnenFrei)" @onclick="RechnenGeklickt">@RechnenText</button>
+                    disabled="@(!RechnenFrei)" title="@Leer(RechnenGrund)"
+                    @onclick="RechnenGeklickt">@RechnenText</button>
         </li>
 
         @foreach (Ablaufeintrag eintrag in Hinten)
@@ -73,6 +74,20 @@
 
     /// <summary>Darf gerechnet werden?</summary>
     [Parameter] public bool RechnenFrei { get; set; } = true;
+
+    /// <summary>
+    /// Der Grund, aus dem NICHT gerechnet werden darf — er steht als <c>title</c>
+    /// am Knopf (Auftrag #207). Leer = kein Grund, kein <c>title</c>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum der Rechenknopf hart sperrt und die Blaetter weich.</b> Ein Blatt
+    /// bleibt anklickbar, weil sein Sperrgrund die Auskunft IST (W16b‑E‑6); der
+    /// Rechenknopf aber startet einen Lauf, und ein Lauf, der nicht laufen darf,
+    /// hat nichts zu melden, das ein Klick besser sagte. Der Wirt stellt den Grund
+    /// deshalb zusaetzlich als Banner ueber die Leiste — der <c>title</c> hier
+    /// erreicht den Zeiger, das Banner jeden.
+    /// </remarks>
+    [Parameter] public string RechnenGrund { get; set; } = "";
 
     /// <summary>Der Rechenknopf wurde gedrückt.</summary>
     [Parameter] public EventCallback Rechnen { get; set; }

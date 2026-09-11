@@ -7691,6 +7691,55 @@ body {
 }
 
 /* ==================================================================== */
+/* DIE ANSICHT „SIMULATION" (Auftrag #207, Anwenderentscheid SIM-Q1)    */
+/*                                                                      */
+/* Derselbe Aufbau wie die Auslegungsansicht: Kopf mit Titel,           */
+/* Projektzeile und Rueckweg, darunter die Ablaufleiste, darunter das   */
+/* Blatt. Sie fuellt die WebView - das Ergebnis stand bis #207 in einer */
+/* Ueberlagerung von 96 vw x 94 vh mit eigenem Rollbalken.              */
+/*                                                                      */
+/* BEIDE BLAETTER BLEIBEN IM BAUM, sobald sie einmal standen; sichtbar  */
+/* ist immer nur eines. display:none statt eines @if, weil ein @if die  */
+/* Komponente ENTSORGT - und mit ihr den gerechneten Lauf, die zwoelf   */
+/* Bilder und das offene Reiterblatt.                                   */
+/* ==================================================================== */
+.epos-simansicht {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-simansicht-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 16px;
+}
+
+.epos-simansicht-kontext {
+    color: var(--epos-text-leise);
+}
+
+/* Der Rueckweg steht rechts - aber IM Fluss: margin-left:auto schiebt ihn
+   nur, solange die Zeile nicht umgebrochen ist. */
+.epos-simansicht-kopfaktionen {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.epos-simansicht-blatt {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-simansicht-blatt--aus {
+    display: none;
+}
+
+/* ==================================================================== */
 /* DIE ABLAUFLEISTE                                                     */
 /*                                                                      */
 /* Fuenf Schritte in einer Zeile, der Rechenknopf als Zaesur dazwischen */

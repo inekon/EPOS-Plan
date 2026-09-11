@@ -101,17 +101,16 @@ namespace WindowsFormsApplication1
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
                 ["BerichteGaben"] = BerichteGaben(),
 
-                // E-5: Die zwei Simulationsansichten bleiben IN dieser WebView -
-                // die Konfiguration als freie Ansicht, das Ergebnis als
-                // Ueberlagerung. Die beiden modalen Huellen sind damit entfallen.
-                ["SimulationKonfigGaben"] =
-                    new Func<IReadOnlyDictionary<string, object>>(
-                        () => SimulationKonfigHuelle.Gaben(_kontext.Id)),
-                ["SimulationErgebnisGaben"] =
-                    new Func<IReadOnlyDictionary<string, object>>(
-                        () => SimulationErgebnisHuelle.Gaben(
-                                  () => _besitzer?.Invoke() as Form, _kontext.Id, _bedarf)),
-                ["ErgebnisTitelText"] = MyResource.Resource.SIMERG_TITEL,
+                // AUFTRAG #207: Hier standen die zwei Simulationsgaben (E-5) - die
+                // Konfiguration als freie Ansicht IN dieser Komponente, das Ergebnis
+                // als Ueberlagerung darueber. Beides ist gefallen: Die Simulation ist
+                // EINE freie Ansicht der AppWurzel, ihre Gaben baut SimulationHuelle
+                // und legt sie HauptfensterHuelle als „SimulationGaben" ein. Die
+                // Startseite meldet nur noch den Weg dorthin.
+                //
+                // Und das musste sie abgeben: Jeder Kachelklick baute hier eine NEUE
+                // SimulationErgebnisHuelle, also blieb kein gerechneter Lauf zwischen
+                // zwei Besuchen stehen (Konzept „Simulationsablauf" 1.3).
 
                 // ---- Texte (die 17 MyResource-Schluessel von Form_Start und die
                 //      78 neuen aus seinen drei .resx, iU9-W16b.2) --------------
@@ -175,6 +174,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der geteilte Zustand — die Seitenhülle reicht ihn hinein.</summary>
         internal SeitenZustand Zustand { get { return _zustand; } }
+
+        /// <summary>
+        /// Die zwei Bedarfsrechnungen des offenen Projekts (Entscheid E-5).
+        /// <c>SimulationHuelle</c> rechnet mit DENSELBEN (Auftrag #207): Der Reiter
+        /// „Simulation" dieser Seite und die Ergebnisansicht schreiben sie beide
+        /// fort, und zwei Sätze wären zwei Wahrheiten über dasselbe Projekt.
+        /// </summary>
+        internal BedarfsZustand Bedarf { get { return _bedarf; } }
 
         /// <summary>
         /// Der Parametersatz von „Berichte &amp; Kosten" — für die ANSICHT der
@@ -634,7 +641,8 @@ namespace WindowsFormsApplication1
                 case Kachelschluessel.Stromspeicher: Stromspeicher(wirt); break;
                 case Kachelschluessel.Pufferspeicher: Pufferspeicher(wirt); break;
 
-                // E-5: Die zwei Simulationswege beantwortet die SEITE selbst - sie
+                // Seit #207 meldet die SEITE die zwei Simulationswege ueber
+                // Dienste.Navigation an die Wurzel (Ansicht SIMULATION mit Marke); sie
                 // holt sich ihren Parametersatz ueber SimulationKonfigGaben bzw.
                 // SimulationErgebnisGaben und wechselt die Ansicht. Hier kommen sie
                 // deshalb gar nicht mehr an.

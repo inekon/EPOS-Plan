@@ -175,14 +175,20 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// Der PARAMETERSATZ der Seite zu einem Projekt — ohne Fenster (iU9-W11b.13).
-        ///
-        /// <para>Die Ergebnisseite zeigt die Konfiguration als ÜBERLAGERUNG (Risiko
-        /// R-W11-6): Blazor über Blazor gehört in dasselbe Fenster, nicht in eine
-        /// zweite WebView (Regel seit W4.0). Sie braucht dafür genau diesen Satz und
-        /// setzt <c>Geschlossen</c> selbst.</para>
+        /// Legt die Hülle an und meldet den Hilfebereich (iU9-W10b.1).
         /// </summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(int idProjekt)
+        /// <remarks>
+        /// <para><b>Sie liefert die INSTANZ, nicht bloss deren Gaben</b> (Auftrag
+        /// #207). Daneben stand bis dahin ein statisches <c>Gaben(int)</c>, das die
+        /// Hülle anlegte und gleich wieder vergass — <c>StartseiteHuelle</c> und die
+        /// Ergebnisseite riefen es bei jedem Öffnen. Der Kaskadenstand
+        /// <c>_konfiguration</c> lebt aber HIER und wird erst von
+        /// <see cref="Speichern"/> geschrieben: Ein Wirt, der bei jedem Betreten eine
+        /// neue Hülle baute, verlöre jede ungespeicherte Änderung beim Schritt- oder
+        /// Ansichtswechsel — und die Ansicht SIMULATION sperrt genau darauf ihren
+        /// Rechenknopf.</para>
+        /// </remarks>
+        internal static SimulationKonfigHuelle Erzeugen(int idProjekt)
         {
             // Bereich fuer den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
             // keine Projekt- oder Kundendaten) - woertlich wie im Vorlaeufer :114,
@@ -190,7 +196,7 @@ namespace WindowsFormsApplication1
             HilfeKontext.SetzeBereich(
                 "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)");
 
-            return new SimulationKonfigHuelle(idProjekt).Gaben();
+            return new SimulationKonfigHuelle(idProjekt);
         }
 
         /// <summary>Der PARAMETERSATZ der Seite — ohne <c>Geschlossen</c>.</summary>
@@ -236,7 +242,6 @@ namespace WindowsFormsApplication1
                 ["LesepunktText"] = MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER,
 
                 ["BtnSpeichern"] = MyResource.Resource.SIM_KONFIG_BTN_SPEICHERN,
-                ["BtnBeenden"] = MyResource.Resource.SIM_KONFIG_BTN_BEENDEN,
 
                 ["StatusGespeichert"] = MyResource.Resource.SIM_STATUS_KONFIG_GESPEICHERT,
                 ["StatusLesepunktDavor"] = MyResource.Resource.SIM_STATUS_LESEPUNKT_DAVOR,

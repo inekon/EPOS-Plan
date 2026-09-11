@@ -18,7 +18,14 @@ der Reiter und der Rechenweg bleiben unberührt.
 
 ---
 
-## 1. Ist-Stand (gemessen)
+## 1. Ist-Stand (gemessen) — **Stand VOR #207**
+
+> **Dieser Abschnitt beschreibt den Zustand vor Stufe S1.** Er ist mit Auftrag
+> **#207** (11.09.2026, Zweig `w207-simulation-ansicht`) behoben und bleibt als
+> Befund stehen: Er nennt die drei Wirte, die tote Stelle in der `AppWurzel` und
+> die Ursache des gemeldeten Rückweg-Fehlers. Was seither gilt, steht in
+> Abschnitt 2 und in der Zeile **S1** des Stufenplans.
+
 
 ### 1.1 Drei Wirte für zwei Seiten
 
@@ -181,10 +188,45 @@ Rechenweg, der Referenzlauf.
 
 | Stufe | Inhalt | Prüfmuster |
 |---|---|---|
-| **S1** — Ansicht und Rückweg (Windows) | `Seitenschluessel.Simulation` (`SIMULATION`), Seite `EPOS.UI/Seiten/Simulation/SimulationSeite.razor` mit `Ablaufleiste` (Vorne ①, Rechnen ②, Hinten ③) und `Marke`; ① und ③ betten die zwei bestehenden Seiten ein; Fußknöpfe „Konfiguration ..."/„Beenden" und die Konfig-Überlagerung fallen aus der Ergebnisseite, `_konfig`/`_ergebnis`/Überlagerung fallen aus der Startseite; Rückwegstapel in `AppWurzel` ersetzt `_auslegungRueckweg`/`_kiRueckweg`; Auslegung kehrt mit Marke zurück; `SimulationHuelle` und `SimulationGaben` in `HauptfensterHuelle`; die zwei alten Schlüssel `SIMULATION_KONFIGURATION`/`SIMULATION_ERGEBNIS` bleiben als Einstiegsmarken (①/③) gültig; Menüpunkt nach SIM‑Q3 | bunit: Ablaufleiste schaltet, ② gesperrt bei ungespeicherter Konfiguration, ③ gesperrt ohne Ergebnis, Rückweg aus der Auslegung landet in ③ auf „Stromspeicher", Rückfrage bei ungespeicherter Konfiguration; **Wache:** `SimulationErgebnisSeite` und `SimulationKonfigSeite` stehen in keiner `Ueberlagerung` mehr (Muster `UeberlagerungstitelTests`); Referenzlauf 5/5 byte-gleich (kein Rechenweg) |
+| **S1** — Ansicht und Rückweg (Windows) — **umgesetzt #207** (11.09.2026, Zweig `w207-simulation-ansicht`) | `Seitenschluessel.Simulation` (`SIMULATION`), Seite `EPOS.UI/Seiten/Simulation/SimulationSeite.razor` mit `Ablaufleiste` (Vorne ①, Rechnen ②, Hinten ③) und `Marke`; ① und ③ betten die zwei bestehenden Seiten ein; Fußknöpfe „Konfiguration ..."/„Beenden" und die Konfig-Überlagerung fallen aus der Ergebnisseite, `_konfig`/`_ergebnis`/Überlagerung fallen aus der Startseite; Rückwegstapel in `AppWurzel` ersetzt `_auslegungRueckweg`/`_kiRueckweg`; Auslegung kehrt mit Marke zurück; `SimulationHuelle` und `SimulationGaben` in `HauptfensterHuelle`; die zwei alten Schlüssel `SIMULATION_KONFIGURATION`/`SIMULATION_ERGEBNIS` bleiben als Einstiegsmarken (①/③) gültig; Menüpunkt nach SIM‑Q3 | bunit: Ablaufleiste schaltet, ② gesperrt bei ungespeicherter Konfiguration, ③ gesperrt ohne Ergebnis, Rückweg aus der Auslegung landet in ③ auf „Stromspeicher", Rückfrage bei ungespeicherter Konfiguration; **Wache:** `SimulationErgebnisSeite` und `SimulationKonfigSeite` stehen in keiner `Ueberlagerung` mehr (Muster `UeberlagerungstitelTests`); Referenzlauf 5/5 byte-gleich (kein Rechenweg) |
 | **S2** — iOS erreicht die Simulation | Messung der zwei Hüllen (Datenweg → Kern-Controller, Plattform bleibt), `IosProjektQuelle.SimulationGaben`, Kachel „Simulation" in der Projektliste; iOS-Lauf 43 **gebündelt mit #202** (trifft die Hülle) | iOS-CI: Ansicht baut, Prüfmodus unverändert; Kern-Tests für den verlegten Datenweg |
 
 S1 ist ohne S2 abnehmbar. S2 setzt S1 voraus, weil es dasselbe Wörterbuch liefern muss.
+
+### Was **#207** umgesetzt hat
+
+- **`Seitenschluessel.Simulation` (`SIMULATION`)** mit `Masken.Simulation`-Zwilling im Kern
+  (Muster `Masken.KiAssistent`, #199): EIN Weg für Menüpunkt, Startseitenknopf und Kachel,
+  auf beiden Plattformen über `Dienste.Navigation.OeffneMaske(Masken.Simulation, marke)`.
+  Die zwei alten Schlüssel `SIMULATION_KONFIGURATION`/`SIMULATION_ERGEBNIS` bleiben als
+  **Einstiegsmarken** (①/③) gültig.
+- **`EPOS.UI/Seiten/Simulation/SimulationSeite.razor`** mit `Ablaufleiste` (① Konfiguration ·
+  ② „2 Simulation starten ▶" als Knopf · ③ Ergebnis), `Marke`-Parameter
+  (`schritt=1|3;blatt=<Reiterschlüssel>`), Kopf mit Titel, Projektzeile, Infoknopf und
+  „← zurück", Rückfrage beim Verlassen (62b‑E‑1). **Beide Blätter bleiben montiert**, sobald
+  sie einmal standen — ein `@if` würde den gerechneten Lauf, den Bilderspeicher und das
+  offene Reiterblatt entsorgen.
+- **Die zwei Seiten bleiben**, sie verlieren nur ihre eigenen Ausgänge: die Ergebnisseite die
+  Fußknöpfe „Konfiguration …" und „Beenden" samt der Konfigurations-Überlagerung, die
+  Konfigurationsseite ihren „Beenden"-Knopf. Der Fußknopf „Simulation starten ▶" der
+  Ergebnisseite BLEIBT — er ist der Zwilling von ② und trägt die Seite auch ohne Leiste
+  darüber (iOS, Stufe S2). Der **Automatikstart ist in der Ansicht abgeschaltet**: Der Lauf ist
+  Schritt ② und damit ein bewusster Klick.
+- **Aus der Startseite fallen** `_konfig`, `_ergebnis`, die Ergebnis-`Ueberlagerung`, die
+  Konfig-Einbettung und die zwei Parameter `SimulationKonfigGaben`/`SimulationErgebnisGaben`.
+- **Rückwegstapel in `AppWurzel`**: `List<(Schluessel, Marke)>`, höchstens drei Einträge,
+  geleert beim Wechsel auf die Startansicht. Er löst `_auslegungRueckweg` (#192) und
+  `_kiRueckweg` (#199) ab; `ZurueckZumAufrufer` und `ZurueckVomAssistenten` holen daraus.
+- **`WindowsFormsApplication1/Views/Simulation/SimulationHuelle.cs`** hält je Projekt die zwei
+  Hülleninstanzen und legt `["SimulationGaben"]` in `HauptfensterHuelle.Gaben()`; die
+  Startseiten-Hülle hat ihre zwei Simulationsgaben abgegeben und reicht nur noch ihren
+  `BedarfsZustand` weiter. Damit trifft der Nachzug aus `SimulationErgebnisHuelle.AuslegungOeffnen`
+  (`_flotteProjektGeaendert`, `_ergebnisGueltig = false`) die Hülle, die ③ danach zeigt.
+- **Menüpunkt „Simulation…"** (`MENU_SIMULATION`) im Kopf „Projekt", unmittelbar hinter
+  „Varianten und Bericht…" — die Menütabelle steht damit bei **59 Punkten, 46 handelnd**.
+
+Nicht umgesetzt und ausdrücklich offen: **S2 (iOS)** — `IosProjektQuelle.SimulationGaben` liefert
+weiterhin `null`; die Ansicht ist dort erreichbar, sobald das Wörterbuch steht (Auftrag #208).
 
 ---
 

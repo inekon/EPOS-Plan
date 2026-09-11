@@ -393,6 +393,27 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Views/Simulation/SimulationErgebnisHuelle.{cs,Anzeige.cs,Bilder.cs,Wege.cs}` —
   und in `EPOS.UI` die **Seite** `Seiten/Simulation/SimulationErgebnisSeite` mit
   ihren zwölf Reiterkomponenten.
+  **Mit Auftrag #207 (11.09.2026) kommt die DRITTE Hülle des Bereichs dazu:**
+  `Views/Simulation/SimulationHuelle.cs` fasst `SimulationKonfigHuelle` und
+  `SimulationErgebnisHuelle` zu EINEM Parametersatz der freien Ansicht
+  `SIMULATION` zusammen (Anwenderentscheid **SIM‑Q1**) und **hält die zwei
+  Hülleninstanzen je Projekt**. Genau das fehlte bis dahin: `StartseiteHuelle`
+  baute bei jedem Kachelklick eine NEUE `SimulationErgebnisHuelle`, also überlebte
+  kein gerechneter Lauf einen Ansichtswechsel — und der Nachzug aus
+  `AuslegungOeffnen` (`_flotteProjektGeaendert`, `_ergebnisGueltig = false`) traf
+  eine Hülle, deren Seite nicht mehr stand (Konzept „Simulationsablauf" 1.3). Die
+  zwei Hüllen bekommen dafür je ein `Erzeugen(…)`, das die INSTANZ liefert; ihre
+  bisherigen `Gaben(…)` bleiben als Fassade. `SimulationErgebnisHuelle` führt
+  zusätzlich `LaufGerechnet` (ist überhaupt schon gerechnet worden — Schritt ③ der
+  Leiste hängt daran, und anders als `_ergebnisGueltig` fällt die Marke nie
+  zurück) und `Sperrgrund()` (die rote Vorprüfung aus ADR‑001); ihr Delegat
+  `KonfigurationGaben` ist gefallen. `HauptfensterHuelle.Gaben()` legt
+  `["SimulationGaben"]` ein (Muster `StromspeicherAuslegungGaben`),
+  `StartseiteHuelle` gibt ihre zwei Simulationsgaben ab und reicht nur noch ihren
+  `BedarfsZustand` weiter (`Bedarf`) — dieselben zwei Bedarfsrechnungen für beide,
+  wie es E‑5 verlangt. `WinFormsNavigation` bekommt den Fall
+  `Masken.Simulation`: ein ANSICHTSWECHSEL über `Navigationsziel`, kein Fenster —
+  dasselbe Muster wie `Masken.Assistent` seit #62b.
   **Entscheid R‑W11‑1:** Die Komponente ist eine SEITE (mit `SeitenZustand`,
   `Seitenschluessel.SimulationErgebnis` und einem Zweig in `AppWurzel` — die
   zweite Fachseite, die iOS erreicht), erscheint unter Windows aber **bis W16 in
@@ -706,7 +727,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   — `Views/Hauptformular/HauptfensterHuelle.cs` (die Datenseite mit dem EINEN
   `Weg`) — und in `EPOS.UI` die Seite `Seiten/Hauptfenster.razor` samt dem
   Baustein `Bausteine/Menueband.razor` und der **erzeugten** `Menuetabelle.cs`
-  (**58 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
+  (**59 Punkte in vier Köpfen**, aus dem Designer und den drei `.resx` per
   Skript, Auflage R‑W16‑8; vier Zeilen haben keine Designer-Herkunft: der Kopf
   **„Sprache"** aus dem Anwenderentscheid **W16c‑E‑2** vom 04.09.2026 — die
   zwei Sprachpunkte hängen seither unter ihm statt neben „Hilfe" zu stehen —,
@@ -720,7 +741,10 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   einen Punkt derselben Beschriftung; der Punkt steht jetzt an seiner Stelle
   im Kopf und trägt sein Bild `Menu4`. Und **W13‑E‑2** vom selben Tag hängt den
   **Stromspeicherimport** in „Daten & Import" — der erste NEUE Weg seit
-  W6‑E‑2. Von den 58 Punkten **handeln 45**,
+  W6‑E‑2. Und **SIM‑Q3** (Auftrag #207, 11.09.2026) hängt „Simulation…"
+  (`MenuItem_Simulation`, `MENU_SIMULATION`) in den Kopf „Projekt", unmittelbar
+  hinter „Varianten und Bericht…" — der erste Menüweg der Simulation überhaupt.
+  Von den 59 Punkten **handeln 46**,
   13 klappen nur auf. Das
   Erzeugerskript liegt nicht im Repository; **geändert wird die Tabelle**).
   **Drei Namen, drei Dinge** (Anwenderentscheid **E‑10**, 04.09.2026):

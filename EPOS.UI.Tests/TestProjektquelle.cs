@@ -76,4 +76,19 @@ internal sealed class TestProjektquelle : IProjektQuelle
     internal IReadOnlyDictionary<string, object>? KiAssistent { get; set; }
 
     public IReadOnlyDictionary<string, object>? KiAssistentGaben(int idProjekt) => KiAssistent;
+
+    /// <summary>
+    /// Der Parametersatz der Ansicht „Simulation" (Auftrag #207) — <c>null</c> ist
+    /// die Vorgabe und heisst „die Seite geht nicht auf", genau der Zustand der
+    /// iOS-Huelle vor Stufe S2.
+    /// </summary>
+    internal IReadOnlyDictionary<string, object>? Simulation { get; set; }
+
+    public IReadOnlyDictionary<string, object>? SimulationGaben(int idProjekt) => Simulation;
+
+    /// <summary>Der Parametersatz der Ansicht „Stromspeicher-Auslegung" (#192).</summary>
+    internal IReadOnlyDictionary<string, object>? Auslegung { get; set; }
+
+    public IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt)
+        => Auslegung;
 }

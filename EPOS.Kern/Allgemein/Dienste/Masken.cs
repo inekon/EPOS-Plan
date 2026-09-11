@@ -150,5 +150,33 @@
         /// <see cref="Assistent"/> seit #62b.</para>
         /// </summary>
         public const string KiAssistent = "KI_ASSISTENT";
+
+        /// <summary>
+        /// Der SIMULATIONSABLAUF als EINE Ansicht (Auftrag #207, Stufe S1 des
+        /// Konzepts „Simulationsablauf ohne Dialog"). Argument: die MARKE, ein
+        /// kurzer Text der Form <c>"schritt=1"</c> bzw.
+        /// <c>"schritt=3;blatt=STROMSPEICHER"</c>.
+        ///
+        /// <para><b>Ein Schlüssel für drei Wege.</b> Bis #207 führten die zwei
+        /// Seitenschlüssel <c>SIMULATION_KONFIGURATION</c> und
+        /// <c>SIMULATION_ERGEBNIS</c> zwei getrennte Ansichten, und keiner von
+        /// beiden hatte hier einen Zwilling: Die Startseite bettete die
+        /// Konfiguration selbst ein und zeigte das Ergebnis als Überlagerung. Mit
+        /// der Ablaufleiste (Anwenderentscheid SIM‑Q1) ist es EINE Ansicht mit drei
+        /// Schritten, und sie braucht einen Weg, den BEIDE Plattformen kennen —
+        /// den Menüpunkt „Simulation…" (SIM‑Q3), den Knopf und die Kachel der
+        /// Startseite und später die iOS-Projektliste.</para>
+        ///
+        /// <para><b>Der Schlüssel trägt denselben Wert</b> wie
+        /// <c>EPOS.UI.Seiten.Seitenschluessel.Simulation</c>
+        /// (<c>"SIMULATION"</c>) — dieselbe Regel wie bei
+        /// <see cref="KiAssistent"/>. Die Windows-Fassung reicht ihn an die
+        /// gezeichnete Wurzel weiter (es gibt kein Fenster dazu), die
+        /// <c>AppWurzel</c> wechselt die Ansicht.</para>
+        ///
+        /// <para><b>Rückgabe <c>true</c> heisst „die Ansicht steht"</b> — wie bei
+        /// <see cref="Assistent"/> und <see cref="KiAssistent"/>.</para>
+        /// </summary>
+        public const string Simulation = "SIMULATION";
     }
 }

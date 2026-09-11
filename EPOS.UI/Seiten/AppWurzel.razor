@@ -117,15 +117,26 @@ else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not nul
         Speichern="@_bhkw.Speichern"
         Geschlossen="BeiBhkwFertig" />
 }
-else if (_ansicht == Seitenschluessel.SimulationKonfiguration && _simKonfig is not null)
+else if (_ansicht == Seitenschluessel.Simulation && _simulation is not null)
 {
-    <EPOS.UI.Seiten.Simulation.SimulationKonfigSeite @attributes="_simKonfig"
-                                                     Geschlossen="ZurueckZurListe" />
-}
-else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not null)
-{
-    <EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite @attributes="_simErgebnis"
-                                                       Geschlossen="ZurueckZurListe" />
+    @* DIE SIMULATION als EINE freie Ansicht (Auftrag #207, Anwenderentscheid
+       SIM-Q1). Hier standen bis dahin ZWEI Zweige - SIMULATION_KONFIGURATION und
+       SIMULATION_ERGEBNIS -, und beide waren unter Windows TOT: Die Startseite
+       bettete die Konfiguration selbst ein und zeigte das Ergebnis als
+       Ueberlagerung, also fuellte kein Wirt die Gaben der Wurzel (Konzept 1.1).
+
+       Die zwei alten Schluessel bleiben als EINSTIEGSMARKEN gueltig und fuehren
+       hierher: Zeige() uebersetzt sie in „schritt=1" bzw. „schritt=3".
+
+       DIE MARKE ist das, was der Rueckwegstapel wiederherstellt - Schritt und
+       Reiterblatt, mehr nicht (Regel aus #199). Wer aus der
+       Stromspeicher-Auslegung zurueckkommt, steht wieder in ③ auf
+       „Stromspeicher"; der Datenstand kommt aus der Huelle, die den
+       Ansichtswechsel ueberlebt. *@
+    <EPOS.UI.Seiten.Simulation.SimulationSeite @ref="_simulationSeite"
+                                               @attributes="_simulation"
+                                               Marke="@_simulationMarke"
+                                               Geschlossen="ZurueckZumAufrufer" />
 }
 else if (_ansicht == Seitenschluessel.Assistent && _assistent is not null)
 {
@@ -195,8 +206,7 @@ else
     private IReadOnlyList<ProjektZeile> _projekte = Array.Empty<ProjektZeile>();
     private IReadOnlyList<(int Id, string Name)> _energietraeger = Array.Empty<(int, string)>();
     private BhkwDialogDaten? _bhkw;
-    private IReadOnlyDictionary<string, object>? _simKonfig;
-    private IReadOnlyDictionary<string, object>? _simErgebnis;
+    private IReadOnlyDictionary<string, object>? _simulation;
     private IReadOnlyDictionary<string, object>? _kiAssistent;
     private IReadOnlyDictionary<string, object>? _assistent;
     private IReadOnlyDictionary<string, object>? _auslegung;
@@ -208,11 +218,19 @@ else
     private EPOS.UI.Seiten.Strom.StromspeicherAuslegungSeite? _auslegungSeite;
 
     /// <summary>
-    /// Die Ansicht, aus der die Auslegung geöffnet wurde — der Rückweg führt dorthin
-    /// und nicht stur auf die <see cref="Startansicht"/> (Auftrag #192 Punkt 1).
-    /// Leer = es gab keine, dann gilt die Startansicht.
+    /// Die stehende Simulationsansicht (Auftrag #207) — sie liefert ihre MARKE für
+    /// den Rückwegstapel und beantwortet, ob die Konfiguration ungespeichert ist.
     /// </summary>
-    private string _auslegungRueckweg = "";
+    private EPOS.UI.Seiten.Simulation.SimulationSeite? _simulationSeite;
+
+    /// <summary>Die Marke, mit der die Simulationsansicht aufmacht.</summary>
+    private string _simulationMarke = "";
+
+    /// <summary>
+    /// Die Simulation ist fertig oder darf verlassen werden — dann wird nicht (noch
+    /// einmal) gefragt.
+    /// </summary>
+    private bool _simulationGeklaert;
 
     /// <summary>
     /// Die Auslegung ist fertig oder darf verlassen werden — dann wird nicht (noch
@@ -322,6 +340,20 @@ else
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
+    /// <summary>
+    /// Der Parametersatz der Ansicht „Simulation", wenn ihn die Hülle stellt
+    /// (Windows: <c>SimulationHuelle.AnsichtGaben</c>). Ohne ihn fragt die Wurzel
+    /// <c>IProjektQuelle.SimulationGaben</c> — der iOS-Weg (Stufe S2, Auftrag #208).
+    ///
+    /// <para><b>Ein Delegat und kein Wörterbuch</b>, wie bei Assistent und
+    /// Auslegung: Der Satz wird bei JEDEM Betreten neu erfragt, weil er den Stand
+    /// der zwei Hülleninstanzen mitbringt — den gerechneten Lauf, die Bilder und
+    /// die Gültigkeitsmarke. Die INSTANZEN selbst hält die Hülle zwischen zwei
+    /// Besuchen; nur so findet der Nachzug der Stromspeicher-Auslegung
+    /// (<c>_ergebnisGueltig = false</c>) die Hülle, die Schritt ③ danach zeigt.</para>
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationGaben { get; set; }
+
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
     // =====================================================================
@@ -428,23 +460,85 @@ else
     //  Der Aufrufkontext des Hilfe-Assistenten (Auftrag #199, Stufe S1)
     // =====================================================================
 
+    // =====================================================================
+    //  DER RUECKWEGSTAPEL (Auftrag #207, Konzept „Simulationsablauf" 2.1)
+    // =====================================================================
+
     /// <summary>
-    /// Die Ansicht, aus welcher der Hilfe-Assistent geöffnet wurde; leer = es gab
-    /// keine, dann gilt die <see cref="Startansicht"/>.
+    /// Die Ansichten, aus denen heraus eine Ansicht MIT RUECKKEHR geöffnet wurde —
+    /// je Eintrag der Seitenschlüssel und die Marke, mit der er wiederkommt.
     /// </summary>
     /// <remarks>
-    /// <b>Was der Rückweg wiederherstellt und was nicht.</b> Er stellt die ANSICHT
-    /// wieder her — ihren Parametersatz hält die Wurzel ohnehin (<c>_simKonfig</c>,
-    /// <c>_auslegung</c>, …). Den INNEREN Zustand der Ansicht stellt er nicht wieder
-    /// her: Die Komponente wird beim Wechsel verworfen, und mit ihr ein offenes
-    /// Reiterblatt, eine Überlagerung und eine halb ausgefüllte Eingabe. Das ist die
-    /// heutige Bauart der Wurzel (eine Ansicht zur Zeit, kein Ansichtenstapel) und
-    /// gilt für JEDEN Wechsel, nicht erst für den Assistenten. Deshalb greift auch
-    /// hier die Rückfrage aus 62b-E-1: Wer den Projektassistenten oder die
-    /// Stromspeicher-Auslegung mit ungespeicherten Eingaben verlässt, wird gefragt —
-    /// auch auf dem Weg zum Hilfe-Assistenten.
+    /// <para><b>Er löst drei Felder ab.</b> Bis #207 führte die Wurzel
+    /// <c>_auslegungRueckweg</c> (#192) und <c>_kiRueckweg</c> (#199) nebeneinander,
+    /// und der Assistent kehrte stur zur Startansicht zurück; jede neue freie Ansicht
+    /// hätte ein viertes Feld gebracht. Der Anwenderentscheid <b>SIM‑Q4</b> macht
+    /// daraus EINEN Mechanismus.</para>
+    ///
+    /// <para><b>Was er wiederherstellt und was nicht.</b> Er stellt die ANSICHT samt
+    /// ihrer MARKE wieder her — Schritt und Reiterblatt, mehr nicht (Regel aus #199).
+    /// Den übrigen inneren Zustand einer Komponente stellt er nicht wieder her: Sie
+    /// wird beim Wechsel verworfen, und mit ihr eine Überlagerung und eine halb
+    /// ausgefüllte Eingabe. Der DATENSTAND kommt aus der Hülle bzw. dem
+    /// Kern-Controller, die den Ansichtswechsel überleben. Deshalb greift die
+    /// Rückfrage aus 62b‑E‑1: Wer den Projektassistenten, die Stromspeicher-Auslegung
+    /// oder die Simulation mit ungespeicherten Eingaben verlässt, wird gefragt.</para>
+    ///
+    /// <para><b>Flach und kurz.</b> Höchstens <see cref="RUECKWEG_TIEFE"/> Einträge
+    /// (Startseite → Simulation → Auslegung → KI-Assistent), und ein Wechsel auf die
+    /// Startansicht leert ihn. <b>Ein Router ist das nicht und soll es nicht
+    /// werden.</b></para>
     /// </remarks>
-    private string _kiRueckweg = "";
+    private readonly List<(string Schluessel, string Marke)> _rueckweg = new();
+
+    /// <summary>Mehr als drei Ebenen kennt der Ablauf nicht.</summary>
+    private const int RUECKWEG_TIEFE = 3;
+
+    /// <summary>
+    /// Die Ansichten, die einen RUECKWEG haben — nur wer hierher wechselt, legt die
+    /// stehende Ansicht ab. „Berichte &amp; Kosten", die Projektliste und die zwei
+    /// Katalogdialoge kehren zur Startansicht zurück und stapeln nicht.
+    /// </summary>
+    private static bool MitRueckkehr(string ziel)
+        => ziel == Seitenschluessel.Simulation
+        || ziel == Seitenschluessel.SimulationKonfiguration
+        || ziel == Seitenschluessel.SimulationErgebnis
+        || ziel == Seitenschluessel.StromspeicherAuslegung
+        || ziel == Seitenschluessel.KiAssistent;
+
+    /// <summary>Die Marke der STEHENDEN Ansicht; leer = sie führt keine.</summary>
+    private string StehendeMarke()
+        => _ansicht == Seitenschluessel.Simulation && _simulationSeite is not null
+               ? _simulationSeite.AktuelleMarke
+               : "";
+
+    /// <summary>Legt die stehende Ansicht samt Marke ab (höchstens drei Einträge).</summary>
+    private void RueckwegMerken()
+    {
+        if (string.IsNullOrEmpty(_ansicht)) return;
+
+        _rueckweg.Add((_ansicht, StehendeMarke()));
+        while (_rueckweg.Count > RUECKWEG_TIEFE) _rueckweg.RemoveAt(0);
+    }
+
+    /// <summary>
+    /// Der Rückweg: den obersten Eintrag holen und zeigen. <c>false</c> = der Stapel
+    /// ist leer oder keine seiner Ansichten lässt sich noch aufbauen; dann gilt wie
+    /// bisher die <see cref="Startansicht"/>.
+    /// </summary>
+    private bool Zurueck()
+    {
+        while (_rueckweg.Count > 0)
+        {
+            (string ziel, string marke) = _rueckweg[^1];
+            _rueckweg.RemoveAt(_rueckweg.Count - 1);
+
+            if (string.IsNullOrEmpty(ziel) || ziel == _ansicht) continue;
+            if (Zeige(ziel, marke: marke, merken: false)) return true;
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Legt den gemeldeten Aufrufkontext über den Parametersatz des Chats: Bereich,
@@ -526,12 +620,11 @@ else
         // Huelle bzw. die Seite, in welchem Bereich der Anwender arbeitet.
         WindowsFormsApplication1.KiChatKontext.AufrufMelden(null);
 
-        string ziel = _kiRueckweg;
-        _kiRueckweg = "";
         _kiAssistent = null;
 
-        if (!string.IsNullOrEmpty(ziel) && ziel != Seitenschluessel.KiAssistent
-            && Zeige(ziel)) return;
+        // Seit #207 holt der STAPEL den Aufrufer (SIM-Q4) - bis dahin stand er in
+        // einem eigenen Feld _kiRueckweg.
+        if (Zurueck()) return;
 
         ZurueckZurListe();
     }
@@ -587,7 +680,17 @@ else
     /// (<c>Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart)</c>).
     /// Ohne sie entscheidet der Schlüssel bzw. das gewählte Projekt.
     /// </param>
-    private bool Zeige(string maske, int? betriebsartWunsch = null)
+    /// <param name="marke">
+    /// Nur für die Simulationsansicht (Auftrag #207): Schritt und Reiterblatt,
+    /// mit denen sie aufmacht (<c>"schritt=3;blatt=STROMSPEICHER"</c>).
+    /// </param>
+    /// <param name="merken">
+    /// <c>false</c> = die stehende Ansicht wird NICHT auf den Rückwegstapel gelegt.
+    /// Der Rückweg selbst geht so — sonst legte er ab, was er gerade verlässt, und
+    /// der Stapel wüchse bei jedem Hin und Her.
+    /// </param>
+    private bool Zeige(string maske, int? betriebsartWunsch = null,
+                       string marke = "", bool merken = true)
     {
         // ANWENDERENTSCHEID 62b-E-1 (11.09.2026): Der Assistent wird nicht still
         // verlassen. Hat der Lauf ungespeicherte Eingaben, kommt die Rueckfrage,
@@ -608,6 +711,25 @@ else
             _ = AuslegungVerlassenUndZeigen(maske, betriebsartWunsch);
             return true;
         }
+
+        // UND fuer die Simulation (Auftrag #207): Eine ungespeicherte Kaskade ist
+        // dasselbe - sie steht nur im Arbeitsspeicher der Huelle. Der Wechsel INNERHALB
+        // der Ansicht (die drei Schluessel fuehren auf dieselbe) fragt nicht.
+        if (_ansicht == Seitenschluessel.Simulation
+            && maske != Seitenschluessel.Simulation
+            && maske != Seitenschluessel.SimulationKonfiguration
+            && maske != Seitenschluessel.SimulationErgebnis
+            && !_simulationGeklaert
+            && _simulationSeite is not null && _simulationSeite.Ungespeichert)
+        {
+            _ = SimulationVerlassenUndZeigen(maske, betriebsartWunsch);
+            return true;
+        }
+
+        // Der Wechsel auf die STARTANSICHT leert den Stapel (Konzept 2.1): Von dort
+        // aus beginnt jeder Weg neu, und ein Eintrag darunter waere unerreichbar.
+        if (maske == Seitenschluessel.Startseite || maske == Seitenschluessel.Projektliste)
+            _rueckweg.Clear();
 
         if (maske == Seitenschluessel.Startseite)
         {
@@ -657,31 +779,41 @@ else
             return true;
         }
 
-        if (maske == Seitenschluessel.SimulationKonfiguration)
+        if (maske == Seitenschluessel.Simulation
+            || maske == Seitenschluessel.SimulationKonfiguration
+            || maske == Seitenschluessel.SimulationErgebnis)
         {
-            _simKonfig = Quelle.SimulationKonfigGaben(_projekt?.Id ?? 0);
-            if (_simKonfig is null)
-            {
-                // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt
-                // warum - der Windows-Zustand „Seite geht nicht auf".
-                _statuszeile = KeineSimKonfigText;
-                return false;
-            }
-            _ansicht = maske;
-            return true;
-        }
+            // DREI SCHLUESSEL, EINE ANSICHT (Auftrag #207, Muster W16a-E-1): Die zwei
+            // alten Schluessel sind seither EINSTIEGSMARKEN - SIMULATION_KONFIGURATION
+            // macht auf Schritt ① auf, SIMULATION_ERGEBNIS auf ③. Eine eigene Marke
+            // des Aufrufers gewinnt gegen beide.
+            string wunsch = marke;
+            if (string.IsNullOrEmpty(wunsch))
+                wunsch = maske == Seitenschluessel.SimulationErgebnis
+                             ? EPOS.UI.Seiten.Simulation.SimulationMarke.SCHRITT_ERGEBNIS
+                         : maske == Seitenschluessel.SimulationKonfiguration
+                             ? EPOS.UI.Seiten.Simulation.SimulationMarke.SCHRITT_KONFIGURATION
+                             : "";
 
-        if (maske == Seitenschluessel.SimulationErgebnis)
-        {
-            _simErgebnis = Quelle.SimulationErgebnisGaben(_projekt?.Id ?? 0);
-            if (_simErgebnis is null)
+            // Der Delegat der Huelle hat Vorrang: Unter Windows haelt SimulationHuelle
+            // den gerechneten Lauf, die Bilder und die Gueltigkeitsmarke zwischen zwei
+            // Besuchen - eine Projektquelle koennte das nicht.
+            IReadOnlyDictionary<string, object>? gaben =
+                SimulationGaben?.Invoke() ?? Quelle.SimulationGaben(_projekt?.Id ?? 0);
+            if (gaben is null)
             {
                 // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt
                 // warum - der Windows-Zustand „Seite geht nicht auf".
-                _statuszeile = KeinSimErgebnisText;
+                _statuszeile = KeineSimulationText;
                 return false;
             }
-            _ansicht = maske;
+
+            if (merken && _ansicht != Seitenschluessel.Simulation) RueckwegMerken();
+
+            _simulation = gaben;
+            _simulationMarke = wunsch;
+            _simulationGeklaert = false;
+            _ansicht = Seitenschluessel.Simulation;
             return true;
         }
 
@@ -734,8 +866,9 @@ else
                 _statuszeile = KeineAuslegungText;
                 return false;
             }
-            // Der Rueckweg fuehrt dorthin, woher man kam (Muster #62b).
-            _auslegungRueckweg = _ansicht;
+            // Der Rueckweg fuehrt dorthin, woher man kam (Muster #62b) - seit #207
+            // ueber den STAPEL und nicht mehr ueber ein eigenes Feld (SIM-Q4).
+            if (merken) RueckwegMerken();
             _auslegungGeklaert = false;
             _ansicht = maske;
             return true;
@@ -760,7 +893,7 @@ else
 
             // Der Rueckweg fuehrt dorthin, woher man kam (Muster #62b) - der
             // Assistent ist ein Abstecher, keine neue Arbeitsansicht.
-            if (_ansicht != Seitenschluessel.KiAssistent) _kiRueckweg = _ansicht;
+            if (merken && _ansicht != Seitenschluessel.KiAssistent) RueckwegMerken();
             _ansicht = maske;
             return true;
         }
@@ -785,15 +918,19 @@ else
         // oder ueber „Projekt oeffnen") - hier wird nicht noch einmal gefragt.
         _assistentGeklaert = true;
 
+        // Die Simulation hat sich SELBST verabschiedet - hier wird nicht noch
+        // einmal gefragt (Auftrag #207, Muster 62b-E-1).
+        _simulationGeklaert = true;
+
         _bhkw = null;
-        _simKonfig = null;
-        _simErgebnis = null;
+        _simulation = null;
+        _simulationMarke = "";
         _kiAssistent = null;
-        _kiRueckweg = "";
         _assistent = null;
         _berichteKosten = null;   // W16c-E-3: auch diese Ansicht wird verlassen
         _auslegung = null;
         _auslegungGeklaert = true;
+        _rueckweg.Clear();
 
         if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
@@ -869,22 +1006,41 @@ else
     // =====================================================================
 
     /// <summary>
-    /// Der RUECKWEG der Auslegung: dorthin, woher man kam. Lässt sich diese Ansicht
-    /// nicht mehr aufbauen, gilt der gewöhnliche Rückweg zur Startansicht.
+    /// Der RUECKWEG einer freien Ansicht mit Rückkehr — der Auslegung (#192) und
+    /// seit #207 auch der Simulation: dorthin, woher man kam, mit der Marke, mit
+    /// der man ging. Lässt sich keine Ansicht des Stapels mehr aufbauen, gilt der
+    /// gewöhnliche Rückweg zur Startansicht.
     /// </summary>
     private void ZurueckZumAufrufer()
     {
         // Die Seite hat sich SELBST verabschiedet - hier wird nicht noch einmal gefragt.
         _auslegungGeklaert = true;
+        _simulationGeklaert = true;
 
-        string ziel = _auslegungRueckweg;
-        _auslegungRueckweg = "";
         _auslegung = null;
+        _simulation = null;
 
-        if (!string.IsNullOrEmpty(ziel) && ziel != Seitenschluessel.StromspeicherAuslegung
-            && Zeige(ziel)) return;
+        if (Zurueck()) return;
 
         ZurueckZurListe();
+    }
+
+    /// <summary>Fragt die stehende Simulationsansicht und wechselt DANACH — oder gar nicht.</summary>
+    private async Task SimulationVerlassenUndZeigen(string maske, int? betriebsart)
+    {
+        EPOS.UI.Seiten.Simulation.SimulationSeite? seite = _simulationSeite;
+        if (seite is null) return;
+
+        EPOS.UI.Seiten.Assistent.AssistentVerlassen weg = await seite.FrageVerlassen();
+        if (weg == EPOS.UI.Seiten.Assistent.AssistentVerlassen.Bleiben) return;
+
+        _simulationGeklaert = true;
+        _simulation = null;
+
+        if (!Zeige(maske, betriebsart) && !Zeige(Startansicht))
+            _ansicht = Seitenschluessel.Projektliste;
+
+        StateHasChanged();
     }
 
     /// <summary>Fragt die stehende Auslegungsansicht und wechselt DANACH — oder gar nicht.</summary>
@@ -914,14 +1070,39 @@ else
         || (_ansicht == Seitenschluessel.StromspeicherAuslegung
             && !_auslegungGeklaert
             && _auslegungSeite is not null
-            && _auslegungSeite.Ungespeichert);
+            && _auslegungSeite.Ungespeichert)
+        || (_ansicht == Seitenschluessel.Simulation
+            && !_simulationGeklaert
+            && _simulationSeite is not null
+            && _simulationSeite.Ungespeichert);
 
     /// <inheritdoc />
     public Task<bool> DarfVerlassen()
     {
-        // Zwei Ansichten haben etwas zu verlieren - der Assistent (62b-E-1) und die
-        // Stromspeicher-Auslegung (#192); jede andere schreibt beim Verlassen nichts.
+        // DREI Ansichten haben etwas zu verlieren - der Assistent (62b-E-1), die
+        // Stromspeicher-Auslegung (#192) und die Simulation (#207); jede andere
+        // schreibt beim Verlassen nichts.
         if (!VerlassenFraglich) return Task.FromResult(true);
+
+        if (_ansicht == Seitenschluessel.Simulation)
+        {
+            var simulation = new TaskCompletionSource<bool>();
+            _ = InvokeAsync(async () =>
+            {
+                try
+                {
+                    EPOS.UI.Seiten.Simulation.SimulationSeite? seite = _simulationSeite;
+                    if (seite is null) { simulation.TrySetResult(true); return; }
+
+                    EPOS.UI.Seiten.Assistent.AssistentVerlassen weg = await seite.FrageVerlassen();
+                    bool frei = weg != EPOS.UI.Seiten.Assistent.AssistentVerlassen.Bleiben;
+                    if (frei) _simulationGeklaert = true;
+                    simulation.TrySetResult(frei);
+                }
+                catch (Exception) { simulation.TrySetResult(true); }
+            });
+            return simulation.Task;
+        }
 
         if (_ansicht == Seitenschluessel.StromspeicherAuslegung)
         {
@@ -988,6 +1169,7 @@ else
         // wird ausschliesslich auf dem Renderfaden.
         bool bekannt = maske == Seitenschluessel.Energietraeger
                     || maske == Seitenschluessel.BhkwWirtschaftlichkeit
+                    || maske == Seitenschluessel.Simulation
                     || maske == Seitenschluessel.SimulationKonfiguration
                     || maske == Seitenschluessel.SimulationErgebnis
                     || maske == Seitenschluessel.KiAssistent
@@ -1014,12 +1196,31 @@ else
             && argumente[0] is WindowsFormsApplication1.KiAufrufkontext kontext)
             WindowsFormsApplication1.KiChatKontext.AufrufMelden(kontext);
 
+        // Die SIMULATION nimmt ihre MARKE als Argument entgegen (Auftrag #207) -
+        // „schritt=1" vom Knopf der Startseite, „schritt=3" von ihrer Kachel,
+        // „schritt=3;blatt=STROMSPEICHER" aus dem Rueckwegstapel.
+        string marke = Marke(maske, argumente);
+
         _ = InvokeAsync(() =>
         {
-            Zeige(maske, betriebsart);
+            Zeige(maske, betriebsart, marke);
             StateHasChanged();
         });
         return true;
+    }
+
+    /// <summary>
+    /// Die MARKE aus dem ersten Argument — nur für die Simulationsansicht und nur,
+    /// wenn ein Text darin steht.
+    /// </summary>
+    private static string Marke(string maske, object[] argumente)
+    {
+        if (maske != Seitenschluessel.Simulation
+            && maske != Seitenschluessel.SimulationKonfiguration
+            && maske != Seitenschluessel.SimulationErgebnis) return "";
+
+        if (argumente is null || argumente.Length == 0) return "";
+        return argumente[0] as string ?? "";
     }
 
     /// <summary>
@@ -1061,13 +1262,13 @@ else
     [Parameter] public string KeinBhkwText { get; set; } =
         "Zu diesem Projekt gibt es keine BHKW-Vergleichsgruppe.";
 
-    /// <summary>Meldung, wenn die Simulationskonfiguration nicht zu laden ist.</summary>
-    [Parameter] public string KeineSimKonfigText { get; set; } =
-        "Zu diesem Projekt lässt sich die Simulationskonfiguration nicht öffnen.";
-
-    /// <summary>Meldung, wenn das Simulationsergebnis nicht zu laden ist.</summary>
-    [Parameter] public string KeinSimErgebnisText { get; set; } =
-        "Zu diesem Projekt lässt sich das Simulationsergebnis nicht öffnen.";
+    /// <summary>
+    /// Meldung, wenn die Simulationsansicht nicht zu laden ist (Auftrag #207).
+    /// Sie löst die zwei Meldungen der abgelösten Zweige ab — es gibt nur noch
+    /// EINE Ansicht, die aufgehen oder nicht aufgehen kann.
+    /// </summary>
+    [Parameter] public string KeineSimulationText { get; set; } =
+        "Zu diesem Projekt lässt sich die Simulation nicht öffnen.";
 
     /// <summary>
     /// Meldung, wenn der KI-Assistent nicht zu öffnen ist — der Zustand, solange die

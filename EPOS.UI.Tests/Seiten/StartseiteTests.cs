@@ -706,81 +706,27 @@ public class StartseiteTests : EposBunitContext
     }
 
     // =====================================================================
-    //  E-5: die zwei Simulationsansichten ohne zweites Fenster
+    //  Auftrag #207: die zwei Simulationswege fuehren in EINE freie Ansicht
     // =====================================================================
+    //
+    //  Hier standen bis #207 zwei Faelle: „Die Simulationskonfiguration loest
+    //  die Startseite ab" und „Das Simulationsergebnis erscheint als
+    //  Ueberlagerung" (Entscheid E-5). Beides gibt es nicht mehr - die
+    //  Startseite MELDET nur noch den Weg. Dass sie ihn richtig meldet, prueft
+    //  StartseiteSimulationwegTests weiter unten; es braucht dafuer eine
+    //  getauschte Dienste.Navigation und damit die serielle Sammlung.
 
     /// <summary>
-    /// <b>Entscheid E-5, erste Hälfte.</b> Die SIMULATIONSKONFIGURATION löst die
-    /// Startseite ab — eine freie Ansicht in derselben WebView statt eines
-    /// zweiten Fensters (der Entscheid R-W10b-1 ist damit geschlossen). Der
-    /// Kachelklick meldet sich dabei NICHT mehr über <c>Geklickt</c>.
+    /// Ohne zuständige Navigation geht der Klick den GEWÖHNLICHEN Weg über
+    /// <c>Geklickt</c> — der Zustand im Prüfstand, im Konsolenlauf und überall
+    /// dort, wo gerade keine Wurzel zeichnet.
     /// </summary>
-    [Fact]
-    public void Die_Simulationskonfiguration_loest_die_Startseite_ab()
-    {
-        List<string> gemeldet = new List<string>();
-        int gefragt = 0;
-
-        var cut = Render<Startseite>(p => p
-            .Add(x => x.Kacheln, () => Kacheln(0))
-            .Add(x => x.ProjektId, () => 1030)
-            .Add(x => x.Bericht, Bereitschaft)
-            .Add(x => x.Geklickt, sch => gemeldet.Add(sch))
-            .Add(x => x.SimulationKonfigGaben, () =>
-            {
-                gefragt++;
-                return new Dictionary<string, object> { ["StartProjekt"] = 1030 };
-            }));
-
-        cut.FindAll("[role='tab']")[4].Click();
-        cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
-
-        Assert.Equal(1, gefragt);
-        Assert.Empty(gemeldet);
-
-        // Die Startseite ist weg - kein Kopfband, keine Reiterleiste mehr.
-        Assert.Empty(cut.FindAll(".epos-startseite"));
-        Assert.Empty(cut.FindAll("[role='tab']"));
-    }
-
-    /// <summary>
-    /// <b>Entscheid E-5, zweite Hälfte.</b> Das SIMULATIONSERGEBNIS erscheint als
-    /// <c>Ueberlagerung</c> — modal, aber in derselben WebView (R-W11-1
-    /// geschlossen). Die Startseite bleibt darunter stehen.
-    /// </summary>
-    [Fact]
-    public void Das_Simulationsergebnis_erscheint_als_Ueberlagerung()
-    {
-        List<string> gemeldet = new List<string>();
-        int gefragt = 0;
-
-        var cut = Render<Startseite>(p => p
-            .Add(x => x.Kacheln, () => Kacheln(0))
-            .Add(x => x.ProjektId, () => 1030)
-            .Add(x => x.Bericht, Bereitschaft)
-            .Add(x => x.Geklickt, sch => gemeldet.Add(sch))
-            .Add(x => x.SimulationErgebnisGaben, () =>
-            {
-                gefragt++;
-                return new Dictionary<string, object> { ["StartProjekt"] = 1030 };
-            }));
-
-        cut.FindAll("[role='tab']")[4].Click();
-        cut.Find(".epos-kachel").Click();
-
-        Assert.Equal(1, gefragt);
-        Assert.Empty(gemeldet);
-
-        // Die Ueberlagerung steht, die Startseite darunter ebenfalls.
-        Assert.NotEmpty(cut.FindAll("[role='dialog']"));
-        Assert.NotEmpty(cut.FindAll(".epos-startseite"));
-    }
-
-    /// <summary>
-    /// Ohne Parametersatz geht der Klick den GEWÖHNLICHEN Weg — das ist der
-    /// Zustand einer Hülle, die die beiden Ansichten nicht anbietet (iOS bis
-    /// iU11).
-    /// </summary>
+    /// <remarks>
+    /// Der Fall stand schon vor Auftrag #207 hier und hieß „ohne Parametersatz";
+    /// er gilt unverändert, nur ist der Rückfall jetzt eine Navigation, die
+    /// <c>false</c> meldet (<c>KeineNavigation</c>), und nicht mehr ein fehlender
+    /// Delegat.
+    /// </remarks>
     [Fact]
     public void Ohne_Parametersatz_meldet_der_Klick_nur_seinen_Schluessel()
     {

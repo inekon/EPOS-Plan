@@ -102,7 +102,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>58 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>59 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -113,18 +113,21 @@ namespace EPOS.UI.Bausteine;
 /// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
 /// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
 /// Ein-Punkt-Untermenue MenuItem_Klima, mit W13-E-2 kommt der
-/// Stromspeicherimport hinzu. Also 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 = 58, dazu 8 Trennstriche.</para>
+/// Stromspeicherimport hinzu, mit SIM-Q3 der Punkt „Simulation…". Also
+/// 54 Bestandspunkte
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 = 59, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 58 Punkten handeln <b>45</b>, 13 klappen auf.
+/// vier klappen nur auf; von den 59 Punkten handeln <b>46</b>, 13 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
-/// ist sie zweimal, und beide Male um einen ECHTEN neuen Weg: mit W6-E-2 um
+/// ist sie dreimal, und jedes Mal um einen ECHTEN neuen Weg: mit W6-E-2 um
 /// den Wechselrichterkatalog und seinen Import (42 -> 44), mit W13-E-2 um den
-/// Stromspeicherimport (44 -> 45).</para>
+/// Stromspeicherimport (44 -> 45) und mit SIM-Q3 (Auftrag #207) um die Ansicht
+/// „Simulation" (45 -> 46) - den ersten Menueweg, den die Simulation ueberhaupt
+/// hat.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -159,6 +162,14 @@ public static class Menuetabelle
             Menuepunkt.Trennstrich("MenuItem_TrennerVarianten"),
             new Menuepunkt("MenuItem_AlsVariante", "MENU_VARIANTE_SPEICHERN", Seitenschluessel.ProjektAlsVariante),
             new Menuepunkt("MenuItem_VariantenBericht", "MENU_VARIANTEN_BERICHT", Seitenschluessel.BerichteKosten),
+            // ANWENDERENTSCHEID SIM-Q3 (11.09.2026, Auftrag #207): der einzige
+            // NEUE Punkt des Kopfs „Projekt" seit W16c. Bis dahin war die
+            // Startseite der EINZIGE Weg in die Simulation - das Menue fuehrte
+            // keinen Punkt dorthin (Konzept „Simulationsablauf" 1.1). Er steht
+            // unmittelbar hinter „Varianten und Bericht…" und traegt KEIN
+            // Untermenue (Regel W16c-E-6); sein Ziel ist die freie Ansicht
+            // SIMULATION, die ohne Marke bei Schritt ① aufmacht.
+            new Menuepunkt("MenuItem_Simulation", "MENU_SIMULATION", Seitenschluessel.Simulation),
         },
         new Menuepunkt("Administration", "MENU_ADMINISTRATION", "")
         {

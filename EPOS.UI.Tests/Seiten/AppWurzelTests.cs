@@ -511,4 +511,219 @@ public class AppWurzelTests : EposBunitContext
         // Neustart des Sprachwechsels - laeuft ohne Abbruch durch.
         Assert.False(cut.Instance.VerlassenFraglich);
     }
+
+    // =====================================================================
+    //  DER RUECKWEGSTAPEL (Auftrag #207, Anwenderentscheid SIM-Q4)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz der Ansicht SIMULATION in seiner schmalsten Form: zwei
+    /// eingebettete Seiten, ein gerechneter Lauf und ein Blatt „Stromspeicher".
+    /// </summary>
+    private static IReadOnlyDictionary<string, object> Simulationsgaben()
+        => new Dictionary<string, object>
+        {
+            ["Dienste"] = new EPOS.UI.Seiten.Simulation.SimulationAnsichtDienste
+            {
+                Konfiguration = new Dictionary<string, object>
+                {
+                    ["Dienste"] = new EPOS.UI.Seiten.Simulation.SimulationKonfigDienste
+                    {
+                        Laden = _ => new EPOS.UI.Seiten.Simulation.SimulationKonfigDaten()
+                    },
+                    ["StartProjekt"] = 1030
+                },
+                Ergebnis = new Dictionary<string, object>
+                {
+                    ["Dienste"] = new EPOS.UI.Seiten.Simulation.SimulationErgebnisDienste
+                    {
+                        Laden = _ => new EPOS.UI.Seiten.Simulation.SimulationErgebnisDaten
+                        {
+                            IdProjekt = 1030,
+                            ErgebnisGueltig = true,
+                            ReiterStromspeicher = true
+                        },
+                        Bild = _ => null
+                    },
+                    ["StartProjekt"] = 1030
+                },
+                ErgebnisVorhanden = () => true
+            },
+            ["ProjektText"] = "Projekt „B3-Kaskade“"
+        };
+
+    private IRenderedComponent<AppWurzel> MitSimulation(TestProjektquelle quelle)
+    {
+        quelle.Startseite = new Dictionary<string, object>
+        {
+            ["ProjektId"] = new Func<int>(() => 1030)
+        };
+        quelle.Simulation = Simulationsgaben();
+
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        return Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+    }
+
+    /// <summary>
+    /// <b>Die Lücke, die #207 schließt</b> (Konzept „Simulationsablauf" 1.3): Der
+    /// Rückweg der Stromspeicher-Auslegung war richtig gebaut, aber es gab kein
+    /// Ziel, zu dem er zurückkonnte — das Ergebnis war eine Überlagerung IN der
+    /// Startseite und keine Ansicht. Jetzt ist es eine, der Stapel merkt sie sich
+    /// samt MARKE, und die Rückkehr landet in ③ auf demselben Reiterblatt.
+    /// </summary>
+    [Fact]
+    public void Der_Rueckweg_aus_der_Auslegung_landet_in_der_Simulation_auf_ihrer_Marke()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Auslegung = new Dictionary<string, object>
+            {
+                ["Dienste"] = new EPOS.UI.Seiten.Strom.StromspeicherAuslegungDienste(),
+                ["PlanerVerfuegbar"] = true
+            }
+        };
+        var cut = MitSimulation(quelle);
+
+        // ① Die Simulation, auf Schritt ③ geoeffnet (die Kachel „Simulation").
+        Assert.True(cut.Instance.OeffneMaske(
+            Seitenschluessel.Simulation,
+            EPOS.UI.Seiten.Simulation.SimulationMarke.SCHRITT_ERGEBNIS));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+
+        // ② Auf das Blatt „Stromspeicher" - das ist die Marke, die zurueckkommen soll.
+        cut.FindAll("div.epos-simerg button[role='tab']")
+           .Single(k => k.TextContent.Contains("Stromspeicher")).Click();
+
+        // ③ Die Auslegung loest die Ansicht ab.
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.StromspeicherAuslegung));
+        cut.Render();
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+        Assert.Single(cut.FindAll(".epos-spauslegung"));
+
+        // ④ „← zurueck" fuehrt DORTHIN ZURUECK, WOHER MAN KAM - und nicht auf die
+        //    Startseite, wie es #192 unter Windows tat.
+        cut.FindAll("button").First(k => k.TextContent.Trim() == "← zurück").Click();
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-spauslegung"));
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+
+        // Und zwar auf Schritt ③, Blatt „Stromspeicher".
+        Assert.NotEmpty(cut.FindAll("div.epos-simerg"));
+        Assert.Contains("blatt=" + EPOS.UI.Seiten.Simulation.SimulationErgebnisSeite.Blatt.Stromspeicher,
+                        MarkeDerSimulation(cut));
+    }
+
+    /// <summary>Die Marke der stehenden Simulationsansicht — über ihre Prüfhilfe.</summary>
+    private static string MarkeDerSimulation(IRenderedComponent<AppWurzel> cut)
+        => cut.FindComponent<EPOS.UI.Seiten.Simulation.SimulationSeite>().Instance.AktuelleMarke;
+
+    /// <summary>
+    /// Der KI-Hilfe-Assistent ist ein ABSTECHER: Er kehrt dorthin zurück, woher er
+    /// kam (#199) — seit #207 über denselben Stapel wie die Auslegung, nicht mehr
+    /// über ein eigenes Feld.
+    /// </summary>
+    [Fact]
+    public void Der_KI_Assistent_kehrt_ueber_den_Stapel_in_die_Simulation_zurueck()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            KiAssistent = new Dictionary<string, object>()
+        };
+        var cut = MitSimulation(quelle);
+
+        Assert.True(cut.Instance.OeffneMaske(
+            Seitenschluessel.Simulation,
+            EPOS.UI.Seiten.Simulation.SimulationMarke.SCHRITT_ERGEBNIS));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.KiAssistent));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-kichat"));
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+
+        // Der letzte Knopf der Chatleiste ist „Schliessen".
+        var knoepfe = cut.FindAll(".epos-kichat-knoepfe button.epos-knopf");
+        knoepfe[knoepfe.Count - 1].Click();
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-kichat"));
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+    }
+
+    /// <summary>
+    /// Der Stapel ist FLACH und wird beim Wechsel auf die Startansicht geleert
+    /// (Konzept 2.1) — wer von dort aus neu beginnt, hat keinen Weg mehr hinter
+    /// sich. Danach landet der Rückweg der Auslegung wieder auf der Startseite.
+    /// </summary>
+    [Fact]
+    public void Ein_Wechsel_auf_die_Startansicht_leert_den_Stapel()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Auslegung = new Dictionary<string, object>
+            {
+                ["Dienste"] = new EPOS.UI.Seiten.Strom.StromspeicherAuslegungDienste(),
+                ["PlanerVerfuegbar"] = true
+            }
+        };
+        var cut = MitSimulation(quelle);
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Simulation);
+        cut.Render();
+        cut.Instance.OeffneMaske(Seitenschluessel.Startseite);
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-startseite"));
+
+        cut.Instance.OeffneMaske(Seitenschluessel.StromspeicherAuslegung);
+        cut.Render();
+        cut.FindAll("button").First(k => k.TextContent.Trim() == "← zurück").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+    }
+
+    /// <summary>
+    /// <b>Die zwei alten Schlüssel bleiben gültig</b> (Auftrag #207): Sie öffnen
+    /// dieselbe Ansicht, nur auf verschiedenen Schritten — als EINSTIEGSMARKEN.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_alten_Simulationsschluessel_sind_Einstiegsmarken_derselben_Ansicht()
+    {
+        var cut = MitSimulation(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.SimulationKonfiguration));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+        Assert.NotEmpty(cut.FindAll("div.epos-simkonfig"));
+        Assert.Empty(cut.FindAll("div.epos-simerg"));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.SimulationErgebnis));
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+        Assert.NotEmpty(cut.FindAll("div.epos-simerg"));
+    }
+
+    /// <summary>
+    /// Ohne Parametersatz bleibt die Liste stehen und sagt warum — der
+    /// Windows-Zustand „Seite geht nicht auf", auf iOS der Stand vor Stufe S2.
+    /// </summary>
+    [Fact]
+    public void Ohne_Parametersatz_geht_die_Simulation_nicht_auf()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte);
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>();
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.Simulation));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+        Assert.Contains("Simulation nicht öffnen", cut.Find(".epos-warnbanner").TextContent);
+    }
 }

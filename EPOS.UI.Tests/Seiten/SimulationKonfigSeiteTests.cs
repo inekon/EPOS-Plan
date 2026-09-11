@@ -596,19 +596,51 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Contains("gespeichert", cut.Find(".epos-warnbanner").TextContent);
     }
 
+    /// <summary>
+    /// <b>Auftrag #207:</b> Die Fußzeile trägt nur noch EINEN Knopf. „Beenden"
+    /// ist gefallen — die Seite ist Schritt ① der Ansicht SIMULATION, und man
+    /// verlässt sie über die Ablaufleiste oder über das eine „← zurück" im Kopf
+    /// der Ansicht (Anwenderentscheid SIM‑Q1).
+    /// </summary>
     [Fact]
-    public void Beenden_meldet_den_Schliesswunsch()
+    public void Die_Fusszeile_traegt_nur_noch_das_Speichern()
     {
-        bool zu = false;
+        var cut = Seite();
+
+        var knoepfe = cut.FindAll("div.epos-leiste button.epos-knopf");
+        Assert.Single(knoepfe);
+        Assert.Contains("speichern", knoepfe[0].TextContent, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// <b>Auftrag #207:</b> Der Wirt erfährt, dass die Kaskade ungespeichert ist —
+    /// daran hängt die Sperre von Schritt ② und die Rückfrage beim Verlassen.
+    /// Nach dem Speichern ist der Stand wieder sauber.
+    /// </summary>
+    [Fact]
+    public void Eine_Kaskadenaenderung_meldet_sich_und_das_Speichern_raeumt_sie_weg()
+    {
+        List<bool> gemeldet = new List<bool>();
 
         var cut = Render<SimulationKonfigSeite>(p => p
             .Add(x => x.Dienste, Dienste())
             .Add(x => x.StartProjekt, 1030)
-            .Add(x => x.Geschlossen, () => zu = true));
+            .Add(x => x.UngespeichertGeaendert, wert => gemeldet.Add(wert)));
 
-        var knoepfe = cut.FindAll("div.epos-leiste button.epos-knopf");
-        knoepfe[knoepfe.Count - 1].Click();
-        Assert.True(zu);
+        Assert.False(cut.Instance.Ungespeichert);
+
+        // ▼ der ersten Waermeerzeugerkarte - derselbe Weg wie in
+        // Die_Pfeile_melden_das_Verschieben_mit_Richtung.
+        cut.FindAll("div.epos-erzeugerkachel")[0]
+           .QuerySelectorAll("button.epos-erzeugerkachel-glyphe")[1].Click();
+
+        Assert.True(cut.Instance.Ungespeichert);
+        Assert.Equal(new[] { true }, gemeldet);
+
+        cut.FindAll("div.epos-leiste button.epos-knopf")[0].Click();
+
+        Assert.False(cut.Instance.Ungespeichert);
+        Assert.Equal(new[] { true, false }, gemeldet);
     }
 
     // ================================================================== Sperre
@@ -625,8 +657,11 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Contains("Schema-Migration", cut.Find(".epos-warnbanner").TextContent);
         Assert.True(cut.Find("fieldset.epos-simkonfig-bereich").HasAttribute("disabled"));
 
-        // Die Fusszeile bleibt draussen: „Beenden" muss erreichbar sein.
-        Assert.NotEmpty(cut.FindAll("div.epos-leiste button.epos-knopf"));
+        // Die Fusszeile bleibt draussen (das fieldset umschliesst sie nicht); der
+        // Speicherknopf selbst ist im Sperrzustand gesperrt.
+        var knoepfe = cut.FindAll("div.epos-leiste button.epos-knopf");
+        Assert.Single(knoepfe);
+        Assert.True(knoepfe[0].HasAttribute("disabled"));
     }
 
     // ================================================================== Editoren

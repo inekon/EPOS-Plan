@@ -1593,7 +1593,11 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Setzen` nicht), dazu **`StartseiteCtrl`** (K4, die vier SQL mit `DbParam`) und **`BedarfsZustand`** (E‑5: die zwei
 > Bedarfsobjekte gehören dem Projekt, nicht mehr einem Fenster). **E‑5 umgesetzt:** die Simulationskonfiguration löst
 > die Startseite in derselben WebView ab, das Ergebnis liegt als `Ueberlagerung` darüber, die zwei modalen Hüllen sind
-> gefallen — **R‑W10b‑1 und R‑W11‑1 damit eingelöst** (in den Blöcken W10b/W11b nachgetragen). `Dienste.Projekt` läuft
+> gefallen — **R‑W10b‑1 und R‑W11‑1 damit eingelöst** (in den Blöcken W10b/W11b nachgetragen).
+> **Nachtrag 11.09.2026, Auftrag #207 (SIM‑Q1):** Die zwei Wirte der Startseite sind seither ihrerseits gefallen — die
+> Simulation ist EINE freie Ansicht `SIMULATION` mit Ablaufleiste (① Konfiguration · ② Lauf · ③ Ergebnis), und
+> die Startseite meldet nur noch den Weg dorthin. E‑5 bleibt als Entscheid gültig („kein zweites Fenster"); was sich
+> ändert, ist der Wirt, nicht das Ziel. `Dienste.Projekt` läuft
 > über `ProjektKontextCtrl`, `Program.startfrm` gibt es nicht mehr, `IProjektQuelle.Startkacheln(int)` (K6) mit
 > Standardumsetzung. 78 neue Texte de/en, darunter erstmals englisch die drei Literale aus dem Code (B1).
 > `Form_Start.Designer.cs` und drei `.resx` als Prüfmuster `Pruefmuster/Hauptformular/` eingefroren (E‑9), alle elf

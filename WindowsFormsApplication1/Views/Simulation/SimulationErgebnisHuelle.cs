@@ -46,33 +46,43 @@ namespace WindowsFormsApplication1
         private static readonly Size MASS = new Size(1474, 821);
 
         // =================================================================
-        // Öffnen
+        // Anlegen
         // =================================================================
 
         /// <summary>
-        /// Zeigt die Ergebnisseite in einem modalen Fenster (R-W11-1). Der Aufrufer
-        /// liest nichts zurück — das tat auch der Vorläufer nicht (Befund W11-B26:
-        /// <c>SetControls()</c> war leer und wurde trotzdem gerufen).
+        /// Legt die Hülle an und meldet den Hilfebereich.
         /// </summary>
-        /// <param name="waermebedarf">
-        /// Das Wärmebedarfsobjekt des Aufrufers — es wird hier WEITERGESCHRIEBEN und
-        /// dort für die Kachelbeschriftungen weiterverwendet (Befund W11-B3).
+        /// <param name="bedarf">
+        /// Die zwei Bedarfsrechnungen des Projekts — sie werden hier
+        /// WEITERGESCHRIEBEN und von der Startseite für die Kachelbeschriftungen
+        /// weiterverwendet (Befund W11-B3, Entscheid E-5).
         /// </param>
-        internal static IReadOnlyDictionary<string, object> Gaben(
+        /// <remarks>
+        /// <para><b>iU9-W16b.4 (Entscheid E-5): kein zweites Fenster mehr.</b> Hier
+        /// stand einmal ein <c>Oeffnen(besitzer, idProjekt, waermebedarf,
+        /// strombedarf)</c> — ein <c>BlazorDialogForm</c> mit der Seite darin,
+        /// 1 474 × 821, der Zwischenstand aus W11b (Entscheid R-W11-1). Der
+        /// ausdrückliche Grund für die Modalität war Befund W11-B3: Die zwei
+        /// Bedarfsobjekte gehörten <c>Form_Start</c> und wurden hier
+        /// weitergeschrieben — nebeneinander offen wären beide Fenster im Streit
+        /// gewesen. Sie gehören seither dem PROJEKT
+        /// (<see cref="BedarfsZustand"/> im Kern).</para>
+        ///
+        /// <para><b>Sie liefert die INSTANZ, nicht bloss deren Gaben</b> (Auftrag
+        /// #207). Daneben stand bis dahin ein statisches <c>Gaben(…)</c>, das die
+        /// Hülle anlegte und gleich wieder vergass — <c>StartseiteHuelle</c> rief es
+        /// bei JEDEM Kachelklick. Der gerechnete Lauf (<c>sim</c>), die zwölf Bilder
+        /// und die Gültigkeitsmarke <c>_ergebnisGueltig</c> leben aber HIER und nicht
+        /// in der Razor-Seite: Wer die Ansicht wechselt — auf die
+        /// Stromspeicher-Auslegung und zurück —, verliert die Seite, und nur eine
+        /// GEHALTENE Hülle bringt den Lauf wieder mit. <c>SimulationHuelle</c> hält
+        /// sie je Projekt; auch der Nachzug aus <see cref="AuslegungOeffnen"/>
+        /// (<c>_ergebnisGueltig = false</c>) findet so die Hülle wieder, die Schritt
+        /// ③ danach zeigt.</para>
+        /// </remarks>
+        internal static SimulationErgebnisHuelle Erzeugen(
             Func<Form> besitzer, int idProjekt, BedarfsZustand bedarf)
         {
-            // iU9-W16b.4 (Entscheid E-5): KEIN ZWEITES FENSTER MEHR.
-            //
-            // Hier stand "Oeffnen(besitzer, idProjekt, waermebedarf, strombedarf)" -
-            // ein BlazorDialogForm mit der Seite darin, 1474 x 821. Es war der
-            // Zwischenstand aus W11b (Entscheid R-W11-1); der ausdrueckliche Grund
-            // fuer die Modalitaet war Befund W11-B3: Die zwei Bedarfsobjekte
-            // gehoerten Form_Start und wurden hier weitergeschrieben - nebeneinander
-            // offen waeren beide Fenster im Streit gewesen.
-            //
-            // Sie gehoeren jetzt dem PROJEKT (BedarfsZustand im Kern), und die Seite
-            // erscheint als Ueberlagerung DERSELBEN WebView. Modal bleibt sie -
-            // der Lauf startet beim Oeffnen von selbst -, aber ohne zweites Fenster.
             if (bedarf == null) throw new ArgumentNullException(nameof(bedarf));
 
             bedarf.FuerProjekt(idProjekt);
@@ -85,7 +95,7 @@ namespace WindowsFormsApplication1
             // Vorlaeufer (:436, Befund W11-B5), nur nicht mehr am Activated-Ereignis.
             HilfeKontext.SetzeBereich("Detaillierte Simulation");
 
-            return huelle.Gaben();
+            return huelle;
         }
 
         // =================================================================
@@ -117,6 +127,38 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zustandsmaschine „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).</summary>
         private bool _ergebnisGueltig;
+
+        /// <summary>
+        /// Ist ueberhaupt schon einmal gerechnet worden? (Auftrag #207)
+        /// </summary>
+        /// <remarks>
+        /// <b>Nicht dasselbe wie <see cref="_ergebnisGueltig"/>.</b> Jene Marke sagt,
+        /// ob das ANGEZEIGTE Ergebnis gespeichert werden darf, und faellt bei jeder
+        /// Aenderung an der Projektflotte auf <c>false</c>. Diese hier sagt nur, dass
+        /// Zahlen dastehen — Schritt ③ der Ablaufleiste haengt daran, und wer aus der
+        /// Auslegung zurueckkommt, soll sie samt dem Banner „Flotte geaendert" sehen
+        /// duerfen. Sie faellt nie zurueck: Ein Lauf, der gelaufen ist, ist gelaufen.
+        /// </remarks>
+        private bool _laufGerechnet;
+
+        /// <summary>Liegt ein gerechneter Lauf vor? (Auftrag #207, Schritt ③)</summary>
+        internal bool LaufGerechnet { get { return _laufGerechnet; } }
+
+        /// <summary>
+        /// Der Grund, aus dem GAR NICHT gerechnet werden kann — die rote Vorpruefung
+        /// der Ablaufleiste (Auftrag #207). Leer = frei.
+        /// </summary>
+        /// <remarks>
+        /// Es ist dieselbe Sperre, die <see cref="Laufen"/> als Erstes prueft und die
+        /// die Seite als Warnbanner zeigt (ADR-001, nicht abgeschlossene
+        /// Schema-Migration). Sie wird HIER gefragt und nicht in der Komponente:
+        /// <c>SchemaMigration</c> liest die Datenbank.
+        /// </remarks>
+        internal static string Sperrgrund()
+        {
+            string grund;
+            return SchemaMigration.SimulationGesperrt(out grund) ? (grund ?? "") : "";
+        }
 
         /// <summary>Abbruchmarke des laufenden Simulationslaufs; <c>null</c> = kein Lauf.</summary>
         private CancellationTokenSource _laufAbbruch;
@@ -224,7 +266,10 @@ namespace WindowsFormsApplication1
                 SpeicherfeldSchreiben = SpeicherfeldSchreiben,
                 SpeicherPreisreihen = SpeicherPreisreihen,
 
-                KonfigurationGaben = () => SimulationKonfigHuelle.Gaben(m_ID_Projekt),
+                // KonfigurationGaben stand hier bis Auftrag #207: Die Ergebnisseite
+                // oeffnete die Konfiguration als zweite Ueberlagerung in ihrer
+                // eigenen. Seither ist sie Schritt ① DERSELBEN Ansicht, und ihren
+                // Parametersatz legt SimulationHuelle unmittelbar daneben.
                 BedarfGaben = waerme => waerme
                     ? BedarfErgebnisHuelle.Gaben(_waermebedarf, true, 1, "")
                     : BedarfErgebnisHuelle.Gaben(_strombedarf, 0),
@@ -988,6 +1033,7 @@ namespace WindowsFormsApplication1
 
             // Erst JETZT ist ein Ergebnis da, das gespeichert werden darf (Befund N1).
             _ergebnisGueltig = true;
+            _laufGerechnet = true;
             _flotteProjektGeaendert = false;
             _autarkieGesetzt = false;
 

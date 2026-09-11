@@ -202,11 +202,17 @@
             <Warnbanner Stufe="@_statusStufe" Text="@_status" />
         }
 
-        <SpeichernLeiste MitSpeichern="true" MitAbbrechen="false"
-                         SatzMarkiert="true" Geaendert="true"
-                         SpeichernText="@BtnSpeichern" OkText="@BtnBeenden"
-                         Gespeichertwerden="Speichern"
-                         Ergebnis="_ => Geschlossen.InvokeAsync()" />
+        @* AUFTRAG #207: Hier stand eine SpeichernLeiste mit „Konfiguration
+           speichern" UND „Beenden". Der zweite Knopf ist gefallen — seit die Seite
+           Schritt ① der Ansicht SIMULATION ist, verlaesst man sie ueber die
+           Ablaufleiste oder ueber das eine „← zurueck" im Kopf der Ansicht
+           (Anwenderentscheid SIM-Q1). Damit bleibt EIN Knopf, und der Baustein
+           lohnt nicht mehr: Seine Statuszeile hat diese Seite nie benutzt, sie
+           meldet ueber ihr eigenes Warnbanner darueber. *@
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@_daten.Gesperrt" @onclick="SpeichernGeklickt">@BtnSpeichern</button>
+        </div>
     </div>
 
     @* =================================================================
@@ -337,8 +343,18 @@
     /// <summary>Das Projekt beim Aufbau, wenn kein <see cref="Zustand"/> gesetzt ist.</summary>
     [Parameter] public int StartProjekt { get; set; }
 
-    /// <summary>Die Seite moechte geschlossen werden („Beenden").</summary>
-    [Parameter] public EventCallback Geschlossen { get; set; }
+    /// <summary>
+    /// Der Stand hat sich geaendert: <c>true</c> = es gibt ungespeicherte
+    /// Aenderungen an der Kaskade (Auftrag #207).
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum die Seite das MELDET, statt bloss gefragt zu werden.</b> Die
+    /// Ansicht SIMULATION sperrt Schritt ② („Simulation starten"), solange die
+    /// Konfiguration ungespeichert ist, und fragt beim Verlassen nach (62b‑E‑1) —
+    /// beides auch dann, wenn Schritt ① gerade nicht sichtbar ist. Ein Wirt, der
+    /// den Stand selbst haelt, kommt ohne stehende Komponente aus.
+    /// </remarks>
+    [Parameter] public EventCallback<bool> UngespeichertGeaendert { get; set; }
 
     // ---- Texte (deutscher Rueckfall; die Huelle setzt die Ressourcen) ----
 
@@ -402,7 +418,6 @@
         = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
 
     [Parameter] public string BtnSpeichern { get; set; } = "Konfiguration speichern";
-    [Parameter] public string BtnBeenden { get; set; } = "Beenden";
 
     [Parameter] public string StatusGespeichert { get; set; }
         = "✔ Konfiguration erfolgreich gespeichert";
@@ -526,6 +541,15 @@
     private string _status = "";
     private WarnStufe _statusStufe = WarnStufe.Erfolg;
 
+    /// <summary>Ungespeicherte Aenderungen an der Kaskade (Auftrag #207).</summary>
+    private bool _ungespeichert;
+
+    /// <summary>
+    /// Gibt es ungespeicherte Aenderungen? Der Wirt fragt danach, bevor er die
+    /// Ansicht wechselt oder rechnen laesst.
+    /// </summary>
+    public bool Ungespeichert => _ungespeichert;
+
     /// <summary>Das offene Projekt.</summary>
     public int IdProjekt => Zustand?.ProjektId ?? StartProjekt;
 
@@ -558,6 +582,11 @@
         _ = InvokeAsync(() =>
         {
             _status = "";
+
+            // Ein PROJEKTWECHSEL wirft den Arbeitsstand weg - die Huelle legt ihre
+            // Kaskade neu an, und was hier offen war, gehoerte dem alten Projekt.
+            UngespeichertSetzen(false);
+
             Neuladen();
             StateHasChanged();
         });
@@ -697,6 +726,7 @@
     private void Verschieben(ErzeugerZeile z, int richtung)
     {
         Dienste?.Verschieben?.Invoke(z.DbWert, richtung);
+        Geaendert();
         Neuladen();
     }
 
@@ -705,6 +735,7 @@
         if (z.IstStrom) Dienste?.StromAuswahl?.Invoke(z.StromPlatz, z.DbWert);
         else Dienste?.Aufnehmen?.Invoke(z.DbWert);
 
+        Geaendert();
         Neuladen();
     }
 
@@ -713,7 +744,26 @@
         if (z.IstStrom) Dienste?.StromAuswahl?.Invoke(z.StromPlatz, "");
         else Dienste?.Entfernen?.Invoke(z.DbWert);
 
+        Geaendert();
         Neuladen();
+    }
+
+    /// <summary>
+    /// GENAU DIESE DREI WEGE sind ungespeichert (Auftrag #207): Kaskadenplatz,
+    /// Aufnehmen, Entfernen. Alles Uebrige dieser Seite — Betriebsmodus,
+    /// Prioritaet, Waermequelle, Pufferzuordnung, Lesepunkt — schreibt SOFORT in
+    /// die Datenbank und hat nichts Offenes. Der Kaskadenstand dagegen lebt bis
+    /// „Konfiguration speichern" im Arbeitsspeicher der Huelle
+    /// (<c>KonfigurationCtrl.Delete</c> + <c>Insert</c>), und ein Simulationslauf
+    /// laese ohne ihn den alten Stand.
+    /// </summary>
+    private void Geaendert() => UngespeichertSetzen(true);
+
+    private void UngespeichertSetzen(bool wert)
+    {
+        if (_ungespeichert == wert) return;
+        _ungespeichert = wert;
+        UngespeichertGeaendert.InvokeAsync(wert);
     }
 
     /// <summary>
@@ -776,11 +826,21 @@
         Melden(StatusEinstellungFehler, WarnStufe.Fehler);
     }
 
-    private void Speichern()
+    /// <summary>
+    /// Schreibt den Kaskadenstand; <c>true</c> = gelungen. <b>Oeffentlich seit
+    /// Auftrag #207</b>: Die Rueckfrage beim Verlassen (62b‑E‑1) geht denselben
+    /// Weg wie der Knopf.
+    /// </summary>
+    public bool Speichern()
     {
-        if (Dienste?.Speichern?.Invoke() == true)
-            Melden(StatusGespeichert, WarnStufe.Erfolg);
+        if (Dienste?.Speichern?.Invoke() != true) return false;
+
+        UngespeichertSetzen(false);
+        Melden(StatusGespeichert, WarnStufe.Erfolg);
+        return true;
     }
+
+    private void SpeichernGeklickt() => Speichern();
 
     /// <summary>
     /// Die Statuszeile. Der Vorlaeufer blendete sie nach DREI SEKUNDEN aus
