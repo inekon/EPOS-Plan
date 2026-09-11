@@ -20,7 +20,16 @@ namespace Auslieferungsvorlage
         internal string Ziel { get; private set; }
         internal List<string> Beispiele { get; } = new List<string>();
         internal bool Trocken { get; private set; }
-        internal bool KatalogeVollstaendig { get; private set; }
+
+        /// <summary>
+        /// Vorgabe <c>true</c> seit Anwenderentscheid <b>#160‑E‑1a</b> (11.09.2026,
+        /// „a"): Der Katalog wird vollstaendig ausgeliefert, ohne dass <c>--kataloge
+        /// alle</c> bei jedem Lauf eigens angegeben werden muesste. Der Schalter
+        /// <c>--kataloge readonly</c> bleibt ausdruecklich waehlbar und setzt diesen
+        /// Wert auf <c>false</c> — Weg b („Marke nachpflegen") wurde verworfen.
+        /// </summary>
+        internal bool KatalogeVollstaendig { get; private set; } = true;
+
         internal bool KatalogleerungZulassen { get; private set; }
 
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
@@ -45,17 +54,23 @@ namespace Auslieferungsvorlage
             Console.WriteLine("                    eine mit ',' oder ';' getrennte Liste von Dateien.");
             Console.WriteLine("  --trocken         Alles rechnen und berichten, nichts schreiben: die Zieldatei");
             Console.WriteLine("                    entsteht nicht, der Bericht geht nur auf die Konsole.");
-            Console.WriteLine("  --kataloge alle   Jede Katalogzeile behalten, statt in *_STAMM nur ReadOnly=TRUE");
-            Console.WriteLine("                    zu behalten (Setup-Konzept 6.1, Schritt 3).");
+            Console.WriteLine("  --kataloge alle   Jede Katalogzeile behalten. VORGABE seit Anwenderentscheid");
+            Console.WriteLine("                    #160-E-1a (11.09.2026) — ohne diesen Schalter geschieht");
+            Console.WriteLine("                    dasselbe.");
+            Console.WriteLine("  --kataloge readonly");
+            Console.WriteLine("                    Nur behalten, was in *_STAMM ReadOnly=TRUE traegt");
+            Console.WriteLine("                    (Setup-Konzept 6.1, Schritt 3) — ausdruecklich zu waehlen;");
+            Console.WriteLine("                    bricht mit Code 4 ab, wenn das eine Katalogtabelle leert.");
             Console.WriteLine("  --katalogleerung-zulassen");
-            Console.WriteLine("                    Nicht abbrechen, wenn die ReadOnly-Regel eine Katalogtabelle");
-            Console.WriteLine("                    vollstaendig leert.");
+            Console.WriteLine("                    Nur mit --kataloge readonly wirksam: nicht abbrechen, wenn");
+            Console.WriteLine("                    die ReadOnly-Regel eine Katalogtabelle vollstaendig leert.");
             Console.WriteLine();
             Console.WriteLine("Rueckgabe:");
             Console.WriteLine("  0  Vorlage erzeugt und abgenommen.");
             Console.WriteLine("  2  Aufruf falsch oder Quelle nicht lesbar.");
             Console.WriteLine("  3  Das Ziel liegt im Repository ausserhalb von Setup/Vorlage/.");
-            Console.WriteLine("  4  Die ReadOnly-Regel wuerde eine Katalogtabelle leeren.");
+            Console.WriteLine("  4  Nur bei --kataloge readonly: Die ReadOnly-Regel wuerde eine Katalogtabelle");
+            Console.WriteLine("     leeren.");
             Console.WriteLine("  5  Fachlicher Abbruch (Beispielimport oder Abnahme fehlgeschlagen).");
             Console.WriteLine("  1  Unerwarteter Fehler; die Ausnahme steht auf stderr.");
             Console.WriteLine();
@@ -80,7 +95,8 @@ namespace Auslieferungsvorlage
                     case "--kataloge":
                         if (++i >= args.Length) return a.Mit("--kataloge braucht einen Wert (readonly oder alle).");
                         if (args[i] == "alle") a.KatalogeVollstaendig = true;
-                        else if (args[i] != "readonly") return a.Mit("--kataloge kennt nur 'readonly' und 'alle'.");
+                        else if (args[i] == "readonly") a.KatalogeVollstaendig = false;
+                        else return a.Mit("--kataloge kennt nur 'readonly' und 'alle'.");
                         break;
                     case "--beispiele":
                         if (++i >= args.Length) return a.Mit("--beispiele braucht einen Ordner oder eine Dateiliste.");

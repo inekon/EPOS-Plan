@@ -146,8 +146,8 @@ namespace Auslieferungsvorlage
                                         " Katalogtabelle(n) vollstaendig (" +
                                         string.Join(", ", bau.GeleerteKataloge) + "). Eine Vorlage mit leerem " +
                                         "Katalog ist unbrauchbar und faellt erst beim Kunden auf. Entweder die " +
-                                        "Marke ReadOnly im Bestand pflegen, oder --kataloge alle, oder " +
-                                        "--katalogleerung-zulassen.");
+                                        "Marke ReadOnly im Bestand pflegen, oder --kataloge weglassen (Vorgabe " +
+                                        "seit #160-E-1a: alle), oder --katalogleerung-zulassen.");
                 return KATALOGWAECHTER;
             }
 

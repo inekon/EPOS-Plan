@@ -73,16 +73,21 @@ namespace Auslieferungsvorlage.Tests
         }
 
         // =============================================================================
-        //  A5 — Der Katalogwaechter
+        //  A5 — Der Katalogwaechter (nur bei ausdruecklichem --kataloge readonly)
         // =============================================================================
         /// <summary>
         /// Die Regel aus Setup-Konzept 6.1 Schritt 3 („in <c>*_STAMM</c> bleibt, was
         /// <c>ReadOnly = TRUE</c> traegt") leert am Bestand der Testdatenbank 22 der 28
         /// Katalogtabellen. Das Werkzeug bricht deshalb ab, statt eine Vorlage mit leerem
         /// Katalog abzulegen — die faellt sonst erst beim Kunden auf.
+        ///
+        /// <para>Seit Anwenderentscheid <b>#160‑E‑1a</b> (11.09.2026) ist die Vorgabe
+        /// <c>--kataloge alle</c>; die Regel und damit dieser Waechter greifen nur noch,
+        /// wenn <c>--kataloge readonly</c> ausdruecklich gewaehlt wird — die Gegenprobe zum
+        /// Aufruf OHNE den Schalter steht in A9.</para>
         /// </summary>
         [Fact]
-        public void A5_Die_ReadOnly_Regel_bricht_ab_wenn_sie_einen_Katalog_leert()
+        public void A5_Die_ReadOnly_Regel_bricht_mit_Kataloge_readonly_ab_wenn_sie_einen_Katalog_leert()
         {
             if (Werkzeuglauf.Testdatenbank == null) return;
             using var o = new Arbeitsordner();
@@ -90,7 +95,7 @@ namespace Auslieferungsvorlage.Tests
             File.Copy(Werkzeuglauf.Testdatenbank, quelle);
             string ziel = o.Datei("Kenndaten.sqlite");
 
-            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel, "--kataloge", "readonly");
 
             Assert.Equal(4, e.Code);
             Assert.Contains("Katalogtabelle", e.Fehlerausgabe);
@@ -169,6 +174,42 @@ namespace Auslieferungsvorlage.Tests
             Assert.True(new FileInfo(ziel).Length > 1_000_000);
         }
 
+        // =============================================================================
+        //  A9 — Ohne den Schalter ist die Vorgabe seit #160-E-1a: alle Katalogzeilen
+        //       bleiben, und der Katalogwaechter (A5) greift NICHT
+        // =============================================================================
+        /// <summary>
+        /// Anwenderentscheid <b>#160‑E‑1a</b> (11.09.2026, „a"): Die Vorgabe von
+        /// <c>--kataloge</c> ist <c>alle</c>. Ein Aufruf OHNE den Schalter darf deshalb
+        /// nicht mehr am Katalogwaechter scheitern (Code 4, siehe A5) — jede Katalogzeile
+        /// der Quelle muss Tabelle fuer Tabelle in der Vorlage wiederzufinden sein, genau
+        /// die Vorher/Nachher-Zaehlung, die auch im Prueflauf (Schritt 3) steht.
+        /// </summary>
+        [Fact]
+        public void A9_Ohne_Kataloge_Schalter_ist_die_Vorgabe_alle_und_jede_Zeile_bleibt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string ziel = o.Datei("Kenndaten.sqlite");
+
+            Dictionary<string, long> vorher = StammZeilenzahlen(quelle);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, ziel);   // KEIN --kataloge
+
+            Assert.True(e.Code == 0, e.Alles);
+            Assert.Contains("Modus: alle", e.Ausgabe);
+
+            Dictionary<string, long> nachher = StammZeilenzahlen(ziel);
+            Assert.Equal(vorher.Keys.OrderBy(k => k, StringComparer.Ordinal),
+                         nachher.Keys.OrderBy(k => k, StringComparer.Ordinal));
+            foreach (string t in vorher.Keys)
+                Assert.True(vorher[t] == nachher[t],
+                            t + ": Quelle " + vorher[t] + " Zeile(n) gegen Vorlage " + nachher[t] + ".");
+            Assert.True(vorher.Values.Sum() > 0, "Die Quelle fuehrt keine Katalogzeile — die Probe waere leer.");
+        }
+
         // -----------------------------------------------------------------------------
         private static Dictionary<string, long> Zeilenzahlen(string datei)
         {
@@ -182,6 +223,33 @@ namespace Auslieferungsvorlage.Tests
                 foreach (DataRow r in t.Rows)
                 {
                     string name = Convert.ToString(r["name"]);
+                    d[name] = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + name + "\""));
+                }
+                return d;
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
+        /// <summary>Nur die Auslieferungskataloge (<c>*_STAMM</c>) — dieselbe Abgrenzung wie
+        /// <see cref="Vorlagenbau.KatalogeBereinigen"/> ueber <c>Projektsicht.Stammtabellen</c>.</summary>
+        private static Dictionary<string, long> StammZeilenzahlen(string datei)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                var d = new Dictionary<string, long>(StringComparer.Ordinal);
+                DataTable t = DataRepository.GetDataTable(
+                    "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE '%\\_STAMM' ESCAPE '\\' " +
+                    "ORDER BY name");
+                foreach (DataRow r in t.Rows)
+                {
+                    string name = Convert.ToString(r["name"]);
+                    if (!name.EndsWith("_STAMM", StringComparison.Ordinal)) continue;
                     d[name] = Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM \"" + name + "\""));
                 }
                 return d;

@@ -105,7 +105,10 @@ namespace Auslieferungsvorlage
         /// <summary>
         /// Setzt die Regel aus <c>Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1
         /// Schritt 3 um: „In den <c>*_STAMM</c>-Tabellen behalten, was <c>ReadOnly = TRUE</c>
-        /// traegt; das ist laut Namenskonvention genau der Auslieferungskatalog."
+        /// traegt; das ist laut Namenskonvention genau der Auslieferungskatalog." Diese
+        /// Regel greift nur noch, wenn <c>--kataloge readonly</c> ausdruecklich gewaehlt
+        /// wird — Anwenderentscheid <b>#160‑E‑1a</b> (11.09.2026) macht <c>alle</c> zur
+        /// VORGABE, siehe <see cref="Argumente.KatalogeVollstaendig"/>.
         ///
         /// <para><b>Eine Tabelle ohne Spalte <c>ReadOnly</c> bleibt vollstaendig.</b> Drei
         /// Kataloge fuehren die Spalte nicht (<c>Tab_Klimadaten_STAMM</c>,
@@ -118,16 +121,17 @@ namespace Auslieferungsvorlage
         /// Oberflaeche (siehe <c>HeizkesselStammCtrl</c>, <c>GebaeudeStammCtrl</c>) und
         /// nicht die Auslieferungsmarke, als die die Namenskonvention sie beschreibt. Wer
         /// die Regel unbesehen anwendet, liefert einen LEEREN Katalog aus - und das faellt
-        /// erst beim Kunden auf. Der Weg an der Sperre vorbei ist
-        /// <c>--kataloge alle</c> oder <c>--katalogleerung-zulassen</c>, beides
-        /// ausdruecklich.</para>
+        /// erst beim Kunden auf. Der Weg an der Sperre vorbei ist, <c>--kataloge readonly</c>
+        /// gar nicht erst zu waehlen (Vorgabe: <c>alle</c>) oder ausdruecklich
+        /// <c>--katalogleerung-zulassen</c> zu setzen.</para>
         /// </summary>
         internal void KatalogeBereinigen(Projektsicht sicht)
         {
             _bericht.Abschnitt("Schritt 3 — Auslieferungskataloge (*_STAMM)");
             _bericht.Zeile("Modus: " + (_arg.KatalogeVollstaendig
-                ? "alle — jede Katalogzeile bleibt (--kataloge alle)"
-                : "readonly — es bleibt, was ReadOnly = TRUE traegt (Setup-Konzept 6.1, Schritt 3)"));
+                ? "alle — Vorgabe (#160-E-1a): jede Katalogzeile bleibt"
+                : "readonly — es bleibt, was ReadOnly = TRUE traegt (--kataloge readonly, " +
+                  "Setup-Konzept 6.1, Schritt 3)"));
             _bericht.Leer();
             // VORHER und NACHHER werden je einmal fuer ALLE Kataloge gezaehlt, nicht je
             // Tabelle um ihre eigene Anweisung herum. Der Grund ist eine Falle, die sonst
