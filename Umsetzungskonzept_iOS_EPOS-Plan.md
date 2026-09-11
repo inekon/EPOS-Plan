@@ -3864,6 +3864,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > für 16…48 px nachziehen); Windows-CI-Lauf auf dem Push beobachten (erster Build mit `ApplicationIcon`).
 > Gate sept37 auf `e53eba8`: Kern 2 685, UI 3 843, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#228 (11.09.2026, `785dc96`, Merge `e462a84`) — Hilfe-Assistent öffnet wieder aus Hauptmenü und F1 (Anwenderbefund, Konzept KI‑D‑B‑3).**
+> Zwei getrennte Ursachen, beide in der Windows-Hülle: (1) Der Menüpunkt läuft seit #219 ZWEIMAL durch `Blazorsprung` — `HauptfensterHuelle.Weg`
+> verzögert jeden Maskenschlüssel (`Masken.KiAssistent` ist einer, der eigene `case` dort ist auf dem Menüweg tot), und `WinFormsNavigation`
+> verzögert im geposteten Sprung noch einmal; der Riegel `_angefordert` fiel aber erst im `finally` am ENDE des Sprungs, also traf der innere
+> Ruf den Riegel des äußeren und kehrte stumm zurück (der Klassenkopf versprach seit W16b den Beginn). (2) F1 hing an `KeyPreview`/`KeyDown` —
+> das wirkt nur für Tasten im `WndProc` eines WinForms-Steuerelements, und seit W16c sitzt der Tastaturzeiger im nativen Browserfenster der
+> WebView2; F1 war seit W16c nie am Gerät geprüft. Jetzt: der Riegel fällt als Erstes in `Ausfuehren` (ein innerer Sprung reiht sich regulär
+> ein), `RiegelSteht()` protokolliert jedes Abweisen und lässt einen verwaisten Riegel nach 5 s verfallen (eine `BeginInvoke`-Nachricht läuft
+> nie, wenn ihr Wirtsfenster vorher fällt), `Wirtsfenster()` fällt von `Form.ActiveForm` auf den `Hauptfensterrahmen` zurück — EINE Ermittlung
+> für Nachrichtenschlange und Fensterbesitzer; F1 über `ProcessCmdKey` (erreicht die Taste auch aus der WebView2); `KiChatHuelle` setzt
+> `_offene` erst nach gelungenem Bau und hängt bei einem Fehlschlag wieder aus (vorher blieb eine Hülle ohne Fenster stehen, die nie ein
+> `FormClosed` meldete — jedes weitere Öffnen „holte sie nach vorn"). Keine Zeile in Kern oder Oberfläche; sechs Quelltextwachen
+> `KiChatOeffnerTests` (Riegelreihenfolge mit Gegenprobe, Protokoll und Verfall, Wirtsfenster-Rückfall, F1 über `ProcessCmdKey`, Lebenszyklus);
+> Konzept Kapitel 8 KI‑D‑B‑3 mit Abnahmeliste; `WindowsFormsApplication1/CLAUDE.md` Regeln (f) und (g). Der Zweig entstand auf der alten Linie
+> und wurde vor dem Merge auf `d5c8c98` umgesetzt; Konflikt in `Hauptfensterrahmen.cs` mit #229 (Programmsymbol-Aufruf bleibt, `KeyPreview`
+> fällt). **Offen:** Windows-Abnahme — Menü Hilfe → KI-Assistent zweimal hintereinander, F1 mit dem Zeiger in der WebView2, Pille aus Ansicht und
+> Dialog, jeweils nach vorherigem Öffnen und Schließen.
+> Gate sept38 auf `e462a84`: Kern 2 685, UI 3 849, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
