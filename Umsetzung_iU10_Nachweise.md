@@ -582,6 +582,28 @@ per `workflow_dispatch` auf Anwenderwunsch („SP‑O‑3: iOS lauf", 11.09.2026
 > Testdatenbank und Doku, nicht die Hülle; geprüft hat ihn der Referenzlauf 13/13 byte-gleich
 > gegen `2026-09-11_R7_Speicherflotte` (Regel vom 09.09.2026).
 
+**Zweiundvierzigster Lauf 34608780957 (`ios.yml`, `macos-26`, 11.09.2026, 14:12–14:19 UTC, 6 min 21 s)** auf
+`39721b0` — ausgelöst per `workflow_dispatch` auf Anwenderentscheid („iOS-Lauf 42 nach #196 starten", 11.09.2026),
+weil #196 erstmals seit Lauf 41 die Hülle selbst trifft: `EPOS.iOS/wwwroot/index.html` bindet seither
+`epos-flotte.css` ein (seit P2 fehlend; ohne die Zeile wären Flottendialoge, Diagnosebanner, Peak-Ziel-Block und
+Größen-Sicht auf iOS ungestylt). Zugleich der erste iOS-Lauf mit **Schemastand 74** (Startmarke `STRICT=118`, Erwartung
+aus der Seed-Datenbank 118 — die Zahl aus dem Nachtrag zu Lauf 41 ist damit belegt), mit der **freien Ansicht
+`STROMSPEICHER_AUSLEGUNG`** der `AppWurzel` (#192, Ablaufleiste, Diagnosebanner, Peak-Ziel; die zwei
+Überlagerungsdialoge sind gefallen), den Paketen P1 bis P4 der Stromspeicher-Dialoge (#183, #184, #193, #196:
+`FlottenDiagnose`, `FlottenPeakZiel`, `SpeicherFlottenErgebnisAnsicht`, `SpeicherFlottenGroessenAnsicht`), dem
+`StromspeicherAuslegungCtrl` im Kern, der Kaskadenplatz-Vorprüfung (#190), der Schema-Kürzung (#188), der Titelregel
+„Ein Titel, eine Stelle" (#187/#194) und der Programmversion 1.2.0 (#191). Workload 36 s, Bau 1 min 06 s (0 Fehler,
+11 Warnungen: die vier Bestandswarnungen des Kerns CS0108 ×2/CS0109 ×2, die `RuntimeIdentifier`-Meldung des
+iOS-SDK, zwei Null-Hinweise CS8604/CS8602 aus `Referenzlauf/Protokoll.cs` und `Referenzlauf/Ergebnisexport.cs` im
+iOS-Ziel sowie vier CS0618 in `EPOS.iOS/Dienste/IosDialogDienst.cs` — `DisplayAlert`, `DisplayActionSheet` und
+`Page.IsBusy` sind in MAUI veraltet, `IsBusy` fällt mit .NET 11; Folgeauftrag #202), Simulatorstart 1 min 14 s
+(iPad Pro 13-inch (M5), Boot 1 min 06 s), Erststart mit Seed-Kopie (67 MB), Startmarken `SQLite 3.53.3` ·
+`STRICT=118` · `Projekte=25` grün, Kultur de-DE, Prüfmodus 1030 (22 CSV, 160 Skalare, 4 s),
+**iZ6-Vergleich gegen `2026-09-11_R7_Speicherflotte` PASS (236 680 Werte)** und **BYTE-GLEICH** (`diff -rq` leer,
+iOS-Simulator arm64). Artefakte `ios-simulator` (26 Dateien, 850 KB) und `ios-app` (321 Dateien, 87,6 MB). Die
+`kern.yml`-Läufe 318 bis 324 auf ubuntu (`d431e23` bis `39721b0`) sind grün. Was der Lauf NICHT zeigt: ob das
+Stilblatt auf dem Gerät auch richtig aussieht — das bleibt eine Sichtprüfung auf dem iPad (iU13-Liste).
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
