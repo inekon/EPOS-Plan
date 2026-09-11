@@ -8870,6 +8870,2670 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzleistung vor und nach Speicherung, mit Peak-Ziel und Ladezustand ähnelt.
+        /// </summary>
+        public static string FLOTTE_ALT_NETZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_ALT_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netto-Cashflow je Projektjahr und kumulierter Stand ähnelt.
+        /// </summary>
+        public static string FLOTTE_ALT_PROJEKTION {
+            get {
+                return ResourceManager.GetString("FLOTTE_ALT_PROJEKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Individueller Ladezustand und Energiegrenzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ALT_SOC {
+            get {
+                return ResourceManager.GetString("FLOTTE_ALT_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEBSQUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEBSQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb je entladener Energie: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEB_ENTLADEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEB_ENTLADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb Leistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEB_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEB_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb Kapazität: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEB_KWH {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEB_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_CRATE_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_CRATE_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate Schritt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_CRATE_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_CRATE_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_CRATE_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_CRATE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen speichern ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_EINSTELLUNGEN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_EINSTELLUNGEN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_FEINRASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_FEINRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen gespeichert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenachse: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GROESSENACHSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GROESSENACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_INVESTQUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_INVESTQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Leistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_INVEST_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_INVEST_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Kapazität: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_INVEST_KWH {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_INVEST_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopie ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_KOPIE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenmodul ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_KOSTENMODUL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_KOSTENMODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastdatei wählen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_LASTDATEI {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_LASTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Last: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_LASTQUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_LASTQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Modelljahr auf die CSV-Zeitachse zuordnen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_MODELLJAHR {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_MODELLJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei CSV-Reihen zusammen mit EPOS- oder Preisprofilwerten ist diese Zuordnung ausdrücklich zu bestätigen. Die CSV-Zeitachse bleibt vollständig erhalten: Für den 29. Februar wird der EPOS-Wert des 28. Februar wiederverwendet; doppelte lokale Stunden bei der Zeitumstellung erhalten denselben EPOS-Modellwert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_MODELLJAHR_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_MODELLJAHR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisdatei wählen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PREISDATEI {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PREISDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisprofil: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PREISPROFIL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PREISPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PREISQUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PREISQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsprofile ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFILE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profilname: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFILNAME {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFILNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisprofil anlegen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_ANLEGEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisprofil bearbeiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil gespeichert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil laden: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_LADEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Preisprofil ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_NEU {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil speichern ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_SPEICHERN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Profil wählen) ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PROFIL_WAEHLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PROFIL_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Datei wählen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PVDATEI {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PVDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_PVQUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_PVQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schrittweite (leer = Stützstellen): ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstrategie: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_STRATEGIE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_STRATEGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stützstellen: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_SUCHRAUM {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_SUCHRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten berücksichtigen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_VERSCHLEISS {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_VERSCHLEISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitreihen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_ZEITREIHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_ZEITREIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batterieexport ins Netz erlauben ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_CHK_EXPORT {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_CHK_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden aus dem Netz erlauben ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_CHK_NETZLADUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_CHK_NETZLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Planung bewertet Bezug und Verkauf getrennt; Netzladung und Batterieexport bleiben ausdrückliche Freigaben. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_HINWEIS_ARBITRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_HINWEIS_ARBITRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Schutz hat Vorrang; verbleibende Freiheitsgrade werden wirtschaftlich genutzt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_HINWEIS_MULTIUSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_HINWEIS_MULTIUSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Flotte begrenzt den Netzbezug auf das wirtschaftliche Peak-Ziel, soweit Energie, Leistung und Anschlussgrenzen reichen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_HINWEIS_PEAK {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_HINWEIS_PEAK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Planung verschiebt PV-Energie mit dem im Auslegungsprofil gewählten Informationsstand. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_HINWEIS_PVPLANUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_HINWEIS_PVPLANUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die reaktive Führung lädt Erzeugungsüberschüsse und entlädt bei Nettobedarf ohne Zukunftsinformation. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_HINWEIS_REAKTIV {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_HINWEIS_REAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlicher Peak-Zielwert: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger-Reihenfolge: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_PRIORITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_PRIORITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsverteilung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_VERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_ZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb und Leistungsverteilung ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahreskonten als CSV ähnelt.
+        /// </summary>
+        public static string FLOTTE_BTN_CSV_JAHRESKONTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BTN_CSV_JAHRESKONTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich als CSV ähnelt.
+        /// </summary>
+        public static string FLOTTE_BTN_CSV_VERGLEICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_BTN_CSV_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Zeitreihen und Speicher als CSV ähnelt.
+        /// </summary>
+        public static string FLOTTE_BTN_CSV_ZEITREIHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_BTN_CSV_ZEITREIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzanschluss · {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHART_NETZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHART_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresprojektion [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHART_PROJEKTION {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHART_PROJEKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand · {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHART_SOC {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHART_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektjahr ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHART_X_JAHR {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHART_X_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlung [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHART_Y_ZAHLUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHART_Y_ZAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustandsbild zusätzlich zeigen ähnelt.
+        /// </summary>
+        public static string FLOTTE_CHK_ZWEITES_BILD {
+            get {
+                return ResourceManager.GetString("FLOTTE_CHK_ZWEITES_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batterie-Verkaufspreis (optional): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_BATTERIEPREIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_BATTERIEPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bekannt seit: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_BEKANNT_SEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_BEKANNT_SEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_BEZUG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Leistung (optional): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_BHKW {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Verkaufspreis (optional): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_BHKWPREIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_BHKWPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_DATUMSFORMAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_DATUMSFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsspalte: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_DATUMSSPALTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_DATUMSSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimaltrenner: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_DEZIMALTRENNER {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_DEZIMALTRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma (,) ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_DEZ_KOMMA {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_DEZ_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt (.) ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_DEZ_PUNKT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_DEZ_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entscheidungszeitpunkt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ENTSCHEIDUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ENTSCHEIDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Format ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_FORMAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnen Sie Zeit, Last und Preise den CSV-Spalten zu. Last und Bezugspreis sind erforderlich; nicht vorhandene optionale Erzeugungs- und Verkaufspreisspalten werden mit 0 angesetzt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel bezeichnet Intervall: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_INTERVALLLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_INTERVALLLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kodierung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_KODIERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_KODIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfang ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_KONV_ANFANG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_KONV_ANFANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ende ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_KONV_ENDE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_KONV_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erste Datenzeile ist eine Kopfzeile ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_KOPFZEILE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_KOPFZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bruttolast: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_LAST {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_LAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Leistungsspalten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_LEISTUNGSEINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_LEISTUNGSEINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh je Intervall ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_LEISTUNG_KWH {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_LEISTUNG_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (nicht vorhanden – Wert 0) ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_NICHT_VORHANDEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_NICHT_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Preisspalten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_PREISEINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_PREISEINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose-Snapshots ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_PROGNOSEZUORDNUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_PROGNOSEZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Leistung (optional): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_PV {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Verkaufspreis (optional): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_PVPREIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_PVPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma (,) ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_SEP_KOMMA {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_SEP_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semikolon (;) ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_SEP_SEMIKOLON {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_SEP_SEMIKOLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabulator ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_SEP_TABULATOR {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_SEP_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Snapshot-ID: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_SNAPSHOT_ID {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_SNAPSHOT_ID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_SPALTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektjahre-CSV importieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_TITEL_JAHRE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_TITEL_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose-CSV importieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_TITEL_PROGNOSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_TITEL_PROGNOSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_TRENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen davor überspringen: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_UEBERSPRINGEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_UEBERSPRINGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_UHRZEITFORMAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_UHRZEITFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitspalte: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_UHRZEITSPALTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_UHRZEITSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Vorschau ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_VORSCHAU {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung und Preise ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_WERTSPALTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_WERTSPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeit und Intervall ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitangabe: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEITANGABE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEITANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEITSTEMPELFORMAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEITSTEMPELFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelspalte: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEITSTEMPELSPALTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEITSTEMPELSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzone: ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEITZONE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEITZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeitstempelspalte ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEIT_EINE_SPALTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEIT_EINE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Getrennte Datums- und Uhrzeitspalten ähnelt.
+        /// </summary>
+        public static string FLOTTE_CSV_ZEIT_GETRENNT {
+            get {
+                return ResourceManager.GetString("FLOTTE_CSV_ZEIT_GETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzanschluss und Ladezustand ähnelt.
+        /// </summary>
+        public static string FLOTTE_DIA_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_DIA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste Flotte in die Auslegung übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_BESTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_BESTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektjahre-CSV importieren … ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_JAHRE_CSV {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_JAHRE_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose-CSV importieren … ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_PROGNOSE_CSV {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_PROGNOSE_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Flotte für die Projektsimulation aktivieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_PROJEKT_AN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_PROJEKT_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektflotte deaktivieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervergleich berechnen ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_RECHNEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnung läuft … ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_RECHNEN_LAEUFT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_RECHNEN_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_BTN_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_BTN_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicheranzahl und Größenbereiche optimieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_CHK_OPTIMIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_CHK_OPTIMIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrere Speicher werden gemeinsam am Netzanschluss simuliert. Jeder Speicher behält seinen eigenen Ladezustand. Verglichen wird mit demselben Standort ohne zusätzliche Speicher. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_HINWEIS_GEMEINSAM {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_HINWEIS_GEMEINSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die folgenden spezifischen Kostensätze gelten für alle Speicher ohne eigene Kostenvorgabe. Ein Auslegungsprofil speichert die gesamte Flotte einschließlich Betriebsführung und Datenquellen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_HINWEIS_KOSTENSAETZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_HINWEIS_KOSTENSAETZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktuelle Flotteneinstellungen gelten nach dem Speichern und dem nächsten erfolgreichen Projektlauf. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_HINWEIS_SPEICHERN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_HINWEIS_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Vergleich berechnet. Die Berechnung verwendet die gespeicherten Einstellungen und denselben Eingang für alle Varianten. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_KEIN_VERGLEICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_KEIN_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnung abgebrochen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_MSG_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_MSG_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flotte aktiviert. Bitte die Projektsimulation neu berechnen; die bisherigen Projektergebnisse gehören noch zum alten Stand. Die Kostenbewertung der Flottenstudie bleibt im Variantenvergleich. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_MSG_AKTIVIERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_MSG_AKTIVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektflotte deaktiviert. Die Projektsimulation verwendet die Einzelvariante, bis Flotteneinstellungen erneut gespeichert und das Projekt neu berechnet werden. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_MSG_DEAKTIVIERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_MSG_DEAKTIVIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherung der Einstellungen ist nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_MSG_KEINE_ABLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_MSG_KEINE_ABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Profilspeicherung ist nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_MSG_KEINE_PROFILABLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_MSG_KEINE_PROFILABLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Archivierte Prognosen werden aus CSV-Zeilen mit Snapshot-ID, Entscheidungszeitpunkt, Bekanntheitszeitpunkt und Intervallwerten importiert. Es werden nur Daten verwendet, die zum Entscheidungszeitpunkt bekannt waren. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_ARCHIV {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_ARCHIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Planung, Preisarbitrage und Multi Use benötigen Prognosen. Im Modus „Idealwissen“ verwendet die Planung die zukünftigen Werte der importierten Standortreihe; das Ergebnis ist eine optimistische Vergleichsgrenze. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_IDEALWISSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_IDEALWISSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für unterschiedliche Projektjahre können vollständige Jahresreihen aus CSV importiert werden. Das Kalenderjahr folgt aus dem Zeitstempel; jede Speicherlösung wird für jedes vollständige Jahr neu simuliert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_JAHRE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_JAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} Jahresreihen gespeichert ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_JAHRESREIHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_JAHRESREIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} Snapshots gespeichert ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_SNAPSHOTS {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_SNAPSHOTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bekannt seit ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_SP_BEKANNT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_SP_BEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entscheidung ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_SP_ENTSCHEIDUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_SP_ENTSCHEIDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervalle ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_SP_INTERVALLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_SP_INTERVALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Snapshot ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROG_SP_SNAPSHOT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROG_SP_SNAPSHOT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Speicherflotte ist für die Projektsimulation aktiviert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROJEKT_AKTIV {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROJEKT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bis zum nächsten erfolgreichen Projektlauf bleibt die zuletzt erfolgreich berechnete Flotte wirksam. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PROJEKT_AKTIV_TEXT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PROJEKT_AKTIV_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – Anzahl: Von muss mindestens 0 und Bis mindestens Von sein. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Ausgleichswert: Ohne gleiche Endenergie ist ein Wert erforderlich. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_AUSGLEICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_AUSGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – C-Rate [1/h]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – Kapazität [kWh]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektlaufzeit: Bitte mindestens 1 Jahr eingeben. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_LAUFZEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_LAUFZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – Leistung [kW]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher '{0}': SoC-Minimum, Start-SoC und SoC-Maximum müssen in dieser Reihenfolge zwischen 0 und 100 % liegen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_PRUEF_SOC {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich &amp; Ergebnisse ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_REITER_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_REITER_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher &amp; Betriebsführung ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_REITER_FLOTTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_REITER_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognosen &amp; Jahresdaten ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_REITER_PROGNOSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_REITER_PROGNOSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten, Kosten &amp; Profile ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_REITER_QUELLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_REITER_QUELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitreihen und Kosten prüfen … ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_STATUS_PRUEFEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_STATUS_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrspeicher-Auslegung ähnelt.
+        /// </summary>
+        public static string FLOTTE_DLG_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_DLG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alterung und Grenzkosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ALTERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ALTERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANZAHL_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANZAHL_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANZAHL_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANZAHL_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energie-Ausgleichswert bewertet die Differenz zwischen Start- und Endenergie. Der editierbare Wert ist ein Vorschlag aus dem effektiven Strompreis und verhindert, dass entnommene Anfangsenergie als kostenloser Ertrag erscheint. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSGLEICH_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSGLEICH_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich dieser Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSLEGUNGSBEREICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSLEGUNGSBEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenkopplung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSLEGUNGSMODUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSLEGUNGSMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batterieexport ins Netz erlauben ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_BATTERIEEXPORT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_BATTERIEEXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_BETRIEBSZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_BETRIEBSZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb und Leistungsverteilung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_BETRIEB_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_BETRIEB_VERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Harte Bezugsgrenze: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_BEZUGSGRENZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_BEZUGSGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_CRATE_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_CRATE_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate Schritt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_CRATE_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_CRATE_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_CRATE_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_CRATE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten je Entladung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_DURCHSATZKOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_DURCHSATZKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Kosten für diese Einheit verwenden ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EIGENE_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EIGENE_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Physische Speichereinheiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINHEITEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINHEITEN_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINHEITEN_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jede Zeile ist ein gleichzeitig betriebener Speicher mit eigenem Zustand und eigenen Grenzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINHEITEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINHEITEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen für diese Speichereinheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINHEIT_AKTIONEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINHEIT_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Harte Einspeisegrenze: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_EINSPEISEGRENZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_EINSPEISEGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Horizont-Endbedingung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENDBEDINGUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENDBEDINGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie {0}: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENDENERGIE_ZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENDENERGIE_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie-Ziele je Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENDENERGIE_ZIELE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENDENERGIE_ZIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} entfernen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENTFERNEN_ARIA {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENTFERNEN_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Entladeleistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENTLADELEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENTLADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladetiefe Punkt {0}: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENTLADETIEFE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENTLADETIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladewirkungsgrad: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ENTLADEWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ENTLADEWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Physische Einheiten, Betriebsziel, Verteilung, Planung und Lebenszyklus werden gemeinsam als Studie gespeichert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERLAEUTERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERLAEUTERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzintervall: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZINTERVALL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZINTERVALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzkosten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZKOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz und Restwert ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERSATZ_RESTWERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERSATZ_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger-Reihenfolge: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ERZEUGER_PRIO {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ERZEUGER_PRIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Protokollierten reaktiven Rückfall erlauben ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_FALLBACK {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_FALLBACK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Marginale Verschleißkosten der Entladung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_GRENZVERSCHLEISS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_GRENZVERSCHLEISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AC-Hilfsverbrauch: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_HILFSVERBRAUCH {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_HILFSVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Speicher hinzufügen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Informationsstand: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_INFORMATIONSSTAND {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_INFORMATIONSSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste Investition: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_INVEST_FIX {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_INVEST_FIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Kapazität: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_INVEST_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_INVEST_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Leistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_INVEST_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_INVEST_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftliche Jahresprojektion ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_JAHRESPROJEKTION {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_JAHRESPROJEKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkapazität: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAPAZITAET_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAPAZITAET_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität Schritt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAPAZITAET_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAPAZITAET_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAPAZITAET_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAPAZITAET_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAT_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAT_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate [1/h] ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAT_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAT_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAT_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KAT_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KAT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Speichereinheit angelegt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KEINE_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KEINE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Rainflow-Kennlinie hinterlegt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KEINE_RAINFLOW {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KEINE_RAINFLOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KOPIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kopieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KOPIEREN_ARIA {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KOPIEREN_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Ladeleistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladewirkungsgrad: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_LADEWIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_LADEWIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung bis: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_LEISTUNG_BIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_LEISTUNG_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung Schritt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_LEISTUNG_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_LEISTUNG_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_LEISTUNG_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_LEISTUNG_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximale Auslegungskandidaten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_MAX_KANDIDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_MAX_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NAME {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden aus dem Netz erlauben ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NETZLADUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NETZLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzgrenzen und Fahrplanung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NETZ_PLANUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NETZ_PLANUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu planen alle: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NEUPLANUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NEUPLANUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste Betriebskosten: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_OPEX_FIX {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_OPEX_FIX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten Kapazität: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_OPEX_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_OPEX_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten Leistung: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_OPEX_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_OPEX_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Perfekte Information ist ein Vergleichslauf und muss im Ergebnis als Oracle gekennzeichnet bleiben. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ORACLE_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ORACLE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlicher Peak-Zielwert: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Reserve: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PEAK_RESERVE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PEAK_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Planungshorizont: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PLANUNGSHORIZONT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PLANUNGSHORIZONT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prognose und rollierender Horizont ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PROGNOSEPLANUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PROGNOSEPLANUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresprojektion: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PROJEKTIONSART {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PROJEKTIONSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein bereitgestelltes Jahr kann einmal bewertet oder für die gewählte Laufzeit wiederholt werden. Die Wiederholung bildet ein konstantes Szenario; künftige Preisänderungen werden nicht automatisch prognostiziert. Für unterschiedliche Jahresverläufe Jahresdaten importieren. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PROJEKTION_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PROJEKTION_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektlaufzeit: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PROJEKTJAHRE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PROJEKTJAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Kennlinienpunkt ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PUNKT_NEU {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PUNKT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt entfernen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PUNKT_WEG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PUNKT_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rainflow-Kennlinienpunkt {0} entfernen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_PUNKT_WEG_ARIA {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_PUNKT_WEG_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optional: belegte Herstellerkennlinie aus Entladetiefe und Zyklen bis Lebensdauerende. Ohne Punkte bleibt der Rainflow-Schaden unbekannt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RAINFLOW_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RAINFLOW_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert der Einheit: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RESTWERT_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RESTWERT_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zusätzlicher Restwert der Studie: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_RESTWERT_GESAMT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_RESTWERT_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schritt: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_SCHRITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_SCHRITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Obergrenze: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_SOC_MAX {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_SOC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Untergrenze: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_SOC_MIN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_SOC_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC zu Beginn: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_SOC_START {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_SOC_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_STANDARD_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_STANDARD_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik und Zustand ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_TECHNIK {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherflotte ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbenannter Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UNBENANNT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UNBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Auslegung variieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_VARIIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_VARIIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung auf Speicher verteilen: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_VERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_VON {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ZINS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zyklen bis EOL Punkt {0}: ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ZYKLEN_EOL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ZYKLEN_EOL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beste technisch zulässige Flotte im geprüften Suchraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_EMPF_BESTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_EMPF_BESTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Auslegung vorhanden ähnelt.
+        /// </summary>
+        public static string FLOTTE_EMPF_KEINE {
+            get {
+                return ResourceManager.GetString("FLOTTE_EMPF_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine technisch zulässige Flotte im geprüften Suchraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_EMPF_KEINE_ZULAESSIGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_EMPF_KEINE_ZULAESSIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung: kein zusätzlicher Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_EMPF_NULLVARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_EMPF_NULLVARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnete Betriebsführung: {0} · Verteilung: {1} ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_BETRIEBSFUEHRUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_BETRIEBSFUEHRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsführung ändern ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_BTN_BETRIEB_AENDERN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_BTN_BETRIEB_AENDERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reaktive PV-Referenz mit derselben Flotte: Stromrechnung {0} €, Bezugsspitze {1} kW, Kapitalwert {2} €. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_REAKTIVE_REFERENZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_REAKTIVE_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber „ohne Speicher“ ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_KAPITALWERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_KAPITALWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Jahre · {1} % Zins · Investition {2} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_KAPITALWERT_QUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_KAPITALWERT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromrechnung im Datenzeitraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_RECHNUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersparnis {0} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_RECHNUNG_QUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_RECHNUNG_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsspitze ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_SPITZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Peak-Ziel ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_SPITZE_OHNE_ZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_SPITZE_OHNE_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel {0} kW · {1} ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_SPITZE_QUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_SPITZE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} → {1} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_SPITZE_WERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_SPITZE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen je Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_ZYKLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geladen {0} kWh · entladen {1} kWh ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_ZYKLEN_QUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_ZYKLEN_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Varianten geprüft; die Tabelle zeigt höchstens 50, der CSV-Export enthält alle. ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_ANZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_JA {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_NEIN {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_BETRIEBSZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_BETRIEBSZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_KAPITALWERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_KAPITALWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden / Entladen [kW] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_VARIANTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässig ähnelt.
+        /// </summary>
+        public static string FLOTTE_KAND_SP_ZULAESSIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_KAND_SP_ZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anfang / Ende [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_ANFANG_ENDE {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_ANFANG_ENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung AC [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_ENTLADUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung AC [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_LADUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_LADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rainflow-Schaden ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_RAINFLOW {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_RAINFLOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_SPEICHER {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_SP_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_SP_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahlen je Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_KENN_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_KENN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand des Speichers ähnelt.
+        /// </summary>
+        public static string FLOTTE_LBL_SOC_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_LBL_SOC_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_LBL_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("FLOTTE_LBL_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das wirtschaftliche Peak-Ziel wurde nicht erreicht. Verfügbare Energie, Ladebedingungen und Speicherleistung prüfen; der Zielwert ist keine zugesicherte Anschlussgrenze. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_PEAK_NICHT_ERREICHT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_PEAK_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Flotte verletzt technische Grenzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_UNZULAESSIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_UNZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben geändert: Diese Ergebnisse gehören zum vorherigen Stand. Bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_VERALTET {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einen Schritt vor ähnelt.
+        /// </summary>
+        public static string FLOTTE_NAV_VOR_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_NAV_VOR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einen Schritt zurück ähnelt.
+        /// </summary>
+        public static string FLOTTE_NAV_ZURUECK_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_NAV_ZURUECK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert. ähnelt.
         /// </summary>
         public static string FLOTTE_PLANER_FEHLT {
@@ -8902,6 +11566,483 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_PLANER_ZIEL_GESPERRT {
             get {
                 return ResourceManager.GetString("FLOTTE_PLANER_ZIEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW vor PV ähnelt.
+        /// </summary>
+        public static string FLOTTE_PRIO_BHKW_VOR_PV {
+            get {
+                return ResourceManager.GetString("FLOTTE_PRIO_BHKW_VOR_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV vor BHKW ähnelt.
+        /// </summary>
+        public static string FLOTTE_PRIO_PV_VOR_BHKW {
+            get {
+                return ResourceManager.GetString("FLOTTE_PRIO_PV_VOR_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition: {0} € · Kapitalwert gegenüber „ohne Speicher“: {1} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung anhand der angegebenen Jahreskonten. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_JAHRESKONTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_JAHRESKONTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber „ohne Speicher“: — Keine Jahreskonten oder ausdrücklich gewählte Referenzjahrprojektion vorhanden. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_OHNE {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieausgleich [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_AUSGLEICH {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_AUSGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_BETRIEB {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netto-Cashflow [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_CASHFLOW {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_CASHFLOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsatz [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_DURCHSATZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_DURCHSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_ERSATZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_SP_JAHR {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_SP_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabelle der Jahreskonten anzeigen ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_TABELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresprojektion ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektion: Das Referenzjahr wird ausdrücklich über die gewählte Laufzeit wiederholt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_WIEDERHOLUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_WIEDERHOLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_BETRIEB {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsatz ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_DURCHSATZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_DURCHSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Entladen + / Laden − ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_ERSATZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher gesamt: Entladen + / Laden − ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_GESAMT {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kumuliert ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_KUMULIERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netto-Cashflow ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_NETTO {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand {0} [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_SOC {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Maximalenergie ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_SOC_MAX {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_SOC_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestenergie ähnelt.
+        /// </summary>
+        public static string FLOTTE_R_SOC_MIN {
+            get {
+                return ResourceManager.GetString("FLOTTE_R_SOC_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erreicht ähnelt.
+        /// </summary>
+        public static string FLOTTE_STATUS_ERREICHT {
+            get {
+                return ResourceManager.GetString("FLOTTE_STATUS_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht erreicht ähnelt.
+        /// </summary>
+        public static string FLOTTE_STATUS_NICHT_ERREICHT {
+            get {
+                return ResourceManager.GetString("FLOTTE_STATUS_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach Grenzkosten und Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string FLOTTE_VERT_GRENZKOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_VERT_GRENZKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach verfügbarer Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_VERT_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_VERT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade ähnelt.
+        /// </summary>
+        public static string FLOTTE_VERT_KASKADE {
+            get {
+                return ResourceManager.GetString("FLOTTE_VERT_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Abregelung ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Davon Batterie-Einspeisung ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_EINSPEISUNG_BATTERIE {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_EINSPEISUNG_BATTERIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Davon BHKW-Einspeisung ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_EINSPEISUNG_BHKW {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_EINSPEISUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Davon PV-Einspeisung ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_EINSPEISUNG_PV {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_EINSPEISUNG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugskosten abzüglich Einspeiseerlöse ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_ENERGIEKOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_ENERGIEKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungskosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_LEISTUNGSKOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_LEISTUNGSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nullzeilen anzeigen ({0}) ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_NULLZEILEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_NULLZEILEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbleibende Bezugsspitze ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SPITZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SP_DELTA {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SP_DELTA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SP_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SP_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SP_KENNZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SP_KENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Flotte ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SP_MIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SP_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Speicher ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_SP_OHNE {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_SP_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromrechnung im Datenzeitraum ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_STROMRECHNUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_STROMRECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umwandlungsverluste ähnelt.
+        /// </summary>
+        public static string FLOTTE_VGL_VERLUSTE {
+            get {
+                return ResourceManager.GetString("FLOTTE_VGL_VERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisoptimierung / Arbitrage ähnelt.
+        /// </summary>
+        public static string FLOTTE_ZIEL_ARBITRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ZIEL_ARBITRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Multi Use mit Peak-Priorität ähnelt.
+        /// </summary>
+        public static string FLOTTE_ZIEL_MULTIUSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ZIEL_MULTIUSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ZIEL_PEAKSHAVING {
+            get {
+                return ResourceManager.GetString("FLOTTE_ZIEL_PEAKSHAVING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Eigenverbrauch (reaktiv) ähnelt.
+        /// </summary>
+        public static string FLOTTE_ZIEL_PVGREEDY {
+            get {
+                return ResourceManager.GetString("FLOTTE_ZIEL_PVGREEDY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Prognoseplanung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ZIEL_PVPLANUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ZIEL_PVPLANUNG", resourceCulture);
             }
         }
         

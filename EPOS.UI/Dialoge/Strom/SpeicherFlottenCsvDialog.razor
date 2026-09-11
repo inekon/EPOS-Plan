@@ -130,14 +130,23 @@
     private bool _initialisiert;
 
     private string Titel => Prognosen ? Texte.PrognosenTitel : Texte.JahresdatenTitel;
-    private static readonly IReadOnlyList<(int Id, string Text)> Trennzeichen = new[] { (0, "Semikolon (;)"), (1, "Komma (,)"), (2, "Tabulator") };
-    private static readonly IReadOnlyList<(int Id, string Text)> Dezimaltrenner = new[] { (0, "Komma (,)"), (1, "Punkt (.)") };
+    // KEIN static readonly: Die Texte kommen aus den Ressourcen, und die Sprache
+    // wechselt zur Laufzeit (#184). Reine Einheitenzeichen (kW, MW, €/kWh) bleiben
+    // Literale - sie werden nicht uebersetzt.
+    private static IReadOnlyList<(int Id, string Text)> Trennzeichen => new[]
+        { (0, Resource.FLOTTE_CSV_SEP_SEMIKOLON), (1, Resource.FLOTTE_CSV_SEP_KOMMA), (2, Resource.FLOTTE_CSV_SEP_TABULATOR) };
+    private static IReadOnlyList<(int Id, string Text)> Dezimaltrenner => new[]
+        { (0, Resource.FLOTTE_CSV_DEZ_KOMMA), (1, Resource.FLOTTE_CSV_DEZ_PUNKT) };
     private static readonly IReadOnlyList<(int Id, string Text)> Kodierungen = new[] { (0, "UTF-8"), (1, "Windows-1252") };
-    private static readonly IReadOnlyList<(int Id, string Text)> Zeitarten = new[] { (0, "Eine Zeitstempelspalte"), (1, "Getrennte Datums- und Uhrzeitspalten") };
-    private static readonly IReadOnlyList<(int Id, string Text)> Konventionen = new[] { (0, "Anfang"), (1, "Ende") };
-    private static readonly IReadOnlyList<(int Id, string Text)> LeistungEinheiten = new[] { (0, "kW"), (1, "MW"), (2, "kWh je Intervall") };
+    private static IReadOnlyList<(int Id, string Text)> Zeitarten => new[]
+        { (0, Resource.FLOTTE_CSV_ZEIT_EINE_SPALTE), (1, Resource.FLOTTE_CSV_ZEIT_GETRENNT) };
+    private static IReadOnlyList<(int Id, string Text)> Konventionen => new[]
+        { (0, Resource.FLOTTE_CSV_KONV_ANFANG), (1, Resource.FLOTTE_CSV_KONV_ENDE) };
+    private static IReadOnlyList<(int Id, string Text)> LeistungEinheiten => new[]
+        { (0, "kW"), (1, "MW"), (2, Resource.FLOTTE_CSV_LEISTUNG_KWH) };
     private static readonly IReadOnlyList<(int Id, string Text)> PreisEinheiten = new[] { (3, "€/kWh"), (4, "ct/kWh"), (5, "€/MWh") };
-    private IReadOnlyList<(int Id, string Text)> Pflichtspalten => Enumerable.Range(0, Math.Max(1, _vorschau?.Spaltenzahl ?? 2)).Select(i => (i, $"Spalte {i + 1}")).ToArray();
+    private IReadOnlyList<(int Id, string Text)> Pflichtspalten => Enumerable.Range(0, Math.Max(1, _vorschau?.Spaltenzahl ?? 2))
+        .Select(i => (i, string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.FLOTTE_CSV_SPALTE, i + 1))).ToArray();
     private IReadOnlyList<(int Id, string Text)> OptionaleSpalten => new[] { (-1, Texte.NichtVorhanden) }.Concat(Pflichtspalten).ToArray();
     private int TrennzeichenIndex => _optionen.Zeitbasis.Trennzeichen switch { ',' => 1, '\t' => 2, _ => 0 };
     private int DezimalIndex => _optionen.Zeitbasis.Dezimaltrenner == '.' ? 1 : 0;
@@ -208,42 +217,42 @@
 
     public sealed class SpeicherFlottenCsvTexte
     {
-        public string PrognosenTitel { get; set; } = "Prognose-CSV importieren";
-        public string JahresdatenTitel { get; set; } = "Projektjahre-CSV importieren";
-        public string Hinweis { get; set; } = "Ordnen Sie Zeit, Last und Preise den CSV-Spalten zu. Last und Bezugspreis sind erforderlich; nicht vorhandene optionale Erzeugungs- und Verkaufspreisspalten werden mit 0 angesetzt.";
-        public string CsvFormat { get; set; } = "CSV-Format";
-        public string Trennzeichen { get; set; } = "Trennzeichen:";
-        public string Dezimaltrenner { get; set; } = "Dezimaltrenner:";
-        public string Kodierung { get; set; } = "Kodierung:";
-        public string Kopfzeile { get; set; } = "Erste Datenzeile ist eine Kopfzeile";
-        public string Ueberspringen { get; set; } = "Zeilen davor überspringen:";
-        public string Zeit { get; set; } = "Zeit und Intervall";
-        public string Zeitangabe { get; set; } = "Zeitangabe:";
-        public string Zeitstempelspalte { get; set; } = "Zeitstempelspalte:";
-        public string Datumsspalte { get; set; } = "Datumsspalte:";
-        public string Uhrzeitspalte { get; set; } = "Uhrzeitspalte:";
-        public string Zeitstempelformat { get; set; } = "Zeitstempelformat (leer = Standard):";
-        public string Datumsformat { get; set; } = "Datumsformat (leer = Standard):";
-        public string Uhrzeitformat { get; set; } = "Uhrzeitformat (leer = Standard):";
-        public string Zeitzone { get; set; } = "Zeitzone:";
-        public string Intervalllage { get; set; } = "Zeitstempel bezeichnet Intervall:";
-        public string Wertspalten { get; set; } = "Leistung und Preise";
-        public string Last { get; set; } = "Bruttolast:";
-        public string Pv { get; set; } = "PV-Leistung (optional):";
-        public string Bhkw { get; set; } = "BHKW-Leistung (optional):";
-        public string Bezug { get; set; } = "Bezugspreis:";
-        public string PvPreis { get; set; } = "PV-Verkaufspreis (optional):";
-        public string BhkwPreis { get; set; } = "BHKW-Verkaufspreis (optional):";
-        public string BatteriePreis { get; set; } = "Batterie-Verkaufspreis (optional):";
-        public string LeistungEinheit { get; set; } = "Einheit der Leistungsspalten:";
-        public string PreisEinheit { get; set; } = "Einheit der Preisspalten:";
-        public string Prognosezuordnung { get; set; } = "Prognose-Snapshots";
-        public string SnapshotId { get; set; } = "Snapshot-ID:";
-        public string BekanntSeit { get; set; } = "Bekannt seit:";
-        public string Entscheidung { get; set; } = "Entscheidungszeitpunkt:";
-        public string NichtVorhanden { get; set; } = "(nicht vorhanden – Wert 0)";
-        public string Vorschau { get; set; } = "CSV-Vorschau";
-        public string Abbrechen { get; set; } = "Abbrechen";
-        public string Uebernehmen { get; set; } = "CSV übernehmen";
+        public string PrognosenTitel { get; set; } = Resource.FLOTTE_CSV_TITEL_PROGNOSEN;
+        public string JahresdatenTitel { get; set; } = Resource.FLOTTE_CSV_TITEL_JAHRE;
+        public string Hinweis { get; set; } = Resource.FLOTTE_CSV_HINWEIS;
+        public string CsvFormat { get; set; } = Resource.FLOTTE_CSV_FORMAT;
+        public string Trennzeichen { get; set; } = Resource.FLOTTE_CSV_TRENNZEICHEN;
+        public string Dezimaltrenner { get; set; } = Resource.FLOTTE_CSV_DEZIMALTRENNER;
+        public string Kodierung { get; set; } = Resource.FLOTTE_CSV_KODIERUNG;
+        public string Kopfzeile { get; set; } = Resource.FLOTTE_CSV_KOPFZEILE;
+        public string Ueberspringen { get; set; } = Resource.FLOTTE_CSV_UEBERSPRINGEN;
+        public string Zeit { get; set; } = Resource.FLOTTE_CSV_ZEIT;
+        public string Zeitangabe { get; set; } = Resource.FLOTTE_CSV_ZEITANGABE;
+        public string Zeitstempelspalte { get; set; } = Resource.FLOTTE_CSV_ZEITSTEMPELSPALTE;
+        public string Datumsspalte { get; set; } = Resource.FLOTTE_CSV_DATUMSSPALTE;
+        public string Uhrzeitspalte { get; set; } = Resource.FLOTTE_CSV_UHRZEITSPALTE;
+        public string Zeitstempelformat { get; set; } = Resource.FLOTTE_CSV_ZEITSTEMPELFORMAT;
+        public string Datumsformat { get; set; } = Resource.FLOTTE_CSV_DATUMSFORMAT;
+        public string Uhrzeitformat { get; set; } = Resource.FLOTTE_CSV_UHRZEITFORMAT;
+        public string Zeitzone { get; set; } = Resource.FLOTTE_CSV_ZEITZONE;
+        public string Intervalllage { get; set; } = Resource.FLOTTE_CSV_INTERVALLLAGE;
+        public string Wertspalten { get; set; } = Resource.FLOTTE_CSV_WERTSPALTEN;
+        public string Last { get; set; } = Resource.FLOTTE_CSV_LAST;
+        public string Pv { get; set; } = Resource.FLOTTE_CSV_PV;
+        public string Bhkw { get; set; } = Resource.FLOTTE_CSV_BHKW;
+        public string Bezug { get; set; } = Resource.FLOTTE_CSV_BEZUG;
+        public string PvPreis { get; set; } = Resource.FLOTTE_CSV_PVPREIS;
+        public string BhkwPreis { get; set; } = Resource.FLOTTE_CSV_BHKWPREIS;
+        public string BatteriePreis { get; set; } = Resource.FLOTTE_CSV_BATTERIEPREIS;
+        public string LeistungEinheit { get; set; } = Resource.FLOTTE_CSV_LEISTUNGSEINHEIT;
+        public string PreisEinheit { get; set; } = Resource.FLOTTE_CSV_PREISEINHEIT;
+        public string Prognosezuordnung { get; set; } = Resource.FLOTTE_CSV_PROGNOSEZUORDNUNG;
+        public string SnapshotId { get; set; } = Resource.FLOTTE_CSV_SNAPSHOT_ID;
+        public string BekanntSeit { get; set; } = Resource.FLOTTE_CSV_BEKANNT_SEIT;
+        public string Entscheidung { get; set; } = Resource.FLOTTE_CSV_ENTSCHEIDUNG;
+        public string NichtVorhanden { get; set; } = Resource.FLOTTE_CSV_NICHT_VORHANDEN;
+        public string Vorschau { get; set; } = Resource.FLOTTE_CSV_VORSCHAU;
+        public string Abbrechen { get; set; } = Resource.FLOTTE_CSV_ABBRECHEN;
+        public string Uebernehmen { get; set; } = Resource.FLOTTE_CSV_UEBERNEHMEN;
     }
 }

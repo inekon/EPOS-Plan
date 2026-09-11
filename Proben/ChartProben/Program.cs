@@ -581,6 +581,36 @@ namespace ChartProben
                             rasterKapazitaeten[RASTER_BESTE_ZEILE],
                             rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
+            // --- Die JAHRESPROJEKTION der Speicherflotte (#184, P2) ------------------
+            //
+            // Saeulen je Projektjahr, Linie kumuliert, Ersatzjahre markiert. Das Bild
+            // ist der einzige Ort, an dem der Anwender sieht, WANN sich eine Flotte
+            // traegt; geprueft werden Masse, die drei Farben und der Determinismus.
+            //
+            // Jahr 1 ist bewusst NEGATIV (Anlaufjahr) - damit steht die rote Saeule im
+            // Bild und die Farbregel „negatives Jahr ist rot" wird mitgeprueft. Das
+            // Ersatzjahr 10 traegt Band und Dreieck in derselben Farbe.
+            int[] projektjahre = new int[20];
+            for (int i = 0; i < 20; i++) projektjahre[i] = i + 1;
+            double[] projektionNetto = Projektionsreihe();
+            double[] projektionKumuliert = Kumuliert(projektionNetto, -15000.0);
+            double[] projektionBetrieb = new double[20];
+            for (int i = 0; i < 20; i++) projektionBetrieb[i] = -420.0 - i * 12.0;
+
+            Pruefe(ziel, "jahresprojektion", 1240, 560,
+                   new[] { ChartRenderer.C_PV, ChartRenderer.C_STAMM,
+                           ChartRenderer.C_RASTER_SCHLECHT },
+                   () => ChartRenderer.Jahresprojektion("Jahresprojektion [€]", projektjahre,
+                            new ChartRenderer.Reihe("Netto-Cashflow", projektionNetto, ChartRenderer.C_PV),
+                            new ChartRenderer.Reihe("kumuliert", projektionKumuliert, ChartRenderer.C_STAMM),
+                            new[] { 10 },
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Betrieb", projektionBetrieb,
+                                                        ChartRenderer.C_BHKW) { Gestrichelt = true }
+                            },
+                            "Zahlung [€]", "Projektjahr"));
+
             // --- Der Ausschnitt muss auch WIRKEN --------------------------------------
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn der
@@ -652,6 +682,21 @@ namespace ChartProben
                         rasterKapazitaeten[RASTER_BESTE_ZEILE],
                         rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
+            // Dasselbe fuer die ERSATZJAHR-MARKE der Jahresprojektion (#184): Masse,
+            // Farben und Determinismus stimmen auch dann, wenn die Marke stillschweigend
+            // an derselben Stelle bliebe. Geprueft wird deshalb, dass ein ANDERES
+            // Ersatzjahr ein anderes Bild ergibt - Band und Dreieck stehen dann ueber
+            // einer anderen Saeule.
+            Unterschiedlich("jahresprojektion_ersatzjahr",
+                () => ChartRenderer.Jahresprojektion("Jahresprojektion [€]", projektjahre,
+                        new ChartRenderer.Reihe("Netto-Cashflow", projektionNetto, ChartRenderer.C_PV),
+                        new ChartRenderer.Reihe("kumuliert", projektionKumuliert, ChartRenderer.C_STAMM),
+                        new[] { 10 }, null, "Zahlung [€]", "Projektjahr"),
+                () => ChartRenderer.Jahresprojektion("Jahresprojektion [€]", projektjahre,
+                        new ChartRenderer.Reihe("Netto-Cashflow", projektionNetto, ChartRenderer.C_PV),
+                        new ChartRenderer.Reihe("kumuliert", projektionKumuliert, ChartRenderer.C_STAMM),
+                        new[] { 14 }, null, "Zahlung [€]", "Projektjahr"));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
@@ -706,6 +751,32 @@ namespace ChartProben
                 r[i] = Math.Max(0, mitte + amplitude * Math.Sin(jahr + phase)
                                          + tagesamplitude * Math.Sin(tag));
             }
+            return r;
+        }
+
+        /// <summary>
+        /// Der Netto-Cashflow einer Speicherflotte ueber 20 Projektjahre (#184) —
+        /// Anlaufjahr negativ, danach ein langsam wachsender Ueberschuss, im
+        /// Ersatzjahr 10 ein Einbruch. Streng deterministisch wie alle Reihen hier.
+        /// </summary>
+        private static double[] Projektionsreihe()
+        {
+            var r = new double[20];
+            for (int i = 0; i < r.Length; i++)
+            {
+                double jahr = i + 1;
+                r[i] = -900.0 + 260.0 * jahr - 4.0 * jahr * jahr;
+                if (jahr == 10) r[i] -= 4200.0;   // Ersatzinvestition
+            }
+            return r;
+        }
+
+        /// <summary>Die laufende Summe einer Reihe ab einem Startwert (Investition, negativ).</summary>
+        private static double[] Kumuliert(double[] werte, double start)
+        {
+            var r = new double[werte.Length];
+            double summe = start;
+            for (int i = 0; i < werte.Length; i++) { summe += werte[i]; r[i] = summe; }
             return r;
         }
 

@@ -184,6 +184,79 @@ Die folgenden kompakten Draft-2020-12-Schemas dokumentieren die beiden manuellen
 
 Abgelegt wird der Payload in `Tab_SpeicherAuslegung`. **Migrationsschritt 73** legt diese Tabelle an, **Migrationsschritt 74** (Auftrag #178, 11.09.2026) baut sie als **STRICT**-Tabelle neu auf: Sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt kein `ALTER TABLE … STRICT`. Spalten, Typen, Fremdschlüssel (`ON DELETE CASCADE` an Projekt und Energieanlage) und der eindeutige Index bleiben wortgleich; die Zeilen werden samt ihrer `ID` übernommen, es ändert sich kein Wert. Die Anweisungen stehen in [`EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs`](EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs).
 
+## Ergebnisdarstellung (P2, Auftrag #184)
+
+Die Ergebnisseite der Flotte (`EPOS.UI/Dialoge/Strom/SpeicherFlottenErgebnisAnsicht.razor`)
+folgt seit dem 11.09.2026 der Hausregel `Doku_Simulationsergebnis_Darstellung.md`. Grundlage
+sind die Anwenderentscheide **SD‑Q6** (Vollfassung statt bloß herausgelöster Tabelle) und
+**SD‑Q7** (Zeitraumwahl) vom selben Tag; das Zielbild steht in
+[`Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md)
+Abschnitt 2.2 und 2.3.
+
+**Was der Anwender sieht.** Von oben nach unten: die Hinweise des Laufs als Warnbanner, eine
+Zeile „Berechnete Betriebsführung … · Verteilung …", **vier Kennzahlkacheln** (Kapitalwert
+gegenüber „ohne Speicher" samt Investition, Laufzeit und Zins; Bezugsspitze vorher → nachher
+mit Peak-Ziel und Status; Stromrechnung mit Ersparnis; Vollzyklen je Einheit mit Lade- und
+Entladeenergie), die **Vergleichstabelle mit drei Spalten** „Ohne Speicher · Mit Flotte · Δ",
+die **Jahresprojektion als Bild** mit aufklappbarer Tabelle, die Kennzahlen je Einheit, die
+Kandidaten der Rastersuche und zuletzt die Diagramme.
+
+**Δ ist eine Fachaussage, keine Formatierung.** Δ = Mit − Ohne; ob ein negatives Δ eine
+Verbesserung ist, entscheidet die Kennzahl (Kosten, Netzbezug, Spitze: weniger ist besser;
+Einspeisung: mehr). Beides rechnet der Kern in `SpeicherFlottenAnzeigeCtrl.Vergleichszeilen`
+(`FlottenVergleichszeile.Delta`, `.NegativIstBesser`, `.IstBesser`) — auf iOS gilt dieselbe
+Regel, und eine zweite Fassung in der Oberfläche liefe irgendwann auseinander. Eine Zeile, in
+der **beide** Seiten null sind (Einspeisung an einem Standort ohne Erzeugung), ist eine
+**Nullzeile** und steht hinter einem Aufklapper: Drei Nullen sind keine Aussage.
+
+**Der Betriebseditor steht nicht mehr im Ergebnis.** Er stand doppelt — bei den Eingaben und
+noch einmal daneben. Das Ergebnis NENNT die berechnete Betriebsführung und meldet über den
+Rückruf `BetriebsfuehrungAendern` nach außen, dass sie geändert werden soll; der
+`SpeicherFlottenDialog` wechselt darauf auf seinen ersten Reiter, die freie Ansicht aus Paket
+P3 später auf Schritt 3. Ohne Rückruf gibt es den Knopf nicht („kein Delegat ist kein Knopf").
+
+**Die Diagramme.** Über jedem Bild dieselbe Steuerung: der Schalter **„sortiert"**
+(Dauerlinie), **je Reihe ein Schalter** mit derselben Ressource wie die Legende, das Bild mit
+**Datenzoom** (`BereichGewaehlt`/`Zurueckgesetzt`) — und dazu die **Zeitraumwahl Jahr / Woche /
+Tag** mit Navigator im Ringschluss (Muster W8‑E‑2; Vorgabe ist Woche 1, denn ein Jahr im
+Viertelstundenraster legt vierzig Werte auf einen Bildpunkt und zeigt keinen einzigen
+Ladezyklus). Die Reihen gibt es **je Einheit** („Speicher A: Entladen + / Laden −") zusätzlich
+zu „Speicher gesamt"; der **Ladezustand einer wählbaren Einheit steht als ZWEITE Achse** im
+Netzbild (§ 5.3), das zweite Bild mit den Energiegrenzen bleibt wählbar. Jedes Bild führt
+seinen eigenen Ausschnitt.
+
+**Neugezeichnet wird ohne Datenbank und ohne zweiten Rechenlauf.**
+`SpeicherFlottenAnzeigeCtrl.Bilder(ergebnis, startTag, tage, speicher, reihen, sortiert,
+netzbereich, socbereich)` liest allein den gehaltenen Lauf und reicht `ladezustand`,
+`sortiert` und `fenster` an den vorhandenen `ChartRenderer.Speicherbetrieb` durch — dessen
+Signatur ist unverändert; sie konnte das alles längst, gerufen wurde es nicht (Befund 1.4 des
+Konzepts). Die Reihenwahl folgt der Hausregel: `null` heißt ALLE, eine **leere Liste** heißt
+KEINE. Gezeichnet wird nur bei einem wirklich geänderten Bildauftrag — der Schlüssel ist der
+der Ergebnisseite (`SimulationErgebnisDaten.Bildauftrag.Schluessel`); wer schnell durch die
+Wochen blättert, verwirft damit den vorigen Auftrag, statt eine Warteschlange aufzubauen
+(Muster W11b‑B‑25).
+
+**Die Jahresprojektion ist ein neues Renderer-Bild.**
+`ChartRenderer.Jahresprojektion(titel, jahre, netto, kumuliert, ersatzjahre, weitere, yTitel,
+xTitel)` zeichnet 1240 × 560: eine Säule je Projektjahr (negative Jahre rot), die kumulierte
+Linie darüber, die Ersatzjahre als senkrechtes Band mit Dreieck, dazu die wählbaren Linien
+Betrieb, Durchsatz und Ersatz. Der Schnittpunkt der kumulierten Linie mit der gestrichelten
+Nulllinie ist die Amortisation. `Proben/ChartProben` prüft das Bild wie jedes andere auf Maße,
+Farben und Determinismus und führt dazu eine **Gegenprobe**, die belegt, dass eine andere
+Ersatzjahrmarke das Bild wirklich ändert — 39 Bilder und 7 Gegenproben, zusammen 46 Proben.
+
+**Lokalisierung.** Alle Texte der fünf Flottenkomponenten und der Textbündel
+(`Beschriftungen`, `SpeicherAuslegungTexte`, `SpeicherFlottenCsvTexte`) stehen als
+`FLOTTE_*`-Ressourcen in `Resource.resx` und `Resource.en-US.resx`; die Reihennamen des
+Betriebsbildes bleiben die vorhandenen `OPT_BETRIEB_R_*`, damit Legende und Schalter
+denselben Text tragen. Die deutschen Werte sind wörtlich die bisherigen Literale — die
+Umstellung beschriftet keine Maske anders.
+
+**Was NICHT in diesem Paket steckt:** das Diagnosebanner der arbeitslosen Flotte (Konzept 2.2
+Punkt 2 — die Zähler liefert P1, die Verdrahtung P3), die freie Ansicht samt Ablaufleiste (P3)
+und die Größen-Sicht mit Rasterkarte und Schnittkurve (P4); die Kandidatentabelle steht
+einstweilen unverändert da.
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |

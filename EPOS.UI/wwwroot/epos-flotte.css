@@ -248,3 +248,72 @@
         border-color: CanvasText;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Das ERGEBNIS der Speicherflotte (#184, Konzept 2.2/2.3)             */
+/*                                                                     */
+/* Die Delta-Spalte faerbt ihren TEXT, nicht ihre Flaeche - dieselbe    */
+/* Sprache wie das Pruefprotokoll des Lastgangimports. Die zwei Farben  */
+/* sind die Ampeltoken (--epos-ampel-gruen 5,3:1 auf Weiss,             */
+/* --epos-ampel-rot 7,0:1); eine eigene Farbe dafuer gaebe es im Haus   */
+/* zweimal dieselbe Aussage. Das Vorzeichen steht in der Zahl - Farbe   */
+/* allein traegt keine Aussage (WCAG 1.4.1).                            */
+/* ------------------------------------------------------------------ */
+.epos-flotte-ergebnis {
+    display: grid;
+    gap: 0.9rem;
+    min-width: 0;
+}
+
+.epos-flotte-vergleich td.epos-flotte-delta--besser {
+    color: var(--epos-ampel-gruen);
+    font-weight: 600;
+}
+
+.epos-flotte-vergleich td.epos-flotte-delta--schlechter {
+    color: var(--epos-ampel-rot);
+    font-weight: 600;
+}
+
+/* Zeitraumwahl und Navigator ueber dem Bild: Stufenwahl, Pfeile, Marke
+   und die Einheitenwahl in EINER Zeile, auf schmalem Schirm umbrechend. */
+.epos-flotte-zeitraum {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    flex-wrap: wrap;
+    padding: 0.3rem 0;
+}
+
+.epos-flotte-zeitraum .epos-optionsgruppe {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+
+/* Die zwei Aufklapper (Nullzeilen, Jahreskonten) tragen die Hausfarbe
+   des Verweises; ihr Inhalt rueckt ein, damit er zur Zusammenfassung
+   gehoert. */
+.epos-flotte-nullzeilen > summary,
+.epos-flotte-jahreskonten > summary {
+    cursor: pointer;
+    color: var(--epos-marke);
+    min-height: var(--epos-touchziel);
+    padding: 0.6rem 0;
+}
+
+.epos-flotte-nullzeilen > table,
+.epos-flotte-jahreskonten > table {
+    margin-top: 0.4rem;
+}
+
+@media (forced-colors: active) {
+    .epos-flotte-vergleich td.epos-flotte-delta--besser,
+    .epos-flotte-vergleich td.epos-flotte-delta--schlechter {
+        color: CanvasText;
+    }
+}

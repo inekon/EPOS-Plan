@@ -3,67 +3,71 @@
 @using SpeicherEngine
 
 <div class="epos-flotten-dialog">
-    @if (_projektAktiv) { <p role="status"><strong>Eine Speicherflotte ist für die Projektsimulation aktiviert.</strong> Bis zum nächsten erfolgreichen Projektlauf bleibt die zuletzt erfolgreich berechnete Flotte wirksam. <button type="button" class="epos-knopf" disabled="@(_laeuft || ProjektDeaktivieren is null)" @onclick="ProjektflotteDeaktivieren">Projektflotte deaktivieren</button></p> }
-    <p class="epos-herleitung">Aktuelle Flotteneinstellungen gelten nach dem Speichern und dem nächsten erfolgreichen Projektlauf.</p>
-    <p class="epos-herleitung">Mehrere Speicher werden gemeinsam am Netzanschluss simuliert. Jeder Speicher behält seinen eigenen Ladezustand. Verglichen wird mit demselben Standort ohne zusätzliche Speicher.</p>
-    <Reiter Bezeichnung="Mehrspeicher-Auslegung" @bind-Aktiv="_reiter">
+    @if (_projektAktiv) { <p role="status"><strong>@Resource.FLOTTE_DLG_PROJEKT_AKTIV</strong> @Resource.FLOTTE_DLG_PROJEKT_AKTIV_TEXT <button type="button" class="epos-knopf" disabled="@(_laeuft || ProjektDeaktivieren is null)" @onclick="ProjektflotteDeaktivieren">@Resource.FLOTTE_DLG_BTN_PROJEKT_AUS</button></p> }
+    <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_SPEICHERN</p>
+    <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_GEMEINSAM</p>
+    <Reiter Bezeichnung="@Resource.FLOTTE_DLG_TITEL" @bind-Aktiv="_reiter">
         <KindInhalt>
-            <Reiterblatt Schluessel="FLOTTE" Titel="Speicher & Betriebsführung">
+            <Reiterblatt Schluessel="FLOTTE" Titel="@Resource.FLOTTE_DLG_REITER_FLOTTE">
                 <KindInhalt>
                     <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
                                            PlanerVerfuegbar="@PlanerVerfuegbar" />
                 </KindInhalt>
             </Reiterblatt>
-            <Reiterblatt Schluessel="QUELLEN" Titel="Daten, Kosten & Profile">
+            <Reiterblatt Schluessel="QUELLEN" Titel="@Resource.FLOTTE_DLG_REITER_QUELLEN">
                 <KindInhalt>
-                    <p class="epos-herleitung">Die folgenden spezifischen Kostensätze gelten für alle Speicher ohne eigene Kostenvorgabe. Ein Auslegungsprofil speichert die gesamte Flotte einschließlich Betriebsführung und Datenquellen.</p>
+                    <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_KOSTENSAETZE</p>
                     <SpeicherAuslegungEditor Wert="@_eingaben" WertChanged="EingabenGeaendert" Aktiv="@(!_laeuft)"
                         NurQuellenKostenProfile="true" Auslegungsprofile="@_vorgaben.Auslegungsprofile"
                         Strompreisprofile="@_vorgaben.Strompreisprofile" Modulkosten="@_vorgaben.Modulkosten"
                         EinstellungenSpeichern="EinstellungenSichern" ProfilSpeichern="ProfilSichern" DateiWaehlen="DateiWaehlen" />
                 </KindInhalt>
             </Reiterblatt>
-            <Reiterblatt Schluessel="PROGNOSEN" Titel="Prognosen & Jahresdaten">
+            <Reiterblatt Schluessel="PROGNOSEN" Titel="@Resource.FLOTTE_DLG_REITER_PROGNOSEN">
                 <KindInhalt>
-                    <p>PV-Planung, Preisarbitrage und Multi Use benötigen Prognosen. Im Modus „Idealwissen“ verwendet die Planung die zukünftigen Werte der importierten Standortreihe; das Ergebnis ist eine optimistische Vergleichsgrenze.</p>
-                    <p>Archivierte Prognosen werden aus CSV-Zeilen mit Snapshot-ID, Entscheidungszeitpunkt, Bekanntheitszeitpunkt und Intervallwerten importiert. Es werden nur Daten verwendet, die zum Entscheidungszeitpunkt bekannt waren.</p>
-                    <button type="button" class="epos-knopf" @onclick="@(() => FlottenCsvOeffnen(true))" disabled="@(_laeuft || DateiWaehlen is null)">Prognose-CSV importieren …</button>
-                    <p>@Auslegung.FlottenPrognoseDatei · @Auslegung.FlottenPrognosen.Count Snapshots gespeichert</p>
-                    <p>Für unterschiedliche Projektjahre können vollständige Jahresreihen aus CSV importiert werden. Das Kalenderjahr folgt aus dem Zeitstempel; jede Speicherlösung wird für jedes vollständige Jahr neu simuliert.</p>
-                    <button type="button" class="epos-knopf" @onclick="@(() => FlottenCsvOeffnen(false))" disabled="@(_laeuft || DateiWaehlen is null)">Projektjahre-CSV importieren …</button>
-                    <p>@Auslegung.FlottenJahresdatenDatei · @Auslegung.FlottenProjektjahre.Count Jahresreihen gespeichert</p>
+                    <p>@Resource.FLOTTE_DLG_PROG_IDEALWISSEN</p>
+                    <p>@Resource.FLOTTE_DLG_PROG_ARCHIV</p>
+                    <button type="button" class="epos-knopf" @onclick="@(() => FlottenCsvOeffnen(true))" disabled="@(_laeuft || DateiWaehlen is null)">@Resource.FLOTTE_DLG_BTN_PROGNOSE_CSV</button>
+                    <p>@string.Format(Kultur, Resource.FLOTTE_DLG_PROG_SNAPSHOTS, Auslegung.FlottenPrognoseDatei, Auslegung.FlottenPrognosen.Count)</p>
+                    <p>@Resource.FLOTTE_DLG_PROG_JAHRE</p>
+                    <button type="button" class="epos-knopf" @onclick="@(() => FlottenCsvOeffnen(false))" disabled="@(_laeuft || DateiWaehlen is null)">@Resource.FLOTTE_DLG_BTN_JAHRE_CSV</button>
+                    <p>@string.Format(Kultur, Resource.FLOTTE_DLG_PROG_JAHRESREIHEN, Auslegung.FlottenJahresdatenDatei, Auslegung.FlottenProjektjahre.Count)</p>
                     @if (Auslegung.FlottenPrognosen.Count > 0)
                     {
-                        <table class="epos-tabelle"><thead><tr><th>Snapshot</th><th>Bekannt seit</th><th>Entscheidung</th><th>Intervalle</th></tr></thead><tbody>
+                        <table class="epos-tabelle"><thead><tr><th>@Resource.FLOTTE_DLG_PROG_SP_SNAPSHOT</th><th>@Resource.FLOTTE_DLG_PROG_SP_BEKANNT</th><th>@Resource.FLOTTE_DLG_PROG_SP_ENTSCHEIDUNG</th><th>@Resource.FLOTTE_DLG_PROG_SP_INTERVALLE</th></tr></thead><tbody>
                             @foreach (var p in Auslegung.FlottenPrognosen.Take(20))
                             { <tr><td>@p.Id</td><td>@p.BekanntSeit.ToString("u")</td><td>@p.Entscheidungszeitpunkt.ToString("u")</td><td>@p.Intervalle.Count</td></tr> }
                         </tbody></table>
                     }
                 </KindInhalt>
             </Reiterblatt>
-            <Reiterblatt Schluessel="ERGEBNIS" Titel="Vergleich & Ergebnisse">
+            <Reiterblatt Schluessel="ERGEBNIS" Titel="@Resource.FLOTTE_DLG_REITER_ERGEBNIS">
                 <KindInhalt>
-                    @if (_ergebnis is null) { <p>Noch kein Vergleich berechnet. Die Berechnung verwendet die gespeicherten Einstellungen und denselben Eingang für alle Varianten.</p> }
+                    @if (_ergebnis is null) { <p>@Resource.FLOTTE_DLG_KEIN_VERGLEICH</p> }
                     else
                     {
-                        <SpeicherFlottenErgebnisAnsicht Ergebnis="_ergebnis" Veraltet="_veraltet" Csv="Csv" />
+                        @* Der Betriebseditor steht seit #184 NICHT mehr im Ergebnis (Konzept 2.2):
+                           Das Ergebnis nennt die berechnete Betriebsführung und meldet den Wunsch,
+                           sie zu ändern — der Dialog wechselt dafür auf seinen ersten Reiter. *@
+                        <SpeicherFlottenErgebnisAnsicht Ergebnis="_ergebnis" Veraltet="_veraltet" Csv="Csv"
+                                                        BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
                         @if (ProjektUebernehmen is not null && _ergebnis.Studie?.Variante.Zulaessig == true && _ergebnis.Konfiguration.Einheiten.Count > 0)
-                        { <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)" @onclick="ProjektflotteUebernehmen">Diese Flotte für die Projektsimulation aktivieren</button> }
+                        { <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)" @onclick="ProjektflotteUebernehmen">@Resource.FLOTTE_DLG_BTN_PROJEKT_AN</button> }
                         @if (_ergebnis.Auslegung?.BesteKonfiguration is not null && !_ergebnis.Auslegung.NullvarianteGewonnen)
-                        { <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)" @onclick="BesteFlotteUebernehmen">Beste Flotte in die Auslegung übernehmen</button> }
+                        { <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)" @onclick="BesteFlotteUebernehmen">@Resource.FLOTTE_DLG_BTN_BESTE</button> }
                     }
                 </KindInhalt>
             </Reiterblatt>
         </KindInhalt>
     </Reiter>
     <div class="epos-flotten-aktionen">
-        <Schalter Bezeichnung="Speicheranzahl und Größenbereiche optimieren" Wert="@Auslegung.FlottenGroessenOptimieren"
+        <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN" Wert="@Auslegung.FlottenGroessenOptimieren"
             Aktiv="@(!_laeuft)" WertChanged="SuchlaufSetzen" />
-        <button type="button" class="epos-knopf" disabled="@(_laeuft || Rechnen is null || Eingabefehler.Length > 0)" @onclick="Starten">@(_laeuft ? "Berechnung läuft …" : "Speichervergleich berechnen")</button>
-        <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Geschlossen">Schließen</button>
+        <button type="button" class="epos-knopf" disabled="@(_laeuft || Rechnen is null || Eingabefehler.Length > 0)" @onclick="Starten">@(_laeuft ? Resource.FLOTTE_DLG_BTN_RECHNEN_LAEUFT : Resource.FLOTTE_DLG_BTN_RECHNEN)</button>
+        <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Geschlossen">@Resource.FLOTTE_DLG_BTN_SCHLIESSEN</button>
     </div>
     @if (Eingabefehler.Length > 0) { <Warnbanner Stufe="WarnStufe.Warnung" Text="@Eingabefehler" /> }
-    <Fortschritt Sichtbar="_laeuft" Anteil="_anteil" Text="@_fortschritt" Abbrechen="@(Abbrechen.HasDelegate ? Abbrechen : (EventCallback?)null)" AbbrechenText="Abbrechen" />
+    <Fortschritt Sichtbar="_laeuft" Anteil="_anteil" Text="@_fortschritt" Abbrechen="@(Abbrechen.HasDelegate ? Abbrechen : (EventCallback?)null)" AbbrechenText="@Resource.FLOTTE_DLG_BTN_ABBRECHEN" />
     @if (_fehler.Length > 0) { <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" /> }
     @if (_projektMeldung.Length > 0) { <p role="status">@_projektMeldung</p> }
     @if (!string.IsNullOrWhiteSpace(Meldung)) { <p>@Meldung</p> }
@@ -113,7 +117,15 @@
     private double? _anteil;
     private SpeicherImportDatei? _flottenCsvDatei;
     private bool _flottenCsvPrognosen;
+    private static System.Globalization.CultureInfo Kultur => System.Globalization.CultureInfo.CurrentCulture;
     private string Eingabefehler => EingabenPruefen();
+
+    /// <summary>
+    /// „Betriebsführung ändern" aus dem Ergebnis (#184): Der Dialog wechselt auf den
+    /// Reiter mit dem Betriebseditor. Ein Ergebnis, das den Editor selbst führte, stand
+    /// bis hierher doppelt da (Konzept „Stromspeicher-Dialoge" 2.2).
+    /// </summary>
+    private void ZurBetriebsfuehrung() => _reiter = "FLOTTE";
     private SpeicherAuslegungKonfiguration Auslegung => _eingaben.Auslegung ??= new();
     private FlottenStudieKonfiguration Flotte => Auslegung.Flotte ??= new();
     protected override void OnInitialized()
@@ -127,7 +139,7 @@
     private void SuchlaufSetzen(bool wert) { Auslegung.FlottenGroessenOptimieren = wert; Geaendert(); }
     private async Task<SpeicherOptimierungVorgaben> ProfilSichern(SpeicherOptimierungEingaben e, string name)
     {
-        if (ProfilSpeichern is null) throw new InvalidOperationException("Die Profilspeicherung ist nicht verfügbar.");
+        if (ProfilSpeichern is null) throw new InvalidOperationException(Resource.FLOTTE_DLG_MSG_KEINE_PROFILABLAGE);
         _fehler = "";
         await InvokeAsync(StateHasChanged);
         _vorgaben = await ProfilSpeichern(e.Kopie(), name);
@@ -135,7 +147,7 @@
     }
     private async Task<string> EinstellungenSichern(SpeicherOptimierungEingaben e)
     {
-        if (EinstellungenSpeichern is null) throw new InvalidOperationException("Die Speicherung der Einstellungen ist nicht verfügbar.");
+        if (EinstellungenSpeichern is null) throw new InvalidOperationException(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
         _fehler = "";
         await InvokeAsync(StateHasChanged);
         return await EinstellungenSpeichern(e.Kopie()) ?? "";
@@ -177,12 +189,12 @@
         if (_laeuft || Rechnen is null) return;
         string eingabefehler = Eingabefehler;
         if (eingabefehler.Length > 0) { _fehler = eingabefehler; return; }
-        _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = "Zeitreihen und Kosten prüfen …";
+        _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = Resource.FLOTTE_DLG_STATUS_PRUEFEN;
         try
         {
             var stand = _eingaben.Kopie();
             var e = await Rechnen(stand, (anteil, text) => { _ = InvokeAsync(() => { _anteil = anteil; _fortschritt = text; StateHasChanged(); }); });
-            if (!e.Erfolg) _fehler = e.Abgebrochen ? "Berechnung abgebrochen." : e.Meldung;
+            if (!e.Erfolg) _fehler = e.Abgebrochen ? Resource.FLOTTE_DLG_MSG_ABGEBROCHEN : e.Meldung;
             else { _ergebnis = e; _veraltet = false; _reiter = "ERGEBNIS"; }
         }
         catch (Exception ex) { _fehler = ex.Message; }
@@ -198,15 +210,16 @@
                             Flotte.Auslegung.Betriebsziele.Any(FlottenPlanerLage.IstPlanend)))
             fehler.Add(Resource.FLOTTE_PLANER_LAUF_GESPERRT);
         if (Flotte.Wirtschaftlichkeit.ProjektjahreBeiWiederholung <= 0)
-            fehler.Add("Projektlaufzeit: Bitte mindestens 1 Jahr eingeben.");
+            fehler.Add(Resource.FLOTTE_DLG_PRUEF_LAUFZEIT);
         if (Flotte.Einheiten.Count > 0 && Flotte.Optionen.Endbedingung == FlottenEndbedingung.KeineVorgabe &&
             Flotte.Optionen.EnergieAusgleichEuroProKWh is null)
-            fehler.Add("Energie-Ausgleichswert: Ohne gleiche Endenergie ist ein Wert erforderlich.");
+            fehler.Add(Resource.FLOTTE_DLG_PRUEF_AUSGLEICH);
         foreach (FlottenEinheit einheit in Flotte.Einheiten)
         {
             if (!double.IsFinite(einheit.SocMin) || !double.IsFinite(einheit.SocStart) || !double.IsFinite(einheit.SocMax) ||
                 einheit.SocMin < 0 || einheit.SocMin > einheit.SocStart || einheit.SocStart > einheit.SocMax || einheit.SocMax > 1)
-                fehler.Add($"Speicher '{(string.IsNullOrWhiteSpace(einheit.Name) ? einheit.Id : einheit.Name)}': SoC-Minimum, Start-SoC und SoC-Maximum müssen in dieser Reihenfolge zwischen 0 und 100 % liegen.");
+                fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_SOC,
+                    string.IsNullOrWhiteSpace(einheit.Name) ? einheit.Id : einheit.Name));
         }
         if (Auslegung.FlottenGroessenOptimieren)
         {
@@ -214,13 +227,13 @@
             {
                 string name = string.IsNullOrWhiteSpace(achse.Vorlage.Name) ? achse.Vorlage.Id : achse.Vorlage.Name;
                 if (achse.AnzahlVon < 0 || achse.AnzahlBis < achse.AnzahlVon)
-                    fehler.Add($"Größenbereich '{name}' – Anzahl: Von muss mindestens 0 und Bis mindestens Von sein.");
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_ANZAHL, name));
                 if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate && UngueltigerBereich(achse.KapazitaetVonKWh, achse.KapazitaetBisKWh, achse.KapazitaetSchrittKWh))
-                    fehler.Add($"Größenbereich '{name}' – Kapazität [kWh]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein.");
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_KAPAZITAET, name));
                 if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate && UngueltigerBereich(achse.LeistungVonKw, achse.LeistungBisKw, achse.LeistungSchrittKw))
-                    fehler.Add($"Größenbereich '{name}' – Leistung [kW]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein.");
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_LEISTUNG, name));
                 if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung && UngueltigerBereich(achse.CRateVon, achse.CRateBis, achse.CRateSchritt))
-                    fehler.Add($"Größenbereich '{name}' – C-Rate [1/h]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein.");
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_CRATE, name));
             }
         }
         return string.Join(" ", fehler);
@@ -236,7 +249,7 @@
             _fehler = await ProjektUebernehmen(_ergebnis);
             if (_fehler.Length > 0) return;
             _projektAktiv = true;
-            _projektMeldung = "Flotte aktiviert. Bitte die Projektsimulation neu berechnen; die bisherigen Projektergebnisse gehören noch zum alten Stand. Die Kostenbewertung der Flottenstudie bleibt im Variantenvergleich.";
+            _projektMeldung = Resource.FLOTTE_DLG_MSG_AKTIVIERT;
         }
         catch (Exception ex) { _fehler = ex.Message; }
     }
@@ -248,7 +261,7 @@
             _fehler = await ProjektDeaktivieren();
             if (_fehler.Length > 0) return;
             _projektAktiv = false;
-            _projektMeldung = "Projektflotte deaktiviert. Die Projektsimulation verwendet die Einzelvariante, bis Flotteneinstellungen erneut gespeichert und das Projekt neu berechnet werden.";
+            _projektMeldung = Resource.FLOTTE_DLG_MSG_DEAKTIVIERT;
         }
         catch (Exception ex) { _fehler = ex.Message; }
     }

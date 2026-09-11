@@ -192,6 +192,26 @@ dessen Sprache:
   gedeckelt. Gedeckelt ist die ANZEIGE, nicht das PNG: Der Zeichner liefert weiter
   860 × 560 und 720 × 460, sonst wäre auch das Gezoomte grob.
 
+### 5.2a Die Flottenansicht folgt seit #184 denselben Regeln (SD‑Q6, SD‑Q7)
+
+Das Ergebnis der Speicherflotte (`EPOS.UI/Dialoge/Strom/SpeicherFlottenErgebnisAnsicht.razor`)
+war bis zum 11.09.2026 der EINE Ort, der von diesem Blatt abwich: ein Bild ohne Reihenwahl,
+ohne Dauerlinie und ohne Datenzoom, der Ausschnitt fest auf sieben Tage ab dem 1. Januar
+(Befund 1.4 des Konzepts „Stromspeicher-Dialoge"). Mit Auftrag **#184** gilt hier § 1 bis § 6
+unverändert: Kennzahlkacheln oben, Tabellen über die volle Breite, über JEDEM Bild dieselbe
+Steuerzeile — „sortiert", je Reihe ein Schalter mit derselben Ressource wie die Legende, das
+`ChartBild` mit `BereichGewaehlt`/`Zurueckgesetzt`. Der Ladezustand steht als **zweite Achse**
+im Netzbild (§ 5.3), je Einheit wählbar; das zweite Bild mit den Energiegrenzen bleibt
+daneben wählbar, weil dort das SoC-Band eine eigene Skala braucht.
+
+**Zwei Dinge kommen über dieses Blatt hinaus**, beide aus Anwenderentscheiden vom 11.09.2026:
+eine **Zeitraumwahl Jahr / Woche / Tag mit Navigator** (SD‑Q7, Muster W8‑E‑2) zusätzlich zum
+Datenzoom — eine Jahresganglinie im Viertelstundenraster zeigt sonst keinen einzigen
+Ladezyklus —, und eine **Δ-Spalte** in der Vergleichstabelle (SD‑Q6), deren Vorzeichen der
+Kern bewertet (`FlottenVergleichszeile.NegativIstBesser`): Bei Kosten, Netzbezug und
+Bezugsspitze ist weniger besser, bei der Einspeisung mehr. Die Farbe steht dabei neben dem
+Vorzeichen und nicht an seiner Stelle.
+
 ### 5.3 Zwei Achsen in EINEM Bild (W11b‑B‑26)
 
 Zwei Größen gehören in dasselbe Bild, wenn der Anwender sie **zusammen** lesen muss —

@@ -51,7 +51,8 @@ public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, e));
 
         Assert.Contains("Kapitalwert gegenüber „ohne Speicher“: —", cut.Markup);
-        Assert.Contains("<td>—</td>", cut.Markup);
+        // Seit #184 traegt die Zahlenzelle die Hausklasse der Ergebnisseite.
+        Assert.Equal("—", Rainflowzelle(cut));
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
             { new() { Entladetiefe = .8, ZyklenBisEol = 6000 } });
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, e));
 
-        Assert.DoesNotContain("<td>—</td>", cut.Markup);
+        Assert.NotEqual("—", Rainflowzelle(cut));
         Assert.Contains("0,25", cut.Markup);
     }
 
@@ -80,6 +81,10 @@ public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
         Assert.Contains("Keine technisch zulässige Flotte", cut.Markup);
         Assert.DoesNotContain("Beste technisch zulässige Flotte", cut.Markup);
     }
+
+    /// <summary>Die LETZTE Zelle der Kennzahlenzeile — der Rainflow-Schaden (#184).</summary>
+    private static string Rainflowzelle(IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut)
+        => cut.FindAll("table.epos-raster tbody tr td").Last().TextContent.Trim();
 
     private static SpeicherFlottenErgebnis Ergebnis(List<FlottenRainflowPunkt> kurve) => new()
     {
