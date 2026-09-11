@@ -737,6 +737,70 @@ alle Spalten seit Schritt 11a; der Import schreibt nur in vorhandene.
 Bericht oder Wirtschaftlichkeit; der Referenzlauf 1030/1007/1017/1045 gegen
 `Referenzlaeufe/2026-09-06_R3_Straenge` ist byte-gleich.
 
+### Befund #212 — „die Liste blinkt bei 6 654 Zeilen" (Anwender, 11.09.2026)
+
+Der Anwender meldete mit Bildschirmfoto: Nach „CEC-Liste abrufen" steht rechts richtig
+„6.654 von 6.654 Sätzen", die Liste zeigt aber nur **Platzhalterzeilen** („…" in jeder
+Zelle) und **blinkt**; die Zeile unter der Liste meldet „0 von 6654 Einträgen geladen."
+Bei bslib (sieben Zeilen) tritt nichts davon auf — unter 120 Zeilen wird nicht
+virtualisiert.
+
+**Was NICHT die Ursache war.** Der Fix zu W13‑B‑6 vom 09.09.2026 hält: Ein Zählertest über
+alle sechs Importwirte (fünf Ausprägungen des `KatalogImportDialog`, dazu Modul- und
+Wechselrichterimport), je 6 654 synthetische Zeilen und zehn Zeichenläufe in Folge, zeigt
+**0 von 10 neuen Datenquellen** und dieselbe gefilterte Menge — die Katalogliste gibt dem
+QuickGrid weiterhin eine stabile Instanz. Auch eine Renderschleife gibt es nicht: Ein
+Zeichenlauf des Wirts kostet genau **einen** Zeichenlauf der Katalogliste. (Der
+`RenderCount` von bunit taugt dafür nicht — er zählt die aktualisierten Komponenten im
+ganzen Unterbaum, nicht die Zeichenläufe der einen Komponente; gemessen wird deshalb mit
+einem eigenen Zähler in der Komponente.)
+
+**Was die Ursache war — drei Dinge, die zusammen den Zeichenlauf so teuer machen, dass die
+virtualisierte Ladung nie fertig wird.** QuickGrid holt seine virtualisierten Zeilen hinter
+`await Task.Delay(100)` (`ProvideVirtualizedItemsAsync`, seine Entprellung) auf demselben
+Zeichenfaden und stellt die Anforderung bei jedem Zeichenlauf neu; solange geladen wird,
+trägt die Tabelle die Klasse `loading`, die den Körper auf `opacity: .25` abblendet — das
+Blinken —, und `Virtualize` zeichnet seine Platzhalterzeilen.
+
+| # | Befund | gemessen (6 654 Zeilen, fünf Zeichenläufe) | behoben durch |
+|---|---|---|---|
+| 1 | `Katalogliste` filtert **und sortiert** den ganzen Katalog bei JEDEM Zeichenlauf, auch wenn sich nichts geändert hat | ohne Sortierung 9 ms, **mit Sortierung nach kWh 105 ms**, mit Sortierung und Suche **194 ms** | Ein **Abzug** über Zeilenliste (Referenz **und** Anzahl), Profil und Filterstand; gerechnet wird nur bei einer Änderung. Die ANZAHL fängt das Löschen an Ort und Stelle, an dem der erste Anlauf zu W13‑B‑6 scheiterte |
+| 2 | Der Alle-Schalter der Suchzeile (W13‑B‑5) fragt den Wirt **zeilenweise**, und der `KatalogImportDialog` antwortete mit einem Durchlauf durch die ganze Anzeigeliste — zudem wurde der Schalterstand drei Mal je Zeichenlauf bestimmt | mit „alle gewählt" **445 ms** (Stromspeicher), **539 ms** (Wechselrichter) | Wörterbuch Satzindex → Anzeigestelle im `KatalogImportDialog`, Mengenspiegel im `ModulImportDialog` (der antwortete mit `List.Contains`), und der Schalterstand wird **einmal** je Zeichenlauf bestimmt |
+| 3 | `Virtualize` rechnet mit **44 px** je Zeile; eine Katalogzeile ist **53 px** hoch (44 px Wahlknopf + 2 × 4 px Zellenpolsterung + 1 px Trennlinie) — es nimmt also rund 17 % zu viele Zeilen an, die Abstandshalter passen nicht zum Gezeichneten, und jede Sichtbarkeitsmeldung stellt die Anforderung neu | — (nur am Gerät sichtbar) | `Katalogliste` gibt dem `Raster` das gerechnete Maß; `KataloglisteTests` rechnet es aus dem Stilblatt nach |
+
+**Nach dem Fix:** 4 ms mit Sortierung (statt 105), 4 ms mit Sortierung und Suche (statt
+194), 15 ms mit „alle gewählt" (statt 445), 7 ms beim Wechselrichterimport (statt 539) —
+und die UI-Prüfsuite läuft in 20 s statt 51 s.
+
+**Der Behälter war in Ordnung.** `.epos-raster-huelle--hoch` trägt `max-height: 420px` und
+`overflow-y: auto` und ist damit der nächste Rollcontainer über den Abstandshaltern; der
+zweite Rollbalken im Bildschirmfoto ist der des Fensters und gehört dahin.
+
+**Die Meldung** unter der Liste nennt seither die **Satzzahl** — „6.654 von 6.654 Einträgen
+geladen." statt „0 von 6654": Die erste Zahl war die Zahl der MARKIERTEN Sätze, und mit dem
+Wortlaut der Ressource `IMP_LADE_GELADEN` las sich das, als wäre nichts geladen worden. Die
+Markierung steht jetzt getrennt dahinter („· 1 gewählt", `IMP_STATUS_GEWAEHLT`) — dieselbe
+Bauart und derselbe Text wie in der Statuszeile des Modulimports. Beide Zahlen tragen das
+Tausendertrennzeichen der Kultur wie die Trefferzeile darüber. Die vier VDI-Ausprägungen
+behalten ihre Meldung; sie gewinnen dieselbe Klarstellung.
+
+**Die grüne Meldung war richtig.** „1 von 1 Einträgen geladen." im Bildschirmfoto ist die
+Sammelmeldung NACH einer Übernahme (`VdiAuswahlFilter.LadeMeldung`: ein Satz geschrieben von
+einem markierten) — kein Befund.
+
+**Wachen:** `KatalogImportDialogTests.Zehn_Zeichenlaeufe_kosten_keine_neue_Datenquelle`
+(`[Theory]` über alle fünf Ausprägungen), `…Eine_sortierte_Liste_kommt_ebenso_zur_Ruhe`,
+`…Alle_gewaehlt_kostet_keine_neue_Datenquelle`,
+`…Die_Auswahlzeile_nennt_die_Satzzahl_mit_Tausendertrennzeichen`,
+`…Die_Auswahlzeile_nennt_die_Markierung_erst_wenn_es_eine_gibt`,
+`ModulImportDialogTests.Der_Wechselrichterimport_kommt_mit_6654_Geraeten_zur_Ruhe` und in
+`KataloglisteTests` die vier Fälle `Zehn_Zeichenlaeufe_ohne_Aenderung_kosten_eine_Rechnung`,
+`Ein_Filterwechsel_rechnet_neu`, `Eine_an_Ort_und_Stelle_geaenderte_Liste_rechnet_neu` und
+`Das_Zeilenmass_der_Virtualisierung_stimmt_mit_dem_Stilblatt`.
+
+**Kein Rechenweg berührt** — Referenzlauf 1030 und 1046 gegen
+`Referenzlaeufe/2026-09-11_R7_Speicherflotte` byte-gleich.
+
 ---
 
 ## Anhang A — Was dieses Papier nicht behandelt

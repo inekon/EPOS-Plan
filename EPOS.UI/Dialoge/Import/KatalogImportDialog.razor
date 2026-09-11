@@ -275,6 +275,13 @@
     [Parameter] public string KeineAuswahlText { get; set; } = Resource.IMP_KAT_MSG_KEINE_AUSWAHL;
     [Parameter] public string VorlageAuswahl { get; set; } = Resource.IMP_LADE_GELADEN;
 
+    /// <summary>
+    /// „{0} gewählt" hinter der Auswahlzeile, sobald etwas markiert ist (Befund
+    /// <b>#212</b>) — derselbe Ressourcentext, den die Statuszeile des Modulimports
+    /// führt; zwei Texte für dieselbe Aussage liefen auseinander.
+    /// </summary>
+    [Parameter] public string GewaehltText { get; set; } = Resource.IMP_STATUS_GEWAEHLT;
+
     private string TitelText => TitelVorgabe ?? Art switch
     {
         KatalogImportArt.Pufferspeicher => Resource.IMP_KAT_TITEL_PUFFERSPEICHER,
@@ -345,6 +352,14 @@
 
     private IReadOnlyList<KatalogZeile> _saetze = Array.Empty<KatalogZeile>();
     private List<Anzeigezeile> _anzeige = new();
+
+    /// <summary>
+    /// Satzindex → Stelle in <see cref="_anzeige"/> (Befund <b>#212</b>). Er entsteht in
+    /// <see cref="ListeAufbauen"/> zusammen mit der Anzeigeliste und ist die einzige
+    /// Stelle, an der <see cref="Anzeigeindex"/> nachsieht.
+    /// </summary>
+    private Dictionary<int, int> _stelle = new();
+
     private readonly Zeilenmarkierung _wahl = new();
 
     /// <summary>Die von Hand geaenderten Bezeichner, Satzindex → Text.</summary>
@@ -391,13 +406,20 @@
     /// <summary>Ist dieser Kandidat markiert? (Rueckfrage der Katalogliste, S3.4.)</summary>
     private bool Gewaehlt(Katalogfilterzeile zeile) => _wahl.IstGewaehlt(Anzeigeindex(zeile));
 
-    /// <summary>Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.</summary>
+    /// <summary>
+    /// Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.
+    ///
+    /// <para><b>Über ein Wörterbuch statt über einen Durchlauf</b> (Befund <b>#212</b>).
+    /// Hier stand eine Schleife über <c>_anzeige</c> — aufgerufen wird die Methode aber
+    /// je GEZEICHNETER Zeile (die Katalogliste fragt <c>IstGewaehlt</c> für jede) und
+    /// obendrein für jede sichtbare Zeile, wenn der Alle-Schalter seinen Stand bestimmt.
+    /// Bei 6 654 Sätzen waren das im schlimmsten Fall 22 Millionen Vergleiche je
+    /// Zeichenlauf; gemessen kostete ein Zeichenlauf mit „alle gewählt" <b>89 ms</b> statt
+    /// 1,6 ms. Der Modulimport — die Messlatte — beantwortet dieselbe Frage seit jeher
+    /// über den Satz und nicht über einen Durchlauf.</para>
+    /// </summary>
     private int Anzeigeindex(Katalogfilterzeile zeile)
-    {
-        for (int i = 0; i < _anzeige.Count; i++)
-            if (_anzeige[i].Quelle == zeile.Id) return i;
-        return -1;
-    }
+        => _stelle.TryGetValue(zeile.Id, out int i) ? i : -1;
 
     private EventCallback AbbrechenCallback =>
         EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
@@ -416,7 +438,40 @@
 
     private bool UebernehmenErlaubt => !_laeuft && _saetze.Count > 0;
 
-    private string AuswahlZeile => string.Format(VorlageAuswahl, _wahl.Anzahl, _anzeige.Count);
+    /// <summary>
+    /// Die Zeile unter der Liste — <b>„6.654 von 6.654 Einträgen geladen."</b>
+    /// (Befund <b>#212</b>, Anwender 11.09.2026).
+    ///
+    /// <para><b>Was daran falsch war.</b> Hier stand
+    /// <c>string.Format(VorlageAuswahl, _wahl.Anzahl, _anzeige.Count)</c> — die erste Zahl
+    /// war die Zahl der MARKIERTEN Sätze. Nach dem Abruf der CEC-Liste mit 6 654
+    /// Stromspeichern stand darum „0 von 6654 Einträgen geladen." da, und der Wortlaut der
+    /// Ressource (<c>IMP_LADE_GELADEN</c>) liest sich, als wäre nichts geladen worden.
+    /// Gemeint ist die SATZZAHL: wie viele der gelesenen Einträge die Liste gerade zeigt.
+    /// Ein Filter macht daraus „15 von 6.654".</para>
+    ///
+    /// <para>Die Markierung geht darum nicht verloren — sie steht dahinter, getrennt, und
+    /// nur wenn es sie gibt: <c>IMP_STATUS_GEWAEHLT</c> („{0} gewählt"), derselbe Text und
+    /// dieselbe Bauart wie in der Statuszeile des Modulimports.</para>
+    ///
+    /// <para>Beide Zahlen mit dem Tausendertrennzeichen der Kultur (<c>N0</c>) — wie die
+    /// Trefferzeile der Katalogliste unmittelbar darüber; „6.654" und „6654" nebeneinander
+    /// sahen aus wie zwei verschiedene Zahlen. Die Hausregel „ohne Tausendertrennzeichen"
+    /// gilt dem EINLESEN einer Eingabe, nicht dem Anzeigen einer Anzahl.</para>
+    /// </summary>
+    private string AuswahlZeile
+    {
+        get
+        {
+            string text = string.Format(CultureInfo.CurrentCulture, VorlageAuswahl,
+                                        _anzeige.Count.ToString("N0", CultureInfo.CurrentCulture),
+                                        _saetze.Count.ToString("N0", CultureInfo.CurrentCulture));
+
+            return _wahl.Anzahl == 0
+                ? text
+                : text + " · " + string.Format(CultureInfo.CurrentCulture, GewaehltText, _wahl.Anzahl);
+        }
+    }
 
     // =====================================================================
     // Aufbau
@@ -494,6 +549,7 @@
         _saetze = Array.Empty<KatalogZeile>();
         _katalogzeilen = Array.Empty<Katalogfilterzeile>();
         _anzeige.Clear();
+        _stelle.Clear();
         _wahl.Leeren();
         _bezeichner.Clear();
         // Eine NEUE Quelle ist eine andere Menge: Der Filter faellt zurueck,
@@ -575,10 +631,12 @@
             Katalogfilter.Anwenden(Profil.Listenprofil, _katalogzeilen, _filterstand);
 
         _anzeige = new List<Anzeigezeile>(sichtbar.Count);
+        _stelle = new Dictionary<int, int>(sichtbar.Count);
         foreach (Katalogfilterzeile k in sichtbar)
         {
             int i = k.Id;
             if (i < 0 || i >= _saetze.Count) continue;
+            _stelle[i] = _anzeige.Count;
             _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), _saetze[i].Firma,
                                           _saetze[i]));
         }

@@ -68,10 +68,15 @@
            gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
         @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
         {
+            @* EINMAL fragen, dreimal benutzen (Befund #212): AlleSichtbarenGewaehlt
+               fragt den Wirt ZEILE FUER ZEILE, und der antwortet je nach Wirt in
+               O(n) - bei 6 654 Saetzen kostete der Stand des Schalters dreimal je
+               Zeichenlauf, was er einmal kosten darf. *@
+            bool alleGewaehlt = AlleSichtbarenGewaehlt;
             <label class="epos-wahl-alle"
-                   title="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
-                <input type="checkbox" checked="@AlleSichtbarenGewaehlt"
-                       aria-label="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                   title="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                <input type="checkbox" checked="@alleGewaehlt"
+                       aria-label="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
                        @onchange="BeiAllewahl" />
                 <span>@Texte.AlleWaehlen</span>
             </label>
@@ -106,7 +111,7 @@
 
     @* ---------------- ZONE B oben - die Liste ---------------------------- *@
     <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen"
-            Virtualisiert="@Virtualisiert">
+            Virtualisiert="@Virtualisiert" Zeilenhoehe="@ZEILENHOEHE">
         <KindInhalt>
             <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
                             Class="epos-spalte-wahl">
@@ -363,6 +368,26 @@
     /// </summary>
     [Parameter] public int VirtualisierenAb { get; set; } = 120;
 
+    /// <summary>
+    /// <b>Die wirkliche Höhe einer Katalogzeile in Pixeln</b> (Befund <b>#212</b>): 44 px
+    /// Berührungsziel des Wahlknopfs (<c>.epos-knopf</c>, <c>--epos-touchziel</c>) + 2 × 4 px
+    /// Zellenpolsterung (<c>.epos-raster th, .epos-raster td</c>) + 1 px Trennlinie.
+    ///
+    /// <para>Der Vorgabewert 44 des <c>Raster</c>s ist die Höhe des KNOPFS, nicht die der
+    /// Zeile — <c>Virtualize</c> rechnete damit rund 17 % zu klein: Es teilt die Höhe des
+    /// Rollbehälters durch dieses Maß, um zu wissen, wie viele Zeilen sichtbar sind, und
+    /// setzt danach die Höhen seiner zwei Abstandshalter. Liegt das Maß unter der Wahrheit,
+    /// stimmen die Abstandshalter nicht mit dem Gezeichneten überein, die
+    /// Sichtbarkeitsmeldungen der Beobachter kommen weiter, und jede davon stellt die
+    /// Datenanforderung des Rasters neu an — hinter QuickGrids 100‑ms‑Entprellung.</para>
+    ///
+    /// <para>JEDE Zeile dieser Liste trägt den Wahlknopf (die Wahlspalte steht in beiden
+    /// Betriebsarten), das Maß gilt also ohne Ausnahme. Ändert jemand die Zellenpolsterung
+    /// oder das Berührungsziel, gehört diese Zahl nachgezogen; <c>KataloglisteTests</c>
+    /// rechnet sie aus dem Stilblatt nach.</para>
+    /// </summary>
+    private const float ZEILENHOEHE = 53f;
+
     private Katalogfilterstand Stand => Filterstand ??= new Katalogfilterstand();
 
     private IReadOnlyList<Katalogfilterzeile> _gefiltert = Array.Empty<Katalogfilterzeile>();
@@ -445,16 +470,53 @@
     /// <summary>Wird virtualisiert? Der Schalter hängt an der GEFILTERTEN Zeilenzahl.</summary>
     public bool Virtualisiert => _gefiltert.Count >= VirtualisierenAb;
 
+    /// <summary>Die Zahl der Zeichenläufe dieser Liste (Prüfhilfe für Tests, Befund <b>#212</b>).</summary>
+    public int Zeichenlaeufe { get; private set; }
+
+    /// <summary>
+    /// Wie oft die gefilterte Sicht WIRKLICH gerechnet wurde (Prüfhilfe für Tests,
+    /// Befund <b>#212</b>). Er steht neben <see cref="Zeichenlaeufe"/>: Zehn
+    /// Zeichenläufe ohne Filter- und ohne Datenwechsel dürfen genau EINE Rechnung
+    /// kosten, nicht zehn.
+    /// </summary>
+    public int Neurechnungen { get; private set; }
+
+    protected override void OnAfterRender(bool firstRender) => Zeichenlaeufe++;
+
     protected override void OnParametersSet() => Neuberechnen();
 
     /// <summary>
-    /// <b>Dieselbe Menge behält ihre Instanz</b> (Befund <b>W13‑B‑6</b>). Gerechnet
-    /// wird weiter bei jedem Zeichenlauf — das MUSS so bleiben: Mehrere Wirte
-    /// verändern ihre Zeilenliste an Ort und Stelle (der Ganglinienverwalter löscht
-    /// mit <c>RemoveAll</c> aus derselben Liste), und wer sich auf eine geänderte
-    /// Referenz verlässt, sieht das nicht. Was sich ändert, ist das ERGEBNIS: Kommt
-    /// dieselbe Menge in derselben Reihenfolge heraus, bleiben
-    /// <see cref="_gefiltert"/> und <see cref="_rasterzeilen"/> stehen.
+    /// <b>Dieselbe Menge behält ihre Instanz</b> (Befund <b>W13‑B‑6</b>) — und
+    /// <b>gerechnet wird nur noch, wenn sich etwas geändert hat</b> (Befund
+    /// <b>#212</b>, 11.09.2026).
+    ///
+    /// <para><b>Was #212 daran ändert.</b> Bis dahin lief <see cref="Katalogfilter.Anwenden"/>
+    /// bei JEDEM Zeichenlauf über den ganzen Katalog — Filtern UND Sortieren. Gemessen
+    /// (bunit, Stromspeicherimport mit 6 654 Sätzen, je fünf Zeichenläufe ohne jede
+    /// Änderung): 1,8 ms je Lauf ohne Sortierung, <b>21 ms</b> mit Sortierung nach kWh,
+    /// <b>39 ms</b> mit Sortierung und Suche. Das ist nicht nur Arbeit umsonst: QuickGrid
+    /// holt seine virtualisierten Zeilen hinter <c>await Task.Delay(100)</c>
+    /// (<c>ProvideVirtualizedItemsAsync</c>, seine Entprellung) auf DEMSELBEN
+    /// Zeichenfaden, und jeder Zeichenlauf stellt die Anforderung neu. Wer je Lauf
+    /// zweistellige Millisekunden verbraucht, hält die Liste in ihrem Platzhalterzustand
+    /// fest — den „…"-Zellen und der Klasse <c>loading</c>, die den Körper auf
+    /// <c>opacity: .25</c> abblendet: das gemeldete Blinken.</para>
+    ///
+    /// <para><b>Warum der erste Anlauf zu W13‑B‑6 daran scheiterte und dieser nicht.</b>
+    /// Er hängte das Neurechnen an die REFERENZ der Zeilenliste (dazu an das Profil und
+    /// einen Zähler im Filterstand) — und mehrere Wirte ändern ihre Liste AN ORT UND
+    /// STELLE: Der Ganglinienverwalter löscht mit <c>RemoveAll</c> aus derselben
+    /// Instanz, die er hereinreicht, und <c>SolarganglinieAdminDialogTests.Ja_loescht_und_meldet</c>
+    /// zeigte danach weiter drei Zeilen. Der Abzug hier führt deshalb die
+    /// ZEILENZAHL mit; ein Löschen oder Anhängen an Ort und Stelle ändert sie immer.
+    /// Was er nicht sieht, ist ein Tausch EINER Zeile gegen eine andere bei gleicher
+    /// Zahl in derselben Instanz — den tut heute kein Wirt (alle bauen ihre Liste neu
+    /// auf), und er stünde auch dem alten Referenzvergleich entgegen.</para>
+    ///
+    /// <para><b>Der Rest bleibt, wie er war:</b> Kommt dieselbe Menge in derselben
+    /// Reihenfolge heraus, bleiben <see cref="_gefiltert"/> und
+    /// <see cref="_rasterzeilen"/> trotzdem stehen — die zweite Schranke gegen eine
+    /// neue Datenquelle.</para>
     ///
     /// <para><b>Warum das der ganze Fix ist.</b> QuickGrid vergleicht seine
     /// Datenquelle nach REFERENZ; eine neue Instanz ist für es eine neue Menge, und
@@ -473,6 +535,10 @@
     /// </summary>
     private void Neuberechnen()
     {
+        if (!EtwasGeaendert()) return;
+
+        Neurechnungen++;
+
         IReadOnlyList<Katalogfilterzeile> neu = Profil is null
             ? Zeilen
             : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
@@ -483,6 +549,73 @@
 
         // DIE EINE Stelle, an der die Datenquelle des Rasters entsteht.
         _rasterzeilen = neu.AsQueryable();
+    }
+
+    // Der ABZUG (Befund #212): Zeilenliste, Profil und Filterstand, wie sie bei der
+    // letzten Rechnung standen. Nichts davon ist ein Zwischenspeicher des ERGEBNISSES -
+    // gespart wird die Rechnung, nicht ihr Ausgang.
+    private object? _abzugZeilen;
+    private int _abzugZeilenzahl = -1;
+    private object? _abzugProfil;
+    private object? _abzugStand;
+    private string _abzugSuche = "";
+    private string _abzugSortierspalte = "";
+    private bool _abzugAufsteigend;
+    private int _abzugFilterzahl = -1;
+    private string[] _abzugAusdruecke = Array.Empty<string>();
+
+    /// <summary>
+    /// <b>Hat sich seit der letzten Rechnung etwas geändert?</b> (Befund <b>#212</b>.)
+    /// Vier Dinge gehen in die gefilterte Sicht ein, und alle vier stehen im Abzug:
+    /// die ZEILENLISTE (Referenz <b>und</b> Anzahl — die Anzahl fängt das Löschen an Ort
+    /// und Stelle, an dem der erste Anlauf zu W13‑B‑6 scheiterte), das PROFIL, die drei
+    /// Skalare des Filterstands (Suche, Sortierspalte, Richtung) und die Ausdrücke der
+    /// Spalten. Letztere kosten je Aufruf so viele Wörterbuchgriffe, wie die Liste
+    /// Spalten hat — bei neun Spalten neun, gegen 6 654 Zeilen mal Filter und Sortierung.
+    ///
+    /// <para>Der Abzug wird nur fortgeschrieben, wenn wirklich gerechnet wird; sonst
+    /// schluckte ein Aufruf, der nichts tut, die Änderung für den nächsten.</para>
+    /// </summary>
+    private bool EtwasGeaendert()
+    {
+        int spalten = Profil?.Spalten.Count ?? 0;
+
+        bool anders = !ReferenceEquals(Zeilen, _abzugZeilen)
+                   || (Zeilen?.Count ?? 0) != _abzugZeilenzahl
+                   || !ReferenceEquals(Profil, _abzugProfil)
+                   || !ReferenceEquals(Stand, _abzugStand)
+                   || !string.Equals(Stand.Suche ?? "", _abzugSuche, StringComparison.Ordinal)
+                   || !string.Equals(Stand.Sortierspalte ?? "", _abzugSortierspalte, StringComparison.Ordinal)
+                   || Stand.Aufsteigend != _abzugAufsteigend
+                   || Stand.Anzahl != _abzugFilterzahl
+                   || _abzugAusdruecke.Length != spalten;
+
+        if (!anders && Profil is not null)
+            for (int i = 0; i < spalten; i++)
+                if (!string.Equals(Stand.Ausdruck(Profil.Spalten[i].Schluessel),
+                                   _abzugAusdruecke[i], StringComparison.Ordinal))
+                {
+                    anders = true;
+                    break;
+                }
+
+        if (!anders) return false;
+
+        _abzugZeilen = Zeilen;
+        _abzugZeilenzahl = Zeilen?.Count ?? 0;
+        _abzugProfil = Profil;
+        _abzugStand = Stand;
+        _abzugSuche = Stand.Suche ?? "";
+        _abzugSortierspalte = Stand.Sortierspalte ?? "";
+        _abzugAufsteigend = Stand.Aufsteigend;
+        _abzugFilterzahl = Stand.Anzahl;
+
+        var ausdruecke = new string[spalten];
+        for (int i = 0; i < spalten; i++)
+            ausdruecke[i] = Stand.Ausdruck(Profil!.Spalten[i].Schluessel);
+        _abzugAusdruecke = ausdruecke;
+
+        return true;
     }
 
     /// <summary>Dieselben Zeilen in derselben Reihenfolge?</summary>

@@ -566,6 +566,155 @@ public class KataloglisteTests : EposBunitContext
     }
 
     // =====================================================================
+    //  #212: gerechnet wird nur bei einer Aenderung (11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Zehn Zeichenläufe kosten EINE Rechnung</b> (Befund <b>#212</b>, Anwender
+    /// 11.09.2026: „die Liste blinkt" beim Stromspeicherimport mit 6 654 Sätzen).
+    ///
+    /// <para>Bis dahin lief <c>Katalogfilter.Anwenden</c> bei JEDEM Zeichenlauf über den
+    /// ganzen Katalog — Filtern und Sortieren. Gemessen an dieser Menge: 1,8 ms je Lauf
+    /// ohne Sortierung, 21 ms mit Sortierung, 39 ms mit Sortierung und Suche. QuickGrid
+    /// holt seine virtualisierten Zeilen hinter einer 100‑ms‑Entprellung auf DEMSELBEN
+    /// Faden und stellt die Anforderung bei jedem Zeichenlauf neu; wer je Lauf
+    /// zweistellige Millisekunden verbraucht, hält die Liste in ihrem Platzhalterzustand
+    /// fest.</para>
+    ///
+    /// <para>Geprüft wird der Zähler, nicht die Zeit — eine Zeitmessung wäre auf einem
+    /// ausgelasteten Läufer keine Wache.</para>
+    /// </summary>
+    [Fact]
+    public void Zehn_Zeichenlaeufe_ohne_Aenderung_kosten_eine_Rechnung()
+    {
+        var viele = Grosser_Katalog(6654);
+        var stand = new Katalogfilterstand();
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Filterstand, stand));
+
+        Assert.True(cut.Instance.Virtualisiert);
+        Assert.Equal(1, cut.Instance.Neurechnungen);
+
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+
+        for (int i = 0; i < 10; i++) cut.Render();
+
+        Assert.Equal(1, cut.Instance.Neurechnungen);
+        Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        Assert.Equal(6654, cut.Instance.Angezeigt.Count);
+    }
+
+    /// <summary>
+    /// <b>Erste Gegenprobe:</b> Ein Filterwechsel rechnet neu. Ein Abzug, der eine
+    /// Änderung verschluckte, wäre der Fehler W6‑B‑2 von der anderen Seite.
+    /// </summary>
+    [Fact]
+    public void Ein_Filterwechsel_rechnet_neu()
+    {
+        var viele = Grosser_Katalog(500);
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, viele)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        Assert.Equal(1, cut.Instance.Neurechnungen);
+
+        Filter(cut, Katalogfilterprofil.SpHersteller, "Sonnen");
+        Gefiltert(cut, "250 von 500 Sätzen", 250);
+
+        Assert.True(cut.Instance.Neurechnungen > 1);
+    }
+
+    /// <summary>
+    /// <b>Zweite Gegenprobe — die teuer erkaufte:</b> Eine AN ORT UND STELLE geänderte
+    /// Zeilenliste wird bemerkt. Genau daran scheiterte der erste Anlauf zu W13‑B‑6, der
+    /// das Neurechnen allein an die Referenz hängte: Der Ganglinienverwalter löscht mit
+    /// <c>RemoveAll</c> aus derselben Instanz, die er hereinreicht
+    /// (<c>SolarganglinieAdminDialogTests.Ja_loescht_und_meldet</c> zeigte danach weiter
+    /// drei Zeilen). Der Abzug führt deshalb die ZEILENZAHL mit.
+    /// </summary>
+    [Fact]
+    public void Eine_an_Ort_und_Stelle_geaenderte_Liste_rechnet_neu()
+    {
+        var liste = Grosser_Katalog(500);
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, liste)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        Assert.Equal(500, cut.Instance.Angezeigt.Count);
+        int vorher = cut.Instance.Neurechnungen;
+
+        liste.RemoveRange(0, 100);
+        cut.Render();
+
+        Assert.Equal(vorher + 1, cut.Instance.Neurechnungen);
+        Assert.Equal(400, cut.Instance.Angezeigt.Count);
+    }
+
+    /// <summary>
+    /// <b>Das Zeilenmaß der Virtualisierung ist GERECHNET, nicht geraten</b> (Befund
+    /// <b>#212</b>). <c>Virtualize</c> teilt die Höhe des Rollbehälters durch dieses Maß,
+    /// um zu wissen, wie viele Zeilen sichtbar sind; liegt es unter der Wahrheit, stimmen
+    /// die Abstandshalter nicht mit dem Gezeichneten überein, und jede
+    /// Sichtbarkeitsmeldung stellt die Datenanforderung neu an.
+    ///
+    /// <para>Die Zahl kommt aus dem STILBLATT: 44 px Berührungsziel des Wahlknopfs
+    /// (<c>--epos-touchziel</c>) + 2 × 4 px Zellenpolsterung (<c>.epos-raster td</c>)
+    /// + 1 px Trennlinie. Eine bunit-Probe misst keine Pixel (Lehre W6‑B‑1) — geprüft
+    /// wird deshalb die RECHNUNG gegen die drei Werte im Blatt.</para>
+    /// </summary>
+    [Fact]
+    public void Das_Zeilenmass_der_Virtualisierung_stimmt_mit_dem_Stilblatt()
+    {
+        string zelle = Zellenregel();
+
+        Assert.Contains("--epos-touchziel: 44px", Stilblatt());
+        Assert.Contains("padding: 4px 8px;", zelle);
+        Assert.Contains("border-bottom: 1px solid", zelle);
+
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, Grosser_Katalog(6654))
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        Assert.Equal(44f + 2 * 4f + 1f,
+                     cut.FindComponent<EPOS.UI.Standards.Raster<Katalogfilterzeile>>()
+                        .Instance.Zeilenhoehe);
+    }
+
+    /// <summary>Das Stilblatt der Bibliothek, aus dem Quellbaum gelesen.</summary>
+    private static string Stilblatt()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+        {
+            string kandidat = System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css");
+            if (System.IO.File.Exists(kandidat)) return System.IO.File.ReadAllText(kandidat);
+        }
+
+        Assert.Fail("epos-ui.css wurde nicht gefunden.");
+        return "";
+    }
+
+    /// <summary>
+    /// Der Rumpf der Zellenregel <c>.epos-raster th, .epos-raster td</c> — vom Selektor
+    /// bis zur schliessenden Klammer, Zeilenenden vereinheitlicht.
+    /// </summary>
+    private static string Zellenregel()
+    {
+        string blatt = Stilblatt().Replace("\r\n", "\n");
+        int a = blatt.IndexOf(".epos-raster th,\n.epos-raster td {", StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Zellenregel des Rasters steht nicht im Stilblatt.");
+
+        int b = blatt.IndexOf('}', a);
+        return blatt.Substring(a, b - a);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 

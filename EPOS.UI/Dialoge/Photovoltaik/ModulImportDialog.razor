@@ -255,6 +255,19 @@
     /// </summary>
     private readonly List<object> _gewaehlte = new();
 
+    /// <summary>
+    /// Dieselbe Menge als NACHSCHLAGEWERK (Befund <b>#212</b>). Die Liste trägt die
+    /// Reihenfolge — sie geht so in den Schreibgang —, aber gefragt wird nach
+    /// Zugehörigkeit: Die Katalogliste ruft <see cref="Gewaehltzeile"/> für jede
+    /// gezeichnete Zeile und, wenn der Alle-Schalter seinen Stand bestimmt, für JEDE
+    /// sichtbare. <c>List.Contains</c> läuft dabei über die ganze Wahl; mit 6 654
+    /// gewählten Wechselrichtern kostete ein Zeichenlauf gemessen <b>108 ms</b> statt
+    /// 2 ms. Der Vergleich bleibt der REFERENZvergleich — zwei Katalogsätze mit
+    /// gleichen Werten sind zwei Geräte.
+    /// </summary>
+    private readonly HashSet<object> _gewaehlteMenge =
+        new HashSet<object>(ReferenceEqualityComparer.Instance);
+
     /// <summary>Die zuletzt angeklickte Zeile — sie füllt die Detailreiter.</summary>
     private object? _zuletzt;
 
@@ -302,7 +315,7 @@
 
     /// <summary>Ist dieser Kandidat markiert? (Rueckfrage der Katalogliste, S3.4.)</summary>
     private bool Gewaehltzeile(Katalogfilterzeile k)
-        => k.Id >= 0 && k.Id < _zeilen.Count && _gewaehlte.Contains(_zeilen[k.Id].Satz);
+        => k.Id >= 0 && k.Id < _zeilen.Count && _gewaehlteMenge.Contains(_zeilen[k.Id].Satz);
 
     /// <summary>Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.</summary>
     private int Anzeigeindex(Katalogfilterzeile k)
@@ -673,14 +686,20 @@
         var sichtbar = new HashSet<object>(_anzeige.Select(z => z.Satz),
                                            ReferenceEqualityComparer.Instance);
         _gewaehlte.RemoveAll(s => sichtbar.Contains(s));
+        _gewaehlteMenge.RemoveWhere(s => sichtbar.Contains(s));
 
         foreach (int i in _wahl.Gewaehlt)
-            if (i >= 0 && i < _anzeige.Count) _gewaehlte.Add(_anzeige[i].Satz);
+            if (i >= 0 && i < _anzeige.Count)
+            {
+                _gewaehlte.Add(_anzeige[i].Satz);
+                _gewaehlteMenge.Add(_anzeige[i].Satz);
+            }
     }
 
     private void WahlLeeren()
     {
         _gewaehlte.Clear();
+        _gewaehlteMenge.Clear();
         _wahl.Leeren();
         _zuletzt = null;
     }
