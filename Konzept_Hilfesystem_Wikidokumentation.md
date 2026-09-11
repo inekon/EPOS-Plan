@@ -840,4 +840,5 @@ Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis 
 die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.
 **Dazu `Simulation` Revision 551** (11.09.2026, Merge `97dc344`, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
 Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts das Ergebnis, ein Lauf zur Zeit); Nachprobe per
-`action=raw` findet den Anker.
+`action=raw` findet den Anker. **Dazu `Hilfe-Assistent` Revision 553** (11.09.2026, Merge #227) mit dem Absatz zur Startzeile
+(Kontext, „Aktuellen Dialog erklären", „Was kann ich hier tun?"); Nachprobe zeichengleich bis auf den Zeilenumbruch am Dateiende.

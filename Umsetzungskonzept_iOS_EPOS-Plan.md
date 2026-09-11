@@ -3819,6 +3819,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > abzunehmen. Merge-Konflikt nur in `EPOS.UI/CLAUDE.md` (Absätze #225 und #220 vereinigt). Gate sept34 auf dem Arbeitsbaum des Merges
 > `97dc344` (die Kopfzeile des Protokolls nennt noch `72b90b1`, weil der Lauf vor dem Merge-Commit startete): Kern 2 673, UI 3 828,
 > Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#227 (11.09.2026, `4690f57`, Merge `49c2e6f`) — Hilfe-Assistent: Startzeile „Aktuellen Dialog erklären" mit Kontext (Anwenderhinweis
+> zum Bildschirmfoto mit zwei Pillen).** Bisher landete die vorbereitete Frage `KI_FRAGE_*` nur als Vorbelegung im Eingabefeld; der Assistent
+> zeigte nicht, dass er den Bildschirm kennt. Jetzt steht beim Öffnen aus einer Pille über dem Eingabefeld eine Startzeile: links die
+> Kontextzeile (Ansicht · Schritt · Reiter bzw. Dialogname), rechts „Aktuellen Dialog erklären" (schickt die vorbereitete Frage, sonst eine
+> allgemeine mit dem Bildschirmnamen) und „Was kann ich hier tun?"; sie verschwindet mit der ersten Nachricht, fehlt beim Menüweg
+> (kein Hilfeschlüssel) und ist ohne Einrichtung weich gesperrt (`aria-disabled`, KI‑D‑Q1). `KiKontextangabe` trägt den Hilfeschlüssel
+> bis zur Komponente (Windows-Hülle und `AppWurzel`); die Pille nennt im Tooltip den Bildschirm („Simulation vom Hilfe-Assistenten
+> erklären lassen"). 7 Ressourcen de/en, 11 neue bunit-Fälle; Konzept KI-Assistent 3.1; Wiki Hilfe-Assistent Revision 553.
+> Der Zweig entstand noch auf der alten Linie (Basis 9b30cfd) und wurde vor dem Merge auf die bereinigte Historie umgesetzt (Basis a5f7ff7).
+> **Historie:** Am Abend kam mit einem Sync (78bcf88/0be2b0c) die Excel-Mappe V7 (71 MB) in den Zweig; nach Anwenderentscheid
+> („Historie umschreiben", Freigabe für `git rebase`/`push --force-with-lease`) wurde der Zweig ab b516f22 ohne diese zwei Commits neu
+> aufgebaut (Baum identisch, alle Commits signiert, Merges erhalten; `.gitignore` sperrt `*.xlsm`/`*.xlsb`).
+> Gate sept35 auf `49c2e6f`: Kern 2 673, UI 3 839, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
