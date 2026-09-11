@@ -1,6 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulation.wiki
-     Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207)
+     Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207;
+     Windows-Abnahme #216: Kachel "Simulation starten", Werkzeugleiste, Reiter Parameter entfallen, Uebersicht zuerst - SIM-E-1)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Simulationsablauf. -->
 Die Ansicht '''Simulation''' führt den Lauf in '''drei Schritten''': ''① Konfiguration'', ''② Simulation starten ▶'' und ''③ Ergebnis''. Sie füllt das Programmfenster ganz aus – kein Fenster im Fenster, ein Rollbalken.
@@ -10,15 +11,15 @@ Das Blatt '''① Konfiguration''' legt fest, welche Erzeuger an der Deckung teil
 == Simulation durchführen ==
 {{Anker|ablauf}}
 
-Die Simulation ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Dialog mehr. Sie erreichen sie über '''Projekt → Simulation…''', über den Knopf '''Simulation Konfiguration…''' oder über die Kachel '''Simulation''' auf dem Reiter ''Simulation'' der Startseite.
+Die Simulation ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Dialog mehr. Sie erreichen sie über '''Projekt → Simulation…''', über den Knopf '''Simulation Konfiguration…''' oder über die Kachel '''Simulation starten''' auf dem Reiter ''Simulation'' der Startseite – die Kachel startet den Lauf sofort; ist er gesperrt, bleibt die Ansicht in Schritt ① und nennt den Grund.
 
-Oben steht die '''Ablaufleiste''' mit drei Stationen: ''① Konfiguration'' · ''② Simulation starten ▶'' · ''③ Ergebnis''. Sichtbar ist immer genau ein Blatt; ein Schrittwechsel wirft nichts weg – der gerechnete Lauf, die Diagramme und der offene Reiter bleiben stehen.
+Oben rechts steht die '''Werkzeugleiste''': die Ablaufleiste mit drei Stationen ''① Konfiguration'' · ''② Simulation starten ▶'' · ''③ Ergebnis'', daneben ''Ergebnis speichern'' (nur in Schritt ③), die Hilfe-Pille und '''← zurück'''. Eine Fußleiste gibt es nicht. Sichtbar ist immer genau ein Blatt; ein Schrittwechsel wirft nichts weg – der gerechnete Lauf, die Diagramme und der offene Reiter bleiben stehen.
 
-# '''① Konfiguration''' – Erzeuger wählen, die Reihenfolge der Kaskade festlegen, Pufferspeicher zuordnen; die Einzelheiten stehen unter [[#erzeuger-und-speicher|Eingaben]]. Änderungen an der Kaskade müssen mit ''Konfiguration speichern'' geschrieben werden, sonst rechnet die Simulation den zuletzt gespeicherten Stand.
+# '''① Konfiguration''' – Erzeuger wählen, die Reihenfolge der Kaskade festlegen, Pufferspeicher zuordnen; die Einzelheiten stehen unter [[#erzeuger-und-speicher|Eingaben]]. Änderungen an der Kaskade müssen mit ''Konfiguration speichern'' geschrieben werden, sonst rechnet die Simulation den zuletzt gespeicherten Stand. Hier stehen auch die '''Laufparameter''': die ''Netzverluste'' (Wert und Einheit) im Abschnitt ''Wärmebedarf'' über den zwei Spalten – sie wirken nur bei vorhandenem Wärmebedarf, Vorgabe 0 % – sowie an der jeweils ersten Karte ihrer Art die ''Betriebsart'' und ''untere Leistungsgrenze'' des BHKW, der ''Heizstab'' der Wärmepumpe und die ''Betriebsbereitschaft'' des Heizkessels. Diese Werte schreibt das Programm sofort beim Verlassen des Feldes.
 # '''② Simulation starten ▶''' ist ein '''Knopf, kein Blatt''' – ein Lauf ist nichts, das man ansieht. Er ist gesperrt, solange die Konfiguration ungespeichert ist oder die Datenbank den Lauf blockiert; der Grund steht am Knopf und als Hinweis darunter. Der Lauf läuft im Hintergrund, mit Fortschrittsbalken und ''Abbrechen'', und endet in Schritt ③.
-# '''③ Ergebnis''' – die zehn Reiter von ''Parameter'' bis ''Stromspeicher'', darunter ''Ergebnis speichern''. Der Schritt steht erst offen, wenn einmal gerechnet wurde, und sagt sonst, warum; die Reiter beschreibt [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]].
+# '''③ Ergebnis''' – die Reiter von ''Übersicht'' bis ''Ergebnis'' (bis zu neun; die Erzeugerreiter je nach Projekt); das Ergebnis macht mit der ''Übersicht'' auf, ''Ergebnis speichern'' steht in der Werkzeugleiste. Der Schritt steht erst offen, wenn einmal gerechnet wurde, und sagt sonst, warum; die Reiter beschreibt [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]. Der Parameterblock des Einzelspeichers (klassischer Projektlauf) steht im Reiter ''Stromspeicher'' unter ''Einzelanlage (klassischer Projektlauf)'' – nur, solange keine Speicherflotte aktiviert ist.
 
-'''← zurück''' oben rechts führt dorthin, woher Sie kamen. Sind Änderungen an der Konfiguration ungespeichert, werden Sie vorher gefragt: ''Speichern'' · ''Verwerfen'' · ''Bleiben''; Esc bedeutet ''Bleiben''.
+'''← zurück''' in der Werkzeugleiste führt dorthin, woher Sie kamen. Sind Änderungen an der Konfiguration ungespeichert, werden Sie vorher gefragt: ''Speichern'' · ''Verwerfen'' · ''Bleiben''; Esc bedeutet ''Bleiben''.
 
 === Speicherflotte und Auslegung ===
 {{Anker|ablauf-auslegung}}
@@ -29,8 +30,10 @@ Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stroms
 {{Anker|ablauf-neu}}
 
 * Ergebnis und Konfiguration erscheinen '''nicht mehr als Fenster im Fenster'''; beide sind Schritte derselben Ansicht.
-* Die Kachel ''Simulation'' öffnet das Ergebnis – ohne gerechnetes Ergebnis die Konfiguration mit einem Hinweis – und '''startet den Lauf nicht mehr von selbst'''.
-* Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen; die Ablaufleiste und das eine ''← zurück'' ersetzen sie.
+* Die Kachel heißt ''Simulation starten'' und '''startet den Lauf''' (Anwenderentscheid SIM‑E‑1, 11.09.2026); ist der Lauf gesperrt – ungespeicherte Konfiguration oder blockierte Datenbank –, bleibt die Ansicht in Schritt ① und nennt den Grund.
+* Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen, ebenso die Fußleiste des Ergebnisses; die Werkzeugleiste oben rechts und das eine ''← zurück'' ersetzen sie.
+* Der Reiter ''Parameter'' des Ergebnisses ist entfallen: Netzverluste, BHKW-Betriebsart und Leistungsgrenze, Heizstab und Betriebsbereitschaft stehen in Schritt ① bei der Konfiguration, der Block der Einzelanlage im Reiter ''Stromspeicher''.
+* Das Ergebnis öffnet mit der ''Übersicht'' statt mit den Parametern.
 * Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
 
 == Eingaben ==
