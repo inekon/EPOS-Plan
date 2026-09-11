@@ -1241,7 +1241,7 @@ Zeitstempel **19.08.2026 14:46**, Schemastand **21**, nur gelesen (keine `Kennda
 Migration **21 → 22** lief ausschließlich auf der Arbeitskopie. **Selbstvergleich:** zweiter Lauf
 desselben Codes auf derselben Quelle **9/9 PASS, 216/216 byte-gleich** — die Basis ist reproduzierbar.
 Vollständige Angaben und die Liste **„Was diese Basis nicht absichert"** im
-[Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+Laufprotokoll der Basis `2026-08-19_B6` (Basis gelöscht, Geschichte in diesem Dokument).
 
 ### Warum die Basis auf B5 gewechselt wurde
 
@@ -1262,7 +1262,7 @@ und nach dem Lauf identisch).
 haben sich gleichzeitig geändert, das Ergebnis wäre nicht zuordenbar. Die Einordnung, welche
 Größen sich unterscheiden und warum (neue E2-Kennzahlspalten, entfallener einkanaliger
 BHKW-Altpfad, Stromspeicher über die SpeicherEngine, Datenpflege des Anwenders), steht im
-[Laufprotokoll der Basis](2026-08-19_B5/lauf_protokoll.md). Zwei Projekte (1008, 1021) sind
+Laufprotokoll der Basis `2026-08-19_B5` (Basis gelöscht, Geschichte in diesem Dokument). Zwei Projekte (1008, 1021) sind
 gegenüber B4 unverändert byte-gleich.
 
 **Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
@@ -1353,7 +1353,7 @@ acht Projekte, 190 CSV, 2 094 451 Werte, Feature-Flag `Kaskade_Zweikanalig` durc
 Warum B4 seinerzeit gesetzt wurde:
 
 **Ein Anlass: die neue Ergebnisspalte aus Etappe D4.** Vollständige Zuordnung je Projekt im
-[Laufprotokoll der Basis](2026-08-16_B4/lauf_protokoll.md).
+Laufprotokoll der Basis `2026-08-16_B4` (Basis gelöscht, Geschichte in diesem Dokument).
 
 Etappe **D4** hat `Tab_ErgebnisHeizkessel.Quellwaerme` eingeführt — **Migrationsschritt 10**,
 rein additives DDL, Schema-Zielstand **9 → 10**. Weil der Export `SELECT * FROM Tab_Ergebnis*`
@@ -1400,7 +1400,7 @@ Schemastand 9, acht Projekte, 190 CSV) — für alle Werte außer der neuen Spal
 byte-gleich mit B4. Warum B3 seinerzeit gesetzt wurde:
 
 **Zwei Anlässe — beide getrennt nachgewiesen.** Vollständige Zuordnung je Projekt im
-[Laufprotokoll der Basis](2026-08-15_B3/lauf_protokoll.md).
+Laufprotokoll der Basis `2026-08-15_B3` (Basis gelöscht, Geschichte in diesem Dokument).
 
 **(1) Ergebnisänderung K-3.** Die Bivalenz-Umschaltung des bivalent-alternativen
 Wärmepumpenbetriebs schaltet ab jetzt an der **Bivalenztemperatur**
@@ -1808,7 +1808,7 @@ nützlich, um die Projektlandschaft zu sichten (`liste`), nicht um eine Basis ei
 > der Referenzmenge mit zwei BHKW-Modulen, gepflegtem KWKG-Satz und gepflegten Energiepreisen
 > und deckt damit als einziges die drei Vollbenutzungsstunden-Aggregate aus E2, die bindende
 > KWKG-Deckelung und die Positivseite der beiden KWKG-Guards (500-kW-Grenze, Heizöl) ab.
-> Zahlen im [Laufprotokoll der Basis](2026-08-19_B6/lauf_protokoll.md).
+> Zahlen im Laufprotokoll der Basis `2026-08-19_B6` (Basis gelöscht, Geschichte in diesem Dokument).
 
 > **Seit dem 15.08.2026 fehlt Projekt 1010 „Kurs EE"** — vom Anwender gelöscht, es war die
 > Kategorie **„nur Wärmepumpe"**. In der festen Liste ist diese Kategorie damit unbesetzt;
