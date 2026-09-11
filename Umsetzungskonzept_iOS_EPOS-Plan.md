@@ -3884,6 +3884,63 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Dialog, jeweils nach vorherigem Öffnen und Schließen.
 > Gate sept38 auf `e462a84`: Kern 2 685, UI 3 849, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#230 (11.09.2026, `16dbbb2`, Merge `b8855a4`) — Windows-CI rot seit Lauf 262: dreizehn Kern-Testfälle prüfen deutsche Texte, der
+> Läufer ist en-US.** Befund der Orchestrierung beim Beobachten des #229-Pushs: `windows.yml` (`build-test`, `windows-latest`) war seit
+> Lauf 262 (`0ec96e3`, 12:09 UTC, Statusblöcke #185/#183/#186) rot, letzter grüner Lauf 261 (`b35c88c`); Lauf 315 auf `e19ef8c`: 12 von
+> 2 673 Kern-Fällen rot, alle übrigen Projekte grün. Die Fälle halten deutsche Texte gegen `Contains`/`Equal` („Betriebskostenkoeffizienten",
+> „Ja", „Speicherflotte", „nicht bewertbar"), der en-US-Läufer liefert die englischen Satellitentexte — die Ressourcen folgen
+> `CurrentUICulture`, nicht `CurrentCulture`. Linux (Gate, `kern.yml`) läuft invariant, die neutrale `.resx` ist deutsch, deshalb dort grün
+> — das Gate hatte an dieser Stelle einen blinden Fleck. Reproduktion auf Linux mit `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` (ICU, keine
+> glibc-Locale nötig): dieselben zwölf Fälle plus ein dreizehnter, nirgends gemeldeter
+> (`SpeicherAuslegungRechnungTests.Fehlende_gewaehlte_Kostenmodul_Kategorie_ist_ein_Fehler`). Fix nach dem Hausmuster #167/#168: neue
+> gemeinsame `EPOS.Kern.Tests/Kulturvorrichtung.cs` (baugleich zur UI-Fassung, ohne bunit; pinnt vier Werte auf `de-DE`, stellt einzeln
+> zurück) in fünf Klassen als `IDisposable`-Feld, `KiMaskenbrueckeTests` tauscht seinen `CurrentCulture`-Handstand dagegen, der
+> dreizehnte Fall pinnt lokal; Produktcode unverändert, Texte bleiben deutsch. Wächter bewusst NICHT erweitert: die Regel „Klasse
+> referenziert `Resource.`" hätte drei der fünf Klassen nicht gefunden (ihre Texte kommen aus Kern-Ausnahmen). **Gate seit sept39:**
+> die Kern-/UI-Tests laufen zusätzlich unter en-US (`LANG`/`LC_ALL`), damit der Windows-Läufer nicht mehr die einzige Stelle ist, die
+> kulturabhängige Asserts findet. **Nebenbefund #231** (Anwenderentscheid ausstehend, wie #168): die prozessweite
+> `DefaultThreadCurrent(UI)Culture`-Pinnung in über 50 Testdateien schlägt bei PARALLELER Sammlungsausführung (xunit-Vorgabe, so läuft
+> die CI) auf Worker-Threads paralleler Kern-Rechnungen fremder Tests durch — unter en-US in 2 von 11 Läufen je ein Fall rot
+> (`SpeicherOptimierungCtrlTests`, `PeakShavingBildTests`); das Gate sieht es nicht (Sammlungen dort nicht parallel).
+> `EPOS.Kern/CLAUDE.md` trägt beides. **#230b (`5dedd3c`, Merge `c0be2cf`):** der erste en-US-Lauf des Gates (sept39) fand sofort drei
+> UI-Klassen ohne Vorrichtung (`KostenKomponenteDialogTests`, `SimulationKonfigSeiteTests`, `SpeicherParameterBlockTests`; 174 von 197
+> UI-Klassen pinnen nicht und liefen unter en-US nur dank des #168-Bestands grün) — gepinnt; Befund dabei: `SpeicherParameterBlockTests`
+> erbte die Pinnung aus `EposBunitContext` und fiel trotzdem, weil C# die Feldinitialisierer der abgeleiteten Klasse VOR dem
+> Basiskonstruktor auswertet — ein Ressourcenwert im Feldinitialisierer fror auf Englisch ein; jetzt eigenes, zuerst deklariertes
+> `Kulturvorrichtung`-Feld, Wert erst im Konstruktorrumpf, `base.Dispose` vor `_kultur.Dispose`. `EPOS.UI/CLAUDE.md` Regelpunkt.
+> **Offen:** Windows-Lauf auf diesem Push muss grün werden (Erwartung: 0 rot, Restrisiko #231).
+> Gate sept41 auf `c0be2cf`: Kern 2 685, UI 3 893, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf aller fünf Testprojekte grün.
+>
+> **#224 (11.09.2026, `b4c4063`, Merge `4d46cb1`) — Stromspeicher-Auslegung: Station „4 Optimierung" als Seite, Feinraster, Kasten
+> „Bestes Ergebnis", Editor neu geordnet (Anwenderentscheid SD‑E‑9 = Empfehlung, Option A; SD‑Q10 Feinraster nur auf der Größenachse,
+> SD‑Q11 Ziel Kapitalwert + jährliche Ersparnis, SD‑Q12 Jahresprojektion nach Schritt 2; Darstellung nach Konzept 7.8).** Ablaufleiste
+> `1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Optimierung · 5 Ergebnis` als Stufenleiste (nummerierte Kreise, aktiv/erledigt/
+> kommend, „veraltet" als Pille; die Simulationsansicht bekommt dieselben Kreise, Lage nach #216 unverändert), der Rechenknopf steht im
+> Blatt 4 (`Ablaufleiste MitAktion="false"`). Gewandert: Schalter „Größen optimieren" und Suchbereiche je Einheit von Schritt 1 in die
+> Suchraumtabelle der Station 4 (`OptimierungBlock.razor`, 397 Z.); die Größen-Sicht von Schritt 5 unter den Kasten „Bestes Ergebnis"
+> (Kapitalwert, jährliche Ersparnis, Kapazität · C‑Rate · Leistung, Anzahl, geprüfte/zulässige Kandidaten, Rechendauer, Marke Grob/Fein);
+> „Netz und Planung" von Schritt 1 nach 3 (`SpeicherFlottenNetzBlock`); die Jahresprojektion mit drei Erklärzeilen (Ausgleichswert,
+> Restwert der Studie, Kandidatengrenze) nach Schritt 2 (`SpeicherFlottenWirtschaftBlock`); die Vorprüfung als kompakte `Hinweiszeilen`
+> (ab zwei aufklappbar). Der Editor schrumpft 675 → 540 Zeilen; vier Blätter schreiben dieselbe `FlottenStudieKonfiguration`,
+> `FlotteGeschrieben()` setzt dem Editor eine frische Kopie. **Feinraster (Phase 2, `FlottenOptimierer`):** Fenster
+> `[max(von, E*−Δ), min(bis, E*+Δ)]` um die Größe des Grob-Optimums, Mindestbreite 1 kWh, Schrittweite Δ/9, nur die ERSTE aktive
+> Suchachse, übrige Achsen/Stückzahl/Ziel beim Grob-Optimum, Gewinn nur bei STRIKT besserem Kapitalwert (Gleichstand → Grob bleibt);
+> `Kandidatenzahl` ist die eine Zählregel für Lauf und Kandidatenzeile, `MaximaleKandidaten` zählt Grob + Obergrenze Fein und weist vor
+> Phase 1 ab; Phasenmarke am Kandidaten, Abbruch und Fortschritt über beide Phasen; vorbelegt an, serialisiert. `Zahlenfeld` zeigt
+> höchstens vier Nachkommastellen (`0.####`, Parameter `Nachkommastellen`), gespeicherter Wert unverändert. Sieben begründete
+> Abweichungen vom Mockup in Konzept 7.9 (u. a. nur erste Achse verfeinert; Kandidatenzeile nennt für Phase 2 eine Obergrenze; Grob/Fein
+> nur in der Schnittkurve unterscheidbar, `C_FEINRASTER`; keine geschätzte Rechendauer; „Netz und Planung" in 3 statt 1). 37 neue Fälle
+> (Engine +13 `FlottenFeinrasterTests`, UI +24); ChartProben 57 Bilder / 13 Gegenproben (+`flottenschnitt_feinraster`,
+> +`flottenschnitt_feinpunkte_wirken`); ~50 Ressourcen; Konzept Kap. 5 (P6/P8), Register SP‑O‑15/16, 7.9; Rechenweg-Wiki Stromspeicher
+> (Feinraster, Gleichungen 47–49, Folgegleichungen nachgezogen) und Benutzer-Wiki Stromspeicher (Schritte 1–5 neu; Upload durch die
+> Orchestrierung); `Doku_Mehrspeicher_Konzept_und_Umsetzung.md`; drei CLAUDE.md. Nebenbei: doppelte Tabellenzeilen in
+> `EPOS.UI/CLAUDE.md` aus einem früheren Merge bereinigt. Der Agentencommit trug zunächst einen abweichenden Trailer und wurde vor dem
+> Merge auf die Sitzungsvorgabe umgeschrieben. **Offen:** Windows-Abnahme (Stufenleiste, Suchraumtabelle, Kasten bei 125 % DPI);
+> kein iOS-Lauf (trifft die Hülle nicht), optischer Beleg auf dem iPad fehlt.
+> Gate sept41 auf `c0be2cf` (Stand nach #230b): Kern 2 685, UI 3 893, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
