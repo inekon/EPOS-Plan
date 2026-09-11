@@ -3274,6 +3274,44 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > byte-gleich gegen R7, kein iOS-Lauf (Regel vom 09.09.2026; das STRICT-Gate liest die Erwartung aus der Seed-Datenbank). Gate auf
 > `e7d6426`: Kern 2444, UI 3487, SpeicherEngine 382, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 326,
 > ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#185 (11.09.2026, `deb2922`, Merge `1ba2f98`) — Projektlauf mit aktivierter Flotte bricht nicht mehr an fehlenden
+> Kostensätzen ab.** Anwenderbefund (Projekt „Stromspeicher mit Wärmepumpe"): `InvalidOperationException` „Im Dialog fehlen die
+> Investitionskoeffizienten" aus `SpeicherAuslegungCtrl.KostenAufloesen` über `SpeicherFlottenProjektCtrl.Rechnen` in
+> `SimulationControl.SpeicherlaufAusfuehren`. Drei Ursachen belegt (Wegwerfprobe gegen `28fd7a6`): Der Dialogstand `@Aktuell`
+> erreicht den Projektlauf mit `Investitionsquelle = Dialog`, aber ohne Sätze (`Vorbelegung` setzt `BetriebVorhanden = false`);
+> `KostenAufloesen` verlangte die Sätze auch für Einheiten mit eigenen Kosten (`Konfiguration` überspringt sie); und der
+> Projektlauf braucht gar keine Sätze — sie erreichen nur `FlottenWirtschaftlichkeit`, Jahreskonten entstehen im Projektlauf
+> nicht. Jetzt: Modus `KostenPflicht` an `Vorbereiten`/`AusQuellenVorbereiten` (eine Methode, kein Duplikat), Kennzeichen
+> `SpeicherKostensaetze.NichtBewertbar`, `FlottenProjektPruefung` mit `Pruefe(projektId)` (Probleme blockieren, Hinweise
+> nicht; fehlende Sätze sind ein Hinweis), `Aktivieren` schreibt den vollständigen Stand `@Projektflotte`, der Abbruch in
+> `SpeicherlaufAusfuehren` bleibt gewollt (ein Projekt mit aktivierter Flotte rechnet nie still ohne sie), der Text nennt den
+> Ausweg; 14 Ressourcen `FLOTTE_MSG_*` de/en. Die Ausnahme erreicht den Anwender über `SimulationErgebnisHuelle.Laufen` als
+> Rückmeldung auf der Ergebnisseite, nicht als unbehandelte Ausnahme. 13 neue Fälle (`SpeicherFlottenProjektKostenTests`,
+> `FlottenPlanerLageTests`). Gate auf `1ba2f98`: Kern 2483, UI 3490, SpeicherEngine 382, SpeicherPlanung 27 + 1 übersprungen,
+> 5 eindeutige Warnungen, SQL 0 von 1 326, ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#183 (11.09.2026, `710b4c3`, Merge `14ecdde`) — Stromspeicher-Dialoge Paket P1 (SD‑Q3/Q4/Q5, Empfehlung).**
+> `SpeicherEngine`: `FlottenDiagnose` am Studienergebnis (je Einheit und Flotte: Intervalle mit Entlade-/Ladeanforderung,
+> Ladedeckel 0 durch Peak-Regel bzw. Netzladeverbot, Entladeanforderung ohne Energie, Lade-/Entladeenergie, `Arbeitslos`,
+> benannte Gründe) — nicht im Referenzexport, kein Rechenwert ändert sich. Kern: `FlottenPeakZiel` (Vorschlag
+> `H₀ = max(Referenzspitze − Σ Entladeleistung, max Tagesminima)` mit Herleitung, zweistufiger Rückfall statt fest 50 kW;
+> `PeakZielBestimmen` per Bisektion ≤ 12 Läufe mit `IProgress`/`CancellationToken`, nur reaktive Ziele), `FlottenPlausibilitaet`
+> (fünf Kennungen: Peak-Ziel unter Tagesminimum ohne Netzladung, über Referenzspitze, Betriebskosten < 0,1 % der Investition,
+> Start-SoC auf Minimum, Flotte arbeitslos; `Pruefhinweise` im Ergebnis), `FlottenVorgaben.NetzladungFuer` (PeakShaving →
+> erlaubt, nur beim Anlegen; serialisierte Vorgabe bleibt `false`, der Stand 1046 trägt `NetzladungErlaubt = true`
+> ausdrücklich). Spezifikation 5.1 um „N dauerhaft über H" ergänzt (Fassung 1.3). 32 neue Fälle. Die UI-Verdrahtung
+> (Diagnosebanner, Knopf „Peak-Ziel bestimmen") kommt mit P3.
+>
+> **#186 (11.09.2026, `c08906f`, Merge `97e17a6`) — Abnahmeliste: Kostenverwaltung und Gruppenkopf.** Der Spaltenkopf
+> „Nutzungs-⏎dauer [a]" trug einen Zeilenumbruch aus WinForms-Zeiten, der in HTML zu einem Leerzeichen kollabierte, dazu
+> `nowrap` und 90/60-px-Spuren; die Einheit des Zahlenfelds quoll aus der Satzspalte in „Betrag netto" (Hausbefund W6‑B‑4,
+> jetzt auch im Zeilenraster); der Gruppenkopf-Balken hatte keinen Innenabstand (140 von 155 Einsätzen ohne Symbol). Jetzt:
+> Umbruch aus beiden Ressourcenwerten, Kopfzellen brechen um, `min-width: 0` im Zeilenraster, Gruppenkopf als Raster mit fester
+> Symbolspur und `padding-inline` — gleicher Textbeginn mit und ohne Symbol. Zwei Stilregel-Wachen, ein bunit-Test gegen den
+> echten Ressourcenwert; `Resource.Designer.cs` neu erzeugt (Kommentarvorschau, −13 Zeichen). Gate auf `4bf5fce`: Kern 2483,
+> UI 3490, SpeicherEngine 388, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 326, ChartProben 44,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
