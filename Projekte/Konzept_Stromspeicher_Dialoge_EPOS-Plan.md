@@ -360,8 +360,14 @@ Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als
   (`StromspeicherAuslegungCtrlTests.Ohne_Flottenstand_steht_die_aktive_Variante_als_EINE_Einheit_da`).
 - **Die Verteilung erscheint erst ab zwei Einheiten** — ausgeblendet, nicht gesperrt, mit einer
   Zeile Erklärung (`FLOTTE_BETRIEB_VERTEILUNG_EINE`). Der Schalter dafür sitzt am geteilten
-  Baustein `SpeicherFlottenBetriebEditor` (`VerteilungZeigen`, Vorgabe `true`), damit der zweite
-  Wirt — der Stromspeicher-Reiter der Ergebnisseite — unverändert bleibt.
+  Baustein `SpeicherFlottenBetriebEditor` (`VerteilungZeigen`, Vorgabe `true`). **Offen: zweiter
+  Wirt → erledigt (#213, Anwenderentscheid 11.09.2026 „Empfehlung"):** Bis dahin setzte nur die
+  Auslegungsansicht den Schalter (`Flotte.Einheiten.Count >= 2`, über `PeakZielBlock`), und der
+  Stromspeicher-Reiter der Ergebnisseite zeigte die Klappliste weiter unbedingt (die Vorgabe des
+  Editors). Seit #213 wertet auch der Reiter dieselbe Bedingung an seinem eigenen Eingabestand
+  (`flotte.Einheiten.Count >= 2`) — keine neue Logik, derselbe Ausdruck an beiden Wirten, denn
+  der geteilte Baustein selbst kennt die Einheitenzahl nicht (sein `Wert` ist
+  `FlottenSimulationOptionen`, ohne Einheitenliste).
 - **Das Rückschreiben in die Projektanlage bleibt** (Schritt 5, Knopf mit Rückfrage): Es greift
   für die eine Einheit mit Anlagenbezug; bei zweien gibt es den Knopf nicht, weil die Anlage eine
   Kapazität und eine Leistung trägt. Geschrieben wird der Arbeitsstand aus Schritt 1 — dorthin

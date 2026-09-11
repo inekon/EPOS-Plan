@@ -341,6 +341,57 @@ public class StromspeicherReiterTests : EposBunitContext
     }
 
     /// <summary>
+    /// Anwenderentscheid 11.09.2026 („Empfehlung" angenommen, Auftrag #213, zweiter Wirt von
+    /// SD‑E‑8): Auch der Stromspeicher-Reiter zeigt die Klappliste „Leistungsverteilung" erst
+    /// ab zwei Einheiten — bei einer steht stattdessen dieselbe Erklärzeile wie im
+    /// Betriebseditor der Auslegungsansicht (<c>StromspeicherAuslegungEinModusTests
+    /// .Die_Verteilung_erscheint_erst_ab_zwei_Einheiten</c>). Bis #213 setzte der Reiter
+    /// <c>VerteilungZeigen</c> nicht und behielt damit die Vorgabe <c>true</c> des Editors.
+    /// </summary>
+    [Fact]
+    public void Bei_einer_Einheit_bleibt_die_Verteilung_im_Reiter_ausgeblendet()
+    {
+        var flotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new() { new() { Id = "a", Name = "Speicher 1", KapazitaetKWh = 100 } }
+        };
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = flotte;
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
+
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG,
+            seite.Markup, StringComparison.Ordinal);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE,
+            seite.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>Zwei Einheiten: dieselbe Bedingung zeigt die Klappliste wie in der Auslegungsansicht.</summary>
+    [Fact]
+    public void Bei_zwei_Einheiten_zeigt_der_Reiter_die_Verteilung()
+    {
+        var flotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new()
+            {
+                new() { Id = "a", Name = "Hauptspeicher", KapazitaetKWh = 120 },
+                new() { Id = "b", Name = "Schnellspeicher", KapazitaetKWh = 36 }
+            }
+        };
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = flotte;
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG,
+            seite.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE,
+            seite.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Auftrag #170c: Der Reiter zeigt DENSELBEN Baustein wie der Dialog — also gilt die
     /// Planersperre auch hier. Ohne Fahrplan-Löser stehen die drei planenden Ziele gesperrt
     /// in der Liste und nennen den Grund.
