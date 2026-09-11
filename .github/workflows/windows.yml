@@ -192,6 +192,17 @@ jobs:
           if ($kb -lt 500) { throw "Der Bootstrapper ist unglaubwuerdig klein ($kb KB) - Abbruch." }
           Write-Host "MicrosoftEdgeWebview2Setup.exe: $kb KB"
 
+      # Waechter vor dem eigentlichen Lauf (Auftrag #181): ISCC 6.7.1 kennt keine
+      # geschachtelten "{ ... }"-Kommentare im [Code]-Abschnitt - eine Inno-Setup-
+      # Konstante wie "{app}" im Kommentartext schliesst ihn vorzeitig, und der Rest
+      # der Zeile bricht als Code ab (so geschehen in Zeile 436, ISCC-Fehler "Column
+      # 37"). Das Skript prueft genau das, bevor der minutenlange Lauf unten ueberhaupt
+      # beginnt - windows-latest bringt Python mit, ein Fund liefert Rueckgabe 1.
+      - name: ISS-Kommentare pruefen
+        shell: pwsh
+        run: |
+          python Setup/pruefe_iss_kommentare.py
+
       # Der eigentliche Lauf (Konzept 8.1, Schritt 3). Die Quelle wird ABSOLUT uebergeben:
       # build-setup.ps1 reicht den Pfad an "dotnet run --project Werkzeuge\Auslieferungs-
       # vorlage" weiter, und ein relativer Pfad haenge dort am Arbeitsverzeichnis des

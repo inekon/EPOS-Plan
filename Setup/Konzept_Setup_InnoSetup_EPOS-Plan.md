@@ -783,6 +783,17 @@ welche Quelle auf dem jeweiligen Image trägt. Die 6.3-Pflicht bleibt
 unverändert; der Notschalter `-IsccVersionIgnorieren` ist für den
 Arbeitsplatz-Notfall gedacht und wird im Workflow bewusst nicht gesetzt.
 
+Der **zweite** Setup-Lauf (34591291099, 11.09.2026) kam an der 6.3-Prüfung
+vorbei — die Versionsermittlung aus #180 trug; welche Quelle dabei zog, nennt
+das Laufprotokoll. Veröffentlichung und Auslieferungsvorlage liefen
+vollständig durch (Prüfbericht 0 Auffälligkeiten, 22,6 MB, Schemastand 73,
+117 STRICT), erst `ISCC.exe` 6.7.1 selbst fiel — an der Kommentarklammer in
+Zeile 436 des `[Code]`-Abschnitts (`{app}` schloss einen `{ … }`-Kommentar
+vorzeitig, Spalte 37). Behoben mit Auftrag #181, der die Zeile umformuliert
+und mit `Setup/pruefe_iss_kommentare.py` einen CI-Vorschritt „ISS-Kommentare
+prüfen" vor „Setup bauen" einzieht, der denselben Fehler künftig vor dem
+minutenlangen Lauf abfängt.
+
 ---
 
 ## 9. Code-Signierung
