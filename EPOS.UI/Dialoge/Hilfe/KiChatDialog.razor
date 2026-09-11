@@ -122,6 +122,34 @@
         </div>
     }
 
+    @* --- Startzeile (Auftrag #227, Anwenderhinweis 11.09.2026) ----------- *@
+    @if (StartzeileSichtbar)
+    {
+        @* Wer die Pille drueckt, soll SEHEN, dass der Assistent den Bildschirm
+           kennt - und WOMIT er anfangen kann ("Es koennte im Hilfedialog
+           'erklaere aktuellen Dialog' stehen. Sonst sind die beiden KI Buttons
+           nicht einsichtig."). Sie steht ueber der Eingabe, solange der
+           Verlauf leer ist, und nur, wenn der Aufruf einen Hilfeschluessel
+           mitbringt - der Menueweg "Hilfe > Assistent" tut das nicht. *@
+        <div class="epos-kichat-startzeile">
+            <span class="epos-kichat-startzeile-kontext">@Kontextzeile</span>
+            <span class="epos-kichat-startzeile-knoepfe">
+                <button type="button" class="epos-knopf"
+                        aria-disabled="@(Eingerichtet ? null : "true")"
+                        title="@(Eingerichtet ? null : Texte.StartzeileGesperrt)"
+                        @onclick="StartzeileErklaerenGewaehlt">
+                    @Texte.StartzeileErklaeren
+                </button>
+                <button type="button" class="epos-knopf"
+                        aria-disabled="@(Eingerichtet ? null : "true")"
+                        title="@(Eingerichtet ? null : Texte.StartzeileGesperrt)"
+                        @onclick="StartzeileMoeglichGewaehlt">
+                    @Texte.StartzeileMoeglich
+                </button>
+            </span>
+        </div>
+    }
+
     @* --- Eingabe: Feld, EINE Knopfreihe, Datenschutzsatz ----------------- *@
     <div class="epos-kichat-eingabe">
         <KiEingabezeile @ref="_eingabe"
@@ -292,6 +320,18 @@
     /// abgeschickt (Konzept 5).
     /// </summary>
     [Parameter] public string Vorbelegung { get; set; } = "";
+
+    /// <summary>
+    /// Der Hilfeschlüssel des Aufrufs (Auftrag #227, Anwenderhinweis 11.09.2026).
+    /// Nicht leer heißt: der Assistent wurde aus einem Dialog oder einer Ansicht
+    /// gerufen (Weg 1) — leer heißt der Menüweg „Hilfe › Assistent".
+    /// </summary>
+    /// <remarks>
+    /// Die STARTZEILE hängt daran und nicht am <see cref="Kontext"/>: Der Menüweg
+    /// bringt ebenfalls einen Bereich mit (das aktive Fenster), aber keinen
+    /// Bildschirm, über den die Startzeile etwas Sinnvolles sagen könnte.
+    /// </remarks>
+    [Parameter] public string Hilfeschluessel { get; set; } = "";
 
     /// <summary>Die KI ist abgeschaltet — der Chat arbeitet als reine Hilfesuche.</summary>
     [Parameter] public bool HilfeBetrieb { get; set; }
@@ -610,6 +650,83 @@
     public string KennungAktuell => _kontext?.Kennung ?? Kennung;
 
     private string VorbelegungAktuell => _kontext?.Vorbelegung ?? Vorbelegung;
+
+    /// <summary>Der Hilfeschlüssel des AKTUELLEN Aufrufs (Auftrag #227).</summary>
+    private string HilfeschluesselAktuell => _kontext?.Hilfeschluessel ?? Hilfeschluessel;
+
+    // =====================================================================
+    //  Die Startzeile (Auftrag #227, Anwenderhinweis 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Kam der Aufruf aus einem Dialog oder einer Ansicht (Weg 1) — im
+    /// Unterschied zum Menüweg „Hilfe › Assistent", der keinen Hilfeschlüssel
+    /// mitbringt?
+    /// </summary>
+    private bool MitAufrufkontext => !string.IsNullOrWhiteSpace(HilfeschluesselAktuell);
+
+    /// <summary>
+    /// Die Startzeile steht, solange der Verlauf leer ist UND ein Aufrufkontext
+    /// vorliegt; sie verschwindet mit der ersten Nachricht. Im Hilfe-Betrieb
+    /// bleibt sie weg — dieselbe Regel wie beim Aktions- und Feldwerteschalter,
+    /// die dort ebenfalls kein Modell voraussetzen dürfen.
+    /// </summary>
+    private bool StartzeileSichtbar => !HilfeBetrieb && _zeilen.Count == 0 && MitAufrufkontext;
+
+    /// <summary>
+    /// Der Name des Bildschirms für die zwei Startzeilenfragen — der Dialogname,
+    /// sonst der Bereich, sonst der Rückfalltext des Bündels.
+    /// </summary>
+    private string BildschirmName
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(DialognameAktuell)) return DialognameAktuell;
+            if (!string.IsNullOrWhiteSpace(KontextAktuell)) return KontextAktuell;
+            return Texte.StartzeileBildschirm;
+        }
+    }
+
+    /// <summary>
+    /// Die Frage hinter „Aktuellen Dialog erklären": die vorbereitete
+    /// <c>KI_FRAGE_*</c> des Kontexts, wenn es eine gibt — sonst die allgemeine
+    /// Erklärfrage mit dem Bildschirmnamen.
+    /// </summary>
+    private string StartzeileErklaerenFrage
+    {
+        get
+        {
+            string vorbereitet = VorbelegungAktuell;
+            return !string.IsNullOrWhiteSpace(vorbereitet)
+                ? vorbereitet
+                : Formatiert(Texte.StartzeileFrageErklaerenFormat);
+        }
+    }
+
+    /// <summary>Die Frage hinter „Was kann ich hier tun?" — immer neu, nie die Vorbelegung.</summary>
+    private string StartzeileMoeglichFrage => Formatiert(Texte.StartzeileFrageMoeglichFormat);
+
+    private string Formatiert(string format)
+    {
+        if (string.IsNullOrEmpty(format)) return BildschirmName;
+        try
+        {
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, format, BildschirmName);
+        }
+        catch (FormatException) { return BildschirmName; }
+    }
+
+    /// <summary>
+    /// „Aktuellen Dialog erklären" — ohne Einrichtung (KI‑D‑Q1) bleibt der Knopf
+    /// eine WEICHE Sperre (<c>aria-disabled</c>) und tut nichts; der bestehende Weg
+    /// in die Einstellungen bleibt unverändert der Knopf „Einstellungen…".
+    /// </summary>
+    private Task StartzeileErklaerenGewaehlt()
+        => Eingerichtet ? Abschicken((StartzeileErklaerenFrage, true)) : Task.CompletedTask;
+
+    /// <summary>„Was kann ich hier tun?" — dieselbe Sperre wie oben.</summary>
+    private Task StartzeileMoeglichGewaehlt()
+        => Eingerichtet ? Abschicken((StartzeileMoeglichFrage, true)) : Task.CompletedTask;
 
     /// <summary>
     /// Die Erklaerzeilen der Begruessung ohne Kopf- und Leerzeilen — der Kopf ist

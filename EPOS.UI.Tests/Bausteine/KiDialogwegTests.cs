@@ -168,6 +168,32 @@ public class InfoKnopfAssistentTests : KiDialogwegBasis
         Assert.Empty(cut.FindAll(".epos-kiknopf"));
     }
 
+    /// <summary>
+    /// Auftrag #227: Kennt die Pille den Bildschirm (Parameter <c>Dialogname</c>),
+    /// trägt das rechte Feld seinen NAMEN im Tooltip — „Simulation vom
+    /// Hilfe-Assistenten erklären lassen" statt des allgemeinen Satzes.
+    /// </summary>
+    [Fact]
+    public void Mit_Dialogname_nennt_der_Tooltip_des_rechten_Feldes_den_Bildschirm()
+    {
+        var cut = Zeigen(dialogname: "Simulation");
+
+        var feld = cut.Find(".epos-kiknopf");
+        Assert.Equal("Simulation vom Hilfe-Assistenten erklären lassen", feld.GetAttribute("title"));
+        Assert.Equal("Simulation vom Hilfe-Assistenten erklären lassen", feld.GetAttribute("aria-label"));
+    }
+
+    /// <summary>Ohne Dialogname bleibt der allgemeine Tooltip stehen.</summary>
+    [Fact]
+    public void Ohne_Dialogname_bleibt_der_allgemeine_Tooltip()
+    {
+        var cut = Zeigen();
+
+        var feld = cut.Find(".epos-kiknopf");
+        Assert.Equal("Diesen Dialog vom Hilfe-Assistenten erklären lassen", feld.GetAttribute("title"));
+        Assert.Equal("Diesen Dialog vom Hilfe-Assistenten erklären lassen", feld.GetAttribute("aria-label"));
+    }
+
     /// <summary>Der Klick öffnet <c>Masken.KiAssistent</c> mit dem Bereich aus dem Schlüssel.</summary>
     [Fact]
     public void Der_Klick_oeffnet_den_Assistenten_mit_dem_Bereich_aus_dem_Schluessel()

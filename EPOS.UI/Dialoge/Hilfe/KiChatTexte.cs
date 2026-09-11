@@ -226,4 +226,41 @@ public sealed class KiChatTexte
     /// (<c>FORTSCHRITT_ABBRECHEN</c>).
     /// </summary>
     public string LaufAbbrechen { get; set; } = "";
+
+    // ---- Die STARTZEILE (Auftrag #227, Anwenderhinweis 11.09.2026) --------
+
+    /// <summary>
+    /// „Aktuellen Dialog erklären" (<c>KI_CHAT_STARTZEILE_ERKLAEREN</c>) — sendet die
+    /// vorbereitete Frage des Kontexts, sonst die allgemeine Erklärfrage.
+    /// </summary>
+    public string StartzeileErklaeren { get; set; } = "";
+
+    /// <summary>„Was kann ich hier tun?" (<c>KI_CHAT_STARTZEILE_MOEGLICH</c>).</summary>
+    public string StartzeileMoeglich { get; set; } = "";
+
+    /// <summary>
+    /// Die allgemeine Erklärfrage mit EINEM Platzhalter für den Bildschirmnamen —
+    /// nur, wenn der Kontext keine eigene <c>KI_FRAGE_*</c> führt
+    /// (<c>KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN</c>).
+    /// </summary>
+    public string StartzeileFrageErklaerenFormat { get; set; } = "{0}";
+
+    /// <summary>
+    /// Die Frage hinter „Was kann ich hier tun?", ebenfalls mit dem Bildschirmnamen
+    /// (<c>KI_CHAT_STARTZEILE_FRAGE_MOEGLICH</c>).
+    /// </summary>
+    public string StartzeileFrageMoeglichFormat { get; set; } = "{0}";
+
+    /// <summary>
+    /// Der Rückfall für den Platzhalter der zwei Fragen oben, wenn weder Dialogname
+    /// noch Bereich etwas hergeben (<c>KI_CHAT_STARTZEILE_BILDSCHIRM</c>).
+    /// </summary>
+    public string StartzeileBildschirm { get; set; } = "";
+
+    /// <summary>
+    /// Der Hinweis an den zwei Knöpfen, solange der Assistent nicht eingerichtet ist
+    /// (KI‑D‑Q1, <c>KI_CHAT_STARTZEILE_GESPERRT</c>) — sie bleiben eine WEICHE Sperre
+    /// (<c>aria-disabled</c>), der bestehende Weg in die Einstellungen bleibt.
+    /// </summary>
+    public string StartzeileGesperrt { get; set; } = "";
 }

@@ -21928,6 +21928,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die diesen Bildschirm ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_BILDSCHIRM {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_BILDSCHIRM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktuellen Dialog erklären ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erkläre mir „{0}“ und was ich hier eingeben oder einstellen kann. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was kann ich in „{0}“ tun, und worauf sollte ich dabei achten? ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_FRAGE_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_FRAGE_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richten Sie zuerst den Assistenten in den Einstellungen ein. ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was kann ich hier tun? ähnelt.
+        /// </summary>
+        public static string KI_CHAT_STARTZEILE_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_CHAT_STARTZEILE_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe-Assistent ähnelt.
         /// </summary>
         public static string KI_CHAT_TITEL {
@@ -24667,6 +24721,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_KNOPF_DIALOG_TOOLTIP {
             get {
                 return ResourceManager.GetString("KI_KNOPF_DIALOG_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} vom Hilfe-Assistenten erklären lassen ähnelt.
+        /// </summary>
+        public static string KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME {
+            get {
+                return ResourceManager.GetString("KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME", resourceCulture);
             }
         }
         

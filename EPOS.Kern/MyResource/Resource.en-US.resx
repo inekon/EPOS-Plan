@@ -14443,6 +14443,24 @@ Import anyway?</value>
   <data name="KI_CHAT_KOPIEREN" xml:space="preserve">
     <value>Copy conversation</value>
   </data>
+  <data name="KI_CHAT_STARTZEILE_ERKLAEREN" xml:space="preserve">
+    <value>Explain current dialog</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_MOEGLICH" xml:space="preserve">
+    <value>What can I do here?</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN" xml:space="preserve">
+    <value>Explain “{0}” and what I can enter or configure here.</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_FRAGE_MOEGLICH" xml:space="preserve">
+    <value>What can I do in “{0}”, and what should I watch out for?</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_BILDSCHIRM" xml:space="preserve">
+    <value>this screen</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_GESPERRT" xml:space="preserve">
+    <value>Set up the assistant in Settings first.</value>
+  </data>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG_TITEL" xml:space="preserve">
     <value>Project name used more than once</value>
   </data>
@@ -17872,6 +17890,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
     <value>Have the help assistant explain this dialog</value>
+  </data>
+  <data name="KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME" xml:space="preserve">
+    <value>Have the help assistant explain {0}</value>
   </data>
   <data name="KI_BANNER_ERKLAEREN" xml:space="preserve">
     <value>explain this</value>

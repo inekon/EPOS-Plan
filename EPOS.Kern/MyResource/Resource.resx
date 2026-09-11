@@ -17880,6 +17880,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
     <value>Diesen Dialog vom Hilfe-Assistenten erklären lassen</value>
   </data>
+  <data name="KI_KNOPF_DIALOG_TOOLTIP_MIT_NAME" xml:space="preserve">
+    <value>{0} vom Hilfe-Assistenten erklären lassen</value>
+  </data>
   <data name="KI_BANNER_ERKLAEREN" xml:space="preserve">
     <value>erklären lassen</value>
   </data>
@@ -17891,6 +17894,24 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="KI_CHAT_MELDUNG" xml:space="preserve">
     <value>Meldung: {0}</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_ERKLAEREN" xml:space="preserve">
+    <value>Aktuellen Dialog erklären</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_MOEGLICH" xml:space="preserve">
+    <value>Was kann ich hier tun?</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_FRAGE_ERKLAEREN" xml:space="preserve">
+    <value>Erkläre mir „{0}“ und was ich hier eingeben oder einstellen kann.</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_FRAGE_MOEGLICH" xml:space="preserve">
+    <value>Was kann ich in „{0}“ tun, und worauf sollte ich dabei achten?</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_BILDSCHIRM" xml:space="preserve">
+    <value>diesen Bildschirm</value>
+  </data>
+  <data name="KI_CHAT_STARTZEILE_GESPERRT" xml:space="preserve">
+    <value>Richten Sie zuerst den Assistenten in den Einstellungen ein.</value>
   </data>
   <data name="KI_FRAGE_ALLGEMEIN" xml:space="preserve">
     <value>Was bedeutet die Meldung „{0}“ und was kann ich tun?</value>

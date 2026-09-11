@@ -577,12 +577,18 @@ body {
     cursor: pointer;
 }
 
-.epos-knopf:hover:not(:disabled) {
+.epos-knopf:hover:not(:disabled):not([aria-disabled="true"]) {
     border-color: var(--epos-karte-rahmen-hover);
     background: var(--epos-karte-flaeche-hover);
 }
 
-.epos-knopf:disabled {
+/* ZWEI BAUARTEN, EIN BILD (W16b-E-6, hier seit Auftrag #227 mit der
+   Startzeile des Chats). Ein hart gesperrter Knopf traegt disabled, ein
+   weich gesperrter aria-disabled - er bleibt anklickbar, weil sein title den
+   Grund nennt. Aussehen darf er deswegen nicht anders: EINE Regel mit zwei
+   Selektoren statt zwei Regeln mit denselben Werten. */
+.epos-knopf:disabled,
+.epos-knopf[aria-disabled="true"] {
     color: var(--epos-text-sehr-leise);
     cursor: default;
 }
@@ -6863,6 +6869,32 @@ body {
 
 .epos-kichat-leiste {
     flex: 0 0 auto;
+}
+
+/* ---- Die Startzeile (Auftrag #227) --------------------------------------
+   Kontext links, "Aktuellen Dialog erklaeren" / "Was kann ich hier tun?"
+   rechts - ueber der Eingabe, nur solange der Verlauf leer ist. Bricht auf
+   schmalem Schirm um (dieselbe Regel wie .epos-kichat-schalter). */
+.epos-kichat-startzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.epos-kichat-startzeile-kontext {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: anywhere;
+}
+
+.epos-kichat-startzeile-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 /* ==========================================================================

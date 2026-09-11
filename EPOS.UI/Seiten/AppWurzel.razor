@@ -695,6 +695,9 @@ else
         kopie["Dialogname"] = aufruf.Dialogname ?? "";
         kopie["Kennung"] = aufruf.Kennung ?? "";
         kopie["Vorbelegung"] = aufruf.Frage ?? "";
+        // Auftrag #227: die STARTZEILE des Chats haengt am Hilfeschluessel, nicht am
+        // Bereich - der Menueweg "Hilfe > Assistent" bringt auch einen Bereich mit.
+        kopie["Hilfeschluessel"] = aufruf.Hilfeschluessel ?? "";
         return kopie;
     }
 

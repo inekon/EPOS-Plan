@@ -18,8 +18,14 @@ namespace EPOS.UI.Dialoge.Hilfe;
 /// <param name="Dialogname">Der Name des rufenden Dialogs; leer = keiner.</param>
 /// <param name="Kennung">Die Meldungskennung; leer = keine.</param>
 /// <param name="Vorbelegung">Die vorbelegte Frage; leer = keine.</param>
+/// <param name="Hilfeschluessel">
+/// Der Hilfeschlüssel des Aufrufs (Auftrag #227); leer = der Menüweg. Die
+/// STARTZEILE des Chats hängt daran — nicht am Bereich, der auch der Menüweg
+/// mitbringt.
+/// </param>
 public sealed record KiKontextangabe(string Kontext, string Dialogname,
-                                     string Kennung, string Vorbelegung);
+                                     string Kennung, string Vorbelegung,
+                                     string Hilfeschluessel = "");
 
 /// <summary>
 /// Die drei Wege, auf denen der Wirt die Bestaetigungsschicht des Chats bedient.
