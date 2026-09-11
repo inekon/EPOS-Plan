@@ -18324,6 +18324,15 @@ Möchten Sie das zulassen?</value>
   <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
     <value>Zu diesem Projekt liegt noch kein gerechnetes Ergebnis vor &#8212; die Ansicht beginnt bei der Konfiguration.</value>
   </data>
+  <data name="SIM_LAUF_ANDERSWO" xml:space="preserve">
+    <value>Die Simulation rechnet gerade an anderer Stelle &#8212; bitte den laufenden Lauf abwarten.</value>
+  </data>
+  <data name="START_SIM_ERGEBNIS" xml:space="preserve">
+    <value>Ergebnis</value>
+  </data>
+  <data name="START_SIM_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Noch kein Ergebnis &#8212; Simulation starten.</value>
+  </data>
   <data name="SIMKONF_GRP_WAERMEBEDARF" xml:space="preserve">
     <value>Wärmebedarf</value>
   </data>

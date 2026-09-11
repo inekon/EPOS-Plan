@@ -18,9 +18,50 @@
 
    OHNE KLIMAREGION gibt es keine Zusammenfassung: Der Vorlaeufer sprang auf
    Reiter 1 zurueck und zeigte eine MessageBox. Das entscheidet die Seite
-   (Startseite.BeiReiter), nicht dieser Reiter - er zeigt dann nur nichts. *@
+   (Startseite.BeiReiter), nicht dieser Reiter - er zeigt dann nur nichts.
+
+   ======================================================================
+   SEIT AUFTRAG #220 RECHNET DIESER REITER (Anwenderentscheid SIM-E-2 vom
+   11.09.2026, Option 1).
+   ======================================================================
+
+   DER BEFUND. Der Anwender hat den Reiter an drei Bildschirmfotos
+   zurueckgegeben: Links standen Zusammenfassung, Konfigurationsknopf und die
+   Kachel „Simulation starten", RECHTS stand nichts - eine leere halbe Seite -,
+   und die Kachel wechselte ueber die Marke schritt=2 in die Ansicht SIMULATION
+   (SIM-E-1, #216). Wer nur rechnen und das Ergebnis ansehen will, verlaesst
+   damit die Startseite, obwohl der Reiter dafuer gebaut ist.
+
+   WAS SICH AENDERT (die fuenf Punkte des Entscheids):
+   1. Die Kachel RECHNET AN ORT UND STELLE - kein Ansichtswechsel. Sie geht
+      denselben Weg wie Schritt ② der Ansicht: dieselbe Sperrpruefung, derselbe
+      Lauf, derselbe Fortschrittsbalken mit Abbrechen. Der Sperrgrund steht an
+      der Kachel (Statuszeile) UND als Hinweis darunter - die weiche Haelfte der
+      Regel W16b-E-6.
+   2. RECHTS steht dieselbe Ergebniskomponente wie Schritt ③
+      (SimulationErgebnisSeite, seit #222 mit der Uebersicht als Dashboard),
+      Startblatt Uebersicht, „Ergebnis speichern" im Kopf der Spalte. Ohne
+      gerechnetes Ergebnis ein Hinweis statt einer Leerflaeche.
+   3. DIE DIENSTE KOMMEN AUS DERSELBEN QUELLE wie die Ansicht
+      (AppWurzel.SimulationGaben / IProjektQuelle.SimulationGaben, seit #208
+      EPOS.UI.Daten/Simulation/SimulationAnsichtQuelle) - keine zweite Huelle,
+      kein zweiter Datenweg; damit rechnet der Reiter auch auf iOS.
+   4. RUECKWEGE: Wer aus dem Stromspeicher-Blatt in die Auslegung geht, kommt
+      HIERHER zurueck - die Marke traegt dafuer die Wirtkennung wirt=START
+      (SimulationMarke.WIRT_START), und die Startseite stellt Reiter und
+      Reiterblatt wieder her.
+   5. EIN LAUF ZUR ZEIT: Ansicht und Reiter teilen sich die
+      SimulationLaufsperre aus der Quelle und sperren sich gegenseitig.
+
+   OHNE DIENSTE BLEIBT ALLES, WIE ES WAR: Dann gibt es keine rechte Spalte, und
+   der Klick auf die Kachel meldet wie bisher seinen Schluessel nach oben (die
+   Startseite wechselt dann ueber Dienste.Navigation in die Ansicht). Das ist der
+   Fall „kein Projekt offen" und der Fall eines Pruefstands - dieselbe Hausregel
+   wie ueberall: kein Delegat, keine Bedienung. *@
 
 @namespace EPOS.UI.Seiten.Start
+@using EPOS.UI.Seiten.Simulation
+@implements IDisposable
 
 <div class="epos-startreiter">
 
@@ -29,54 +70,116 @@
             <h2 class="epos-startreiter-titel">@KopfText</h2>
             <p class="epos-startreiter-text">@Text</p>
         </div>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Traegt das Kopfband des
+           Hauptfensters die Pille, zeichnet dieser Reiter keine zweite - er MELDET
+           seinen Kontext nach oben („Startseite · Simulation · <Blatt>"), und die
+           Pille dort oben traegt seinen Schluessel. Auf iOS gibt es kein Kopfband,
+           der CascadingValue fehlt, und alles bleibt wie bisher. *@
+        @if (!HilfePilleImKopfband)
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Kontext.Dialogname" />
+        }
     </div>
 
-    @if (Bericht is not null)
-    {
-        <section class="epos-startzusammenfassung" aria-label="@ZusammenfassungTitelText">
-            <h3 class="epos-startreiter-titel">@ZusammenfassungTitelText</h3>
-            <dl class="epos-startzusammenfassung-liste">
-                <dt>@ProjektnameText</dt>
-                <dd>@Bericht.Projektname</dd>
-                <dt>@WaermebedarfText</dt>
-                <dd>@Bericht.Waermebedarf</dd>
-                <dt>@StrombedarfText</dt>
-                <dd>@Bericht.Strombedarf</dd>
-                <dt>@KomponentenText</dt>
-                <dd>@Bericht.Komponenten</dd>
-            </dl>
-        </section>
-    }
+    <div class="@Rasterklasse">
 
-    @* Der Knopf traegt seit dem Anwenderwunsch vom 05.09.2026 das Sinnbild
-       seiner Kachel (W16b-E-3). Er IST die 21. Kachel dieser Seite - im Bestand
-       ein btn_SimKonfig ohne Bild, aber mit demselben Rang wie die
-       Bildkacheln daneben; ein Knopf mit Bild ist in dieser Maske Hausform
-       (btn_Speichern, btn_Help). *@
-    <div class="epos-startreiter-leiste">
-        <button type="button" class="epos-knopf epos-knopf--mit-bild"
-                @onclick="@(() => Geklickt.InvokeAsync(Kachelschluessel.SimulationKonfiguration))">
-            <img class="epos-kachel-bild epos-kachel-bild--knopf @Kachelbilder.Klasse(Kachelschluessel.SimulationKonfiguration)"
-                 src="@Kachelbilder.Quelle(Kachelschluessel.SimulationKonfiguration)" alt="" />
-            <span>@KonfigText</span>
-        </button>
-    </div>
+        @* ------------------------------------------------ linke Spalte *@
+        <div class="epos-simreiter-links">
 
-    <Kachelraster Hoechstbreite="404">
-        <KindInhalt>
-            @foreach (StartKachel kachel in Kacheln)
+            @if (Bericht is not null)
             {
-                StartKachel k = kachel;
-                <Kachel Titel="@k.Titel"
-                        Beschreibung="@k.Beschreibung"
-                        Zustand="@k.Zustand"
-                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
-                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
-                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+                <section class="epos-startzusammenfassung" aria-label="@ZusammenfassungTitelText">
+                    <h3 class="epos-startreiter-titel">@ZusammenfassungTitelText</h3>
+                    <dl class="epos-startzusammenfassung-liste">
+                        <dt>@ProjektnameText</dt>
+                        <dd>@Bericht.Projektname</dd>
+                        <dt>@WaermebedarfText</dt>
+                        <dd>@Bericht.Waermebedarf</dd>
+                        <dt>@StrombedarfText</dt>
+                        <dd>@Bericht.Strombedarf</dd>
+                        <dt>@KomponentenText</dt>
+                        <dd>@Bericht.Komponenten</dd>
+                    </dl>
+                </section>
             }
-        </KindInhalt>
-    </Kachelraster>
+
+            @* Der Knopf traegt seit dem Anwenderwunsch vom 05.09.2026 das Sinnbild
+               seiner Kachel (W16b-E-3). Er IST die 21. Kachel dieser Seite - im Bestand
+               ein btn_SimKonfig ohne Bild, aber mit demselben Rang wie die
+               Bildkacheln daneben; ein Knopf mit Bild ist in dieser Maske Hausform
+               (btn_Speichern, btn_Help). *@
+            <div class="epos-startreiter-leiste">
+                <button type="button" class="epos-knopf epos-knopf--mit-bild"
+                        @onclick="@(() => Geklickt.InvokeAsync(Kachelschluessel.SimulationKonfiguration))">
+                    <img class="epos-kachel-bild epos-kachel-bild--knopf @Kachelbilder.Klasse(Kachelschluessel.SimulationKonfiguration)"
+                         src="@Kachelbilder.Quelle(Kachelschluessel.SimulationKonfiguration)" alt="" />
+                    <span>@KonfigText</span>
+                </button>
+            </div>
+
+            <Kachelraster Hoechstbreite="404">
+                <KindInhalt>
+                    @foreach (StartKachel kachel in Kacheln)
+                    {
+                        StartKachel k = kachel;
+                        <Kachel Titel="@k.Titel"
+                                Beschreibung="@k.Beschreibung"
+                                Zustand="@KachelZustand(k)"
+                                Status="@KachelStatus(k)"
+                                Aktiv="@KachelAktiv(k.Schluessel)"
+                                Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                                Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                                Geklickt="@(() => BeiKachel(k.Schluessel))" />
+                    }
+                </KindInhalt>
+            </Kachelraster>
+
+            @* Der Fortschritt des Laufs steht DORT, wo geklickt wurde (SIM-E-2,
+               Punkt 1). Die Zahlen kommen aus der Ergebnisseite - es bleibt EIN Lauf
+               mit EINEM Fortschritt, nur an einer anderen Stelle; ihr eigener Balken
+               ist dafuer abgeschaltet (FortschrittZeigen="false"). *@
+            <Fortschritt Sichtbar="@Laeuft" Anteil="@Steuerung.Anteil"
+                         Text="@Steuerung.Fortschrittstext"
+                         Abbrechen="@(Steuerung.AbbruchMoeglich ? EventCallback.Factory.Create(this, Abbrechen) : null)"
+                         AbbrechenText="@AbbruchText" />
+
+            @if (Sperrgrund.Length > 0)
+            {
+                @* Die weiche Auskunft zur gesperrten Kachel (Hausregel W16b-E-6):
+                   Die Statuszeile an der Kachel erreicht den, der hinsieht, das
+                   Banner darunter jeden. *@
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Sperrgrund" />
+            }
+        </div>
+
+        @* ----------------------------------------------- rechte Spalte *@
+        @{
+            IReadOnlyDictionary<string, object>? ergebnisGaben = Dienste?.Ergebnis;
+        }
+        @if (ergebnisGaben is not null)
+        {
+            <div class="epos-simreiter-rechts">
+                <div class="epos-simreiter-rechtskopf">
+                    <h3 class="epos-startreiter-titel">@ErgebnisTitelText</h3>
+                    <button type="button" class="epos-knopf epos-simreiter-speichern"
+                            disabled="@(!SpeichernFrei)"
+                            @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
+                </div>
+
+                @if (_ergebnisMontiert)
+                {
+                    <SimulationErgebnisSeite @ref="_ergebnisSeite" @attributes="ergebnisGaben"
+                                             Automatikstart="false" FortschrittZeigen="false"
+                                             StartBlatt="@StartBlatt"
+                                             StandGeaendert="ErgebnisStandGemeldet" />
+                }
+                else
+                {
+                    <p class="epos-simreiter-leer">@ErgebnisFehltText</p>
+                }
+            </div>
+        }
+    </div>
 </div>
 
 @code {
@@ -94,6 +197,26 @@
     /// steht der Kasten gar nicht da.
     /// </summary>
     [Parameter] public Zusammenfassung? Bericht { get; set; }
+
+    /// <summary>
+    /// Die Lauf- und Ergebnisdienste der Simulation (Auftrag <b>#220</b>);
+    /// <c>null</c> = diese Plattform stellt sie nicht — dann bleibt die rechte
+    /// Spalte weg, und die Kachel meldet ihren Schlüssel wie vor #220.
+    /// </summary>
+    /// <remarks>
+    /// <b>Dieselbe Quelle wie die Ansicht</b> (SIM‑E‑2, Punkt 3): Der Satz kommt aus
+    /// <c>AppWurzel.SimulationGaben</c> bzw. <c>IProjektQuelle.SimulationGaben</c> —
+    /// keine zweite Hülle. Die Startseite holt ihn beim BETRETEN des Reiters, weil er
+    /// den Stand der Hüllen mitbringt (den gerechneten Lauf, die Bilder, die
+    /// Gültigkeitsmarke).
+    /// </remarks>
+    [Parameter] public SimulationAnsichtDienste? Dienste { get; set; }
+
+    /// <summary>
+    /// Das Reiterblatt, mit dem die rechte Spalte aufmacht (Auftrag #220, Punkt 4);
+    /// leer = die Vorgabe „Übersicht". Der Weg der MARKE aus dem Rückwegstapel.
+    /// </summary>
+    [Parameter] public string StartBlatt { get; set; } = "";
 
     /// <summary>Überschrift (<c>label31</c>).</summary>
     [Parameter] public string KopfText { get; set; } = "Simulation durchführen";
@@ -121,4 +244,198 @@
 
     /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Simulation";
+
+    /// <summary>Der Name der Startseite in der Kontextmeldung (Auftrag #220/#221).</summary>
+    [Parameter] public string AnsichtText { get; set; } = "Startseite";
+
+    /// <summary>Der Name dieses Reiters in der Kontextmeldung.</summary>
+    [Parameter] public string ReiterText { get; set; } = "Simulation";
+
+    // =====================================================================
+    //  Die EINE Pille und der gemeldete Kontext (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Führt ein Kopfband über dieser Seite schon eine Hilfe-Pille? Dann zeichnet der
+    /// Reiter keine zweite (Auftrag #221).
+    /// </summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>Der Weg nach oben; <c>null</c> = niemand hört zu (ein Prüfstand).</summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    /// <summary>Wo der Anwender steht: „Startseite · Simulation · &lt;Blatt&gt;".</summary>
+    public Hilfekontext Kontext
+        => new Hilfekontext(HilfeSchluessel, AnsichtText, ReiterText, Blattname);
+
+    /// <summary>Der Name des offenen Reiterblatts der rechten Spalte; leer = keines.</summary>
+    private string Blattname
+        => _ergebnisMontiert
+               ? SimulationBlattnamen.Text(_ergebnisSeite?.AktivesBlatt ?? StartBlatt)
+               : "";
+
+    /// <summary>Der zuletzt gemeldete Kontext — gemeldet wird nur bei Wechsel.</summary>
+    private Hilfekontext? _gemeldet;
+
+    // =====================================================================
+    //  Der Lauf (Auftrag #220, SIM-E-2)
+    // =====================================================================
+
+    /// <summary>Steht die rechte Spalte? Sie bleibt danach stehen.</summary>
+    private bool _ergebnisMontiert;
+
+    /// <summary>Ein Lauf soll starten, sobald die rechte Spalte gezeichnet ist.</summary>
+    private bool _laufAnstossen;
+
+    private SimulationErgebnisSeite? _ergebnisSeite;
+
+    private SimulationLaufsteuerung? _steuerung;
+
+    /// <summary>
+    /// Die GEMEINSAME Laufsteuerung — dieselbe Klasse, die Schritt ② der Ansicht
+    /// benutzt (eine Wahrheit, Auftrag #220). Der Reiter kennt keine Konfigurationsseite
+    /// und meldet deshalb nie „ungespeichert"; die Sperre aus einer ungespeicherten
+    /// Konfiguration trifft ihn trotzdem, sobald die Ansicht sie meldet — sie steht in
+    /// <c>Dienste.Sperrgrund</c> nicht, sondern gilt nur dort, wo bearbeitet wird.
+    /// </summary>
+    private SimulationLaufsteuerung Steuerung
+        => _steuerung ??= new SimulationLaufsteuerung(
+               this, () => Dienste, () => false, () => _ergebnisSeite);
+
+    /// <summary>Rechnet dieser Reiter selbst? Ohne Ergebnisdienste nicht.</summary>
+    private bool LaufWirt => Dienste?.Ergebnis is not null;
+
+    /// <summary>Liegt ein gerechneter Lauf vor?</summary>
+    private bool ErgebnisDa => Dienste?.ErgebnisVorhanden?.Invoke() ?? false;
+
+    /// <summary>Der Grund, aus dem die Kachel gesperrt ist; leer = frei.</summary>
+    private string Sperrgrund => Steuerung.Sperrgrund;
+
+    /// <summary>Läuft der Lauf dieses Reiters gerade?</summary>
+    private bool Laeuft => Steuerung.Laeuft;
+
+    /// <summary>
+    /// Die Kachel „Simulation starten" ist gesperrt, solange ein Grund vorliegt oder
+    /// gerade gerechnet wird; jede andere Kachel bleibt, wie sie war.
+    /// </summary>
+    private bool KachelAktiv(string schluessel)
+        => !(LaufWirt && schluessel == Kachelschluessel.SimulationErgebnis
+             && (Sperrgrund.Length > 0 || Laeuft));
+
+    /// <summary>Der Sperrgrund steht AN der Kachel (SIM‑E‑2, Punkt 1).</summary>
+    private string KachelStatus(StartKachel k)
+        => LaufWirt && k.Schluessel == Kachelschluessel.SimulationErgebnis
+               ? Sperrgrund
+               : "";
+
+    /// <summary>Ein gesperrter Lauf färbt den Statuspunkt grau statt grün.</summary>
+    private Kachelstand? KachelZustand(StartKachel k)
+        => KachelStatus(k).Length > 0 ? Kachelstand.Aus : k.Zustand;
+
+    /// <summary>
+    /// Ein Klick auf eine Kachel. Die Kachel „Simulation starten" RECHNET hier, sobald
+    /// dieser Reiter die Dienste führt (SIM‑E‑2, Punkt 1) — sonst meldet sie ihren
+    /// Schlüssel wie vor #220, und die Startseite wechselt in die Ansicht.
+    /// </summary>
+    private async Task BeiKachel(string schluessel)
+    {
+        if (LaufWirt && schluessel == Kachelschluessel.SimulationErgebnis)
+        {
+            LaufAnstossen();
+            return;
+        }
+
+        await Geklickt.InvokeAsync(schluessel);
+    }
+
+    /// <summary>
+    /// Stößt den Lauf an — derselbe Weg wie <c>SimulationSeite.Rechnen</c>: Die rechte
+    /// Spalte wird montiert, und gestartet wird, sobald sie gezeichnet ist.
+    /// </summary>
+    private void LaufAnstossen()
+    {
+        if (!Steuerung.Frei) return;
+
+        _ergebnisMontiert = true;
+        _laufAnstossen = true;
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Liegt schon ein gerechneter Lauf vor, steht die rechte Spalte von selbst -
+        // sonst zeigte der Rueckweg aus der Auslegung den Hinweis „noch kein Ergebnis"
+        // ueber einem Lauf, den es gibt.
+        if (LaufWirt && ErgebnisDa) _ergebnisMontiert = true;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        KontextMelden();
+
+        if (!_laufAnstossen) return;
+        if (_ergebnisSeite is null) return;      // die Spalte zeichnet erst
+
+        _laufAnstossen = false;
+        await Steuerung.Starten();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Abbrechen() => Steuerung.Abbrechen();
+
+    /// <summary>
+    /// Die Ergebnisseite meldet, dass sich ihr Stand geändert hat — daran hängen
+    /// „Ergebnis speichern" und der Fortschrittsbalken der linken Spalte.
+    /// </summary>
+    private void ErgebnisStandGemeldet() => StateHasChanged();
+
+    /// <summary>
+    /// Darf „Ergebnis speichern" handeln? Dieselbe Bedingung wie in der Ansicht: nur
+    /// nach einem vollständigen Lauf und nicht während eines laufenden.
+    /// </summary>
+    private bool SpeichernFrei
+        => _ergebnisMontiert && _ergebnisSeite is not null && _ergebnisSeite.SpeichernMoeglich;
+
+    private void ErgebnisSpeichern() => _ergebnisSeite?.ErgebnisSpeichern();
+
+    /// <summary>Das sichtbare Blatt der rechten Spalte (Prüfhilfe).</summary>
+    public string AktivesBlatt => _ergebnisSeite?.AktivesBlatt ?? "";
+
+    /// <summary>Steht die rechte Spalte? (Prüfhilfe und Marke der Startseite)</summary>
+    public bool ErgebnisSteht => _ergebnisMontiert;
+
+    // =====================================================================
+    //  Anzeige
+    // =====================================================================
+
+    private string Rasterklasse
+        => LaufWirt ? "epos-simreiter" : "epos-simreiter epos-simreiter--allein";
+
+    private static string ErgebnisTitelText => Resource.START_SIM_ERGEBNIS;
+    private static string ErgebnisFehltText => Resource.START_SIM_KEIN_ERGEBNIS;
+    private static string ErgebnisSpeichernText => Resource.SIM_TITEL_ERGEBNIS_SPEICHERN;
+    private static string AbbruchText => Resource.OPT_BTN_ABBRUCH;
+
+    /// <summary>Meldet den Kontext nach oben — aber nur, wenn er sich geändert hat.</summary>
+    private void KontextMelden()
+    {
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null) return;
+
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        // Der Reiter geht - die Pille im Kopfband faellt auf den Schluessel des
+        // Fensters zurueck.
+        if (_gemeldet is not null) Hilfemelder?.Melden(null);
+    }
 }

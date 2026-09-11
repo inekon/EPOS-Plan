@@ -46,6 +46,16 @@ namespace WindowsFormsApplication1
         private SimulationKonfigHuelle _konfig;
         private SimulationErgebnisHuelle _ergebnis;
 
+        /// <summary>
+        /// Die Sperre „ein Lauf zur Zeit" (Auftrag <b>#220</b>, Anwenderentscheid
+        /// <b>SIM‑E‑2</b>, Punkt 5). Sie gehört der QUELLE und nicht einem
+        /// Parametersatz: Seit #220 stoßen zwei Wirte denselben Lauf an — Schritt ②
+        /// der Ansicht SIMULATION und die Kachel des Startseiten-Reiters —, und jeder
+        /// von ihnen holt sich SEINEN Parametersatz. Nur ein Objekt, das beide
+        /// Aufrufe überlebt, kann sie gegeneinander sperren.
+        /// </summary>
+        private readonly SimulationLaufsperre _laufsperre = new SimulationLaufsperre();
+
         /// <param name="bedarf">
         /// Die zwei Bedarfsrechnungen des offenen Projekts (Befund W16-B29, Entscheid
         /// E-5). Sie gehören dem PROJEKT und werden unter Windows mit der Startseite
@@ -96,7 +106,11 @@ namespace WindowsFormsApplication1
                     // Hilfe-Assistenten an; die Kennzahlen des Laufs stehen fertig im
                     // zuletzt geladenen Stand der Ergebnishuelle. Kein neuer Datenweg -
                     // dieselbe DTO, nur ohne zweites Lesen.
-                    Ergebnisstand = () => _ergebnis.LetzterStand
+                    Ergebnisstand = () => _ergebnis.LetzterStand,
+
+                    // AUFTRAG #220 (SIM-E-2, Punkt 5): dieselbe Sperre in JEDEM Satz -
+                    // so sperren sich Ansicht und Startseiten-Reiter gegenseitig.
+                    Laufsperre = _laufsperre
                 },
                 ["ProjektText"] = Projektzeile(projektName)
             };

@@ -93,8 +93,16 @@
        die Produktgattung schon dort; die Seite laesst ihre eigene
        Gattungszeile dann weg. Auf iOS ist die Kopfleiste leer, und die Zeile
        bleibt die einzige Nennung des Produkts. *@
-    <EPOS.UI.Seiten.Start.Startseite @attributes="_startseite"
-                                     KopfbandZeigen="@(Kopfleiste is null)" />
+    @* AUFTRAG #220 (SIM-E-2): Der Reiter „Simulation" RECHNET und zeigt das
+       Ergebnis - und bekommt seine Dienste aus DERSELBEN Quelle wie die Ansicht
+       SIMULATION (SimulationGabenHolen), damit es keine zweite Huelle gibt. Die
+       MARKE stellt Reiter und Reiterblatt wieder her, wenn der Rueckweg aus der
+       Stromspeicher-Auslegung hierher fuehrt. *@
+    <EPOS.UI.Seiten.Start.Startseite @ref="_startseiteSeite"
+                                     @attributes="_startseite"
+                                     KopfbandZeigen="@(Kopfleiste is null)"
+                                     SimulationGaben="@SimulationGabenHolen"
+                                     Marke="@_startseiteMarke" />
 }
 else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not null)
 {
@@ -238,6 +246,15 @@ else
 
     /// <summary>Die Marke, mit der die Simulationsansicht aufmacht.</summary>
     private string _simulationMarke = "";
+
+    /// <summary>
+    /// Die stehende Startseite (Auftrag #220) — sie liefert ihre MARKE für den
+    /// Rückwegstapel, wenn ihr Reiter „Simulation" vorn steht.
+    /// </summary>
+    private EPOS.UI.Seiten.Start.Startseite? _startseiteSeite;
+
+    /// <summary>Die Marke, mit der die Startseite aufmacht (#220); leer = keine.</summary>
+    private string _startseiteMarke = "";
 
     /// <summary>
     /// Die Simulation ist fertig oder darf verlassen werden — dann wird nicht (noch
@@ -633,10 +650,32 @@ else
         || ziel == Seitenschluessel.KiAssistent;
 
     /// <summary>Die Marke der STEHENDEN Ansicht; leer = sie führt keine.</summary>
+    /// <remarks>
+    /// Seit Auftrag <b>#220</b> führt auch die STARTSEITE eine — ihr Reiter
+    /// „Simulation" zeigt dieselbe Ergebniskomponente wie Schritt ③, und wer aus ihm
+    /// heraus die Stromspeicher-Auslegung öffnet, will in den REITER zurück und nicht
+    /// in die Ansicht. Die Marke trägt dafür die Wirtkennung <c>wirt=START</c>.
+    /// </remarks>
     private string StehendeMarke()
-        => _ansicht == Seitenschluessel.Simulation && _simulationSeite is not null
-               ? _simulationSeite.AktuelleMarke
-               : "";
+    {
+        if (_ansicht == Seitenschluessel.Simulation && _simulationSeite is not null)
+            return _simulationSeite.AktuelleMarke;
+
+        if (_ansicht == Seitenschluessel.Startseite && _startseiteSeite is not null)
+            return _startseiteSeite.AktuelleMarke;
+
+        return "";
+    }
+
+    /// <summary>
+    /// Der Parametersatz der Simulation — der EINE Weg für ZWEI Wirte (Auftrag #220):
+    /// die freie Ansicht <c>SIMULATION</c> und den Reiter „Simulation" der Startseite.
+    /// Der Delegat der Hülle hat Vorrang (unter Windows hält <c>SimulationHuelle</c>
+    /// den gerechneten Lauf, die Bilder und die Gültigkeitsmarke); ohne ihn fragt die
+    /// Wurzel die Projektquelle — der iOS-Weg.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? SimulationGabenHolen()
+        => SimulationGaben?.Invoke() ?? Quelle.SimulationGaben(_projekt?.Id ?? 0);
 
     /// <summary>Legt die stehende Ansicht samt Marke ab (höchstens drei Einträge).</summary>
     private void RueckwegMerken()
@@ -868,6 +907,11 @@ else
                 _statuszeile = KeineStartseiteText;
                 return false;
             }
+
+            // Die MARKE des Rueckwegs (Auftrag #220): Sie stellt den Reiter
+            // „Simulation" samt seinem Reiterblatt wieder her. Ohne Marke bleibt die
+            // Startseite, wo sie aufmacht.
+            _startseiteMarke = marke;
             _ansicht = maske;
             return true;
         }
@@ -924,8 +968,7 @@ else
             // Der Delegat der Huelle hat Vorrang: Unter Windows haelt SimulationHuelle
             // den gerechneten Lauf, die Bilder und die Gueltigkeitsmarke zwischen zwei
             // Besuchen - eine Projektquelle koennte das nicht.
-            IReadOnlyDictionary<string, object>? gaben =
-                SimulationGaben?.Invoke() ?? Quelle.SimulationGaben(_projekt?.Id ?? 0);
+            IReadOnlyDictionary<string, object>? gaben = SimulationGabenHolen();
             if (gaben is null)
             {
                 // Kein Projekt, keine Datenbank: Die Liste bleibt stehen und sagt

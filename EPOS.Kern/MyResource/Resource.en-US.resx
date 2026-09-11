@@ -18317,6 +18317,15 @@ Do you want to allow this?</value>
   <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
     <value>There is no computed result for this project yet &#8212; the view starts at the configuration.</value>
   </data>
+  <data name="SIM_LAUF_ANDERSWO" xml:space="preserve">
+    <value>The simulation is already running elsewhere &#8212; please wait for it to finish.</value>
+  </data>
+  <data name="START_SIM_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="START_SIM_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>No result yet &#8212; start the simulation.</value>
+  </data>
   <data name="SIMKONF_GRP_WAERMEBEDARF" xml:space="preserve">
     <value>Heat demand</value>
   </data>

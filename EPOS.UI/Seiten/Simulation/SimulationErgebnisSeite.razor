@@ -51,7 +51,13 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_daten.Sperrgrund" />
     }
 
-    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+    @* DER BALKEN GEHOERT DER SEITE - aber nicht immer an DIESE Stelle (Auftrag
+       #220): Im Startseiten-Reiter steht die Kachel, die den Lauf ausloest, in der
+       LINKEN Spalte, und der Fortschritt gehoert dorthin, wo geklickt wurde. Der
+       Wirt schaltet ihn hier ab und zeichnet ihn dort aus DENSELBEN Werten
+       (Anteil, Fortschrittstext, LaufAbbrechen) - es bleibt EIN Lauf mit EINEM
+       Fortschritt, nur an einer anderen Stelle. Vorgabe ist wie bisher: hier. *@
+    <Fortschritt Sichtbar="@(_laeuft && FortschrittZeigen)" Anteil="@_anteil" Text="@_fortschrittText"
                  Abbrechen="@(Dienste?.Abbrechen is null ? null : EventCallback.Factory.Create(this, Abbrechen))"
                  AbbrechenText="@Resource.OPT_BTN_ABBRUCH" />
 
@@ -333,6 +339,14 @@
     [Parameter] public EventCallback StandGeaendert { get; set; }
 
     /// <summary>
+    /// Zeichnet die Seite ihren eigenen Fortschrittsbalken? Vorgabe <c>true</c>
+    /// (Auftrag <b>#220</b>); <c>false</c> = der Wirt zeichnet ihn an seiner Stelle
+    /// aus <see cref="Anteil"/>, <see cref="Fortschrittstext"/> und
+    /// <see cref="LaufAbbrechen"/>.
+    /// </summary>
+    [Parameter] public bool FortschrittZeigen { get; set; } = true;
+
+    /// <summary>
     /// Das Reiterblatt, mit dem die Seite aufmacht (einer der Schluessel aus
     /// <see cref="Blatt"/>); leer = die Vorgabe. Sie liest ihn EINMAL beim Aufbau.
     /// </summary>
@@ -389,6 +403,18 @@
 
     /// <summary>Laeuft die Simulation gerade? (Pruefhilfe)</summary>
     public bool Laeuft => _laeuft;
+
+    /// <summary>
+    /// Der Fortschritt des laufenden Laufs (0…1); <c>null</c> = unbestimmt. Fuer
+    /// einen Wirt, der den Balken selbst zeichnet (Auftrag #220).
+    /// </summary>
+    public double? Anteil => _anteil;
+
+    /// <summary>Die Phasenmeldung des laufenden Laufs; leer = die Vorgabe (#220).</summary>
+    public string Fortschrittstext => _fortschrittText;
+
+    /// <summary>Nimmt der Kern einen Abbruch entgegen? Ohne Rueckruf kein Knopf (#220).</summary>
+    public bool AbbruchMoeglich => Dienste?.Abbrechen is not null;
 
     private bool BedarfGabenDa => Dienste?.BedarfGaben is not null;
     private bool WpGabenDa => Dienste?.WaermepumpenGaben is not null;
@@ -518,9 +544,19 @@
         _anteil = anteil;
         _fortschrittText = string.IsNullOrEmpty(text) ? Resource.SIMERG_LAUF_LAEUFT : text;
         _ = InvokeAsync(StateHasChanged);
+
+        // Seit #220 kann der Balken beim WIRT stehen (Startseiten-Reiter); dann muss
+        // auch er von jeder Phasenmeldung erfahren, sonst bliebe sein Text stehen.
+        Melden();
     }
 
-    private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
+    private void Abbrechen() => LaufAbbrechen();
+
+    /// <summary>
+    /// Bricht den laufenden Lauf ab — der Weg des eigenen Knopfes UND der eines
+    /// Wirts, der den Balken selbst zeichnet (Auftrag #220).
+    /// </summary>
+    public void LaufAbbrechen() => Dienste?.Abbrechen?.Invoke();
 
     /// <summary>
     /// „Ergebnis speichern" — seit #216 der Weg der WERKZEUGLEISTE der Ansicht

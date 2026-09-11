@@ -290,7 +290,7 @@ fallen mit dem Umzug der Katalogmasken (iU11).
 | **SIM‑Q5** Bedarfs-Detail, Wärmepumpen-Detail, Variantenvergleich bleiben Überlagerungen? | Ja (Regel SD‑Q1: kurze Unterdialoge mit eigener Rückkehr) | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑Q6** S2 (iOS) direkt nach S1 starten, iOS-Lauf mit #202 bündeln? | Ja — die Simulation ist die erste Fachseite der iOS-Migration und heute dort nicht erreichbar | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑E‑1** Die Kachel „Simulation" der Startseite: öffnen oder rechnen? | **RECHNEN** — sie heißt „Simulation starten" und löst Schritt ② aus (Anwenderwort, Windows-Abnahme #216) | **entschieden 11.09.2026 (Anwender), umgesetzt #216** (`5ef1433`, Merge `bcd3725`; Gate sept25) |
-| **SIM‑E‑2** Der Startseiten-Reiter „Simulation" (drei Bildschirmfotos 11.09.2026): rechts leer, Kachel wechselt in die Ansicht — was soll rechts stehen, was tut die Kachel? | **Option 1: Die Kachel „Simulation starten" rechnet AN ORT UND STELLE** (Fortschrittsbalken, Abbrechen, Sperrgründe wie an Schritt ②); rechts im Reiter steht danach dieselbe Ergebniskomponente wie Schritt ③ (Übersicht zuerst, Reiter darüber, „Ergebnis speichern" im Kopf), ohne Ergebnis ein Hinweis. Die Ansicht bleibt für Konfiguration (①) und Vollbild; die Dienste kommen aus derselben Quelle wie die Ansicht (#208, damit auch iOS); der Rückweg aus der Auslegung führt in den Reiter zurück. Folgen nach Empfehlung angenommen. | **entschieden 11.09.2026 (Anwender), Umsetzung #220 nach #221/#222** |
+| **SIM‑E‑2** Der Startseiten-Reiter „Simulation" (drei Bildschirmfotos 11.09.2026): rechts leer, Kachel wechselt in die Ansicht — was soll rechts stehen, was tut die Kachel? | **Option 1: Die Kachel „Simulation starten" rechnet AN ORT UND STELLE** (Fortschrittsbalken, Abbrechen, Sperrgründe wie an Schritt ②); rechts im Reiter steht danach dieselbe Ergebniskomponente wie Schritt ③ (Übersicht zuerst, Reiter darüber, „Ergebnis speichern" im Kopf), ohne Ergebnis ein Hinweis. Die Ansicht bleibt für Konfiguration (①) und Vollbild; die Dienste kommen aus derselben Quelle wie die Ansicht (#208, damit auch iOS); der Rückweg aus der Auslegung führt in den Reiter zurück. Folgen nach Empfehlung angenommen. | **entschieden 11.09.2026 (Anwender), umgesetzt #220** (Abschnitt 9) |
 | **SIM‑E‑3** Die Übersicht des Ergebnisses: zweimal dieselben Zahlen, Zahlenspalte weit vom Kopf, leerer Ring bei 0 % | **a)** EINE Übersicht (Dashboard Wärme \| Strom), **b)** Ringvariante A (grauer Vollring, Rest immer als Segment), **c)** keine Zoomleiste an Ringen | **entschieden 11.09.2026 (Anwender: „Empfehlung"), umgesetzt #222** |
 
 ---
@@ -555,3 +555,117 @@ Referenzlauf 1030 und 1046 bleibt **byte-gleich** gegen R7.
   Spalten des Mockups.
 - **Die Restzeile der Wärmetabelle** trägt in den drei Kanalspalten „—": Der Restwärmebedarf ist
   eine Bilanzgröße des Laufs und nicht nach Kanälen aufgeteilt.
+
+---
+
+## 9. SIM‑E‑2 (11.09.2026) — der Startseiten-Reiter „Simulation" rechnet
+
+**Anwenderentscheid SIM‑E‑2, Option 1**, umgesetzt mit **Auftrag #220** (nach #221 und #222).
+
+### 9.1 Befund — eine leere halbe Seite und ein Ansichtswechsel
+
+Der Anwender hat den Reiter an drei Bildschirmfotos zurückgegeben. Gemessen am Stand nach
+#216:
+
+* **Links** standen Projektzusammenfassung, der Knopf „Simulation Konfiguration…" und die
+  eine Bildkachel „Simulation starten" — zusammen etwa ein Drittel der Breite.
+* **Rechts stand nichts.** Zwei Drittel des Reiters waren leer.
+* Die **Kachel wechselte die Ansicht**: Sie trug seit SIM‑E‑1 die Marke `schritt=2`, und die
+  Ansicht `SIMULATION` rechnete dort. Wer nur rechnen und das Ergebnis ansehen wollte,
+  verließ dafür die Startseite — obwohl der Reiter genau dafür gebaut ist.
+
+### 9.2 Zielbild — zwei Spalten, ein Lauf
+
+| | vorher | seit #220 |
+|---|---|---|
+| Kachel „Simulation starten" | Marke `schritt=2`, **Ansichtswechsel** | **rechnet an Ort und Stelle**, kein Wechsel |
+| Fortschritt und Abbrechen | in der Ansicht | **unter der Kachel**, in der linken Spalte |
+| Sperrgründe | am Rechenknopf der Ansicht | **an der Kachel** (Statuszeile, grauer Punkt) **und als Hinweis darunter** |
+| rechte Spalte | leer | **dieselbe `SimulationErgebnisSeite` wie Schritt ③**, Startblatt „Übersicht" |
+| „Ergebnis speichern" | Werkzeugleiste der Ansicht | **im Kopf der rechten Spalte** (dieselbe Bedingung) |
+| ohne gerechneten Lauf | — | Hinweis **„Noch kein Ergebnis — Simulation starten."** |
+
+Die Aufteilung ist ein CSS-Raster `minmax(0, 1fr) minmax(0, 2fr)` (`.epos-simreiter`);
+unter 1100 px stehen die zwei Spalten untereinander. Die Schwelle ist eine andere als die
+900 px von `Zweispaltenauswahl` und `Katalograhmen`: Dort stehen zwei Eingabeblöcke
+nebeneinander, hier eine Eingabespalte neben einer ganzen Ergebnisseite mit neun
+Reiterblättern.
+
+**Die Ansicht `SIMULATION` bleibt unverändert** — sie trägt die Konfiguration ①, das
+Vollbild ③, den Menüpunkt „Projekt → Simulation…" und die Werkzeugleiste aus #216.
+
+### 9.3 Eine Wahrheit: `SimulationLaufsteuerung`
+
+Zwei Wirte beantworten seither dieselben drei Fragen — „warum ist der Lauf gesperrt?",
+„darf er starten?" und „wie startet er?". Kopiert wäre das zweimal derselbe
+Zustandsautomat. Sie stehen deshalb EINMAL in
+`EPOS.UI/Seiten/Simulation/SimulationLaufsteuerung.cs`:
+
+* **`SimulationLaufsteuerung`** — `Sperrgrund` (in der Reihenfolge: fremder Lauf → rote
+  Vorprüfung → ungespeicherte Konfiguration), `Frei`, `Laeuft`, `Anteil`,
+  `Fortschrittstext`, `AbbruchMoeglich`, `Abbrechen()` und `Starten()`. Sie rechnet nichts:
+  Der Lauf gehört unverändert der `SimulationErgebnisSeite` (Fortschritt, Abbruch,
+  Neuladen danach). `SimulationSeite` benutzt sie seit #220 für Schritt ②,
+  `SimulationReiter` für die Kachel.
+* **`SimulationLaufsperre`** — „ein Lauf zur Zeit" (Punkt 5 des Entscheids). Sie lebt in der
+  QUELLE (`SimulationAnsichtQuelle`, EINE je Projekt) und geht über
+  `SimulationAnsichtDienste.Laufsperre` in JEDEN Parametersatz; Ansicht und Reiter sperren
+  sich damit gegenseitig, ohne voneinander zu wissen. Eine Komponente könnte sie nicht
+  halten: Es sind zwei Komponenten mit zwei Lebensdauern, und die Wurzel verwirft die eine,
+  wenn sie die andere zeigt.
+
+Die `SimulationErgebnisSeite` hat dafür drei Zusätze bekommen, alle mit dem heutigen
+Verhalten als Vorgabe: `FortschrittZeigen` (Vorgabe `true` — der Reiter schaltet ihren
+eigenen Balken ab und zeichnet ihn unter der Kachel), die Leseeigenschaften `Anteil` /
+`Fortschrittstext` / `AbbruchMoeglich` und `LaufAbbrechen()`. **Es bleibt EIN Lauf mit
+EINEM Fortschritt** — nur an einer anderen Stelle gezeichnet.
+
+### 9.4 Dienste aus EINER Quelle (Punkt 3)
+
+Der Reiter bekommt seine Dienste über den vorhandenen Weg: `AppWurzel.SimulationGabenHolen()`
+(`SimulationGaben?.Invoke() ?? Quelle.SimulationGaben(projekt)`) — derselbe Aufruf, aus dem
+sich die Ansicht bedient, gebündelt in EINER privaten Methode. Die `Startseite` bekommt ihn
+als `[Parameter] Func<IReadOnlyDictionary<string, object>?>? SimulationGaben` und holt den
+Satz beim **Betreten** des Reiters (`BeiSimulationBetreten`), weil er den Stand der zwei
+Hüllen mitbringt; `SimulationAnsichtDienste.Aus(gaben)` liest das Bündel heraus, damit der
+Schlüsselname an einer Stelle steht.
+
+**Keine zweite Hülle, kein zweiter Datenweg** — und damit rechnet der Reiter auf iOS
+genauso: Dort fehlt der Hüllen-Delegat, und `IosProjektQuelle.SimulationGaben` liefert
+denselben Satz aus derselben `SimulationAnsichtQuelle`.
+
+### 9.5 Rückwege (Punkt 4): die Marke bekommt eine Wirtkennung
+
+Derselbe Schritt ③ steht seither an ZWEI Stellen. Der Rückwegstapel muss sie
+auseinanderhalten: Wer die Stromspeicher-Auslegung aus dem REITER heraus geöffnet hat, will
+in den Reiter zurück und nicht in die Ansicht. Die Marke trägt dafür ein drittes Stück:
+
+```
+wirt=START;schritt=3;blatt=STROMSPEICHER
+```
+
+* `SimulationMarke.WIRT_START`, `WirtLesen(marke)` und die Überladung
+  `Schreiben(wirt, schritt, blatt)` — eine Marke OHNE Wirtkennung meint wie bisher die
+  Ansicht, und die Startseite lässt sie liegen.
+* `Startseite.AktuelleMarke` liefert sie, solange der Reiter „Simulation" vorn steht;
+  `AppWurzel.StehendeMarke()` fragt neben der Simulationsansicht jetzt auch die Startseite.
+* `Startseite.Marke` wendet sie an, wenn sie sich ÄNDERT (Muster `SimulationSeite`): Reiter
+  „Simulation" nach vorn, Blatt als `StartBlatt` an die rechte Spalte.
+
+Der Assistent folgt demselben Gedanken wie #221: Der Reiter **meldet seinen Hilfekontext**
+über den `Hilfekontextmelder` („Startseite · Simulation · &lt;Blatt&gt;") und zeichnet unter
+Windows KEINE eigene Pille — die eine Pille des Kopfbands trägt seinen Schlüssel. Auf iOS
+gibt es kein Kopfband, und der Reiter behält seine.
+
+### 9.6 Der Rückfall
+
+Ohne Parametersatz — kein Projekt offen, ein Prüfstand, eine Plattform ohne Simulation —
+gibt es keine rechte Spalte (`.epos-simreiter--allein`), und die Kachel meldet ihren
+Schlüssel wie vor #220; die Startseite wechselt dann über `Dienste.Navigation` in die
+Ansicht. Dieselbe Hausregel wie überall: kein Delegat, keine Bedienung.
+
+### 9.7 Was #220 NICHT anfasst
+
+Rechenweg, Kern-Controller, die Reiterinhalte des Ergebnisses, die Ansicht `SIMULATION`
+selbst (außer der gemeinsamen Laufsteuerung), die Pille aus #221 (außer der Kontextmeldung)
+und die Auslegungsansicht. Der Referenzlauf 1030 und 1046 bleibt **byte-gleich** gegen R7.

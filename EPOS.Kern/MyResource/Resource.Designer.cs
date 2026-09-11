@@ -43582,6 +43582,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Simulation rechnet gerade an anderer Stelle — bitte den laufenden Lauf abwarten. ähnelt.
+        /// </summary>
+        public static string SIM_LAUF_ANDERSWO {
+            get {
+                return ResourceManager.GetString("SIM_LAUF_ANDERSWO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart: ähnelt.
         /// </summary>
         public static string SIM_LBL_BEDARFSART {
@@ -47692,6 +47701,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_SIM_BTN_KONFIG {
             get {
                 return ResourceManager.GetString("START_SIM_BTN_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string START_SIM_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("START_SIM_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Ergebnis — Simulation starten. ähnelt.
+        /// </summary>
+        public static string START_SIM_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("START_SIM_KEIN_ERGEBNIS", resourceCulture);
             }
         }
         

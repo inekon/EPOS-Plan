@@ -230,7 +230,6 @@
     private static string Schritt1Text => Resource.SIM_ANSICHT_SCHRITT1;
     private static string Schritt3Text => Resource.SIM_ANSICHT_SCHRITT3;
     private static string RechnenText => Resource.SIM_ANSICHT_BTN_LAUF;
-    private static string KonfigGesperrtText => Resource.SIM_ANSICHT_LAUF_GESPERRT_KONFIG;
     private static string ErgebnisGesperrtText => Resource.SIM_ANSICHT_ERGEBNIS_GESPERRT;
     private static string ErgebnisFehltText => Resource.SIM_ANSICHT_ERGEBNIS_FEHLT;
     private static string VerlassenTitelText => Resource.SIM_ANSICHT_VERLASSEN_TITEL;
@@ -327,24 +326,27 @@
                             || (Dienste?.ErgebnisVorhanden?.Invoke() ?? false);
 
     /// <summary>
-    /// Der Grund, aus dem ② gesperrt ist; leer = frei. ZUERST die rote
-    /// Vorprüfung (ohne sie läuft gar nichts), dann die ungespeicherte
-    /// Konfiguration (der Lauf läse sonst den alten Stand aus der Datenbank).
+    /// Die GEMEINSAME Laufsteuerung (Auftrag <b>#220</b>) — dieselbe, die der
+    /// Startseiten-Reiter „Simulation" benutzt. Sie beantwortet, warum ② gesperrt
+    /// ist, ob es starten darf und wie es startet; kopiert wäre das zweimal
+    /// derselbe Zustandsautomat (Anwenderentscheid SIM‑E‑2).
     /// </summary>
-    private string Rechensperre
-    {
-        get
-        {
-            if (Dienste?.Ergebnis is null) return "";
+    private SimulationLaufsteuerung? _steuerung;
 
-            string sperrgrund = Dienste?.Sperrgrund?.Invoke() ?? "";
-            if (sperrgrund.Length > 0) return sperrgrund;
+    private SimulationLaufsteuerung Steuerung
+        => _steuerung ??= new SimulationLaufsteuerung(
+               this, () => Dienste, () => _konfigUngespeichert, () => _ergebnisSeite);
 
-            return _konfigUngespeichert ? KonfigGesperrtText : "";
-        }
-    }
+    /// <summary>
+    /// Der Grund, aus dem ② gesperrt ist; leer = frei. ZUERST ein fremder Lauf
+    /// (SIM‑E‑2, Punkt 5), dann die rote Vorprüfung (ohne sie läuft gar nichts),
+    /// dann die ungespeicherte Konfiguration (der Lauf läse sonst den alten Stand
+    /// aus der Datenbank) — die Reihenfolge steht in
+    /// <see cref="SimulationLaufsteuerung.Sperrgrund"/>.
+    /// </summary>
+    private string Rechensperre => Steuerung.Sperrgrund;
 
-    private bool RechnenFrei => Dienste?.Ergebnis is not null && Rechensperre.Length == 0;
+    private bool RechnenFrei => Steuerung.Frei;
 
     private void SchrittGewaehlt(string schluessel)
     {
@@ -480,7 +482,11 @@
         if (seite is null) return;          // ③ zeichnet erst — beim nächsten Mal
 
         _laufAnstossen = false;
-        await seite.LaufStarten();
+
+        // Seit #220 geht der Start ueber die GEMEINSAME Laufsteuerung: Sie meldet die
+        // Sperre „ein Lauf zur Zeit" an, geht den Weg der Ergebnisseite und gibt sie
+        // wieder frei.
+        await Steuerung.Starten();
         await InvokeAsync(StateHasChanged);
     }
 
