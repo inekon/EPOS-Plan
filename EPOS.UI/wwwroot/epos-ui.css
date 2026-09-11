@@ -3061,6 +3061,17 @@ body {
     margin-top: 6px;
 }
 
+/* Der Parameterbereich EINER Erzeugerkarte (#216): abgesetzt durch eine
+   Trennlinie, damit die Einstellung nicht wie ein weiterer Chip aussieht, und
+   mit Zeiger auf „Text" - die Karte selbst ist anklickbar, ihre Felder sind es
+   auf ihre eigene Weise. */
+.epos-erzeugerkachel-parameter {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    cursor: default;
+}
+
 /* ---- Speicherkachel -------------------------------------------------- */
 
 .epos-speicherkachel {
@@ -3232,6 +3243,29 @@ body {
 .epos-simkonfig-hinweis {
     margin: 2px 0 6px 0;
     color: var(--epos-text-leise);
+}
+
+/* DIE FUENF LAUFPARAMETER (Windows-Abnahme #216, Punkt 3). Der Abschnitt
+   „Waermebedarf" steht ueber den zwei Spalten, die drei Erzeugerwerte in ihrer
+   Karte. Beide nehmen denselben schmalen Feldblock wie der Reiter, aus dem sie
+   kommen - unter mancher Zahl steht ein Hinweisabsatz, der zu dem Feld UEBER
+   ihm gehoert, und zweispaltig fiele der neben ein fremdes Feld. */
+.epos-simkonfig-bedarf {
+    margin-bottom: 10px;
+}
+
+.epos-simkonfig-felder {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 640px;
+}
+
+.epos-simkonfig-info {
+    margin: 6px 0 0 0;
+    color: var(--epos-text-leise);
+    white-space: pre-line;
+    max-width: 640px;
 }
 
 /* Der Textschalter am Spaltenende (Abnahmebefund 1) - im Vorlaeufer ein
@@ -3474,6 +3508,15 @@ body {
     color: var(--epos-text-leise);
     white-space: pre-line;
     max-width: 640px;
+}
+
+/* Die Ueberschrift eines Abschnitts IN einem Ergebnisreiter - heute der
+   Einzelanlagenblock des Stromspeichers (#216). */
+.epos-simerg-untertitel {
+    margin: 10px 0 4px 0;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+    color: var(--epos-text);
 }
 
 .epos-simerg-status { margin: 4px 0; font-weight: 600; }
@@ -7720,13 +7763,26 @@ body {
     color: var(--epos-text-leise);
 }
 
-/* Der Rueckweg steht rechts - aber IM Fluss: margin-left:auto schiebt ihn
-   nur, solange die Zeile nicht umgebrochen ist. */
+/* DIE WERKZEUGLEISTE (Windows-Abnahme #216, Punkt 2: „Bringe die Elemente
+   aus dem Dialog auf die rechte Seite mit besserem Design").
+
+   EINE Zeile statt zweier: Schrittgruppe · „Ergebnis speichern" · [i] [KI] ·
+   „← zurueck", rechtsbuendig. margin-left:auto schiebt sie nach rechts - aber
+   IM Fluss, also nur solange die Kopfzeile nicht umgebrochen ist. Auf schmalem
+   Schirm bricht sie um; die Schrittgruppe ist EIN Flexelement und bleibt dabei
+   als Ganzes zusammen. */
+.epos-simansicht-werkzeugleiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-left: auto;
+}
+
 .epos-simansicht-kopfaktionen {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-left: auto;
 }
 
 .epos-simansicht-blatt {
@@ -7822,6 +7878,34 @@ body {
 .epos-ablaufleiste-modus {
     display: inline-flex;
     align-items: center;
+}
+
+/* KOMPAKT (Windows-Abnahme #216, Punkt 2): die Leiste steht als GRUPPE in einer
+   Werkzeugleiste, nicht als eigene Zeile ueber dem Blatt. Damit faellt die
+   Trennlinie - sie trennte die Leiste vom Blatt darunter - und die Zaesur vor
+   dem Rechenknopf: Bei fuenf Schritten ist sie die Grenze zwischen „eingeben"
+   und „rechnen", bei DREI waere sie eine Luecke mitten in der Gruppe. Der Rand
+   umschliesst die drei Schritte als EIN Bedienelement. */
+.epos-ablaufleiste--kompakt {
+    border-bottom: 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.epos-ablaufleiste--kompakt .epos-ablaufleiste-aktion {
+    margin-inline-start: 0;
+    gap: 0;
+    padding: 0;
+}
+
+.epos-ablaufleiste--kompakt .epos-ablaufleiste-rechnen {
+    border-radius: 0;
+}
+
+/* Der letzte Schritt braucht seine Trennlinie nicht - der Rahmen ist schon da. */
+.epos-ablaufleiste--kompakt .epos-ablaufleiste-schritt:last-child .epos-ablaufleiste-knopf {
+    border-right: 0;
 }
 
 @media (forced-colors: active) {

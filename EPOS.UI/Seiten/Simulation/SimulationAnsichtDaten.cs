@@ -37,6 +37,18 @@ public static class SimulationMarke
     /// <summary>Der Schritt ① als Marke.</summary>
     public const string SCHRITT_KONFIGURATION = "schritt=1";
 
+    /// <summary>
+    /// Der Schritt ② als Marke — <b>„öffnen UND rechnen"</b> (Anwenderentscheid
+    /// <b>SIM‑E‑1</b> vom 11.09.2026, Windows-Abnahme #216).
+    /// </summary>
+    /// <remarks>
+    /// ② ist kein Blatt, sondern der Rechenknopf; eine Marke darauf heisst deshalb
+    /// nicht „zeige Schritt 2", sondern „tu, was der Knopf tut". Die Ansicht prüft
+    /// dabei DIESELBE Sperre wie der Knopf: Ist sie gesetzt, bleibt sie bei ① und
+    /// nennt den Grund — eine Marke ist ein WUNSCH, kein Befehl.
+    /// </remarks>
+    public const string SCHRITT_LAUF = "schritt=2";
+
     /// <summary>Der Schritt ③ als Marke.</summary>
     public const string SCHRITT_ERGEBNIS = "schritt=3";
 
@@ -126,4 +138,48 @@ public sealed class SimulationAnsichtDienste
     /// Deshalb fragt diese Auskunft nach dem LAUF und nicht nach der Gültigkeit.
     /// </remarks>
     public Func<bool>? ErgebnisVorhanden;
+
+    /// <summary>
+    /// Die fünf LAUFPARAMETER, die seit Auftrag <b>#216</b> in Schritt ① stehen;
+    /// <c>null</c> = die Plattform bietet sie nicht an, dann zeigt ① sie nicht.
+    /// </summary>
+    public SimulationParameterDienste? Parameter;
+}
+
+/// <summary>
+/// Die fünf Laufparameter des gefallenen Reiters „Parameter" — Netzverluste,
+/// BHKW-Betriebsart, untere Leistungsgrenze, Heizstab und Betriebsbereitschaft
+/// (Windows-Abnahme <b>#216</b> vom 11.09.2026, Punkt 3: „Nimm Parameter heraus").
+///
+/// <para><b>Kein zweiter Schreibweg.</b> Die fünf Delegaten sind DIESELBEN, die
+/// bis #216 der Reiter „Parameter" von <c>SimulationErgebnisDienste</c> bekam —
+/// unter Windows legt sie <c>SimulationHuelle</c> aus der
+/// <c>SimulationErgebnisHuelle</c> ein (<c>KonfigSchreiben</c>,
+/// <c>BetriebsartSchreiben</c>). Die Werte landen damit in denselben Spalten von
+/// <c>Tab_Einstellungen</c>, und die Hülle, die den Lauf bestückt, kennt sie
+/// unverändert. Ein eigener Weg über die Konfigurationshülle wäre ein zweiter
+/// Stand derselben Zahlen.</para>
+///
+/// <para><b>Jedes Feld schreibt sofort</b> — dieselbe Hausregel wie im
+/// abgelösten Reiter (W11b‑B‑29); es gibt keinen Speichernknopf für diese fünf.</para>
+/// </summary>
+public sealed class SimulationParameterDienste
+{
+    /// <summary>Liest den Stand der fünf Werte; <c>null</c> = keiner.</summary>
+    public Func<ParameterDaten>? Laden;
+
+    /// <summary>Wert und Einheit der Netzwärmeverluste.</summary>
+    public Action<double, string>? NetzverlusteSchreiben;
+
+    /// <summary>0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung.</summary>
+    public Action<int>? BetriebsartSchreiben;
+
+    /// <summary>Die projektweite untere Modulationsgrenze der BHKW-Module [%].</summary>
+    public Action<int>? LeistungsgrenzeSchreiben;
+
+    /// <summary>Rechnet die Wärmepumpe mit Heizstab?</summary>
+    public Action<bool>? HeizstabSchreiben;
+
+    /// <summary>Die Betriebsbereitschaft des Heizkessels [h/a].</summary>
+    public Action<double>? BereitschaftSchreiben;
 }

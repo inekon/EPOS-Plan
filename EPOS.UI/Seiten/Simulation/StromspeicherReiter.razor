@@ -113,15 +113,30 @@
         </section>
     }
 
-    @* W11b-B-28: DIE PARAMETER. Sie stehen VOR den Kacheln und OHNE Bedingung:
+    @* W11b-B-28: DIE PARAMETER. Sie stehen VOR den Kacheln und AUCH OHNE Lauf:
        Ein Projekt ohne Lauf zeigt sonst eine Warnzeile und sonst nichts - und
        gerade dann will der Anwender die Betriebsfuehrung einstellen, bevor er
-       rechnet. Jedes Feld schreibt sofort (W11b-B-29). *@
-    @if (!FlottenEinstiegMoeglich)
+       rechnet. Jedes Feld schreibt sofort (W11b-B-29).
+
+       SIE GEHOEREN DER EINZELANLAGE (Windows-Abnahme #216 vom 11.09.2026,
+       Punkt 3). Bis dahin hing der Block an FlottenEinstiegMoeglich - also an der
+       FRAGE, ob die Plattform ueberhaupt eine Flotte rechnen kann; unter Windows
+       ist das immer der Fall, und der Block war damit unerreichbar geworden. Er
+       haengt jetzt am STAND: Solange KEIN Flottenstand aktiviert ist, faehrt der
+       Projektlauf die Einzelanlage, und dann sind das seine Parameter. Mit
+       aktivierter Flotte folgt die Betriebsart dem Haekchen „Netzladung" des
+       Flotteneditors (StromspeicherSimCtrl), und zwei Pflegestellen desselben
+       Werts waeren eine zuviel. *@
+    @if (!Daten.FlotteImProjektAktiv)
     {
-    <SpeicherParameterBlock Daten="@Parameter" Dienste="@Dienste" Gesperrt="@Gesperrt"
-                            OptimierungMoeglich="@(!FlottenEinstiegMoeglich && OptimierungMoeglich)"
-                            Optimierung="@Optimierung" />
+        <section class="epos-simerg-block" aria-labelledby="speicher-einzelanlage-titel">
+            <h3 id="speicher-einzelanlage-titel" class="epos-simerg-untertitel">
+                @Resource.SP_GRP_EINZELANLAGE
+            </h3>
+            <SpeicherParameterBlock Daten="@Parameter" Dienste="@Dienste" Gesperrt="@Gesperrt"
+                                    OptimierungMoeglich="@(!FlottenEinstiegMoeglich && OptimierungMoeglich)"
+                                    Optimierung="@Optimierung" />
+        </section>
     }
 
     @if (Daten.Flottenergebnis is not null)

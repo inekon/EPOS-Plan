@@ -52,6 +52,33 @@
 
     <fieldset class="epos-simkonfig-bereich" disabled="@_daten.Gesperrt">
 
+        @* DIE NETZVERLUSTE (Windows-Abnahme #216 vom 11.09.2026, Punkt 3: „Nimm
+           Parameter heraus — die Netzverluste koennen an eine andere Stelle
+           (werden diese ueberhaupt verwendet?)"). Sie WERDEN verwendet:
+           SimulationLaufCtrl prueft sie (Z. 72) und uebergibt sie an
+           SimulationWaermebedarf.Netzverluste (Z. 118-119), das sie stuendlich
+           umrechnet und ueber SimulationKanaele.NetzverlusteVerteilen anteilig
+           auf die Bedarfskanaele legt. Deshalb stehen sie hier, beim WAERMEBEDARF
+           des Projekts, und nicht mehr in einem Reiter des Ergebnisses. *@
+        @if (Parameter?.Laden is not null)
+        {
+            <section class="epos-simkonfig-bedarf" aria-label="@Resource.SIMKONF_GRP_WAERMEBEDARF">
+                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_WAERMEBEDARF" />
+                <div class="epos-simkonfig-felder">
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
+                                        Wert="@_parameter.Netzverluste"
+                                        Einheit="@_parameter.NetzverlusteEinheit"
+                                        Aktiv="@(!_daten.Gesperrt && Parameter?.NetzverlusteSchreiben is not null)"
+                                        WertChanged="NetzverlusteGesetzt" />
+                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_NETZVERLUSTE" />
+                        </KindInhalt>
+                    </Formularraster>
+                </div>
+            </section>
+        }
+
         @if (_ansicht == ANSICHT_SCHEMA)
         {
             <Schema Layout="@_schema" Gewaehlt="@_auswahl"
@@ -102,6 +129,7 @@
                         {
                             ErzeugerZeile zeile = z;
                             <ErzeugerKachel Aufbau="@zeile.Kachel"
+                                            Parameterbereich="@Erzeugerparameter(zeile)"
                                             AufnehmenText="@AufnehmenText"
                                             TipHoch="@TipHoch" TipRunter="@TipRunter"
                                             TipBearbeiten="@TipBearbeiten" TipEntfernen="@TipEntfernen"
@@ -356,6 +384,26 @@
     /// </remarks>
     [Parameter] public EventCallback<bool> UngespeichertGeaendert { get; set; }
 
+    /// <summary>
+    /// Die FÜNF LAUFPARAMETER des gefallenen Reiters „Parameter" (Windows-Abnahme
+    /// <b>#216</b> vom 11.09.2026, Punkt 3); <c>null</c> = die Plattform bietet sie
+    /// nicht an, dann steht weder der Abschnitt „Wärmebedarf" noch ein
+    /// Parameterbereich an einer Erzeugerkarte.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum hier und nicht im Ergebnis.</b> „Nimm Parameter heraus — die
+    /// Netzverluste können an eine andere Stelle." Sie parametrieren den LAUF, nicht
+    /// sein Ergebnis: Die Netzverluste gehören zum Wärmebedarf des Projekts, die
+    /// drei Erzeugerwerte an die Karte des Erzeugers, den sie betreffen — dorthin,
+    /// wo der Anwender ihn ohnehin konfiguriert.</para>
+    /// <para><b>Jedes Feld schreibt sofort</b>, wie im abgelösten Reiter; der Knopf
+    /// „Konfiguration speichern" darunter gehört der Kaskade und nicht diesen fünf.
+    /// Der Schreibweg ist derselbe geblieben (<c>KonfigSchreiben</c> der
+    /// Ergebnishülle), die Werte landen in denselben Spalten von
+    /// <c>Tab_Einstellungen</c>.</para>
+    /// </remarks>
+    [Parameter] public SimulationParameterDienste? Parameter { get; set; }
+
     // ---- Texte (deutscher Rueckfall; die Huelle setzt die Ressourcen) ----
 
     [Parameter] public string KopfText { get; set; } = "Erzeuger definieren, Pufferspeicher zuordnen:";
@@ -502,6 +550,9 @@
     private SimulationKonfigDaten _daten = new SimulationKonfigDaten();
     private Bausteine.SchemaBild? _schema;
 
+    /// <summary>Der Stand der fünf Laufparameter (#216); ohne Dienst die Vorgaben.</summary>
+    private ParameterDaten _parameter = new ParameterDaten();
+
     private string _ansicht = ANSICHT_LISTE;
 
     /// <summary>
@@ -599,9 +650,144 @@
     private void Neuladen()
     {
         _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationKonfigDaten();
+        _parameter = Parameter?.Laden?.Invoke() ?? new ParameterDaten();
         AnsichtszustandAnwenden();
         SchemaAuffrischen();
     }
+
+    // =====================================================================
+    // Die fünf Laufparameter (#216) — jedes Feld schreibt sofort
+    // =====================================================================
+
+    private void NetzverlusteGesetzt(double? wert)
+    {
+        _parameter.Netzverluste = wert ?? 0.0;
+        Parameter?.NetzverlusteSchreiben?.Invoke(_parameter.Netzverluste,
+                                                 _parameter.NetzverlusteEinheit);
+    }
+
+    /// <summary>
+    /// Die drei Betriebsarten des BHKW. Die Steuerwerte 0/1/2 sind die des
+    /// Vorläufers (<c>RadioButton.Tag</c>, <c>bhkwSimulationsArt</c>) und stehen so
+    /// in <c>Tab_Einstellungen</c>.
+    /// </summary>
+    private static readonly (int Id, string Text)[] BETRIEBSARTEN =
+    {
+        (0, Resource.SIMERG_OPT_WAERMEGEFUEHRT),
+        (1, Resource.SIMERG_OPT_STROMGEFUEHRT),
+        (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
+    };
+
+    private void BetriebsartGesetzt(int? wert)
+    {
+        _parameter.Betriebsart = wert ?? 0;
+        Parameter?.BetriebsartSchreiben?.Invoke(_parameter.Betriebsart);
+    }
+
+    private void LeistungsgrenzeGesetzt(int? wert)
+    {
+        _parameter.UntersteLeistungsgrenze = wert ?? 0;
+        Parameter?.LeistungsgrenzeSchreiben?.Invoke(_parameter.UntersteLeistungsgrenze);
+    }
+
+    private void HeizstabGesetzt(bool wert)
+    {
+        _parameter.Heizstab = wert;
+        Parameter?.HeizstabSchreiben?.Invoke(wert);
+    }
+
+    private void BereitschaftGesetzt(double? wert)
+    {
+        _parameter.Bereitschaft = wert ?? 0.0;
+        Parameter?.BereitschaftSchreiben?.Invoke(_parameter.Bereitschaft);
+    }
+
+    /// <summary>
+    /// Der Parameterbereich EINER Erzeugerkarte; <c>null</c> = dieser Erzeuger hat
+    /// keinen (dann steht der Bereich gar nicht da).
+    /// </summary>
+    /// <remarks>
+    /// Welche Karte welches Feld zeigt, entscheidet ihr <c>DbWert</c> — dieselbe
+    /// Zuordnung, die bis #216 <c>BlattZuTool</c> der Hülle für die vier
+    /// Unterblätter des Reiters „Parameter" traf. Die Beschriftungen sind
+    /// unverändert dieselben Ressourcen wie dort.
+    /// </remarks>
+    private RenderFragment? Erzeugerparameter(ErzeugerZeile zeile)
+    {
+        if (Parameter?.Laden is null) return null;
+
+        // NUR AN DER ERSTEN KARTE IHRER ART. Ein Projekt kann mehrere Module
+        // derselben Erzeugerart fuehren (zwei BHKW-Module = zwei Karten), die
+        // fuenf Werte gelten aber PROJEKTWEIT - an jeder Karte stuenden sie so
+        // oft da, wie es Module gibt, und jede Eingabe schriebe dieselbe Spalte.
+        // Dieselbe Regel, nach der auch ▲▼ und × nur an der ersten Karte stehen.
+        if (!ReferenceEquals(zeile, ErsteIhrerArt(zeile.DbWert))) return null;
+
+        return zeile.DbWert switch
+        {
+            WindowsFormsApplication1.DbWerte.ERZEUGER_BHKW => ParameterBhkw,
+            WindowsFormsApplication1.DbWerte.ERZEUGER_WAERMEPUMPE => ParameterWaermepumpe,
+            WindowsFormsApplication1.DbWerte.ERZEUGER_HEIZKESSEL => ParameterHeizkessel,
+            _ => null
+        };
+    }
+
+    /// <summary>Die erste Zeile dieser Erzeugerart über alle Gruppen; <c>null</c> = keine.</summary>
+    private ErzeugerZeile? ErsteIhrerArt(string dbWert)
+    {
+        foreach (KachelGruppe gruppe in _daten.Gruppen)
+            foreach (ErzeugerZeile zeile in gruppe.Zeilen)
+                if (string.Equals(zeile.DbWert, dbWert, StringComparison.Ordinal)) return zeile;
+
+        return null;
+    }
+
+    private bool ParameterAktiv => !_daten.Gesperrt;
+
+    private RenderFragment ParameterKopf => @<Gruppenkopf Titel="@Resource.SIMKONF_GRP_LAUFPARAMETER" />;
+
+    private RenderFragment ParameterBhkw => @<div class="epos-simkonfig-felder">
+        @ParameterKopf
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+                <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
+                               Eintraege="@BETRIEBSARTEN" Auswahl="@_parameter.Betriebsart"
+                               Aktiv="@ParameterAktiv" AuswahlChanged="BetriebsartGesetzt" />
+
+                @* W6-E-7 (07.09.2026): DIE PROJEKTWEITE UNTERGRENZE - hier und nur
+                   hier. Das Feld fuehrt Tab_Einstellungen.Leistungsgrenze, traegt
+                   seine Einheit am Feld und sagt in der Herleitungszeile, was 0
+                   bedeutet - denn seit W6-E-7 rechnet 0 als 0 und nicht mehr still
+                   als 30 %. *@
+                <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" Einheit="%"
+                              Wert="@_parameter.UntersteLeistungsgrenze" Min="0" Max="100"
+                              Aktiv="@ParameterAktiv" WertChanged="LeistungsgrenzeGesetzt" />
+                <Herleitungszeile Text="@Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" />
+            </KindInhalt>
+        </Formularraster>
+        <p class="epos-simkonfig-info">@Resource.SIMERG_INFO_BHKW</p>
+    </div>;
+
+    private RenderFragment ParameterWaermepumpe => @<div class="epos-simkonfig-felder">
+        @ParameterKopf
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+                <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@_parameter.Heizstab"
+                          Aktiv="@ParameterAktiv" WertChanged="HeizstabGesetzt" />
+            </KindInhalt>
+        </Formularraster>
+    </div>;
+
+    private RenderFragment ParameterHeizkessel => @<div class="epos-simkonfig-felder">
+        @ParameterKopf
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
+                            Wert="@_parameter.Bereitschaft" Einheit="h/a"
+                            Aktiv="@ParameterAktiv" WertChanged="BereitschaftGesetzt" />
+            </KindInhalt>
+        </Formularraster>
+    </div>;
 
     /// <summary>
     /// Traegt Auswahl und Aufklappzustand in die frisch geladenen Kacheln nach.

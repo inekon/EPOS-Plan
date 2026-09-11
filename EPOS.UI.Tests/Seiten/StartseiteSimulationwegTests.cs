@@ -18,9 +18,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// Konfiguration…" die Startseite INNERHALB ihrer eigenen Komponente ab, und die
 /// Kachel „Simulation" zog eine breite <c>Ueberlagerung</c> über sie (Entscheid
 /// E‑5). Seither meldet die Seite nur noch den WEG: Beide gehen über
-/// <c>Dienste.Navigation</c> auf die freie Ansicht <c>SIMULATION</c> — der Knopf mit
-/// der Marke <c>schritt=1</c>, die Kachel mit <c>schritt=3</c>. Das ist auf BEIDEN
-/// Plattformen derselbe Weg (Konzept „Simulationsablauf" 2).</para>
+/// <c>Dienste.Navigation</c> auf die freie Ansicht <c>SIMULATION</c>. Das ist auf
+/// BEIDEN Plattformen derselbe Weg (Konzept „Simulationsablauf" 2).</para>
+///
+/// <para><b>Seit dem Anwenderentscheid SIM‑E‑1</b> (Windows-Abnahme #216 vom
+/// 11.09.2026, Punkt 1: „Belege den Button (Kachel ‚Simulation') mit ‚Simulation
+/// starten'") trägt die KACHEL die Marke <c>schritt=2</c> und löst damit den Lauf
+/// aus; der Knopf bleibt bei <c>schritt=1</c>. Das revidiert für diese Kachel den
+/// #207-Entscheid „sie öffnet ③ und startet nicht von selbst".</para>
 ///
 /// <para>Der Fall tauscht <c>Dienste.Navigation</c> und gehört deshalb in die
 /// serielle Sammlung — dieselbe Regel wie die KI-Dialogwege aus #199.</para>
@@ -65,7 +70,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
         {
             Schluessel = Kachelschluessel.SimulationErgebnis,
             Reiter = Reiterschluessel.Simulation,
-            Titel = "Simulation"
+            Titel = WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T
         }
     };
 
@@ -98,9 +103,13 @@ public class StartseiteSimulationwegTests : EposBunitContext
         Assert.Empty(gemeldet);
     }
 
-    /// <summary>Die Kachel „Simulation" öffnet dieselbe Ansicht bei Schritt ③.</summary>
+    /// <summary>
+    /// Die Kachel „Simulation starten" öffnet dieselbe Ansicht und LÖST DEN LAUF
+    /// AUS (SIM‑E‑1): Marke <c>schritt=2</c> — das ist derselbe Weg, den der
+    /// Rechenknopf der Ablaufleiste geht, samt Sperrprüfung.
+    /// </summary>
     [Fact]
-    public void Die_Kachel_Simulation_oeffnet_die_Ansicht_bei_Schritt_drei()
+    public void Die_Kachel_Simulation_starten_loest_Schritt_zwei_aus()
     {
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
@@ -109,8 +118,25 @@ public class StartseiteSimulationwegTests : EposBunitContext
         cut.Find(".epos-kachel").Click();
 
         Assert.Equal(new[] { Masken.Simulation }, Navigation.Masken);
-        Assert.Equal(SimulationMarke.SCHRITT_ERGEBNIS, Navigation.LetzteArgumente[0]);
+        Assert.Equal(SimulationMarke.SCHRITT_LAUF, Navigation.LetzteArgumente[0]);
         Assert.Empty(gemeldet);
+    }
+
+    /// <summary>
+    /// Und die Kachel HEISST so — der Titel kommt aus <c>START_K_DETAILSIM_T</c>,
+    /// den die Hülle setzt; hier steht er als Probendatum und wird angezeigt.
+    /// </summary>
+    [Fact]
+    public void Die_Kachel_traegt_die_Beschriftung_Simulation_starten()
+    {
+        List<string> gemeldet = new List<string>();
+        var cut = Zeigen(gemeldet);
+
+        cut.FindAll("[role='tab']")[4].Click();
+
+        Assert.Equal("Simulation starten",
+                     WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T);
+        Assert.Contains("Simulation starten", cut.Find(".epos-kachel").TextContent);
     }
 
     /// <summary>

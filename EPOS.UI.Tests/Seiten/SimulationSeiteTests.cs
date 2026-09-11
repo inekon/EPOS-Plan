@@ -140,6 +140,10 @@ public class SimulationSeiteTests : EposBunitContext
     private static IElement Rechnen(IRenderedComponent<SimulationSeite> cut)
         => cut.Find("button.epos-ablaufleiste-rechnen");
 
+    /// <summary>„Ergebnis speichern" der Werkzeugleiste (#216).</summary>
+    private static IElement Speichern(IRenderedComponent<SimulationSeite> cut)
+        => cut.Find("button.epos-simansicht-speichern");
+
     /// <summary>Das SICHTBARE Blatt — das andere steht daneben und schweigt.</summary>
     private static IReadOnlyList<IElement> Sichtbar(IRenderedComponent<SimulationSeite> cut)
         => cut.FindAll(".epos-simansicht-blatt:not(.epos-simansicht-blatt--aus)");
@@ -185,6 +189,73 @@ public class SimulationSeiteTests : EposBunitContext
         var zurueck = cut.FindAll(".epos-simansicht-kopfaktionen button.epos-knopf");
         Assert.Single(zurueck);
         Assert.Equal("← zurück", zurueck[0].TextContent.Trim());
+    }
+
+    // =====================================================================
+    //  #216, Punkt 2 — EINE rechtsbuendige Werkzeugleiste
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Windows-Abnahme #216, Punkt 2:</b> „Bringe die Elemente aus dem Dialog auf
+    /// die rechte Seite mit besserem Design." Alles, was die Ansicht bedient, steht
+    /// in EINER Leiste im Kopf: die Schrittgruppe (kompakt, ohne Lücke), daneben
+    /// „Ergebnis speichern", dann das EINE Paar [i] [KI] und das EINE „← zurück".
+    /// </summary>
+    [Fact]
+    public void Die_Werkzeugleiste_steht_im_Kopf_und_traegt_die_Gruppe_zusammen()
+    {
+        var cut = Zeigen(ergebnisDa: true);
+
+        IElement leiste = cut.Find(".epos-simansicht-kopf .epos-simansicht-werkzeugleiste");
+
+        // Die Schrittgruppe ist EIN Element der Leiste und traegt die kompakte Form.
+        Assert.Single(leiste.QuerySelectorAll("nav.epos-ablaufleiste--kompakt"));
+        Assert.Single(leiste.QuerySelectorAll("button.epos-simansicht-speichern"));
+        Assert.Single(leiste.QuerySelectorAll(".epos-simansicht-kopfaktionen"));
+
+        // Die Ablaufleiste steht NICHT mehr als eigene Zeile unter dem Kopf.
+        Assert.Empty(cut.FindAll(".epos-simansicht > nav.epos-ablaufleiste"));
+    }
+
+    /// <summary>
+    /// EIN Paar [i] [KI] je Ansicht (Hausregel W11b‑B‑9 sinngemäß) und KEINE
+    /// Fußleiste mehr: Beides trug die eingebettete Ergebnisseite bis #216 ein
+    /// zweites Mal.
+    /// </summary>
+    [Fact]
+    public void Die_Ansicht_traegt_genau_ein_Paar_Info_und_KI_und_keine_Fussleiste()
+    {
+        var cut = Zeigen(marke: SimulationMarke.SCHRITT_ERGEBNIS, ergebnisDa: true);
+
+        Assert.Single(cut.FindAll("button.epos-infoknopf"));
+        Assert.Empty(cut.FindAll("div.epos-simerg-fuss"));
+        Assert.Empty(cut.FindAll("div.epos-simerg-kopf"));
+    }
+
+    /// <summary>
+    /// „Ergebnis speichern" ist NUR in ③ frei — in ① gibt es kein Ergebnis, das
+    /// man speichern könnte, und während des Laufs auch nicht.
+    /// </summary>
+    [Fact]
+    public void Ergebnis_speichern_ist_nur_in_Schritt_drei_frei()
+    {
+        var cut = Zeigen();
+
+        Assert.Equal("Ergebnis speichern", Speichern(cut).TextContent.Trim());
+        Assert.True(Speichern(cut).HasAttribute("disabled"));
+
+        Rechnen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
+
+        // Waehrend des Laufs bleibt er gesperrt.
+        Assert.True(Speichern(cut).HasAttribute("disabled"));
+
+        cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
+        cut.WaitForAssertion(() => Assert.False(Speichern(cut).HasAttribute("disabled")));
+
+        // Zurueck auf ① sperrt ihn wieder - dort gehoert er nicht hin.
+        Schritte(cut)[0].Click();
+        Assert.True(Speichern(cut).HasAttribute("disabled"));
     }
 
     /// <summary>Ohne Marke steht Schritt ① — und nur er.</summary>
@@ -353,6 +424,48 @@ public class SimulationSeiteTests : EposBunitContext
 
         // Danach steht ③ offen, auch ohne Auskunft der Huelle.
         Assert.Equal("false", Schritte(cut)[1].GetAttribute("aria-disabled") ?? "false");
+    }
+
+    // =====================================================================
+    //  #216, Punkt 1 — die Marke schritt=2 (Anwenderentscheid SIM-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>SIM‑E‑1 (11.09.2026):</b> „Belege den Button (Kachel ‚Simulation') mit
+    /// ‚Simulation starten'." Die Kachel öffnet die Ansicht mit
+    /// <c>schritt=2</c> — und die tut, was der Rechenknopf tut: auf ③ wechseln und
+    /// den Lauf starten. Schritt ① entsteht dabei gar nicht erst; sein Aufbau
+    /// läse die Datenbank.
+    /// </summary>
+    [Fact]
+    public void Die_Marke_Lauf_startet_die_Simulation_und_landet_in_Schritt_drei()
+    {
+        var cut = Zeigen(marke: SimulationMarke.SCHRITT_LAUF);
+
+        Assert.Equal(SimulationSchritt.Ergebnis, cut.Instance.Schritt);
+        cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[role='progressbar']")));
+        Assert.Empty(cut.FindAll("div.epos-simkonfig"));
+
+        cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[role='progressbar']")));
+    }
+
+    /// <summary>
+    /// Eine Marke ist ein WUNSCH, kein Befehl: Ist der Lauf gesperrt, bleibt die
+    /// Ansicht bei ① und nennt den Grund — dieselbe weiche Auskunft wie am
+    /// Rechenknopf.
+    /// </summary>
+    [Fact]
+    public void Die_Marke_Lauf_bleibt_bei_Sperre_in_Schritt_eins_und_nennt_den_Grund()
+    {
+        var cut = Zeigen(marke: SimulationMarke.SCHRITT_LAUF,
+                         sperrgrund: "Die Datenbank ist nicht auf dem benötigten Stand.");
+
+        Assert.Equal(SimulationSchritt.Konfiguration, cut.Instance.Schritt);
+        Assert.Equal(0, _laeufe);
+        Assert.NotEmpty(cut.FindAll("div.epos-simkonfig"));
+        Assert.Contains("benötigten Stand", cut.Find(".epos-warnbanner").TextContent);
     }
 
     // =====================================================================

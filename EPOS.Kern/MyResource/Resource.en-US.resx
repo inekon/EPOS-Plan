@@ -13600,9 +13600,6 @@ Please check all entries!</value>
   <data name="SIMERG_TITEL" xml:space="preserve">
     <value>Detailed simulation</value>
   </data>
-  <data name="SIMERG_TAB_PARAMETER" xml:space="preserve">
-    <value>Parameters</value>
-  </data>
   <data name="SIMERG_TAB_UEBERSICHT" xml:space="preserve">
     <value>Overview</value>
   </data>
@@ -15093,7 +15090,7 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>Selected technologies:</value>
   </data>
   <data name="START_K_DETAILSIM_T" xml:space="preserve">
-    <value>Simulation</value>
+    <value>Start simulation</value>
   </data>
   <data name="START_K_DETAILSIM_B" xml:space="preserve">
     <value>Precise annual simulation with full detail</value>
@@ -18259,6 +18256,18 @@ Do you want to allow this?</value>
   </data>
   <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
     <value>There is no computed result for this project yet &#8212; the view starts at the configuration.</value>
+  </data>
+  <data name="SIMKONF_GRP_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="SIMKONF_HRL_NETZVERLUSTE" xml:space="preserve">
+    <value>Only effective if the project has a heat demand: the losses are spread over the year and distributed pro rata across the demand channels. Default 0 %.</value>
+  </data>
+  <data name="SIMKONF_GRP_LAUFPARAMETER" xml:space="preserve">
+    <value>Simulation parameters</value>
+  </data>
+  <data name="SP_GRP_EINZELANLAGE" xml:space="preserve">
+    <value>Single unit (classic project run)</value>
   </data>
   <data name="SIM_ANSICHT_VERLASSEN_TITEL" xml:space="preserve">
     <value>Unsaved configuration</value>

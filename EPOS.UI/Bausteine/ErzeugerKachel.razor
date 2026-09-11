@@ -100,11 +100,36 @@
             }
         </div>
     }
+
+    @* DER PARAMETERBEREICH (Windows-Abnahme #216 vom 11.09.2026, Punkt 3: „Nimm
+       Parameter heraus"). Die drei Erzeugerwerte des gefallenen Reiters
+       „Parameter" — BHKW-Betriebsart samt unterer Leistungsgrenze, Heizstab der
+       Waermepumpe, Betriebsbereitschaft des Heizkessels — stehen jetzt an der
+       Karte des Erzeugers, den sie betreffen. Er steht IMMER da und nicht erst
+       aufgeklappt: Es ist eine Einstellung, kein Geraetedatum.
+
+       Der Baustein weiss nicht, was darin steht — er haelt nur den Platz. Ein
+       Klick darin darf die Karte nicht mehr auswaehlen oder aufklappen
+       (@onclick:stopPropagation), sonst schoebe jede Eingabe die Kachel um. *@
+    @if (Parameterbereich is not null)
+    {
+        <div class="epos-erzeugerkachel-parameter" @onclick:stopPropagation="true"
+             @ondblclick:stopPropagation="true">
+            @Parameterbereich
+        </div>
+    }
 </div>
 
 @code {
     /// <summary>Der Inhalt der Kachel; nie <c>null</c>.</summary>
     [Parameter] public ErzeugerKachelDaten? Aufbau { get; set; }
+
+    /// <summary>
+    /// Die Simulationsparameter DIESES Erzeugers (Auftrag #216); <c>null</c> =
+    /// keine, dann steht der Bereich gar nicht da. Was darin steht, bestimmt der
+    /// Wirt — der Baustein haelt nur den Platz.
+    /// </summary>
+    [Parameter] public RenderFragment? Parameterbereich { get; set; }
 
     private static readonly ErzeugerKachelDaten LEER = new ErzeugerKachelDaten();
 

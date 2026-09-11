@@ -704,9 +704,16 @@
 
         // AUFTRAG #207: Die zwei Simulationswege fuehren in EINE freie Ansicht der
         // AppWurzel, und die MARKE sagt, wo sie aufmacht - der Knopf bei der
-        // Konfiguration (①), die Kachel beim Ergebnis (③). Ohne gerechnetes
-        // Ergebnis faellt die Ansicht SELBST auf ① zurueck und sagt warum; das
-        // entscheidet sie, nicht die Startseite.
+        // Konfiguration (①).
+        //
+        // DIE KACHEL RECHNET (Anwenderentscheid SIM-E-1 vom 11.09.2026, Punkt 1
+        // der Windows-Abnahme #216): „Belege den Button (Kachel ‚Simulation') mit
+        // ‚Simulation starten'." Sie traegt seither die Marke schritt=2 - die
+        // Ansicht geht denselben Weg wie ihr Rechenknopf: Sperrgrund pruefen,
+        // Fortschritt, Abbrechen. Ist gesperrt, bleibt sie bei ① und nennt den
+        // Grund. Das revidiert fuer DIESE Kachel den #207-Entscheid „die Kachel
+        // oeffnet ③ und startet nicht von selbst"; sie hiess dort noch
+        // „Simulation", und der Anwender hat genau das zurueckgegeben.
         //
         // Der Weg ist Dienste.Navigation und damit auf BEIDEN Plattformen derselbe:
         // Unter Windows reicht WinFormsNavigation den Schluessel an die gezeichnete
@@ -717,7 +724,7 @@
             && SimulationOeffnen(SimulationMarke.SCHRITT_KONFIGURATION)) return;
 
         if (schluessel == Kachelschluessel.SimulationErgebnis
-            && SimulationOeffnen(SimulationMarke.SCHRITT_ERGEBNIS)) return;
+            && SimulationOeffnen(SimulationMarke.SCHRITT_LAUF)) return;
 
         Geklickt?.Invoke(schluessel);
 

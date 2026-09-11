@@ -39326,15 +39326,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
-        /// </summary>
-        public static string SIMERG_TAB_PARAMETER {
-            get {
-                return ResourceManager.GetString("SIMERG_TAB_PARAMETER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht ähnelt.
         /// </summary>
         public static string SIMERG_TAB_UEBERSICHT {
@@ -39394,6 +39385,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_ZUSATZ_NICHT_IN_KASKADE {
             get {
                 return ResourceManager.GetString("SIMERG_ZUSATZ_NICHT_IN_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter für die Simulation ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_LAUFPARAMETER {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_LAUFPARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt nur, wenn das Projekt einen Wärmebedarf führt: Die Verluste werden stündlich umgelegt und anteilig auf die Bedarfskanäle verteilt. Vorgabe 0 %. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_NETZVERLUSTE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_NETZVERLUSTE", resourceCulture);
             }
         }
         
@@ -45877,6 +45895,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelanlage (klassischer Projektlauf) ähnelt.
+        /// </summary>
+        public static string SP_GRP_EINZELANLAGE {
+            get {
+                return ResourceManager.GetString("SP_GRP_EINZELANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gerätetechnik ähnelt.
         /// </summary>
         public static string SP_GRUPPE_GERAETETECHNIK {
@@ -46508,7 +46535,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation starten ähnelt.
         /// </summary>
         public static string START_K_DETAILSIM_T {
             get {
