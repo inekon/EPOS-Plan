@@ -825,4 +825,10 @@ Rückkehr aus der Stromspeicher-Auslegung und „Neu gegenüber der Vorversion".
 vorhandenen Anker und ihre Absätze stehen wortgleich** — `speicher-im-projekt` wird von der
 Stromspeicherseite verlinkt, `senkenliste`/`senkenzeile`/`parallelverbund`/`ladeverhalten` stehen
 in `help_mapping.txt` —, ebenso „Siehe auch", die Kategorie und der Abschnitt „Berechnung".
-Hochgeladen wird sie durch die Orchestrierung erst nach #216 (Kachel „Simulation starten", Reiter „Parameter" fällt, Übersicht zuerst), damit die Seite nicht zweimal wandert.
+Hochgeladen wurde sie durch die Orchestrierung erst nach #216 (Kachel „Simulation starten", Reiter „Parameter" fällt, Übersicht zuerst),
+damit die Seite nicht zweimal wandert: **Revision 546** (11.09.2026, Merge `bcd3725`, Gate sept25) — die Quelle trägt seither die
+#216-Punkte (Einstiegssatz mit SIM‑E‑1, Werkzeugleiste statt Ablaufleiste plus Fußleiste, Laufparameter in Schritt ①, Schritt ③ mit
+bis zu neun Reitern ab „Übersicht" und dem Einzelanlagenblock, drei neue Punkte unter „Neu gegenüber der Vorversion"); die Nachprobe
+per `action=raw` zählt 13 Anker (zehn alte, drei neue). **Dazu `Hilfe-Assistent` Revision 547** (11.09.2026) mit dem Absatz
+„Rechnen dauert und lässt sich abbrechen" aus #214 und dem Satz zur EPOS-Marke rechts neben dem i aus #218 (Merge `bec51ec`) —
+ein Upload für beide Aufträge, Quelle und Live-Stand gleich.

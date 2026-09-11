@@ -70,6 +70,13 @@ Plattform grundsätzlich möglich ist (Lizenz erlaubt KI, kein Lesemodus-Verbot 
 Dialoge und Überlagerungen mit Info-Knopf den Assistenten in einem Schritt; ein Dialog, der ihn nicht will
 (Lizenzdialog, Erststart), setzt `MitAssistent="false"`.
 
+**Gestalt seit #218 (11.09.2026, `b9dc087`, Merge `bec51ec`; Anwenderentscheid „KI-Knopf: Variante C + Variante D"):** Info-Knopf
+und KI-Knopf sind EINE **Hilfe-Pille** (`.epos-hilfepille`, 28 px hoch, ein Rahmen, Trennlinie) — links das „i" als Inline-SVG, rechts
+die nachgezeichnete EPOS-Plan-Marke (drei Felder PV-Blau/Grün/Orange, weiße Mitte, blauer Blitz; Token `--epos-ki-marke-*`) statt der
+Beschriftung „KI". Der `KiKnopf` bleibt als Ring mit derselben Marke für Wirte ohne Info-Knopf; beide tragen `Aktiv` (Vorgabe `false`,
+noch von keinem Wirt gesetzt — vorgesehen, sobald eine Ansicht `KI_ASSISTENT` offen ist). Die Selektoren `.epos-infoknopf` und
+`.epos-kiknopf` bleiben für die Dialogproben bestehen; `KI_KNOPF_HILFE` und `KI_KNOPF_DIALOG` sind ohne Leser entfernt.
+
 **Was der Knopf weiß.** Denselben `Schluessel` wie der Info-Knopf. Daraus leitet der Kern den Bereich ab:
 `KiChatKontext.BereichFuerHilfeschluessel(schluessel)` — eine Tabelle Hilfeschlüssel-Präfix → Bereich der
 Positivliste (`Form_Heizkessel*` → `B_HEIZKESSEL`, `KDLG_*`/`Form_Kosten*` → `B_KOSTEN`, …), mit `BEREICH_UNBEKANNT`
