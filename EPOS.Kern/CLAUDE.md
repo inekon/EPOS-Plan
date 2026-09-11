@@ -207,7 +207,7 @@ oder auf die Konsole schreibenden Vorbelegung.
 | Haken | Wofür | Vorbelegung |
 |---|---|---|
 | `Meldung.Zeigen` / `.Hinweis` / `.Warnung` / `.Warten` | Dialog statt `MessageBox.Show` bzw. Sanduhr | **seit iU5 `Dienste.Dialog`** — ohne Oberfläche damit Konsole, `Warten` folgenlos. `Program.Main` belegt diese vier Haken **nicht mehr** |
-| `SimulationControl.Speicherlauf` | der Stromspeicherzweig (K8) | wird vom `[ModuleInitializer]` in `SimulationControl.Stromspeicher.cs` gesetzt, sobald diese Assembly lädt |
+| `SimulationControl.Speicherlauf` | der Stromspeicherzweig (K8) | wird von `SimulationControl.StromspeicherzweigEinhaengen` in `SimulationControl.Stromspeicher.cs` gesetzt — ausdrücklich, als erste Anweisung von `Do_Simulation`. Bis zum Stromspeicher-Sync hing die Belegung an einem `[ModuleInitializer]`; in einer Bibliothek ist das die Bauart, vor der CA2255 warnt, und unter AOT (iOS) weder vorhersagbar noch beweisbar |
 | `SimulationRunner.Speicherergebnismodell` | dasselbe für das Ergebnismodell | wie oben |
 | `WErzeugerCtrl.GeraetewaisenAufraeumen` | Aufräumlauf nach dem Löschen eines Projekts | `null` = kein Lauf; zulässig, weil er ohnehin nach dem erfolgreichen DELETE läuft und der Migrationsschritt nachholt |
 | `DataRepository.Zugriff` | die Umsetzung hinter `IDatenzugriff` (iU6-T4) | `new SqliteDatenzugriff()`; wird in iU5 an `Dienste.Daten` gehängt |

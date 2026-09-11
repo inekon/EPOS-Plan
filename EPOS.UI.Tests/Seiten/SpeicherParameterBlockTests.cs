@@ -315,7 +315,7 @@ public class SpeicherParameterBlockTests : EposBunitContext
 
         Assert.Equal(Resource.SP_PARAM_MSG_GESPEICHERT, block.Instance.Meldung);
         Assert.DoesNotContain(block.FindAll("p.epos-simerg-status"),
-                              p => p.ClassName.Contains("epos-simerg-warn"));
+                              p => p.ClassName is string klassen && klassen.Contains("epos-simerg-warn"));
     }
 
     /// <summary>Vor dem ersten Schreibvorgang steht keine Meldung da.</summary>

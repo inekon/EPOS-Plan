@@ -62,7 +62,7 @@
         }
         <table class="epos-tabelle"><thead><tr><th>Speicher</th><th>Ladung AC kWh</th><th>Entladung AC kWh</th><th>Anfang / Ende kWh</th><th>Vollzyklen</th><th>Rainflow-Schaden</th></tr></thead><tbody>
             @foreach (var k in s.Variante.SpeicherKennzahlen)
-            { <tr><td>@(Ergebnis.Konfiguration.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId)?.Name ?? k.SpeicherId)</td><td>@N(k.LadeenergieAcKWh)</td><td>@N(k.EntladeenergieAcKWh)</td><td>@N(k.AnfangsenergieKWh) / @N(k.EndenergieKWh)</td><td>@N(k.AequivalenteVollzyklen)</td><td>@Rainflow(k)</td></tr> }
+            { <tr><td>@(Ergebnis.Konfiguration?.Einheiten.FirstOrDefault(x => x.Id == k.SpeicherId)?.Name ?? k.SpeicherId)</td><td>@N(k.LadeenergieAcKWh)</td><td>@N(k.EntladeenergieAcKWh)</td><td>@N(k.AnfangsenergieKWh) / @N(k.EndenergieKWh)</td><td>@N(k.AequivalenteVollzyklen)</td><td>@Rainflow(k)</td></tr> }
         </tbody></table>
         <Formularraster><KindInhalt>
             <Ganzzahlfeld Bezeichnung="Start ab Tag (0 = Beginn)" Wert="@_startTag" Min="0" WertChanged="TagSetzen" />

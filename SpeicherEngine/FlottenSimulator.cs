@@ -11,6 +11,32 @@ public static class FlottenSimulator
     private const double Dt = 0.25;
     private const double Eps = 1e-8;
 
+    /// <summary>
+    /// Rechnet EINE Variante vollstaendig: denselben Standortdatensatz einmal OHNE
+    /// Speicher und einmal MIT der konfigurierten Flotte, beide mit demselben Tarif
+    /// (Spezifikation 7.1 und 9.1).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Eingang und Konfiguration werden vor dem Lauf TIEF KOPIERT; spaetere Aenderungen
+    /// am uebergebenen Objekt koennen den laufenden Rechenstand nicht mehr beeinflussen.
+    /// </para>
+    /// <para>
+    /// Bei einem planenden <see cref="FlottenBetriebsziel"/> wird nach
+    /// <see cref="FlottenSimulationOptionen.NeuplanungAlleIntervalle"/> mit der REAL
+    /// erreichten Energie neu geplant; ausgefuehrt wird stets gegen den tatsaechlichen
+    /// Zustand. Scheitert die Planung, bricht der Lauf ab — es sei denn,
+    /// <see cref="FlottenSimulationOptionen.PrognoseFallbackErlaubt"/> gibt den
+    /// protokollierten Rueckfall auf die reaktive Regel frei.
+    /// </para>
+    /// </remarks>
+    /// <param name="input">Istwerte, archivierte Prognosen und Verfuegbarkeiten des Standorts.</param>
+    /// <param name="config">Flotte, Betriebsoptionen, Tarif und Kapitalwerteingaben der Variante.</param>
+    /// <param name="planer">Der Planer fuer die planenden Ziele; fuer die reaktiven Ziele <c>null</c>.</param>
+    /// <param name="cancellationToken">Abbruchmarke; sie wird je Intervall geprueft.</param>
+    /// <returns>Referenz und Variante samt Rechnungen, Endenergieaenderung und — bei vorliegenden Jahreskonten — Kapitalwert.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="input"/> oder <paramref name="config"/> ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Zeitraster, Einheiten, Reihen oder Optionen sind nicht schluessig.</exception>
     public static FlottenStudienErgebnis Simuliere(
         FlottenEingang input,
         FlottenStudieKonfiguration config,
@@ -48,6 +74,24 @@ public static class FlottenSimulator
         return result;
     }
 
+    /// <summary>
+    /// Bildet die Stromrechnung EINER Abrechnungsperiode aus den am Netzanschluss
+    /// bezogenen und eingespeisten Mengen (Spezifikation 9.1).
+    /// </summary>
+    /// <remarks>
+    /// Die Rechnung addiert KEINE getrennt geschaetzten Batterieerloese: Bewertet wird
+    /// allein, was ueber den Anschluss geflossen ist — Bezug zum Bezugspreis, die drei
+    /// Einspeiseanteile zu ihren jeweiligen Verkaufspreisen. Der Leistungspreis wird
+    /// einmal je Periode auf den hoechsten Netzbezug angesetzt. Referenz und Variante
+    /// werden mit demselben Tarif gerechnet.
+    /// </remarks>
+    /// <param name="simulation">Der ausgefuehrte Lauf, dessen Intervalle abgerechnet werden.</param>
+    /// <param name="eingang">Die Preisreihe derselben Laenge; sie liefert Bezugs- und Verkaufspreise je Intervall.</param>
+    /// <param name="tarif">Leistungspreis, Fixkosten und der optionale eigene Batterieverkaufspreis.</param>
+    /// <returns>Arbeits-, Leistungs- und Fixkosten [EUR], der abgerechnete Peak [kW] und ihre Summe.</returns>
+    /// <exception cref="ArgumentNullException">Einer der drei Rechnungseingaenge ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Simulation und Preisreihe sind unterschiedlich lang.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Der Tarif enthaelt negative oder nicht endliche Werte.</exception>
     public static FlottenRechnung RechneTarif(
         FlottenSimulationErgebnis simulation,
         IReadOnlyList<FlottenNetzintervall> eingang,
