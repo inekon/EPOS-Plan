@@ -3592,6 +3592,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `flotte_bewerten` ruft `Starten()` = seit #206 der Flottenweg.
 > Gate sept19 auf `9122812`: Kern 2643, UI 3654, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#207 (11.09.2026, `4da303d`, Merge `e608457`) — Simulationsablauf Stufe S1 (Anwenderentscheid „SIM‑Q1 bis Q6: Empfehlung").** Die Simulation
+> ist eine **freie Ansicht `SIMULATION`** der `AppWurzel` (`EPOS.UI/Seiten/Simulation/SimulationSeite.razor`, 429 Z.) mit Ablaufleiste
+> **① Konfiguration · ② Simulation starten ▶ (Knopf, kein Blatt) · ③ Ergebnis**; sie bettet `SimulationKonfigSeite` und
+> `SimulationErgebnisSeite` ein. ② ist gesperrt, solange die Konfiguration ungespeichert ist (genau die drei Kaskadenwege) oder die
+> Sperre aus ADR‑001 (`SchemaMigration.SimulationGesperrt`) steht — der Grund steht am Knopf und darunter; ③ öffnet, sobald ein Lauf gerechnet
+> ist (nicht „gültig", sonst sperrte der Nachzug der Auslegung genau den Schritt, in den der Rückweg führt); `Automatikstart` ist in der
+> Ansicht aus (SIM‑Q1). **Gefallen:** aus der `Startseite` die Ergebnis-`Ueberlagerung`, die Konfig-Einbettung und ihre zwei Gaben (die
+> Kachel ruft `Dienste.Navigation.OeffneMaske(Masken.Simulation, marke)`); aus der Ergebnisseite die Fußknöpfe „Konfiguration …"/„Beenden"
+> und die Konfig-`Ueberlagerung`; aus der Konfigurationsseite „Beenden". **Rückwegstapel** `List<(Schluessel, Marke)>` in der `AppWurzel`
+> (höchstens 3, geleert bei `STARTSEITE`/`PROJEKTLISTE`; `Zeige(ziel, marke, merken)` legt ab, `Zurueck()` holt und überspringt tote Ziele)
+> ersetzt `_auslegungRueckweg` (#192) und `_kiRueckweg` (#199) — die Auslegung kehrt in ③ auf den Reiter „Stromspeicher" zurück, der
+> das Banner „Flotte geändert" zeigt (`SimulationErgebnisHuelle.LaufGerechnet`). **Hülle:** `SimulationHuelle` (121 Z.) hält je Projekt
+> Konfig- und Ergebnishülle und liefert **ein** Wörterbuch `{Dienste, ProjektText}`; `HauptfensterHuelle.Gaben()["SimulationGaben"]`,
+> `IProjektQuelle.SimulationGaben` (Standard `null` — die iOS-Quelle liefert noch nichts, S2 = #208). **Menü:** „Simulation…" neben
+> „Varianten und Bericht…" (SIM‑Q3), 58 → **59** Punkte, 46 handelnd; Marken `schritt=…;blatt=…`. Ressourcen +14 `SIM_ANSICHT_*`/`MENU_SIMULATION`,
+> −3 verwaiste. Tests +33: `SimulationSeiteTests` (477 Z.), `StartseiteSimulationwegTests`, Wache `SimulationOhneUeberlagerungTests` („keine
+> Simulationsseite in einer `Ueberlagerung`", Gegenprobe am Bestand vor #207). **Offen:** „Simulation starten ▶" bleibt auch in der Fußleiste
+> von ③ (Zwilling von ②, trägt die Seite auf iOS ohne Leiste); ein nur gespeichertes Ergebnis früherer Sitzungen öffnet ③ nicht (kein Lesepfad
+> im Bestand); Wiki-Bedienungsseite „Simulation" (Textvorschlag des Agenten) durch die Orchestrierung; Windows-Abnahme steht aus.
+> Gate sept20 auf `e608457`: Kern 2643, UI 3687, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
