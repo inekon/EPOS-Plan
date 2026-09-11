@@ -6,7 +6,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenBetriebEditorTests : BunitContext
+public sealed class SpeicherFlottenBetriebEditorTests : EposBunitContext
 {
     [Fact]
     public void Alle_gemeinsamen_Betriebsfelder_werden_als_Snapshot_gemeldet()

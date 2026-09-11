@@ -142,6 +142,46 @@ Archivierte Prognosen enthalten je Snapshot eine ID sowie `known_at` und `decisi
 
 Profile speichern Flotte, Quellen, Spaltenzuordnungen und importierte Laufdaten in der Datenbank. Importierte Dateien müssen zum späteren Laden des Profils nicht erneut vorhanden sein.
 
+Die folgenden kompakten Draft-2020-12-Schemas dokumentieren die beiden manuellen JSON-Importe (Prognosen und tatsächliche Projektjahre), die der CSV-Dialog beim Einlesen prüft. Enums werden als Namen gelesen. `row` steht für ein Objekt mit den erforderlichen Feldern `Zeitstempel` (date-time), `LastKw`, `PvKw`, `BhkwKw` (Zahlen ≥ 0) sowie den vier endlichen Preisen `BezugspreisEuroProKWh`, `PvVerkaufspreisEuroProKWh`, `BhkwVerkaufspreisEuroProKWh`, `BatterieVerkaufspreisEuroProKWh`.
+
+**Archivierte Prognosen:** Zusätzlich prüft der Controller bekannte Art, Bekanntheitszeit und Abdeckung.
+
+```json
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"EPOS Flotten-Prognosen","type":"array","minItems":1,
+  "items":{"type":"object",
+    "required":["Id","BekanntSeit","Entscheidungszeitpunkt","Art","Intervalle"],
+    "properties":{
+      "Id":{"type":"string","minLength":1},
+      "BekanntSeit":{"type":"string","format":"date-time"},
+      "Entscheidungszeitpunkt":{"type":"string","format":"date-time"},
+      "Art":{"const":"VerifiziertBekannt"},
+      "Intervalle":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/row"}}
+    }},
+  "$defs":{"row":{"type":"object","required":["Zeitstempel","LastKw","PvKw","BhkwKw","BezugspreisEuroProKWh","PvVerkaufspreisEuroProKWh","BhkwVerkaufspreisEuroProKWh","BatterieVerkaufspreisEuroProKWh"]}}
+}
+```
+
+**Tatsächliche Projektjahre:** Der Controller prüft eindeutige lückenlose Jahre und eine vollständige UTC-Viertelstundenachse. Verfügbarkeitsarrays müssen dieselbe Länge haben.
+
+```json
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"EPOS Flotten-Projektjahre","type":"array","minItems":1,
+  "items":{"type":"object","required":["Jahr","Istwerte"],"properties":{
+    "Jahr":{"type":"integer"},
+    "IstVollstaendigesJahr":{"type":"boolean","default":true},
+    "Istwerte":{"type":"array","minItems":35040,"maxItems":35136,"items":{"$ref":"#/$defs/row"}},
+    "Prognosen":{"type":"array","default":[]},
+    "VerfuegbarkeitsfaktorNachEinheitId":{"type":"object","default":{},"additionalProperties":{"type":"array","items":{"type":"number","minimum":0,"maximum":1}}}
+  }},
+  "$defs":{"row":{"type":"object","required":["Zeitstempel","LastKw","PvKw","BhkwKw","BezugspreisEuroProKWh","PvVerkaufspreisEuroProKWh","BhkwVerkaufspreisEuroProKWh","BatterieVerkaufspreisEuroProKWh"]}}
+}
+```
+
+`SpeicherAuslegungKonfiguration.Flotte` speichert Konfiguration, Quellen und importierte Werte im vorhandenen versionierten gzip-JSON-Payload (`gz1:`). Dies ist interne Persistenz, kein dritter Dateiimport. Nullable Grenzen bleiben `null`; unendliche JSON-Zahlen werden nicht verwendet. Die Schemas sind Dokumentation und keine separat ausgelieferten `.schema.json`-Validatoren.
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |

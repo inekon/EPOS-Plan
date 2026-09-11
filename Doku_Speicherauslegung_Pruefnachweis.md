@@ -4,7 +4,7 @@
 
 Stand: 11.09.2026 · Dokumentversion 1.2
 
-Die Kosten-, Auslegungs- und Importfunktionen sind im lokalen EPOS-Plan-Projekt unter `C:/Users/DirkEngelmann/Documents/WP-Plan` implementiert. Der Release-Build liegt unter `WindowsFormsApplication1/bin/Release/net10.0-windows/EPOS_Plan.exe`. Die bestehende installierte Anwendung erhält den neuen Dialog beim Start dieses neu gebauten Programmstands; die HTML-Auswertung im Speichersimulationsordner gehört weiterhin zum Python-Beispiel.
+Die Kosten-, Auslegungs- und Importfunktionen sind im EPOS-Plan-Repository implementiert. Der Release-Build liegt repositoriumsrelativ unter `WindowsFormsApplication1/bin/Release/net10.0-windows/EPOS_Plan.exe` (Windows-Build-Ausgabe, nicht im Repository versioniert). Die bestehende installierte Anwendung erhält den neuen Dialog beim Start dieses neu gebauten Programmstands; die HTML-Auswertung im Speichersimulationsordner gehört weiterhin zum Python-Beispiel.
 
 ## Einstieg
 
@@ -52,4 +52,4 @@ Der Betriebskostenbetrag des Referenzjahres wird als konstanter jährlicher Betr
 
 ## Nachweise
 
-Die vollständigen Konsolenprotokolle und die Referenzergebnisse liegen unter `C:/Users/DirkEngelmann/Documents/Büro Optimierung/.work`. Maßgeblich sind `dotnet_test_WP-Plan.Kern_Release_after_pv_fix.log`, `build_WindowsFormsApplication1_Release_final.log`, `epos_referenz_73_final2_vergleich.log`, `sql73_final.log` und `wiki_publish_report.json`.
+Konsolenprotokolle liegen beim Anwender (nicht im Repository). Maßgeblich sind `dotnet_test_WP-Plan.Kern_Release_after_pv_fix.log`, `build_WindowsFormsApplication1_Release_final.log`, `epos_referenz_73_final2_vergleich.log`, `sql73_final.log` und `wiki_publish_report.json`.

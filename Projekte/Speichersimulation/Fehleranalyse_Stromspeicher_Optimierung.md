@@ -11,13 +11,13 @@ Der konfigurierte Standardweg wurde anhand von `DataRepository.GetDBPath()` und 
 
 Die Quelle wurde mit SQLite `mode=ro` geöffnet und über die SQLite-Backup-API einschließlich WAL-Stand in diese Arbeitskopie gesichert:
 
-`C:\Users\DirkEngelmann\Documents\WP-Plan\.work\realprojekt\Kenndaten_StromspeicherOptimierung_20260911_092816.sqlite`
+`.work/realprojekt/Kenndaten_StromspeicherOptimierung_20260911_092816.sqlite`
 
 `PRAGMA integrity_check` ergab für Original und Kopie jeweils `ok`. Das Original enthält nach der Prüfung unverändert nur Profil-ID 1, `@Aktuell`, Anlage 14993, Stand `2026-09-11T07:27:18.1475121+00:00`, Datenlänge 2316. Nur die Kopie erhielt beim Aktivierungstest zusätzlich `@Projektflotte` mit `ID_Energieanlage = NULL`. `@Aktuell` blieb auch in der Kopie unverändert.
 
 Ausführbares Prüfharness:
 
-`C:\Users\DirkEngelmann\Documents\WP-Plan\.work\RealFleetHarness\RealFleetHarness.csproj`
+`.work/RealFleetHarness/RealFleetHarness.csproj`
 
 Der Harnesslauf endete mit Exitcode 0.
 

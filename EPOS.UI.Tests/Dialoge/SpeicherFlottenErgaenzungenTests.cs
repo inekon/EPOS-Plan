@@ -8,7 +8,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenErgaenzungenTests : BunitContext
+public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
 {
     [Fact]
     public void Rainflow_Kennlinie_und_marginale_Verschleisskosten_werden_editierbar_gemeldet()

@@ -594,7 +594,7 @@ Die Erweiterung sollte in die vorhandene C#-Architektur von EPOS-Plan integriert
 
 Der öffentlich beschriebene Funktionsumfang umfasst bereits Stromspeicher, PV, Wärmeerzeuger und Variantenvergleiche. Die Produktseite nennt Viertelstunden für die Stromseite und Stunden für die Wärmeseite. Diese Kopplung wird im Ausbau bewusst erhalten. [EPOS-Plan Produktbeschreibung](https://epos-plan.de/)
 
-Für den Umsetzungsvorschlag wurden am 10. September 2026 ausgewählte lokale Dateien im Projektverzeichnis C:/Users/DirkEngelmann/Documents/WP-Plan gelesen. Das ist eine Prüfung konkreter Integrationsstellen, keine vollständige Revision oder Ausführung der bestehenden Anwendung. Die nachfolgend benannten neuen Typen und Funktionen sind Vorschläge.
+Für den Umsetzungsvorschlag wurden am 10. September 2026 ausgewählte Dateien im Repository gelesen. Das ist eine Prüfung konkreter Integrationsstellen, keine vollständige Revision oder Ausführung der bestehenden Anwendung. Die nachfolgend benannten neuen Typen und Funktionen sind Vorschläge.
 
 | Vorhandener Baustein | Beobachteter Stand | Vorgeschlagene Weiterentwicklung |
 |---|---|---|
@@ -698,7 +698,7 @@ Die vorhandenen Testprojekte SpeicherEngine.Tests, EPOS.Kern.Tests und EPOS.UI.T
 
 ### 13.9 Eingesehene Integrationsstellen
 
-Die folgenden Dateien bilden die überprüfbare Grundlage des Umsetzungsvorschlags. Alle Pfade beziehen sich auf C:/Users/DirkEngelmann/Documents/WP-Plan.
+Die folgenden Dateien bilden die überprüfbare Grundlage des Umsetzungsvorschlags. Alle Pfade sind repositoriumsrelativ.
 
 | Bereich | Eingesehene Datei |
 |---|---|
@@ -825,4 +825,12 @@ In der erweiterten Lastspitzenkappung steuert die Residuallast am Netzanschluss:
 ### 14.8 Verwendete Projektunterlagen
 
 Abgeglichen wurden die EPOS-Konzepte zu Kosten, Energieträgern, Speicher, PV und Importkodierung. Für die Speicherung gelten BETRIEB_SQLITE.md und ADR-001_Schema-Ausrollung.md. Die Wiki-Ergänzung folgt Konzept_Hilfesystem_Wikidokumentation.md; EPOSPlan_Dokumentation_DesignSkizze.md wurde als Hintergrund eingesehen. Bestehende Wiki-Anker bleiben erhalten.
+
+## 15 Vollständiger Mehrspeicherstand in EPOS Plan
+
+Stand 11.09.2026. Der nachfolgende Implementierungsstand ergänzt die ursprünglichen Grundlagen und ersetzt die frühere Beschränkung der App-Anbindung auf eine Einzelvariante. Kapitel 14 bleibt als datierte Vorstufe nachvollziehbar.
+
+Die aktuelle [Beschreibung von Konzept, Algorithmus und Implementierung](../Doku_Mehrspeicher_Konzept_und_Umsetzung.md) beschreibt physisch gleichzeitig betriebene Einheiten, fünf Betriebsziele, getrennte Verteilung, rollierende MILP-Planung, prognosegerechte Informationsstände, Jahreskonten, Kapitalwert, Rastersuche und Nullvariante.
+
+Das [Word-Handbuch zum Mehrspeicherbetrieb](Speichersimulation/Mehrspeicher_EPOS_Plan.docx) erklärt die Bedienung und die abgestimmte Detaillierte Simulation. Ein Studienprofil und eine aktivierte Projektflotte bleiben getrennte Stände. Die Projektflotte ersetzt nach einer neuen Projektsimulation die elektrischen Netzflüsse; ihre Detailergebnisse werden im aufrufenden Stromspeicher-Reiter angezeigt.
 
