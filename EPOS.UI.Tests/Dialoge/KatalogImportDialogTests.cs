@@ -5,9 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Import;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
@@ -155,12 +157,18 @@ public class KatalogImportDialogTests : EposBunitContext
     /// <para>Wo ein Lesegang NULL sichtbare Zeilen ergibt — die Solarvorbelegung
     /// filtert die Probezeilen weg —, trägt erst der nächste Filterschritt den
     /// Nachweis; dort steht dann dieser Aufruf mit der Zahl, die er erwartet.</para>
+    ///
+    /// <para><b>Die SICHTBARE Zahl steht seit Befund #212 VORN</b> („15 von 6.654
+    /// Einträgen geladen."); vorher trug die Zeile die Zahl der MARKIERTEN Sätze an
+    /// erster und die sichtbare an zweiter Stelle. Geprüft wird deshalb der Anfang der
+    /// Zeile, nicht mehr „ von n ".</para>
     /// </summary>
     private static void Gezeichnet(IRenderedComponent<KatalogImportDialog> cut, int zeilen)
         => cut.WaitForAssertion(() =>
         {
             Assert.Equal(zeilen, cut.Instance.SichtbareZeilen);
-            Assert.Contains(" von " + zeilen + " ", Auswahlzeile(cut));
+            Assert.StartsWith(zeilen.ToString("N0", CultureInfo.CurrentCulture) + " von ",
+                              Auswahlzeile(cut));
         });
 
     /// <summary>
@@ -1224,6 +1232,172 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
 
         cut.WaitForAssertion(() => Assert.True(ergebnis));
+    }
+
+    // =====================================================================
+    // #212 — die Liste kommt zur Ruhe (Anwenderbefund 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wache über ALLE FÜNF Ausprägungen</b> (Befund <b>#212</b>, Anwender
+    /// 11.09.2026: „die Liste blinkt" beim Stromspeicherimport mit 6 654 Sätzen; die
+    /// Erweiterung des Auftrags verlangt dieselbe Messung für jeden Importwirt).
+    ///
+    /// <para>Gezählt wird dreierlei, je Ausprägung, nach dem Lesen von 6 654 Sätzen und
+    /// über zehn Zeichenläufe ohne jede Änderung: <b>(a)</b> wie oft die Katalogliste dem
+    /// QuickGrid eine NEUE Datenquelle gibt (QuickGrid vergleicht nach Referenz und
+    /// bricht dafür seine laufende Ladung ab — Befund W13‑B‑6), <b>(b)</b> wie oft die
+    /// gefilterte Sicht neu gerechnet wird (Filtern UND Sortieren über den ganzen
+    /// Katalog — Befund #212), und <b>(c)</b> dass die Liste am Ende noch dieselbe Menge
+    /// zeigt.</para>
+    ///
+    /// <para><b>Gemessen</b> (Stromspeicher, 6 654 Sätze, fünf Zeichenläufe): vorher
+    /// 105 ms mit Sortierung nach kWh und 445 ms mit „alle gewählt", danach 4 ms und
+    /// 15 ms.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(KatalogImportArt.Heizkessel)]
+    [InlineData(KatalogImportArt.Pufferspeicher)]
+    [InlineData(KatalogImportArt.Solarkollektoren)]
+    [InlineData(KatalogImportArt.Waermepumpe)]
+    [InlineData(KatalogImportArt.Stromspeicher)]
+    public void Zehn_Zeichenlaeufe_kosten_keine_neue_Datenquelle(KatalogImportArt art)
+    {
+        var cut = ImportMitVielenZeilen(art, 6654);
+
+        var liste = cut.FindComponent<Katalogliste>();
+        Assert.True(liste.Instance.Virtualisiert);
+
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        object menge = liste.Instance.Angezeigt;
+        int rechnungen = liste.Instance.Neurechnungen;
+
+        for (int i = 0; i < 10; i++)
+        {
+            cut.Render();
+            Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        }
+
+        Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
+        Assert.Same(menge, cut.FindComponent<Katalogliste>().Instance.Angezeigt);
+        Assert.Equal(6654, cut.Instance.SichtbareZeilen);
+    }
+
+    /// <summary>
+    /// <b>Und dasselbe mit einer SORTIERUNG</b> — der Zustand des Bildschirmfotos
+    /// (die Spalte kWh trug den Sortierpfeil). Sortieren ist die teure Hälfte der
+    /// Rechnung: <c>List.Sort</c> über 6 654 Zeilen mit kulturbewusstem
+    /// Gleichstandsvergleich, bis #212 bei jedem Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void Eine_sortierte_Liste_kommt_ebenso_zur_Ruhe()
+    {
+        var cut = ImportMitVielenZeilen(KatalogImportArt.Stromspeicher, 6654);
+
+        // Die fünfte Spalte ist kWh; zweimal klicken heisst absteigend.
+        string erste = cut.FindComponent<Katalogliste>().Instance.Angezeigt[0].Bezeichner;
+        cut.FindAll(".epos-spaltenkopf-titel")[4].Click();
+        cut.FindAll(".epos-spaltenkopf-titel")[4].Click();
+        cut.WaitForAssertion(() => Assert.NotEqual(
+            erste, cut.FindComponent<Katalogliste>().Instance.Angezeigt[0].Bezeichner));
+
+        int rechnungen = cut.FindComponent<Katalogliste>().Instance.Neurechnungen;
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+
+        for (int i = 0; i < 10; i++) cut.Render();
+
+        Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
+        Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+    }
+
+    /// <summary>
+    /// <b>Und mit „alle gewählt"</b> — der Alle-Schalter der Suchzeile (W13‑B‑5) fragt
+    /// den Wirt ZEILE FÜR ZEILE, ob sie gewählt ist. Der Wirt antwortete darauf mit einem
+    /// Durchlauf durch die ganze Anzeigeliste: 6 654 × 6 654 Vergleiche, zwei- bis
+    /// dreimal je Zeichenlauf. Seit #212 ist es ein Wörterbuchgriff, und der Schalter
+    /// fragt EINMAL je Zeichenlauf statt dreimal.
+    /// </summary>
+    [Fact]
+    public void Alle_gewaehlt_kostet_keine_neue_Datenquelle()
+    {
+        var cut = ImportMitVielenZeilen(KatalogImportArt.Stromspeicher, 6654);
+
+        cut.Find(".epos-wahl-alle input").Change(true);
+        cut.WaitForAssertion(() => Assert.Equal(6654, cut.Instance.Markiert.Count));
+
+        int rechnungen = cut.FindComponent<Katalogliste>().Instance.Neurechnungen;
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+
+        for (int i = 0; i < 10; i++) cut.Render();
+
+        Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
+        Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        Assert.Equal(6654, cut.Instance.Markiert.Count);
+    }
+
+    /// <summary>
+    /// <b>Die Zeile unter der Liste nennt die SATZZAHL</b> (Befund <b>#212</b>, Punkt 3
+    /// des Auftrags). Nach dem Abruf der CEC-Liste stand dort „0 von 6654 Einträgen
+    /// geladen." — die erste Zahl war die Zahl der MARKIERTEN Sätze, und der Wortlaut
+    /// der Ressource las sich, als wäre nichts geladen worden. Jetzt steht dort
+    /// „6.654 von 6.654 Einträgen geladen.", mit dem Tausendertrennzeichen der Kultur
+    /// wie in der Trefferzeile unmittelbar darüber.
+    /// </summary>
+    [Fact]
+    public void Die_Auswahlzeile_nennt_die_Satzzahl_mit_Tausendertrennzeichen()
+    {
+        var cut = ImportMitVielenZeilen(KatalogImportArt.Stromspeicher, 6654);
+
+        Assert.Equal("6.654 von 6.654 Einträgen geladen.", Auswahlzeile(cut));
+        Assert.Equal("6.654 von 6.654 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Markierung steht DAHINTER, getrennt</b> — dieselbe Bauart und derselbe
+    /// Ressourcentext wie in der Statuszeile des Modulimports („n gewählt"). Ohne
+    /// Markierung steht sie gar nicht da.
+    /// </summary>
+    [Fact]
+    public void Die_Auswahlzeile_nennt_die_Markierung_erst_wenn_es_eine_gibt()
+    {
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
+        Einlesen(cut, 3);
+
+        Assert.Equal("3 von 3 Einträgen geladen.", Auswahlzeile(cut));
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
+
+        cut.WaitForAssertion(
+            () => Assert.Equal("3 von 3 Einträgen geladen. · 1 gewählt", Auswahlzeile(cut)));
+    }
+
+    /// <summary>
+    /// Baut eine Ausprägung mit <paramref name="anzahl"/> synthetischen Sätzen und liest
+    /// sie ein — der Prüfstand der vier #212-Fälle. Der Weg ist der ECHTE: beim
+    /// Stromspeicher der erste Quellknopf, sonst der Dateiwähler.
+    /// </summary>
+    private IRenderedComponent<KatalogImportDialog> ImportMitVielenZeilen(
+        KatalogImportArt art, int anzahl)
+    {
+        var zeilen = new List<KatalogZeile>(anzahl);
+        for (int i = 0; i < anzahl; i++)
+        {
+            string name = "Satz " + i.ToString("D5", CultureInfo.InvariantCulture);
+            zeilen.Add(Speicher(name, i % 2 == 0 ? "Sonnen" : "BYD", "M" + i,
+                                "Lithium-Eisen-Phosphat", 5.0 + i % 90, 2.0 + i % 30,
+                                "0.93", "5", "CEC_DATEI"));
+        }
+
+        var cut = Bauen(art, zeilen);
+
+        if (art == KatalogImportArt.Stromspeicher)
+            Quelle(cut, WindowsFormsApplication1.MyResource.Resource.IMP_KAT_QUELLE_CEC_NETZ);
+        else
+            Einlesen(cut);
+
+        cut.WaitForAssertion(() => Assert.Equal(anzahl, cut.Instance.SichtbareZeilen));
+        return cut;
     }
 
     // =====================================================================

@@ -7,9 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Photovoltaik;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -1497,5 +1499,63 @@ public class ModulImportDialogTests : EposBunitContext
 
         cut.Find(".epos-wahl-alle input").Change(false);
         cut.WaitForAssertion(() => Assert.Empty(cut.Instance.Gewaehlte));
+    }
+
+    // =====================================================================
+    // #212 — die Liste kommt zur Ruhe (Anwenderbefund 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wache über den GEMEINSAMEN Importwirt der Photovoltaik</b> (Befund
+    /// <b>#212</b>, Erweiterung des Auftrags vom 11.09.2026: dieselbe Messung für jeden
+    /// Importwirt, nicht nur für den Stromspeicher). Geprüft wird an der
+    /// Wechselrichter-Ausprägung mit 6 654 Geräten, weil ein <c>CecWechselrichter</c>
+    /// billig zu bauen ist; die Mechanik ist bei beiden Ausprägungen dieselbe.
+    ///
+    /// <para>Gezählt wird, was der Anwender als Blinken sieht: eine NEUE Datenquelle je
+    /// Zeichenlauf (QuickGrid vergleicht nach Referenz und bricht dafür seine laufende
+    /// Ladung ab) und eine neue Rechnung der gefilterten Sicht. Beides muss über zehn
+    /// Zeichenläufe ohne Änderung <b>null</b> bleiben — auch dann, wenn alle 6 654 Geräte
+    /// gewählt sind: Der Alle-Schalter fragt je Zeile beim Wirt nach, und dessen Antwort
+    /// lief bis #212 über <c>List.Contains</c> durch die ganze Wahl (gemessen 108 ms je
+    /// Zeichenlauf, danach 1,4 ms).</para>
+    /// </summary>
+    [Fact]
+    public void Der_Wechselrichterimport_kommt_mit_6654_Geraeten_zur_Ruhe()
+    {
+        var saetze = new List<object>(6654);
+        for (int i = 0; i < 6654; i++)
+            saetze.Add(Geraet((i % 2 == 0 ? "Alpha AG: A-" : "Beta GmbH: B-") + i, 3000 + i % 900));
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, saetze);
+        Laden(cut);
+        cut.WaitForAssertion(() => Assert.Equal(6654, cut.Instance.SichtbareZeilen));
+
+        var liste = cut.FindComponent<Katalogliste>();
+        Assert.True(liste.Instance.Virtualisiert);
+
+        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        int rechnungen = liste.Instance.Neurechnungen;
+
+        for (int i = 0; i < 10; i++)
+        {
+            cut.Render();
+            Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        }
+
+        Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
+
+        // Und mit voller Markierung: derselbe Stand, keine neue Datenquelle.
+        cut.Find(".epos-wahl-alle input").Change(true);
+        cut.WaitForAssertion(() => Assert.Equal(6654, cut.Instance.Gewaehlte.Count));
+
+        rechnungen = cut.FindComponent<Katalogliste>().Instance.Neurechnungen;
+        quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+
+        for (int i = 0; i < 10; i++) cut.Render();
+
+        Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
+        Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        Assert.Equal(6654, cut.Instance.Gewaehlte.Count);
     }
 }

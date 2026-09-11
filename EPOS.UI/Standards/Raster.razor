@@ -148,6 +148,17 @@
     /// <summary>
     /// Angenommene Zeilenhoehe in Pixeln fuer die Virtualisierung — die
     /// Hausgroesse eines Beruehrungsziels.
+    ///
+    /// <para><b>Der Vorgabewert ist die Hoehe des BEDIENELEMENTS, nicht die der ZEILE</b>
+    /// (Befund <b>#212</b>, 11.09.2026). <c>Virtualize</c> teilt die Hoehe des
+    /// Rollbehaelters durch dieses Mass, um zu wissen, wie viele Zeilen sichtbar sind, und
+    /// setzt danach die Hoehen seiner zwei Abstandshalter. Liegt es unter der Wahrheit,
+    /// passen die Abstandshalter nicht zum Gezeichneten, die Sichtbarkeitsmeldungen der
+    /// Beobachter kommen weiter, und jede davon stellt die Datenanforderung neu an — hinter
+    /// QuickGrids 100‑ms‑Entprellung, also ohne je fertig zu werden. <b>Wer
+    /// <see cref="Virtualisiert"/> setzt, gibt das Mass SEINER Zeile mit</b>: Zellenpolsterung
+    /// und Trennlinie kommen zur Hoehe des Inhalts hinzu. Die <c>Katalogliste</c> rechnet
+    /// dafuer 44 + 2 × 4 + 1 = 53 px.</para>
     /// </summary>
     [Parameter] public float Zeilenhoehe { get; set; } = 44f;
 
