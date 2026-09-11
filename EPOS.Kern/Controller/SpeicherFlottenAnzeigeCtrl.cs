@@ -47,7 +47,7 @@ public sealed record FlottenVergleichszeile(string Bezeichnung, string Einheit,
 /// sie konnte das alles längst (Befund 1.4 des Konzepts). Die Reihenschlüssel sind
 /// sprachneutral; ihre Beschriftungen kommen aus derselben Ressource wie die Legende.
 /// </remarks>
-public static class SpeicherFlottenAnzeigeCtrl
+public static partial class SpeicherFlottenAnzeigeCtrl
 {
     // =====================================================================
     // Die sprachneutralen Reihenschluessel (Hausregel 5: null = alle, leer = keine)

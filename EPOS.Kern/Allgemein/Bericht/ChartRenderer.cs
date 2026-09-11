@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using SkiaSharp;
 
 namespace WindowsFormsApplication1
@@ -2564,6 +2565,21 @@ namespace WindowsFormsApplication1
         /// zwar im Anstrich des Steuerelements, also unfangbar. Werte, die keine Zahl
         /// sind, bekommen hier die Farbe des schlechtesten Punktes und gehen nicht in
         /// die Skala ein.</para>
+        ///
+        /// <para><b>UNZULÄSSIGE Zellen werden SCHRAFFIERT</b> (Auftrag #193, Konzept
+        /// „Stromspeicher-Dialoge" 2.5). Ein Kandidat, der eine harte Grenze verletzt,
+        /// gewinnt auch mit hohem Kapitalwert nicht (Spezifikation 9.4) — ohne
+        /// Kennzeichnung stünde er als grünes Feld im Bild und wäre von einem gültigen
+        /// Optimum nicht zu unterscheiden. Die Schraffur liegt ÜBER der Farbe und nimmt
+        /// ihr nichts: Der Wert bleibt ablesbar, die Sperre kommt dazu. Sie ist außerdem
+        /// eine MUSTER-Aussage und keine Farbaussage — in Graustufen und bei
+        /// Farbenblindheit bleibt sie erkennbar (WCAG 1.4.1).</para>
+        ///
+        /// <para><b>Die FUSSZEILE nennt die Grenze der Aussage</b> (<c>SP‑O‑4</c>): Die
+        /// Rastersuche kennt nur die gerechneten Punkte; zwischen zwei Stützstellen ist
+        /// nichts geprüft, und ein „Optimum" ist das Beste des endlichen Rasters, nicht
+        /// das globale. Der Satz steht IM BILD und nicht nur daneben, weil das Bild
+        /// exportiert und in Berichte übernommen wird.</para>
         /// </summary>
         /// <param name="titel">Überschrift, z. B. „Jahresüberschuss ΔJ [€/a]".</param>
         /// <param name="xTitel">Beschriftung der C-Raten-Achse.</param>
@@ -2574,12 +2590,18 @@ namespace WindowsFormsApplication1
         /// <param name="werte">Zielfunktionswerte <c>[iKapazität][iCRate]</c> [€/a].</param>
         /// <param name="besteZeile">Zeile des Optimums, oder -1 für „keine Marke".</param>
         /// <param name="besteSpalte">Spalte des Optimums, oder -1 für „keine Marke".</param>
+        /// <param name="unzulaessig">Je Zelle <c>true</c> = schraffieren; <c>null</c> = keine
+        /// Schraffur (der Stand vor #193, damit bestehende Aufrufer byte-gleich bleiben).</param>
+        /// <param name="fusszeile">Der Hinweis unter dem Bild; leer oder <c>null</c> = keine
+        /// Zeile und ein Bild wie zuvor.</param>
         public static byte[] Optimierungsraster(string titel, string xTitel, string yTitel,
                                                 string skalaTitel,
                                                 IReadOnlyList<double> cRaten,
                                                 IReadOnlyList<double> kapazitaetenKwh,
                                                 double[][] werte,
-                                                int besteZeile, int besteSpalte)
+                                                int besteZeile, int besteSpalte,
+                                                bool[][] unzulaessig = null,
+                                                string fusszeile = null)
         {
             int W = 860, H = 560;
             using (var flaeche = Start(W, H))
@@ -2621,6 +2643,11 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + s * breite;
                         float y = rc.Bottom - (i + 1) * hoehe;
                         using (var b = Fuellung(farbe)) g.DrawRect(x, y, breite, hoehe, b);
+
+                        // DIE SPERRE ALS MUSTER (#193): Schraffur ueber die Farbe, nicht
+                        // statt ihrer - der Wert bleibt ablesbar.
+                        if (Gesetzt(unzulaessig, i, s))
+                            Schraffur(g, SKRect.Create(x, y, breite, hoehe));
                     }
 
                 using (var netz = Strich(SKColors.White, 1f))
@@ -2680,8 +2707,76 @@ namespace WindowsFormsApplication1
                 Farbskala(g, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
                           min, max, skalaTitel);
 
+                // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
+                // bricht bei Bedarf auf zwei Zeilen um; ohne Text aendert sie nichts.
+                if (!string.IsNullOrWhiteSpace(fusszeile))
+                    using (var f = Schrift(13f))
+                        Umbruchtext(g, fusszeile, f, SKColors.DimGray, rc.Left, rc.Bottom + 56f,
+                                    W - rc.Left - 14f);
+
                 return Png(flaeche);
             }
+        }
+
+        /// <summary>Steht in der Schraffurmatrix an dieser Stelle <c>true</c>?</summary>
+        private static bool Gesetzt(bool[][] matrix, int zeile, int spalte)
+        {
+            if (matrix == null || zeile < 0 || zeile >= matrix.Length) return false;
+            bool[] reihe = matrix[zeile];
+            return reihe != null && spalte >= 0 && spalte < reihe.Length && reihe[spalte];
+        }
+
+        /// <summary>
+        /// Die DIAGONALSCHRAFFUR einer gesperrten Zelle — 45°, fester Abstand, in der
+        /// Farbe des schlechtesten Rasterpunkts.
+        /// </summary>
+        /// <remarks>
+        /// Der Abstand steht in BILDPUNKTEN und nicht in Zellbreiten: Sonst trüge eine
+        /// schmale Zelle dieselbe Strichzahl wie eine breite, und das Muster sagte etwas
+        /// über die Rastergröße statt über die Sperre. Gezeichnet wird innerhalb der
+        /// Zelle (<c>ClipRect</c>), damit die Striche nicht in die Nachbarzelle laufen.
+        /// </remarks>
+        private static void Schraffur(SKCanvas g, SKRect zelle)
+        {
+            const float abstand = 7f;
+            g.Save();
+            g.ClipRect(zelle);
+            using (var stift = Strich(C_RASTER_SCHLECHT, 1.5f))
+                for (float v = -zelle.Height; v < zelle.Width; v += abstand)
+                    g.DrawLine(zelle.Left + v, zelle.Bottom,
+                               zelle.Left + v + zelle.Height, zelle.Top, stift);
+            g.Restore();
+        }
+
+        /// <summary>
+        /// Ein Hinweis, der an der Breite <paramref name="breite"/> umbricht — höchstens
+        /// zwei Zeilen, damit die Fußzeile nicht ins Bild wächst.
+        /// </summary>
+        private static void Umbruchtext(SKCanvas g, string text, SKFont f, SKColor farbe,
+                                        float x, float y, float breite)
+        {
+            string[] woerter = (text ?? "").Split(' ');
+            var zeile = new StringBuilder();
+            int gezeichnet = 0;
+            for (int i = 0; i < woerter.Length; i++)
+            {
+                string versuch = zeile.Length == 0 ? woerter[i] : zeile + " " + woerter[i];
+                if (zeile.Length > 0 && f.MeasureText(versuch) > breite)
+                {
+                    Text(g, zeile.ToString(), f, farbe, x, y + gezeichnet * (TextHoehe(f) + 3f));
+                    gezeichnet++;
+                    if (gezeichnet >= 2) return;
+                    zeile.Clear();
+                    zeile.Append(woerter[i]);
+                }
+                else
+                {
+                    zeile.Clear();
+                    zeile.Append(versuch);
+                }
+            }
+            if (zeile.Length > 0 && gezeichnet < 2)
+                Text(g, zeile.ToString(), f, farbe, x, y + gezeichnet * (TextHoehe(f) + 3f));
         }
 
         /// <summary>

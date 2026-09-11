@@ -347,6 +347,78 @@ Punkt 2 — die Zähler liefert P1, die Verdrahtung P3), die freie Ansicht samt 
 und die Größen-Sicht mit Rasterkarte und Schnittkurve (P4); die Kandidatentabelle steht
 einstweilen unverändert da.
 
+## Größen-Sicht der Flotte (P4, #193)
+
+Die Rastersuche gab es seit jeher — angezeigt wurde davon eine Texttabelle mit höchstens
+50 Zeilen. Wie der Kapitalwert an der GRÖSSE hängt, stand nirgends; für den Einzelspeicher
+zeichnet der Renderer Rasterkarte und Schnittkurve seit W11b‑B‑5, für die Flotte nicht
+(Konzept 1.5). Und die Kandidaten trugen weder Durchsatz noch Vollzyklen: **ein arbeitsloser
+Kandidat war von einem arbeitenden nicht zu unterscheiden** — derselbe Befund, der als
+SP‑O‑10 den ganzen Flottenlauf betraf. Zielbild ist
+[`Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md)
+Abschnitt 2.5.
+
+**Der Kandidat trägt seine Kennzahlen.** `FlottenKandidatZusammenfassung` führt seither
+`DurchsatzKWh` (AC-Entladung des ersten gerechneten Jahres), `Vollzyklen`
+(Durchsatz ÷ Kapazität), `BezugsspitzeKw`, `ErsparnisEuroJahr` und `Arbeitslos` aus der
+Diagnose (P1) — dazu die Achsenwerte: `CRate` (Entladeleistung ÷ Kapazität), die Größen je
+Einheit (`FlottenKandidatEinheit`) und die Stelle im Raster (`Rasterzeile`/`Rasterspalte`,
+belegt bei genau einer aktiven Suchachse). **Gerechnet wird nichts nach**: Der
+`FlottenOptimierer` füllt die Felder aus dem Kandidatenlauf, den er ohnehin fährt. Die
+**Ersparnis ist die Rechnungsdifferenz OHNE Kapitaldienst** — abzüglich Betriebsaufwand und
+Durchsatzkosten, aber ohne Investition, Ersatz und Restwert; die stecken im Kapitalwert
+daneben. Beide Zahlen zusammen beantworten „lohnt der Betrieb?" und „trägt sich die
+Anschaffung?" getrennt.
+
+**Die Karte baut der Kern.** `SpeicherFlottenAnzeigeCtrl.Rasterdaten(ergebnis, einheit)`
+liefert Achsen (Kapazität als Zeilen, C-Rate als Spalten), die Wertematrix in EUR, die
+Schraffurmatrix und die Stelle des Optimums; `einheit = -1` sind die Summen der Flotte, sonst
+die Größen der gewählten Einheit. Eine Stelle ohne Kandidat ist **`double.NaN`** und keine
+Null — der Renderer überspringt sie in der Farbskala, und eine Null wäre die Aussage „genauso
+gut wie die Nullvariante". Stehen zwei Kandidaten auf derselben Stelle (dieselbe Hardware, zwei
+Betriebsziele), besetzt der bessere sie: erst Zulässigkeit, dann Kapitalwert — die Rangfolge
+der Spezifikation 9.4. Die Achsen kommen aus den WERTEN und nicht aus dem Rasterindex: Im Modus
+`KapazitaetUndLeistung` trüge dieselbe Spalte in jeder Zeile eine andere C-Rate. Dazu die zwei
+Schnitte `Schnittdaten(ergebnis, cRate)` (über der Kapazität) und
+`SchnittdatenLeistung(ergebnis, kapazitaetKwh)` (dieselbe Kurve über der Entladeleistung,
+Achse aus `P = E · C`).
+
+**Zwei Zutaten im Bild.** `ChartRenderer.Optimierungsraster` nimmt seither zwei optionale
+Parameter: `bool[][] unzulaessig` schraffiert die gesperrten Zellen ÜBER ihrer Farbe — der Wert
+bleibt ablesbar, die Sperre kommt dazu, und sie ist eine MUSTER-Aussage statt einer Farbaussage
+(WCAG 1.4.1) — und `fusszeile` setzt den **SP‑O‑4-Hinweis** ins Bild
+(`FLOTTE_GROESSEN_ENDLICHES_RASTER`: die Aussage gilt nur für das geprüfte endliche Raster).
+Der Hinweis steht IM Bild, weil das Bild exportiert wird. Beide Parameter haben den Standard
+`null`; die bestehenden Aufrufer und die 39 Bilder der ChartProben bleiben byte-gleich
+(nachgewiesen durch je einen vollständigen Lauf vor und nach der Änderung). `Schnittkurve`
+bleibt unverändert — „über der Leistung" ist dieselbe Funktion mit anderer Achsenbeschriftung.
+`Proben/ChartProben` führt seither **41 Bilder und 8 Gegenproben, zusammen 49 Proben**: die
+Flotten-Rasterkarte mit Schraffur und Fußzeile, den Schnitt über der Leistung und die
+Gegenprobe, dass die Schraffur das Bild wirklich ändert.
+
+**Der Baustein** `EPOS.UI/Dialoge/Strom/SpeicherFlottenGroessenAnsicht.razor` zeigt in dieser
+Reihenfolge: Aussage und SP‑O‑4-Hinweis, die **Rasterkarte** (Einheitenwahl ab zwei Einheiten),
+daneben die **zwei Schnitte** mit je einem Schieber über die STELLEN der Achse (die
+Stützstellen einer Rastersuche sind nicht gleichmäßig verteilt — ein Schieber, der dazwischen
+stehen bliebe, zeigte eine Kurve, die es nicht gibt; Vorbelegung ist die Stelle des Optimums),
+und darunter die **Kandidatentabelle**: Kapazität, Lade-/Entladeleistung, C-Rate, Kapitalwert,
+Ersparnis/a, Vollzyklen/a, Bezugsspitze, zulässig mit Grund — sortierbar je Spalte, mit
+Spaltenfilter nach dem Katalogfilter-Muster, hervorgehobener Optimum-Zeile, benanntem
+Kennzeichen „arbeitslos" und „Übernehmen" je Zeile (`EventCallback<FlottenKandidatZusammenfassung>
+KandidatUebernehmen`). **Gefiltert wird VOR der Tabelle** (W14a‑E‑10): Profil und Zeilen baut
+`SpeicherFlottenAnzeigeCtrl.Kandidatenprofil()`/`.Kandidatenzeilen(ergebnis)` über
+`Katalogfilterprofil.AusSpalten`, eingeschränkt wird mit `Katalogfilter.Anwenden` — damit gelten
+für die Kandidaten Zahlenausdruck (`>10`, `10..60`), Verknüpfung und Sortierzyklus der fünfzehn
+Katalogwirte.
+
+**Eingehängt ist der Baustein noch nicht** — die freie Ansicht `STROMSPEICHER_AUSLEGUNG` baut
+Paket P3 parallel; die Einbindung folgt nach beiden Merges. Die Verfeinerung um interessante
+Kandidaten (Spezifikation 12.2, „Feinraster") bleibt Paket P5.
+
+**Der Referenzlauf ist unberührt:** Die Rastersuche liegt nicht im Projektlauf, und die neuen
+Felder ändern keinen Rechenwert (1030 und 1046 byte-gleich gegen
+`Referenzlaeufe/2026-09-11_R7_Speicherflotte`).
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |

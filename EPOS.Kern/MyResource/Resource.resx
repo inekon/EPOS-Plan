@@ -17667,4 +17667,157 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_CSV_SPALTE" xml:space="preserve">
     <value>Spalte {0}</value>
   </data>
+  <data name="FLOTTE_GROESSEN_TITEL" xml:space="preserve">
+    <value>Größenabhängigkeit</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_UNTERTITEL" xml:space="preserve">
+    <value>Wie hängt der Kapitalwert an Kapazität und Leistung? Die Karte zeigt jeden gerechneten Rasterpunkt, die Kurven je einen Schnitt daraus.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LEER" xml:space="preserve">
+    <value>Es liegt keine Rastersuche vor; führen Sie die Auslegung aus, um die Größenabhängigkeit zu sehen.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_KEIN_RASTER" xml:space="preserve">
+    <value>Die Suche hat keine zwei Größenachsen ergeben — eine Karte gibt es dazu nicht. Die geprüften Varianten stehen in der Tabelle.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER" xml:space="preserve">
+    <value>Kapitalwert über Kapazität und C-Rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET" xml:space="preserve">
+    <value>Schnitt bei {0} C — Kapitalwert über der Kapazität</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG" xml:space="preserve">
+    <value>Schnitt bei {0} kWh — Kapitalwert über der Entladeleistung</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_CRATE" xml:space="preserve">
+    <value>C-Rate [1/h] (Leistung = Kapazität × C-Rate)</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität [kWh]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Entladeleistung [kW]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SKALA" xml:space="preserve">
+    <value>Kapitalwert [€]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ENDLICHES_RASTER" xml:space="preserve">
+    <value>SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. Zwischen zwei Stützstellen ist nichts gerechnet; das markierte Optimum ist das beste geprüfte, nicht das global beste.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER" xml:space="preserve">
+    <value>Rasterkarte der Auslegung: Kapitalwert über Kapazität und C-Rate, unzulässige Punkte schraffiert</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT" xml:space="preserve">
+    <value>Schnittkurve: Kapitalwert über der Kapazität bei fester C-Rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" xml:space="preserve">
+    <value>Schnittkurve: Kapitalwert über der Entladeleistung bei fester Kapazität</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_EINHEIT" xml:space="preserve">
+    <value>Gezeigte Einheit</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_CRATE" xml:space="preserve">
+    <value>C-Rate des Schnitts</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität des Schnitts</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SUMME" xml:space="preserve">
+    <value>Flotte gesamt</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_EINHEIT" xml:space="preserve">
+    <value>Einheit {0}</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_CRATE" xml:space="preserve">
+    <value>{0} C</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_KAPAZITAET" xml:space="preserve">
+    <value>{0} kWh</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TITEL_KANDIDATEN" xml:space="preserve">
+    <value>Geprüfte Varianten</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KANDIDAT" xml:space="preserve">
+    <value>Kandidat</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_BETRIEBSZIEL" xml:space="preserve">
+    <value>Betriebsziel</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_LADEN" xml:space="preserve">
+    <value>Laden</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ENTLADEN" xml:space="preserve">
+    <value>Entladen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_CRATE" xml:space="preserve">
+    <value>C-Rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KAPITALWERT" xml:space="preserve">
+    <value>Kapitalwert</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ERSPARNIS" xml:space="preserve">
+    <value>Ersparnis</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_VOLLZYKLEN" xml:space="preserve">
+    <value>Vollzyklen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_SPITZE" xml:space="preserve">
+    <value>Bezugsspitze</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ZULAESSIG" xml:space="preserve">
+    <value>Zulässig</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_GRUND" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_AKTION" xml:space="preserve">
+    <value>Übernahme</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SORTIEREN" xml:space="preserve">
+    <value>Nach {0} sortieren</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TRICHTER" xml:space="preserve">
+    <value>{0} filtern</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TRICHTER_GESETZT" xml:space="preserve">
+    <value>{0}: Filter gesetzt</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_FILTER_LOESCHEN" xml:space="preserve">
+    <value>Filter löschen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_FILTER_ZURUECK" xml:space="preserve">
+    <value>Filter zurücksetzen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_PLATZHALTER_TEXT" xml:space="preserve">
+    <value>enthält…</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_PLATZHALTER_ZAHL" xml:space="preserve">
+    <value>z. B. &gt;10 oder 10..60</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_HINWEIS_ZAHL" xml:space="preserve">
+    <value>Formen: &gt;10, &lt;60, 10..60, =15</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TREFFER" xml:space="preserve">
+    <value>{0} von {1} Varianten</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_KEIN_TREFFER" xml:space="preserve">
+    <value>Keine Variante passt zu den gesetzten Filtern.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_BTN_UEBERNEHMEN_TITEL" xml:space="preserve">
+    <value>Diese Variante als Flotte übernehmen</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_OPTIMUM" xml:space="preserve">
+    <value>Optimum des Rasters</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ARBEITSLOS" xml:space="preserve">
+    <value>arbeitslos</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ARBEITSLOS_TITEL" xml:space="preserve">
+    <value>Diese Flotte hat im gerechneten Zeitraum weder geladen noch entladen; sie kostet nur.</value>
+  </data>
 </root>

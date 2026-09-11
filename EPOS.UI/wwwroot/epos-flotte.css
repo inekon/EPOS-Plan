@@ -317,3 +317,109 @@
         color: CanvasText;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* Die GROESSEN-SICHT der Flotte (#193, Konzept 2.5)                   */
+/*                                                                     */
+/* Karte und Schnitte stehen NEBENEINANDER, solange Platz ist: Die     */
+/* Karte sagt "wo", die Kurve "wie steil" - beides zusammen ist die    */
+/* Aussage, und wer dafuer rollen muss, sieht immer nur eine Haelfte.  */
+/* Unter 1000 px stapeln sie, dann ist die Karte breiter als der halbe */
+/* Schirm mehr wert als die Nachbarschaft.                             */
+/* ------------------------------------------------------------------ */
+.epos-flotte-groessen {
+    display: grid;
+    gap: 0.9rem;
+    min-width: 0;
+}
+
+.epos-flotte-groessen-bilder {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    align-items: start;
+}
+
+.epos-flotte-groessen-steuerung {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem 1.2rem;
+    flex-wrap: wrap;
+    padding: 0.3rem 0;
+}
+
+/* Der Schieber ist ein BERUEHRUNGSZIEL (iL4): 44 px hoch, damit ihn ein
+   Finger trifft; der Wert steht als Text daneben, weil ein Schieber ohne
+   Zahl nur eine ungefaehre Aussage macht. */
+.epos-flotte-groessen-schieber input[type="range"] {
+    min-height: var(--epos-touchziel);
+    min-width: 10rem;
+    accent-color: var(--epos-marke);
+}
+
+.epos-flotte-groessen-wert {
+    margin-left: 0.5rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epos-flotte-groessen-leiste {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Die OPTIMUM-Zeile traegt Flaeche UND Marke: Eine Flaeche allein waere
+   eine Farbaussage (WCAG 1.4.1), und in der gefilterten Liste steht das
+   Optimum nicht mehr zwingend oben. */
+.epos-flotte-groessen-tabelle tr.epos-flotte-groessen-optimum {
+    background: var(--epos-ampel-gruen-flaeche);
+    font-weight: 600;
+}
+
+.epos-flotte-groessen-tabelle tr.epos-flotte-groessen-gesperrt {
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-groessen-marke,
+.epos-flotte-groessen-arbeitslos {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    font-size: 0.85em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epos-flotte-groessen-marke {
+    border-color: var(--epos-ampel-gruen);
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-flotte-groessen-arbeitslos {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+@media (max-width: 1000px) {
+    .epos-flotte-groessen-bilder {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-flotte-groessen-marke,
+    .epos-flotte-groessen-arbeitslos {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+
+    .epos-flotte-groessen-tabelle tr.epos-flotte-groessen-optimum {
+        border: 2px solid CanvasText;
+    }
+}

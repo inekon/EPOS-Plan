@@ -1136,7 +1136,46 @@ public sealed class FlottenAuslegungEingang
     public int MaximaleKandidaten { get; set; } = 10000;
 }
 
+/// <summary>
+/// Die Groessen EINER Einheit eines Kandidaten (Auftrag #193, Konzept
+/// „Stromspeicher-Dialoge" 2.5).
+/// </summary>
+/// <remarks>
+/// Die Summenwerte der <see cref="FlottenKandidatZusammenfassung"/> beantworten die
+/// Frage „wie gross ist die Flotte", nicht die Frage „wie gross ist EIN Geraet". Die
+/// Groessen-Sicht braucht beides: Die Rasterkarte laesst die Einheit waehlen und zeigt
+/// bei mehr als einer die Summe (Konzept 2.5), und ohne die Einzelgroessen liesse sich
+/// die Achse einer Flotte aus zwei verschiedenen Einheiten gar nicht bilden.
+/// </remarks>
+public sealed class FlottenKandidatEinheit
+{
+    /// <summary>Kennung der Einheit (<see cref="FlottenEinheit.Id"/>).</summary>
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>Kapazitaet [kWh] dieser einen Einheit.</summary>
+    public double KapazitaetKWh { get; set; }
+
+    /// <summary>Ladeleistung [kW] dieser einen Einheit.</summary>
+    public double LadeleistungKw { get; set; }
+
+    /// <summary>Entladeleistung [kW] dieser einen Einheit.</summary>
+    public double EntladeleistungKw { get; set; }
+
+    /// <summary>
+    /// C-Rate [1/h] dieser Einheit: <c>Entladeleistung / Kapazitaet</c>; ohne Kapazitaet 0.
+    /// </summary>
+    public double CRate => KapazitaetKWh > 0.0 ? EntladeleistungKw / KapazitaetKWh : 0.0;
+}
+
 /// <summary>Die Zusammenfassung EINES geprueften Kandidaten; die vollstaendige Zeitreihe haelt nur der beste.</summary>
+/// <remarks>
+/// <b>Seit Auftrag #193 traegt sie auch die BETRIEBSkennzahlen</b> (Konzept
+/// „Stromspeicher-Dialoge" 1.6 und 2.5): Durchsatz, Vollzyklen, Bezugsspitze,
+/// Betriebsersparnis und die Aussage <see cref="Arbeitslos"/>. Bis dahin stand je
+/// Kandidat nur der Kapitalwert da — ein arbeitsloser Kandidat war von einem
+/// arbeitenden nicht zu unterscheiden. Die Zahlen kommen aus dem Kandidatenlauf, den
+/// die Rastersuche ohnehin rechnet; eine zweite Simulation gibt es nicht.
+/// </remarks>
 public sealed class FlottenKandidatZusammenfassung
 {
     /// <summary>Kennung des Kandidaten; sie enthaelt je Einheit Kennung, Kapazitaet sowie Lade- und Entladeleistung und das Betriebsziel.</summary>
@@ -1162,6 +1201,66 @@ public sealed class FlottenKandidatZusammenfassung
 
     /// <summary>Grund der Unzulaessigkeit oder des Rechenfehlers; <c>null</c> bei einem zulaessigen Kandidaten.</summary>
     public string? Grund { get; set; }
+
+    // =====================================================================
+    // Die Achsenwerte der Groessen-Sicht (Auftrag #193, Konzept 2.5)
+    // =====================================================================
+
+    /// <summary>Die Groessen JE EINHEIT, in der Reihenfolge der Einheiten; bei der Nullvariante leer.</summary>
+    public List<FlottenKandidatEinheit> Einheiten { get; set; } = new();
+
+    /// <summary>
+    /// C-Rate [1/h] der Flotte: <c>Entladeleistung / Kapazitaet</c> ueber die Summen;
+    /// ohne Kapazitaet 0. Bei gleich grossen Einheiten ist sie die C-Rate der Einheit.
+    /// </summary>
+    public double CRate => KapazitaetKWh > 0.0 ? EntladeleistungKw / KapazitaetKWh : 0.0;
+
+    /// <summary>
+    /// Die Stelle auf der ERSTEN Suchachse (Kapazitaet bzw. — im Modus
+    /// <see cref="FlottenAuslegungsmodus.LeistungUndCRate"/> — Leistung); <c>-1</c>, wo
+    /// der Achsenmodus sie nicht liefert.
+    /// </summary>
+    /// <remarks>
+    /// Sie ist nur bei GENAU EINER aktiven Suchachse belegt. Mehrere Achsen spannen kein
+    /// zweidimensionales Raster auf; eine Rasterkarte gaebe es dafuer nicht, und ein
+    /// erfundener Index waere schlimmer als keiner.
+    /// </remarks>
+    public int Rasterzeile { get; set; } = -1;
+
+    /// <summary>Die Stelle auf der ZWEITEN Suchachse (Leistung bzw. C-Rate); <c>-1</c> wie <see cref="Rasterzeile"/>.</summary>
+    public int Rasterspalte { get; set; } = -1;
+
+    // =====================================================================
+    // Die Betriebskennzahlen des Kandidatenlaufs (Auftrag #193)
+    // =====================================================================
+
+    /// <summary>
+    /// Jahresdurchsatz [kWh]: die AC-seitig ABGEGEBENE Energie der ganzen Flotte im
+    /// ersten gerechneten Jahr. Die Entladung ist die Groesse, die Nutzen stiftet und
+    /// Verschleiss kostet; die Ladung steht daneben in der Diagnose.
+    /// </summary>
+    public double DurchsatzKWh { get; set; }
+
+    /// <summary>Vollzyklen [1/a]: <see cref="DurchsatzKWh"/> geteilt durch <see cref="KapazitaetKWh"/>; ohne Kapazitaet 0.</summary>
+    public double Vollzyklen { get; set; }
+
+    /// <summary>Hoechster Netzbezug [kW] des Kandidatenlaufs — die Groesse, die der Leistungspreis bewertet.</summary>
+    public double BezugsspitzeKw { get; set; }
+
+    /// <summary>
+    /// Betriebsersparnis [EUR/a] gegenueber „ohne Speicher", OHNE Kapitaldienst:
+    /// Rechnungsdifferenz des ersten Jahres abzueglich Betriebsaufwand und
+    /// Durchsatzkosten. Investition, Ersatzinvestition und Restwert bleiben aussen vor —
+    /// sie stecken im <see cref="KapitalwertEuro"/>.
+    /// </summary>
+    public double ErsparnisEuroJahr { get; set; }
+
+    /// <summary>
+    /// Die Flotte dieses Kandidaten hat im gerechneten Zeitraum weder geladen noch
+    /// entladen (<see cref="FlottenDiagnose.Arbeitslos"/>, Aufgabe #183). Ein solcher
+    /// Kandidat kostet nur.
+    /// </summary>
+    public bool Arbeitslos { get; set; }
 }
 
 /// <summary>

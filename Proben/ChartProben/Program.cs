@@ -581,6 +581,47 @@ namespace ChartProben
                             rasterKapazitaeten[RASTER_BESTE_ZEILE],
                             rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
+            // =========================================================================
+            // 39/40 - die GROESSEN-SICHT DER FLOTTE (#193, P4, Konzept 2.5)
+            // =========================================================================
+            //
+            // Dieselbe Rasterkarte, nun mit den zwei Zutaten, die die Flotte braucht:
+            // der SCHRAFFUR der unzulaessigen Kandidaten und der FUSSZEILE mit dem
+            // SP-O-4-Hinweis. Beides sind optionale Parameter; die Probe 37 darueber
+            // ruft die Funktion weiterhin ohne sie und muss byte-gleich bleiben.
+            //
+            // Unzulaessig ist hier der ganze obere Rand (die zwei groessten
+            // Kapazitaeten) und die schnellste C-Rate - so liegt Schraffur sowohl an
+            // einer Kante als auch quer durch die Flaeche, und das Optimum bleibt frei.
+            bool[][] rasterSperre = Rastersperre(rasterKapazitaeten.Length, rasterCRaten.Length);
+
+            Pruefe(ziel, "flottenraster_schraffur", 860, 560,
+                   new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
+                           ChartRenderer.C_RASTER_GUT, SKColors.Black },
+                   () => ChartRenderer.Optimierungsraster("Kapitalwert über Kapazität und C-Rate",
+                            "C-Rate [1/h] (Leistung = Kapazität × C-Rate)", "Kapazität [kWh]",
+                            "Kapitalwert [€]",
+                            rasterCRaten, rasterKapazitaeten, rasterWerte,
+                            RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE,
+                            rasterSperre,
+                            "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. "
+                            + "Zwischen zwei Stützstellen ist nichts gerechnet."));
+
+            // Der SCHNITT UEBER DER LEISTUNG ist dieselbe Funktion mit einer anderen
+            // Achse: P = E * C, die Kapazitaetszeile also ueber der Leistung gelesen.
+            // Geprueft wird, dass sie das auch mit einer Achse kann, die nicht bei
+            // 500 anfaengt - die Leistungen liegen hier zwischen 1 250 und 7 500 kW.
+            double[] leistungsachse = Leistungsachse(rasterCRaten,
+                                                     rasterKapazitaeten[RASTER_BESTE_ZEILE]);
+
+            Pruefe(ziel, "flottenschnitt_leistung", 720, 460,
+                   new[] { ChartRenderer.C_STAMM, ChartRenderer.C_RASTER_SCHLECHT },
+                   () => ChartRenderer.Schnittkurve("Schnitt bei 2 500 kWh — Kapitalwert über der Entladeleistung",
+                            "Entladeleistung [kW]", "Kapitalwert [€]",
+                            leistungsachse, rasterWerte[RASTER_BESTE_ZEILE],
+                            leistungsachse[RASTER_BESTE_SPALTE],
+                            rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
+
             // --- Die JAHRESPROJEKTION der Speicherflotte (#184, P2) ------------------
             //
             // Saeulen je Projektjahr, Linie kumuliert, Ersatzjahre markiert. Das Bild
@@ -681,6 +722,23 @@ namespace ChartProben
                         rasterKapazitaeten, Rasterspalte(rasterWerte, RASTER_BESTE_SPALTE),
                         rasterKapazitaeten[RASTER_BESTE_ZEILE],
                         rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
+
+            // Dasselbe fuer die SCHRAFFUR der Groessen-Sicht (#193): Masse, Farben und
+            // Determinismus stimmen auch dann, wenn der Parameter "unzulaessig"
+            // stillschweigend uebergangen wuerde - und dann stuende ein gesperrter
+            // Kandidat als gruenes Feld im Bild. Geprueft wird deshalb, dass "mit
+            // Schraffur" und "ohne Schraffur" zwei verschiedene Bilder sind. Der
+            // erste Aufruf ist zugleich der Beleg, dass die Probe 37 (Aufruf OHNE die
+            // zwei neuen Parameter) unberuehrt bleibt.
+            Unterschiedlich("flottenraster_schraffur_wirkt",
+                () => ChartRenderer.Optimierungsraster("Kapitalwert über Kapazität und C-Rate",
+                        "C-Rate [1/h]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        rasterCRaten, rasterKapazitaeten, rasterWerte,
+                        RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE),
+                () => ChartRenderer.Optimierungsraster("Kapitalwert über Kapazität und C-Rate",
+                        "C-Rate [1/h]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        rasterCRaten, rasterKapazitaeten, rasterWerte,
+                        RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE, rasterSperre));
 
             // Dasselbe fuer die ERSATZJAHR-MARKE der Jahresprojektion (#184): Masse,
             // Farben und Determinismus stimmen auch dann, wenn die Marke stillschweigend
@@ -840,6 +898,35 @@ namespace ChartProben
         {
             var w = new double[feld.Length];
             for (int i = 0; i < feld.Length; i++) w[i] = feld[i][spalte];
+            return w;
+        }
+
+        /// <summary>
+        /// Die Sperrmatrix der Groessen-Sicht (#193): die zwei GROESSTEN Kapazitaeten
+        /// und die schnellste C-Rate sind unzulaessig. Damit liegt Schraffur an einer
+        /// Kante und quer durch die Flaeche, und das Optimum (Zeile 4, Spalte 2) bleibt
+        /// frei - sonst pruefte das Bild die Marke ueber der Schraffur statt beides.
+        /// </summary>
+        private static bool[][] Rastersperre(int zeilen, int spalten)
+        {
+            var sperre = new bool[zeilen][];
+            for (int i = 0; i < zeilen; i++)
+            {
+                sperre[i] = new bool[spalten];
+                for (int s = 0; s < spalten; s++)
+                    sperre[i][s] = i >= zeilen - 2 || s == spalten - 1;
+            }
+            return sperre;
+        }
+
+        /// <summary>
+        /// Die Leistungsachse einer Rasterzeile: P = E * C bei fester Kapazitaet - die
+        /// zweite Lesart derselben Kurve (Konzept 2.5).
+        /// </summary>
+        private static double[] Leistungsachse(double[] cRaten, double kapazitaetKwh)
+        {
+            var w = new double[cRaten.Length];
+            for (int s = 0; s < cRaten.Length; s++) w[s] = cRaten[s] * kapazitaetKwh;
             return w;
         }
 
