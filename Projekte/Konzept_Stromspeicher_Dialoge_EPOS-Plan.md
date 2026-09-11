@@ -562,3 +562,15 @@ Größenachse, **SD‑Q11** Zielgröße bleibt der Kapitalwert und der Kasten �
 dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach Schritt 2. Umsetzung als **Auftrag #224**
 (Opus, eigener Worktree) nach den Merges von #220 (AppWurzel), #225 (Ablaufleiste bündig, Anzahl-Schritt fällt) und #226
 (Rasterkarte folgt der Größenkopplung), weil alle drei die Auslegungsseite, den Editor oder die Größen-Sicht anfassen.
+
+### 7.8 Darstellung der Ansicht (Anwenderwunsch 11.09.2026, Bildschirmfoto Schritt 1)
+
+*„optimiere die Darstellung der Seite z. B. etwas deutlich 1 Speicher, 2 Daten & Kosten …"* — Befund am Foto und Regeln für #224:
+
+| Befund | Regel |
+|---|---|
+| Die Stationen der Ablaufleiste sind kleine Textreiter; nur „4 Größen optimieren" ist ein dunkler Knopf, „5 Ergebnis" trägt daneben die Marke „veraltet". Was Schritt ist und was Knopf, sieht man nicht. | **Stufenleiste** im Baustein `Ablaufleiste`: je Station ein nummerierter Kreis (28 px) plus Titel; die aktive Station ausgefüllt in der Primärfarbe mit Unterstrich, erledigte Stationen mit Haken, kommende grau; alle fünf gleich gebaut (kein Knopf unter den Stationen — der Rechenknopf steht in der Seite von Schritt 4, 7.4). Die Marke „veraltet" bleibt als kleine Pille am Kreis von 5. Eine Reihe, bündig links (#225). Die Simulationsseite nutzt denselben Baustein und bekommt dieselben Kreise, behält aber Lage und Reihenfolge ihrer Werkzeugleiste (#216, `Kompakt`). |
+| Zahlen mit Gleitkommarest: Ladewirkungsgrad `94,86832980505137 %`, SoC-Obergrenze `89,99999999999999 %`, Energie-Ausgleichswert `0,31746000000002055`. | Der Baustein `Zahlenfeld` zeigt Werte mit höchstens vier Nachkommastellen (`0.####`, Kultur des Anwenders), ein Parameter `Nachkommastellen` erlaubt weniger (Prozente 2); der gespeicherte Wert bleibt unverändert, erst eine Eingabe ändert ihn. Gilt hausweit für alle Dialoge; bunit-Fall am Baustein. |
+| Zwei blaue Hinweisbänder (Betriebsaufwand, Start-Ladezustand) nehmen ein Drittel des Kopfes ein, jedes mit eigenem Link „erklären lassen". | Diagnosehinweise **kompakt**: eine Zeile je Hinweis mit Symbol, Text und dem Link inline; ab zwei Hinweisen ein aufklappbarer Block „2 Hinweise" (offen beim ersten Erscheinen, Zustand je Sitzung). Diagnosebanner-Konzept (2.4) bleibt, nur die Form ändert sich. |
+| Kopf „Speicherflotte — Physische Einheiten …" mit der roten Pille „1 Speicher" rechts und dem Satz über die Studie. | Der Erklärsatz wird Herleitungszeile (leise), die Pille zeigt die Einheitenzahl neutral (kein Rot ohne Fehler). |
+| Kartenkopf der Einheit `[100kW, 129.0kWh]` mit Punkt als Dezimaltrenner und ohne Leerzeichen. | Beschriftung nach Hauskultur: „129 kWh · 100/100 kW" (steht rechts schon so) — den Namen ohne den Klammerzusatz zeigen. |
