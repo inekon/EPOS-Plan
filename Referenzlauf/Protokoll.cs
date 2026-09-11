@@ -101,7 +101,14 @@ namespace WindowsFormsApplication1.Referenzlauf
             // #202: Path.GetDirectoryName liefert null bei einem Wurzelpfad - unter
             // Nullable=enable (EPOS.iOS verlinkt diese Datei) ist der Durchreicher
             // CS8604. Gleiche Wirkung, nur ohne den Sonderfall.
-            string ordner = Path.GetDirectoryName(datei);
+            // #223: Die Variable selbst muss dafuer string? sein, sonst warnt die
+            // Zuweisung des moeglichen null-Werts als CS8600 (iOS-Lauf 43). Die
+            // Annotation gilt eng begrenzt fuer diese eine Zeile, weil das Werkzeug
+            // selbst mit Nullable=disable baut (Referenzlauf.csproj, EPOS.Referenzlauf.csproj)
+            // und "?" dort sonst ungeschuetzt als CS8632 warnt.
+#nullable enable
+            string? ordner = Path.GetDirectoryName(datei);
+#nullable restore
             if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
 
             File.WriteAllText(datei, sb.ToString(), new UTF8Encoding(true));
