@@ -3614,6 +3614,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > im Bestand); Wiki-Bedienungsseite „Simulation" (Textvorschlag des Agenten) durch die Orchestrierung; Windows-Abnahme steht aus.
 > Gate sept20 auf `e608457`: Kern 2643, UI 3687, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#213 (11.09.2026, `dcbe300`, Merge `33d2afb`) — Stromspeicher-Reiter: Leistungsverteilung erst ab zwei Einheiten (Anwenderentscheid
+> „Verteilung im Stromspeicher-Reiter erst ab zwei Einheiten: Empfehlung", der zweite Wirt von SD‑E‑8).** `StromspeicherReiter.razor` setzt
+> `VerteilungZeigen` des `SpeicherFlottenBetriebEditor` aus der Einheitenzahl, wortgleich zur Auslegungsansicht; der Editor selbst kennt die
+> Einheitenzahl nicht (sein Wert ist `FlottenSimulationOptionen`), deshalb bleibt der Parameter und beide Wirte entscheiden gleich. Zwei
+> bunit-Fälle in `StromspeicherReiterTests` (eine Einheit → Erklärzeile, zwei → Klappliste). Konzept 4.1 („Offen: zweiter Wirt" → erledigt) und
+> `Doku_Mehrspeicher_Konzept_und_Umsetzung.md` nachgezogen; der Satz „Offen: zweiter Wirt" im Statusblock #206 oben bleibt als Geschichte stehen.
+> Gate sept21 auf `33d2afb`: Kern 2643, UI 3689, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
