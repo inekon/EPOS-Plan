@@ -694,6 +694,17 @@ Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der
 > **Auch `#170c` hat ihn nicht ausgelöst** (11.09.2026): Der Schritt fasst Kern, Oberfläche und
 > Texte an, `EPOS.iOS/` und keine `Dienste.*`-Schnittstelle — nach derselben Regel also kein
 > Grund für den macOS-Läufer. Der Gerätebeleg oben bleibt damit bewusst offen.
+>
+> **Und `#174` ebenfalls nicht** (11.09.2026, Anwenderentscheid **SP‑O‑8**): Das dreizehnte
+> Prüfprojekt **1046 „Prüfprojekt Speicherflotte"** in `Kenndaten_Test.sqlite` und die neue
+> Referenzbasis **`2026-09-11_R7_Speicherflotte`** (13 Projekte, 345 CSV, 1 937 Skalare) hängen
+> den Flottenpfad des Projektlaufs ins Regressionsnetz; `ios.yml` ist dabei **nur** im
+> Basis-Pfad nachgezogen (der iZ6-Vergleich für Projekt 1030 zeigt jetzt auf R7 statt R6 —
+> `Projekt_1030` ist in beiden Basen **byte-gleich**, der Nachweis des letzten iOS-Laufs bleibt
+> damit gültig). Weder `EPOS.iOS/`, noch ein Adapter, noch der Prüfmodus, noch die Seed-Kopie
+> sind berührt — der Nachweis ist der grüne Kern-Lauf auf ubuntu. Die Seed-Datenbank der Hülle
+> meldet beim nächsten iOS-Lauf `Projekte=25` statt 24; das STRICT-Gate zieht seine Erwartung
+> ohnehin aus der Seed-Datei selbst und bleibt bei 117.
 
 ---
 

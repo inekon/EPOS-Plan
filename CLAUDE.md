@@ -168,23 +168,32 @@ nachfragen.
 | `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
-gegen `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten` gehalten (**zwölf Projekte, 312 CSV,
-1 792 Skalare**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` auf
-**Schemastand 73** (die Basis selbst ist am 07.09.2026 auf Schemastand 69 eingefroren; am
-09.09.2026 — Auftrag #154 — ist `Kenndaten_Test.sqlite` byte-gleich auf 72 nachgezogen und am
-11.09.2026 mit dem Stromspeicher-Sync byte-gleich auf 73, die Schritte 70–72 legen
-ausschließlich nullbare Spalten an und Schritt 73 allein die leere Tabelle
-`Tab_SpeicherAuslegung`, kein Rechenwert ändert sich) nach dem
+gegen `Referenzlaeufe/2026-09-11_R7_Speicherflotte` gehalten (**dreizehn Projekte, 345 CSV,
+1 937 Skalare**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` auf
+**Schemastand 73**) nach dem Anwenderentscheid **SP‑O‑8** vom 11.09.2026: Das dreizehnte
+Projekt **1046 „Prüfprojekt Speicherflotte"** — eine Tiefkopie von 1007 mit einem aktivierten
+Stand `@Projektflotte` (zwei Einheiten, 24 kWh an 10/12 kW und 16 kWh an 6/7 kW, getrennte
+Richtungswirkungsgrade und SoC-Bänder, Ziel `PeakShaving` gegen 16 kW, Verteilung `Kaskade`,
+kein Solver) — ist das **einzige**, das den Flottenpfad des Projektlaufs betritt; die zwölf
+übrigen fahren die Einzelanlage. **Sie sind byte-gleich zur Vorgängerbasis R6**, der Wechsel
+ist reine Erweiterung. Die Wirkung der Flotte: Bezugsspitze 19,7762 → **16,7428 kW**
+(−15,3 %), Netzbezug 50 538,7 → 51 611,0 kWh (+2,1 %, davon 122,4 kWh Umwandlungsverlust);
+der Export führt dafür 42 neue Skalare unter `Flotte.*` und vier Ganglinien je Einheit, alle
+nur, wenn die Flotte gerechnet hat. Herleitung, Wahl des Peak-Ziels und die drei Gegenproben
+stehen im `protokoll.txt` der Basis; das Projekt entsteht wiederholbar aus
+`Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py`.
+Die Vorgängerbasis `2026-09-07_R6_PvKoeffizienten` (zwölf Projekte, 312 CSV, 1 792 Skalare)
+bleibt zur Geschichte liegen — sie entstand nach dem
 Befund **W6‑B‑5** mit den Entscheiden
 **Q1–Q3**: Schemaschritt 69 repariert die verdorbenen PV-Modulkoeffizienten aus der CEC-Liste.
-**Elf der zwölf Projekte sind byte-gleich zur Vorgängerbasis; nur 1007 weicht ab**, und dort
-nur die acht Dateien der PV-Kette — die Ursache ist genau eine Spalte: `T_NOCT` springt vom
+**Elf der zwölf Projekte waren byte-gleich zu IHRER Vorgängerbasis; nur 1007 wich ab**, und dort
+nur in den acht Dateien der PV-Kette — die Ursache ist genau eine Spalte: `T_NOCT` springt vom
 Rückfall 45 °C auf den Katalogwert 47,4 °C, das sind −0,69 % theoretische PV-Erzeugung. Der
 Gegenbeweis (allein `T_NOCT` zurück auf 45 → 29 von 29 Dateien byte-gleich zu R5) steht im
 `protokoll.txt` der Basis. Die Vorgängerbasis
 `2026-09-07_R5_Zahlenrand` bleibt zur Geschichte liegen — sie entstand nach den drei
-Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis. Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") bleibt zur Geschichte liegen, ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen); die CI rechnet bei
-jedem Push die Projekte 1030, 1007, 1017 und 1045 gegen dieselbe Basis.
+Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis. Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") bleibt zur Geschichte liegen, ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen; die CI rechnet bei
+jedem Push die Projekte 1030, 1007, 1017, 1045 **und 1046** gegen die aktuelle Basis.
 
 **Die Basis führt seit dem Anwenderentscheid Em‑9.8 (07.09.2026) auch zehn
 Emissionsskalare** je Projekt mit Kessel- bzw. BHKW-Stufe (`Em.Kessel.Co2T` in t/a,
@@ -208,6 +217,18 @@ oder ein neues PV-Modul anlegt, das ein Referenzprojekt benutzt —, friert im s
 die Basis neu ein und begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`.** `alpha_SC`
 und `beta_OC` liest kein Rechenweg (nur die Strangampel und die Importprüfung); der Beleg
 dafür steht als Gegenprobe im `protokoll.txt` der Basis R6.
+
+**Seit dem Anwenderentscheid SP‑O‑8 (11.09.2026) gilt dieselbe Regel für die
+FLOTTENPARAMETER des Projekts 1046.** Der Stand `@Projektflotte` in `Tab_SpeicherAuslegung`
+(ID_Projekt 1046, Anlagenbezug `NULL`) ist der einzige aktivierte Flottenstand der
+Testdatenbank; er schaltet den zweiten Speicherpfad ein, und `aggregate.csv` führt dafür
+42 Skalare und vier Ganglinien. Daraus folgt die **Einfrierregel (SP‑O‑8): Wer diesen Stand
+ändert — Einheitenzahl, Kapazität, Lade-/Entladeleistung, Richtungswirkungsgrade,
+SoC-Grenzen, Start-SoC, Peak-Reserve, Hilfsverbrauch, Betriebsziel, Verteilung, Peak-Ziel,
+Netzladung, Batterieexport, Energie-Ausgleichswert oder Lebensdauerkurve — oder eine
+Projektzeile von 1046, friert im selben Schritt die Basis neu ein und begründet den Wechsel
+in `Referenzlaeufe/LIESMICH.md`.** Auslegungs- und Arbeitsstände unter einem ANDEREN
+Bezeichner als `@Projektflotte` erreichen den Projektlauf nicht und bleiben frei.
 
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg

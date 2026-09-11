@@ -57,6 +57,32 @@ die Jahreserzeugung eines Projekts.
 > man allein `T_NOCT` auf den alten Rückfallwert zurück und lässt die drei anderen Spalten
 > repariert, ist Projekt 1007 wieder **byte-gleich zu R5**.
 
+## Die dritte Einfrierregel: die Flottenparameter des Projekts 1046 (SP‑O‑8, 11.09.2026)
+
+Dieselbe Klasse von Falle, dritter Ort. Seit dem Anwenderentscheid **SP‑O‑8** führt die
+Testdatenbank mit Projekt **1046 „Prüfprojekt Speicherflotte"** einen aktivierten Stand
+`@Projektflotte` in `Tab_SpeicherAuslegung` — den einzigen der Datenbank. Er schaltet im
+gewöhnlichen Projektlauf den **Flottenpfad** ein (`SpeicherFlottenProjektCtrl.IstAktiv` →
+`SimulationControl.SpeicherlaufAusfuehren`), und `aggregate.csv` führt dafür 42 Skalare und
+vier Ganglinien. Jede Zahl dieses Standes geht damit unmittelbar in die Referenz.
+
+> **Wer den Stand `@Projektflotte` des Projekts 1046 ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen ist jede Änderung an Einheitenzahl, Kapazität, Lade-/Entladeleistung,
+> Richtungswirkungsgraden, SoC-Grenzen, Start-SoC, Peak-Reserve, Hilfsverbrauch,
+> Betriebsziel, Verteilung, Peak-Ziel, Netzladung, Batterieexport, Energie-Ausgleichswert
+> oder Lebensdauerkurve — und ebenso jede Änderung an den Projektzeilen von 1046 selbst.
+>
+> **Nicht** betroffen sind Auslegungs- und Arbeitsstände unter einem ANDEREN Bezeichner als
+> `@Projektflotte`: Sie erreichen den Projektlauf nicht. Die übrigen Projekte der
+> Testdatenbank führen gar keinen Flottenstand.
+
+Das Projekt entsteht wiederholbar aus
+[`Skripte/pruefprojekt_1046_speicherflotte.py`](Skripte/pruefprojekt_1046_speicherflotte.py);
+Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen im
+`protokoll.txt` der Basis `2026-09-11_R7_Speicherflotte`.
+
 ## Aktuelle Basis
 
 **`2026-09-07_M7_nach-Merge7/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
@@ -137,14 +163,102 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 > & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
 > ```
 
-### CI-Basis auf Linux: `2026-09-07_R6_PvKoeffizienten` (löst `2026-09-07_R5_Zahlenrand` ab)
+### CI-Basis auf Linux: `2026-09-11_R7_Speicherflotte` (löst `2026-09-07_R6_PvKoeffizienten` ab)
+
+**`2026-09-11_R7_Speicherflotte/`** — **dieselben zwölf Projekte plus ein dreizehntes**
+(1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045 **und 1046**),
+**345 CSV** (vorher 312), **1 937 Skalare** (vorher 1 792), gerechnet mit dem plattformfreien
+`EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 73**, 25 Projekte,
+119 Tabellen, davon 117 STRICT). Gegen diese Basis hält `.github/workflows/kern.yml`
+(1030, 1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate
+der Orchestrierung zieht getrennt nach.
+
+> **Anlass: der Anwenderentscheid SP‑O‑8 vom 11.09.2026, „Empfehlung".** Das
+> Mehrspeicherkonzept hat mit `SpeicherEngine/Flotten*.cs`, den Controllern
+> `SpeicherFlotten*Ctrl` und der Weiche in `SimulationControl.Stromspeicher.cs` einen
+> **zweiten Speicherpfad** in den gewöhnlichen Projektlauf gelegt — und **keines der zwölf
+> Referenzprojekte betrat ihn**. Sie fahren alle die Einzelanlage über
+> `StromspeicherSimCtrl.RechneAktiveVariante`. Eine stille Änderung an Verteilung, Reserve,
+> Richtungswirkungsgrad oder Netzbilanz wäre in keinem Referenzlauf aufgefallen.
+>
+> **Das dreizehnte Projekt: 1046 „Prüfprojekt Speicherflotte"**, eine Tiefkopie von **1007**
+> („Laurentiuskirche" — von den drei Projekten mit Strombedarf UND PV das mit der höchsten
+> Bezugsspitze, 19,776 kW gegen 8,37 kW bei 1040 und 1045; und das einzige, das schon
+> Stromspeicheranlagen führt, wodurch dasselbe Projekt mit ausgeschalteter Flotte den
+> Einzelpfad rechnet). Darin eine **Flotte aus zwei Einheiten**: A mit 24 kWh an 10/12 kW
+> (η 0,96/0,94, SoC 0,05–0,95, Reserve 2,4 kWh), B mit 16 kWh an 6/7 kW (η 0,93/0,91,
+> SoC 0,10–0,90, Reserve 1,2 kWh). Betriebsziel **`PeakShaving`** gegen **16,0 kW**,
+> Verteilung **`Kaskade`**, Netzladung frei, Batterieexport gesperrt. **Kein planendes Ziel** —
+> `PvPlanung`, `Arbitrage` und `MultiUse` brauchen einen `IFlottenPlaner` und damit
+> Google OR-Tools, die der plattformfreie Referenzlauf bewusst nicht einbindet.
+>
+> **Die zwölf alten Projekte sind BYTE-GLEICH zu R6** — `diff -rq` je Projekt ohne einen
+> einzigen Unterschied in 312 CSV. Der Wechsel R6 → R7 ist reine **Erweiterung**: das neue
+> Projekt in der Testdatenbank und 42 Skalare plus vier Ganglinien im Export, beide unter der
+> Bedingung „die Flotte hat gerechnet".
+>
+> | Projekt 1046 | Flotte AUS (Einzelspeicher) | Flotte AN | Differenz |
+> |---|---:|---:|---:|
+> | Bezugsspitze [kW] | 19,7762 | **16,7428** | −3,0334 (−15,3 %) |
+> | Netzbezug [kWh] | 50 538,68 | **51 611,01** | +1 072,33 (+2,1 %) |
+> | Intervalle über 16 kW | 2 864 | **20** | — |
+> | CSV / Skalare | 29 / 99 | **33 / 145** | +4 / +46 |
+>
+> Der höhere Netzbezug ist die Rechnung, nicht ein Fehler: Peak Shaving mit freigegebener
+> Netzladung kauft unter dem Peak-Ziel und gibt später mit Wirkungsgradverlust wieder ab
+> (122,42 kWh Umwandlungsverlust, 36,73 kWh von der PV-Einspeisung in die Eigennutzung
+> verschoben, 18,80 kWh mehr Speicherinhalt am Jahresende). Bezahlt wird das mit dem
+> Leistungspreis auf 3,03 kW weniger Bezugsspitze.
+>
+> **Die Flottenwege sind wirklich betreten** (aus den vier neuen Ganglinien, 35 040
+> Intervalle): Einheit A entlädt in 1 761 und lädt in 877 Intervallen, B in 1 177 bzw. 734;
+> „nur B entlädt" in 1 152 Intervallen, weil A an seiner unteren Grenze steht — das ist die
+> **Kaskade**. Beide SoC-Bänder werden voll ausgefahren (A 0,0500…0,9500, B 0,1000…0,9000),
+> und die **Peak-Reserve** wird in 254 (A) bzw. 672 (B) Intervallen freigegeben — was nur bei
+> einer tatsächlichen Peak-Überschreitung erlaubt ist. Gleichzeitiges Laden und Entladen
+> innerhalb der Flotte: **0 Intervalle**.
+>
+> **Warum 16,0 kW und nicht 12.** Aus `reststrom_viertelstunde.csv` des Projekts 1007 lässt
+> sich je Schwelle T die längste zusammenhängende Energie über T ablesen: 101,5 kWh bei
+> T = 12, 33,5 kWh bei T = 16, 8,5 kWh bei T = 18. Die Flotte hat 34,4 kWh nutzbar. Gemessen:
+> bei T = 12 bleibt die Bezugsspitze bei 19,81 kW (die reaktive Regel entlädt schon an jedem
+> mittleren Tag und steht am Jahreshöchstwert leer), bei T = 18 arbeitet die Flotte fast nicht
+> mehr (3,9 bzw. 5,6 äquivalente Vollzyklen). Bei T = 16 sind es 23,3 bzw. 24,9 Vollzyklen —
+> und 20 verbleibende Überschreitungen, die den Freigabeweg der Reserve im Netz halten.
+>
+> **Keine Lebensdauerkurve, mit Absicht:** `RainflowKurve` bleibt leer, der Miner-Schaden
+> damit 0. Mit Kurve bricht die Auswertung ab, sobald eine Zyklustiefe außerhalb der
+> Stützstellen liegt — ein Referenzprojekt, das bei einer harmlosen Änderung nicht abweicht,
+> sondern abstürzt, wäre ein schlechtes Regressionsnetz. Der Skalar steht trotzdem, damit eine
+> später hinterlegte Kurve eine ZAHL ändert und keinen SCHLÜSSEL hinzufügt (Muster `Em.*.CoKg`).
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich** (`diff -rq`
+> ohne einen einzigen Unterschied in 345 CSV), Toleranzvergleich **13/13 PASS**
+> (3 777 497 Werte). **Laufzeit** 00:00:04. Auch das Skript ist wiederholbar: zwei Läufe auf
+> zwei frischen Kopien derselben Testdatenbank liefern **byte-gleiche** Dateien.
+>
+> ```bash
+> python3 Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py \
+>   Referenzlaeufe/Kenndaten_Test.sqlite
+>
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+>   --ziel Referenzlaeufe/2026-09-11_R7_Speicherflotte
+> ```
+>
+> Aufbau des Projekts, Herleitung der Größen und die drei Gegenproben im Wortlaut stehen im
+> `protokoll.txt` der Basis.
+
+### Vorgängerbasis: `2026-09-07_R6_PvKoeffizienten` (löste `2026-09-07_R5_Zahlenrand` ab)
 
 **`2026-09-07_R6_PvKoeffizienten/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018,
 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, unverändert **1 792 Skalare**
 (kein Schlüssel neu, keiner entfallen), gerechnet mit dem plattformfreien `EPOS.Referenzlauf`
-auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 69**). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045) jeden Push, `ios.yml` den
-iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
+auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 69**). Sie hielt bis zum 11.09.2026
+jeden Push (`.github/workflows/kern.yml` mit 1030, 1007, 1017, 1045) und den iZ6-Vergleich
+für 1030 in `ios.yml`; abgelöst hat sie `2026-09-11_R7_Speicherflotte` (Anwenderentscheid
+**SP‑O‑8**), zu der ihre zwölf Projekte **byte-gleich** sind. Sie bleibt zur Geschichte liegen.
 
 > **Anlass: der Befund W6‑B‑5 mit den drei Entscheiden Q1–Q3 vom 07.09.2026, alle
 > „Empfehlung"** — Schemaschritt **69** repariert die verdorbenen PV-Modulkoeffizienten
