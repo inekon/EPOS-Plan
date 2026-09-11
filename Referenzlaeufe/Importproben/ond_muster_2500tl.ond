@@ -1,0 +1,49 @@
+PVObject_=pvGInverter
+  Version=6.81
+  Flags=$00381000
+
+  PVObject_Commercial=pvCommercial
+    Comment=Synthetische Prüfprobe für EPOS-Plan (Konzept Wechselrichter, Anhang A)
+    Flags=$0041
+    Manufacturer=Musterwerk
+    Model=Muster 2500TL
+    DataSource=EPOS-Plan Prüfstand, kein Herstellerdatenblatt
+    YearBeg=2024
+  End of PVObject pvCommercial
+
+  Transfo=Without
+  NbInputs=1
+  NbMPPT=1
+  Pnight=0.50
+
+  Converter=TConverter
+    PNomConv=2.500
+    PMaxOUT=2.500
+    PNomDC=2.600
+    PMaxDC=2.750
+    VMppMin=80
+    VMppNom=350
+    VMPPMax=500
+    VAbsMax=600
+    VStart=100
+    PSeuil=12.0
+    IMaxDC=12.0
+    IMaxAC=11.0
+    EfficMax=97.50
+    EfficEuro=96.80
+    MonoTri=mono
+    ProfilPIO=TCubicProfile
+      NPtsMax=11
+      NPtsEff=7
+      LastCompile=$B18D
+      Mode=1
+      Point_1=              0.000000,              0.000000
+      Point_2=      138.888889,      125.000000
+      Point_3=      265.957447,      250.000000
+      Point_4=      519.750520,      500.000000
+      Point_5=      773.195876,      750.000000
+      Point_6=     1282.051282,     1250.000000
+      Point_7=     2577.319588,     2500.000000
+    End of TCubicProfile
+  End of TConverter
+End of PVObject pvGInverter

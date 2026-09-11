@@ -1,0 +1,76 @@
+PVObject_=pvGInverter
+  Version=7.20
+  Flags=$00381000
+
+  PVObject_Commercial=pvCommercial
+    Comment=Drei ProfilPIO-Fassungen – untere, nominale und obere MPP-Spannung
+    Flags=$0041
+    Manufacturer=Musterwerk
+    Model=Muster 10000TL-3
+    DataSource=EPOS-Plan Prüfstand, kein Herstellerdatenblatt
+    YearBeg=2025
+  End of PVObject pvCommercial
+
+  Transfo=Without
+  NbInputs=4
+  NbMPPT=2
+  Night_Loss=1.20
+
+  Converter=TConverter
+    PNomConv=10.000
+    PMaxOUT=11.000
+    PNomDC=10.300
+    PMaxDC=15.000
+    VMppMin=200
+    VMppNom=600
+    VMPPMax=800
+    VAbsMax=1000
+    VStart=250
+    PSeuil=25.0
+    IMaxDC=25.0
+    IMaxAC=16.0
+    EfficMax=98.20
+    EfficEuro=97.60
+    MonoTri=tri
+    VNomEff=200.0,600.0,800.0,
+    ProfilPIOV1=TCubicProfile
+      NPtsMax=11
+      NPtsEff=7
+      LastCompile=$B18D
+      Mode=1
+      Point_1=              0.000000,              0.000000
+      Point_2=      531.914894,      500.000000
+      Point_3=     1058.201058,     1000.000000
+      Point_4=     2094.240838,     2000.000000
+      Point_5=     3125.000000,     3000.000000
+      Point_6=     5197.505198,     5000.000000
+      Point_7=    10471.204188,    10000.000000
+    End of TCubicProfile
+    ProfilPIOV2=TCubicProfile
+      NPtsMax=11
+      NPtsEff=7
+      LastCompile=$B18D
+      Mode=1
+      Point_1=              0.000000,              0.000000
+      Point_2=      520.833333,      500.000000
+      Point_3=     1036.269430,     1000.000000
+      Point_4=     2051.282051,     2000.000000
+      Point_5=     3061.224490,     3000.000000
+      Point_6=     5091.649695,     5000.000000
+      Point_7=    10256.410256,    10000.000000
+    End of TCubicProfile
+    ProfilPIOV3=TCubicProfile
+      NPtsMax=11
+      NPtsEff=7
+      LastCompile=$B18D
+      Mode=1
+      Point_1=              0.000000,              0.000000
+      Point_2=      518.134715,      500.000000
+      Point_3=     1030.927835,     1000.000000
+      Point_4=     2040.816327,     2000.000000
+      Point_5=     3045.685279,     3000.000000
+      Point_6=     5065.856130,     5000.000000
+      Point_7=    10204.081633,    10000.000000
+    End of TCubicProfile
+  End of TConverter
+End of PVObject pvGInverter
