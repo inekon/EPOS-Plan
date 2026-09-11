@@ -3183,6 +3183,19 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > - **SP‑O‑7 Wärmekopplung:** BHKW-Fahrplan und elektrische Zusatzlast sind Eingaben; keine gemeinsame Wärme/Strom-MILP (bewusst, Kap. 13.5).
 > - **SP‑O‑8 Referenzlauf:** Linux-Gate 11.09.2026 byte-gleich für 1030/1007/1017/1045; die vier Projekte führen keine Flotte — ein Referenzprojekt MIT Flotte (Basis R7) fehlt, sonst ist der Flottenpfad ohne Regressionsnetz.
 > - **SP‑O‑9 Repository:** `.work/` (73-MB-Datenbankkopie) und fünf docx auf Anwenderwunsch im Zweig belassen (11.09.2026); Klongröße + ~80 MB.
+>
+> **#170c/#172/#173 (11.09.2026) — Nacharbeiten der Integration.** **#170c (SP‑O‑3 eingelöst, `4f3cf8e`):** Drei der fünf
+> Flottenziele planen und brauchen einen `IFlottenPlaner`, den nur die WinForms-Anwendung registriert (`Program.cs`);
+> `EPOS.iOS/MauiProgram` und die Linux-Prüfstände setzen keinen, und die Wahl eines planenden Ziels endete erst im Lauf mit
+> einer `InvalidOperationException`. Jetzt: Auskunft `EPOS.Kern/Controller/FlottenPlanerLage.cs` (`Verfuegbar`, `Grund`,
+> `IstPlanend`, `ZielMoeglich`; Fabrik gesetzt UND liefert einen Planer), `Auswahlfeld` mit gesperrten Einträgen samt Grund,
+> Warn- bzw. Hinweisbanner im gemeinsamen Baustein `SpeicherFlottenBetriebEditor` (Dialog und Reiter), Vergleichsknopf
+> gesperrt, solange Ziel oder Auslegungsraster planen; vier Ressourcenschlüssel de/en. Mit gesetzter Fabrik ist nichts
+> gesperrt — Windows unverändert; `EPOS.iOS` und `SpeicherPlanung` unberührt, Gerätebeleg im Simulator offen (kein iOS-Lauf,
+> Regel vom 09.09.2026). **#172:** fünf historische Links in `Referenzlaeufe/LIESMICH.md` auf gelöschte Basisordner entlinkt,
+> `EPOS.Kern/CLAUDE.md` `Model/` (54). **#173:** 14 Codestellen in sieben Testdateien auf die xUnit-Idiome, 28 Analysewarnungen
+> → 0; das Gate zählt Warnungen seither mit `[A-Za-z]+[0-9]+`. Gate auf `ed83c66`: Kern 2 432 grün, UI 3 468 grün, SpeicherEngine 382,
+> SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 319, ChartProben 44, Referenzlauf byte-gleich.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
