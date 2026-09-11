@@ -17169,6 +17169,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_ED_ANZAHL_BIS" xml:space="preserve">
     <value>Anzahl bis:</value>
   </data>
+  <data name="FLOTTE_ED_ANZAHL_HINWEIS" xml:space="preserve">
+    <value>Stückzahl dieser Einheit in der Flotte; 0 = Einheit entfällt, gezählt wird in Einerschritten.</value>
+  </data>
   <data name="FLOTTE_ED_KAPAZITAET_VON" xml:space="preserve">
     <value>Kapazität von:</value>
   </data>

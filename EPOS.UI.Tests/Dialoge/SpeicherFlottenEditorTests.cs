@@ -127,9 +127,18 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
         Assert.DoesNotContain(kategorien, x => x.GetAttribute("aria-label") == "C-Rate [1/h]");
         Assert.Equal(3, Kategorie(cut, "Kapazität [kWh]").QuerySelectorAll("input").Length);
         Assert.Equal(3, Kategorie(cut, "Leistung [kW]").QuerySelectorAll("input").Length);
-        Assert.Equal(3, Kategorie(cut, "Anzahl").QuerySelectorAll("input").Length);
-        Assert.True(KategorieEingabe(cut, "Anzahl", "Schritt:").HasAttribute("disabled"));
-        Assert.Equal("1", KategorieEingabe(cut, "Anzahl", "Schritt:").GetAttribute("value"));
+
+        // AUFTRAG #225 NACHTRAG (Anwenderfrage 11.09.2026: "wozu steht hier schrittzahl,
+        // wenn diese nicht änderbar ist?"): Der Kasten "Anzahl" führt nur noch die ZWEI
+        // Ganzzahlfelder Von/Bis — das tote, dauerhaft deaktivierte dritte Feld "Schritt"
+        // (Wert immer 1, ohne Modellbindung) ist gefallen; an seiner Stelle steht die
+        // Erklaerzeile.
+        Assert.Equal(2, Kategorie(cut, "Anzahl").QuerySelectorAll("input").Length);
+        Assert.Empty(Kategorie(cut, "Anzahl").QuerySelectorAll("input[disabled]"));
+        Assert.DoesNotContain(Kategorie(cut, "Anzahl").QuerySelectorAll("label"),
+            x => x.TextContent.Contains("Schritt:"));
+        Assert.Single(Kategorie(cut, "Anzahl").QuerySelectorAll("p.epos-flotte-hinweis"));
+        Assert.Contains("gezählt wird in Einerschritten", Kategorie(cut, "Anzahl").TextContent);
     }
 
     [Fact]
