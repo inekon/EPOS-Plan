@@ -440,6 +440,12 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     /// <summary>
     /// Der Kopfblock nennt die Fassung. Wer eine Seite anfasst, sieht in Zeile 1,
     /// ob sie die Notation schon trägt — und welche.
+    ///
+    /// <para><b>Nachtrag Auftrag #203 (11.09.2026).</b> Es ist nicht mehr auf jeder
+    /// Seite dieselbe Zahl: Die Stromspeicherseite trägt die <b>Fassung 4</b>
+    /// (zweiter Hauptteil „Mehrere Speicher (Speicherflotte)"). Geprüft wird
+    /// deshalb je Seite gegen die Fassung, die sie führen soll — ein Kopfblock
+    /// ganz OHNE Fassungsangabe fällt weiterhin rot aus.</para>
     /// </summary>
     [Theory]
     [MemberData(nameof(Seitennamen))]
@@ -447,8 +453,24 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     {
         string kopf = string.Join("\n", File.ReadAllLines(Seitendatei(seite)).Take(4));
 
-        Assert.Contains("Fassung 3", kopf, StringComparison.Ordinal);
+        string erwartet = FassungDerSeite.TryGetValue(seite, out string? eigene)
+            ? eigene!
+            : "Fassung 3";
+
+        Assert.Contains(erwartet, kopf, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// Die Seiten, die eine EIGENE Fassung führen — jede mit ihrem Grund. Ohne
+    /// Eintrag gilt die Fassung 3 der Rubrik.
+    /// </summary>
+    private static readonly Dictionary<string, string> FassungDerSeite =
+        new(StringComparer.Ordinal)
+        {
+            // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen, dazu der
+            // zweite Hauptteil "Mehrere Speicher (Speicherflotte)".
+            { "Stromspeicher", "Fassung 4" }
+        };
 
     /// <summary>
     /// Die Anzeige-Gleichungen einer Seite — LaTeX in <c>&lt;math&gt;</c> (Fassung 3).

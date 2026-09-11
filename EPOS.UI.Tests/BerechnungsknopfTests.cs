@@ -99,6 +99,16 @@ public sealed class BerechnungsknopfTests
     };
 
     /// <summary>
+    /// Die Seiten, deren Kopfblock eine EIGENE Fassung nennt (Auftrag #203). Ohne
+    /// Eintrag gilt die Fassung 3 der Rubrik.
+    /// </summary>
+    private static readonly Dictionary<string, string> FassungImKopf =
+        new(StringComparer.Ordinal)
+        {
+            { "Stromspeicher", "Fassung 4: Speicherflotte" }
+        };
+
+    /// <summary>
     /// Alle dreizehn Seiten der Rubrik — seit der Zusammenführung von Teil A und Teil B
     /// (06.09.2026) gelten die Fassung-2-Fälle für jede von ihnen.
     /// </summary>
@@ -448,7 +458,17 @@ public sealed class BerechnungsknopfTests
         string[] zeilen = File.ReadAllText(pfad).Replace("\r\n", "\n").Split('\n');
 
         Assert.DoesNotContain("<big>", string.Join("\n", zeilen), StringComparison.Ordinal);
-        Assert.Contains("Fassung 3: LaTeX-Formeln und Legenden", zeilen[0], StringComparison.Ordinal);
+
+        // Auftrag #203 (11.09.2026): Die Stromspeicherseite traegt seither die
+        // FASSUNG 4 (zweiter Hauptteil "Mehrere Speicher (Speicherflotte)"). Die
+        // BAUFORM prueft dieser Fall unveraendert weiter - Gleichung, Legende,
+        // kein <big> -; nur die Zahl im Kopfblock ist nicht mehr auf allen
+        // dreizehn Seiten dieselbe. Ohne Eintrag gilt die Fassung 3.
+        string fassung = FassungImKopf.TryGetValue(seitenname, out string? eigene)
+            ? eigene!
+            : "Fassung 3: LaTeX-Formeln und Legenden";
+
+        Assert.Contains(fassung, zeilen[0], StringComparison.Ordinal);
 
         int gleichungen = 0;
         int legenden = 0;

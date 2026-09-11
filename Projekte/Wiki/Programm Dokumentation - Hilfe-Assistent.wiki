@@ -1,0 +1,67 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Hilfe-Assistent
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
+     Stand: 2026-09-11 (Absatz "Der Assistent aus einem Dialog heraus", Stufe S1)
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
+
+== Eingaben ==
+
+* '''Frage''' – das Eingabefeld des Chatfensters; die Kontextzeile darüber zeigt den erkannten Programmbereich, der mitgesendet wird.
+* '''Nur suchen''' – der Assistent durchsucht ausschließlich die mitgelieferte Hilfe. Keine Übertragung, keine Kosten.
+* '''Aktionen zulassen''' – gibt Arbeitsschritte im Programm überhaupt erst frei; ändernde Aktionen laufen nur nach ausdrücklicher Bestätigung.
+* '''Was wird gesendet?''' – zeigt vor dem Absenden genau den Text, der übertragen würde.
+* '''Werkzeuge…''' und '''Protokoll anzeigen''' – eine Aktion selbst ausführen beziehungsweise jeden Versuch mit Zeitpunkt und Ergebnis nachlesen.
+* '''Einstellungen…''' – den eigenen Zugangsschlüssel hinterlegen; die Zeile ''Heute genutzt'' zeigt den Stand des Tageslimits von 50 Anfragen.
+
+== Der Assistent aus einem Dialog heraus ==
+{{Anker|aus-dem-dialog}}
+
+Seit dem 11.09.2026 muss man den Assistenten nicht mehr suchen: Er ist dort erreichbar, wo gearbeitet wird.
+
+=== Der KI-Knopf neben dem Fragezeichen ===
+{{Anker|ki-knopf}}
+
+'''Neben dem Fragezeichen''' jedes Dialogs steht ein zweiter Knopf, der den Assistenten öffnet. Das Fragezeichen führt weiterhin auf die Hilfeseite dieses Dialogs, der neue Knopf ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
+
+Der Assistent öffnet sich '''ohne''' das Fenster zu blockieren: Sie können den Dialog weiter bedienen, während die Antwort entsteht.
+
+'''Der Knopf ist auch ohne Einrichtung da.''' Ist noch kein Zugangsschlüssel hinterlegt, führt er in die '''Einstellungen''' statt ins Leere. Netz, Schlüssel, Einwilligung und Tageslimit sind ausdrücklich keine Bedingung dafür, dass der Knopf erscheint – auch der Lesemodus blendet ihn nicht aus, denn '''Fragen ist lesend'''. Nur wenn der Assistent für diese Installation ganz abgeschaltet ist, fehlt er.
+
+Vier Masken führen ihn bewusst nicht: das Chatfenster selbst, seine Werkzeugliste und die beiden Lizenzmasken.
+
+=== Die Kontextzeile ===
+{{Anker|kontextzeile}}
+
+Über dem Eingabefeld steht, '''woher''' Sie kommen – der erkannte Programmbereich und der Name des Dialogs. Der Bereich wird aus dem Hilfeschlüssel des Dialogs abgeleitet, also aus derselben Angabe, die auch das Fragezeichen benutzt; er ordnet die Treffer der Hilfesuche. Wird kein Bereich erkannt, steht das ebenso dort.
+
+Auf dem iPad wechselt das Programm dafür die Ansicht und kehrt anschließend dorthin zurück, woher Sie kamen.
+
+=== „Erklären lassen" an einer Meldung ===
+{{Anker|erklaeren-lassen}}
+
+An Warn- und Diagnosemeldungen steht rechts der Link '''„erklären lassen"'''. Er öffnet den Assistenten mit einer '''vorbereiteten Frage''' zu genau dieser Meldung.
+
+'''Die Frage wird nicht abgeschickt.''' Sie steht in der Eingabezeile, und Sie entscheiden, ob Sie sie so stellen, umformulieren oder verwerfen – es gibt keinen Assistenten ohne Anwenderfrage.
+
+Zu jeder dieser Meldungen liegt ein '''Abschnitt im eingebauten Wissen''': Bedeutung, Ursache, Abhilfe und der Verweis auf die passende Wikiseite. Der Abschnitt wird über die '''Kennung''' der Meldung gefunden, nicht über ihren Wortlaut – deshalb trägt die Antwort auch dann, wenn kein Zugangsschlüssel hinterlegt ist, kein Netz zur Verfügung steht oder das Tageslimit erschöpft ist.
+
+=== Was dabei übertragen wird ===
+{{Anker|dialog-uebertragung}}
+
+Beim Öffnen aus einem Dialog gehen mit: der '''Programmbereich''', der '''Name des Dialogs''', die '''Kennung''' der Meldung und – bei „erklären lassen" – der '''Text des Banners'''.
+
+'''Keine Projektdaten und keine Feldwerte.''' Was in den Eingabefeldern steht, verlässt das Programm nicht. Ein Assistent, der die eingegebenen Werte mitliest, ist ein eigener Ausbauschritt und bekommt eine eigene Einwilligung.
+
+Wie bisher gilt: '''„Was wird gesendet?"''' zeigt vor dem Absenden genau den Text, der übertragen würde, und '''„Nur suchen"''' überträgt gar nichts.
+
+=== Menü und F1 bleiben ===
+{{Anker|menue-und-f1}}
+
+Der Aufruf über das Menü und über '''F1''' ist unverändert. Beide Wege übergeben den Bereich, in dem Sie gerade arbeiten – der neue Knopf ist ein '''zusätzlicher''' Einstieg, kein Ersatz.
+
+== Siehe auch ==
+
+* [[Hilfe-Assistent]] – Aufruf, Datenschutz, Aktionen und Grenzen des Assistenten
+* [[FAQ]] – häufige Fragen zu Kosten und Datenübertragung
+
+[[Kategorie:Programm Dokumentation]]

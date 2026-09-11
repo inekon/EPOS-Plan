@@ -1,0 +1,271 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Stromspeicher
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki
+     Stand: 2026-09-11 (Ansicht STROMSPEICHER_AUSLEGUNG, Speicherflotte)
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
+     Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
+Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
+
+== Eingaben ==
+
+* '''Auswahl aus der Datenbank''' – den Speicher aus dem Katalog ins Projekt übernehmen; die Liste ''ausgewählte Stromspeicher'' zeigt die Zuordnung.
+* '''Name und Typ''' – Bezeichnung und Bauart des Speichers.
+* '''Leistung und Energie''' – die Lade- und Entladeleistung sowie die Kapazität des Speichers.
+* '''Ladezustand''' – die Grenze des Ladezustands in Prozent.
+* '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
+* '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
+* {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
+* {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort weiterhin unter ''Energiespeicher''.
+
+== Stromspeicher-Auslegung ==
+{{Anker|auslegung-ansicht}}
+{{Anker|auslegung-optimieren}}
+
+Die '''Stromspeicher-Auslegung''' ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Fenster mehr. Sie füllt das Programmfenster ganz aus: kein Rahmen im Rahmen, kein zweiter Rollbalken.
+
+Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechnet sie ein Raster von Kandidaten durch. Und '''wie fährt die Anlage?''' – dafür rechnet sie eine feste Bestückung mit einer gewählten Betriebsführung. Beides geht wahlweise für '''einen''' Speicher oder für eine '''Flotte''' physisch gleichzeitig betriebener Speicher.
+
+=== Erreichbarkeit ===
+{{Anker|auslegung-start}}
+
+Der Weg hinein führt über das '''Simulationsergebnis''': Reiter '''Stromspeicher''' → Karte ''Speicherflotte und Auslegung'' → '''„Speicherflotte & Auslegung öffnen"'''. Die Ansicht '''wechselt''' dann an die Stelle der Ergebnisseite; der Knopf ''← zurück'' oben rechts führt dorthin zurück, woher Sie kamen.
+
+'''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Ergebnisseite mit. Öffnen Sie die Ansicht ohne vorherigen Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
+
+Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dieses Projekt bereits eine Flotte aktiviert, steht darunter ein Band '''„Projektflotte aktiv"''' mit dem Knopf, sie wieder abzuschalten.
+
+=== Ablaufleiste und die zwei Modi ===
+{{Anker|auslegung-ablauf}}
+
+Über allem steht die '''Ablaufleiste''' mit fünf Stationen:
+
+  1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Berechnen · 5 Ergebnis
+
+Die Stationen 1, 2, 3 und 5 sind '''Blätter''' – ein Klick blättert um. '''Station 4 ist der Rechenknopf'''; er heißt je nach Modus und Schalter ''4 Flotte bewerten'', ''4 Größen optimieren'' oder ''4 Optimieren''. '''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
+
+Rechts neben der Leiste steht der '''Modusschalter''':
+
+{| class="wikitable"
+! Modus !! Wofür !! Was die Blätter zeigen
+|-
+| '''Flotte''' || mehrere physisch gleichzeitig betriebene Speicher in ''einer'' Variante || Flotteneditor, Daten und Kosten, Betriebsführung mit Peak-Ziel, Flottenergebnis
+|-
+| '''Einzelspeicher''' || die klassische Auslegung ''einer'' aktiven Speichervariante || Suchraum, Betrieb, Ergebnis der Rasteroptimierung
+|}
+
+Es ist '''dieselbe Leiste mit anderen Blättern'''. Der Modus entscheidet auch, was Station 4 rechnet.
+
+=== Schritt 1 — Speicher ===
+{{Anker|auslegung-speicher}}
+
+Im Modus '''Flotte''' stehen hier die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Entladeleistung in kW, Lade- und Entladewirkungsgrad, das nutzbare Ladezustandsband, der Start-Ladezustand, die geschützte Peak-Reserve, der Hilfsverbrauch, der Grenzverschleiß und die Kostensätze. Einheiten lassen sich hinzufügen, kopieren und löschen; als '''Vorlage''' dient ein Satz aus dem Speicherkatalog.
+
+Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
+
+Darunter steht der Schalter '''„Größen optimieren"'''. Aus ist er, wenn Sie '''diese''' Bestückung bewerten wollen; ein ist er, wenn ein '''Raster''' von Größen durchgerechnet werden soll – dann tragen Sie je Suchachse ein, welche Einheit sie ersetzt und welche Bereiche und Schrittweiten gelten.
+
+Im Modus '''Einzelspeicher''' steht hier der Suchraum der aktiven Speichervariante:
+
+==== Größe und C-Rate ====
+{{Anker|auslegung-groesse}}
+
+Wählen Sie als Größenbasis '''Kapazität in kWh''' oder '''Leistung in kW'''. Geben Sie jeweils ''Von'', ''Bis'' und wahlweise eine ''Schrittweite'' ein. Ohne Größenschritt bestimmt die Anzahl der Stützstellen das Raster. Gleiche Grenzen prüfen eine feste Größe. Auch die C-Rate erhält eine Untergrenze, Obergrenze und Schrittweite; gleiche Grenzen prüfen eine feste C-Rate.
+
+Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
+
+=== Schritt 2 — Daten & Kosten ===
+{{Anker|auslegung-daten}}
+
+Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen und die Kostensätze. Im Modus ''Flotte'' erscheinen nur Quellen, Kosten und Profile; die Suchbereiche gehören dort zu Schritt 1.
+
+==== Investition und Betrieb ====
+{{Anker|auslegung-kosten}}
+
+Für '''Investition''' und '''Betrieb''' wird die Quelle unabhängig gewählt: ''Kostenmodul'' übernimmt die geeigneten spezifischen Sätze der aktiven Speicheranlage; ''Im Dialog'' verwendet die direkt eingegebenen Werte.
+
+{| class="wikitable"
+! Eingabe !! Einheit !! Berechnung
+|-
+| Investition Leistung || €/kW || Satz × AC-Nennleistung
+|-
+| Investition Kapazität || €/kWh || Satz × Nennkapazität
+|-
+| Betrieb Leistung || €/(kW·a) || Satz × AC-Nennleistung je Jahr
+|-
+| Betrieb Kapazität || €/(kWh·a) || Satz × Nennkapazität je Jahr
+|-
+| Betrieb Entladung || €/kWh entladen || Satz × simulierte AC-Entladeenergie je Jahr
+|}
+
+Alle Sätze sind netto. Die Kosten werden für jeden untersuchten Speicher neu berechnet. '''€/kWh Kapazität und €/kWh entladen sind verschiedene Bezugsgrößen.''' Explizite Nullkosten sind möglich; eine fehlende ausgewählte Kostenquelle wird als Fehler gemeldet.
+
+Pauschalen, Prozentpositionen, Erlöse, Zuschüsse und erst später beginnende Kosten werden in diesem spezifischen Kostenmodell nicht übernommen. Die ausgelassenen Positionen erscheinen mit Hinweis. Die Auslegungsbewertung ist damit eine Bewertung der gewählten spezifischen Kosten; die vollständige Projektwirtschaftlichkeit wird separat geprüft. Derselbe Verschleißanteil darf nicht zusätzlich sowohl als entladeabhängige Betriebskosten als auch über den optionalen Verschleißterm angesetzt werden.
+
+Für die Flotte kommen hier die '''finanzielle Projektlaufzeit''' und der '''Energie-Ausgleichswert''' dazu. Die Laufzeit ist stets sichtbar und änderbar. Der Ausgleichswert bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende; ohne ihn wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst geänderte Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
+
+==== Last, PV und Preis ====
+{{Anker|auslegung-quellen}}
+
+Jede Quelle wird einzeln gewählt:
+
+* '''Last''': EPOS-Strombedarf einschließlich der im Simulationslauf ermittelten elektrischen Zusatzverbraucher oder eine eigene CSV-Datei. ''load_kw'' bedeutet Bruttolast in kW vor Abzug der Erzeugung.
+* '''PV''': verfügbare AC-Leistung aus der EPOS-PV-Simulation oder einer eigenen CSV-Datei. ''pv_kw'' liegt nach Wechselrichterverlusten und vor zusätzlicher Abregelung. ''Keine PV'' setzt die PV-Leistung auf null.
+* '''Bezugspreis''': EPOS-Tarif, editierbares Strompreisprofil oder eine separate CSV-Datei. ''buy_eur_kwh'' enthält bereits den effektiven variablen Bezugspreis; negative Werte sind erlaubt. Auf die importierte effektive Preisreihe werden keine weiteren Tarifaufschläge addiert. Das bestehende Strompreisprofil verwendet dagegen Monats- und Wochenstundenwerte in ct/kWh plus den Projektaufschlag.
+
+'''BHKW-Leistung und Einspeisevergütung''' kommen bei der Flotte immer aus dem vorbereiteten Projektlauf; die Batterieeinspeisung braucht einen '''eigenen''' Verkaufspreis – der Bezugspreis wird nie als Verkaufspreis verwendet.
+
+==== CSV-Dateien laden ====
+{{Anker|auslegung-csv}}
+
+Wählen Sie für die gewünschte Rolle ''CSV-Datei'' und öffnen Sie die Datei über die zugehörige Schaltfläche. In der Vorschau ordnen Sie Zeit- und Wertspalten zu. Spaltennamen sind frei wählbar. Auch getrennte Datum- und Uhrzeitspalten sind möglich.
+
+Stellen Sie Trennzeichen, Dezimalzeichen, Kopfzeile, zu überspringende Zeilen, UTF-8 oder Windows-1252, Zeitformat, Zeitzone und Intervallanfang oder -ende ein. Last und PV können in kW, MW oder kWh je Intervall vorliegen; Preise in €/kWh, ct/kWh oder €/MWh. Stundenwerte werden auf vier Viertelstunden verteilt; Intervallenergie wird dabei in mittlere Leistung umgerechnet.
+
+Für die wirtschaftliche Jahresauslegung braucht jede gewählte Datei ein vollständiges Kalenderjahr. Alle Dateien müssen dieselbe UTC-Zeitachse besitzen. Echte Lücken, doppelte UTC-Zeitstempel, unklare Sommerzeitstunden und ungültige Zahlen verhindern die Berechnung.
+
+Bei Mischung mit EPOS-Modellreihen wird die '''EPOS-Modelljahrzuordnung''' ausdrücklich eingeschaltet. Die eingelesenen Werte und Zeitstempel bleiben erhalten. EPOS-Werte werden nach Monat, Tag und Uhrzeit zugeordnet; am 29. Februar wird der EPOS-28. Februar verwendet, in der wiederholten Herbststunde derselbe EPOS-Ortsstundenwert erneut. Das Ergebnis nennt diese Annahme.
+
+Im Modus ''Flotte'' steht daneben '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''Projektjahre''' (für eine Mehrjahresbewertung) und '''archivierte Prognosen''' (für die planenden Betriebsziele) eingelesen – über denselben Spaltenzuordnungsdialog. Eine Prognose trägt eine Kennung, einen Zeitpunkt ''bekannt seit'' und einen Entscheidungszeitpunkt; was erst nach der Entscheidung bekannt war, darf nicht darin stehen.
+
+==== Profile und Vorgaben ====
+{{Anker|auslegung-profile}}
+
+'''Einstellungen speichern''' hält den aktuellen Eingabestand fest. Ein '''benanntes Profil''' speichert Kostensätze, Suchbereiche, C-Raten, Strompreisprofil und sämtliche Quellenzuordnungen einschließlich eingelesener Zeitreihen. Sie können Profile laden, bearbeiten und unter einem weiteren Namen duplizieren. Die Ursprungsdateien müssen beim erneuten Öffnen nicht vorhanden sein.
+
+'''Namen mit einem führenden @ sind für das Programm reserviert.''' Der Arbeitsstand heißt ''@Aktuell'', die für den Projektlauf freigegebene Flotte ''@Projektflotte''. Ein eigenes Profil bekommt deshalb einen gewöhnlichen Namen.
+
+Nach einer Änderung zeigt die Oberfläche das bisherige Ergebnis als '''veraltet'''. Berechnen Sie neu, bevor Sie den Bestpunkt übernehmen. Heatmap und Schnittkurve verwenden die gewählte Größenbasis; Kennzahlen und Rasterexport berücksichtigen die Betriebskosten. Die Übernahme des Bestpunkts übernimmt die Dimensionierung in die aktive Speicheranlage. Prüfen Sie für die anschließende Projektwirtschaftlichkeit auch die dort hinterlegten Kostenpositionen.
+
+Die PV-Einspeisevergütung wird auch bei Dateiquellen aus dem Projekt gelesen. Eine reine Dateiauslegung verwendet Last und PV aus den Dateien, ohne zusätzliche BHKW-Erzeugung aus einem Simulationslauf.
+
+=== Schritt 3 — Betriebsführung ===
+{{Anker|auslegung-betrieb}}
+
+Hier steht, '''wie''' die Anlage gefahren wird.
+
+Im Modus '''Flotte''' wählen Sie das '''Betriebsziel''':
+
+{| class="wikitable"
+! Betriebsziel !! Was es tut !! Braucht den Fahrplaner
+|-
+| '''PV-Eigenverbrauch (reaktiv)''' || Überschuss sofort laden, bei Nettobedarf sofort entladen || nein
+|-
+| '''Lastspitzenkappung''' || gegen ein Peak-Ziel am Netzanschluss fahren und unter dem Ziel wieder aufladen || nein
+|-
+| '''PV-Prognoseplanung''' || erst kleinster Netzbezug, dann kleinste Abregelung, dann kleinste gespeicherte Energie || '''ja'''
+|-
+| '''Preisoptimierung / Arbitrage''' || die prognostizierten Kosten aus Arbeit, Leistung, Export und Verschleiß minimieren || '''ja'''
+|-
+| '''Multi Use mit Peak-Priorität''' || erst die kleinste unvermeidbare Peak-Überschreitung, dann die Kosten || '''ja'''
+|}
+
+Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kapazität'', ''Kaskade'' oder ''Nach Grenzkosten und Wirkungsgrad'' – und die '''Erzeuger-Reihenfolge''' der Direkteinspeisung (PV vor BHKW oder umgekehrt). Für ein planendes Ziel gilt die Verteilung nicht: Dort ist die Leistung jeder Einheit eine eigene Größe der Planung.
+
+'''Peak-Ziel.''' Bei der Lastspitzenkappung erscheint der Peak-Ziel-Block:
+
+* Der '''Vorschlag''' wird aus der Referenzreihe hergeleitet, nicht geraten. Unter dem Feld steht die Herleitung im Klartext; '''„Vorschlag übernehmen"''' setzt ihn ein.
+* '''„Peak-Ziel bestimmen…"''' sucht das '''kleinste''' Ziel, das diese Flotte tatsächlich hält – höchstens zwölf Jahresläufe, mit Fortschrittsanzeige und Abbruch, am Ende eine Rückfrage mit Ziel, verbleibender Spitze und Zahl der Läufe. Der Knopf ist '''schwach gesperrt''', solange ein planendes Betriebsziel eingestellt ist; der Kurzhinweis nennt den Grund.
+* '''Netzladung''' folgt dem Betriebsziel: Die Lastspitzenkappung bekommt sie, weil die Wiederaufladung unter dem Ziel genau das ist; PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. '''Der Schalter bleibt änderbar''', und eine gespeicherte Einstellung wird nicht überschrieben.
+* '''Start-Ladezustand.''' Für den Projektlauf steht er auf der unteren Marke. Ein leerer Speicher kann eine Spitze am 1. Januar nicht kappen – die Ansicht sagt es, statt den Standard still zu ändern.
+
+Im Modus '''Einzelspeicher''' stehen hier Betriebsart, Verschleißterm, Kapitalzins, Nutzungsdauer und der '''Leistungspreis''' samt seiner Quelle; der Leistungspreis lässt sich von hier aus ins Projekt zurückschreiben.
+
+=== Schritt 4 — Berechnen ===
+{{Anker|auslegung-rechnen}}
+
+Station 4 startet den Lauf. Was sie rechnet, sagt ihre Beschriftung: ''Flotte bewerten'' (eine Bestückung), ''Größen optimieren'' (das Raster) oder ''Optimieren'' (Einzelspeicher).
+
+'''Die Vorprüfung steht über der Ablaufleiste''' und läuft schon vor dem Start. Sie '''sperrt nicht''', sie warnt – der Lauf startet trotzdem:
+
+{| class="wikitable"
+! Meldung !! Was sie bedeutet
+|-
+| Peak-Ziel unter dem Tagesminimum || Unter das Ziel fällt die Last nie; ohne Netzladung lädt die Flotte gar nicht.
+|-
+| Peak-Ziel über der Referenzspitze || Die Kappung bleibt wirkungslos – das Ziel liegt über allem, was je auftritt.
+|-
+| Betriebskosten sehr niedrig || Der jährliche Betrieb liegt unter 0,1 % der Investition; meist fehlt ein Kostensatz.
+|-
+| Start-Ladezustand auf dem Minimum || Zu Beginn ist nichts abzugeben.
+|-
+| Arbeitslose Flotte || Aus dem letzten Lauf: weder geladen noch entladen, mit den gezählten Gründen.
+|}
+
+Neben jeder Meldung steht '''„erklären lassen"''', sofern der Hilfe-Assistent zur Verfügung steht; er öffnet sich mit einer vorbereiteten Frage zu genau dieser Meldung.
+
+Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusammenpasst, oder eine Projektlaufzeit von null Jahren machen den Lauf '''unmöglich'''. Solche Meldungen sperren den Rechenknopf.
+
+Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer). '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen.
+
+=== Schritt 5 — Ergebnis ===
+{{Anker|auslegung-ergebnis}}
+
+Von oben nach unten:
+
+# '''Diagnosebanner''' – nur, wenn es etwas zu sagen gibt (siehe unten).
+# '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze vorher → nachher (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie.
+# '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
+# '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf.
+# '''Kennzahlen je Einheit''' – Lade- und Entladeenergie, Vollzyklen, Anfangs- und Endenergie, Rainflow-Zyklen und Schaden.
+# '''Ergebnisse über der Speichergröße''' – nur nach einer Rastersuche (siehe unten).
+# '''Diagramme''' – siehe unten.
+
+'''Die Diagramme''' tragen über jedem Bild dieselbe Steuerung: den Schalter '''„sortiert"''' (Dauerlinie), '''je Reihe einen Schalter''' mit derselben Beschriftung wie die Legende, die '''Zeitraumwahl Jahr / Woche / Tag''' mit Vor- und Zurückschaltern und den '''Datenzoom''' durch Ziehen im Bild. Die Reihen gibt es je Einheit ''und'' als „Speicher gesamt"; der '''Ladezustand''' einer wählbaren Einheit steht als zweite Achse im Netzbild. Vorgabe ist die '''Woche''' – ein ganzes Jahr im Viertelstundenraster legt vierzig Werte auf einen Bildpunkt und zeigt keinen einzigen Ladezyklus.
+
+Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen Ergebnis) und '''„Beste Flotte übernehmen"''' (nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante). Die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten; erst danach fährt der gewöhnliche Projektlauf diese Flotte.
+
+==== Diagnose: die Flotte hat nichts getan ====
+{{Anker|auslegung-diagnose}}
+
+Eine Flotte kann ein ganzes Jahr rechnen, ohne ein einziges Mal zu laden oder zu entladen. Dann sind „Mit Flotte" und „Ohne Speicher" zahlengleich, und die Kacheln zeigen zwölf Nullen. Damit das niemand für ein Ergebnis hält, steht '''über''' den Kacheln das Diagnosebanner: '''„Die Flotte hat im gesamten Zeitraum weder geladen noch entladen."''' – mit den gezählten Gründen im Klartext.
+
+Dazu bietet es die passende Abhilfe an:
+
+* '''„Peak-Ziel bestimmen…"''' – wenn das Ziel unter der Last liegt;
+* '''„Netzladung erlauben"''' – wenn der Ladedeckel am Netzladeverbot hing;
+* '''„Zu Schritt 3 Betriebsführung"''' – wenn die Einstellung im Ganzen zu prüfen ist;
+* '''„erklären lassen"''' – der Hilfe-Assistent mit einer vorbereiteten Frage zu genau diesem Befund.
+
+Ein Knopf erscheint nur, wenn seine Abhilfe an dieser Stelle überhaupt möglich ist.
+
+==== Ergebnisse über der Speichergröße ====
+{{Anker|auslegung-groessen}}
+
+Nach einer '''Rastersuche''' steht vor der Kandidatentabelle die Größen-Sicht:
+
+* die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
+* die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
+* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
+
+'''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
+
+'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird.
+
+=== Beim Verlassen ===
+{{Anker|auslegung-verlassen}}
+
+Haben Sie Eingaben geändert und nicht gespeichert, fragt die Ansicht beim Verlassen: '''Speichern / Verwerfen / Bleiben'''. ''Esc'' bedeutet ''Bleiben''. Danach kehrt das Programm dorthin zurück, woher Sie kamen.
+
+=== Auf dem iPad ===
+{{Anker|auslegung-ios}}
+
+Die Ansicht gibt es auch auf dem iPad – mit '''einer''' Einschränkung: Die drei '''planenden''' Betriebsziele (PV-Prognoseplanung, Preisoptimierung/Arbitrage, Multi Use) brauchen den Fahrplaner, und den gibt es dort nicht. Sie sind gesperrt; ein Lauf damit bricht mit einer benannten Meldung ab, statt still etwas anderes zu rechnen. Die zwei '''reaktiven''' Ziele – PV-Eigenverbrauch und Lastspitzenkappung – und die ganze Rastersuche stehen auf jeder Plattform.
+
+== Siehe auch ==
+
+* [[Stromspeicher]] – Betrieb in der Simulation und Darstellung des Ladezustands
+* [[Grundlagen/Stromspeicher]] – die fachlichen Hintergründe
+* [[Programm Dokumentation/Hilfe-Assistent]] – der Knopf „erklären lassen" an den Meldungen dieser Ansicht
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter
+[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]].
+
+Die Rechenwege dieser Ansicht im Einzelnen:
+
+* [[Programm Dokumentation/Berechnung/Stromspeicher#auslegung-kosten-zeitreihen|Erweiterte Auslegung mit Kosten und Zeitreihen]] – Größenachse, Kostensätze, Zeitreihen aus Dateien
+* [[Programm Dokumentation/Berechnung/Stromspeicher#flotte|Mehrere Speicher (Speicherflotte)]] – Modell je Einheit, die fünf Betriebsziele, Verteilung, Prognoseplanung, Alterung, Kapitalwert, Rastersuche, Diagnose und Peak-Ziel
+* [[Programm Dokumentation/Berechnung/Stromspeicher#grenzen|Grenzen und Annahmen]] – was der Rechenweg ausdrücklich nicht tut
+* [[Programm Dokumentation/Berechnung/Stromspeicher#ergebnisse|Ergebnisse und wo sie stehen]] – welche Größe wo erscheint
