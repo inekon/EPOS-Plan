@@ -3700,6 +3700,22 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Offen:** Windows-Abnahme der Farben (bunit prüft nur Struktur); `Aktiv` setzen, sobald eine Ansicht `KI_ASSISTENT` steht.
 > Gate sept25 auf `bec51ec`: Kern 2 655, UI 3 729, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#212 (11.09.2026, `8935ad6`, Merge `5b54010`) — Stromspeicher-Import „blinkt" bei 6 654 Zeilen (Anwenderbefund, Neustart nach Abbruch;
+> Erweiterung „auch bei anderen Imports prüfen").** Headless über alle SECHS Importwirte (vier VDI 3805, Wechselrichter CEC/OND, Stromspeicher
+> CEC/bslib) mit je 6 654 synthetischen Zeilen gemessen: keine neue Datenquelle je Zeichenlauf, Behälter richtig — die Ursache sind drei
+> Kosten je Zeichenlauf, alle an der GEMEINSAMEN Stelle behoben: (1) `Katalogliste.Neuberechnen` filterte und sortierte den ganzen Katalog
+> bei jedem Zeichenlauf (105 ms sortiert, 194 ms mit Suche → 4 ms; Abzug `EtwasGeaendert` über Zeilenliste samt Anzahl, Profil, Filterstand,
+> Suche, Sortierung, Spaltenausdrücke); (2) `KatalogImportDialog.Anzeigeindex` linear und dreifache zeilenweise Abfrage des Alle-Schalters
+> (445 → 15 ms; Modulimport `_gewaehlte.Contains` 539 → 7 ms per Mengenspiegel); (3) `Raster.Zeilenhoehe` 44 statt 53 px, `Virtualize`
+> forderte bei jeder Sichtbarkeitsmeldung neu an. QuickGrid lädt hinter `Task.Delay(100)` und zeichnet solange Platzhalter (`loading`) —
+> das Blinken. Statuszeile nennt die Satzzahl („6.654 von 6.654 Einträgen geladen. · 1 gewählt"); die grüne Sammelmeldung des Fotos war
+> korrekt. Wache mit eigenen Zählern in der Komponente (bunit `RenderCount` zählt den Unterbaum), parametrisiert über die Ausprägungen;
+> 14 neue Fälle, UI-Suite 20 s statt 51 s. Konzept Stromspeicherimport (Befund/Fix), `EPOS.UI/CLAUDE.md` (Katalogliste: stabile
+> Items-Referenz, Zeilenmaß). **Offen:** Windows-Abnahme (Blinken weg? Zeilenmaß 53 px trifft?); der Abzug bemerkt keinen Zeilentausch
+> bei gleicher Anzahl in derselben Listeninstanz (tut heute kein Wirt).
+> Gate sept26 auf `5b54010`: Kern 2 655, UI 3 743, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
