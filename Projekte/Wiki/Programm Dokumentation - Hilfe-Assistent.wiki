@@ -71,6 +71,8 @@ Seit dem 11.09.2026 kann der Assistent in der offenen Maske '''mitarbeiten''': e
 
 '''Rechnen dauert und lässt sich abbrechen.''' Ein Simulationslauf, das Bestimmen des wirtschaftlichen Peak-Ziels und das Bewerten einer Speicherflotte laufen denselben Weg wie der jeweilige Knopf: mit Fortschrittsanzeige, mit Abbruch – und das Ergebnis steht danach '''in der Ansicht''', nicht nur im Chat. Es läuft immer nur eine Anforderung; eine zweite wird mit Hinweis abgelehnt, statt sich anzustellen.
 
+'''So sieht das aus.''' Sobald wirklich gerechnet wird, erscheint '''im Chatfenster''' – zwischen dem Gesprächsverlauf und dem Eingabefeld – ein Balken mit einer Zeile darüber, was gerade läuft („Die Kaskade rechnet …"), und daneben der Knopf '''Abbrechen'''. Solange der Balken steht, sind Eingabefeld, '''Fragen''', '''Nur suchen''' und '''Werkzeuge…''' gesperrt – es läuft ja bereits etwas. '''Abbrechen''' wirkt nicht auf der Stelle, sondern an der nächsten Phasengrenze des Laufs; genau das sagt die Zeile unter dem Balken, und der Knopf ist danach gesperrt, damit niemand ein zweites Mal drückt. Ist der Lauf zu Ende, verschwindet der Balken, und im Verlauf steht eine Zeile mit Namen und Dauer – „… – fertig nach 42,7 s." beziehungsweise „… – abgebrochen nach 12,3 s.". Ein Abbruch ist dabei '''kein Fehler''': Er hinterlässt keinen halben Zustand, es wird nichts gespeichert, und der bisherige Ergebnisstand des Projekts bleibt unberührt.
+
 '''Im Protokoll steht jeder Versuch.''' '''Protokoll anzeigen''' führt jede Feldsetzung mit Maske, Feld, altem und neuem Wert, jedes Speichern mit dem Pfad der Sicherungskopie und jeden Rechenlauf mit Dauer – auch die abgelehnten und die abgebrochenen.
 
 === Menü und F1 bleiben ===

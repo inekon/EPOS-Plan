@@ -62,6 +62,10 @@ namespace WindowsFormsApplication1
     /// (<c>Allgemein\DataRepository.cs:48-58</c>). Jeder Datenbankzugriff laeuft deshalb
     /// auf dem UI-Thread; besteht keine Oberflaeche (Aktionsharnisch, Konsolenlauf), laeuft
     /// er auf dem rufenden Thread - dann gibt es keinen zweiten.
+    /// <b>Eine Ausnahme, seit Auftrag #214:</b> Eine Aktion mit
+    /// <see cref="KiAktion.AusfuehrenLang"/> laeuft im HINTERGRUND (siehe
+    /// <c>ImHintergrund</c>) - sonst waeren Fortschritt und Abbruch eine Zusage, die
+    /// niemand einloesen kann.
     /// </description></item>
     /// <item><description>
     /// <b>Einlaeufigkeit.</b> Immer nur EINE Aktion gleichzeitig. Ein zweiter Aufruf wird
@@ -81,7 +85,9 @@ namespace WindowsFormsApplication1
     /// </description></item>
     /// <item><description>
     /// <b>Abbruch.</b> Ein <see cref="CancellationToken"/> geht durch; Stufe 1 ist zu kurz,
-    /// um ihn auszuwerten, aber der Weg steht fuer die Rechenaktionen der Etappe 4.
+    /// um ihn auszuwerten. Die drei RECHENaktionen werten ihn aus - sie bekommen ihn ueber
+    /// die <see cref="KiLaufumgebung"/>, und der Chat haelt je laufender Aktion die
+    /// Quelle dazu (Auftrag #214).
     /// </description></item>
     /// <item><description>
     /// <b>Protokoll.</b> GENAU EINE Zeile je Ausfuehrungsversuch - auch fuer abgewiesene
@@ -542,9 +548,13 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // ---- Der eigentliche Lauf, auf dem UI-Thread.
-                KiErgebnis ergebnis = await AufUiThread(() => LaufMitEngineModus(aufruf, abbruch))
-                                            .ConfigureAwait(true);
+                // ---- Der eigentliche Lauf. KURZ auf dem UI-Thread, LANG im Hintergrund
+                //      (Auftrag #214) - die Begruendung steht bei ImHintergrund.
+                KiErgebnis ergebnis = aktion.AusfuehrenLang != null
+                    ? await ImHintergrund(() => LaufMitEngineModus(aufruf, abbruch))
+                            .ConfigureAwait(true)
+                    : await AufUiThread(() => LaufMitEngineModus(aufruf, abbruch))
+                            .ConfigureAwait(true);
 
                 // Der Zaehler steigt fuer JEDE gelaufene Aktion, auch fuer lesende: eine
                 // Vorschau, auf die inzwischen irgendetwas gefolgt ist, beschreibt nicht
@@ -793,6 +803,42 @@ namespace WindowsFormsApplication1
             // dort legt die Huelle AufOberflaeche ohnehin ein.
             await Task.CompletedTask.ConfigureAwait(true);
             return arbeit();
+        }
+
+        /// <summary>
+        /// Fuehrt eine LANG laufende Aktion auf einem Arbeitsfaden aus (Auftrag #214).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum sie NICHT auf den Oberflaechenfaden gehoert.</b> Eine Aktion mit
+        /// <see cref="KiAktion.AusfuehrenLang"/> rechnet Minuten. Liefe sie ueber
+        /// <see cref="AufOberflaeche"/>, waere der Bedienfaden fuer diese Minuten belegt
+        /// - und damit waeren Fortschritt und Abbruch eine Zusage, die niemand einloest:
+        /// Der Balken zeichnete nicht, weil der Renderer nicht drankaeme, und der Klick
+        /// auf „Abbrechen" erreichte die Warteschlange erst NACH dem Lauf. Genau das war
+        /// der Restpunkt aus Auftrag #201 („laeuft minutenlang ohne Rueckmeldung und ist
+        /// nicht abbrechbar").
+        /// </para>
+        /// <para>
+        /// <b>Warum das zulaessig ist.</b> Es sind heute genau DREI Aktionen, und alle
+        /// drei rufen einen Rechenweg, der nachweislich aus einem fremden Faden laeuft:
+        /// <c>SimulationRunner</c> (Probe R-W10a-2,
+        /// <c>EPOS.Kern.Tests/SimulationslaufAusFremdemFadenTests</c>) und die zwei
+        /// Rechenwege der Stromspeicher-Ansicht, die die Huelle ohnehin in
+        /// <c>Task.Run</c> legt. <c>SqliteDatenzugriff</c> oeffnet je Aufruf eine eigene
+        /// Verbindung und haelt nichts <c>[ThreadStatic]</c>; der dialogfreie Modus von
+        /// <c>DataRepository</c> ist ein prozessweiter Zaehler, und die Einlaeufigkeit
+        /// (Pflicht 1) schliesst zwei gleichzeitige Laeufe aus.
+        /// </para>
+        /// <para>
+        /// <b>Die 19 uebrigen Aktionen bleiben, wo sie waren</b> - auf dem
+        /// Oberflaechenfaden. Sie lesen und schreiben ueber die Bestandscontroller, und
+        /// die sind nicht threadsicher; sie dauern dafuer Millisekunden.
+        /// </para>
+        /// </remarks>
+        private static Task<T> ImHintergrund<T>(Func<T> arbeit)
+        {
+            return Task.Run(arbeit);
         }
 
         /// <summary>Fragt die Modalitaet ueber den eingestellten Weg; im Zweifel frei.</summary>

@@ -1,3 +1,5 @@
+using KiKern;
+
 namespace EPOS.UI.Dialoge.Hilfe;
 
 /// <summary>
@@ -63,4 +65,48 @@ public sealed class KiChatSteuerung
     /// Der Gesprächsverlauf bleibt — er gehört der Sitzung, nicht dem Dialog.
     /// </summary>
     public Func<KiKontextangabe, Task> Kontext { get; init; } = _ => Task.CompletedTask;
+
+    // =====================================================================
+    //  Der laufende Rechenvorgang (Auftrag #214)
+    // =====================================================================
+
+    /// <summary>
+    /// Die SENKE für die Fortschrittsschritte lang laufender Aktionen. Die Hülle legt
+    /// sie an <c>KiAusfuehrung.Fortschritt</c>, solange das Chatfenster steht, und nimmt
+    /// sie beim Schließen wieder heraus.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Sie gehört dem DIALOG, nicht der Hülle</b> (Auftrag #214, Punkt 1). Bis dahin
+    /// belegte niemand die Senke: Der Kern meldete brav seine Phasen, und es hörte
+    /// keiner zu. Läge der Fortschrittszustand in der Windows-Hülle, müsste ihn die
+    /// iOS-Hülle ein zweites Mal bauen — der Baustein <c>Fortschritt</c> steht aber
+    /// ohnehin in dieser Bibliothek.
+    /// </para>
+    /// <para>
+    /// <b>Sie marshallt selbst.</b> Die Komponente nimmt jeden Schritt über
+    /// <c>InvokeAsync</c> entgegen; der Kern darf also aus jedem Faden melden — und seit
+    /// Auftrag #214 tut er das aus einem Arbeitsfaden.
+    /// </para>
+    /// </remarks>
+    public IProgress<KiFortschritt> Fortschritt { get; init; } = new NichtsHoert();
+
+    /// <summary>
+    /// Die Abbruchmarke der GERADE laufenden Anforderung; ohne laufende Anforderung
+    /// <see cref="CancellationToken.None"/>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Ein Delegat und kein Wert</b>, aus demselben Grund wie bei den Feldwerten
+    /// (Auftrag #200): Die Quelle entsteht erst mit dem Klick und wird mit jedem neuen
+    /// Lauf ersetzt. Die Hülle fragt sie unmittelbar vor dem Aufruf — dann gilt die
+    /// Marke des Laufs, den sie gerade startet.
+    /// </remarks>
+    public Func<CancellationToken> Abbruchmarke { get; init; } = () => CancellationToken.None;
+
+    /// <summary>Die Vorgabesenke: Sie nimmt jeden Schritt entgegen und tut nichts.</summary>
+    private sealed class NichtsHoert : IProgress<KiFortschritt>
+    {
+        /// <inheritdoc/>
+        public void Report(KiFortschritt wert) { }
+    }
 }

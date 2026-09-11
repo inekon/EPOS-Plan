@@ -35,6 +35,19 @@ namespace WindowsFormsApplication1
     /// anderen, weil die Ansicht ihr Ergebnis erst nach dem vollstaendigen Lauf setzt.
     /// </para>
     /// <para>
+    /// <b>Seit Auftrag #214 kommen beide wirklich an.</b> Bis dahin war die Umgebung nur
+    /// ANGEBOTEN: <c>simulation_rechnen</c> reichte weder Melder noch Marke in den
+    /// <see cref="SimulationRunner"/> hinein, und die zwei Ansichtsrechnungen liessen
+    /// ihren Parameter <c>u</c> ungenutzt. Jetzt geht der <c>Phasenmelder</c> samt
+    /// <c>u.Abbruch</c> in den Lauf, und die Ansicht haengt ihren eigenen Abbruch an die
+    /// Marke (<c>StromspeicherAuslegungSeite.KiBewerten</c>/<c>KiPeakZiel</c>).
+    /// </para>
+    /// <para>
+    /// <b>Und sie laufen im HINTERGRUND</b> (<c>KiAusfuehrung.ImHintergrund</c>): Auf dem
+    /// Bedienfaden waeren Balken und Abbruchknopf eine Zusage, die niemand einloesen
+    /// kann — der Faden ist fuer die Dauer des Laufs belegt.
+    /// </para>
+    /// <para>
     /// <b>Die Einlaeufigkeit kommt vom Ausfuehrer</b> (Fachkonzept 3.4, Pflicht 1) und
     /// nicht von hier: Zwei gleichzeitige Anforderungen weist
     /// <see cref="KiAusfuehrung"/> mit „es laeuft bereits etwas" ab, und zwar fuer jede
@@ -112,23 +125,30 @@ namespace WindowsFormsApplication1
                     u.AbbruchPruefen();
 
                     var runner = new SimulationRunner();
+                    var melder = new Phasenmelder(u);
                     string fehler;
                     int idErgebnis = 0;
                     bool ok;
 
+                    // Seit Auftrag #214 gehen Fortschritt und Abbruchmarke IN den Lauf
+                    // hinein (SimulationControl.Do_Simulation prueft sie zwischen den
+                    // fuenf Phasen). Ein Abbruch verlaesst den Runner als
+                    // OperationCanceledException und wird vom Ausfuehrer zur benannten
+                    // Ablehnung - gespeichert wird dabei nichts, denn der Schreibschritt
+                    // liegt hinter dem Lauf.
                     if (speichern)
                     {
-                        idErgebnis = runner.SimuliereUndSpeichere(wahl.Id, out fehler);
+                        idErgebnis = runner.SimuliereUndSpeichere(wahl.Id, out fehler, melder, u.Abbruch);
                         ok = idErgebnis > 0;
                     }
                     else
                     {
-                        ok = runner.Simuliere(wahl.Id, out fehler);
+                        ok = runner.Simuliere(wahl.Id, out fehler, melder, u.Abbruch);
                     }
 
-                    // Abgebrochen wird NACH dem Lauf ausgewertet: Der Runner kennt keine
-                    // Abbruchmarke, und ein halb gespeicherter Ergebnisstand entstuende
-                    // erst beim Schreiben - das ist der Punkt, an dem hier geprueft wird.
+                    // Die zweite Wache bleibt stehen: Eine Abbruchanforderung, die erst
+                    // NACH der letzten Phasengrenze kam, wuerde sonst als gelungener Lauf
+                    // gemeldet.
                     if (u.Abbruch.IsCancellationRequested)
                         return KiErgebnis.Abgebrochen(MyResource.Resource.KI_AUS_ABGEBROCHEN);
 
@@ -283,6 +303,60 @@ namespace WindowsFormsApplication1
                         return KiErgebnis.Abgebrochen(MyResource.Resource.KI_AUS_ABGEBROCHEN);
                     }
                 });
+        }
+
+        // =====================================================================
+        // Die Bruecke Laufphase -> Fortschrittsschritt (Auftrag #214)
+        // =====================================================================
+
+        /// <summary>
+        /// Setzt die fuenf Phasenmeldungen des Simulationslaufs in Schritte der
+        /// <see cref="KiLaufumgebung"/> um.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum die Beschriftung HIER steht und nicht im Chat.</b> Der Chat sieht nur
+        /// den <see cref="KiFortschritt"/> — Anteil und eine Zeile Klartext; die
+        /// <c>Laufphase</c> kennt er nicht und soll sie nicht kennen. Wer die Phase
+        /// benennt, ist die Aktion, die den Lauf ausloest, und ihre Texte stehen wie alle
+        /// Aktionstexte im Katalog des Kerns.
+        /// </para>
+        /// <para>
+        /// <b>Der Anteil kommt unveraendert durch.</b> Er ist eine Schaetzung ueber die
+        /// Phasenfolge (0,0 / 0,10 / 0,60 / 0,75 / 0,90) — <c>LaufFortschritt</c> sagt das
+        /// selbst; ihn hier zu glaetten hiesse, eine Genauigkeit zu behaupten, die der
+        /// Lauf nicht hat.
+        /// </para>
+        /// </remarks>
+        private sealed class Phasenmelder : IProgress<LaufFortschritt>
+        {
+            private readonly KiLaufumgebung _umgebung;
+
+            internal Phasenmelder(KiLaufumgebung umgebung)
+            {
+                _umgebung = umgebung;
+            }
+
+            /// <inheritdoc/>
+            public void Report(LaufFortschritt wert)
+            {
+                if (wert == null || _umgebung == null) return;
+                _umgebung.Melde(wert.Anteil, Phasentext(wert));
+            }
+
+            private static string Phasentext(LaufFortschritt wert)
+            {
+                if (!string.IsNullOrEmpty(wert.Text)) return wert.Text;
+
+                switch (wert.Phase)
+                {
+                    case Laufphase.Kaskade: return MyResource.Resource.KI_LAUF_PHASE_KASKADE;
+                    case Laufphase.Photovoltaik: return MyResource.Resource.KI_LAUF_PHASE_PV;
+                    case Laufphase.Stromspeicher: return MyResource.Resource.KI_LAUF_PHASE_SPEICHER;
+                    case Laufphase.Abschluss: return MyResource.Resource.KI_LAUF_PHASE_ABSCHLUSS;
+                    default: return MyResource.Resource.KI_LAUF_PHASE_START;
+                }
+            }
         }
 
         /// <summary>

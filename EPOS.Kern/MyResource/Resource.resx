@@ -18210,6 +18210,33 @@ Möchten Sie das zulassen?</value>
   <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
     <value>Die Flotte wird bewertet …</value>
   </data>
+  <data name="KI_LAUF_LAEUFT" xml:space="preserve">
+    <value>{0} läuft …</value>
+  </data>
+  <data name="KI_LAUF_ABBRUCH" xml:space="preserve">
+    <value>Abbruch angefordert – der Lauf hält an der nächsten Phasengrenze.</value>
+  </data>
+  <data name="KI_LAUF_FERTIG" xml:space="preserve">
+    <value>{0} – fertig nach {1} s.</value>
+  </data>
+  <data name="KI_LAUF_ABGEBROCHEN" xml:space="preserve">
+    <value>{0} – abgebrochen nach {1} s.</value>
+  </data>
+  <data name="KI_LAUF_PHASE_START" xml:space="preserve">
+    <value>Der Lauf wird vorbereitet …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_KASKADE" xml:space="preserve">
+    <value>Die Kaskade rechnet …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_PV" xml:space="preserve">
+    <value>Die Photovoltaik wird gerechnet …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_SPEICHER" xml:space="preserve">
+    <value>Der Stromspeicher wird gerechnet …</value>
+  </data>
+  <data name="KI_LAUF_PHASE_ABSCHLUSS" xml:space="preserve">
+    <value>Die Kennzahlen werden gebildet …</value>
+  </data>
   <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
     <value>Die Ansicht „{0}“ ist nicht geöffnet; diese Rechnung läuft nur dort.</value>
   </data>

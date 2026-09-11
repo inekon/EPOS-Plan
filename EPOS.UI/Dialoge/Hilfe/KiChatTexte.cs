@@ -194,4 +194,36 @@ public sealed class KiChatTexte
 
     /// <summary>„Abbrechen" im Block (<c>KI_AKT_BESTAETIGUNG_ABBRECHEN</c>).</summary>
     public string BestaetigungAbbrechen { get; set; } = "";
+
+    // ---- Der laufende Rechenvorgang (Auftrag #214) -------------------------
+
+    /// <summary>
+    /// Die erste Zeile unter dem Balken, bis der Kern seinen ersten Schritt meldet:
+    /// „{0} läuft …" (<c>KI_LAUF_LAEUFT</c>) mit dem Titel der Aktion.
+    /// </summary>
+    public string LaufLaeuft { get; set; } = "{0} läuft …";
+
+    /// <summary>
+    /// Die Zeile nach dem Klick auf „Abbrechen" (<c>KI_LAUF_ABBRUCH</c>) — der Abbruch
+    /// wirkt erst an der nächsten Phasengrenze, und das gehört gesagt.
+    /// </summary>
+    public string LaufAbbruch { get; set; } = "Abbruch angefordert …";
+
+    /// <summary>
+    /// Die Verlaufszeile nach einem gelungenen Lauf: „{0} – fertig nach {1} s."
+    /// (<c>KI_LAUF_FERTIG</c>).
+    /// </summary>
+    public string LaufFertig { get; set; } = "{0} – fertig nach {1} s.";
+
+    /// <summary>
+    /// Die Verlaufszeile nach einem abgebrochenen Lauf: „{0} – abgebrochen nach {1} s."
+    /// (<c>KI_LAUF_ABGEBROCHEN</c>).
+    /// </summary>
+    public string LaufAbgebrochen { get; set; } = "{0} – abgebrochen nach {1} s.";
+
+    /// <summary>
+    /// Beschriftung des Abbruchknopfs am Balken; leer = der Vorgabetext des Bausteins
+    /// (<c>FORTSCHRITT_ABBRECHEN</c>).
+    /// </summary>
+    public string LaufAbbrechen { get; set; } = "";
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 
 namespace WindowsFormsApplication1
 {
@@ -79,12 +80,23 @@ namespace WindowsFormsApplication1
         /// den Text des Abbruchgrunds, ergänzt um die Warnungen des Laufs
         /// (<c>Protokoll.AlsText(nurFehlerUndWarnungen: true)</c>).
         /// </summary>
-        public bool Simuliere(int idProjekt, out string fehler)
+        /// <remarks>
+        /// <b>Fortschritt und Abbruch sind nachgereicht (Auftrag #214)</b> und
+        /// ausdruecklich WAHLFREI: Ohne die zwei Zusatzangaben laeuft dieselbe Rechnung in
+        /// derselben Reihenfolge wie bisher — der Referenzlauf ist das Gate dafuer. Mit
+        /// ihnen meldet der Lauf seine fuenf Phasen und laesst sich ZWISCHEN ihnen
+        /// abbrechen; der Abbruch verlaesst die Methode als
+        /// <see cref="OperationCanceledException"/>, damit kein halbes Ergebnis entsteht
+        /// und erst recht keines gespeichert wird.
+        /// </remarks>
+        public bool Simuliere(int idProjekt, out string fehler,
+                              IProgress<LaufFortschritt> fortschritt = null,
+                              CancellationToken abbruch = default)
         {
             using (DataRepository.EngineModus())
             {
                 LaufOk = false;
-                bool ok = Simuliere_Intern(idProjekt, out fehler);
+                bool ok = Simuliere_Intern(idProjekt, out fehler, fortschritt, abbruch);
                 LaufOk = ok;
 
                 // Datenbankfehler, die im dialogfreien Modus aufgelaufen sind, gehören in
@@ -108,7 +120,9 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private bool Simuliere_Intern(int idProjekt, out string fehler)
+        private bool Simuliere_Intern(int idProjekt, out string fehler,
+                                      IProgress<LaufFortschritt> fortschritt = null,
+                                      CancellationToken abbruch = default)
         {
             fehler = null;
 
@@ -200,7 +214,7 @@ namespace WindowsFormsApplication1
             sim.modeBHKW = ctrl.model.Betriebsart;
 
             // Erzeuger-Simulationen (WP, Kessel, BHKW, Solar, PV, Speicher).
-            sim.Do_Simulation(idProjekt);
+            sim.Do_Simulation(idProjekt, fortschritt, abbruch);
 
             // Paket-5-Nacharbeit, Befund N10: Der zweikanalige Weg meldet Abbrüche
             // dialogfrei über den Fehlerkanal statt über eine MessageBox (Konzept 13.4).
@@ -1116,9 +1130,11 @@ namespace WindowsFormsApplication1
         /// hätte im headless-Lauf eine MessageBox geöffnet, weil der Block bis dahin
         /// erst hinter dem Ergebnisaufbau begann.
         /// </summary>
-        public int SimuliereUndSpeichere(int idProjekt, out string fehler)
+        public int SimuliereUndSpeichere(int idProjekt, out string fehler,
+                                         IProgress<LaufFortschritt> fortschritt = null,
+                                         CancellationToken abbruch = default)
         {
-            if (!Simuliere(idProjekt, out fehler))
+            if (!Simuliere(idProjekt, out fehler, fortschritt, abbruch))
                 return -1;
 
             int id;

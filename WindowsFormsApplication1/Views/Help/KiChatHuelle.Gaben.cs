@@ -102,10 +102,57 @@ namespace WindowsFormsApplication1
                     .Create(new object(), Schliessen),
                 ["UeberlagerungGeaendert"] = Microsoft.AspNetCore.Components.EventCallback.Factory
                     .Create<bool>(new object(), UeberlagerungGemeldet),
-                ["Anmelden"] = (Action<KiChatSteuerung>)(s => _steuerung = s),
+                ["Anmelden"] = (Action<KiChatSteuerung>)Anmelden,
 
                 ["Texte"] = Texte()
             };
+        }
+
+        // ==================================================================
+        //  Die Anmeldung der Komponente
+        // ==================================================================
+
+        /// <summary>
+        /// Die Komponente meldet ihre Einstiege an — und seit Auftrag #214 auch die zwei
+        /// Enden des laufenden Rechenvorgangs.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Hülle hält keinen Fortschrittszustand.</b> Sie hängt die Senke der
+        /// Komponente an <c>KiAusfuehrung.Fortschritt</c> und nimmt sie beim Schließen
+        /// wieder heraus — dieselbe Bauart wie <c>AufOberflaeche</c> und
+        /// <c>Ueberlagerung</c>. Balken, Schritttext, Abbruchknopf und die Schlusszeile
+        /// im Verlauf gehören der Razor-Komponente; iOS bekommt sie damit ohne eine Zeile
+        /// Hüllenarbeit.
+        /// </para>
+        /// <para>
+        /// <b>Bis #214 hörte hier niemand zu.</b> Der Kern meldete seit Etappe S3 brav
+        /// seine Phasen, und die Senke stand auf <c>null</c> — genau das war der
+        /// Restpunkt aus Auftrag #201.
+        /// </para>
+        /// </remarks>
+        private void Anmelden(KiChatSteuerung steuerung)
+        {
+            _steuerung = steuerung;
+            KiAusfuehrungWindows.Aktuell.Fortschritt = steuerung == null ? null : steuerung.Fortschritt;
+        }
+
+        /// <summary>
+        /// Die Abbruchmarke der GERADE laufenden Anforderung; ohne Komponente
+        /// <see cref="CancellationToken.None"/>.
+        /// </summary>
+        /// <remarks>
+        /// Gefragt wird unmittelbar VOR jedem Aufruf: Die Quelle gehört der Komponente,
+        /// und sie legt sie an, bevor sie den Delegaten ruft. Ein hier festgehaltenes
+        /// Token zeigte auf den Lauf von vorhin.
+        /// </remarks>
+        private CancellationToken Abbruchmarke()
+        {
+            KiChatSteuerung steuerung = _steuerung;
+            if (steuerung == null) return CancellationToken.None;
+
+            try { return steuerung.Abbruchmarke(); }
+            catch (Exception) { return CancellationToken.None; }
         }
 
         // ==================================================================
@@ -125,12 +172,19 @@ namespace WindowsFormsApplication1
 
             KiDialogdaten felder = Feldblock(mitFeldwerten);
 
+            // Auftrag #214: die Abbruchmarke der Komponente statt CancellationToken.None.
+            // Die Werkzeugrunde kann eine Rechenaktion ausloesen, und die dauert Minuten -
+            // ohne die Marke waere der Abbruchknopf des Chats ein toter Knopf.
+            CancellationToken marke = Abbruchmarke();
+
             KiAntwort antwort = mitAktionen
                 ? await KiChatService.FrageMitAktionenAsync(frage, HilfeKontext.Beschreibung(),
                                                             _verlauf, _platzhalter,
+                                                            abbruch: marke,
                                                             dialogdaten: felder)
                                      .ConfigureAwait(true)
                 : await KiChatService.FrageAsync(frage, HilfeKontext.Beschreibung(), _verlauf,
+                                                 abbruch: marke,
                                                  dialogdaten: felder)
                                      .ConfigureAwait(true);
 
@@ -155,7 +209,7 @@ namespace WindowsFormsApplication1
         private async Task<IReadOnlyList<Gespraechszeile>> SuchenAsync(string frage)
         {
             List<WissensAbschnitt> treffer = await KiChatService
-                .AbschnitteBeschaffenAsync(frage, HilfeKontext.Beschreibung(), CancellationToken.None)
+                .AbschnitteBeschaffenAsync(frage, HilfeKontext.Beschreibung(), Abbruchmarke())
                 .ConfigureAwait(true);
 
             return Umsetzen(KiVerlaufstexte.Suchtreffer(treffer));
@@ -176,7 +230,7 @@ namespace WindowsFormsApplication1
                 });
 
             KiErgebnis ergebnis = await KiAusfuehrungsweg.Aktuell
-                .AusfuehrenAsync(geprueft.Aufruf, CancellationToken.None).ConfigureAwait(true);
+                .AusfuehrenAsync(geprueft.Aufruf, Abbruchmarke()).ConfigureAwait(true);
 
             var schritt = new KiSchritt
             {
@@ -576,7 +630,15 @@ namespace WindowsFormsApplication1
                 Kopieren = MyResource.Resource.KI_CHAT_KOPIEREN,
                 BestaetigungTitel = MyResource.Resource.KI_AKT_BESTAETIGUNG_TITEL,
                 BestaetigungAusfuehren = MyResource.Resource.KI_AKT_BESTAETIGUNG_AUSFUEHREN,
-                BestaetigungAbbrechen = MyResource.Resource.KI_AKT_BESTAETIGUNG_ABBRECHEN
+                BestaetigungAbbrechen = MyResource.Resource.KI_AKT_BESTAETIGUNG_ABBRECHEN,
+
+                // Der laufende Rechenvorgang (Auftrag #214). Die Beschriftung des
+                // Abbruchknopfs kommt aus dem Baustein selbst (FORTSCHRITT_ABBRECHEN) -
+                // ein zweiter Schluessel fuer dasselbe Wort waere eine zweite Wahrheit.
+                LaufLaeuft = MyResource.Resource.KI_LAUF_LAEUFT,
+                LaufAbbruch = MyResource.Resource.KI_LAUF_ABBRUCH,
+                LaufFertig = MyResource.Resource.KI_LAUF_FERTIG,
+                LaufAbgebrochen = MyResource.Resource.KI_LAUF_ABGEBROCHEN
             };
         }
 

@@ -542,6 +542,61 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual("", ergebnis.Text);
         }
 
+        /// <summary>
+        /// <b>Eine LANGE Aktion laeuft nicht auf dem Oberflaechenfaden</b> (Auftrag
+        /// #214). Der Weg dorthin wird genau EINMAL benutzt — fuer die Vorschau der
+        /// Vorbereitung; der Lauf selbst geht in den Hintergrund.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum das der Kern der Sache ist.</b> Liefe die Rechnung ueber
+        /// <c>AufOberflaeche</c>, waere der Bedienfaden fuer ihre Dauer belegt: Der
+        /// Fortschrittsbalken zeichnete nicht, und der Klick auf „Abbrechen" erreichte
+        /// die Warteschlange erst NACH dem Lauf. Genau das war der Restpunkt aus #201.
+        /// </remarks>
+        [Fact]
+        public async Task Eine_Rechenaktion_laeuft_nicht_auf_dem_Oberflaechenfaden()
+        {
+            if (!_db.Vorhanden) return;
+
+            var ansicht = new Pruefansicht();
+            ansicht.Anmelden();
+
+            int wege = 0;
+            KiAusfuehrung schicht = Frisch();
+            schicht.AufOberflaeche = arbeit => { Interlocked.Increment(ref wege); return arbeit(); };
+
+            KiErgebnis ergebnis = await MitFreigabe(schicht, "flotte_bewerten",
+                                                    new Dictionary<string, object>());
+
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+            Assert.True(ansicht.Gerechnet, "Der Rechenweg der Ansicht wurde nicht gerufen.");
+            Assert.Equal(1, wege);
+        }
+
+        /// <summary>
+        /// Die GEGENPROBE: Eine kurze Schreibaktion benutzt den Weg auf den
+        /// Oberflaechenfaden ZWEIMAL — fuer die Vorschau und fuer den Lauf. Sie
+        /// beruehrt die Bestandscontroller, und die sind nicht threadsicher.
+        /// </summary>
+        [Fact]
+        public async Task Eine_kurze_Aktion_laeuft_weiterhin_auf_dem_Oberflaechenfaden()
+        {
+            if (!_db.Vorhanden) return;
+
+            var dialog = new Pruefdialog { Gesamtvolumen = 1000 };
+            dialog.Anmelden();
+
+            int wege = 0;
+            KiAusfuehrung schicht = Frisch();
+            schicht.AufOberflaeche = arbeit => { Interlocked.Increment(ref wege); return arbeit(); };
+
+            KiErgebnis ergebnis = await MitFreigabe(schicht, "feld_setzen",
+                                                    Werte("gesamtvolumen", "1500"));
+
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+            Assert.Equal(2, wege);
+        }
+
         // ==================================================================
         //  Hilfen
         // ==================================================================

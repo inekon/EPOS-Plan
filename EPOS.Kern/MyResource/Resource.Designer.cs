@@ -24194,6 +24194,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbruch angefordert – der Lauf hält an der nächsten Phasengrenze. ähnelt.
+        /// </summary>
+        public static string KI_LAUF_ABBRUCH {
+            get {
+                return ResourceManager.GetString("KI_LAUF_ABBRUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – abgebrochen nach {1} s. ähnelt.
+        /// </summary>
+        public static string KI_LAUF_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("KI_LAUF_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} – fertig nach {1} s. ähnelt.
+        /// </summary>
+        public static string KI_LAUF_FERTIG {
+            get {
+                return ResourceManager.GetString("KI_LAUF_FERTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} läuft … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_LAUF_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahlen werden gebildet … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_PHASE_ABSCHLUSS {
+            get {
+                return ResourceManager.GetString("KI_LAUF_PHASE_ABSCHLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kaskade rechnet … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_PHASE_KASKADE {
+            get {
+                return ResourceManager.GetString("KI_LAUF_PHASE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Photovoltaik wird gerechnet … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_PHASE_PV {
+            get {
+                return ResourceManager.GetString("KI_LAUF_PHASE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromspeicher wird gerechnet … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_PHASE_SPEICHER {
+            get {
+                return ResourceManager.GetString("KI_LAUF_PHASE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf wird vorbereitet … ähnelt.
+        /// </summary>
+        public static string KI_LAUF_PHASE_START {
+            get {
+                return ResourceManager.GetString("KI_LAUF_PHASE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe-Assistent (KI)... ähnelt.
         /// </summary>
         public static string KI_MENUE_ASSISTENT {

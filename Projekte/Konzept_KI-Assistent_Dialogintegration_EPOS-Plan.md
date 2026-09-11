@@ -3,7 +3,9 @@
 Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #198 · Ablage `Projekte/` · Status: **entschieden am
 11.09.2026** (Anwender: „Stufe 1 mit den Wegen 1 und 2, Weg 4 danach für die vier deklarierten Masken und die
 Stromspeicher-Ansicht, Weg 5: Assistent soll steuern"). Umsetzung in drei Stufen nach Abschnitt 6. **Die Fragen KI‑D‑Q1 bis KI‑D‑Q4 sind am 11.09.2026 nach Empfehlung
-entschieden** (Anwender: „KI‑D‑Q1 bis Q4: Empfehlung"), siehe Abschnitt 7.
+entschieden** (Anwender: „KI‑D‑Q1 bis Q4: Empfehlung"), siehe Abschnitt 7. **Alle drei Stufen sind umgesetzt**
+(#199, #200, #201); der Restpunkt aus #201 — Fortschrittsbalken und Abbrechen bei den Rechenaktionen — ist mit
+**#214** (11.09.2026, Anwenderentscheid „Empfehlung starten") geschlossen, siehe Abschnitt 3.4.
 
 Dieses Konzept baut auf [`Konzept_KI-Assistent_Aufgabensteuerung.md`](../Konzept_KI-Assistent_Aufgabensteuerung.md)
 (Aktionsregister, drei Schutzstufen, Bestätigung, Sicherungspunkt, Protokoll) und auf
@@ -139,6 +141,22 @@ Bestätigung **und** Sicherungspunkt, weil datenbankwirksam), rechnen (Stufe 3: 
 Flotte bewerten — nebenläufig mit `Fortschritt`, abbrechbar). Speichern durch den Assistenten ist nach KI‑D‑Q4
 erlaubt, aber nie ohne Bestätigung und Sicherungspunkt.
 
+**Nebenläufig, mit Fortschritt und Abbruch — seit #214 wirklich.** Auftrag #201 hatte den Weg gebaut und die
+zwei Enden offengelassen: `KiLaufumgebung` trug Melder und Abbruchmarke bis in die drei Rechenaktionen, aber die
+Chat-Hülle reichte `CancellationToken.None` herein und belegte die Senke `KiAusfuehrung.Fortschritt` nicht — ein
+Simulationslauf über den Assistenten lief minutenlang ohne Rückmeldung und war nicht abbrechbar. Drei Dinge hat
+**#214** nachgezogen: (a) Der **Dialog** (`KiChatDialog`, plattformfrei) hält je laufender Anforderung eine
+`CancellationTokenSource`, meldet beide Enden über `KiChatSteuerung` an den Wirt und zeigt den Baustein
+`Fortschritt` mit Balken, Schritttext und „Abbrechen"; nach Ende oder Abbruch verschwindet er, und im Verlauf
+steht die Sache benannt und mit Dauer. Die Windows-Hülle reicht nur durch, was sie ohnehin hat — iOS erbt es ohne
+Hüllenarbeit. (b) Eine Aktion mit `AusfuehrenLang` läuft im **Hintergrund** (`KiAusfuehrung.ImHintergrund`) statt
+über `AufOberflaeche`: Auf dem Bedienfaden wären Balken und Abbruchknopf eine Zusage, die niemand einlösen kann,
+weil der Faden für die Dauer des Laufs belegt ist. Die 19 kurzen Aktionen bleiben, wo sie waren. (c) Der Abbruch
+kommt an: `simulation_rechnen` reicht Melder und Marke in `SimulationRunner`/`SimulationControl.Do_Simulation`
+(Prüfung zwischen den fünf Phasen, W11a), `peak_ziel_bestimmen` und `flotte_bewerten` hängen `umgebung.Abbruch`
+an denselben Abbruchweg wie der Knopf der Ansicht (`Dienste.Abbrechen`). Ein Abbruch ist eine **benannte
+Ablehnung** im Protokoll, kein Fehler.
+
 **Was ausdrücklich nicht geht** (bleibt beim Aufgabensteuerungskonzept 5.4): löschen ohne Rückfrage, Lizenz,
 Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb des Registers.
 
@@ -175,6 +193,7 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
 | **S1** (Wege 1 + 2) — **umgesetzt #199** (11.09.2026) |  **#199** | `InfoKnopf.MitAssistent` mit `KiKnopf`; `KiAufrufkontext`, `Masken.KiAssistent` in `Dienste.Navigation`, Windows-Hülle und `AppWurzel` öffnen mit Kontext; `KiChatKontext.BereichFuerHilfeschluessel` (Tabelle, Test über alle Schlüssel), `AktiverBereich` aus der Oberfläche; `Warnbanner.Kennung` + Link, Kennungen an Diagnosebanner, Prüfhinweisen, Vorprüfung, Laufwarnungen, Strangampel; `HilfeWissen`-Abschnitte je Kennung; `KI_FRAGE_*` de/en; Kontextzeile im Chat zeigt Dialog und Kennung | bunit: Knopf in einem Dialog mit und ohne Assistent, Öffnen mit Kontext, Bannerlink mit Kennung; Kern: Bereichstabelle vollständig, Aufruf setzt den Haken; Referenzlauf unberührt |
 | **S2** (Weg 4) — **umgesetzt #200** (11.09.2026) | **#200** | `KiMaskenbruecke` im Kern; `KiDialogKatalog` auf Eigenschaftsnamen; die vier Dialoge und die Stromspeicher-Ansicht melden ihre Felder an; Einwilligungsstufe „Dialogdaten"; Schalter „Feldwerte mitsenden" + Vorschau im Chat; `dialog_lesen` aus der Brücke | Kern: Brücke liest die fünf Masken; bunit: Schalter, Vorschau zeigt Werte, ohne Einwilligung nichts; Protokoll |
 | **S3** (Weg 5) — **umgesetzt #201** (11.09.2026, `d1bfb56`, Merge `9122812`; Wiki `Hilfe-Assistent` Rev. 542) | **#201** | `KiAktionen` in den Kern; `feld_setzen` über die Brücke mit Bestätigungsblock, Plausibilität des Dialogs, Lesemodus/ReadOnly; `dialog_oeffnen`; speichern mit Sicherungspunkt; rechnen mit `Fortschritt`; Protokoll alt → neu | Kern: Setzen, Ablehnung im Lesemodus, Sicherungspunkt; bunit: Bestätigung → Feld im Dialog; Referenzlauf unberührt |
+| **S3‑Rest** (Fortschritt und Abbruch) — **umgesetzt #214** (11.09.2026) | **#214** | `KiChatDialog` hält je Anforderung eine `CancellationTokenSource` und meldet Senke und Marke über `KiChatSteuerung` an; Baustein `Fortschritt` im Chat (Balken, Schritttext, „Abbrechen"), Schlusszeile im Verlauf mit Namen und Dauer; Senden und Aktionsknöpfe während eines Laufs gesperrt; lange Aktionen laufen im Hintergrund (`KiAusfuehrung.ImHintergrund`) statt über `AufOberflaeche`; Abbruch kommt in allen drei Rechenaktionen an (`SimulationRunner` mit `IProgress`/`CancellationToken`, `Dienste.Abbrechen` der Stromspeicher-Ansicht) | bunit: Balken während einer langen Aktion, „Abbrechen" setzt die Marke, Verlaufszeile „abgebrochen"; Kern: eine lange Aktion nutzt `AufOberflaeche` NICHT (Gegenprobe: eine kurze zweimal); KiKern: `KiLaufumgebung`/`KiFortschritt`; Referenzlauf 1030/1046 byte-gleich |
 
 Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jeder Auftrag: Doku in
 `Konzept_KI-Assistent_Aufgabensteuerung.md` (Kapitel 8, Etappen) und `EPOS.UI/CLAUDE.md`; Wiki-Seite
