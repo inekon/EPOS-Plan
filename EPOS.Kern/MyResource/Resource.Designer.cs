@@ -46074,6 +46074,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bleiben ähnelt.
+        /// </summary>
+        public static string WIZ_BTN_BLEIBEN {
+            get {
+                return ResourceManager.GetString("WIZ_BTN_BLEIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekt öffnen ähnelt.
         /// </summary>
         public static string WIZ_BTN_PROJEKT_OEFFNEN {
@@ -46092,6 +46101,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string WIZ_BTN_VERWERFEN {
+            get {
+                return ResourceManager.GetString("WIZ_BTN_VERWERFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ▶ ähnelt.
         /// </summary>
         public static string WIZ_BTN_WEITER {
@@ -46106,6 +46124,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIZ_BTN_ZURUECK {
             get {
                 return ResourceManager.GetString("WIZ_BTN_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten gespeichert ähnelt.
+        /// </summary>
+        public static string WIZ_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WIZ_GESPEICHERT", resourceCulture);
             }
         }
         
@@ -46180,6 +46207,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIZ_TITEL {
             get {
                 return ResourceManager.GetString("WIZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektassistent enthält Eingaben, die noch nicht gespeichert sind. Sollen sie jetzt gespeichert werden? ähnelt.
+        /// </summary>
+        public static string WIZ_VERLASSEN_FRAGE {
+            get {
+                return ResourceManager.GetString("WIZ_VERLASSEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ungespeicherte Eingaben ähnelt.
+        /// </summary>
+        public static string WIZ_VERLASSEN_TITEL {
+            get {
+                return ResourceManager.GetString("WIZ_VERLASSEN_TITEL", resourceCulture);
             }
         }
         

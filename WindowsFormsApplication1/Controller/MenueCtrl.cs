@@ -50,12 +50,12 @@ namespace WindowsFormsApplication1
 
         private void AssistentZeigen(int betriebsart)
         {
-            // Der Rahmen wird von der Navigation gebaut, beim WizardCtrl angemeldet und
-            // modal gezeigt; hier bleibt nur die Rueckmeldung an den Anwender.
-            if (Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart))
-            {
-                Dienste.Dialog.Meldung("Daten gespeichert");
-            }
+            // Aufgabe #62b (Anwenderentscheid W16a-E-1 / W16b-O-5): Der Assistent ist
+            // eine freie ANSICHT. Der Aufruf schaltet sie und kehrt sofort zurueck -
+            // er kann deshalb nicht mehr wissen, ob gespeichert wurde, und die
+            // Meldung "Daten gespeichert" steht seither dort, wo die Antwort
+            // bekannt ist (AssistentHuelle, hinter dem gelungenen Speicherlauf).
+            Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart);
         }
 
         /// <summary>

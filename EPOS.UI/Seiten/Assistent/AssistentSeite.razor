@@ -53,6 +53,15 @@
 
 <div class="epos-seite epos-assistentseite">
 
+    @* DER TITEL DER ANSICHT (#62b). Als modales Fenster trug ihn die Titelleiste
+       („Projektassistent", WIZ_TITEL); eine freie Ansicht hat keine, und ohne ihn
+       staende der Anwender unter dem Menueband vor dreizehn Schritten ohne
+       Ueberschrift. Dieselbe Loesung wie bei der Simulationskonfiguration, der
+       ersten Fachseite, die frei wurde - und mit den Hausklassen der Seitenkoepfe. *@
+    <div class="epos-seite-kopf">
+        <h1 class="epos-seite-titel">@TitelText</h1>
+    </div>
+
     @if (!string.IsNullOrEmpty(_meldung))
     {
         @* Der Baustein kennt keinen eigenen Titel; die MessageBox des Vorlaeufers
@@ -72,6 +81,27 @@
                ZurueckText="@ZurueckText"
                WeiterText="@WeiterText"
                SpeichernText="@SpeichernText" />
+
+    @* DIE RUECKFRAGE beim Verlassen (Anwenderentscheid 62b-E-1, 11.09.2026).
+
+       Seit der Assistent eine freie Ansicht ist (W16a-E-1 / W16b-O-5), gibt es
+       Wege aus ihm heraus, die es in der modalen Huelle nicht gab: ein
+       Menuepunkt, eine Kachel, das Schliessen des Programms. Sie duerfen die
+       Eingaben nicht still wegwerfen.
+
+       Als UEBERLAGERUNG und nicht als MessageBox: EPOS.UI kennt weder WinForms
+       noch ein zweites Fenster, und die Frage gilt auf BEIDEN Plattformen
+       (62b-E-1, Festlegung 3). Der Baustein Rueckfrage traegt genau die drei
+       Wege - Ja/Nein/Abbrechen werden Speichern/Verwerfen/Bleiben; Esc heisst
+       damit „Bleiben", der vorsichtigste der drei. *@
+    <Rueckfrage Offen="@_frageOffen"
+                TitelText="@VerlassenTitelText"
+                Frage="@VerlassenFrageText"
+                MitAbbrechen="true"
+                JaText="@SpeichernText"
+                NeinText="@VerwerfenText"
+                AbbrechenText="@BleibenText"
+                Beantwortet="BeiVerlassenAntwort" />
 </div>
 
 @code {
@@ -133,6 +163,18 @@
     /// <summary>Der Lauf ist zu Ende — abgebrochen (<c>false</c>) oder gespeichert (<c>true</c>).</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
+    /// <summary>
+    /// Hat der Lauf Eingaben, die noch nicht geschrieben sind? (Anwenderentscheid
+    /// <b>62b-E-1</b>, 11.09.2026.)
+    ///
+    /// <para>Die Antwort kommt aus dem ZUSTAND des Laufs und nicht von hier:
+    /// <c>AssistentCtrl.HatAenderungen</c> vergleicht den Abdruck des Projektkopfs
+    /// und der sechs Listen mit dem Stand, den zuletzt das PROGRAMM gesetzt hat.
+    /// Ohne Delegat gilt „keine Aenderungen" — dann wechselt die Ansicht
+    /// unmittelbar, so wie vor diesem Entscheid.</para>
+    /// </summary>
+    [Parameter] public Func<bool>? HatAenderungen { get; set; }
+
     // =====================================================================
     // Texte
     // =====================================================================
@@ -143,6 +185,22 @@
     [Parameter] public string SpeichernText { get; set; } = "Speichern";
     [Parameter] public string ProjektLabelText { get; set; } = "Bestehendes Projekt auswählen";
     [Parameter] public string ProjektOeffnenText { get; set; } = "Projekt öffnen";
+
+    /// <summary>Die Überschrift der Ansicht (<c>WIZ_TITEL</c>) — der frühere Fenstertitel.</summary>
+    [Parameter] public string TitelText { get; set; } = "Projektassistent";
+
+    /// <summary>Überschrift der Rückfrage beim Verlassen (<c>WIZ_VERLASSEN_TITEL</c>).</summary>
+    [Parameter] public string VerlassenTitelText { get; set; } = "Ungespeicherte Eingaben";
+
+    /// <summary>Der Satz der Rückfrage (<c>WIZ_VERLASSEN_FRAGE</c>).</summary>
+    [Parameter] public string VerlassenFrageText { get; set; } =
+        "Der Projektassistent hat ungespeicherte Eingaben. Sollen sie gespeichert werden?";
+
+    /// <summary>„Verwerfen" — der zweite Weg der Rückfrage (<c>WIZ_BTN_VERWERFEN</c>).</summary>
+    [Parameter] public string VerwerfenText { get; set; } = "Verwerfen";
+
+    /// <summary>„Bleiben" — der dritte Weg der Rückfrage (<c>WIZ_BTN_BLEIBEN</c>).</summary>
+    [Parameter] public string BleibenText { get; set; } = "Bleiben";
 
     /// <summary>Eine Variante in der Projektliste (<c>PRJ_LIST_ART_VARIANTE</c>, W15a‑E‑1).</summary>
     [Parameter] public string ArtVarianteText { get; set; } = "Variante";
@@ -166,6 +224,16 @@
     private string _markiertName = "";
     private string _meldung = "";
     private string _meldungTitel = "";
+
+    /// <summary>Steht die Rückfrage aus 62b-E-1?</summary>
+    private bool _frageOffen;
+
+    /// <summary>
+    /// Die wartende Antwort der Rückfrage — dasselbe Muster wie die drei
+    /// Überlagerungen von <c>GanglinienImportLauf</c>: Die Überlagerung wird
+    /// gezeigt, der Aufrufer wartet auf diese Aufgabe, der Knopf löst sie auf.
+    /// </summary>
+    private TaskCompletionSource<bool?>? _frageWartet;
 
     /// <summary>Titel und Text der EINEN Meldung in einem Satz.</summary>
     private string Meldungssatz
@@ -369,18 +437,30 @@
         SchritteBauen();
     }
 
-    private void BeiDoppelklick(ProjektKopfZeile zeile)
+    private Task BeiDoppelklick(ProjektKopfZeile zeile)
     {
-        if (_schritt != 0) return;
+        if (_schritt != 0) return Task.CompletedTask;
         _markiertId = zeile.Id;
         _markiertName = zeile.Name;
-        BeiProjektOeffnen();
+        return BeiProjektOeffnen();
     }
 
-    private void BeiProjektOeffnen()
+    /// <summary>
+    /// „Projekt öffnen" — der Rückweg aus dem linken Band. Er verlässt den
+    /// Assistenten und geht deshalb seit 62b-E-1 durch dieselbe Rückfrage wie
+    /// „Abbrechen"; ohne Änderungen merkt der Anwender davon nichts.
+    /// </summary>
+    private async Task BeiProjektOeffnen()
     {
         if (_markiertId <= 0 || string.IsNullOrWhiteSpace(_markiertName)) return;
+
+        AssistentVerlassen weg = await FrageVerlassen();
+        if (weg == AssistentVerlassen.Bleiben) return;
+
+        // Der Wirt setzt das Projekt aktiv; das Ende des Laufs meldet die Seite
+        // selbst - in der modalen Huelle schloss dafuer die Huelle das Fenster.
         ProjektOeffnen?.Invoke(_markiertId, _markiertName);
+        await Geschlossen.InvokeAsync(false);
     }
 
     // =====================================================================
@@ -415,16 +495,47 @@
         SchritteBauen();
     }
 
-    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+    /// <summary>
+    /// „Abbrechen" — seit 62b-E-1 derselbe Weg wie jedes andere Verlassen: Ohne
+    /// Aenderungen geht es unmittelbar hinaus, mit Aenderungen kommt die
+    /// Rueckfrage. Der Knopf ist damit kein zweiter Begriff von „verwerfen"
+    /// neben dem der Rueckfrage, sondern derselbe.
+    /// </summary>
+    private async Task BeiAbbrechen()
+    {
+        AssistentVerlassen weg = await FrageVerlassen();
+        if (weg == AssistentVerlassen.Bleiben) return;
+
+        await Geschlossen.InvokeAsync(weg == AssistentVerlassen.Gespeichert);
+    }
 
     private async Task BeiSpeichern()
+    {
+        if (!SpeicherLauf()) return;
+
+        await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// DER Speicherweg des Knopfes — Prüfung der stehenden Seite, Übernahme des
+    /// verlassenen Schrittes, <c>Speichern</c>. <c>false</c> = es blieb bei einer
+    /// Meldung, der Assistent steht noch.
+    /// </summary>
+    /// <remarks>
+    /// Herausgezogen, damit die Rückfrage aus 62b-E-1 „denselben Weg wie der
+    /// Knopf" gehen kann und nicht einen zweiten, der beim ersten Fachwechsel
+    /// davon abwiche. Was DANACH geschieht, ist verschieden: Der Knopf meldet
+    /// <c>Geschlossen(true)</c>, die Rückfrage gibt ihrem Wirt den Ansichtswechsel
+    /// frei.
+    /// </remarks>
+    private bool SpeicherLauf()
     {
         string? grund = SeitePruefen?.Invoke(_schritt);
         if (!string.IsNullOrEmpty(grund))
         {
             _meldung = grund;
             _meldungTitel = "";
-            return;
+            return false;
         }
         SeiteVerlassen?.Invoke(_schritt);
 
@@ -435,9 +546,71 @@
             // Assistent bleibt stehen - die Eingaben gehen nicht verloren.
             _meldung = fehler.Value.Text;
             _meldungTitel = fehler.Value.Titel;
-            return;
+            return false;
         }
 
-        await Geschlossen.InvokeAsync(true);
+        return true;
+    }
+
+    // =====================================================================
+    // Das Verlassen (Anwenderentscheid 62b-E-1 vom 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Hat der Lauf ungespeicherte Eingaben? Ohne den Delegaten
+    /// <see cref="HatAenderungen"/> lautet die Antwort <c>false</c> — dann gibt es
+    /// keine Rückfrage.
+    /// </summary>
+    public bool Ungespeichert => HatAenderungen is not null && HatAenderungen();
+
+    /// <summary>
+    /// Fragt den Anwender, ob er den Assistenten verlassen will, und liefert den
+    /// gewählten Weg. <b>Ohne Änderung gibt es keine Rückfrage</b> (62b-E-1,
+    /// Festlegung 1): Dann ist die Antwort unmittelbar
+    /// <see cref="AssistentVerlassen.Verwerfen"/> — es ist nichts zu verlieren.
+    /// </summary>
+    /// <remarks>
+    /// Der Wirt ruft das, BEVOR er die Ansicht wechselt (<c>AppWurzel</c>) oder das
+    /// Programm schließt (<c>Hauptfensterrahmen.FormClosing</c>). Scheitert das
+    /// Speichern, bleibt der Assistent stehen und zeigt seine Meldung — die Antwort
+    /// ist dann <see cref="AssistentVerlassen.Bleiben"/>.
+    /// </remarks>
+    public async Task<AssistentVerlassen> FrageVerlassen()
+    {
+        if (_frageOffen) return AssistentVerlassen.Bleiben;   // sie steht schon
+        if (!Ungespeichert) return AssistentVerlassen.Verwerfen;
+
+        _frageWartet = new TaskCompletionSource<bool?>();
+        _frageOffen = true;
+        await InvokeAsync(StateHasChanged);
+
+        bool? antwort = await _frageWartet.Task;
+
+        _frageWartet = null;
+        _frageOffen = false;
+
+        // Bleiben (auch Esc): nichts geschieht.
+        if (antwort is null)
+        {
+            await InvokeAsync(StateHasChanged);
+            return AssistentVerlassen.Bleiben;
+        }
+
+        // Verwerfen: der Wirt wechselt, geschrieben wird nichts.
+        if (antwort == false)
+        {
+            await InvokeAsync(StateHasChanged);
+            return AssistentVerlassen.Verwerfen;
+        }
+
+        bool ok = SpeicherLauf();
+        await InvokeAsync(StateHasChanged);
+        return ok ? AssistentVerlassen.Gespeichert : AssistentVerlassen.Bleiben;
+    }
+
+    private void BeiVerlassenAntwort(bool? antwort)
+    {
+        _frageOffen = false;
+        _frageWartet?.TrySetResult(antwort);
     }
 }

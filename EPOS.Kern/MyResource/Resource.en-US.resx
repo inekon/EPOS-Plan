@@ -14919,6 +14919,21 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
     <value>Open project</value>
   </data>
+  <data name="WIZ_VERLASSEN_TITEL" xml:space="preserve">
+    <value>Unsaved entries</value>
+  </data>
+  <data name="WIZ_VERLASSEN_FRAGE" xml:space="preserve">
+    <value>The project wizard contains entries that have not been saved yet. Save them now?</value>
+  </data>
+  <data name="WIZ_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="WIZ_BTN_BLEIBEN" xml:space="preserve">
+    <value>Stay</value>
+  </data>
+  <data name="WIZ_GESPEICHERT" xml:space="preserve">
+    <value>Data saved</value>
+  </data>
   <data name="START_REITER_PROJEKT" xml:space="preserve">
     <value>Project</value>
   </data>

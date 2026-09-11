@@ -78,6 +78,14 @@ namespace WindowsFormsApplication1
                 // bliebe stehen und zeigte nur ihr Banner.
                 ["BerichteKostenGaben"] = _startseite.BerichteGaben(),
 
+                // DER PROJEKTASSISTENT als freie Ansicht (W16a-E-1 / W16b-O-5,
+                // Aufgabe #62b): Er ist kein Dauerzustand wie die zwei Seiten
+                // darueber, sondern beginnt beim Betreten - deshalb ein DELEGAT je
+                // Betriebsart und kein fertiges Woerterbuch. Gerufen wird er von
+                // AppWurzel, sobald die Ansicht ASSISTENT gesetzt wird.
+                ["AssistentGaben"] =
+                    new Func<int, IReadOnlyDictionary<string, object>>(AssistentHuelle.AnsichtGaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname
@@ -180,12 +188,16 @@ namespace WindowsFormsApplication1
             switch (ziel)
             {
                 // ---- Menü „Projekt" -----------------------------------------
-                case Seitenschluessel.ProjektNeu:
-                    return () => ProjektAssistent(neu: true);
-
-                case Seitenschluessel.ProjektBearbeiten:
-                    return () => ProjektAssistent(neu: false);
-
+                // ANWENDERENTSCHEID W16a-E-1 / W16b-O-5 (Aufgabe #62b, 11.09.2026):
+                // Seitenschluessel.ProjektNeu und …ProjektBearbeiten haben hier
+                // KEINEN Fall mehr. Bis dahin oeffneten sie den Assistenten in
+                // einer modalen Huelle und zogen danach den Projektkontext nach;
+                // jetzt faellt der Schluessel durch, dieser Weg meldet false, und
+                // Hauptfenster.Springe laesst die AppWurzel auf die ANSICHT
+                // wechseln - derselbe Weg wie „Varianten und Bericht…" (W16c-E-3)
+                // und derselbe wie auf iOS. Der Nachzug des Projektkontexts steht
+                // seither in AssistentHuelle, unmittelbar hinter dem gelungenen
+                // Speicherlauf.
                 case Seitenschluessel.ProjektOeffnen:
                     return () => new MenueCtrl().ProjektOeffnen();
 
@@ -287,25 +299,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Projektassistent aus dem Menü — und der Nachzug des
-        /// Projektkontexts danach.
-        /// </summary>
-        /// <remarks>
-        /// Wörtlich <c>MenuItem_Neu_Click</c> (<c>:464-476</c>) und
-        /// <c>MenuItem_ProjektBearbeiten_Click</c> (<c>:586-595</c>), „Befund 3":
-        /// Ohne den Nachzug bliebe der Kontext auf dem zuvor geöffneten Projekt
-        /// stehen, und die Startkacheln schrieben ins falsche Projekt.
-        /// </remarks>
-        private static void ProjektAssistent(bool neu)
-        {
-            MenueCtrl menu = new MenueCtrl();
-            if (neu) menu.ProjektNeu(); else menu.ProjektBearbeiten();
-
-            if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
-                Program.projektkontext?.Setzen(Program.wizardctrl.Projektname);
-        }
-
-        /// <summary>
         /// „Über EPOS-Plan" — die EINZIGE <c>MessageBox</c> des Hauptfensters
         /// (<c>:669-677</c>). Ihr Titel war ein deutsches Literal („Über " +
         /// PRODUKTNAME) und ihre Schlusszeile ebenso; beide stehen jetzt im
@@ -346,6 +339,19 @@ namespace WindowsFormsApplication1
         private static void SpracheSetzen(string sprache, bool englisch)
         {
             if (Dienste.Sprache.IstEnglisch == englisch) return;
+
+            // 62b-E-1: Der Neustart wirft ungespeicherte Eingaben genauso weg wie
+            // ein Schliessen - also wird zuerst gefragt. Die Rueckfrage steht in
+            // der Ansicht und antwortet erst mit dem naechsten Klick; deshalb
+            // asynchron. Ist nichts zu fragen, antwortet sie unmittelbar, und der
+            // Neustart laeuft wie bisher.
+            _ = SpracheNachRueckfrage(sprache);
+        }
+
+        private static async Task SpracheNachRueckfrage(string sprache)
+        {
+            EPOS.UI.Dienste.INavigationsZiel ziel = EPOS.UI.Dienste.Navigationsziel.Aktuell;
+            if (ziel != null && !await ziel.DarfVerlassen()) return;
 
             Dienste.Sprache.Setzen(sprache);
             Application.Restart();

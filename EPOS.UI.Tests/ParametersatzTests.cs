@@ -123,6 +123,35 @@ public sealed class ParametersatzTests
     }
 
     /// <summary>
+    /// Der PARAMETERSATZ DES ASSISTENTEN (Aufgabe #62b, 11.09.2026).
+    ///
+    /// <para>Er braucht einen eigenen Fall, seit der Assistent eine freie ANSICHT
+    /// ist: Sein Wörterbuch geht nicht mehr durch ein
+    /// <c>new BlazorDialogForm&lt;AssistentSeite&gt;(…)</c> — daran erkennt Fall 1
+    /// seine Fundstellen —, sondern als Delegat <c>AssistentGaben</c> an
+    /// <c>AppWurzel</c>, die es mit <c>@@attributes</c> in die Seite schüttet. Die
+    /// Falle ist dieselbe geblieben: ein Schlüssel ohne <c>[Parameter]</c> bricht
+    /// beim ERSTEN Zeichnen.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Parametersatz_des_Assistenten_trifft_die_Parameter_seiner_Seite()
+    {
+        Type? seite = Komponente("AssistentSeite");
+        Assert.NotNull(seite);
+
+        List<HashSet<string>> saetze = SchluesselAus("AssistentHuelle", "Gaben");
+        Assert.True(saetze.Any(satz => satz.Count >= 10),
+            "AssistentHuelle.Gaben wurde nicht gelesen — stimmt der Weg zum Quelltext noch?");
+
+        string[] fremd = saetze.Select(satz => Fremdschluessel(seite!, satz))
+                               .OrderBy(f => f.Length).First();
+
+        Assert.True(fremd.Length == 0,
+            "Diese Schlüssel treffen keinen [Parameter] von AssistentSeite: " +
+            string.Join(", ", fremd));
+    }
+
+    /// <summary>
     /// SELBSTPROBE. Ein Leser, der nichts mehr findet, ist immer grün — und
     /// deshalb wertlos. Der Fall hält die Zahl der Fundstellen gegen eine
     /// Untergrenze.
