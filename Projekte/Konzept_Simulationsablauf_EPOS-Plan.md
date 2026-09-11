@@ -290,6 +290,7 @@ fallen mit dem Umzug der Katalogmasken (iU11).
 | **SIM‑Q5** Bedarfs-Detail, Wärmepumpen-Detail, Variantenvergleich bleiben Überlagerungen? | Ja (Regel SD‑Q1: kurze Unterdialoge mit eigener Rückkehr) | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑Q6** S2 (iOS) direkt nach S1 starten, iOS-Lauf mit #202 bündeln? | Ja — die Simulation ist die erste Fachseite der iOS-Migration und heute dort nicht erreichbar | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑E‑1** Die Kachel „Simulation" der Startseite: öffnen oder rechnen? | **RECHNEN** — sie heißt „Simulation starten" und löst Schritt ② aus (Anwenderwort, Windows-Abnahme #216) | **entschieden 11.09.2026 (Anwender), umgesetzt #216** (`5ef1433`, Merge `bcd3725`; Gate sept25) |
+| **SIM‑E‑2** Der Startseiten-Reiter „Simulation" (drei Bildschirmfotos 11.09.2026): rechts leer, Kachel wechselt in die Ansicht — was soll rechts stehen, was tut die Kachel? | **Option 1: Die Kachel „Simulation starten" rechnet AN ORT UND STELLE** (Fortschrittsbalken, Abbrechen, Sperrgründe wie an Schritt ②); rechts im Reiter steht danach dieselbe Ergebniskomponente wie Schritt ③ (Übersicht zuerst, Reiter darüber, „Ergebnis speichern" im Kopf), ohne Ergebnis ein Hinweis. Die Ansicht bleibt für Konfiguration (①) und Vollbild; die Dienste kommen aus derselben Quelle wie die Ansicht (#208, damit auch iOS); der Rückweg aus der Auslegung führt in den Reiter zurück. Folgen nach Empfehlung angenommen. | **entschieden 11.09.2026 (Anwender), Umsetzung #220 nach #221/#222** |
 
 ---
 
