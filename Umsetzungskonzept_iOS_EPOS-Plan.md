@@ -3636,6 +3636,26 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Dialogintegration 3.4/KI‑D‑Q3 „erledigt mit #211". Offen: `ErzeugerZeile.NurLesen` trägt die Bedeutung „Gerät schreibgeschützt" (Windows-Abnahme).
 > Gate sept22 auf `8387deb`: Kern 2643, UI 3692, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#217 (11.09.2026, `6fade45`, Merge `e536a29`) — „Projekt löschen" (Kachel) stürzte ab.** `ProjektWahlDialog.MehrereFrage` formatierte den
+> Ressourcentext `PDLG_RUECKFRAGE` mit EINEM Argument; der Text stammt aus dem alten WinForms-Dialog (Merge 5, 02.09.2026) und trägt ZWEI Platzhalter
+> (Anzahl, Namensliste) samt „Fortfahren?" — `FormatException` bei jedem Löschen, in bunit grün, weil die Razor-Vorgabe nur `{0}` hatte. Fix: der Dialog
+> baut die Namensliste (zwölf Namen, „… und n weitere", Variantenkennzeichen) und formatiert mit beiden Argumenten; die Razor-Vorgabe hat dieselbe
+> Struktur wie die Ressource. Alle sieben Format-Parameter des Dialogs gegen ihre Ressourcen geprüft (nur dieser wich ab). Zwei bunit-Fälle mit dem
+> echten Ressourcentext (de/en, 3 und 14 Projekte) und die Wache `ProjektWahlPlatzhalterWacheTests` (höchste Platzhalternummer der Ressource = Vorgabe).
+>
+> **#214 (11.09.2026, `0a29d31`, Merge `42f51e4`) — Fortschrittsbalken und Abbrechen bei Rechenaktionen des Assistenten (Restpunkt #201,
+> Anwenderentscheid „Empfehlung starten").** Befund: Auf dem Bedienfaden wären Balken und Abbruchknopf eine leere Zusage — `AufOberflaeche` führte den
+> Lauf inline, der Renderer zeichnete nicht, der Klick kam erst nach dem Lauf an. Lange Aktionen (`AusfuehrenLang`) laufen deshalb in
+> `KiAusfuehrung.ImHintergrund` (`Task.Run`), die 19 kurzen bleiben auf dem Oberflächenfaden. `KiChatDialog.Lauf.cs` (258 Z.) belegt die Senke, zeigt
+> Balken, Schritttext und „Abbrechen" und sperrt Senden/Aktionsknöpfe während einer Aktion. Abbruch erreicht `simulation_rechnen` über einen
+> `Phasenmelder` in `SimulationRunner`/`SimulationControl` (Prüfung zwischen den fünf Phasen, `OperationCanceledException` → `KiErgebnis.Abgebrochen`,
+> nichts gespeichert), `peak_ziel_bestimmen` und `flotte_bewerten` über die `KiLaufKlammer` der Auslegungsansicht (dieselbe Abbruchquelle wie der Knopf
+> „Berechnen"); die Hülle reicht die Abbruchmarke an alle vier Wege statt `CancellationToken.None`. 9 Ressourcen, `KiLaufumgebungTests` (14),
+> Kernfälle mit Gegenprobe lang/kurz. **Offen:** Windows-Abnahme (Lage des Balkens, spürbarer Abbruch); die Werkzeugliste löst die drei
+> Rechenaktionen weiterhin nicht aus (Bestand #201, bestätigungspflichtig); Wiki „Hilfe-Assistent" Absatz „Rechnen dauert" in der Quelle, Upload durch die Orchestrierung.
+> Gate sept23 auf `42f51e4`: Kern 2645, UI 3711, Engine 394, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
