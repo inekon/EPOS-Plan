@@ -769,6 +769,20 @@ nicht (Abschnitt 9; der Job hat bewusst keine Geheimnisse), installiert wird
 nicht, gestartet wird nicht: Die Freigabeprobe oben bleibt Handarbeit auf
 einer frischen Windows-Installation.
 
+Der **erste** Setup-Lauf (34588593433, 11.09.2026) fiel rot: `ISCC.exe` stand
+zwar im Runner-Image, aber `VersionInfo.FileVersion` lieferte dort den String
+„0.0.0.0" statt der tatsächlich installierten Fassung 6.4.x, und die
+6.3-Prüfung von `build-setup.ps1` brach folgerichtig ab. Seit **#180** ermittelt
+die Funktion `IsccVersionErmitteln` die Version stattdessen über mehrere
+Quellen der Reihe nach — `FileVersionRaw`, `ProductVersionRaw`, dieselben zwei
+Zeichenketten von `Compil32.exe` daneben, zuletzt die `DisplayVersion` des
+Registry-Schlüssels „Inno Setup 6_is1" — und nimmt die erste brauchbare; der
+Schritt „Inno Setup bereitstellen" gibt seither zusätzlich alle geprüften
+Rohwerte als `Diagnose: …`-Zeilen aus, damit ein künftiger Lauf sofort zeigt,
+welche Quelle auf dem jeweiligen Image trägt. Die 6.3-Pflicht bleibt
+unverändert; der Notschalter `-IsccVersionIgnorieren` ist für den
+Arbeitsplatz-Notfall gedacht und wird im Workflow bewusst nicht gesetzt.
+
 ---
 
 ## 9. Code-Signierung
