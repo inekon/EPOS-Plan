@@ -433,7 +433,9 @@ var
   Altbestands ist damit ein HAUSWERKZEUG (EposSqliteMigrator, Konsolenfassung) und
   kein Kundenweg; die Anwendung selbst kommt ohne Fremdtreiber aus
   (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Die Datenbank einer
-  Neuinstallation entsteht aus {app}\Vorlage\Kenndaten.sqlite.
+  Neuinstallation entsteht aus der Vorlage Kenndaten.sqlite im Unterordner Vorlage
+  des Programmordners (Konstante app, ohne Klammern geschrieben - siehe den
+  Hinweis im naechsten Kommentar).
 
   Der WebView2-Bootstrapper darunter bleibt: Ohne die Laufzeit startet EPOS-Plan
   seit iU9-W15c gar nicht. }
