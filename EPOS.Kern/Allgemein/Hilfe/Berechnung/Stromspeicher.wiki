@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-11 (Fassung 5: ein Weg in der Ansicht) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-11 (Fassung 6: adaptive Entladeschwelle) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
@@ -162,7 +162,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>w_j</math> || Grenzverschleiß je abgegebener AC-Kilowattstunde — Entscheidungspreis, keine Auszahlung || €/kWh || Flotteneditor
 |-
-| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (47)
+| <math>H</math> || wirtschaftliches Peak-Ziel — '''weich''', es darf verfehlt werden; bei der '''Ratsche''' der Startwert <math>H_{\mathrm{start}}</math> nach (49) || kW || Schritt 3 „Betriebsführung"; Vorbelegung nach (47)
 |-
 | <math>G_{\mathrm{imp}}</math>, <math>G_{\mathrm{exp}}</math> || '''harte''' technische Anschlussgrenzen für Bezug und Einspeisung || kW || Flotteneditor; eine verbleibende Überschreitung macht die Variante unzulässig
 |-
@@ -285,6 +285,12 @@ Größen, die der Lauf je Intervall oder je Lauf bildet.
 | <math>\mathrm{CF}(a)</math> || Jahresüberschuss gegenüber der Referenz ohne Speicher || €/a || (44)
 |-
 | <math>\mathrm{NPV}_{\mathrm{F}}</math> || Kapitalwert der Flotte gegenüber „ohne Speicher" || € || (45)
+|-
+| <math>D(k)</math> || verfügbare Entladeleistung der ganzen Flotte im Intervall || kW || (48)
+|-
+| <math>H(k)</math> || geltende Entladeschwelle der '''Ratsche''' — sie kann im Lauf nur steigen || kW || (49)
+|-
+| <math>H_{\mathrm{end}}</math> || kausal erreichte Schwelle am Ende des Laufs || kW || (50)
 |}
 
 == Rechenweg ==
@@ -950,6 +956,85 @@ wirkt nur beim Anlegen einer neuen Konfiguration; der Schalter bleibt änderbar.
 Der '''Start-Ladezustand''' bleibt beim Produktivstandard auf der unteren Marke. Ein voller Start
 würde eine Spitze im Januar schöner rechnen, als sie im Betrieb wäre; sichtbar gemacht wird die Lage
 deshalb über einen Hinweis und nicht über eine stille Änderung des Standards.
+
+=== Adaptive Entladeschwelle — die kausale Ratsche ===
+{{Anker|peak-ratsche}}
+
+Ein '''festes''' Peak-Ziel hält die Schwelle das ganze Jahr. Kann die Flotte eine Spitze nicht
+halten, ist die Jahresspitze verloren — und die Regel entlädt danach trotzdem bei jeder
+kleineren Spitze weiter, hält den Ladezustand niedrig und verfehlt auch die nächste große
+Spitze. Beobachtet wurde genau das: Die Tagesspitzen einer Januarwoche wurden sauber gekappt, die
+große Spitze am siebten Tag traf auf einen leeren Speicher.
+
+Die '''Ratsche''' behebt das ohne jedes Zukunftswissen. Die Schwelle ist dann kein Parameter,
+sondern ein '''Zustand''', der im Lauf nur '''steigen''' kann: Vor jedem Intervall wird geprüft,
+ob die Flotte die anstehende Netzlast überhaupt bis auf <math>H</math> drücken '''kann'''; kann
+sie es nicht, wird <math>H</math> auf das Erreichbare nachgezogen. Erst danach gilt die Regel aus
+(33) und (34) unverändert — mit dem nachgezogenen <math>H</math>.
+
+: <math>\displaystyle D(k) = \sum_{j=1}^{m} \min\left( P_{\mathrm{d},j} \cdot v_j(k) , \frac{\left( E_j(k) - E_{\mathrm{min},j} \right) \cdot \eta_{\mathrm{dis},j}}{\Delta t} \right)</math> &nbsp;&nbsp;(48)
+:: <math>D(k)</math> – verfügbare Entladeleistung der ganzen Flotte im Intervall [kW]
+:: <math>P_{\mathrm{d},j}</math> – höchste Entladeleistung der Einheit [kW]
+:: <math>v_j(k)</math> – Verfügbarkeitsfaktor der Einheit, 0…1 [–]
+:: <math>E_j(k)</math> – Energie der Einheit zu Beginn des Intervalls [kWh]
+:: <math>E_{\mathrm{min},j}</math> – untere Ladezustandsmarke der Einheit [kWh]
+:: <math>\eta_{\mathrm{dis},j}</math> – Entladewirkungsgrad der Einheit [–]
+:: <math>\Delta t</math> – Länge des Intervalls, 0,25 [h]
+
+: <math>\displaystyle H(k) = \max\left( H(k-1) , n(k) - D(k) \right) , \quad H(0) = H_{\mathrm{start}}</math> &nbsp;&nbsp;(49)
+:: <math>H(k)</math> – die in diesem Intervall geltende Entladeschwelle [kW]
+:: <math>H(k-1)</math> – die Schwelle des vorigen Intervalls [kW]
+:: <math>n(k)</math> – Netzlast ohne Batterie aus (32) [kW]
+:: <math>D(k)</math> – verfügbare Entladeleistung aus (48) [kW]
+:: <math>H_{\mathrm{start}}</math> – Startwert der Ratsche; Vorgabe ist die Grundlast, das Maximum der Tagesminima aus (47) [kW]
+
+<math>D(k)</math> ist '''genau''' die Entladegrenze der Ausführung — Leistung mal Verfügbarkeit,
+nutzbare Energie über der unteren Marke, Entladewirkungsgrad. Die '''Peak-Reserve''' ist bei
+<math>n(k) > H</math> definitionsgemäß freigegeben und geht deshalb in <math>D(k)</math> ein; die
+untere Marke ist dort <math>E_{\mathrm{min},j}</math> und nicht die um die Reserve angehobene
+Untergrenze aus (27).
+
+: <math>\displaystyle M^{*} \le H_{\mathrm{end}} = H(K)</math> &nbsp;&nbsp;(50)
+:: <math>M^{*}</math> – kleinstes FESTES Ziel, das ein Jahr mit vollem Wissen gehalten wird (Bisektion) [kW]
+:: <math>H_{\mathrm{end}}</math> – die kausal erreichte Schwelle am Ende des Laufs [kW]
+:: <math>K</math> – Zahl der Intervalle des Rechenzeitraums [–]
+
+(50) gilt immer, und zwar aus einem einfachen Grund: Ein festes <math>M^{*}</math> ab dem ersten
+Intervall entlädt in jedem Intervall höchstens so viel wie die Ratsche — deren Schwelle liegt
+nie über <math>M^{*}</math>, solange sie nicht scheitert — und lädt mindestens so viel; sein
+Ladezustand liegt deshalb nie unter dem der Ratsche, und was <math>M^{*}</math> hält, hält sie
+auch. Die '''Differenz <math>H_{\mathrm{end}} - M^{*}</math> ist der Wert der Vorausschau''' — die
+Zahl, die sagt, ob sich ein Prognoseregler lohnen würde. Die Ergebnisansicht zeigt deshalb beide:
+'''„kausal erreicht“''' und '''„mit Vorausschau erreichbar“'''.
+
+Die Ratsche ist '''kausal''' (sie kennt keine Zukunft), '''deterministisch''' und '''monoton'''; sie
+braucht weder einen Zielwert noch eine Bisektion und verschwendet keine Energie an Spitzen, die die
+Jahresspitze nicht mehr senken. Sie ist das Verhalten eines realen Reglers ohne Prognose.
+
+{| class="wikitable"
+! Was !! adaptiv (kausal) !! fest
+|-
+| Bedeutung der eingegebenen Zahl || '''Startwert''' <math>H_{\mathrm{start}}</math> der Schwelle || das Ziel des ganzen Zeitraums
+|-
+| Vorgabe im Feld || die '''Grundlast''' (Maximum der Tagesminima) || der Vorschlag <math>H_0</math> nach (47)
+|-
+| Schwelle im Lauf || steigt nach (49), wenn <math>n(k) - D(k) > H</math> || bleibt
+|-
+| Ergebnis || <math>H_{\mathrm{end}}</math> — „kausal erreicht“ || die Bezugsspitze wird gegen <math>H</math> gehalten
+|-
+| Diagnose || zählt die '''Nachzüge''' (Intervalle mit <math>n(k) - D(k) > H</math>) || —
+|}
+
+'''Adaptiv ist die Vorgabe NEUER Stände''' — für die Lastspitzenkappung und für Multi Use mit
+Peak-Priorität, die zwei Betriebsziele mit einem Peak-Ziel. Ein '''gespeicherter''' Stand trägt
+„fest“ und rechnet unverändert weiter; wer umschalten will, tut es in Schritt 3. Die
+Wiederaufladung bleibt eine Freigabe des Anwenders: Ohne sie lädt auch die Ratsche nur aus
+Überschuss, und die Diagnose sagt das.
+
+'''Was die Ratsche nicht ist:''' eine Optimierung. Sie erreicht <math>M^{*}</math> nur dann, wenn
+sie ihre Schwelle nie nachziehen muss — bei <math>H_{\mathrm{start}} = M^{*}</math> ist sie mit dem
+festen Ziel wortgleich. Ein Monatsleistungspreis, ein Sicherheitsaufschlag und eine
+Kurzfristprognose sind ausdrücklich '''nicht''' Teil des Rechenwegs.
 
 === Vorprüfung vor dem Lauf ===
 

@@ -345,8 +345,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die FUENFTE Maske (Auftrag #200, Anwenderentscheid KI‑D‑Q3): die
-        /// Stromspeicher-Ansicht — sechzehn Felder aus
-        /// <c>EPOS.UI.Seiten.Strom.StromspeicherKiSicht</c>.
+        /// Stromspeicher-Ansicht — siebzehn Felder aus
+        /// <c>EPOS.UI.Seiten.Strom.StromspeicherKiSicht</c>; das siebzehnte,
+        /// <c>peak_ziel_adaptiv</c>, kam mit der kausalen Ratsche dazu
+        /// (Spezifikation 5.1.1, Auftrag #215).
         /// </summary>
         /// <remarks>
         /// <para>
@@ -417,6 +419,9 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SpaPeakZielName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SpaPeakZielErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("peak_ziel_adaptiv", "StromspeicherKiSicht.PeakZielAdaptiv",
+                                     KiDialogTexte.SpaAdaptivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaAdaptivErl),
                     new KiDialogFeld("netzladung", "StromspeicherKiSicht.NetzladungErlaubt",
                                      KiDialogTexte.SpaNetzladungName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SpaNetzladungErl),

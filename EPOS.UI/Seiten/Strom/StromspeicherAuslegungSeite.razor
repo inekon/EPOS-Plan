@@ -205,6 +205,9 @@
                            Verweigert="@(EventCallback.Factory.Create(this, PeakZielVerweigert))"
                            VorschlagText="@Resource.FLOTTE_PEAK_BTN_VORSCHLAG"
                            BestimmenText="@Resource.FLOTTE_PEAK_BTN_BESTIMMEN"
+                           GrundlastText="@Resource.FLOTTE_PEAK_BTN_GRUNDLAST"
+                           VorausschauText="@Resource.FLOTTE_PEAK_BTN_VORAUSSCHAU"
+                           StartwertHerleitung="@Resource.FLOTTE_PEAK_STARTWERT_HERLEITUNG"
                            GesperrtText="@Resource.FLOTTE_PEAK_GESPERRT"
                            NetzladungErlaubtText="@Resource.FLOTTE_PEAK_NETZLADUNG_JA"
                            NetzladungVerbotenText="@Resource.FLOTTE_PEAK_NETZLADUNG_NEIN" />
@@ -253,6 +256,7 @@
                 }
 
                 <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
+                                                VorausschauPeakZielKw="@_peakVorausschau?.PeakZielKw"
                                                 Csv="@(Dienste?.Csv is null ? default
                                                        : EventCallback.Factory.Create<string>(this, CsvSchreiben))"
                                                 BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
@@ -460,6 +464,13 @@
     private IReadOnlyList<FlottenHinweis> _vorpruefung = Array.Empty<FlottenHinweis>();
     private FlottenPeakZielVorschlag? _peakVorschlag;
     private FlottenPeakZielErgebnis? _peakErgebnis;
+
+    /// <summary>
+    /// Die ZULETZT BESTIMMTE Bisektion — „mit Vorausschau erreichbar" (M*). Sie überlebt
+    /// die Rückfrage, weil Schritt 5 sie neben der kausal erreichten Schwelle H_end
+    /// zeigt; die Differenz der beiden ist der Wert einer Prognose (PS‑Q2).
+    /// </summary>
+    private FlottenPeakZielErgebnis? _peakVorausschau;
     private bool _laeuft, _veraltet, _projektAktiv, _ungespeichert, _prognosenOffen;
     private double? _anteil;
     private string _fortschritt = "", _fehler = "", _meldung = "";
@@ -774,9 +785,22 @@
     private void BetriebsoptionenGeaendert(FlottenSimulationOptionen optionen)
     {
         FlottenBetriebsziel vorher = Flotte.Optionen.Betriebsziel;
+        bool ratscheVorher = Flotte.Optionen.PeakZielAdaptiv;
         Flotte.Optionen = SpeicherAuslegungKopie.Von(optionen);
         if (Flotte.Optionen.Betriebsziel != vorher)
+        {
             Flotte.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(Flotte.Optionen.Betriebsziel);
+            // Dieselbe Vorgabe wie beim Anlegen (PS-Q1, #215): Die Ratsche ist die
+            // Vorgabe der zwei Ziele MIT Peak-Ziel. Die Erklaerzeile des Editors sagt,
+            // was der Wechsel bedeutet — still ist er nicht.
+            Flotte.Optionen.PeakZielAdaptiv = FlottenVorgaben.PeakZielAdaptivFuer(Flotte.Optionen.Betriebsziel);
+        }
+        // WIRD DIE RATSCHE EINGESCHALTET, ist die Zahl im Feld nicht mehr das Ziel des
+        // Zeitraums, sondern der STARTWERT — und der ist die Grundlast
+        // (Spezifikation 5.1.1). Nur beim Einschalten, nie beim Ausschalten und nie an
+        // einem Stand, den niemand angefasst hat.
+        if (!ratscheVorher && Flotte.Optionen.PeakZielAdaptiv && _peakVorschlag is { AusReihe: true })
+            Flotte.Optionen.WirtschaftlicherPeakZielwertKw = _peakVorschlag.TagesminimumMaxKw;
         Geaendert();
         PeakVorschlagHolen();
     }
@@ -980,7 +1004,12 @@
     private void PeakVorschlagUebernehmen()
     {
         if (_peakVorschlag is null) return;
-        Flotte.Optionen.WirtschaftlicherPeakZielwertKw = _peakVorschlag.PeakZielKw;
+        // Bei der Ratsche ist der übernommene Wert der STARTWERT H₀ = Grundlast
+        // (Spezifikation 5.1.1); beim festen Ziel bleibt es beim Vorschlag aus #183.
+        Flotte.Optionen.WirtschaftlicherPeakZielwertKw =
+            Flotte.Optionen.PeakZielAdaptiv && _peakVorschlag.AusReihe
+                ? _peakVorschlag.TagesminimumMaxKw
+                : _peakVorschlag.PeakZielKw;
         Geaendert();
     }
 
@@ -1003,6 +1032,9 @@
         {
             FlottenPeakZielErgebnis ergebnis = await Dienste.PeakZielBestimmen(_eingaben.Kopie(), Melden);
             _peakErgebnis = ergebnis;
+            // Der Wert bleibt stehen, auch wenn die Rückfrage verneint wird: Schritt 5
+            // stellt ihn der kausal erreichten Schwelle gegenüber.
+            _peakVorausschau = ergebnis;
         }
         catch (Exception ex) { _fehler = ex.Message; }
         finally { _laeuft = false; }

@@ -90,6 +90,18 @@
             </KindInhalt>
         </Kachelraster>
 
+        @* DIE ZWEI SCHWELLEN (Spezifikation 5.1.1, PS-Q2): „kausal erreicht" ist das,
+           was die Ratsche OHNE Zukunftswissen geschafft hat; „mit Vorausschau
+           erreichbar" das Optimum der Bisektion. Die Differenz ist die Zahl, die sagt,
+           ob sich ein Prognoseregler lohnt. *@
+        @if (KausalErreicht is not null)
+        {
+            <p class="epos-flotte-hinweis">@KausalZeile</p>
+        }
+        @if (VorausschauZeile.Length > 0)
+        {
+            <p class="epos-flotte-hinweis">@VorausschauZeile</p>
+        }
         @if (PeakZielVerfehlt)
         {
             <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.FLOTTE_MSG_PEAK_NICHT_ERREICHT" />
@@ -326,6 +338,13 @@
 
     /// <summary>Der CSV-Export; ohne Delegat bleiben die Knöpfe gesperrt.</summary>
     [Parameter] public EventCallback<string> Csv { get; set; }
+
+    /// <summary>
+    /// Das zuletzt BESTIMMTE Peak-Ziel M* [kW] — „mit Vorausschau erreichbar";
+    /// <c>null</c> = die Bisektion ist in dieser Sitzung nicht gelaufen
+    /// (Spezifikation 5.1.1, Anwenderentscheid PS‑Q2).
+    /// </summary>
+    [Parameter] public double? VorausschauPeakZielKw { get; set; }
 
     /// <summary>
     /// „Betriebsführung ändern": Das Ergebnis führt den Editor NICHT mehr (Konzept 2.2),
@@ -598,8 +617,13 @@
     private string KachelSpitzeQuelle
         => PeakZiel is not double p
             ? Resource.FLOTTE_KACHEL_SPITZE_OHNE_ZIEL
-            : string.Format(Kultur, Resource.FLOTTE_KACHEL_SPITZE_QUELLE, N(p),
-                PeakZielVerfehlt ? Resource.FLOTTE_STATUS_NICHT_ERREICHT : Resource.FLOTTE_STATUS_ERREICHT);
+            : KausalErreicht is double h
+                // Bei der Ratsche nennt die Kachel den STARTWERT und die erreichte
+                // Schwelle; ein „erreicht/nicht erreicht" waere hier sinnlos — die
+                // Schwelle wird ja gerade auf das Erreichbare nachgezogen.
+                ? string.Format(Kultur, Resource.FLOTTE_KACHEL_SPITZE_KAUSAL, N(p), N(h))
+                : string.Format(Kultur, Resource.FLOTTE_KACHEL_SPITZE_QUELLE, N(p),
+                    PeakZielVerfehlt ? Resource.FLOTTE_STATUS_NICHT_ERREICHT : Resource.FLOTTE_STATUS_ERREICHT);
 
     private string KachelRechnung
         => Ergebnis?.Studie is { } s ? N(s.Variantenrechnung.GesamtEuro) + " €" : "";
@@ -669,8 +693,37 @@
         }
     }
 
+    /// <summary>
+    /// Die KAUSAL ERREICHTE Schwelle H_end [kW] der Ratsche; <c>null</c> bei festem Ziel
+    /// (Prüfhilfe).
+    /// </summary>
+    public double? KausalErreicht
+        => WindowsFormsApplication1.SpeicherFlottenAnzeigeCtrl.KausalErreichtesPeakZielKw(Ergebnis);
+
+    /// <summary>Die Zeile „kausal erreicht" samt der Zahl der Nachzüge (Prüfhilfe).</summary>
+    public string KausalZeile
+        => KausalErreicht is not double h || Ergebnis?.Studie is not { } s
+            ? ""
+            : string.Format(Kultur, Resource.FLOTTE_ERG_PEAK_KAUSAL, N(h),
+                WindowsFormsApplication1.SpeicherFlottenAnzeigeCtrl.SchwelleNachgezogen(Ergebnis)
+                    .ToString(Kultur),
+                s.Variante.Diagnose.IntervalleGesamt.ToString(Kultur));
+
+    /// <summary>
+    /// Die Zeile „mit Vorausschau erreichbar" samt dem Wert der Vorausschau
+    /// <c>H_end − M*</c>; leer, wenn die Bisektion nicht gelaufen ist (Prüfhilfe).
+    /// </summary>
+    public string VorausschauZeile
+        => VorausschauPeakZielKw is not double stern
+            ? ""
+            : string.Format(Kultur, Resource.FLOTTE_ERG_PEAK_VORAUSSCHAU, N(stern),
+                N((KausalErreicht ?? Ergebnis?.Studie?.Variante.MaximalerNetzbezugKw ?? stern) - stern));
+
     private bool PeakZielVerfehlt
-        => PeakZiel is double p && Ergebnis?.Studie is { } s && s.Variante.MaximalerNetzbezugKw > p + 0.00001;
+        // Bei der Ratsche ist die GELTENDE Schwelle H_end und nicht der Startwert; sie
+        // wird nie verfehlt, weil sie auf das Erreichbare nachgezogen wird.
+        => (KausalErreicht ?? PeakZiel) is double p && Ergebnis?.Studie is { } s
+            && s.Variante.MaximalerNetzbezugKw > p + 0.00001;
 
     private string Betriebszeile
         => Ergebnis?.Konfiguration?.Optionen is not { } o

@@ -41,5 +41,34 @@ namespace WindowsFormsApplication1
         /// <returns><c>true</c>, wenn eine neue Konfiguration mit freigegebener Netzladung vorbelegt wird.</returns>
         public static bool NetzladungFuer(FlottenBetriebsziel ziel) =>
             ziel == FlottenBetriebsziel.PeakShaving;
+
+        /// <summary>
+        /// Die Vorgabe für „Peak-Ziel adaptiv (kausale Ratsche)" zu einem Betriebsziel
+        /// (Spezifikation 5.1.1, Anwenderentscheid <b>PS‑Q1</b> vom 11.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Ratsche ist die Vorgabe NEUER Stände</b>, und zwar bei den zwei Zielen,
+        /// die überhaupt ein Peak-Ziel führen: Lastspitzenkappung und Multi Use. Der
+        /// Befund vom 11.09.2026: Bei festem Ziel entlädt die Flotte auch dann noch bei
+        /// jeder kleineren Spitze, wenn die Jahresspitze schon verfehlt ist — sie steht
+        /// dann leer, wenn die große Spitze kommt. Wer ein festes Ziel will, schaltet um.
+        /// </para>
+        /// <para>
+        /// Für die übrigen Ziele gibt es kein Peak-Ziel und damit keine Schwelle, die
+        /// nachgezogen werden könnte; die Vorgabe ist dort <c>false</c>.
+        /// </para>
+        /// <para>
+        /// Wie bei <see cref="NetzladungFuer"/> gilt sie ausschließlich für die
+        /// VORBELEGUNG. Die serialisierte Vorgabe in
+        /// <see cref="FlottenSimulationOptionen.PeakZielAdaptiv"/> bleibt <c>false</c>,
+        /// damit gespeicherte Stände unverändert rechnen — insbesondere der Stand
+        /// <c>@Projektflotte</c> des Prüfprojekts 1046, der die Regressionsbasis R7 hält.
+        /// </para>
+        /// </remarks>
+        /// <param name="ziel">Die gewählte Betriebsführung.</param>
+        /// <returns><c>true</c>, wenn eine neue Konfiguration mit der Ratsche vorbelegt wird.</returns>
+        public static bool PeakZielAdaptivFuer(FlottenBetriebsziel ziel) =>
+            ziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse;
     }
 }

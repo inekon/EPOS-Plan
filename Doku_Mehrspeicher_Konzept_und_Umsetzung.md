@@ -155,6 +155,76 @@ Der erste Term sagt, wie tief die Flotte überhaupt kappen kann; der zweite verh
 
 **Der Start-Ladezustand bleibt beim Produktivstandard SoC-Minimum** (AP0, SD‑Q4). Geändert wird nichts; ein voller Start würde den Januar-Peak schöner rechnen, als er im Betrieb wäre. Sichtbar gemacht wird die Lage nur über den Hinweis `StartSoCAufMinimum`.
 
+## Adaptive Entladeschwelle — die kausale Ratsche (P7, #215)
+
+Anlass ist der Anwenderbefund vom 11.09.2026: Bei FESTEM Peak-Ziel entlädt die Flotte auch
+dann noch bei jeder kleineren Spitze, wenn die Jahresspitze schon verfehlt ist — der Speicher
+steht dann leer, wenn die große Spitze kommt (Bildschirmfoto: Ziel 200 kW, Januarwoche sauber
+gekappt, Spitze 523 kW ungekappt). Der Anwender hat das kausale Gegenmodell als Excel-Makro
+`calc_peakshaving` vorgelegt. Umgesetzt sind die Anwenderentscheide **PS‑Q1 bis PS‑Q4**
+(11.09.2026, je „Empfehlung“); Fachgrundlage ist Abschnitt **5.1.1** der
+[Spezifikation](Projekte/Spezifikation_Stromspeicher_Optimierung.md).
+
+**Die Regel R.** Die Schwelle `H` ist kein Parameter, sondern ein Zustand des Laufs, der nur
+steigen kann:
+
+```
+H  <- H0                                  Startwert; Vorgabe: die Grundlast (max der Tagesminima)
+je Intervall t:
+    D_t <- Summe_j Grenzen(einheit_j, energie_j, release = true).Discharge
+    wenn N_t - D_t > H:   H <- N_t - D_t   Spitze nicht haltbar -> Schwelle nachziehen
+    danach unveraendert die Regel aus 5.1, aber mit DIESEM H
+```
+
+`D_t` ist **genau** die Entladegrenze der Ausführung (`FlottenSimulator.Grenzen`: Leistung mal
+Verfügbarkeit, nutzbare Energie über der SoC-Untergrenze, Entladewirkungsgrad). Die
+Peak-Reserve ist bei `N > H` definitionsgemäß freigegeben und geht deshalb mit `release = true`
+ein. Die Ratsche läuft nur für die zwei Betriebsziele MIT Peak-Ziel (`PeakShaving`,
+`MultiUse`) und nur im Lauf MIT Flotte — ohne Einheiten wäre `D_t` stets 0, und die Schwelle
+zöge stur auf die Spitze der Referenz.
+
+| Feld | Ort | Bedeutung |
+|---|---|---|
+| `PeakZielAdaptiv` | `FlottenSimulationOptionen` | Ratsche an oder aus; **serialisierte Vorgabe `false`** |
+| `WirtschaftlicherPeakZielwertKw` | `FlottenSimulationOptionen` | bei der Ratsche der **Startwert H₀** |
+| `PeakZielKw` | `FlottenIntervallErgebnis` | die geltende Schwelle je Intervall — die **Treppe** |
+| `ErreichtesPeakZielKw` | `FlottenSimulationErgebnis` | **H_end**, die kausal erreichte Schwelle; `null` bei festem Ziel |
+| `IntervalleSchwelleNachgezogen` | `FlottenDiagnose` | Zahl der **Nachzüge** (`N - D > H`) |
+
+**Die Vorgabe gilt nur für NEUE Stände** — dasselbe Muster wie die Netzladung aus #183:
+`FlottenVorgaben.PeakZielAdaptivFuer(ziel)` ist `true` für `PeakShaving` und `MultiUse`, die
+serialisierte Vorgabe der Eigenschaft bleibt `false`. Ein gespeicherter Stand — insbesondere
+`@Projektflotte` des Prüfprojekts **1046** — liest sich damit als `fest` und rechnet
+unverändert; **1030 und 1046 sind byte-gleich gegen `2026-09-11_R7_Speicherflotte`**. Bei
+`PeakZielAdaptiv = false` liest der Simulator denselben `double` wie zuvor: Der Rechenweg ist
+bit-identisch.
+
+**Die zwei Schwellen nebeneinander** (PS‑Q2). `FlottenPeakZiel.PeakZielBestimmen` bleibt, rechnet
+aber ausdrücklich mit `PeakZielAdaptiv = false` auf einer Kopie und heißt in der Anzeige
+„mit Vorausschau erreichbar“ (M*). Es gilt **M* ≤ H_end**; die Differenz ist
+der **Wert der Vorausschau** und entscheidet, ob sich S‑D (Kurzfristprognose) lohnt. Die
+Ergebnisansicht zeigt beide Zeilen, das Netzbild zeichnet `H` als Treppe
+(`SpeicherFlottenAnzeigeCtrl`, Reihe „Peak-Ziel“ aus der Ganglinie statt aus
+der Konfiguration).
+
+**Der Prüfstand ist der Port des Excel-Makros.** `SpeicherEngine.Tests/FlottenPeakRatscheTests`
+rechnet die Referenzregel Zeile für Zeile nach und hält sie gegen den Simulator — auf einem
+**synthetischen** Viertelstundenlastgang (der Kundenlastgang bleibt außerhalb des
+Repositoriums): sieben Tage, Grundlast 60 kW, fünf Tagesspitzen 250…400 kW, am sechsten
+Abend ein 400-kW-Block, der ohne Ladepause in eine Spitze von 740 kW übergeht; eine Einheit
+400 kW / 400 kWh, η = 1, SoC 0…100 %, Start leer.
+
+| Fall | Jahresspitze | Bemerkung |
+|---|---:|---|
+| fest, H = 60 kW (Grundlast) | 740,0 kW | Befund SP‑O‑10 in Reinform: Ladedeckel dauerhaft 0, Flotte arbeitslos |
+| **adaptiv, H₀ = 60 kW** | **540,0 kW** | H-Treppe 60 → 250 → 340 → 540 kW, drei Nachzüge |
+| M* (Bisektion) | 340,0 kW | mit Vorausschau erreichbar; Wert der Vorausschau 200 kW |
+| adaptiv, H₀ = M* | 340,0 kW | null Nachzüge — wortgleich zum festen Ziel (S‑C) |
+
+**Nicht Teil dieses Pakets** (PS‑Q3/PS‑Q4, Spezifikation 5.1.1): kein Monatstarif (S‑B), keine
+Kurzfristprognose (S‑D), kein Sicherheitsaufschlag (S‑E), keine stille Netzladung für
+bestehende Stände. Die Diagnose benennt die Sperre wie bisher.
+
 ## Datenbankquellen und CSV-Importe
 
 | Rolle | Quelle | Flottenfeld |

@@ -523,8 +523,39 @@ public sealed class FlottenSimulationOptionen
     /// <summary>Einspeisen aus der Batterie ist freigegeben. Eine fehlende Freigabe verhindert keine zulaessige direkte PV-Einspeisung.</summary>
     public bool BatterieexportErlaubt { get; set; }
 
-    /// <summary>WEICHES wirtschaftliches Peak-Ziel [kW]; <c>null</c> = keines. Es darf verfehlt werden — abgerechnet wird der reale Restpeak — und ist von einer harten Anschlussgrenze zu unterscheiden.</summary>
+    /// <summary>WEICHES wirtschaftliches Peak-Ziel [kW]; <c>null</c> = keines. Es darf verfehlt werden — abgerechnet wird der reale Restpeak — und ist von einer harten Anschlussgrenze zu unterscheiden. Bei <see cref="PeakZielAdaptiv"/> ist es der STARTWERT H₀ der Ratsche.</summary>
     public double? WirtschaftlicherPeakZielwertKw { get; set; }
+
+    /// <summary>
+    /// Die Entladeschwelle wird im Lauf NACHGEZOGEN, statt das ganze Jahr fest zu stehen
+    /// (kausale Ratsche, Spezifikation 5.1.1 Regel R).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Die Schwelle H ist dann kein Parameter, sondern ein Zustand, der nur steigen kann:
+    /// Kann die Flotte die anstehende Netzlast nicht bis auf H druecken
+    /// (<c>N − D &gt; H</c> mit D = verfuegbarer Entladeleistung aus
+    /// <c>Grenzen()</c>), wird H auf das Erreichbare nachgezogen; danach gilt die Regel
+    /// aus 5.1 unveraendert. <see cref="WirtschaftlicherPeakZielwertKw"/> ist in diesem
+    /// Fall der Startwert H₀ (Vorgabe: die Grundlast), und
+    /// <see cref="FlottenSimulationErgebnis.ErreichtesPeakZielKw"/> traegt das erreichte
+    /// H am Ende.
+    /// </para>
+    /// <para>
+    /// <b>Die SERIALISIERTE Vorgabe ist <c>false</c></b>: Ein gespeicherter Stand rechnet
+    /// unveraendert weiter — insbesondere der Stand <c>@Projektflotte</c> des
+    /// Pruefprojekts 1046, der die Regressionsbasis R7 haelt. Die Vorgabe fuer NEUE
+    /// Staende steht in <c>FlottenVorgaben.PeakZielAdaptivFuer</c> (Muster #183).
+    /// </para>
+    /// <para>
+    /// Die Ratsche wirkt nur dort, wo es ein Peak-Ziel gibt — bei den Betriebszielen
+    /// <see cref="FlottenBetriebsziel.PeakShaving"/> und
+    /// <see cref="FlottenBetriebsziel.MultiUse"/> — und nur im Lauf MIT Flotte; der
+    /// Referenzlauf ohne Speicher haette keine Entladeleistung und zoege die Schwelle
+    /// stur auf die Spitze.
+    /// </para>
+    /// </remarks>
+    public bool PeakZielAdaptiv { get; set; }
 
     /// <summary>Preisschwelle [EUR/kWh], unterhalb derer die reaktive Arbitrage laedt; <c>null</c> = kein Schwellenregler.</summary>
     public double? ArbitrageLadepreisSchwelle { get; set; }
@@ -686,6 +717,18 @@ public sealed class FlottenIntervallErgebnis
     /// <summary>Ueberschreitung des WEICHEN Peak-Ziels [kW]. Sie ist eine Warnung, keine Unzulaessigkeit.</summary>
     public double WirtschaftlichePeakverletzungKw { get; set; }
 
+    /// <summary>
+    /// Das in DIESEM Intervall geltende weiche Peak-Ziel H [kW]; <c>null</c>, wenn der
+    /// Lauf keines fuehrt.
+    /// </summary>
+    /// <remarks>
+    /// Ohne <see cref="FlottenSimulationOptionen.PeakZielAdaptiv"/> ist es in jedem
+    /// Intervall der feste Zielwert; mit der Ratsche (Spezifikation 5.1.1) ist die Reihe
+    /// eine TREPPE, die nur steigt. Das Netzbild zeichnet sie an der Stelle, an der es
+    /// vorher eine waagerechte Linie zog.
+    /// </remarks>
+    public double? PeakZielKw { get; set; }
+
     /// <summary>Angeforderte Leistung [kW] je Speicher aus Regel oder Fahrplan; positiv Entladen, negativ Laden.</summary>
     public List<double> SollleistungKwJeSpeicher { get; set; } = new();
 
@@ -798,6 +841,18 @@ public sealed class FlottenSimulationErgebnis
     /// <summary>Hoechster Netzbezug [kW] eines Abrechnungsintervalls — die Groesse, die der Leistungspreis bewertet.</summary>
     public double MaximalerNetzbezugKw { get; set; }
 
+    /// <summary>
+    /// Die KAUSAL ERREICHTE Schwelle H_end [kW] am Ende des Laufs; <c>null</c>, wenn die
+    /// Ratsche nicht gefahren wurde (Spezifikation 5.1.1).
+    /// </summary>
+    /// <remarks>
+    /// Sie ist der Gegenwert zum Vorausschau-Optimum M* der Bisektion
+    /// („Peak-Ziel bestimmen"): Es gilt <c>M* ≤ H_end</c>, und die Differenz
+    /// <c>H_end − M*</c> ist der Wert einer Prognose. Ein FESTES Ziel traegt hier
+    /// <c>null</c> — es ist keine erreichte, sondern eine gesetzte Schwelle.
+    /// </remarks>
+    public double? ErreichtesPeakZielKw { get; set; }
+
     /// <summary>Zahl der Intervalle, die nach einem Planungsfehler reaktiv gefahren wurden.</summary>
     public int PlanFallbackIntervalle { get; set; }
 
@@ -909,6 +964,12 @@ public sealed class FlottenDiagnose
 
     /// <summary>Zahl der Intervalle mit Entladeanforderung, in denen die GESAMTE Flotte keine abgebbare Energie hatte.</summary>
     public int IntervalleEntladeanforderungOhneEnergie { get; set; }
+
+    /// <summary>
+    /// Zahl der Intervalle, in denen die Ratsche die Schwelle NACHGEZOGEN hat
+    /// (<c>N − D &gt; H</c>, Spezifikation 5.1.1); 0 bei festem Peak-Ziel.
+    /// </summary>
+    public int IntervalleSchwelleNachgezogen { get; set; }
 
     /// <summary>Aufgenommene Energie [kWh] AC-seitig ueber die ganze Flotte.</summary>
     public double LadeenergieAcKWh { get; set; }

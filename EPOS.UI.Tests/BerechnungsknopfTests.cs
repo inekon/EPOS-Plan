@@ -99,13 +99,14 @@ public sealed class BerechnungsknopfTests
     };
 
     /// <summary>
-    /// Die Seiten, deren Kopfblock eine EIGENE Fassung nennt (Auftrag #203). Ohne
-    /// Eintrag gilt die Fassung 3 der Rubrik.
+    /// Die Seiten, deren Kopfblock eine EIGENE Fassung nennt (Auftrag #203, seit
+    /// #215 die Fassung 6 mit der kausalen Ratsche). Ohne Eintrag gilt die
+    /// Fassung 3 der Rubrik.
     /// </summary>
     private static readonly Dictionary<string, string> FassungImKopf =
         new(StringComparer.Ordinal)
         {
-            { "Stromspeicher", "Fassung 5: ein Weg in der Ansicht" }
+            { "Stromspeicher", "Fassung 6: adaptive Entladeschwelle" }
         };
 
     /// <summary>

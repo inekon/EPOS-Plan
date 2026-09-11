@@ -9293,6 +9293,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_PEAKMODUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_PEAKMODUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startwert der Schwelle: ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_LBL_PEAKSTART {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_LBL_PEAKSTART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlicher Peak-Zielwert: ähnelt.
         /// </summary>
         public static string FLOTTE_BETRIEB_LBL_PEAKZIEL {
@@ -11219,6 +11237,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kausal erreicht: {0} kW — Schwelle in {1} von {2} Intervallen nachgezogen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_PEAK_KAUSAL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_PEAK_KAUSAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Vorausschau erreichbar: {0} kW · Wert der Vorausschau {1} kW. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_PEAK_VORAUSSCHAU {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_PEAK_VORAUSSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reaktive PV-Referenz mit derselben Flotte: Stromrechnung {0} €, Bezugsspitze {1} kW, Kapitalwert {2} €. ähnelt.
         /// </summary>
         public static string FLOTTE_ERG_REAKTIVE_REFERENZ {
@@ -11732,6 +11768,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kausale Ratsche · Startwert {0} kW · erreicht {1} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_KACHEL_SPITZE_KAUSAL {
+            get {
+                return ResourceManager.GetString("FLOTTE_KACHEL_SPITZE_KAUSAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Peak-Ziel ähnelt.
         /// </summary>
         public static string FLOTTE_KACHEL_SPITZE_OHNE_ZIEL {
@@ -12119,11 +12164,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die adaptiv (kausal) ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAKMODUS_ADAPTIV {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAKMODUS_ADAPTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAKMODUS_FEST {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAKMODUS_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel bestimmen… ähnelt.
         /// </summary>
         public static string FLOTTE_PEAK_BTN_BESTIMMEN {
             get {
                 return ResourceManager.GetString("FLOTTE_PEAK_BTN_BESTIMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlast als Startwert übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAK_BTN_GRUNDLAST {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAK_BTN_GRUNDLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Vorausschau erreichbares Ziel bestimmen… ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAK_BTN_VORAUSSCHAU {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAK_BTN_VORAUSSCHAU", resourceCulture);
             }
         }
         
@@ -12178,6 +12259,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_PEAK_NETZLADUNG_NEIN {
             get {
                 return ResourceManager.GetString("FLOTTE_PEAK_NETZLADUNG_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adaptiv (kausal): Die Schwelle startet auf dem Startwert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann — sie kann nur steigen. Damit bleibt der Speicher für die große Spitze geladen, statt an kleineren leerzulaufen (Spezifikation 5.1.1). ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAK_RATSCHE_JA {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAK_RATSCHE_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fest: Die Schwelle steht den ganzen Zeitraum auf dem eingegebenen Wert. Ist die Jahresspitze einmal verfehlt, entlädt die Flotte trotzdem weiter bei jeder kleineren Spitze (Befund vom 11.09.2026). ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAK_RATSCHE_NEIN {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAK_RATSCHE_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startwert der Ratsche: die Grundlast {0} kW (Maximum der Tagesminima). Die Schwelle steigt im Lauf selbst auf das Erreichbare; ein tieferer Startwert schadet nicht. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PEAK_STARTWERT_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_PEAK_STARTWERT_HERLEITUNG", resourceCulture);
             }
         }
         
@@ -12349,6 +12457,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_PROJ_WIEDERHOLUNG {
             get {
                 return ResourceManager.GetString("FLOTTE_PROJ_WIEDERHOLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_REITER_PEAKMODUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_REITER_PEAKMODUS", resourceCulture);
             }
         }
         
@@ -22666,6 +22783,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_NEIGUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adaptiv (kausale Ratsche): Die Schwelle startet auf dem eingegebenen Wert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann. Fest: Die Schwelle steht den ganzen Zeitraum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ADAPTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ADAPTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel adaptiv ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ADAPTIV_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ADAPTIV_NAME", resourceCulture);
             }
         }
         

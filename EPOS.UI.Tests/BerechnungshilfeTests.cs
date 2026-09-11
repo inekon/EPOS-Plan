@@ -468,8 +468,10 @@ public sealed class BerechnungshilfeTests : EposBunitContext
         new(StringComparer.Ordinal)
         {
             // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen, dazu der
-            // zweite Hauptteil "Mehrere Speicher (Speicherflotte)".
-            { "Stromspeicher", "Fassung 5" }
+            // zweite Hauptteil "Mehrere Speicher (Speicherflotte)". Auftrag #215:
+            // Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle - die kausale
+            // Ratsche" (Spezifikation 5.1.1).
+            { "Stromspeicher", "Fassung 6" }
         };
 
     /// <summary>

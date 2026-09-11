@@ -258,6 +258,8 @@
         internal static string SpaBetriebszielErl => MyResource.Resource.KI_DLG_SPA_ZIEL_ERL;
         internal static string SpaPeakZielName => MyResource.Resource.KI_DLG_SPA_PEAK_NAME;
         internal static string SpaPeakZielErl => MyResource.Resource.KI_DLG_SPA_PEAK_ERL;
+        internal static string SpaAdaptivName => MyResource.Resource.KI_DLG_SPA_ADAPTIV_NAME;
+        internal static string SpaAdaptivErl => MyResource.Resource.KI_DLG_SPA_ADAPTIV_ERL;
         internal static string SpaNetzladungName => MyResource.Resource.KI_DLG_SPA_NETZLADUNG_NAME;
         internal static string SpaNetzladungErl => MyResource.Resource.KI_DLG_SPA_NETZLADUNG_ERL;
         internal static string SpaStartSocName => MyResource.Resource.KI_DLG_SPA_STARTSOC_NAME;

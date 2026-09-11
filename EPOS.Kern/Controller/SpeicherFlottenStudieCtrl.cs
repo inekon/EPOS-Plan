@@ -149,8 +149,9 @@ public static class SpeicherFlottenStudieCtrl
 
     /// <summary>
     /// Betriebsvorgaben einer NEU angelegten Flotte: das Peak-Ziel aus der Referenz
-    /// (statt der früheren festen 50 kW) und die Netzladung nach dem Betriebsziel
-    /// (Anwenderentscheide SD‑Q3 und SD‑Q5, Aufgabe #183).
+    /// (statt der früheren festen 50 kW), die Netzladung nach dem Betriebsziel
+    /// (Anwenderentscheide SD‑Q3 und SD‑Q5, Aufgabe #183) und seit Aufgabe #215 die
+    /// kausale Ratsche (Anwenderentscheid PS‑Q1, Spezifikation 5.1.1).
     /// </summary>
     /// <remarks>
     /// Sie greift ausschließlich beim Anlegen. Ein gespeicherter Stand kommt hier nie
@@ -165,6 +166,7 @@ public static class SpeicherFlottenStudieCtrl
         StromspeicherSimCtrl ctrl, SimulationControl sim)
     {
         f.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(f.Optionen.Betriebsziel);
+        f.Optionen.PeakZielAdaptiv = FlottenVorgaben.PeakZielAdaptivFuer(f.Optionen.Betriebsziel);
         f.Optionen.WirtschaftlicherPeakZielwertKw = PeakZielVorschlag(f, bezugsspitzeKw, ctrl, sim).PeakZielKw;
     }
 
