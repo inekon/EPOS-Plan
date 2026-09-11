@@ -269,6 +269,24 @@ nicht global optimal") wird im Bild benannt.
 
 ---
 
+### 4.1 Nachträglicher Entscheid SD‑E‑8 (11.09.2026): ein Modus statt zwei
+
+Anwender, zum Bildschirmfoto der Ansicht mit dem Modus-Umschalter „Einzelspeicher": **„Es ist
+nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen. Für
+Einzelspeicher sollen auch die Betriebsziele wählbar sein — die bisherigen Berechnungsarten
+für Einzelspeicher sind nicht mehr nötig."**
+
+Damit ist **SD‑Q1 revidiert**: Die Ansicht `STROMSPEICHER_AUSLEGUNG` kennt nur noch EINEN Weg —
+die Flottenrechnung; ein Einzelspeicher ist eine Flotte mit genau einer Einheit (so bildet die
+Spezifikation 1.2, Kapitel 11, eine vorhandene Einzelanlage ohnehin ab). Die fünf Betriebsziele,
+Peak-Ziel, Diagnose und Größen-Sicht gelten für jede Einheitenzahl; die Verteilung wird erst ab
+zwei Einheiten gezeigt. Die drei Einzelspeicher-Schritte (Suchraum, Betrieb mit den
+Berechnungsarten Dauernutzung/Nachtnutzung/Lastspitzenkappung, Ergebnis) und der
+Modus-Umschalter fallen aus der Ansicht. **SD‑Q2 bleibt:** Der Projektlauf führt weiter zwei
+Pfade — die Einzelanlage der zwölf Referenzprojekte rechnet unverändert, nur wer die
+Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als **Paket P5**
+(Aufgabe #206), parallel zu S3 des Assistenten (#201).
+
 ## 5. Stufenplan (nach dem Entscheid; je Paket ein Opus-Agent im eigenen Worktree)
 
 | Paket | Inhalt | Regressionsbedingung |
