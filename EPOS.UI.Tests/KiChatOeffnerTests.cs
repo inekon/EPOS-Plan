@@ -116,6 +116,175 @@ public sealed class KiChatOeffnerTests
     }
 
     // =====================================================================
+    //  KI-D-B-3: der Assistent geht wieder auf (Auftrag #228)
+    // =====================================================================
+    //
+    //  Anwender, 11.09.2026: „der hilfe assistent laesst sich nicht mehr aus dem
+    //  Hauptmenue aufrufen (auch mit F1 nicht)". Zwei getrennte Ursachen, beide
+    //  in WinForms und deshalb hier als Quelltextzeuge:
+    //
+    //  (1) DER SPRUNG IM SPRUNG. Der Menuepunkt traegt den Schluessel
+    //      Seitenschluessel.KiAssistent, und der IST ein Wert von Masken -
+    //      HauptfensterHuelle.Weg erkennt ihn also in Maskenschluessel und
+    //      verzoegert ihn; im geposteten Sprung ruft MaskeOeffnen
+    //      Dienste.Navigation.OeffneMaske, und WinFormsNavigation verzoegert
+    //      seit #219 ein ZWEITES Mal. Der innere Ruf traf den noch stehenden
+    //      Riegel des aeusseren und kehrte stumm zurueck.
+    //  (2) F1 AUS DER WEBVIEW2. KeyPreview wirkt nur fuer Tasten, die im WndProc
+    //      eines WinForms-Steuerelements ankommen; der Tastaturzeiger sitzt aber
+    //      seit W16c in der WebView2 des Hauptfensters.
+
+    /// <summary>
+    /// <b>Der Riegel fällt VOR dem Sprung, nicht danach.</b> Sonst verschluckt ein
+    /// laufender Sprung jeden, den er selbst anstößt (Ursache 1).
+    /// </summary>
+    [Fact]
+    public void Der_Riegel_des_Sprungs_faellt_vor_dem_Sprung()
+    {
+        string quelle = Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "Blazorsprung.cs");
+        string rumpf = Block(quelle,
+                             "private static void Ausfuehren(Action sprung)",
+                             "private static void Protokoll(string satz)");
+
+        Assert.True(FaelltVorDemSprung(rumpf),
+                    "Blazorsprung.Ausfuehren löst den Riegel nicht, bevor der Sprung läuft — " +
+                    "ein Sprung, den dieser Sprung anstößt (Menü → MaskeOeffnen → " +
+                    "WinFormsNavigation), wird dann stumm verworfen (Befund KI-D-B-3).");
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Der Leser erkennt den alten Stand — Riegel im
+    /// <c>finally</c>, also am Ende des Sprungs.
+    /// </summary>
+    [Fact]
+    public void Der_Leser_erkennt_den_Riegel_am_Ende_des_Sprungs()
+    {
+        const string alt =
+            "private static void Ausfuehren(Action sprung)\n" +
+            "{\n" +
+            "    try { sprung(); }\n" +
+            "    catch (Exception ex) { Protokoll(\"x\"); }\n" +
+            "    finally { _angefordert = false; }\n" +
+            "}\n";
+
+        Assert.False(FaelltVorDemSprung(alt));
+    }
+
+    /// <summary>
+    /// <b>Kein stumm verworfener Sprung mehr.</b> Der blanke
+    /// <c>if (_angefordert) return;</c> ist weg; wer abgewiesen wird, steht im
+    /// Protokoll, und ein verwaister Riegel verfällt.
+    /// </summary>
+    /// <remarks>
+    /// Die Frist ist der zweite Teil derselben Sache: Eine mit <c>BeginInvoke</c>
+    /// eingereihte Nachricht läuft nie, wenn ihr Wirtsfenster vorher abgebaut wird —
+    /// ohne Verfall bliebe der Riegel für die restliche Sitzung stehen, und dann
+    /// wären Menü, Kacheln und Hilfe-Pillen auf einen Schlag stumm.
+    /// </remarks>
+    [Fact]
+    public void Ein_abgewiesener_Sprung_steht_im_Protokoll_und_der_Riegel_verfaellt()
+    {
+        string quelle = Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "Blazorsprung.cs");
+        string[] zeilen = OhneKommentare(quelle);
+
+        Assert.DoesNotContain(zeilen,
+            z => z.Contains("if (_angefordert) return;", StringComparison.Ordinal));
+
+        string riegel = Block(quelle,
+                              "private static bool RiegelSteht()",
+                              "private static void Ausfuehren(Action sprung)");
+
+        Assert.Contains("Protokoll(", riegel, StringComparison.Ordinal);
+        Assert.Contains("RIEGELFRIST", riegel, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Assistentenweg fällt auf das Hauptfenster zurück.</b>
+    /// <c>Form.ActiveForm</c> kann <c>null</c> sein — dann liefe der Sprung
+    /// unmittelbar (also doch im WebView2-Rückruf), und das nicht-modale
+    /// Chatfenster ginge ohne Besitzer und ohne Taskleisteneintrag auf.
+    /// </summary>
+    [Fact]
+    public void Der_Assistentenweg_faellt_auf_das_Hauptfenster_zurueck()
+    {
+        string quelle = Lies("WindowsFormsApplication1", "Dienste", "WinFormsNavigation.cs");
+        string fall = Fallblock(quelle, "Masken.KiAssistent");
+
+        Assert.Contains("Blazorsprung.Wirtsfenster", fall, StringComparison.Ordinal);
+
+        // Derselbe Wirt trägt beides: die Nachrichtenschlange UND den Besitzer.
+        Assert.Contains("KiChatHuelle.Oeffnen(wirt", fall, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>F1 fängt <c>ProcessCmdKey</c>, nicht <c>KeyPreview</c></b> (Ursache 2).
+    /// </summary>
+    /// <remarks>
+    /// <c>KeyPreview</c> wirkt über <c>Control.ProcessKeyMessage</c> und damit nur
+    /// für Tasten, die im <c>WndProc</c> eines WinForms-Steuerelements ankommen.
+    /// Das Browserfenster der WebView2 ist keines. <c>ProcessCmdKey</c> erreicht
+    /// der Tastendruck dagegen über <c>PreTranslateMessage</c> →
+    /// <c>Control.FromChildHandle</c> → <c>PreProcessMessage</c> und die
+    /// Elternkette hinauf.
+    /// </remarks>
+    [Fact]
+    public void Das_Hauptfenster_faengt_F1_ueber_ProcessCmdKey()
+    {
+        string quelle = Lies("WindowsFormsApplication1", "Views", "Hauptformular",
+                             "Hauptfensterrahmen.cs");
+        string[] zeilen = OhneKommentare(quelle);
+
+        Assert.Contains(zeilen,
+            z => z.Contains("protected override bool ProcessCmdKey", StringComparison.Ordinal));
+        Assert.Contains(zeilen, z => z.Contains("Keys.F1", StringComparison.Ordinal));
+        Assert.Contains(zeilen, z => z.Contains("KiChatHuelle.Oeffnen", StringComparison.Ordinal));
+
+        Assert.DoesNotContain(zeilen,
+            z => z.Contains("KeyPreview = true", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Die Hülle merkt sich nur ein FERTIG gebautes Fenster.</b> Bis #228 setzte
+    /// <c>Einhaengen()</c> das Feld <c>_offene</c> — und das läuft VOR <c>Show()</c>.
+    /// </summary>
+    /// <remarks>
+    /// Brach der Aufbau danach ab, stand <c>_offene</c> auf einer Hülle, deren
+    /// Fenster nie erschien und deshalb nie ein <c>FormClosed</c> meldete: Jedes
+    /// weitere Öffnen „holte es nach vorn" und tat sichtbar nichts — auf JEDEM Weg,
+    /// Menü, F1 und Pille.
+    /// </remarks>
+    [Fact]
+    public void Die_Chathuelle_merkt_sich_nur_ein_gebautes_Fenster()
+    {
+        string quelle = Lies("WindowsFormsApplication1", "Views", "Help", "KiChatHuelle.cs");
+
+        string einhaengen = Block(quelle, "private void Einhaengen()", "private void Aufraeumen()");
+        Assert.DoesNotContain(OhneKommentare(einhaengen),
+            z => z.Contains("_offene = this", StringComparison.Ordinal));
+
+        // Und ein gescheiterter Aufbau ist zu sehen, nicht zu erraten.
+        string oeffnen = Block(quelle, "public static void Oeffnen(", "private bool Steht");
+        Assert.Contains("_offene = new KiChatHuelle", oeffnen, StringComparison.Ordinal);
+        Assert.Contains("Protokoll(", oeffnen, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Löst dieser Rumpf von <c>Ausfuehren</c> den Riegel, BEVOR der Sprung läuft?
+    /// </summary>
+    private static bool FaelltVorDemSprung(string rumpf)
+    {
+        // OHNE KOMMENTARE: Der Rumpf ERKLÄRT den Befund und nennt dabei das alte
+        // Muster ("nicht im finally") — das ist Absicht und darf den Leser nicht
+        // in die Irre führen. Dieselbe Regel wie in InKommentar.
+        string rein = string.Join("\n", OhneKommentare(rumpf));
+
+        int riegel = rein.IndexOf("_angefordert = false;", StringComparison.Ordinal);
+        int sprung = rein.IndexOf("sprung();", StringComparison.Ordinal);
+        return riegel >= 0 && sprung >= 0 && riegel < sprung
+               && !rein.Contains("finally", StringComparison.Ordinal);
+    }
+
+    // =====================================================================
     //  KI-D-B-2: eine Adresse ist keine Datei
     // =====================================================================
 
@@ -330,6 +499,20 @@ public sealed class KiChatOeffnerTests
         int naechster = quelltext.IndexOf("case ", anfang + 5, StringComparison.Ordinal);
         return naechster < 0 ? quelltext.Substring(anfang)
                              : quelltext.Substring(anfang, naechster - anfang);
+    }
+
+    /// <summary>
+    /// Der Textblock von <paramref name="von"/> bis <paramref name="bis"/>
+    /// (ausschließlich) — für eine Methode, die kein <c>case</c>-Zweig ist.
+    /// </summary>
+    private static string Block(string quelltext, string von, string bis)
+    {
+        int anfang = quelltext.IndexOf(von, StringComparison.Ordinal);
+        Assert.True(anfang >= 0, "Die Marke '" + von + "' steht nicht mehr im Quelltext.");
+
+        int ende = quelltext.IndexOf(bis, anfang + von.Length, StringComparison.Ordinal);
+        return ende < 0 ? quelltext.Substring(anfang)
+                        : quelltext.Substring(anfang, ende - anfang);
     }
 
     /// <summary>Die Zeilen einer Datei ohne Zeilen, die mit einem Kommentar beginnen.</summary>

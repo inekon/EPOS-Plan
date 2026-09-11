@@ -240,6 +240,8 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
 
 | **Kontext** (KI‑D‑E‑1) — **umgesetzt #221** (11.09.2026) | **#221** | **Eine Pille je Bildschirm** und ein Kontext mit Substanz: `Hilfekontext`/`Hilfekontextmelder` in `EPOS.UI/Dienste`, `AppWurzel.AktiverHilfekontext` samt `HilfekontextGeaendert`, `CascadingValue HilfePilleImKopfband` aus `Hauptfenster`; die vier freien Ansichten und der Kopf von Schritt ① lassen ihre Pille unter dem Kopfband weg und melden statt dessen Ansicht · Schritt · Reiter (Format `KI_KONTEXT_STELLE`). Die **Simulationsansicht meldet sich an der Maskenbrücke an** — sechste Katalogmaske `KiMaskennamen.SIMULATION` mit **18 Feldern** aus `SimulationKiSicht` (Kaskade und nicht aufgenommene Anlagen lesend, die fünf Laufparameter lesbar UND setzbar über `SimulationParameterDienste`, die sieben Kennzahlen des Laufs samt SoC-Band, Reiterblatt und Laufhinweisen nur lesend), Ziel in `KiMaskenziele`. Dazu `KiChatKontext.AufrufGeaendert`/`AssistentStehtFuer` für das leuchtende Feld der Pille (#218) und **Startfragen je Bereich** (`KI_FRAGE_SIMULATION_KONFIG`, `KI_FRAGE_SIMULATION_ERGEBNIS`, de/en) statt der leeren Eingabezeile | bunit: `HilfePilleTests` (eine Pille, Schlüssel folgt Ansicht und Schritt, ohne Kopfband die eigene, Stelle als Dialogname, leuchtendes Feld, Startfragen samt zwei Gegenproben); `KiSimulationMaskeTests` (18 Felder, Felder je Schritt, `feld_setzen` über den Delegaten, Kennzahlen nicht setzbar, genau fünf setzbare Felder); Kern: Startfragen in beiden Sprachen, Aufrufwechsel wird gemeldet; Referenzlauf 1030/1046 byte-gleich |
 
+| **Öffnen** (KI‑D‑B‑3) — **umgesetzt #228** (11.09.2026) | **#228** | Der Assistent geht wieder aus dem **Hauptmenü** und über **F1** auf. Zwei Ursachen: (1) der Riegel von `Blazorsprung` fiel erst am ENDE des Sprungs, und seit #219 verzögert der Menüweg ZWEIMAL (`HauptfensterHuelle.Weg` → `MaskeOeffnen` → `WinFormsNavigation`) — der innere Ruf wurde stumm verworfen; (2) `KeyPreview`/`KeyDown` sieht keine Taste, die in der WebView2 anfällt. Behoben: Riegel fällt vor dem Sprung, `RiegelSteht` protokolliert und lässt einen verwaisten Riegel verfallen, `Blazorsprung.Wirtsfenster` fällt auf das Hauptfenster zurück (Schlange UND Besitzer), `Hauptfensterrahmen.ProcessCmdKey` statt `KeyPreview`; dazu trägt `KiChatHuelle._offene` nur noch ein fertig gebautes Fenster | Quelltextwachen `KiChatOeffnerTests` (Riegel vor dem Sprung samt Gegenprobe, Protokoll und Verfall, Wirtsfenster-Rückfall, F1 über `ProcessCmdKey`, Lebenszyklus der Hülle); Kern und Oberfläche unverändert, Referenzlauf unberührt. **Am Gerät bleibt** beides: Menü, F1, Pille — je nach vorherigem Öffnen und Schließen |
+
 Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jeder Auftrag: Doku in
 `Konzept_KI-Assistent_Aufgabensteuerung.md` (Kapitel 8, Etappen) und `EPOS.UI/CLAUDE.md`; Wiki-Seite
 „Hilfe-Assistent" nach S1 und S3 nachziehen (Upload durch die Orchestrierung).
@@ -265,7 +267,8 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 
 Die drei Wege stehen seit #199/#200/#201; die Abnahme am Gerät hat zwei Dinge zurückgegeben, die
 **keine** Fachfrage sind und trotzdem den ganzen Assistenten unbrauchbar machen. Beide sind mit
-**Auftrag #219** behoben.
+**Auftrag #219** behoben. Ein drittes kam am selben Tag hinterher — es war die **Nebenwirkung**
+der ersten Behebung und ist mit **Auftrag #228** behoben (KI‑D‑B‑3).
 
 ### KI‑D‑B‑1 — „die Eingabe funktioniert nicht"
 
@@ -335,6 +338,69 @@ niemand gestellt hatte: **kommt der Klick überhaupt irgendwo an?**
 `navigator.clipboard` kommt nicht vor), „Rechtshinweis anzeigen", „Einstellungen…", „Werkzeuge…",
 „Aktionen zulassen", „Fragen", „Nur suchen", „Schließen", der i-Knopf, der Kontextlink und der
 Tageszähler. Jedes dieser Elemente hat seitdem einen bunit-Fall.
+
+### KI‑D‑B‑3 — „der Hilfe-Assistent lässt sich nicht mehr aus dem Hauptmenü aufrufen (auch mit F1 nicht)"
+
+**Befund (Anwender, 11.09.2026, unmittelbar nach #219).** Der Assistent ist aus einer Ansicht
+(Hilfe-Pille) aufgegangen und wieder geschlossen worden. Danach tut der Menüpunkt
+**Hilfe → KI-Assistent** nichts, und **F1** ebenso wenig. Keine Meldung, kein Absturz — es
+passiert schlicht nichts.
+
+**Zwei Ursachen, die nichts miteinander zu tun haben.** Dass beide am selben Tag auffallen, ist
+kein Zufall: Die eine ist die Nebenwirkung von #219, die andere lag seit W16c da und hatte bis
+dahin niemand geprüft (der Punkt „Menü und F1" stand im Umsetzungskonzept ausdrücklich als
+**Windows-Abnahme steht aus**).
+
+**Ursache 1 — der SPRUNG IM SPRUNG.** `Blazorsprung` führt einen prozessweiten Riegel
+`_angefordert`: „ein Sprung zur Zeit", damit nicht zwei schnelle Kachelklicks zwei modale Fenster
+in die Schlange stellen. Der Klassenkopf sagt seit W16b, der Riegel gelte **nur bis zum Beginn**
+des Sprungs — der Programmtext löste ihn aber erst im `finally` von `Ausfuehren`, also am **Ende**.
+Solange jeder Sprung genau eine Ebene tief war, fiel das nicht auf. Seit #219 ist er zwei Ebenen
+tief, und zwar auf genau diesem Weg:
+
+1. `Seitenschluessel.KiAssistent` **ist** ein Wert von `Masken` (`"KI_ASSISTENT"`);
+   `HauptfensterHuelle.Weg` erkennt ihn deshalb in `Maskenschluessel` und verzögert ihn
+   (`HauptfensterHuelle.cs:183‑187`). Der eigens dafür gebaute Fall
+   `case Seitenschluessel.KiAssistent` in `Ablauf(…)` wird auf dem Menüweg **nie erreicht** — die
+   Schlüsseltabelle greift vorher.
+2. Der geposteten Nachricht folgt `MaskeOeffnen` → `Dienste.Navigation.OeffneMaske` →
+   `WinFormsNavigation`, Fall `Masken.KiAssistent` — und der ruft seit #219 selbst
+   `Blazorsprung.Verzoegert` (`WinFormsNavigation.cs:213‑219`).
+3. Der innere Ruf traf den Riegel des äußeren, der noch stand, und kehrte bei
+   `if (_angefordert) return;` (`Blazorsprung.cs:85`) **stumm** zurück. Kein Protokolleintrag,
+   kein Fenster.
+
+**Ursache 2 — F1 aus der WebView2.** `Hauptfensterrahmen` fing die Taste mit
+`KeyPreview = true` und einem `KeyDown`-Handler. `KeyPreview` wirkt aber nur für Tasten, die im
+`WndProc` eines **WinForms**-Steuerelements ankommen: Erst `Control.ProcessKeyMessage` fragt
+`parent.ProcessKeyPreview`. Seit W16c ist das ganze Fenster **eine** `BlazorSeite`, der
+Tastaturzeiger sitzt also praktisch immer in der WebView2 — und deren Tastenmeldungen gehen an das
+Browserfenster, ein natives Kindfenster ohne WinForms-`WndProc`. Der `KeyDown` des Rahmens wurde
+damit nie ausgelöst. Vor W16c hing F1 als **Menükürzel** an einem `ToolStripMenuItem`, und
+Menükürzel laufen über `Form.ProcessCmdKey` — deshalb ging es früher.
+
+**Behoben (#228) an vier Stellen:**
+
+| Stelle | Was | Nachweis ohne Gerät |
+|---|---|---|
+| `Blazorsprung.Ausfuehren` | Der Riegel fällt als **ERSTES**, nicht im `finally` — genau das, was der Klassenkopf seit W16b verspricht. Ein Sprung, den dieser Sprung anstößt, reiht sich damit regulär ein (eine Nachricht später) statt verschluckt zu werden. Er läuft ausdrücklich **nicht** unmittelbar: Der äußere Sprung kann inzwischen in einer verschachtelten Nachrichtenschleife stehen, und dann käme der innere Ruf wieder aus einem WebView2-Rückruf | `KiChatOeffnerTests.Der_Riegel_des_Sprungs_faellt_vor_dem_Sprung` samt Gegenprobe |
+| `Blazorsprung.RiegelSteht` (neu) | Ein abgewiesener Sprung steht im **Protokoll** (`Debug`/`Trace`), und ein **verwaister** Riegel verfällt nach fünf Sekunden. Der Verfall ist die zweite Hälfte derselben Sache: Eine mit `BeginInvoke` eingereihte Nachricht läuft nie, wenn ihr Wirtsfenster vorher abgebaut wird — ohne Frist bliebe der Riegel für die restliche Sitzung stehen, und dann wären Menü, Kacheln **und** Pillen auf einen Schlag stumm | `KiChatOeffnerTests.Ein_abgewiesener_Sprung_steht_im_Protokoll_und_der_Riegel_verfaellt` |
+| `Blazorsprung.Wirtsfenster` (neu), benutzt in `Verzoegert` und in `WinFormsNavigation` | Rückfall auf das **Hauptfenster**: `Form.ActiveForm` kann `null` sein, und dann lief der Sprung bis dahin unmittelbar (also doch im Rückruf) **und** das nicht-modale Chatfenster ging ohne Besitzer auf — ohne Besitzer und ohne Taskleisteneintrag (`ShowInTaskbar = false`) ist es hinter dem Hauptfenster nicht wiederzufinden. EINE Ermittlung trägt jetzt beides, Nachrichtenschlange und Besitzer | `KiChatOeffnerTests.Der_Assistentenweg_faellt_auf_das_Hauptfenster_zurueck` |
+| `Hauptfensterrahmen.ProcessCmdKey` (ersetzt `KeyPreview` + `KeyDown`) | `ProcessCmdKey` erreicht der Tastendruck auch aus der WebView2: `Application.ThreadContext.PreTranslateMessage` sucht über `Control.FromChildHandle` das nächste verwaltete Steuerelement — das ist die `WebView2`, deren Kindfenster das Browserfenster ist —, ruft dort `PreProcessMessage`, und das reicht `ProcessCmdKey` die Elternkette hinauf. Der Weg deckt den bisherigen mit ab (er läuft auch, wenn ein gewöhnliches WinForms-Kind den Zeiger hat) | `KiChatOeffnerTests.Das_Hauptfenster_faengt_F1_ueber_ProcessCmdKey` |
+
+**Dazu der Lebenszyklus der Hülle**, weil er dieselbe Art von stiller Sperre tragen konnte:
+`KiChatHuelle.Einhaengen()` setzte `_offene = this` — und das läuft **vor** `Show()`. Bricht der
+Aufbau danach ab, stünde `_offene` auf einer Hülle, deren Fenster nie erscheint und deshalb nie
+ein `FormClosed` meldet; jedes weitere Öffnen „holte es nach vorn" und täte sichtbar nichts, auf
+**jedem** Weg. Seit #228 trägt das Feld nur, was fertig gebaut ist (gesetzt in `Oeffnen`), ein
+Fehlschlag hängt aus und meldet sich, und `Steht` prüft zusätzlich `IsHandleCreated`.
+**Wache:** `KiChatOeffnerTests.Die_Chathuelle_merkt_sich_nur_ein_gebautes_Fenster`.
+
+**Was am Gerät bleibt.** Beide Ursachen sind WinForms und Windows-Nachrichtenschleife; der
+Quelltextzeuge belegt, dass der Weg gebaut ist, nicht dass Windows ihn geht. Die Abnahme prüft
+deshalb: **Menü Hilfe → KI-Assistent** (auch zweimal hintereinander), **F1** mit dem Zeiger in der
+WebView2, die **Pille** aus einer Ansicht und aus einem Dialog — jeweils nach einem vorherigen
+Öffnen und Schließen des Assistenten.
 
 ### KI‑D‑E‑1 — „zwei KI-Buttons ohne unterschiedliche Funktion"
 
