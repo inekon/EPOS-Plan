@@ -5028,53 +5028,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>Der Speicher hält die Zielschwelle nicht: die neue Spitze liegt bei {0} kW. Kapazität oder Leistung erhöhen oder die Schwelle anheben.</value>
   </data>
-  <data name="OPT_TITEL" xml:space="preserve">
-    <value>Auslegung optimieren</value>
-  </data>
-  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
-    <value>Suchraum</value>
-  </data>
   <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
     <value>Ergebnis</value>
-  </data>
-  <data name="OPT_LBL_CMIN" xml:space="preserve">
-    <value>Kapazität von [kWh]</value>
-  </data>
-  <data name="OPT_LBL_CMAX" xml:space="preserve">
-    <value>Kapazität bis [kWh]</value>
-  </data>
-  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
-    <value>Stützstellen</value>
-  </data>
-  <data name="OPT_LBL_RMIN" xml:space="preserve">
-    <value>C-Rate von [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RMAX" xml:space="preserve">
-    <value>C-Rate bis [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
-    <value>Schrittweite [1/h]</value>
-  </data>
-  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
-    <value>Berechnungsart</value>
-  </data>
-  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
-    <value>Feinraster um das Optimum</value>
-  </data>
-  <data name="OPT_CHK_KVER" xml:space="preserve">
-    <value>Verschleißkosten in die Zielfunktion</value>
-  </data>
-  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
-    <value>Rasterpunkte: {0}</value>
   </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Aktuelle Auslegung: {0} kWh / {1} kW ({2} C)</value>
   </data>
   <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
     <value>Maximiert wird der Jahresüberschuss nach Kapitaldienst ΔJ = E_a,äq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Die Amortisationszeit ist bewusst keine Zielgröße, sondern Sekundärkennzahl.</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIEL_LASTSPITZE" xml:space="preserve">
-    <value>Maximiert wird ΔJ = L_P · ΔP_max · rbf_deg − Verschiebeverluste − (c_cap·C + c_pow·P + I_fix) · a(i_z, N): die jährliche Leistungspreisersparnis abzüglich der Kosten der verschobenen Energie und des Kapitaldienstes. Die Schwelle wird je Rasterpunkt nachgezogen — wie in der Maske Lastspitzenkappung.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Leistungspreis L_P</value>
@@ -5121,9 +5082,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
     <value>Die Zielschwelle wurde gerissen — der Speicher hält sie nicht.</value>
   </data>
-  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
-    <value>Achtung: Annuität und Verschleißkosten bepreisen denselben Sachverhalt. Solange c_ver aus der Investition abgeleitet ist, ist die Einrechnung eine Doppelzählung.</value>
-  </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
     <value>Vorbelegung: 500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität. C-Rate 0,5 … 3,0 in 0,5er-Schritten.</value>
   </data>
@@ -5135,9 +5093,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Abbrechen</value>
-  </data>
-  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Bestpunkt übernehmen …</value>
   </data>
   <data name="OPT_BTN_CSV" xml:space="preserve">
     <value>Raster als CSV …</value>
@@ -5183,9 +5138,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
     <value>ganzes Jahr</value>
-  </data>
-  <data name="OPT_BETRIEB_CHK_JAHR" xml:space="preserve">
-    <value>Ganzes Jahr</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Netzbezug ohne Speicher</value>
@@ -5249,15 +5201,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_SP_EINHEIT" xml:space="preserve">
     <value>Einheit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
-    <value>Auslegung des Bestpunkts</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
-    <value>Wirtschaftlichkeit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
-    <value>Speicher und Energie</value>
   </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nennkapazität C_nom</value>
@@ -16545,9 +16488,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Nicht monetäre Wirkungen: {0}</value>
   </data>
-  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
-    <value>Die Eingaben wurden geändert. Das angezeigte Ergebnis ist nicht mehr aktuell; bitte neu berechnen.</value>
-  </data>
   <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
     <value>Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert.</value>
   </data>
@@ -18149,8 +18089,5 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
     <value>Größe in die Projektanlage übernehmen…</value>
-  </data>
-  <data name="FLOTTE_SEITE_ANLAGE_FRAGE" xml:space="preserve">
-    <value>Kapazität {0} kWh und Leistung {1} kW in die Speicheranlage des Projekts übernehmen? Die Simulation ist danach nicht mehr aktuell und muss neu gerechnet werden.</value>
   </data>
 </root>

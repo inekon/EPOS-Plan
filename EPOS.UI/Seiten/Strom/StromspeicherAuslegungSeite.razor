@@ -23,7 +23,9 @@
    drei eigenen Blaettern und drei eigenen Berechnungsarten (Dauernutzung,
    Nachtnutzung, Lastspitzenkappung). Seither rechnet die Ansicht IMMER die Flotte:
    Ein Einzelspeicher ist eine Flotte mit genau EINER Einheit — so bildet die
-   Spezifikation (1.2, Kapitel 11) eine vorhandene Anlage ohnehin ab —, und die fuenf
+   Spezifikation (1.2, Kapitel 11) eine vorhandene Anlage ohnehin ab, und die
+   Vorbelegung des Kerns legt seit #210 je Speicheranlage des Projekts eine Einheit
+   an —, und die fuenf
    Betriebsziele, das Peak-Ziel, die Diagnose und die Groessen-Sicht gelten fuer jede
    Einheitenzahl. Die VERTEILUNG erscheint erst ab zwei Einheiten; bei einer wirkt sie
    nicht, und ein Feld ohne Wirkung ist eine Behauptung.
@@ -151,10 +153,12 @@
         @if (_schritt == AuslegungSchritt.Speicher)
         {
             @* EINE Einheitenliste fuer jede Einheitenzahl (SD-E-8). Die Vorbelegung
-               EINER Einheit aus der aktiven Speichervariante des Projekts macht der
-               KERN (SpeicherFlottenStudieCtrl.Vorbelegung): Kapazitaet, Lade- und
-               Entladeleistung, die zwei Wirkungsgrade und das SoC-Band kommen aus
-               StromspeicherSimCtrl.LeseParameter, der Anlagenbezug aus dem Kontext. *@
+               macht der KERN (SpeicherFlottenStudieCtrl.Vorbelegung) und nicht diese
+               Seite: Seit #210 entsteht je SP_TYP-Anlage des Projekts EINE Einheit —
+               Kapazitaet, Lade- und Entladeleistung, die zwei Wirkungsgrade und das
+               SoC-Band aus StromspeicherSimCtrl.LeseParameter(projekt, anlage), Name
+               und AnlageId aus der Anlagenzeile. Ein Projekt mit EINER Speicheranlage
+               bekommt damit genau eine Einheit — das ist der Einzelspeicher. *@
             <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
                                    BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
             <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN"
@@ -427,7 +431,13 @@
     private static string PeakFrageFormat => Resource.FLOTTE_PEAK_FRAGE;
     private static string PeakGesperrtText => Resource.FLOTTE_PEAK_GESPERRT;
     private static string AnlageBtnText => Resource.FLOTTE_SEITE_BTN_ANLAGE;
-    private static string AnlageFrageFormat => Resource.FLOTTE_SEITE_ANLAGE_FRAGE;
+    /// <summary>
+    /// Der Wortlaut der Rückfrage vor dem Schreiben. <b>Es ist der Text des gefallenen
+    /// Einzelspeicher-Ergebnisses</b> — dieselbe Frage, dieselben zwei Zahlen, derselbe
+    /// Hinweis „Die Simulation wird dabei nicht neu gerechnet"; ein zweiter Schlüssel mit
+    /// derselben Aussage liefe beim ersten Umformulieren auseinander.
+    /// </summary>
+    private static string AnlageFrageFormat => Resource.OPT_MSG_UEBERNAHME_FRAGE;
     private static string KandidatTitelText => Resource.FLOTTE_SEITE_KANDIDAT_TITEL;
     private static string KandidatFrageText => Resource.FLOTTE_SEITE_KANDIDAT_FRAGE;
     private static string KandidatBannerFormat => Resource.FLOTTE_SEITE_KANDIDAT_BANNER;

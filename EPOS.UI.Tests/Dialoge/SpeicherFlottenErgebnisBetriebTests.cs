@@ -278,6 +278,54 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     }
 
     // =====================================================================
+    // Kennzahlen je Speicher — eine Zeile je Einheit (#210)
+    // =====================================================================
+
+    /// <summary>
+    /// ANWENDERBEFUND #210 (11.09.2026): „Kennzahlen je Speicher" zeigte EINE Zeile,
+    /// obwohl die Flotte zwei Einheiten führt. Die Ansicht selbst war nie der Grund —
+    /// sie zählt, was das Ergebnis trägt. Diese Wache hält das fest: zwei Einheiten,
+    /// zwei Kennzahlzeilen, beide mit ihrem Anlagennamen.
+    /// </summary>
+    [Fact]
+    public void Kennzahlen_je_Speicher_fuehren_JEDE_Einheit()
+    {
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
+
+        var zeilen = Kennzahlentabelle(cut).QuerySelectorAll("tbody tr");
+        Assert.Equal(2, zeilen.Length);
+        Assert.Equal(new[] { "Speicher A", "Speicher B" },
+                     zeilen.Select(r => r.QuerySelectorAll("td")[0].TextContent.Trim()).ToArray());
+        Assert.Contains(Komma("1.800,00"), zeilen[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains(Komma("900,00"), zeilen[1].TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Dieselbe Zusage für die REIHENWAHL: je Einheit ein Paar aus Leistungs- und
+    /// Ladezustandsreihe — mit ihrem Namen, nicht mit ihrer Kennung.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenwahl_fuehrt_je_Einheit_ein_Paar()
+    {
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
+        string[] schalter = cut.FindAll("label.epos-schalter .epos-feld-text")
+                               .Select(x => x.TextContent.Trim()).ToArray();
+
+        foreach (string name in new[] { "Speicher A", "Speicher B" })
+        {
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, Resource.FLOTTE_R_EINHEIT, name), schalter);
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, Resource.FLOTTE_R_SOC, name), schalter);
+        }
+    }
+
+    /// <summary>Die Kennzahlentabelle — erkannt an ihrer Vollzyklenspalte.</summary>
+    private static AngleSharp.Dom.IElement Kennzahlentabelle(
+        IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut)
+        => cut.FindAll("table.epos-raster")
+              .Single(t => (t.QuerySelector("thead")?.TextContent ?? "")
+                            .Contains(Resource.FLOTTE_KENN_SP_VOLLZYKLEN, StringComparison.Ordinal));
+
+    // =====================================================================
     // Der Betriebseditor steht nicht mehr im Ergebnis
     // =====================================================================
 

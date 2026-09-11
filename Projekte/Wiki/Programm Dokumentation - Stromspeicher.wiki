@@ -63,7 +63,7 @@ Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Ent
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
-'''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier bereits '''eine''' Einheit: die aktive Speichervariante des Projekts mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.
+'''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier je Speicheranlage des Projekts bereits eine Einheit – mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Bei einer Anlage ist es genau eine Einheit; Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.
 
 Darunter steht der Schalter '''„Größen optimieren"'''. Aus ist er, wenn Sie '''diese''' Bestückung bewerten wollen; ein ist er, wenn ein '''Raster''' von Größen durchgerechnet werden soll – dann tragen Sie je Suchachse ein, welche Einheit sie ersetzt und welche Bereiche und Schrittweiten gelten.
 

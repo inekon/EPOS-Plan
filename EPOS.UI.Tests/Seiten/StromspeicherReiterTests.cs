@@ -256,6 +256,91 @@ public class StromspeicherReiterTests : EposBunitContext
     }
 
     /// <summary>
+    /// ANWENDERBEFUND #210 (11.09.2026): Der Eingabestand <c>@Aktuell</c> führte EINE
+    /// Einheit, obwohl das Projekt ZWEI Speicheranlagen hat — und der Abschnitt
+    /// „Kennzahlen je Speicher" zeigte dieselbe eine. Die Ursache lag in der Vorbelegung
+    /// des Kerns (<c>SpeicherFlottenStudieCtrl.Vorbelegung</c>, Wache in
+    /// <c>EPOS.Kern.Tests/SpeicherFlottenAnlagenEinheitenTests</c>); hier wird der
+    /// ANZEIGEteil festgehalten: Beide Einheiten stehen in der Eingabetabelle, beide mit
+    /// ihrer HERKUNFT, und das Ergebnis führt beide Kennzahlzeilen.
+    /// </summary>
+    [Fact]
+    public void Zwei_Speicheranlagen_stehen_mit_Herkunft_im_Eingabestand_und_im_Ergebnis()
+    {
+        var flotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new()
+            {
+                new() { Id = "a", Name = "Speicher Halle", AnlageId = "14935",
+                        KapazitaetKWh = 129, LadeleistungKw = 100, EntladeleistungKw = 100 },
+                new() { Id = "b", Name = "Speicher Verwaltung", AnlageId = "14936",
+                        KapazitaetKWh = 129, LadeleistungKw = 100, EntladeleistungKw = 100 }
+            }
+        };
+
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = flotte;
+        daten.Flottenergebnis = new SpeicherFlottenErgebnis
+        {
+            Erfolg = true,
+            Konfiguration = SpeicherAuslegungKopie.Von(flotte),
+            Studie = new FlottenStudienErgebnis
+            {
+                Variante = new FlottenSimulationErgebnis
+                {
+                    Zulaessig = true,
+                    SpeicherKennzahlen = new()
+                    {
+                        new() { SpeicherId = "a", LadeenergieAcKWh = 1060.67, EntladeenergieAcKWh = 856.70 },
+                        new() { SpeicherId = "b", LadeenergieAcKWh = 980.11, EntladeenergieAcKWh = 790.55 }
+                    }
+                }
+            }
+        };
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
+
+        // Der Eingabestand: zwei Zeilen, jede mit ihrer Projektanlage.
+        var eingabe = seite.FindAll("table.epos-tabelle").First();
+        Assert.Equal("Herkunft", eingabe.QuerySelectorAll("thead th")[1].TextContent.Trim());
+        var zeilen = eingabe.QuerySelectorAll("tbody tr");
+        Assert.Equal(2, zeilen.Length);
+        Assert.Equal(new[] { "Speicher Halle", "Speicher Verwaltung" },
+                     zeilen.Select(r => r.QuerySelectorAll("td")[0].TextContent.Trim()).ToArray());
+        Assert.Equal(new[] { "Projektanlage 14935", "Projektanlage 14936" },
+                     zeilen.Select(r => r.QuerySelectorAll("td")[1].TextContent.Trim()).ToArray());
+
+        // Und das Ergebnis darunter führt beide Kennzahlzeilen.
+        var ansicht = seite.FindComponent<SpeicherFlottenErgebnisAnsicht>();
+        var kennzahlen = ansicht.FindAll("table.epos-raster")
+            .Single(t => (t.QuerySelector("thead")?.TextContent ?? "").Contains(
+                WindowsFormsApplication1.MyResource.Resource.FLOTTE_KENN_SP_VOLLZYKLEN,
+                StringComparison.Ordinal))
+            .QuerySelectorAll("tbody tr");
+        Assert.Equal(new[] { "Speicher Halle", "Speicher Verwaltung" },
+                     kennzahlen.Select(r => r.QuerySelectorAll("td")[0].TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>Eine von Hand angelegte Einheit nennt sich als solche.</summary>
+    [Fact]
+    public void Eine_Einheit_ohne_Anlagenbezug_heisst_nur_im_Eingabestand()
+    {
+        var flotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new() { new() { Id = "x", Name = "Zusatzspeicher", KapazitaetKWh = 50 } }
+        };
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = flotte;
+
+        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
+
+        Assert.Equal("nur im Eingabestand", seite.FindAll("table.epos-tabelle").First()
+            .QuerySelectorAll("tbody tr td")[1].TextContent.Trim());
+    }
+
+    /// <summary>
     /// Auftrag #170c: Der Reiter zeigt DENSELBEN Baustein wie der Dialog — also gilt die
     /// Planersperre auch hier. Ohne Fahrplan-Löser stehen die drei planenden Ziele gesperrt
     /// in der Liste und nennen den Grund.

@@ -255,11 +255,12 @@ public sealed class StromspeicherAuslegungCtrlTests
 
     /// <summary>
     /// <b>Ein Einzelspeicher ist eine Flotte mit EINER Einheit.</b> Öffnet der Anwender
-    /// die Ansicht für ein Projekt OHNE gespeicherten Flottenstand, belegt der Kern die
-    /// aktive Speichervariante als eine Einheit vor — Kapazität, Lade- und
+    /// die Ansicht für ein Projekt OHNE gespeicherten Flottenstand, belegt der Kern je
+    /// Speicheranlage des Projekts eine Einheit vor (seit #210) — Kapazität, Lade- und
     /// Entladeleistung, die zwei Wirkungsgrade und das SoC-Band; der Anlagenbezug macht
-    /// sie als die Anlage des Projekts kenntlich, und genau daran hängt in Schritt 5 das
-    /// Rückschreiben.
+    /// sie als Anlage des Projekts kenntlich, und genau daran hängt in Schritt 5 das
+    /// Rückschreiben. Ein Projekt mit EINER Speicheranlage bekommt damit genau eine
+    /// Einheit — der Fall, den SD‑E‑8 „Einzelspeicher" nennt.
     /// </summary>
     /// <remarks>
     /// Geprüft wird auf Projekt <b>1017</b>: Es trägt GENAU EINE Speicheranlage mit
