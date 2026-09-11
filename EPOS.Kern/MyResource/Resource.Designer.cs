@@ -11309,6 +11309,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte der Auslegung: Kapitalwert über Kapazität und Entladeleistung, unzulässige Punkte schraffiert ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_RASTER_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_RASTER_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte der Auslegung: Kapitalwert über Entladeleistung und C-Rate, unzulässige Punkte schraffiert ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_RASTER_KW_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_RASTER_KW_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Kapazität bei fester C-Rate ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_ALT_SCHNITT {
@@ -11318,11 +11336,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Kapazität bei fester Entladeleistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Entladeleistung bei fester Kapazität ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Entladeleistung bei fester C-Rate ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_SCHNITT_LEI_BEI_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_SCHNITT_LEI_BEI_C", resourceCulture);
             }
         }
         
@@ -11372,6 +11408,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über Kapazität und Entladeleistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_RASTER_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_RASTER_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über Entladeleistung und C-Rate ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_RASTER_KW_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_RASTER_KW_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} C — Kapitalwert über der Kapazität ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET {
@@ -11381,11 +11435,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} kW — Kapitalwert über der Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} kWh — Kapitalwert über der Entladeleistung ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} C — Kapitalwert über der Entladeleistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C", resourceCulture);
             }
         }
         
@@ -11476,6 +11548,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_GROESSEN_LBL_KAPAZITAET {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_LBL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung des Schnitts ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_LBL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_LBL_LEISTUNG", resourceCulture);
             }
         }
         
@@ -11728,6 +11809,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_GROESSEN_WERT_KAPAZITAET {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_WERT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_WERT_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_WERT_LEISTUNG", resourceCulture);
             }
         }
         

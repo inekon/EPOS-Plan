@@ -2576,6 +2576,18 @@ namespace WindowsFormsApplication1
         /// <summary>Der beste Rasterwert — ForestGreen.</summary>
         public static readonly SKColor C_RASTER_GUT = new SKColor(0x22, 0x8B, 0x22);
 
+        /// <summary>
+        /// Ein LOCH im Raster — eine Stelle ohne gerechneten Kandidaten (Auftrag #226).
+        /// </summary>
+        /// <remarks>
+        /// Sie gehört NICHT auf die Dreifarbskala: Bis #226 bekam jeder nicht endliche
+        /// Wert <see cref="C_RASTER_SCHLECHT"/> und stand damit als „schlechtester
+        /// Kandidat" im Bild — eine Aussage über eine Variante, die nie gerechnet wurde.
+        /// Das helle Grau liegt bewusst neben dem Weiß der Netzlinien: Ein Loch soll
+        /// als Fläche erkennbar bleiben und nicht als Lücke im Netz.
+        /// </remarks>
+        public static readonly SKColor C_RASTER_LOCH = new SKColor(0xF2, 0xF2, 0xF2);
+
         /// <summary>Stufen der Farbskala rechts. UNGERADE, damit die Mitte exakt Gold trifft.</summary>
         private const int FARBSKALA_STUFEN = 21;
 
@@ -2828,7 +2840,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static SKColor Rasterfarbe(double wert, double min, double max)
         {
-            if (double.IsNaN(wert) || double.IsInfinity(wert)) return C_RASTER_SCHLECHT;
+            // EIN LOCH IST KEIN SCHLECHTER WERT (Auftrag #226): An dieser Stelle wurde
+            // nichts gerechnet. Auf der Minimumfarbe stand dort bis dahin die Aussage
+            // „schlechtester Kandidat des Rasters" - im Modus Kapazität × Leistung
+            // zerfiel die Karte damit in ein überwiegend rotes Feld.
+            if (double.IsNaN(wert) || double.IsInfinity(wert)) return C_RASTER_LOCH;
             double spanne = max - min;
             double t = spanne > 1e-12 ? (wert - min) / spanne : 0.5;
             return Farbstufe(t);

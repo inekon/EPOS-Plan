@@ -7,38 +7,84 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1;
 
 /// <summary>
-/// Die Achsen und Werte EINER Rasterkarte der Auslegung (Auftrag #193, Konzept
-/// „Stromspeicher-Dialoge" 2.5).
+/// WELCHE GRÖSSE eine Achse der Rasterkarte trägt (Auftrag #226).
 /// </summary>
 /// <remarks>
-/// <para><b>Zeilen sind Kapazitäten, Spalten C-Raten</b> — dieselbe Anordnung, die
-/// <see cref="ChartRenderer.Optimierungsraster"/> seit W11b‑B‑5 für den Einzelspeicher
-/// zeichnet. Die C-Rate IST die Leistungsachse in normierter Form (<c>P = E · C</c>);
-/// sie steht dort, weil ein Raster über Kapazität UND absoluter Leistung bei jedem
-/// Kapazitätsschritt eine andere Leistungsreihe hätte und damit keine Karte wäre.</para>
+/// Sie folgt aus der Größenkopplung der Suchachse (<see cref="FlottenAuslegungsmodus"/>)
+/// und entscheidet Achsentitel, Schieberbeschriftung und Zahlenformat. Sie steht als
+/// eigener Aufzählungstyp da, weil die drei Kopplungen ihre sechs Achsen aus nur DIESEN
+/// DREI Größen bilden: Eine Oberfläche wählt ihre Texte danach, ohne die drei Modi noch
+/// einmal aufzuzählen.
+/// </remarks>
+public enum Flottenachsengroesse
+{
+    /// <summary>Kapazität [kWh].</summary>
+    Kapazitaet,
+
+    /// <summary>Entladeleistung [kW].</summary>
+    Leistung,
+
+    /// <summary>C-Rate [1/h] — die Leistung in normierter Form.</summary>
+    CRate
+}
+
+/// <summary>
+/// Die Achsen und Werte EINER Rasterkarte der Auslegung (Auftrag #193, Konzept
+/// „Stromspeicher-Dialoge" 2.5; Achsen nach Kopplung seit Auftrag #226).
+/// </summary>
+/// <remarks>
+/// <para><b>Die Achsen folgen der GRÖSSENKOPPLUNG der Suche</b>
+/// (<see cref="FlottenAuslegungErgebnis.Achsenmodus"/>) und nicht einer festen
+/// Anordnung:</para>
+/// <list type="table">
+///   <item><term><c>KapazitaetUndLeistung</c></term>
+///     <description>Zeilen Kapazität [kWh], Spalten Entladeleistung [kW] — genau das
+///     eingegebene Raster, ohne Loch.</description></item>
+///   <item><term><c>KapazitaetUndCRate</c></term>
+///     <description>Zeilen Kapazität [kWh], Spalten C-Rate [1/h].</description></item>
+///   <item><term><c>LeistungUndCRate</c></term>
+///     <description>Zeilen Entladeleistung [kW], Spalten C-Rate [1/h].</description></item>
+/// </list>
+/// <para><b>Warum das der Befund vom 11.09.2026 erzwungen hat.</b> Bis #226 stand die
+/// C-Rate IMMER auf der Spaltenachse. Im Modus <c>KapazitaetUndLeistung</c> liegen die
+/// Kandidaten aber auf einem Kapazität × Leistung-Gitter; P/C ist dort kein Gitter,
+/// sondern bis zu <c>n · m</c> verschiedene Quotienten. Aus 13 × 13 Kandidaten wurde so
+/// eine Karte mit einer krummen C-Raten-Achse und überwiegend Löchern — und die Löcher
+/// zeichnete der Renderer in der Minimumfarbe, also rot.</para>
 /// <para><b>Ein Loch im Raster ist <c>double.NaN</c></b> — eine Stelle, an der kein
 /// Kandidat gerechnet wurde. Sie geht nicht in die Farbskala ein (der Renderer
-/// überspringt nicht endliche Werte) und ist etwas anderes als ein Kandidat mit dem
-/// Kapitalwert 0.</para>
+/// überspringt nicht endliche Werte, und seit #226 zeichnet er sie hellgrau statt in
+/// der Minimumfarbe) und ist etwas anderes als ein Kandidat mit dem Kapitalwert 0.</para>
 /// </remarks>
-/// <param name="CRaten">Die C-Raten der Spalten [1/h], aufsteigend.</param>
-/// <param name="KapazitaetenKwh">Die Kapazitäten der Zeilen [kWh], aufsteigend.</param>
-/// <param name="Werte">Kapitalwert [€] je Stelle <c>[iKapazität][iCRate]</c>; <c>NaN</c> = Loch.</param>
+/// <param name="Modus">Die Größenkopplung, aus der die Achsen folgen.</param>
+/// <param name="Spaltenwerte">Die Werte der Spaltenachse, aufsteigend.</param>
+/// <param name="Zeilenwerte">Die Werte der Zeilenachse, aufsteigend.</param>
+/// <param name="Werte">Kapitalwert [€] je Stelle <c>[iZeile][iSpalte]</c>; <c>NaN</c> = Loch.</param>
 /// <param name="Unzulaessig">Je Stelle: Der dort stehende Kandidat verletzt eine harte Grenze.</param>
 /// <param name="BesteZeile">Zeile des Optimums, oder <c>-1</c>.</param>
 /// <param name="BesteSpalte">Spalte des Optimums, oder <c>-1</c>.</param>
-public sealed record FlottenRasterdaten(IReadOnlyList<double> CRaten,
-                                        IReadOnlyList<double> KapazitaetenKwh,
+public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
+                                        IReadOnlyList<double> Spaltenwerte,
+                                        IReadOnlyList<double> Zeilenwerte,
                                         double[][] Werte,
                                         bool[][] Unzulaessig,
                                         int BesteZeile, int BesteSpalte)
 {
     /// <summary>Es gibt keine Karte — kein Kandidat, oder nur die Nullvariante.</summary>
-    public bool IstLeer => CRaten.Count == 0 || KapazitaetenKwh.Count == 0;
+    public bool IstLeer => Spaltenwerte.Count == 0 || Zeilenwerte.Count == 0;
+
+    /// <summary>Welche Größe die ZEILEN tragen.</summary>
+    public Flottenachsengroesse Zeilengroesse
+        => SpeicherFlottenAnzeigeCtrl.Zeilengroesse(Modus);
+
+    /// <summary>Welche Größe die SPALTEN tragen.</summary>
+    public Flottenachsengroesse Spaltengroesse
+        => SpeicherFlottenAnzeigeCtrl.Spaltengroesse(Modus);
 
     /// <summary>Die leere Karte; sie ersetzt jedes <c>null</c> bei den Aufrufern.</summary>
     public static FlottenRasterdaten Leer { get; } =
-        new(Array.Empty<double>(), Array.Empty<double>(), Array.Empty<double[]>(),
+        new(FlottenAuslegungsmodus.KapazitaetUndCRate,
+            Array.Empty<double>(), Array.Empty<double>(), Array.Empty<double[]>(),
             Array.Empty<bool[]>(), -1, -1);
 }
 
@@ -93,16 +139,52 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// Spalte in so viele Spalten, wie es Kapazitätszeilen gibt — die Karte wäre eine
     /// Diagonale. Die Schranke ist RELATIV, weil Kapazitäten in kWh und C-Raten in 1/h
     /// drei Größenordnungen auseinanderliegen.
+    /// <para><b>Sie ist kein Ersatz für die richtige Achse</b> (Auftrag #226): Im Modus
+    /// <c>KapazitaetUndLeistung</c> trägt jede Zeile eine ANDERE C-Rate — dort liegen
+    /// die Quotienten nicht ein Bit, sondern Größenordnungen auseinander, und keine
+    /// Schranke fasst sie zusammen. Genau deshalb steht dort die Leistung an der
+    /// Spaltenachse und nicht die C-Rate.</para>
     /// </remarks>
     private const double ACHSENSCHRANKE = 1e-9;
+
+    // =====================================================================
+    //  Welche Größe auf welcher Achse steht (Auftrag #226)
+    // =====================================================================
+
+    /// <summary>Die Größe der ZEILENachse zu einer Größenkopplung.</summary>
+    public static Flottenachsengroesse Zeilengroesse(FlottenAuslegungsmodus modus)
+        => modus == FlottenAuslegungsmodus.LeistungUndCRate
+            ? Flottenachsengroesse.Leistung
+            : Flottenachsengroesse.Kapazitaet;
+
+    /// <summary>Die Größe der SPALTENachse zu einer Größenkopplung.</summary>
+    public static Flottenachsengroesse Spaltengroesse(FlottenAuslegungsmodus modus)
+        => modus == FlottenAuslegungsmodus.KapazitaetUndLeistung
+            ? Flottenachsengroesse.Leistung
+            : Flottenachsengroesse.CRate;
+
+    /// <summary>
+    /// Die Größe, über der der ZWEITE Schnitt läuft — die GEGENGRÖSSE zur Zeilenachse.
+    /// </summary>
+    /// <remarks>
+    /// Beide Schnitte zeigen eine PHYSIKALISCHE Größe, nie die C-Rate: Der erste läuft
+    /// über der Zeilengröße (Kapazität bzw. Leistung), der zweite über der jeweils
+    /// anderen. Im Modus <c>KapazitaetUndCRate</c> entsteht sie als <c>P = E · C</c>, im
+    /// Modus <c>LeistungUndCRate</c> als <c>E = P / C</c>, im Modus
+    /// <c>KapazitaetUndLeistung</c> steht sie ohne Umrechnung auf der Spaltenachse.
+    /// </remarks>
+    public static Flottenachsengroesse Gegengroesse(FlottenAuslegungsmodus modus)
+        => Zeilengroesse(modus) == Flottenachsengroesse.Kapazitaet
+            ? Flottenachsengroesse.Leistung
+            : Flottenachsengroesse.Kapazitaet;
 
     // =====================================================================
     //  Die Rasterkarte
     // =====================================================================
 
     /// <summary>
-    /// Die Rasterkarte einer Auslegung: Kapitalwert über Kapazität (Zeilen) und C-Rate
-    /// (Spalten), dazu die Schraffurmatrix und die Stelle des Optimums.
+    /// Die Rasterkarte einer Auslegung: Kapitalwert über den zwei Größen, die die
+    /// Suchachse gekoppelt hat, dazu die Schraffurmatrix und die Stelle des Optimums.
     /// </summary>
     /// <param name="ergebnis">Das Ergebnis der Rastersuche; <c>null</c> = leere Karte.</param>
     /// <param name="einheit">
@@ -117,22 +199,23 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// widerspräche der Marke des Optimums im selben Bild.</para>
     /// <para><b>Die Achsen kommen aus den WERTEN, nicht aus dem Rasterindex</b>
     /// (<see cref="FlottenKandidatZusammenfassung.Rasterzeile"/>). Den Index gibt es nur
-    /// bei genau EINER aktiven Suchachse; er sagt außerdem nichts über die
-    /// Beschriftung — im Modus <c>KapazitaetUndLeistung</c> ist die zweite Achse eine
-    /// Leistungsreihe, und dieselbe Spalte trägt dann in jeder Zeile eine ANDERE C-Rate.
-    /// Aus den Werten gebaut stimmt die Karte in allen drei Achsenmodi und auch für einen
-    /// Stand, der von anderswo kommt.</para>
+    /// bei genau EINER aktiven Suchachse, und er sagt nichts über die Beschriftung. Was
+    /// die Werte BEDEUTEN, sagt dagegen der
+    /// <see cref="FlottenAuslegungErgebnis.Achsenmodus"/> — und genau das fehlte bis
+    /// Auftrag #226.</para>
     /// </remarks>
     public static FlottenRasterdaten Rasterdaten(FlottenAuslegungErgebnis ergebnis,
                                                  int einheit = FLOTTE_GESAMT)
     {
-        List<Rasterpunkt> punkte = Rasterpunkte(ergebnis, einheit);
+        FlottenAuslegungsmodus modus = ergebnis?.Achsenmodus
+                                       ?? FlottenAuslegungsmodus.KapazitaetUndCRate;
+        List<Rasterpunkt> punkte = Rasterpunkte(ergebnis, einheit, modus);
         if (punkte.Count == 0) return FlottenRasterdaten.Leer;
 
-        IReadOnlyList<double> kapazitaeten = Achse(punkte.Select(p => p.KapazitaetKWh));
-        IReadOnlyList<double> cRaten = Achse(punkte.Select(p => p.CRate));
+        IReadOnlyList<double> zeilenwerte = Achse(punkte.Select(p => p.Zeilenwert));
+        IReadOnlyList<double> spaltenwerte = Achse(punkte.Select(p => p.Spaltenwert));
 
-        int zeilen = kapazitaeten.Count, spalten = cRaten.Count;
+        int zeilen = zeilenwerte.Count, spalten = spaltenwerte.Count;
         var werte = new double[zeilen][];
         var unzulaessig = new bool[zeilen][];
         var belegt = new Rasterpunkt[zeilen][];
@@ -146,8 +229,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
 
         foreach (Rasterpunkt p in punkte)
         {
-            int zeile = Stelle(kapazitaeten, p.KapazitaetKWh);
-            int spalte = Stelle(cRaten, p.CRate);
+            int zeile = Stelle(zeilenwerte, p.Zeilenwert);
+            int spalte = Stelle(spaltenwerte, p.Spaltenwert);
             if (zeile < 0 || spalte < 0) continue;
             if (belegt[zeile][spalte] is { } alt && !IstBesser(p, alt)) continue;
 
@@ -170,7 +253,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                     }
         }
 
-        return new FlottenRasterdaten(cRaten, kapazitaeten, werte, unzulaessig,
+        return new FlottenRasterdaten(modus, spaltenwerte, zeilenwerte, werte, unzulaessig,
                                       besteZeile, besteSpalte);
     }
 
@@ -179,49 +262,36 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     // =====================================================================
 
     /// <summary>
-    /// Der Schnitt bei fester C-Rate: Kapitalwert über der KAPAZITÄT (Konzept 2.5).
+    /// Der Schnitt BEI EINEM SPALTENWERT: Kapitalwert über der Zeilengröße — Kapazität
+    /// [kWh], im Modus <c>LeistungUndCRate</c> Entladeleistung [kW] (Konzept 2.5).
     /// </summary>
     /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
-    /// <param name="cRate">Die festgehaltene C-Rate [1/h]; sie muss auf der Achse liegen.</param>
+    /// <param name="spaltenwert">Der festgehaltene Spaltenwert; er muss auf der Achse liegen.</param>
     /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
-    public static FlottenSchnittdaten Schnittdaten(FlottenAuslegungErgebnis ergebnis,
-                                                   double cRate, int einheit = FLOTTE_GESAMT)
-    {
-        FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
-        int spalte = Stelle(raster.CRaten, cRate);
-        if (spalte < 0) return FlottenSchnittdaten.Leer;
-
-        var werte = new double[raster.KapazitaetenKwh.Count];
-        for (int i = 0; i < werte.Length; i++) werte[i] = raster.Werte[i][spalte];
-        return Schnitt(raster.KapazitaetenKwh, werte);
-    }
+    public static FlottenSchnittdaten SchnittdatenBeiSpalte(FlottenAuslegungErgebnis ergebnis,
+                                                            double spaltenwert,
+                                                            int einheit = FLOTTE_GESAMT)
+        => SchnittBeiSpalte(Rasterdaten(ergebnis, einheit), spaltenwert);
 
     /// <summary>
-    /// Derselbe Schnitt über der LEISTUNG: Kapitalwert über der Entladeleistung bei
-    /// fester Kapazität (Konzept 2.5, „daneben dieselbe Kurve über der Leistung").
+    /// Der Schnitt BEI EINEM ZEILENWERT: Kapitalwert über der GEGENGRÖSSE — der
+    /// Entladeleistung, im Modus <c>LeistungUndCRate</c> der Kapazität
+    /// (Konzept 2.5, „daneben dieselbe Kurve über der Leistung").
     /// </summary>
     /// <remarks>
-    /// Die Achse entsteht aus <c>P = E · C</c>: Bei fester Kapazität ist die Leistung der
-    /// C-Rate proportional, die Kurve also dieselbe Zeile des Rasters über einer anders
-    /// beschrifteten Achse. Gezeichnet wird sie mit
-    /// <see cref="ChartRenderer.Schnittkurve"/> — derselben Funktion, nur mit anderer
-    /// Achsenbeschriftung.
+    /// Die Achse entsteht je nach Kopplung unmittelbar aus den Spaltenwerten
+    /// (<c>KapazitaetUndLeistung</c>), als <c>P = E · C</c> (<c>KapazitaetUndCRate</c>)
+    /// oder als <c>E = P / C</c> (<c>LeistungUndCRate</c>). Gezeichnet wird sie mit
+    /// <see cref="ChartRenderer.Schnittkurve"/> — derselben Funktion wie der erste
+    /// Schnitt, nur mit anderer Achsenbeschriftung.
     /// </remarks>
     /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
-    /// <param name="kapazitaetKwh">Die festgehaltene Kapazität [kWh]; sie muss auf der Achse liegen.</param>
+    /// <param name="zeilenwert">Der festgehaltene Zeilenwert; er muss auf der Achse liegen.</param>
     /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
-    public static FlottenSchnittdaten SchnittdatenLeistung(FlottenAuslegungErgebnis ergebnis,
-                                                           double kapazitaetKwh,
+    public static FlottenSchnittdaten SchnittdatenBeiZeile(FlottenAuslegungErgebnis ergebnis,
+                                                           double zeilenwert,
                                                            int einheit = FLOTTE_GESAMT)
-    {
-        FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
-        int zeile = Stelle(raster.KapazitaetenKwh, kapazitaetKwh);
-        if (zeile < 0) return FlottenSchnittdaten.Leer;
-
-        double kapazitaet = raster.KapazitaetenKwh[zeile];
-        var achse = raster.CRaten.Select(c => c * kapazitaet).ToArray();
-        return Schnitt(achse, raster.Werte[zeile]);
-    }
+        => SchnittBeiZeile(Rasterdaten(ergebnis, einheit), zeilenwert);
 
     // =====================================================================
     //  Die drei Bilder
@@ -241,51 +311,152 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         if (raster.IstLeer) return null;
 
         return ChartRenderer.Optimierungsraster(
-            Bildtitel(MyResource.Resource.FLOTTE_GROESSEN_CHART_RASTER, einheit, einheitenname),
-            MyResource.Resource.FLOTTE_GROESSEN_ACHSE_CRATE,
-            MyResource.Resource.FLOTTE_GROESSEN_ACHSE_KAPAZITAET,
+            Bildtitel(Rastertitel(raster.Modus), einheit, einheitenname),
+            Achsentext(raster.Spaltengroesse),
+            Achsentext(raster.Zeilengroesse),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
-            raster.CRaten, raster.KapazitaetenKwh, raster.Werte,
+            raster.Spaltenwerte, raster.Zeilenwerte, raster.Werte,
             raster.BesteZeile, raster.BesteSpalte,
             raster.Unzulaessig, MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER);
     }
 
-    /// <summary>Die SCHNITTKURVE über der Kapazität als PNG; ohne Kurve <c>null</c>.</summary>
+    /// <summary>Die SCHNITTKURVE bei einem Spaltenwert als PNG; ohne Kurve <c>null</c>.</summary>
     /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
-    /// <param name="cRate">Die festgehaltene C-Rate [1/h].</param>
+    /// <param name="spaltenwert">Der festgehaltene Spaltenwert.</param>
     /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
-    public static byte[] Schnittbild(FlottenAuslegungErgebnis ergebnis, double cRate,
-                                     int einheit = FLOTTE_GESAMT)
+    public static byte[] SchnittbildBeiSpalte(FlottenAuslegungErgebnis ergebnis,
+                                              double spaltenwert,
+                                              int einheit = FLOTTE_GESAMT)
     {
-        FlottenSchnittdaten schnitt = Schnittdaten(ergebnis, cRate, einheit);
+        FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
+        FlottenSchnittdaten schnitt = SchnittBeiSpalte(raster, spaltenwert);
         if (schnitt.IstLeer) return null;
 
         return ChartRenderer.Schnittkurve(
-            string.Format(CultureInfo.CurrentCulture,
-                MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET, Zahl(cRate, "0.###")),
-            MyResource.Resource.FLOTTE_GROESSEN_ACHSE_KAPAZITAET,
+            Schnitttitel(raster.Zeilengroesse, raster.Spaltengroesse, spaltenwert),
+            Achsentext(raster.Zeilengroesse),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
             schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert);
     }
 
-    /// <summary>Dieselbe Kurve über der ENTLADELEISTUNG als PNG; ohne Kurve <c>null</c>.</summary>
+    /// <summary>Die SCHNITTKURVE bei einem Zeilenwert als PNG; ohne Kurve <c>null</c>.</summary>
     /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
-    /// <param name="kapazitaetKwh">Die festgehaltene Kapazität [kWh].</param>
+    /// <param name="zeilenwert">Der festgehaltene Zeilenwert.</param>
     /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
-    public static byte[] SchnittbildLeistung(FlottenAuslegungErgebnis ergebnis,
-                                             double kapazitaetKwh,
+    public static byte[] SchnittbildBeiZeile(FlottenAuslegungErgebnis ergebnis,
+                                             double zeilenwert,
                                              int einheit = FLOTTE_GESAMT)
     {
-        FlottenSchnittdaten schnitt = SchnittdatenLeistung(ergebnis, kapazitaetKwh, einheit);
+        FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
+        FlottenSchnittdaten schnitt = SchnittBeiZeile(raster, zeilenwert);
         if (schnitt.IstLeer) return null;
 
         return ChartRenderer.Schnittkurve(
-            string.Format(CultureInfo.CurrentCulture,
-                MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG, Zahl(kapazitaetKwh, "0.#")),
-            MyResource.Resource.FLOTTE_GROESSEN_ACHSE_LEISTUNG,
+            Schnitttitel(Gegengroesse(raster.Modus), raster.Zeilengroesse, zeilenwert),
+            Achsentext(Gegengroesse(raster.Modus)),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
             schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert);
     }
+
+    // =====================================================================
+    //  Die Texte je Achsengröße und Kopplung (Auftrag #226)
+    // =====================================================================
+    //
+    //  Sie stehen HIER und nicht in der Oberflaeche, weil der Kern SELBST drei davon
+    //  in die Bilder schreibt (Titel und die zwei Achsentitel). Zwei Wahrheiten -
+    //  eine im Bild, eine daneben im Markup - liefen beim ersten neuen Modus
+    //  auseinander.
+
+    /// <summary>Der Achsentitel einer Größe — <c>„Kapazität [kWh]"</c> und so fort.</summary>
+    /// <param name="groesse">Die Größe der Achse.</param>
+    public static string Achsentext(Flottenachsengroesse groesse) => groesse switch
+    {
+        Flottenachsengroesse.Leistung => MyResource.Resource.FLOTTE_GROESSEN_ACHSE_LEISTUNG,
+        Flottenachsengroesse.CRate => MyResource.Resource.FLOTTE_GROESSEN_ACHSE_CRATE,
+        _ => MyResource.Resource.FLOTTE_GROESSEN_ACHSE_KAPAZITAET
+    };
+
+    /// <summary>Die Beschriftung des Schiebers, der diese Größe festhält.</summary>
+    /// <param name="groesse">Die Größe, die der Schieber wählt.</param>
+    public static string Schiebertext(Flottenachsengroesse groesse) => groesse switch
+    {
+        Flottenachsengroesse.Leistung => MyResource.Resource.FLOTTE_GROESSEN_LBL_LEISTUNG,
+        Flottenachsengroesse.CRate => MyResource.Resource.FLOTTE_GROESSEN_LBL_CRATE,
+        _ => MyResource.Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET
+    };
+
+    /// <summary>Ein Achsenwert mit seiner Einheit — <c>„20 kWh"</c>, <c>„1 C"</c>.</summary>
+    /// <param name="groesse">Die Größe, deren Einheit dahinter steht.</param>
+    /// <param name="wert">Der Wert; nicht endlich lässt den Zahlteil leer.</param>
+    public static string Werttext(Flottenachsengroesse groesse, double wert) => string.Format(
+        CultureInfo.CurrentCulture,
+        groesse switch
+        {
+            Flottenachsengroesse.Leistung => MyResource.Resource.FLOTTE_GROESSEN_WERT_LEISTUNG,
+            Flottenachsengroesse.CRate => MyResource.Resource.FLOTTE_GROESSEN_WERT_CRATE,
+            _ => MyResource.Resource.FLOTTE_GROESSEN_WERT_KAPAZITAET
+        },
+        Zahl(wert, Zahlenformat(groesse)));
+
+    /// <summary>Die Überschrift der Rasterkarte je Größenkopplung.</summary>
+    /// <param name="modus">Die Größenkopplung der Suchachse.</param>
+    public static string Rastertitel(FlottenAuslegungsmodus modus) => modus switch
+    {
+        FlottenAuslegungsmodus.KapazitaetUndLeistung =>
+            MyResource.Resource.FLOTTE_GROESSEN_CHART_RASTER_KW,
+        FlottenAuslegungsmodus.LeistungUndCRate =>
+            MyResource.Resource.FLOTTE_GROESSEN_CHART_RASTER_KW_C,
+        _ => MyResource.Resource.FLOTTE_GROESSEN_CHART_RASTER
+    };
+
+    /// <summary>Die Bildbeschreibung der Rasterkarte je Größenkopplung (<c>alt</c>-Text).</summary>
+    /// <param name="modus">Die Größenkopplung der Suchachse.</param>
+    public static string Rasterbeschreibung(FlottenAuslegungsmodus modus) => modus switch
+    {
+        FlottenAuslegungsmodus.KapazitaetUndLeistung =>
+            MyResource.Resource.FLOTTE_GROESSEN_ALT_RASTER_KW,
+        FlottenAuslegungsmodus.LeistungUndCRate =>
+            MyResource.Resource.FLOTTE_GROESSEN_ALT_RASTER_KW_C,
+        _ => MyResource.Resource.FLOTTE_GROESSEN_ALT_RASTER
+    };
+
+    /// <summary>
+    /// Die Überschrift einer Schnittkurve: worüber sie läuft und bei welchem Wert der
+    /// anderen Größe sie steht.
+    /// </summary>
+    /// <param name="ueber">Die Größe der Achse — Kapazität oder Leistung, nie die C-Rate.</param>
+    /// <param name="bei">Die festgehaltene Größe.</param>
+    /// <param name="wert">Ihr Wert.</param>
+    public static string Schnitttitel(Flottenachsengroesse ueber, Flottenachsengroesse bei,
+                                      double wert)
+        => string.Format(CultureInfo.CurrentCulture,
+                         ueber == Flottenachsengroesse.Kapazitaet
+                             ? bei == Flottenachsengroesse.CRate
+                                 ? MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET
+                                 : MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW
+                             : bei == Flottenachsengroesse.CRate
+                                 ? MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C
+                                 : MyResource.Resource.FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG,
+                         Zahl(wert, Zahlenformat(bei)));
+
+    /// <summary>
+    /// Die Bildbeschreibung einer Schnittkurve (<c>alt</c>-Text); die Rollen sind
+    /// dieselben wie bei <see cref="Schnitttitel"/>.
+    /// </summary>
+    /// <param name="ueber">Die Größe der Achse.</param>
+    /// <param name="bei">Die festgehaltene Größe.</param>
+    public static string Schnittbeschreibung(Flottenachsengroesse ueber, Flottenachsengroesse bei)
+        => ueber == Flottenachsengroesse.Kapazitaet
+            ? bei == Flottenachsengroesse.CRate
+                ? MyResource.Resource.FLOTTE_GROESSEN_ALT_SCHNITT
+                : MyResource.Resource.FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW
+            : bei == Flottenachsengroesse.CRate
+                ? MyResource.Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEI_BEI_C
+                : MyResource.Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG;
+
+    /// <summary>Das Zahlenformat einer Achsengröße: die C-Rate feiner als kWh und kW.</summary>
+    private static string Zahlenformat(Flottenachsengroesse groesse)
+        => groesse == Flottenachsengroesse.CRate ? "0.###" : "0.#";
 
     // =====================================================================
     //  Die Kandidatentabelle — Spalten und Zeilen für den Katalogfilter
@@ -511,21 +682,28 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     // =====================================================================
 
     /// <summary>EIN Kandidat an seiner Stelle im Raster.</summary>
+    /// <remarks>
+    /// Er trägt seit Auftrag #226 ZEILEN- und SPALTENwert statt Kapazität und C-Rate:
+    /// Welche Größe darin steht, sagt die Größenkopplung — der Punkt selbst weiß es
+    /// nicht mehr, und genau das hält die Karte von der falschen Achse fern.
+    /// </remarks>
     private sealed class Rasterpunkt
     {
-        public double KapazitaetKWh { get; init; }
+        public double Zeilenwert { get; init; }
 
-        public double CRate { get; init; }
+        public double Spaltenwert { get; init; }
 
         public FlottenKandidatZusammenfassung Kandidat { get; init; }
     }
 
     /// <summary>
-    /// Die Kandidaten, die auf der Karte einen Platz haben. Ohne Kapazität gibt es keine
+    /// Die Kandidaten, die auf der Karte einen Platz haben, mit ihrer Stelle NACH DER
+    /// GRÖSSENKOPPLUNG. Ohne Kapazität gibt es weder eine Kapazitätsachse noch eine
     /// C-Rate — die Nullvariante und ein Kandidat ohne Einheit stehen deshalb nicht im
     /// Raster, sondern in der Tabelle darunter.
     /// </summary>
-    private static List<Rasterpunkt> Rasterpunkte(FlottenAuslegungErgebnis ergebnis, int einheit)
+    private static List<Rasterpunkt> Rasterpunkte(FlottenAuslegungErgebnis ergebnis, int einheit,
+                                                  FlottenAuslegungsmodus modus)
     {
         var punkte = new List<Rasterpunkt>();
         if (ergebnis?.Kandidaten is not { Count: > 0 } kandidaten) return punkte;
@@ -551,8 +729,10 @@ public static partial class SpeicherFlottenAnzeigeCtrl
 
             punkte.Add(new Rasterpunkt
             {
-                KapazitaetKWh = kapazitaet,
-                CRate = leistung / kapazitaet,
+                Zeilenwert = Zeilengroesse(modus) == Flottenachsengroesse.Leistung
+                    ? leistung : kapazitaet,
+                Spaltenwert = Spaltengroesse(modus) == Flottenachsengroesse.Leistung
+                    ? leistung : leistung / kapazitaet,
                 Kandidat = k
             });
         }
@@ -598,24 +778,80 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         return neu.Kandidat.KapitalwertEuro > alt.Kandidat.KapitalwertEuro;
     }
 
+    /// <summary>Der Schnitt bei einem Spaltenwert auf einer BEREITS gebauten Karte.</summary>
+    private static FlottenSchnittdaten SchnittBeiSpalte(FlottenRasterdaten raster,
+                                                        double spaltenwert)
+    {
+        int spalte = Stelle(raster.Spaltenwerte, spaltenwert);
+        if (spalte < 0) return FlottenSchnittdaten.Leer;
+
+        var werte = new double[raster.Zeilenwerte.Count];
+        for (int i = 0; i < werte.Length; i++) werte[i] = raster.Werte[i][spalte];
+        return Schnitt(raster.Zeilenwerte, werte);
+    }
+
+    /// <summary>Der Schnitt bei einem Zeilenwert auf einer BEREITS gebauten Karte.</summary>
+    private static FlottenSchnittdaten SchnittBeiZeile(FlottenRasterdaten raster,
+                                                       double zeilenwert)
+    {
+        int zeile = Stelle(raster.Zeilenwerte, zeilenwert);
+        if (zeile < 0) return FlottenSchnittdaten.Leer;
+
+        return Schnitt(Gegenachse(raster, raster.Zeilenwerte[zeile]), raster.Werte[zeile]);
+    }
+
+    /// <summary>
+    /// Die Achse des ZWEITEN Schnitts: die Gegengröße zur festgehaltenen Zeile.
+    /// </summary>
+    /// <remarks>
+    /// Im Modus <c>KapazitaetUndLeistung</c> steht sie schon da — die Spalten SIND die
+    /// Leistungen. In den zwei C-Raten-Modi entsteht sie aus <c>P = E · C</c> bzw.
+    /// <c>E = P / C</c>; eine C-Rate von 0 hätte dort keine Kapazität und wird zum Loch,
+    /// statt die ganze Kurve mit einer Unendlichkeit zu verderben.
+    /// </remarks>
+    private static IReadOnlyList<double> Gegenachse(FlottenRasterdaten raster, double zeilenwert)
+        => raster.Modus switch
+        {
+            FlottenAuslegungsmodus.KapazitaetUndLeistung => raster.Spaltenwerte,
+            FlottenAuslegungsmodus.KapazitaetUndCRate =>
+                raster.Spaltenwerte.Select(c => c * zeilenwert).ToArray(),
+            _ => raster.Spaltenwerte
+                       .Select(c => c > 0.0 ? zeilenwert / c : double.NaN).ToArray()
+        };
+
     /// <summary>
     /// Aus Achse und Werten ein <see cref="FlottenSchnittdaten"/> samt Optimum-Marke; die
     /// Marke steht auf dem größten ENDLICHEN Wert der Kurve.
     /// </summary>
+    /// <remarks>
+    /// Die Stützstellen werden dabei AUFSTEIGEND gelegt: Im Modus
+    /// <c>LeistungUndCRate</c> entsteht die Kapazitätsachse als <c>E = P / C</c> und
+    /// fällt damit über der aufsteigenden C-Rate. In den übrigen Fällen steht die Achse
+    /// bereits aufsteigend, und die Ordnung lässt sie unberührt.
+    /// </remarks>
     private static FlottenSchnittdaten Schnitt(IReadOnlyList<double> achse,
                                                IReadOnlyList<double> werte)
     {
+        int n = Math.Min(achse.Count, werte.Count);
+        var stellen = Enumerable.Range(0, n)
+            .OrderBy(i => double.IsFinite(achse[i]) ? achse[i] : double.MaxValue)
+            .ToArray();
+
+        var a = new double[n];
+        var w = new double[n];
         double besteAchse = double.NaN, besterWert = double.NaN;
-        for (int i = 0; i < achse.Count && i < werte.Count; i++)
+        for (int i = 0; i < n; i++)
         {
-            if (!double.IsFinite(werte[i])) continue;
-            if (double.IsNaN(besterWert) || werte[i] > besterWert)
+            a[i] = achse[stellen[i]];
+            w[i] = werte[stellen[i]];
+            if (!double.IsFinite(w[i])) continue;
+            if (double.IsNaN(besterWert) || w[i] > besterWert)
             {
-                besterWert = werte[i];
-                besteAchse = achse[i];
+                besterWert = w[i];
+                besteAchse = a[i];
             }
         }
-        return new FlottenSchnittdaten(achse, werte, besteAchse, besterWert);
+        return new FlottenSchnittdaten(a, w, besteAchse, besterWert);
     }
 
     /// <summary>Die Bildüberschrift — mit Einheitennamen, sobald eine gewählt ist.</summary>

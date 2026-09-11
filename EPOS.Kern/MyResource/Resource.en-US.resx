@@ -18566,4 +18566,34 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SIM_BEREICH" xml:space="preserve">
     <value>The value for “{0}” has to be between {1} and {2}.</value>
   </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER_KW" xml:space="preserve">
+    <value>Grid map of the sizing: net present value over capacity and discharge power, infeasible points hatched</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER_KW_C" xml:space="preserve">
+    <value>Grid map of the sizing: net present value over discharge power and C-rate, infeasible points hatched</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW" xml:space="preserve">
+    <value>Section curve: net present value over capacity at a fixed discharge power</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEI_BEI_C" xml:space="preserve">
+    <value>Section curve: net present value over discharge power at a fixed C-rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER_KW" xml:space="preserve">
+    <value>Net present value over capacity and discharge power</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER_KW_C" xml:space="preserve">
+    <value>Net present value over discharge power and C-rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW" xml:space="preserve">
+    <value>Section at {0} kW — net present value over capacity</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C" xml:space="preserve">
+    <value>Section at {0} C — net present value over discharge power</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_LEISTUNG" xml:space="preserve">
+    <value>Power of the section</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_LEISTUNG" xml:space="preserve">
+    <value>{0} kW</value>
+  </data>
 </root>
