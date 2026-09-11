@@ -789,12 +789,13 @@ Die Rubrik **Berechnung** bleibt davon unberührt: Ihre Quellen liegen weiterhin
 sie dort ausgeliefert und geprüft werden. `Projekte/Wiki/` ist ausdrücklich **kein** zweiter
 Ablageort für sie.
 
-Die ersten zwei Seiten dieser Art (Auftrag #203):
+Die ersten zwei Seiten dieser Art (Auftrag #203), die dritte mit Auftrag #207:
 
 | Wikititel | Repo-Quelle |
 |---|---|
 | `Programm Dokumentation/Stromspeicher` | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` |
 | `Programm Dokumentation/Hilfe-Assistent` | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` |
+| `Programm Dokumentation/Simulation` | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
@@ -809,3 +810,16 @@ Fassung 5 Revision 541, vermerkt in `Projekte/Konzept_Stromspeicher_Dialoge_EPOS
 **#201** (`Hilfe-Assistent` Revision 542 — Abschnitt „Der Assistent setzt Felder und rechnet" mit
 Anker `setzen-und-rechnen`, Absatz zum Schalter „Feldwerte mitsenden"; Diff 22+/3− gegen Revision 539,
 byte-gleich zur Repo-Quelle, keine Parse-Fehler).
+
+**Die dritte Seite kam am 11.09.2026 mit Auftrag #207 dazu** — `Programm Dokumentation/Simulation`.
+Sie hatte bis dahin KEINE Repo-Quelle; angelegt wurde sie nach Regel 3 aus dem gelesenen
+Live-Stand (`action=raw`, 4 745 Zeichen), und erst danach wurde ergänzt. Geändert ist genau
+zweierlei: Die Einleitung beschreibt statt des Dialogs „Simulation Konfiguration" die **Ansicht
+mit drei Schritten** (der zweite Absatz nennt das Konfigurationsblatt weiter beim Namen), und
+davor steht der neue Abschnitt **„Simulation durchführen"** (`{{Anker|ablauf}}`) mit der
+Ablaufleiste, den zwei Sperrgründen von Schritt ②, dem einen „← zurück" samt Rückfrage, der
+Rückkehr aus der Stromspeicher-Auslegung und „Neu gegenüber der Vorversion". **Alle zehn
+vorhandenen Anker und ihre Absätze stehen wortgleich** — `speicher-im-projekt` wird von der
+Stromspeicherseite verlinkt, `senkenliste`/`senkenzeile`/`parallelverbund`/`ladeverhalten` stehen
+in `help_mapping.txt` —, ebenso „Siehe auch", die Kategorie und der Abschnitt „Berechnung".
+Hochgeladen wird sie durch die Orchestrierung erst nach #216 (Kachel „Simulation starten", Reiter „Parameter" fällt, Übersicht zuerst), damit die Seite nicht zweimal wandert.
