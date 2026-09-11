@@ -1,3 +1,20 @@
+@* DER EDITOR FUER QUELLEN, KOSTEN UND PROFILE der Stromspeicher-Auslegung.
+
+   BIS #206 TRUG ER AUCH DEN SUCHRAUM des Einzelspeicher-Optimierers — Groessenachse,
+   Von/Bis/Schritt, Stuetzstellen, C-Rate, Berechnungsart, Feinraster, Verschleiss —,
+   sichtbar gemacht ueber den Schalter NurQuellenKostenProfile. Mit dem
+   Anwenderentscheid SD-E-8 vom 11.09.2026 kennt die Ansicht nur noch EINEN Weg, die
+   Flotte, und die fuehrt ihren Suchbereich je Einheit in der Flottenachse
+   (FlottenAuslegungsAchse im SpeicherFlottenEditor) statt hier. Der Block ist deshalb
+   gefallen, und mit ihm der Schalter: Dieser Editor zeigt IMMER Quellen, Kosten und
+   Profile.
+
+   DIE FELDER SELBST SIND NICHT WEG — Groessenachse, Stuetzstellen, Strategie und
+   Feinraster stehen weiter in SpeicherOptimierungEingaben und speisen den
+   Einzelspeicher-Optimierer, den der Bericht (SpeicherBetriebsbild) und die KI-Aktion
+   „speicher_optimieren" weiter fahren. Sie werden nur nicht mehr in dieser Ansicht
+   eingegeben. *@
+
 @namespace EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
@@ -5,50 +22,6 @@
 <div class="epos-speicherauslegung epos-speicheropt-suchraum">
     <Formularraster>
         <KindInhalt>
-            @if (!NurQuellenKostenProfile)
-            {
-            <Formulargruppe Titel="@Texte.Suchraum">
-                <KindInhalt>
-                    <Auswahlfeld Bezeichnung="@Texte.Groessenachse" Eintraege="@Achsen"
-                                 Auswahl="@((int)_wert.Groessenachse)" Aktiv="@Aktiv"
-                                 AuswahlChanged="AchseSetzen" />
-                    @if (_wert.Groessenachse == OptimiererGroessenachse.KapazitaetKwh)
-                    {
-                        <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kWh" Wert="@_wert.CMinKwh"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.CMinKwh = x))" />
-                        <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kWh" Wert="@_wert.CMaxKwh"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.CMaxKwh = x))" />
-                        <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kWh" Wert="@_wert.CSchrittKwh"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => NullableSetzen(v, x => _wert.CSchrittKwh = x))" />
-                    }
-                    else
-                    {
-                        <Zahlenfeld Bezeichnung="@Texte.Von" Einheit="kW" Wert="@_wert.PMinKw"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.PMinKw = x))" />
-                        <Zahlenfeld Bezeichnung="@Texte.Bis" Einheit="kW" Wert="@_wert.PMaxKw"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.PMaxKw = x))" />
-                        <Zahlenfeld Bezeichnung="@Texte.Schritt" Einheit="kW" Wert="@_wert.PSchrittKw"
-                                    Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => NullableSetzen(v, x => _wert.PSchrittKw = x))" />
-                    }
-                    <Ganzzahlfeld Bezeichnung="@Texte.Stuetzstellen" Wert="@_wert.Stuetzstellen" Aktiv="@Aktiv"
-                                  Min="@SpeicherOptimierungCtrl.STUETZSTELLEN_MIN" Max="@SpeicherOptimierungCtrl.STUETZSTELLEN_MAX"
-                                  WertChanged="StuetzstellenSetzen" />
-                    <Zahlenfeld Bezeichnung="@Texte.CRateVon" Wert="@_wert.RMin" Einheit="1/h"
-                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RMin = x))" />
-                    <Zahlenfeld Bezeichnung="@Texte.CRateBis" Wert="@_wert.RMax" Einheit="1/h"
-                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RMax = x))" />
-                    <Zahlenfeld Bezeichnung="@Texte.CRateSchritt" Wert="@_wert.RSchritt" Einheit="1/h"
-                                Min="@KLEINSTER_POSITIVER_WERT" Aktiv="@Aktiv" WertChanged="@(v => ZahlSetzen(v, x => _wert.RSchritt = x))" />
-                    <Auswahlfeld Bezeichnung="@Texte.Strategie" Eintraege="@Strategien"
-                                 Auswahl="@((int)_wert.Strategie)" Aktiv="@Aktiv" AuswahlChanged="StrategieSetzen" />
-                    <Schalter Bezeichnung="@Texte.Feinraster" Wert="@_wert.Feinraster" Aktiv="@Aktiv"
-                              WertChanged="@(v => BoolSetzen(v, x => _wert.Feinraster = x))" />
-                    <Schalter Bezeichnung="@Texte.Verschleiss" Wert="@_wert.KVerInZielfunktion" Aktiv="@Aktiv"
-                              WertChanged="@(v => BoolSetzen(v, x => _wert.KVerInZielfunktion = x))" />
-                </KindInhalt>
-            </Formulargruppe>
-
-            }
             <Formulargruppe Titel="@Texte.Zeitreihen">
                 <KindInhalt>
                     <Auswahlfeld Bezeichnung="@Texte.Lastquelle" Eintraege="@LastQuellen" Auswahl="@((int)Auslegung.Lastquelle)"
@@ -176,7 +149,6 @@
     [Parameter] public SpeicherOptimierungEingaben Wert { get; set; } = new();
     [Parameter] public EventCallback<SpeicherOptimierungEingaben> WertChanged { get; set; }
     [Parameter] public bool Aktiv { get; set; } = true;
-    [Parameter] public bool NurQuellenKostenProfile { get; set; }
     [Parameter] public IReadOnlyList<SpeicherAuslegungProfil> Auslegungsprofile { get; set; } = Array.Empty<SpeicherAuslegungProfil>();
     [Parameter] public IReadOnlyList<KostenprofilModel> Strompreisprofile { get; set; } = Array.Empty<KostenprofilModel>();
     [Parameter] public SpeicherKostensaetze Modulkosten { get; set; } = new();
@@ -184,8 +156,6 @@
     [Parameter] public Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>>? ProfilSpeichern { get; set; }
     [Parameter] public Func<Task<SpeicherImportDatei>>? DateiWaehlen { get; set; }
     [Parameter] public SpeicherAuslegungTexte Texte { get; set; } = new();
-
-    private const double KLEINSTER_POSITIVER_WERT = double.Epsilon;
 
     private SpeicherOptimierungEingaben _wert = new();
     private int? _profilIndex;
@@ -197,8 +167,6 @@
     private bool _kostenprofilOffen;
 
     private SpeicherAuslegungKonfiguration Auslegung => _wert.Auslegung ??= new();
-    private static readonly IReadOnlyList<(int Id, string Text)> Achsen = new[] { (0, "Kapazität [kWh]"), (1, "Leistung [kW]") };
-    private static readonly IReadOnlyList<(int Id, string Text)> Strategien = SpeicherOptimierungCtrl.Strategien().Select((x,i)=>(i,x)).ToArray();
     private static readonly IReadOnlyList<(int Id, string Text)> LastQuellen = new[] { (0,"EPOS: Strombedarf / Stromlastgang"), (1,"Separate CSV-Datei") };
     private static readonly IReadOnlyList<(int Id, string Text)> PvQuellen = new[] { (0,"EPOS: PV-Simulation"), (1,"Separate CSV-Datei"), (2,"Keine PV") };
     private static readonly IReadOnlyList<(int Id, string Text)> PreisQuellen = new[] { (0,"EPOS: Stromtarif"), (1,"Separate CSV-Datei"), (3,"Editierbares Strompreisprofil") };
@@ -218,12 +186,6 @@
 
     protected override void OnParametersSet() { if (!ReferenceEquals(Wert, _wert)) _wert = Wert.Kopie(); }
     private async Task Geaendert() { _fehler=""; _erfolg=""; await WertChanged.InvokeAsync(_wert.Kopie()); }
-    private async Task ZahlSetzen(double? v, Action<double> set) { if(v.HasValue)set(v.Value); await Geaendert(); }
-    private async Task NullableSetzen(double? v, Action<double?> set) { set(v); await Geaendert(); }
-    private async Task BoolSetzen(bool v, Action<bool> set) { set(v); await Geaendert(); }
-    private async Task StuetzstellenSetzen(int? v) { if(v.HasValue)_wert.Stuetzstellen=v.Value; await Geaendert(); }
-    private async Task AchseSetzen(int? v) { _wert.Groessenachse=v==1?OptimiererGroessenachse.LeistungKw:OptimiererGroessenachse.KapazitaetKwh; await Geaendert(); }
-    private async Task StrategieSetzen(int? v) { _wert.Strategie=v switch {1=>OptimiererStrategie.Nachtnutzung,2=>OptimiererStrategie.Lastspitzenkappung,_=>OptimiererStrategie.Dauernutzung}; await Geaendert(); }
     private async Task QuelleSetzen(int? v, Action<SpeicherAuslegungQuelle> set) { set((SpeicherAuslegungQuelle)(v??0)); await Geaendert(); }
     private async Task KostenQuelleSetzen(int? v, Action<SpeicherKostenQuelle> set) { set((SpeicherKostenQuelle)(v??0)); await Geaendert(); }
     private async Task EposModelljahrSetzen(bool v) { Auslegung.EposModelljahrZuordnen = v; await Geaendert(); }
@@ -245,8 +207,6 @@
 
 @code {
     public sealed class SpeicherAuslegungTexte {
-        public string Suchraum {get;set;}=Resource.FLOTTE_AUS_SUCHRAUM; public string Groessenachse{get;set;}=Resource.FLOTTE_AUS_GROESSENACHSE; public string Von{get;set;}=Resource.FLOTTE_AUS_VON; public string Bis{get;set;}=Resource.FLOTTE_AUS_BIS; public string Schritt{get;set;}=Resource.FLOTTE_AUS_SCHRITT; public string Stuetzstellen{get;set;}=Resource.FLOTTE_AUS_STUETZSTELLEN;
-        public string CRateVon{get;set;}=Resource.FLOTTE_AUS_CRATE_VON; public string CRateBis{get;set;}=Resource.FLOTTE_AUS_CRATE_BIS; public string CRateSchritt{get;set;}=Resource.FLOTTE_AUS_CRATE_SCHRITT; public string Strategie{get;set;}=Resource.FLOTTE_AUS_STRATEGIE; public string Feinraster{get;set;}=Resource.FLOTTE_AUS_FEINRASTER; public string Verschleiss{get;set;}=Resource.FLOTTE_AUS_VERSCHLEISS;
         public string Zeitreihen{get;set;}=Resource.FLOTTE_AUS_ZEITREIHEN; public string Lastquelle{get;set;}=Resource.FLOTTE_AUS_LASTQUELLE; public string PvQuelle{get;set;}=Resource.FLOTTE_AUS_PVQUELLE; public string Preisquelle{get;set;}=Resource.FLOTTE_AUS_PREISQUELLE; public string Preisprofil{get;set;}=Resource.FLOTTE_AUS_PREISPROFIL; public string LastDatei{get;set;}=Resource.FLOTTE_AUS_LASTDATEI; public string PvDatei{get;set;}=Resource.FLOTTE_AUS_PVDATEI; public string PreisDatei{get;set;}=Resource.FLOTTE_AUS_PREISDATEI; public string PreisprofilBearbeiten{get;set;}=Resource.FLOTTE_AUS_PROFIL_BEARBEITEN; public string PreisprofilAnlegen{get;set;}=Resource.FLOTTE_AUS_PROFIL_ANLEGEN; public string NeuesPreisprofil{get;set;}=Resource.FLOTTE_AUS_PROFIL_NEU;
         public string EposModelljahrZuordnen{get;set;}=Resource.FLOTTE_AUS_MODELLJAHR; public string EposModelljahrHinweis{get;set;}=Resource.FLOTTE_AUS_MODELLJAHR_HINWEIS;
         public string Kosten{get;set;}=Resource.FLOTTE_AUS_KOSTEN; public string Investitionsquelle{get;set;}=Resource.FLOTTE_AUS_INVESTQUELLE; public string Betriebsquelle{get;set;}=Resource.FLOTTE_AUS_BETRIEBSQUELLE; public string InvestKw{get;set;}=Resource.FLOTTE_AUS_INVEST_KW; public string InvestKwh{get;set;}=Resource.FLOTTE_AUS_INVEST_KWH; public string BetriebKw{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KW; public string BetriebKwh{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KWH; public string BetriebEntladen{get;set;}=Resource.FLOTTE_AUS_BETRIEB_ENTLADEN; public string KostenmodulHerkunft{get;set;}=Resource.FLOTTE_AUS_KOSTENMODUL;

@@ -5012,53 +5012,14 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>The storage cannot hold the target threshold: the new peak is {0} kW. Increase capacity or power, or raise the threshold.</value>
   </data>
-  <data name="OPT_TITEL" xml:space="preserve">
-    <value>Optimise sizing</value>
-  </data>
-  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
-    <value>Search range</value>
-  </data>
   <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
     <value>Result</value>
-  </data>
-  <data name="OPT_LBL_CMIN" xml:space="preserve">
-    <value>Capacity from [kWh]</value>
-  </data>
-  <data name="OPT_LBL_CMAX" xml:space="preserve">
-    <value>Capacity to [kWh]</value>
-  </data>
-  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
-    <value>Grid points</value>
-  </data>
-  <data name="OPT_LBL_RMIN" xml:space="preserve">
-    <value>C rate from [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RMAX" xml:space="preserve">
-    <value>C rate to [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
-    <value>Step [1/h]</value>
-  </data>
-  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
-    <value>Calculation mode</value>
-  </data>
-  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
-    <value>Refine around the optimum</value>
-  </data>
-  <data name="OPT_CHK_KVER" xml:space="preserve">
-    <value>Include wear cost in the objective</value>
-  </data>
-  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
-    <value>Grid points: {0}</value>
   </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Current sizing: {0} kWh / {1} kW ({2} C)</value>
   </data>
   <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
     <value>The objective is the annual surplus after capital service ΔJ = E_a,eq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Payback time is deliberately a secondary indicator, not an objective.</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIEL_LASTSPITZE" xml:space="preserve">
-    <value>The objective is ΔJ = L_P · ΔP_max · rbf_deg − shifting losses − (c_cap·C + c_pow·P + I_fix) · a(i_z, N): the annual demand charge saving less the cost of the shifted energy and the capital service. The threshold is raised per grid point — as in the peak shaving dialog.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Demand charge L_P</value>
@@ -5105,9 +5066,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
     <value>The target threshold was exceeded — the storage cannot hold it.</value>
   </data>
-  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
-    <value>Caution: annuity and wear cost price the same thing. As long as c_ver is derived from the investment, including it double counts.</value>
-  </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
     <value>Default: 500 … 5,000 kWh with 10 grid points; if the current capacity is outside, 0.25 … 2.5 × the current capacity instead. C rate 0.5 … 3.0 in 0.5 steps.</value>
   </data>
@@ -5119,9 +5077,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Apply best point …</value>
   </data>
   <data name="OPT_BTN_CSV" xml:space="preserve">
     <value>Grid as CSV …</value>
@@ -5167,9 +5122,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
     <value>whole year</value>
-  </data>
-  <data name="OPT_BETRIEB_CHK_JAHR" xml:space="preserve">
-    <value>Whole year</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Grid draw without storage</value>
@@ -5233,15 +5185,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_SP_EINHEIT" xml:space="preserve">
     <value>Unit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
-    <value>Sizing of the best point</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
-    <value>Economics</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
-    <value>Storage and energy</value>
   </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nominal capacity C_nom</value>
@@ -16538,9 +16481,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Non-monetary effects: {0}</value>
   </data>
-  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
-    <value>The inputs have changed. The displayed result is out of date; please calculate again.</value>
-  </data>
   <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
     <value>No schedule solver is available on this platform; planning operating targets are disabled.</value>
   </data>
@@ -17384,42 +17324,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
     <value>Unnamed storage unit</value>
   </data>
-  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
-    <value>Search space</value>
-  </data>
-  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
-    <value>Size axis:</value>
-  </data>
-  <data name="FLOTTE_AUS_VON" xml:space="preserve">
-    <value>From:</value>
-  </data>
-  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
-    <value>To:</value>
-  </data>
-  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
-    <value>Step size (empty = number of points):</value>
-  </data>
-  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
-    <value>Points:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
-    <value>C rate from:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
-    <value>C rate to:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
-    <value>C rate step:</value>
-  </data>
-  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
-    <value>Operating strategy:</value>
-  </data>
-  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
-    <value>Fine grid</value>
-  </data>
-  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
-    <value>Take wear cost into account</value>
-  </data>
   <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
     <value>Time series</value>
   </data>
@@ -17822,15 +17726,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
     <value>← back</value>
   </data>
-  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
-    <value>Fleet</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
-    <value>Single storage</value>
-  </data>
   <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
     <value>Design workflow</value>
   </data>
@@ -17839,9 +17734,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
     <value>1 Storage</value>
-  </data>
-  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
-    <value>1 Storage parameters</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
     <value>2 Data &amp; costs</value>
@@ -17853,13 +17745,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>5 Result</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Evaluate fleet</value>
+    <value>4 Evaluate</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
     <value>4 Optimise sizes</value>
-  </data>
-  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
-    <value>4 Optimise</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>The result step opens once a run has been computed.</value>
@@ -18184,5 +18073,14 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>The assistant cannot trigger buttons in this version yet.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_VERTEILUNG_EINE" xml:space="preserve">
+    <value>Allocation appears from two units upward: it distributes a charge or discharge request across several storages, and with one there is nothing to distribute.</value>
+  </data>
+  <data name="FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" xml:space="preserve">
+    <value>The demand charge values the highest annual grid power. It applies to the sizing study and is written to the project’s active storage variant at the same time — it is the same field the „Parameters“ tab maintains.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
+    <value>Transfer size to the project unit…</value>
   </data>
 </root>

@@ -16,7 +16,10 @@ namespace EPOS.UI.Tests.Seiten.Strom;
 /// Ablaufleiste. Jeder übernommene Prüffall muss deshalb erst auf sein Blatt gehen —
 /// und das soll er in EINER Zeile tun können, nicht über drei Suchen im Markup.</para>
 ///
-/// <para>Sie kennt nur Markup, keine Fachlogik: Schritte, Modus, Rechenknopf.</para>
+/// <para>Sie kennt nur Markup, keine Fachlogik: Schritte und Rechenknopf. <b>Den
+/// Modus-Umschalter gibt es seit #206 nicht mehr</b> (Anwenderentscheid SD‑E‑8): Die
+/// Ansicht rechnet immer die Flotte, ein Einzelspeicher ist eine Flotte mit einer
+/// Einheit.</para>
 /// </summary>
 internal static class Auslegungshilfe
 {
@@ -43,10 +46,6 @@ internal static class Auslegungshilfe
     /// <summary>Der Rechenknopf (Schritt 4).</summary>
     internal static IElement Rechenknopf(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Find("button.epos-ablaufleiste-rechnen");
-
-    /// <summary>Stellt den Modus-Umschalter um.</summary>
-    internal static void Modus(IRenderedComponent<StromspeicherAuslegungSeite> cut, AuslegungModus modus)
-        => cut.Find(".epos-ablaufleiste-modus select").Change(((int)modus).ToString());
 
     /// <summary>Ein Knopf der Seite mit genau diesem Beschriftungstext.</summary>
     internal static IElement Knopf(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
