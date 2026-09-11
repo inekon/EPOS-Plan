@@ -115,7 +115,6 @@ namespace WindowsFormsApplication1
                 Simulationslauf = Simulationslauf,
 
                 FlotteRechnen = FlotteRechnen,
-                EinzelRechnen = EinzelRechnen,
                 Abbrechen = Abbrechen,
 
                 EinstellungenSpeichern = EinstellungenSpeichern,
@@ -125,7 +124,6 @@ namespace WindowsFormsApplication1
 
                 AuslegungUebernehmen = AuslegungUebernehmen,
                 LeistungspreisSchreiben = LeistungspreisSchreiben,
-                Betriebsbild = Betriebsbild,
 
                 ProjektflotteAktiv = _ctrl.ProjektflotteAktiv,
                 ProjektflotteAktivieren = ProjektflotteAktivieren,
@@ -223,51 +221,6 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 return new SpeicherFlottenErgebnis { Meldung = ex.Message };
-            }
-            finally
-            {
-                Aufraeumen();
-            }
-        }
-
-        /// <summary>
-        /// Die Rastersuche des Einzelspeichers. Sie wirft nicht: Jeder Ausgang steht im
-        /// Ergebnis — eine unbehandelte Ausnahme aus einem <c>Task.Run</c>, auf das
-        /// niemand wartet, beendete unter dem WinForms-<c>BlazorWebView</c> den Prozess.
-        /// </summary>
-        private async Task<SpeicherOptimierungErgebnis> EinzelRechnen(
-            SpeicherOptimierungEingaben eingaben, Action<double?, string> melder)
-        {
-            if (_abbruch != null)
-                return new SpeicherOptimierungErgebnis
-                { Erfolg = false, Meldung = MyResource.Resource.FLOTTE_DLG_MSG_LAEUFT };
-
-            string meldung;
-            StromspeicherOptimierungVorbereitung vorbereitung = _ctrl.EinzelVorbereiten(eingaben, out meldung);
-            if (vorbereitung == null)
-                return new SpeicherOptimierungErgebnis { Erfolg = false, Meldung = meldung };
-            Nachziehen();
-
-            _abbruch = new CancellationTokenSource();
-            CancellationToken marke = _abbruch.Token;
-            IProgress<SpeicherOptimierungFortschritt> fortschritt =
-                new Progress<SpeicherOptimierungFortschritt>(
-                    f => melder(f != null ? f.Anteil : (double?)null, f != null ? f.Text : ""));
-
-            try
-            {
-                // Gerechnet wird der EINGEFRORENE Laufstand der Vorbereitung, nicht die
-                // Dialogkopie: Er traegt die wirklich verwendeten Kostensaetze.
-                return await Task.Run(
-                    () => _ctrl.EinzelRechnen(vorbereitung, vorbereitung.Eingaben, fortschritt, marke));
-            }
-            catch (Exception ex)
-            {
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message)
-                };
             }
             finally
             {
@@ -395,6 +348,11 @@ namespace WindowsFormsApplication1
             return new Rueckmeldung(true, string.Format(MyResource.Resource.OPT_CSV_GESCHRIEBEN, pfad));
         }
 
+        /// <summary>
+        /// Schreibt Kapazität und Leistung EINER Einheit in die Speicheranlage des
+        /// Projekts (Schritt 5 der Ansicht). <b>Er bleibt mit SD‑E‑8</b>: Ohne
+        /// aktivierte Projektflotte rechnet der Projektlauf die Einzelanlage (SD‑Q2).
+        /// </summary>
         private Rueckmeldung AuslegungUebernehmen(double kwh, double kw)
         {
             (bool Erfolg, string Text) antwort = _ctrl.AuslegungUebernehmen(kwh, kw);
@@ -408,17 +366,6 @@ namespace WindowsFormsApplication1
             // wenigstens in die Konsole und nicht ins Leere (Befund W11b-B-29).
             if (!antwort.Erfolg)
                 Console.WriteLine("Der Leistungspreis konnte nicht geschrieben werden: " + antwort.Text);
-        }
-
-        /// <summary>Zeichnet das Bild „Lastgang und Speicherbetrieb" neu — ohne Datenbank.</summary>
-        private SpeicherOptimierungBetriebsbild Betriebsbild(
-            bool ganzesJahr, IReadOnlyList<string> reihen, Diagrammbereich bereich)
-        {
-            ChartRenderer.Bildausschnitt ausschnitt = bereich == null
-                ? null
-                : new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis, bereich.YVon, bereich.YBis);
-
-            return _ctrl.Betriebsbild(ganzesJahr, reihen, ausschnitt);
         }
 
         private Task<string> ProjektflotteAktivieren(SpeicherFlottenErgebnis ergebnis)

@@ -228,7 +228,38 @@
     private KiMaskenanmeldung? _kiMaske;
 
     protected override void OnInitialized()
-        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER, () => Daten);
+        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER, () => Daten,
+                                             KiHaken());
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3) —
+    /// dieselbe Bauart wie im Heizkesseleditor: zeichnen, prüfen, speichern nach Modus.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Speichern = KiSpeichern
+    };
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (!EingabenPruefen())
+            return KiKern.KiErgebnis.Abgelehnt(_meldung);
+
+        KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
+            ? Ueberschreiben?.Invoke(Daten)
+            : Anlegen?.Invoke(Daten, Daten.Name);
+
+        if (ergebnis is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        await NachDemSchreiben(ergebnis);
+        return ergebnis.Ok
+            ? KiKern.KiErgebnis.Ok(ergebnis.Meldung, anzahl: 1)
+            : KiKern.KiErgebnis.Fehlgeschlagen(ergebnis.Meldung);
+    }
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();

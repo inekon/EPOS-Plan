@@ -3528,6 +3528,46 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > laufen noch über `KiDialogZugriff` und lehnen ab; iOS hat weiter keinen `Fragen`-Delegaten (`IProjektQuelle.KiAssistentGaben` leer, iU11).
 > Gate sept16 auf `24a8b71`: Kern 2 607, UI 3 661, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#210 (11.09.2026, `0697dd6`, Merge `99e5f3f`) — Speicherflotte im Projektlauf: zwei Einheiten bleiben zwei.** Anwenderbefund aus zwei
+> Bildschirmfotos: „Kennzahlen je Speicher" und die Reihenwahl der Diagramme führten EINE Einheit, ebenso der Eingabestand `@Aktuell` —
+> das Projekt hat zwei Speicheranlagen. **Ursache** (`SpeicherFlottenStudieCtrl.Vorbelegung`, vorher Z. 61–70): Die erste Flotte eines Projekts
+> entstand aus `StromspeicherSimCtrl.LeseParameter(projektId)`, und der liefert per Bauart EINEN Satz — die Anlagenzeile der aktiven
+> Speichervariante (AP9b), im Rückfall die kapazitätsgewichtete Summe. Für den Einzelspeicherlauf richtig, für die Flotte ein stiller Verlust;
+> weil der Projektlauf den gespeicherten Stand `@Projektflotte` rechnet, fehlte die zweite Anlage danach überall. Die zwei anderen Hypothesen
+> (Zusammenfall gleicher `AnlageId`/Namen; veraltetes Ergebnis ohne Banner) sind mit Tests ausgeschlossen. **Fix:** `StromspeicherSimCtrl.Speicheranlagen(int)`
+> (alle `SP_TYP`-Anlagen in Anlagenreihenfolge, `REF_SP_TYP` bleibt draußen) und `SpeicherFlottenStudieCtrl.EinheitenAusProjektanlagen` — je Anlage ein
+> eigener `LeseParameter(projektId, anlageId)`-Satz (Gerätedaten aus der Anlage, SoC-Band aus deren Variantenzeile), Name = Anlagenbezeichner, `AnlageId`
+> gesetzt, Rückfall auf den Sammelsatz nur ohne Anlagensatz; gespeicherte Stände werden nie überschrieben. Der Stromspeicher-Reiter zeigt je Einheit die
+> Spalte **„Herkunft"** („Projektanlage ‹Id›" oder „nur im Eingabestand"). 6 Kern-Fälle (`SpeicherFlottenAnlagenEinheitenTests`, drei davon vor dem Fix
+> rot) und 4 bunit-Fälle. **Offen (#210‑O‑1, Anwenderentscheid):** Das Schema unterscheidet eine gleichzeitig betriebene Anlage nicht von einer
+> Vergleichsalternative — beides ist eine `SP_TYP`-Zeile; der Fix nimmt alle als Einheiten (sichtbarer statt stiller Fehler, überzählige löscht der
+> Anwender in Schritt 1). Die Referenzprojekte 1007/1046 führen je vier `SP_TYP`-Anlagen und bekämen beim ersten Öffnen der Auslegung vier
+> Vorbelegungs-Einheiten; regressionsrelevant ist das nicht (1046 rechnet seinen Stand `@Projektflotte`). Gate sept17 auf `99e5f3f`: Kern 2 613, UI 3 665,
+> Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7 (Agent: 13/13).
+>
+> **#206 (11.09.2026, `8a382b6` + `7cecc6e`, Merge `4fcb6a1`) — Stromspeicher-Auslegung, Paket P5: ein Modus statt zwei (Anwenderentscheid
+> SD‑E‑8: „Es ist nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen … die bisherigen Berechnungsarten für
+> Einzelspeicher sind nicht mehr nötig").** Der Modus-Umschalter und `AuslegungModus` sind gefallen; die Ansicht `STROMSPEICHER_AUSLEGUNG`
+> rechnet immer die Flotte. **Ein Einzelspeicher ist eine Flotte mit einer Einheit:** Ohne gespeicherten Stand belegt der Kern je
+> Speicheranlage des Projekts eine Einheit vor (Vorbelegung aus #210 — Kapazität, Leistungen, Wirkungsgrade und SoC-Band aus der Anlage,
+> Name = Anlagenbezeichner). Die fünf Betriebsziele, Peak-Ziel, Diagnose, Vorprüfung und Größen-Sicht gelten für jede Einheitenzahl; die
+> **Verteilung erscheint erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.VerteilungZeigen`, bei einer Einheit eine Erklärzeile).
+> Der **Leistungspreis** ist eine Eingabe in Schritt 2 (`LeistungspreisBlock`, derselbe Wert wie L_P des alten Einzelspeichers, mit Quelle);
+> **Rückschreiben in die Projektanlage** (Kapazität/Leistung über `UebernehmeAuslegung`, mit Rückfrage) steht in Schritt 5 für die Einheit
+> mit Anlagenbezug — damit bekommt auch der klassische Projektlauf ohne aktivierte Flotte die optimierte Größe. Schritt 4 heißt „Bewerten".
+> **Gelöscht:** `EinzelspeicherSuchraum/-Betrieb/-Ergebnis.razor` und der Einzel-Prüfstand (1 538 Z., 41 Fälle), der Suchraum-Teil des
+> `SpeicherAuslegungEditor`, `EinzelVorbereiten`/`EinzelRechnen`/`Betriebsbild`/`RasterCsv` in `StromspeicherAuslegungCtrl` und Hülle
+> (nur, was keinen Aufrufer mehr hatte). **Geblieben mit Grund:** `SpeicherOptimierer`/`OptimiererStrategie`/`SpeicherOptimierungCtrl` — Aufrufer
+> sind die KI-Aktion `speicher_optimieren` (`StromspeicherSimCtrl:688`), `SpeicherAuslegungCtrl.Vorbelegung` und das Bericht-`SpeicherBetriebsbild`;
+> `Strategien()` hat nur noch einen Testaufrufer. Ressourcen −38 (17 der Ansicht, 21 verwaiste `OPT_*`), +3, 5 894 Schlüssel je Sprache.
+> 18 neue bunit-Fälle (Wache „kein `AuslegungModus` in EPOS.UI"), 2 Kern-Fälle gegen Projekt 1017. **Wiki:** Bedienungsseite mit neuem Anker
+> `auslegung-anlage`, Rechenwegseite **Fassung 5** (Abschnitt `auslegung-kosten-zeitreihen` als Rechenweg des Einzelspeicher-Optimierers
+> gekennzeichnet — nicht mehr in der Ansicht, weiter im Bericht und Assistenten), Wächter nachgezogen; Upload durch die Orchestrierung.
+> **Offen:** Der zweite Wirt des Betriebseditors (`StromspeicherReiter`) zeigt die Verteilung weiter auch bei einer Einheit (Anwenderfrage);
+> Stufenplan-Zeile „Feinraster" heißt jetzt P6; Windows-Abnahme steht aus. SD‑Q1 revidiert, SD‑Q2 bleibt (Projektlaufpfade unverändert).
+> Gate sept18 auf `4fcb6a1`: Kern 2 615, UI 3 638, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

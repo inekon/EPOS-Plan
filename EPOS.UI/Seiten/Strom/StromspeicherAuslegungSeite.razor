@@ -15,16 +15,33 @@
    Rollbalken. Geblieben sind DREI Ueberlagerungen — die CSV-Spaltenzuordnung, die
    Prognosentabelle und die Rueckfrage beim Verlassen.
 
-   EINE ANSICHT, ZWEI MODI (Anwenderentscheid SD-Q1). „Flotte" und
-   „Einzelspeicher" teilen Kopf, Ablaufleiste, Daten- und Kostenblatt; RECHNERISCH
-   bleiben die Pfade getrennt (SD-Q2) — der Einzelpfad ist der regressionsgepruefte
-   (zwoelf Referenzprojekte), der Flottenpfad laeuft gegen Projekt 1046. Mit ihr
-   fallen die zwei Dialoge SpeicherFlottenDialog und SpeicherOptimierungDialog
-   (Regel iZ5: nie zwei Fassungen derselben Maske).
+   EIN WEG, KEINE ZWEI MODI (Anwenderentscheid SD-E-8 vom 11.09.2026): „Es ist
+   nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen.
+   Fuer Einzelspeicher sollen auch die Betriebsziele waehlbar sein — die bisherigen
+   Berechnungsarten fuer Einzelspeicher sind nicht mehr noetig." Bis #206 stand hier
+   ein Modus-Umschalter, und der „Einzelspeicher" fuhr eine eigene Rastersuche mit
+   drei eigenen Blaettern und drei eigenen Berechnungsarten (Dauernutzung,
+   Nachtnutzung, Lastspitzenkappung). Seither rechnet die Ansicht IMMER die Flotte:
+   Ein Einzelspeicher ist eine Flotte mit genau EINER Einheit — so bildet die
+   Spezifikation (1.2, Kapitel 11) eine vorhandene Anlage ohnehin ab, und die
+   Vorbelegung des Kerns legt seit #210 je Speicheranlage des Projekts eine Einheit
+   an —, und die fuenf
+   Betriebsziele, das Peak-Ziel, die Diagnose und die Groessen-Sicht gelten fuer jede
+   Einheitenzahl. Die VERTEILUNG erscheint erst ab zwei Einheiten; bei einer wirkt sie
+   nicht, und ein Feld ohne Wirkung ist eine Behauptung.
+
+   WAS DER EINZELWEG HIERLIESS, BLEIBT: Die Groesse EINER Einheit laesst sich in
+   Schritt 5 in die Speicheranlage des Projekts zurueckschreiben, und der
+   Leistungspreis L_P steht in Schritt 2 — EINE Eingabe, dieselbe fuer die Flotte
+   (FlottenTarif.LeistungspreisEuroProKw) und fuer die Projektvariante. Der Grund ist
+   SD-Q2: Der Projektlauf fuehrt weiter zwei Pfade, und ohne aktivierte Projektflotte
+   rechnet er die Einzelanlage — die ausgelegte Groesse kaeme dort sonst nie an.
+   Der Einzelspeicher-OPTIMIERER selbst ist nicht geloescht: Er traegt weiter das
+   Betriebsbild des Berichts und die KI-Aktion „speicher_optimieren".
 
    DER ABLAUF IST SICHTBAR. Fuenf Schritte statt vier Reiter: 1 Speicher ·
    2 Daten & Kosten · 3 Betriebsfuehrung · 4 Berechnen · 5 Ergebnis. Schritt 4 ist
-   ein KNOPF und heisst nach dem, was er tut („Flotte bewerten" ohne, „Groessen
+   ein KNOPF und heisst nach dem, was er tut („Bewerten" ohne, „Groessen
    optimieren" mit dem Suchlauf-Schalter). Schritt 5 ist erst nach einem Lauf
    betretbar, und eine Eingabeaenderung markiert ihn als veraltet.
 
@@ -93,20 +110,14 @@
     <Ablaufleiste Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
                   Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
                   RechnenText="@RechnenText" RechnenFrei="@RechnenFrei" Rechnen="Starten"
-                  Bezeichnung="@AblaufText" VeraltetText="@VeraltetText">
-        <Modusknopf>
-            <Auswahlfeld Bezeichnung="@ModusText" Eintraege="@Modi" Auswahl="@((int)_modus)"
-                         Aktiv="@(!_laeuft)" AuswahlChanged="ModusGewaehlt" />
-        </Modusknopf>
-    </Ablaufleiste>
+                  Bezeichnung="@AblaufText" VeraltetText="@VeraltetText" />
 
     @if (Eingabefehler.Length > 0)
     {
         @* DER EINGABEFEHLER SPERRT (anders als die Vorpruefung darueber): Ein SoC-Band,
            das nicht zusammenpasst, oder eine Projektlaufzeit von 0 Jahren machen den
-           Lauf nicht schlechter, sondern unmoeglich. Bei der Flotte wird er LAUFEND
-           gerechnet — so hielt es der abgeloeste Dialog —, beim Einzelspeicher beim
-           Start (SpeicherOptimierungCtrl.Pruefe). *@
+           Lauf nicht schlechter, sondern unmoeglich. Er wird LAUFEND gerechnet — so
+           hielt es der abgeloeste Dialog. *@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@Eingabefehler" />
     }
 
@@ -141,35 +152,40 @@
     <div class="epos-spauslegung-blatt">
         @if (_schritt == AuslegungSchritt.Speicher)
         {
-            @if (_modus == AuslegungModus.Flotte)
-            {
-                <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
-                                       BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
-                <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN"
-                          Wert="@Auslegung.FlottenGroessenOptimieren" Aktiv="@(!_laeuft)"
-                          WertChanged="SuchlaufSetzen" />
-            }
-            else
-            {
-                <EinzelspeicherSuchraum Wert="@_eingaben" Geaendert="Geaendert" Aktiv="@(!_laeuft)"
-                                        AktuelleAuslegung="@_vorgaben.AktuelleAuslegung" />
-            }
+            @* EINE Einheitenliste fuer jede Einheitenzahl (SD-E-8). Die Vorbelegung
+               macht der KERN (SpeicherFlottenStudieCtrl.Vorbelegung) und nicht diese
+               Seite: Seit #210 entsteht je SP_TYP-Anlage des Projekts EINE Einheit —
+               Kapazitaet, Lade- und Entladeleistung, die zwei Wirkungsgrade und das
+               SoC-Band aus StromspeicherSimCtrl.LeseParameter(projekt, anlage), Name
+               und AnlageId aus der Anlagenzeile. Ein Projekt mit EINER Speicheranlage
+               bekommt damit genau eine Einheit — das ist der Einzelspeicher. *@
+            <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
+                                   BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
+            <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN"
+                      Wert="@Auslegung.FlottenGroessenOptimieren" Aktiv="@(!_laeuft)"
+                      WertChanged="SuchlaufSetzen" />
         }
         else if (_schritt == AuslegungSchritt.Daten)
         {
-            @if (_modus == AuslegungModus.Flotte)
-            {
-                <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_KOSTENSAETZE</p>
-            }
+            <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_KOSTENSAETZE</p>
             <SpeicherAuslegungEditor Wert="@_eingaben" WertChanged="EingabenGeaendert" Aktiv="@(!_laeuft)"
-                                     NurQuellenKostenProfile="@(_modus == AuslegungModus.Flotte)"
                                      Auslegungsprofile="@_vorgaben.Auslegungsprofile"
                                      Strompreisprofile="@_vorgaben.Strompreisprofile"
                                      Modulkosten="@_vorgaben.Modulkosten"
                                      EinstellungenSpeichern="@SpeicherWeg"
                                      ProfilSpeichern="@ProfilWeg"
                                      DateiWaehlen="@Dienste?.DateiWaehlen" />
-            @if (_modus == AuslegungModus.Flotte && Dienste?.DateiWaehlen is not null)
+
+            @* DER LEISTUNGSPREIS steht seit SD-E-8 HIER und nicht mehr im gefallenen
+               Blatt „Einzelspeicher-Betrieb": Er ist ein KOSTENSATZ und gehoert zu
+               Schritt 2, und es ist DERSELBE Wert wie der Leistungspreis der Flotte —
+               eine Eingabe, keine zweite. *@
+            <LeistungspreisBlock Wert="@_eingaben.LeistungspreisEurProKwA" Aktiv="@(!_laeuft)"
+                                 Quellen="@Leistungspreisquellen"
+                                 Schreibbar="@(Dienste?.LeistungspreisSchreiben is not null)"
+                                 Gewaehlt="LeistungspreisGesetzt" />
+
+            @if (Dienste?.DateiWaehlen is not null)
             {
                 <button type="button" class="epos-knopf" disabled="@_laeuft"
                         @onclick="PrognosenOeffnen">@PrognosenText</button>
@@ -177,110 +193,99 @@
         }
         else if (_schritt == AuslegungSchritt.Betrieb)
         {
-            @if (_modus == AuslegungModus.Flotte)
-            {
-                <PeakZielBlock Wert="@Flotte.Optionen" WertChanged="BetriebsoptionenGeaendert"
-                               Aktiv="@(!_laeuft)" PlanerVerfuegbar="@PlanerVerfuegbar"
-                               Vorschlag="@_peakVorschlag"
-                               VorschlagUebernehmen="@(_peakVorschlag is null ? default : EventCallback.Factory.Create(this, PeakVorschlagUebernehmen))"
-                               Bestimmen="@(Dienste?.PeakZielBestimmen is null ? default : EventCallback.Factory.Create(this, PeakZielBestimmen))"
-                               Verweigert="@(EventCallback.Factory.Create(this, PeakZielVerweigert))"
-                               VorschlagText="@Resource.FLOTTE_PEAK_BTN_VORSCHLAG"
-                               BestimmenText="@Resource.FLOTTE_PEAK_BTN_BESTIMMEN"
-                               GesperrtText="@Resource.FLOTTE_PEAK_GESPERRT"
-                               NetzladungErlaubtText="@Resource.FLOTTE_PEAK_NETZLADUNG_JA"
-                               NetzladungVerbotenText="@Resource.FLOTTE_PEAK_NETZLADUNG_NEIN" />
-            }
-            else
-            {
-                <EinzelspeicherBetrieb Wert="@_eingaben" Geaendert="Geaendert" Aktiv="@(!_laeuft)"
-                                       Quellen="@Leistungspreisquellen"
-                                       LeistungspreisSchreiben="@(Dienste?.LeistungspreisSchreiben is null ? default
-                                           : EventCallback.Factory.Create<double>(this, Dienste.LeistungspreisSchreiben))" />
-            }
+            @* Die fuenf Betriebsziele gelten fuer JEDE Einheitenzahl (SD-E-8); die
+               VERTEILUNG erst ab zwei Einheiten — sie verteilt eine Anforderung auf
+               mehrere Speicher, und bei einem gibt es nichts zu verteilen. *@
+            <PeakZielBlock Wert="@Flotte.Optionen" WertChanged="BetriebsoptionenGeaendert"
+                           Aktiv="@(!_laeuft)" PlanerVerfuegbar="@PlanerVerfuegbar"
+                           VerteilungZeigen="@(Flotte.Einheiten.Count >= 2)"
+                           Vorschlag="@_peakVorschlag"
+                           VorschlagUebernehmen="@(_peakVorschlag is null ? default : EventCallback.Factory.Create(this, PeakVorschlagUebernehmen))"
+                           Bestimmen="@(Dienste?.PeakZielBestimmen is null ? default : EventCallback.Factory.Create(this, PeakZielBestimmen))"
+                           Verweigert="@(EventCallback.Factory.Create(this, PeakZielVerweigert))"
+                           VorschlagText="@Resource.FLOTTE_PEAK_BTN_VORSCHLAG"
+                           BestimmenText="@Resource.FLOTTE_PEAK_BTN_BESTIMMEN"
+                           GesperrtText="@Resource.FLOTTE_PEAK_GESPERRT"
+                           NetzladungErlaubtText="@Resource.FLOTTE_PEAK_NETZLADUNG_JA"
+                           NetzladungVerbotenText="@Resource.FLOTTE_PEAK_NETZLADUNG_NEIN" />
         }
         else if (_schritt == AuslegungSchritt.Ergebnis)
         {
-            @if (_modus == AuslegungModus.Flotte)
+            @if (_flottenErgebnis is null)
             {
-                @if (_flottenErgebnis is null)
-                {
-                    <p>@Resource.FLOTTE_DLG_KEIN_VERGLEICH</p>
-                }
-                else
-                {
-                    @* DAS DIAGNOSEBANNER STEHT UEBER DEN KACHELN (Konzept 2.2 Punkt 2):
-                       Wer die Kacheln liest, bevor er weiss, dass die Flotte nichts
-                       getan hat, liest zwoelf Nullen als Ergebnis. *@
-                    <FlottenDiagnosebanner Diagnose="@_flottenErgebnis.Studie?.Variante?.Diagnose"
-                                           Hinweise="@_flottenErgebnis.Pruefhinweise"
-                                           NetzladungSchonErlaubt="@Flotte.Optionen.NetzladungErlaubt"
-                                           Gesperrt="@_laeuft"
-                                           PeakZielBestimmen="@(Dienste?.PeakZielBestimmen is null ? default
-                                               : EventCallback.Factory.Create(this, PeakZielBestimmen))"
-                                           NetzladungErlauben="@(EventCallback.Factory.Create(this, NetzladungErlauben))"
-                                           ZurBetriebsfuehrung="@(EventCallback.Factory.Create(this, ZurBetriebsfuehrung))"
-                                           ArbeitslosText="@ArbeitslosText" HinweiseText="@HinweiseText"
-                                           Hilfeschluessel="@HilfeSchluessel" Dialogname="@TitelText"
-                                           PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
-                                           BetriebsfuehrungText="@ZuBetriebText" />
-
-                    @* DIE GROESSEN-SICHT (Paket P4 / #193, eingebunden mit #196) steht
-                       VOR der Ergebnisansicht, weil Konzept 2.5 sie dort verlangt: Erst
-                       die Frage „welche GROESSE traegt sich?", dann die Auswertung der
-                       einen gerechneten Flotte. Bedingung ist das RASTERSUCHERGEBNIS und
-                       nicht der Schalter „Groessen optimieren": Der Schalter sagt, was
-                       der NAECHSTE Lauf tut — abgeschaltet nach einem Suchlauf verschwaende
-                       er die Karte, die gerade entstanden ist. Seit #196 traegt DIESER
-                       Baustein die Kandidatentabelle; die einfache Texttabelle in der
-                       Ergebnisansicht ist damit gefallen (keine zwei Tabellen). *@
-                    @if (_flottenErgebnis.Auslegung is not null)
-                    {
-                        <SpeicherFlottenGroessenAnsicht Ergebnis="@_flottenErgebnis.Auslegung"
-                                                        Einheiten="@Einheitenzahl"
-                                                        KandidatUebernehmen="@(EventCallback.Factory
-                                                            .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
-                                                        Csv="@(Dienste?.Csv is null ? default
-                                                               : EventCallback.Factory.Create(this, KandidatenCsv))" />
-                    }
-
-                    <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
-                                                    Csv="@(Dienste?.Csv is null ? default
-                                                           : EventCallback.Factory.Create<string>(this, CsvSchreiben))"
-                                                    BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
-
-                    <div class="epos-simerg-fuss">
-                        @if (Dienste?.ProjektflotteAktivieren is not null
-                             && _flottenErgebnis.Studie?.Variante.Zulaessig == true
-                             && _flottenErgebnis.Konfiguration.Einheiten.Count > 0)
-                        {
-                            <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
-                                    @onclick="ProjektflotteUebernehmen">@Resource.FLOTTE_DLG_BTN_PROJEKT_AN</button>
-                        }
-                        @if (_flottenErgebnis.Auslegung?.BesteKonfiguration is not null
-                             && !_flottenErgebnis.Auslegung.NullvarianteGewonnen)
-                        {
-                            <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
-                                    @onclick="BesteFlotteUebernehmen">@Resource.FLOTTE_DLG_BTN_BESTE</button>
-                        }
-                    </div>
-                }
+                <p>@Resource.FLOTTE_DLG_KEIN_VERGLEICH</p>
             }
             else
             {
-                @if (_einzelErgebnis is null)
+                @* DAS DIAGNOSEBANNER STEHT UEBER DEN KACHELN (Konzept 2.2 Punkt 2):
+                   Wer die Kacheln liest, bevor er weiss, dass die Flotte nichts
+                   getan hat, liest zwoelf Nullen als Ergebnis. *@
+                <FlottenDiagnosebanner Diagnose="@_flottenErgebnis.Studie?.Variante?.Diagnose"
+                                       Hinweise="@_flottenErgebnis.Pruefhinweise"
+                                       NetzladungSchonErlaubt="@Flotte.Optionen.NetzladungErlaubt"
+                                       Gesperrt="@_laeuft"
+                                       PeakZielBestimmen="@(Dienste?.PeakZielBestimmen is null ? default
+                                           : EventCallback.Factory.Create(this, PeakZielBestimmen))"
+                                       NetzladungErlauben="@(EventCallback.Factory.Create(this, NetzladungErlauben))"
+                                       ZurBetriebsfuehrung="@(EventCallback.Factory.Create(this, ZurBetriebsfuehrung))"
+                                       ArbeitslosText="@ArbeitslosText" HinweiseText="@HinweiseText"
+                                       Hilfeschluessel="@HilfeSchluessel" Dialogname="@TitelText"
+                                       PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
+                                       BetriebsfuehrungText="@ZuBetriebText" />
+
+                @* DIE GROESSEN-SICHT (Paket P4 / #193, eingebunden mit #196) steht
+                   VOR der Ergebnisansicht, weil Konzept 2.5 sie dort verlangt: Erst
+                   die Frage „welche GROESSE traegt sich?", dann die Auswertung der
+                   einen gerechneten Flotte. Bedingung ist das RASTERSUCHERGEBNIS und
+                   nicht der Schalter „Groessen optimieren": Der Schalter sagt, was
+                   der NAECHSTE Lauf tut — abgeschaltet nach einem Suchlauf verschwaende
+                   er die Karte, die gerade entstanden ist. Seit #196 traegt DIESER
+                   Baustein die Kandidatentabelle; die einfache Texttabelle in der
+                   Ergebnisansicht ist damit gefallen (keine zwei Tabellen). *@
+                @if (_flottenErgebnis.Auslegung is not null)
                 {
-                    <p>@Resource.OPT_MSG_KEIN_ERGEBNIS</p>
+                    <SpeicherFlottenGroessenAnsicht Ergebnis="@_flottenErgebnis.Auslegung"
+                                                    Einheiten="@Einheitenzahl"
+                                                    KandidatUebernehmen="@(EventCallback.Factory
+                                                        .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
+                                                    Csv="@(Dienste?.Csv is null ? default
+                                                           : EventCallback.Factory.Create(this, KandidatenCsv))" />
                 }
-                else
-                {
-                    <EinzelspeicherErgebnis Ergebnis="@_einzelErgebnis" Veraltet="@_veraltet" Gesperrt="@_laeuft"
-                                            Gelaufen="@_gelaufen" Betriebsbild="@Dienste?.Betriebsbild"
-                                            Uebernehmen="@(Dienste?.AuslegungUebernehmen is null ? default
-                                                : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, AuslegungUebernehmen))"
-                                            Csv="@(Dienste?.Csv is null ? default
-                                                   : EventCallback.Factory.Create<string>(this, CsvSchreiben))" />
-                }
+
+                <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
+                                                Csv="@(Dienste?.Csv is null ? default
+                                                       : EventCallback.Factory.Create<string>(this, CsvSchreiben))"
+                                                BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
+
+                <div class="epos-simerg-fuss">
+                    @if (Dienste?.ProjektflotteAktivieren is not null
+                         && _flottenErgebnis.Studie?.Variante.Zulaessig == true
+                         && _flottenErgebnis.Konfiguration.Einheiten.Count > 0)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
+                                @onclick="ProjektflotteUebernehmen">@Resource.FLOTTE_DLG_BTN_PROJEKT_AN</button>
+                    }
+                    @if (_flottenErgebnis.Auslegung?.BesteKonfiguration is not null
+                         && !_flottenErgebnis.Auslegung.NullvarianteGewonnen)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
+                                @onclick="BesteFlotteUebernehmen">@Resource.FLOTTE_DLG_BTN_BESTE</button>
+                    }
+                    @* DIE GROESSE EINER EINHEIT ZURUECK IN DIE PROJEKTANLAGE (SD-E-8).
+                       Das konnte bis #206 nur der Modus „Einzelspeicher"; er ist
+                       gefallen, der Weg bleibt. Er greift nur bei EINER Einheit mit
+                       Anlagenbezug — bei zweien waere nicht zu sagen, welche die Anlage
+                       des Projekts ist, und die Anlage traegt genau EINE Kapazitaet und
+                       EINE Leistung. Geschrieben wird der ARBEITSSTAND aus Schritt 1:
+                       Er traegt, was „Kandidat uebernehmen" und „Beste Flotte
+                       uebernehmen" dort abgelegt haben, und die Rueckfrage nennt beide
+                       Zahlen. *@
+                    @if (Dienste?.AuslegungUebernehmen is not null && Anlageneinheit is not null)
+                    {
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="AnlageUebernehmenFragen">@AnlageBtnText</button>
+                    }
+                </div>
             }
         }
     </div>
@@ -366,6 +371,12 @@
     @* Die Rueckfrage nach dem bestimmten Peak-Ziel (SD-Q3). *@
     <Rueckfrage Offen="@(_peakErgebnis is not null)" TitelText="@PeakTitelText" Frage="@PeakFrageText"
                 Beantwortet="PeakBeantwortet" />
+
+    @* Die Rueckfrage vor dem Schreiben in die Projektanlage (SD-E-8) — woertlich die
+       des gefallenen Einzelspeicher-Ergebnisses: Sie nennt Kapazitaet und Leistung,
+       bevor geschrieben wird, denn danach ist die Simulation nicht mehr aktuell. *@
+    <Rueckfrage Offen="@_anlageFrage" TitelText="@TitelText" Frage="@_anlageFrageText"
+                Beantwortet="AnlageBeantwortet" />
 </div>
 
 @code {
@@ -398,19 +409,14 @@
     /// </summary>
     private static string TitelText => Resource.FLOTTE_SEITE_TITEL;
     private static string ZurueckText => Resource.FLOTTE_SEITE_ZURUECK;
-    private static string ModusText => Resource.FLOTTE_SEITE_MODUS;
-    private static string ModusFlotteText => Resource.FLOTTE_SEITE_MODUS_FLOTTE;
-    private static string ModusEinzelText => Resource.FLOTTE_SEITE_MODUS_EINZEL;
     private static string AblaufText => Resource.FLOTTE_SEITE_ABLAUF;
     private static string VeraltetText => Resource.FLOTTE_SEITE_VERALTET;
     private static string Schritt1Text => Resource.FLOTTE_SEITE_SCHRITT1;
-    private static string Schritt1EinzelText => Resource.FLOTTE_SEITE_SCHRITT1_EINZEL;
     private static string Schritt2Text => Resource.FLOTTE_SEITE_SCHRITT2;
     private static string Schritt3Text => Resource.FLOTTE_SEITE_SCHRITT3;
     private static string Schritt5Text => Resource.FLOTTE_SEITE_SCHRITT5;
     private static string RechnenFlotteText => Resource.FLOTTE_SEITE_BTN_FLOTTE;
     private static string RechnenGroessenText => Resource.FLOTTE_SEITE_BTN_GROESSEN;
-    private static string RechnenEinzelText => Resource.FLOTTE_SEITE_BTN_EINZEL;
     private static string ErgebnisGesperrtText => Resource.FLOTTE_SEITE_ERGEBNIS_GESPERRT;
     private static string KeinLaufText => Resource.FLOTTE_SEITE_KEIN_LAUF;
     private static string LaufStartenText => Resource.FLOTTE_SEITE_BTN_LAUF;
@@ -424,6 +430,14 @@
     private static string PeakTitelText => Resource.FLOTTE_PEAK_TITEL;
     private static string PeakFrageFormat => Resource.FLOTTE_PEAK_FRAGE;
     private static string PeakGesperrtText => Resource.FLOTTE_PEAK_GESPERRT;
+    private static string AnlageBtnText => Resource.FLOTTE_SEITE_BTN_ANLAGE;
+    /// <summary>
+    /// Der Wortlaut der Rückfrage vor dem Schreiben. <b>Es ist der Text des gefallenen
+    /// Einzelspeicher-Ergebnisses</b> — dieselbe Frage, dieselben zwei Zahlen, derselbe
+    /// Hinweis „Die Simulation wird dabei nicht neu gerechnet"; ein zweiter Schlüssel mit
+    /// derselben Aussage liefe beim ersten Umformulieren auseinander.
+    /// </summary>
+    private static string AnlageFrageFormat => Resource.OPT_MSG_UEBERNAHME_FRAGE;
     private static string KandidatTitelText => Resource.FLOTTE_SEITE_KANDIDAT_TITEL;
     private static string KandidatFrageText => Resource.FLOTTE_SEITE_KANDIDAT_FRAGE;
     private static string KandidatBannerFormat => Resource.FLOTTE_SEITE_KANDIDAT_BANNER;
@@ -439,20 +453,23 @@
     //  Zustand
     // =====================================================================
 
-    private AuslegungModus _modus = AuslegungModus.Flotte;
     private string _schritt = AuslegungSchritt.Speicher;
     private SpeicherOptimierungVorgaben _vorgaben = new();
     private SpeicherOptimierungEingaben _eingaben = new();
     private SpeicherFlottenErgebnis? _flottenErgebnis;
-    private SpeicherOptimierungErgebnis? _einzelErgebnis;
-    private OptimiererStrategie _gelaufen = OptimiererStrategie.Dauernutzung;
     private IReadOnlyList<FlottenHinweis> _vorpruefung = Array.Empty<FlottenHinweis>();
     private FlottenPeakZielVorschlag? _peakVorschlag;
     private FlottenPeakZielErgebnis? _peakErgebnis;
     private bool _laeuft, _veraltet, _projektAktiv, _ungespeichert, _prognosenOffen;
     private double? _anteil;
-    private string _fortschritt = "", _fehler = "", _meldung = "", _eingabefehler = "";
+    private string _fortschritt = "", _fehler = "", _meldung = "";
     private bool _meldungErfolg;
+
+    /// <summary>Steht die Rückfrage vor dem Schreiben in die Projektanlage? (SD‑E‑8)</summary>
+    private bool _anlageFrage;
+
+    /// <summary>Der Wortlaut dieser Rückfrage — sie nennt Kapazität und Leistung.</summary>
+    private string _anlageFrageText = "";
     private SpeicherImportDatei? _csvDatei;
     private bool _csvPrognosen;
     private bool _frageOffen;
@@ -467,17 +484,11 @@
     /// <summary>Der stehende Schritt (Prüfhilfe).</summary>
     public string Schritt => _schritt;
 
-    /// <summary>Der stehende Modus (Prüfhilfe).</summary>
-    public AuslegungModus Modus => _modus;
-
     /// <summary>Der Arbeitsstand (Prüfhilfe).</summary>
     public SpeicherOptimierungEingaben Eingaben => _eingaben;
 
     /// <summary>Das Ergebnis des letzten Flottenlaufs (Prüfhilfe).</summary>
     public SpeicherFlottenErgebnis? Flottenergebnis => _flottenErgebnis;
-
-    /// <summary>Das Ergebnis des letzten Rasterlaufs (Prüfhilfe).</summary>
-    public SpeicherOptimierungErgebnis? Einzelergebnis => _einzelErgebnis;
 
     /// <summary>Läuft gerade eine Rechnung? (Prüfhilfe)</summary>
     public bool Laeuft => _laeuft;
@@ -493,8 +504,29 @@
 
     private SpeicherAuslegungKonfiguration Auslegung => _eingaben.Auslegung ??= new();
     private FlottenStudieKonfiguration Flotte => Auslegung.Flotte ??= new();
-    private bool ErgebnisDa => _modus == AuslegungModus.Flotte ? _flottenErgebnis is not null
-                                                               : _einzelErgebnis is { Erfolg: true };
+    private bool ErgebnisDa => _flottenErgebnis is not null;
+
+    /// <summary>
+    /// Die EINE Einheit, die für die Speicheranlage des Projekts steht — <c>null</c>,
+    /// wenn es keine oder mehr als eine ist.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Anlagenbezug entscheidet</b> (<c>FlottenEinheit.AnlageId</c>): Ihn setzt die
+    /// Vorbelegung des Kerns, wenn die Einheit aus der aktiven Speichervariante entstanden
+    /// ist. Trägt keine Einheit einen Bezug und steht genau eine da, ist sie gemeint — der
+    /// Fall einer Flotte, die der Anwender von Hand angelegt hat. Bei zwei Einheiten gibt
+    /// es die Frage nicht: Die Projektanlage trägt eine Kapazität und eine Leistung.
+    /// </remarks>
+    private FlottenEinheit? Anlageneinheit
+    {
+        get
+        {
+            List<FlottenEinheit> einheiten = Flotte.Einheiten;
+            var mitBezug = einheiten.Where(e => !string.IsNullOrWhiteSpace(e.AnlageId)).ToList();
+            if (mitBezug.Count == 1) return mitBezug[0];
+            return mitBezug.Count == 0 && einheiten.Count == 1 ? einheiten[0] : null;
+        }
+    }
 
     private IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Leistungspreisquellen =>
         _vorgaben.Leistungspreisquellen ?? Array.Empty<SpeicherOptimierungLeistungspreisQuelle>();
@@ -507,20 +539,13 @@
     private Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>>? ProfilWeg
         => Dienste?.ProfilSpeichern is null ? null : ProfilSichern;
 
-    private IReadOnlyList<(int Id, string Text)> Modi => new[]
-    {
-        ((int)AuslegungModus.Flotte, ModusFlotteText),
-        ((int)AuslegungModus.Einzelspeicher, ModusEinzelText)
-    };
-
     // =====================================================================
     //  Die Ablaufleiste
     // =====================================================================
 
     private IReadOnlyList<Ablaufeintrag> Vorne => new[]
     {
-        new Ablaufeintrag(AuslegungSchritt.Speicher,
-            _modus == AuslegungModus.Flotte ? Schritt1Text : Schritt1EinzelText, true, false, ""),
+        new Ablaufeintrag(AuslegungSchritt.Speicher, Schritt1Text, true, false, ""),
         new Ablaufeintrag(AuslegungSchritt.Daten, Schritt2Text, true, false, ""),
         new Ablaufeintrag(AuslegungSchritt.Betrieb, Schritt3Text, true, false, "")
     };
@@ -530,28 +555,19 @@
         new Ablaufeintrag(AuslegungSchritt.Ergebnis, Schritt5Text, ErgebnisDa, _veraltet, ErgebnisGesperrtText)
     };
 
-    private string RechnenText => _modus == AuslegungModus.Einzelspeicher
-        ? RechnenEinzelText
-        : Auslegung.FlottenGroessenOptimieren ? RechnenGroessenText : RechnenFlotteText;
+    private string RechnenText =>
+        Auslegung.FlottenGroessenOptimieren ? RechnenGroessenText : RechnenFlotteText;
 
     private bool RechnenFrei => !_laeuft && Rechendelegat is not null && Eingabefehler.Length == 0;
 
-    /// <summary>
-    /// Der Eingabefehler, der den Lauf SPERRT. Bei der Flotte laufend gerechnet, beim
-    /// Einzelspeicher erst beim Start gesetzt.
-    /// </summary>
-    private string Eingabefehler => _modus == AuslegungModus.Flotte
-        ? FlotteEingabenPruefen()
-        : _eingabefehler;
+    /// <summary>Der Eingabefehler, der den Lauf SPERRT — laufend gerechnet.</summary>
+    private string Eingabefehler => FlotteEingabenPruefen();
 
-    private object? Rechendelegat => _modus == AuslegungModus.Flotte
-        ? (object?)Dienste?.FlotteRechnen
-        : Dienste?.EinzelRechnen;
+    private object? Rechendelegat => Dienste?.FlotteRechnen;
 
     private void SchrittGewaehlt(string schluessel)
     {
         _schritt = schluessel;
-        _eingabefehler = "";
         if (schluessel == AuslegungSchritt.Betrieb) PeakVorschlagHolen();
     }
 
@@ -559,20 +575,6 @@
     {
         if (schluessel == AuslegungSchritt.Ergebnis) _meldungErfolg = false;
         _meldung = ErgebnisGesperrtText;
-    }
-
-    private void ModusGewaehlt(int? wert)
-    {
-        if (!wert.HasValue || _laeuft) return;
-        _modus = wert.Value == (int)AuslegungModus.Einzelspeicher
-            ? AuslegungModus.Einzelspeicher : AuslegungModus.Flotte;
-
-        // Die zwei Pfade rechnen getrennt (SD-Q2): Ein Ergebnis des einen sagt ueber
-        // den anderen nichts, und der Ergebnisschritt bleibt deshalb zu, bis dieser
-        // Modus selbst gerechnet hat.
-        if (_schritt == AuslegungSchritt.Ergebnis && !ErgebnisDa) _schritt = AuslegungSchritt.Speicher;
-        _meldung = "";
-        _fehler = "";
     }
 
     // =====================================================================
@@ -598,7 +600,84 @@
         _kiSicht = new StromspeicherKiSicht(() => _eingaben, () => _flottenErgebnis,
                                             () => _vorpruefung);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
-                                          () => _kiSicht);
+                                          () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3):
+    /// zeichnen, die Vorprüfung, der Speicherweg — und als einzige Maske ZWEI
+    /// Rechenwege.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Der Schlüssel eines Rechenwegs ist der AKTIONSNAME</b> und kein eigener
+    /// Katalog: <c>flotte_bewerten</c> ist der Knopf „Berechnen", <c>peak_ziel_bestimmen</c>
+    /// der Knopf „Peak-Ziel bestimmen…". Beide laufen DENSELBEN Weg wie der Knopf — mit
+    /// derselben Vorprüfung, demselben Fortschritt und demselben Abbruch —, damit der
+    /// Assistent nicht etwas anderes rechnet als die Ansicht daneben.</para>
+    /// <para><b>Das Ergebnis steht danach IN DER ANSICHT</b>, nicht nur im Chat: Die
+    /// gerufenen Methoden setzen ihre Stände (<c>_flottenErgebnis</c>, <c>_peakErgebnis</c>)
+    /// wie nach dem Knopfdruck; der Chat bekommt nur die Kurzfassung.</para>
+    /// <para><b>Das Peak-Ziel wird NICHT von selbst übernommen.</b> Der Knopfweg legt das
+    /// Ergebnis in eine Rückfrage („soll der Wert übernommen werden?"), und dabei bleibt
+    /// es — eine Rechnung ist kein Setzen. Wer den Wert will, bestätigt die Rückfrage
+    /// oder lässt ihn mit <c>feld_setzen</c> eintragen.</para>
+    /// <para><b>Seit #206 gibt es nur noch EINEN Weg zu rechnen</b> (Anwenderentscheid
+    /// SD‑E‑8: ein Einzelspeicher ist eine Flotte mit einer Einheit). <c>Starten()</c> ist
+    /// seither die dünne Weiche auf <c>FlotteStarten()</c>, und genau sie ruft auch der
+    /// Knopf „Berechnen" — der Assistent geht damit denselben Weg, ohne dass hier eine
+    /// Betriebsart zu unterscheiden wäre.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken()
+        => new KiMaskenhaken
+           {
+               Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+               Pruefen = KiVorpruefung,
+               Speichern = KiSpeichern
+           }
+           .Rechenweg("flotte_bewerten", KiBewerten)
+           .Rechenweg("peak_ziel_bestimmen", KiPeakZiel);
+
+    private string KiVorpruefung() => Eingabefehler;
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (Dienste?.EinstellungenSpeichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
+
+        string fehler = await EinstellungenSichern(_eingaben);
+        return fehler.Length == 0
+            ? KiKern.KiErgebnis.Ok(Resource.KI_AKTION_SIM_FERTIG, anzahl: 1)
+            : KiKern.KiErgebnis.Fehlgeschlagen(fehler);
+    }
+
+    private async Task<KiKern.KiErgebnis> KiBewerten(KiKern.KiLaufumgebung umgebung)
+    {
+        if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
+        if (!RechnenFrei) return KiKern.KiErgebnis.Abgelehnt(Eingabefehler);
+
+        await Starten();
+        await InvokeAsync(StateHasChanged);
+
+        if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
+
+        return KiKern.KiErgebnis.Ok(
+            string.Format(Kultur, Resource.KI_AKTION_FLOTTE_LAEUFT), anzahl: 1);
+    }
+
+    private async Task<KiKern.KiErgebnis> KiPeakZiel(KiKern.KiLaufumgebung umgebung)
+    {
+        if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
+        if (Dienste?.PeakZielBestimmen is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE);
+
+        await PeakZielBestimmen();
+        await InvokeAsync(StateHasChanged);
+
+        if (_fehler.Length > 0) return KiKern.KiErgebnis.Fehlgeschlagen(_fehler);
+        if (_peakErgebnis is null)
+            return KiKern.KiErgebnis.Fehlgeschlagen(Resource.OPT_MSG_KEIN_ERGEBNIS);
+
+        return KiKern.KiErgebnis.Ok(PeakFrageText, anzahl: 1);
     }
 
     /// <summary>
@@ -677,7 +756,7 @@
     /// <summary>Die Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.</summary>
     private void Vorpruefen()
     {
-        if (_modus != AuslegungModus.Flotte || Dienste?.Vorpruefen is null)
+        if (Dienste?.Vorpruefen is null)
         {
             _vorpruefung = Array.Empty<FlottenHinweis>();
             return;
@@ -688,7 +767,7 @@
 
     private void PeakVorschlagHolen()
     {
-        if (_modus != AuslegungModus.Flotte || Dienste?.PeakZielVorschlag is null) { _peakVorschlag = null; return; }
+        if (Dienste?.PeakZielVorschlag is null) { _peakVorschlag = null; return; }
         try { _peakVorschlag = Dienste.PeakZielVorschlag(_eingaben); }
         catch (Exception) { _peakVorschlag = null; }
     }
@@ -757,11 +836,8 @@
     private async Task Starten()
     {
         if (_laeuft) return;
-        _eingabefehler = "";
         _meldung = "";
-
-        if (_modus == AuslegungModus.Flotte) await FlotteStarten();
-        else await EinzelStarten();
+        await FlotteStarten();
     }
 
     private async Task FlotteStarten()
@@ -781,43 +857,6 @@
             else
             {
                 _flottenErgebnis = e;
-                _veraltet = false;
-                _ungespeichert = false;
-                _schritt = AuslegungSchritt.Ergebnis;
-            }
-        }
-        catch (Exception ex) { _fehler = ex.Message; }
-        finally { _laeuft = false; }
-    }
-
-    private async Task EinzelStarten()
-    {
-        if (Dienste?.EinzelRechnen is null) return;
-
-        IReadOnlyList<string> maengel = SpeicherOptimierungCtrl.Pruefe(_eingaben);
-        if (maengel.Count > 0)
-        {
-            // Eingabefehler SPERREN den Rasterlauf - er beginnt gar nicht erst.
-            _eingabefehler = string.Join(Environment.NewLine, maengel);
-            _einzelErgebnis = null;
-            return;
-        }
-
-        _laeuft = true; _fehler = ""; _anteil = 0.0;
-        _fortschritt = string.Format(Kultur, Resource.OPT_STATUS_PUNKT, 0,
-            SpeicherOptimierungCtrl.Punktzahl(_eingaben));
-        try
-        {
-            SpeicherOptimierungErgebnis antwort = await Dienste.EinzelRechnen(_eingaben.Kopie(), Melden);
-            if (antwort is null || !antwort.Erfolg)
-            {
-                _einzelErgebnis = null;
-                _fehler = antwort?.Meldung ?? Resource.OPT_MSG_KEIN_ERGEBNIS;
-            }
-            else
-            {
-                _einzelErgebnis = antwort;
-                _gelaufen = _eingaben.Strategie;
                 _veraltet = false;
                 _ungespeichert = false;
                 _schritt = AuslegungSchritt.Ergebnis;
@@ -1096,12 +1135,65 @@
         => _flottenErgebnis is null ? Task.CompletedTask
             : CsvSchreiben(SpeicherFlottenAnzeigeCtrl.VergleichCsv(_flottenErgebnis));
 
-    private void AuslegungUebernehmen((double Kwh, double Kw) auslegung)
+    // =====================================================================
+    //  Die Groesse EINER Einheit zurueck in die Projektanlage (SD-E-8)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Leistung, die in die Projektanlage geht. <b>Die Anlage trägt EINEN Wert</b>
+    /// (<c>Tab_StromspeicherVariante.P</c>), die Einheit zwei; genommen wird die
+    /// größere — sie ist die Baugröße des Geräts, und die Vorbelegung des Kerns setzt
+    /// umgekehrt beide Richtungen auf dieselbe Zahl.
+    /// </summary>
+    private static double LeistungDerEinheit(FlottenEinheit einheit)
+        => Math.Max(einheit.LadeleistungKw, einheit.EntladeleistungKw);
+
+    /// <summary>Fragt, bevor geschrieben wird — die Rückfrage nennt beide Zahlen.</summary>
+    private void AnlageUebernehmenFragen()
     {
-        if (Dienste?.AuslegungUebernehmen is null) return;
-        Rueckmeldung antwort = Dienste.AuslegungUebernehmen(auslegung.Kwh, auslegung.Kw);
-        _meldungErfolg = antwort.Erfolg;
-        _meldung = antwort.Text ?? "";
+        if (_laeuft || Dienste?.AuslegungUebernehmen is null) return;
+        if (Anlageneinheit is not { } einheit) return;
+
+        _anlageFrageText = string.Format(Kultur, AnlageFrageFormat,
+            einheit.KapazitaetKWh.ToString("0.#", Kultur),
+            LeistungDerEinheit(einheit).ToString("0.#", Kultur));
+        _anlageFrage = true;
+    }
+
+    /// <summary>
+    /// Schreibt Kapazität und Leistung in die Speicheranlage des Projekts.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein automatisches Nachrechnen</b> — wörtlich wie im gefallenen
+    /// Einzelspeicher-Ergebnis: Die Simulation ist danach nicht mehr aktuell, und der
+    /// Anwender entscheidet selbst, wann er den Lauf wiederholt.
+    /// </remarks>
+    private void AnlageBeantwortet(bool? antwort)
+    {
+        _anlageFrage = false;
+        if (antwort != true || Dienste?.AuslegungUebernehmen is null) return;
+        if (Anlageneinheit is not { } einheit) return;
+
+        Rueckmeldung rueck = Dienste.AuslegungUebernehmen(
+            einheit.KapazitaetKWh, LeistungDerEinheit(einheit));
+        _meldungErfolg = rueck.Erfolg;
+        _meldung = rueck.Text ?? "";
+    }
+
+    /// <summary>
+    /// Der Leistungspreis L_P wurde in Schritt 2 gesetzt (SD‑E‑8). <b>Er steht an zwei
+    /// Stellen desselben Arbeitsstandes</b> — im Suchraum (<c>LeistungspreisEurProKwA</c>,
+    /// den der Bericht und der Assistent lesen) und im Flottentarif
+    /// (<c>Tarif.LeistungspreisEuroProKw</c>, mit dem die Flottenwirtschaftlichkeit
+    /// rechnet); geschrieben werden deshalb beide, aus EINER Eingabe. Der dritte Ort ist
+    /// die Projektvariante, und dorthin schreibt der Kern sofort (W11b‑E‑3).
+    /// </summary>
+    private void LeistungspreisGesetzt(double wert)
+    {
+        _eingaben.LeistungspreisEurProKwA = wert;
+        Flotte.Tarif.LeistungspreisEuroProKw = wert;
+        Geaendert();
+        Dienste?.LeistungspreisSchreiben?.Invoke(wert);
     }
 
     private async Task CsvSchreiben(string csv)

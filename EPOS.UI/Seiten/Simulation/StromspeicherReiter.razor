@@ -71,12 +71,17 @@
                 <SpeicherFlottenBetriebEditor Wert="@flotte.Optionen" WertChanged="FlottenbetriebGesetzt"
                                                Aktiv="@(!Gesperrt && !_flottenSpeichert && Dienste?.OptimierungEinstellungenSpeichern is not null)"
                                                PlanerVerfuegbar="@PlanerVerfuegbar" />
+                @* DIE HERKUNFT STEHT AN DER EINHEIT (#210). Der Name IST der
+                   Anlagenbezeichner; ohne Anlagenbezug ist die Einheit im Editor
+                   von Hand entstanden und gehoert keiner Projektanlage. Ein
+                   Anwender mit zwei Speichern sieht damit, welche Zeile woher
+                   kommt - und ob eine fehlt. *@
                 <table class="epos-tabelle">
-                    <thead><tr><th>Speicher</th><th>Kapazität kWh</th><th>Laden kW</th><th>Entladen kW</th></tr></thead>
+                    <thead><tr><th>Speicher</th><th>Herkunft</th><th>Kapazität kWh</th><th>Laden kW</th><th>Entladen kW</th></tr></thead>
                     <tbody>
                         @foreach (var einheit in flotte.Einheiten)
                         {
-                            <tr><td>@einheit.Name</td><td>@Zahl(einheit.KapazitaetKWh)</td><td>@Zahl(einheit.LadeleistungKw)</td><td>@Zahl(einheit.EntladeleistungKw)</td></tr>
+                            <tr><td>@einheit.Name</td><td>@Herkunft(einheit)</td><td>@Zahl(einheit.KapazitaetKWh)</td><td>@Zahl(einheit.LadeleistungKw)</td><td>@Zahl(einheit.EntladeleistungKw)</td></tr>
                         }
                     </tbody>
                 </table>
@@ -267,6 +272,18 @@
             ? "Projektflottenbetrieb ausdrücklich deaktiviert · Eingabestand @Aktuell bleibt erhalten"
             : "Eingabestand @Aktuell · wird beim nächsten Projektlauf geprüft";
     private static string Zahl(double wert) => wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>Woher eine Einheit stammt (#210): Projektanlage oder Handeintrag.</summary>
+    /// <remarks>
+    /// Die Vorbelegung macht aus JEDER Speicheranlage des Projekts eine Einheit und
+    /// hinterlegt deren <c>AnlageId</c>. Eine Einheit ohne Anlagenbezug ist im
+    /// Flotteneditor entstanden — sie steht für kein Gerät der Projektdaten und wird bei
+    /// einem Variantenwechsel auch nicht nachgezogen.
+    /// </remarks>
+    private static string Herkunft(FlottenEinheit einheit)
+        => string.IsNullOrWhiteSpace(einheit.AnlageId)
+            ? "nur im Eingabestand"
+            : "Projektanlage " + einheit.AnlageId;
 
     protected override void OnParametersSet()
     {

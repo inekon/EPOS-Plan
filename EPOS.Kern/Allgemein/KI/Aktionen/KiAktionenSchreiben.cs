@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 using KiKern;
 
@@ -268,7 +268,7 @@ namespace WindowsFormsApplication1
             {
                 wahl = SpeichervarianteWaehlen(a);
             }
-            catch (OleDbException ex)
+            catch (SqliteException ex)
             {
                 return KiAktionsTexte.SpeicherTabelleFehlt + " " + ex.Message;
             }

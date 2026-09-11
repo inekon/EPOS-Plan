@@ -503,7 +503,40 @@
         // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
         if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
 
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => Daten);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => Daten, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Diese Maske ist die einzige der fünf, die den SCHREIBSCHUTZ kennt.</b>
+    /// <c>WaermepumpeStammDaten.NurLesen</c> trägt das <c>ReadOnly</c> des
+    /// Auslieferungskatalogs (Fachkonzept 4.5); solange es steht, lehnt schon
+    /// <c>feld_setzen</c> ab — und nicht erst der Speicherknopf. Beim ANLEGEN gilt es
+    /// nicht, genau wie in <see cref="BeiSpeichern"/> (der Vorläufer prüft
+    /// <c>!neu &amp;&amp; ReadOnly</c>).
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => !_neu && Daten.NurLesen,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        if (!_neu && Daten.NurLesen)
+            return KiKern.KiErgebnis.Abgelehnt(MeldungReadOnlySpeichern);
+
+        BeiSpeichern();
+        return _meldungStufe == WarnStufe.Warnung
+            ? KiKern.KiErgebnis.Fehlgeschlagen(_meldung)
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 using KiKern;
 
@@ -429,7 +429,7 @@ namespace WindowsFormsApplication1
         /// Bestand nicht - <c>LizenzManager</c> kennt nur <c>DarfSchreiben()</c> und keine
         /// Modulliste. Geprueft wird deshalb, was tatsaechlich fehlschlagen kann: eine
         /// Datenbank ohne die Tabellen des Moduls. Der Aufruf faengt den
-        /// <see cref="OleDbException"/> ab und meldet ihn im Klartext.
+        /// <see cref="SqliteException"/> ab und meldet ihn im Klartext.
         /// </remarks>
         internal static KiAktion SpeichervariantenAuflisten()
         {
@@ -454,7 +454,7 @@ namespace WindowsFormsApplication1
                         varianten = ctrl.ReadAllByProjekt(id);
                         aktive = new StromspeicherVarianteCtrl().ReadAktiveVariante(id);
                     }
-                    catch (OleDbException ex)
+                    catch (SqliteException ex)
                     {
                         return KiErgebnis.Abgelehnt(KiAktionsTexte.SpeicherTabelleFehlt)
                                          .MitMeldungen(new[] { ex.Message });

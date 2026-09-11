@@ -1,6 +1,6 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Stromspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki
-     Stand: 2026-09-11 (Ansicht STROMSPEICHER_AUSLEGUNG, Speicherflotte)
+     Stand: 2026-09-11 (Ansicht STROMSPEICHER_AUSLEGUNG, ein Weg statt zwei Modi - SD-E-8)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
 Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
@@ -22,7 +22,9 @@ Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er 
 
 Die '''Stromspeicher-Auslegung''' ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Fenster mehr. Sie füllt das Programmfenster ganz aus: kein Rahmen im Rahmen, kein zweiter Rollbalken.
 
-Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechnet sie ein Raster von Kandidaten durch. Und '''wie fährt die Anlage?''' – dafür rechnet sie eine feste Bestückung mit einer gewählten Betriebsführung. Beides geht wahlweise für '''einen''' Speicher oder für eine '''Flotte''' physisch gleichzeitig betriebener Speicher.
+Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechnet sie ein Raster von Kandidaten durch. Und '''wie fährt die Anlage?''' – dafür rechnet sie eine feste Bestückung mit einer gewählten Betriebsführung.
+
+'''Es gibt dafür genau einen Weg''' (seit dem 11.09.2026): Ein '''Einzelspeicher ist eine Flotte mit einer Einheit'''. Legen Sie eine Einheit an, rechnet die Ansicht Ihre einzelne Anlage; legen Sie mehrere an, rechnet sie deren Zusammenspiel. Die fünf Betriebsziele, das Peak-Ziel, die Diagnose und die Größen-Sicht gelten in beiden Fällen. Den früheren Umschalter ''Flotte / Einzelspeicher'' und die drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' gibt es nicht mehr – an ihre Stelle treten die '''Betriebsziele''' aus Schritt 3.
 
 === Erreichbarkeit ===
 {{Anker|auslegung-start}}
@@ -33,49 +35,51 @@ Der Weg hinein führt über das '''Simulationsergebnis''': Reiter '''Stromspeich
 
 Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dieses Projekt bereits eine Flotte aktiviert, steht darunter ein Band '''„Projektflotte aktiv"''' mit dem Knopf, sie wieder abzuschalten.
 
-=== Ablaufleiste und die zwei Modi ===
+=== Ablaufleiste ===
 {{Anker|auslegung-ablauf}}
 
 Über allem steht die '''Ablaufleiste''' mit fünf Stationen:
 
   1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Berechnen · 5 Ergebnis
 
-Die Stationen 1, 2, 3 und 5 sind '''Blätter''' – ein Klick blättert um. '''Station 4 ist der Rechenknopf'''; er heißt je nach Modus und Schalter ''4 Flotte bewerten'', ''4 Größen optimieren'' oder ''4 Optimieren''. '''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
+Die Stationen 1, 2, 3 und 5 sind '''Blätter''' – ein Klick blättert um. '''Station 4 ist der Rechenknopf'''; er heißt je nach Schalter ''4 Bewerten'' oder ''4 Größen optimieren''. '''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
 
-Rechts neben der Leiste steht der '''Modusschalter''':
+Einen '''Modusschalter''' gibt es seit dem 11.09.2026 nicht mehr. Was er unterschied, entscheidet jetzt die '''Zahl der Einheiten''' in Schritt 1:
 
 {| class="wikitable"
-! Modus !! Wofür !! Was die Blätter zeigen
+! Einheiten !! Was Sie rechnen !! Was sich ändert
 |-
-| '''Flotte''' || mehrere physisch gleichzeitig betriebene Speicher in ''einer'' Variante || Flotteneditor, Daten und Kosten, Betriebsführung mit Peak-Ziel, Flottenergebnis
+| '''eine''' || die Auslegung ''einer'' Anlage – der frühere Modus ''Einzelspeicher'' || die '''Verteilung''' entfällt in Schritt 3; sie verteilt auf mehrere Speicher, und bei einem gibt es nichts zu verteilen
 |-
-| '''Einzelspeicher''' || die klassische Auslegung ''einer'' aktiven Speichervariante || Suchraum, Betrieb, Ergebnis der Rasteroptimierung
+| '''mehrere''' || mehrere physisch gleichzeitig betriebene Speicher in ''einer'' Variante || die '''Verteilung''' erscheint
 |}
 
-Es ist '''dieselbe Leiste mit anderen Blättern'''. Der Modus entscheidet auch, was Station 4 rechnet.
+Alles Übrige ist gleich: dieselben Blätter, dieselben fünf Betriebsziele, dasselbe Peak-Ziel, dieselbe Diagnose und dieselbe Größen-Sicht.
 
 === Schritt 1 — Speicher ===
 {{Anker|auslegung-speicher}}
 
-Im Modus '''Flotte''' stehen hier die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Entladeleistung in kW, Lade- und Entladewirkungsgrad, das nutzbare Ladezustandsband, der Start-Ladezustand, die geschützte Peak-Reserve, der Hilfsverbrauch, der Grenzverschleiß und die Kostensätze. Einheiten lassen sich hinzufügen, kopieren und löschen; als '''Vorlage''' dient ein Satz aus dem Speicherkatalog.
+Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Entladeleistung in kW, Lade- und Entladewirkungsgrad, das nutzbare Ladezustandsband, der Start-Ladezustand, die geschützte Peak-Reserve, der Hilfsverbrauch, der Grenzverschleiß und die Kostensätze. Einheiten lassen sich hinzufügen, kopieren und löschen; als '''Vorlage''' dient ein Satz aus dem Speicherkatalog.
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
-Darunter steht der Schalter '''„Größen optimieren"'''. Aus ist er, wenn Sie '''diese''' Bestückung bewerten wollen; ein ist er, wenn ein '''Raster''' von Größen durchgerechnet werden soll – dann tragen Sie je Suchachse ein, welche Einheit sie ersetzt und welche Bereiche und Schrittweiten gelten.
+'''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier je Speicheranlage des Projekts bereits eine Einheit – mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Bei einer Anlage ist es genau eine Einheit; Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.
 
-Im Modus '''Einzelspeicher''' steht hier der Suchraum der aktiven Speichervariante:
+Darunter steht der Schalter '''„Größen optimieren"'''. Aus ist er, wenn Sie '''diese''' Bestückung bewerten wollen; ein ist er, wenn ein '''Raster''' von Größen durchgerechnet werden soll – dann tragen Sie je Suchachse ein, welche Einheit sie ersetzt und welche Bereiche und Schrittweiten gelten.
 
 ==== Größe und C-Rate ====
 {{Anker|auslegung-groesse}}
 
-Wählen Sie als Größenbasis '''Kapazität in kWh''' oder '''Leistung in kW'''. Geben Sie jeweils ''Von'', ''Bis'' und wahlweise eine ''Schrittweite'' ein. Ohne Größenschritt bestimmt die Anzahl der Stützstellen das Raster. Gleiche Grenzen prüfen eine feste Größe. Auch die C-Rate erhält eine Untergrenze, Obergrenze und Schrittweite; gleiche Grenzen prüfen eine feste C-Rate.
+Die Suchbereiche stehen '''je Einheit''' in deren Auslegungsbereich: Anzahl, Kapazität in kWh, Leistung in kW und C-Rate in 1/h, jeweils mit ''Von'', ''Bis'' und ''Schrittweite''. Der Auslegungsmodus sagt, welche zwei der drei Größen gerastert werden und welche sich daraus ergibt.
 
 Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
 
 === Schritt 2 — Daten & Kosten ===
 {{Anker|auslegung-daten}}
 
-Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen und die Kostensätze. Im Modus ''Flotte'' erscheinen nur Quellen, Kosten und Profile; die Suchbereiche gehören dort zu Schritt 1.
+Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen, die Kostensätze und der Leistungspreis. Die Suchbereiche gehören zu Schritt 1, die Betriebsführung zu Schritt 3.
+
+'''Leistungspreis.''' Das Feld ''Leistungspreis'' in €/(kW·a) bewertet die höchste Bezugsleistung des Jahres. Es ist '''eine''' Eingabe für beides: für die Auslegung und für die aktive Speichervariante des Projekts – dasselbe Feld, das der Reiter ''Parameter'' pflegt. Eine Änderung wird sofort geschrieben. Sind Leistungspreise im Projekt gepflegt, steht daneben eine Liste der '''Quellen'''; eine Auswahl daraus setzt den Wert ein und schreibt ihn ebenfalls.
 
 ==== Investition und Betrieb ====
 {{Anker|auslegung-kosten}}
@@ -124,7 +128,7 @@ Für die wirtschaftliche Jahresauslegung braucht jede gewählte Datei ein vollst
 
 Bei Mischung mit EPOS-Modellreihen wird die '''EPOS-Modelljahrzuordnung''' ausdrücklich eingeschaltet. Die eingelesenen Werte und Zeitstempel bleiben erhalten. EPOS-Werte werden nach Monat, Tag und Uhrzeit zugeordnet; am 29. Februar wird der EPOS-28. Februar verwendet, in der wiederholten Herbststunde derselbe EPOS-Ortsstundenwert erneut. Das Ergebnis nennt diese Annahme.
 
-Im Modus ''Flotte'' steht daneben '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''Projektjahre''' (für eine Mehrjahresbewertung) und '''archivierte Prognosen''' (für die planenden Betriebsziele) eingelesen – über denselben Spaltenzuordnungsdialog. Eine Prognose trägt eine Kennung, einen Zeitpunkt ''bekannt seit'' und einen Entscheidungszeitpunkt; was erst nach der Entscheidung bekannt war, darf nicht darin stehen.
+Daneben steht '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''Projektjahre''' (für eine Mehrjahresbewertung) und '''archivierte Prognosen''' (für die planenden Betriebsziele) eingelesen – über denselben Spaltenzuordnungsdialog. Eine Prognose trägt eine Kennung, einen Zeitpunkt ''bekannt seit'' und einen Entscheidungszeitpunkt; was erst nach der Entscheidung bekannt war, darf nicht darin stehen.
 
 ==== Profile und Vorgaben ====
 {{Anker|auslegung-profile}}
@@ -142,7 +146,7 @@ Die PV-Einspeisevergütung wird auch bei Dateiquellen aus dem Projekt gelesen. E
 
 Hier steht, '''wie''' die Anlage gefahren wird.
 
-Im Modus '''Flotte''' wählen Sie das '''Betriebsziel''':
+Sie wählen das '''Betriebsziel''' – bei einer Einheit genauso wie bei mehreren:
 
 {| class="wikitable"
 ! Betriebsziel !! Was es tut !! Braucht den Fahrplaner
@@ -160,6 +164,8 @@ Im Modus '''Flotte''' wählen Sie das '''Betriebsziel''':
 
 Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kapazität'', ''Kaskade'' oder ''Nach Grenzkosten und Wirkungsgrad'' – und die '''Erzeuger-Reihenfolge''' der Direkteinspeisung (PV vor BHKW oder umgekehrt). Für ein planendes Ziel gilt die Verteilung nicht: Dort ist die Leistung jeder Einheit eine eigene Größe der Planung.
 
+'''Bei einer einzigen Einheit erscheint die Verteilung nicht''' – sie verteilt eine Lade- oder Entladeanforderung auf mehrere Speicher, und bei einem gibt es nichts zu verteilen. Eine Zeile unter dem Block sagt es. Legen Sie eine zweite Einheit an, ist sie wieder da; die gespeicherte Regel bleibt dabei unberührt.
+
 '''Peak-Ziel.''' Bei der Lastspitzenkappung erscheint der Peak-Ziel-Block:
 
 * Der '''Vorschlag''' wird aus der Referenzreihe hergeleitet, nicht geraten. Unter dem Feld steht die Herleitung im Klartext; '''„Vorschlag übernehmen"''' setzt ihn ein.
@@ -167,12 +173,10 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 * '''Netzladung''' folgt dem Betriebsziel: Die Lastspitzenkappung bekommt sie, weil die Wiederaufladung unter dem Ziel genau das ist; PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. '''Der Schalter bleibt änderbar''', und eine gespeicherte Einstellung wird nicht überschrieben.
 * '''Start-Ladezustand.''' Für den Projektlauf steht er auf der unteren Marke. Ein leerer Speicher kann eine Spitze am 1. Januar nicht kappen – die Ansicht sagt es, statt den Standard still zu ändern.
 
-Im Modus '''Einzelspeicher''' stehen hier Betriebsart, Verschleißterm, Kapitalzins, Nutzungsdauer und der '''Leistungspreis''' samt seiner Quelle; der Leistungspreis lässt sich von hier aus ins Projekt zurückschreiben.
-
 === Schritt 4 — Berechnen ===
 {{Anker|auslegung-rechnen}}
 
-Station 4 startet den Lauf. Was sie rechnet, sagt ihre Beschriftung: ''Flotte bewerten'' (eine Bestückung), ''Größen optimieren'' (das Raster) oder ''Optimieren'' (Einzelspeicher).
+Station 4 startet den Lauf. Was sie rechnet, sagt ihre Beschriftung: ''Bewerten'' (diese eine Bestückung) oder ''Größen optimieren'' (das Raster).
 
 '''Die Vorprüfung steht über der Ablaufleiste''' und läuft schon vor dem Start. Sie '''sperrt nicht''', sie warnt – der Lauf startet trotzdem:
 
@@ -212,6 +216,11 @@ Von oben nach unten:
 '''Die Diagramme''' tragen über jedem Bild dieselbe Steuerung: den Schalter '''„sortiert"''' (Dauerlinie), '''je Reihe einen Schalter''' mit derselben Beschriftung wie die Legende, die '''Zeitraumwahl Jahr / Woche / Tag''' mit Vor- und Zurückschaltern und den '''Datenzoom''' durch Ziehen im Bild. Die Reihen gibt es je Einheit ''und'' als „Speicher gesamt"; der '''Ladezustand''' einer wählbaren Einheit steht als zweite Achse im Netzbild. Vorgabe ist die '''Woche''' – ein ganzes Jahr im Viertelstundenraster legt vierzig Werte auf einen Bildpunkt und zeigt keinen einzigen Ladezyklus.
 
 Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen Ergebnis) und '''„Beste Flotte übernehmen"''' (nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante). Die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten; erst danach fährt der gewöhnliche Projektlauf diese Flotte.
+
+{{Anker|auslegung-anlage}}
+'''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Reiter ''Parameter'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet weiterhin die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.
+
+Tragen '''zwei''' Einheiten einen Anlagenbezug, erscheint der Knopf nicht: Die Anlage trägt eine Kapazität und eine Leistung, und welche der beiden gemeint wäre, ließe sich nicht sagen.
 
 ==== Diagnose: die Flotte hat nichts getan ====
 {{Anker|auslegung-diagnose}}

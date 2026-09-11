@@ -11,19 +11,29 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Warum hier und nicht im Kern.</b> Nur an dieser Stelle darf UI- und DB-Code
-    /// stehen (Fachkonzept 3.7). Weil die Registerbefuellung in DERSELBEN Assembly liegt
-    /// wie die Controller, ist weder <c>InternalsVisibleTo</c> noch eine oeffentliche
-    /// Fassade noetig - <c>ProjektCtrl</c>, <c>TechnikPlanwertCtrl</c> und
-    /// <c>KostenPositionCtrl</c> sind <c>internal</c> (Fachkonzept 5.5).
+    /// <b>Seit Auftrag #201 im KERN.</b> Bis dahin lag diese Datei in der
+    /// Windows-Anwendung, mit der Begruendung „nur dort darf UI- und DB-Code stehen"
+    /// (Fachkonzept 3.7). Die Begruendung ist mit iU4 hinfaellig geworden: Die
+    /// Controller liegen laengst in <c>EPOS.Kern</c>, und die Registerbefuellung liegt
+    /// damit weiterhin in DERSELBEN Assembly wie sie — <c>ProjektCtrl</c>,
+    /// <c>TechnikPlanwertCtrl</c> und <c>KostenPositionCtrl</c> sind <c>internal</c>
+    /// (Fachkonzept 5.5), und es braucht weder <c>InternalsVisibleTo</c> noch eine
+    /// oeffentliche Fassade. Was der Umzug bringt, steht im Konzept „Der Hilfe-Assistent
+    /// im Dialog", 3.4: <b>iOS und die Razor-Dialoge bekommen DASSELBE Register.</b>
+    /// Vorher stand dort <c>KeineAusfuehrung</c> mit einem leeren — der Assistent
+    /// antwortete, aber er konnte nichts.
     /// </para>
     /// <para>
     /// <b>Umfang.</b> Stufe 1 (lesend) aus Fachkonzept 5.1 - OHNE <c>maske_oeffnen</c>
     /// und <c>projekt_oeffnen</c>: beide oeffnen blockierend-modal
     /// (<c>MenueCtrl.cs:251-389</c>, <c>:130</c>, <c>:178</c>) und gehoeren in eine
     /// spaetere Etappe. Dazu seit Etappe 3 die drei Schreibaktionen der Stufe 2
-    /// (<see cref="KiAktionenSchreiben"/>). Stufe 3 (rechnen) ist noch nicht registriert;
-    /// <c>KiRiegel.HoechsteStufe</c> weist sie ohnehin ab.
+    /// (<see cref="KiAktionenSchreiben"/>) und seit Etappe S3 (Auftrag #201) die drei
+    /// RECHENAKTIONEN der Stufe 3 (<see cref="KiAktionenRechnen"/>) sowie
+    /// <c>dialog_oeffnen</c> und <c>dialog_speichern</c>
+    /// (<see cref="KiAktionenDialog"/>). <c>KiRiegel.HoechsteStufe</c> steht seither
+    /// auf <c>Rechnen</c> — was NICHT heisst, dass etwas ohne Klick liefe: Alles
+    /// oberhalb von Stufe 1 braucht weiterhin die ausdrueckliche Freigabe.
     /// </para>
     /// <para>
     /// <b><c>maske_oeffnen</c> bleibt auch nach Etappe 3b aussen vor.</b> Die vier
@@ -50,8 +60,17 @@ namespace WindowsFormsApplication1
     internal static class KiAktionen
     {
         /// <summary>Baut das vollstaendige Register.</summary>
-        internal static KiRegister Erzeuge()
+        /// <param name="ausfuehrung">
+        /// Der Ausfuehrer, dem dieses Register gehoert. Genau EINE Aktion braucht ihn:
+        /// <c>letzte_aktionen</c> liest sein Sitzungsgedaechtnis. Seit Auftrag #201
+        /// traegt <see cref="KiAusfuehrung"/> seinen Zustand als Instanz, damit ein
+        /// Pruefling einen frischen anlegen kann — deshalb wird er hereingereicht und
+        /// nicht statisch angesprochen.
+        /// </param>
+        internal static KiRegister Erzeuge(KiAusfuehrung ausfuehrung)
         {
+            if (ausfuehrung == null) throw new ArgumentNullException(nameof(ausfuehrung));
+
             var register = new KiRegister();
 
             // ---- Projekte, Varianten, Speichervarianten
@@ -89,7 +108,7 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenLastgang.MinimaleSpitzeErmitteln());
 
             // ---- Sitzungsgedaechtnis
-            register.Aufnehmen(KiAktionenSitzung.LetzteAktionen());
+            register.Aufnehmen(KiAktionenSitzung.LetzteAktionen(ausfuehrung));
 
             // ---- Schreibaktionen der Stufe 2 (Etappe 3, Fachkonzept 5.2). Sie laufen
             //      NUR nach ausdruecklicher Bestaetigung; den Riegel dafuer haelt
@@ -109,6 +128,24 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenDialog.FeldSetzen());
             register.Aufnehmen(KiAktionenDialog.FormularAusfuellen());
             register.Aufnehmen(KiAktionenDialog.DialogAktionAusfuehren());
+
+            // ---- Der Weg IN eine Maske (Etappe S3, Auftrag #201 Punkt 3). Stufe 1:
+            //      Oeffnen aendert nichts, die Verantwortung geht mit dem Oeffnen an den
+            //      Anwender ueber (Fachkonzept 4.1). Das Ziel je Katalogmaske steht als
+            //      Tabelle in KiMaskenziele - ein Waechter haelt sie gegen den Katalog.
+            register.Aufnehmen(KiAktionenDialog.DialogOeffnen());
+
+            // ---- Der Weg AUS einer Maske in die Datenbank (Etappe S3, Punkt 4,
+            //      Anwenderentscheid KI-D-Q4). Die einzige Dialogaktion mit
+            //      Sicherungspunkt.
+            register.Aufnehmen(KiAktionenDialog.DialogSpeichern());
+
+            // ---- Stufe 3: rechnen und lang laufend (Fachkonzept 5.3, Etappe S3).
+            //      Bestaetigungspflichtig wie jede Schreibaktion, dazu mit Fortschritt
+            //      und Abbruchmarke (KiLaufumgebung).
+            register.Aufnehmen(KiAktionenRechnen.SimulationRechnen());
+            register.Aufnehmen(KiAktionenRechnen.PeakZielBestimmen());
+            register.Aufnehmen(KiAktionenRechnen.FlotteBewerten());
 
             return register;
         }

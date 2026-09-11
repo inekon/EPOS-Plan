@@ -59,15 +59,7 @@ public static class SpeicherFlottenStudieCtrl
             return v;
         }
         var f = new FlottenStudieKonfiguration();
-        f.Einheiten.Add(new FlottenEinheit
-        {
-            Id = Guid.NewGuid().ToString("N"), Name = ctrl.LetzterKontext?.Bezeichner ?? "Speicher 1",
-            AnlageId = ctrl.LetzterKontext?.ID_Energieanlage.ToString(CultureInfo.InvariantCulture),
-            KapazitaetKWh = p.CNomKwh, LadeleistungKw = p.PKw, EntladeleistungKw = p.PKw,
-            Ladewirkungsgrad = p.EtaCh, Entladewirkungsgrad = p.EtaDis,
-            SocMin = p.SoCMinKwh / p.CNomKwh, SocMax = p.SoCMaxKwh / p.CNomKwh,
-            SocStart = p.StartSoCEffektivKwh / p.CNomKwh
-        });
+        EinheitenAusProjektanlagen(f, projektId, ctrl, p);
         BetriebsvorgabenSetzen(f, peak, ctrl, sim);
         f.Optionen.NeuplanungAlleIntervalle = 96;
         f.Tarif.LeistungspreisEuroProKw = v.Eingaben.LeistungspreisEurProKwA;
@@ -78,6 +70,81 @@ public static class SpeicherFlottenStudieCtrl
         v.Eingaben.Auslegung.Flotte = f;
         BedienvorgabenErgaenzen(v.Eingaben.Auslegung, Preisvorschlag(projektId, v.Eingaben.Auslegung));
         return v;
+    }
+
+    /// <summary>
+    /// Die Einheiten einer NEU angelegten Flotte: <b>eine je Speicheranlage des
+    /// Projekts</b> (Anwenderbefund #210, 11.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Der Befund.</b> Hier stand bis #210 EINE Einheit, gebaut aus
+    /// <c>StromspeicherSimCtrl.LeseParameter(projektId)</c>. Das ist der Satz der
+    /// AKTIVEN Variante (AP9b), im Rückfall die Summe über alle Anlagen — für den
+    /// EINZELspeicherlauf richtig, für die Flotte aber ein stiller Verlust: Ein Projekt
+    /// mit zwei Speichern bekam eine Flotte mit einer Einheit, und weil der Projektlauf
+    /// den GESPEICHERTEN Stand rechnet, tauchte die zweite auch in „Kennzahlen je
+    /// Speicher" nie wieder auf.</para>
+    ///
+    /// <para><b>Warum ALLE Anlagenzeilen.</b> Die Spezifikation (Kapitel 11) sagt für den
+    /// Einzelfall: „Eine bereits vorhandene Einzelanlage wird beim Laden als Flotte mit
+    /// genau einer Einheit abgebildet" — bei mehreren Anlagen entsprechend mehrere. Das
+    /// Schema trennt eine gleichzeitig betriebene Anlage nicht von einer bloßen
+    /// Vergleichs-Alternative; beide sind eine <c>SP_TYP</c>-Zeile. Von den zwei
+    /// möglichen Fehlern ist deshalb der SICHTBARE der kleinere: Wer eine Einheit zu
+    /// viel bekommt, sieht sie im Editor und nimmt sie heraus (die Vorbelegung greift nur
+    /// beim ANLEGEN, der gespeicherte Stand wird nie überschrieben); wer eine zu wenig
+    /// bekommt, erfährt es nirgends. Die Referenzliste <c>REF_SP_TYP</c> bleibt draußen —
+    /// sie ist ausdrücklich der Vergleichsfall.</para>
+    ///
+    /// <para><b>Je Einheit ihr eigener Parametersatz.</b> Gelesen wird über
+    /// <c>LeseParameter(projektId, anlageId)</c>: Gerätedaten aus der Anlagenzeile,
+    /// Betriebsführung (SoC-Band) aus DEREN Variantenzeile. Ein eigener Controller je
+    /// Anlage, damit der <c>LetzterKontext</c> des Aufrufers unberührt bleibt.</para>
+    ///
+    /// <para><b>Der Rückfall bleibt der Sammelsatz.</b> Liefert keine Anlagenzeile einen
+    /// Satz — etwa weil das Projekt vor Migrationsschritt 11d steht —, entsteht die eine
+    /// Einheit wie bisher aus <paramref name="sammelsatz"/>. Ohne Einheit gäbe es keine
+    /// Flotte.</para>
+    /// </remarks>
+    /// <param name="f">Die neu angelegte Flottenkonfiguration.</param>
+    /// <param name="projektId">Das Projekt.</param>
+    /// <param name="ctrl">Der Controller, dessen <c>LetzterKontext</c> den Sammelsatz trägt.</param>
+    /// <param name="sammelsatz">Der Satz aus <c>LeseParameter(projektId)</c>; nie <c>null</c>.</param>
+    private static void EinheitenAusProjektanlagen(FlottenStudieKonfiguration f, int projektId,
+        StromspeicherSimCtrl ctrl, SpeicherParameter sammelsatz)
+    {
+        foreach (int anlageId in ctrl.Speicheranlagen(projektId))
+        {
+            var einzeln = new StromspeicherSimCtrl();
+            SpeicherParameter p = einzeln.LeseParameter(projektId, anlageId);
+            if (p == null || !(p.CNomKwh > 0)) continue;
+            f.Einheiten.Add(Einheit(p, einzeln.LetzterKontext, f.Einheiten.Count + 1));
+        }
+
+        if (f.Einheiten.Count == 0)
+            f.Einheiten.Add(Einheit(sammelsatz, ctrl.LetzterKontext, 1));
+    }
+
+    /// <summary>Eine Flotteneinheit aus einem gelesenen Speicherparametersatz.</summary>
+    /// <param name="p">Der Parametersatz der Anlage.</param>
+    /// <param name="kontext">Der Lesekontext mit Anlagenname und Anlagen-Id.</param>
+    /// <param name="nummer">Laufende Nummer für den Namensrückfall.</param>
+    private static FlottenEinheit Einheit(SpeicherParameter p, StromspeicherLaufKontext kontext, int nummer)
+    {
+        string name = kontext?.Bezeichner;
+        if (string.IsNullOrWhiteSpace(name))
+            name = "Speicher " + nummer.ToString(CultureInfo.InvariantCulture);
+        return new FlottenEinheit
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Name = name,
+            AnlageId = kontext == null || kontext.ID_Energieanlage <= 0
+                ? null : kontext.ID_Energieanlage.ToString(CultureInfo.InvariantCulture),
+            KapazitaetKWh = p.CNomKwh, LadeleistungKw = p.PKw, EntladeleistungKw = p.PKw,
+            Ladewirkungsgrad = p.EtaCh, Entladewirkungsgrad = p.EtaDis,
+            SocMin = p.SoCMinKwh / p.CNomKwh, SocMax = p.SoCMaxKwh / p.CNomKwh,
+            SocStart = p.StartSoCEffektivKwh / p.CNomKwh
+        };
     }
 
     /// <summary>

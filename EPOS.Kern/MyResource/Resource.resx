@@ -5025,53 +5025,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>Der Speicher hält die Zielschwelle nicht: die neue Spitze liegt bei {0} kW. Kapazität oder Leistung erhöhen oder die Schwelle anheben.</value>
   </data>
-  <data name="OPT_TITEL" xml:space="preserve">
-    <value>Auslegung optimieren</value>
-  </data>
-  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
-    <value>Suchraum</value>
-  </data>
   <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
     <value>Ergebnis</value>
-  </data>
-  <data name="OPT_LBL_CMIN" xml:space="preserve">
-    <value>Kapazität von [kWh]</value>
-  </data>
-  <data name="OPT_LBL_CMAX" xml:space="preserve">
-    <value>Kapazität bis [kWh]</value>
-  </data>
-  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
-    <value>Stützstellen</value>
-  </data>
-  <data name="OPT_LBL_RMIN" xml:space="preserve">
-    <value>C-Rate von [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RMAX" xml:space="preserve">
-    <value>C-Rate bis [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
-    <value>Schrittweite [1/h]</value>
-  </data>
-  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
-    <value>Berechnungsart</value>
-  </data>
-  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
-    <value>Feinraster um das Optimum</value>
-  </data>
-  <data name="OPT_CHK_KVER" xml:space="preserve">
-    <value>Verschleißkosten in die Zielfunktion</value>
-  </data>
-  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
-    <value>Rasterpunkte: {0}</value>
   </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Aktuelle Auslegung: {0} kWh / {1} kW ({2} C)</value>
   </data>
   <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
     <value>Maximiert wird der Jahresüberschuss nach Kapitaldienst ΔJ = E_a,äq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Die Amortisationszeit ist bewusst keine Zielgröße, sondern Sekundärkennzahl.</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIEL_LASTSPITZE" xml:space="preserve">
-    <value>Maximiert wird ΔJ = L_P · ΔP_max · rbf_deg − Verschiebeverluste − (c_cap·C + c_pow·P + I_fix) · a(i_z, N): die jährliche Leistungspreisersparnis abzüglich der Kosten der verschobenen Energie und des Kapitaldienstes. Die Schwelle wird je Rasterpunkt nachgezogen — wie in der Maske Lastspitzenkappung.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Leistungspreis L_P</value>
@@ -5118,9 +5079,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
     <value>Die Zielschwelle wurde gerissen — der Speicher hält sie nicht.</value>
   </data>
-  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
-    <value>Achtung: Annuität und Verschleißkosten bepreisen denselben Sachverhalt. Solange c_ver aus der Investition abgeleitet ist, ist die Einrechnung eine Doppelzählung.</value>
-  </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
     <value>Vorbelegung: 500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität. C-Rate 0,5 … 3,0 in 0,5er-Schritten.</value>
   </data>
@@ -5132,9 +5090,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Abbrechen</value>
-  </data>
-  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Bestpunkt übernehmen …</value>
   </data>
   <data name="OPT_BTN_CSV" xml:space="preserve">
     <value>Raster als CSV …</value>
@@ -5180,9 +5135,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
     <value>ganzes Jahr</value>
-  </data>
-  <data name="OPT_BETRIEB_CHK_JAHR" xml:space="preserve">
-    <value>Ganzes Jahr</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Netzbezug ohne Speicher</value>
@@ -5246,15 +5198,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_SP_EINHEIT" xml:space="preserve">
     <value>Einheit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
-    <value>Auslegung des Bestpunkts</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
-    <value>Wirtschaftlichkeit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
-    <value>Speicher und Energie</value>
   </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nennkapazität C_nom</value>
@@ -16536,9 +16479,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Nicht monetäre Wirkungen: {0}</value>
   </data>
-  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
-    <value>Die Eingaben wurden geändert. Das angezeigte Ergebnis ist nicht mehr aktuell; bitte neu berechnen.</value>
-  </data>
   <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
     <value>Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert.</value>
   </data>
@@ -17382,42 +17322,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
     <value>Unbenannter Speicher</value>
   </data>
-  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
-    <value>Suchraum</value>
-  </data>
-  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
-    <value>Größenachse:</value>
-  </data>
-  <data name="FLOTTE_AUS_VON" xml:space="preserve">
-    <value>Von:</value>
-  </data>
-  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
-    <value>Bis:</value>
-  </data>
-  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
-    <value>Schrittweite (leer = Stützstellen):</value>
-  </data>
-  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
-    <value>Stützstellen:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
-    <value>C-Rate von:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
-    <value>C-Rate bis:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
-    <value>C-Rate Schritt:</value>
-  </data>
-  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
-    <value>Betriebsstrategie:</value>
-  </data>
-  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
-    <value>Feinraster</value>
-  </data>
-  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
-    <value>Verschleißkosten berücksichtigen</value>
-  </data>
   <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
     <value>Zeitreihen</value>
   </data>
@@ -17820,15 +17724,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
     <value>← zurück</value>
   </data>
-  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
-    <value>Modus</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
-    <value>Flotte</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
-    <value>Einzelspeicher</value>
-  </data>
   <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
     <value>Ablauf der Auslegung</value>
   </data>
@@ -17837,9 +17732,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
     <value>1 Speicher</value>
-  </data>
-  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
-    <value>1 Speicherparameter</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
     <value>2 Daten &amp; Kosten</value>
@@ -17851,13 +17743,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>5 Ergebnis</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Flotte bewerten</value>
+    <value>4 Bewerten</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
     <value>4 Größen optimieren</value>
-  </data>
-  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
-    <value>4 Optimieren</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>Der Ergebnisschritt steht erst offen, wenn einmal gerechnet wurde.</value>
@@ -18182,6 +18071,174 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>Knöpfe kann der Assistent in dieser Fassung noch nicht auslösen.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_VERTEILUNG_EINE" xml:space="preserve">
+    <value>Die Verteilung erscheint erst ab zwei Einheiten: Sie verteilt eine Lade- oder Entladeanforderung auf mehrere Speicher, und bei einem gibt es nichts zu verteilen.</value>
+  </data>
+  <data name="FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" xml:space="preserve">
+    <value>Der Leistungspreis bewertet die höchste Bezugsleistung des Jahres. Er gilt für die Auslegung und wird zugleich in die aktive Speichervariante des Projekts geschrieben — es ist dasselbe Feld, das der Reiter „Parameter" pflegt.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
+    <value>Größe in die Projektanlage übernehmen…</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Öffnet eine der freigegebenen Masken; der Anwender arbeitet danach selbst darin weiter.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Maske öffnen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Öffne die Heizkesselverwaltung.</value>
+  </data>
+  <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
+    <value>Name der Maske aus dem Dialogkatalog, die geöffnet werden soll.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Speichert die Eingaben der offenen Maske über deren eigenen Speicherweg in die Datenbank.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Maske speichern</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Speichere den Heizkessel so, wie er jetzt in der Maske steht.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Der Datensatz der Maske wird geschrieben. Vorher entsteht eine Sicherungskopie der Datenbank; rückgängig macht das Schreiben nur das Zurückspielen dieser Kopie.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Rechnet die Simulation eines Projekts durch; auf Wunsch wird das Ergebnis gespeichert.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Simulation rechnen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Rechne das Projekt Musterhaus und speichere das Ergebnis.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Der Lauf belegt den Rechenkern für die Dauer der Rechnung. Mit „speichern“ wird der vorhandene Ergebnisstand des Projekts überschrieben.</value>
+  </data>
+  <data name="KI_AKTION_ERL_SIM_SPEICHERN" xml:space="preserve">
+    <value>Soll das Ergebnis gespeichert werden? Ohne Angabe wird nur gerechnet.</value>
+  </data>
+  <data name="KI_AKTION_SIM_SPEICHERN_NAME" xml:space="preserve">
+    <value>Ergebnis speichern</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_PEAKZIEL" xml:space="preserve">
+    <value>Bestimmt in der offenen Stromspeicher-Ansicht das wirtschaftliche Peak-Ziel.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_PEAKZIEL" xml:space="preserve">
+    <value>Peak-Ziel bestimmen</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_PEAKZIEL" xml:space="preserve">
+    <value>Bestimme das wirtschaftliche Peak-Ziel für die eingestellte Flotte.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_PEAKZIEL" xml:space="preserve">
+    <value>Das gefundene Peak-Ziel steht danach in der Ansicht; der bisherige Wert wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Rechnet die Flotte der offenen Stromspeicher-Ansicht durch — derselbe Weg wie der Knopf „Berechnen“.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Flotte bewerten</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Bewerte die eingestellte Speicherflotte.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Das Ergebnis der Bewertung steht danach in der Ansicht; ein vorheriges Ergebnis wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_UEBER_SPEICHERN" xml:space="preserve">
+    <value>Diesen Knopf löst der Assistent nicht aus; zum Schreiben gibt es die Aktion dialog_speichern.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_KEIN_WEG" xml:space="preserve">
+    <value>Knöpfe einer Maske kann der Assistent nicht auslösen. Zum Schreiben gibt es dialog_speichern, zum Füllen der Felder feld_setzen und formular_ausfuellen.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OK" xml:space="preserve">
+    <value>Die Maske „{0}“ ist geöffnet.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_KEIN_WEG" xml:space="preserve">
+    <value>Die Maske „{0}“ lässt sich von hier aus nicht öffnen (Ziel {1}). Auf dieser Plattform führt kein Weg dorthin.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OHNE_ZIEL" xml:space="preserve">
+    <value>Für die Maske „{0}“ ist kein Öffnungsweg hinterlegt.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>Die Maske „{0}“ ließ sich nicht öffnen: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_VORSCHAU" xml:space="preserve">
+    <value>Die Maske „{0}“ wird mit ihren {1} Feldern gespeichert. Der Datensatz wird geschrieben; vorher entsteht eine Sicherungskopie der Datenbank.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_KEIN_WEG" xml:space="preserve">
+    <value>Die Maske „{0}“ bietet dem Assistenten keinen Speicherweg an.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>Die Maske „{0}“ ließ sich nicht speichern: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_SICHERUNG" xml:space="preserve">
+    <value>Der Vorzustand ist gesichert: {0}</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet. Das gespeicherte Ergebnis bleibt unberührt.</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU_SPEICHERN" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet und das Ergebnis gespeichert. Der vorhandene Ergebnisstand des Projekts wird dabei überschrieben.</value>
+  </data>
+  <data name="KI_AKTION_SIM_LAEUFT" xml:space="preserve">
+    <value>Das Projekt „{0}“ wird gerechnet …</value>
+  </data>
+  <data name="KI_AKTION_SIM_FERTIG" xml:space="preserve">
+    <value>Der Lauf ist fertig.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist gerechnet.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK_GESPEICHERT" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist gerechnet und das Ergebnis gespeichert.</value>
+  </data>
+  <data name="KI_AKTION_SIM_FEHLER" xml:space="preserve">
+    <value>Das Projekt „{0}“ ließ sich nicht rechnen: {1}</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_VORSCHAU" xml:space="preserve">
+    <value>In der Ansicht „{0}“ wird das wirtschaftliche Peak-Ziel bestimmt. Der Lauf kann mehrere Minuten dauern; das gefundene Ziel ersetzt danach den eingestellten Wert.</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_LAEUFT" xml:space="preserve">
+    <value>Das wirtschaftliche Peak-Ziel wird bestimmt …</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_VORSCHAU" xml:space="preserve">
+    <value>Die Flotte der Ansicht „{0}“ wird bewertet. Der Lauf kann mehrere Minuten dauern; ein vorheriges Ergebnis wird ersetzt.</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
+    <value>Die Flotte wird bewertet …</value>
+  </data>
+  <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
+    <value>Die Ansicht „{0}“ ist nicht geöffnet; diese Rechnung läuft nur dort.</value>
+  </data>
+  <data name="KI_AKTION_KEIN_RECHENWEG" xml:space="preserve">
+    <value>Die Ansicht „{1}“ bietet den Rechenweg „{0}“ gerade nicht an.</value>
+  </data>
+  <data name="KI_FELD_NICHT_SETZBAR" xml:space="preserve">
+    <value>Das Feld „{0}“ ist eine abgeleitete Größe und lässt sich nicht setzen.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT" xml:space="preserve">
+    <value>Der in „{0}“ bearbeitete Satz gehört zur Auslieferung und ist schreibgeschützt.</value>
+  </data>
+  <data name="KI_FELD_LEER_VERBOTEN" xml:space="preserve">
+    <value>Das Feld „{0}“ ist ein Pflichtfeld und darf nicht leer bleiben.</value>
+  </data>
+  <data name="KI_FELD_LEER_UNMOEGLICH" xml:space="preserve">
+    <value>Das Feld „{0}“ führt immer einen Wert; leeren lässt es sich nicht.</value>
+  </data>
+  <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
+    <value>Das Feld „{0}“ erwartet eine Zahl; „{1}“ ist keine.</value>
+  </data>
+  <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
+    <value>Das Feld „{0}“ erwartet Ja oder Nein; „{1}“ ist keines von beiden.</value>
+  </data>
+  <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
+    <value>Das Feld „{0}“ ließ sich nicht setzen: {1}</value>
+  </data>
+  <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
+    <value>Die Maske meldet dazu: {0}</value>
   </data>
   <data name="MENU_SIMULATION" xml:space="preserve">
     <value>Simulation&#8230;</value>

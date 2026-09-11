@@ -405,12 +405,37 @@ else
     protected override void OnInitialized()
     {
         Navigationsziel.Aktuell = this;
+        KiAusfuehrungEinlegen();
         if (Zustand is not null) Zustand.Geaendert += BeiZustand;
         LizenzlageUebernehmen();
         // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
         // Wechsel - sonst gaebe es zwei Stellen, an denen eine Ansicht entsteht.
         if (!Zeige(Startansicht)) _ansicht = Seitenschluessel.Projektliste;
         Laden();
+    }
+
+    /// <summary>
+    /// Legt die AUSFÜHRUNGSSCHICHT des Assistenten ein, wenn noch die stille steht
+    /// (Auftrag #201, Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum hier.</b> Das Aktionsregister liegt seit #201 im Kern, aber
+    /// eingelegt wird es von der Hülle: Unter Windows tut das <c>Program.Main</c>
+    /// (samt den zwei Windows-Haken Modalität und Feldhilfe), auf iOS gibt es keine
+    /// Stelle, die vor der Wurzel liefe. Ohne diesen Aufruf bliebe dort
+    /// <c>KeineAusfuehrung</c> stehen — leeres Register, jede Aktion abgelehnt; genau
+    /// der Zustand, den S3 beendet.</para>
+    /// <para><b>Nur, wenn noch nichts steht.</b> Unter Windows ist die Schicht längst
+    /// eingelegt, wenn die Wurzel zeichnet; sie hier zu ersetzen nähme ihr die zwei
+    /// Haken und das Sitzungsgedächtnis des laufenden Programms.</para>
+    /// </remarks>
+    private static void KiAusfuehrungEinlegen()
+    {
+        if (WindowsFormsApplication1.KiAusfuehrungsweg.Aktuell
+                is not WindowsFormsApplication1.KeineAusfuehrung) return;
+
+        WindowsFormsApplication1.KiAusfuehrungsweg.Aktuell =
+            new WindowsFormsApplication1.KiAusfuehrung();
     }
 
     /// <summary>

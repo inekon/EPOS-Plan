@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
             // Der Ausfuehrer marshallt jeden Datenbankzugriff ueber dieses Fenster auf
             // den Oberflaechenfaden (Fachkonzept 3.4; seit W15b.0c ein Delegat statt
             // eines Control, Entscheid E-8).
-            KiAusfuehrer.AufOberflaeche = ArbeitAufDemFenster;
+            KiAusfuehrungWindows.Aktuell.AufOberflaeche = ArbeitAufDemFenster;
 
             _bestaetigungsweg = BestaetigungFragen;
             KiChatService.Bestaetigungsweg = _bestaetigungsweg;
@@ -219,11 +219,11 @@ namespace WindowsFormsApplication1
             if (ReferenceEquals(KiChatService.Bestaetigungsweg, _bestaetigungsweg))
                 KiChatService.Bestaetigungsweg = null;
 
-            if (ReferenceEquals(KiAusfuehrer.AufOberflaeche,
+            if (ReferenceEquals(KiAusfuehrungWindows.Aktuell.AufOberflaeche,
                                 (Func<Func<Task>, Task>)ArbeitAufDemFenster))
-                KiAusfuehrer.AufOberflaeche = null;
+                KiAusfuehrungWindows.Aktuell.AufOberflaeche = null;
 
-            KiAusfuehrer.Ueberlagerung = null;
+            KiAusfuehrungWindows.Aktuell.Ueberlagerung = null;
 
             // Der Aufrufkontext gilt fuer das FENSTER (Auftrag #199): Ist es zu,
             // beantwortet wieder die Fensterermittlung, in welchem Bereich der

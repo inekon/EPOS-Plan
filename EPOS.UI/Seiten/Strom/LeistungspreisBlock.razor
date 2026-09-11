@@ -1,0 +1,97 @@
+﻿@* DER LEISTUNGSPREIS L_P in Schritt 2 „Daten & Kosten" der Stromspeicher-Auslegung
+   (Anwenderentscheid SD-E-8 vom 11.09.2026, Auftrag #206).
+
+   WOHER ER KOMMT. Bis #206 stand dieses Feld im Blatt „Betriebsfuehrung" des Modus
+   „Einzelspeicher" (EinzelspeicherBetrieb, Anwenderentscheid W11b-E-3) und erschien
+   dort nur bei der Berechnungsart „Lastspitzenkappung". Der Modus ist gefallen, der
+   Wert nicht: Die Flotte rechnet mit demselben Satz
+   (FlottenTarif.LeistungspreisEuroProKw), und er ist ein KOSTENSATZ — also gehoert er
+   zu den Kosten und nicht zur Betriebsfuehrung. Er steht seither IMMER da, nicht nur
+   bei einem bestimmten Ziel: Der Leistungspreis bewertet die Bezugsspitze jedes
+   Laufs.
+
+   DAS FELD SCHREIBT SOFORT. Es ist dasselbe Feld Tab_StromspeicherVariante.L_P, das
+   der Reiter „Parameter" und die Peak-Shaving-Maske pflegen — EINE Pflegestelle. Ohne
+   Schreibweg bleibt es Anzeige („Kein Delegat ist kein Knopf"); gerechnet wird dann
+   mit dem vorbelegten Wert. Die Klappliste bietet NUR gepflegte Quellen an; eine
+   Liste mit Nullen waere keine Auswahl, sondern eine Falle.
+
+   DER BAUSTEIN SCHREIBT NICHTS SELBST. Er meldet den gewaehlten Satz — wohin er
+   geht (Suchraum, Flottentarif, Projektvariante), entscheidet die Seite. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<section class="epos-speicheropt-blatt" aria-label="@Resource.OPT_LBL_LEISTUNGSPREIS">
+    <div class="epos-speicheropt-suchraum">
+        <Formularraster>
+            <KindInhalt>
+                <Formulargruppe Titel="@Resource.OPT_LBL_LEISTUNGSPREIS">
+                    <KindInhalt>
+                        <Zahlenfeld Bezeichnung="@Resource.OPT_LBL_LEISTUNGSPREIS" Einheit="€/(kW·a)" Min="0"
+                                    Wert="@Wert" Aktiv="@(Aktiv && Schreibbar)"
+                                    WertChanged="FeldGesetzt" />
+
+                        @if (Quellen.Count > 0)
+                        {
+                            <Auswahlfeld Bezeichnung="@Resource.OPT_LBL_LP_QUELLE" Eintraege="@Quellenliste"
+                                         Auswahl="@_quelle" Platzhalter="@Resource.OPT_LBL_LP_QUELLE"
+                                         Aktiv="@(Aktiv && Schreibbar)"
+                                         AuswahlChanged="QuelleGewaehlt" />
+                        }
+                    </KindInhalt>
+                </Formulargruppe>
+            </KindInhalt>
+        </Formularraster>
+    </div>
+
+    <Herleitungszeile Text="@Resource.FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" />
+</section>
+
+@code {
+    /// <summary>Der Leistungspreis L_P [€/(kW·a)].</summary>
+    [Parameter] public double Wert { get; set; }
+
+    /// <summary>Darf bearbeitet werden? (Während eines Laufs: nein.)</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Gibt es einen Weg, der den Satz in die Projektvariante schreibt? Ohne ihn bleibt
+    /// das Feld Anzeige — ein Feld, das nur den Arbeitsstand träfe, wäre eine halbe
+    /// Pflegestelle.
+    /// </summary>
+    [Parameter] public bool Schreibbar { get; set; } = true;
+
+    /// <summary>Die angebotenen Leistungspreis-Quellen; leer = keine gepflegt.</summary>
+    [Parameter] public IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Quellen { get; set; }
+        = Array.Empty<SpeicherOptimierungLeistungspreisQuelle>();
+
+    /// <summary>Ein Satz wurde eingegeben oder aus einer Quelle übernommen.</summary>
+    [Parameter] public EventCallback<double> Gewaehlt { get; set; }
+
+    /// <summary>Die zuletzt gewählte Quelle (Index); <c>null</c> = keine.</summary>
+    private int? _quelle;
+
+    private IReadOnlyList<(int Id, string Text)> Quellenliste =>
+        Quellen.Select((q, i) => (Id: i, Text: q.Bezeichnung)).ToList();
+
+    /// <summary>Von Hand geändert — damit gilt keine Quelle mehr.</summary>
+    private Task FeldGesetzt(double? wert)
+    {
+        if (!wert.HasValue) return Task.CompletedTask;
+        _quelle = null;
+        return Gewaehlt.InvokeAsync(wert.Value);
+    }
+
+    /// <summary>
+    /// Eine Quelle wurde gewählt: Ihr Wert geht ins Feld UND weiter — die Übernahme ist
+    /// ein Schreibvorgang, kein Vorschlag (W11b‑E‑3).
+    /// </summary>
+    private Task QuelleGewaehlt(int? index)
+    {
+        _quelle = index;
+        if (!index.HasValue || index.Value < 0 || index.Value >= Quellen.Count) return Task.CompletedTask;
+        return Gewaehlt.InvokeAsync(Quellen[index.Value].WertEurProKwA);
+    }
+}

@@ -1,4 +1,4 @@
-﻿@* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
+@* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
    2.1, Paket P3 / Auftrag #192).
 
    WOZU. Der abgeloeste Flottendialog hatte vier REITER und in seiner Fussleiste
@@ -10,9 +10,13 @@
    BERECHNEN → Ergebnis lesen.
 
    SCHRITT 4 IST EIN KNOPF, KEIN BLATT. Er traegt seine Beschriftung aus dem
-   Zustand („Flotte bewerten" / „Groessen optimieren" / „Optimieren") — das ist
-   die zweite Haelfte der Antwort auf Punkt 3: Ohne den Schalter „Speicheranzahl
-   und Groessenbereiche optimieren" rechnet derselbe Knopf EINE Konfiguration.
+   Zustand („Bewerten" / „Groessen optimieren") — das ist die zweite Haelfte der
+   Antwort auf Punkt 3: Ohne den Schalter „Speicheranzahl und Groessenbereiche
+   optimieren" rechnet derselbe Knopf EINE Konfiguration.
+
+   DER MODUS-UMSCHALTER IST MIT #206 GEFALLEN (Anwenderentscheid SD-E-8): Die
+   Ansicht kennt nur noch EINEN Weg, und eine Leiste, die zwischen zwei Wegen
+   umschaltet, hat nichts mehr umzuschalten.
 
    WEICHE SPERRE STATT disabled (Hausregel W16b-E-6). Schritt 5 ist vor dem
    ersten Lauf nicht betretbar — und genau dann will der Anwender wissen, warum.
@@ -33,11 +37,6 @@
         }
 
         <li class="epos-ablaufleiste-aktion">
-            @if (Modusknopf is not null)
-            {
-                <span class="epos-ablaufleiste-modus">@Modusknopf</span>
-            }
-
             <button type="button" class="epos-knopf epos-knopf--primaer epos-ablaufleiste-rechnen"
                     disabled="@(!RechnenFrei)" title="@Leer(RechnenGrund)"
                     @onclick="RechnenGeklickt">@RechnenText</button>
@@ -91,9 +90,6 @@
 
     /// <summary>Der Rechenknopf wurde gedrückt.</summary>
     [Parameter] public EventCallback Rechnen { get; set; }
-
-    /// <summary>Der Modus-Umschalter; er steht links neben dem Rechenknopf.</summary>
-    [Parameter] public RenderFragment? Modusknopf { get; set; }
 
     /// <summary>Beschriftung der Leiste für die Sprachausgabe.</summary>
     [Parameter] public string Bezeichnung { get; set; } = "Ablauf";

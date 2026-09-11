@@ -1,31 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 
 namespace EPOS.UI.Seiten.Strom;
-
-/// <summary>
-/// Die zwei Betriebsarten der Ansicht „Stromspeicher-Auslegung"
-/// (Anwenderentscheid <b>SD‑Q1</b> vom 11.09.2026).
-/// </summary>
-/// <remarks>
-/// Eine Ansicht, zwei Modi — <b>rechnerisch bleiben die Pfade getrennt</b> (SD‑Q2):
-/// Der Einzelpfad ist der regressionsgeprüfte (zwölf Referenzprojekte), der
-/// Flottenpfad läuft seit #174 gegen Projekt 1046. Geteilt wird die Ansicht, nicht
-/// der Rechenweg.
-/// </remarks>
-public enum AuslegungModus
-{
-    /// <summary>Die Speicherflotte — ein oder mehrere AC-Einheiten.</summary>
-    Flotte = 0,
-
-    /// <summary>Die Rastersuche über Kapazität und C-Rate EINES Speichers.</summary>
-    Einzelspeicher = 1
-}
 
 /// <summary>
 /// Die sprachneutralen Schlüssel der Ablaufleiste (Konzept „Stromspeicher-Dialoge" 2.1).
@@ -37,7 +17,7 @@ public enum AuslegungModus
 /// </remarks>
 public static class AuslegungSchritt
 {
-    /// <summary>Blatt 1 — die Flotte bzw. der Suchraum des Einzelspeichers.</summary>
+    /// <summary>Blatt 1 — die Speichereinheiten; eine Einheit ist der Einzelspeicher (SD‑E‑8).</summary>
     public const string Speicher = "SPEICHER";
 
     /// <summary>Blatt 2 — Quellen, Kosten und Profile.</summary>
@@ -94,10 +74,6 @@ public sealed class StromspeicherAuslegungDienste
     public Func<SpeicherOptimierungEingaben, Action<double?, string>,
                 Task<SpeicherFlottenErgebnis>>? FlotteRechnen;
 
-    /// <summary>Rechnet die Rastersuche des Einzelspeichers.</summary>
-    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
-                Task<SpeicherOptimierungErgebnis>>? EinzelRechnen;
-
     /// <summary>Bricht einen laufenden Hintergrundlauf ab; ohne Delegat kein Knopf.</summary>
     public Action? Abbrechen;
 
@@ -113,15 +89,26 @@ public sealed class StromspeicherAuslegungDienste
     /// <summary>Schreibt einen CSV-Text in eine Datei.</summary>
     public Func<string, Task<Rueckmeldung>>? Csv;
 
-    /// <summary>Übernimmt Kapazität [kWh] und Leistung [kW] des Bestpunkts in die Gerätedaten.</summary>
+    /// <summary>
+    /// Übernimmt Kapazität [kWh] und Leistung [kW] EINER Einheit in die Speicheranlage
+    /// des Projekts (Schritt 5, „Größe in die Projektanlage übernehmen").
+    /// </summary>
+    /// <remarks>
+    /// <b>Er bleibt mit SD‑E‑8</b>: Der Projektlauf ohne aktivierte Flotte rechnet
+    /// weiter die Einzelanlage (SD‑Q2), und ohne diesen Weg käme die ausgelegte Größe
+    /// dort nie an.
+    /// </remarks>
     public Func<double, double, Rueckmeldung>? AuslegungUebernehmen;
 
-    /// <summary>Schreibt den Leistungspreis L_P [€/(kW·a)] sofort in die aktive Variante.</summary>
+    /// <summary>
+    /// Schreibt den Leistungspreis L_P [€/(kW·a)] sofort in die aktive Variante.
+    /// </summary>
+    /// <remarks>
+    /// Es ist DERSELBE Wert wie der Leistungspreis der Flotte
+    /// (<c>FlottenTarif.LeistungspreisEuroProKw</c>) — eine Eingabe in Schritt 2, keine
+    /// zweite (SD‑E‑8).
+    /// </remarks>
     public Action<double>? LeistungspreisSchreiben;
-
-    /// <summary>Zeichnet das Bild „Lastgang und Speicherbetrieb" des Bestpunkts neu.</summary>
-    public Func<bool, IReadOnlyList<string>, Diagrammbereich?,
-                SpeicherOptimierungBetriebsbild>? Betriebsbild;
 
     /// <summary>Ist die Flotte dieses Projekts für den Projektlauf aktiviert?</summary>
     public Func<bool>? ProjektflotteAktiv;

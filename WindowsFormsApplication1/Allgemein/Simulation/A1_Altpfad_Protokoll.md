@@ -53,7 +53,7 @@ Marker-Rücksetzen): idempotent; 1 Übernahme (1007007 ← 50/30), 33 dokumentie
 Rückfall-Fälle (invertierte Paare bzw. Bezeichner-Varianten „Liter"/„Ltr" — exakt das
 bisherige Engine-Verhalten, kein Ergebnisverlust).
 
-**Neue Basis: [`Referenzlaeufe/2026-08-27_A1`](../../../Referenzlaeufe/2026-08-27_A1/lauf_protokoll.md)**
+**Neue Basis: `Referenzlaeufe/2026-08-27_A1` (entfernt, Stand `1e71d30`)**
 — dreizehn Projekte, erstmals mit den vier Konzept-11.1-Projekten; `2026-08-27_K1` rückt zu
 den früheren Ständen.
 

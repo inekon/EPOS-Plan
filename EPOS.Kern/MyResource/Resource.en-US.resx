@@ -5009,53 +5009,14 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>The storage cannot hold the target threshold: the new peak is {0} kW. Increase capacity or power, or raise the threshold.</value>
   </data>
-  <data name="OPT_TITEL" xml:space="preserve">
-    <value>Optimise sizing</value>
-  </data>
-  <data name="OPT_GRP_SUCHRAUM" xml:space="preserve">
-    <value>Search range</value>
-  </data>
   <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
     <value>Result</value>
-  </data>
-  <data name="OPT_LBL_CMIN" xml:space="preserve">
-    <value>Capacity from [kWh]</value>
-  </data>
-  <data name="OPT_LBL_CMAX" xml:space="preserve">
-    <value>Capacity to [kWh]</value>
-  </data>
-  <data name="OPT_LBL_STUETZSTELLEN" xml:space="preserve">
-    <value>Grid points</value>
-  </data>
-  <data name="OPT_LBL_RMIN" xml:space="preserve">
-    <value>C rate from [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RMAX" xml:space="preserve">
-    <value>C rate to [1/h]</value>
-  </data>
-  <data name="OPT_LBL_RSCHRITT" xml:space="preserve">
-    <value>Step [1/h]</value>
-  </data>
-  <data name="OPT_LBL_STRATEGIE" xml:space="preserve">
-    <value>Calculation mode</value>
-  </data>
-  <data name="OPT_CHK_FEINRASTER" xml:space="preserve">
-    <value>Refine around the optimum</value>
-  </data>
-  <data name="OPT_CHK_KVER" xml:space="preserve">
-    <value>Include wear cost in the objective</value>
-  </data>
-  <data name="OPT_LBL_PUNKTE" xml:space="preserve">
-    <value>Grid points: {0}</value>
   </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Current sizing: {0} kWh / {1} kW ({2} C)</value>
   </data>
   <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
     <value>The objective is the annual surplus after capital service ΔJ = E_a,eq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Payback time is deliberately a secondary indicator, not an objective.</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIEL_LASTSPITZE" xml:space="preserve">
-    <value>The objective is ΔJ = L_P · ΔP_max · rbf_deg − shifting losses − (c_cap·C + c_pow·P + I_fix) · a(i_z, N): the annual demand charge saving less the cost of the shifted energy and the capital service. The threshold is raised per grid point — as in the peak shaving dialog.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Demand charge L_P</value>
@@ -5102,9 +5063,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
     <value>The target threshold was exceeded — the storage cannot hold it.</value>
   </data>
-  <data name="OPT_HINWEIS_KVER" xml:space="preserve">
-    <value>Caution: annuity and wear cost price the same thing. As long as c_ver is derived from the investment, including it double counts.</value>
-  </data>
   <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
     <value>Default: 500 … 5,000 kWh with 10 grid points; if the current capacity is outside, 0.25 … 2.5 × the current capacity instead. C rate 0.5 … 3.0 in 0.5 steps.</value>
   </data>
@@ -5116,9 +5074,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="OPT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Apply best point …</value>
   </data>
   <data name="OPT_BTN_CSV" xml:space="preserve">
     <value>Grid as CSV …</value>
@@ -5164,9 +5119,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
     <value>whole year</value>
-  </data>
-  <data name="OPT_BETRIEB_CHK_JAHR" xml:space="preserve">
-    <value>Whole year</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Grid draw without storage</value>
@@ -5230,15 +5182,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_SP_EINHEIT" xml:space="preserve">
     <value>Unit</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_AUSLEGUNG" xml:space="preserve">
-    <value>Sizing of the best point</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_WIRTSCHAFT" xml:space="preserve">
-    <value>Economics</value>
-  </data>
-  <data name="OPT_KZ_GRUPPE_SPEICHER" xml:space="preserve">
-    <value>Storage and energy</value>
   </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nominal capacity C_nom</value>
@@ -16529,9 +16472,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Non-monetary effects: {0}</value>
   </data>
-  <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
-    <value>The inputs have changed. The displayed result is out of date; please calculate again.</value>
-  </data>
   <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
     <value>No schedule solver is available on this platform; planning operating targets are disabled.</value>
   </data>
@@ -17375,42 +17315,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
     <value>Unnamed storage unit</value>
   </data>
-  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
-    <value>Search space</value>
-  </data>
-  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
-    <value>Size axis:</value>
-  </data>
-  <data name="FLOTTE_AUS_VON" xml:space="preserve">
-    <value>From:</value>
-  </data>
-  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
-    <value>To:</value>
-  </data>
-  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
-    <value>Step size (empty = number of points):</value>
-  </data>
-  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
-    <value>Points:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
-    <value>C rate from:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
-    <value>C rate to:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
-    <value>C rate step:</value>
-  </data>
-  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
-    <value>Operating strategy:</value>
-  </data>
-  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
-    <value>Fine grid</value>
-  </data>
-  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
-    <value>Take wear cost into account</value>
-  </data>
   <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
     <value>Time series</value>
   </data>
@@ -17813,15 +17717,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
     <value>← back</value>
   </data>
-  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
-    <value>Fleet</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
-    <value>Single storage</value>
-  </data>
   <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
     <value>Design workflow</value>
   </data>
@@ -17830,9 +17725,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
     <value>1 Storage</value>
-  </data>
-  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
-    <value>1 Storage parameters</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
     <value>2 Data &amp; costs</value>
@@ -17844,13 +17736,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>5 Result</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Evaluate fleet</value>
+    <value>4 Evaluate</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
     <value>4 Optimise sizes</value>
-  </data>
-  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
-    <value>4 Optimise</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>The result step opens once a run has been computed.</value>
@@ -18175,6 +18064,174 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>The assistant cannot trigger buttons in this version yet.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_VERTEILUNG_EINE" xml:space="preserve">
+    <value>Allocation appears from two units upward: it distributes a charge or discharge request across several storages, and with one there is nothing to distribute.</value>
+  </data>
+  <data name="FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" xml:space="preserve">
+    <value>The demand charge values the highest annual grid power. It applies to the sizing study and is written to the project’s active storage variant at the same time — it is the same field the „Parameters“ tab maintains.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
+    <value>Transfer size to the project unit…</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Opens one of the released forms; the user then continues working in it.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Open form</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_OEFFNEN" xml:space="preserve">
+    <value>Open the boiler administration.</value>
+  </data>
+  <data name="KI_AKTION_ERL_MASKE_OEFFNEN" xml:space="preserve">
+    <value>Name of the form from the dialog catalogue that is to be opened.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Saves the entries of the open form to the database through the form's own save path.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Save form</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>Save the boiler as it now stands in the form.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_DIALOG_SPEICHERN" xml:space="preserve">
+    <value>The record of the form is written. A backup copy of the database is made first; the write can only be undone by restoring that copy.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Runs the simulation of a project; on request the result is saved.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Run simulation</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>Run the project Musterhaus and save the result.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_SIMULATION_RECHNEN" xml:space="preserve">
+    <value>The run occupies the calculation core for its duration. With „save“ the existing result of the project is overwritten.</value>
+  </data>
+  <data name="KI_AKTION_ERL_SIM_SPEICHERN" xml:space="preserve">
+    <value>Should the result be saved? Without an entry the run only calculates.</value>
+  </data>
+  <data name="KI_AKTION_SIM_SPEICHERN_NAME" xml:space="preserve">
+    <value>Save result</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_PEAKZIEL" xml:space="preserve">
+    <value>Determines the economic peak target in the open electricity storage view.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_PEAKZIEL" xml:space="preserve">
+    <value>Determine peak target</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_PEAKZIEL" xml:space="preserve">
+    <value>Determine the economic peak target for the configured fleet.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_PEAKZIEL" xml:space="preserve">
+    <value>The peak target that was found then stands in the view; the previous value is replaced.</value>
+  </data>
+  <data name="KI_AKTION_ZWECK_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluates the fleet of the open electricity storage view — the same path as the „Calculate“ button.</value>
+  </data>
+  <data name="KI_AKTION_TITEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluate fleet</value>
+  </data>
+  <data name="KI_AKTION_BEISPIEL_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>Evaluate the configured storage fleet.</value>
+  </data>
+  <data name="KI_AKTION_WIRKUNG_FLOTTE_BEWERTEN" xml:space="preserve">
+    <value>The result of the evaluation then stands in the view; a previous result is replaced.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_UEBER_SPEICHERN" xml:space="preserve">
+    <value>The assistant does not trigger this button; for writing there is the action dialog_speichern.</value>
+  </data>
+  <data name="KI_AKTION_KNOPF_KEIN_WEG" xml:space="preserve">
+    <value>The assistant cannot trigger buttons of a form. For writing there is dialog_speichern, for filling fields feld_setzen and formular_ausfuellen.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OK" xml:space="preserve">
+    <value>The form „{0}“ is open.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_KEIN_WEG" xml:space="preserve">
+    <value>The form „{0}“ cannot be opened from here (target {1}). On this platform there is no path to it.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_OHNE_ZIEL" xml:space="preserve">
+    <value>No opening path is stored for the form „{0}“.</value>
+  </data>
+  <data name="KI_AKTION_OEFFNEN_FEHLER" xml:space="preserve">
+    <value>The form „{0}“ could not be opened: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_VORSCHAU" xml:space="preserve">
+    <value>The form „{0}“ is saved with its {1} fields. The record is written; a backup copy of the database is made first.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_KEIN_WEG" xml:space="preserve">
+    <value>The form „{0}“ offers the assistant no save path.</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_FEHLER" xml:space="preserve">
+    <value>The form „{0}“ could not be saved: {1}</value>
+  </data>
+  <data name="KI_AKTION_SPEICHERN_SICHERUNG" xml:space="preserve">
+    <value>The previous state is backed up: {0}</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU" xml:space="preserve">
+    <value>The project „{0}“ is calculated. The saved result remains untouched.</value>
+  </data>
+  <data name="KI_AKTION_SIM_VORSCHAU_SPEICHERN" xml:space="preserve">
+    <value>The project „{0}“ is calculated and the result is saved. The existing result of the project is overwritten.</value>
+  </data>
+  <data name="KI_AKTION_SIM_LAEUFT" xml:space="preserve">
+    <value>Calculating project „{0}“ …</value>
+  </data>
+  <data name="KI_AKTION_SIM_FERTIG" xml:space="preserve">
+    <value>The run has finished.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK" xml:space="preserve">
+    <value>The project „{0}“ has been calculated.</value>
+  </data>
+  <data name="KI_AKTION_SIM_OK_GESPEICHERT" xml:space="preserve">
+    <value>The project „{0}“ has been calculated and the result saved.</value>
+  </data>
+  <data name="KI_AKTION_SIM_FEHLER" xml:space="preserve">
+    <value>The project „{0}“ could not be calculated: {1}</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_VORSCHAU" xml:space="preserve">
+    <value>The economic peak target is determined in the view „{0}“. The run can take several minutes; the target that is found then replaces the configured value.</value>
+  </data>
+  <data name="KI_AKTION_PEAKZIEL_LAEUFT" xml:space="preserve">
+    <value>Determining the economic peak target …</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_VORSCHAU" xml:space="preserve">
+    <value>The fleet of the view „{0}“ is evaluated. The run can take several minutes; a previous result is replaced.</value>
+  </data>
+  <data name="KI_AKTION_FLOTTE_LAEUFT" xml:space="preserve">
+    <value>Evaluating the fleet …</value>
+  </data>
+  <data name="KI_AKTION_ANSICHT_NICHT_OFFEN" xml:space="preserve">
+    <value>The view „{0}“ is not open; this calculation only runs there.</value>
+  </data>
+  <data name="KI_AKTION_KEIN_RECHENWEG" xml:space="preserve">
+    <value>The view „{1}“ does not currently offer the calculation path „{0}“.</value>
+  </data>
+  <data name="KI_FELD_NICHT_SETZBAR" xml:space="preserve">
+    <value>The field „{0}“ is a derived value and cannot be set.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT" xml:space="preserve">
+    <value>The record being edited in „{0}“ belongs to the delivery and is write-protected.</value>
+  </data>
+  <data name="KI_FELD_LEER_VERBOTEN" xml:space="preserve">
+    <value>The field „{0}“ is mandatory and must not be left empty.</value>
+  </data>
+  <data name="KI_FELD_LEER_UNMOEGLICH" xml:space="preserve">
+    <value>The field „{0}“ always carries a value; it cannot be emptied.</value>
+  </data>
+  <data name="KI_FELD_KEINE_ZAHL" xml:space="preserve">
+    <value>The field „{0}“ expects a number; „{1}“ is not one.</value>
+  </data>
+  <data name="KI_FELD_KEIN_WAHRHEITSWERT" xml:space="preserve">
+    <value>The field „{0}“ expects yes or no; „{1}“ is neither.</value>
+  </data>
+  <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
+    <value>The field „{0}“ could not be set: {1}</value>
+  </data>
+  <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
+    <value>The form reports on this: {0}</value>
   </data>
   <data name="MENU_SIMULATION" xml:space="preserve">
     <value>Simulation&#8230;</value>

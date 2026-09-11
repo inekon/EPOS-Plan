@@ -137,6 +137,8 @@ n  = Last − PV − BHKW + Hilfsverbrauch der Flotte
 
 Der erste Term sagt, wie tief die Flotte überhaupt kappen kann; der zweite verhindert ein Ziel, unter das die Last nie fällt — sonst ist Wiederaufladung nach der Regel aus Spezifikation 5.1 ausgeschlossen. Jeder Vorschlag trägt eine Herleitungszeile im Klartext. Liegt keine Zeitreihe vor, gilt ein **benannter** Rückfall: mit bekannter Bezugsspitze `max(Spitze − Σ Entladeleistung; GrundlastAnteilImRueckfall · Spitze)`, ohne sie die Konstante `RueckfallPeakZielKw`. Gespeicherte Stände werden nie überschrieben — die Vorbelegung greift ausschließlich beim Anlegen einer neuen Flotte (`SpeicherFlottenStudieCtrl.BetriebsvorgabenSetzen`).
 
+**Die Vorbelegung der EINHEITEN: eine je Speicheranlage des Projekts** (Anwenderbefund **#210**, 11.09.2026). `SpeicherFlottenStudieCtrl.Vorbelegung` baute eine neu angelegte Flotte bis dahin aus `StromspeicherSimCtrl.LeseParameter(projektId)` — EIN Parametersatz, nämlich der der AKTIVEN Variante (AP9b), im Rückfall die kapazitätsgewichtete Summe über alle `SP_TYP`-Anlagen — und daraus wurde genau EINE Einheit. Ein Projekt mit zwei Speichern bekam so eine Flotte mit einer Einheit, und weil der Projektlauf den gespeicherten Stand rechnet, fehlte die zweite danach überall: im Eingabestand `@Aktuell`, in „Kennzahlen je Speicher" und in der Reihenwahl der Diagramme. Seit #210 liefert `StromspeicherSimCtrl.Speicheranlagen(projektId)` die `SP_TYP`-Anlagenzeilen in Anlagenreihenfolge, und die Vorbelegung liest je Zeile über `LeseParameter(projektId, anlageId)` **ihren eigenen** Satz — Gerätedaten aus der Anlage, SoC-Band und Betriebsführung aus DEREN Variantenzeile. Jede Einheit trägt Anlagennamen und `AnlageId`; der Stromspeicher-Reiter nennt diese Herkunft je Zeile. Die Referenzliste `REF_SP_TYP` bleibt draußen (Vergleichsfall, keine gleichzeitig betriebene Anlage), und wie beim Peak-Ziel gilt: **Gespeicherte Stände werden nie überschrieben** — die Vorbelegung greift ausschließlich beim Anlegen. Fachliche Kante: Das Schema trennt eine parallel betriebene Anlage nicht von einer Vergleichs-Alternative; gewählt ist deshalb der SICHTBARE Fehler — eine Einheit zu viel nimmt der Anwender im Editor heraus, eine Einheit zu wenig erfährt er nirgends.
+
 **„Peak-Ziel bestimmen"** (`FlottenPeakZiel.PeakZielBestimmen`) beantwortet die Frage, die der Anwender an eine Lastspitzenkappung stellt: Wie tief komme ich mit dieser Flotte? Bisektion zwischen der Grundlast (Maximum der Tagesminima) und der Referenzspitze, gesucht ist das kleinste `H`, bei dem die verbleibende Bezugsspitze `≤ H` bleibt. Höchstens `HoechsteLaeufe` = 12 Jahresläufe, je Lauf eine Meldung über `IProgress<FlottenPeakZielFortschritt>`, Abbruch über `CancellationToken`. Gerechnet wird ausdrücklich mit `PeakShaving`; **planende Ziele werden benannt abgewiesen**, weil sie je Lauf den MILP-Planer bräuchten (SP‑O‑1).
 
 **Die Vorprüfung** (`FlottenPlausibilitaet.Pruefe`, [`EPOS.Kern/Controller/FlottenPlausibilitaet.cs`](EPOS.Kern/Controller/FlottenPlausibilitaet.cs)) läuft in `SpeicherFlottenStudieCtrl.Rechnen` vor der Rechnung und nach der Rechnung noch einmal mit der Diagnose. Sie liefert Hinweise mit Stufe (`Warnung`/`Hinweis`) und sprachneutraler Kennung; sie landen in der bestehenden Hinweisliste **und** zusätzlich strukturiert in `SpeicherFlottenErgebnis.Pruefhinweise`, an denen die Oberfläche ihre Abhilfeknöpfe aufhängt (Paket P3).
@@ -358,18 +360,37 @@ Die Zielbilder stehen in
 [`Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md)
 Abschnitt 1.1, 1.6, 2.1, 2.2 Punkt 2 und 2.4.
 
-**Ein Faden statt zweier Reitersätze (SD‑Q1).** Über allem steht die **Ablaufleiste**
+**Ein Faden statt zweier Reitersätze.** Über allem steht die **Ablaufleiste**
 (`Ablaufleiste.razor`) mit fünf Stationen — **1 Speicher · 2 Daten & Kosten ·
 3 Betriebsführung · 4 Berechnen · 5 Ergebnis**. Station 4 ist der Rechenknopf, die übrigen
-sind Blätter. Rechts davon steht der **Modusschalter Flotte / Einzelspeicher**: dieselbe
-Leiste, andere Blätter — die Flotte zeigt `SpeicherFlottenEditor`, `SpeicherAuslegungEditor`
-und `SpeicherFlottenBetriebEditor`, der Einzelspeicher die drei aus dem gefallenen Dialog
-herausgelösten Blätter `EinzelspeicherSuchraum`, `EinzelspeicherBetrieb` und
-`EinzelspeicherErgebnis`. **Keine der vier Bestandskomponenten wurde kopiert**; der
+sind Blätter. Die Blätter sind `SpeicherFlottenEditor`, `SpeicherAuslegungEditor` und
+`SpeicherFlottenBetriebEditor` — **keine der drei Bestandskomponenten wurde kopiert**; der
 `SpeicherFlottenEditor` bekam allein den Schalter `BetriebZeigen`, damit die Betriebsführung
 nur auf Station 3 erscheint. Eine Station, die noch nicht bedienbar ist, bleibt ein
 `<button>` mit `aria-disabled` und Grund im `title` (schwache Sperre, W16b‑E‑6) — nie ein
 `disabled` ohne Begründung.
+
+**Ein Weg statt zweier Modi (SD‑E‑8, #206, 11.09.2026).** Bis dahin stand rechts in der
+Leiste ein **Modusschalter Flotte / Einzelspeicher** (SD‑Q1), und der Einzelspeicher fuhr mit
+drei eigenen Blättern eine eigene Rastersuche. Der Anwender hat ihn zurückgegeben: „Es ist
+nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen." Seither
+rechnet die Ansicht **immer die Flotte**; ein Einzelspeicher ist eine Flotte mit genau EINER
+Einheit — so bildet die Spezifikation (1.2, Kapitel 11) eine vorhandene Anlage ohnehin ab, und
+`SpeicherFlottenStudieCtrl.Vorbelegung` legt seit #210 je Speicheranlage des Projekts eine
+Einheit an; ein Projekt mit EINER Anlage bekommt damit genau eine. Die fünf
+Betriebsziele, das Peak-Ziel, die Diagnose und die Größen-Sicht gelten für jede Einheitenzahl;
+die **Verteilung erscheint erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.
+VerteilungZeigen`, ausgeblendet statt gesperrt, mit einer Erklärzeile — bei einer Einheit gibt
+es nichts zu verteilen). Gefallen sind `AuslegungModus`, der `Modusknopf` der Ablaufleiste,
+die drei Blätter `EinzelspeicherSuchraum`/`-Betrieb`/`-Ergebnis` und der Suchraum-Teil des
+`SpeicherAuslegungEditor`. **Zwei Dinge des Einzelwegs blieben**, weil der PROJEKTLAUF weiter
+zwei Pfade führt (SD‑Q2): das **Rückschreiben in die Projektanlage** in Schritt 5 — ein Knopf
+mit Rückfrage für die eine Einheit mit Anlagenbezug, ohne den die ausgelegte Größe beim
+klassischen Projektlauf nie ankäme — und der **Leistungspreis** als EINE Eingabe in Schritt 2
+(`LeistungspreisBlock`; derselbe Wert für `FlottenTarif.LeistungspreisEuroProKw`, den Suchraum
+und die Projektvariante). Der Einzelspeicher-**Optimierer** selbst ist nicht gelöscht: Er
+trägt das Betriebsbild des Berichts (`SpeicherBetriebsbild`), die Vorbelegung in
+`SpeicherAuslegungCtrl` und die KI-Aktion `speicher_optimieren`.
 
 **Der Weg dorthin und zurück.** Der Reiter „Stromspeicher" der Ergebnisseite **wechselt die
 Ansicht**, statt eine Überlagerung aufzuziehen (Muster W16c‑E‑3). Die Ergebnisseite selbst
@@ -388,9 +409,11 @@ Simulationslauf an (Muster iU9‑W11a). Zwei Läufe nebeneinander wären zwei Wa
 **Die Datenseite liegt im Kern.** `EPOS.Kern/Controller/StromspeicherAuslegungCtrl.cs` ist
 eine **Instanz** je Projekt und führt, was vorher als Delegatenbündel in der WinForms-Hülle
 stand: Vorgaben lesen, Einstellungen und Profile speichern (ein Name mit `@` ist für interne
-Stände reserviert), Flotte und Einzelspeicher vorbereiten und rechnen, Betriebsbild und CSV,
-Bestpunkt übernehmen, Leistungspreis schreiben, Projektflotte aktivieren und deaktivieren,
+Stände reserviert), die Flotte vorbereiten und rechnen, die Größe einer Einheit in die
+Projektanlage übernehmen, Leistungspreis schreiben, Projektflotte aktivieren und deaktivieren,
 Vorprüfung, Peak-Ziel-Vorschlag und Peak-Ziel-Bestimmung sowie den eigenen Simulationslauf.
+Der Einzelweg (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`) ist mit #206
+entfallen — samt dem gemerkten rohen Raster, an dem das Nachzeichnen des Betriebsbildes hing.
 Die Hülle behält nur, was die **Plattform** beisteuert: Dateiwähler, `Task.Run`,
 `CancellationTokenSource`, Fensterbesitz. Datenbankarbeit bleibt auf dem Bedienfaden, allein
 die reinen Rechnungen gehen in `Task.Run` mit `IProgress<T>` und `CancellationToken`.

@@ -61,12 +61,19 @@ public sealed class KiMaskenanmeldung : IDisposable
     /// <typeparam name="T">Der Typ des Daten-Objekts; sein Name steht im Katalog vor dem Punkt.</typeparam>
     /// <param name="maskenname">Der Katalogschlüssel, eine Konstante aus <see cref="KiMaskennamen"/>.</param>
     /// <param name="quelle">Liefert das aktuelle Daten-Objekt; darf <c>null</c> liefern.</param>
+    /// <param name="haken">
+    /// Was der Dialog über seine Felder hinaus beisteuert (Auftrag #201, Stufe S3):
+    /// Auffrischen nach dem Setzen, seine eigene Plausibilitätsprüfung, der Schreibschutz
+    /// seines Satzes, sein Speicherweg, seine Rechenwege. <c>null</c> = nichts davon; die
+    /// jeweilige Aktion lehnt dann benannt ab, statt still nichts zu tun.
+    /// </param>
     /// <returns>
     /// Die Anmeldung — sie wird beim Schließen des Dialogs verworfen. Kennt der Katalog die
     /// Maske nicht, kommt trotzdem ein Objekt zurück; es ist dann nur nicht
     /// <see cref="Angemeldet"/>.
     /// </returns>
-    public static KiMaskenanmeldung Fuer<T>(string maskenname, Func<T?> quelle) where T : class
+    public static KiMaskenanmeldung Fuer<T>(string maskenname, Func<T?> quelle,
+                                            KiMaskenhaken? haken = null) where T : class
     {
         if (quelle is null) throw new ArgumentNullException(nameof(quelle));
 
@@ -87,10 +94,10 @@ public sealed class KiMaskenanmeldung : IDisposable
                 return stand is null ? null : eigenschaft.GetValue(stand);
             };
 
-            // Der Setzer ist Stufe S3 (Auftrag #201) und heute unbenutzt. Er entsteht
-            // trotzdem hier, damit die Setzbarkeit eines Feldes AN DER EIGENSCHAFT haengt
-            // und nicht an einer zweiten Liste: Eine abgeleitete Groesse (die Diagnose der
-            // Flotte) hat keinen Setzer, und genau das soll der Assistent sehen.
+            // Der Setzer trägt seit Auftrag #201 (Stufe S3) den Setzweg. Er entsteht
+            // hier, damit die Setzbarkeit eines Feldes AN DER EIGENSCHAFT haengt und nicht
+            // an einer zweiten Liste: Eine abgeleitete Groesse (die Diagnose der Flotte)
+            // hat keinen Setzer, und genau das soll der Assistent sehen.
             Action<object?>? setzen = eigenschaft.CanWrite
                 ? wert =>
                   {
@@ -99,10 +106,14 @@ public sealed class KiMaskenanmeldung : IDisposable
                   }
                 : null;
 
-            zugaenge.Add(new KiFeldzugang(feld, lesen, setzen));
+            // Der ZIELTYP geht mit (Auftrag #201): Was aus der Modellantwort kommt, ist
+            // Text; was die Eigenschaft annimmt, ist double?, int, bool oder string. Die
+            // Umsetzung macht der Kern (KiFeldwandler) - er braucht dafür den Typ, und
+            // der steht nur hier fest.
+            zugaenge.Add(new KiFeldzugang(feld, lesen, setzen, eigenschaft.PropertyType));
         }
 
-        object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge);
+        object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge, haken);
         return new KiMaskenanmeldung(eintrag.Maskenname, marke);
     }
 
