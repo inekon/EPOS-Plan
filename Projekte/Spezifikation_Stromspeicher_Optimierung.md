@@ -2,7 +2,7 @@
 
 ## Grundlagen und Algorithmen für die Softwareumsetzung
 
-Version 1.2 | 11. September 2026 | Fachliche und technische Spezifikation
+Version 1.3 | 11. September 2026 | Fachliche und technische Spezifikation
 
 Dieses Dokument definiert eine Offline-Simulation für einen Standort mit Stromverbrauch, optionaler Photovoltaik und mehreren Batteriespeichern. Die Software soll Speichergrößen, Betriebsstrategien und die Verteilung von Lade- und Entladeleistung vergleichen. Maßstab für die wirtschaftliche Auswahl ist der Kapitalwert gegenüber demselben Standort ohne die untersuchten Speicher.
 
@@ -207,6 +207,14 @@ Leistung verteilen, physikalisch ausführen, Restpeak protokollieren
 ```
 
 Die Wiederaufladung nutzt freie Anschlussleistung unter H. Sie darf keinen neuen Peak über H erzeugen. Das ist eine reaktive Referenzstrategie. Sie lädt auch dann nach, wenn kurz darauf PV erwartet wird; diesen wirtschaftlichen Nachteil kann eine Prognoseplanung vermeiden.
+
+**Der Fall N dauerhaft über H** (ergänzt in Version 1.3, Befund SP‑O‑10 vom 11.09.2026). Die Regel oben behandelt ihn nicht; sie sagt nur „Restpeak protokollieren". Liegt der Zielwert H unter jedem Wert der Netzlast, entsteht daraus eine **arbeitslose Flotte**, und zwar zwangsläufig: Die Anforderung `N - H` ist in jedem Intervall positiv, es wird also nie eine Ladung angefordert, und der Ladedeckel `max(0, H - N)` der Regel „keine Wiederaufladung über H" ist dauerhaft 0. Ist zusätzlich die Netzladung gesperrt, greift der zweite Ladedeckel `max(0, -N)`, der ohne Überschuss ebenfalls 0 ist. Startet der Speicher auf seiner unteren SoC-Marke, hat er schon im ersten Intervall nichts abzugeben. Das Ergebnis ist rechnerisch richtig und dennoch wertlos: Variante und Referenz sind zahlengleich, der Kapitalwert ist die negative Investition zuzüglich Betriebskosten.
+
+Verbindlich sind daraus drei Forderungen an die Umsetzung:
+
+1. **Der Zielwert wird aus der Referenz hergeleitet, nicht geraten.** Die Untergrenze eines sinnvollen H ist das Maximum der Tagesminima von N — unter dieses Maximum fällt die Last an mindestens einem Tag nie, und damit ist an diesem Tag jede Wiederaufladung ausgeschlossen. Die Obergrenze eines wirksamen H ist die Referenzspitze. Ein Vorschlag lautet deshalb `H0 = max(Referenzspitze - Summe Entladeleistung; max der Tagesminima)`.
+2. **Die Simulation weist die Sperren aus.** Je Einheit und für die Flotte werden gezählt: Intervalle mit `N > H`, Intervalle mit Lade- und mit Entladeanforderung, Intervalle mit Ladedeckel 0 durch die Peak-Regel, Intervalle mit Ladedeckel 0 durch das Netzladeverbot und Intervalle mit Entladeanforderung an einen leeren Speicher. Aus Lade- und Entladeenergie folgt die Aussage „arbeitslos". Die Gründe sind sprachneutral zu benennen und mit ihren Zahlen auszugeben.
+3. **Der Start-Ladezustand wird genannt, nicht stillschweigend geändert.** Bleibt er auf der unteren SoC-Marke, ist am Anfang des Rechenzeitraums nichts zu entladen; eine Spitze in den ersten Stunden kann die Flotte deshalb nicht kappen. Ein voller Start würde diese Spitze schöner rechnen, als sie im Betrieb wäre.
 
 ### 5.2 PV Eigenverbrauch als Greedy Referenz
 

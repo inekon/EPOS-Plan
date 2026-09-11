@@ -800,6 +800,130 @@ public sealed class FlottenSimulationErgebnis
 
     /// <summary>Zahl der Intervalle, die nach einem Planungsfehler reaktiv gefahren wurden.</summary>
     public int PlanFallbackIntervalle { get; set; }
+
+    /// <summary>
+    /// Die Betriebsdiagnose dieses Laufs: sie sagt, WARUM die Flotte getan hat, was sie
+    /// getan hat — und insbesondere, warum sie nichts getan hat (Konzept Stromspeicher-Dialoge 2.4).
+    /// Der Referenzlauf OHNE Speicher traegt eine leere Diagnose; sie ist nie <c>null</c>.
+    /// </summary>
+    public FlottenDiagnose Diagnose { get; set; } = new();
+}
+
+/// <summary>
+/// Der sprachneutrale Grund EINES Diagnosebefunds. Die Aufzaehlung wird gespeichert und
+/// angezeigt; der Anzeigetext gehoert in die Oberflaeche, nicht in die Rechenbibliothek.
+/// </summary>
+public enum FlottenDiagnoseGrund
+{
+    /// <summary>Die Nettolast <c>n</c> lag ueber dem wirtschaftlichen Peak-Ziel <c>H</c>. Liegt der Anteil bei 1, fiel die Last im ganzen Zeitraum nie unter <c>H</c>.</summary>
+    LastUeberPeakZiel = 0,
+
+    /// <summary>Der Ladedeckel <c>max(0, H - n)</c> der Peak-Regel war 0: Wiederaufladung haette einen neuen Peak ueber <c>H</c> erzeugt (Spezifikation 5.1).</summary>
+    LadedeckelDurchPeakregel = 1,
+
+    /// <summary>Der Ladedeckel <c>max(0, -n)</c> des Netzladeverbots war 0: ohne <see cref="FlottenSimulationOptionen.NetzladungErlaubt"/> ist Laden nur aus verbleibendem Ueberschuss moeglich.</summary>
+    LadedeckelDurchNetzladeverbot = 2,
+
+    /// <summary>Es lag eine Entladeanforderung vor, die Flotte hatte aber keine abgebbare Energie — der Speicher stand auf seiner unteren Marke.</summary>
+    EntladeanforderungOhneEnergie = 3,
+
+    /// <summary>Im gesamten Rechenzeitraum wurde nie eine Entladung angefordert.</summary>
+    KeineEntladeanforderung = 4,
+
+    /// <summary>Im gesamten Rechenzeitraum wurde nie eine Ladung angefordert.</summary>
+    KeineLadeanforderung = 5
+}
+
+/// <summary>Ein gezaehlter Diagnosebefund: der Grund und die Zahl der betroffenen Intervalle.</summary>
+public sealed class FlottenDiagnoseBefund
+{
+    /// <summary>Der sprachneutrale Grund.</summary>
+    public FlottenDiagnoseGrund Grund { get; set; }
+
+    /// <summary>Zahl der Intervalle, auf die der Grund zutrifft.</summary>
+    public int Intervalle { get; set; }
+
+    /// <summary>Anteil [-] von <see cref="Intervalle"/> an allen gerechneten Intervallen; 0, wenn nichts gerechnet wurde.</summary>
+    public double Anteil { get; set; }
+}
+
+/// <summary>Die Betriebsdiagnose EINER Einheit ueber den Rechenzeitraum.</summary>
+public sealed class FlottenEinheitDiagnose
+{
+    /// <summary>Die Kennung der Einheit (<see cref="FlottenEinheit.Id"/>).</summary>
+    public string SpeicherId { get; set; } = string.Empty;
+
+    /// <summary>Zahl der Intervalle, in denen die Verteilung dieser Einheit eine Entladung zugewiesen hat.</summary>
+    public int IntervalleMitEntladeanforderung { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen die Verteilung dieser Einheit eine Ladung zugewiesen hat.</summary>
+    public int IntervalleMitLadeanforderung { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen die Flotte entladen sollte und diese Einheit keine abgebbare Energie hatte.</summary>
+    public int IntervalleEntladeanforderungOhneEnergie { get; set; }
+
+    /// <summary>Aufgenommene Energie [kWh] AC-seitig; sie entspricht <see cref="FlottenSpeicherKennzahlen.LadeenergieAcKWh"/>.</summary>
+    public double LadeenergieAcKWh { get; set; }
+
+    /// <summary>Abgegebene Energie [kWh] AC-seitig; sie entspricht <see cref="FlottenSpeicherKennzahlen.EntladeenergieAcKWh"/>.</summary>
+    public double EntladeenergieAcKWh { get; set; }
+
+    /// <summary>Die Einheit hat im gesamten Zeitraum weder geladen noch entladen.</summary>
+    public bool Arbeitslos { get; set; }
+}
+
+/// <summary>
+/// Die Diagnose EINES Flottenlaufs (Konzept Stromspeicher-Dialoge 2.4 Punkt 5, Aufgabe #183).
+/// </summary>
+/// <remarks>
+/// <para>
+/// Sie zaehlt die Sperren, die im Bestand unsichtbar blieben: eine Nettolast dauerhaft
+/// ueber dem Peak-Ziel, einen Ladedeckel 0 aus der Peak-Regel oder aus dem
+/// Netzladeverbot und eine Entladeanforderung an einen leeren Speicher. Aus Lade- und
+/// Entladeenergie folgt die Aussage <see cref="Arbeitslos"/>.
+/// </para>
+/// <para>
+/// Die Diagnose aendert KEINEN Rechenwert. Sie wird nur fuer den Lauf MIT Flotte
+/// gefuehrt; der Referenzlauf ohne Speicher traegt eine leere Diagnose.
+/// </para>
+/// </remarks>
+public sealed class FlottenDiagnose
+{
+    /// <summary>Zahl der gerechneten Intervalle; 0 beim Referenzlauf ohne Speicher.</summary>
+    public int IntervalleGesamt { get; set; }
+
+    /// <summary>Zahl der Intervalle mit <c>n &gt; H</c>; 0, wenn kein Peak-Ziel gesetzt ist.</summary>
+    public int IntervalleLastUeberPeakZiel { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen die Betriebsfuehrung eine Entladung der Flotte angefordert hat.</summary>
+    public int IntervalleMitEntladeanforderung { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen die Betriebsfuehrung eine Ladung der Flotte angefordert hat.</summary>
+    public int IntervalleMitLadeanforderung { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen die Peak-Regel den Ladedeckel auf 0 gesetzt hat.</summary>
+    public int IntervalleLadedeckelNullPeakregel { get; set; }
+
+    /// <summary>Zahl der Intervalle, in denen das Netzladeverbot den Ladedeckel auf 0 gesetzt hat.</summary>
+    public int IntervalleLadedeckelNullNetzladeverbot { get; set; }
+
+    /// <summary>Zahl der Intervalle mit Entladeanforderung, in denen die GESAMTE Flotte keine abgebbare Energie hatte.</summary>
+    public int IntervalleEntladeanforderungOhneEnergie { get; set; }
+
+    /// <summary>Aufgenommene Energie [kWh] AC-seitig ueber die ganze Flotte.</summary>
+    public double LadeenergieAcKWh { get; set; }
+
+    /// <summary>Abgegebene Energie [kWh] AC-seitig ueber die ganze Flotte.</summary>
+    public double EntladeenergieAcKWh { get; set; }
+
+    /// <summary>Die Flotte hat im gesamten Zeitraum weder geladen noch entladen. Ohne Einheiten ist die Aussage <c>false</c>.</summary>
+    public bool Arbeitslos { get; set; }
+
+    /// <summary>Die gezaehlten Gruende in fester Reihenfolge; ein Grund ohne betroffene Intervalle steht nicht in der Liste.</summary>
+    public List<FlottenDiagnoseBefund> Gruende { get; set; } = new();
+
+    /// <summary>Die Diagnose je Einheit, in der Reihenfolge der Einheiten.</summary>
+    public List<FlottenEinheitDiagnose> Einheiten { get; set; } = new();
 }
 
 /// <summary>

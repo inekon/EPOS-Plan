@@ -23,6 +23,13 @@ public sealed class SpeicherFlottenErgebnis
     public FlottenStudienErgebnis ReaktiveReferenz { get; set; }
     public FlottenAuslegungErgebnis Auslegung { get; set; }
     public List<string> Hinweise { get; set; } = new();
+
+    /// <summary>
+    /// Dieselben Vorprüfungshinweise wie in <see cref="Hinweise"/>, aber mit Stufe und
+    /// sprachneutraler Kennung — die Oberfläche hängt daran ihre Abhilfeknöpfe auf
+    /// (Konzept Stromspeicher-Dialoge 2.2 Punkt 2, Paket P3).
+    /// </summary>
+    public List<FlottenHinweis> Pruefhinweise { get; set; } = new();
 }
 
 /// <summary>
@@ -46,7 +53,7 @@ public static class SpeicherFlottenStudieCtrl
         if (p == null)
         {
             v.Eingaben.Auslegung.Flotte = new FlottenStudieKonfiguration();
-            v.Eingaben.Auslegung.Flotte.Optionen.WirtschaftlicherPeakZielwertKw = 50;
+            BetriebsvorgabenSetzen(v.Eingaben.Auslegung.Flotte, peak, ctrl, sim);
             v.Eingaben.Auslegung.Flotte.Wirtschaftlichkeit.Kalkulationszins = .03;
             BedienvorgabenErgaenzen(v.Eingaben.Auslegung, Preisvorschlag(projektId, v.Eingaben.Auslegung));
             return v;
@@ -61,7 +68,7 @@ public static class SpeicherFlottenStudieCtrl
             SocMin = p.SoCMinKwh / p.CNomKwh, SocMax = p.SoCMaxKwh / p.CNomKwh,
             SocStart = p.StartSoCEffektivKwh / p.CNomKwh
         });
-        f.Optionen.WirtschaftlicherPeakZielwertKw = 50;
+        BetriebsvorgabenSetzen(f, peak, ctrl, sim);
         f.Optionen.NeuplanungAlleIntervalle = 96;
         f.Tarif.LeistungspreisEuroProKw = v.Eingaben.LeistungspreisEurProKwA;
         f.Wirtschaftlichkeit.Kalkulationszins = p.Kapitalzins;
@@ -71,6 +78,68 @@ public static class SpeicherFlottenStudieCtrl
         v.Eingaben.Auslegung.Flotte = f;
         BedienvorgabenErgaenzen(v.Eingaben.Auslegung, Preisvorschlag(projektId, v.Eingaben.Auslegung));
         return v;
+    }
+
+    /// <summary>
+    /// Betriebsvorgaben einer NEU angelegten Flotte: das Peak-Ziel aus der Referenz
+    /// (statt der früheren festen 50 kW) und die Netzladung nach dem Betriebsziel
+    /// (Anwenderentscheide SD‑Q3 und SD‑Q5, Aufgabe #183).
+    /// </summary>
+    /// <remarks>
+    /// Sie greift ausschließlich beim Anlegen. Ein gespeicherter Stand kommt hier nie
+    /// vorbei — <see cref="Vorbelegung"/> kehrt vorher um, sobald eine Flotte im Profil
+    /// steht —, und der Projektlauf ruft diese Methode überhaupt nicht.
+    /// </remarks>
+    /// <param name="f">Die neu angelegte Flottenkonfiguration.</param>
+    /// <param name="bezugsspitzeKw">Die Bezugsspitze des Lastgangs [kW] aus dem Lauf; 0 = unbekannt.</param>
+    /// <param name="ctrl">Der Speichercontroller, über den die EPOS-Reihen gebildet werden.</param>
+    /// <param name="sim">Der abgeschlossene Simulationslauf; <c>null</c> = keine Zeitreihe, benannter Rückfall.</param>
+    private static void BetriebsvorgabenSetzen(FlottenStudieKonfiguration f, double bezugsspitzeKw,
+        StromspeicherSimCtrl ctrl, SimulationControl sim)
+    {
+        f.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(f.Optionen.Betriebsziel);
+        f.Optionen.WirtschaftlicherPeakZielwertKw = PeakZielVorschlag(f, bezugsspitzeKw, ctrl, sim).PeakZielKw;
+    }
+
+    /// <summary>
+    /// Der Vorschlag H₀ für eine neu angelegte Flotte — aus dem gelaufenen Lastgang, sonst
+    /// aus der Bezugsspitze, sonst aus dem benannten Rückfall.
+    /// </summary>
+    /// <param name="f">Die Flotte, aus der Entladeleistung und Hilfsverbrauch stammen.</param>
+    /// <param name="bezugsspitzeKw">Die Bezugsspitze des Lastgangs [kW]; 0 = unbekannt.</param>
+    /// <param name="ctrl">Der Speichercontroller, über den die EPOS-Reihen gebildet werden.</param>
+    /// <param name="sim">Der abgeschlossene Simulationslauf oder <c>null</c>.</param>
+    /// <returns>Der Vorschlag samt Herleitungszeile; die Oberfläche zeigt sie unter dem Feld (P3).</returns>
+    internal static FlottenPeakZielVorschlag PeakZielVorschlag(FlottenStudieKonfiguration f,
+        double bezugsspitzeKw, StromspeicherSimCtrl ctrl, SimulationControl sim)
+    {
+        double entladeleistung = f.Einheiten.Sum(x => x.EntladeleistungKw);
+        if (sim != null && ctrl != null)
+            try
+            {
+                double[] last = ctrl.BaueLastreihe(sim);
+                double[] pv = ctrl.BauePvReihe(sim);
+                double[] bhkw = ctrl.BaueBhkwReihe(sim);
+                if (last is { Length: > 0 } && pv != null && pv.Length == last.Length &&
+                    (bhkw == null || bhkw.Length == last.Length))
+                {
+                    double hilfsverbrauch = f.Einheiten.Sum(x => x.HilfsverbrauchKw);
+                    var netto = new double[last.Length];
+                    for (int i = 0; i < last.Length; i++)
+                        netto[i] = last[i] - pv[i] - (bhkw?[i] ?? 0) + hilfsverbrauch;
+                    // Das EPOS-Modelljahr ist ein gleichmäßiges Viertelstundenraster; wo es
+                    // nicht aufgeht, gilt die ganze Reihe als EIN Tag statt eines geratenen.
+                    int jeTag = netto.Length % 96 == 0 ? 96 : netto.Length;
+                    return FlottenPeakZiel.Vorschlag(netto, jeTag, entladeleistung);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ein nicht gelaufener oder unvollständiger Simulationsstand ist kein Fehler
+                // der Vorbelegung; dann gilt der benannte Rückfall.
+                Console.WriteLine("Peak-Ziel-Vorbelegung ohne Lastgang: " + ex.Message);
+            }
+        return FlottenPeakZiel.Rueckfall(bezugsspitzeKw, entladeleistung);
     }
 
     /// <summary>Einmalige, im Dialog sichtbare Bedienvorgaben; gepflegte Werte werden erhalten.</summary>
@@ -192,6 +261,9 @@ public static class SpeicherFlottenStudieCtrl
         var f = Konfiguration(v.Eingaben);
         PruefeProjektjahresAbdeckung(input.Projektjahre, f.Wirtschaftlichkeit);
         var result = new SpeicherFlottenErgebnis { Eingaben = v.Eingaben.Kopie(), Konfiguration = f };
+        // Vorprüfung VOR der Rechnung (Konzept Stromspeicher-Dialoge 2.4 Punkt 3): Sie sagt,
+        // was an den Eingaben das Ergebnis schon jetzt entwertet.
+        HinweiseUebernehmen(result, FlottenPlausibilitaet.Pruefe(input, f, v.Eingaben.Auslegung?.VerwendeteKosten));
         if (v.Eingaben.Auslegung.FlottenGroessenOptimieren)
         {
             result.Auslegung = FlottenOptimierer.Rechne(input, f, planer, fortschritt, token);
@@ -213,6 +285,11 @@ public static class SpeicherFlottenStudieCtrl
                 result.ReaktiveReferenz = Einzelstudie(input, vergleich, null, token);
             else result.Hinweise.Add("PV-Referenzvergleich benötigt einen Energie-Ausgleichswert, da die reaktive Fahrweise ihre Endenergie nicht erzwingt.");
         }
+        // Nach der Rechnung liegt die Diagnose vor; sie trägt die Gründe einer arbeitslosen
+        // Flotte und den Start-SoC-Hinweis nach (SD‑Q4).
+        if (result.Studie?.Variante?.Diagnose is { } diagnose)
+            HinweiseUebernehmen(result, FlottenPlausibilitaet.Pruefe(input, result.Konfiguration,
+                v.Eingaben.Auslegung?.VerwendeteKosten, diagnose));
         result.Erfolg = true;
         if (!string.IsNullOrWhiteSpace(v.ZeitachsenHinweis)) result.Hinweise.Add(v.ZeitachsenHinweis);
         if (v.ZeitstempelUtc == null)
@@ -220,6 +297,22 @@ public static class SpeicherFlottenStudieCtrl
         if (f.Optionen.PrognoseArt == PrognoseArt.Oracle)
             result.Hinweise.Add("Idealwissen: Die Planung verwendet zukünftige Werte der eingelesenen Reihe. Das ist eine optimistische Vergleichsgrenze, kein historisch erreichbarer Fahrplan.");
         return result;
+    }
+
+    /// <summary>
+    /// Übernimmt neue Vorprüfungshinweise in beide Listen des Ergebnisses; eine Kennung
+    /// steht höchstens einmal darin.
+    /// </summary>
+    /// <param name="result">Das Laufergebnis.</param>
+    /// <param name="neue">Die geprüften Hinweise.</param>
+    private static void HinweiseUebernehmen(SpeicherFlottenErgebnis result, List<FlottenHinweis> neue)
+    {
+        foreach (var h in neue)
+        {
+            if (result.Pruefhinweise.Any(x => x.Kennung == h.Kennung)) continue;
+            result.Pruefhinweise.Add(h);
+            result.Hinweise.Add(h.Text);
+        }
     }
 
     private static FlottenStudienErgebnis Einzelstudie(FlottenEingang input, FlottenStudieKonfiguration f,

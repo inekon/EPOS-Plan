@@ -111,6 +111,48 @@ Das vollständige endliche kartesische Raster wird mit den ausgewählten Zielen 
 
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
+## Diagnose und Peak-Ziel (P1, #183)
+
+Anlass ist der Befund **SP‑O‑10** vom 11.09.2026: „Mit Flotte" war byte-gleich „Ohne Speicher", weil die Flotte im ganzen Jahr weder geladen noch entladen hatte — und niemand sagte es. Drei Sperren wirkten zusammen: das fest vorbelegte Peak-Ziel 50 kW bei einer Spitze von 789 kW, das Netzladeverbot an einem Standort ohne Überschuss und ein Start-Ladezustand auf dem SoC-Minimum. Umgesetzt sind die Anwenderentscheide **SD‑Q3**, **SD‑Q4** und **SD‑Q5** (11.09.2026, je „Empfehlung"); Grundlage ist Abschnitt 2.4 des [Konzepts der Stromspeicher-Dialoge](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md). **Kein Rechenwert ändert sich**: Der Referenzlauf bleibt 13/13 byte-gleich gegen `2026-09-11_R7_Speicherflotte`.
+
+**Die Diagnose** (`FlottenDiagnose` in [`SpeicherEngine/FlottenModel.cs`](SpeicherEngine/FlottenModel.cs), gefüllt in [`SpeicherEngine/FlottenSimulator.cs`](SpeicherEngine/FlottenSimulator.cs)) hängt am Laufergebnis `FlottenSimulationErgebnis.Diagnose` und damit an der `Variante` der Studie. Sie zählt je Intervall mit und wird nur für den Lauf **mit** Flotte geführt; der Referenzlauf ohne Speicher trägt eine leere Diagnose. Sie steht nicht im Referenzexport.
+
+| Zähler | Bedeutung |
+|---|---|
+| `IntervalleLastUeberPeakZiel` | Intervalle mit `n > H`. Anteil 1 heißt: Die Last fiel nie unter das Ziel |
+| `IntervalleMitEntladeanforderung` / `…MitLadeanforderung` | Intervalle, in denen die Betriebsführung überhaupt etwas verlangt hat |
+| `IntervalleLadedeckelNullPeakregel` | `max(0, H − n)` war 0 — Wiederaufladung hätte einen neuen Peak über `H` erzeugt (Spezifikation 5.1) |
+| `IntervalleLadedeckelNullNetzladeverbot` | `max(0, −n)` war 0 — ohne `NetzladungErlaubt` gibt es nichts zu laden |
+| `IntervalleEntladeanforderungOhneEnergie` | Entladeanforderung an eine Flotte ohne abgebbare Energie |
+| `LadeenergieAcKWh` / `EntladeenergieAcKWh`, `Arbeitslos` | beide 0 ⇒ arbeitslose Flotte |
+
+Dieselben Zähler stehen je Einheit in `FlottenEinheitDiagnose`. Daraus bildet der Simulator die Liste `Gruende` — `FlottenDiagnoseBefund` mit sprachneutraler Aufzählung `FlottenDiagnoseGrund`, Intervallzahl und Anteil; ein Grund ohne betroffene Intervalle steht nicht darin. Der Anzeigetext gehört in die Oberfläche, nicht in die Rechenbibliothek.
+
+**Die Vorbelegung des Peak-Ziels** (`FlottenPeakZiel.Vorschlag`, [`EPOS.Kern/Controller/FlottenPeakZiel.cs`](EPOS.Kern/Controller/FlottenPeakZiel.cs)) ersetzt die feste 50 kW:
+
+```
+H0 = max( Referenzspitze − Summe Entladeleistung ;  max der Tagesminima der Nettolast )
+n  = Last − PV − BHKW + Hilfsverbrauch der Flotte
+```
+
+Der erste Term sagt, wie tief die Flotte überhaupt kappen kann; der zweite verhindert ein Ziel, unter das die Last nie fällt — sonst ist Wiederaufladung nach der Regel aus Spezifikation 5.1 ausgeschlossen. Jeder Vorschlag trägt eine Herleitungszeile im Klartext. Liegt keine Zeitreihe vor, gilt ein **benannter** Rückfall: mit bekannter Bezugsspitze `max(Spitze − Σ Entladeleistung; GrundlastAnteilImRueckfall · Spitze)`, ohne sie die Konstante `RueckfallPeakZielKw`. Gespeicherte Stände werden nie überschrieben — die Vorbelegung greift ausschließlich beim Anlegen einer neuen Flotte (`SpeicherFlottenStudieCtrl.BetriebsvorgabenSetzen`).
+
+**„Peak-Ziel bestimmen"** (`FlottenPeakZiel.PeakZielBestimmen`) beantwortet die Frage, die der Anwender an eine Lastspitzenkappung stellt: Wie tief komme ich mit dieser Flotte? Bisektion zwischen der Grundlast (Maximum der Tagesminima) und der Referenzspitze, gesucht ist das kleinste `H`, bei dem die verbleibende Bezugsspitze `≤ H` bleibt. Höchstens `HoechsteLaeufe` = 12 Jahresläufe, je Lauf eine Meldung über `IProgress<FlottenPeakZielFortschritt>`, Abbruch über `CancellationToken`. Gerechnet wird ausdrücklich mit `PeakShaving`; **planende Ziele werden benannt abgewiesen**, weil sie je Lauf den MILP-Planer bräuchten (SP‑O‑1).
+
+**Die Vorprüfung** (`FlottenPlausibilitaet.Pruefe`, [`EPOS.Kern/Controller/FlottenPlausibilitaet.cs`](EPOS.Kern/Controller/FlottenPlausibilitaet.cs)) läuft in `SpeicherFlottenStudieCtrl.Rechnen` vor der Rechnung und nach der Rechnung noch einmal mit der Diagnose. Sie liefert Hinweise mit Stufe (`Warnung`/`Hinweis`) und sprachneutraler Kennung; sie landen in der bestehenden Hinweisliste **und** zusätzlich strukturiert in `SpeicherFlottenErgebnis.Pruefhinweise`, an denen die Oberfläche ihre Abhilfeknöpfe aufhängt (Paket P3).
+
+| Kennung | Anlass |
+|---|---|
+| `PeakZielUnterTagesminimum` | Peak-Ziel unter dem Maximum der Tagesminima bei `NetzladungErlaubt = false` (Warnung) |
+| `PeakZielUeberReferenzspitze` | Peak-Ziel über der Referenzspitze — die Kappung bleibt wirkungslos |
+| `BetriebskostenSehrNiedrig` | jährlicher Betriebsaufwand unter 0,1 % der Investition (Befund „Betrieb 1,00 €/a" bei 15.000 € Investition) |
+| `StartSoCAufMinimum` | Start-Ladezustand = SoC-Minimum bei Lastspitzenkappung, oder die Diagnose meldet eine arbeitslose Flotte (SD‑Q4) |
+| `FlotteArbeitslos` | die Diagnose meldet `Arbeitslos`; der Text nennt die gezählten Gründe |
+
+**Vorgabe „Netzladung erlaubt" je Betriebsziel** (`FlottenVorgaben.NetzladungFuer`, SD‑Q5): Lastspitzenkappung bekommt die Freigabe — Spezifikation 5.1 sagt „Die Wiederaufladung nutzt freie Anschlussleistung unter H", und genau das **ist** Netzladung; PV-Eigenverbrauch und die planenden Ziele bekommen sie nicht. Die Vorgabe wirkt **nur** beim Anlegen einer neuen Konfiguration. Die serialisierte Vorgabe in `FlottenSimulationOptionen.NetzladungErlaubt` bleibt `false`, damit gespeicherte Stände unverändert lesen. Der Stand `@Projektflotte` des Prüfprojekts **1046** trägt die Eigenschaft ausdrücklich (`NetzladungErlaubt = true`, geprüft am 11.09.2026 gegen `Referenzlaeufe/Kenndaten_Test.sqlite`) und ist vom Vorgabenwechsel damit nicht berührt.
+
+**Der Start-Ladezustand bleibt beim Produktivstandard SoC-Minimum** (AP0, SD‑Q4). Geändert wird nichts; ein voller Start würde den Januar-Peak schöner rechnen, als er im Betrieb wäre. Sichtbar gemacht wird die Lage nur über den Hinweis `StartSoCAufMinimum`.
+
 ## Datenbankquellen und CSV-Importe
 
 | Rolle | Quelle | Flottenfeld |
