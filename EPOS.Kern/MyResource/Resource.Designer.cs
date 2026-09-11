@@ -11228,6 +11228,465 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate [1/h] (Leistung = Kapazität × C-Rate) ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ACHSE_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ACHSE_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität [kWh] ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ACHSE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ACHSE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ACHSE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ACHSE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte der Auslegung: Kapitalwert über Kapazität und C-Rate, unzulässige Punkte schraffiert ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_RASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Kapazität bei fester C-Rate ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_SCHNITT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_SCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnittkurve: Kapitalwert über der Entladeleistung bei fester Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die arbeitslos ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ARBEITSLOS {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ARBEITSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Flotte hat im gerechneten Zeitraum weder geladen noch entladen; sie kostet nur. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ARBEITSLOS_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ARBEITSLOS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Variante als Flotte übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_BTN_UEBERNEHMEN_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_BTN_UEBERNEHMEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über Kapazität und C-Rate ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_RASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} C — Kapitalwert über der Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnitt bei {0} kWh — Kapitalwert über der Entladeleistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. Zwischen zwei Stützstellen ist nichts gerechnet; das markierte Optimum ist das beste geprüfte, nicht das global beste. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_ENDLICHES_RASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_ENDLICHES_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter löschen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_FILTER_LOESCHEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_FILTER_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Filter zurücksetzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_FILTER_ZURUECK {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_FILTER_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Formen: &gt;10, &lt;60, 10..60, =15 ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_HINWEIS_ZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_HINWEIS_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Suche hat keine zwei Größenachsen ergeben — eine Karte gibt es dazu nicht. Die geprüften Varianten stehen in der Tabelle. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_KEIN_RASTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_KEIN_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Variante passt zu den gesetzten Filtern. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate des Schnitts ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_LBL_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_LBL_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigte Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_LBL_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_LBL_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität des Schnitts ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_LBL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_LBL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es liegt keine Rastersuche vor; führen Sie die Auslegung aus, um die Größenabhängigkeit zu sehen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_LEER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Optimum des Rasters ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_OPTIMUM {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_OPTIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die enthält… ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_PLATZHALTER_TEXT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_PLATZHALTER_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die z. B. &gt;10 oder 10..60 ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_PLATZHALTER_ZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_PLATZHALTER_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert [€] ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SKALA {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SKALA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach {0} sortieren ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SORTIEREN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SORTIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_AKTION {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsziel ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_BETRIEBSZIEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_BETRIEBSZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_ENTLADEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_ENTLADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersparnis ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_ERSPARNIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_ERSPARNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_GRUND {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidat ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_KANDIDAT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_KANDIDAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_KAPITALWERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_KAPITALWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_LADEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsspitze ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_SPITZE {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollzyklen ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_VOLLZYKLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_VOLLZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zulässig ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_ZULAESSIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_ZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flotte gesamt ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SUMME {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenabhängigkeit ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geprüfte Varianten ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_TITEL_KANDIDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_TITEL_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Varianten ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_TREFFER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} filtern ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_TRICHTER {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_TRICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Filter gesetzt ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_TRICHTER_GESETZT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_TRICHTER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie hängt der Kapitalwert an Kapazität und Leistung? Die Karte zeigt jeden gerechneten Rasterpunkt, die Kurven je einen Schnitt daraus. ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_UNTERTITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_UNTERTITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} C ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_WERT_CRATE {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_WERT_CRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kWh ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_WERT_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_WERT_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert gegenüber „ohne Speicher“ ähnelt.
         /// </summary>
         public static string FLOTTE_KACHEL_KAPITALWERT {

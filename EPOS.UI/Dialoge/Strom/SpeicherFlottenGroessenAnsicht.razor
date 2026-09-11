@@ -1,0 +1,517 @@
+@* DIE GROESSEN-SICHT DER SPEICHERFLOTTE (Auftrag #193, Paket P4 des Konzepts
+   „Stromspeicher-Dialoge", Abschnitt 2.5).
+
+   DER BEFUND, DER SIE VERLANGT (Konzept 1.5/1.6): Die Rastersuche gibt es seit
+   jeher - angezeigt wurde davon eine Texttabelle mit hoechstens 50 Zeilen. Wie
+   der Kapitalwert an der GROESSE haengt, stand nirgends; fuer den
+   Einzelspeicher zeichnet der Renderer Rasterkarte und Schnittkurve seit
+   W11b-B-5, fuer die Flotte nicht.
+
+   DREI SICHTEN AUF DIESELBEN ZAHLEN, IN DIESER REIHENFOLGE:
+     1. die RASTERKARTE - wo liegt das Gebiet, in dem es sich traegt?
+     2. die zwei SCHNITTE - wie steil faellt es daneben ab?
+     3. die TABELLE - welche Variante genau, und mit welchen Kennzahlen?
+   Die Karte beantwortet die Frage zuerst, weil sie ALLE Punkte auf einmal
+   zeigt; die Tabelle steht darunter, weil sie die einzige Stelle ist, an der
+   man eine Variante UEBERNIMMT.
+
+   KEINE ZAHL WIRD HIER GERECHNET. Achsen, Matrix, Schraffur, Schnitte und die
+   drei Bilder kommen aus SpeicherFlottenAnzeigeCtrl; die Kennzahlen je
+   Kandidat hat der FlottenOptimierer waehrend der Suche gefuellt (#193, Schritt
+   1). Die Hausregel dahinter ist dieselbe wie in der Ergebnisansicht (#184):
+   Fachaussagen stehen im Kern, damit iOS sie nicht ein zweites Mal bekommt.
+
+   GEFILTERT WIRD VOR DER TABELLE, nie in ihr (W14a-E-10): Der Filterstand
+   liegt hier, Katalogfilter.Anwenden im Kern schraenkt ein, und die Tabelle
+   bekommt die bereits eingeschraenkte Liste. Profil und Zeilen baut
+   SpeicherFlottenAnzeigeCtrl; damit gelten fuer die Kandidaten Zahlenausdruck,
+   Verknuepfung und Sortierung der fuenfzehn Katalogwirte, ohne dass hier eine
+   sechzehnte Wahrheit entstuende.
+
+   DIE SPERRE IST EIN MUSTER, NICHT EINE FARBE. Ein unzulaessiger Kandidat ist
+   im Bild SCHRAFFIERT und in der Tabelle mit „Nein" und seinem Grund benannt -
+   Farbe allein traegt keine Aussage (WCAG 1.4.1).
+
+   SP-O-4 STEHT ZWEIMAL: als Fusszeile IM Bild (es wird exportiert) und als
+   Hinweiszeile darueber, zusammen mit der Aussage des Laufs.
+
+   DIESER BAUSTEIN WIRD NOCH NIRGENDS EINGEHAENGT. Paket P3 (#192) baut die
+   freie Ansicht STROMSPEICHER_AUSLEGUNG und laesst in Schritt 5 die Markierung
+   stehen; die Einbindung folgt nach beiden Merges. *@
+
+@namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
+@using WindowsFormsApplication1
+@using SpeicherEngine
+
+<div class="epos-flotte-groessen">
+
+    @if (Ergebnis is null)
+    {
+        <p class="epos-flotte-leer">@Resource.FLOTTE_GROESSEN_LEER</p>
+    }
+    else
+    {
+        <Gruppenkopf Titel="@Resource.FLOTTE_GROESSEN_TITEL" />
+        <p class="epos-flotte-hinweis">@Resource.FLOTTE_GROESSEN_UNTERTITEL</p>
+        <p class="epos-flotte-hinweis">@Ergebnis.Aussage</p>
+        <p class="epos-flotte-hinweis">@Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER</p>
+
+        @if (Ergebnis.NullvarianteGewonnen)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_EMPF_NULLVARIANTE" />
+        }
+
+        @* ---------------------------------------------------------------- *@
+        @* Rasterkarte links, die zwei Schnitte rechts                       *@
+        @* ---------------------------------------------------------------- *@
+        @if (_raster.IstLeer)
+        {
+            <p class="epos-flotte-hinweis">@Resource.FLOTTE_GROESSEN_KEIN_RASTER</p>
+        }
+        else
+        {
+            <div class="epos-flotte-groessen-bilder">
+
+                <section class="epos-simerg-block">
+                    @if (Einheiten > 1)
+                    {
+                        <div class="epos-flotte-groessen-steuerung">
+                            <Auswahlfeld Bezeichnung="@Resource.FLOTTE_GROESSEN_LBL_EINHEIT"
+                                         Eintraege="@Einheitenwahl" Auswahl="@_einheit"
+                                         AuswahlChanged="EinheitGesetzt" />
+                        </div>
+                    }
+                    <ChartBild Png="@_rasterbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_RASTER" />
+                </section>
+
+                <section class="epos-simerg-block">
+                    <div class="epos-flotte-groessen-steuerung">
+                        @* DER C-RATEN-SCHIEBER laeuft ueber die STELLEN der Achse, nicht
+                           ueber die Werte: Die Stuetzstellen einer Rastersuche sind
+                           nicht gleichmaessig verteilt (die Achse nimmt ihre exakte
+                           Obergrenze zusaetzlich auf), und ein Schieber, der dazwischen
+                           stehen bleiben koennte, zeigte eine Kurve, die es nicht gibt. *@
+                        <label class="epos-feld epos-flotte-groessen-schieber">
+                            <span class="epos-feld-text">@Resource.FLOTTE_GROESSEN_LBL_CRATE</span>
+                            <span class="epos-feld-zeile">
+                                <input type="range" min="0" max="@(_raster.CRaten.Count - 1)" step="1"
+                                       value="@_spalte" aria-label="@Resource.FLOTTE_GROESSEN_LBL_CRATE"
+                                       aria-valuetext="@CRatentext" @onchange="SpalteGesetzt" />
+                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@CRatentext</span>
+                            </span>
+                        </label>
+
+                        <label class="epos-feld epos-flotte-groessen-schieber">
+                            <span class="epos-feld-text">@Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET</span>
+                            <span class="epos-feld-zeile">
+                                <input type="range" min="0" max="@(_raster.KapazitaetenKwh.Count - 1)" step="1"
+                                       value="@_zeile" aria-label="@Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET"
+                                       aria-valuetext="@Kapazitaetstext" @onchange="ZeileGesetzt" />
+                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@Kapazitaetstext</span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <ChartBild Png="@_schnittbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_SCHNITT" />
+                    <ChartBild Png="@_leistungsbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" />
+                </section>
+            </div>
+        }
+
+        @* ---------------------------------------------------------------- *@
+        @* Die Kandidatentabelle                                             *@
+        @* ---------------------------------------------------------------- *@
+        <Gruppenkopf Titel="@Resource.FLOTTE_GROESSEN_TITEL_KANDIDATEN" />
+
+        <div class="epos-flotte-groessen-leiste">
+            <span class="epos-flotte-hinweis">@Trefferzeile</span>
+            @if (_stand.Gesetzt)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="FilterZurueck">
+                    @Resource.FLOTTE_GROESSEN_FILTER_ZURUECK
+                </button>
+            }
+        </div>
+
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-flotte-groessen-tabelle">
+                <thead>
+                    <tr>
+                        @for (int i = 0; i < Profil.Spalten.Count; i++)
+                        {
+                            Katalogspalte spalte = Profil.Spalten[i];
+                            bool rechts = i >= Profil.Spalten.Count - 2;
+                            <th scope="col" class="@Spaltenklasse(spalte)"
+                                aria-sort="@Sortierlage(spalte)">
+                                <div class="epos-spaltenkopf">
+                                    @if (spalte.Sortierbar)
+                                    {
+                                        <button type="button" class="epos-spaltenkopf-titel"
+                                                title="@Kurztext(Resource.FLOTTE_GROESSEN_SORTIEREN, spalte)"
+                                                aria-label="@Kurztext(Resource.FLOTTE_GROESSEN_SORTIEREN, spalte)"
+                                                @onclick="@(() => Sortieren(spalte))">
+                                            <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                            <span class="epos-sortierpfeil" aria-hidden="true">@Sortierzeichen(spalte)</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                    }
+
+                                    @if (spalte.Filterbar)
+                                    {
+                                        <button type="button" class="@Trichterklasse(spalte)"
+                                                aria-expanded="@((_offen == spalte.Schluessel).ToString().ToLowerInvariant())"
+                                                title="@Trichtertext(spalte)" aria-label="@Trichtertext(spalte)"
+                                                @onclick="@(() => Trichter(spalte))">
+                                            @* Gefuellt gegen Umriss und nicht nur eine andere
+                                               Farbe - in Graustufen bleibt ein voller Trichter
+                                               ein voller Trichter (Auflage des Anwenders,
+                                               Katalogliste). *@
+                                            <svg class="epos-trichter-bild" viewBox="0 0 16 16"
+                                                 width="14" height="14" aria-hidden="true" focusable="false">
+                                                <path d="M1.5 2.5 h13 l-5 6 v5.5 l-3 1.5 v-7 z"
+                                                      fill="@(_stand.Gefiltert(spalte.Schluessel) ? "currentColor" : "none")"
+                                                      stroke="currentColor"
+                                                      stroke-width="@(_stand.Gefiltert(spalte.Schluessel) ? "2" : "1.3")"
+                                                      stroke-linejoin="round" />
+                                            </svg>
+                                        </button>
+
+                                        @if (_offen == spalte.Schluessel)
+                                        {
+                                            <Spaltenfilter Spaltenname="@spalte.Kopftext"
+                                                           Wert="@_stand.Ausdruck(spalte.Schluessel)"
+                                                           Platzhalter="@Platzhalter(spalte)"
+                                                           Hinweis="@Hinweis(spalte)"
+                                                           TextLoeschen="@Resource.FLOTTE_GROESSEN_FILTER_LOESCHEN"
+                                                           RechtsBuendig="@rechts"
+                                                           WertChanged="@(w => Filter(spalte, w))"
+                                                           Geschlossen="Schliessen" />
+                                        }
+                                    }
+                                </div>
+                            </th>
+                        }
+                        @* Die Aktionsspalte traegt einen BESCHRIFTETEN Kopf (W5-B-1):
+                           ohne ihn hat sie nichts, woraus sie ihre Breite naehme. *@
+                        <th scope="col" class="epos-zellenaktionen">@Resource.FLOTTE_GROESSEN_SP_AKTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Katalogfilterzeile zeile in Zeilen)
+                    {
+                        FlottenKandidatZusammenfassung? kandidat = Kandidat(zeile.Schluessel);
+                        <tr class="@Zeilenklasse(kandidat)">
+                            @foreach (Katalogspalte spalte in Profil.Spalten)
+                            {
+                                <td class="@Spaltenklasse(spalte)">
+                                    @zeile.Text(spalte.Schluessel)
+                                    @if (spalte.Schluessel == SpeicherFlottenAnzeigeCtrl.SP_KANDIDAT
+                                         && kandidat is not null)
+                                    {
+                                        @if (IstOptimum(kandidat))
+                                        {
+                                            <span class="epos-flotte-groessen-marke">@Resource.FLOTTE_GROESSEN_OPTIMUM</span>
+                                        }
+                                        @if (kandidat.Arbeitslos)
+                                        {
+                                            <span class="epos-flotte-groessen-arbeitslos"
+                                                  title="@Resource.FLOTTE_GROESSEN_ARBEITSLOS_TITEL">
+                                                @Resource.FLOTTE_GROESSEN_ARBEITSLOS
+                                            </span>
+                                        }
+                                    }
+                                </td>
+                            }
+                            <td class="epos-zellenaktionen">
+                                @* Der Flexkasten steht IN der Zelle, nicht auf ihr (W5-B-1):
+                                   display:flex auf einem <td> nimmt ihm seine Rolle als
+                                   Tabellenzelle. *@
+                                <span class="epos-zellenaktionen-inhalt">
+                                    <button type="button" class="epos-simerg-knopf"
+                                            disabled="@(!KandidatUebernehmen.HasDelegate || kandidat is null)"
+                                            title="@Resource.FLOTTE_GROESSEN_BTN_UEBERNEHMEN_TITEL"
+                                            @onclick="@(() => Uebernehmen(kandidat))">
+                                        @Resource.FLOTTE_GROESSEN_BTN_UEBERNEHMEN
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Zeilen.Count == 0)
+        {
+            <p class="epos-katalog-leer">@Resource.FLOTTE_GROESSEN_KEIN_TREFFER</p>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Das Ergebnis der Rastersuche; <c>null</c> = es steht nichts da.</summary>
+    [Parameter] public FlottenAuslegungErgebnis? Ergebnis { get; set; }
+
+    /// <summary>
+    /// Wie viele Einheiten die Flotte führt. Ab zwei erscheint die Einheitenwahl über
+    /// der Karte (Konzept 2.5: „je Einheit wählbar, bei Anzahl &gt; 1 die Summe").
+    /// </summary>
+    [Parameter] public int Einheiten { get; set; } = 1;
+
+    /// <summary>
+    /// „Kandidat übernehmen" — der Wirt macht die Variante zur Flotte. Ohne Delegat
+    /// bleiben die Knöpfe gesperrt (Hausregel „kein Delegat, kein Bedienelement").
+    /// </summary>
+    [Parameter] public EventCallback<FlottenKandidatZusammenfassung> KandidatUebernehmen { get; set; }
+
+    // --- Prüfhilfen der Tests -------------------------------------------------
+
+    /// <summary>Die gewählte Einheit — <c>-1</c> = die Summe der Flotte (Prüfhilfe).</summary>
+    public int GewaehlteEinheit => _einheit;
+
+    /// <summary>Die C-Rate des gezeigten Schnitts (Prüfhilfe).</summary>
+    public double GewaehlteCRate => Achsenwert(_raster.CRaten, _spalte);
+
+    /// <summary>Die Kapazität des gezeigten Leistungsschnitts (Prüfhilfe).</summary>
+    public double GewaehlteKapazitaet => Achsenwert(_raster.KapazitaetenKwh, _zeile);
+
+    /// <summary>Die Kandidatenzeilen nach Filter und Sortierung (Prüfhilfe).</summary>
+    public IReadOnlyList<Katalogfilterzeile> SichtbareZeilen => Zeilen;
+
+    // --- Zustand --------------------------------------------------------------
+
+    private readonly Katalogfilterstand _stand = new();
+
+    private FlottenAuslegungErgebnis? _gezeichnet;
+    private FlottenRasterdaten _raster = FlottenRasterdaten.Leer;
+    private byte[]? _rasterbild, _schnittbild, _leistungsbild;
+    private string _offen = "";
+    private int _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
+
+    /// <summary>
+    /// Die Stellen der zwei Schieber; <c>-1</c> heisst „noch nicht gewaehlt" und wird
+    /// beim Zeichnen auf die Stelle des Optimums gesetzt. Es ist ausdruecklich KEIN
+    /// Rueckfall auf 0: Die erste Stelle der Achse ist eine gueltige Wahl, und ein
+    /// Rueckfall „0 heisst unbelegt" spraenge beim Ziehen an den linken Anschlag
+    /// wieder ans Optimum zurueck.
+    /// </summary>
+    private int _spalte = -1, _zeile = -1;
+
+    // KEIN static readonly: Die Kultur wechselt zur Laufzeit (Sprachumschaltung im
+    // Rahmen) - dieselbe Regel wie in SpeicherFlottenErgebnisAnsicht.
+    private static CultureInfo Kultur => CultureInfo.CurrentCulture;
+
+    private Katalogfilterprofil Profil => _profil ??= SpeicherFlottenAnzeigeCtrl.Kandidatenprofil();
+
+    private Katalogfilterprofil? _profil;
+
+    // --- Lebenszyklus ---------------------------------------------------------
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(_gezeichnet, Ergebnis))
+        {
+            // Ein NEUES Ergebnis setzt Einheitenwahl, Schieber und Filter zurück: Der
+            // Ausschnitt eines früheren Rasters hat mit diesem nichts zu tun.
+            _gezeichnet = Ergebnis;
+            _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
+            _spalte = -1;
+            _zeile = -1;
+            _offen = "";
+            _stand.Zuruecksetzen();
+            _stand.Sortierspalte = "";
+            _stand.Aufsteigend = true;
+            _alle = SpeicherFlottenAnzeigeCtrl.Kandidatenzeilen(Ergebnis);
+            Filtern();
+        }
+        Zeichnen();
+    }
+
+    /// <summary>
+    /// Holt Karte, Schnitte und die drei Bilder aus dem Kern. Die Schieberstellen werden
+    /// dabei auf die Achse zurückgeholt — eine neue Einheitenwahl hat andere Achsen, und
+    /// eine Stelle, die es nicht mehr gibt, zeigte eine leere Kurve.
+    /// </summary>
+    private void Zeichnen()
+    {
+        _raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(Ergebnis, _einheit);
+        if (_raster.IstLeer)
+        {
+            _rasterbild = null;
+            _schnittbild = null;
+            _leistungsbild = null;
+            return;
+        }
+
+        // Vorbelegung ist die Stelle des OPTIMUMS: Der erste Blick soll auf der Kurve
+        // liegen, auf der das markierte Beste steht. Ohne Optimum beginnt die Achse vorn.
+        if (_spalte < 0) _spalte = Math.Max(_raster.BesteSpalte, 0);
+        if (_zeile < 0) _zeile = Math.Max(_raster.BesteZeile, 0);
+        _spalte = Math.Clamp(_spalte, 0, _raster.CRaten.Count - 1);
+        _zeile = Math.Clamp(_zeile, 0, _raster.KapazitaetenKwh.Count - 1);
+
+        _rasterbild = SpeicherFlottenAnzeigeCtrl.Rasterbild(Ergebnis, _einheit, Einheitenname(_einheit));
+        _schnittbild = SpeicherFlottenAnzeigeCtrl.Schnittbild(Ergebnis, _raster.CRaten[_spalte], _einheit);
+        _leistungsbild = SpeicherFlottenAnzeigeCtrl.SchnittbildLeistung(
+            Ergebnis, _raster.KapazitaetenKwh[_zeile], _einheit);
+    }
+
+    // --- Einheitenwahl und Schieber -------------------------------------------
+
+    private IReadOnlyList<(int Id, string Text)> Einheitenwahl
+    {
+        get
+        {
+            var liste = new List<(int, string)>
+            {
+                (SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT, Resource.FLOTTE_GROESSEN_SUMME)
+            };
+            for (int i = 0; i < Einheiten; i++) liste.Add((i, Einheitenname(i)));
+            return liste;
+        }
+    }
+
+    private string Einheitenname(int stelle)
+        => stelle < 0 ? "" : string.Format(Kultur, Resource.FLOTTE_GROESSEN_EINHEIT, stelle + 1);
+
+    private void EinheitGesetzt(int? wert)
+    {
+        _einheit = wert ?? SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
+        // Die Achsen einer Einheit sind nicht die der Flotte; die Schieber beginnen neu.
+        _spalte = -1;
+        _zeile = -1;
+        Zeichnen();
+    }
+
+    private void SpalteGesetzt(ChangeEventArgs e)
+    {
+        _spalte = Stelle(e, _raster.CRaten.Count);
+        Zeichnen();
+    }
+
+    private void ZeileGesetzt(ChangeEventArgs e)
+    {
+        _zeile = Stelle(e, _raster.KapazitaetenKwh.Count);
+        Zeichnen();
+    }
+
+    /// <summary>Die Stelle aus dem Schieber — außerhalb der Achse wird geklemmt.</summary>
+    private static int Stelle(ChangeEventArgs e, int anzahl)
+    {
+        if (anzahl <= 0) return 0;
+        return int.TryParse(e.Value?.ToString(), NumberStyles.Integer,
+                            CultureInfo.InvariantCulture, out int wert)
+            ? Math.Clamp(wert, 0, anzahl - 1) : 0;
+    }
+
+    private static double Achsenwert(IReadOnlyList<double> achse, int stelle)
+        => stelle >= 0 && stelle < achse.Count ? achse[stelle] : double.NaN;
+
+    private string CRatentext => string.Format(Kultur, Resource.FLOTTE_GROESSEN_WERT_CRATE,
+        Zahl(Achsenwert(_raster.CRaten, _spalte), "0.###"));
+
+    private string Kapazitaetstext => string.Format(Kultur, Resource.FLOTTE_GROESSEN_WERT_KAPAZITAET,
+        Zahl(Achsenwert(_raster.KapazitaetenKwh, _zeile), "0.#"));
+
+    // --- Filter, Sortierung, Tabelle ------------------------------------------
+
+    /// <summary>
+    /// Die Zeilen NACH Filter und Sortierung. Gefiltert wird VOR der Tabelle
+    /// (W14a‑E‑10): <c>Katalogfilter.Anwenden</c> im Kern schränkt ein, die Tabelle
+    /// zeichnet nur noch.
+    /// </summary>
+    /// <remarks>
+    /// Die Menge steht in einem FELD und wird bei jeder Änderung EINMAL neu gebildet.
+    /// Als Eigenschaft gerechnet liefe sie je Zeichenlauf mehrfach — einmal für die
+    /// Trefferzeile, einmal für die Schleife —, und jeder Lauf sortierte die Liste neu.
+    /// </remarks>
+    private IReadOnlyList<Katalogfilterzeile> Zeilen { get; set; } = Array.Empty<Katalogfilterzeile>();
+
+    private IReadOnlyList<Katalogfilterzeile> _alle = Array.Empty<Katalogfilterzeile>();
+
+    private void Filtern() => Zeilen = Katalogfilter.Anwenden(Profil, _alle, _stand);
+
+    private string Trefferzeile
+        => string.Format(Kultur, Resource.FLOTTE_GROESSEN_TREFFER, Zeilen.Count, _alle.Count);
+
+    private void Sortieren(Katalogspalte spalte)
+    {
+        _stand.Sortieren(spalte.Schluessel);
+        Filtern();
+    }
+
+    private void Trichter(Katalogspalte spalte)
+        => _offen = _offen == spalte.Schluessel ? "" : spalte.Schluessel;
+
+    private void Filter(Katalogspalte spalte, string ausdruck)
+    {
+        _stand.Setzen(spalte.Schluessel, ausdruck);
+        Filtern();
+    }
+
+    private void Schliessen() => _offen = "";
+
+    private void FilterZurueck()
+    {
+        _stand.Zuruecksetzen();
+        _offen = "";
+        Filtern();
+    }
+
+    /// <summary>⇅ unsortiert, ▲ auf, ▼ ab (Konzept_Katalogfilter 5.6.2).</summary>
+    private string Sortierzeichen(Katalogspalte spalte)
+        => _stand.Sortierspalte != spalte.Schluessel ? "⇅" : _stand.Aufsteigend ? "▲" : "▼";
+
+    /// <summary>Die Sortierlage für die Sprachausgabe.</summary>
+    private string Sortierlage(Katalogspalte spalte)
+        => _stand.Sortierspalte != spalte.Schluessel
+            ? "none" : _stand.Aufsteigend ? "ascending" : "descending";
+
+    private string Trichterklasse(Katalogspalte spalte)
+        => _stand.Gefiltert(spalte.Schluessel)
+            ? "epos-trichter epos-trichter--gesetzt" : "epos-trichter";
+
+    private string Trichtertext(Katalogspalte spalte)
+        => Kurztext(_stand.Gefiltert(spalte.Schluessel)
+            ? Resource.FLOTTE_GROESSEN_TRICHTER_GESETZT
+            : Resource.FLOTTE_GROESSEN_TRICHTER, spalte);
+
+    private static string Kurztext(string muster, Katalogspalte spalte)
+        => string.Format(Kultur, muster, spalte.Kopftext);
+
+    private static string Platzhalter(Katalogspalte spalte)
+        => spalte.Art == Katalogspaltenart.Zahl
+            ? Resource.FLOTTE_GROESSEN_PLATZHALTER_ZAHL : Resource.FLOTTE_GROESSEN_PLATZHALTER_TEXT;
+
+    private static string Hinweis(Katalogspalte spalte)
+        => spalte.Art == Katalogspaltenart.Zahl ? Resource.FLOTTE_GROESSEN_HINWEIS_ZAHL : "";
+
+    private static string Spaltenklasse(Katalogspalte spalte)
+        => spalte.Rechtsbuendig ? "epos-simerg-zahl" : "";
+
+    // --- Kandidaten -----------------------------------------------------------
+
+    private FlottenKandidatZusammenfassung? Kandidat(string schluessel)
+        => Ergebnis?.Kandidaten.FirstOrDefault(
+            x => string.Equals(x.KandidatId, schluessel, StringComparison.Ordinal));
+
+    private bool IstOptimum(FlottenKandidatZusammenfassung? kandidat)
+        => kandidat is not null && ReferenceEquals(kandidat, Ergebnis?.BesterKandidat);
+
+    private string Zeilenklasse(FlottenKandidatZusammenfassung? kandidat)
+    {
+        if (kandidat is null) return "";
+        if (IstOptimum(kandidat)) return "epos-flotte-groessen-optimum";
+        return kandidat.Zulaessig ? "" : "epos-flotte-groessen-gesperrt";
+    }
+
+    private Task Uebernehmen(FlottenKandidatZusammenfassung? kandidat)
+        => kandidat is null ? Task.CompletedTask : KandidatUebernehmen.InvokeAsync(kandidat);
+
+    private static string Zahl(double wert, string format)
+        => double.IsFinite(wert) ? wert.ToString(format, Kultur) : "—";
+}

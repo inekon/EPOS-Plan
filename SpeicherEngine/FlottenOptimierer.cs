@@ -65,10 +65,11 @@ public static class FlottenOptimierer
         var successfulEvaluations = 0;
         Exception? firstConfigurationError = null;
         FlottenStudienErgebnis? nullStudy = null;
-        foreach (var units in hardware)
+        foreach (var variante in hardware)
         foreach (var ziel in ziele)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var units = variante.Einheiten;
             var candidate = FlottenKopie.Konfiguration(basis);
             candidate.Einheiten = units.Select(FlottenKopie.Einheit).ToList();
             candidate.Optionen.Betriebsziel = ziel;
@@ -135,7 +136,8 @@ public static class FlottenOptimierer
                 displayStudy!.Wirtschaftlichkeit = economics;
                 nullStudy ??= Nullstudie(displayStudy);
                 var summary = Zusammenfassung(id, ziel, candidate.Einheiten, feasible,
-                    economics.KapitalwertEuro, reason);
+                    economics.KapitalwertEuro, reason, variante);
+                Kennzahlen(summary, displayStudy, accounts);
                 result.Kandidaten.Add(summary);
                 if (feasible && economics.KapitalwertEuro > bestValue)
                 {
@@ -151,7 +153,7 @@ public static class FlottenOptimierer
             {
                 firstConfigurationError ??= ex;
                 result.Kandidaten.Add(Zusammenfassung(id, ziel, candidate.Einheiten, false,
-                    double.NegativeInfinity, ex.Message));
+                    double.NegativeInfinity, ex.Message, variante));
             }
             done++;
             progress?.Report(new FlottenFortschritt { Abgeschlossen = done, Gesamt = (int)totalLong, KandidatId = id });
@@ -187,7 +189,8 @@ public static class FlottenOptimierer
     }
 
     private static FlottenKandidatZusammenfassung Zusammenfassung(string id, FlottenBetriebsziel ziel,
-        IReadOnlyList<FlottenEinheit> units, bool feasible, double npv, string? reason) => new()
+        IReadOnlyList<FlottenEinheit> units, bool feasible, double npv, string? reason,
+        Hardwarevariante variante) => new()
     {
         KandidatId = id,
         Betriebsziel = ziel,
@@ -196,8 +199,50 @@ public static class FlottenOptimierer
         KapazitaetKWh = units.Sum(x => x.KapazitaetKWh),
         LadeleistungKw = units.Sum(x => x.LadeleistungKw),
         EntladeleistungKw = units.Sum(x => x.EntladeleistungKw),
-        Grund = reason
+        Grund = reason,
+        Rasterzeile = variante.Rasterzeile,
+        Rasterspalte = variante.Rasterspalte,
+        Einheiten = units.Select(x => new FlottenKandidatEinheit
+        {
+            Id = x.Id,
+            KapazitaetKWh = x.KapazitaetKWh,
+            LadeleistungKw = x.LadeleistungKw,
+            EntladeleistungKw = x.EntladeleistungKw
+        }).ToList()
     };
+
+    /// <summary>
+    /// Die BETRIEBSkennzahlen eines Kandidaten aus dem Lauf, der ohnehin gerechnet wurde
+    /// (Auftrag #193, Konzept „Stromspeicher-Dialoge" 2.5) — eine zweite Simulation gibt
+    /// es nicht.
+    /// </summary>
+    /// <remarks>
+    /// <para>Gelesen wird das ERSTE gerechnete Jahr: Durchsatz, Bezugsspitze und
+    /// Diagnose stehen in seinem Variantenlauf, die Ersparnis in seinem Jahreskonto.
+    /// Ueber mehrere Projektjahre gemittelt waeren es Zahlen, die in keinem Jahr so
+    /// dastanden; die Jahresreihe selbst haelt ohnehin nur der beste Kandidat.</para>
+    /// <para>Die ERSPARNIS ist die Rechnungsdifferenz abzueglich Betriebsaufwand und
+    /// Durchsatzkosten — der laufende Vorteil OHNE Kapitaldienst. Investition,
+    /// Ersatzinvestition und Restwert bleiben aussen vor; sie stecken im Kapitalwert
+    /// daneben, und beide Zahlen zusammen beantworten „lohnt der Betrieb?" und „traegt
+    /// sich die Anschaffung?" getrennt.</para>
+    /// </remarks>
+    private static void Kennzahlen(FlottenKandidatZusammenfassung summary,
+        FlottenStudienErgebnis study, IReadOnlyList<FlottenJahreskonto> accounts)
+    {
+        summary.DurchsatzKWh = study.Variante.SpeicherKennzahlen.Sum(x => x.EntladeenergieAcKWh);
+        summary.Vollzyklen = summary.KapazitaetKWh > 0.0
+            ? summary.DurchsatzKWh / summary.KapazitaetKWh : 0.0;
+        summary.BezugsspitzeKw = study.Variante.MaximalerNetzbezugKw;
+        summary.Arbeitslos = study.Variante.Diagnose.Arbeitslos;
+
+        if (accounts.Count > 0)
+        {
+            var konto = accounts[0];
+            summary.ErsparnisEuroJahr = konto.Referenzrechnung.GesamtEuro
+                - konto.Variantenrechnung.GesamtEuro - konto.OpexEuro - konto.DurchsatzkostenEuro;
+        }
+    }
 
     private static FlottenStudienErgebnis Nullstudie(FlottenStudienErgebnis source)
     {
@@ -231,11 +276,38 @@ public static class FlottenOptimierer
         };
     }
 
-    private static List<List<FlottenEinheit>> BildeHardware(FlottenStudieKonfiguration config)
+    /// <summary>
+    /// EINE Hardwarevariante des Rasters samt ihrer Stelle darin (Auftrag #193).
+    /// </summary>
+    /// <remarks>
+    /// Die zwei Stellen sind nur bei GENAU EINER aktiven Suchachse belegt: Erst dann ist
+    /// das Raster zweidimensional und laesst sich als Karte zeichnen. Bei mehreren Achsen
+    /// bleiben sie auf <c>-1</c> — ein erfundener Index waere schlimmer als keiner.
+    /// </remarks>
+    private sealed class Hardwarevariante
+    {
+        public Hardwarevariante(List<FlottenEinheit> einheiten, int zeile = -1, int spalte = -1)
+        {
+            Einheiten = einheiten;
+            Rasterzeile = zeile;
+            Rasterspalte = spalte;
+        }
+
+        public List<FlottenEinheit> Einheiten { get; }
+
+        /// <summary>Stelle auf der ERSTEN Achse (Kapazitaet bzw. Leistung); -1 = keine.</summary>
+        public int Rasterzeile { get; }
+
+        /// <summary>Stelle auf der ZWEITEN Achse (Leistung bzw. C-Rate); -1 = keine.</summary>
+        public int Rasterspalte { get; }
+    }
+
+    private static List<Hardwarevariante> BildeHardware(FlottenStudieKonfiguration config)
     {
         var active = config.Auslegung.Achsen.Where(x => x.Aktiv).ToArray();
         if (active.Length == 0)
-            return new List<List<FlottenEinheit>> { config.Einheiten.Select(FlottenKopie.Einheit).ToList() };
+            return new List<Hardwarevariante>
+                { new(config.Einheiten.Select(FlottenKopie.Einheit).ToList()) };
         var axisChoices = active.Select((axis, index) => BildeAchse(axis, index)).ToArray();
         long count = 1;
         foreach (var choices in axisChoices) count = checked(count * choices.Count);
@@ -244,23 +316,29 @@ public static class FlottenOptimierer
         var replacedIds = new HashSet<string>(active.Select(a => a.ErsetztEinheitId ?? a.Vorlage.Id)
             .Where(id => !string.IsNullOrWhiteSpace(id)), StringComparer.Ordinal);
         var fixedUnits = config.Einheiten.Where(x => !replacedIds.Contains(x.Id)).Select(FlottenKopie.Einheit).ToList();
-        var result = new List<List<FlottenEinheit>>((int)count) { fixedUnits };
+
+        // Die Stelle im Raster ueberlebt nur, solange es EINE Achse gibt (siehe
+        // Hardwarevariante); bei mehreren wird sie verworfen.
+        bool eineAchse = axisChoices.Length == 1;
+        var result = new List<Hardwarevariante>((int)count) { new(fixedUnits) };
         foreach (var choices in axisChoices)
         {
-            var next = new List<List<FlottenEinheit>>(result.Count * choices.Count);
+            var next = new List<Hardwarevariante>(result.Count * choices.Count);
             foreach (var prefix in result)
             foreach (var choice in choices)
             {
-                var combined = prefix.Select(FlottenKopie.Einheit).ToList();
-                combined.AddRange(choice.Select(FlottenKopie.Einheit));
-                next.Add(combined);
+                var combined = prefix.Einheiten.Select(FlottenKopie.Einheit).ToList();
+                combined.AddRange(choice.Einheiten.Select(FlottenKopie.Einheit));
+                next.Add(eineAchse
+                    ? new Hardwarevariante(combined, choice.Rasterzeile, choice.Rasterspalte)
+                    : new Hardwarevariante(combined));
             }
             result = next;
         }
         return result;
     }
 
-    private static List<List<FlottenEinheit>> BildeAchse(FlottenAuslegungsAchse axis, int axisIndex)
+    private static List<Hardwarevariante> BildeAchse(FlottenAuslegungsAchse axis, int axisIndex)
     {
         if (axis.AnzahlVon < 0 || axis.AnzahlBis < axis.AnzahlVon)
             throw new ArgumentException("Ungueltiger Anzahlbereich in Auslegungsachse.");
@@ -270,17 +348,18 @@ public static class FlottenOptimierer
         var secondAxis = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung
             ? Raster(axis.LeistungVonKw, axis.LeistungBisKw, axis.LeistungSchrittKw, "Leistung")
             : Raster(axis.CRateVon, axis.CRateBis, axis.CRateSchritt, "C-Rate");
-        var result = new List<List<FlottenEinheit>>();
+        var result = new List<Hardwarevariante>();
         for (var count = axis.AnzahlVon; count <= axis.AnzahlBis; count++)
         {
             if (count == 0)
             {
-                result.Add(new List<FlottenEinheit>());
+                result.Add(new Hardwarevariante(new List<FlottenEinheit>()));
                 continue;
             }
-            foreach (var first in firstAxis)
-            foreach (var second in secondAxis)
+            for (var ersteStelle = 0; ersteStelle < firstAxis.Count; ersteStelle++)
+            for (var zweiteStelle = 0; zweiteStelle < secondAxis.Count; zweiteStelle++)
             {
+                double first = firstAxis[ersteStelle], second = secondAxis[zweiteStelle];
                 var capacity = axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first / second : first;
                 var power = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndCRate ? first * second :
                     axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first : second;
@@ -299,7 +378,7 @@ public static class FlottenOptimierer
                     b.EntladeleistungKw = axis.Vorlage.EntladeleistungKw * powerScale;
                     units.Add(b);
                 }
-                result.Add(units);
+                result.Add(new Hardwarevariante(units, ersteStelle, zweiteStelle));
             }
         }
         return result;

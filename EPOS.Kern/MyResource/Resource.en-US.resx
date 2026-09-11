@@ -17660,4 +17660,157 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_CSV_SPALTE" xml:space="preserve">
     <value>Column {0}</value>
   </data>
+  <data name="FLOTTE_GROESSEN_TITEL" xml:space="preserve">
+    <value>Dependence on size</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_UNTERTITEL" xml:space="preserve">
+    <value>How does the net present value depend on capacity and power? The map shows every computed grid point, the curves one section each.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LEER" xml:space="preserve">
+    <value>No grid search available; run the sizing to see the dependence on size.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_KEIN_RASTER" xml:space="preserve">
+    <value>The search did not yield two size axes — there is no map for it. The evaluated variants are listed in the table.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER" xml:space="preserve">
+    <value>Net present value over capacity and C-rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_KAPAZITAET" xml:space="preserve">
+    <value>Section at {0} C — net present value over capacity</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_LEISTUNG" xml:space="preserve">
+    <value>Section at {0} kWh — net present value over discharge power</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_CRATE" xml:space="preserve">
+    <value>C-rate [1/h] (power = capacity × C-rate)</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Discharge power [kW]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SKALA" xml:space="preserve">
+    <value>Net present value [€]</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ENDLICHES_RASTER" xml:space="preserve">
+    <value>SP-O-4: The statement holds only for the finite grid that was evaluated. Nothing is computed between two grid points; the marked optimum is the best evaluated one, not the global one.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER" xml:space="preserve">
+    <value>Grid map of the sizing: net present value over capacity and C-rate, infeasible points hatched</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT" xml:space="preserve">
+    <value>Section curve: net present value over capacity at a fixed C-rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" xml:space="preserve">
+    <value>Section curve: net present value over discharge power at a fixed capacity</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_EINHEIT" xml:space="preserve">
+    <value>Unit shown</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_CRATE" xml:space="preserve">
+    <value>C-rate of the section</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_KAPAZITAET" xml:space="preserve">
+    <value>Capacity of the section</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SUMME" xml:space="preserve">
+    <value>Whole fleet</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_EINHEIT" xml:space="preserve">
+    <value>Unit {0}</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_CRATE" xml:space="preserve">
+    <value>{0} C</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_KAPAZITAET" xml:space="preserve">
+    <value>{0} kWh</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TITEL_KANDIDATEN" xml:space="preserve">
+    <value>Evaluated variants</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KANDIDAT" xml:space="preserve">
+    <value>Candidate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_BETRIEBSZIEL" xml:space="preserve">
+    <value>Operating goal</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KAPAZITAET" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_LADEN" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ENTLADEN" xml:space="preserve">
+    <value>Discharge</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_CRATE" xml:space="preserve">
+    <value>C-rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_KAPITALWERT" xml:space="preserve">
+    <value>Net present value</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ERSPARNIS" xml:space="preserve">
+    <value>Savings</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_VOLLZYKLEN" xml:space="preserve">
+    <value>Full cycles</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_SPITZE" xml:space="preserve">
+    <value>Peak demand</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ZULAESSIG" xml:space="preserve">
+    <value>Feasible</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_GRUND" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_AKTION" xml:space="preserve">
+    <value>Adoption</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SORTIEREN" xml:space="preserve">
+    <value>Sort by {0}</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TRICHTER" xml:space="preserve">
+    <value>Filter {0}</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TRICHTER_GESETZT" xml:space="preserve">
+    <value>{0}: filter set</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_FILTER_LOESCHEN" xml:space="preserve">
+    <value>Clear filter</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_FILTER_ZURUECK" xml:space="preserve">
+    <value>Reset filters</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_PLATZHALTER_TEXT" xml:space="preserve">
+    <value>contains…</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_PLATZHALTER_ZAHL" xml:space="preserve">
+    <value>e.g. &gt;10 or 10..60</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_HINWEIS_ZAHL" xml:space="preserve">
+    <value>Forms: &gt;10, &lt;60, 10..60, =15</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_TREFFER" xml:space="preserve">
+    <value>{0} of {1} variants</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_KEIN_TREFFER" xml:space="preserve">
+    <value>No variant matches the filters that are set.</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Adopt</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_BTN_UEBERNEHMEN_TITEL" xml:space="preserve">
+    <value>Adopt this variant as the fleet</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_OPTIMUM" xml:space="preserve">
+    <value>Optimum of the grid</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ARBEITSLOS" xml:space="preserve">
+    <value>idle</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ARBEITSLOS_TITEL" xml:space="preserve">
+    <value>This fleet neither charged nor discharged in the computed period; it only costs.</value>
+  </data>
 </root>
