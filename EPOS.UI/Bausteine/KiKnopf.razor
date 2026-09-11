@@ -14,30 +14,52 @@
    Unter Windows fuehrt das nach KiChatHuelle.Oeffnen, auf iOS ueber
    Dienste.Navigation zu Seitenschluessel.KiAssistent (Entscheid E-10).
 
-   LINKS NEBEN DEM INFOKNOPF. Die Kollisionsregel des Bestands steht in
-   InfoKnopf.cs:99: "Traegt die Maske oben rechts bereits den KI-Knopf (Breite
-   bis 40 plus 8 Rand), gehoert der Infoknopf LINKS daneben - also rund 60." In
-   Pixeln gerechnet war das noetig; in einer Knopfleiste genuegt die
-   Reihenfolge - der Wirt setzt <KiKnopf /> vor den <InfoKnopf />.
-
    ER ZIEHT DEN FOKUS NICHT AN SICH. Der Vorlaeufer war ein Knopf mit
    TabStop = false UND einem ueberschriebenen OnMouseDown, damit ein Klick den
    Fokus nicht aus dem gerade bearbeiteten Feld holt. In HTML genuegt
-   tabindex="-1" und ein preventDefault auf mousedown - dieselbe Zusage. *@
+   tabindex="-1" und ein preventDefault auf mousedown - dieselbe Zusage.
+
+   ------------------------------------------------------------------------
+   SEIT AUFTRAG #218 ZEICHNET ER EINEN RING MIT DER EPOS-PLAN-MARKE (Variante
+   C, Anwenderentscheid 11.09.2026 "KI-Knopf: Variante C + Variante D"). Bis
+   dahin trug er eine Beschriftung ("Hilfe" bzw. "KI", nie wirklich gesetzt -
+   der Ressourcenschluessel KI_KNOPF_HILFE ist mit ihr gefallen) und stand
+   LINKS neben dem InfoKnopf (Kollisionsregel
+   InfoKnopf.cs:99, in Pixeln gerechnet). Die Pille aus InfoKnopf ist seither
+   der uebliche Weg fuer die 110 Einbaustellen mit Info-Knopf - SIE zeichnet
+   die Marke selbst als rechtes Feld. Dieser Baustein bleibt fuer einen Wirt
+   OHNE Info-Knopf: derselbe Ring, keine Beschriftung mehr, nur der Kurztext
+   als Tooltip. Aktiv (die Ansicht KI_ASSISTENT steht) fuellt den Ring mit dem
+   Blau der Marke und einem weissen Blitz statt der drei Farben - wie das
+   rechte Feld der Pille. *@
 
 @namespace EPOS.UI.Bausteine
 
 @if (Sichtbar)
 {
-    <button type="button" class="epos-kiknopf" tabindex="-1"
+    <button type="button" class="epos-kiknopf @(Aktiv ? "epos-kiknopf--aktiv" : "")" tabindex="-1"
             title="@Kurztext" aria-label="@Kurztext"
-            @onmousedown:preventDefault="true" @onclick="Klick">@Beschriftung</button>
+            @onmousedown:preventDefault="true" @onclick="Klick">
+        @if (Aktiv)
+        {
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path fill="currentColor" d="M9.3 4.9 6.2 8.7h2.5L6.9 12.2 10.4 8H8z" />
+            </svg>
+        }
+        else
+        {
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path class="epos-ki-marke-pv" d="M8 8V1.2A6.8 6.8 0 0 1 14.8 8z" />
+                <path class="epos-ki-marke-erzeuger" d="M8 8h6.8A6.8 6.8 0 0 1 4.6 13.9z" />
+                <path class="epos-ki-marke-lueftung" d="M8 8 4.6 13.9A6.8 6.8 0 0 1 8 1.2z" />
+                <circle class="epos-ki-marke-mitte" cx="8" cy="8" r="2.1" />
+                <path class="epos-ki-marke-blitz" d="M8.6 6.6 7.2 8.3h1.1L7.5 9.9l1.6-1.9H8z" />
+            </svg>
+        }
+    </button>
 }
 
 @code {
-    /// <summary>Beschriftung des Knopfes (<c>KI_KNOPF_HILFE</c>, de „Hilfe").</summary>
-    [Parameter] public string Beschriftung { get; set; } = "";
-
     /// <summary>Kurztext und Sprachausgabe (<c>KI_KNOPF_TOOLTIP</c>, de „KI-Assistent").</summary>
     [Parameter] public string Kurztext { get; set; } = "";
 
@@ -53,6 +75,13 @@
     /// <c>Sichtbar</c> trotzdem auf <c>true</c>; das entscheidet der Wirt.
     /// </remarks>
     [Parameter] public bool Sichtbar { get; set; } = true;
+
+    /// <summary>
+    /// Steht die Ansicht <c>KI_ASSISTENT</c> gerade? Vorgabe <c>false</c> (Auftrag #218).
+    /// Fuellt den Ring mit dem Blau der Marke und einem weissen Blitz statt der drei
+    /// Farben — derselbe Zustand wie am rechten Feld der Hilfepille aus <c>InfoKnopf</c>.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; }
 
     /// <summary>Der Anwender möchte den Assistenten.</summary>
     [Parameter] public EventCallback Gewaehlt { get; set; }

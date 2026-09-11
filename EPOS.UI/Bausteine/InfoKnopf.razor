@@ -31,7 +31,25 @@
    der Weg dorthin zu sehen ist. Unsichtbar ist er nur, wo die Installation die
    KI abgeschaltet hat (KiVerfuegbarkeit) oder wo ein Dialog ihn ausdruecklich
    nicht will: die Lizenz- und Erststartmasken und die Einstellungen des
-   Assistenten selbst setzen MitAssistent="false". *@
+   Assistenten selbst setzen MitAssistent="false".
+
+   ------------------------------------------------------------------------
+   SEIT AUFTRAG #218 SIND ES ZWEI FELDER EINER PILLE, KEIN KNOPFPAAR MEHR
+   (Anwenderentscheid 11.09.2026, "KI-Knopf: Variante C + Variante D"). Bis
+   dahin standen ein blauer Kreis mit "i" (28x28 PNG) und ein Rahmenknopf mit
+   dem Text "KI" nebeneinander - zwei Formen, zwei Farben, ein Textknopf ohne
+   Bild. Seither ist es EIN Element "epos-hilfepille" mit zwei
+   "epos-hilfepille__feld"-Feldern: links unveraendert die Hilfeseite (jetzt
+   als Inline-SVG statt help_icon.png - das PNG bleibt fuer die
+   WinForms-Hilfe, Form_HelpPopup), rechts - wenn der Assistent moeglich ist -
+   die EPOS-Plan-Marke in ihren drei Farben (Variante C, nachgezeichnet aus
+   Resources/Logo125_125.jpg, es gibt keine SVG-Quelle). Ohne Assistent bleibt
+   nur das linke Feld stehen, die Pille sieht dann aus wie ein gewoehnlicher
+   runder Knopf. Steht die Ansicht KI_ASSISTENT, darf ein Wirt, der das weiss
+   (AppWurzel, SimulationSeite, StromspeicherAuslegungSeite), Aktiv="true"
+   setzen - das Feld fuellt sich dann mit dem Blau der Marke und einem
+   weissen Blitz statt der drei Farben. Der Baustein KiKnopf bleibt daneben
+   fuer Wirte OHNE Info-Knopf und zeichnet dieselbe Marke im Ring. *@
 
 @namespace EPOS.UI.Bausteine
 @using EPOS.UI.Dienste
@@ -39,15 +57,39 @@
 
 @inject IHilfeDienst Hilfe
 
-<button type="button" class="epos-infoknopf" title="@Kurztext" aria-label="@Kurztext"
-        @onclick="BeimKlick">
-    <img src="_content/EPOS.UI/help_icon.png" alt="" width="28" height="28" />
-</button>
-@if (AssistentSichtbar)
-{
-    <KiKnopf Beschriftung="@AssistentBeschriftung" Kurztext="@AssistentKurztext"
-             Gewaehlt="AssistentGewaehlt" />
-}
+<span class="epos-hilfepille">
+    <button type="button" class="epos-infoknopf epos-hilfepille__feld" title="@Kurztext"
+            aria-label="@Kurztext" @onclick="BeimKlick">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <circle cx="8" cy="4.2" r="1.3" fill="currentColor" />
+            <rect x="6.9" y="6.6" width="2.2" height="6" rx="1" fill="currentColor" />
+        </svg>
+    </button>
+    @if (AssistentSichtbar)
+    {
+        <button type="button"
+                class="epos-kiknopf epos-hilfepille__feld @(Aktiv ? "epos-hilfepille__feld--aktiv" : "")"
+                tabindex="-1" title="@AssistentKurztext" aria-label="@AssistentKurztext"
+                @onmousedown:preventDefault="true" @onclick="AssistentGewaehlt">
+            @if (Aktiv)
+            {
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path fill="currentColor" d="M9.3 4.9 6.2 8.7h2.5L6.9 12.2 10.4 8H8z" />
+                </svg>
+            }
+            else
+            {
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path class="epos-ki-marke-pv" d="M8 8V1.2A6.8 6.8 0 0 1 14.8 8z" />
+                    <path class="epos-ki-marke-erzeuger" d="M8 8h6.8A6.8 6.8 0 0 1 4.6 13.9z" />
+                    <path class="epos-ki-marke-lueftung" d="M8 8 4.6 13.9A6.8 6.8 0 0 1 8 1.2z" />
+                    <circle class="epos-ki-marke-mitte" cx="8" cy="8" r="2.1" />
+                    <path class="epos-ki-marke-blitz" d="M8.6 6.6 7.2 8.3h1.1L7.5 9.9l1.6-1.9H8z" />
+                </svg>
+            }
+        </button>
+    }
+</span>
 
 @code {
     /// <summary>Schluessel im Hilfekatalog, z. B. "Form_Kosten_Auswahl.btn_Help".</summary>
@@ -80,12 +122,18 @@
     /// </remarks>
     [Parameter] public string Dialogname { get; set; } = "";
 
-    /// <summary>Beschriftung des KI-Knopfes (<c>KI_KNOPF_DIALOG</c>).</summary>
-    [Parameter] public string AssistentBeschriftung { get; set; } = Text("KI_KNOPF_DIALOG", "KI");
-
     /// <summary>Kurztext des KI-Knopfes (<c>KI_KNOPF_DIALOG_TOOLTIP</c>).</summary>
     [Parameter] public string AssistentKurztext { get; set; } =
         Text("KI_KNOPF_DIALOG_TOOLTIP", "Diesen Dialog vom Hilfe-Assistenten erklären lassen");
+
+    /// <summary>
+    /// Steht die Ansicht <c>KI_ASSISTENT</c> gerade? Vorgabe <c>false</c>. Ein Wirt, der
+    /// das weiss (<c>AppWurzel</c>, <c>SimulationSeite</c>,
+    /// <c>StromspeicherAuslegungSeite</c>), darf ihn setzen — ohne Pflicht (Auftrag #218).
+    /// Das rechte Feld der Pille fuellt sich dann mit dem Blau der Marke und einem
+    /// weissen Blitz statt der drei Farben.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; }
 
     private HilfeEintrag? _eintrag;
 

@@ -24293,29 +24293,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KI ähnelt.
-        /// </summary>
-        public static string KI_KNOPF_DIALOG {
-            get {
-                return ResourceManager.GetString("KI_KNOPF_DIALOG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Dialog vom Hilfe-Assistenten erklären lassen ähnelt.
         /// </summary>
         public static string KI_KNOPF_DIALOG_TOOLTIP {
             get {
                 return ResourceManager.GetString("KI_KNOPF_DIALOG_TOOLTIP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfe ähnelt.
-        /// </summary>
-        public static string KI_KNOPF_HILFE {
-            get {
-                return ResourceManager.GetString("KI_KNOPF_HILFE", resourceCulture);
             }
         }
         

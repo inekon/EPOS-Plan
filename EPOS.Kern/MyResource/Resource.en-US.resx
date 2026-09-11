@@ -8400,9 +8400,6 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_KNOPF_TOOLTIP" xml:space="preserve">
     <value>AI assistant</value>
   </data>
-  <data name="KI_KNOPF_HILFE" xml:space="preserve">
-    <value>Help</value>
-  </data>
   <data name="KI_MENUE_ASSISTENT" xml:space="preserve">
     <value>Help assistant (AI)...</value>
   </data>
@@ -17875,9 +17872,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="FLOTTE_SEITE_KANDIDAT_BANNER" xml:space="preserve">
     <value>Candidate {0} applied — re-evaluate the fleet.</value>
-  </data>
-  <data name="KI_KNOPF_DIALOG" xml:space="preserve">
-    <value>AI</value>
   </data>
   <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
     <value>Have the help assistant explain this dialog</value>
