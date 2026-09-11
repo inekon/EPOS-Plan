@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Hilfe;
+﻿namespace EPOS.UI.Dialoge.Hilfe;
 
 /// <summary>
 /// Was <c>KiEinstellungenDialog</c> nach OK zurueckgibt.
@@ -18,4 +18,16 @@ namespace EPOS.UI.Dialoge.Hilfe;
 /// </remarks>
 /// <param name="ApiSchluessel">Der eingetippte Schluessel, getrimmt; leer = keiner.</param>
 /// <param name="WegBErzwingen">Steht „Rueckfallweg B erzwingen"?</param>
-public sealed record KiEinstellungenErgebnis(string ApiSchluessel, bool WegBErzwingen);
+/// <param name="Dialogdaten">
+/// Steht die Einwilligungsstufe „Dialogdaten" (Auftrag #200, KI‑D‑Q2)? <c>false</c>
+/// nimmt sie zurueck.
+/// </param>
+/// <remarks>
+/// <b>Warum die dritte Angabe hier und nicht in einem eigenen Rueckweg.</b> Sie ist
+/// derselben Art wie die zwei anderen: eine Einstellung, die der Dialog ANZEIGT und der
+/// Aufrufer SCHREIBT. Ein eigener Rueckruf haette „Abbrechen" zweideutig gemacht - die
+/// Einwilligung waere dann schon zurueckgenommen, waehrend der Schluessel unveraendert
+/// bliebe.
+/// </remarks>
+public sealed record KiEinstellungenErgebnis(string ApiSchluessel, bool WegBErzwingen,
+                                             bool Dialogdaten = false);

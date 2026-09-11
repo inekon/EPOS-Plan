@@ -80,6 +80,15 @@ namespace WindowsFormsApplication1
             if (ergebnis == null) return;
             KiChatService.ApiKey = ergebnis.ApiSchluessel;
             KiChatService.WegBErzwingen = ergebnis.WegBErzwingen;
+
+            // Die dritte Angabe seit Auftrag #200: die Einwilligungsstufe
+            // "Dialogdaten". Geschrieben wird nur, was sich AENDERT - sonst
+            // bekaeme der Eintrag bei jedem OK ein neues Datum, obwohl der
+            // Anwender nichts entschieden hat.
+            if (ergebnis.Dialogdaten == KiEinwilligung.DialogdatenErteilt) return;
+
+            if (ergebnis.Dialogdaten) KiEinwilligung.DialogdatenErteilen();
+            else KiEinwilligung.DialogdatenZuruecknehmen();
         }
 
         /// <summary>
@@ -96,6 +105,7 @@ namespace WindowsFormsApplication1
                 ["Modellzeile"] = string.Format(MyResource.Resource.KI_EINST_HINWEIS_MODELL,
                                                 KiChatService.MODELL),
                 ["WegB"] = KiChatService.WegBErzwingen,
+                ["Dialogdaten"] = KiEinwilligung.DialogdatenErteilt,
                 ["ModellNeuErkennen"] = (Func<string, Task<string>>)ModellNeuErkennen,
 
                 ["SchluesselText"] = MyResource.Resource.KI_EINST_LBL_SCHLUESSEL,
@@ -106,9 +116,26 @@ namespace WindowsFormsApplication1
                 ["HinweisDaten"] = MyResource.Resource.KI_EINST_HINWEIS_DATEN,
                 ["HinweisKontingent"] = MyResource.Resource.KI_EINST_HINWEIS_KONTINGENT,
                 ["WegBText"] = MyResource.Resource.KI_AKT_WEGB_EINSTELLUNG,
+                ["DialogdatenText"] = MyResource.Resource.KI_DIALOGDATEN_EINST_SCHALTER,
+                ["DialogdatenErklaerung"] = MyResource.Resource.KI_DIALOGDATEN_EINST_ERKLAERUNG,
+                ["DialogdatenStand"] = Dialogdatenstand(),
                 ["OkText"] = MyResource.Resource.KI_EINST_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.KI_EINST_BTN_ABBRECHEN
             };
+        }
+
+        /// <summary>
+        /// Der Stand der Einwilligung „Dialogdaten" im Klartext (Auftrag #200).
+        /// </summary>
+        private static string Dialogdatenstand()
+        {
+            if (!KiEinwilligung.DialogdatenErteilt)
+                return MyResource.Resource.KI_DIALOGDATEN_EINST_OHNE;
+
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 MyResource.Resource.KI_DIALOGDATEN_EINST_STAND,
+                                 KiEinwilligung.DialogdatenBestaetigtAm,
+                                 KiEinwilligung.DialogdatenFassung);
         }
 
         /// <summary>

@@ -40,6 +40,8 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -355,10 +357,29 @@
     /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
 
+    // =====================================================================
+    //  Der Hilfe-Assistent liest die Feldwerte (Auftrag #200, Stufe S2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>: Sie hält je Katalogfeld einen
+    /// Getter auf <see cref="Daten"/> und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Die Brücke hält nur den Zugang; ob ein
+    /// Feldwert hinausgeht, entscheiden der Schalter „Feldwerte mitsenden" im Chat und
+    /// die Einwilligungsstufe „Dialogdaten" (Anwenderentscheid KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
     protected override void OnInitialized()
     {
         _hinweis = HinweisBeimOeffnen ?? "";
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten);
     }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

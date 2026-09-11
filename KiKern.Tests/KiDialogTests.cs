@@ -14,7 +14,7 @@ namespace KiKern.Tests
         // ------------------------------------------------------------------ Bausteine
 
         private static KiDialogFeld Feld(string name = "wartungskosten",
-                                         string pfad = "gb_Kosten.tb_Wartung")
+                                         string pfad = "HeizkesselKatalogDaten.Wartungskosten")
             => new KiDialogFeld(name, pfad, "Wartungskosten", KiParameterTyp.Zahl,
                                 "Jährliche Wartungskosten des Kessels.", einheit: "€/a");
 
@@ -62,53 +62,67 @@ namespace KiKern.Tests
             // Ohne Erlaeuterung koennte dialog_parameter_erklaeren nur den Anzeigenamen
             // wiederholen - genau die Antwort, die der Anwender schon vor sich sieht.
             Assert.Throws<ArgumentException>(() => new KiDialogFeld(
-                "wartungskosten", "tb_Wartung", "Wartungskosten", KiParameterTyp.Zahl, "  "));
+                "wartungskosten", "Daten.Wartungskosten", "Wartungskosten",
+                KiParameterTyp.Zahl, "  "));
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
-        [InlineData("gb_Kosten..tb_Wartung")]   // leere Stufe
-        [InlineData(".tb_Wartung")]
-        [InlineData("gb_Kosten.")]
-        [InlineData("tb Wartung")]              // Leerzeichen
+        [InlineData("Daten..Wartung")]                  // leere Stufe
+        [InlineData(".Wartung")]
+        [InlineData("Daten.")]
+        [InlineData("Daten Wartung")]                   // Leerzeichen statt Punkt
+        [InlineData("Wartungskosten")]                  // nur EINE Stufe
+        [InlineData("Daten.Kosten.Wartung")]            // drei Stufen
+        [InlineData("1Daten.Wartung")]                  // Ziffer am Anfang
+        [InlineData("Daten.tb-Wartung")]                // Bindestrich ist kein Bezeichner
         [InlineData(null)]
-        public void FeldOhneBrauchbarenControlpfad_LaesstSichNichtDeklarieren(string? pfad)
+        public void FeldOhneBrauchbarenEigenschaftspfad_LaesstSichNichtDeklarieren(string? pfad)
         {
+            // Seit Auftrag #200 traegt das zweite Argument den Namen der EIGENSCHAFT im
+            // Daten-Objekt (Typ.Eigenschaft) und nicht mehr den WinForms-Controlnamen.
+            // Genau zwei Stufen, beide C#-Bezeichner - alles andere ist kein Pfad.
             Assert.Throws<ArgumentException>(() => Feld(pfad: pfad!));
-            Assert.False(KiControlpfad.IstGueltig(pfad));
+            Assert.False(KiEigenschaftspfad.IstGueltig(pfad));
         }
 
         [Theory]
-        [InlineData("tb_Wartung")]
-        [InlineData("gb_Kessel.tb_Wirkungsgrad_Öl")]   // Bestand: nicht-ASCII-Controlnamen
-        [InlineData("tabControl1.tabPage2.gb_Kosten.tb_Wartung")]
-        public void ControlpfadeDesBestands_WerdenAngenommen(string pfad)
+        [InlineData("HeizkesselKatalogDaten.Ptherm")]
+        [InlineData("ErzeugerZeile.AnzahlModule")]
+        [InlineData("StromspeicherKiSicht.KapazitaetGesamtKWh")]
+        [InlineData("Daten.Wirkungsgrad_Öl")]   // Bestand: nicht-ASCII-Eigenschaftsnamen
+        public void EigenschaftspfadeDesKatalogs_WerdenAngenommen(string pfad)
         {
-            // Die Startmasken fuehren nicht-ASCII-Controlnamen (Bestandsanker B9). Wuerde
-            // der Kern die ASCII-Regel der Aktionsnamen auch hier anlegen, waere genau das
-            // Feld nicht deklarierbar, um das es haeufig geht.
-            Assert.True(KiControlpfad.IstGueltig(pfad));
-            Assert.Equal(pfad, Feld(pfad: pfad).Controlpfad);
+            // Nicht-ASCII bleibt erlaubt (Bestandsanker B9): Der Bestand fuehrt
+            // Bezeichner mit Umlaut, und ein Feld, das es gibt, muss deklarierbar sein.
+            Assert.True(KiEigenschaftspfad.IstGueltig(pfad));
+
+            KiDialogFeld f = Feld(pfad: pfad);
+            Assert.Equal(pfad, f.Eigenschaftspfad);
+            Assert.Equal(pfad.Split('.')[0], f.Datentyp);
+            Assert.Equal(pfad.Split('.')[1], f.Eigenschaft);
         }
 
         [Fact]
         public void ZahlenlisteAlsFeld_LaesstSichNichtDeklarieren()
         {
-            // Ein Maskenfeld traegt genau einen Wert; fuer eine Liste gibt es kein Control.
+            // Ein Maskenfeld traegt genau einen Wert; fuer eine Liste gibt es kein
+            // Eingabefeld.
             Assert.Throws<ArgumentException>(() => new KiDialogFeld(
-                "projekte", "tb_Projekte", "Projekte", KiParameterTyp.GanzzahlListe, "Liste."));
+                "projekte", "Daten.Projekte", "Projekte", KiParameterTyp.GanzzahlListe,
+                "Liste."));
         }
 
         [Fact]
         public void FeldEigenschaften_StehenSoDaWieDeklariert()
         {
-            var f = new KiDialogFeld("nutzungsdauer", "gb_Kosten.tb_Dauer", "Nutzungsdauer",
+            var f = new KiDialogFeld("nutzungsdauer", "Daten.Nutzungsdauer", "Nutzungsdauer",
                                      KiParameterTyp.Ganzzahl, "Erwartete Nutzungsdauer.",
                                      einheit: "a", leerErlaubt: true, hilfeSlug: "nutzungsdauer");
 
             Assert.Equal("nutzungsdauer", f.Name);
-            Assert.Equal("gb_Kosten.tb_Dauer", f.Controlpfad);
+            Assert.Equal("Daten.Nutzungsdauer", f.Eigenschaftspfad);
             Assert.Equal("Nutzungsdauer", f.Anzeigename);
             Assert.Equal(KiParameterTyp.Ganzzahl, f.Typ);
             Assert.Equal("a", f.Einheit);
@@ -231,33 +245,40 @@ namespace KiKern.Tests
         }
 
         [Fact]
-        public void DoppelterControlpfad_LaesstSichNichtDeklarieren()
+        public void DoppelterEigenschaftspfad_LaesstSichNichtDeklarieren()
         {
             Assert.Throws<ArgumentException>(() => Maske(new[]
             {
-                Feld("wartungskosten", "gb_Kosten.tb_Wartung"),
-                Feld("wartungskosten_2", "gb_Kosten.tb_Wartung")
+                Feld("wartungskosten", "Daten.Wartung"),
+                Feld("wartungskosten_2", "Daten.Wartung")
             }));
         }
 
         [Fact]
-        public void ControlpfadDoppelt_TrotzAndererSchreibweise_WirdAbgewiesen()
+        public void EigenschaftspfadDoppelt_TrotzAndererSchreibweise_WirdAbgewiesen()
         {
-            // Die Controlsuche des Bestands vergleicht ohne Ruecksicht auf Gross-/Klein-
-            // schreibung; zwei solche Eintraege zeigten also auf dasselbe Control.
+            // Die Aufloesung vergleicht ohne Ruecksicht auf Gross-/Kleinschreibung; zwei
+            // solche Eintraege zeigten also auf dieselbe Eigenschaft.
             Assert.Throws<ArgumentException>(() => Maske(new[]
             {
-                Feld("eins", "gb_Kosten.tb_Wartung"),
-                Feld("zwei", "GB_Kosten.TB_Wartung")
+                Feld("eins", "Daten.Wartung"),
+                Feld("zwei", "DATEN.wartung")
             }));
         }
 
         [Fact]
-        public void DasselbeControl_AlsFeldUndAlsKnopf_WirdAbgewiesen()
+        public void FeldUndKnopf_TeilenSICH_DIE_Pfadmenge_NICHT_MEHR()
         {
-            Assert.Throws<ArgumentException>(() => Maske(
-                new[] { Feld("speichern_feld", "btn_Speichern") },
-                new[] { Knopf("speichern", "btn_Speichern") }));
+            // Seit Auftrag #200 sind es ZWEI Namensraeume: Ein Feld traegt einen
+            // Eigenschaftspfad, ein Knopf weiterhin seinen Controlnamen. Sie koennen
+            // einander nicht mehr treffen - und eine gemeinsame Pruefung behauptete eine
+            // Kollision, die es nicht gibt.
+            KiDialog m = Maske(
+                new[] { Feld("speichern_feld", "Daten.Speichern") },
+                new[] { Knopf("speichern", "Daten.Speichern") });
+
+            Assert.True(m.KenntFeld("speichern_feld"));
+            Assert.True(m.KenntKnopf("speichern"));
         }
 
         [Fact]
@@ -281,7 +302,7 @@ namespace KiKern.Tests
         {
             // Sie stehen in der Klartext-Ablehnung: „das Feld gibt es nicht, bekannt sind …".
             KiDialog m = Maske(
-                new[] { Feld("wartungskosten", "tb_Eins"), Feld("dauer", "tb_Zwei") },
+                new[] { Feld("wartungskosten", "Daten.Eins"), Feld("dauer", "Daten.Zwei") },
                 new[] { Knopf("speichern", "btn_Eins"), Knopf("abbrechen", "btn_Zwei") });
 
             Assert.Equal(new[] { "dauer", "wartungskosten" }, m.Feldnamen());
@@ -317,7 +338,7 @@ namespace KiKern.Tests
         private static KiDialogKatalog Katalog()
             => new KiDialogKatalog(
                 Maske(),
-                new KiDialog("Form_PV", "Photovoltaik", new[] { Feld("leistung", "tb_Leistung") }),
+                new KiDialog("Form_PV", "Photovoltaik", new[] { Feld("leistung", "ErzeugerZeile.Leistung") }),
                 new KiDialog("Form_WP", "Wärmepumpe"),
                 new KiDialog("Form_PufferSp_Bearbeiten", "Pufferspeicher bearbeiten"));
 

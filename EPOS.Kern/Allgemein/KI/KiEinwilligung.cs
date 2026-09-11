@@ -59,6 +59,38 @@ namespace WindowsFormsApplication1
         private const string REG_ABSCHALTER = "KiDeaktiviert";
 
         // ------------------------------------------------------------------
+        // Zweite Stufe: DIALOGDATEN (Auftrag #200, Anwenderentscheid KI-D-Q2)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Fassung der Einwilligung in die Übertragung von <b>Feldwerten offener
+        /// Masken</b>. <b>Bei jeder inhaltlichen Änderung des Erklärtextes (Ressourcen
+        /// <c>KI_DIALOGDATEN_*</c>) um eins erhöhen</b> — dann wird erneut gefragt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum eine eigene Stufe und nicht die vorhandene.</b> Die allgemeine
+        /// Einwilligung (<see cref="FASSUNG"/>) deckt ab, dass FRAGE und HILFEABSCHNITTE
+        /// an den Anbieter gehen — Bedienbegriffe, keine Projektdaten (Konzept „Der
+        /// Hilfe-Assistent im Dialog", 3.2). Ein Feldblock ist etwas anderes: Er trägt
+        /// die Zahlen, die der Anwender gerade eingibt. Wer dem einen zustimmt, hat dem
+        /// anderen nicht zugestimmt — deshalb ein eigener Merker, eine eigene Fassung
+        /// und ein eigener Rückweg (Anwenderentscheid <b>KI‑D‑Q2</b>, 11.09.2026).
+        /// </para>
+        /// <para>
+        /// <b>Der Abschalter überstimmt auch sie.</b> Ist die KI abgeschaltet, geht
+        /// nichts hinaus — eine erteilte Dialogdaten-Einwilligung ändert daran nichts.
+        /// </para>
+        /// </remarks>
+        public const int FASSUNG_DIALOGDATEN = 1;
+
+        /// <summary>Bestätigte Fassung der Dialogdaten-Einwilligung (Zahl als Text).</summary>
+        private const string REG_DIALOGDATEN = "KiDialogdatenBestaetigt";
+
+        /// <summary>Zeitpunkt der Dialogdaten-Einwilligung, nur zur Anzeige.</summary>
+        private const string REG_DIALOGDATEN_AM = "KiDialogdatenBestaetigtAm";
+
+        // ------------------------------------------------------------------
         // Einhängepunkt der Oberfläche
         // ------------------------------------------------------------------
 
@@ -215,6 +247,119 @@ namespace WindowsFormsApplication1
         public static bool Sicherstellen()
         {
             return !Abgeschaltet && BestaetigteFassung >= FASSUNG;
+        }
+
+        // ------------------------------------------------------------------
+        // Einwilligungsstufe „Dialogdaten" (Auftrag #200, KI-D-Q2)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Zeigt die Erklärung, was mit den Feldwerten geschieht, und liefert
+        /// <c>true</c>, wenn der Anwender zustimmt. Die Plattformhülle hängt sie beim
+        /// Programmstart ein.
+        /// </summary>
+        /// <remarks>
+        /// Bleibt der Haken leer, gibt es keinen Weg zu dieser Einwilligung — und damit
+        /// keinen Weg, Feldwerte zu übertragen. Das ist dieselbe Zusage wie bei
+        /// <see cref="Nachfragen"/>: Ein Lauf ohne Oberfläche darf nichts an den Anbieter
+        /// senden. Der Haken darf nicht werfen; tut er es doch, gilt das als Ablehnung.
+        /// </remarks>
+        public static Func<Task<bool>> NachfragenDialogdaten { get; set; }
+
+        /// <summary>Bestätigte Fassung der Dialogdaten-Einwilligung; 0 = keine.</summary>
+        public static int DialogdatenFassung
+        {
+            get
+            {
+                int n;
+                string wert = Lesen(REG_DIALOGDATEN);
+                return int.TryParse(wert, NumberStyles.Integer, CultureInfo.InvariantCulture, out n) ? n : 0;
+            }
+        }
+
+        /// <summary>Zeitpunkt der Dialogdaten-Einwilligung als Text; leer, wenn keine vorliegt.</summary>
+        public static string DialogdatenBestaetigtAm
+        {
+            get { return Lesen(REG_DIALOGDATEN_AM) ?? ""; }
+        }
+
+        /// <summary>
+        /// Es liegt eine gültige Einwilligung in die Übertragung von Feldwerten vor und
+        /// die KI ist nicht abgeschaltet.
+        /// </summary>
+        public static bool DialogdatenErteilt
+        {
+            get { return !Abgeschaltet && DialogdatenFassung >= FASSUNG_DIALOGDATEN; }
+        }
+
+        /// <summary>
+        /// Lässt sich die Einwilligung hier überhaupt einholen? <c>false</c> heißt: Der
+        /// Schalter „Feldwerte mitsenden" bleibt aus und gesperrt, und die Oberfläche
+        /// nennt den Grund.
+        /// </summary>
+        /// <remarks>
+        /// Drei Fälle machen sie unmöglich: die abgeschaltete KI, eine fehlende
+        /// allgemeine Einwilligung ohne Nachfrageweg und ein Lauf ohne Oberfläche
+        /// (Prüfstand, Konsole) — dort ist kein Haken eingehängt.
+        /// </remarks>
+        public static bool DialogdatenMoeglich
+        {
+            get
+            {
+                if (Abgeschaltet) return false;
+                if (DialogdatenFassung >= FASSUNG_DIALOGDATEN) return true;
+                return NachfragenDialogdaten != null;
+            }
+        }
+
+        /// <summary>Merkt die Dialogdaten-Einwilligung für die aktuelle Fassung samt Zeitpunkt.</summary>
+        public static void DialogdatenErteilen()
+        {
+            Schreiben(REG_DIALOGDATEN, FASSUNG_DIALOGDATEN.ToString(CultureInfo.InvariantCulture));
+            Schreiben(REG_DIALOGDATEN_AM,
+                      DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>Nimmt die Dialogdaten-Einwilligung zurück; beim nächsten Mal wird wieder gefragt.</summary>
+        public static void DialogdatenZuruecknehmen()
+        {
+            Loeschen(REG_DIALOGDATEN);
+            Loeschen(REG_DIALOGDATEN_AM);
+        }
+
+        /// <summary>
+        /// Der Riegel vor jeder Übertragung von Feldwerten: <c>true</c>, wenn gesendet
+        /// werden darf. Gefragt wird <b>einmal</b> — beim ersten Einschalten des
+        /// Schalters; danach entscheidet der abgelegte Merker.
+        /// </summary>
+        /// <remarks>
+        /// Die Reihenfolge ist dieselbe wie bei <see cref="SicherstellenAsync"/>:
+        /// Abschalter zuerst, dann die abgelegte Fassung, erst danach die Frage. Die
+        /// ALLGEMEINE Einwilligung wird vorher sichergestellt — ohne sie geht ohnehin
+        /// keine Anfrage hinaus, und eine Zustimmung zu den Feldwerten allein wäre
+        /// wertlos.
+        /// </remarks>
+        public static async Task<bool> SicherstellenDialogdatenAsync()
+        {
+            if (Abgeschaltet) return false;
+            if (!await SicherstellenAsync().ConfigureAwait(true)) return false;
+            if (DialogdatenFassung >= FASSUNG_DIALOGDATEN) return true;
+
+            Func<Task<bool>> frage = NachfragenDialogdaten;
+            if (frage == null) return false;
+
+            bool ja;
+            try
+            {
+                Task<bool> lauf = frage();
+                ja = lauf != null && await lauf.ConfigureAwait(true);
+            }
+            catch { return false; }
+
+            if (!ja) return false;
+
+            DialogdatenErteilen();
+            return true;
         }
 
         // ------------------------------------------------------------------

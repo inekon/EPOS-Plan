@@ -22,10 +22,13 @@ namespace KiKern
     /// und der Erklaertext („erwartet eine Zahl") soll in beiden Faellen derselbe sein.
     /// </para>
     /// <para>
-    /// <b>Der Kern kennt keine Controls.</b> <see cref="Controlpfad"/> ist reiner Text;
-    /// aufgeloest wird er erst im Anwendungsprojekt (Muster <c>FindControlRecursive</c>).
-    /// So bleibt KiKern referenzfrei (Fachkonzept 3.7) - und die Deklaration bleibt
-    /// pruefbar, ohne eine Maske zu oeffnen.
+    /// <b>Der Kern kennt weder Controls noch Datenklassen.</b> <see cref="Eigenschaftspfad"/>
+    /// ist reiner Text; aufgeloest wird er erst in der Oberflaeche, und zwar seit Auftrag
+    /// #200 (Stufe S2) ueber die EIGENSCHAFT des Daten-Objekts eines Razor-Dialogs
+    /// (<c>HeizkesselKatalogDaten.Ptherm</c>) statt ueber einen WinForms-Controlnamen.
+    /// Die Controlnamen waren seit iU9 tot: Die vier Masken sind Razor-Komponenten, und
+    /// <c>Application.OpenForms</c> fuehrt sie nicht mehr. So bleibt KiKern referenzfrei
+    /// (Fachkonzept 3.7) - und die Deklaration bleibt pruefbar, ohne eine Maske zu oeffnen.
     /// </para>
     /// </remarks>
     public sealed class KiDialogFeld
@@ -34,7 +37,10 @@ namespace KiKern
         /// Deklariert ein steuerbares Feld.
         /// </summary>
         /// <param name="name">Logischer, sprachneutraler Schluessel (ASCII, wie <see cref="KiName"/>).</param>
-        /// <param name="controlpfad">Pfad des Controls in der Maske, z. B. <c>gb_Kessel.tb_Wirkungsgrad</c>.</param>
+        /// <param name="eigenschaftspfad">
+        /// Typname und Eigenschaft im Daten-Objekt des Dialogs, z. B.
+        /// <c>HeizkesselKatalogDaten.Ptherm</c> (Auftrag #200).
+        /// </param>
         /// <param name="anzeigename">Klartextname - genau der Text, den der Anwender auf der Maske liest.</param>
         /// <param name="typ">Feldart; wiederverwendet <see cref="KiParameterTyp"/>.</param>
         /// <param name="erlaeuterung">Ein Satz Klartext fuer <c>dialog_parameter_erklaeren</c>.</param>
@@ -42,7 +48,7 @@ namespace KiKern
         /// <param name="leerErlaubt">Darf das Feld leer bleiben?</param>
         /// <param name="hilfeSlug">Slug des Hilfeartikels (<c>WordPressHelpCatalog.Get</c>); <c>null</c> = keiner.</param>
         public KiDialogFeld(string name,
-                            string controlpfad,
+                            string eigenschaftspfad,
                             string anzeigename,
                             KiParameterTyp typ,
                             string erlaeuterung,
@@ -54,10 +60,11 @@ namespace KiKern
                 throw new ArgumentException(
                     "Feldname '" + name + "' ist nicht zulaessig (erlaubt: a-z, 0-9, _; hoechstens 64 Zeichen).",
                     nameof(name));
-            if (!KiControlpfad.IstGueltig(controlpfad))
+            if (!KiEigenschaftspfad.IstGueltig(eigenschaftspfad))
                 throw new ArgumentException(
-                    "Das Feld '" + name + "' braucht einen Controlpfad ohne Leerzeichen und ohne leere Stufe " +
-                    "(geliefert: '" + controlpfad + "').", nameof(controlpfad));
+                    "Das Feld '" + name + "' braucht einen Eigenschaftspfad der Form " +
+                    "'Datentyp.Eigenschaft' (geliefert: '" + eigenschaftspfad + "').",
+                    nameof(eigenschaftspfad));
             if (string.IsNullOrWhiteSpace(anzeigename))
                 throw new ArgumentException(
                     "Das Feld '" + name + "' braucht den Anzeigenamen, der auf der Maske steht.", nameof(anzeigename));
@@ -77,7 +84,7 @@ namespace KiKern
                     nameof(typ));
 
             Name = name;
-            Controlpfad = controlpfad.Trim();
+            Eigenschaftspfad = eigenschaftspfad.Trim();
             Anzeigename = anzeigename;
             Typ = typ;
             Erlaeuterung = erlaeuterung;
@@ -89,8 +96,17 @@ namespace KiKern
         /// <summary>Logischer, sprachneutraler Schluessel des Feldes.</summary>
         public string Name { get; }
 
-        /// <summary>Pfad des Controls in der Maske - aufgeloest wird er im Anwendungsprojekt.</summary>
-        public string Controlpfad { get; }
+        /// <summary>
+        /// Typname und Eigenschaft im Daten-Objekt des Dialogs
+        /// (<c>HeizkesselKatalogDaten.Ptherm</c>) - aufgeloest wird er in der Oberflaeche.
+        /// </summary>
+        public string Eigenschaftspfad { get; }
+
+        /// <summary>Der Typname vor dem Punkt - das Daten-Objekt, an dem die Eigenschaft haengt.</summary>
+        public string Datentyp => KiEigenschaftspfad.Datentyp(Eigenschaftspfad);
+
+        /// <summary>Der Eigenschaftsname hinter dem Punkt.</summary>
+        public string Eigenschaft => KiEigenschaftspfad.Eigenschaft(Eigenschaftspfad);
 
         /// <summary>Klartextname, wie er auf der Maske steht.</summary>
         public string Anzeigename { get; }
@@ -114,7 +130,7 @@ namespace KiKern
         public bool HatHilfe => HilfeSlug.Length > 0;
 
         /// <inheritdoc/>
-        public override string ToString() => Name + " (" + Controlpfad + ")";
+        public override string ToString() => Name + " (" + Eigenschaftspfad + ")";
     }
 
     /// <summary>
@@ -298,12 +314,17 @@ namespace KiKern
             // (KiAktion): das Modell koennte den zweiten nie erreichen.
             var namen = new HashSet<string>(StringComparer.Ordinal);
 
-            // Doppelte CONTROLPFADE werden ohne Ruecksicht auf Gross-/Kleinschreibung
-            // abgewiesen - die Controlsuche des Bestands vergleicht ebenso, zwei solche
-            // Eintraege zeigten also auf dasselbe Control. Feld und Knopf teilen sich diese
-            // Pruefung: dasselbe Control zweimal, einmal als Feld und einmal als Knopf, ist
-            // ebenfalls ein Fehler.
-            var pfade = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // ZWEI Pfadmengen seit Auftrag #200, nicht mehr eine. Ein Feld traegt jetzt
+            // einen EIGENSCHAFTSpfad ("HeizkesselKatalogDaten.Ptherm"), ein Knopf
+            // weiterhin seinen Controlnamen ("btn_Speichern"): Das sind zwei
+            // Namensraeume, die einander nicht mehr treffen koennen. Eine gemeinsame
+            // Menge behauptete eine Kollision, die es nicht gibt - und verschwiege im
+            // Fehlerfall, WELCHE Art Pfad doppelt steht. Verglichen wird weiterhin ohne
+            // Ruecksicht auf Gross-/Kleinschreibung: Die Aufloesung (Reflection bzw.
+            // Controlsuche) tut es ebenso, zwei solche Eintraege zeigten also auf
+            // dasselbe Ziel.
+            var feldpfade = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var knopfpfade = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (felder != null)
                 foreach (KiDialogFeld f in felder)
@@ -314,10 +335,10 @@ namespace KiKern
                     if (!namen.Add(f.Name))
                         throw new ArgumentException(
                             "Das Feld '" + f.Name + "' ist in '" + maskenname + "' doppelt deklariert.", nameof(felder));
-                    if (!pfade.Add(f.Controlpfad))
+                    if (!feldpfade.Add(f.Eigenschaftspfad))
                         throw new ArgumentException(
-                            "Der Controlpfad '" + f.Controlpfad + "' ist in '" + maskenname + "' doppelt deklariert.",
-                            nameof(felder));
+                            "Der Eigenschaftspfad '" + f.Eigenschaftspfad + "' ist in '" + maskenname +
+                            "' doppelt deklariert.", nameof(felder));
                     _felder.Add(f);
                 }
 
@@ -332,7 +353,7 @@ namespace KiKern
                     if (!knopfnamen.Add(k.Name))
                         throw new ArgumentException(
                             "Der Knopf '" + k.Name + "' ist in '" + maskenname + "' doppelt deklariert.", nameof(knoepfe));
-                    if (!pfade.Add(k.Controlpfad))
+                    if (!knopfpfade.Add(k.Controlpfad))
                         throw new ArgumentException(
                             "Der Controlpfad '" + k.Controlpfad + "' ist in '" + maskenname + "' doppelt deklariert.",
                             nameof(knoepfe));
@@ -452,6 +473,75 @@ namespace KiKern
 
             foreach (string stufe in p.Split(Trenner))
                 if (stufe.Length == 0) return false;
+
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Namensregel fuer EIGENSCHAFTSpfade der Maskenfelder (Auftrag #200, Stufe S2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Ein Eigenschaftspfad hat GENAU ZWEI Stufen: den Typnamen des Daten-Objekts und
+    /// den Namen der Eigenschaft darin (<c>HeizkesselKatalogDaten.Ptherm</c>). Beide
+    /// sind C#-Bezeichner - Buchstabe oder Unterstrich am Anfang, danach Buchstaben,
+    /// Ziffern und Unterstriche.
+    /// </para>
+    /// <para>
+    /// <b>Warum genau zwei und nicht beliebig viele.</b> Der Getter der Maskenbruecke
+    /// liest die Eigenschaft per Reflection an EINEM Objekt; ein tieferer Pfad
+    /// (<c>Daten.Flotte.Optionen.Betriebsziel</c>) haette ueber eine Kette von
+    /// <c>null</c>-Stellen zu laufen, und jede davon waere eine stille Fehlerquelle.
+    /// Wo eine Maske eine Tiefe braucht, bekommt sie ein flaches SICHTMODELL, das die
+    /// Kette EINMAL an einer benannten Stelle aufloest (so die Stromspeicher-Ansicht).
+    /// </para>
+    /// <para>
+    /// <b>Der Typname steht mit im Pfad</b>, obwohl er zum Aufloesen nicht noetig waere:
+    /// Er ist die Probe, dass Katalog und Daten-Objekt zusammengehoeren. Meldet ein
+    /// Dialog ein Objekt anderen Typs an, faellt es beim Anmelden auf und nicht erst,
+    /// wenn eine Eigenschaft zufaellig gleich heisst.
+    /// </para>
+    /// </remarks>
+    public static class KiEigenschaftspfad
+    {
+        /// <summary>Trennzeichen zwischen Typname und Eigenschaft.</summary>
+        public const char Trenner = '.';
+
+        /// <summary>Ist das ein brauchbarer Eigenschaftspfad <c>Typ.Eigenschaft</c>?</summary>
+        public static bool IstGueltig(string? pfad)
+        {
+            if (string.IsNullOrWhiteSpace(pfad)) return false;
+
+            string[] stufen = pfad!.Trim().Split(Trenner);
+            if (stufen.Length != 2) return false;
+
+            foreach (string stufe in stufen)
+                if (!IstBezeichner(stufe)) return false;
+
+            return true;
+        }
+
+        /// <summary>Der Typname vor dem Punkt; leer, wenn der Pfad nicht gueltig ist.</summary>
+        public static string Datentyp(string? pfad) => Stufe(pfad, 0);
+
+        /// <summary>Der Eigenschaftsname hinter dem Punkt; leer, wenn der Pfad nicht gueltig ist.</summary>
+        public static string Eigenschaft(string? pfad) => Stufe(pfad, 1);
+
+        private static string Stufe(string? pfad, int nummer)
+        {
+            if (!IstGueltig(pfad)) return "";
+            return pfad!.Trim().Split(Trenner)[nummer];
+        }
+
+        /// <summary>Ist das ein C#-Bezeichner?</summary>
+        private static bool IstBezeichner(string? stufe)
+        {
+            if (string.IsNullOrEmpty(stufe)) return false;
+            if (!char.IsLetter(stufe![0]) && stufe[0] != '_') return false;
+
+            foreach (char c in stufe)
+                if (!char.IsLetterOrDigit(c) && c != '_') return false;
 
             return true;
         }

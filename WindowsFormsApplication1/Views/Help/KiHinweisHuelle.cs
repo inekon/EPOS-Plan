@@ -61,6 +61,24 @@ namespace WindowsFormsApplication1
             // bleibt erhalten, weil der Nachlauf einen Task liefert. Ohne Fenster
             // (Programmstart) laeuft es unmittelbar - genau wie vorher.
             KiEinwilligung.Nachfragen = () => Blazornachlauf.Nachgelagert(() => Einholen());
+
+            // DIE ZWEITE STUFE (Auftrag #200, Anwenderentscheid KI-D-Q2): die
+            // Einwilligung in die Uebertragung von FELDWERTEN offener Masken. Sie ist
+            // eine Rueckfrage und kein Vertragstext - deshalb Dienste.Dialog und kein
+            // eigener Dialog: Was uebertragen wird, steht vollstaendig im Fragetext, und
+            // dieselbe Erklaerung steht dauerhaft in den Einstellungen des Assistenten.
+            //
+            // Derselbe Nachlauf wie oben: Gezogen wird der Riegel aus dem
+            // Schalter des Chatfensters, also aus einem Blazor-Ereignis heraus.
+            KiEinwilligung.NachfragenDialogdaten = () => Blazornachlauf.Nachgelagert(
+                () => Dienste.Dialog.Frage(MyResource.Resource.KI_DIALOGDATEN_FRAGE,
+                                           MyResource.Resource.KI_DIALOGDATEN_FRAGE_TITEL,
+                                           warnend: false, vorgabeNein: true));
+
+            // Und die SENKE der Protokollzeile (Konzept 4, "Protokoll"): Die Zeile baut
+            // der Kern - sie hat das Format jeder anderen Aktionszeile -, angehaengt
+            // wird sie an dieselbe Datei wie jeder Ausfuehrungsversuch.
+            KiMaskenbruecke.Protokollsenke = KiAusfuehrer.ProtokollzeileAnhaengen;
         }
 
         /// <summary>

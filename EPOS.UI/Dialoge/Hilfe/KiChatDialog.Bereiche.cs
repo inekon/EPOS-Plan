@@ -84,7 +84,10 @@ public partial class KiChatDialog
         if (Vorschau is null) return;
         _textTitel = Texte.VorschauTitel;
         _textKopf = Texte.VorschauKopf;
-        _textInhalt = await Vorschau();
+        // Der FELDBLOCK geht mit, wenn der Schalter steht (Auftrag #200): Die Vorschau
+        // zeigt woertlich, was die naechste Anfrage mitnimmt - sie baut den Text nicht
+        // nach, sondern ruft denselben Weg mit demselben Schalterstand.
+        _textInhalt = await Vorschau(_feldwerte);
         await BereichZeigen(Bereich.Text);
     }
 

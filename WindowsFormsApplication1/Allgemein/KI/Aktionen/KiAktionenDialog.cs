@@ -66,13 +66,33 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Nennt Felder, aktuelle Werte und auslösbare Knoepfe der offenen Katalogmaske.
-        /// Andockpunkt <c>KiDialogZugriff.Aufloesen</c> / <c>LiesText</c>.
+        /// Andockpunkt <c>KiMaskenbruecke.Lesen</c> (seit Auftrag #200).
         /// </summary>
         /// <remarks>
+        /// <para>
         /// <b>Das ist das „Finden" der Parameter</b> (Auftrag vom 20.08.2026). Ohne diese
         /// Aktion muesste das Modell Feldnamen raten; mit ihr bekommt es genau die Liste,
         /// die auch die Pruefung und die Bestaetigung verwenden - eine Deklaration, drei
         /// Verwendungen.
+        /// </para>
+        /// <para>
+        /// <b>Die WERTE kommen seit Auftrag #200 aus der MASKENBRUECKE und nicht mehr aus
+        /// Controls.</b> Der alte Weg (<c>Application.OpenForms</c> +
+        /// <c>FindControlRecursive</c>) ist seit iU9 tot: Die vier Masken sind
+        /// Razor-Komponenten und stehen in keiner <c>Form</c> mehr. Die Bruecke liefert
+        /// stattdessen den Dialogzustand, den der offene Dialog selbst angemeldet hat —
+        /// und zwar auf BEIDEN Plattformen aus derselben Kernfunktion. Der
+        /// Function-Calling-Vertrag ist unberuehrt: derselbe Aktionsname, derselbe
+        /// Parameter <c>maske</c>, dieselben neun Spalten je Zeile.
+        /// </para>
+        /// <para>
+        /// <b>Die KNOEPFE bleiben beim alten Weg</b> und melden deshalb heute
+        /// „nicht bedienbar". Das ist kein Versehen, sondern der Stand: Eine
+        /// Knopfausloesung ist eine Formularaktion der Stufe S3 (Auftrag #201), und erst
+        /// dort bekommt sie ihren Weg in die Razor-Komponente. Eine Zeile, die einen
+        /// Knopf als bedienbar auswiese, ohne dass ihn jemand ausloesen kann, waere die
+        /// schlechtere Auskunft.
+        /// </para>
         /// </remarks>
         internal static KiAktion DialogLesen()
         {
@@ -82,38 +102,31 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelDialogLesen,
                 beispiel: KiAktionsTexte.BeispielDialogLesen,
                 stufe: Schutzstufe.Lesen,
-                andockpunkt: "KiDialogZugriff.Aufloesen / LiesText",
+                andockpunkt: "KiMaskenbruecke.Lesen",
                 parameter: new[] { MaskeParameter() },
-                vorbedingung: a => KiDialogZugriff.Aufloesen(a.Text("maske"), false).Grund,
+                vorbedingung: a => BrueckenGrund(a.Text("maske")),
                 ausfuehren: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), false);
-                    if (!bezug.Ok) return KiErgebnis.Abgelehnt(bezug.Grund);
+                    string grund = BrueckenGrund(a.Text("maske"));
+                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
 
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
                     var zeilen = KiHilfe.Liste();
 
-                    foreach (KiDialogFeld f in bezug.Eintrag.Felder)
-                    {
-                        Control c = KiDialogZugriff.Aufloesen(bezug.Maske, f.Controlpfad);
-                        string hindernis = KiDialogZugriff.PruefeSetzbar(f, c);
-
+                    foreach (KiFeldwert w in KiMaskenbruecke.Lesen(maske))
                         zeilen.Add(KiHilfe.Zeile(
                             "art", "feld",
-                            "name", f.Name,
-                            "anzeigename", KiHilfe.Text(f.Anzeigename),
-                            "typ", f.Typ.ToString(),
-                            "einheit", KiHilfe.Text(f.Einheit),
-                            "leer_erlaubt", f.LeerErlaubt,
-                            "wert", KiHilfe.Text(KiDialogZugriff.LiesText(c)),
-                            "bedienbar", hindernis == null,
-                            "hinweis", KiHilfe.Text(hindernis)));
-                    }
+                            "name", w.Name,
+                            "anzeigename", KiHilfe.Text(w.Anzeigename),
+                            "typ", w.Typ.ToString(),
+                            "einheit", KiHilfe.Text(w.Einheit),
+                            "leer_erlaubt", w.LeerErlaubt,
+                            "wert", KiHilfe.Text(w.Text),
+                            "bedienbar", w.Setzbar,
+                            "hinweis", KiHilfe.Text(w.Setzbar ? null : KiDialogTexte.NichtSetzbar)));
 
-                    foreach (KiDialogKnopf k in bezug.Eintrag.Knoepfe)
-                    {
-                        Control c = KiDialogZugriff.Aufloesen(bezug.Maske, k.Controlpfad);
-                        string hindernis = KiDialogZugriff.PruefeKnopf(k, c);
-
+                    foreach (KiDialogKnopf k in eintrag.Knoepfe)
                         zeilen.Add(KiHilfe.Zeile(
                             "art", "knopf",
                             "name", k.Name,
@@ -122,16 +135,49 @@ namespace WindowsFormsApplication1
                             "einheit", "",
                             "leer_erlaubt", false,
                             "wert", "",
-                            "bedienbar", hindernis == null,
-                            "hinweis", KiHilfe.Text(hindernis)));
-                    }
+                            "bedienbar", false,
+                            "hinweis", KiHilfe.Text(KiDialogTexte.KnopfSpaeter)));
 
                     return KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.Gelesen,
-                                      bezug.Eintrag.Anzeigename,
-                                      bezug.Eintrag.Felder.Count, bezug.Eintrag.Knoepfe.Count),
+                                      eintrag.Anzeigename,
+                                      eintrag.Felder.Count, eintrag.Knoepfe.Count),
                         zeilen);
                 });
+        }
+
+        /// <summary>
+        /// Der Maskenschluessel eines Aufrufs: der genannte, sonst die zuletzt
+        /// angemeldete Maske.
+        /// </summary>
+        private static string Maskenschluessel(string genannt)
+        {
+            string gesucht = (genannt ?? "").Trim();
+            return gesucht.Length > 0 ? gesucht : KiMaskenbruecke.AktiveMaske();
+        }
+
+        /// <summary>
+        /// Warum die Bruecke diese Maske nicht liefern kann; <c>null</c> = sie kann.
+        /// </summary>
+        /// <remarks>
+        /// Die Ablehnung NENNT, was es gibt — dieselbe Regel wie beim alten Weg
+        /// (Fachkonzept 11.4): Ein „geht nicht" ohne Liste zwaenge das Modell zum Raten.
+        /// </remarks>
+        private static string BrueckenGrund(string genannt)
+        {
+            string gesucht = (genannt ?? "").Trim();
+
+            if (gesucht.Length > 0 && !KiDialoge.Katalog.Kennt(gesucht))
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
+                                     gesucht, KiDialogZugriff.Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+
+            string maske = Maskenschluessel(gesucht);
+
+            if (maske.Length == 0 || !KiMaskenbruecke.IstAngemeldet(maske))
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
+                                     KiDialogZugriff.Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+
+            return null;
         }
 
         // =====================================================================
@@ -190,7 +236,7 @@ namespace WindowsFormsApplication1
                         ? KiDialogTexte.LeerErlaubt
                         : KiDialogTexte.LeerPflicht;
 
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
 
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
@@ -269,7 +315,7 @@ namespace WindowsFormsApplication1
                 {
                     KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
                     KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
 
                     return KiFeldBlock.Felder(bezug.Eintrag.Anzeigename, new[]
                     {
@@ -286,7 +332,7 @@ namespace WindowsFormsApplication1
                     if (feld == null)
                         return KiErgebnis.Abgelehnt(FeldGrund(bezug, a.Text("feld")));
 
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
                     string neu = a.Text("wert");
                     string alt = KiDialogZugriff.LiesText(c);
 
@@ -388,7 +434,7 @@ namespace WindowsFormsApplication1
                             continue;
                         }
 
-                        Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                        Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
                         string alt = KiDialogZugriff.LiesText(c);
 
                         string hindernis = KiDialogZugriff.Setze(feld, c, werte[i]);
@@ -569,7 +615,7 @@ namespace WindowsFormsApplication1
             KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
             if (feld == null) return FeldGrund(bezug, a.Text("feld"));
 
-            Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+            Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
             string grund = KiDialogZugriff.PruefeSetzbar(feld, c);
             if (grund != null) return grund;
 
@@ -595,7 +641,7 @@ namespace WindowsFormsApplication1
                 KiDialogFeld feld = bezug.Eintrag.FindeFeld(namen[i]);
                 if (feld == null) return FeldGrund(bezug, namen[i]);
 
-                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
                 grund = KiDialogZugriff.PruefeSetzbar(feld, c);
                 if (grund != null) return grund;
 
@@ -682,7 +728,7 @@ namespace WindowsFormsApplication1
                 KiDialogFeld feld = bezug.Eintrag.FindeFeld(namen[i]);
                 if (feld == null) continue;
 
-                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Controlpfad);
+                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
                 var aenderung = new KiFeldAenderung(feld.Anzeigename,
                                                     KiDialogZugriff.LiesText(c), inhalte[i]);
                 if (aenderung.IstAenderung) ziel.Add(aenderung);

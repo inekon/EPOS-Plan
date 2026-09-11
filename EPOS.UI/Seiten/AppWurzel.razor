@@ -479,6 +479,44 @@ else
     }
 
     /// <summary>
+    /// Legt die drei Einstiege von „Feldwerte mitsenden" bei, wenn die Quelle sie nicht
+    /// mitbringt (Auftrag #200, Stufe S2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Dieselbe Kernfunktion wie unter Windows.</b> Die Werte holt
+    /// <c>KiMaskenbruecke.Dialogdaten</c>, die Einwilligung
+    /// <c>KiEinwilligung.SicherstellenDialogdatenAsync</c> — dieselben zwei Stellen, aus
+    /// denen die Windows-Hülle ihre Delegaten legt und aus denen dort die Werkzeugaktion
+    /// <c>dialog_lesen</c> liest. Die Wurzel schreibt hier keine zweite Wahrheit auf,
+    /// sie verdrahtet nur.
+    /// </para>
+    /// <para>
+    /// <b>Eine mitgebrachte Angabe gewinnt.</b> Unter Windows baut
+    /// <c>KiChatHuelle.Gaben</c> denselben Satz; wer ihn schon mitbringt, bekommt ihn
+    /// nicht überschrieben.
+    /// </para>
+    /// </remarks>
+    private static IReadOnlyDictionary<string, object> MitFeldwerten(
+        IReadOnlyDictionary<string, object> gaben)
+    {
+        if (gaben.ContainsKey("Feldwerte")) return gaben;
+
+        var kopie = new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, object> paar in gaben) kopie[paar.Key] = paar.Value;
+
+        kopie["Feldwerte"] =
+            (Func<WindowsFormsApplication1.KiDialogdaten?>)
+                (() => WindowsFormsApplication1.KiMaskenbruecke.Dialogdaten());
+        kopie["FeldwerteEinwilligen"] =
+            (Func<Task<bool>>)WindowsFormsApplication1.KiEinwilligung.SicherstellenDialogdatenAsync;
+        kopie["FeldwerteGesperrt"] =
+            !WindowsFormsApplication1.KiEinwilligung.DialogdatenMoeglich;
+
+        return kopie;
+    }
+
+    /// <summary>
     /// Der Rückweg aus dem Hilfe-Assistenten: dorthin, woher man kam (Muster #62b).
     /// Lässt sich diese Ansicht nicht mehr aufbauen, gilt der gewöhnliche Rückweg.
     /// </summary>
@@ -718,7 +756,7 @@ else
             // Der AUFRUFKONTEXT (Auftrag #199) legt sich UEBER den Parametersatz der
             // Quelle: Bereich, Dialogname, Kennung und die vorbelegte Frage kommen aus
             // dem Aufruf, alles Uebrige (Delegaten, Texte, Zaehler) aus der Huelle.
-            _kiAssistent = MitAufruf(gaben);
+            _kiAssistent = MitFeldwerten(MitAufruf(gaben));
 
             // Der Rueckweg fuehrt dorthin, woher man kam (Muster #62b) - der
             // Assistent ist ein Abstecher, keine neue Arbeitsansicht.

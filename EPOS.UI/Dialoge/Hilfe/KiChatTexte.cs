@@ -102,6 +102,26 @@ public sealed class KiChatTexte
     /// <summary>Meldung, wenn die Einwilligung fehlt (<c>KI_HINWEIS_ABGELEHNT</c>).</summary>
     public string EinwilligungFehlt { get; set; } = "";
 
+    // ---- „Feldwerte mitsenden" (Auftrag #200, Stufe S2) ---------------------
+
+    /// <summary>„Feldwerte mitsenden" (<c>KI_DIALOGDATEN_SCHALTER</c>).</summary>
+    public string Feldwerte { get; set; } = "";
+
+    /// <summary>Meldung nach dem Einschalten (<c>KI_DIALOGDATEN_EIN</c>).</summary>
+    public string FeldwerteEin { get; set; } = "";
+
+    /// <summary>Meldung nach dem Ausschalten (<c>KI_DIALOGDATEN_AUS</c>).</summary>
+    public string FeldwerteAus { get; set; } = "";
+
+    /// <summary>Meldung, wenn die Einwilligung „Dialogdaten" fehlt (<c>KI_DIALOGDATEN_FEHLT</c>).</summary>
+    public string FeldwerteFehlt { get; set; } = "";
+
+    /// <summary>
+    /// Der sichtbare Grund neben dem GESPERRTEN Schalter
+    /// (<c>KI_DIALOGDATEN_GESPERRT</c>); leer = kein Grund anzeigen.
+    /// </summary>
+    public string FeldwerteGesperrt { get; set; } = "";
+
     /// <summary>„Werkzeuge…" (<c>KI_AKT_WERKZEUGE_BTN</c>).</summary>
     public string Werkzeuge { get; set; } = "";
 

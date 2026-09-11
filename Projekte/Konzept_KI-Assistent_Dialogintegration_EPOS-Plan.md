@@ -1,4 +1,4 @@
-# Konzept: Der Hilfe-Assistent im Dialog — Aufruf, Kontext, Feldzustand, Steuerung
+﻿# Konzept: Der Hilfe-Assistent im Dialog — Aufruf, Kontext, Feldzustand, Steuerung
 
 Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #198 · Ablage `Projekte/` · Status: **entschieden am
 11.09.2026** (Anwender: „Stufe 1 mit den Wegen 1 und 2, Weg 4 danach für die vier deklarierten Masken und die
@@ -24,7 +24,7 @@ und 4, und wird hier nicht wiederholt.
 | Kontext | Windows: `HilfeKontext.Beschreibung()` aus der WinForms-Hülle (Positivliste der Bereiche); Kern: `KiChatKontext.AktiverBereich` als Haken | der Haken wird **in keinem Produktcode gesetzt** — auf iOS ist der Bereich immer „Unbekannter Bereich" |
 | Wissensbasis | `HilfeWissen.Suchen(frage, kontext)` über Hilfe- und Wiki-Abschnitte, `WikiWissen` mit `SemantikIndex` (OnnxRuntime, nicht auf iOS) | der Bereich ordnet die Treffer; ein Dialogname oder eine Meldungskennung ist noch kein Suchbegriff |
 | Aktionsregister | `KiRegister` aus `KiKern`; gefüllt in `WindowsFormsApplication1/Allgemein/KI/Aktionen/KiAktionen.cs` | **liegt in der Windows-Hülle** — iOS und die Razor-Dialoge haben kein Register (Hausregel: Logik in den Kern) |
-| Dialogkatalog | `KiDialogKatalog` mit vier Masken (`Form_Heizkessel_Bearbeiten`, `Form_PV`, `Form_PufferSp_Bearbeiten`, `Form_WP`), Felder als `KiDialogFeld(schluessel, controlname, …)` | gebunden an **WinForms-Controlnamen** (`tb_th_Leistung`); die Masken sind seit iU9 Razor-Dialoge — der Setz- und Leseweg ist tot |
+| Dialogkatalog | `KiDialogKatalog` mit vier Masken (`Form_Heizkessel_Bearbeiten`, `Form_PV`, `Form_PufferSp_Bearbeiten`, `Form_WP`), Felder als `KiDialogFeld(schluessel, controlname, …)` | gebunden an **WinForms-Controlnamen** (`tb_th_Leistung`); die Masken sind seit iU9 Razor-Dialoge — der Setz- und Leseweg ist tot. **Mit #200 behoben:** der zweite Parameter ist der Eigenschaftspfad (`HeizkesselKatalogDaten.Ptherm`), aufgelöst über die `KiMaskenbruecke`; dazu die fünfte Maske `StromspeicherAuslegung` |
 | Warn- und Diagnosebanner | `Warnbanner` (95 Einsätze: Stufe, Text, Verfall), `FlottenDiagnosebanner` (P3), Prüfhinweise mit `Kennung` (P1), Laufwarnungen `LAUF_W_*`, Strangampel P1–P8 | jede Meldung hat eine Kennung oder einen Ressourcenschlüssel, aber keinen Weg zum Assistenten |
 
 Kurz: Alle Teile sind da, sie sind nur nicht miteinander verbunden, und zwei davon (Register, Dialogkatalog) hängen
@@ -173,7 +173,7 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
 | Stufe | Auftrag | Inhalt | Prüfmuster |
 |---|---|---|---|
 | **S1** (Wege 1 + 2) — **umgesetzt #199** (11.09.2026) |  **#199** | `InfoKnopf.MitAssistent` mit `KiKnopf`; `KiAufrufkontext`, `Masken.KiAssistent` in `Dienste.Navigation`, Windows-Hülle und `AppWurzel` öffnen mit Kontext; `KiChatKontext.BereichFuerHilfeschluessel` (Tabelle, Test über alle Schlüssel), `AktiverBereich` aus der Oberfläche; `Warnbanner.Kennung` + Link, Kennungen an Diagnosebanner, Prüfhinweisen, Vorprüfung, Laufwarnungen, Strangampel; `HilfeWissen`-Abschnitte je Kennung; `KI_FRAGE_*` de/en; Kontextzeile im Chat zeigt Dialog und Kennung | bunit: Knopf in einem Dialog mit und ohne Assistent, Öffnen mit Kontext, Bannerlink mit Kennung; Kern: Bereichstabelle vollständig, Aufruf setzt den Haken; Referenzlauf unberührt |
-| **S2** (Weg 4) | **#200** | `KiMaskenbruecke` im Kern; `KiDialogKatalog` auf Eigenschaftsnamen; die vier Dialoge und die Stromspeicher-Ansicht melden ihre Felder an; Einwilligungsstufe „Dialogdaten"; Schalter „Feldwerte mitsenden" + Vorschau im Chat; `dialog_lesen` aus der Brücke | Kern: Brücke liest die fünf Masken; bunit: Schalter, Vorschau zeigt Werte, ohne Einwilligung nichts; Protokoll |
+| **S2** (Weg 4) — **umgesetzt #200** (11.09.2026) | **#200** | `KiMaskenbruecke` im Kern; `KiDialogKatalog` auf Eigenschaftsnamen; die vier Dialoge und die Stromspeicher-Ansicht melden ihre Felder an; Einwilligungsstufe „Dialogdaten"; Schalter „Feldwerte mitsenden" + Vorschau im Chat; `dialog_lesen` aus der Brücke | Kern: Brücke liest die fünf Masken; bunit: Schalter, Vorschau zeigt Werte, ohne Einwilligung nichts; Protokoll |
 | **S3** (Weg 5) | **#201** | `KiAktionen` in den Kern; `feld_setzen` über die Brücke mit Bestätigungsblock, Plausibilität des Dialogs, Lesemodus/ReadOnly; `dialog_oeffnen`; speichern mit Sicherungspunkt; rechnen mit `Fortschritt`; Protokoll alt → neu | Kern: Setzen, Ablehnung im Lesemodus, Sicherungspunkt; bunit: Bestätigung → Feld im Dialog; Referenzlauf unberührt |
 
 Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jeder Auftrag: Doku in
@@ -187,8 +187,8 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 | Frage | Empfehlung | Stand |
 |---|---|---|
 | **KI‑D‑Q1** Ist der KI-Knopf auch ohne Einrichtung sichtbar? | Ja; er führt in die Einstellungen mit Hinweis, was fehlt. Ein fehlender Knopf ist nicht erklärbar. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #199**: `KiVerfuegbarkeit.Moeglich` fragt allein den Abschalter der Installation — Netz, Schlüssel und Einwilligung sind ausdrücklich keine Bedingung |
-| **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S2 |
-| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S2/S3 |
+| **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200**: eigener Merker samt `FASSUNG_DIALOGDATEN` und Datum in `KiEinwilligung`; gefragt wird EINMAL beim ersten Einschalten des Schalters, zurückgenommen wird im `KiEinstellungenDialog`. Ohne eingehängten Haken gibt es keinen Weg zu ihr — ein Lauf ohne Oberfläche überträgt keine Feldwerte |
+| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung), für S2 umgesetzt #200**: die vier auf Eigenschaftsnamen ihres Razor-Daten-Objekts umgestellt (Feldumfang unverändert 15/3/1/1), die Stromspeicher-Ansicht als fünfte Deklaration mit 16 Feldern neu. Das SETZEN bleibt S3 |
 | **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S3 |
 
 **Entscheid 11.09.2026: alle vier nach Empfehlung.**

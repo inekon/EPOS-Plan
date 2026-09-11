@@ -52,6 +52,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using System.Globalization
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -607,7 +608,26 @@
         KatalogNeuLaden();
         GesamtNeu();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+
+        // Auftrag #200: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden. Sie wechselt
+        // mit jedem Klick in der Projektliste - deshalb ein Delegat und keine Instanz;
+        // die Bruecke liest bei jedem Mal neu.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => _projektZeile);
     }
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c> (Auftrag #200, Stufe S2). Sie hält
+    /// die drei Getter auf die gewählte Projektzeile und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht, entscheiden
+    /// der Schalter „Feldwerte mitsenden" im Chat und die Einwilligungsstufe
+    /// „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

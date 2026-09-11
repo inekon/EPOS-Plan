@@ -947,6 +947,84 @@ Erzeugerzeile der Ergebnisübersicht — und die **Strangampel P1–P8**, die al
 kennt oder den Assistenten aus derselben Maske ruft, findet den Abschnitt. Ein Erklärlink an diesen
 zwei Stellen ist ein eigener Schritt.
 
+### Etappe S2 umgesetzt (#200) — der Assistent liest den Dialog, Weg 4
+
+Stand 11.09.2026, Zweig `w200-ki-dialog-s2`. Grundlage ist
+[`Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
+(Abschnitt 3.3, Zeile S2). Sie löst die Zusage aus 7.2 ein — „der HilfeKontext muss den
+Datenzustand kennen" — und zwar unter der Schutzstufe „lesen mit Projektdaten" aus 4.1, mit
+eigener Einwilligung nach 4.2.
+
+**Die Maskenbrücke ersetzt den toten Controlnamen-Weg.** `EPOS.Kern/Allgemein/KI/KiMaskenbruecke.cs`
+hält je offenem Dialog eine Feldliste: `Anmelden(maske, katalogeintrag, zugaenge)` /
+`Abmelden(maske, marke)`, `Offene()`, `Lesen(maske)` → je Feld Anzeigename, Art, Einheit,
+Leer-Regel, **Rohwert UND Text**. Ein `KiFeldzugang` ist die Deklaration aus dem Katalog plus
+`Func<object> Lesen` und `Action<object> Setzen`; der Setzer ist angelegt und noch unbenutzt (S3).
+Ein Eintrag je Maske, die JÜNGSTE Anmeldung gilt, und `Abmelden` trägt die Marke ihrer Anmeldung —
+sonst löschte unter Blazor die scheidende Instanz einer wiederaufgebauten Überlagerung den Eintrag
+ihrer Nachfolgerin. Der Getter darf werfen: Dann bleibt SEIN Feld leer, nicht die ganze Auskunft.
+
+**Der Dialogkatalog nennt seit #200 Eigenschaften statt Controls.** Der zweite Parameter jeder
+`KiDialogFeld` ist `Typ.Eigenschaft` (`HeizkesselKatalogDaten.Ptherm`) statt `tb_th_Leistung`;
+`KiEigenschaftspfad` löst `KiControlpfad` für die Felder ab (genau zwei Stufen, beide
+C#-Bezeichner — der Knopf behält bis S3 seinen Controlnamen). Der alte Weg war seit iU9 tot:
+Die vier Masken sind Razor-Komponenten, `Application.OpenForms` führt sie nicht mehr. Die
+gemessenen `KiKnopfposition`-Koordinaten sind mit derselben Änderung entfallen — den Aufrufknopf
+zeichnet seit iU9‑W15b.5 der Baustein `KiKnopf` im Dialogkopf. **Der Feldumfang der vier Masken ist
+unverändert** (15 / 3 / 1 / 1, Fachkonzept 11.6); ihn zu erweitern ist eine fachliche Entscheidung
+mit eigener Abnahme.
+
+**Die fünfte Deklaration: die Stromspeicher-Ansicht** (`STROMSPEICHER_AUSLEGUNG`, Anwenderentscheid
+KI‑D‑Q3). Sechzehn Felder — Einheitenzahl und die Aufstellung je Einheit, die drei Summen der
+Flotte, Betriebsziel, Peak-Ziel, Netzladung, Start-SoC, Peak-Reserve, dazu **lesend** die Diagnose
+(arbeitslos, Gründe, Prüfhinweise) und das Ergebnis der letzten Bewertung (Bezugsspitze, Netzbezug,
+Kapitalwert). Damit wird „Warum ist die Flotte arbeitslos?" mit den echten Zählern beantwortet.
+Angemeldet wird ein flaches **Sichtmodell** (`EPOS.UI/Seiten/Strom/StromspeicherKiSicht.cs`), weil
+ein Katalogfeld zwei Stufen tief ist und die Ansicht drei bis fünf; es rechnet bei jedem Zugriff aus
+den lebenden Ständen. Knöpfe hat sie keine: „Berechnen", „Peak-Ziel bestimmen…" und „Speichern"
+sind rechnende bzw. datenbankwirksame Aktionen und gehören in das Aktionsregister (S3).
+
+**Drei Zeilen je Dialog.** `EPOS.UI/Dienste/KiMaskenanmeldung.cs` liest die Deklaration und löst
+jeden Eigenschaftspfad per Reflection am Daten-Objekt auf — die Quelle ist ein DELEGAT, weil der
+Photovoltaik-Dialog die GEWÄHLTE Zeile anmeldet und die mit jedem Klick wechselt. Was nicht
+auflöst, wird nicht angemeldet und fällt im Wächter auf: `KiMaskenanmeldung.Pruefe` nennt jeden
+fehlenden Pfad, `EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests` hält die Liste für alle fünf
+Masken leer (mit Gegenprobe am falschen Daten-Objekt).
+
+**Die Einwilligungsstufe „Dialogdaten"** (KI‑D‑Q2) steht in `KiEinwilligung` neben der allgemeinen:
+eigener Merker, eigene `FASSUNG_DIALOGDATEN`, eigenes Datum, eigener Rückweg. Wer dem Rechtshinweis
+zustimmt, hat der Übertragung seiner Feldwerte **nicht** zugestimmt. `SicherstellenDialogdatenAsync`
+stellt zuerst die allgemeine Einwilligung sicher und fragt dann EINMAL über
+`NachfragenDialogdaten`; ohne eingehängten Haken gibt es keinen Weg zu ihr — ein Lauf ohne
+Oberfläche kann keine Feldwerte übertragen. Zurücknehmen und den Stand ablesen kann der Anwender im
+`KiEinstellungenDialog`, wo auch die Erklärung dauerhaft steht.
+
+**Der Schalter „Feldwerte mitsenden"** erscheint im Chat nur, wenn eine Maske angemeldet ist, und
+bleibt ohne Einwilligungsweg aus und gesperrt — mit dem Grund SICHTBAR daneben (ein gesperrtes
+Kästchen zeigt keinen Tooltip). Die **Vorschau** „Was wird gesendet?" nimmt den Schalterstand mit
+und zeigt damit den Feldblock wörtlich: Vorschau und Wirklichkeit sind derselbe Weg mit demselben
+Stand. Der Chat kennt die Brücke nicht — er bekommt `Feldwerte`, `FeldwerteEinwilligen` und
+`FeldwerteGesperrt` als Delegaten (§ 15.3) und entscheidet nur das OB.
+
+**`dialog_lesen` liest aus der Brücke.** Die Werkzeugaktion behält Namen, Parameter und ihre neun
+Spalten je Zeile (der Function-Calling-Vertrag bleibt), holt die Werte aber aus
+`KiMaskenbruecke.Lesen` statt aus Controls. `KiChatService` bekommt dafür genau einen neuen
+optionalen Parameter `dialogdaten` (in `FrageAsync`, `FrageMitAktionenAsync`, `SendeVorschau`,
+`PromptBauen`); der Block steht im Prompt hinter dem Bereich und vor den Hilfeabschnitten. Der
+Dienst prüft weder Schalter noch Einwilligung nach — er nimmt entgegen, was ihm die Hülle gibt, und
+die prüft beides (der Riegel steht doppelt, weil die Einwilligung zwischen Anhaken und Frage
+zurückgenommen werden kann).
+
+**Protokoll.** Jede tatsächliche Übertragung schreibt EINE Zeile im Format jeder anderen
+Aktionszeile (Fachkonzept 3.6): Aktion `dialog_daten`, Stufe „lesen", Parameter
+`{"maske":…,"felder":n}`, Ergebnistext mit Maskenname und Feldzahl. Gebaut wird sie im Kern,
+angehängt über `KiMaskenbruecke.Protokollsenke` — unter Windows an
+`KiAusfuehrer.ProtokollzeileAnhaengen`.
+
+**Was S2 NICHT anfasst:** das Setzen von Feldern und die Aktionen (beides S3), das Aktionsregister,
+den Semantikindex, den Rechenweg. Der Referenzlauf ist unberührt (1030 und 1046 byte-gleich gegen
+`2026-09-11_R7_Speicherflotte`).
+
 
 ---
 

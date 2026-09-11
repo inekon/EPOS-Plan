@@ -18026,4 +18026,163 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>The module count of the strings differs from the number of modules of the plant (rule P8). What does that mean and which figure drives the yield?</value>
   </data>
+  <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
+    <value>Send field values</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EIN" xml:space="preserve">
+    <value>The field values of the open dialog are now sent along with your question.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_AUS" xml:space="preserve">
+    <value>The field values stay here; only the question is sent.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FEHLT" xml:space="preserve">
+    <value>Without the “dialog data” consent no field value is transmitted.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_GESPERRT" xml:space="preserve">
+    <value>Field values cannot be sent here: the “dialog data” consent cannot be obtained.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_BLOCK_KOPF" xml:space="preserve">
+    <value>Values of the open dialog “{0}” ({1} fields):</value>
+  </data>
+  <data name="KI_DIALOGDATEN_LEER" xml:space="preserve">
+    <value>(empty)</value>
+  </data>
+  <data name="KI_DIALOGDATEN_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="KI_DIALOGDATEN_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FRAGE_TITEL" xml:space="preserve">
+    <value>Transmit field values?</value>
+  </data>
+  <data name="KI_DIALOGDATEN_FRAGE" xml:space="preserve">
+    <value>The assistant is about to send the values of the dialog you currently have open to the model provider, together with your question.
+
+Only the fields listed in the dialog catalogue are transmitted — display name, unit and the value currently shown in the dialog. Project name, customer name and the database itself are not included.
+
+Before every request you can read literally what goes out via “What is sent?”, and the switch “Send field values” can be turned off at any time. You can withdraw this consent in the assistant settings.
+
+Do you want to allow this?</value>
+  </data>
+  <data name="KI_DIALOGDATEN_PROTOKOLL" xml:space="preserve">
+    <value>Field values of dialog “{0}” transmitted ({1} fields).</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_SCHALTER" xml:space="preserve">
+    <value>Transmit field values of open dialogs (dialog data)</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_ERKLAERUNG" xml:space="preserve">
+    <value>With this consent the assistant may send the values of the dialog you currently have open — only the fields of the dialog catalogue, only when you flip the switch, and only after the “What is sent?” preview. Without it, only your question goes out.</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_STAND" xml:space="preserve">
+    <value>Consent given on {0} (version {1}).</value>
+  </data>
+  <data name="KI_DIALOGDATEN_EINST_OHNE" xml:space="preserve">
+    <value>No consent given yet.</value>
+  </data>
+  <data name="KI_DLG_MASKE_SPA" xml:space="preserve">
+    <value>Battery storage sizing</value>
+  </data>
+  <data name="KI_DLG_SPA_EINHEITEN_NAME" xml:space="preserve">
+    <value>Units in the fleet</value>
+  </data>
+  <data name="KI_DLG_SPA_EINHEITEN_ERL" xml:space="preserve">
+    <value>How many storage units the fleet operates at the same time.</value>
+  </data>
+  <data name="KI_DLG_SPA_LISTE_NAME" xml:space="preserve">
+    <value>Units in detail</value>
+  </data>
+  <data name="KI_DLG_SPA_LISTE_ERL" xml:space="preserve">
+    <value>Capacity, charge power and discharge power per unit, in fleet order.</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPAZITAET_NAME" xml:space="preserve">
+    <value>Fleet capacity</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Sum of the full-range capacities of all units.</value>
+  </data>
+  <data name="KI_DLG_SPA_LADEN_NAME" xml:space="preserve">
+    <value>Fleet charge power</value>
+  </data>
+  <data name="KI_DLG_SPA_LADEN_ERL" xml:space="preserve">
+    <value>Sum of the maximum AC-side charge powers of all units.</value>
+  </data>
+  <data name="KI_DLG_SPA_ENTLADEN_NAME" xml:space="preserve">
+    <value>Fleet discharge power</value>
+  </data>
+  <data name="KI_DLG_SPA_ENTLADEN_ERL" xml:space="preserve">
+    <value>Sum of the maximum AC-side discharge powers of all units.</value>
+  </data>
+  <data name="KI_DLG_SPA_ZIEL_NAME" xml:space="preserve">
+    <value>Operating objective</value>
+  </data>
+  <data name="KI_DLG_SPA_ZIEL_ERL" xml:space="preserve">
+    <value>The operating strategy of the fleet, for example PV self-consumption or peak shaving.</value>
+  </data>
+  <data name="KI_DLG_SPA_PEAK_NAME" xml:space="preserve">
+    <value>Peak target</value>
+  </data>
+  <data name="KI_DLG_SPA_PEAK_ERL" xml:space="preserve">
+    <value>The soft economic target for the highest grid import; empty means none is set.</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZLADUNG_NAME" xml:space="preserve">
+    <value>Grid charging allowed</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZLADUNG_ERL" xml:space="preserve">
+    <value>Without this permission only remaining PV surplus may be charged.</value>
+  </data>
+  <data name="KI_DLG_SPA_STARTSOC_NAME" xml:space="preserve">
+    <value>Initial state of charge</value>
+  </data>
+  <data name="KI_DLG_SPA_STARTSOC_ERL" xml:space="preserve">
+    <value>The state of charge at the start of the calculation period, averaged over the units.</value>
+  </data>
+  <data name="KI_DLG_SPA_RESERVE_NAME" xml:space="preserve">
+    <value>Peak reserve</value>
+  </data>
+  <data name="KI_DLG_SPA_RESERVE_ERL" xml:space="preserve">
+    <value>Protected energy above the technical minimum, summed over the fleet.</value>
+  </data>
+  <data name="KI_DLG_SPA_ARBEITSLOS_NAME" xml:space="preserve">
+    <value>Fleet idle</value>
+  </data>
+  <data name="KI_DLG_SPA_ARBEITSLOS_ERL" xml:space="preserve">
+    <value>Yes means the fleet neither charged nor discharged during the whole period.</value>
+  </data>
+  <data name="KI_DLG_SPA_GRUENDE_NAME" xml:space="preserve">
+    <value>Diagnosis reasons</value>
+  </data>
+  <data name="KI_DLG_SPA_GRUENDE_ERL" xml:space="preserve">
+    <value>The counted blockers of the last run — load above the peak target, charge cap 0, empty storage.</value>
+  </data>
+  <data name="KI_DLG_SPA_HINWEISE_NAME" xml:space="preserve">
+    <value>Check notes</value>
+  </data>
+  <data name="KI_DLG_SPA_HINWEISE_ERL" xml:space="preserve">
+    <value>The notes of the pre-check and of the last run, one below the other as text.</value>
+  </data>
+  <data name="KI_DLG_SPA_SPITZE_NAME" xml:space="preserve">
+    <value>Peak import (last run)</value>
+  </data>
+  <data name="KI_DLG_SPA_SPITZE_ERL" xml:space="preserve">
+    <value>The highest grid import of a billing interval in the run with the fleet.</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZBEZUG_NAME" xml:space="preserve">
+    <value>Grid import (last run)</value>
+  </data>
+  <data name="KI_DLG_SPA_NETZBEZUG_ERL" xml:space="preserve">
+    <value>The energy drawn from the grid over the calculation period in the run with the fleet.</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPITALWERT_NAME" xml:space="preserve">
+    <value>Net present value (last run)</value>
+  </data>
+  <data name="KI_DLG_SPA_KAPITALWERT_ERL" xml:space="preserve">
+    <value>The net present value of the fleet against the variant without extra storage; empty means not evaluated.</value>
+  </data>
+  <data name="KI_DLG_NICHT_SETZBAR" xml:space="preserve">
+    <value>This field is a derived value; it can be read but not set.</value>
+  </data>
+  <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
+    <value>The assistant cannot trigger buttons in this version yet.</value>
+  </data>
 </root>

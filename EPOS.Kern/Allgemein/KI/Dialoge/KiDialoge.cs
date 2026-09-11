@@ -3,50 +3,97 @@
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Der gefuellte Dialogkatalog: die vier Startmasken der Etappe 3b
-    /// (Fachkonzept 11.3/11.6, Umsetzungskonzept Paket F3).
+    /// Die sprachneutralen Schluessel des Dialogkatalogs — die EINE Stelle, an der ein
+    /// Razor-Dialog erfaehrt, unter welchem Namen er in der Maskenbruecke steht
+    /// (Auftrag #200, Stufe S2).
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Warum hier und nicht im Kern.</b> Nur an dieser Stelle darf Wissen ueber die
-    /// Masken stehen (Fachkonzept 3.7); <c>KiKern</c> haelt die Verwaltung und die
-    /// Bauartsperre gegen Loeschknoepfe, kennt aber kein einziges Control. Dieselbe
-    /// Arbeitsteilung wie zwischen <see cref="KiRegister"/> und <see cref="KiAktionen"/>.
+    /// <b>Warum die Namen bleiben, was sie waren.</b> <c>Form_Heizkessel_Bearbeiten</c>,
+    /// <c>Form_PV</c>, <c>Form_PufferSp_Bearbeiten</c> und <c>Form_WP</c> sind Typnamen
+    /// gefallener WinForms-Masken; als KATALOGSCHLUESSEL sind sie trotzdem richtig. Sie
+    /// stehen im Aktionsprotokoll, im Werkzeugvertrag des Modells
+    /// (<c>dialog_lesen(maske: "Form_PV")</c>) und in den Hilfeschluesseln der Dialoge
+    /// (<c>Form_PV.btn_Help</c>) — sie umzubenennen hiesse, alle drei zugleich zu
+    /// brechen, und zwar ohne fachlichen Gewinn. Die FUENFTE Maske ist deshalb auch die
+    /// erste ohne <c>Form_</c>-Vorsilbe: Sie hatte nie eine WinForms-Fassung.
     /// </para>
     /// <para>
-    /// <b>Der Feldumfang ist nicht frei gewaehlt.</b> Aufgenommen ist je Maske GENAU das,
-    /// was ihre Knopfpruefung erfasst - also die Felder, die durch
-    /// <c>Program.ZahlPruefen</c>/<c>Program.GanzzahlPruefen</c> laufen (Fachkonzept 11.6:
-    /// „Feldumfang v1 = die von der Knopfpruefung erfassten Eingabefelder"). Das ist der
-    /// Grund, warum drei der vier Masken so wenige Felder fuehren: Ihre uebrigen Felder
-    /// werden beim Speichern still geparst (<c>double.TryParse</c>,
-    /// <c>Program.GanzzahlParsen</c>) und sind damit noch nicht auf das Knopfmuster
-    /// umgestellt. Fachkonzept 11.7 haelt genau dafuer fest: solche Felder kommen erst
-    /// NACH ihrer Umstellung in den Katalog - die Umstellung selbst ist Bestandspflege
-    /// ausserhalb dieses Konzepts. Ein Feld hier aufzunehmen, dessen Wert beim Speichern
-    /// stillschweigend verworfen wird, waere die schlechtere Wahl: Der Assistent zeigte
-    /// eine Wirkung an, die es nicht gibt.
-    /// </para>
-    /// <para>
-    /// <b>Die Knopfliste ist eine Positivliste.</b> Aufgenommen sind nur Knoepfe, die die
-    /// Eingaben der Maske verarbeiten oder sie verwerfen. Ausdruecklich NICHT aufgenommen:
-    /// Loeschknoepfe (die weist schon <see cref="KiDialogKnopf"/> per Bauart ab), Knoepfe,
-    /// die eine weitere Maske oeffnen (<c>btn_Bearbeiten</c>, <c>btn_Kenndaten</c>,
-    /// <c>btn_Katalog</c>), Knoepfe, die eine Auswahlliste veraendern
-    /// (<c>btn__Hinzu</c>, <c>btn__Entfernen</c>) und <c>btn_Neu</c> der Waermepumpenmaske,
-    /// der die Eingabefelder ohne Rueckfrage ueberschreibt.
-    /// </para>
-    /// <para>
-    /// <b>Kein Feld traegt einen Hilfe-Slug.</b> Die Zuordnung Control -&gt; Slug liest
-    /// <c>HelpExtender.RegisterControl</c> aus <c>help_mapping.txt</c>
-    /// (<c>Allgemein\Hilfe\HelpCatalog.cs:254</c>); diese Datei liegt nicht im Repository,
-    /// und es gibt im ganzen Baum keinen Aufruf von <c>SetHelpKey</c>. Es ist also fuer
-    /// keines dieser Felder ein Slug nachweisbar. Der Weg dorthin steht trotzdem
-    /// (<c>KiAktionenDialog</c> fragt <c>Program.HelpCatalog.Get</c>, sobald ein Slug
-    /// deklariert ist) - deklariert wird aber nur, was belegt ist.
+    /// <b>Die Zuordnung Razor-Dialog → Maskenname steht hier und nicht im Dialog.</b>
+    /// Jede der fuenf Komponenten nennt beim Anmelden ihre Konstante; eine Zeichenkette
+    /// im Markup waere die naechste Stelle, an der sich ein Tippfehler erst zur Laufzeit
+    /// zeigt.
     /// </para>
     /// </remarks>
-    internal static class KiDialoge
+    public static class KiMaskennamen
+    {
+        /// <summary>Heizkessel-Katalogeditor (<c>HeizkesselKatalogDialog</c>).</summary>
+        public const string HEIZKESSEL = "Form_Heizkessel_Bearbeiten";
+
+        /// <summary>Photovoltaik-Projektdialog (<c>PhotovoltaikDialog</c>).</summary>
+        public const string PHOTOVOLTAIK = "Form_PV";
+
+        /// <summary>Pufferspeicher-Katalogeditor (<c>PufferSpKatalogDialog</c>).</summary>
+        public const string PUFFERSPEICHER = "Form_PufferSp_Bearbeiten";
+
+        /// <summary>Waermepumpen-Katalogeditor (<c>WaermepumpeStammDialog</c>).</summary>
+        public const string WAERMEPUMPE = "Form_WP";
+
+        /// <summary>Stromspeicher-Auslegung (<c>StromspeicherAuslegungSeite</c>).</summary>
+        public const string STROMSPEICHER_AUSLEGUNG = "StromspeicherAuslegung";
+    }
+
+    /// <summary>
+    /// Der gefuellte Dialogkatalog: die vier Startmasken der Etappe 3b und — seit
+    /// Auftrag #200 — die Stromspeicher-Ansicht (Fachkonzept 11.3/11.6, Konzept
+    /// „Der Hilfe-Assistent im Dialog" 3.3).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Warum hier und nicht in KiKern.</b> Nur an dieser Stelle darf Wissen ueber die
+    /// Masken stehen (Fachkonzept 3.7); <c>KiKern</c> haelt die Verwaltung und die
+    /// Bauartsperre gegen Loeschknoepfe, kennt aber weder ein Control noch eine
+    /// Datenklasse. Dieselbe Arbeitsteilung wie zwischen <see cref="KiRegister"/> und
+    /// <c>KiAktionen</c>.
+    /// </para>
+    /// <para>
+    /// <b>Der zweite Parameter ist seit Auftrag #200 der EIGENSCHAFTSPFAD</b>
+    /// (<c>HeizkesselKatalogDaten.Ptherm</c>) und nicht mehr der WinForms-Controlname
+    /// (<c>tb_th_Leistung</c>). Der alte Weg war tot: Die vier Masken sind seit iU9
+    /// Razor-Komponenten, <c>Application.OpenForms</c> fuehrt sie nicht mehr, und
+    /// <c>FindControlRecursive</c> fand nichts. An seine Stelle tritt die
+    /// <see cref="KiMaskenbruecke"/> — der offene Dialog meldet je Feld einen Getter auf
+    /// die Eigenschaft seines Daten-Objekts an. Der Typname VOR dem Punkt ist die Probe,
+    /// dass Katalog und Daten-Objekt zusammengehoeren; ein Waechter haelt jeden
+    /// Eigenschaftsnamen per Reflection gegen den Typ
+    /// (<c>EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests</c>).
+    /// </para>
+    /// <para>
+    /// <b>Die Maskenkoordinaten sind mit dieser Umstellung entfallen.</b> Drei der vier
+    /// Eintraege trugen eine gemessene <c>KiKnopfposition</c> — der Platz, an dem der
+    /// Aufrufknopf im Client-Bereich der WinForms-Maske noch frei war. Seit iU9‑W15b.5
+    /// zeichnet den Knopf der Baustein <c>KiKnopf</c> im Kopf jedes Dialogs (Auftrag
+    /// #199, Weg 1); es gibt keinen freien Platz mehr zu suchen und keine Maske mehr, in
+    /// der man ihn suchen koennte. Die Zahlen standen sonst als gemessene Wahrheit ueber
+    /// Fenster, die es nicht mehr gibt.
+    /// </para>
+    /// <para>
+    /// <b>Der Feldumfang der vier Masken ist UNVERAENDERT.</b> Er stammt aus Fachkonzept
+    /// 11.6 („Feldumfang v1 = die von der Knopfpruefung erfassten Eingabefelder") und ist
+    /// der Grund, warum drei der vier Masken so wenige Felder fuehren. Ihn zu erweitern
+    /// ist eine fachliche Entscheidung mit eigener Abnahme und gehoert nicht in einen
+    /// Schritt, der den Aufloesungsweg austauscht — sonst liesse sich hinterher nicht
+    /// sagen, was den Feldblock veraendert hat.
+    /// </para>
+    /// <para>
+    /// <b>Kein Feld traegt einen Hilfe-Slug.</b> Die Zuordnung Feld → Slug las
+    /// <c>HelpExtender.RegisterControl</c> aus <c>help_mapping.txt</c>; diese Datei liegt
+    /// nicht im Repository, und es gibt im ganzen Baum keinen Aufruf von
+    /// <c>SetHelpKey</c>. Der Weg dorthin steht trotzdem — deklariert wird aber nur, was
+    /// belegt ist.
+    /// </para>
+    /// </remarks>
+    public static class KiDialoge
     {
         private static KiDialogKatalog _katalog;
         private static readonly object _sperre = new object();
@@ -60,7 +107,7 @@ namespace WindowsFormsApplication1
         /// eine Maske zuwachsen koennte, waere genau der Weg, auf dem eine nicht
         /// freigegebene Maske doch noch steuerbar wuerde (<see cref="KiDialogKatalog"/>).
         /// </remarks>
-        internal static KiDialogKatalog Katalog
+        public static KiDialogKatalog Katalog
         {
             get
             {
@@ -74,114 +121,96 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Baut den vollstaendigen Katalog.</summary>
-        internal static KiDialogKatalog Erzeuge()
+        public static KiDialogKatalog Erzeuge()
         {
             return new KiDialogKatalog(
                 Heizkessel(),
                 Photovoltaik(),
                 Pufferspeicher(),
-                Waermepumpe());
+                Waermepumpe(),
+                Stromspeicherauslegung());
         }
 
         // =====================================================================
-        // Form_Heizkessel_Bearbeiten
+        // Form_Heizkessel_Bearbeiten  ->  HeizkesselKatalogDialog
         // =====================================================================
 
         /// <summary>
-        /// Heizkessel bearbeiten - die 15 Felder aus
-        /// <c>Views\Heizkessel\Form_Heizkessel_Bearbeiten.cs:532-546</c>
-        /// (<c>EingabenPruefen</c>) und die vier Aktionsknoepfe.
+        /// Heizkessel bearbeiten — die 15 Felder der Knopfpruefung, seit Auftrag #200
+        /// als Eigenschaften von <c>EPOS.UI.Dialoge.Erzeuger.HeizkesselKatalogDaten</c>.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <b>Die Knopfposition ist gemessen, nicht geschaetzt.</b> Die Maske fuehrt oben
-        /// rechts eine SENKRECHTE Knopfleiste: <c>btn_Ueberschreiben</c> (616/19),
-        /// <c>btn_Speichern_Unter</c> (616/59), <c>btn_Speichern</c> (616/98),
-        /// <c>btn_Abbrechen</c> (616/137), jeweils 105x31 - der Streifen x 616..721 ist
-        /// also von y 19 bis y 168 durchgehend belegt (Masse aus
-        /// <c>Form_Heizkessel_Bearbeiten.resx</c>, Client 744x589). Der Regelplatz 8/8 des
-        /// Aufrufknopfs liegt mitten auf <c>btn_Ueberschreiben</c>; auch ein Platz bei
-        /// AbstandOben 55 laege noch auf <c>btn_Speichern_Unter</c> (59..90). Der Knopf
-        /// geht deshalb UNTER die Leiste: 176 = Unterkante 168 plus die uebliche Luft von
-        /// 8. Darunter beginnt erst bei y 416 wieder etwas (<c>groupBox5</c>, x 536..732),
-        /// und links davon endet die breiteste Rubrik bei x 576.
-        /// </para>
-        /// <para>
-        /// <b>Wartungskosten entsteht zur Laufzeit</b> (<c>WartungsfeldAufbauen</c>,
-        /// <c>:121</c>) und steht deshalb in keiner Designer-Datei. Fuer den Katalog macht
-        /// das keinen Unterschied - aufgeloest wird ueber den Controlnamen in der
-        /// aufgebauten Maske, und <c>EingabenPruefen</c> prueft das Feld wie jedes andere.
-        /// </para>
+        /// Der Feldsatz ist derselbe wie zuvor; nur die Aufloesung hat gewechselt. Zwei
+        /// Namen fallen dabei auf, und beide sind Absicht: Die thermische Leistung heisst
+        /// im Daten-Objekt <c>Ptherm</c> (nicht <c>ThLeistung</c>), und der
+        /// Bereitschaftsverlust <c>Betriebsbereitschaftverlust</c> — so stehen sie in der
+        /// Oberflaeche, und der Katalog schreibt keine zweite Schreibweise daneben.
         /// </remarks>
         private static KiDialog Heizkessel()
         {
             return new KiDialog(
-                maskenname: "Form_Heizkessel_Bearbeiten",
+                maskenname: KiMaskennamen.HEIZKESSEL,
                 anzeigename: KiDialogTexte.MaskeHeizkessel,
                 felder: new[]
                 {
-                    new KiDialogFeld("th_leistung", "tb_th_Leistung",
+                    new KiDialogFeld("th_leistung", "HeizkesselKatalogDaten.Ptherm",
                                      KiDialogTexte.HkLeistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkLeistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("wirkungsgrad_gas", "tb_Wirkungsgrad",
+                    new KiDialogFeld("wirkungsgrad_gas", "HeizkesselKatalogDaten.Wirkungsgrad_Gas",
                                      KiDialogTexte.HkWgGasName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkWgGasErl,
                                      leerErlaubt: true),
-
-                    // Der Controlname traegt ein „Ö" - der Bestand fuehrt hier einen
-                    // Nicht-ASCII-Bezeichner (Umsetzungskonzept 3b, Bestandsanker B9).
-                    // KiControlpfad laesst das ausdruecklich zu; die Aufloesung vergleicht
-                    // ohne Ruecksicht auf Gross-/Kleinschreibung, aber zeichengenau.
-                    new KiDialogFeld("wirkungsgrad_oel", "tb_Wirkungsgrad_Öl",
+                    new KiDialogFeld("wirkungsgrad_oel", "HeizkesselKatalogDaten.Wirkungsgrad_Oel",
                                      KiDialogTexte.HkWgOelName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkWgOelErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("bereitschaftsverlust", "tb_B_Verlust",
+                    new KiDialogFeld("bereitschaftsverlust",
+                                     "HeizkesselKatalogDaten.Betriebsbereitschaftverlust",
                                      KiDialogTexte.HkBbVerlustName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkBbVerlustErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
-                    new KiDialogFeld("investitionskosten", "tb_Investitionskosten",
+                    new KiDialogFeld("investitionskosten", "HeizkesselKatalogDaten.Investitionskosten",
                                      KiDialogTexte.HkInvestName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkInvestErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
-                    new KiDialogFeld("wartungskosten", "tb_Wartungskosten",
+                    new KiDialogFeld("wartungskosten", "HeizkesselKatalogDaten.Wartungskosten",
                                      KiDialogTexte.HkWartungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkWartungErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("raumbedarf", "tb_Raumbedarf",
+                    new KiDialogFeld("raumbedarf", "HeizkesselKatalogDaten.Raumbedarf",
                                      KiDialogTexte.HkRaumbedarfName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkRaumbedarfErl,
                                      einheit: KiDialogTexte.EINHEIT_M3, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "tb_Nutzungsdauer",
+                    new KiDialogFeld("nutzungsdauer", "HeizkesselKatalogDaten.Nutzungsdauer",
                                      KiDialogTexte.HkNutzungsdauerName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkNutzungsdauerErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
-                    new KiDialogFeld("co2", "tb_CO2",
+                    new KiDialogFeld("co2", "HeizkesselKatalogDaten.CO2",
                                      KiDialogTexte.HkCo2Name, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkCo2Erl,
                                      einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("so2", "tb_SO2",
+                    new KiDialogFeld("so2", "HeizkesselKatalogDaten.SO2",
                                      KiDialogTexte.HkSo2Name, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkSo2Erl,
                                      einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("nox", "tb_NOx",
+                    new KiDialogFeld("nox", "HeizkesselKatalogDaten.NOx",
                                      KiDialogTexte.HkNoxName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkNoxErl,
                                      einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("co", "tb_CO",
+                    new KiDialogFeld("co", "HeizkesselKatalogDaten.CO",
                                      KiDialogTexte.HkCoName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkCoErl,
                                      einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("staub", "tb_Staub",
+                    new KiDialogFeld("staub", "HeizkesselKatalogDaten.Staub",
                                      KiDialogTexte.HkStaubName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkStaubErl,
                                      einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "textBox_Vorlauf",
+                    new KiDialogFeld("vorlauf", "HeizkesselKatalogDaten.Vorlauf",
                                      KiDialogTexte.HkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "textBox_Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "HeizkesselKatalogDaten.Ruecklauf",
                                      KiDialogTexte.HkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
@@ -194,55 +223,40 @@ namespace WindowsFormsApplication1
                     new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
                                       KiDialogTexte.KnopfUeberschreiben),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
-                },
-                knopfposition: new KiKnopfposition(abstandRechts: 8, abstandOben: 176));
+                });
         }
 
         // =====================================================================
-        // Form_PV
+        // Form_PV  ->  PhotovoltaikDialog
         // =====================================================================
 
         /// <summary>
-        /// Photovoltaik-Module - die drei Felder aus
-        /// <c>Views\Photovoltaik\Form_PV.cs:276-278</c>.
+        /// Photovoltaik — die drei Werte, die der Projektdialog neben der Geraetewahl
+        /// fuehrt; sie stehen an der gewaehlten Zeile
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <b>Die Maske fuehrt keinen Speichern-Knopf.</b> <c>btn_Speichern_Click</c>
-        /// (<c>:268</c>) traegt die umgestellte Knopfpruefung, ist aber an KEIN Control
-        /// gebunden - <c>Form_PV.Designer.cs</c> verdrahtet nur
-        /// <c>btn__Hinzu</c>, <c>btn__Entfernen</c>, <c>btn_Abbrechen</c>, <c>btn_OK</c>,
-        /// <c>btn_Bearbeiten</c> und <c>btn_Löschen</c>. Uebernommen werden die drei Felder
-        /// im Bestand ueber <c>panel1_Leave</c> -&gt; <c>UpdateProerties</c> (<c>:132</c>,
-        /// stille Parser), abgeschlossen wird die Maske mit <c>btn_OK</c>. Der Katalog
-        /// deklariert deshalb nur Knoepfe, die es wirklich gibt.
-        /// </para>
-        /// <para>
-        /// <b>Knopfposition wegen des Kopfbandes.</b> <c>label_Type</c> liegt bei 0/0 und
-        /// ist 762x31 gross; der Regelplatz 8/8 laege darauf. Direkt darunter beginnt bei
-        /// y 59 schon <c>listBox_DB</c> (x 449..746), ein Platz bei AbstandOben 39 schnitte
-        /// ihre obere rechte Ecke an. Bleiben genau die 27 Bildpunkte dazwischen:
-        /// AbstandOben 33 setzt den 24 Punkte hohen Knopf mit je zwei Punkten Luft
-        /// zwischen Kopfband und Liste (Masse aus <c>Form_PV.Designer.cs</c>,
-        /// Client 762x582).
-        /// </para>
+        /// <b>Das Daten-Objekt ist hier eine ZEILE und kein Dialogstand.</b> Der Dialog
+        /// fuehrt eine Projektliste; angemeldet wird die GEWAEHLTE Zeile, und der Getter
+        /// holt sie bei jedem Lesen neu. Ist keine gewaehlt, sind die drei Felder leer —
+        /// derselbe Zustand, den der Anwender auf der Maske sieht.
         /// </remarks>
         private static KiDialog Photovoltaik()
         {
             return new KiDialog(
-                maskenname: "Form_PV",
+                maskenname: KiMaskennamen.PHOTOVOLTAIK,
                 anzeigename: KiDialogTexte.MaskePv,
                 felder: new[]
                 {
-                    new KiDialogFeld("neigung", "textBox_Neigung",
+                    new KiDialogFeld("neigung", "ErzeugerZeile.Neigung",
                                      KiDialogTexte.PvNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvNeigungErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("azimut", "textBox_Azimut",
+                    new KiDialogFeld("azimut", "ErzeugerZeile.Azimut",
                                      KiDialogTexte.PvAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("anzahl_module", "textBox_AnlagenLeistung",
+                    new KiDialogFeld("anzahl_module", "ErzeugerZeile.AnzahlModule",
                                      KiDialogTexte.PvAnzahlName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvAnzahlErl,
                                      leerErlaubt: true)
@@ -251,43 +265,33 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
-                },
-                knopfposition: new KiKnopfposition(abstandRechts: 8, abstandOben: 33));
+                });
         }
 
         // =====================================================================
-        // Form_PufferSp_Bearbeiten
+        // Form_PufferSp_Bearbeiten  ->  PufferSpKatalogDialog
         // =====================================================================
 
         /// <summary>
-        /// Pufferspeicher bearbeiten - das eine Feld aus
-        /// <c>Views\Pufferspeicher\Form_PufferSp_Bearbeiten.cs:261</c>
-        /// (<c>VolumenPruefen</c>) und die vier Aktionsknoepfe.
+        /// Pufferspeicher bearbeiten — das eine Feld der Knopfpruefung
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.PufferSpKatalogDaten</c>).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <b>Nur ein Feld - und das ist kein Versehen.</b> Die uebrigen Eingaben der Maske
-        /// (Hersteller, Speichertyp, Bereitschaftsverluste, Investitionskosten) uebernimmt
-        /// <c>InitDatensatzUpdate</c> (<c>:269</c>) ueber <c>double.TryParse</c> ohne jede
-        /// Meldung: ein unlesbarer Text wird dort stillschweigend zu 0. Solche Felder
-        /// gehoeren nach Fachkonzept 11.7 erst nach ihrer Umstellung in den Katalog.
-        /// </para>
-        /// <para>
-        /// <b>Keine Knopfposition noetig.</b> Die Knopfleiste beginnt bei x 502 und y 35,
-        /// <c>groupBox1</c> endet bei x 487 - der Regelplatz 8/8 (bei Client 619x355 also
-        /// x 568..611, y 8..32) bleibt in jedem Fall frei, auch bei der breiteren
-        /// Beschriftung des Hilfe-Betriebs. Masse aus
-        /// <c>Form_PufferSp_Bearbeiten.resx</c>.
-        /// </para>
+        /// <b>Nur ein Feld — und das ist kein Versehen.</b> Die uebrigen Eingaben der
+        /// Maske (Hersteller, Speichertyp, Bereitschaftsverluste, Investitionskosten)
+        /// liefen im Vorlaeufer ueber stille Parser und gehoeren nach Fachkonzept 11.7
+        /// erst nach ihrer Umstellung in den Katalog. Ob die Razor-Fassung das anders
+        /// sieht, ist eine fachliche Frage mit eigener Abnahme — sie gehoert nicht in
+        /// den Schritt, der den Aufloesungsweg austauscht.
         /// </remarks>
         private static KiDialog Pufferspeicher()
         {
             return new KiDialog(
-                maskenname: "Form_PufferSp_Bearbeiten",
+                maskenname: KiMaskennamen.PUFFERSPEICHER,
                 anzeigename: KiDialogTexte.MaskePufferSp,
                 felder: new[]
                 {
-                    new KiDialogFeld("gesamtvolumen", "textBox_Volumen",
+                    new KiDialogFeld("gesamtvolumen", "PufferSpKatalogDaten.Gesamtvolumen",
                                      KiDialogTexte.PspVolumenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PspVolumenErl,
                                      einheit: KiDialogTexte.EINHEIT_LITER, leerErlaubt: true)
@@ -304,57 +308,26 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Form_WP
+        // Form_WP  ->  WaermepumpeStammDialog
         // =====================================================================
 
         /// <summary>
-        /// Waermepumpen verwalten - das eine Feld aus
-        /// <c>Views\Wärmepumpe\Form_WP.cs:324</c> und die zwei Aktionsknoepfe.
+        /// Waermepumpen verwalten — das eine Feld der Knopfpruefung
+        /// (<c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten</c>).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <b>Nur ein Feld.</b> <c>btn_Speichern_Click</c> prueft ausschliesslich
-        /// <c>textBox_Modulkosten</c> (und zwar mit <c>leerErlaubt: false</c>); Nennleistung,
-        /// Heizstab und Baujahr laufen daneben ueber <c>Program.GanzzahlParsen</c> und
-        /// lassen bei unlesbarem Text stillschweigend den gelesenen Datensatzwert stehen.
-        /// Begruendung wie beim Pufferspeicher (Fachkonzept 11.7).
-        /// </para>
-        /// <para>
-        /// <b>Der Abbrechen-Knopf existiert nicht.</b> <c>btn_Abbrechen_Click</c>
-        /// (<c>:269</c>) ist wie bei <c>Form_PV</c> ein Ereignisbehandler ohne Control;
-        /// <c>Form_WP.Designer.cs</c> verdrahtet <c>btn_Beenden</c> (Beschriftung seit
-        /// Paket D3 „Beenden" — der Knopf schliesst nur, gespeichert wird ueber
-        /// <c>btn_Speichern</c>; die Rolle im Katalog bleibt „ok", wie bei
-        /// <c>Form_Simulation_Config.btn_OK</c>, das ebenfalls „Beenden" zeigt),
-        /// <c>btn_Neu</c>, <c>btn_Kenndaten</c>, <c>btn_Speichern</c>, <c>btn_Loeschen</c>
-        /// und <c>btn_Katalog</c>. Deklariert sind deshalb nur <c>btn_Speichern</c> und
-        /// <c>btn_Beenden</c>.
-        /// </para>
-        /// <para>
-        /// <b>Knopfposition wegen des Kopfbandes UND des Infobuttons.</b> <c>label1</c>
-        /// liegt bei 0/0 und ist 877x28 gross, darunter beginnt der freie Streifen.
-        /// <c>btn_Help</c> steht dort aber bereits: 833/31, 28x28
-        /// (<c>Form_WP.Designer.cs</c>). Die frueheren Werte (AbstandRechts 8,
-        /// AbstandOben 36) setzten den Aufrufknopf genau darauf - im D-Check vom
-        /// 28.08.2026 in BEIDEN Konstruktormodi mit 26 x 24 px Ueberdeckung gemessen.
-        /// AbstandRechts 60 setzt ihn LINKS daneben, AbstandOben 34 unter das Kopfband.
-        /// Beide Werte tragen AUCH den skalierten Fall: Die Maske skaliert nach Schrift
-        /// (gemessen 1006 statt 877 Client-Breite), die Designer-Steuerelemente wandern
-        /// dabei mit, der nachtraeglich eingehaengte Aufrufknopf nicht. Bei 1006 px liegt
-        /// er auf x 917..946, <c>btn_Help</c> auf 955 - 9 px Luft; unskaliert auf
-        /// x 788..817 mit 16 px Luft. Nach unten grenzt <c>textBox_Name</c> (387/58,
-        /// 427x25) unskaliert buendig an, skaliert mit Abstand.
-        /// Masse aus <c>Form_WP.resx</c> bzw. dem Designer, Client 877x642.
-        /// </para>
+        /// Begruendung fuer den Feldumfang wie beim Pufferspeicher (Fachkonzept 11.7):
+        /// <c>btn_Speichern_Click</c> prueft ausschliesslich die Modulkosten, und zwar
+        /// mit <c>leerErlaubt: false</c>.
         /// </remarks>
         private static KiDialog Waermepumpe()
         {
             return new KiDialog(
-                maskenname: "Form_WP",
+                maskenname: KiMaskennamen.WAERMEPUMPE,
                 anzeigename: KiDialogTexte.MaskeWp,
                 felder: new[]
                 {
-                    new KiDialogFeld("modulkosten", "textBox_Modulkosten",
+                    new KiDialogFeld("modulkosten", "WaermepumpeStammDaten.Modulkosten",
                                      KiDialogTexte.WpModulkostenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpModulkostenErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: false)
@@ -363,8 +336,125 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
                     new KiDialogKnopf("ok", "btn_Beenden", KiDialogTexte.KnopfOk)
-                },
-                knopfposition: new KiKnopfposition(abstandRechts: 60, abstandOben: 34));
+                });
+        }
+
+        // =====================================================================
+        // StromspeicherAuslegung  ->  StromspeicherAuslegungSeite
+        // =====================================================================
+
+        /// <summary>
+        /// Die FUENFTE Maske (Auftrag #200, Anwenderentscheid KI‑D‑Q3): die
+        /// Stromspeicher-Ansicht — sechzehn Felder aus
+        /// <c>EPOS.UI.Seiten.Strom.StromspeicherKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum gerade sie und warum als erste Nicht-Katalogmaske.</b> Sie ist die
+        /// Ansicht mit der haeufigsten unverstandenen Meldung des Hauses („Die Flotte hat
+        /// im gesamten Zeitraum weder geladen noch entladen", Kennung
+        /// <c>FLOTTE_ARBEITSLOS</c>) — und die Antwort darauf steht in ihren eigenen
+        /// Zaehlern. Ohne Feldwerte kann der Assistent sie nur allgemein erklaeren; mit
+        /// ihnen nennt er das Peak-Ziel, die Netzladefreigabe und die Zahl der
+        /// Intervalle, in denen der Ladedeckel auf 0 stand.
+        /// </para>
+        /// <para>
+        /// <b>Sechs Felder sind ABGELEITET und nur lesbar</b> (Diagnose und Ergebnis der
+        /// letzten Bewertung). Sie sind trotzdem Felder und keine zweite Gattung: Die
+        /// Deklaration traegt Anzeigename, Art und Erlaeuterung, und der Feldblock zeigt
+        /// sie neben den Eingaben — der Anwender liest sie auf derselben Ansicht ebenso
+        /// nebeneinander. Die Setzseite bleibt bei ihnen leer, und die Stufe S3 wird sie
+        /// darum ablehnen; das ist der Unterschied, den sie brauchen.
+        /// </para>
+        /// <para>
+        /// <b>Eine Flotte hat MEHRERE Einheiten, ein Maskenfeld traegt EINEN Wert</b>
+        /// (<see cref="KiDialogFeld"/>). Die drei Summenfelder nennen deshalb die Flotte
+        /// als Ganzes, und <c>einheiten_liste</c> traegt die Aufstellung je Einheit als
+        /// Text — genau die Zeile, die die Ansicht zeigt. Eine Deklaration je Einheit
+        /// ginge nicht: Ihre Zahl steht erst zur Laufzeit fest.
+        /// </para>
+        /// <para>
+        /// <b>Keine Knoepfe.</b> Die Ansicht fuehrt „Berechnen", „Peak-Ziel
+        /// bestimmen…" und „Speichern" — das sind rechnende und datenbankwirksame
+        /// Aktionen der Stufen 2 und 3 des Aufgabensteuerungskonzepts. Sie gehoeren in
+        /// das Aktionsregister mit Bestaetigung und Sicherungspunkt (Auftrag #201) und
+        /// nicht in eine Knopfliste, die eine Formularaktion ausloest.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Stromspeicherauslegung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                anzeigename: KiDialogTexte.MaskeSpeicherauslegung,
+                felder: new[]
+                {
+                    // ---- Die Flotte -------------------------------------------------
+                    new KiDialogFeld("einheiten", "StromspeicherKiSicht.Einheitenzahl",
+                                     KiDialogTexte.SpaEinheitenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SpaEinheitenErl),
+                    new KiDialogFeld("einheiten_liste", "StromspeicherKiSicht.EinheitenListe",
+                                     KiDialogTexte.SpaListeName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaListeErl, leerErlaubt: true),
+                    new KiDialogFeld("kapazitaet_gesamt", "StromspeicherKiSicht.KapazitaetGesamtKWh",
+                                     KiDialogTexte.SpaKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+                    new KiDialogFeld("ladeleistung_gesamt", "StromspeicherKiSicht.LadeleistungGesamtKw",
+                                     KiDialogTexte.SpaLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("entladeleistung_gesamt",
+                                     "StromspeicherKiSicht.EntladeleistungGesamtKw",
+                                     KiDialogTexte.SpaEntladeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaEntladeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+
+                    // ---- Die Betriebsfuehrung ---------------------------------------
+                    new KiDialogFeld("betriebsziel", "StromspeicherKiSicht.Betriebsziel",
+                                     KiDialogTexte.SpaBetriebszielName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SpaBetriebszielErl),
+                    new KiDialogFeld("peak_ziel", "StromspeicherKiSicht.PeakZielKw",
+                                     KiDialogTexte.SpaPeakZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaPeakZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("netzladung", "StromspeicherKiSicht.NetzladungErlaubt",
+                                     KiDialogTexte.SpaNetzladungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaNetzladungErl),
+                    new KiDialogFeld("start_soc", "StromspeicherKiSicht.StartSocProzent",
+                                     KiDialogTexte.SpaStartSocName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaStartSocErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("peak_reserve", "StromspeicherKiSicht.PeakReserveKWh",
+                                     KiDialogTexte.SpaReserveName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaReserveErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+
+                    // ---- Die Diagnose (nur lesend) ----------------------------------
+                    new KiDialogFeld("diagnose_arbeitslos", "StromspeicherKiSicht.Arbeitslos",
+                                     KiDialogTexte.SpaArbeitslosName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaArbeitslosErl),
+                    new KiDialogFeld("diagnose_gruende", "StromspeicherKiSicht.DiagnoseGruende",
+                                     KiDialogTexte.SpaGruendeName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaGruendeErl, leerErlaubt: true),
+                    new KiDialogFeld("pruefhinweise", "StromspeicherKiSicht.Pruefhinweise",
+                                     KiDialogTexte.SpaHinweiseName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaHinweiseErl, leerErlaubt: true),
+
+                    // ---- Das Ergebnis der letzten Bewertung (nur lesend) -------------
+                    new KiDialogFeld("ergebnis_bezugsspitze",
+                                     "StromspeicherKiSicht.BezugsspitzeKw",
+                                     KiDialogTexte.SpaSpitzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaSpitzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("ergebnis_netzbezug", "StromspeicherKiSicht.NetzbezugKWh",
+                                     KiDialogTexte.SpaNetzbezugName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaNetzbezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("ergebnis_kapitalwert", "StromspeicherKiSicht.KapitalwertEuro",
+                                     KiDialogTexte.SpaKapitalwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SpaKapitalwertErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true)
+                });
         }
     }
 }

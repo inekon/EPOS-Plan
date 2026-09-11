@@ -332,7 +332,7 @@ public class KiChatDialogTests : EposBunitContext
         string? gefragt = null;
 
         var cut = Zeigen(p => p.Add(x => x.Fragen,
-            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _) =>
+            (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _, _) =>
             {
                 gefragt = f;
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(new[]
@@ -358,7 +358,7 @@ public class KiChatDialogTests : EposBunitContext
         int modell = 0, suche = 0;
 
         var cut = Zeigen(p => p
-            .Add(x => x.Fragen, (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _) =>
+            .Add(x => x.Fragen, (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _, _) =>
             {
                 modell++;
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>());
@@ -386,7 +386,7 @@ public class KiChatDialogTests : EposBunitContext
         int gefragt = 0;
 
         var cut = Zeigen(p => p.Add(x => x.Fragen,
-            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _) =>
+            (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _, _) =>
             {
                 gefragt++;
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>());
@@ -409,7 +409,7 @@ public class KiChatDialogTests : EposBunitContext
         int gefragt = 0;
 
         var cut = Zeigen(p => p.Add(x => x.Fragen,
-            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _) =>
+            (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((_, _, _) =>
             {
                 gefragt++;
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>());
@@ -1038,7 +1038,7 @@ public class KiChatDialogTests : EposBunitContext
         var fragen = new List<string>();
 
         var cut = Zeigen(p => p.Add(x => x.Fragen,
-            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _) =>
+            (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _, _) =>
             {
                 fragen.Add(f);
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(
@@ -1068,7 +1068,7 @@ public class KiChatDialogTests : EposBunitContext
         var fragen = new List<string>();
 
         var cut = Zeigen(p => p.Add(x => x.Fragen,
-            (Func<string, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _) =>
+            (Func<string, bool, bool, Task<IReadOnlyList<Gespraechszeile>>>)((f, _, _) =>
             {
                 fragen.Add(f);
                 return Task.FromResult<IReadOnlyList<Gespraechszeile>>(Array.Empty<Gespraechszeile>());
