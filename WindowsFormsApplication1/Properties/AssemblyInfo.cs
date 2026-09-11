@@ -36,5 +36,8 @@ using System.Runtime.InteropServices;
 // 1.1.0.0 (August 2026): Varianten-Verwaltung, Berichtserstellung als Word- und
 // Excel-Datei, Wirtschaftlichkeitsrechnung. Die Nummer steht so auch im
 // Update-Logbuch von Wiki und Website - beide Angaben zusammen halten.
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
+// 1.2.0.0 (September 2026, #191): Datenhaltung SQLite (Kenndaten.sqlite statt
+// Access), Laufzeit .NET 10 und WebView2, Setup ohne Access-Engine; Nummer wie
+// im Update-Logbuch auf epos-plan.de.
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]

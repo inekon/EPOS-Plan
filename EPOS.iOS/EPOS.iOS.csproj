@@ -48,7 +48,9 @@
     <AssemblyName>EPOS.iOS</AssemblyName>
     <ApplicationTitle>EPOS-Plan</ApplicationTitle>
     <ApplicationId>de.inekon.eposplan</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!-- Gleiche Version wie Windows (WindowsFormsApplication1\Properties\AssemblyInfo.cs),
+         Update-Logbuch 1.2.0.0 (#191, 11.09.2026). -->
+    <ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- 17.0: von SkiaSharp.NativeAssets.iOS 3.119 (net8.0-ios17.0) erzwungen;
