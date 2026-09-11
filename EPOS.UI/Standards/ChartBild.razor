@@ -1,4 +1,4 @@
-@* Diagramm als fertiges Bild.
+﻿@* Diagramm als fertiges Bild.
 
    Gezeichnet wird im Rechenkern (Skia-Renderer, iF16); die Oberflaeche zeigt
    nur noch das PNG. Das haelt EPOS.UI frei von jeder Zeichenbibliothek und
@@ -31,7 +31,8 @@
 @if (Png is { Length: > 0 })
 {
     <Diagramm Bezeichnung="@Alt" BereichGewaehlt="@BereichGewaehlt"
-              Zurueckgesetzt="@Zurueckgesetzt" Zusatzklasse="@Gestaltklasse">
+              Zurueckgesetzt="@Zurueckgesetzt" Zusatzklasse="@Gestaltklasse"
+              OhneZoom="@Rund">
         <img class="epos-chartbild" src="data:image/png;base64,@Convert.ToBase64String(Png)"
              alt="@Alt" width="@Breite" height="@Hoehe" />
     </Diagramm>
@@ -55,6 +56,12 @@ else
     /// Jahresganglinie mit 8 760 Stunden jeden Bildpunkt braucht (das war Befund
     /// W11b-B-2 derselben Reihe, und der bleibt). Die Marke sagt nur die GESTALT;
     /// das Mass steht als Token <c>--epos-diagramm-rund</c> im Stilblatt.</para>
+    ///
+    /// <para><b>Seit Auftrag #222 nimmt dieselbe Marke dem Bild den ZOOM</b>
+    /// (<c>Diagramm.OhneZoom</c>): Ein Ring hat nichts zu zoomen, und auf ×1,2
+    /// schnitt der Rahmen den Kreis an. Das ist die eine Ausnahme zur Hausregel
+    /// W8‑E‑2; der Rahmen selbst bleibt, jedes Bild geht weiter durch diese
+    /// Komponente.</para>
     /// </summary>
     [Parameter] public bool Rund { get; set; }
 

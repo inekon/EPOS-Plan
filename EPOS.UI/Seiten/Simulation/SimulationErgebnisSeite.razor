@@ -62,13 +62,23 @@
 
     @* Die Laufmeldungen als anklickbares Banner - der Vorlaeufer zeigte den
        Volltext als ToolTip an einem programmatischen Label und beim Klick als
-       MessageBox (:3862). *@
+       MessageBox (:3862).
+
+       SEIT #222 KOMPAKT: Bis dahin war es eine weisse Vollbreitenzeile in
+       Knopfform mit zentriertem Text - eine leere Zeile ueber dem Reiterstapel,
+       die aussah wie eine Schaltflaeche fuer etwas Wichtiges. Jetzt steht das
+       Band in der Warnfarbe des Hauses, traegt links die ZAHL als Abzeichen und
+       rechts „anzeigen"; der Klick tut dasselbe wie bisher. *@
     @if (_daten.LaufmeldungenAnzahl > 0)
     {
-        <button type="button" class="epos-simerg-knopf" @onclick="() => _volltext = true">
-            @(_daten.LaufmeldungenAnzahl == 1
-                ? Resource.SIM_LAUFMELDUNG_EINER
-                : string.Format(Resource.SIM_LAUFMELDUNG_MEHRERE, _daten.LaufmeldungenAnzahl))
+        <button type="button" class="epos-simerg-laufband" @onclick="() => _volltext = true">
+            <span class="epos-simerg-laufband-zahl">@_daten.LaufmeldungenAnzahl</span>
+            <span class="epos-simerg-laufband-text">
+                @(_daten.LaufmeldungenAnzahl == 1
+                    ? Resource.SIM_LAUFMELDUNG_EINER
+                    : string.Format(Resource.SIM_LAUFMELDUNG_MEHRERE, _daten.LaufmeldungenAnzahl))
+            </span>
+            <span class="epos-simerg-laufband-pfeil">@Resource.SIM_LAUFMELDUNG_ANZEIGEN ▾</span>
         </button>
     }
 
@@ -87,10 +97,10 @@
                 <Reiterblatt Schluessel="@Blatt.Uebersicht" Titel="@Resource.SIMERG_TAB_UEBERSICHT">
                     <KindInhalt>
                         <UebersichtReiter Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht"
-                                          Kuchen="@Bild(Bilder.UebersichtKuchen)"
                                           RingWaerme="@Bild(Bilder.RingWaerme)"
                                           RingStrom="@Bild(Bilder.RingStrom)"
-                                          BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)" />
+                                          BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
+                                          StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -182,7 +192,6 @@
                     <KindInhalt>
                         <ErgebnisReiter Autarkie="@_daten.Autarkie" Bild="BildHolen"
                                         KapazitaetGeaendert="KapazitaetGeaendert"
-                                        UebersichtInhalt="@UebersichtNavigator"
                                         WaermegangInhalt="@Waermegang"
                                         StromgangInhalt="@Stromgang" />
                     </KindInhalt>
@@ -677,11 +686,6 @@
     // =====================================================================
     // Die Inhalte des Ergebnisreiters
     // =====================================================================
-
-    private RenderFragment UebersichtNavigator => @<UebersichtReiter
-        Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht" NurNavigator="true"
-        RingWaerme="@Bild(Bilder.RingWaerme)" RingStrom="@Bild(Bilder.RingStrom)"
-        BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)" />;
 
     private RenderFragment Waermegang => @<WaermegangReiter
         Daten="@_daten.Waermegang" Bild="BildHolen"

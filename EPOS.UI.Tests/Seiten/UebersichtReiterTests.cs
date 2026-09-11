@@ -10,17 +10,22 @@ using Xunit;
 namespace EPOS.UI.Tests.Seiten;
 
 /// <summary>
-/// Der UEBERSICHTS-Reiter (iU9-W11b.2), Vorbild <c>tabPage_Uebersicht</c> (R2)
-/// UND <c>NavigatorUebersicht</c> (428 Z. samt 148 Zeilen GDI).
+/// Das DASHBOARD der Simulationsübersicht (Auftrag #222, SIM‑E‑3), Vorbild
+/// <c>tabPage_Uebersicht</c> (R2) UND <c>NavigatorUebersicht</c> (428 Z. samt
+/// 148 Zeilen GDI).
 ///
-/// <para>Soll: die 13 Zahlen aus dem Kern-DTO, die Praesenzregel je Zeile,
-/// zwei Ringe und zwei Kacheln, das Eigenanteilsraster, ohne Bedarf KEIN Ring
-/// (Befund W11-B36) und die beiden Rollen der Komponente.</para>
+/// <para><b>Soll:</b> ZWEI Spalten (Wärme links, Strom rechts), je Spalte ein
+/// Kopfband mit Abzeichen, drei Kennzahlen, der Ring mit HTML-Legende, die
+/// Erzeugertabelle mit rechtsbündigen Köpfen und der Einheit im Kopf, der
+/// Schalter für die Zeilen ohne Beitrag und der Weg in den Bedarf. Dazu die
+/// zwei Sonderfälle: ohne Bedarf kein Ring (Befund W11‑B36), bei 0 % Deckung
+/// der Hinweis auf die fehlenden Stromerzeuger.</para>
+///
 /// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
 /// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
-/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
-/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
-/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe mit. <c>FindAll("button")</c>
+/// zählte die mit und prüfte damit nicht mehr, was der Fall behauptet — seit
+/// #222 tragen die zwei Ringe allerdings gar keine Knöpfe mehr.</para>
 /// </summary>
 public class UebersichtReiterTests : EposBunitContext
 {
@@ -30,8 +35,7 @@ public class UebersichtReiterTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
 
         // Die BESCHRIFTUNGEN folgen der Oberflaechensprache, die ZAHLEN der
-        // Zahlenkultur — der Vorlaeufer formatierte mit ToString("F2") und damit
-        // ebenfalls kulturabhaengig. Beide werden festgelegt (Regel seit W8).
+        // Zahlenkultur — beide werden festgelegt (Regel seit W8).
     }
 
     // =====================================================================
@@ -58,100 +62,277 @@ public class UebersichtReiterTests : EposBunitContext
             PvStromproduktionMwh = 0.0
         };
 
-    private static UebersichtDaten Daten(bool waermebedarf = true, bool strombedarf = true) =>
-        new UebersichtDaten
+    /// <summary>Die Wärmetabelle der Probe: WP mit Beitrag, Heizstab ohne.</summary>
+    private static Erzeugertabelle Waermetabelle() => new Erzeugertabelle
+    {
+        Spalten = new[]
+        {
+            new Tabellenkopf("Erzeuger"),
+            new Tabellenkopf("Erzeugung", "MWh/a"),
+            new Tabellenkopf("Heizung", "MWh/a")
+        },
+        Zeilen = new[]
+        {
+            new Erzeugerzeile("Wärmepumpe", new[] { "300,00", "280,00" }),
+            new Erzeugerzeile("Heizstab", new[] { "0,00", "0,00" }, OhneBeitrag: true),
+            new Erzeugerzeile("Heizkessel", new[] { "174,21", "160,00" })
+        },
+        Summe = new Erzeugerzeile("Summe Erzeuger", new[] { "474,21", "440,00" }),
+        Rest = new Erzeugerzeile("Restwärmebedarf", new[] { "6,04", "—" })
+    };
+
+    private static Erzeugertabelle Stromtabelle(bool mitErzeuger) => new Erzeugertabelle
+    {
+        Spalten = new[]
+        {
+            new Tabellenkopf("Erzeuger"),
+            new Tabellenkopf("Erzeugung", "MWh/a"),
+            new Tabellenkopf("Anteil", "%")
+        },
+        Zeilen = mitErzeuger
+            ? new[] { new Erzeugerzeile("Photovoltaik", new[] { "14,80", "12,3" }) }
+            : System.Array.Empty<Erzeugerzeile>(),
+        Rest = new Erzeugerzeile("Reststrombedarf", new[] { "30,00", "87,7" }),
+        LeerText = mitErzeuger ? "" : "Keine Stromerzeuger im Projekt — die Tabelle erscheint mit dem ersten Erzeuger."
+    };
+
+    private static UebersichtDaten Daten(bool waermebedarf = true, bool strombedarf = true,
+                                         bool stromerzeuger = true)
+        => new UebersichtDaten
         {
             Waermepumpe = true,
             Heizstab = true,
             Heizkessel = true,
             WaermedeckungProzent = 98.7,
-            StromdeckungProzent = 12.3,
+            StromdeckungProzent = stromerzeuger ? 12.3 : 0.0,
             WaermebedarfVorhanden = waermebedarf,
             StrombedarfVorhanden = strombedarf,
+            WaermebedarfMwh = 480.25,
+            StrombedarfMwh = 199.25,
             ReststromMwh = 30.0,
             RestwaermeMwh = 6.04,
-            EigenanteilSpalten = new[] { "Energie-Erzeuger", "Ergebnis [MWh/a]", "Deckung Heizung [MWh/a]" },
-            Eigenanteil = new[]
+            Kaskade = "Wärmepumpe → Heizkessel",
+            StromerzeugerVorhanden = stromerzeuger,
+            WaermeLegende = new[]
             {
-                new Rasterzeile(new[] { "Wärmepumpe", "300,00", "280,00" }),
-                new Rasterzeile(new[] { "Heizkessel", "174,21", "160,00" })
-            }
+                new Ringanteil("Wärmepumpe", 300.0, 62.5, "#2ECC71"),
+                new Ringanteil("Heizkessel", 174.21, 36.3, "#95A5A6"),
+                new Ringanteil("Rest (ungedeckt)", 6.04, 1.3, "#D9DEE5", IstRest: true)
+            },
+            StromLegende = stromerzeuger
+                ? new[]
+                {
+                    new Ringanteil("Photovoltaik", 14.8, 12.3, "#2ECC71"),
+                    new Ringanteil("Netzbezug (ungedeckt)", 30.0, 87.7, "#D9DEE5", IstRest: true)
+                }
+                : new[] { new Ringanteil("Netzbezug (ungedeckt)", 199.25, 100.0, "#D9DEE5", IstRest: true) },
+            WaermeTabelle = Waermetabelle(),
+            StromTabelle = Stromtabelle(stromerzeuger)
         };
 
     private IRenderedComponent<UebersichtReiter> Zeichnen(UebersichtDaten daten,
-                                                          bool nurNavigator = false,
-                                                          Action? details = null)
+                                                          Action? details = null,
+                                                          Action? strom = null)
         => Render<UebersichtReiter>(p =>
         {
             p.Add(x => x.Kennzahlen, Zahlen());
             p.Add(x => x.Daten, daten);
-            p.Add(x => x.Kuchen, BILD);
             p.Add(x => x.RingWaerme, BILD);
             p.Add(x => x.RingStrom, BILD);
-            p.Add(x => x.NurNavigator, nurNavigator);
             if (details is not null) p.Add(x => x.BedarfDetails, EventCallback.Factory.Create(this, details));
+            if (strom is not null) p.Add(x => x.StromDetails, EventCallback.Factory.Create(this, strom));
         });
 
     // =====================================================================
+    //  Zwei Spalten, eine Übersicht (#222, Entscheid a)
+    // =====================================================================
 
-    /// <summary>Die 13 Zahlen stehen mit dem Format „F2" des Vorlaeufers.</summary>
+    /// <summary>
+    /// Das Dashboard führt GENAU ZWEI Spalten — links Wärme, rechts Strom, in
+    /// derselben Ordnung wie bisher (W11b‑B‑15, W11b‑B‑12).
+    /// </summary>
     [Fact]
-    public void Die_Kennzahlen_stehen_mit_zwei_Nachkommastellen()
+    public void Das_Dashboard_fuehrt_zwei_Spalten_Waerme_und_Strom()
     {
         var seite = Zeichnen(Daten());
-        string text = seite.Markup;
+        var spalten = seite.FindAll("section.epos-simueb-spalte");
+        var koepfe = seite.FindAll("h2.epos-gruppenkopf-titel");
 
-        Assert.Contains("480,25", text);
-        Assert.Contains("120,50", text);
-        Assert.Contains("300,00", text);
-        Assert.Contains("6,04", text);
+        Assert.Equal(2, spalten.Count);
+        Assert.Equal(2, koepfe.Count);
+        Assert.Equal("Wärme", koepfe[0].TextContent.Trim());
+        Assert.Equal("Strom", koepfe[1].TextContent.Trim());
+
+        // Sie stehen NEBENEINANDER in EINER Rasterzeile.
+        Assert.Single(seite.FindAll("div.epos-simueb-spalten"));
     }
 
     /// <summary>
-    /// Praesenz: In einem Projekt ohne BHKW, Solarthermie und PV stehen deren
-    /// Zeilen NICHT da — der Vorlaeufer zeigte „0,00".
+    /// Die zwei Kennzahlengruppen des Vorläufers (13 Zeilen als
+    /// <c>dl.epos-simerg-werte</c>) und sein Eigenanteilsraster
+    /// (<c>table.epos-raster</c>) sind mit #222 gefallen — jede Zahl steht
+    /// genau einmal.
     /// </summary>
     [Fact]
-    public void Zeilen_ohne_Komponente_stehen_nicht_da()
+    public void Die_alten_Kennzahlenlisten_und_das_Eigenanteilsraster_sind_weg()
     {
         var seite = Zeichnen(Daten());
-        string text = seite.Markup;
 
-        Assert.DoesNotContain("Wärmeproduktion BHKW", text);
-        Assert.DoesNotContain("Solare Wärme", text);
-        Assert.DoesNotContain("Stromproduktion PV", text);
-        Assert.Contains("Wärmeproduktion WP", text);
-        Assert.Contains("Stromverbrauch Heizstab", text);
-    }
-
-    /// <summary>Die beiden Restzeilen beschreiben das Projekt und bleiben immer stehen.</summary>
-    [Fact]
-    public void Die_beiden_Restzeilen_bleiben_immer_stehen()
-    {
-        var d = Daten();
-        d.Waermepumpe = d.Heizstab = d.Heizkessel = false;
-
-        var seite = Zeichnen(d);
-        Assert.Contains("Restwärmebedarf", seite.Markup);
-        Assert.Contains("Reststrombedarf", seite.Markup);
+        Assert.Empty(seite.FindAll("dl.epos-simerg-werte"));
+        Assert.Empty(seite.FindAll("table.epos-raster"));
+        Assert.Empty(seite.FindAll("div.epos-kennzahlkachel"));
     }
 
     /// <summary>
-    /// Zwei Ringe, nebeneinander — der Kuchen entfällt seit W11b‑B‑11 (08.09.2026): er
-    /// zeigte dieselbe Wärmebedarfsdeckung wie der Ring.
+    /// Je Spalte DREI Kennzahlen: Bedarf, Deckung durch Erzeuger, Rest — die
+    /// letzte betont, denn sie ist das Ergebnis und keine weitere Zeile.
     /// </summary>
     [Fact]
-    public void Die_volle_Rolle_zeigt_zwei_Ringe_und_keinen_Kuchen()
+    public void Jede_Spalte_fuehrt_drei_Kennzahlen_mit_betontem_Rest()
     {
         var seite = Zeichnen(Daten());
+
+        Assert.Equal(6, seite.FindAll("div.epos-simueb-kennzahl").Count);
+        Assert.Equal(2, seite.FindAll("div.epos-simueb-kennzahl--betont").Count);
+
+        string text = seite.Markup;
+        Assert.Contains("480,25", text);     // Wärmebedarf
+        Assert.Contains("199,25", text);     // Strombedarf mit Eigenverbrauch
+        Assert.Contains("98,7", text);       // Wärmedeckung
+        Assert.Contains("6,04", text);       // Restwärme
+        Assert.Contains("30,00", text);      // Reststrom
+    }
+
+    /// <summary>
+    /// Das Abzeichen im Kopfband: bei der Wärme die KASKADE des Laufs, beim Strom
+    /// nur dann ein Satz, wenn kein Stromerzeuger im Projekt steht.
+    /// </summary>
+    [Fact]
+    public void Das_Kopfband_traegt_die_Kaskade_und_den_Strombefund()
+    {
+        var abzeichen = Zeichnen(Daten(stromerzeuger: false))
+            .FindAll("span.epos-gruppenkopf-summe");
+
+        Assert.Equal(2, abzeichen.Count);
+        Assert.Equal("Kaskade: Wärmepumpe → Heizkessel", abzeichen[0].TextContent.Trim());
+        Assert.Equal("kein Stromerzeuger im Projekt", abzeichen[1].TextContent.Trim());
+    }
+
+    /// <summary>Mit Stromerzeugern bleibt das zweite Abzeichen leer.</summary>
+    [Fact]
+    public void Mit_Stromerzeuger_steht_kein_Strombefund_im_Kopfband()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.DoesNotContain("kein Stromerzeuger im Projekt", seite.Markup);
+        Assert.Single(seite.FindAll("span.epos-gruppenkopf-summe"));
+    }
+
+    /// <summary>
+    /// KEINE ZAHL GEHT VERLOREN: Die drei Eigenverbräuche der Wärmeerzeuger — der
+    /// Nenner des Stromrings — stehen als leise Zeile unter den Kennzahlen der
+    /// Stromspalte. Sie sind die einzigen der 13 Vorläuferzahlen, die in keinem
+    /// Erzeugerreiter wieder vorkommen.
+    /// </summary>
+    [Fact]
+    public void Die_Eigenverbraeuche_der_Waermeerzeuger_bleiben_stehen()
+    {
+        var zeile = Zeichnen(Daten()).Find("p.epos-simueb-eigenverbrauch").TextContent;
+
+        Assert.Contains("75,00", zeile);     // Wärmepumpe
+        Assert.Contains("2,50", zeile);      // Heizstab
+        Assert.Contains("1,25", zeile);      // Spitzenkessel
+    }
+
+    // =====================================================================
+    //  Die Ringe (#222, Entscheid b und c)
+    // =====================================================================
+
+    /// <summary>Zwei Ringe, je einer in seiner Spalte — und beide rund bemessen.</summary>
+    [Fact]
+    public void Jede_Spalte_traegt_ihren_Ring()
+    {
+        var seite = Zeichnen(Daten());
+
         Assert.Equal(2, seite.FindAll("img").Count);
-        Assert.Empty(seite.FindAll("section.epos-simerg-diagrammzeile"));
-        // beide Ringe in EINER Spaltenzeile nebeneinander
-        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"), z => z.QuerySelectorAll("img").Length == 2);
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund img").Count);
+        Assert.Equal(2, seite.FindAll("div.epos-simueb-ring").Count);
     }
 
     /// <summary>
-    /// Befund W11-B36: Ohne Bedarf steht kein Ring, sondern der Satz dazu — der
+    /// <b>Entscheid c (#222): KEINE ZOOMLEISTE AN RINGEN.</b> Die Leiste
+    /// „×1 · 1:1" bleibt Zeitreihen und Balken vorbehalten; an einem Ring war sie
+    /// Bedienfläche ohne Gegenwert, und auf ×1,2 schnitt der Rahmen den Kreis an.
+    /// Das ist die eine Ausnahme zur Hausregel W8‑E‑2 — der RAHMEN bleibt.
+    /// </summary>
+    [Fact]
+    public void Die_Ringe_tragen_keine_Zoomleiste()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Empty(seite.FindAll("div.epos-diagramm-leiste"));
+        Assert.Empty(seite.FindAll("button.epos-diagramm-knopf"));
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm").Count);   // der Rahmen bleibt
+    }
+
+    /// <summary>
+    /// <b>Die Legende ist HTML.</b> Je Segment ein Farbkästchen, der Name, die
+    /// Menge in MWh und der Anteil in Prozent — die zwei Zahlen aus W11b‑B‑11,
+    /// jetzt kopierbar statt als Rastergrafik im Bild. Den Abschluss macht die
+    /// Summenzeile mit dem Bedarf und 100 %.
+    /// </summary>
+    [Fact]
+    public void Die_Legende_steht_als_HTML_mit_MWh_und_Prozent()
+    {
+        var seite = Zeichnen(Daten());
+        var waerme = seite.FindAll("ul.epos-simueb-legende")[0];
+        var zeilen = waerme.QuerySelectorAll("li");
+
+        Assert.Equal(4, zeilen.Length);               // drei Segmente plus Summe
+        Assert.Contains("Wärmepumpe", zeilen[0].TextContent);
+        Assert.Contains("300,00 MWh", zeilen[0].TextContent);
+        Assert.Contains("62,5 %", zeilen[0].TextContent);
+
+        // Das Farbkaestchen traegt die Segmentfarbe des Bildes.
+        Assert.Contains("#2ECC71",
+                        zeilen[0].QuerySelector("span.epos-simueb-farbe")!.GetAttribute("style") ?? "");
+
+        // Der Rest steht abgesetzt, die Summe schliesst ab.
+        Assert.Single(waerme.QuerySelectorAll("li.epos-simueb-legende-rest"));
+        Assert.Contains("480,25 MWh", zeilen[3].TextContent);
+        Assert.Contains("100,0 %", zeilen[3].TextContent);
+    }
+
+    /// <summary>
+    /// <b>Der 0‑%‑Fall (Entscheid b).</b> Ohne Stromerzeuger steht der Ring
+    /// trotzdem da — als grauer Vollring, denn der ungedeckte Rest ist immer ein
+    /// Segment —, die Legende nennt den Netzbezug mit 100 %, und darunter steht
+    /// der Weg in die Konfiguration.
+    /// </summary>
+    [Fact]
+    public void Bei_null_Prozent_steht_der_Hinweis_auf_die_Konfiguration()
+    {
+        var seite = Zeichnen(Daten(stromerzeuger: false));
+
+        Assert.Equal(2, seite.FindAll("img").Count);          // der Stromring bleibt stehen
+        var hinweis = seite.Find("p.epos-simueb-leerhinweis").TextContent;
+        Assert.Contains("Kein Stromerzeuger in der Kaskade", hinweis);
+        Assert.Contains("① Konfiguration", hinweis);
+
+        var strom = seite.FindAll("ul.epos-simueb-legende")[1];
+        Assert.Contains("Netzbezug (ungedeckt)", strom.TextContent);
+        Assert.Contains("100,0 %", strom.TextContent);
+    }
+
+    /// <summary>Die Gegenprobe: Mit Deckung steht der Hinweis nicht da.</summary>
+    [Fact]
+    public void Mit_Deckung_steht_kein_Leerhinweis()
+    {
+        Assert.Empty(Zeichnen(Daten()).FindAll("p.epos-simueb-leerhinweis"));
+    }
+
+    /// <summary>
+    /// Befund W11‑B36: Ohne Bedarf steht kein Ring, sondern der Satz dazu — der
     /// Vorlaeufer setzte den Mittelwert hart auf 100 %.
     /// </summary>
     [Fact]
@@ -159,247 +340,173 @@ public class UebersichtReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Daten(waermebedarf: false, strombedarf: false));
 
-        Assert.Empty(seite.FindAll("img"));            // kein Ring - und keinen Kuchen gibt es mehr
+        Assert.Empty(seite.FindAll("img"));
         Assert.Equal(2, seite.FindAll("p.epos-simerg-hinweis").Count);
-    }
-
-    /// <summary>Die zwei KPI-Kacheln des Navigators.</summary>
-    [Fact]
-    public void Zwei_Kacheln_zeigen_Reststrom_und_Restwaerme()
-    {
-        var seite = Zeichnen(Daten());
-        string text = seite.Markup;
-
-        Assert.Contains("Reststrombedarf", text);
-        Assert.Contains("Restwärmebedarf", text);
-        Assert.Contains("30,00", text);
-    }
-
-    /// <summary>
-    /// <b>Anwenderwunsch 08.09.2026 (W11b‑B‑12).</b> Die Kachelreihe folgt
-    /// jetzt den Ringen darüber — links Restwärme (unter dem Wärmering),
-    /// rechts Reststrom (unter dem Stromring); vorher stand Reststrom links.
-    /// </summary>
-    [Fact]
-    public void Die_Kacheln_stehen_in_der_Reihenfolge_der_Ringe()
-    {
-        var seite = Zeichnen(Daten());
-        var kacheln = seite.FindAll("div.epos-kennzahlkachel");
-
-        Assert.Equal(2, kacheln.Count);
-        Assert.Contains("Restwärmebedarf", kacheln[0].TextContent);
-        Assert.Contains("Reststrombedarf", kacheln[1].TextContent);
-    }
-
-    /// <summary>
-    /// <b>W11b‑B‑23 (09.09.2026).</b> Die NAMENSSPALTE des Eigenanteilsrasters
-    /// trug <c>class=""</c> — als einzige Zelle des ganzen Reiterstapels. Die
-    /// Hausregel dazu ist alt (sie steht an <c>Zeilenklasse</c> der betonten
-    /// Zeile): <c>null</c> lässt Blazor das Attribut ganz weg.
-    /// </summary>
-    [Fact]
-    public void Das_Eigenanteilsraster_traegt_kein_leeres_Klassenattribut()
-    {
-        var seite = Zeichnen(Daten());
-
-        Assert.DoesNotContain("<td class=\"\">", seite.Markup);
-        Assert.NotEmpty(seite.FindAll("table.epos-raster td.epos-simerg-zahl"));
-    }
-
-    /// <summary>Das Eigenanteilsraster: Kopfzeile und je Erzeuger eine Zeile.</summary>
-    [Fact]
-    public void Das_Eigenanteilsraster_zeigt_je_Erzeuger_eine_Zeile()
-    {
-        var seite = Zeichnen(Daten());
-
-        Assert.Equal(3, seite.FindAll("table.epos-raster thead th").Count);
-        Assert.Equal(2, seite.FindAll("table.epos-raster tbody tr").Count);
-    }
-
-    /// <summary>
-    /// Die zweite Rolle: im Ergebnisreiter zeigt dieselbe Komponente NUR den
-    /// Navigatorteil — keine Kennzahlengruppen, kein Kuchen.
-    /// </summary>
-    [Fact]
-    public void Die_Navigatorrolle_zeigt_nur_Ringe_Kacheln_und_Raster()
-    {
-        var seite = Zeichnen(Daten(), nurNavigator: true);
-
-        Assert.Equal(2, seite.FindAll("img").Count);
-        Assert.Empty(seite.FindAll("dl.epos-simerg-werte"));
-        Assert.Single(seite.FindAll("table.epos-raster"));
-    }
-
-    /// <summary>
-    /// <b>Befund W11b‑B‑4</b> (Windows-Abnahme V2 vom 07.09.2026): „Simulation
-    /// Übersicht: Die Charts sind optisch zu groß." Alle DREI Bilder dieses
-    /// Reiters sind rund — der Kuchen 960 × 600, die zwei Ringe je 720 × 560 —
-    /// und tragen deshalb die Maßmarke. Sie stehen weiter über beide Spalten
-    /// (W11b‑B‑2 bleibt); begrenzt ist die ANZEIGEBREITE des Bildes, nicht die
-    /// Zeile, in der es steht.
-    /// </summary>
-    [Fact]
-    public void Beide_Ringe_des_Reiters_sind_rund_bemessen()
-    {
-        var seite = Zeichnen(Daten());
-
-        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund").Count);
-        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund img").Count);
-    }
-
-    /// <summary>In der Navigatorrolle bleiben es die zwei Ringe — beide rund.</summary>
-    [Fact]
-    public void Auch_die_Navigatorrolle_bemisst_ihre_Ringe()
-    {
-        var seite = Zeichnen(Daten(), nurNavigator: true);
-
-        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund").Count);
+        Assert.Empty(seite.FindAll("ul.epos-simueb-legende"));
     }
 
     // =====================================================================
-    //  Anwenderrueckmeldung 08.09.2026 — W11b‑B‑15: nach Wärme und Strom
+    //  Die Erzeugertabelle (#222, Punkt 4)
     // =====================================================================
 
     /// <summary>
-    /// <b>Anwenderrückmeldung 08.09.2026 (W11b‑B‑15).</b> „Es sollte nach
-    /// Kategorie Strom und Wärme gruppiert werden." Statt der zwei Balken
-    /// „Energiebedarf" und „Ergebnisse" untereinander stehen zwei Gruppen
-    /// NEBENEINANDER — in derselben Ordnung wie die zwei Ringe darunter.
+    /// <b>Anwenderbefund 11.09.2026:</b> „Zahlenspalte unter der Überschrift ist
+    /// ungünstig." Die erste Spalte trägt den Namen und steht links; jede weitere
+    /// ist eine Zahlenspalte, und ihr Kopf steht RECHTSbündig über ihr. Die
+    /// Einheit steht einmal im Kopf, als zweite Zeile.
     /// </summary>
     [Fact]
-    public void Die_Kennzahlen_stehen_in_den_zwei_Gruppen_Waerme_und_Strom()
+    public void Die_Zahlenkoepfe_stehen_rechts_und_tragen_die_Einheit()
     {
         var seite = Zeichnen(Daten());
-        var koepfe = seite.FindAll("h2.epos-gruppenkopf-titel");
+        var koepfe = seite.FindAll("table.epos-simueb-tabelle")[0].QuerySelectorAll("thead th");
 
-        Assert.Equal(2, koepfe.Count);
-        Assert.Equal("Wärme", koepfe[0].TextContent.Trim());
-        Assert.Equal("Strom", koepfe[1].TextContent.Trim());
+        Assert.Equal(3, koepfe.Length);
+        Assert.Contains("epos-simueb-name", koepfe[0].ClassName ?? "");
+        Assert.Null(koepfe[1].ClassName);                     // eine Zahlenspalte, keine Namensspalte
+        Assert.Equal("MWh/a", koepfe[1].QuerySelector("span.epos-simueb-kopfeinheit")!.TextContent);
 
-        // Die zwei alten Balken gibt es nicht mehr.
-        Assert.DoesNotContain("Energiebedarf", seite.Markup);
-        Assert.DoesNotContain("Ergebnisse", seite.Markup);
+        // Die Einheit steht NICHT in den Zellen.
+        Assert.DoesNotContain("300,00 MWh/a", seite.Markup);
+    }
+
+    /// <summary>Summen- und Restzeile schließen die Tabelle betont ab.</summary>
+    [Fact]
+    public void Summe_und_Rest_schliessen_die_Tabelle_ab()
+    {
+        var seite = Zeichnen(Daten());
+        var waerme = seite.FindAll("table.epos-simueb-tabelle")[0];
+
+        Assert.Single(waerme.QuerySelectorAll("tr.epos-simueb-summe"));
+        Assert.Single(waerme.QuerySelectorAll("tr.epos-simueb-rest"));
+        Assert.Contains("Summe Erzeuger", waerme.QuerySelector("tr.epos-simueb-summe")!.TextContent);
+        Assert.Contains("Restwärmebedarf", waerme.QuerySelector("tr.epos-simueb-rest")!.TextContent);
     }
 
     /// <summary>
-    /// Die zwei Gruppen stehen in EINER Spaltenzeile — nebeneinander, wie die
-    /// zwei Ringe; untereinander wären es wieder zwei Balken.
+    /// Eine Zeile OHNE BEITRAG steht gedimmt da — sie verschwindet nicht von
+    /// selbst, denn eine angelegte Anlage mit 0,00 ist eine Aussage (#190).
     /// </summary>
     [Fact]
-    public void Die_zwei_Gruppen_stehen_nebeneinander()
+    public void Zeilen_ohne_Beitrag_stehen_gedimmt_und_bleiben_zunaechst_stehen()
     {
         var seite = Zeichnen(Daten());
+        var waerme = seite.FindAll("table.epos-simueb-tabelle")[0];
 
-        Assert.Contains(seite.FindAll("div.epos-simerg-spalten"),
-                        z => z.QuerySelectorAll("dl.epos-simerg-werte").Length == 2);
+        Assert.Equal(3, waerme.QuerySelectorAll("tbody tr:not(.epos-simueb-summe):not(.epos-simueb-rest)").Length);
+        Assert.Single(waerme.QuerySelectorAll("tr.epos-simueb-null"));
+        Assert.True(seite.Instance.NullzeilenSichtbar(true));
     }
 
     /// <summary>
-    /// Die Wärmegruppe: erst der BEDARF, dann die Erzeuger in der Reihenfolge
-    /// des Entwurfs (WP, BHKW, Solar, SPK), zuletzt der REST. Das Projekt der
-    /// Probe hat Wärmepumpe und Kessel — BHKW und Solarthermie fehlen nach der
-    /// Präsenzregel.
+    /// Der SCHALTER blendet sie aus und wieder ein; er merkt sich den Stand, und
+    /// er steht nur da, wo es überhaupt eine Nullzeile gibt.
     /// </summary>
     [Fact]
-    public void Die_Waermegruppe_fuehrt_Bedarf_Erzeuger_und_Rest()
+    public void Der_Schalter_blendet_die_Nullzeilen_aus_und_wieder_ein()
     {
         var seite = Zeichnen(Daten());
-        var listen = seite.FindAll("dl.epos-simerg-werte");
+        var schalter = seite.FindAll("button.epos-simueb-schalter");
 
-        Assert.Equal(2, listen.Count);
-        Assert.Equal(
-            new[] { "Wärmebedarf des Nahwärmenetzes:", "Wärmeproduktion WP:",
-                    "Wärmeproduktion der Spitzenkessel:", "Restwärmebedarf:" },
-            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        // Nur die Waermespalte fuehrt eine Zeile ohne Beitrag.
+        Assert.Single(schalter);
+        Assert.Equal("1 Zeilen ohne Beitrag ausblenden", schalter[0].TextContent.Trim());
+
+        schalter[0].Click();
+        Assert.False(seite.Instance.NullzeilenSichtbar(true));
+        Assert.Empty(seite.FindAll("tr.epos-simueb-null"));
+        Assert.Equal("1 Zeilen ohne Beitrag einblenden",
+                     seite.Find("button.epos-simueb-schalter").TextContent.Trim());
+
+        seite.Find("button.epos-simueb-schalter").Click();
+        Assert.True(seite.Instance.NullzeilenSichtbar(true));
+        Assert.Single(seite.FindAll("tr.epos-simueb-null"));
     }
 
     /// <summary>
-    /// #190 (Abnahmeliste „PV mit Heizkessel"): Steht der Kessel des Projekts auf
-    /// keinem Platz der Simulation, bekommt seine Zeile den Zusatz „(nicht in der
-    /// Kaskade)" — die kürzeste Antwort auf die 0,00 daneben. Die Zeile selbst bleibt
-    /// stehen (Präsenzregel Punkt 4), und alle anderen bleiben unberührt.
+    /// Ohne Stromerzeuger steht statt der Zeilen der Satz, dass die Tabelle mit
+    /// dem ersten Erzeuger erscheint — die Restzeile bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Stromerzeuger_traegt_die_Stromtabelle_ihren_Leersatz()
+    {
+        var strom = Zeichnen(Daten(stromerzeuger: false))
+            .FindAll("table.epos-simueb-tabelle")[1];
+
+        Assert.Single(strom.QuerySelectorAll("td.epos-simueb-leer"));
+        Assert.Contains("Keine Stromerzeuger im Projekt", strom.TextContent);
+        Assert.Single(strom.QuerySelectorAll("tr.epos-simueb-rest"));
+    }
+
+    /// <summary>
+    /// #190: Steht ein Erzeuger des Projekts auf keinem Platz der Simulation,
+    /// trägt seine Zeile den Zusatz „(nicht in der Kaskade)".
     /// </summary>
     [Fact]
     public void Ein_Erzeuger_ohne_Kaskadenplatz_traegt_den_Zusatz()
     {
         UebersichtDaten daten = Daten();
-        daten.OhneKaskadenplatz = new[] { "Heizkessel" };
+        daten.WaermeTabelle.Zeilen = new[]
+        {
+            new Erzeugerzeile("Heizkessel", new[] { "0,00", "0,00" }, OhneBeitrag: true,
+                              Zusatz: " (nicht in der Kaskade)")
+        };
 
-        var listen = Zeichnen(daten).FindAll("dl.epos-simerg-werte");
+        var seite = Zeichnen(daten);
 
-        Assert.Equal(
-            new[] { "Wärmebedarf des Nahwärmenetzes:", "Wärmeproduktion WP:",
-                    "Wärmeproduktion der Spitzenkessel: (nicht in der Kaskade)",
-                    "Restwärmebedarf:" },
-            listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
-
-        // Die WP steht auf einem Platz - ihre Zeile bleibt, wie sie war.
-        Assert.DoesNotContain("Wärmeproduktion WP: (", listen[0].TextContent);
+        Assert.Contains("nicht in der Kaskade",
+                        seite.Find("span.epos-simueb-zusatz").TextContent);
     }
 
-    /// <summary>
-    /// Die Gegenprobe: Ohne Lücke trägt keine Zeile den Zusatz — sonst bestünde eine
-    /// Anzeige, die ihn IMMER anhängt, den Fall darüber ebenso.
-    /// </summary>
+    /// <summary>Die Gegenprobe: Ohne Lücke trägt keine Zeile den Zusatz.</summary>
     [Fact]
     public void Ohne_Luecke_traegt_keine_Zeile_den_Zusatz()
     {
         Assert.DoesNotContain("nicht in der Kaskade", Zeichnen(Daten()).Markup);
     }
 
-    /// <summary>
-    /// Die Stromgruppe: BEDARF, die drei Verbraucher, die Erzeuger, REST. Der
-    /// Stromverbrauch SPK stand vorher HINTER den Erzeugerzeilen; er gehört zu
-    /// den Verbrauchern, aus denen sich die Restzahl ergibt.
-    /// </summary>
-    [Fact]
-    public void Die_Stromgruppe_fuehrt_Bedarf_Verbraucher_Erzeuger_und_Rest()
-    {
-        var seite = Zeichnen(Daten());
-        var listen = seite.FindAll("dl.epos-simerg-werte");
-
-        Assert.Equal(
-            new[] { "Strombedarf:", "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
-                    "Stromverbrauch SPK:", "Reststrombedarf:" },
-            listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
-    }
-
-    /// <summary>
-    /// Der Rest ist keine weitere Zeile der Aufstellung, sondern ihr Ergebnis:
-    /// Er trägt in allen drei Zellen die Abschlusskennzeichnung (fett, Linie
-    /// darüber). Keine andere Zeile trägt sie — und keine gewöhnliche Zeile
-    /// bekommt ein leeres Klassenattribut (<c>Zeilenklasse</c> gibt <c>null</c>).
-    /// </summary>
-    [Fact]
-    public void Die_Restzeile_schliesst_jede_Gruppe_betont_ab()
-    {
-        var seite = Zeichnen(Daten());
-        var betont = seite.FindAll("dt.epos-simerg-abschluss");
-
-        Assert.Equal(2, betont.Count);
-        Assert.Equal("Restwärmebedarf:", betont[0].TextContent.Trim());
-        Assert.Equal("Reststrombedarf:", betont[1].TextContent.Trim());
-
-        Assert.Equal(4, seite.FindAll("dd.epos-simerg-abschluss").Count);   // Wert und Einheit je Zeile
-        Assert.Equal(9, seite.FindAll("dl.epos-simerg-werte dt").Count);    // 4 Wärme + 5 Strom
-        Assert.Equal(2, seite.FindAll("dl.epos-simerg-werte dt[class]").Count);
-    }
+    // =====================================================================
+    //  Der Fuß
+    // =====================================================================
 
     /// <summary>Kein Rueckruf = kein Knopf (Hausregel seit W2).</summary>
     [Fact]
-    public void Ohne_Rueckruf_bleibt_der_Bedarfsknopf_weg()
+    public void Ohne_Rueckruf_bleiben_die_Fussknoepfe_weg()
     {
         var seite = Zeichnen(Daten());
         Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
     }
 
+    /// <summary>
+    /// Jede Spalte bekommt ihren eigenen Weg in den Bedarf — die Wärmespalte
+    /// „Wärmebedarf Übersicht…", die Stromspalte ihr Gegenstück (#222).
+    /// </summary>
     [Fact]
-    public void Der_Bedarfsknopf_meldet_seinen_Klick()
+    public void Jede_Spalte_meldet_ihren_eigenen_Bedarfsknopf()
     {
-        int gerufen = 0;
-        var seite = Zeichnen(Daten(), details: () => gerufen++);
+        int waerme = 0, strom = 0;
+        var seite = Zeichnen(Daten(), details: () => waerme++, strom: () => strom++);
+        var knoepfe = seite.FindAll("button.epos-simerg-knopf");
 
-        seite.Find("button.epos-simerg-knopf").Click();
-        Assert.Equal(1, gerufen);
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Equal("Wärmebedarf Übersicht...", knoepfe[0].TextContent.Trim());
+        Assert.Equal("Strombedarf Übersicht...", knoepfe[1].TextContent.Trim());
+
+        knoepfe[0].Click();
+        seite.FindAll("button.epos-simerg-knopf")[1].Click();
+
+        Assert.Equal(1, waerme);
+        Assert.Equal(1, strom);
+    }
+
+    /// <summary>Nur der Wärmerückruf: nur ein Knopf, und zwar seiner.</summary>
+    [Fact]
+    public void Ohne_Stromrueckruf_bleibt_nur_der_Waermeknopf()
+    {
+        var seite = Zeichnen(Daten(), details: () => { });
+
+        Assert.Single(seite.FindAll("button.epos-simerg-knopf"));
+        Assert.Equal("Wärmebedarf Übersicht...",
+                     seite.Find("button.epos-simerg-knopf").TextContent.Trim());
     }
 }

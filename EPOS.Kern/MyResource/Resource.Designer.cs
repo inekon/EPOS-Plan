@@ -41411,6 +41411,186 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade: {0} ähnelt.
+        /// </summary>
+        public static string SIMUEB_BADGE_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMUEB_BADGE_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Stromerzeuger im Projekt ähnelt.
+        /// </summary>
+        public static string SIMUEB_BADGE_OHNE_STROMERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_BADGE_OHNE_STROMERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a ähnelt.
+        /// </summary>
+        public static string SIMUEB_EIGENVERBRAUCH {
+            get {
+                return ResourceManager.GetString("SIMUEB_EIGENVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Stromerzeuger in der Kaskade. Photovoltaik, BHKW oder Speicher unter {0} aufnehmen, dann zeigt der Ring die Deckung je Erzeuger. ähnelt.
+        /// </summary>
+        public static string SIMUEB_HINWEIS_OHNE_STROMERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_HINWEIS_OHNE_STROMERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung durch Erzeuger ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_DECKUNG {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug (ungedeckt) ähnelt.
+        /// </summary>
+        public static string SIMUEB_LEGENDE_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("SIMUEB_LEGENDE_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest (ungedeckt) ähnelt.
+        /// </summary>
+        public static string SIMUEB_LEGENDE_REST {
+            get {
+                return ResourceManager.GetString("SIMUEB_LEGENDE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ① Konfiguration ähnelt.
+        /// </summary>
+        public static string SIMUEB_LINK_KONFIGURATION {
+            get {
+                return ResourceManager.GetString("SIMUEB_LINK_KONFIGURATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gedeckt ähnelt.
+        /// </summary>
+        public static string SIMUEB_RING_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMUEB_RING_GEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug 100 % ähnelt.
+        /// </summary>
+        public static string SIMUEB_RING_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("SIMUEB_RING_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeilen ohne Beitrag ausblenden ähnelt.
+        /// </summary>
+        public static string SIMUEB_SCHALTER_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("SIMUEB_SCHALTER_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zeilen ohne Beitrag einblenden ähnelt.
+        /// </summary>
+        public static string SIMUEB_SCHALTER_EINBLENDEN {
+            get {
+                return ResourceManager.GetString("SIMUEB_SCHALTER_EINBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil ähnelt.
+        /// </summary>
+        public static string SIMUEB_SPALTE_ANTEIL {
+            get {
+                return ResourceManager.GetString("SIMUEB_SPALTE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger ähnelt.
+        /// </summary>
+        public static string SIMUEB_SPALTE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_SPALTE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugung ähnelt.
+        /// </summary>
+        public static string SIMUEB_SPALTE_ERZEUGUNG {
+            get {
+                return ResourceManager.GetString("SIMUEB_SPALTE_ERZEUGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Stromerzeuger im Projekt — die Tabelle erscheint mit dem ersten Erzeuger. ähnelt.
+        /// </summary>
+        public static string SIMUEB_TABELLE_OHNE_STROMERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_TABELLE_OHNE_STROMERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wärmeerzeuger im Projekt — die Tabelle erscheint mit dem ersten Erzeuger. ähnelt.
+        /// </summary>
+        public static string SIMUEB_TABELLE_OHNE_WAERMEERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMUEB_TABELLE_OHNE_WAERMEERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Erzeuger ähnelt.
+        /// </summary>
+        public static string SIMUEB_ZEILE_SUMME {
+            get {
+                return ResourceManager.GetString("SIMUEB_ZEILE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung ist zulässig und wird gespeichert, gilt aber als unplausibel: ähnelt.
         /// </summary>
         public static string SIMWARN_DIALOG_KOPF {
@@ -41982,6 +42162,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_BTN_SENKE_RUNTER {
             get {
                 return ResourceManager.GetString("SIM_BTN_SENKE_RUNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf Übersicht... ähnelt.
+        /// </summary>
+        public static string SIM_BTN_STROMBEDARF_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("SIM_BTN_STROMBEDARF_UEBERSICHT", resourceCulture);
             }
         }
         
@@ -42997,6 +43186,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die anzeigen ähnelt.
+        /// </summary>
+        public static string SIM_LAUFMELDUNG_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("SIM_LAUFMELDUNG_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis zum Lauf (anklicken) ähnelt.
         /// </summary>
         public static string SIM_LAUFMELDUNG_EINER {
@@ -43926,38 +44124,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung {0} [MWh/a] ähnelt.
-        /// </summary>
-        public static string SIM_SPALTE_DECKUNG_KANAL {
-            get {
-                return ResourceManager.GetString("SIM_SPALTE_DECKUNG_KANAL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
         /// </summary>
         public static string SIM_SPALTE_EINSPEISEHOEHE {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_EINSPEISEHOEHE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Erzeuger ähnelt.
-        /// </summary>
-        public static string SIM_SPALTE_ENERGIE_ERZEUGER {
-            get {
-                return ResourceManager.GetString("SIM_SPALTE_ENERGIE_ERZEUGER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis [MWh/a] ähnelt.
-        /// </summary>
-        public static string SIM_SPALTE_ERGEBNIS_MWH {
-            get {
-                return ResourceManager.GetString("SIM_SPALTE_ERGEBNIS_MWH", resourceCulture);
             }
         }
         

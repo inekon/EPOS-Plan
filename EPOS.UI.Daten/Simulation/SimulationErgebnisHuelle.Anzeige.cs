@@ -84,8 +84,16 @@ namespace WindowsFormsApplication1
                 // die Bilanzgröße des Laufs.
                 RestwaermeMwh = k.RestwaermeMwh,
 
-                EigenanteilSpalten = EigenanteilSpalten(),
-                Eigenanteil = Eigenanteil(k, p),
+                // #222: Bedarf, Legende und Tabelle je Spalte des Dashboards. Die
+                // Legende kommt aus DERSELBEN Segmentliste wie das Ringbild.
+                WaermebedarfMwh = wbGesamt,
+                StrombedarfMwh = sbGesamt,
+                WaermeLegende = Legende(SegmenteWaerme(p, k)),
+                StromLegende = Legende(SegmenteStrom(p, k)),
+                WaermeTabelle = WaermeTabelle(k, p, tool),
+                StromTabelle = StromTabelle(k, p),
+                Kaskade = Kaskadentext(tool),
+                StromerzeugerVorhanden = p.Photovoltaik || p.BHKW || p.Stromspeicher,
 
                 // #190: Warum steht hier 0,00, obwohl das Projekt den Kessel fuehrt?
                 // Weil er auf keinem Platz steht. Die Antwort kommt aus DERSELBEN
@@ -94,6 +102,220 @@ namespace WindowsFormsApplication1
             };
 
             return d;
+        }
+
+        // =================================================================
+        // Das Dashboard der Übersicht (#222, SIM-E-3)
+        // =================================================================
+
+        /// <summary>
+        /// Die HTML-Legende zu einer Ringsegmentliste (#222): Name, Menge, Anteil an
+        /// der Summe aller Segmente und die Segmentfarbe als CSS-Wert.
+        ///
+        /// <para>Segmente ohne Wert entfallen — genau wie im Bild
+        /// (<c>ChartRenderer.Ring</c> zeichnet nur <c>Wert &gt; 0</c>); sonst nennte die
+        /// Legende ein Segment, das keiner sieht. Das LETZTE Segment ist der ungedeckte
+        /// Rest und wird als solcher markiert.</para>
+        /// </summary>
+        private static List<Ringanteil> Legende(List<ChartRenderer.Ringsegment> segmente)
+        {
+            double summe = 0;
+            foreach (ChartRenderer.Ringsegment s in segmente)
+                if (s.Wert > 0) summe += s.Wert;
+
+            var legende = new List<Ringanteil>();
+            for (int i = 0; i < segmente.Count; i++)
+            {
+                ChartRenderer.Ringsegment s = segmente[i];
+                if (s.Wert <= 0) continue;
+                legende.Add(new Ringanteil(s.Name, s.Wert,
+                                           summe > 0 ? s.Wert * 100.0 / summe : 0.0,
+                                           CssFarbe(s.Farbe),
+                                           i == segmente.Count - 1));
+            }
+            return legende;
+        }
+
+        /// <summary>Eine Segmentfarbe als CSS-Wert — dieselbe Farbe wie im Bild.</summary>
+        private static string CssFarbe(SKColor f)
+        {
+            return "#" + f.Red.ToString("X2", CultureInfo.InvariantCulture)
+                       + f.Green.ToString("X2", CultureInfo.InvariantCulture)
+                       + f.Blue.ToString("X2", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Die vier WÄRMEPLÄTZE des Laufs als Text, z. B. „Wärmepumpe → Heizkessel"
+        /// (#222). Leere Plätze entfallen; ohne jeden Platz bleibt der Text leer, und
+        /// die Spalte trägt dann kein Abzeichen.
+        /// </summary>
+        private static string Kaskadentext(string[] tool)
+        {
+            if (tool == null) return "";
+            var namen = new List<string>();
+            for (int i = 0; i < 4 && i < tool.Length; i++)
+                if (!string.IsNullOrEmpty(tool[i]))
+                    namen.Add(ErzeugerKatalog.Anzeige(tool[i].Trim()));
+            return string.Join(" → ", namen);
+        }
+
+        /// <summary>
+        /// Die ERZEUGERTABELLE der Wärmespalte (#222): dieselben Zahlen wie das
+        /// Eigenanteilsraster des Vorläufers — Deckung je Erzeuger und Bedarfskanal —,
+        /// nur mit getrennten Köpfen, Summen- und Restzeile.
+        ///
+        /// <para>Die Spaltenköpfe tragen Beschriftung und Einheit GETRENNT: Der Kopf
+        /// steht rechtsbündig über seiner Zahl, die Einheit einmal als kleine zweite
+        /// Zeile statt in jeder Zelle.</para>
+        /// </summary>
+        private Erzeugertabelle WaermeTabelle(SimulationErgebnisCtrl.UebersichtKennzahlen k,
+                                              ErgebnisPraesenz p, string[] tool)
+        {
+            var spalten = new List<Tabellenkopf>
+            {
+                new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGER),
+                new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGUNG, MWH_A)
+            };
+            foreach (string kanal in KANALNAMEN) spalten.Add(new Tabellenkopf(kanal, MWH_A));
+
+            HashSet<string> ohnePlatz = OhneKaskadenplatz(tool);
+            var zeilen = new List<Erzeugerzeile>();
+            var summe = new double[1 + Kanal.ANZAHL];
+
+            void Zeile(string name, string dbWert, double produktionMwh, double[] kanalKwh)
+            {
+                double[] kanalMwh = SimulationErgebnisCtrl.KanalMwh(kanalKwh);
+                var werte = new double[1 + Kanal.ANZAHL];
+                werte[0] = produktionMwh;
+                for (int i = 0; i < Kanal.ANZAHL; i++) werte[1 + i] = kanalMwh[i];
+                for (int i = 0; i < werte.Length; i++) summe[i] += werte[i];
+
+                zeilen.Add(new Erzeugerzeile(name, Zahlen(werte), OhneBeitrag(werte),
+                                             dbWert != null && ohnePlatz.Contains(dbWert)
+                                                 ? MyResource.Resource.SIMERG_ZUSATZ_NICHT_IN_KASKADE
+                                                 : ""));
+            }
+
+            if (p.Waermepumpe)
+                Zeile(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                      DbWerte.ERZEUGER_WAERMEPUMPE, k.WaermeWpMwh,
+                      SimulationRunner.Summiere(sim.simulation_wp.Direktdeckung_Kanal,
+                                                sim.simulation_wp.Speicherentladung_Kanal));
+            if (p.Heizstab)
+                Zeile(MyResource.Resource.CHART_SEGMENT_HEIZSTAB, null, k.WaermeHeizstabMwh,
+                      SimulationRunner.Summiere(sim.simulation_wp.Heizstab_Kanal));
+            if (p.Solarthermie)
+                Zeile(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE,
+                      DbWerte.ERZEUGER_SOLARTHERMIE, k.WaermeSolarMwh,
+                      SimulationRunner.Summiere(sim.simulation_solarthermie.Direktdeckung_Kanal,
+                                                sim.simulation_solarthermie.Speicherentladung_Kanal));
+            if (p.Heizkessel)
+                Zeile(MyResource.Resource.SIM_TABELLE_HEIZKESSEL,
+                      DbWerte.ERZEUGER_HEIZKESSEL, k.WaermeKesselMwh,
+                      SimulationRunner.Summiere(sim.simulation_spk.Direktdeckung_Kanal,
+                                                sim.simulation_spk.Speicherentladung_Kanal));
+            if (p.BHKW)
+                Zeile(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
+                      DbWerte.ERZEUGER_BHKW, k.WaermeBhkwMwh,
+                      SimulationRunner.Summiere(sim.simulation_bhkw.Direktdeckung_Kanal,
+                                                sim.simulation_bhkw.Speicherentladung_Kanal));
+
+            var rest = new double[1 + Kanal.ANZAHL];
+            rest[0] = k.RestwaermebedarfMwh;
+            for (int i = 0; i < Kanal.ANZAHL; i++) rest[1 + i] = double.NaN;   // nicht aufgeteilt
+
+            return new Erzeugertabelle
+            {
+                Spalten = spalten,
+                Zeilen = zeilen,
+                Summe = zeilen.Count > 0
+                    ? new Erzeugerzeile(MyResource.Resource.SIMUEB_ZEILE_SUMME, Zahlen(summe))
+                    : null,
+                Rest = new Erzeugerzeile(MyResource.Resource.SIM_KACHEL_RESTWAERMEBEDARF, Zahlen(rest)),
+                LeerText = zeilen.Count == 0 ? MyResource.Resource.SIMUEB_TABELLE_OHNE_WAERMEERZEUGER : ""
+            };
+        }
+
+        /// <summary>
+        /// Die ERZEUGERTABELLE der Stromspalte (#222): je Stromerzeuger die Erzeugung
+        /// und ihr Anteil am Strombedarf, darunter der Reststrombedarf.
+        ///
+        /// <para><b>Abweichung vom Mockup, benannt.</b> Der Entwurf nennt vier Spalten
+        /// (Erzeugung, Eigenverbrauch, Einspeisung, Anteil). Eigenverbrauch und
+        /// Einspeisung JE ERZEUGER führt kein DTO des Laufs — der Lauf bucht sie als
+        /// Projektsummen. Sie hier zu rechnen hieße, in der Anzeige einen neuen
+        /// Rechenwert zu erfinden; die Tabelle führt deshalb die zwei Spalten, die es
+        /// gibt (Auftrag #222: „nur wenn die DTOs sie liefern, sonst die vorhandenen
+        /// Spalten").</para>
+        /// </summary>
+        private Erzeugertabelle StromTabelle(SimulationErgebnisCtrl.UebersichtKennzahlen k,
+                                             ErgebnisPraesenz p)
+        {
+            double bedarf = k.StrombedarfMitEigenverbrauchMwh;
+
+            var zeilen = new List<Erzeugerzeile>();
+            double summe = 0;
+
+            void Zeile(string name, double mwh)
+            {
+                summe += mwh;
+                zeilen.Add(new Erzeugerzeile(name, Stromzahlen(mwh, bedarf), OhneBeitrag(new[] { mwh })));
+            }
+
+            if (p.Photovoltaik) Zeile(MyResource.Resource.SIM_PHOTOVOLTAIK, k.PvStromproduktionMwh);
+            if (p.BHKW) Zeile(MyResource.Resource.SIM_ERZEUGERNAME_BHKW, k.BhkwStromproduktionMwh);
+            if (p.Stromspeicher && sim.Speicherergebnis != null)
+                Zeile(MyResource.Resource.SIM_STROMSPEICHER, k.StromspeicherEntladungMwh);
+
+            return new Erzeugertabelle
+            {
+                Spalten = new List<Tabellenkopf>
+                {
+                    new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGER),
+                    new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ERZEUGUNG, MWH_A),
+                    new Tabellenkopf(MyResource.Resource.SIMUEB_SPALTE_ANTEIL, "%")
+                },
+                Zeilen = zeilen,
+                Summe = zeilen.Count > 1
+                    ? new Erzeugerzeile(MyResource.Resource.SIMUEB_ZEILE_SUMME, Stromzahlen(summe, bedarf))
+                    : null,
+                Rest = new Erzeugerzeile(MyResource.Resource.SIM_KACHEL_RESTSTROMBEDARF,
+                                         Stromzahlen(k.ReststromMwh, bedarf)),
+                LeerText = zeilen.Count == 0 ? MyResource.Resource.SIMUEB_TABELLE_OHNE_STROMERZEUGER : ""
+            };
+        }
+
+        private const string MWH_A = "MWh/a";
+
+        /// <summary>Die Zellen einer Zeile — <c>NaN</c> wird zum Gedankenstrich.</summary>
+        private static string[] Zahlen(double[] werte)
+        {
+            var zellen = new string[werte.Length];
+            for (int i = 0; i < werte.Length; i++)
+                zellen[i] = double.IsNaN(werte[i]) ? "—"
+                                                   : werte[i].ToString("N2", CultureInfo.CurrentCulture);
+            return zellen;
+        }
+
+        /// <summary>Menge und Anteil am Strombedarf.</summary>
+        private static string[] Stromzahlen(double mwh, double bedarf)
+        {
+            return new[]
+            {
+                mwh.ToString("N2", CultureInfo.CurrentCulture),
+                (bedarf > 0 ? mwh * 100.0 / bedarf : 0.0).ToString("N1", CultureInfo.CurrentCulture)
+            };
+        }
+
+        /// <summary>
+        /// Trägt die Zeile NICHTS bei? Dann steht sie gedimmt und lässt sich ausblenden
+        /// — sie verschwindet aber nicht von selbst (Präsenzregel Punkt 4, #190).
+        /// </summary>
+        private static bool OhneBeitrag(double[] werte)
+        {
+            foreach (double w in werte)
+                if (!double.IsNaN(w) && w > 0) return false;
+            return true;
         }
 
         /// <summary>
@@ -124,84 +346,6 @@ namespace WindowsFormsApplication1
         private SimulationErgebnisCtrl.UebersichtKennzahlen Kennzahlen()
         {
             return SimulationErgebnisCtrl.Uebersicht(sim, _waermebedarf, _strombedarf);
-        }
-
-        private static string[] EigenanteilSpalten()
-        {
-            var spalten = new List<string>
-            {
-                MyResource.Resource.SIM_SPALTE_ENERGIE_ERZEUGER,
-                MyResource.Resource.SIM_SPALTE_ERGEBNIS_MWH
-            };
-            foreach (string kanal in KANALNAMEN)
-                spalten.Add(string.Format(MyResource.Resource.SIM_SPALTE_DECKUNG_KANAL, kanal));
-            return spalten.ToArray();
-        }
-
-        /// <summary>
-        /// Der Eigenanteil je Erzeuger und Bedarfskanal — wörtlich aus
-        /// <c>NavigatorUebersicht.FillTableWithData</c> :122-150, samt der eigenen Zeile
-        /// für den Heizstab (Begründung dort :132-136: In der Ergebnispersistenz gehört
-        /// er zur Wärmepumpe, auf dem Bildschirm bekommt er seine eigene Zeile — die
-        /// Summe der beiden ist der gespeicherte WP-Eigenanteil).
-        /// </summary>
-        private List<Rasterzeile> Eigenanteil(SimulationErgebnisCtrl.UebersichtKennzahlen k,
-                                              ErgebnisPraesenz p)
-        {
-            var zeilen = new List<Rasterzeile>();
-
-            if (p.Waermepumpe)
-                zeilen.Add(Eigenanteilzeile(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
-                    k.WaermeWpMwh,
-                    SimulationRunner.Summiere(sim.simulation_wp.Direktdeckung_Kanal,
-                                              sim.simulation_wp.Speicherentladung_Kanal)));
-
-            if (p.Heizstab)
-                zeilen.Add(Eigenanteilzeile(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                    k.WaermeHeizstabMwh,
-                    SimulationRunner.Summiere(sim.simulation_wp.Heizstab_Kanal)));
-
-            if (p.Solarthermie)
-                zeilen.Add(Eigenanteilzeile(MyResource.Resource.SIM_SOLARTHERMIE_ANLAGE,
-                    k.WaermeSolarMwh,
-                    SimulationRunner.Summiere(sim.simulation_solarthermie.Direktdeckung_Kanal,
-                                              sim.simulation_solarthermie.Speicherentladung_Kanal)));
-
-            if (p.Heizkessel)
-                zeilen.Add(Eigenanteilzeile(MyResource.Resource.SIM_TABELLE_HEIZKESSEL,
-                    k.WaermeKesselMwh,
-                    SimulationRunner.Summiere(sim.simulation_spk.Direktdeckung_Kanal,
-                                              sim.simulation_spk.Speicherentladung_Kanal)));
-
-            if (p.BHKW)
-                zeilen.Add(Eigenanteilzeile(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                    k.WaermeBhkwMwh,
-                    SimulationRunner.Summiere(sim.simulation_bhkw.Direktdeckung_Kanal,
-                                              sim.simulation_bhkw.Speicherentladung_Kanal)));
-
-            return zeilen;
-        }
-
-        /// <summary>
-        /// Eine Ergebniszeile: Erzeuger, Produktion [MWh/a] und der Eigenanteil je Kanal
-        /// (Paket E1). Der Kanalvektor kommt in kWh aus der Engine-Buchführung; die
-        /// Umrechnung auf MWh macht seit W8‑O‑5c der Kern
-        /// (<see cref="SimulationErgebnisCtrl.KanalMwh"/>) und nicht mehr diese Zeile —
-        /// wörtlich <c>NavigatorUebersicht.Zeile</c> :159-168.
-        /// </summary>
-        private static Rasterzeile Eigenanteilzeile(string name, double produktionMwh,
-                                                    double[] eigenanteilKanalKwh)
-        {
-            var zellen = new List<string>
-            {
-                name,
-                produktionMwh.ToString("F2", CultureInfo.CurrentCulture)
-            };
-            double[] kanalMwh = SimulationErgebnisCtrl.KanalMwh(eigenanteilKanalKwh);
-            for (int k = 0; k < Kanal.ANZAHL; k++)
-                zellen.Add(kanalMwh[k].ToString("F2", CultureInfo.CurrentCulture));
-
-            return new Rasterzeile(zellen);
         }
 
         // =================================================================

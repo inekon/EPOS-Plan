@@ -215,30 +215,41 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         {
             p.Add(x => x.Autarkie, a);
             p.Add(x => x.Bild, Bild);
-            p.Add(x => x.UebersichtInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>ueb</i>")));
             p.Add(x => x.WaermegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>wg</i>")));
             p.Add(x => x.StromgangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>sg</i>")));
             if (kapazitaet is not null)
                 p.Add(x => x.KapazitaetGeaendert, EventCallback.Factory.Create<double>(this, kapazitaet));
         });
 
-    /// <summary>Aus den vier Navigationsknoepfen wird ein innerer Reiter.</summary>
+    /// <summary>
+    /// Aus den vier Navigationsknoepfen wird ein innerer Reiter — seit #222 mit
+    /// DREI Blaettern.
+    ///
+    /// <para><b>Das Blatt „Uebersicht" ist gefallen</b> (Anwenderentscheid
+    /// 11.09.2026, Punkt a: „eine Uebersicht"). Es zeigte dieselben Zahlen wie der
+    /// gleichnamige HAUPTreiter, der seit #216 ohnehin das erste Blatt der Seite
+    /// ist — zwei Ringe, zwei Rest-Kacheln und das Eigenanteilsraster, alles
+    /// doppelt. Das erste Blatt dieses Reiters ist seither die AUTARKIE.</para>
+    /// </summary>
     [Fact]
-    public void Der_Ergebnisreiter_traegt_vier_Blaetter()
+    public void Der_Ergebnisreiter_traegt_drei_Blaetter()
     {
         var seite = ErgebnisZeichnen(Autarkie());
-        Assert.Equal(4, seite.FindAll("button[role='tab']").Count);
-        Assert.Equal("UEBERSICHT", seite.Instance.AktivesBlatt);
+        Assert.Equal(3, seite.FindAll("button[role='tab']").Count);
+        Assert.Equal("AUTARKIE", seite.Instance.AktivesBlatt);
+        Assert.DoesNotContain("reiter-UEBERSICHT", seite.Markup);
     }
 
     [Fact]
-    public void Die_drei_Fremdinhalte_erscheinen_in_ihrem_Blatt()
+    public void Die_zwei_Fremdinhalte_erscheinen_in_ihrem_Blatt()
     {
         var seite = ErgebnisZeichnen(Autarkie());
-        Assert.Contains("<i>ueb</i>", seite.Markup);
 
         seite.Find("button[role='tab'][id='reiter-WAERMEGANG']").Click();
         Assert.Contains("<i>wg</i>", seite.Markup);
+
+        seite.Find("button[role='tab'][id='reiter-STROMGANG']").Click();
+        Assert.Contains("<i>sg</i>", seite.Markup);
     }
 
     /// <summary>Kacheln und Balken der Autarkie-Analyse.</summary>

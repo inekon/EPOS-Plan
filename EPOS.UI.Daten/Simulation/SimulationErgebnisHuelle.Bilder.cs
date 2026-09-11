@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Seiten.Simulation;
@@ -71,7 +70,20 @@ namespace WindowsFormsApplication1
         private static readonly SKColor R_PV = SKColor.Parse("#2ECC71");
         private static readonly SKColor R_BHKW_STROM = SKColor.Parse("#E67E22");
         private static readonly SKColor R_SPEICHER = SKColor.Parse("#9B59B6");
-        private static readonly SKColor R_RESTSTROM = SKColor.Parse("#F1C40F");
+
+        /// <summary>
+        /// Der UNGEDECKTE REST — seit #222 in BEIDEN Ringen dasselbe Grau
+        /// (Anwenderentscheid 11.09.2026 „Empfehlung", Ringvariante A).
+        ///
+        /// <para>Vorher war er im Wärmering Blau (<c>#3498DB</c>) und im Stromring Gelb
+        /// (<c>#F1C40F</c>) — zwei kräftige Farben für dieselbe Aussage „hier fehlt
+        /// etwas", und im Stromring ohne Erzeuger sah ein voller gelber Kreis aus wie
+        /// eine Leistung. Grau ist die Abwesenheit; das Bild sagt damit dasselbe wie
+        /// die Legende daneben. Der Wert ist derselbe wie das Stilblatt-Token
+        /// <c>--epos-ring-rest</c>, damit das Legendenkästchen die Segmentfarbe
+        /// trifft.</para>
+        /// </summary>
+        private static readonly SKColor R_REST_GRAU = SKColor.Parse("#D9DEE5");
 
         // =================================================================
         // Ein Bild
@@ -274,37 +286,21 @@ namespace WindowsFormsApplication1
         /// und Farben gemeinsam gefiltert (<c>NavigatorUebersicht</c> :304-333).
         /// </summary>
         /// <summary>
-        /// W11b‑B‑11 (Windows-Abnahme 08.09.2026, „Zahlen fehlen im Diagramm — Prozent und
-        /// absolut"): Die Legende der zwei Ringe nennt je Segment den Wert in MWh und seinen
-        /// Anteil an der Summe aller Segmente — die Zahlen, die bis dahin nur der Kuchen der
-        /// Wärmebedarfsdeckung nannte (der seither entfällt, er zeigte dieselbe Deckung wie
-        /// der Ring). Segmente ohne Wert behalten ihren Namen; der Renderer lässt
-        /// Nullsegmente ohnehin aus.
+        /// Die Segmente des WÄRMERINGS — EINE Liste für das Bild UND für die Legende
+        /// daneben (#222).
+        ///
+        /// <para><b>W11b‑B‑11 ist damit anders erfüllt.</b> Bis #222 hängte
+        /// <c>MitZahlen</c> Menge und Prozent an den Segmentnamen, damit sie in der
+        /// gezeichneten Legende standen. Die Legende steht jetzt als HTML neben dem
+        /// Bild und trägt dieselben zwei Zahlen in eigenen Spalten — kopierbar,
+        /// mitwachsend und nicht abschneidbar. Der Name bleibt deshalb ein Name.</para>
+        ///
+        /// <para>Der ungedeckte Rest ist IMMER das letzte Segment (:325-326) — auch
+        /// mit dem Wert 0; der Renderer lässt Nullsegmente ohnehin aus.</para>
         /// </summary>
-        private static List<ChartRenderer.Ringsegment> MitZahlen(List<ChartRenderer.Ringsegment> segmente)
+        private List<ChartRenderer.Ringsegment> SegmenteWaerme(
+            ErgebnisPraesenz p, SimulationErgebnisCtrl.UebersichtKennzahlen k)
         {
-            double summe = 0;
-            foreach (ChartRenderer.Ringsegment s in segmente) if (s.Wert > 0) summe += s.Wert;
-            var mit = new List<ChartRenderer.Ringsegment>(segmente.Count);
-            foreach (ChartRenderer.Ringsegment s in segmente)
-                mit.Add(new ChartRenderer.Ringsegment(Ringtext(s.Name, s.Wert, summe), s.Wert, s.Farbe));
-            return mit;
-        }
-
-        private static string Ringtext(string name, double wert, double summe)
-        {
-            if (wert <= 0) return name;
-            CultureInfo k = CultureInfo.CurrentCulture;
-            string prozent = summe > 0 ? (wert * 100.0 / summe).ToString("N1", k) + " %" : "";
-            return name + "  " + wert.ToString("N2", k) + " MWh" + (prozent.Length > 0 ? "  (" + prozent + ")" : "");
-        }
-
-        private byte[] BildRingWaerme()
-        {
-            ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
-            var k = Kennzahlen();
-            double wbGesamt = _waermebedarf.Waermebedarf_Gesamt;
-
             var segmente = new List<ChartRenderer.Ringsegment>();
             if (p.Waermepumpe)
                 segmente.Add(new ChartRenderer.Ringsegment(
@@ -322,28 +318,16 @@ namespace WindowsFormsApplication1
                 segmente.Add(new ChartRenderer.Ringsegment(
                     MyResource.Resource.SIM_ERZEUGERNAME_BHKW, k.WaermeBhkwMwh, R_BHKW));
 
-            // Der Rest ist IMMER dabei (:325-326).
             segmente.Add(new ChartRenderer.Ringsegment(
-                MyResource.Resource.CHART_SEGMENT_REST, k.RestwaermebedarfMwh, R_REST));
+                MyResource.Resource.SIMUEB_LEGENDE_REST, k.RestwaermebedarfMwh, R_REST_GRAU));
 
-            double mitte = wbGesamt > 0 ? k.WaermeGesamtMwh * 100.0 / wbGesamt : 0.0;
-
-            return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG,
-                                      MitZahlen(segmente), mitte, "%");
+            return segmente;
         }
 
-        /// <summary>
-        /// Der Ring „Stromdeckung" (B6). Er liest seit W8‑O‑5c / S1.2 dieselben
-        /// <c>…Mwh</c>-Felder wie der Wärmering (Befund U5/U6); vorher rechnete er
-        /// Photovoltaik und Speicherentladung selbst auf MWh und nahm BHKW und
-        /// Reststrom fertig — drei Konventionen in EINEM Bild.
-        /// </summary>
-        private byte[] BildRingStrom()
+        /// <summary>Die Segmente des STROMRINGS — dieselbe Regel wie bei der Wärme.</summary>
+        private List<ChartRenderer.Ringsegment> SegmenteStrom(
+            ErgebnisPraesenz p, SimulationErgebnisCtrl.UebersichtKennzahlen k)
         {
-            ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
-            var k = Kennzahlen();
-            double sbGesamt = k.StrombedarfMitEigenverbrauchMwh;
-
             var segmente = new List<ChartRenderer.Ringsegment>();
             if (p.Photovoltaik)
                 segmente.Add(new ChartRenderer.Ringsegment(
@@ -358,13 +342,46 @@ namespace WindowsFormsApplication1
                     k.StromspeicherEntladungMwh, R_SPEICHER));
 
             segmente.Add(new ChartRenderer.Ringsegment(
-                MyResource.Resource.SIM_KACHEL_RESTSTROMBEDARF, k.ReststromMwh, R_RESTSTROM));
+                MyResource.Resource.SIMUEB_LEGENDE_NETZBEZUG, k.ReststromMwh, R_REST_GRAU));
+
+            return segmente;
+        }
+
+        private byte[] BildRingWaerme()
+        {
+            ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
+            var k = Kennzahlen();
+            double wbGesamt = _waermebedarf.Waermebedarf_Gesamt;
+
+            double mitte = wbGesamt > 0 ? k.WaermeGesamtMwh * 100.0 / wbGesamt : 0.0;
+
+            return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG,
+                                      SegmenteWaerme(p, k), mitte, "%",
+                                      MyResource.Resource.SIMUEB_RING_GEDECKT, false);
+        }
+
+        /// <summary>
+        /// Der Ring „Stromdeckung" (B6). Er liest seit W8‑O‑5c / S1.2 dieselben
+        /// <c>…Mwh</c>-Felder wie der Wärmering (Befund U5/U6); vorher rechnete er
+        /// Photovoltaik und Speicherentladung selbst auf MWh und nahm BHKW und
+        /// Reststrom fertig — drei Konventionen in EINEM Bild.
+        /// </summary>
+        private byte[] BildRingStrom()
+        {
+            ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
+            var k = Kennzahlen();
+            double sbGesamt = k.StrombedarfMitEigenverbrauchMwh;
 
             // Befund W11-B36: Ohne Bedarf steht hier 0 und nicht 100.
             double mitte = sbGesamt > 0 ? k.StromGesamtMwh * 100.0 / sbGesamt : 0.0;
 
+            // #222: Bei 0 % sagt die Unterzeile, WAS null ist — sonst steht dort ein
+            // grauer Vollring mit einer nackten Null.
+            string unterzeile = mitte > 0 ? MyResource.Resource.SIMUEB_RING_GEDECKT
+                                          : MyResource.Resource.SIMUEB_RING_NETZBEZUG;
+
             return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG,
-                                      MitZahlen(segmente), mitte, "%");
+                                      SegmenteStrom(p, k), mitte, "%", unterzeile, false);
         }
 
         // ---- Die Wärmepumpenseite ---------------------------------------

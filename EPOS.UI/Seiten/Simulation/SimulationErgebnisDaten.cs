@@ -243,11 +243,122 @@ public sealed class UebersichtDaten
     public double ReststromMwh;
     public double RestwaermeMwh;
 
-    /// <summary>Der Eigenanteil je Erzeuger und Bedarfskanal (<c>FillTableWithData</c>).</summary>
-    public IReadOnlyList<Rasterzeile> Eigenanteil = Array.Empty<Rasterzeile>();
+    /// <summary>
+    /// Die Wärmespalte des Dashboards: je Erzeuger die Deckung nach Kanälen
+    /// (<c>FillTableWithData</c>), dazu Summen- und Restzeile (#222).
+    /// </summary>
+    public Erzeugertabelle WaermeTabelle = new Erzeugertabelle();
 
-    /// <summary>Die Spaltenköpfe des Eigenanteil-Rasters.</summary>
-    public IReadOnlyList<string> EigenanteilSpalten = Array.Empty<string>();
+    /// <summary>Die Stromspalte des Dashboards — ohne Stromerzeuger nur die Restzeile.</summary>
+    public Erzeugertabelle StromTabelle = new Erzeugertabelle();
+
+    /// <summary>
+    /// Die Legende des WÄRMERINGS als Daten (#222) — je Segment Name, Menge, Anteil
+    /// und Farbe, der ungedeckte Rest zuletzt.
+    ///
+    /// <para>Sie kommt aus DERSELBEN Segmentliste wie das Bild
+    /// (<c>SimulationErgebnisHuelle.SegmenteWaerme</c>); zwei Wege wären zwei
+    /// Wahrheiten über denselben Kreis.</para>
+    /// </summary>
+    public IReadOnlyList<Ringanteil> WaermeLegende = Array.Empty<Ringanteil>();
+
+    /// <summary>Dasselbe für den Stromring.</summary>
+    public IReadOnlyList<Ringanteil> StromLegende = Array.Empty<Ringanteil>();
+
+    /// <summary>Der Wärmebedarf [MWh/a] — der Nenner des Wärmerings.</summary>
+    public double WaermebedarfMwh;
+
+    /// <summary>Der Strombedarf samt Eigenverbrauch [MWh/a] — der Nenner des Stromrings.</summary>
+    public double StrombedarfMwh;
+
+    /// <summary>
+    /// Die vier Wärmeplätze des Laufs als Text, z. B. „Wärmepumpe → Heizkessel"
+    /// (<c>SimulationControl.tool</c> 1…4). Leer = kein Platz belegt.
+    /// </summary>
+    public string Kaskade = "";
+
+    /// <summary>
+    /// Führt das Projekt überhaupt einen Stromerzeuger (PV, BHKW, Speicher)? Sonst
+    /// trägt die Stromspalte statt einer Erzeugertabelle den Weg in die
+    /// Konfiguration (#222, Mockup „Ringvariante A").
+    /// </summary>
+    public bool StromerzeugerVorhanden;
+}
+
+/// <summary>
+/// Ein Legendeneintrag eines Deckungsrings (#222): Name, Menge, Anteil und die
+/// Farbe des Segments im Bild.
+///
+/// <para><b>Warum die Legende aus dem Bild heraus ist.</b> Im PNG war sie eine
+/// Rastergrafik: nicht kopierbar, nicht mitwachsend, und am Rand des Rahmens
+/// abgeschnitten (Windows-Foto „Heinestr 15", rechte Grafik). Als HTML daneben ist
+/// sie Text.</para>
+/// </summary>
+/// <param name="Name">Der Segmentname, z. B. „Wärmepumpe".</param>
+/// <param name="Mwh">Die Menge [MWh/a].</param>
+/// <param name="Prozent">Sein Anteil an der Summe aller Segmente.</param>
+/// <param name="Farbe">Die Segmentfarbe als CSS-Wert, z. B. <c>#2ECC71</c>.</param>
+/// <param name="IstRest">Der ungedeckte Rest — er steht abgesetzt am Fuß der Legende.</param>
+public sealed record Ringanteil(string Name, double Mwh, double Prozent, string Farbe,
+                                bool IstRest = false);
+
+/// <summary>
+/// Ein Spaltenkopf der Erzeugertabelle (#222): Beschriftung und Einheit GETRENNT.
+///
+/// <para>Vorher stand „Deckung Heizung [MWh/a]" als eine Zeichenkette im Kopf,
+/// linksbündig über rechtsbündigen Zahlen — die Zahl stand dreihundert Bildpunkte
+/// von ihrem Kopf entfernt. Getrennt kann der Kopf rechtsbündig ÜBER seiner Zahl
+/// stehen und die Einheit eine kleine zweite Zeile bilden.</para>
+/// </summary>
+/// <param name="Text">Die Beschriftung, z. B. „Heizung".</param>
+/// <param name="Einheit">Die Einheit, z. B. „MWh/a"; leer = ohne zweite Zeile.</param>
+public sealed record Tabellenkopf(string Text, string Einheit = "");
+
+/// <summary>
+/// Eine Zeile der Erzeugertabelle (#222).
+/// </summary>
+/// <param name="Name">Der Erzeuger — die erste, linksbündige Spalte.</param>
+/// <param name="Zahlen">Die bereits formatierten Zahlen in Spaltenreihenfolge.</param>
+/// <param name="OhneBeitrag">
+/// Jede Zahl dieser Zeile ist null — die Zeile steht gedimmt und lässt sich
+/// ausblenden. Sie verschwindet NICHT von selbst: Eine angelegte Anlage ohne
+/// Beitrag ist eine Aussage (Präsenzregel Punkt 4, #190).
+/// </param>
+/// <param name="Zusatz">Klammerzusatz am Namen, z. B. „(nicht in der Kaskade)".</param>
+public sealed record Erzeugerzeile(string Name, IReadOnlyList<string> Zahlen,
+                                   bool OhneBeitrag = false, string Zusatz = "");
+
+/// <summary>
+/// Die Erzeugertabelle EINER Spalte des Dashboards (#222) — Köpfe, Zeilen, die
+/// Summe der Erzeuger und der Rest.
+/// </summary>
+public sealed class Erzeugertabelle
+{
+    /// <summary>Die Spaltenköpfe; die erste ist die Namensspalte.</summary>
+    public IReadOnlyList<Tabellenkopf> Spalten = Array.Empty<Tabellenkopf>();
+
+    /// <summary>Die Erzeugerzeilen in Kaskadenreihenfolge.</summary>
+    public IReadOnlyList<Erzeugerzeile> Zeilen = Array.Empty<Erzeugerzeile>();
+
+    /// <summary>Die Summe der Erzeuger; <c>null</c> = keine (dann steht auch kein Strich).</summary>
+    public Erzeugerzeile? Summe;
+
+    /// <summary>Der Rest, der nach allen Erzeugern übrig bleibt.</summary>
+    public Erzeugerzeile? Rest;
+
+    /// <summary>Satz statt Zeilen, wenn das Projekt keinen Erzeuger dieser Art führt.</summary>
+    public string LeerText = "";
+
+    /// <summary>Wie viele Zeilen ohne Beitrag dastehen (Zähler des Schalters).</summary>
+    public int OhneBeitrag
+    {
+        get
+        {
+            int n = 0;
+            foreach (Erzeugerzeile z in Zeilen) if (z.OhneBeitrag) n++;
+            return n;
+        }
+    }
 }
 
 /// <summary>
