@@ -3909,7 +3909,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > erbte die Pinnung aus `EposBunitContext` und fiel trotzdem, weil C# die Feldinitialisierer der abgeleiteten Klasse VOR dem
 > Basiskonstruktor auswertet — ein Ressourcenwert im Feldinitialisierer fror auf Englisch ein; jetzt eigenes, zuerst deklariertes
 > `Kulturvorrichtung`-Feld, Wert erst im Konstruktorrumpf, `base.Dispose` vor `_kultur.Dispose`. `EPOS.UI/CLAUDE.md` Regelpunkt.
-> **Offen:** Windows-Lauf auf diesem Push muss grün werden (Erwartung: 0 rot, Restrisiko #231).
+> **Windows-CI danach:** Lauf 320 auf `b663060` GRÜN — der erste grüne Windows-Lauf seit Lauf 261 (Kern 2 685, UI 3 893, Engine 425).
+> Lauf 319 auf `cf65e71` (derselbe Programmstand, nur der Statusblock-Commit davor) fiel mit GENAU EINEM Fall
+> (`SpeicherOptimierungCtrlTests.Die_Kennzahlen_tragen_die_Zahlen_des_Bestpunkts`, „Sequence contains no matching element": die Kennzahl wird
+> über ihre deutsche Bezeichnung gesucht, ein Worker-Thread rechnete englisch) — das ist der Nebenbefund #231 in freier Wildbahn, 1 von
+> 2 685, auf identischem Programmstand einmal rot und einmal grün. **Offen:** Anwenderentscheid #231 (Empfehlung: `windows.yml`/`kern.yml`
+> mit `-- xUnit.ParallelizeTestCollections=false` wie das Gate, danach Kern-Texte mit expliziter Kultur als eigene Welle).
 > Gate sept41 auf `c0be2cf`: Kern 2 685, UI 3 893, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf aller fünf Testprojekte grün.
 >
