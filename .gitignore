@@ -407,3 +407,8 @@ api_gemini.txt
 *.sqlite-wal
 *.sqlite-shm
 *.sqlite-journal
+
+# Excel-Arbeitsmappen (Anwenderentscheid 11.09.2026: die 71-MB-Mappe V7 kam per Sync 78bcf88 ins
+# Repository und wurde am selben Abend wieder entfernt; Referenzmappen bleiben ausserhalb)
+*.xlsm
+*.xlsb
