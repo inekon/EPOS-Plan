@@ -8,7 +8,7 @@ name: Windows
 
 on:
   push:
-    branches: [main, sqlite, ios_migration]
+    branches: [main, sqlite, ios_migration, ios_migration_september]
   schedule:
     # 03:00 UTC, taeglich.
     - cron: '0 3 * * *'

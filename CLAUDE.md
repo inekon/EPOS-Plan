@@ -297,7 +297,8 @@ Weglassen darf die Verdichtung: vollständige Dateiinhalte, Build- und Testausga
 ein grünes Gate oder einen Commit gemündet sind, und die Zwischenschritte erledigter Wellen jenseits
 von Commit und Ergebnis.
 
-Während der iOS-Migration (Zweig `ios_migration`) gilt zusätzlich: Der dauerhafte Stand steht in den
+Während der iOS-Migration (Arbeitszweig seit dem 11.09.2026 `ios_migration_september`, davor `ios_migration`;
+Anwenderentscheid 11.09.2026 „ios_migration_september wird der Arbeitszweig") gilt zusätzlich: Der dauerhafte Stand steht in den
 Statusblöcken von [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) und in
 [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md). Nach einer Verdichtung wird der
-Wellenstand von dort und aus `git log origin/ios_migration` nachgelesen, nicht aus dem Gedächtnis.
+Wellenstand von dort und aus `git log origin/ios_migration_september` nachgelesen, nicht aus dem Gedächtnis.

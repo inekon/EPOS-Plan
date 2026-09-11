@@ -27,7 +27,7 @@ Sandbox, und ein Prüfmodus rechnet das Referenzprojekt 1030 auf dem Gerät.
 
 1. Auf GitHub das Repository öffnen → Reiter **Actions**.
 2. Links in der Liste der Workflows **iOS** wählen.
-3. Rechts **Run workflow** → Branch `ios_migration` → **Run workflow**.
+3. Rechts **Run workflow** → Branch `ios_migration_september` (Arbeitszweig seit 11.09.2026; davor `ios_migration`) → **Run workflow**.
 
 Der Lauf dauert 15–20 Minuten (Workload 3–6, Bau 5–8, Simulator 3–5) und wird bei privaten
 Repositories mit **Faktor 10** auf das Minutenkontingent angerechnet. Er läuft zusätzlich von
