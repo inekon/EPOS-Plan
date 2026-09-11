@@ -66,6 +66,17 @@ angesetzt (`FlottenSimulator.cs:121–122`) — ein Peak-Ziel von 50 kW vor 789 
 nie erreichbar, und die Warnung „Das wirtschaftliche Peak-Ziel wurde nicht erreicht" sagt dem
 Anwender nicht, warum.
 
+**Ergänzung „Befund #185" (11.09.2026).** Derselbe Projektlauf brach danach vollständig ab —
+`SpeicherAuslegungCtrl.KostenAufloesen` verlangte spezifische Kostensätze bedingungslos und warf
+„Im Dialog fehlen die Investitionskoeffizienten", sobald der Dialogstand `@Aktuell` die Quelle
+„Dialog" trug, aber keine gepflegten Sätze. Gebraucht werden sie dort nicht: Die Sätze erreichen
+ausschließlich `FlottenWirtschaftlichkeit`, während Netzleistung, Ladezustand und Energie des
+Projektlaufs keinen einzigen von ihnen lesen — und trägt jede Einheit `EigeneKosten`, überschreibt
+`SpeicherFlottenStudieCtrl.Konfiguration` mit ihnen ohnehin nichts. Seither verlangt der
+**Studienlauf** sie weiterhin (mit dem Ausweg im Meldungstext), der **Projektlauf** rechnet ohne
+sie weiter und kennzeichnet Kapitalwert und Jahreskonten als „nicht bewertbar"
+(`KostenPflicht`, `SpeicherFlottenProjektCtrl.Pruefe`, `SpeicherFlottenProjektLauf.KostenBewertbar`).
+
 ### 1.3 Jahresprojektion „Betrieb 1,00 €/a" — ein Eingabewert, kein Rechenfehler
 
 `FlottenWirtschaftlichkeit.cs:49–58`: `Betrieb = fix + €/(kWh·a)·C + €/(kW·a)·P`,

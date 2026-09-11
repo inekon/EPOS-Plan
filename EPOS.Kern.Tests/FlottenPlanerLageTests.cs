@@ -133,6 +133,48 @@ public sealed class FlottenPlanerLageTests
     }
 
     /// <summary>
+    /// BEFUND #185: Die neue Vorprüfung einer Projektflotte nennt ein planendes
+    /// Betriebsziel ohne Fahrplan-Löser als benanntes PROBLEM — der Lauf meldete es
+    /// vorher erst tief in der Engine. Der Fall steht hier und nicht bei den
+    /// Kostenprüffällen, weil die Fabrik prozessweiter Zustand ist und jeder Tausch
+    /// in diese eine Klasse gehört.
+    /// </summary>
+    [Fact]
+    public void Vorpruefung_NenntDasPlanendeZielOhnePlaner()
+    {
+        MitFabrik(null, () =>
+        {
+            SpeicherOptimierungEingaben eingaben = FlottenEingaben(FlottenBetriebsziel.Arbitrage);
+
+            FlottenProjektPruefung pruefung =
+                SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, false);
+
+            Assert.False(pruefung.Rechenbar);
+            Assert.Contains(pruefung.Probleme, x => x.Contains("Fahrplan-Löser"));
+            Assert.Contains("Ausweg", pruefung.Meldung);
+        });
+
+        MitFabrik(() => new StillerPlaner(), () =>
+        {
+            SpeicherOptimierungEingaben eingaben = FlottenEingaben(FlottenBetriebsziel.Arbitrage);
+
+            Assert.True(SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, false).Rechenbar);
+        });
+    }
+
+    private static SpeicherOptimierungEingaben FlottenEingaben(FlottenBetriebsziel ziel)
+        => new()
+        {
+            Auslegung = new SpeicherAuslegungKonfiguration
+            {
+                Lastquelle = SpeicherAuslegungQuelle.Epos,
+                PvQuelle = SpeicherAuslegungQuelle.Keine,
+                Preisquelle = SpeicherAuslegungQuelle.Epos,
+                Flotte = Konfiguration(ziel)
+            }
+        };
+
+    /// <summary>
     /// Setzt die Fabrik, führt die Prüfung aus und stellt den vorherigen Stand wieder her. Der
     /// Zwischenspeicher der Auskunft wird vorher und nachher verworfen, damit kein Prüffall den
     /// nächsten färbt.

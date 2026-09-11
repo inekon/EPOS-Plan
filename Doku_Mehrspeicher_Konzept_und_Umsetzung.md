@@ -184,6 +184,54 @@ Die folgenden kompakten Draft-2020-12-Schemas dokumentieren die beiden manuellen
 
 Abgelegt wird der Payload in `Tab_SpeicherAuslegung`. **Migrationsschritt 73** legt diese Tabelle an, **Migrationsschritt 74** (Auftrag #178, 11.09.2026) baut sie als **STRICT**-Tabelle neu auf: Sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt kein `ALTER TABLE … STRICT`. Spalten, Typen, Fremdschlüssel (`ON DELETE CASCADE` an Projekt und Energieanlage) und der eindeutige Index bleiben wortgleich; die Zeilen werden samt ihrer `ID` übernommen, es ändert sich kein Wert. Die Anweisungen stehen in [`EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs`](EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs).
 
+## Projektlauf ohne Kostensätze (#185)
+
+**Der Befund (Anwender, 11.09.2026).** Ein Projektlauf mit aktivierter Speicherflotte brach
+vollständig ab: `System.InvalidOperationException: "Die Speicherflotte für diesen Projektlauf ist
+ungültig oder konnte nicht geplant werden: Im Dialog fehlen die Investitionskoeffizienten."`
+Die Ursache steht in `SpeicherAuslegungCtrl.KostenAufloesen`: Sie verlangte Investitions- **und**
+Betriebskoeffizienten bedingungslos, sobald `Investitionsquelle == Dialog` beziehungsweise
+`Betriebsquelle == Dialog` und `DirekteKosten.InvestVorhanden`/`BetriebVorhanden` nicht gesetzt
+waren. Genau diesen Stand legt `SpeicherAuslegungCtrl.Vorbelegung` an, wenn das Speichergerät
+keine Kostendaten trägt (`InvestVorhanden = CPow > 0 || CCap > 0`, `BetriebVorhanden = false`);
+er wandert über „Einstellungen speichern" als `@Aktuell` in `Tab_SpeicherAuslegung` und von dort
+als Lauf-Snapshot in jeden Projektlauf.
+
+**Warum das falsch war — zwei Gründe, beide messbar.**
+
+1. **Der Projektlauf braucht die Sätze nicht.** Sie erreichen ausschließlich
+   `FlottenWirtschaftlichkeit` (`Investition`, `ErzeugeJahreskonto`); `FlottenSimulator.SimuliereKern`
+   liest keinen einzigen von ihnen. Netzleistung, Ladezustand, Lade- und Entladeenergie sind ohne
+   sie dieselben. Im Projektlauf entstehen zudem gar keine Jahreskonten
+   (`FlottenStudieKonfiguration.Wirtschaftlichkeit.Jahreskonten` ist leer), der Kapitalwert wird
+   dort also ohnehin nicht gebildet.
+2. **Einheiten mit eigenen Kosten brauchen sie auch im Studienlauf nicht.**
+   `SpeicherFlottenStudieCtrl.Konfiguration` überspringt jede Einheit mit `EigeneKosten` und
+   überschreibt nur die übrigen mit den aufgelösten Sätzen. Trägt jede Einheit eigene Kosten,
+   wurde eine Pflichtangabe verlangt, die anschließend nirgends ankommt.
+
+**Die Behebung, drei Ebenen.**
+
+| Ebene | Was sich ändert |
+|---|---|
+| `SpeicherAuslegungCtrl` | `Vorbereiten`/`AusQuellenVorbereiten` nehmen eine `KostenPflicht` (`Studienlauf` = Vorgabe, `Projektlauf`). `SpezifischeSaetzeGebraucht` beantwortet, ob überhaupt eine Einheit die Sätze braucht — ohne Flotte (Einzelanlage) und bei jeder Einheit ohne `EigeneKosten` lautet die Antwort ja. Fehlen sie und werden sie nicht gebraucht: Sätze 0 mit der Herkunft „je Einheit (eigene Kosten)". Fehlen sie und werden gebraucht: im Studienlauf weiterhin eine Ausnahme, deren Text den Ausweg nennt; im Projektlauf Sätze 0 mit `SpeicherKostensaetze.NichtBewertbar = true`. `StandKosten` löst die Sätze eines gespeicherten Standes auf, ohne eine Zeitreihe zu beschaffen |
+| `SpeicherFlottenProjektCtrl` | `Aktivieren` schreibt `@Projektflotte` seither mit aufgelösten `VerwendeteKosten` (bereits aufgelöste, brauchbare Sätze bleiben eingefroren). Neu ist die Vorprüfung `Pruefe(projektId)` → `FlottenProjektPruefung` mit **Problemen** (Stand fehlt, nicht aktiviert, keine Einheit, unzulässige Projektquelle, planendes Ziel ohne Fahrplan-Löser) und **Hinweisen** (fehlende Kostensätze). Beide `Rechnen`-Wege rufen sie und werfen — wenn überhaupt — mit der **vollständigen Liste** und dem Ausweg statt mit dem jeweils ersten Problem. `SpeicherFlottenProjektLauf.KostenBewertbar` trägt die Bewertbarkeit, `Hinweis` den Klartext |
+| `SimulationControl.Stromspeicher` | Der Abbruch **bleibt** — ein Projekt mit aktivierter Flotte darf nicht still ohne sie rechnen. Neu ist allein, dass Warnung und Ausnahme aus `MyResource.Resource.FLOTTE_MSG_LAUF_WARNUNG`/`…_GESCHEITERT` kommen und der Ausnahmetext den Ausweg nennt („die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen"). Der Protokolleintrag steht weiterhin **vor** dem Wurf |
+
+**Wie die Ausnahme den Anwender erreicht.** `Do_Simulation` fängt sie nicht; sie verlässt
+`SimulationLaufCtrl.Laufen` und damit das `Task.Run` der Windows-Hülle, die sie in
+`SimulationErgebnisHuelle.Laufen` (`:889`) als `Rueckmeldung(false, ex.Message)` auf der Ergebnisseite
+anzeigt. Sie schlägt also **nicht** als unbehandelte Ausnahme durch; ein zusätzlicher Fang an der
+Naht des Laufs wäre eine zweite Fehlerpolitik neben `Abbruchgrund` und unterbliebe deshalb.
+Im plattformfreien `EPOS.Referenzlauf` verlässt sie `SimulationRunner.Ausfuehren` — dort ist der
+harte Abbruch eines Stapellaufs gewollt.
+
+**Was gleich bleibt.** Der Referenzlauf ist byte-gleich: Projekt 1046 trägt gepflegte Sätze
+(`DirekteKosten` mit `InvestVorhanden`/`BetriebVorhanden`), damit sind `investFehlt` und
+`betriebFehlt` beide falsch, und `KostenAufloesen` liefert Werte, Flags und Herkunftstext
+unverändert. 13/13 Projekte byte-gleich gegen `Referenzlaeufe/2026-09-11_R7_Speicherflotte`,
+1046 weiterhin mit 42 `Flotte.*`-Skalaren.
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |
