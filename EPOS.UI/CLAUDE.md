@@ -448,6 +448,12 @@ entgegen — sie ist damit austauschbar.
 - Bezeichner und Kommentare deutsch; neue `.razor`/`.cs` UTF-8 **mit** BOM, LF.
 - Jeder Baustein bekommt einen `bunit`-Test in `EPOS.UI.Tests` (Darstellung, Callback,
   Zustandsklasse).
+- **Der Windows-Läufer der CI läuft unter der Systemkultur `en-US`**, nicht `de-DE`, und
+  `Resource.*` löst ohne eigene Vorgabe über `CultureInfo.CurrentUICulture` auf — jede
+  `EPOS.UI.Tests`-Klasse mit einem deutschen Text-Assert führt deshalb die Hausvorrichtung
+  (`Kulturvorrichtung`/`EposBunitContext`, `EPOS.UI.Tests/Kulturvorrichtung.cs`, seit #168).
+  Das Gate prüft `EPOS.UI.Tests` seit Auftrag #230b (11.09.2026) zusätzlich unter
+  `LANG=en_US.UTF-8`, sequenziell **und** parallel.
 
 ## Bausteine (`Bausteine/`)
 

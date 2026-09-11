@@ -19,10 +19,27 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class KostenKomponenteDialogTests : BunitContext
 {
+    // Gate sept39 (11.09.2026, Gegenprobe #230b, LANG=en_US.UTF-8):
+    // Der_Spaltenkopf_Nutzungsdauer_traegt_keinen_Zeilenumbruch vergleicht gegen
+    // Resource.KDLG_SP_NUTZUNG ("Nutzungsdauer [a]") — ohne Pinnung lieferte die
+    // Ressource unter en-US "Service life [a]". Hausvorrichtung seit #168,
+    // Rückstellung in Dispose.
+    private readonly Kulturvorrichtung _kultur = new();
+
     public KostenKomponenteDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _kultur.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     // ---- Probendaten -----------------------------------------------------
