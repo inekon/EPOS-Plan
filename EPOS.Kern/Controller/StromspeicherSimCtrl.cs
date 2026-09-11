@@ -1096,6 +1096,70 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die <c>SP_TYP</c>-Anlagenzeilen des Projekts in Anlagenreihenfolge
+        /// (<c>ORDER BY ID</c>) — die Grundlage der MEHRSPEICHER-Vorbelegung (#210).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum sie neben <see cref="LeseParameter(int,int)"/> steht.</b> Jene Methode
+        /// liefert EINEN Parametersatz — die Zeile der aktiven Variante, im Rückfall die
+        /// Summe über alle Anlagen. Für den EINZELspeicherlauf ist das richtig (AP9b,
+        /// Fachkonzept 7.3). Die FLOTTE dagegen fährt mehrere Speicher gleichzeitig und
+        /// braucht deshalb die Liste: <c>SpeicherFlottenStudieCtrl.Vorbelegung</c> liest
+        /// je Anlagenzeile ihren eigenen Satz und macht daraus je eine Einheit.
+        /// </para>
+        /// <para>
+        /// <b>Derselbe Filter wie überall</b> — nur <c>WizardItemClass.SP_TYP</c>. Die
+        /// Referenzliste <c>REF_SP_TYP</c> führt den VERGLEICHSFALL des Projekts und
+        /// keine gleichzeitig betriebene Anlage; dieselbe Grenze ziehen
+        /// <see cref="LeseParameter(int,int)"/>, <c>UebernehmeAuslegung</c> und
+        /// <c>StromspeicherVarianteCtrl.AktiveVarianteSicherstellen</c>.
+        /// </para>
+        /// <para>
+        /// <b>Sie wirft nicht.</b> Ein Fehlschlag ist eine leere Liste; der Aufrufer fällt
+        /// dann auf den Sammelsatz zurück und verliert nichts.
+        /// </para>
+        /// </remarks>
+        /// <param name="idProjekt">Projekt-ID.</param>
+        /// <returns>Die Anlagen-IDs; leer, wenn das Projekt keine Speicheranlage führt.</returns>
+        public IReadOnlyList<int> Speicheranlagen(int idProjekt)
+        {
+            List<int> ids = new List<int>();
+            if (idProjekt <= 0) return ids;
+
+            try
+            {
+                using (DataRepository.EngineModus())
+                {
+                    DbParam pProjekt = new DbParam("@projekt", DbParamTyp.Integer);
+                    pProjekt.Wert = idProjekt;
+                    DbParam pTyp = new DbParam("@typ", DbParamTyp.Integer);
+                    pTyp.Wert = WizardItemClass.SP_TYP;
+
+                    DataTable dt = DataRepository.GetDataTable(
+                        "SELECT a.ID AS ID_Anlage FROM Tab_Energieanlagen AS a " +
+                        "INNER JOIN Tab_Stromspeicher AS sp ON a.ID_SP = sp.ID " +
+                        "WHERE a.ID_Projekt = ? AND a.ID_Type = ? ORDER BY a.ID",
+                        new DbParam[] { pProjekt, pTyp });
+
+                    if (dt == null) return ids;
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        int id = (int)Zahl(dt, row, "ID_Anlage");
+                        if (id > 0) ids.Add(id);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Speicheranlagen des Projekts konnten nicht gelesen werden: " + ex.Message);
+                ids.Clear();
+            }
+
+            return ids;
+        }
+
+        /// <summary>
         /// Wie <see cref="LeseParameter(int)"/>, aber wahlweise auf <b>eine</b>
         /// Anlagenzeile beschränkt (AP8/AP9).
         /// </summary>
