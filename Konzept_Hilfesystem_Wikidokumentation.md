@@ -831,4 +831,7 @@ damit die Seite nicht zweimal wandert: **Revision 546** (11.09.2026, Merge `bcd3
 bis zu neun Reitern ab „Übersicht" und dem Einzelanlagenblock, drei neue Punkte unter „Neu gegenüber der Vorversion"); die Nachprobe
 per `action=raw` zählt 13 Anker (zehn alte, drei neue). **Dazu `Hilfe-Assistent` Revision 547** (11.09.2026) mit dem Absatz
 „Rechnen dauert und lässt sich abbrechen" aus #214 und dem Satz zur EPOS-Marke rechts neben dem i aus #218 (Merge `bec51ec`) —
-ein Upload für beide Aufträge, Quelle und Live-Stand gleich.
+ein Upload für beide Aufträge, Quelle und Live-Stand gleich. **Dazu `Simulation` Revision 549** (11.09.2026, Merge `d84af29`,
+Gate sept30) mit den #222-Punkten (Anwenderentscheid SIM‑E‑3: die Übersicht als Dashboard „Wärme | Strom" mit Kennzahlenzeile, Ring
+mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „Ergebnis" fällt); die Nachprobe per `action=raw` liefert
+12 306 Zeichen und die drei Dashboard-Sätze.
