@@ -56,6 +56,16 @@ namespace Testdatenbankschema
     /// <b>Fuer diesen einen Schritt ist die Abnahme deshalb nicht die Byte-Gleichheit,
     /// sondern die ERKLAERTE Abweichung</b> und eine neu eingefrorene Basis; die
     /// Begruendung steht in <c>Referenzlaeufe/LIESMICH.md</c>.</para>
+    ///
+    /// <para><b>Schritt 73</b> legt <c>Tab_SpeicherAuslegung</c> samt eindeutigem Index
+    /// an (DDL bei <c>SpeicherAuslegungCtrl</c>), <b>Schritt 74</b> (Auftrag #178) baut
+    /// dieselbe Tabelle als <b>STRICT</b>-Tabelle NEU auf — der erste TABELLENNEUBAU
+    /// dieses Werkzeugs, weil SQLite kein <c>ALTER TABLE … STRICT</c> kennt. Die sechs
+    /// Anweisungen und die Vorabprobe stehen in <c>SpeicherAuslegungStrict</c>, also
+    /// wieder in DERSELBEN Quelle, aus der sich
+    /// <c>SchemaMigration.Schritt_74_SpeicherauslegungStrict</c> bedient. Beide Schritte
+    /// sind ergebnisneutral: 73 legt keine Zeile an, 74 kopiert die vorhandenen samt
+    /// ihrer <c>ID</c>.</para>
     /// </summary>
     internal static class Program
     {
@@ -66,7 +76,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 69) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 74) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -218,6 +228,31 @@ namespace Testdatenbankschema
 
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);
+
+            // ---- Schritt 74: dieselbe Tabelle als STRICT-Tabelle (Auftrag #178).
+            //      DER ERSTE TABELLENNEUBAU dieses Werkzeugs - SQLite kennt kein
+            //      ALTER TABLE ... STRICT, also CREATE unter Hilfsnamen, INSERT ...
+            //      SELECT mit namentlich genannten Spalten, DROP, RENAME und Index neu,
+            //      alles in EINER Transaktion. Die sechs Anweisungen und die Vorabprobe
+            //      kommen aus SpeicherAuslegungStrict - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_74_SpeicherauslegungStrict bedient.
+            //      Ergebnisneutral: Zeilen und IDs werden mitkopiert, kein Wert und kein
+            //      Typ aendert sich. Wiederholbar ueber die Vorabprobe.
+            long ohneStrict = Zahl(SpeicherAuslegungStrict.Zaehlung());
+            Console.WriteLine("Schritt 74 - " + SpeicherAuslegungStrict.TABELLE +
+                              " ohne STRICT: " + ohneStrict + ".");
+            if (!trocken)
+            {
+                long zeilenVorher = Zahl("SELECT COUNT(*) FROM " + SpeicherAuslegungStrict.TABELLE);
+                bool umgebaut = SpeicherAuslegungStrict.Umbauen();
+                long zeilenNachher = Zahl("SELECT COUNT(*) FROM " + SpeicherAuslegungStrict.TABELLE);
+                Console.WriteLine("Schritt 74: " + (umgebaut
+                    ? "neu aufgebaut, " + zeilenVorher + " Zeile(n) vorher, " +
+                      zeilenNachher + " nachher."
+                    : "nichts zu tun - die Tabelle ist bereits STRICT."));
+                if (umgebaut) tabellen++;
+            }
+            Console.WriteLine();
 
             if (!trocken)
             {

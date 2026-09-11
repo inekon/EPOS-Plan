@@ -123,7 +123,7 @@ Solange EPOS-Plan läuft, ist der **aktuelle Datenstand die Summe aus `.sqlite` 
 ## 3. Sicherung
 
 Gesichert wird immer die **ganze Datei**: Kataloge und Projektdaten stehen in derselben
-`Kenndaten.sqlite`, und dazu gehören seit Schemastand 73 auch die gespeicherten
+`Kenndaten.sqlite`, und dazu gehören seit Schemastand 73 (seit 74 als STRICT-Tabelle) auch die gespeicherten
 Speicherauslegungsprofile in `Tab_SpeicherAuslegung` (Kostensätze, Suchbereiche und die
 zugeordneten CSV-Zeitreihen als Projektdaten, mit `ON DELETE CASCADE` am Projekt und an der
 Energieanlage). Einen getrennten Export einzelner Tabellen gibt es nicht — wer ein Profil
@@ -327,14 +327,19 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 11.09.2026: Schemastand 73** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+**Stand 11.09.2026: Schemastand 74** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
 repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
 `Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
 72 p_I in drei Spalten und der Freitext „Nicht monetäre Wirkungen" an derselben Tabelle;
 73 `Tab_SpeicherAuslegung` für projekt- und anlagenbezogene Kostenprofile, Suchbereiche
-und importierte Zeitreihen samt Zuordnung), 70 025 216 Byte (66,8 MB). Die neue Tabelle
-enthält in der Referenzdatenbank keine Nutzdaten. Nachzusehen ist der Stand jederzeit:
+und importierte Zeitreihen samt Zuordnung; **74 dieselbe Tabelle als STRICT-Tabelle neu
+aufgebaut** — sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt
+kein `ALTER TABLE … STRICT`), **70 803 456 Byte (67,5 MB)**, **119 Tabellen, davon 118 STRICT**
+(die 119. ist die Systemtabelle `sqlite_sequence`), **25 Projekte**. Die Tabelle
+`Tab_SpeicherAuslegung` führt seit dem Prüfprojekt 1046 (Basis R7) genau eine Zeile, den
+reservierten Flottenstand `@Projektflotte`; Schritt 74 hat sie byte-gleich übernommen.
+Nachzusehen ist der Stand jederzeit:
 
 ```
 sqlite3 -readonly Referenzlaeufe/Kenndaten_Test.sqlite "SELECT SchemaVersion FROM Tab_Applikation;"
@@ -354,9 +359,11 @@ dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/
 ```
 
 Das Werkzeug fährt **dieselben Quellen wie `SchemaMigration`** — den Spaltenkatalog
-(`SchemaKatalog`), die Typübersetzung (`StilleDb.SqliteSpaltenTyp`) und für Schritt 62 die
-`DELETE`-Texte aus `KlimaWaisenBereinigung` —, setzt den Marker auf `SchemaStand.Zielversion` und
-verdichtet mit `VACUUM`. Es ist **idempotent** (vorhandene Spalte = nichts zu tun), läuft auf
+(`SchemaKatalog`), die Typübersetzung (`StilleDb.SqliteSpaltenTyp`), für Schritt 62 die
+`DELETE`-Texte aus `KlimaWaisenBereinigung` und für Schritt 74 die sechs Anweisungen aus
+`SpeicherAuslegungStrict` —, setzt den Marker auf `SchemaStand.Zielversion` und
+verdichtet mit `VACUUM`. Es ist **idempotent** (vorhandene Spalte = nichts zu tun; Schritt 74
+fragt `sqlite_master`, ob die Tabelle überhaupt noch ohne `STRICT` steht), läuft auf
 Linux und kennt `--trocken` für den Blick vor dem Griff. Von Hand angelegte Spalten wären eine
 zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verhindern soll.
 

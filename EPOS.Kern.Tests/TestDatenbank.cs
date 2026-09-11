@@ -148,7 +148,18 @@ namespace EPOS.Kern.Tests
                 // Tab_ProjektWirtschaftlichkeit. Wie in der Migration ueber ADD COLUMN,
                 // aus DERSELBEN Quelle; kein DML, NULL heisst bei p_I "wie p_B".
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung) SpalteSicherstellen(s);
+                // Schritt 73 (11.09.2026): Tab_SpeicherAuslegung und ihr eindeutiger
+                // Index. Die DDL steht beim Controller, der die Tabelle auch im Betrieb
+                // still selbst anlegt - DIESELBE Quelle wie in der Migration.
                 SpeicherAuslegungCtrl.SchemaSicherstellen();
+
+                // Schritt 74 (Auftrag #178, 11.09.2026): dieselbe Tabelle als
+                // STRICT-Tabelle. Auf einer Kopie, die schon auf Stand 73 steht, ist sie
+                // ohne STRICT angelegt worden; SQLite kennt kein ALTER TABLE ... STRICT,
+                // also baut SpeicherAuslegungStrict sie in EINER Transaktion neu auf -
+                // DIESELBE Quelle wie in der Migration und im Werkzeug. Steht sie schon
+                // STRICT, tut der Aufruf nichts.
+                SpeicherAuslegungStrict.Umbauen();
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

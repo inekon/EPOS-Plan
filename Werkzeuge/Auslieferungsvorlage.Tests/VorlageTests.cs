@@ -139,7 +139,12 @@ namespace Auslieferungsvorlage.Tests
 
             Assert.Equal(SchemaStand.Zielversion, befund.Stand);
             Assert.Equal("ok", befund.Integritaet);
-            Assert.Equal(117, befund.Strict);
+
+            // 118 seit Schemaschritt 74 (Auftrag #178, 11.09.2026): Tab_SpeicherAuslegung
+            // aus Schritt 73 war die EINZIGE Fachtabelle ohne STRICT und ist neu
+            // aufgebaut. Vorher 117. Die 119. Tabelle der Datei ist sqlite_sequence -
+            // eine Systemtabelle, die SQLite selbst anlegt und die nie STRICT traegt.
+            Assert.Equal(118, befund.Strict);
         }
 
         // =============================================================================

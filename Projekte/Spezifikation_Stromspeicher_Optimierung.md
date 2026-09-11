@@ -774,7 +774,7 @@ Die PV-Einspeisevergütung stammt auch bei PV aus CSV aus dem Projekt und wird b
 
 ### 14.4 Speicherung und technische Anschlussstellen
 
-Migrationsschritt **73** legt `Tab_SpeicherAuslegung` mit Projekt- und Anlagenbezug sowie einem eindeutigen Index je Profilnamen an. `@Aktuell` bezeichnet den letzten Eingabestand; dieser reservierte Name wird nicht als Benutzerprofil angeboten. Ein benanntes Profil ist eine eigenständige Kopie. Die Payload ist versioniertes, komprimiertes JSON (`gz1:`), einschließlich eingelesener Werte, Zeitstempel, Dateiname, SHA-256 und Importoptionen. Die Ursprungsdatei muss beim erneuten Öffnen nicht vorhanden sein.
+Migrationsschritt **73** legt `Tab_SpeicherAuslegung` mit Projekt- und Anlagenbezug sowie einem eindeutigen Index je Profilnamen an. Migrationsschritt **74** (Auftrag #178, 11.09.2026) baut dieselbe Tabelle als **STRICT**-Tabelle neu auf — sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`; Spalten, Typen, Fremdschlüssel und Index bleiben wortgleich, die Zeilen werden samt ihrer `ID` übernommen. `@Aktuell` bezeichnet den letzten Eingabestand; dieser reservierte Name wird nicht als Benutzerprofil angeboten. Ein benanntes Profil ist eine eigenständige Kopie. Die Payload ist versioniertes, komprimiertes JSON (`gz1:`), einschließlich eingelesener Werte, Zeitstempel, Dateiname, SHA-256 und Importoptionen. Die Ursprungsdatei muss beim erneuten Öffnen nicht vorhanden sein.
 
 Die Daten bleiben beim Kopieren des Projekts und beim erneuten Speichern derselben Speicheranlage im Assistenten erhalten. Das Löschen des Projekts entfernt seine Profile über Fremdschlüssel. Die Dateien `-wal` und `-shm` werden nicht einzeln behandelt; Sicherung und Schemapflege folgen [BETRIEB_SQLITE.md](BETRIEB_SQLITE.md).
 

@@ -66,11 +66,17 @@ namespace WindowsFormsApplication1
         /// Preisänderungssatz der kapitalgebundenen Kosten p_I in drei Spalten und das
         /// Freitextfeld, Anwenderentscheid W5-B-12 vom 09.09.2026, VALERI-Lücken G4
         /// und G6) auf 72; mit den gespeicherten Speicherauslegungsprofilen und
-        /// Zeitreihen (Schritt 73 vom 11.09.2026) auf <b>73</b>. Der Freeze-Stand
+        /// Zeitreihen (Schritt 73 vom 11.09.2026) auf 73 — und mit dem NEUAUFBAU
+        /// derselben Tabelle als <b>STRICT</b>-Tabelle (Schritt 74, Auftrag #178 vom
+        /// 11.09.2026) auf <b>74</b>. Schritt 74 ist der erste TABELLENNEUBAU des
+        /// SQLite-Zweigs (<c>CREATE</c> unter Hilfsnamen, <c>INSERT … SELECT</c>,
+        /// <c>DROP</c>, <c>RENAME</c>, Index neu — alles in einer Transaktion); die
+        /// Anweisungen stehen bei <see cref="SpeicherAuslegungStrict"/>, er ändert keinen
+        /// Wert und ist wiederholbar. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 73;
+        public const int Zielversion = 74;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

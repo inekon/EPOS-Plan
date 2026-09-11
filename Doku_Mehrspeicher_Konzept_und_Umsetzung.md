@@ -182,6 +182,8 @@ Die folgenden kompakten Draft-2020-12-Schemas dokumentieren die beiden manuellen
 
 `SpeicherAuslegungKonfiguration.Flotte` speichert Konfiguration, Quellen und importierte Werte im vorhandenen versionierten gzip-JSON-Payload (`gz1:`). Dies ist interne Persistenz, kein dritter Dateiimport. Nullable Grenzen bleiben `null`; unendliche JSON-Zahlen werden nicht verwendet. Die Schemas sind Dokumentation und keine separat ausgelieferten `.schema.json`-Validatoren.
 
+Abgelegt wird der Payload in `Tab_SpeicherAuslegung`. **Migrationsschritt 73** legt diese Tabelle an, **Migrationsschritt 74** (Auftrag #178, 11.09.2026) baut sie als **STRICT**-Tabelle neu auf: Sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt kein `ALTER TABLE … STRICT`. Spalten, Typen, Fremdschlüssel (`ON DELETE CASCADE` an Projekt und Energieanlage) und der eindeutige Index bleiben wortgleich; die Zeilen werden samt ihrer `ID` übernommen, es ändert sich kein Wert. Die Anweisungen stehen in [`EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs`](EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs).
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |
