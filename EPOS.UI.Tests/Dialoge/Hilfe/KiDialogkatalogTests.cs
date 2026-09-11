@@ -28,14 +28,20 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// </summary>
 public class KiDialogkatalogTests
 {
-    /// <summary>Die fünf Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <summary>Die sechs Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
     public static TheoryData<string, Type> Masken() => new()
     {
         { KiMaskennamen.HEIZKESSEL,              typeof(HeizkesselKatalogDaten) },
         { KiMaskennamen.PHOTOVOLTAIK,            typeof(ErzeugerZeile) },
         { KiMaskennamen.PUFFERSPEICHER,          typeof(PufferSpKatalogDaten) },
         { KiMaskennamen.WAERMEPUMPE,             typeof(WaermepumpeStammDaten) },
-        { KiMaskennamen.STROMSPEICHER_AUSLEGUNG, typeof(StromspeicherKiSicht) }
+        { KiMaskennamen.STROMSPEICHER_AUSLEGUNG, typeof(StromspeicherKiSicht) },
+
+        // Auftrag #221 (KI-D-E-1): die sechste Maske — die Ansicht „Simulation".
+        // Voll ausgeschrieben: EPOS.UI.Seiten.Simulation fuehrt eine ZWEITE
+        // ErzeugerZeile, und ein using darauf machte die Zeile darueber mehrdeutig.
+        { KiMaskennamen.SIMULATION,
+          typeof(EPOS.UI.Seiten.Simulation.SimulationKiSicht) }
     };
 
     // =====================================================================
@@ -80,11 +86,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_fuenf_Masken()
+    public void Der_Katalog_fuehrt_sechs_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(5, katalog.Anzahl);
+        Assert.Equal(6, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }

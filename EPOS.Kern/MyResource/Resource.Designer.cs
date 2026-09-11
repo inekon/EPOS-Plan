@@ -22634,6 +22634,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SIM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SIM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher-Auslegung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SPA {
@@ -22783,6 +22792,339 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_NEIGUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert für „{0}“ muss zwischen {1} und {2} liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden im Jahr, in denen der Kessel betriebsbereit gehalten wird; daraus folgt sein Bereitschaftsverlust. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BEREITSCHAFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BEREITSCHAFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft des Heizkessels ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BEREITSCHAFT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BEREITSCHAFT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung. Sie gilt projektweit für alle BHKW-Module. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der BHKW ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die projektweite untere Modulationsgrenze: Unterhalb dieses Anteils der Nennleistung schaltet das Modul ab, statt weiter zu modulieren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Leistungsgrenze der BHKW ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_GRENZE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_GRENZE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Wärmepumpe mit elektrischem Heizstab? Er deckt, was die Wärmepumpe allein nicht schafft, und verbraucht dafür Strom im Verhältnis eins zu eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_HEIZSTAB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_HEIZSTAB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_HEIZSTAB_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_HEIZSTAB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warnungen und Hinweise, die der letzte Lauf gemeldet hat — etwa ein angelegter Erzeuger ohne Kaskadenplatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_HINWEISE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_HINWEISE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise zum Lauf ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_HINWEISE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_HINWEISE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KASKADE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KASKADE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaskade und Reihenfolge ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KASKADE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KASKADE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag auf den Wärmebedarf für die Verluste des Verteilnetzes; wirkt nur bei vorhandenem Wärmebedarf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_NETZVERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_NETZVERLUSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzwärmeverluste ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_NETZVERLUSTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_NETZVERLUSTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen, die das Projekt führt, die aber auf keinem Platz der Simulation stehen. Sie rechnen nicht und erscheinen in der Übersicht mit 0,00. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_OHNE_PLATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_OHNE_PLATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgenommene Anlagen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_OHNE_PLATZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_OHNE_PLATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_REITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_REITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Offenes Reiterblatt ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_REITER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresstrombedarf des Projekts ohne die Eigenverbräuche der Wärmeerzeuger. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SBEDARF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SBEDARF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welcher Schritt der Ablaufleiste gerade vorn steht: die Konfiguration oder das Ergebnis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SCHRITT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SCHRITT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schritt der Ansicht ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SCHRITT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SCHRITT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil des Strombedarfs einschließlich der Eigenverbräuche, den Photovoltaik, BHKW und Speicherentladung im Lauf gedeckt haben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SDECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SDECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromdeckung ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SDECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SDECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die im Lauf aus dem Stromspeicher entnommene Energie; 0, wenn das Projekt keinen Speicher führt oder er nicht gearbeitet hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_ENTLADUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_ENTLADUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladung des Stromspeichers ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_ENTLADUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_ENTLADUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der zulässige Ladezustandsbereich der aktiven Speichervariante; leer, wenn das Projekt keine aktive Variante führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_SOC_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_SOC_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band des Stromspeichers ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_SOC_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_SOC_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Strommenge, die nach allen Erzeugern aus dem Netz bezogen werden muss. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SREST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SREST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SREST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SREST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahreswärmebedarf des Projekts aus Heizung, Brauchwasser und Prozesswärme — der Nenner der Wärmedeckung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WBEDARF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WBEDARF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil des Wärmebedarfs, den die Erzeuger der Kaskade im Lauf gedeckt haben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WDECKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WDECKUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmedeckung ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WDECKUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WDECKUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmemenge, die nach allen Erzeugern der Kaskade ungedeckt bleibt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WREST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WREST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WREST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WREST_NAME", resourceCulture);
             }
         }
         
@@ -23521,6 +23863,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_PV_STRANG_P8 {
             get {
                 return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie sind die Kennzahlen dieses Laufs zu lesen — Bedarf, Deckung und Rest bei Wärme und Strom? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_SIMULATION_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_SIMULATION_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Laufparameter wirken auf diese Simulation, und warum deckt die Kaskade den Bedarf nur teilweise? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_SIMULATION_KONFIG {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_SIMULATION_KONFIG", resourceCulture);
             }
         }
         
@@ -24307,6 +24667,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_KNOPF_TOOLTIP {
             get {
                 return ResourceManager.GetString("KI_KNOPF_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} ähnelt.
+        /// </summary>
+        public static string KI_KONTEXT_STELLE {
+            get {
+                return ResourceManager.GetString("KI_KONTEXT_STELLE", resourceCulture);
             }
         }
         

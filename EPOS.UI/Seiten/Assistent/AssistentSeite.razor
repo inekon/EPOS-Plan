@@ -210,6 +210,45 @@
     [Parameter] public string HilfeSchluessel { get; set; } = "AssistentSeite.btn_Help";
 
     // =====================================================================
+    // Die EINE Pille und der gemeldete Kontext (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Führt ein Kopfband über dieser Ansicht schon eine Hilfe-Pille? Dann zeichnet das
+    /// linke Band keine zweite. Unter Windows setzt <c>Hauptfenster</c> den Wert; auf
+    /// iOS fehlt er.
+    /// </summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>Der Weg nach oben; <c>null</c> = niemand hört zu.</summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    /// <summary>Wo der Anwender steht: Hilfeschlüssel, Name der Ansicht und ihr Schritt.</summary>
+    public Hilfekontext Kontext
+        => new Hilfekontext(HilfeSchluessel, TitelText, Schritttitel);
+
+    /// <summary>Die Überschrift des stehenden Schritts; leer, wenn es sie nicht gibt.</summary>
+    private string Schritttitel
+        => _schritt >= 0 && _schritt < _schritte.Count ? _schritte[_schritt].Titel : "";
+
+    /// <summary>Der zuletzt nach oben gemeldete Kontext — gemeldet wird nur ein Wechsel.</summary>
+    private Hilfekontext? _gemeldet;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null) return;
+
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
+    // =====================================================================
     // Zustand
     // =====================================================================
 
@@ -378,9 +417,18 @@
 
         builder.OpenElement(i++, "div");
         builder.AddAttribute(i++, "class", "epos-assistent-bandkopf");
-        builder.OpenComponent<InfoKnopf>(i++);
-        builder.AddComponentParameter(i++, nameof(InfoKnopf.Schluessel), HilfeSchluessel);
-        builder.CloseComponent();
+
+        // EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Traegt das Kopfband des
+        // Hauptfensters die Pille, zeichnet das linke Band keine zweite - die Ansicht
+        // MELDET stattdessen ihren Kontext nach oben.
+        if (!HilfePilleImKopfband)
+        {
+            builder.OpenComponent<InfoKnopf>(i++);
+            builder.AddComponentParameter(i++, nameof(InfoKnopf.Schluessel), HilfeSchluessel);
+            builder.AddComponentParameter(i++, nameof(InfoKnopf.Dialogname), Kontext.Dialogname);
+            builder.CloseComponent();
+        }
+
         builder.CloseElement();
 
         builder.OpenElement(i++, "h2");

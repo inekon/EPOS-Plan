@@ -68,8 +68,18 @@
             <span>@Kopfzeile</span>
             @* Der Hilfeknopf der JEWEILIGEN Seite (08.09.2026): Bis hierher trug der
                Rahmen einen allgemeinen Schluessel und jede Seite darunter noch einmal
-               Titel und Knopf - beides stand doppelt. *@
-            <InfoKnopf Schluessel="@HilfeJeSeite" />
+               Titel und Knopf - beides stand doppelt.
+
+               EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Als freie ANSICHT
+               unter dem Kopfband des Hauptfensters laesst sie ihre Pille weg und
+               meldet stattdessen ihren Kontext nach oben. Als REITERBLATT der
+               Startseite (dort haengt kein Geschlossen-Rueckruf) behaelt sie die
+               eigene - dort gibt es keine Ansicht, deren Schluessel das Kopfband
+               tragen koennte. *@
+            @if (!PilleImKopfband)
+            {
+                <InfoKnopf Schluessel="@HilfeJeSeite" Dialogname="@Kontext.Dialogname" />
+            }
         </div>
 
         @if (_gaben is null)
@@ -212,6 +222,63 @@
         _ => HilfeSchluessel
     };
 
+    // =====================================================================
+    //  Die EINE Pille und der gemeldete Kontext (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Führt ein Kopfband über dieser Ansicht schon eine Hilfe-Pille? Unter Windows
+    /// setzt <c>Hauptfenster</c> den Wert; auf iOS fehlt er.
+    /// </summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>Der Weg nach oben; <c>null</c> = niemand hört zu.</summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    /// <summary>
+    /// Lässt DIESE Einbaustelle ihre Pille weg? Nur als freie ANSICHT — als
+    /// Reiterblatt der Startseite trägt sie sie weiter.
+    /// </summary>
+    /// <remarks>
+    /// <b>Woran die zwei Rollen zu unterscheiden sind:</b> an dem Rückweg. Eine
+    /// Ansicht braucht einen, ein Reiterblatt nicht — dieselbe Unterscheidung, mit der
+    /// die Seite seit W16c‑E‑3 ihren „← zurück"-Knopf zeigt oder weglässt.
+    /// </remarks>
+    private bool PilleImKopfband => HilfePilleImKopfband && Geschlossen.HasDelegate;
+
+    /// <summary>Wo der Anwender steht: Hilfeschlüssel und Name der gezeigten Seite.</summary>
+    public Hilfekontext Kontext
+        => new Hilfekontext(HilfeJeSeite, NavigationBezeichnung, Seitenname);
+
+    /// <summary>Der Name der gezeigten Seite, wie ihn die Navigation zeigt.</summary>
+    private string Seitenname => _seite switch
+    {
+        SEITE_UEBERSICHT => NavUebersicht,
+        SEITE_KOSTEN     => NavKosten,
+        SEITE_WIRTSCHAFT => NavWirtschaft,
+        SEITE_BERICHT    => NavBericht,
+        _                => ""
+    };
+
+    /// <summary>Der zuletzt nach oben gemeldete Kontext — gemeldet wird nur ein Wechsel.</summary>
+    private Hilfekontext? _gemeldet;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Nur die ANSICHT meldet; das Reiterblatt der Startseite steht unter der
+        // Startseite und hat keinen Schluessel, den das Kopfband tragen sollte.
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null || !Geschlossen.HasDelegate) return;
+
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
     protected override void OnInitialized()
     {
         _seite = Bekannt(Startseite) ? Startseite : SEITE_UEBERSICHT;
@@ -223,6 +290,10 @@
     public void Dispose()
     {
         if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+
+        // Die Ansicht geht - die Pille im Kopfband faellt auf den Schluessel des
+        // Fensters zurueck (Auftrag #221).
+        if (Geschlossen.HasDelegate) Hilfemelder?.Melden(null);
     }
 
     private void BeiZustand()

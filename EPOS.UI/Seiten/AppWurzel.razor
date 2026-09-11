@@ -70,6 +70,17 @@
     </div>
 }
 
+@* DER MELDER DES HILFEKONTEXTS (Auftrag #221, Anwenderentscheid KI-D-E-1).
+
+   Er kommt VON OBEN und wird nur dort gelesen, wo eine Ansicht eine eigene
+   Pille fuehrt (Simulation, Stromspeicher-Auslegung, Projektassistent,
+   Berichte & Kosten). Ueber ihn weiss die Kopfband-Pille des Hauptfensters,
+   welchen Hilfeschluessel sie gerade tragen muss - ohne dass die Wurzel den
+   inneren Zustand der Ansichten kennen muesste. IsFixed, weil das Objekt die
+   ganze Lebensdauer der Wurzel gilt: ein neuer Melder je Zeichenlauf zoege
+   jede Ansicht darunter in einen neuen Parametersatz. *@
+<CascadingValue Value="_melder" IsFixed="true">
+
 @if (_ansicht == Seitenschluessel.Startseite && _startseite is not null)
 {
     @* DIE STARTSEITE (iU9-W16b.2). Unter Windows reicht Hauptfenster den
@@ -197,6 +208,8 @@ else
     <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" />
 }
 
+</CascadingValue>
+
 @code {
     // =====================================================================
     // Zustand - drei Ansichten, ein offenes Projekt
@@ -256,6 +269,87 @@ else
     private bool _assistentGeklaert;
     private WindowsFormsApplication1.LizenzLage? _lizenz;
     private string _lizenzbanner = "";
+
+    // =====================================================================
+    // Der HILFEKONTEXT der aktiven Ansicht (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Was die aktive Ansicht über sich meldet — Hilfeschlüssel, Name, Schritt und
+    /// Reiterblatt. <see cref="Hilfekontext.Keiner"/> = keine Ansicht führt einen
+    /// (Startseite, Projektliste), dann gilt der Schlüssel des Wirts.
+    /// </summary>
+    private Hilfekontext _hilfekontext = Hilfekontext.Keiner;
+
+    /// <summary>
+    /// Der Melder, den die Ansichten von hier bekommen — EIN Objekt für die
+    /// Lebensdauer der Wurzel (<c>IsFixed</c>).
+    /// </summary>
+    private Hilfekontextmelder? _melder;
+
+    /// <summary>
+    /// Der Hilfekontext der stehenden Ansicht — die Schale liest ihn für ihre
+    /// EINE Pille (Auftrag #221).
+    /// </summary>
+    public Hilfekontext AktiverHilfekontext => _hilfekontext;
+
+    /// <summary>
+    /// Der Kontext hat gewechselt — die Ansicht ist eine andere, ihr Schritt oder
+    /// ihr Reiterblatt auch, oder der Assistent ist auf- bzw. zugegangen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum auch beim Auf- und Zugehen des Assistenten.</b> Die Pille leuchtet,
+    /// solange er für diese Ansicht steht (<c>InfoKnopf.Aktiv</c>, #218). Unter
+    /// Windows ist der Chat ein EIGENES Fenster; sein Schliessen loest in dieser
+    /// WebView nichts aus. Den Anstoss gibt <c>KiChatKontext.AufrufGeaendert</c>,
+    /// und die Wurzel reicht ihn als denselben Wechsel nach oben — die Schale
+    /// zeichnet dann neu und fragt den Zustand frisch ab.
+    /// </remarks>
+    [Parameter] public EventCallback<Hilfekontext> HilfekontextGeaendert { get; set; }
+
+    /// <summary>
+    /// Die Senke des Melders: Sie VERGLEICHT. Eine Ansicht meldet nach jedem
+    /// Zeichenlauf — ohne Vergleich zöge jede Meldung den nächsten nach sich.
+    /// </summary>
+    private void HilfekontextGemeldet(Hilfekontext? kontext)
+    {
+        Hilfekontext neu = kontext ?? Hilfekontext.Keiner;
+        if (_hilfekontext.Equals(neu)) return;
+
+        _hilfekontext = neu;
+        Kontextwechsel();
+    }
+
+    /// <summary>
+    /// Der Assistent ist auf- oder zugegangen (<c>KiChatKontext.AufrufGeaendert</c>).
+    /// Der Kontext bleibt derselbe; zu zeichnen ist trotzdem.
+    /// </summary>
+    private void BeiAufrufwechsel() => Kontextwechsel();
+
+    /// <summary>
+    /// Meldet nach oben und zeichnet neu — über <c>InvokeAsync</c>, weil beides auch
+    /// aus dem Verwerfen einer Ansicht heraus kommen kann (also mitten im
+    /// Zeichenlauf) und unter Windows aus dem Fenster des Chats (also von einem
+    /// anderen Faden).
+    /// </summary>
+    private void Kontextwechsel()
+    {
+        try
+        {
+            _ = InvokeAsync(async () =>
+            {
+                if (HilfekontextGeaendert.HasDelegate)
+                    await HilfekontextGeaendert.InvokeAsync(_hilfekontext);
+
+                StateHasChanged();
+            });
+        }
+        catch (ObjectDisposedException)
+        {
+            // Die Wurzel geht selbst gerade weg (Programmende, Sprachwechsel) - dann
+            // gibt es niemanden mehr, dem zu melden waere.
+        }
+    }
 
     // =====================================================================
     // Die zwei Gaben der Schale (iU9-W16c.2)
@@ -406,6 +500,8 @@ else
     {
         Navigationsziel.Aktuell = this;
         KiAusfuehrungEinlegen();
+        _melder = new Hilfekontextmelder(HilfekontextGemeldet);
+        WindowsFormsApplication1.KiChatKontext.AufrufGeaendert += BeiAufrufwechsel;
         if (Zustand is not null) Zustand.Geaendert += BeiZustand;
         LizenzlageUebernehmen();
         // Die Startansicht wird ueber DENSELBEN Weg gesetzt wie jeder spaetere
@@ -463,6 +559,11 @@ else
     public void Dispose()
     {
         if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+
+        // Ein statisches Ereignis haelt seinen Hoerer am Leben (Auftrag #221) - wer
+        // sich anhaengt, haengt sich beim Verwerfen wieder ab.
+        WindowsFormsApplication1.KiChatKontext.AufrufGeaendert -= BeiAufrufwechsel;
+
         if (ReferenceEquals(Navigationsziel.Aktuell, this)) Navigationsziel.Aktuell = null;
     }
 

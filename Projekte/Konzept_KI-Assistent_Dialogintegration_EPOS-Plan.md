@@ -77,6 +77,34 @@ Beschriftung „KI". Der `KiKnopf` bleibt als Ring mit derselben Marke für Wirt
 noch von keinem Wirt gesetzt — vorgesehen, sobald eine Ansicht `KI_ASSISTENT` offen ist). Die Selektoren `.epos-infoknopf` und
 `.epos-kiknopf` bleiben für die Dialogproben bestehen; `KI_KNOPF_HILFE` und `KI_KNOPF_DIALOG` sind ohne Leser entfernt.
 
+**Regel seit #221 (Anwenderentscheid KI‑D‑E‑1 vom 11.09.2026): EINE PILLE JE BILDSCHIRM.**
+Der Befund war: „Die KI-Buttons haben keine unterschiedliche Funktion im Kontext. Daher ist es nicht
+sinnvoll, auf einer Sicht zwei KI-Buttons zu sehen. Es muss einen Kontext in der KI-Funktion der
+zweiten Sicht geben, der sich von dem anderen KI-Button unterscheidet." Gemessen: Das Kopfband des
+`Hauptfenster`s zeichnete seine Pille mit dem **festen** Schlüssel `Hauptfenster.btn_Help` über
+JEDER Ansicht, und die Ansicht darunter zeichnete eine zweite mit ihrem eigenen — beide führten in
+denselben Chat, nur mit verschiedener Bereichszeichenkette. Daraus zwei Sätze, die zusammengehören:
+
+1. **Die Pille des Bildschirms steht dort, wo der Bildschirm anfängt.** Unter Windows ist das das
+   Kopfband; die Ansichten (`SimulationSeite`, `StromspeicherAuslegungSeite`, `AssistentSeite`,
+   `BerichteKostenSeite` als freie Ansicht, dazu der Kopf von `SimulationKonfigSeite` als Schritt ①)
+   zeichnen ihre eigene nur, wenn **kein** Kopfband sie führt — ein `CascadingValue`
+   `HilfePilleImKopfband`, den `Hauptfenster` auf `true` setzt und der auf iOS (AppWurzel ohne
+   Hauptfenster) fehlt. **Überlagerungsdialoge behalten ihre Pille** (sie verdecken die Seite und
+   haben eigene Felder), ebenso die INLINE-Knöpfe im Inhalt („Berechnungsweg…"): Sie tragen einen
+   anderen Schlüssel und führen auf eine andere Hilfeseite.
+2. **Die Pille oben FOLGT der Ansicht.** Die `AppWurzel` führt einen `AktiverHilfekontext`
+   (`EPOS.UI/Dienste/Hilfekontext.cs`: Hilfeschlüssel, Ansicht, Schritt, Reiterblatt); jede Ansicht
+   meldet ihn über den `Hilfekontextmelder` nach oben, und `Hauptfenster` bindet Schlüssel, Dialognamen
+   und `Aktiv` daran. Ohne meldende Ansicht (Startseite, Projektliste) gilt der bisherige
+   Fensterschlüssel. Damit wechselt in der Simulation auch der **Bereich** mit dem Schritt:
+   Schritt ① → `Form_Simulation_Config.btn_Help` → `B_SIM_KONFIG`, Schritt ③ →
+   `Form_Simulation_Detail.btn_Help` → `B_SIM_DETAIL`.
+
+Wache: `EPOS.UI.Tests/Seiten/HilfePilleTests` — genau eine Pille im Kopfbereich, kein Hilfeschlüssel
+zweimal auf demselben Bildschirm, der Schlüssel folgt Ansicht und Schritt, und ohne Kopfband
+zeichnet die Ansicht ihre eigene (die iOS-Gegenprobe).
+
 **Was der Knopf weiß.** Denselben `Schluessel` wie der Info-Knopf. Daraus leitet der Kern den Bereich ab:
 `KiChatKontext.BereichFuerHilfeschluessel(schluessel)` — eine Tabelle Hilfeschlüssel-Präfix → Bereich der
 Positivliste (`Form_Heizkessel*` → `B_HEIZKESSEL`, `KDLG_*`/`Form_Kosten*` → `B_KOSTEN`, …), mit `BEREICH_UNBEKANNT`
@@ -210,6 +238,8 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
 | **S3‑Rest** (Fortschritt und Abbruch) — **umgesetzt #214** (11.09.2026) | **#214** | `KiChatDialog` hält je Anforderung eine `CancellationTokenSource` und meldet Senke und Marke über `KiChatSteuerung` an; Baustein `Fortschritt` im Chat (Balken, Schritttext, „Abbrechen"), Schlusszeile im Verlauf mit Namen und Dauer; Senden und Aktionsknöpfe während eines Laufs gesperrt; lange Aktionen laufen im Hintergrund (`KiAusfuehrung.ImHintergrund`) statt über `AufOberflaeche`; Abbruch kommt in allen drei Rechenaktionen an (`SimulationRunner` mit `IProgress`/`CancellationToken`, `Dienste.Abbrechen` der Stromspeicher-Ansicht) | bunit: Balken während einer langen Aktion, „Abbrechen" setzt die Marke, Verlaufszeile „abgebrochen"; Kern: eine lange Aktion nutzt `AufOberflaeche` NICHT (Gegenprobe: eine kurze zweimal); KiKern: `KiLaufumgebung`/`KiFortschritt`; Referenzlauf 1030/1046 byte-gleich |
 | **Bedienung** (Befunde der Abnahme) — **umgesetzt #219** (11.09.2026) | **#219** | KI‑D‑B‑1 (Tastaturfokus des nicht-modalen Chatfensters): `Masken.KiAssistent` öffnet über `Blazorsprung.Verzoegert`, `BlazorDialogForm.TastaturUebergeben()` gibt der zweiten WebView2 die Eingabe (sofort und nach ihrer Initialisierung), das Textfeld trägt `autofocus` und bekommt den Schreibzeiger nach dem ersten Zeichnen sowie bei jedem neuen Aufrufkontext. KI‑D‑B‑2 (tote Verweise): eine ADRESSE geht über `Dienste.Datei.AdresseOeffnen` statt über `MitSystemOeffnen` — in `KiChatHuelle.Gaben` und im Rückfall von `WindowsHilfeDienst` | bunit: jedes Bedienelement des Chats einzeln (`KiChatBedienungTests`, 19 Fälle); Quelltextwachen `KiChatOeffnerTests` (Sprung, Fokusübergabe, Adressweg, kein leerer Delegat, kein Bedienelement ohne Weg — je mit Gegenprobe); Referenzlauf unberührt. **Am Gerät bleibt** der Fokusweg WinForms → WebView2 → DOM auf beiden Öffnungswegen |
 
+| **Kontext** (KI‑D‑E‑1) — **umgesetzt #221** (11.09.2026) | **#221** | **Eine Pille je Bildschirm** und ein Kontext mit Substanz: `Hilfekontext`/`Hilfekontextmelder` in `EPOS.UI/Dienste`, `AppWurzel.AktiverHilfekontext` samt `HilfekontextGeaendert`, `CascadingValue HilfePilleImKopfband` aus `Hauptfenster`; die vier freien Ansichten und der Kopf von Schritt ① lassen ihre Pille unter dem Kopfband weg und melden statt dessen Ansicht · Schritt · Reiter (Format `KI_KONTEXT_STELLE`). Die **Simulationsansicht meldet sich an der Maskenbrücke an** — sechste Katalogmaske `KiMaskennamen.SIMULATION` mit **18 Feldern** aus `SimulationKiSicht` (Kaskade und nicht aufgenommene Anlagen lesend, die fünf Laufparameter lesbar UND setzbar über `SimulationParameterDienste`, die sieben Kennzahlen des Laufs samt SoC-Band, Reiterblatt und Laufhinweisen nur lesend), Ziel in `KiMaskenziele`. Dazu `KiChatKontext.AufrufGeaendert`/`AssistentStehtFuer` für das leuchtende Feld der Pille (#218) und **Startfragen je Bereich** (`KI_FRAGE_SIMULATION_KONFIG`, `KI_FRAGE_SIMULATION_ERGEBNIS`, de/en) statt der leeren Eingabezeile | bunit: `HilfePilleTests` (eine Pille, Schlüssel folgt Ansicht und Schritt, ohne Kopfband die eigene, Stelle als Dialogname, leuchtendes Feld, Startfragen samt zwei Gegenproben); `KiSimulationMaskeTests` (18 Felder, Felder je Schritt, `feld_setzen` über den Delegaten, Kennzahlen nicht setzbar, genau fünf setzbare Felder); Kern: Startfragen in beiden Sprachen, Aufrufwechsel wird gemeldet; Referenzlauf 1030/1046 byte-gleich |
+
 Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jeder Auftrag: Doku in
 `Konzept_KI-Assistent_Aufgabensteuerung.md` (Kapitel 8, Etappen) und `EPOS.UI/CLAUDE.md`; Wiki-Seite
 „Hilfe-Assistent" nach S1 und S3 nachziehen (Upload durch die Orchestrierung).
@@ -224,6 +254,8 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 | **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200**: eigener Merker samt `FASSUNG_DIALOGDATEN` und Datum in `KiEinwilligung`; gefragt wird EINMAL beim ersten Einschalten des Schalters, zurückgenommen wird im `KiEinstellungenDialog`. Ohne eingehängten Haken gibt es keinen Weg zu ihr — ein Lauf ohne Oberfläche überträgt keine Feldwerte |
 | **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200 (lesen) und #201 (setzen)**: die vier auf Eigenschaftsnamen ihres Razor-Daten-Objekts umgestellt (Feldumfang unverändert 15/3/1/1), die Stromspeicher-Ansicht als fünfte Deklaration mit 16 Feldern. Mit #201 melden alle fünf ihre `KiMaskenhaken` an und sind in dieser Reihenfolge verdrahtet; je Maske führt `EPOS.UI.Tests/Dialoge/Hilfe/KiFeldSetzenTests` einen Fall. **`Schreibgeschuetzt` trug dabei zunächst nur die Wärmepumpe** (Bericht #201, Restpunkt); Heizkessel, Photovoltaik und Pufferspeicher folgen mit **#211** |
 | **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | **entschieden 11.09.2026 (Empfehlung), umgesetzt #201**: `dialog_speichern` ruft den Speicherweg der offenen Maske — Stufe 2, `datenbankwirksam`, damit mit Sicherungspunkt VOR der Bestätigung; der Pfad steht in der Bestätigung und im Ergebnis. Ohne Freigabe wird der Speicherweg nicht einmal gerufen |
+
+| **KI‑D‑E‑1** Zwei Pillen auf einer Sicht — welche bleibt? | Eine je Bildschirm: die des Kopfbands, und ihr Schlüssel folgt der aktiven Ansicht. Dazu bekommt die zweite Sicht einen Kontext, der sich vom ersten unterscheidet — sie meldet ihre Felder an. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #221**: `CascadingValue HilfePilleImKopfband` + `AppWurzel.AktiverHilfekontext`; die Simulationsansicht als sechste Katalogmaske mit 18 Feldern; Startfragen je Bereich |
 
 **Entscheid 11.09.2026: alle vier nach Empfehlung.**
 
@@ -303,3 +335,34 @@ niemand gestellt hatte: **kommt der Klick überhaupt irgendwo an?**
 `navigator.clipboard` kommt nicht vor), „Rechtshinweis anzeigen", „Einstellungen…", „Werkzeuge…",
 „Aktionen zulassen", „Fragen", „Nur suchen", „Schließen", der i-Knopf, der Kontextlink und der
 Tageszähler. Jedes dieser Elemente hat seitdem einen bunit-Fall.
+
+### KI‑D‑E‑1 — „zwei KI-Buttons ohne unterschiedliche Funktion"
+
+**Befund (Anwender, Bildschirmfoto der Simulationsansicht, 11.09.2026).** „Die KI-Buttons haben
+keine unterschiedliche Funktion im Kontext. Daher ist es nicht sinnvoll, auf einer Sicht zwei
+KI-Buttons zu sehen. Es muss einen Kontext in der KI-Funktion der zweiten Sicht geben, der sich von
+dem anderen KI-Button unterscheidet."
+
+**Gemessen.** `Hauptfenster.razor:66` zeichnete die Kopfband-Pille mit dem festen Schlüssel
+`Hauptfenster.btn_Help` — über JEDER Ansicht. `SimulationSeite.razor:93`,
+`Strom/StromspeicherAuslegungSeite.razor:76` und der Kopf von `SimulationKonfigSeite` zeichneten
+eine zweite mit eigenem Schlüssel. Mehr Unterschied gab es nicht: An der Maskenbrücke meldeten nur
+die vier Erzeugerdialoge und die Stromspeicher-Auslegung Felder an; die Simulationsansicht meldete
+**nichts** — `dialog_lesen` und „Feldwerte mitsenden" hatten dort nichts zu zeigen.
+
+**Behoben (#221) in drei Schritten:**
+
+| Schritt | Was | Nachweis |
+|---|---|---|
+| **Eine Pille je Bildschirm** | `CascadingValue HilfePilleImKopfband` aus `Hauptfenster`; die vier freien Ansichten und der Kopf von Schritt ① lassen ihre eigene weg. Inline-Knöpfe im Inhalt („Berechnungsweg…") und Überlagerungsdialoge behalten sie — sie tragen andere Schlüssel | `HilfePilleTests`: genau eine Pille im Kopfbereich, KEIN Schlüssel zweimal auf demselben Bildschirm, und die iOS-Gegenprobe (AppWurzel ohne Kopfband zeichnet die eigene) |
+| **Die Pille folgt der Ansicht** | `Hilfekontext` (Schlüssel, Ansicht, Schritt, Reiter) + `Hilfekontextmelder` als CascadingValue der `AppWurzel`; `Hauptfenster` bindet Schlüssel, Dialognamen und `Aktiv` daran. Der Schlüssel bestimmt zweierlei: die Hilfeseite UND den Bereich des Assistenten | `HilfePilleTests`: Simulation Schritt ① → `B_SIM_KONFIG`, Schritt ③ → `B_SIM_DETAIL`, Auslegung → ihr Schlüssel, zurück zur Startansicht → Fensterschlüssel |
+| **Der Kontext bekommt Substanz** | Die Simulationsansicht ist die **sechste** Katalogmaske: 18 Felder aus `SimulationKiSicht` — Kaskade und nicht aufgenommene Anlagen (lesend), die fünf Laufparameter (lesbar und setzbar über `SimulationParameterDienste`, mit Plausibilitätsgrenzen im Maskenhaken), die sieben Kennzahlen des Laufs samt SoC-Band, offenem Reiterblatt und Laufhinweisen (lesend). Dazu die Startfragen `KI_FRAGE_SIMULATION_KONFIG` / `KI_FRAGE_SIMULATION_ERGEBNIS` statt der leeren Eingabezeile | `KiSimulationMaskeTests`: 18 Felder, Werte je Schritt, `feld_setzen` geht über den Delegaten, genau fünf setzbare Felder, eine Kennzahl wird benannt abgelehnt |
+
+**Warum die Daten aus den vorhandenen DTO kommen.** `SimulationKiSicht` löst die Ketten über
+`SimulationKonfigDaten`, `ParameterDaten` und `SimulationErgebnisDaten` auf; den Ergebnisstand gibt
+`SimulationErgebnisHuelle.LetzterStand` her — das, was die Seite gerade zeigt. Ein eigener Ladeweg
+wäre ein zweiter Stand derselben Zahlen und je Leseanfrage ein weiterer Datenbankzugriff.
+
+**Was am Gerät bleibt.** Ob die Pille im Kopfband im laufenden Programm mit dem Schritt umspringt
+und ob der Chat die neue Kontextzeile („Simulation · 3 Ergebnis · Stromspeicher") zeigt, sagt die
+Windows-Abnahme; bunit kennt kein zweites Fenster.

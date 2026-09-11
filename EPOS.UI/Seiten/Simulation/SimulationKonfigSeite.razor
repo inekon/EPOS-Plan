@@ -32,7 +32,14 @@
 
     <div class="epos-simkonfig-kopf">
         <span class="epos-simkonfig-titel">@KopfText</span>
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Als Schritt ① der Ansicht
+           „Simulation" unter dem Kopfband des Hauptfensters traegt die Pille dort oben
+           GENAU DIESEN Schluessel - hier stuende er ein zweites Mal. Auf iOS fehlt das
+           Kopfband, der CascadingValue fehlt, und die Seite zeichnet sie wie bisher. *@
+        @if (!HilfePilleImKopfband)
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+        }
 
         <span class="epos-simkonfig-ansicht">
             <span class="epos-simkonfig-ansichtlabel">@AnsichtLabel</span>
@@ -410,6 +417,18 @@
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Config.btn_Help";
 
     /// <summary>
+    /// Führt ein Kopfband über dieser Seite schon eine Hilfe-Pille? Dann zeichnet der
+    /// Kopf dieser Seite keine zweite mit demselben Schlüssel (Auftrag #221).
+    /// </summary>
+    /// <remarks>
+    /// Der inline stehende Knopf „Berechnungsweg" im Erzeugerabschnitt bleibt: Er trägt
+    /// einen ANDEREN Schlüssel und führt auf eine andere Hilfeseite — er ist ein Teil
+    /// des Inhalts und nicht die Pille des Bildschirms.
+    /// </remarks>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>
     /// H13 — der ZWEITE Hilfeschlüssel: der RECHENWEG statt der Bedienung. Er zeigt auf
     /// die Wikiseite „Programm Dokumentation/Berechnung/Simulationsablauf"
     /// (help_mapping.txt, Abschnitt „H13 — Rubrik Berechnung").
@@ -609,6 +628,37 @@
 
     /// <summary>Der ausgewaehlte Knotenschluessel (Pruefhilfe).</summary>
     public string Auswahl => _auswahl;
+
+    /// <summary>
+    /// Der gezeigte Stand — Kaskade, Reihenfolge und Speicherspalte (Auftrag #221).
+    /// </summary>
+    /// <remarks>
+    /// <b>Wozu er öffentlich ist.</b> Der Wirt <c>SimulationSeite</c> meldet die Felder
+    /// dieser Ansicht beim Hilfe-Assistenten an und liest die Kaskade aus GENAU DEM
+    /// Stand, den der Anwender vor sich hat — nicht aus einem zweiten Ladevorgang, der
+    /// etwas anderes zeigen könnte.
+    /// </remarks>
+    public SimulationKonfigDaten Stand => _daten;
+
+    /// <summary>
+    /// Der Stand der fünf Laufparameter (#216) — dasselbe Objekt, das die Felder
+    /// dieser Seite zeigen (Auftrag #221).
+    /// </summary>
+    /// <remarks>
+    /// Wer hineinschreibt, ändert damit auch die Anzeige; genau so setzt der
+    /// Assistent einen Laufparameter, und <see cref="Auffrischen"/> zeichnet danach.
+    /// </remarks>
+    public ParameterDaten Laufparameter => _parameter;
+
+    /// <summary>
+    /// Lädt den gezeigten Stand neu und zeichnet — der Weg, den ein Wirt geht,
+    /// nachdem von aussen geschrieben wurde (Auftrag #221).
+    /// </summary>
+    public void Auffrischen()
+    {
+        Neuladen();
+        StateHasChanged();
+    }
 
     // =====================================================================
     // Laden

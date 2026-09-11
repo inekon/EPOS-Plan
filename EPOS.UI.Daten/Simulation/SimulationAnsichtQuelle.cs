@@ -90,7 +90,13 @@ namespace WindowsFormsApplication1
                     // AUFTRAG #216: Die fuenf Laufparameter stehen in Schritt 1, ihre Delegaten kommen
                     // weiterhin aus der ERGEBNISHUELLE — sie haelt die zwei Felder, mit denen der Lauf
                     // bestueckt wird (Betriebsart, Leistungsgrenze). Beim Merge #208 hierher gezogen.
-                    Parameter = _ergebnis.ParameterGaben()
+                    Parameter = _ergebnis.ParameterGaben(),
+
+                    // AUFTRAG #221 (KI-D-E-1): Die Ansicht meldet ihre Felder beim
+                    // Hilfe-Assistenten an; die Kennzahlen des Laufs stehen fertig im
+                    // zuletzt geladenen Stand der Ergebnishuelle. Kein neuer Datenweg -
+                    // dieselbe DTO, nur ohne zweites Lesen.
+                    Ergebnisstand = () => _ergebnis.LetzterStand
                 },
                 ["ProjektText"] = Projektzeile(projektName)
             };

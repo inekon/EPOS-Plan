@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -19,6 +20,37 @@ public static class SimulationSchritt
 
     /// <summary>Schritt ③ — die <see cref="SimulationErgebnisSeite"/>.</summary>
     public const string Ergebnis = "ERGEBNIS";
+}
+
+/// <summary>
+/// Der ANZEIGENAME eines Reiterblatts von Schritt ③ (Auftrag #221).
+///
+/// <para><b>Wozu.</b> Die Ansicht meldet ihren Hilfekontext nach oben — Name, Schritt
+/// und offenes Reiterblatt —, und der Assistent nennt ihn in seiner Kontextzeile. Was
+/// die Ergebnisseite dabei herausgibt, ist der sprachneutrale SCHLÜSSEL
+/// (<c>STROMSPEICHER</c>); was der Anwender liest, ist die Beschriftung des Reiters.</para>
+///
+/// <para><b>Die Beschriftungen sind dieselben Ressourcen</b>, die
+/// <c>SimulationErgebnisSeite</c> an ihre neun <c>Reiterblatt</c> gibt — und deshalb
+/// hält ein Wächter (<c>EPOS.UI.Tests</c>) beide Listen gegeneinander: Jeder Schlüssel
+/// aus <c>SimulationErgebnisSeite.Blatt</c> muss hier einen Namen haben.</para>
+/// </summary>
+public static class SimulationBlattnamen
+{
+    /// <summary>Der Anzeigename zum Blattschlüssel; ein unbekannter liefert Leer.</summary>
+    public static string Text(string? schluessel) => schluessel switch
+    {
+        SimulationErgebnisSeite.Blatt.Uebersicht    => Resource.SIMERG_TAB_UEBERSICHT,
+        SimulationErgebnisSeite.Blatt.Bedarf        => Resource.SIMERG_TAB_BEDARF,
+        SimulationErgebnisSeite.Blatt.Waermepumpe   => Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+        SimulationErgebnisSeite.Blatt.Heizkessel    => Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
+        SimulationErgebnisSeite.Blatt.Solarthermie  => Resource.SIM_ERZEUGERNAME_SOLARTHERMIE,
+        SimulationErgebnisSeite.Blatt.Bhkw          => Resource.SIM_ERZEUGERNAME_BHKW,
+        SimulationErgebnisSeite.Blatt.Photovoltaik  => Resource.SIM_PHOTOVOLTAIK,
+        SimulationErgebnisSeite.Blatt.Stromspeicher => Resource.SIM_STROMSPEICHER,
+        SimulationErgebnisSeite.Blatt.Ergebnis      => Resource.SIM_ERGEBNIS,
+        _                                           => ""
+    };
 }
 
 /// <summary>
@@ -144,6 +176,21 @@ public sealed class SimulationAnsichtDienste
     /// <c>null</c> = die Plattform bietet sie nicht an, dann zeigt ① sie nicht.
     /// </summary>
     public SimulationParameterDienste? Parameter;
+
+    /// <summary>
+    /// Der ZULETZT GELADENE Stand von Schritt ③ — das, was die Ergebnisseite gerade
+    /// zeigt; <c>null</c> = sie hat noch nichts geladen (Auftrag #221).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Wozu.</b> Die Ansicht meldet ihre Felder beim Hilfe-Assistenten an
+    /// (KI‑D‑E‑1), und zu ihnen gehören die Kennzahlen des Laufs. Sie stehen fertig in
+    /// <see cref="SimulationErgebnisDaten"/>; ein eigener Ladeweg dafür wäre ein
+    /// ZWEITER Stand derselben Zahlen — und jede Leseanfrage des Assistenten ein
+    /// weiterer Datenbankzugriff.</para>
+    /// <para><b>Es ist kein neuer Datenweg</b>, sondern derselbe: Die Hülle gibt her,
+    /// was sie beim letzten <c>SimulationErgebnisDienste.Laden</c> ohnehin gebaut hat.</para>
+    /// </remarks>
+    public Func<SimulationErgebnisDaten?>? Ergebnisstand;
 }
 
 /// <summary>

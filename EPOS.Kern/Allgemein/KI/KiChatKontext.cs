@@ -321,6 +321,97 @@ namespace WindowsFormsApplication1
         public static void AufrufMelden(KiAufrufkontext aufruf)
         {
             Aufruf = aufruf;
+
+            Action melder = AufrufGeaendert;
+            if (melder == null) return;
+            try { melder(); } catch { }
+        }
+
+        /// <summary>
+        /// Der Aufruf hat gewechselt — der Assistent ist aufgegangen, hat seinen
+        /// Kontext bekommen oder ist zu (Auftrag #221).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Wozu ein Ereignis und nicht bloss die Abfrage.</b> Die HILFE-PILLE
+        /// leuchtet, solange der Assistent fuer die stehende Ansicht offen ist
+        /// (<c>InfoKnopf.Aktiv</c>, Auftrag #218). Unter Windows steht der Chat in einem
+        /// EIGENEN Fenster; wird es geschlossen, geschieht in der WebView des
+        /// Hauptfensters nichts — kein Ereignis, kein Zeichenlauf, und die Pille bliebe
+        /// bis zum naechsten Klick erleuchtet. Ueber dieses Ereignis erfaehrt die
+        /// <c>AppWurzel</c> davon und zeichnet neu.</para>
+        /// <para><b>Es ist prozessweit und statisch</b> — wie <see cref="Aufruf"/>
+        /// selbst. Wer sich anhaengt, haengt sich beim Verwerfen wieder ab; eine
+        /// Komponente, die das vergisst, haelt sich selbst am Leben.</para>
+        /// </remarks>
+        public static event Action AufrufGeaendert;
+
+        /// <summary>
+        /// Steht der Assistent gerade FUER DIESEN Hilfeschluessel? (Auftrag #221)
+        /// </summary>
+        /// <remarks>
+        /// Genau das beantwortet <c>InfoKnopf.Aktiv</c>: Die Pille der Ansicht, aus der
+        /// gefragt wurde, traegt das Blau der Marke — nicht jede Pille im Haus. Ein
+        /// Aufruf ohne Hilfeschluessel (der Menueweg) laesst keine leuchten.
+        /// </remarks>
+        public static bool AssistentStehtFuer(string hilfeschluessel)
+        {
+            if (string.IsNullOrWhiteSpace(hilfeschluessel)) return false;
+
+            KiAufrufkontext aufruf = Aufruf;
+            if (aufruf == null) return false;
+
+            return string.Equals((aufruf.Hilfeschluessel ?? "").Trim(), hilfeschluessel.Trim(),
+                                 StringComparison.Ordinal);
+        }
+
+        // ------------------------------------------------------------------
+        //  Die STARTFRAGE je Bereich (Auftrag #221, Punkt 3)
+        //
+        //  WOZU. Wer die Pille einer ANSICHT drueckt, hat noch keine Frage - die
+        //  Eingabezeile blieb bis hierher leer, und der Anwender musste selbst
+        //  finden, was der Assistent ueber diese Ansicht weiss. Ein Banner hat es
+        //  seit #199 besser: Es belegt die Frage aus KI_FRAGE_<Kennung> vor.
+        //  Dieselbe Vorbelegung bekommt jetzt die Ansicht - ueber ihren
+        //  HILFESCHLUESSEL, also ohne eine einzige Zeile im Dialog.
+        //
+        //  SIE IST EINE VORBELEGUNG UND KEINE FRAGE. Abgeschickt wird nichts
+        //  (Konzept 5: „kein Assistent ohne Anwenderfrage"); der Satz steht in der
+        //  Eingabezeile und laesst sich ueberschreiben.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Zuordnung Maskenpräfix eines Hilfeschlüssels → Ressourcenschlüssel der
+        /// Startfrage. Was hier nicht steht, hat keine Vorbelegung.
+        /// </summary>
+        private static readonly Dictionary<string, string> STARTFRAGE_JE_HILFEPRAEFIX =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Form_Simulation_Config", "KI_FRAGE_SIMULATION_KONFIG" },
+            { "Form_Simulation_Detail", "KI_FRAGE_SIMULATION_ERGEBNIS" }
+        };
+
+        /// <summary>Die Startfragentabelle zum Nachlesen — eine Kopie, keine Handhabe.</summary>
+        public static IReadOnlyDictionary<string, string> Startfragepraefixe =>
+            new Dictionary<string, string>(STARTFRAGE_JE_HILFEPRAEFIX, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Die vorbelegte Frage zu einem Hilfeschlüssel (<c>Form_Simulation_Detail.btn_Help</c>);
+        /// leer, wenn diese Ansicht keine eigene führt.
+        /// </summary>
+        public static string StartfrageFuerHilfeschluessel(string hilfeschluessel)
+        {
+            if (string.IsNullOrWhiteSpace(hilfeschluessel)) return "";
+
+            string schluessel = hilfeschluessel.Trim();
+            int punkt = schluessel.IndexOf('.');
+            string maske = punkt < 0 ? schluessel : schluessel.Substring(0, punkt);
+            if (maske.Length == 0) return "";
+
+            string ressource;
+            if (!STARTFRAGE_JE_HILFEPRAEFIX.TryGetValue(maske, out ressource)) return "";
+
+            try { return MyResource.Resource.ResourceManager.GetString(ressource) ?? ""; }
+            catch (Exception) { return ""; }
         }
 
         // ------------------------------------------------------------------

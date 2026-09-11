@@ -36,8 +36,25 @@
 
 <div class="epos-hauptfenster">
 
+@* EINE PILLE JE BILDSCHIRM (Auftrag #221, Anwenderentscheid KI-D-E-1 vom
+   11.09.2026: „Es ist nicht sinnvoll, auf einer Sicht zwei KI-Buttons zu
+   sehen.").
+
+   Das Kopfband dieses Fensters steht ueber JEDER Ansicht und fuehrt seit W16c
+   eine Hilfe-Pille. Die freien Ansichten der Wurzel - Simulation,
+   Stromspeicher-Auslegung, Projektassistent, Berichte & Kosten - zeichneten
+   bis hierher eine ZWEITE mit ihrem eigenen Schluessel; auf dem Bildschirm
+   standen dann zwei Pillen, die sich nur in einer Zeichenkette unterschieden.
+
+   Der Wechsel geht in BEIDE Richtungen: Die Ansicht laesst ihre Pille weg
+   (dieser Schalter), und die Pille hier oben uebernimmt ihren Schluessel
+   (HilfekontextGeaendert). Auf iOS gibt es dieses Fenster nicht, der Schalter
+   fehlt dort - und die Ansicht zeichnet ihre Pille wie bisher selbst. *@
+<CascadingValue Name="HilfePilleImKopfband" Value="true" IsFixed="true">
+
     <AppWurzel @ref="_wurzel"
                Zustand="@Zustand"
+               HilfekontextGeaendert="HilfekontextGemeldet"
                Startansicht="@Startansicht"
                StartseiteGaben="@StartseiteGaben"
                BerichteKostenGaben="@BerichteKostenGaben"
@@ -62,13 +79,24 @@
                        meinte den Ablauf des PROGRAMMS, nicht die Startseite (Befund
                        W16b-B5); ihr Ziel in help_mapping.txt ist "Programmablauf".
                        Hier steht sie im Kopfband des Fensters - an derselben Stelle
-                       im Aufbau, nur eine Ebene hoeher. *@
-                    <InfoKnopf Schluessel="@HilfeSchluessel" />
+                       im Aufbau, nur eine Ebene hoeher.
+
+                       SEIT AUFTRAG #221 IST SIE DIE EINE PILLE DES BILDSCHIRMS: Sie
+                       traegt den Hilfeschluessel der AKTIVEN ANSICHT, sobald eine ihn
+                       meldet, und den Fensterschluessel nur dort, wo keine es tut -
+                       auf der Startseite und in der Projektliste. Der Dialogname aus
+                       demselben Kontext nennt Ansicht, Schritt und Reiterblatt; die
+                       Kontextzeile des Chats zeigt ihn. *@
+                    <InfoKnopf Schluessel="@KopfbandSchluessel"
+                               Dialogname="@_hilfekontext.Dialogname"
+                               Aktiv="@AssistentSteht" />
                     <span class="epos-hauptfenster-version">@VersionText</span>
                 </div>
             </header>
         </Kopfleiste>
     </AppWurzel>
+
+</CascadingValue>
 
 </div>
 
@@ -115,6 +143,44 @@
     /// W16b-O-4).
     /// </summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Hauptfenster.btn_Help";
+
+    // =====================================================================
+    //  Die EINE Pille (Auftrag #221, Anwenderentscheid KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Was die aktive Ansicht über sich meldet; <see cref="Hilfekontext.Keiner"/> =
+    /// keine tut es (Startseite, Projektliste).
+    /// </summary>
+    private Hilfekontext _hilfekontext = Hilfekontext.Keiner;
+
+    /// <summary>
+    /// Der Schlüssel der Kopfband-Pille: der der ANSICHT, sobald sie einen meldet —
+    /// sonst der des Fensters.
+    /// </summary>
+    /// <remarks>
+    /// <b>Er bestimmt zweierlei</b>, und deshalb reicht es nicht, ihn anzuzeigen: die
+    /// Hilfeseite hinter dem „i" UND den Bereich, mit dem der Assistent aufgeht
+    /// (<c>KiChatKontext.BereichFuerHilfeschluessel</c>). Erst dadurch bekommt die
+    /// zweite Sicht einen anderen Kontext als die erste — was der Anwender am
+    /// 11.09.2026 vermisst hat.
+    /// </remarks>
+    public string KopfbandSchluessel
+        => _hilfekontext.Da ? _hilfekontext.Schluessel : HilfeSchluessel;
+
+    /// <summary>
+    /// Steht der Assistent gerade für DIESEN Schlüssel? Dann füllt sich das rechte
+    /// Feld der Pille mit dem Blau der Marke (<c>InfoKnopf.Aktiv</c>, #218).
+    /// </summary>
+    public bool AssistentSteht
+        => WindowsFormsApplication1.KiChatKontext.AssistentStehtFuer(KopfbandSchluessel);
+
+    /// <summary>
+    /// Die Wurzel meldet einen Wechsel — eine andere Ansicht, ein anderer Schritt, ein
+    /// anderes Reiterblatt, oder der Assistent ist auf- bzw. zugegangen.
+    /// </summary>
+    private void HilfekontextGemeldet(Hilfekontext kontext)
+        => _hilfekontext = kontext ?? Hilfekontext.Keiner;
 
     // =====================================================================
     //  Die Wurzel

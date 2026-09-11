@@ -55,6 +55,8 @@
 @namespace EPOS.UI.Seiten.Simulation
 @using EPOS.UI.Seiten.Assistent
 @using EPOS.UI.Seiten.Strom
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite epos-simansicht">
 
@@ -90,7 +92,16 @@
                     disabled="@(!SpeichernFrei)" @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
 
             <span class="epos-simansicht-kopfaktionen">
-                <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+                @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Traegt das
+                   Kopfband des Hauptfensters die Pille, zeichnet die Ansicht keine
+                   zweite - sie MELDET stattdessen ihren Kontext nach oben, und die
+                   Pille dort oben traegt ihren Schluessel. Auf iOS gibt es kein
+                   Kopfband, der CascadingValue fehlt, und alles bleibt wie bisher. *@
+                @if (!HilfePilleImKopfband)
+                {
+                    <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Kontext.Dialogname"
+                               Aktiv="@AssistentSteht" />
+                }
                 <button type="button" class="epos-knopf" @onclick="Verlassen">@ZurueckText</button>
             </span>
         </div>
@@ -168,6 +179,48 @@
     /// <summary>Der Hilfeschlüssel von Schritt ③ — der der Ergebnisseite.</summary>
     [Parameter] public string HilfeSchluesselErgebnis { get; set; }
         = "Form_Simulation_Detail.btn_Help";
+
+    // =====================================================================
+    //  Die EINE Pille und der gemeldete Kontext (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Führt ein Kopfband über dieser Ansicht schon eine Hilfe-Pille? Dann zeichnet sie
+    /// keine zweite. Unter Windows setzt <c>Hauptfenster</c> den Wert; auf iOS gibt es
+    /// kein Kopfband, der Wert fehlt und bleibt <c>false</c>.
+    /// </summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>
+    /// Der Weg nach oben: Über ihn erfährt die Kopfband-Pille, welchen Hilfeschlüssel
+    /// sie tragen muss. <c>null</c> = niemand hört zu (ein Prüfstand, eine Hülle ohne
+    /// <c>AppWurzel</c>).
+    /// </summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    /// <summary>
+    /// Wo der Anwender steht: Hilfeschlüssel des Schritts, Name der Ansicht, Schritt
+    /// und — in ③ — das offene Reiterblatt.
+    /// </summary>
+    public Hilfekontext Kontext
+        => new Hilfekontext(HilfeSchluessel, TitelText, SchrittText, ReiterText);
+
+    /// <summary>Der Name des stehenden Schritts, wie ihn die Ablaufleiste zeigt.</summary>
+    private string SchrittText
+        => _schritt == SimulationSchritt.Ergebnis ? Schritt3Text : Schritt1Text;
+
+    /// <summary>Der Name des offenen Reiterblatts; leer, solange ① vorn steht.</summary>
+    private string ReiterText
+        => _schritt == SimulationSchritt.Ergebnis
+               ? SimulationBlattnamen.Text(_ergebnisSeite?.AktivesBlatt ?? _startBlatt)
+               : "";
+
+    /// <summary>Steht der Assistent gerade für diesen Schritt? (<c>InfoKnopf.Aktiv</c>, #218)</summary>
+    public bool AssistentSteht => KiChatKontext.AssistentStehtFuer(HilfeSchluessel);
+
+    /// <summary>Der zuletzt nach oben gemeldete Kontext — er wird nur bei Wechsel gemeldet.</summary>
+    private Hilfekontext? _gemeldet;
 
     // ---- Texte: unmittelbar aus MyResource (Muster StromspeicherAuslegungSeite) ----
 
@@ -419,6 +472,8 @@
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        KontextMelden();
+
         if (!_laufAnstossen) return;
 
         SimulationErgebnisSeite? seite = _ergebnisSeite;
@@ -497,5 +552,151 @@
     {
         _frageOffen = false;
         _frageWartet?.TrySetResult(antwort);
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Auftrag #221, Anwenderentscheid KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Meldet den Kontext nach oben — aber nur, wenn er sich geändert hat. Gemeldet
+    /// wird nach JEDEM Zeichenlauf, weil Schritt und Reiterblatt sich ohne Zutun
+    /// dieser Komponente ändern können (die Ergebnisseite führt ihr Blatt selbst).
+    /// </summary>
+    private void KontextMelden()
+    {
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null) return;
+
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
+    /// <summary>
+    /// Das flache Abbild dieser Ansicht für den Assistenten; es rechnet bei jedem
+    /// Zugriff aus den vier lebenden Ständen.
+    /// </summary>
+    private SimulationKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. <b>Angemeldet heißt nicht
+    /// übertragen</b>: Ob ein Feldwert hinausgeht, entscheiden der Schalter „Feldwerte
+    /// mitsenden" im Chat und die Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </summary>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Der Ersatzstand der fünf Laufparameter, solange Schritt ① NICHT steht.
+    /// </summary>
+    /// <remarks>
+    /// Wer über die Marke <c>schritt=3</c> hereinkommt, baut ① gar nicht erst auf
+    /// (Kopfkommentar) — dann gibt es kein <c>_konfigSeite</c>, aus dem sich der Stand
+    /// lesen liesse. Er wird deshalb EINMAL geladen und festgehalten; sobald ① steht,
+    /// gilt wieder dessen Objekt, und nur das ist zugleich die Anzeige.
+    /// </remarks>
+    private ParameterDaten? _laufparameterErsatz;
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        // Auftrag #221 (KI-D-E-1): die SECHSTE Maske des Dialogkatalogs. Angemeldet
+        // wird ein SICHTMODELL und nicht eine der DTO - ein Katalogfeld ist genau zwei
+        // Stufen tief, die Kennzahlen des Laufs liegen drei bis vier Stufen tief und
+        // verteilt ueber vier Staende (Muster StromspeicherAuslegungSeite, #200).
+        _kiSicht = new SimulationKiSicht(() => _konfigSeite?.Stand,
+                                         KiLaufparameter,
+                                         () => Dienste?.Parameter,
+                                         () => Dienste?.Ergebnisstand?.Invoke(),
+                                         () => SchrittText,
+                                         () => ReiterText);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Muster #201): zeichnen, die
+    /// Plausibilität der fünf Laufparameter und die Auskunft, ob überhaupt geschrieben
+    /// werden kann.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg und keine Rechenwege.</b> Die fünf Laufparameter
+    /// schreiben SOFORT (Hausregel des abgelösten Reiters, W11b‑B‑29) — es gibt keinen
+    /// Speichernknopf, den <c>dialog_speichern</c> drücken könnte. „Simulation
+    /// starten ▶" und „Ergebnis speichern" sind Aktionen der Stufen 2 und 3 und
+    /// gehören in das Aktionsregister, nicht in einen Maskenhaken.</para>
+    /// <para><b>Schreibgeschützt ist die Ansicht ohne Schreibwege</b> — auf einer
+    /// Plattform, die <c>SimulationParameterDienste</c> nicht stellt, zeigt Schritt ①
+    /// die fünf Felder gar nicht erst, und <c>feld_setzen</c> lehnt benannt ab, statt
+    /// still nichts zu tun.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken()
+        => new KiMaskenhaken
+           {
+               Auffrischen = KiAuffrischen,
+               Pruefen = KiPruefung,
+               Schreibgeschuetzt = () => Dienste?.Parameter is null
+           };
+
+    /// <summary>
+    /// Der Stand der fünf Laufparameter: das Objekt von Schritt ①, sobald er steht —
+    /// sonst der einmal geladene Ersatz.
+    /// </summary>
+    private ParameterDaten? KiLaufparameter()
+    {
+        SimulationKonfigSeite? konfig = _konfigSeite;
+        if (konfig is not null) return konfig.Laufparameter;
+
+        return _laufparameterErsatz ??= Dienste?.Parameter?.Laden?.Invoke();
+    }
+
+    /// <summary>
+    /// Nach einem <c>feld_setzen</c>: den Stand von Schritt ① neu lesen und zeichnen.
+    /// </summary>
+    private void KiAuffrischen()
+        => _ = InvokeAsync(() =>
+           {
+               _konfigSeite?.Auffrischen();
+               StateHasChanged();
+           });
+
+    /// <summary>
+    /// Die Plausibilität der fünf Laufparameter — dieselben Grenzen, die die Felder in
+    /// Schritt ① führen. Leer = in Ordnung.
+    /// </summary>
+    private string KiPruefung()
+    {
+        ParameterDaten? p = KiLaufparameter();
+        if (p is null) return "";
+
+        if (p.Netzverluste < 0.0 || p.Netzverluste > 100.0)
+            return Grenzbefund(Resource.KI_DLG_SIM_NETZVERLUSTE_NAME, 0, 100);
+
+        if (p.Betriebsart < 0 || p.Betriebsart > 2)
+            return Grenzbefund(Resource.KI_DLG_SIM_BETRIEBSART_NAME, 0, 2);
+
+        if (p.UntersteLeistungsgrenze < 0 || p.UntersteLeistungsgrenze > 100)
+            return Grenzbefund(Resource.KI_DLG_SIM_GRENZE_NAME, 0, 100);
+
+        if (p.Bereitschaft < 0.0 || p.Bereitschaft > 8760.0)
+            return Grenzbefund(Resource.KI_DLG_SIM_BEREITSCHAFT_NAME, 0, 8760);
+
+        return "";
+    }
+
+    private static string Grenzbefund(string feld, int von, int bis)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                         Resource.KI_DLG_SIM_BEREICH, feld, von, bis);
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        _kiMaske?.Dispose();
+
+        // Die Ansicht geht - die Pille im Kopfband faellt auf den Schluessel des
+        // Fensters zurueck.
+        Hilfemelder?.Melden(null);
     }
 }

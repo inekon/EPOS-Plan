@@ -41,6 +41,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stromspeicher-Auslegung (<c>StromspeicherAuslegungSeite</c>).</summary>
         public const string STROMSPEICHER_AUSLEGUNG = "StromspeicherAuslegung";
+
+        /// <summary>
+        /// Die Ansicht „Simulation" (<c>SimulationSeite</c>, Auftrag #221) — die SECHSTE
+        /// Maske und die zweite ohne <c>Form_</c>-Vorsilbe.
+        /// </summary>
+        public const string SIMULATION = "Simulation";
     }
 
     /// <summary>
@@ -128,7 +134,8 @@ namespace WindowsFormsApplication1
                 Photovoltaik(),
                 Pufferspeicher(),
                 Waermepumpe(),
-                Stromspeicherauslegung());
+                Stromspeicherauslegung(),
+                Simulation());
         }
 
         // =====================================================================
@@ -459,6 +466,128 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SpaKapitalwertName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SpaKapitalwertErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true)
+                });
+        }
+
+        // =====================================================================
+        // Simulation  ->  SimulationSeite
+        // =====================================================================
+
+        /// <summary>
+        /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
+        /// „Simulation" — achtzehn Felder aus
+        /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum sie dazukommt.</b> Der Anwender hat am 11.09.2026 gemeldet: „Die
+        /// KI-Buttons haben keine unterschiedliche Funktion im Kontext. Daher ist es
+        /// nicht sinnvoll, auf einer Sicht zwei KI-Buttons zu sehen. Es muss einen
+        /// Kontext in der KI-Funktion der zweiten Sicht geben." Bis hierher unterschied
+        /// die Simulationsansicht vom Hauptfenster genau EINE Zeichenkette — der Bereich
+        /// aus dem Hilfeschluessel. Sie meldet jetzt an, WAS auf ihr steht.
+        /// </para>
+        /// <para>
+        /// <b>Drei Gruppen, drei Rollen.</b> Schritt ① traegt die KASKADE (lesend — sie
+        /// ist eine Reihenfolge und kein Eingabefeld), danach stehen die FUENF
+        /// LAUFPARAMETER (lesbar UND setzbar; sie sind die einzigen Zahlen der Ansicht,
+        /// die der Anwender selbst eintraegt), und Schritt ③ traegt die KENNZAHLEN des
+        /// Laufs (lesend — sie sind gerechnet). Die Setzseite folgt wie ueberall der
+        /// Schreibbarkeit der Eigenschaft (<c>KiFeldzugang.Setzbar</c>); eine zweite
+        /// Liste „was ist setzbar" gibt es nicht.
+        /// </para>
+        /// <para>
+        /// <b>Die Betriebsart ist eine GANZZAHL und keine Aufzaehlung.</b> 0, 1 und 2
+        /// stehen so in <c>Tab_Einstellungen</c> (Vorlaeufer <c>RadioButton.Tag</c>,
+        /// <c>bhkwSimulationsArt</c>); ein Aufzaehlungstyp brauchte eine zweite
+        /// Namensliste, die es nur fuer den Assistenten gaebe. Was 0, 1 und 2 bedeuten,
+        /// steht in der Erlaeuterung.
+        /// </para>
+        /// <para>
+        /// <b>Keine Knoepfe.</b> „Simulation starten ▶" und „Ergebnis speichern" sind
+        /// rechnende bzw. datenbankwirksame Aktionen der Stufen 2 und 3 und gehoeren in
+        /// das Aktionsregister mit Bestaetigung und Sicherungspunkt — dieselbe
+        /// Begruendung wie bei der Stromspeicher-Ansicht.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Simulation()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SIMULATION,
+                anzeigename: KiDialogTexte.MaskeSimulation,
+                felder: new[]
+                {
+                    // ---- Wo der Anwender steht --------------------------------------
+                    new KiDialogFeld("schritt", "SimulationKiSicht.Ansichtsschritt",
+                                     KiDialogTexte.SimSchrittName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimSchrittErl, leerErlaubt: true),
+                    new KiDialogFeld("reiter", "SimulationKiSicht.Reiter",
+                                     KiDialogTexte.SimReiterName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimReiterErl, leerErlaubt: true),
+
+                    // ---- Schritt ① : Kaskade und Reihenfolge (nur lesend) -----------
+                    new KiDialogFeld("kaskade", "SimulationKiSicht.Kaskade",
+                                     KiDialogTexte.SimKaskadeName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaskadeErl, leerErlaubt: true),
+                    new KiDialogFeld("nicht_aufgenommen", "SimulationKiSicht.NichtAufgenommen",
+                                     KiDialogTexte.SimOhnePlatzName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimOhnePlatzErl, leerErlaubt: true),
+
+                    // ---- Die fuenf Laufparameter (lesbar und setzbar) ----------------
+                    new KiDialogFeld("netzverluste", "SimulationKiSicht.Netzverluste",
+                                     KiDialogTexte.SimNetzverlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimNetzverlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("bhkw_betriebsart", "SimulationKiSicht.BhkwBetriebsart",
+                                     KiDialogTexte.SimBetriebsartName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimBetriebsartErl),
+                    new KiDialogFeld("bhkw_leistungsgrenze", "SimulationKiSicht.BhkwLeistungsgrenze",
+                                     KiDialogTexte.SimLeistungsgrenzeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SimLeistungsgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("wp_heizstab", "SimulationKiSicht.WpHeizstab",
+                                     KiDialogTexte.SimHeizstabName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimHeizstabErl),
+                    new KiDialogFeld("kessel_bereitschaft", "SimulationKiSicht.KesselBereitschaft",
+                                     KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimBereitschaftErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A),
+
+                    // ---- Schritt ③ : die Kennzahlen des Laufs (nur lesend) ----------
+                    new KiDialogFeld("waermebedarf", "SimulationKiSicht.WaermebedarfMwh",
+                                     KiDialogTexte.SimWaermebedarfName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimWaermebedarfErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true),
+                    new KiDialogFeld("waermedeckung", "SimulationKiSicht.WaermedeckungProzent",
+                                     KiDialogTexte.SimWaermedeckungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimWaermedeckungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("restwaerme", "SimulationKiSicht.RestwaermeMwh",
+                                     KiDialogTexte.SimRestwaermeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimRestwaermeErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true),
+                    new KiDialogFeld("strombedarf", "SimulationKiSicht.StrombedarfMwh",
+                                     KiDialogTexte.SimStrombedarfName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimStrombedarfErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true),
+                    new KiDialogFeld("stromdeckung", "SimulationKiSicht.StromdeckungProzent",
+                                     KiDialogTexte.SimStromdeckungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimStromdeckungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("reststrom", "SimulationKiSicht.ReststromMwh",
+                                     KiDialogTexte.SimReststromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimReststromErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true),
+                    new KiDialogFeld("speicher_entladung", "SimulationKiSicht.SpeicherentladungMwh",
+                                     KiDialogTexte.SimSpeicherEntladungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpeicherEntladungErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A, leerErlaubt: true),
+                    new KiDialogFeld("speicher_soc_band", "SimulationKiSicht.SpeicherSocBand",
+                                     KiDialogTexte.SimSpeicherSocName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimSpeicherSocErl, leerErlaubt: true),
+                    new KiDialogFeld("laufhinweise", "SimulationKiSicht.Laufhinweise",
+                                     KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimHinweiseErl, leerErlaubt: true)
                 });
         }
     }

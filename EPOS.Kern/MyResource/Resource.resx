@@ -18417,4 +18417,127 @@ Möchten Sie das zulassen?</value>
   <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
     <value>davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a</value>
   </data>
+  <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="KI_DLG_SIM_SCHRITT_NAME" xml:space="preserve">
+    <value>Schritt der Ansicht</value>
+  </data>
+  <data name="KI_DLG_SIM_SCHRITT_ERL" xml:space="preserve">
+    <value>Welcher Schritt der Ablaufleiste gerade vorn steht: die Konfiguration oder das Ergebnis.</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_NAME" xml:space="preserve">
+    <value>Offenes Reiterblatt</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_ERL" xml:space="preserve">
+    <value>Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration.</value>
+  </data>
+  <data name="KI_DLG_SIM_KASKADE_NAME" xml:space="preserve">
+    <value>Kaskade und Reihenfolge</value>
+  </data>
+  <data name="KI_DLG_SIM_KASKADE_ERL" xml:space="preserve">
+    <value>Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt.</value>
+  </data>
+  <data name="KI_DLG_SIM_OHNE_PLATZ_NAME" xml:space="preserve">
+    <value>Nicht aufgenommene Anlagen</value>
+  </data>
+  <data name="KI_DLG_SIM_OHNE_PLATZ_ERL" xml:space="preserve">
+    <value>Anlagen, die das Projekt führt, die aber auf keinem Platz der Simulation stehen. Sie rechnen nicht und erscheinen in der Übersicht mit 0,00.</value>
+  </data>
+  <data name="KI_DLG_SIM_NETZVERLUSTE_NAME" xml:space="preserve">
+    <value>Netzwärmeverluste</value>
+  </data>
+  <data name="KI_DLG_SIM_NETZVERLUSTE_ERL" xml:space="preserve">
+    <value>Aufschlag auf den Wärmebedarf für die Verluste des Verteilnetzes; wirkt nur bei vorhandenem Wärmebedarf.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSART_NAME" xml:space="preserve">
+    <value>Betriebsart der BHKW</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSART_ERL" xml:space="preserve">
+    <value>0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung. Sie gilt projektweit für alle BHKW-Module.</value>
+  </data>
+  <data name="KI_DLG_SIM_GRENZE_NAME" xml:space="preserve">
+    <value>Untere Leistungsgrenze der BHKW</value>
+  </data>
+  <data name="KI_DLG_SIM_GRENZE_ERL" xml:space="preserve">
+    <value>Die projektweite untere Modulationsgrenze: Unterhalb dieses Anteils der Nennleistung schaltet das Modul ab, statt weiter zu modulieren.</value>
+  </data>
+  <data name="KI_DLG_SIM_HEIZSTAB_NAME" xml:space="preserve">
+    <value>Heizstab der Wärmepumpe</value>
+  </data>
+  <data name="KI_DLG_SIM_HEIZSTAB_ERL" xml:space="preserve">
+    <value>Rechnet die Wärmepumpe mit elektrischem Heizstab? Er deckt, was die Wärmepumpe allein nicht schafft, und verbraucht dafür Strom im Verhältnis eins zu eins.</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREITSCHAFT_NAME" xml:space="preserve">
+    <value>Betriebsbereitschaft des Heizkessels</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Stunden im Jahr, in denen der Kessel betriebsbereit gehalten wird; daraus folgt sein Bereitschaftsverlust.</value>
+  </data>
+  <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="KI_DLG_SIM_WBEDARF_ERL" xml:space="preserve">
+    <value>Der Jahreswärmebedarf des Projekts aus Heizung, Brauchwasser und Prozesswärme — der Nenner der Wärmedeckung.</value>
+  </data>
+  <data name="KI_DLG_SIM_WDECKUNG_NAME" xml:space="preserve">
+    <value>Wärmedeckung</value>
+  </data>
+  <data name="KI_DLG_SIM_WDECKUNG_ERL" xml:space="preserve">
+    <value>Anteil des Wärmebedarfs, den die Erzeuger der Kaskade im Lauf gedeckt haben.</value>
+  </data>
+  <data name="KI_DLG_SIM_WREST_NAME" xml:space="preserve">
+    <value>Restwärmebedarf</value>
+  </data>
+  <data name="KI_DLG_SIM_WREST_ERL" xml:space="preserve">
+    <value>Die Wärmemenge, die nach allen Erzeugern der Kaskade ungedeckt bleibt.</value>
+  </data>
+  <data name="KI_DLG_SIM_SBEDARF_NAME" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="KI_DLG_SIM_SBEDARF_ERL" xml:space="preserve">
+    <value>Der Jahresstrombedarf des Projekts ohne die Eigenverbräuche der Wärmeerzeuger.</value>
+  </data>
+  <data name="KI_DLG_SIM_SDECKUNG_NAME" xml:space="preserve">
+    <value>Stromdeckung</value>
+  </data>
+  <data name="KI_DLG_SIM_SDECKUNG_ERL" xml:space="preserve">
+    <value>Anteil des Strombedarfs einschließlich der Eigenverbräuche, den Photovoltaik, BHKW und Speicherentladung im Lauf gedeckt haben.</value>
+  </data>
+  <data name="KI_DLG_SIM_SREST_NAME" xml:space="preserve">
+    <value>Reststrombedarf</value>
+  </data>
+  <data name="KI_DLG_SIM_SREST_ERL" xml:space="preserve">
+    <value>Die Strommenge, die nach allen Erzeugern aus dem Netz bezogen werden muss.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_ENTLADUNG_NAME" xml:space="preserve">
+    <value>Entladung des Stromspeichers</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_ENTLADUNG_ERL" xml:space="preserve">
+    <value>Die im Lauf aus dem Stromspeicher entnommene Energie; 0, wenn das Projekt keinen Speicher führt oder er nicht gearbeitet hat.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOC_NAME" xml:space="preserve">
+    <value>SoC-Band des Stromspeichers</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOC_ERL" xml:space="preserve">
+    <value>Der zulässige Ladezustandsbereich der aktiven Speichervariante; leer, wenn das Projekt keine aktive Variante führt.</value>
+  </data>
+  <data name="KI_DLG_SIM_HINWEISE_NAME" xml:space="preserve">
+    <value>Hinweise zum Lauf</value>
+  </data>
+  <data name="KI_DLG_SIM_HINWEISE_ERL" xml:space="preserve">
+    <value>Warnungen und Hinweise, die der letzte Lauf gemeldet hat — etwa ein angelegter Erzeuger ohne Kaskadenplatz.</value>
+  </data>
+  <data name="KI_FRAGE_SIMULATION_KONFIG" xml:space="preserve">
+    <value>Welche Laufparameter wirken auf diese Simulation, und warum deckt die Kaskade den Bedarf nur teilweise?</value>
+  </data>
+  <data name="KI_FRAGE_SIMULATION_ERGEBNIS" xml:space="preserve">
+    <value>Wie sind die Kennzahlen dieses Laufs zu lesen — Bedarf, Deckung und Rest bei Wärme und Strom?</value>
+  </data>
+  <data name="KI_KONTEXT_STELLE" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREICH" xml:space="preserve">
+    <value>Der Wert für „{0}“ muss zwischen {1} und {2} liegen.</value>
+  </data>
 </root>

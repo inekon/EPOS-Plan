@@ -66,7 +66,13 @@ namespace WindowsFormsApplication1
                 // einen gerechneten Simulationslauf und geht deshalb ueber den Knopf der
                 // Ergebnisseite auf; dort liefert OeffneMaske false, und die Aktion lehnt
                 // benannt ab. Auf iOS wechselt die Wurzel die Ansicht.
-                { KiMaskennamen.STROMSPEICHER_AUSLEGUNG, STROMSPEICHER_AUSLEGUNG }
+                { KiMaskennamen.STROMSPEICHER_AUSLEGUNG, STROMSPEICHER_AUSLEGUNG },
+
+                // Die Ansicht „Simulation" ist eine freie ANSICHT der AppWurzel und
+                // zugleich ein Maskenschluessel der Windows-Navigationstabelle (SIM-Q3,
+                // #207) - beide Wege fuehren ueber denselben Schluessel, und deshalb
+                // steht hier Masken.Simulation und keine zweite Zeichenkette.
+                { KiMaskennamen.SIMULATION,       Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>
