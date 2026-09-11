@@ -7,6 +7,7 @@ using EPOS.UI.Dialoge.Projekt;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -434,5 +435,105 @@ public class ProjektWahlDialogTests : EposBunitContext
         Assert.Equal(3, auftrag!.Projekte.Count);
         Assert.Equal(1099, auftrag.Projekte[0].Id);               // die Variante vor ihrem Stamm
         Assert.True(auftrag.Sicherung);
+    }
+
+    // =====================================================================
+    // Auftrag #217 (11.09.2026): FormatException in MehrereFrage —
+    // FrageMehrereFormat trägt ZWEI Platzhalter wie PDLG_RUECKFRAGE
+    // =====================================================================
+
+    /// <summary>
+    /// Der Befund wörtlich: <c>ProjektWahlHuelle.Gaben</c> reicht IMMER den
+    /// ECHTEN Ressourcentext <c>PDLG_RUECKFRAGE</c> als
+    /// <c>FrageMehrereFormat</c> herein — der hat ZWEI Platzhalter
+    /// (<c>{0}</c> Anzahl, <c>{1}</c> Namensliste). Dieser Fall tut dasselbe
+    /// statt einer selbstgebauten Ein-Platzhalter-Vorlage — die den Fehler bis
+    /// zum Befund #217 versteckt hatte, weil auch die Razor-VORGABE nur
+    /// <c>{0}</c> führte. Geprüft wird in BEIDEN Sprachen: die Anzahl steht am
+    /// Anfang, jeder Name steht drin, eine Variante trägt ihr Kennzeichen, und
+    /// die Rückfrage endet mit der Schlussfrage der Ressource.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Fortfahren?")]
+    [InlineData("en-US", "Continue?")]
+    public void Der_echte_Ressourcentext_PDLG_RUECKFRAGE_formatiert_ohne_Absturz(
+        string kultur, string schlussfrage)
+    {
+        try
+        {
+            Kultur(kultur);
+            string vorlage = Resource.PDLG_RUECKFRAGE;   // ZWEI Platzhalter — der Befund
+
+            var zeilen = new[]
+            {
+                DREI[0], DREI[1],
+                new ProjektKopfZeile(1099, "Referenz BHKW V1", "Stadtwerke", "", null, StammId: 1030)
+            };
+            var cut = Render<ProjektWahlDialog>(p => p
+                .Add(x => x.Zeilen, zeilen)
+                .Add(x => x.Zweck, ProjektWahlDialog.ProjektZweck.Loeschen)
+                .Add(x => x.Mehrfach, true)
+                .Add(x => x.FrageMehrereFormat, vorlage));
+
+            cut.Find(".epos-projektwahl-alle").Click();
+
+            // Kein FormatException beim Zeichnen der Rückfrage (der Absturz aus #217).
+            Ok(cut).Click();
+
+            string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+            Assert.StartsWith("3", frage);                       // {0} = Anzahl
+            Assert.Contains(DREI[0].Name, frage);
+            Assert.Contains(DREI[1].Name, frage);
+            Assert.Contains("Referenz BHKW V1 (Variante)", frage);
+            Assert.Contains(schlussfrage, frage);                 // aus der Ressource, nicht selbst gebaut
+        }
+        finally
+        {
+            Kultur("de-DE");
+        }
+    }
+
+    /// <summary>
+    /// <b>14 Projekte:</b> die Liste bricht nach zwölf Namen ab und hängt
+    /// „… und 2 weitere" an (<c>WeitereFormat</c>) — dieselbe Grenze wie im
+    /// WinForms-Vorgänger.
+    /// </summary>
+    [Fact]
+    public void Vierzehn_Projekte_zeigen_zwoelf_Namen_und_dann_und_zwei_weitere()
+    {
+        var zeilen = Enumerable.Range(1, 14)
+            .Select(i => new ProjektKopfZeile(2000 + i, "Projekt " + i, "Kunde"))
+            .ToArray();
+
+        var cut = Render<ProjektWahlDialog>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Zweck, ProjektWahlDialog.ProjektZweck.Loeschen)
+            .Add(x => x.Mehrfach, true)
+            .Add(x => x.FrageMehrereFormat, Resource.PDLG_RUECKFRAGE));
+
+        cut.Find(".epos-projektwahl-alle").Click();
+        Ok(cut).Click();
+
+        string frage = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.StartsWith("14", frage);
+
+        for (int i = 1; i <= 12; i++)
+            Assert.Matches(@"(^|\n)Projekt " + i + @"(\n|$)", frage);
+
+        // Projekt 13 und 14 stehen NICHT mehr einzeln - nur die Sammelzeile.
+        Assert.DoesNotMatch(@"(^|\n)Projekt 13(\n|$)", frage);
+        Assert.DoesNotMatch(@"(^|\n)Projekt 14(\n|$)", frage);
+        Assert.Contains("… und 2 weitere", frage);
+    }
+
+    private static void Kultur(string name)
+    {
+        var k = new CultureInfo(name);
+        CultureInfo.DefaultThreadCurrentCulture = k;
+        CultureInfo.DefaultThreadCurrentUICulture = k;
+        Thread.CurrentThread.CurrentCulture = k;
+        Thread.CurrentThread.CurrentUICulture = k;
+        CultureInfo.CurrentCulture = k;
+        CultureInfo.CurrentUICulture = k;
     }
 }
