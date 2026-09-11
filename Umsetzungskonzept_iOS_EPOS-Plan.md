@@ -3749,6 +3749,17 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Blazorsprung`/Hüllen der übrigen 26 Ordner unter `Views/` bleiben Windows (iU11).
 > Gate sept28 auf `c989745`: Kern 2 666, UI 3 776, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **iOS-Lauf 43 (34644279531 auf `d976451`, 11.09.2026, grün, 10 min 49 s) und #223 (`5370fef`, Merge `eb23302`).** Der erste Lauf mit
+> `EPOS.UI.Daten` und der Simulationsansicht auf iOS: Bau 0 Fehler, STRICT 118, Projekte 25, Prüfmodus 1030 PASS (236 680 Werte) und
+> byte-gleich gegen R7; Nachweisabsatz „Dreiundvierzigster Lauf". Der iOS-Bau meldet 6 Warnungen statt 11 — vier des Kerns, eine des SDK
+> und **eine der Hülle**: die #202-Zeile `string ordner = Path.GetDirectoryName(datei)` in `Referenzlauf/Protokoll.cs:104` ist unter
+> `Nullable=enable` ein `CS8600`; die Schranke „iOS-Warnungen = 0" ist um eine verfehlt. **#223** setzt `string?` in einer eng begrenzten
+> `#nullable enable`/`restore`-Klammer (Referenzlauf.csproj und EPOS.Referenzlauf.csproj verlinken die Datei mit `Nullable=disable`, ein nacktes
+> `string?` wäre dort `CS8632`); Beleg ohne Mac: `EPOS.Referenzlauf` mit `-p:Nullable=enable` vorher 1, nachher 0 Fundstellen, ohne Schalter 0/0;
+> `Ergebnisexport.cs` warnungsfrei. Die Schranke wird mit dem nächsten freigegebenen iOS-Lauf geführt (kein eigener Lauf, CI-Regel).
+> Gate sept29 auf `eb23302`: Kern 2 666, UI 3 776, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
