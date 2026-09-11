@@ -216,9 +216,23 @@
                                            PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
                                            BetriebsfuehrungText="@ZuBetriebText" />
 
-                    @if (Auslegung.FlottenGroessenOptimieren)
+                    @* DIE GROESSEN-SICHT (Paket P4 / #193, eingebunden mit #196) steht
+                       VOR der Ergebnisansicht, weil Konzept 2.5 sie dort verlangt: Erst
+                       die Frage „welche GROESSE traegt sich?", dann die Auswertung der
+                       einen gerechneten Flotte. Bedingung ist das RASTERSUCHERGEBNIS und
+                       nicht der Schalter „Groessen optimieren": Der Schalter sagt, was
+                       der NAECHSTE Lauf tut — abgeschaltet nach einem Suchlauf verschwaende
+                       er die Karte, die gerade entstanden ist. Seit #196 traegt DIESER
+                       Baustein die Kandidatentabelle; die einfache Texttabelle in der
+                       Ergebnisansicht ist damit gefallen (keine zwei Tabellen). *@
+                    @if (_flottenErgebnis.Auslegung is not null)
                     {
-                        @* P4: SpeicherFlottenGroessenAnsicht (#193) *@
+                        <SpeicherFlottenGroessenAnsicht Ergebnis="@_flottenErgebnis.Auslegung"
+                                                        Einheiten="@Einheitenzahl"
+                                                        KandidatUebernehmen="@(EventCallback.Factory
+                                                            .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
+                                                        Csv="@(Dienste?.Csv is null ? default
+                                                               : EventCallback.Factory.Create(this, KandidatenCsv))" />
                     }
 
                     <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
@@ -331,6 +345,15 @@
                 MitAbbrechen="true" JaText="@SpeichernText" NeinText="@VerwerfenText"
                 AbbrechenText="@BleibenText" Beantwortet="VerlassenBeantwortet" />
 
+    @* Die Rueckfrage vor „Kandidat uebernehmen" (#196) — dasselbe Muster wie beim
+       Verlassen (62b-E-1): Speichern / Verwerfen / Bleiben, Esc heisst „Bleiben".
+       Sie kommt NUR, wenn Schritt 1 ungespeicherte Eingaben traegt; der Kandidat
+       ersetzt sie, und wer sie behalten will, speichert sie vorher. *@
+    <Rueckfrage Offen="@(_kandidat is not null)" TitelText="@KandidatTitelText"
+                Frage="@KandidatFrageText" MitAbbrechen="true"
+                JaText="@SpeichernText" NeinText="@VerwerfenText" AbbrechenText="@BleibenText"
+                Beantwortet="KandidatBeantwortet" />
+
     @* Die Rueckfrage nach dem bestimmten Peak-Ziel (SD-Q3). *@
     <Rueckfrage Offen="@(_peakErgebnis is not null)" TitelText="@PeakTitelText" Frage="@PeakFrageText"
                 Beantwortet="PeakBeantwortet" />
@@ -392,6 +415,9 @@
     private static string PeakTitelText => Resource.FLOTTE_PEAK_TITEL;
     private static string PeakFrageFormat => Resource.FLOTTE_PEAK_FRAGE;
     private static string PeakGesperrtText => Resource.FLOTTE_PEAK_GESPERRT;
+    private static string KandidatTitelText => Resource.FLOTTE_SEITE_KANDIDAT_TITEL;
+    private static string KandidatFrageText => Resource.FLOTTE_SEITE_KANDIDAT_FRAGE;
+    private static string KandidatBannerFormat => Resource.FLOTTE_SEITE_KANDIDAT_BANNER;
     private static string VerlassenTitelText => Resource.FLOTTE_SEITE_VERLASSEN_TITEL;
     private static string VerlassenFrageText => Resource.FLOTTE_SEITE_VERLASSEN_FRAGE;
     private static string SpeichernText => Resource.FLOTTE_SEITE_BTN_SPEICHERN;
@@ -422,6 +448,12 @@
     private bool _csvPrognosen;
     private bool _frageOffen;
     private TaskCompletionSource<bool?>? _frageWartet;
+
+    /// <summary>
+    /// Der Kandidat, über dem die Rückfrage steht (#196); <c>null</c> = keine Rückfrage.
+    /// Ohne ungespeicherte Eingaben wird er unmittelbar übernommen und steht hier nie.
+    /// </summary>
+    private FlottenKandidatZusammenfassung? _kandidat;
 
     /// <summary>Der stehende Schritt (Prüfhilfe).</summary>
     public string Schritt => _schritt;
@@ -927,10 +959,7 @@
     {
         if (_veraltet || _flottenErgebnis?.Auslegung?.BesteKonfiguration is null) return;
 
-        Auslegung.Flotte = SpeicherAuslegungKopie.Von(_flottenErgebnis.Auslegung.BesteKonfiguration);
-        Auslegung.Flotte.Auslegung.Achsen.Clear();
-        Auslegung.FlottenGroessenOptimieren = false;
-        Geaendert();
+        FlotteSetzen(_flottenErgebnis.Auslegung.BesteKonfiguration);
         try
         {
             if (Dienste?.EinstellungenSpeichern is not null)
@@ -942,6 +971,97 @@
         }
         catch (Exception ex) { _fehler = ex.Message; }
     }
+
+    /// <summary>
+    /// Der EINE Weg, auf dem eine gerechnete Konfiguration zur Flotte in Schritt 1 wird
+    /// (#196). Er räumt die Suchachsen weg und schaltet den Suchlauf ab — was übernommen
+    /// ist, ist eine feste Flotte und kein Suchraum mehr —, und
+    /// <see cref="Geaendert"/> markiert Schritt 5 als veraltet: Das stehende Ergebnis
+    /// gehört zur vorigen Flotte.
+    /// </summary>
+    private void FlotteSetzen(FlottenStudieKonfiguration konfiguration)
+    {
+        Auslegung.Flotte = SpeicherAuslegungKopie.Von(konfiguration);
+        Auslegung.Flotte.Auslegung.Achsen.Clear();
+        Auslegung.FlottenGroessenOptimieren = false;
+        Geaendert();
+    }
+
+    // =====================================================================
+    //  „Kandidat uebernehmen" aus der Groessen-Sicht (#196, Konzept 2.5)
+    // =====================================================================
+
+    /// <summary>
+    /// Wie viele Einheiten die Größen-Sicht je Einheit anbieten darf. Maßgeblich ist die
+    /// Flotte des LAUFS und nicht der Arbeitsstand: Die Karte zeigt dessen Kandidaten,
+    /// und eine Einheitenwahl, die es in ihnen nicht gibt, zeigte eine leere Karte.
+    /// Ohne Laufkonfiguration bleibt der Arbeitsstand.
+    /// </summary>
+    private int Einheitenzahl => _flottenErgebnis?.Konfiguration?.Einheiten is { } einheiten
+        ? einheiten.Count : Flotte.Einheiten.Count;
+
+    /// <summary>
+    /// „Kandidat übernehmen": Die gewählte Rastervariante wird die Flotte in Schritt 1.
+    /// <b>Trägt Schritt 1 ungespeicherte Eingaben, wird vorher gefragt</b> (Muster
+    /// 62b‑E‑1) — der Kandidat ersetzt sie, und das ist nicht rückgängig zu machen.
+    /// </summary>
+    private Task KandidatUebernehmen(FlottenKandidatZusammenfassung kandidat)
+    {
+        if (_laeuft || kandidat is null) return Task.CompletedTask;
+        if (_ungespeichert) { _kandidat = kandidat; return Task.CompletedTask; }
+        return KandidatAnwenden(kandidat);
+    }
+
+    /// <summary>
+    /// Die Antwort auf die Rückfrage: <c>true</c> speichert den bisherigen Stand, bevor
+    /// der Kandidat ihn ersetzt, <c>false</c> verwirft ihn, <c>null</c> („Bleiben", auch
+    /// Esc) lässt alles, wie es ist.
+    /// </summary>
+    private async Task KandidatBeantwortet(bool? antwort)
+    {
+        FlottenKandidatZusammenfassung? kandidat = _kandidat;
+        _kandidat = null;
+        if (antwort is null || kandidat is null) return;
+
+        if (antwort == true)
+        {
+            string fehler = await EinstellungenSichern(_eingaben);
+            if (fehler.Length > 0) { _fehler = fehler; return; }
+        }
+
+        await KandidatAnwenden(kandidat);
+    }
+
+    /// <summary>
+    /// Übernimmt den Kandidaten und führt zurück auf Schritt 1. Die Konfiguration baut
+    /// der KERN (<see cref="SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration"/>); für den
+    /// besten Kandidaten gibt er die Konfiguration des Optimierers zurück — denselben
+    /// Stand, den „Beste Flotte übernehmen" nimmt.
+    /// </summary>
+    private Task KandidatAnwenden(FlottenKandidatZusammenfassung kandidat)
+    {
+        try
+        {
+            FlottenStudieKonfiguration konfiguration = SpeicherFlottenAnzeigeCtrl
+                .KandidatKonfiguration(_flottenErgebnis?.Auslegung, Flotte, kandidat);
+            if (konfiguration is null) return Task.CompletedTask;
+
+            FlotteSetzen(konfiguration);
+            _schritt = AuslegungSchritt.Speicher;
+
+            // Die Meldung steht NACH Geaendert() (in FlotteSetzen), weil das die
+            // Meldezeile raeumt - dasselbe Muster wie beim uebernommenen Peak-Ziel.
+            _meldungErfolg = true;
+            _meldung = string.Format(Kultur, KandidatBannerFormat, kandidat.KandidatId);
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Der Variantenvergleich als CSV — er führt ALLE Kandidaten des Laufs.</summary>
+    private Task KandidatenCsv()
+        => _flottenErgebnis is null ? Task.CompletedTask
+            : CsvSchreiben(SpeicherFlottenAnzeigeCtrl.VergleichCsv(_flottenErgebnis));
 
     private void AuslegungUebernehmen((double Kwh, double Kw) auslegung)
     {

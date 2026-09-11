@@ -66,8 +66,53 @@ public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
         Assert.Contains("0,25", cut.Markup);
     }
 
+    /// <summary>
+    /// Die Aussage „kein zulässiger Kandidat" stand bis Auftrag #196 als Überschrift
+    /// über der einfachen Kandidatentabelle der Ergebnisansicht. Mit der Einbindung der
+    /// Größen-Sicht (P4) ist die Tabelle dorthin gewandert — und die Empfehlung mit ihr;
+    /// der Wortlaut ist derselbe geblieben.
+    /// </summary>
     [Fact]
-    public void Ergebnis_behauptet_ohne_zulaessigen_Kandidaten_keine_beste_Flotte()
+    public void Groessensicht_behauptet_ohne_zulaessigen_Kandidaten_keine_beste_Flotte()
+    {
+        var auslegung = new FlottenAuslegungErgebnis
+        {
+            NullvarianteGewonnen = false,
+            Kandidaten = new() { new FlottenKandidatZusammenfassung { KandidatId = "x", Zulaessig = false } }
+        };
+
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, auslegung));
+
+        Assert.Contains("Keine technisch zulässige Flotte", cut.Markup);
+        Assert.DoesNotContain("Beste technisch zulässige Flotte", cut.Markup);
+    }
+
+    /// <summary>
+    /// Die Gegenprobe: Mit einem zulässigen Besten steht der andere der beiden Sätze da.
+    /// </summary>
+    [Fact]
+    public void Groessensicht_behauptet_mit_zulaessigem_Kandidaten_die_beste_Flotte()
+    {
+        var bester = new FlottenKandidatZusammenfassung { KandidatId = "x", Zulaessig = true };
+        var auslegung = new FlottenAuslegungErgebnis
+        {
+            NullvarianteGewonnen = false,
+            Kandidaten = new() { bester },
+            BesterKandidat = bester
+        };
+
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, auslegung));
+
+        Assert.Contains("Beste technisch zulässige Flotte", cut.Markup);
+        Assert.DoesNotContain("Keine technisch zulässige Flotte", cut.Markup);
+    }
+
+    /// <summary>
+    /// Und die Ergebnisansicht führt die Kandidatentabelle seither NICHT mehr: Zwei
+    /// Tabellen derselben Kandidaten wären zwei Wahrheiten (#196).
+    /// </summary>
+    [Fact]
+    public void Ergebnisansicht_fuehrt_die_Kandidatentabelle_nicht_mehr()
     {
         SpeicherFlottenErgebnis e = Ergebnis(new List<FlottenRainflowPunkt>());
         e.Auslegung = new FlottenAuslegungErgebnis
@@ -78,8 +123,9 @@ public sealed class SpeicherFlottenErgaenzungenTests : EposBunitContext
 
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, e));
 
-        Assert.Contains("Keine technisch zulässige Flotte", cut.Markup);
-        Assert.DoesNotContain("Beste technisch zulässige Flotte", cut.Markup);
+        Assert.DoesNotContain("Keine technisch zulässige Flotte", cut.Markup);
+        Assert.DoesNotContain("Varianten geprüft", cut.Markup);
+        Assert.DoesNotContain("Variantenvergleich als CSV", cut.Markup);
     }
 
     /// <summary>Die LETZTE Zelle der Kennzahlenzeile — der Rainflow-Schaden (#184).</summary>

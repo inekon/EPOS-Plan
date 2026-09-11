@@ -18,11 +18,19 @@
             hier EPOS.iOS.
           * viewport-fit=cover oben.
 
+        DREI Stilblaetter, nicht zwei: epos-flotte.css traegt seit Paket P2 die
+        Flottenstile und seit P3/P4 Diagnosebanner, Peak-Ziel und Groessen-Sicht
+        (.epos-flotte-groessen*). Die Windows-Huelle bindet es seit #184 ein, die
+        iOS-Huelle bis Auftrag #196 nicht - die Ansicht STROMSPEICHER_AUSLEGUNG
+        haette auf dem iPad ungestaltet dagestanden. Wer hier ein Stilblatt
+        ergaenzt, ergaenzt es in BEIDEN Huellen.
+
         Die Seite wird nicht im Browser aufgerufen: Die BlazorWebView laedt sie
         ueber HostPage="wwwroot/index.html" und haengt EPOS.UI.Seiten.AppWurzel
         an <div id="app">.
     -->
     <link href="_content/EPOS.UI/epos-ui.css" rel="stylesheet" />
+    <link href="_content/EPOS.UI/epos-flotte.css" rel="stylesheet" />
     <link href="EPOS.iOS.styles.css" rel="stylesheet" />
 </head>
 <body>

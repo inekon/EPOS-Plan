@@ -12641,6 +12641,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidat {0} übernommen — Flotte neu bewerten. ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_KANDIDAT_BANNER {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_KANDIDAT_BANNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Kandidat ersetzt die Speicher in Schritt 1. Die dortigen Eingaben sind nicht gespeichert — sollen sie vorher gespeichert werden? ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_KANDIDAT_FRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_KANDIDAT_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidat übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_KANDIDAT_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_KANDIDAT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Projekt liegt kein gerechneter Simulationslauf vor. Die EPOS-Zeitreihen (Last, Erzeugung, Preise) stammen aus einem solchen Lauf. ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_KEIN_LAUF {
