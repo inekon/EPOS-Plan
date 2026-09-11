@@ -3834,6 +3834,20 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > aufgebaut (Baum identisch, alle Commits signiert, Merges erhalten; `.gitignore` sperrt `*.xlsm`/`*.xlsb`).
 > Gate sept35 auf `49c2e6f`: Kern 2 673, UI 3 839, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#226 (11.09.2026, `8c3a901`, Merge `e0c9c6a`) — Größen-Sicht: Rasterkarte und Schnitte folgen der Größenkopplung (Anwenderbefund, zwei
+> Bildschirmfotos).** Ursache belegt: `SpeicherFlottenAnzeigeCtrl.Groessen.cs:133` baute die Spaltenachse IMMER aus der C-Rate — bei Kopplung
+> „Kapazität und Leistung" (13 × 13 Kandidaten, 20…500/40) sind das 137 krumme C-Raten, 1 781 Stellen mit mindestens 1 612 Löchern; und
+> `ChartRenderer.Rasterfarbe` gab jedem `NaN` die Minimumfarbe — daher das rote Feld (Gegenprobe: ohne den Fix waren Loch und Minimum
+> byte-gleich). Jetzt führt `FlottenAuslegungErgebnis.Achsenmodus` (aus der ersten aktiven Suchachse) die eine Quelle; `FlottenRasterdaten`
+> trägt Modus, Zeilen- und Spaltenwerte samt Größenart; die Schnitte heißen `SchnittdatenBeiSpalte`/`BeiZeile` (Achse je Kopplung unmittelbar,
+> `P = E·C` oder `E = P/C`); Titel, Achsen-, Schieber- und `alt`-Texte kommen je Kopplung aus dem Kern (zehn Ressourcen de/en); Löcher hellgrau
+> (`C_RASTER_LOCH`), Schraffur und SP‑O‑4-Fußzeile unverändert. 17 neue Fälle (Kern +9, UI +4, Engine +4); ChartProben 55 (+Rasterbild
+> Kapazität × Leistung, +Gegenprobe Loch ≠ Minimum); Konzept 2.5 und Register SP‑O‑14 (beim Merge von SP‑O‑13 umnummeriert, #225 trägt
+> SP‑O‑13); Wiki-Quelle Stromspeicher (Upload durch die Orchestrierung). **Offen:** Windows-Abnahme; ein einmaliger, nicht reproduzierter
+> UI-Testfall in einem von vier Läufen des Agenten (Name nicht erfasst) — bleibt beobachtet.
+> Gate sept36 auf `e0c9c6a`: Kern 2 682, UI 3 843, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

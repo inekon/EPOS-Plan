@@ -838,7 +838,10 @@ mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „E
 #221-Absätzen (Anwenderentscheid KI‑D‑E‑1: eine Marke je Bildschirm, die im Kopfband der Ansicht folgt und blau ausgefüllt bleibt, solange das
 Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher"; was der Assistent in der Simulation liest und setzt);
 die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.
-**Dazu `Simulation` Revision 551** (11.09.2026, Merge `97dc344`, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
+**Dazu `Simulation` Revision 551** (11.09.2026, Merge `d5c8c98` — vor der Historienbereinigung `97dc344` —, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
 Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts das Ergebnis, ein Lauf zur Zeit); Nachprobe per
 `action=raw` findet den Anker. **Dazu `Hilfe-Assistent` Revision 553** (11.09.2026, Merge #227) mit dem Absatz zur Startzeile
 (Kontext, „Aktuellen Dialog erklären", „Was kann ich hier tun?"); Nachprobe zeichengleich bis auf den Zeilenumbruch am Dateiende.
+**Dazu `Stromspeicher` Revision 554** (11.09.2026, Merge `e0c9c6a`, Gate sept36) mit dem #226-Absatz zur Größen-Sicht (Rasterkarte und
+Schnitte folgen der Größenkopplung — Kapazität × Leistung, Kapazität × C-Rate, Leistung × C-Rate —, Löcher hellgrau statt in der
+Minimumfarbe); 27 366 → 27 872 Zeichen, Nachprobe zeichengleich bis auf den Zeilenumbruch am Dateiende.
