@@ -1846,6 +1846,47 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Datenbanken, deren Migration diese Spalten noch nicht angelegt hat) und **W16a‑O‑1‑R2** (`WIZ_SPEICHERN_FEHLER`
 > endet auf „die bereits geschriebenen Angaben bleiben stehen." — das stimmt jetzt nicht mehr; der Satz ist
 > bewusst unangetastet geblieben, seine Neufassung in de und en ist eine Anwenderentscheidung).
+>
+> **W16a‑E‑1 / W16b‑O‑5 erledigt — der Projektassistent ist eine freie Ansicht (11.09.2026, `f2a1edd4`),
+> zusammengeführt in `b3c9fdce`.** **Die letzte Fachseite verlässt ihre modale Hülle.**
+> `BlazorDialogForm<AssistentSeite>` und jedes `DialogResult` des Assistenten sind gelöscht; die drei Schlüssel
+> `ASSISTENT`, `PROJEKT_NEU` und `PROJEKT_BEARBEITEN` führen auf denselben Zweig der `AppWurzel`, die Betriebsart
+> sagt der Schlüssel oder das Argument. Damit ist der Entscheid vom 04.09.2026 eingelöst — und zwar erst jetzt,
+> weil er an **W16a‑O‑1** hing: Ohne Transaktion hinterließe ein seitlicher Ausstieg ein halb geschriebenes Projekt.
+> **Die zwei Gründe für die Modalität sind einzeln abgelöst**: Die Meldung „Daten gespeichert" steht dort, wo die
+> Antwort bekannt ist — in `AssistentHuelle`, hinter dem gelungenen Speicherlauf, als **Kurzhinweis der Startseite**
+> statt als `MessageBox` —, und der Projektkontext wird unmittelbar nach dem Schreiben über
+> `ProjektKontextCtrl.Gewechselt` nachgezogen, wie bei jedem anderen Projektwechsel; der Unterschied „zuletzt
+> geöffnet merken" (Kachel) gegen „nur setzen" (Menü) bleibt erhalten.
+>
+> **Anwenderentscheid 62b‑E‑1 (11.09.2026)**: Wer den Assistenten mit ungespeicherten Eingaben verlässt, bekommt
+> drei Wege in einer `Ueberlagerung` — **Speichern** (derselbe Weg wie der Knopf, samt Prüfung und der Transaktion
+> aus W16a‑O‑1; **scheitert er, bleibt der Assistent stehen** und der Wechsel findet nicht statt), **Verwerfen**
+> (Wechsel ohne Schreiben), **Bleiben** (Abbruch, auch über Esc). **Ohne Änderung gibt es keine Rückfrage**, und
+> „geändert" leitet `AssistentCtrl.HatAenderungen` aus zwei **Zustandsabdrücken** ab — Projektkopf (acht Felder)
+> und die sechs Fachlisten samt den dreizehn Seitenschaltern —, nicht aus einem Ereigniszähler, der auch bei einem
+> Fokuswechsel hochzählte. Die Frage gilt für **jeden** Ausgang: Ansichtswechsel, „Abbrechen", „Projekt öffnen",
+> **Programmschluss** und Sprachwechsel-Neustart; **Bearbeiten hat keinen Sonderweg**. Sie liegt in der
+> Razor-Schicht und damit auf **beiden** Plattformen; für Windows reichen `INavigationsZiel.VerlassenFraglich`
+> (synchron) und `.DarfVerlassen()` sie bis in `Hauptfensterrahmen.FormClosing`. Beide Mitglieder haben
+> **Standardfassungen** — kein Implementierer bricht, und `IosNavigation` ruft die Schnittstelle ohnehin nur.
+> Neu: `AssistentVerlassen`, fünf Textschlüssel in de und en (`designer_neu.py` gezogen, 5 379 → 5 381,
+> wiederholbar). **Der Speicherweg aus W16a‑O‑1 ist unangetastet.**
+>
+> Gate grün: 0 Fehler / 6 eindeutige Warnungen, Kern **2 351**, UI **3 422** (+19), SpeicherEngine 347, KiKern 469,
+> Formularkarte 122, SQL 0 von 1 312, ChartProben 44, Referenzlauf 1030/1007/1017/1045 **4 × PASS und byte-gleich**
+> gegen `2026-09-07_R6_PvKoeffizienten`, kein Schema. **Auf Linux nicht prüfbar und deshalb nicht behauptet**: dass
+> wirklich kein zweites Fenster entsteht, die Anmutung der freien Ansicht, `FormClosing`/`Application.Restart` und
+> das Zusammenspiel mit der WebView2 — geprüft ist die **Schaltlogik**. **Abnahme auf Windows: A‑W16a‑E1‑1…13**
+> (die zwei Menüwege und die zwei Startkacheln, Speichern neu und bestehend, „Abbrechen" mit und ohne Eingaben,
+> Ansichtswechsel mit Zielansicht nach dem Speichern, scheiterndes Speichern in der Rückfrage, „Projekt öffnen",
+> Programmschluss, Sprachwechsel, Anmutung bei 100/125/150 %). **Offen bleiben R‑W16‑6** (der Feldvergleich am
+> Gerät, gemeinsam mit A‑W16a‑O1‑3) **und `IosProjektQuelle.AssistentGaben`** (W16a‑O‑4): Auf dem iPad meldet die
+> Wurzel weiter „Der Projektassistent steht auf diesem Gerät noch nicht zur Verfügung."; sobald die iOS-Hülle den
+> Parametersatz liefert, bekommt sie die Rückfrage ohne weitere Arbeit mit — sie braucht dafür nur den Delegaten
+> `HatAenderungen` in ihren Gaben. Zwei Auslegungen zur Bestätigung: „Abbrechen" geht durch dieselbe Rückfrage
+> (strenge Lesart von „verlässt den Assistenten"), und ein Menüpunkt, der nur einen **Dialog** öffnet statt die
+> Ansicht zu wechseln, fragt nicht.
 
 > **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
 >
