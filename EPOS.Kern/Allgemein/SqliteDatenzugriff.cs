@@ -413,8 +413,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = ErzeugeKommando(conn, null, sql, parameters))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameters))
                 using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
                     return LadeTabelle(leser);
@@ -433,8 +433,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = ErzeugeKommando(conn, null, sql, parameters))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameters))
                 {
                     cmd.ExecuteNonQuery();
                     return true;
@@ -460,8 +460,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = ErzeugeKommando(conn, null, sql, parameters))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameters))
                 {
                     // ExecuteNonQuery liefert die Anzahl der betroffenen Datensätze (int)
                     return cmd.ExecuteNonQuery();
@@ -485,17 +485,18 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
                 {
-                    using (SqliteCommand cmd = ErzeugeKommando(conn, null, insertSql, parameters))
+                    using (SqliteCommand cmd = ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, insertSql, parameters))
                     {
                         cmd.ExecuteNonQuery();
                     }
 
                     // Holt die ID des gerade erzeugten Datensatzes auf DIESER Verbindung
                     // (frueher SELECT @@IDENTITY).
-                    using (SqliteCommand cmdIdentity = conn.CreateCommand())
+                    using (SqliteCommand cmdIdentity = leihe.Verbindung.CreateCommand())
                     {
+                        cmdIdentity.Transaction = leihe.Transaktion;
                         cmdIdentity.CommandText = "SELECT last_insert_rowid()";
                         return Convert.ToInt32(cmdIdentity.ExecuteScalar());
                     }
@@ -518,8 +519,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = ErzeugeKommando(conn, null, sql, parameters))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameters))
                 {
                     object result = cmd.ExecuteScalar();
 
@@ -574,6 +575,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public DbVorgang Vorgang()
         {
+            // iU9-W16a-O-1: Laeuft schon ein Vorgang auf diesem Faden, wird daraus ein
+            // UNTERPUNKT (Sicherungspunkt) auf DESSEN Verbindung statt eines zweiten
+            // Vorgangs auf einer zweiten - der bliebe an der Schreibsperre haengen und
+            // saehe den noch nicht festgeschriebenen Stand nicht.
+            DbVorgang laufender = Vorgangsklammer.Aktueller;
+            if (laufender != null && laufender.Offen) return new DbVorgang(laufender);
+
             return new DbVorgang(OeffneVerbindung());
         }
 

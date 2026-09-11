@@ -423,8 +423,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null,
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion,
                            "SELECT [" + spalte + "] FROM [" + tabelle + "] WHERE ID = " + id, null))
                 {
                     object v = cmd.ExecuteScalar();
@@ -449,8 +449,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, null))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, null))
                 {
                     object v = cmd.ExecuteScalar();
                     return (v == DBNull.Value) ? null : v;
@@ -474,8 +474,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
                     return DataRepository.LadeTabelle(leser);
