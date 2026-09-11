@@ -91,7 +91,15 @@ namespace WindowsFormsApplication1
                     Konfiguration = _konfig.Gaben(),
                     Ergebnis = _ergebnis.Gaben(),
                     Sperrgrund = SimulationErgebnisHuelle.Sperrgrund,
-                    ErgebnisVorhanden = () => _ergebnis.LaufGerechnet
+                    ErgebnisVorhanden = () => _ergebnis.LaufGerechnet,
+
+                    // AUFTRAG #216: Die fünf Laufparameter stehen in Schritt ①, ihre
+                    // Delegaten kommen aber weiterhin aus der ERGEBNISHÜLLE — sie
+                    // hält die zwei Felder, mit denen der Lauf bestückt wird
+                    // (Betriebsart, Leistungsgrenze). Ein eigener Weg über die
+                    // Konfigurationshülle schriebe dieselben Spalten und ließe diese
+                    // Felder stehen.
+                    Parameter = _ergebnis.ParameterGaben()
                 },
                 ["ProjektText"] = Projektzeile()
             };

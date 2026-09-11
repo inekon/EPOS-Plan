@@ -38,14 +38,13 @@
 
 <div class="epos-simerg">
 
-    @* W11b-B-9 (Windows-Abnahme V3, 07.09.2026): KEIN eigener Titel mehr. Die Seite
-       steht seit E-5 in einer Ueberlagerung, die den Titel schon traegt (unter
-       Windows die der Startseite, auf iOS die Kopfleiste der AppWurzel) - er stand
-       zweimal untereinander. Der Hilfeknopf bleibt und steht rechts, wie der
-       Hilfeknopf eines Dialogs ohne Titel (epos-dialog-kopf--ohnetitel). *@
-    <div class="epos-simerg-kopf epos-simerg-kopf--ohnetitel">
-        <InfoKnopf Schluessel="@HilfeSchluessel" />
-    </div>
+    @* KEIN EIGENER KOPF MEHR (Windows-Abnahme #216 vom 11.09.2026, Punkt 2).
+       W11b-B-9 hatte den Titel gestrichen, weil der Wirt ihn schon trug; der
+       Hilfeknopf blieb stehen - und damit stand seit #207 ein ZWEITES Paar
+       [i] [KI] unmittelbar unter dem der Ansicht (Bild 1 der Abnahme). Ein Paar
+       je Ansicht: Es steht in der Werkzeugleiste der SimulationSeite, und sein
+       Hilfeschluessel ist derselbe (Form_Simulation_Detail.btn_Help), sobald
+       Schritt ③ vorn ist. *@
 
     @if (_daten.Gesperrt)
     {
@@ -78,15 +77,12 @@
         <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL">
             <KindInhalt>
 
-                <Reiterblatt Schluessel="@Blatt.Parameter" Titel="@Resource.SIMERG_TAB_PARAMETER">
-                    <KindInhalt>
-                        @* W11b-B-28: OHNE Optimierung/OptimierungMoeglich - der Knopf
-                           steht mit dem Speicherparameterblock im Ergebnisreiter
-                           "Stromspeicher". *@
-                        <ParameterReiter Daten="@_daten.Parameter" Dienste="@Dienste"
-                                         Gesperrt="@_daten.Gesperrt" />
-                    </KindInhalt>
-                </Reiterblatt>
+                @* DER REITER „PARAMETER" IST MIT #216 GEFALLEN (Windows-Abnahme
+                   11.09.2026, Punkt 3: „Nimm Parameter heraus"). Seine vier
+                   Unterblaetter stehen jetzt in Schritt ①: die Netzverluste im
+                   Abschnitt „Waermebedarf", die drei Erzeugerwerte in der
+                   jeweiligen Erzeugerkarte. Damit ist die UEBERSICHT das erste
+                   Blatt (Punkt 4: „Stelle die Uebersicht als erstes dar"). *@
 
                 <Reiterblatt Schluessel="@Blatt.Uebersicht" Titel="@Resource.SIMERG_TAB_UEBERSICHT">
                     <KindInhalt>
@@ -197,23 +193,15 @@
 
     </fieldset>
 
-    @* AUFTRAG #207: Aus VIER Fussknoepfen sind ZWEI geworden. „Konfiguration ..."
-       und „Beenden" traegt seither die ABLAUFLEISTE der Ansicht SIMULATION - der
-       erste als Schritt ①, der zweite als das eine „← zurueck" im Kopf. Der
-       Laufknopf bleibt: Er ist der Zwilling von Schritt ②, und die Seite soll
-       auch ohne die Leiste ueber sich rechnen koennen (iOS, Stufe S2). *@
-    <div class="epos-simerg-fuss">
-        <button type="button" @onclick="LaufStarten" disabled="@(_laeuft || _daten.Gesperrt)">
-            @Resource.SIMERG_BTN_SIMULATION
-        </button>
-
-        @* „Ergebnis speichern" nur nach einem VOLLSTAENDIGEN Lauf - die
-           Zustandsmaschine aus Nacharbeit Paket 8, Befund N1. *@
-        <button type="button" @onclick="ErgebnisSpeichern"
-                disabled="@(_laeuft || !_daten.ErgebnisGueltig)">
-            @Resource.SIM_TITEL_ERGEBNIS_SPEICHERN
-        </button>
-    </div>
+    @* DIE FUSSLEISTE IST MIT #216 GEFALLEN (Windows-Abnahme 11.09.2026, Punkt 2:
+       „Bringe die Elemente aus dem Dialog auf die rechte Seite"). #207 hatte aus
+       vier Fussknoepfen zwei gemacht und die zwei stehen lassen, weil die Seite
+       auch ohne Leiste ueber sich rechnen koennen sollte; seither standen
+       „Simulation starten ▶" und „Ergebnis speichern" ZWEIMAL untereinander - in
+       der Ablaufleiste und hier. Beide traegt jetzt die Werkzeugleiste der
+       SimulationSeite, auf BEIDEN Plattformen dieselbe (iOS, Stufe S2):
+       LaufStarten() und ErgebnisSpeichern() sind oeffentlich, SpeichernMoeglich
+       sagt, ob der zweite Knopf handeln darf. *@
 
     @* ================================================================
        Die Ueberlagerungen - alles in EINEM Fenster (Risiko R2)
@@ -281,10 +269,15 @@
 </div>
 
 @code {
-    /// <summary>Die sprachneutralen Schluessel der zehn Blaetter.</summary>
+    /// <summary>
+    /// Die sprachneutralen Schluessel der NEUN Blaetter.
+    ///
+    /// <para><b>Es waren zehn.</b> Mit Auftrag #216 (Windows-Abnahme 11.09.2026,
+    /// Punkte 3 und 4) ist „PARAMETER" gefallen — seine Felder stehen in Schritt ①
+    /// —, und die UEBERSICHT steht vorn: „Stelle die Uebersicht als erstes dar".</para>
+    /// </summary>
     public static class Blatt
     {
-        public const string Parameter = "PARAMETER";
         public const string Uebersicht = "UEBERSICHT";
         public const string Bedarf = "BEDARF";
         public const string Waermepumpe = "WAERMEPUMPE";
@@ -324,6 +317,13 @@
     [Parameter] public bool Automatikstart { get; set; } = true;
 
     /// <summary>
+    /// Der Stand hat sich geaendert, an dem die Werkzeugleiste des Wirts haengt
+    /// (Auftrag #216) — ein Lauf hat begonnen oder geendet, ein Ergebnis wurde
+    /// gespeichert, die Seite hat neu geladen.
+    /// </summary>
+    [Parameter] public EventCallback StandGeaendert { get; set; }
+
+    /// <summary>
     /// Das Reiterblatt, mit dem die Seite aufmacht (einer der Schluessel aus
     /// <see cref="Blatt"/>); leer = die Vorgabe. Sie liest ihn EINMAL beim Aufbau.
     /// </summary>
@@ -334,7 +334,8 @@
     /// </remarks>
     [Parameter] public string StartBlatt { get; set; } = "";
 
-    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Simulation_Detail.btn_Help";
+    // Der Parameter HilfeSchluessel ist mit #216 entfallen: Die Seite traegt
+    // keinen Infoknopf mehr, und den der Ansicht setzt SimulationSeite.
 
     // =====================================================================
     // Zustand
@@ -344,7 +345,13 @@
     private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
 
     private Reiter? _reiter;
-    private string _blatt = Blatt.Parameter;
+
+    /// <summary>
+    /// Das sichtbare Blatt. Vorgabe ist die UEBERSICHT (Windows-Abnahme #216,
+    /// Punkt 4) — bis dahin stand der Reiter „Parameter" vorn und der
+    /// Automatikstart schaltete danach auf die Uebersicht weiter.
+    /// </summary>
+    private string _blatt = Blatt.Uebersicht;
 
     private bool _laeuft;
     private double? _anteil;
@@ -469,6 +476,7 @@
         _fortschrittText = Resource.SIMERG_LAUF_LAEUFT;
         _meldung = "";
         StateHasChanged();
+        Melden();
 
         Rueckmeldung antwort;
         try
@@ -489,6 +497,7 @@
         }
 
         StateHasChanged();
+        Melden();
     }
 
     /// <summary>
@@ -504,11 +513,36 @@
 
     private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
 
-    private void ErgebnisSpeichern()
+    /// <summary>
+    /// „Ergebnis speichern" — seit #216 der Weg der WERKZEUGLEISTE der Ansicht
+    /// (der Fussknopf dieser Seite ist mit ihr gefallen).
+    /// </summary>
+    public void ErgebnisSpeichern()
     {
         Rueckmeldung antwort = Dienste?.Speichern?.Invoke() ?? Rueckmeldung.Still;
         _meldung = antwort.Text;
         _meldungStufe = antwort.Erfolg ? WarnStufe.Erfolg : WarnStufe.Fehler;
+        StateHasChanged();
+        Melden();
+    }
+
+    /// <summary>
+    /// Darf „Ergebnis speichern" handeln? Nur nach einem VOLLSTAENDIGEN Lauf und
+    /// nicht waehrend eines laufenden — die Zustandsmaschine aus Nacharbeit
+    /// Paket 8, Befund N1, unveraendert; sie steht seit #216 nur an einem anderen
+    /// Knopf.
+    /// </summary>
+    public bool SpeichernMoeglich => !_laeuft && _daten.ErgebnisGueltig;
+
+    /// <summary>
+    /// Sagt dem Wirt, dass sich der Stand geaendert hat, an dem seine
+    /// Werkzeugleiste haengt (<see cref="SpeichernMoeglich"/>). Ohne diese
+    /// Meldung bliebe „Ergebnis speichern" nach einem Lauf gesperrt stehen, bis
+    /// den Wirt etwas anderes neu zeichnet.
+    /// </summary>
+    private void Melden()
+    {
+        if (StandGeaendert.HasDelegate) _ = StandGeaendert.InvokeAsync();
     }
 
     // =====================================================================

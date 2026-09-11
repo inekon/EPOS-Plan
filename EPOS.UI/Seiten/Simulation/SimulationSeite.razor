@@ -27,6 +27,21 @@
    ihren „Beenden"-Knopf. Was sie ersetzt, ist die Leiste hier oben und das EINE
    „← zurueck" im Kopf.
 
+   EINE RECHTSBUENDIGE WERKZEUGLEISTE (Windows-Abnahme #216 vom 11.09.2026,
+   Punkte 1 bis 4). Der Anwender gab vier Saetze zurueck: „Belege den Button
+   (Kachel ‚Simulation') mit ‚Simulation starten'." — „Bringe die Elemente aus
+   dem Dialog auf die rechte Seite mit besserem Design." — „Nimm Parameter
+   heraus." — „Stelle die Uebersicht als erstes dar." Daraus:
+   (1) SIM-E-1: die Kachel traegt die Marke schritt=2 und RECHNET; das revidiert
+       fuer sie den #207-Entscheid „Kachel startet nicht von selbst".
+   (2) Kopf und Ablaufleiste sind EINE Zeile, rechts: Schrittgruppe ohne Luecke,
+       „Ergebnis speichern", [i] [KI], „← zurueck". Die Fussleiste und das zweite
+       i/KI-Paar der eingebetteten Ergebnisseite sind dafuer gefallen — ein Paar
+       je Ansicht.
+   (3) Der Reiter „Parameter" von ③ ist gefallen; seine Netzverluste und die drei
+       Erzeugerwerte stehen in Schritt ① (Parameter -> SimulationKonfigSeite).
+   (4) ③ macht mit der Uebersicht auf.
+
    BEIDE BLAETTER BLEIBEN MONTIERT, sobald sie einmal standen — sichtbar ist
    immer nur eines. Ein Schrittwechsel darf weder den gerechneten Lauf noch den
    Bilderspeicher noch das offene Reiterblatt wegwerfen; genau das aber taete ein
@@ -43,25 +58,43 @@
 
 <div class="epos-seite epos-simansicht">
 
-    @* ---------------------------------------------------------------- Kopf *@
+    @* ------------------------------------------- Kopf und Werkzeugleiste *@
+    @* WINDOWS-ABNAHME #216 (11.09.2026), Punkt 2: „Bringe die Elemente aus dem
+       Dialog auf die rechte Seite mit besserem Design." Bis dahin standen Kopf
+       und Ablaufleiste in ZWEI Zeilen, und die Ergebnisseite darunter trug noch
+       einmal ihr eigenes [i] [KI] und eine Fussleiste mit „Simulation starten ▶"
+       und „Ergebnis speichern" — dieselben zwei Knoepfe, die die Leiste schon
+       fuehrte. Jetzt ist es EINE rechtsbuendige Leiste: die Schrittgruppe
+       (① · ② · ③, kompakt und ohne Luecke), daneben „Ergebnis speichern", dann
+       das EINE Paar [i] [KI] und das EINE „← zurueck". Auf schmalem Schirm
+       bricht die Leiste um; die Gruppe bleibt als Ganzes zusammen. *@
     <div class="epos-seite-kopf epos-simansicht-kopf">
         <h1 class="epos-seite-titel">@TitelText</h1>
         @if (!string.IsNullOrWhiteSpace(ProjektText))
         {
             <span class="epos-simansicht-kontext">@ProjektText</span>
         }
-        <span class="epos-simansicht-kopfaktionen">
-            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
-            <button type="button" class="epos-knopf" @onclick="Verlassen">@ZurueckText</button>
-        </span>
-    </div>
 
-    @* ------------------------------------------------------- Ablaufleiste *@
-    <Ablaufleiste Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
-                  Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
-                  RechnenText="@RechnenText" RechnenFrei="@RechnenFrei"
-                  RechnenGrund="@Rechensperre" Rechnen="Rechnen"
-                  Bezeichnung="@AblaufText" />
+        <div class="epos-simansicht-werkzeugleiste">
+            <Ablaufleiste Kompakt="true"
+                          Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
+                          Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
+                          RechnenText="@RechnenText" RechnenFrei="@RechnenFrei"
+                          RechnenGrund="@Rechensperre" Rechnen="Rechnen"
+                          Bezeichnung="@AblaufText" />
+
+            @* „Ergebnis speichern" gehoert zu ③ und ist nur dort zu haben — die
+               Zustandsmaschine dahinter (nur nach einem vollstaendigen Lauf) liegt
+               unveraendert in der Ergebnisseite. *@
+            <button type="button" class="epos-knopf epos-simansicht-speichern"
+                    disabled="@(!SpeichernFrei)" @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
+
+            <span class="epos-simansicht-kopfaktionen">
+                <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+                <button type="button" class="epos-knopf" @onclick="Verlassen">@ZurueckText</button>
+            </span>
+        </div>
+    </div>
 
     @if (Rechensperre.Length > 0)
     {
@@ -80,6 +113,7 @@
     {
         <div class="@Blattklasse(SimulationSchritt.Konfiguration)">
             <SimulationKonfigSeite @ref="_konfigSeite" @attributes="Dienste.Konfiguration"
+                                   Parameter="@Dienste.Parameter"
                                    UngespeichertGeaendert="KonfigStandGemeldet" />
         </div>
     }
@@ -88,7 +122,8 @@
     {
         <div class="@Blattklasse(SimulationSchritt.Ergebnis)">
             <SimulationErgebnisSeite @ref="_ergebnisSeite" @attributes="Dienste.Ergebnis"
-                                     Automatikstart="false" StartBlatt="@_startBlatt" />
+                                     Automatikstart="false" StartBlatt="@_startBlatt"
+                                     StandGeaendert="ErgebnisStandGemeldet" />
         </div>
     }
 
@@ -109,9 +144,14 @@
     [Parameter] public SimulationAnsichtDienste? Dienste { get; set; }
 
     /// <summary>
-    /// Die MARKE des Aufrufers — <c>"schritt=1"</c>, <c>"schritt=3"</c> oder
-    /// <c>"schritt=3;blatt=STROMSPEICHER"</c>. Angewandt wird sie, wenn sie sich
-    /// ÄNDERT; was der Anwender danach in der Ablaufleiste tut, gewinnt.
+    /// Die MARKE des Aufrufers — <c>"schritt=1"</c>, <c>"schritt=2"</c>,
+    /// <c>"schritt=3"</c> oder <c>"schritt=3;blatt=STROMSPEICHER"</c>. Angewandt
+    /// wird sie, wenn sie sich ÄNDERT; was der Anwender danach in der Ablaufleiste
+    /// tut, gewinnt.
+    ///
+    /// <para><c>schritt=2</c> ist die Marke der KACHEL „Simulation starten"
+    /// (Anwenderentscheid <b>SIM‑E‑1</b>, #216): Sie zeigt kein Blatt, sondern tut,
+    /// was der Rechenknopf tut — und bleibt bei ①, wenn er gesperrt ist.</para>
     /// </summary>
     [Parameter] public string Marke { get; set; } = "";
 
@@ -143,6 +183,7 @@
     private static string VerlassenTitelText => Resource.SIM_ANSICHT_VERLASSEN_TITEL;
     private static string VerlassenFrageText => Resource.SIM_ANSICHT_VERLASSEN_FRAGE;
     private static string SpeichernText => Resource.SIM_ANSICHT_BTN_SPEICHERN;
+    private static string ErgebnisSpeichernText => Resource.SIM_TITEL_ERGEBNIS_SPEICHERN;
     private static string VerwerfenText => Resource.SIM_ANSICHT_BTN_VERWERFEN;
     private static string BleibenText => Resource.SIM_ANSICHT_BTN_BLEIBEN;
 
@@ -173,6 +214,23 @@
 
     private SimulationKonfigSeite? _konfigSeite;
     private SimulationErgebnisSeite? _ergebnisSeite;
+
+    /// <summary>
+    /// Darf „Ergebnis speichern" handeln? NUR in ③ (Windows-Abnahme #216, Punkt 2)
+    /// und nur, wenn die Ergebnisseite einen vollständigen Lauf führt.
+    /// </summary>
+    private bool SpeichernFrei
+        => _schritt == SimulationSchritt.Ergebnis
+        && _ergebnisSeite is not null
+        && _ergebnisSeite.SpeichernMoeglich;
+
+    private void ErgebnisSpeichern() => _ergebnisSeite?.ErgebnisSpeichern();
+
+    /// <summary>
+    /// Die Ergebnisseite meldet, dass sich ihr Stand geändert hat — daran hängt
+    /// „Ergebnis speichern" in der Werkzeugleiste hier oben.
+    /// </summary>
+    private void ErgebnisStandGemeldet() => StateHasChanged();
 
     /// <summary>Der stehende Schritt (Prüfhilfe und Marke).</summary>
     public string Schritt => _schritt;
@@ -291,6 +349,20 @@
 
         if (marke.Schritt == 1)
         {
+            _schritt = SimulationSchritt.Konfiguration;
+            _konfigMontiert = true;
+            return;
+        }
+
+        if (marke.Schritt == 2)
+        {
+            // SIM-E-1 (11.09.2026): „Belege den Button (Kachel ‚Simulation') mit
+            // ‚Simulation starten'." Die Kachel oeffnet die Ansicht UND loest
+            // Schritt ② aus - denselben Weg wie der Knopf, mit derselben
+            // Sperrpruefung. Ist gesperrt, bleibt die Ansicht bei ①; den Grund
+            // nennt das Banner ueber den Blaettern (Rechensperre).
+            if (RechnenFrei) { Rechnen(); if (erste) _konfigMontiert = false; return; }
+
             _schritt = SimulationSchritt.Konfiguration;
             _konfigMontiert = true;
             return;

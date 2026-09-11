@@ -304,8 +304,9 @@ namespace WindowsFormsApplication1
             // DAMIT BESTANDSPROJEKTE NICHT ANDERS RECHNEN, hebt Migrationsschritt 67
             // (BhkwLeistungsgrenzeVorgabe, SCHRITT_67_BHKW_LEISTUNGSGRENZE) die Saetze
             // OHNE gepflegten Wert (NULL) einmalig auf 30 an; eine gepflegte 0 bleibt 0.
-            // Der Wert steht seither SICHTBAR im Parameterblatt "BHKW" der
-            // Simulationskonfiguration (EPOS.UI/Seiten/Simulation/ParameterReiter.razor)
+            // Der Wert steht seither SICHTBAR bei der BHKW-Karte der
+            // Simulationskonfiguration (EPOS.UI/Seiten/Simulation/SimulationKonfigSeite.razor;
+            // bis Auftrag #216 im Parameterblatt "BHKW" des Reiters "Parameter")
             // und ein neues Projekt startet mit 30 % (KonfigurationModel).
             //
             // BERICHTIGUNG. Der frühere Kommentar an dieser Stelle nannte

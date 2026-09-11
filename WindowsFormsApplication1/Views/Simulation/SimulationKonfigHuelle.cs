@@ -1620,6 +1620,17 @@ namespace WindowsFormsApplication1
         {
             if (_gesperrt) return false;
 
+            // AUFTRAG #216: Die fuenf Laufparameter (Netzverluste, BHKW-Betriebsart,
+            // untere Leistungsgrenze, Heizstab, Betriebsbereitschaft) stehen seit der
+            // Windows-Abnahme vom 11.09.2026 auf DIESER Seite, geschrieben werden sie
+            // aber ueber die ERGEBNIShuelle - sie haelt den Stand, mit dem der Lauf
+            // bestueckt wird. Dieses Speichern schreibt die GANZE Zeile aus
+            // _konfiguration weg (Delete + Insert): Ohne den frischen Stand traege es
+            // die fuenf Werte auf den Stand zurueck, der beim Anlegen der Huelle in der
+            // Datenbank stand - der Anwender saehe seine Eingabe verschwinden, sobald
+            // er die Kaskade speichert.
+            LaufparameterNachlesen();
+
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
 
@@ -1631,6 +1642,34 @@ namespace WindowsFormsApplication1
                 KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, false);
 
             return true;
+        }
+
+        /// <summary>
+        /// Liest die fuenf Laufparameter frisch aus <c>Tab_Einstellungen</c> in den
+        /// Arbeitsstand nach (Auftrag #216, Begruendung in <see cref="Speichern"/>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Nur diese fuenf.</b> Alles andere der Zeile gehoert dem Arbeitsstand
+        /// dieser Seite (Kaskade Tool_1..6) und darf nicht ueberschrieben werden -
+        /// sonst verloere der Anwender genau die Aenderung, die er speichern will.
+        /// <para><b>Still wie die Vorwahl:</b> Schlaegt das Nachlesen fehl, wird die
+        /// Kaskade trotzdem gespeichert - sie ist das, worauf der Knopf zielt.</para>
+        /// </remarks>
+        private void LaufparameterNachlesen()
+        {
+            try
+            {
+                KonfigurationModel frisch = KonfigurationCtrl.LiesProjekt(m_ID_Projekt);
+                if (frisch == null) return;
+
+                _konfiguration.m_Netzverluste = frisch.m_Netzverluste;
+                _konfiguration.m_szNetzverlusteEinheit = frisch.m_szNetzverlusteEinheit;
+                _konfiguration.Betriebsart = frisch.Betriebsart;
+                _konfiguration.Leistungsgrenze = frisch.Leistungsgrenze;
+                _konfiguration.m_WP_Heizstab = frisch.m_WP_Heizstab;
+                _konfiguration.m_Kessel_Betriebsbereitschaft = frisch.m_Kessel_Betriebsbereitschaft;
+            }
+            catch { /* Nachlesen ist Vorsorge - es darf das Speichern nie verhindern */ }
         }
 
         private bool LesepunktSchreiben(bool davor)

@@ -197,7 +197,27 @@ public class StromspeicherReiterTests : EposBunitContext
                               b => b.TextContent.Contains("optimieren"));
 
         var mit = Zeichnen(Daten(), optimierung: true, dienste: Flottendienste());
-        Assert.Empty(mit.FindComponents<SpeicherParameterBlock>());
+        Assert.DoesNotContain(
+            mit.FindComponent<SpeicherParameterBlock>().FindAll("button"),
+            b => b.TextContent.Contains("optimieren"));
+    }
+
+    /// <summary>
+    /// <b>WINDOWS-ABNAHME #216 (11.09.2026), Punkt 3.</b> Der Einzelanlagenblock hing
+    /// bis dahin an der FRAGE, ob die Plattform eine Flotte rechnen kann — unter
+    /// Windows ist das immer der Fall, und damit war er unerreichbar. Er hängt jetzt
+    /// am STAND: Solange kein Flottenstand aktiviert ist, fährt der Projektlauf die
+    /// Einzelanlage, und dann sind das seine Parameter. Er steht unter seiner eigenen
+    /// Überschrift, damit man sieht, wozu er gehört.
+    /// </summary>
+    [Fact]
+    public void Ohne_aktivierte_Flotte_steht_der_Einzelanlagenblock_unter_seiner_Ueberschrift()
+    {
+        var seite = Zeichnen(Daten(), optimierung: true, dienste: Flottendienste());
+
+        Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SP_GRP_EINZELANLAGE,
+                        seite.Markup);
     }
 
     [Fact]
@@ -208,7 +228,6 @@ public class StromspeicherReiterTests : EposBunitContext
 
         Assert.Contains("Speicherflotte und Auslegung", seite.Markup);
         Assert.Contains("Eingabestand @Aktuell", seite.Markup);
-        Assert.Empty(seite.FindComponents<SpeicherParameterBlock>());
         Assert.Single(seite.FindComponents<SpeicherFlottenBetriebEditor>());
         var knopf = seite.FindAll("button").Single(b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
         knopf.Click();
@@ -243,7 +262,12 @@ public class StromspeicherReiterTests : EposBunitContext
 
         Assert.Contains("Mehrspeicherbetrieb aktiviert", seite.Markup);
         Assert.DoesNotContain("Growatt · Grünstrom · Dauernutzung", seite.Markup);
+
+        // #216: MIT aktivierter Flotte bleibt der Einzelanlagenblock weg - die
+        // Betriebsart folgt dann dem Haekchen „Netzladung" des Flotteneditors.
         Assert.Empty(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SP_GRP_EINZELANLAGE,
+                              seite.Markup);
         Assert.Single(seite.FindAll("button"), b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
         Assert.Contains("Multi Use", seite.Markup);
         Assert.Contains("Grenzkosten", seite.Markup);

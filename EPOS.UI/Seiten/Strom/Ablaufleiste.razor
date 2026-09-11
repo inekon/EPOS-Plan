@@ -29,7 +29,7 @@
 
 @namespace EPOS.UI.Seiten.Strom
 
-<nav class="epos-ablaufleiste" aria-label="@Bezeichnung">
+<nav class="@Leistenklasse" aria-label="@Bezeichnung">
     <ol class="epos-ablaufleiste-schritte">
         @foreach (Ablaufeintrag eintrag in Vorne)
         {
@@ -96,6 +96,22 @@
 
     /// <summary>Die Marke „veraltet" hinter einem überholten Blatt.</summary>
     [Parameter] public string VeraltetText { get; set; } = "veraltet";
+
+    /// <summary>
+    /// KOMPAKT: die Leiste steht als Gruppe in einer Werkzeugleiste, nicht als
+    /// eigene Zeile über dem Blatt (Windows-Abnahme <b>#216</b>, Punkt 2).
+    /// </summary>
+    /// <remarks>
+    /// Die breite Fassung schiebt den Rechenknopf mit <c>margin-inline-start:auto</c>
+    /// nach rechts — bei fünf Schritten ist das die Zäsur zwischen „eingeben" und
+    /// „rechnen", bei DREI wäre es eine Lücke mitten in der Gruppe. Kompakt rücken
+    /// die Schritte zusammen und die Leiste verliert ihre Trennlinie; die
+    /// Werkzeugleiste des Wirts trägt sie.
+    /// </remarks>
+    [Parameter] public bool Kompakt { get; set; }
+
+    private string Leistenklasse
+        => Kompakt ? "epos-ablaufleiste epos-ablaufleiste--kompakt" : "epos-ablaufleiste";
 
     private Task RechnenGeklickt() => RechnenFrei ? Rechnen.InvokeAsync() : Task.CompletedTask;
 

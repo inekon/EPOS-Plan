@@ -1,4 +1,6 @@
-﻿using Bunit;
+﻿using System.Linq;
+using AngleSharp.Dom;
+using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
@@ -209,6 +211,133 @@ public class SimulationKonfigSeiteTests : BunitContext
         => Render<SimulationKonfigSeite>(p => p
             .Add(x => x.Dienste, Dienste(gesperrt, mitBooster))
             .Add(x => x.StartProjekt, 1030));
+
+    // =====================================================================
+    //  #216, Punkt 3 — die fuenf Laufparameter stehen in Schritt ①
+    // =====================================================================
+
+    private readonly List<string> _geschrieben = new();
+
+    private SimulationParameterDienste Parameterdienste() => new SimulationParameterDienste
+    {
+        Laden = () => new ParameterDaten
+        {
+            Netzverluste = 4,
+            NetzverlusteEinheit = "%",
+            Betriebsart = 1,
+            UntersteLeistungsgrenze = 30,
+            Heizstab = true,
+            Bereitschaft = 8000
+        },
+        NetzverlusteSchreiben = (w, e) => _geschrieben.Add("netz:" + w + e),
+        BetriebsartSchreiben = w => _geschrieben.Add("betriebsart:" + w),
+        LeistungsgrenzeSchreiben = w => _geschrieben.Add("grenze:" + w),
+        HeizstabSchreiben = w => _geschrieben.Add("heizstab:" + w),
+        BereitschaftSchreiben = w => _geschrieben.Add("bereitschaft:" + w)
+    };
+
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitParametern()
+        => Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, Dienste())
+            .Add(x => x.Parameter, Parameterdienste())
+            .Add(x => x.StartProjekt, 1030));
+
+    /// <summary>
+    /// <b>Windows-Abnahme #216, Punkt 3:</b> „Nimm Parameter heraus — die
+    /// Netzverluste können an eine andere Stelle." Sie stehen jetzt im Abschnitt
+    /// „Wärmebedarf" dieser Seite, mit dem Hinweis, wann sie wirken — und sie
+    /// schreiben sofort, wie im abgelösten Reiter.
+    /// </summary>
+    [Fact]
+    public void Die_Netzverluste_stehen_beim_Waermebedarf_und_schreiben_sofort()
+    {
+        var seite = SeiteMitParametern();
+
+        IElement abschnitt = seite.Find("section.epos-simkonfig-bedarf");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
+                        abschnitt.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_NETZVERLUSTE,
+                        abschnitt.TextContent);
+        Assert.Contains("nur", abschnitt.TextContent.ToLowerInvariant());
+
+        IElement feld = abschnitt.QuerySelectorAll("input")[0];
+        Assert.Equal("4", feld.GetAttribute("value"));
+
+        feld.Input("7");
+        Assert.Equal(new[] { "netz:7%" }, _geschrieben);
+    }
+
+    /// <summary>Ohne Parametersatz steht der Abschnitt gar nicht da.</summary>
+    [Fact]
+    public void Ohne_Parametersatz_bleibt_der_Waermebedarfsabschnitt_weg()
+    {
+        var seite = Seite();
+
+        Assert.Empty(seite.FindAll("section.epos-simkonfig-bedarf"));
+        Assert.Empty(seite.FindAll("div.epos-erzeugerkachel-parameter"));
+    }
+
+    /// <summary>
+    /// Die drei Erzeugerwerte stehen an DER Karte, die sie betreffen — BHKW
+    /// (Betriebsart und untere Leistungsgrenze), Wärmepumpe (Heizstab),
+    /// Heizkessel (Betriebsbereitschaft). Und jeder schreibt sofort.
+    /// </summary>
+    [Fact]
+    public void Jeder_Erzeugerparameter_steht_an_seiner_Karte_und_schreibt_sofort()
+    {
+        var seite = SeiteMitParametern();
+
+        // Die Waermepumpe ist im Probenprojekt VERFUEGBAR und damit zugeklappt -
+        // der Textschalter am Spaltenende holt sie hervor.
+        seite.Find("button.epos-simkonfig-verfuegbar").Click();
+
+        IElement bhkw = Karte(seite, "BHKW · Modul 1");
+        IElement kessel = Karte(seite, "Heizkessel");
+        IElement wp = Karte(seite, "Wärmepumpe");
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_GRP_BETRIEBSART,
+                        bhkw.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE,
+                        bhkw.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
+                        wp.TextContent);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_BEREITSCHAFT,
+                        kessel.TextContent);
+
+        // Die Betriebsart steht auf „stromgefuehrt" (1) - der dritte Knopf waehlt 2.
+        bhkw.QuerySelectorAll("input[type='radio']")[2].Change(true);
+        wp.QuerySelector("input[type='checkbox']")!.Change(false);
+        kessel.QuerySelectorAll("input")[0].Input("7500");
+
+        Assert.Equal(new[] { "betriebsart:2", "heizstab:False", "bereitschaft:7500" },
+                     _geschrieben);
+    }
+
+    /// <summary>
+    /// NUR AN DER ERSTEN KARTE IHRER ART: Das Projekt führt zwei BHKW-Module, die
+    /// fünf Werte gelten aber projektweit — an beiden Karten stünde dieselbe
+    /// Betriebsart zweimal.
+    /// </summary>
+    [Fact]
+    public void Ein_zweites_Modul_derselben_Art_traegt_keinen_zweiten_Parameterblock()
+    {
+        var seite = SeiteMitParametern();
+
+        Assert.Empty(Karte(seite, "BHKW · Modul 2")
+                         .QuerySelectorAll("div.epos-erzeugerkachel-parameter"));
+
+        // Zwei Bereiche: BHKW und Heizkessel - die Waermepumpe ist zugeklappt.
+        Assert.Equal(2, seite.FindAll("div.epos-erzeugerkachel-parameter").Count);
+
+        // Mit ihr sind es drei, und das zweite BHKW-Modul bleibt ohne.
+        seite.Find("button.epos-simkonfig-verfuegbar").Click();
+        Assert.Equal(3, seite.FindAll("div.epos-erzeugerkachel-parameter").Count);
+    }
+
+    /// <summary>Die Erzeugerkarte EINES Erzeugers über ihren Titel.</summary>
+    private static IElement Karte(IRenderedComponent<SimulationKonfigSeite> seite, string titel)
+        => seite.FindAll("div.epos-erzeugerkachel")
+                .Single(k => k.QuerySelector(".epos-erzeugerkachel-titel")!.TextContent.Trim() == titel);
 
     /// <summary>Die Seite mit GENAU diesen Daten (W10b-B-2).</summary>
     private IRenderedComponent<SimulationKonfigSeite> Zeige(SimulationKonfigDaten daten)

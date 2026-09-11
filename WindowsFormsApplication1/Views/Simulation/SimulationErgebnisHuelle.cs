@@ -239,26 +239,8 @@ namespace WindowsFormsApplication1
                 Speichern = ErgebnisSpeichern,
                 Bild = Bild,
 
-                NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
-                {
-                    m.m_Netzverluste = wert;
-                    m.m_szNetzverlusteEinheit = einheit;
-                }),
-                BetriebsartSchreiben = wert =>
-                {
-                    _bhkwBetriebsart = wert;
-                    KonfigSchreiben(m => m.Betriebsart = wert);
-                },
-                LeistungsgrenzeSchreiben = wert =>
-                {
-                    // W6-E-7: in Leistungsgrenze, NICHT in m_BHKW_Grenzleistung -
-                    // Begruendung am Feld _grenzleistungBhkw.
-                    _grenzleistungBhkw = wert;
-                    KonfigSchreiben(m => m.Leistungsgrenze = wert);
-                },
-                HeizstabSchreiben = wert => KonfigSchreiben(m => m.m_WP_Heizstab = wert),
-                BereitschaftSchreiben = wert =>
-                    KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
+                // Die FUENF Laufparameter stehen seit #216 in Schritt ①; ihre
+                // Delegaten liefert ParameterGaben() derselben Huelle.
 
                 // W11b-B-29: EIN Schreibweg fuer die Speicherparameter. Ihn nehmen
                 // der Parameterblock des Ergebnisreiters (jedes Feld sofort) und die
@@ -323,7 +305,7 @@ namespace WindowsFormsApplication1
             ctrl.ProjektLesen(idProjekt);
             string[] tool = Tools();
 
-            d.Parameter = ParameterDaten(tool);
+            d.Parameter = Parametersatz();
             d.ErgebnisGueltig = _ergebnisGueltig && !d.Gesperrt;
 
             // Die Reiterleiste folgt derselben Regel wie die Menüliste des Vorläufers
@@ -421,26 +403,30 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // Die Parameterseite
+        // Die fuenf Laufparameter (bis #216 der Reiter „Parameter")
         // =================================================================
 
-        private ParameterDaten ParameterDaten(string[] tool)
+        /// <summary>
+        /// Die fuenf Laufparameter samt dem Stand des Speicherblocks.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Der Reiter „Parameter" ist mit Auftrag #216 gefallen</b>
+        /// (Windows-Abnahme 11.09.2026, Punkt 3). Mit ihm die Liste seiner
+        /// Unterblaetter und die Abbildung <c>BlattZuTool</c>: Welche Erzeugerkarte
+        /// von Schritt ① welches Feld zeigt, entscheidet dort der <c>DbWert</c> der
+        /// Zeile. Der Reiter „Stromspeicher" haengt unveraendert an
+        /// <c>d.ReiterStromspeicher</c>, nicht an dieser Abbildung.</para>
+        /// <para>Gelesen wird aus <c>ctrl.model</c> — der Aufrufer hat unmittelbar
+        /// davor <c>ProjektLesen</c> gerufen. Betriebsart und Leistungsgrenze
+        /// kommen aus den zwei Feldern der Huelle: Sie sind der Stand, mit dem
+        /// auch der Lauf bestueckt wird.</para>
+        /// </remarks>
+        private ParameterDaten Parametersatz()
         {
-            var blaetter = new List<string> { ParameterBlatt.Bedarf };
-
-            // Die Reihenfolge ist die von Tool_1..6 - wörtlich (UpdateTabPages :2848).
-            foreach (string t in tool)
-            {
-                if (string.IsNullOrEmpty(t)) continue;
-                string schluessel = BlattZuTool(t.Trim());
-                if (schluessel != null && !blaetter.Contains(schluessel)) blaetter.Add(schluessel);
-            }
-
             KonfigurationModel m = ctrl.model ?? new KonfigurationModel();
 
             return new ParameterDaten
             {
-                Unterblaetter = blaetter,
                 Netzverluste = m.m_Netzverluste,
                 NetzverlusteEinheit = string.IsNullOrEmpty(m.m_szNetzverlusteEinheit)
                     ? "%" : m.m_szNetzverlusteEinheit,
@@ -453,22 +439,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das Parameterblatt zu einem Erzeuger; <c>null</c> = keines.
+        /// Die fuenf Laufparameter fuer SCHRITT ① (Auftrag #216) — <b>derselbe
+        /// Lese- und Schreibweg</b>, den bis #216 der Reiter „Parameter" der
+        /// Ergebnisseite nahm.
         /// </summary>
         /// <remarks>
-        /// <b>Der Stromspeicher hat hier seit W11b‑B‑28 keines mehr</b> (Anwenderwunsch
-        /// 10.09.2026). Seine Parameter stehen als <c>SpeicherParameterBlock</c> im
-        /// ERGEBNISreiter „Stromspeicher"; ein Blatt gleichen Namens im Reiter
-        /// „Parameter" waere die zweite Pflegestelle desselben Satzes. Der Reiter
-        /// „Stromspeicher" selbst haengt unveraendert an <c>d.ReiterStromspeicher</c>
-        /// (Tool_6 bzw. irgendein Toolplatz), nicht an dieser Abbildung.
+        /// <b>Warum die ERGEBNIShuelle und nicht die Konfigurationshuelle.</b> Die
+        /// zwei Felder <c>_bhkwBetriebsart</c> und <c>_grenzleistungBhkw</c> sind
+        /// der Stand, mit dem <c>SimulationLaufCtrl.Bestuecken</c> den Lauf
+        /// bestueckt. Ein zweiter Schreibweg ueber die Konfigurationshuelle
+        /// schriebe zwar dieselben Spalten, liesse diese Felder aber stehen — der
+        /// naechste Lauf rechnete mit der alten Betriebsart. Ohne den
+        /// Speicherblock: den braucht Schritt ① nicht, und sein Lesen zieht eine
+        /// Variantenpflege nach sich.
         /// </remarks>
-        private static string BlattZuTool(string tool)
+        internal SimulationParameterDienste ParameterGaben()
         {
-            if (tool == DbWerte.ERZEUGER_BHKW) return ParameterBlatt.Bhkw;
-            if (tool == DbWerte.ERZEUGER_WAERMEPUMPE) return ParameterBlatt.Waermepumpe;
-            if (tool == DbWerte.ERZEUGER_HEIZKESSEL) return ParameterBlatt.Heizkessel;
-            return null;
+            return new SimulationParameterDienste
+            {
+                Laden = () =>
+                {
+                    ctrl.ProjektLesen(m_ID_Projekt);
+                    KonfigurationModel m = ctrl.model ?? new KonfigurationModel();
+                    return new ParameterDaten
+                    {
+                        Netzverluste = m.m_Netzverluste,
+                        NetzverlusteEinheit = string.IsNullOrEmpty(m.m_szNetzverlusteEinheit)
+                            ? "%" : m.m_szNetzverlusteEinheit,
+                        Betriebsart = _bhkwBetriebsart,
+                        UntersteLeistungsgrenze = _grenzleistungBhkw,
+                        Heizstab = m.m_WP_Heizstab,
+                        Bereitschaft = m.m_Kessel_Betriebsbereitschaft
+                    };
+                },
+                NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
+                {
+                    m.m_Netzverluste = wert;
+                    m.m_szNetzverlusteEinheit = einheit;
+                }),
+                BetriebsartSchreiben = wert =>
+                {
+                    _bhkwBetriebsart = wert;
+                    KonfigSchreiben(m => m.Betriebsart = wert);
+                },
+                LeistungsgrenzeSchreiben = wert =>
+                {
+                    // W6-E-7: in Leistungsgrenze, NICHT in m_BHKW_Grenzleistung.
+                    _grenzleistungBhkw = wert;
+                    KonfigSchreiben(m => m.Leistungsgrenze = wert);
+                },
+                HeizstabSchreiben = wert => KonfigSchreiben(m => m.m_WP_Heizstab = wert),
+                BereitschaftSchreiben = wert =>
+                    KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert)
+            };
         }
 
         private void KonfigSchreiben(Action<KonfigurationModel> aenderung)

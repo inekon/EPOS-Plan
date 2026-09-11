@@ -143,25 +143,26 @@ public sealed class SpeicherPreisreihenDaten
 }
 
 /// <summary>
-/// Der Stand der Parameterseite (R1). Die Unterblaetter haengen an
-/// <c>Tab_Einstellungen.Tool_1..6</c> — „Bedarf" ist immer dabei
-/// (<c>UpdateTabPages</c> :2843-2865); das Blatt „Stromspeicher" ist mit W11b‑B‑28
-/// in den Ergebnisreiter gezogen und steht nicht mehr darunter.
+/// Die fünf LAUFPARAMETER des Projekts und der Stand des Speicherblocks.
+///
+/// <para><b>Der Reiter „Parameter" ist mit Auftrag #216 gefallen</b>
+/// (Windows-Abnahme 11.09.2026, Punkt 3: „Nimm Parameter heraus — die
+/// Netzverluste können an eine andere Stelle"). Seine vier Unterblätter stehen
+/// seither dort, wo der Anwender die Sache ohnehin einstellt: die
+/// <see cref="Netzverluste"/> im Abschnitt „Wärmebedarf" von Schritt ①, die drei
+/// Erzeugerwerte in der jeweiligen Erzeugerkarte daneben. Mit dem Reiter sind
+/// <c>Unterblaetter</c> und die Schlüsselklasse <c>ParameterBlatt</c> entfallen —
+/// welche Karte welches Feld zeigt, entscheidet ihr <c>DbWert</c>.</para>
+///
+/// <para><see cref="Speicher"/> gehört seit W11b‑B‑28 in den Ergebnisreiter
+/// „Stromspeicher" und wird von der Ergebnisseite dorthin durchgereicht; die
+/// Hülle liest beides in einem Zug.</para>
 /// </summary>
 public sealed class ParameterDaten
 {
-    /// <summary>
-    /// Die Unterblaetter in der Reihenfolge, in der der Vorlaeufer sie einhaengte:
-    /// „Bedarf" immer zuerst, danach die Erzeuger in der Reihenfolge von
-    /// <c>Tool_1..6</c> (<c>UpdateTabPages</c> :2848-2865). Die Schluessel stehen in
-    /// <see cref="ParameterBlatt"/>.
-    /// </summary>
-    public IReadOnlyList<string> Unterblaetter = new[] { ParameterBlatt.Bedarf };
-
     // ---- P1: Wärme-/Strombedarf (immer) ----
     public double Netzverluste;
     public string NetzverlusteEinheit = "%";
-    public IReadOnlyList<string> NetzverlusteEinheiten = new[] { "%" };
 
     // ---- P2: BHKW ----
 
@@ -169,10 +170,7 @@ public sealed class ParameterDaten
     public int Betriebsart;
     public int UntersteLeistungsgrenze;
 
-    // ---- Stromspeicher: kein Blatt dieses Reiters mehr (W11b-B-28), aber
-    //      weiterhin Teil DIESES Datensatzes - die Huelle liest die Parameterseite
-    //      in einem Zug, und der Ergebnisreiter "Stromspeicher" bekommt sie von der
-    //      Seite durchgereicht.
+    // ---- Stromspeicher: Ergebnisreiter „Stromspeicher" (W11b-B-28) ----
     public SpeicherParameterDaten Speicher = new SpeicherParameterDaten();
 
     // ---- P4: Wärmepumpe ----
@@ -180,27 +178,6 @@ public sealed class ParameterDaten
 
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
-}
-
-/// <summary>
-/// Die sprachneutralen Schluessel der Parameter-Unterblaetter. Sie ersetzen die
-/// <c>TabPage</c>-Namen des Vorlaeufers und tragen keinen Umlaut mehr (Befund
-/// W11-B30).
-///
-/// <para><b>Es sind VIER</b> (W11b‑B‑28, Anwenderwunsch 10.09.2026). Der Vorlaeufer
-/// fuehrte fuenf (Befund W11-B1), und der Reiter fuehrte sie bis dahin auch:
-/// Bedarf, BHKW, <b>Stromspeicher</b>, Waermepumpe, Heizkessel. Das
-/// Stromspeicherblatt ist als <c>SpeicherParameterBlock</c> in den ERGEBNISreiter
-/// „Stromspeicher" gezogen — dorthin, wo die Zahlen stehen, zu denen es gehoert.
-/// Sein Schluessel entfaellt ersatzlos; <c>BlattZuTool</c> der Huelle liefert fuer
-/// <c>ERZEUGER_STROMSPEICHER</c> kein Blatt mehr.</para>
-/// </summary>
-public static class ParameterBlatt
-{
-    public const string Bedarf = "BEDARF";
-    public const string Bhkw = "BHKW";
-    public const string Waermepumpe = "WAERMEPUMPE";
-    public const string Heizkessel = "HEIZKESSEL";
 }
 
 // =========================================================================
@@ -559,22 +536,13 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Rendert EIN Bild — erst beim Betreten des Reiters, dann zwischengespeichert.</summary>
     public Func<Bildauftrag, byte[]?>? Bild;
 
-    // ---- Die Parameter schreiben SOFORT, feldweise (wie der Vorlaeufer) ----
-
-    /// <summary>Netzverluste und ihre Einheit.</summary>
-    public Action<double, string>? NetzverlusteSchreiben;
-
-    /// <summary>Die BHKW-Betriebsart (0/1/2).</summary>
-    public Action<int>? BetriebsartSchreiben;
-
-    /// <summary>Die unterste Leistungsgrenze der BHKW-Module.</summary>
-    public Action<int>? LeistungsgrenzeSchreiben;
-
-    /// <summary>Der Heizstabschalter der Wärmepumpe.</summary>
-    public Action<bool>? HeizstabSchreiben;
-
-    /// <summary>Die Betriebsbereitschaft des Heizkessels.</summary>
-    public Action<double>? BereitschaftSchreiben;
+    // ---- Die FUENF Laufparameter stehen seit #216 in Schritt ① ----
+    //
+    // Netzverluste, BHKW-Betriebsart, untere Leistungsgrenze, Heizstab und
+    // Betriebsbereitschaft haben diese Seite mit dem Reiter „Parameter" verlassen
+    // (Windows-Abnahme 11.09.2026, Punkt 3). Ihre Delegaten stehen unveraendert in
+    // SimulationParameterDienste und kommen aus DERSELBEN Huelle - ein zweiter
+    // Satz hier waere eine zweite Wahrheit.
 
     /// <summary>
     /// Ein Feld der Speichervariante bzw. der Speicheranlage — der Schluessel benennt

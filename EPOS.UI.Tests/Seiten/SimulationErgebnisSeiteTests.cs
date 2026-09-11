@@ -44,10 +44,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     {
         IdProjekt = 1030,
         ErgebnisGueltig = true,
-        Parameter = new ParameterDaten
-        {
-            Unterblaetter = new[] { ParameterBlatt.Bedarf, ParameterBlatt.Waermepumpe }
-        },
+        Parameter = new ParameterDaten(),
         ReiterWaermepumpe = true,
         ReiterHeizkessel = true,
         ReiterStromspeicher = true,
@@ -97,13 +94,22 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
             .Add(x => x.StartProjekt, 1030)
             .Add(x => x.Automatikstart, automatik));
 
+    /// <summary>
+    /// Startet den Lauf. Seit #216 gibt es dafür keinen Knopf MEHR AUF DIESER
+    /// SEITE — der Weg ist <c>LaufStarten()</c>, und genau den nimmt Schritt ② der
+    /// Ansicht.
+    /// </summary>
+    private static void Starten(IRenderedComponent<SimulationErgebnisSeite> seite)
+        => seite.InvokeAsync(() => seite.Instance.LaufStarten());
+
     // =====================================================================
     // Die Reiterleiste
     // =====================================================================
 
     /// <summary>
-    /// Zehn Blätter, nicht elf: Der Behälter-Reiter „Simulation" (R3) war die
-    /// Menüliste und entfällt mit ihr (Befund W11-B11).
+    /// NEUN Blätter, nicht zehn: Der Reiter „Parameter" ist mit Auftrag #216
+    /// gefallen (Windows-Abnahme 11.09.2026, Punkt 3) — seine Felder stehen in
+    /// Schritt ① der Ansicht.
     /// </summary>
     [Fact]
     public void Die_Leiste_zeigt_nur_die_Blaetter_der_gewaehlten_Erzeuger()
@@ -111,27 +117,67 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         var seite = Zeichnen();
         var knoepfe = seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']");
 
-        // Parameter, Übersicht, Bedarf, Wärmepumpe, Heizkessel, Stromspeicher, Ergebnis
-        Assert.Equal(7, knoepfe.Count);
+        // Übersicht, Bedarf, Wärmepumpe, Heizkessel, Stromspeicher, Ergebnis
+        Assert.Equal(6, knoepfe.Count);
         Assert.DoesNotContain(knoepfe, k => k.TextContent == "BHKW");
         Assert.DoesNotContain(knoepfe, k => k.TextContent == "Photovoltaik");
     }
 
-    /// <summary>Der Startreiter ist „Parameter" (wörtlich :415-421).</summary>
+    /// <summary>
+    /// DER REITER „PARAMETER" IST WEG (Windows-Abnahme #216, Punkt 3: „Nimm
+    /// Parameter heraus"). Weder ein Blatt noch sein Schlüssel noch seine
+    /// Beschriftung stehen noch da.
+    /// </summary>
     [Fact]
-    public void Der_Startreiter_ist_Parameter()
+    public void Es_gibt_keinen_Reiter_Parameter_mehr()
     {
         var seite = Zeichnen();
-        Assert.Equal("PARAMETER", seite.Instance.AktivesBlatt);
+
+        Assert.DoesNotContain("reiter-PARAMETER", seite.Markup);
+        Assert.DoesNotContain(
+            seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']"),
+            k => k.TextContent == "Parameter");
+    }
+
+    /// <summary>
+    /// „Stelle die Übersicht als erstes dar" (Windows-Abnahme #216, Punkt 4). Bis
+    /// dahin stand der Reiter „Parameter" vorn.
+    /// </summary>
+    [Fact]
+    public void Der_Startreiter_ist_die_Uebersicht()
+    {
+        var seite = Zeichnen();
+        Assert.Equal("UEBERSICHT", seite.Instance.AktivesBlatt);
     }
 
     [Fact]
-    public void Ohne_Erzeuger_bleiben_vier_Blaetter()
+    public void Ohne_Erzeuger_bleiben_drei_Blaetter()
     {
         _daten = new SimulationErgebnisDaten { ErgebnisGueltig = true };
         var seite = Zeichnen();
 
-        Assert.Equal(4, seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']").Count);
+        Assert.Equal(3, seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']").Count);
+    }
+
+    // =====================================================================
+    // #216: keine Fussleiste, kein zweites i/KI-Paar
+    // =====================================================================
+
+    /// <summary>
+    /// DIE FUSSLEISTE IST GEFALLEN (Windows-Abnahme #216, Punkt 2): Ihre zwei
+    /// Knöpfe „Simulation starten ▶" und „Ergebnis speichern" standen seit #207
+    /// ZWEIMAL — hier und in der Ablaufleiste darüber. Beide trägt jetzt die
+    /// Werkzeugleiste der <c>SimulationSeite</c>; mit dem eigenen Kopf fällt auch
+    /// das zweite Paar [i] [KI].
+    /// </summary>
+    [Fact]
+    public void Die_Seite_traegt_weder_Fussleiste_noch_eigenen_Infoknopf()
+    {
+        var seite = Zeichnen();
+
+        Assert.Empty(seite.FindAll("div.epos-simerg-fuss"));
+        Assert.Empty(seite.FindAll("div.epos-simerg-kopf"));
+        Assert.Empty(seite.FindAll("button.epos-infoknopf"));
     }
 
     // =====================================================================
@@ -169,11 +215,13 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     public void Waehrend_des_Laufs_steht_der_Fortschritt()
     {
         var seite = Zeichnen();
-        seite.FindAll("div.epos-simerg-fuss button")[0].Click();
+        Starten(seite);
 
         Assert.True(seite.Instance.Laeuft);
         Assert.Single(seite.FindAll("[role='progressbar']"));
-        Assert.True(seite.FindAll("div.epos-simerg-fuss button")[0].HasAttribute("disabled"));
+
+        // Waehrend des Laufs darf „Ergebnis speichern" der Werkzeugleiste nicht.
+        Assert.False(seite.Instance.SpeichernMoeglich);
 
         seite.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
         seite.WaitForState(() => !seite.Instance.Laeuft);
@@ -184,7 +232,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     public void Die_Phasenmeldung_erreicht_den_Balken()
     {
         var seite = Zeichnen();
-        seite.FindAll("div.epos-simerg-fuss button")[0].Click();
+        Starten(seite);
 
         seite.InvokeAsync(() => _melder!(0.6, "Photovoltaik"));
         seite.WaitForAssertion(() => Assert.Contains("Photovoltaik", seite.Markup));
@@ -198,7 +246,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     public void Der_Abbruch_meldet_sich()
     {
         var seite = Zeichnen();
-        seite.FindAll("div.epos-simerg-fuss button")[0].Click();
+        Starten(seite);
 
         seite.Find("[role='progressbar']");
         var abbrechen = seite.FindAll("button");
@@ -216,7 +264,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     public void Ein_abgebrochener_Lauf_meldet_seinen_Grund()
     {
         var seite = Zeichnen();
-        seite.FindAll("div.epos-simerg-fuss button")[0].Click();
+        Starten(seite);
 
         seite.InvokeAsync(() => _laufFertig!.SetResult(
             new Rueckmeldung(false, "Simulation abgebrochen: keine Klimaregion")));
@@ -240,9 +288,8 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         _daten.ErgebnisGueltig = false;
 
         var seite = Zeichnen();
-        var knoepfe = seite.FindAll("div.epos-simerg-fuss button");
 
-        Assert.True(knoepfe[1].HasAttribute("disabled"));   // „Ergebnis speichern"
+        Assert.False(seite.Instance.SpeichernMoeglich);
         Assert.Equal(0, _gespeichert);
     }
 
@@ -250,11 +297,12 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     public void Speichern_meldet_sein_Ergebnis()
     {
         var seite = Zeichnen();
-        foreach (var b in seite.FindAll("div.epos-simerg-fuss button"))
-            if (b.TextContent.Contains("Ergebnis speichern")) { b.Click(); break; }
+        Assert.True(seite.Instance.SpeichernMoeglich);
+
+        seite.InvokeAsync(() => seite.Instance.ErgebnisSpeichern());
 
         Assert.Equal(1, _gespeichert);
-        Assert.Contains("gespeichert", seite.Markup);
+        seite.WaitForAssertion(() => Assert.Contains("gespeichert", seite.Markup));
     }
 
     /// <summary>
@@ -272,7 +320,6 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
 
         Assert.Contains("benötigten Stand", seite.Markup);
         Assert.True(seite.Find("fieldset").HasAttribute("disabled"));
-        Assert.True(seite.FindAll("div.epos-simerg-fuss button")[0].HasAttribute("disabled"));
     }
 
     // =====================================================================
@@ -310,15 +357,16 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     {
         var seite = Zeichnen();
 
-        // Der Startreiter ist „Parameter" - er hat kein Bild.
-        Assert.Empty(_auftraege);
+        // Der Startreiter ist seit #216 die „Uebersicht" - sie holt ihre drei Bilder.
+        int nachDemAufbau = _auftraege.Count;
+        Assert.True(nachDemAufbau >= 1);
 
         seite.Find("button[role='tab'][id='reiter-BEDARF']").Click();
         int nachErstemBetreten = _auftraege.Count;
-        Assert.True(nachErstemBetreten >= 2);
+        Assert.True(nachErstemBetreten > nachDemAufbau);
 
         // Zurück und wieder hin: derselbe Schlüssel, kein neuer Auftrag an die Hülle.
-        seite.Find("button[role='tab'][id='reiter-PARAMETER']").Click();
+        seite.Find("button[role='tab'][id='reiter-UEBERSICHT']").Click();
         seite.Find("button[role='tab'][id='reiter-BEDARF']").Click();
 
         Assert.Equal(nachErstemBetreten, _auftraege.Count);
@@ -360,23 +408,6 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Reiter „Parameter" fuehrt das Speicherblatt nicht mehr — und der
-    /// Optimierungsknopf steht nicht mehr dort, sondern im Ergebnisreiter.
-    /// </summary>
-    [Fact]
-    public void Der_Parameterreiter_fuehrt_kein_Speicherblatt_mehr()
-    {
-        var seite = Zeichnen();
-
-        Assert.DoesNotContain(
-            seite.FindComponent<ParameterReiter>().FindAll("button[role='tab']"),
-            k => k.TextContent == WindowsFormsApplication1.MyResource.Resource.SIM_STROMSPEICHER);
-
-        Assert.DoesNotContain(seite.FindComponent<ParameterReiter>().FindAll("button"),
-                              b => b.TextContent.Contains("optimieren"));
-    }
-
-    /// <summary>
     /// PAKET P3 (#192): Der Knopf zieht KEINE Überlagerung mehr auf, sondern WECHSELT
     /// die Ansicht (Muster W16c‑E‑3). Die Seite meldet das über <c>AuslegungOeffnen</c>
     /// an ihre Hülle; die kennt den gerechneten Simulationslauf und den Weg zur Wurzel.
@@ -407,7 +438,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         var seite = Render<SimulationErgebnisSeite>(p => p
             .Add(x => x.Automatikstart, false));
 
-        Assert.Equal(4, seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']").Count);
+        Assert.Equal(3, seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']").Count);
 
         // Ohne Bilddelegat wird kein Bild angefordert; der Baustein zeigt seinen
         // Platzhalter.

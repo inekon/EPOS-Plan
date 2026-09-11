@@ -13607,9 +13607,6 @@ Alle Eingaben überprüfen!</value>
   <data name="SIMERG_TITEL" xml:space="preserve">
     <value>Detaillierte Simulation</value>
   </data>
-  <data name="SIMERG_TAB_PARAMETER" xml:space="preserve">
-    <value>Parameter</value>
-  </data>
   <data name="SIMERG_TAB_UEBERSICHT" xml:space="preserve">
     <value>Übersicht</value>
   </data>
@@ -15100,7 +15097,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>Ausgewählte Technologien:</value>
   </data>
   <data name="START_K_DETAILSIM_T" xml:space="preserve">
-    <value>Simulation</value>
+    <value>Simulation starten</value>
   </data>
   <data name="START_K_DETAILSIM_B" xml:space="preserve">
     <value>Präzise Jahressimulation mit allen Details</value>
@@ -18338,6 +18335,18 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIM_ANSICHT_ERGEBNIS_FEHLT" xml:space="preserve">
     <value>Zu diesem Projekt liegt noch kein gerechnetes Ergebnis vor &#8212; die Ansicht beginnt bei der Konfiguration.</value>
+  </data>
+  <data name="SIMKONF_GRP_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="SIMKONF_HRL_NETZVERLUSTE" xml:space="preserve">
+    <value>Wirkt nur, wenn das Projekt einen Wärmebedarf führt: Die Verluste werden stündlich umgelegt und anteilig auf die Bedarfskanäle verteilt. Vorgabe 0 %.</value>
+  </data>
+  <data name="SIMKONF_GRP_LAUFPARAMETER" xml:space="preserve">
+    <value>Parameter für die Simulation</value>
+  </data>
+  <data name="SP_GRP_EINZELANLAGE" xml:space="preserve">
+    <value>Einzelanlage (klassischer Projektlauf)</value>
   </data>
   <data name="SIM_ANSICHT_VERLASSEN_TITEL" xml:space="preserve">
     <value>Ungespeicherte Konfiguration</value>
