@@ -3760,6 +3760,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Ergebnisexport.cs` warnungsfrei. Die Schranke wird mit dem nächsten freigegebenen iOS-Lauf geführt (kein eigener Lauf, CI-Regel).
 > Gate sept29 auf `eb23302`: Kern 2 666, UI 3 776, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#222 (11.09.2026, `34a6dbc`, Merge `d84af29`) — Simulationsergebnis: EINE Übersicht als Dashboard Wärme | Strom (Anwenderentscheid SIM‑E‑3,
+> Mockup `simulation-uebersicht.html`).** Der Hauptreiter „Übersicht" trägt je Spalte Kennzahlenzeile (Bedarf, Deckung, Rest), Ring mit
+> HTML-Legende und Erzeugertabelle mit rechtsbündigen Zahlenköpfen, Einheit im Kopf, gedimmten und ausblendbaren Nullzeilen, Summen- und
+> Restzeile; das Blatt „Übersicht" im Ergebnisreiter fällt (Autarkie und zwei Produktionscharts bleiben). Ringe: der ungedeckte Rest ist immer ein
+> graues Segment, 0 % ein grauer Vollring mit Hinweis; Legende aus dem Bild heraus; keine Zoomleiste an Ringen (`ChartBild Rund` setzt `OhneZoom`,
+> Ausnahme W8‑E‑2 in `EPOS.UI/CLAUDE.md`); Hinweisband kompakt. **Befund im Renderer:** `SKPath.ArcTo` zeichnet bei 360° nichts — ein Ring oder
+> Kuchen mit einem einzigen Segment blieb weiß (deshalb der leere Kreis im Foto); `ChartRenderer.Kreissegment` zeichnet ab 360° einen Kreis,
+> Wächter `ErgebnisbilderTests` und ChartProbe `ring_null_prozent` (fiel vor dem Fix rot). Abweichungen vom Mockup mit Grund: Weg nach ① nur
+> Text (`SimulationSeite` gehört #221; Nachrüstung danach), Stromtabelle Erzeugung/Anteil (Eigenverbrauch und Einspeisung je Erzeuger führt kein
+> DTO), Restzeile Wärme ohne Kanalaufteilung, Zusatzzeile „davon Eigenverbrauch der Wärmeerzeuger". 22 Ressourcen, 3 verwaiste entfernt,
+> Designer wiederholbar; 29 neue Fälle; Konzept Simulationsablauf Abschnitt 8; Wiki-Quelle Simulation (Upload durch die Orchestrierung).
+> **Offen:** Windows-Abnahme; `BildKuchen()` ohne Aufrufer (Aufräumschritt); Sprung aus dem 0‑%-Hinweis nach ① nach #221.
+> Gate sept30 auf `d84af29`: Kern 2 670, UI 3 779, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
