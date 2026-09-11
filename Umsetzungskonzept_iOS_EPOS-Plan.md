@@ -3803,6 +3803,22 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Einerschritten); es fällt, eine Erklärzeile `FLOTTE_ED_ANZAHL_HINWEIS` (de/en) tritt an seine Stelle. Konzept Stromspeicher-Dialoge Register
 > SP‑O‑13. Gate sept33 auf `9b30cfd`: Kern 2 673, UI 3 814, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben
 > 53, Referenzlauf 5/5 byte-gleich gegen R7. Am selben Abend kam mit dem Sync `78bcf88` die Excel-Mappe V7 (71 MB) ins Repository.
+>
+> **#220 (11.09.2026, `989569e`, Merge `97dc344`) — Startseiten-Reiter „Simulation": die Kachel rechnet an Ort und Stelle, rechts das Ergebnis
+> (Anwenderentscheid SIM‑E‑2, Option 1).** `SimulationLaufsteuerung` ist die EINE Wahrheit für Schritt ② der Ansicht und die Kachel des Reiters
+> (Sperrgrund in der Reihenfolge fremder Lauf → rote Vorprüfung → ungespeicherte Konfiguration, Fortschritt, Abbrechen, Start); der Lauf
+> selbst bleibt bei der `SimulationErgebnisSeite` (Zusätze `FortschrittZeigen`, `Anteil`, `Fortschrittstext`, `AbbruchMoeglich`,
+> `LaufAbbrechen()`). Die `SimulationLaufsperre` liegt je Projekt in der `SimulationAnsichtQuelle` und geht über `SimulationAnsichtDienste`
+> in jeden Parametersatz — Ansicht und Reiter sperren sich gegenseitig (`SIM_LAUF_ANDERSWO`). Dienste aus einer Quelle:
+> `AppWurzel.SimulationGabenHolen()` bündelt Hüllen-Delegat und `Quelle.SimulationGaben` und reicht sie an die Startseite (iOS-Weg
+> unverändert). Rückwegmarke mit Wirtkennung `wirt=START;schritt=3;blatt=…` (`SimulationMarke.WIRT_START`); der Reiter meldet seinen
+> Hilfekontext „Startseite · Simulation · ⟨Blatt⟩" ohne eigene Pille (#221). 14 neue bunit-Fälle; Konzept Simulationsablauf Abschnitt 9;
+> Wiki-Quelle Simulation (Abschnitt „Der Reiter Simulation der Startseite", Anker `startreiter`; Upload durch die Orchestrierung).
+> **Offen:** Windows-Abnahme (Zweispaltigkeit ab 1 100 px, Kachelbreite, Höhe der Ergebnisseite im Reiter); der Reiter „Simulation" ist
+> unter Windows der einzige Startseiten-Reiter ohne eigene Info-Pille (sie steht im Kopfband) — sichtbare Ungleichheit, vom Anwender
+> abzunehmen. Merge-Konflikt nur in `EPOS.UI/CLAUDE.md` (Absätze #225 und #220 vereinigt). Gate sept34 auf dem Arbeitsbaum des Merges
+> `97dc344` (die Kopfzeile des Protokolls nennt noch `72b90b1`, weil der Lauf vor dem Merge-Commit startete): Kern 2 673, UI 3 828,
+> Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
