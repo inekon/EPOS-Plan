@@ -92,14 +92,28 @@ namespace WindowsFormsApplication1
             _fenster.FormClosed += (s, e) => Aufraeumen();
             Einhaengen();
 
-            if (besitzer is Form wirt && !wirt.IsDisposed) _fenster.Show(wirt);
-            else _fenster.Show();
+            // WAS EINGEHAENGT IST, WIRD BEI EINEM FEHLSCHLAG WIEDER AUSGEHAENGT
+            // (Befund KI-D-B-3): Einhaengen() belegt KiChatService.Bestaetigungsweg
+            // und den Weg auf den Oberflaechenfaden. Bricht der Aufbau danach ab,
+            // zeigten beide auf eine Huelle ohne Fenster - und der naechste
+            // Bestaetigungslauf haette auf ein Fenster gewartet, das es nie gab.
+            try
+            {
+                if (besitzer is Form wirt && !wirt.IsDisposed) _fenster.Show(wirt);
+                else _fenster.Show();
 
-            // DIE TASTATUR (Befund KI-D-B-1). Ein Show(besitzer) holt sie nicht von
-            // selbst - anders als ein ShowDialog, das seine eigene Nachrichtenschleife
-            // mitbringt. Ohne diese Zeile blieb die Eingabe bei dem Fenster, aus dessen
-            // WebView2-Rueckruf der Klick kam, und das Chatfenster nahm kein Zeichen an.
-            _fenster.TastaturUebergeben();
+                // DIE TASTATUR (Befund KI-D-B-1). Ein Show(besitzer) holt sie nicht von
+                // selbst - anders als ein ShowDialog, das seine eigene Nachrichtenschleife
+                // mitbringt. Ohne diese Zeile blieb die Eingabe bei dem Fenster, aus dessen
+                // WebView2-Rueckruf der Klick kam, und das Chatfenster nahm kein Zeichen an.
+                _fenster.TastaturUebergeben();
+            }
+            catch
+            {
+                Aufraeumen();
+                if (!_fenster.IsDisposed) _fenster.Dispose();
+                throw;
+            }
         }
 
         // ==================================================================
@@ -130,7 +144,7 @@ namespace WindowsFormsApplication1
             // Fenster wird zuvor wiederhergestellt, sonst blinkt es nur in der
             // Taskleiste und der Klick sieht wirkungslos aus.
             KiChatHuelle offen = _offene;
-            if (offen != null && offen._fenster != null && !offen._fenster.IsDisposed)
+            if (offen != null && offen.Steht)
             {
                 if (offen._fenster.WindowState == FormWindowState.Minimized)
                     offen._fenster.WindowState = FormWindowState.Normal;
@@ -150,7 +164,48 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            _offene = new KiChatHuelle(besitzer, aufruf);
+            // EIN HALB GEBAUTES FENSTER DARF NICHT SPERREN (Befund KI-D-B-3,
+            // Auftrag #228). Das Feld wurde bis dahin in Einhaengen() gesetzt,
+            // also VOR Show() und TastaturUebergeben(): Warf der Aufbau danach,
+            // blieb _offene auf einer Huelle stehen, deren Fenster nie erschien
+            // und deshalb nie ein FormClosed meldete - jedes weitere Oeffnen
+            // "holte es nach vorn" und tat sichtbar nichts. Jetzt traegt das Feld
+            // nur, was fertig gebaut ist, und ein Fehlschlag ist zu sehen statt
+            // zu schweigen.
+            _offene = null;
+            try
+            {
+                _offene = new KiChatHuelle(besitzer, aufruf);
+            }
+            catch (Exception ex)
+            {
+                _offene = null;
+                Protokoll("Das Chatfenster liess sich nicht aufbauen: " + ex);
+                try { Dienste.Dialog.Meldung(ex.Message); } catch { }
+            }
+        }
+
+        /// <summary>
+        /// <c>true</c>, solange das Fenster dieser Hülle wirklich steht — gebaut,
+        /// gezeigt und nicht entsorgt.
+        /// </summary>
+        /// <remarks>
+        /// <c>IsHandleCreated</c> gehört dazu (Befund KI‑D‑B‑3): Eine Hülle, deren
+        /// <c>Show</c> nie gelaufen ist, hat ein Fenster, das weder entsorgt noch
+        /// sichtbar ist — „nicht entsorgt" allein wäre also kein Beleg dafür, dass
+        /// der Anwender den Assistenten vor sich hat.
+        /// </remarks>
+        private bool Steht
+            => _fenster != null && !_fenster.IsDisposed && _fenster.IsHandleCreated;
+
+        private static void Protokoll(string satz)
+        {
+            try
+            {
+                System.Diagnostics.Debug.WriteLine("[KiChat] " + satz);
+                System.Diagnostics.Trace.WriteLine("[KiChat] " + satz);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -203,7 +258,10 @@ namespace WindowsFormsApplication1
 
         private void Einhaengen()
         {
-            _offene = this;
+            // HIER STAND "_offene = this" (Befund KI-D-B-3, Auftrag #228). Das war
+            // zu frueh: Einhaengen() laeuft VOR Show(), und ein Fehlschlag danach
+            // liess das Feld auf einer Huelle stehen, deren Fenster nie erschien.
+            // Gesetzt wird es jetzt in Oeffnen(), wenn der Bau gelungen ist.
 
             // Der Ausfuehrer marshallt jeden Datenbankzugriff ueber dieses Fenster auf
             // den Oberflaechenfaden (Fachkonzept 3.4; seit W15b.0c ein Delegat statt

@@ -210,9 +210,18 @@ namespace WindowsFormsApplication1
                 // beantwortet die Frage „behandle ich den Schluessel?", nicht
                 // „ist das Fenster schon oben?" (dieselbe Trennung wie in
                 // HauptfensterHuelle.Weg).
+                //
+                // BEFUND KI-D-B-3 (Anwender, 11.09.2026, Auftrag #228): Form.ActiveForm
+                // kann NULL sein - dann liefe der Sprung unmittelbar (also doch im
+                // WebView2-Rueckruf), und das Chatfenster ginge ohne Besitzer auf.
+                // Ein Fenster ohne Besitzer und ohne Taskleisteneintrag
+                // (BlazorDialogForm: ShowInTaskbar = false) ist hinter dem
+                // Hauptfenster nicht wiederzufinden. Blazorsprung.Wirtsfenster faellt
+                // deshalb auf das Hauptfenster zurueck - EINE Ermittlung fuer beides,
+                // Nachrichtenschlange und Besitzer.
                 case Masken.KiAssistent:
                     {
-                        Form wirt = Form.ActiveForm;
+                        Form wirt = Blazorsprung.Wirtsfenster(Form.ActiveForm);
                         KiAufrufkontext kontext = Aufrufkontext(argumente);
                         Blazorsprung.Verzoegert(wirt, () => KiChatHuelle.Oeffnen(wirt, kontext));
                         return true;

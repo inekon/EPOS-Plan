@@ -12,9 +12,9 @@ namespace WindowsFormsApplication1
     /// Nachrichtenschleife (<c>Program.Main</c> gibt das Fenster an
     /// <c>Application.Run</c>), Fenstergeometrie und Titel, EINE
     /// <see cref="BlazorSeite{T}"/> mit <c>EPOS.UI/Seiten/Hauptfenster.razor</c>,
-    /// der Besitzer für jede <see cref="BlazorDialogForm{T}"/>, <c>KeyPreview</c>
-    /// samt F1 (die WebView fängt F1 nicht ab) und die stille
-    /// Lizenz-Nachprüfung beim Start.</para>
+    /// der Besitzer für jede <see cref="BlazorDialogForm{T}"/>, <c>ProcessCmdKey</c>
+    /// samt F1 (der Weg, der die Taste auch AUS der WebView2 erreicht — Befund
+    /// KI‑D‑B‑3) und die stille Lizenz-Nachprüfung beim Start.</para>
     ///
     /// <para><b>Was hier NICHT mehr steht:</b> die 45 Menüpunkte, die 34
     /// Ereignishandler, die acht <c>Init*</c>-Methoden (Kopfband, KI-Hilfe,
@@ -78,12 +78,10 @@ namespace WindowsFormsApplication1
             // obwohl die EXE seit demselben Auftrag ihr eigenes ApplicationIcon traegt.
             Programmsymbol.Anwenden(this);
 
-            // F1 auch unabhängig vom Menü: Die WebView fängt die Taste nicht ab,
-            // und der Menüpunkt allein wäre in einer Razor-Oberfläche kein
-            // Tastenkürzel mehr (im Bestand InitKiHilfe :357-374).
-            KeyPreview = true;
-            KeyDown += BeiTaste;
-
+            // F1 auch unabhängig vom Menü: Der Menüpunkt allein wäre in einer
+            // Razor-Oberfläche kein Tastenkürzel mehr (im Bestand InitKiHilfe
+            // :357-374). Die Taste fängt seit Befund KI-D-B-3 ProcessCmdKey ab
+            // und nicht mehr KeyPreview/KeyDown — Begründung dort.
             Load += BeimLaden;
 
             // ANWENDERENTSCHEID 62b-E-1 (11.09.2026), Festlegung 4: Auch das
@@ -153,15 +151,43 @@ namespace WindowsFormsApplication1
             Close();
         }
 
-        private void BeiTaste(object sender, KeyEventArgs e)
+        /// <summary>
+        /// <b>F1 öffnet den Hilfe-Assistenten</b> — Befund <b>KI‑D‑B‑3</b>
+        /// (Anwender, 11.09.2026: „auch mit F1 nicht").
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum <see cref="Form.ProcessCmdKey"/> und nicht
+        /// <c>KeyPreview</c>.</b> Bis hierher stand hier ein <c>KeyDown</c> mit
+        /// <c>KeyPreview = true</c>. <c>KeyPreview</c> wirkt aber nur für Tasten,
+        /// die im <c>WndProc</c> eines WinForms-Steuerelements ankommen: Erst
+        /// <c>Control.ProcessKeyMessage</c> fragt <c>parent.ProcessKeyPreview</c>.
+        /// Seit W16c ist das ganze Fenster EINE <see cref="BlazorSeite{T}"/>, der
+        /// Tastaturzeiger sitzt also praktisch immer in der WebView2 — und deren
+        /// Tastenmeldungen gehen an das Browserfenster, ein natives Kindfenster,
+        /// dessen <c>WndProc</c> kein WinForms-Steuerelement ist. Das
+        /// <c>KeyDown</c> des Rahmens wurde damit nie ausgelöst.</para>
+        /// <para><see cref="Form.ProcessCmdKey"/> erreicht der Tastendruck
+        /// dagegen: <c>Application.ThreadContext.PreTranslateMessage</c> sucht
+        /// über <c>Control.FromChildHandle</c> das nächste verwaltete
+        /// Steuerelement — das ist die <c>WebView2</c>, deren Kindfenster das
+        /// Browserfenster ist —, ruft dort <c>PreProcessMessage</c>, und das
+        /// reicht <c>ProcessCmdKey</c> die Elternkette hinauf bis zu diesem
+        /// Fenster. Dieser Weg deckt den bisherigen mit ab: Er läuft auch, wenn
+        /// ein gewöhnliches WinForms-Kind den Zeiger hat.</para>
+        /// <para><c>true</c> hält die Taste an — es gibt keinen zweiten Empfänger,
+        /// und ein zweites <c>Oeffnen</c> wäre ohnehin nur ein Nach-vorn-Holen.</para>
+        /// </remarks>
+        protected override bool ProcessCmdKey(ref Message nachricht, Keys taste)
         {
-            if (e.KeyCode != Keys.F1) return;
+            if (taste == Keys.F1 && !DesignMode)
+            {
+                // OHNE Aufrufkontext (Auftrag #199): F1 ist der globale Weg und kennt
+                // keinen Dialog - die Huelle baut sich den Kontext des aktiven BEREICHS.
+                KiChatHuelle.Oeffnen(this);
+                return true;
+            }
 
-            e.Handled = true;
-
-            // OHNE Aufrufkontext (Auftrag #199): F1 ist der globale Weg und kennt
-            // keinen Dialog - die Huelle baut sich den Kontext des aktiven BEREICHS.
-            KiChatHuelle.Oeffnen(this);
+            return base.ProcessCmdKey(ref nachricht, taste);
         }
 
         private void BeimLaden(object sender, EventArgs e)
