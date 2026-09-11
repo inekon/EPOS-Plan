@@ -70,8 +70,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 {
                     object v = cmd.ExecuteScalar();
                     return (v == DBNull.Value) ? null : v;
@@ -89,8 +89,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
                     // Derselbe Typ-Rueckweg (D9) wie in DataRepository.GetDataTable -
@@ -110,8 +110,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 {
                     return cmd.ExecuteNonQuery();
                 }

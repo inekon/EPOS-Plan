@@ -1810,6 +1810,42 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > unter dem Raster. Paket P3 gesamt: 14 Dateien, 168 Felder, 43 Raster, kein `Formulargruppe` nötig (jede Gruppe des
 > Vorbilds ist schon ein `Gruppenkopf`), 15 `epos-feldpaar` und drei Zweispalter samt Stilblattregeln gefallen, eine
 > Zeile CSS neu (Herleitungszeile spannt über alle Spalten); UI 2 595 (+14), Formularkarte 122.
+>
+> **W16a‑O‑1 erledigt — die Transaktion des Speicherwegs (11.09.2026, `ecce4cd1`), zusammengeführt in `d8014c1f`.**
+> Die zweite Hälfte von Entscheid **E‑4** ist eingelöst: Die **23 Schreibmethoden** von `WizardCtrl` nehmen einen
+> `DbVorgang` entgegen, `AssistentCtrl.Speichern` öffnet ihn **einmal** über den ganzen Lauf, schreibt ihn nur bei
+> Erfolg fest und rollt bei jedem Fehlschlag zurück — beim gescheiterten Schritt wie bei der geworfenen Ausnahme.
+> **Ein halb geschriebenes Projekt kann es nicht mehr geben**; das `AssistentErgebnis` nennt den Schritt unverändert
+> weiter. **Die Reihenfolge der Schreibschritte ist Zeichen für Zeichen dieselbe geblieben** — der Diff von
+> `WizardCtrl` entfernt genau die 23 alten Signaturen und sonst keine Zeile. Der eigentliche Befund steckte darunter:
+> Ein bloß durchgereichter Vorgang hätte die zwölf Katalogcontroller (`CopyFromStamm`, `ApplyGanglinieToProjekt`,
+> `KostenProjektPositionenCtrl`, `GeraeteWaisen`) nicht erreicht — sie holen sich je Anweisung eine EIGENE Verbindung,
+> liefen also an der Transaktion vorbei und hingen unter WAL an deren Schreibsperre. Deshalb meldet jede
+> Schreibmethode den Vorgang am FADEN an (neu `EPOS.Kern/Allgemein/Vorgangsklammer.cs`, `[ThreadStatic]` statt
+> `AsyncLocal`, weil eine `SqliteConnection` nicht auf zwei Fäden darf); die Zugriffsschicht leiht sich an ihrer
+> einen Stelle dessen Verbindung **samt Transaktion**, und ein `DataRepository.Vorgang()` unter der Klammer wird zum
+> SAVEPOINT‑Unterpunkt statt zu einer zweiten Verbindung. **Ohne angemeldete Klammer ist die Zugriffsschicht
+> unverändert** — eine eigene Verbindung je Anweisung, ohne Transaktion —, und alle Bestandsaufrufer (Startseite,
+> Kontextmenüs, Tests) rufen weiter ohne Vorgang. Zwei neue Kern‑Prüffälle (`AssistentCtrlTests`): ein erzwungener
+> Fehlschlag in **Schritt 5 von 14** lässt **24 projektgebundene Tabellen** Zeile für Zeile unverändert, und der
+> erfolgreiche Lauf schreibt dasselbe wie die bisherige Schreibfolge — bis hin zu den vergebenen Ids; die Gegenprobe
+> mit ausgehängter Klammer fällt rot aus. Der Bedienweg bleibt **modal**; die freie Ansicht ist W16a‑E‑1 (#62b).
+> Gate grün: 0 Fehler / 6 eindeutige Warnungen, Kern **2 341** (+2), UI 3 403, SpeicherEngine 347, KiKern 469 — auch
+> unter `en_US` —, Formularkarte 122, SQL 0 von 1 312, ChartProben 44, Referenzlauf 1030/1007/1017/1045 **4 × PASS
+> und byte-gleich** gegen `2026-09-07_R6_PvKoeffizienten`, kein Schema.
+>
+> **Offen: Risiko R‑W16‑6 ist damit NICHT eingelöst.** Der Umbau des Schreibwegs verlangt den Feld-für-Feld-Vergleich
+> am Windows-Gerät, und der läuft nur dort — je einmal für ein über den Assistenten NEU angelegtes und ein
+> BEARBEITETES Projekt, mit dem Stand vor und nach dieser Welle (`Referenzlauf.exe projekt <id> <ordner>`, dann
+> `vergleich`). Auf Linux belegen nur die zwei Kern-Prüffälle den Rückzug. **Abnahme auf Windows:
+> A‑W16a‑O1‑1…8** — die zwei Assistentenwege, der `projekt`-Vergleich (‑3, **er schließt R‑W16‑6**), das erzwungene
+> Scheitern mit unverändertem Projekt (‑4), der Wiederholungslauf ohne Dubletten (‑5), die Bestandswege der
+> Startseite (‑6), der Waisen-Aufräumlauf ohne „database is locked" (‑7) und die englische Fehlermeldung (‑8).
+> Zwei Restpunkte für den Anwender: **W16a‑O‑1‑R1** (`StelleSpaltenSicher` merkt sich das Anlegen einer Spalte
+> statisch — ein Rückzug nimmt die Spalte zurück, der gemerkte Wert bleibt bis zum Programmstart; trifft nur
+> Datenbanken, deren Migration diese Spalten noch nicht angelegt hat) und **W16a‑O‑1‑R2** (`WIZ_SPEICHERN_FEHLER`
+> endet auf „die bereits geschriebenen Angaben bleiben stehen." — das stimmt jetzt nicht mehr; der Satz ist
+> bewusst unangetastet geblieben, seine Neufassung in de und en ist eine Anwenderentscheidung).
 
 > **Statusblock iU9 — Welle 15c umgesetzt (04.09.2026, Basis `f71853b` nach W15b, zusammengeführt mit `5a73fd6` nach den W15b-Entscheiden)**
 >

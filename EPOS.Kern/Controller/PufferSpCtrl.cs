@@ -1370,8 +1370,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 {
                     cmd.ExecuteScalar();
                     return true;
@@ -1475,9 +1475,9 @@ namespace WindowsFormsApplication1
                 // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht. Der Leser
                 // bleibt ein Leser (zwei Spalten einer Zeile), die Meldung bleibt
                 // dieselbe - deshalb innen umgestellt statt ueber StilleDb.
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
                 using (SqliteCommand cmd = DataRepository.ErzeugeKommando(
-                           conn, null, ProjektPuffer.SQL_PUFFER_TEMPERATUREN,
+                           leihe.Verbindung, leihe.Transaktion, ProjektPuffer.SQL_PUFFER_TEMPERATUREN,
                            new[] { new DbParam("@id", idPuffer) }))
                 using (SqliteDataReader r = cmd.ExecuteReader())
                 {
@@ -1676,8 +1676,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 {
                     return cmd.ExecuteScalar();
                 }
@@ -1695,8 +1695,8 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 {
                     return cmd.ExecuteNonQuery();
                 }
@@ -1750,8 +1750,8 @@ namespace WindowsFormsApplication1
             {
                 // ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht; Meldungstext
                 // und Rueckgabe (leere Liste im Fehlerfall) bleiben.
-                using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, parameter))
                 using (SqliteDataReader r = cmd.ExecuteReader())
                 {
                     while (r.Read())

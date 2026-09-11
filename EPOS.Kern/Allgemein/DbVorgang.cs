@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 
 namespace WindowsFormsApplication1
@@ -32,6 +33,15 @@ namespace WindowsFormsApplication1
         private bool _abgeschlossen;
 
         /// <summary>
+        /// Der Name des Sicherungspunkts, wenn dies ein UNTERPUNKT eines laufenden
+        /// Vorgangs ist; <c>null</c> beim echten Vorgang mit eigener Verbindung.
+        /// </summary>
+        private readonly string _sicherungspunkt;
+
+        /// <summary>Fortlaufende Nummer der Sicherungspunkte (Namen muessen eindeutig sein).</summary>
+        private static int _punktzaehler;
+
+        /// <summary>
         /// Nur ueber <see cref="DataRepository.Vorgang"/> zu haben - die Verbindung ist
         /// dort bereits geoeffnet und mit den PRAGMAs versehen.
         /// </summary>
@@ -39,6 +49,55 @@ namespace WindowsFormsApplication1
         {
             _verbindung = verbindung ?? throw new ArgumentNullException(nameof(verbindung));
             _transaktion = _verbindung.BeginTransaction();
+            _sicherungspunkt = null;
+        }
+
+        /// <summary>
+        /// EIN UNTERPUNKT EINES LAUFENDEN VORGANGS (iU9-W16a-O-1).
+        ///
+        /// <para>SQLite kennt keine geschachtelten Transaktionen, wohl aber
+        /// SICHERUNGSPUNKTE. Wer waehrend eines angemeldeten Vorgangs
+        /// <c>DataRepository.Vorgang()</c> ruft - und das tun ein Dutzend
+        /// Katalogcontroller -, bekommt deshalb keinen zweiten Vorgang auf einer
+        /// zweiten Verbindung (die an der Schreibsperre haengen bliebe), sondern
+        /// diesen Unterpunkt: dieselbe Verbindung, dieselbe Transaktion, ein eigener
+        /// Sicherungspunkt.</para>
+        ///
+        /// <para>Damit bleibt die Bedeutung fuer den Aufrufer dieselbe wie bisher:
+        /// <c>Commit()</c> laesst sein Werk stehen (<c>RELEASE</c>), <c>Rollback()</c>
+        /// nimmt GENAU SEINE Aenderungen zurueck (<c>ROLLBACK TO</c>) und laesst den
+        /// umgebenden Lauf weiterarbeiten. Nur die Dauerhaftigkeit entscheidet der
+        /// aeussere Vorgang.</para>
+        /// </summary>
+        internal DbVorgang(DbVorgang eltern)
+        {
+            if (eltern == null) throw new ArgumentNullException(nameof(eltern));
+            if (!eltern.Offen)
+                throw new InvalidOperationException(
+                    "Der umgebende Datenbankvorgang ist bereits abgeschlossen.");
+
+            _verbindung = eltern._verbindung;
+            _transaktion = eltern._transaktion;
+            _sicherungspunkt = "epos_up_" + (++_punktzaehler).ToString(CultureInfo.InvariantCulture);
+            _transaktion.Save(_sicherungspunkt);
+        }
+
+        /// <summary>Laeuft der Vorgang noch (Verbindung da, weder Commit noch Rollback)?</summary>
+        internal bool Offen
+        {
+            get { return _verbindung != null && !_abgeschlossen; }
+        }
+
+        /// <summary>Die Verbindung des Vorgangs - fuer die <see cref="Leihverbindung"/>.</summary>
+        internal SqliteConnection Verbindung
+        {
+            get { return _verbindung; }
+        }
+
+        /// <summary>Die Transaktion des Vorgangs - fuer die <see cref="Leihverbindung"/>.</summary>
+        internal SqliteTransaction Transaktion
+        {
+            get { return _transaktion; }
         }
 
         private void PruefeOffen()
@@ -106,11 +165,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Schreibt den Vorgang fest.</summary>
+        /// <summary>
+        /// Schreibt den Vorgang fest. Ein UNTERPUNKT gibt dabei nur seinen
+        /// Sicherungspunkt frei - festgeschrieben wird beim aeusseren Vorgang.
+        /// </summary>
         public void Commit()
         {
             PruefeOffen();
-            _transaktion.Commit();
+            if (_sicherungspunkt != null) _transaktion.Release(_sicherungspunkt);
+            else _transaktion.Commit();
             _abgeschlossen = true;
         }
 
@@ -122,17 +185,44 @@ namespace WindowsFormsApplication1
         public void Rollback()
         {
             if (_verbindung == null || _abgeschlossen) return;
-            _transaktion.Rollback();
+
+            if (_sicherungspunkt != null)
+            {
+                // Der Unterpunkt nimmt GENAU SEINE Aenderungen zurueck; der umgebende
+                // Lauf arbeitet weiter. ROLLBACK TO laesst den Punkt stehen - er wird
+                // anschliessend freigegeben.
+                _transaktion.Rollback(_sicherungspunkt);
+                try { _transaktion.Release(_sicherungspunkt); }
+                catch (Exception) { /* z. B. von SQLite selbst schon abgeraeumt */ }
+            }
+            else
+            {
+                _transaktion.Rollback();
+            }
+
             _abgeschlossen = true;
         }
 
         /// <summary>
         /// Ohne vorheriges <c>Commit()</c> wird zurueckgerollt; raeumt Transaktion UND
         /// Verbindung ab. Mehrfachaufruf ist zulaessig.
+        ///
+        /// <para>Ein UNTERPUNKT raeumt weder Transaktion noch Verbindung ab - beide
+        /// gehoeren dem umgebenden Vorgang.</para>
         /// </summary>
         public void Dispose()
         {
             if (_verbindung == null) return;
+
+            if (_sicherungspunkt != null)
+            {
+                try { Rollback(); }
+                catch (Exception) { /* z. B. von SQLite selbst schon zurueckgerollt */ }
+                _abgeschlossen = true;
+                _transaktion = null;
+                _verbindung = null;
+                return;
+            }
 
             try
             {

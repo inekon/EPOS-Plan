@@ -398,8 +398,8 @@ namespace WindowsFormsApplication1
 
                 if (conn == null)
                 {
-                    using (SqliteConnection eigene = StilleDb.OeffneVerbindung())
-                    using (SqliteCommand cmd = DataRepository.ErzeugeKommando(eigene, null, sql, ps))
+                    using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                    using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, ps))
                     using (SqliteDataReader r = cmd.ExecuteReader())
                         while (r.Read())
                             if (!r.IsDBNull(0))
@@ -507,8 +507,8 @@ namespace WindowsFormsApplication1
                     // hier keine, und der Bericht zaehlt blockweise weiter.
                     if (conn == null)
                     {
-                        using (SqliteConnection eigene = StilleDb.OeffneVerbindung())
-                        using (SqliteCommand cmd = DataRepository.ErzeugeKommando(eigene, null, sql, null))
+                        using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                        using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, null))
                             summe += cmd.ExecuteNonQuery();
                     }
                     else
