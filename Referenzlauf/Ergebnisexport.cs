@@ -167,6 +167,46 @@ namespace WindowsFormsApplication1.Referenzlauf
                                   sim.Speicherfuellstand_stuendlich, summen);
             }
 
+            // --- Speicherflotte: Ganglinien je Einheit ------------------------------------
+            //
+            // ANWENDERENTSCHEID SP-O-8 (11.09.2026). Der Flottenpfad des gewoehnlichen
+            // Projektlaufs (SimulationControl.Stromspeicher.cs -> SpeicherFlottenProjektCtrl)
+            // hatte bis hierher KEIN Regressionsnetz: Keines der zwoelf Referenzprojekte
+            // aktivierte eine Flotte, und die zwei Reihen oben fuehren ohnehin nur den
+            // SUMMEN-Fuellstand aus dem Kompatibilitaetsergebnis. Was der Flottenpfad
+            // eigenstaendig rechnet - die Aufteilung auf die Einheiten (Verteilung,
+            // SoC-Grenzen, Richtungsleistungen, Reserve) - stand in keiner Datei.
+            //
+            // JE EINHEIT ZWEI REIHEN, nach dem Muster der Quellspeicher weiter oben:
+            // der Energiestand am INTERVALLENDE [kWh] und die ausgefuehrte Leistung [kW]
+            // mit der Vorzeichenregel der Engine (positiv entladen, negativ laden). Die
+            // Dateinamen tragen den Rang der Einheit in der Konfiguration - bei der
+            // Verteilung "Kaskade" ist genau das die Reihenfolge, in der ausgelastet
+            // wird, und eine vertauschte Reihenfolge faellt damit als Dateiunterschied
+            // auf und nicht erst in einer Summe.
+            //
+            // Projekte ohne aktivierte Flotte erzeugen KEINE dieser Dateien - dieselbe
+            // Bedingung wie beim Erdreich- und beim Emissionsblock.
+            if (sim.Speicherflottenergebnis != null && sim.Speicherflottenkonfiguration != null)
+            {
+                var intervalle = sim.Speicherflottenergebnis.Variante.Intervalle;
+                int einheiten = sim.Speicherflottenkonfiguration.Einheiten.Count;
+                for (int e = 0; e < einheiten; e++)
+                {
+                    var energie = new double[intervalle.Count];
+                    var leistung = new double[intervalle.Count];
+                    for (int t = 0; t < intervalle.Count; t++)
+                    {
+                        var x = intervalle[t];
+                        energie[t] = e < x.EnergieEndeKWhJeSpeicher.Count ? x.EnergieEndeKWhJeSpeicher[e] : 0.0;
+                        leistung[t] = e < x.IstleistungKwJeSpeicher.Count ? x.IstleistungKwJeSpeicher[e] : 0.0;
+                    }
+                    string p = "flotte_einheit_" + e.ToString(CultureInfo.InvariantCulture) + "_";
+                    dateien += Vektor(zielOrdner, p + "energie.csv", energie, summen);
+                    dateien += Vektor(zielOrdner, p + "leistung.csv", leistung, summen);
+                }
+            }
+
             // --- Skalare -----------------------------------------------------------------
             var skalare = new List<KeyValuePair<string, string>>();
             skalare.Add(Neu("Lauf.ID_Projekt", idProjekt.ToString(CultureInfo.InvariantCulture)));
@@ -285,6 +325,102 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Em.Bhkw.NoxKg",   Zahl(bh.Em_NOX_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.CoKg",    Zahl(bh.Em_CO_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.StaubKg", Zahl(bh.Em_Staub_BHKW)));
+            }
+
+            // --- Speicherflotte: Kennzahlen (Anwenderentscheid SP-O-8, 11.09.2026) --------
+            //
+            // WAS HIER FEHLTE. Laeuft die Flotte, ersetzt sie den Reststrombedarf des
+            // Projekts (SimulationControl.Stromspeicher.cs) - aber alles, WORAUS dieser
+            // Netzbezug entsteht, blieb unsichtbar: die getrennten Einspeisereihen nach
+            // PV, BHKW und Batterie, die Abregelung, die Umwandlungsverluste, die
+            // Bezugsspitze, die der Leistungspreis bewertet, und die Kennzahlen je
+            // Einheit. Eine Aenderung an Verteilung, Reserve oder Wirkungsgrad haette
+            // sich in der EINEN Jahressumme des Reststroms gegenseitig aufheben koennen.
+            //
+            // DIE EINHEIT STEHT IM NAMEN, wie bei den zehn Emissionsskalaren (Em-9.8-Q3):
+            // Energien fuehren kWh, Leistungen kW, Zyklen und Miner-Schaden sind
+            // dimensionslos. Der Export rechnet nicht um.
+            //
+            // EIGENES PRAEFIX "Flotte.": "Ergebnis.", "Photovoltaik." usw. stehen fuer
+            // "Spalte einer Tab_Ergebnis*-Zeile" (SELECT *). Die Flotte hat keine
+            // Ergebniszeile - ihr Laufstand lebt nur im Speicher des Laufs.
+            //
+            // MIT REFERENZ. "Flotte.Ref.*" ist derselbe Lauf OHNE jeden Speicher, den die
+            // Engine zum Vergleich mitrechnet (FlottenStudienErgebnis.ReferenzOhneSpeicher).
+            // Er kostet nichts, steht ohnehin da und macht aus der Wirkung der Flotte
+            // eine Differenz statt einer nackten Zahl.
+            //
+            // BEDINGUNG WIE BEI DEN VEKTOREN: Der Block laeuft nur, wenn die Flotte
+            // wirklich gerechnet hat. Die zwoelf Bestandsprojekte fahren die Einzelanlage
+            // und bekommen KEINEN dieser 42 Schluessel, statt 42 Nullen zu tragen.
+            if (sim.Speicherflottenergebnis != null && sim.Speicherflottenkonfiguration != null)
+            {
+                SpeicherEngine.FlottenStudienErgebnis studie = sim.Speicherflottenergebnis;
+                SpeicherEngine.FlottenStudieKonfiguration flotte = sim.Speicherflottenkonfiguration;
+                SpeicherEngine.FlottenSimulationErgebnis variante = studie.Variante;
+                SpeicherEngine.FlottenSimulationErgebnis referenz = studie.ReferenzOhneSpeicher;
+                SpeicherFlottenNetzbilanz bilanz = sim.Speicherflottennetzbilanz;
+
+                skalare.Add(Neu("Flotte.EinheitenAnzahl",
+                    flotte.Einheiten.Count.ToString(CultureInfo.InvariantCulture)));
+                skalare.Add(Neu("Flotte.Betriebsziel", flotte.Optionen.Betriebsziel.ToString()));
+                skalare.Add(Neu("Flotte.Verteilung", flotte.Optionen.Verteilung.ToString()));
+                skalare.Add(Neu("Flotte.PeakZielKw",
+                    flotte.Optionen.WirtschaftlicherPeakZielwertKw.HasValue
+                        ? Zahl(flotte.Optionen.WirtschaftlicherPeakZielwertKw.Value) : ""));
+                skalare.Add(Neu("Flotte.NetzladungErlaubt", flotte.Optionen.NetzladungErlaubt.ToString()));
+                skalare.Add(Neu("Flotte.BatterieexportErlaubt", flotte.Optionen.BatterieexportErlaubt.ToString()));
+                skalare.Add(Neu("Flotte.Zulaessig", variante.Zulaessig.ToString()));
+                skalare.Add(Neu("Flotte.PlanFallbackIntervalle",
+                    variante.PlanFallbackIntervalle.ToString(CultureInfo.InvariantCulture)));
+
+                skalare.Add(Neu("Flotte.NetzbezugKwh", Zahl(variante.NetzbezugKWh)));
+                skalare.Add(Neu("Flotte.BezugsspitzeKw", Zahl(variante.MaximalerNetzbezugKw)));
+                skalare.Add(Neu("Flotte.NetzeinspeisungKwh", Zahl(variante.NetzeinspeisungKWh)));
+                skalare.Add(Neu("Flotte.PvAbregelungKwh", Zahl(variante.PvAbregelungKWh)));
+                skalare.Add(Neu("Flotte.VerlusteKwh", Zahl(variante.VerlusteKWh)));
+
+                // Die drei Einspeisequellen stehen nur in der Projekt-Netzbilanz - sie
+                // ist die Stelle, die PV, BHKW und Batterie ohne Doppelzaehlung trennt.
+                if (bilanz != null)
+                {
+                    skalare.Add(Neu("Flotte.PvEinspeisungKwh", Zahl(bilanz.PvNetzeinspeisungKwh)));
+                    skalare.Add(Neu("Flotte.BhkwEinspeisungKwh", Zahl(bilanz.BhkwNetzeinspeisungKwh)));
+                    skalare.Add(Neu("Flotte.BatterieEinspeisungKwh", Zahl(bilanz.BatterieNetzeinspeisungKwh)));
+                }
+
+                skalare.Add(Neu("Flotte.Ref.NetzbezugKwh", Zahl(referenz.NetzbezugKWh)));
+                skalare.Add(Neu("Flotte.Ref.BezugsspitzeKw", Zahl(referenz.MaximalerNetzbezugKw)));
+                skalare.Add(Neu("Flotte.Ref.NetzeinspeisungKwh", Zahl(referenz.NetzeinspeisungKWh)));
+                skalare.Add(Neu("Flotte.Ref.PvAbregelungKwh", Zahl(referenz.PvAbregelungKWh)));
+
+                for (int e = 0; e < flotte.Einheiten.Count; e++)
+                {
+                    SpeicherEngine.FlottenEinheit einheit = flotte.Einheiten[e];
+                    string p = "Flotte.Einheit[" + e.ToString(CultureInfo.InvariantCulture) + "].";
+                    skalare.Add(Neu(p + "Id", einheit.Id));
+                    skalare.Add(Neu(p + "KapazitaetKwh", Zahl(einheit.KapazitaetKWh)));
+                    skalare.Add(Neu(p + "LadeleistungKw", Zahl(einheit.LadeleistungKw)));
+                    skalare.Add(Neu(p + "EntladeleistungKw", Zahl(einheit.EntladeleistungKw)));
+
+                    // Die Kennzahlen stehen in derselben Reihenfolge wie die Einheiten
+                    // (FlottenSimulationErgebnis.SpeicherKennzahlen); beim Referenzlauf
+                    // ohne Speicher ist die Liste leer.
+                    if (e >= variante.SpeicherKennzahlen.Count) continue;
+                    SpeicherEngine.FlottenSpeicherKennzahlen k = variante.SpeicherKennzahlen[e];
+                    skalare.Add(Neu(p + "AnfangsenergieKwh", Zahl(k.AnfangsenergieKWh)));
+                    skalare.Add(Neu(p + "EndenergieKwh", Zahl(k.EndenergieKWh)));
+                    skalare.Add(Neu(p + "LadeenergieKwh", Zahl(k.LadeenergieAcKWh)));
+                    skalare.Add(Neu(p + "EntladeenergieKwh", Zahl(k.EntladeenergieAcKWh)));
+                    skalare.Add(Neu(p + "VollzyklenAeq", Zahl(k.AequivalenteVollzyklen)));
+                    // Ohne Lebensdauerkurve zaehlt die Rainflow-Auswertung die Zyklen und
+                    // laesst den Schaden bei 0 - der Schluessel steht trotzdem, damit eine
+                    // spaeter hinterlegte Kurve eine ZAHL aendert und keinen SCHLUESSEL
+                    // hinzufuegt (dasselbe Muster wie beim strukturell leeren Em.*.CoKg).
+                    skalare.Add(Neu(p + "MinerSchaden", Zahl(k.RainflowSchaden)));
+                    skalare.Add(Neu(p + "RainflowZyklen",
+                        k.RainflowZyklen.Count.ToString(CultureInfo.InvariantCulture)));
+                }
             }
 
             skalare.AddRange(ErgebnisTabellenLesen(kopfId));

@@ -1,0 +1,402 @@
+﻿# Referenzlauf (Kern) vom 11.09.2026 10:17
+
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-11_R7_Speicherflotte
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046
+Dauer:         00:00:04
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1
+Zielordner:    Referenzlaeufe/2026-09-11_R7_Speicherflotte
+
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (67 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/agent-a0ce95ffc9145b6a1/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+25 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (13):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1046 "Prüfprojekt Speicherflotte"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 29 CSV-Dateien, 99 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 21 CSV-Dateien, 101 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: 21 CSV-Dateien, 124 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 22 CSV-Dateien, 151 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 25 CSV-Dateien, 141 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 26 CSV-Dateien, 167 Skalare.
+  OK - 26 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 160 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 25 CSV-Dateien, 154 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 27 CSV-Dateien, 155 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 34 CSV-Dateien, 202 Skalare.
+  OK - 34 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1046 "Prüfprojekt Speicherflotte" wird gerechnet ...
+Simulation startet fuer Projekt 1046 ...
+Simulation beendet, Ergebnis-Kopf-ID 225.
+Projekt 1046: 33 CSV-Dateien, 145 Skalare.
+  OK - 33 Dateien in 00:00
+
+Fertig. Gesamtdauer 00:00:04
+Erfolgreich: 13 von 13
+```
+
+
+## Warum diese Basis: SP-O-8, das dreizehnte Pruefprojekt
+
+Anwenderentscheid **SP-O-8 vom 11.09.2026** ("Empfehlung"): Das Mehrspeicherkonzept
+hat mit SpeicherEngine/Flotten*.cs, den Controllern SpeicherFlotten*Ctrl und der
+Weiche in SimulationControl.Stromspeicher.cs einen ZWEITEN Speicherpfad in den
+gewoehnlichen Projektlauf gelegt - und keines der zwoelf Referenzprojekte betrat
+ihn. Sie fahren alle die Einzelanlage ueber
+StromspeicherSimCtrl.RechneAktiveVariante. Der Flottenpfad hatte damit kein
+Regressionsnetz: Eine stille Aenderung an Verteilung, Reserve, Richtungs-
+wirkungsgrad oder Netzbilanz waere in keinem Referenzlauf aufgefallen, sondern
+allein in den Pruefstaenden von SpeicherEngine.Tests.
+
+Diese Basis loest 2026-09-07_R6_PvKoeffizienten ab. Sie fuehrt DIESELBEN zwoelf
+Projekte plus das neue 1046 "Pruefprojekt Speicherflotte":
+
+    345 CSV (vorher 312), 1 937 Skalare (vorher 1 792), Schemastand 73,
+    gerechnet mit dem plattformfreien EPOS.Referenzlauf auf Linux gegen
+    Referenzlaeufe/Kenndaten_Test.sqlite (25 Projekte, 119 Tabellen, davon
+    117 STRICT).
+
+Das Projekt entsteht wiederholbar aus dem Skript
+Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py (Muster: das Skript zu
+1045 aus W6-O-7). Zwei Laeufe des Skripts auf zwei frischen Kopien derselben
+Testdatenbank liefern BYTE-GLEICHE Dateien - der Stand-Zeitstempel der Zeile in
+Tab_SpeicherAuslegung ist fest verdrahtet und nicht "jetzt", und die gzip-Nutzlast
+wird mit mtime = 0 gepackt.
+
+
+## Das Projekt 1046
+
+Vorlage ist **1007 "Laurentiuskirche"**. Gesucht war ein Bestandsprojekt mit echtem
+Strombedarf UND Photovoltaik; gemessen an R6 bleiben drei uebrig:
+
+    Projekt | Bezugsspitze | PV-Ueberschuss | Stromspeicher im Projekt
+    1007    |  19,776 kW   |    887,6 kWh   | ja (vier SP-Anlagen, Variante 1 aktiv)
+    1040    |   8,370 kW   |  2 272,7 kWh   | nein
+    1045    |   8,372 kW   |    674,8 kWh   | nein
+
+Das Betriebsziel des Pruefprojekts ist PeakShaving, und dafuer zaehlt die
+BEZUGSSPITZE: Sie ist bei 1007 mehr als doppelt so hoch wie bei den beiden anderen.
+Nur dort laesst sich ein wirtschaftliches Peak-Ziel setzen, das deutlich unter der
+Spitze liegt und von einer Flotte realistischer Groesse auch erreicht werden kann;
+bei 8,4 kW Spitze waere jedes Ziel darunter eine Rechenuebung ohne Aussage. Dazu
+kommt: 1007 FUEHRT bereits Stromspeicheranlagen. Damit rechnet dasselbe Projekt mit
+deaktivierter Flotte den EINZELpfad und mit aktivierter den FLOTTENpfad - genau die
+Gegenprobe (b) weiter unten.
+
+Die Flotte: zwei physisch gleichzeitig betriebene AC-Einheiten unterschiedlicher
+Groesse, mit getrennten Richtungsleistungen, getrennten Richtungswirkungsgraden,
+eigenen SoC-Grenzen, eigener Peak-Reserve und eigenem Hilfsverbrauch.
+
+    Einheit | C [kWh] | P_lade  | P_entlade | eta_c | eta_d | SoC-Band  | Reserve | Hilfsverbr.
+    A       |   24,0  | 10,0 kW |  12,0 kW  | 0,96  | 0,94  | 0,05-0,95 | 2,4 kWh | 0,030 kW
+    B       |   16,0  |  6,0 kW |   7,0 kW  | 0,93  | 0,91  | 0,10-0,90 | 1,2 kWh | 0,020 kW
+
+Betrieb: reaktives Ziel PeakShaving gegen ein wirtschaftliches Peak-Ziel von
+16,0 kW, Verteilung Kaskade (A zuerst, B deckt den Rest), Netzladung freigegeben,
+Batterieexport gesperrt, keine HARTE Anschlussgrenze. KEIN planendes Ziel: PvPlanung,
+Arbitrage und MultiUse brauchen einen IFlottenPlaner und damit Google OR-Tools; der
+plattformfreie EPOS.Referenzlauf bindet die nicht ein, und ein MILP-Ergebnis waere
+weder auf allen Plattformen bitgleich noch ohne Zeitlimit reproduzierbar. Die zwei
+reaktiven Ziele kommen ohne Planer aus und sind deterministisch.
+
+Der Stand steht als reservierter Projektflottenstand @Projektflotte in
+Tab_SpeicherAuslegung (ID_Projekt 1046, ID_Energieanlage NULL, 1 724 Zeichen
+gz1-Nutzlast). SpeicherFlottenProjektCtrl.IstAktiv liest ihn und schaltet damit den
+Flottenpfad ein - ohne Dialog und ohne vorherigen Auslegungslauf.
+
+
+### Die Groesse ist am Peak-Ziel gemessen, nicht geraten
+
+Die Empfehlung des Auftrags nannte "z. B. 50 kW/100 kWh und 30 kW/90 kWh", zusammen
+190 kWh an 80 kW. Das sind Groessen fuer einen Industriestandort; 1007 hat eine
+Bezugsspitze von 19,8 kW und einen Jahresbezug von 50,5 MWh. Eine 80-kW-Flotte davor
+waere in JEDEM Intervall unbegrenzt - Verteilung, SoC-Grenzen, Reserve und
+Richtungsleistungen haetten nie eine Wirkung, und genau diese Wege soll das Projekt
+halten.
+
+Aus der Reihe reststrom_viertelstunde.csv des Projekts 1007 in R6 laesst sich je
+Schwelle T die LAENGSTE zusammenhaengende Energie ueber T ablesen - die Energie, die
+eine Flotte vorhalten muss, um T zu halten:
+
+    T [kW]          |  12   |  14  |  15  |  16  |  17  |  18
+    Exkursion [kWh] | 101,5 | 67,5 | 50,5 | 33,5 | 19,5 |  8,5
+
+Die Flotte hat 34,4 kWh nutzbar (0,90 * 24 + 0,80 * 16) und passt damit zu
+T = 16,0 kW. Gemessen wurde auch, was die Nachbarn taeten:
+
+    T = 12 kW : Bezugsspitze bleibt 19,81 kW (die reaktive Regel entlaedt schon an
+                jedem mittleren Tag und steht am Jahreshoechstwert leer),
+                4 248 Intervalle ueber dem Ziel
+    T = 16 kW : Bezugsspitze 16,74 kW, 20 Intervalle ueber dem Ziel  <- gewaehlt
+    T = 18 kW : Bezugsspitze exakt 18,00 kW, 0 Intervalle ueber dem Ziel - aber nur
+                noch 3,9 bzw. 5,6 aequivalente Vollzyklen im Jahr; die Flotte
+                arbeitet praktisch nicht
+
+T = 16,0 trifft die Mitte: Die Spitze faellt sichtbar, und die 20 verbleibenden
+Ueberschreitungen halten den Weg der PEAK-RESERVE im Netz, die nur bei einer
+tatsaechlichen Ueberschreitung freigegeben wird.
+
+
+### Keine Lebensdauerkurve - mit Absicht
+
+FlottenEinheit.RainflowKurve bleibt bei beiden Einheiten LEER. Die
+Rainflow-Auswertung zaehlt dann die Zyklen und laesst den Miner-Schaden bei 0
+(FlottenRainflow.Auswerten: "Eine leere Kurve liefert die gezaehlten Zyklen ohne
+Schaden"). Mit Kurve bricht die Auswertung ab, sobald EINE Zyklustiefe ausserhalb
+der gelieferten Stuetzstellen liegt - und die kleinste Tiefe eines Jahreslaufs haengt
+an der Feinstruktur der Rechnung, nicht an der Konfiguration. Ein Referenzprojekt,
+das bei einer harmlosen Aenderung am Flottenpfad nicht ABWEICHT, sondern ABSTUERZT,
+waere ein schlechtes Regressionsnetz. Der Miner-Schaden selbst ist in
+SpeicherEngine.Tests gepruefte Physik; aggregate.csv fuehrt den Skalar trotzdem
+(Wert 0), damit eine spaeter hinterlegte Kurve eine ZAHL aendert und keinen
+SCHLUESSEL hinzufuegt - dasselbe Muster wie beim strukturell leeren Em.Kessel.CoKg.
+
+
+## Was der Export neu fuehrt (Referenzlauf/Ergebnisexport.cs)
+
+Vier CSV und 42 Skalare, ALLE unter der Bedingung, dass die Flotte wirklich
+gerechnet hat (sim.Speicherflottenergebnis != null). Die zwoelf Bestandsprojekte
+bekommen keinen einzigen neuen Schluessel - dieselbe Bedingungsregel wie beim
+Erdreich- und beim Emissionsblock, und der Beleg dafuer ist Gegenprobe (a).
+
+  CSV je Einheit (Rang in der Konfiguration = Reihenfolge der Kaskade):
+    flotte_einheit_0_energie.csv    Energiestand am Intervallende [kWh]
+    flotte_einheit_0_leistung.csv   ausgefuehrte Leistung [kW], + entladen / - laden
+    flotte_einheit_1_energie.csv
+    flotte_einheit_1_leistung.csv
+
+  Skalare (Einheit im Namen, wie bei Em-9.8-Q3; eigenes Praefix "Flotte.", weil die
+  Flotte keine Tab_Ergebnis*-Zeile hat):
+    Konfiguration  EinheitenAnzahl, Betriebsziel, Verteilung, PeakZielKw,
+                   NetzladungErlaubt, BatterieexportErlaubt
+    Lauf           Zulaessig, PlanFallbackIntervalle
+    Variante       NetzbezugKwh, BezugsspitzeKw, NetzeinspeisungKwh,
+                   PvEinspeisungKwh, BhkwEinspeisungKwh, BatterieEinspeisungKwh,
+                   PvAbregelungKwh, VerlusteKwh
+    Referenz       Flotte.Ref.NetzbezugKwh, .BezugsspitzeKw, .NetzeinspeisungKwh,
+                   .PvAbregelungKwh  (derselbe Lauf OHNE jeden Speicher, den die
+                   Engine ohnehin mitrechnet)
+    je Einheit     Id, KapazitaetKwh, LadeleistungKw, EntladeleistungKw,
+                   AnfangsenergieKwh, EndenergieKwh, LadeenergieKwh,
+                   EntladeenergieKwh, VollzyklenAeq, MinerSchaden, RainflowZyklen
+
+Die drei Einspeisegroessen kommen aus der Projekt-Netzbilanz
+(StromspeicherSimCtrl.ProjektNetzbilanz) - sie ist die Stelle, die PV, BHKW und
+Batterie ohne Doppelzaehlung trennt. Alte Skalare sind weder entfallen noch
+umbenannt.
+
+
+## Gegenprobe (a): die zwoelf alten Projekte sind byte-gleich zu R6
+
+    for p in 1007 1008 1017 1018 1023 1024 1030 1039 1040 1041 1042 1045; do
+      diff -rq Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/Projekt_$p \
+               Referenzlaeufe/2026-09-11_R7_Speicherflotte/Projekt_$p
+    done
+
+    -> 12 von 12 BYTE-GLEICH, kein einziger Unterschied in 312 CSV.
+
+Damit ist belegt: Weder das neue Projekt in der Testdatenbank noch der erweiterte
+Export beruehren die Rechnung der Bestandsprojekte. Der Wechsel R6 -> R7 ist reine
+ERWEITERUNG.
+
+
+## Gegenprobe (b): 1046 mit und ohne aktivierte Flotte
+
+Auf einer Kopie der Testdatenbank wurde im Stand @Projektflotte des Projekts 1046
+allein FlotteImProjektAktiv auf false gesetzt (FlottenProjektbetriebDeaktiviert auf
+true, Revision +1). Damit faellt SpeicherFlottenProjektCtrl.IstAktiv auf false, und
+SimulationControl.SpeicherlaufAusfuehren rechnet den EINZELpfad ueber die aktive
+Speichervariante des Projekts - genau wie die Vorlage 1007.
+
+                                 Flotte AUS          Flotte AN        Differenz
+    Bezugsspitze [kW]              19,7762            16,7428          -3,0334  (-15,3 %)
+    Netzbezug [kWh]             50 538,68           51 611,01       +1 072,33  (+2,1 %)
+    Sim.Reststrom [MWh]         50,5386766          51,6110066
+    Intervalle ueber 16 kW          2 864                 20
+    CSV-Dateien                        29                 33
+    Skalare                            99                145
+
+    abweichende Viertelstunden: 32 148 von 35 040 in reststrom_viertelstunde.csv
+    kein Schluessel nur im Lauf OHNE Flotte - der Flottenblock ergaenzt, er ersetzt
+    nichts.
+
+Der hoehere Netzbezug ist kein Fehler, sondern die Rechnung: Peak Shaving mit
+freigegebener Netzladung kauft Energie, wenn sie billig unter dem Peak-Ziel liegt,
+und gibt sie spaeter mit Wirkungsgradverlust wieder ab. Die Flotte bucht dafuer
+122,42 kWh Umwandlungsverlust, verschiebt 36,73 kWh von der PV-Einspeisung in die
+Eigennutzung (887,63 -> 850,90 kWh) und laesst am Jahresende 18,80 kWh mehr im
+Speicher stehen als am Anfang (A 12,0 -> 22,8 kWh, B 6,4 -> 14,4 kWh). Bezahlt wird
+das mit dem Leistungspreis auf 3,03 kW weniger Bezugsspitze.
+
+Der Referenzlauf OHNE jeden Speicher, den die Engine selbst mitrechnet, bestaetigt
+die Zahl von der anderen Seite: Flotte.Ref.BezugsspitzeKw = 19,7762127 - bis auf die
+letzte Stelle derselbe Wert, den der Einzelpfad liefert. Die vier BYD-/Vaillant-
+Anlagen des Projekts kappen an der Jahresspitze nichts; die 3,03 kW kommen
+vollstaendig aus der Flotte.
+
+
+### Die Flottenwege sind wirklich betreten
+
+Ausgewertet aus den vier neuen Ganglinien des Projekts 1046 (35 040 Intervalle):
+
+    Einheit A entlaedt in 1 761, laedt in   877 Intervallen
+    Einheit B entlaedt in 1 177, laedt in   734 Intervallen
+    Entladen: nur A 1 736 | beide 25 | nur B 1 152
+    Laden:    nur A   734 | beide 143 | nur B 591
+    gleichzeitiges Laden UND Entladen innerhalb der Flotte: 0 Intervalle
+
+  Kaskade      "nur B" tritt auf, weil A an seiner unteren Grenze steht - die
+               Kaskade laesst B erst dann arbeiten. Das ist die Reihenfolge der
+               Konfiguration und nicht die der Kapazitaet.
+  SoC-Grenzen  A erreicht 0,0500 und 0,9500, B erreicht 0,1000 und 0,9000 - beide
+               Baender werden ausgefahren, keines verletzt.
+  Reserve      A faellt in 254, B in 672 Intervallen unter seine Reservemarke
+               (SocMin*C + Reserve). Das darf nur bei einer TATSAECHLICHEN
+               Peak-Anforderung geschehen - der Freigabeweg (release) ist damit
+               nachweislich betreten und nicht nur konfiguriert.
+  Grenzen      A liegt in 5 Intervallen exakt auf seiner Ladegrenze von 10,0 kW.
+  Zyklen       A 23,27, B 24,88 aequivalente Vollzyklen; 92 bzw. 88 gezaehlte
+               Rainflow-Zyklen, Miner-Schaden 0 (keine Lebensdauerkurve, s. o.).
+
+
+## Gegenprobe (c): Determinismus
+
+Zweiter Lauf desselben Standes in einen anderen Zielordner:
+
+    13 von 13 BYTE-GLEICH (diff -rq ohne einen einzigen Unterschied in 345 CSV)
+    Toleranzvergleich 13/13 PASS (3 777 497 Werte)
+
+Dazu die Wiederholbarkeit des Skripts: Zwei Laeufe von
+pruefprojekt_1046_speicherflotte.py auf zwei frischen Kopien derselben
+Testdatenbank ergeben BYTE-GLEICHE Dateien (cmp ohne Unterschied, 70 803 456 Byte).
+
+
+## Einfrierregel fuer die Flottenparameter von 1046
+
+Wie bei den Emissionsfaktoren (Em-9.8-Q4) und den PV-Modulkoeffizienten (W6-B-5-Q3)
+ist die Testdatenbank damit an einer weiteren Stelle regressionsrelevant geworden:
+
+  Wer den Stand @Projektflotte des Projekts 1046 aendert - Einheitenzahl,
+  Kapazitaet, Richtungsleistungen, Wirkungsgrade, SoC-Grenzen, Start-SoC, Reserve,
+  Hilfsverbrauch, Betriebsziel, Verteilung, Peak-Ziel, Netzladung, Batterieexport,
+  Energie-Ausgleichswert, Lebensdauerkurve - oder eine der Projektzeilen von 1046,
+  friert im selben Schritt die Basis neu ein und begruendet den Wechsel in
+  Referenzlaeufe/LIESMICH.md.
+
+Die uebrigen Projekte der Testdatenbank fuehren keinen Flottenstand; ein Auslegungs-
+oder Arbeitsprofil unter einem ANDEREN Bezeichner als @Projektflotte erreicht den
+Projektlauf nicht und ist von der Regel nicht betroffen.
+
+
+## Laufzeit
+
+Gesamtdauer 00:00:04 fuer dreizehn Projekte - wie der R6-Stand auf demselben
+Laeufer; das Projekt 1046 rechnet in unter einer Sekunde.
+
+
+## Aufruf
+
+    python3 Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py \
+      Referenzlaeufe/Kenndaten_Test.sqlite
+
+    dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+      --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+      --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+      --ziel Referenzlaeufe/2026-09-11_R7_Speicherflotte
