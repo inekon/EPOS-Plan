@@ -158,6 +158,14 @@ Flottenpfad rechnerisch zusammengeführt werden, ist eine spätere Frage (SD‑Q
 teilen sie nur die Ansicht, nicht den Rechenweg — der Einzelpfad ist der regressionsgeprüfte
 (zwölf Referenzprojekte), der Flottenpfad seit #174 mit Projekt 1046.
 
+**Befund 11.09.2026 (Anwender: „springt bei ‚Zurück' auf das Hauptfenster und geht nicht
+zurück"):** Der Rückweg ist gebaut (`AppWurzel._auslegungRueckweg`), aber unter Windows steht
+das Simulationsergebnis nicht als Ansicht der Wurzel, sondern als `Ueberlagerung` in der
+Startseite — die Wurzel merkt sich deshalb `STARTSEITE`, und beim Zurück ist das Ergebnis weg.
+Ursache, Zielbild (Simulation als EINE freie Ansicht mit Ablaufleiste, Rückwegstapel mit Marke)
+und Stufenplan stehen in
+[`Konzept_Simulationsablauf_EPOS-Plan.md`](Konzept_Simulationsablauf_EPOS-Plan.md).
+
 ### 2.2 Ergebnis als eigener Schritt (Punkt 1)
 
 Nach der Hausregel `Doku_Simulationsergebnis_Darstellung.md` § 1–4 und § 6:
