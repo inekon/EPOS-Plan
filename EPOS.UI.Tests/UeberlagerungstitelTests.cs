@@ -23,6 +23,23 @@ namespace EPOS.UI.Tests;
 /// beweisbar, ohne eine Hülle zu lesen. Das prüft
 /// <see cref="Jede_Ueberlagerung_und_ihr_Kind_tragen_verschiedene_Titelquellen"/>.</para>
 ///
+/// <para><b>Nachtrag Auftrag #194 (Restfall aus #187, 11.09.2026):</b> Eine
+/// Komponente der Hausregel-Bauart (b) (eigener Parameter
+/// <c>[Parameter] public bool TitelAnzeigen</c> statt leerbarem
+/// <c>TitelText</c>, z. B. <c>PufferSpProjektDialog</c>) setzt an ihrer
+/// Einbettungsstelle oft GAR KEIN <c>TitelText="@X"</c> — der Vergleich oben griff
+/// dort also nie, obwohl der Kopf trotzdem doppelt stand (die DRITTE Einbettung
+/// von <c>PufferSpProjektDialog</c>, direkt aus
+/// <c>Seiten/Simulation/SimulationKonfigSeite.razor</c>, blieb dadurch
+/// unentdeckt). Dieselbe Methode <see cref="MarkupFunde"/> prüft seither
+/// ZUSÄTZLICH: Trägt eine im Block eingebettete Komponente selbst den
+/// Parameter <c>TitelAnzeigen</c> (erkannt an ihrer eigenen Datei, Helfer
+/// <see cref="FuehrtTitelAnzeigenParameter"/>), muss ihre Einbettung
+/// <c>TitelAnzeigen="false"</c> (oder einen leeren <c>TitelText=""</c>)
+/// setzen — sonst ist es ein Fund, unabhängig davon, ob <c>TitelText</c>
+/// überhaupt gesetzt wird. Das prüft
+/// <see cref="Die_Markup_Wache_findet_die_Pufferverwaltung_vor_194"/>.</para>
+///
 /// <para><b>Bauart B (neun Stellen, die Kosten-, Gesetzes-, Klimazonen- und
 /// Pufferspeicherdialoge):</b> die Überlagerung und die Komponente bekommen
 /// ihren Text aus ZWEI verschiedenen Ausdrücken, die aber in derselben
@@ -52,7 +69,7 @@ namespace EPOS.UI.Tests;
 /// Parameter <c>[Parameter] public bool TitelAnzeigen { get; set; } = true;</c>
 /// steuert stattdessen NUR den eigenen Kopf.</para>
 ///
-/// <para><b>Ausnahmeliste: leer.</b> Beide Fälle unten müssen ohne
+/// <para><b>Ausnahmeliste: leer.</b> Alle Fälle unten müssen ohne
 /// Einschränkung grün bleiben — jeder neue Doppel-Titel, gleich welcher
 /// Bauart, ist ein Fehler, keine Ausnahme.</para>
 /// </summary>
@@ -129,6 +146,93 @@ public sealed class UeberlagerungstitelTests
         Assert.Empty(MarkupFunde(dateienHeute));
     }
 
+    /// <summary>
+    /// Restfall aus #187 (Auftrag #194): die DRITTE Einbettung von
+    /// <c>PufferSpProjektDialog</c> — direkt aus der Simulationskonfiguration, Bauart b
+    /// (<c>TitelAnzeigen</c> statt leerbarem <c>TitelText</c>) — trug ihren Titel
+    /// doppelt, und die alte Bauart A sah es NICHT: Die Komponente setzt an dieser
+    /// Einbettungsstelle gar kein <c>TitelText="@…"</c>, also griff der bisherige
+    /// Vergleich (Titel/TitelText wortgleich) nie. Der eingefrorene Bestand von
+    /// <c>SimulationKonfigSeite.razor</c> VOR #194 (Zeile 248, um
+    /// <c>&lt;Ueberlagerung … Titel="@VerwaltungTitel"&gt;</c>) muss als Fund
+    /// erscheinen; die HEUTIGE Fassung (<c>TitelAnzeigen="false"</c> an der
+    /// Einbettungsstelle) nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Die_Markup_Wache_findet_die_Pufferverwaltung_vor_194()
+    {
+        const string wirtVorher =
+            "@if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)\n" +
+            "{\n" +
+            "    <Ueberlagerung Offen=\"true\" Titel=\"@VerwaltungTitel\" Geschlossen=\"Ebene1Schliessen\">\n" +
+            "        <KindInhalt>\n" +
+            "            <EPOS.UI.Dialoge.Simulation.PufferSpProjektDialog @attributes=\"_gaben1\"\n" +
+            "                                                              Geschlossen=\"VerwaltungFertig\" />\n" +
+            "        </KindInhalt>\n" +
+            "    </Ueberlagerung>\n" +
+            "}\n";
+        const string kind =
+            "<div class=\"epos-dialog-kopf @(TitelAnzeigen ? \"\" : \"epos-dialog-kopf--ohnetitel\")\">\n" +
+            "    @if (TitelAnzeigen)\n" +
+            "    {\n" +
+            "        <h1 class=\"epos-dialog-titel\">@TitelText</h1>\n" +
+            "    }\n" +
+            "</div>\n" +
+            "@code {\n" +
+            "    [Parameter] public string TitelText { get; set; } = \"Pufferspeicher im Projekt\";\n" +
+            "    [Parameter] public bool TitelAnzeigen { get; set; } = true;\n" +
+            "}\n";
+
+        var dateienVorher = new Dictionary<string, string>
+        {
+            ["SimulationKonfigSeite.razor"] = wirtVorher,
+            ["PufferSpProjektDialog.razor"] = kind
+        };
+
+        List<MarkupFund> fundeVorher = MarkupFunde(dateienVorher);
+
+        MarkupFund fund = Assert.Single(fundeVorher);
+        Assert.Equal("VerwaltungTitel", fund.Bezeichner);
+        Assert.Equal("PufferSpProjektDialog", fund.Kind);
+
+        // Die HEUTIGE Fassung (TitelAnzeigen="false" an der Einbettungsstelle) meldet
+        // nichts mehr.
+        const string wirtHeute =
+            "@if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)\n" +
+            "{\n" +
+            "    <Ueberlagerung Offen=\"true\" Titel=\"@VerwaltungTitel\" Geschlossen=\"Ebene1Schliessen\">\n" +
+            "        <KindInhalt>\n" +
+            "            <EPOS.UI.Dialoge.Simulation.PufferSpProjektDialog @attributes=\"_gaben1\" TitelAnzeigen=\"false\"\n" +
+            "                                                              Geschlossen=\"VerwaltungFertig\" />\n" +
+            "        </KindInhalt>\n" +
+            "    </Ueberlagerung>\n" +
+            "}\n";
+        var dateienHeute2 = new Dictionary<string, string>
+        {
+            ["SimulationKonfigSeite.razor"] = wirtHeute,
+            ["PufferSpProjektDialog.razor"] = kind
+        };
+        Assert.Empty(MarkupFunde(dateienHeute2));
+
+        // Und die Ausweichform "leerer TitelText" haelt ebenso.
+        const string wirtLeererTitelText =
+            "@if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)\n" +
+            "{\n" +
+            "    <Ueberlagerung Offen=\"true\" Titel=\"@VerwaltungTitel\" Geschlossen=\"Ebene1Schliessen\">\n" +
+            "        <KindInhalt>\n" +
+            "            <EPOS.UI.Dialoge.Simulation.PufferSpProjektDialog TitelText=\"\"\n" +
+            "                                                              Geschlossen=\"VerwaltungFertig\" />\n" +
+            "        </KindInhalt>\n" +
+            "    </Ueberlagerung>\n" +
+            "}\n";
+        var dateienLeererTitelText = new Dictionary<string, string>
+        {
+            ["SimulationKonfigSeite.razor"] = wirtLeererTitelText,
+            ["PufferSpProjektDialog.razor"] = kind
+        };
+        Assert.Empty(MarkupFunde(dateienLeererTitelText));
+    }
+
     private static List<MarkupFund> MarkupFunde(IReadOnlyDictionary<string, string> dateien)
     {
         var funde = new List<MarkupFund>();
@@ -172,11 +276,49 @@ public sealed class UeberlagerungstitelTests
                         funde.Add(new MarkupFund(datei.Key, zeile, bezeichner, kind));
                     }
                 }
+
+                // Bauart b (#194): die eingebettete Komponente traegt gar kein
+                // TitelText="@<bezeichner>" - ihr eigener Kopf haengt hier an einem
+                // ZWEITEN Parameter TitelAnzeigen (TitelText bleibt fuer eine zweite
+                // Aufgabe im Rumpf erhalten, z. B. Gruppenkopf/Bildbeschreibung). Jede
+                // Komponente, die diesen Parameter FUEHRT, muss ihn an JEDER
+                // Einbettungsstelle mit Ueberlagerungstitel auf "false" setzen (oder
+                // TitelText selbst leeren) - sonst zeichnet sie ihren Kopf trotzdem, und
+                // der Titel der Ueberlagerung steht ein zweites Mal darunter.
+                foreach (Match kindM in Regex.Matches(block,
+                             @"<(?:[A-Za-z0-9_.]*\.)?([A-Z][A-Za-z0-9]*)\b"))
+                {
+                    string kind = kindM.Groups[1].Value;
+
+                    if (!dateien.TryGetValue(kind + ".razor", out string? kindDatei))
+                        continue;                       // Kind nicht Teil dieses Laufs/Baums
+                    if (!FuehrtTitelAnzeigenParameter(kindDatei))
+                        continue;                       // keine Bauart-b-Komponente
+
+                    int kindTagEnde = FindeTagEnde(block, kindM.Index);
+                    if (kindTagEnde < 0) continue;
+                    string kindTag = block.Substring(kindM.Index, kindTagEnde - kindM.Index + 1);
+
+                    bool titelAbgeschaltet =
+                        Regex.IsMatch(kindTag, "TitelAnzeigen=\"@?false\"") ||
+                        Regex.IsMatch(kindTag, "TitelText=\"\"");
+                    if (titelAbgeschaltet) continue;
+
+                    int zeile = 1 + CountNewlines(s, m.Index);
+                    funde.Add(new MarkupFund(datei.Key, zeile, bezeichner, kind));
+                }
             }
         }
 
         return funde;
     }
+
+    /// <summary>
+    /// Fuehrt die Komponente einen eigenen <c>[Parameter] public bool TitelAnzeigen</c>
+    /// (Bauart b der Hausregel, statt eines leerbaren <c>TitelText</c>)?
+    /// </summary>
+    private static bool FuehrtTitelAnzeigenParameter(string kindText)
+        => Regex.IsMatch(kindText, @"\[Parameter\]\s*public\s+bool\s+TitelAnzeigen\b");
 
     /// <summary>
     /// Zeichnet <paramref name="kindText"/> seinen eigenen

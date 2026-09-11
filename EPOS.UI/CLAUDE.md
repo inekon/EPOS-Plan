@@ -148,11 +148,15 @@ entgegen — sie ist damit austauschbar.
   nicht leer werden darf: `KlimazonenkarteDialog` speist daraus zugleich
   `Bildkarte.Bildbeschreibung`, `PufferSpProjektDialog` zugleich die Überschrift seines
   `Gruppenkopf`-Bestandsblocks — beide bekommen `TitelAnzeigen="false"` NUR an der
-  Einbettungsstelle (`QuelleErdreichDialog`, `QuellePufferspeicherDialog`, `WaermesenkeDialog`),
-  `TitelText` bleibt unverändert. **Wache:** `EPOS.UI.Tests/UeberlagerungstitelTests` — Bauart A
-  rein am Markup (derselbe Bezeichner in `Titel=` und `TitelText=`), Bauart B an einer
-  `Huelle.cs`-Methode, die `TitelText` auf denselben Schlüssel wie ihr eigenes `…Titel`-Feld
-  setzt; beide mit Gegenprobe, Ausnahmeliste leer.
+  Einbettungsstelle (`QuelleErdreichDialog`, `QuellePufferspeicherDialog`, `WaermesenkeDialog`,
+  seit Auftrag **#194** auch die DRITTE Rolle von `PufferSpProjektDialog` direkt in
+  `Seiten/Simulation/SimulationKonfigSeite.razor`), `TitelText` bleibt unverändert. **Wache:**
+  `EPOS.UI.Tests/UeberlagerungstitelTests` — Bauart A rein am Markup (derselbe Bezeichner in
+  `Titel=` und `TitelText=`; seit #194 prüft sie an jeder Einbettung mit Überlagerungstitel
+  ZUSÄTZLICH den Wert von `TitelAnzeigen` selbst, wenn die eingebettete Komponente diesen
+  Parameter führt — unabhängig davon, ob überhaupt ein `TitelText=` in der Einbettung steht),
+  Bauart B an einer `Huelle.cs`-Methode, die `TitelText` auf denselben Schlüssel wie ihr eigenes
+  `…Titel`-Feld setzt; alle mit Gegenprobe, Ausnahmeliste leer.
 - **Ein dauerhaftes Banner nur für einen Zustand, den der Anwender beheben MUSS und
   sonst nicht sieht.** Anwenderwunsch **W16b‑E‑6** vom 05.09.2026: Über der Startseite
   stand, solange kein Projekt offen war, ein `Warnbanner` mit den zwei Sätzen der
