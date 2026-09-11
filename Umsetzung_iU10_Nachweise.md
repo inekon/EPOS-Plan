@@ -543,6 +543,29 @@ dann vom Anwender mit der Regel „nur wenn unbedingt nötig" gestoppt: Die Kern
 Testdatenbank samt SQL-Dialektprüfer, ein Simulatorlauf fügt dem nichts hinzu. Der nächste Nachweislauf ist der 41ste,
 und er braucht einen Grund aus der Regel oben.
 
+**Einundvierzigster Lauf 34586803270 (`ios.yml`, `macos-26`, 11.09.2026, 09:57–10:07 UTC, 10 min)** auf
+`8b08479` — der erste Lauf auf dem Arbeitszweig `ios_migration_september` und der erste mit dem
+**Mehrspeicherkonzept** (Stromspeicher-Sync `4c3b521` vom zweiten Rechner, integriert mit #170 bis #173 und #170c):
+Die Flotten-Engine (`SpeicherEngine/Flotten*.cs` — fünf Betriebsziele, drei Verteilungsregeln, Rainflow-Alterung),
+die Kern-Controller `SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl` und `SpeicherAuslegungCtrl` und die
+Razor-Bausteine `SpeicherFlotten*` übersetzen damit erstmals für iOS. Der OR-Tools-Planer bleibt in `SpeicherPlanung`
+und ist von der Hülle aus nicht referenziert — `FlottenPlanerLage` (#170c, SP‑O‑3) meldet „kein Planer", und der
+Betriebseditor sperrt die drei planenden Ziele PvPlanung, Arbitrage und MultiUse; der Gerätebeleg dafür auf dem iPad
+ist noch offen. Der Stromspeicherzweig hängt sich seit #171 aus `Do_Simulation` ein
+(`StromspeicherzweigEinhaengen()`), ein `ModuleInitializer` kommt im Kern nicht mehr vor. Dazu #62b (Projektassistent
+als freie Ansicht der `AppWurzel`, Rückfrage Speichern/Verwerfen/Bleiben nach 62b‑E‑1) und #168 (`EposBunitContext`,
+nur Testcode). Erster Lauf mit der Seed-Datenbank auf **Schemastand 73** — Schritt 73 legt `Tab_SpeicherAuslegung`
+an, ohne STRICT: 119 Tabellen, 117 davon STRICT wie vor dem Schritt. Workload 26 s, Bau 1 min 48 s (0 Fehler, vier
+Warnungen aus dem Bestand: CS0108 ×2, CS0109 ×2), Simulatorstart 2 min 22 s, Erststart mit Seed-Kopie (66 MB),
+Startmarken `SQLite 3.53.3` · `STRICT=117` (Erwartung aus der Seed-Datenbank: 117) · `Projekte=24` grün, Prüfmodus
+1030 (22 CSV, 160 Skalare), **iZ6-Vergleich gegen `2026-09-07_R6_PvKoeffizienten` PASS (236 680 Werte)** und
+**BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64) — keines der zwölf Referenzprojekte führt eine Speicherflotte,
+die Flotten-Engine ist dort ohne Rechenwirkung; den ersten Referenznachweis MIT Speicherflotte bringt das Projekt
+1046 der Basis R7 (SP‑O‑8, #174). Artefakte `ios-simulator` (26 Dateien) und `ios-app` (321 Dateien, 87 MB). Die
+`kern.yml`-Läufe 301 bis 305 auf ubuntu (`d0b8d72`, `ca869eb`, `462a91f`, `84f81d4`, `8b08479`) sind grün. Ausgelöst
+per `workflow_dispatch` auf Anwenderwunsch („SP‑O‑3: iOS lauf", 11.09.2026) — der zweite Grund der Regel vom
+09.09.2026, und der erste Nachweislauf nach dem abgebrochenen Lauf 40.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
