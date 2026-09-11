@@ -904,7 +904,7 @@ namespace EPOS.Kern.Tests
 
             // Das EINE Pflichtfeld ist die AC-Nennleistung - wie bei der
             // Photovoltaik allein die Nennleistung.
-            Assert.Single(wr.Felder.Where(f => !f.LeerErlaubt));
+            Assert.Single(wr.Felder, f => !f.LeerErlaubt);
             Assert.Equal(ModulKatalogProfil.FeldPAcNenn,
                          wr.Felder.Single(f => !f.LeerErlaubt).Schluessel);
 

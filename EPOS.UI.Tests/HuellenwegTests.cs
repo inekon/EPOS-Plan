@@ -118,8 +118,8 @@ public sealed class HuellenwegTests
             "private Task<bool> EinstellungenAsync()\n" +
             "    => Blazornachlauf.Nachgelagert(() => KiEinstellungenHuelle.Oeffnen(_fenster));";
 
-        Assert.True(ModalRegex.IsMatch(schlecht));
-        Assert.False(ModalRegex.IsMatch(gut));
+        Assert.Matches(ModalRegex, schlecht);
+        Assert.DoesNotMatch(ModalRegex, gut);
     }
 
     // =====================================================================

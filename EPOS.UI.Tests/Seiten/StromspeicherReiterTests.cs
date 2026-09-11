@@ -396,8 +396,8 @@ public class StromspeicherReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Daten());
 
-        Assert.Single(seite.FindAll("label.epos-schalter")
-                           .Where(l => l.TextContent.Trim() == "sortiert"));
+        Assert.Single(seite.FindAll("label.epos-schalter"),
+                      l => l.TextContent.Trim() == "sortiert");
 
         _auftraege.Clear();
         Bildschalter(seite)[0].Change(true);
