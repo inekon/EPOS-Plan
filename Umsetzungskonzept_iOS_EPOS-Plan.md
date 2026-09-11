@@ -3716,6 +3716,24 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > bei gleicher Anzahl in derselben Listeninstanz (tut heute kein Wirt).
 > Gate sept26 auf `5b54010`: Kern 2 655, UI 3 743, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#219 (11.09.2026, `76d2586`, Merge `2e02c95`) — Hilfe-Assistent: Eingabe ohne Tastatur (KI‑D‑B‑1) und toter Verweis „Online-Dokumentation"
+> (KI‑D‑B‑2); Anwenderbefunde mit Bildschirmfoto.** KI‑D‑B‑1: Der Pillenweg aus einer Ansicht (`InfoKnopf` → `KiAssistentWeg` → `OeffneMaske`)
+> öffnete die nicht-modale `KiChatHuelle` mit ihrer zweiten WebView2 SYNCHRON im WebMessage-Rückruf der ersten WebView2
+> (`WinFormsNavigation.cs:195`, ohne `Blazorsprung`; die Lage von W16b‑B‑1/W13‑B‑1/W15b‑B‑1), und hinter `Show(besitzer)` stand keine
+> Fokusübergabe — der Menüweg lief seit W16b verzögert, aber ebenso ohne Fokus. Die Sperrhypothese (`Gesperrt`) ist mit bunit widerlegt.
+> Fix: Fall `KiAssistent` über `Blazorsprung.Verzoegert`; `BlazorDialogForm.TastaturUebergeben()`/`Fokussieren()` nach `Show` und beim
+> Nach-vorn-Holen; `KiEingabezeile` mit `autofocus` und `FocusAsync` nach dem ersten Zeichnen. KI‑D‑B‑2: `KiChatHuelle.Gaben.cs:460` rief
+> `Dienste.Datei.MitSystemOeffnen` für eine https-Adresse, `WindowsDateiDienst.cs:107` prüft `File.Exists` und gab still `false` — jeder
+> Verweis des Chats (Fußleiste, Wikitreffer, Modellantworten) und der Rückfall des i-Knopfs (`WindowsHilfeDienst.cs:82`) waren tot; Fix
+> `Dienste.Datei.AdresseOeffnen` („eine Adresse ist keine Datei", seit iU9‑W16c.3 im Vertrag). Alle 16 Bedienelemente des Dialogs geprüft
+> (Tabelle im Bericht; die übrigen grün, „Verlauf kopieren" geht über die Hülle, nicht über `navigator.clipboard`). 19 bunit-Fälle
+> `KiChatBedienungTests`, 10 Quelltextwachen `KiChatOeffnerTests` (je mit Gegenprobe), `WindowsFormsApplication1/CLAUDE.md` (Blazorsprung
+> dritter Verteiler, Tastaturübergabe, Adresse ≠ Datei), KI-Konzept Kapitel 8. **Offen (nur am Gerät):** Tastatur auf beiden Öffnungswegen
+> und beim zweiten Öffnen; Browserstart des Verweises; falls der Fokus ausbleibt, `CoreWebView2Controller.MoveFocus` als nächster Schritt;
+> `Blazorsprung._angefordert` ist prozessweit ein Riegel; iOS erbt `autofocus` ungeprüft (kein iOS-Lauf, Regel).
+> Gate sept27 auf `2e02c95`: Kern 2 655, UI 3 772, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
