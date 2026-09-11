@@ -7,6 +7,29 @@ namespace SpeicherEngine;
 /// <summary>Zusammenhaengende Rainflow-Auswertung; sie behauptet keine kalendarische Alterung.</summary>
 public static class FlottenRainflow
 {
+    /// <summary>
+    /// Zerlegt einen zusammenhaengenden SoC-Verlauf in Voll- und Halbzyklen und
+    /// summiert daraus den Miner-Schaden (Spezifikation 8.2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Verarbeitet wird die AELTERE Schwingweite, sobald die neuere mindestens ebenso
+    /// gross ist; offene Randzyklen zaehlen mit 0,5. Der Schaden lautet
+    /// <c>D = Summe Anzahl_k / ZyklenBisEol(DoD_k)</c>, wobei zwischen den
+    /// Stuetzstellen LOGARITHMISCH interpoliert wird.
+    /// </para>
+    /// <para>
+    /// Ausserhalb der gelieferten Stuetzstellen wird NICHT extrapoliert, sondern
+    /// abgebrochen. Eine leere Kurve liefert die gezaehlten Zyklen ohne Schaden. Eine
+    /// kalendarische Alterung behauptet die Auswertung ausdruecklich nicht.
+    /// </para>
+    /// </remarks>
+    /// <param name="socVerlauf">Der SoC-Verlauf [-] einer Einheit, Werte von 0 bis 1, in zeitlicher Reihenfolge.</param>
+    /// <param name="lebensdauerkurve">Die Stuetzstellen (Entladetiefe, Zyklen bis EOL); leer = nur zaehlen.</param>
+    /// <returns>Die gezaehlten Zyklen und der Miner-Schaden [-].</returns>
+    /// <exception cref="ArgumentNullException">Einer der beiden Eingaenge ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Der SoC-Verlauf oder die Lebensdauerkurve enthaelt ungueltige Werte.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Eine Zyklustiefe liegt ausserhalb der gelieferten Lebensdauerkurve.</exception>
     public static FlottenRainflowErgebnis Auswerten(
         IReadOnlyList<double> socVerlauf,
         IReadOnlyList<FlottenRainflowPunkt> lebensdauerkurve)

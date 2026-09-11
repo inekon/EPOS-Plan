@@ -343,7 +343,7 @@
                 ? $"{a.FlottenProjektjahre?.Count ?? 0} einzelne Projektjahre"
                 : $"Jahresdaten-CSV {a.FlottenJahresdatenDatei}";
             string kosten = $"Investition {Kostenquelle(a.Investitionsquelle)}, Betrieb {Kostenquelle(a.Betriebsquelle)}";
-            string herkunft = a.VerwendeteKosten?.Herkunft;
+            string? herkunft = a.VerwendeteKosten?.Herkunft;
             if (string.IsNullOrWhiteSpace(herkunft)) herkunft = a.DirekteKosten?.Herkunft;
             if (!string.IsNullOrWhiteSpace(herkunft)) kosten += $" ({herkunft})";
             return $"Last {last}; PV {pv}; Bezugspreis {preis}; Kosten {kosten}; {prognose}; {jahre}; Revision {a.Revision}.";

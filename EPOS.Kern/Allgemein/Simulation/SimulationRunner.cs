@@ -27,12 +27,14 @@ namespace WindowsFormsApplication1
         /// Kante K8) — dieselbe Begründung wie bei
         /// <see cref="SimulationControl.Speicherlauf"/>: Die Abbildung liegt in
         /// <c>StromspeicherSimCtrl</c>, einer Klasse mit weitem Umfeld, die der
-        /// Rechenkern nicht kennen soll. Gesetzt wird der Haken vom Hauptprogramm über
-        /// den ModuleInitializer in <c>SimulationControl.Stromspeicher.cs</c>.
+        /// Rechenkern nicht kennen soll. Gesetzt wird der Haken von
+        /// <c>SimulationControl.StromspeicherzweigEinhaengen</c> in
+        /// <c>SimulationControl.Stromspeicher.cs</c> — ausdrücklich, beim Einstieg in
+        /// <c>Do_Simulation</c>.
         ///
         /// <para>Bleibt er leer, entfällt die Detailzeile — was ein Lauf ohne Speicher
         /// ohnehin tut. Kopf und Detail können dabei nicht widersprechen: Ohne den Haken
-        /// gibt es auch kein <c>Speicherergebnis</c>, weil derselbe Initialisierer beide
+        /// gibt es auch kein <c>Speicherergebnis</c>, weil dieselbe Belegung beide
         /// Haken setzt.</para>
         /// </summary>
         public static Func<SpeicherEngine.SpeicherErgebnis, StromspeicherLaufKontext,

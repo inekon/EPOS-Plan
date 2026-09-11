@@ -7,6 +7,31 @@ namespace SpeicherEngine;
 /// <summary>Kapitalwert aus expliziten vollstaendigen Jahreskonten.</summary>
 public static class FlottenWirtschaftlichkeit
 {
+    /// <summary>
+    /// Bildet aus EINER gerechneten Studie das Jahreskonto eines Projektjahres
+    /// (Spezifikation 9.3).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <c>CF = Rechnung_Referenz - Rechnung_Variante - OPEX - Durchsatzkosten
+    /// - Ersatzkosten + bewertete Endenergieaenderung</c>. Der Cashflow darf negativ
+    /// sein und wird nicht auf 0 gekappt.
+    /// </para>
+    /// <para>
+    /// Die Endenergieaenderung MUSS bewertet werden: Weicht die Endenergie von der
+    /// Anfangsenergie ab und fehlt der Ausgleichswert, bricht die Bildung ab — sonst
+    /// waere Anfangsenergie ein kostenloser Ertrag (Spezifikation 9.2).
+    /// </para>
+    /// </remarks>
+    /// <param name="jahr">Die Jahresnummer ab 1; sie entscheidet zugleich ueber die Faelligkeit der Ersatzbeschaffung.</param>
+    /// <param name="studie">Die Gegenueberstellung von Referenz und Variante dieses Jahres.</param>
+    /// <param name="einheiten">Die Einheiten, aus denen Betriebs-, Durchsatz- und Ersatzkosten stammen.</param>
+    /// <param name="energieAusgleichEuroProKWh">Bewertung der Endenergieaenderung [EUR/kWh]; <c>null</c> nur bei unveraenderter Endenergie zulaessig.</param>
+    /// <param name="istVollstaendigesJahr">Das Konto deckt ein vollstaendiges Jahr ab; ein Teiljahr wird spaeter nicht diskontiert.</param>
+    /// <param name="projektionskennzeichnung">Klartext zur Herkunft des Kontos.</param>
+    /// <returns>Das vollstaendige Jahreskonto mit beiden Rechnungen und dem Netto-Cashflow.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="studie"/> oder <paramref name="einheiten"/> ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Die Endenergie hat sich geaendert, ohne dass ein Ausgleichswert vorliegt.</exception>
     public static FlottenJahreskonto ErzeugeJahreskonto(
         int jahr,
         FlottenStudienErgebnis studie,
@@ -46,6 +71,29 @@ public static class FlottenWirtschaftlichkeit
         };
     }
 
+    /// <summary>
+    /// Berechnet den Kapitalwert aus expliziten, lueckenlosen Jahreskonten:
+    /// <c>NPV = -CAPEX + Summe CF(a)/(1+r)^a + Restwert/(1+r)^n</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// CAPEX umfasst je Einheit den Festbetrag, den kapazitaetsbezogenen Anteil und den
+    /// leistungsbezogenen Anteil auf die GROESSERE der beiden Richtungsleistungen. Die
+    /// diskontierte Amortisation ist das erste Jahr, in dem der kumulierte
+    /// DISKONTIERTE Zahlungsstrom nicht mehr negativ ist.
+    /// </para>
+    /// <para>
+    /// Teiljahre werden abgewiesen; ein einzelnes Referenzjahr wird nur bei
+    /// <see cref="FlottenWirtschaftlichkeitEingang.ReferenzjahrExplizitWiederholen"/>
+    /// ueber die Laufzeit vervielfacht und im Ergebnis als vereinfachte Projektion
+    /// gekennzeichnet. Ersatzkosten werden dabei je Jahr neu auf Faelligkeit geprueft.
+    /// </para>
+    /// </remarks>
+    /// <param name="input">Einheiten, Jahreskonten, Zins, Restwert und die Projektionsvorgabe; der Eingang wird vor der Rechnung kopiert.</param>
+    /// <returns>Investition, Kapitalwert, Amortisationsjahr, die Zahlungsreihe und die bewerteten Jahreskonten.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="input"/> ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Der Kalkulationszins ist nicht endlich oder nicht groesser als -100 Prozent.</exception>
+    /// <exception cref="ArgumentException">Jahreskonten fehlen, enthalten ein Teiljahr, beginnen nicht lueckenlos bei Jahr 1, oder die Projektionsvorgabe passt nicht zur Kontenzahl.</exception>
     public static FlottenWirtschaftlichkeitErgebnis Bewerte(FlottenWirtschaftlichkeitEingang input)
     {
         if (input is null) throw new ArgumentNullException(nameof(input));

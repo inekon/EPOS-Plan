@@ -587,7 +587,9 @@ sich beim Erststart nachladen lassen (E3). E4 (Volldownload beim Erststart) nur 
 
 - [ ] **AOT statt JIT.** Der Simulator führt JIT aus, das Gerät nicht. Zu prüfen sind die
       Stellen, die Reflection oder Startzeitmagie benutzen: der `[ModuleInitializer]` in
-      `SimulationControl.Stromspeicher.cs`, `ApplicationSettingsBase` in `Properties/Settings`,
+      `SimulationControl.Stromspeicher.cs` ist mit #171 gefallen — der Speicherzweig hängt
+      seither ausdrücklich an `Do_Simulation` —, offen bleiben
+      `ApplicationSettingsBase` in `Properties/Settings`,
       die 102 Dateien mit `DataTable`, BouncyCastle und die Ressourcensatelliten (iR-e).
       `MtouchLink=SdkOnly` belassen — der Kern darf nicht getrimmt werden.
 - [ ] **Signierkette und `.ipa`** (iU13, § 3.4).

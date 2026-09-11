@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace WindowsFormsApplication1
 {
@@ -10,18 +9,56 @@ namespace WindowsFormsApplication1
     /// <para>Die Methode steht hier <b>unverändert</b> — samt ihrer Begründung. Neu ist
     /// nur, dass der Kernteil sie über den Haken
     /// <see cref="SimulationControl.Speicherlauf"/> erreicht statt direkt, und dass
-    /// dieser Haken beim Laden der Assembly gesetzt wird
-    /// (<see cref="HakenSetzen"/>). Ohne diese Datei — im Rechenkern — bleibt der Haken
+    /// dieser Haken beim Start eines Laufs AUSDRÜCKLICH gesetzt wird
+    /// (<see cref="StromspeicherzweigEinhaengen"/>, gerufen als erste Anweisung von
+    /// <see cref="Do_Simulation"/>). Ohne diese Datei — im Rechenkern — bleibt der Haken
     /// leer, und die Kette rechnet ohne Speicherwirkung; genau der Fehlerfall, den die
     /// Methode ohnehin kennt.</para>
+    ///
+    /// <para><b>Warum kein <c>ModuleInitializer</c> mehr.</b> Bis zum
+    /// Stromspeicher-Sync hing <see cref="HakenSetzen"/> an einem
+    /// <c>[ModuleInitializer]</c> und lief beim Laden der Assembly. In einer
+    /// BIBLIOTHEK ist das die Bauart, vor der CA2255 warnt: Der Zeitpunkt gehört dem
+    /// Laufzeitsystem, nicht dem Programm, und unter AOT — dem iOS-Ziel — ist er weder
+    /// vorhersagbar noch beweisbar. Stattdessen hängt der Zweig jetzt an EINER
+    /// ausdrücklichen Stelle im Kern, die Windows, die Linux-Tests und iOS gleichermaßen
+    /// durchlaufen: dem Einstieg des Projektlaufs. Die Belegung ist dieselbe, sie ist
+    /// nur nicht mehr unsichtbar.</para>
     /// </summary>
     partial class SimulationControl
     {
+        /// <summary>Schloss um die einmalige Belegung der drei Haken.</summary>
+        private static readonly object m_StromspeicherzweigSchloss = new object();
+
+        /// <summary>Die drei Haken sind belegt.</summary>
+        private static bool m_StromspeicherzweigEingehaengt;
+
         /// <summary>
-        /// Hängt den Speicherzweig ein, sobald die Assembly geladen ist — vor jedem
-        /// Aufruf und ohne Zutun eines Aufrufers.
+        /// Hängt den Speicherzweig ein — ausdrücklich, einmalig und fadensicher.
+        ///
+        /// <para>Gerufen wird sie als erste Anweisung von <see cref="Do_Simulation"/>,
+        /// also auf JEDER Plattform auf demselben Weg. Ein zweiter Aufruf tut nichts;
+        /// ein Aufrufer, der den Speicherzweig ausserhalb eines Laufs braucht, darf sie
+        /// gefahrlos selbst rufen.</para>
         /// </summary>
-        [ModuleInitializer]
+        internal static void StromspeicherzweigEinhaengen()
+        {
+            // Bewusst OHNE vorgelagerte Prüfung ausserhalb des Schlosses: Der Aufruf
+            // steht einmal je Projektlauf, ein Schloss kostet dort nichts, und die
+            // doppelt geprüfte Sperre bräuchte eine Speicherbarriere, um auf jeder
+            // Architektur zu tragen.
+            lock (m_StromspeicherzweigSchloss)
+            {
+                if (m_StromspeicherzweigEingehaengt) return;
+                HakenSetzen();
+                m_StromspeicherzweigEingehaengt = true;
+            }
+        }
+
+        /// <summary>
+        /// Belegt die drei Haken des Speicherzweigs. Aufgerufen wird sie ausschließlich
+        /// über <see cref="StromspeicherzweigEinhaengen"/>.
+        /// </summary>
         internal static void HakenSetzen()
         {
             Speicherlauf = (sim, idProjekt, abbruch) =>

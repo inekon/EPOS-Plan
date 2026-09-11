@@ -9,6 +9,35 @@ namespace SpeicherEngine;
 public static class FlottenOptimierer
 {
     private const string NullId = "Nullvariante-ohne-Zusatzspeicher";
+    /// <summary>
+    /// Prueft das VOLLSTAENDIGE endliche Raster aus Hardwarevarianten und Betriebszielen
+    /// und nennt die beste zulaessige Variante (Spezifikation 12.2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Das kartesische Raster wird nie gekuerzt: Uebersteigt es
+    /// <see cref="FlottenAuslegungEingang.MaximaleKandidaten"/>, wird es abgewiesen.
+    /// Jeder Kandidat wird ueber alle gelieferten Projektjahre gerechnet — der End-SoC
+    /// jeder Einheit wird zum Start-SoC des Folgejahres —, sonst ueber das eine
+    /// vollstaendige Jahr der Istreihe.
+    /// </para>
+    /// <para>
+    /// Rangfolge: technisch ZULAESSIGE Varianten nach hoechstem Kapitalwert, daneben die
+    /// zulaessige Nullvariante mit Kapitalwert 0. Ist die Referenz wegen einer harten
+    /// Netzgrenze unzulaessig, kann eine technisch noetige Variante trotz negativem
+    /// Kapitalwert gewinnen. Sind alle Rechnungen fachlich ungueltig, entsteht ein
+    /// Konfigurationsfehler statt einer falschen Null-Empfehlung. Die vollstaendige
+    /// Zeitreihe haelt nur der beste Kandidat beziehungsweise die Nullvariante.
+    /// </para>
+    /// </remarks>
+    /// <param name="input">Istwerte, Prognosen, Projektjahre und Verfuegbarkeiten des Standorts.</param>
+    /// <param name="config">Ausgangsflotte, Betriebsoptionen, Tarif, Kapitalwerteingaben und Suchraum.</param>
+    /// <param name="planer">Der Planer fuer die planenden Ziele; fuer die reaktiven Ziele <c>null</c>.</param>
+    /// <param name="progress">Empfaenger der Fortschrittsmeldungen je Kandidat; <c>null</c> = keine.</param>
+    /// <param name="cancellationToken">Abbruchmarke; sie wirkt im Kandidaten-, Jahres-, Intervall- und Solverlauf.</param>
+    /// <returns>Die Zusammenfassungen aller Kandidaten und — sofern vorhanden — bester Kandidat, Konfiguration, Studie und Zeitreihe.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="input"/> oder <paramref name="config"/> ist <c>null</c>.</exception>
+    /// <exception cref="ArgumentException">Das Raster ueberschreitet die Kandidatengrenze, ein Projektjahr ist unvollstaendig, oder keine Variante liess sich fachlich bewerten.</exception>
     public static FlottenAuslegungErgebnis Rechne(
         FlottenEingang input,
         FlottenStudieKonfiguration config,

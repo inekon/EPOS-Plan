@@ -359,6 +359,11 @@ namespace WindowsFormsApplication1
                                   IProgress<LaufFortschritt> fortschritt = null,
                                   CancellationToken abbruch = default)
         {
+            // iU3 KANTE K8: der Stromspeicherzweig wird hier AUSDRÜCKLICH eingehängt.
+            // Es ist die eine Stelle, die Windows, die Linux-Tests und iOS auf
+            // demselben Weg durchlaufen; der Aufruf ist einmalig und fadensicher.
+            StromspeicherzweigEinhaengen();
+
             using (DataRepository.EngineModus())
             {
                 Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
@@ -4332,10 +4337,10 @@ namespace WindowsFormsApplication1
         /// über <c>StromspeicherSimCtrl</c> — eine Klasse, die Preisreihen, Varianten
         /// und Auslegungsoptimierung mitbringt und darüber weit in die Oberfläche reicht.
         /// Der Rechenkern soll sie nicht kennen. Er kennt deshalb nur diese Signatur;
-        /// GESETZT wird sie vom Hauptprogramm über einen
-        /// <see cref="System.Runtime.CompilerServices.ModuleInitializerAttribute"/> in
-        /// <c>SimulationControl.Stromspeicher.cs</c> — also ohne dass irgendein Aufrufer
-        /// daran denken müsste.</para>
+        /// GESETZT wird sie von <c>StromspeicherzweigEinhaengen</c> in
+        /// <c>SimulationControl.Stromspeicher.cs</c>, gerufen als erste Anweisung von
+        /// <see cref="Do_Simulation"/> — ausdrücklich, einmalig und auf Windows, in den
+        /// Linux-Tests und auf iOS auf demselben Weg.</para>
         ///
         /// <para><b>Ist der Haken nicht gesetzt</b> (Kern ohne die Partial-Datei), fällt
         /// der Lauf in genau den Fehlerfall, den die Methode dort ohnehin dokumentiert:
