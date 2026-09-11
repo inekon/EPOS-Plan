@@ -834,4 +834,7 @@ per `action=raw` zählt 13 Anker (zehn alte, drei neue). **Dazu `Hilfe-Assistent
 ein Upload für beide Aufträge, Quelle und Live-Stand gleich. **Dazu `Simulation` Revision 549** (11.09.2026, Merge `d84af29`,
 Gate sept30) mit den #222-Punkten (Anwenderentscheid SIM‑E‑3: die Übersicht als Dashboard „Wärme | Strom" mit Kennzahlenzeile, Ring
 mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „Ergebnis" fällt); die Nachprobe per `action=raw` liefert
-12 306 Zeichen und die drei Dashboard-Sätze.
+12 306 Zeichen und die drei Dashboard-Sätze. **Dazu `Hilfe-Assistent` Revision 550** (11.09.2026, Merge `c311384`, Gate sept31) mit den
+#221-Absätzen (Anwenderentscheid KI‑D‑E‑1: eine Marke je Bildschirm, die im Kopfband der Ansicht folgt und blau ausgefüllt bleibt, solange das
+Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher"; was der Assistent in der Simulation liest und setzt);
+die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.

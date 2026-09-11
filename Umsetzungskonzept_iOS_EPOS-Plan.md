@@ -3775,6 +3775,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Offen:** Windows-Abnahme; `BildKuchen()` ohne Aufrufer (Aufräumschritt); Sprung aus dem 0‑%-Hinweis nach ① nach #221.
 > Gate sept30 auf `d84af29`: Kern 2 670, UI 3 779, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#221 (11.09.2026, `73078dc`, Merge `c311384`) — EINE Hilfe-Pille je Bildschirm (Anwenderentscheid KI‑D‑E‑1).** `AppWurzel` führt den
+> `Hilfekontext` (Schlüssel, Ansicht, Schritt, Reiter) und reicht einen `Hilfekontextmelder` als festen `CascadingValue` nach unten; jede Ansicht
+> mit eigener Pille meldet in `OnAfterRender` (die Senke vergleicht) und in `Dispose` `null`; nach oben geht `HilfekontextGeaendert`, woran
+> `Hauptfenster` Schlüssel, Name und `Aktiv` seiner EINEN Kopfband-Pille bindet; `KiChatKontext.AufrufGeaendert` meldet das Schließen des
+> Windows-Chatfensters in diese WebView. Der `CascadingValue` `HilfePilleImKopfband` (im Hauptfenster `true`, auf iOS nicht gesetzt) lässt
+> die Ansichten ihre eigene Pille weg. Die Simulationsansicht meldet 18 Felder an der Maskenbrücke an (`KiMaskennamen.SIMULATION`, Wirt
+> `SimulationSeite`): Schritt und Reiter, Kaskade und nicht aufgenommene Erzeuger, fünf Laufparameter lesbar UND setzbar über
+> `SimulationParameterDienste`, neun Ergebniskennzahlen aus `SimulationErgebnisHuelle.LetzterStand` (dieselbe DTO, kein zweiter Ladeweg).
+> Kontextzeile `KI_KONTEXT_STELLE` („{0} · {1}"), Startfragen je Bereich; 41 Ressourcen je Sprache; Konzept KI-Assistent 3.1/6/7/8,
+> `EPOS.UI/CLAUDE.md`, Wiki-Quelle Hilfe-Assistent (Upload durch die Orchestrierung). `HilfePilleTests` läuft in der seriellen Sammlung
+> `KiDialogweg`, weil `Navigationsziel.Aktuell` und `KiChatKontext.Aufruf` prozessweiter Zustand sind. **Offen:** Windows-Abnahme am Gerät
+> (Pille springt mit dem Schritt um, rechtes Feld leuchtet bei offenem Chat, Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher");
+> eine gemeinsame serielle Sammlung für alle AppWurzel-Wirte (Nachzug); `Aktiv` auf iOS nicht sichtbar, weil die Ansicht `KI_ASSISTENT`
+> die Pille der abgelösten Ansicht verdrängt. Merge: die Ressourcendateien beider Aufträge (#222, #221) vereinigt, Designer neu erzeugt.
+> Gate sept31 auf `c311384` ROT: `KiSimulationMaskeTests.Schritt_3_…` erwartete „420,5" und bekam „420.5" — die Maskenbrücke formatiert mit der
+> Prozesskultur, die Klasse pinnte sie nicht (im Worktree des Agenten hing der Fall an der Laufreihenfolge); Fix `91885de` hängt die
+> `Kulturvorrichtung` ein. Gate sept32 auf `91885de`: Kern 2 673, UI 3 812, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
