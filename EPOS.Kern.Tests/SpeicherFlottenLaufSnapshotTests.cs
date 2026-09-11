@@ -6,10 +6,21 @@ using Xunit;
 
 namespace EPOS.Kern.Tests;
 
+/// <summary>
+/// Pinnt die Kultur (Auftrag #230, Befund „Windows-CI rot seit Lauf 262"):
+/// <c>UngueltigerSnapshot_WirftImFlottenzweig_StattAufLegacyZurueckzufallen</c> hält die
+/// deutsche Ausnahmemeldung („Speicherflotte", „externe Lastdatei") fest, die aus dem
+/// Kern über <c>CurrentUICulture</c> kommt — auf dem Windows-Läufer (en-US) sonst
+/// englisch.
+/// </summary>
 [Collection("Testdatenbank")]
-public sealed class SpeicherFlottenLaufSnapshotTests
+public sealed class SpeicherFlottenLaufSnapshotTests : IDisposable
 {
     private const int Projekt = 987654321;
+
+    private readonly Kulturvorrichtung _kultur = new();
+
+    public void Dispose() => _kultur.Dispose();
 
     [Fact]
     public void Snapshot_IstNurAnSeineSimulationControlInstanzGebunden()

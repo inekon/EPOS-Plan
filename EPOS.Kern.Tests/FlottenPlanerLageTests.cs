@@ -12,9 +12,18 @@ namespace EPOS.Kern.Tests;
 /// Ausnahmen in <see cref="SpeicherFlottenProjektCtrl"/> und <c>FlottenSimulator</c>: Ohne
 /// registrierte <see cref="SpeicherFlottenProjektCtrl.PlanerFactory"/> sollen die drei planenden
 /// Betriebsziele in der Oberfläche gar nicht erst begehbar sein.
+///
+/// <para>Pinnt die Kultur (Auftrag #230, Befund „Windows-CI rot seit Lauf 262"): Die
+/// Vorprüfung <see cref="SpeicherFlottenProjektCtrl.Pruefe"/> meldet auf Deutsch
+/// („Fahrplan-Löser"), die Ressourcen folgen <c>CurrentUICulture</c> — auf dem
+/// Windows-Läufer (en-US) sonst englisch.</para>
 /// </summary>
-public sealed class FlottenPlanerLageTests
+public sealed class FlottenPlanerLageTests : IDisposable
 {
+    private readonly Kulturvorrichtung _kultur = new();
+
+    public void Dispose() => _kultur.Dispose();
+
     [Fact]
     public void OhneFabrik_IstKeinPlanerDa_undDerGrundStehtInDenRessourcen()
     {

@@ -762,3 +762,68 @@ git grep -nE 'System\.Windows\.Forms|System\.Drawing|MessageBox\.|\bProgram\.|\b
 
 `\bRegistry\.` mit Wortgrenze — ohne sie trifft das Muster `speicherRegistry.` in
 `SimulationControl.cs` und meldet zwölf falsche Treffer.
+
+**Der Kulturwächter (`EPOS.Kern.Tests/KulturwaechterTests.cs`, Befund #166/#167) prüft nur die
+ZWEI prozessweiten Setzer** (`CultureInfo.DefaultThreadCurrentCulture`/`…UICulture`) — nicht
+`Thread.CurrentThread.CurrentCulture`/`…UICulture` oder `CultureInfo.CurrentCulture`/`…UICulture`,
+die nur den aktuellen Thread betreffen (dieselbe Sechserliste, die `EPOS.UI.Tests` seit #168
+prüft, gilt hier nicht). **Auftrag #230 (11.09.2026) fand daraus einen blinden Fleck: Der
+Windows-Läufer (`.github/workflows/windows.yml`) läuft unter der Systemkultur **en-US**, der
+Linux-Läufer (`kern.yml`) unter der **invarianten** Kultur — beide NICHT `de-DE`, aber nur
+Windows füllt `CultureInfo.CurrentUICulture` mit echten englischen Satellitentexten statt
+der neutralen (deutschen) Ressource. `MyResource/Resource.Designer.cs` liest jeden Text über
+`ResourceManager.GetString(schluessel, resourceCulture)` mit `resourceCulture = Resource.Culture`
+(Standard `null`) — **null fällt auf `CultureInfo.CurrentUICulture` zurück, nicht auf
+`CurrentCulture`**. Eine Testklasse, die `CurrentCulture` pinnt (für Zahlen- und
+Dezimaltrennzeichen: „12,5" vs. „12.5"), aber `CurrentUICulture` unberührt lässt, bekommt auf
+dem Windows-Läufer deshalb ENGLISCHE Ressourcentexte, obwohl der Test einen deutschen Literal
+erwartet — auf Linux unsichtbar, weil die invariante Kultur dort ohnehin die neutrale
+(deutsche) `.resx` liefert. Genau das traf Lauf 262–315: Fünf Klassen —
+`FlottenPlanerLageTests`, `SpeicherFlottenProjektKostenTests` (sieben Fälle),
+`SpeicherFlottenLaufSnapshotTests`, `KiMaskenbrueckeTests` (pinnte nur `CurrentCulture`) und
+`KiDialogaufrufTests` — pinnten die Kultur gar nicht oder nur `CurrentCulture`; zwölf Fälle
+bekamen englische statt deutscher Assert-Ziele. Behoben mit der gemeinsamen
+`EPOS.Kern.Tests/Kulturvorrichtung.cs` (baugleich zu `EPOS.UI.Tests/Kulturvorrichtung.cs`,
+aber ohne deren `EposBunitContext` — der Kern kennt kein `bunit`): Sie pinnt alle VIER Werte
+(`DefaultThreadCurrentCulture`, `…UICulture`, `Thread.CurrentThread.CurrentCulture`,
+`…UICulture`) auf `de-DE` und stellt sie in `Dispose` zurück. **Jede Testklasse mit
+Ressourcentext-Asserts (`Assert.Contains`/`Assert.Equal` gegen ein deutsches Literal, das aus
+dem Rechenkern über `Resource.*` kommt) führt seither diese Vorrichtung.** Eine SCHARFE
+Wächterregel dafür — „jede Klasse, die `Resource.` referenziert oder `Dienste.Sprache` liest,
+muss die Vorrichtung führen" — wurde geprüft und verworfen: Von den fünf betroffenen Klassen
+referenzieren nur zwei (`FlottenPlanerLageTests`, `KiDialogaufrufTests`) `Resource.` überhaupt
+im eigenen Quelltext, keine referenziert `Dienste.Sprache` — die deutschen Texte der übrigen
+drei kommen über Ausnahme- und Hinweismeldungen VON KERN-CONTROLLERN, die die Vorrichtung im
+Testquelltext selbst nicht ankündigen. Die Regel hätte drei von fünf Befunden nicht gefunden
+und wäre reines Heuristik-Rauschen — der Wächter bleibt beim Stand aus #167/#168.
+
+**Der Nachweis unter `LANG=en_US.UTF-8` fand einen 13. Fall UND eine eigene, ältere
+Racebedingung.** `SpeicherAuslegungRechnungTests.Fehlende_gewaehlte_Kostenmodul_Kategorie_ist_ein_Fehler`
+pinnte gar keine Kultur (derselbe Fehler wie oben) und fiel in JEDEM der geprüften Läufe —
+ebenfalls mit der Vorrichtung behoben. Daneben fiel je EIN weiterer, WECHSELNDER Fall auf
+(u. a. `SpeicherOptimierungCtrlTests.Die_Kennzahlen_tragen_die_Zahlen_des_Bestpunkts`,
+`SpeicherParameterPruefungTests.NaN_in_der_Geraetegroesse_wird_abgewiesen`,
+`PeakShavingBildTests.Dasselbe_Ergebnis_liefert_dasselbe_Bild`) — nie ohne `LANG`, aber unter
+`LANG=en_US.UTF-8` nicht in jedem Lauf und nie zweimal derselbe. Ursache ist NICHT die
+fehlende Vorrichtung dieser Klassen (sie pinnen bereits `CurrentCulture`, teils sauber), sondern
+eine SYSTEMISCHE Lücke, die #230 nicht schließt: `CultureInfo.DefaultThreadCurrentUICulture`
+ist prozessweit und wirkt auf JEDEN ab dann NEU gestarteten Thread — auch auf die
+Worker-Threads, die eine PARALLELE Kern-Rechnung (z. B. die Rastersuche hinter
+`SpeicherOptimierungCtrl`) unter der Haube startet. Läuft eine solche Rechnung GLEICHZEITIG mit
+(irgend)einer anderen, unverwandten Testklasse, deren Vorrichtung gerade `de-DE` gesetzt hat
+(xunit fährt verschiedene Sammlungen grundsätzlich nebeneinander), kann ein einzelner
+Worker-Thread die geliehene `de-DE`-Kultur einfangen, während der aufrufende Testthread bei
+`en-US` bleibt — ein Etikettenvergleich zwischen den beiden fällt dann falsch aus. Diese
+Racebedingung ist ÄLTER als #230 (sie hängt an über 50 Dateien, die bereits vor #230
+`CultureInfo.DefaultThreadCurrentCulture`/`…UICulture` prozessweit pinnen) und unabhängig von
+den fünf hier behobenen Klassen; sie vollständig zu schließen bräuchte entweder eine
+Migration weg von `DefaultThreadCurrent(UI)Culture` in Dutzenden Dateien oder das Abschalten
+der xunit-Sammlungsparallelität für `EPOS.Kern.Tests` — beides außerhalb des Auftrags. Von elf
+Läufen unter `LANG=en_US.UTF-8` nach dem Fix dieses Auftrags blieben neun grün (2685/2685);
+zwei zeigten GENAU EINEN der wechselnden Fälle (`SpeicherOptimierungCtrlTests.Die_Bilder_entstehen_deterministisch`
+bzw. `PeakShavingBildTests.Dasselbe_Ergebnis_liefert_dasselbe_Bild`) — nie einen der zwölf plus
+eins hier behobenen. Die Rate liegt damit bei rund einem Fall in fünf Läufen; ein künftiger
+Windows-Lauf kann deshalb vereinzelt einen ANDEREN, hier nicht behobenen Fall zeigen, ohne
+dass das auf einen neuen Kulturfehler in den fünf (plus dem 13.) hier behandelten Klassen
+hindeutet — ein erneuter Lauf (die Race trifft selten zweimal denselben Fall) unterscheidet
+das zuverlässig von einer echten Regression.
