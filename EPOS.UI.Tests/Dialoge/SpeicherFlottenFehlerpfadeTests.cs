@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenFehlerpfadeTests : BunitContext
+public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
 {
     [Fact]
     public void Berechnungsfehler_und_erfolgloses_Ergebnis_zeigen_den_tatsaechlichen_Text()

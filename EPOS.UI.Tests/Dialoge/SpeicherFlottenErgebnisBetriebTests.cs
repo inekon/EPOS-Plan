@@ -6,7 +6,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenErgebnisBetriebTests : BunitContext
+public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
 {
     [Fact]
     public void Ergebnis_erklaert_den_berechneten_Betrieb_und_nicht_erreichten_Peak()

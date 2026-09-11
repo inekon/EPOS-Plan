@@ -2,15 +2,15 @@
 
 ## Aktuelle Mehrspeicher-Dokumentation
 
-Der aktuelle, in EPOS-Plan umgesetzte Mehrspeicherstand ist zuerst in **[Mehrspeicher_EPOS_Plan.docx](Mehrspeicher_EPOS_Plan.docx)** für Anwender und in **[Mehrspeicher_Konzept_und_Umsetzung.md](Mehrspeicher_Konzept_und_Umsetzung.md)** als prüfbare Konzept-zu-Code-Dokumentation beschrieben. Dort stehen Speicherflotte, Betriebsziele, Projektaktivierung, Ergebnisse, MILP, Wirtschaftlichkeit, Tests und bekannte Grenzen gemeinsam.
+Der aktuelle, in EPOS-Plan umgesetzte Mehrspeicherstand ist zuerst in **[Mehrspeicher_EPOS_Plan.docx](Mehrspeicher_EPOS_Plan.docx)** für Anwender und in **[Doku_Mehrspeicher_Konzept_und_Umsetzung.md](../../Doku_Mehrspeicher_Konzept_und_Umsetzung.md)** als prüfbare Konzept-zu-Code-Dokumentation beschrieben. Dort stehen Speicherflotte, Betriebsziele, Projektaktivierung, Ergebnisse, MILP, Wirtschaftlichkeit, Tests und bekannte Grenzen gemeinsam.
 
-Die umfassende fachliche Grundlage bleibt **Speichersimulation_EPOS_Plan.docx**. **Spezifikation.md** enthält denselben Fachinhalt in einer für Entwicklung und Versionsverwaltung geeigneten Form. Kapitel 13 beschreibt die Integration in die tatsächlich eingesehenen Projekte SpeicherEngine, EPOS.Kern und EPOS.UI. Die Kosten-, Auslegungs- und Importfunktionen aus Kapitel 14 sind inzwischen im EPOS-Plan-Quellcode implementiert; der ursprüngliche Vorschlag in Kapitel 13 bleibt als fachlicher Hintergrund erhalten.
+Die umfassende fachliche Grundlage bleibt **Speichersimulation_EPOS_Plan.docx**. **[Spezifikation_Stromspeicher_Optimierung.md](../Spezifikation_Stromspeicher_Optimierung.md)** enthält denselben Fachinhalt in einer für Entwicklung und Versionsverwaltung geeigneten Form. Kapitel 13 beschreibt die Integration in die tatsächlich eingesehenen Projekte SpeicherEngine, EPOS.Kern und EPOS.UI. Die Kosten-, Auslegungs- und Importfunktionen aus Kapitel 14 sind inzwischen im EPOS-Plan-Quellcode implementiert; der ursprüngliche Vorschlag in Kapitel 13 bleibt als fachlicher Hintergrund erhalten.
 
 Der Ordner `code` enthält einen ausführbaren Python-Referenzkern mit drei Download-Adaptern, Mehrspeichermodell, Prognoseoptimierung und Kapitalwertfunktionen. Er ist eine fachliche Referenz für die C#-Umsetzung. Nicht implementierte Erweiterungen wie die laufende SoH-Rückwirkung sind in der Spezifikation ausdrücklich benannt.
 
 ## Erweiterter EPOS Dialog vom 11. September 2026
 
-**Kapitel 14 der Spezifikation** und die eigenständig lesbare Datei **EPOS_Dialog_Kosten_und_Zeitreihen.md** beschreiben Kosten aus dem Kostenmodul oder der Direkteingabe, editierbare Kostenprofile, dauerhaft gespeicherte Suchbereiche in kW oder kWh und C-Raten sowie unabhängige Last-, PV- und Preisquellen mit CSV-Spaltenauswahl. Relevante EPOS-Markdown-Dokumente und aktuelle Anschlussstellen wurden abgeglichen.
+**Kapitel 14 der Spezifikation** und die eigenständig lesbare Datei **[Doku_Speicherauslegung_Kosten_Zeitreihen.md](../../Doku_Speicherauslegung_Kosten_Zeitreihen.md)** beschreiben Kosten aus dem Kostenmodul oder der Direkteingabe, editierbare Kostenprofile, dauerhaft gespeicherte Suchbereiche in kW oder kWh und C-Raten sowie unabhängige Last-, PV- und Preisquellen mit CSV-Spaltenauswahl. Relevante EPOS-Markdown-Dokumente und aktuelle Anschlussstellen wurden abgeglichen.
 
 **Umsetzungsstand 11.09.2026:** Der EPOS-Dialog und seine C#-Anbindung sind implementiert. Die Bedienung und Grenzen stehen in EPOS_Dialog_Kosten_und_Zeitreihen.md. Die bestehende HTML-Auswertung und das Python-Beispiel besitzen diese zusätzlichen Dialogfunktionen noch nicht. Die Bedienung des vorhandenen Beispiels bleibt wie unten beschrieben.
 

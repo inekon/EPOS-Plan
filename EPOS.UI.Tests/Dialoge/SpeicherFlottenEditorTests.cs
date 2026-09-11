@@ -5,7 +5,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenEditorTests : BunitContext
+public sealed class SpeicherFlottenEditorTests : EposBunitContext
 {
     [Fact]
     public void Einheiten_lassen_sich_hinzufuegen_kopieren_und_entfernen()

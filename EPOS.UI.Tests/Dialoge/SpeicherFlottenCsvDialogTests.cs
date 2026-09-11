@@ -7,7 +7,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenCsvDialogTests : BunitContext
+public sealed class SpeicherFlottenCsvDialogTests : EposBunitContext
 {
     [Fact]
     public void Kopfzeile_belegt_Zeit_Werte_und_Prognosemetadaten_vor()

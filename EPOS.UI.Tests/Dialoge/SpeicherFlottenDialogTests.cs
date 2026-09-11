@@ -6,7 +6,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherFlottenDialogTests : BunitContext
+public sealed class SpeicherFlottenDialogTests : EposBunitContext
 {
     [Fact]
     public void Echter_Einstieg_zeigt_Flotteneditor_statt_altem_Einzelspeicherraster()

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
-public sealed class SpeicherAuslegungEditorTests : BunitContext
+public sealed class SpeicherAuslegungEditorTests : EposBunitContext
 {
     public SpeicherAuslegungEditorTests() => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
 
