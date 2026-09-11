@@ -845,3 +845,8 @@ Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts d
 **Dazu `Stromspeicher` Revision 554** (11.09.2026, Merge `e0c9c6a`, Gate sept36) mit dem #226-Absatz zur Größen-Sicht (Rasterkarte und
 Schnitte folgen der Größenkopplung — Kapazität × Leistung, Kapazität × C-Rate, Leistung × C-Rate —, Löcher hellgrau statt in der
 Minimumfarbe); 27 366 → 27 872 Zeichen, Nachprobe zeichengleich bis auf den Zeilenumbruch am Dateiende.
+**Dazu `Stromspeicher` Revision 555 und `Berechnung/Stromspeicher` Revision 556** (11.09.2026, Merge `4d46cb1`, Gate sept41, #224):
+die Bedienungsseite beschreibt die fünf Stationen neu (Station „4 Optimierung" mit Suchraumtabelle, Kandidatenzeile, Feinraster-Schalter
+und Kasten „Bestes Ergebnis", Größen-Sicht dort statt in Schritt 5; 27 871 → 36 499 Zeichen), die Rechenwegseite trägt den Unterabschnitt
+„Phase 2: das Feinraster um das Grob-Optimum" mit den Gleichungen 47–49 und nachgezogenen Folgegleichungen (76 391 → 79 130 Zeichen);
+beide Nachproben zeichengleich bis auf den Zeilenumbruch am Dateiende.
