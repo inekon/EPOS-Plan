@@ -21,10 +21,27 @@ namespace EPOS.UI.Tests.Seiten;
 /// </summary>
 public class SimulationKonfigSeiteTests : BunitContext
 {
+    // Gate sept39 (11.09.2026, Gegenprobe #230b, LANG=en_US.UTF-8):
+    // Die_Netzverluste_stehen_beim_Waermebedarf_und_schreiben_sofort vergleicht
+    // gegen deutsche Ressourcentexte (u. a. "nur") — ohne Pinnung rechnete die
+    // Ressourcenauflösung unter en-US englisch. Hausvorrichtung seit #168,
+    // Rückstellung in Dispose.
+    private readonly Kulturvorrichtung _kultur = new();
+
     public SimulationKonfigSeiteTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _kultur.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 
     // =====================================================================

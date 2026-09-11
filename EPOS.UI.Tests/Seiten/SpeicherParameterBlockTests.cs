@@ -30,16 +30,46 @@ namespace EPOS.UI.Tests.Seiten;
 /// </summary>
 public class SpeicherParameterBlockTests : EposBunitContext
 {
+    /// <summary>
+    /// Gate sept39 (11.09.2026, Gegenprobe #230b, LANG=en_US.UTF-8): Diese Klasse erbt bereits
+    /// <see cref="EposBunitContext"/>, das im KONSTRUKTORRUMPF pinnt — C# wertet die
+    /// FELDINITIALISIERER der abgeleiteten Klasse aber VOR dem gesamten Basiskonstruktor aus
+    /// (empirisch geprüft, entgegen der verbreiteten Annahme „Basis zuerst"). Ein
+    /// Feldinitialisierer, der hier eine Ressource läse, säße also VOR der geerbten Pinnung fest
+    /// (traf <c>_antwort</c> unten: <c>Resource.SP_PARAM_MSG_GESPEICHERT</c> fiel dadurch auf
+    /// Englisch fest, siehe Konstruktor). Dieses EIGENE Feld pinnt zusätzlich VOR jedem weiteren
+    /// Feldinitialisierer dieser Klasse (deklariert als erstes) und stellt in <c>Dispose</c>
+    /// zurück — NACH der geerbten Vorrichtung (<c>base.Dispose</c> zuerst), sonst überschriebe die
+    /// geerbte Rückstellung (die bei ihrer eigenen Konstruktion bereits DIESE Pinnung als „vorher"
+    /// sah) die hier wiederhergestellte echte Ausgangskultur erneut mit de-DE.
+    /// </summary>
+    private readonly Kulturvorrichtung _kultur = new();
 
     /// <summary>Jeder Schreibvorgang: Feldschlüssel und Wert, in der Reihenfolge des Anfalls.</summary>
     private readonly List<(string Feld, string Wert)> _geschrieben = new();
     private int _optimierungen;
-    private Rueckmeldung _antwort = new Rueckmeldung(true, Resource.SP_PARAM_MSG_GESPEICHERT);
+
+    /// <summary>
+    /// Bewusst NICHT als Feldinitialisierer (siehe Doku an <see cref="_kultur"/>): Der
+    /// Konstruktorrumpf läuft nachweislich NACH der gesamten Basiskonstruktion — hier ist
+    /// <c>Resource.SP_PARAM_MSG_GESPEICHERT</c> sicher gepinnt.
+    /// </summary>
+    private Rueckmeldung _antwort;
 
     public SpeicherParameterBlockTests()
     {
+        _antwort = new Rueckmeldung(true, Resource.SP_PARAM_MSG_GESPEICHERT);
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+        {
+            _kultur.Dispose();
+        }
     }
 
     // =====================================================================
