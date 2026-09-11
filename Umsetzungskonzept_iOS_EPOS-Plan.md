@@ -3312,6 +3312,36 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > echten Ressourcenwert; `Resource.Designer.cs` neu erzeugt (Kommentarvorschau, −13 Zeichen). Gate auf `4bf5fce`: Kern 2483,
 > UI 3490, SpeicherEngine 388, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 326, ChartProben 44,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#190 (11.09.2026, `ef374b9`, Merge `7270204`, Anwenderentscheid HK‑E‑1a) — Erzeuger ohne Kaskadenplatz.** Abnahmeliste,
+> Projekt „PV mit Heizkessel": Spitzenkessel 0,00 MWh, Restwärmebedarf 11,55 MWh, Deckung 0 %. Ursache: Ein Wärmeerzeuger rechnet
+> nur mit Platz in `Tab_Einstellungen.Tool_1..4` (`SimulationControl.cs:861–871`), den einzig der Knopf „+ aufnehmen" der
+> Simulationskonfiguration vergibt (`Kaskade.Aufnehmen`, ein Aufrufer); die verfügbaren Karten waren dort ausgeblendet, und
+> niemand warnte. Vier der dreizehn Referenzprojekte tragen dieselbe Lücke (1007 und 1046 Heizkessel, 1008 Heizkessel, 1017
+> Wärmepumpe). **HK‑E‑1a (Anwender, 11.09.2026): melden, nicht automatisch aufnehmen** — ein automatisches Aufnehmen hätte drei
+> CI-Projekte und damit die Basis R7 geändert (R8), und ein Platz ist eine gespeicherte Anwendereinstellung. Jetzt:
+> `SimulationLaufCtrl.ErzeugerOhneKaskadenplatz` (Kennungen `LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ` und `…_STROMPLATZ` für
+> PV/Speicher auf `Tool_5/6`, `Warnbefund.Steuerwert`), Protokollwarnung im Lauf hinter `WarnkriterienMelden` (nicht im
+> Referenzexport), Übersichtszeile „(nicht in der Kaskade)", Konfigurationsseite mit Hinweisleiste „n Erzeuger sind angelegt,
+> aber nicht in der Simulation" und Knopf „einblenden"; verfügbare Karten MIT Anlage beim ersten Blick sichtbar,
+> Katalog-Platzhalter bleiben verborgen (`ErzeugerZeile.HatAnlage`). Sechs Ressourcen de/en; zehn neue Fälle; Referenzlauf
+> 13/13 byte-gleich gegen R7. Gate auf `7270204`: Kern 2507, UI 3512, SpeicherEngine 388, SpeicherPlanung 27 + 1 übersprungen,
+> 5 eindeutige Warnungen, SQL 0 von 1 327, ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#184 (11.09.2026, `2a77bd4`, Merge `12db7da`) — Stromspeicher-Dialoge Paket P2 (SD‑Q6/Q7, Empfehlung).**
+> `SpeicherFlottenErgebnisAnsicht` neu nach Konzept 2.2/2.3: Hinweise als Warnbanner, Zeile „Berechnete Betriebsführung" mit
+> Knopf „Betriebsführung ändern" (der Dialog wechselt auf den Reiter), vier Kennzahlkacheln, Vergleichstabelle „Ohne Speicher ·
+> Mit Flotte · Δ" mit Vorzeichenregel je Kennzahl (`FlottenVergleichszeile.NegativIstBesser`) und einklappbaren Nullzeilen,
+> Jahresprojektion als Bild (`ChartRenderer.Jahresprojektion`, Balken je Jahr, Linie kumuliert, Ersatzjahre markiert) mit
+> aufklappbarer Tabelle, Speicher-Kennzahlen je Einheit, CSV-Export. Diagramme nach Hausregel § 5: über jedem Bild „sortiert",
+> ein Schalter je Reihe (Netz ohne/mit, Peak-Ziel, Speicher gesamt und je Einheit, Ladezustand je Einheit als zweite Achse),
+> Datenzoom, Zeitraum Jahr/Woche/Tag mit Navigator — `SpeicherFlottenAnzeigeCtrl.Bilder(ergebnis, startTag, tage, speicher,
+> reihen, sortiert, netzbereich, socbereich)` reicht `ladezustand`/`sortiert`/`fenster` an den unveränderten Renderer durch,
+> ohne Datenbank; Bildschlüssel-Zwischenspeicher statt Stapel. **349 Ressourcen `FLOTTE_*` de/en** — die fünf Flottenkomponenten
+> und drei Textbündel sind erstmals lokalisiert. ChartProben 44 → 46 (39 Bilder, 7 Gegenproben). 37 neue Fälle; Referenzlauf
+> 1030/1046 byte-gleich. Kein Diagnosebanner (P3), Kandidatentabelle nur lokalisiert (P4). Beim Merge: Ressourcenkonflikte am
+> Dateiende mit #185/#190 durch Vereinigung gelöst, Designer neu erzeugt. Gate auf `12db7da`: Kern 2507, UI 3512, SpeicherEngine 388,
+> SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 327, ChartProben 46, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
