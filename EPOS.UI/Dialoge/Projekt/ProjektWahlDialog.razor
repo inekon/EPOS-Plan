@@ -216,9 +216,24 @@
     [Parameter] public string KeineText { get; set; } = "Auswahl aufheben";
     [Parameter] public string SicherungText { get; set; } = "Sicherungskopie der Datenbank vor dem Löschen anlegen";
     [Parameter] public string AusgewaehltFormat { get; set; } = "{0} ausgewählt";
-    /// <summary>Rueckfrage der Mehrfachloeschung; {0} = Anzahl, danach die Namen (hoechstens zwoelf).</summary>
+    /// <summary>
+    /// Rueckfrage der Mehrfachloeschung; ZWEI Platzhalter wie die Ressource
+    /// <c>PDLG_RUECKFRAGE</c> — <c>{0}</c> = Anzahl, <c>{1}</c> = die Namensliste
+    /// (hoechstens zwoelf Namen, Varianten gekennzeichnet, sonst „… und n weitere").
+    ///
+    /// <para><b>Befund #217 (11.09.2026):</b> Die Vorgabe fuehrte bis dahin nur
+    /// <c>{0}</c>, waehrend die Ressource seit dem WinForms-Vorgaenger (Merge 5)
+    /// ZWEI Platzhalter traegt und <c>{1}</c> selbst die Namensliste einbettet. Der
+    /// Code baute die Liste danach BLIND an — mit einem echten Ressourcentext als
+    /// <c>FrageMehrereFormat</c> (jede Windows-Installation) warf
+    /// <c>string.Format</c> eine <see cref="System.FormatException"/>, weil kein
+    /// zweites Argument gereicht wurde; die bunit-Faelle blieben gruen, weil ihre Vorgabe
+    /// hier denselben Fehler trug wie der Code. Seither: EINE Wahrheit fuer den
+    /// Aufbau — die Namensliste entsteht separat und geht als ZWEITES Argument in
+    /// <c>string.Format(FrageMehrereFormat, anzahl, namensliste)</c>.</para>
+    /// </summary>
     [Parameter] public string FrageMehrereFormat { get; set; } =
-        "{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:";
+        "{0} Projekt(e) werden mit allen zugehörigen Daten unwiderruflich gelöscht:\n\n{1}\nFortfahren?";
     [Parameter] public string VarianteText { get; set; } = "Variante";
     [Parameter] public string WeitereFormat { get; set; } = "… und {0} weitere";
     /// <summary>Der Loeschauftrag - Varianten VOR ihren Staemmen, samt Sicherungswunsch.</summary>
@@ -261,26 +276,32 @@
         }
     }
 
-    /// <summary>Rueckfrage mit Liste (hoechstens zwoelf Namen, Varianten gekennzeichnet).</summary>
+    /// <summary>
+    /// Rueckfrage mit Liste (hoechstens zwoelf Namen, Varianten gekennzeichnet). Die
+    /// Namensliste entsteht ALS EIGENE Zeichenkette und geht dann als ZWEITES
+    /// Argument in <see cref="FrageMehrereFormat"/> — dieselbe Struktur wie die
+    /// Ressource <c>PDLG_RUECKFRAGE</c> (Befund #217).
+    /// </summary>
     private string MehrereFrage
     {
         get
         {
             IReadOnlyList<ProjektKopfZeile> liste = Auswahl;
-            var sb = new System.Text.StringBuilder();
-            sb.Append(string.Format(FrageMehrereFormat ?? "{0}", liste.Count));
+            var namen = new System.Text.StringBuilder();
             int n = 0;
             foreach (ProjektKopfZeile z in liste)
             {
                 if (++n > 12)
                 {
-                    sb.Append('\n').Append(string.Format(WeitereFormat ?? "{0}", liste.Count - 12));
+                    if (namen.Length > 0) namen.Append('\n');
+                    namen.Append(string.Format(WeitereFormat ?? "{0}", liste.Count - 12));
                     break;
                 }
-                sb.Append('\n').Append(z.Name);
-                if (z.StammId > 0) sb.Append(" (").Append(VarianteText).Append(')');
+                if (namen.Length > 0) namen.Append('\n');
+                namen.Append(z.Name);
+                if (z.StammId > 0) namen.Append(" (").Append(VarianteText).Append(')');
             }
-            return sb.ToString();
+            return string.Format(FrageMehrereFormat ?? "{0}\n\n{1}", liste.Count, namen.ToString());
         }
     }
 
