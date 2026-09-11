@@ -241,7 +241,7 @@ nicht global optimal") wird im Bild benannt.
 - Keine Zusammenführung von Einzel- und Flottenpfad (SD‑Q2, später).
 - Keine Monatspeaks/Tarifstaffeln (SP‑O‑5), keine Alterungswirkung (SP‑O‑2/6).
 - Kein iOS-Lauf für diese Welle: Sie trifft Kern, Oberfläche und Tests, nicht die Hülle
-  (Regel vom 09.09.2026); der Gerätebeleg für die gesperrten planenden Ziele (SP‑O‑3) bleibt offen.
+  (Regel vom 09.09.2026); der Gerätebeleg für die gesperrten planenden Ziele (SP‑O‑3) ist am 11.09.2026 auf dem iPad geführt (Anwender).
 
 ---
 

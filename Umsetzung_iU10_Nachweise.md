@@ -551,7 +551,7 @@ die Kern-Controller `SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl` un
 Razor-Bausteine `SpeicherFlotten*` übersetzen damit erstmals für iOS. Der OR-Tools-Planer bleibt in `SpeicherPlanung`
 und ist von der Hülle aus nicht referenziert — `FlottenPlanerLage` (#170c, SP‑O‑3) meldet „kein Planer", und der
 Betriebseditor sperrt die drei planenden Ziele PvPlanung, Arbitrage und MultiUse; der Gerätebeleg dafür auf dem iPad
-ist noch offen. Der Stromspeicherzweig hängt sich seit #171 aus `Do_Simulation` ein
+ist am 11.09.2026 durch den Anwender geführt (Betriebseditor sperrt die drei planenden Ziele auf dem Gerät). Der Stromspeicherzweig hängt sich seit #171 aus `Do_Simulation` ein
 (`StromspeicherzweigEinhaengen()`), ein `ModuleInitializer` kommt im Kern nicht mehr vor. Dazu #62b (Projektassistent
 als freie Ansicht der `AppWurzel`, Rückfrage Speichern/Verwerfen/Bleiben nach 62b‑E‑1) und #168 (`EposBunitContext`,
 nur Testcode). Erster Lauf mit der Seed-Datenbank auf **Schemastand 73** — Schritt 73 legt `Tab_SpeicherAuslegung`
@@ -690,17 +690,25 @@ Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der
       **drei planenden Betriebsziele `PvPlanung`, `Arbitrage` und `MultiUse`** auf dem iPad
       nicht verfügbar — `SpeicherFlottenProjektCtrl.Planer` bricht mit einer benannten Meldung
       ab. Die reaktiven Ziele `PvGreedy` und `PeakShaving` rechnen ohne Planer und stünden
-      damit auch dort. Ob OR-Tools unter `net10.0-ios` überhaupt trägt (native Hälfte,
-      statisches Linken, App-Store-Regeln) ist **ungeprüft**.
-- [ ] **`#170c` ist umgesetzt, der Nachweis im Simulator offen.** Was die Hülle bei einem
+      damit auch dort. Ob OR-Tools unter `net10.0-ios` überhaupt trägt, ist am 11.09.2026
+      **geprüft, und es trägt nicht:** Das Paket Google.OrTools 9.15.6755 liefert seine native
+      Hälfte nur für win-x64, linux-x64, linux-arm64, osx-x64 und osx-arm64 — kein ios-arm64,
+      kein Simulatorziel —, und die macOS-Fassung besteht aus rund 100 dynamischen Bibliotheken
+      (OR-Tools, SCIP, HiGHS, CBC/CLP, abseil, protobuf, re2; 55 MB), die iOS nicht lädt; ein
+      eigener Port bräuchte die ganze C++-Kette statisch für iOS übersetzt und den SWIG-Aufsatz
+      auf statisches Linken und AOT-taugliche Rückrufe umgeschrieben. Der Weg bleibt SP‑O‑3;
+      ein späterer Planer für das iPad wäre ein Adapter hinter `IFlottenPlaner` (Dienstweg).
+- [x] **`#170c` ist umgesetzt, Nachweis im Simulator (Lauf 41) und Gerätebeleg (11.09.2026) geführt.** Was die Hülle bei einem
       planenden Ziel anzeigt, ist entschieden: Die neue Auskunft
       `EPOS.Kern/Controller/FlottenPlanerLage.cs` liest die Fabrik, und der gemeinsame Baustein
       `SpeicherFlottenBetriebEditor` — er steht im Dialog wie im Reiter — sperrt ohne
       Fahrplan-Löser genau die drei planenden Ziele mit dem Grund im Tooltip, erklärt ein
       gespeichertes planendes Profil mit einem Banner statt mit einer Ausnahme und hält den
       Rechenknopf des Flottendialogs zu; `EPOS.iOS` blieb dafür unberührt (kein Adapter nötig).
-      **Offen bleibt allein der Gerätebeleg:** dass `EPOS.iOS` gegen diesen Kern- und UI-Stand
-      baut und der Prüfmodus im Simulator weiter rechnet — das zeigt erst ein iOS-Lauf.
+      Dass `EPOS.iOS` gegen diesen Kern- und UI-Stand baut und der Prüfmodus im Simulator weiter
+      rechnet, zeigte der einundvierzigste Lauf (`34586803270`); dass der Betriebseditor auf dem
+      iPad die drei planenden Ziele wirklich sperrt und die zwei reaktiven rechnen, hat der
+      Anwender am 11.09.2026 auf dem Gerät belegt (**Gerätebeleg SP‑O‑3 geführt**).
 
 > **Kein iOS-Lauf ausgelöst.** Nach der Regel vom 09.09.2026 trifft dieser Sync die iOS-Hülle
 > nicht selbst — er ändert Kern, Oberfläche, Testdatenbank und Doku, und genau das prüft
