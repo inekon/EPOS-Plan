@@ -3848,6 +3848,22 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > UI-Testfall in einem von vier Läufen des Agenten (Name nicht erfasst) — bleibt beobachtet.
 > Gate sept36 auf `e0c9c6a`: Kern 2 682, UI 3 843, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#229 (11.09.2026, `7edbc29`, Merge `e53eba8`) — die EPOS-Marke als Programmsymbol (Anwenderwunsch „nehme das EPOS-ICON als
+> Programm-Symbol").** Befund: `WindowsFormsApplication1.csproj` führte kein `ApplicationIcon`, die Exe zeigte in Taskleiste, Alt‑Tab und
+> Explorer das Standardsymbol; die im Setup nur optional verdrahtete `Setup/EPOS-Plan.ico` lag weder im Arbeitsbaum noch je in der
+> Git-Geschichte. Jetzt: `WindowsFormsApplication1/Resources/EPOS-Plan.ico` (19 054 Byte, sieben Stufen 16…256 px, aus der Marke des
+> Bausteins `InfoKnopf` — drei Felder, weißer Kern, Blitz — erzeugt; alle Stufen PNG-komprimiert), `ApplicationIcon` im csproj,
+> `Programmsymbol.Anwenden(Form)` lädt das Symbol aus der laufenden Exe (eine Quelle) für `Hauptfensterrahmen`, `BlazorDialogForm` (und
+> damit `KiChatHuelle`) und `Form_HelpPopup`; `SetupIconFile` zeigt auf dieselbe Datei, `[Icons]`/`UninstallDisplayIcon` erben es über die
+> Exe. `EPOS.iOS/Resources/AppIcon/appicon.svg` trägt statt des „EP"-Platzhalters (Kopfkommentar „vorläufig bis iU13") dieselbe Marke —
+> trifft die Hülle, **kein iOS-Lauf ausgelöst** (Regel vom 09.09.2026); Nachweis mit dem nächsten freigegebenen Lauf. Wache
+> `ProgrammsymbolWacheTests` (3 Fälle: `ApplicationIcon` gesetzt, ICO-Kopf und Stufen 16/32/48, Setup und Anwendung nennen dieselbe
+> Datei). Der Zweig entstand noch auf der alten Linie und wurde vor dem Merge auf `d5c8c98` umgesetzt. **Offen:** Windows-Abnahme
+> (Taskleiste, Alt‑Tab, Explorer, Fensterköpfe, Installer-Symbol; sollten PNG-komprimierte Kleinstufen irgendwo weiß bleiben, BMP-Stufen
+> für 16…48 px nachziehen); Windows-CI-Lauf auf dem Push beobachten (erster Build mit `ApplicationIcon`).
+> Gate sept37 auf `e53eba8`: Kern 2 685, UI 3 843, Engine 412, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 55,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
