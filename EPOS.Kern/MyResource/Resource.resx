@@ -8407,9 +8407,6 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_KNOPF_TOOLTIP" xml:space="preserve">
     <value>KI-Assistent</value>
   </data>
-  <data name="KI_KNOPF_HILFE" xml:space="preserve">
-    <value>Hilfe</value>
-  </data>
   <data name="KI_MENUE_ASSISTENT" xml:space="preserve">
     <value>Hilfe-Assistent (KI)...</value>
   </data>
@@ -17846,9 +17843,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="FLOTTE_SEITE_KANDIDAT_BANNER" xml:space="preserve">
     <value>Kandidat {0} übernommen — Flotte neu bewerten.</value>
-  </data>
-  <data name="KI_KNOPF_DIALOG" xml:space="preserve">
-    <value>KI</value>
   </data>
   <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
     <value>Diesen Dialog vom Hilfe-Assistenten erklären lassen</value>

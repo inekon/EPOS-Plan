@@ -1,6 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Hilfe-Assistent
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
-     Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3)
+     Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3;
+     Auftrag #218 - die Hilfepille, Anwenderentscheid "KI-Knopf: Variante C + Variante D")
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
 
@@ -21,7 +22,7 @@ Seit dem 11.09.2026 muss man den Assistenten nicht mehr suchen: Er ist dort erre
 === Der KI-Knopf neben dem Fragezeichen ===
 {{Anker|ki-knopf}}
 
-'''Neben dem Fragezeichen''' jedes Dialogs steht ein zweiter Knopf, der den Assistenten öffnet. Das Fragezeichen führt weiterhin auf die Hilfeseite dieses Dialogs, der neue Knopf ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
+'''Sie erreichen den Assistenten über die EPOS-Marke rechts neben dem i oben rechts in jeder Maske''' – die drei Felder des Programmlogos, farbig und mit einem Blitz in der Mitte. Beide Felder stehen in einem gemeinsamen Rahmen: Das i führt weiterhin auf die Hilfeseite dieses Dialogs, die Marke daneben ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
 
 Der Assistent öffnet sich '''ohne''' das Fenster zu blockieren: Sie können den Dialog weiter bedienen, während die Antwort entsteht.
 

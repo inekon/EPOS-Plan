@@ -249,6 +249,18 @@
     --epos-verlauf-warnung: var(--epos-stufe-warnung);  /* Hinweis, Verfall */
     --epos-verlauf-fehler: var(--epos-stufe-fehler);    /* Fehler, abgelehnt*/
     --epos-verlauf-bestaetigung: var(--epos-warn-text); /* Blocktitel, fett */
+
+    /* ---- Die EPOS-Plan-Marke am KI-Knopf (Auftrag #218, Anwenderentscheid
+       11.09.2026 "KI-Knopf: Variante C + Variante D") --------------------
+       Nachgezeichnet aus Resources/Logo125_125.jpg (drei Felder: PV,
+       Erzeuger, Lueftung) mit weisser Mitte und blauem Blitz - es gibt keine
+       SVG-Quelle, die vier Farben stehen deshalb hier als eigene Token statt
+       als Rueckfall in der Regel. Benutzt vom rechten Feld der Hilfepille
+       (InfoKnopf) und vom Ring von KiKnopf - derselbe Ring, dieselbe Marke. */
+    --epos-ki-marke-pv: #3a8fd6;
+    --epos-ki-marke-erzeuger: #7ab648;
+    --epos-ki-marke-lueftung: #f28c28;
+    --epos-ki-marke-blitz: #124d8a;
 }
 
 /* ==========================================================================
@@ -587,28 +599,84 @@ body {
 }
 
 /* ==========================================================================
-   Baustein: InfoKnopf (Vorbild Allgemein/Hilfe/InfoKnopf.cs - 28x28)
+   Baustein: InfoKnopf / Hilfepille (Vorbild Allgemein/Hilfe/InfoKnopf.cs -
+   28x28). Seit Auftrag #218 (Anwenderentscheid 11.09.2026, "KI-Knopf:
+   Variante C + Variante D") ist der Fragezeichenknopf das LINKE Feld einer
+   Pille "epos-hilfepille" - die Klasse .epos-infoknopf bleibt (ueber 40
+   Dialogproben suchen sie), traegt aber nur noch die Farbe des Inline-SVG;
+   Rahmen, Groesse und Rundung kommen vom Feld bzw. von der Pille.
    ========================================================================== */
 
 .epos-infoknopf {
-    width: var(--epos-infoknopf);
-    height: var(--epos-infoknopf);
-    padding: 0;
-    background: transparent;
-    border: 0;
-    border-radius: 50%;
-    cursor: pointer;
-    line-height: 0;
+    color: var(--epos-marke);
 }
 
-.epos-infoknopf:hover {
+/* Der Rahmen um beide Felder: Rundung 16px, Hoehe --epos-infoknopf (28px),
+   ein gemeinsamer Rahmen statt zwei getrennter Formen. Ohne Assistenten
+   steht nur das linke Feld darin - die Pille sieht dann wie ein
+   gewoehnlicher runder Knopf aus. */
+.epos-hilfepille {
+    display: inline-flex;
+    align-items: stretch;
+    height: var(--epos-infoknopf);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.epos-hilfepille__feld {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--epos-infoknopf);
+    height: 100%;
+    padding: 0 6px;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+
+/* Die Trennlinie zwischen den zwei Feldern - es gibt sie nur, wenn es ein
+   zweites Feld gibt (ohne Assistenten kein Nachbar, keine Linie). */
+.epos-hilfepille__feld + .epos-hilfepille__feld {
+    border-left: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-hilfepille__feld:hover {
     background: var(--epos-karte-flaeche-hover);
 }
 
-.epos-infoknopf img {
-    width: var(--epos-infoknopf);
-    height: var(--epos-infoknopf);
+.epos-hilfepille__feld svg {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
+
+/* "Assistent offen" (die Ansicht KI_ASSISTENT steht, Parameter Aktiv): das
+   rechte Feld fuellt sich mit dem Blau der Marke, der Blitz wird weiss statt
+   der drei Farben. Zwei Klassen zusammen (0,2,0) schlagen zuverlaessig jede
+   einzelne Klasse - unabhaengig von der Reihenfolge im Blatt. */
+.epos-hilfepille__feld.epos-hilfepille__feld--aktiv,
+.epos-hilfepille__feld.epos-hilfepille__feld--aktiv:hover {
+    background: var(--epos-marke);
+    color: #fff;
+}
+
+@media (forced-colors: active) {
+    .epos-hilfepille { border-color: CanvasText; }
+    .epos-hilfepille__feld + .epos-hilfepille__feld { border-left-color: CanvasText; }
+}
+
+/* Die EPOS-Plan-Marke (Variante C) im rechten Feld der Pille UND im Ring von
+   KiKnopf - dieselben Klassen, ein Bild. */
+.epos-ki-marke-pv { fill: var(--epos-ki-marke-pv); }
+.epos-ki-marke-erzeuger { fill: var(--epos-ki-marke-erzeuger); }
+.epos-ki-marke-lueftung { fill: var(--epos-ki-marke-lueftung); }
+.epos-ki-marke-mitte { fill: #fff; }
+.epos-ki-marke-blitz { fill: var(--epos-ki-marke-blitz); }
 
 /* Der ZWEITE Infoknopf einer Maske: der Weg in die Wikirubrik "Berechnung"
    (Paket H13, 06.09.2026). Er sitzt am Kopf des Abschnitts, der den Rechenweg
@@ -4709,21 +4777,35 @@ body {
 /* --------------------------------------------------------------------------
    Der KI-Einstieg aus einer Maske (iU9-W15b.5).
 
-   Der Vorlaeufer KiAufrufKnopf war ein 24-40 px breiter Knopf oben rechts,
-   LINKS neben dem Infoknopf (Kollisionsregel InfoKnopf.cs:99). In einer
-   Knopfleiste genuegt die Reihenfolge; die Hoehe haelt er mit dem Infoknopf
-   gleich, damit beide auf einer Linie sitzen.
+   Seit Auftrag #218 (Anwenderentscheid 11.09.2026, "KI-Knopf: Variante C +
+   Variante D") ist dieser Baustein der RING um die EPOS-Plan-Marke (Variante
+   C) - fuer einen Wirt OHNE Info-Knopf, derselbe Ring wie das rechte Feld
+   der Hilfepille aus InfoKnopf (Farben in .epos-ki-marke-*, Baustein
+   InfoKnopf weiter oben). Der Vorlaeufer KiAufrufKnopf war ein 24-40 px
+   breiter Textknopf ("KI") LINKS neben dem Infoknopf (Kollisionsregel
+   InfoKnopf.cs:99); die Hoehe haelt er weiter mit --epos-infoknopf gleich.
    -------------------------------------------------------------------------- */
 .epos-kiknopf {
+    width: var(--epos-infoknopf);
     height: var(--epos-infoknopf);
     min-width: var(--epos-infoknopf);
-    padding: 0 8px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font: inherit;
-    color: var(--epos-verlauf-kopf);
+    color: var(--epos-marke);
     background: transparent;
-    border: 1px solid var(--epos-rahmen);
-    border-radius: var(--epos-ecke);
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 50%;
     cursor: pointer;
+    line-height: 0;
+}
+
+.epos-kiknopf svg {
+    width: 16px;
+    height: 16px;
+    display: block;
 }
 
 .epos-kiknopf:hover {
@@ -4738,8 +4820,29 @@ body {
     outline: none;
 }
 
+/* "Assistent offen": derselbe Zustand wie am rechten Feld der Hilfepille -
+   zwei Klassen zusammen (0,2,0) schlagen die Grundform zuverlaessig. */
+.epos-kiknopf.epos-kiknopf--aktiv,
+.epos-kiknopf.epos-kiknopf--aktiv:hover {
+    background: var(--epos-marke);
+    color: #fff;
+    border-color: var(--epos-marke);
+}
+
 @media (forced-colors: active) {
     .epos-kiknopf { border: 1px solid CanvasText; }
+}
+
+/* INNERHALB DER HILFEPILLE ersetzt das Feld den eigenen Ring dieses
+   Bausteins durch die flache Feldform der Pille - keinen eigenen Rahmen,
+   keine eigene Rundung, das traegt .epos-hilfepille. Zwei Klassen am selben
+   Element (0,2,0) gewinnen zuverlaessig gegen die Ring-Grundform von
+   .epos-kiknopf allein (0,1,0), unabhaengig von der Reihenfolge im Blatt. */
+.epos-hilfepille__feld.epos-kiknopf {
+    width: auto;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -5083,7 +5186,7 @@ body {
    -------------------------------------------------------------------------- */
 @media print {
     .epos-lizenz-knoepfe,
-    .epos-lizenz-kopf .epos-infoknopf,
+    .epos-lizenz-kopf .epos-hilfepille,
     .epos-reiter-leiste {
         display: none !important;
     }

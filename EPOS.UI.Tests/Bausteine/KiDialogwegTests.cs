@@ -83,12 +83,19 @@ public class InfoKnopfAssistentTests : KiDialogwegBasis
 {
     private IRenderedComponent<InfoKnopf> Zeigen(string schluessel = "Form_Heizkessel.btn_Help",
                                                  bool mitAssistent = true,
-                                                 string dialogname = "")
+                                                 string dialogname = "",
+                                                 bool aktiv = false)
         => Render<InfoKnopf>(p => p
                .Add(x => x.Schluessel, schluessel)
                .Add(x => x.MitAssistent, mitAssistent)
-               .Add(x => x.Dialogname, dialogname));
+               .Add(x => x.Dialogname, dialogname)
+               .Add(x => x.Aktiv, aktiv));
 
+    /// <summary>
+    /// Seit Auftrag #218 EIN Element "epos-hilfepille" mit zwei Feldern — kein
+    /// Knopfpaar mehr. Das rechte Feld traegt die EPOS-Plan-Marke als Inline-SVG,
+    /// keine Beschriftung "KI" (Anwenderentscheid 11.09.2026, Variante C + D).
+    /// </summary>
     [Fact]
     public void Neben_dem_Fragezeichen_steht_der_KI_Knopf()
     {
@@ -97,14 +104,25 @@ public class InfoKnopfAssistentTests : KiDialogwegBasis
         Assert.True(cut.Instance.AssistentSichtbar);
         Assert.Single(cut.FindAll(".epos-kiknopf"));
 
+        // BEIDE Felder stehen in EINER Pille.
+        Assert.Single(cut.FindAll(".epos-hilfepille"));
+        var pille = cut.Find(".epos-hilfepille");
+
         // REIHENFOLGE: erst der Infoknopf, dann der Assistent.
-        var knoepfe = cut.FindAll("button");
-        Assert.Equal(2, knoepfe.Count);
+        var knoepfe = pille.QuerySelectorAll("button");
+        Assert.Equal(2, knoepfe.Length);
         Assert.Contains("epos-infoknopf", knoepfe[0].ClassName);
+        Assert.Contains("epos-hilfepille__feld", knoepfe[0].ClassName);
         Assert.Contains("epos-kiknopf", knoepfe[1].ClassName);
+        Assert.Contains("epos-hilfepille__feld", knoepfe[1].ClassName);
+
+        // KEIN Text "KI" mehr — nur noch das Inline-SVG der Marke.
+        Assert.Equal("", knoepfe[1].TextContent.Trim());
+        Assert.NotEmpty(knoepfe[1].QuerySelectorAll("svg"));
     }
 
-    /// <summary>Der Dialog, der ihn nicht will, setzt <c>MitAssistent="false"</c>.</summary>
+    /// <summary>Der Dialog, der ihn nicht will, setzt <c>MitAssistent="false"</c> — dann
+    /// bleibt nur das linke Feld der Pille stehen.</summary>
     [Fact]
     public void Ohne_MitAssistent_steht_er_nicht()
     {
@@ -113,6 +131,30 @@ public class InfoKnopfAssistentTests : KiDialogwegBasis
         Assert.False(cut.Instance.AssistentSichtbar);
         Assert.Empty(cut.FindAll(".epos-kiknopf"));
         Assert.Single(cut.FindAll("button"));
+        Assert.Single(cut.FindAll(".epos-hilfepille"));
+    }
+
+    /// <summary>
+    /// "Assistent offen" (Parameter <c>Aktiv</c>, Auftrag #218): das rechte Feld
+    /// traegt die Zustandsklasse und fuellt sich mit dem Blau der Marke.
+    /// </summary>
+    [Fact]
+    public void Aktiv_setzt_die_Zustandsklasse_am_rechten_Feld()
+    {
+        var cut = Zeigen(aktiv: true);
+
+        var assistentfeld = cut.Find(".epos-kiknopf");
+        Assert.Contains("epos-hilfepille__feld--aktiv", assistentfeld.ClassName);
+    }
+
+    /// <summary>Ohne <c>Aktiv</c> (Vorgabe) traegt das Feld die Zustandsklasse nicht.</summary>
+    [Fact]
+    public void Ohne_Aktiv_bleibt_die_Zustandsklasse_weg()
+    {
+        var cut = Zeigen();
+
+        var assistentfeld = cut.Find(".epos-kiknopf");
+        Assert.DoesNotContain("epos-hilfepille__feld--aktiv", assistentfeld.ClassName);
     }
 
     /// <summary>Die Installation hat die KI abgeschaltet — dann gibt es den Weg nicht.</summary>
