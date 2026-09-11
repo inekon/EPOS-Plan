@@ -566,6 +566,22 @@ die Flotten-Engine ist dort ohne Rechenwirkung; den ersten Referenznachweis MIT 
 per `workflow_dispatch` auf Anwenderwunsch („SP‑O‑3: iOS lauf", 11.09.2026) — der zweite Grund der Regel vom
 09.09.2026, und der erste Nachweislauf nach dem abgebrochenen Lauf 40.
 
+> **Nachtrag 11.09.2026 — Auftrag #178, Schemaschritt 74: die Zahl ist jetzt 118.** Genau die
+> gezählten „117 von 119" waren der Befund dieses Laufs: Die zwei Tabellen ohne `STRICT` waren
+> `sqlite_sequence` (Systemtabelle) und `Tab_SpeicherAuslegung` aus Schritt 73 — die einzige
+> Fachtabelle des Zielschemas, die die Hauskonvention verletzte. **Schemaschritt 74** baut sie
+> neu auf (`CREATE` unter Hilfsnamen, `INSERT … SELECT` mit namentlich genannten Spalten,
+> `DROP`, `RENAME`, Index neu — alles in EINER Transaktion, Anweisungen in
+> `EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs`), und der CREATE-Text
+> `SpeicherAuslegungCtrl.SQL_TABELLE` trägt seither selbst `STRICT`, damit eine NEUE Datenbank
+> die Tabelle gleich richtig anlegt. Die Seed- und Testdatenbank steht seither auf
+> **Schemastand 74**: 119 Tabellen, **118 STRICT**, 25 Projekte, unverändert 70 803 456 Byte;
+> die Zeile `@Projektflotte` des Projekts 1046 ist byte-gleich übernommen. Das STRICT-Gate in
+> `ios.yml` zieht seine Erwartung aus der Seed-Datenbank selbst und braucht keine Änderung —
+> es meldet künftig `STRICT=118`. **Kein iOS-Lauf ausgelöst:** Der Schritt trifft Kern,
+> Testdatenbank und Doku, nicht die Hülle; geprüft hat ihn der Referenzlauf 13/13 byte-gleich
+> gegen `2026-09-11_R7_Speicherflotte` (Regel vom 09.09.2026).
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.

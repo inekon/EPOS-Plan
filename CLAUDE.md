@@ -96,7 +96,9 @@ Datenbank und ohne Oberfläche, und **`SpeicherPlanung`** bindet **Google OR-Too
 `.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche fünf
 Razor-Dialoge unter `EPOS.UI/Dialoge/Strom/` und den Reiter `StromspeicherReiter.razor`;
 **Schemaschritt 73** legt `Tab_SpeicherAuslegung` für die gespeicherten Auslegungsprofile,
-Suchbereiche und importierten Zeitreihen an. Was umgesetzt ist, steht in
+Suchbereiche und importierten Zeitreihen an; **Schemaschritt 74** (Auftrag #178, 11.09.2026)
+baut dieselbe Tabelle als **STRICT**-Tabelle neu auf — sie war die einzige Fachtabelle des
+Zielschemas ohne `STRICT`, und SQLite kennt kein `ALTER TABLE … STRICT`. Was umgesetzt ist, steht in
 [`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Doku_Mehrspeicher_Konzept_und_Umsetzung.md),
 die Fachgrundlage in
 [`Projekte/Spezifikation_Stromspeicher_Optimierung.md`](Projekte/Spezifikation_Stromspeicher_Optimierung.md)
@@ -140,7 +142,10 @@ der Testdatenbank auf Schemastand 72 (#154) war der erste Fall dieser Regel: Lau
 `9999d51` wurde nach vier Minuten abgebrochen und zählt nicht als Nachweis. Der Nachzug auf
 **Schemastand 73** (Stromspeicher-Sync vom 11.09.2026) ist der zweite: Er trifft Kern,
 Oberfläche und Testdatenbank, nicht die Hülle — geprüft hat ihn `kern.yml` auf ubuntu, ein
-iOS-Lauf wurde nicht ausgelöst. Dieselbe Zurückhaltung gilt seit dem 11.09.2026
+iOS-Lauf wurde nicht ausgelöst. Der Nachzug auf **Schemastand 74** (Auftrag #178 vom
+11.09.2026, `Tab_SpeicherAuslegung` als STRICT) ist der dritte Fall derselben Regel: Er trifft
+Kern, Werkzeug und Testdatenbank, nicht die Hülle; das STRICT-Gate der iOS-CI zieht seine
+Erwartung aus der Seed-Datenbank selbst, es war nichts am Workflow zu ändern. Dieselbe Zurückhaltung gilt seit dem 11.09.2026
 (Anwenderentscheid „#160‑E‑1: CI") für den **Setup-Lauf**, der das Installationsprogramm auf
 `windows-latest` baut: Der Windows-Läufer zählt **doppelt** und ein Lauf braucht bis zu einer
 Stunde (Veröffentlichung, 186 MB Herstellerdaten, LZMA2-Solidkompression), deshalb hat er
@@ -170,7 +175,10 @@ nachfragen.
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
 gegen `Referenzlaeufe/2026-09-11_R7_Speicherflotte` gehalten (**dreizehn Projekte, 345 CSV,
 1 937 Skalare**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` auf
-**Schemastand 73**) nach dem Anwenderentscheid **SP‑O‑8** vom 11.09.2026: Das dreizehnte
+**Schemastand 74** — die Basis selbst entstand auf Schemastand 73; **Schritt 74 macht
+`Tab_SpeicherAuslegung` zur STRICT-Tabelle und ändert keinen Rechenwert**, die Testdatenbank ist
+am 11.09.2026 byte-gleich darauf nachgezogen, 13/13 Projekte byte-gleich) nach dem
+Anwenderentscheid **SP‑O‑8** vom 11.09.2026: Das dreizehnte
 Projekt **1046 „Prüfprojekt Speicherflotte"** — eine Tiefkopie von 1007 mit einem aktivierten
 Stand `@Projektflotte` (zwei Einheiten, 24 kWh an 10/12 kW und 16 kWh an 6/7 kW, getrennte
 Richtungswirkungsgrade und SoC-Bänder, Ziel `PeakShaving` gegen 16 kW, Verteilung `Kaskade`,

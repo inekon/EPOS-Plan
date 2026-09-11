@@ -15,11 +15,25 @@ namespace WindowsFormsApplication1
     public static partial class SpeicherAuslegungCtrl
     {
         public const string AktuellerStand = "@Aktuell";
+
+        /// <summary>
+        /// Die EINE Beschreibung von <c>Tab_SpeicherAuslegung</c> — gelesen von
+        /// Schemaschritt 73, von <see cref="SchemaSicherstellen"/> (der stillen
+        /// Selbstanlage) und vom Werkzeug <c>Testdatenbankschema</c>.
+        ///
+        /// <para><b><c>STRICT</c> seit Schemaschritt 74</b> (Auftrag #178, 11.09.2026).
+        /// Jede andere Fachtabelle des Zielschemas trägt es; diese eine war die Ausnahme,
+        /// und eine neue Datenbank hätte sie ohne diesen Zusatz immer wieder ohne STRICT
+        /// bekommen. Die Spaltentypen sind unverändert — <c>INTEGER</c> und <c>TEXT</c>
+        /// sind bereits die Typen, die eine STRICT-Tabelle zulässt. Bestandstabellen baut
+        /// <see cref="SpeicherAuslegungStrict"/> um; <c>ALTER TABLE … STRICT</c> gibt es
+        /// in SQLite nicht.</para>
+        /// </summary>
         public const string SQL_TABELLE = "CREATE TABLE IF NOT EXISTS Tab_SpeicherAuslegung (" +
             "ID INTEGER NOT NULL PRIMARY KEY, ID_Projekt INTEGER NOT NULL, ID_Energieanlage INTEGER, " +
             "Bezeichner TEXT NOT NULL, Daten TEXT NOT NULL, Stand TEXT NOT NULL, " +
             "FOREIGN KEY (ID_Projekt) REFERENCES Tab_Projekt(ID) ON DELETE CASCADE, " +
-            "FOREIGN KEY (ID_Energieanlage) REFERENCES Tab_Energieanlagen(ID) ON DELETE CASCADE)";
+            "FOREIGN KEY (ID_Energieanlage) REFERENCES Tab_Energieanlagen(ID) ON DELETE CASCADE) STRICT";
         public const string SQL_INDEX = "CREATE UNIQUE INDEX IF NOT EXISTS idx_SpeicherAuslegung " +
             "ON Tab_SpeicherAuslegung(ID_Projekt, COALESCE(ID_Energieanlage,0), Bezeichner)";
 

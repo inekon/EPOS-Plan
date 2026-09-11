@@ -152,6 +152,10 @@ jobs:
           # nachdem die Migrationsschritte 65 und 66 drei Tabellen ergaenzt
           # hatten (117 von 118, die 118. ist sqlite_sequence). Eine GROESSERE
           # Zahl (Seed hinter einem Migrationsschritt der App) ist kein Fehler.
+          # Stand seit Schemaschritt 74 (Auftrag #178, 11.09.2026): 119 Tabellen,
+          # davon 118 STRICT - Tab_SpeicherAuslegung aus Schritt 73 war die
+          # einzige Fachtabelle ohne STRICT und ist neu aufgebaut; ohne STRICT
+          # bleibt nur noch die Systemtabelle sqlite_sequence.
           ERWARTET=$(sqlite3 "$SEED" "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND sql LIKE '%STRICT%'")
           IST=$(grep -oE "STRICT=[0-9]+" artifacts/ios/start.log | head -1 | cut -d= -f2)   # ohne Zeilenanker, s. o.; die pty-Ausgabe traegt \r
           echo "STRICT-Tabellen: erwartet mindestens $ERWARTET (Seed), gemeldet ${IST:-keine}"

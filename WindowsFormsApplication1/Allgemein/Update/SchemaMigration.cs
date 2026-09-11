@@ -2725,6 +2725,52 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_72_VALERI_ERGAENZUNG = 72;
         public const int SCHRITT_73_SPEICHERAUSLEGUNG = 73;
 
+        /// <summary>
+        /// Schritt 74 — <c>Tab_SpeicherAuslegung</c> wird eine <b>STRICT</b>-Tabelle
+        /// (Auftrag <b>#178</b>, 11.09.2026). Anlass, Rezept, Transaktionsklammer,
+        /// Wiederholbarkeit und Ergebnisneutralität stehen vollständig bei
+        /// <see cref="SpeicherAuslegungStrict"/>; hier nur, was die Migration angeht.
+        ///
+        /// <para><b>Wozu.</b> Beim Nachweis des iOS-Laufs 41 gezählt:
+        /// <c>Kenndaten_Test.sqlite</c> führt 119 Tabellen, davon 117 STRICT — die zwei
+        /// ohne sind <c>sqlite_sequence</c> (System) und <c>Tab_SpeicherAuslegung</c> aus
+        /// Schritt 73. Jede andere Fachtabelle der Migration ist STRICT, und die iOS-CI
+        /// zählt die STRICT-Tabellen der Seed-Datenbank als Startgate.</para>
+        ///
+        /// <para><b>Warum nicht Schritt 73 berichtigt wird.</b> Der ist ausgeliefert: Die
+        /// Testdatenbank steht auf 73, die Referenzbasis R7 ist darauf eingefroren, und
+        /// eine produktive Datenbank kann ihn längst durchlaufen haben — ihr Zähler steht
+        /// dann schon auf 73, ein umgeschriebener Schritt 73 erreicht sie nie mehr. Der
+        /// CREATE-Text <c>SpeicherAuslegungCtrl.SQL_TABELLE</c> bekommt trotzdem
+        /// <c>STRICT</c>, damit eine NEUE Datenbank die Tabelle gleich richtig anlegt;
+        /// er bleibt die EINE Quelle, aus der sich auch Schritt 73 bedient.</para>
+        ///
+        /// <para><b>Der erste Schritt des SQLite-Zweigs mit einem TABELLENNEUBAU.</b> Der
+        /// Werkzeugkasten (siehe den Kommentarblock über <see cref="SqliteDdl"/>) hat den
+        /// Fall vorgemerkt und den Helfer bewusst nicht auf Vorrat gebaut. Er entsteht
+        /// jetzt — und nicht hier, sondern im Kern bei
+        /// <see cref="SpeicherAuslegungStrict"/>, weil ihn drei Leser brauchen: dieser
+        /// Schritt, <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c>. Er geht über <c>DataRepository.Vorgang()</c> statt über
+        /// <see cref="SqliteDdl"/>: Die sechs Anweisungen müssen in EINER Transaktion
+        /// stehen, und die Zugriffsschicht öffnet je Einzelanweisung eine Verbindung aus
+        /// dem Pool.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Der Schritt kopiert Zeilen samt ihrer
+        /// <c>ID</c> und legt den eindeutigen Index neu an; kein Wert und kein Typ ändert
+        /// sich. Der Referenzlauf bleibt byte-gleich — das ist die Abnahme.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 74
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 73
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>SpeicherAuslegungStrict.Zaehlung</c> fragt
+        /// <c>sqlite_master</c>, ob es die Tabelle OHNE <c>STRICT</c> überhaupt gibt. Ist
+        /// sie schon STRICT — oder auf einer frischen Datei noch gar nicht da —, tut der
+        /// Schritt nichts.</para>
+        /// </summary>
+        public const int SCHRITT_74_SPEICHERAUSLEGUNG_STRICT = 74;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4824,6 +4870,21 @@ namespace WindowsFormsApplication1
                         "Speicherauslegung mit Kostenprofilen und importierten Zeitreihen speichern",
                         "Auslegungsbereiche, Kostenquellen und CSV-Zuordnungen koennten nicht projektbezogen gespeichert werden.",
                         Schritt_73_Speicherauslegung),
+
+            // AUFTRAG #178 vom 11.09.2026. Begruendung, Rezept und Idempotenzzusage
+            // stehen bei der Schrittkonstanten; die sechs Anweisungen und die
+            // Vorabprobe stehen in SpeicherAuslegungStrict - EINE Quelle fuer
+            // Migration, Testdatenbank und Nachweis. DER ERSTE TABELLENNEUBAU des
+            // SQLite-Zweigs (Rezept "Making Other Kinds Of Table Schema Changes").
+            new Schritt(SCHRITT_74_SPEICHERAUSLEGUNG_STRICT,
+                        "Tab_SpeicherAuslegung als STRICT-Tabelle neu aufbauen - " +
+                        "die einzige Fachtabelle des Zielschemas, die noch ohne STRICT " +
+                        "stand (Auftrag #178)",
+                        "Tab_SpeicherAuslegung naehme dann weiter jeden Typ in jeder " +
+                        "Spalte an - eine Zahl im Textfeld Daten, ein Text in ID_Projekt -, " +
+                        "waehrend jede andere Fachtabelle das abweist. Das STRICT-Gate der " +
+                        "iOS-CI zaehlt eine Tabelle weniger als erwartet.",
+                        Schritt_74_SpeicherauslegungStrict),
         };
 
         /// <summary>
@@ -11088,6 +11149,79 @@ namespace WindowsFormsApplication1
         {
             return SqliteDdl(l, SpeicherAuslegungCtrl.SQL_TABELLE, "Tabelle Tab_SpeicherAuslegung")
                 && SqliteDdl(l, SpeicherAuslegungCtrl.SQL_INDEX, "Index idx_SpeicherAuslegung");
+        }
+
+        /// <summary>
+        /// Schritt 74 — Anlass, Rezept und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_74_SPEICHERAUSLEGUNG_STRICT"/> und ausführlich bei
+        /// <see cref="SpeicherAuslegungStrict"/>.
+        ///
+        /// <para><b>Eine Quelle, drei Leser.</b> Die sechs Anweisungen und die
+        /// Vorabprobe kommen aus <see cref="SpeicherAuslegungStrict"/> — dieselbe Quelle,
+        /// aus der sich <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis bedienen.
+        /// Hier steht keine abgeschriebene DDL.</para>
+        ///
+        /// <para><b>Nicht über <see cref="SqliteDdl"/>.</b> Der Umbau braucht EINE
+        /// Transaktion über alle sechs Anweisungen (zwischen <c>DROP</c> und
+        /// <c>RENAME</c> gibt es einen Augenblick ohne die Tabelle), und der
+        /// SQLite-Werkzeugkasten führt jede Anweisung auf einer eigenen Verbindung aus
+        /// dem Pool aus. Deshalb <c>DataRepository.Vorgang()</c> — und deshalb ein
+        /// <c>try</c>: Ein <c>DbVorgang</c> REICHT Fehler DURCH, während dieser Zweig
+        /// still bleiben muss (Programmstart vor dem ersten Fenster). Der Fehlertext
+        /// geht dabei nicht verloren, er landet im Bericht.</para>
+        /// </summary>
+        private static bool Schritt_74_SpeicherauslegungStrict(Lauf l)
+        {
+            long umzubauen = SqliteZahl(SpeicherAuslegungStrict.Zaehlung());
+            l.Notiz("74: " + SpeicherAuslegungStrict.TABELLE + " ohne STRICT: " +
+                    (umzubauen < 0 ? "unbekannt" : umzubauen.ToString(CultureInfo.InvariantCulture)) + ".");
+
+            if (umzubauen == 0)
+            {
+                l.Notiz("74: nichts zu tun - die Tabelle ist bereits STRICT oder auf dieser " +
+                        "Datei noch gar nicht vorhanden.");
+                return true;
+            }
+
+            bool umgebaut;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    umgebaut = SpeicherAuslegungStrict.Umbauen();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("74: FEHLER - " + text);
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            // Die Nachprobe. Eine -1 heisst "nicht lesbar" und ist Auskunft, keine
+            // Bedingung (dieselbe Regel wie bei SqliteZahl); nur eine ECHTE Zaehlung
+            // groesser 0 belegt, dass der Umbau nicht angekommen ist.
+            long rest = SqliteZahl(SpeicherAuslegungStrict.Zaehlung());
+            if (rest > 0)
+            {
+                l.LetzterFehler = SpeicherAuslegungStrict.TABELLE +
+                                  " traegt nach dem Umbau immer noch kein STRICT.";
+                l.Notiz("74: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("74: " + SpeicherAuslegungStrict.TABELLE + " ist jetzt eine STRICT-Tabelle" +
+                    (umgebaut ? " (neu aufgebaut, Zeilen und IDs uebernommen)" : "") +
+                    "; der eindeutige Index idx_SpeicherAuslegung steht wieder. Es aendert " +
+                    "sich kein Wert und kein Typ - der Referenzlauf bleibt byte-gleich.");
+            return true;
         }
 
         // --- Hilfsmittel des Schritts 58 ---------------------------------------------

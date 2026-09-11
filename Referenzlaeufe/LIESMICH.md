@@ -169,7 +169,10 @@ heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Wa
 (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045 **und 1046**),
 **345 CSV** (vorher 312), **1 937 Skalare** (vorher 1 792), gerechnet mit dem plattformfreien
 `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 73**, 25 Projekte,
-119 Tabellen, davon 117 STRICT). Gegen diese Basis hält `.github/workflows/kern.yml`
+119 Tabellen, davon 117 STRICT — die Datei steht seit Auftrag #178 vom 11.09.2026 auf
+**Schemastand 74** mit **118 STRICT**; Schritt 74 macht `Tab_SpeicherAuslegung` zur
+STRICT-Tabelle, der Lauf gegen diese Basis bleibt 13/13 byte-gleich, siehe den Nachtrag weiter
+unten). Gegen diese Basis hält `.github/workflows/kern.yml`
 (1030, 1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate
 der Orchestrierung zieht getrennt nach.
 
@@ -341,6 +344,41 @@ für 1030 in `ios.yml`; abgelöst hat sie `2026-09-11_R7_Speicherflotte` (Anwend
 >
 > **Keine der beiden Einfrierregeln ist berührt**: Der Schritt fasst weder einen
 > Emissionsfaktor (Em‑9.8‑Q4) noch einen PV-Modulkoeffizienten (W6‑B‑5‑Q3) an.
+
+> **Nachtrag 11.09.2026 — Schemastand 74 (Auftrag #178), die Basis bleibt.**
+> Migrationsschritt **74** (`SCHRITT_74_SPEICHERAUSLEGUNG_STRICT`) baut `Tab_SpeicherAuslegung`
+> als **STRICT**-Tabelle NEU auf. Anlass ist ein Befund aus dem iOS-Lauf 41: Die Datei führte
+> 119 Tabellen, davon 117 STRICT — ohne `STRICT` standen nur `sqlite_sequence` (Systemtabelle)
+> und eben `Tab_SpeicherAuslegung` aus Schritt 73. SQLite kennt kein `ALTER TABLE … STRICT`,
+> deshalb der **erste Tabellenneubau des SQLite-Zweigs** nach dem Rezept des Handbuchs:
+> `CREATE` unter dem Hilfsnamen `Tab_SpeicherAuslegung_neu`, `INSERT … SELECT` mit **namentlich
+> genannten** Spalten, `DROP`, `RENAME`, Index neu — alles in EINER Transaktion
+> (`EPOS.Kern/Allgemein/Update/SpeicherAuslegungStrict.cs`). Spalten, Typen, `NOT NULL`,
+> `PRIMARY KEY`, die zwei Fremdschlüssel mit `ON DELETE CASCADE` und `idx_SpeicherAuslegung`
+> bleiben wortgleich; der CREATE-Text `SpeicherAuslegungCtrl.SQL_TABELLE` trägt seither selbst
+> `STRICT`, damit eine NEUE Datenbank die Tabelle gleich richtig anlegt. **Schritt 73 ist
+> unverändert** — er ist ausgeliefert, und die Basis R7 steht auf ihm.
+>
+> Stand der Datei seither: **Schemastand 74**, **70 803 456 Byte** (67,5 MB — unverändert
+> gegenüber Stand 73 nach dem Prüfprojekt 1046), **119 Tabellen, davon 118 STRICT**,
+> **25 Projekte**. Die einzige Zeile der Tabelle, der reservierte Flottenstand
+> `@Projektflotte` des Projekts 1046 (SP‑O‑8), ist **byte-gleich übernommen** — `ID`,
+> `ID_Projekt`, `ID_Energieanlage` (NULL), `Bezeichner`, die 1 724 Zeichen Nutzlast in `Daten`
+> und `Stand` samt ihren Speichertypen (SHA-256 der Zeilen vorher wie nachher
+> `251c8554…add0d9`). Die **Gegenprobe** ist leer:
+> `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND sql NOT LIKE '%STRICT%'`
+> liefert keine Zeile mehr.
+>
+> **Der Referenzlauf ist 13/13 byte-gleich gegen `2026-09-11_R7_Speicherflotte`** — `diff -rq`
+> ohne einen einzigen Unterschied in 345 CSV (allein `protokoll.txt` weicht ab, das ist die
+> Laufmitschrift), Toleranzvergleich 13/13 PASS (3 777 497 Werte). **Kein Rechenwert ändert
+> sich, die Basis wird nicht neu eingefroren.** Nachgezogen wie üblich mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`;
+> der SQL-Dialektprüfer meldet unverändert **0 Fundstellen** (1 326 Texte, davon 215 dynamisch).
+>
+> **Keine der drei Einfrierregeln ist berührt**: Der Schritt fasst weder einen Emissionsfaktor
+> (Em‑9.8‑Q4) noch einen PV-Modulkoeffizienten (W6‑B‑5‑Q3) noch einen Flottenparameter des
+> Projekts 1046 (SP‑O‑8) an — er kopiert Zeilen, er schreibt keine.
 
 ### Vorgängerbasis: `2026-09-07_R5_Zahlenrand` (löste `2026-09-07_R4_Double` ab)
 
