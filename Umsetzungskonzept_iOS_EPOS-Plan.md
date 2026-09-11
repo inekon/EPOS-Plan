@@ -3564,6 +3564,30 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Stufenplan-Zeile „Feinraster" heißt jetzt P6; Windows-Abnahme steht aus. SD‑Q1 revidiert, SD‑Q2 bleibt (Projektlaufpfade unverändert).
 > Gate sept18 auf `4fcb6a1`: Kern 2 615, UI 3 638, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#201 (11.09.2026, `d1bfb56`, Zwischenmerge `d2889cd` mit #206/#210, Merge `9122812`) — Assistent im Dialog, Stufe S3 (Weg 5 „Assistent soll
+> steuern", KI‑D‑Q3/Q4).** Aktionsregister und Ausführung sind aus der Windows-Hülle in den Kern gezogen: zehn Dateien per `git mv` nach
+> `EPOS.Kern/Allgemein/KI/Aktionen/` bzw. `KiAusfuehrung.cs` (1 040 Z.). `KiAusfuehrung` ist eine **Instanz** (Einläufigkeit, Laufmarke,
+> Sitzungsgedächtnis und Register gehören einem Ausführer; ein Prüfling legt sich einen frischen an); die `AppWurzel` legt die Kern-Ausführung
+> ein, solange `KeineAusfuehrung` steht — **iOS und die Razor-Dialoge haben dasselbe Register** (29 Aktionen: 24 Bestand, neu `dialog_oeffnen`
+> Stufe 1, `dialog_speichern` Stufe 2 mit Sicherungspunkt, `simulation_rechnen`, `peak_ziel_bestimmen`, `flotte_bewerten` Stufe 3;
+> `KiRiegel.HoechsteStufe` → `Rechnen`). **`feld_setzen`** geht über die Maskenbrücke (#200) in den offenen Dialog: `KiMaskenhaken`
+> (Auffrischen, Prüfen, Speichern, Schreibschutz, Rechenwege) je Maske, `KiFeldwandler` (Werttyp), `KiMaskenziele`, `KiFeldhilfe` als Naht
+> zum Feld-Hilfetext, `KiLaufumgebung` trägt Fortschritt und Abbruchmarke bis in die Aktion; Ablehnungen benannt (abgeleitetes Feld,
+> Typfehler, Schreibschutz, ohne Bestätigung, Auffrischen). Setzbar: Heizkessel 15/15, Photovoltaik 3/3, Pufferspeicher 1/1, Wärmepumpe 1/1
+> (einzige Maske mit `Schreibgeschuetzt`, weil nur ihr Daten-Objekt `NurLesen` führt), Stromspeicher-Auslegung 5/16. **In der Hülle blieb**
+> `KiAusfuehrungWindows` (121 Z.: Halter der Instanz, `Form.ActiveForm.Modal`, Hilfetext über `WikiHelpCatalog`); `KiDialogZugriff` (567 Z.)
+> und `KiAusfuehrungAdapter` sind gelöscht, der Rückfall über `Application.OpenForms` ersatzlos. 53 Ressourcen `KI_AKTION_*`/`KI_FELD_*` de/en.
+> Tests: `KiRegisterS3Tests` (663 Z.), `KiFeldSetzenTests` (je Maske ein Fall), `KiMaskenhakenTests`. **Doku:** Konzept Dialogintegration (S3),
+> `Konzept_KI-Assistent_Aufgabensteuerung.md` (+101), drei CLAUDE.md, Wiki „Hilfe-Assistent" (+25, Upload durch die Orchestrierung).
+> **Abweichungen/offen:** `speicher_optimieren` war nie registriert (nur im Aktionskatalog des Konzepts; sein Platz nach SD‑E‑8 ist
+> `flotte_bewerten`); `dialog_aktion_ausfuehren` bleibt und lehnt benannt ab (ein Razor-Dialog hat keinen Knopf von außen);
+> `dialog_oeffnen("StromspeicherAuslegung")` lehnt unter Windows benannt ab (kein Schlüssel der WinForms-Navigation, braucht einen gerechneten
+> Lauf; iOS wechselt die `AppWurzel`); der **Fortschrittsbalken im Chat** wird noch nicht gefüttert (die Hülle reicht `CancellationToken.None`,
+> die Senke `KiAusfuehrung.Fortschritt` bleibt unbelegt — ein Hüllenschritt). Zwischenmerge mit #206/#210: zwei resx-Konflikte (reine Anhänge),
+> `flotte_bewerten` ruft `Starten()` = seit #206 der Flottenweg.
+> Gate sept19 auf `9122812`: Kern 2643, UI 3654, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
