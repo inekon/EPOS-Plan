@@ -2,7 +2,7 @@
 
 ## Grundlagen und Algorithmen für die Softwareumsetzung
 
-Version 1.3 | 11. September 2026 | Fachliche und technische Spezifikation
+Version 1.4 | 11. September 2026 | Fachliche und technische Spezifikation
 
 Dieses Dokument definiert eine Offline-Simulation für einen Standort mit Stromverbrauch, optionaler Photovoltaik und mehreren Batteriespeichern. Die Software soll Speichergrößen, Betriebsstrategien und die Verteilung von Lade- und Entladeleistung vergleichen. Maßstab für die wirtschaftliche Auswahl ist der Kapitalwert gegenüber demselben Standort ohne die untersuchten Speicher.
 
@@ -215,6 +215,79 @@ Verbindlich sind daraus drei Forderungen an die Umsetzung:
 1. **Der Zielwert wird aus der Referenz hergeleitet, nicht geraten.** Die Untergrenze eines sinnvollen H ist das Maximum der Tagesminima von N — unter dieses Maximum fällt die Last an mindestens einem Tag nie, und damit ist an diesem Tag jede Wiederaufladung ausgeschlossen. Die Obergrenze eines wirksamen H ist die Referenzspitze. Ein Vorschlag lautet deshalb `H0 = max(Referenzspitze - Summe Entladeleistung; max der Tagesminima)`.
 2. **Die Simulation weist die Sperren aus.** Je Einheit und für die Flotte werden gezählt: Intervalle mit `N > H`, Intervalle mit Lade- und mit Entladeanforderung, Intervalle mit Ladedeckel 0 durch die Peak-Regel, Intervalle mit Ladedeckel 0 durch das Netzladeverbot und Intervalle mit Entladeanforderung an einen leeren Speicher. Aus Lade- und Entladeenergie folgt die Aussage „arbeitslos". Die Gründe sind sprachneutral zu benennen und mit ihren Zahlen auszugeben.
 3. **Der Start-Ladezustand wird genannt, nicht stillschweigend geändert.** Bleibt er auf der unteren SoC-Marke, ist am Anfang des Rechenzeitraums nichts zu entladen; eine Spitze in den ersten Stunden kann die Flotte deshalb nicht kappen. Ein voller Start würde diese Spitze schöner rechnen, als sie im Betrieb wäre.
+
+### 5.1.1 Adaptive Entladeschwelle — die kausale Ratsche (ergänzt in Version 1.4, Anwenderbefund 11.09.2026)
+
+**Befund.** Die Regel aus 5.1 hält den Zielwert H das ganze Jahr fest. Kann die Flotte eine Spitze nicht
+halten (`N − D > H` mit D = verfügbare Entladeleistung), ist die Jahresspitze verloren — die Regel entlädt
+danach trotzdem bei jeder kleineren Spitze über H weiter, hält den Ladezustand damit niedrig und verfehlt
+auch die nächste große Spitze. Beobachtet am 11.09.2026 (Einheit 1 395 kWh / 500 kW, H = 200 kW): In der
+ersten Januarwoche werden die Tagesspitzen von 250–400 kW sauber auf 200 kW gekappt, die Spitze von
+523 kW am siebten Tag trifft auf einen leeren Speicher und bleibt ungekappt. Der Anwender hat das Gegenmodell
+in einer Excel-Datei belegt (Makro `calc_peakshaving`, Speicher 400 kW / 400 kWh, Viertelstundenlastgang
+eines Jahres): Die Jahresspitze fällt von 738,4 kW auf **569,6 kW**, ohne dass ein Zielwert vorgegeben wird.
+
+**Regel R (Ratsche, kausal).** Die Schwelle H ist kein Parameter, sondern ein Zustand, der im Lauf nur
+steigen kann. Vor jedem Intervall wird geprüft, ob die Flotte die anstehende Netzlast bis auf H drücken
+KANN; kann sie es nicht, wird H auf das Erreichbare nachgezogen. Erst danach gilt die Regel aus 5.1.
+
+```text
+H ← H0                                          Startwert (Vorgabe: Grundlast = Maximum der Tagesminima; 0 erlaubt)
+je Intervall t:
+    D_t ← Σ_j min( P_ent,j · v_j ,  (E_j − floor_j) · η_ent,j / Δt )     verfügbare Entladeleistung der Flotte
+    wenn N_t − D_t > H:   H ← N_t − D_t          Spitze ist nicht haltbar → Schwelle nachziehen
+    wenn N_t > H:         Entladung anfordern = N_t − H
+    sonst:                Ladung anfordern = H − N_t,
+                          begrenzt durch Ladefreigabe (Netzladung bzw. nur Überschuss), Speicherraum und Anschluss
+Ergebnis: H_end = erreichte Jahresspitze der Variante; die Ganglinie von H ist eine Treppe
+```
+
+D_t ist genau die Entladegrenze der Ausführung (`Grenzen()` im Simulator: Leistung × Verfügbarkeit, nutzbare
+Energie über der SoC-Untergrenze, Entladewirkungsgrad). Die Peak-Reserve ist bei `N_t > H` definitionsgemäß
+freigegeben, sie geht also in D_t ein. Für eine Einheit ohne Verluste und ohne SoC-Fenster ist R wortgleich
+mit dem Excel-Makro; das Makro ist damit die Referenzrechnung des Prüfstands (synthetischer Lastgang, der
+Kundenlastgang bleibt außerhalb des Repositoriums).
+
+**Eigenschaften.** R ist kausal (kennt keine Zukunft), deterministisch und monoton; sie braucht keinen
+Zielwert und keine Bisektion. Sie verschwendet keine Energie an Spitzen, die die Jahresspitze nicht mehr
+senken. Sie ist das Verhalten eines realen Reglers ohne Prognose.
+
+**Vergleich mit dem Vorausschau-Optimum.** Die Bisektion aus Konzept 2.4 („Peak-Ziel bestimmen") sucht das
+kleinste FESTE H, das ein Jahr mit vollem Wissen gehalten wird; nenne es M*. Es gilt **M* ≤ H_end**: Ein
+festes M* ab dem ersten Intervall entlädt in jedem Intervall höchstens so viel wie die Ratsche (deren
+Schwelle nie über M* liegt, solange sie nicht scheitert) und lädt mindestens so viel; ihr Ladezustand liegt
+deshalb nie unter dem der Ratsche, und was M* hält, hält sie auch. Die Differenz H_end − M* ist der **Wert
+der Vorausschau** — die Zahl, die sagt, ob sich ein Prognoseregler lohnt. Beide Werte gehören in die
+Ergebnisansicht: „kausal erreicht" (R) und „mit Vorausschau erreichbar" (Bisektion, auf Knopf wie heute).
+
+**Geprüfte Alternativen (11.09.2026).**
+
+| Strategie | Bewertung |
+|---|---|
+| **S‑A Ratsche über das Jahr** (Regel R) | Empfohlen als Vorgabe für die Lastspitzenkappung. Behebt den Befund, ist ohne Prognose real umsetzbar, reproduziert das Excel-Makro. |
+| S‑B Ratsche je Abrechnungsperiode (Rücksetzen am Monatsanfang) | Nicht nötig: Der Leistungspreis des Modells ist ein Jahrespreis in €/(kW·a) (`FlottenTarif.LeistungspreisEuroProKw`); ein Monatsleistungspreis existiert im Modell nicht. Vorgemerkt für den Fall, dass ein solcher Tarif kommt. |
+| S‑C Vorausschau-Optimum (Bisektion, Bestand) | Bleibt als Vergleichs- und Auslegungswert. Als Startwert H0 der Ratsche taugt es nicht: Mit H0 = M* ist R mit dem festen Ziel identisch. |
+| S‑D Ratsche mit Kurzfristprognose (Persistenz: gestern bzw. gleicher Wochentag der Vorwoche) | Zweite Stufe. Vor einer Entladung wird geprüft, ob die erwartete Restenergie des Tages über H den Ladezustand übersteigt; wenn ja, wird H vorausschauend angehoben oder die Entladung gedrosselt. Der Gewinn ist durch H_end − M* nach oben begrenzt — erst nach S‑A messen, dann entscheiden. Die Prognose-Snapshots des Simulators (Kapitel 6) sind die Naht. |
+| S‑E Sicherheitsaufschlag auf H (Prozent oder kW) | In der Simulation überflüssig (deterministisch). Gehört in die Hilfe als Hinweis für den realen Regler, nicht in den Rechenweg. |
+| S‑F Laden „rechtzeitig" statt „so schnell wie möglich" | Ohne Preisunterschiede wirkungslos für die Jahresspitze; mit Preisen ist es der Fall Multi Use (6.5). Keine Änderung an R. |
+
+**Bedienung und Anzeige (Vorschlag).** In Schritt 3 der Auslegungsansicht wird das Peak-Ziel zur Wahl
+„adaptiv (kausal) | fest": adaptiv ist die Vorgabe NEUER Stände, das Zahlenfeld heißt dann „Startwert" und
+ist mit der Grundlast vorbelegt; fest verhält sich wie bisher. Die Ergebnisansicht nennt H_end als
+„erreichte Schwelle", das Netzanschluss-Diagramm zeichnet H als Treppe statt als waagerechte Linie, die
+Diagnose zählt die Nachzüge (Intervalle mit `N − D > H`). Die Wiederaufladung aus dem Netz bleibt eine
+Freigabe des Anwenders; ohne sie lädt R nur aus Überschuss, und die Diagnose sagt das (SP‑O‑10). Gespeicherte
+Stände tragen die Vorgabe „fest" und rechnen unverändert — das Prüfprojekt 1046 (festes Ziel 16 kW) bleibt
+byte-gleich zur Basis R7 (Muster #183: Vorgaben nur für neue Stände).
+
+**Fragen an den Anwender (PS‑Q1 … PS‑Q4).**
+
+| Frage | Empfehlung |
+|---|---|
+| **PS‑Q1** Ratsche (S‑A) als Vorgabe für neue Stände, Startwert = Grundlast? | Ja. Wer ein festes Ziel will, schaltet um. |
+| **PS‑Q2** „Peak-Ziel bestimmen" behalten und als „mit Vorausschau erreichbar" neben „kausal erreicht" zeigen? | Ja; die Differenz ist der Wert einer Prognose und entscheidet über S‑D. |
+| **PS‑Q3** Netzladung bei Lastspitzenkappung für BESTEHENDE Stände still einschalten? | Nein. Bestehende Stände bleiben, wie gespeichert; das Diagnosebanner (und künftig der Stromspeicher-Reiter) benennt die Sperre. Neue Stände haben sie seit #183 an. |
+| **PS‑Q4** S‑D (Kurzfristprognose) jetzt mit beauftragen? | Nein, erst nach S‑A mit gemessenem H_end − M* über die Prüfprojekte entscheiden. |
 
 ### 5.2 PV Eigenverbrauch als Greedy Referenz
 
