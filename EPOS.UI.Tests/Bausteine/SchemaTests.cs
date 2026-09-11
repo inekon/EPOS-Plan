@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Collections.Generic;
+using Bunit;
 using EPOS.UI.Bausteine;
 using Xunit;
 
@@ -34,23 +35,27 @@ public class SchemaTests : BunitContext
         Knoten: new[]
         {
             new SchemaKnoten("QUELLE_1", SchemaKnotenart.Quelle, 18, 44, 150, 35,
-                             "", "Außenluft", new string[0], new string[0],
+                             "", "Außenluft", "Außenluft", new string[0], new string[0],
                              "Quelle der Wärmepumpe", false, "", false, true),
 
             new SchemaKnoten("ERZEUGER_1", SchemaKnotenart.Erzeuger, 224, 44, 214, 65,
-                             "1", "Wärmepumpe · WP 1", new[] { "55 / 45 °C", "Senke: Puffer A" },
+                             "1", "Wärmepumpe · WP 1", "Wärmepumpe · WP 1",
+                             new[] { "55 / 45 °C", "Senke: Puffer A" },
                              new string[0], "Chips der Karte", false, "", false, false),
 
             new SchemaKnoten("ERZEUGER_2", SchemaKnotenart.Erzeuger, 224, 123, 214, 50,
-                             "2", "Heizkessel · K1", new[] { "70 / 50 °C" }, new string[0],
+                             "2", "Heizkessel · K1", "Heizkessel · K1",
+                             new[] { "70 / 50 °C" }, new string[0],
                              "", mitWarnung, "Vorlauf unter dem Puffer-Sollwert", true, false),
 
             new SchemaKnoten("SPEICHER_10", SchemaKnotenart.Speicher, 494, 60, 190, 82,
-                             "", "Puffer A", new[] { "800 l" }, new[] { "Heizung", "Warmwasser" },
+                             "", "Puffer A", "Puffer A", new[] { "800 l" },
+                             new[] { "Heizung", "Warmwasser" },
                              "Detailzeilen der Karte", false, "", false, false),
 
             new SchemaKnoten("ABNEHMER_HEIZKREIS", SchemaKnotenart.Abnehmer, 740, 70, 132, 35,
-                             "", "Heizkreis", new string[0], new string[0], "", false, "", false, false)
+                             "", "Heizkreis", "Heizkreis", new string[0], new string[0],
+                             "", false, "", false, false)
         },
         Kanten: new[]
         {
@@ -154,6 +159,51 @@ public class SchemaTests : BunitContext
         var ohne = Render<Schema>(p => p.Add(x => x.Layout, Bild(mitWarnung: false)));
         Assert.Empty(ohne.FindAll("g.epos-schema-knoten--warnung"));
         Assert.Empty(ohne.FindAll("rect.epos-schema-warnflaeche"));
+    }
+
+    // ================================================================== Titelkuerzung
+
+    /// <summary>
+    /// Auftrag #188 (Abnahmeliste): Ein Knotentitel, den der Kern gekuerzt hat
+    /// (<c>SchemaLayout.TitelAnzeige</c>), zeigt im SVG-<c>&lt;text&gt;</c> die GEKUERZTE
+    /// Fassung — der volle Name bleibt unveraendert im Tooltipp (<c>&lt;title&gt;</c>, ueber
+    /// <c>Kurzhinweis</c>) und im <c>aria-label</c> stehen, damit ihn eine Sprachausgabe
+    /// vollstaendig vorliest.
+    /// </summary>
+    [Fact]
+    public void Ein_gekuerzter_Titel_steht_im_Text_der_volle_im_Tooltipp()
+    {
+        const string voll = "Wärmepumpe mit einem deutlich zu langen Anzeigenamen";
+        const string gekuerzt = "Wärmepumpe mit einem deutlich…";
+
+        SchemaBild basis = Bild();
+        List<SchemaKnoten> knoten = new List<SchemaKnoten>(basis.Knoten);
+        knoten[1] = knoten[1] with { Titel = voll, TitelAnzeige = gekuerzt };
+        SchemaBild bild = basis with { Knoten = knoten };
+
+        var cut = Render<Schema>(p => p.Add(x => x.Layout, bild));
+
+        var titelTexte = cut.FindAll("text.epos-schema-titel");
+        Assert.Contains(titelTexte, t => t.TextContent == gekuerzt);
+        Assert.DoesNotContain(titelTexte, t => t.TextContent == voll);
+
+        var tooltipps = cut.FindAll("g.epos-schema-knoten title");
+        Assert.Contains(tooltipps, t => t.TextContent.StartsWith(voll));
+
+        Assert.Contains(cut.FindAll("g.epos-schema-knoten"), g => g.GetAttribute("aria-label") == voll);
+    }
+
+    /// <summary>Ein Titel, der ohnehin in die Box passt, kommt unveraendert an.</summary>
+    [Fact]
+    public void Ein_nicht_gekuerzter_Titel_ist_in_Text_und_Tooltipp_derselbe()
+    {
+        var cut = Render<Schema>(p => p.Add(x => x.Layout, Bild()));
+
+        var titelTexte = cut.FindAll("text.epos-schema-titel");
+        Assert.Contains(titelTexte, t => t.TextContent == "Wärmepumpe · WP 1");
+
+        var tooltipps = cut.FindAll("g.epos-schema-knoten title");
+        Assert.Contains(tooltipps, t => t.TextContent.StartsWith("Wärmepumpe · WP 1"));
     }
 
     // ================================================================== Kanten

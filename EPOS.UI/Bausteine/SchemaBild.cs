@@ -46,12 +46,19 @@ public enum SchemaKantenart
 /// Nur bei <see cref="SchemaKnotenart.Quelle"/> von Belang: Die Quelle einer Waermepumpe
 /// bekommt den blauen Rahmen, jede andere den leisen.
 /// </param>
+/// <param name="Titel">Der VOLLE Name — geht unveraendert in den Tooltipp (<c>&lt;title&gt;</c>).</param>
+/// <param name="TitelAnzeige">
+/// Der Titel, vom Kern auf die Kastenbreite GEKUERZT (<c>SchemaLayout.TitelKuerzen</c>,
+/// Auftrag #188) — das steht im gezeichneten SVG-<c>&lt;text&gt;</c>. Bei einem kurzen Titel
+/// ist es derselbe Text wie <see cref="Titel"/>.
+/// </param>
 public sealed record SchemaKnoten(
     string Schluessel,
     SchemaKnotenart Art,
     int X, int Y, int Breite, int Hoehe,
     string Rang,
     string Titel,
+    string TitelAnzeige,
     IReadOnlyList<string> Zeilen,
     IReadOnlyList<string> Badges,
     string Hinweis,

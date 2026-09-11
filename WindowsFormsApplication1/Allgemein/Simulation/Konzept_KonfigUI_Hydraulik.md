@@ -73,6 +73,19 @@ Bei mehreren Speichern passen die Vollkarten nicht in die Spalte. Deshalb:
   synchronisiert (Klick auf die Karte hebt den Speicher im Schema hervor und
   umgekehrt).
 
+### 3b. Gekürzte Knotentitel im Schema (Ergänzung, Auftrag #188, Abnahmeliste)
+
+Ein langer Bezeichner (Anlagenname, Modelltext) lief im SVG-Schema (`Schema.razor`) über
+seine Box hinaus — der Titel wurde als nackter `<text>` ohne `textLength`/`clipPath` und
+ohne Kürzung gezeichnet. Die Kürzung rechnet seither der Kern, headless prüfbar:
+`SchemaLayout.TitelKuerzen(titel, verfuegbareBreite)` kürzt mit „…" auf die verfügbare
+Breite (Spaltenbreite − beide seitliche Ränder − 16 px Rangversatz, wenn ein
+Kaskadenrang vorsteht) und liefert das Ergebnis je Knoten als
+`SchemaLayout.Knotenflaeche.TitelAnzeige`. Der volle Name bleibt unverändert in
+`Knoten.Titel` und geht damit unverändert in den Tooltipp (`<title>`, über
+`Kurzhinweis`) und ins `aria-label` — gekürzt wird nur, was gezeichnet wird, nicht was
+der Anwender bei Bedarf lesen kann.
+
 ## 4. Datenmodell
 
 | Änderung | Umfang |

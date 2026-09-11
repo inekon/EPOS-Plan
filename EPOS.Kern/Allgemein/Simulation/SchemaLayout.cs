@@ -149,6 +149,15 @@ namespace WindowsFormsApplication1
             public SchemaModell.Knoten Knoten;
             public Rechteck Flaeche;
 
+            /// <summary>
+            /// Der Knotentitel, GEKUERZT auf die verfuegbare Breite der Box (Auftrag #188,
+            /// Abnahmeliste). <see cref="Knoten"/>.Titel bleibt der volle Name — er geht
+            /// unveraendert in den Tooltipp; dieses Feld ist ausschliesslich fuer den
+            /// SVG-<c>&lt;text&gt;</c> gedacht, der sonst ueber die Box hinauslief (0
+            /// Kuerzung, 0 <c>textLength</c>/<c>clipPath</c> im Vorlaeufer <c>Schema.razor</c>).
+            /// </summary>
+            public string TitelAnzeige = "";
+
             public string Schluessel
             {
                 get { return Knoten != null ? Knoten.Schluessel : ""; }
@@ -380,7 +389,21 @@ namespace WindowsFormsApplication1
             {
                 Rechteck r = FlaecheVon(k.Schluessel);
                 if (r.IstLeer) continue;
-                Knoten.Add(new Knotenflaeche { Knoten = k, Flaeche = r });
+
+                // Auftrag #188: der Titel darf nie ueber die Box hinauslaufen. Verfuegbar
+                // ist die Kastenbreite abzueglich BEIDER seitlichen Raender (der Titel
+                // beginnt bei KNOTEN_RAND und die Zeile endet — wie Zusatzzeile und Badge
+                // — vor der rechten KNOTEN_RAND-Grenze, siehe Schema.razor) und, falls ein
+                // Kaskadenrang vorsteht, dessen 16 px Versatz (Schema.razor:128).
+                int rangversatz = string.IsNullOrEmpty(k.Rang) ? 0 : 16;
+                int verfuegbareBreite = r.Breite - 2 * KNOTEN_RAND - rangversatz;
+
+                Knoten.Add(new Knotenflaeche
+                {
+                    Knoten = k,
+                    Flaeche = r,
+                    TitelAnzeige = TitelKuerzen(k.Titel, verfuegbareBreite)
+                });
             }
 
             KantenLegen();
@@ -905,6 +928,34 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(text)) return 0;
             return (int)Math.Ceiling(text.Length * ZEICHEN_BREITE);
+        }
+
+        /// <summary>Wird angehaengt, wenn ein Titel nicht in die Box passt.</summary>
+        private const string ELLIPSE = "…";
+
+        /// <summary>
+        /// Kuerzt einen Knotentitel auf <paramref name="verfuegbareBreite"/> [px] und
+        /// haengt „…" an, wenn er nicht hineinpasst (Auftrag #188, Abnahmeliste). Passt der
+        /// volle Titel hinein, kommt er UNVERAENDERT zurueck — keine Kuerzung ohne Grund.
+        ///
+        /// <para>Gemessen wird wie in <see cref="TextBreite"/> ueber <see cref="ZEICHEN_BREITE"/>
+        /// (kein <c>TextRenderer.MeasureText</c>, siehe Klassenkopf); Umlaute zaehlen als EIN
+        /// Zeichen wie jedes andere — <c>string.Length</c> ist fuer sie bereits korrekt, sie
+        /// sind kein Ersatzzeichenpaar.</para>
+        /// </summary>
+        public static string TitelKuerzen(string titel, int verfuegbareBreite)
+        {
+            if (string.IsNullOrEmpty(titel)) return titel ?? "";
+            if (TextBreite(titel) <= verfuegbareBreite) return titel;
+
+            int platzFuerText = verfuegbareBreite - TextBreite(ELLIPSE);
+            if (platzFuerText <= 0) return ELLIPSE;
+
+            int zeichen = (int)(platzFuerText / ZEICHEN_BREITE);
+            if (zeichen <= 0) return ELLIPSE;
+            if (zeichen >= titel.Length) zeichen = titel.Length - 1;   // muss kuerzer werden
+
+            return titel.Substring(0, zeichen) + ELLIPSE;
         }
     }
 }

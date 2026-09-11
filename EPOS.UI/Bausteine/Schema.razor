@@ -124,10 +124,14 @@
                               dominant-baseline="central">@knoten.Rang</text></g>
                     }
 
+                    @* Auftrag #188: gezeichnet wird die GEKUERZTE Fassung — der volle Name
+                       steht unveraendert im Tooltipp (<title> oben, aus Kurzhinweis) und im
+                       aria-label. Die Kuerzung selbst rechnet der Kern (SchemaLayout,
+                       TitelKuerzen), hier steht nur das Malen. *@
                     <g><text class="epos-schema-titel"
                           x="@(knoten.X + KNOTEN_RAND + (string.IsNullOrEmpty(knoten.Rang) ? 0 : 16))"
                           y="@(knoten.Y + KNOTEN_RAND + TITEL_HOEHE / 2)"
-                          dominant-baseline="central">@knoten.Titel</text></g>
+                          dominant-baseline="central">@knoten.TitelAnzeige</text></g>
 
                     @{ int y = knoten.Y + KNOTEN_RAND + TITEL_HOEHE; }
                     @foreach (string zeile in knoten.Zeilen)
