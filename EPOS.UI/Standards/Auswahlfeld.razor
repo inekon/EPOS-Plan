@@ -42,7 +42,8 @@
             }
             @foreach (var eintrag in Eintraege)
             {
-                <option @key="eintrag.Id" value="@eintrag.Id"
+                <option @key="eintrag.Id" value="@eintrag.Id" disabled="@IstGesperrt(eintrag.Id)"
+                        title="@(IstGesperrt(eintrag.Id) && GesperrtHinweis.Length > 0 ? GesperrtHinweis : null)"
                         selected="@(Auswahl.HasValue && eintrag.Id == Auswahl.Value)">@eintrag.Text</option>
             }
         </select>
@@ -98,10 +99,31 @@
     /// </summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 
+    /// <summary>
+    /// Ids EINZELNER Eintraege, die nicht waehlbar sind - die Liste bleibt sonst bedienbar.
+    ///
+    /// <para>Gebraucht wird das dort, wo eine Moeglichkeit BESTEHT, auf diesem Geraet aber
+    /// nicht traegt: Die drei PLANENDEN Betriebsziele einer Speicherflotte brauchen einen
+    /// Fahrplan-Loeser, und den registriert nur die Windows-Anwendung (Auftrag #170c). Ein
+    /// gesperrter Eintrag ist ehrlicher als ein fehlender - er sagt, dass es das Ziel gibt
+    /// und warum es hier nicht geht; der Grund steht in <see cref="GesperrtHinweis"/>.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyCollection<int> GesperrteEintraege { get; set; } = Array.Empty<int>();
+
+    /// <summary>Grund der Sperre; er haengt als <c>title</c> an jedem gesperrten Eintrag.</summary>
+    [Parameter] public string GesperrtHinweis { get; set; } = "";
+
+    private bool IstGesperrt(int id) => GesperrteEintraege is { Count: > 0 } && GesperrteEintraege.Contains(id);
+
     private Task BeiAuswahl(ChangeEventArgs e)
     {
         string szRoh = e.Value?.ToString() ?? "";
-        Auswahl = Zahlen.GanzzahlParsen(szRoh, out int nId) ? nId : null;
+        int? gewaehlt = Zahlen.GanzzahlParsen(szRoh, out int nId) ? nId : null;
+        // Ein gesperrter Eintrag kommt im Browser gar nicht erst zurueck; ueber den Pruefstand
+        // oder eine nachgereichte Zuweisung schon. Er wird still verworfen - die Sperre gilt
+        // hier, nicht erst im Rechenlauf.
+        if (gewaehlt.HasValue && IstGesperrt(gewaehlt.Value)) return Task.CompletedTask;
+        Auswahl = gewaehlt;
         return AuswahlChanged.InvokeAsync(Auswahl);
     }
 }

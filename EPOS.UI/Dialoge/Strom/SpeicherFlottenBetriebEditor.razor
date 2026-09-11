@@ -1,11 +1,30 @@
+@* DER BAUSTEIN DER BETRIEBSFUEHRUNG. Er steht an ZWEI Stellen - im Dialog
+   "Speicherflotte & Auslegung" (ueber SpeicherFlottenEditor) und im Reiter
+   "Stromspeicher" der Ergebnisseite. Das Mehrspeicherkonzept will das so:
+   "ueber denselben Baustein editierbar".
+
+   DESHALB STEHT DIE PLANERSPERRE HIER (Auftrag #170c): Drei der fuenf
+   Betriebsziele PLANEN und brauchen einen Fahrplan-Loeser (IFlottenPlaner).
+   Registriert wird der nur von der Windows-Anwendung; auf dem iPad und in den
+   Linux-Pruefstaenden gibt es keinen. Ohne diesen Riegel endete die Wahl eines
+   planenden Ziels erst IM LAUF mit einer InvalidOperationException - eine
+   Maske, die eine Wahl anbietet, die sie nicht halten kann. Jetzt sind die drei
+   Eintraege gesperrt und sagen im Tooltip warum; ein GESPEICHERTES planendes
+   Profil wird mit einem Banner erklaert, statt zu werfen. Die zwei Ausnahmen im
+   Kern bleiben als letzte Schranke stehen. *@
+
 @namespace EPOS.UI.Dialoge.Strom
+@using System.Globalization
 @using SpeicherEngine
+@using WindowsFormsApplication1
 
 <section class="epos-flotte-abschnitt epos-flotte-betrieb" aria-labelledby="flotte-betrieb-titel">
     <h3 id="flotte-betrieb-titel">Betrieb und Leistungsverteilung</h3>
     <div class="epos-flotte-feldraster epos-flotte-feldraster--kompakt">
         <Auswahlfeld Bezeichnung="Betriebsziel:" Eintraege="@Betriebsziele"
                        Auswahl="@((int)_wert.Betriebsziel)" Aktiv="@Aktiv"
+                       GesperrteEintraege="@GesperrteZiele"
+                       GesperrtHinweis="@(PlanerFehlt ? Resource.FLOTTE_PLANER_ZIEL_GESPERRT : "")"
                        AuswahlChanged="BetriebszielSetzen" />
         <Auswahlfeld Bezeichnung="Leistungsverteilung:" Eintraege="@Verteilungen"
                        Auswahl="@((int)_wert.Verteilung)" Aktiv="@Aktiv"
@@ -24,6 +43,15 @@
         <Schalter Bezeichnung="Batterieexport ins Netz erlauben" Wert="@_wert.BatterieexportErlaubt"
                    Aktiv="@Aktiv" WertChanged="BatterieexportSetzen" />
     </div>
+    @if (PlanerFehlt && FlottenPlanerLage.IstPlanend(_wert.Betriebsziel))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung"
+                    Text="@string.Format(CultureInfo.CurrentCulture, Resource.FLOTTE_PLANER_PROFIL, Zielname(_wert.Betriebsziel))" />
+    }
+    else if (PlanerFehlt)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_PLANER_FEHLT" />
+    }
     <p class="epos-flotte-hinweis">@ZielHinweis</p>
 </section>
 
@@ -32,8 +60,30 @@
     [Parameter] public EventCallback<FlottenSimulationOptionen> WertChanged { get; set; }
     [Parameter] public bool Aktiv { get; set; } = true;
 
+    /// <summary>
+    /// Ist ein Fahrplan-Loeser da? <c>null</c> = die Auskunft des Kerns fragen
+    /// (<see cref="FlottenPlanerLage.Verfuegbar"/>) - das ist der Betriebsfall. Ein
+    /// Pruefstand setzt den Wert ausdruecklich und braucht dann keine statische Fabrik.
+    /// </summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
     private FlottenSimulationOptionen _wert = new();
     private FlottenSimulationOptionen? _eingangReferenz;
+
+    private bool PlanerFehlt => !(PlanerVerfuegbar ?? FlottenPlanerLage.Verfuegbar);
+
+    /// <summary>Die drei planenden Ziele - gesperrt, solange kein Fahrplan-Loeser da ist.</summary>
+    private IReadOnlyCollection<int> GesperrteZiele => PlanerFehlt ? PlanendeIds : Array.Empty<int>();
+
+    private static readonly int[] PlanendeIds =
+    {
+        (int)FlottenBetriebsziel.PvPlanung,
+        (int)FlottenBetriebsziel.Arbitrage,
+        (int)FlottenBetriebsziel.MultiUse
+    };
+
+    private static string Zielname(FlottenBetriebsziel ziel) =>
+        Betriebsziele.FirstOrDefault(x => x.Id == (int)ziel).Text ?? ziel.ToString();
 
     private static readonly IReadOnlyList<(int Id, string Text)> Betriebsziele = new[]
     {
@@ -70,7 +120,12 @@
 
     private async Task BetriebszielSetzen(int? wert)
     {
-        if (wert.HasValue) _wert.Betriebsziel = (FlottenBetriebsziel)wert.Value;
+        if (!wert.HasValue) { await Melden(); return; }
+        var ziel = (FlottenBetriebsziel)wert.Value;
+        // Zweiter Riegel hinter der Sperre im Auswahlfeld: ein planendes Ziel wird ohne
+        // Fahrplan-Loeser nicht uebernommen und auch nicht nach oben gemeldet.
+        if (PlanerFehlt && FlottenPlanerLage.IstPlanend(ziel)) return;
+        _wert.Betriebsziel = ziel;
         await Melden();
     }
 

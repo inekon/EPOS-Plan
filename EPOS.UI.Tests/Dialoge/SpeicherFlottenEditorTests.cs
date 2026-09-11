@@ -67,12 +67,17 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
         Assert.Equal(0.96, gemeldet.Einheiten[0].Entladewirkungsgrad, 10);
     }
 
+    /// <remarks>
+    /// Multi Use PLANT und ist ohne Fahrplan-Löser gesperrt (Auftrag #170c); dieser Fall
+    /// prüft die Felder des Ziels und setzt den Planer deshalb ausdrücklich voraus.
+    /// </remarks>
     [Fact]
     public void MultiUse_zeigt_Peak_und_Prognoseparameter()
     {
         FlottenStudieKonfiguration? gemeldet = null;
         var cut = Render<SpeicherFlottenEditor>(p => p
             .Add(x => x.Wert, KonfigurationMitEinheit())
+            .Add(x => x.PlanerVerfuegbar, true)
             .Add(x => x.WertChanged, x => gemeldet = x));
 
         Auswahl(cut, "Betriebsziel:").Change(((int)FlottenBetriebsziel.MultiUse).ToString());

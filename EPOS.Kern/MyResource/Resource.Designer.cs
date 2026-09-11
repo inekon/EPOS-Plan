@@ -8870,6 +8870,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PLANER_FEHLT {
+            get {
+                return ResourceManager.GetString("FLOTTE_PLANER_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Fahrplan-Löser kann mit einem planenden Betriebsziel kein Speichervergleich gerechnet werden. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PLANER_LAUF_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_PLANER_LAUF_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gespeicherte Betriebsziel „{0}“ plant und braucht einen Fahrplan-Löser, den es auf dieser Plattform nicht gibt. Die Flotte wird erst wieder gerechnet, wenn ein reaktives Betriebsziel gewählt ist. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PLANER_PROFIL {
+            get {
+                return ResourceManager.GetString("FLOTTE_PLANER_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Betriebsziel plant und ist ohne Fahrplan-Löser nicht wählbar. ähnelt.
+        /// </summary>
+        public static string FLOTTE_PLANER_ZIEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_PLANER_ZIEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string FORTSCHRITT_ABBRECHEN {
@@ -25187,7 +25223,7 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("OPT_MSG_ERGEBNIS_VERALTET", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Optimierung ist fehlgeschlagen: {0} ähnelt.
         /// </summary>

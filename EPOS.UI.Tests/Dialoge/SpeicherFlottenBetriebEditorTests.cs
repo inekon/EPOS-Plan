@@ -15,6 +15,7 @@ public sealed class SpeicherFlottenBetriebEditorTests : EposBunitContext
         var eingang = new FlottenSimulationOptionen();
         var cut = Render<SpeicherFlottenBetriebEditor>(p => p
             .Add(x => x.Wert, eingang)
+            .Add(x => x.PlanerVerfuegbar, true)
             .Add(x => x.WertChanged, x => gemeldet = x));
 
         Auswahl(cut, "Betriebsziel:").Change(((int)FlottenBetriebsziel.MultiUse).ToString());
@@ -38,7 +39,8 @@ public sealed class SpeicherFlottenBetriebEditorTests : EposBunitContext
     public void Peakziel_erscheint_nur_fuer_PeakShaving_und_MultiUse()
     {
         var cut = Render<SpeicherFlottenBetriebEditor>(p => p
-            .Add(x => x.Wert, new FlottenSimulationOptionen()));
+            .Add(x => x.Wert, new FlottenSimulationOptionen())
+            .Add(x => x.PlanerVerfuegbar, true));
 
         Assert.DoesNotContain("Wirtschaftlicher Peak-Zielwert", cut.Markup);
         Auswahl(cut, "Betriebsziel:").Change(((int)FlottenBetriebsziel.PeakShaving).ToString());

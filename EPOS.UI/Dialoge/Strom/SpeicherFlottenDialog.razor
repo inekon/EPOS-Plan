@@ -10,7 +10,8 @@
         <KindInhalt>
             <Reiterblatt Schluessel="FLOTTE" Titel="Speicher & Betriebsführung">
                 <KindInhalt>
-                    <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)" />
+                    <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
+                                           PlanerVerfuegbar="@PlanerVerfuegbar" />
                 </KindInhalt>
             </Reiterblatt>
             <Reiterblatt Schluessel="QUELLEN" Titel="Daten, Kosten & Profile">
@@ -93,6 +94,16 @@
     [Parameter] public Func<bool>? ProjektAktiv { get; set; }
     [Parameter] public Func<SpeicherFlottenErgebnis, Task<string>>? ProjektUebernehmen { get; set; }
     [Parameter] public Func<Task<string>>? ProjektDeaktivieren { get; set; }
+
+    /// <summary>
+    /// Ist ein Fahrplan-Löser da? <c>null</c> = die Auskunft des Kerns fragen
+    /// (<see cref="WindowsFormsApplication1.FlottenPlanerLage.Verfuegbar"/>) — Betriebsfall.
+    /// Ohne Planer sperrt der Dialog den Rechenknopf für planende Betriebsziele und nennt den
+    /// Grund im Warnbanner, statt die Ausnahme des Kerns abzuwarten (Auftrag #170c).
+    /// </summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    private bool PlanerFehlt => !(PlanerVerfuegbar ?? FlottenPlanerLage.Verfuegbar);
     private SpeicherOptimierungVorgaben _vorgaben = new();
     private SpeicherOptimierungEingaben _eingaben = new();
     private SpeicherFlottenErgebnis? _ergebnis;
@@ -180,6 +191,12 @@
     private string EingabenPruefen()
     {
         var fehler = new List<string>();
+        // Ohne Fahrplan-Loeser bleibt der Rechenknopf fuer planende Ziele gesperrt (Auftrag
+        // #170c). Geprueft wird auch die Zielliste der Auslegung: sie variiert ueber
+        // Betriebsziele und braeuchte den Planer genauso.
+        if (PlanerFehlt && (FlottenPlanerLage.IstPlanend(Flotte.Optionen.Betriebsziel) ||
+                            Flotte.Auslegung.Betriebsziele.Any(FlottenPlanerLage.IstPlanend)))
+            fehler.Add(Resource.FLOTTE_PLANER_LAUF_GESPERRT);
         if (Flotte.Wirtschaftlichkeit.ProjektjahreBeiWiederholung <= 0)
             fehler.Add("Projektlaufzeit: Bitte mindestens 1 Jahr eingeben.");
         if (Flotte.Einheiten.Count > 0 && Flotte.Optionen.Endbedingung == FlottenEndbedingung.KeineVorgabe &&
