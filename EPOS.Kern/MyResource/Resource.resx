@@ -16534,4 +16534,16 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
     <value>Die Eingaben wurden geändert. Das angezeigte Ergebnis ist nicht mehr aktuell; bitte neu berechnen.</value>
   </data>
+  <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
+    <value>Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert.</value>
+  </data>
+  <data name="FLOTTE_PLANER_ZIEL_GESPERRT" xml:space="preserve">
+    <value>Dieses Betriebsziel plant und ist ohne Fahrplan-Löser nicht wählbar.</value>
+  </data>
+  <data name="FLOTTE_PLANER_PROFIL" xml:space="preserve">
+    <value>Das gespeicherte Betriebsziel „{0}“ plant und braucht einen Fahrplan-Löser, den es auf dieser Plattform nicht gibt. Die Flotte wird erst wieder gerechnet, wenn ein reaktives Betriebsziel gewählt ist.</value>
+  </data>
+  <data name="FLOTTE_PLANER_LAUF_GESPERRT" xml:space="preserve">
+    <value>Ohne Fahrplan-Löser kann mit einem planenden Betriebsziel kein Speichervergleich gerechnet werden.</value>
+  </data>
 </root>

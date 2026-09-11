@@ -69,7 +69,8 @@
             @if (_flottenEingaben?.Auslegung?.Flotte is { } flotte)
             {
                 <SpeicherFlottenBetriebEditor Wert="@flotte.Optionen" WertChanged="FlottenbetriebGesetzt"
-                                               Aktiv="@(!Gesperrt && !_flottenSpeichert && Dienste?.OptimierungEinstellungenSpeichern is not null)" />
+                                               Aktiv="@(!Gesperrt && !_flottenSpeichert && Dienste?.OptimierungEinstellungenSpeichern is not null)"
+                                               PlanerVerfuegbar="@PlanerVerfuegbar" />
                 <table class="epos-tabelle">
                     <thead><tr><th>Speicher</th><th>Kapazität kWh</th><th>Laden kW</th><th>Entladen kW</th></tr></thead>
                     <tbody>
@@ -403,6 +404,14 @@
 
     /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Vergleich { get; set; }
+
+    /// <summary>
+    /// Durchreiche an <see cref="EPOS.UI.Dialoge.Strom.SpeicherFlottenBetriebEditor.PlanerVerfuegbar"/>:
+    /// <c>null</c> = die Auskunft des Kerns fragen (Betriebsfall, Auftrag #170c). Ohne
+    /// Fahrplan-Löser stehen die drei planenden Betriebsziele gesperrt in der Liste, und ein
+    /// gespeichertes planendes Profil erklärt sich mit einem Banner.
+    /// </summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
 
     /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
     public Diagrammbereich? Bereich => _bereich;

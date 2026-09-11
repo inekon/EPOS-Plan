@@ -16527,4 +16527,16 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="OPT_MSG_ERGEBNIS_VERALTET" xml:space="preserve">
     <value>The inputs have changed. The displayed result is out of date; please calculate again.</value>
   </data>
+  <data name="FLOTTE_PLANER_FEHLT" xml:space="preserve">
+    <value>No schedule solver is available on this platform; planning operating targets are disabled.</value>
+  </data>
+  <data name="FLOTTE_PLANER_ZIEL_GESPERRT" xml:space="preserve">
+    <value>This operating target uses planning and cannot be selected without a schedule solver.</value>
+  </data>
+  <data name="FLOTTE_PLANER_PROFIL" xml:space="preserve">
+    <value>The stored operating target “{0}” uses planning and requires a schedule solver, which does not exist on this platform. The fleet is not calculated again until a reactive operating target is selected.</value>
+  </data>
+  <data name="FLOTTE_PLANER_LAUF_GESPERRT" xml:space="preserve">
+    <value>Without a schedule solver no storage comparison can be calculated for a planning operating target.</value>
+  </data>
 </root>

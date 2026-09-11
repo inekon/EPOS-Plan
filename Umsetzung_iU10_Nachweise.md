@@ -653,14 +653,24 @@ Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der
       ab. Die reaktiven Ziele `PvGreedy` und `PeakShaving` rechnen ohne Planer und stünden
       damit auch dort. Ob OR-Tools unter `net10.0-ios` überhaupt trägt (native Hälfte,
       statisches Linken, App-Store-Regeln) ist **ungeprüft**.
-- [ ] **Der Nachweis ist offen und gehört zu `#170c`**, nicht hierher: Er muss zeigen, dass
-      `EPOS.iOS` gegen den neuen Kern- und UI-Stand baut und der Prüfmodus weiter rechnet, und
-      er muss entscheiden, was die Hülle bei einem planenden Ziel anzeigt.
+- [ ] **`#170c` ist umgesetzt, der Nachweis im Simulator offen.** Was die Hülle bei einem
+      planenden Ziel anzeigt, ist entschieden: Die neue Auskunft
+      `EPOS.Kern/Controller/FlottenPlanerLage.cs` liest die Fabrik, und der gemeinsame Baustein
+      `SpeicherFlottenBetriebEditor` — er steht im Dialog wie im Reiter — sperrt ohne
+      Fahrplan-Löser genau die drei planenden Ziele mit dem Grund im Tooltip, erklärt ein
+      gespeichertes planendes Profil mit einem Banner statt mit einer Ausnahme und hält den
+      Rechenknopf des Flottendialogs zu; `EPOS.iOS` blieb dafür unberührt (kein Adapter nötig).
+      **Offen bleibt allein der Gerätebeleg:** dass `EPOS.iOS` gegen diesen Kern- und UI-Stand
+      baut und der Prüfmodus im Simulator weiter rechnet — das zeigt erst ein iOS-Lauf.
 
 > **Kein iOS-Lauf ausgelöst.** Nach der Regel vom 09.09.2026 trifft dieser Sync die iOS-Hülle
 > nicht selbst — er ändert Kern, Oberfläche, Testdatenbank und Doku, und genau das prüft
 > `kern.yml` auf ubuntu. Der grüne Kern-Lauf ist hier der Nachweis; der macOS-Läufer (Faktor 10)
 > bleibt aus, bis `#170c` ihn braucht oder der Anwender ihn verlangt.
+>
+> **Auch `#170c` hat ihn nicht ausgelöst** (11.09.2026): Der Schritt fasst Kern, Oberfläche und
+> Texte an, `EPOS.iOS/` und keine `Dienste.*`-Schnittstelle — nach derselben Regel also kein
+> Grund für den macOS-Läufer. Der Gerätebeleg oben bleibt damit bewusst offen.
 
 ---
 

@@ -11,7 +11,8 @@
         <span class="epos-flotte-editor__zaehler">@EinheitenText</span>
     </div>
 
-    <SpeicherFlottenBetriebEditor Wert="@_wert.Optionen" WertChanged="BetriebsoptionenSetzen" Aktiv="@Aktiv" />
+    <SpeicherFlottenBetriebEditor Wert="@_wert.Optionen" WertChanged="BetriebsoptionenSetzen" Aktiv="@Aktiv"
+                                   PlanerVerfuegbar="@PlanerVerfuegbar" />
 
     <section class="epos-flotte-abschnitt" aria-labelledby="flotte-einheiten-titel">
         <div class="epos-flotte-abschnitt__kopf">
@@ -292,6 +293,12 @@
     [Parameter] public EventCallback<FlottenStudieKonfiguration> WertChanged { get; set; }
     [Parameter] public bool Aktiv { get; set; } = true;
     [Parameter] public Beschriftungen Texte { get; set; } = new();
+
+    /// <summary>
+    /// Durchreiche an <see cref="SpeicherFlottenBetriebEditor.PlanerVerfuegbar"/>:
+    /// <c>null</c> = die Auskunft des Kerns fragen (Betriebsfall, Auftrag #170c).
+    /// </summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
 
     private FlottenStudieKonfiguration _wert = new();
     private FlottenStudieKonfiguration? _eingangReferenz;

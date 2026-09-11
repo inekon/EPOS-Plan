@@ -255,6 +255,65 @@ public class StromspeicherReiterTests : EposBunitContext
         Assert.Contains("Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf.", seite.Markup);
     }
 
+    /// <summary>
+    /// Auftrag #170c: Der Reiter zeigt DENSELBEN Baustein wie der Dialog — also gilt die
+    /// Planersperre auch hier. Ohne Fahrplan-Löser stehen die drei planenden Ziele gesperrt
+    /// in der Liste und nennen den Grund.
+    /// </summary>
+    [Fact]
+    public void Ohne_Planer_sind_die_planenden_Ziele_auch_im_Reiter_gesperrt()
+    {
+        var seite = Render<StromspeicherReiter>(p => p
+            .Add(x => x.Daten, Daten())
+            .Add(x => x.Parameter, new SpeicherParameterDaten())
+            .Add(x => x.Dienste, Flottendienste())
+            .Add(x => x.PlanerVerfuegbar, false));
+
+        var ziele = seite.FindAll("label").First(x => x.TextContent.Contains("Betriebsziel:"))
+                         .QuerySelector("select")!.QuerySelectorAll("option").ToArray();
+        Assert.Equal(new[] { "2", "3", "4" },
+            ziele.Where(x => x.HasAttribute("disabled")).Select(x => x.GetAttribute("value")).ToArray());
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_FEHLT, seite.Markup);
+    }
+
+    /// <summary>
+    /// Ein GESPEICHERTES planendes Profil erklärt sich im Reiter mit einem Banner, statt den
+    /// Anwender erst im Projektlauf gegen die Ausnahme des Kerns laufen zu lassen.
+    /// </summary>
+    [Fact]
+    public void Gespeichertes_planendes_Profil_erklaert_sich_im_Reiter()
+    {
+        var flotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new() { new() { Id = "s1", Name = "Speicher 1", KapazitaetKWh = 100 } },
+            Optionen = new FlottenSimulationOptionen { Betriebsziel = FlottenBetriebsziel.PvPlanung }
+        };
+
+        var seite = Render<StromspeicherReiter>(p => p
+            .Add(x => x.Daten, Daten())
+            .Add(x => x.Parameter, new SpeicherParameterDaten())
+            .Add(x => x.Dienste, Flottendienste(flotte))
+            .Add(x => x.PlanerVerfuegbar, false));
+
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_PROFIL,
+            "PV-Prognoseplanung"), seite.Markup);
+    }
+
+    [Fact]
+    public void Mit_Planer_bleibt_die_Zielliste_im_Reiter_vollstaendig_bedienbar()
+    {
+        var seite = Render<StromspeicherReiter>(p => p
+            .Add(x => x.Daten, Daten())
+            .Add(x => x.Parameter, new SpeicherParameterDaten())
+            .Add(x => x.Dienste, Flottendienste())
+            .Add(x => x.PlanerVerfuegbar, true));
+
+        var ziele = seite.FindAll("label").First(x => x.TextContent.Contains("Betriebsziel:"))
+                         .QuerySelector("select")!.QuerySelectorAll("option").ToArray();
+        Assert.DoesNotContain(ziele, x => x.HasAttribute("disabled"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_FEHLT, seite.Markup);
+    }
+
     [Fact]
     public void Ohne_vollstaendigen_Flottendienst_bleibt_der_Legacyblock_erhalten()
     {
