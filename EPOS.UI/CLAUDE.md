@@ -124,6 +124,35 @@ entgegen — sie ist damit austauschbar.
   Assistentenseiten), und `WindowsFormsApplication1/Allgemein/Blazor/Parametersatzwache`
   dasselbe am Gerät. **Wer eine Komponente umbenennt oder einen Parameter streicht, prüft die
   Hülle mit.**
+- **Ein Titel, eine Stelle: Trägt die Überlagerung einen Titel, zeigt die Komponente keinen
+  eigenen** (`epos-dialog-kopf--ohnetitel`, Hausregel **W11b‑B‑9**, Vorbild
+  `WaermepumpeAnlageDialog.razor:96`; als eigene Regel benannt und auf **22** Stellen im Haus
+  angewandt durch **Auftrag #187**, Abnahmeliste vom 11.09.2026). Befund: `<Ueberlagerung
+  Titel="@X">` zeichnet ihren Kopf (`epos-ueberlagerung-titel`) UNBEDINGT — trägt die
+  eingebettete Komponente denselben Text ODER denselben Ressourcenschlüssel unbedingt in ihrem
+  eigenen `<h1 class="epos-dialog-titel">`, steht er zweimal übereinander. **Zwei Bauarten, je
+  nachdem, wozu die Komponente `TitelText` sonst noch braucht:**
+  (a) **`TitelText` bleibt leer** — der Regelfall: `<div class="epos-dialog-kopf
+  @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">`, der `<h1>` nur
+  `@if (!string.IsNullOrEmpty(TitelText))`, der Hilfeknopf bleibt immer. Die einbettende Stelle
+  setzt `TitelText=""` — im Markup unmittelbar (elf `NamensDialog`-Einbettungen, z. B.
+  `KatalogDublettenDialog.razor`) oder in der Hülle, wenn der Parametersatz aus einer
+  `*Gaben()`-Methode kommt (`KostenKomponenteHuelle.CaseGaben`/`EditorGaben`,
+  `KostenfaktorKatalogHuelle.Gaben`). **Speist dieselbe `Gaben()`-Methode AUCH ein
+  eigenständiges Fenster** (z. B. `BhkwHuelle.KatalogGaben` für `KatalogBearbeiten` UND für die
+  Überlagerung in `BhkwDialog`), bleibt sie UNVERÄNDERT — ein kleiner Helfer `OhneTitel(…)`
+  kopiert den Satz NUR an der einbettenden Stelle und überschreibt darin `TitelText` (so in
+  `BhkwHuelle`, `HeizkesselHuelle`, `KostenKomponenteHuelle.GesetzeGaben` für die geteilte
+  `GesetzeskatalogHuelle.Gaben`). (b) **ein eigener `[Parameter] public bool TitelAnzeigen { get;
+  set; } = true`** — wenn `TitelText` noch für etwas ANDERES im Rumpf gebraucht wird und deshalb
+  nicht leer werden darf: `KlimazonenkarteDialog` speist daraus zugleich
+  `Bildkarte.Bildbeschreibung`, `PufferSpProjektDialog` zugleich die Überschrift seines
+  `Gruppenkopf`-Bestandsblocks — beide bekommen `TitelAnzeigen="false"` NUR an der
+  Einbettungsstelle (`QuelleErdreichDialog`, `QuellePufferspeicherDialog`, `WaermesenkeDialog`),
+  `TitelText` bleibt unverändert. **Wache:** `EPOS.UI.Tests/UeberlagerungstitelTests` — Bauart A
+  rein am Markup (derselbe Bezeichner in `Titel=` und `TitelText=`), Bauart B an einer
+  `Huelle.cs`-Methode, die `TitelText` auf denselben Schlüssel wie ihr eigenes `…Titel`-Feld
+  setzt; beide mit Gegenprobe, Ausnahmeliste leer.
 - **Ein dauerhaftes Banner nur für einen Zustand, den der Anwender beheben MUSS und
   sonst nicht sieht.** Anwenderwunsch **W16b‑E‑6** vom 05.09.2026: Über der Startseite
   stand, solange kein Projekt offen war, ein `Warnbanner` mit den zwei Sätzen der

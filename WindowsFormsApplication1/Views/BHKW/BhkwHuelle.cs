@@ -468,11 +468,15 @@ namespace WindowsFormsApplication1
                 ["SummePtherm"] = new Func<string>(
                     () => SummeLeistung(projektId, idType, modelle).ToString()),
 
+                // #187: Die Ueberlagerung traegt den Titel schon (EditorTitel,
+                // derselbe Schluessel BHKWK_TITEL wie KatalogGaben). KatalogGaben
+                // bleibt dafuer UNVERAENDERT - sie liefert auch das eigenstaendige
+                // Fenster ueber KatalogBearbeiten, das seinen Titel behalten muss.
                 ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => KatalogGaben(name, neu: false)),
+                    name => OhneTitel(KatalogGaben(name, neu: false))),
 
                 ["EditorGabenNeu"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => KatalogGaben(name, neu: true)),
+                    name => OhneTitel(KatalogGaben(name, neu: true))),
 
                 ["TraegerGaben"] = new Func<TraegerVorbereitung, IReadOnlyDictionary<string, object>>(
                     TraegerGaben),
@@ -715,6 +719,24 @@ namespace WindowsFormsApplication1
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
+        }
+
+        /// <summary>
+        /// #187: Nimmt einen fertigen Parametersatz (hier von
+        /// <see cref="KatalogGaben"/>, die AUCH das eigenständige Fenster
+        /// <see cref="KatalogBearbeiten"/> bedient) und setzt darin nur
+        /// <c>TitelText</c> auf leer — die Überlagerung, in der der Satz
+        /// hier landet (<c>BhkwDialog</c>), trägt den Titel bereits selbst
+        /// (Hausregel W11b-B-9). <see cref="KatalogGaben"/> bleibt dafür
+        /// unangetastet, ihr anderer Aufrufer behält seinen Fenstertitel.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> OhneTitel(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            var kopie = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, object> kv in gaben) kopie[kv.Key] = kv.Value;
+            kopie["TitelText"] = "";
+            return kopie;
         }
 
         /// <summary>

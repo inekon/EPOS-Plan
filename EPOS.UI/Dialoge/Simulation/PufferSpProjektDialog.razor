@@ -60,8 +60,11 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -350,6 +353,18 @@
     // --- Texte ------------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Pufferspeicher im Projekt";
+
+    /// <summary>
+    /// #187: Zeigt den eigenen Kopf (<c>epos-dialog-titel</c>)? Vorgabe
+    /// <c>true</c>. <c>TitelText</c> bleibt dabei UNVERÄNDERT — er speist
+    /// auch die Überschrift des Bestandsblocks (<c>Gruppenkopf</c> unten)
+    /// und darf deshalb nicht leer werden, nur weil eine Überlagerung ihn
+    /// schon im eigenen Kopf zeigt. Diese Komponente läuft in DREI Rollen
+    /// (eigenes Fenster, Überlagerung in <c>QuellePufferspeicherDialog</c>
+    /// und in <c>WaermesenkeDialog</c>); nur die zwei Überlagerungsrollen
+    /// setzen <c>false</c> (Hausregel W11b-B-9, #187).
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
     [Parameter] public string LabelBestand { get; set; } = "Pufferspeicher";
     [Parameter] public string BtnNeu { get; set; } = "Neuer Pufferspeicher";
     [Parameter] public string BtnEntfernen { get; set; } = "Entfernen";
