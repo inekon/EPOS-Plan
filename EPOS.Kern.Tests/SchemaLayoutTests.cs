@@ -190,6 +190,94 @@ namespace EPOS.Kern.Tests
                          SchemaLayout.KnotenHoehe(voll));
         }
 
+        // ================================================================== Titelkuerzung
+        //
+        // Auftrag #188 (Abnahmeliste): Schema.razor zeichnete den Knotentitel ungekuerzt —
+        // ein langer Bezeichner lief ueber die Erzeuger-Box (214 px) hinaus. Die Kuerzung
+        // rechnet SchemaLayout: TitelAnzeige neben dem vollen Titel, headless pruefbar.
+
+        private static SchemaLayout.Knotenflaeche KnotenFlaeche(SchemaLayout l, string schluessel)
+        {
+            foreach (SchemaLayout.Knotenflaeche k in l.Knoten)
+                if (k.Schluessel == schluessel) return k;
+
+            Assert.Fail("Knoten " + schluessel + " fehlt");
+            return null;
+        }
+
+        [Fact]
+        public void Ein_kurzer_Titel_bleibt_von_TitelKuerzen_unberuehrt()
+        {
+            Assert.Equal("Waermepumpe", SchemaLayout.TitelKuerzen("Waermepumpe", 200));
+
+            // Und ebenso im vollstaendig angeordneten Modell: Die drei Erzeugertitel des
+            // synthetischen Modells (max. 11 Zeichen) passen bequem in die 214-px-Spalte.
+            SchemaLayout l = SchemaLayout.Anordnen(Modell(), 0);
+            Assert.Equal("Waermepumpe", KnotenFlaeche(l, "ERZEUGER_1").TitelAnzeige);
+            Assert.Equal("Heizkessel", KnotenFlaeche(l, "ERZEUGER_2").TitelAnzeige);
+        }
+
+        [Fact]
+        public void Ein_vierzig_Zeichen_Titel_wird_mit_Ellipse_auf_die_verfuegbare_Breite_gekuerzt()
+        {
+            string titel = new string('A', 40);
+
+            // Schmaler als 40 Zeichen * ZEICHEN_BREITE (6 px) = 240 px, also Kuerzung noetig.
+            string gekuerzt = SchemaLayout.TitelKuerzen(titel, 150);
+
+            Assert.NotEqual(titel, gekuerzt);
+            Assert.EndsWith("…", gekuerzt);
+            Assert.True(gekuerzt.Length < titel.Length, "Kuerzung muss kuerzer sein als das Original");
+            Assert.True(SchemaLayout.TextBreite(gekuerzt) <= 150,
+                        "TitelAnzeige ragt ueber die verfuegbare Breite hinaus: " +
+                        SchemaLayout.TextBreite(gekuerzt) + " > 150");
+
+            // Und im angeordneten Modell: ein Erzeuger mit vierzig Zeichen Titel sprengt die
+            // 214-px-Spalte (198 px verfuegbar ohne Rang) und wird ebenso gekuerzt.
+            SchemaModell m = Modell();
+            m.Finden("ERZEUGER_2").Titel = titel;
+
+            SchemaLayout l = SchemaLayout.Anordnen(m, 0);
+            SchemaLayout.Knotenflaeche k = KnotenFlaeche(l, "ERZEUGER_2");
+
+            Assert.Equal(titel, k.Knoten.Titel);          // der volle Name bleibt fuer den Tooltipp
+            Assert.NotEqual(titel, k.TitelAnzeige);
+            Assert.EndsWith("…", k.TitelAnzeige);
+            Assert.True(SchemaLayout.TextBreite(k.TitelAnzeige) <= k.Flaeche.Breite - 2 * SchemaLayout.KNOTEN_RAND);
+        }
+
+        [Fact]
+        public void Umlaute_im_Titel_werden_sauber_gekuerzt_und_nicht_zerschnitten()
+        {
+            string titel = "Wärmepumpe Außenluft groß Übergabe Grünstrom Prüfstück Nördlich";
+            Assert.True(SchemaLayout.TextBreite(titel) > 120, "Testtitel muesste Kuerzung erzwingen");
+
+            string gekuerzt = SchemaLayout.TitelKuerzen(titel, 120);
+
+            Assert.EndsWith("…", gekuerzt);
+            Assert.True(SchemaLayout.TextBreite(gekuerzt) <= 120);
+
+            // Das Stueck VOR der Ellipse ist ein echtes Prefix des Originaltitels — kein
+            // Umlaut wird durch die Kuerzung verstuemmelt (ein Umlaut ist EIN char, kein
+            // Ersatzzeichenpaar; string.Length zaehlt ihn bereits richtig).
+            string ohneEllipse = gekuerzt.Substring(0, gekuerzt.Length - 1);
+            Assert.StartsWith(ohneEllipse, titel);
+        }
+
+        [Fact]
+        public void Eine_sehr_schmale_Breite_liefert_mindestens_die_Ellipse()
+        {
+            Assert.Equal("…", SchemaLayout.TitelKuerzen("Waermepumpe", 0));
+            Assert.Equal("…", SchemaLayout.TitelKuerzen("Waermepumpe", 3));
+        }
+
+        [Fact]
+        public void Ein_leerer_Titel_bleibt_leer()
+        {
+            Assert.Equal("", SchemaLayout.TitelKuerzen("", 100));
+            Assert.Equal("", SchemaLayout.TitelKuerzen(null, 100));
+        }
+
         // ================================================================== Kanten
 
         // Anwenderbefund W10b-B-1 (05.09.2026): Die Leitungen laufen in SPALTENBAHNEN,

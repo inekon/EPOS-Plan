@@ -1523,7 +1523,7 @@ namespace WindowsFormsApplication1
                 knoten.Add(new SchemaKnoten(
                     k.Schluessel, (SchemaKnotenart)(int)k.Knoten.Art,
                     k.Flaeche.X, k.Flaeche.Y, k.Flaeche.Breite, k.Flaeche.Hoehe,
-                    k.Knoten.Rang, k.Knoten.Titel,
+                    k.Knoten.Rang, k.Knoten.Titel, k.TitelAnzeige,
                     k.Knoten.Zeilen, k.Knoten.Badges,
                     k.Knoten.Hinweis, k.Knoten.Warnung, k.Knoten.Warntext, k.Knoten.Kaskade,
                     k.Knoten.ID_Type == ProjektPuffer.TYP_WP));
