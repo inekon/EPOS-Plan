@@ -1,0 +1,69 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulation.wiki
+     Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207)
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
+     Der Rechenweg steht auf Programm Dokumentation/Berechnung/Simulationsablauf. -->
+Die Ansicht '''Simulation''' führt den Lauf in '''drei Schritten''': ''① Konfiguration'', ''② Simulation starten ▶'' und ''③ Ergebnis''. Sie füllt das Programmfenster ganz aus – kein Fenster im Fenster, ein Rollbalken.
+
+Das Blatt '''① Konfiguration''' legt fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. Es ist die Schaltzentrale des Projekts: Hier entstehen die Erzeugerkaskade und die Zuordnung der Pufferspeicher.
+
+== Simulation durchführen ==
+{{Anker|ablauf}}
+
+Die Simulation ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Dialog mehr. Sie erreichen sie über '''Projekt → Simulation…''', über den Knopf '''Simulation Konfiguration…''' oder über die Kachel '''Simulation''' auf dem Reiter ''Simulation'' der Startseite.
+
+Oben steht die '''Ablaufleiste''' mit drei Stationen: ''① Konfiguration'' · ''② Simulation starten ▶'' · ''③ Ergebnis''. Sichtbar ist immer genau ein Blatt; ein Schrittwechsel wirft nichts weg – der gerechnete Lauf, die Diagramme und der offene Reiter bleiben stehen.
+
+# '''① Konfiguration''' – Erzeuger wählen, die Reihenfolge der Kaskade festlegen, Pufferspeicher zuordnen; die Einzelheiten stehen unter [[#erzeuger-und-speicher|Eingaben]]. Änderungen an der Kaskade müssen mit ''Konfiguration speichern'' geschrieben werden, sonst rechnet die Simulation den zuletzt gespeicherten Stand.
+# '''② Simulation starten ▶''' ist ein '''Knopf, kein Blatt''' – ein Lauf ist nichts, das man ansieht. Er ist gesperrt, solange die Konfiguration ungespeichert ist oder die Datenbank den Lauf blockiert; der Grund steht am Knopf und als Hinweis darunter. Der Lauf läuft im Hintergrund, mit Fortschrittsbalken und ''Abbrechen'', und endet in Schritt ③.
+# '''③ Ergebnis''' – die zehn Reiter von ''Parameter'' bis ''Stromspeicher'', darunter ''Ergebnis speichern''. Der Schritt steht erst offen, wenn einmal gerechnet wurde, und sagt sonst, warum; die Reiter beschreibt [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]].
+
+'''← zurück''' oben rechts führt dorthin, woher Sie kamen. Sind Änderungen an der Konfiguration ungespeichert, werden Sie vorher gefragt: ''Speichern'' · ''Verwerfen'' · ''Bleiben''; Esc bedeutet ''Bleiben''.
+
+=== Speicherflotte und Auslegung ===
+{{Anker|ablauf-auslegung}}
+
+Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stromspeicher'' wechselt in die [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher-Auslegung]]. Deren '''← zurück''' bringt Sie wieder in das Ergebnis, und zwar auf denselben Reiter – der dann meldet, dass die Flotte geändert wurde und die Simulation neu zu starten ist.
+
+=== Neu gegenüber der Vorversion ===
+{{Anker|ablauf-neu}}
+
+* Ergebnis und Konfiguration erscheinen '''nicht mehr als Fenster im Fenster'''; beide sind Schritte derselben Ansicht.
+* Die Kachel ''Simulation'' öffnet das Ergebnis – ohne gerechnetes Ergebnis die Konfiguration mit einem Hinweis – und '''startet den Lauf nicht mehr von selbst'''.
+* Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen; die Ablaufleiste und das eine ''← zurück'' ersetzen sie.
+* Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
+
+== Eingaben ==
+
+=== Simulation Konfiguration ===
+
+* {{Anker|erzeuger-und-speicher}}'''Erzeuger definieren, Pufferspeicher zuordnen''' – die Kopfzeile der Maske benennt ihre beiden Aufgaben: die Erzeuger in ihrer Reihenfolge und die Speicher, die sie beliefern.
+* {{Anker|erzeugerliste}}'''Wärmeerzeuger, Stromerzeuger und Energiespeicher''' – die im Projekt vorhandenen Anlagen der Reihe nach auswählen; nicht angekreuzte Bausteine des Projekts erscheinen hier nicht.
+* '''Priorität absteigend''' – die Reihenfolge ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort.
+* {{Anker|puffer-zuordnung}}'''Pufferspeicher Zuordnung''' – mit ''Pufferspeicher Zuordnung einblenden'' öffnen Sie die Rubrik, in der Sie den ausgewählten Erzeugern Speicher zuordnen und Vorlauf- und Rücklauftemperatur sowie die Ein- und Abschaltschwellen festlegen.
+* {{Anker|speicher-im-projekt}}'''Speicher im Projekt''' – die rechte Spalte führt alle Speicher des Projekts als Kacheln: zuerst die Pufferspeicher, danach je aufgenommenem Stromspeicher eine Kachel mit Namen und den ersten drei Kennwerten (Kapazität, Leistung, Wirkungsgrad). Ein nur verfügbarer, nicht aufgenommener Stromspeicher steht dort nicht. Bearbeitet wird der Stromspeicher weiterhin links unter ''Energiespeicher''.
+* {{Anker|ansicht}}'''Ansicht: Liste oder Schema''' – die Umschaltung über der Arbeitsfläche zeigt dieselbe Konfiguration wahlweise als Liste der Karten oder als Anlagenschema mit den Verbindungen zwischen Erzeugern, Speichern und Senken. Der Inhalt ist derselbe, nur die Darstellung wechselt.
+* '''Doppelklick in der Übersicht''' – ändert Pufferspeicher, Vorlauf und Rücklauf des betreffenden Eintrags; bei Wärmepumpen zusätzlich Priorität, Wärmequelle, Wärmesenke und Betriebsmodus.
+* {{Anker|extrapolation}}'''Extrapolation der WP-Kennlinie''' – der Schalter ''Extrapolation der WP-Kennlinie erlauben'' steht nicht mehr in dieser Maske, sondern in der Detailansicht der Wärmepumpe unter ''Kenndaten Kennlinien''; siehe [[Programm Dokumentation/Wärmepumpe#extrapolation|Wärmepumpe: Extrapolation]]. Er bleibt eine Projekteinstellung für alle Wärmepumpen des Projekts.
+* '''Konfiguration speichern''' – die Konfiguration bleibt dem Projekt erhalten; eine Statuszeile bestätigt das Speichern.
+
+=== Wärmesenken einer Anlage ===
+
+* {{Anker|senkenliste}}'''Wärmesenken in Reihenfolge der Belieferung''' – die Liste führt die Senken einer Anlage nach Rang: Die oberste wird zuerst beliefert, die folgenden bekommen, was übrig bleibt. Die Pfeilschaltflächen daneben verschieben die markierte Zeile im Rang.
+* {{Anker|senkenzeile}}'''Gewählte Senke: Ziel, Pufferspeicher, Bedarfsart''' – ''Ziel'' bestimmt, wohin die Wärme geht: in den Heizkreis zur direkten Deckung, in die Prozesswärme oder in einen Pufferspeicher für Heizung, Brauchwasser, Prozesswärme oder Kombibetrieb. ''Pufferspeicher'' benennt bei den Speicherzielen den Speicher der Zeile, ''Bedarfsart'' teilt die Lieferung auf – beides mit Warmwasservorrang, nur Warmwasser oder nur Heizwärme; die Bedarfsart wirkt nur beim Ziel Heizkreis.
+* {{Anker|parallelverbund}}'''Parallelverbund (mehrere Speicher als ein Vorrat)''' – zusätzlich angekreuzte Pufferspeicher rechnen gemeinsam mit dem oben gewählten Leitspeicher als ein einziger Vorrat; eine Zeile darunter nennt das Summenvolumen. Der Verbund steht nur der Senke auf Rang 1 und nur bei einem Speicherziel offen.
+* {{Anker|ladeverhalten}}'''Ladeverhalten am Pufferspeicher''' – die ''Ladepriorität'' bestimmt, an welcher Stelle dieser Speicher geladen wird; ''Bei PV-Überschuss'' erlaubt dafür eine abweichende zweite Reihenfolge. Eine ''eigene Ladeobergrenze'' beendet die Ladung bei einem Prozentsatz des Speichers, statt bis zur Abschaltschwelle zu laden. Die ''eigene Einspeisehöhe'' legt fest, in welche Schicht eingespeist wird (0 = unten, 1 = oben); sie wirkt nur bei einem geschichteten Zielspeicher.
+
+== Siehe auch ==
+
+* [[Simulation konfigurieren und starten]] – der zugehörige Schritt im Programmablauf
+* [[Simulation]] – Erzeugerkaskade, Strombilanz und zeitliche Auflösung
+* [[Grundlagen/Hydraulikschemata]] – hydraulische Einbindung von Erzeugern und Speichern
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Die Reihenfolge eines Simulationslaufs — Bedarf, Kaskade der Waermeerzeuger,
+Photovoltaik, Stromspeicher, Abschluss — steht unter
+[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].
