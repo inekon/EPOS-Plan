@@ -686,9 +686,10 @@ bleibt die Kette es auch.
 > **Nachtrag 11.09.2026:** Der Einwand ist erledigt. Die Vorlagendatenbank liegt
 > nicht mehr im Repository, sondern **entsteht im Lauf** aus einer benannten
 > Quelle (`Werkzeuge\Auslieferungsvorlage`, Abschnitt 6.1) — in der CI aus
-> `Referenzlaeufe/Kenndaten_Test.sqlite`. Damit gibt es den Job: `setup.yml`,
-> siehe „Lauf in der CI" am Ende von 8.1. Handarbeit bleibt allein die
-> Auslieferung selbst, deren Quelle ein gepflegter Katalogstand vom
+> `Referenzlaeufe/Kenndaten_Test.sqlite`. Damit gibt es den Job: seit #177 der
+> Job `installer` in `.github/workflows/windows.yml` (davor die eigene Datei
+> `setup.yml`, #176), siehe „Lauf in der CI" am Ende von 8.1. Handarbeit bleibt
+> allein die Auslieferung selbst, deren Quelle ein gepflegter Katalogstand vom
 > Arbeitsplatz ist.
 
 ### 8.1 Laufanleitung Windows
@@ -737,25 +738,36 @@ vollständigen Handlauf.
    Zeilennummer im `.iss`).
 
 **Lauf in der CI (Anwenderentscheid „#160‑E‑1: CI" vom 11.09.2026).** Dieselbe
-Kette fährt `.github/workflows/setup.yml` auf `windows-latest`, weil es Anwender
-und Agenten gibt, die weder Windows noch Inno Setup zur Hand haben. Ausgelöst
-wird sie **nur von Hand** — GitHub → Actions → **Setup** → *Run workflow* (kein
-Push-, kein Zeitauslöser: der Windows-Läufer zählt doppelt, und Veröffentlichung,
-186 MB Herstellerdaten und LZMA2-Solidkompression füllen den Lauf; Zeitlimit 60
-Minuten, Häkchen „schnell" schaltet auf `lzma2/normal`). Der Job lädt den
-WebView2-Bootstrapper nach (er steht in `.gitignore` und fehlt im Klon), prüft
-`ISCC.exe` im Runner-Image und ruft dann Schritt 3 von oben mit
-`-Quelldatenbank Referenzlaeufe/Kenndaten_Test.sqlite -Kataloge alle`, ohne
-`-Beispiele` — das Repository führt keinen gepflegten Beispielsatz, und ohne den
-Schalter bleibt die Vorlage projektfrei (6.1, Schritt 4). Zurück kommen drei
-Dinge, 14 Tage lang: der übersetzte Installer aus `Setup\Ausgabe`, der
-Prüfbericht der Vorlage (er steht zusätzlich im Lauf selbst — er ist der Beleg,
-dass keines der 24 Prüfprojekte in den Installer gewandert ist) und das
-Skriptprotokoll. **Grenzen:** Das Ergebnis ist ein Prüfstück, kein
-Auslieferungsstand — die Quelle ist die Testdatenbank, nicht der gepflegte
-Katalogstand. Signiert wird nicht (Abschnitt 9; der Job hat bewusst keine
-Geheimnisse), installiert wird nicht, gestartet wird nicht: Die Freigabeprobe
-oben bleibt Handarbeit auf einer frischen Windows-Installation.
+Kette fährt der Job `installer` in `.github/workflows/windows.yml` auf
+`windows-latest`, weil es Anwender und Agenten gibt, die weder Windows noch
+Inno Setup zur Hand haben. Der Job stand bis zum 11.09.2026 in einer eigenen
+Datei `setup.yml` (#176) und ist mit **#177** hierher verlegt: GitHub nimmt
+eine Workflow-Datei erst dann in die Actions-Liste auf, wenn sie auf dem
+Standardzweig `main` liegt, ein `workflow_dispatch` auf eine neue Datei eines
+Nebenzweigs scheitert bis dahin mit 404. `windows.yml` ist bereits registriert
+— ein `workflow_dispatch` mit `ref = <Zweig>` benutzt dessen Datei genau
+dieses Zweigs, auch bevor er auf `main` steht. Ausgelöst wird der Setup-Bau
+weiterhin **nur von Hand** — GitHub → Actions → **Windows** → *Run workflow* →
+Häkchen „setup" (kein Push-, kein Zeitauslöser für diesen Zweig des Laufs: der
+Windows-Läufer zählt doppelt, und Veröffentlichung, 186 MB Herstellerdaten und
+LZMA2-Solidkompression füllen den Lauf; Zeitlimit 60 Minuten, zusätzliches
+Häkchen „schnell" schaltet auf `lzma2/normal`). Ohne das Häkchen „setup" läuft
+weiterhin nur der bisherige Job `build-test` — die zwei Jobs schließen sich
+über ihre `if`-Bedingungen gegenseitig aus, ein Setup-Lauf fährt nicht
+zusätzlich die Testkette. Der Job `installer` lädt den WebView2-Bootstrapper
+nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
+Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
+Referenzlaeufe/Kenndaten_Test.sqlite -Kataloge alle`, ohne `-Beispiele` — das
+Repository führt keinen gepflegten Beispielsatz, und ohne den Schalter bleibt
+die Vorlage projektfrei (6.1, Schritt 4). Zurück kommen drei Dinge, 14 Tage
+lang: der übersetzte Installer aus `Setup\Ausgabe`, der Prüfbericht der
+Vorlage (er steht zusätzlich im Lauf selbst — er ist der Beleg, dass keines
+der 24 Prüfprojekte in den Installer gewandert ist) und das Skriptprotokoll.
+**Grenzen:** Das Ergebnis ist ein Prüfstück, kein Auslieferungsstand — die
+Quelle ist die Testdatenbank, nicht der gepflegte Katalogstand. Signiert wird
+nicht (Abschnitt 9; der Job hat bewusst keine Geheimnisse), installiert wird
+nicht, gestartet wird nicht: Die Freigabeprobe oben bleibt Handarbeit auf
+einer frischen Windows-Installation.
 
 ---
 
