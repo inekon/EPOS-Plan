@@ -34,15 +34,20 @@ namespace EPOS.UI.Tests.Bausteine;
 ///
 /// <para>Die Sprache pinnt die Klasse selbst (Hausregel seit iU9‑W8).</para>
 /// </summary>
-public class ParameteruebersichtTests : BunitContext
+public class ParameteruebersichtTests : EposBunitContext
 {
     public ParameteruebersichtTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Kultur("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    /// <summary>
+    /// Schaltet INNERHALB eines Falls auf eine andere Kultur um — die
+    /// endgültige Rückstellung auf die Kultur des Läufers übernimmt die
+    /// <see cref="Kulturvorrichtung"/> aus dem Konstruktor von
+    /// <see cref="EposBunitContext"/>.
+    /// </summary>
     private static void Kultur(string name)
     {
         var k = new CultureInfo(name);

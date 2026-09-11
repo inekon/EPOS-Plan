@@ -17,23 +17,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Die Umrechnungszeile traegt Zahlen; die UI-Kultur wird deshalb wie in
 /// <c>SpeichernLeisteTests</c> auf de-DE festgehalten.
 /// </summary>
-public class CaseEingabeDialogTests : BunitContext
+public class CaseEingabeDialogTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentCulture;
-    private readonly CultureInfo _uiKulturVorher = CultureInfo.CurrentUICulture;
-
     public CaseEingabeDialogTests()
     {
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentCulture = _kulturVorher;
-        CultureInfo.CurrentUICulture = _uiKulturVorher;
-        base.Dispose(disposing);
     }
 
     private IRenderedComponent<CaseEingabeDialog> Aufbauen(

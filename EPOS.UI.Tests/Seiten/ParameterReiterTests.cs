@@ -26,10 +26,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// aus <c>MyResource.Resource</c> und folgen der Oberflaechensprache des
 /// Fadens.</para>
 /// </summary>
-public class ParameterReiterTests : BunitContext
+public class ParameterReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     private readonly List<(double Wert, string Einheit)> _netzverluste = new();
     private readonly List<int> _betriebsart = new();
     private readonly List<int> _grenze = new();
@@ -40,13 +38,6 @@ public class ParameterReiterTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

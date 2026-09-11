@@ -15,7 +15,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// ihrem Einheitsauszug, Verbrauch, Jahresnutzungsgrad, der Schalter für die dezentrale
 /// Warmwasserbereitung und drei Knöpfe.
 /// </summary>
-public class GebaeudeWohnflaecheDialogTests : BunitContext
+public class GebaeudeWohnflaecheDialogTests : EposBunitContext
 {
     private static readonly string[] BEDARFSARTEN =
     {
@@ -30,8 +30,6 @@ public class GebaeudeWohnflaecheDialogTests : BunitContext
     public GebaeudeWohnflaecheDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

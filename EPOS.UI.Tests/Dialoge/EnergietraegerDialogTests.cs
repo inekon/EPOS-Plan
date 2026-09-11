@@ -17,21 +17,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Abschnitten und die Schlussleiste. Dazu die Unterdialoge, die seit dieser
 /// Welle in einer Überlagerung stehen.</para>
 /// </summary>
-public class EnergietraegerDialogTests : BunitContext
+public class EnergietraegerDialogTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentCulture;
-
     public EnergietraegerDialogTests()
     {
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentCulture = _kulturVorher;
-        base.Dispose(disposing);
     }
 
     // ---- Probendaten -----------------------------------------------------

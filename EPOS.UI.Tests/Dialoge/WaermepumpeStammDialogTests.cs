@@ -16,7 +16,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// 28 Zeilen — die Stammliste, neun Felder, zwei Kennlinienbilder in zwei
 /// Reiterblättern, der Umschalter Wärme/Kühlung und sechs Knöpfe.
 /// </summary>
-public class WaermepumpeStammDialogTests : BunitContext
+public class WaermepumpeStammDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -54,8 +54,6 @@ public class WaermepumpeStammDialogTests : BunitContext
     public WaermepumpeStammDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

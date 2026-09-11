@@ -24,30 +24,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// und der Schalter „Jahresverlauf".</item>
 /// </list>
 /// </summary>
-public class BedarfErgebnisDialogTests : BunitContext
+public class BedarfErgebnisDialogTests : EposBunitContext
 {
     public BedarfErgebnisDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit iU9‑W8, Muster
-    /// <c>DeutscheOberflaeche</c> aus <c>GebaeudeKatalogDialogTests</c>) — Kultur UND
-    /// Thread-Kultur, damit ein Lauf unter <c>LANG=en_US.UTF-8</c> dieselbe
-    /// Zahlenschreibweise sieht.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private static readonly byte[] BILD = { 1, 2, 3, 4 };

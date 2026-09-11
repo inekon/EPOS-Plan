@@ -17,21 +17,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// dem Umstellen, der stille Ruecksprung auf einer bereits aktiven Zeile, die
 /// Meldung ohne Auswahl, das Protokoll und der ECHTE Fortschritt.</para>
 /// </summary>
-public class SpeicherVariantenVergleichTests : BunitContext
+public class SpeicherVariantenVergleichTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     public SpeicherVariantenVergleichTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        base.Dispose(disposing);
     }
 
     private static VergleichDaten Daten(bool keineAktive = false) => new VergleichDaten

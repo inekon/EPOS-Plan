@@ -18,7 +18,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt: Die Erwartungswerte sind deutsche
 /// Beschriftungen, und der Windows-Läufer läuft mit englischer Oberfläche.</para>
 /// </summary>
-public class GebaeudeKatalogDialogTests : BunitContext
+public class GebaeudeKatalogDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Einfamilienhaus", "Hotel" };
     private static readonly string[] ARTEN = { "Einfamilienhaus", "Hotel", "Kaufhaus" };
@@ -33,25 +33,7 @@ public class GebaeudeKatalogDialogTests : BunitContext
     public GebaeudeKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
-    /// <c>DeutscheOberflaeche</c> aus <c>EPOS.Kern.Tests</c>) — Kultur UND
-    /// Thread-Kultur, damit ein Lauf unter <c>LANG=en_US.UTF-8</c> dieselben deutschen
-    /// Beschriftungen und dieselbe Zahlenschreibweise sieht.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     /// <summary>Ein vollständig belegter Satz — alle 17 Pflichtzahlen stehen.</summary>

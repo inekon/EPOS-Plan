@@ -26,12 +26,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Der Gesetzeskatalog kommt als Delegat herein — die Tests legen die Werte
 /// selbst, ohne Datenbank.
 /// </summary>
-public class PhotovoltaikVerguetungDialogTests : BunitContext
+public class PhotovoltaikVerguetungDialogTests : EposBunitContext
 {
     public PhotovoltaikVerguetungDialogTests()
     {
-        Thread.CurrentThread.CurrentCulture = new CultureInfo("de-DE");
-        Thread.CurrentThread.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

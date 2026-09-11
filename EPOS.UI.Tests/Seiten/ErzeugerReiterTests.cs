@@ -38,25 +38,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>Bildauftrag.Bereich</c> an den Kern, der Knopf „1:1" nimmt ihn
 /// zurück.</para>
 /// </summary>
-public class ErzeugerReiterTests : BunitContext
+public class ErzeugerReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
     private readonly List<Bildauftrag> _auftraege = new();
 
     public ErzeugerReiterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }

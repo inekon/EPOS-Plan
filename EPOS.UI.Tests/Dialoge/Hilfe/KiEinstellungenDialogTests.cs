@@ -26,15 +26,10 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 ///
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8).</para>
 /// </summary>
-public class KiEinstellungenDialogTests : BunitContext
+public class KiEinstellungenDialogTests : EposBunitContext
 {
     public KiEinstellungenDialogTests()
     {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
     }
 
     private IRenderedComponent<KiEinstellungenDialog> Zeigen(

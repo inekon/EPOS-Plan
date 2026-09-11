@@ -22,10 +22,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// der Dialoge stammen aus dem Ressourcenkatalog des Kerns, und die CI-Laeufer
 /// auf macOS und Windows laufen englisch.
 /// </summary>
-public class AppWurzelTests : BunitContext
+public class AppWurzelTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-
     private static readonly ProjektZeile[] ZweiProjekte =
     {
         new ProjektZeile(1030, "B3-Kaskade", "Region 12", "WP+BHKW"),
@@ -35,13 +33,11 @@ public class AppWurzelTests : BunitContext
     public AppWurzelTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
     protected override void Dispose(bool disposing)
     {
-        CultureInfo.CurrentUICulture = _kulturVorher;
         Navigationsziel.Aktuell = null;
         base.Dispose(disposing);
     }

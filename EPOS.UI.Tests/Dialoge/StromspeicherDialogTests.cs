@@ -21,7 +21,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// beiden Pfeile und der reine Anzeigeblock mit sieben Feldern — davon zwei mit
 /// Beschriftungen aus dem Ressourcenkatalog statt aus dem Designer.
 /// </summary>
-public class StromspeicherDialogTests : BunitContext
+public class StromspeicherDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -65,8 +65,6 @@ public class StromspeicherDialogTests : BunitContext
     public StromspeicherDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

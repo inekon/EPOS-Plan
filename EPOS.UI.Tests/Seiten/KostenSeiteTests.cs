@@ -18,30 +18,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// mit zehn Spalten, die Zeilenfarben (rosa/gelb), die Kurztexte und die
 /// Fußzeile.</para>
 /// </summary>
-public class KostenSeiteTests : BunitContext
+public class KostenSeiteTests : EposBunitContext
 {
     public KostenSeiteTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        DeutscheOberflaeche();
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Muster
-    /// <c>UebersichtSeiteTests</c>) — Kultur UND Thread-Kultur, damit ein Lauf
-    /// unter <c>LANG=en_US.UTF-8</c> dieselben Beschriftungen und dieselbe
-    /// Zahlschreibweise sieht.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // ---- Probendaten -----------------------------------------------------

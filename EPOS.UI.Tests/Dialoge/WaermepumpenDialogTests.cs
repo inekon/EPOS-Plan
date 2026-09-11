@@ -14,13 +14,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Wärmepumpen Verwaltung — seit W7‑B‑3 (08.09.2026) EIN Dialog: links die Wärmepumpen des
 /// Projekts, rechts der Katalog, darunter die Detailansicht der markierten Anlage eingebettet.
 /// </summary>
-public class WaermepumpenDialogTests : BunitContext
+public class WaermepumpenDialogTests : EposBunitContext
 {
     public WaermepumpenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

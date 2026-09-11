@@ -32,17 +32,11 @@ namespace EPOS.UI.Tests.Bausteine;
 ///
 /// <para>Kultur gepinnt (Hausregel seit iU9‑W8).</para>
 /// </summary>
-public class KatalogVergleichTests : BunitContext
+public class KatalogVergleichTests : EposBunitContext
 {
     public KatalogVergleichTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     // =====================================================================

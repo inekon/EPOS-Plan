@@ -19,7 +19,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_PufferSp</c>: zwei Listen, zwei Filter (Hersteller und Volumen), der
 /// Detailblock und die Eindeutigkeitsrückfrage vor dem Aufnehmen.
 /// </summary>
-public class PufferspeicherDialogTests : BunitContext
+public class PufferspeicherDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -57,8 +57,6 @@ public class PufferspeicherDialogTests : BunitContext
     public PufferspeicherDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

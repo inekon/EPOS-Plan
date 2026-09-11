@@ -28,20 +28,10 @@ namespace EPOS.UI.Tests;
 /// Lehre W6-B-1) und der BESTAND (kein Dialog baut das Muster noch selbst, und
 /// alle elf Wirte nehmen ihn).</para>
 /// </summary>
-public class ZweispaltenauswahlTests : BunitContext
+public class ZweispaltenauswahlTests : EposBunitContext
 {
     public ZweispaltenauswahlTests()
     {
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     /// <summary>Die kleinste tragfähige Probe: zwei Listen, zwei Knöpfe.</summary>

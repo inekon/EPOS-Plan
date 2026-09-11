@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_Solarganglinie</c>: neun Zeilen — zwei Listen, die beiden Pfeile, Name
 /// und Beschreibung als Anzeige, „Bearbeiten…", OK und Abbrechen.
 /// </summary>
-public class SolarganglinieDialogTests : BunitContext
+public class SolarganglinieDialogTests : EposBunitContext
 {
     /// <summary>
     /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
@@ -37,8 +37,6 @@ public class SolarganglinieDialogTests : BunitContext
     public SolarganglinieDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

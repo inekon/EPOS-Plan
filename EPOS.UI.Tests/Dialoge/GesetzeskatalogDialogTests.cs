@@ -27,7 +27,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// deutsche Beschriftungen, und der Windows-Läufer läuft mit englischer
 /// Oberfläche.</para>
 /// </summary>
-public class GesetzeskatalogDialogTests : BunitContext
+public class GesetzeskatalogDialogTests : EposBunitContext
 {
     private static readonly (string, string)[] KLASSEN =
     {
@@ -56,18 +56,7 @@ public class GesetzeskatalogDialogTests : BunitContext
     public GesetzeskatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;          // das Raster laedt sein JS-Modul
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit W8).</summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private IRenderedComponent<GesetzeskatalogDialog> Aufbauen(

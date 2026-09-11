@@ -18,25 +18,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// (Befund W11-B41), die vier Navigationsblaetter und die Autarkiekacheln samt
 /// der NICHT gespeicherten Was-waere-wenn-Kapazitaet (Befund W11-B32).</para>
 /// </summary>
-public class GangUndErgebnisReiterTests : BunitContext
+public class GangUndErgebnisReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
     private readonly List<Bildauftrag> _auftraege = new();
 
     public GangUndErgebnisReiterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }

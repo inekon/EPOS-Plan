@@ -17,15 +17,10 @@ namespace EPOS.UI.Tests.Bausteine;
 ///
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8).</para>
 /// </summary>
-public class KiKnopfTests : BunitContext
+public class KiKnopfTests : EposBunitContext
 {
     public KiKnopfTests()
     {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
     }
 
     [Fact]

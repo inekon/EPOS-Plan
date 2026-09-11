@@ -25,24 +25,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// Windows-Läufer läuft mit englischer Oberfläche, und die Erwartungswerte
 /// unten sind deutsche Beschriftungen.</para>
 /// </summary>
-public class KachelbilderTests : BunitContext
+public class KachelbilderTests : EposBunitContext
 {
     public KachelbilderTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // =====================================================================

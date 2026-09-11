@@ -16,15 +16,13 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Ausprägungen - Waermepumpe und Heizkessel - haben deshalb ihre eigenen Faelle,
 /// wie in Welle 8 die drei Bedarfsblaetter.</para>
 /// </summary>
-public class QuellePufferspeicherDialogTests : BunitContext
+public class QuellePufferspeicherDialogTests : EposBunitContext
 {
     private const string BERECHNET = "berechnet";
     private const string FEST = "fest";
 
     public QuellePufferspeicherDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

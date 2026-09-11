@@ -18,16 +18,10 @@ namespace EPOS.UI.Tests.Standards;
 ///
 /// <para>Die Klasse pinnt die Sprache selbst (Regel seit W8).</para>
 /// </summary>
-public class ChartBildTests : BunitContext
+public class ChartBildTests : EposBunitContext
 {
     public ChartBildTests()
     {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-
         // Der Rahmen laedt sein Zoommodul dynamisch; in Loose-Mode beantwortet
         // bunit den import mit dem Standardwert.
         JSInterop.Mode = JSRuntimeMode.Loose;

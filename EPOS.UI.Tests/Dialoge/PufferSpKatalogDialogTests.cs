@@ -18,7 +18,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// dem Windows-Lauf 33839255709): Die Erwartungswerte sind deutsche Beschriftungen und
 /// deutsche Zahlenschreibweise, der Windows-Läufer läuft mit englischer Oberfläche.</para>
 /// </summary>
-public class PufferSpKatalogDialogTests : BunitContext
+public class PufferSpKatalogDialogTests : EposBunitContext
 {
     /// <summary>
     /// Die drei Speichertypen in der Reihenfolge der Auswahlliste — die Id ist der
@@ -32,23 +32,7 @@ public class PufferSpKatalogDialogTests : BunitContext
     public PufferSpKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Kultur, UI-Kultur und die beiden <c>DefaultThread*</c>-Kulturen auf de-DE
-    /// (Muster <c>GebaeudeKatalogDialogTests</c>).
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private static PufferSpKatalogDaten Bestand() => new()

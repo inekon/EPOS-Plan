@@ -41,21 +41,11 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para>Keine Sprachbindung: geprüft werden Klassennamen. Die Kultur wird
 /// trotzdem gepinnt (Hausregel seit iU9‑W8).</para>
 /// </summary>
-public class FormularrasterTests : BunitContext
+public class FormularrasterTests : EposBunitContext
 {
     public FormularrasterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     // =====================================================================

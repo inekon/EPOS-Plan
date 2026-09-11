@@ -19,7 +19,7 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
-public class EinstellungenDialogTests : BunitContext
+public class EinstellungenDialogTests : EposBunitContext
 {
     private static Einstellungensatz Satz() => new Einstellungensatz
     {
@@ -37,17 +37,7 @@ public class EinstellungenDialogTests : BunitContext
     public EinstellungenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private IRenderedComponent<EinstellungenDialog> Zeige(

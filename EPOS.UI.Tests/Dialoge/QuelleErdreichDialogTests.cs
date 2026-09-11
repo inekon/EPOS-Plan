@@ -20,13 +20,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// VDI4640Pruefung und ErdreichAuswertung; alle drei rechnen aus dem uebergebenen
 /// Aussentemperaturvektor bzw. dem Prozessspeicher.</para>
 /// </summary>
-public class QuelleErdreichDialogTests : BunitContext
+public class QuelleErdreichDialogTests : EposBunitContext
 {
     public QuelleErdreichDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
