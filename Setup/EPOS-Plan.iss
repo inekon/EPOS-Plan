@@ -152,8 +152,14 @@ RestartApplications=no
 
 ; Optionale Gestaltungs- und Textdateien. Die #if-Abfragen sorgen dafür, dass
 ; das Skript auch dann übersetzt, wenn eine davon noch fehlt.
-#if FileExists(SetupDir + "EPOS-Plan.ico")
-SetupIconFile={#SetupDir}EPOS-Plan.ico
+;
+; Symbol des Installationsprogramms — Auftrag #229 (Anwenderwunsch 11.09.2026:
+; "nehme das EPOS-ICON als Programm-Symbol"). EINE Quelle, kein zweites Bild:
+; dieselbe Datei, die die Anwendung selbst über <ApplicationIcon> einbettet
+; (WindowsFormsApplication1.csproj) — vorher lag hier kein Setup\EPOS-Plan.ico,
+; und der Installer trug das Inno-Setup-Standardsymbol.
+#if FileExists(RepoDir + "WindowsFormsApplication1\Resources\EPOS-Plan.ico")
+SetupIconFile={#RepoDir}WindowsFormsApplication1\Resources\EPOS-Plan.ico
 #endif
 #if FileExists(SetupDir + "Lizenz.rtf")
 LicenseFile={#SetupDir}Lizenz.rtf

@@ -894,6 +894,28 @@ Der Port bildet das Verhalten des Vorgängers bewusst genau nach: Feldgrößen f
 `double`; Arrays werden **in-place** überschrieben, der Rückgabewert wird fast überall ignoriert.
 Diese Konventionen beim Erweitern beibehalten.
 
+## Programmsymbol
+
+Seit Auftrag #229 (Anwenderwunsch 11.09.2026: „nehme das EPOS-ICON als Programm-Symbol (für
+taskleiste etc.)") trägt die Anwendung ein eigenes Symbol statt des .NET-Standardsymbols — in
+Taskleiste, Alt-Tab, Explorer und jedem Fensterkopf. **Eine Quelle:** die EPOS-Plan-Marke
+(Variante C — drei Farbfelder, weißer Kern, Blitz —, dieselbe Zeichnung wie in
+`EPOS.UI/Bausteine/InfoKnopf.razor`/`KiKnopf.razor`) liegt als mehrstufiges ICO
+(16/24/32/48/64/128/256 px, PNG-komprimiert) unter `Resources/EPOS-Plan.ico`. Das csproj setzt
+`<ApplicationIcon>Resources\EPOS-Plan.ico</ApplicationIcon>`, und `Setup/EPOS-Plan.iss` nimmt für
+`SetupIconFile` **dieselbe** Datei (`{#RepoDir}WindowsFormsApplication1\Resources\EPOS-Plan.ico`)
+— kein zweites Bild, das beim nächsten Wechsel unbemerkt auseinanderlaufen könnte. Ein
+`<ApplicationIcon>` allein färbt aber nur die Exe-Datei; jedes `Form` braucht sein eigenes
+`Form.Icon` gesetzt, sonst zeigt sein Fensterkopf weiter das eingebaute .NET-Symbol. Dafür lädt
+die kleine statische Klasse `Allgemein/Programmsymbol.cs` das Symbol einmal aus der laufenden Exe
+(`Icon.ExtractAssociatedIcon(Application.ExecutablePath)` — dieselbe Datei, kein zweites Einlesen)
+und bietet `Anwenden(Form)` an; drei Konstruktoren rufen sie — `Hauptfensterrahmen`,
+`BlazorDialogForm<T>` (die EINE `Form`-Unterklasse aller Blazor-Dialoge, damit auch
+`KiChatHuelle`, die intern eine `BlazorDialogForm<KiChatDialog>` baut) und `Form_HelpPopup`.
+**Kein Kern** — `EPOS.Kern` kennt kein WinForms. Der Wächter `EPOS.Kern.Tests/ProgrammsymbolWacheTests`
+(läuft auf Linux, liest nur Quelltext und ICO-Bytes) hält `<ApplicationIcon>` gesetzt, die Datei
+mit mindestens 16/32/48 px vorhanden und Setup wie Anwendung auf demselben Pfad.
+
 ## Konventionen
 
 - Root-Namespace `WindowsFormsApplication1` für alles, trotz Domänen-Ordnern.

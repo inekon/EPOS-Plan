@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Programmsymbol - Platzhalter aus dem Hausthema (KartenStil): dunkles Blau
-     der Gruppenkoepfe als Grund, "EP" in der hellen Themaflaeche. Er wird von
-     der MAUI-Buildkette in alle geforderten Groessen gerastert. Ein
-     gestaltetes Symbol ist Sache von iU13 (TestFlight/Store). -->
-<svg xmlns="http://www.w3.org/2000/svg" width="456" height="456" viewBox="0 0 456 456">
-  <rect width="456" height="456" fill="#0F1F3D"/>
-  <text x="228" y="292" font-family="Helvetica, Arial, sans-serif" font-size="200"
-        font-weight="bold" fill="#F5F4EF" text-anchor="middle">EP</text>
+<!-- Programmsymbol (Auftrag #229, Anwenderwunsch 11.09.2026: "nehme das
+     EPOS-ICON als Programm-Symbol"). Ersetzt den "EP"-Platzhalter aus dem
+     Hausthema (KartenStil) durch die EPOS-Plan-Marke selbst — dieselbe
+     Zeichnung wie in EPOS.UI/Bausteine/InfoKnopf.razor/KiKnopf.razor
+     (Variante C: drei Farbfelder, weisser Kern, Blitz) und in der ICO-Datei
+     der Windows-Anwendung (WindowsFormsApplication1/Resources/EPOS-Plan.ico).
+     Grund weiterhin das dunkle Blau der Gruppenkoepfe (#0F1F3D, deckend -
+     ein iOS-Symbol darf keine Transparenz tragen), dieselbe Farbe wie im
+     Color-Attribut von EPOS.iOS.csproj. Die drei Pfade und der Kreis stehen
+     im selben 16x16-Koordinatenraum wie das UI-Vorbild, damit die Proportion
+     (Kreisdurchmesser rund 85 % der Kantenlaenge) unveraendert bleibt; die
+     MAUI-Buildkette rastert die SVG in alle geforderten Groessen. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <rect width="16" height="16" fill="#0F1F3D"/>
+  <path d="M8 8V1.2A6.8 6.8 0 0 1 14.8 8z" fill="#3a8fd6"/>
+  <path d="M8 8h6.8A6.8 6.8 0 0 1 4.6 13.9z" fill="#7ab648"/>
+  <path d="M8 8 4.6 13.9A6.8 6.8 0 0 1 8 1.2z" fill="#f28c28"/>
+  <circle cx="8" cy="8" r="2.1" fill="#ffffff"/>
+  <path d="M8.6 6.6 7.2 8.3h1.1L7.5 9.9l1.6-1.9H8z" fill="#124d8a"/>
 </svg>
