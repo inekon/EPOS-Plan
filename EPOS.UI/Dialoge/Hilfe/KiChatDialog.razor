@@ -124,11 +124,13 @@
 
     @* --- Eingabe: Feld, EINE Knopfreihe, Datenschutzsatz ----------------- *@
     <div class="epos-kichat-eingabe">
-        <KiEingabezeile Bezeichnung="@Texte.Eingabe"
+        <KiEingabezeile @ref="_eingabe"
+                        Bezeichnung="@Texte.Eingabe"
                         MitModell="@(!HilfeBetrieb)"
                         FragenText="@Texte.Fragen"
                         SuchenText="@Texte.Suchen"
                         Gesperrt="@Gesperrt"
+                        AutoFokus="true"
                         Vorbelegung="@VorbelegungAktuell"
                         Abgeschickt="Abschicken">
             <Vorspann>
@@ -514,6 +516,20 @@
     private static string Zahl(int n)
         => n.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>
+    /// Die Eingabezeile — <b>fuer den Schreibzeiger</b> (Befund KI‑D‑B‑1). Sie ist das
+    /// einzige Kind, das dieser Dialog als Verweis haelt; alles andere geht ueber
+    /// Parameter.
+    /// </summary>
+    private KiEingabezeile? _eingabe;
+
+    /// <summary>
+    /// Soll der Schreibzeiger beim naechsten Zeichenlauf in die Eingabezeile? Gesetzt
+    /// beim Aufbau und bei jedem NEUEN Aufrufkontext (das Fenster steht dann schon,
+    /// und ein erstes Zeichnen gibt es nicht mehr).
+    /// </summary>
+    private bool _fokusNoetig = true;
+
     private string _status = "";
     private string _semantik = "";
     private Bereich _bereich = Bereich.Keiner;
@@ -699,6 +715,33 @@
     }
 
     /// <summary>
+    /// Setzt den Schreibzeiger in die Eingabezeile — <b>Befund KI‑D‑B‑1</b> (Anwender,
+    /// 11.09.2026: „die Eingabe funktioniert nicht").
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Zwei Haelften, eine Eingabe.</b> Die Plattformhuelle gibt dem Fenster
+    /// die Tastatur des Betriebssystems (unter Windows
+    /// <c>BlazorDialogForm.TastaturUebergeben</c>); WELCHES Feld darin schreibt,
+    /// entscheidet diese Stelle. Fehlt eine der beiden, tippt der Anwender ins
+    /// Leere.</para>
+    /// <para><b>Nur einmal und nur, wenn nicht gesperrt.</b> Danach gehoert der Zeiger
+    /// dem Anwender — ein Griff bei jedem Zeichenlauf risse ihn aus der Werkzeugliste
+    /// oder aus dem Bestaetigungsblock heraus. Bei gesperrter Eingabe bleibt die Marke
+    /// stehen, der naechste Zeichenlauf versucht es erneut: Ein Fenster, das mit
+    /// laufender Aktion aufgeht, soll den Zeiger bekommen, sobald sie fertig ist.</para>
+    /// </remarks>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_fokusNoetig) return;
+
+        KiEingabezeile? zeile = _eingabe;
+        if (zeile is null || Gesperrt) return;
+
+        _fokusNoetig = false;
+        await zeile.Fokussieren();
+    }
+
+    /// <summary>
     /// Ein NEUER Aufrufkontext für das stehende Fenster (Auftrag #199) — Windows
     /// öffnet nur EIN Chatfenster, und wer aus einem zweiten Dialog fragt, soll nicht
     /// den Bereich von vorhin lesen.
@@ -706,6 +749,12 @@
     private Task KontextSetzen(KiKontextangabe angabe)
     {
         _kontext = angabe;
+
+        // Derselbe Weg wie beim Aufbau (Befund KI-D-B-1): Ein zweites Oeffnen holt
+        // dieses Fenster nach vorn - dann soll der Schreibzeiger wieder in der
+        // Eingabezeile stehen, und ein erstes Zeichnen gibt es dafuer nicht mehr.
+        _fokusNoetig = true;
+
         return InvokeAsync(StateHasChanged);
     }
 

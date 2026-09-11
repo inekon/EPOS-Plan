@@ -451,13 +451,28 @@ namespace WindowsFormsApplication1
         /// Öffnet eine Adresse — <b>nur http und https</b> (Bestand <c>:1554-1555</c>).
         /// In derselben Anzeige landet Antworttext des Modells, und der ist Fremdtext.
         /// </summary>
+        /// <remarks>
+        /// <para><b>Befund KI‑D‑B‑2</b> (Anwender, 11.09.2026: „Online-Dokumentation
+        /// öffnen tut nichts"). Hier stand <c>Dienste.Datei.MitSystemOeffnen</c> — und
+        /// dessen Windows-Fassung beginnt mit <c>if (!File.Exists(pfad)) return false;</c>
+        /// (<c>WindowsDateiDienst.cs:107</c>). Eine Adresse ist keine Datei: Der Aufruf
+        /// kehrte ohne Wirkung und ohne Meldung zurück — der Fußleistenverweis, die
+        /// Wikitreffer der Suche und jeder Verweis aus einer Modellantwort waren tot.
+        /// Genau diesen Fall nennt <c>IDateiDienst.AdresseOeffnen</c> in seiner eigenen
+        /// Beschreibung (iU9‑W16c.3); er ist der Weg, den auch der Menüpunkt
+        /// „Hilfe → Dokumentation" geht.</para>
+        /// <para><b>Kein modales Fenster</b> und deshalb kein Nachlauf nötig: Beide
+        /// Fassungen starten die Shell-Zuordnung in einem ANDEREN Prozess und pumpen
+        /// keine verschachtelte Nachrichtenschleife (so steht es auch in der
+        /// Begründung von <c>HuellenwegTests.ModalRegex</c>).</para>
+        /// </remarks>
         private void AdresseOeffnen(string adresse)
         {
             if (string.IsNullOrWhiteSpace(adresse)) return;
             if (!adresse.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                 && !adresse.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) return;
 
-            try { Dienste.Datei.MitSystemOeffnen(DokuUebersetzung.FuerAnzeige(adresse)); }
+            try { Dienste.Datei.AdresseOeffnen(DokuUebersetzung.FuerAnzeige(adresse)); }
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine("[KI] Adresse: " + ex.Message); }
         }
 

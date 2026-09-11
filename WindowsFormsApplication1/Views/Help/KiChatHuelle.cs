@@ -94,6 +94,12 @@ namespace WindowsFormsApplication1
 
             if (besitzer is Form wirt && !wirt.IsDisposed) _fenster.Show(wirt);
             else _fenster.Show();
+
+            // DIE TASTATUR (Befund KI-D-B-1). Ein Show(besitzer) holt sie nicht von
+            // selbst - anders als ein ShowDialog, das seine eigene Nachrichtenschleife
+            // mitbringt. Ohne diese Zeile blieb die Eingabe bei dem Fenster, aus dessen
+            // WebView2-Rueckruf der Klick kam, und das Chatfenster nahm kein Zeichen an.
+            _fenster.TastaturUebergeben();
         }
 
         // ==================================================================
@@ -128,7 +134,12 @@ namespace WindowsFormsApplication1
             {
                 if (offen._fenster.WindowState == FormWindowState.Minimized)
                     offen._fenster.WindowState = FormWindowState.Normal;
-                offen._fenster.Activate();
+
+                // Nach vorn holen UND die Tastatur mitgeben (Befund KI-D-B-1): Ein
+                // blosses Activate() stellt das Fenster vor die anderen, laesst den
+                // Tastaturzeiger aber dort, wo er war - also in der WebView2, aus deren
+                // Rueckruf der zweite Klick kam.
+                offen._fenster.TastaturUebergeben();
 
                 // EIN Fenster, aber ein NEUER Kontext (Auftrag #199): Wer aus einem
                 // zweiten Dialog fragt, bekommt dessen Bereich und dessen vorbelegte

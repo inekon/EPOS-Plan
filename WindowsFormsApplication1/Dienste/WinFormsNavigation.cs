@@ -192,9 +192,31 @@ namespace WindowsFormsApplication1
                 // der Maske weiterarbeiten kann, ueber die er fragt. „true" heisst
                 // deshalb „der Assistent steht", nicht „mit OK beendet" - dieselbe
                 // Bedeutung wie beim Projektassistenten seit #62b.
+                //
+                // BEFUND KI-D-B-1 (Anwender, 11.09.2026: „die Eingabe funktioniert
+                // nicht"). Bis #219 stand hier der blanke Aufruf - und dieser Weg
+                // kommt von der PILLE einer Razor-Ansicht, also aus dem
+                // WebMessageReceived-Rueckruf der ERSTEN WebView2. Dort eine ZWEITE
+                // WebView2 aufzuziehen ist genau die Lage der Befunde W16b-B-1,
+                // W13-B-1 und W15b-B-1; der Menueweg macht es seit W16b anders
+                // (HauptfensterHuelle.Weg laeuft ueber Blazorsprung), dieser eine
+                // Weg lief daran vorbei. Blazorsprung.Verzoegert laesst das Ereignis
+                // zu Ende laufen und oeffnet eine gepostete Nachricht spaeter.
+                //
+                // Die zwei Angaben werden VORHER geholt und mitgegeben: Zum
+                // Zeitpunkt des Sprungs ist „das aktive Fenster" nicht mehr
+                // zwingend dasselbe, und der Aufrufkontext gehoert zum Klick.
+                // „true" faellt dabei unveraendert sofort zurueck - diese Tabelle
+                // beantwortet die Frage „behandle ich den Schluessel?", nicht
+                // „ist das Fenster schon oben?" (dieselbe Trennung wie in
+                // HauptfensterHuelle.Weg).
                 case Masken.KiAssistent:
-                    KiChatHuelle.Oeffnen(Form.ActiveForm, Aufrufkontext(argumente));
-                    return true;
+                    {
+                        Form wirt = Form.ActiveForm;
+                        KiAufrufkontext kontext = Aufrufkontext(argumente);
+                        Blazorsprung.Verzoegert(wirt, () => KiChatHuelle.Oeffnen(wirt, kontext));
+                        return true;
+                    }
 
                 // AUFTRAG #207 (SIM-Q1): Die SIMULATION ist eine freie ANSICHT und
                 // kein Fenster - hier wird nichts geoeffnet, sondern der Schluessel

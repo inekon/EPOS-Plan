@@ -60,7 +60,12 @@ namespace WindowsFormsApplication1
         /// Kapitelzeile, Einleitungssatz, Verweis auf die Wikiseite. Nur wenn das
         /// nicht geht - kein Oberflaechenfaden, Popup nicht erzeugbar -, wird die
         /// Adresse ersatzweise im Browser geoeffnet
-        /// (<c>Dienste.Datei.MitSystemOeffnen</c>).
+        /// (<c>Dienste.Datei.AdresseOeffnen</c>).
+        ///
+        /// <para><b>Befund KI-D-B-2</b> (11.09.2026): Hier stand
+        /// <c>MitSystemOeffnen</c>, und das prueft <c>File.Exists</c> - fuer eine
+        /// Adresse also immer <c>false</c>. Der Rueckfall war stumm; dieselbe
+        /// Verwechslung wie im Chatfenster (<c>KiChatHuelle.Gaben.cs</c>).</para>
         /// </remarks>
         public void Oeffnen(string schluessel)
         {
@@ -79,7 +84,7 @@ namespace WindowsFormsApplication1
                 System.Diagnostics.Debug.WriteLine("[Help] Popup nicht moeglich, Rueckfall auf den Browser: " + ex);
             }
 
-            if (!string.IsNullOrEmpty(eintrag.Url)) Dienste.Datei.MitSystemOeffnen(eintrag.Url);
+            if (!string.IsNullOrEmpty(eintrag.Url)) Dienste.Datei.AdresseOeffnen(eintrag.Url);
         }
     }
 }
