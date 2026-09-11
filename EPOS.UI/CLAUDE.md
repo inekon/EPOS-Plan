@@ -311,7 +311,10 @@ entgegen — sie ist damit austauschbar.
   bekommt jedes Zahlenfeld in einer Tabelle eine feste kleine `width`. **bunit misst
   keine Breite** (Lehre W6‑B‑1): Der Nachweis ist eine Playwright-Probe im Laufordner,
   im Repository steht die REGEL als `StilblattTests`-Fall und die Spaltenfolge als
-  bunit-Fall auf das Markup.
+  bunit-Fall auf das Markup. Die Regel zum Zahlenfeld gilt auch im Zeilenraster (#186):
+  `.epos-zr-zelle .epos-eingabe` trägt seither dieselben zwei Zeilen (`min-width: 0`,
+  `width: 100%`), sonst quillt die Einheit eines Zahlenfelds in die Nachbarspalte — dort
+  Satz → Betrag der Kostenverwaltung.
 - **Die gewählte `<option>` trägt `selected`, und jede `<option>` trägt ein `@key`**
   (`Standards/Auswahlfeld.razor`, seit W6‑B‑4). Ein `<select>` hat im DOM kein
   `value`-Attribut; Blazor merkt sich den Wert beim Einhängen und setzt `element.value`

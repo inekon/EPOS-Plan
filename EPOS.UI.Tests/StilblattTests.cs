@@ -482,6 +482,52 @@ public sealed class StilblattTests
         Assert.Contains(".epos-raster th.epos-simerg-zahl", css, StringComparison.Ordinal);
     }
 
+    // ---------------------------------------------------------------------
+    //  #186: Gruppenkopf-Balken und Kopfzelle des Zeilenrasters
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Befund 3 der Abnahmeliste vom 11.09.2026:</b> weisser Text im dunklen
+    /// Balken ohne Einrichtung — <c>.epos-gruppenkopf-balken</c> trug kein
+    /// <c>padding</c>, nur <c>.epos-gruppenkopf-titel { margin-left: 8px }</c>,
+    /// unabhaengig davon ob ein Symbol stand. Mit Symbol begann der Text daher
+    /// spaeter als ohne — zwei Textbeginn-Stellen desselben Balkens, bei ueber
+    /// 140 Einsaetzen ohne Symbol sichtbar als „keine Einrueckung". Der Balken
+    /// traegt jetzt <c>padding-inline</c> und eine FESTE Symbolspur
+    /// (<c>grid-template-columns</c>): Die Spur steht auch ohne
+    /// <c>&lt;span class="epos-gruppenkopf-symbol"&gt;</c>, der Titel liegt
+    /// immer in derselben Spalte — der Textbeginn ist damit fuer jeden Einsatz
+    /// derselbe, mit und ohne Symbol.
+    /// </summary>
+    [Fact]
+    public void W186_Der_Gruppenkopf_Balken_traegt_padding_inline()
+    {
+        string block = Regelblock(".epos-gruppenkopf-balken");
+
+        Assert.Contains("padding-inline:", block, StringComparison.Ordinal);
+        Assert.Contains("grid-template-columns:", block, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Befund 1a der Abnahmeliste vom 11.09.2026:</b> Die Spaltenkoepfe
+    /// „Nutzungs-⏎dauer [a]" und „Worst/Best" liefen zusammen. Ursache war ein
+    /// echter Zeilenumbruch in <c>KDLG_SP_NUTZUNG</c> (wirkte in WinForms,
+    /// kollabierte in HTML zu einem Leerzeichen) UND
+    /// <c>.epos-zr-kopfzelle { white-space: nowrap }</c> ohne Overflow — die
+    /// schmalste Spur des Positionsrasters ist 60 px (SPALTENMASS), das reicht
+    /// fuer keinen Kopftext einzeilig. Die Kopfzelle darf jetzt zweizeilig
+    /// umbrechen, auch mitten im Wort.
+    /// </summary>
+    [Fact]
+    public void W186_Die_Kopfzelle_des_Zeilenrasters_bricht_um()
+    {
+        string block = Regelblock(".epos-zr-kopfzelle");
+
+        Assert.DoesNotContain("nowrap", block, StringComparison.Ordinal);
+        Assert.Contains("white-space: normal", block, StringComparison.Ordinal);
+        Assert.Contains("overflow-wrap: anywhere", block, StringComparison.Ordinal);
+    }
+
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
     private static string Regelblock(string selektor)
     {
