@@ -158,6 +158,11 @@ public static class FlottenSimulator
         var hilfsleistung = einheiten.Sum(x => x.HilfsverbrauchKw);
         var bisherigerPeak = 0.0;
 
+        // Diagnose (Aufgabe #183): nur fuer den Lauf MIT Flotte. Sie zaehlt mit und
+        // greift in keinen Rechenweg ein.
+        var diagnose = ergebnis.Diagnose;
+        var einheitDiagnose = einheiten.Select(x => new FlottenEinheitDiagnose { SpeicherId = x.Id }).ToArray();
+
         for (var t = 0; t < input.Istwerte.Count; t++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -208,6 +213,8 @@ public static class FlottenSimulator
             var release = o.WirtschaftlicherPeakZielwertKw.HasValue && nOhneSpeicher > o.WirtschaftlicherPeakZielwertKw.Value;
             var soll = new double[einheiten.Count];
             var curtailRequest = 0.0;
+            // Die ROHanforderung vor der Verteilung; nur die Diagnose liest sie.
+            var anforderungKw = 0.0;
             if (planend && plan is not null && fallbackGrund is null)
             {
                 var k = t - planStart;
@@ -224,18 +231,30 @@ public static class FlottenSimulator
                         soll = Verteile(Math.Max(soll.Sum(), peakBedarf), einheiten, energie, o.Verteilung,
                             true, row.Zeitstempel, AktuelleVerfuegbarkeit(input, einheiten, t));
                 }
+                anforderungKw = soll.Sum();
             }
             else
             {
                 var effektivesZiel = ziel == FlottenBetriebsziel.MultiUse ? FlottenBetriebsziel.PeakShaving
                     : planend ? FlottenBetriebsziel.PvGreedy : ziel;
                 var request = BestimmeReaktiveAnforderung(effektivesZiel, nOhneSpeicher, row, o);
+                anforderungKw = request;
                 soll = Verteile(request, einheiten, energie, o.Verteilung, release, row.Zeitstempel,
                     AktuelleVerfuegbarkeit(input, einheiten, t));
             }
 
+            if (einheiten.Count > 0)
+                ZaehleAnforderung(diagnose, einheitDiagnose, einheiten, energie, soll, anforderungKw,
+                    nOhneSpeicher, release, o, AktuelleVerfuegbarkeit(input, einheiten, t));
+
             var interval = FuehreAus(row, einheiten, energie, soll, curtailRequest, o,
-                AktuelleVerfuegbarkeit(input, einheiten, t));
+                AktuelleVerfuegbarkeit(input, einheiten, t),
+                out var peakregelSperrtLaden, out var netzladeverbotSperrtLaden);
+            if (einheiten.Count > 0)
+            {
+                if (peakregelSperrtLaden) diagnose.IntervalleLadedeckelNullPeakregel++;
+                if (netzladeverbotSperrtLaden) diagnose.IntervalleLadedeckelNullNetzladeverbot++;
+            }
             if (fallbackGrund is not null)
             {
                 interval.PlanFallback = true;
@@ -298,8 +317,91 @@ public static class FlottenSimulator
                 RainflowSchaden = rain.Schaden,
                 RainflowZyklen = rain.Zyklen
             });
+            einheitDiagnose[j].LadeenergieAcKWh = ladeenergie[j];
+            einheitDiagnose[j].EntladeenergieAcKWh = entladeenergie[j];
+            einheitDiagnose[j].Arbeitslos = ladeenergie[j] <= Eps && entladeenergie[j] <= Eps;
         }
+        SchliesseDiagnose(ergebnis.Diagnose, einheitDiagnose, einheiten.Count);
         return ergebnis;
+    }
+
+    /// <summary>
+    /// Zaehlt die Diagnosemerkmale EINES Intervalls. Sie liest nur; kein Rechenwert
+    /// haengt von ihr ab.
+    /// </summary>
+    private static void ZaehleAnforderung(
+        FlottenDiagnose diagnose,
+        FlottenEinheitDiagnose[] jeEinheit,
+        IReadOnlyList<FlottenEinheit> einheiten,
+        IReadOnlyList<double> energie,
+        IReadOnlyList<double> soll,
+        double anforderungKw,
+        double nettolastKw,
+        bool release,
+        FlottenSimulationOptionen o,
+        IReadOnlyList<double> verfuegbarkeit)
+    {
+        diagnose.IntervalleGesamt++;
+        if (o.WirtschaftlicherPeakZielwertKw is double h && nettolastKw > h)
+            diagnose.IntervalleLastUeberPeakZiel++;
+
+        var entladeanforderung = anforderungKw > Eps;
+        var ladeanforderung = anforderungKw < -Eps;
+        if (entladeanforderung) diagnose.IntervalleMitEntladeanforderung++;
+        if (ladeanforderung) diagnose.IntervalleMitLadeanforderung++;
+
+        if (entladeanforderung)
+        {
+            var abgebbar = 0.0;
+            for (var j = 0; j < einheiten.Count; j++)
+            {
+                var moeglich = Grenzen(einheiten[j], energie[j], release, verfuegbarkeit[j]).Discharge;
+                abgebbar += moeglich;
+                if (moeglich <= Eps) jeEinheit[j].IntervalleEntladeanforderungOhneEnergie++;
+            }
+            if (abgebbar <= Eps) diagnose.IntervalleEntladeanforderungOhneEnergie++;
+        }
+
+        for (var j = 0; j < einheiten.Count; j++)
+        {
+            if (soll[j] > Eps) jeEinheit[j].IntervalleMitEntladeanforderung++;
+            else if (soll[j] < -Eps) jeEinheit[j].IntervalleMitLadeanforderung++;
+        }
+    }
+
+    /// <summary>
+    /// Bildet aus den gezaehlten Merkmalen die Aussage <see cref="FlottenDiagnose.Arbeitslos"/>
+    /// und die Liste der benannten Gruende.
+    /// </summary>
+    private static void SchliesseDiagnose(FlottenDiagnose diagnose, FlottenEinheitDiagnose[] jeEinheit,
+        int einheitenAnzahl)
+    {
+        diagnose.Einheiten.AddRange(jeEinheit);
+        diagnose.LadeenergieAcKWh = jeEinheit.Sum(x => x.LadeenergieAcKWh);
+        diagnose.EntladeenergieAcKWh = jeEinheit.Sum(x => x.EntladeenergieAcKWh);
+        diagnose.Arbeitslos = einheitenAnzahl > 0 &&
+            diagnose.LadeenergieAcKWh <= Eps && diagnose.EntladeenergieAcKWh <= Eps;
+        if (diagnose.IntervalleGesamt == 0) return;
+
+        void Melde(FlottenDiagnoseGrund grund, int anzahl)
+        {
+            if (anzahl <= 0) return;
+            diagnose.Gruende.Add(new FlottenDiagnoseBefund
+            {
+                Grund = grund,
+                Intervalle = anzahl,
+                Anteil = (double)anzahl / diagnose.IntervalleGesamt
+            });
+        }
+
+        Melde(FlottenDiagnoseGrund.LastUeberPeakZiel, diagnose.IntervalleLastUeberPeakZiel);
+        Melde(FlottenDiagnoseGrund.LadedeckelDurchPeakregel, diagnose.IntervalleLadedeckelNullPeakregel);
+        Melde(FlottenDiagnoseGrund.LadedeckelDurchNetzladeverbot, diagnose.IntervalleLadedeckelNullNetzladeverbot);
+        Melde(FlottenDiagnoseGrund.EntladeanforderungOhneEnergie, diagnose.IntervalleEntladeanforderungOhneEnergie);
+        if (diagnose.IntervalleMitEntladeanforderung == 0)
+            Melde(FlottenDiagnoseGrund.KeineEntladeanforderung, diagnose.IntervalleGesamt);
+        if (diagnose.IntervalleMitLadeanforderung == 0)
+            Melde(FlottenDiagnoseGrund.KeineLadeanforderung, diagnose.IntervalleGesamt);
     }
 
     private static FlottenIntervallErgebnis FuehreAus(
@@ -309,7 +411,9 @@ public static class FlottenSimulator
         IReadOnlyList<double> commands,
         double curtailRequest,
         FlottenSimulationOptionen o,
-        IReadOnlyList<double> verfuegbarkeit)
+        IReadOnlyList<double> verfuegbarkeit,
+        out bool peakregelSperrtLaden,
+        out bool netzladeverbotSperrtLaden)
     {
         if (commands.Count != einheiten.Count || energie.Count != einheiten.Count)
             throw new ArgumentException("Je Speicher werden Zustand und Sollleistung benoetigt.");
@@ -339,6 +443,10 @@ public static class FlottenSimulator
         if (o.WirtschaftlicherPeakZielwertKw.HasValue)
             chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, o.WirtschaftlicherPeakZielwertKw.Value - n));
         if (!o.NetzladungErlaubt) chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, -n));
+        // Diagnose: WELCHE der beiden Regeln den Ladedeckel auf 0 gezogen hat.
+        peakregelSperrtLaden = o.WirtschaftlicherPeakZielwertKw.HasValue &&
+            Math.Max(0, o.WirtschaftlicherPeakZielwertKw.Value - n) <= Eps;
+        netzladeverbotSperrtLaden = !o.NetzladungErlaubt && Math.Max(0, -n) <= Eps;
         var allowed = Math.Max(total, -chargeCeiling);
         if (!o.BatterieexportErlaubt) allowed = Math.Min(allowed, Math.Max(0, n));
         allowed = Math.Min(allowed, Math.Max(0, n + exportLimit));
