@@ -3407,6 +3407,35 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 215 dynamisch, 1 127 in Ordnung** (vorher 1 327/1/214/1 112; per CSV-Vergleich keine andere Klassifikation geändert).
 > Selbsttest 35 Anweisungen (drei neue Tokenfälle: foreach-Name, Katalogbereich, eigene Klasse vor lokalem Namen); LIESMICH.
 > Gate auf `b17af66`: Kern 2532, UI 3541, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#192 (11.09.2026, `0088941`, Merge `ef55097`) — Stromspeicher-Dialoge Paket P3 (SD‑Q1/Q3/Q5, Empfehlung): die Ansicht
+> `STROMSPEICHER_AUSLEGUNG`.** Der Flottendialog war eine Überlagerung mit vier Reitern („Fenster in Fenster", SP‑O‑11). Jetzt
+> ist die Stromspeicher-Auslegung eine **freie Ansicht der `AppWurzel`** (`EPOS.UI/Seiten/Strom/StromspeicherAuslegungSeite.razor`,
+> Muster #62b): Kopfzeile mit Projekt/Variante und Rückweg über `Dienste.Navigation`, **Ablaufleiste** 1 Speicher · 2 Daten &
+> Kosten · 3 Betriebsführung · 4 Berechnen · 5 Ergebnis (Schritt 5 erst nach einem Lauf, „Eingaben geändert" markiert ihn
+> veraltet), **Modus Flotte/Einzelspeicher** als zwei Modi EINER Ansicht (SD‑Q1) — der Einzelspeicher bringt seine Blätter
+> Suchraum, Betrieb und Ergebnis mit Rasterkarte/Schnittkurve mit, rechnerisch bleiben die Pfade getrennt (SD‑Q2). Die Blätter
+> sind die bestehenden Editoren (`SpeicherFlottenEditor`, `SpeicherAuslegungEditor`, `SpeicherFlottenBetriebEditor`,
+> `SpeicherFlottenErgebnisAnsicht`); Überlagerungen nur noch für CSV-Spaltenzuordnung, Prognosen und die Rückfrage beim
+> Verlassen. **`SpeicherFlottenDialog` und `SpeicherOptimierungDialog` fallen** (iZ5); der Stromspeicher-Reiter der Ergebnisseite
+> wechselt die Ansicht (W16c‑E‑3). **Datenbank- und Rechenweg im Kern:** `StromspeicherAuslegungCtrl` (653 Zeilen — Vorgaben,
+> Profile speichern, Flotte/Einzel vorbereiten und rechnen, Aktivieren/Deaktivieren, CSV, Vorprüfung, Peak-Ziel, eigener
+> Simulationslauf); `SimulationErgebnisHuelle.Flotte.cs` fällt, `.Optimierung.cs` schrumpft 400 → 190 Zeilen, die neue
+> `StromspeicherAuslegungHuelle` behält Dateiwähler, `Task.Run`, Abbruch und Fensterbesitz. Die Ergebnisseite meldet ihre gerechnete
+> `SimulationControl` VOR dem Ansichtswechsel am Controller an (`Anmelden`, Einmal-Übergabe); ohne Anmeldung bietet die Seite den
+> eigenen Lauf über den Baustein `Fortschritt` an (W11a) — nie zwei Läufe nebeneinander. **Diagnosebanner** (`FlottenDiagnosebanner`)
+> über den Kacheln bei `Diagnose.Arbeitslos` mit Gründen, Prüfhinweisen und Abhilfeknöpfen (Peak-Ziel bestimmen, Netzladung
+> erlauben, zu Schritt 3); **Peak-Ziel-Block** (`PeakZielBlock`) mit Herleitung aus `FlottenPeakZiel.Vorschlag`, „übernehmen" und
+> „Peak-Ziel bestimmen…" nebenläufig mit Fortschritt und Abbruch, Ergebnis als Rückfrage; **Vorprüfung** vor „Berechnen" als Banner
+> ohne Blockieren; **Netzladung je Ziel** beim Zielwechsel (SD‑Q5); Start-SoC-Hinweis (SD‑Q4). 46 Ressourcen de/en am Ende der
+> resx; Formularkarte 0/0/0; Windows-Hülle baut mit `EnableWindowsTargeting`. **Offen:** die Marke `@* P4:
+> SpeicherFlottenGroessenAnsicht (#193) *@` in Schritt 5 (Einbindung → #196); kein Menüpunkt (Empfehlung des Agenten: erst nach der
+> Windows-Abnahme, weil die Seite ohne angemeldeten Lauf erst selbst rechnen müsste); unter Windows landet der Rückweg auf der
+> Startseite, weil das Ergebnis dort eine Überlagerung ist; `EPOS.iOS/wwwroot/index.html` bindet `epos-flotte.css` nicht ein
+> (Bestand seit P2, → #196, iOS-Lauf nur auf Anwenderwunsch); Windows-Abnahme durch den Anwender. Merge-Konflikte mit #193 an
+> fünf Dateienden (resx beidseitig angefügt, CSS, zwei Doku-Dateien) durch Vereinigung gelöst — im CSS hatte Git den
+> gemeinsamen Blockschluss der P3-Regeln als Suffix gewertet, zwei schließende Klammern nachgesetzt (82/82). Gate auf `ef55097`:
+> Kern 2540, UI 3559, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

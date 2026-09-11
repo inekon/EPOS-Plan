@@ -93,8 +93,7 @@ Wirtschaftlichkeit, Rainflow-Zyklen und die begrenzte Rastersuche (`Flotten*.cs`
 Datenbank und ohne Oberfläche, und **`SpeicherPlanung`** bindet **Google OR-Tools 9.15.6755
 (SCIP)** als gemischt-ganzzahligen Fahrplaner an. Die Naht dazu führt der Kern
 (`SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl`, `SpeicherAuslegungCtrl` samt
-`.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche fünf
-Razor-Dialoge unter `EPOS.UI/Dialoge/Strom/` und den Reiter `StromspeicherReiter.razor`;
+`.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche seit **#192** (11.09.2026, Paket P3 des Konzepts `Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`) die **freie Ansicht `STROMSPEICHER_AUSLEGUNG`** der `AppWurzel` (`EPOS.UI/Seiten/Strom/StromspeicherAuslegungSeite.razor` mit Ablaufleiste, Diagnosebanner und Peak-Ziel-Block; die Überlagerungsdialoge `SpeicherFlottenDialog` und `SpeicherOptimierungDialog` sind gefallen), die Editoren und Bausteine unter `EPOS.UI/Dialoge/Strom/` — darunter seit **#193** die Größen-Sicht `SpeicherFlottenGroessenAnsicht` (Paket P4) — und den Reiter `StromspeicherReiter.razor`;
 **Schemaschritt 73** legt `Tab_SpeicherAuslegung` für die gespeicherten Auslegungsprofile,
 Suchbereiche und importierten Zeitreihen an; **Schemaschritt 74** (Auftrag #178, 11.09.2026)
 baut dieselbe Tabelle als **STRICT**-Tabelle neu auf — sie war die einzige Fachtabelle des
