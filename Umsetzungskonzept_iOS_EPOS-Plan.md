@@ -3502,6 +3502,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 0 Parse-Fehler, Kategorien unverändert. Drei Textstellen, die der Upload vom 10.09. verdorben hatte (zwei Fettsätze über den
 > Zeilenumbruch, Protokollzeile ohne „Berechnungsart"), in `b8e59ae` berichtigt; Kern 2 580 und UI 3 604 grün auf diesem Stand
 > (reine Doku und Wächter, kein Gate nötig).
+>
+> **#200 (11.09.2026, `1e6cd38`, Merge `24a8b71`) — Assistent im Dialog, Stufe S2 (Weg 4 „Feldzustand mitgeben"; KI‑D‑Q2/Q3
+> umgesetzt).** Die **Maskenbrücke** `EPOS.Kern/Allgemein/KI/KiMaskenbruecke.cs` (531 Z.) führt je offenem Dialog seine Feldliste:
+> `KiFeldzugang` mit `Lesen` UND `Setzen` (Setzen angelegt und geprüft, noch von keinem Produktionsweg gerufen — das ist S3),
+> `KiFeldwert`, `KiDialogdaten`, Protokollsenke; An-/Abmelden idempotent, thread-sicher. Der **Dialogkatalog** hängt nicht mehr an
+> WinForms-Controlnamen: `KiDialogFeld` trägt einen `KiEigenschaftspfad` auf das Daten-Objekt der Razor-Komponente, `KiDialoge.cs`
+> ist neu geschrieben (`KiMaskennamen`), ein Wächter prüft jeden Pfad per Reflexion. **Fünf Masken** melden sich über den
+> Anmeldehelfer `EPOS.UI/Dienste/KiMaskenanmeldung.cs` (drei Zeilen je Dialog) an: Heizkessel 15 Felder, PV 3, Pufferspeicher 1,
+> Wärmepumpe 1 — Feldumfang bewusst unverändert (Fachkonzept 11.6) — und neu die **Stromspeicher-Ansicht** über das flache Sichtmodell
+> `StromspeicherKiSicht.cs` (16 Felder, 5 setzbar, 11 abgeleitet: Diagnose, Ergebnis der letzten Bewertung). **Einwilligungsstufe
+> „Dialogdaten"** in `KiEinwilligung` (eigener Merker, Fassung, Datum, Zurücknehmen; Text in den KI-Einstellungen). **Chat:** Schalter
+> „Feldwerte mitsenden" (nur bei angemeldeter Maske; ohne Einwilligung aus und gesperrt mit Grund), Vorschau zeigt den Feldblock
+> wörtlich; `KiChatService` bekam genau EINEN optionalen Parameter `KiDialogdaten` (Block hinter dem Bereich, vor den Hilfeabschnitten),
+> der Function-Calling-Vertrag ist unberührt, `dialog_lesen` liefert aus der Brücke. Die Komponente kennt die Brücke nicht — sie bekommt
+> `Feldwerte`/`FeldwerteEinwilligen`/`FeldwerteGesperrt` als Delegaten (§ 15.3), beide Hüllen legen sie aus denselben zwei Kernstellen.
+> Knöpfe behalten ihren `Controlpfad` und melden „nicht bedienbar" (Formularaktionen sind S3). Nebenbei: zwei `Schalter` der
+> Eingabezeile trugen denselben `@key` (Blazor-Abbruch „More than one sibling has the same key value") — behoben. **51 Ressourcen** de/en.
+> 40 Dateien, +4 599/−310; **+27 Kern-, +57 bunit-, +5 KiKern-Fälle** (`KiMaskenbrueckeTests`, `KiDialogdatenEinwilligungTests`,
+> `KiDialogkatalogTests`, `KiFeldwerteTests`). **Offen für S3 (#201):** Setzen über die Brücke, Knöpfe, `feld_setzen`/`formular_ausfuellen`
+> laufen noch über `KiDialogZugriff` und lehnen ab; iOS hat weiter keinen `Fragen`-Delegaten (`IProjektQuelle.KiAssistentGaben` leer, iU11).
+> Gate sept16 auf `24a8b71`: Kern 2 607, UI 3 661, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
