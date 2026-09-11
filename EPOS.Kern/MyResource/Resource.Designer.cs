@@ -15691,8 +15691,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungs-
-        ///dauer [a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer [a] ähnelt.
         /// </summary>
         public static string KDLG_SP_NUTZUNG {
             get {
