@@ -280,7 +280,7 @@ Freigabe des Anwenders; ohne sie lädt R nur aus Überschuss, und die Diagnose s
 Stände tragen die Vorgabe „fest" und rechnen unverändert — das Prüfprojekt 1046 (festes Ziel 16 kW) bleibt
 byte-gleich zur Basis R7 (Muster #183: Vorgaben nur für neue Stände).
 
-**Fragen an den Anwender (PS‑Q1 … PS‑Q4).**
+**Fragen an den Anwender (PS‑Q1 … PS‑Q4) — entschieden am 11.09.2026 („PS‑Q1 bis Q4, Empfehlung"); Umsetzung Paket P7 (#215).**
 
 | Frage | Empfehlung |
 |---|---|
