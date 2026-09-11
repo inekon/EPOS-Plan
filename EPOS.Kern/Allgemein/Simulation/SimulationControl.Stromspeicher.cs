@@ -137,9 +137,14 @@ namespace WindowsFormsApplication1
                 catch (OperationCanceledException) { throw; }
                 catch (Exception ex)
                 {
-                    Protokoll.Warnung("Die Speicherflotte für diesen Projektlauf konnte nicht gerechnet werden: " + ex.Message);
-                    throw new InvalidOperationException(
-                        "Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: " + ex.Message, ex);
+                    // Der Abbruch BLEIBT (Befund #185): Ein Projekt mit aktivierter
+                    // Flotte darf nicht still ohne sie rechnen — das Ergebnis wäre ein
+                    // anderes Projekt. Neu ist allein, dass die Meldung den AUSWEG nennt;
+                    // der Protokolleintrag steht weiterhin VOR dem Wurf.
+                    Protokoll.Warnung(string.Format(
+                        MyResource.Resource.FLOTTE_MSG_LAUF_WARNUNG, ex.Message));
+                    throw new InvalidOperationException(string.Format(
+                        MyResource.Resource.FLOTTE_MSG_LAUF_GESCHEITERT, ex.Message), ex);
                 }
             }
 

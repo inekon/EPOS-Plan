@@ -16554,4 +16554,46 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_PLANER_LAUF_GESPERRT" xml:space="preserve">
     <value>Without a schedule solver no storage comparison can be calculated for a planning operating target.</value>
   </data>
+  <data name="FLOTTE_MSG_KOSTEN_INVEST_DIALOG" xml:space="preserve">
+    <value>The investment coefficients are missing in the dialog. Please enter the cost rates on the “Data, costs &amp; profiles” tab or set individual costs per unit.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_BETRIEB_DIALOG" xml:space="preserve">
+    <value>The operating cost coefficients are missing in the dialog. Please enter the cost rates on the “Data, costs &amp; profiles” tab or set individual costs per unit.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_INVEST_MODUL" xml:space="preserve">
+    <value>The cost module contains no usable investment coefficients. Please enter an investment rate per kW or kWh in the cost dialog of the storage system, switch to the dialog rates or set individual costs per unit.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_BETRIEB_MODUL" xml:space="preserve">
+    <value>The cost module contains no usable operating cost coefficients. Please enter an operating cost rate in the cost dialog of the storage system, switch to the dialog rates or set individual costs per unit.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_JE_EINHEIT" xml:space="preserve">
+    <value>per unit (individual costs)</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR_KURZ" xml:space="preserve">
+    <value>not assessable (cost rates missing)</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>The specific cost rates of the storage fleet are missing for this project run. Operation, grid power and state of charge have been calculated; the net present value and the annual accounts of the fleet are not assessable. The rates are on the “Data, costs &amp; profiles” tab of the sizing dialog; alternatively each unit carries its own costs.</value>
+  </data>
+  <data name="FLOTTE_MSG_PROJEKT_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>The storage fleet of this project is not fully set up:</value>
+  </data>
+  <data name="FLOTTE_MSG_PROJEKT_AUSWEG" xml:space="preserve">
+    <value>Way out: deactivate the fleet in the sizing dialog or complete the inputs.</value>
+  </data>
+  <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
+    <value>The reserved project fleet state @Projektflotte is missing.</value>
+  </data>
+  <data name="FLOTTE_MSG_NICHT_AKTIV" xml:space="preserve">
+    <value>The storage fleet is not activated for the project run.</value>
+  </data>
+  <data name="FLOTTE_MSG_KEINE_EINHEITEN" xml:space="preserve">
+    <value>The project fleet state contains no physical storage unit.</value>
+  </data>
+  <data name="FLOTTE_MSG_LAUF_WARNUNG" xml:space="preserve">
+    <value>The storage fleet could not be calculated for this project run: {0}</value>
+  </data>
+  <data name="FLOTTE_MSG_LAUF_GESCHEITERT" xml:space="preserve">
+    <value>The storage fleet for this project run is invalid or could not be scheduled: {0} Way out: deactivate the fleet in the sizing dialog or complete the inputs.</value>
+  </data>
 </root>

@@ -16561,4 +16561,46 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_PLANER_LAUF_GESPERRT" xml:space="preserve">
     <value>Ohne Fahrplan-Löser kann mit einem planenden Betriebsziel kein Speichervergleich gerechnet werden.</value>
   </data>
+  <data name="FLOTTE_MSG_KOSTEN_INVEST_DIALOG" xml:space="preserve">
+    <value>Im Dialog fehlen die Investitionskoeffizienten. Bitte die Kostensätze im Reiter „Daten, Kosten &amp; Profile“ eintragen oder je Einheit eigene Kosten setzen.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_BETRIEB_DIALOG" xml:space="preserve">
+    <value>Im Dialog fehlen die Betriebskostenkoeffizienten. Bitte die Kostensätze im Reiter „Daten, Kosten &amp; Profile“ eintragen oder je Einheit eigene Kosten setzen.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_INVEST_MODUL" xml:space="preserve">
+    <value>Das Kostenmodul enthaelt keine verwendbaren Investitionskoeffizienten. Bitte im Kostendialog der Speicheranlage einen Investitionssatz je kW oder kWh hinterlegen, auf die Dialogsätze umschalten oder je Einheit eigene Kosten setzen.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_BETRIEB_MODUL" xml:space="preserve">
+    <value>Das Kostenmodul enthaelt keine verwendbaren Betriebskostenkoeffizienten. Bitte im Kostendialog der Speicheranlage einen Betriebskostensatz hinterlegen, auf die Dialogsätze umschalten oder je Einheit eigene Kosten setzen.</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_JE_EINHEIT" xml:space="preserve">
+    <value>je Einheit (eigene Kosten)</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR_KURZ" xml:space="preserve">
+    <value>nicht bewertbar (Kostensätze fehlen)</value>
+  </data>
+  <data name="FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR" xml:space="preserve">
+    <value>Für diesen Projektlauf fehlen die spezifischen Kostensätze der Speicherflotte. Betrieb, Netzleistung und Ladezustand sind gerechnet; Kapitalwert und Jahreskonten der Flotte sind nicht bewertbar. Die Sätze stehen im Auslegungsdialog im Reiter „Daten, Kosten &amp; Profile“; alternativ trägt jede Einheit eigene Kosten.</value>
+  </data>
+  <data name="FLOTTE_MSG_PROJEKT_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Die Speicherflotte dieses Projekts ist nicht vollständig eingerichtet:</value>
+  </data>
+  <data name="FLOTTE_MSG_PROJEKT_AUSWEG" xml:space="preserve">
+    <value>Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen.</value>
+  </data>
+  <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
+    <value>Der reservierte Projektflottenstand @Projektflotte fehlt.</value>
+  </data>
+  <data name="FLOTTE_MSG_NICHT_AKTIV" xml:space="preserve">
+    <value>Die Speicherflotte ist für den Projektlauf nicht aktiviert.</value>
+  </data>
+  <data name="FLOTTE_MSG_KEINE_EINHEITEN" xml:space="preserve">
+    <value>Der Projektflottenstand enthält keine physische Speichereinheit.</value>
+  </data>
+  <data name="FLOTTE_MSG_LAUF_WARNUNG" xml:space="preserve">
+    <value>Die Speicherflotte für diesen Projektlauf konnte nicht gerechnet werden: {0}</value>
+  </data>
+  <data name="FLOTTE_MSG_LAUF_GESCHEITERT" xml:space="preserve">
+    <value>Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: {0} Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen.</value>
+  </data>
 </root>

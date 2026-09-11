@@ -8,6 +8,28 @@ namespace WindowsFormsApplication1
     public enum SpeicherAuslegungQuelle { Epos = 0, Datei = 1, Keine = 2, Preisprofil = 3 }
     public enum SpeicherKostenQuelle { Dialog = 0, Kostenmodul = 1 }
 
+    /// <summary>
+    /// Wie streng ein Lauf fehlende — und tatsächlich gebrauchte — Kostensätze nimmt
+    /// (Befund #185).
+    /// </summary>
+    /// <remarks>
+    /// Der STUDIENLAUF vergleicht Speichervarianten wirtschaftlich; ohne Kostensätze hat
+    /// er kein Ergebnis und bricht deshalb weiterhin ab — mit dem Ausweg im Meldungstext.
+    /// Der PROJEKTLAUF rechnet dagegen das Betriebsverhalten des ganzen Projekts; die
+    /// spezifischen Kostensätze gehen dort in KEINE Netz-, SoC- oder Energiegröße ein
+    /// (sie erreichen allein <c>FlottenWirtschaftlichkeit</c>). Ein fehlender Kostensatz
+    /// darf einen Projektlauf deshalb nicht kippen: Betrieb und Netzwirkung werden
+    /// gerechnet, Kapitalwert und Jahreskonten sind „nicht bewertbar“.
+    /// </remarks>
+    public enum KostenPflicht
+    {
+        /// <summary>Fehlende, aber gebrauchte Sätze sind ein Fehler.</summary>
+        Studienlauf = 0,
+
+        /// <summary>Fehlende Sätze werden mit 0 angesetzt und als nicht bewertbar gekennzeichnet.</summary>
+        Projektlauf = 1
+    }
+
     /// <summary>Spezifische Nettokosten. Kapazität und entladene Energie sind verschiedene Basen.</summary>
     public sealed class SpeicherKostensaetze
     {
@@ -18,6 +40,14 @@ namespace WindowsFormsApplication1
         public double BetriebEurProKwhEntladen { get; set; }
         public bool InvestVorhanden { get; set; }
         public bool BetriebVorhanden { get; set; }
+
+        /// <summary>
+        /// Die Sätze wurden für einen Projektlauf mit 0 angesetzt, weil sie gebraucht
+        /// werden, aber fehlen (<see cref="KostenPflicht.Projektlauf"/>). Betrieb und
+        /// Netzwirkung sind gerechnet; Kapitalwert und Jahreskonten sind es nicht.
+        /// </summary>
+        public bool NichtBewertbar { get; set; }
+
         public string Herkunft { get; set; } = "";
         public List<string> AusgelassenePositionen { get; set; } = new();
     }

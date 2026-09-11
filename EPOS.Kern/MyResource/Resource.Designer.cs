@@ -8870,6 +8870,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektflottenstand enthält keine physische Speichereinheit. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KEINE_EINHEITEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KEINE_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Dialog fehlen die Betriebskostenkoeffizienten. Bitte die Kostensätze im Reiter „Daten, Kosten &amp; Profile“ eintragen oder je Einheit eigene Kosten setzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_BETRIEB_DIALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_BETRIEB_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kostenmodul enthaelt keine verwendbaren Betriebskostenkoeffizienten. Bitte im Kostendialog der Speicheranlage einen Betriebskostensatz hinterlegen, auf die Dialogsätze umschalten oder je Einheit eigene Kosten setzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_BETRIEB_MODUL {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_BETRIEB_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Dialog fehlen die Investitionskoeffizienten. Bitte die Kostensätze im Reiter „Daten, Kosten &amp; Profile“ eintragen oder je Einheit eigene Kosten setzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_INVEST_DIALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_INVEST_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kostenmodul enthaelt keine verwendbaren Investitionskoeffizienten. Bitte im Kostendialog der Speicheranlage einen Investitionssatz je kW oder kWh hinterlegen, auf die Dialogsätze umschalten oder je Einheit eigene Kosten setzen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_INVEST_MODUL {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_INVEST_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Einheit (eigene Kosten) ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_JE_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Projektlauf fehlen die spezifischen Kostensätze der Speicherflotte. Betrieb, Netzleistung und Ladezustand sind gerechnet; Kapitalwert und Jahreskonten der Flotte sind nicht bewertbar. Die Sätze stehen im Auslegungsdialog im Reiter „Daten, Kosten &amp; Profile“; alternativ trägt jede Einheit eigene Kosten. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht bewertbar (Kostensätze fehlen) ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR_KURZ {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: {0} Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_LAUF_GESCHEITERT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_LAUF_GESCHEITERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte für diesen Projektlauf konnte nicht gerechnet werden: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_LAUF_WARNUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_LAUF_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte ist für den Projektlauf nicht aktiviert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_NICHT_AKTIV {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_NICHT_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_PROJEKT_AUSWEG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_PROJEKT_AUSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte dieses Projekts ist nicht vollständig eingerichtet: ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_PROJEKT_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_PROJEKT_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der reservierte Projektflottenstand @Projektflotte fehlt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_STAND_FEHLT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_STAND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auf dieser Plattform ist kein Fahrplan-Löser verfügbar; planende Betriebsziele sind deaktiviert. ähnelt.
         /// </summary>
         public static string FLOTTE_PLANER_FEHLT {

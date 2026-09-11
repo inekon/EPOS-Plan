@@ -21,7 +21,8 @@ namespace WindowsFormsApplication1
         /// <see cref="StromspeicherOptimierungVorbereitung.Eingaben"/>.
         /// </summary>
         public static StromspeicherOptimierungVorbereitung Vorbereiten(
-            SimulationControl sim, int projektId, SpeicherOptimierungEingaben eingaben)
+            SimulationControl sim, int projektId, SpeicherOptimierungEingaben eingaben,
+            KostenPflicht kostenPflicht = KostenPflicht.Studienlauf)
         {
             ArgumentNullException.ThrowIfNull(eingaben);
             if (projektId <= 0) throw new ArgumentOutOfRangeException(nameof(projektId));
@@ -78,9 +79,15 @@ namespace WindowsFormsApplication1
                     // eingefrorenen Modulkosten. Er darf weder eine inzwischen aktive
                     // Einzelanlage benötigen noch seine Kosten bei jedem Projektlauf
                     // unbemerkt aus deren Kostendialog neu lesen.
+                    //
+                    // BEFUND #185: Fehlen sie im Stand, ist das im STUDIENLAUF weiterhin
+                    // ein Fehler. Im PROJEKTLAUF darf es keiner sein — dort entscheidet
+                    // erst KostenAufloesen, ob die Sätze überhaupt gebraucht werden.
                     ? snapshot.Auslegung.VerwendeteKosten == null
-                        ? throw new InvalidOperationException(
-                            "Im übernommenen Projektflottenstand fehlen die aufgelösten Kosten.")
+                        ? (kostenPflicht == KostenPflicht.Projektlauf
+                            ? new SpeicherKostensaetze()
+                            : throw new InvalidOperationException(
+                                "Im übernommenen Projektflottenstand fehlen die aufgelösten Kosten."))
                         : KopiereKosten(snapshot.Auslegung.VerwendeteKosten)
                     : Modulkosten(projektId, Anlage(projektId)))
                 : null;
@@ -100,7 +107,61 @@ namespace WindowsFormsApplication1
 
             return AusQuellenVorbereiten(epos, basis, kontext, snapshot, modulkosten,
                 profilAufschlagCtKwh, projektVerguetung?.PvCtKwh,
-                projektVerguetung?.BhkwCtKwh);
+                projektVerguetung?.BhkwCtKwh, kostenPflicht);
+        }
+
+        /// <summary>
+        /// Löst die Kostensätze EINES gespeicherten Standes auf, ohne eine einzige
+        /// Zeitreihe zu beschaffen (Befund #185).
+        /// </summary>
+        /// <remarks>
+        /// Gebraucht wird sie von <see cref="SpeicherFlottenProjektCtrl.Aktivieren"/> und
+        /// von dessen Vorprüfung: Beide müssen wissen, ob der Stand vollständig ist —
+        /// aber keiner von beiden rechnet dabei. Bereits aufgelöste und brauchbare Sätze
+        /// bleiben unverändert eingefroren; nur ein LÜCKENHAFTER Stand wird aus
+        /// Dialogsätzen bzw. Kostenmodul nachgezogen.
+        /// </remarks>
+        internal static SpeicherKostensaetze StandKosten(
+            int projektId, SpeicherAuslegungKonfiguration a)
+        {
+            ArgumentNullException.ThrowIfNull(a);
+            bool gebraucht = SpezifischeSaetzeGebraucht(a);
+            SpeicherKostensaetze vorhanden = a.VerwendeteKosten;
+            if (vorhanden != null && !vorhanden.NichtBewertbar &&
+                (!gebraucht || (vorhanden.InvestVorhanden && vorhanden.BetriebVorhanden)))
+                return KopiereKosten(vorhanden);
+
+            bool brauchtModulkosten =
+                a.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul ||
+                a.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul;
+            SpeicherKostensaetze modul = brauchtModulkosten
+                ? Modulkosten(projektId, Anlage(projektId)) : null;
+            return KostenAufloesen(a, modul, KostenPflicht.Projektlauf);
+        }
+
+        /// <summary>
+        /// Braucht dieser Stand überhaupt SPEZIFISCHE Kostensätze (Befund #185)?
+        /// </summary>
+        /// <remarks>
+        /// <para>Nein — und nur dann nein —, wenn eine Flotte vorliegt und JEDE ihrer
+        /// Einheiten eigene Kosten trägt: <c>SpeicherFlottenStudieCtrl.Konfiguration</c>
+        /// überschreibt genau die Einheiten OHNE <c>EigeneKosten</c> mit den
+        /// aufgelösten Sätzen und lässt die übrigen unangetastet.</para>
+        /// <para>Ohne Flotte gehen die Investitionssätze in <c>SpeicherParameter</c>
+        /// (<c>CCapEurProKwh</c>/<c>CPowEurProKw</c>) der Einzelanlage ein; dann werden
+        /// sie gebraucht. Die Vorlagen der Größenachsen zählen nur mit, wenn der
+        /// Suchlauf überhaupt läuft.</para>
+        /// </remarks>
+        internal static bool SpezifischeSaetzeGebraucht(SpeicherAuslegungKonfiguration a)
+        {
+            SpeicherEngine.FlottenStudieKonfiguration f = a?.Flotte;
+            if (f?.Einheiten == null || f.Einheiten.Count == 0) return true;
+            foreach (SpeicherEngine.FlottenEinheit e in f.Einheiten)
+                if (e != null && !e.EigeneKosten) return true;
+            if (a.FlottenGroessenOptimieren && f.Auslegung?.Achsen != null)
+                foreach (SpeicherEngine.FlottenAuslegungsAchse achse in f.Auslegung.Achsen)
+                    if (achse?.Vorlage != null && !achse.Vorlage.EigeneKosten) return true;
+            return false;
         }
 
         /// <summary>
@@ -115,7 +176,8 @@ namespace WindowsFormsApplication1
             SpeicherKostensaetze modulkosten,
             double profilAufschlagCtKwh,
             double[] projektPvVerguetungCtKwh = null,
-            double[] projektBhkwVerguetungCtKwh = null)
+            double[] projektBhkwVerguetungCtKwh = null,
+            KostenPflicht kostenPflicht = KostenPflicht.Studienlauf)
         {
             ArgumentNullException.ThrowIfNull(basis);
             ArgumentNullException.ThrowIfNull(eingaben);
@@ -128,7 +190,7 @@ namespace WindowsFormsApplication1
             SpeicherAuslegungKonfiguration a = snapshot.Auslegung;
             PruefeQuellen(a);
 
-            SpeicherKostensaetze kosten = KostenAufloesen(a, modulkosten);
+            SpeicherKostensaetze kosten = KostenAufloesen(a, modulkosten, kostenPflicht);
             a.VerwendeteKosten = KopiereKosten(kosten);
             SpeicherParameter laufBasis = basis with
             {
@@ -239,46 +301,82 @@ namespace WindowsFormsApplication1
                 throw new ArgumentException("Die Preisquelle muss EPOS, Datei oder Preisprofil sein.", nameof(a));
         }
 
+        /// <summary>
+        /// Die spezifischen Sätze eines Laufs — und die Frage, ob sie ÜBERHAUPT
+        /// gebraucht werden (Befund #185).
+        /// </summary>
+        /// <remarks>
+        /// Bis zu diesem Befund verlangte die Methode beide Kostengruppen bedingungslos.
+        /// Das traf zwei Fälle, in denen sie niemand braucht: eine Flotte, deren Einheiten
+        /// AUSNAHMSLOS eigene Kosten tragen (dann überschreibt
+        /// <c>SpeicherFlottenStudieCtrl.Konfiguration</c> nichts mit ihnen), und den
+        /// PROJEKTLAUF, dessen Betriebsergebnis — Netzleistung, SoC, Energie — keinen
+        /// Kostensatz liest. Beide Fälle brachten einen vollständigen Projektlauf zu Fall.
+        /// </remarks>
         private static SpeicherKostensaetze KostenAufloesen(
-            SpeicherAuslegungKonfiguration a, SpeicherKostensaetze modul)
+            SpeicherAuslegungKonfiguration a, SpeicherKostensaetze modul,
+            KostenPflicht pflicht = KostenPflicht.Studienlauf)
         {
             SpeicherKostensaetze direkt = a.DirekteKosten ?? new SpeicherKostensaetze();
             SpeicherKostensaetze invest = a.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul
                 ? modul : direkt;
             SpeicherKostensaetze betrieb = a.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul
                 ? modul : direkt;
-            if (invest == null || !invest.InvestVorhanden)
+            bool gebraucht = SpezifischeSaetzeGebraucht(a);
+            bool investFehlt = invest == null || !invest.InvestVorhanden;
+            bool betriebFehlt = betrieb == null || !betrieb.BetriebVorhanden;
+
+            if (investFehlt && gebraucht && pflicht == KostenPflicht.Studienlauf)
                 throw new InvalidOperationException(a.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul
-                    ? "Das Kostenmodul enthaelt keine verwendbaren Investitionskoeffizienten."
-                    : "Im Dialog fehlen die Investitionskoeffizienten.");
-            if (betrieb == null || !betrieb.BetriebVorhanden)
+                    ? MyResource.Resource.FLOTTE_MSG_KOSTEN_INVEST_MODUL
+                    : MyResource.Resource.FLOTTE_MSG_KOSTEN_INVEST_DIALOG);
+            if (betriebFehlt && gebraucht && pflicht == KostenPflicht.Studienlauf)
                 throw new InvalidOperationException(a.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul
-                    ? "Das Kostenmodul enthaelt keine verwendbaren Betriebskostenkoeffizienten."
-                    : "Im Dialog fehlen die Betriebskostenkoeffizienten.");
+                    ? MyResource.Resource.FLOTTE_MSG_KOSTEN_BETRIEB_MODUL
+                    : MyResource.Resource.FLOTTE_MSG_KOSTEN_BETRIEB_DIALOG);
 
-            PruefeKostenwert(invest.InvestEurProKw, "Investition EUR/kW");
-            PruefeKostenwert(invest.InvestEurProKwh, "Investition EUR/kWh");
-            PruefeKostenwert(betrieb.BetriebEurProKwJahr, "Betrieb EUR/(kW*a)");
-            PruefeKostenwert(betrieb.BetriebEurProKwhJahr, "Betrieb EUR/(kWh*a)");
-            PruefeKostenwert(betrieb.BetriebEurProKwhEntladen, "Betrieb EUR/kWh entladen");
+            if (!investFehlt)
+            {
+                PruefeKostenwert(invest.InvestEurProKw, "Investition EUR/kW");
+                PruefeKostenwert(invest.InvestEurProKwh, "Investition EUR/kWh");
+            }
+            if (!betriebFehlt)
+            {
+                PruefeKostenwert(betrieb.BetriebEurProKwJahr, "Betrieb EUR/(kW*a)");
+                PruefeKostenwert(betrieb.BetriebEurProKwhJahr, "Betrieb EUR/(kWh*a)");
+                PruefeKostenwert(betrieb.BetriebEurProKwhEntladen, "Betrieb EUR/kWh entladen");
+            }
 
+            // Fehlende Sätze stehen auf 0 — und sagen im Herkunftstext, WARUM: weil die
+            // Einheiten sie selbst mitbringen (dann bleibt die Rechnung vollständig) oder
+            // weil dieser Projektlauf ohne sie auskommen muss (dann nicht).
+            bool nichtBewertbar = (investFehlt || betriebFehlt) && gebraucht;
             return new SpeicherKostensaetze
             {
-                InvestEurProKw = invest.InvestEurProKw,
-                InvestEurProKwh = invest.InvestEurProKwh,
-                BetriebEurProKwJahr = betrieb.BetriebEurProKwJahr,
-                BetriebEurProKwhJahr = betrieb.BetriebEurProKwhJahr,
-                BetriebEurProKwhEntladen = betrieb.BetriebEurProKwhEntladen,
-                InvestVorhanden = true,
-                BetriebVorhanden = true,
-                Herkunft = "Investition: " + (invest.Herkunft ?? "") +
-                    "; Betrieb: " + (betrieb.Herkunft ?? ""),
+                InvestEurProKw = investFehlt ? 0.0 : invest.InvestEurProKw,
+                InvestEurProKwh = investFehlt ? 0.0 : invest.InvestEurProKwh,
+                BetriebEurProKwJahr = betriebFehlt ? 0.0 : betrieb.BetriebEurProKwJahr,
+                BetriebEurProKwhJahr = betriebFehlt ? 0.0 : betrieb.BetriebEurProKwhJahr,
+                BetriebEurProKwhEntladen = betriebFehlt ? 0.0 : betrieb.BetriebEurProKwhEntladen,
+                InvestVorhanden = !investFehlt,
+                BetriebVorhanden = !betriebFehlt,
+                NichtBewertbar = nichtBewertbar,
+                Herkunft = "Investition: " + Herkunftstext(invest, investFehlt, gebraucht) +
+                    "; Betrieb: " + Herkunftstext(betrieb, betriebFehlt, gebraucht),
                 AusgelassenePositionen = modul == null ||
                     (a.Investitionsquelle != SpeicherKostenQuelle.Kostenmodul &&
                      a.Betriebsquelle != SpeicherKostenQuelle.Kostenmodul)
                     ? new List<string>()
                     : new List<string>(modul.AusgelassenePositionen ?? new List<string>())
             };
+        }
+
+        private static string Herkunftstext(SpeicherKostensaetze quelle, bool fehlt, bool gebraucht)
+        {
+            if (!fehlt) return quelle.Herkunft ?? "";
+            return gebraucht
+                ? MyResource.Resource.FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR_KURZ
+                : MyResource.Resource.FLOTTE_MSG_KOSTEN_JE_EINHEIT;
         }
 
         private static void PruefeKostenwert(double wert, string name)
@@ -297,6 +395,7 @@ namespace WindowsFormsApplication1
                 BetriebEurProKwhEntladen = k.BetriebEurProKwhEntladen,
                 InvestVorhanden = k.InvestVorhanden,
                 BetriebVorhanden = k.BetriebVorhanden,
+                NichtBewertbar = k.NichtBewertbar,
                 Herkunft = k.Herkunft ?? "",
                 AusgelassenePositionen = new List<string>(k.AusgelassenePositionen ?? new List<string>())
             };

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -19,6 +21,37 @@ public sealed class SpeicherFlottenProjektLauf
     public string Hinweis { get; init; } = "";
     /// <summary>Netzbezug positiv, Netzeinspeisung negativ [kW].</summary>
     public double[] NetzleistungKw { get; init; } = Array.Empty<double>();
+
+    /// <summary>
+    /// Betrieb und Netzwirkung sind immer gerechnet; <c>false</c> heißt, dass
+    /// Kapitalwert und Jahreskonten dieses Laufs mangels Kostensätzen NICHT bewertbar
+    /// sind (Befund #185). Der Grund steht dann zusätzlich in <see cref="Hinweis"/>.
+    /// </summary>
+    public bool KostenBewertbar { get; init; } = true;
+}
+
+/// <summary>
+/// Das Ergebnis der Vorprüfung einer Projektflotte (Befund #185).
+/// </summary>
+/// <remarks>
+/// <b>Probleme</b> verhindern den Flottenlauf; <b>Hinweise</b> tun das nicht. Fehlende
+/// Kostensätze sind deshalb ein HINWEIS: Das Betriebsergebnis eines Projektlaufs hängt
+/// nicht an ihnen, nur seine wirtschaftliche Bewertung.
+/// </remarks>
+public sealed class FlottenProjektPruefung
+{
+    public IReadOnlyList<string> Probleme { get; init; } = Array.Empty<string>();
+    public IReadOnlyList<string> Hinweise { get; init; } = Array.Empty<string>();
+
+    /// <summary>Der Flottenlauf kann ausgeführt werden.</summary>
+    public bool Rechenbar => Probleme.Count == 0;
+
+    /// <summary>Alle Probleme in EINER Meldung, samt dem Ausweg am Ende.</summary>
+    public string Meldung => Probleme.Count == 0 ? "" :
+        MyResource.Resource.FLOTTE_MSG_PROJEKT_UNVOLLSTAENDIG +
+        Environment.NewLine + string.Join(Environment.NewLine, Probleme) +
+        Environment.NewLine +
+        MyResource.Resource.FLOTTE_MSG_PROJEKT_AUSWEG;
 }
 
 /// <summary>
@@ -48,6 +81,15 @@ public static class SpeicherFlottenProjektCtrl
         snapshot.Auslegung.FlottenGroessenOptimieren = false;
         snapshot.Auslegung.FlotteImProjektAktiv = true;
         snapshot.Auslegung.Revision = checked(snapshot.Auslegung.Revision + 1);
+
+        // BEFUND #185: Der uebernommene Stand muss VOLLSTAENDIG sein — Quellen, Kosten-
+        // quellen UND die aufgeloesten Saetze. Ein Aufrufer, der hier den rohen
+        // Dialogstand statt des vorbereiteten Laufstandes einreicht, hinterliess sonst
+        // ein @Projektflotte mit "Investitionsquelle = Dialog" und leeren Saetzen; der
+        // naechste Projektlauf brach daran ab. Bereits aufgeloeste, brauchbare Saetze
+        // bleiben unveraendert eingefroren.
+        snapshot.Auslegung.VerwendeteKosten =
+            SpeicherAuslegungCtrl.StandKosten(projektId, snapshot.Auslegung);
 
         // Der Projektflottenstand gehoert zum Projekt, nicht zur gerade aktiven
         // Einzelanlage. anlageId 0 wird als DB-NULL gespeichert und uebersteht damit
@@ -81,40 +123,98 @@ public static class SpeicherFlottenProjektCtrl
         return a?.FlotteImProjektAktiv == true ? SpeicherAuslegungKopie.Von(a.Flotte) : null;
     }
 
+    /// <summary>
+    /// Prüft VOR dem Lauf, ob die aktivierte Projektflotte dieses Projekts vollständig
+    /// eingerichtet ist (Befund #185).
+    /// </summary>
+    /// <remarks>
+    /// Sie beantwortet in EINEM Durchgang, was der Lauf sonst an fünf verschiedenen
+    /// Stellen nacheinander abgebrochen hat: Stand vorhanden, Flotte aktiviert, Einheiten
+    /// da, Projektquellen zulässig, planendes Betriebsziel ohne Fahrplan-Löser. Der
+    /// Anwender bekommt damit die VOLLSTÄNDIGE Liste statt des jeweils ersten Problems.
+    /// </remarks>
+    public static FlottenProjektPruefung Pruefe(int projektId)
+        => Pruefe(projektId <= 0 ? null : ProjektflottenEingaben(projektId), projektId, true);
+
+    internal static FlottenProjektPruefung Pruefe(SpeicherOptimierungEingaben eingaben,
+        int projektId, bool aktivierungGefordert)
+    {
+        List<string> probleme = new List<string>();
+        List<string> hinweise = new List<string>();
+        SpeicherAuslegungKonfiguration a = eingaben?.Auslegung;
+        if (a == null)
+        {
+            probleme.Add(MyResource.Resource.FLOTTE_MSG_STAND_FEHLT);
+            return new FlottenProjektPruefung { Probleme = probleme, Hinweise = hinweise };
+        }
+
+        if (aktivierungGefordert && !a.FlotteImProjektAktiv)
+            probleme.Add(MyResource.Resource.FLOTTE_MSG_NICHT_AKTIV);
+        if (a.Flotte?.Einheiten == null || a.Flotte.Einheiten.Count == 0)
+            probleme.Add(MyResource.Resource.FLOTTE_MSG_KEINE_EINHEITEN);
+
+        // Die fünf Quellenregeln stehen EINMAL — in PruefeProjektquellen. Sie werden
+        // hier gerufen und nicht abgeschrieben; die Meldung ist die Problemzeile.
+        try { PruefeProjektquellen(a); }
+        catch (Exception ex) { probleme.Add(ex.Message); }
+
+        FlottenBetriebsziel ziel = a.Flotte?.Optionen?.Betriebsziel ?? FlottenBetriebsziel.PvGreedy;
+        if (FlottenPlanerLage.IstPlanend(ziel) && !FlottenPlanerLage.Verfuegbar)
+            probleme.Add(string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.FLOTTE_PLANER_PROFIL, ziel));
+
+        if (SpeicherAuslegungCtrl.SpezifischeSaetzeGebraucht(a) && projektId > 0)
+        {
+            SpeicherKostensaetze kosten = null;
+            try { kosten = SpeicherAuslegungCtrl.StandKosten(projektId, a); }
+            catch (Exception ex) { probleme.Add(ex.Message); }
+            if (kosten != null && kosten.NichtBewertbar)
+                hinweise.Add(MyResource.Resource.FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR);
+        }
+
+        return new FlottenProjektPruefung { Probleme = probleme, Hinweise = hinweise };
+    }
+
     public static SpeicherFlottenProjektLauf Rechnen(SimulationControl sim, int projektId,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sim);
-        SpeicherOptimierungEingaben eingaben = ProjektflottenEingaben(projektId)
-            ?? throw new InvalidOperationException("Der reservierte Projektflottenstand @Projektflotte fehlt.");
-        SpeicherAuslegungKonfiguration auslegung = eingaben.Auslegung
-            ?? throw new InvalidOperationException("Die aktive Flottenkonfiguration fehlt.");
-        if (!auslegung.FlotteImProjektAktiv)
-            throw new InvalidOperationException("Die Speicherflotte ist für den Projektlauf nicht aktiviert.");
-        PruefeProjektquellen(auslegung);
+        SpeicherOptimierungEingaben eingaben = ProjektflottenEingaben(projektId);
+        FlottenProjektPruefung pruefung = Pruefe(eingaben, projektId, true);
+        if (!pruefung.Rechenbar) throw new InvalidOperationException(pruefung.Meldung);
+        SpeicherAuslegungKonfiguration auslegung = eingaben.Auslegung;
 
+        // Der PROJEKTLAUF darf an fehlenden Kostensaetzen nicht scheitern (Befund #185):
+        // Netzleistung, SoC und Energie lesen keinen einzigen von ihnen.
         StromspeicherOptimierungVorbereitung vorbereitung =
-            SpeicherAuslegungCtrl.Vorbereiten(sim, projektId, eingaben)
+            SpeicherAuslegungCtrl.Vorbereiten(sim, projektId, eingaben, KostenPflicht.Projektlauf)
             ?? throw new InvalidOperationException("Die EPOS-Zeitreihen oder Speicherparameter konnten nicht vorbereitet werden.");
         FlottenEingang input = SpeicherFlottenStudieCtrl.Eingang(vorbereitung);
         FlottenStudieKonfiguration config = SpeicherFlottenStudieCtrl.Konfiguration(vorbereitung.Eingaben);
         SpeicherFlottenProjektLauf lauf = Rechnen(input, config, vorbereitung.Kontext,
             Planer(config), cancellationToken);
-        string hinweis = vorbereitung.ZeitachsenHinweis ?? "";
-        if (config.Optionen.PrognoseArt == PrognoseArt.Oracle)
-            hinweis = string.Join(Environment.NewLine, new[]
-            {
-                hinweis,
-                "Idealwissen: Der Flottenplan verwendet zukünftige Werte der Projektzeitreihe als optimistische Vergleichsgrenze."
-            }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        bool bewertbar = vorbereitung.Eingaben.Auslegung.VerwendeteKosten?.NichtBewertbar != true;
+        string hinweis = Hinweistext(vorbereitung, config, bewertbar);
         return new SpeicherFlottenProjektLauf
         {
             Eingaben = vorbereitung.Eingaben.Kopie(),
             Konfiguration = lauf.Konfiguration, Studie = lauf.Studie,
             Kompatibilitaetsergebnis = lauf.Kompatibilitaetsergebnis,
             Kontext = lauf.Kontext, NetzleistungKw = lauf.NetzleistungKw,
-            Hinweis = hinweis
+            Hinweis = hinweis, KostenBewertbar = bewertbar
         };
+    }
+
+    /// <summary>Zeitachse, Idealwissen und — seit #185 — die fehlende Kostenbewertung.</summary>
+    private static string Hinweistext(StromspeicherOptimierungVorbereitung vorbereitung,
+        FlottenStudieKonfiguration config, bool kostenBewertbar)
+    {
+        List<string> zeilen = new List<string> { vorbereitung.ZeitachsenHinweis ?? "" };
+        if (config.Optionen.PrognoseArt == PrognoseArt.Oracle)
+            zeilen.Add("Idealwissen: Der Flottenplan verwendet zukünftige Werte der Projektzeitreihe als optimistische Vergleichsgrenze.");
+        if (!kostenBewertbar) zeilen.Add(MyResource.Resource.FLOTTE_MSG_KOSTEN_NICHT_BEWERTBAR);
+        return string.Join(Environment.NewLine,
+            zeilen.Where(x => !string.IsNullOrWhiteSpace(x)));
     }
 
     /// <summary>
@@ -132,17 +232,15 @@ public static class SpeicherFlottenProjektCtrl
         SpeicherOptimierungEingaben laufEingaben = snapshot.Kopie();
         SpeicherAuslegungKonfiguration auslegung = laufEingaben.Auslegung
             ?? throw new InvalidOperationException("Die Flottenkonfiguration des Lauf-Snapshots fehlt.");
-        if (auslegung.Flotte?.Einheiten == null || auslegung.Flotte.Einheiten.Count == 0)
-            throw new InvalidOperationException(
-                "Der Lauf-Snapshot enthält keine physische Speicherflotte.");
         auslegung.FlottenGroessenOptimieren = false;
         // Der Lauf-Snapshot ist noch kein freigegebener Projektstand. Kosten und
         // Projektquellen werden deshalb für diesen Lauf frisch aufgelöst.
         auslegung.FlotteImProjektAktiv = false;
-        PruefeProjektquellen(auslegung);
+        FlottenProjektPruefung pruefung = Pruefe(laufEingaben, projektId, false);
+        if (!pruefung.Rechenbar) throw new InvalidOperationException(pruefung.Meldung);
 
         StromspeicherOptimierungVorbereitung vorbereitung =
-            SpeicherAuslegungCtrl.Vorbereiten(sim, projektId, laufEingaben)
+            SpeicherAuslegungCtrl.Vorbereiten(sim, projektId, laufEingaben, KostenPflicht.Projektlauf)
             ?? throw new InvalidOperationException(
                 "Die EPOS-Zeitreihen oder Speicherparameter konnten nicht vorbereitet werden.");
         FlottenEingang input = SpeicherFlottenStudieCtrl.Eingang(vorbereitung);
@@ -150,14 +248,7 @@ public static class SpeicherFlottenProjektCtrl
         SpeicherFlottenProjektLauf lauf = Rechnen(input, config, vorbereitung.Kontext,
             Planer(config), cancellationToken);
 
-        string hinweis = vorbereitung.ZeitachsenHinweis ?? "";
-        if (config.Optionen.PrognoseArt == PrognoseArt.Oracle)
-            hinweis = string.Join(Environment.NewLine, new[]
-            {
-                hinweis,
-                "Idealwissen: Der Flottenplan verwendet zukünftige Werte der Projektzeitreihe als optimistische Vergleichsgrenze."
-            }.Where(x => !string.IsNullOrWhiteSpace(x)));
-
+        bool bewertbar = vorbereitung.Eingaben.Auslegung.VerwendeteKosten?.NichtBewertbar != true;
         return new SpeicherFlottenProjektLauf
         {
             Eingaben = vorbereitung.Eingaben.Kopie(),
@@ -166,7 +257,8 @@ public static class SpeicherFlottenProjektCtrl
             Kompatibilitaetsergebnis = lauf.Kompatibilitaetsergebnis,
             Kontext = lauf.Kontext,
             NetzleistungKw = lauf.NetzleistungKw,
-            Hinweis = hinweis
+            Hinweis = Hinweistext(vorbereitung, config, bewertbar),
+            KostenBewertbar = bewertbar
         };
     }
 
