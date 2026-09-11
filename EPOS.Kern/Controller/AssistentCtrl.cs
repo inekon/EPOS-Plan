@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 
 namespace WindowsFormsApplication1
 {
@@ -178,6 +182,175 @@ namespace WindowsFormsApplication1
 
             _seiteAktiv[WizardItemClass.KOMPONENTEN_ITEM] = true;
             _seiteAktiv[WizardItemClass.PROJEKT_ITEM] = true;
+
+            // Der Ausgangsstand ist der Vergleichsstand: Was DANACH anders ist, hat
+            // der Anwender getan (Anwenderentscheid 62b-E-1).
+            ZustandMerken();
+        }
+
+        // =============================================================================
+        // UNGESPEICHERTE EINGABEN (Anwenderentscheid 62b-E-1 vom 11.09.2026)
+        // =============================================================================
+
+        /// <summary>Der gemerkte Stand des Projektkopfs.</summary>
+        private string _abdruckKopf = "";
+
+        /// <summary>Der gemerkte Stand der sechs Listen und der dreizehn Schalter.</summary>
+        private string _abdruckListen = "";
+
+        /// <summary>
+        /// Hat der Lauf Eingaben, die noch nicht geschrieben sind?
+        ///
+        /// <para><b>Woraus die Antwort kommt.</b> Aus dem ZUSTAND, nicht aus einem
+        /// Ereigniszähler: Der Assistent nimmt an drei Stellen einen Abdruck seines
+        /// Zustands — beim Anlegen des Laufs, nach den sechs Ladewegen
+        /// (<see cref="Laden"/>) und nach einem gelungenen Speicherlauf — und
+        /// vergleicht ihn hier mit dem jetzigen. Ein Fokuswechsel, ein Seitenwechsel
+        /// und ein zweites Betreten derselben Seite ändern daran nichts; ein
+        /// getipptes Zeichen, eine aufgenommene Anlage und eine abgewählte Kachel
+        /// schon.</para>
+        ///
+        /// <para><b>Zwei Abdrücke statt einem</b>, weil die zwei Teile zu
+        /// verschiedenen Zeitpunkten vom PROGRAMM gefüllt werden: Die sechs Listen
+        /// füllt <see cref="Laden"/>, den Kopf füllt die Oberfläche beim Betreten der
+        /// Projektseite aus der Datenbank (<c>ProjektKopfHuelle.Gaben</c>) — sie
+        /// meldet das über <see cref="KopfMerken"/>. Ein gemeinsamer Abdruck
+        /// verschlänge beim Laden die Kopfeingabe, die der Anwender unmittelbar davor
+        /// gemacht hat.</para>
+        ///
+        /// <para><c>Projekt</c> steht bewusst NICHT im Abdruck: Es ist der
+        /// Schreibpuffer, den <see cref="ProjektkopfUebernehmen"/> aus
+        /// <see cref="Kopf"/> ableitet, und es trägt mit
+        /// <c>m_Aenderungsdatum = DateTime.Now</c> einen Wert, der sich von selbst
+        /// ändert.</para>
+        /// </summary>
+        public bool HatAenderungen
+        {
+            get { return KopfAbdruck() != _abdruckKopf || ListenAbdruck() != _abdruckListen; }
+        }
+
+        /// <summary>Merkt den JETZIGEN Zustand als den ungeänderten — Kopf und Listen.</summary>
+        public void ZustandMerken()
+        {
+            _abdruckKopf = KopfAbdruck();
+            _abdruckListen = ListenAbdruck();
+        }
+
+        /// <summary>
+        /// Merkt allein den Projektkopf. Die Oberfläche ruft das, nachdem sie ihn aus
+        /// der Datenbank bestückt oder vorbelegt hat — was DAS Programm einträgt, ist
+        /// keine Eingabe des Anwenders.
+        /// </summary>
+        public void KopfMerken()
+        {
+            _abdruckKopf = KopfAbdruck();
+        }
+
+        /// <summary>
+        /// Der Abdruck des Projektkopfs — die acht Datenfelder, ausdrücklich OHNE
+        /// <c>NameAenderbar</c> (das ist eine Anzeigeregel der Betriebsart, keine
+        /// Eingabe).
+        /// </summary>
+        public string KopfAbdruck()
+        {
+            if (Kopf == null || Kopf.Count == 0) return "";
+
+            ProjektKopfDaten k = Kopf[0];
+            return string.Join("", new[]
+            {
+                k.Name ?? "", k.Beschreibung ?? "", k.Kunde ?? "", k.Bearbeiter ?? "",
+                k.Erstelldatum.ToString("O", CultureInfo.InvariantCulture),
+                k.Aenderungsdatum.ToString("O", CultureInfo.InvariantCulture),
+                k.IdKlimaregion.ToString(CultureInfo.InvariantCulture),
+                k.Klimaname ?? ""
+            });
+        }
+
+        /// <summary>
+        /// Der Abdruck der sechs Listen und der dreizehn Seitenschalter.
+        /// </summary>
+        /// <remarks>
+        /// Über REFLEXION, und zwar mit Absicht: Die sieben Modelle führen zusammen
+        /// weit über hundert Felder, und eine abgeschriebene Feldliste wäre genau die
+        /// zweite Wahrheit, die beim ersten neuen Feld auseinanderliefe — dann meldete
+        /// der Assistent eine Eingabe nicht mehr. Gelesen werden nur WERTE (Zahl, Text,
+        /// Wahrheitswert, Datum, Aufzählung); Verweisfelder wie das Selbstfeld
+        /// <c>items</c> bleiben außen vor.
+        /// </remarks>
+        private string ListenAbdruck()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < SEITEN; i++) sb.Append(_seiteAktiv[i] ? '1' : '0');
+
+            Anhaengen(sb, Erzeuger);
+            Anhaengen(sb, Gebaeude);
+            Anhaengen(sb, Waermebedarf);
+            Anhaengen(sb, Prozess);
+            Anhaengen(sb, Stromverbraucher);
+            Anhaengen(sb, Stromganglinie);
+            return sb.ToString();
+        }
+
+        private static void Anhaengen<T>(StringBuilder sb, List<T> liste)
+        {
+            sb.Append('|').Append(liste == null ? 0 : liste.Count);
+            if (liste == null) return;
+
+            foreach (T eintrag in liste)
+            {
+                sb.Append(';');
+                if (eintrag == null) { sb.Append('-'); continue; }
+
+                foreach (Func<object, object> lesen in Leser(eintrag.GetType()))
+                {
+                    object wert;
+                    try { wert = lesen(eintrag); } catch (Exception) { wert = null; }
+                    sb.Append(Convert.ToString(wert, CultureInfo.InvariantCulture)).Append('=');
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die Wertleser eines Modelltyps, nach Namen sortiert und je Typ einmal
+        /// gebaut. Die Reihenfolge von <c>GetFields</c> ist nicht zugesichert; der
+        /// Abdruck muss aber über die Laufzeit eines Assistentenlaufs derselbe sein.
+        /// </summary>
+        private static readonly Dictionary<Type, List<Func<object, object>>> _leser =
+            new Dictionary<Type, List<Func<object, object>>>();
+
+        private static List<Func<object, object>> Leser(Type typ)
+        {
+            lock (_leser)
+            {
+                List<Func<object, object>> fertig;
+                if (_leser.TryGetValue(typ, out fertig)) return fertig;
+
+                var namen = new List<KeyValuePair<string, Func<object, object>>>();
+
+                foreach (FieldInfo f in typ.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                    if (IstWert(f.FieldType))
+                        namen.Add(new KeyValuePair<string, Func<object, object>>(
+                            "f:" + f.Name, o => f.GetValue(o)));
+
+                foreach (PropertyInfo p in typ.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    if (p.CanRead && p.GetIndexParameters().Length == 0 && IstWert(p.PropertyType))
+                        namen.Add(new KeyValuePair<string, Func<object, object>>(
+                            "p:" + p.Name, o => p.GetValue(o)));
+
+                fertig = namen.OrderBy(e => e.Key, StringComparer.Ordinal)
+                              .Select(e => e.Value)
+                              .ToList();
+                _leser[typ] = fertig;
+                return fertig;
+            }
+        }
+
+        /// <summary>Trägt dieser Typ einen VERGLEICHBAREN Wert?</summary>
+        private static bool IstWert(Type typ)
+        {
+            Type t = Nullable.GetUnderlyingType(typ) ?? typ;
+            return t.IsPrimitive || t.IsEnum || t == typeof(string) || t == typeof(decimal)
+                || t == typeof(DateTime) || t == typeof(TimeSpan) || t == typeof(Guid);
         }
 
         // =============================================================================
@@ -261,6 +434,12 @@ namespace WindowsFormsApplication1
             LadeWaermebedarf(projektName);
             LadeStromverbraucher(projektName);
             BereitsGeladen = true;
+
+            // Was die sechs Ladewege eintragen, ist der Stand der DATENBANK und keine
+            // Eingabe des Anwenders (62b-E-1). Der Kopfabdruck bleibt unberuehrt: Er
+            // kann in diesem Augenblick bereits eine Eingabe tragen - Laden laeuft
+            // unmittelbar nachdem die Projektseite verlassen wurde.
+            _abdruckListen = ListenAbdruck();
         }
 
         /// <summary>

@@ -129,11 +129,21 @@ else if (_ansicht == Seitenschluessel.SimulationErgebnis && _simErgebnis is not 
 }
 else if (_ansicht == Seitenschluessel.Assistent && _assistent is not null)
 {
-    @* Der Projektassistent (iU9-W16a.5). Unter Windows steht dieselbe Komponente
-       in einer MODALEN Huelle (AssistentHuelle) - beide Aufrufer werten aus, ob
-       gespeichert wurde; hier loest sie die Ansicht ab, weil es auf dem iPad kein
-       zweites Fenster gibt. *@
-    <EPOS.UI.Seiten.Assistent.AssistentSeite @attributes="_assistent"
+    @* Der PROJEKTASSISTENT als freie Ansicht (iU9-W16a.5; seit dem
+       Anwenderentscheid W16a-E-1 / W16b-O-5 auf BEIDEN Plattformen).
+
+       Bis dahin stand er unter Windows in einer MODALEN Huelle, weil seine zwei
+       Aufrufer auswerteten, OB gespeichert wurde, und der Rahmen danach den
+       Projektkontext nachzog. Beides braucht das modale Fenster nicht mehr: Der
+       Nachzug haengt am Ereignis ProjektKontextCtrl.Gewechselt, und was hier zu
+       melden ist, meldet BeiAssistentFertig.
+
+       Was der freie Weg dafuer braucht, ist die Rueckfrage aus 62b-E-1 - ein
+       Menuepunkt kann den Assistenten jetzt verlassen, ein modales Fenster
+       konnte das nicht. Sie steht IN der Seite (Ueberlagerung), gefragt wird
+       ueber FrageVerlassen. *@
+    <EPOS.UI.Seiten.Assistent.AssistentSeite @ref="_assistentSeite"
+                                             @attributes="_assistent"
                                              Geschlossen="BeiAssistentFertig" />
 }
 else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
@@ -171,6 +181,19 @@ else
     private IReadOnlyDictionary<string, object>? _berichteKosten;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+
+    /// <summary>
+    /// Die stehende Assistentenseite — sie beantwortet, ob der Lauf ungespeicherte
+    /// Eingaben hat, und stellt die Rückfrage aus 62b-E-1.
+    /// </summary>
+    private EPOS.UI.Seiten.Assistent.AssistentSeite? _assistentSeite;
+
+    /// <summary>
+    /// Der Assistent ist fertig oder darf verlassen werden — dann wird nicht (noch
+    /// einmal) gefragt. Gesetzt vom Rückweg und von der beantworteten Rückfrage,
+    /// zurückgesetzt beim Betreten der Ansicht.
+    /// </summary>
+    private bool _assistentGeklaert;
     private WindowsFormsApplication1.LizenzLage? _lizenz;
     private string _lizenzbanner = "";
 
@@ -231,6 +254,19 @@ else
     /// Startseite) — vorher wurde die Ansicht unter Windows nie gezeigt.</para>
     /// </summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des PROJEKTASSISTENTEN zu einer Betriebsart, wenn ihn die
+    /// Hülle stellt (Windows: <c>AssistentHuelle.AnsichtGaben</c>). Ohne ihn fragt
+    /// die Wurzel <c>IProjektQuelle.AssistentGaben</c> — der iOS-Weg.
+    ///
+    /// <para><b>Ein Delegat und kein Wörterbuch</b>, anders als bei Startseite und
+    /// „Berichte &amp; Kosten": Ein Assistentenlauf ist kein Dauerzustand, sondern
+    /// beginnt beim Betreten der Ansicht — jeder Aufruf legt einen neuen
+    /// <c>AssistentCtrl</c> an. Die Betriebsart geht hinein, weil sie die zwei
+    /// Einstiege unterscheidet (0 = neues Projekt, 1 = vorhandenes bearbeiten).</para>
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? AssistentGaben { get; set; }
 
     // =====================================================================
     // Das Lizenzbanner (Welle iF30)
@@ -375,8 +411,29 @@ else
         Zeige(wahl.Maske);
     }
 
-    private bool Zeige(string maske)
+    /// <summary>
+    /// Schaltet die Ansicht. <c>false</c> = der Schlüssel ist hier unbekannt oder
+    /// die Ansicht lässt sich nicht aufbauen; dann bleibt stehen, was steht.
+    /// </summary>
+    /// <param name="maske">Der Seitenschlüssel.</param>
+    /// <param name="betriebsartWunsch">
+    /// Nur für den Assistenten: die Betriebsart aus dem Argument des Aufrufers
+    /// (<c>Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart)</c>).
+    /// Ohne sie entscheidet der Schlüssel bzw. das gewählte Projekt.
+    /// </param>
+    private bool Zeige(string maske, int? betriebsartWunsch = null)
     {
+        // ANWENDERENTSCHEID 62b-E-1 (11.09.2026): Der Assistent wird nicht still
+        // verlassen. Hat der Lauf ungespeicherte Eingaben, kommt die Rueckfrage,
+        // und der Wechsel geschieht erst DANACH - oder gar nicht. Ohne Aenderung
+        // wird nicht gefragt, dann faellt der Aufruf hier durch.
+        if (_ansicht == Seitenschluessel.Assistent && !_assistentGeklaert
+            && _assistentSeite is not null && _assistentSeite.Ungespeichert)
+        {
+            _ = VerlassenUndZeigen(maske, betriebsartWunsch);
+            return true;
+        }
+
         if (maske == Seitenschluessel.Startseite)
         {
             // Der Parametersatz der Huelle hat Vorrang: Unter Windows haelt
@@ -453,12 +510,30 @@ else
             return true;
         }
 
-        if (maske == Seitenschluessel.Assistent)
+        if (maske == Seitenschluessel.Assistent
+            || maske == Seitenschluessel.ProjektNeu
+            || maske == Seitenschluessel.ProjektBearbeiten)
         {
-            // Betriebsart BEARBEITEN, wenn ein Projekt gewaehlt ist - sonst NEU;
-            // dieselbe Unterscheidung wie MenueCtrl.ProjektNeu/ProjektBearbeiten.
-            int betriebsart = (_projekt?.Id ?? 0) > 0 ? 1 : 0;
-            _assistent = Quelle.AssistentGaben(betriebsart, _projekt?.Id ?? 0);
+            // DREI Schluessel, EINE Ansicht (W16a-E-1): Der Kern ruft den
+            // Assistenten ueber Masken.Assistent mit der Betriebsart als Argument,
+            // das Menueband meldet die zwei WEGE des Hauptfensters. Sie sagen
+            // dasselbe - PROJEKT_NEU ist Betriebsart 0, PROJEKT_BEARBEITEN ist 1 -,
+            // und ohne beides entscheidet das gewaehlte Projekt (der iOS-Weg,
+            // dieselbe Unterscheidung wie MenueCtrl.ProjektNeu/ProjektBearbeiten).
+            int betriebsart = betriebsartWunsch
+                ?? (maske == Seitenschluessel.ProjektNeu
+                        ? WindowsFormsApplication1.AssistentCtrl.BETRIEBSART_NEU
+                    : maske == Seitenschluessel.ProjektBearbeiten
+                        ? WindowsFormsApplication1.AssistentCtrl.BETRIEBSART_BEARBEITEN
+                    : (_projekt?.Id ?? 0) > 0
+                        ? WindowsFormsApplication1.AssistentCtrl.BETRIEBSART_BEARBEITEN
+                        : WindowsFormsApplication1.AssistentCtrl.BETRIEBSART_NEU);
+
+            // Der Delegat der Huelle hat Vorrang: Unter Windows baut
+            // AssistentHuelle je Lauf einen neuen AssistentCtrl und haengt die
+            // dreizehn Seitengaben daran - eine Projektquelle koennte das nicht.
+            _assistent = AssistentGaben?.Invoke(betriebsart)
+                         ?? Quelle.AssistentGaben(betriebsart, _projekt?.Id ?? 0);
             if (_assistent is null)
             {
                 // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
@@ -467,7 +542,8 @@ else
                 _statuszeile = KeinProjektassistentText;
                 return false;
             }
-            _ansicht = maske;
+            _assistentGeklaert = false;
+            _ansicht = Seitenschluessel.Assistent;
             return true;
         }
 
@@ -502,6 +578,10 @@ else
     /// </summary>
     private void ZurueckZurListe()
     {
+        // Der Assistent hat sich SELBST verabschiedet (gespeichert, abgebrochen
+        // oder ueber „Projekt oeffnen") - hier wird nicht noch einmal gefragt.
+        _assistentGeklaert = true;
+
         _bhkw = null;
         _simKonfig = null;
         _simErgebnis = null;
@@ -543,6 +623,82 @@ else
         ZurueckZurListe();
     }
 
+    // =====================================================================
+    // Den Assistenten verlassen (Anwenderentscheid 62b-E-1 vom 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Fragt die stehende Assistentenseite und wechselt DANACH — oder gar nicht.
+    /// </summary>
+    /// <remarks>
+    /// Der Wechsel kann nicht synchron bleiben: Die Rückfrage ist eine
+    /// <c>Ueberlagerung</c> in derselben WebView, und ihre Antwort kommt erst mit
+    /// dem nächsten Klick. <see cref="Zeige"/> meldet deshalb „behandelt" und
+    /// schiebt die Arbeit hierher.
+    /// </remarks>
+    private async Task VerlassenUndZeigen(string maske, int? betriebsart)
+    {
+        EPOS.UI.Seiten.Assistent.AssistentSeite? seite = _assistentSeite;
+        if (seite is null) return;
+
+        EPOS.UI.Seiten.Assistent.AssistentVerlassen weg = await seite.FrageVerlassen();
+        if (weg == EPOS.UI.Seiten.Assistent.AssistentVerlassen.Bleiben) return;
+
+        if (weg == EPOS.UI.Seiten.Assistent.AssistentVerlassen.Gespeichert)
+            _statuszeile = MeldungGespeichert;
+
+        _assistentGeklaert = true;
+        _assistent = null;
+
+        if (!Zeige(maske, betriebsart) && !Zeige(Startansicht))
+            _ansicht = Seitenschluessel.Projektliste;
+
+        // Ein gespeicherter Lauf hat ein Projekt angelegt oder fortgeschrieben.
+        Laden();
+        StateHasChanged();
+    }
+
+    /// <inheritdoc />
+    public bool VerlassenFraglich
+        => _ansicht == Seitenschluessel.Assistent
+           && !_assistentGeklaert
+           && _assistentSeite is not null
+           && _assistentSeite.Ungespeichert;
+
+    /// <inheritdoc />
+    public Task<bool> DarfVerlassen()
+    {
+        // Nur der Assistent hat etwas zu verlieren; jede andere Ansicht schreibt
+        // beim Verlassen ohnehin nichts.
+        if (!VerlassenFraglich || _assistentSeite is null)
+            return Task.FromResult(true);
+
+        var antwort = new TaskCompletionSource<bool>();
+
+        // Gefragt wird auf dem RENDERFADEN - der Aufrufer ist unter Windows der
+        // Oberflaechenfaden im FormClosing, und gezeichnet wird nur hier.
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                EPOS.UI.Seiten.Assistent.AssistentSeite? seite = _assistentSeite;
+                if (seite is null) { antwort.TrySetResult(true); return; }
+
+                EPOS.UI.Seiten.Assistent.AssistentVerlassen weg = await seite.FrageVerlassen();
+                bool frei = weg != EPOS.UI.Seiten.Assistent.AssistentVerlassen.Bleiben;
+                if (frei) _assistentGeklaert = true;
+                antwort.TrySetResult(frei);
+            }
+            catch (Exception)
+            {
+                // Eine gescheiterte Rueckfrage darf das Programm nicht festhalten.
+                antwort.TrySetResult(true);
+            }
+        });
+
+        return antwort.Task;
+    }
+
     private void BeiBhkwFertig(EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitErgebnis ergebnis)
     {
         _statuszeile = ergebnis is { Gespeichert: true } ? MeldungGespeichert : "";
@@ -564,18 +720,36 @@ else
                     || maske == Seitenschluessel.SimulationErgebnis
                     || maske == Seitenschluessel.KiAssistent
                     || maske == Seitenschluessel.Assistent
+                    || maske == Seitenschluessel.ProjektNeu
+                    || maske == Seitenschluessel.ProjektBearbeiten
                     || maske == Seitenschluessel.Startseite
                     || maske == Seitenschluessel.BerichteKosten
                     || maske == Seitenschluessel.Projektliste;
 
         if (!bekannt) return false;
 
+        // Der Assistent nimmt seine Betriebsart als Argument entgegen - so ruft ihn
+        // der Kern seit jeher (Dienste.Navigation.OeffneMaske(Masken.Assistent, 0|1)).
+        int? betriebsart = Betriebsart(maske, argumente);
+
         _ = InvokeAsync(() =>
         {
-            Zeige(maske);
+            Zeige(maske, betriebsart);
             StateHasChanged();
         });
         return true;
+    }
+
+    /// <summary>
+    /// Die Betriebsart aus dem ersten Argument — nur für den Assistenten und nur,
+    /// wenn eine ganze Zahl darin steht.
+    /// </summary>
+    private static int? Betriebsart(string maske, object[] argumente)
+    {
+        if (maske != Seitenschluessel.Assistent) return null;
+        if (argumente is null || argumente.Length == 0 || argumente[0] is null) return null;
+
+        try { return Convert.ToInt32(argumente[0]); } catch (Exception) { return null; }
     }
 
     /// <inheritdoc />

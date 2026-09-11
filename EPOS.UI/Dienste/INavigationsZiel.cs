@@ -37,6 +37,32 @@ public interface INavigationsZiel
 
     /// <summary>Zeichnet die gerade sichtbare Ansicht neu.</summary>
     void Auffrischen();
+
+    /// <summary>
+    /// Darf die Oberflaeche verlassen werden? (Anwenderentscheid <b>62b-E-1</b> vom
+    /// 11.09.2026, Festlegung 4.)
+    ///
+    /// <para><b>Wofuer.</b> Seit der Projektassistent eine freie ANSICHT ist, kann
+    /// er beim Schliessen des Programms mit ungespeicherten Eingaben stehen. Der
+    /// <c>Hauptfensterrahmen</c> fragt hier, bricht sein <c>FormClosing</c> ab und
+    /// schliesst erst, wenn die Antwort <c>true</c> lautet — die Rueckfrage selbst
+    /// steht als <c>Ueberlagerung</c> in der Ansicht und nicht als
+    /// <c>MessageBox</c>.</para>
+    ///
+    /// <para>Die Standardfassung sagt <c>true</c>: Eine Ansicht, die nichts zu
+    /// verlieren hat, haelt niemanden auf.</para>
+    /// </summary>
+    Task<bool> DarfVerlassen() => Task.FromResult(true);
+
+    /// <summary>
+    /// Gibt es ueberhaupt etwas zu fragen? <b>Synchron</b>, und genau deshalb
+    /// getrennt von <see cref="DarfVerlassen"/>: Ein <c>FormClosing</c> muss OHNE
+    /// Warten entscheiden, ob es abbrechen darf. Wer hier <c>false</c> liest,
+    /// schliesst wie eh und je — und ein <c>Application.Restart</c> (Sprachwechsel)
+    /// bleibt damit unberuehrt, statt an einem stets abgebrochenen Schliessen zu
+    /// scheitern.
+    /// </summary>
+    bool VerlassenFraglich => false;
 }
 
 /// <summary>

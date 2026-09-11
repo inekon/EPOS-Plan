@@ -82,8 +82,12 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
 
 - **`Program.cs`** — `Main` startet die Oberfläche. Hält `rahmen` (bis zum
   Anwenderentscheid E‑10 vom 04.09.2026: `mdifrm`), `projektkontext`,
-  `menuectrl`, `wizardctrl` — mit iU9‑W16c ist keines davon verwaist: `menuectrl` liest
-  `AssistentHuelle`, `wizardctrl` die Startseiten- und die Hauptfensterhülle. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
+  `menuectrl`, `wizardctrl` — mit iU9‑W16c ist keines davon verwaist: beide liest seit **#62b**
+  (11.09.2026) `AssistentHuelle` — `menuectrl` für „Projekt öffnen" aus dem linken
+  Band, `wizardctrl` (über `WizardCtrl.Aktueller`) für den Nachzug des
+  Projektkontexts hinter dem gelungenen Speicherlauf. Die zwei Aufrufer, die ihn
+  bis dahin NACH dem modalen Fenster lasen, gibt es nicht mehr: Der Assistent ist
+  eine freie Ansicht. **`mainfrm` und `startfrm` sind mit iU9‑W16b entfallen**:
   das Detailformular `FormMain` ist gelöscht (E‑7), und die Startseite ist eine
   Razor-Seite — wer sie erreichen will, geht über `StartseiteHuelle.Aktuelle`, wer das
   offene Projekt braucht, über `Dienste.Projekt` (`ProjektKontextCtrl`, K2). Globaler veränderlicher Zustand — Seiteneffekte bei Änderungen

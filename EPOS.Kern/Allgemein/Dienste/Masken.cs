@@ -115,8 +115,14 @@
 
         /// <summary>
         /// Der Projektassistent. Argument: die Betriebsart
-        /// (<c>WizardParent.WIZARD_MODE_NEU</c> bzw. <c>…_BEARBEITEN</c>).
-        /// Rückgabe <c>true</c>, wenn der Assistent gespeichert hat.
+        /// (<c>AssistentCtrl.BETRIEBSART_NEU</c> bzw. <c>…_BEARBEITEN</c>).
+        ///
+        /// <para><b>Die Rückgabe hat seit dem 11.09.2026 (Anwenderentscheid
+        /// W16a-E-1 / W16b-O-5, Aufgabe #62b) eine andere Bedeutung:</b> Sie sagt
+        /// „die Ansicht ist gewechselt", nicht mehr „es wurde gespeichert". Der
+        /// Assistent ist eine freie ANSICHT — der Aufruf kehrt sofort zurück, und
+        /// ob gespeichert wird, entscheidet sich erst danach. Wer das wissen muss,
+        /// hört auf <c>IProjektKontext.Gewechselt</c>.</para>
         /// </summary>
         public const string Assistent = "ASSISTENT";
 

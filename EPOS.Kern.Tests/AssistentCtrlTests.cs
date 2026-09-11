@@ -952,6 +952,111 @@ namespace EPOS.Kern.Tests
             return zeilen.ToArray();
         }
 
+        // =========================================================================
+        // Ungespeicherte Eingaben (Anwenderentscheid 62b-E-1 vom 11.09.2026)
+        // - ohne Datenbank
+        // =========================================================================
+
+        /// <summary>
+        /// Ein frischer Lauf hat nichts zu verlieren — und der bloße Blick auf den
+        /// Zustand ändert daran nichts (zweimal fragen heißt nicht „geändert").
+        /// </summary>
+        [Fact]
+        public void Ein_frischer_Lauf_hat_keine_Aenderungen()
+        {
+            AssistentCtrl a = new AssistentCtrl();
+
+            Assert.False(a.HatAenderungen);
+            Assert.False(a.HatAenderungen);
+        }
+
+        /// <summary>
+        /// Eine Eingabe im PROJEKTKOPF ist eine Änderung — auch die kleinste.
+        /// </summary>
+        [Fact]
+        public void Eine_Eingabe_im_Projektkopf_ist_eine_Aenderung()
+        {
+            AssistentCtrl a = new AssistentCtrl();
+
+            a.Kopf[0].Name = "Neues Projekt";
+            Assert.True(a.HatAenderungen);
+
+            // Der Kopf gilt als bestueckt (die Huelle liest ihn aus der Datenbank
+            // bzw. belegt ihn vor): danach ist der Stand wieder der ungeaenderte.
+            a.KopfMerken();
+            Assert.False(a.HatAenderungen);
+
+            a.Kopf[0].Klimaname = "Region 12";
+            Assert.True(a.HatAenderungen);
+        }
+
+        /// <summary>
+        /// Eine aufgenommene Anlage ist eine Änderung — und ein GEÄNDERTES FELD einer
+        /// bereits aufgenommenen ebenso. Das ist der Grund, warum der Abdruck die
+        /// Feldwerte liest und nicht nur die Listenlänge zählt.
+        /// </summary>
+        [Fact]
+        public void Eine_aufgenommene_und_eine_geaenderte_Anlage_sind_Aenderungen()
+        {
+            AssistentCtrl a = new AssistentCtrl();
+
+            a.Erzeuger.Add(new WErzeugerModel
+            {
+                ID_Type = WizardItemClass.BHKW_TYP,
+                Bezeichner = "BHKW 1"
+            });
+            Assert.True(a.HatAenderungen);
+
+            a.ZustandMerken();
+            Assert.False(a.HatAenderungen);
+
+            a.Erzeuger[0].Bezeichner = "BHKW 2";
+            Assert.True(a.HatAenderungen);
+
+            a.ZustandMerken();
+            a.Erzeuger.RemoveAt(0);
+            Assert.True(a.HatAenderungen);
+        }
+
+        /// <summary>
+        /// Eine abgewählte Kachel ist eine Änderung — sie entscheidet beim Speichern,
+        /// ob ein ganzes Gewerk verschwindet (<c>EntferneNichtAktiveZuordnungen</c>).
+        /// </summary>
+        [Fact]
+        public void Eine_geschaltete_Seite_ist_eine_Aenderung()
+        {
+            AssistentCtrl a = new AssistentCtrl();
+
+            a.SeiteSchalten(WizardItemClass.PV_ITEM, true);
+            Assert.True(a.HatAenderungen);
+
+            a.ZustandMerken();
+            Assert.False(a.HatAenderungen);
+
+            a.SeiteSchalten(WizardItemClass.PV_ITEM, false);
+            Assert.True(a.HatAenderungen);
+        }
+
+        /// <summary>
+        /// <b>Der Grund für ZWEI Abdrücke:</b> Die sechs Ladewege füllen die Listen
+        /// aus der Datenbank — das ist keine Eingabe. Eine Kopfeingabe, die der
+        /// Anwender unmittelbar davor gemacht hat, überlebt das Laden trotzdem;
+        /// ein gemeinsamer Abdruck hätte sie verschluckt.
+        /// </summary>
+        [Fact]
+        public void Das_Laden_setzt_nur_die_Listen_zurueck_nicht_den_Kopf()
+        {
+            AssistentCtrl a = new AssistentCtrl();
+
+            a.Kopf[0].Beschreibung = "vom Anwender getippt";
+
+            // Laden ohne Projektnamen liest nichts - das ist der Neu-Zweig; die
+            // Listen sind danach nachweislich der Stand der Datenbank.
+            a.Laden("");
+
+            Assert.True(a.HatAenderungen);
+        }
+
         private static AssistentErgebnis Ergebnis(AssistentAusgang ausgang, string schritt = "")
         {
             // Der Konstruktor ist internal; EPOS.Kern.Tests sieht ihn (InternalsVisibleTo).

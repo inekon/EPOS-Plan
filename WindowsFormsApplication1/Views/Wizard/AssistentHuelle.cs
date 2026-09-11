@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-using EPOS.UI.Seiten.Assistent;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -17,77 +13,70 @@ namespace WindowsFormsApplication1
     /// werden die dreizehn Parametersätze gebaut — dieselben <c>Gaben</c>-Wörterbücher,
     /// die die elf Hüllen schon für <c>BlazorAssistentSeite</c> lieferten.</para>
     ///
-    /// <para><b>Modal, weil beide Aufrufer die Rückkehr brauchen.</b>
-    /// <c>MenueCtrl.ProjektNeu</c> und <c>…ProjektBearbeiten</c> werten
-    /// <c>gespeichert</c> aus; <c>Form_Start</c> und <c>Hauptfensterrahmen</c> ziehen danach
-    /// den Projektkontext aus <c>WizardCtrl.Aktueller.Projektname</c> nach. Dieselbe
-    /// Begründung wie bei den beiden Simulationsseiten (R‑W10b‑1 / R‑W11‑1).</para>
+    /// <para><b>Seit W16a-E-1 / W16b-O-5 ist der Assistent eine FREIE ANSICHT</b>
+    /// (Aufgabe #62b, 11.09.2026) — es gibt kein <c>BlazorDialogForm</c> mehr und
+    /// kein <c>DialogResult</c>. Er war die letzte Fachseite in einer modalen Hülle,
+    /// und modal war er aus zwei Gründen: Seine Aufrufer werteten aus, OB gespeichert
+    /// wurde, und der Rahmen zog danach den Projektkontext nach. Beides ist jetzt
+    /// anders gelöst — der Nachzug geschieht HIER, unmittelbar nach dem gelungenen
+    /// Speicherlauf (<see cref="ProjektkontextNachziehen"/>), und die Startseite
+    /// erfährt ihn über <c>ProjektKontextCtrl.Gewechselt</c> wie jeden anderen
+    /// Projektwechsel.</para>
     ///
     /// <para><b>Der Rückweg „Projekt öffnen".</b> Er stand als
     /// <c>WizardParent.ProjektOeffnenUndSchliessen</c> (:940-960) im Rahmen: Projekt
     /// aktiv setzen, den Namen in <c>WizardCtrl</c> nachziehen, schließen und die
-    /// Startmaske kurz melden lassen. Er steht jetzt hier — mit W16b wird aus dem
-    /// letzten Schritt ein Rückruf an die Razor-Startseite.</para>
+    /// Startmaske kurz melden lassen. Er steht jetzt hier; das SCHLIESSEN meldet seit
+    /// #62b die Seite selbst (<c>Geschlossen(false)</c>), es gibt kein Fenster
+    /// mehr, das zuzumachen wäre.</para>
     /// </summary>
     internal static class AssistentHuelle
     {
-        /// <summary>Fenstermaß des Assistenten (Vorläufer: 1264 × 900).</summary>
-        private static readonly Size MASS = new Size(1264, 900);
-
         /// <summary>
-        /// Zeigt den Assistenten modal und meldet, ob gespeichert wurde — der Ersatz
-        /// für <c>WinFormsNavigation.AssistentZeigen</c>.
+        /// Der PARAMETERSATZ EINES neuen Assistentenlaufs — der Ersatz für
+        /// <c>Oeffnen(besitzer, betriebsart)</c> seit #62b.
+        ///
+        /// <para>Er legt den <see cref="AssistentCtrl"/> des Laufs an und reicht ihn
+        /// über die Delegaten in <see cref="Gaben"/> an die Razor-Seite. Gerufen wird
+        /// er von <c>AppWurzel</c>, sobald die Ansicht ASSISTENT betreten wird —
+        /// einmal je Lauf, wie vorher <c>new AssistentCtrl()</c> je Fenster.</para>
         /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Assistent erscheint.</param>
         /// <param name="betriebsart">
         /// <see cref="AssistentCtrl.BETRIEBSART_NEU"/> oder <c>…_BEARBEITEN</c>.
         /// </param>
-        internal static bool Oeffnen(IWin32Window besitzer, int betriebsart)
+        internal static IReadOnlyDictionary<string, object> AnsichtGaben(int betriebsart)
         {
             AssistentCtrl ctrl = new AssistentCtrl { Betriebsart = betriebsart };
 
-            BlazorDialogForm<AssistentSeite> dlg = null;
-            bool gespeichert = false;
+            // Ob dieser Lauf das Projekt als „zuletzt geoeffnet" merkt, entscheidet
+            // der EINSTIEG und nicht der Speicherweg: Die Startkacheln tun es, die
+            // zwei Menuewege „Neu"/„Bearbeiten" nicht (ProjektKontextCtrl, Setzen
+            // gegen Uebernehmen). In der modalen Fassung stand diese Unterscheidung
+            // in den zwei Aufrufern, die nach dem ShowDialog weiterarbeiteten; jetzt
+            // meldet der Einstieg sie vorher an - einmalig, fuer genau diesen Lauf.
+            bool merken = _merkeNaechstenLauf;
+            _merkeNaechstenLauf = false;
 
-            var werte = new Dictionary<string, object>(Gaben(ctrl))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    gespeichert = ok;
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
-            };
-
-            dlg = new BlazorDialogForm<AssistentSeite>(Text_("WIZ_TITEL", "Projektassistent"),
-                                                       MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-
-            // Der Rueckweg "Projekt oeffnen" schliesst den Assistenten OHNE zu
-            // speichern; die Startseite meldet den Wechsel danach kurz. Close()
-            // blendet den modalen Rahmen nur aus - der Hinweis liegt deshalb erst
-            // hier ueber der Startseite und nicht unter dem Assistenten.
-            //
-            // iU9-W16b.3: Aus dem Aufruf an Program.startfrm ist ein Rueckruf an die
-            // RAZOR-Startseite geworden (StartseiteHuelle merkt den Satz vor, die
-            // Seite holt ihn beim naechsten Auffrischen ab und zeigt ihn als
-            // Warnbanner mit Verfaellt = 3 s - genau die Lebensdauer von Form_Hinweis).
-            if (_hinweisFaellig)
-            {
-                _hinweisFaellig = false;
-                StartseiteHuelle.Aktuelle?.HinweisProjektGeoeffnet();
-            }
-
-            return gespeichert && ctrl.Gespeichert;
+            return new Dictionary<string, object>(Gaben(ctrl, merken));
         }
+
+        /// <summary>
+        /// Der nächste Lauf merkt sein Projekt als „zuletzt geöffnet" — gesetzt von
+        /// den zwei Startkacheln, verbraucht von <see cref="AnsichtGaben"/>.
+        /// </summary>
+        internal static void NaechsterLaufMerktProjekt()
+        {
+            _merkeNaechstenLauf = true;
+        }
+
+        private static bool _merkeNaechstenLauf;
 
         /// <summary>
         /// Der PARAMETERSATZ der Seite — die Delegaten der Vermessung § 12.8 (Laden,
         /// Speichern, Seite schalten) samt den Texten.
         /// </summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(AssistentCtrl ctrl)
+        internal static IReadOnlyDictionary<string, object> Gaben(AssistentCtrl ctrl,
+                                                                  bool merken = false)
         {
             if (ctrl == null) throw new ArgumentNullException(nameof(ctrl));
 
@@ -120,6 +109,12 @@ namespace WindowsFormsApplication1
                     KomponentenauswahlHuelle.Gaben(id, komponenten, ctrl.Betriebsart,
                                                    ctrl.SeiteSchalten);
                     ctrl.BereitsGeladen = false;
+
+                    // 62b-E-1: Ein anderes Projekt ist ein anderer Ausgangsstand -
+                    // die dreizehn Seitenschalter kommen aus SEINEM Komponenten-
+                    // bestand, nicht aus einer Eingabe. Ohne diese Zeile meldete
+                    // der Assistent nach einem blossen Listenklick „ungespeichert".
+                    ctrl.ZustandMerken();
                 }),
 
                 ["ProjektOeffnen"] = new Action<int, string>(ProjektOeffnen),
@@ -127,9 +122,33 @@ namespace WindowsFormsApplication1
                 ["Speichern"] = new Func<(string Text, string Titel)?>(() =>
                 {
                     AssistentErgebnis e = ctrl.Speichern();
-                    if (e.Erfolg) return null;
-                    return (AssistentCtrl.Meldungstext(e), AssistentCtrl.Meldungstitel(e));
+                    if (!e.Erfolg)
+                        return (AssistentCtrl.Meldungstext(e), AssistentCtrl.Meldungstitel(e));
+
+                    // Der Speicherweg selbst bleibt unangetastet (W16a-O-1). Was
+                    // hier DAHINTER steht, ist der Nachzug, den bis #62b die zwei
+                    // Aufrufer nach dem ShowDialog erledigten.
+                    ctrl.ZustandMerken();
+                    ProjektkontextNachziehen(merken);
+
+                    // Die Meldung „Daten gespeichert" stand bis #62b als MessageBox
+                    // in MenueCtrl.AssistentZeigen, hinter dem ShowDialog. Sie steht
+                    // jetzt hier - an der einen Stelle, die weiss, dass geschrieben
+                    // wurde - und als Kurzhinweis der Startseite statt als Kasten
+                    // (aus einem Blazor-Ereignis heraus ist eine MessageBox
+                    // verboten, Regel (d) der Blazor-Huelle).
+                    StartseiteHuelle.Aktuelle?.Kurzhinweis(
+                        Text_("WIZ_GESPEICHERT", "Daten gespeichert"));
+                    return null;
                 }),
+
+                // 62b-E-1: Woran der Assistent erkennt, dass es etwas zu verlieren
+                // gibt. Die Antwort rechnet der Kern aus seinem Zustand.
+                ["HatAenderungen"] = new Func<bool>(() => ctrl.HatAenderungen),
+
+                // Der fruehere FENSTERTITEL - er steht jetzt als Ueberschrift in der
+                // Ansicht (#62b); der Ressourcenschluessel ist derselbe.
+                ["TitelText"] = Text_("WIZ_TITEL", "Projektassistent"),
 
                 ["AbbrechenText"] = Text_("WIZ_BTN_ABBRECHEN", "Abbrechen"),
                 ["ZurueckText"] = Text_("WIZ_BTN_ZURUECK", "◀ Zurück"),
@@ -137,6 +156,15 @@ namespace WindowsFormsApplication1
                 ["SpeichernText"] = Text_("WIZ_BTN_SPEICHERN", "Speichern"),
                 ["ProjektLabelText"] = Text_("WIZ_LBL_PROJEKT", "Bestehendes Projekt auswählen"),
                 ["ProjektOeffnenText"] = Text_("WIZ_BTN_PROJEKT_OEFFNEN", "Projekt öffnen"),
+
+                // Die drei Wege der Rueckfrage aus 62b-E-1; "Speichern" nimmt den
+                // vorhandenen Knopftext - es IST derselbe Weg.
+                ["VerlassenTitelText"] = Text_("WIZ_VERLASSEN_TITEL", "Ungespeicherte Eingaben"),
+                ["VerlassenFrageText"] = Text_("WIZ_VERLASSEN_FRAGE",
+                    "Der Projektassistent enthält Eingaben, die noch nicht gespeichert sind. "
+                    + "Sollen sie jetzt gespeichert werden?"),
+                ["VerwerfenText"] = Text_("WIZ_BTN_VERWERFEN", "Verwerfen"),
+                ["BleibenText"] = Text_("WIZ_BTN_BLEIBEN", "Bleiben"),
 
                 // W15a-E-1: Das linke Band zeigt nur den Namen; die Variantenherkunft
                 // steht dort als leise Zeile darunter (keine Artspalte, kein Platz).
@@ -214,7 +242,18 @@ namespace WindowsFormsApplication1
                     // SetEditProjektName(bool): Bearbeiten heisst "Name steht fest".
                     ctrl.Kopf[0].NameAenderbar =
                         ctrl.Betriebsart == AssistentCtrl.BETRIEBSART_NEU;
-                    return ProjektKopfHuelle.Gaben(name, ctrl.Kopf);
+
+                    // 62b-E-1: Was die Huelle hier eintraegt, ist der Stand der
+                    // DATENBANK (Bearbeiten) bzw. die Vorbelegung eines neuen
+                    // Projekts - beides keine Eingabe des Anwenders. Ob sie etwas
+                    // eingetragen hat, sagt der Abdruck vorher/nachher; ohne diesen
+                    // Vergleich verschluckte ein zweites Betreten der Projektseite
+                    // eine Eingabe, die der Anwender dort gemacht hat.
+                    string abdruckVorher = ctrl.KopfAbdruck();
+                    IReadOnlyDictionary<string, object> kopfgaben =
+                        ProjektKopfHuelle.Gaben(name, ctrl.Kopf);
+                    if (ctrl.KopfAbdruck() != abdruckVorher) ctrl.KopfMerken();
+                    return kopfgaben;
 
                 case WizardItemClass.GEBAEUDE_ITEM:
                     return GebaeudeHuelle.Gaben(null, id, name, ctrl.Gebaeude,
@@ -264,11 +303,11 @@ namespace WindowsFormsApplication1
         // Der Rueckweg "Projekt oeffnen"
         // =================================================================================
 
-        private static bool _hinweisFaellig;
-
         /// <summary>
-        /// Setzt das gewählte Projekt aktiv und schließt den Assistenten — wörtlich
-        /// <c>WizardParent.ProjektOeffnenUndSchliessen</c> (:940-960).
+        /// Setzt das gewählte Projekt aktiv — wörtlich
+        /// <c>WizardParent.ProjektOeffnenUndSchliessen</c> (:940-960), ohne das
+        /// Schließen: Das meldet seit #62b die Seite selbst
+        /// (<c>Geschlossen(false)</c>), es gibt kein Fenster mehr.
         ///
         /// <para><b>Kein Detailformular</b> (Nutzerwunsch 30.08.2026): Der Anwender
         /// wollte an dieser Stelle nur wechseln, nicht bearbeiten.</para>
@@ -279,30 +318,43 @@ namespace WindowsFormsApplication1
 
             if (!Program.menuectrl.ProjektAktivSetzen(name, id)) return;
 
-            // Der Assistent wird von zwei Stellen aus gestartet, die nach seinem
-            // Schliessen den Projektkontext aus WizardCtrl.Aktueller.Projektname
-            // nachziehen. Das Feld haelt den zuletzt GESPEICHERTEN Namen und wird
-            // beim Start nicht geleert - ohne diese Zeile holte der Nachzug ein
-            // frueher gespeichertes Projekt zurueck.
+            // WizardCtrl.Aktueller.Projektname haelt den zuletzt GESPEICHERTEN Namen
+            // und wird beim Start nicht geleert. Die Zeile stand hier, weil der
+            // Nachzug nach dem ShowDialog aus diesem Feld las; sie bleibt, weil
+            // ProjektkontextNachziehen denselben Weg geht.
             if (WizardCtrl.Aktueller != null) WizardCtrl.Aktueller.Projektname = name;
 
-            _hinweisFaellig = true;
-
-            // Das Fenster schliesst der Rueckruf der Komponente (Geschlossen(false)) -
-            // hier steht nur, was der Vorlaeufer VOR dem Close() tat.
-            SchliesseAssistent();
+            // Der Kurzhinweis „Projekt X geoeffnet!" ueber der Startseite. In der
+            // modalen Fassung wurde er nach dem ShowDialog gezeigt, weil Close()
+            // den Rahmen nur ausblendete; jetzt wechselt die Ansicht unmittelbar
+            // danach, und die Startseite holt den Satz beim naechsten Auffrischen ab.
+            StartseiteHuelle.Aktuelle?.HinweisProjektGeoeffnet();
         }
 
-        private static void SchliesseAssistent()
+        /// <summary>
+        /// Der NACHZUG des Projektkontexts nach einem gelungenen Speicherlauf
+        /// (Aufgabe #62b).
+        ///
+        /// <para>Bis dahin stand er zweimal hinter dem <c>ShowDialog</c>: in
+        /// <c>HauptfensterHuelle.ProjektAssistent</c> (als <c>Setzen</c>) und in
+        /// <c>StartseiteHuelle.ProjektNeu</c>/<c>…ProjektOeffnen</c> (als
+        /// <c>Uebernehmen</c>). Ohne modale Rückkehr gibt es diesen Ort nicht mehr —
+        /// also steht er hier, an der einen Stelle, die weiß, dass geschrieben
+        /// wurde. Die Startseite erfährt den Wechsel über
+        /// <c>ProjektKontextCtrl.Gewechselt</c> wie jeden anderen auch.</para>
+        ///
+        /// <para><paramref name="merken"/> trägt den EINEN Unterschied der zwei
+        /// Einstiege: Die Startkacheln schreiben das Projekt als „zuletzt geöffnet"
+        /// fort (<c>Uebernehmen</c>), die zwei Menüwege nicht (<c>Setzen</c>) —
+        /// nachzulesen im Klassenkopf von <c>ProjektKontextCtrl</c>.</para>
+        /// </summary>
+        private static void ProjektkontextNachziehen(bool merken)
         {
-            foreach (Form f in Application.OpenForms)
-            {
-                if (f is BlazorDialogForm<AssistentSeite> dlg)
-                {
-                    dlg.Schliessen(false);
-                    return;
-                }
-            }
+            string name = WizardCtrl.Aktueller?.Projektname ?? "";
+            if (name == "") return;
+
+            if (merken) Program.projektkontext?.Uebernehmen(0, name);
+            else Program.projektkontext?.Setzen(name);
         }
 
         // =================================================================================

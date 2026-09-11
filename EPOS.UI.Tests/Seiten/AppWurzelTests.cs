@@ -314,4 +314,201 @@ public class AppWurzelTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-seite"));
         Assert.Empty(cut.FindAll(".epos-navigation"));
     }
+
+    // =====================================================================
+    //  Der PROJEKTASSISTENT als freie Ansicht (W16a-E-1 / W16b-O-5, #62b)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz eines Assistentenlaufs, wie ihn unter Windows
+    /// <c>AssistentHuelle.AnsichtGaben</c> baut — hier ohne Datenbank: nur die
+    /// Betriebsart, ein Gabendelegat fuer den Komponentenschritt und die Frage
+    /// nach ungespeicherten Eingaben.
+    /// </summary>
+    private static IReadOnlyDictionary<string, object> Assistentengaben(
+        int betriebsart, List<int> betriebsarten, Func<bool>? geaendert = null)
+    {
+        betriebsarten.Add(betriebsart);
+        return new Dictionary<string, object>
+        {
+            ["Betriebsart"] = betriebsart,
+            ["SeiteAktiv"] = new Func<int, bool>(nr => nr <= 1),
+            ["SeiteGaben"] = new Func<int, IReadOnlyDictionary<string, object>?>(
+                nr => new Dictionary<string, object>()),
+            ["HatAenderungen"] = geaendert ?? (() => false)
+        };
+    }
+
+    private IRenderedComponent<AppWurzel> MitAssistent(
+        List<int> betriebsarten, Func<bool>? geaendert = null)
+    {
+        Services.AddSingleton<IProjektQuelle>(new TestProjektquelle(ZweiProjekte));
+        return Render<AppWurzel>(p => p
+            .Add(x => x.AssistentGaben,
+                 new Func<int, IReadOnlyDictionary<string, object>?>(
+                     b => Assistentengaben(b, betriebsarten, geaendert))));
+    }
+
+    /// <summary>
+    /// <b>Die SCHALTLOGIK des Entscheids:</b> Die zwei Menuewege PROJEKT_NEU und
+    /// PROJEKT_BEARBEITEN setzen die ANSICHT — sie erzeugen kein Fenster (das ist
+    /// auf Linux nicht messbar, wohl aber, dass die Wurzel den Schluessel kennt und
+    /// die Ansicht wechselt). Die Betriebsart kommt aus dem Schluessel.
+    /// </summary>
+    [Theory]
+    [InlineData("PROJEKT_NEU", 0)]
+    [InlineData("PROJEKT_BEARBEITEN", 1)]
+    public void Die_zwei_Menuewege_schalten_die_Assistentenansicht(string schluessel, int erwartet)
+    {
+        var betriebsarten = new List<int>();
+        var cut = MitAssistent(betriebsarten);
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Equal(new[] { erwartet }, betriebsarten);
+
+        // Das linke Band steht nur beim BEARBEITEN - der sichtbare Unterschied der
+        // zwei Wege, und der Beleg, dass die Betriebsart wirklich ankommt.
+        Assert.Equal(erwartet == 1, cut.FindAll(".epos-assistent-band").Count == 1);
+    }
+
+    /// <summary>
+    /// Der Kern ruft den Assistenten ueber <c>Masken.Assistent</c> und reicht die
+    /// Betriebsart als ARGUMENT herein — so tut es <c>MenueCtrl.AssistentZeigen</c>
+    /// seit jeher. Die Wurzel nimmt sie an.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    public void Die_Betriebsart_kommt_auch_als_Argument_an(int betriebsart)
+    {
+        var betriebsarten = new List<int>();
+        var cut = MitAssistent(betriebsarten);
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.Assistent, betriebsart));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Equal(new[] { betriebsart }, betriebsarten);
+    }
+
+    /// <summary>
+    /// Ohne Delegat bleibt es beim iOS-Zustand: Die Liste steht und sagt warum
+    /// (<c>IProjektQuelle.AssistentGaben</c> liefert dort <c>null</c>).
+    /// </summary>
+    [Fact]
+    public void Ohne_Assistentengaben_bleibt_die_Liste_stehen_und_sagt_warum()
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.ProjektNeu));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-assistentseite"));
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Contains("Projektassistent", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>62b-E-1, Festlegung 1:</b> OHNE Aenderungen wechselt die Ansicht
+    /// unmittelbar — keine Rueckfrage.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aenderungen_wechselt_die_Ansicht_unmittelbar()
+    {
+        var cut = MitAssistent(new List<int>());
+
+        cut.Instance.OeffneMaske(Seitenschluessel.ProjektNeu);
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Projektliste);
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-assistentseite"));
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// <b>62b-E-1:</b> MIT Aenderungen kommt die Rueckfrage, und die Ansicht bleibt
+    /// stehen, bis sie beantwortet ist. „Bleiben" laesst den Assistenten stehen,
+    /// „Verwerfen" laesst den Wechsel zu.
+    /// </summary>
+    [Fact]
+    public void Mit_Aenderungen_haelt_die_Rueckfrage_den_Ansichtswechsel_auf()
+    {
+        var cut = MitAssistent(new List<int>(), geaendert: () => true);
+
+        cut.Instance.OeffneMaske(Seitenschluessel.ProjektNeu);
+        cut.Render();
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Projektliste);
+        cut.Render();
+
+        // Die Frage steht, der Assistent auch.
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+
+        // Bleiben.
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[2].Click();
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+
+        // Zweiter Versuch, diesmal verwerfen.
+        cut.Instance.OeffneMaske(Seitenschluessel.Projektliste);
+        cut.Render();
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();
+
+        Assert.Empty(cut.FindAll(".epos-assistentseite"));
+        Assert.Single(cut.FindAll(".epos-seite"));
+    }
+
+    /// <summary>
+    /// <b>62b-E-1, Festlegung 4:</b> <c>DarfVerlassen</c> ist der Weg des
+    /// <c>Hauptfensterrahmens</c> beim Schliessen des Programms. Ohne stehenden
+    /// Assistenten sagt er unmittelbar ja.
+    /// </summary>
+    [Fact]
+    public async Task DarfVerlassen_sagt_ohne_Assistenten_unmittelbar_ja()
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.False(cut.Instance.VerlassenFraglich);
+        Assert.True(await cut.Instance.DarfVerlassen());
+    }
+
+    /// <summary>
+    /// Steht der Assistent MIT Aenderungen, fragt <c>DarfVerlassen</c> — und
+    /// antwortet erst, wenn der Anwender geantwortet hat. „Bleiben" heisst nein.
+    /// </summary>
+    [Fact]
+    public async Task DarfVerlassen_fragt_den_stehenden_Assistenten()
+    {
+        var cut = MitAssistent(new List<int>(), geaendert: () => true);
+        cut.Instance.OeffneMaske(Seitenschluessel.ProjektNeu);
+        cut.Render();
+
+        // Die SYNCHRONE Vorfrage - an ihr entscheidet der Hauptfensterrahmen, ob er
+        // sein FormClosing ueberhaupt abbricht.
+        Assert.True(cut.Instance.VerlassenFraglich);
+
+        Task<bool> antwort = cut.Instance.DarfVerlassen();
+        cut.WaitForElement(".epos-rueckfrage");
+        Assert.False(antwort.IsCompleted);
+
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[2].Click();   // Bleiben
+        Assert.False(await antwort);
+
+        // Und mit „Verwerfen" darf geschlossen werden.
+        Task<bool> zweite = cut.Instance.DarfVerlassen();
+        cut.WaitForElement(".epos-rueckfrage");
+        cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();
+        Assert.True(await zweite);
+
+        // Danach ist nichts mehr zu fragen: Ein zweites Schliessen - und der
+        // Neustart des Sprachwechsels - laeuft ohne Abbruch durch.
+        Assert.False(cut.Instance.VerlassenFraglich);
+    }
 }
