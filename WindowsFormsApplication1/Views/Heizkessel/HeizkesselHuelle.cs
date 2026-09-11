@@ -227,6 +227,10 @@ namespace WindowsFormsApplication1
             // Bereichspruefung wie in SetControls (Z. 358-362): Brennstoff ist eine
             // 1-basierte Id, die Liste kann kuerzer sein.
             d.Brennstoff = m.Brennstoff >= 1 ? m.Brennstoff : (int?)null;
+
+            // Auftrag #211: das ReadOnly des geladenen Satzes fuer den Assistenten
+            // (KiMaskenhaken.Schreibgeschuetzt) - ReadSingle setzt m_bReadOnly mit.
+            d.NurLesen = m.m_bReadOnly;
         }
 
         /// <summary>

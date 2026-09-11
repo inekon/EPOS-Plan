@@ -20,7 +20,7 @@ Eine Flotte ist eine Liste physisch gleichzeitig betriebener AC-Speicher innerha
 | MILP mit Zeitlimit und unterscheidbaren Status | [`SpeicherPlanung/OrToolsFlottenPlaner.cs`](SpeicherPlanung/OrToolsFlottenPlaner.cs) |
 | Projekt-/CSV-Adapter, Prognose- und Jahresimport | [`EPOS.Kern/Controller/SpeicherFlottenStudieCtrl.cs`](EPOS.Kern/Controller/SpeicherFlottenStudieCtrl.cs) |
 | Profil, geprüfte Aktivierung und gewöhnlicher Projektlauf | [`EPOS.Kern/Controller/SpeicherAuslegungModel.cs`](EPOS.Kern/Controller/SpeicherAuslegungModel.cs), [`EPOS.Kern/Controller/SpeicherFlottenProjektCtrl.cs`](EPOS.Kern/Controller/SpeicherFlottenProjektCtrl.cs) |
-| Flotteneditor, Quellenimport, Ergebnis und CSV | [`EPOS.UI/Dialoge/Strom/SpeicherFlottenDialog.razor`](EPOS.UI/Dialoge/Strom/SpeicherFlottenDialog.razor), [`EPOS.UI/Dialoge/Strom/SpeicherFlottenEditor.razor`](EPOS.UI/Dialoge/Strom/SpeicherFlottenEditor.razor) |
+| Flotteneditor, Quellenimport, Ergebnis und CSV | `EPOS.UI/Dialoge/Strom/SpeicherFlottenDialog.razor` (gefallen mit #192), [`EPOS.UI/Dialoge/Strom/SpeicherFlottenEditor.razor`](EPOS.UI/Dialoge/Strom/SpeicherFlottenEditor.razor) |
 | Einstieg und aktive Flotte in den detaillierten Simulationsergebnissen | [`EPOS.UI/Seiten/Simulation/StromspeicherReiter.razor`](EPOS.UI/Seiten/Simulation/StromspeicherReiter.razor) |
 
 Ein freigegebener Kandidat kann als `@Projektflotte` aktiviert und im gewöhnlichen Projektlauf gefahren oder wieder deaktiviert werden. Dieser reservierte Stand wird mit Anlagenbezug `NULL` gespeichert und gehört dadurch zum Projekt, nicht zur gerade gewählten Einzelanlage. Er bleibt bei Variantenwechsel und beim Löschen einer einzelnen Anlagenzeile erhalten. Arbeitsstände und benannte Auslegungsprofile bleiben davon getrennt.

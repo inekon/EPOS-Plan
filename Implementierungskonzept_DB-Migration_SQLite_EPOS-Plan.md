@@ -23,7 +23,7 @@ werden in S5 als `sql/tools/` eingecheckt und sind damit die wiederholbaren Prü
 
 | Behauptung Rev. 2 | Messwert 01.09. | Status |
 |---|---|---|
-| 6 Ausführungsmethoden in `DataRepository`, eine Verbindungsstring-Quelle `GetConnectionString()` ([DataRepository.cs:161](WindowsFormsApplication1/Allgemein/DataRepository.cs)) | bestätigt; auch alle Eigenverbindungen ziehen diesen String | ✔ |
+| 6 Ausführungsmethoden in `DataRepository`, eine Verbindungsstring-Quelle `GetConnectionString()` ([DataRepository.cs:161](EPOS.Kern/Allgemein/DataRepository.cs)) | bestätigt; auch alle Eigenverbindungen ziehen diesen String | ✔ |
 | 36 Dateien mit eigener `OleDbConnection` (Schwerpunkte ErgebnisCtrl 9, PufferSpCtrl 8, WaermequelleClass 5) | **36 Dateien / 67 Stellen**, Schwerpunkte exakt | ✔ |
 | **Kein `?` in einem SQL-Textliteral** (Träger der ?→@pN-Umschreibung) | bestätigt — inkl. Kreuzfragment-Prüfung über Verkettungsgrenzen (293 offene Hochkommata, 0 Risikopaare) | ✔ |
 | `@@IDENTITY` 20 Stellen / 16 Dateien | zeichengenau — davon **12 ausführbare Statements in 11 Dateien**, Rest Kommentare | ✔ |
@@ -42,9 +42,9 @@ werden in S5 als `sql/tools/` eingecheckt und sind damit die wiederholbaren Prü
 | „`BeginTransaction`: 29 Dateien" | **18 Dateien / 24 Aufrufe** über `DataRepository.BeginTransaction` — **plus 13 Dateien / 16 Stellen mit eigenem `conn.BeginTransaction()`**. Transaktionsführend sind zusammen **31 Dateien**; die „29" war vermutlich diese Summe auf anderem Stand |
 | „`RecordSet`: 61 Nutzer" | 61 ist die grep-Zahl inkl. Kommentaren; **47 Dateien** nutzen die Klasse wirklich |
 | „`LIKE`: 4 (+2 RowFilter)" | **20 SQL-Stellen + 2 RowFilter.** Die Filterfragmente der Katalogdialoge (BHKW, Heizkessel, PV, Pufferspeicher) gehen per Verkettung wirklich an die DB. Fast alle sind `Like '%'`-Allesfilter; Bewertung in Abschnitt 6 |
-| „`IIf` ausschließlich in `SchemaMigration.cs`" | **3 Stellen im Laufzeitcode:** [Ladeordnung.cs:77](WindowsFormsApplication1/Allgemein/Simulation/Ladeordnung.cs) (ORDER BY Anlagenprio), [EmissionskatalogCtrl.cs:266](WindowsFormsApplication1/Controller/EmissionskatalogCtrl.cs) (`ORDER BY IIF(ist_aktiv,0,1)`), [ProjektDuplizierenCtrl.cs:728](WindowsFormsApplication1/Controller/ProjektDuplizierenCtrl.cs) (Offset-Remapping). SQLite kennt `iif()` seit 3.32 — voraussichtlich lauffähig, wird in S5 durch Ausführung bewiesen |
+| „`IIf` ausschließlich in `SchemaMigration.cs`" | **3 Stellen im Laufzeitcode:** [Ladeordnung.cs:77](EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs) (ORDER BY Anlagenprio), [EmissionskatalogCtrl.cs:266](EPOS.Kern/Controller/EmissionskatalogCtrl.cs) (`ORDER BY IIF(ist_aktiv,0,1)`), [ProjektDuplizierenCtrl.cs:728](EPOS.Kern/Controller/ProjektDuplizierenCtrl.cs) (Offset-Remapping). SQLite kennt `iif()` seit 3.32 — voraussichtlich lauffähig, wird in S5 durch Ausführung bewiesen |
 | „Boolean-Literale `= TRUE/FALSE`: 42" | **44 Zeilen / 51 Vorkommen** (kein einziges `<> TRUE/FALSE`); 20 Zeilen davon im Laufzeitcode. Sonderschreibweisen, die ein naives Muster verfehlt: `= true` (klein, SchemaMigration:10033), `=false` (ohne Leerzeichen, Form_KostenfaktorItem.cs:29) |
-| „`GetMaxID` = `MAX(ID)+1`" | Die Methode liefert **nur MAX**; das `+1` steht bei den Aufrufern — **40 Stellen in 27 Dateien**. Eine Stelle nutzt GetMaxID **ohne** `+1` ([ProjektPhotovoltaikCtrl.cs:211](WindowsFormsApplication1/Controller/ProjektPhotovoltaikCtrl.cs)) — in S5 gesondert sichten |
+| „`GetMaxID` = `MAX(ID)+1`" | Die Methode liefert **nur MAX**; das `+1` steht bei den Aufrufern — **40 Stellen in 27 Dateien**. Eine Stelle nutzt GetMaxID **ohne** `+1` ([ProjektPhotovoltaikCtrl.cs:211](EPOS.Kern/Controller/ProjektPhotovoltaikCtrl.cs)) — in S5 gesondert sichten |
 | DDL-Inventur „17 CREATE / 35 ALTER (alle ADD Spalte) / 13 INDEX / 5 DROP" | Rohzeilen inkl. Kommentaren. In Literalen: 16 CREATE TABLE, **25 ALTER TABLE — davon 14 × `ADD CONSTRAINT … FOREIGN KEY` und 1 × `DROP CONSTRAINT`**, 17 CREATE INDEX, 1 DROP-TABLE-Schleife. Folge für die Schemapflege: Abschnitt 5 |
 | „nur die beiden Views zu übersetzen" | Die Schemapflege schreibt **5** Abfragen (zusätzlich `Abfrage_SST`, `Abfrage_Kuehlung_MaxLast`, `Abfrage_KenndatenKuehlung_Max`) und löscht 5. Und: **`Abfrage_Kostenfaktoren` ist in Access eine PROCEDURE, keine View** — ACE erlaubt kein `ORDER BY` in `CREATE VIEW`. SQLite erlaubt es; dort wird sie eine normale View (3.2). Die Zeilenangaben in Rev. 2 Abschnitt 3.3 sind zudem vertauscht (Kostenfaktoren ≈ 5513, Energieträger ≈ 6344) |
 | D7: „BHKW-Wirtschaftlichkeit ab Schritt 63 offen" | **Bereits gelandet** als Schritte 60/61 (`SCHRITT_60_BRENNSTOFF_BESTANDTEILE`, `SCHRITT_61_STEUER_JE_ANLAGE`). Offen ist nur noch der Einheitenbruch (künftig 62). Die Schema-Beruhigung ist näher als gedacht |
@@ -72,7 +72,7 @@ Gegenmaßnahme: zentrale Wiederherstellung des Typ-Rückwegs im neuen `GetDataTa
 begrenzter Sweep — Messwerte und Bauentscheidung in 2.4.
 
 **N2 — `GetOleDbSchemaTable`: ~24 Stellen in 15 Dateien** (zweite Zählung: 29 — Abgleich im
-Prüfrezept S4c), Schwerpunkt [ErgebnisCtrl.cs](WindowsFormsApplication1/Controller/ErgebnisCtrl.cs)
+Prüfrezept S4c), Schwerpunkt [ErgebnisCtrl.cs](EPOS.Kern/Controller/ErgebnisCtrl.cs)
 (6, darunter Rowsets `Indexes` und `Foreign_Keys`), ProjektDuplizierenCtrl (3),
 WirtschaftlichkeitCtrl (2), ProjektExportImportCtrl (2). Kein Gegenstück in
 Microsoft.Data.Sqlite → Ersatz über `PRAGMA table_info` / `index_list` / `foreign_key_list` /
@@ -85,7 +85,7 @@ EmissionsBilanzRechner, BerichtCtrl, VariantenCtrl u. a.). Diese Stellen laufen 
 im SQLite-Build und wandern auf die neuen Helfer (S4d) — sie sind vom Einfrieren des
 Access-Zweigs **nicht** erfasst.
 
-**N4 — ADOX-Reseed beim Projektimport.** [ProjektExportImportCtrl.cs:673–693](WindowsFormsApplication1/Controller/ProjektExportImportCtrl.cs):
+**N4 — ADOX-Reseed beim Projektimport.** [ProjektExportImportCtrl.cs:673–693](EPOS.Kern/Controller/ProjektExportImportCtrl.cs):
 Autowert-Erkennung per ADOX-COM plus `ALTER TABLE … ALTER COLUMN … COUNTER(max+1,1)` (einziges
 `ALTER COLUMN` im Repo, reine ACE-Syntax). Unter SQLite: `sqlite_sequence` direkt setzen
 (Abschnitt 2.9). ADOX-Verweis entfällt.
@@ -252,8 +252,8 @@ Reader und begradigt dabei den Typ-Rückweg zentral:
 Die Messung (675 DataRow-Konsumstellen in 162 Dateien) zeigt: Der Bestand konsumiert fast
 durchgängig über `Convert.To*` (1.365 Aufrufe, 654 davon DB-nah) und ist gegen den Rückweg
 weitgehend immun. **Harte Casts brechen nur an 4 Stellen** — 3 × `(int)`, 1 × `(bool)`, alle in
-[GebäudeKontextMenuCtrl.cs:103–110](WindowsFormsApplication1/Controller/GebäudeKontextMenuCtrl.cs)
-und [Kenndaten.cs:107](WindowsFormsApplication1/Views/Wärmepumpe/Kenndaten.cs).
+GebäudeKontextMenuCtrl.cs:103–110 (gefallen mit iU9-W16b.1)
+und Kenndaten.cs:107 (gefallen mit iU9-W7.3).
 `(DateTime)`-/`(decimal)`-Casts und `.Field<T>` kommen **gar nicht** vor; alle 17
 Datums-Lesestellen laufen über `Convert.ToDateTime` bzw. DBNull-Test; die 7
 `RowFilter`/`Select`-Ausdrücke enthalten keinen Datums- oder Boolean-Vergleich.
@@ -286,7 +286,7 @@ Eigenverbindungen zurückgeführt hat, läuft der Konsum durch diese eine Stelle
 ### 2.5 ExecuteInsertAndGetId
 
 `SELECT @@IDENTITY` → `SELECT last_insert_rowid()` als zweites Kommando auf **derselben offenen
-Verbindung** (wie heute, [DataRepository.cs:306](WindowsFormsApplication1/Allgemein/DataRepository.cs)).
+Verbindung** (wie heute, [DataRepository.cs:306](EPOS.Kern/Allgemein/DataRepository.cs)).
 Signatur bleibt ohne `params` (einzige der sechs Methoden — 7 Aufrufstellen verlassen sich darauf).
 
 ### 2.6 DbVorgang statt Verbindungs-Tupel

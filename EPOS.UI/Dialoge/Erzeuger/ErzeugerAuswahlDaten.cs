@@ -92,6 +92,15 @@ public sealed class ErzeugerZeile
     /// rechnet die Anlage wie bisher.</para>
     /// </summary>
     public List<StrangZeile> Straenge { get; set; } = new();
+
+    /// <summary>
+    /// Ist das GERÄT, auf das diese Zeile verweist, ein Auslieferungssatz
+    /// (<c>ReadOnly</c> in <c>Tab_PV_STAMM</c>)? Auftrag #211, Fachkonzept 4.5, Muster
+    /// <c>WaermepumpeStammDaten.NurLesen</c> — der Katalogsatz selbst bleibt dabei
+    /// unangetastet, nur der Assistent lehnt eine Feldsetzung an dieser Zeile ab, statt
+    /// erst beim Speichern zu scheitern.
+    /// </summary>
+    public bool NurLesen { get; set; }
 }
 
 /// <summary>

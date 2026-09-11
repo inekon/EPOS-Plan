@@ -48,4 +48,12 @@ public sealed class PufferSpKatalogDaten
 
     /// <summary>Investitionskosten [€].</summary>
     public double? Investitionskosten { get; set; }
+
+    /// <summary>
+    /// Auslieferungssatz (<c>ReadOnly</c> in <c>Tab_Pufferspeicher_STAMM</c>)? Dann lehnt
+    /// der Speicherweg ein „Überschreiben" ab (Fachkonzept 4.5, Muster
+    /// <c>WaermepumpeStammDaten.NurLesen</c>, Auftrag #211). Bei einer Neuanlage bleibt es
+    /// <c>false</c> — der Kandidat für „Speichern" ist immer schreibbar.
+    /// </summary>
+    public bool NurLesen { get; set; }
 }
