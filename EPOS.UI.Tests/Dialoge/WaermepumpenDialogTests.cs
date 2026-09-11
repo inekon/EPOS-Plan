@@ -183,7 +183,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.True(cut.Instance.DetailOffen);
         Assert.Single(cut.FindAll(".epos-wp-eingebettet"));
         // Die Detailansicht traegt kein eigenes OK - nur die Verwaltung hat eines.
-        Assert.Single(cut.FindAll("button").Where(b => b.TextContent.Trim() == "OK"));
+        Assert.Single(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
     }
 
     [Fact]

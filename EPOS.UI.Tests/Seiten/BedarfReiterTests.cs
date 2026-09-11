@@ -186,8 +186,8 @@ public class BedarfReiterTests : EposBunitContext
         var seite = Zeichnen(Daten());
 
         // Genau EINER — vor W11b‑B‑16 stand in jeder Spalte einer.
-        Assert.Single(seite.FindAll("label.epos-schalter")
-                           .Where(s => s.TextContent.Trim() == "sortiert"));
+        Assert.Single(seite.FindAll("label.epos-schalter"),
+                      s => s.TextContent.Trim() == "sortiert");
 
         _auftraege.Clear();
         seite.FindAll("input[type='checkbox']")[0].Change(true);

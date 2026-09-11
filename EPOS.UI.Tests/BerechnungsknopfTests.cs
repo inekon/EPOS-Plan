@@ -583,14 +583,14 @@ public sealed class BerechnungsknopfTests
         Assert.DoesNotMatch(LatexBefehl, "Q_a = ( Σ Q(t) ) / 1 000");
         Assert.DoesNotMatch(LatexBefehl, "Der Faktor 0,83 gilt fuer Wand und Waermebruecken.");
 
-        Assert.True(ErlaubteBefehle.Contains("frac"));
-        Assert.True(ErlaubteBefehle.Contains("displaystyle"));
-        Assert.True(ErlaubteBefehle.Contains("vartheta"));
+        Assert.Contains("frac", ErlaubteBefehle);
+        Assert.Contains("displaystyle", ErlaubteBefehle);
+        Assert.Contains("vartheta", ErlaubteBefehle);
 
-        Assert.False(ErlaubteBefehle.Contains("dfrac"));
-        Assert.False(ErlaubteBefehle.Contains("tag"));
-        Assert.False(ErlaubteBefehle.Contains("label"));
-        Assert.False(ErlaubteBefehle.Contains("newcommand"));
+        Assert.DoesNotContain("dfrac", ErlaubteBefehle);
+        Assert.DoesNotContain("tag", ErlaubteBefehle);
+        Assert.DoesNotContain("label", ErlaubteBefehle);
+        Assert.DoesNotContain("newcommand", ErlaubteBefehle);
     }
 
     /// <summary>

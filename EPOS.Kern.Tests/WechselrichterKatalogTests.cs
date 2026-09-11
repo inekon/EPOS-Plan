@@ -178,7 +178,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(vorher + 3, ctrl.Filtern("Alle").Count);
             Assert.Equal(2, ctrl.Filtern("Alpha AG").Count);
-            Assert.Equal(1, ctrl.Filtern("Beta GmbH").Count);
+            Assert.Single(ctrl.Filtern("Beta GmbH"));
             Assert.Empty(ctrl.Filtern("Gibt es nicht"));
 
             IReadOnlyList<string> firmen = WechselrichterStammCtrl.Hersteller();
