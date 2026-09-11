@@ -632,6 +632,17 @@ nach. Eine neue Warnung der Hülle ist ab dann ein Befund, kein Rauschen.
 Path.GetDirectoryName(datei)` ist unter `Nullable=enable` ein `string?`). Die Schranke ist um eine verfehlt; Fix
 **#223** (`string?`), Nachweis mit dem nächsten freigegebenen Lauf.
 
+**#223 behoben (Zweig `w223-protokoll-nullable`):** `string? ordner`, eng begrenzt mit `#nullable
+enable`/`#nullable restore` um genau diese Zeile — ohne die Begrenzung hätte die Annotation unter dem
+`Nullable=disable` der Werkzeugprojekte (`Referenzlauf.csproj`, `EPOS.Referenzlauf.csproj`, dort
+gebaut u. a. im Schritt „Referenzlauf bauen" von `kern.yml`) eine neue `CS8632` erzeugt. Beleg ohne
+Mac: `dotnet build EPOS.Referenzlauf -p:Nullable=enable` vorher 1 Fundstelle `CS8600` in
+`Protokoll.cs:104`, nachher 0; derselbe Bau ohne den Schalter (Standard `Nullable=disable`) 0
+Warnungen vorher wie nachher; `Ergebnisexport.cs` — die einzige zweite von `EPOS.iOS.csproj`
+verlinkte Datei — zeigt in keiner der beiden Einstellungen eine Nullbarkeitswarnung. `EPOS.Referenzlauf`
+Projekt 1030 gegen `2026-09-11_R7_Speicherflotte` weiterhin byte-gleich (22 Dateien, 236 680 Werte,
+`diff -rq` leer). Nachweis der Schranke „iOS-Warnungen = 0" mit dem nächsten freigegebenen iOS-Lauf.
+
 **Dreiundvierzigster Lauf 34644279531 (`ios.yml`, `macos-26`, 11.09.2026, 20:27–20:38 UTC, 10 min 49 s)** auf
 `d976451` — ausgelöst per `workflow_dispatch` auf Anwenderentscheid („Freigabe des iOS-Laufs 43 nach #208 und #202",
 11.09.2026), nach dem Merge von **#208** (`c989745`, Anwenderentscheid #208‑E‑1 = A): der erste Lauf mit dem elften
