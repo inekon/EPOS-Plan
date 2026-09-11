@@ -15,6 +15,22 @@ namespace WindowsFormsApplication1
     /// Leser (Befund W16a-B2). Ohne sie ist die Datei plattformfrei - und
     /// <see cref="AssistentCtrl"/> (K3) kann sie ueberhaupt erst rufen.</para>
     ///
+    /// <para><b>Jede der 23 Schreibmethoden nimmt seit iU9-W16a-O-1 einen
+    /// <see cref="DbVorgang"/> entgegen</b> (Entscheid E-4, zweite Haelfte). Er ist
+    /// OPTIONAL: Ohne ihn schreibt die Methode wie bisher je Anweisung fuer sich -
+    /// so rufen die Startseite und die Kontextmenues sie. Der Assistent dagegen
+    /// oeffnet EINEN Vorgang ueber seinen ganzen Lauf und reicht ihn hier herein;
+    /// scheitert ein Schritt, steht hinterher nichts von dem Lauf in der Datenbank
+    /// (<see cref="AssistentCtrl.Speichern"/>).</para>
+    ///
+    /// <para>Die erste Zeile jeder dieser Methoden meldet den Vorgang ueber
+    /// <c>Vorgangsklammer</c> am Faden an. Das ist noetig, weil die Methoden nicht
+    /// nur selbst schreiben, sondern ein Dutzend Katalogcontroller rufen
+    /// (<c>CopyFromStamm</c>, <c>ApplyGanglinieToProjekt</c> …), die sich sonst
+    /// ihre eigene Verbindung holten - und damit weder im Rueckzug noch im
+    /// ungeschriebenen Stand des Laufs stuenden. Der SQL-Text und die Reihenfolge
+    /// der Anweisungen sind dabei unveraendert geblieben.</para>
+    ///
     /// <para><b>Der Aufraeumlauf laeuft ueber den Haken.</b>
     /// <c>GeraeteWaisen.Aufraeumen</c> zieht die Oberflaeche mit und bleibt in der
     /// Anwendung; <see cref="WErzeugerCtrl.GeraetewaisenAufraeumen"/> ist die
@@ -83,8 +99,12 @@ namespace WindowsFormsApplication1
         /// Projekt-Loeschweg <c>WErzeugerCtrl.Delete</c>.
         /// </para>
         /// </summary>
-        public bool Del_Projekt_Waermeerzeuger(int projektID)
+        public bool Del_Projekt_Waermeerzeuger(int projektID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             SpVariantenSichern(projektID, TYP_ALLE);
             SenkenSichern(projektID);
             // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
@@ -100,8 +120,12 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
-        public bool Del_Projekt_Waermeerzeuger(int projektID, int nType)
+        public bool Del_Projekt_Waermeerzeuger(int projektID, int nType, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             SpVariantenSichern(projektID, nType);
 
             // S1: Die Senkenlisten werden AUCH im typgefilterten Weg gesichert - die
@@ -120,8 +144,12 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID), new DbParam("@type", nType) });
         }
 
-        public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger)
+        public bool Del_Projekt_ID_Waermeerzeuger(int projektID, int ID_Waermeerzeuger, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             // Ä21: Das gezielte Entfernen EINER Anlage nimmt ihre Kostenpositionen
             // mit (Nutzerauftrag 27.08.2026: eine nicht angelegte Anlage darf keine
             // Kosten hinterlassen). NUR hier — die Typ-/Alle-Löschwege sind auch
@@ -141,8 +169,12 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID), new DbParam("@id", ID_Waermeerzeuger) });
         }
 
-        public bool Del_Projekt_ZuordungGebäude(int projektID)
+        public bool Del_Projekt_ZuordungGebäude(int projektID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             // Tagesverteilungen der Projekt-Gebaeude entfernen (Detail vor Kopf).
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
@@ -160,8 +192,12 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
-        public bool Del_Projekt_ZuordungGebäude(int projektID, int ID)
+        public bool Del_Projekt_ZuordungGebäude(int projektID, int ID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             // ID = Z_ProjektGebaeude.ID; zugehoerige Gebaeude-Kopie via ID_ProjektGebaeude.
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
@@ -178,14 +214,22 @@ namespace WindowsFormsApplication1
                 new DbParam[] { new DbParam("@pID", projektID), new DbParam("@id", ID) });
         }
 
-        public bool Del_WaermebedarfExtern(int projektID)
+        public bool Del_WaermebedarfExtern(int projektID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
-        public bool Del_Projekt_Prozess(int projektID, int ID = 0)
+        public bool Del_Projekt_Prozess(int projektID, int ID = 0, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
 
@@ -195,20 +239,32 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
-        public bool Del_Stromganglinie(int projektID)
+        public bool Del_Stromganglinie(int projektID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
-        public bool Del_Solarganglinie(int projektID)
+        public bool Del_Solarganglinie(int projektID, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektSolarganglinie WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
 
-        public bool Del_Projekt_Stromverbraucher(int projektID, int ID = 0)
+        public bool Del_Projekt_Stromverbraucher(int projektID, int ID = 0, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ?";
 
@@ -218,8 +274,12 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps.ToArray());
         }
 
-        public bool Del_Projekt_Brauchwasser(int projektID, int ID = 0)
+        public bool Del_Projekt_Brauchwasser(int projektID, int ID = 0, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ?";
 
@@ -1535,8 +1595,12 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list)
+        public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             try
             {
                 // Ein Zwischenspeicher fuer den ganzen Durchlauf: dieselbe Puffer-ID
@@ -1965,8 +2029,12 @@ namespace WindowsFormsApplication1
         /// bisher ohne Zuordnung. Beide Quellen schreiben ueber dieselbe Mechanik
         /// (<see cref="TraegerSatzAnlegen"/>), also mit denselben Stammwerten.
         /// </summary>
-        public bool Add_Projekt_Energietraeger(int projektID, List<WErzeugerModel> list)
+        public bool Add_Projekt_Energietraeger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             if (projektID <= 0 || list == null) return true;
 
             // je Träger nur EIN Satz, auch wenn mehrere Anlagen denselben Träger nutzen
@@ -2185,8 +2253,12 @@ namespace WindowsFormsApplication1
             return (o != null && o != DBNull.Value) ? Convert.ToDouble(o) : 0.0;
         }
 
-        public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list)
+        public bool Add_Projekt_ZuordungGebäude(int projektID, List<Z_ProjGebModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (var item in list)
             {
@@ -2211,8 +2283,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Projekt(ref int projektID, ProjektModel model)
+        public bool Add_Projekt(ref int projektID, ProjektModel model, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             string sql = "INSERT INTO Tab_Projekt (Projektname, Bearbeiter, Beschreibung, Kunde, Aenderungsdatum, ID_Klimaregion, Erstelldatum) VALUES (?,?,?,?,?,?,?)";
 
             DbParam[] ps = {
@@ -2245,8 +2321,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Update_Projekt(int projektID, ProjektModel model)
+        public bool Update_Projekt(int projektID, ProjektModel model, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             // Klimadaten-Kopie fuer das Projekt anlegen (falls noetig); liefert die Projekt-Region-ID.
             int projRegId = KlimaregionStammCtrl.ApplyRegionByNameToProjekt(model.m_szKlimaregion, projektID);
             if (projRegId > 0) model.m_ID_Klimaregion = projRegId;
@@ -2264,8 +2344,12 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        public bool Add_SP(int projektID, List<StromspeicherModel> list)
+        public bool Add_SP(int projektID, List<StromspeicherModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             foreach (var item in list)
             {
                 string sql = @"INSERT INTO Tab_Energieanlagen 
@@ -2284,8 +2368,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list)
+        public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             int nextID = DataRepository.GetMaxID("Z_ProjektWaermebedarf", "ID_Z") + 1;
 
             // Migrationsschritt 48 (F18): Der Speicherweg der Zuordnung ist LOESCHEN +
@@ -2320,8 +2408,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list)
+        public bool Add_Projekt_Prozess(int projektID, List<Z_ProjektProzesswaermeModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             int nextID = DataRepository.GetMaxID("Z_Projekt_Prozesswaerme", "ID") + 1;
 
             foreach (var item in list)
@@ -2345,8 +2437,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list)
+        public bool Add_Projekt_Stromverbraucher(int projektID, List<Z_ProjektStromverbraucherModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             int nextID = DataRepository.GetMaxID("Z_Projekt_Stromverbraucher", "ID") + 1;
 
             foreach (var item in list)
@@ -2370,8 +2466,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list)
+        public bool Add_Stromganglinie(int projektID, List<Z_ProjektStromganglinieModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             foreach (var item in list)
             {
                 // Stamm-Ganglinie (+ Daten) bei Bedarf ins Projekt kopieren und die Projekt-Ganglinie-ID verwenden.
@@ -2391,8 +2491,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Solarganglinie(int projektID, List<Z_ProjektSolarganglinieModel> list)
+        public bool Add_Solarganglinie(int projektID, List<Z_ProjektSolarganglinieModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             int nextID = DataRepository.GetMaxID("Z_ProjektSolarganglinie", "ID") + 1;
 
             foreach (var item in list)
@@ -2415,8 +2519,12 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        public bool Add_Projekt_Brauchwasser(int projektID, List<Z_ProjektBrauchwasserModel> list)
+        public bool Add_Projekt_Brauchwasser(int projektID, List<Z_ProjektBrauchwasserModel> list, DbVorgang vorgang = null)
         {
+            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
+            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
             int nextID = DataRepository.GetMaxID("Z_Projekt_Brauchwasser", "ID") + 1;
 
             foreach (var item in list)
