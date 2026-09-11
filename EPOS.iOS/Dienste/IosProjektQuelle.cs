@@ -261,6 +261,75 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     // =====================================================================
+    // Ansicht „Simulation" (Auftrag #208, Stufe S2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Simulationsansicht EINES Projekts - sie ueberlebt den Ansichtswechsel.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum ein gehaltenes Feld.</b> Der gerechnete Lauf, die zwoelf Bilder
+    /// und die Gueltigkeitsmarke leben in der Ergebnishuelle, nicht in der Razor-Seite.
+    /// Wer die Ansicht wechselt - auf die Stromspeicher-Auslegung und zurueck -,
+    /// verliert die Seite; nur eine GEHALTENE Quelle bringt den Lauf wieder mit
+    /// (Konzept „Simulationsablauf" 1.3). Unter Windows haelt sie
+    /// <c>Views/Simulation/SimulationHuelle</c>, hier diese Projektquelle.</para>
+    ///
+    /// <para>Die Quelle selbst legt je Projekt neue Huellen an
+    /// (<c>SimulationAnsichtQuelle.Nachziehen</c>); ein Projektwechsel braucht hier
+    /// also nichts.</para>
+    /// </remarks>
+    private SimulationAnsichtQuelle? _simulation;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <para><b>Es wird nichts nachgebaut</b> - dieselbe Quelle, die auch die
+    /// Windows-Schale benutzt. Der EINE Unterschied ist die Naht
+    /// <c>SimulationPlattformwege</c>: Der Waermepumpen-Assistent oeffnet aus sich
+    /// heraus WinForms-Fenster (<c>WaermepumpenHuelle.Gaben(IWin32Window, …)</c>) und
+    /// steht deshalb hier nicht zur Verfuegung. Er wird BENANNT abgelehnt und faellt
+    /// nicht still aus: Wer im Reiter „Waermepumpe" eine Modulzeile doppelt antippt,
+    /// bekommt den Grund als Meldung ueber <c>Dienste.Dialog</c>.</para>
+    ///
+    /// <para>Der zweite Weg, der hier fehlt, ist der Knopf „Katalog ansehen" in der
+    /// Pufferverwaltung (<c>Katalogwege.PufferKatalogGaben</c>) - ohne eingehaengten
+    /// Haken zeigt der Dialog ihn gar nicht erst an. Alles Uebrige - Konfiguration,
+    /// Lauf, elf Reiter, Bilder, CSV-Ausgaben ueber <c>Dienste.Datei</c>, die
+    /// Stromspeicher-Auslegung - ist derselbe Code wie unter Windows.</para>
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? SimulationGaben(int idProjekt)
+    {
+        if (idProjekt <= 0) return null;
+
+        try
+        {
+            _simulation ??= new SimulationAnsichtQuelle(
+                new BedarfsZustand(),
+                SimulationPlattformwege.Ohne(
+                    WindowsFormsApplication1.MyResource.Resource.SIM_MSG_WEG_NICHT_HIER));
+
+            return _simulation.AnsichtGaben(idProjekt, Projektname(idProjekt));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Simulation: " + ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>Der Projektname fuer die Kopfzeile der Ansicht; leer, wenn unbekannt.</summary>
+    private static string Projektname(int idProjekt)
+    {
+        try
+        {
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(idProjekt);
+            return projekt.rows > 0 ? (projekt.m_szProjektname ?? "") : "";
+        }
+        catch { return ""; }
+    }
+
+    // =====================================================================
 
     /// <summary>
     /// Das Lagebild der Lizenz fuer das Banner der <c>AppWurzel</c> (Welle iF30).

@@ -8,6 +8,18 @@ beisteuert (Umsetzungskonzept iOS, Paket iU10).
 **Die eine Regel: Hier steht nichts Fachliches.** Kein Rechenweg, keine Maske, kein SQL. Wer hier
 etwas über Wärmepumpen oder Kapitalwerte schreiben will, ist im falschen Projekt.
 
+**Seit Auftrag #208 referenziert die Hülle ein drittes plattformfreies Projekt:
+[`EPOS.UI.Daten`](../EPOS.UI.Daten/)** — die Datenseite der Oberfläche. Dort liegen die
+Hüllen, die aus Kern-Controllern die DTO der Razor-Seiten bauen; sie lagen bis dahin
+sämtlich in `WindowsFormsApplication1/Views/`, und genau deshalb war die Simulation auf dem
+iPad unerreichbar. **Was hier NICHT geht, wird BENANNT abgelehnt und fällt nicht still aus:**
+Der Wärmepumpen-Assistent öffnet aus sich heraus WinForms-Fenster; `IosProjektQuelle` legt
+dafür `SimulationPlattformwege.Ohne(<Grund>)` ein, und wer die Modulzeile doppelt antippt,
+bekommt den Grund als Meldung über `Dienste.Dialog`. Der zweite fehlende Weg, der Knopf
+„Katalog ansehen" der Pufferverwaltung, hängt an `Katalogwege.PufferKatalogGaben`; ohne
+eingehängten Haken zeigt der Dialog ihn gar nicht erst (kein Delegat, kein Knopf). Beide
+fallen mit dem Umzug der Katalogmasken (iU11).
+
 ## Warum MAUI und nicht ein reines `Microsoft.iOS`-Projekt
 
 Für `net10.0-ios` gibt es außerhalb von `Microsoft.AspNetCore.Components.WebView.Maui` **keinen**
@@ -24,7 +36,7 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `MauiProgram.cs` | der Aufbau: die neun `Dienste.*` des Kerns belegen, die Datenbank bereitstellen, das DI-Verzeichnis der WebView füllen. Das iOS-Gegenstück zu `WindowsFormsApplication1/Program.cs` |
 | `App.cs`, `HauptSeite.cs` | ein Fenster, eine Seite, eine `BlazorWebView` mit `EPOS.UI.Seiten.AppWurzel` — seit iU9‑W16c ist das die **gemeinsame Wurzel beider Plattformen** (Entscheid E‑1: eine Wurzel, zwei Schalen). Die Schale ist ein `RenderFragment` (`Kopfleiste`): Unter Windows steht dort das `Menueband` mit seinen 58 Punkten, **auf iOS bleibt sie leer** — iL5 sagt „kein MDI, keine modalen Ketten", und eine Menüleiste wäre auf Touch unbedienbar. Ohne Angabe macht die Wurzel mit `PROJEKTLISTE` auf, wie bisher |
 | `wwwroot/index.html` | die Startseite der WebView — zeichengleich zur Windows-Fassung bis auf `EPOS.iOS.styles.css` und `viewport-fit=cover` |
-| `Dienste/` | 12 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter`. **iU9‑W16c hat hier NICHTS geändert**: Die drei neuen Glieder — `IProjektQuelle.StartseiteGaben`/`BerichteKostenGaben` (K7) und `IDateiDienst.AdresseOeffnen` (der Browserstart) — sind Standardumsetzungen (`null` bzw. `false`), damit die Hülle durch die Erweiterung nicht bricht. Wer Startseite, Berichte und die Online-Dokumentation auf dem iPad will, legt die drei Fassungen mit **iU11** nach; bis dahin sagt `AppWurzel` es im Banner, statt leer zu bleiben |
+| `Dienste/` | 12 Dateien: die neun Umgebungsdienste des Kerns als `Ios*`, dazu `IosHilfeDienst` und `IosProjektQuelle` (die beiden `EPOS.UI`-Schnittstellen) und der plattformfreie `Dateifilter`. **Seit Auftrag #208 liefert `IosProjektQuelle.SimulationGaben` die Ansicht SIMULATION** — aus derselben `SimulationAnsichtQuelle` (`EPOS.UI.Daten`), die auch die Windows-Schale benutzt; die Quelle wird je Sitzung GEHALTEN, damit der gerechnete Lauf und die Bilder einen Ansichtswechsel überleben. **iU9‑W16c hat hier NICHTS geändert**: Die drei neuen Glieder — `IProjektQuelle.StartseiteGaben`/`BerichteKostenGaben` (K7) und `IDateiDienst.AdresseOeffnen` (der Browserstart) — sind Standardumsetzungen (`null` bzw. `false`), damit die Hülle durch die Erweiterung nicht bricht. Wer Startseite, Berichte und die Online-Dokumentation auf dem iPad will, legt die drei Fassungen mit **iU11** nach; bis dahin sagt `AppWurzel` es im Banner, statt leer zu bleiben |
 | `Datenbankbereitstellung.cs` | Seed-Kopie beim Erststart, `DataRepository.PfadUeberschreibung`, die Gate-Zeilen `SQLite …`/`STRICT=…` und `VACUUM INTO` für die Sicherung |
 | `Pruefung/Prueflauf.cs` | der Prüfmodus für die CI (`EPOS_PRUEFLAUF`); `Ergebnisexport.cs` und `Protokoll.cs` sind aus `Referenzlauf/` **verlinkt**, nicht kopiert |
 | `Platforms/iOS/` | `Main.cs`, `AppDelegate.cs`, `Info.plist` |
@@ -40,7 +52,7 @@ MAUI-Navigation** — die Navigation lebt in Blazor (`EPOS.UI/Seiten/AppWurzel`)
 | `IGeraeteId` | `IosGeraeteId` | `UIDevice` | `identifierForVendor` + Modell — neuer Abdruck, also neues Gerät am Lizenzserver |
 | `ISprache` | `IosSprache` | `NSLocale` + `Dienste.Einstellungen` | ohne gespeicherten Wert entscheidet die Gerätesprache; Umstellung wirkt sofort (kein Neustart) |
 | `IDateiDienst` | `IosDateiDienst` | `FilePicker`, `Share` | `DateiSpeichern` liefert einen Pfad unter `Documents`; `OrdnerWaehlen` = `""` |
-| `IDialogDienst` | `IosDialogDienst` | `Page.DisplayAlert` | vom Hauptfaden aus wird **nicht** gefragt, sondern „nein"/„Abbruch" geantwortet (iR-f) |
+| `IDialogDienst` | `IosDialogDienst` | `Page.DisplayAlertAsync` | vom Hauptfaden aus wird **nicht** gefragt, sondern „nein"/„Abbruch" geantwortet (iR-f). **Seit #202 die `…Async`-Namen** (die alten fallen mit .NET 11); `Warten` setzt statt des abgekündigten `Page.IsBusy` den Zustand `Wartet` und ruft den Haken `Wartekurve` — `IsBusy` schaltete auf iOS den NETZWERK-Anzeiger, und den ignoriert iOS seit Fassung 13, bei Mindestziel 17.0 war der Aufruf also schon vorher wirkungslos |
 | `INavigation` | `IosNavigation` | — | reicht an `EPOS.UI.Dienste.Navigationsziel` weiter |
 | `IProjektKontext` | `IosProjektKontext` | — | **dünne Weiterleitung auf `EPOS.Kern/Controller/ProjektKontextCtrl`** (Anwenderentscheid W16b‑O‑3, 04.09.2026): dieselbe Klasse wie unter Windows, dieselbe Antwort. Bis dahin führte sie das Projekt selbst — und las die Klimazone als einzige aus dem STAMM (`Tab_Klimaregion_STAMM.Name`), während Windows die Projektkopie nahm (Befund W16b‑B2). **Die Messung zum Entscheid hat gezeigt, dass das ein Fehler dieser Hülle war, kein zweiter Weg**: `Tab_Projekt.ID_Klimaregion` trägt die Id der PROJEKTKOPIE, die Abfrage hielt sie gegen den STAMM-Schlüssel — zwei getrennte Schlüsselräume, Antwort immer leer. Vereinheitlicht ist deshalb auf die Projektkopie, und die eigene Abfrage ist ersatzlos weg. **iOS-eigen bleibt allein das `try/catch` um `Uebernehmen`** — der Kern lässt eine Ausnahme aus dem Datenzugriff durch, und hier liegt die Datenbank in der Sandbox und wird beim Erststart erst kopiert |
 

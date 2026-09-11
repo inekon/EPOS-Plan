@@ -535,8 +535,12 @@ namespace WindowsFormsApplication1.Referenzlauf
             if (v is decimal) return Zahl((double)(decimal)v);
             if (v is byte || v is short || v is int || v is long)
                 return Convert.ToInt64(v, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
-            return Convert.ToString(v, CultureInfo.InvariantCulture)
-                          .Replace(";", ",").Replace("\r", " ").Replace("\n", " ");
+            // #202: Convert.ToString ist als string? deklariert; v ist oben bereits
+            // gegen null und DBNull geprueft, der Rueckfall aendert also keinen Wert -
+            // er nimmt nur das CS8602 unter Nullable=enable (EPOS.iOS verlinkt diese
+            // Datei) weg.
+            string text = Convert.ToString(v, CultureInfo.InvariantCulture) ?? "";
+            return text.Replace(";", ",").Replace("\r", " ").Replace("\n", " ");
         }
 
         // ---------------------------------------------------------------------------------

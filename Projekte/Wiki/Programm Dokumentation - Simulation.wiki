@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulation.wiki
      Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
@@ -32,6 +32,7 @@ Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stroms
 * Die Kachel ''Simulation'' öffnet das Ergebnis – ohne gerechnetes Ergebnis die Konfiguration mit einem Hinweis – und '''startet den Lauf nicht mehr von selbst'''.
 * Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen; die Ablaufleiste und das eine ''← zurück'' ersetzen sie.
 * Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
+* '''Auf dem iPad''' erreichen Sie dieselbe Ansicht über den Knopf ''Simulation…'' in der Projektliste; nur der Wärmepumpen-Assistent (Doppeltipp auf eine Modulzeile im Reiter ''Wärmepumpe'') steht dort nicht zur Verfügung und sagt das auch.
 
 == Eingaben ==
 

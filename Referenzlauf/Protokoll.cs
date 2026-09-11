@@ -98,7 +98,12 @@ namespace WindowsFormsApplication1.Referenzlauf
             foreach (string z in _zeilen) sb.AppendLine(z);
             sb.AppendLine("```");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(datei));
+            // #202: Path.GetDirectoryName liefert null bei einem Wurzelpfad - unter
+            // Nullable=enable (EPOS.iOS verlinkt diese Datei) ist der Durchreicher
+            // CS8604. Gleiche Wirkung, nur ohne den Sonderfall.
+            string ordner = Path.GetDirectoryName(datei);
+            if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
+
             File.WriteAllText(datei, sb.ToString(), new UTF8Encoding(true));
         }
     }

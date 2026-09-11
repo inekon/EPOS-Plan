@@ -52,6 +52,15 @@
                     @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.BhkwWirtschaftlichkeit))">
                 @KnopfBhkw
             </button>
+            @* Auftrag #208 (Stufe S2 „Simulationsablauf"): der Einstieg in die
+               Ansicht SIMULATION. Er geht denselben Weg wie die zwei anderen - die
+               Liste oeffnet nichts, sie meldet Projekt und Maskenschluessel an die
+               Wurzel. Ohne Simulationsgaben bleibt die Wurzel in der Liste stehen
+               und sagt es in der Statuszeile. *@
+            <button type="button" class="epos-knopf epos-projekt-simulation"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.Simulation))">
+                @KnopfSimulation
+            </button>
         </Zeilenaktionen>
     </ProjektListe>
 </div>
@@ -93,6 +102,9 @@
 
     /// <summary>Beschriftung des Knopfes „BHKW-Wirtschaftlichkeit".</summary>
     [Parameter] public string KnopfBhkw { get; set; } = "BHKW-Wirtschaftlichkeit…";
+
+    /// <summary>Beschriftung des Knopfes „Simulation" (Auftrag #208).</summary>
+    [Parameter] public string KnopfSimulation { get; set; } = "Simulation…";
 
     /// <summary>
     /// Die Zeilen in der Form des Bausteins. Klimaregion und Ausstattung sind die zwei

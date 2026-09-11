@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <!--
     EPOS.iOS - die iOS-HUELLE von EPOS-Plan (Umsetzungskonzept iOS, Paket iU10).
@@ -78,6 +78,11 @@
   <ItemGroup>
     <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
     <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+    <!-- Die DATENSEITE der Oberflaeche (Auftrag #208): die plattformfreien Huellen,
+         die aus Kern-Controllern die DTO der Razor-Seiten bauen. Ohne sie muesste
+         diese Huelle den Ladeweg der Simulation nachbauen - genau die Doppelpflege,
+         die Modell C abschafft. -->
+    <ProjectReference Include="..\EPOS.UI.Daten\EPOS.UI.Daten.csproj" />
   </ItemGroup>
 
   <ItemGroup>
