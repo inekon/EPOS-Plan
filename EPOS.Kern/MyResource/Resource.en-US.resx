@@ -17162,6 +17162,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_ED_ANZAHL_BIS" xml:space="preserve">
     <value>Number to:</value>
   </data>
+  <data name="FLOTTE_ED_ANZAHL_HINWEIS" xml:space="preserve">
+    <value>Number of this unit in the fleet; 0 = unit is omitted, counted in steps of one.</value>
+  </data>
   <data name="FLOTTE_ED_KAPAZITAET_VON" xml:space="preserve">
     <value>Capacity from:</value>
   </data>

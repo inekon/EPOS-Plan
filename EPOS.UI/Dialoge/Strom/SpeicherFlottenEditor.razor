@@ -141,8 +141,15 @@
                                                                WertChanged="@(v => AchseGanzSetzen(achse, x => achse.AnzahlVon = x, v))" />
                                                 <Ganzzahlfeld Bezeichnung="@Texte.Bis" Wert="@achse.AnzahlBis" Min="0" Aktiv="@(Aktiv && achse.Aktiv)"
                                                                WertChanged="@(v => AchseGanzSetzen(achse, x => achse.AnzahlBis = x, v))" />
-                                                <Ganzzahlfeld Bezeichnung="@Texte.Schritt" Wert="1" Aktiv="false" />
                                             </div>
+                                            @* KEIN drittes Feld "Schritt": Die Stueckzahl kennt nur Einerschritte
+                                               (FlottenOptimierer, `for count = AnzahlVon; count <= AnzahlBis; count++`)
+                                               — ein deaktiviertes Zahlenfeld mit dem festen Wert 1 war ein totes
+                                               Bedienelement ohne Modellbindung (Anwenderfrage 11.09.2026, Auftrag
+                                               #225 Nachtrag: "wozu steht hier schrittzahl, wenn diese nicht
+                                               änderbar ist?"). Die Erklaerzeile sagt, WAS gilt, statt eine Eingabe
+                                               vorzutaeuschen, die es nicht gibt. *@
+                                            <p class="epos-flotte-hinweis">@Texte.AnzahlHinweis</p>
                                         </section>
                                         @if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
                                         {
@@ -609,6 +616,14 @@
         public string Schritt { get; set; } = Resource.FLOTTE_ED_SCHRITT;
         public string AnzahlVon { get; set; } = Resource.FLOTTE_ED_ANZAHL_VON;
         public string AnzahlBis { get; set; } = Resource.FLOTTE_ED_ANZAHL_BIS;
+
+        /// <summary>
+        /// Ersetzt seit Auftrag <b>#225</b> (Nachtrag, Anwenderfrage 11.09.2026) das dritte,
+        /// deaktivierte Zahlenfeld "Schritt" im Kasten "Anzahl": Die Stueckzahl zaehlt immer
+        /// in Einerschritten (<c>FlottenOptimierer</c>), das Feld hatte keine Modellbindung.
+        /// </summary>
+        public string AnzahlHinweis { get; set; } = Resource.FLOTTE_ED_ANZAHL_HINWEIS;
+
         public string KapazitaetVon { get; set; } = Resource.FLOTTE_ED_KAPAZITAET_VON;
         public string KapazitaetBis { get; set; } = Resource.FLOTTE_ED_KAPAZITAET_BIS;
         public string KapazitaetSchritt { get; set; } = Resource.FLOTTE_ED_KAPAZITAET_SCHRITT;

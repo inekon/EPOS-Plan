@@ -10346,6 +10346,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl dieser Einheit in der Flotte; 0 = Einheit entfällt, gezählt wird in Einerschritten. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANZAHL_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANZAHL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl von: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ANZAHL_VON {
