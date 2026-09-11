@@ -228,9 +228,14 @@
                          Bedienbar="@ProjektOffen" Sperrgrund="@Sperrgrund"
                          Betreten="BeiSimulationBetreten">
                 <KindInhalt>
-                    <SimulationReiter Kacheln="@KachelnVon(Reiterschluessel.Simulation)"
+                    <SimulationReiter @ref="_simulationReiter"
+                                      Kacheln="@KachelnVon(Reiterschluessel.Simulation)"
                                       Geklickt="BeiKachel"
                                       Bericht="@_bericht"
+                                      Dienste="@_simulationDienste"
+                                      StartBlatt="@_simulationBlatt"
+                                      AnsichtText="@ReiterAnsichtText"
+                                      ReiterText="@ReiterSimulationText"
                                       KopfText="@SimulationKopfText" Text="@SimulationText"
                                       KonfigText="@SimulationKonfigText"
                                       ZusammenfassungTitelText="@ZusammenfassungTitelText"
@@ -338,6 +343,33 @@
     /// </summary>
     [Parameter] public Func<Zusammenfassung?>? Bericht { get; set; }
 
+    /// <summary>
+    /// Die Lauf- und Ergebnisdienste der Simulation für den Reiter „Simulation"
+    /// (Auftrag <b>#220</b>, Anwenderentscheid <b>SIM‑E‑2</b>); <c>null</c> = diese
+    /// Plattform stellt sie nicht — dann bleibt der Reiter, wie er vor #220 war.
+    /// </summary>
+    /// <remarks>
+    /// <b>Es ist DERSELBE Delegat, aus dem sich die Ansicht SIMULATION bedient</b>
+    /// (<c>AppWurzel.SimulationGaben</c> bzw. <c>IProjektQuelle.SimulationGaben</c>,
+    /// Quelle <c>EPOS.UI.Daten/Simulation/SimulationAnsichtQuelle</c> seit #208) —
+    /// keine zweite Hülle und kein zweiter Datenweg. Gefragt wird beim BETRETEN des
+    /// Reiters, weil der Satz den Stand der Hüllen mitbringt.
+    /// </remarks>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? SimulationGaben { get; set; }
+
+    /// <summary>
+    /// Die MARKE des Aufrufers (Auftrag <b>#220</b>) — heute nur die des
+    /// Startseiten-Reiters „Simulation": <c>"wirt=START;schritt=3;blatt=STROMSPEICHER"</c>.
+    /// Angewandt wird sie, wenn sie sich ÄNDERT; leer = keine.
+    /// </summary>
+    /// <remarks>
+    /// Der Rückwegstapel der <c>AppWurzel</c> legt sie ab, wenn aus dem Reiter heraus
+    /// die Stromspeicher-Auslegung geöffnet wird, und gibt sie beim Rückweg wieder
+    /// herein. Ohne Wirtkennung <c>wirt=START</c> bleibt sie hier wirkungslos — dann
+    /// meint sie die ANSICHT.
+    /// </remarks>
+    [Parameter] public string Marke { get; set; } = "";
+
     /// <summary>Die Weiche der Solarthermiekachel wurde umgestellt.</summary>
     [Parameter] public Action<bool>? SolarartGewaehlt { get; set; }
 
@@ -441,6 +473,12 @@
     [Parameter] public string ReiterStromText { get; set; } = "Strombedarf";
     [Parameter] public string ReiterErzeugerText { get; set; } = "Energieerzeuger";
     [Parameter] public string ReiterSimulationText { get; set; } = "Simulation";
+
+    /// <summary>
+    /// Der Name DIESER Seite in der Kontextmeldung des Hilfe-Assistenten
+    /// („Startseite · Simulation · Übersicht", Auftrag #220/#221).
+    /// </summary>
+    [Parameter] public string ReiterAnsichtText { get; set; } = "Startseite";
     [Parameter] public string ReiterBerichteText { get; set; } = "Berichte & Kosten";
 
     [Parameter] public string ProjektKopfText { get; set; } = "Projekt einrichten";
@@ -494,6 +532,21 @@
     private string _klimaregion = "";
     private Zusammenfassung? _bericht;
     private bool _solarGanglinie;
+
+    /// <summary>
+    /// Der Parametersatz der Simulation, beim BETRETEN des Reiters geholt (#220);
+    /// <c>null</c> = keiner.
+    /// </summary>
+    private EPOS.UI.Seiten.Simulation.SimulationAnsichtDienste? _simulationDienste;
+
+    /// <summary>Das Reiterblatt, mit dem die rechte Spalte aufmacht (Marke, #220).</summary>
+    private string _simulationBlatt = "";
+
+    /// <summary>Der stehende Reiter „Simulation" — er liefert seine Marke (#220).</summary>
+    private SimulationReiter? _simulationReiter;
+
+    /// <summary>Die zuletzt ANGEWANDTE Marke; der Sentinel heisst „noch keine" (#220).</summary>
+    private string _markeAngewandt = "\u0000";
 
     private string _meldung = "";
     private WarnStufe _meldungsstufe = WarnStufe.Hinweis;
@@ -637,6 +690,12 @@
             _bericht = null;
             _reiter = Reiterschluessel.Projekt;
         }
+
+        // Der gehaltene Parametersatz gehoerte dem alten Projekt (#220). Er wird beim
+        // naechsten Betreten des Reiters neu geholt - die Quelle legt dann ohnehin
+        // neue Huellen an (Regel „eine Huelle JE PROJEKT").
+        _simulationDienste = null;
+        if (_reiter == Reiterschluessel.Simulation) SimulationDiensteHolen();
     }
 
     // =====================================================================
@@ -759,11 +818,79 @@
     /// </summary>
     private void BeiSimulationBetreten()
     {
+        // AUFTRAG #220 (SIM-E-2, Punkt 3): Der Parametersatz der Simulation wird beim
+        // BETRETEN geholt - er bringt den Stand der zwei Huellen mit (gerechneter Lauf,
+        // Bilder, Gueltigkeitsmarke), und der aendert sich zwischen zwei Besuchen.
+        // Es ist DERSELBE Delegat, aus dem sich die Ansicht SIMULATION bedient.
+        SimulationDiensteHolen();
+
         _bericht = Bericht?.Invoke();
         if (_bericht is not null) return;
 
         _reiter = Reiterschluessel.Projekt;
         Melden(KeineKlimaregionText, WarnStufe.Warnung, null);
+    }
+
+    /// <summary>
+    /// Holt den Parametersatz der Simulation und liest die Dienste daraus (#220).
+    /// Ohne Delegat oder ohne Projekt bleibt er <c>null</c> — dann ist der Reiter der
+    /// von vor #220.
+    /// </summary>
+    private void SimulationDiensteHolen()
+        => _simulationDienste = EPOS.UI.Seiten.Simulation.SimulationAnsichtDienste
+                                    .Aus(SimulationGaben?.Invoke());
+
+    // =====================================================================
+    //  Die MARKE des Startseiten-Reiters (Auftrag #220, SIM-E-2 Punkt 4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die MARKE dieser Seite, wie sie der Rückwegstapel der <c>AppWurzel</c> ablegt:
+    /// Wirtkennung, Schritt und — wenn die rechte Spalte steht — ihr Reiterblatt.
+    /// Leer = der Reiter „Simulation" steht nicht vorn, dann gibt es nichts
+    /// wiederherzustellen.
+    /// </summary>
+    public string AktuelleMarke
+    {
+        get
+        {
+            if (_reiter != Reiterschluessel.Simulation) return "";
+
+            SimulationReiter? reiter = _simulationReiter;
+            if (reiter is null) return "";
+
+            return EPOS.UI.Seiten.Simulation.SimulationMarke.Schreiben(
+                EPOS.UI.Seiten.Simulation.SimulationMarke.WIRT_START, 3,
+                reiter.ErgebnisSteht ? reiter.AktivesBlatt : "");
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (string.Equals(Marke, _markeAngewandt, StringComparison.Ordinal)) return;
+        _markeAngewandt = Marke;
+        MarkeAnwenden(Marke);
+    }
+
+    /// <summary>
+    /// Stellt Reiter und Reiterblatt aus der Marke wieder her — aber nur, wenn sie die
+    /// Wirtkennung <c>wirt=START</c> trägt: Ohne sie meint die Marke die ANSICHT
+    /// SIMULATION und geht diese Seite nichts an.
+    /// </summary>
+    private void MarkeAnwenden(string marke)
+    {
+        string wirt = EPOS.UI.Seiten.Simulation.SimulationMarke.WirtLesen(marke);
+        if (!string.Equals(wirt, EPOS.UI.Seiten.Simulation.SimulationMarke.WIRT_START,
+                           StringComparison.Ordinal)) return;
+
+        if (!ProjektOffen) return;          // ohne Projekt ist der Reiter gesperrt
+
+        (int Schritt, string Blatt) stelle =
+            EPOS.UI.Seiten.Simulation.SimulationMarke.Lesen(marke);
+
+        _simulationBlatt = stelle.Blatt;
+        _reiter = Reiterschluessel.Simulation;
     }
 
     // =====================================================================

@@ -5731,6 +5731,85 @@ body {
     border-color: var(--epos-rahmen-leise);
 }
 
+/* ---- Der Reiter "Simulation" rechnet (Auftrag #220, SIM-E-2) -----------
+
+   ZWEI SPALTEN: links ein Drittel (Zusammenfassung, Konfigurationsknopf, die
+   Kachel "Simulation starten", Fortschritt und Sperrgrund), rechts zwei Drittel
+   mit derselben Ergebniskomponente wie Schritt 3 der Ansicht. Bis #220 stand
+   rechts nichts - eine leere halbe Seite, und die Kachel wechselte in die
+   Ansicht (Anwenderbefund an drei Bildschirmfotos vom 11.09.2026).
+
+   minmax(0, ...) an BEIDEN Spalten: Ohne die Null als Mindestbreite nimmt eine
+   Rasterspalte die groesste unteilbare Breite ihres Inhalts (min-content), und
+   die Ergebnisseite fuehrt Tabellen und Bilder, die breiter sind als ein
+   Drittel Bildschirm - die linke Spalte waere dann aus dem Bild geschoben.
+
+   UNTER 1100 px stehen die zwei Spalten UNTEREINANDER. Die Schwelle ist eine
+   andere als die 900 px von Zweispaltenauswahl und Katalograhmen: Dort stehen
+   zwei Eingabebloecke nebeneinander, hier eine Eingabespalte neben einer ganzen
+   Ergebnisseite mit neun Reiterblaettern.
+
+   OHNE DIENSTE gibt es keine rechte Spalte (--allein); dann bleibt die linke
+   ueber die ganze Breite - der Reiter sieht aus wie vor #220. */
+.epos-simreiter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.epos-simreiter--allein {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 1100px) {
+    .epos-simreiter {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.epos-simreiter-links,
+.epos-simreiter-rechts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Die Kachel darf die schmale Spalte fuellen: Das feste Raster aus W16b-E-7
+   deckelt sie bei 404 px, eine Untergrenze traegt es nicht. */
+.epos-simreiter-links .epos-kachelraster {
+    width: 100%;
+}
+
+/* Der Kopf der rechten Spalte traegt die Ueberschrift und "Ergebnis speichern" -
+   dieselbe Bedingung wie in der Werkzeugleiste der Ansicht (nur nach einem
+   vollstaendigen Lauf). */
+.epos-simreiter-rechtskopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-bottom: 1px solid var(--epos-start-kasten-rahmen);
+    padding-bottom: 6px;
+}
+
+.epos-simreiter-speichern {
+    font-weight: 700;
+}
+
+/* "Noch kein Ergebnis - Simulation starten." Kein Kasten und keine Warnflaeche:
+   Es fehlt nichts, was der Anwender beheben muesste - er hat nur noch nicht
+   gerechnet (Regel W16b-E-6, dritte Stufe). */
+.epos-simreiter-leer {
+    margin: 0;
+    padding: 24px 0;
+    text-align: center;
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
 /* ==========================================================================
    MENUEBAND (iU9-W16c.1) - die Windows-Schale des Hauptfensters.
 

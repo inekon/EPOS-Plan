@@ -85,6 +85,22 @@ public static class SimulationMarke
     public const string SCHRITT_ERGEBNIS = "schritt=3";
 
     /// <summary>
+    /// Die WIRTKENNUNG des Startseiten-Reiters „Simulation" (Auftrag <b>#220</b>,
+    /// Anwenderentscheid <b>SIM‑E‑2</b>, Punkt 4).
+    /// </summary>
+    /// <remarks>
+    /// <para>Seit #220 zeigt derselbe Schritt ③ an ZWEI Stellen — als Blatt der
+    /// Ansicht <c>SIMULATION</c> und in der rechten Spalte des Startseiten-Reiters.
+    /// Der Rückwegstapel muss beide auseinanderhalten können: Wer die
+    /// Stromspeicher-Auslegung aus dem REITER heraus geöffnet hat, will in den Reiter
+    /// zurück und nicht in die Ansicht.</para>
+    /// <para>Deshalb trägt die Marke der Startseite zusätzlich
+    /// <c>wirt=START</c> — <c>"wirt=START;schritt=3;blatt=STROMSPEICHER"</c>. Ohne
+    /// Wirtkennung meint eine Marke wie bisher die Ansicht.</para>
+    /// </remarks>
+    public const string WIRT_START = "START";
+
+    /// <summary>
     /// Liest Schritt und Reiterblatt aus einer Marke. Unbekanntes bleibt leer
     /// bzw. 0 — eine Marke ist ein WUNSCH, kein Befehl, und die Seite entscheidet
     /// selbst, ob sie ihn erfüllen kann (ohne Ergebnis fällt sie auf ① zurück).
@@ -116,10 +132,39 @@ public static class SimulationMarke
         return (schritt, blatt);
     }
 
+    /// <summary>
+    /// Liest die WIRTKENNUNG einer Marke; leer = keine, dann meint sie die Ansicht
+    /// (Auftrag #220).
+    /// </summary>
+    public static string WirtLesen(string? marke)
+    {
+        if (string.IsNullOrWhiteSpace(marke)) return "";
+
+        foreach (string stueck in marke.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            int gleich = stueck.IndexOf('=');
+            if (gleich <= 0) continue;
+
+            if (string.Equals(stueck.Substring(0, gleich).Trim(), "wirt",
+                              StringComparison.OrdinalIgnoreCase))
+                return stueck.Substring(gleich + 1).Trim();
+        }
+
+        return "";
+    }
+
     /// <summary>Schreibt eine Marke; ein leeres Blatt bleibt weg.</summary>
     public static string Schreiben(int schritt, string? blatt)
         => string.IsNullOrEmpty(blatt) ? "schritt=" + schritt
                                        : "schritt=" + schritt + ";blatt=" + blatt;
+
+    /// <summary>
+    /// Schreibt eine Marke MIT Wirtkennung (Auftrag #220); ein leerer Wirt schreibt
+    /// dieselbe Marke wie <see cref="Schreiben(int, string?)"/>.
+    /// </summary>
+    public static string Schreiben(string? wirt, int schritt, string? blatt)
+        => string.IsNullOrEmpty(wirt) ? Schreiben(schritt, blatt)
+                                      : "wirt=" + wirt + ";" + Schreiben(schritt, blatt);
 }
 
 /// <summary>
@@ -139,6 +184,31 @@ public static class SimulationMarke
 /// </summary>
 public sealed class SimulationAnsichtDienste
 {
+    /// <summary>
+    /// Der Schlüssel, unter dem die Quelle dieses Bündel in ihren Parametersatz legt
+    /// (<c>SimulationAnsichtQuelle.AnsichtGaben</c>).
+    /// </summary>
+    public const string PARAMETER = "Dienste";
+
+    /// <summary>
+    /// Liest das Bündel aus einem Parametersatz der Simulation (Auftrag <b>#220</b>);
+    /// <c>null</c> = der Satz fehlt oder führt keines.
+    /// </summary>
+    /// <remarks>
+    /// <b>Wozu.</b> Seit #220 bedient sich ein ZWEITER Wirt aus demselben Satz — der
+    /// Startseiten-Reiter „Simulation" (SIM‑E‑2, Punkt 3). Die Ansicht bekommt ihn als
+    /// <c>@attributes</c> und damit über den Blazor-Verteiler; der Reiter braucht nur
+    /// das Bündel. Damit der Schlüsselname an EINER Stelle steht, liest ihn diese
+    /// Methode — nicht die <c>Startseite</c>.
+    /// </remarks>
+    public static SimulationAnsichtDienste? Aus(IReadOnlyDictionary<string, object>? gaben)
+    {
+        if (gaben is null) return null;
+        return gaben.TryGetValue(PARAMETER, out object? wert)
+                   ? wert as SimulationAnsichtDienste
+                   : null;
+    }
+
     /// <summary>
     /// Der Parametersatz von Schritt ① (<see cref="SimulationKonfigSeite"/>);
     /// <c>null</c> = die Plattform bietet ihn nicht an.
@@ -191,6 +261,18 @@ public sealed class SimulationAnsichtDienste
     /// was sie beim letzten <c>SimulationErgebnisDienste.Laden</c> ohnehin gebaut hat.</para>
     /// </remarks>
     public Func<SimulationErgebnisDaten?>? Ergebnisstand;
+
+    /// <summary>
+    /// Die gemeinsame Sperre <b>„ein Lauf zur Zeit"</b> (Auftrag <b>#220</b>,
+    /// Anwenderentscheid <b>SIM‑E‑2</b>, Punkt 5); <c>null</c> = keine Sperre.
+    /// </summary>
+    /// <remarks>
+    /// Seit #220 stoßen ZWEI Wirte denselben Lauf an — Schritt ② der Ansicht und die
+    /// Kachel des Startseiten-Reiters. Die Quelle legt EINE Sperre je Projekt an und
+    /// gibt sie jedem Parametersatz mit; damit sperren sich die beiden gegenseitig,
+    /// ohne voneinander zu wissen.
+    /// </remarks>
+    public SimulationLaufsperre? Laufsperre;
 }
 
 /// <summary>
