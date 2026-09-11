@@ -80,6 +80,72 @@ namespace WindowsFormsApplication1
             KeyDown += BeiTaste;
 
             Load += BeimLaden;
+
+            // ANWENDERENTSCHEID 62b-E-1 (11.09.2026), Festlegung 4: Auch das
+            // SCHLIESSEN DES PROGRAMMS fragt nach, wenn der Projektassistent
+            // ungespeicherte Eingaben hat. Das ist die einzige Stelle des
+            // Entscheids, die diesen Rahmen beruehrt - die Rueckfrage selbst steht
+            // in der Ansicht, nicht hier (EPOS.UI kennt keine MessageBox).
+            FormClosing += BeimSchliessen;
+        }
+
+        /// <summary>
+        /// <c>true</c>, sobald die Ansicht dem Schließen zugestimmt hat — dann läuft
+        /// das zweite <c>Close()</c> ohne Rückfrage durch.
+        /// </summary>
+        private bool _schliessenFrei;
+
+        /// <summary>
+        /// Fragt die Ansicht, ob geschlossen werden darf (62b-E-1).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum abbrechen und später noch einmal schließen.</b>
+        /// <c>FormClosing</c> ist synchron, die Rückfrage steht als Überlagerung in
+        /// der WebView und wird erst mit dem nächsten Klick des Anwenders
+        /// beantwortet. Ein blockierendes Warten hielte genau den Faden an, auf dem
+        /// die WebView zeichnet — also wird das Schließen abgebrochen, die Antwort
+        /// abgewartet und danach (bei „ja") <see cref="Form.Close"/> erneut
+        /// gerufen.</para>
+        /// <para>Ohne Oberfläche oder ohne stehenden Assistenten antwortet
+        /// <c>DarfVerlassen</c> unmittelbar <c>true</c>; dann sieht der Anwender
+        /// nichts als das Schließen.</para>
+        /// </remarks>
+        private void BeimSchliessen(object sender, FormClosingEventArgs e)
+        {
+            if (_schliessenFrei || DesignMode) return;
+
+            EPOS.UI.Dienste.INavigationsZiel ziel = EPOS.UI.Dienste.Navigationsziel.Aktuell;
+
+            // Die Vorfrage ist SYNCHRON und entscheidet, ob ueberhaupt abgebrochen
+            // wird: Ein Schliessen, das nichts zu fragen hat, laeuft unveraendert
+            // durch - auch das Application.Restart des Sprachwechsels.
+            if (ziel == null || !ziel.VerlassenFraglich) return;
+
+            e.Cancel = true;
+
+            // EINE NACHRICHT SPAETER, nicht hier: Steht nichts zu fragen, antwortet
+            // DarfVerlassen sofort, und ein unmittelbares Close() liefe MITTEN in
+            // diesem FormClosing - das Fenster raeumte sich unter seinem eigenen
+            // Ereignis weg. BeginInvoke laesst das Ereignis erst zu Ende laufen;
+            // derselbe Gedanke wie bei Blazorsprung.
+            BeginInvoke(new Action(() => FragenUndSchliessen(ziel)));
+        }
+
+        private async void FragenUndSchliessen(EPOS.UI.Dienste.INavigationsZiel ziel)
+        {
+            bool frei;
+            try { frei = await ziel.DarfVerlassen(); }
+            catch (Exception ex)
+            {
+                // Eine gescheiterte Rueckfrage darf das Programm nicht festhalten.
+                System.Diagnostics.Debug.WriteLine("Rueckfrage beim Schliessen: " + ex.Message);
+                frei = true;
+            }
+
+            if (!frei) return;
+
+            _schliessenFrei = true;
+            Close();
         }
 
         private void BeiTaste(object sender, KeyEventArgs e)

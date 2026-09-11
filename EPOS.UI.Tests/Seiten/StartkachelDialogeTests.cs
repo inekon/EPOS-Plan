@@ -126,6 +126,17 @@ public class StartkachelDialogeTests : BunitContext
             ["SpeichernText"] = "Speichern",
             ["ProjektLabelText"] = "Bestehendes Projekt auswählen",
             ["ProjektOeffnenText"] = "Projekt öffnen",
+
+            // Seit #62b (11.09.2026) ist der Assistent eine freie ANSICHT: Er traegt
+            // seinen frueheren Fenstertitel selbst und fragt beim Verlassen nach
+            // (62b-E-1). Die fuenf Schluessel stehen ebenso in AssistentHuelle.Gaben.
+            ["TitelText"] = "Projektassistent",
+            ["HatAenderungen"] = new Func<bool>(() => false),
+            ["VerlassenTitelText"] = "Ungespeicherte Eingaben",
+            ["VerlassenFrageText"] = "Sollen sie jetzt gespeichert werden?",
+            ["VerwerfenText"] = "Verwerfen",
+            ["BleibenText"] = "Bleiben",
+
             ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), _ => { })
         };
 
@@ -140,6 +151,9 @@ public class StartkachelDialogeTests : BunitContext
                                      .Select(k => k.TextContent.Trim())
                                      .ToArray();
         Assert.Equal(new[] { "Abbrechen", "◀ Zurück", "Weiter ▶" }, knoepfe);
+
+        // Der frueher Fenstertitel steht seit #62b in der Ansicht.
+        Assert.Equal("Projektassistent", gezeichnet.Find(".epos-seite-titel").TextContent);
     }
 
     /// <summary>

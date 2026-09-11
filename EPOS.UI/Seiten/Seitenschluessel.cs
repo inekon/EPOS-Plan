@@ -84,11 +84,14 @@ public static class Seitenschluessel
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Er hat einen <c>Masken.*</c>-Zwilling: <c>Masken.Assistent</c> ist unter
-    /// Windows der Weg vom Menue und von den beiden Startkacheln in die modale
-    /// Huelle (<c>AssistentHuelle.Oeffnen</c>) — beide Aufrufer werten aus, ob
-    /// gespeichert wurde. Der Schluessel hier gilt fuer den iOS-Weg: Dort wird die
-    /// Ansicht ausgetauscht, es gibt kein zweites Fenster.
+    /// Er hat einen <c>Masken.*</c>-Zwilling: <c>Masken.Assistent</c> ist der Weg
+    /// vom Menue und von den beiden Startkacheln. <b>Seit dem 11.09.2026
+    /// (Anwenderentscheid W16a-E-1 / W16b-O-5, Aufgabe #62b) fuehren beide auf
+    /// DIESE Ansicht</b> — die modale Huelle ist gefallen, und damit gilt fuer den
+    /// Assistenten dasselbe wie fuer jede andere Fachseite: Die Ansicht wird
+    /// ausgetauscht, es gibt kein zweites Fenster. Die BETRIEBSART kommt als
+    /// Argument mit (<c>OeffneMaske(Masken.Assistent, 0|1)</c>) oder aus den zwei
+    /// Wegschluesseln <see cref="ProjektNeu"/> / <see cref="ProjektBearbeiten"/>.
     /// </para>
     /// <para>
     /// Die drei uebrigen Schluessel der Zusammenlegung (<c>STARTSEITE</c>,
@@ -252,13 +255,21 @@ public static class Seitenschluessel
     //  Ort.
     // =====================================================================
 
-    /// <summary>Menue „Projekt -> Neu…" - der Assistent in Betriebsart NEU.</summary>
+    /// <summary>
+    /// Menue „Projekt -> Neu…" - der Assistent in Betriebsart NEU.
+    /// <b>Seit #62b (11.09.2026) ein ANSICHTSWECHSEL</b>: Die Windows-Huelle hat
+    /// fuer diesen Schluessel keinen Fall mehr, er faellt durch und
+    /// <see cref="AppWurzel"/> zeigt <see cref="Assistent"/>.
+    /// </summary>
     public const string ProjektNeu = "PROJEKT_NEU";
 
     /// <summary>Menue „Projekt -> Öffnen…" - Projektauswahl, dann aktiv setzen.</summary>
     public const string ProjektOeffnen = "PROJEKT_OEFFNEN";
 
-    /// <summary>Menue „Projekt -> Bearbeiten…" - der Assistent in Betriebsart BEARBEITEN.</summary>
+    /// <summary>
+    /// Menue „Projekt -> Bearbeiten…" - der Assistent in Betriebsart BEARBEITEN.
+    /// Wie <see cref="ProjektNeu"/> seit #62b ein ANSICHTSWECHSEL.
+    /// </summary>
     public const string ProjektBearbeiten = "PROJEKT_BEARBEITEN";
 
     /// <summary>Menue „Projekt -> zuletzt geöffnet" - ohne Dialog aktiv setzen.</summary>

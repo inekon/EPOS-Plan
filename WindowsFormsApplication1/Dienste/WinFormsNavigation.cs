@@ -226,16 +226,25 @@ namespace WindowsFormsApplication1
         // ==================================================================
 
         /// <summary>
-        /// Der Projektassistent. Baut den Rahmen, meldet ihn beim
-        /// <see cref="WizardCtrl"/> an, zeigt ihn modal und meldet zurück, ob gespeichert
-        /// wurde — inhaltlich unverändert gegenüber <c>MenueCtrl.AssistentZeigen</c>.
+        /// Der Projektassistent — seit Aufgabe #62b (Anwenderentscheid W16a-E-1 /
+        /// W16b-O-5) ein ANSICHTSWECHSEL und kein Fenster mehr.
+        ///
+        /// <para><b>Was die Rückgabe jetzt heißt.</b> Bis dahin <c>true</c> = „es
+        /// wurde gespeichert" (das Ergebnis des <c>ShowDialog</c>); jetzt <c>true</c>
+        /// = „die Ansicht ist gewechselt". Ob gespeichert wurde, kann an dieser
+        /// Stelle niemand mehr wissen: Der Assistent steht erst danach, und der
+        /// Aufrufer läuft weiter. Der einzige Leser der alten Bedeutung war
+        /// <c>MenueCtrl.AssistentZeigen</c> mit seiner Meldung „Daten gespeichert";
+        /// sie steht seither dort, wo die Antwort bekannt ist — in
+        /// <c>AssistentHuelle</c>, hinter dem gelungenen Speicherlauf.</para>
+        ///
+        /// <para><c>false</c> heißt „es zeichnet gerade keine Oberfläche" — derselbe
+        /// Ausgang wie bei jedem anderen Schlüssel ohne Ziel.</para>
         /// </summary>
         private static bool AssistentZeigen(int betriebsart)
         {
-            // iU9-W16a.5: Der Assistent ist eine Razor-Seite (EPOS.UI/Seiten/Assistent/
-            // AssistentSeite.razor) in einer modalen Huelle - beide Aufrufer werten
-            // "gespeichert" aus und ziehen danach den Projektkontext nach.
-            return AssistentHuelle.Oeffnen(null, betriebsart);
+            return EPOS.UI.Dienste.Navigationsziel.Aktuell?
+                       .OeffneMaske(Masken.Assistent, betriebsart) ?? false;
         }
 
         // ==================================================================

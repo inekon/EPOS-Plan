@@ -41,6 +41,7 @@
                Startansicht="@Startansicht"
                StartseiteGaben="@StartseiteGaben"
                BerichteKostenGaben="@BerichteKostenGaben"
+               AssistentGaben="@AssistentGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -147,6 +148,13 @@
 
     /// <summary>Der Parametersatz von „Berichte &amp; Kosten"; unter Windows leer.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BerichteKostenGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des PROJEKTASSISTENTEN je Betriebsart (Windows:
+    /// <c>AssistentHuelle.AnsichtGaben</c>). Er wird nur durchgereicht; das
+    /// Fenster wertet nichts davon aus.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? AssistentGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt

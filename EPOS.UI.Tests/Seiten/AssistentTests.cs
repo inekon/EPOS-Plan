@@ -602,4 +602,206 @@ public class AssistentTests : BunitContext
         Assert.Equal(1, cut.Instance.Schritt);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
+
+    // =====================================================================
+    // Ungespeicherte Eingaben (Anwenderentscheid 62b-E-1 vom 11.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Lauf mit Rueckfrage-Verkabelung: <paramref name="geaendert"/> sagt, ob es
+    /// etwas zu verlieren gibt, <paramref name="speichernFehler"/>, ob der
+    /// Speicherlauf scheitert.
+    /// </summary>
+    private IRenderedComponent<AssistentSeite> ZeigeMitAenderung(
+        Func<bool> geaendert,
+        Action<bool>? geschlossen = null,
+        Func<(string Text, string Titel)?>? speichern = null)
+    {
+        return Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 0)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, nr => nr <= 1)
+            .Add(x => x.HatAenderungen, geaendert)
+            .Add(x => x.Speichern, speichern ?? (() => null))
+            .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
+    }
+
+    private static IHtmlCollection<IElement> Rueckfrageknoepfe(
+        IRenderedComponent<AssistentSeite> cut)
+        => cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-leiste button");
+
+    /// <summary>
+    /// <b>62b-E-1, Festlegung 1:</b> Ohne Aenderung gibt es keine Rueckfrage — der
+    /// Assistent geht unmittelbar hinaus.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aenderungen_verlaesst_Abbrechen_den_Assistenten_ohne_Rueckfrage()
+    {
+        bool? ergebnis = null;
+        var cut = ZeigeMitAenderung(() => false, ok => ergebnis = ok);
+
+        Abbrechen(cut).Click();
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// Mit Aenderungen kommt die Rueckfrage — und sie hat DREI Wege
+    /// (Speichern / Verwerfen / Bleiben), nicht zwei.
+    /// </summary>
+    [Fact]
+    public void Mit_Aenderungen_fragt_der_Assistent_mit_drei_Wegen_nach()
+    {
+        bool? ergebnis = null;
+        var cut = ZeigeMitAenderung(() => true, ok => ergebnis = ok);
+
+        Abbrechen(cut).Click();
+
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Equal(3, Rueckfrageknoepfe(cut).Length);
+        Assert.Null(ergebnis);                 // noch ist nichts entschieden
+    }
+
+    /// <summary>„Bleiben" bricht den Wechsel ab: Der Assistent steht wie zuvor.</summary>
+    [Fact]
+    public void Bleiben_bricht_den_Wechsel_ab()
+    {
+        bool? ergebnis = null;
+        bool gespeichert = false;
+        var cut = ZeigeMitAenderung(() => true, ok => ergebnis = ok,
+                                    () => { gespeichert = true; return null; });
+
+        Abbrechen(cut).Click();
+        Rueckfrageknoepfe(cut)[2].Click();      // Bleiben
+
+        Assert.Null(ergebnis);
+        Assert.False(gespeichert);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+    }
+
+    /// <summary>„Verwerfen" geht hinaus, OHNE zu schreiben.</summary>
+    [Fact]
+    public void Verwerfen_verlaesst_den_Assistenten_ohne_zu_schreiben()
+    {
+        bool? ergebnis = null;
+        bool gespeichert = false;
+        var cut = ZeigeMitAenderung(() => true, ok => ergebnis = ok,
+                                    () => { gespeichert = true; return null; });
+
+        Abbrechen(cut).Click();
+        Rueckfrageknoepfe(cut)[1].Click();      // Verwerfen
+
+        Assert.False(ergebnis);                 // verlassen, aber nicht gespeichert
+        Assert.False(gespeichert);
+    }
+
+    /// <summary>
+    /// „Speichern" laeuft DENSELBEN Weg wie der Knopf: erst die Seitenpruefung, dann
+    /// <c>SeiteVerlassen</c>, dann <c>Speichern</c>. Gelingt er, ist der Lauf zu Ende
+    /// und meldet „gespeichert".
+    /// </summary>
+    [Fact]
+    public void Speichern_in_der_Rueckfrage_geht_denselben_Weg_wie_der_Knopf()
+    {
+        bool? ergebnis = null;
+        var schritte = new List<string>();
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 0)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, nr => nr <= 1)
+            .Add(x => x.HatAenderungen, () => true)
+            .Add(x => x.SeitePruefen, nr => { schritte.Add("pruefen"); return null; })
+            .Add(x => x.SeiteVerlassen, nr => schritte.Add("verlassen"))
+            .Add(x => x.Speichern, () => { schritte.Add("speichern"); return null; })
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        Abbrechen(cut).Click();
+        Rueckfrageknoepfe(cut)[0].Click();       // Speichern
+
+        Assert.Equal(new[] { "pruefen", "verlassen", "speichern" }, schritte);
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>62b-E-1, Zeile „Speichern":</b> Scheitert der Speicherlauf, BLEIBT der
+    /// Assistent stehen und zeigt die Meldung — der Wechsel findet nicht statt.
+    /// </summary>
+    [Fact]
+    public void Scheitert_das_Speichern_bleibt_der_Assistent_stehen()
+    {
+        bool? ergebnis = null;
+        var cut = ZeigeMitAenderung(
+            () => true,
+            ok => ergebnis = ok,
+            () => ("Der Schritt Add_Projekt ist fehlgeschlagen.", "Speichern fehlgeschlagen"));
+
+        Abbrechen(cut).Click();
+        Rueckfrageknoepfe(cut)[0].Click();       // Speichern
+
+        Assert.Null(ergebnis);                   // NICHT verlassen
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Contains("Add_Projekt", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// Die Rueckfrage gilt auch fuer „Projekt oeffnen" — auch dieser Weg verlaesst
+    /// den Assistenten. Das Projekt wird erst nach der Antwort gesetzt.
+    /// </summary>
+    [Fact]
+    public void Auch_Projekt_oeffnen_fragt_nach_und_setzt_erst_danach()
+    {
+        string geoeffnet = "";
+        bool? ergebnis = null;
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 1)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, nr => nr <= 1)
+            .Add(x => x.Projekte, Projekte())
+            .Add(x => x.HatAenderungen, () => true)
+            .Add(x => x.ProjektOeffnen, (int id, string name) => geoeffnet = name)
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.FindAll(".epos-assistent-band tbody tr button")[0].Click();   // markieren
+        cut.Find(".epos-assistent-band .epos-leiste button").Click();     // „Projekt oeffnen"
+
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Equal("", geoeffnet);
+
+        Rueckfrageknoepfe(cut)[1].Click();       // Verwerfen
+
+        Assert.NotEqual("", geoeffnet);
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// <c>FrageVerlassen</c> ist der Weg, den der WIRT geht (AppWurzel beim
+    /// Ansichtswechsel, der Hauptfensterrahmen beim Schliessen des Programms).
+    /// Ohne Aenderungen antwortet er unmittelbar mit „Verwerfen" — ohne zu zeichnen.
+    /// </summary>
+    [Fact]
+    public async Task FrageVerlassen_antwortet_ohne_Aenderungen_unmittelbar()
+    {
+        var cut = ZeigeMitAenderung(() => false);
+
+        AssistentVerlassen weg = await cut.Instance.FrageVerlassen();
+
+        Assert.Equal(AssistentVerlassen.Verwerfen, weg);
+        Assert.False(cut.Instance.Ungespeichert);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// Ohne den Delegaten <c>HatAenderungen</c> gilt „nichts zu verlieren" — eine
+    /// Huelle, die ihn nicht stellt (iOS vor iU11), aendert damit nichts.
+    /// </summary>
+    [Fact]
+    public void Ohne_Delegat_gilt_der_Lauf_als_ungeaendert()
+    {
+        var cut = Zeige();
+
+        Assert.False(cut.Instance.Ungespeichert);
+    }
 }

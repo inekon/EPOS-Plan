@@ -259,8 +259,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal void HinweisProjektGeoeffnet()
         {
-            _kurzhinweis = MyResource.Resource.Text_Projekt + " " + _kontext.Name + " "
-                         + MyResource.Resource.Text_Geoeffnet + "!";
+            Kurzhinweis(MyResource.Resource.Text_Projekt + " " + _kontext.Name + " "
+                        + MyResource.Resource.Text_Geoeffnet + "!");
+        }
+
+        /// <summary>
+        /// Ein beliebiger Kurzhinweis über der Startseite — derselbe Weg wie
+        /// <see cref="HinweisProjektGeoeffnet"/>, nur mit fremdem Satz.
+        /// </summary>
+        /// <remarks>
+        /// Zweiter Nutzer seit Aufgabe #62b: „Daten gespeichert" nach einem
+        /// Assistentenlauf. Bis dahin war das eine <c>MessageBox</c> in
+        /// <c>MenueCtrl.AssistentZeigen</c>, die nach dem modalen Fenster erschien;
+        /// ohne modale Rückkehr gibt es diesen Ort nicht mehr, und eine
+        /// <c>MessageBox</c> aus einem Blazor-Ereignis heraus ist ohnehin verboten
+        /// (Regel (d) der Blazor-Hülle).
+        /// </remarks>
+        internal void Kurzhinweis(string satz)
+        {
+            if (string.IsNullOrEmpty(satz)) return;
+
+            _kurzhinweis = satz;
             _zustand.Auffrischen();
         }
 
@@ -634,27 +653,34 @@ namespace WindowsFormsApplication1
 
         // ---- Reiter 1: Projekt ---------------------------------------------
 
+        /// <summary>
+        /// Kachel „Projekt neu" — wörtlich <c>pBox_ProjektNeu_Click</c> (:289-310),
+        /// seit Aufgabe #62b ohne die zwei Zeilen danach.
+        /// </summary>
+        /// <remarks>
+        /// Der Assistent ist eine freie ANSICHT (W16a-E-1 / W16b-O-5): Der Aufruf
+        /// schaltet sie und kehrt sofort zurück — ein <c>Uebernehmen</c> unmittelbar
+        /// dahinter läse den Namen des ZULETZT gespeicherten Laufs, nicht den dieses.
+        /// Der Nachzug steht deshalb in <c>AssistentHuelle</c>, hinter dem
+        /// gelungenen Speicherlauf; dass er das Projekt dabei als „zuletzt geöffnet"
+        /// fortschreibt (<c>Uebernehmen</c> statt <c>Setzen</c>), ist die
+        /// Eigenheit DIESES Einstiegs und wird vorher angemeldet.
+        /// </remarks>
         private void ProjektNeu()
         {
-            // Woertlich pBox_ProjektNeu_Click (:289-310).
-            MenueCtrl menu = new MenueCtrl();
-            menu.ProjektNeu();
-
-            if (Program.wizardctrl == null || Program.wizardctrl.Projektname == "") return;
-
-            // Zuletzt geoeffnetes Projekt merken - Schreiblogik unveraendert; sie
-            // liegt seit W16b.0 im Kern.
-            _kontext.Uebernehmen(0, Program.wizardctrl.Projektname);
+            AssistentHuelle.NaechsterLaufMerktProjekt();
+            new MenueCtrl().ProjektNeu();
         }
 
+        /// <summary>
+        /// Kachel „Projekt öffnen" — wörtlich <c>pBox_ProjektOeffnen_Click</c>
+        /// (:331-352); sie führt in den Assistenten in Betriebsart BEARBEITEN.
+        /// Zum Nachzug siehe <see cref="ProjektNeu"/>.
+        /// </summary>
         private void ProjektOeffnen()
         {
-            // Woertlich pBox_ProjektOeffnen_Click (:331-352).
-            MenueCtrl menu = new MenueCtrl();
-            menu.ProjektBearbeiten();
-
-            if (Program.wizardctrl != null && Program.wizardctrl.Projektname != "")
-                _kontext.Uebernehmen(0, Program.wizardctrl.Projektname);
+            AssistentHuelle.NaechsterLaufMerktProjekt();
+            new MenueCtrl().ProjektBearbeiten();
         }
 
         private void ProjektZuletzt(IWin32Window wirt)
