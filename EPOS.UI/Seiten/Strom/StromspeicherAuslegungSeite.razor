@@ -1,0 +1,1068 @@
+@* DIE ANSICHT „STROMSPEICHER-AUSLEGUNG" (Seitenschluessel STROMSPEICHER_AUSLEGUNG,
+   Paket P3 / Auftrag #192, Konzept „Stromspeicher-Dialoge" 2.1).
+
+   ANLASS. Der Anwender gab am 11.09.2026 den Dialog „Auslegung optimieren"
+   zurueck, mit fuenf Punkten. Der fuenfte war der kuerzeste: „Fenster in Fenster
+   ist nicht gut." Der Flottendialog stand als modale Ueberlagerung ueber der
+   Ergebnisseite, sein CSV-Unterdialog als zweite Ueberlagerung darin — vier
+   Reiter, eine Fussleiste, ein Warnbanner, ein Fortschrittsbalken und die
+   Ergebnistabelle in einem Fenster mit eigenem Rollbalken.
+
+   DAS HAUS KENNT DEN ANDEREN WEG seit W16b/#62b: Simulationskonfiguration und
+   Projektassistent sind FREIE ANSICHTEN der AppWurzel (E-5, W16a-E-1),
+   Ueberlagerungen bleiben fuer Rueckfragen und kleine Unterdialoge. Genau das ist
+   diese Seite: Sie fuellt die WebView, kein Rahmen im Rahmen, kein zweiter
+   Rollbalken. Geblieben sind DREI Ueberlagerungen — die CSV-Spaltenzuordnung, die
+   Prognosentabelle und die Rueckfrage beim Verlassen.
+
+   EINE ANSICHT, ZWEI MODI (Anwenderentscheid SD-Q1). „Flotte" und
+   „Einzelspeicher" teilen Kopf, Ablaufleiste, Daten- und Kostenblatt; RECHNERISCH
+   bleiben die Pfade getrennt (SD-Q2) — der Einzelpfad ist der regressionsgepruefte
+   (zwoelf Referenzprojekte), der Flottenpfad laeuft gegen Projekt 1046. Mit ihr
+   fallen die zwei Dialoge SpeicherFlottenDialog und SpeicherOptimierungDialog
+   (Regel iZ5: nie zwei Fassungen derselben Maske).
+
+   DER ABLAUF IST SICHTBAR. Fuenf Schritte statt vier Reiter: 1 Speicher ·
+   2 Daten & Kosten · 3 Betriebsfuehrung · 4 Berechnen · 5 Ergebnis. Schritt 4 ist
+   ein KNOPF und heisst nach dem, was er tut („Flotte bewerten" ohne, „Groessen
+   optimieren" mit dem Suchlauf-Schalter). Schritt 5 ist erst nach einem Lauf
+   betretbar, und eine Eingabeaenderung markiert ihn als veraltet.
+
+   WOHER DIE SIMULATION KOMMT. Jede EPOS-Zeitreihe (Last, PV, BHKW, Preise) stammt
+   aus einem abgeschlossenen Lauf. Zwei Wege fuehren dorthin, und beide liegen im
+   Kern (StromspeicherAuslegungCtrl): Die Ergebnisseite reicht IHREN Lauf herein,
+   und wo keiner vorliegt, rechnet die Seite ihn ueber SimulationLaufCtrl nach —
+   mit dem Baustein Fortschritt, Muster iU9-W11a.
+
+   KEINE DATENBANK (Hausregel EPOS.UI). Alles, was liest oder schreibt, steht als
+   Delegat in StromspeicherAuslegungDienste und fuehrt in den Kern-Controller. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using EPOS.UI.Dialoge.Strom
+@using EPOS.UI.Seiten.Assistent
+@using EPOS.UI.Seiten.Simulation
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-seite epos-spauslegung">
+
+    @* ---------------------------------------------------------------- Kopf *@
+    <div class="epos-seite-kopf epos-spauslegung-kopf">
+        <h1 class="epos-seite-titel">@TitelText</h1>
+        @if (!string.IsNullOrWhiteSpace(ProjektText))
+        {
+            <span class="epos-spauslegung-kontext">@ProjektText</span>
+        }
+        <span class="epos-spauslegung-kopfaktionen">
+            <InfoKnopf Schluessel="@HilfeSchluessel" />
+            <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Verlassen">@ZurueckText</button>
+        </span>
+    </div>
+
+    @if (_projektAktiv)
+    {
+        <p role="status" class="epos-spauslegung-projektflotte">
+            <strong>@Resource.FLOTTE_DLG_PROJEKT_AKTIV</strong> @Resource.FLOTTE_DLG_PROJEKT_AKTIV_TEXT
+            @if (Dienste?.ProjektflotteDeaktivieren is not null)
+            {
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="ProjektflotteDeaktivieren">@Resource.FLOTTE_DLG_BTN_PROJEKT_AUS</button>
+            }
+        </p>
+    }
+
+    @* Die VORPRUEFUNG steht UEBER der Ablaufleiste (Konzept 2.4 Punkt 3): Sie
+       gehoert zum Lauf, nicht zu einem Blatt — und sie SPERRT nicht, sie warnt.
+       Der Lauf startet trotzdem; das ist ausdruecklich so gewollt. *@
+    @foreach (FlottenHinweis hinweis in _vorpruefung)
+    {
+        <Warnbanner Stufe="@(hinweis.Stufe == FlottenHinweisStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis)"
+                    Text="@hinweis.Text" />
+    }
+
+    @* ------------------------------------------------------- Ablaufleiste *@
+    <Ablaufleiste Vorne="@Vorne" Hinten="@Hinten" Aktiv="@_schritt"
+                  Gewaehlt="SchrittGewaehlt" Verweigert="SchrittVerweigert"
+                  RechnenText="@RechnenText" RechnenFrei="@RechnenFrei" Rechnen="Starten"
+                  Bezeichnung="@AblaufText" VeraltetText="@VeraltetText">
+        <Modusknopf>
+            <Auswahlfeld Bezeichnung="@ModusText" Eintraege="@Modi" Auswahl="@((int)_modus)"
+                         Aktiv="@(!_laeuft)" AuswahlChanged="ModusGewaehlt" />
+        </Modusknopf>
+    </Ablaufleiste>
+
+    @if (Eingabefehler.Length > 0)
+    {
+        @* DER EINGABEFEHLER SPERRT (anders als die Vorpruefung darueber): Ein SoC-Band,
+           das nicht zusammenpasst, oder eine Projektlaufzeit von 0 Jahren machen den
+           Lauf nicht schlechter, sondern unmoeglich. Bei der Flotte wird er LAUFEND
+           gerechnet — so hielt es der abgeloeste Dialog —, beim Einzelspeicher beim
+           Start (SpeicherOptimierungCtrl.Pruefe). *@
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Eingabefehler" />
+    }
+
+    @if (_fehler.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@(_meldungErfolg ? WarnStufe.Erfolg : WarnStufe.Fehler)" Text="@_meldung" />
+    }
+
+    @if (Dienste?.LaufVorhanden is not null && !Dienste.LaufVorhanden()
+         && Dienste.Simulationslauf is not null)
+    {
+        @* Ohne gerechneten Lauf gibt es keine EPOS-Zeitreihe. Die Seite sagt es und
+           bietet den Lauf an, statt ihn heimlich zu starten (Muster W11a). *@
+        <div class="epos-spauslegung-lauf">
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@KeinLaufText" />
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="SimulationslaufStarten">@LaufStartenText</button>
+        </div>
+    }
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschritt"
+                 Abbrechen="@(Dienste?.Abbrechen is null ? (EventCallback?)null
+                              : EventCallback.Factory.Create(this, Abbrechen))"
+                 AbbrechenText="@Resource.FLOTTE_DLG_BTN_ABBRECHEN" />
+
+    @* ------------------------------------------------------------- Blatt *@
+    <div class="epos-spauslegung-blatt">
+        @if (_schritt == AuslegungSchritt.Speicher)
+        {
+            @if (_modus == AuslegungModus.Flotte)
+            {
+                <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
+                                       BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
+                <Schalter Bezeichnung="@Resource.FLOTTE_DLG_CHK_OPTIMIEREN"
+                          Wert="@Auslegung.FlottenGroessenOptimieren" Aktiv="@(!_laeuft)"
+                          WertChanged="SuchlaufSetzen" />
+            }
+            else
+            {
+                <EinzelspeicherSuchraum Wert="@_eingaben" Geaendert="Geaendert" Aktiv="@(!_laeuft)"
+                                        AktuelleAuslegung="@_vorgaben.AktuelleAuslegung" />
+            }
+        }
+        else if (_schritt == AuslegungSchritt.Daten)
+        {
+            @if (_modus == AuslegungModus.Flotte)
+            {
+                <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_KOSTENSAETZE</p>
+            }
+            <SpeicherAuslegungEditor Wert="@_eingaben" WertChanged="EingabenGeaendert" Aktiv="@(!_laeuft)"
+                                     NurQuellenKostenProfile="@(_modus == AuslegungModus.Flotte)"
+                                     Auslegungsprofile="@_vorgaben.Auslegungsprofile"
+                                     Strompreisprofile="@_vorgaben.Strompreisprofile"
+                                     Modulkosten="@_vorgaben.Modulkosten"
+                                     EinstellungenSpeichern="@SpeicherWeg"
+                                     ProfilSpeichern="@ProfilWeg"
+                                     DateiWaehlen="@Dienste?.DateiWaehlen" />
+            @if (_modus == AuslegungModus.Flotte && Dienste?.DateiWaehlen is not null)
+            {
+                <button type="button" class="epos-knopf" disabled="@_laeuft"
+                        @onclick="PrognosenOeffnen">@PrognosenText</button>
+            }
+        }
+        else if (_schritt == AuslegungSchritt.Betrieb)
+        {
+            @if (_modus == AuslegungModus.Flotte)
+            {
+                <PeakZielBlock Wert="@Flotte.Optionen" WertChanged="BetriebsoptionenGeaendert"
+                               Aktiv="@(!_laeuft)" PlanerVerfuegbar="@PlanerVerfuegbar"
+                               Vorschlag="@_peakVorschlag"
+                               VorschlagUebernehmen="@(_peakVorschlag is null ? default : EventCallback.Factory.Create(this, PeakVorschlagUebernehmen))"
+                               Bestimmen="@(Dienste?.PeakZielBestimmen is null ? default : EventCallback.Factory.Create(this, PeakZielBestimmen))"
+                               Verweigert="@(EventCallback.Factory.Create(this, PeakZielVerweigert))"
+                               VorschlagText="@Resource.FLOTTE_PEAK_BTN_VORSCHLAG"
+                               BestimmenText="@Resource.FLOTTE_PEAK_BTN_BESTIMMEN"
+                               GesperrtText="@Resource.FLOTTE_PEAK_GESPERRT"
+                               NetzladungErlaubtText="@Resource.FLOTTE_PEAK_NETZLADUNG_JA"
+                               NetzladungVerbotenText="@Resource.FLOTTE_PEAK_NETZLADUNG_NEIN" />
+            }
+            else
+            {
+                <EinzelspeicherBetrieb Wert="@_eingaben" Geaendert="Geaendert" Aktiv="@(!_laeuft)"
+                                       Quellen="@Leistungspreisquellen"
+                                       LeistungspreisSchreiben="@(Dienste?.LeistungspreisSchreiben is null ? default
+                                           : EventCallback.Factory.Create<double>(this, Dienste.LeistungspreisSchreiben))" />
+            }
+        }
+        else if (_schritt == AuslegungSchritt.Ergebnis)
+        {
+            @if (_modus == AuslegungModus.Flotte)
+            {
+                @if (_flottenErgebnis is null)
+                {
+                    <p>@Resource.FLOTTE_DLG_KEIN_VERGLEICH</p>
+                }
+                else
+                {
+                    @* DAS DIAGNOSEBANNER STEHT UEBER DEN KACHELN (Konzept 2.2 Punkt 2):
+                       Wer die Kacheln liest, bevor er weiss, dass die Flotte nichts
+                       getan hat, liest zwoelf Nullen als Ergebnis. *@
+                    <FlottenDiagnosebanner Diagnose="@_flottenErgebnis.Studie?.Variante?.Diagnose"
+                                           Hinweise="@_flottenErgebnis.Pruefhinweise"
+                                           NetzladungSchonErlaubt="@Flotte.Optionen.NetzladungErlaubt"
+                                           Gesperrt="@_laeuft"
+                                           PeakZielBestimmen="@(Dienste?.PeakZielBestimmen is null ? default
+                                               : EventCallback.Factory.Create(this, PeakZielBestimmen))"
+                                           NetzladungErlauben="@(EventCallback.Factory.Create(this, NetzladungErlauben))"
+                                           ZurBetriebsfuehrung="@(EventCallback.Factory.Create(this, ZurBetriebsfuehrung))"
+                                           ArbeitslosText="@ArbeitslosText" HinweiseText="@HinweiseText"
+                                           PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
+                                           BetriebsfuehrungText="@ZuBetriebText" />
+
+                    @if (Auslegung.FlottenGroessenOptimieren)
+                    {
+                        @* P4: SpeicherFlottenGroessenAnsicht (#193) *@
+                    }
+
+                    <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
+                                                    Csv="@(Dienste?.Csv is null ? default
+                                                           : EventCallback.Factory.Create<string>(this, CsvSchreiben))"
+                                                    BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
+
+                    <div class="epos-simerg-fuss">
+                        @if (Dienste?.ProjektflotteAktivieren is not null
+                             && _flottenErgebnis.Studie?.Variante.Zulaessig == true
+                             && _flottenErgebnis.Konfiguration.Einheiten.Count > 0)
+                        {
+                            <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
+                                    @onclick="ProjektflotteUebernehmen">@Resource.FLOTTE_DLG_BTN_PROJEKT_AN</button>
+                        }
+                        @if (_flottenErgebnis.Auslegung?.BesteKonfiguration is not null
+                             && !_flottenErgebnis.Auslegung.NullvarianteGewonnen)
+                        {
+                            <button type="button" class="epos-knopf" disabled="@(_veraltet || _laeuft)"
+                                    @onclick="BesteFlotteUebernehmen">@Resource.FLOTTE_DLG_BTN_BESTE</button>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                @if (_einzelErgebnis is null)
+                {
+                    <p>@Resource.OPT_MSG_KEIN_ERGEBNIS</p>
+                }
+                else
+                {
+                    <EinzelspeicherErgebnis Ergebnis="@_einzelErgebnis" Veraltet="@_veraltet" Gesperrt="@_laeuft"
+                                            Gelaufen="@_gelaufen" Betriebsbild="@Dienste?.Betriebsbild"
+                                            Uebernehmen="@(Dienste?.AuslegungUebernehmen is null ? default
+                                                : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, AuslegungUebernehmen))"
+                                            Csv="@(Dienste?.Csv is null ? default
+                                                   : EventCallback.Factory.Create<string>(this, CsvSchreiben))" />
+                }
+            }
+        }
+    </div>
+
+    @* ------------------------------------------------------ Ueberlagerungen *@
+    @if (_csvDatei is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@_csvDatei.Dateiname" Zusatzklasse="epos-ueberlagerung--breit"
+                       Geschlossen="CsvSchliessen">
+            <KindInhalt>
+                <SpeicherFlottenCsvDialog Datei="@_csvDatei" Prognosen="@_csvPrognosen"
+                                          Optionen="@(_csvPrognosen ? Auslegung.FlottenPrognoseCsvOptionen
+                                                                    : Auslegung.FlottenJahresCsvOptionen)"
+                                          PrognosenUebernommen="PrognosenUebernehmen"
+                                          JahresdatenUebernommen="JahresdatenUebernehmen"
+                                          Geschlossen="CsvSchliessen" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_prognosenOffen)
+    {
+        <Ueberlagerung Offen="true" Titel="@PrognosenTitelText" Zusatzklasse="epos-ueberlagerung--breit"
+                       Geschlossen="PrognosenSchliessen">
+            <KindInhalt>
+                <div class="epos-flotte-prognosen">
+                    <p>@Resource.FLOTTE_DLG_PROG_IDEALWISSEN</p>
+                    <p>@Resource.FLOTTE_DLG_PROG_ARCHIV</p>
+                    <button type="button" class="epos-knopf" disabled="@(_laeuft || Dienste?.DateiWaehlen is null)"
+                            @onclick="@(() => CsvOeffnen(true))">@Resource.FLOTTE_DLG_BTN_PROGNOSE_CSV</button>
+                    <p>@string.Format(Kultur, Resource.FLOTTE_DLG_PROG_SNAPSHOTS,
+                            Auslegung.FlottenPrognoseDatei, Auslegung.FlottenPrognosen.Count)</p>
+                    <p>@Resource.FLOTTE_DLG_PROG_JAHRE</p>
+                    <button type="button" class="epos-knopf" disabled="@(_laeuft || Dienste?.DateiWaehlen is null)"
+                            @onclick="@(() => CsvOeffnen(false))">@Resource.FLOTTE_DLG_BTN_JAHRE_CSV</button>
+                    <p>@string.Format(Kultur, Resource.FLOTTE_DLG_PROG_JAHRESREIHEN,
+                            Auslegung.FlottenJahresdatenDatei, Auslegung.FlottenProjektjahre.Count)</p>
+                    @if (Auslegung.FlottenPrognosen.Count > 0)
+                    {
+                        <div class="epos-raster-huelle">
+                            <table class="epos-tabelle">
+                                <thead><tr>
+                                    <th>@Resource.FLOTTE_DLG_PROG_SP_SNAPSHOT</th>
+                                    <th>@Resource.FLOTTE_DLG_PROG_SP_BEKANNT</th>
+                                    <th>@Resource.FLOTTE_DLG_PROG_SP_ENTSCHEIDUNG</th>
+                                    <th>@Resource.FLOTTE_DLG_PROG_SP_INTERVALLE</th>
+                                </tr></thead>
+                                <tbody>
+                                    @foreach (FlottenPrognoseSnapshot p in Auslegung.FlottenPrognosen.Take(20))
+                                    {
+                                        <tr>
+                                            <td>@p.Id</td>
+                                            <td>@p.BekanntSeit.ToString("u")</td>
+                                            <td>@p.Entscheidungszeitpunkt.ToString("u")</td>
+                                            <td>@p.Intervalle.Count</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @* Die RUECKFRAGE beim Verlassen (Muster 62b-E-1): Speichern / Verwerfen /
+       Bleiben; Esc heisst „Bleiben", der vorsichtigste der drei. OHNE Aenderung
+       gibt es keine Rueckfrage. *@
+    <Rueckfrage Offen="@_frageOffen" TitelText="@VerlassenTitelText" Frage="@VerlassenFrageText"
+                MitAbbrechen="true" JaText="@SpeichernText" NeinText="@VerwerfenText"
+                AbbrechenText="@BleibenText" Beantwortet="VerlassenBeantwortet" />
+
+    @* Die Rueckfrage nach dem bestimmten Peak-Ziel (SD-Q3). *@
+    <Rueckfrage Offen="@(_peakErgebnis is not null)" TitelText="@PeakTitelText" Frage="@PeakFrageText"
+                Beantwortet="PeakBeantwortet" />
+</div>
+
+@code {
+    private static CultureInfo Kultur => CultureInfo.CurrentCulture;
+
+    // =====================================================================
+    //  Parameter
+    // =====================================================================
+
+    /// <summary>Die Datenseite; ohne sie zeigt die Seite eine leere Vorbelegung.</summary>
+    [Parameter] public StromspeicherAuslegungDienste? Dienste { get; set; }
+
+    /// <summary>Die Seite möchte verlassen werden („← zurück").</summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>
+    /// Ist ein Fahrplan-Löser da? <c>null</c> = die Auskunft des Kerns fragen
+    /// (<see cref="FlottenPlanerLage.Verfuegbar"/>) — der Betriebsfall.
+    /// </summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    /// <summary>Projekt und Variante in einer Zeile; leer = keine Angabe.</summary>
+    [Parameter] public string ProjektText { get; set; } = "";
+
+    /// <summary>
+    /// Die ANZEIGETEXTE kommen unmittelbar aus <c>MyResource</c> — dasselbe Muster,
+    /// das #184 fuer die fuenf Flottenbausteine eingefuehrt hat. Ein Bündel aus
+    /// dreissig <c>[Parameter] string</c> haette die Fachparameter der Seite zwischen
+    /// Knopfbeschriftungen versteckt (Hausregel EPOS.UI/CLAUDE.md).
+    /// </summary>
+    private static string TitelText => Resource.FLOTTE_SEITE_TITEL;
+    private static string ZurueckText => Resource.FLOTTE_SEITE_ZURUECK;
+    private static string ModusText => Resource.FLOTTE_SEITE_MODUS;
+    private static string ModusFlotteText => Resource.FLOTTE_SEITE_MODUS_FLOTTE;
+    private static string ModusEinzelText => Resource.FLOTTE_SEITE_MODUS_EINZEL;
+    private static string AblaufText => Resource.FLOTTE_SEITE_ABLAUF;
+    private static string VeraltetText => Resource.FLOTTE_SEITE_VERALTET;
+    private static string Schritt1Text => Resource.FLOTTE_SEITE_SCHRITT1;
+    private static string Schritt1EinzelText => Resource.FLOTTE_SEITE_SCHRITT1_EINZEL;
+    private static string Schritt2Text => Resource.FLOTTE_SEITE_SCHRITT2;
+    private static string Schritt3Text => Resource.FLOTTE_SEITE_SCHRITT3;
+    private static string Schritt5Text => Resource.FLOTTE_SEITE_SCHRITT5;
+    private static string RechnenFlotteText => Resource.FLOTTE_SEITE_BTN_FLOTTE;
+    private static string RechnenGroessenText => Resource.FLOTTE_SEITE_BTN_GROESSEN;
+    private static string RechnenEinzelText => Resource.FLOTTE_SEITE_BTN_EINZEL;
+    private static string ErgebnisGesperrtText => Resource.FLOTTE_SEITE_ERGEBNIS_GESPERRT;
+    private static string KeinLaufText => Resource.FLOTTE_SEITE_KEIN_LAUF;
+    private static string LaufStartenText => Resource.FLOTTE_SEITE_BTN_LAUF;
+    private static string PrognosenText => Resource.FLOTTE_SEITE_BTN_PROGNOSEN;
+    private static string PrognosenTitelText => Resource.FLOTTE_SEITE_PROGNOSEN_TITEL;
+    private static string ArbeitslosText => Resource.FLOTTE_BANNER_ARBEITSLOS;
+    private static string HinweiseText => Resource.FLOTTE_BANNER_HINWEISE;
+    private static string PeakBestimmenText => Resource.FLOTTE_BANNER_BTN_PEAKZIEL;
+    private static string NetzladungText => Resource.FLOTTE_BANNER_BTN_NETZLADUNG;
+    private static string ZuBetriebText => Resource.FLOTTE_BANNER_BTN_BETRIEB;
+    private static string PeakTitelText => Resource.FLOTTE_PEAK_TITEL;
+    private static string PeakFrageFormat => Resource.FLOTTE_PEAK_FRAGE;
+    private static string PeakGesperrtText => Resource.FLOTTE_PEAK_GESPERRT;
+    private static string VerlassenTitelText => Resource.FLOTTE_SEITE_VERLASSEN_TITEL;
+    private static string VerlassenFrageText => Resource.FLOTTE_SEITE_VERLASSEN_FRAGE;
+    private static string SpeichernText => Resource.FLOTTE_SEITE_BTN_SPEICHERN;
+    private static string VerwerfenText => Resource.FLOTTE_SEITE_BTN_VERWERFEN;
+    private static string BleibenText => Resource.FLOTTE_SEITE_BTN_BLEIBEN;
+
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpeicherOptimierung.btn_Help";
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    private AuslegungModus _modus = AuslegungModus.Flotte;
+    private string _schritt = AuslegungSchritt.Speicher;
+    private SpeicherOptimierungVorgaben _vorgaben = new();
+    private SpeicherOptimierungEingaben _eingaben = new();
+    private SpeicherFlottenErgebnis? _flottenErgebnis;
+    private SpeicherOptimierungErgebnis? _einzelErgebnis;
+    private OptimiererStrategie _gelaufen = OptimiererStrategie.Dauernutzung;
+    private IReadOnlyList<FlottenHinweis> _vorpruefung = Array.Empty<FlottenHinweis>();
+    private FlottenPeakZielVorschlag? _peakVorschlag;
+    private FlottenPeakZielErgebnis? _peakErgebnis;
+    private bool _laeuft, _veraltet, _projektAktiv, _ungespeichert, _prognosenOffen;
+    private double? _anteil;
+    private string _fortschritt = "", _fehler = "", _meldung = "", _eingabefehler = "";
+    private bool _meldungErfolg;
+    private SpeicherImportDatei? _csvDatei;
+    private bool _csvPrognosen;
+    private bool _frageOffen;
+    private TaskCompletionSource<bool?>? _frageWartet;
+
+    /// <summary>Der stehende Schritt (Prüfhilfe).</summary>
+    public string Schritt => _schritt;
+
+    /// <summary>Der stehende Modus (Prüfhilfe).</summary>
+    public AuslegungModus Modus => _modus;
+
+    /// <summary>Der Arbeitsstand (Prüfhilfe).</summary>
+    public SpeicherOptimierungEingaben Eingaben => _eingaben;
+
+    /// <summary>Das Ergebnis des letzten Flottenlaufs (Prüfhilfe).</summary>
+    public SpeicherFlottenErgebnis? Flottenergebnis => _flottenErgebnis;
+
+    /// <summary>Das Ergebnis des letzten Rasterlaufs (Prüfhilfe).</summary>
+    public SpeicherOptimierungErgebnis? Einzelergebnis => _einzelErgebnis;
+
+    /// <summary>Läuft gerade eine Rechnung? (Prüfhilfe)</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>Die Hinweise der Vorprüfung (Prüfhilfe).</summary>
+    public IReadOnlyList<FlottenHinweis> Vorpruefung => _vorpruefung;
+
+    /// <summary>Ist der Ergebnisschritt veraltet? (Prüfhilfe)</summary>
+    public bool Veraltet => _veraltet;
+
+    /// <summary>Gibt es ungespeicherte Eingaben? Der Wirt fragt danach, bevor er wechselt.</summary>
+    public bool Ungespeichert => _ungespeichert;
+
+    private SpeicherAuslegungKonfiguration Auslegung => _eingaben.Auslegung ??= new();
+    private FlottenStudieKonfiguration Flotte => Auslegung.Flotte ??= new();
+    private bool ErgebnisDa => _modus == AuslegungModus.Flotte ? _flottenErgebnis is not null
+                                                               : _einzelErgebnis is { Erfolg: true };
+
+    private IReadOnlyList<SpeicherOptimierungLeistungspreisQuelle> Leistungspreisquellen =>
+        _vorgaben.Leistungspreisquellen ?? Array.Empty<SpeicherOptimierungLeistungspreisQuelle>();
+
+    /// <summary>Der Speicherweg des Auslegungseditors; <c>null</c> = kein Knopf.</summary>
+    private Func<SpeicherOptimierungEingaben, Task<string>>? SpeicherWeg
+        => Dienste?.EinstellungenSpeichern is null ? null : EinstellungenSichern;
+
+    /// <summary>Der Profilweg des Auslegungseditors; <c>null</c> = kein Knopf.</summary>
+    private Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>>? ProfilWeg
+        => Dienste?.ProfilSpeichern is null ? null : ProfilSichern;
+
+    private IReadOnlyList<(int Id, string Text)> Modi => new[]
+    {
+        ((int)AuslegungModus.Flotte, ModusFlotteText),
+        ((int)AuslegungModus.Einzelspeicher, ModusEinzelText)
+    };
+
+    // =====================================================================
+    //  Die Ablaufleiste
+    // =====================================================================
+
+    private IReadOnlyList<Ablaufeintrag> Vorne => new[]
+    {
+        new Ablaufeintrag(AuslegungSchritt.Speicher,
+            _modus == AuslegungModus.Flotte ? Schritt1Text : Schritt1EinzelText, true, false, ""),
+        new Ablaufeintrag(AuslegungSchritt.Daten, Schritt2Text, true, false, ""),
+        new Ablaufeintrag(AuslegungSchritt.Betrieb, Schritt3Text, true, false, "")
+    };
+
+    private IReadOnlyList<Ablaufeintrag> Hinten => new[]
+    {
+        new Ablaufeintrag(AuslegungSchritt.Ergebnis, Schritt5Text, ErgebnisDa, _veraltet, ErgebnisGesperrtText)
+    };
+
+    private string RechnenText => _modus == AuslegungModus.Einzelspeicher
+        ? RechnenEinzelText
+        : Auslegung.FlottenGroessenOptimieren ? RechnenGroessenText : RechnenFlotteText;
+
+    private bool RechnenFrei => !_laeuft && Rechendelegat is not null && Eingabefehler.Length == 0;
+
+    /// <summary>
+    /// Der Eingabefehler, der den Lauf SPERRT. Bei der Flotte laufend gerechnet, beim
+    /// Einzelspeicher erst beim Start gesetzt.
+    /// </summary>
+    private string Eingabefehler => _modus == AuslegungModus.Flotte
+        ? FlotteEingabenPruefen()
+        : _eingabefehler;
+
+    private object? Rechendelegat => _modus == AuslegungModus.Flotte
+        ? (object?)Dienste?.FlotteRechnen
+        : Dienste?.EinzelRechnen;
+
+    private void SchrittGewaehlt(string schluessel)
+    {
+        _schritt = schluessel;
+        _eingabefehler = "";
+        if (schluessel == AuslegungSchritt.Betrieb) PeakVorschlagHolen();
+    }
+
+    private void SchrittVerweigert(string schluessel)
+    {
+        if (schluessel == AuslegungSchritt.Ergebnis) _meldungErfolg = false;
+        _meldung = ErgebnisGesperrtText;
+    }
+
+    private void ModusGewaehlt(int? wert)
+    {
+        if (!wert.HasValue || _laeuft) return;
+        _modus = wert.Value == (int)AuslegungModus.Einzelspeicher
+            ? AuslegungModus.Einzelspeicher : AuslegungModus.Flotte;
+
+        // Die zwei Pfade rechnen getrennt (SD-Q2): Ein Ergebnis des einen sagt ueber
+        // den anderen nichts, und der Ergebnisschritt bleibt deshalb zu, bis dieser
+        // Modus selbst gerechnet hat.
+        if (_schritt == AuslegungSchritt.Ergebnis && !ErgebnisDa) _schritt = AuslegungSchritt.Speicher;
+        _meldung = "";
+        _fehler = "";
+    }
+
+    // =====================================================================
+    //  Laden
+    // =====================================================================
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        try
+        {
+            _vorgaben = Dienste?.Vorgaben?.Invoke() ?? new SpeicherOptimierungVorgaben();
+            _eingaben = _vorgaben.Eingaben.Kopie();
+            _projektAktiv = Dienste?.ProjektflotteAktiv?.Invoke() == true;
+            Vorpruefen();
+            PeakVorschlagHolen();
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    // =====================================================================
+    //  Eingaben
+    // =====================================================================
+
+    /// <summary>
+    /// Etwas wurde geschrieben. <b>Der Zeichenlauf steht hier ausdrücklich</b>: Die
+    /// Blätter melden über gewöhnliche <c>Func</c>-Delegaten zurück, nicht über
+    /// <c>EventCallback</c> — und dann zeichnet Blazor den Wirt NICHT von selbst neu.
+    /// Ohne ihn bliebe ein alter Fehlertext stehen, und der Auslegungseditor bekäme
+    /// seinen aufgefrischten Stand nie zu sehen.
+    /// </summary>
+    private void Geaendert()
+    {
+        _fehler = "";
+        _meldung = "";
+        _ungespeichert = true;
+        if (ErgebnisDa) _veraltet = true;
+        Vorpruefen();
+        StateHasChanged();
+    }
+
+    private void FlotteGeaendert(FlottenStudieKonfiguration f)
+    {
+        Auslegung.Flotte = SpeicherAuslegungKopie.Von(f);
+        Geaendert();
+    }
+
+    private void EingabenGeaendert(SpeicherOptimierungEingaben e)
+    {
+        _eingaben = e.Kopie();
+        Geaendert();
+    }
+
+    /// <summary>
+    /// Der Betriebseditor hat geschrieben. <b>Wechselt das BETRIEBSZIEL, wechselt die
+    /// Vorgabe „Netzladung erlaubt" mit</b> (Anwenderentscheid SD‑Q5): Die
+    /// Lastspitzenkappung braucht sie (Spezifikation 5.1: „Die Wiederaufladung nutzt
+    /// freie Anschlussleistung unter H"), der PV-Eigenverbrauch ausdrücklich nicht.
+    /// Der Schalter bleibt änderbar, und ein GESPEICHERTER Stand wird nicht angefasst —
+    /// die Vorgabe greift nur bei einer Änderung im Feld.
+    /// </summary>
+    private void BetriebsoptionenGeaendert(FlottenSimulationOptionen optionen)
+    {
+        FlottenBetriebsziel vorher = Flotte.Optionen.Betriebsziel;
+        Flotte.Optionen = SpeicherAuslegungKopie.Von(optionen);
+        if (Flotte.Optionen.Betriebsziel != vorher)
+            Flotte.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(Flotte.Optionen.Betriebsziel);
+        Geaendert();
+        PeakVorschlagHolen();
+    }
+
+    private void SuchlaufSetzen(bool wert)
+    {
+        Auslegung.FlottenGroessenOptimieren = wert;
+        Geaendert();
+    }
+
+    /// <summary>Die Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.</summary>
+    private void Vorpruefen()
+    {
+        if (_modus != AuslegungModus.Flotte || Dienste?.Vorpruefen is null)
+        {
+            _vorpruefung = Array.Empty<FlottenHinweis>();
+            return;
+        }
+        try { _vorpruefung = Dienste.Vorpruefen(_eingaben) ?? (IReadOnlyList<FlottenHinweis>)Array.Empty<FlottenHinweis>(); }
+        catch (Exception) { _vorpruefung = Array.Empty<FlottenHinweis>(); }
+    }
+
+    private void PeakVorschlagHolen()
+    {
+        if (_modus != AuslegungModus.Flotte || Dienste?.PeakZielVorschlag is null) { _peakVorschlag = null; return; }
+        try { _peakVorschlag = Dienste.PeakZielVorschlag(_eingaben); }
+        catch (Exception) { _peakVorschlag = null; }
+    }
+
+    // =====================================================================
+    //  Speichern
+    // =====================================================================
+
+    private async Task<string> EinstellungenSichern(SpeicherOptimierungEingaben e)
+    {
+        if (Dienste?.EinstellungenSpeichern is null) return Resource.FLOTTE_DLG_MSG_KEINE_ABLAGE;
+        _fehler = "";
+        await InvokeAsync(StateHasChanged);
+        string fehler = await Dienste.EinstellungenSpeichern(e.Kopie()) ?? "";
+        if (fehler.Length == 0) _ungespeichert = false;
+        return fehler;
+    }
+
+    private async Task<SpeicherOptimierungVorgaben> ProfilSichern(SpeicherOptimierungEingaben e, string name)
+    {
+        if (Dienste?.ProfilSpeichern is null)
+            throw new InvalidOperationException(Resource.FLOTTE_DLG_MSG_KEINE_PROFILABLAGE);
+        _fehler = "";
+        await InvokeAsync(StateHasChanged);
+        _vorgaben = await Dienste.ProfilSpeichern(e.Kopie(), name);
+        return _vorgaben;
+    }
+
+    // =====================================================================
+    //  Der Lauf
+    // =====================================================================
+
+    private void Melden(double? anteil, string text)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _anteil = anteil;
+            _fortschritt = text ?? "";
+            StateHasChanged();
+        });
+    }
+
+    private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
+
+    private async Task SimulationslaufStarten()
+    {
+        if (_laeuft || Dienste?.Simulationslauf is null) return;
+        _laeuft = true; _fehler = ""; _meldung = ""; _anteil = null; _fortschritt = LaufStartenText;
+        try
+        {
+            Rueckmeldung antwort = await Dienste.Simulationslauf(Melden);
+            if (antwort is { Erfolg: false } && !string.IsNullOrEmpty(antwort.Text)) _fehler = antwort.Text;
+            else
+            {
+                // Der frische Lauf traegt neue Zeitreihen: Vorbelegung, Vorpruefung und
+                // Peak-Ziel-Vorschlag haengen daran.
+                _vorgaben = Dienste.Vorgaben?.Invoke() ?? _vorgaben;
+                Vorpruefen();
+                PeakVorschlagHolen();
+            }
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+        finally { _laeuft = false; }
+    }
+
+    private async Task Starten()
+    {
+        if (_laeuft) return;
+        _eingabefehler = "";
+        _meldung = "";
+
+        if (_modus == AuslegungModus.Flotte) await FlotteStarten();
+        else await EinzelStarten();
+    }
+
+    private async Task FlotteStarten()
+    {
+        if (Dienste?.FlotteRechnen is null) return;
+
+        if (FlotteEingabenPruefen().Length > 0) return;
+
+        _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = Resource.FLOTTE_DLG_STATUS_PRUEFEN;
+        try
+        {
+            SpeicherFlottenErgebnis e = await Dienste.FlotteRechnen(_eingaben.Kopie(), Melden);
+            if (!e.Erfolg)
+            {
+                _fehler = e.Abgebrochen ? Resource.FLOTTE_DLG_MSG_ABGEBROCHEN : e.Meldung;
+            }
+            else
+            {
+                _flottenErgebnis = e;
+                _veraltet = false;
+                _ungespeichert = false;
+                _schritt = AuslegungSchritt.Ergebnis;
+            }
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+        finally { _laeuft = false; }
+    }
+
+    private async Task EinzelStarten()
+    {
+        if (Dienste?.EinzelRechnen is null) return;
+
+        IReadOnlyList<string> maengel = SpeicherOptimierungCtrl.Pruefe(_eingaben);
+        if (maengel.Count > 0)
+        {
+            // Eingabefehler SPERREN den Rasterlauf - er beginnt gar nicht erst.
+            _eingabefehler = string.Join(Environment.NewLine, maengel);
+            _einzelErgebnis = null;
+            return;
+        }
+
+        _laeuft = true; _fehler = ""; _anteil = 0.0;
+        _fortschritt = string.Format(Kultur, Resource.OPT_STATUS_PUNKT, 0,
+            SpeicherOptimierungCtrl.Punktzahl(_eingaben));
+        try
+        {
+            SpeicherOptimierungErgebnis antwort = await Dienste.EinzelRechnen(_eingaben.Kopie(), Melden);
+            if (antwort is null || !antwort.Erfolg)
+            {
+                _einzelErgebnis = null;
+                _fehler = antwort?.Meldung ?? Resource.OPT_MSG_KEIN_ERGEBNIS;
+            }
+            else
+            {
+                _einzelErgebnis = antwort;
+                _gelaufen = _eingaben.Strategie;
+                _veraltet = false;
+                _ungespeichert = false;
+                _schritt = AuslegungSchritt.Ergebnis;
+            }
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+        finally { _laeuft = false; }
+    }
+
+    /// <summary>
+    /// Die Eingabeprüfung des Flottenpfads — wörtlich die des abgelösten Dialogs.
+    /// </summary>
+    private string FlotteEingabenPruefen()
+    {
+        var fehler = new List<string>();
+        bool planerFehlt = !(PlanerVerfuegbar ?? FlottenPlanerLage.Verfuegbar);
+
+        // Ohne Fahrplan-Loeser bleibt der Rechenknopf fuer planende Ziele gesperrt
+        // (Auftrag #170c). Geprueft wird auch die Zielliste der Auslegung: sie variiert
+        // ueber Betriebsziele und braeuchte den Planer genauso.
+        if (planerFehlt && (FlottenPlanerLage.IstPlanend(Flotte.Optionen.Betriebsziel) ||
+                            Flotte.Auslegung.Betriebsziele.Any(FlottenPlanerLage.IstPlanend)))
+            fehler.Add(Resource.FLOTTE_PLANER_LAUF_GESPERRT);
+
+        if (Flotte.Wirtschaftlichkeit.ProjektjahreBeiWiederholung <= 0)
+            fehler.Add(Resource.FLOTTE_DLG_PRUEF_LAUFZEIT);
+
+        if (Flotte.Einheiten.Count > 0 && Flotte.Optionen.Endbedingung == FlottenEndbedingung.KeineVorgabe &&
+            Flotte.Optionen.EnergieAusgleichEuroProKWh is null)
+            fehler.Add(Resource.FLOTTE_DLG_PRUEF_AUSGLEICH);
+
+        foreach (FlottenEinheit einheit in Flotte.Einheiten)
+        {
+            if (!double.IsFinite(einheit.SocMin) || !double.IsFinite(einheit.SocStart) ||
+                !double.IsFinite(einheit.SocMax) || einheit.SocMin < 0 ||
+                einheit.SocMin > einheit.SocStart || einheit.SocStart > einheit.SocMax || einheit.SocMax > 1)
+                fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_SOC,
+                    string.IsNullOrWhiteSpace(einheit.Name) ? einheit.Id : einheit.Name));
+        }
+
+        if (Auslegung.FlottenGroessenOptimieren)
+        {
+            foreach (FlottenAuslegungsAchse achse in Flotte.Auslegung.Achsen.Where(x => x.Aktiv))
+            {
+                string name = string.IsNullOrWhiteSpace(achse.Vorlage.Name) ? achse.Vorlage.Id : achse.Vorlage.Name;
+                if (achse.AnzahlVon < 0 || achse.AnzahlBis < achse.AnzahlVon)
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_ANZAHL, name));
+                if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate &&
+                    UngueltigerBereich(achse.KapazitaetVonKWh, achse.KapazitaetBisKWh, achse.KapazitaetSchrittKWh))
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_KAPAZITAET, name));
+                if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate &&
+                    UngueltigerBereich(achse.LeistungVonKw, achse.LeistungBisKw, achse.LeistungSchrittKw))
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_LEISTUNG, name));
+                if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung &&
+                    UngueltigerBereich(achse.CRateVon, achse.CRateBis, achse.CRateSchritt))
+                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_CRATE, name));
+            }
+        }
+
+        return string.Join(" ", fehler);
+    }
+
+    private static bool UngueltigerBereich(double von, double bis, double schritt) =>
+        !double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von ||
+        (bis > von && (!double.IsFinite(schritt) || schritt <= 0));
+
+    // =====================================================================
+    //  Das Peak-Ziel (SD-Q3)
+    // =====================================================================
+
+    private void PeakVorschlagUebernehmen()
+    {
+        if (_peakVorschlag is null) return;
+        Flotte.Optionen.WirtschaftlicherPeakZielwertKw = _peakVorschlag.PeakZielKw;
+        Geaendert();
+    }
+
+    private void PeakZielVerweigert()
+    {
+        _meldungErfolg = false;
+        _meldung = PeakGesperrtText;
+    }
+
+    private async Task PeakZielBestimmen()
+    {
+        if (_laeuft || Dienste?.PeakZielBestimmen is null) return;
+
+        // Die Ausnahme des Kerns wird NICHT gezeigt, sondern vorher geprueft: Ein
+        // planendes Ziel braeuchte je Lauf den Fahrplaner (Auftrag #192, Punkt 5).
+        if (FlottenPlanerLage.IstPlanend(Flotte.Optionen.Betriebsziel)) { PeakZielVerweigert(); return; }
+
+        _laeuft = true; _fehler = ""; _meldung = ""; _anteil = null; _fortschritt = PeakTitelText;
+        try
+        {
+            FlottenPeakZielErgebnis ergebnis = await Dienste.PeakZielBestimmen(_eingaben.Kopie(), Melden);
+            _peakErgebnis = ergebnis;
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+        finally { _laeuft = false; }
+    }
+
+    private string PeakFrageText => _peakErgebnis is null ? "" : string.Format(Kultur, PeakFrageFormat,
+        _peakErgebnis.PeakZielKw.ToString("0.#", Kultur),
+        _peakErgebnis.VerbleibendeSpitzeKw.ToString("0.#", Kultur),
+        _peakErgebnis.Laeufe.ToString(Kultur));
+
+    private void PeakBeantwortet(bool? antwort)
+    {
+        FlottenPeakZielErgebnis? ergebnis = _peakErgebnis;
+        _peakErgebnis = null;
+        if (antwort != true || ergebnis is null) return;
+
+        Flotte.Optionen.WirtschaftlicherPeakZielwertKw = ergebnis.PeakZielKw;
+        _schritt = AuslegungSchritt.Betrieb;
+        Geaendert();
+
+        // Die Herleitung steht NACH Geaendert(), weil das die Meldezeile raeumt: Der
+        // Anwender soll lesen, wie der uebernommene Wert zustande kam.
+        _meldungErfolg = true;
+        _meldung = ergebnis.Herleitung;
+    }
+
+    // =====================================================================
+    //  Die Abhilfeknoepfe des Diagnosebanners
+    // =====================================================================
+
+    private void NetzladungErlauben()
+    {
+        Flotte.Optionen.NetzladungErlaubt = true;
+        Geaendert();
+    }
+
+    private void ZurBetriebsfuehrung()
+    {
+        _schritt = AuslegungSchritt.Betrieb;
+        PeakVorschlagHolen();
+    }
+
+    // =====================================================================
+    //  Projektflotte, Bestpunkt, CSV
+    // =====================================================================
+
+    private async Task ProjektflotteUebernehmen()
+    {
+        if (_veraltet || _flottenErgebnis is null || Dienste?.ProjektflotteAktivieren is null) return;
+        try
+        {
+            string fehler = await Dienste.ProjektflotteAktivieren(_flottenErgebnis);
+            if (fehler.Length > 0) { _fehler = fehler; return; }
+            _projektAktiv = true;
+            _meldungErfolg = true;
+            _meldung = Resource.FLOTTE_DLG_MSG_AKTIVIERT;
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    private async Task ProjektflotteDeaktivieren()
+    {
+        if (Dienste?.ProjektflotteDeaktivieren is null) return;
+        try
+        {
+            string fehler = await Dienste.ProjektflotteDeaktivieren();
+            if (fehler.Length > 0) { _fehler = fehler; return; }
+            _projektAktiv = false;
+            _meldungErfolg = true;
+            _meldung = Resource.FLOTTE_DLG_MSG_DEAKTIVIERT;
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    private async Task BesteFlotteUebernehmen()
+    {
+        if (_veraltet || _flottenErgebnis?.Auslegung?.BesteKonfiguration is null) return;
+
+        Auslegung.Flotte = SpeicherAuslegungKopie.Von(_flottenErgebnis.Auslegung.BesteKonfiguration);
+        Auslegung.Flotte.Auslegung.Achsen.Clear();
+        Auslegung.FlottenGroessenOptimieren = false;
+        Geaendert();
+        try
+        {
+            if (Dienste?.EinstellungenSpeichern is not null)
+            {
+                string fehler = await EinstellungenSichern(_eingaben);
+                if (fehler.Length > 0) { _fehler = fehler; return; }
+            }
+            _schritt = AuslegungSchritt.Speicher;
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    private void AuslegungUebernehmen((double Kwh, double Kw) auslegung)
+    {
+        if (Dienste?.AuslegungUebernehmen is null) return;
+        Rueckmeldung antwort = Dienste.AuslegungUebernehmen(auslegung.Kwh, auslegung.Kw);
+        _meldungErfolg = antwort.Erfolg;
+        _meldung = antwort.Text ?? "";
+    }
+
+    private async Task CsvSchreiben(string csv)
+    {
+        if (Dienste?.Csv is null) return;
+        Rueckmeldung antwort = await Dienste.Csv(csv);
+        _meldungErfolg = antwort.Erfolg;
+        _meldung = antwort.Text ?? "";
+    }
+
+    private void PrognosenOeffnen() => _prognosenOffen = true;
+
+    private void PrognosenSchliessen() => _prognosenOffen = false;
+
+    private async Task CsvOeffnen(bool prognosen)
+    {
+        if (Dienste?.DateiWaehlen is null) return;
+        try
+        {
+            SpeicherImportDatei datei = await Dienste.DateiWaehlen();
+            if (datei is null || datei.Inhalt.Length == 0) return;
+            _csvPrognosen = prognosen;
+            _csvDatei = datei;
+            _prognosenOffen = false;
+            _fehler = "";
+        }
+        catch (Exception ex) { _fehler = ex.Message; }
+    }
+
+    private void CsvSchliessen() => _csvDatei = null;
+
+    /// <summary>
+    /// Ein CSV-Import hat den Arbeitsstand VON AUSSEN geändert. Der Auslegungseditor
+    /// hält eine eigene Kopie und frischt sie nur auf, wenn sich die REFERENZ ändert
+    /// (<c>SpeicherAuslegungEditor.OnParametersSet</c>) — ohne einen neuen Stand
+    /// schriebe er beim nächsten „Einstellungen speichern" den alten zurück und der
+    /// eben eingelesene Dateiname wäre wieder weg.
+    /// </summary>
+    private void Uebernommen()
+    {
+        _eingaben = _eingaben.Kopie();
+        Geaendert();
+    }
+
+    private Task PrognosenUebernehmen(List<FlottenPrognoseSnapshot> snapshots, SpeicherFlottenCsvOptionen optionen)
+    {
+        Auslegung.FlottenPrognosen = snapshots;
+        Auslegung.FlottenPrognoseDatei = _csvDatei?.Dateiname ?? "";
+        Auslegung.FlottenPrognoseCsvOptionen = SpeicherAuslegungKopie.Von(optionen);
+        _csvDatei = null;
+        Uebernommen();
+        return Task.CompletedTask;
+    }
+
+    private Task JahresdatenUebernehmen(List<FlottenProjektjahr> jahre, SpeicherFlottenCsvOptionen optionen)
+    {
+        Auslegung.FlottenProjektjahre = jahre;
+        Auslegung.FlottenJahresdatenDatei = _csvDatei?.Dateiname ?? "";
+        Auslegung.FlottenJahresCsvOptionen = SpeicherAuslegungKopie.Von(optionen);
+        _csvDatei = null;
+        Uebernommen();
+        return Task.CompletedTask;
+    }
+
+    // =====================================================================
+    //  Verlassen (Muster 62b-E-1)
+    // =====================================================================
+
+    private async Task Verlassen()
+    {
+        if (await FrageVerlassen() == AssistentVerlassen.Bleiben) return;
+        await Geschlossen.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Fragt den Anwender, ob er die Ansicht verlassen will, und liefert den gewählten
+    /// Weg. <b>Ohne ungespeicherte Eingaben gibt es keine Rückfrage</b> (62b‑E‑1).
+    /// </summary>
+    /// <remarks>
+    /// Der Wirt ruft das, BEVOR er die Ansicht wechselt (<c>AppWurzel</c>) oder das
+    /// Programm schließt. Scheitert das Speichern, bleibt die Ansicht stehen und zeigt
+    /// ihre Meldung — die Antwort ist dann <see cref="AssistentVerlassen.Bleiben"/>.
+    /// </remarks>
+    public async Task<EPOS.UI.Seiten.Assistent.AssistentVerlassen> FrageVerlassen()
+    {
+        if (_frageOffen) return AssistentVerlassen.Bleiben;      // sie steht schon
+        if (!_ungespeichert) return AssistentVerlassen.Verwerfen;
+
+        _frageWartet = new TaskCompletionSource<bool?>();
+        _frageOffen = true;
+        await InvokeAsync(StateHasChanged);
+
+        bool? antwort = await _frageWartet.Task;
+        _frageWartet = null;
+        _frageOffen = false;
+
+        if (antwort is null) { await InvokeAsync(StateHasChanged); return AssistentVerlassen.Bleiben; }
+        if (antwort == false) { await InvokeAsync(StateHasChanged); return AssistentVerlassen.Verwerfen; }
+
+        string fehler = await EinstellungenSichern(_eingaben);
+        if (fehler.Length > 0)
+        {
+            _fehler = fehler;
+            await InvokeAsync(StateHasChanged);
+            return AssistentVerlassen.Bleiben;
+        }
+
+        await InvokeAsync(StateHasChanged);
+        return AssistentVerlassen.Gespeichert;
+    }
+
+    private void VerlassenBeantwortet(bool? antwort)
+    {
+        _frageOffen = false;
+        _frageWartet?.TrySetResult(antwort);
+    }
+}

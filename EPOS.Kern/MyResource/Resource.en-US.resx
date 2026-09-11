@@ -17813,4 +17813,142 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_GROESSEN_ARBEITSLOS_TITEL" xml:space="preserve">
     <value>This fleet neither charged nor discharged in the computed period; it only costs.</value>
   </data>
+  <data name="SPAUS_MSG_PROFILNAME_RESERVIERT" xml:space="preserve">
+    <value>Profile names starting with '@' are reserved for internal states.</value>
+  </data>
+  <data name="FLOTTE_SEITE_TITEL" xml:space="preserve">
+    <value>Battery storage design</value>
+  </data>
+  <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
+    <value>← back</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
+    <value>Fleet</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
+    <value>Single storage</value>
+  </data>
+  <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
+    <value>Design workflow</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERALTET" xml:space="preserve">
+    <value>out of date</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
+    <value>1 Storage</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
+    <value>1 Storage parameters</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
+    <value>2 Data &amp; costs</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT3" xml:space="preserve">
+    <value>3 Operating strategy</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT5" xml:space="preserve">
+    <value>5 Result</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
+    <value>4 Evaluate fleet</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
+    <value>4 Optimise sizes</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
+    <value>4 Optimise</value>
+  </data>
+  <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
+    <value>The result step opens once a run has been computed.</value>
+  </data>
+  <data name="FLOTTE_SEITE_KEIN_LAUF" xml:space="preserve">
+    <value>This project has no computed simulation run. The EPOS time series (load, generation, prices) come from such a run.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_LAUF" xml:space="preserve">
+    <value>Run simulation</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_PROGNOSEN" xml:space="preserve">
+    <value>Forecasts and project years…</value>
+  </data>
+  <data name="FLOTTE_SEITE_PROGNOSEN_TITEL" xml:space="preserve">
+    <value>Forecasts and project years</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERLASSEN_TITEL" xml:space="preserve">
+    <value>Unsaved entries</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERLASSEN_FRAGE" xml:space="preserve">
+    <value>The battery storage design has unsaved entries. Should they be saved?</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_BLEIBEN" xml:space="preserve">
+    <value>Stay</value>
+  </data>
+  <data name="FLOTTE_SEITE_PROJEKT" xml:space="preserve">
+    <value>Project “{0}”</value>
+  </data>
+  <data name="FLOTTE_BANNER_ARBEITSLOS" xml:space="preserve">
+    <value>The fleet neither charged nor discharged during the whole period.</value>
+  </data>
+  <data name="FLOTTE_BANNER_HINWEISE" xml:space="preserve">
+    <value>Notes on this run</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_PEAKZIEL" xml:space="preserve">
+    <value>Determine peak target…</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_NETZLADUNG" xml:space="preserve">
+    <value>Allow grid charging</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_BETRIEB" xml:space="preserve">
+    <value>Go to step 3 Operating strategy</value>
+  </data>
+  <data name="FLOTTE_PEAK_TITEL" xml:space="preserve">
+    <value>Determine peak target</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Apply proposal</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_BESTIMMEN" xml:space="preserve">
+    <value>Determine peak target…</value>
+  </data>
+  <data name="FLOTTE_PEAK_GESPERRT" xml:space="preserve">
+    <value>The peak target can only be determined for the reactive operating goals peak shaving and PV self-consumption; a scheduling goal would need the solver for every annual run.</value>
+  </data>
+  <data name="FLOTTE_PEAK_FRAGE" xml:space="preserve">
+    <value>Apply peak target {0} kW? (remaining peak {1} kW, {2} runs)</value>
+  </data>
+  <data name="FLOTTE_PEAK_LAUF" xml:space="preserve">
+    <value>Run {0} of {1}: peak target {2} kW, remaining peak {3} kW</value>
+  </data>
+  <data name="FLOTTE_PEAK_NETZLADUNG_JA" xml:space="preserve">
+    <value>Default for peak shaving: grid charging ALLOWED — recharging uses the connection capacity free below the peak target (specification 5.1). The switch stays editable.</value>
+  </data>
+  <data name="FLOTTE_PEAK_NETZLADUNG_NEIN" xml:space="preserve">
+    <value>Default for this operating goal: grid charging NOT allowed — the storage only takes up its own surplus. The switch stays editable.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_LAEUFT" xml:space="preserve">
+    <value>A storage computation is already running.</value>
+  </data>
+  <data name="FLOTTE_DLG_STATUS_VARIANTE" xml:space="preserve">
+    <value>Fleet variant {0} of {1}</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_TITEL" xml:space="preserve">
+    <value>Import time series or forecasts</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_NUR_CSV" xml:space="preserve">
+    <value>Please select a CSV file. JSON files are not imported.</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_FEHLT" xml:space="preserve">
+    <value>The selected file was not found.</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>The CSV file is larger than 20 MiB.</value>
+  </data>
 </root>

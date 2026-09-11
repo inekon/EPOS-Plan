@@ -1,0 +1,129 @@
+@* DAS DIAGNOSEBANNER der arbeitslosen Flotte (Konzept „Stromspeicher-Dialoge"
+   2.2 Punkt 2, Paket P3 / Auftrag #192).
+
+   DER BEFUND, DEN ES BEANTWORTET. Der Anwender schickte am 11.09.2026 zwei
+   Bildschirmfotos: „Mit Flotte" byte-gleich „Ohne Speicher", „Speicher gesamt"
+   flach auf 0, Netto-Cashflow = −Betrieb. Das ist EIN Befund — die Flotte hat im
+   ganzen Jahr weder geladen noch entladen —, und niemand sagte es. Der Simulator
+   zaehlte Lade- und Entladeenergie schon damals; gewertet hat es keiner.
+
+   SEIT P1 (#183) ZAEHLT ER AUCH DIE GRUENDE. FlottenDiagnose traegt je Intervall,
+   woran es lag: Last ueber dem Peak-Ziel, Ladedeckel 0 durch die Peak-Regel,
+   Ladedeckel 0 durch das Netzladeverbot, Entladeanforderung bei leerem Speicher.
+   FlottenPlausibilitaet.Gruende fasst sie in einem Satz zusammen — hier steht nur
+   die Anzeige.
+
+   DREI ABHILFEKNOEPFE, KEINE ERKLAERUNG OHNE AUSWEG. Ein Banner, das einen
+   Zustand meldet und den Anwender damit stehen laesst, ist eine halbe Auskunft.
+   „Peak-Ziel bestimmen…" faehrt die Bisektion aus P1, „Netzladung erlauben"
+   setzt die Option in Schritt 3, „Zu Schritt 3" fuehrt dorthin, wo beides steht.
+   Jeder Knopf erscheint nur MIT seinem Rueckruf („Kein Delegat ist kein Knopf").
+
+   ZWEI KLAENGE. Arbeitslos ist eine WARNUNG — das Ergebnis ist unbrauchbar. Nur
+   Hinweise sind ein HINWEIS: Der Lauf taugt, aber etwas ist zu beachten. Die
+   Regel steht in EPOS.UI/CLAUDE.md („ein Dauerbanner nur fuer einen Zustand, den
+   der Anwender beheben MUSS") — beide Faelle gehoeren dazu, und beide stehen im
+   ERGEBNIS, also dort, wo der Anwender ohnehin hinsieht. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+@if (Sichtbar)
+{
+    <section class="epos-flotte-diagnose @(Arbeitslos ? "epos-flotte-diagnose--warnung" : "epos-flotte-diagnose--hinweis")"
+             role="@(Arbeitslos ? "alert" : "status")" aria-labelledby="flotte-diagnose-titel">
+
+        <h3 id="flotte-diagnose-titel" class="epos-flotte-diagnose-titel">@Kopfzeile</h3>
+
+        @if (Arbeitslos && Gruende.Length > 0)
+        {
+            <p class="epos-flotte-diagnose-gruende">@Gruende</p>
+        }
+
+        @if (Hinweise.Count > 0)
+        {
+            <ul class="epos-flotte-diagnose-liste">
+                @foreach (FlottenHinweis hinweis in Hinweise)
+                {
+                    <li class="@(hinweis.Stufe == FlottenHinweisStufe.Warnung
+                                 ? "epos-flotte-diagnose-zeile--warnung" : null)">@hinweis.Text</li>
+                }
+            </ul>
+        }
+
+        <div class="epos-flotte-diagnose-aktionen">
+            @if (PeakZielBestimmen.HasDelegate)
+            {
+                <button type="button" class="epos-knopf" disabled="@Gesperrt"
+                        @onclick="PeakZielBestimmen">@PeakZielText</button>
+            }
+            @if (NetzladungErlauben.HasDelegate && !NetzladungSchonErlaubt)
+            {
+                <button type="button" class="epos-knopf" disabled="@Gesperrt"
+                        @onclick="NetzladungErlauben">@NetzladungText</button>
+            }
+            @if (ZurBetriebsfuehrung.HasDelegate)
+            {
+                <button type="button" class="epos-knopf" disabled="@Gesperrt"
+                        @onclick="ZurBetriebsfuehrung">@BetriebsfuehrungText</button>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    /// <summary>Die Diagnose des Laufs; <c>null</c> = keine.</summary>
+    [Parameter] public FlottenDiagnose? Diagnose { get; set; }
+
+    /// <summary>Die Prüfhinweise des Laufs (Stufe Warnung/Hinweis); nie <c>null</c>.</summary>
+    [Parameter] public IReadOnlyList<FlottenHinweis> Hinweise { get; set; } = Array.Empty<FlottenHinweis>();
+
+    /// <summary>Steht „Netzladung erlaubt" schon an? Dann fehlt der Knopf.</summary>
+    [Parameter] public bool NetzladungSchonErlaubt { get; set; }
+
+    /// <summary>Alle Knöpfe gesperrt (ein Lauf ist gerade unterwegs).</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>„Peak-Ziel bestimmen…"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback PeakZielBestimmen { get; set; }
+
+    /// <summary>„Netzladung erlauben"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback NetzladungErlauben { get; set; }
+
+    /// <summary>„Zu Schritt 3 Betriebsführung"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback ZurBetriebsfuehrung { get; set; }
+
+    /// <summary>Beschriftung des ersten Abhilfeknopfs.</summary>
+    [Parameter] public string PeakZielText { get; set; } = "Peak-Ziel bestimmen…";
+
+    /// <summary>Beschriftung des zweiten Abhilfeknopfs.</summary>
+    [Parameter] public string NetzladungText { get; set; } = "Netzladung erlauben";
+
+    /// <summary>Beschriftung des dritten Abhilfeknopfs.</summary>
+    [Parameter] public string BetriebsfuehrungText { get; set; } = "Zu Schritt 3 Betriebsführung";
+
+    /// <summary>Die Kopfzeile im Fall „arbeitslos".</summary>
+    [Parameter] public string ArbeitslosText { get; set; } =
+        "Die Flotte hat im gesamten Zeitraum weder geladen noch entladen.";
+
+    /// <summary>Die Kopfzeile im Fall „nur Hinweise".</summary>
+    [Parameter] public string HinweiseText { get; set; } = "Hinweise zu diesem Lauf";
+
+    /// <summary>Hat die Flotte nichts getan? (Prüfhilfe)</summary>
+    public bool Arbeitslos => Diagnose?.Arbeitslos == true;
+
+    /// <summary>Erscheint das Banner überhaupt? (Prüfhilfe)</summary>
+    public bool Sichtbar => Arbeitslos || Hinweise.Count > 0;
+
+    private string Kopfzeile => Arbeitslos ? ArbeitslosText : HinweiseText;
+
+    /// <summary>
+    /// Die gezählten Gründe als EIN Satz — gebaut im Kern
+    /// (<see cref="FlottenPlausibilitaet.Gruende"/>), damit iOS denselben liest.
+    /// </summary>
+    private string Gruende => Diagnose is null
+        ? ""
+        : FlottenPlausibilitaet.Gruende(Diagnose, CultureInfo.CurrentCulture);
+}

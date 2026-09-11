@@ -318,6 +318,85 @@
     }
 }
 
+
+/* ==================================================================== */
+/* DAS DIAGNOSEBANNER und der PEAK-ZIEL-BLOCK (Paket P3, Auftrag #192)  */
+/*                                                                      */
+/* Zwei Klaenge, eine Form: „arbeitslos" ist eine WARNUNG (das Ergebnis */
+/* ist unbrauchbar), blosse Hinweise sind ein HINWEIS. Der linke        */
+/* Balken ist derselbe wie beim Warnbanner des Hauses.                  */
+/* ==================================================================== */
+.epos-flotte-diagnose {
+    margin: 8px 0;
+    border: 1px solid var(--epos-rahmen);
+    border-inline-start: 6px solid var(--epos-rahmen);
+    border-radius: 4px;
+    padding: 10px 14px;
+}
+
+.epos-flotte-diagnose--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+}
+
+.epos-flotte-diagnose--hinweis {
+    border-color: var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+}
+
+.epos-flotte-diagnose-titel {
+    margin: 0 0 4px;
+    font-size: inherit;
+}
+
+.epos-flotte-diagnose-gruende {
+    margin: 0 0 6px;
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-diagnose-liste {
+    margin: 6px 0;
+    padding-inline-start: 18px;
+}
+
+.epos-flotte-diagnose-zeile--warnung {
+    font-weight: 600;
+}
+
+.epos-flotte-diagnose-aktionen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.epos-flotte-peakziel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.epos-flotte-peakziel-vorschlag,
+.epos-flotte-peakziel-bestimmen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.epos-flotte-prognosen {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+@media (forced-colors: active) {
+    .epos-flotte-diagnose--warnung,
+    .epos-flotte-diagnose--hinweis {
+        border-color: CanvasText;
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Die GROESSEN-SICHT der Flotte (#193, Konzept 2.5)                   */
 /*                                                                     */

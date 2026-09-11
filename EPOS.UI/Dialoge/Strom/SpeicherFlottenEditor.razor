@@ -11,8 +11,16 @@
         <span class="epos-flotte-editor__zaehler">@EinheitenText</span>
     </div>
 
-    <SpeicherFlottenBetriebEditor Wert="@_wert.Optionen" WertChanged="BetriebsoptionenSetzen" Aktiv="@Aktiv"
-                                   PlanerVerfuegbar="@PlanerVerfuegbar" />
+    @* Der Betriebseditor steht hier NUR, solange der Wirt ihn nicht selbst fuehrt.
+       Die Ansicht STROMSPEICHER_AUSLEGUNG (P3, #192) hat fuer ihn einen EIGENEN
+       Schritt der Ablaufleiste („3 Betriebsfuehrung") — stuende er hier ein
+       zweites Mal, saehe der Anwender dieselben sechs Felder zweimal, und genau
+       diese Doppelung hat Konzept 2.2 fuer das Ergebnisblatt bereits beseitigt. *@
+    @if (BetriebZeigen)
+    {
+        <SpeicherFlottenBetriebEditor Wert="@_wert.Optionen" WertChanged="BetriebsoptionenSetzen" Aktiv="@Aktiv"
+                                       PlanerVerfuegbar="@PlanerVerfuegbar" />
+    }
 
     <section class="epos-flotte-abschnitt" aria-labelledby="flotte-einheiten-titel">
         <div class="epos-flotte-abschnitt__kopf">
@@ -299,6 +307,18 @@
     /// <c>null</c> = die Auskunft des Kerns fragen (Betriebsfall, Auftrag #170c).
     /// </summary>
     [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    /// <summary>
+    /// Steht der Betriebseditor IN diesem Baustein? Vorgabe <c>true</c> — so trug ihn
+    /// der Flottendialog, und so trägt ihn der Reiter „Stromspeicher".
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c> setzt die Ansicht STROMSPEICHER_AUSLEGUNG (P3, #192): Dort ist die
+    /// Betriebsführung ein EIGENER Schritt der Ablaufleiste, und zweimal dieselben sechs
+    /// Felder wären genau die Doppelung, die Konzept 2.2 für das Ergebnisblatt schon
+    /// beseitigt hat.
+    /// </remarks>
+    [Parameter] public bool BetriebZeigen { get; set; } = true;
 
     private FlottenStudieKonfiguration _wert = new();
     private FlottenStudieKonfiguration? _eingangReferenz;

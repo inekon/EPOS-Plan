@@ -7578,6 +7578,154 @@ body {
 }
 
 /* ==================================================================== */
+/* DIE ANSICHT „STROMSPEICHER-AUSLEGUNG" (Paket P3, Auftrag #192)       */
+/*                                                                      */
+/* Sie fuellt die WebView: kein Rahmen im Rahmen, kein zweiter          */
+/* Rollbalken - genau das war Punkt 5 der Anwenderrueckmeldung vom      */
+/* 11.09.2026 („Fenster in Fenster ist nicht gut"). Der Kopf traegt     */
+/* Titel, Projektzeile und den Rueckweg in EINER Zeile; er bricht auf   */
+/* schmalem Schirm um, statt den Rueckwegknopf hinauszuschieben.        */
+/* ==================================================================== */
+.epos-spauslegung {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-spauslegung-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 16px;
+}
+
+.epos-spauslegung-kontext {
+    color: var(--epos-text-leise);
+}
+
+/* Der Rueckweg steht rechts - aber IM Fluss: margin-left:auto schiebt ihn
+   nur, solange die Zeile nicht umgebrochen ist. */
+.epos-spauslegung-kopfaktionen {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.epos-spauslegung-projektflotte {
+    margin: 0;
+}
+
+.epos-spauslegung-blatt {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-spauslegung-lauf {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* ==================================================================== */
+/* DIE ABLAUFLEISTE                                                     */
+/*                                                                      */
+/* Fuenf Schritte in einer Zeile, der Rechenknopf als Zaesur dazwischen */
+/* (margin-inline-start:auto schiebt ihn samt Modus-Umschalter nach     */
+/* rechts, das Ergebnisblatt folgt dahinter). Unter 900 px bricht die   */
+/* Liste um; die Schritte bleiben dabei in ihrer Reihenfolge.           */
+/*                                                                      */
+/* JEDER SCHRITT IST EIN <button> - auch der gesperrte. Ein disabled-   */
+/* Knopf nimmt keine Zeigerereignisse an, zeigt seinen title nicht und  */
+/* sagt der Sprachausgabe „nicht verfuegbar" ohne den Grund; die weiche */
+/* Sperre (aria-disabled) traegt ihn. Beide Bauarten stehen deshalb in  */
+/* EINER Regel und sehen gleich aus (Hausregel W16b-E-6).               */
+/* ==================================================================== */
+.epos-ablaufleiste {
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-ablaufleiste-schritte {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-ablaufleiste-schritt {
+    margin: 0;
+    padding: 0;
+}
+
+.epos-ablaufleiste-knopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+    padding: 6px 16px;
+    border: 0;
+    border-right: 1px solid var(--epos-rahmen-leise);
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--epos-text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.epos-ablaufleiste-knopf--aktiv {
+    background: var(--epos-flaeche);
+    border-bottom-color: var(--epos-marke);
+    color: var(--epos-marke);
+    font-weight: 600;
+}
+
+.epos-ablaufleiste-knopf:disabled,
+.epos-ablaufleiste-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    cursor: default;
+}
+
+.epos-ablaufleiste-veraltet {
+    padding: 0 6px;
+    border: 1px solid var(--epos-warn-rahmen);
+    border-radius: 3px;
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 400;
+}
+
+.epos-ablaufleiste-aktion {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    margin-inline-start: auto;
+    padding: 4px 12px;
+}
+
+.epos-ablaufleiste-modus {
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (forced-colors: active) {
+    .epos-ablaufleiste-knopf--aktiv {
+        border-bottom-color: Highlight;
+    }
+
+    .epos-ablaufleiste-veraltet {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -7790,3 +7938,4 @@ body {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+

@@ -1,14 +1,25 @@
-using System.Text;
+﻿using System.Text;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
+using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Tests.Seiten.Strom;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
 public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
 {
+    /// <summary>
+    /// Die Ansicht traegt einen <c>InfoKnopf</c>; ohne Hilfedienst wirft der
+    /// Blazor-Verteiler schon beim ersten Zeichnen.
+    /// </summary>
+    public SpeicherFlottenFehlerpfadeTests() => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+
     [Fact]
     public void Berechnungsfehler_und_erfolgloses_Ergebnis_zeigen_den_tatsaechlichen_Text()
     {
@@ -30,11 +41,13 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
     [Fact]
     public void Einstellungen_und_Profil_zeigen_Rueckgabe_oder_Ausnahme()
     {
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, Vorgaben)
-            .Add(x => x.EinstellungenSpeichern, _ => Task.FromResult("Datenbank ist schreibgeschützt"))
-            .Add(x => x.ProfilSpeichern, (_, _) =>
-                Task.FromException<SpeicherOptimierungVorgaben>(new InvalidOperationException("Profilname bereits vergeben"))));
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = Vorgaben,
+            EinstellungenSpeichern = _ => Task.FromResult("Datenbank ist schreibgeschützt"),
+            ProfilSpeichern = (_, _) =>
+                Task.FromException<SpeicherOptimierungVorgaben>(new InvalidOperationException("Profilname bereits vergeben"))
+        });
         Datenreiter(cut);
 
         cut.FindAll("button").Single(x => x.TextContent.Contains("Einstellungen speichern")).Click();
@@ -50,15 +63,17 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
     public void Erfolgreiches_Speichern_und_Profilspeichern_loescht_einen_alten_Berechnungsfehler()
     {
         const string alterFehler = "Projektlaufzeit: Jahresdaten fehlen";
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, Vorgaben)
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = Vorgaben,
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
             {
                 Erfolg = false,
                 Meldung = alterFehler
-            }))
-            .Add(x => x.EinstellungenSpeichern, _ => Task.FromResult(""))
-            .Add(x => x.ProfilSpeichern, (_, _) => Task.FromResult(Vorgaben())));
+            }),
+            EinstellungenSpeichern = _ => Task.FromResult(""),
+            ProfilSpeichern = (_, _) => Task.FromResult(Vorgaben())
+        });
 
         Start(cut);
         Assert.Contains(alterFehler, cut.Markup);
@@ -83,18 +98,20 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
         var vorgaben = Vorgaben();
         vorgaben.Eingaben.Auslegung.Lastquelle = SpeicherAuslegungQuelle.Datei;
         byte[] csv = Encoding.UTF8.GetBytes("Zeit;Wert\n2026-01-01 00:00;1,5\n2026-01-01 00:15;2,0\n");
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, () => vorgaben)
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => vorgaben,
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
             {
                 Erfolg = false,
                 Meldung = alterFehler
-            }))
-            .Add(x => x.DateiWaehlen, () => Task.FromResult(new SpeicherImportDatei
+            }),
+            DateiWaehlen = () => Task.FromResult(new SpeicherImportDatei
             {
                 Dateiname = "last.csv",
                 Inhalt = csv
-            })));
+            })
+        });
 
         Start(cut);
         Assert.Contains(alterFehler, cut.Markup);
@@ -111,15 +128,19 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
     public void JSON_Datei_wird_im_neuen_Flotten_CSV_Dialog_abgewiesen()
     {
         byte[] json = Encoding.UTF8.GetBytes("[{\"Jahr\":2026,\"Istwerte\":[]},{\"Jahr\":2026,\"Istwerte\":[]}]");
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, Vorgaben)
-            .Add(x => x.DateiWaehlen, () => Task.FromResult(new SpeicherImportDatei
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = Vorgaben,
+            DateiWaehlen = () => Task.FromResult(new SpeicherImportDatei
             {
                 Dateiname = "projektjahre.json",
                 Inhalt = json
-            })));
+            })
+        });
 
-        cut.FindAll("button").Single(x => x.TextContent.Trim() == "Prognosen & Jahresdaten").Click();
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Daten);
+        cut.FindAll("button")
+           .Single(x => x.TextContent.Trim() == Resource.FLOTTE_SEITE_BTN_PROGNOSEN).Click();
         cut.FindAll("button").Single(x => x.TextContent.Contains("Projektjahre-CSV importieren")).Click();
 
         Assert.Contains("JSON-Import wird nicht unterstützt", cut.Markup);
@@ -132,13 +153,15 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
         var vorgaben = Vorgaben();
         vorgaben.Eingaben.Auslegung.Lastquelle = SpeicherAuslegungQuelle.Datei;
         byte[] csv = Encoding.UTF8.GetBytes("Zeit\n2026-01-01 00:00\n");
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, () => vorgaben)
-            .Add(x => x.DateiWaehlen, () => Task.FromResult(new SpeicherImportDatei
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => vorgaben,
+            DateiWaehlen = () => Task.FromResult(new SpeicherImportDatei
             {
                 Dateiname = "last.csv",
                 Inhalt = csv
-            })));
+            })
+        });
         Datenreiter(cut);
 
         cut.FindAll("button").Single(x => x.TextContent.Contains("Lastdatei")).Click();
@@ -178,9 +201,11 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
             Vorlage = einheit
         });
 
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, () => vorgaben)
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())));
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => vorgaben,
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        });
 
         Assert.Contains("Projektlaufzeit: Bitte mindestens 1 Jahr", cut.Markup);
         Assert.Contains("Energie-Ausgleichswert", cut.Markup);
@@ -190,9 +215,15 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
         Assert.True(Startknopf(cut).HasAttribute("disabled"));
     }
 
-    private IRenderedComponent<SpeicherFlottenDialog> RenderDialog(
-        Func<SpeicherOptimierungEingaben, Action<double?, string>, Task<SpeicherFlottenErgebnis>> rechnen) =>
-        Render<SpeicherFlottenDialog>(p => p.Add(x => x.Vorgaben, Vorgaben).Add(x => x.Rechnen, rechnen));
+    private IRenderedComponent<StromspeicherAuslegungSeite> RenderDialog(
+        Func<SpeicherOptimierungEingaben, Action<double?, string>, Task<SpeicherFlottenErgebnis>> rechnen)
+        => Ansicht(new StromspeicherAuslegungDienste { Vorgaben = Vorgaben, FlotteRechnen = rechnen });
+
+    /// <summary>Die Ansicht im Modus „Flotte" (der Vorgabemodus), Blatt 1.</summary>
+    private IRenderedComponent<StromspeicherAuslegungSeite> Ansicht(StromspeicherAuslegungDienste dienste)
+        => Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.Dienste, dienste)
+            .Add(x => x.PlanerVerfuegbar, true));
 
     private static SpeicherOptimierungVorgaben Vorgaben() => new()
     {
@@ -211,11 +242,12 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
         }
     };
 
-    private static void Start(IRenderedComponent<SpeicherFlottenDialog> cut) => Startknopf(cut).Click();
+    private static void Start(IRenderedComponent<StromspeicherAuslegungSeite> cut) => Startknopf(cut).Click();
 
-    private static AngleSharp.Dom.IElement Startknopf(IRenderedComponent<SpeicherFlottenDialog> cut) =>
-        cut.FindAll("button").Single(x => x.TextContent.Trim() == "Speichervergleich berechnen");
+    private static AngleSharp.Dom.IElement Startknopf(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut) => Auslegungshilfe.Rechenknopf(cut);
 
-    private static void Datenreiter(IRenderedComponent<SpeicherFlottenDialog> cut) =>
-        cut.FindAll("button").Single(x => x.TextContent.Trim() == "Daten, Kosten & Profile").Click();
+    /// <summary>Blatt 2 „Daten &amp; Kosten" — der frühere Reiter „Daten, Kosten &amp; Profile".</summary>
+    private static void Datenreiter(IRenderedComponent<StromspeicherAuslegungSeite> cut) =>
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Daten);
 }

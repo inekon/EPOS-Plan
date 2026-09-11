@@ -376,30 +376,28 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
                               b => b.TextContent.Contains("optimieren"));
     }
 
+    /// <summary>
+    /// PAKET P3 (#192): Der Knopf zieht KEINE Überlagerung mehr auf, sondern WECHSELT
+    /// die Ansicht (Muster W16c‑E‑3). Die Seite meldet das über <c>AuslegungOeffnen</c>
+    /// an ihre Hülle; die kennt den gerechneten Simulationslauf und den Weg zur Wurzel.
+    /// </summary>
     [Fact]
-    public void Die_Auslegungswege_gehen_von_der_Seite_bis_in_den_Dialog()
+    public void Der_Auslegungsknopf_wechselt_die_Ansicht_statt_eine_Ueberlagerung_zu_oeffnen()
     {
+        int gewechselt = 0;
         var dienste = Dienste();
         dienste.OptimierungVorgaben = () => new SpeicherOptimierungVorgaben();
-        dienste.OptimierungRechnen = (_, _) =>
-            Task.FromResult(new SpeicherOptimierungErgebnis { Erfolg = false });
-        Func<SpeicherOptimierungEingaben, Task<string>> einstellungen = _ => Task.FromResult("");
-        Func<SpeicherOptimierungEingaben, string, Task<SpeicherOptimierungVorgaben>> profil =
-            (_, _) => Task.FromResult(new SpeicherOptimierungVorgaben());
-        Func<Task<SpeicherImportDatei>> datei = () => Task.FromResult(new SpeicherImportDatei());
-        dienste.OptimierungEinstellungenSpeichern = einstellungen;
-        dienste.OptimierungProfilSpeichern = profil;
-        dienste.OptimierungDateiWaehlen = datei;
+        dienste.AuslegungOeffnen = () => gewechselt++;
 
         var seite = Zeichnen(dienste: dienste);
         seite.Find("button[role='tab'][id='reiter-STROMSPEICHER']").Click();
         seite.FindAll("button").Single(b => b.TextContent.Trim() ==
             WindowsFormsApplication1.MyResource.Resource.OPT_BTN_OEFFNEN).Click();
 
-        var dialog = seite.FindComponent<SpeicherOptimierungDialog>().Instance;
-        Assert.Same(einstellungen, dialog.EinstellungenSpeichern);
-        Assert.Same(profil, dialog.ProfilSpeichern);
-        Assert.Same(datei, dialog.DateiWaehlen);
+        Assert.Equal(1, gewechselt);
+
+        // Die Ergebnisseite traegt die Auslegung nicht mehr in sich.
+        Assert.Empty(seite.FindComponents<EPOS.UI.Seiten.Strom.StromspeicherAuslegungSeite>());
     }
 
     /// <summary>Ohne Datenseite zeichnet die Seite eine leere Ergebnisansicht.</summary>

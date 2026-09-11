@@ -132,6 +132,17 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? SimulationErgebnisGaben(int idProjekt) => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ der Ansicht „Stromspeicher-Auslegung" (Paket P3,
+    /// Auftrag #192); <c>null</c> = geht gerade nicht.
+    ///
+    /// <para>Dieselbe Form und derselbe Grund wie bei
+    /// <see cref="SimulationErgebnisGaben"/>. Unter Windows setzt die Huelle den
+    /// Parameter <c>AppWurzel.StromspeicherAuslegungGaben</c>, und dieser Weg bleibt
+    /// unbenutzt; auf iOS ist er der einzige.</para>
+    /// </summary>
+    IReadOnlyDictionary<string, object>? StromspeicherAuslegungGaben(int idProjekt) => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ des KI-Hilfe-Assistenten (iU9-W15b.7,
     /// Entscheid E-10).
     ///

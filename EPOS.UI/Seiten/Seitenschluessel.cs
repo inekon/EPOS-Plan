@@ -143,6 +143,26 @@ public static class Seitenschluessel
     /// </summary>
     public const string Varianten = WindowsFormsApplication1.Ansichten.Varianten;
 
+    /// <summary>
+    /// Die Ansicht „Stromspeicher-Auslegung" (<c>Seiten.Strom.StromspeicherAuslegungSeite</c>,
+    /// Paket P3 / Auftrag #192) — die vierte Fachseite, die <see cref="AppWurzel"/> traegt.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Sie loest ZWEI Ueberlagerungen ab: den Flottendialog und die
+    /// Einzelspeicher-Optimierung, die beide modal ueber der Ergebnisseite standen
+    /// („Fenster in Fenster ist nicht gut", Anwenderrueckmeldung 11.09.2026). Mit
+    /// <b>SD-Q1</b> sind daraus zwei MODI EINER Ansicht geworden.
+    /// </para>
+    /// <para>
+    /// Sie hat bewusst KEINEN <c>Masken.*</c>-Zwilling: Der Kern oeffnet sie nicht, und
+    /// ein Menuepunkt fuehrt bis auf Weiteres nicht dorthin (Auftrag #192 Punkt 3 —
+    /// die Menuetabelle bleibt bei 58 Punkten). Der Weg hinein ist der Knopf des
+    /// Stromspeicher-Reiters der Ergebnisseite, und er meldet DIESEN Schluessel.
+    /// </para>
+    /// </remarks>
+    public const string StromspeicherAuslegung = "STROMSPEICHER_AUSLEGUNG";
+
     // =====================================================================
     //  K7 (iU9-W16c.0, Entscheid E-2) - die 25 Maskenschluessel des Kerns
     //
@@ -328,7 +348,7 @@ public static class Seitenschluessel
     {
         Projektliste, Energietraeger, BhkwWirtschaftlichkeit,
         SimulationKonfiguration, SimulationErgebnis, KiAssistent, Assistent,
-        Startseite, BerichteKosten, Varianten,
+        Startseite, BerichteKosten, Varianten, StromspeicherAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,

@@ -238,23 +238,16 @@ namespace WindowsFormsApplication1
 
                 // W11b-B-5: Hier stand EIN Delegat - die Sprungbruecke mit dem
                 // einzigen Schluessel Sprungziel.SpeicherOptimierung, die
-                // Form_SpeicherOptimierung modal ueber der WebView oeffnete. Die
-                // Maske ist gefallen; die fuenf Wege stehen in
-                // SimulationErgebnisHuelle.Optimierung.cs.
+                // Form_SpeicherOptimierung modal ueber der WebView oeffnete. Danach
+                // waren es zwoelf, die Datenseite der zwei Ueberlagerungen. Seit
+                // Paket P3 (#192) sind es FUENF: Die Auslegung ist eine eigene
+                // ANSICHT (STROMSPEICHER_AUSLEGUNG), und was hier bleibt, braucht
+                // der Reiter „Stromspeicher" selbst.
                 OptimierungVorgaben = OptimierungVorgaben,
                 OptimierungFlottenRechnen = OptimierungFlottenRechnen,
-                FlottenProjektAktiv = () => SpeicherFlottenProjektCtrl.IstAktiv(m_ID_Projekt),
-                FlottenProjektUebernehmen = FlottenProjektUebernehmen,
-                FlottenProjektDeaktivieren = FlottenProjektDeaktivieren,
-                OptimierungRechnen = OptimierungRechnen,
-                OptimierungAbbrechen = OptimierungAbbrechen,
-                OptimierungUebernehmen = OptimierungUebernehmen,
                 OptimierungCsv = OptimierungCsv,
                 OptimierungEinstellungenSpeichern = OptimierungEinstellungenSpeichern,
-                OptimierungProfilSpeichern = OptimierungProfilSpeichern,
-                OptimierungDateiWaehlen = OptimierungDateiWaehlen,
-                OptimierungLeistungspreis = OptimierungLeistungspreis,
-                OptimierungBetrieb = OptimierungBetrieb,
+                AuslegungOeffnen = AuslegungOeffnen,
 
                 CsvBedarf = CsvBedarf,
                 CsvWaermepumpe = CsvWaermepumpe,

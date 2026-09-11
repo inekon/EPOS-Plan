@@ -1,0 +1,288 @@
+@* SCHRITT 5 des Modus „Einzelspeicher" — DAS ERGEBNIS DER RASTERSUCHE
+   (aus SpeicherOptimierungDialog, W11b-B-5 und W11b-B-25).
+
+   HEATMAP UND SCHNITTKURVE NEBENEINANDER, mit gedeckelter Hoehe (Befund
+   W11b-B-25: „Grafik zu gross"). Die Kurve ist der SCHNITT DURCH die Karte —
+   untereinander schob die Karte sie aus dem sichtbaren Bereich, und der Anwender
+   sah nie beide zugleich. Gedeckelt ist die ANZEIGE (max. 320 px hoch), nicht das
+   PNG: Die Zeichenmasse bleiben 860 x 560 und 720 x 460.
+
+   DAS EINE BILD „LASTGANG UND SPEICHERBETRIEB" zeigt, was der BESTPUNKT
+   tatsaechlich tut: Netzbezug ohne und mit Speicher, bei der Lastspitzenkappung
+   die erreichte Schwelle, dazu die Speicherleistung mit Vorzeichen — alles in kW
+   und auf EINER Achse. Umschalter, Reihenwahl und Datenzoom erscheinen nur MIT
+   Neuzeichnen-Delegat; ohne ihn bleibt das Bild des Laufs stehen.
+
+   DIE KENNZAHLEN ALS WERTELISTEN (dl.epos-simerg-werte) statt als eine lange
+   Tabelle — dieselbe Sprache wie auf allen Reitern der Ergebnisseite. Eine Gruppe
+   ohne Zeilen entfaellt ganz. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+@if (Ergebnis is { Erfolg: true })
+{
+    <section class="epos-speicheropt-ergebnis" aria-label="@Resource.OPT_TITEL">
+
+        @if (Veraltet)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.OPT_MSG_ERGEBNIS_VERALTET" />
+        }
+
+        <p class="epos-simerg-status">@Ergebnis.Statuszeile</p>
+
+        @foreach (string hinweis in Ergebnis.Hinweise)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@hinweis" />
+        }
+
+        <div class="epos-speicheropt-diagramme">
+            <ChartBild Png="@Ergebnis.RasterBild" Alt="@Resource.OPT_CHART_HEATMAP_TITEL" />
+            <ChartBild Png="@Ergebnis.SchnittBild" Alt="@Ergebnis.SchnittTitel" />
+        </div>
+
+        @if (_betriebBild is { Length: > 0 })
+        {
+            <section class="epos-simerg-block epos-speicheropt-betrieb">
+                @if (Betriebsbild is null)
+                {
+                    <ChartBild Png="@_betriebBild" Alt="@_betriebTitel" />
+                }
+                else
+                {
+                    @* DIE SCHALTER STEHEN UEBER DEM BILD — Hausregel der Ergebnisseite
+                       (Doku_Simulationsergebnis_Darstellung.md, 5): erst die
+                       Darstellungsart, dann je Reihe ein Schalter, dann das Bild. *@
+                    <div class="epos-simerg-schalter">
+                        <Schalter Bezeichnung="@Resource.OPT_BETRIEB_CHK_JAHR" Wert="@_betriebJahr"
+                                  WertChanged="BetriebJahrGesetzt" />
+                    </div>
+
+                    <div class="epos-simerg-schalter">
+                        @foreach (var reihe in Betriebsreihen)
+                        {
+                            string schluessel = reihe.Schluessel;
+                            <Schalter Bezeichnung="@reihe.Text" Wert="@ReiheAn(schluessel)"
+                                      WertChanged="@(w => BetriebsreiheGesetzt(schluessel, w))" />
+                        }
+                    </div>
+
+                    <ChartBild Png="@_betriebBild" Alt="@_betriebTitel"
+                               BereichGewaehlt="BetriebBereich" Zurueckgesetzt="BetriebBereichZurueck" />
+                }
+            </section>
+        }
+
+        <div class="epos-simerg-spalten">
+            @foreach (string gruppe in GRUPPEN)
+            {
+                string g = gruppe;
+                if (!Zeilen(g).Any()) { continue; }
+
+                <section class="epos-simerg-block">
+                    <Gruppenkopf Titel="@Gruppentitel(g)" />
+                    <dl class="epos-simerg-werte">
+                        @foreach (SpeicherOptimierungKennzahl z in Zeilen(g))
+                        {
+                            <dt>@z.Bezeichnung</dt>
+                            <dd class="@(z.Negativ ? "epos-simerg-warn" : null)">@z.Wert</dd>
+                            <dd class="epos-simerg-einheit">@z.Einheit</dd>
+                        }
+                    </dl>
+                </section>
+            }
+        </div>
+
+        <div class="epos-simerg-fuss">
+            @if (Uebernehmen.HasDelegate)
+            {
+                <button type="button" @onclick="UebernehmenFragen" disabled="@(Gesperrt || Veraltet)">
+                    @Resource.OPT_BTN_UEBERNEHMEN
+                </button>
+            }
+            @if (Csv.HasDelegate)
+            {
+                <button type="button" @onclick="CsvSchreiben" disabled="@Gesperrt">@Resource.OPT_BTN_CSV</button>
+            }
+        </div>
+
+        <Rueckfrage Offen="@_frage" TitelText="@Resource.OPT_TITEL" Frage="@_frageText"
+                    Beantwortet="FrageBeantwortet" />
+    </section>
+}
+
+@code {
+    private static readonly string[] GRUPPEN =
+    {
+        SpeicherOptimierungCtrl.GRUPPE_AUSLEGUNG,
+        SpeicherOptimierungCtrl.GRUPPE_WIRTSCHAFT,
+        SpeicherOptimierungCtrl.GRUPPE_SPEICHER,
+        SpeicherOptimierungCtrl.GRUPPE_KAPPUNG
+    };
+
+    /// <summary>Das Ergebnis des letzten Rasterlaufs; <c>null</c> = keines.</summary>
+    [Parameter] public SpeicherOptimierungErgebnis? Ergebnis { get; set; }
+
+    /// <summary>Die Eingaben wurden nach dem Lauf geändert.</summary>
+    [Parameter] public bool Veraltet { get; set; }
+
+    /// <summary>Ein Lauf ist unterwegs — die Knöpfe bleiben gesperrt.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Die Berechnungsart des GERECHNETEN Laufs (sie entscheidet die Reihe „Schwelle").</summary>
+    [Parameter] public OptimiererStrategie Gelaufen { get; set; } = OptimiererStrategie.Dauernutzung;
+
+    /// <summary>Zeichnet das Bild „Lastgang und Speicherbetrieb" neu; ohne Delegat keine Umschalter.</summary>
+    [Parameter] public Func<bool, IReadOnlyList<string>, Diagrammbereich?,
+                            SpeicherOptimierungBetriebsbild>? Betriebsbild { get; set; }
+
+    /// <summary>Übernimmt Kapazität [kWh] und Leistung [kW] des Bestpunkts; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback<(double Kwh, double Kw)> Uebernehmen { get; set; }
+
+    /// <summary>Schreibt das Raster als CSV; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback<string> Csv { get; set; }
+
+    private byte[]? _betriebBild;
+    private string _betriebTitel = "";
+    private bool _betriebJahr;
+    private Diagrammbereich? _betriebBereich;
+    private SpeicherOptimierungErgebnis? _gezeigt;
+    private bool _frage;
+    private string _frageText = "";
+
+    /// <summary>
+    /// Die gewählten Reihen. Sie startet mit ALLEN; wählt der Anwender alles ab, bleibt sie
+    /// LEER und das Bild zeigt den Leerhinweis des Zeichners — die Hausregel der
+    /// Ergebnisseite (§ 5), ohne Rückfall auf „alle".
+    /// </summary>
+    private readonly List<string> _betriebReihen = new()
+    {
+        SpeicherOptimierungCtrl.REIHE_OHNE,
+        SpeicherOptimierungCtrl.REIHE_MIT,
+        SpeicherOptimierungCtrl.REIHE_SCHWELLE,
+        SpeicherOptimierungCtrl.REIHE_SPEICHER
+    };
+
+    /// <summary>Das gezeigte Betriebsbild (Prüfhilfe); <c>null</c> = keines.</summary>
+    public byte[]? BetriebsbildPng => _betriebBild;
+
+    /// <summary>Zeigt das Betriebsbild das ganze Jahr? (Prüfhilfe)</summary>
+    public bool BetriebGanzesJahr => _betriebJahr;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Ein NEUER Lauf setzt die Schalterstellungen zurueck: Der Ausschnitt eines
+        // frueheren Bestpunkts hat mit diesem nichts zu tun.
+        if (ReferenceEquals(_gezeigt, Ergebnis)) return;
+        _gezeigt = Ergebnis;
+        _betriebJahr = false;
+        _betriebBereich = null;
+        _betriebBild = Ergebnis?.BetriebBild;
+        _betriebTitel = Ergebnis?.BetriebTitel ?? "";
+    }
+
+    /// <summary>
+    /// Die wählbaren Reihen. Die SCHWELLE gibt es nur bei der Lastspitzenkappung — bei den
+    /// anderen Berechnungsarten wäre sie eine Linie ohne Bedeutung.
+    /// </summary>
+    private IEnumerable<(string Schluessel, string Text)> Betriebsreihen
+    {
+        get
+        {
+            yield return (SpeicherOptimierungCtrl.REIHE_OHNE, Resource.OPT_BETRIEB_R_OHNE);
+            yield return (SpeicherOptimierungCtrl.REIHE_MIT, Resource.OPT_BETRIEB_R_MIT);
+            if (Gelaufen == OptimiererStrategie.Lastspitzenkappung)
+                yield return (SpeicherOptimierungCtrl.REIHE_SCHWELLE, Resource.OPT_BETRIEB_R_SCHWELLE);
+            yield return (SpeicherOptimierungCtrl.REIHE_SPEICHER, Resource.OPT_BETRIEB_R_LEISTUNG);
+        }
+    }
+
+    private bool ReiheAn(string schluessel) => _betriebReihen.Contains(schluessel);
+
+    private void BetriebJahrGesetzt(bool wert)
+    {
+        _betriebJahr = wert;
+        // Ein anderer Ausschnitt entwertet den aufgezogenen Bereich — er war in Anteilen
+        // des ALTEN Bildes gemessen.
+        _betriebBereich = null;
+        BetriebZeichnen();
+    }
+
+    private void BetriebsreiheGesetzt(string schluessel, bool an)
+    {
+        if (an)
+        {
+            if (!_betriebReihen.Contains(schluessel)) _betriebReihen.Add(schluessel);
+        }
+        else _betriebReihen.Remove(schluessel);
+
+        BetriebZeichnen();
+    }
+
+    private void BetriebBereich(Diagrammbereich bereich)
+    {
+        _betriebBereich = bereich;
+        BetriebZeichnen();
+    }
+
+    private void BetriebBereichZurueck()
+    {
+        _betriebBereich = null;
+        BetriebZeichnen();
+    }
+
+    /// <summary>Holt das Bild neu — EIN Jahreslauf des Bestpunkts, kein Raster.</summary>
+    private void BetriebZeichnen()
+    {
+        if (Betriebsbild is null) return;
+
+        SpeicherOptimierungBetriebsbild neu = Betriebsbild(_betriebJahr, _betriebReihen, _betriebBereich);
+        if (neu is null) return;
+
+        _betriebBild = neu.Png;
+        _betriebTitel = neu.Titel;
+    }
+
+    private IEnumerable<SpeicherOptimierungKennzahl> Zeilen(string gruppe)
+    {
+        if (Ergebnis is null) yield break;
+
+        foreach (SpeicherOptimierungKennzahl z in Ergebnis.Kennzahlen)
+            if (string.Equals(z.Gruppe, gruppe, StringComparison.Ordinal)) yield return z;
+    }
+
+    private static string Gruppentitel(string gruppe) => gruppe switch
+    {
+        SpeicherOptimierungCtrl.GRUPPE_AUSLEGUNG => Resource.OPT_KZ_GRUPPE_AUSLEGUNG,
+        SpeicherOptimierungCtrl.GRUPPE_WIRTSCHAFT => Resource.OPT_KZ_GRUPPE_WIRTSCHAFT,
+        SpeicherOptimierungCtrl.GRUPPE_SPEICHER => Resource.OPT_KZ_GRUPPE_SPEICHER,
+        _ => gruppe
+    };
+
+    private void UebernehmenFragen()
+    {
+        if (Ergebnis is null || !Uebernehmen.HasDelegate) return;
+
+        CultureInfo k = CultureInfo.CurrentCulture;
+        _frageText = string.Format(k, Resource.OPT_MSG_UEBERNAHME_FRAGE,
+            Ergebnis.KapazitaetKwh.ToString("0.#", k), Ergebnis.LeistungKw.ToString("0.#", k));
+        _frage = true;
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        _frage = false;
+        if (antwort != true || Ergebnis is null) return;
+
+        await Uebernehmen.InvokeAsync((Ergebnis.KapazitaetKwh, Ergebnis.LeistungKw));
+    }
+
+    private async Task CsvSchreiben()
+    {
+        if (Ergebnis is null || !Csv.HasDelegate) return;
+        await Csv.InvokeAsync(Ergebnis.RasterCsv);
+    }
+}

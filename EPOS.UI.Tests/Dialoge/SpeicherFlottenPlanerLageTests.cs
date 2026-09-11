@@ -1,8 +1,12 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
+using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Tests.Seiten.Strom;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
@@ -20,6 +24,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public sealed class SpeicherFlottenPlanerLageTests : EposBunitContext
 {
+    /// <summary>
+    /// Die Ansicht traegt einen <c>InfoKnopf</c>; ohne Hilfedienst wirft der
+    /// Blazor-Verteiler schon beim ersten Zeichnen.
+    /// </summary>
+    public SpeicherFlottenPlanerLageTests() => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+
     /// <summary>Die Ids der Liste im Baustein — sie folgen der Reihenfolge des Aufzählungstyps.</summary>
     private const string Reaktiv = "0";      // PvGreedy
     private const string PeakShaving = "1";
@@ -157,28 +167,32 @@ public sealed class SpeicherFlottenPlanerLageTests : EposBunitContext
         FlottenStudieKonfiguration flotte = Flotte(FlottenBetriebsziel.PvGreedy);
         flotte.Auslegung.Betriebsziele.Add(FlottenBetriebsziel.MultiUse);
 
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.PlanerVerfuegbar, false)
-            .Add(x => x.Vorgaben, () => new SpeicherOptimierungVorgaben
-            {
-                Eingaben = new SpeicherOptimierungEingaben
-                    { Auslegung = new SpeicherAuslegungKonfiguration { Flotte = flotte } }
-            })
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())));
+        var cut = Ansicht(flotte, planer: false);
 
         Assert.True(Rechenknopf(cut).HasAttribute("disabled"));
         Assert.Contains(Resource.FLOTTE_PLANER_LAUF_GESPERRT, cut.Markup);
     }
 
-    private IRenderedComponent<SpeicherFlottenDialog> Dialog(FlottenBetriebsziel ziel, bool planer) =>
-        Render<SpeicherFlottenDialog>(p => p
+    private IRenderedComponent<StromspeicherAuslegungSeite> Dialog(FlottenBetriebsziel ziel, bool planer)
+        => Ansicht(Flotte(ziel), planer);
+
+    /// <summary>
+    /// Die Ansicht mit dieser Flotte. Der Rechenknopf ist Schritt 4 der Ablaufleiste;
+    /// er traegt seit Paket P3 die Sperre, die vorher am Fussknopf des Dialogs hing.
+    /// </summary>
+    private IRenderedComponent<StromspeicherAuslegungSeite> Ansicht(
+        FlottenStudieKonfiguration flotte, bool planer)
+        => Render<StromspeicherAuslegungSeite>(p => p
             .Add(x => x.PlanerVerfuegbar, planer)
-            .Add(x => x.Vorgaben, () => new SpeicherOptimierungVorgaben
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste
             {
-                Eingaben = new SpeicherOptimierungEingaben
-                    { Auslegung = new SpeicherAuslegungKonfiguration { Flotte = Flotte(ziel) } }
-            })
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())));
+                Vorgaben = () => new SpeicherOptimierungVorgaben
+                {
+                    Eingaben = new SpeicherOptimierungEingaben
+                        { Auslegung = new SpeicherAuslegungKonfiguration { Flotte = flotte } }
+                },
+                FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+            }));
 
     private static FlottenStudieKonfiguration Flotte(FlottenBetriebsziel ziel) => new()
     {
@@ -193,8 +207,8 @@ public sealed class SpeicherFlottenPlanerLageTests : EposBunitContext
             { ProjektjahreBeiWiederholung = 1 }
     };
 
-    private static AngleSharp.Dom.IElement Rechenknopf(IRenderedComponent<SpeicherFlottenDialog> cut) =>
-        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Speichervergleich berechnen");
+    private static AngleSharp.Dom.IElement Rechenknopf(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut) => Auslegungshilfe.Rechenknopf(cut);
 
     private static AngleSharp.Dom.IElement Auswahl(IRenderedComponent<SpeicherFlottenBetriebEditor> cut) =>
         cut.FindAll("label").Single(x => x.TextContent.Contains("Betriebsziel:")).QuerySelector("select")!;

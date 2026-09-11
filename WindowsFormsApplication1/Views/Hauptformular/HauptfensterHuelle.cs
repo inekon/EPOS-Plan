@@ -86,6 +86,14 @@ namespace WindowsFormsApplication1
                 ["AssistentGaben"] =
                     new Func<int, IReadOnlyDictionary<string, object>>(AssistentHuelle.AnsichtGaben),
 
+                // DIE STROMSPEICHER-AUSLEGUNG als freie Ansicht (Paket P3, #192).
+                // Wie beim Assistenten ein DELEGAT je Betreten und kein fertiges
+                // Woerterbuch: Der Arbeitsgang nimmt den zuletzt gerechneten
+                // Simulationslauf mit, und der aendert sich zwischen zwei Besuchen.
+                ["StromspeicherAuslegungGaben"] =
+                    new Func<IReadOnlyDictionary<string, object>>(
+                        StromspeicherAuslegungHuelle.AnsichtGaben),
+
                 // Das Kopfband (InitMarke). Die drei Produkttexte waren deutsche
                 // Literale im Code (Befund W16-B25); zwei davon stehen jetzt im
                 // Katalog, der Produktname bleibt eine Konstante — ein Markenname

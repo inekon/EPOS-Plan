@@ -627,15 +627,17 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Schreibt die Vergleichstabelle als CSV.</summary>
     public Func<Task<Rueckmeldung>>? VergleichCsv;
 
-    // ---- Die Auslegungsoptimierung des Stromspeichers (W11b-B-5) ----
+    // ---- Die Auslegung des Stromspeichers (W11b-B-5, seit P3/#192 eine ANSICHT) ----
     //
     // Bis zur Windows-Abnahme V2 (07.09.2026) stand hier EIN Delegat: die
-    // Sprungbruecke (Func<string, Task<bool>> Sprung) mit dem einzigen Schluessel
-    // Sprungziel.SpeicherOptimierung. Sie oeffnete Form_SpeicherOptimierung modal
-    // ueber der WebView. Die Maske ist gefallen (Befunde „Texte ueberschneiden
-    // sich" und „Dialog stuerzt nach kurzer Zeit ab"); an ihre Stelle tritt die
-    // Ueberlagerung SpeicherOptimierungDialog, und aus dem einen Schluessel werden
-    // diese fuenf benannten Wege. Damit ist auch das letzte Sprungziel weg.
+    // Sprungbruecke in Form_SpeicherOptimierung. Danach waren es zwoelf - die
+    // Datenseite der zwei Ueberlagerungen SpeicherFlottenDialog und
+    // SpeicherOptimierungDialog. BEIDE Dialoge sind mit Paket P3 (#192) gefallen;
+    // ihre Delegaten stehen jetzt an der Ansicht STROMSPEICHER_AUSLEGUNG und
+    // fuehren in EPOS.Kern/Controller/StromspeicherAuslegungCtrl.
+    //
+    // Was HIER bleibt, braucht der Reiter „Stromspeicher" selbst: Er zeigt die
+    // Flotte samt Betriebseditor an, speichert deren Optionen und schreibt die CSV.
 
     /// <summary>
     /// Liest den Vorschlag fuer den Suchraum samt der aktuellen Auslegung
@@ -643,28 +645,13 @@ public sealed class SimulationErgebnisDienste
     /// Fachkonzepts da.
     /// </summary>
     public Func<SpeicherOptimierungVorgaben>? OptimierungVorgaben;
-    public Func<bool>? FlottenProjektAktiv;
-    public Func<SpeicherFlottenErgebnis, Task<string>>? FlottenProjektUebernehmen;
-    public Func<Task<string>>? FlottenProjektDeaktivieren;
+
+    /// <summary>
+    /// Ist der Flotteneinstieg ueberhaupt moeglich? Der Reiter fragt nur, OB es ihn
+    /// gibt; gerechnet wird in der Ansicht STROMSPEICHER_AUSLEGUNG.
+    /// </summary>
     public Func<SpeicherOptimierungEingaben, Action<double?, string>,
                 Task<SpeicherFlottenErgebnis>>? OptimierungFlottenRechnen;
-
-    /// <summary>
-    /// Rechnet die Rastersuche im Hintergrund; <paramref name="melder"/> bekommt
-    /// Anteil und Text. OHNE Delegat gibt es die Optimierung gar nicht — die
-    /// Rastersuche braucht einen gelaufenen Simulationsdurchgang.
-    /// </summary>
-    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
-                Task<SpeicherOptimierungErgebnis>>? OptimierungRechnen;
-
-    /// <summary>Bricht einen laufenden Suchlauf ab; ohne Delegat kein Knopf.</summary>
-    public Action? OptimierungAbbrechen;
-
-    /// <summary>
-    /// Uebernimmt Kapazitaet [kWh] und Leistung [kW] des Bestpunkts in die
-    /// Geraetedaten. Neu gerechnet wird bewusst nicht.
-    /// </summary>
-    public Func<double, double, Rueckmeldung>? OptimierungUebernehmen;
 
     /// <summary>Schreibt den uebergebenen CSV-Text in eine Datei; ohne Delegat kein Knopf.</summary>
     public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
@@ -672,39 +659,15 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Speichert den aktuellen Auslegungsauftrag unter dem reservierten Standnamen.</summary>
     public Func<SpeicherOptimierungEingaben, Task<string>>? OptimierungEinstellungenSpeichern;
 
-    /// <summary>Speichert ein benanntes Auslegungsprofil und liefert die frisch gelesenen Vorgaben.</summary>
-    public Func<SpeicherOptimierungEingaben, string,
-                Task<SpeicherOptimierungVorgaben>>? OptimierungProfilSpeichern;
-
-    /// <summary>Waehlt und liest eine CSV-Datei in der Plattformhuelle.</summary>
-    public Func<Task<SpeicherImportDatei>>? OptimierungDateiWaehlen;
-
     /// <summary>
-    /// Zeichnet das Bild „Lastgang und Speicherbetrieb" des Bestpunkts NEU
-    /// (Befund W11b-B-25, Windows-Abnahme 09.09.2026).
+    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Paket P3, #192).
     /// </summary>
     /// <remarks>
-    /// Die drei Angaben sind die drei Schalterstellungen des Bildes: ganzes Jahr
-    /// statt der Woche um die Jahresspitze, die gewaehlten Reihen
-    /// (<c>SpeicherOptimierungCtrl.REIHE_*</c>; leer = alle) und der Datenzoom
-    /// (W11b-B-24). Neu gerechnet wird dabei EIN Jahreslauf des Bestpunkts, nicht
-    /// das Raster. OHNE Delegat zeigt der Dialog das Bild des Laufs und bietet
-    /// keine Umschalter an.
+    /// Die Huelle stellt dabei ihren gerechneten Simulationslauf bereit und meldet den
+    /// Seitenschluessel an die Wurzel. OHNE Delegat gibt es den Knopf nicht — auf iOS
+    /// ist das bis iU11 der Regelfall.
     /// </remarks>
-    public Func<bool, IReadOnlyList<string>, Diagrammbereich?,
-                SpeicherOptimierungBetriebsbild>? OptimierungBetrieb;
-
-    /// <summary>
-    /// Schreibt den Leistungspreis L_P [EUR/(kW*a)] SOFORT in die aktive
-    /// Speichervariante (Anwenderentscheid W11b-E-3, 10.09.2026).
-    /// </summary>
-    /// <remarks>
-    /// Es ist dasselbe Feld <c>Tab_StromspeicherVariante.L_P</c>, das der Reiter
-    /// „Parameter" und die Peak-Shaving-Maske pflegen - EINE Pflegestelle, kein
-    /// zweiter Wert daneben. OHNE Delegat zeigt der Dialog das Feld nur an und
-    /// schreibt nichts („Kein Delegat ist kein Knopf").
-    /// </remarks>
-    public Action<double>? OptimierungLeistungspreis;
+    public Action? AuslegungOeffnen;
 
     // ---- Die vier CSV-Exporte ----
 

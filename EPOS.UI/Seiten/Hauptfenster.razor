@@ -42,6 +42,7 @@
                StartseiteGaben="@StartseiteGaben"
                BerichteKostenGaben="@BerichteKostenGaben"
                AssistentGaben="@AssistentGaben"
+               StromspeicherAuslegungGaben="@StromspeicherAuslegungGaben"
                Lizenzlage="@Lizenzlage">
         <Kopfleiste>
             <Menueband @ref="_band"
@@ -155,6 +156,13 @@
     /// Fenster wertet nichts davon aus.
     /// </summary>
     [Parameter] public Func<int, IReadOnlyDictionary<string, object>?>? AssistentGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Ansicht „Stromspeicher-Auslegung" (Windows:
+    /// <c>StromspeicherAuslegungHuelle.AnsichtGaben</c>). Er wird nur durchgereicht;
+    /// das Fenster wertet nichts davon aus.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? StromspeicherAuslegungGaben { get; set; }
 
     /// <summary>
     /// Das Lagebild der Lizenz für das Banner der Wurzel (Welle iF30). Es kommt
