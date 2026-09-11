@@ -126,5 +126,29 @@
         /// </summary>
         public const string Assistent = "ASSISTENT";
 
+        /// <summary>
+        /// Der HILFE-ASSISTENT (KI). Argument: ein <see cref="KiAufrufkontext"/> —
+        /// Bereich, Dialogname, Hilfeschlüssel, vorbelegte Frage, Meldungskennung.
+        ///
+        /// <para><b>Neu mit Auftrag #199</b> (Stufe S1 des Konzepts „Der
+        /// Hilfe-Assistent im Dialog"). Bis dahin hatte der Chat als einzige Ansicht
+        /// KEINEN Maskenschlüssel (Befund W15b‑B4): Er ging über das Menü und über F1
+        /// auf, beides unmittelbar in der Windows-Hülle, und auf iOS über den
+        /// Seitenschlüssel der <c>AppWurzel</c>. Mit dem KI-Knopf im Dialogkopf braucht
+        /// es einen Weg, den BEIDE Plattformen kennen — und das ist
+        /// <c>Dienste.Navigation</c>.</para>
+        ///
+        /// <para><b>Der Schlüssel trägt keinen Klassennamen</b>, sondern denselben
+        /// Wert wie <c>EPOS.UI.Seiten.Seitenschluessel.KiAssistent</c>
+        /// (<c>"KI_ASSISTENT"</c>) — zwei Zeichenketten für dieselbe Ansicht wären zwei
+        /// Wahrheiten. Die Windows-Fassung öffnet damit die nicht-modale
+        /// <c>KiChatHuelle</c>, die <c>AppWurzel</c> wechselt die Ansicht.</para>
+        ///
+        /// <para><b>Rückgabe <c>true</c> heisst „der Assistent steht"</b> — nicht „mit
+        /// OK beendet": Das Chatfenster ist unter Windows nicht-modal und auf iOS eine
+        /// Ansicht; der Aufruf kehrt sofort zurück. Dieselbe Bedeutung wie bei
+        /// <see cref="Assistent"/> seit #62b.</para>
+        /// </summary>
+        public const string KiAssistent = "KI_ASSISTENT";
     }
 }

@@ -90,7 +90,27 @@
     /// </summary>
     [Parameter] public EventCallback<(string Frage, bool MitKi)> Abgeschickt { get; set; }
 
+    /// <summary>
+    /// Eine VORBELEGTE Frage (Auftrag #199, Weg 2): Sie steht beim Aufbau im Feld und
+    /// wird <b>nicht</b> abgeschickt.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum nicht abschicken.</b> Konzept 5: „Kein Assistent ohne
+    /// Anwenderfrage." Der Anwender hat auf eine Meldung gezeigt, nicht auf „Fragen"
+    /// gedrückt — er soll die Frage lesen, ändern oder verwerfen können, bevor etwas
+    /// hinausgeht. Und er soll sie überhaupt stellen dürfen, ohne dass sein
+    /// Tageskontingent ungefragt sinkt.</para>
+    /// <para><b>Nur beim ERSTEN Zeichnen.</b> Danach gehört das Feld dem Anwender: Ein
+    /// erneutes Setzen desselben Textes überschriebe eine halb getippte Frage. Eine
+    /// NEUE Vorbelegung — der Anwender zeigt auf eine zweite Meldung — setzt sie
+    /// dagegen.</para>
+    /// </remarks>
+    [Parameter] public string Vorbelegung { get; set; } = "";
+
     private string _text = "";
+
+    /// <summary>Die zuletzt übernommene Vorbelegung; <c>null</c> = noch keine gesehen.</summary>
+    private string? _uebernommen;
     private bool _abfangen;
 
     /// <summary>
@@ -101,6 +121,16 @@
 
     /// <summary>Der aktuelle Feldinhalt — für den Wirt, der ihn zurücksetzen darf.</summary>
     public string Frage => _text;
+
+    /// <summary>Übernimmt eine NEUE Vorbelegung in das Feld (Auftrag #199).</summary>
+    protected override void OnParametersSet()
+    {
+        string neu = Vorbelegung ?? "";
+        if (string.Equals(_uebernommen, neu, StringComparison.Ordinal)) return;
+
+        _uebernommen = neu;
+        if (neu.Length > 0) _text = neu;
+    }
 
     /// <summary>
     /// Übernimmt die Eingabe — <b>außer</b> der, die unmittelbar auf ein sendendes

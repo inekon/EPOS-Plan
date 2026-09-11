@@ -153,6 +153,9 @@ namespace WindowsFormsApplication1
             if (e.KeyCode != Keys.F1) return;
 
             e.Handled = true;
+
+            // OHNE Aufrufkontext (Auftrag #199): F1 ist der globale Weg und kennt
+            // keinen Dialog - die Huelle baut sich den Kontext des aktiven BEREICHS.
             KiChatHuelle.Oeffnen(this);
         }
 

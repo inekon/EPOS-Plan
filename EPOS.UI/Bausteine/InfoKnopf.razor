@@ -7,7 +7,35 @@
    ist derselbe Schluessel wie links in help_mapping.txt, z. B.
    "Form_Kosten_Auswahl.btn_Help".
 
-   Die Komponente kennt den Hilfekatalog nicht, nur IHilfeDienst. *@
+   Die Komponente kennt den Hilfekatalog nicht, nur IHilfeDienst.
+
+   ------------------------------------------------------------------------
+   SEIT AUFTRAG #199 TRAEGT ER DEN KI-KNOPF (Stufe S1, Weg 1 des Konzepts
+   "Der Hilfe-Assistent im Dialog").
+
+   WARUM HIER UND NICHT IN 88 DIALOGEN. Der Infoknopf steht in 110
+   Einbaustellen und ist die EINZIGE Stelle, die einen Dialog fachlich benennt
+   - er traegt seinen Hilfeschluessel. Genau daraus leitet der Kern den
+   Bereich ab (KiChatKontext.BereichFuerHilfeschluessel). Ein KI-Knopf, der
+   neben ihm steht, bekommt den Kontext also geschenkt; ein KI-Knopf, den jeder
+   Dialog selbst setzt, waere 88-mal derselbe Handgriff und 88-mal eine
+   Gelegenheit, den Schluessel zu vergessen.
+
+   RECHTS NEBEN DEM INFOKNOPF. Der Vorlaeufer KiAufrufKnopf stand LINKS
+   (Kollisionsregel InfoKnopf.cs:99, in Pixeln gerechnet). In einer Knopfleiste
+   genuegt die Reihenfolge, und die ist hier umgekehrt: Der Infoknopf ist der
+   gewohnte Weg und bleibt an seinem Platz; der Assistent kommt dazu.
+
+   OHNE EINRICHTUNG BLEIBT ER SICHTBAR (Anwenderentscheid KI-D-Q1): Netz,
+   API-Schluessel und Einwilligung entscheiden, was der Chat TUT - nicht, ob
+   der Weg dorthin zu sehen ist. Unsichtbar ist er nur, wo die Installation die
+   KI abgeschaltet hat (KiVerfuegbarkeit) oder wo ein Dialog ihn ausdruecklich
+   nicht will: die Lizenz- und Erststartmasken und die Einstellungen des
+   Assistenten selbst setzen MitAssistent="false". *@
+
+@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dienste
+@using WindowsFormsApplication1
 
 @inject IHilfeDienst Hilfe
 
@@ -15,6 +43,11 @@
         @onclick="BeimKlick">
     <img src="_content/EPOS.UI/help_icon.png" alt="" width="28" height="28" />
 </button>
+@if (AssistentSichtbar)
+{
+    <KiKnopf Beschriftung="@AssistentBeschriftung" Kurztext="@AssistentKurztext"
+             Gewaehlt="AssistentGewaehlt" />
+}
 
 @code {
     /// <summary>Schluessel im Hilfekatalog, z. B. "Form_Kosten_Auswahl.btn_Help".</summary>
@@ -26,10 +59,41 @@
     /// </summary>
     [Parameter] public string StandardKurztext { get; set; } = "Hilfe zu diesem Fenster";
 
+    /// <summary>
+    /// Steht neben dem Fragezeichen der KI-Knopf? Vorgabe <c>true</c> — der Assistent
+    /// gehört in jeden Dialog (Konzept 2, Zielbild).
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c> setzen die Masken, in denen er fehl am Platz wäre: die
+    /// Lizenzmasken, der Erststart und die Einstellungen des Assistenten selbst. Ein
+    /// KI-Knopf im Einstellungsdialog des Assistenten führte im Kreis.
+    /// </remarks>
+    [Parameter] public bool MitAssistent { get; set; } = true;
+
+    /// <summary>
+    /// Der Name des Dialogs für die Kontextzeile des Chats („Heizkessel bearbeiten");
+    /// leer = der Chat nennt nur den Bereich.
+    /// </summary>
+    /// <remarks>
+    /// Ein BEDIENBEGRIFF, kein Projektdatum — dieselbe Grenze wie beim Bereich
+    /// (<see cref="KiAufrufkontext.Dialogname"/>).
+    /// </remarks>
+    [Parameter] public string Dialogname { get; set; } = "";
+
+    /// <summary>Beschriftung des KI-Knopfes (<c>KI_KNOPF_DIALOG</c>).</summary>
+    [Parameter] public string AssistentBeschriftung { get; set; } = Text("KI_KNOPF_DIALOG", "KI");
+
+    /// <summary>Kurztext des KI-Knopfes (<c>KI_KNOPF_DIALOG_TOOLTIP</c>).</summary>
+    [Parameter] public string AssistentKurztext { get; set; } =
+        Text("KI_KNOPF_DIALOG_TOOLTIP", "Diesen Dialog vom Hilfe-Assistenten erklären lassen");
+
     private HilfeEintrag? _eintrag;
 
     /// <summary>Der aufgeloeste Katalogeintrag (Pruefhilfe fuer Tests).</summary>
     public HilfeEintrag? Eintrag => _eintrag;
+
+    /// <summary>Steht der KI-Knopf? (Prüfhilfe für Tests.)</summary>
+    public bool AssistentSichtbar => MitAssistent && KiAssistentWeg.Moeglich;
 
     private string Kurztext => string.IsNullOrEmpty(_eintrag?.Tooltip) ? StandardKurztext : _eintrag!.Tooltip;
 
@@ -41,5 +105,22 @@
     private void BeimKlick()
     {
         if (!string.IsNullOrEmpty(Schluessel)) Hilfe.Oeffnen(Schluessel);
+    }
+
+    /// <summary>
+    /// Der Anwender möchte den Assistenten — mit dem Bereich aus DIESEM Hilfeschlüssel.
+    /// </summary>
+    private void AssistentGewaehlt() => KiAssistentWeg.AusDialog(Schluessel, Dialogname);
+
+    /// <summary>
+    /// Ein Ressourcentext mit deutschem Rückfall — dieselbe Regel wie bei jedem
+    /// <c>[Parameter] string</c> dieser Bibliothek (EPOS.UI/CLAUDE.md, „Texte über
+    /// Ressourcen"). Er steht als Vorgabewert hier, weil der Baustein in 110
+    /// Einbaustellen ohne eigene Textparameter gesetzt wird.
+    /// </summary>
+    private static string Text(string schluessel, string rueckfall)
+    {
+        try { return Resource.ResourceManager.GetString(schluessel) ?? rueckfall; }
+        catch (Exception) { return rueckfall; }
     }
 }

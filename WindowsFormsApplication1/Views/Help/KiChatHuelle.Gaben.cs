@@ -36,7 +36,13 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 // ---- Zustand beim Oeffnen -------------------------------------
+                // Der Bereich kommt seit #199 aus dem AUFRUFKONTEXT, sobald einer
+                // gemeldet ist; HilfeKontext ist der zweite Lieferant und traegt den
+                // Menueweg.
                 ["Kontext"] = HilfeKontext.Beschreibung(),
+                ["Dialogname"] = _aufruf.Dialogname ?? "",
+                ["Kennung"] = _aufruf.Kennung ?? "",
+                ["Vorbelegung"] = _aufruf.Frage ?? "",
                 ["HilfeBetrieb"] = _hilfeBetrieb,
                 ["Eingerichtet"] = KiChatService.IstEingerichtet,
                 ["AnfragenHeute"] = KiChatService.AnfragenHeute,
@@ -470,6 +476,8 @@ namespace WindowsFormsApplication1
 
                 KontextFormat = MyResource.Resource.KI_CHAT_KONTEXT,
                 KontextLeer = MyResource.Resource.KI_CHAT_KONTEXT_LEER,
+                DialognameFormat = MyResource.Resource.KI_CHAT_DIALOGNAME,
+                MeldungFormat = MyResource.Resource.KI_CHAT_MELDUNG,
                 Denkt = MyResource.Resource.KI_CHAT_DENKT,
                 VerbrauchFormat = MyResource.Resource.KI_CHAT_VERBRAUCH,
 

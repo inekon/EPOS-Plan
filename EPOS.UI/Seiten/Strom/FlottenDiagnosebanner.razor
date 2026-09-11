@@ -35,7 +35,21 @@
     <section class="epos-flotte-diagnose @(Arbeitslos ? "epos-flotte-diagnose--warnung" : "epos-flotte-diagnose--hinweis")"
              role="@(Arbeitslos ? "alert" : "status")" aria-labelledby="flotte-diagnose-titel">
 
-        <h3 id="flotte-diagnose-titel" class="epos-flotte-diagnose-titel">@Kopfzeile</h3>
+        <h3 id="flotte-diagnose-titel" class="epos-flotte-diagnose-titel">
+            @Kopfzeile
+            @if (Arbeitslos && ErklaerenMoeglich)
+            {
+                @* „ERKLAEREN LASSEN" an der DIAGNOSE (Auftrag #199, Weg 2). Sie ist
+                   kein Warnbanner - dieses Banner traegt drei Abhilfeknoepfe und eine
+                   Hinweisliste -, aber sie ist die Meldung, die der Anwender am
+                   haeufigsten nicht versteht ("Mit Flotte" byte-gleich "Ohne
+                   Speicher"). Sie bekommt deshalb denselben Link. *@
+                <button type="button" class="epos-warnbanner-erklaeren"
+                        @onclick="() => Erklaeren(KiMeldungskennung.FLOTTE_ARBEITSLOS, ArbeitslosText)">
+                    @ErklaerenText
+                </button>
+            }
+        </h3>
 
         @if (Arbeitslos && Gruende.Length > 0)
         {
@@ -48,7 +62,19 @@
                 @foreach (FlottenHinweis hinweis in Hinweise)
                 {
                     <li class="@(hinweis.Stufe == FlottenHinweisStufe.Warnung
-                                 ? "epos-flotte-diagnose-zeile--warnung" : null)">@hinweis.Text</li>
+                                 ? "epos-flotte-diagnose-zeile--warnung" : null)">
+                        @hinweis.Text
+                        @if (ErklaerenMoeglich && Kennung(hinweis).Length > 0)
+                        {
+                            @* JE PRUEFHINWEIS ein eigener Link: Die fuenf Hinweise
+                               haben fuenf Ursachen und fuenf Abhilfen, und genau das
+                               fuehrt das Aktionswissen je Kennung. *@
+                            <button type="button" class="epos-warnbanner-erklaeren"
+                                    @onclick="() => Erklaeren(Kennung(hinweis), hinweis.Text)">
+                                @ErklaerenText
+                            </button>
+                        }
+                    </li>
                 }
             </ul>
         }
@@ -110,6 +136,50 @@
 
     /// <summary>Die Kopfzeile im Fall „nur Hinweise".</summary>
     [Parameter] public string HinweiseText { get; set; } = "Hinweise zu diesem Lauf";
+
+    // =====================================================================
+    //  „erklären lassen" (Auftrag #199, Stufe S1, Weg 2)
+    // =====================================================================
+
+    /// <summary>Beschriftung des Erklärlinks (<c>KI_BANNER_ERKLAEREN</c>).</summary>
+    [Parameter] public string ErklaerenText { get; set; } =
+        Ressource("KI_BANNER_ERKLAEREN", "erklären lassen");
+
+    /// <summary>
+    /// Der Hilfeschlüssel der Ansicht, in der das Banner steht — daraus folgt der
+    /// Bereich des Assistenten.
+    /// </summary>
+    [Parameter] public string Hilfeschluessel { get; set; } = "";
+
+    /// <summary>Der Name der Ansicht für die Kontextzeile des Chats.</summary>
+    [Parameter] public string Dialogname { get; set; } = "";
+
+    /// <summary>Steht der Erklärlink? (Prüfhilfe für Tests.)</summary>
+    public bool ErklaerenMoeglich => EPOS.UI.Dienste.KiAssistentWeg.Moeglich;
+
+    /// <summary>Die sprachneutrale Kennung eines Prüfhinweises; leer = kein Link.</summary>
+    private static string Kennung(FlottenHinweis hinweis)
+        => hinweis is null ? "" : KiMeldungskennung.Fuer(hinweis.Kennung);
+
+    private void Erklaeren(string kennung, string meldungstext)
+    {
+        if (string.IsNullOrWhiteSpace(kennung)) return;
+
+        EPOS.UI.Dienste.KiAssistentWeg.AusMeldung(
+            kennung, KiMeldungskennung.Frage(kennung, meldungstext),
+            Hilfeschluessel, Dialogname);
+    }
+
+    /// <summary>Ein Ressourcentext mit deutschem Rückfall (Hausregel EPOS.UI/CLAUDE.md).</summary>
+    private static string Ressource(string schluessel, string rueckfall)
+    {
+        try
+        {
+            return WindowsFormsApplication1.MyResource.Resource.ResourceManager
+                       .GetString(schluessel) ?? rueckfall;
+        }
+        catch (Exception) { return rueckfall; }
+    }
 
     /// <summary>Hat die Flotte nichts getan? (Prüfhilfe)</summary>
     public bool Arbeitslos => Diagnose?.Arbeitslos == true;

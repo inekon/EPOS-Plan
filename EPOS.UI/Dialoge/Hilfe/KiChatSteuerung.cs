@@ -1,6 +1,25 @@
 namespace EPOS.UI.Dialoge.Hilfe;
 
 /// <summary>
+/// Die Kontextangabe eines Chatfensters (Auftrag #199, Stufe S1): Bereich,
+/// Dialogname, Meldungskennung und die vorbelegte Frage.
+/// </summary>
+/// <remarks>
+/// <b>Wofür ein eigener Satz und nicht vier Parameter.</b> Beim ERSTEN Öffnen kommen
+/// die vier Angaben als Parameter herein; steht das Fenster aber schon (Windows
+/// öffnet nur EINES, <c>KiChatHuelle</c>), müssen sie NACHTRÄGLICH gesetzt werden —
+/// wer aus einem zweiten Dialog fragt, bekommt sonst den Bereich von vorhin. Der Weg
+/// dafür ist derselbe wie bei der Bestätigungsschicht: Die Komponente meldet sich an,
+/// der Wirt ruft.
+/// </remarks>
+/// <param name="Kontext">Der Bereich, fertig formuliert („Bereich: Heizkessel").</param>
+/// <param name="Dialogname">Der Name des rufenden Dialogs; leer = keiner.</param>
+/// <param name="Kennung">Die Meldungskennung; leer = keine.</param>
+/// <param name="Vorbelegung">Die vorbelegte Frage; leer = keine.</param>
+public sealed record KiKontextangabe(string Kontext, string Dialogname,
+                                     string Kennung, string Vorbelegung);
+
+/// <summary>
 /// Die drei Wege, auf denen der Wirt die Bestaetigungsschicht des Chats bedient.
 /// </summary>
 /// <remarks>
@@ -37,4 +56,11 @@ public sealed class KiChatSteuerung
     /// Schliessen des Fensters. Mehrfachaufruf ist unschaedlich.
     /// </summary>
     public Func<bool, Task> Beenden { get; init; } = _ => Task.CompletedTask;
+
+    /// <summary>
+    /// Stellt das STEHENDE Chatfenster auf einen neuen Aufrufkontext ein
+    /// (Auftrag #199): Bereich, Dialogname, Meldungskennung und vorbelegte Frage.
+    /// Der Gesprächsverlauf bleibt — er gehört der Sitzung, nicht dem Dialog.
+    /// </summary>
+    public Func<KiKontextangabe, Task> Kontext { get; init; } = _ => Task.CompletedTask;
 }

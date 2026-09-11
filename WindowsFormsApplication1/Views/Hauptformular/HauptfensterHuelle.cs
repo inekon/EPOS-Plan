@@ -259,6 +259,10 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.Lizenztext:
                     return () => LizenzHuelle.Anzeigen(_besitzer?.Invoke());
 
+                // Der MENUEWEG bleibt (Auftrag #199) und uebergibt keinen
+                // Dialogkontext: Die Huelle baut sich den des aktiven BEREICHS. Den
+                // Dialogkontext tragen die zwei neuen Wege - der KI-Knopf im
+                // Dialogkopf und „erklaeren lassen" am Banner.
                 case Seitenschluessel.KiAssistent:
                     return () => KiChatHuelle.Oeffnen(_besitzer?.Invoke());
 

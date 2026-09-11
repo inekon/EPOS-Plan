@@ -168,9 +168,13 @@ else if (_ansicht == Seitenschluessel.KiAssistent && _kiAssistent is not null)
 {
     @* Der KI-Hilfe-Assistent (iU9-W15b.7, Entscheid E-10). Unter Windows steht
        dieselbe Komponente NICHT-MODAL mit Besitzer (KiChatHuelle, E-6); hier
-       loest sie die Ansicht ab, weil es auf dem iPad kein zweites Fenster gibt. *@
+       loest sie die Ansicht ab, weil es auf dem iPad kein zweites Fenster gibt.
+
+       SEIT #199 KEHRT SIE ZURUECK, WOHER SIE KAM (Muster #62b/W16c-E-3): Der
+       KI-Knopf steht in JEDEM Dialog, und wer aus der Simulationskonfiguration
+       fragt, will danach wieder dort stehen - nicht auf der Startseite. *@
     <EPOS.UI.Dialoge.Hilfe.KiChatDialog @attributes="_kiAssistent"
-                                        Geschlossen="ZurueckZurListe" />
+                                        Geschlossen="ZurueckVomAssistenten" />
 }
 else
 {
@@ -420,6 +424,80 @@ else
         });
     }
 
+    // =====================================================================
+    //  Der Aufrufkontext des Hilfe-Assistenten (Auftrag #199, Stufe S1)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Ansicht, aus welcher der Hilfe-Assistent geöffnet wurde; leer = es gab
+    /// keine, dann gilt die <see cref="Startansicht"/>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Was der Rückweg wiederherstellt und was nicht.</b> Er stellt die ANSICHT
+    /// wieder her — ihren Parametersatz hält die Wurzel ohnehin (<c>_simKonfig</c>,
+    /// <c>_auslegung</c>, …). Den INNEREN Zustand der Ansicht stellt er nicht wieder
+    /// her: Die Komponente wird beim Wechsel verworfen, und mit ihr ein offenes
+    /// Reiterblatt, eine Überlagerung und eine halb ausgefüllte Eingabe. Das ist die
+    /// heutige Bauart der Wurzel (eine Ansicht zur Zeit, kein Ansichtenstapel) und
+    /// gilt für JEDEN Wechsel, nicht erst für den Assistenten. Deshalb greift auch
+    /// hier die Rückfrage aus 62b-E-1: Wer den Projektassistenten oder die
+    /// Stromspeicher-Auslegung mit ungespeicherten Eingaben verlässt, wird gefragt —
+    /// auch auf dem Weg zum Hilfe-Assistenten.
+    /// </remarks>
+    private string _kiRueckweg = "";
+
+    /// <summary>
+    /// Legt den gemeldeten Aufrufkontext über den Parametersatz des Chats: Bereich,
+    /// Dialogname, Meldungskennung und die vorbelegte Frage (Auftrag #199).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Kontext gewinnt gegen die Quelle.</b> <c>IProjektQuelle.KiAssistentGaben</c>
+    /// liefert Delegaten, Texte und Zähler; wer aus einem Dialog fragt, hat den
+    /// genaueren Bereich. Bringt die Quelle einen dieser vier Schlüssel gar nicht mit,
+    /// entsteht er hier — die Komponente führt für alle vier einen
+    /// <c>[Parameter]</c>.
+    /// </remarks>
+    private static IReadOnlyDictionary<string, object> MitAufruf(
+        IReadOnlyDictionary<string, object> gaben)
+    {
+        WindowsFormsApplication1.KiAufrufkontext? aufruf =
+            WindowsFormsApplication1.KiChatKontext.Aufruf;
+        if (aufruf is null) return gaben;
+
+        var kopie = new Dictionary<string, object>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, object> paar in gaben) kopie[paar.Key] = paar.Value;
+
+        string bereich = WindowsFormsApplication1.KiChatKontext.Freigegeben(aufruf.Bereich);
+        if (!string.Equals(bereich, WindowsFormsApplication1.KiChatKontext.BEREICH_UNBEKANNT,
+                           StringComparison.Ordinal))
+            kopie["Kontext"] = bereich;
+
+        kopie["Dialogname"] = aufruf.Dialogname ?? "";
+        kopie["Kennung"] = aufruf.Kennung ?? "";
+        kopie["Vorbelegung"] = aufruf.Frage ?? "";
+        return kopie;
+    }
+
+    /// <summary>
+    /// Der Rückweg aus dem Hilfe-Assistenten: dorthin, woher man kam (Muster #62b).
+    /// Lässt sich diese Ansicht nicht mehr aufbauen, gilt der gewöhnliche Rückweg.
+    /// </summary>
+    private void ZurueckVomAssistenten()
+    {
+        // Der Aufruf gilt fuer den offenen Chat; danach beantwortet wieder die
+        // Huelle bzw. die Seite, in welchem Bereich der Anwender arbeitet.
+        WindowsFormsApplication1.KiChatKontext.AufrufMelden(null);
+
+        string ziel = _kiRueckweg;
+        _kiRueckweg = "";
+        _kiAssistent = null;
+
+        if (!string.IsNullOrEmpty(ziel) && ziel != Seitenschluessel.KiAssistent
+            && Zeige(ziel)) return;
+
+        ZurueckZurListe();
+    }
+
     /// <summary>
     /// Legt <see cref="Zustand"/> einem Parametersatz bei, der KEINEN fuehrt.
     /// Ein mitgelieferter Zustand hat Vorrang: Unter Windows meldet
@@ -627,8 +705,8 @@ else
 
         if (maske == Seitenschluessel.KiAssistent)
         {
-            _kiAssistent = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
-            if (_kiAssistent is null)
+            IReadOnlyDictionary<string, object>? gaben = Quelle.KiAssistentGaben(_projekt?.Id ?? 0);
+            if (gaben is null)
             {
                 // Solange die iOS-Huelle den Assistenten nicht bedient (iU11), bleibt
                 // die Liste stehen und sagt warum - der Windows-Zustand "Fenster geht
@@ -636,6 +714,15 @@ else
                 _statuszeile = KeinAssistentText;
                 return false;
             }
+
+            // Der AUFRUFKONTEXT (Auftrag #199) legt sich UEBER den Parametersatz der
+            // Quelle: Bereich, Dialogname, Kennung und die vorbelegte Frage kommen aus
+            // dem Aufruf, alles Uebrige (Delegaten, Texte, Zaehler) aus der Huelle.
+            _kiAssistent = MitAufruf(gaben);
+
+            // Der Rueckweg fuehrt dorthin, woher man kam (Muster #62b) - der
+            // Assistent ist ein Abstecher, keine neue Arbeitsansicht.
+            if (_ansicht != Seitenschluessel.KiAssistent) _kiRueckweg = _ansicht;
             _ansicht = maske;
             return true;
         }
@@ -664,6 +751,7 @@ else
         _simKonfig = null;
         _simErgebnis = null;
         _kiAssistent = null;
+        _kiRueckweg = "";
         _assistent = null;
         _berichteKosten = null;   // W16c-E-3: auch diese Ansicht wird verlassen
         _auslegung = null;
@@ -878,6 +966,15 @@ else
         // Der Assistent nimmt seine Betriebsart als Argument entgegen - so ruft ihn
         // der Kern seit jeher (Dienste.Navigation.OeffneMaske(Masken.Assistent, 0|1)).
         int? betriebsart = Betriebsart(maske, argumente);
+
+        // Der HILFE-ASSISTENT nimmt seinen Aufrufkontext als Argument (Auftrag #199).
+        // KiAssistentWeg meldet ihn im Kern, bevor er hier ankommt; gemeldet wird er
+        // hier trotzdem, damit die Wurzel auch einen Aufruf traegt, der den Helfer
+        // nicht benutzt hat.
+        if (maske == Seitenschluessel.KiAssistent
+            && argumente is { Length: > 0 }
+            && argumente[0] is WindowsFormsApplication1.KiAufrufkontext kontext)
+            WindowsFormsApplication1.KiChatKontext.AufrufMelden(kontext);
 
         _ = InvokeAsync(() =>
         {

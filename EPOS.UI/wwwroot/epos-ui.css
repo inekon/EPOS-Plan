@@ -375,6 +375,35 @@ body {
     font-weight: 700;
 }
 
+/* Der Meldungstext nimmt den Platz, „erklaeren lassen" steht rechts. */
+.epos-warnbanner-text {
+    flex: 1 1 auto;
+}
+
+/* „erklaeren lassen" (Auftrag #199, Weg 2): ein KNOPF in der Anmutung eines
+   Verweises - er oeffnet den Assistenten und fuehrt auf keine Adresse. Die
+   Farbe erbt er vom Banner, damit er in allen vier Klaengen lesbar bleibt; das
+   Beruehrungsziel haelt --epos-touchziel. */
+.epos-warnbanner-erklaeren {
+    flex: 0 0 auto;
+    min-height: var(--epos-touchziel);
+    padding: 0 4px;
+    font: inherit;
+    color: inherit;
+    text-decoration: underline;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.epos-warnbanner-erklaeren:hover {
+    text-decoration: none;
+}
+
+@media (forced-colors: active) {
+    .epos-warnbanner-erklaeren { color: LinkText; }
+}
+
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
 .epos-warnbanner--hinweis {
     border-color: var(--epos-karte-rahmen-hover);

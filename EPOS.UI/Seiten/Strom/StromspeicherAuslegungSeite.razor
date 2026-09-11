@@ -1,4 +1,4 @@
-@* DIE ANSICHT „STROMSPEICHER-AUSLEGUNG" (Seitenschluessel STROMSPEICHER_AUSLEGUNG,
+﻿@* DIE ANSICHT „STROMSPEICHER-AUSLEGUNG" (Seitenschluessel STROMSPEICHER_AUSLEGUNG,
    Paket P3 / Auftrag #192, Konzept „Stromspeicher-Dialoge" 2.1).
 
    ANLASS. Der Anwender gab am 11.09.2026 den Dialog „Auslegung optimieren"
@@ -55,7 +55,7 @@
             <span class="epos-spauslegung-kontext">@ProjektText</span>
         }
         <span class="epos-spauslegung-kopfaktionen">
-            <InfoKnopf Schluessel="@HilfeSchluessel" />
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
             <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Verlassen">@ZurueckText</button>
         </span>
     </div>
@@ -77,8 +77,15 @@
        Der Lauf startet trotzdem; das ist ausdruecklich so gewollt. *@
     @foreach (FlottenHinweis hinweis in _vorpruefung)
     {
+        @* SEIT #199 MIT KENNUNG (Stufe S1, Weg 2): Die Vorpruefung sagt, WAS nicht
+           passt; „erklaeren lassen" sagt, WARUM und was zu tun ist. Die Kennung ist
+           die sprachneutrale FlottenHinweisKennung - nicht der Text, der mit jeder
+           Zahl darin wechselt. *@
         <Warnbanner Stufe="@(hinweis.Stufe == FlottenHinweisStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis)"
-                    Text="@hinweis.Text" />
+                    Text="@hinweis.Text"
+                    Kennung="@KiMeldungskennung.Fuer(hinweis.Kennung)"
+                    Hilfeschluessel="@HilfeSchluessel"
+                    Dialogname="@TitelText" />
     }
 
     @* ------------------------------------------------------- Ablaufleiste *@
@@ -213,6 +220,7 @@
                                            NetzladungErlauben="@(EventCallback.Factory.Create(this, NetzladungErlauben))"
                                            ZurBetriebsfuehrung="@(EventCallback.Factory.Create(this, ZurBetriebsfuehrung))"
                                            ArbeitslosText="@ArbeitslosText" HinweiseText="@HinweiseText"
+                                           Hilfeschluessel="@HilfeSchluessel" Dialogname="@TitelText"
                                            PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
                                            BetriebsfuehrungText="@ZuBetriebText" />
 

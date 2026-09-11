@@ -17967,4 +17967,70 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_SEITE_KANDIDAT_BANNER" xml:space="preserve">
     <value>Kandidat {0} übernommen — Flotte neu bewerten.</value>
   </data>
+  <data name="KI_KNOPF_DIALOG" xml:space="preserve">
+    <value>KI</value>
+  </data>
+  <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
+    <value>Diesen Dialog vom Hilfe-Assistenten erklären lassen</value>
+  </data>
+  <data name="KI_BANNER_ERKLAEREN" xml:space="preserve">
+    <value>erklären lassen</value>
+  </data>
+  <data name="KI_BANNER_ERKLAEREN_TOOLTIP" xml:space="preserve">
+    <value>Diese Meldung vom Hilfe-Assistenten erklären lassen</value>
+  </data>
+  <data name="KI_CHAT_DIALOGNAME" xml:space="preserve">
+    <value>Dialog: {0}</value>
+  </data>
+  <data name="KI_CHAT_MELDUNG" xml:space="preserve">
+    <value>Meldung: {0}</value>
+  </data>
+  <data name="KI_FRAGE_ALLGEMEIN" xml:space="preserve">
+    <value>Was bedeutet die Meldung „{0}“ und was kann ich tun?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM" xml:space="preserve">
+    <value>Das Peak-Ziel liegt unter dem Maximum der Tagesminima. Was bedeutet das für die Speicherflotte, und wie setze ich ein tragfähiges Peak-Ziel?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE" xml:space="preserve">
+    <value>Das Peak-Ziel liegt über der Referenzspitze. Warum bleibt die Lastspitzenkappung dann wirkungslos, und welches Ziel ist sinnvoll?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG" xml:space="preserve">
+    <value>Der jährliche Betriebsaufwand der Speicherflotte gilt als auffällig klein. Woran liegt das, und welche Werte gehören dort hinein?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_START_SOC_AUF_MINIMUM" xml:space="preserve">
+    <value>Der Start-Ladezustand steht auf dem SoC-Minimum. Wie wirkt sich das auf das Ergebnis aus, und wann sollte ich ihn ändern?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_ARBEITSLOS" xml:space="preserve">
+    <value>Die Speicherflotte hat im ganzen Zeitraum weder geladen noch entladen. Woran kann das liegen, und wie bekomme ich einen brauchbaren Lauf?</value>
+  </data>
+  <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf?</value>
+  </data>
+  <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>Ein Stromerzeuger oder Stromspeicher des Projekts steht auf keinem Platz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P1" xml:space="preserve">
+    <value>Die Leerlaufspannung des Strangs liegt im kalten Fall über der DC-Grenze des Wechselrichters (Regel P1). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P2" xml:space="preserve">
+    <value>Die MPP-Spannung des Strangs liegt im heissen Fall unter dem MPP-Fenster des Wechselrichters (Regel P2). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P3" xml:space="preserve">
+    <value>Die MPP-Spannung des Strangs liegt im kalten Fall über dem MPP-Fenster des Wechselrichters (Regel P3). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P4" xml:space="preserve">
+    <value>Der Eingangsstrom je MPP-Tracker ist zu hoch (Regel P4). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P5" xml:space="preserve">
+    <value>An einem MPP-Tracker hängen mehr Stränge, als das Gerät führt (Regel P5). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P6" xml:space="preserve">
+    <value>Das DC/AC-Verhältnis liegt ausserhalb des empfohlenen Bandes (Regel P6). Was bedeutet das, und welche Auslegung ist sinnvoll?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P7" xml:space="preserve">
+    <value>Die DC-Eingangsleistung liegt über der Herstellergrenze des Wechselrichters (Regel P7). Was bedeutet das, und wie behebe ich es?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
+    <value>Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung?</value>
+  </data>
 </root>

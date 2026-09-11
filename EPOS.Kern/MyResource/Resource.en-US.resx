@@ -17960,4 +17960,70 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_SEITE_KANDIDAT_BANNER" xml:space="preserve">
     <value>Candidate {0} applied — re-evaluate the fleet.</value>
   </data>
+  <data name="KI_KNOPF_DIALOG" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="KI_KNOPF_DIALOG_TOOLTIP" xml:space="preserve">
+    <value>Have the help assistant explain this dialog</value>
+  </data>
+  <data name="KI_BANNER_ERKLAEREN" xml:space="preserve">
+    <value>explain this</value>
+  </data>
+  <data name="KI_BANNER_ERKLAEREN_TOOLTIP" xml:space="preserve">
+    <value>Have the help assistant explain this message</value>
+  </data>
+  <data name="KI_CHAT_DIALOGNAME" xml:space="preserve">
+    <value>Dialog: {0}</value>
+  </data>
+  <data name="KI_CHAT_MELDUNG" xml:space="preserve">
+    <value>Message: {0}</value>
+  </data>
+  <data name="KI_FRAGE_ALLGEMEIN" xml:space="preserve">
+    <value>What does the message “{0}” mean and what can I do?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM" xml:space="preserve">
+    <value>The peak target is below the maximum of the daily minima. What does that mean for the storage fleet, and how do I set a workable peak target?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE" xml:space="preserve">
+    <value>The peak target is above the reference peak. Why does peak shaving have no effect then, and which target makes sense?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG" xml:space="preserve">
+    <value>The annual operating cost of the storage fleet is flagged as unusually small. Why is that, and which values belong there?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_START_SOC_AUF_MINIMUM" xml:space="preserve">
+    <value>The initial state of charge sits at the SoC minimum. How does that affect the result, and when should I change it?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_ARBEITSLOS" xml:space="preserve">
+    <value>The storage fleet neither charged nor discharged over the whole period. What can cause that, and how do I get a usable run?</value>
+  </data>
+  <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
+    <value>A heat generator of the project holds no cascade slot and therefore does not take part in the run. How do I add it to the simulation?</value>
+  </data>
+  <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>An electricity generator or battery of the project holds no slot and therefore does not take part in the run. How do I add it to the simulation?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P1" xml:space="preserve">
+    <value>The open-circuit voltage of the string exceeds the inverter DC limit in the cold case (rule P1). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P2" xml:space="preserve">
+    <value>The MPP voltage of the string falls below the inverter MPP window in the hot case (rule P2). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P3" xml:space="preserve">
+    <value>The MPP voltage of the string exceeds the inverter MPP window in the cold case (rule P3). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P4" xml:space="preserve">
+    <value>The input current per MPP tracker is too high (rule P4). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P5" xml:space="preserve">
+    <value>More strings are connected to one MPP tracker than the device supports (rule P5). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P6" xml:space="preserve">
+    <value>The DC/AC ratio is outside the recommended band (rule P6). What does that mean and which sizing makes sense?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P7" xml:space="preserve">
+    <value>The DC input power exceeds the inverter limit given by the manufacturer (rule P7). What does that mean and how do I fix it?</value>
+  </data>
+  <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
+    <value>The module count of the strings differs from the number of modules of the plant (rule P8). What does that mean and which figure drives the yield?</value>
+  </data>
 </root>

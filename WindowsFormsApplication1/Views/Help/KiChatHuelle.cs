@@ -66,8 +66,22 @@ namespace WindowsFormsApplication1
         private KiFreigabe _offeneFreigabe;
         private System.Windows.Forms.Timer _verfallUhr;
 
-        private KiChatHuelle(IWin32Window besitzer)
+        /// <summary>
+        /// Der AUFRUFKONTEXT dieses Chatfensters (Auftrag #199): Bereich, Dialogname,
+        /// Kennung und die vorbelegte Frage. Nie <c>null</c> — der Menüweg baut einen
+        /// aus dem aktiven Bereich.
+        /// </summary>
+        private KiAufrufkontext _aufruf = new KiAufrufkontext();
+
+        private KiChatHuelle(IWin32Window besitzer, KiAufrufkontext aufruf)
         {
+            // MELDEN, auch wenn nichts mitkam: Ein null loescht einen alten Aufruf,
+            // sonst zeigte der Menueweg auf den Dialog von vorhin. Der Weg aus einem
+            // Dialog hat hier schon gemeldet (KiAssistentWeg) - dasselbe Objekt noch
+            // einmal zu melden ist folgenlos.
+            KiChatKontext.AufrufMelden(aufruf);
+            _aufruf = aufruf ?? Menuekontext();
+
             // Der Abschalter wird bei JEDEM Oeffnen neu gelesen: Die Verwaltung kann
             // ihn im laufenden Programm umlegen (Bestand :494-499).
             _hilfeBetrieb = KiEinwilligung.Abgeschaltet;
@@ -104,7 +118,7 @@ namespace WindowsFormsApplication1
         /// Fenster.
         /// </para>
         /// </remarks>
-        public static void Oeffnen(IWin32Window besitzer = null)
+        public static void Oeffnen(IWin32Window besitzer = null, KiAufrufkontext aufruf = null)
         {
             // Die 25 Zeilen aus KiAufrufKnopf.Aufrufen (:223-247). Ein minimiertes
             // Fenster wird zuvor wiederhergestellt, sonst blinkt es nur in der
@@ -115,10 +129,60 @@ namespace WindowsFormsApplication1
                 if (offen._fenster.WindowState == FormWindowState.Minimized)
                     offen._fenster.WindowState = FormWindowState.Normal;
                 offen._fenster.Activate();
+
+                // EIN Fenster, aber ein NEUER Kontext (Auftrag #199): Wer aus einem
+                // zweiten Dialog fragt, bekommt dessen Bereich und dessen vorbelegte
+                // Frage - sonst zeigte der offene Chat weiter auf die Maske von
+                // vorhin. Der Gespraechsverlauf bleibt dabei stehen; er gehoert der
+                // Sitzung, nicht dem Dialog.
+                offen.KontextSetzen(aufruf);
                 return;
             }
 
-            _offene = new KiChatHuelle(besitzer);
+            _offene = new KiChatHuelle(besitzer, aufruf);
+        }
+
+        /// <summary>
+        /// Der Aufrufkontext des MENÜWEGS: kein Dialog, keine Meldung — der Bereich,
+        /// in dem der Anwender gerade arbeitet (<c>HilfeKontext</c> über
+        /// <c>KiChatKontext.AktuellerBereich</c>).
+        /// </summary>
+        /// <remarks>
+        /// Der Menüweg bleibt damit, was er war, und trägt seinen Kontext trotzdem
+        /// ausdrücklich — statt ihn, wie bis #199, erst im Augenblick jeder Frage aus
+        /// dem gerade aktiven Fenster zu erraten.
+        /// </remarks>
+        private static KiAufrufkontext Menuekontext()
+        {
+            return new KiAufrufkontext { Bereich = KiChatKontext.AktuellerBereich() };
+        }
+
+        /// <summary>
+        /// Stellt ein bereits offenes Fenster auf einen neuen Aufrufkontext ein
+        /// (Auftrag #199).
+        /// </summary>
+        private void KontextSetzen(KiAufrufkontext aufruf)
+        {
+            _aufruf = aufruf ?? Menuekontext();
+            KiChatKontext.AufrufMelden(aufruf);
+
+            KiChatSteuerung s = _steuerung;
+            if (s == null) return;
+
+            // Ein Parametersatz laesst sich nach dem ersten Zeichnen nicht mehr
+            // austauschen (RootComponents.Add nimmt ihn EINMAL entgegen). Die
+            // Komponente hat sich deshalb mit einem Setzweg angemeldet - dieselbe
+            // Bauart wie bei der Bestaetigungsschicht (W15b-B28).
+            try { s.Kontext(Kontextangabe()); } catch (Exception) { }
+        }
+
+        /// <summary>Die vier Kontextangaben für die Komponente (Auftrag #199).</summary>
+        private KiKontextangabe Kontextangabe()
+        {
+            return new KiKontextangabe(HilfeKontext.Beschreibung(),
+                                       _aufruf.Dialogname ?? "",
+                                       _aufruf.Kennung ?? "",
+                                       _aufruf.Frage ?? "");
         }
 
         // ==================================================================
@@ -160,6 +224,11 @@ namespace WindowsFormsApplication1
                 KiAusfuehrer.AufOberflaeche = null;
 
             KiAusfuehrer.Ueberlagerung = null;
+
+            // Der Aufrufkontext gilt fuer das FENSTER (Auftrag #199): Ist es zu,
+            // beantwortet wieder die Fensterermittlung, in welchem Bereich der
+            // Anwender arbeitet.
+            KiChatKontext.AufrufMelden(null);
         }
 
         /// <inheritdoc/>

@@ -877,6 +877,77 @@ Mehrschrittige Abläufe („Variante anlegen, Komponente übernehmen, rechnen") 
 Einzelschritt-Ausführung und Abbruch nach jedem Schritt; Vorschlagsbetrieb („mir fällt auf, dass …"); Auswertung des
 Protokolls, um die häufigsten Absichten zu erkennen.
 
+### Etappe S1 umgesetzt (#199) — der Assistent im Dialog, Wege 1 und 2
+
+Stand 11.09.2026, Zweig `w199-ki-dialog-s1`. Grundlage ist
+[`Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](Projekte/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
+(Abschnitt 6, Zeile S1). Sie steht hier, weil sie zwei Zusagen dieses Konzepts einlöst: die
+**Erreichbarkeit** aus Etappe 5 („Der Assistent muss dort erreichbar sein, wo gearbeitet wird") und
+das **Aktionswissen** aus 7.1 — je Meldung ein Abschnitt mit Bedeutung, Ursache, Abhilfe und
+Wiki-Verweis.
+
+**Weg 1 — der KI-Knopf im Dialogkopf.** Er steht nicht in 88 Dialogen einzeln, sondern **im
+`InfoKnopf`**: Der Baustein bekommt `MitAssistent` (Vorgabe `true`) und zeichnet rechts neben sich
+den `KiKnopf`, sobald `KiVerfuegbarkeit.Moeglich` es sagt. Damit tragen **110 Einbaustellen** den
+Assistenten in einem Schritt. Vier Masken setzen `MitAssistent="false"` und keine fünfte: der Chat
+selbst, seine Werkzeugliste und die zwei Lizenzmasken (Wächter
+`InfoknopfSchluesselWacheTests.Es_gibt_keine_fuenfte_Ausnahme`).
+
+**Der Bereich kommt aus dem Hilfeschlüssel.** `KiChatKontext.BereichFuerHilfeschluessel` ist eine
+Tabelle Maskenpräfix → Bereich der Positivliste (69 Präfixe); unter mehreren passenden gewinnt das
+längste, sonst gilt `BEREICH_UNBEKANNT`, und jeder Treffer geht durch `Freigegeben`. Ein Wächter
+hält sie gegen **alle 201 Hilfeschlüssel** aus `help_mapping.txt` — kein Schlüssel darf unbekannt
+bleiben.
+
+**Der Öffnungsweg ist derselbe auf beiden Plattformen.**
+`Dienste.Navigation.OeffneMaske(Masken.KiAssistent, kontext)` mit dem neuen Kern-Typ
+`KiAufrufkontext { Bereich, Dialogname, Hilfeschluessel, Frage, Kennung }`. Unter Windows öffnet
+`WinFormsNavigation` die nicht-modale `KiChatHuelle` mit diesem Kontext; auf iOS wechselt die
+`AppWurzel` die Ansicht und **kehrt danach dorthin zurück, woher sie kam** (Muster #62b). Der
+Menüweg und F1 bleiben, wie sie waren, und übergeben den Kontext des aktiven Bereichs.
+
+**Der Aufruf ist der erste Lieferant des Bereichs.** `KiChatKontext.AufrufMelden` setzt ihn;
+`AktuellerBereich()` fragt ihn vor dem Haken, und `HilfeKontext.Beschreibung()` der Windows-Hülle
+ist seither der **zweite** Lieferant statt der einzigen Quelle. Damit ist der Bereich auch auf iOS
+bekannt — der Befund W15b‑B19 („auf iOS immer Unbekannter Bereich") ist geschlossen.
+
+**Weg 2 — „erklären lassen".** `Warnbanner` bekommt `Kennung`; ist sie gesetzt und der Assistent
+möglich, steht rechts der Link. Er ruft denselben Weg mit `Frage` = `KI_FRAGE_<Kennung>`, sonst dem
+allgemeinen Satz mit dem Bannertext, und mit der Kennung als Suchbegriff. Gesetzt ist die Kennung
+an der **Vorprüfung** der Stromspeicher-Ansicht und am **Diagnosebanner** der Flotte (an der
+Diagnose selbst und je Prüfhinweis).
+
+**Aktionswissen: 15 Abschnitte.** `HilfeWissen.Aktionswissen()` führt je Kennung einen Abschnitt
+mit BEDEUTUNG, URSACHE, ABHILFE und WIKI-Verweis — die fünf `FLOTTE_*` aus `FlottenHinweisKennung`,
+die zwei `LAUF_W_ERZEUGER_OHNE_*` aus `SimulationLaufCtrl` und die acht `PV_STRANG_P1…P8` der
+Strangampel. Sie sind **Daten, keine Modellantworten**: `HilfeWissen.Suchen` gibt einem
+Kennungstreffer einen Zuschlag, der jedes Stichwort schlägt, und zieht die Kennung ohne
+ausdrückliche Angabe aus dem gemeldeten Aufruf — damit trägt „erklären lassen" durch die ganze
+Kette, auch ohne Schlüssel, ohne Netz und bei erschöpftem Tageslimit.
+
+**Was Stufe S1 überträgt:** Bereich, Dialogname, Kennung und der Bannertext. Keine Feldwerte, keine
+Projektdaten — das ist Stufe S2 (Weg 4) und braucht eine eigene Einwilligung (KI‑D‑Q2). Die
+vorbelegte Frage steht in der Eingabezeile und wird **nicht** abgeschickt (Konzept 5: „kein
+Assistent ohne Anwenderfrage").
+
+**Anwenderentscheid KI‑D‑Q1 eingelöst:** Der Knopf bleibt ohne Einrichtung sichtbar.
+`KiVerfuegbarkeit.Moeglich` fragt allein den Abschalter der Installation
+(`KiEinwilligung.Abgeschaltet`, benutzer- oder maschinenweit); Netz, API-Schlüssel, Einwilligung
+und Tageslimit sind ausdrücklich keine Bedingung, und der Lesemodus blendet nichts aus — fragen
+ist lesend.
+
+**Was S1 NICHT anfasst:** `KiChatService`, die Wissensbasis-Formate, den Semantikindex, das
+Aktionsregister (S3) und den Rechenweg. Der Referenzlauf ist unberührt.
+
+**Nicht umgestellt, weil sie kein `Warnbanner` benutzen** (Abgrenzung des Auftrags „wo eine Meldung
+heute nicht über `Warnbanner` läuft, NICHT umbauen"): die **Laufwarnungen** `LAUF_W_ERZEUGER_OHNE_*`
+— sie erscheinen als Protokollzeile des Laufs und als Zusatz „(nicht in der Kaskade)" an der
+Erzeugerzeile der Ergebnisübersicht — und die **Strangampel P1–P8**, die als farbige Ampelzeile
+(`.epos-ampel`) unter der Strangtabelle steht. Ihr Aktionswissen ist trotzdem da: Wer die Kennung
+kennt oder den Assistenten aus derselben Maske ruft, findet den Abschnitt. Ein Erklärlink an diesen
+zwei Stellen ist ein eigener Schritt.
+
+
 ---
 
 ## 9. Risiken und offene Entscheidungen
