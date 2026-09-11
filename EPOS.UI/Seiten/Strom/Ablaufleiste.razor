@@ -110,8 +110,30 @@
     /// </remarks>
     [Parameter] public bool Kompakt { get; set; }
 
+    /// <summary>
+    /// BÜNDIG: alle Stationen stehen in EINER Reihe ohne Lücke, linksbündig
+    /// (Auftrag <b>#225</b>, Anwenderwunsch 11.09.2026 — Bildschirmfoto der
+    /// Stromspeicher-Auslegung: „1 2 3“, eine breite Lücke, dann „4 5“).
+    /// </summary>
+    /// <remarks>
+    /// Nimmt NUR <c>margin-inline-start: auto</c> vom Rechenknopf weg — sonst
+    /// nichts: Rahmen, Trennlinien und die aktive Unterstreichung der breiten
+    /// Fassung bleiben, damit die Leiste weiterhin wie „STROMSPEICHER_AUSLEGUNG“
+    /// aussieht und nicht wie die gerahmte Gruppe von <see cref="Kompakt"/> (die
+    /// bleibt der Simulationsseite vorbehalten und ändert sich hier nicht).
+    /// </remarks>
+    [Parameter] public bool Buendig { get; set; }
+
     private string Leistenklasse
-        => Kompakt ? "epos-ablaufleiste epos-ablaufleiste--kompakt" : "epos-ablaufleiste";
+    {
+        get
+        {
+            string klasse = "epos-ablaufleiste";
+            if (Kompakt) klasse += " epos-ablaufleiste--kompakt";
+            if (Buendig) klasse += " epos-ablaufleiste--buendig";
+            return klasse;
+        }
+    }
 
     private Task RechnenGeklickt() => RechnenFrei ? Rechnen.InvokeAsync() : Task.CompletedTask;
 

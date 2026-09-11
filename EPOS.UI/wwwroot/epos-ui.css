@@ -8004,6 +8004,16 @@ body {
     align-items: center;
 }
 
+/* BUENDIG (Auftrag #225, Anwenderwunsch 11.09.2026): alle Stationen der
+   Stromspeicher-Auslegung in EINER Reihe ohne Luecke, linksbuendig. Nimmt
+   NUR die margin-inline-start:auto des Rechenknopfs weg - Rahmen,
+   Trennlinien und die aktive Unterstreichung der breiten Fassung bleiben
+   unveraendert. Getrennt von --kompakt, das der Simulationsseite gehoert
+   und weiterhin die gerahmte Gruppe zeichnet. */
+.epos-ablaufleiste--buendig .epos-ablaufleiste-aktion {
+    margin-inline-start: 0;
+}
+
 /* KOMPAKT (Windows-Abnahme #216, Punkt 2): die Leiste steht als GRUPPE in einer
    Werkzeugleiste, nicht als eigene Zeile ueber dem Blatt. Damit faellt die
    Trennlinie - sie trennte die Leiste vom Blatt darunter - und die Zaesur vor

@@ -422,6 +422,11 @@ Ins Register § 8 des Umsetzungskonzepts (Block „Offene Punkte des Mehrspeiche
   keine Größen-Sicht trotz Rastersuche; Behebung P2–P4.
 - **SP‑O‑12 Zwei Speicherpfade:** Einzelspeicher (regressionsgeprüft, 12 Projekte) und Flotte
   (1046) rechnen getrennt; Zusammenführung erst nach SD‑Q2.
+- **SP‑O‑13 Ablaufleiste mit Lücke:** Bildschirmfoto 11.09.2026 — „1 2 3", eine breite Lücke,
+  dann „4 5" (die breite Fassung schiebt Rechenknopf und Schritt 5 mit `margin-inline-start:auto`
+  nach rechts); Behebung Auftrag **#225** — Modifikator `Ablaufleiste.Buendig` /
+  `.epos-ablaufleiste--buendig`, fünf Stationen linksbündig ohne Lücke, die Simulationsseite
+  (`Kompakt`) bleibt unverändert.
 
 ---
 
