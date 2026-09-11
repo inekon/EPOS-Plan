@@ -3262,6 +3262,18 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `kern.yml` rechnet 1030/1007/1017/1045/**1046** gegen R7, `ios.yml` nur den Basispfad (kein iOS-Lauf ausgelöst), dritte
 > Einfrierregel in `CLAUDE.md` und `LIESMICH.md`. Gate auf `65c767f`: Kern 2437, UI 3487, SpeicherEngine 382, SpeicherPlanung
 > 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 319, ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#178 (11.09.2026, `cc90fc9`, Merge `e7d6426`) — Schemaschritt 74: `Tab_SpeicherAuslegung` STRICT.** Befund aus dem Nachweis zu
+> iOS-Lauf 41: Die Tabelle aus Schritt 73 war die einzige Fachtabelle der Testdatenbank ohne STRICT (119 Tabellen, 117 STRICT).
+> Schritt 74 legt sie in einer Transaktion als STRICT neu an (CREATE neu, INSERT SELECT, DROP, RENAME, Index; wiederholbar,
+> `PRAGMA defer_foreign_keys`); die eine Quelle `SpeicherAuslegungCtrl.SQL_TABELLE` trägt STRICT für Migration, stille
+> Selbstanlage und `Werkzeuge/Testdatenbankschema`; Schritt 73 bleibt unverändert. `SchemaStand.Zielversion = 74`, Testdatenbank
+> 119 Tabellen / **118 STRICT** / 25 Projekte, Dateigröße unverändert, die Zeile `@Projektflotte` (1046) byte-gleich (SHA-256);
+> Gegenprobe „Tabelle ohne STRICT" leer. `Migration74Tests` 7 Fälle, Auslieferungsvorlage-Probe auf 118, Doku (LIESMICH, BETRIEB_SQLITE
+> § 6.5, CLAUDE.md, EPOS.Kern/CLAUDE.md, ios.yml-Kommentar, Nachweisdokument, Spezifikation 14.4) nachgezogen. Referenzlauf 13/13
+> byte-gleich gegen R7, kein iOS-Lauf (Regel vom 09.09.2026; das STRICT-Gate liest die Erwartung aus der Seed-Datenbank). Gate auf
+> `e7d6426`: Kern 2444, UI 3487, SpeicherEngine 382, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 326,
+> ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
