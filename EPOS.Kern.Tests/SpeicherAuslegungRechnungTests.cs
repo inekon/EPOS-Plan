@@ -164,9 +164,17 @@ namespace EPOS.Kern.Tests
                 v.Eingaben.Auslegung.LastDatei.Werte);
         }
 
+        /// <summary>
+        /// Pinnt die Kultur (Nachweis Auftrag #230, 13. Fall neben den zwölf aus Lauf 315 —
+        /// dieselbe Ursache, hier ohne jede Pinnung): Die Ausnahme meldet auf Deutsch
+        /// („keine verwendbaren Betriebskosten"), die Ressourcen folgen
+        /// <c>CurrentUICulture</c> — auf dem Windows-Läufer (en-US) sonst englisch.
+        /// </summary>
         [Fact]
         public void Fehlende_gewaehlte_Kostenmodul_Kategorie_ist_ein_Fehler()
         {
+            using var kultur = new Kulturvorrichtung();
+
             SpeicherOptimierungEingaben e = Eingaben();
             e.Auslegung.Betriebsquelle = SpeicherKostenQuelle.Kostenmodul;
             SpeicherKostensaetze modul = new SpeicherKostensaetze

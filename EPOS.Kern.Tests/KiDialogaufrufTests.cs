@@ -23,12 +23,19 @@ namespace EPOS.Kern.Tests
     /// PROZESSWEITEN Zustand — <c>KiChatKontext.Aufruf</c>,
     /// <c>KiChatKontext.AktiverBereich</c> und <c>KiVerfuegbarkeit.Haken</c>. Zwei
     /// verschiedene Sammlungen liefen nebeneinander; es gibt genau eine serielle.</para>
+    ///
+    /// <para>Pinnt die Kultur (Auftrag #230, Befund „Windows-CI rot seit Lauf 262"):
+    /// <c>Die_Frage_zur_Kennung_schlaegt_den_allgemeinen_Satz</c> hält den deutschen
+    /// Fragetext („Speicherflotte") fest, den <see cref="KiMeldungskennung.Frage"/> aus
+    /// Ressourcen baut, die <c>CurrentUICulture</c> folgen — die Klasse pinnte bis dahin
+    /// gar keine Kultur.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class KiDialogaufrufTests : IDisposable
     {
         private readonly Func<string> _bereichVorher = KiChatKontext.AktiverBereich;
         private readonly Func<bool> _verfuegbarVorher = KiVerfuegbarkeit.Haken;
+        private readonly Kulturvorrichtung _kultur = new();
 
         /// <summary>Stellt den prozessweiten Zustand zurück — jeder Fall, jedes Mal.</summary>
         public void Dispose()
@@ -36,6 +43,7 @@ namespace EPOS.Kern.Tests
             KiChatKontext.AufrufMelden(null);
             KiChatKontext.AktiverBereich = _bereichVorher;
             KiVerfuegbarkeit.Haken = _verfuegbarVorher;
+            _kultur.Dispose();
         }
 
         // =================================================================

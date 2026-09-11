@@ -19,11 +19,20 @@ namespace EPOS.Kern.Tests;
 /// <item>Der STUDIENLAUF bricht weiterhin ab — aber mit dem Ausweg im Text.</item>
 /// <item>Einheiten mit EIGENEN Kosten brauchen überhaupt keine Sätze.</item>
 /// </list>
+///
+/// <para>Pinnt die Kultur (Auftrag #230, Befund „Windows-CI rot seit Lauf 262"): Sieben der
+/// Fälle halten deutsche Ausnahme- und Hinweistexte fest
+/// („Betriebskostenkoeffizienten", „nicht bewertbar", „je Einheit" …), die aus dem Kern
+/// über <c>CurrentUICulture</c> kommen — auf dem Windows-Läufer (en-US) sonst englisch.</para>
 /// </summary>
 [Collection("Testdatenbank")]
-public sealed class SpeicherFlottenProjektKostenTests
+public sealed class SpeicherFlottenProjektKostenTests : IDisposable
 {
     private const int Projekt = 987654322;
+
+    private readonly Kulturvorrichtung _kultur = new();
+
+    public void Dispose() => _kultur.Dispose();
 
     // =====================================================================
     //  1. Die Reproduktion — der Weg des Anwenders

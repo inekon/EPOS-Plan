@@ -25,21 +25,25 @@ namespace EPOS.Kern.Tests
     /// träfe sonst eine Anmeldung aus einer nebenher laufenden Klasse
     /// (Befund iU5‑O‑1).</para>
     ///
-    /// <para>Die Klasse pinnt die Kultur selbst (Regel seit W8): Der Feldblock
-    /// formatiert Zahlen in der Anwenderkultur, und „12,5" gegen „12.5" wäre sonst eine
-    /// Frage des Läufers.</para>
+    /// <para>Die Klasse pinnt die Kultur über die gemeinsame <see cref="Kulturvorrichtung"/>
+    /// (seit Auftrag #230; vorher nur <c>CurrentCulture</c>, s. u.): Der Feldblock formatiert
+    /// Zahlen in der Anwenderkultur, und „12,5" gegen „12.5" wäre sonst eine Frage des
+    /// Läufers — UND er schreibt Wahrheitswerte („Ja") und den Leer-Text („(leer)") aus
+    /// <c>Resource.</c>, die <c>CurrentUICulture</c> folgen. Bis #230 pinnte die Klasse nur
+    /// <c>CurrentCulture</c>: Auf dem Windows-Läufer (en-US) blieb <c>CurrentUICulture</c>
+    /// unberührt, und zwei Fälle bekamen die englischen Satellitentexte
+    /// („Yes" statt „Ja", „(empty)" statt „(leer)").</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class KiMaskenbrueckeTests : IDisposable
     {
         private const string MASKE = "Form_Pruefstand";
 
-        private readonly CultureInfo _kulturVorher = Thread.CurrentThread.CurrentCulture;
+        private readonly Kulturvorrichtung _kultur = new();
         private readonly Action<string> _senkeVorher = KiMaskenbruecke.Protokollsenke;
 
         public KiMaskenbrueckeTests()
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
             KiMaskenbruecke.Leeren();
         }
 
@@ -47,7 +51,7 @@ namespace EPOS.Kern.Tests
         {
             KiMaskenbruecke.Leeren();
             KiMaskenbruecke.Protokollsenke = _senkeVorher;
-            Thread.CurrentThread.CurrentCulture = _kulturVorher;
+            _kultur.Dispose();
         }
 
         // =====================================================================
