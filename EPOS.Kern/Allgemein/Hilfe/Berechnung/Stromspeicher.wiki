@@ -433,8 +433,8 @@ Ladegrenze, der Rest aus dem BHKW-Überschuss:
 :: <math>v_{\mathrm{pv}}(k)</math>, <math>v_{\mathrm{bhkw}}(k)</math> – Einspeisevergütung je Quelle [ct/kWh]
 :: <math>100</math> – Umrechnung von Cent in Euro [ct/€]
 
-Die Division durch 100 rechnet Cent in Euro um. Die Ladung kostet also die '''entgangene
-Vergütung''' der Energie, die sonst eingespeist worden wäre. Energetisch ist der Speicher dabei
+Die Division durch 100 rechnet Cent in Euro um. Die Ladung kostet also die '''entgangene Vergütung'''
+der Energie, die sonst eingespeist worden wäre. Energetisch ist der Speicher dabei
 quellenblind — die Aufteilung <math>E_{\mathrm{pv,ant}}</math> / <math>E_{\mathrm{bhkw,ant}}</math>
 ist reine Bewertung.
 
@@ -495,8 +495,8 @@ Sekundärkennzahl je Auslegung ausgewiesen.
 
 Die Auslegungssuche ist kein Teil des Simulationslaufs, sondern ein eigener Rechenlauf. Sie
 durchsucht zweistufig — Grobraster über den ganzen Suchraum, dann ein Feinraster um das Groboptimum,
-verfeinert wird die ausgewählte Größenachse (Kapazität oder Leistung) — und maximiert den '''Jahresüberschuss nach
-Kapitaldienst''':
+verfeinert wird die ausgewählte Größenachse (Kapazität oder Leistung) — und maximiert den
+'''Jahresüberschuss nach Kapitaldienst''':
 
 : <math>\displaystyle \Delta J(C,P) = E_{\mathrm{a,aeq}}(C,P) - \left[ c_{\mathrm{cap}} \cdot C + c_{\mathrm{pow}} \cdot P + I_{\mathrm{fix}} \right] \cdot a(i,N)</math> &nbsp;&nbsp;(23)
 :: <math>\Delta J(C,P)</math> – Jahresüberschuss nach Kapitaldienst [€/a]
@@ -1016,7 +1016,8 @@ Zusätzlich für die '''Speicherflotte''':
 * '''Variantenvergleich der Speicher''' — dieselben Kennzahlen je Variante nebeneinander.
 * '''Auslegungsoptimierung''' — Heatmap über Kapazität oder Leistung und C-Rate, Bestpunkt nach (23) und Kennzahlen je Rasterpunkt.
 
-* '''Simulationsprotokoll''' — jeder Rückfall (kein Speicher, keine Kapazität, 1‑C‑Annahme,Ersatz-SoC-Band, nicht umgesetzte) und jede Rasterabweichung.
+* '''Simulationsprotokoll''' — jeder Rückfall (kein Speicher, keine Kapazität, 1‑C‑Annahme,
+  Ersatz-SoC-Band, nicht umgesetzte Berechnungsart) und jede Rasterabweichung.
 
 Für die '''Speicherflotte''' zusätzlich:
 
