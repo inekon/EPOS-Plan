@@ -3217,12 +3217,12 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > zur Aufnahme ins Register § 8 des Umsetzungskonzepts bei der Zusammenführung von `ios_migration_september`:
 > - **SP‑O‑1 Oracle-Jahreslauf:** 35 040 Intervalle mit Horizont 192 / Neuplanung 96 brechen nach > 60 s ab (Test übersprungen); Laufzeit und Dialogtauglichkeit unbelegt. Entscheid: Grenze für den Dialog (Kandidatenzahl × Horizont) oder Hintergrundlauf mit Fortschritt.
 > - **SP‑O‑2 Rainflow ohne Alterungswirkung:** Miner-Schaden wird ausgewiesen, aber Kapazität/Leistung altern im Lauf nicht; kein Kalender-, Temperatur- oder Ersatzmodell.
-> - **SP‑O‑3 Solver nur Windows:** Google.OrTools/SCIP hängt an `SpeicherPlanung` (WinForms). iOS und jede andere Schale ohne registrierten `IFlottenPlaner` haben nur die reaktiven Ziele PvGreedy/PeakShaving; PvPlanung/Arbitrage/MultiUse müssen dort als „nicht verfügbar" erscheinen (#170c prüft).
+> - **SP‑O‑3 Solver nur Windows:** Google.OrTools/SCIP hängt an `SpeicherPlanung` (WinForms). iOS und jede andere Schale ohne registrierten `IFlottenPlaner` haben nur die reaktiven Ziele PvGreedy/PeakShaving; PvPlanung/Arbitrage/MultiUse müssen dort als „nicht verfügbar" erscheinen (#170c prüft). → **eingelöst 11.09.2026 (#170c: `FlottenPlanerLage`, Sperre im Betriebseditor).**
 > - **SP‑O‑4 Optimalität:** MILP-Optimum gilt je Horizont; rollierender Jahreslauf und endliches Größenraster sind nicht global optimal — im Ergebnis so benennen (steht im Dialog).
 > - **SP‑O‑5 Tarife:** keine Monatspeaks, Tarifstaffeln, Steuern, mehrere Abrechnungsperioden; eine Abrechnungsperiode je Variante.
 > - **SP‑O‑6 Mehrjahresalterung:** Projektjahre und SoC-Mitnahme umgesetzt; Degradation, Ausfall, Reparatur fehlen (spätere Zustandsmodelle).
 > - **SP‑O‑7 Wärmekopplung:** BHKW-Fahrplan und elektrische Zusatzlast sind Eingaben; keine gemeinsame Wärme/Strom-MILP (bewusst, Kap. 13.5).
-> - **SP‑O‑8 Referenzlauf:** Linux-Gate 11.09.2026 byte-gleich für 1030/1007/1017/1045; die vier Projekte führen keine Flotte — ein Referenzprojekt MIT Flotte (Basis R7) fehlt, sonst ist der Flottenpfad ohne Regressionsnetz.
+> - **SP‑O‑8 Referenzlauf:** Linux-Gate 11.09.2026 byte-gleich für 1030/1007/1017/1045; die vier Projekte führen keine Flotte — ein Referenzprojekt MIT Flotte (Basis R7) fehlt, sonst ist der Flottenpfad ohne Regressionsnetz. → **eingelöst 11.09.2026 (#174: Basis R7, Projekt 1046).**
 > - **SP‑O‑9 Repository:** `.work/` (73-MB-Datenbankkopie) und fünf docx auf Anwenderwunsch im Zweig belassen (11.09.2026); Klongröße + ~80 MB.
 >
 > **#170c/#172/#173 (11.09.2026) — Nacharbeiten der Integration.** **#170c (SP‑O‑3 eingelöst, `4f3cf8e`):** Drei der fünf
@@ -3237,6 +3237,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `EPOS.Kern/CLAUDE.md` `Model/` (54). **#173:** 14 Codestellen in sieben Testdateien auf die xUnit-Idiome, 28 Analysewarnungen
 > → 0; das Gate zählt Warnungen seither mit `[A-Za-z]+[0-9]+`. Gate auf `ed83c66`: Kern 2 432 grün, UI 3 468 grün, SpeicherEngine 382,
 > SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 319, ChartProben 44, Referenzlauf byte-gleich.
+>
+> **#174 (11.09.2026, SP‑O‑8 eingelöst, `088a6a1`, Merge `65c767f`) — Prüfprojekt 1046 und Referenzbasis R7.** Keines der zwölf
+> Referenzprojekte betrat den Flottenpfad des Projektlaufs (`SpeicherFlottenProjektCtrl` → `SpeicherEngine/FlottenSimulator`);
+> eine stille Änderung an Verteilung, Reserve, Richtungswirkungsgrad oder Netzbilanz wäre nur im Prüfstand aufgefallen. Jetzt:
+> **1046 „Prüfprojekt Speicherflotte"**, Tiefkopie von 1007 (höchste Bezugsspitze 19,776 kW der drei Projekte mit Strombedarf
+> und PV, führt schon Einzelspeicher — dasselbe Projekt rechnet mit Flotte aus den Einzelpfad, mit Flotte an den Flottenpfad),
+> zwei Einheiten 24 kWh an 10/12 kW und 16 kWh an 6/7 kW mit getrennten Richtungswirkungsgraden, SoC-Bändern, Reserve und
+> Hilfsverbrauch, Ziel `PeakShaving` gegen 16 kW, Verteilung `Kaskade`, kein Solver (planende Ziele brauchen OR-Tools, das der
+> plattformfreie Referenzlauf bewusst nicht bindet). Die Größe ist am Peak-Ziel gemessen, nicht geraten: längste Exkursion über
+> T aus `reststrom_viertelstunde.csv` 101,5 kWh (T=12), 33,5 kWh (T=16), 8,5 kWh (T=18) bei 34,4 kWh nutzbar — T=16 hält 20
+> Überschreitungen und damit den Freigabeweg der Peak-Reserve im Netz; die Auftragsempfehlung 190 kWh an 80 kW wäre vor
+> 19,8 kW in jedem Intervall unbegrenzt gewesen. Wirkung: Bezugsspitze 19,7762 → **16,7428 kW** (−15,3 %), Netzbezug
+> 50 538,7 → 51 611,0 kWh (+2,1 %), Intervalle über 16 kW 2 864 → 20; A entlädt 1 761×/lädt 877×, B 1 177×/734×, „nur B
+> entlädt" 1 152× (Kaskade), beide SoC-Bänder voll ausgefahren, gleichzeitiges Laden und Entladen 0×. `Referenzlauf/Ergebnisexport.cs`
+> führt neu vier Flotten-Ganglinien je Einheit und 42 Skalare `Flotte.*` (Netzbilanz, Referenz ohne Speicher `Flotte.Ref.*`,
+> je Einheit Energie, Vollzyklen, Miner-Schaden, Rainflow-Zyklen), alle nur, wenn die Flotte gerechnet hat. Basis
+> `Referenzlaeufe/2026-09-11_R7_Speicherflotte`: **13 Projekte, 345 CSV, 1 937 Skalare**, die zwölf alten **byte-gleich zu R6**,
+> zweiter Lauf 13/13 byte-gleich, Toleranzvergleich 13/13 PASS (3 777 497 Werte); Projekt wiederholbar aus
+> `Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py` (Testdatenbank 25 Projekte, Schemastand 73, 117 STRICT).
+> `kern.yml` rechnet 1030/1007/1017/1045/**1046** gegen R7, `ios.yml` nur den Basispfad (kein iOS-Lauf ausgelöst), dritte
+> Einfrierregel in `CLAUDE.md` und `LIESMICH.md`. Gate auf `65c767f`: Kern 2437, UI 3487, SpeicherEngine 382, SpeicherPlanung
+> 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 319, ChartProben 44, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
