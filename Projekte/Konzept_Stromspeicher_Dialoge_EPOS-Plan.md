@@ -422,3 +422,130 @@ Ins Register § 8 des Umsetzungskonzepts (Block „Offene Punkte des Mehrspeiche
   keine Größen-Sicht trotz Rastersuche; Behebung P2–P4.
 - **SP‑O‑12 Zwei Speicherpfade:** Einzelspeicher (regressionsgeprüft, 12 Projekte) und Flotte
   (1046) rechnen getrennt; Zusammenführung erst nach SD‑Q2.
+
+---
+
+## 7. Optimierung als eigener Bereich — Anwenderrückmeldung 11.09.2026 (SD‑E‑9)
+
+### 7.1 Rückmeldung
+
+Drei Bildschirmfotos (Einheiteneditor mit „Größenbereich dieser Einheit" und „Ersatz und Restwert",
+Block „Wirtschaftliche Jahresprojektion") und die Excel-Mappe V7 (Blatt „Optimierung Speicher
+(Ziel: max N13)", Tab „Daten für Auswertung P_Sim"): *„verbessere die Struktur der Dialogseite. Es soll
+ein Bereich Stromspeicheroptimierung geben, der die wirtschaftlich beste ‚Größe' des Stromspeichers
+berechnet und auch grafisch darstellt. Dies war schon einmal vorhanden."* Dazu die Bitte, drei Felder
+zu erläutern: Energie-Ausgleichswert, Zusätzlicher Restwert der Studie, Maximale Auslegungskandidaten.
+
+### 7.2 Befund — die Optimierung gibt es, sie ist nur versteckt
+
+- **Die Rastersuche liefert heute genau das, was die Mappe zeigt.** Seit P4 (#193) und P5 (#206)
+  zeichnet Schritt 5 die **Rasterkarte** „Kapitalwert über Kapazität und C-Rate" (Optimum markiert,
+  unzulässige Punkte schraffiert), zwei **Schnittkurven** (über der Kapazität bei fester C-Rate, über
+  der Leistung bei fester Kapazität) und die **Kandidatentabelle** mit „übernehmen"
+  (`SpeicherFlottenGroessenAnsicht`, 561 Zeilen; Bilder aus `ChartRenderer.Optimierungsraster`/
+  `.Schnittkurve`, dieselben Renderer wie der gefallene Einzelspeicher-Dialog aus #137).
+- **Erreichbar ist sie nur über drei Schalter an drei Orten.** (1) In Schritt 1 ganz unten, UNTER dem
+  Block „Wirtschaftliche Jahresprojektion", der Schalter „Speicheranzahl und Größenbereiche optimieren"
+  (`FLOTTE_DLG_CHK_OPTIMIEREN` → `Auslegung.FlottenGroessenOptimieren`); (2) je Einheit im Klappblock
+  „Größenbereich dieser Einheit" der Schalter „In der Auslegung variieren" samt Größenkopplung und drei
+  Bereichen; (3) erst dann heißt Station 4 „Größen optimieren" statt „Bewerten", und Schritt 5 zeigt die
+  Größen-Sicht. **Im Foto steht Schalter (1) aus** — deshalb sieht der Anwender „4 Bewerten" und keine
+  Optimierung. Das Wort „Optimierung" kommt in der Ablaufleiste nicht vor (1 Speicher · 2 Daten & Kosten ·
+  3 Betriebsführung · 4 Bewerten · 5 Ergebnis).
+- **Der Einheiteneditor ordnet falsch.** Die sieben Kostenfelder (Feste Investition, Investition
+  Kapazität/Leistung, Betriebskosten fix/Kapazität/Leistung, Kosten je Entladung) stehen unter der
+  Überschrift **„Ersatz und Restwert"**, weil der Schalter „Eigene Kosten für diese Einheit verwenden"
+  dort eingehängt wurde (`SpeicherFlottenEditor.razor:193-228`). Der **Größenbereich** (der SUCHRAUM der
+  Optimierung) steht zwischen „Alterung" und „Ersatz", obwohl er nicht die Einheit beschreibt, sondern
+  die Suche. Der Block „Wirtschaftliche Jahresprojektion" (Zins, Laufzeit, Restwert, Ausgleichswert)
+  steht in Schritt 1 unter der Einheitenliste — die Wiki-Seite ordnet ihn Schritt 2 „Daten & Kosten"
+  zu („Für die Flotte kommen hier die finanzielle Projektlaufzeit und der Energie-Ausgleichswert
+  dazu"); Programm und Doku widersprechen sich.
+- **Was mit dem alten Dialog verloren ging.** `SpeicherOptimierungDialog` (#137) baute die Mappe
+  wörtlich nach: **Phase 1 Grobraster**, **Phase 2 Feinraster** um das Grob-Optimum
+  (`SpeicherOptimierer.FeinrasterBereich`, V7-Regel Schrittweite/9), Kasten **„Bestes Ergebnis"**
+  (Zielwert, Größe, C-Rate, Leistung, Rechendauer), Heatmap, Schnittkurve. Er fiel mit P3/P5, weil
+  die Flotte den Weg übernahm. Der `FlottenOptimierer` rechnet heute NUR das Grobraster (Kapitel 5,
+  P6 „Feinraster — später"); den Kasten „Bestes Ergebnis" gibt es in der Größen-Sicht nicht — das
+  Optimum steht nur als Marke im Bild und als hervorgehobene Tabellenzeile.
+- **Zwei Anzeigebefunde am Rand.** Das Feld „Energie-Ausgleichswert" zeigt `0,31746000000002055`
+  (Gleitkommarest des Vorschlags aus dem mittleren Bezugspreis; das `Zahlenfeld` rundet nicht,
+  `SpeicherFlottenEditor.razor:280`). Die zwei Expertenfelder „Zusätzlicher Restwert der Studie" und
+  „Maximale Auslegungskandidaten" stehen ohne Erklärzeile neben Zins und Laufzeit.
+
+### 7.3 Was die drei Felder bedeuten (Antwort, gehört in Erklärzeilen und Wiki)
+
+| Feld | Bedeutung | Quelle |
+|---|---|---|
+| **Energie-Ausgleichswert** [€/kWh gespeichert] | Am Ende des Simulationsjahrs steht der Speicher selten auf demselben Ladezustand wie am Anfang. Ein Speicher, der voll startet und leer endet, hätte „gratis" Energie verkauft; einer, der leer startet und voll endet, hätte Energie bezahlt, die noch drin ist. Der Ausgleichswert bewertet die Differenz Endenergie − Startenergie mit einem Preis und bucht sie als Korrektur in die Jahresbilanz (positiv, wenn der Speicher voller endet). Der Vorschlag ist der mittlere Bezugspreis der Datenquelle; ein von Hand geänderter Wert bleibt („gespeichert") und wird nicht wieder überschrieben. Ohne Endenergiegleichheit ist er Pflicht. | `FlottenSimulationOptionen.EnergieAusgleichEuroProKWh`, `SpeicherFlottenErgebnis.EndenergieAusgleichEuro` |
+| **Zusätzlicher Restwert der Studie** [€] | Ein Betrag, der am ENDE der Projektlaufzeit als Einnahme angesetzt und auf heute abgezinst in den Kapitalwert eingeht — ZUSÄTZLICH zu den Restwerten der einzelnen Einheiten („Restwert der Einheit" im Editor). Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket. Vorgabe 0. | `FlottenWirtschaftlichkeitEingang.RestwertEuro`; `FlottenWirtschaftlichkeit.cs:140` addiert Studie + Einheiten |
+| **Maximale Auslegungskandidaten** | Obergrenze für die Zahl der Rasterpunkte, die die Optimierung rechnet. Die Suche multipliziert je variierter Einheit die Schritte von Anzahl × Kapazität × Leistung (bzw. C-Rate); jeder Kandidat ist ein vollständiger Jahreslauf über alle Projektjahre. Überschreitet das Raster die Grenze, wird der Lauf **abgewiesen, nicht gekürzt** — man verkleinert dann Bereich oder Schrittweite. Vorgabe 10 000. Im Foto: Kapazität 20…500/20 und Leistung 20…500/20 = 25 × 25 = 625 Kandidaten. | `FlottenAuslegungEingang.MaximaleKandidaten`, `FlottenOptimierer.cs:57` |
+
+### 7.4 Zielbild — Station „Optimierung" statt eines Schalters (Vorschlag)
+
+Die Ablaufleiste bekommt die Optimierung als eigene, benannte Station; Station 4 ist dann eine SEITE,
+nicht nur ein Rechenknopf:
+
+**1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Optimierung · 5 Ergebnis**
+
+- **Schritt 1 Speicher:** nur noch die Einheiten (Technik, Alterung & Grenzkosten, Kosten dieser
+  Einheit, Ersatz & Restwert). Der Größenbereich und der Schalter „optimieren" wandern nach 4; der
+  Block „Wirtschaftliche Jahresprojektion" wandert nach 2 (dort, wo die Wiki-Seite ihn beschreibt).
+- **Schritt 2 Daten & Kosten:** Zeitreihen, Kostensätze, dazu Zins, Jahresprojektion, Projektlaufzeit,
+  Restwert der Studie, Energie-Ausgleichswert (jedes Expertenfeld mit Erklärzeile aus 7.3).
+- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt, Mockup `stromspeicher-optimierung.html`):
+  1. Kopf: **Ziel** (Kapitalwert gegenüber „ohne Speicher" — die Mappe kannte drei Zielgrößen, das
+     Programm legt seit P1 eine fest) und die Wahl **„Nur die eingestellte Flotte bewerten"** oder
+     **„Wirtschaftlich beste Größe suchen"**.
+  2. **Suchraum je Einheit** (heute „Größenbereich dieser Einheit"): Größenkopplung, Von/Bis/Schritt für
+     Anzahl, Kapazität, Leistung bzw. C-Rate — als Tabelle, eine Zeile je Einheit, Schalter „variieren".
+  3. **Kandidatenzeile, live:** „25 × 25 × 1 = 625 Kandidaten, geschätzt 1–2 min" gegen „Maximale
+     Auslegungskandidaten"; rot mit Hinweis, sobald das Raster die Grenze reißt (heute erst beim Start).
+  4. **Phase 2 Feinraster** (Schalter, Vorgabe an): nach dem Grobraster ein zweites Raster um das
+     Grob-Optimum auf der Größenachse, Schrittweite/9 wie in der Mappe und im alten Einzelspeicher
+     (`SpeicherOptimierer.FeinrasterBereich`) — das ist Paket P6, vorgezogen.
+  5. **Rechenknopf** „Optimieren" (bzw. „Bewerten"), Fortschritt und Abbrechen wie heute.
+  6. **Ergebnis der Suche**, direkt darunter: Kasten **„Bestes Ergebnis"** (Kapitalwert, Kapazität,
+     C-Rate, Leistung, Anzahl; geprüfte / zulässige Kandidaten; Rechendauer), daneben die
+     **Rasterkarte** und die **Kurve Kapitalwert über der Größe** (Grob- und Feinpunkte unterscheidbar),
+     darunter die **Kandidatentabelle** — das ist die heutige Größen-Sicht, sie zieht von 5 nach 4.
+     „Kandidat übernehmen" schreibt die Größe in Schritt 1 und markiert das Ergebnis in 5 als veraltet.
+- **Schritt 5 Ergebnis:** nur noch die Bewertung der GEWÄHLTEN Flotte (Kacheln, Δ-Tabelle, Diagramme,
+  Jahresprojektion) — ohne Größen-Sicht.
+
+**Abbildung Mappe ↔ Programm**
+
+| Mappe V7, Blatt „Optimierung Speicher" | Programm nach 7.4 |
+|---|---|
+| Ziel: max N13 (Jahresüberschuss nach Kapitaldienst) | Kapitalwert über die Projektlaufzeit (gleiche Rangfolge bei gleicher Laufzeit und gleichem Zins; Entscheid P1) |
+| Bestes Ergebnis: Wert, Größe, C-Rate, Leistung, Rechendauer | Kasten „Bestes Ergebnis" (neu) |
+| Phase 1 Grobraster Größe × C-Rate, farbige Matrix | Rasterkarte (vorhanden), Kopplung „Kapazität und C-Rate" |
+| Phase 2 Feinraster 4 500…5 000 | Feinraster im `FlottenOptimierer` (P6, neu) |
+| Punktdiagramm Ergebnis über Größe | Schnittkurve (vorhanden), Grob- und Feinpunkte (neu) |
+
+### 7.5 Optionen und Empfehlung
+
+| | Inhalt | Aufwand |
+|---|---|---|
+| **A — Station „Optimierung"** (Empfehlung) | 7.4 vollständig: Station 4 als Seite, Suchraum und Schalter aus 1 nach 4, Jahresprojektion nach 2, Kandidatenzeile live, Feinraster (P6), Kasten „Bestes Ergebnis", Größen-Sicht von 5 nach 4, Editorblöcke neu geordnet, Erklärzeilen, Rundung des Ausgleichswerts; Wiki-Seite Stromspeicher (Schritte) nachgezogen | ein Opus-Agent, Seite + Editor + Optimierer; Referenzlauf unberührt (Projektlauf kennt keine Rastersuche) |
+| **B — nur Sichtbarkeit** | Struktur bleibt; Schalter nach OBEN in Schritt 1 mit dem Namen „Wirtschaftlich beste Größe suchen", Station 4 heißt immer „Optimieren / Bewerten", Kasten „Bestes Ergebnis" in Schritt 5, Kostenblock im Editor umbenannt, Rundung | klein, ein Sonnet-Agent; das Versteck bleibt, die Mappen-Analogie nicht |
+| **C — A ohne Feinraster** | wie A, P6 bleibt „später" | wie A minus Optimierer |
+
+**Empfehlung A.** Die Rückmeldung zielt auf einen BEREICH, der den Namen trägt und wie das Mappenblatt
+aufgebaut ist; das Feinraster ist der einzige fachliche Rest aus der Mappe, der noch fehlt, und der alte
+Einzelspeicher-Code zeigt die Regel (Schrittweite/9, Mindestbreite 1 kWh) — die Portierung in den
+`FlottenOptimierer` ist überschaubar und bekommt ein eigenes Prüfmuster (Grob-Optimum ⊂ Feinraster,
+Feinraster gewinnt nur bei strikt besserem Wert, wie `SpeicherOptimierer.cs:143`).
+
+### 7.6 Fragen (SD‑Q9 … SD‑Q12)
+
+| Frage | Empfehlung |
+|---|---|
+| **SD‑Q9** Option A, B oder C? | A |
+| **SD‑Q10** Feinraster wie in der Mappe (Schrittweite/9 um das Grob-Optimum, nur auf der Größenachse) oder auf beiden Achsen? | wie Mappe: nur Größenachse, C-Rate bleibt Grobraster (die Mappe zeigt, dass die C-Rate ab 1,0 C nichts mehr ändert) |
+| **SD‑Q11** Zielgröße bleibt der Kapitalwert (nicht der Jahresüberschuss der Mappe)? | ja — der Kasten „Bestes Ergebnis" zeigt zusätzlich die jährliche Ersparnis, damit der Vergleich mit der Mappe möglich bleibt |
+| **SD‑Q12** Block „Wirtschaftliche Jahresprojektion" nach Schritt 2 (wie die Wiki-Seite sagt)? | ja |
+
+**Stufenplan:** **P8 Struktur** (A oder C, ein Opus-Agent) und **P6 Feinraster** (bei A im selben
+Auftrag, sonst später). Start nach dem Merge von #220 (Startseiten-Reiter Simulation), weil beide
+`AppWurzel.razor` anfassen.
