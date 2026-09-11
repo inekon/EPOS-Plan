@@ -3794,6 +3794,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Prozesskultur, die Klasse pinnte sie nicht (im Worktree des Agenten hing der Fall an der Laufreihenfolge); Fix `91885de` hängt die
 > `Kulturvorrichtung` ein. Gate sept32 auf `91885de`: Kern 2 673, UI 3 812, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#225 (11.09.2026, `a71aa03` + `49cbb02`, Merge `9b30cfd`) — Ablaufleiste der Stromspeicher-Auslegung bündig; toter Anzahl-Schritt fällt
+> (zwei Anwenderwünsche vom Bildschirmfoto).** Die Regel `.epos-ablaufleiste-aktion { margin-inline-start: auto }` schob Rechenknopf und
+> hintere Stationen nach rechts; der neue, unabhängige Modifikator `Buendig` (`epos-ablaufleiste--buendig`) hebt NUR diese Marge auf, die
+> Simulationsseite behält `Kompakt` (#216) — belegt durch `AblaufleisteBuendigTests` (beide Wirte). Im Kasten „Anzahl" des Größenbereichs
+> stand ein deaktiviertes Schrittfeld ohne Modellbindung (`FlottenAuslegungsachse` kennt nur `AnzahlVon`/`AnzahlBis`, der Optimierer zählt in
+> Einerschritten); es fällt, eine Erklärzeile `FLOTTE_ED_ANZAHL_HINWEIS` (de/en) tritt an seine Stelle. Konzept Stromspeicher-Dialoge Register
+> SP‑O‑13. Gate sept33 auf `9b30cfd`: Kern 2 673, UI 3 814, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben
+> 53, Referenzlauf 5/5 byte-gleich gegen R7. Am selben Abend kam mit dem Sync `78bcf88` die Excel-Mappe V7 (71 MB) ins Repository.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
