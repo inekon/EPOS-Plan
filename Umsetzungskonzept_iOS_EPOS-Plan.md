@@ -3524,6 +3524,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > laufen noch über `KiDialogZugriff` und lehnen ab; iOS hat weiter keinen `Fragen`-Delegaten (`IProjektQuelle.KiAssistentGaben` leer, iU11).
 > Gate sept16 auf `24a8b71`: Kern 2 607, UI 3 661, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#210 (11.09.2026, `0697dd6`, Merge `99e5f3f`) — Speicherflotte im Projektlauf: zwei Einheiten bleiben zwei.** Anwenderbefund aus zwei
+> Bildschirmfotos: „Kennzahlen je Speicher" und die Reihenwahl der Diagramme führten EINE Einheit, ebenso der Eingabestand `@Aktuell` —
+> das Projekt hat zwei Speicheranlagen. **Ursache** (`SpeicherFlottenStudieCtrl.Vorbelegung`, vorher Z. 61–70): Die erste Flotte eines Projekts
+> entstand aus `StromspeicherSimCtrl.LeseParameter(projektId)`, und der liefert per Bauart EINEN Satz — die Anlagenzeile der aktiven
+> Speichervariante (AP9b), im Rückfall die kapazitätsgewichtete Summe. Für den Einzelspeicherlauf richtig, für die Flotte ein stiller Verlust;
+> weil der Projektlauf den gespeicherten Stand `@Projektflotte` rechnet, fehlte die zweite Anlage danach überall. Die zwei anderen Hypothesen
+> (Zusammenfall gleicher `AnlageId`/Namen; veraltetes Ergebnis ohne Banner) sind mit Tests ausgeschlossen. **Fix:** `StromspeicherSimCtrl.Speicheranlagen(int)`
+> (alle `SP_TYP`-Anlagen in Anlagenreihenfolge, `REF_SP_TYP` bleibt draußen) und `SpeicherFlottenStudieCtrl.EinheitenAusProjektanlagen` — je Anlage ein
+> eigener `LeseParameter(projektId, anlageId)`-Satz (Gerätedaten aus der Anlage, SoC-Band aus deren Variantenzeile), Name = Anlagenbezeichner, `AnlageId`
+> gesetzt, Rückfall auf den Sammelsatz nur ohne Anlagensatz; gespeicherte Stände werden nie überschrieben. Der Stromspeicher-Reiter zeigt je Einheit die
+> Spalte **„Herkunft"** („Projektanlage ‹Id›" oder „nur im Eingabestand"). 6 Kern-Fälle (`SpeicherFlottenAnlagenEinheitenTests`, drei davon vor dem Fix
+> rot) und 4 bunit-Fälle. **Offen (#210‑O‑1, Anwenderentscheid):** Das Schema unterscheidet eine gleichzeitig betriebene Anlage nicht von einer
+> Vergleichsalternative — beides ist eine `SP_TYP`-Zeile; der Fix nimmt alle als Einheiten (sichtbarer statt stiller Fehler, überzählige löscht der
+> Anwender in Schritt 1). Die Referenzprojekte 1007/1046 führen je vier `SP_TYP`-Anlagen und bekämen beim ersten Öffnen der Auslegung vier
+> Vorbelegungs-Einheiten; regressionsrelevant ist das nicht (1046 rechnet seinen Stand `@Projektflotte`). Gate sept17 auf `99e5f3f`: Kern 2 613, UI 3 665,
+> Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7 (Agent: 13/13).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
