@@ -8924,8 +8924,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Betrag netto [€/a]</value>
   </data>
   <data name="KDLG_SP_NUTZUNG" xml:space="preserve">
-    <value>Nutzungs-
-dauer [a]</value>
+    <value>Nutzungsdauer [a]</value>
   </data>
   <data name="KDLG_SP_WORSTBEST" xml:space="preserve">
     <value>Worst/Best</value>

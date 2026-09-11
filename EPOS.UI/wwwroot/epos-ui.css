@@ -311,29 +311,44 @@ body {
     margin-bottom: 15px;
 }
 
+/* Befund 3 der Abnahmeliste vom 11.09.2026 (#186): weisser Text im
+   dunklen Balken ohne Einrichtung - der Balken selbst trug KEIN
+   padding, nur .epos-gruppenkopf-titel einen margin-left von 8px, und
+   der galt unabhaengig vom Symbol. Mit Symbol begann der Text deshalb
+   spaeter (Symbolspur + margin) als ohne (nur margin) - zwei
+   Textbeginn-Stellen fuer denselben Balken.
+
+   Der Balken ist deshalb ein CSS-Raster mit einer FESTEN Symbolspur:
+   Die Spur steht immer, auch ohne <span class="epos-gruppenkopf-
+   symbol">, und der Titel liegt IMMER in Spalte 2 - der Textbeginn ist
+   damit fuer jeden der ueber 140 Einsaetze derselbe, ob mit oder ohne
+   Symbol. padding-inline ist der Hausabstand an den Aussenkanten des
+   Balkens; er ersetzt den bisherigen padding-right der Summe. */
 .epos-gruppenkopf-balken {
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--epos-gruppenkopf-symbolbreite) 1fr auto;
+    column-gap: 8px;
     align-items: center;
     min-height: var(--epos-gruppenkopf-hoehe);
     background: var(--epos-gruppenkopf-flaeche);
     color: var(--epos-gruppenkopf-text);
+    padding-inline: var(--epos-rand);
 }
 
 .epos-gruppenkopf-symbol {
-    flex: 0 0 var(--epos-gruppenkopf-symbolbreite);
+    grid-column: 1;
     text-align: center;
 }
 
 .epos-gruppenkopf-titel {
-    flex: 1 1 auto;
-    margin-left: 8px;
+    grid-column: 2;
+    margin: 0;
     font-size: var(--epos-schriftgroesse-gruppenkopf);
     font-weight: 700;
 }
 
 .epos-gruppenkopf-summe {
-    flex: 0 0 auto;
-    padding-right: var(--epos-rand);
+    grid-column: 3;
     color: var(--epos-gruppenkopf-summe);
     text-align: right;
 }
@@ -1559,17 +1574,40 @@ body {
     display: contents;
 }
 
+/* Befund 1a der Abnahmeliste vom 11.09.2026 (#186): "Nutzungs-
+   dauer [a]" / "Worst/Best" laufen zusammen. white-space: nowrap ohne
+   overflow liess den Kopftext ueber die eigene Spur hinauswachsen -
+   sichtbar wurde das erst, seit der Zeilenumbruch aus KDLG_SP_NUTZUNG
+   entfernt ist (der wirkte in WinForms, kollabierte in HTML zu einem
+   Leerzeichen und verdeckte den Ueberlauf). Eine Kopfzelle darf jetzt
+   zweizeilig umbrechen, auch mitten im Wort - die schmalste Spur des
+   Positionsrasters ist 60 px (SPALTENMASS), das reicht fuer keinen
+   Kopftext einzeilig. */
 .epos-zr-kopfzelle {
     padding: 4px 2px;
     font-weight: 700;
     color: var(--epos-text-leise);
     border-bottom: 1px solid var(--epos-rahmen-leise);
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.2;
 }
 
 .epos-zr-zelle {
     min-width: 0;
     padding: 2px 0;
+}
+
+/* Befund 1b (#186): Die Einheit eines Zahlenfelds quillt in die
+   Nachbarspalte. .epos-eingabe traegt flex: 1 1 auto OHNE min-width -
+   ein <input> ist ohne Vorgabe rund 196 px breit, und der Flexbox-
+   Mindestinhalt verhindert das Schrumpfen unter die eigene Spur
+   (Hausbefund W6-B-4, gilt auch im Zeilenraster). min-width: 0 gibt
+   das Schrumpfen frei, width: 100% haelt das Feld an der Spurbreite
+   fest statt am reinen Flex-Wachstum. */
+.epos-zr-zelle .epos-eingabe {
+    min-width: 0;
+    width: 100%;
 }
 
 /* Eine Zelle ohne eigenes Bedienelement (Kette, Einheit, Betragsspiegel). */

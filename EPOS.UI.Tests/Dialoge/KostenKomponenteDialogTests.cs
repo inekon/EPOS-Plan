@@ -2,6 +2,7 @@
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -122,6 +123,33 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Equal("Aktionen", koepfe[0].TextContent);
         Assert.Equal("Betrag netto [€]", koepfe[4].TextContent);
         Assert.Equal("Worst/Best", koepfe[6].TextContent);
+    }
+
+    /// <summary>
+    /// Befund 1a der Abnahmeliste vom 11.09.2026 (#186): <c>KDLG_SP_NUTZUNG</c>
+    /// trug einen echten Zeilenumbruch ("Nutzungs-\ndauer [a]"), der in WinForms
+    /// wirkte und in HTML zu einem Leerzeichen kollabierte - dadurch verdeckt
+    /// blieb, dass die Kopfzelle des Zeilenrasters keinen Umbruch verkraftete
+    /// (<c>white-space: nowrap</c> ohne Overflow) und der Kopftext in die
+    /// Nachbarspalte lief. Dieser Fall haelt den RESSOURCENWERT fest, den die
+    /// Windows-Huelle (<c>KostenKomponenteHuelle</c>) unveraendert an
+    /// <see cref="KostenKomponenteDialog.SpalteNutzung"/> reicht, und dass der
+    /// Spaltenkopf ihn ohne Zeilenumbruchzeichen zeigt.
+    /// </summary>
+    [Fact]
+    public void Der_Spaltenkopf_Nutzungsdauer_traegt_keinen_Zeilenumbruch()
+    {
+        string spalte = Resource.KDLG_SP_NUTZUNG;
+        Assert.DoesNotContain("\n", spalte);
+        Assert.DoesNotContain("\r", spalte);
+        Assert.Equal("Nutzungsdauer [a]", spalte);
+
+        var cut = Zeige(p => p.Add(x => x.SpalteNutzung, spalte));
+
+        string kopf = cut.FindAll(".epos-zr-kopfzelle")[5].TextContent;   // sechste Spalte
+
+        Assert.Equal("Nutzungsdauer [a]", kopf);
+        Assert.DoesNotContain("\n", kopf);
     }
 
     [Fact]
