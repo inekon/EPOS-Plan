@@ -3656,6 +3656,25 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rechenaktionen weiterhin nicht aus (Bestand #201, bestätigungspflichtig); Wiki „Hilfe-Assistent" Absatz „Rechnen dauert" in der Quelle, Upload durch die Orchestrierung.
 > Gate sept23 auf `42f51e4`: Kern 2645, UI 3711, Engine 394, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#215 (11.09.2026, `4bd5c8c`, Merge `74a3bb1`) — Paket P7: adaptive Lastspitzenkappung, die kausale Ratsche (Spezifikation 5.1.1 Fassung 1.4,
+> Anwenderentscheid „PS‑Q1 bis Q4, Empfehlung").** Befund des Anwenders: Bei festem Peak-Ziel entlud die Flotte nach einer verfehlten Spitze
+> an jeder kleineren weiter und stand leer, wenn die große kam. Jetzt ist H ein Zustand: `PeakZielAdaptiv` in `FlottenSimulationOptionen`
+> (Vorgabe NEUER Stände über `FlottenVorgaben.PeakZielAdaptivFuer`, gespeicherte Stände bleiben fest), je Intervall D_t aus `Grenzen(…, release: true)`,
+> Nachzug `H = N − D` bei `N − D > H`, danach die Regel aus 5.1 mit H an allen sieben Lesestellen des Simulators; `FlottenIntervallErgebnis.PeakZielKw`
+> (Treppe), `FlottenSimulationErgebnis.ErreichtesPeakZielKw` (H_end), `FlottenDiagnose.IntervalleSchwelleNachgezogen`. Ohne Ratsche ist der Rechenweg
+> Bit für Bit der bisherige. Bisektion rechnet ausdrücklich fest und heißt „mit Vorausschau erreichbar"; Anzeige-Controller zeichnet die Treppe und
+> nennt „kausal erreicht". Ansicht: Schritt 3 Wahl „adaptiv (kausal) | fest" mit „Startwert" (Grundlast vorbelegt), Schritt 5 zwei Zeilen, Reiter zeigt
+> den Modus, KI-Sicht 17. Feld `peak_ziel_adaptiv`, 15 Ressourcen. **Prüfstand:** `FlottenPeakRatscheTests` (14) mit dem Port des Excel-Makros auf
+> einem synthetischen Lastgang (7 Tage, Grundlast 60 kW, Spitzen 250–400 kW, ein 740-kW-Block): fest 740 kW (arbeitslos, SP‑O‑10), adaptiv
+> **540 kW** (H-Treppe 60 → 250 → 340 → 540, drei Nachzüge), Vorausschau-Optimum M* 340 kW, Wert der Vorausschau 200 kW; Port und Simulator auf
+> 1e‑6 gleich in Jahresspitze, H-Treppe, Netz- und SoC-Ganglinie; adaptiv mit H₀ = M* = fest. `PeakRatscheAnsichtTests` (11), zehn Kernfälle.
+> **Doku:** Spezifikation 5.1.1 „umgesetzt", Konzept P7, `Doku_Mehrspeicher` (+70), Wiki-Rechenweg **Fassung 6** (Anker `peak-ratsche`, Gl. 48–50),
+> Bedienungsseite Schritt 3/5 — Upload durch die Orchestrierung. **Offen:** Windows-Abnahme; S‑D (Kurzfristprognose) nach PS‑Q4 erst nach gemessenem
+> H_end − M*; Beobachtung des Agenten: `ModulImportDialogTests.Der_Herstellerfilter_…` fiel in einem von drei Gesamtläufen (Verdacht prozessweites
+> `Katalogfilterregister`, gehört zu #212). Kein iOS-Lauf (trifft die Hülle nicht).
+> Gate sept24 auf `74a3bb1`: Kern 2655, UI 3722, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
