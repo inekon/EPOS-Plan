@@ -73,7 +73,15 @@
             <span class="epos-spauslegung-kontext">@ProjektText</span>
         }
         <span class="epos-spauslegung-kopfaktionen">
-            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+            @* EINE PILLE JE BILDSCHIRM (Auftrag #221, KI-D-E-1): Traegt das Kopfband
+               des Hauptfensters die Pille, zeichnet die Ansicht keine zweite — sie
+               MELDET ihren Kontext nach oben. Auf iOS fehlt das Kopfband, der
+               CascadingValue fehlt, und alles bleibt wie bisher. *@
+            @if (!HilfePilleImKopfband)
+            {
+                <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Kontext.Dialogname"
+                           Aktiv="@AssistentSteht" />
+            }
             <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Verlassen">@ZurueckText</button>
         </span>
     </div>
@@ -454,6 +462,52 @@
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_SpeicherOptimierung.btn_Help";
 
     // =====================================================================
+    //  Die EINE Pille und der gemeldete Kontext (Auftrag #221, KI-D-E-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Führt ein Kopfband über dieser Ansicht schon eine Hilfe-Pille? Dann zeichnet sie
+    /// keine zweite. Unter Windows setzt <c>Hauptfenster</c> den Wert; auf iOS fehlt er.
+    /// </summary>
+    [CascadingParameter(Name = "HilfePilleImKopfband")]
+    public bool HilfePilleImKopfband { get; set; }
+
+    /// <summary>Der Weg nach oben; <c>null</c> = niemand hört zu.</summary>
+    [CascadingParameter] public Hilfekontextmelder? Hilfemelder { get; set; }
+
+    /// <summary>Wo der Anwender steht: Hilfeschlüssel, Name der Ansicht und ihr Schritt.</summary>
+    public Hilfekontext Kontext => new Hilfekontext(HilfeSchluessel, TitelText, SchrittText);
+
+    /// <summary>Der Name des stehenden Schritts, wie ihn die Ablaufleiste zeigt.</summary>
+    private string SchrittText => _schritt switch
+    {
+        AuslegungSchritt.Speicher => Schritt1Text,
+        AuslegungSchritt.Daten    => Schritt2Text,
+        AuslegungSchritt.Betrieb  => Schritt3Text,
+        AuslegungSchritt.Ergebnis => Schritt5Text,
+        _                         => ""
+    };
+
+    /// <summary>Steht der Assistent gerade für diese Ansicht? (<c>InfoKnopf.Aktiv</c>, #218)</summary>
+    public bool AssistentSteht => KiChatKontext.AssistentStehtFuer(HilfeSchluessel);
+
+    /// <summary>Der zuletzt nach oben gemeldete Kontext — gemeldet wird nur ein Wechsel.</summary>
+    private Hilfekontext? _gemeldet;
+
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Hilfekontextmelder? melder = Hilfemelder;
+        if (melder is null) return;
+
+        Hilfekontext jetzt = Kontext;
+        if (_gemeldet is not null && _gemeldet.Equals(jetzt)) return;
+
+        _gemeldet = jetzt;
+        melder.Melden(jetzt);
+    }
+
+    // =====================================================================
     //  Zustand
     // =====================================================================
 
@@ -739,7 +793,14 @@
     private KiMaskenanmeldung? _kiMaske;
 
     /// <inheritdoc/>
-    public void Dispose() => _kiMaske?.Dispose();
+    public void Dispose()
+    {
+        _kiMaske?.Dispose();
+
+        // Die Ansicht geht - die Pille im Kopfband faellt auf den Schluessel des
+        // Fensters zurueck (Auftrag #221).
+        Hilfemelder?.Melden(null);
+    }
 
     // =====================================================================
     //  Eingaben

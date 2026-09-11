@@ -291,7 +291,31 @@ namespace WindowsFormsApplication1
         // Laden — was die Seite nach EINEM Lauf zeigt
         // =================================================================
 
+        /// <summary>
+        /// Der ZULETZT zusammengetragene Stand — das, was die Seite gerade zeigt;
+        /// <c>null</c> = sie hat noch nichts geladen (Auftrag #221).
+        /// </summary>
+        private SimulationErgebnisDaten _letzterStand;
+
+        /// <summary>
+        /// Der zuletzt geladene Stand, ohne ihn neu zusammenzutragen (Auftrag #221).
+        /// </summary>
+        /// <remarks>
+        /// <b>Wozu.</b> Die Ansicht meldet ihre Felder beim Hilfe-Assistenten an
+        /// (KI-D-E-1), und zu ihnen gehoeren die Kennzahlen des Laufs. Ein eigener
+        /// Ladeweg dafuer waere ein ZWEITER Stand derselben Zahlen - und jede
+        /// Leseanfrage des Assistenten ein weiterer Datenbankzugriff. Hier wird nur
+        /// hergegeben, was <see cref="Laden"/> ohnehin gebaut hat.
+        /// </remarks>
+        internal SimulationErgebnisDaten LetzterStand { get { return _letzterStand; } }
+
         private SimulationErgebnisDaten Laden(int idProjekt)
+        {
+            _letzterStand = Zusammentragen(idProjekt);
+            return _letzterStand;
+        }
+
+        private SimulationErgebnisDaten Zusammentragen(int idProjekt)
         {
             SimulationErgebnisDaten d = new SimulationErgebnisDaten { IdProjekt = idProjekt };
 

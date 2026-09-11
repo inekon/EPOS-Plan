@@ -82,12 +82,21 @@ namespace WindowsFormsApplication1
                                                         string frage = null,
                                                         string kennung = null)
         {
+            // AUFTRAG #221: Wer die Pille einer ANSICHT drueckt, bringt keine Frage
+            // mit - die Eingabezeile blieb bis hierher leer. Fuehrt die Ansicht eine
+            // STARTFRAGE (Tabelle in KiChatKontext), steht sie jetzt dort. Eine
+            // mitgegebene Frage - der Weg aus einem BANNER - gewinnt: Sie ist die
+            // genauere.
+            string gestellt = frage ?? "";
+            if (gestellt.Length == 0)
+                gestellt = KiChatKontext.StartfrageFuerHilfeschluessel(hilfeschluessel);
+
             return new KiAufrufkontext
             {
                 Bereich = KiChatKontext.BereichFuerHilfeschluessel(hilfeschluessel),
                 Hilfeschluessel = hilfeschluessel ?? "",
                 Dialogname = dialogname ?? "",
-                Frage = frage ?? "",
+                Frage = gestellt,
                 Kennung = kennung ?? ""
             };
         }

@@ -55,6 +55,12 @@
         /// <summary>Einheit einer Energiemenge in Kilowattstunden (Auftrag #200).</summary>
         internal const string EINHEIT_KWH = "kWh";
 
+        /// <summary>Einheit einer Jahresenergiemenge in Megawattstunden (Auftrag #221).</summary>
+        internal const string EINHEIT_MWH_A = "MWh/a";
+
+        /// <summary>Einheit einer Jahresbetriebsdauer (Auftrag #221).</summary>
+        internal const string EINHEIT_H_A = "h/a";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -67,6 +73,9 @@
 
         /// <summary>Die fuenfte Maske (Auftrag #200): die Stromspeicher-Ansicht.</summary>
         internal static string MaskeSpeicherauslegung => MyResource.Resource.KI_DLG_MASKE_SPA;
+
+        /// <summary>Die sechste Maske (Auftrag #221): die Ansicht „Simulation".</summary>
+        internal static string MaskeSimulation => MyResource.Resource.KI_DLG_MASKE_SIM;
 
         // ====================================================================== Knoepfe
 
@@ -278,6 +287,45 @@
         internal static string SpaNetzbezugErl => MyResource.Resource.KI_DLG_SPA_NETZBEZUG_ERL;
         internal static string SpaKapitalwertName => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_NAME;
         internal static string SpaKapitalwertErl => MyResource.Resource.KI_DLG_SPA_KAPITALWERT_ERL;
+
+        // ========================================= Simulation: Felder (Auftrag #221)
+
+        internal static string SimSchrittName => MyResource.Resource.KI_DLG_SIM_SCHRITT_NAME;
+        internal static string SimSchrittErl => MyResource.Resource.KI_DLG_SIM_SCHRITT_ERL;
+        internal static string SimReiterName => MyResource.Resource.KI_DLG_SIM_REITER_NAME;
+        internal static string SimReiterErl => MyResource.Resource.KI_DLG_SIM_REITER_ERL;
+        internal static string SimKaskadeName => MyResource.Resource.KI_DLG_SIM_KASKADE_NAME;
+        internal static string SimKaskadeErl => MyResource.Resource.KI_DLG_SIM_KASKADE_ERL;
+        internal static string SimOhnePlatzName => MyResource.Resource.KI_DLG_SIM_OHNE_PLATZ_NAME;
+        internal static string SimOhnePlatzErl => MyResource.Resource.KI_DLG_SIM_OHNE_PLATZ_ERL;
+        internal static string SimNetzverlusteName => MyResource.Resource.KI_DLG_SIM_NETZVERLUSTE_NAME;
+        internal static string SimNetzverlusteErl => MyResource.Resource.KI_DLG_SIM_NETZVERLUSTE_ERL;
+        internal static string SimBetriebsartName => MyResource.Resource.KI_DLG_SIM_BETRIEBSART_NAME;
+        internal static string SimBetriebsartErl => MyResource.Resource.KI_DLG_SIM_BETRIEBSART_ERL;
+        internal static string SimLeistungsgrenzeName => MyResource.Resource.KI_DLG_SIM_GRENZE_NAME;
+        internal static string SimLeistungsgrenzeErl => MyResource.Resource.KI_DLG_SIM_GRENZE_ERL;
+        internal static string SimHeizstabName => MyResource.Resource.KI_DLG_SIM_HEIZSTAB_NAME;
+        internal static string SimHeizstabErl => MyResource.Resource.KI_DLG_SIM_HEIZSTAB_ERL;
+        internal static string SimBereitschaftName => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_NAME;
+        internal static string SimBereitschaftErl => MyResource.Resource.KI_DLG_SIM_BEREITSCHAFT_ERL;
+        internal static string SimWaermebedarfName => MyResource.Resource.KI_DLG_SIM_WBEDARF_NAME;
+        internal static string SimWaermebedarfErl => MyResource.Resource.KI_DLG_SIM_WBEDARF_ERL;
+        internal static string SimWaermedeckungName => MyResource.Resource.KI_DLG_SIM_WDECKUNG_NAME;
+        internal static string SimWaermedeckungErl => MyResource.Resource.KI_DLG_SIM_WDECKUNG_ERL;
+        internal static string SimRestwaermeName => MyResource.Resource.KI_DLG_SIM_WREST_NAME;
+        internal static string SimRestwaermeErl => MyResource.Resource.KI_DLG_SIM_WREST_ERL;
+        internal static string SimStrombedarfName => MyResource.Resource.KI_DLG_SIM_SBEDARF_NAME;
+        internal static string SimStrombedarfErl => MyResource.Resource.KI_DLG_SIM_SBEDARF_ERL;
+        internal static string SimStromdeckungName => MyResource.Resource.KI_DLG_SIM_SDECKUNG_NAME;
+        internal static string SimStromdeckungErl => MyResource.Resource.KI_DLG_SIM_SDECKUNG_ERL;
+        internal static string SimReststromName => MyResource.Resource.KI_DLG_SIM_SREST_NAME;
+        internal static string SimReststromErl => MyResource.Resource.KI_DLG_SIM_SREST_ERL;
+        internal static string SimSpeicherEntladungName => MyResource.Resource.KI_DLG_SIM_SP_ENTLADUNG_NAME;
+        internal static string SimSpeicherEntladungErl => MyResource.Resource.KI_DLG_SIM_SP_ENTLADUNG_ERL;
+        internal static string SimSpeicherSocName => MyResource.Resource.KI_DLG_SIM_SP_SOC_NAME;
+        internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
+        internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
+        internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

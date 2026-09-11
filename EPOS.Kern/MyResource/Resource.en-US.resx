@@ -18353,4 +18353,127 @@ Do you want to allow this?</value>
   <data name="SIM_ANSICHT_BTN_BLEIBEN" xml:space="preserve">
     <value>Stay</value>
   </data>
+  <data name="KI_DLG_MASKE_SIM" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="KI_DLG_SIM_SCHRITT_NAME" xml:space="preserve">
+    <value>Step of the view</value>
+  </data>
+  <data name="KI_DLG_SIM_SCHRITT_ERL" xml:space="preserve">
+    <value>Which step of the process bar is in front: the configuration or the result.</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_NAME" xml:space="preserve">
+    <value>Open tab</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_ERL" xml:space="preserve">
+    <value>The result tab the user is currently looking at (overview, demand, heat pump, boiler, solar thermal, CHP, photovoltaics, battery storage, result); empty while the configuration is shown.</value>
+  </data>
+  <data name="KI_DLG_SIM_KASKADE_NAME" xml:space="preserve">
+    <value>Cascade and order</value>
+  </data>
+  <data name="KI_DLG_SIM_KASKADE_ERL" xml:space="preserve">
+    <value>The generators included, in the order the simulation uses them — one list per group. The rank decides which generator covers the demand first.</value>
+  </data>
+  <data name="KI_DLG_SIM_OHNE_PLATZ_NAME" xml:space="preserve">
+    <value>Plants not included</value>
+  </data>
+  <data name="KI_DLG_SIM_OHNE_PLATZ_ERL" xml:space="preserve">
+    <value>Plants the project holds that have no place in the simulation. They do not run and show 0.00 in the overview.</value>
+  </data>
+  <data name="KI_DLG_SIM_NETZVERLUSTE_NAME" xml:space="preserve">
+    <value>Distribution heat losses</value>
+  </data>
+  <data name="KI_DLG_SIM_NETZVERLUSTE_ERL" xml:space="preserve">
+    <value>Surcharge on the heat demand for the losses of the distribution network; effective only where there is a heat demand.</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSART_NAME" xml:space="preserve">
+    <value>CHP operating mode</value>
+  </data>
+  <data name="KI_DLG_SIM_BETRIEBSART_ERL" xml:space="preserve">
+    <value>0 = heat-led, 1 = power-led, 2 = without feed-in. It applies to all CHP modules of the project.</value>
+  </data>
+  <data name="KI_DLG_SIM_GRENZE_NAME" xml:space="preserve">
+    <value>Lower power limit of the CHP units</value>
+  </data>
+  <data name="KI_DLG_SIM_GRENZE_ERL" xml:space="preserve">
+    <value>The project-wide lower modulation limit: below this share of rated output the module shuts down instead of modulating further.</value>
+  </data>
+  <data name="KI_DLG_SIM_HEIZSTAB_NAME" xml:space="preserve">
+    <value>Heat pump immersion heater</value>
+  </data>
+  <data name="KI_DLG_SIM_HEIZSTAB_ERL" xml:space="preserve">
+    <value>Does the heat pump run with an electric immersion heater? It covers what the heat pump alone cannot and consumes electricity one to one.</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREITSCHAFT_NAME" xml:space="preserve">
+    <value>Boiler standby time</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Hours per year the boiler is kept ready for operation; its standby loss follows from this.</value>
+  </data>
+  <data name="KI_DLG_SIM_WBEDARF_NAME" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="KI_DLG_SIM_WBEDARF_ERL" xml:space="preserve">
+    <value>The annual heat demand of the project from space heating, domestic hot water and process heat — the denominator of the heat coverage.</value>
+  </data>
+  <data name="KI_DLG_SIM_WDECKUNG_NAME" xml:space="preserve">
+    <value>Heat coverage</value>
+  </data>
+  <data name="KI_DLG_SIM_WDECKUNG_ERL" xml:space="preserve">
+    <value>Share of the heat demand covered by the generators of the cascade in this run.</value>
+  </data>
+  <data name="KI_DLG_SIM_WREST_NAME" xml:space="preserve">
+    <value>Remaining heat demand</value>
+  </data>
+  <data name="KI_DLG_SIM_WREST_ERL" xml:space="preserve">
+    <value>The amount of heat left uncovered after all generators of the cascade.</value>
+  </data>
+  <data name="KI_DLG_SIM_SBEDARF_NAME" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
+  <data name="KI_DLG_SIM_SBEDARF_ERL" xml:space="preserve">
+    <value>The annual electricity demand of the project without the own consumption of the heat generators.</value>
+  </data>
+  <data name="KI_DLG_SIM_SDECKUNG_NAME" xml:space="preserve">
+    <value>Electricity coverage</value>
+  </data>
+  <data name="KI_DLG_SIM_SDECKUNG_ERL" xml:space="preserve">
+    <value>Share of the electricity demand including own consumption that photovoltaics, CHP and storage discharge covered in this run.</value>
+  </data>
+  <data name="KI_DLG_SIM_SREST_NAME" xml:space="preserve">
+    <value>Remaining electricity demand</value>
+  </data>
+  <data name="KI_DLG_SIM_SREST_ERL" xml:space="preserve">
+    <value>The amount of electricity that has to be drawn from the grid after all generators.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_ENTLADUNG_NAME" xml:space="preserve">
+    <value>Battery storage discharge</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_ENTLADUNG_ERL" xml:space="preserve">
+    <value>The energy taken from the battery storage in this run; 0 if the project has no storage or it did not work.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOC_NAME" xml:space="preserve">
+    <value>State-of-charge band of the battery storage</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOC_ERL" xml:space="preserve">
+    <value>The admissible state-of-charge range of the active storage variant; empty if the project has no active variant.</value>
+  </data>
+  <data name="KI_DLG_SIM_HINWEISE_NAME" xml:space="preserve">
+    <value>Notes on the run</value>
+  </data>
+  <data name="KI_DLG_SIM_HINWEISE_ERL" xml:space="preserve">
+    <value>Warnings and notes reported by the last run — for instance a generator that has no place in the cascade.</value>
+  </data>
+  <data name="KI_FRAGE_SIMULATION_KONFIG" xml:space="preserve">
+    <value>Which run parameters affect this simulation, and why does the cascade cover the demand only in part?</value>
+  </data>
+  <data name="KI_FRAGE_SIMULATION_ERGEBNIS" xml:space="preserve">
+    <value>How should I read the key figures of this run — demand, coverage and remainder for heat and electricity?</value>
+  </data>
+  <data name="KI_KONTEXT_STELLE" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="KI_DLG_SIM_BEREICH" xml:space="preserve">
+    <value>The value for “{0}” has to be between {1} and {2}.</value>
+  </data>
 </root>

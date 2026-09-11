@@ -1,7 +1,8 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Hilfe-Assistent
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
      Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3;
-     Auftrag #218 - die Hilfepille, Anwenderentscheid "KI-Knopf: Variante C + Variante D")
+     Auftrag #218 - die Hilfepille, Anwenderentscheid "KI-Knopf: Variante C + Variante D";
+     Auftrag #221 - eine Pille je Bildschirm, Anwenderentscheid KI-D-E-1)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
 
@@ -24,6 +25,10 @@ Seit dem 11.09.2026 muss man den Assistenten nicht mehr suchen: Er ist dort erre
 
 '''Sie erreichen den Assistenten über die EPOS-Marke rechts neben dem i oben rechts in jeder Maske''' – die drei Felder des Programmlogos, farbig und mit einem Blitz in der Mitte. Beide Felder stehen in einem gemeinsamen Rahmen: Das i führt weiterhin auf die Hilfeseite dieses Dialogs, die Marke daneben ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
 
+'''Die Marke steht oben rechts im Kopfband und folgt der Ansicht.''' Auf jedem Bildschirm gibt es genau eine: In einem Dialog oder einer Überlagerung steht sie im Kopf des Dialogs, sonst im Kopfband des Programmfensters – und dort meint sie immer das, was Sie gerade vor sich haben. Wechseln Sie in der Simulation von der Konfiguration zum Ergebnis, wechselt mit ihr auch der Programmbereich, den der Assistent kennt. Knöpfe mitten im Inhalt, die einen '''Rechenweg''' erklären, bleiben davon unberührt: Sie führen auf eine andere Hilfeseite.
+
+Solange das Gespräch zu dieser Ansicht offen ist, ist die Marke '''blau ausgefüllt''' – so sehen Sie, wofür der Assistent gerade zuständig ist.
+
 Der Assistent öffnet sich '''ohne''' das Fenster zu blockieren: Sie können den Dialog weiter bedienen, während die Antwort entsteht.
 
 '''Der Knopf ist auch ohne Einrichtung da.''' Ist noch kein Zugangsschlüssel hinterlegt, führt er in die '''Einstellungen''' statt ins Leere. Netz, Schlüssel, Einwilligung und Tageslimit sind ausdrücklich keine Bedingung dafür, dass der Knopf erscheint – auch der Lesemodus blendet ihn nicht aus, denn '''Fragen ist lesend'''. Nur wenn der Assistent für diese Installation ganz abgeschaltet ist, fehlt er.
@@ -34,6 +39,8 @@ Vier Masken führen ihn bewusst nicht: das Chatfenster selbst, seine Werkzeuglis
 {{Anker|kontextzeile}}
 
 Über dem Eingabefeld steht, '''woher''' Sie kommen – der erkannte Programmbereich und der Name des Dialogs. Der Bereich wird aus dem Hilfeschlüssel des Dialogs abgeleitet, also aus derselben Angabe, die auch das Fragezeichen benutzt; er ordnet die Treffer der Hilfesuche. Wird kein Bereich erkannt, steht das ebenso dort.
+
+Kommen Sie aus einer '''Ansicht mit mehreren Schritten''', nennt die Zeile auch die Stelle: „Simulation · 3 Ergebnis · Stromspeicher". Und für die Ansicht ''Simulation'' ist bereits eine Frage vorbereitet – Sie können sie abschicken oder überschreiben.
 
 Auf dem iPad wechselt das Programm dafür die Ansicht und kehrt anschließend dorthin zurück, woher Sie kamen.
 
@@ -58,7 +65,9 @@ Wie bisher gilt: '''„Was wird gesendet?"''' zeigt vor dem Absenden genau den T
 === Der Assistent setzt Felder und rechnet ===
 {{Anker|setzen-und-rechnen}}
 
-Seit dem 11.09.2026 kann der Assistent in der offenen Maske '''mitarbeiten''': einen Wert eintragen, mehrere Felder auf einmal füllen, die Maske speichern, eine Maske öffnen und eine Rechnung anstoßen. Freigegeben sind dafür fünf Masken: '''Heizkessel bearbeiten''', '''Photovoltaik''', '''Pufferspeicher bearbeiten''', '''Wärmepumpen verwalten''' und die Ansicht '''Stromspeicher-Auslegung'''.
+Seit dem 11.09.2026 kann der Assistent in der offenen Maske '''mitarbeiten''': einen Wert eintragen, mehrere Felder auf einmal füllen, die Maske speichern, eine Maske öffnen und eine Rechnung anstoßen. Freigegeben sind dafür sechs Masken: '''Heizkessel bearbeiten''', '''Photovoltaik''', '''Pufferspeicher bearbeiten''', '''Wärmepumpen verwalten''', die Ansicht '''Stromspeicher-Auslegung''' und die Ansicht '''Simulation'''.
+
+In der '''Simulation''' liest er, was auf der Ansicht steht: die '''Kaskade''' samt Reihenfolge, die Anlagen, die das Projekt führt, die aber auf keinem Platz der Simulation stehen, die '''fünf Laufparameter''' (Netzwärmeverluste, Betriebsart und untere Leistungsgrenze der BHKW, Heizstab der Wärmepumpe, Betriebsbereitschaft des Heizkessels) und – nach einem Lauf – '''Bedarf, Deckung und Rest''' bei Wärme und Strom, die Speicherentladung, das SoC-Band und die Hinweise des Laufs. '''Setzen kann er dort nur die fünf Laufparameter'''; alles Übrige ist gerechnet und wird mit Begründung abgelehnt.
 
 '''Nichts geschieht ohne Ihren Klick.''' Vor jeder Änderung zeigt der Chat einen '''Bestätigungsblock''': welches Feld, welcher Wert bisher, welcher künftig – Feld für Feld im Klartext. Erst „Ausführen" trägt den Wert ein; „Abbrechen" verwirft ihn, und nach einer Minute verfällt die Freigabe von selbst. Ein Klick gilt für genau einen Vorgang, es gibt kein „ab jetzt immer".
 

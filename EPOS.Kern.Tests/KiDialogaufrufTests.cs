@@ -339,6 +339,85 @@ namespace EPOS.Kern.Tests
                         + string.Join(Environment.NewLine, fehlend));
         }
 
+        /// <summary>
+        /// AUFTRAG #221 (KI-D-E-1): Jede ANSICHT mit eigener Startfrage hat sie in
+        /// beiden Sprachen — sonst stuende auf der englischen Oberflaeche ein deutscher
+        /// Satz in der Eingabezeile.
+        /// </summary>
+        [Fact]
+        public void Jede_Startfrage_einer_Ansicht_steht_in_beiden_Sprachen()
+        {
+            var fehlend = new List<string>();
+
+            foreach (KeyValuePair<string, string> paar in KiChatKontext.Startfragepraefixe)
+                foreach (string kultur in new[] { "de-DE", "en-US" })
+                {
+                    string text = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+                        paar.Value, new System.Globalization.CultureInfo(kultur));
+
+                    if (string.IsNullOrWhiteSpace(text))
+                        fehlend.Add(paar.Key + " → " + paar.Value + " (" + kultur + ")");
+                }
+
+            Assert.True(fehlend.Count == 0,
+                        "Fehlende Startfragen:" + Environment.NewLine
+                        + string.Join(Environment.NewLine, fehlend));
+        }
+
+        /// <summary>
+        /// Die Startfrage folgt dem MASKENPRAEFIX des Hilfeschluessels — und ein
+        /// unbekanntes Praefix liefert nichts, statt eine Frage zu erfinden.
+        /// </summary>
+        [Fact]
+        public void Die_Startfrage_folgt_dem_Maskenpraefix()
+        {
+            string konfig =
+                KiChatKontext.StartfrageFuerHilfeschluessel("Form_Simulation_Config.btn_Help");
+            string ergebnis =
+                KiChatKontext.StartfrageFuerHilfeschluessel("Form_Simulation_Detail.btn_Help");
+
+            Assert.NotEqual("", konfig);
+            Assert.NotEqual("", ergebnis);
+            Assert.NotEqual(konfig, ergebnis);
+
+            Assert.Equal("", KiChatKontext.StartfrageFuerHilfeschluessel("Form_PV.btn_Help"));
+            Assert.Equal("", KiChatKontext.StartfrageFuerHilfeschluessel(""));
+            Assert.Equal("", KiChatKontext.StartfrageFuerHilfeschluessel(null));
+        }
+
+        /// <summary>
+        /// AUFTRAG #221: Der Aufruf MELDET seinen Wechsel — daran haengt die Pille, die
+        /// leuchtet, solange der Assistent fuer eine Ansicht steht (#218).
+        /// </summary>
+        [Fact]
+        public void Ein_Aufrufwechsel_wird_gemeldet_und_die_Pille_weiss_fuer_wen()
+        {
+            int gemeldet = 0;
+            Action hoerer = () => gemeldet++;
+
+            KiChatKontext.AufrufGeaendert += hoerer;
+            try
+            {
+                KiChatKontext.AufrufMelden(
+                    KiAufrufkontext.AusHilfeschluessel("Form_Simulation_Detail.btn_Help"));
+
+                Assert.Equal(1, gemeldet);
+                Assert.True(KiChatKontext.AssistentStehtFuer("Form_Simulation_Detail.btn_Help"));
+                Assert.False(KiChatKontext.AssistentStehtFuer("Form_Simulation_Config.btn_Help"));
+                Assert.False(KiChatKontext.AssistentStehtFuer(""));
+
+                KiChatKontext.AufrufMelden(null);
+
+                Assert.Equal(2, gemeldet);
+                Assert.False(KiChatKontext.AssistentStehtFuer("Form_Simulation_Detail.btn_Help"));
+            }
+            finally
+            {
+                KiChatKontext.AufrufGeaendert -= hoerer;
+                KiChatKontext.AufrufMelden(null);
+            }
+        }
+
         [Fact]
         public void Die_Frage_zur_Kennung_schlaegt_den_allgemeinen_Satz()
         {
