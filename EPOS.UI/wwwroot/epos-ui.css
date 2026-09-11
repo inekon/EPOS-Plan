@@ -326,7 +326,7 @@ body {
 
 .epos-gruppenkopf-titel {
     flex: 1 1 auto;
-    margin: 0;
+    margin-left: 8px;
     font-size: var(--epos-schriftgroesse-gruppenkopf);
     font-weight: 700;
 }
