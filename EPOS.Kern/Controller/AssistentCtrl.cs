@@ -73,13 +73,24 @@ namespace WindowsFormsApplication1
     /// Aufrufer zeigt es EINMAL an. Der Vorläufer brach kommentarlos ab und ließ ein
     /// halb geschriebenes Projekt stehen.</para>
     ///
-    /// <para><b>Offen bleibt die TRANSAKTION</b> (Anwenderfrage E-4, zweite Hälfte):
-    /// Ein einziger <c>DbVorgang</c> über den ganzen Speicherlauf setzt voraus, dass
-    /// alle 23 Schreibmethoden von <see cref="WizardCtrl"/> (1 737 Zeilen) ihn
-    /// hereingereicht bekommen statt jede ihre eigene Verbindung zu öffnen. Das ist
-    /// ein Umbau des SCHREIBWEGS und damit genau die Änderung, die Risiko R-W16-6
-    /// ohne einen Feld-für-Feld-Vergleich am Windows-Gerät untersagt. Diese Welle
-    /// liefert deshalb die Meldung, nicht die Rücknahme.</para>
+    /// <para><b>Die TRANSAKTION ist seit W16a-O-1 da</b> (Anwenderfrage E-4, zweite
+    /// Hälfte): <see cref="Speichern"/> öffnet EINEN <c>DbVorgang</c>, reicht ihn in
+    /// jede der 23 Schreibmethoden von <see cref="WizardCtrl"/> hinein und schreibt ihn
+    /// erst fest, wenn ALLE Schritte gelungen sind. Scheitert einer — oder wirft einer —,
+    /// wird der ganze Lauf zurückgerollt; die Meldung nennt den Schritt wie bisher. Ein
+    /// halb geschriebenes Projekt kann es damit nicht mehr geben. Die Reihenfolge der
+    /// Schreibschritte ist dabei Zeichen für Zeichen dieselbe geblieben: Geändert hat
+    /// sich die Klammer, nicht der Inhalt.</para>
+    ///
+    /// <para>Damit die Klammer auch die Katalogcontroller UNTER den 23 Methoden erreicht
+    /// (<c>CopyFromStamm</c>, <c>ApplyGanglinieToProjekt</c> …), meldet jede
+    /// Schreibmethode den Vorgang über <c>Vorgangsklammer</c> am Faden an; die
+    /// Zugriffsschicht leiht sich dessen Verbindung, statt eine eigene zu öffnen.</para>
+    ///
+    /// <para><b>Was damit NICHT eingelöst ist:</b> Risiko R-W16-6 verlangt für jeden
+    /// Umbau des Schreibwegs den Feld-für-Feld-Vergleich am Windows-Gerät
+    /// (<c>Referenzlauf.exe projekt</c>). Der steht aus; auf Linux belegen zwei
+    /// Kern-Prüffälle den Rückzug und den unveränderten Erfolgsfall.</para>
     /// </summary>
     public class AssistentCtrl
     {
@@ -551,43 +562,89 @@ namespace WindowsFormsApplication1
 
             Gespeichert = false;
 
-            return Betriebsart == BETRIEBSART_NEU ? Anlegen(ctrl) : Fortschreiben(ctrl);
+            // ===== DIE KLAMMER (W16a-O-1) ====================================
+            // EIN Vorgang ueber den GANZEN Lauf. Festgeschrieben wird nur, wenn der
+            // Zweig "gespeichert" meldet; jeder andere Ausgang - gescheiterter Schritt
+            // wie geworfene Ausnahme - rollt alles zurueck. Der Vorgang ist fuer die
+            // Dauer des Laufs am Faden angemeldet (Vorgangsklammer), damit auch die
+            // Katalogcontroller unter den 23 Schreibmethoden darin arbeiten.
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                AssistentErgebnis ergebnis;
+                try
+                {
+                    ergebnis = Betriebsart == BETRIEBSART_NEU
+                                   ? Anlegen(ctrl, vorgang)
+                                   : Fortschreiben(ctrl, vorgang);
+                }
+                catch (Exception)
+                {
+                    Gespeichert = false;
+                    vorgang.Rollback();
+                    throw;
+                }
+
+                if (!ergebnis.Erfolg)
+                {
+                    // Der Schritt hat FALSE gemeldet: nichts von diesem Lauf bleibt
+                    // stehen. Die Meldung selbst ist unveraendert (E-4).
+                    Gespeichert = false;
+                    vorgang.Rollback();
+                    return ergebnis;
+                }
+
+                try
+                {
+                    vorgang.Commit();
+                }
+                catch (Exception)
+                {
+                    Gespeichert = false;
+                    vorgang.Rollback();
+                    return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Commit");
+                }
+
+                return ergebnis;
+            }
         }
 
-        /// <summary>Der NEU-Zweig — neun Schreibschritte in fester Reihenfolge.</summary>
-        private AssistentErgebnis Anlegen(WizardCtrl ctrl)
+        /// <summary>
+        /// Der NEU-Zweig — neun Schreibschritte in fester Reihenfolge, alle im selben
+        /// <paramref name="vorgang"/>.
+        /// </summary>
+        private AssistentErgebnis Anlegen(WizardCtrl ctrl, DbVorgang vorgang)
         {
             int id = ProjektId;
-            if (!ctrl.Add_Projekt(ref id, Projekt))
+            if (!ctrl.Add_Projekt(ref id, Projekt, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt");
             ProjektId = id;
 
-            if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude))
+            if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_ZuordungGebaeude");
 
-            if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger))
+            if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WP_Waermeerzeuger");
 
             // Erst hier steht die ECHTE Projekt-ID (Add_Projekt/@@IDENTITY). Die Seiten
             // haben in ihrem CreateNewEnergyCarrier nur den Katalogtraeger angelegt;
             // energy_price und energy_Project_settings haengen an Tab_Projekt.ID und
             // entstehen deshalb erst jetzt.
-            if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger))
+            if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
 
-            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess))
+            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Prozess");
 
-            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie))
+            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Stromganglinie");
 
-            if (!ctrl.Del_WaermebedarfExtern(ProjektId))
+            if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_WaermebedarfExtern");
 
-            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf))
+            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WaermebedarfExtern");
 
-            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher))
+            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
 
             Gespeichert = true;
@@ -598,50 +655,50 @@ namespace WindowsFormsApplication1
         /// Der BEARBEITEN-Zweig — erst filtern, dann je Gewerk löschen und neu
         /// anlegen, zuletzt der Projektsatz.
         /// </summary>
-        private AssistentErgebnis Fortschreiben(WizardCtrl ctrl)
+        private AssistentErgebnis Fortschreiben(WizardCtrl ctrl, DbVorgang vorgang)
         {
             Erzeuger.RemoveAll(NichtAktivesElement);
             EntferneNichtAktiveZuordnungen();
 
-            if (!ctrl.Del_Projekt_Waermeerzeuger(ProjektId))
+            if (!ctrl.Del_Projekt_Waermeerzeuger(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Waermeerzeuger");
 
-            if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger))
+            if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WP_Waermeerzeuger");
 
             // Auch hier: neu hinzugekommene Traeger bekommen ihre projektgebundenen
             // Saetze, bereits zugeordnete faengt der COUNT-Test ab.
-            if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger))
+            if (!ctrl.Add_Projekt_Energietraeger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Energietraeger");
 
-            if (!ctrl.Del_Projekt_ZuordungGebäude(ProjektId))
+            if (!ctrl.Del_Projekt_ZuordungGebäude(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_ZuordungGebaeude");
 
-            if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude))
+            if (!ctrl.Add_Projekt_ZuordungGebäude(ProjektId, Gebaeude, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_ZuordungGebaeude");
 
-            if (!ctrl.Del_Projekt_Prozess(ProjektId))
+            if (!ctrl.Del_Projekt_Prozess(ProjektId, vorgang: vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Prozess");
 
-            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess))
+            if (!ctrl.Add_Projekt_Prozess(ProjektId, Prozess, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Prozess");
 
-            if (!ctrl.Del_Stromganglinie(ProjektId))
+            if (!ctrl.Del_Stromganglinie(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Stromganglinie");
 
-            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie))
+            if (!ctrl.Add_Stromganglinie(ProjektId, Stromganglinie, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Stromganglinie");
 
-            if (!ctrl.Del_WaermebedarfExtern(ProjektId))
+            if (!ctrl.Del_WaermebedarfExtern(ProjektId, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_WaermebedarfExtern");
 
-            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf))
+            if (!ctrl.Add_WaermebedarfExtern(ProjektId, Waermebedarf, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WaermebedarfExtern");
 
-            if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId))
+            if (!ctrl.Del_Projekt_Stromverbraucher(ProjektId, vorgang: vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Del_Projekt_Stromverbraucher");
 
-            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher))
+            if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
 
             Projekt.m_Aenderungsdatum = DateTime.Now;
@@ -650,7 +707,7 @@ namespace WindowsFormsApplication1
             Projekt.m_szBeschreibung = Kopf[0].Beschreibung ?? "";
             Projekt.m_szKlimaregion = Kopf[0].Klimaname ?? "";
 
-            if (!ctrl.Update_Projekt(ProjektId, Projekt))
+            if (!ctrl.Update_Projekt(ProjektId, Projekt, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Update_Projekt");
 
             Gespeichert = true;

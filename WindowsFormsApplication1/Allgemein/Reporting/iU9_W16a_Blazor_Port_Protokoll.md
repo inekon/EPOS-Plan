@@ -1,4 +1,4 @@
-# iU9 Welle 16a — Der Assistent: Wizard_Stromlastgang, Wizard_Komponenten, WizardParent, ProjektAuswahl — Portprotokoll
+﻿# iU9 Welle 16a — Der Assistent: Wizard_Stromlastgang, Wizard_Komponenten, WizardParent, ProjektAuswahl — Portprotokoll
 
 > Teilwelle **W16a** des Pakets iU9 (Welle 16 = der Rahmen K5 in drei Teilwellen).
 > Grundlage: `iU9_W16_Vermessung.md` (1 907 Zeilen, Stand `4101740`) und die
@@ -140,7 +140,7 @@ die Seitenreihenfolge sind **wörtlich** übernommen.
 | # | Frage | Stand |
 |---|---|---|
 | **E‑3** | Die Bitmaske zusammenlegen? | **Vorläufig ja, und der Nachweis steht.** `KomponentenBestandCtrl` liegt im Kern; **N6** hält `Bitmaske(id)` gegen den eingefrorenen `Form_Start.status`-Wert für **alle dreizehn** Referenzprojekte — **keine Abweichung**. Damit ist die Gleichheit erstmals erzwungen statt nur behauptet. `Form_Start.UpdateWizardSymbole` fällt mit W16b |
-| **E‑4** | Bekommt `SpeichernAusfuehren` eine Transaktion? | **Halb umgesetzt.** Die **Meldung** ist da: statt 17 stiller `return` nennt `AssistentErgebnis` den fehlgeschlagenen Schritt, und der Assistent bleibt stehen. Die **Transaktion** ist es NICHT: Ein `DbVorgang` über den ganzen Lauf setzte voraus, dass alle 23 Schreibmethoden von `WizardCtrl` (1 737 Z.) ihn hereingereicht bekommen statt jede ihre eigene gepoolte Verbindung zu öffnen — ein Umbau des SCHREIBWEGS, den Risiko R‑W16‑6 ohne einen Feld-für-Feld-Vergleich am Windows-Gerät untersagt. **Frage an den Anwender: eigener Schritt mit eigenem Nachweis, oder bleibt es bei der Meldung?** |
+| **E‑4** | Bekommt `SpeichernAusfuehren` eine Transaktion? | **Seit 11.09.2026 GANZ umgesetzt** (zweite Hälfte: W16a‑O‑1, Abschnitt am Ende). Die **Meldung** war es zuerst: statt 17 stiller `return` nennt `AssistentErgebnis` den fehlgeschlagenen Schritt, und der Assistent bleibt stehen. die **Transaktion** kam als eigener Schritt nach: ein `DbVorgang` über den ganzen Lauf, hereingereicht in alle 23 Schreibmethoden von `WizardCtrl`. **Risiko R‑W16‑6 bleibt trotzdem offen** — der Feld-für-Feld-Vergleich am Windows-Gerät steht aus. |
 | **E‑5** | Simulationskonfiguration/-ergebnis modal? | **W16a berührt es nicht** — beide Seiten hängen an `Form_Start` (W16b) |
 | **E‑9** | Wohin mit den Zeugen? | **Vorläufig umgesetzt für den Kleinschreibungs-Zeugen**: `Wizard_Komponenten` ist eingefroren nach `Pruefmuster/Wizard/` gewandert (5 Dateien), der Test zählt ihn von dort. Der „ja"- und der Maskenschlüssel-Zeuge bleiben bis W16b/W16c am Bestand |
 | **W16a‑E‑1 (neu)** | **Der Assistent ist unter Windows MODAL geblieben.** `BlazorDialogForm<AssistentSeite>`, weil beide Aufrufer (`MenueCtrl.ProjektNeu`/`…Bearbeiten`) auswerten, ob gespeichert wurde, und `Form_Start`/`MDIMainForm` danach den Projektkontext nachziehen | Dieselbe Begründung wie R‑W10b‑1/R‑W11‑1. **Mit W16b/W16c könnte er eine freie Ansicht in derselben WebView werden** — soll er? |
@@ -261,7 +261,7 @@ nach der Welle, danach `Referenzlauf.exe vergleich <vorher> <nachher>`.
 
 | # | Punkt |
 |---|---|
-| **W16a‑O‑1** | **Die Transaktion des Speicherwegs** (E‑4, zweite Hälfte). Umfang: 23 Methoden in `WizardCtrl` auf einen hereingereichten `DbVorgang`; Nachweis: der Windows-`projekt`-Vergleich aus § 8 |
+| ~~**W16a‑O‑1**~~ | **Die Transaktion des Speicherwegs** (E‑4, zweite Hälfte) — **umgesetzt am 11.09.2026**, siehe den Abschnitt „W16a‑O‑1“ am Ende dieses Protokolls. 23 Methoden in `WizardCtrl` nehmen einen `DbVorgang` entgegen, `AssistentCtrl.Speichern` klammert den ganzen Lauf. **Die Auflage bleibt:** der Windows-`projekt`-Vergleich aus § 8 ist NICHT gefahren — Risiko R‑W16‑6 ist offen |
 | **W16a‑O‑2** | **`WizardCtrl.speichern`** ist ein totes Feld (B7). Streichen, sobald jemand die Klasse ohnehin anfasst |
 | **W16a‑O‑3** | **Der Assistent ist modal.** Sobald die Startseite Razor ist (W16b), könnte er eine freie Ansicht derselben WebView werden — dieselbe Frage wie R‑W10b‑1/R‑W11‑1 |
 | **W16a‑O‑4** | **`IosProjektQuelle.AssistentGaben`** ist nicht umgesetzt; der Assistent ist auf iOS damit angekündigt, aber nicht bedienbar (iU11) |
@@ -437,3 +437,82 @@ breite Feld (die mehrzeilige Beschreibung) steht **außerhalb**.
 Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
 als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
 Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+---
+
+## W16a‑O‑1 — Die Transaktion des Speicherwegs (11.09.2026)
+
+**Der Auftrag** war die zweite Hälfte von Entscheid **E‑4**: Die 23 Schreibmethoden
+von `EPOS.Kern/Controller/WizardCtrl.cs` nehmen einen hereingereichten `DbVorgang`
+entgegen; `AssistentCtrl.Speichern` öffnet ihn einmal, klammert den ganzen Lauf und
+rollt bei jedem Fehlschlag zurück. **Die Reihenfolge der Schreibschritte ist Zeichen
+für Zeichen dieselbe geblieben** — geändert hat sich die Klammer, nicht der Inhalt.
+
+### Die Klammer
+
+`AssistentCtrl.Speichern` öffnet **einen** `DbVorgang` (`DataRepository.Vorgang()`)
+und gibt ihn an `Anlegen` bzw. `Fortschreiben` weiter; jeder der 23 Aufrufe reicht
+ihn als letzten Parameter durch. Festgeschrieben wird **nur**, wenn der Zweig
+„gespeichert“ meldet. Meldet ein Schritt `false`, wird zurückgerollt und das
+unveränderte `AssistentErgebnis` (mit dem Namen des Schrittes) geliefert; wirft
+einer, wird zurückgerollt und die Ausnahme weitergereicht; scheitert das `Commit`
+selbst, wird zurückgerollt und der Schritt heißt `Commit`.
+
+### Warum ein Parameter allein nicht reicht — `Vorgangsklammer`
+
+Die 23 Methoden schreiben nicht nur selbst; sie rufen ein Dutzend Katalogcontroller
+(`CopyFromStamm`, `ApplyGanglinieToProjekt`, `KostenProjektPositionenCtrl`,
+`GeraeteWaisen`). Jede dieser Stellen holte sich bisher **ihre eigene** Verbindung.
+Ein bloß durchgereichter Vorgang erreichte sie nicht: Ihre Schreibvorgänge liefen an
+der Transaktion vorbei (kein Rückzug) und blieben unter WAL an der Schreibsperre
+hängen, ihre Lesevorgänge sähen den noch nicht festgeschriebenen Stand nicht.
+
+Deshalb meldet jede der 23 Methoden den Vorgang für ihre Dauer am **Faden** an
+(`EPOS.Kern/Allgemein/Vorgangsklammer.cs`, `[ThreadStatic]`), und die Zugriffsschicht
+**leiht** sich an ihrer einen Stelle, an der sie eine Verbindung aufmacht, die des
+angemeldeten Vorgangs (`Leihverbindung`). Ist keiner angemeldet — der Normalfall im
+ganzen übrigen Programm —, passiert genau das, was vorher passierte. Ruft jemand
+unter der Klammer `DataRepository.Vorgang()`, bekommt er einen **Unterpunkt**
+(SQLite-`SAVEPOINT`) auf derselben Verbindung: `Commit` gibt ihn frei, `Rollback`
+nimmt genau seine Änderungen zurück — die Bedeutung für den Aufrufer bleibt.
+
+### Nachweis auf Linux (zwei neue Kern-Prüffälle)
+
+* `Ein_Fehlschlag_in_der_Mitte_nimmt_den_ganzen_Lauf_zurueck` — Bearbeiten-Lauf über
+  Projekt 1007; der Gebäudename wird auf einen ersetzt, den der Katalog nicht kennt,
+  so dass Schritt 5 von 14 (`Add_Projekt_ZuordungGebäude`) `false` meldet. Zu diesem
+  Zeitpunkt sind elf Anlagenzeilen gelöscht und neu angelegt, die Energieträgersätze
+  geschrieben und die Gebäudezuordnung gelöscht. Danach sind Zählstand,
+  Anlagenbezeichner, Projektkopf **und der vollständige Zeileninhalt der 24
+  projektgebundenen Tabellen** Zeichen für Zeichen die von vorher.
+* `Ein_erfolgreicher_Lauf_schreibt_dasselbe_wie_die_bisherige_Schreibfolge` —
+  derselbe NEU-Lauf zweimal auf je eigener Arbeitskopie: einmal über `Speichern`
+  (geklammert), einmal über die neun Schreibmethoden in der Reihenfolge des Bestands
+  **ohne** Vorgang. Verglichen wird der vollständige Zeileninhalt (Zeitpunktspalten
+  ausgenommen) — er ist gleich, bis hin zu den vergebenen Ids.
+
+**Gegenprobe:** Mit ausgehängter Klammer fällt der erste Fall rot aus (der zweite
+bleibt grün — er vergleicht Inhalt, nicht Klammer).
+
+### Was OFFEN bleibt
+
+**Risiko R‑W16‑6 ist mit dieser Arbeit NICHT eingelöst.** Es verlangt für jeden
+Umbau des Schreibwegs den Feld-für-Feld-Vergleich am Windows-Gerät, und der läuft
+nur dort:
+
+```
+Referenzlauf.exe projekt <id> <ordner-vorher>     (vor dem Stand)
+Referenzlauf.exe projekt <id> <ordner-nachher>    (nach dem Stand)
+Referenzlauf.exe vergleich <ordner-vorher> <ordner-nachher>
+```
+
+je einmal für ein über den Assistenten **neu angelegtes** und ein **bearbeitetes**
+Projekt (Rezept aus § 8).
+
+**Restpunkt W16a‑O‑1‑R1:** `KostenPositionCtrl.StelleSpaltenSicher` und
+`Z_ProjektGebGanglinieCtrl.StelleKanalSpalteSicher` legen fehlende Spalten an und
+merken sich das Ergebnis in einem statischen Feld. Läuft eine solche Vorsorge
+innerhalb des Speicherlaufs und wird der Lauf zurückgerollt, ist die Spalte wieder
+weg, der gemerkte Wert sagt aber „vorhanden“ — bis zum nächsten Programmstart. Das
+trifft nur eine Datenbank, auf der die Schemamigration diese Spalten noch nicht
+angelegt hat.

@@ -96,6 +96,11 @@ namespace WindowsFormsApplication1
 
             try
             {
+                // iU9-W16a-O-1: Ohne ausdruecklichen Vorgang gilt der auf diesem Faden
+                // angemeldete - sonst laese diese Abfrage an einem laufenden
+                // Speicherlauf vorbei und saehe seinen Stand nicht.
+                if (vorgang == null) vorgang = Vorgangsklammer.Aktueller;
+
                 if (vorgang != null)
                 {
                     _ergebnis = vorgang.Lese(sql);
@@ -134,6 +139,9 @@ namespace WindowsFormsApplication1
         {
             try
             {
+                // iU9-W16a-O-1: wie bei Open - der angemeldete Vorgang gilt.
+                if (vorgang == null) vorgang = Vorgangsklammer.Aktueller;
+
                 if (vorgang != null)
                 {
                     vorgang.Ausfuehren(sql);

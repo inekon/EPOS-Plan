@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
@@ -583,6 +584,320 @@ namespace EPOS.Kern.Tests
                 }
                 finally { WizardCtrl.Aktueller = vorherCtrl; }
             }
+        }
+
+
+        // =========================================================================
+        // Die KLAMMER um den Speicherlauf (W16a-O-1, Entscheid E-4 zweite Haelfte)
+        // =========================================================================
+
+        /// <summary>
+        /// NACHWEIS zur Rücknahme: Bricht der Speicherlauf in der MITTE ab, steht
+        /// danach nichts von diesem Lauf in der Datenbank.
+        ///
+        /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Der Bearbeiten-Zweig
+        /// schreibt vierzehn Schritte. Der fünfte — <c>Add_Projekt_ZuordungGebäude</c>
+        /// — meldet <c>false</c>, sobald der Gebäudename nicht im Katalog
+        /// <c>Tab_Gebaeude_STAMM</c> steht (<c>GebaeudeStammCtrl.CopyFromStamm</c>
+        /// liefert dann 0). Zu diesem Zeitpunkt sind die vier Schritte davor
+        /// GELAUFEN: die elf Anlagenzeilen des Projekts sind gelöscht und neu
+        /// angelegt, die Energieträgersätze geschrieben, die Gebäudezuordnung
+        /// gelöscht — und in der fehlgeschlagenen Methode selbst steht die neue
+        /// <c>Z_ProjektGebaeude</c>-Zeile bereits.</para>
+        ///
+        /// <para><b>Was der Fall belegt.</b> Vor W16a-O-1 blieb genau dieser Stand
+        /// stehen: ein Projekt ohne Gebäude, mit frisch vergebenen Anlagen-Ids und
+        /// einer Zuordnungszeile ohne Gebäudekopie. Mit der Klammer ist der
+        /// Zählstand, sind die Anlagenbezeichner und ist der Projektkopf hinterher
+        /// Zeichen für Zeichen der von vorher.</para>
+        ///
+        /// <para>Eigene Arbeitskopie, weil die Probe schreibt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Fehlschlag_in_der_Mitte_nimmt_den_ganzen_Lauf_zurueck()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+
+                    const string NAME = "Laurentiuskirche";
+                    const int ID = 1007;
+
+                    AssistentCtrl a = Bearbeitenlauf(NAME, ID);
+
+                    // Der Stand VOR dem Lauf - Zaehlstand, Anlagen, Kopf und der
+                    // vollstaendige Zeileninhalt der projektgebundenen Tabellen.
+                    Dictionary<string, int> zaehlVorher = Zaehlstand(ID);
+                    string[] anlagenVorher = Anlagenbezeichner(ID);
+                    string abbildVorher = Projektabbild(ID);
+                    ProjektKopfDaten kopfVorher = ProjektCtrl.Kopf(NAME);
+
+                    // DER FEHLSCHLAG: ein Gebaeudename, den der Katalog nicht kennt.
+                    Assert.NotEmpty(a.Gebaeude);
+                    a.Gebaeude[a.Gebaeude.Count - 1].Gebaeudename =
+                        "Kein Gebaeude dieses Namens (W16a-O-1)";
+
+                    AssistentErgebnis e = a.Speichern();
+
+                    Assert.Equal(AssistentAusgang.Fehlgeschlagen, e.Ausgang);
+                    Assert.Equal("Add_Projekt_ZuordungGebaeude", e.Schritt);
+                    Assert.False(a.Gespeichert);
+
+                    // ... und danach steht nichts von dem Lauf in der Datenbank.
+                    Assert.Equal(zaehlVorher, Zaehlstand(ID));
+                    Assert.Equal(anlagenVorher, Anlagenbezeichner(ID));
+                    Assert.Equal(abbildVorher, Projektabbild(ID));
+
+                    ProjektKopfDaten kopfNachher = ProjektCtrl.Kopf(NAME);
+                    Assert.Equal(kopfVorher.Name, kopfNachher.Name);
+                    Assert.Equal(kopfVorher.Beschreibung, kopfNachher.Beschreibung);
+                    Assert.Equal(kopfVorher.Kunde, kopfNachher.Kunde);
+                    Assert.Equal(kopfVorher.Bearbeiter, kopfNachher.Bearbeiter);
+                    Assert.Equal(kopfVorher.Klimaname, kopfNachher.Klimaname);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        /// <summary>
+        /// NACHWEIS zum Erfolgsfall: Der geklammerte Lauf schreibt DASSELBE wie die
+        /// bisherige, ungeklammerte Schreibfolge.
+        ///
+        /// <para><b>Wie verglichen wird.</b> Zweimal derselbe NEU-Lauf aus derselben
+        /// Vorlage (Projekt 1030), jeder auf einer EIGENEN, unberührten Arbeitskopie:
+        /// einmal über <see cref="AssistentCtrl.Speichern"/> (ein
+        /// <c>DbVorgang</c> über den ganzen Lauf), einmal über die neun
+        /// Schreibmethoden von <c>WizardCtrl</c> in der Reihenfolge des Bestands und
+        /// OHNE Vorgang — genau so, wie der Speicherweg bis W16a-O-1 lief
+        /// (<see cref="OhneKlammerAnlegen"/>). Verglichen wird der vollständige
+        /// Zeileninhalt der einundzwanzig projektgebundenen Tabellen, die
+        /// Datumsspalten ausgenommen (sie tragen <c>DateTime.Now</c>).</para>
+        ///
+        /// <para>Weil beide Läufe auf demselben Ausgangsstand dieselben Einfügungen
+        /// in derselben Reihenfolge machen, stimmen sogar die vergebenen Ids überein.
+        /// Das ist der Beleg, dass sich die KLAMMER geändert hat und nicht der
+        /// Inhalt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_erfolgreicher_Lauf_schreibt_dasselbe_wie_die_bisherige_Schreibfolge()
+        {
+            const string VORLAGE = "Referenz BHKW-Kaskade (Regressionstest)";
+            const int ID_VORLAGE = 1030;
+            const string NEU = "W16a-O-1 Klammerprobe";
+
+            string mitKlammer = null;
+            string ohneKlammer = null;
+
+            // --- Lauf 1: MIT Klammer (der neue Weg) ---
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+
+                    AssistentCtrl a = Neulauf(VORLAGE, ID_VORLAGE, NEU);
+                    AssistentErgebnis e = a.Speichern();
+                    Assert.True(e.Erfolg, "Speichern scheiterte an: " + e.Schritt);
+
+                    int idNeu = ProjektCtrl.IdVonName(NEU);
+                    Assert.True(idNeu > 0, "Das neue Projekt wurde nicht angelegt.");
+                    mitKlammer = Projektabbild(idNeu);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+
+            // --- Lauf 2: OHNE Klammer (die bisherige Schreibfolge) ---
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                try
+                {
+                    WizardCtrl ctrl = new WizardCtrl();
+                    WizardCtrl.Aktueller = ctrl;
+
+                    AssistentCtrl a = Neulauf(VORLAGE, ID_VORLAGE, NEU);
+                    string schritt = OhneKlammerAnlegen(a, ctrl);
+                    Assert.Null(schritt);
+
+                    int idNeu = ProjektCtrl.IdVonName(NEU);
+                    Assert.True(idNeu > 0, "Das neue Projekt wurde nicht angelegt.");
+                    ohneKlammer = Projektabbild(idNeu);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+
+            // Gegen den leeren Vergleich: Das Abbild traegt die Anlagenzeilen des
+            // Projekts, sonst verglichen beide Laeufe nichts.
+            Assert.False(string.IsNullOrEmpty(mitKlammer));
+            Assert.DoesNotContain("== Tab_Energieanlagen 0", mitKlammer);
+            Assert.Contains("== Tab_Energieanlagen ", mitKlammer);
+
+            Assert.Equal(ohneKlammer, mitKlammer);
+        }
+
+        /// <summary>
+        /// Die NEUN Schreibschritte des NEU-Zweigs in der Reihenfolge des Bestands
+        /// und OHNE Vorgang — die Vergleichsfassung zu
+        /// <c>AssistentCtrl.Anlegen</c>. Liefert <c>null</c> bei Erfolg, sonst den
+        /// Namen des gescheiterten Schrittes.
+        /// </summary>
+        private static string OhneKlammerAnlegen(AssistentCtrl a, WizardCtrl ctrl)
+        {
+            ctrl.Klimazone = a.Kopf[0].Klimaname ?? "";
+            ctrl.Projektname = a.Kopf[0].Name ?? "";
+
+            a.ProjektkopfUebernehmen();
+            a.Projekt.m_szKlimaregion = a.Kopf[0].Klimaname ?? "";
+            a.Projekt.m_ID_Klimaregion = 0;
+
+            int id = a.ProjektId;
+            if (!ctrl.Add_Projekt(ref id, a.Projekt)) return "Add_Projekt";
+            a.ProjektId = id;
+
+            if (!ctrl.Add_Projekt_ZuordungGebäude(a.ProjektId, a.Gebaeude)) return "Add_Projekt_ZuordungGebaeude";
+            if (!ctrl.Add_WP_Waermeerzeuger(a.ProjektId, a.Erzeuger)) return "Add_WP_Waermeerzeuger";
+            if (!ctrl.Add_Projekt_Energietraeger(a.ProjektId, a.Erzeuger)) return "Add_Projekt_Energietraeger";
+            if (!ctrl.Add_Projekt_Prozess(a.ProjektId, a.Prozess)) return "Add_Projekt_Prozess";
+            if (!ctrl.Add_Stromganglinie(a.ProjektId, a.Stromganglinie)) return "Add_Stromganglinie";
+            if (!ctrl.Del_WaermebedarfExtern(a.ProjektId)) return "Del_WaermebedarfExtern";
+            if (!ctrl.Add_WaermebedarfExtern(a.ProjektId, a.Waermebedarf)) return "Add_WaermebedarfExtern";
+            if (!ctrl.Add_Projekt_Stromverbraucher(a.ProjektId, a.Stromverbraucher)) return "Add_Projekt_Stromverbraucher";
+
+            return null;
+        }
+
+        /// <summary>
+        /// Ein Assistentenlauf im BEARBEITEN-Zweig, so gestellt, wie ihn der
+        /// Komponentenschritt und die Kopfseite stellen würden.
+        /// </summary>
+        private static AssistentCtrl Bearbeitenlauf(string name, int id)
+        {
+            AssistentCtrl a = new AssistentCtrl();
+            a.Betriebsart = AssistentCtrl.BETRIEBSART_BEARBEITEN;
+            a.ProjektId = id;
+            a.Laden(name);
+
+            KomponentenBestandCtrl bestand = KomponentenBestandCtrl.Lesen(id);
+            for (int k = 0; k < KomponentenBestandCtrl.ANZAHL; k++)
+                a.SeiteSchalten(bestand[k].SeitenIndex, bestand[k].Vorhanden);
+
+            ProjektKopfDaten kopf = ProjektCtrl.Kopf(name);
+            Assert.NotNull(kopf);
+            a.Kopf[0].Name = kopf.Name;
+            a.Kopf[0].Beschreibung = kopf.Beschreibung;
+            a.Kopf[0].Kunde = kopf.Kunde;
+            a.Kopf[0].Bearbeiter = kopf.Bearbeiter;
+            a.Kopf[0].Erstelldatum = kopf.Erstelldatum;
+            a.Kopf[0].IdKlimaregion = kopf.IdKlimaregion;
+            a.Kopf[0].Klimaname = kopf.Klimaname;
+
+            return a;
+        }
+
+        /// <summary>
+        /// Derselbe Stand, auf den NEU-Zweig umgestellt und unter neuem Namen — wie
+        /// in <c>Ein_Neu_Lauf_legt_dasselbe_an_was_er_bekommen_hat</c>.
+        /// </summary>
+        private static AssistentCtrl Neulauf(string vorlage, int idVorlage, string neuerName)
+        {
+            AssistentCtrl a = Bearbeitenlauf(vorlage, idVorlage);
+            a.Betriebsart = AssistentCtrl.BETRIEBSART_NEU;
+            a.ProjektId = new ProjektCtrl().GetMaxID() + 1;
+            a.Kopf[0].Name = neuerName;
+            return a;
+        }
+
+        /// <summary>
+        /// Die projektgebundenen Tabellen und ihre Projektspalte — die Flaeche, auf
+        /// der ein Assistentenlauf schreibt. <c>Tab_Klimadaten</c> und
+        /// <c>Tab_Solar</c> stehen bewusst NICHT dabei: 365 bzw. 8 760 Zeilen je
+        /// Projekt, die der Assistent nur als Ganzes kopiert.
+        /// </summary>
+        private static readonly string[] ABBILD_TABELLEN =
+        {
+            "Tab_Energieanlagen:ID_Projekt",
+            "Z_ProjektGebaeude:ID_Projekt",
+            "Z_ProjektWaermebedarf:ID_Projekt",
+            "Z_Projekt_Prozesswaerme:ID_Projekt",
+            "Z_Projekt_Stromverbraucher:ID_Projekt",
+            "Z_ProjektStromganglinie:ID_Projekt",
+            "Z_ProjektSolarganglinie:ID_Projekt",
+            "Z_Projekt_Brauchwasser:ID_Projekt",
+            "Z_ProjektPufferSp:ID_Projekt",
+            "Tab_Gebaeude:ID_Projekt",
+            "Tab_BHKW:ID_Projekt",
+            "Tab_Heizkessel:ID_Projekt",
+            "Tab_WP:ID_Projekt",
+            "Tab_PV:ID_Projekt",
+            "Tab_Stromspeicher:ID_Projekt",
+            "Tab_Pufferspeicher:ID_Projekt",
+            "Tab_Solarkollektoren:ID_Projekt",
+            "Tab_Klimaregion:ID_Projekt",
+            "Tab_Waermebedarf:ID_Projekt",
+            "Tab_Stromganglinie:ID_Projekt",
+            "Tab_Stromverbraucher:ID_Projekt",
+            "Tab_ProjektWerte:ProjektID",
+            "energy_price:ID_Projekt",
+            "energy_project_settings:ID_Projekt",
+        };
+
+        /// <summary>
+        /// Der vollständige Zeileninhalt aller projektgebundenen Tabellen als EIN
+        /// Text — die Vergleichsgrundlage beider Klammerproben.
+        ///
+        /// <para>Zeitpunktspalten bleiben draußen — jede Spalte vom Typ
+        /// <c>DateTime</c> und jede, deren Name „datum" enthält: Der Speicherweg setzt
+        /// sie auf <c>DateTime.Now</c> (<c>Tab_Projekt.Aenderungsdatum</c>,
+        /// <c>energy_price.valid_from</c> …), zwei Läufe können dort nicht gleich
+        /// sein.</para>
+        /// </summary>
+        private static string Projektabbild(int idProjekt)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (string eintrag in ABBILD_TABELLEN)
+            {
+                string[] teile = eintrag.Split(':');
+                string tabelle = teile[0];
+                string spalte = teile[1];
+
+                if (!DataRepository.TabelleVorhanden(tabelle)) continue;
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + tabelle + "] WHERE [" + spalte + "] = ? ORDER BY 1",
+                    new DbParam("@id", idProjekt));
+
+                sb.Append("== ").Append(tabelle).Append(' ')
+                  .Append(dt == null ? 0 : dt.Rows.Count).Append('\n');
+                if (dt == null) continue;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    foreach (DataColumn c in dt.Columns)
+                    {
+                        // Zeitpunkte bleiben draussen: Der Speicherweg setzt sie auf
+                        // DateTime.Now (Aenderungsdatum, energy_price.valid_from …),
+                        // zwei Laeufe koennen dort nicht gleich sein.
+                        if (c.DataType == typeof(DateTime)) continue;
+                        if (c.ColumnName.IndexOf("datum", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                        sb.Append(c.ColumnName).Append('=')
+                          .Append(Convert.ToString(r[c], CultureInfo.InvariantCulture)).Append('|');
+                    }
+                    sb.Append('\n');
+                }
+            }
+
+            return sb.ToString();
         }
 
         // =========================================================================
