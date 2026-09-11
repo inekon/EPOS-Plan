@@ -1,0 +1,126 @@
+@* DIE ABLAUFLEISTE der Stromspeicher-Auslegung (Konzept „Stromspeicher-Dialoge"
+   2.1, Paket P3 / Auftrag #192).
+
+   WOZU. Der abgeloeste Flottendialog hatte vier REITER und in seiner Fussleiste
+   einen Knopf „Speichervergleich berechnen". Der Anwender fragte darauf: „Wie
+   wird die Lastspitzenkappung gestartet?" (Rueckmeldung 11.09.2026, Punkt 3) —
+   und die Frage war berechtigt: Ein Reiterwerk sagt „waehle ein Blatt", ein
+   Ablauf sagt „tue dies, dann das". Die fuenf Schritte sind der Ablauf, den der
+   Code ohnehin fuehrt: Speicher anlegen → Daten und Kosten → Betriebsziel →
+   BERECHNEN → Ergebnis lesen.
+
+   SCHRITT 4 IST EIN KNOPF, KEIN BLATT. Er traegt seine Beschriftung aus dem
+   Zustand („Flotte bewerten" / „Groessen optimieren" / „Optimieren") — das ist
+   die zweite Haelfte der Antwort auf Punkt 3: Ohne den Schalter „Speicheranzahl
+   und Groessenbereiche optimieren" rechnet derselbe Knopf EINE Konfiguration.
+
+   WEICHE SPERRE STATT disabled (Hausregel W16b-E-6). Schritt 5 ist vor dem
+   ersten Lauf nicht betretbar — und genau dann will der Anwender wissen, warum.
+   Ein disabled-Knopf nimmt keine Zeigerereignisse an: kein title, kein click,
+   und die Sprachausgabe sagt „nicht verfuegbar" ohne den Grund. Deshalb
+   aria-disabled samt title und ein Handler, der den Versuch MELDET.
+
+   Der Baustein kennt weder Flotte noch Rechenweg: Er bekommt Eintraege und
+   meldet den angeklickten Schluessel. *@
+
+@namespace EPOS.UI.Seiten.Strom
+
+<nav class="epos-ablaufleiste" aria-label="@Bezeichnung">
+    <ol class="epos-ablaufleiste-schritte">
+        @foreach (Ablaufeintrag eintrag in Vorne)
+        {
+            @Schritt(eintrag)
+        }
+
+        <li class="epos-ablaufleiste-aktion">
+            @if (Modusknopf is not null)
+            {
+                <span class="epos-ablaufleiste-modus">@Modusknopf</span>
+            }
+
+            <button type="button" class="epos-knopf epos-knopf--primaer epos-ablaufleiste-rechnen"
+                    disabled="@(!RechnenFrei)" @onclick="RechnenGeklickt">@RechnenText</button>
+        </li>
+
+        @foreach (Ablaufeintrag eintrag in Hinten)
+        {
+            @Schritt(eintrag)
+        }
+    </ol>
+</nav>
+
+@code {
+    /// <summary>Die Blätter VOR dem Rechenknopf (Schritte 1 bis 3).</summary>
+    [Parameter] public IReadOnlyList<Ablaufeintrag> Vorne { get; set; } = Array.Empty<Ablaufeintrag>();
+
+    /// <summary>Die Blätter NACH dem Rechenknopf (Schritt 5).</summary>
+    [Parameter] public IReadOnlyList<Ablaufeintrag> Hinten { get; set; } = Array.Empty<Ablaufeintrag>();
+
+    /// <summary>Der Schlüssel des stehenden Blattes.</summary>
+    [Parameter] public string Aktiv { get; set; } = "";
+
+    /// <summary>Ein Blatt wurde gewählt.</summary>
+    [Parameter] public EventCallback<string> Gewaehlt { get; set; }
+
+    /// <summary>
+    /// Ein GESPERRTES Blatt wurde versucht — der Wirt meldet den Grund
+    /// (weiche Sperre, Hausregel W16b‑E‑6).
+    /// </summary>
+    [Parameter] public EventCallback<string> Verweigert { get; set; }
+
+    /// <summary>Die Beschriftung des Rechenknopfs (Schritt 4).</summary>
+    [Parameter] public string RechnenText { get; set; } = "Berechnen";
+
+    /// <summary>Darf gerechnet werden?</summary>
+    [Parameter] public bool RechnenFrei { get; set; } = true;
+
+    /// <summary>Der Rechenknopf wurde gedrückt.</summary>
+    [Parameter] public EventCallback Rechnen { get; set; }
+
+    /// <summary>Der Modus-Umschalter; er steht links neben dem Rechenknopf.</summary>
+    [Parameter] public RenderFragment? Modusknopf { get; set; }
+
+    /// <summary>Beschriftung der Leiste für die Sprachausgabe.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "Ablauf";
+
+    /// <summary>Die Marke „veraltet" hinter einem überholten Blatt.</summary>
+    [Parameter] public string VeraltetText { get; set; } = "veraltet";
+
+    private Task RechnenGeklickt() => RechnenFrei ? Rechnen.InvokeAsync() : Task.CompletedTask;
+
+    private Task Waehlen(Ablaufeintrag eintrag)
+        => eintrag.Bedienbar ? Gewaehlt.InvokeAsync(eintrag.Schluessel)
+                             : Verweigert.InvokeAsync(eintrag.Schluessel);
+
+    /// <summary>
+    /// EIN Schritt. Er ist immer ein <c>button</c> — auch der gesperrte, sonst
+    /// erreichte ihn die Tastatur nicht und sein Grund bliebe unsagbar.
+    /// </summary>
+    private RenderFragment Schritt(Ablaufeintrag eintrag) => @<li class="epos-ablaufleiste-schritt">
+        <button type="button"
+                class="@Klasse(eintrag)"
+                aria-current="@(IstAktiv(eintrag) ? "step" : null)"
+                aria-disabled="@(eintrag.Bedienbar ? null : "true")"
+                title="@(eintrag.Bedienbar ? null : Leer(eintrag.Sperrgrund))"
+                @onclick="@(() => Waehlen(eintrag))">
+            <span class="epos-ablaufleiste-titel">@eintrag.Titel</span>
+            @if (eintrag.Veraltet)
+            {
+                <span class="epos-ablaufleiste-veraltet">@VeraltetText</span>
+            }
+        </button>
+    </li>;
+
+    private bool IstAktiv(Ablaufeintrag eintrag)
+        => string.Equals(eintrag.Schluessel, Aktiv, StringComparison.Ordinal);
+
+    private string Klasse(Ablaufeintrag eintrag)
+    {
+        string klasse = "epos-ablaufleiste-knopf";
+        if (IstAktiv(eintrag)) klasse += " epos-ablaufleiste-knopf--aktiv";
+        if (eintrag.Veraltet) klasse += " epos-ablaufleiste-knopf--veraltet";
+        return klasse;
+    }
+
+    private static string? Leer(string text) => string.IsNullOrWhiteSpace(text) ? null : text;
+}

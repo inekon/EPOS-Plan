@@ -347,6 +347,83 @@ Punkt 2 — die Zähler liefert P1, die Verdrahtung P3), die freie Ansicht samt 
 und die Größen-Sicht mit Rasterkarte und Schnittkurve (P4); die Kandidatentabelle steht
 einstweilen unverändert da.
 
+## Ansicht Stromspeicher-Auslegung (P3, #192)
+
+Seit dem 11.09.2026 ist die Speicherauslegung eine **freie Ansicht der `AppWurzel`**
+(`Seitenschluessel.StromspeicherAuslegung` = `STROMSPEICHER_AUSLEGUNG`,
+`EPOS.UI/Seiten/Strom/StromspeicherAuslegungSeite.razor`) und kein modaler Dialog mehr. Damit
+sind die zwei letzten Speicher-Dialoge **gefallen**: `SpeicherFlottenDialog.razor` und
+`SpeicherOptimierungDialog.razor` sind gelöscht, ihre Prüfstände an der Seite fortgeschrieben.
+Die Zielbilder stehen in
+[`Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md)
+Abschnitt 1.1, 1.6, 2.1, 2.2 Punkt 2 und 2.4.
+
+**Ein Faden statt zweier Reitersätze (SD‑Q1).** Über allem steht die **Ablaufleiste**
+(`Ablaufleiste.razor`) mit fünf Stationen — **1 Speicher · 2 Daten & Kosten ·
+3 Betriebsführung · 4 Berechnen · 5 Ergebnis**. Station 4 ist der Rechenknopf, die übrigen
+sind Blätter. Rechts davon steht der **Modusschalter Flotte / Einzelspeicher**: dieselbe
+Leiste, andere Blätter — die Flotte zeigt `SpeicherFlottenEditor`, `SpeicherAuslegungEditor`
+und `SpeicherFlottenBetriebEditor`, der Einzelspeicher die drei aus dem gefallenen Dialog
+herausgelösten Blätter `EinzelspeicherSuchraum`, `EinzelspeicherBetrieb` und
+`EinzelspeicherErgebnis`. **Keine der vier Bestandskomponenten wurde kopiert**; der
+`SpeicherFlottenEditor` bekam allein den Schalter `BetriebZeigen`, damit die Betriebsführung
+nur auf Station 3 erscheint. Eine Station, die noch nicht bedienbar ist, bleibt ein
+`<button>` mit `aria-disabled` und Grund im `title` (schwache Sperre, W16b‑E‑6) — nie ein
+`disabled` ohne Begründung.
+
+**Der Weg dorthin und zurück.** Der Reiter „Stromspeicher" der Ergebnisseite **wechselt die
+Ansicht**, statt eine Überlagerung aufzuziehen (Muster W16c‑E‑3). Die Ergebnisseite selbst
+trägt dafür nur noch `AuslegungOeffnen`; ihre acht Auslegungsdelegaten sind entfallen. Den
+Rückweg führt `AppWurzel` nach dem Muster aus #62b: Die Wurzel merkt sich die aufrufende
+Ansicht, fragt beim Verlassen über `FrageVerlassen`/`AssistentVerlassen` nach ungespeicherten
+Eingaben und kehrt danach dorthin zurück.
+
+**Woher die Seite ihren Simulationslauf bekommt.** Jede EPOS-Zeitreihe stammt aus genau einem
+abgeschlossenen Lauf. Die Windows-Hülle der Ergebnisseite reicht deshalb **ihren** Lauf an den
+Kern-Controller weiter (`StromspeicherAuslegungHuelle.Anmelden`), bevor sie die Ansicht
+öffnet; liegt keine Anmeldung vor — etwa beim Aufruf ohne vorherige Simulation —, baut
+`AnsichtGaben()` einen Controller **ohne** Lauf, und die Seite bietet den eigenen
+Simulationslauf an (Muster iU9‑W11a). Zwei Läufe nebeneinander wären zwei Wahrheiten.
+
+**Die Datenseite liegt im Kern.** `EPOS.Kern/Controller/StromspeicherAuslegungCtrl.cs` ist
+eine **Instanz** je Projekt und führt, was vorher als Delegatenbündel in der WinForms-Hülle
+stand: Vorgaben lesen, Einstellungen und Profile speichern (ein Name mit `@` ist für interne
+Stände reserviert), Flotte und Einzelspeicher vorbereiten und rechnen, Betriebsbild und CSV,
+Bestpunkt übernehmen, Leistungspreis schreiben, Projektflotte aktivieren und deaktivieren,
+Vorprüfung, Peak-Ziel-Vorschlag und Peak-Ziel-Bestimmung sowie den eigenen Simulationslauf.
+Die Hülle behält nur, was die **Plattform** beisteuert: Dateiwähler, `Task.Run`,
+`CancellationTokenSource`, Fensterbesitz. Datenbankarbeit bleibt auf dem Bedienfaden, allein
+die reinen Rechnungen gehen in `Task.Run` mit `IProgress<T>` und `CancellationToken`.
+
+**Das Diagnosebanner (Konzept 2.2 Punkt 2).** Über den Kennzahlkacheln des Ergebnisblattes
+steht `FlottenDiagnosebanner.razor`. Es liest die Zähler aus P1
+(`FlottenBetriebsdiagnose`, `FlottenPlausibilitaet.Gruende`) und sagt im Klartext, **warum**
+eine Flotte arbeitslos blieb — und bietet dazu die passende Abhilfe an: „Peak-Ziel
+bestimmen…", „Netzladung erlauben" oder „Zur Betriebsführung". Jede Abhilfe ist ein Delegat;
+fehlt er, fehlt der Knopf („kein Delegat ist kein Knopf").
+
+**Peak-Ziel: Vorschlag, Bestimmung, Vorprüfung (SD‑Q3/SD‑Q5).** Auf Station 3 steht der
+`PeakZielBlock`: Er zeigt den **hergeleiteten Vorschlag** H₀ aus der Referenzzeitreihe samt
+Herleitungszeile (die feste 50-kW-Vorgabe ist mit P1 gefallen), lässt ihn übernehmen und
+bietet „Peak-Ziel bestimmen…" als Suchlauf an — schwach gesperrt, solange kein Planer für das
+gewählte Betriebsziel zur Verfügung steht. Die **Netzladung folgt dem Betriebsziel**
+(`FlottenVorgaben.NetzladungFuer`): Wer das Ziel wechselt, bekommt die dazu passende
+Vorbelegung, statt eine fremde mitzuschleppen. Die **Vorprüfung** läuft vor jedem Lauf und
+ohne ihn: Sie meldet, was das Ergebnis entwerten würde — allen voran ein Peak-Ziel unter dem
+Tagesminimum.
+
+**Ressourcen und CSS.** 46 neue Schlüssel (`FLOTTE_SEITE_*`, `FLOTTE_BANNER_*`,
+`FLOTTE_PEAK_*` sowie einige `FLOTTE_DLG_*` und `SPAUS_*`) stehen deutsch und englisch am
+**Ende** beider `.resx`; `Resource.Designer.cs` ist mit
+`Werkzeuge/ResourceDesigner/designer_neu.py` neu erzeugt. Die Gestaltung liegt in
+`epos-ui.css` (`.epos-spauslegung*`, `.epos-ablaufleiste*`, vor dem Block FORMULARRASTER) und
+`epos-flotte.css` (`.epos-flotte-diagnose*`, `.epos-flotte-peakziel*`); Tokens stehen in
+`:root`, es gibt keine CSS-Verschachtelung.
+
+**Was NICHT in diesem Paket steckt:** die Größen-Sicht mit Rasterkarte und Schnittkurve
+(P4, #193) — im Ergebnisblatt steht dafür die Marke `@* P4: SpeicherFlottenGroessenAnsicht
+(#193) *@`.
+
 ## Testbelege vom 11.09.2026
 
 | Nachweis | Ergebnis | Beleg |

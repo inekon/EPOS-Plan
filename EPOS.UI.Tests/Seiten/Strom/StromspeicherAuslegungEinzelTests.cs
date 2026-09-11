@@ -2,7 +2,8 @@
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
-using EPOS.UI.Dialoge.Strom;
+using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Seiten.Strom;
 using EPOS.UI.Dienste;
 using EPOS.UI.Bausteine;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,12 +11,18 @@ using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
-namespace EPOS.UI.Tests.Dialoge;
+namespace EPOS.UI.Tests.Seiten.Strom;
 
 /// <summary>
-/// Die AUSLEGUNGSOPTIMIERUNG des Stromspeichers (W11b‑B‑5, Windows-Abnahme V2 vom
-/// 07.09.2026) — der Nachfolger von <c>Form_SpeicherOptimierung</c>, der letzten
-/// WinForms-Fachmaske.
+/// Der MODUS „EINZELSPEICHER" der Ansicht „Stromspeicher-Auslegung" (Paket P3,
+/// Auftrag #192) — die übernommenen Prüffälle des gefallenen
+/// <c>SpeicherOptimierungDialog</c> (W11b‑B‑5, Windows-Abnahme V2 vom 07.09.2026),
+/// der seinerseits <c>Form_SpeicherOptimierung</c> ablöste.
+///
+/// <para><b>Was der Umzug ändert und was nicht.</b> Die Fachaussagen sind dieselben;
+/// nur stehen die Bedienelemente jetzt auf den Blättern der Ablaufleiste — Suchraum
+/// auf Schritt 1, Berechnungsart und Leistungspreis auf Schritt 3, das Ergebnis auf
+/// Schritt 5 —, und der Startknopf ist Schritt 4 der Leiste.</para>
 ///
 /// <para><b>Was hier geprüft wird, sind die zwei Befunde des Anwenders.</b></para>
 /// <list type="number">
@@ -34,9 +41,9 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Punktzahl und die Kennzahlen sind
 /// Text.</para>
 /// </summary>
-public class SpeicherOptimierungDialogTests : EposBunitContext
+public class StromspeicherAuslegungEinzelTests : EposBunitContext
 {
-    public SpeicherOptimierungDialogTests()
+    public StromspeicherAuslegungEinzelTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
@@ -124,33 +131,63 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, kennung
     };
 
-    private IRenderedComponent<SpeicherOptimierungDialog> Aufbauen(
+    /// <summary>
+    /// Die Ansicht im Modus „Einzelspeicher", Blatt 1. Jeder Prüffall beginnt hier —
+    /// so wie er im abgelösten Dialog auf dessen einzigem Blatt begann.
+    /// </summary>
+    private IRenderedComponent<StromspeicherAuslegungSeite> Aufbauen(
         Func<SpeicherOptimierungEingaben, Action<double?, string>,
              Task<SpeicherOptimierungErgebnis>>? rechnen = null,
         Action? abbrechen = null,
-        Action<(double Kwh, double Kw)>? uebernehmen = null,
-        Action<string>? csv = null,
+        Func<double, double, Rueckmeldung>? uebernehmen = null,
+        Func<string, Task<Rueckmeldung>>? csv = null,
         Action? geschlossen = null,
-        string meldung = "",
-        bool meldungErfolg = false,
         Func<SpeicherOptimierungVorgaben>? vorgaben = null,
         Action<double>? leistungspreis = null,
         Func<bool, IReadOnlyList<string>, Diagrammbereich?,
              SpeicherOptimierungBetriebsbild>? betrieb = null)
     {
-        return Render<SpeicherOptimierungDialog>(p => p
-            .Add(x => x.Vorgaben, vorgaben ?? Vorgaben)
-            .Add(x => x.Betrieb, betrieb)
-            .Add(x => x.LeistungspreisSchreiben,
-                 leistungspreis is null ? default : EventCallbackVon(leistungspreis))
-            .Add(x => x.Rechnen, rechnen ?? ((_, _) => Task.FromResult(Ergebnis())))
-            .Add(x => x.Abbrechen, abbrechen is null ? default : EventCallbackVon(abbrechen))
-            .Add(x => x.Uebernehmen, uebernehmen is null ? default : EventCallbackVon(uebernehmen))
-            .Add(x => x.Csv, csv is null ? default : EventCallbackVon(csv))
-            .Add(x => x.Geschlossen, geschlossen is null ? default : EventCallbackVon(geschlossen))
-            .Add(x => x.Meldung, meldung)
-            .Add(x => x.MeldungErfolg, meldungErfolg));
+        var dienste = new StromspeicherAuslegungDienste
+        {
+            Vorgaben = vorgaben ?? Vorgaben,
+            EinzelRechnen = rechnen ?? ((_, _) => Task.FromResult(Ergebnis())),
+            Abbrechen = abbrechen,
+            AuslegungUebernehmen = uebernehmen,
+            Csv = csv,
+            LeistungspreisSchreiben = leistungspreis,
+            Betriebsbild = betrieb
+        };
+
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.Dienste, dienste)
+            .Add(x => x.PlanerVerfuegbar, false)
+            .Add(x => x.Geschlossen,
+                 geschlossen is null ? default : EventCallbackVon(geschlossen)));
+
+        Auslegungshilfe.Modus(cut, AuslegungModus.Einzelspeicher);
+        return cut;
     }
+
+    /// <summary>Startet den Rasterlauf — Schritt 4 der Ablaufleiste.</summary>
+    private static Task Starten(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => Auslegungshilfe.Rechenknopf(cut).ClickAsync(new());
+
+    /// <summary>Das Ergebnisblatt (Schritt 5) — dort stehen Bilder und Kennzahlen.</summary>
+    private static void ZumErgebnis(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => Auslegungshilfe.Schritt(cut, AuslegungSchritt.Ergebnis);
+
+    /// <summary>Blatt 3 — Berechnungsart, Zielfunktion, Leistungspreis.</summary>
+    private static void ZumBetrieb(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => Auslegungshilfe.Schritt(cut, AuslegungSchritt.Betrieb);
+
+    /// <summary>Blatt 1 — der Suchraum.</summary>
+    private static void ZumSuchraum(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
+
+    /// <summary>Die Ergebniskomponente — sie hält die Schalterstellungen des Betriebsbildes.</summary>
+    private static EinzelspeicherErgebnis Ergebnisblatt(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => cut.FindComponent<EinzelspeicherErgebnis>().Instance;
 
     private Microsoft.AspNetCore.Components.EventCallback EventCallbackVon(Action a)
         => Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, a);
@@ -158,8 +195,8 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     private Microsoft.AspNetCore.Components.EventCallback<T> EventCallbackVon<T>(Action<T> a)
         => Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, a);
 
-    private static IElement Knopf(IRenderedComponent<SpeicherOptimierungDialog> cut, string text)
-        => cut.FindAll("button").Single(b => b.TextContent.Trim() == text);
+    private static IElement Knopf(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
+        => Auslegungshilfe.Knopf(cut, text);
 
     // =================================================================================
     //  Befund 1 — die Ueberschneidung
@@ -191,10 +228,14 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         // Der Text wird nicht gekuerzt und nicht abgeschnitten - in der abgeloesten
-        // Maske ragte er 8 Bildpunkte ueber seine GroupBox hinaus.
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_HINWEIS_ZIELFUNKTION,
-                        cut.Markup, StringComparison.Ordinal);
+        // Maske ragte er 8 Bildpunkte ueber seine GroupBox hinaus. Seit P3 steht die
+        // SUCHRAUMregel auf Blatt 1 und die ZIELFUNKTION auf Blatt 3: Sie gehoeren zu
+        // verschiedenen Schritten und stehen deshalb nicht mehr untereinander.
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_HINWEIS_SUCHRAUM,
+                        cut.Markup, StringComparison.Ordinal);
+
+        ZumBetrieb(cut);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_HINWEIS_ZIELFUNKTION,
                         cut.Markup, StringComparison.Ordinal);
     }
 
@@ -216,8 +257,9 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public void Der_Suchraum_traegt_die_sechs_Felder_und_die_drei_Schalter()
     {
         var cut = Aufbauen();
-        string html = cut.Markup;
 
+        // Blatt 1 „Speicherparameter": die sechs Zahlen und das Feinraster - alles,
+        // was den RASTER beschreibt.
         foreach (string label in new[]
         {
             WindowsFormsApplication1.MyResource.Resource.OPT_LBL_CMIN,
@@ -226,11 +268,18 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
             WindowsFormsApplication1.MyResource.Resource.OPT_LBL_RMIN,
             WindowsFormsApplication1.MyResource.Resource.OPT_LBL_RMAX,
             WindowsFormsApplication1.MyResource.Resource.OPT_LBL_RSCHRITT,
+            WindowsFormsApplication1.MyResource.Resource.OPT_CHK_FEINRASTER
+        })
+            Assert.Contains(label, cut.Markup, StringComparison.Ordinal);
+
+        // Blatt 3 „Betriebsfuehrung": Berechnungsart und Zielfunktionsschalter.
+        ZumBetrieb(cut);
+        foreach (string label in new[]
+        {
             WindowsFormsApplication1.MyResource.Resource.OPT_LBL_STRATEGIE,
-            WindowsFormsApplication1.MyResource.Resource.OPT_CHK_FEINRASTER,
             WindowsFormsApplication1.MyResource.Resource.OPT_CHK_KVER
         })
-            Assert.Contains(label, html, StringComparison.Ordinal);
+            Assert.Contains(label, cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -252,7 +301,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         Assert.Contains("120", cut.Find("span.epos-speicheropt-punkte").TextContent,
                         StringComparison.Ordinal);
 
-        cut.FindAll("input[type=checkbox]")[0].Change(false);   // Feinraster aus
+        cut.FindAll("input[type=checkbox]")[0].Change(false);   // Feinraster aus (Blatt 1)
         Assert.Contains("60", cut.Find("span.epos-speicheropt-punkte").TextContent,
                         StringComparison.Ordinal);
     }
@@ -266,9 +315,9 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        Assert.NotNull(cut.Instance.Ergebnis);
+        Assert.NotNull(cut.Instance.Einzelergebnis);
         Assert.Contains("120 Rasterpunkte", cut.Markup, StringComparison.Ordinal);
         Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
         Assert.Contains("Nennkapazität C_nom", cut.Markup, StringComparison.Ordinal);
@@ -281,7 +330,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Beide_Bilder_sind_zoombar()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.Equal(2, cut.FindAll("div.epos-diagramm").Count);
         Assert.All(cut.FindAll("img.epos-chartbild"),
@@ -292,7 +341,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Der_Rand_Hinweis_erscheint_als_Warnband()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.Contains("Optimum am Rand", cut.Markup, StringComparison.Ordinal);
     }
@@ -301,7 +350,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Ohne_Randlage_steht_kein_Hinweis()
     {
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(Ergebnis(randlage: false)));
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.DoesNotContain("Optimum am Rand", cut.Markup, StringComparison.Ordinal);
     }
@@ -320,7 +369,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
 
         // Der Klick wird NICHT abgewartet: Sein Task endet erst, wenn der Behandler
         // fertig ist - und der wartet auf den Lauf. Das ist der Sinn der Uebung.
-        Task klick = cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        Task klick = Starten(cut);
 
         Assert.True(cut.Instance.Laeuft);
         Assert.NotNull(cut.Find("progress"));
@@ -343,7 +392,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var quelle = new TaskCompletionSource<SpeicherOptimierungErgebnis>();
         var cut = Aufbauen(rechnen: (_, _) => quelle.Task);
 
-        Task klick = cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        Task klick = Starten(cut);
 
         Assert.Empty(cut.FindAll("button.epos-fortschritt-abbruch"));
 
@@ -359,7 +408,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
 
         var cut = Aufbauen(rechnen: (_, _) => quelle.Task, abbrechen: () => gerufen++);
 
-        Task klick = cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        Task klick = Starten(cut);
         await cut.Find("button.epos-fortschritt-abbruch").ClickAsync(new());
 
         Assert.Equal(1, gerufen);
@@ -388,10 +437,10 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         // "Kapazität bis" unter "von" - dieselbe Bedingung, die die abgeloeste Maske
         // mit einer MessageBox meldete.
         cut.FindAll("input[type=text]")[1].Input("100");
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.Equal(0, laeufe);
-        Assert.Null(cut.Instance.Ergebnis);
+        Assert.Null(cut.Instance.Einzelergebnis);
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_MSG_CMAX,
                         cut.Markup, StringComparison.Ordinal);
     }
@@ -405,9 +454,9 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
             Meldung = "Die Simulation ist noch nicht gerechnet."
         }));
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        Assert.Null(cut.Instance.Ergebnis);
+        Assert.Null(cut.Instance.Einzelergebnis);
         Assert.Contains("Die Simulation ist noch nicht gerechnet.", cut.Markup,
                         StringComparison.Ordinal);
         Assert.Empty(cut.FindAll("img.epos-chartbild"));
@@ -420,10 +469,15 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     [Fact]
     public async Task Ohne_Ergebnis_ist_Uebernehmen_gesperrt()
     {
-        var cut = Aufbauen(uebernehmen: _ => { });
+        var cut = Aufbauen(uebernehmen: (_, _) => new Rueckmeldung(true, ""));
 
-        Assert.True(Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_UEBERNEHMEN)
-                        .HasAttribute("disabled"));
+        // Ohne Lauf gibt es das Ergebnisblatt gar nicht - der Schritt ist weich
+        // gesperrt und nennt seinen Grund (Hausregel W16b-E-6).
+        AngleSharp.Dom.IElement schritt =
+            Auslegungshilfe.Schrittknopf(cut, AuslegungSchritt.Ergebnis);
+        Assert.Equal("true", schritt.GetAttribute("aria-disabled"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_BTN_UEBERNEHMEN,
+                              cut.Markup, StringComparison.Ordinal);
         await Task.CompletedTask;
     }
 
@@ -435,9 +489,13 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Uebernehmen_fragt_zurueck_und_ruft_den_Weg_genau_einmal()
     {
         var gerufen = new List<(double Kwh, double Kw)>();
-        var cut = Aufbauen(uebernehmen: a => gerufen.Add(a));
+        var cut = Aufbauen(uebernehmen: (kwh, kw) =>
+        {
+            gerufen.Add((kwh, kw));
+            return new Rueckmeldung(true, "Die Auslegung wurde übernommen.");
+        });
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
         await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_UEBERNEHMEN)
                   .ClickAsync(new());
 
@@ -456,9 +514,13 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Ein_Nein_schreibt_nichts()
     {
         var gerufen = new List<(double Kwh, double Kw)>();
-        var cut = Aufbauen(uebernehmen: a => gerufen.Add(a));
+        var cut = Aufbauen(uebernehmen: (kwh, kw) =>
+        {
+            gerufen.Add((kwh, kw));
+            return new Rueckmeldung(true, "");
+        });
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
         await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_UEBERNEHMEN)
                   .ClickAsync(new());
         await Knopf(cut, "Nein").ClickAsync(new());
@@ -471,14 +533,31 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     /// Band; „konnte nicht geschrieben werden" schon.
     /// </summary>
     [Fact]
-    public void Die_Meldung_der_Huelle_steht_in_der_richtigen_Stufe()
+    public async Task Die_Meldung_der_Huelle_steht_in_der_richtigen_Stufe()
     {
-        var gut = Aufbauen(meldung: "Die Auslegung wurde übernommen.", meldungErfolg: true);
+        var gut = Aufbauen(uebernehmen: (_, _) =>
+            new Rueckmeldung(true, "Die Auslegung wurde übernommen."));
+        await Uebernehmen(gut);
+
         Assert.Contains("Die Auslegung wurde übernommen.", gut.Markup, StringComparison.Ordinal);
         Assert.NotNull(gut.Find(".epos-warnbanner--erfolg"));
 
-        var schlecht = Aufbauen(meldung: "Die Auslegung konnte nicht geschrieben werden.");
+        var schlecht = Aufbauen(uebernehmen: (_, _) =>
+            new Rueckmeldung(false, "Die Auslegung konnte nicht geschrieben werden."));
+        await Uebernehmen(schlecht);
+
+        Assert.Contains("Die Auslegung konnte nicht geschrieben werden.", schlecht.Markup,
+                        StringComparison.Ordinal);
         Assert.Empty(schlecht.FindAll(".epos-warnbanner--erfolg"));
+    }
+
+    /// <summary>Rechnen, „Bestpunkt übernehmen" drücken und die Rückfrage bejahen.</summary>
+    private static async Task Uebernehmen(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+    {
+        await Starten(cut);
+        await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_UEBERNEHMEN)
+                  .ClickAsync(new());
+        await Knopf(cut, "Ja").ClickAsync(new());
     }
 
     // =================================================================================
@@ -489,7 +568,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Ohne_Rueckruf_kein_CSV_Knopf()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_BTN_CSV,
                               cut.Markup, StringComparison.Ordinal);
@@ -499,9 +578,9 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Der_CSV_Weg_bekommt_den_fertigen_Text()
     {
         string? bekommen = null;
-        var cut = Aufbauen(csv: t => bekommen = t);
+        var cut = Aufbauen(csv: t => { bekommen = t; return Task.FromResult(Rueckmeldung.Still); });
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
         await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_CSV).ClickAsync(new());
 
         Assert.NotNull(bekommen);
@@ -514,10 +593,12 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         int zu = 0;
         var cut = Aufbauen(geschlossen: () => zu++);
 
-        await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.OPT_BTN_SCHLIESSEN)
+        // Der Dialog hatte einen Schliessknopf, die Ansicht hat den RUECKWEG. Ohne
+        // ungespeicherte Eingaben gibt es dabei keine Rueckfrage (62b-E-1).
+        await Knopf(cut, WindowsFormsApplication1.MyResource.Resource.FLOTTE_SEITE_ZURUECK)
                   .ClickAsync(new());
 
-        Assert.Equal(1, zu);
+        cut.WaitForAssertion(() => Assert.Equal(1, zu));
     }
 
     // =================================================================================
@@ -546,19 +627,19 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
 
         for (int i = 1; i <= 5; i++)
         {
-            await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+            await Starten(cut);
 
             Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
             Assert.Equal(2, cut.FindAll("div.epos-diagramm").Count);
             Assert.Equal(i, lauf);
 
             // Das Bild ist DAS DES LAUFS - kein Rest des vorigen.
-            Assert.Same(cut.Instance.Ergebnis!.RasterBild, cut.Instance.Ergebnis.RasterBild);
-            Assert.Equal((byte)i, cut.Instance.Ergebnis.RasterBild[8]);
+            Assert.Same(cut.Instance.Einzelergebnis!.RasterBild, cut.Instance.Einzelergebnis.RasterBild);
+            Assert.Equal((byte)i, cut.Instance.Einzelergebnis.RasterBild[8]);
         }
 
         // Auch die Kennzahlen bleiben drei - nichts staut sich an.
-        Assert.Equal(3, cut.Instance.Ergebnis!.Kennzahlen.Count);
+        Assert.Equal(3, cut.Instance.Einzelergebnis!.Kennzahlen.Count);
     }
 
     /// <summary>
@@ -577,10 +658,10 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
                 : new SpeicherOptimierungErgebnis { Erfolg = false, Meldung = "Fehlgeschlagen." });
         });
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
         Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
         Assert.Empty(cut.FindAll("img.epos-chartbild"));
         Assert.Contains("Fehlgeschlagen.", cut.Markup, StringComparison.Ordinal);
     }
@@ -596,29 +677,37 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Gaben_zeichnet_er_und_sperrt_den_Start()
     {
-        var cut = Render<SpeicherOptimierungDialog>();
+        var cut = Render<StromspeicherAuslegungSeite>(p => p.Add(x => x.PlanerVerfuegbar, false));
+        Auslegungshilfe.Modus(cut, AuslegungModus.Einzelspeicher);
 
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_GRP_SUCHRAUM,
                         cut.Markup, StringComparison.Ordinal);
-        Assert.True(cut.Find("button.epos-simerg-knopf").HasAttribute("disabled"));
+        Assert.True(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
     }
 
     // =================================================================================
     //  ANWENDERENTSCHEID W11b‑E‑3 (10.09.2026) — die Lastspitzenkappung
     // =================================================================================
 
-    /// <summary>Die Klappliste „Berechnungsart" ist die ERSTE Auswahl des Dialogs.</summary>
-    private static IElement Berechnungsart(IRenderedComponent<SpeicherOptimierungDialog> cut)
-        => cut.FindAll("select")[0];
+    /// <summary>
+    /// Die Klappliste „Berechnungsart" auf Blatt 3. <b>Die ERSTE Auswahl der Seite ist
+    /// der MODUS-Umschalter</b> der Ablaufleiste — er steht vor jedem Blatt.
+    /// </summary>
+    private static IElement Berechnungsart(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => cut.FindAll("select")[1];
 
-    /// <summary>Stellt die Klappliste auf die Lastspitzenkappung (Aufzählungswert 2).</summary>
-    private static void KappungWaehlen(IRenderedComponent<SpeicherOptimierungDialog> cut)
-        => Berechnungsart(cut).Change("2");
+    /// <summary>Geht auf Blatt 3 und stellt die Klappliste auf die Lastspitzenkappung.</summary>
+    private static void KappungWaehlen(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+    {
+        ZumBetrieb(cut);
+        Berechnungsart(cut).Change("2");
+    }
 
     [Fact]
     public void Die_Klappliste_bietet_drei_Berechnungsarten()
     {
         var cut = Aufbauen();
+        ZumBetrieb(cut);
         var eintraege = Berechnungsart(cut).QuerySelectorAll("option");
 
         Assert.Equal(3, eintraege.Length);
@@ -634,6 +723,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public void Das_Leistungspreisfeld_erscheint_erst_mit_der_Kappung()
     {
         var cut = Aufbauen(vorgaben: VorgabenMitQuellen, leistungspreis: _ => { });
+        ZumBetrieb(cut);
 
         Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_LBL_LEISTUNGSPREIS,
                               cut.Markup, StringComparison.Ordinal);
@@ -670,8 +760,8 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
 
         KappungWaehlen(cut);
 
-        // Die zweite Auswahl des Dialogs ist die Quellenliste; Id = Listenindex.
-        var quellen = cut.FindAll("select")[1];
+        // Nach Modus-Umschalter und Berechnungsart folgt die Quellenliste; Id = Listenindex.
+        var quellen = cut.FindAll("select")[2];
         Assert.Equal(3, quellen.QuerySelectorAll("option").Length);   // Platzhalter + zwei Quellen
 
         quellen.Change("1");                                          // Energietraeger Strom
@@ -689,8 +779,8 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
 
         KappungWaehlen(cut);
 
-        // Sechs Zahlenfelder des Suchraums, dann der Leistungspreis.
-        cut.FindAll("input[type=text]")[6].Input("142,5");
+        // Auf Blatt 3 steht NUR der Leistungspreis - der Suchraum ist Blatt 1.
+        cut.FindAll("input[type=text]")[0].Input("142,5");
 
         Assert.Equal(142.5, cut.Instance.Eingaben.LeistungspreisEurProKwA);
         Assert.Equal(new[] { 142.5 }, geschrieben);
@@ -703,7 +793,8 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen(leistungspreis: _ => { });
         KappungWaehlen(cut);
 
-        Assert.Single(cut.FindAll("select"));
+        // Modus-Umschalter und Berechnungsart - keine dritte Liste.
+        Assert.Equal(2, cut.FindAll("select").Count);
         Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.OPT_LBL_LP_QUELLE,
                               cut.Markup, StringComparison.Ordinal);
     }
@@ -715,8 +806,8 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen(vorgaben: VorgabenMitQuellen);
         KappungWaehlen(cut);
 
-        Assert.True(cut.FindAll("input[type=text]")[6].HasAttribute("disabled"));
-        Assert.True(cut.FindAll("select")[1].HasAttribute("disabled"));
+        Assert.True(cut.FindAll("input[type=text]")[0].HasAttribute("disabled"));
+        Assert.True(cut.FindAll("select")[2].HasAttribute("disabled"));
     }
 
     // =================================================================================
@@ -731,7 +822,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Beide_Bilder_stehen_nebeneinander_in_einer_Zeile()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         var zeile = cut.Find("div.epos-speicheropt-diagramme");
         Assert.Equal(2, zeile.QuerySelectorAll("img.epos-chartbild").Length);
@@ -746,7 +837,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Die_Kennzahlen_stehen_als_Wertelisten()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.Empty(cut.FindAll("table.epos-speicheropt-kennzahlen"));
         Assert.Equal(3, cut.FindAll("dl.epos-simerg-werte").Count);   // drei belegte Gruppen
@@ -758,7 +849,7 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Die_Hinweise_stehen_als_Warnbaender()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         var baender = cut.FindAll(".epos-warnbanner-text");
         Assert.Contains(baender, b => b.TextContent.Contains("Optimum am Rand", StringComparison.Ordinal));
@@ -806,9 +897,9 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Ohne_Betriebsbild_bleibt_es_bei_zwei_Bildern()
     {
         var cut = Aufbauen();
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        Assert.Null(cut.Instance.Betriebsbild);
+        Assert.Null(Ergebnisblatt(cut).BetriebsbildPng);
         Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
         Assert.Empty(cut.FindAll("section.epos-speicheropt-betrieb"));
     }
@@ -817,12 +908,12 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Mit_Betriebsbild_erscheint_das_dritte_Bild()
     {
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()));
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
         var abschnitt = cut.Find("section.epos-speicheropt-betrieb");
         Assert.Single(abschnitt.QuerySelectorAll("img.epos-chartbild"));
-        Assert.False(cut.Instance.BetriebGanzesJahr);
+        Assert.False(Ergebnisblatt(cut).BetriebGanzesJahr);
     }
 
     /// <summary>Ohne Neuzeichnen-Weg gibt es keine Umschalter („Kein Delegat ist kein Knopf").</summary>
@@ -830,10 +921,10 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
     public async Task Ohne_Neuzeichnen_gibt_es_keine_Umschalter()
     {
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()));
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        // Nur die zwei Schalter des Suchraums (Feinraster, K_ver).
-        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
+        // Auf dem Ergebnisblatt steht ohne Neuzeichnen-Weg KEIN Schalter.
+        Assert.Empty(cut.FindAll("input[type=checkbox]"));
     }
 
     /// <summary>
@@ -847,15 +938,15 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
                            betrieb: zeichner.Zeichne);
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        byte[] vorher = cut.Instance.Betriebsbild!;
-        cut.FindAll("input[type=checkbox]")[2].Change(true);   // „Ganzes Jahr"
+        byte[] vorher = Ergebnisblatt(cut).BetriebsbildPng!;
+        cut.FindAll("input[type=checkbox]")[0].Change(true);   // „Ganzes Jahr"
 
         Assert.Single(zeichner.Anfragen);
         Assert.True(zeichner.Anfragen[0].Jahr);
-        Assert.True(cut.Instance.BetriebGanzesJahr);
-        Assert.NotEqual(vorher, cut.Instance.Betriebsbild);
+        Assert.True(Ergebnisblatt(cut).BetriebGanzesJahr);
+        Assert.NotEqual(vorher, Ergebnisblatt(cut).BetriebsbildPng);
     }
 
     /// <summary>Eine abgewählte Reihe fehlt in der nächsten Anfrage.</summary>
@@ -866,10 +957,10 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
                            betrieb: zeichner.Zeichne);
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
-        // Schalter 2 = „Ganzes Jahr", 3 = Netzbezug ohne Speicher.
-        cut.FindAll("input[type=checkbox]")[3].Change(false);
+        // Schalter 0 = „Ganzes Jahr", 1 = Netzbezug ohne Speicher.
+        cut.FindAll("input[type=checkbox]")[1].Change(false);
 
         Assert.Single(zeichner.Anfragen);
         Assert.DoesNotContain(SpeicherOptimierungCtrl.REIHE_OHNE, zeichner.Anfragen[0].Reihen);
@@ -888,14 +979,14 @@ public class SpeicherOptimierungDialogTests : EposBunitContext
         var cut = Aufbauen(rechnen: (_, _) => Task.FromResult(ErgebnisMitBetrieb()),
                            betrieb: zeichner.Zeichne);
 
-        await cut.Find("button.epos-simerg-knopf").ClickAsync(new());
+        await Starten(cut);
 
         // Der Lauf stand auf Dauernutzung: drei Reihenschalter (ohne die Schwelle).
-        Assert.Equal(6, cut.FindAll("input[type=checkbox]").Count);   // 2 Suchraum + Jahr + 3 Reihen
+        Assert.Equal(4, cut.FindAll("input[type=checkbox]").Count);   // Jahr + 3 Reihen
 
+        cut.FindAll("input[type=checkbox]")[1].Change(false);
+        cut.FindAll("input[type=checkbox]")[2].Change(false);
         cut.FindAll("input[type=checkbox]")[3].Change(false);
-        cut.FindAll("input[type=checkbox]")[4].Change(false);
-        cut.FindAll("input[type=checkbox]")[5].Change(false);
 
         Assert.Equal(3, zeichner.Anfragen.Count);
 

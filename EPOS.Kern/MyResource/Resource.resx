@@ -17667,4 +17667,142 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_CSV_SPALTE" xml:space="preserve">
     <value>Spalte {0}</value>
   </data>
+  <data name="SPAUS_MSG_PROFILNAME_RESERVIERT" xml:space="preserve">
+    <value>Profilnamen mit '@' sind für interne Stände reserviert.</value>
+  </data>
+  <data name="FLOTTE_SEITE_TITEL" xml:space="preserve">
+    <value>Stromspeicher-Auslegung</value>
+  </data>
+  <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
+    <value>← zurück</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
+    <value>Modus</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
+    <value>Flotte</value>
+  </data>
+  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
+    <value>Einzelspeicher</value>
+  </data>
+  <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
+    <value>Ablauf der Auslegung</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERALTET" xml:space="preserve">
+    <value>veraltet</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
+    <value>1 Speicher</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
+    <value>1 Speicherparameter</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
+    <value>2 Daten &amp; Kosten</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT3" xml:space="preserve">
+    <value>3 Betriebsführung</value>
+  </data>
+  <data name="FLOTTE_SEITE_SCHRITT5" xml:space="preserve">
+    <value>5 Ergebnis</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
+    <value>4 Flotte bewerten</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
+    <value>4 Größen optimieren</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
+    <value>4 Optimieren</value>
+  </data>
+  <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
+    <value>Der Ergebnisschritt steht erst offen, wenn einmal gerechnet wurde.</value>
+  </data>
+  <data name="FLOTTE_SEITE_KEIN_LAUF" xml:space="preserve">
+    <value>Zu diesem Projekt liegt kein gerechneter Simulationslauf vor. Die EPOS-Zeitreihen (Last, Erzeugung, Preise) stammen aus einem solchen Lauf.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_LAUF" xml:space="preserve">
+    <value>Simulation rechnen</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_PROGNOSEN" xml:space="preserve">
+    <value>Prognosen und Projektjahre…</value>
+  </data>
+  <data name="FLOTTE_SEITE_PROGNOSEN_TITEL" xml:space="preserve">
+    <value>Prognosen und Projektjahre</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERLASSEN_TITEL" xml:space="preserve">
+    <value>Ungespeicherte Eingaben</value>
+  </data>
+  <data name="FLOTTE_SEITE_VERLASSEN_FRAGE" xml:space="preserve">
+    <value>Die Stromspeicher-Auslegung hat ungespeicherte Eingaben. Sollen sie gespeichert werden?</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_VERWERFEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_BLEIBEN" xml:space="preserve">
+    <value>Bleiben</value>
+  </data>
+  <data name="FLOTTE_SEITE_PROJEKT" xml:space="preserve">
+    <value>Projekt „{0}“</value>
+  </data>
+  <data name="FLOTTE_BANNER_ARBEITSLOS" xml:space="preserve">
+    <value>Die Flotte hat im gesamten Zeitraum weder geladen noch entladen.</value>
+  </data>
+  <data name="FLOTTE_BANNER_HINWEISE" xml:space="preserve">
+    <value>Hinweise zu diesem Lauf</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_PEAKZIEL" xml:space="preserve">
+    <value>Peak-Ziel bestimmen…</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_NETZLADUNG" xml:space="preserve">
+    <value>Netzladung erlauben</value>
+  </data>
+  <data name="FLOTTE_BANNER_BTN_BETRIEB" xml:space="preserve">
+    <value>Zu Schritt 3 Betriebsführung</value>
+  </data>
+  <data name="FLOTTE_PEAK_TITEL" xml:space="preserve">
+    <value>Peak-Ziel bestimmen</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag übernehmen</value>
+  </data>
+  <data name="FLOTTE_PEAK_BTN_BESTIMMEN" xml:space="preserve">
+    <value>Peak-Ziel bestimmen…</value>
+  </data>
+  <data name="FLOTTE_PEAK_GESPERRT" xml:space="preserve">
+    <value>Das Peak-Ziel lässt sich nur für die reaktiven Betriebsziele Lastspitzenkappung und PV-Eigenverbrauch bestimmen; ein planendes Ziel bräuchte für jeden Jahreslauf den Fahrplaner.</value>
+  </data>
+  <data name="FLOTTE_PEAK_FRAGE" xml:space="preserve">
+    <value>Peak-Ziel {0} kW übernehmen? (verbleibende Spitze {1} kW, {2} Läufe)</value>
+  </data>
+  <data name="FLOTTE_PEAK_LAUF" xml:space="preserve">
+    <value>Lauf {0} von {1}: Peak-Ziel {2} kW, verbleibende Spitze {3} kW</value>
+  </data>
+  <data name="FLOTTE_PEAK_NETZLADUNG_JA" xml:space="preserve">
+    <value>Vorgabe zur Lastspitzenkappung: Netzladung ERLAUBT — die Wiederaufladung nutzt die freie Anschlussleistung unter dem Peak-Ziel (Spezifikation 5.1). Der Schalter bleibt änderbar.</value>
+  </data>
+  <data name="FLOTTE_PEAK_NETZLADUNG_NEIN" xml:space="preserve">
+    <value>Vorgabe zu diesem Betriebsziel: Netzladung NICHT erlaubt — der Speicher nimmt nur den eigenen Überschuss auf. Der Schalter bleibt änderbar.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_LAEUFT" xml:space="preserve">
+    <value>Es läuft bereits eine Speicherberechnung.</value>
+  </data>
+  <data name="FLOTTE_DLG_STATUS_VARIANTE" xml:space="preserve">
+    <value>Flottenvariante {0} von {1}</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_TITEL" xml:space="preserve">
+    <value>Zeitreihe oder Prognosen importieren</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_NUR_CSV" xml:space="preserve">
+    <value>Bitte eine CSV-Datei auswählen. JSON-Dateien werden nicht importiert.</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_FEHLT" xml:space="preserve">
+    <value>Die gewählte Datei wurde nicht gefunden.</value>
+  </data>
+  <data name="FLOTTE_DLG_DATEI_ZU_GROSS" xml:space="preserve">
+    <value>Die CSV-Datei ist größer als 20 MiB.</value>
+  </data>
 </root>

@@ -1,371 +1,161 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Seiten.Simulation;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die AUSLEGUNGSOPTIMIERUNG in der Ergebnishülle (W11b‑B‑5, Windows-Abnahme V2
-    /// vom 07.09.2026).
+    /// Die STROMSPEICHER-AUSLEGUNG in der Ergebnishülle — seit Paket P3 (Auftrag #192)
+    /// nur noch das, was der Reiter „Stromspeicher" selbst braucht.
     ///
-    /// <para><b>Warum diese Datei entsteht.</b> Bis hierher genügte der Hülle EINE
-    /// Zeile — <c>Sprung = schluessel =&gt; Sprungbruecke.Fuer(_fenster, sim,
-    /// m_ID_Projekt)(schluessel)</c> —, weil das Ziel eine WinForms-Maske war und
-    /// alles selbst tat: Felder lesen, Datenbank, <c>Task.Run</c>, ScottPlot,
-    /// Übernahme, CSV. <c>Form_SpeicherOptimierung</c> ist mit dieser Welle gefallen
-    /// (Befunde „Texte überschneiden sich" und „Dialog stürzt nach kurzer Zeit ab"),
-    /// und was sie an Umgebung brauchte, steht jetzt hier: die Datenbankseite auf dem
-    /// Bedienfaden, der Rechenlauf in <c>Task.Run</c>, die Abbruchmarke und der
-    /// Dateischreiber.</para>
+    /// <para><b>Was hier stand und wohin es gegangen ist.</b> Bis zur Windows-Abnahme V2
+    /// genügte der Hülle EINE Zeile, die Sprungbrücke in <c>Form_SpeicherOptimierung</c>.
+    /// Mit W11b‑B‑5 wurden daraus zwölf Delegaten — Vorbelegung lesen, Stand und Profil
+    /// schreiben, Flotte rechnen, Raster rechnen, Betriebsbild nachzeichnen,
+    /// Projektflotte aktivieren und deaktivieren, Bestpunkt übernehmen, Leistungspreis
+    /// schreiben —, weil die zwei RAZOR-DIALOGE daran hingen. Beide Dialoge sind mit P3
+    /// gefallen („Fenster in Fenster ist nicht gut", Anwenderrückmeldung 11.09.2026);
+    /// ihre Datenseite liegt seither in
+    /// <see cref="StromspeicherAuslegungCtrl"/> — Hausregel: Datenbankseite in den
+    /// Kern.</para>
     ///
-    /// <para><b>Die Aufteilung ist dieselbe wie beim Simulationslauf</b>
-    /// (<see cref="SimulationErgebnisHuelle"/>): <c>BereiteOptimierungVor</c> LIEST die
-    /// Datenbank und bleibt auf dem Bedienfaden — <c>DataRepository.EngineModus</c> ist
-    /// prozessweit und nicht threadgebunden —, nur die reine Rechnung geht in
-    /// <c>Task.Run</c>.</para>
-    ///
-    /// <para><b>Sie steht in einer EIGENEN Teildatei</b>, damit die Welle die drei
-    /// gewachsenen Teildateien der Hülle nicht anfasst.</para>
+    /// <para><b>Geblieben sind vier Wege</b>, und alle vier gehören dem REITER
+    /// „Stromspeicher": Er zeigt die Flotte samt Betriebseditor an
+    /// (<see cref="OptimierungVorgaben"/>), speichert deren Optionen
+    /// (<see cref="OptimierungEinstellungenSpeichern"/>), schreibt die CSV
+    /// (<see cref="OptimierungCsv"/>) und fragt, ob es den Flotteneinstieg überhaupt
+    /// gibt (<see cref="OptimierungFlottenRechnen"/>). Dazu kommt der
+    /// ANSICHTSWECHSEL <see cref="AuslegungOeffnen"/>.</para>
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
-        /// <summary>Die Abbruchmarke des laufenden Suchlaufs; <c>null</c> = keiner läuft.</summary>
-        private CancellationTokenSource _optimierungAbbruch;
+        /// <summary>
+        /// Der Auslegungscontroller dieses Projekts — er hält Lauf, Vorbereitung und
+        /// das rohe Raster. Angelegt beim ersten Zugriff.
+        /// </summary>
+        private StromspeicherAuslegungCtrl _auslegung;
+
+        /// <summary>An der Projektflotte wurde geschrieben, ohne dass neu gerechnet wurde.</summary>
+        private bool _flotteProjektGeaendert;
+
+        /// <summary>Die Abbruchmarke eines laufenden Hintergrundlaufs; <c>null</c> = keiner läuft.</summary>
+        private CancellationTokenSource _auslegungAbbruch;
 
         /// <summary>
-        /// Zeitreihen und Basisauslegung des LETZTEN Suchlaufs — sie tragen das
-        /// Nachzeichnen des Betriebsbildes (Befund W11b‑B‑25, 09.09.2026).
+        /// Der Controller mit dem AKTUELLEN Simulationslauf. Der Lauf wird nur
+        /// nachgereicht, wenn er sich geändert hat — sonst verlöre die Ansicht bei
+        /// jedem Zeichnen ihr gemerktes Raster.
         /// </summary>
-        /// <remarks>
-        /// Sie bleiben hier stehen, damit ein Umschalten des Ausschnitts nicht die
-        /// Datenbank anfassen muss: <c>BereiteOptimierungVor</c> ist der einzige
-        /// Datenbankteil der Optimierung, und er lief bereits auf dem Bedienfaden.
-        /// </remarks>
-        private StromspeicherOptimierungVorbereitung _optimierungVorbereitung;
-
-        /// <summary>Das rohe Rasterergebnis des letzten Laufs; <c>null</c> = keiner.</summary>
-        private SpeicherEngine.OptimiererErgebnis _optimierungRoh;
+        private StromspeicherAuslegungCtrl Auslegung()
+        {
+            if (_auslegung == null) _auslegung = new StromspeicherAuslegungCtrl(m_ID_Projekt);
+            if (!ReferenceEquals(_auslegung.Lauf, sim)) _auslegung.LaufUebernehmen(sim);
+            return _auslegung;
+        }
 
         /// <summary>
         /// Vorbelegung des Suchraums samt der aktuellen Auslegung — <b>Datenbankzugriff</b>,
         /// deshalb auf dem Bedienfaden.
         /// </summary>
-        private SpeicherOptimierungVorgaben OptimierungVorgaben()
-        {
-            // L_P kann im Parameterreiter unmittelbar geschrieben worden sein. Vor der
-            // Vorbelegung wird deshalb der aktive Variantensatz frisch gelesen.
-            VarianteLesen();
-            SpeicherOptimierungVorgaben vorgaben =
-                SpeicherFlottenStudieCtrl.Vorbelegung(m_ID_Projekt, BezugsspitzeKw(), sim);
-            if (_speicherVariante != null)
-                vorgaben.Eingaben.LeistungspreisEurProKwA = _speicherVariante.L_P;
-            return vorgaben;
-        }
+        private SpeicherOptimierungVorgaben OptimierungVorgaben() => Auslegung().Vorgaben();
 
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung.</summary>
         private Task<string> OptimierungEinstellungenSpeichern(SpeicherOptimierungEingaben eingaben)
         {
-            try
+            string fehler = Auslegung().EinstellungenSpeichern(eingaben);
+            if (string.IsNullOrEmpty(fehler))
             {
-                var snapshot = eingaben.Kopie();
-                snapshot.Auslegung.FlottenProjektbetriebDeaktiviert = false;
-                SpeicherAuslegungCtrl.Speichern(m_ID_Projekt, SpeicherAuslegungCtrl.Anlage(m_ID_Projekt),
-                    SpeicherAuslegungCtrl.AktuellerStand, snapshot);
                 _flotteProjektGeaendert = true;
                 _ergebnisGueltig = false;
-                return Task.FromResult("");
             }
-            catch (Exception ex)
-            {
-                return Task.FromResult(ex.Message);
-            }
-        }
-
-        /// <summary>Speichert ein benanntes Profil und liest die Profilliste anschliessend neu.</summary>
-        private Task<SpeicherOptimierungVorgaben> OptimierungProfilSpeichern(
-            SpeicherOptimierungEingaben eingaben, string name)
-        {
-            name = (name ?? "").Trim();
-            if (name.StartsWith("@", StringComparison.Ordinal))
-                throw new ArgumentException("Profilnamen mit '@' sind für interne Stände reserviert.");
-
-            SpeicherAuslegungCtrl.Speichern(m_ID_Projekt, SpeicherAuslegungCtrl.Anlage(m_ID_Projekt),
-                name, eingaben.Kopie());
-            return Task.FromResult(OptimierungVorgaben());
-        }
-
-        /// <summary>Waehlt eine CSV-Datei und uebergibt ihren Inhalt pfadfrei an Razor.</summary>
-        private async Task<SpeicherImportDatei> OptimierungDateiWaehlen()
-        {
-            string pfad = await Dienste.Datei.DateiOeffnenAsync(
-                "Zeitreihe oder Prognosen importieren", "CSV-Zeitreihen (*.csv)|*.csv",
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-            if (string.IsNullOrEmpty(pfad)) return new SpeicherImportDatei();
-            if (!string.Equals(Path.GetExtension(pfad), ".csv", StringComparison.OrdinalIgnoreCase))
-                throw new IOException("Bitte eine CSV-Datei auswählen. JSON-Dateien werden nicht importiert.");
-
-            const long maximal = 20L * 1024L * 1024L;
-            var info = new FileInfo(pfad);
-            if (!info.Exists) throw new FileNotFoundException("Die gewählte Datei wurde nicht gefunden.", pfad);
-            if (info.Length > maximal) throw new IOException("Die CSV-Datei ist größer als 20 MiB.");
-
-            byte[] inhalt = await Task.Run(() => File.ReadAllBytes(pfad));
-            if (inhalt.LongLength > maximal) throw new IOException("Die CSV-Datei ist größer als 20 MiB.");
-            return new SpeicherImportDatei { Dateiname = Path.GetFileName(pfad), Inhalt = inhalt };
+            return Task.FromResult(fehler);
         }
 
         /// <summary>
-        /// Die höchste Bezugsleistung des gerechneten Strombedarfs [kW]; 0, solange kein
-        /// Lauf vorliegt (Anwenderentscheid W11b‑E‑3, 10.09.2026).
+        /// Rechnet die Flottenstudie: Datenbank auf dem Bedienfaden, Rechnung in
+        /// <c>Task.Run</c>.
         /// </summary>
         /// <remarks>
-        /// Sie entscheidet, welche STUFE der Leistungspreis-Staffel an der Spitze greift
-        /// — und damit, welchen Wert die Tarifstruktur als Leistungspreis anbietet.
-        /// Genommen wird der Strombedarf des Laufs und nicht der Netzbezug: Der Speicher
-        /// soll die Spitze ja erst kappen, die Bezugsspitze OHNE ihn ist die
-        /// Bezugsgröße.
+        /// Der Reiter „Stromspeicher" fragt diesen Weg nur auf <c>null</c> ab — er
+        /// entscheidet damit, ob es den Flotteneinstieg gibt. Gerechnet wird in der
+        /// Ansicht STROMSPEICHER_AUSLEGUNG; dass der Weg trotzdem VOLLSTÄNDIG ist, hält
+        /// die Auskunft ehrlich.
         /// </remarks>
-        private double BezugsspitzeKw()
-        {
-            double[] werte = sim != null && sim.simulation_Strombedarf != null
-                ? sim.simulation_Strombedarf.Strombedarf_viertelStundenwerte
-                : null;
-            if (werte == null) return 0.0;
-
-            double spitze = 0.0;
-            for (int i = 0; i < werte.Length; i++)
-                if (werte[i] > spitze) spitze = werte[i];
-            return spitze;
-        }
-
-        /// <summary>
-        /// Schreibt den Leistungspreis L_P SOFORT in die aktive Speichervariante
-        /// (Anwenderentscheid W11b‑E‑3, 10.09.2026).
-        /// </summary>
-        /// <remarks>
-        /// <b>Über denselben Weg wie der Reiter „Parameter"</b>
-        /// (<c>SpeicherfeldSchreiben</c> mit <c>SpeicherFeld.Leistungspreis</c>) — L_P
-        /// hat EINE Pflegestelle, und ein zweiter Schreiber daneben wäre genau die
-        /// Doppelung, die zwei auseinanderlaufende Werte erzeugt. <c>VarianteLesen</c>
-        /// steht davor, weil der Anwender die Optimierung öffnen kann, ohne den Reiter
-        /// „Stromspeicher" je gesehen zu haben; ohne den Aufruf wäre
-        /// <c>_speicherVariante</c> dann <c>null</c> und der Schreibversuch wirkungslos.
-        /// <para><b>Nicht mehr stumm</b> (W11b‑B‑29): Der Weg liefert seit dem
-        /// Anwenderentscheid 1 eine Rückmeldung. Der Dialog hat keine Zeile dafür — er
-        /// zeigt seine eigene Meldung —, aber ein Fehlschlag geht wenigstens in die
-        /// Konsole und nicht mehr ins Leere.</para>
-        /// </remarks>
-        private void OptimierungLeistungspreis(double leistungspreisEurProKwA)
-        {
-            VarianteLesen();
-            EPOS.UI.Seiten.Simulation.Rueckmeldung antwort = SpeicherfeldSchreiben(
-                SpeicherFeld.Leistungspreis,
-                leistungspreisEurProKwA.ToString("R", CultureInfo.InvariantCulture));
-
-            if (!antwort.Erfolg)
-                Console.WriteLine("Der Leistungspreis konnte nicht geschrieben werden: " + antwort.Text);
-        }
-
-        /// <summary>
-        /// Die Rastersuche: Datenbank auf dem Bedienfaden, Rechnung in
-        /// <c>Task.Run</c>, Ergebnis (samt der zwei fertigen PNG) wieder hier.
-        /// </summary>
-        /// <remarks>
-        /// <para><b>Sie wirft nicht.</b> Jeder Ausgang steht im Ergebnis — der
-        /// Controller fängt Abbruch und Fehler selbst ab, und was hier noch schiefgehen
-        /// kann (die Vorbereitung), wird an Ort und Stelle gefangen. Eine unbehandelte
-        /// Ausnahme aus einem <c>Task.Run</c>, auf das niemand wartet, beendete unter
-        /// dem WinForms-<c>BlazorWebView</c> den Prozess.</para>
-        /// <para><b>Der Fortschritt ist im Controller gedrosselt</b>
-        /// (<c>SpeicherOptimierungCtrl.Drossel</c>); hier kommt also schon wenig an.
-        /// <c>Progress&lt;T&gt;</c> entsteht auf dem Bedienfaden und marshallt selbst
-        /// dorthin zurück.</para>
-        /// </remarks>
-        private async Task<SpeicherOptimierungErgebnis> OptimierungRechnen(
+        private async Task<SpeicherFlottenErgebnis> OptimierungFlottenRechnen(
             SpeicherOptimierungEingaben eingaben, Action<double?, string> melder)
         {
-            // Die Dialogkopie wird nie waehrend eines laufenden Hintergrundlaufs
-            // weiterbearbeitet. Vorbereiten loest EPOS-, Datei- und Kostenquellen auf
-            // und dokumentiert die wirklich verwendeten Saetze in dieser Laufkopie.
-            SpeicherOptimierungEingaben laufEingaben = eingaben.Kopie();
+            if (_auslegungAbbruch != null)
+                return new SpeicherFlottenErgebnis { Meldung = MyResource.Resource.FLOTTE_DLG_MSG_LAEUFT };
 
-            // ---- Datenbank und Quellen, Bedienfaden -----------------------
-            StromspeicherOptimierungVorbereitung vorbereitung;
+            StromspeicherAuslegungCtrl ctrl = Auslegung();
+            string meldung;
+            StromspeicherOptimierungVorbereitung vorbereitung = ctrl.FlotteVorbereiten(eingaben, out meldung);
+            if (vorbereitung == null) return new SpeicherFlottenErgebnis { Meldung = meldung };
+
+            _flotteProjektGeaendert = true;
+            _ergebnisGueltig = false;
+
+            _auslegungAbbruch = new CancellationTokenSource();
+            CancellationToken marke = _auslegungAbbruch.Token;
+            IProgress<FlottenFortschritt> fortschritt =
+                new Progress<FlottenFortschritt>(p => melder(
+                    p.Gesamt > 0 ? (double)p.Abgeschlossen / p.Gesamt : (double?)null,
+                    string.Format(MyResource.Resource.FLOTTE_DLG_STATUS_VARIANTE,
+                                  p.Abgeschlossen, p.Gesamt)));
             try
             {
-                vorbereitung = SpeicherAuslegungCtrl.Vorbereiten(sim, m_ID_Projekt, laufEingaben);
-                _optimierungVorbereitung = vorbereitung;
-                _optimierungRoh = null;
+                return await Task.Run(() => ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException)
             {
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message)
-                };
-            }
-
-            if (vorbereitung == null)
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = MyResource.Resource.SIMENG_SPEICHER_KEIN_SPEICHER
-                };
-
-            // Die Vorbereitung friert die Eingaben samt der wirklich verwendeten
-            // Kostensaetze ein. Genau dieser Stand wird gespeichert und gerechnet.
-            SpeicherOptimierungEingaben laufstand = vorbereitung.Eingaben;
-            string speicherfehler = await OptimierungEinstellungenSpeichern(laufstand);
-            if (!string.IsNullOrEmpty(speicherfehler))
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, speicherfehler)
-                };
-
-            // ---- Rechnung, Hintergrund-Task -------------------------------
-            _optimierungAbbruch = new CancellationTokenSource();
-            CancellationToken marke = _optimierungAbbruch.Token;
-
-            IProgress<SpeicherOptimierungFortschritt> fortschritt =
-                new Progress<SpeicherOptimierungFortschritt>(
-                    f => melder(f != null ? f.Anteil : null, f != null ? f.Text : ""));
-
-            try
-            {
-                SpeicherOptimierungErgebnis ergebnis = await Task.Run(
-                    () => SpeicherOptimierungCtrl.Rechnen(vorbereitung, laufstand, fortschritt, marke));
-
-                if (ergebnis != null && !string.IsNullOrWhiteSpace(vorbereitung.ZeitachsenHinweis))
-                {
-                    var hinweise = new System.Collections.Generic.List<string>();
-                    hinweise.Add(vorbereitung.ZeitachsenHinweis);
-                    if (ergebnis.Hinweise != null) hinweise.AddRange(ergebnis.Hinweise);
-                    ergebnis.Hinweise = hinweise;
-                }
-
-                // Das rohe Raster bleibt hier: Ein Umschalten des Betriebsbildes
-                // rechnet damit EINEN Jahreslauf nach statt der ganzen Rastersuche.
-                _optimierungRoh = ergebnis != null ? ergebnis.Roh : null;
-                return ergebnis;
-            }
-            catch (Exception ex)
-            {
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message)
-                };
+                return new SpeicherFlottenErgebnis
+                { Abgebrochen = true, Meldung = MyResource.Resource.FLOTTE_DLG_MSG_ABGEBROCHEN };
             }
             finally
             {
-                CancellationTokenSource quelle = _optimierungAbbruch;
-                _optimierungAbbruch = null;
+                CancellationTokenSource quelle = _auslegungAbbruch;
+                _auslegungAbbruch = null;
                 if (quelle != null) quelle.Dispose();
             }
         }
 
         /// <summary>
-        /// Zeichnet das Bild „Lastgang und Speicherbetrieb" neu — anderer Ausschnitt,
-        /// andere Reihenwahl, anderer Datenzoom (Befund W11b‑B‑25, 09.09.2026).
+        /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Muster W16c‑E‑3,
+        /// „Ansicht wechseln statt Überlagerung").
         /// </summary>
         /// <remarks>
-        /// <b>Ohne Datenbank und ohne neue Rastersuche.</b> Gerechnet wird EIN
-        /// Jahreslauf des Bestpunkts aus dem gemerkten Raster; bei 120 gerechneten
-        /// Punkten kostet das unter einem Prozent des Laufs, und der Bedienfaden
-        /// bleibt kurz genug. Ohne Lauf gibt es nichts zu zeichnen — dann kommt ein
-        /// leeres Bild zurück, und der Dialog zeigt es nicht.
+        /// Zuerst wird der ARBEITSGANG angemeldet — mit dem Projekt, dem gerechneten
+        /// Simulationslauf und dem Nachzug für diese Seite —, dann meldet die Hülle den
+        /// Seitenschlüssel an die Wurzel. Ohne angemeldete Wurzel (kein Blazor auf dem
+        /// Bildschirm) geschieht nichts; das ist derselbe Ausgang wie bei jedem anderen
+        /// Navigationsweg.
         /// </remarks>
-        private SpeicherOptimierungBetriebsbild OptimierungBetrieb(
-            bool ganzesJahr,
-            System.Collections.Generic.IReadOnlyList<string> reihen,
-            EPOS.UI.Bausteine.Diagrammbereich bereich)
+        private void AuslegungOeffnen()
         {
-            if (_optimierungVorbereitung == null || _optimierungRoh == null)
-                return new SpeicherOptimierungBetriebsbild();
-
-            ChartRenderer.Bildausschnitt ausschnitt = bereich == null
-                ? null
-                : new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
-                                                   bereich.YVon, bereich.YBis);
-
-            try
+            StromspeicherAuslegungHuelle.Anmelden(Auslegung(), () =>
             {
-                return SpeicherOptimierungCtrl.Betriebsbild(
-                    _optimierungVorbereitung, _optimierungRoh, ganzesJahr, reihen, ausschnitt);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Das Betriebsbild konnte nicht gezeichnet werden: " + ex.Message);
-                return new SpeicherOptimierungBetriebsbild();
-            }
+                _flotteProjektGeaendert = true;
+                _ergebnisGueltig = false;
+            });
+
+            EPOS.UI.Dienste.Navigationsziel.Aktuell?.OeffneMaske(
+                EPOS.UI.Seiten.Seitenschluessel.StromspeicherAuslegung);
         }
 
         /// <summary>
-        /// Setzt die Abbruchmarke, falls ein Suchlauf läuft.
-        /// </summary>
-        /// <remarks>
-        /// Die lokale Kopie und der Fang der <see cref="ObjectDisposedException"/> stehen
-        /// hier aus demselben Grund wie in der abgelösten Maske: Zwischen dem Entsorgen
-        /// im <c>finally</c> und dem Nullsetzen kann ein zweiter Aufruf hineinlaufen.
-        /// </remarks>
-        private void OptimierungAbbrechen()
-        {
-            CancellationTokenSource quelle = _optimierungAbbruch;
-            if (quelle == null) return;
-
-            try { quelle.Cancel(); }
-            catch (ObjectDisposedException) { /* Lauf war ohnehin schon zu Ende */ }
-        }
-
-        /// <summary>
-        /// Schreibt Kapazität und Leistung des Bestpunkts in die Gerätedaten.
-        /// </summary>
-        /// <remarks>
-        /// <b>Kein automatisches Nachrechnen</b> — wörtlich wie im Vorläufer: Die
-        /// Simulation ist danach nicht mehr aktuell, das steht in der Meldung, und der
-        /// Anwender entscheidet selbst, wann er den Lauf wiederholt.
-        /// </remarks>
-        private Rueckmeldung OptimierungUebernehmen(double cNomKwh, double pKw)
-        {
-            StromspeicherSimCtrl ctrl = new StromspeicherSimCtrl();
-            bool ok;
-            try
-            {
-                ok = ctrl.UebernehmeAuslegung(m_ID_Projekt, cNomKwh, pKw);
-            }
-            catch (Exception ex)
-            {
-                return new Rueckmeldung(false, string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message));
-            }
-
-            if (!ok)
-                return new Rueckmeldung(false, string.IsNullOrEmpty(ctrl.LetzterHinweis)
-                    ? MyResource.Resource.OPT_MSG_UEBERNAHME_FEHLER
-                    : ctrl.LetzterHinweis);
-
-            return new Rueckmeldung(true, MyResource.Resource.OPT_MSG_UEBERNOMMEN);
-        }
-
-        /// <summary>
-        /// Schreibt das Raster als CSV.
+        /// Schreibt einen CSV-Text als Datei.
         /// </summary>
         /// <remarks>
         /// <b>Eigener Schreiber, nicht <c>CsvExportClass</c>.</b> Jene Klasse ist auf
-        /// ZEITREIHEN zugeschnitten — sie stellt jeder Zeile einen Zeitstempel voran und
-        /// rechnet zwischen 8 760 und 35 040 Werten um; eine Rastermatrix hat weder
-        /// Zeitbezug noch Zeitraster. Den Text liefert
-        /// <c>SpeicherOptimierungCtrl.RasterCsvText</c> (Semikolon, Dezimalkomma), hier
-        /// kommt nur die Kodierung dazu: UTF-8 MIT BOM, damit deutsches Excel die Datei
-        /// direkt richtig öffnet.
-        ///
-        /// <para>Der Dateiwähler wird <c>await</c>et
-        /// (<c>Dienste.Datei.DateiSpeichernAsync</c>) — ein synchron geöffnetes
+        /// ZEITREIHEN zugeschnitten — sie stellt jeder Zeile einen Zeitstempel voran;
+        /// eine Rastermatrix hat weder Zeitbezug noch Zeitraster. Hier kommt nur die
+        /// Kodierung dazu: UTF-8 MIT BOM, damit deutsches Excel die Datei direkt richtig
+        /// öffnet.
+        /// <para>Der Dateiwähler wird <c>await</c>et — ein synchron geöffnetes
         /// Plattformfenster mitten im Blazor-Ereignis ist der Absturz aus Befund
         /// W13‑B‑1.</para>
         /// </remarks>

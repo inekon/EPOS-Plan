@@ -1,0 +1,128 @@
+@* SCHRITT 3 „BETRIEBSFUEHRUNG" der Flotte — der vorhandene Betriebseditor und
+   darunter das PEAK-ZIEL (Konzept „Stromspeicher-Dialoge" 2.4 Punkte 1, 2 und 4;
+   Anwenderentscheide SD-Q3 und SD-Q5 vom 11.09.2026).
+
+   DER BAUSTEIN IST KEINE KOPIE. Der Betriebseditor ist derselbe, den der Reiter
+   „Stromspeicher" der Ergebnisseite fuehrt (SpeicherFlottenBetriebEditor); hier
+   kommt nur das dazu, was am Peak-Ziel haengt.
+
+   DIE HERLEITUNGSZEILE. Bis P1 war die Vorbelegung fest 50 kW — unabhaengig von
+   der Last. Bei einer Grundlast von 70…80 kW und einer Spitze von 789 kW war die
+   Anforderung n − H in JEDEM Intervall positiv und der Ladedeckel max(0, H − n)
+   dauerhaft 0: Die Flotte konnte weder laden noch entladen (Befund SP-O-10).
+   Seither rechnet FlottenPeakZiel.Vorschlag H₀ aus der Referenz, und die Zeile
+   sagt WIE. Sie steht nur, wenn der Vorschlag aus einer ZEITREIHE stammt; der
+   benannte Rueckfall aus der blossen Bezugsspitze waere keine Herleitung.
+
+   DER KNOPF „PEAK-ZIEL BESTIMMEN…". Er faehrt die Bisektion aus P1 — bis zu
+   zwoelf Jahreslaeufe. Fuer die drei PLANENDEN Ziele ist er gesperrt und sagt
+   warum: Sie braeuchten je Lauf den MILP-Planer, und zwoelf geplante Jahreslaeufe
+   sind keine Bedienhandlung. Geprueft wird das HIER, vor dem Aufruf — die
+   Ausnahme des Kerns ist die letzte Schranke, nicht die Anzeige. *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-flotte-peakziel">
+
+    <SpeicherFlottenBetriebEditor Wert="@Wert" WertChanged="WertChanged" Aktiv="@Aktiv"
+                                  PlanerVerfuegbar="@PlanerVerfuegbar" />
+
+    @* Die Vorgabe „Netzladung erlaubt" haengt am Betriebsziel (SD-Q5). Der Satz
+       erklaert, warum der Schalter beim Zielwechsel umspringt — sonst waere es
+       eine stille Aenderung. *@
+    <Herleitungszeile Text="@NetzladungText" />
+
+    @if (HatPeakZiel)
+    {
+        @if (Vorschlag is { AusReihe: true })
+        {
+            <div class="epos-flotte-peakziel-vorschlag">
+                <Herleitungszeile Text="@Vorschlag.Herleitung" />
+                @if (VorschlagUebernehmen.HasDelegate)
+                {
+                    <button type="button" class="epos-knopf" disabled="@(!Aktiv)"
+                            @onclick="VorschlagUebernehmen">@VorschlagText</button>
+                }
+            </div>
+        }
+
+        @if (Bestimmen.HasDelegate)
+        {
+            <div class="epos-flotte-peakziel-bestimmen">
+                @* WEICHE SPERRE: Ein disabled-Knopf zeigt seinen title nicht, und
+                   der Grund ist hier die ganze Auskunft (Hausregel W16b-E-6). *@
+                <button type="button" class="epos-knopf"
+                        aria-disabled="@(Moeglich ? null : "true")"
+                        title="@(Moeglich ? null : GesperrtText)"
+                        disabled="@(!Aktiv)"
+                        @onclick="BestimmenGeklickt">@BestimmenText</button>
+                @if (!Moeglich)
+                {
+                    <span class="epos-flotte-hinweis">@GesperrtText</span>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Die Betriebsoptionen der Flotte.</summary>
+    [Parameter] public FlottenSimulationOptionen Wert { get; set; } = new();
+
+    /// <summary>Der Editor hat geschrieben.</summary>
+    [Parameter] public EventCallback<FlottenSimulationOptionen> WertChanged { get; set; }
+
+    /// <summary>Darf bearbeitet werden? (Während eines Laufs: nein.)</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Durchreiche an den Betriebseditor; <c>null</c> = die Auskunft des Kerns fragen.</summary>
+    [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    /// <summary>Der hergeleitete Vorschlag H₀; <c>null</c> = keiner.</summary>
+    [Parameter] public FlottenPeakZielVorschlag? Vorschlag { get; set; }
+
+    /// <summary>„Vorschlag übernehmen"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback VorschlagUebernehmen { get; set; }
+
+    /// <summary>„Peak-Ziel bestimmen…"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback Bestimmen { get; set; }
+
+    /// <summary>Der Versuch, den gesperrten Knopf zu drücken — der Wirt meldet den Grund.</summary>
+    [Parameter] public EventCallback Verweigert { get; set; }
+
+    [Parameter] public string VorschlagText { get; set; } = "Vorschlag übernehmen";
+    [Parameter] public string BestimmenText { get; set; } = "Peak-Ziel bestimmen…";
+
+    /// <summary>Der Grund, warum die Bestimmung bei einem planenden Ziel nicht angeboten wird.</summary>
+    [Parameter] public string GesperrtText { get; set; } =
+        "Das Peak-Ziel lässt sich nur für die reaktiven Betriebsziele Lastspitzenkappung und " +
+        "PV-Eigenverbrauch bestimmen; ein planendes Ziel bräuchte für jeden Jahreslauf den Fahrplaner.";
+
+    /// <summary>Die Erläuterung zur Vorgabe „Netzladung" (SD‑Q5).</summary>
+    [Parameter] public string NetzladungErlaubtText { get; set; } =
+        "Vorgabe zur Lastspitzenkappung: Netzladung ERLAUBT — die Wiederaufladung nutzt die freie " +
+        "Anschlussleistung unter dem Peak-Ziel (Spezifikation 5.1). Der Schalter bleibt änderbar.";
+
+    /// <summary>Die Erläuterung zur Vorgabe „Netzladung" bei den übrigen Zielen.</summary>
+    [Parameter] public string NetzladungVerbotenText { get; set; } =
+        "Vorgabe zu diesem Betriebsziel: Netzladung NICHT erlaubt — der Speicher nimmt nur den " +
+        "eigenen Überschuss auf. Der Schalter bleibt änderbar.";
+
+    /// <summary>Trägt das gewählte Ziel überhaupt ein Peak-Ziel? (Prüfhilfe)</summary>
+    public bool HatPeakZiel => Wert.Betriebsziel is FlottenBetriebsziel.PeakShaving
+                                                 or FlottenBetriebsziel.MultiUse;
+
+    /// <summary>Lässt sich das Peak-Ziel bestimmen? (Prüfhilfe)</summary>
+    public bool Moeglich => !FlottenPlanerLage.IstPlanend(Wert.Betriebsziel);
+
+    private string NetzladungText => FlottenVorgaben.NetzladungFuer(Wert.Betriebsziel)
+        ? NetzladungErlaubtText
+        : NetzladungVerbotenText;
+
+    private Task BestimmenGeklickt()
+        => Moeglich ? Bestimmen.InvokeAsync() : Verweigert.InvokeAsync();
+}

@@ -174,7 +174,7 @@
                             <StromspeicherReiter Daten="@_daten.Speicher" Bild="BildHolen"
                                                  Parameter="@_daten.Parameter.Speicher"
                                                  Dienste="@Dienste" Gesperrt="@_daten.Gesperrt"
-                                                 OptimierungMoeglich="@(Dienste?.OptimierungRechnen is not null || Dienste?.OptimierungFlottenRechnen is not null)"
+                                                 OptimierungMoeglich="@(Dienste?.AuslegungOeffnen is not null)"
                                                  Optimierung="Optimierung"
                                                  Csv="@Rueckruf(Dienste?.CsvSpeicher)"
                                                  Vergleich="@(Dienste?.VergleichRechnen is null ? default : EventCallback.Factory.Create(this, VergleichOeffnen))" />
@@ -268,42 +268,12 @@
         </Ueberlagerung>
     }
 
-    @* Die AUSLEGUNGSOPTIMIERUNG (W11b-B-5). Bis zur Windows-Abnahme V2 sprang der
-       Knopf hier ueber die Sprungbruecke in Form_SpeicherOptimierung - ein modales
-       WinForms-Fenster ueber der WebView. Die Maske ist gefallen (Texte
-       ueberschneiden sich, Dialog stuerzt ab); das Ziel ist jetzt selbst Razor und
-       erscheint als Ueberlagerung im selben Fenster (Muster W4/W10a, Risiko R2). *@
-    @if (_optimierungOffen)
-    {
-        <Ueberlagerung Offen="true" Titel="@Resource.OPT_TITEL"
-                       Zusatzklasse="epos-ueberlagerung--breit"
-                       Geschlossen="OptimierungSchliessen">
-            <KindInhalt>
-                <EPOS.UI.Dialoge.Strom.SpeicherOptimierungDialog
-                    Vorgaben="@Dienste?.OptimierungVorgaben"
-                    FlottenRechnen="@Dienste?.OptimierungFlottenRechnen"
-                    FlottenProjektAktiv="@Dienste?.FlottenProjektAktiv"
-                    FlottenProjektUebernehmen="@Dienste?.FlottenProjektUebernehmen"
-                    FlottenProjektDeaktivieren="@Dienste?.FlottenProjektDeaktivieren"
-                    Rechnen="@Dienste?.OptimierungRechnen"
-                    Abbrechen="@(Dienste?.OptimierungAbbrechen is null ? default
-                                 : EventCallback.Factory.Create(this, Dienste.OptimierungAbbrechen))"
-                    Uebernehmen="@(Dienste?.OptimierungUebernehmen is null ? default
-                                   : EventCallback.Factory.Create<(double Kwh, double Kw)>(this, OptimierungUebernehmen))"
-                    Csv="@(Dienste?.OptimierungCsv is null ? default
-                           : EventCallback.Factory.Create<string>(this, OptimierungCsv))"
-                    EinstellungenSpeichern="@Dienste?.OptimierungEinstellungenSpeichern"
-                    ProfilSpeichern="@Dienste?.OptimierungProfilSpeichern"
-                    DateiWaehlen="@Dienste?.OptimierungDateiWaehlen"
-                    LeistungspreisSchreiben="@(Dienste?.OptimierungLeistungspreis is null ? default
-                                               : EventCallback.Factory.Create<double>(this, Dienste.OptimierungLeistungspreis))"
-                    Betrieb="@Dienste?.OptimierungBetrieb"
-                    Meldung="@_optimierungMeldung"
-                    MeldungErfolg="@_optimierungErfolg"
-                    Geschlossen="OptimierungSchliessen" />
-            </KindInhalt>
-        </Ueberlagerung>
-    }
+    @* Die AUSLEGUNGSOPTIMIERUNG stand hier bis Paket P3 (#192) als UEBERLAGERUNG
+       (W11b-B-5) - und davor als modales WinForms-Fenster. Der Anwender hat beides
+       zurueckgegeben: „Fenster in Fenster ist nicht gut" (11.09.2026). Sie ist jetzt
+       eine FREIE ANSICHT der AppWurzel (STROMSPEICHER_AUSLEGUNG); der Knopf des
+       Stromspeicher-Reiters WECHSELT die Ansicht, statt eine Ueberlagerung
+       aufzuziehen - dasselbe Muster wie W16c-E-3 bei „Varianten und Bericht…". *@
 
     @if (_vergleichOffen)
     {
@@ -382,10 +352,6 @@
     private IReadOnlyDictionary<string, object>? _konfiguration;
     private IReadOnlyDictionary<string, object>? _bedarf;
     private IReadOnlyDictionary<string, object>? _waermepumpe;
-
-    private bool _optimierungOffen;
-    private string _optimierungMeldung = "";
-    private bool _optimierungErfolg;
 
     private bool _vergleichOffen;
     private bool _vergleichLaeuft;
@@ -571,60 +537,18 @@
     }
 
     /// <summary>
-    /// Oeffnet die Auslegungsoptimierung als UEBERLAGERUNG (W11b-B-5). Bis zur
-    /// Windows-Abnahme V2 sprang sie ueber <c>Dienste.Sprung</c> in ein modales
-    /// WinForms-Fenster.
+    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Paket P3, #192).
     /// </summary>
-    private void Optimierung()
-    {
-        if (Dienste?.OptimierungRechnen is null && Dienste?.OptimierungFlottenRechnen is null) return;
-
-        _optimierungMeldung = "";
-        _optimierungErfolg = false;
-        _optimierungOffen = true;
-    }
-
-    /// <summary>
-    /// Schliesst die Ueberlagerung UND liest neu (W11b-B-28).
-    ///
-    /// <para>Der Dialog schreibt den Leistungspreis L_P sofort in die aktive Variante
-    /// (W11b-E-3) und kann ueber "Uebernehmen" die Geraetegroesse geaendert haben. Der
-    /// Parameterblock des Reiters "Stromspeicher" zeigt beides erst, wenn er einen
-    /// neuen Lesestand bekommt - ohne dieses Neuladen stuende dort bis zum naechsten
-    /// Lauf der alte Wert. Seit W11b-B-29 ist das der einzige Weg, auf dem der Block
-    /// nachzieht: Er puffert nichts mehr, was dabei verlorengehen koennte.</para>
-    /// </summary>
-    private void OptimierungSchliessen()
-    {
-        _optimierungOffen = false;
-        _optimierungMeldung = "";
-        _optimierungErfolg = false;
-        Neuladen();
-    }
-
-    /// <summary>
-    /// Der Bestpunkt geht in die Geraetedaten. Danach liest die Seite die
-    /// Speichervariante neu; NEU GERECHNET wird bewusst nicht - das entscheidet der
-    /// Anwender (woertlich wie im Vorlaeufer, :5985-5990).
-    /// </summary>
-    private void OptimierungUebernehmen((double Kwh, double Kw) auslegung)
-    {
-        Rueckmeldung antwort = Dienste?.OptimierungUebernehmen?.Invoke(auslegung.Kwh, auslegung.Kw)
-                               ?? Rueckmeldung.Still;
-
-        _optimierungMeldung = antwort.Text;
-        _optimierungErfolg = antwort.Erfolg;
-        if (antwort.Erfolg) Neuladen();
-    }
-
-    private async Task OptimierungCsv(string csv)
-    {
-        if (Dienste?.OptimierungCsv is null) return;
-
-        Rueckmeldung antwort = await Dienste.OptimierungCsv(csv);
-        _optimierungMeldung = antwort.Text;
-        _optimierungErfolg = antwort.Erfolg;
-    }
+    /// <remarks>
+    /// <para><b>Ansicht wechseln statt Überlagerung</b> — Muster <b>W16c‑E‑3</b>. Bis
+    /// hierher zog dieser Knopf eine modale Überlagerung über die Ergebnisseite auf,
+    /// und deren CSV-Unterdialog eine zweite darin; der Anwender hat genau das
+    /// zurückgegeben („Fenster in Fenster ist nicht gut", 11.09.2026).</para>
+    /// <para>Die Hülle stellt dabei ihren gerechneten Simulationslauf bereit — die
+    /// EPOS-Zeitreihen der Auslegung stammen aus IHM — und meldet danach den
+    /// Seitenschlüssel an die Wurzel.</para>
+    /// </remarks>
+    private void Optimierung() => Dienste?.AuslegungOeffnen?.Invoke();
 
     private async Task VergleichOeffnen()
     {

@@ -1,6 +1,10 @@
-using System.Text;
+﻿using System.Text;
 using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
+using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Tests.Seiten.Strom;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
@@ -9,6 +13,12 @@ namespace EPOS.UI.Tests.Dialoge;
 
 public sealed class SpeicherFlottenCsvDialogTests : EposBunitContext
 {
+    /// <summary>
+    /// Die Ansicht traegt einen <c>InfoKnopf</c>; ohne Hilfedienst wirft der
+    /// Blazor-Verteiler schon beim ersten Zeichnen.
+    /// </summary>
+    public SpeicherFlottenCsvDialogTests() => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+
     [Fact]
     public void Kopfzeile_belegt_Zeit_Werte_und_Prognosemetadaten_vor()
     {
@@ -69,17 +79,24 @@ public sealed class SpeicherFlottenCsvDialogTests : EposBunitContext
                 }
             }
         };
-        var cut = Render<SpeicherFlottenDialog>(p => p
-            .Add(x => x.Vorgaben, () => vorgaben)
-            .Add(x => x.DateiWaehlen, () => Task.FromResult(PrognoseCsv()))
-            .Add(x => x.EinstellungenSpeichern, e => { gespeichert = e; return Task.FromResult(""); }));
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste
+            {
+                Vorgaben = () => vorgaben,
+                DateiWaehlen = () => Task.FromResult(PrognoseCsv()),
+                EinstellungenSpeichern = e => { gespeichert = e; return Task.FromResult(""); }
+            }));
 
-        cut.FindAll("button").Single(x => x.TextContent.Trim() == "Prognosen & Jahresdaten").Click();
+        // Die Prognosentabelle ist seit Paket P3 eine UEBERLAGERUNG des Blattes
+        // „Daten & Kosten" und kein vierter Reiter mehr.
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Daten);
+        cut.FindAll("button").Single(x => x.TextContent.Trim()
+            == WindowsFormsApplication1.MyResource.Resource.FLOTTE_SEITE_BTN_PROGNOSEN).Click();
         cut.FindAll("button").Single(x => x.TextContent.Contains("Prognose-CSV importieren")).Click();
         Auswahl(cut.FindComponent<SpeicherFlottenCsvDialog>(), "Einheit der Preisspalten:").Change("4");
         cut.FindComponent<SpeicherFlottenCsvDialog>().FindAll("button")
             .Single(x => x.TextContent.Trim() == "CSV übernehmen").Click();
-        cut.FindAll("button").Single(x => x.TextContent.Trim() == "Daten, Kosten & Profile").Click();
         cut.FindAll("button").Single(x => x.TextContent.Contains("Einstellungen speichern")).Click();
 
         Assert.NotNull(gespeichert);

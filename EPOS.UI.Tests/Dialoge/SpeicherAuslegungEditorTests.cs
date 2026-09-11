@@ -1,7 +1,9 @@
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
 using Bunit;
 using EPOS.UI.Dialoge.Strom;
+using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Tests.Seiten.Strom;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,20 +128,27 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
     [Fact]
     public void Ein_neu_gespeichertes_Profil_bleibt_nach_dem_Eltern_Rerender_waehlbar()
     {
-        var cut = Render<SpeicherOptimierungDialog>(p => p
-            .Add(x => x.Vorgaben, () => new SpeicherOptimierungVorgaben
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste
             {
-                Eingaben = new SpeicherOptimierungEingaben()
-            })
-            .Add(x => x.ProfilSpeichern, (eingaben, name) => Task.FromResult(
-                new SpeicherOptimierungVorgaben
+                Vorgaben = () => new SpeicherOptimierungVorgaben
                 {
-                    Eingaben = eingaben,
-                    Auslegungsprofile = new[]
+                    Eingaben = new SpeicherOptimierungEingaben()
+                },
+                ProfilSpeichern = (eingaben, name) => Task.FromResult(
+                    new SpeicherOptimierungVorgaben
                     {
-                        new SpeicherAuslegungProfil { Name = name, Eingaben = eingaben.Kopie() }
-                    }
-                })));
+                        Eingaben = eingaben,
+                        Auslegungsprofile = new[]
+                        {
+                            new SpeicherAuslegungProfil { Name = name, Eingaben = eingaben.Kopie() }
+                        }
+                    })
+            }));
+
+        // Der Auslegungseditor steht auf Blatt 2 der Ablaufleiste.
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Daten);
 
         cut.FindAll("label").Single(x => x.TextContent.Contains("Profilname"))
             .QuerySelector("input")!.Input("Neue Auslegung");
@@ -165,17 +174,27 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
     [Fact]
     public void Eine_Aenderung_markiert_das_Ergebnis_als_veraltet_und_sperrt_die_Uebernahme()
     {
-        var cut = Render<SpeicherOptimierungDialog>(p => p
-            .Add(x => x.Vorgaben, () => new SpeicherOptimierungVorgaben { Eingaben = new SpeicherOptimierungEingaben() })
-            .Add(x => x.EinstellungenSpeichern, _ => Task.FromResult(""))
-            .Add(x => x.Rechnen, (_, _) => Task.FromResult(new SpeicherOptimierungErgebnis { Erfolg = true }))
-            .Add(x => x.Uebernehmen, EventCallback.Factory.Create<(double, double)>(this, _ => { })));
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste
+            {
+                Vorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = new SpeicherOptimierungEingaben() },
+                EinstellungenSpeichern = _ => Task.FromResult(""),
+                EinzelRechnen = (_, _) => Task.FromResult(new SpeicherOptimierungErgebnis { Erfolg = true }),
+                AuslegungUebernehmen = (_, _) => new EPOS.UI.Seiten.Simulation.Rueckmeldung(true, "")
+            }));
 
-        cut.FindAll("button").Single(x => x.TextContent.Contains("Optimierung starten")).Click();
+        Auslegungshilfe.Modus(cut, AuslegungModus.Einzelspeicher);
+        Auslegungshilfe.Rechenknopf(cut).Click();
+
         var uebernehmen = cut.FindAll("button").Single(x => x.TextContent.Contains("Bestpunkt übernehmen"));
         Assert.False(uebernehmen.HasAttribute("disabled"));
 
-        cut.Find("select").Change("1");
+        // Eine Aenderung auf Blatt 1 entwertet das Ergebnis - dieselbe Aussage wie im
+        // abgeloesten Dialog, nur ueber die Ablaufleiste hinweg.
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
+        cut.FindAll("input[type=text]")[1].Input("4000");
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Ergebnis);
 
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_MSG_ERGEBNIS_VERALTET, cut.Markup);
         Assert.True(cut.FindAll("button").Single(x => x.TextContent.Contains("Bestpunkt übernehmen")).HasAttribute("disabled"));
