@@ -2868,6 +2868,209 @@ namespace WindowsFormsApplication1
             }
         }
 
+
+        // ============================================ Jahresprojektion (#184, P2)
+
+        /// <summary>Der Grund der Ersatzjahr-Marke — Firebrick mit 40 von 255 Deckung.</summary>
+        private static readonly SKColor C_ERSATZJAHR = new SKColor(0xB2, 0x22, 0x22, 40);
+
+        /// <summary>
+        /// <b>B11 — JAHRESPROJEKTION einer Speicherflotte</b> (Auftrag #184, Konzept
+        /// „Stromspeicher-Dialoge" 2.2 Punkt 4, Anwenderentscheid SD‑Q6 vom 11.09.2026).
+        ///
+        /// <para><b>Warum ein Bild und nicht nur die Tabelle.</b> Die Jahreskonten standen
+        /// bis hierher als zwanzigzeilige Tabelle im Ergebnis. Die zwei Fragen, die der
+        /// Anwender an eine Projektion stellt — „trägt sich das jemals?" und „wann kippt
+        /// es?" — beantwortet erst das Bild: die SÄULE zeigt den Netto-Cashflow des
+        /// einzelnen Jahres, die LINIE den kumulierten Stand. Ihr Schnittpunkt mit der
+        /// Nulllinie ist die Amortisation, und ein Ersatzjahr ist der Knick darin.</para>
+        ///
+        /// <para><b>Alles in EINER Einheit, deshalb EINE Achse</b> (Hausregel
+        /// <c>Doku_Simulationsergebnis_Darstellung.md</c> § 5.3): Netto-Cashflow, Betrieb,
+        /// Durchsatz, Ersatz und der kumulierte Stand sind allesamt Geldbeträge. Die Achse
+        /// ist vorzeichenfähig und hebt ihre Null gestrichelt hervor — ein Jahr darf
+        /// negativ sein, und die kumulierte Linie beginnt es immer.</para>
+        ///
+        /// <para><b>Die Ersatzjahre sind der GRUND, nicht eine Reihe.</b> Sie stehen als
+        /// senkrechtes Band hinter der Säule ihres Jahres und als Dreieck am oberen Rand.
+        /// Eine eigene Kurve hätten sie nicht verdient: Sie sagen nicht „wie viel", sondern
+        /// „hier fällt die Ersatzinvestition an" — und genau diese Stelle sucht das Auge im
+        /// Knick der kumulierten Linie.</para>
+        ///
+        /// <para><b>Eine negative Säule ist ROT</b> (<see cref="C_RASTER_SCHLECHT"/>),
+        /// unabhängig von der Farbe der Reihe. Ein Verlustjahr in derselben Farbe wie ein
+        /// Gewinnjahr wäre nur an seiner Richtung zu erkennen — bei zwanzig schmalen Säulen
+        /// zu wenig.</para>
+        ///
+        /// <para>Bildmaß 1240 × 560 wie die übrigen Jahresbilder dieser Datei.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Jahresprojektion [€]".</param>
+        /// <param name="jahre">Die Projektjahre in Reihenfolge (1…n); sie beschriften die x-Achse.</param>
+        /// <param name="netto">Die Säulenreihe (Netto-Cashflow je Jahr); <c>null</c> = keine Säulen.</param>
+        /// <param name="kumuliert">Die Linie des kumulierten Standes; <c>null</c> = keine Linie.</param>
+        /// <param name="ersatzjahre">Die Jahresnummern mit Ersatzinvestition; <c>null</c> = keine Marke.</param>
+        /// <param name="weitere">Weitere wählbare Linien (Betrieb, Durchsatz, Ersatz); <c>null</c> = keine.</param>
+        /// <param name="yTitel">Beschriftung der y-Achse; <c>null</c> = keine.</param>
+        /// <param name="xTitel">Beschriftung der x-Achse; <c>null</c> = keine.</param>
+        public static byte[] Jahresprojektion(string titel, IReadOnlyList<int> jahre,
+                                              Reihe netto, Reihe kumuliert,
+                                              IReadOnlyList<int> ersatzjahre,
+                                              IReadOnlyList<Reihe> weitere = null,
+                                              string yTitel = null, string xTitel = null)
+        {
+            int W = 1240, H = 560;
+            const float LEGENDE_X = 100f, LEGENDE_Y = 66f;
+
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                var rc = SKRect.Create(110f, 116f, W - 170f, 330f);
+
+                int n = jahre == null ? 0 : jahre.Count;
+                var linien = new List<Reihe>();
+                if (Brauchbar(kumuliert)) linien.Add(kumuliert);
+                foreach (Reihe r in weitere ?? new List<Reihe>())
+                    if (Brauchbar(r)) linien.Add(r);
+
+                bool mitSaeulen = netto != null && netto.Werte != null && netto.Werte.Length > 0 &&
+                                  netto.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
+                if (n < 1 || (!mitSaeulen && linien.Count == 0))
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                // Die LEGENDE macht sich selbst Platz — dieselbe Regel wie im
+                // Verlaufsbild (W11b-B-28): Jede Zeile über der ersten schiebt die
+                // Zeichenfläche um ihre Höhe nach unten.
+                var leg = new List<Segment>();
+                if (mitSaeulen) leg.Add(new Segment(netto.Name, 0, netto.Farbe));
+                foreach (Reihe r in linien) leg.Add(new Segment(r.Name, 0, r.Farbe));
+                float legendenhoehe = Legende(g, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
+                float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
+                if (schub > 0f) rc = SKRect.Create(rc.Left, rc.Top + schub, rc.Width, rc.Height - schub);
+
+                // Die Skala trägt ALLES, was gezeichnet wird — Säulen und Linien teilen
+                // sich die Achse, sonst wäre der kumulierte Stand nicht gegen den
+                // Jahreswert zu lesen. Die Null ist immer dabei.
+                double min = 0.0, max = 0.0;
+                if (mitSaeulen)
+                {
+                    min = Math.Min(min, netto.Werte.Min());
+                    max = Math.Max(max, netto.Werte.Max());
+                }
+                foreach (Reihe r in linien)
+                {
+                    min = Math.Min(min, r.Werte.Min());
+                    max = Math.Max(max, r.Werte.Max());
+                }
+                double stufe = RundeStufe(Math.Max(1e-9, (max - min) / 5.0));
+                min = Math.Floor(min / stufe) * stufe;
+                max = Math.Ceiling(max / stufe) * stufe;
+                if (max - min < 1e-9) max = min + stufe;
+
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(15f))
+                    for (double wert = min; wert <= max + stufe * 1e-6; wert += stufe)
+                    {
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+
+                float fach = rc.Width / n;
+                float y0 = (float)(rc.Bottom - (0.0 - min) / (max - min) * rc.Height);
+
+                // ERSATZJAHRE zuerst: Das Band steht HINTER Säule und Linie.
+                if (ersatzjahre != null && ersatzjahre.Count > 0)
+                    using (var band = Fuellung(C_ERSATZJAHR))
+                    using (var marke = Fuellung(C_RASTER_SCHLECHT))
+                        for (int i = 0; i < n; i++)
+                        {
+                            if (!ersatzjahre.Contains(jahre[i])) continue;
+                            float mitte = rc.Left + (i + 0.5f) * fach;
+                            g.DrawRect(mitte - fach * 0.45f, rc.Top, fach * 0.9f, rc.Height, band);
+                            Vieleck(g, new[]
+                            {
+                                new SKPoint(mitte - 7f, rc.Top - 12f),
+                                new SKPoint(mitte + 7f, rc.Top - 12f),
+                                new SKPoint(mitte, rc.Top - 1f)
+                            }, marke);
+                        }
+
+                // DIE SÄULEN — je Jahr eine, negative in Rot.
+                if (mitSaeulen)
+                    using (var gut = Fuellung(netto.Farbe))
+                    using (var schlecht = Fuellung(C_RASTER_SCHLECHT))
+                        for (int i = 0; i < n && i < netto.Werte.Length; i++)
+                        {
+                            double wert = netto.Werte[i];
+                            float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                            float oben = Math.Min(y, y0), unten = Math.Max(y, y0);
+                            if (unten - oben < 1f) unten = oben + 1f;
+                            float mitte = rc.Left + (i + 0.5f) * fach;
+                            g.DrawRect(mitte - fach * 0.3f, oben, fach * 0.6f, unten - oben,
+                                       wert < 0 ? schlecht : gut);
+                        }
+
+                // DIE LINIEN — über den Säulenmitten, damit Jahr 1 über Säule 1 liegt.
+                foreach (Reihe r in linien)
+                {
+                    int m = Math.Min(n, r.Werte.Length);
+                    if (m < 2) continue;
+                    var punkte = new SKPoint[m];
+                    for (int i = 0; i < m; i++)
+                    {
+                        float x = rc.Left + (i + 0.5f) * fach;
+                        float y = (float)(rc.Bottom - (r.Werte[i] - min) / (max - min) * rc.Height);
+                        punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                    }
+                    using (var strichel = r.Gestrichelt
+                               ? SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f) : null)
+                    using (var stift = Strich(r.Farbe, r.Breite > 0 ? r.Breite : 3f))
+                    {
+                        stift.StrokeJoin = SKStrokeJoin.Round;
+                        if (strichel != null) stift.PathEffect = strichel;
+                        Linienzug(g, punkte, stift);
+                    }
+                }
+
+                // Achsen, gestrichelte Nulllinie und die Jahresbeschriftung.
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+                using (var strichel = SKPathEffect.CreateDash(new[] { 6f, 4f }, 0f))
+                using (var stift = Strich(SKColors.DimGray, 2f))
+                {
+                    stift.PathEffect = strichel;
+                    g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
+                }
+
+                int schritt = n <= 12 ? 1 : n <= 25 ? 2 : n <= 50 ? 5 : 10;
+                using (var f = Schrift(15f))
+                {
+                    for (int i = 0; i < n; i += schritt)
+                    {
+                        string lab = jahre[i].ToString(DE);
+                        float mitte = rc.Left + (i + 0.5f) * fach;
+                        Text(g, lab, f, SKColors.DimGray, mitte - f.MeasureText(lab) / 2f,
+                             rc.Bottom + 8f);
+                    }
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
+                }
+
+                return Png(flaeche);
+            }
+        }
+
         // ------------------------------------------------------- geteilte Helfer
 
         /// <summary>Die Reihen, die etwas zu zeichnen haben.</summary>

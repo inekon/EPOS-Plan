@@ -19,28 +19,28 @@
 @using WindowsFormsApplication1
 
 <section class="epos-flotte-abschnitt epos-flotte-betrieb" aria-labelledby="flotte-betrieb-titel">
-    <h3 id="flotte-betrieb-titel">Betrieb und Leistungsverteilung</h3>
+    <h3 id="flotte-betrieb-titel">@Resource.FLOTTE_BETRIEB_TITEL</h3>
     <div class="epos-flotte-feldraster epos-flotte-feldraster--kompakt">
-        <Auswahlfeld Bezeichnung="Betriebsziel:" Eintraege="@Betriebsziele"
+        <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_ZIEL" Eintraege="@Betriebsziele"
                        Auswahl="@((int)_wert.Betriebsziel)" Aktiv="@Aktiv"
                        GesperrteEintraege="@GesperrteZiele"
                        GesperrtHinweis="@(PlanerFehlt ? Resource.FLOTTE_PLANER_ZIEL_GESPERRT : "")"
                        AuswahlChanged="BetriebszielSetzen" />
-        <Auswahlfeld Bezeichnung="Leistungsverteilung:" Eintraege="@Verteilungen"
+        <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG" Eintraege="@Verteilungen"
                        Auswahl="@((int)_wert.Verteilung)" Aktiv="@Aktiv"
                        AuswahlChanged="VerteilungSetzen" />
-        <Auswahlfeld Bezeichnung="Erzeuger-Reihenfolge:" Eintraege="@ErzeugerPrioritaeten"
+        <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PRIORITAET" Eintraege="@ErzeugerPrioritaeten"
                        Auswahl="@((int)_wert.ErzeugerPrioritaet)" Aktiv="@Aktiv"
                        AuswahlChanged="ErzeugerPrioritaetSetzen" />
         @if (HatPeakZiel)
         {
-            <Zahlenfeld Bezeichnung="Wirtschaftlicher Peak-Zielwert:" Einheit="kW"
+            <Zahlenfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PEAKZIEL" Einheit="kW"
                         Wert="@_wert.WirtschaftlicherPeakZielwertKw" Min="0" Aktiv="@Aktiv"
                         WertChanged="PeakZielSetzen" />
         }
-        <Schalter Bezeichnung="Laden aus dem Netz erlauben" Wert="@_wert.NetzladungErlaubt"
+        <Schalter Bezeichnung="@Resource.FLOTTE_BETRIEB_CHK_NETZLADUNG" Wert="@_wert.NetzladungErlaubt"
                    Aktiv="@Aktiv" WertChanged="NetzladungSetzen" />
-        <Schalter Bezeichnung="Batterieexport ins Netz erlauben" Wert="@_wert.BatterieexportErlaubt"
+        <Schalter Bezeichnung="@Resource.FLOTTE_BETRIEB_CHK_EXPORT" Wert="@_wert.BatterieexportErlaubt"
                    Aktiv="@Aktiv" WertChanged="BatterieexportSetzen" />
     </div>
     @if (PlanerFehlt && FlottenPlanerLage.IstPlanend(_wert.Betriebsziel))
@@ -85,30 +85,33 @@
     private static string Zielname(FlottenBetriebsziel ziel) =>
         Betriebsziele.FirstOrDefault(x => x.Id == (int)ziel).Text ?? ziel.ToString();
 
-    private static readonly IReadOnlyList<(int Id, string Text)> Betriebsziele = new[]
+    // KEIN static readonly: Die Texte kommen aus den Ressourcen, und die Sprache
+    // wechselt zur Laufzeit (Sprachumschaltung im Rahmen). Ein einmal gefuellter
+    // statischer Vorrat zeigte nach dem Wechsel weiter die alte Sprache.
+    private static IReadOnlyList<(int Id, string Text)> Betriebsziele => new[]
     {
-        (0, "PV-Eigenverbrauch (reaktiv)"), (1, "Lastspitzenkappung"),
-        (2, "PV-Prognoseplanung"), (3, "Preisoptimierung / Arbitrage"),
-        (4, "Multi Use mit Peak-Priorität")
+        (0, Resource.FLOTTE_ZIEL_PVGREEDY), (1, Resource.FLOTTE_ZIEL_PEAKSHAVING),
+        (2, Resource.FLOTTE_ZIEL_PVPLANUNG), (3, Resource.FLOTTE_ZIEL_ARBITRAGE),
+        (4, Resource.FLOTTE_ZIEL_MULTIUSE)
     };
-    private static readonly IReadOnlyList<(int Id, string Text)> Verteilungen = new[]
+    private static IReadOnlyList<(int Id, string Text)> Verteilungen => new[]
     {
-        (0, "Nach verfügbarer Kapazität"), (1, "Kaskade"),
-        (2, "Nach Grenzkosten und Wirkungsgrad")
+        (0, Resource.FLOTTE_VERT_KAPAZITAET), (1, Resource.FLOTTE_VERT_KASKADE),
+        (2, Resource.FLOTTE_VERT_GRENZKOSTEN)
     };
-    private static readonly IReadOnlyList<(int Id, string Text)> ErzeugerPrioritaeten = new[]
+    private static IReadOnlyList<(int Id, string Text)> ErzeugerPrioritaeten => new[]
     {
-        (0, "PV vor BHKW"), (1, "BHKW vor PV")
+        (0, Resource.FLOTTE_PRIO_PV_VOR_BHKW), (1, Resource.FLOTTE_PRIO_BHKW_VOR_PV)
     };
 
     private bool HatPeakZiel => _wert.Betriebsziel is FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse;
     private string ZielHinweis => _wert.Betriebsziel switch
     {
-        FlottenBetriebsziel.PeakShaving => "Die Flotte begrenzt den Netzbezug auf das wirtschaftliche Peak-Ziel, soweit Energie, Leistung und Anschlussgrenzen reichen.",
-        FlottenBetriebsziel.PvPlanung => "Die Planung verschiebt PV-Energie mit dem im Auslegungsprofil gewählten Informationsstand.",
-        FlottenBetriebsziel.Arbitrage => "Die Planung bewertet Bezug und Verkauf getrennt; Netzladung und Batterieexport bleiben ausdrückliche Freigaben.",
-        FlottenBetriebsziel.MultiUse => "Peak-Schutz hat Vorrang; verbleibende Freiheitsgrade werden wirtschaftlich genutzt.",
-        _ => "Die reaktive Führung lädt Erzeugungsüberschüsse und entlädt bei Nettobedarf ohne Zukunftsinformation."
+        FlottenBetriebsziel.PeakShaving => Resource.FLOTTE_BETRIEB_HINWEIS_PEAK,
+        FlottenBetriebsziel.PvPlanung => Resource.FLOTTE_BETRIEB_HINWEIS_PVPLANUNG,
+        FlottenBetriebsziel.Arbitrage => Resource.FLOTTE_BETRIEB_HINWEIS_ARBITRAGE,
+        FlottenBetriebsziel.MultiUse => Resource.FLOTTE_BETRIEB_HINWEIS_MULTIUSE,
+        _ => Resource.FLOTTE_BETRIEB_HINWEIS_REAKTIV
     };
 
     protected override void OnParametersSet()

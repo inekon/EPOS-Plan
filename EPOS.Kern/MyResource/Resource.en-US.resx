@@ -16613,4 +16613,1051 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="SIMERG_ZUSATZ_NICHT_IN_KASKADE" xml:space="preserve">
     <value> (not in the cascade)</value>
   </data>
+  <data name="FLOTTE_R_GESAMT" xml:space="preserve">
+    <value>All storage: discharge + / charge −</value>
+  </data>
+  <data name="FLOTTE_R_EINHEIT" xml:space="preserve">
+    <value>{0}: discharge + / charge −</value>
+  </data>
+  <data name="FLOTTE_R_SOC" xml:space="preserve">
+    <value>State of charge {0} [kWh]</value>
+  </data>
+  <data name="FLOTTE_R_SOC_MIN" xml:space="preserve">
+    <value>Minimum energy</value>
+  </data>
+  <data name="FLOTTE_R_SOC_MAX" xml:space="preserve">
+    <value>Maximum energy</value>
+  </data>
+  <data name="FLOTTE_R_PEAKZIEL" xml:space="preserve">
+    <value>Peak target</value>
+  </data>
+  <data name="FLOTTE_R_NETTO" xml:space="preserve">
+    <value>Net cash flow</value>
+  </data>
+  <data name="FLOTTE_R_KUMULIERT" xml:space="preserve">
+    <value>cumulative</value>
+  </data>
+  <data name="FLOTTE_R_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="FLOTTE_R_DURCHSATZ" xml:space="preserve">
+    <value>Throughput</value>
+  </data>
+  <data name="FLOTTE_R_ERSATZ" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="FLOTTE_CHART_NETZ" xml:space="preserve">
+    <value>Grid connection · {0}</value>
+  </data>
+  <data name="FLOTTE_CHART_SOC" xml:space="preserve">
+    <value>State of charge · {0}</value>
+  </data>
+  <data name="FLOTTE_CHART_PROJEKTION" xml:space="preserve">
+    <value>Annual projection [€]</value>
+  </data>
+  <data name="FLOTTE_CHART_X_JAHR" xml:space="preserve">
+    <value>Project year</value>
+  </data>
+  <data name="FLOTTE_CHART_Y_ZAHLUNG" xml:space="preserve">
+    <value>Payment [€]</value>
+  </data>
+  <data name="FLOTTE_ALT_NETZ" xml:space="preserve">
+    <value>Grid power before and after storage, with peak target and state of charge</value>
+  </data>
+  <data name="FLOTTE_ALT_SOC" xml:space="preserve">
+    <value>Individual state of charge and energy limits</value>
+  </data>
+  <data name="FLOTTE_ALT_PROJEKTION" xml:space="preserve">
+    <value>Net cash flow per project year and cumulative balance</value>
+  </data>
+  <data name="FLOTTE_MSG_VERALTET" xml:space="preserve">
+    <value>Inputs changed: these results belong to the previous state. Please recalculate.</value>
+  </data>
+  <data name="FLOTTE_MSG_PEAK_NICHT_ERREICHT" xml:space="preserve">
+    <value>The economic peak target was not reached. Check available energy, charging conditions and storage power; the target is not a guaranteed connection limit.</value>
+  </data>
+  <data name="FLOTTE_MSG_UNZULAESSIG" xml:space="preserve">
+    <value>The fleet violates technical limits.</value>
+  </data>
+  <data name="FLOTTE_ERG_BETRIEBSFUEHRUNG" xml:space="preserve">
+    <value>Calculated operating strategy: {0} · Distribution: {1}</value>
+  </data>
+  <data name="FLOTTE_ERG_BTN_BETRIEB_AENDERN" xml:space="preserve">
+    <value>Change operating strategy</value>
+  </data>
+  <data name="FLOTTE_ERG_REAKTIVE_REFERENZ" xml:space="preserve">
+    <value>Reactive PV reference with the same fleet: electricity bill {0} €, peak draw {1} kW, net present value {2} €.</value>
+  </data>
+  <data name="FLOTTE_KACHEL_KAPITALWERT" xml:space="preserve">
+    <value>Net present value against “no storage”</value>
+  </data>
+  <data name="FLOTTE_KACHEL_KAPITALWERT_QUELLE" xml:space="preserve">
+    <value>{0} years · {1} % interest · investment {2} €</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE" xml:space="preserve">
+    <value>Peak draw</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE_WERT" xml:space="preserve">
+    <value>{0} → {1} kW</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE_QUELLE" xml:space="preserve">
+    <value>Peak target {0} kW · {1}</value>
+  </data>
+  <data name="FLOTTE_KACHEL_SPITZE_OHNE_ZIEL" xml:space="preserve">
+    <value>no peak target</value>
+  </data>
+  <data name="FLOTTE_STATUS_ERREICHT" xml:space="preserve">
+    <value>reached</value>
+  </data>
+  <data name="FLOTTE_STATUS_NICHT_ERREICHT" xml:space="preserve">
+    <value>not reached</value>
+  </data>
+  <data name="FLOTTE_KACHEL_RECHNUNG" xml:space="preserve">
+    <value>Electricity bill in the data period</value>
+  </data>
+  <data name="FLOTTE_KACHEL_RECHNUNG_QUELLE" xml:space="preserve">
+    <value>Saving {0} €</value>
+  </data>
+  <data name="FLOTTE_KACHEL_ZYKLEN" xml:space="preserve">
+    <value>Full cycles per unit</value>
+  </data>
+  <data name="FLOTTE_KACHEL_ZYKLEN_QUELLE" xml:space="preserve">
+    <value>charged {0} kWh · discharged {1} kWh</value>
+  </data>
+  <data name="FLOTTE_VGL_TITEL" xml:space="preserve">
+    <value>Comparison</value>
+  </data>
+  <data name="FLOTTE_VGL_SP_KENNZAHL" xml:space="preserve">
+    <value>Indicator</value>
+  </data>
+  <data name="FLOTTE_VGL_SP_EINHEIT" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="FLOTTE_VGL_SP_OHNE" xml:space="preserve">
+    <value>Without storage</value>
+  </data>
+  <data name="FLOTTE_VGL_SP_MIT" xml:space="preserve">
+    <value>With fleet</value>
+  </data>
+  <data name="FLOTTE_VGL_SP_DELTA" xml:space="preserve">
+    <value>Δ</value>
+  </data>
+  <data name="FLOTTE_VGL_NULLZEILEN" xml:space="preserve">
+    <value>Show zero rows ({0})</value>
+  </data>
+  <data name="FLOTTE_VGL_STROMRECHNUNG" xml:space="preserve">
+    <value>Electricity bill in the data period</value>
+  </data>
+  <data name="FLOTTE_VGL_ENERGIEKOSTEN" xml:space="preserve">
+    <value>Draw costs less feed-in revenue</value>
+  </data>
+  <data name="FLOTTE_VGL_LEISTUNGSKOSTEN" xml:space="preserve">
+    <value>Demand charges</value>
+  </data>
+  <data name="FLOTTE_VGL_NETZBEZUG" xml:space="preserve">
+    <value>Grid draw</value>
+  </data>
+  <data name="FLOTTE_VGL_SPITZE" xml:space="preserve">
+    <value>Remaining peak draw</value>
+  </data>
+  <data name="FLOTTE_VGL_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in</value>
+  </data>
+  <data name="FLOTTE_VGL_EINSPEISUNG_PV" xml:space="preserve">
+    <value>Of which PV feed-in</value>
+  </data>
+  <data name="FLOTTE_VGL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>Of which CHP feed-in</value>
+  </data>
+  <data name="FLOTTE_VGL_EINSPEISUNG_BATTERIE" xml:space="preserve">
+    <value>Of which battery feed-in</value>
+  </data>
+  <data name="FLOTTE_VGL_ABREGELUNG" xml:space="preserve">
+    <value>PV curtailment</value>
+  </data>
+  <data name="FLOTTE_VGL_VERLUSTE" xml:space="preserve">
+    <value>Conversion losses</value>
+  </data>
+  <data name="FLOTTE_PROJ_TITEL" xml:space="preserve">
+    <value>Annual projection</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST" xml:space="preserve">
+    <value>Investment: {0} € · net present value against “no storage”: {1} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_WIEDERHOLUNG" xml:space="preserve">
+    <value>Projection: the reference year is explicitly repeated over the selected period.</value>
+  </data>
+  <data name="FLOTTE_PROJ_JAHRESKONTEN" xml:space="preserve">
+    <value>Assessment based on the given annual accounts.</value>
+  </data>
+  <data name="FLOTTE_PROJ_OHNE" xml:space="preserve">
+    <value>Net present value against “no storage”: — no annual accounts or explicitly selected reference-year projection available.</value>
+  </data>
+  <data name="FLOTTE_PROJ_TABELLE" xml:space="preserve">
+    <value>Show table of annual accounts</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_BETRIEB" xml:space="preserve">
+    <value>Operation [€]</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_DURCHSATZ" xml:space="preserve">
+    <value>Throughput [€]</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_ERSATZ" xml:space="preserve">
+    <value>Replacement [€]</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_AUSGLEICH" xml:space="preserve">
+    <value>Energy balancing [€]</value>
+  </data>
+  <data name="FLOTTE_PROJ_SP_CASHFLOW" xml:space="preserve">
+    <value>Net cash flow [€]</value>
+  </data>
+  <data name="FLOTTE_KENN_TITEL" xml:space="preserve">
+    <value>Indicators per storage unit</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_SPEICHER" xml:space="preserve">
+    <value>Storage unit</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_LADUNG" xml:space="preserve">
+    <value>Charge AC [kWh]</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_ENTLADUNG" xml:space="preserve">
+    <value>Discharge AC [kWh]</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_ANFANG_ENDE" xml:space="preserve">
+    <value>Start / end [kWh]</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_VOLLZYKLEN" xml:space="preserve">
+    <value>Full cycles</value>
+  </data>
+  <data name="FLOTTE_KENN_SP_RAINFLOW" xml:space="preserve">
+    <value>Rainflow damage</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_VARIANTE" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_BETRIEBSZIEL" xml:space="preserve">
+    <value>Operating target</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_ZULAESSIG" xml:space="preserve">
+    <value>Admissible</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_LEISTUNG" xml:space="preserve">
+    <value>Charge / discharge [kW]</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_KAPITALWERT" xml:space="preserve">
+    <value>Net present value [€]</value>
+  </data>
+  <data name="FLOTTE_KAND_SP_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="FLOTTE_KAND_JA" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="FLOTTE_KAND_NEIN" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="FLOTTE_KAND_ANZAHL" xml:space="preserve">
+    <value>{0} variants checked; the table shows at most 50, the CSV export contains all.</value>
+  </data>
+  <data name="FLOTTE_EMPF_KEINE" xml:space="preserve">
+    <value>No sizing available</value>
+  </data>
+  <data name="FLOTTE_EMPF_NULLVARIANTE" xml:space="preserve">
+    <value>Recommendation: no additional storage</value>
+  </data>
+  <data name="FLOTTE_EMPF_BESTE" xml:space="preserve">
+    <value>Best technically admissible fleet in the search space checked</value>
+  </data>
+  <data name="FLOTTE_EMPF_KEINE_ZULAESSIGE" xml:space="preserve">
+    <value>No technically admissible fleet in the search space checked</value>
+  </data>
+  <data name="FLOTTE_DIA_TITEL" xml:space="preserve">
+    <value>Grid connection and state of charge</value>
+  </data>
+  <data name="FLOTTE_CHK_ZWEITES_BILD" xml:space="preserve">
+    <value>Show state-of-charge chart as well</value>
+  </data>
+  <data name="FLOTTE_LBL_ZEITRAUM" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="FLOTTE_LBL_SOC_EINHEIT" xml:space="preserve">
+    <value>State of charge of the unit</value>
+  </data>
+  <data name="FLOTTE_NAV_ZURUECK_TITEL" xml:space="preserve">
+    <value>One step back</value>
+  </data>
+  <data name="FLOTTE_NAV_VOR_TITEL" xml:space="preserve">
+    <value>One step forward</value>
+  </data>
+  <data name="FLOTTE_BTN_CSV_JAHRESKONTEN" xml:space="preserve">
+    <value>Annual accounts as CSV</value>
+  </data>
+  <data name="FLOTTE_BTN_CSV_VERGLEICH" xml:space="preserve">
+    <value>Variant comparison as CSV</value>
+  </data>
+  <data name="FLOTTE_BTN_CSV_ZEITREIHEN" xml:space="preserve">
+    <value>All time series and storage units as CSV</value>
+  </data>
+  <data name="FLOTTE_ZIEL_PVGREEDY" xml:space="preserve">
+    <value>PV self-consumption (reactive)</value>
+  </data>
+  <data name="FLOTTE_ZIEL_PEAKSHAVING" xml:space="preserve">
+    <value>Peak shaving</value>
+  </data>
+  <data name="FLOTTE_ZIEL_PVPLANUNG" xml:space="preserve">
+    <value>PV forecast planning</value>
+  </data>
+  <data name="FLOTTE_ZIEL_ARBITRAGE" xml:space="preserve">
+    <value>Price optimisation / arbitrage</value>
+  </data>
+  <data name="FLOTTE_ZIEL_MULTIUSE" xml:space="preserve">
+    <value>Multi use with peak priority</value>
+  </data>
+  <data name="FLOTTE_VERT_KAPAZITAET" xml:space="preserve">
+    <value>By available capacity</value>
+  </data>
+  <data name="FLOTTE_VERT_KASKADE" xml:space="preserve">
+    <value>Cascade</value>
+  </data>
+  <data name="FLOTTE_VERT_GRENZKOSTEN" xml:space="preserve">
+    <value>By marginal cost and efficiency</value>
+  </data>
+  <data name="FLOTTE_PRIO_PV_VOR_BHKW" xml:space="preserve">
+    <value>PV before CHP</value>
+  </data>
+  <data name="FLOTTE_PRIO_BHKW_VOR_PV" xml:space="preserve">
+    <value>CHP before PV</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_TITEL" xml:space="preserve">
+    <value>Operation and power distribution</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_ZIEL" xml:space="preserve">
+    <value>Operating target:</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_VERTEILUNG" xml:space="preserve">
+    <value>Power distribution:</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_PRIORITAET" xml:space="preserve">
+    <value>Generator order:</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_LBL_PEAKZIEL" xml:space="preserve">
+    <value>Economic peak target:</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_CHK_NETZLADUNG" xml:space="preserve">
+    <value>Allow charging from the grid</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_CHK_EXPORT" xml:space="preserve">
+    <value>Allow battery export to the grid</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_HINWEIS_PEAK" xml:space="preserve">
+    <value>The fleet limits the grid draw to the economic peak target as far as energy, power and connection limits allow.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_HINWEIS_PVPLANUNG" xml:space="preserve">
+    <value>The planner shifts PV energy using the information level selected in the sizing profile.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_HINWEIS_ARBITRAGE" xml:space="preserve">
+    <value>The planner values draw and sale separately; grid charging and battery export remain explicit permissions.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_HINWEIS_MULTIUSE" xml:space="preserve">
+    <value>Peak protection takes precedence; remaining degrees of freedom are used economically.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_HINWEIS_REAKTIV" xml:space="preserve">
+    <value>Reactive control charges generation surpluses and discharges on net demand without any information about the future.</value>
+  </data>
+  <data name="FLOTTE_DLG_TITEL" xml:space="preserve">
+    <value>Multi-storage sizing</value>
+  </data>
+  <data name="FLOTTE_DLG_REITER_FLOTTE" xml:space="preserve">
+    <value>Storage &amp; operating strategy</value>
+  </data>
+  <data name="FLOTTE_DLG_REITER_QUELLEN" xml:space="preserve">
+    <value>Data, costs &amp; profiles</value>
+  </data>
+  <data name="FLOTTE_DLG_REITER_PROGNOSEN" xml:space="preserve">
+    <value>Forecasts &amp; annual data</value>
+  </data>
+  <data name="FLOTTE_DLG_REITER_ERGEBNIS" xml:space="preserve">
+    <value>Comparison &amp; results</value>
+  </data>
+  <data name="FLOTTE_DLG_PROJEKT_AKTIV" xml:space="preserve">
+    <value>A storage fleet is activated for the project simulation.</value>
+  </data>
+  <data name="FLOTTE_DLG_PROJEKT_AKTIV_TEXT" xml:space="preserve">
+    <value>Until the next successful project run the fleet calculated last remains in effect.</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_PROJEKT_AUS" xml:space="preserve">
+    <value>Deactivate project fleet</value>
+  </data>
+  <data name="FLOTTE_DLG_HINWEIS_SPEICHERN" xml:space="preserve">
+    <value>The current fleet settings take effect after saving and after the next successful project run.</value>
+  </data>
+  <data name="FLOTTE_DLG_HINWEIS_GEMEINSAM" xml:space="preserve">
+    <value>Several storage units are simulated together at the grid connection. Each unit keeps its own state of charge. The comparison is against the same site without additional storage.</value>
+  </data>
+  <data name="FLOTTE_DLG_HINWEIS_KOSTENSAETZE" xml:space="preserve">
+    <value>The following specific cost rates apply to all storage units without their own cost data. A sizing profile stores the entire fleet including operating strategy and data sources.</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_IDEALWISSEN" xml:space="preserve">
+    <value>PV planning, price arbitrage and multi use need forecasts. In “perfect information” mode the planner uses the future values of the imported site series; the result is an optimistic benchmark.</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_ARCHIV" xml:space="preserve">
+    <value>Archived forecasts are imported from CSV rows with snapshot ID, decision time, time of knowledge and interval values. Only data known at the decision time is used.</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_PROGNOSE_CSV" xml:space="preserve">
+    <value>Import forecast CSV …</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_SNAPSHOTS" xml:space="preserve">
+    <value>{0} · {1} snapshots stored</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_JAHRE" xml:space="preserve">
+    <value>Complete annual series can be imported from CSV for different project years. The calendar year follows from the time stamp; every storage solution is simulated again for each complete year.</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_JAHRE_CSV" xml:space="preserve">
+    <value>Import project-year CSV …</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_JAHRESREIHEN" xml:space="preserve">
+    <value>{0} · {1} annual series stored</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_SP_SNAPSHOT" xml:space="preserve">
+    <value>Snapshot</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_SP_BEKANNT" xml:space="preserve">
+    <value>Known since</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_SP_ENTSCHEIDUNG" xml:space="preserve">
+    <value>Decision</value>
+  </data>
+  <data name="FLOTTE_DLG_PROG_SP_INTERVALLE" xml:space="preserve">
+    <value>Intervals</value>
+  </data>
+  <data name="FLOTTE_DLG_KEIN_VERGLEICH" xml:space="preserve">
+    <value>No comparison calculated yet. The calculation uses the stored settings and the same input for all variants.</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_PROJEKT_AN" xml:space="preserve">
+    <value>Activate this fleet for the project simulation</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_BESTE" xml:space="preserve">
+    <value>Apply best fleet to the sizing</value>
+  </data>
+  <data name="FLOTTE_DLG_CHK_OPTIMIEREN" xml:space="preserve">
+    <value>Optimise number of units and size ranges</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_RECHNEN" xml:space="preserve">
+    <value>Calculate storage comparison</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_RECHNEN_LAEUFT" xml:space="preserve">
+    <value>Calculation running …</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="FLOTTE_DLG_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="FLOTTE_DLG_STATUS_PRUEFEN" xml:space="preserve">
+    <value>Checking time series and costs …</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_ABGEBROCHEN" xml:space="preserve">
+    <value>Calculation cancelled.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_AKTIVIERT" xml:space="preserve">
+    <value>Fleet activated. Please recalculate the project simulation; the previous project results still belong to the old state. The cost assessment of the fleet study remains in the variant comparison.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_DEAKTIVIERT" xml:space="preserve">
+    <value>Project fleet deactivated. The project simulation uses the single variant until fleet settings are saved again and the project is recalculated.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_KEINE_PROFILABLAGE" xml:space="preserve">
+    <value>Profile saving is not available.</value>
+  </data>
+  <data name="FLOTTE_DLG_MSG_KEINE_ABLAGE" xml:space="preserve">
+    <value>Saving the settings is not available.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_LAUFZEIT" xml:space="preserve">
+    <value>Project period: please enter at least 1 year.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_AUSGLEICH" xml:space="preserve">
+    <value>Energy balancing value: without equal final energy a value is required.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_SOC" xml:space="preserve">
+    <value>Storage unit '{0}': SoC minimum, start SoC and SoC maximum must lie between 0 and 100 % in that order.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_ANZAHL" xml:space="preserve">
+    <value>Size range '{0}' – number: from must be at least 0 and to at least from.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_KAPAZITAET" xml:space="preserve">
+    <value>Size range '{0}' – capacity [kWh]: from must be positive, to at least from and the step positive for a range.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_LEISTUNG" xml:space="preserve">
+    <value>Size range '{0}' – power [kW]: from must be positive, to at least from and the step positive for a range.</value>
+  </data>
+  <data name="FLOTTE_DLG_PRUEF_CRATE" xml:space="preserve">
+    <value>Size range '{0}' – C rate [1/h]: from must be positive, to at least from and the step positive for a range.</value>
+  </data>
+  <data name="FLOTTE_ED_TITEL" xml:space="preserve">
+    <value>Storage fleet</value>
+  </data>
+  <data name="FLOTTE_ED_ERLAEUTERUNG" xml:space="preserve">
+    <value>Physical units, operating target, distribution, planning and life cycle are stored together as one study.</value>
+  </data>
+  <data name="FLOTTE_ED_BETRIEB_VERTEILUNG" xml:space="preserve">
+    <value>Operation and power distribution</value>
+  </data>
+  <data name="FLOTTE_ED_BETRIEBSZIEL" xml:space="preserve">
+    <value>Operating target:</value>
+  </data>
+  <data name="FLOTTE_ED_VERTEILUNG" xml:space="preserve">
+    <value>Distribute power across units:</value>
+  </data>
+  <data name="FLOTTE_ED_ERZEUGER_PRIO" xml:space="preserve">
+    <value>Generator order:</value>
+  </data>
+  <data name="FLOTTE_ED_EINHEITEN" xml:space="preserve">
+    <value>Physical storage units</value>
+  </data>
+  <data name="FLOTTE_ED_EINHEITEN_HINWEIS" xml:space="preserve">
+    <value>Each row is a storage unit operated at the same time, with its own state and its own limits.</value>
+  </data>
+  <data name="FLOTTE_ED_HINZUFUEGEN" xml:space="preserve">
+    <value>+ Add storage unit</value>
+  </data>
+  <data name="FLOTTE_ED_KEINE_EINHEIT" xml:space="preserve">
+    <value>No storage unit created yet.</value>
+  </data>
+  <data name="FLOTTE_ED_EINHEIT_AKTIONEN" xml:space="preserve">
+    <value>Actions for this storage unit</value>
+  </data>
+  <data name="FLOTTE_ED_KOPIEREN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="FLOTTE_ED_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="FLOTTE_ED_KOPIEREN_ARIA" xml:space="preserve">
+    <value>Copy {0}</value>
+  </data>
+  <data name="FLOTTE_ED_ENTFERNEN_ARIA" xml:space="preserve">
+    <value>Remove {0}</value>
+  </data>
+  <data name="FLOTTE_ED_TECHNIK" xml:space="preserve">
+    <value>Technology and state</value>
+  </data>
+  <data name="FLOTTE_ED_NAME" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="FLOTTE_ED_KAPAZITAET" xml:space="preserve">
+    <value>Nominal capacity:</value>
+  </data>
+  <data name="FLOTTE_ED_LADELEISTUNG" xml:space="preserve">
+    <value>Maximum charging power:</value>
+  </data>
+  <data name="FLOTTE_ED_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Maximum discharging power:</value>
+  </data>
+  <data name="FLOTTE_ED_LADEWIRKUNGSGRAD" xml:space="preserve">
+    <value>Charging efficiency:</value>
+  </data>
+  <data name="FLOTTE_ED_ENTLADEWIRKUNGSGRAD" xml:space="preserve">
+    <value>Discharging efficiency:</value>
+  </data>
+  <data name="FLOTTE_ED_SOC_MIN" xml:space="preserve">
+    <value>SoC lower limit:</value>
+  </data>
+  <data name="FLOTTE_ED_SOC_MAX" xml:space="preserve">
+    <value>SoC upper limit:</value>
+  </data>
+  <data name="FLOTTE_ED_SOC_START" xml:space="preserve">
+    <value>SoC at start:</value>
+  </data>
+  <data name="FLOTTE_ED_PEAK_RESERVE" xml:space="preserve">
+    <value>Peak reserve:</value>
+  </data>
+  <data name="FLOTTE_ED_HILFSVERBRAUCH" xml:space="preserve">
+    <value>AC auxiliary consumption:</value>
+  </data>
+  <data name="FLOTTE_ED_ALTERUNG" xml:space="preserve">
+    <value>Ageing and marginal cost</value>
+  </data>
+  <data name="FLOTTE_ED_GRENZVERSCHLEISS" xml:space="preserve">
+    <value>Marginal wear cost of discharging:</value>
+  </data>
+  <data name="FLOTTE_ED_RAINFLOW_HINWEIS" xml:space="preserve">
+    <value>Optional: documented manufacturer curve of depth of discharge against cycles to end of life. Without points the rainflow damage stays unknown.</value>
+  </data>
+  <data name="FLOTTE_ED_KEINE_RAINFLOW" xml:space="preserve">
+    <value>No rainflow curve stored.</value>
+  </data>
+  <data name="FLOTTE_ED_ENTLADETIEFE" xml:space="preserve">
+    <value>Depth of discharge, point {0}:</value>
+  </data>
+  <data name="FLOTTE_ED_ZYKLEN_EOL" xml:space="preserve">
+    <value>Cycles to EOL, point {0}:</value>
+  </data>
+  <data name="FLOTTE_ED_PUNKT_NEU" xml:space="preserve">
+    <value>+ Curve point</value>
+  </data>
+  <data name="FLOTTE_ED_PUNKT_WEG" xml:space="preserve">
+    <value>Remove point</value>
+  </data>
+  <data name="FLOTTE_ED_PUNKT_WEG_ARIA" xml:space="preserve">
+    <value>Remove rainflow curve point {0}</value>
+  </data>
+  <data name="FLOTTE_ED_AUSLEGUNGSBEREICH" xml:space="preserve">
+    <value>Size range of this unit</value>
+  </data>
+  <data name="FLOTTE_ED_VARIIEREN" xml:space="preserve">
+    <value>Vary during sizing</value>
+  </data>
+  <data name="FLOTTE_ED_AUSLEGUNGSMODUS" xml:space="preserve">
+    <value>Size coupling:</value>
+  </data>
+  <data name="FLOTTE_ED_KAT_ANZAHL" xml:space="preserve">
+    <value>Number</value>
+  </data>
+  <data name="FLOTTE_ED_KAT_KAPAZITAET" xml:space="preserve">
+    <value>Capacity [kWh]</value>
+  </data>
+  <data name="FLOTTE_ED_KAT_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="FLOTTE_ED_KAT_CRATE" xml:space="preserve">
+    <value>C rate [1/h]</value>
+  </data>
+  <data name="FLOTTE_ED_VON" xml:space="preserve">
+    <value>From:</value>
+  </data>
+  <data name="FLOTTE_ED_BIS" xml:space="preserve">
+    <value>To:</value>
+  </data>
+  <data name="FLOTTE_ED_SCHRITT" xml:space="preserve">
+    <value>Step:</value>
+  </data>
+  <data name="FLOTTE_ED_ANZAHL_VON" xml:space="preserve">
+    <value>Number from:</value>
+  </data>
+  <data name="FLOTTE_ED_ANZAHL_BIS" xml:space="preserve">
+    <value>Number to:</value>
+  </data>
+  <data name="FLOTTE_ED_KAPAZITAET_VON" xml:space="preserve">
+    <value>Capacity from:</value>
+  </data>
+  <data name="FLOTTE_ED_KAPAZITAET_BIS" xml:space="preserve">
+    <value>Capacity to:</value>
+  </data>
+  <data name="FLOTTE_ED_KAPAZITAET_SCHRITT" xml:space="preserve">
+    <value>Capacity step:</value>
+  </data>
+  <data name="FLOTTE_ED_LEISTUNG_VON" xml:space="preserve">
+    <value>Power from:</value>
+  </data>
+  <data name="FLOTTE_ED_LEISTUNG_BIS" xml:space="preserve">
+    <value>Power to:</value>
+  </data>
+  <data name="FLOTTE_ED_LEISTUNG_SCHRITT" xml:space="preserve">
+    <value>Power step:</value>
+  </data>
+  <data name="FLOTTE_ED_CRATE_VON" xml:space="preserve">
+    <value>C rate from:</value>
+  </data>
+  <data name="FLOTTE_ED_CRATE_BIS" xml:space="preserve">
+    <value>C rate to:</value>
+  </data>
+  <data name="FLOTTE_ED_CRATE_SCHRITT" xml:space="preserve">
+    <value>C rate step:</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZ_RESTWERT" xml:space="preserve">
+    <value>Replacement and residual value</value>
+  </data>
+  <data name="FLOTTE_ED_EIGENE_KOSTEN" xml:space="preserve">
+    <value>Use separate costs for this unit</value>
+  </data>
+  <data name="FLOTTE_ED_INVEST_FIX" xml:space="preserve">
+    <value>Fixed investment:</value>
+  </data>
+  <data name="FLOTTE_ED_INVEST_KAPAZITAET" xml:space="preserve">
+    <value>Investment, capacity:</value>
+  </data>
+  <data name="FLOTTE_ED_INVEST_LEISTUNG" xml:space="preserve">
+    <value>Investment, power:</value>
+  </data>
+  <data name="FLOTTE_ED_OPEX_FIX" xml:space="preserve">
+    <value>Fixed operating cost:</value>
+  </data>
+  <data name="FLOTTE_ED_OPEX_KAPAZITAET" xml:space="preserve">
+    <value>Operating cost, capacity:</value>
+  </data>
+  <data name="FLOTTE_ED_OPEX_LEISTUNG" xml:space="preserve">
+    <value>Operating cost, power:</value>
+  </data>
+  <data name="FLOTTE_ED_DURCHSATZKOSTEN" xml:space="preserve">
+    <value>Cost per discharge:</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZKOSTEN" xml:space="preserve">
+    <value>Replacement cost:</value>
+  </data>
+  <data name="FLOTTE_ED_ERSATZINTERVALL" xml:space="preserve">
+    <value>Replacement interval:</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_EINHEIT" xml:space="preserve">
+    <value>Residual value of the unit:</value>
+  </data>
+  <data name="FLOTTE_ED_NETZ_PLANUNG" xml:space="preserve">
+    <value>Grid limits and scheduling</value>
+  </data>
+  <data name="FLOTTE_ED_BEZUGSGRENZE" xml:space="preserve">
+    <value>Hard draw limit:</value>
+  </data>
+  <data name="FLOTTE_ED_EINSPEISEGRENZE" xml:space="preserve">
+    <value>Hard feed-in limit:</value>
+  </data>
+  <data name="FLOTTE_ED_PEAKZIEL" xml:space="preserve">
+    <value>Economic peak target:</value>
+  </data>
+  <data name="FLOTTE_ED_NETZLADUNG" xml:space="preserve">
+    <value>Allow charging from the grid</value>
+  </data>
+  <data name="FLOTTE_ED_BATTERIEEXPORT" xml:space="preserve">
+    <value>Allow battery export to the grid</value>
+  </data>
+  <data name="FLOTTE_ED_PROGNOSEPLANUNG" xml:space="preserve">
+    <value>Forecast and rolling horizon</value>
+  </data>
+  <data name="FLOTTE_ED_INFORMATIONSSTAND" xml:space="preserve">
+    <value>Information level:</value>
+  </data>
+  <data name="FLOTTE_ED_PLANUNGSHORIZONT" xml:space="preserve">
+    <value>Planning horizon:</value>
+  </data>
+  <data name="FLOTTE_ED_NEUPLANUNG" xml:space="preserve">
+    <value>Replan every:</value>
+  </data>
+  <data name="FLOTTE_ED_ENDBEDINGUNG" xml:space="preserve">
+    <value>Horizon end condition:</value>
+  </data>
+  <data name="FLOTTE_ED_ENDENERGIE_ZIELE" xml:space="preserve">
+    <value>Final energy targets per unit</value>
+  </data>
+  <data name="FLOTTE_ED_ENDENERGIE_ZIEL" xml:space="preserve">
+    <value>Final energy {0}:</value>
+  </data>
+  <data name="FLOTTE_ED_FALLBACK" xml:space="preserve">
+    <value>Allow a logged reactive fallback</value>
+  </data>
+  <data name="FLOTTE_ED_ORACLE_HINWEIS" xml:space="preserve">
+    <value>Perfect information is a benchmark run and must remain marked as an oracle in the result.</value>
+  </data>
+  <data name="FLOTTE_ED_JAHRESPROJEKTION" xml:space="preserve">
+    <value>Economic annual projection</value>
+  </data>
+  <data name="FLOTTE_ED_AUSGLEICH_HINWEIS" xml:space="preserve">
+    <value>The energy balancing value prices the difference between start and final energy. The editable value is a suggestion derived from the effective electricity price and prevents withdrawn initial energy from appearing as free revenue.</value>
+  </data>
+  <data name="FLOTTE_ED_PROJEKTION_HINWEIS" xml:space="preserve">
+    <value>A given year can be assessed once or repeated over the selected period. The repetition forms a constant scenario; future price changes are not forecast automatically. Import annual data for differing annual profiles.</value>
+  </data>
+  <data name="FLOTTE_ED_ZINS" xml:space="preserve">
+    <value>Discount rate:</value>
+  </data>
+  <data name="FLOTTE_ED_PROJEKTIONSART" xml:space="preserve">
+    <value>Annual projection:</value>
+  </data>
+  <data name="FLOTTE_ED_PROJEKTJAHRE" xml:space="preserve">
+    <value>Project period:</value>
+  </data>
+  <data name="FLOTTE_ED_RESTWERT_GESAMT" xml:space="preserve">
+    <value>Additional residual value of the study:</value>
+  </data>
+  <data name="FLOTTE_ED_MAX_KANDIDATEN" xml:space="preserve">
+    <value>Maximum sizing candidates:</value>
+  </data>
+  <data name="FLOTTE_ED_EINHEITEN_ANZAHL" xml:space="preserve">
+    <value>{0} storage units</value>
+  </data>
+  <data name="FLOTTE_ED_STANDARD_EINHEIT" xml:space="preserve">
+    <value>Storage unit {0}</value>
+  </data>
+  <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
+    <value>Unnamed storage unit</value>
+  </data>
+  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
+    <value>Search space</value>
+  </data>
+  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
+    <value>Size axis:</value>
+  </data>
+  <data name="FLOTTE_AUS_VON" xml:space="preserve">
+    <value>From:</value>
+  </data>
+  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
+    <value>To:</value>
+  </data>
+  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
+    <value>Step size (empty = number of points):</value>
+  </data>
+  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
+    <value>Points:</value>
+  </data>
+  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
+    <value>C rate from:</value>
+  </data>
+  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
+    <value>C rate to:</value>
+  </data>
+  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
+    <value>C rate step:</value>
+  </data>
+  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
+    <value>Operating strategy:</value>
+  </data>
+  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
+    <value>Fine grid</value>
+  </data>
+  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
+    <value>Take wear cost into account</value>
+  </data>
+  <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
+    <value>Time series</value>
+  </data>
+  <data name="FLOTTE_AUS_LASTQUELLE" xml:space="preserve">
+    <value>Load:</value>
+  </data>
+  <data name="FLOTTE_AUS_PVQUELLE" xml:space="preserve">
+    <value>PV:</value>
+  </data>
+  <data name="FLOTTE_AUS_PREISQUELLE" xml:space="preserve">
+    <value>Draw price:</value>
+  </data>
+  <data name="FLOTTE_AUS_PREISPROFIL" xml:space="preserve">
+    <value>Price profile:</value>
+  </data>
+  <data name="FLOTTE_AUS_LASTDATEI" xml:space="preserve">
+    <value>Choose load file</value>
+  </data>
+  <data name="FLOTTE_AUS_PVDATEI" xml:space="preserve">
+    <value>Choose PV file</value>
+  </data>
+  <data name="FLOTTE_AUS_PREISDATEI" xml:space="preserve">
+    <value>Choose price file</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_BEARBEITEN" xml:space="preserve">
+    <value>Edit price profile</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_ANLEGEN" xml:space="preserve">
+    <value>Create price profile</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_NEU" xml:space="preserve">
+    <value>New price profile</value>
+  </data>
+  <data name="FLOTTE_AUS_MODELLJAHR" xml:space="preserve">
+    <value>Map the EPOS model year onto the CSV time axis</value>
+  </data>
+  <data name="FLOTTE_AUS_MODELLJAHR_HINWEIS" xml:space="preserve">
+    <value>For CSV series combined with EPOS or price-profile values this mapping has to be confirmed explicitly. The CSV time axis is kept in full: for 29 February the EPOS value of 28 February is reused; duplicate local hours at the clock change get the same EPOS model value.</value>
+  </data>
+  <data name="FLOTTE_AUS_KOSTEN" xml:space="preserve">
+    <value>Costs</value>
+  </data>
+  <data name="FLOTTE_AUS_INVESTQUELLE" xml:space="preserve">
+    <value>Investment cost:</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEBSQUELLE" xml:space="preserve">
+    <value>Operating cost:</value>
+  </data>
+  <data name="FLOTTE_AUS_INVEST_KW" xml:space="preserve">
+    <value>Investment, power:</value>
+  </data>
+  <data name="FLOTTE_AUS_INVEST_KWH" xml:space="preserve">
+    <value>Investment, capacity:</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEB_KW" xml:space="preserve">
+    <value>Operation, power:</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEB_KWH" xml:space="preserve">
+    <value>Operation, capacity:</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEB_ENTLADEN" xml:space="preserve">
+    <value>Operation per discharged energy:</value>
+  </data>
+  <data name="FLOTTE_AUS_KOSTENMODUL" xml:space="preserve">
+    <value>Cost module</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFILE" xml:space="preserve">
+    <value>Sizing profiles</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_LADEN" xml:space="preserve">
+    <value>Load profile:</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_WAEHLEN" xml:space="preserve">
+    <value>(choose profile)</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFILNAME" xml:space="preserve">
+    <value>Profile name:</value>
+  </data>
+  <data name="FLOTTE_AUS_EINSTELLUNGEN_SPEICHERN" xml:space="preserve">
+    <value>Save settings</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_SPEICHERN" xml:space="preserve">
+    <value>Save profile</value>
+  </data>
+  <data name="FLOTTE_AUS_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="FLOTTE_AUS_KOPIE" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="FLOTTE_AUS_GESPEICHERT" xml:space="preserve">
+    <value>Settings saved.</value>
+  </data>
+  <data name="FLOTTE_AUS_PROFIL_GESPEICHERT" xml:space="preserve">
+    <value>Profile saved.</value>
+  </data>
+  <data name="FLOTTE_CSV_TITEL_PROGNOSEN" xml:space="preserve">
+    <value>Import forecast CSV</value>
+  </data>
+  <data name="FLOTTE_CSV_TITEL_JAHRE" xml:space="preserve">
+    <value>Import project-year CSV</value>
+  </data>
+  <data name="FLOTTE_CSV_HINWEIS" xml:space="preserve">
+    <value>Assign time, load and prices to the CSV columns. Load and draw price are required; missing optional generation and sales-price columns are taken as 0.</value>
+  </data>
+  <data name="FLOTTE_CSV_FORMAT" xml:space="preserve">
+    <value>CSV format</value>
+  </data>
+  <data name="FLOTTE_CSV_TRENNZEICHEN" xml:space="preserve">
+    <value>Separator:</value>
+  </data>
+  <data name="FLOTTE_CSV_DEZIMALTRENNER" xml:space="preserve">
+    <value>Decimal separator:</value>
+  </data>
+  <data name="FLOTTE_CSV_KODIERUNG" xml:space="preserve">
+    <value>Encoding:</value>
+  </data>
+  <data name="FLOTTE_CSV_KOPFZEILE" xml:space="preserve">
+    <value>First data row is a header row</value>
+  </data>
+  <data name="FLOTTE_CSV_UEBERSPRINGEN" xml:space="preserve">
+    <value>Skip rows before it:</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEIT" xml:space="preserve">
+    <value>Time and interval</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEITANGABE" xml:space="preserve">
+    <value>Time format:</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEITSTEMPELSPALTE" xml:space="preserve">
+    <value>Time-stamp column:</value>
+  </data>
+  <data name="FLOTTE_CSV_DATUMSSPALTE" xml:space="preserve">
+    <value>Date column:</value>
+  </data>
+  <data name="FLOTTE_CSV_UHRZEITSPALTE" xml:space="preserve">
+    <value>Time-of-day column:</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEITSTEMPELFORMAT" xml:space="preserve">
+    <value>Time-stamp format (empty = default):</value>
+  </data>
+  <data name="FLOTTE_CSV_DATUMSFORMAT" xml:space="preserve">
+    <value>Date format (empty = default):</value>
+  </data>
+  <data name="FLOTTE_CSV_UHRZEITFORMAT" xml:space="preserve">
+    <value>Time-of-day format (empty = default):</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEITZONE" xml:space="preserve">
+    <value>Time zone:</value>
+  </data>
+  <data name="FLOTTE_CSV_INTERVALLLAGE" xml:space="preserve">
+    <value>Time stamp denotes interval:</value>
+  </data>
+  <data name="FLOTTE_CSV_WERTSPALTEN" xml:space="preserve">
+    <value>Power and prices</value>
+  </data>
+  <data name="FLOTTE_CSV_LAST" xml:space="preserve">
+    <value>Gross load:</value>
+  </data>
+  <data name="FLOTTE_CSV_PV" xml:space="preserve">
+    <value>PV power (optional):</value>
+  </data>
+  <data name="FLOTTE_CSV_BHKW" xml:space="preserve">
+    <value>CHP power (optional):</value>
+  </data>
+  <data name="FLOTTE_CSV_BEZUG" xml:space="preserve">
+    <value>Draw price:</value>
+  </data>
+  <data name="FLOTTE_CSV_PVPREIS" xml:space="preserve">
+    <value>PV sales price (optional):</value>
+  </data>
+  <data name="FLOTTE_CSV_BHKWPREIS" xml:space="preserve">
+    <value>CHP sales price (optional):</value>
+  </data>
+  <data name="FLOTTE_CSV_BATTERIEPREIS" xml:space="preserve">
+    <value>Battery sales price (optional):</value>
+  </data>
+  <data name="FLOTTE_CSV_LEISTUNGSEINHEIT" xml:space="preserve">
+    <value>Unit of the power columns:</value>
+  </data>
+  <data name="FLOTTE_CSV_PREISEINHEIT" xml:space="preserve">
+    <value>Unit of the price columns:</value>
+  </data>
+  <data name="FLOTTE_CSV_PROGNOSEZUORDNUNG" xml:space="preserve">
+    <value>Forecast snapshots</value>
+  </data>
+  <data name="FLOTTE_CSV_SNAPSHOT_ID" xml:space="preserve">
+    <value>Snapshot ID:</value>
+  </data>
+  <data name="FLOTTE_CSV_BEKANNT_SEIT" xml:space="preserve">
+    <value>Known since:</value>
+  </data>
+  <data name="FLOTTE_CSV_ENTSCHEIDUNG" xml:space="preserve">
+    <value>Decision time:</value>
+  </data>
+  <data name="FLOTTE_CSV_NICHT_VORHANDEN" xml:space="preserve">
+    <value>(not present – value 0)</value>
+  </data>
+  <data name="FLOTTE_CSV_VORSCHAU" xml:space="preserve">
+    <value>CSV preview</value>
+  </data>
+  <data name="FLOTTE_CSV_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="FLOTTE_CSV_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply CSV</value>
+  </data>
+  <data name="FLOTTE_CSV_SEP_SEMIKOLON" xml:space="preserve">
+    <value>Semicolon (;)</value>
+  </data>
+  <data name="FLOTTE_CSV_SEP_KOMMA" xml:space="preserve">
+    <value>Comma (,)</value>
+  </data>
+  <data name="FLOTTE_CSV_SEP_TABULATOR" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="FLOTTE_CSV_DEZ_KOMMA" xml:space="preserve">
+    <value>Comma (,)</value>
+  </data>
+  <data name="FLOTTE_CSV_DEZ_PUNKT" xml:space="preserve">
+    <value>Point (.)</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEIT_EINE_SPALTE" xml:space="preserve">
+    <value>One time-stamp column</value>
+  </data>
+  <data name="FLOTTE_CSV_ZEIT_GETRENNT" xml:space="preserve">
+    <value>Separate date and time-of-day columns</value>
+  </data>
+  <data name="FLOTTE_CSV_KONV_ANFANG" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="FLOTTE_CSV_KONV_ENDE" xml:space="preserve">
+    <value>End</value>
+  </data>
+  <data name="FLOTTE_CSV_LEISTUNG_KWH" xml:space="preserve">
+    <value>kWh per interval</value>
+  </data>
+  <data name="FLOTTE_CSV_SPALTE" xml:space="preserve">
+    <value>Column {0}</value>
+  </data>
 </root>
