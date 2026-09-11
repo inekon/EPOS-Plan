@@ -78,13 +78,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Liest einen Wert aus <c>Properties.Settings</c>; <c>null</c>, wenn es den
-        /// Schlüssel dort nicht gibt oder er leer ist. Der Zugriff läuft über den
-        /// Namensindex der <c>ApplicationSettingsBase</c> — ein unbekannter Name wirft
-        /// dort, deshalb der Fangblock.
+        /// Schlüssel dort nicht gibt oder er leer ist.
+        ///
+        /// <para><b>Auftrag #189 (Abnahmeliste).</b> <c>Properties.Settings</c> kennt nur die
+        /// NEUN Schlüssel des Einstellungsdialogs (<c>DBPath</c>, <c>DBName</c>, <c>PVGISUrl</c>,
+        /// <c>GeoKodierung</c>, <c>WordPressUrl</c>, <c>VDI3805Path</c>, <c>DBExportPath</c>,
+        /// <c>DBImportPath</c>, <c>AllgemeinPath</c>) — jeder REGISTRY-Schlüssel (z. B.
+        /// <c>LizenzAnker</c>, <c>LizenzZugestimmt</c>, <c>BedarfEinheit</c>, …) lief bis hierher
+        /// über den WERTindexer <c>this[schluessel]</c> der <c>ApplicationSettingsBase</c>, und
+        /// der wirft <c>SettingsPropertyNotFoundException</c> für einen unbekannten Namen — pro
+        /// Öffnen der Simulation zweimal (<c>LizenzManager</c> liest/schreibt seinen Anker über
+        /// die Schreibnaht). Die Sammlung <c>Properties.Settings.Default.Properties</c> wirft
+        /// dagegen NICHT: Ihr Indexer ist eine <c>SettingsPropertyCollection</c> und liefert für
+        /// einen unbekannten Namen schlicht <c>null</c> — deshalb hier die Vorabprüfung, statt
+        /// die Ausnahme als Steuerfluss zu nutzen.</para>
+        ///
+        /// <para>Der Fangblock bleibt — er fängt jetzt nur noch den ECHTEN Fehler (eine kaputte
+        /// oder nicht lesbare <c>user.config</c>), nicht mehr den erwarteten Fall „Schlüssel
+        /// unbekannt", der oben bereits abgefangen ist.</para>
         /// </summary>
         private static string AusSettings(string schluessel)
         {
             if (string.IsNullOrEmpty(schluessel)) return null;
+            if (Properties.Settings.Default.Properties[schluessel] == null) return null;
+
             try
             {
                 object wert = Properties.Settings.Default[schluessel];

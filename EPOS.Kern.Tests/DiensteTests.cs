@@ -330,6 +330,46 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  Properties.Settings — Auftrag #189
+        // ==================================================================
+
+        /// <summary>
+        /// Auftrag #189 (Abnahmeliste): <c>SettingsEinstellungen.AusSettings</c>
+        /// (die WinForms-Fassung von <see cref="IEinstellungen"/> in
+        /// <c>WindowsFormsApplication1/Dienste/</c>, hier ohne Windows nicht ladbar) griff
+        /// auf einen unbekannten Registry-Schluessel — z. B. <c>LizenzAnker</c>
+        /// (<c>LizenzManager</c>, ueber die Schreibnaht) — mit dem WERTindexer von
+        /// <c>Properties.Settings.Default</c> zu und fing die dabei geworfene
+        /// <c>SettingsPropertyNotFoundException</c> ab: Ausnahme als Steuerfluss, zweimal
+        /// je Oeffnen der Simulation. Die Behebung prueft seither VOR dem Wertzugriff den
+        /// SAMMLUNGSindexer <c>Properties.Settings.Default.Properties[schluessel]</c>, der
+        /// fuer einen unbekannten Namen schlicht <c>null</c> liefert statt zu werfen.
+        ///
+        /// <para><see cref="WindowsFormsApplication1.Properties.Settings"/> selbst liegt
+        /// PLATTFORMFREI im Kern (<c>System.Configuration.ConfigurationManager</c>, kein
+        /// WinForms-Bezug — anders als <c>SettingsEinstellungen</c>, das die Windows-Fassung
+        /// des Dienstes ist und deshalb keine eigene Kern-Naht hat). Die Behauptung, auf der
+        /// die Behebung beruht, ist damit OHNE Windows nachweisbar: Der Sammlungsindexer
+        /// wirft nicht, der Wertindexer fuer denselben unbekannten Namen schon — und ein
+        /// bekannter Schluessel bleibt an beiden Stellen unveraendert lesbar.</para>
+        /// </summary>
+        [Fact]
+        public void Properties_Settings_Sammlungsindexer_wirft_nicht_der_Wertindexer_fuer_unbekannte_Schluessel_schon()
+        {
+            const string unbekannt = "LizenzAnker";   // Registry-Schluessel, keiner der neun Settings-Werte
+
+            Assert.Null(WindowsFormsApplication1.Properties.Settings.Default.Properties[unbekannt]);
+            Assert.Throws<System.Configuration.SettingsPropertyNotFoundException>(
+                () => { object wert = WindowsFormsApplication1.Properties.Settings.Default[unbekannt]; });
+
+            // Ein bekannter Schluessel bleibt an beiden Indexern lesbar - die
+            // Vorabpruefung darf keinen der neun echten Werte verwerfen.
+            const string bekannt = "DBPath";
+            Assert.NotNull(WindowsFormsApplication1.Properties.Settings.Default.Properties[bekannt]);
+            Assert.IsType<string>(WindowsFormsApplication1.Properties.Settings.Default[bekannt]);
+        }
+
+        // ==================================================================
         //  Austauschbarkeit
         // ==================================================================
 

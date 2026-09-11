@@ -105,7 +105,11 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `ProtectedData`, `Application.ProductName` und die Zuordnung von Masken- und
   Gewerksschlüsseln zu Formularklassen:
   `WindowsDialogDienst`, `WindowsDateiDienst`, `WindowsPfade`, `RegistryEinstellungen`,
-  `SettingsEinstellungen` (Brücke zu `Properties.Settings`), `DpapiLizenzAblage`,
+  `SettingsEinstellungen` (Brücke zu `Properties.Settings`; **`AusSettings` prüft seit Auftrag
+  #189 den Sammlungsindexer `Properties.Settings.Default.Properties[schluessel]` VOR dem
+  Wertzugriff** — ein Registry-Schlüssel wie `LizenzAnker` kennt `Properties.Settings` nicht,
+  und der Wertindexer warf dafür bis dahin zweimal je Öffnen der Simulation eine
+  `SettingsPropertyNotFoundException`, die der Fangblock als Steuerfluss abfing), `DpapiLizenzAblage`,
   `WindowsGeraeteId`, `WindowsSprache`, `WinFormsNavigation`. **`FormStartProjektKontext`
   ist mit iU9‑W16b.3 gefallen** — der Projektkontext liegt seither als
   `EPOS.Kern/Controller/ProjektKontextCtrl` im Kern (K2).
