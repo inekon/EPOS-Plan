@@ -3675,6 +3675,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Katalogfilterregister`, gehört zu #212). Kein iOS-Lauf (trifft die Hülle nicht).
 > Gate sept24 auf `74a3bb1`: Kern 2655, UI 3722, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#216 (11.09.2026, `5ef1433`, Merge `bcd3725`) — Windows-Abnahme der Simulationsansicht (#207, drei Bildschirmfotos; Anwenderentscheid SIM‑E‑1).**
+> Die Kachel der Startseite heißt „Simulation starten" und startet den Lauf (`SimulationMarke.SCHRITT_LAUF`; bei Sperre Rückfall auf ① mit Grund).
+> Der Kopf ist eine rechtsbündige Werkzeugleiste (kompakte Ablaufleiste, „Ergebnis speichern" nur in ③, i/KI, „← zurück"); die Fußleiste des
+> Ergebnisses ist gefallen. Der Reiter „Parameter" ist entfallen (`ParameterReiter.razor` gelöscht): Die Netzverluste — sie werden gelesen, Weg
+> `KonfigurationCtrl` → `SimulationLaufCtrl.cs:72/118` → `SimulationWaermebedarf.cs:344-374` — stehen in ① im Abschnitt „Wärmebedarf" (Vorgabe 0 %,
+> wirkt nur bei Wärmebedarf); BHKW-Betriebsart und untere Leistungsgrenze, Heizstab und Betriebsbereitschaft sitzen als Parameterbereich an der
+> ERSTEN Karte ihrer Art (`ErzeugerKachel.Parameterbereich`); der Einzelspeicherblock steht im Reiter „Stromspeicher" unter „Einzelanlage
+> (klassischer Projektlauf)" und nur ohne aktivierte Flotte. Alle fünf Schreibwege bleiben (`SimulationParameterDienste` aus
+> `SimulationErgebnisHuelle.ParameterGaben()`); das Ergebnis macht mit der Übersicht auf. **Nebenbefund behoben:** `SimulationKonfigHuelle.Speichern`
+> schrieb die ganze `Tab_Einstellungen`-Zeile aus dem Arbeitsstand und hätte die fünf Laufparameter zurückgesetzt — `LaufparameterNachlesen()` liest
+> sie vor dem Schreiben nach. Fünf Ressourcen (`SIMKONF_GRP_WAERMEBEDARF`, `SIMKONF_HRL_NETZVERLUSTE`, `SIMKONF_GRP_LAUFPARAMETER`,
+> `SP_GRP_EINZELANLAGE`, `START_K_DETAILSIM_T`), `SIMERG_TAB_PARAMETER` entfernt; 13 neue bunit-Fälle, 11 der `ParameterReiterTests` gefallen;
+> Konzept Simulationsablauf Abschnitt 7. **Offen:** Windows-Abnahme; iOS liefert `SimulationGaben` weiter `null` (#208).
+>
+> **#218 (11.09.2026, `b9dc087`, Merge `bec51ec`) — Hilfe-Pille mit EPOS-Marke (Anwenderentscheid „KI-Knopf: Variante C + Variante D").**
+> `InfoKnopf.razor` zeichnet die Pille `.epos-hilfepille`: links das „i" als Inline-SVG (statt `help_icon.png`), rechts bei sichtbarem Assistenten
+> die nachgezeichnete EPOS-Plan-Marke (drei Felder PV-Blau/Grün/Orange, weiße Mitte, blauer Blitz; Token `--epos-ki-marke-*`). `KiKnopf.razor`
+> bleibt als Ring für Wirte ohne Info-Knopf und zeichnet dieselbe Marke; beide tragen `Aktiv` (Vorgabe `false`, füllt Feld bzw. Ring mit
+> `--epos-marke`) — noch von keinem Wirt gesetzt. Die Selektoren `.epos-infoknopf`/`.epos-kiknopf` bleiben (über 40 Dialogproben), dazu
+> `epos-hilfepille__feld[--aktiv]`. Textbeschriftung „KI" entfällt: `KI_KNOPF_HILFE` und `KI_KNOPF_DIALOG` ohne Leser entfernt,
+> `KI_KNOPF_DIALOG_TOOLTIP` bleibt. Fünf neue bunit-Fälle; Wiki-Quelle Hilfe-Assistent um den Satz zur Marke ergänzt.
+> **Offen:** Windows-Abnahme der Farben (bunit prüft nur Struktur); `Aktiv` setzen, sobald eine Ansicht `KI_ASSISTENT` steht.
+> Gate sept25 auf `bec51ec`: Kern 2 655, UI 3 729, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
