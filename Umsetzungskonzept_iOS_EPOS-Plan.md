@@ -3342,6 +3342,71 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 1030/1046 byte-gleich. Kein Diagnosebanner (P3), Kandidatentabelle nur lokalisiert (P4). Beim Merge: Ressourcenkonflikte am
 > Dateiende mit #185/#190 durch Vereinigung gelöst, Designer neu erzeugt. Gate auf `12db7da`: Kern 2507, UI 3512, SpeicherEngine 388,
 > SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 327, ChartProben 46, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#188 und #189 (11.09.2026, `4d62c31` und `de20c6a`, Merge `3c5ff0b`) — zwei Punkte der Abnahmeliste `iOS_Migration_Probleme`.**
+> **#188 Schema kürzt lange Bezeichner:** Ein Knotentitel, der breiter ist als seine Spalte, lief im Hydraulikschema über den
+> Kasten hinaus. Jetzt kürzt `SchemaLayout.TitelKuerzen` im Kern auf die verfügbare Breite (Spaltenbreite abzüglich beider
+> Knotenränder und des Rangversatzes der Kaskade, gemessen über `ZEICHEN_BREITE`) mit „…"; `Knotenflaeche.TitelAnzeige` trägt
+> die Anzeigefassung neben dem vollen `Titel`, `Schema.razor` zeichnet sie, Tooltip und `aria-label` führen weiter den vollen
+> Namen; die Windows-Hülle (`SimulationKonfigHuelle.SchemaAbbilden`) reicht das Feld durch. Acht neue Fälle (sechs Kern, zwei
+> bunit). **#189 `SettingsEinstellungen` prüft den Schlüssel vor dem Zugriff:** `AusSettings` fragte den Wertindexer von
+> `Properties.Settings` und fing die `SettingsPropertyNotFoundException` als Steuerfluss; jetzt prüft der Sammlungsindexer
+> (`Properties[schluessel] == null → null`), der Fangblock bleibt für eine verdorbene `user.config`. Ein Kern-Test belegt das
+> Verhalten beider Indexer am plattformfreien `Properties.Settings`-Typ. Referenzlauf 1030 byte-gleich (reine Anzeige und
+> Einstellungspfad). Gate auf `3c5ff0b`: Kern 2532, UI 3541, SpeicherEngine 388, SpeicherPlanung 27 + 1 übersprungen,
+> 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 46, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#187 (11.09.2026, `10a394a`, Merge `275479e`) — Abnahmeliste: doppelter Dialogtitel.** Die Überlagerung „Position bearbeiten"
+> trug den Titel zweimal — einmal im Kopf der `Ueberlagerung`, einmal in der eingebetteten Komponente, beide aus demselben
+> Ressourcenschlüssel (`VPOS_TITEL`, `KFAK_TITEL`, `KCASE_TITEL`). Eine Sichtung aller 102 Überlagerungen des Bestands (87 mit
+> Titel) fand **22** solche Dopplungen: die vier Kostendialoge in `KostenKomponenteDialog`, elf `NamensDialog`-Einbettungen der
+> Katalog- und Bedarfsdialoge, die Editor-Überlagerungen von `BhkwDialog` und `HeizkesselDialog`, `KlimazonenkarteDialog` in
+> `QuelleErdreichDialog` und `PufferSpProjektDialog` in `QuellePufferspeicherDialog`/`WaermesenkeDialog`. Alle folgen jetzt der
+> **Hausregel „Ein Titel, eine Stelle"** (W11b‑B‑9 als Regel in `EPOS.UI/CLAUDE.md`): Trägt die Überlagerung einen Titel, zeigt
+> die Komponente keinen eigenen — Bauart a) `TitelText` bleibt leer (Regelfall, in den Hüllen `KostenKomponenteHuelle`,
+> `KostenfaktorKatalogHuelle`, Helfer `OhneTitel`), Bauart b) `[Parameter] bool TitelAnzeigen = true`, wo `TitelText` noch etwas
+> anderes speist (Bildbeschreibung der Karte, Gruppenkopf des Bestandsblocks). Eine geteilte `Gaben()`-Methode, die auch ein
+> eigenständiges Fenster bedient, bleibt unverändert. **Wache** `EPOS.UI.Tests/UeberlagerungstitelTests.cs` (fünf Fälle, zwei
+> Bauarten: Markup mit identischem Bezeichner; Hülle mit gleichem Schlüssel in `.Titel` und `TitelText` derselben Methode) mit
+> Gegenprobe am eingefrorenen Vorher-Stand; drei bunit-Fälle. Restfall: die dritte Einbettung von `PufferSpProjektDialog` in
+> `SimulationKonfigSeite.razor` (Abgrenzung zu #190) → **#194** (`5c44276`, Merge `94bff2f`): `TitelAnzeigen="false"` an der
+> dritten Einbettung; die Wache prüft seither an jeder Einbettung mit Überlagerungstitel den Parameter selbst, auch ohne
+> `TitelText=` an der Stelle, und findet den alten Stand rot; bunit-Fall in `SimulationKonfigSeiteTests`. Gate auf `275479e`: Kern 2532, UI 3541, SpeicherEngine 388,
+> SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 46, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#193 (11.09.2026, `e0c81b0`, Merge `8b2bfc8`) — Stromspeicher-Dialoge Paket P4 (Konzept 2.5, Entscheid 11.09.2026): Größen-Sicht
+> der Flotte.** Die Rastersuche des Flottenoptimierers lieferte Kandidaten nur mit Kapazität, Leistung, Kapitalwert und
+> Zulässigkeit — ein arbeitsloser Kandidat war von einem arbeitenden nicht zu unterscheiden, und eine Größen-Sicht gab es für die
+> Flotte nicht (Befund SP‑O‑11). Jetzt trägt `FlottenKandidatZusammenfassung` je Kandidat Durchsatz, Vollzyklen, Bezugsspitze,
+> Betriebsersparnis, `Arbeitslos` (aus der Diagnose P1), C-Rate, Rasterindex und die Einheiten (`FlottenKandidatEinheit`), gefüllt
+> aus dem Kandidatenlauf, den der `FlottenOptimierer` ohnehin rechnet. Der Kern liefert die Anzeigedaten ohne Datenbank
+> (`SpeicherFlottenAnzeigeCtrl.Groessen`: `Rasterdaten` Summe oder je Einheit, Löcher als NaN; `Schnittdaten` über der Kapazität
+> bei fester C-Rate und `SchnittdatenLeistung` bei fester Kapazität; `Rasterbild`/`Schnittbild`; Kandidatenprofil und -zeilen
+> im Katalogfilter-Muster). `ChartRenderer.Optimierungsraster` bekommt zwei optionale Parameter — Schraffur der unzulässigen
+> Zellen und eine Fußzeile mit dem SP‑O‑4-Hinweis („endliches Raster") —, die 39 Bestandsbilder bleiben byte-gleich. Der
+> Baustein `SpeicherFlottenGroessenAnsicht` (Parameter `Ergebnis`, `Einheiten`, Ereignis `KandidatUebernehmen`) zeigt Rasterkarte
+> mit Einheitenwahl, die zwei Schnittkurven mit Schiebern (C-Rate bzw. Kapazität, Vorbelegung am Optimum) und die sortier- und
+> filterbare Kandidatentabelle mit Optimum-Zeile, Arbeitslos-Kennzeichen und „Kandidat übernehmen"; 51 Ressourcen
+> `FLOTTE_GROESSEN_*` de/en. **Noch nirgends eingehängt** — die Ansicht `STROMSPEICHER_AUSLEGUNG` aus P3 (#192) bindet ihn
+> nach beiden Merges ein. ChartProben 46 → **49** (41 Bilder, 8 Gegenproben); 42 neue Fälle (6 Engine, 19 Kern, 17 bunit).
+> Gate auf `8b2bfc8`: Kern 2532, UI 3541, SpeicherEngine 394, SpeicherPlanung 27 + 1 übersprungen, 5 eindeutige Warnungen,
+> SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#195 (11.09.2026, `7e3434b`, Merge `b17af66`) — SQL-Dialektprüfer: Namensauflösung in drei Stufen.** Das Gate auf `8b2bfc8`
+> meldete eine Fundstelle in `KomponentenUebernahmeCtrl.cs:344` — `DELETE FROM [<div class="epos-dialog-kopf">…]`: Die
+> Schleifenvariable `kind` (`foreach (string kind in plan.Kindtabellen)`) wurde über die gleichnamige Fixture-Konstante
+> `const string kind` der neuen Wache `UeberlagerungstitelTests` (#187) aufgelöst, weil der Kurzname damit in genau einer Klasse
+> vorkam. Zwei Ursachen im Werkzeug: `_lokale_namen` kannte nur `string x = …`/`var x = …`, nicht `foreach`, Parameter
+> (`out`/`ref`/`in`/`params`/`this`), Deklarationen ohne Zuweisung und Dekonstruktionen; und der Konstantenkatalog kam aus ALLEN
+> `.cs` des Repos statt aus dem Prüfbereich (`WURZELN`). Jetzt löst `_konstante` in drei Stufen auf — eigene Klasse geht immer
+> vor; erst ohne eigenen Treffer sperrt ein lokaler Name; sonst der Kurzname einer fremden Klasse (Hausregel W6.7) — und der Katalog
+> stammt aus `dateien_im_bereich`. Nebenbefund: Sechs Klassen (`Z_ProjGebCtrl`, `Z_ProjektGebGanglinieCtrl`, `StromspeicherSimCtrl`,
+> `Z_ProjektBrauchwasserCtrl`, `Z_ProjektProzesswaermeCtrl`, `Z_ProjektStromverbraucherCtrl`) führen eine klasseneigene
+> `const string sql` neben einem Parameter oder einer Variablen `sql`; die alte Reihenfolge „lokal vor eigener Klasse" hatte deren
+> 15 Konstantenbezüge seit jeher stillschweigend übersprungen — sie werden jetzt geprüft: **1 342 SQL-Texte, 0 Fundstellen,
+> 215 dynamisch, 1 127 in Ordnung** (vorher 1 327/1/214/1 112; per CSV-Vergleich keine andere Klassifikation geändert).
+> Selbsttest 35 Anweisungen (drei neue Tokenfälle: foreach-Name, Katalogbereich, eigene Klasse vor lokalem Namen); LIESMICH.
+> Gate auf `b17af66`: Kern 2532, UI 3541, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
