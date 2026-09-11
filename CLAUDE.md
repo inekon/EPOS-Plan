@@ -140,7 +140,12 @@ der Testdatenbank auf Schemastand 72 (#154) war der erste Fall dieser Regel: Lau
 `9999d51` wurde nach vier Minuten abgebrochen und zählt nicht als Nachweis. Der Nachzug auf
 **Schemastand 73** (Stromspeicher-Sync vom 11.09.2026) ist der zweite: Er trifft Kern,
 Oberfläche und Testdatenbank, nicht die Hülle — geprüft hat ihn `kern.yml` auf ubuntu, ein
-iOS-Lauf wurde nicht ausgelöst. Im Zweifel vor
+iOS-Lauf wurde nicht ausgelöst. Dieselbe Zurückhaltung gilt seit dem 11.09.2026
+(Anwenderentscheid „#160‑E‑1: CI") für den **Setup-Lauf** `.github/workflows/setup.yml`, der
+das Installationsprogramm auf `windows-latest` baut: Der Windows-Läufer zählt **doppelt** und
+ein Lauf braucht bis zu einer Stunde (Veröffentlichung, 186 MB Herstellerdaten,
+LZMA2-Solidkompression), deshalb hat er **nur** `workflow_dispatch` — *Actions → Setup → Run
+workflow*, nicht bei Push. Im Zweifel vor
 dem Auslösen nachfragen.
 
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**

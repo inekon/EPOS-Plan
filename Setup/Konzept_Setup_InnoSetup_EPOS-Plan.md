@@ -683,6 +683,14 @@ scheitert aber vorerst an der Vorlagendatenbank: 92 MB Binärdatei mit
 Kundenbezug gehören nicht in ein Repository. Solange dieser Schritt manuell ist,
 bleibt die Kette es auch.
 
+> **Nachtrag 11.09.2026:** Der Einwand ist erledigt. Die Vorlagendatenbank liegt
+> nicht mehr im Repository, sondern **entsteht im Lauf** aus einer benannten
+> Quelle (`Werkzeuge\Auslieferungsvorlage`, Abschnitt 6.1) — in der CI aus
+> `Referenzlaeufe/Kenndaten_Test.sqlite`. Damit gibt es den Job: `setup.yml`,
+> siehe „Lauf in der CI" am Ende von 8.1. Handarbeit bleibt allein die
+> Auslieferung selbst, deren Quelle ein gepflegter Katalogstand vom
+> Arbeitsplatz ist.
+
 ### 8.1 Laufanleitung Windows
 
 Anlass (Anwender, 10.09.2026): Inno Setup läuft nicht zentral installiert,
@@ -727,6 +735,27 @@ vollständigen Handlauf.
    `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` und — sobald `ISCC.exe` lief —
    dessen Meldungen (Erfolg mit Pfad und Größe, oder der Fehlertext mit
    Zeilennummer im `.iss`).
+
+**Lauf in der CI (Anwenderentscheid „#160‑E‑1: CI" vom 11.09.2026).** Dieselbe
+Kette fährt `.github/workflows/setup.yml` auf `windows-latest`, weil es Anwender
+und Agenten gibt, die weder Windows noch Inno Setup zur Hand haben. Ausgelöst
+wird sie **nur von Hand** — GitHub → Actions → **Setup** → *Run workflow* (kein
+Push-, kein Zeitauslöser: der Windows-Läufer zählt doppelt, und Veröffentlichung,
+186 MB Herstellerdaten und LZMA2-Solidkompression füllen den Lauf; Zeitlimit 60
+Minuten, Häkchen „schnell" schaltet auf `lzma2/normal`). Der Job lädt den
+WebView2-Bootstrapper nach (er steht in `.gitignore` und fehlt im Klon), prüft
+`ISCC.exe` im Runner-Image und ruft dann Schritt 3 von oben mit
+`-Quelldatenbank Referenzlaeufe/Kenndaten_Test.sqlite -Kataloge alle`, ohne
+`-Beispiele` — das Repository führt keinen gepflegten Beispielsatz, und ohne den
+Schalter bleibt die Vorlage projektfrei (6.1, Schritt 4). Zurück kommen drei
+Dinge, 14 Tage lang: der übersetzte Installer aus `Setup\Ausgabe`, der
+Prüfbericht der Vorlage (er steht zusätzlich im Lauf selbst — er ist der Beleg,
+dass keines der 24 Prüfprojekte in den Installer gewandert ist) und das
+Skriptprotokoll. **Grenzen:** Das Ergebnis ist ein Prüfstück, kein
+Auslieferungsstand — die Quelle ist die Testdatenbank, nicht der gepflegte
+Katalogstand. Signiert wird nicht (Abschnitt 9; der Job hat bewusst keine
+Geheimnisse), installiert wird nicht, gestartet wird nicht: Die Freigabeprobe
+oben bleibt Handarbeit auf einer frischen Windows-Installation.
 
 ---
 
