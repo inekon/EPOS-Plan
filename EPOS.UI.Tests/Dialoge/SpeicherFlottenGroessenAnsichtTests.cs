@@ -100,12 +100,12 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         // Ohne bestes Kandidat kennt die Zweierflotte keine Optimum-Stelle; die
         // Schieber beginnen deshalb vorn auf der Achse.
         Assert.Equal(-1, cut.Instance.GewaehlteEinheit);
-        Assert.Equal(20.0, cut.Instance.GewaehlteKapazitaet, 9);
+        Assert.Equal(20.0, cut.Instance.GewaehlterZeilenwert, 9);
 
         Auswahl(cut, Resource.FLOTTE_GROESSEN_LBL_EINHEIT).Change("0");
 
         Assert.Equal(0, cut.Instance.GewaehlteEinheit);
-        Assert.Equal(10.0, cut.Instance.GewaehlteKapazitaet, 9);
+        Assert.Equal(10.0, cut.Instance.GewaehlterZeilenwert, 9);
     }
 
     /// <summary>
@@ -117,14 +117,14 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
     {
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
 
-        Assert.Equal(1.0, cut.Instance.GewaehlteCRate, 9);
-        Assert.Equal(20.0, cut.Instance.GewaehlteKapazitaet, 9);
+        Assert.Equal(1.0, cut.Instance.GewaehlterSpaltenwert, 9);
+        Assert.Equal(20.0, cut.Instance.GewaehlterZeilenwert, 9);
 
         Schieber(cut, Resource.FLOTTE_GROESSEN_LBL_CRATE).Change("0");
-        Assert.Equal(0.5, cut.Instance.GewaehlteCRate, 9);
+        Assert.Equal(0.5, cut.Instance.GewaehlterSpaltenwert, 9);
 
         Schieber(cut, Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET).Change("2");
-        Assert.Equal(30.0, cut.Instance.GewaehlteKapazitaet, 9);
+        Assert.Equal(30.0, cut.Instance.GewaehlterZeilenwert, 9);
     }
 
     /// <summary>Eine Stelle außerhalb der Achse wird geklemmt statt eine leere Kurve zu zeigen.</summary>
@@ -135,8 +135,98 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
 
         Schieber(cut, Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET).Change("99");
 
-        Assert.Equal(30.0, cut.Instance.GewaehlteKapazitaet, 9);
+        Assert.Equal(30.0, cut.Instance.GewaehlterZeilenwert, 9);
         Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
+    }
+
+    // =====================================================================
+    //  Die Achsen folgen der Größenkopplung (Auftrag #226)
+    // =====================================================================
+
+    /// <summary>
+    /// Im Modus <c>KapazitaetUndLeistung</c> heißen die zwei Schieber „Leistung des
+    /// Schnitts" und „Kapazität des Schnitts" — von der C-Rate ist keine Rede mehr.
+    /// </summary>
+    /// <remarks>
+    /// Das ist der Anwenderbefund vom 11.09.2026 an der Oberfläche: Wer Kapazität UND
+    /// Leistung rastert, will auch beide sehen.
+    /// </remarks>
+    [Fact]
+    public void Im_Kapazitaet_mal_Leistung_Modus_waehlen_die_Schieber_Leistung_und_Kapazitaet()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, KapazitaetUndLeistung()));
+
+        Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndLeistung, cut.Instance.Achsenmodus);
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_LEISTUNG, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET, cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_GROESSEN_LBL_CRATE, cut.Markup, StringComparison.Ordinal);
+
+        // Der obere Schieber steht auf der LEISTUNG des Optimums (10 kW), der untere
+        // auf seiner Kapazität (20 kWh).
+        Assert.Equal(10.0, cut.Instance.GewaehlterSpaltenwert, 9);
+        Assert.Equal(20.0, cut.Instance.GewaehlterZeilenwert, 9);
+        Assert.Contains(SpeicherFlottenAnzeigeCtrl.Werttext(Flottenachsengroesse.Leistung, 10.0),
+            cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Die drei Bildbeschreibungen folgen demselben Modus — ein <c>alt</c>-Text, der
+    /// von einer C-Rate spräche, wäre für eine Sprachausgabe schlicht falsch.
+    /// </summary>
+    [Fact]
+    public void Die_Bildbeschreibungen_folgen_der_Kopplung()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, KapazitaetUndLeistung()));
+
+        IReadOnlyList<IElement> bilder = cut.FindAll("img.epos-chartbild");
+        Assert.Equal(3, bilder.Count);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER_KW, bilder[0].GetAttribute("alt"));
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW, bilder[1].GetAttribute("alt"));
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].GetAttribute("alt"));
+    }
+
+    /// <summary>
+    /// Im Modus <c>LeistungUndCRate</c> wählt der obere Schieber die C-Rate und der
+    /// untere die LEISTUNG; die Kapazität steht nur noch auf der zweiten Kurve.
+    /// </summary>
+    [Fact]
+    public void Im_Leistung_mal_CRate_Modus_waehlt_der_untere_Schieber_die_Leistung()
+    {
+        FlottenAuslegungErgebnis e = Ergebnis();
+        e.Achsenmodus = FlottenAuslegungsmodus.LeistungUndCRate;
+
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, e));
+
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_CRATE, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_LEISTUNG, cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET, cut.Markup,
+            StringComparison.Ordinal);
+
+        // Der beste Kandidat der Prüfstands-Flotte trägt 20 kW bei 1,0 C.
+        Assert.Equal(20.0, cut.Instance.GewaehlterZeilenwert, 9);
+        Assert.Equal(1.0, cut.Instance.GewaehlterSpaltenwert, 9);
+    }
+
+    /// <summary>
+    /// Der Modus <c>KapazitaetUndCRate</c> bleibt der Stand vor #226: C-Rate oben,
+    /// Kapazität unten.
+    /// </summary>
+    [Fact]
+    public void Der_CRaten_Modus_behaelt_seine_zwei_Schieber()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
+
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_CRATE, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET, cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_GROESSEN_LBL_LEISTUNG, cut.Markup,
+            StringComparison.Ordinal);
+
+        IReadOnlyList<IElement> bilder = cut.FindAll("img.epos-chartbild");
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER, bilder[0].GetAttribute("alt"));
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT, bilder[1].GetAttribute("alt"));
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].GetAttribute("alt"));
     }
 
     // =====================================================================
@@ -328,6 +418,29 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         => cut.FindAll("th").First(x => x.TextContent.Contains(titel, StringComparison.Ordinal))
               .QuerySelector(".epos-trichter")!;
 
+    /// <summary>
+    /// DER FALL DES ANWENDERS (11.09.2026) im Kleinen: Größenkopplung „Kapazität und
+    /// Leistung", drei Kapazitäten × zwei Leistungen — ein volles Gitter, das Optimum
+    /// bei 20 kWh / 10 kW.
+    /// </summary>
+    private static FlottenAuslegungErgebnis KapazitaetUndLeistung()
+    {
+        FlottenKandidatZusammenfassung bester = Kandidat("KL-20-10", 20, 10, 2000, true, 220);
+        var kandidaten = new List<FlottenKandidatZusammenfassung>();
+        foreach (double kapazitaet in new[] { 10.0, 20.0, 30.0 })
+            foreach (double leistung in new[] { 5.0, 10.0 })
+                kandidaten.Add(Math.Abs(kapazitaet - 20.0) < 1e-9 && Math.Abs(leistung - 10.0) < 1e-9
+                    ? bester
+                    : Kandidat($"KL-{kapazitaet}-{leistung}", kapazitaet, leistung,
+                               100.0 * kapazitaet + 10.0 * leistung, true, 50));
+
+        return new FlottenAuslegungErgebnis
+        {
+            Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+            Kandidaten = kandidaten,
+            BesterKandidat = bester
+        };
+    }
     /// <summary>
     /// Derselbe synthetische 3 × 2-Prüfstand wie in
     /// <c>EPOS.Kern.Tests/SpeicherFlottenGroessenCtrlTests</c>: sieben Kandidaten,

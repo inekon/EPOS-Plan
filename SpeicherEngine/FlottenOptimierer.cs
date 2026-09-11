@@ -58,7 +58,12 @@ public static class FlottenOptimierer
             throw new ArgumentException($"Das vollstaendige Raster umfasst {totalLong} Kandidaten und ueberschreitet die Grenze " +
                 $"{basis.Auslegung.MaximaleKandidaten}. Das Raster wurde nicht gekuerzt.");
 
+        // Die Groessenkopplung der ERSTEN aktiven Suchachse geht ins Ergebnis (Auftrag
+        // #226): Sie sagt der Groessen-Sicht, welche zwei Groessen die Karte aufspannt.
+        // Ohne aktive Achse gibt es kein Raster - dann bleibt die Vorbelegung stehen.
         var result = new FlottenAuslegungErgebnis();
+        var ersteAchse = basis.Auslegung.Achsen.FirstOrDefault(x => x.Aktiv);
+        if (ersteAchse is not null) result.Achsenmodus = ersteAchse.Modus;
         var done = 0;
         var bestValue = double.NegativeInfinity;
         bool? nullFeasible = null;

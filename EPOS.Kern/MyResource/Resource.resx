@@ -18540,4 +18540,34 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SIM_BEREICH" xml:space="preserve">
     <value>Der Wert für „{0}“ muss zwischen {1} und {2} liegen.</value>
   </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER_KW" xml:space="preserve">
+    <value>Rasterkarte der Auslegung: Kapitalwert über Kapazität und Entladeleistung, unzulässige Punkte schraffiert</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_RASTER_KW_C" xml:space="preserve">
+    <value>Rasterkarte der Auslegung: Kapitalwert über Entladeleistung und C-Rate, unzulässige Punkte schraffiert</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW" xml:space="preserve">
+    <value>Schnittkurve: Kapitalwert über der Kapazität bei fester Entladeleistung</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEI_BEI_C" xml:space="preserve">
+    <value>Schnittkurve: Kapitalwert über der Entladeleistung bei fester C-Rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER_KW" xml:space="preserve">
+    <value>Kapitalwert über Kapazität und Entladeleistung</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_RASTER_KW_C" xml:space="preserve">
+    <value>Kapitalwert über Entladeleistung und C-Rate</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW" xml:space="preserve">
+    <value>Schnitt bei {0} kW — Kapitalwert über der Kapazität</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C" xml:space="preserve">
+    <value>Schnitt bei {0} C — Kapitalwert über der Entladeleistung</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_LBL_LEISTUNG" xml:space="preserve">
+    <value>Leistung des Schnitts</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_WERT_LEISTUNG" xml:space="preserve">
+    <value>{0} kW</value>
+  </data>
 </root>

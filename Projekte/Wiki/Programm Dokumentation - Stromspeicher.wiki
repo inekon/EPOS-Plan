@@ -251,6 +251,8 @@ Nach einer '''Rastersuche''' steht vor der Kandidatentabelle die Größen-Sicht:
 
 '''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
 
+'''Die Achsen folgen der Größenkopplung''' der Suchachse aus Schritt 1: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
+
 '''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird.
 
 === Beim Verlassen ===

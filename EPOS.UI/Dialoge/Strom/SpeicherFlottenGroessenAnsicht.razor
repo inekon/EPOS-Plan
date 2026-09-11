@@ -21,6 +21,17 @@
    1). Die Hausregel dahinter ist dieselbe wie in der Ergebnisansicht (#184):
    Fachaussagen stehen im Kern, damit iOS sie nicht ein zweites Mal bekommt.
 
+   DIE ACHSEN FOLGEN DER GROESSENKOPPLUNG (Auftrag #226, Anwenderbefund vom
+   11.09.2026). Bis dahin stand die C-Rate immer auf der Spaltenachse - auch bei
+   einer Suche ueber Kapazitaet UND Leistung, wo P/C gar kein Gitter bildet: Aus
+   13 x 13 Kandidaten wurde eine krumme C-Raten-Achse mit ueberwiegend Loechern,
+   und die Loecher zeichnete der Renderer in der Minimumfarbe. Seither sagt
+   FlottenAuslegungErgebnis.Achsenmodus, welche zwei Groessen die Karte
+   aufspannt; Schieberbeschriftung, Einheit und Bildbeschreibung holt dieser
+   Baustein zu jedem Modus aus dem Kern (Schiebertext, Werttext,
+   Rasterbeschreibung, Schnittbeschreibung) - dieselben Texte, die dort in die
+   Bilder geschrieben werden.
+
    GEFILTERT WIRD VOR DER TABELLE, nie in ihr (W14a-E-10): Der Filterstand
    liegt hier, Katalogfilter.Anwenden im Kern schraenkt ein, und die Tabelle
    bekommt die bereits eingeschraenkte Liste. Profil und Zeilen baut
@@ -94,39 +105,44 @@
                                          AuswahlChanged="EinheitGesetzt" />
                         </div>
                     }
-                    <ChartBild Png="@_rasterbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_RASTER" />
+                    <ChartBild Png="@_rasterbild" Alt="@Rasterbeschreibung" />
                 </section>
 
                 <section class="epos-simerg-block">
                     <div class="epos-flotte-groessen-steuerung">
-                        @* DER C-RATEN-SCHIEBER laeuft ueber die STELLEN der Achse, nicht
+                        @* DIE ZWEI SCHIEBER laufen ueber die STELLEN der Achse, nicht
                            ueber die Werte: Die Stuetzstellen einer Rastersuche sind
                            nicht gleichmaessig verteilt (die Achse nimmt ihre exakte
                            Obergrenze zusaetzlich auf), und ein Schieber, der dazwischen
-                           stehen bleiben koennte, zeigte eine Kurve, die es nicht gibt. *@
+                           stehen bleiben koennte, zeigte eine Kurve, die es nicht gibt.
+
+                           WELCHE GROESSE sie waehlen, sagt die Groessenkopplung der
+                           Suche (Auftrag #226) - oben die Spaltenachse, unten die
+                           Zeilenachse; Beschriftung und Einheit kommen aus dem Kern,
+                           damit im Bild und daneben dasselbe steht. *@
                         <label class="epos-feld epos-flotte-groessen-schieber">
-                            <span class="epos-feld-text">@Resource.FLOTTE_GROESSEN_LBL_CRATE</span>
+                            <span class="epos-feld-text">@Spaltenschieber</span>
                             <span class="epos-feld-zeile">
-                                <input type="range" min="0" max="@(_raster.CRaten.Count - 1)" step="1"
-                                       value="@_spalte" aria-label="@Resource.FLOTTE_GROESSEN_LBL_CRATE"
-                                       aria-valuetext="@CRatentext" @onchange="SpalteGesetzt" />
-                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@CRatentext</span>
+                                <input type="range" min="0" max="@(_raster.Spaltenwerte.Count - 1)" step="1"
+                                       value="@_spalte" aria-label="@Spaltenschieber"
+                                       aria-valuetext="@Spaltentext" @onchange="SpalteGesetzt" />
+                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@Spaltentext</span>
                             </span>
                         </label>
 
                         <label class="epos-feld epos-flotte-groessen-schieber">
-                            <span class="epos-feld-text">@Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET</span>
+                            <span class="epos-feld-text">@Zeilenschieber</span>
                             <span class="epos-feld-zeile">
-                                <input type="range" min="0" max="@(_raster.KapazitaetenKwh.Count - 1)" step="1"
-                                       value="@_zeile" aria-label="@Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET"
-                                       aria-valuetext="@Kapazitaetstext" @onchange="ZeileGesetzt" />
-                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@Kapazitaetstext</span>
+                                <input type="range" min="0" max="@(_raster.Zeilenwerte.Count - 1)" step="1"
+                                       value="@_zeile" aria-label="@Zeilenschieber"
+                                       aria-valuetext="@Zeilentext" @onchange="ZeileGesetzt" />
+                                <span class="epos-flotte-groessen-wert" aria-hidden="true">@Zeilentext</span>
                             </span>
                         </label>
                     </div>
 
-                    <ChartBild Png="@_schnittbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_SCHNITT" />
-                    <ChartBild Png="@_leistungsbild" Alt="@Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" />
+                    <ChartBild Png="@_spaltenbild" Alt="@Spaltenbeschreibung" />
+                    <ChartBild Png="@_zeilenbild" Alt="@Zeilenbeschreibung" />
                 </section>
             </div>
         }
@@ -306,11 +322,14 @@
     /// <summary>Die gewählte Einheit — <c>-1</c> = die Summe der Flotte (Prüfhilfe).</summary>
     public int GewaehlteEinheit => _einheit;
 
-    /// <summary>Die C-Rate des gezeigten Schnitts (Prüfhilfe).</summary>
-    public double GewaehlteCRate => Achsenwert(_raster.CRaten, _spalte);
+    /// <summary>Der festgehaltene SPALTENwert des ersten Schnitts (Prüfhilfe).</summary>
+    public double GewaehlterSpaltenwert => Achsenwert(_raster.Spaltenwerte, _spalte);
 
-    /// <summary>Die Kapazität des gezeigten Leistungsschnitts (Prüfhilfe).</summary>
-    public double GewaehlteKapazitaet => Achsenwert(_raster.KapazitaetenKwh, _zeile);
+    /// <summary>Der festgehaltene ZEILENwert des zweiten Schnitts (Prüfhilfe).</summary>
+    public double GewaehlterZeilenwert => Achsenwert(_raster.Zeilenwerte, _zeile);
+
+    /// <summary>Die Größenkopplung, der die Achsen folgen (Prüfhilfe, Auftrag #226).</summary>
+    public FlottenAuslegungsmodus Achsenmodus => _raster.Modus;
 
     /// <summary>Die Kandidatenzeilen nach Filter und Sortierung (Prüfhilfe).</summary>
     public IReadOnlyList<Katalogfilterzeile> SichtbareZeilen => Zeilen;
@@ -321,7 +340,7 @@
 
     private FlottenAuslegungErgebnis? _gezeichnet;
     private FlottenRasterdaten _raster = FlottenRasterdaten.Leer;
-    private byte[]? _rasterbild, _schnittbild, _leistungsbild;
+    private byte[]? _rasterbild, _spaltenbild, _zeilenbild;
     private string _offen = "";
     private int _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
 
@@ -375,8 +394,8 @@
         if (_raster.IstLeer)
         {
             _rasterbild = null;
-            _schnittbild = null;
-            _leistungsbild = null;
+            _spaltenbild = null;
+            _zeilenbild = null;
             return;
         }
 
@@ -384,13 +403,14 @@
         // liegen, auf der das markierte Beste steht. Ohne Optimum beginnt die Achse vorn.
         if (_spalte < 0) _spalte = Math.Max(_raster.BesteSpalte, 0);
         if (_zeile < 0) _zeile = Math.Max(_raster.BesteZeile, 0);
-        _spalte = Math.Clamp(_spalte, 0, _raster.CRaten.Count - 1);
-        _zeile = Math.Clamp(_zeile, 0, _raster.KapazitaetenKwh.Count - 1);
+        _spalte = Math.Clamp(_spalte, 0, _raster.Spaltenwerte.Count - 1);
+        _zeile = Math.Clamp(_zeile, 0, _raster.Zeilenwerte.Count - 1);
 
         _rasterbild = SpeicherFlottenAnzeigeCtrl.Rasterbild(Ergebnis, _einheit, Einheitenname(_einheit));
-        _schnittbild = SpeicherFlottenAnzeigeCtrl.Schnittbild(Ergebnis, _raster.CRaten[_spalte], _einheit);
-        _leistungsbild = SpeicherFlottenAnzeigeCtrl.SchnittbildLeistung(
-            Ergebnis, _raster.KapazitaetenKwh[_zeile], _einheit);
+        _spaltenbild = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(
+            Ergebnis, _raster.Spaltenwerte[_spalte], _einheit);
+        _zeilenbild = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiZeile(
+            Ergebnis, _raster.Zeilenwerte[_zeile], _einheit);
     }
 
     // --- Einheitenwahl und Schieber -------------------------------------------
@@ -422,13 +442,13 @@
 
     private void SpalteGesetzt(ChangeEventArgs e)
     {
-        _spalte = Stelle(e, _raster.CRaten.Count);
+        _spalte = Stelle(e, _raster.Spaltenwerte.Count);
         Zeichnen();
     }
 
     private void ZeileGesetzt(ChangeEventArgs e)
     {
-        _zeile = Stelle(e, _raster.KapazitaetenKwh.Count);
+        _zeile = Stelle(e, _raster.Zeilenwerte.Count);
         Zeichnen();
     }
 
@@ -455,11 +475,34 @@
         ? Resource.FLOTTE_EMPF_BESTE
         : Resource.FLOTTE_EMPF_KEINE_ZULAESSIGE;
 
-    private string CRatentext => string.Format(Kultur, Resource.FLOTTE_GROESSEN_WERT_CRATE,
-        Zahl(Achsenwert(_raster.CRaten, _spalte), "0.###"));
+    // --- Die Texte der zwei Schieber und der drei Bilder (Auftrag #226) --------
+    //
+    // Sie kommen SAMTLICH aus dem Kern: Titel und Achsentitel schreibt er selbst ins
+    // PNG, und stuenden Schieber- und Alt-Texte daneben noch einmal hier, liefen die
+    // zwei Fassungen beim ersten neuen Achsenmodus auseinander.
 
-    private string Kapazitaetstext => string.Format(Kultur, Resource.FLOTTE_GROESSEN_WERT_KAPAZITAET,
-        Zahl(Achsenwert(_raster.KapazitaetenKwh, _zeile), "0.#"));
+    private string Spaltenschieber
+        => SpeicherFlottenAnzeigeCtrl.Schiebertext(_raster.Spaltengroesse);
+
+    private string Zeilenschieber
+        => SpeicherFlottenAnzeigeCtrl.Schiebertext(_raster.Zeilengroesse);
+
+    private string Spaltentext => SpeicherFlottenAnzeigeCtrl.Werttext(
+        _raster.Spaltengroesse, Achsenwert(_raster.Spaltenwerte, _spalte));
+
+    private string Zeilentext => SpeicherFlottenAnzeigeCtrl.Werttext(
+        _raster.Zeilengroesse, Achsenwert(_raster.Zeilenwerte, _zeile));
+
+    private string Rasterbeschreibung
+        => SpeicherFlottenAnzeigeCtrl.Rasterbeschreibung(_raster.Modus);
+
+    /// <summary>Der erste Schnitt läuft über der ZEILENgröße, festgehalten ist die Spalte.</summary>
+    private string Spaltenbeschreibung => SpeicherFlottenAnzeigeCtrl.Schnittbeschreibung(
+        _raster.Zeilengroesse, _raster.Spaltengroesse);
+
+    /// <summary>Der zweite Schnitt läuft über der GEGENgröße, festgehalten ist die Zeile.</summary>
+    private string Zeilenbeschreibung => SpeicherFlottenAnzeigeCtrl.Schnittbeschreibung(
+        SpeicherFlottenAnzeigeCtrl.Gegengroesse(_raster.Modus), _raster.Zeilengroesse);
 
     // --- Filter, Sortierung, Tabelle ------------------------------------------
 
@@ -555,7 +598,4 @@
 
     private Task Uebernehmen(FlottenKandidatZusammenfassung? kandidat)
         => kandidat is null ? Task.CompletedTask : KandidatUebernehmen.InvokeAsync(kandidat);
-
-    private static string Zahl(double wert, string format)
-        => double.IsFinite(wert) ? wert.ToString(format, Kultur) : "—";
 }

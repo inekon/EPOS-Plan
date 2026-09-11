@@ -649,6 +649,30 @@ namespace ChartProben
                             leistungsachse[RASTER_BESTE_SPALTE],
                             rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
 
+            // =========================================================================
+            // 41 - die GROESSENKOPPLUNG "Kapazitaet und Leistung" (#226)
+            // =========================================================================
+            //
+            // Der Fall des Anwenders vom 11.09.2026: 13 x 13 = 169 Kandidaten auf einem
+            // Kapazitaet x Leistung-Gitter (20...500 in Schritten von 40). Beide Achsen
+            // sind das eingegebene Raster, die Matrix ist LUECKENLOS - und genau das
+            // unterscheidet dieses Bild von der C-Raten-Karte darueber, in der dieselben
+            // Kandidaten auf 137 krumme Spalten mit ueberwiegend Loechern fielen.
+            double[] kapLeistungAchse = new double[13];
+            for (int i = 0; i < 13; i++) kapLeistungAchse[i] = 20.0 + 40.0 * i;
+            double[][] kapLeistungWerte = Leistungsfeld(kapLeistungAchse, kapLeistungAchse);
+
+            Pruefe(ziel, "flottenraster_leistung", 860, 560,
+                   new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
+                           ChartRenderer.C_RASTER_GUT, SKColors.Black },
+                   () => ChartRenderer.Optimierungsraster(
+                            "Kapitalwert über Kapazität und Entladeleistung",
+                            "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                            kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                            LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                            "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. "
+                            + "Zwischen zwei Stützstellen ist nichts gerechnet."));
+
             // --- Die JAHRESPROJEKTION der Speicherflotte (#184, P2) ------------------
             //
             // Saeulen je Projektjahr, Linie kumuliert, Ersatzjahre markiert. Das Bild
@@ -766,6 +790,30 @@ namespace ChartProben
                         "C-Rate [1/h]", "Kapazität [kWh]", "Kapitalwert [€]",
                         rasterCRaten, rasterKapazitaeten, rasterWerte,
                         RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE, rasterSperre));
+
+            // Und dasselbe fuer das LOCH (#226): Bis dahin bekam jede nicht gerechnete
+            // Stelle die MINIMUMFARBE - eine Aussage ueber eine Variante, die es nie
+            // gab. Die Gegenprobe stellt zwei Raster nebeneinander, die sich in genau
+            // EINER Zelle unterscheiden: einmal NaN, einmal der kleinste Wert des
+            // Feldes. Vor der Behebung waren beide Bilder byte-gleich (beide rot);
+            // Masse, Farben und Determinismus haetten das nie bemerkt. Skalengrenzen
+            // und damit alle uebrigen Zellen bleiben gleich, weil das Minimum an der
+            // Ecke [12][12] stehen bleibt.
+            double loch = kapLeistungWerte.SelectMany(z => z).Min();
+
+            Unterschiedlich("flottenraster_loch_ist_kein_minimum",
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse,
+                        MitStelle(kapLeistungWerte, 0, 0, double.NaN),
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE),
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse,
+                        MitStelle(kapLeistungWerte, 0, 0, loch),
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE));
 
             // Dasselbe fuer die ERSATZJAHR-MARKE der Jahresprojektion (#184): Masse,
             // Farben und Determinismus stimmen auch dann, wenn die Marke stillschweigend
@@ -988,6 +1036,43 @@ namespace ChartProben
             var w = new double[cRaten.Length];
             for (int s = 0; s < cRaten.Length; s++) w[s] = cRaten[s] * kapazitaetKwh;
             return w;
+        }
+
+        /// <summary>Das Optimum des Kapazitaet-x-Leistung-Feldes: 220 kWh (Zeile 5).</summary>
+        private const int LEISTUNGSFELD_BESTE_ZEILE = 5;
+
+        /// <summary>Siehe <see cref="LEISTUNGSFELD_BESTE_ZEILE"/>: 140 kW (Spalte 3).</summary>
+        private const int LEISTUNGSFELD_BESTE_SPALTE = 3;
+
+        /// <summary>
+        /// Das synthetische Feld der GROESSENKOPPLUNG "Kapazitaet und Leistung" (#226):
+        /// eine nach unten geoeffnete Flaeche mit dem Scheitel bei 220 kWh und 140 kW.
+        /// Das Minimum liegt an der Ecke [12][12] - dort bleibt es auch, wenn die
+        /// Gegenprobe die Zelle [0][0] veraendert.
+        /// </summary>
+        private static double[][] Leistungsfeld(double[] kapazitaeten, double[] leistungen)
+        {
+            var feld = new double[kapazitaeten.Length][];
+            for (int i = 0; i < kapazitaeten.Length; i++)
+            {
+                feld[i] = new double[leistungen.Length];
+                for (int s = 0; s < leistungen.Length; s++)
+                {
+                    double c = kapazitaeten[i], p = leistungen[s];
+                    feld[i][s] = 5000.0
+                               - (c - 220.0) * (c - 220.0) / 100.0
+                               - (p - 140.0) * (p - 140.0) / 50.0;
+                }
+            }
+            return feld;
+        }
+
+        /// <summary>Eine KOPIE des Feldes mit genau EINER veraenderten Stelle.</summary>
+        private static double[][] MitStelle(double[][] feld, int zeile, int spalte, double wert)
+        {
+            var kopie = feld.Select(z => (double[])z.Clone()).ToArray();
+            kopie[zeile][spalte] = wert;
+            return kopie;
         }
 
         // =================================================================================

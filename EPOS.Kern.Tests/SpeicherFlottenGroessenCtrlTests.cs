@@ -63,8 +63,8 @@ namespace EPOS.Kern.Tests
         {
             FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(Ergebnis());
 
-            Assert.Equal(new[] { 10.0, 20.0, 30.0 }, raster.KapazitaetenKwh);
-            Assert.Equal(new[] { 0.5, 1.0 }, raster.CRaten);
+            Assert.Equal(new[] { 10.0, 20.0, 30.0 }, raster.Zeilenwerte);
+            Assert.Equal(new[] { 0.5, 1.0 }, raster.Spaltenwerte);
             Assert.Equal(1000.0, raster.Werte[0][0], 9);
             Assert.Equal(2000.0, raster.Werte[1][1], 9);
             Assert.False(raster.IstLeer);
@@ -168,12 +168,12 @@ namespace EPOS.Kern.Tests
             FlottenRasterdaten erste = SpeicherFlottenAnzeigeCtrl.Rasterdaten(ergebnis, 0);
             FlottenRasterdaten zweite = SpeicherFlottenAnzeigeCtrl.Rasterdaten(ergebnis, 1);
 
-            Assert.Equal(new[] { 20.0, 40.0 }, summe.KapazitaetenKwh);
-            Assert.Equal(new[] { 10.0, 20.0 }, erste.KapazitaetenKwh);
-            Assert.Equal(erste.KapazitaetenKwh, zweite.KapazitaetenKwh);
+            Assert.Equal(new[] { 20.0, 40.0 }, summe.Zeilenwerte);
+            Assert.Equal(new[] { 10.0, 20.0 }, erste.Zeilenwerte);
+            Assert.Equal(erste.Zeilenwerte, zweite.Zeilenwerte);
 
             // Die C-Rate ist eine VERHAELTNISgröße und bleibt deshalb dieselbe.
-            Assert.Equal(summe.CRaten, erste.CRaten);
+            Assert.Equal(summe.Spaltenwerte, erste.Spaltenwerte);
             Assert.Equal(summe.Werte[0][0], erste.Werte[0][0], 9);
         }
 
@@ -198,7 +198,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Schnitt_bei_fester_CRate_liest_die_Spalte()
         {
-            FlottenSchnittdaten schnitt = SpeicherFlottenAnzeigeCtrl.Schnittdaten(Ergebnis(), 0.5);
+            FlottenSchnittdaten schnitt = SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiSpalte(Ergebnis(), 0.5);
 
             Assert.Equal(new[] { 10.0, 20.0, 30.0 }, schnitt.Achse);
             Assert.Equal(new[] { 1000.0, 500.0, 4000.0 }, schnitt.Werte);
@@ -215,7 +215,7 @@ namespace EPOS.Kern.Tests
         public void Der_Schnitt_ueber_der_Leistung_rechnet_die_Achse_aus_der_CRate()
         {
             FlottenSchnittdaten schnitt =
-                SpeicherFlottenAnzeigeCtrl.SchnittdatenLeistung(Ergebnis(), 20.0);
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(Ergebnis(), 20.0);
 
             Assert.Equal(new[] { 10.0, 20.0 }, schnitt.Achse);     // 20 kWh · 0,5 und · 1,0
             Assert.Equal(new[] { 500.0, 2000.0 }, schnitt.Werte);
@@ -230,10 +230,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ein_Wert_neben_der_Achse_liefert_keinen_Schnitt()
         {
-            Assert.True(SpeicherFlottenAnzeigeCtrl.Schnittdaten(Ergebnis(), 0.7).IstLeer);
-            Assert.True(SpeicherFlottenAnzeigeCtrl.SchnittdatenLeistung(Ergebnis(), 25.0).IstLeer);
-            Assert.Null(SpeicherFlottenAnzeigeCtrl.Schnittbild(Ergebnis(), 0.7));
-            Assert.Null(SpeicherFlottenAnzeigeCtrl.SchnittbildLeistung(Ergebnis(), 25.0));
+            Assert.True(SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiSpalte(Ergebnis(), 0.7).IstLeer);
+            Assert.True(SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(Ergebnis(), 25.0).IstLeer);
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(Ergebnis(), 0.7));
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.SchnittbildBeiZeile(Ergebnis(), 25.0));
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace EPOS.Kern.Tests
         public void Ein_Loch_in_der_Kurve_bleibt_NaN()
         {
             FlottenSchnittdaten schnitt =
-                SpeicherFlottenAnzeigeCtrl.SchnittdatenLeistung(Ergebnis(), 30.0);
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(Ergebnis(), 30.0);
 
             Assert.True(double.IsNaN(schnitt.Werte[1]));
             Assert.Equal(15.0, schnitt.OptimumAchse, 9);     // 30 kWh · 0,5
@@ -265,14 +265,14 @@ namespace EPOS.Kern.Tests
             FlottenAuslegungErgebnis e = Ergebnis();
 
             byte[] raster = SpeicherFlottenAnzeigeCtrl.Rasterbild(e);
-            byte[] schnitt = SpeicherFlottenAnzeigeCtrl.Schnittbild(e, 0.5);
-            byte[] leistung = SpeicherFlottenAnzeigeCtrl.SchnittbildLeistung(e, 20.0);
+            byte[] schnitt = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(e, 0.5);
+            byte[] leistung = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiZeile(e, 20.0);
 
             Assert.NotNull(raster);
             Assert.NotNull(schnitt);
             Assert.NotNull(leistung);
             Assert.Equal(raster, SpeicherFlottenAnzeigeCtrl.Rasterbild(e));
-            Assert.Equal(schnitt, SpeicherFlottenAnzeigeCtrl.Schnittbild(e, 0.5));
+            Assert.Equal(schnitt, SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(e, 0.5));
         }
 
         /// <summary>
@@ -289,6 +289,222 @@ namespace EPOS.Kern.Tests
 
             Assert.NotEqual(SpeicherFlottenAnzeigeCtrl.Rasterbild(mit),
                             SpeicherFlottenAnzeigeCtrl.Rasterbild(ohne));
+        }
+
+        // =================================================================
+        //  Die Achsen folgen der Größenkopplung (Auftrag #226)
+        // =================================================================
+
+        /// <summary>
+        /// Im Modus <c>KapazitaetUndLeistung</c> tragen die ZEILEN die Kapazität und die
+        /// SPALTEN die Entladeleistung — beide Achsen genau das eingegebene Raster, und
+        /// die Matrix ist LÜCKENLOS.
+        /// </summary>
+        /// <remarks>
+        /// Das ist der Befund des Anwenders vom 11.09.2026 in Zahlen: 13 × 13 = 169
+        /// Kandidaten auf einem Kapazität × Leistung-Gitter (20…500 in Schritten von 40).
+        /// </remarks>
+        [Fact]
+        public void Im_Modus_Kapazitaet_und_Leistung_traegt_die_Spalte_die_Leistung()
+        {
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(Gitter169());
+
+            Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndLeistung, raster.Modus);
+            Assert.Equal(Flottenachsengroesse.Kapazitaet, raster.Zeilengroesse);
+            Assert.Equal(Flottenachsengroesse.Leistung, raster.Spaltengroesse);
+
+            Assert.Equal(Stuetzstellen(), raster.Zeilenwerte);
+            Assert.Equal(Stuetzstellen(), raster.Spaltenwerte);
+
+            // KEIN Loch: Jede der 169 Stellen trägt ihren Kandidaten.
+            int loecher = raster.Werte.Sum(zeile => zeile.Count(double.IsNaN));
+            Assert.Equal(0, loecher);
+
+            // Das Optimum steht auf 220 kWh (Zeile 5) und 140 kW (Spalte 3).
+            Assert.Equal(5, raster.BesteZeile);
+            Assert.Equal(3, raster.BesteSpalte);
+        }
+
+        /// <summary>
+        /// DIE GEGENPROBE zum Befund: Dieselben 169 Kandidaten als Kapazität × C-Rate
+        /// gelesen zerfallen in eine krumme Spaltenachse mit überwiegend Löchern — genau
+        /// das Bild, das der Anwender gemeldet hat.
+        /// </summary>
+        [Fact]
+        public void Dieselben_Kandidaten_als_CRate_gelesen_zerfallen_in_Loecher()
+        {
+            FlottenAuslegungErgebnis falsch = Gitter169();
+            falsch.Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate;
+
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(falsch);
+
+            Assert.Equal(13, raster.Zeilenwerte.Count);
+            Assert.True(raster.Spaltenwerte.Count > 13,
+                "Die C-Raten der 169 Kandidaten sind kein Gitter.");
+
+            int stellen = raster.Zeilenwerte.Count * raster.Spaltenwerte.Count;
+            int loecher = raster.Werte.Sum(zeile => zeile.Count(double.IsNaN));
+            Assert.True(loecher > stellen / 2,
+                $"Erwartet überwiegend Löcher, gezählt {loecher} von {stellen}.");
+        }
+
+        /// <summary>
+        /// Im Modus <c>LeistungUndCRate</c> tragen die ZEILEN die Entladeleistung und die
+        /// SPALTEN die C-Rate; die Kapazität folgt als <c>E = P / C</c>.
+        /// </summary>
+        [Fact]
+        public void Im_Modus_Leistung_und_CRate_traegt_die_Zeile_die_Leistung()
+        {
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(LeistungUndCRate());
+
+            Assert.Equal(Flottenachsengroesse.Leistung, raster.Zeilengroesse);
+            Assert.Equal(Flottenachsengroesse.CRate, raster.Spaltengroesse);
+            Assert.Equal(new[] { 5.0, 10.0 }, raster.Zeilenwerte);
+            Assert.Equal(new[] { 0.5, 1.0 }, raster.Spaltenwerte);
+            Assert.Equal(0, raster.Werte.Sum(zeile => zeile.Count(double.IsNaN)));
+        }
+
+        /// <summary>
+        /// Der Modus <c>KapazitaetUndCRate</c> bleibt der Stand vor #226 — Zeilen
+        /// Kapazität, Spalten C-Rate.
+        /// </summary>
+        [Fact]
+        public void Der_CRaten_Modus_bleibt_wie_bisher()
+        {
+            FlottenAuslegungErgebnis e = Ergebnis();
+            e.Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate;
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(e);
+
+            Assert.Equal(new[] { 10.0, 20.0, 30.0 }, raster.Zeilenwerte);
+            Assert.Equal(new[] { 0.5, 1.0 }, raster.Spaltenwerte);
+            Assert.Equal(Flottenachsengroesse.Kapazitaet, raster.Zeilengroesse);
+            Assert.Equal(Flottenachsengroesse.CRate, raster.Spaltengroesse);
+        }
+
+        /// <summary>
+        /// Die ZWEI SCHNITTE folgen dem Modus: Im Kapazität × Leistung-Gitter läuft der
+        /// erste über der Kapazität (eine Leistung festgehalten), der zweite über der
+        /// Leistung (eine Kapazität festgehalten) — OHNE Umrechnung, die Spalten SIND
+        /// die Leistungen.
+        /// </summary>
+        [Fact]
+        public void Die_Schnitte_folgen_der_Kopplung_Kapazitaet_und_Leistung()
+        {
+            FlottenAuslegungErgebnis e = Gitter169();
+
+            FlottenSchnittdaten ueberKapazitaet =
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiSpalte(e, 140.0);
+            Assert.Equal(Stuetzstellen(), ueberKapazitaet.Achse);
+            Assert.Equal(220.0, ueberKapazitaet.OptimumAchse, 9);
+
+            FlottenSchnittdaten ueberLeistung =
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(e, 220.0);
+            Assert.Equal(Stuetzstellen(), ueberLeistung.Achse);
+            Assert.Equal(140.0, ueberLeistung.OptimumAchse, 9);
+        }
+
+        /// <summary>
+        /// Im Modus <c>LeistungUndCRate</c> läuft der erste Schnitt über der Leistung,
+        /// der zweite über der KAPAZITÄT — und deren Achse <c>E = P / C</c> fällt über
+        /// der aufsteigenden C-Rate; sie wird deshalb aufsteigend gelegt.
+        /// </summary>
+        [Fact]
+        public void Die_Schnitte_folgen_der_Kopplung_Leistung_und_CRate()
+        {
+            FlottenAuslegungErgebnis e = LeistungUndCRate();
+
+            FlottenSchnittdaten ueberLeistung =
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiSpalte(e, 0.5);
+            Assert.Equal(new[] { 5.0, 10.0 }, ueberLeistung.Achse);
+            Assert.Equal(new[] { 100.0, 300.0 }, ueberLeistung.Werte);
+
+            // 10 kW bei 1,0 C sind 10 kWh, bei 0,5 C sind es 20 kWh - die Achse faellt
+            // ueber der aufsteigenden C-Rate und wird deshalb umgelegt.
+            FlottenSchnittdaten ueberKapazitaet =
+                SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(e, 10.0);
+            Assert.Equal(new[] { 10.0, 20.0 }, ueberKapazitaet.Achse);
+            Assert.Equal(new[] { 400.0, 300.0 }, ueberKapazitaet.Werte);
+            Assert.Equal(10.0, ueberKapazitaet.OptimumAchse, 9);
+        }
+
+        /// <summary>
+        /// Die Bilder eines Modus sind ANDERE als die des anderen — ohne diese
+        /// Gegenprobe bestünde ein stillschweigend übergangener Achsenmodus jede
+        /// Maß- und Determinismusprüfung.
+        /// </summary>
+        [Fact]
+        public void Ein_anderer_Achsenmodus_ergibt_ein_anderes_Bild()
+        {
+            FlottenAuslegungErgebnis nachLeistung = Gitter169();
+            FlottenAuslegungErgebnis nachCRate = Gitter169();
+            nachCRate.Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate;
+
+            Assert.NotEqual(SpeicherFlottenAnzeigeCtrl.Rasterbild(nachLeistung),
+                            SpeicherFlottenAnzeigeCtrl.Rasterbild(nachCRate));
+        }
+
+        // =================================================================
+        //  Die Texte je Achsengröße und Kopplung (Auftrag #226)
+        // =================================================================
+
+        /// <summary>
+        /// Titel, Achsentitel, Schieberbeschriftung und Wertetext kommen je Größe und
+        /// Kopplung aus den Ressourcen — die EINE Quelle für Bild und Markup.
+        /// </summary>
+        [Fact]
+        public void Jede_Kopplung_traegt_ihre_eigenen_Texte()
+        {
+            Assert.Equal(Resource.FLOTTE_GROESSEN_CHART_RASTER,
+                SpeicherFlottenAnzeigeCtrl.Rastertitel(FlottenAuslegungsmodus.KapazitaetUndCRate));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_CHART_RASTER_KW,
+                SpeicherFlottenAnzeigeCtrl.Rastertitel(FlottenAuslegungsmodus.KapazitaetUndLeistung));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_CHART_RASTER_KW_C,
+                SpeicherFlottenAnzeigeCtrl.Rastertitel(FlottenAuslegungsmodus.LeistungUndCRate));
+
+            Assert.Equal(Resource.FLOTTE_GROESSEN_ACHSE_LEISTUNG,
+                SpeicherFlottenAnzeigeCtrl.Achsentext(Flottenachsengroesse.Leistung));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_LBL_LEISTUNG,
+                SpeicherFlottenAnzeigeCtrl.Schiebertext(Flottenachsengroesse.Leistung));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET,
+                SpeicherFlottenAnzeigeCtrl.Schiebertext(Flottenachsengroesse.Kapazitaet));
+
+            // Die Einheit steht am Wert, das Zahlenformat richtet sich nach der Größe.
+            Assert.Equal("140 kW",
+                SpeicherFlottenAnzeigeCtrl.Werttext(Flottenachsengroesse.Leistung, 140.0));
+            Assert.Equal("220 kWh",
+                SpeicherFlottenAnzeigeCtrl.Werttext(Flottenachsengroesse.Kapazitaet, 220.0));
+            Assert.Equal("1,25 C",
+                SpeicherFlottenAnzeigeCtrl.Werttext(Flottenachsengroesse.CRate, 1.25));
+        }
+
+        /// <summary>
+        /// Die vier Schnitt-Überschriften: worüber die Kurve läuft und was festgehalten
+        /// ist — je Paar ein eigener Text, auch für die Bildbeschreibung.
+        /// </summary>
+        [Fact]
+        public void Jeder_Schnitt_nennt_seine_Achse_und_den_festgehaltenen_Wert()
+        {
+            Assert.Equal(
+                string.Format(CultureInfo.CurrentCulture,
+                              Resource.FLOTTE_GROESSEN_CHART_SCHNITT_KAP_BEI_KW, "140"),
+                SpeicherFlottenAnzeigeCtrl.Schnitttitel(
+                    Flottenachsengroesse.Kapazitaet, Flottenachsengroesse.Leistung, 140.0));
+
+            Assert.Equal(
+                string.Format(CultureInfo.CurrentCulture,
+                              Resource.FLOTTE_GROESSEN_CHART_SCHNITT_LEI_BEI_C, "0,5"),
+                SpeicherFlottenAnzeigeCtrl.Schnitttitel(
+                    Flottenachsengroesse.Leistung, Flottenachsengroesse.CRate, 0.5));
+
+            Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW,
+                SpeicherFlottenAnzeigeCtrl.Schnittbeschreibung(
+                    Flottenachsengroesse.Kapazitaet, Flottenachsengroesse.Leistung));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG,
+                SpeicherFlottenAnzeigeCtrl.Schnittbeschreibung(
+                    Flottenachsengroesse.Leistung, Flottenachsengroesse.Kapazitaet));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER_KW,
+                SpeicherFlottenAnzeigeCtrl.Rasterbeschreibung(
+                    FlottenAuslegungsmodus.KapazitaetUndLeistung));
         }
 
         // =================================================================
@@ -554,6 +770,67 @@ namespace EPOS.Kern.Tests
 
         // ================================================================= Prüfstand
 
+        /// <summary>
+        /// Die dreizehn Stützstellen des Anwenderfalls: 20…500 in Schritten von 40.
+        /// </summary>
+        private static double[] Stuetzstellen()
+            => Enumerable.Range(0, 13).Select(i => 20.0 + 40.0 * i).ToArray();
+
+        /// <summary>
+        /// DER FALL DES ANWENDERS (11.09.2026): eine Einheit mit Größenkopplung
+        /// „Kapazität und Leistung", beide Größen 20…500 in Schritten von 40 —
+        /// 13 × 13 = 169 Kandidaten auf einem vollen Gitter, das Optimum bei
+        /// 220 kWh / 140 kW.
+        /// </summary>
+        private static FlottenAuslegungErgebnis Gitter169()
+        {
+            double[] stellen = Stuetzstellen();
+            var kandidaten = new List<FlottenKandidatZusammenfassung>();
+            FlottenKandidatZusammenfassung bester = null;
+
+            foreach (double kapazitaet in stellen)
+                foreach (double leistung in stellen)
+                {
+                    double wert = 5000.0
+                                - (kapazitaet - 220.0) * (kapazitaet - 220.0) / 100.0
+                                - (leistung - 140.0) * (leistung - 140.0) / 50.0;
+                    var k = Kandidat($"G-{kapazitaet}-{leistung}", kapazitaet, leistung,
+                                     wert, true, 10 * kapazitaet);
+                    kandidaten.Add(k);
+                    if (Math.Abs(kapazitaet - 220.0) < 1e-9 && Math.Abs(leistung - 140.0) < 1e-9)
+                        bester = k;
+                }
+
+            return new FlottenAuslegungErgebnis
+            {
+                Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                Kandidaten = kandidaten,
+                BesterKandidat = bester
+            };
+        }
+
+        /// <summary>
+        /// Vier Kandidaten auf einem Leistung × C-Rate-Gitter (5/10 kW × 0,5/1,0 C); die
+        /// Kapazität folgt als <c>E = P / C</c> und nimmt die Werte 5, 10 und 20 kWh an.
+        /// </summary>
+        private static FlottenAuslegungErgebnis LeistungUndCRate()
+        {
+            var kandidaten = new List<FlottenKandidatZusammenfassung>();
+            double wert = 0.0;
+            foreach (double leistung in new[] { 5.0, 10.0 })
+                foreach (double rate in new[] { 0.5, 1.0 })
+                {
+                    wert += 100.0;
+                    kandidaten.Add(Kandidat($"L-{leistung}-{rate}", leistung / rate, leistung,
+                                            wert, true, 50));
+                }
+
+            return new FlottenAuslegungErgebnis
+            {
+                Achsenmodus = FlottenAuslegungsmodus.LeistungUndCRate,
+                Kandidaten = kandidaten
+            };
+        }
         /// <summary>
         /// Sechs Kandidaten auf einem 3 × 2-Raster (10/20/30 kWh × 0,5/1,0 C):
         /// die Nullvariante, vier belegte Stellen, eine doppelt besetzte, ein

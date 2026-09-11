@@ -329,6 +329,18 @@ real number"), also im Anstrich des Steuerelements und damit unfangbar. Der Aufr
 `Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (38 Bilder,
 sechs Gegenproben) und in `EPOS.Kern.Tests/SpeicherOptimierungCtrlTests`.
 
+**Ein LOCH im Raster ist seit Auftrag #226 (11.09.2026) hellgrau, nicht rot.**
+`Rasterfarbe` gab jedem nicht endlichen Wert die Minimumfarbe `C_RASTER_SCHLECHT` — an
+einer Stelle, an der gar kein Kandidat gerechnet wurde, stand damit die Aussage
+„schlechtester Kandidat des Rasters"; im Modus Kapazität × Leistung wurde die Karte
+dadurch zu einem überwiegend roten Feld (Anwenderbefund). Sie gibt ihm jetzt
+`C_RASTER_LOCH` (0xF2F2F2), ausdrücklich neben dem Weiß der Netzlinien; die Schraffur
+der UNZULÄSSIGEN Zellen bleibt davon unberührt — „nicht gerechnet" und „verletzt eine
+harte Grenze" sind zwei verschiedene Dinge. Die Farbskala rechts ist unberührt (sie
+rechnet über `Farbstufe`), und jedes Bild ohne Loch bleibt byte-gleich. Gegenprobe:
+`ChartProben`-Fall `flottenraster_loch_ist_kein_minimum` — vor der Behebung waren Loch
+und Minimumwert byte-gleich.
+
 **Die vier BERICHTSBILDER bleiben unangetastet.** `JahresverlaufWaerme` und
 `DauerlinieWaerme` sind zwei feste Ausprägungen von `ErzeugerStapel`,
 `StrombilanzMonate`/`MonatsSaeulen` zwei von `MonatsStapel`, `Speichertemperaturen` eine

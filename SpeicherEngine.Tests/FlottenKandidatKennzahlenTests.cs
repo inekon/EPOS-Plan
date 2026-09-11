@@ -177,6 +177,29 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
                      Einer(ergebnis, kapazitaet: 10.0, cRate: 1.0).BezugsspitzeKw, 9);
     }
 
+    /// <summary>
+    /// DAS ERGEBNIS TRÄGT DIE GRÖSSENKOPPLUNG der Suchachse (Auftrag #226,
+    /// Anwenderbefund 11.09.2026). Ohne sie weiß die Größen-Sicht nicht, was ihre
+    /// Achsen bedeuten, und legte die Kandidaten eines Kapazität × Leistung-Gitters
+    /// auf eine C-Raten-Achse — dort sind sie kein Gitter mehr, sondern Löcher.
+    /// </summary>
+    /// <param name="modus">Die eingestellte Kopplung der einzigen aktiven Achse.</param>
+    [Theory]
+    [InlineData(FlottenAuslegungsmodus.KapazitaetUndCRate)]
+    [InlineData(FlottenAuslegungsmodus.KapazitaetUndLeistung)]
+    [InlineData(FlottenAuslegungsmodus.LeistungUndCRate)]
+    public void Das_Ergebnis_traegt_die_Groessenkopplung_der_Suchachse(FlottenAuslegungsmodus modus)
+        => Assert.Equal(modus, Suche(netzladung: true, modus).Achsenmodus);
+
+    /// <summary>
+    /// OHNE aktive Suchachse gibt es kein Raster — dann bleibt die Vorbelegung stehen,
+    /// und ein Ergebnis aus fremder Quelle wird gelesen wie vor #226.
+    /// </summary>
+    [Fact]
+    public void Ohne_Suchachse_bleibt_die_Vorbelegung_stehen()
+        => Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndCRate,
+                        new FlottenAuslegungErgebnis().Achsenmodus);
+
     // ================================================================= Prüfstand
 
     private const double OPEX_FEST = 12.0;
@@ -191,8 +214,16 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
         => Gerastert(e).Single(k => Math.Abs(k.KapazitaetKWh - kapazitaet) < 1e-9
                                  && Math.Abs(k.CRate - cRate) < 1e-9);
 
-    /// <summary>Die Rastersuche über zwei Kapazitäten und zwei C-Raten.</summary>
-    private static FlottenAuslegungErgebnis Suche(bool netzladung)
+    /// <summary>
+    /// Die Rastersuche über zwei Kapazitäten und zwei C-Raten — und, seit Auftrag #226,
+    /// wahlweise über eine andere Größenkopplung. Die Leistungsgrenzen stehen deshalb
+    /// mit da; in den zwei C-Raten-Modi liest sie niemand.
+    /// </summary>
+    /// <param name="netzladung">Darf die Flotte aus dem Netz laden?</param>
+    /// <param name="modus">Die Größenkopplung der einzigen aktiven Achse.</param>
+    private static FlottenAuslegungErgebnis Suche(
+        bool netzladung,
+        FlottenAuslegungsmodus modus = FlottenAuslegungsmodus.KapazitaetUndCRate)
     {
         FlottenStudieKonfiguration config = Config(netzladung);
         config.Einheiten.Clear();
@@ -205,12 +236,15 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
                 new()
                 {
                     Aktiv = true,
-                    Modus = FlottenAuslegungsmodus.KapazitaetUndCRate,
+                    Modus = modus,
                     AnzahlVon = 1,
                     AnzahlBis = 1,
                     KapazitaetVonKWh = 10,
                     KapazitaetBisKWh = 20,
                     KapazitaetSchrittKWh = 10,
+                    LeistungVonKw = 5,
+                    LeistungBisKw = 10,
+                    LeistungSchrittKw = 5,
                     CRateVon = 0.5,
                     CRateBis = 1.0,
                     CRateSchritt = 0.5,

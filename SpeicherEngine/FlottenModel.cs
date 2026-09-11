@@ -1353,6 +1353,22 @@ public sealed class FlottenAuslegungErgebnis
 
     /// <summary>Die Zusammenfassungen ALLER geprueften Kandidaten, auch der unzulaessigen.</summary>
     public List<FlottenKandidatZusammenfassung> Kandidaten { get; set; } = new();
+
+    /// <summary>
+    /// Die GROESSENKOPPLUNG, mit der dieses Raster entstanden ist — der
+    /// <see cref="FlottenAuslegungsAchse.Modus"/> der ersten AKTIVEN Suchachse.
+    /// </summary>
+    /// <remarks>
+    /// <para>Sie steht HIER und nicht bei der Konfiguration, damit die Groessen-Sicht
+    /// EINE Quelle hat: Ein Ergebnis wird aufbewahrt, weitergereicht und angezeigt,
+    /// waehrend der Arbeitsstand daneben weiterbearbeitet wird — die Achsen der Karte
+    /// gehoeren zum gerechneten Raster, nicht zum Stand von jetzt (Auftrag #226).</para>
+    /// <para>Ohne aktive Suchachse gibt es kein Raster; dann bleibt die Vorbelegung
+    /// <see cref="FlottenAuslegungsmodus.KapazitaetUndCRate"/> stehen. Sie ist
+    /// AUSGESCHRIEBEN und nicht der Aufzaehlungsstandard 0: Ein Ergebnis aus fremder
+    /// Quelle, das den Modus nicht setzt, wird damit gelesen wie vor #226.</para>
+    /// </remarks>
+    public FlottenAuslegungsmodus Achsenmodus { get; set; } = FlottenAuslegungsmodus.KapazitaetUndCRate;
 }
 
 /// <summary>Die Fortschrittsmeldung der Rastersuche.</summary>
