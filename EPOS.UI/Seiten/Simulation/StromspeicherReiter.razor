@@ -68,9 +68,17 @@
             <p class="epos-simerg-status"><strong>@Flottenstatus</strong></p>
             @if (_flottenEingaben?.Auslegung?.Flotte is { } flotte)
             {
+                @* DIE VERTEILUNG ERST AB ZWEI EINHEITEN, auch hier (Anwenderentscheid
+                   11.09.2026, „zweiter Wirt von SD-E-8", Auftrag #213): Bis #213 zeigte
+                   dieser Reiter die Klappliste unbedingt (die Vorgabe des Editors ist
+                   `true`) - der Betriebseditor selbst kennt die Einheitenzahl nicht
+                   (sein Wert ist FlottenSimulationOptionen, ohne Einheitenliste), also
+                   entscheidet der WIRT, wie es die Auslegungsansicht seit #206 schon
+                   tut (StromspeicherAuslegungSeite ueber PeakZielBlock). *@
                 <SpeicherFlottenBetriebEditor Wert="@flotte.Optionen" WertChanged="FlottenbetriebGesetzt"
                                                Aktiv="@(!Gesperrt && !_flottenSpeichert && Dienste?.OptimierungEinstellungenSpeichern is not null)"
-                                               PlanerVerfuegbar="@PlanerVerfuegbar" />
+                                               PlanerVerfuegbar="@PlanerVerfuegbar"
+                                               VerteilungZeigen="@(flotte.Einheiten.Count >= 2)" />
                 @* DIE HERKUNFT STEHT AN DER EINHEIT (#210). Der Name IST der
                    Anlagenbezeichner; ohne Anlagenbezug ist die Einheit im Editor
                    von Hand entstanden und gehoert keiner Projektanlage. Ein
