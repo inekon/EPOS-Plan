@@ -1,4 +1,4 @@
-# Konzept: Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg
+﻿# Konzept: Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg
 
 Stand 11.09.2026, gemessen am Stand `1e71d30` (`ios_migration_september`). Anlass ist die
 Anwenderrückmeldung vom 11.09.2026 zum Bildschirmfoto des Stromspeicher-Reiters der
@@ -189,7 +189,7 @@ Rechenweg, der Referenzlauf.
 | Stufe | Inhalt | Prüfmuster |
 |---|---|---|
 | **S1** — Ansicht und Rückweg (Windows) — **umgesetzt #207** (11.09.2026, `4da303d`, Merge `e608457`) | `Seitenschluessel.Simulation` (`SIMULATION`), Seite `EPOS.UI/Seiten/Simulation/SimulationSeite.razor` mit `Ablaufleiste` (Vorne ①, Rechnen ②, Hinten ③) und `Marke`; ① und ③ betten die zwei bestehenden Seiten ein; Fußknöpfe „Konfiguration ..."/„Beenden" und die Konfig-Überlagerung fallen aus der Ergebnisseite, `_konfig`/`_ergebnis`/Überlagerung fallen aus der Startseite; Rückwegstapel in `AppWurzel` ersetzt `_auslegungRueckweg`/`_kiRueckweg`; Auslegung kehrt mit Marke zurück; `SimulationHuelle` und `SimulationGaben` in `HauptfensterHuelle`; die zwei alten Schlüssel `SIMULATION_KONFIGURATION`/`SIMULATION_ERGEBNIS` bleiben als Einstiegsmarken (①/③) gültig; Menüpunkt nach SIM‑Q3 | bunit: Ablaufleiste schaltet, ② gesperrt bei ungespeicherter Konfiguration, ③ gesperrt ohne Ergebnis, Rückweg aus der Auslegung landet in ③ auf „Stromspeicher", Rückfrage bei ungespeicherter Konfiguration; **Wache:** `SimulationErgebnisSeite` und `SimulationKonfigSeite` stehen in keiner `Ueberlagerung` mehr (Muster `UeberlagerungstitelTests`); Referenzlauf 5/5 byte-gleich (kein Rechenweg) |
-| **S2** — iOS erreicht die Simulation | Messung der zwei Hüllen (Datenweg → Kern-Controller, Plattform bleibt), `IosProjektQuelle.SimulationGaben`, Kachel „Simulation" in der Projektliste; iOS-Lauf 43 **gebündelt mit #202** (trifft die Hülle) | iOS-CI: Ansicht baut, Prüfmodus unverändert; Kern-Tests für den verlegten Datenweg |
+| **S2** — iOS erreicht die Simulation — **umgesetzt #208** (11.09.2026, `2f62ca4` + `81d8f2f`; Anwenderentscheid #208‑E‑1 = A: Datenseite `EPOS.UI.Daten`; Merge siehe Statusblock) | Messung der zwei Hüllen (Datenweg → plattformfreies Projekt `EPOS.UI.Daten`, Plattform bleibt), `IosProjektQuelle.SimulationGaben`, Knopf „Simulation…" in der Projektliste; iOS-Lauf 43 **gebündelt mit #202** (trifft die Hülle) | iOS-CI: Ansicht baut, Prüfmodus unverändert; Kern-Tests für den verlegten Datenweg |
 
 S1 ist ohne S2 abnehmbar. S2 setzt S1 voraus, weil es dasselbe Wörterbuch liefern muss.
 
@@ -225,8 +225,55 @@ S1 ist ohne S2 abnehmbar. S2 setzt S1 voraus, weil es dasselbe Wörterbuch liefe
 - **Menüpunkt „Simulation…"** (`MENU_SIMULATION`) im Kopf „Projekt", unmittelbar hinter
   „Varianten und Bericht…" — die Menütabelle steht damit bei **59 Punkten, 46 handelnd**.
 
-Nicht umgesetzt und ausdrücklich offen: **S2 (iOS)** — `IosProjektQuelle.SimulationGaben` liefert
-weiterhin `null`; die Ansicht ist dort erreichbar, sobald das Wörterbuch steht (Auftrag #208).
+### Was **#208** umgesetzt hat (Stufe S2)
+
+**Die Messung.** Die zwei Datenhüllen führen **5 490 Zeilen**, und davon waren genau **sechs**
+Windows: ein `Func<Form>` als Fensterbesitzer und die eine Stelle, die ihn braucht — der
+Wärmepumpen-Assistent (`WaermepumpenHuelle.Gaben(IWin32Window, …)`). Alles andere geht seit
+Paket iU5 über `Dienste.*` und ist auf jeder Plattform derselbe Weg. Der Grund, warum die
+Simulation auf iOS fehlte, war also tatsächlich nicht die Oberfläche — es war der ORT der
+Datenseite.
+
+**Der Ort: ein neues Projekt `EPOS.UI.Daten`.** Es sieht den Kern UND die Oberfläche und kennt
+keine Plattform (`EnableWindowsTargeting=false` wie `EPOS.Kern` und `EPOS.UI`). In den Kern
+selbst konnte die Datenseite **nicht** ziehen: Eine Hülle baut genau die DTO der Razor-Seiten
+(`SimulationKonfigDaten`, `ChipDaten`, `SchemaBild`, `Rueckmeldung`), und `EPOS.UI` kennt
+`EPOS.Kern`, nicht umgekehrt — dieselbe Begründung, die schon `KiMaskenbruecke` im Kopf trägt.
+In `EPOS.UI` konnte sie ebenso wenig bleiben: Dort gilt „Keine Datenbank". Verlegt sind
+**18 Dateien / 8 115 Zeilen**: die zwei Simulationshüllen samt Teildateien, die sieben
+Unterdialoghüllen der Konfiguration, `PufferSpProjektHuelle`, `BedarfErgebnisHuelle` (ihre
+tote `Zeigen`/`Oeffnen`-Hälfte ist dabei gefallen — sie hatte im ganzen Bestand keinen
+Aufrufer mehr) und `StromspeicherAuslegungHuelle`.
+
+**Die Windows-Hülle bleibt — als ADAPTER.** `Views/Simulation/SimulationHuelle.cs` fällt von
+122 auf **64 Zeilen** und trägt nur noch den Fensterbesitzer, den sie als benannten Weg in die
+Quelle legt. **Windows verhält sich unverändert**;
+`HauptfensterHuelle.Gaben()["SimulationGaben"]` kommt jetzt aus
+`EPOS.UI.Daten/Simulation/SimulationAnsichtQuelle.cs` (116 Z.).
+
+**Zwei Nähte statt einer Plattformbindung** — beide benannt, beide mit Standardfassung:
+`SimulationPlattformwege` (der Wärmepumpen-Assistent; ohne Weg lehnt die Hülle **benannt** ab
+und fällt nicht still aus) und `Katalogwege` (der Auslieferungskatalog der Pufferspeicher, der
+noch in `KatalogBrowserHuelle` steckt — ohne eingehängten Haken zeigt die Pufferverwaltung den
+Knopf „Katalog ansehen" gar nicht erst).
+
+**Drei Stellen sind dabei in den Kern gezogen**, weil sie dort hingehören:
+`SchemaMigration.SimulationGesperrt` war nur eine Weiterleitung auf
+`SchemaStand.SimulationGesperrt` (die Hüllen rufen jetzt den Kern unmittelbar),
+`KartenStil.Kreisziffer` ist reine Zeichenarbeit an einer Ladeposition und heißt seither
+`Ladeordnung.Kreisziffer`, und `HilfeKontext.SetzeBereich` erreicht die Datenseite über den
+neuen Haken `KiChatKontext.BereichMelder` (Windows hängt ihn in `Program.Main` ein — der
+Gegenweg zum vorhandenen `AktiverBereich`).
+
+**iOS.** `IosProjektQuelle.SimulationGaben` hält je Sitzung EINE `SimulationAnsichtQuelle` —
+der gerechnete Lauf und die Bilder überleben damit einen Ansichtswechsel, genau wie unter
+Windows —, und die **Projektliste** führt je Zeile einen dritten Knopf „Simulation…"
+(`Seitenschluessel.Simulation`). Der Rückweg läuft über den Stapel aus #207 und landet wieder
+in der Liste.
+
+Offen bleibt auf iOS genau das, was ein Fenster braucht: der Wärmepumpen-Assistent (benannt
+abgelehnt) und der Katalogbrowser der Pufferverwaltung (kein Delegat, kein Knopf). Beide
+fallen mit dem Umzug der Katalogmasken (iU11).
 
 ---
 

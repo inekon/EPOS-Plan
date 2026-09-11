@@ -68,7 +68,7 @@ Vereinbarung selbst ist ein Baustein und wird nicht geprüft; geprüft wird jede
 (`felder + "Tab_Pufferspeicher WHERE …"`).
 
 > **Der Katalog kommt seit dem Befund #195 (11.09.2026) NUR aus dem Prüfbereich**
-> (`dateien_im_bereich()`, also `EPOS.Kern` und `WindowsFormsApplication1`) — nicht mehr
+> (`dateien_im_bereich()`, also `EPOS.Kern`, `WindowsFormsApplication1` und — seit dem Merge #208 (11.09.2026, Anwenderentscheid #208‑E‑1) — `EPOS.UI.Daten`, die plattformfreie Datenseite der Oberfläche (sie lädt über Controller, führt heute keinen eigenen SQL-Text; die Wurzel steht drin, damit ein künftiger Text nicht am Prüfer vorbeigeht)) — nicht mehr
 > aus dem gesamten Arbeitsbaum. Eine Konstante eines Testprojekts (`EPOS.UI.Tests`,
 > `Werkzeuge`, `Proben`, …) darf keinen Kurznamen im Produktcode auflösen. Genau das tat
 > `EPOS.UI.Tests/UeberlagerungstitelTests.cs`: Sie legte mit `const string kind = "<div

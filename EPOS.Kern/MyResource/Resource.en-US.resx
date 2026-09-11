@@ -2663,6 +2663,9 @@ Please run the simulation first. An aborted run or one that has not yet been cal
     <value>No simulation data available!
 Please calculate the energy demand first.</value>
   </data>
+  <data name="SIM_MSG_WEG_NICHT_HIER" xml:space="preserve">
+    <value>This path is not available on this device.</value>
+  </data>
   <data name="SIM_MSG_KEINE_DATEN_SIMULATION" xml:space="preserve">
     <value>No simulation data available!
 Please run the simulation first.</value>

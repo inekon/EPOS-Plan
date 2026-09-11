@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -52,8 +50,11 @@ namespace WindowsFormsApplication1
                 // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
                 // Fenster; NurLesen sperrt die drei Bearbeitungsknoepfe. Damit
                 // entfaellt das Sprungziel PufferSpAdminNurLesen (W10a.0c).
-                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => PufferSpAdminHuelle.Gaben(true)),
+                // Auftrag #208: Der Katalogbrowser steckt noch in einer Windows-Huelle
+                // (KatalogBrowserHuelle oeffnet je nach Weg ein eigenes Fenster). Er
+                // kommt deshalb ueber den Haken Katalogwege herein; ohne Haken zeigt
+                // der Dialog den Knopf "Katalog ansehen" gar nicht erst.
+                ["VerwaltungGaben"] = Katalogwege.PufferKatalogGaben,
                 ["PasstZurVerwendung"] = PasstZurVerwendung(idProjekt, verwendung),
                 ["VorbelegteNutzung"] = VorbelegteNutzung(verwendung),
 

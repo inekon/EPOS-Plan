@@ -108,13 +108,10 @@ namespace WindowsFormsApplication1
         /// <summary>Durchmesser des Statuspunkts einer Aktionskarte [px].</summary>
         public const int KARTE_STATUSPUNKT = 14;
 
-        /// <summary>Kreisziffern ①…⑨ für die wirksame Ladepriorität (Konzept 3, „①②").</summary>
-        public static string Kreisziffer(int n)
-        {
-            if (n < 1) return "";
-            if (n > 9) return "(" + n + ")";
-            return ((char)('①' + (n - 1))).ToString();
-        }
+        // Kreisziffer(n) steht seit Auftrag #208 in EPOS.Kern (Ladeordnung.Kreisziffer):
+        // Sie war reine Zeichenarbeit an einer Ladeposition, wurde nur von der
+        // Simulationskonfiguration gebraucht - und die liegt seither plattformfrei in
+        // EPOS.UI.Daten, wo es dieses System.Drawing-Modul nicht gibt.
 
         /// <summary>Rechteck mit abgerundeten Ecken — für Kartenrahmen und Chips.</summary>
         public static GraphicsPath Rundeck(Rectangle r, int radius)

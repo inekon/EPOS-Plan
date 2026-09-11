@@ -4,7 +4,7 @@ namespace EPOS.iOS;
 
 /// <summary>
 /// Die iOS-Fassung von <see cref="IDialogDienst"/>: die Systemmeldung
-/// (<c>UIAlertController</c>) ueber <c>Page.DisplayAlert</c>.
+/// (<c>UIAlertController</c>) ueber <c>Page.DisplayAlertAsync</c>.
 ///
 /// <para><b>Wofuer dieser Adapter da ist - und wofuer nicht.</b> Er bedient die
 /// 47 Meldungen und 4 Rueckfragen des KERNS, also Stellen, die es seit Jahren
@@ -13,7 +13,7 @@ namespace EPOS.iOS;
 /// laufen nie hierher.</para>
 ///
 /// <para><b>Die synchrone Rueckfrage ist die heikle Stelle</b> (iR-f).
-/// <c>Frage</c> muss ein <c>bool</c> zurueckgeben, <c>DisplayAlert</c> liefert
+/// <c>Frage</c> muss ein <c>bool</c> zurueckgeben, <c>DisplayAlertAsync</c> liefert
 /// ein <c>Task&lt;bool&gt;</c>. Vom HAUPTFADEN aus laesst sich darauf nicht
 /// warten - das waere ein Selbstblock, und die Meldung erschiene nie. Kommt der
 /// Aufruf von dort, wird deshalb NICHT gefragt, sondern die schadensaermere
@@ -60,7 +60,7 @@ public sealed class IosDialogDienst : IDialogDienst
         try
         {
             return MainThread.InvokeOnMainThreadAsync(
-                () => seite.DisplayAlert(titel ?? "", text, JA, NEIN)).GetAwaiter().GetResult();
+                () => seite.DisplayAlertAsync(titel ?? "", text, JA, NEIN)).GetAwaiter().GetResult();
         }
         catch
         {
@@ -82,7 +82,7 @@ public sealed class IosDialogDienst : IDialogDienst
         {
             // Eine Dreifachwahl ist auf iOS ein Aktionsblatt, keine Meldung.
             string? antwort = MainThread.InvokeOnMainThreadAsync(
-                () => seite.DisplayActionSheet(titel ?? text, ABBRECHEN, null, JA, NEIN))
+                () => seite.DisplayActionSheetAsync(titel ?? text, ABBRECHEN, null, JA, NEIN))
                 .GetAwaiter().GetResult();
 
             if (antwort == JA) return JaNeinAbbruch.Ja;
@@ -95,18 +95,43 @@ public sealed class IosDialogDienst : IDialogDienst
         }
     }
 
+    /// <summary>
+    /// Der aktuelle Wartezustand - <c>true</c>, solange der Kern rechnet.
+    /// </summary>
+    /// <remarks>
+    /// Sie steht hier, damit die Schale (heute <c>HauptSeite</c>, spaeter eine
+    /// Anzeige in <c>EPOS.UI</c>) die Kurve zeigen KANN, ohne dass der Kern eine
+    /// zweite Schnittstelle bekommt.
+    /// </remarks>
+    public static bool Wartet { get; private set; }
+
+    /// <summary>
+    /// Der Haken, ueber den eine Schale die Wartekurve wirklich anzeigt;
+    /// <c>null</c> = niemand zeigt sie an (der heutige Stand).
+    /// </summary>
+    public static Action<bool>? Wartekurve { get; set; }
+
     /// <inheritdoc/>
     /// <remarks>
-    /// Die Wartekurve ist auf iOS die Aktivitaetsanzeige der Seite
-    /// (<c>Page.IsBusy</c>). Ohne Seite bleibt sie folgenlos - wie in
-    /// <see cref="StilleDialoge"/>.
+    /// <para><b>Warum hier kein <c>Page.IsBusy</c> mehr steht</b> (Auftrag #202).
+    /// Die Eigenschaft ist in .NET 10 abgekuendigt und faellt mit .NET 11; sie
+    /// setzte auf iOS den NETZWERK-Aktivitaetsanzeiger, und den ignoriert iOS seit
+    /// Fassung 13 ohnehin - bei einem Mindestziel von iOS 17.0 war der Aufruf also
+    /// schon vorher wirkungslos. Statt eines abgekuendigten Aufrufs ohne Wirkung
+    /// steht hier ein benannter Zustand und ein Haken: Wer die Kurve zeigen will,
+    /// haengt sich ein.</para>
+    ///
+    /// <para>Ohne eingehaengten Haken bleibt der Aufruf folgenlos - derselbe
+    /// Ausgang wie in <see cref="StilleDialoge"/>.</para>
     /// </remarks>
     public void Warten(bool an)
     {
-        Microsoft.Maui.Controls.Page? seite = Seite();
-        if (seite == null) return;
+        Wartet = an;
 
-        try { MainThread.BeginInvokeOnMainThread(() => seite.IsBusy = an); } catch { }
+        Action<bool>? haken = Wartekurve;
+        if (haken == null) return;
+
+        try { MainThread.BeginInvokeOnMainThread(() => haken(an)); } catch { }
     }
 
     // =====================================================================
@@ -122,7 +147,7 @@ public sealed class IosDialogDienst : IDialogDienst
 
         // Eine reine Meldung braucht keine Antwort und darf deshalb auch vom
         // Hauptfaden aus gezeigt werden - es wird nicht gewartet.
-        try { MainThread.BeginInvokeOnMainThread(() => seite.DisplayAlert(titel, text, OK)); }
+        try { MainThread.BeginInvokeOnMainThread(() => _ = seite.DisplayAlertAsync(titel, text, OK)); }
         catch { Protokoll(titel + ": " + text); }
     }
 

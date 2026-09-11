@@ -321,10 +321,28 @@ namespace WindowsFormsApplication1
         /// <summary>Die WP-Anlagen des Projekts — die Liste, die der Dialog bearbeitet.</summary>
         private List<WErzeugerModel> _wpModelle;
 
+        /// <remarks>
+        /// <b>Der eine Weg, den die Schale beisteuern muss</b> (Auftrag #208): Der
+        /// Wärmepumpendialog öffnet aus sich heraus weitere Fenster und braucht
+        /// deshalb einen Fensterbesitzer — unter Windows
+        /// <c>WaermepumpenHuelle.Gaben(IWin32Window, …)</c>. Bietet die Schale ihn
+        /// nicht an, wird das BENANNT abgelehnt und nicht still übergangen: Die Seite
+        /// bekommt <c>null</c> (also keine Überlagerung), der Anwender den Grund.
+        /// </remarks>
         private IReadOnlyDictionary<string, object> WaermepumpenGaben()
         {
+            if (_wege.WaermepumpeGaben == null)
+            {
+                string grund = string.IsNullOrWhiteSpace(_wege.WaermepumpeSperrgrund)
+                                   ? MyResource.Resource.SIM_MSG_WEG_NICHT_HIER
+                                   : _wege.WaermepumpeSperrgrund;
+
+                Dienste.Dialog.Meldung(grund, MyResource.Resource.WPV_TITEL);
+                return null;
+            }
+
             _wpModelle = WErzeugerCtrl.ModelleJeTyp(m_ID_Projekt, WizardItemClass.WP_TYP);
-            return WaermepumpenHuelle.Gaben(_fenster, m_ID_Projekt, _wpModelle, wizard: false);
+            return _wege.WaermepumpeGaben(m_ID_Projekt, _wpModelle);
         }
 
         /// <summary>

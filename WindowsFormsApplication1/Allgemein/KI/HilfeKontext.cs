@@ -379,6 +379,12 @@ namespace WindowsFormsApplication1
         {
             KiChatKontext.AktiverBereich =
                 () => !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
+
+            // Auftrag #208: Der GEGENWEG. Die Datenseite der Simulation liegt seither
+            // plattformfrei in EPOS.UI.Daten und sieht diese Klasse nicht mehr; sie
+            // meldet ihren Bereich ueber KiChatKontext.BereichMelden, und der landet
+            // hier - derselbe Aufruf wie vorher, nur ueber einen Haken.
+            KiChatKontext.BereichMelder = SetzeBereich;
         }
 
         /// <summary>

@@ -588,6 +588,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Ladeposition als KREISZIFFER ①…⑨, ab 10 als „(n)"; 0 und kleiner liefern
+        /// den leeren Text (Konzept 3, „①②").
+        ///
+        /// <para><b>Sie steht seit Auftrag #208 hier</b> und nicht mehr in
+        /// <c>Allgemein/GrafikTools/KartenStil</c>: Das ist reine Zeichenarbeit an einer
+        /// Ladeposition — sie gehört zu <see cref="Position(List{LadeEintrag}, int, bool)"/>
+        /// und nicht zu einer Farbtabelle mit <c>System.Drawing</c>, die die
+        /// plattformfreie Datenseite gar nicht sehen darf.</para>
+        /// </summary>
+        public static string Kreisziffer(int n)
+        {
+            if (n < 1) return "";
+            if (n > 9) return "(" + n + ")";
+            return ((char)('\u2460' + (n - 1))).ToString();
+        }
+
+        /// <summary>
         /// Position einer Anlage in der Ladereihenfolge (1-basiert); 0, wenn sie nicht
         /// vorkommt. Grundlage der Anzeige „Lädt als n. von m" (Konzept 4.2).
         /// </summary>

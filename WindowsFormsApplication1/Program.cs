@@ -265,6 +265,13 @@ namespace WindowsFormsApplication1
             // Ohne diesen Aufruf bleibt der Bereich "Unbekannter Bereich".
             HilfeKontext.Einhaengen();
 
+            // Auftrag #208: Der eine Weg der plattformfreien Datenseite, der noch in
+            // einer Windows-Huelle steckt - der Auslieferungskatalog der
+            // Pufferspeicher (KatalogBrowserHuelle oeffnet je nach Weg ein eigenes
+            // Fenster). Ohne diesen Haken zeigt die Pufferverwaltung den Knopf
+            // "Katalog ansehen" nicht - genau der Stand auf iOS.
+            Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
+
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.

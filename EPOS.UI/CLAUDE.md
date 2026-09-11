@@ -18,6 +18,12 @@ entgegen — sie ist damit austauschbar.
   `wwwroot/epos-ui.css` (Herkunft: `WindowsFormsApplication1/Allgemein/GrafikTools/KartenStil.cs`).
 - **Keine Datenbank.** Kein `DataRepository`, kein `RecordSet`, kein `DbParam`, kein SQL. Daten
   kommen ausschließlich als `[Parameter]` herein; das Laden erledigt ein Controller in der Hülle.
+  **Und die Hülle hat seit Auftrag #208 ein eigenes Projekt: [`EPOS.UI.Daten`](../EPOS.UI.Daten/).**
+  Es referenziert diese Bibliothek (und damit den Kern), ist ebenso plattformfrei
+  (`EnableWindowsTargeting=false`) und trägt den Programmtext, der aus Kern-Controllern die DTO
+  dieser Komponenten baut — bis dahin lag der samt Datenbankzugriff in
+  `WindowsFormsApplication1/Views/`, und genau deshalb war keine Fachseite auf iOS erreichbar.
+  **An dieser Regel ändert das nichts:** Hier kommen die Daten weiterhin fertig herein.
 - **Texte über Ressourcen.** `@using WindowsFormsApplication1.MyResource` steht in `_Imports.razor`,
   also `@Resource.KAUSW_TITEL`. Solange ein Schlüssel fehlt, steht der deutsche Literaltext als
   Standardwert eines `[Parameter] string`-Textes in der Komponente — die Hülle kann ihn dann ohne

@@ -442,13 +442,33 @@ public sealed class ParametersatzTests
         return d!.FullName;
     }
 
+    /// <summary>
+    /// Die Huellen des Bestands — seit Auftrag <b>#208</b> an ZWEI Orten: in
+    /// <c>WindowsFormsApplication1/Views</c> (was ein Fenster braucht) und in
+    /// <c>EPOS.UI.Daten</c> (die plattformfreie Datenseite, die Windows UND iOS
+    /// benutzen). Wer eine Huelle dorthin verlegt, soll sie nicht aus dieser Wache
+    /// verlieren.
+    /// </summary>
     private static string[] Huellen()
     {
-        string views = Path.Combine(Wurzel(), "WindowsFormsApplication1", "Views");
-        if (!Directory.Exists(views)) return Array.Empty<string>();
+        var ordner = new[]
+        {
+            Path.Combine(Wurzel(), "WindowsFormsApplication1", "Views"),
+            Path.Combine(Wurzel(), "EPOS.UI.Daten")
+        };
 
-        return Directory.GetFiles(views, "*Huelle.cs", SearchOption.AllDirectories)
-                        .OrderBy(p => p, StringComparer.Ordinal)
-                        .ToArray();
+        var dateien = new List<string>();
+        foreach (string o in ordner)
+        {
+            if (!Directory.Exists(o)) continue;
+
+            dateien.AddRange(Directory.GetFiles(o, "*Huelle.cs", SearchOption.AllDirectories)
+                                      .Where(d => !d.Contains(Path.DirectorySeparatorChar + "obj" +
+                                                              Path.DirectorySeparatorChar)
+                                               && !d.Contains(Path.DirectorySeparatorChar + "bin" +
+                                                              Path.DirectorySeparatorChar)));
+        }
+
+        return dateien.OrderBy(p => p, StringComparer.Ordinal).ToArray();
     }
 }

@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulation.wiki
      Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207;
      Windows-Abnahme #216: Kachel "Simulation starten", Werkzeugleiste, Reiter Parameter entfallen, Uebersicht zuerst - SIM-E-1)
@@ -35,6 +35,7 @@ Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stroms
 * Der Reiter ''Parameter'' des Ergebnisses ist entfallen: Netzverluste, BHKW-Betriebsart und Leistungsgrenze, Heizstab und Betriebsbereitschaft stehen in Schritt ① bei der Konfiguration, der Block der Einzelanlage im Reiter ''Stromspeicher''.
 * Das Ergebnis öffnet mit der ''Übersicht'' statt mit den Parametern.
 * Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
+* '''Auf dem iPad''' erreichen Sie dieselbe Ansicht über den Knopf ''Simulation…'' in der Projektliste; nur der Wärmepumpen-Assistent (Doppeltipp auf eine Modulzeile im Reiter ''Wärmepumpe'') steht dort nicht zur Verfügung und sagt das auch.
 
 == Eingaben ==
 

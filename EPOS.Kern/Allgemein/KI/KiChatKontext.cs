@@ -1,4 +1,4 @@
-// Der Bedienkontext des KI-Assistenten - plattformfrei (iU9-W15b.0f, Entscheid E-9).
+﻿// Der Bedienkontext des KI-Assistenten - plattformfrei (iU9-W15b.0f, Entscheid E-9).
 //
 // WARUM ES DIESE DATEI GIBT. HilfeKontext.Beschreibung() ermittelt den Bereich, in dem
 // der Anwender arbeitet, ueber Form.ActiveForm und ActiveMdiChild
@@ -340,6 +340,32 @@ namespace WindowsFormsApplication1
         /// fehlerhafte Huelle kann so keinen freien Text in den Prompt bringen.
         /// </remarks>
         public static Func<string> AktiverBereich { get; set; }
+
+        /// <summary>
+        /// Der GEGENWEG zu <see cref="AktiverBereich"/>: Eine Maske MELDET, in welchem
+        /// Bereich sie steht. Windows haengt hier <c>HilfeKontext.SetzeBereich</c> ein
+        /// (Program.Main); ohne eingehaengten Melder geschieht nichts.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum ein Haken und kein Aufruf.</b> Die Datenseite der Simulation
+        /// liegt seit Auftrag #208 plattformfrei in EPOS.UI.Daten und kann
+        /// <c>HilfeKontext</c> (WinForms, <c>Form.ActiveForm</c>) nicht mehr sehen. Der
+        /// gemeldete Bereich geht wie jeder andere durch
+        /// <see cref="Freigegeben"/> - eine Huelle kann so keinen freien Text in den
+        /// Prompt bringen.</para>
+        /// </remarks>
+        public static Action<string> BereichMelder { get; set; }
+
+        /// <summary>
+        /// Meldet den Bereich, in dem der Anwender gerade steht - still, wenn kein
+        /// Melder eingehaengt ist.
+        /// </summary>
+        public static void BereichMelden(string bereich)
+        {
+            Action<string> melder = BereichMelder;
+            if (melder == null) return;
+            try { melder(bereich); } catch { }
+        }
 
         /// <summary>
         /// Der Bereich, in dem der Anwender gerade arbeitet - immer ein Eintrag der

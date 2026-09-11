@@ -76,6 +76,24 @@ die Texte in `MyResource.Resource.*`. Erster umgestellter Dialog: „Energieträ
 (`EnergietraegerVarianteDialog`). Voraussetzung beim Anwender ist die **WebView2-Laufzeit**; das
 Setup installiert sie nach.
 
+Die **Datenseite der Oberfläche wächst seit dem 11.09.2026 (Auftrag #208) in
+[`EPOS.UI.Daten`](EPOS.UI.Daten/)** — dem dritten plattformfreien Projekt neben Kern und
+Oberfläche. Dort liegen die **Hüllen**: der Programmtext, der aus Kern-Controllern die DTO der
+Razor-Seiten baut. **Warum ein eigenes Projekt:** Eine Hülle braucht BEIDES — den Kern (sie
+lädt) und die Oberfläche (sie baut deren DTO). In `EPOS.Kern` kann sie deshalb nicht liegen
+(`EPOS.UI` kennt den Kern, nicht umgekehrt), in `EPOS.UI` ebenso wenig (Hausregel „Keine
+Datenbank"). Bis #208 lagen sie sämtlich in `WindowsFormsApplication1/Views/` — und damit war
+jede Fachseite auf iOS unerreichbar, auch wenn ihre Hülle keine einzige Windows-Zeile führte:
+Von den **5 490 Zeilen** der zwei Simulationshüllen waren genau **sechs** Windows. Verlegt
+sind mit #208 die **18 Dateien / 8 115 Zeilen** der Simulation samt ihren Unterdialogen;
+`EnableWindowsTargeting=false` hält das Projekt sauber, und was die Plattform beisteuern muss,
+kommt als **benannte Naht** herein (`Simulation/SimulationPlattformwege.cs`, `Katalogwege.cs`).
+Die Windows-Hülle `Views/Simulation/SimulationHuelle.cs` ist seither ein **Adapter von
+64 Zeilen** (vorher 122), und `EPOS.iOS/Dienste/IosProjektQuelle.SimulationGaben` liefert
+denselben Parametersatz aus derselben Quelle — **die Simulation ist damit die erste Fachseite,
+die auf dem iPad wirklich rechnet** (Stufe S2 des Konzepts
+[`Projekte/Konzept_Simulationsablauf_EPOS-Plan.md`](Projekte/Konzept_Simulationsablauf_EPOS-Plan.md)).
+
 Die **iOS-Hülle steht seit dem 03.09.2026 (Paket iU10) in [`EPOS.iOS`](EPOS.iOS/CLAUDE.md)** — eine
 MAUI-Blazor-Hybrid-App mit **einer** Seite und darin **einer** `BlazorWebView`, die
 `EPOS.UI.Seiten.AppWurzel` zeigt. Sie trägt nur, was die Plattform beisteuert: die neun
@@ -116,8 +134,9 @@ ist gewollt: **Ohne registrierten `IFlottenPlaner` sind die drei planenden Betri
 bricht dann mit einer benannten Meldung ab. Die zwei reaktiven Ziele `PvGreedy` und
 `PeakShaving` rechnen ohne Planer und stehen deshalb auf jeder Plattform.
 
-`WP-Plan.Kern.slnf` führt seither **zehn** Projekte — `EPOS.Kern`, `EPOS.UI`, `KiKern`,
-`SpeicherEngine`, `SpeicherPlanung` und die fünf zugehörigen Testprojekte —, `WP-Plan.sln`
+`WP-Plan.Kern.slnf` führt seit Auftrag #208 **elf** Projekte — `EPOS.Kern`, `EPOS.UI`,
+`EPOS.UI.Daten`, `KiKern`, `SpeicherEngine`, `SpeicherPlanung` und die fünf zugehörigen
+Testprojekte (`EPOS.UI.Daten` prüft `EPOS.Kern.Tests`) —, `WP-Plan.sln`
 zusätzlich die Windows-Anwendung und die Werkzeuge. `EPOS.iOS` steht weiterhin in keiner von
 beiden (eigene Projektmappe, siehe oben).
 

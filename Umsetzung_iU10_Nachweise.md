@@ -604,6 +604,29 @@ iOS-Simulator arm64). Artefakte `ios-simulator` (26 Dateien, 850 KB) und `ios-ap
 `kern.yml`-Läufe 318 bis 324 auf ubuntu (`d431e23` bis `39721b0`) sind grün. Was der Lauf NICHT zeigt: ob das
 Stilblatt auf dem Gerät auch richtig aussieht — das bleibt eine Sichtprüfung auf dem iPad (iU13-Liste).
 
+### Die Schranke: **iOS-Warnungen = 0** (Auftrag #202, gebündelt mit #208)
+
+**Ab Lauf 43 gilt: Der iOS-Bau meldet KEINE eigene Warnung.** Lauf 42 führte sechs — vier
+`CS0618` in `EPOS.iOS/Dienste/IosDialogDienst.cs` (`DisplayAlert`, `DisplayActionSheet`,
+`Page.IsBusy`) und zwei Nullbarkeitshinweise aus den zwei **verlinkten** Bausteinen des
+Referenzlaufs (`CS8602` in `Ergebnisexport.cs`, `CS8604` in `Protokoll.cs`). Alle sechs sind
+mit **#202** behoben:
+
+- die drei MAUI-Aufrufe auf `DisplayAlertAsync`/`DisplayActionSheetAsync` gezogen (die alten
+  Namen fallen mit .NET 11),
+- `Page.IsBusy` ersetzt durch den Zustand `IosDialogDienst.Wartet` und den Haken
+  `Wartekurve`: `IsBusy` schaltete auf iOS den NETZWERK-Anzeiger, und den ignoriert iOS seit
+  Fassung 13 — bei einem Mindestziel von 17.0 war der Aufruf schon vorher wirkungslos,
+- die zwei Nullstellen in den verlinkten Dateien an der Quelle geschlossen (`Path.GetDirectoryName`
+  gegen `null` geprüft, `Convert.ToString` mit Rückfall `""`). Beide sind wertgleich; der
+  Referenzlauf bleibt byte-gleich. **Das `NoWarn` bleibt ungesetzt** — der Kommentar in
+  `EPOS.iOS.csproj` sagt weiterhin, warum: Es gälte für die ganze Hülle.
+
+**Die Schranke ist damit formuliert, nicht geführt:** Der Nachweis kommt mit **Lauf 43**
+(gebündelt mit #208, weil dieser die Hülle selbst trifft). Wer ihn liest, hält die
+Warnungszeile des Schritts „Bau für den Simulator" gegen **0** und trägt das Ergebnis hier
+nach. Eine neue Warnung der Hülle ist ab dann ein Befund, kein Rauschen.
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.

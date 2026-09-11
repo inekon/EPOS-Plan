@@ -990,7 +990,7 @@ AUSGENOMMEN = (
     "Allgemein/DbParamOleDb.cs",
 )
 
-WURZELN = ("EPOS.Kern", "WindowsFormsApplication1")
+WURZELN = ("EPOS.Kern", "WindowsFormsApplication1", "EPOS.UI.Daten")
 
 
 def dateien_im_bereich(basis):

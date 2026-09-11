@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Text;
-using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -114,7 +112,7 @@ namespace WindowsFormsApplication1
             // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
             // auf halb migriertem Schema zu konfigurieren, führt zu stillen Datenfehlern.
             string grund;
-            _gesperrt = SchemaMigration.SimulationGesperrt(out grund);
+            _gesperrt = SchemaStand.SimulationGesperrt(out grund);
             _sperrgrund = _gesperrt ? grund : "";
             if (_gesperrt) return;
 
@@ -193,7 +191,7 @@ namespace WindowsFormsApplication1
             // Bereich fuer den KI-Hilfe-Assistenten melden (nur Bedien-Kontext,
             // keine Projekt- oder Kundendaten) - woertlich wie im Vorlaeufer :114,
             // nur nicht mehr am Activated-Ereignis eines Fensters.
-            HilfeKontext.SetzeBereich(
+            KiChatKontext.BereichMelden(
                 "Simulation Konfiguration (Erzeuger definieren, Pufferspeicher zuordnen)");
 
             return new SimulationKonfigHuelle(idProjekt);
@@ -785,7 +783,7 @@ namespace WindowsFormsApplication1
                 int position = Ladeordnung.Position(ordnung, info.ID, false);
                 if (position > 0)
                 {
-                    text += " " + KartenStil.Kreisziffer(position);
+                    text += " " + Ladeordnung.Kreisziffer(position);
                     hinweis = string.Format(MyResource.Resource.SIM_POSITION_LAEDT_ALS,
                                             position, ordnung.Count) +
                               Environment.NewLine + hinweis;
@@ -806,7 +804,7 @@ namespace WindowsFormsApplication1
                 List<Ladeordnung.LadeEintrag> ordnung2 =
                     Ladeordnung.Ladereihenfolge(m_ID_Projekt, rang2.ID_Puffer);
                 int position2 = Ladeordnung.Position(ordnung2, info.ID, true);
-                if (position2 > 0) zweit += " " + KartenStil.Kreisziffer(position2);
+                if (position2 > 0) zweit += " " + Ladeordnung.Kreisziffer(position2);
             }
 
             chips.Add(new ChipDaten(string.Format(MyResource.Resource.SIM_KARTE_ZWEITSENKE, zweit),
@@ -827,7 +825,7 @@ namespace WindowsFormsApplication1
                     List<Ladeordnung.LadeEintrag> ordnungN =
                         Ladeordnung.Ladereihenfolge(m_ID_Projekt, z.ID_Puffer);
                     int positionN = Ladeordnung.Position(ordnungN, info.ID, true);
-                    if (positionN > 0) weiter += " " + KartenStil.Kreisziffer(positionN);
+                    if (positionN > 0) weiter += " " + Ladeordnung.Kreisziffer(positionN);
                 }
 
                 chips.Add(new ChipDaten(

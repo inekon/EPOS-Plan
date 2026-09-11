@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EPOS.UI.Daten - die DATENSEITE der plattformfreien Oberflaeche
+    (Umsetzungskonzept iOS, Konzept "Simulationsablauf" Stufe S2, Auftrag #208).
+
+    WOZU ES DIESES PROJEKT GIBT. Eine Razor-Seite in EPOS.UI bekommt ihre Daten
+    fertig als [Parameter] herein; wer sie holt, ist die "Huelle". Bis #208 lagen
+    alle Huellen in WindowsFormsApplication1 - und damit war jede Fachseite auf
+    iOS unerreichbar, auch wenn ihre Huelle keine einzige Windows-Zeile fuehrte
+    (gemessen an den Simulationshuellen: 5 490 Zeilen, davon 6 Windows-Zeilen).
+
+    WARUM NICHT IN EPOS.Kern. Der Kern kennt EPOS.UI nicht und darf es nicht
+    kennen - EPOS.UI referenziert EPOS.Kern, nicht umgekehrt (dieselbe Begruendung
+    steht in EPOS.Kern/Allgemein/KI/KiMaskenbruecke.cs). Eine Huelle baut aber
+    genau die DTO der Razor-Seiten (SimulationKonfigDaten, ChipDaten, SchemaBild,
+    Rueckmeldung); sie kann deshalb nicht im Kern liegen.
+
+    WARUM NICHT IN EPOS.UI. Dort gilt die Hausregel "Keine Datenbank" (EPOS.UI
+    /CLAUDE.md): kein DataRepository, kein RecordSet, kein SQL. Eine Huelle tut
+    genau das - sie laedt. Beides zusammen ergibt dieses Projekt: Es sieht den
+    Kern UND die Oberflaeche, es sieht KEINE Plattform.
+
+    DIE PLATTFORM BLEIBT DRAUSSEN. <EnableWindowsTargeting>false</> hebt die
+    Erlaubnis aus Directory.Build.props wieder auf - genau wie in EPOS.Kern und
+    EPOS.UI: Jede Windows-API bricht hier den Build, statt erst zur Laufzeit auf
+    iOS aufzufallen. Was die Plattform beisteuern muss (Fensterbesitz,
+    Dateiwaehler ueber ein Fenster, der Waermepumpen-Assistent), kommt als
+    benannte NAHT herein - Simulation/SimulationPlattformwege.cs.
+
+    RootNamespace WindowsFormsApplication1 wie EPOS.Kern: Die verschobenen Dateien
+    behalten ihren Namensraum, damit der Umzug ein Umzug bleibt und keine
+    Umbenennung von 5 500 Zeilen.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <RootNamespace>WindowsFormsApplication1</RootNamespace>
+    <AssemblyName>EPOS.UI.Daten</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- EPOS.UI zieht EPOS.Kern transitiv mit; beide werden gebraucht. -->
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
+  </ItemGroup>
+
+  <!--
+    Die Huellen sind - wie im Bestand - internal. Die zwei Schalen und das
+    Testprojekt sehen sie; dieselbe Freigabe, die EPOS.Kern fuer EPOS_Plan,
+    EPOS.iOS und seine Tests erteilt.
+  -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="EPOS_Plan" />
+    <InternalsVisibleTo Include="EPOS.iOS" />
+    <InternalsVisibleTo Include="EPOS.UI.Tests" />
+    <InternalsVisibleTo Include="EPOS.Kern.Tests" />
+  </ItemGroup>
+
+</Project>

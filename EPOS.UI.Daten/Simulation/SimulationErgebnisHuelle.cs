@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -42,8 +40,10 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
-        /// <summary>Wunschgröße des Fensters — die des Vorläufers (<c>ClientSize</c>).</summary>
-        private static readonly Size MASS = new Size(1474, 821);
+        // MASS (1 474 x 821, die ClientSize des Vorlaeufers) ist mit Auftrag #208
+        // gefallen: Die Ergebnisseite hat seit Entscheid E-5 kein eigenes Fenster
+        // mehr, das Feld hatte keinen Leser - und System.Drawing.Size gibt es in der
+        // plattformfreien Datenseite nicht.
 
         // =================================================================
         // Anlegen
@@ -81,7 +81,7 @@ namespace WindowsFormsApplication1
         /// ③ danach zeigt.</para>
         /// </remarks>
         internal static SimulationErgebnisHuelle Erzeugen(
-            Func<Form> besitzer, int idProjekt, BedarfsZustand bedarf)
+            SimulationPlattformwege wege, int idProjekt, BedarfsZustand bedarf)
         {
             if (bedarf == null) throw new ArgumentNullException(nameof(bedarf));
 
@@ -89,11 +89,11 @@ namespace WindowsFormsApplication1
 
             SimulationErgebnisHuelle huelle =
                 new SimulationErgebnisHuelle(idProjekt, bedarf.Waerme, bedarf.Strom);
-            huelle._besitzer = besitzer;
+            huelle._wege = wege ?? new SimulationPlattformwege();
 
             // Bereich fuer den KI-Hilfe-Assistenten melden - woertlich wie im
             // Vorlaeufer (:436, Befund W11-B5), nur nicht mehr am Activated-Ereignis.
-            HilfeKontext.SetzeBereich("Detaillierte Simulation");
+            KiChatKontext.BereichMelden("Detaillierte Simulation");
 
             return huelle;
         }
@@ -114,13 +114,13 @@ namespace WindowsFormsApplication1
             new EPOS.UI.Dienste.SeitenZustand();
 
         /// <summary>
-        /// Das Fenster, über dem Unterdialoge erscheinen. Bis iU9-W16b.4 war das die
-        /// eigene modale Hülle; seither ist es das Hauptfenster, denn die Seite hat
-        /// kein eigenes mehr (Entscheid E-5).
+        /// Was die SCHALE beisteuert — der einzige Rest, der nicht plattformfrei ist
+        /// (Auftrag #208). Bis iU9-W16b.4 stand hier ein <c>Func&lt;Form&gt;</c>: das
+        /// Fenster, über dem Unterdialoge erscheinen. Seit #208 liegt die Datenseite
+        /// in EPOS.UI.Daten und kennt kein Fenster mehr; was eines braucht, kommt als
+        /// benannter Weg herein (<see cref="SimulationPlattformwege"/>).
         /// </summary>
-        private Func<Form> _besitzer;
-
-        private Form _fenster { get { return _besitzer?.Invoke(); } }
+        private SimulationPlattformwege _wege = new SimulationPlattformwege();
 
         /// <summary>Die aktive Speichervariante — die Parameterseite bearbeitet sie.</summary>
         private StromspeicherVarianteModel _speicherVariante;
@@ -157,7 +157,7 @@ namespace WindowsFormsApplication1
         internal static string Sperrgrund()
         {
             string grund;
-            return SchemaMigration.SimulationGesperrt(out grund) ? (grund ?? "") : "";
+            return SchemaStand.SimulationGesperrt(out grund) ? (grund ?? "") : "";
         }
 
         /// <summary>Abbruchmarke des laufenden Simulationslaufs; <c>null</c> = kein Lauf.</summary>
@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
             // aus SimulationBlockiert :3406-3419; nur meldet sie hier als Banner statt
             // als MessageBox.
             string sperrgrund;
-            d.Gesperrt = SchemaMigration.SimulationGesperrt(out sperrgrund);
+            d.Gesperrt = SchemaStand.SimulationGesperrt(out sperrgrund);
             d.Sperrgrund = d.Gesperrt ? sperrgrund : "";
 
             ctrl.ProjektLesen(idProjekt);
@@ -956,7 +956,7 @@ namespace WindowsFormsApplication1
             _ergebnisGueltig = false;
 
             string sperrgrund;
-            if (SchemaMigration.SimulationGesperrt(out sperrgrund))
+            if (SchemaStand.SimulationGesperrt(out sperrgrund))
                 return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, sperrgrund);
 
             // PAKET 8 (Konzept 13.4): EIN Protokollkanal je Lauf, angelegt VOR der
