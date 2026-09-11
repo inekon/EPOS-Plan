@@ -10,10 +10,10 @@ Alles zu Code, Build und Architektur steht in
 [`WindowsFormsApplication1/CLAUDE.md`](WindowsFormsApplication1/CLAUDE.md).
 
 Der **Rechenkern liegt seit dem 03.09.2026 (Paket iU4) in einem eigenen Projekt**
-[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **383 `.cs`-Dateien**, `net10.0` **ohne**
+[`EPOS.Kern`](EPOS.Kern/CLAUDE.md) — inzwischen **403 `.cs`-Dateien**, `net10.0` **ohne**
 WinForms und **ohne `System.Data.OleDb`**: Simulation, Wirtschaftlichkeit, Modelle,
 Zugriffsschicht (`IDatenzugriff`/`SqliteDatenzugriff`), Bericht mit Ausgabe **und**
-Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 117 Controller. Die
+Diagramm-Renderer, Lizenz, Import, Katalog, Export, das KI-**Wissen** und 127 Controller. Die
 Windows-Anwendung referenziert das Projekt und übersetzt diese Dateien nicht mehr. **Eine
 Fachänderung am Rechenkern wird dort gemacht, nicht in `WindowsFormsApplication1/`.**
 
@@ -87,6 +87,43 @@ CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.0.400.1`, Xcode
 Hand auslöst: GitHub → Actions → iOS → *Run workflow*. Was ohne Mac nachweisbar ist und was nicht,
 steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
 
+Die **Mehrspeicherrechnung** liegt seit dem 11.09.2026 in **zwei eigenen Projekten**:
+[`SpeicherEngine`](SpeicherEngine/) rechnet die Flotte — AC-Physik, Verteilung,
+Wirtschaftlichkeit, Rainflow-Zyklen und die begrenzte Rastersuche (`Flotten*.cs`) — ohne
+Datenbank und ohne Oberfläche, und **`SpeicherPlanung`** bindet **Google OR-Tools 9.15.6755
+(SCIP)** als gemischt-ganzzahligen Fahrplaner an. Die Naht dazu führt der Kern
+(`SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl`, `SpeicherAuslegungCtrl` samt
+`.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche fünf
+Razor-Dialoge unter `EPOS.UI/Dialoge/Strom/` und den Reiter `StromspeicherReiter.razor`;
+**Schemaschritt 73** legt `Tab_SpeicherAuslegung` für die gespeicherten Auslegungsprofile,
+Suchbereiche und importierten Zeitreihen an. Was umgesetzt ist, steht in
+[`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Doku_Mehrspeicher_Konzept_und_Umsetzung.md),
+die Fachgrundlage in
+[`Projekte/Spezifikation_Stromspeicher_Optimierung.md`](Projekte/Spezifikation_Stromspeicher_Optimierung.md)
+(Fassung 1.2 vom 11.09.2026, 14 Kapitel); der ältere Einzelspeicherstand bleibt als
+[`Doku_Speicherauslegung_Kosten_Zeitreihen.md`](Doku_Speicherauslegung_Kosten_Zeitreihen.md)
+datiert liegen.
+
+**Regel: `Google.OrTools` hängt NUR an `SpeicherPlanung`** — und damit nur an der
+Windows-Anwendung, die als einziges Projekt `SpeicherPlanung` referenziert und in
+`Program.Main` die Fabrik `SpeicherFlottenProjektCtrl.PlanerFactory` setzt. **Nie an
+`EPOS.Kern`, `EPOS.UI`, `SpeicherEngine` oder `EPOS.iOS`**; dort ist der Planer ausschließlich
+die Schnittstelle `IFlottenPlaner` aus `SpeicherEngine/FlottenModel.cs`. Daraus folgt, und es
+ist gewollt: **Ohne registrierten `IFlottenPlaner` sind die drei planenden Betriebsziele
+`PvPlanung`, `Arbitrage` und `MultiUse` nicht verfügbar** — `SpeicherFlottenProjektCtrl.Planer`
+bricht dann mit einer benannten Meldung ab. Die zwei reaktiven Ziele `PvGreedy` und
+`PeakShaving` rechnen ohne Planer und stehen deshalb auf jeder Plattform.
+
+`WP-Plan.Kern.slnf` führt seither **zehn** Projekte — `EPOS.Kern`, `EPOS.UI`, `KiKern`,
+`SpeicherEngine`, `SpeicherPlanung` und die fünf zugehörigen Testprojekte —, `WP-Plan.sln`
+zusätzlich die Windows-Anwendung und die Werkzeuge. `EPOS.iOS` steht weiterhin in keiner von
+beiden (eigene Projektmappe, siehe oben).
+
+Der Python-Referenzkern unter `Projekte/Speichersimulation/code/` ist **Referenz, kein
+Werkzeug**: Er gehört zur Spezifikation, wird nicht gebaut, von keiner CI gerufen und steht in
+keiner Projektmappe. Er belegt den Algorithmus, gegen den die C#-Umsetzung geprüft wurde —
+deshalb steht er nicht in der Werkzeugtabelle unten.
+
 **Regel für die CI (Anwender, 03.09.2026): Vor dem Aufrufen des macOS-Läufers jeweils
 nachfragen, um das Actions-Kontingent nicht unnötig zu erhöhen.** Der macOS-Läufer zählt
 zehnfach. Deshalb laufen `kern.yml` bei Push nur auf ubuntu und `ios.yml` gar nicht von
@@ -100,7 +137,10 @@ implementiert, der Prüfmodus oder die Seed-Kopie beim Erststart — oder wenn d
 verlangt. Eine Änderung an Kern, Oberfläche, Testdatenbank oder Doku, die `kern.yml` auf
 ubuntu schon prüft, ist KEIN Grund; der Nachweis dafür ist der grüne Kern-Lauf. Der Nachzug
 der Testdatenbank auf Schemastand 72 (#154) war der erste Fall dieser Regel: Lauf 40 auf
-`9999d51` wurde nach vier Minuten abgebrochen und zählt nicht als Nachweis. Im Zweifel vor
+`9999d51` wurde nach vier Minuten abgebrochen und zählt nicht als Nachweis. Der Nachzug auf
+**Schemastand 73** (Stromspeicher-Sync vom 11.09.2026) ist der zweite: Er trifft Kern,
+Oberfläche und Testdatenbank, nicht die Hülle — geprüft hat ihn `kern.yml` auf ubuntu, ein
+iOS-Lauf wurde nicht ausgelöst. Im Zweifel vor
 dem Auslösen nachfragen.
 
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
@@ -118,9 +158,11 @@ dem Auslösen nachfragen.
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
 gegen `Referenzlaeufe/2026-09-07_R6_PvKoeffizienten` gehalten (**zwölf Projekte, 312 CSV,
 1 792 Skalare**, aus dem plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` auf
-**Schemastand 72** (die Basis selbst ist am 07.09.2026 auf Schemastand 69 eingefroren; am
-09.09.2026 — Auftrag #154 — ist `Kenndaten_Test.sqlite` byte-gleich auf 72 nachgezogen, die
-Schritte 70–72 legen ausschließlich nullbare Spalten an, kein Rechenwert ändert sich) nach dem
+**Schemastand 73** (die Basis selbst ist am 07.09.2026 auf Schemastand 69 eingefroren; am
+09.09.2026 — Auftrag #154 — ist `Kenndaten_Test.sqlite` byte-gleich auf 72 nachgezogen und am
+11.09.2026 mit dem Stromspeicher-Sync byte-gleich auf 73, die Schritte 70–72 legen
+ausschließlich nullbare Spalten an und Schritt 73 allein die leere Tabelle
+`Tab_SpeicherAuslegung`, kein Rechenwert ändert sich) nach dem
 Befund **W6‑B‑5** mit den Entscheiden
 **Q1–Q3**: Schemaschritt 69 repariert die verdorbenen PV-Modulkoeffizienten aus der CEC-Liste.
 **Elf der zwölf Projekte sind byte-gleich zur Vorgängerbasis; nur 1007 weicht ab**, und dort

@@ -204,6 +204,30 @@ iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach.
 > Die vollständige Vorher-/Nachher-Tabelle der 6 + 9 Katalogsätze, die Herleitung der
 > −0,69 % und der Gegenbeweis stehen im `protokoll.txt` der Basis.
 
+> **Nachtrag 09.09.2026 — Schemastand 72 (Auftrag #154), die Basis bleibt.** Die Schritte 70
+> (PV-Strangprüfung), 71 (zwölf Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`) und 72
+> (p_I in drei Spalten und der Freitext „Nicht monetäre Wirkungen") legen **ausschließlich
+> nullbare Spalten** an; `Kenndaten_Test.sqlite` ist byte-gleich nachgezogen, die Dateigröße
+> blieb bei 70 012 928 Byte. Kein Rechenwert ändert sich.
+
+> **Nachtrag 11.09.2026 — Schemastand 73 (Stromspeicher-Sync `4c3b521`), die Basis bleibt.**
+> Migrationsschritt **73** (`SCHRITT_73_SPEICHERAUSLEGUNG`) legt **eine einzige neue Tabelle**
+> an — `Tab_SpeicherAuslegung` samt dem eindeutigen Index `idx_SpeicherAuslegung` über
+> `ID_Projekt`, `COALESCE(ID_Energieanlage,0)` und `Bezeichner` — für die gespeicherten
+> Kostenprofile, Suchbereiche und importierten Zeitreihen der Speicherauslegung. **Er ändert
+> keine bestehende Spalte und legt keine Zeile an**; in der Referenzdatenbank steht die Tabelle
+> leer. Stand der Datei seither: **Schemastand 73**, **70 025 216 Byte** (66,8 MB; +12 288 Byte
+> gegenüber Stand 72, also drei Datenbankseiten zu 4 096 Byte), **119 Tabellen, davon
+> 117 STRICT**, **24 Projekte**. Der Kern-Referenzlauf
+> der CI-Projekte 1030, 1007, 1017 und 1045 ist im Linux-Gate auf `c51e839` **byte-gleich
+> gegen `2026-09-07_R6_PvKoeffizienten`** — kein Rechenwert ändert sich, die Basis wird nicht
+> neu eingefroren. Nachgezogen wie üblich mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`;
+> der SQL-Dialektprüfer meldet unverändert **0 Fundstellen**.
+>
+> **Keine der beiden Einfrierregeln ist berührt**: Der Schritt fasst weder einen
+> Emissionsfaktor (Em‑9.8‑Q4) noch einen PV-Modulkoeffizienten (W6‑B‑5‑Q3) an.
+
 ### Vorgängerbasis: `2026-09-07_R5_Zahlenrand` (löste `2026-09-07_R4_Double` ab)
 
 **`2026-09-07_R5_Zahlenrand/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023,

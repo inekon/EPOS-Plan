@@ -1,6 +1,7 @@
 # Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
 # KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests, seit iU3 EPOS.Kern und
-# seit iU4 EPOS.Kern.Tests).
+# seit iU4 EPOS.Kern.Tests, dazu EPOS.UI und EPOS.UI.Tests, seit dem
+# Stromspeicher-Sync vom 11.09.2026 SpeicherPlanung und SpeicherPlanung.Tests).
 # Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
 # WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
 # Dazu kommen drei Laeufe, die NICHT im Filter stehen: der Referenzlauf (iU3)
@@ -53,6 +54,24 @@ jobs:
       - name: Bauen
         run: dotnet build WP-Plan.Kern.slnf -c Release
 
+      # 11.09.2026 (Stromspeicher-Sync): Der Filter fuehrt seither ZEHN Projekte,
+      # darunter SpeicherPlanung und SpeicherPlanung.Tests - ein eigener Schritt
+      # ist nicht noetig, der Bau- und der Testschritt nehmen sie ueber den
+      # Filter mit.
+      # DAMIT IST DER OR-TOOLS-NACHWEIS AUF UBUNTU GEFUEHRT: Google.OrTools
+      # (9.15.6755, SCIP) haengt ausschliesslich an SpeicherPlanung, und dieser
+      # Lauf belegt, dass das Paket samt seiner nativen Haelfte auf Linux
+      # wiederhergestellt wird, baut und die MILP-Faelle rechnet. Der Planer ist
+      # also NICHT windowsgebunden - windowsgebunden ist nur, WER IHN REGISTRIERT
+      # (WindowsFormsApplication1/Program.cs setzt
+      # SpeicherFlottenProjektCtrl.PlanerFactory; EPOS.Kern, EPOS.UI,
+      # SpeicherEngine und EPOS.iOS kennen nur die Schnittstelle IFlottenPlaner).
+      # EIN Fall laeuft hier bewusst NICHT mit: der Oracle-Jahresbenchmark ueber
+      # 35 040 Viertelstunden in SpeicherPlanung.Tests/FlottenIntegrationTests.cs
+      # steht auf [Fact(Skip = ...)], weil er das 60-Sekunden-Limit reisst. Die
+      # kurze Vierwochen-Fassung desselben Wegs laeuft mit; wer die Jahreszahl
+      # braucht, nimmt den Skip von Hand heraus. "27 bestanden, 1 uebersprungen"
+      # ist deshalb das erwartete Ergebnis dieses Projekts und kein Ausfall.
       - name: Testen
         run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
 

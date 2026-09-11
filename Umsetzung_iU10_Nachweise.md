@@ -631,6 +631,37 @@ iPad genauso läuft wie unter Windows: Die sieben Dialoge der Welle 10a erschein
 
 ---
 
+## Nachtrag Stromspeicher-Mehrspeicherkonzept (11.09.2026)
+
+Der Windows-Sync `4c3b521` bringt die **Speicherflotte**: `SpeicherEngine` um die
+`Flotten*`-Dateien erweitert, acht neue Controller in `EPOS.Kern`, fünf Razor-Dialoge unter
+`EPOS.UI/Dialoge/Strom/`, Schemaschritt **73** (`Tab_SpeicherAuslegung`) — und **ein neues
+Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der Schnittstelle
+`IFlottenPlaner` anbindet. Was das für die iOS-Hülle bedeutet, in drei Punkten:
+
+- [x] **`EPOS.iOS` ist unberührt.** Die Hülle referenziert `EPOS.Kern` und `EPOS.UI`, und beide
+      übersetzen den neuen Stand; `SpeicherEngine` kommt über den Kern transitiv mit — es ist
+      plattformfrei, ohne native Hälfte und ohne OR-Tools. Am Projekt, an den neun Adaptern, am
+      Prüfmodus und an der Seed-Kopie hat der Sync **keine Zeile** geändert.
+- [ ] **Der Planer fehlt auf iOS, und das ist zunächst so gewollt.** `SpeicherPlanung`
+      wird einzig von `WindowsFormsApplication1` referenziert, und nur dessen `Program.Main` setzt
+      `SpeicherFlottenProjektCtrl.PlanerFactory`. Ohne registrierten `IFlottenPlaner` sind die
+      **drei planenden Betriebsziele `PvPlanung`, `Arbitrage` und `MultiUse`** auf dem iPad
+      nicht verfügbar — `SpeicherFlottenProjektCtrl.Planer` bricht mit einer benannten Meldung
+      ab. Die reaktiven Ziele `PvGreedy` und `PeakShaving` rechnen ohne Planer und stünden
+      damit auch dort. Ob OR-Tools unter `net10.0-ios` überhaupt trägt (native Hälfte,
+      statisches Linken, App-Store-Regeln) ist **ungeprüft**.
+- [ ] **Der Nachweis ist offen und gehört zu `#170c`**, nicht hierher: Er muss zeigen, dass
+      `EPOS.iOS` gegen den neuen Kern- und UI-Stand baut und der Prüfmodus weiter rechnet, und
+      er muss entscheiden, was die Hülle bei einem planenden Ziel anzeigt.
+
+> **Kein iOS-Lauf ausgelöst.** Nach der Regel vom 09.09.2026 trifft dieser Sync die iOS-Hülle
+> nicht selbst — er ändert Kern, Oberfläche, Testdatenbank und Doku, und genau das prüft
+> `kern.yml` auf ubuntu. Der grüne Kern-Lauf ist hier der Nachweis; der macOS-Läufer (Faktor 10)
+> bleibt aus, bis `#170c` ihn braucht oder der Anwender ihn verlangt.
+
+---
+
 ## Was iU10 bewusst **nicht** tut
 
 - **Kein Wizard.** `AppWurzel` ist eine Zustandsmaschine mit VIER Ansichten (seit iU9-W10b),
