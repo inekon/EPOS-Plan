@@ -146,17 +146,25 @@ Rollbalken. Oben eine **Ablaufleiste** mit fünf Schritten, die den Weg aus 1.1 
  1 Speicher  ·  2 Daten & Kosten  ·  3 Betriebsführung  ·  4 Berechnen  ·  5 Ergebnis
 ```
 
-Schritt 4 ist ein Knopf, kein Blatt: Er heißt „Flotte bewerten" (Einzelkonfiguration) bzw.
-„Größen optimieren" (Rastersuche an), je nach Modus-Umschalter in Schritt 1. Schritt 5 ist das
+Schritt 4 ist ein Knopf, kein Blatt: Er heißt „Bewerten" (Einzelkonfiguration) bzw.
+„Größen optimieren" (Rastersuche an), je nach dem Schalter in Schritt 1. Schritt 5 ist das
 Ergebnis (2.2) und erst nach einem Lauf betretbar; „Eingaben geändert" markiert ihn als veraltet.
 Überlagerungen bleiben nur für die CSV-Spaltenzuordnung, die Rückfrage „Speichern / Verwerfen /
 Bleiben" beim Verlassen mit ungespeicherten Eingaben (wie 62b‑E‑1) und die Prognosen-Tabelle.
 
-Dasselbe Muster bekommt die **Einzelspeicher-Optimierung** (`SpeicherOptimierungDialog`, 2 Bilder
-mit Reihenwahl schon vorhanden): Sie wird Modus „Einzelspeicher" derselben Ansicht. Ob Einzel- und
-Flottenpfad rechnerisch zusammengeführt werden, ist eine spätere Frage (SD‑Q2); in dieser Welle
-teilen sie nur die Ansicht, nicht den Rechenweg — der Einzelpfad ist der regressionsgeprüfte
-(zwölf Referenzprojekte), der Flottenpfad seit #174 mit Projekt 1046.
+> **Fortschreibung SD‑E‑8 (11.09.2026, umgesetzt #206).** Der hier beschriebene
+> **Modus-Umschalter Flotte / Einzelspeicher ist gefallen** — die Ansicht rechnet immer die
+> Flotte, und ein Einzelspeicher ist eine Flotte mit genau einer Einheit. Die Absätze unten,
+> die einen Modus nennen, sind in diesem Sinn zu lesen; was sie dem Modus „Flotte" zuschreiben,
+> gilt seither für jede Einheitenzahl. Der Einzelspeicher-**Optimierer** bleibt: Er trägt weiter
+> das Betriebsbild des Berichts und die KI-Aktion `speicher_optimieren`. Einzelheiten in 4.1.
+
+Dasselbe Muster bekam bis #206 die **Einzelspeicher-Optimierung** (`SpeicherOptimierungDialog`,
+2 Bilder mit Reihenwahl schon vorhanden): Sie wurde Modus „Einzelspeicher" derselben Ansicht. Ob
+Einzel- und Flottenpfad rechnerisch zusammengeführt werden, ist eine spätere Frage (SD‑Q2, **sie
+bleibt auch nach SD‑E‑8 offen**): Die ANSICHT ist seit #206 eine, der PROJEKTLAUF führt weiter
+zwei Pfade — der Einzelpfad ist der regressionsgeprüfte (zwölf Referenzprojekte), der Flottenpfad
+seit #174 mit Projekt 1046.
 
 **Befund 11.09.2026 (Anwender: „springt bei ‚Zurück' auf das Hauptfenster und geht nicht
 zurück"):** Der Rückweg ist gebaut (`AppWurzel._auslegungRueckweg`), aber unter Windows steht
@@ -227,7 +235,9 @@ das ist vor dem Merge gegen Projekt 1046 (R7) zu prüfen (Stufenplan P1).
 
 ### 2.5 Ergebnisse über der Speichergröße (Punkt 3b)
 
-Im Modus „Größen optimieren" zeigt Schritt 5 vor der Kandidatentabelle:
+Mit dem Schalter „Größen optimieren" zeigt Schritt 5 vor der Kandidatentabelle
+(seit SD‑E‑8 für jede Einheitenzahl — die Größen-Sicht einer Flotte mit einer Einheit ist die
+Größen-Sicht des Einzelspeichers):
 
 - **Rasterkarte** Kapazität × Leistung (Farbe = Kapitalwert gegenüber „ohne Speicher", unzulässige
   Kandidaten schraffiert, Optimum markiert) — je Einheit wählbar, bei Anzahl > 1 die Summe;
@@ -287,6 +297,32 @@ Pfade — die Einzelanlage der zwölf Referenzprojekte rechnet unverändert, nur
 Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als **Paket P5**
 (Aufgabe #206), parallel zu S3 des Assistenten (#201).
 
+**Umgesetzt #206** (11.09.2026). Was dabei blieb und warum:
+
+- **Die Vorbelegung EINER Einheit macht der Kern schon** (`SpeicherFlottenStudieCtrl.Vorbelegung`):
+  Ohne gespeicherten Flottenstand wird die aktive Speichervariante des Projekts als eine Einheit
+  angelegt — Kapazität, Lade- und Entladeleistung, beide Wirkungsgrade, SoC-Band und der
+  Anlagenbezug. Es war nichts zu ergänzen, nur nachzuweisen
+  (`StromspeicherAuslegungCtrlTests.Ohne_Flottenstand_steht_die_aktive_Variante_als_EINE_Einheit_da`).
+- **Die Verteilung erscheint erst ab zwei Einheiten** — ausgeblendet, nicht gesperrt, mit einer
+  Zeile Erklärung (`FLOTTE_BETRIEB_VERTEILUNG_EINE`). Der Schalter dafür sitzt am geteilten
+  Baustein `SpeicherFlottenBetriebEditor` (`VerteilungZeigen`, Vorgabe `true`), damit der zweite
+  Wirt — der Stromspeicher-Reiter der Ergebnisseite — unverändert bleibt.
+- **Das Rückschreiben in die Projektanlage bleibt** (Schritt 5, Knopf mit Rückfrage): Es greift
+  für die eine Einheit mit Anlagenbezug; bei zweien gibt es den Knopf nicht, weil die Anlage eine
+  Kapazität und eine Leistung trägt. Geschrieben wird der Arbeitsstand aus Schritt 1 — dorthin
+  legen „Kandidat übernehmen" und „Beste Flotte übernehmen" ihr Ergebnis.
+- **Der Leistungspreis ist EINE Eingabe** und steht in Schritt 2 (`LeistungspreisBlock`): Er
+  schreibt in den Suchraum, in `FlottenTarif.LeistungspreisEuroProKw` und sofort in die
+  Projektvariante (W11b‑E‑3).
+- **Gelöscht** sind `EinzelspeicherSuchraum/-Betrieb/-Ergebnis.razor`, der Suchraum-Teil des
+  `SpeicherAuslegungEditor` samt `NurQuellenKostenProfile`, der `Modusknopf` der `Ablaufleiste`,
+  `AuslegungModus` und im Kern der Einzelweg des `StromspeicherAuslegungCtrl`
+  (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`). **Nicht gelöscht** sind
+  `SpeicherOptimierungCtrl` und `SpeicherOptimierer`: Sie haben weitere Aufrufer (Bericht
+  `SpeicherBetriebsbild`, `SpeicherAuslegungCtrl.Vorbelegung`, KI-Aktion `speicher_optimieren`
+  über `StromspeicherSimCtrl`).
+
 ## 5. Stufenplan (nach dem Entscheid; je Paket ein Opus-Agent im eigenen Worktree)
 
 | Paket | Inhalt | Regressionsbedingung |
@@ -295,9 +331,10 @@ Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als
 | **P2 Ergebnis und Diagramme** — **umgesetzt #184** (`2a77bd4`, Merge `12db7da`) | `SpeicherFlottenErgebnisAnsicht` nach 2.2/2.3; `SpeicherFlottenAnzeigeCtrl.Bilder` mit `sortiert`/`fenster`/`ladezustand`, Reihen je Einheit; Jahresprojektionsbild im `ChartRenderer` (ChartProben 44 → 46 Proben, 39 Bilder und 7 Gegenproben); Ressourcen `FLOTTE_*` de/en für alle Flottentexte und die drei Textbündel; bunit-Tests, Hausmuster W16b‑O‑2. **Ohne** Diagnosebanner — die Zähler liefert P1, die Verdrahtung P3 | ChartProben 46/46 grün, EPOS.UI.Tests 3 503/3 503, EPOS.Kern.Tests 2 463/2 463, Referenzlauf 1030/1046 byte-gleich zu R7 |
 | **P3 Ansicht** — **umgesetzt #192** (`0088941`, Merge `ef55097`) | Seitenschlüssel `STROMSPEICHER_AUSLEGUNG`, Ablaufleiste mit fünf Stationen, Modus Flotte/Einzelspeicher (SD‑Q1), Rückkehrweg über `AppWurzel`/`Dienste.Navigation`, Rückfrage beim Verlassen (62b‑E‑1), Überlagerungen nur für CSV/Prognosen; Diagnosebanner (2.2 Punkt 2) und Peak-Ziel-Vorschlag/-Bestimmung samt Vorprüfung und Netzladung je Ziel (SD‑Q3/SD‑Q5); Hüllen-Delegaten aus `SimulationErgebnisHuelle.Flotte.cs`/`.Optimierung.cs` im Kern-Controller `StromspeicherAuslegungCtrl` (Regel: Datenbankseite in den Kern); `SpeicherFlottenDialog` und `SpeicherOptimierungDialog` sind gelöscht (Regel iZ5, nie zwei Fassungen). **Kein** neuer Menüpunkt in diesem Paket — die `Menuetabelle` bleibt bei 58 Punkten; der Weg führt über den Stromspeicher-Reiter der Ergebnisseite | EPOS.UI.Tests 3 530/3 530, EPOS.Kern.Tests 2 515/2 515, ChartProben 46/46, SQL-Prüfer 0, Referenzlauf 1030/1046 byte-gleich zu R7; Windows-Abnahme durch den Anwender steht aus |
 | **P4 Größen-Sicht** — **umgesetzt #193** (`e0c81b0`, Merge `8b2bfc8`) | Rasterkarte und Schnittkurve für die Flotte aus `FlottenKandidatZusammenfassung` (+ Durchsatz, Vollzyklen, Spitze, Ersparnis, „arbeitslos“, C-Rate und Rasterindex), `SpeicherFlottenAnzeigeCtrl.Rasterdaten`/`Schnittdaten`/`SchnittdatenLeistung` samt den drei Bildern, `ChartRenderer.Optimierungsraster` mit optionaler **Schraffur** und **SP‑O‑4-Fußzeile**, Baustein `SpeicherFlottenGroessenAnsicht` mit Kandidatentabelle (Filter, Sortierung, „übernehmen“). **Einbindung #196 (`47bdc8a`, Merge `bd9dbac`)** (11.09.2026): Schritt 5 der Ansicht `STROMSPEICHER_AUSLEGUNG` zeigt den Baustein, sobald ein Rastersuchergebnis vorliegt — VOR der Ergebnisansicht (Konzept 2.5); die einfache Kandidatentabelle der `SpeicherFlottenErgebnisAnsicht` ist damit gefallen (keine zwei Tabellen), Empfehlung und CSV-Export sind mitgewandert. „Kandidat übernehmen“ macht die Variante über `SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration` zur Flotte in Schritt 1 — für den besten Kandidaten ist das die Konfiguration des Optimierers, für jeden anderen eine Rückabbildung aus `FlottenKandidatEinheit` auf den Arbeitsstand —, markiert Schritt 5 als veraltet und führt nach Schritt 1 mit Hinweisbanner; ungespeicherte Eingaben werden vorher abgefragt (Muster 62b‑E‑1). Dazu bindet `EPOS.iOS/wwwroot/index.html` seither `epos-flotte.css` ein | Referenzlauf 1030/1046 byte-gleich gegen R7; ChartProben 49 (41 Bilder, 8 Gegenproben), die 39 vorhandenen Bilder byte-gleich. #196: EPOS.UI.Tests 3 569, EPOS.Kern.Tests 2 546, SQL-Prüfer 0 |
-| **P5 Feinraster** (später) | Verfeinerung um interessante Kandidaten (Spezifikation 12.2) im `FlottenOptimierer` | eigener Entscheid, eigenes Prüfmuster |
+| **P5 Ein Weg statt zwei Modi (SD‑E‑8)** — **umgesetzt #206** (Zweig `w206-ein-modus`; SHA beim Merge nachtragen) | `AuslegungModus` und der Modus-Umschalter fallen; die Ansicht rechnet immer die Flotte, ein Einzelspeicher ist eine Flotte mit EINER Einheit (Vorbelegung aus der aktiven Speichervariante — sie stand im Kern schon). Fünf Betriebsziele für jede Einheitenzahl, die **Verteilung erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.VerteilungZeigen`, ausgeblendet statt gesperrt, mit Erklärzeile), Schritt 4 heißt „Bewerten" bzw. „Größen optimieren". **Was der Einzelweg hierließ, bleibt:** das Rückschreiben in die Projektanlage in Schritt 5 (Knopf mit Rückfrage, für die eine Einheit mit Anlagenbezug — ohne ihn käme die ausgelegte Größe nie beim klassischen Projektlauf an, SD‑Q2) und der Leistungspreis als EINE Eingabe in Schritt 2 (`LeistungspreisBlock` → Suchraum, `FlottenTarif.LeistungspreisEuroProKw` und Projektvariante). **Gelöscht:** `EinzelspeicherSuchraum/-Betrieb/-Ergebnis`, der Suchraum-Teil des `SpeicherAuslegungEditor` samt `NurQuellenKostenProfile`, der `Modusknopf` der `Ablaufleiste`, der Einzelweg in `StromspeicherAuslegungCtrl` (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`) und 17 Ressourcenschlüssel. **Nicht gelöscht:** `SpeicherOptimierungCtrl` und `SpeicherOptimierer` — sie tragen Bericht, Vorbelegung und die KI-Aktion `speicher_optimieren` | EPOS.UI.Tests 3 634, EPOS.Kern.Tests 2 609, SpeicherEngine.Tests 394, KiKern.Tests 474, ChartProben 49, SQL-Prüfer 0, Referenzlauf 1030/1046 byte-gleich zu R7 (kein Rechenwert geändert) |
+| **P6 Feinraster** (später) | Verfeinerung um interessante Kandidaten (Spezifikation 12.2) im `FlottenOptimierer` | eigener Entscheid, eigenes Prüfmuster |
 
-Reihenfolge P1 → P2 → P3 → P4; P1 und P2 können parallel laufen (P2 zeigt die Diagnose aus P1,
+Reihenfolge P1 → P2 → P3 → P4 → P5; P1 und P2 können parallel laufen (P2 zeigt die Diagnose aus P1,
 Schnittstelle = die Felder im `SpeicherFlottenErgebnis`, vorab vereinbart). Nach jedem Paket:
 Gate, Statusblock, Push; iOS-Lauf keiner.
 

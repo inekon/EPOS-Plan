@@ -20,6 +20,10 @@ namespace EPOS.UI.Tests.Seiten.Strom;
 /// Fachaussagen bleiben: Der Rechenlauf bekommt einen unabhängigen Stand, die
 /// Projektübernahme ist ausdrücklich und nach einer Eingabeänderung gesperrt, und aus
 /// dem Ergebnis führt ein Weg zurück zur Betriebsführung.</para>
+///
+/// <para><b>Seit #206 ist es der EINZIGE Weg</b> (Anwenderentscheid SD‑E‑8): Der
+/// Modus-Umschalter ist gefallen, und was er auf den Einzelspeicher führte, steht in
+/// <c>StromspeicherAuslegungEinModusTests</c>.</para>
 /// </summary>
 public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
 {
@@ -39,7 +43,7 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         => Auslegungshilfe.Rechenknopf(cut).Click();
 
     [Fact]
-    public void Der_Einstieg_zeigt_den_Flotteneditor_statt_des_Einzelspeicherrasters()
+    public void Der_Einstieg_zeigt_den_Flotteneditor()
     {
         var cut = Ansicht(new StromspeicherAuslegungDienste
         {
@@ -48,34 +52,8 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         });
 
         Assert.Single(cut.FindComponents<SpeicherFlottenEditor>());
-        Assert.Empty(cut.FindComponents<EinzelspeicherSuchraum>());
         Assert.DoesNotContain("Vorbelegung: 500", cut.Markup);
-    }
-
-    /// <summary>
-    /// Der Modus-Umschalter (SD‑Q1) führt auf den ANDEREN Pfad — und nur dorthin: Die
-    /// zwei Rechenwege bleiben getrennt (SD‑Q2).
-    /// </summary>
-    [Fact]
-    public void Der_Modusumschalter_wechselt_auf_den_Einzelspeicher()
-    {
-        var cut = Ansicht(new StromspeicherAuslegungDienste
-        {
-            Vorgaben = () => new SpeicherOptimierungVorgaben(),
-            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
-            EinzelRechnen = (_, _) => Task.FromResult(new SpeicherOptimierungErgebnis())
-        });
-
-        Assert.Equal(AuslegungModus.Flotte, cut.Instance.Modus);
         Assert.Equal(Resource.FLOTTE_SEITE_BTN_FLOTTE,
-                     Auslegungshilfe.Rechenknopf(cut).TextContent.Trim());
-
-        Auslegungshilfe.Modus(cut, AuslegungModus.Einzelspeicher);
-
-        Assert.Equal(AuslegungModus.Einzelspeicher, cut.Instance.Modus);
-        Assert.Single(cut.FindComponents<EinzelspeicherSuchraum>());
-        Assert.Empty(cut.FindComponents<SpeicherFlottenEditor>());
-        Assert.Equal(Resource.FLOTTE_SEITE_BTN_EINZEL,
                      Auslegungshilfe.Rechenknopf(cut).TextContent.Trim());
     }
 

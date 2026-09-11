@@ -17391,42 +17391,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
     <value>Unbenannter Speicher</value>
   </data>
-  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
-    <value>Suchraum</value>
-  </data>
-  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
-    <value>Größenachse:</value>
-  </data>
-  <data name="FLOTTE_AUS_VON" xml:space="preserve">
-    <value>Von:</value>
-  </data>
-  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
-    <value>Bis:</value>
-  </data>
-  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
-    <value>Schrittweite (leer = Stützstellen):</value>
-  </data>
-  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
-    <value>Stützstellen:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
-    <value>C-Rate von:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
-    <value>C-Rate bis:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
-    <value>C-Rate Schritt:</value>
-  </data>
-  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
-    <value>Betriebsstrategie:</value>
-  </data>
-  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
-    <value>Feinraster</value>
-  </data>
-  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
-    <value>Verschleißkosten berücksichtigen</value>
-  </data>
   <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
     <value>Zeitreihen</value>
   </data>
@@ -17829,15 +17793,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
     <value>← zurück</value>
   </data>
-  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
-    <value>Modus</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
-    <value>Flotte</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
-    <value>Einzelspeicher</value>
-  </data>
   <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
     <value>Ablauf der Auslegung</value>
   </data>
@@ -17846,9 +17801,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
     <value>1 Speicher</value>
-  </data>
-  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
-    <value>1 Speicherparameter</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
     <value>2 Daten &amp; Kosten</value>
@@ -17860,13 +17812,10 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
     <value>5 Ergebnis</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Flotte bewerten</value>
+    <value>4 Bewerten</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
     <value>4 Größen optimieren</value>
-  </data>
-  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
-    <value>4 Optimieren</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>Der Ergebnisschritt steht erst offen, wenn einmal gerechnet wurde.</value>
@@ -18191,5 +18140,17 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>Knöpfe kann der Assistent in dieser Fassung noch nicht auslösen.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_VERTEILUNG_EINE" xml:space="preserve">
+    <value>Die Verteilung erscheint erst ab zwei Einheiten: Sie verteilt eine Lade- oder Entladeanforderung auf mehrere Speicher, und bei einem gibt es nichts zu verteilen.</value>
+  </data>
+  <data name="FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" xml:space="preserve">
+    <value>Der Leistungspreis bewertet die höchste Bezugsleistung des Jahres. Er gilt für die Auslegung und wird zugleich in die aktive Speichervariante des Projekts geschrieben — es ist dasselbe Feld, das der Reiter „Parameter" pflegt.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
+    <value>Größe in die Projektanlage übernehmen…</value>
+  </data>
+  <data name="FLOTTE_SEITE_ANLAGE_FRAGE" xml:space="preserve">
+    <value>Kapazität {0} kWh und Leistung {1} kW in die Speicheranlage des Projekts übernehmen? Die Simulation ist danach nicht mehr aktuell und muss neu gerechnet werden.</value>
   </data>
 </root>

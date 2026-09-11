@@ -17384,42 +17384,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_ED_UNBENANNT" xml:space="preserve">
     <value>Unnamed storage unit</value>
   </data>
-  <data name="FLOTTE_AUS_SUCHRAUM" xml:space="preserve">
-    <value>Search space</value>
-  </data>
-  <data name="FLOTTE_AUS_GROESSENACHSE" xml:space="preserve">
-    <value>Size axis:</value>
-  </data>
-  <data name="FLOTTE_AUS_VON" xml:space="preserve">
-    <value>From:</value>
-  </data>
-  <data name="FLOTTE_AUS_BIS" xml:space="preserve">
-    <value>To:</value>
-  </data>
-  <data name="FLOTTE_AUS_SCHRITT" xml:space="preserve">
-    <value>Step size (empty = number of points):</value>
-  </data>
-  <data name="FLOTTE_AUS_STUETZSTELLEN" xml:space="preserve">
-    <value>Points:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_VON" xml:space="preserve">
-    <value>C rate from:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_BIS" xml:space="preserve">
-    <value>C rate to:</value>
-  </data>
-  <data name="FLOTTE_AUS_CRATE_SCHRITT" xml:space="preserve">
-    <value>C rate step:</value>
-  </data>
-  <data name="FLOTTE_AUS_STRATEGIE" xml:space="preserve">
-    <value>Operating strategy:</value>
-  </data>
-  <data name="FLOTTE_AUS_FEINRASTER" xml:space="preserve">
-    <value>Fine grid</value>
-  </data>
-  <data name="FLOTTE_AUS_VERSCHLEISS" xml:space="preserve">
-    <value>Take wear cost into account</value>
-  </data>
   <data name="FLOTTE_AUS_ZEITREIHEN" xml:space="preserve">
     <value>Time series</value>
   </data>
@@ -17822,15 +17786,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_SEITE_ZURUECK" xml:space="preserve">
     <value>← back</value>
   </data>
-  <data name="FLOTTE_SEITE_MODUS" xml:space="preserve">
-    <value>Mode</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_FLOTTE" xml:space="preserve">
-    <value>Fleet</value>
-  </data>
-  <data name="FLOTTE_SEITE_MODUS_EINZEL" xml:space="preserve">
-    <value>Single storage</value>
-  </data>
   <data name="FLOTTE_SEITE_ABLAUF" xml:space="preserve">
     <value>Design workflow</value>
   </data>
@@ -17839,9 +17794,6 @@ The step "{0}" failed; the entries already written remain in place.</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT1" xml:space="preserve">
     <value>1 Storage</value>
-  </data>
-  <data name="FLOTTE_SEITE_SCHRITT1_EINZEL" xml:space="preserve">
-    <value>1 Storage parameters</value>
   </data>
   <data name="FLOTTE_SEITE_SCHRITT2" xml:space="preserve">
     <value>2 Data &amp; costs</value>
@@ -17853,13 +17805,10 @@ The step "{0}" failed; the entries already written remain in place.</value>
     <value>5 Result</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_FLOTTE" xml:space="preserve">
-    <value>4 Evaluate fleet</value>
+    <value>4 Evaluate</value>
   </data>
   <data name="FLOTTE_SEITE_BTN_GROESSEN" xml:space="preserve">
     <value>4 Optimise sizes</value>
-  </data>
-  <data name="FLOTTE_SEITE_BTN_EINZEL" xml:space="preserve">
-    <value>4 Optimise</value>
   </data>
   <data name="FLOTTE_SEITE_ERGEBNIS_GESPERRT" xml:space="preserve">
     <value>The result step opens once a run has been computed.</value>
@@ -18184,5 +18133,17 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KNOPF_SPAETER" xml:space="preserve">
     <value>The assistant cannot trigger buttons in this version yet.</value>
+  </data>
+  <data name="FLOTTE_BETRIEB_VERTEILUNG_EINE" xml:space="preserve">
+    <value>Allocation appears from two units upward: it distributes a charge or discharge request across several storages, and with one there is nothing to distribute.</value>
+  </data>
+  <data name="FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS" xml:space="preserve">
+    <value>The demand charge values the highest annual grid power. It applies to the sizing study and is written to the project’s active storage variant at the same time — it is the same field the „Parameters“ tab maintains.</value>
+  </data>
+  <data name="FLOTTE_SEITE_BTN_ANLAGE" xml:space="preserve">
+    <value>Transfer size to the project unit…</value>
+  </data>
+  <data name="FLOTTE_SEITE_ANLAGE_FRAGE" xml:space="preserve">
+    <value>Transfer capacity {0} kWh and power {1} kW to the project’s storage unit? The simulation is no longer current afterwards and has to be recalculated.</value>
   </data>
 </root>

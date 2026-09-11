@@ -358,18 +358,36 @@ Die Zielbilder stehen in
 [`Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md)
 Abschnitt 1.1, 1.6, 2.1, 2.2 Punkt 2 und 2.4.
 
-**Ein Faden statt zweier Reitersätze (SD‑Q1).** Über allem steht die **Ablaufleiste**
+**Ein Faden statt zweier Reitersätze.** Über allem steht die **Ablaufleiste**
 (`Ablaufleiste.razor`) mit fünf Stationen — **1 Speicher · 2 Daten & Kosten ·
 3 Betriebsführung · 4 Berechnen · 5 Ergebnis**. Station 4 ist der Rechenknopf, die übrigen
-sind Blätter. Rechts davon steht der **Modusschalter Flotte / Einzelspeicher**: dieselbe
-Leiste, andere Blätter — die Flotte zeigt `SpeicherFlottenEditor`, `SpeicherAuslegungEditor`
-und `SpeicherFlottenBetriebEditor`, der Einzelspeicher die drei aus dem gefallenen Dialog
-herausgelösten Blätter `EinzelspeicherSuchraum`, `EinzelspeicherBetrieb` und
-`EinzelspeicherErgebnis`. **Keine der vier Bestandskomponenten wurde kopiert**; der
+sind Blätter. Die Blätter sind `SpeicherFlottenEditor`, `SpeicherAuslegungEditor` und
+`SpeicherFlottenBetriebEditor` — **keine der drei Bestandskomponenten wurde kopiert**; der
 `SpeicherFlottenEditor` bekam allein den Schalter `BetriebZeigen`, damit die Betriebsführung
 nur auf Station 3 erscheint. Eine Station, die noch nicht bedienbar ist, bleibt ein
 `<button>` mit `aria-disabled` und Grund im `title` (schwache Sperre, W16b‑E‑6) — nie ein
 `disabled` ohne Begründung.
+
+**Ein Weg statt zweier Modi (SD‑E‑8, #206, 11.09.2026).** Bis dahin stand rechts in der
+Leiste ein **Modusschalter Flotte / Einzelspeicher** (SD‑Q1), und der Einzelspeicher fuhr mit
+drei eigenen Blättern eine eigene Rastersuche. Der Anwender hat ihn zurückgegeben: „Es ist
+nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen." Seither
+rechnet die Ansicht **immer die Flotte**; ein Einzelspeicher ist eine Flotte mit genau EINER
+Einheit — so bildet die Spezifikation (1.2, Kapitel 11) eine vorhandene Anlage ohnehin ab, und
+`SpeicherFlottenStudieCtrl.Vorbelegung` legt sie aus der aktiven Speichervariante an. Die fünf
+Betriebsziele, das Peak-Ziel, die Diagnose und die Größen-Sicht gelten für jede Einheitenzahl;
+die **Verteilung erscheint erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.
+VerteilungZeigen`, ausgeblendet statt gesperrt, mit einer Erklärzeile — bei einer Einheit gibt
+es nichts zu verteilen). Gefallen sind `AuslegungModus`, der `Modusknopf` der Ablaufleiste,
+die drei Blätter `EinzelspeicherSuchraum`/`-Betrieb`/`-Ergebnis` und der Suchraum-Teil des
+`SpeicherAuslegungEditor`. **Zwei Dinge des Einzelwegs blieben**, weil der PROJEKTLAUF weiter
+zwei Pfade führt (SD‑Q2): das **Rückschreiben in die Projektanlage** in Schritt 5 — ein Knopf
+mit Rückfrage für die eine Einheit mit Anlagenbezug, ohne den die ausgelegte Größe beim
+klassischen Projektlauf nie ankäme — und der **Leistungspreis** als EINE Eingabe in Schritt 2
+(`LeistungspreisBlock`; derselbe Wert für `FlottenTarif.LeistungspreisEuroProKw`, den Suchraum
+und die Projektvariante). Der Einzelspeicher-**Optimierer** selbst ist nicht gelöscht: Er
+trägt das Betriebsbild des Berichts (`SpeicherBetriebsbild`), die Vorbelegung in
+`SpeicherAuslegungCtrl` und die KI-Aktion `speicher_optimieren`.
 
 **Der Weg dorthin und zurück.** Der Reiter „Stromspeicher" der Ergebnisseite **wechselt die
 Ansicht**, statt eine Überlagerung aufzuziehen (Muster W16c‑E‑3). Die Ergebnisseite selbst
@@ -388,9 +406,11 @@ Simulationslauf an (Muster iU9‑W11a). Zwei Läufe nebeneinander wären zwei Wa
 **Die Datenseite liegt im Kern.** `EPOS.Kern/Controller/StromspeicherAuslegungCtrl.cs` ist
 eine **Instanz** je Projekt und führt, was vorher als Delegatenbündel in der WinForms-Hülle
 stand: Vorgaben lesen, Einstellungen und Profile speichern (ein Name mit `@` ist für interne
-Stände reserviert), Flotte und Einzelspeicher vorbereiten und rechnen, Betriebsbild und CSV,
-Bestpunkt übernehmen, Leistungspreis schreiben, Projektflotte aktivieren und deaktivieren,
+Stände reserviert), die Flotte vorbereiten und rechnen, die Größe einer Einheit in die
+Projektanlage übernehmen, Leistungspreis schreiben, Projektflotte aktivieren und deaktivieren,
 Vorprüfung, Peak-Ziel-Vorschlag und Peak-Ziel-Bestimmung sowie den eigenen Simulationslauf.
+Der Einzelweg (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`) ist mit #206
+entfallen — samt dem gemerkten rohen Raster, an dem das Nachzeichnen des Betriebsbildes hing.
 Die Hülle behält nur, was die **Plattform** beisteuert: Dateiwähler, `Task.Run`,
 `CancellationTokenSource`, Fensterbesitz. Datenbankarbeit bleibt auf dem Bedienfaden, allein
 die reinen Rechnungen gehen in `Task.Run` mit `IProgress<T>` und `CancellationToken`.

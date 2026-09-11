@@ -8933,42 +8933,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bis: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_BIS {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_BIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate bis: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_CRATE_BIS {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_CRATE_BIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate Schritt: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_CRATE_SCHRITT {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_CRATE_SCHRITT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die C-Rate von: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_CRATE_VON {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_CRATE_VON", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_DUPLIZIEREN {
@@ -8987,29 +8951,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_FEINRASTER {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_FEINRASTER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einstellungen gespeichert. ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_GESPEICHERT {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_GESPEICHERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Größenachse: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_GROESSENACHSE {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_GROESSENACHSE", resourceCulture);
             }
         }
         
@@ -9230,60 +9176,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schrittweite (leer = Stützstellen): ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_SCHRITT {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_SCHRITT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsstrategie: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_STRATEGIE {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_STRATEGIE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stützstellen: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_STUETZSTELLEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_STUETZSTELLEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Suchraum ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_SUCHRAUM {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_SUCHRAUM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten berücksichtigen ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_VERSCHLEISS {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_VERSCHLEISS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Von: ähnelt.
-        /// </summary>
-        public static string FLOTTE_AUS_VON {
-            get {
-                return ResourceManager.GetString("FLOTTE_AUS_VON", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitreihen ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_ZEITREIHEN {
@@ -9442,6 +9334,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_BETRIEB_TITEL {
             get {
                 return ResourceManager.GetString("FLOTTE_BETRIEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verteilung erscheint erst ab zwei Einheiten: Sie verteilt eine Lade- oder Entladeanforderung auf mehrere Speicher, und bei einem gibt es nichts zu verteilen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_BETRIEB_VERTEILUNG_EINE {
+            get {
+                return ResourceManager.GetString("FLOTTE_BETRIEB_VERTEILUNG_EINE", resourceCulture);
             }
         }
         
@@ -12560,6 +12461,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität {0} kWh und Leistung {1} kW in die Speicheranlage des Projekts übernehmen? Die Simulation ist danach nicht mehr aktuell und muss neu gerechnet werden. ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_ANLAGE_FRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_ANLAGE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe in die Projektanlage übernehmen… ähnelt.
+        /// </summary>
+        public static string FLOTTE_SEITE_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_SEITE_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bleiben ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_BTN_BLEIBEN {
@@ -12569,16 +12488,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 4 Optimieren ähnelt.
-        /// </summary>
-        public static string FLOTTE_SEITE_BTN_EINZEL {
-            get {
-                return ResourceManager.GetString("FLOTTE_SEITE_BTN_EINZEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 4 Flotte bewerten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 4 Bewerten ähnelt.
         /// </summary>
         public static string FLOTTE_SEITE_BTN_FLOTTE {
             get {
@@ -12677,29 +12587,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modus ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis bewertet die höchste Bezugsleistung des Jahres. Er gilt für die Auslegung und wird zugleich in die aktive Speichervariante des Projekts geschrieben — es ist dasselbe Feld, das der Reiter „Parameter&quot; pflegt. ähnelt.
         /// </summary>
-        public static string FLOTTE_SEITE_MODUS {
+        public static string FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS {
             get {
-                return ResourceManager.GetString("FLOTTE_SEITE_MODUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher ähnelt.
-        /// </summary>
-        public static string FLOTTE_SEITE_MODUS_EINZEL {
-            get {
-                return ResourceManager.GetString("FLOTTE_SEITE_MODUS_EINZEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Flotte ähnelt.
-        /// </summary>
-        public static string FLOTTE_SEITE_MODUS_FLOTTE {
-            get {
-                return ResourceManager.GetString("FLOTTE_SEITE_MODUS_FLOTTE", resourceCulture);
+                return ResourceManager.GetString("FLOTTE_SEITE_LEISTUNGSPREIS_HINWEIS", resourceCulture);
             }
         }
         
@@ -12727,15 +12619,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_SEITE_SCHRITT1 {
             get {
                 return ResourceManager.GetString("FLOTTE_SEITE_SCHRITT1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Speicherparameter ähnelt.
-        /// </summary>
-        public static string FLOTTE_SEITE_SCHRITT1_EINZEL {
-            get {
-                return ResourceManager.GetString("FLOTTE_SEITE_SCHRITT1_EINZEL", resourceCulture);
             }
         }
         
