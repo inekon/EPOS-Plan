@@ -135,6 +135,12 @@ jobs:
       # (Suchreihenfolge des Skripts: -Iscc -> EPOS_ISCC -> neben dem Skript ->
       # Program Files -> Registry, Auftrag #164). "-y" ist noetig, weil choco sonst auf
       # eine Bestaetigung wartet; das Skript verlangt Fassung 6.3 oder neuer.
+      #
+      # Die "Diagnose: ..."-Zeilen unten sind KEINE Pruefung (die uebernimmt
+      # build-setup.ps1 selbst ueber IsccVersionErmitteln, #180) - sie zeigen
+      # nur, welche Quelle auf DIESEM Runner-Image traegt. Anlass: Lauf
+      # 34588593433 (11.09.2026) fiel, weil VersionInfo.FileVersion hier
+      # "0.0.0.0" lieferte, obwohl Inno Setup 6.4.x installiert war.
       - name: Inno Setup bereitstellen
         shell: pwsh
         run: |
@@ -145,6 +151,31 @@ jobs:
           }
           if (-not (Test-Path $iscc)) { throw "ISCC.exe nicht gefunden: $iscc" }
           Write-Host ("Inno Setup " + (Get-Item $iscc).VersionInfo.FileVersion + " : " + $iscc)
+
+          $vi = (Get-Item $iscc).VersionInfo
+          Write-Host "Diagnose: ISCC.exe FileVersion       = $($vi.FileVersion)"
+          Write-Host "Diagnose: ISCC.exe FileVersionRaw    = $($vi.FileVersionRaw)"
+          Write-Host "Diagnose: ISCC.exe ProductVersion    = $($vi.ProductVersion)"
+          Write-Host "Diagnose: ISCC.exe ProductVersionRaw = $($vi.ProductVersionRaw)"
+
+          $compil32 = Join-Path (Split-Path -Parent $iscc) 'Compil32.exe'
+          if (Test-Path $compil32) {
+            $vic = (Get-Item $compil32).VersionInfo
+            Write-Host "Diagnose: Compil32.exe FileVersion       = $($vic.FileVersion)"
+            Write-Host "Diagnose: Compil32.exe FileVersionRaw    = $($vic.FileVersionRaw)"
+            Write-Host "Diagnose: Compil32.exe ProductVersion    = $($vic.ProductVersion)"
+            Write-Host "Diagnose: Compil32.exe ProductVersionRaw = $($vic.ProductVersionRaw)"
+          } else {
+            Write-Host "Diagnose: Compil32.exe nicht gefunden ($compil32)"
+          }
+
+          $regPfad = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Inno Setup 6_is1'
+          if (Test-Path $regPfad) {
+            $reg = Get-ItemProperty $regPfad
+            Write-Host "Diagnose: Registry DisplayVersion    = $($reg.DisplayVersion)"
+          } else {
+            Write-Host "Diagnose: Registry-Schluessel nicht gefunden ($regPfad)"
+          }
 
       # Der WebView2-Bootstrapper liegt NICHT im Repository (.gitignore:
       # /MicrosoftEdgeWebview2Setup.exe) - er ist eine Fremddatei von rund 2 MB.

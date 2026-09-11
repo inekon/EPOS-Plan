@@ -79,6 +79,22 @@
     Unterordner, der mit "Inno Setup" beginnt), dann
     %ProgramFiles%/%ProgramFiles(x86)%, dann die Registry. Ohne Angabe wie bisher.
 
+    Die gefundene ISCC.exe muss 6.3 oder neuer sein. Seit #180 ermittelt
+    IsccVersionErmitteln das ueber mehrere Quellen statt nur ueber
+    VersionInfo.FileVersion: Lauf 34588593433 (11.09.2026) zeigte, dass dieser
+    String auf windows-latest "0.0.0.0" liefert, obwohl das Image tatsaechlich
+    Inno Setup 6.4.x fuehrt - FileVersionRaw, Compil32.exe daneben oder die
+    Registry tragen dort weiterhin.
+
+.PARAMETER IsccVersionIgnorieren
+    Notschalter fuer den Fall, dass keine der Quellen aus IsccVersionErmitteln
+    eine brauchbare Version liefert oder alle unter 6.3 liegen: Aus dem sonst
+    ueblichen Abbruch wird dann nur ein Warnhinweis, das Skript baut ungeprueft
+    weiter. Die 6.3-Pflicht selbst wird dadurch NICHT abgesenkt - der Schalter
+    umgeht nur ihre Pruefung fuer einen einzelnen Lauf. Gedacht fuer den
+    Notfall auf einem Arbeitsplatz mit bekannt guter, aber nicht erkennbarer
+    Installation; im CI-Workflow bewusst NICHT gesetzt (#180).
+
 .PARAMETER Sign
     Signiert das fertige Setup mit signtool. Setzt -Thumbprint voraus.
 
@@ -102,6 +118,7 @@ param(
     [switch] $SkipPublish,
     [switch] $Schnell,
     [string] $Iscc,
+    [switch] $IsccVersionIgnorieren,
     [switch] $Sign,
     [string] $Thumbprint
 )
@@ -255,6 +272,203 @@ function ZuIsccPfad([string] $Pfad) {
     return (Join-Path $Pfad 'ISCC.exe')
 }
 
+# ---------------------------------------------------------------------------
+#  ISCC-Version robust ermitteln (#180)
+# ---------------------------------------------------------------------------
+#
+# Befund Lauf 34588593433 (11.09.2026, windows.yml Job "installer"): Auf
+# windows-latest liefert "(Get-Item ISCC.exe).VersionInfo.FileVersion" den
+# String "0.0.0.0", obwohl das Image tatsaechlich Inno Setup 6.4.x fuehrt -
+# der StringFileInfo-Eintrag FileVersion traegt dort nicht (leer oder nicht
+# gepflegt), waehrend FileVersionRaw (der feste VS_FIXEDFILEINFO-Versions-
+# block), Compil32.exe daneben oder die Registry weiterhin brauchbare Werte
+# liefern. IsccVersionErmitteln fragt deshalb mehrere Quellen der Reihe nach
+# ab und nimmt die ERSTE brauchbare (Version >= 1.0).
+
+function VersionAusString([string] $Roh) {
+    # Bereinigt einen Versionsstring wie bisher ("-replace '[^0-9.].*$', ''")
+    # und liefert [version], oder $null wenn nichts Brauchbares uebrig bleibt.
+    # [version]'' wirft - deshalb die Leerpruefung davor.
+    if (-not $Roh) { return $null }
+    $Bereinigt = $Roh -replace '[^0-9.].*$', ''
+    if (-not $Bereinigt) { return $null }
+    try { return [version] $Bereinigt } catch { return $null }
+}
+
+function IsccDateiQuellen([string] $Datei, [string] $Kennung) {
+    # Liefert die Quellen a-c (FileVersionRaw, ProductVersionRaw, FileVersion,
+    # ProductVersion) fuer eine Datei (ISCC.exe oder Compil32.exe) als
+    # [pscustomobject[]] mit Quelle/Roh - ungeprueft, ob eine davon brauchbar
+    # ist. Jeder Eigenschaftszugriff ist unter Set-StrictMode -Version Latest
+    # vorher gegen PSObject.Properties.Name geprueft.
+    $DateiVorhanden = $false
+    if ($Datei) { $DateiVorhanden = Test-Path $Datei -ErrorAction SilentlyContinue }
+    if (-not $DateiVorhanden) {
+        return @([pscustomobject]@{ Quelle = "$Kennung"; Roh = '(nicht vorhanden)' })
+    }
+
+    $vi = $null
+    try { $vi = (Get-Item $Datei -ErrorAction Stop).VersionInfo }
+    catch { $vi = $null }
+    if (-not $vi) {
+        return @([pscustomobject]@{ Quelle = "$Kennung VersionInfo"; Roh = '(nicht lesbar)' })
+    }
+
+    $Eigenschaften = $vi.PSObject.Properties.Name
+    $Ergebnis = @()
+
+    $RohFileVersionRaw = $null
+    if ($Eigenschaften -contains 'FileVersionRaw' -and $null -ne $vi.FileVersionRaw) {
+        $RohFileVersionRaw = $vi.FileVersionRaw.ToString()
+    }
+    $Ergebnis += [pscustomobject]@{ Quelle = "$Kennung FileVersionRaw"; Roh = $(if ($RohFileVersionRaw) { $RohFileVersionRaw } else { '(leer)' }) }
+
+    $RohProductVersionRaw = $null
+    if ($Eigenschaften -contains 'ProductVersionRaw' -and $null -ne $vi.ProductVersionRaw) {
+        $RohProductVersionRaw = $vi.ProductVersionRaw.ToString()
+    }
+    $Ergebnis += [pscustomobject]@{ Quelle = "$Kennung ProductVersionRaw"; Roh = $(if ($RohProductVersionRaw) { $RohProductVersionRaw } else { '(leer)' }) }
+
+    $RohFileVersion = $null
+    if ($Eigenschaften -contains 'FileVersion' -and $vi.FileVersion) {
+        $RohFileVersion = $vi.FileVersion
+    }
+    $Ergebnis += [pscustomobject]@{ Quelle = "$Kennung FileVersion"; Roh = $(if ($RohFileVersion) { $RohFileVersion } else { '(leer)' }) }
+
+    $RohProductVersion = $null
+    if ($Eigenschaften -contains 'ProductVersion' -and $vi.ProductVersion) {
+        $RohProductVersion = $vi.ProductVersion
+    }
+    $Ergebnis += [pscustomobject]@{ Quelle = "$Kennung ProductVersion"; Roh = $(if ($RohProductVersion) { $RohProductVersion } else { '(leer)' }) }
+
+    return $Ergebnis
+}
+
+function IsccVersionErmitteln([string] $Pfad) {
+    # Quellen der Reihe nach: a) FileVersionRaw, b) ProductVersionRaw,
+    # c) FileVersion/ProductVersion als String - jeweils von ISCC.exe, danach
+    # d) dieselben vier von Compil32.exe im selben Ordner, danach e) die
+    # Registry (DisplayVersion des Uninstall-Schluessels "Inno Setup 6_is1",
+    # nur gewertet, wenn deren InstallLocation zum Ordner von ISCC.exe passt -
+    # fehlt InstallLocation, zaehlt die Registry trotzdem als LETZTE Quelle,
+    # mit Hinweis in der Diagnose). Zuletzt f) die Bannerzeile von "ISCC.exe"
+    # ohne Argumente: Sie traegt nur die Hauptversion ("Inno Setup 6
+    # Command-Line Compiler...") und zaehlt deshalb NIE als brauchbare Quelle
+    # (eine blosse "6" belegt 6.3 nicht), erscheint aber in der Diagnose.
+    #
+    # Rueckgabe: [pscustomobject] mit
+    #   Version  - [version] der ersten brauchbaren Quelle (>= 1.0), sonst $null
+    #   Quelle   - Name dieser Quelle (String), sonst $null
+    #   Diagnose - String[] "Quelle: Rohwert" ALLER geprueften Quellen, auch
+    #              der erfolglosen - fuer die Fehlermeldung im Aufrufer.
+    $Diagnose   = [System.Collections.Generic.List[string]]::new()
+    $GefVersion = $null
+    $GefQuelle  = $null
+
+    foreach ($Eintrag in (IsccDateiQuellen $Pfad 'ISCC.exe')) {
+        $Diagnose.Add("$($Eintrag.Quelle): $($Eintrag.Roh)")
+        if (-not $GefVersion) {
+            $v = VersionAusString $Eintrag.Roh
+            if ($v -and $v -ge [version]'1.0') { $GefVersion = $v; $GefQuelle = $Eintrag.Quelle }
+        }
+    }
+
+    $Compil32 = $null
+    if ($Pfad) {
+        $Ordner = Split-Path -Parent $Pfad
+        if ($Ordner) { $Compil32 = Join-Path $Ordner 'Compil32.exe' }
+    }
+    foreach ($Eintrag in (IsccDateiQuellen $Compil32 'Compil32.exe')) {
+        $Diagnose.Add("$($Eintrag.Quelle): $($Eintrag.Roh)")
+        if (-not $GefVersion) {
+            $v = VersionAusString $Eintrag.Roh
+            if ($v -and $v -ge [version]'1.0') { $GefVersion = $v; $GefQuelle = $Eintrag.Quelle }
+        }
+    }
+
+    try {
+        $RegSchluessel = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Inno Setup 6_is1'
+        $RegDa = Test-Path $RegSchluessel -ErrorAction SilentlyContinue
+        if ($RegDa) {
+            $Reg = Get-ItemProperty $RegSchluessel -ErrorAction Stop
+            $RegEigenschaften = $Reg.PSObject.Properties.Name
+
+            $RohDisplayVersion = $null
+            if ($RegEigenschaften -contains 'DisplayVersion' -and $Reg.DisplayVersion) {
+                $RohDisplayVersion = $Reg.DisplayVersion
+            }
+
+            if ($RohDisplayVersion) {
+                $RohInstallLocation = $null
+                if ($RegEigenschaften -contains 'InstallLocation' -and $Reg.InstallLocation) {
+                    $RohInstallLocation = $Reg.InstallLocation
+                }
+
+                $Passt = $false
+                if ($RohInstallLocation -and $Pfad) {
+                    $OrdnerIscc = Split-Path -Parent $Pfad
+                    if ($OrdnerIscc) { $OrdnerIscc = $OrdnerIscc.TrimEnd('\') }
+                    $OrdnerReg = $RohInstallLocation.TrimEnd('\')
+                    if ($OrdnerIscc -and $OrdnerReg) {
+                        $Passt = $OrdnerIscc.Equals($OrdnerReg, [System.StringComparison]::OrdinalIgnoreCase)
+                    }
+                }
+
+                if ($Passt) {
+                    $RegQuelle = 'Registry DisplayVersion'
+                    $Diagnose.Add("${RegQuelle}: $RohDisplayVersion")
+                }
+                elseif (-not $RohInstallLocation) {
+                    $RegQuelle = 'Registry DisplayVersion (ohne InstallLocation)'
+                    $Diagnose.Add("${RegQuelle}: $RohDisplayVersion")
+                }
+                else {
+                    $RegQuelle = $null
+                    $Diagnose.Add("Registry DisplayVersion: $RohDisplayVersion (InstallLocation '$RohInstallLocation' passt nicht zu '$Pfad' - uebersprungen)")
+                }
+
+                if ($RegQuelle -and -not $GefVersion) {
+                    $v = VersionAusString $RohDisplayVersion
+                    if ($v -and $v -ge [version]'1.0') { $GefVersion = $v; $GefQuelle = $RegQuelle }
+                }
+            }
+            else {
+                $Diagnose.Add('Registry DisplayVersion: (leer)')
+            }
+        }
+        else {
+            $Diagnose.Add('Registry: Schluessel nicht vorhanden')
+        }
+    }
+    catch {
+        $Diagnose.Add("Registry: (Fehler: $($_.Exception.Message))")
+    }
+
+    $PfadVorhanden = $false
+    if ($Pfad) { $PfadVorhanden = Test-Path $Pfad -ErrorAction SilentlyContinue }
+    if ($PfadVorhanden) {
+        try {
+            $Zeile = & $Pfad 2>&1 | Select-Object -First 1
+            $Diagnose.Add("ISCC.exe Bannerzeile: $Zeile")
+        }
+        catch {
+            $Diagnose.Add("ISCC.exe Bannerzeile: (Fehler: $($_.Exception.Message))")
+        }
+    }
+
+    return [pscustomobject]@{
+        Version  = $GefVersion
+        Quelle   = $GefQuelle
+        Diagnose = $Diagnose.ToArray()
+    }
+}
+
+function AbbruchOderWarnung([string] $Meldung, [switch] $Ignorieren) {
+    # Buendelt die Entscheidung "werfen oder nur warnen" fuer -IsccVersionIgnorieren
+    # an einer Stelle statt sie an jedem Aufrufer zu wiederholen.
+    if ($Ignorieren) { Write-Warning $Meldung } else { throw $Meldung }
+}
+
 $Kandidaten = @()
 if ($Iscc)          { $Kandidaten += (ZuIsccPfad $Iscc) }
 if ($env:EPOS_ISCC) { $Kandidaten += (ZuIsccPfad $env:EPOS_ISCC) }
@@ -294,12 +508,39 @@ oder ueber die Umgebungsvariable EPOS_ISCC.
 }
 
 # 6.3 ist Pflicht: davor gibt es weder den Architekturbezeichner x64compatible
-# noch UTF-8 ohne BOM.
-$IsccVersion = [version]((Get-Item $Iscc).VersionInfo.FileVersion -replace '[^0-9.].*$', '')
-if ($IsccVersion -lt [version]'6.3') {
-    throw "Inno Setup $IsccVersion gefunden, benoetigt wird 6.3 oder neuer: $Iscc"
+# noch UTF-8 ohne BOM. Die Version wird ueber IsccVersionErmitteln bestimmt
+# (#180): Lauf 34588593433 (11.09.2026) zeigte, dass VersionInfo.FileVersion
+# auf windows-latest "0.0.0.0" liefert, obwohl das Image Inno Setup 6.4.x
+# fuehrt - FileVersionRaw, Compil32.exe daneben oder die Registry tragen dort
+# weiterhin, deshalb der Faecher aus mehreren Quellen statt einer einzigen.
+$IsccErmittlung   = IsccVersionErmitteln $Iscc
+$IsccDiagnoseText = ($IsccErmittlung.Diagnose | ForEach-Object { "  - $_" }) -join "`n"
+
+if (-not $IsccErmittlung.Version) {
+    AbbruchOderWarnung -Ignorieren:$IsccVersionIgnorieren -Meldung @"
+Inno-Setup-Version nicht ermittelbar: $Iscc
+
+Geprueft wurden:
+$IsccDiagnoseText
+
+Benoetigt wird Inno Setup 6.3 oder neuer - die Pflicht bleibt bestehen. Mit
+-IsccVersionIgnorieren laesst sich dieser Abbruch im Notfall auf einen
+Warnhinweis absenken (siehe Kommentar zum Parameter im Skriptkopf).
+"@
+    Hinweis "Inno Setup Version unbekannt (mit -IsccVersionIgnorieren fortgesetzt) : $Iscc"
 }
-Hinweis "Inno Setup $IsccVersion : $Iscc"
+elseif ($IsccErmittlung.Version -lt [version]'6.3') {
+    AbbruchOderWarnung -Ignorieren:$IsccVersionIgnorieren -Meldung @"
+Inno Setup $($IsccErmittlung.Version) gefunden ($($IsccErmittlung.Quelle)), benoetigt wird 6.3 oder neuer: $Iscc
+
+Geprueft wurden:
+$IsccDiagnoseText
+"@
+    Hinweis "Inno Setup $($IsccErmittlung.Version) ($($IsccErmittlung.Quelle)), unter 6.3 - mit -IsccVersionIgnorieren fortgesetzt : $Iscc"
+}
+else {
+    Hinweis "Inno Setup $($IsccErmittlung.Version) ($($IsccErmittlung.Quelle)) : $Iscc"
+}
 
 # .NET SDK pruefen. Veroeffentlicht wird mit "dotnet publish": Seit dem
 # 02.09.2026 haelt das Projekt keine COM-Referenzen mehr (Excel-Interop auf
