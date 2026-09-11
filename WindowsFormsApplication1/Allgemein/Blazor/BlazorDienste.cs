@@ -48,6 +48,10 @@ namespace WindowsFormsApplication1
                     // Alles, was eine BlazorWebView selbst braucht (WebViewManager,
                     // JS-Laufzeit, Dateianbieter).
                     sammlung.AddWindowsFormsBlazorWebView();
+                    #if DEBUG
+                       sammlung.AddBlazorWebViewDeveloperTools();
+                    #endif
+                    // mit STRG+SHIFT+I kann der devTools Dialog zu Debugzwecken geöffnet werden, das dient zur Inspizierung von html + css im webViev
 
                     // Der Zugang zum Hilfesystem fuer <InfoKnopf>: dieselbe
                     // Aufloesung ueber help_mapping.txt und den Wiki-Katalog, die
