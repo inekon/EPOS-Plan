@@ -627,6 +627,30 @@ mit **#202** behoben:
 Warnungszeile des Schritts „Bau für den Simulator" gegen **0** und trägt das Ergebnis hier
 nach. Eine neue Warnung der Hülle ist ab dann ein Befund, kein Rauschen.
 
+**Nachgetragen, Lauf 43 (34644279531):** 6 Warnungen — vier des Kerns, eine des SDK (`RuntimeIdentifier`), und
+**eine der Hülle: `CS8600` in `Referenzlauf/Protokoll.cs:104`** (die #202-Zuweisung `string ordner =
+Path.GetDirectoryName(datei)` ist unter `Nullable=enable` ein `string?`). Die Schranke ist um eine verfehlt; Fix
+**#223** (`string?`), Nachweis mit dem nächsten freigegebenen Lauf.
+
+**Dreiundvierzigster Lauf 34644279531 (`ios.yml`, `macos-26`, 11.09.2026, 20:27–20:38 UTC, 10 min 49 s)** auf
+`d976451` — ausgelöst per `workflow_dispatch` auf Anwenderentscheid („Freigabe des iOS-Laufs 43 nach #208 und #202",
+11.09.2026), nach dem Merge von **#208** (`c989745`, Anwenderentscheid #208‑E‑1 = A): der erste Lauf mit dem elften
+Projekt **`EPOS.UI.Daten`** (die sieben Simulationshüllen plattformfrei, `SimulationAnsichtQuelle` liefert der `AppWurzel`
+dasselbe Wörterbuch wie Windows), mit der **Simulationsansicht auf iOS** (Kachel „Simulation" in der Projektliste,
+Stufe S2 des Simulationskonzepts) und mit den Korrekturen aus **#202**; dazu die Zwischenstände #212 bis #219
+(Katalogliste, Hilfe-Pille, Assistent-Fokus). Workload 27 s, Bau 2 min 56 s (0 Fehler, **6 Warnungen**: die vier
+Bestandswarnungen des Kerns CS0108 ×2/CS0109 ×2, die `RuntimeIdentifier`-Meldung des iOS-SDK und **eine neue
+Nullbarkeitswarnung `CS8600` in `Referenzlauf/Protokoll.cs:104`** — die #202-Zeile `string ordner =
+Path.GetDirectoryName(datei)` weist unter `Nullable=enable` ein `string?` einer `string` zu; die alte `CS8604` ist weg,
+an ihrer Stelle steht die Zuweisung; Folgeauftrag **#223**, eine Zeile `string?`), Simulatorstart 2 min 22 s
+(iPad Pro 13-inch (M5)), Erststart mit Seed-Kopie aus dem Anwendungspaket, Startmarken `SQLite 3.53.3` · `STRICT=118`
+(Erwartung aus der Seed-Datenbank 118) · `Projekte=25` grün, Kultur de-DE, Prüfmodus 1030 (22 CSV, 160 Skalare, 21 s),
+**iZ6-Vergleich gegen `2026-09-11_R7_Speicherflotte` PASS (236 680 Werte)** und **BYTE-GLEICH** (`diff -rq` leer,
+iOS-Simulator arm64). Artefakte `ios-simulator` (852 KB) und `ios-app` (83,8 MB). **Die Schranke „iOS-Warnungen = 0"
+ist damit um EINE verfehlt** (6 statt der 5, die Kern und SDK beisteuern); der Nachweis kommt mit dem nächsten
+freigegebenen Lauf nach #223. Was der Lauf NICHT zeigt: ob die Simulationsansicht auf dem Gerät bedienbar aussieht
+und ob `autofocus`/`FocusAsync` aus #219 in der WKWebView die Tastatur holen — beides Sichtprüfung auf dem iPad (iU13-Liste).
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
