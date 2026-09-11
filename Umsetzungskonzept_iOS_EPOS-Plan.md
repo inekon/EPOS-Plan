@@ -1834,7 +1834,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > unter `en_US` —, Formularkarte 122, SQL 0 von 1 312, ChartProben 44, Referenzlauf 1030/1007/1017/1045 **4 × PASS
 > und byte-gleich** gegen `2026-09-07_R6_PvKoeffizienten`, kein Schema.
 >
-> **Offen: Risiko R‑W16‑6 ist damit NICHT eingelöst.** Der Umbau des Schreibwegs verlangt den Feld-für-Feld-Vergleich
+> **Offen: Risiko R‑W16‑6 ist damit NICHT eingelöst** (→ **geschlossen 11.09.2026, Anwenderentscheid: „alter Schreibweg ist nicht mehr relevant"**)**.** Der Umbau des Schreibwegs verlangt den Feld-für-Feld-Vergleich
 > am Windows-Gerät, und der läuft nur dort — je einmal für ein über den Assistenten NEU angelegtes und ein
 > BEARBEITETES Projekt, mit dem Stand vor und nach dieser Welle (`Referenzlauf.exe projekt <id> <ordner>`, dann
 > `vergleich`). Auf Linux belegen nur die zwei Kern-Prüffälle den Rückzug. **Abnahme auf Windows:
@@ -1881,7 +1881,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > (die zwei Menüwege und die zwei Startkacheln, Speichern neu und bestehend, „Abbrechen" mit und ohne Eingaben,
 > Ansichtswechsel mit Zielansicht nach dem Speichern, scheiterndes Speichern in der Rückfrage, „Projekt öffnen",
 > Programmschluss, Sprachwechsel, Anmutung bei 100/125/150 %). **Offen bleiben R‑W16‑6** (der Feldvergleich am
-> Gerät, gemeinsam mit A‑W16a‑O1‑3) **und `IosProjektQuelle.AssistentGaben`** (W16a‑O‑4): Auf dem iPad meldet die
+> Gerät, gemeinsam mit A‑W16a‑O1‑3; → **geschlossen 11.09.2026 durch Anwenderentscheid, siehe Eintrag im Welle‑11b‑Block**) **und `IosProjektQuelle.AssistentGaben`** (W16a‑O‑4): Auf dem iPad meldet die
 > Wurzel weiter „Der Projektassistent steht auf diesem Gerät noch nicht zur Verfügung."; sobald die iOS-Hülle den
 > Parametersatz liefert, bekommt sie die Rückfrage ohne weitere Arbeit mit — sie braucht dafür nur den Delegaten
 > `HatAenderungen` in ihren Gaben. Zwei Auslegungen zur Bestätigung: „Abbrechen" geht durch dieselbe Rückfrage
@@ -3436,6 +3436,15 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > fünf Dateienden (resx beidseitig angefügt, CSS, zwei Doku-Dateien) durch Vereinigung gelöst — im CSS hatte Git den
 > gemeinsamen Blockschluss der P3-Regeln als Suffix gewertet, zwei schließende Klammern nachgesetzt (82/82). Gate auf `ef55097`:
 > Kern 2540, UI 3559, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **R‑W16‑6 geschlossen (Anwenderentscheid 11.09.2026: „alter Schreibweg ist nicht mehr relevant").** Das Risiko aus
+> Teilwelle 16a — der neue Schreibweg des Projektassistenten (`AssistentCtrl` mit Transaktion) könnte ein Projekt mit anderen
+> Feldwerten ablegen als der gefallene WinForms-Assistent — verlangte den Feld-für-Feld-Vergleich am Windows-Gerät gegen den
+> Stand `vor-W16` (`975ead5`), Abnahmepunkt A‑W16a‑O1‑3. Der Anwender hat entschieden, dass der alte Schreibweg nicht mehr
+> maßgeblich ist: Der Assistent von W16a ist die einzige Fassung, seine zwei Kern-Prüffälle (Rückzug bei Fehlschlag) und die
+> bunit-Fälle der Ansicht sind der Nachweis, ein Vergleich gegen den gelöschten Weg entfällt. Damit ist auch A‑W16a‑O1‑3
+> gegenstandslos; die übrigen Punkte A‑W16a‑O1‑1/2/4…8 bleiben Teil der Windows-Abnahme. Der Git-Tag `vor-W16` bleibt zur
+> Geschichte stehen.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
