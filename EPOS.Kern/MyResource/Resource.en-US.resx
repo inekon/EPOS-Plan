@@ -2823,15 +2823,6 @@ Please select a different buffer storage or change the heat sink of one of the u
   <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
     <value>Gas/biogas/rapeseed oil/wood... [MWh/a]</value>
   </data>
-  <data name="SIM_SPALTE_DECKUNG_KANAL" xml:space="preserve">
-    <value>Coverage {0} [MWh/a]</value>
-  </data>
-  <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
-    <value>Energy generator</value>
-  </data>
-  <data name="SIM_SPALTE_ERGEBNIS_MWH" xml:space="preserve">
-    <value>Result [MWh/a]</value>
-  </data>
   <data name="SIM_SPALTE_FLAECHE" xml:space="preserve">
     <value>Area [m²]</value>
   </data>
@@ -18352,5 +18343,71 @@ Do you want to allow this?</value>
   </data>
   <data name="SIM_ANSICHT_BTN_BLEIBEN" xml:space="preserve">
     <value>Stay</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Generator</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ERZEUGUNG" xml:space="preserve">
+    <value>Generation</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ANTEIL" xml:space="preserve">
+    <value>Share</value>
+  </data>
+  <data name="SIMUEB_ZEILE_SUMME" xml:space="preserve">
+    <value>Total generators</value>
+  </data>
+  <data name="SIMUEB_LEGENDE_REST" xml:space="preserve">
+    <value>Remainder (uncovered)</value>
+  </data>
+  <data name="SIMUEB_LEGENDE_NETZBEZUG" xml:space="preserve">
+    <value>Grid supply (uncovered)</value>
+  </data>
+  <data name="SIMUEB_RING_GEDECKT" xml:space="preserve">
+    <value>covered</value>
+  </data>
+  <data name="SIMUEB_RING_NETZBEZUG" xml:space="preserve">
+    <value>grid supply 100 %</value>
+  </data>
+  <data name="SIMUEB_LBL_DECKUNG" xml:space="preserve">
+    <value>Covered by generators</value>
+  </data>
+  <data name="SIMUEB_LBL_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="SIMUEB_LBL_STROMBEDARF" xml:space="preserve">
+    <value>Electricity demand</value>
+  </data>
+  <data name="SIMUEB_BADGE_KASKADE" xml:space="preserve">
+    <value>Cascade: {0}</value>
+  </data>
+  <data name="SIMUEB_BADGE_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>no electricity generator in the project</value>
+  </data>
+  <data name="SIMUEB_HINWEIS_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>No electricity generator in the cascade. Add photovoltaics, a CHP unit or a battery under {0}, and the ring will show the share of each generator.</value>
+  </data>
+  <data name="SIMUEB_LINK_KONFIGURATION" xml:space="preserve">
+    <value>① Configuration</value>
+  </data>
+  <data name="SIMUEB_TABELLE_OHNE_WAERMEERZEUGER" xml:space="preserve">
+    <value>No heat generators in the project — the table appears with the first generator.</value>
+  </data>
+  <data name="SIMUEB_TABELLE_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>No electricity generators in the project — the table appears with the first generator.</value>
+  </data>
+  <data name="SIMUEB_SCHALTER_AUSBLENDEN" xml:space="preserve">
+    <value>Hide {0} rows without a contribution</value>
+  </data>
+  <data name="SIMUEB_SCHALTER_EINBLENDEN" xml:space="preserve">
+    <value>Show {0} rows without a contribution</value>
+  </data>
+  <data name="SIM_BTN_STROMBEDARF_UEBERSICHT" xml:space="preserve">
+    <value>Electricity demand overview...</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_ANZEIGEN" xml:space="preserve">
+    <value>show</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
+    <value>of which own consumption of the heat generators: {0} MWh/a</value>
   </data>
 </root>

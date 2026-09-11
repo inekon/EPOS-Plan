@@ -1,7 +1,8 @@
 ﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulation
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulation.wiki
      Stand: 2026-09-11 (Ansicht SIMULATION mit Ablaufleiste, drei Schritte - SIM-Q1, Auftrag #207;
-     Windows-Abnahme #216: Kachel "Simulation starten", Werkzeugleiste, Reiter Parameter entfallen, Uebersicht zuerst - SIM-E-1)
+     Windows-Abnahme #216: Kachel "Simulation starten", Werkzeugleiste, Reiter Parameter entfallen, Uebersicht zuerst - SIM-E-1;
+     Auftrag #222: die Uebersicht ist ein Dashboard Waerme | Strom, das zweite Uebersichtsblatt im Reiter Ergebnis ist gefallen - SIM-E-3)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Simulationsablauf. -->
 Die Ansicht '''Simulation''' führt den Lauf in '''drei Schritten''': ''① Konfiguration'', ''② Simulation starten ▶'' und ''③ Ergebnis''. Sie füllt das Programmfenster ganz aus – kein Fenster im Fenster, ein Rollbalken.
@@ -18,6 +19,8 @@ Oben rechts steht die '''Werkzeugleiste''': die Ablaufleiste mit drei Stationen 
 # '''① Konfiguration''' – Erzeuger wählen, die Reihenfolge der Kaskade festlegen, Pufferspeicher zuordnen; die Einzelheiten stehen unter [[#erzeuger-und-speicher|Eingaben]]. Änderungen an der Kaskade müssen mit ''Konfiguration speichern'' geschrieben werden, sonst rechnet die Simulation den zuletzt gespeicherten Stand. Hier stehen auch die '''Laufparameter''': die ''Netzverluste'' (Wert und Einheit) im Abschnitt ''Wärmebedarf'' über den zwei Spalten – sie wirken nur bei vorhandenem Wärmebedarf, Vorgabe 0 % – sowie an der jeweils ersten Karte ihrer Art die ''Betriebsart'' und ''untere Leistungsgrenze'' des BHKW, der ''Heizstab'' der Wärmepumpe und die ''Betriebsbereitschaft'' des Heizkessels. Diese Werte schreibt das Programm sofort beim Verlassen des Feldes.
 # '''② Simulation starten ▶''' ist ein '''Knopf, kein Blatt''' – ein Lauf ist nichts, das man ansieht. Er ist gesperrt, solange die Konfiguration ungespeichert ist oder die Datenbank den Lauf blockiert; der Grund steht am Knopf und als Hinweis darunter. Der Lauf läuft im Hintergrund, mit Fortschrittsbalken und ''Abbrechen'', und endet in Schritt ③.
 # '''③ Ergebnis''' – die Reiter von ''Übersicht'' bis ''Ergebnis'' (bis zu neun; die Erzeugerreiter je nach Projekt); das Ergebnis macht mit der ''Übersicht'' auf, ''Ergebnis speichern'' steht in der Werkzeugleiste. Der Schritt steht erst offen, wenn einmal gerechnet wurde, und sagt sonst, warum; die Reiter beschreibt [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]]. Der Parameterblock des Einzelspeichers (klassischer Projektlauf) steht im Reiter ''Stromspeicher'' unter ''Einzelanlage (klassischer Projektlauf)'' – nur, solange keine Speicherflotte aktiviert ist.
+#* Der erste Reiter '''Übersicht''' ist seit dem 11.09.2026 ein '''Dashboard mit zwei Spalten''': links ''Wärme'', rechts ''Strom''. Jede Spalte trägt dieselben fünf Bänder – ein Kopfband (bei der Wärme mit der Kaskade des Laufs, beim Strom mit dem Hinweis ''kein Stromerzeuger im Projekt''), die drei Kennzahlen ''Bedarf'' · ''Deckung durch Erzeuger'' · ''Rest'', den Deckungsring mit seiner Legende (je Segment MWh und Prozent), die Erzeugertabelle und einen Fuß mit ''Wärmebedarf Übersicht…'' bzw. ''Strombedarf Übersicht…''. Zeilen ohne Beitrag stehen gedimmt und lassen sich über ''n Zeilen ohne Beitrag ausblenden'' wegklappen. Auf schmalem Bildschirm stehen die zwei Spalten untereinander.
+#* Der letzte Reiter '''Ergebnis''' führt seither '''drei''' Blätter – ''Autarkie-Analyse'', ''Wärmeproduktion'' und ''Stromproduktion''. Sein früheres viertes Blatt ''Übersicht'' zeigte dieselben Zahlen wie der gleichnamige erste Reiter und ist entfallen.
 
 '''← zurück''' in der Werkzeugleiste führt dorthin, woher Sie kamen. Sind Änderungen an der Konfiguration ungespeichert, werden Sie vorher gefragt: ''Speichern'' · ''Verwerfen'' · ''Bleiben''; Esc bedeutet ''Bleiben''.
 
@@ -34,6 +37,10 @@ Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stroms
 * Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen, ebenso die Fußleiste des Ergebnisses; die Werkzeugleiste oben rechts und das eine ''← zurück'' ersetzen sie.
 * Der Reiter ''Parameter'' des Ergebnisses ist entfallen: Netzverluste, BHKW-Betriebsart und Leistungsgrenze, Heizstab und Betriebsbereitschaft stehen in Schritt ① bei der Konfiguration, der Block der Einzelanlage im Reiter ''Stromspeicher''.
 * Das Ergebnis öffnet mit der ''Übersicht'' statt mit den Parametern.
+* Die '''Übersicht''' zeigt jede Zahl nur noch '''einmal''' (Anwenderentscheid 11.09.2026): Sie ist ein Dashboard ''Wärme | Strom'', und das zweite Übersichtsblatt im Reiter ''Ergebnis'' ist entfallen. Die Legende der zwei Ringe steht als Text neben dem Bild statt darin – sie lässt sich kopieren und wird nicht mehr abgeschnitten; dafür tragen die Ringe keine Zoomleiste mehr, denn an einem Ring gibt es nichts zu zoomen.
+* Der ungedeckte '''Rest''' ist in beiden Ringen ein graues Segment. Deckt kein Erzeuger den Strombedarf, steht dort ein '''voller grauer Ring''' mit ''0,0 % · Netzbezug 100 %'' und darunter der Hinweis, unter ''① Konfiguration'' einen Stromerzeuger aufzunehmen – vorher war der Kreis an dieser Stelle leer.
+* In den Erzeugertabellen steht der '''Spaltenkopf über seiner Zahl''' (rechtsbündig) und die Einheit einmal im Kopf statt in jeder Zelle.
+* Das Band ''n Hinweise zum Lauf'' ist '''kompakt''': Zähler, Kurztext und ''anzeigen ▾''.
 * Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
 * '''Auf dem iPad''' erreichen Sie dieselbe Ansicht über den Knopf ''Simulation…'' in der Projektliste; nur der Wärmepumpen-Assistent (Doppeltipp auf eine Modulzeile im Reiter ''Wärmepumpe'') steht dort nicht zur Verfügung und sagt das auch.
 

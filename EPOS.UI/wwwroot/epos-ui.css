@@ -54,6 +54,12 @@
     --epos-schema-versorgung: #1D9E75;      /* FARBE_VERSORGUNG             */
     --epos-schema-prozess: #7E57A6;         /* FARBE_PROZESS (Paket E1)     */
 
+    /* Der UNGEDECKTE REST der zwei Deckungsringe (#222). Derselbe Wert steht
+       als R_REST_GRAU im Bildbauer der Ergebnishuelle - Segment und
+       Legendenkaestchen muessen dieselbe Farbe tragen, sonst zeigt die Legende
+       auf etwas, das so im Kreis nicht vorkommt. */
+    --epos-ring-rest: #D9DEE5;
+
     /* Program.FarbeFehleingabe - Feld, dessen Text gerade keine Zahl ist. */
     --epos-fehleingabe: rgb(255, 235, 235);
 
@@ -1343,6 +1349,13 @@ body {
    schmalen Spalte nur einen weissen Streifen unter den Kreis legen. */
 .epos-diagramm--rund .epos-diagramm-flaeche {
     min-height: 0;
+}
+
+/* ... UND KEINE BEDIENUNG (Auftrag #222, Ausnahme zur Hausregel W8-E-2). Ein
+   rundes Bild traegt seit #222 kein OhneZoom-freies Diagramm mehr: weder Leiste
+   noch Rad. Der Greifzeiger versprach ein Verschieben, das es nicht mehr gibt. */
+.epos-diagramm--rund .epos-diagramm-flaeche {
+    cursor: default;
 }
 
 .epos-diagramm-leiste {
@@ -8030,6 +8043,348 @@ body {
     }
 }
 
+/* ==========================================================================
+   DAS DASHBOARD DER SIMULATIONSUEBERSICHT (Auftrag #222, SIM-E-3)
+
+   Zwei Spalten - Waerme links, Strom rechts -, jede eine Karte mit fuenf
+   Baendern: Kopf, Kennzahlen, Ring mit Legende, Erzeugertabelle, Fuss. Unter
+   --epos-zweispalten-umbruch stehen sie untereinander.
+
+   WARUM DIE TABELLE EIGENE REGELN BEKOMMT und nicht .epos-raster nimmt: Das
+   Hausraster setzt seine Koepfe LINKSbuendig, weil es Text fuehrt. Hier fuehren
+   alle Spalten ausser der ersten ZAHLEN, und der Anwender hat genau das
+   beanstandet ("Zahlenspalte unter der Ueberschrift ist unguenstig"): Ein
+   linksbuendiger Kopf ueber einer rechtsbuendigen Zahl steht in einer breiten
+   Spalte weit weg von ihr. Hier stehen Kopf UND Zelle rechts, die Einheit
+   einmal als kleine zweite Kopfzeile, und die erste Spalte nimmt den Rest der
+   Breite.
+   ========================================================================== */
+
+.epos-simueb {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-karte-rand);
+}
+
+.epos-simueb-spalten {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--epos-karte-rand);
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .epos-simueb-spalten {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.epos-simueb-spalte {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    overflow: hidden;
+}
+
+/* Der Gruppenkopf ist hier das Kopfband der Karte und nicht ein Abschnitt im
+   Fluss - sein Hausabstand nach unten wuerde einen weissen Streifen unter dem
+   dunklen Balken lassen. */
+.epos-simueb-spalte > .epos-gruppenkopf {
+    margin-bottom: 0;
+}
+
+/* --- Das Kennzahlenband: Bedarf | Deckung | Rest ------------------------- */
+
+.epos-simueb-kennzahlen {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-simueb-kennzahl {
+    padding: 10px var(--epos-rand);
+    border-right: 1px solid var(--epos-rahmen-leise);
+    min-width: 0;
+}
+
+.epos-simueb-kennzahl:last-child {
+    border-right: 0;
+}
+
+.epos-simueb-kennzahl-text {
+    display: block;
+    color: var(--epos-text-leise);
+}
+
+.epos-simueb-kennzahl-wert {
+    display: block;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-simueb-kennzahl-wert small {
+    margin-left: 4px;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 400;
+    color: var(--epos-text-leise);
+}
+
+/* Der REST ist keine weitere Kennzahl, sondern das, was nach allem uebrig
+   bleibt - dieselbe Sprache wie die Abschlusszeile der Kennzahlenlisten. */
+.epos-simueb-kennzahl--betont .epos-simueb-kennzahl-wert {
+    color: var(--epos-text);
+}
+
+.epos-simueb-eigenverbrauch {
+    margin: 0;
+    padding: 6px var(--epos-rand);
+    color: var(--epos-text-leise);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+/* --- Ring und Legende ---------------------------------------------------- */
+
+.epos-simueb-ringzeile {
+    display: grid;
+    grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+    gap: var(--epos-rand);
+    align-items: center;
+    padding: var(--epos-rand);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+@media (max-width: 620px) {
+    .epos-simueb-ringzeile {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.epos-simueb-ring {
+    min-width: 0;
+}
+
+/* Der Ring ist seit #222 quadratisch (420 x 420) und traegt seine Legende
+   nicht mehr im Bild; 200 px reichen fuer die Mittelzahl samt Unterzeile. */
+.epos-simueb-ring .epos-diagramm {
+    max-width: 200px;
+}
+
+.epos-simueb-legendenblock {
+    min-width: 0;
+}
+
+.epos-simueb-legende {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.epos-simueb-legende li {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr) auto auto;
+    column-gap: 10px;
+    align-items: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-simueb-farbe {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+}
+
+.epos-simueb-legende-name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.epos-simueb-legende-wert,
+.epos-simueb-legende-anteil {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.epos-simueb-legende-anteil {
+    color: var(--epos-text-leise);
+    min-width: 5ch;
+}
+
+/* Die SUMME schliesst die Legende ab - der Bedarf, auf den sich alle Anteile
+   beziehen. Linie darueber, fett, wie die Abschlusszeile der Kennzahlenliste. */
+.epos-simueb-legende-summe {
+    border-top: 1px solid var(--epos-rahmen);
+    padding-top: 4px;
+    font-weight: 700;
+}
+
+.epos-simueb-leerhinweis {
+    margin: 10px 0 0;
+    padding: 8px 10px;
+    background: var(--epos-flaeche);
+    border-radius: var(--epos-ecke);
+    color: var(--epos-text-leise);
+}
+
+/* --- Die Erzeugertabelle ------------------------------------------------- */
+
+.epos-simueb-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-simueb-tabelle th,
+.epos-simueb-tabelle td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.epos-simueb-tabelle thead th {
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+    font-weight: 600;
+    vertical-align: bottom;
+}
+
+/* Die Einheit steht EINMAL im Kopf, als kleine zweite Zeile - nicht in jeder
+   Zelle und nicht in einer eigenen Spalte. */
+.epos-simueb-kopfeinheit {
+    display: block;
+    font-weight: 400;
+}
+
+/* Die erste Spalte traegt den Namen: links, umbrechbar, und sie nimmt den
+   Platz, den die Zahlenspalten uebrig lassen. */
+.epos-simueb-tabelle th.epos-simueb-name,
+.epos-simueb-tabelle td.epos-simueb-name {
+    text-align: left;
+    white-space: normal;
+    width: 38%;
+}
+
+.epos-simueb-zusatz {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-simueb-leer {
+    text-align: left;
+    white-space: normal;
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+/* Eine Zeile OHNE BEITRAG steht gedimmt - sie verschwindet nicht, denn eine
+   angelegte Anlage mit 0,00 ist eine Aussage (#190). */
+.epos-simueb-tabelle tr.epos-simueb-null td {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-simueb-tabelle tr.epos-simueb-summe td {
+    font-weight: 600;
+    border-top: 2px solid var(--epos-rahmen);
+    border-bottom: 0;
+}
+
+.epos-simueb-tabelle tr.epos-simueb-rest td {
+    font-weight: 600;
+    color: var(--epos-quelle-text);
+    background: var(--epos-flaeche);
+    border-bottom: 0;
+}
+
+/* --- Der Fuss ------------------------------------------------------------ */
+
+.epos-simueb-fuss {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 8px var(--epos-rand);
+    margin-top: auto;
+}
+
+/* Der Schalter fuer die Nullzeilen ist ein Textknopf, kein Kasten - er wechselt
+   eine Ansicht und fuehrt keine Handlung aus. */
+.epos-simueb-schalter {
+    min-height: var(--epos-touchziel);
+    border: 0;
+    background: none;
+    padding: 0;
+    color: var(--epos-quelle-text);
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-simueb-schalter:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+.epos-simueb-fuss .epos-simerg-knopf {
+    margin-left: auto;
+}
+
+/* --- Das Hinweisband der Ergebnisseite ----------------------------------- */
+
+/* SEIT #222 KOMPAKT. Vorher war es ein Knopf in voller Breite mit zentriertem
+   Text auf weissem Grund - eine leere Zeile, die wie eine Schaltflaeche fuer
+   etwas Wichtiges aussah. Jetzt ist es ein Band in der Warnfarbe des Hauses:
+   links die ZAHL als Abzeichen, in der Mitte der Text, rechts "anzeigen". */
+.epos-simerg-laufband {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 6px var(--epos-rand);
+    border: 1px solid var(--epos-warn-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.epos-simerg-laufband-zahl {
+    flex: none;
+    min-width: 24px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: var(--epos-warn-rahmen);
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+}
+
+.epos-simerg-laufband-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.epos-simerg-laufband-pfeil {
+    flex: none;
+    white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+    .epos-simerg-laufband {
+        border: 1px solid ButtonBorder;
+    }
+}
+
 /* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
@@ -8243,4 +8598,3 @@ body {
         grid-template-columns: minmax(0, 1fr);
     }
 }
-

@@ -290,6 +290,7 @@ fallen mit dem Umzug der Katalogmasken (iU11).
 | **SIM‑Q5** Bedarfs-Detail, Wärmepumpen-Detail, Variantenvergleich bleiben Überlagerungen? | Ja (Regel SD‑Q1: kurze Unterdialoge mit eigener Rückkehr) | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑Q6** S2 (iOS) direkt nach S1 starten, iOS-Lauf mit #202 bündeln? | Ja — die Simulation ist die erste Fachseite der iOS-Migration und heute dort nicht erreichbar | **entschieden 11.09.2026 (Empfehlung)** |
 | **SIM‑E‑1** Die Kachel „Simulation" der Startseite: öffnen oder rechnen? | **RECHNEN** — sie heißt „Simulation starten" und löst Schritt ② aus (Anwenderwort, Windows-Abnahme #216) | **entschieden 11.09.2026 (Anwender), umgesetzt #216** (`5ef1433`, Merge `bcd3725`; Gate sept25) |
+| **SIM‑E‑3** Die Übersicht des Ergebnisses: zweimal dieselben Zahlen, Zahlenspalte weit vom Kopf, leerer Ring bei 0 % | **a)** EINE Übersicht (Dashboard Wärme \| Strom), **b)** Ringvariante A (grauer Vollring, Rest immer als Segment), **c)** keine Zoomleiste an Ringen | **entschieden 11.09.2026 (Anwender: „Empfehlung"), umgesetzt #222** |
 
 ---
 
@@ -429,3 +430,127 @@ der MARKE — `blatt=STROMSPEICHER` aus der Auslegung trifft unverändert.
 
 Rechenweg, Reiterinhalte, Diagramme, die Controller des Kerns, der Rückwegstapel, die
 Auslegungsansicht und der Menüpunkt „Simulation…". Die Hüllen nur an den Schreibnähten.
+
+---
+
+## 8. SIM‑E‑3 (11.09.2026) — die Übersicht des Ergebnisses neu
+
+Nach #216 hat der Anwender das Ergebnis am Bildschirmfoto „Heinestr 15" angesehen. Drei Sätze
+kamen zurück, und alle drei betreffen die ANSICHT der Übersicht:
+
+> „Zahlenspalte unter der Überschrift ist ungünstig, Strombedarfsdeckung bei 0 ist das Diagramm
+> nicht gut … Design optimieren auf gute Übersicht und praktische Nutzbarkeit."
+
+Der Entwurf dazu lag als Mockup vor; der Anwender hat alle drei Fragen mit **„Empfehlung"**
+entschieden: **a)** eine Übersicht, **b)** Ringvariante A, **c)** keine Zoomleiste an Ringen.
+Umgesetzt mit **Auftrag #222**.
+
+### 8.1 Befund B‑1 — dieselben Zahlen zweimal
+
+`UebersichtReiter.razor` hatte ZWEI Rollen: den Hauptreiter „Übersicht" (13 Kennzahlen in zwei
+Gruppen) UND — mit `NurNavigator` — das erste Blatt des Reiters „Ergebnis" (zwei Ringe, zwei
+Rest-Kacheln, das Eigenanteilsraster). Beide standen auf DERSELBEN Seite, nur zwei Reiter
+auseinander; der Anwender sah Restwärme und Restspitze je zweimal.
+
+**Fix.** Die Rolle `NurNavigator` entfällt. Der Hauptreiter wird das Dashboard, das Blatt
+„Übersicht" im Ergebnisreiter fällt — der behält seine DREI eigenen Blätter (Autarkie-Analyse,
+Wärme- und Stromproduktion) und macht seither mit der Autarkie auf. Startblatt der Seite bleibt
+die „Übersicht" (#216). Aus neun Hauptreitern werden keine acht: Der Reiter „Ergebnis" bleibt,
+es fällt ein Blatt IN ihm.
+
+### 8.2 Das Dashboard — zwei Spalten Wärme | Strom
+
+Die Reihenfolge bleibt die gewohnte (W11b‑B‑15 „nach Kategorie gruppiert", W11b‑B‑12 „Restwärme
+unter dem Wärmering"): links Wärme, rechts Strom. Jede Spalte trägt fünf Bänder.
+
+| Band | Inhalt |
+|---|---|
+| Kopf | „Wärme" bzw. „Strom", rechts ein Abzeichen: die KASKADE des Laufs (`tool[0…3]`) bzw. „kein Stromerzeuger im Projekt" |
+| Kennzahlen | Bedarf · Deckung durch Erzeuger · Rest — DREI Zahlen statt dreizehn, die letzte betont |
+| Ring | links das Bild, rechts die Legende als **HTML** (je Segment MWh und %, der Rest abgesetzt, darunter die Summe = Bedarf mit 100 %) |
+| Tabelle | je Erzeuger seine Zahlen, Summe der Erzeuger und Restzeile |
+| Fuß | der Schalter für die Zeilen ohne Beitrag und „Wärmebedarf Übersicht…" bzw. „Strombedarf Übersicht…" |
+
+Unter 960 px stehen die zwei Spalten untereinander.
+
+**Keine Zahl geht verloren.** Die 13 Kennzahlen des Vorläufers stehen sämtlich in den
+Erzeugerreitern wieder — bis auf DREI: den Stromverbrauch von Wärmepumpe, Heizstab und
+Spitzenkessel, aus dem sich der Nenner des Stromrings zusammensetzt. Sie stehen als eine leise
+Zeile unter den Kennzahlen der Stromspalte.
+
+### 8.3 Befund B‑2 — der leere Kreis bei 0 % (Ringvariante A)
+
+Der Anwender sah bei 0 % Stromdeckung einen **leeren Kreis**. Die Ursache liegt tiefer als in der
+Farbwahl und ist mit #222 gefunden: `SKPath.ArcTo` zieht bei einem Winkel von **360°** nichts —
+Anfangs- und Endpunkt fallen zusammen, der geschlossene Pfad ist die leere Strecke vom
+Mittelpunkt zum Rand und zurück. Ein Ring mit EINEM Segment (alles Netzbezug) blieb deshalb
+weiß. Dieselbe Falle traf den Kuchen mit nur einem Segment.
+
+**Fix (drei Teile).**
+
+1. `ChartRenderer.Kreissegment` zeichnet ab 360° einen KREIS statt eines Bogens. Wächter:
+   `ErgebnisbilderTests.Ein_einziges_Segment_fuellt_den_Ring_ganz` (prüft die Farbe im Bild)
+   und die ChartProbe `ring_null_prozent`.
+2. Der ungedeckte Rest ist in BEIDEN Ringen dasselbe **Grau** (`#D9DEE5`, im Stilblatt das Token
+   `--epos-ring-rest`) — vorher Blau im Wärmering, Gelb im Stromring; ein voller gelber Kreis
+   sah aus wie eine Leistung.
+3. Die Mitte trägt eine **Unterzeile**: „gedeckt" bzw. — bei 0 % Stromdeckung — „Netzbezug
+   100 %". Darunter steht im HTML der Weg: „Kein Stromerzeuger in der Kaskade. Photovoltaik,
+   BHKW oder Speicher unter ① Konfiguration aufnehmen …"
+
+### 8.4 Die Legende verlässt das Bild
+
+`ChartRenderer.Ring` bekommt eine Überladung mit `mitteUnterzeile` und `mitLegende`. Ohne Legende
+wird das Bild **quadratisch (420 × 420)**; die 720 × 560 des Vorläufers waren zu zwei Fünfteln
+Legendenfläche. Die Legende steht als HTML neben dem Ring — kopierbar, mitwachsend und nicht
+abschneidbar. Sie kommt aus DERSELBEN Segmentliste wie das Bild
+(`SimulationErgebnisHuelle.SegmenteWaerme` / `.SegmenteStrom`); zwei Wege wären zwei Wahrheiten
+über denselben Kreis. Die Aufrufe mit vier Parametern bleiben unverändert — Bericht und
+ChartProben zeichnen ihre Ringe wie bisher.
+
+### 8.5 Befund B‑3 — die Zahl weit weg von ihrem Kopf
+
+Das Eigenanteilsraster setzte seine Köpfe LINKSbündig über RECHTSbündige Zahlen in gleich breiten
+Spalten: zwischen „Deckung Brauchwasser [MWh/a]" und der 0,00 darunter lagen dreihundert
+Bildpunkte. Die neue Erzeugertabelle (`.epos-simueb-tabelle`) stellt Kopf UND Zelle rechts, führt
+die Einheit einmal als kleine zweite Kopfzeile, setzt `font-variant-numeric: tabular-nums` und
+lässt die Namensspalte den Rest der Breite nehmen.
+
+**Zeilen ohne Beitrag** stehen gedimmt und lassen sich mit „n Zeilen ohne Beitrag ausblenden"
+wegklappen; Vorgabe ist EINBLENDEN, der Schalter merkt sich den Stand je Spalte. Sie
+verschwinden nicht von selbst — eine angelegte Anlage mit 0,00 ist eine Aussage (#190, Zusatz
+„(nicht in der Kaskade)").
+
+### 8.6 Die Zoom-Ausnahme (Entscheid c)
+
+Die Hausregel **W8‑E‑2** („jedes Renderer-Bild steht im Baustein `Diagramm` und ist zoombar")
+bekommt ihre eine Ausnahme: **Ring und Kuchen**. `ChartBild Rund="true"` setzt seither
+`Diagramm.OhneZoom` — keine Leiste „×1 · 1:1", kein JavaScript-Modul, kein Greifzeiger. Ein Ring
+trägt eine Handvoll Segmente statt 8 760 Stützstellen; ein Achsenausschnitt ist dort undenkbar,
+und auf ×1,2 schnitt `.epos-diagramm-flaeche { overflow: hidden }` den Kreis an (rechte Grafik
+des Fotos). **Der Rahmen bleibt** — die Regel „jedes Bild durch `ChartBild`" gilt unverändert,
+und ihr Wächter `ChartBildTests.Jedes_Bild_steht_im_Baustein_Diagramm` ist unberührt.
+
+### 8.7 Das Hinweisband
+
+„n Hinweise zum Lauf" war ein Knopf in voller Breite mit zentriertem Text auf weißem Grund — eine
+leere Zeile, die aussah wie eine Schaltfläche für etwas Wichtiges. Jetzt ein Band in der
+Warnfarbe des Hauses: links die Zahl als Abzeichen, in der Mitte der Kurztext, rechts
+„anzeigen ▾". Der Klick öffnet den Volltext wie bisher.
+
+### 8.8 Was #222 NICHT anfasst
+
+Rechenweg, Kern-Controller, die übrigen Reiterinhalte, `SimulationSeite.razor` (außer dem
+Hinweisband), `InfoKnopf`, `Hauptfenster`, `AppWurzel` und die Auslegungsansicht. Der
+Referenzlauf 1030 und 1046 bleibt **byte-gleich** gegen R7.
+
+### 8.9 Offen
+
+- **Der Link „① Konfiguration"** im 0‑%-Hinweis ist TEXT, kein Sprung. Den Schritt wechselt die
+  `SimulationSeite`, und die war von #222 ausgenommen; die Ablaufleiste mit „① Konfiguration"
+  steht unmittelbar über der Ansicht. Ein Rückruf durch die Ergebnisseite wäre nachzurüsten.
+- **Eigenverbrauch und Einspeisung je Stromerzeuger** führt kein DTO des Laufs (der Lauf bucht
+  sie als Projektsummen). Die Stromtabelle führt deshalb „Erzeugung" und „Anteil" statt der vier
+  Spalten des Mockups.
+- **Die Restzeile der Wärmetabelle** trägt in den drei Kanalspalten „—": Der Restwärmebedarf ist
+  eine Bilanzgröße des Laufs und nicht nach Kanälen aufgeteilt.

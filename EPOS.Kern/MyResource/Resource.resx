@@ -2839,15 +2839,6 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
   <data name="SIM_SPALTE_BRENNSTOFFE" xml:space="preserve">
     <value>Gas/Biogas/Rapsöl/Holz... [MWh/a]</value>
   </data>
-  <data name="SIM_SPALTE_DECKUNG_KANAL" xml:space="preserve">
-    <value>Deckung {0} [MWh/a]</value>
-  </data>
-  <data name="SIM_SPALTE_ENERGIE_ERZEUGER" xml:space="preserve">
-    <value>Energie-Erzeuger</value>
-  </data>
-  <data name="SIM_SPALTE_ERGEBNIS_MWH" xml:space="preserve">
-    <value>Ergebnis [MWh/a]</value>
-  </data>
   <data name="SIM_SPALTE_FLAECHE" xml:space="preserve">
     <value>Fläche [m²]</value>
   </data>
@@ -18359,5 +18350,71 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIM_ANSICHT_BTN_BLEIBEN" xml:space="preserve">
     <value>Bleiben</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ERZEUGUNG" xml:space="preserve">
+    <value>Erzeugung</value>
+  </data>
+  <data name="SIMUEB_SPALTE_ANTEIL" xml:space="preserve">
+    <value>Anteil</value>
+  </data>
+  <data name="SIMUEB_ZEILE_SUMME" xml:space="preserve">
+    <value>Summe Erzeuger</value>
+  </data>
+  <data name="SIMUEB_LEGENDE_REST" xml:space="preserve">
+    <value>Rest (ungedeckt)</value>
+  </data>
+  <data name="SIMUEB_LEGENDE_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug (ungedeckt)</value>
+  </data>
+  <data name="SIMUEB_RING_GEDECKT" xml:space="preserve">
+    <value>gedeckt</value>
+  </data>
+  <data name="SIMUEB_RING_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug 100 %</value>
+  </data>
+  <data name="SIMUEB_LBL_DECKUNG" xml:space="preserve">
+    <value>Deckung durch Erzeuger</value>
+  </data>
+  <data name="SIMUEB_LBL_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="SIMUEB_LBL_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="SIMUEB_BADGE_KASKADE" xml:space="preserve">
+    <value>Kaskade: {0}</value>
+  </data>
+  <data name="SIMUEB_BADGE_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>kein Stromerzeuger im Projekt</value>
+  </data>
+  <data name="SIMUEB_HINWEIS_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>Kein Stromerzeuger in der Kaskade. Photovoltaik, BHKW oder Speicher unter {0} aufnehmen, dann zeigt der Ring die Deckung je Erzeuger.</value>
+  </data>
+  <data name="SIMUEB_LINK_KONFIGURATION" xml:space="preserve">
+    <value>① Konfiguration</value>
+  </data>
+  <data name="SIMUEB_TABELLE_OHNE_WAERMEERZEUGER" xml:space="preserve">
+    <value>Keine Wärmeerzeuger im Projekt — die Tabelle erscheint mit dem ersten Erzeuger.</value>
+  </data>
+  <data name="SIMUEB_TABELLE_OHNE_STROMERZEUGER" xml:space="preserve">
+    <value>Keine Stromerzeuger im Projekt — die Tabelle erscheint mit dem ersten Erzeuger.</value>
+  </data>
+  <data name="SIMUEB_SCHALTER_AUSBLENDEN" xml:space="preserve">
+    <value>{0} Zeilen ohne Beitrag ausblenden</value>
+  </data>
+  <data name="SIMUEB_SCHALTER_EINBLENDEN" xml:space="preserve">
+    <value>{0} Zeilen ohne Beitrag einblenden</value>
+  </data>
+  <data name="SIM_BTN_STROMBEDARF_UEBERSICHT" xml:space="preserve">
+    <value>Strombedarf Übersicht...</value>
+  </data>
+  <data name="SIM_LAUFMELDUNG_ANZEIGEN" xml:space="preserve">
+    <value>anzeigen</value>
+  </data>
+  <data name="SIMUEB_EIGENVERBRAUCH" xml:space="preserve">
+    <value>davon Eigenverbrauch der Wärmeerzeuger: {0} MWh/a</value>
   </data>
 </root>

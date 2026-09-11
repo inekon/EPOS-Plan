@@ -1,4 +1,4 @@
-@* Der Rahmen, in dem JEDES Renderer-Bild steht (Windows-Abnahme 05.09.2026,
+﻿@* Der Rahmen, in dem JEDES Renderer-Bild steht (Windows-Abnahme 05.09.2026,
    Befund A-1: „Allgemein bei Charts: das Zoomen funktioniert nicht").
 
    WAS ER IST. Ein Rahmen mit Zoom. Im WinForms-Vorbild waren die Diagramme
@@ -39,22 +39,33 @@
 
 <div class="@Rahmenklasse">
 
-    <div class="epos-diagramm-leiste">
-        <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
+    @* OHNE ZOOM KEINE LEISTE (Auftrag #222, Ausnahme zur Hausregel W8-E-2).
+       Ein RING hat nichts zu zoomen: Er traegt fuenf Segmente, keine 8 760
+       Stuetzstellen. Die Leiste „x1 · 1:1" darueber war deshalb Bedienflaeche
+       ohne Gegenwert - und schlimmer: Auf x1,2 schnitt
+       .epos-diagramm-flaeche { overflow: hidden } den Kreis an (Windows-Foto
+       „Heinestr 15", rechte Grafik). Mit OhneZoom faellt die Leiste, und das
+       JavaScript-Modul wird gar nicht erst gebunden. *@
+    @if (!OhneZoom)
+    {
+        <div class="epos-diagramm-leiste">
+            <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
 
-        @if (BereichGewaehlt.HasDelegate)
-        {
-            <button type="button" class="epos-diagramm-knopf" aria-pressed="@Bereichsmodus.ToString().ToLowerInvariant()"
-                    title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
-        }
+            @if (BereichGewaehlt.HasDelegate)
+            {
+                <button type="button" class="epos-diagramm-knopf" aria-pressed="@Bereichsmodus.ToString().ToLowerInvariant()"
+                        title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
+            }
 
-        <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
-                @onclick="ZurueckGewaehlt">@ZurueckText</button>
-    </div>
+            <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
+                    @onclick="ZurueckGewaehlt">@ZurueckText</button>
+        </div>
+    }
 
     @* tabindex macht die Flaeche tastaturerreichbar (+ - 0); role="img" mit
-       aria-label sagt der Sprachausgabe, was hier zu sehen ist. *@
-    <div class="epos-diagramm-flaeche" @ref="_flaeche" tabindex="0"
+       aria-label sagt der Sprachausgabe, was hier zu sehen ist. Ohne Zoom gibt
+       es nichts zu bedienen - dann bleibt die Flaeche aus der Tabfolge. *@
+    <div class="epos-diagramm-flaeche" @ref="_flaeche" tabindex="@(OhneZoom ? null : "0")"
          role="img" aria-label="@Bezeichnung">
         <div class="epos-diagramm-inhalt">@ChildContent</div>
         <div class="epos-diagramm-gummi" hidden></div>
@@ -106,6 +117,19 @@
     /// </summary>
     [Parameter] public string Zusatzklasse { get; set; } = "";
 
+    /// <summary>
+    /// KEIN ZOOM an diesem Bild (Auftrag #222) — weder Leiste noch Rad, Ziehen,
+    /// Kneifgeste oder Tasten.
+    ///
+    /// <para>Die Hausregel W8‑E‑2 („jedes Renderer-Bild steht im Baustein Diagramm
+    /// und ist zoombar") bekommt damit ihre EINE Ausnahme: RING und KUCHEN. Sie
+    /// tragen eine Handvoll Segmente statt 8 760 Stützstellen; ein Achsenausschnitt
+    /// ist dort undenkbar, und ein vergrößerter Kreis sagt nichts, was der
+    /// ungezoomte nicht sagt. Der Rahmen bleibt — die Regel „jedes Bild durch
+    /// ChartBild" gilt unverändert, nur eben ohne Bedienung.</para>
+    /// </summary>
+    [Parameter] public bool OhneZoom { get; set; }
+
     /// <summary>Steht der Umschalter „Bereich" an? (Pruefhilfe)</summary>
     public bool Bereichsmodus => _bereich;
 
@@ -129,7 +153,7 @@
     /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
+        if (!firstRender || OhneZoom) return;
 
         try
         {

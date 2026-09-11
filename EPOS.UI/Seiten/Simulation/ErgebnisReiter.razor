@@ -1,13 +1,16 @@
-@* Der ERGEBNIS-Reiter der Ergebnisseite (R11 + DashboardForm, iU9-W11b.11).
+﻿@* Der ERGEBNIS-Reiter der Ergebnisseite (R11 + DashboardForm, iU9-W11b.11).
 
    VORBILD. tabPage_Ergebnis hatte NULL Designer-Kinder; sein Inhalt entstand im
    TabNavigationManager (242 Z.): ein SplitContainer 10/90, links VIER Knoepfe,
    rechts ein Inhaltspanel, in das je nach Knopf NavigatorUebersicht,
    DashboardForm, NavigatorWaerme oder NavigatorStrom eingesetzt wurde.
 
-   AUS DEN VIER KNOEPFEN WIRD EIN INNERER <Reiter>. Die drei Fremdinhalte
-   reicht der Wirt als RenderFragment herein - so bleibt diese Komponente das,
-   was sie ist: die Navigation und die AUTARKIE-ANALYSE.
+   AUS DEN VIER KNOEPFEN WIRD EIN INNERER <Reiter> - seit #222 mit DREI
+   Blaettern. Die zwei Fremdinhalte (Waerme- und Stromganglinie) reicht der Wirt
+   als RenderFragment herein - so bleibt diese Komponente das, was sie ist: die
+   Navigation und die AUTARKIE-ANALYSE. Das vierte Blatt „Uebersicht" ist mit
+   #222 gefallen: Es zeigte dieselben Zahlen wie der gleichnamige HAUPTreiter,
+   der seit #216 das erste Blatt der Seite ist.
 
    VIER BEFUNDE ENTFALLEN MIT DEM TabNavigationManager:
      W11-B43  vier RowStyles bei RowCount = 3,
@@ -38,9 +41,13 @@
     <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
         <KindInhalt>
 
-            <Reiterblatt Schluessel="UEBERSICHT" Titel="@Resource.SIM_NAV_UEBERSICHT">
-                <KindInhalt>@UebersichtInhalt</KindInhalt>
-            </Reiterblatt>
+            @* DAS BLATT „UEBERSICHT" IST MIT #222 GEFALLEN (Anwenderentscheid
+               11.09.2026, Punkt a: „eine Uebersicht"). Es zeigte dieselben Zahlen
+               wie der Hauptreiter „Uebersicht" - zwei Ringe, zwei Rest-Kacheln und
+               das Eigenanteilsraster -, und der steht seit #216 ohnehin als ERSTES
+               Blatt der Seite. Was bleibt, sind die DREI Blaetter, die dieser
+               Reiter selbst traegt: die Autarkie-Analyse und die zwei
+               Produktionsganglinien. Das erste Blatt ist seither die AUTARKIE. *@
 
             <Reiterblatt Schluessel="AUTARKIE" Titel="@Resource.SIM_NAV_AUTARKIE_ANALYSE">
                 <KindInhalt>
@@ -119,9 +126,6 @@
     /// Kacheln neu. Sie wird NICHT gespeichert (Befund W11-B32).
     /// </summary>
     [Parameter] public EventCallback<double> KapazitaetGeaendert { get; set; }
-
-    /// <summary>Der Navigatorteil des Uebersichtsreiters.</summary>
-    [Parameter] public RenderFragment? UebersichtInhalt { get; set; }
 
     /// <summary>Der Waermegang-Reiter.</summary>
     [Parameter] public RenderFragment? WaermegangInhalt { get; set; }

@@ -490,6 +490,33 @@ namespace ChartProben
                             },
                             78.6, "%"));
 
+            // Der Ring des DASHBOARDS (#222): OHNE Legende, mit Unterzeile unter der
+            // Mittelzahl - und deshalb quadratisch. Die Legende steht dort als HTML
+            // neben dem Bild; im PNG waere sie eine Rastergrafik, die der Rahmen
+            // abschneidet (Anwenderfoto „Heinestr 15", rechte Grafik).
+            Pruefe(ziel, "ring_ohne_legende", 420, 420,
+                   new[] { RING_WP, RING_REST_GRAU },
+                   () => ChartRenderer.Ring("Waermebedarfsdeckung [%]",
+                            new List<ChartRenderer.Ringsegment>
+                            {
+                                new ChartRenderer.Ringsegment("Waermepumpe", 340, RING_WP),
+                                new ChartRenderer.Ringsegment("Rest", 60, RING_REST_GRAU)
+                            },
+                            85.0, "%", "gedeckt", false));
+
+            // DER 0-%-FALL (#222, Anwenderbefund „Strombedarfsdeckung bei 0 ist das
+            // Diagramm nicht gut"): Der ungedeckte Rest ist IMMER ein Segment, bei
+            // 0 % also ein grauer VOLLRING. Vorher zeichnete der Stromring dort einen
+            // vollen gelben Kreis - das sah aus wie eine Leistung.
+            Pruefe(ziel, "ring_null_prozent", 420, 420,
+                   new[] { RING_REST_GRAU },
+                   () => ChartRenderer.Ring("Strombedarfsdeckung [%]",
+                            new List<ChartRenderer.Ringsegment>
+                            {
+                                new ChartRenderer.Ringsegment("Netzbezug", 10322.36, RING_REST_GRAU)
+                            },
+                            0.0, "%", "Netzbezug 100 %", false));
+
             // --- B6: Monatsstapel -----------------------------------------------------
             Pruefe(ziel, "monatsstapel_drei_reihen", 978, 542,
                    new[] { SKColors.Gold, SKColors.LightGreen, SKColors.Red },
@@ -755,6 +782,31 @@ namespace ChartProben
                         new ChartRenderer.Reihe("kumuliert", projektionKumuliert, ChartRenderer.C_STAMM),
                         new[] { 14 }, null, "Zahlung [€]", "Projektjahr"));
 
+            // Dasselbe fuer die ZWEI Zusaetze des Rings (#222). Beide bestuenden Mass-,
+            // Farb- und Determinismuspruefung auch dann, wenn der Renderer sie
+            // stillschweigend uebergehen wuerde - und dann stuende die Legende weiter
+            // im Bild bzw. die Mitte traege eine nackte Null ohne den Satz dazu.
+            var ringDeckung = new List<ChartRenderer.Ringsegment>
+            {
+                new ChartRenderer.Ringsegment("Photovoltaik", 220, RING_WP),
+                new ChartRenderer.Ringsegment("Netzbezug", 95, RING_REST_GRAU)
+            };
+            var ringNull = new List<ChartRenderer.Ringsegment>
+            {
+                new ChartRenderer.Ringsegment("Netzbezug", 315, RING_REST_GRAU)
+            };
+
+            Unterschiedlich("ring_legende_weglassen",
+                () => ChartRenderer.Ring("Stromdeckung", ringDeckung, 69.8, "%"),
+                () => ChartRenderer.Ring("Stromdeckung", ringDeckung, 69.8, "%", "gedeckt", false));
+
+            // „0 % zeichnet den grauen Vollring": Derselbe Aufruf mit einem
+            // Deckungssegment ergibt ein ANDERES Bild - waere der Vollring nur die
+            // unveraenderte Zeichnung von irgendetwas, faellt es hier auf.
+            Unterschiedlich("ring_null_prozent_vollring",
+                () => ChartRenderer.Ring("Stromdeckung", ringDeckung, 69.8, "%", "gedeckt", false),
+                () => ChartRenderer.Ring("Stromdeckung", ringNull, 0.0, "%", "Netzbezug 100 %", false));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
@@ -783,6 +835,14 @@ namespace ChartProben
         private static readonly SKColor STREU_ROT_AUF_WEISS = new SKColor(255, 135, 135);
         private static readonly SKColor STREU_GELB_AUF_WEISS = new SKColor(255, 255, 135);
         private static readonly SKColor STREU_BLAU_AUF_WEISS = new SKColor(135, 135, 255);
+
+        /// <summary>
+        /// Der UNGEDECKTE REST der zwei Deckungsringe (#222) — seit dem
+        /// Anwenderentscheid vom 11.09.2026 in BEIDEN Ringen dasselbe Grau. Derselbe
+        /// Wert steht als <c>R_REST_GRAU</c> im Bildbauer der Ergebnishuelle und als
+        /// Token <c>--epos-ring-rest</c> im Stilblatt.
+        /// </summary>
+        private static readonly SKColor RING_REST_GRAU = new SKColor(0xD9, 0xDE, 0xE5);
 
         /// <summary>Die Segmentfarben der beiden Donuts der <c>NavigatorUebersicht</c>.</summary>
         private static readonly SKColor RING_WP = new SKColor(0x2E, 0xCC, 0x71);

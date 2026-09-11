@@ -2095,7 +2095,37 @@ namespace WindowsFormsApplication1
         public static byte[] Ring(string titel, IReadOnlyList<Ringsegment> segmente,
                                   double mitteWert, string mitteEinheit)
         {
-            int W = 720, H = 560;
+            return Ring(titel, segmente, mitteWert, mitteEinheit, null, true);
+        }
+
+        /// <summary>
+        /// <b>B5 mit ZWEI Zusaetzen (Auftrag #222, SIM-E-3).</b> Dieselbe Zeichnung mit
+        /// einer UNTERZEILE unter der Mittelzahl und der Wahl, die Legende aus dem Bild
+        /// zu lassen.
+        ///
+        /// <para><b>Warum die Legende hinaus darf.</b> Das Dashboard der Simulations-
+        /// uebersicht setzt die Legende als HTML NEBEN den Ring: Dort ist sie kopierbar,
+        /// sie waechst mit der Schriftgroesse des Anwenders, und sie wird nicht
+        /// abgeschnitten, wenn der Rahmen schmaler ist als das Bild. Im Bild bliebe sie
+        /// eine Rastergrafik, die bei jeder Fenstergroesse dieselben Bildpunkte
+        /// beansprucht. Ohne Legende wird das Bild QUADRATISCH (420 x 420): Die
+        /// 720 x 560 des Vorlaeufers waren zu zwei Fuenfteln Legendenflaeche, und ein
+        /// Ring mit 140 Bildpunkten Weissraum darunter steht in einer Spalte schief.</para>
+        ///
+        /// <para><b>Warum die Unterzeile.</b> „0,0 %" allein sagt nicht, WAS null ist.
+        /// Die Unterzeile traegt den Satz dazu — „gedeckt" beim Waermering, „Netzbezug
+        /// 100 %" beim Stromring ohne Erzeuger.</para>
+        /// </summary>
+        /// <param name="mitteUnterzeile">Kleiner Text unter der Mittelzahl; leer = ohne.</param>
+        /// <param name="mitLegende">
+        /// <c>false</c> laesst die Legende weg und liefert das quadratische Mass.
+        /// </param>
+        public static byte[] Ring(string titel, IReadOnlyList<Ringsegment> segmente,
+                                  double mitteWert, string mitteEinheit,
+                                  string mitteUnterzeile, bool mitLegende)
+        {
+            int W = mitLegende ? 720 : 420;
+            int H = mitLegende ? 560 : 420;
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
@@ -2105,7 +2135,8 @@ namespace WindowsFormsApplication1
                     .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
                     .ToList();
 
-                var rc = SKRect.Create(210f, 90f, 300f, 300f);
+                var rc = mitLegende ? SKRect.Create(210f, 90f, 300f, 300f)
+                                    : SKRect.Create(60f, 70f, 300f, 300f);
 
                 if (gueltig.Count == 0)
                 {
@@ -2129,12 +2160,23 @@ namespace WindowsFormsApplication1
 
                 string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
                                                                    ? "" : " " + mitteEinheit);
+                bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
                 using (var f = Schrift(26f, fett: true))
-                    Text(g, mitte, f, C_STAMM, rc.MidX - f.MeasureText(mitte) / 2f,
-                         rc.MidY - TextHoehe(f) / 2f);
+                {
+                    float y = rc.MidY - TextHoehe(f) / 2f;
+                    if (unterzeile) y -= 9f;      // Platz fuer die kleine Zeile darunter
+                    Text(g, mitte, f, C_STAMM, rc.MidX - f.MeasureText(mitte) / 2f, y);
+                }
 
-                Legende(g, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
-                        60f, 430f, W - 30f);
+                if (unterzeile)
+                    using (var f = Schrift(12f))
+                        Text(g, mitteUnterzeile, f, SKColors.DimGray,
+                             rc.MidX - f.MeasureText(mitteUnterzeile) / 2f,
+                             rc.MidY + TextHoehe(f) / 2f + 2f);
+
+                if (mitLegende)
+                    Legende(g, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
+                            60f, 430f, W - 30f);
 
                 return Png(flaeche);
             }
@@ -3422,8 +3464,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Kreissegment vom Mittelpunkt aus (ersetzt Graphics.FillPie).</summary>
+        /// <summary>
+        /// Ein Kreissegment (ersetzt <c>Graphics.FillPie</c>).
+        ///
+        /// <para><b>Der VOLLKREIS ist ein eigener Fall (Befund zu Auftrag #222).</b>
+        /// <c>SKPath.ArcTo</c> zieht bei einem Winkel von 360° NICHTS: Anfangs- und
+        /// Endpunkt fallen zusammen, und der geschlossene Pfad ist die leere Strecke
+        /// vom Mittelpunkt zum Kreisrand und zurück. Genau das sah der Anwender am
+        /// Stromring ohne Erzeuger — ein Segment über den ganzen Kreis, und im Bild
+        /// stand ein LEERER Kreis („Strombedarfsdeckung bei 0 ist das Diagramm nicht
+        /// gut", 11.09.2026). Ab 360° wird deshalb ein Kreis gezeichnet und kein
+        /// Bogen. Dieselbe Falle traf den Kuchen mit nur einem Segment.</para>
+        /// </summary>
         private static void Kreissegment(SKCanvas g, SKRect rect, float start, float sweep, SKPaint fuellung)
         {
+            if (Math.Abs(sweep) >= 360f)
+            {
+                g.DrawOval(rect, fuellung);
+                return;
+            }
+
             using (var pfad = new SKPath())
             {
                 pfad.MoveTo(rect.MidX, rect.MidY);

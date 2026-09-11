@@ -179,7 +179,7 @@ WebViews in einem Fenster). Zusammen 11 031 Zeilen `.cs`, 4 201 Zeilen Designer 
 |---|---|---|
 | `Form_Simulation_Detail` | ja | gelöscht; `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite` mit `SimulationErgebnisHuelle` (vier Teildateien). Die Komponente ist eine **Seite** (Entscheid R‑W11‑1) und erscheint unter Windows bis W16 in der modalen Dialoghülle, 1 474 × 821. |
 | `DashboardForm` | ja | gelöscht; die Autarkie-Analyse ist ein Blatt des `ErgebnisReiter`. |
-| `NavigatorUebersicht` | ja | gelöscht; ihr Inhalt ist der `UebersichtReiter` in seiner zweiten Rolle (`NurNavigator`). |
+| `NavigatorUebersicht` | ja | gelöscht; ihr Inhalt ist der `UebersichtReiter` — bis #222 in seiner zweiten Rolle (`NurNavigator`), seither das Dashboard des Hauptreiters selbst. |
 | `NavigatorStrom` | ja | gelöscht; `StromgangReiter` — jetzt MIT Sortiertumschalter (Befund W11‑B41). |
 | `NavigatorWaerme` | ja | gelöscht; `WaermegangReiter`. |
 | `Form_SpeicherVariantenVergleich` | ja | gelöscht; `SpeicherVariantenVergleich` als **Überlagerung** der Ergebnisseite, mit echtem Fortschritt („n von m"). |

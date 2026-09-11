@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using SkiaSharp;
@@ -308,6 +308,80 @@ namespace EPOS.Kern.Tests
             byte[] png = ChartRenderer.Ring("Leer", null, 0, "%");
             Assert.NotNull(png);
             Assert.Equal((720, 560), Mass(png));
+        }
+
+        // ---- #222: Ring OHNE Legende und mit Unterzeile ----------------------
+
+        /// <summary>
+        /// <b>Auftrag #222 (SIM‑E‑3).</b> Das Dashboard der Simulationsübersicht setzt
+        /// die Legende als HTML NEBEN den Ring; das Bild braucht sie dann nicht mehr und
+        /// wird QUADRATISCH. Die 720 × 560 des Vorläufers waren zu zwei Fünfteln
+        /// Legendenfläche — ein Ring mit 140 Bildpunkten Weißraum darunter steht in einer
+        /// Spalte schief.
+        /// </summary>
+        [Fact]
+        public void Ring_ohne_Legende_ist_quadratisch()
+        {
+            byte[] png = ChartRenderer.Ring("Deckung", new List<ChartRenderer.Ringsegment>
+            { new ChartRenderer.Ringsegment("PV", 1, SKColors.Green) }, 100.0, "%", null, false);
+
+            Assert.Equal((420, 420), Mass(png));
+        }
+
+        /// <summary>
+        /// Die GEGENPROBE zum Schalter: „mit Legende" und „ohne Legende" sind zwei
+        /// verschiedene Bilder. Ohne sie bestünde ein stillschweigend übergangener
+        /// Parameter jede Maß- und Farbprüfung — und die Legende stünde weiter im Bild.
+        /// </summary>
+        [Fact]
+        public void Der_Legendenschalter_aendert_das_Bild()
+        {
+            var segmente = new List<ChartRenderer.Ringsegment>
+            {
+                new ChartRenderer.Ringsegment("PV", 220, SKColors.Green),
+                new ChartRenderer.Ringsegment("Rest", 95, SKColors.LightGray)
+            };
+
+            byte[] mit = ChartRenderer.Ring("Deckung", segmente, 69.8, "%");
+            byte[] ohne = ChartRenderer.Ring("Deckung", segmente, 69.8, "%", null, false);
+
+            Assert.NotEqual(mit.Length, ohne.Length);
+        }
+
+        /// <summary>
+        /// Die UNTERZEILE unter der Mittelzahl (#222): „0,0 %" allein sagt nicht, WAS
+        /// null ist. Sie ändert das Bild — sonst wäre der Text stillschweigend verloren.
+        /// </summary>
+        [Fact]
+        public void Die_Unterzeile_der_Mitte_aendert_das_Bild()
+        {
+            var segmente = new List<ChartRenderer.Ringsegment>
+            { new ChartRenderer.Ringsegment("Netzbezug", 100, SKColors.LightGray) };
+
+            byte[] ohne = ChartRenderer.Ring("Deckung", segmente, 0.0, "%", null, false);
+            byte[] mit = ChartRenderer.Ring("Deckung", segmente, 0.0, "%", "Netzbezug 100 %", false);
+
+            Assert.NotEqual(ohne, mit);
+        }
+
+        /// <summary>
+        /// <b>Befund zu #222: DER VOLLKREIS WAR LEER.</b> <c>SKPath.ArcTo</c> zieht bei
+        /// einem Winkel von 360° nichts — Anfangs- und Endpunkt fallen zusammen. Ein
+        /// Ring mit EINEM Segment (der Stromring ohne Erzeuger: alles Netzbezug) zeigte
+        /// deshalb einen leeren Kreis, und genau das hat der Anwender beanstandet.
+        /// Geprüft an der FARBE: Das Segmentgrau muss im Bild wirklich vorkommen.
+        /// </summary>
+        [Fact]
+        public void Ein_einziges_Segment_fuellt_den_Ring_ganz()
+        {
+            SKColor grau = new SKColor(0xD9, 0xDE, 0xE5);
+
+            byte[] png = ChartRenderer.Ring("Deckung", new List<ChartRenderer.Ringsegment>
+            { new ChartRenderer.Ringsegment("Netzbezug", 10322.36, grau) }, 0.0, "%",
+                "Netzbezug 100 %", false);
+
+            using (SKBitmap bild = SKBitmap.Decode(png))
+                Assert.Contains(bild.Pixels, p => p == grau);
         }
 
         // ---------------------------------------------------------------- B6

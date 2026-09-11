@@ -348,6 +348,40 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Auftrag #222, Punkt 5: DAS HINWEISBAND IST KOMPAKT.</b> Bis dahin war es
+    /// ein Knopf in voller Breite mit zentriertem Text auf weißem Grund — eine leere
+    /// Zeile über dem Reiterstapel, die aussah wie eine Schaltfläche für etwas
+    /// Wichtiges. Jetzt trägt es links die ZAHL als Abzeichen, in der Mitte den Text
+    /// und rechts „anzeigen ▾"; der Klick tut dasselbe wie bisher.
+    /// </summary>
+    [Fact]
+    public void Das_Hinweisband_traegt_Zaehler_Text_und_Pfeil()
+    {
+        _daten = Voll();
+        _daten.LaufmeldungenAnzahl = 8;
+        _daten.Laufmeldungen = "Hinweis 1";
+
+        var seite = Zeichnen();
+        var band = seite.Find("button.epos-simerg-laufband");
+
+        Assert.Equal("8", band.QuerySelector("span.epos-simerg-laufband-zahl")!.TextContent.Trim());
+        Assert.Contains("Hinweise zum Lauf",
+                        band.QuerySelector("span.epos-simerg-laufband-text")!.TextContent);
+        Assert.Contains("anzeigen",
+                        band.QuerySelector("span.epos-simerg-laufband-pfeil")!.TextContent);
+
+        band.Click();
+        Assert.Single(seite.FindAll("[role='dialog']"));
+    }
+
+    /// <summary>Ohne Meldungen steht kein Band da.</summary>
+    [Fact]
+    public void Ohne_Laufmeldungen_steht_kein_Hinweisband()
+    {
+        Assert.Empty(Zeichnen().FindAll("button.epos-simerg-laufband"));
+    }
+
+    /// <summary>
     /// Bilder entstehen erst beim BETRETEN eines Reiters und werden je
     /// Schalterstellung zwischengespeichert — zwölf PNG je Lauf im Voraus wären
     /// zu teuer (Risiko der Vermessung § 11.5).
