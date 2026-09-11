@@ -802,3 +802,10 @@ als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher`
 Nachprobe über `action=raw` und `action=parse`: alle drei Seiten byte-gleich zur Repo-Quelle,
 474 gerenderte Formeln, keine Parse-Fehler, Kategorien unverändert (die Rechenwegseiten tragen
 wie ihre zwölf Nachbarn keine).
+
+Weitere Uploads derselben Art am 11.09.2026, jeweils Repo-Quelle zuerst, Bot-Konto, Nachprobe
+über `action=raw` und `action=parse`: **#206** (`Stromspeicher` Revision 540, `Berechnung/Stromspeicher`
+Fassung 5 Revision 541, vermerkt in `Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`) und
+**#201** (`Hilfe-Assistent` Revision 542 — Abschnitt „Der Assistent setzt Felder und rechnet" mit
+Anker `setzen-und-rechnen`, Absatz zum Schalter „Feldwerte mitsenden"; Diff 22+/3− gegen Revision 539,
+byte-gleich zur Repo-Quelle, keine Parse-Fehler).
