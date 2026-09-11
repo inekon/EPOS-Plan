@@ -36,14 +36,19 @@ public class LizenzTexteTests : IDisposable
     /// </summary>
     private const string NUR_ENGLISCH = nameof(LizenzTexte.SprachHinweis);
 
-    public LizenzTexteTests() => Kultur("de-DE");
+    private readonly Kulturvorrichtung _kultur = new();
 
     public void Dispose()
     {
-        Kultur("de-DE");
+        _kultur.Dispose();
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Schaltet INNERHALB eines Falls zwischen de-DE und en-US um — die
+    /// endgültige Rückstellung auf die Kultur des Läufers übernimmt die
+    /// <see cref="Kulturvorrichtung"/> im Feld <c>_kultur</c>.
+    /// </summary>
     private static void Kultur(string name)
     {
         var kultur = new CultureInfo(name);

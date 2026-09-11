@@ -16,7 +16,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Datenseite ist ein Pruefstand: Er schreibt mit, statt zu schreiben, und
 /// laesst sich auf jeden Pruefausgang stellen.</para>
 /// </summary>
-public class WaermesenkeDialogTests : BunitContext
+public class WaermesenkeDialogTests : EposBunitContext
 {
     private const string HEIZKREIS = "Heizkreis";
     private const string PROZESS = "Prozesswaerme";
@@ -31,8 +31,6 @@ public class WaermesenkeDialogTests : BunitContext
 
     public WaermesenkeDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

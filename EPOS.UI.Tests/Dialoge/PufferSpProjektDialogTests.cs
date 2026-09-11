@@ -16,12 +16,10 @@ namespace EPOS.UI.Tests.Dialoge;
 /// womit sie gerufen wurden. Damit laesst sich pruefen, WAS der Dialog speichern
 /// will, ohne dass eine Datenbank in der Naehe ist.</para>
 /// </summary>
-public class PufferSpProjektDialogTests : BunitContext
+public class PufferSpProjektDialogTests : EposBunitContext
 {
     public PufferSpProjektDialogTests()
     {
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

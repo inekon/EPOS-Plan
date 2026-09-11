@@ -22,11 +22,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
 /// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
 /// </summary>
-public class UebersichtReiterTests : BunitContext
+public class UebersichtReiterTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
-
     public UebersichtReiterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -35,15 +32,6 @@ public class UebersichtReiterTests : BunitContext
         // Die BESCHRIFTUNGEN folgen der Oberflaechensprache, die ZAHLEN der
         // Zahlenkultur — der Vorlaeufer formatierte mit ToString("F2") und damit
         // ebenfalls kulturabhaengig. Beide werden festgelegt (Regel seit W8).
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

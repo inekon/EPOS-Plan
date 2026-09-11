@@ -36,17 +36,11 @@ namespace EPOS.UI.Tests;
 ///
 /// <para>Kultur gepinnt (Hausregel seit iU9‑W8).</para>
 /// </summary>
-public class KatalogfilterS3Tests : BunitContext
+public class KatalogfilterS3Tests : EposBunitContext
 {
     public KatalogfilterS3Tests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
 
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }

@@ -23,13 +23,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Zeile unter dem Rechenmodell sagt, was die Modellwahl unterscheidet — und was
 /// nicht.</para>
 /// </summary>
-public class PvModellFelderTests : BunitContext
+public class PvModellFelderTests : EposBunitContext
 {
     public PvModellFelderTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
     }
 
     private static ErzeugerZeile Zeile(bool erweitert = false)

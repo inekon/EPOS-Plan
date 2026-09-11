@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_SolarKollektoren</c>: zwei Listen mit den beiden Pfeilen, der Modulblock
 /// mit sechs Anzeigefeldern und die Gruppe „Kollektor" mit sechs Bedienelementen.
 /// </summary>
-public class SolarkollektorenDialogTests : BunitContext
+public class SolarkollektorenDialogTests : EposBunitContext
 {
 
     /// <summary>
@@ -60,8 +60,6 @@ public class SolarkollektorenDialogTests : BunitContext
     public SolarkollektorenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

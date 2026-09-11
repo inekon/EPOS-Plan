@@ -24,24 +24,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// <c>GebaeudeKatalogDialogTests</c>): Die Erwartungswerte sind deutsche
 /// Beschriftungen, und der Windows-Läufer läuft mit englischer Oberfläche.</para>
 /// </summary>
-public class StartseiteTests : BunitContext
+public class StartseiteTests : EposBunitContext
 {
     public StartseiteTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     // =====================================================================

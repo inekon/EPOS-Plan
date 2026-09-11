@@ -24,7 +24,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// 0 Anlagen · 1 Angaben der gewaehlten Anlage · 2 KWK-Zuschlag · 3 Energiesteuer ·
 /// 4 Stromsteuer · 5 Kohaerenzpruefung · 6 Hilfsstrom · 7 Vorschau.</para>
 /// </summary>
-public class BhkwWirtschaftlichkeitDialogTests : BunitContext
+public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 {
     private const int STAMM = 1030;
 
@@ -35,10 +35,6 @@ public class BhkwWirtschaftlichkeitDialogTests : BunitContext
         // Erwartungen unabhaengig vom Rechner gelten, wird die Anzeigesprache
         // ausdruecklich auf Deutsch gestellt.
         var de = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
 
         // QuickGrid (im Raster) laedt beim ersten Zeichnen ein JS-Modul.
         JSInterop.Mode = JSRuntimeMode.Loose;

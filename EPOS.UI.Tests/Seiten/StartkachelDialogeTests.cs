@@ -33,25 +33,13 @@ namespace EPOS.UI.Tests.Seiten;
 ///
 /// <para>Die Sprache ist auf de-DE gepinnt (Regel seit iU9-W8).</para>
 /// </summary>
-public class StartkachelDialogeTests : BunitContext
+public class StartkachelDialogeTests : EposBunitContext
 {
     public StartkachelDialogeTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
         Services.AddSingleton<IProjektQuelle>(new KeineProjekte());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     /// <summary>

@@ -28,24 +28,12 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Die Sprache pinnt die Klasse selbst (Regel seit iU9‑W8).</para>
 /// </summary>
-public class WechselrichterDialogTests : BunitContext
+public class WechselrichterDialogTests : EposBunitContext
 {
     public WechselrichterDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     /// <summary>Das Profil in DEUTSCH — so, wie die Hülle es liefert.</summary>

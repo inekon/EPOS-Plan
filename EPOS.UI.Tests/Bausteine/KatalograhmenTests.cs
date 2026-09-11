@@ -29,21 +29,11 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para>Keine Sprachbindung: geprüft werden Klassennamen. Die Kultur wird
 /// trotzdem gepinnt (Hausregel seit iU9‑W8).</para>
 /// </summary>
-public class KatalograhmenTests : BunitContext
+public class KatalograhmenTests : EposBunitContext
 {
     public KatalograhmenTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private IRenderedComponent<Katalograhmen> Aufbauen(bool gestapelt = false) =>

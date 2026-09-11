@@ -17,15 +17,13 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_EingProzTyp</c>, <c>Form_EingBrauchwasserTyp</c>. Geprüft wird je
 /// AUSPRÄGUNG (Risiko R-W8-1).
 /// </summary>
-public class TypProfilDialogTests : BunitContext
+public class TypProfilDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Buerogebaeude", "Wohnhaus" };
 
     public TypProfilDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

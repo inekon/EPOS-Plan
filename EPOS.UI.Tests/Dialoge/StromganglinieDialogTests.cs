@@ -21,30 +21,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// nicht über den Namen), der wörtlich übernommene Befund W12-B5 (keine
 /// Dublettenprüfung) und die Verwaltung als Überlagerung.</para>
 /// </summary>
-public class StromganglinieDialogTests : BunitContext
+public class StromganglinieDialogTests : EposBunitContext
 {
     public StromganglinieDialogTests()
     {
-        DeutscheOberflaeche();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Hausmuster seit iU9-W8) —
-    /// Kultur UND Thread-Kultur, damit ein Lauf auf einem en-US-Läufer dieselben
-    /// deutschen Texte sieht. Seit W12-E-1 prüft diese Klasse auch formatierte
-    /// Meldungen; ohne das Pinnen hinge ihr Wortlaut an der Läuferkultur.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private static List<Katalogfilterzeile> Katalog()

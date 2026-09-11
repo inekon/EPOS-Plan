@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Bunit;
+﻿using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -29,10 +28,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// Gerätegröße nur bei genau einer Speicheranlage, der Ausbaustufen-Schalter
 /// dauerhaft gesperrt.</para>
 /// </summary>
-public class SpeicherParameterBlockTests : BunitContext
+public class SpeicherParameterBlockTests : EposBunitContext
 {
-    private readonly CultureInfo _kulturVorher = CultureInfo.CurrentUICulture;
-    private readonly CultureInfo _zahlenVorher = CultureInfo.CurrentCulture;
 
     /// <summary>Jeder Schreibvorgang: Feldschlüssel und Wert, in der Reihenfolge des Anfalls.</summary>
     private readonly List<(string Feld, string Wert)> _geschrieben = new();
@@ -43,15 +40,6 @@ public class SpeicherParameterBlockTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("de-DE");
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        CultureInfo.CurrentUICulture = _kulturVorher;
-        CultureInfo.CurrentCulture = _zahlenVorher;
-        base.Dispose(disposing);
     }
 
     // =====================================================================

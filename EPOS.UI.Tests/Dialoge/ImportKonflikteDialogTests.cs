@@ -20,30 +20,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// ausmachen: das Namensfeld nur beim Umbenennen, der Namensvorschlag, die
 /// Rückgabe ALLER Zeilen und die OK-Prüfung.</para>
 /// </summary>
-public class ImportKonflikteDialogTests : BunitContext
+public class ImportKonflikteDialogTests : EposBunitContext
 {
     public ImportKonflikteDialogTests()
     {
-        DeutscheOberflaeche();
         JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit iU9-W8, Muster
-    /// <c>DeutscheOberflaeche</c> aus <c>EPOS.Kern.Tests</c>) — Kultur UND Thread-Kultur,
-    /// damit ein Lauf auf einem en-US-Läufer dieselben deutschen Texte sieht wie hier.
-    /// Windows-Lauf 33839255709 fiel ohne das Pinnen mit "Cancel" statt "Abbrechen".
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private static ImportPruefung Pruefung(ImportBefund befund, string name,

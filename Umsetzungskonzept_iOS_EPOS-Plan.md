@@ -4518,6 +4518,16 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Rückstellung — eigener Testprozess, jede Klasse pinnt selbst neu, kein beobachteter Fehler; Empfehlung: gemeinsame
 > Vorrichtung statt 65 Handgriffe, Wächter ausweiten (#168, nur auf Wunsch). Gate auf `fd78124`: Kern 2 277 grün (vier neue Wächterfälle), UI 3 359 von 3 360 — der eine rote Fall `KlimadatenDialogTests.Der_Fortschritt_meldet_die_Schritte_und_laesst_sich_abbrechen` (Zeile 357, Abbruchzähler 0 statt 1) ist bunit-Flattern: #167 berührt `EPOS.UI.Tests` nicht, im Gate zu #166 und in drei Wiederholungen der Klasse (16/16) grün → #169 nach dem Muster W16b‑O‑2,
 > Referenzlauf byte-gleich; Warnungsschranke weiter allein durch die vorbestehende CS8602 (`RasterTests.cs:335`) gerissen.
+>
+> **#168 (Anwenderentscheid 11.09.2026 „setze empfehlungen um", #167‑O‑1) — EINE Kulturvorrichtung für `EPOS.UI.Tests`.**
+> 113 Testdateien pinnten die Kultur im Konstruktor auf de-DE, nur acht stellten etwas zurück. Statt 113 Handgriffen:
+> `EPOS.UI.Tests/Kulturvorrichtung.cs` (`IDisposable`, merkt die vier Werte je Ziel einzeln und stellt jeden aus seinem
+> eigenen Merkwert zurück) und `EposBunitContext : BunitContext`, der sie im Konstruktor anlegt und in `Dispose` freigibt.
+> 105 Klassen erben jetzt statt zu pinnen (mechanisch, jeder Diff gelesen), acht Sonderfälle mit Sprachwechsel im Fall
+> behalten ihre Logik auf Basis der Vorrichtung; `LizenzTexteTests` stellte vorher hart auf de-DE statt auf die
+> Ausgangskultur zurück (mitbehoben). Der Kulturwächter aus #167 prüft seither beide Testprojekte (fünf neue Fälle).
+> Fix `1f3e56a` (nur Testcode, 115 Dateien, −665 Zeilen). Gate auf `1d7b1e0`: Kern 2 346 grün (+5 Wächterfälle), UI 3 403 grün — auch unter
+> en_US-Prozesskultur —, Referenzlauf byte-gleich.
 
 > **Statusblock iU9 — Welle 3 umgesetzt (03.09.2026, Basis `95cf8be`)**
 >

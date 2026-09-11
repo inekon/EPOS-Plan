@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Threading;
+﻿using System;
 using EPOS.UI.Dienste;
 using Xunit;
 
@@ -18,20 +17,15 @@ namespace EPOS.UI.Tests;
 /// Arbeitsbereich. Denselben Schnitt macht <c>ParametersatzTests</c>.</para>
 ///
 /// <para>Keine Sprachbindung: geprüft werden ausschließlich Zahlen. Die
-/// Kultur wird trotzdem gepinnt (Hausregel seit iU9‑W8).</para>
+/// Kultur wird trotzdem gepinnt (Hausregel seit iU9‑W8) — hier über ein
+/// <see cref="Kulturvorrichtung"/>-Feld statt Erbschaft, weil die Klasse keine
+/// <c>BunitContext</c> ist (Auftrag #168).</para>
 /// </summary>
-public sealed class FenstermassTests
+public sealed class FenstermassTests : IDisposable
 {
-    public FenstermassTests() => DeutscheOberflaeche();
+    private readonly Kulturvorrichtung _kultur = new();
 
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-    }
+    public void Dispose() => _kultur.Dispose();
 
     /// <summary>Ein üblicher Schirm: 1920 × 1080 mit 40 px Taskleiste.</summary>
     private const int ARBEIT_BREITE = 1920;

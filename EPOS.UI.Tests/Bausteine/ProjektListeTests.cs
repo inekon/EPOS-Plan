@@ -22,7 +22,7 @@ namespace EPOS.UI.Tests.Bausteine;
 /// <para>Die Kultur ist auf de-DE gepinnt: Die Erwartungswerte sind deutsche
 /// Beschriftungen und deutsche Datumsschreibweise.</para>
 /// </summary>
-public class ProjektListeTests : BunitContext
+public class ProjektListeTests : EposBunitContext
 {
     private static readonly ProjektKopfZeile[] VIER =
     {
@@ -38,24 +38,6 @@ public class ProjektListeTests : BunitContext
     public ProjektListeTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberflaeche wird auf de-DE gepinnt (Muster
-    /// <c>GebaeudeKatalogDialogTests</c>) — Kultur UND Thread-Kultur, damit ein Lauf
-    /// unter <c>LANG=en_US.UTF-8</c> dieselben Beschriftungen und dieselbe
-    /// Datumsschreibweise sieht.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     private IRenderedComponent<ProjektListe> Aufbauen(Action<ComponentParameterCollectionBuilder<ProjektListe>>? mehr = null)

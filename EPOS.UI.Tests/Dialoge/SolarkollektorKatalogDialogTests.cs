@@ -15,13 +15,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_SolarDB</c>: 27 Zeilen — vier Textfelder, acht Pflichtzahlen, zwei
 /// Ganzzahlen mit erlaubter Leere und vier Knöpfe.
 /// </summary>
-public class SolarkollektorKatalogDialogTests : BunitContext
+public class SolarkollektorKatalogDialogTests : EposBunitContext
 {
     public SolarkollektorKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

@@ -31,7 +31,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// wirklich fort sind, dass die neun Spalten dastehen — und dass die Auswahl,
 /// das Übernehmen und der Tastaturweg unverändert arbeiten.</para>
 /// </summary>
-public class WaermepumpenKatalogDialogTests : BunitContext
+public class WaermepumpenKatalogDialogTests : EposBunitContext
 {
     /// <summary>
     /// Das PROFIL des Katalogs — dieselben neun Spalten wie in der Verwaltung
@@ -85,8 +85,6 @@ public class WaermepumpenKatalogDialogTests : BunitContext
     public WaermepumpenKatalogDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;   // QuickGrid laedt ein JS-Modul
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

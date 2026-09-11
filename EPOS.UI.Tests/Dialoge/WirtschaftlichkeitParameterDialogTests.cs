@@ -32,7 +32,7 @@ namespace EPOS.UI.Tests.Dialoge;
 ///       Referenzkessel + Bilanzjahr, Methode, Biomasse, Nachweis (7)</item>
 /// </list>
 /// </summary>
-public class WirtschaftlichkeitParameterDialogTests : BunitContext
+public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 {
     public WirtschaftlichkeitParameterDialogTests()
     {
@@ -40,24 +40,7 @@ public class WirtschaftlichkeitParameterDialogTests : BunitContext
         // Dialog, und der bringt ein Raster (QuickGrid) mit - das laedt sein
         // JS-Modul beim Zeichnen.
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>
-    /// Die Sprache der Oberflaeche wird auf de-DE gepinnt (Muster
-    /// <c>GebaeudeKatalogDialogTests</c>, Regel seit W8, verschaerft am 04.09.2026).
-    /// Diese Klasse prueft deutsche Beschriftungen; sich darauf zu verlassen, dass
-    /// eine andere Klasse den Prozessstandard gesetzt hat, war die Ursache der
-    /// W12-Rotmeldung auf dem Windows-Laeufer.
-    /// </summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     // ETAPPE W5-B-9 (09.09.2026): Der Szenarioblock steht ZWISCHEN Allgemein und

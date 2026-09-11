@@ -24,7 +24,7 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
-public class KatalogDublettenDialogTests : BunitContext
+public class KatalogDublettenDialogTests : EposBunitContext
 {
     private static readonly (string, string)[] KATALOGE =
     {
@@ -72,18 +72,7 @@ public class KatalogDublettenDialogTests : BunitContext
     public KatalogDublettenDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
-    }
-
-    /// <summary>Die Sprache der Oberfläche wird auf de-DE gepinnt (Regel seit W8).</summary>
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
     }
 
     private IRenderedComponent<KatalogDublettenDialog> Zeige(

@@ -27,25 +27,13 @@ namespace EPOS.UI.Tests.Seiten;
 /// Menuebeschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer
 /// laeuft englisch.</para>
 /// </summary>
-public class HauptfensterTests : BunitContext
+public class HauptfensterTests : EposBunitContext
 {
     public HauptfensterTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
         Services.AddSingleton<IProjektQuelle>(new KeineProjekte());
-    }
-
-    private static void DeutscheOberflaeche()
-    {
-        var de = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = de;
-        CultureInfo.DefaultThreadCurrentUICulture = de;
-        Thread.CurrentThread.CurrentCulture = de;
-        Thread.CurrentThread.CurrentUICulture = de;
-        CultureInfo.CurrentCulture = de;
-        CultureInfo.CurrentUICulture = de;
     }
 
     protected override void Dispose(bool disposing)

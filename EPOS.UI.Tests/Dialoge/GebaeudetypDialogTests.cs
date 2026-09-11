@@ -14,7 +14,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Form_EingGebTyp</c>: 33 Zeilen — Typliste, Beschreibung, Kurvenliste, 24
 /// Stundenfelder, Bild und vier Knöpfe.
 /// </summary>
-public class GebaeudetypDialogTests : BunitContext
+public class GebaeudetypDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Buerogebaeude", "Wohngebaeude VDI 2067" };
 
@@ -28,8 +28,6 @@ public class GebaeudetypDialogTests : BunitContext
     public GebaeudetypDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

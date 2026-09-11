@@ -73,22 +73,19 @@ namespace EPOS.UI.Tests.Bausteine;
 /// englisch. Der Zweisprachenfall setzt die Kultur selbst und stellt sie
 /// zurueck.</para>
 /// </summary>
-public class MenuebandTests : BunitContext
+public class MenuebandTests : EposBunitContext
 {
-    private readonly CultureInfo _vorher = CultureInfo.CurrentUICulture;
-
     public MenuebandTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        Kultur("de-DE");
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        Kultur(_vorher.Name.Length == 0 ? "de-DE" : _vorher.Name);
-        base.Dispose(disposing);
-    }
-
+    /// <summary>
+    /// Schaltet INNERHALB eines Falls zwischen de-DE und en-US um (mehrfacher
+    /// Sprachwechsel je Testmethode) — die endgültige Rückstellung auf die
+    /// Kultur des Läufers übernimmt die <see cref="Kulturvorrichtung"/> aus dem
+    /// Konstruktor von <see cref="EposBunitContext"/>, nicht mehr dieser Helfer.
+    /// </summary>
     private static void Kultur(string name)
     {
         var kultur = new CultureInfo(name);

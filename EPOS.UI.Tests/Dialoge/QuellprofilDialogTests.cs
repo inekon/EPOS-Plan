@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>JSInterop steht auf Loose: Das Werteraster ist VIRTUALISIERT (Befund
 /// W10-B20), und QuickGrid ruft dafuer JavaScript.</para>
 /// </summary>
-public class QuellprofilDialogTests : BunitContext
+public class QuellprofilDialogTests : EposBunitContext
 {
     private const string MONAT = "Monat";
     private const string TAG = "Tag";
@@ -26,8 +26,6 @@ public class QuellprofilDialogTests : BunitContext
     public QuellprofilDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        CultureInfo.CurrentCulture = new CultureInfo("de-DE");
-        CultureInfo.CurrentUICulture = new CultureInfo("de-DE");
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 

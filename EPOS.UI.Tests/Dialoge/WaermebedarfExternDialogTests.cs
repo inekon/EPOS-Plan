@@ -28,7 +28,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Beschriftungen.</para>
 /// </summary>
-public class WaermebedarfExternDialogTests : BunitContext
+public class WaermebedarfExternDialogTests : EposBunitContext
 {
     /// <summary>
     /// Der Katalog als <see cref="Katalogfilterzeile"/> — seit Stufe S3.2
@@ -53,15 +53,15 @@ public class WaermebedarfExternDialogTests : BunitContext
     public WaermebedarfExternDialogTests()
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
-        DeutscheOberflaeche();
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
     /// <summary>
-    /// Die Sprache der Oberfläche wird auf de-DE gepinnt (Hausmuster seit iU9-W8) —
-    /// Kultur UND Thread-Kultur, damit ein Lauf auf einem en-US-Läufer dieselben
-    /// deutschen Texte sieht. Seit W9‑E‑3 prüft diese Klasse auch formatierte
-    /// Meldungen; ohne das Pinnen hinge ihr Wortlaut an der Läuferkultur.
+    /// Schaltet INNERHALB eines Falls zurück auf de-DE (die zwei
+    /// Zweisprachen-Fälle stellen sie in ihrem eigenen <c>finally</c> damit
+    /// zurück) — die endgültige Rückstellung auf die Kultur des Läufers
+    /// übernimmt die <see cref="Kulturvorrichtung"/> aus dem Konstruktor von
+    /// <see cref="EposBunitContext"/>.
     /// </summary>
     private static void DeutscheOberflaeche() => Kultur("de-DE");
 
