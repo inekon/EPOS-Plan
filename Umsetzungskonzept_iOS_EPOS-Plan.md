@@ -3734,6 +3734,21 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Blazorsprung._angefordert` ist prozessweit ein Riegel; iOS erbt `autofocus` ungeprüft (kein iOS-Lauf, Regel).
 > Gate sept27 auf `2e02c95`: Kern 2 655, UI 3 772, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
 > Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#208 (11.09.2026, `2f62ca4` + `81d8f2f`, Merge `c989745`) — Simulationsablauf Stufe S2: iOS erreicht die Simulation; Anwenderentscheid
+> #208‑E‑1 = A: das elfte Projekt `EPOS.UI.Daten`.** Die sieben Simulationshüllen (5 612 Zeilen, sechs davon Windows) ziehen als 18 Dateien in ein
+> plattformfreies Projekt, das Kern UND Oberfläche sieht (`EnableWindowsTargeting=false`; der Kern darf EPOS.UI nicht kennen, EPOS.UI keine
+> Datenbank, eine Hülle baut die DTO der Razor-Seiten und lädt). `SimulationAnsichtQuelle` liefert dasselbe Wörterbuch aus `idProjekt`, Projektname
+> und Bedarfszustand; zwei benannte Nähte (`SimulationPlattformwege`: Wärmepumpen-Assistent auf iOS benannt abgelehnt; `Katalogwege`: Pufferkatalog-
+> Knopf entfällt ohne Delegat); `Ladeordnung.Kreisziffer` und `KiChatKontext.BereichMelder` in den Kern; die Windows-Hülle bleibt ein Adapter
+> (`SimulationHuelle.cs`, 64 Z.). iOS: `IosProjektQuelle.SimulationGaben`, Kachel „Simulation" in der Projektliste; **#202** erledigt
+> (`DisplayAlertAsync`/`DisplayActionSheetAsync`, `IsBusy`, zwei Null-Hinweise im Referenzlauf). `WP-Plan.Kern.slnf`/`WP-Plan.sln` führen elf Projekte;
+> `SqlDialektPruefer` prüft die neue Wurzel mit. Merge-Konflikt `SimulationHuelle.cs` (#216 vs. Umzug) zugunsten des Adapters mit dem
+> #216-Parameterweg. 11 neue Kernfälle (`SimulationAnsichtQuelleTests`, Bild-Determinismus, Quelltextwache „keine Windows-Berührung"), 4 bunit
+> (`SimulationAufIosTests`); `EinheitenWacheTests`/`ParametersatzTests` lesen das neue Projekt mit. **Offen:** iOS-Lauf 43 (freigegeben, folgt);
+> `Blazorsprung`/Hüllen der übrigen 26 Ordner unter `Views/` bleiben Windows (iU11).
+> Gate sept28 auf `c989745`: Kern 2 666, UI 3 776, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
