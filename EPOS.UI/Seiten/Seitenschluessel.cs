@@ -65,9 +65,12 @@ public static class Seitenschluessel
     /// Baustein <c>KiKnopf</c> jeder Maske.
     /// </para>
     /// <para>
-    /// <b>Er hat bewusst KEINEN <c>Masken.*</c>-Zwilling</b> (Befund W15b-B4): Der
-    /// Chat wurde nie ueber die Sprungtabelle geoeffnet, und die Tabelle faellt mit
-    /// Welle 16 ohnehin.
+    /// <b>Seit Auftrag #199 hat er einen <c>Masken.*</c>-Zwilling</b>
+    /// (<c>Masken.KiAssistent</c>), und der Wert kommt von dort. Bis dahin hatte er
+    /// keinen (Befund W15b-B4) — der Chat wurde nie ueber die Sprungtabelle
+    /// geoeffnet, sondern in der Windows-Huelle unmittelbar. Mit dem KI-Knopf im
+    /// Dialogkopf (Stufe S1, Weg 1) braucht es einen Weg, den BEIDE Plattformen
+    /// kennen: <c>Dienste.Navigation.OeffneMaske(Masken.KiAssistent, kontext)</c>.
     /// </para>
     /// <para>
     /// Der Kern kennt denselben Wert als Zeichenkette in
@@ -76,7 +79,7 @@ public static class Seitenschluessel
     /// (Entscheid E-9).
     /// </para>
     /// </remarks>
-    public const string KiAssistent = "KI_ASSISTENT";
+    public const string KiAssistent = WindowsFormsApplication1.Masken.KiAssistent;
 
     /// <summary>
     /// Der PROJEKTASSISTENT (<c>Seiten.Assistent.AssistentSeite</c>, iU9-W16a.5) —

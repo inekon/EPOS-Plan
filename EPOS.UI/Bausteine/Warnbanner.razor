@@ -36,6 +36,9 @@
    "Projekt Details" (Anwenderentscheid E-7). Die drei PointToScreen-Rechnungen
    sind ersatzlos entfallen. *@
 
+@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dienste
+@using WindowsFormsApplication1
 @implements IDisposable
 
 @if (!_verfallen)
@@ -43,6 +46,21 @@
     <div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
+        @if (ErklaerenSichtbar)
+        {
+            @* „ERKLAEREN LASSEN" (Auftrag #199, Stufe S1, Weg 2).
+
+               Ein Knopf und kein <a>: Er fuehrt nicht auf eine Adresse, sondern
+               oeffnet den Assistenten - und ein <a href="#"> waere fuer eine
+               Sprachausgabe ein Sprungziel, das es nicht gibt. Die Klasse gibt
+               ihm die Anmutung eines Verweises.
+
+               Er erscheint nur MIT Kennung: Ohne sie gaebe es keinen
+               Wissensabschnitt, auf den er zeigen koennte, und keine vorbelegte
+               Frage - der Anwender landete in einem leeren Chat. *@
+            <button type="button" class="epos-warnbanner-erklaeren"
+                    title="@ErklaerenKurztext" @onclick="Erklaeren">@ErklaerenText</button>
+        }
     </div>
 }
 
@@ -61,6 +79,65 @@
 
     /// <summary>Das Banner ist verfallen - der Wirt darf seine Meldung vergessen.</summary>
     [Parameter] public EventCallback Verfallen { get; set; }
+
+    // =====================================================================
+    //  „erklären lassen" (Auftrag #199, Stufe S1, Weg 2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die sprachneutrale MELDUNGSKENNUNG (<see cref="KiMeldungskennung"/>) — ist sie
+    /// gesetzt und der Assistent möglich, trägt das Banner rechts den Link
+    /// „erklären lassen". Leer = kein Link.
+    /// </summary>
+    /// <remarks>
+    /// <b>Sie ist nicht der Meldungstext.</b> Der Text wechselt mit der Sprache und mit
+    /// jeder Zahl darin; die Kennung ist fest und führt auf den Abschnitt des
+    /// Aktionswissens (<c>HilfeWissen</c>) und auf die vorbelegte Frage
+    /// <c>KI_FRAGE_&lt;Kennung&gt;</c>.
+    /// </remarks>
+    [Parameter] public string? Kennung { get; set; }
+
+    /// <summary>
+    /// Der Hilfeschlüssel der Maske, in der das Banner steht — daraus folgt der Bereich
+    /// des Assistenten. Leer = der Bereich bleibt unbekannt; der Link steht trotzdem.
+    /// </summary>
+    [Parameter] public string? Hilfeschluessel { get; set; }
+
+    /// <summary>Der Name des Dialogs für die Kontextzeile des Chats; leer = keiner.</summary>
+    [Parameter] public string? Dialogname { get; set; }
+
+    /// <summary>Beschriftung des Links (<c>KI_BANNER_ERKLAEREN</c>).</summary>
+    [Parameter] public string ErklaerenText { get; set; } =
+        Ressource("KI_BANNER_ERKLAEREN", "erklären lassen");
+
+    /// <summary>Kurztext des Links (<c>KI_BANNER_ERKLAEREN_TOOLTIP</c>).</summary>
+    [Parameter] public string ErklaerenKurztext { get; set; } =
+        Ressource("KI_BANNER_ERKLAEREN_TOOLTIP", "Diese Meldung vom Hilfe-Assistenten erklären lassen");
+
+    /// <summary>Steht der Link? (Prüfhilfe für Tests.)</summary>
+    public bool ErklaerenSichtbar
+        => !string.IsNullOrWhiteSpace(Kennung) && KiAssistentWeg.Moeglich;
+
+    /// <summary>
+    /// Öffnet den Assistenten mit der Kennung und der vorbelegten Frage — die Ressource
+    /// <c>KI_FRAGE_&lt;Kennung&gt;</c>, sonst der allgemeine Satz mit dem Bannertext.
+    /// Abgeschickt wird sie nicht.
+    /// </summary>
+    private void Erklaeren()
+    {
+        string kennung = (Kennung ?? "").Trim();
+        if (kennung.Length == 0) return;
+
+        KiAssistentWeg.AusMeldung(kennung, KiMeldungskennung.Frage(kennung, Text),
+                                  Hilfeschluessel, Dialogname);
+    }
+
+    /// <summary>Ein Ressourcentext mit deutschem Rückfall (Hausregel EPOS.UI/CLAUDE.md).</summary>
+    private static string Ressource(string schluessel, string rueckfall)
+    {
+        try { return Resource.ResourceManager.GetString(schluessel) ?? rueckfall; }
+        catch (Exception) { return rueckfall; }
+    }
 
     /// <summary>
     /// Die Uhr. Im Betrieb <c>Task.Delay</c>; ein Pruefstand legt eine gesteuerte

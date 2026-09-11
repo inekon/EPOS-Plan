@@ -67,4 +67,13 @@ internal sealed class TestProjektquelle : IProjektQuelle
     internal WindowsFormsApplication1.LizenzLage? Lizenz { get; set; }
 
     public WindowsFormsApplication1.LizenzLage? Lizenzlage() => Lizenz;
+
+    /// <summary>
+    /// Der Parametersatz des KI-Hilfe-Assistenten (Auftrag #199) — <c>null</c> ist
+    /// die Vorgabe und heisst „steht auf diesem Geraet noch nicht zur Verfuegung",
+    /// genau der Zustand der iOS-Huelle vor iU11.
+    /// </summary>
+    internal IReadOnlyDictionary<string, object>? KiAssistent { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KiAssistentGaben(int idProjekt) => KiAssistent;
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using EPOS.UI.Dialoge.Projekt;
 namespace WindowsFormsApplication1
 {
@@ -185,6 +186,16 @@ namespace WindowsFormsApplication1
                 case Masken.Assistent:
                     return AssistentZeigen(Ganzzahl(argumente, 0));
 
+                // Der HILFE-ASSISTENT (Auftrag #199, Stufe S1). Er ist der einzige
+                // Schluessel dieser Tabelle, der NICHT modal oeffnet: Das Chatfenster
+                // steht nicht-modal mit Besitzer (Entscheid E-6), damit der Anwender in
+                // der Maske weiterarbeiten kann, ueber die er fragt. „true" heisst
+                // deshalb „der Assistent steht", nicht „mit OK beendet" - dieselbe
+                // Bedeutung wie beim Projektassistenten seit #62b.
+                case Masken.KiAssistent:
+                    KiChatHuelle.Oeffnen(Form.ActiveForm, Aufrufkontext(argumente));
+                    return true;
+
             }
 
             return false;
@@ -257,6 +268,17 @@ namespace WindowsFormsApplication1
         // Projektwahl-Fach. Seit W15a fuellen die Huellen es selbst, und seit
         // W15c gibt es in diesem switch kein "new Form_X()" mehr - beide Methoden
         // standen ohne Aufrufer da (nur noch in Kommentaren genannt).
+
+        /// <summary>
+        /// Der <see cref="KiAufrufkontext"/> aus dem ersten Argument (Auftrag #199);
+        /// <c>null</c>, wenn keiner mitkam — dann baut die Hülle den Kontext des
+        /// Menüwegs.
+        /// </summary>
+        private static KiAufrufkontext Aufrufkontext(object[] argumente)
+        {
+            if (argumente == null || argumente.Length == 0) return null;
+            return argumente[0] as KiAufrufkontext;
+        }
 
         private static int Ganzzahl(object[] argumente, int stelle)
         {

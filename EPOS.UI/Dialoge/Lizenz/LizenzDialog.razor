@@ -65,7 +65,9 @@
             <p class="epos-lizenz-untertitel">@Texte.KopfUntertitel</p>
         </div>
 
-        <InfoKnopf Schluessel="Form_Lizenz.btn_Help" />
+        @* Ohne KI-Knopf (#199): Der Vertragstext ist kein Bedienthema, und der
+           Dialog steht auch VOR der ersten Zustimmung. *@
+        <InfoKnopf Schluessel="Form_Lizenz.btn_Help" MitAssistent="false" />
     </header>
 
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@Texte.KopfTitel">

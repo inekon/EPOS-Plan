@@ -381,6 +381,20 @@ namespace WindowsFormsApplication1
                 () => !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
         }
 
+        /// <summary>
+        /// Der Bereich aus dem gemeldeten DIALOGAUFRUF (Auftrag #199); leer, wenn der
+        /// Assistent nicht aus einer Maske gerufen wurde oder der Bereich unbekannt
+        /// ist. Er geht der Fensterermittlung vor.
+        /// </summary>
+        private static string AusDemAufruf()
+        {
+            KiAufrufkontext aufruf = KiChatKontext.Aufruf;
+            if (aufruf == null) return "";
+
+            string bereich = KiChatKontext.Freigegeben(aufruf.Bereich);
+            return string.Equals(bereich, BEREICH_UNBEKANNT, StringComparison.Ordinal) ? "" : bereich;
+        }
+
         /// <summary>Loescht den gesetzten Kontext (z. B. beim Schliessen einer Maske).</summary>
         public static void Zuruecksetzen()
         {
@@ -400,12 +414,22 @@ namespace WindowsFormsApplication1
         /// vergebenen Beschriftungen der Oberflaeche. Projekt-, Kunden- und
         /// Simulationsdaten sind ausgeschlossen; zur Sicherheit laeuft der
         /// fertige Text zusaetzlich durch <see cref="OhneKlarnamen"/>.
+        ///
+        /// <para><b>Seit Auftrag #199 ist diese Klasse der ZWEITE Lieferant.</b> Wurde
+        /// der Assistent aus einem DIALOG gerufen (KI-Knopf oder „erklären lassen"),
+        /// kennt der Kern den Bereich genauer als jede Fensterermittlung — er steht im
+        /// gemeldeten <c>KiChatKontext.Aufruf</c>. Die Ermittlung über
+        /// <c>Form.ActiveForm</c> bleibt für den Menüweg und für jede Frage, die ohne
+        /// Dialogbezug gestellt wird; sie ist damit nicht mehr die einzige Quelle,
+        /// sondern der Rückfall.</para>
         /// </summary>
         public static string Beschreibung()
         {
             StringBuilder sb = new StringBuilder();
 
-            string bereich = !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
+            string bereich = AusDemAufruf();
+            if (string.IsNullOrEmpty(bereich))
+                bereich = !string.IsNullOrEmpty(_bereich) ? _bereich : AktivesFenster();
             if (!string.IsNullOrEmpty(bereich)) sb.Append("Bereich: ").Append(bereich);
 
             string tabs = AktiveRegisterkarten();

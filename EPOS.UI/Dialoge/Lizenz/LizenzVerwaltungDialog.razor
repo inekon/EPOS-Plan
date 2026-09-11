@@ -111,7 +111,10 @@
     }
 
     <div class="epos-lizverw-fuss">
-        <InfoKnopf Schluessel="Form_LizenzVerwaltung.btn_Help" />
+        @* Ohne KI-Knopf (#199): Lizenzfragen beantwortet der Assistent nicht -
+           er darf Lizenz und Einstellungen nicht anfassen
+           (Aufgabensteuerungskonzept 1.2). *@
+        <InfoKnopf Schluessel="Form_LizenzVerwaltung.btn_Help" MitAssistent="false" />
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@Wortlaut.KnopfSchliessen</button>
     </div>

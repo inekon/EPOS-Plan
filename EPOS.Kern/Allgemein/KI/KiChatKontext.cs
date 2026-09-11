@@ -158,6 +158,172 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------------
+        //  Zuordnung nach HILFESCHLUESSEL (Auftrag #199, Stufe S1, Weg 1)
+        //
+        //  WARUM DER HILFESCHLUESSEL. Jeder Dialog traegt ihn ohnehin - am
+        //  InfoKnopf, als dieselbe Zeichenkette, die links in help_mapping.txt
+        //  steht. Er ist damit die EINZIGE Stelle, die einen Dialog fachlich
+        //  benennt (Konzept "Der Hilfe-Assistent im Dialog", 1). Wer daraus den
+        //  Bereich ableitet, braucht in 88 Dialogen keine einzige neue Zeile.
+        //
+        //  PRAEFIX UND NICHT VOLLTREFFER. Ein Schluessel ist
+        //  "<Maske>.<Steuerelement>" ("Form_Gebaeude2.groupBox5"), und
+        //  help_mapping.txt fuehrt 201 davon auf 103 Masken. Zugeordnet wird
+        //  deshalb das MASKENPRAEFIX, und unter mehreren passenden gewinnt das
+        //  LAENGSTE: "Form_Stromspeicher" und "Form_Stromverbraucher" sind zwei
+        //  Bereiche, "Form_BHKW" deckt "Form_BHKWAdmin" und "Form_BHKWEing"
+        //  gemeinsam ab.
+        //
+        //  DIE SCHRANKE BLEIBT. Jeder Treffer geht durch Freigegeben() - auch
+        //  ein Tippfehler in dieser Tabelle kann keinen freien Text in den
+        //  Prompt bringen.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Zuordnung Maskenpräfix eines Hilfeschlüssels -&gt; Bereich. Gepflegt gegen
+        /// <c>WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt</c>; der
+        /// Wächter <c>KiBereichstabelleTests</c> hält beide gegeneinander.
+        /// </summary>
+        private static readonly Dictionary<string, string> BEREICH_JE_HILFEPRAEFIX =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "AssistentSeite",                B_ASSISTENT },
+            { "Form_AdminPV",                  B_PHOTOVOLTAIK },
+            { "Form_AdminSettings",            B_ADMIN },
+            { "Form_AdminStromspeicher",       B_STROMSPEICHER },
+            { "Form_AdminWaermeeinlesen",      B_WAERMEBEDARF },
+            { "Form_AdminWechselrichter",      B_PHOTOVOLTAIK },
+            { "Form_BHKW",                     B_BHKW },
+            { "Form_Betriebsmodus",            B_WAERMEPUMPE },
+            { "Form_BkUebernahme",             B_VARIANTEN },
+            { "Form_Brauchwasser",             B_BRAUCHWASSER },
+            { "Form_CaseEingabe",              B_KOSTEN },
+            { "Form_DBBHKW",                   B_BHKW },
+            { "Form_EingBrauchwasserTyp",      B_BRAUCHWASSER },
+            { "Form_EingDBStromverbraucher",   B_STROMVERBRAUCHER },
+            { "Form_EingGebTyp",               B_GEBAEUDE },
+            { "Form_EingProzTyp",              B_PROZESSWAERME },
+            { "Form_EingStromTyp",             B_STROMVERBRAUCHER },
+            { "Form_Emissionskatalog",         B_KOSTEN },
+            { "Form_Energietraeger",           B_KOSTEN },
+            { "Form_ErgBrauchwasserwaerme",    B_BRAUCHWASSER },
+            { "Form_ErgProzesswaerme",         B_PROZESSWAERME },
+            { "Form_ErgStromverbraucher",      B_STROMVERBRAUCHER },
+            { "Form_GanglinieImportOptionen",  B_STROMVERBRAUCHER },
+            { "Form_Gebaeude",                 B_GEBAEUDE },
+            { "Form_Gesetzesparameter",        B_ADMIN },
+            { "Form_Heizkessel",               B_HEIZKESSEL },
+            { "Form_ImportKonflikte",          B_PROJEKT },
+            { "Form_KatalogDubletten",         B_ADMIN },
+            { "Form_KiChat",                   B_HILFE },
+            { "Form_KiEinstellungen",          B_HILFE },
+            { "Form_Klimadaten",               B_KLIMADATEN },
+            { "Form_Klimazonenkarte",          B_QUELLE_ERDREICH },
+            { "Form_Kosten",                   B_KOSTEN },
+            { "Form_LeistungspreisReihe",      B_KOSTEN },
+            { "Form_Lizenz",                   B_LIZENZ },
+            { "Form_PV",                       B_PHOTOVOLTAIK },
+            { "Form_PeakShaving",              B_STROMSPEICHER },
+            { "Form_PhotovoltaikVerguetung",   B_KOSTEN },
+            { "Form_Projekt",                  B_PROJEKT },
+            { "Form_Prozesswaerme",            B_PROZESSWAERME },
+            { "Form_PufferSp",                 B_PUFFERSPEICHER },
+            { "Form_QuelleErdreich",           B_QUELLE_ERDREICH },
+            { "Form_QuellePufferspeicher",     B_SIM_KONFIG },
+            { "Form_Quellprofil",              B_SIM_KONFIG },
+            { "Form_Simulation_Config",        B_SIM_KONFIG },
+            { "Form_Simulation_Detail",        B_SIM_DETAIL },
+            { "Form_Solar",                    B_SOLARTHERMIE },
+            { "Form_SpeicherOptimierung",      B_STROMSPEICHER },
+            { "Form_SpeicherVariantenVergleich", B_STROMSPEICHER },
+            { "Form_SpotpreisImport",          B_KOSTEN },
+            { "Form_Start",                    B_HAUPTFENSTER },
+            { "Form_Stromganglinie",           B_STROMVERBRAUCHER },
+            { "Form_Stromspeicher",            B_STROMSPEICHER },
+            { "Form_Stromverbraucher",         B_STROMVERBRAUCHER },
+            { "Form_Tarifstruktur",            B_KOSTEN },
+            { "Form_Vorlagen",                 B_KOSTEN },
+            { "Form_WP",                       B_WAERMEPUMPE },
+            { "Form_Waermebedarf",             B_WAERMEBEDARF },
+            { "Form_Waermesenke",              B_SIM_KONFIG },
+            { "Form_Wirtschaftlichkeit",       B_WIRTSCHAFT },
+            { "Hauptfenster",                  B_HAUPTFENSTER },
+            { "Kenndaten",                     B_WAERMEPUMPE },
+            { "KiWerkzeugliste",               B_HILFE },
+            { "Main_PV_Test",                  B_PHOTOVOLTAIK },
+            { "UcBericht",                     B_BERICHT },
+            { "UcBkKosten",                    B_KOSTEN },
+            { "UcBkUebersicht",                B_VARIANTEN },
+            { "UcWirtschaftlichkeit",          B_WIRTSCHAFT },
+            { "Wizard_WPItem",                 B_WAERMEPUMPE }
+        };
+
+        /// <summary>Die Präfixtabelle zum Nachlesen — eine Kopie, keine Handhabe.</summary>
+        public static IReadOnlyDictionary<string, string> Hilfepraefixe =>
+            new Dictionary<string, string>(BEREICH_JE_HILFEPRAEFIX, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Der Bereich zu einem Hilfeschlüssel (<c>Form_Heizkessel.btn_Help</c>).
+        /// Ein unbekanntes Präfix liefert <see cref="BEREICH_UNBEKANNT"/>.
+        /// </summary>
+        public static string BereichFuerHilfeschluessel(string hilfeschluessel)
+        {
+            if (string.IsNullOrWhiteSpace(hilfeschluessel)) return BEREICH_UNBEKANNT;
+
+            string schluessel = hilfeschluessel.Trim();
+
+            // Das Maskenpraefix ist alles vor dem ersten Punkt; ein Schluessel ohne
+            // Punkt gilt ganz.
+            int punkt = schluessel.IndexOf('.');
+            string maske = punkt < 0 ? schluessel : schluessel.Substring(0, punkt);
+            if (maske.Length == 0) return BEREICH_UNBEKANNT;
+
+            string treffer;
+            if (BEREICH_JE_HILFEPRAEFIX.TryGetValue(maske, out treffer)) return Freigegeben(treffer);
+
+            // Unter mehreren passenden Praefixen gewinnt das laengste.
+            string bestes = null;
+            foreach (KeyValuePair<string, string> paar in BEREICH_JE_HILFEPRAEFIX)
+            {
+                if (!maske.StartsWith(paar.Key, StringComparison.OrdinalIgnoreCase)) continue;
+                if (bestes != null && paar.Key.Length <= bestes.Length) continue;
+                bestes = paar.Key;
+                treffer = paar.Value;
+            }
+
+            return bestes == null ? BEREICH_UNBEKANNT : Freigegeben(treffer);
+        }
+
+        // ------------------------------------------------------------------
+        //  Der AUFRUF aus einem Dialog (Auftrag #199, Stufe S1)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Der zuletzt gemeldete Aufruf aus einem Dialog; <c>null</c> = der Assistent
+        /// wurde nicht aus einer Maske heraus gerufen.
+        /// </summary>
+        public static KiAufrufkontext Aufruf { get; private set; }
+
+        /// <summary>
+        /// Meldet den Aufruf aus einem Dialog. <c>null</c> löscht ihn — so meldet sich
+        /// der Menüweg und das Schliessen des Chatfensters.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Aufruf ist der ERSTE Lieferant des Hakens</b>
+        /// <see cref="AktiverBereich"/>, die Windows-<c>HilfeKontext</c> der zweite
+        /// (Konzept 3.1). Der Haken selbst bleibt unangetastet: Er wird einmal beim
+        /// Programmstart belegt, und ein Dialogaufruf, der ihn überschriebe, liesse den
+        /// Bereich nach dem Schliessen des Dialogs stehen. Statt dessen fragt
+        /// <see cref="AktuellerBereich"/> zuerst hier und fällt dann auf den Haken
+        /// zurück — auf iOS, wo kein Haken eingehängt ist, trägt der Aufruf damit
+        /// allein.
+        /// </remarks>
+        public static void AufrufMelden(KiAufrufkontext aufruf)
+        {
+            Aufruf = aufruf;
+        }
+
+        // ------------------------------------------------------------------
         //  Die Ermittlung - Sache der Huelle
         // ------------------------------------------------------------------
 
@@ -181,6 +347,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string AktuellerBereich()
         {
+            // Der Aufruf aus einem Dialog ist der erste Lieferant (S1, #199): Er weiss
+            // genauer, worum es geht, als jede Fensterermittlung - und auf iOS ist er
+            // der einzige.
+            KiAufrufkontext aufruf = Aufruf;
+            if (aufruf != null)
+            {
+                string ausDemAufruf = Freigegeben(aufruf.Bereich);
+                if (!string.Equals(ausDemAufruf, BEREICH_UNBEKANNT, StringComparison.Ordinal))
+                    return ausDemAufruf;
+            }
+
             Func<string> haken = AktiverBereich;
             if (haken == null) return BEREICH_UNBEKANNT;
 

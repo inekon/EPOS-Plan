@@ -44,6 +44,18 @@ public sealed class KiChatTexte
     /// <summary>„Kontext: (nicht erkannt)" (<c>KI_CHAT_KONTEXT_LEER</c>).</summary>
     public string KontextLeer { get; set; } = "";
 
+    /// <summary>
+    /// „Dialog: {0}" (<c>KI_CHAT_DIALOGNAME</c>, Auftrag #199) — der zweite Teil der
+    /// Kontextzeile, wenn der Aufruf aus einer Maske kam. Leer = weglassen.
+    /// </summary>
+    public string DialognameFormat { get; set; } = "";
+
+    /// <summary>
+    /// „Meldung: {0}" (<c>KI_CHAT_MELDUNG</c>, Auftrag #199) — der dritte Teil, wenn
+    /// der Aufruf von einem Banner kam. Leer = weglassen.
+    /// </summary>
+    public string MeldungFormat { get; set; } = "";
+
     /// <summary>„Der Assistent denkt nach…" (<c>KI_CHAT_DENKT</c>).</summary>
     public string Denkt { get; set; } = "";
 

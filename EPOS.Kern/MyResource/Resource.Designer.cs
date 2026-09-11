@@ -21316,6 +21316,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erklären lassen ähnelt.
+        /// </summary>
+        public static string KI_BANNER_ERKLAEREN {
+            get {
+                return ResourceManager.GetString("KI_BANNER_ERKLAEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Meldung vom Hilfe-Assistenten erklären lassen ähnelt.
+        /// </summary>
+        public static string KI_BANNER_ERKLAEREN_TOOLTIP {
+            get {
+                return ResourceManager.GetString("KI_BANNER_ERKLAEREN_TOOLTIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gefundene Hilfeabschnitte: ähnelt.
         /// </summary>
         public static string KI_CHAT_ABSCHNITTE {
@@ -21397,6 +21415,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dialog: {0} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_DIALOGNAME {
+            get {
+                return ResourceManager.GetString("KI_CHAT_DIALOGNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Was der Assistent tut und was übertragen wird ähnelt.
         /// </summary>
         public static string KI_CHAT_ERKLAERUNG_MEHR {
@@ -21447,6 +21474,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_CHAT_KOPIEREN {
             get {
                 return ResourceManager.GetString("KI_CHAT_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Meldung: {0} ähnelt.
+        /// </summary>
+        public static string KI_CHAT_MELDUNG {
+            get {
+                return ResourceManager.GetString("KI_CHAT_MELDUNG", resourceCulture);
             }
         }
         
@@ -22396,6 +22432,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was bedeutet die Meldung „{0}“ und was kann ich tun? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_ALLGEMEIN {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_ALLGEMEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherflotte hat im ganzen Zeitraum weder geladen noch entladen. Woran kann das liegen, und wie bekomme ich einen brauchbaren Lauf? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_ARBEITSLOS {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_ARBEITSLOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der jährliche Betriebsaufwand der Speicherflotte gilt als auffällig klein. Woran liegt das, und welche Werte gehören dort hinein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Peak-Ziel liegt über der Referenzspitze. Warum bleibt die Lastspitzenkappung dann wirkungslos, und welches Ziel ist sinnvoll? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Peak-Ziel liegt unter dem Maximum der Tagesminima. Was bedeutet das für die Speicherflotte, und wie setze ich ein tragfähiges Peak-Ziel? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Start-Ladezustand steht auf dem SoC-Minimum. Wie wirkt sich das auf das Ergebnis aus, und wann sollte ich ihn ändern? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_START_SOC_AUF_MINIMUM {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_START_SOC_AUF_MINIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Stromerzeuger oder Stromspeicher des Projekts steht auf keinem Platz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_LAUF_W_ERZEUGER_OHNE_STROMPLATZ {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_LAUF_W_ERZEUGER_OHNE_STROMPLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leerlaufspannung des Strangs liegt im kalten Fall über der DC-Grenze des Wechselrichters (Regel P1). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P1 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die MPP-Spannung des Strangs liegt im heissen Fall unter dem MPP-Fenster des Wechselrichters (Regel P2). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P2 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die MPP-Spannung des Strangs liegt im kalten Fall über dem MPP-Fenster des Wechselrichters (Regel P3). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P3 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eingangsstrom je MPP-Tracker ist zu hoch (Regel P4). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P4 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An einem MPP-Tracker hängen mehr Stränge, als das Gerät führt (Regel P5). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P5 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das DC/AC-Verhältnis liegt ausserhalb des empfohlenen Bandes (Regel P6). Was bedeutet das, und welche Auslegung ist sinnvoll? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P6 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die DC-Eingangsleistung liegt über der Herstellergrenze des Wechselrichters (Regel P7). Was bedeutet das, und wie behebe ich es? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P7 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_PV_STRANG_P8 {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_PV_STRANG_P8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie ein Stichwort ein und klicken Sie auf „Suchen“. Durchsucht wird die mitgelieferte Hilfe - dabei verlässt keine Angabe diesen Rechner. ähnelt.
         /// </summary>
         public static string KI_HILFEBETRIEB_BEGRUESSUNG {
@@ -23160,6 +23340,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_KERN_WIRKUNG_LESEN {
             get {
                 return ResourceManager.GetString("KI_KERN_WIRKUNG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KI ähnelt.
+        /// </summary>
+        public static string KI_KNOPF_DIALOG {
+            get {
+                return ResourceManager.GetString("KI_KNOPF_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Dialog vom Hilfe-Assistenten erklären lassen ähnelt.
+        /// </summary>
+        public static string KI_KNOPF_DIALOG_TOOLTIP {
+            get {
+                return ResourceManager.GetString("KI_KNOPF_DIALOG_TOOLTIP", resourceCulture);
             }
         }
         

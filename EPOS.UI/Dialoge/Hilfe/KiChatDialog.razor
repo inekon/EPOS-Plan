@@ -67,7 +67,9 @@
             <h2 class="epos-kichat-titel">@Texte.Verlauf</h2>
             <p class="epos-kichat-kontext">@Kontextzeile</p>
             <span class="epos-kichat-kopfknopf">
-                <InfoKnopf Schluessel="Form_KiChat.btn_Help" />
+                @* MitAssistent="false" (Auftrag #199): Ein KI-Knopf IM Chat fuehrte im
+                   Kreis - der Assistent ist schon offen. *@
+                <InfoKnopf Schluessel="Form_KiChat.btn_Help" MitAssistent="false" />
             </span>
         </div>
 
@@ -114,6 +116,7 @@
                         FragenText="@Texte.Fragen"
                         SuchenText="@Texte.Suchen"
                         Gesperrt="@Gesperrt"
+                        Vorbelegung="@VorbelegungAktuell"
                         Abgeschickt="Abschicken">
             <Vorspann>
                 @if (!HilfeBetrieb)
@@ -233,6 +236,24 @@
 
     /// <summary>Der Bedienkontext („Bereich: …"), fertig aus dem Kern.</summary>
     [Parameter] public string Kontext { get; set; } = "";
+
+    /// <summary>
+    /// Der Name des DIALOGS, aus dem der Assistent gerufen wurde (Auftrag #199,
+    /// Stufe S1); leer = über das Menü oder ohne Dialogbezug.
+    /// </summary>
+    [Parameter] public string Dialogname { get; set; } = "";
+
+    /// <summary>
+    /// Die sprachneutrale MELDUNGSKENNUNG, wenn der Aufruf von einem Banner kam
+    /// („erklären lassen", Weg 2); leer = keine.
+    /// </summary>
+    [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>
+    /// Die vorbelegte Frage. Sie steht in der Eingabezeile und wird <b>nicht</b>
+    /// abgeschickt (Konzept 5).
+    /// </summary>
+    [Parameter] public string Vorbelegung { get; set; } = "";
 
     /// <summary>Die KI ist abgeschaltet — der Chat arbeitet als reine Hilfesuche.</summary>
     [Parameter] public bool HilfeBetrieb { get; set; }
@@ -409,9 +430,52 @@
 
     private bool Gesperrt => _beschaeftigt || (Belegt is not null && Belegt());
 
-    private string Kontextzeile => string.IsNullOrEmpty(Kontext)
-        ? Texte.KontextLeer
-        : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.KontextFormat, Kontext);
+    /// <summary>
+    /// Die KONTEXTZEILE im Kopf: Bereich, Dialogname und — falls gesetzt — die
+    /// Meldungskennung, getrennt durch senkrechte Striche (Auftrag #199).
+    /// </summary>
+    /// <remarks>
+    /// <b>Sie nennt, was der Assistent weiss, und nichts darüber hinaus.</b> Bereich
+    /// und Dialogname sind Bedienbegriffe, die Kennung ist sprachneutral — dieselbe
+    /// Grenze, die <c>KiChatKontext.Freigegeben</c> zieht. Feldwerte stehen hier
+    /// bewusst nicht; das ist Stufe S2 mit eigener Einwilligung.
+    /// </remarks>
+    private string Kontextzeile
+    {
+        get
+        {
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            string bereich = string.IsNullOrEmpty(KontextAktuell)
+                ? Texte.KontextLeer
+                : string.Format(k, Texte.KontextFormat, KontextAktuell);
+
+            var teile = new List<string>();
+            if (!string.IsNullOrEmpty(bereich)) teile.Add(bereich);
+
+            if (!string.IsNullOrWhiteSpace(DialognameAktuell) && !string.IsNullOrEmpty(Texte.DialognameFormat))
+                teile.Add(string.Format(k, Texte.DialognameFormat, DialognameAktuell));
+
+            if (!string.IsNullOrWhiteSpace(KennungAktuell) && !string.IsNullOrEmpty(Texte.MeldungFormat))
+                teile.Add(string.Format(k, Texte.MeldungFormat, KennungAktuell));
+
+            return string.Join(" | ", teile);
+        }
+    }
+
+    /// <summary>
+    /// Der nachträglich gesetzte Aufrufkontext (<c>KiChatSteuerung.Kontext</c>);
+    /// <c>null</c> = es gilt der Parametersatz vom Öffnen.
+    /// </summary>
+    private KiKontextangabe? _kontext;
+
+    private string KontextAktuell => _kontext?.Kontext ?? Kontext;
+
+    private string DialognameAktuell => _kontext?.Dialogname ?? Dialogname;
+
+    /// <summary>Die Meldungskennung des Aufrufs — Prüfhilfe und Kontextzeile.</summary>
+    public string KennungAktuell => _kontext?.Kennung ?? Kennung;
+
+    private string VorbelegungAktuell => _kontext?.Vorbelegung ?? Vorbelegung;
 
     /// <summary>
     /// Die Erklaerzeilen der Begruessung ohne Kopf- und Leerzeilen — der Kopf ist
@@ -505,8 +569,20 @@
         {
             Zeigen = BestaetigungZeigen,
             Verfall = VerfallSetzen,
-            Beenden = BestaetigungBeenden
+            Beenden = BestaetigungBeenden,
+            Kontext = KontextSetzen
         });
+    }
+
+    /// <summary>
+    /// Ein NEUER Aufrufkontext für das stehende Fenster (Auftrag #199) — Windows
+    /// öffnet nur EIN Chatfenster, und wer aus einem zweiten Dialog fragt, soll nicht
+    /// den Bereich von vorhin lesen.
+    /// </summary>
+    private Task KontextSetzen(KiKontextangabe angabe)
+    {
+        _kontext = angabe;
+        return InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
