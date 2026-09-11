@@ -26,9 +26,19 @@
                        GesperrteEintraege="@GesperrteZiele"
                        GesperrtHinweis="@(PlanerFehlt ? Resource.FLOTTE_PLANER_ZIEL_GESPERRT : "")"
                        AuswahlChanged="BetriebszielSetzen" />
-        <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG" Eintraege="@Verteilungen"
-                       Auswahl="@((int)_wert.Verteilung)" Aktiv="@Aktiv"
-                       AuswahlChanged="VerteilungSetzen" />
+        @* DIE VERTEILUNG ERST AB ZWEI EINHEITEN (Anwenderentscheid SD-E-8, #206):
+           Sie verteilt eine Anforderung auf MEHRERE Speicher — bei einem gibt es
+           nichts zu verteilen, und jede der drei Regeln fuehrt zum selben Ergebnis.
+           AUSGEBLENDET, nicht gesperrt: Ein gesperrtes Feld behauptet, hier gaebe es
+           eine Wahl, die gerade nicht erlaubt ist; es gibt sie schlicht nicht. Der
+           gespeicherte Wert bleibt dabei unberuehrt — wer eine zweite Einheit anlegt,
+           findet seine Regel wieder. *@
+        @if (VerteilungZeigen)
+        {
+            <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG" Eintraege="@Verteilungen"
+                           Auswahl="@((int)_wert.Verteilung)" Aktiv="@Aktiv"
+                           AuswahlChanged="VerteilungSetzen" />
+        }
         <Auswahlfeld Bezeichnung="@Resource.FLOTTE_BETRIEB_LBL_PRIORITAET" Eintraege="@ErzeugerPrioritaeten"
                        Auswahl="@((int)_wert.ErzeugerPrioritaet)" Aktiv="@Aktiv"
                        AuswahlChanged="ErzeugerPrioritaetSetzen" />
@@ -52,6 +62,10 @@
     {
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_PLANER_FEHLT" />
     }
+    @if (!VerteilungZeigen)
+    {
+        <p class="epos-flotte-hinweis">@Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE</p>
+    }
     <p class="epos-flotte-hinweis">@ZielHinweis</p>
 </section>
 
@@ -66,6 +80,13 @@
     /// Pruefstand setzt den Wert ausdruecklich und braucht dann keine statische Fabrik.
     /// </summary>
     [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    /// <summary>
+    /// Zeigt die VERTEILUNG (Anwenderentscheid <b>SD‑E‑8</b> vom 11.09.2026). Der Wirt
+    /// setzt sie auf „ab zwei Einheiten"; die Vorgabe <c>true</c> lässt jeden anderen
+    /// Wirt unverändert, der eine Flotte im gewohnten Sinn führt.
+    /// </summary>
+    [Parameter] public bool VerteilungZeigen { get; set; } = true;
 
     private FlottenSimulationOptionen _wert = new();
     private FlottenSimulationOptionen? _eingangReferenz;

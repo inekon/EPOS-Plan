@@ -29,7 +29,8 @@
 <div class="epos-flotte-peakziel">
 
     <SpeicherFlottenBetriebEditor Wert="@Wert" WertChanged="WertChanged" Aktiv="@Aktiv"
-                                  PlanerVerfuegbar="@PlanerVerfuegbar" />
+                                  PlanerVerfuegbar="@PlanerVerfuegbar"
+                                  VerteilungZeigen="@VerteilungZeigen" />
 
     @* Die Vorgabe „Netzladung erlaubt" haengt am Betriebsziel (SD-Q5). Der Satz
        erklaert, warum der Schalter beim Zielwechsel umspringt — sonst waere es
@@ -81,6 +82,12 @@
 
     /// <summary>Durchreiche an den Betriebseditor; <c>null</c> = die Auskunft des Kerns fragen.</summary>
     [Parameter] public bool? PlanerVerfuegbar { get; set; }
+
+    /// <summary>
+    /// Durchreiche an den Betriebseditor: Die VERTEILUNG erscheint erst ab zwei
+    /// Einheiten (SD‑E‑8).
+    /// </summary>
+    [Parameter] public bool VerteilungZeigen { get; set; } = true;
 
     /// <summary>Der hergeleitete Vorschlag H₀; <c>null</c> = keiner.</summary>
     [Parameter] public FlottenPeakZielVorschlag? Vorschlag { get; set; }

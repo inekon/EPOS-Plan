@@ -469,7 +469,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
         {
             // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen, dazu der
             // zweite Hauptteil "Mehrere Speicher (Speicherflotte)".
-            { "Stromspeicher", "Fassung 4" }
+            { "Stromspeicher", "Fassung 5" }
         };
 
     /// <summary>

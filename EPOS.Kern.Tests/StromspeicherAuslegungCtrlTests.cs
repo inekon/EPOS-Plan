@@ -250,8 +250,85 @@ public sealed class StromspeicherAuslegungCtrlTests
     }
 
     // =====================================================================
+    //  Ein Modus statt zwei (Anwenderentscheid SD-E-8, Auftrag #206)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Ein Einzelspeicher ist eine Flotte mit EINER Einheit.</b> Öffnet der Anwender
+    /// die Ansicht für ein Projekt OHNE gespeicherten Flottenstand, belegt der Kern je
+    /// Speicheranlage des Projekts eine Einheit vor (seit #210) — Kapazität, Lade- und
+    /// Entladeleistung, die zwei Wirkungsgrade und das SoC-Band; der Anlagenbezug macht
+    /// sie als Anlage des Projekts kenntlich, und genau daran hängt in Schritt 5 das
+    /// Rückschreiben. Ein Projekt mit EINER Speicheranlage bekommt damit genau eine
+    /// Einheit — der Fall, den SD‑E‑8 „Einzelspeicher" nennt.
+    /// </summary>
+    /// <remarks>
+    /// Geprüft wird auf Projekt <b>1017</b>: Es trägt GENAU EINE Speicheranlage mit
+    /// aktiver Variante und keinen Stand in <c>Tab_SpeicherAuslegung</c> — 1046 hätte
+    /// seinen gespeicherten <c>@Projektflotte</c>-Stand zurückgegeben und die Vorbelegung
+    /// nie erreicht, und 1007 führt vier Speicheranlagen.
+    /// </remarks>
+    [Fact]
+    public void Ohne_Flottenstand_steht_die_aktive_Variante_als_EINE_Einheit_da()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Einzelprojekt);
+        FlottenStudieKonfiguration flotte = ctrl.Vorgaben().Eingaben.Auslegung.Flotte;
+
+        Assert.NotNull(flotte);
+        FlottenEinheit einheit = Assert.Single(flotte.Einheiten);
+
+        Assert.False(string.IsNullOrWhiteSpace(einheit.AnlageId), "Der Anlagenbezug fehlt.");
+        Assert.True(einheit.KapazitaetKWh > 0.0);
+        Assert.True(einheit.LadeleistungKw > 0.0);
+        Assert.Equal(einheit.LadeleistungKw, einheit.EntladeleistungKw);
+        Assert.InRange(einheit.Ladewirkungsgrad, 0.0, 1.0);
+        Assert.InRange(einheit.Entladewirkungsgrad, 0.0, 1.0);
+        Assert.True(einheit.SocMin < einheit.SocMax);
+        Assert.InRange(einheit.SocStart, einheit.SocMin, einheit.SocMax);
+    }
+
+    /// <summary>
+    /// <b>Das Rückschreiben in die Projektanlage bleibt</b> (SD‑E‑8, Punkt 2): Der
+    /// Projektlauf führt weiter zwei Pfade (SD‑Q2), und ohne aktivierte Projektflotte
+    /// rechnet er die Einzelanlage — die ausgelegte Größe käme dort sonst nie an.
+    /// </summary>
+    [Fact]
+    public void Die_uebernommene_Groesse_steht_danach_in_der_Projektanlage()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Einzelprojekt);
+        FlottenEinheit vorher = ctrl.Vorgaben().Eingaben.Auslegung.Flotte.Einheiten[0];
+
+        double kapazitaet = vorher.KapazitaetKWh + 7.5;
+        double leistung = vorher.LadeleistungKw + 2.5;
+
+        (bool Erfolg, string Text) antwort = ctrl.AuslegungUebernehmen(kapazitaet, leistung);
+        Assert.True(antwort.Erfolg, antwort.Text);
+
+        // Die frisch gelesene Vorbelegung zeigt die geschriebene Groesse — sie kommt aus
+        // derselben Quelle, die der Projektlauf ohne Flotte liest.
+        FlottenEinheit nachher = new StromspeicherAuslegungCtrl(Einzelprojekt)
+            .Vorgaben().Eingaben.Auslegung.Flotte.Einheiten[0];
+
+        Assert.Equal(kapazitaet, nachher.KapazitaetKWh, 6);
+        Assert.Equal(leistung, nachher.LadeleistungKw, 6);
+        Assert.Equal(leistung, nachher.EntladeleistungKw, 6);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
+
+    /// <summary>
+    /// Das Projekt mit GENAU EINER Speicheranlage, aktiver Variante und OHNE
+    /// gespeicherten Auslegungsstand — der Fall „Einzelspeicher" nach SD‑E‑8.
+    /// </summary>
+    private const int Einzelprojekt = 1017;
 
     /// <summary>Die Zahl der Viertelstunden eines Normaljahres.</summary>
     private const int Intervalle = 35040;

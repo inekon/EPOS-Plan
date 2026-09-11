@@ -191,16 +191,20 @@ nur, wenn die Flotte gerechnet hat. Herleitung, Wahl des Peak-Ziels und die drei
 stehen im `protokoll.txt` der Basis; das Projekt entsteht wiederholbar aus
 `Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py`.
 Die Vorgängerbasis `2026-09-07_R6_PvKoeffizienten` (zwölf Projekte, 312 CSV, 1 792 Skalare)
-bleibt zur Geschichte liegen — sie entstand nach dem
+liegt seit dem 11.09.2026 (Anwenderentscheid SYNC‑Q1) nicht mehr im Arbeitsbaum, sondern nur noch
+in der Git-Geschichte (Stand `1e71d30`) — sie entstand nach dem
 Befund **W6‑B‑5** mit den Entscheiden
 **Q1–Q3**: Schemaschritt 69 repariert die verdorbenen PV-Modulkoeffizienten aus der CEC-Liste.
 **Elf der zwölf Projekte waren byte-gleich zu IHRER Vorgängerbasis; nur 1007 wich ab**, und dort
 nur in den acht Dateien der PV-Kette — die Ursache ist genau eine Spalte: `T_NOCT` springt vom
 Rückfall 45 °C auf den Katalogwert 47,4 °C, das sind −0,69 % theoretische PV-Erzeugung. Der
 Gegenbeweis (allein `T_NOCT` zurück auf 45 → 29 von 29 Dateien byte-gleich zu R5) steht im
-`protokoll.txt` der Basis. Die Vorgängerbasis
-`2026-09-07_R5_Zahlenrand` bleibt zur Geschichte liegen — sie entstand nach den drei
-Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis. Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") bleibt zur Geschichte liegen, ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen; die CI rechnet bei
+`protokoll.txt` der Basis, abrufbar mit
+`git show 1e71d30:Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/protokoll.txt`. Die Vorgängerbasis
+`2026-09-07_R5_Zahlenrand` liegt ebenso seit dem 11.09.2026 (SYNC‑Q1) nur noch in der
+Git-Geschichte (Stand `1e71d30`) — sie entstand nach den drei
+Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis, abrufbar mit
+`git show 1e71d30:Referenzlaeufe/2026-09-07_R5_Zahlenrand/protokoll.txt`. Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") liegt ebenso seit dem 11.09.2026 (SYNC‑Q1) nur noch in der Git-Geschichte (Stand `1e71d30`), ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen; die CI rechnet bei
 jedem Push die Projekte 1030, 1007, 1017, 1045 **und 1046** gegen die aktuelle Basis.
 
 **Die Basis führt seit dem Anwenderentscheid Em‑9.8 (07.09.2026) auch zehn

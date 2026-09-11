@@ -83,6 +83,52 @@ Das Projekt entsteht wiederholbar aus
 Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen im
 `protokoll.txt` der Basis `2026-09-11_R7_Speicherflotte`.
 
+## Entfernte Basen (11.09.2026, SYNC‑Q1)
+
+**`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
+Basen aufräumt, lässt `2026-09-11_R7_Speicherflotte`, `Kenndaten_Test.sqlite`, `Importproben`,
+`Skripte` und `LIESMICH.md` stehen.**
+
+Der Sync-Commit `b02f986` vom 11.09.2026 (anderer Rechner) hat ausschließlich gelöscht (0
+hinzugefügt, 0 geändert, 7 758 gelöscht): die 24 historischen Referenzbasen unten (7 731 Dateien,
+1 016,7 MB) und den Ordner `Referenzlaeufe/Importproben` (27 Dateien) — Letzterer ist als
+`c28ec10` wiederhergestellt, weil 13 Testklassen ihn lesen. Der Anwenderentscheid **SYNC‑Q1**
+vom 11.09.2026 lautet **„entfernt lassen"**: Kein Test, kein Gate, keine CI liest eine entfernte
+Basis, nur Kommentare und Doku nennen sie noch. Jede entfernte Datei bleibt über die
+Git-Geschichte erreichbar — Stand **`1e71d30`**, der letzte Commit vor der Löschung:
+
+```bash
+git show 1e71d30:Referenzlaeufe/<Basis>/protokoll.txt      # eine einzelne Datei
+git checkout 1e71d30 -- Referenzlaeufe/<Basis>              # ganzer Ordner
+```
+
+| Ordner | Datum | Zweck |
+|---|---|---|
+| `2026-08-27_V0` | 27.08.2026 | Stand nach den V0-Bestandsfehler-Fixes (Mehrgebäude-Doppelzählung, summierte statt überschriebene Stromprofile) und vor der Dreikanal-Umstellung; neun Projekte, 216 CSV |
+| `2026-08-27_K1` | 27.08.2026 | Basis der Pakete K1 bis S2 nach der Dreikanal-Umstellung (anteilige Netzverlustverteilung F2, Wochenprofile am Klimadaten-Kalender F3); neun Projekte, 216 CSV |
+| `2026-08-27_A1` | 27.08.2026 | erste Basis mit den vier Konzept-11.1-Projekten nach dem Altpfad-Abriss, Meilenstein „ein Rechenweg"; dreizehn Projekte, 329 CSV |
+| `2026-08-27_E1` | 27.08.2026 | Basis des Meilensteins Z3 (Paket E1, Ergebnis je Kanal, Migrationsschritt 52); dreizehn Projekte, 329 CSV |
+| `2026-08-28_P1` | 28.08.2026 | Stand nach Paket P1 (Schichtspeichermodell, Migrationsschritt 53), konstruktiv byte-gleich zu E1; dreizehn Projekte, 329 CSV |
+| `2026-08-28_B2` | 28.08.2026 | Stand nach Paket B2 (Kessel-Temperaturmodus, wählbarer Booster-Lesepunkt, Schema 55) plus Datenänderung an 1042; gemeinsamer Ausgangspunkt beider Basen vom 29.08.2026; dreizehn Projekte, 332 CSV |
+| `2026-08-28_E2` | 28.08.2026 | erste Basis mit scharfer Booster-Temperaturkopplung in Projekt 1042 (Codestand E2/D-Check); dreizehn Projekte, 332 CSV |
+| `2026-08-29_Booster` | 29.08.2026 | Referenz des 13-Projekte-Zweitstands mit erstmals scharfer Booster-Temperaturkopplung (Anlage 14818, `WQ_Unbegrenzt = False`); dreizehn Projekte, 332 CSV |
+| `2026-08-29_E1E2` | 29.08.2026 | Referenz des 10-Projekte-Bestands dieses Rechners nach den Emissions-Etappen E1/E2 (CO2-Saat, Emissionsarten-Katalog) samt Umbau von 1039 und Löschung von 1040–1042; zehn Projekte, 234 CSV |
+| `2026-08-30_B3-Kaskade` | 30.08.2026 | Stand nach Wiederherstellung der 1030-BHKW-Kaskade und Neuaufbau von 1042, Zusammenführung der beiden Datenbestände vom 29.08.2026; dreizehn Projekte, 332 CSV |
+| `2026-09-02_PA0_vor-PaketA` | 02.09.2026 | Ausgangsbasis vor Paket A, einzige Quelle der Ganglinien im UTC-Raster, nach dem Wechsel auf SQLite und dem Projektwechsel (1040–1042 gelöscht, 1026/1028/1029/1043 neu); vierzehn Projekte, 355 CSV |
+| `2026-09-02_PA1_nach-PaketA` | 02.09.2026 | Stand nach Paket A des PV-Ertragsmodell-Konzepts (Zeitbasis UTC → Ortszeit, Stufe E1 „Eine Wahrheit"), byte-gleich zu PB1; vierzehn Projekte, 355 CSV |
+| `2026-09-03_M1_nach-Merge` | 03.09.2026 | Stand nach dem Merge von `origin/ios_migration` (Umzug des Rechenkerns nach `EPOS.Kern`/`EPOS.UI`), byte-gleich zu PB1; vierzehn Projekte, 355 CSV |
+| `2026-09-03_M2_nach-Merge2` | 03.09.2026 | Stand nach dem zweiten Merge (Blazor-Dialoge iU9, iOS-Hülle iU10, SQL-Dialekt-Audit, Wirtschaftlichkeitspakete FX2–FX5/B5), byte-gleich zu M1; vierzehn Projekte, 355 CSV |
+| `2026-09-03_M3_nach-Merge3` | 03.09.2026 | Stand nach dem dritten Merge (iU9 Welle 1: sieben WinForms-Masken der Kosten-/Wirtschaftlichkeitsseite durch Razor-Komponenten ersetzt), byte-gleich zu M2; vierzehn Projekte, 355 CSV |
+| `2026-09-03_M4_nach-Merge4` | 03.09.2026 | Stand nach dem vierten Merge (iU9 Welle 0: Stilllegung von neun Altmasken), byte-gleich zu M3; vierzehn Projekte, 355 CSV |
+| `2026-09-03_PB1_nach-PaketB` | 03.09.2026 | Stand nach Paket B (PV-Modellwahl je Anlage: Hay-Davies, Huld-Schwachlichtmodell, Wechselrichter-Teillastkennlinie, Degradation), byte-gleich zu PA1; vierzehn Projekte, 355 CSV |
+| `2026-09-05_M5_nach-Merge5` | 05.09.2026 | Stand nach dem fünften Merge (iU9-Wellen W2–W16c, Umzug auf die Razor-Struktur, zwölf stillgelegte WinForms-Masken), byte-gleich zu M4; vierzehn Projekte, 355 CSV |
+| `2026-09-05_R2_Zeitbasis` | 05.09.2026 | plattformfreie CI-Basis nach Zusammenführung der Rechner-2-Linie (Paket A: Solar-Zeitbasis UTC → Ortszeit); elf Projekte, 282 CSV |
+| `2026-09-06_R3_Straenge` | 06.09.2026 | CI-Basis mit dem ersten Strang-Projekt 1045 „Prüfprojekt Ost/West Stränge" (Wechselrichterkonzept, Vorrangregel Kapitel 3.5); zwölf Projekte, 312 CSV |
+| `2026-09-07_M7_nach-Merge7` | 07.09.2026 | Stand nach dem siebten Merge (PV-Strangtabelle W6‑B‑4, Schemaschritt 69 samt Linux-Basis R6) — die Windows-Reihen-Basis „Aktuelle Basis" bis zur Ablösung; vierzehn Projekte, 355 CSV |
+| `2026-09-07_R4_Double` | 07.09.2026 | CI-Basis nach Anwenderentscheid W8‑O‑5d („alles in double" statt `float`); zwölf Projekte, 312 CSV |
+| `2026-09-07_R5_Zahlenrand` | 07.09.2026 | CI-Basis nach den Entscheiden W8‑O‑5d‑Q1 (Zahlenrand), W8‑O‑5d‑Q2 (keine `int`-Abschneidung im BHKW-Plan-Port) und Em‑9.8 (zehn Emissionsskalare); zwölf Projekte, 312 CSV, 1 792 Skalare |
+| `2026-09-07_R6_PvKoeffizienten` | 07.09.2026 | CI-Basis nach Befund W6‑B‑5 (Reparatur der PV-Modulkoeffizienten aus der CEC-Liste, Schemaschritt 69); zwölf Projekte, 312 CSV, 1 792 Skalare — abgelöst durch R7 am 11.09.2026 |
+
 ## Aktuelle Basis
 
 **`2026-09-07_M7_nach-Merge7/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
@@ -979,7 +1025,7 @@ Clipping, Degradation).
 > Wechselrichterdaten **+3,37 %** (reiner Hay-Davies-Gewinn) und EVQ **62,97 %**. Alle
 > Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
 > abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
-> [Laufprotokoll der Basis](2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) und im
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
 > [Paket-B-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
 >
 > **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
@@ -1030,7 +1076,7 @@ PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austaus
 > Speicherfüllstand bis −2,3 %, (4) temperaturabhängige Größen der Wärmeseite.
 > **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
 > außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
-> [Laufprotokoll der Basis](2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) und im
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
 > [Paket-A-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
 >
 > **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
@@ -1062,7 +1108,7 @@ damit die einzige Quelle der Ganglinien im UTC-Raster.
 > lief während der Entnahme). **Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich.** Gegen
 > `2026-08-30_B3-Kaskade` waren acht Projekte byte-gleich; die Abweichungen bei 1030 und 1039
 > sind Datenänderungen des Anwenders. Vollständige Begründung im
-> [Laufprotokoll der Basis](2026-09-02_PA0_vor-PaketA/lauf_protokoll.md).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
 
 ### Frühere Fassung: `2026-08-30_B3-Kaskade`
 
@@ -1097,7 +1143,7 @@ damit erledigt — es gilt wieder **eine** Basis.
 > `--ohne BHKWModul[0].Hilfsenergie,BHKWModul[1].Hilfsenergie,HeizkesselModul[0].Hilfsenergie`
 > meldet **elf Projekte PASS** und FAIL nur in 1030 und 1042 — der Rechenkern ist
 > unverändert. Zahlen und Zuordnung im
-> [Laufprotokoll der Basis](2026-08-30_B3-Kaskade/lauf_protokoll.md).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
 >
 > **ACHTUNG bei 1030:** Das zweite Modul ist jetzt „EC-POWER XRGI 9" (9 kW el) statt
 > „Agenitor 306 (250 kw.el) Gas". Die Pfade bleiben abgedeckt (beide Module Erdgas, beide
@@ -1141,7 +1187,7 @@ EIN Stand.
 > und **„Booster-Lesepunkt: DAVOR"** (Default aus Paket B2). Gegen `2026-08-28_B2`:
 > **319/332 byte-gleich, alle 13 Abweichungen in 1042** (gewollt — Booster-JAZ
 > 4,60 → 3,05, die 45-°C-Fiktion ist weg; Zahlen im
-> [Laufprotokoll der Basis](2026-08-29_Booster/lauf_protokoll.md)).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`)).
 > **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei `projekt`-Läufe auf EINER festen
 > Quellkopie, Datenstand 29.08.2026 00:29).
 >
@@ -1178,7 +1224,7 @@ EIN Stand.
 > → „Wärmepumpe WG - BHKW", WP-Gewerk ohne Modul), **1040, 1041, 1042 gelöscht**.
 > Arbeitskopie migriert **54 → 57**; **Selbstvergleich 234/234 byte-/MD5-gleich**;
 > `pruefen` plausibel. Details im
-> [Laufprotokoll der Basis](2026-08-29_E1E2/lauf_protokoll.md).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
 > **ACHTUNG: Mit der Löschung von 1040–1042 und dem 1039-Umbau verliert dieser
 > Datenbestand die vier Konzept-11.1-Abdeckungen** (Mehrgebäude, zwei Puffer je
 > Kanal/Parallelverbund, Prozesswärme mit eigenem Puffer, Booster-Kette) — ihre
@@ -1202,7 +1248,7 @@ EIN Stand.
 > `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19). Die
 > Booster-Temperaturkopplung war in dieser Basis **nicht scharf** (an Anlage 14818
 > stand noch `WQ_Unbegrenzt = True`, konstant 45 °C) — Details im
-> [Laufprotokoll der Basis](2026-08-28_B2/lauf_protokoll.md).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
 >
 > **Die feste Projektliste (dreizehn IDs):**
 >
@@ -1220,7 +1266,7 @@ EIN Stand.
 > A/B byte-gleich belegt; alle CSV-Unterschiede zur P1-Basis sind die 1042-Datenänderung.
 > **Selbstvergleich 332/332 byte-gleich** (zwei `projekt`-Läufe auf EINER festen
 > Quellkopie, Datenstand 28.08.2026 09:05). Details:
-> [Laufprotokoll der Basis](2026-08-28_E2/lauf_protokoll.md).
+> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
 >
 > **Die feste Projektliste (dreizehn IDs):**
 >
@@ -1476,7 +1522,7 @@ dreizehn Projekte, 329 CSV) — die Basis des Meilensteins Z3; P1 war gegen sie 
 `2026-08-27_A1/` bleibt als **älterer Stand** liegen (Codestand A1, Schemastand 51,
 dreizehn Projekte, 329 CSV) — die erste Basis mit den vier Konzept-11.1-Projekten,
 Meilenstein „ein Rechenweg". A/B-Zuordnung des Altpfad-Abrisses im
-[Laufprotokoll](2026-08-27_A1/lauf_protokoll.md); 1042 dort noch mit drei WP-Modulen und
+Laufprotokoll (entfernt, Stand `1e71d30`); 1042 dort noch mit drei WP-Modulen und
 Kombi-Speicher 1054195 (vor der Datenänderung des Anwenders).
 
 `2026-08-27_K1/` bleibt als **älterer Stand** liegen (Codestand K1 auf `Pufferspeicher`,

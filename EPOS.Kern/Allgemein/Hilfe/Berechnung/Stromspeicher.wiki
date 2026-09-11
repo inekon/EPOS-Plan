@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-11 (Fassung 4: Speicherflotte) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-11 (Fassung 5: ein Weg in der Ansicht) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
@@ -513,7 +513,11 @@ Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet
 === Erweiterte Auslegung mit Kosten und Zeitreihen ===
 {{Anker|auslegung-kosten-zeitreihen}}
 
-Der Entwicklungsstand vom 11.09.2026 erweitert die Auslegung um spezifische Kosten, gespeicherte Profile und getrennte Datenquellen. Die Bedienung steht unter [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]].
+Dieser Abschnitt beschreibt den '''Rechenweg des Einzelspeicher-Optimierers'''. Er erweitert die Auslegung um spezifische Kosten, gespeicherte Profile und getrennte Datenquellen.
+
+'''Seit dem 11.09.2026 (Anwenderentscheid SD-E-8) steht er nicht mehr in der Ansicht ''Stromspeicher-Auslegung''.''' Sie kennt nur noch EINEN Weg: die Flottenrechnung, und ein Einzelspeicher ist dort eine Flotte mit einer Einheit (siehe [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]]). An die Stelle der drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' treten dort die fünf Betriebsziele der Flotte.
+
+Der hier beschriebene Rechenweg bleibt '''unverändert in Betrieb''': Er trägt das Betriebsbild des Berichts und die Aktion ''speicher_optimieren'' des Hilfe-Assistenten. Die Formeln (24) bis (26) gelten deshalb weiter; nur eingegeben werden ihre Größen nicht mehr in der Ansicht.
 
 Als Größenachse wird entweder die Kapazität <math>E</math> in kWh oder die AC-Nennleistung <math>P</math> in kW vorgegeben. Die C-Rate <math>r</math> hat die Einheit 1/h. Es gilt <math>P = E \cdot r</math> beziehungsweise <math>E = P/r</math>. Unter- und Obergrenze sind einschließlich; gleiche Grenzen prüfen einen festen Wert. Die Feinphase bleibt innerhalb des vorgegebenen Bereichs.
 

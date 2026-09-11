@@ -1,55 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows.Forms;
 using KiKern;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die fuenf Aktionen der Formularsteuerung (Fachkonzept 11.4, Umsetzungskonzept
-    /// Etappe 3b, Paket F3).
+    /// Die Aktionen am OFFENEN DIALOG (Fachkonzept 11.4, Konzept „Der Hilfe-Assistent im
+    /// Dialog" 3.4 / Weg 5, Etappe S3).
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Zwei lesende, drei schreibende.</b> <c>dialog_lesen</c> und
-    /// <c>dialog_parameter_erklaeren</c> gehoeren zu <see cref="Schutzstufe.Lesen"/>: Sie
-    /// fassen nichts an. <c>feld_setzen</c>, <c>formular_ausfuellen</c> und
-    /// <c>dialog_aktion_ausfuehren</c> gehoeren zu <see cref="Schutzstufe.Schreiben"/> und
-    /// tragen zusaetzlich <see cref="KiAktion.Formularaktion"/> - die „Stufe 2F" des
-    /// Fachkonzepts.
+    /// <b>Sieben Aktionen, drei Gattungen.</b> <c>dialog_lesen</c>,
+    /// <c>dialog_parameter_erklaeren</c> und <c>dialog_oeffnen</c> gehoeren zu
+    /// <see cref="Schutzstufe.Lesen"/>: Sie fassen keine Daten an (auch das Oeffnen einer
+    /// Maske nicht — die Verantwortung geht mit dem Oeffnen an den Anwender ueber,
+    /// Fachkonzept 4.1). <c>feld_setzen</c>, <c>formular_ausfuellen</c> und
+    /// <c>dialog_aktion_ausfuehren</c> sind FORMULARAKTIONEN der Stufe 2: Sie wirken in
+    /// die offene Maske. <c>dialog_speichern</c> ist die einzige Aktion dieser Datei, die
+    /// in die DATENBANK wirkt — sie traegt deshalb den Sicherungspunkt (KI‑D‑Q4).
     /// </para>
     /// <para>
-    /// <b>Was das Kennzeichen 2F NICHT ist: eine Ausnahme vom Riegel.</b>
-    /// <c>KiRiegel.BrauchtBestaetigung</c> haengt allein an der Stufe; diese drei Aktionen
-    /// brauchen deshalb dieselbe Bestaetigung wie jede andere Schreibaktion. Das
-    /// Kennzeichen entscheidet ueber genau zwei Dinge im Anwendungsprojekt: die
-    /// Modalitaetsweiche im <see cref="KiAusfuehrer"/> (eine Formularaktion VERLANGT die
-    /// offene Zielmaske, waehrend alle uebrigen Aktionen bei offenem modalem Dialog
-    /// abgewiesen werden) und - seit Paket F4 - die abschaltbare Feldsicherung
-    /// (<see cref="KiBestaetigungspflicht"/>).
+    /// <b>Seit Auftrag #201 laeuft ALLES ueber die MASKENBRUECKE.</b> Bis dahin loeste
+    /// <c>KiDialogZugriff</c> Maskennamen ueber <c>Application.OpenForms</c> und Felder
+    /// ueber <c>FindControlRecursive</c> auf. Der Weg war seit iU9 tot: Die vier Masken
+    /// sind Razor-Komponenten und stehen in keiner <c>Form</c> mehr. An seiner Stelle
+    /// meldet der offene Dialog seine Feldzugaenge selbst an
+    /// (<see cref="KiMaskenbruecke"/>, Stufe S2) — und seit S3 dazu seine
+    /// <see cref="KiMaskenhaken"/>: Auffrischen, Plausibilitaetspruefung, Schreibschutz,
+    /// Speicherweg. Damit steht derselbe Weg auf Windows UND auf iOS.
     /// </para>
     /// <para>
-    /// <b>Der Sicherungspunkt haengt NICHT am Kennzeichen 2F, sondern an
-    /// <see cref="KiAktion.Datenbankwirksam"/></b> (Festlegung Paket F4).
-    /// <c>feld_setzen</c> und <c>formular_ausfuellen</c> fuellen nur Eingabefelder und
-    /// brauchen keine Datenbankkopie; <c>dialog_aktion_ausfuehren</c> behaelt sie, weil der
-    /// ausgeloeste Knopf ueber den Bestand in die Datenbank schreibt. Die Begruendung steht
-    /// bei jeder der drei Deklarationen.
-    /// </para>
-    /// <para>
-    /// <b>Keine zweite Eingabepruefung.</b> Gesetzt wird TEXT, geprueft wird am Knopf der
-    /// Maske (<c>Program.ZahlPruefen</c>/<c>GanzzahlPruefen</c>, Fachkonzept 11.2). „abc"
-    /// laesst sich deshalb in ein Zahlenfeld eintragen und scheitert erst bei
-    /// <c>dialog_aktion_ausfuehren</c> - mit der Meldung des BESTANDS. Genau das fordert
-    /// die Abnahme (Umsetzungskonzept 3b, Punkt 4): Der Assistent ersetzt die Pruefung
-    /// nicht, er loest sie aus.
+    /// <b>Keine zweite Eingabepruefung — aber eine ECHTE.</b> Gesetzt wird ueber dieselbe
+    /// Eigenschaft, an der auch das Eingabefeld haengt; die Umsetzung Text → Wert macht
+    /// <see cref="KiFeldwandler"/>, und den fachlichen Befund liefert danach der DIALOG
+    /// (<see cref="KiMaskenhaken.Pruefen"/>). Der Assistent ersetzt die Pruefung des
+    /// Bestands nicht, er loest sie aus (Umsetzungskonzept 3b, Punkt 4).
     /// </para>
     /// <para>
     /// <b>Die Vorschau kommt aus dem Kern.</b> Der Bestaetigungsblock entsteht in
-    /// <see cref="KiFeldBlock"/> aus Katalogtexten und den auf dem UI-Thread gelesenen
-    /// Werten - nie aus Modelltext. Waere er Modelltext, bestaetigte der Anwender eine
-    /// Beschreibung, die mit dem tatsaechlichen Eingriff nichts zu tun haben muss.
+    /// <see cref="KiFeldBlock"/> aus Katalogtexten und den gelesenen Werten — nie aus
+    /// Modelltext. Waere er Modelltext, bestaetigte der Anwender eine Beschreibung, die
+    /// mit dem tatsaechlichen Eingriff nichts zu tun haben muss.
     /// </para>
     /// </remarks>
     internal static class KiAktionenDialog
@@ -65,8 +57,8 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Nennt Felder, aktuelle Werte und auslösbare Knoepfe der offenen Katalogmaske.
-        /// Andockpunkt <c>KiMaskenbruecke.Lesen</c> (seit Auftrag #200).
+        /// Nennt Felder, aktuelle Werte und die Wege der offenen Maske. Andockpunkt
+        /// <c>KiMaskenbruecke.Lesen</c>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -76,22 +68,12 @@ namespace WindowsFormsApplication1
         /// Verwendungen.
         /// </para>
         /// <para>
-        /// <b>Die WERTE kommen seit Auftrag #200 aus der MASKENBRUECKE und nicht mehr aus
-        /// Controls.</b> Der alte Weg (<c>Application.OpenForms</c> +
-        /// <c>FindControlRecursive</c>) ist seit iU9 tot: Die vier Masken sind
-        /// Razor-Komponenten und stehen in keiner <c>Form</c> mehr. Die Bruecke liefert
-        /// stattdessen den Dialogzustand, den der offene Dialog selbst angemeldet hat —
-        /// und zwar auf BEIDEN Plattformen aus derselben Kernfunktion. Der
-        /// Function-Calling-Vertrag ist unberuehrt: derselbe Aktionsname, derselbe
-        /// Parameter <c>maske</c>, dieselben neun Spalten je Zeile.
-        /// </para>
-        /// <para>
-        /// <b>Die KNOEPFE bleiben beim alten Weg</b> und melden deshalb heute
-        /// „nicht bedienbar". Das ist kein Versehen, sondern der Stand: Eine
-        /// Knopfausloesung ist eine Formularaktion der Stufe S3 (Auftrag #201), und erst
-        /// dort bekommt sie ihren Weg in die Razor-Komponente. Eine Zeile, die einen
-        /// Knopf als bedienbar auswiese, ohne dass ihn jemand ausloesen kann, waere die
-        /// schlechtere Auskunft.
+        /// <b>Die KNOEPFE der Deklaration bleiben unbedienbar</b>, und das ist seit
+        /// Auftrag #201 kein Zwischenstand mehr, sondern der Befund: Ein Razor-Dialog hat
+        /// keinen <c>Button</c>, den man von aussen druecken koennte. Was hinter dem
+        /// Speicherknopf steht, meldet der Dialog stattdessen als HAKEN an — und die
+        /// Zeile nennt dem Modell den Weg dorthin (<c>dialog_speichern</c>), statt
+        /// „geht nicht" ohne Ausweg zu sagen.
         /// </para>
         /// </remarks>
         internal static KiAktion DialogLesen()
@@ -112,6 +94,7 @@ namespace WindowsFormsApplication1
 
                     string maske = Maskenschluessel(a.Text("maske"));
                     KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
                     var zeilen = KiHilfe.Liste();
 
                     foreach (KiFeldwert w in KiMaskenbruecke.Lesen(maske))
@@ -136,7 +119,9 @@ namespace WindowsFormsApplication1
                             "leer_erlaubt", false,
                             "wert", "",
                             "bedienbar", false,
-                            "hinweis", KiHilfe.Text(KiDialogTexte.KnopfSpaeter)));
+                            "hinweis", KiHilfe.Text(haken.Speichern != null
+                                                        ? MyResource.Resource.KI_AKTION_KNOPF_UEBER_SPEICHERN
+                                                        : KiDialogTexte.KnopfSpaeter)));
 
                     return KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.Gelesen,
@@ -146,65 +131,21 @@ namespace WindowsFormsApplication1
                 });
         }
 
-        /// <summary>
-        /// Der Maskenschluessel eines Aufrufs: der genannte, sonst die zuletzt
-        /// angemeldete Maske.
-        /// </summary>
-        private static string Maskenschluessel(string genannt)
-        {
-            string gesucht = (genannt ?? "").Trim();
-            return gesucht.Length > 0 ? gesucht : KiMaskenbruecke.AktiveMaske();
-        }
-
-        /// <summary>
-        /// Warum die Bruecke diese Maske nicht liefern kann; <c>null</c> = sie kann.
-        /// </summary>
-        /// <remarks>
-        /// Die Ablehnung NENNT, was es gibt — dieselbe Regel wie beim alten Weg
-        /// (Fachkonzept 11.4): Ein „geht nicht" ohne Liste zwaenge das Modell zum Raten.
-        /// </remarks>
-        private static string BrueckenGrund(string genannt)
-        {
-            string gesucht = (genannt ?? "").Trim();
-
-            if (gesucht.Length > 0 && !KiDialoge.Katalog.Kennt(gesucht))
-                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
-                                     gesucht, KiDialogZugriff.Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
-
-            string maske = Maskenschluessel(gesucht);
-
-            if (maske.Length == 0 || !KiMaskenbruecke.IstAngemeldet(maske))
-                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
-                                     KiDialogZugriff.Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
-
-            return null;
-        }
-
         // =====================================================================
         // dialog_parameter_erklaeren
         // =====================================================================
 
         /// <summary>
         /// Erklaert ein Feld: Anzeigename, Art, Einheit, Leer-Regel, Erlaeuterung - und,
-        /// wo ein Hilfe-Slug deklariert ist, den Hilfetext aus
-        /// <c>WikiHelpCatalog.Get</c> (<c>Allgemein\Hilfe\HelpCatalog.cs:194</c>).
+        /// wo ein Hilfe-Slug deklariert ist, den Hilfetext der Plattform
+        /// (<see cref="KiFeldhilfe"/>).
         /// </summary>
         /// <remarks>
-        /// <para>
         /// <b>Der Hilfetext ist ein ZUSATZ, keine Bedingung.</b> Heute deklariert kein
         /// Katalogfeld einen Slug (Begruendung in <see cref="KiDialoge"/>: die Zuordnung
         /// haengt an <c>help_mapping.txt</c>, die es im Baum nicht gibt). Die Aktion
         /// antwortet deshalb aus der Katalog-Erlaeuterung - und liefert den Hilfeartikel
-        /// zusaetzlich, sobald ein Slug dazukommt. Genau deswegen ist die Erlaeuterung im
-        /// Katalog Pflichttext (<see cref="KiDialogFeld"/>): Sonst haetten Felder ohne Slug
-        /// gar keine Antwort.
-        /// </para>
-        /// <para>
-        /// <b>Der Hilfekatalog darf fehlen.</b> <c>WikiHelpCatalog.Aktueller</c> wird erst
-        /// in <c>Program.Main</c> belegt; im Aktionsharnisch und in Prueflaeufen gibt es ihn
-        /// nicht. Ein fehlender Hilfetext ist ein Schoenheitsfehler und kein Grund, die
-        /// Erklaerung scheitern zu lassen.
-        /// </para>
+        /// zusaetzlich, sobald ein Slug dazukommt.
         /// </remarks>
         internal static KiAktion DialogParameterErklaeren()
         {
@@ -214,29 +155,30 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelDialogErklaeren,
                 beispiel: KiAktionsTexte.BeispielDialogErklaeren,
                 stufe: Schutzstufe.Lesen,
-                andockpunkt: "KiDialogKatalog / WikiHelpCatalog.Get",
+                andockpunkt: "KiDialogKatalog / KiFeldhilfe",
                 parameter: new[] { MaskeParameter(), FeldParameter() },
                 vorbedingung: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), false);
-                    if (!bezug.Ok) return bezug.Grund;
-                    return FeldGrund(bezug, a.Text("feld"));
+                    string grund = BrueckenGrund(a.Text("maske"));
+                    if (grund != null) return grund;
+                    return FeldzugangGrund(a.Text("maske"), a.Text("feld"));
                 },
                 ausfuehren: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), false);
-                    if (!bezug.Ok) return KiErgebnis.Abgelehnt(bezug.Grund);
+                    string grund = BrueckenGrund(a.Text("maske"));
+                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
 
-                    KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
-                    if (feld == null)
-                        return KiErgebnis.Abgelehnt(FeldGrund(bezug, a.Text("feld")));
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+                    if (zugang == null)
+                        return KiErgebnis.Abgelehnt(FeldzugangGrund(a.Text("maske"), a.Text("feld")));
 
-                    HelpEntry hilfe = Hilfetext(feld);
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiDialogFeld feld = zugang.Feld;
+                    KiFeldhilfeEintrag hilfe = KiFeldhilfe.Fuer(feld.HilfeSlug);
                     string leerregel = feld.LeerErlaubt
                         ? KiDialogTexte.LeerErlaubt
                         : KiDialogTexte.LeerPflicht;
-
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
 
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
@@ -247,22 +189,98 @@ namespace WindowsFormsApplication1
                         "leer_erlaubt", feld.LeerErlaubt,
                         "leer_regel", KiHilfe.Text(leerregel),
                         "erlaeuterung", KiHilfe.Text(feld.Erlaeuterung),
-                        "wert", KiHilfe.Text(KiDialogZugriff.LiesText(c)),
+                        "wert", KiHilfe.Text(Feldtext(zugang)),
+                        "bedienbar", zugang.Setzbar,
                         "hilfe_slug", KiHilfe.Text(feld.HilfeSlug),
-                        "hilfe_tooltip", KiHilfe.Text(hilfe != null ? hilfe.Tooltip : ""),
-                        "hilfe_url", KiHilfe.Text(hilfe != null ? hilfe.Url : "")));
+                        "hilfe_tooltip", KiHilfe.Text(hilfe != null ? hilfe.Kurztext : ""),
+                        "hilfe_url", KiHilfe.Text(hilfe != null ? hilfe.Adresse : "")));
 
                     string satz =
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.Erklaert,
-                                      feld.Anzeigename, bezug.Eintrag.Anzeigename) +
+                                      feld.Anzeigename, eintrag.Anzeigename) +
                         " (" + Typname(feld.Typ) +
                         (feld.Einheit.Length > 0 ? ", " + feld.Einheit : "") + ") " +
                         feld.Erlaeuterung + " " + leerregel;
 
-                    if (hilfe != null && hilfe.Tooltip.Length > 0)
-                        satz += " " + hilfe.Tooltip;
+                    if (hilfe != null && hilfe.Kurztext.Length > 0)
+                        satz += " " + hilfe.Kurztext;
 
                     return KiErgebnis.Ok(satz, zeilen, anzahl: 1);
+                });
+        }
+
+        // =====================================================================
+        // dialog_oeffnen  (Auftrag #201, Punkt 3)
+        // =====================================================================
+
+        /// <summary>
+        /// Oeffnet eine Maske des Dialogkatalogs ueber <c>Dienste.Navigation</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Stufe 1, obwohl der Anwender danach alles aendern kann</b> — so steht es im
+        /// Fachkonzept 4.1: „Die Verantwortung geht mit dem Oeffnen an ihn ueber." Was die
+        /// Maske beim Oeffnen SELBST schriebe, waere der Ausschlussgrund; keine der fuenf
+        /// Katalogmasken tut das.
+        /// </para>
+        /// <para>
+        /// <b>Die Zuordnung ist DATEN</b> (<see cref="KiMaskenziele"/>) und keine
+        /// Fallunterscheidung; ein Waechter haelt sie gegen den Katalog. Wohin der
+        /// Schluessel dann fuehrt, entscheidet die Plattform: Unter Windows die
+        /// Navigationstabelle der Huelle, auf iOS die <c>AppWurzel</c>.
+        /// </para>
+        /// <para>
+        /// <b>Ein offener modaler Dialog sperrt</b> — das erledigt der Ausfuehrer fuer
+        /// jede Aktion, die keine Formularaktion ist (Fachkonzept 3.4, Pflicht 2). Diese
+        /// hier ist ausdruecklich KEINE: Sie oeffnet ein Fenster, und genau davor schuetzt
+        /// die Sperre.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion DialogOeffnen()
+        {
+            return new KiAktion(
+                name: "dialog_oeffnen",
+                zweck: KiAktionsTexte.ZweckDialogOeffnen,
+                titel: KiAktionsTexte.TitelDialogOeffnen,
+                beispiel: KiAktionsTexte.BeispielDialogOeffnen,
+                stufe: Schutzstufe.Lesen,
+                andockpunkt: "Dienste.Navigation.OeffneMaske",
+                parameter: new[] { MaskePflichtParameter() },
+                vorbedingung: a => ZielGrund(a.Text("maske")),
+                ausfuehren: a =>
+                {
+                    string grund = ZielGrund(a.Text("maske"));
+                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
+
+                    KiDialog eintrag = KiDialoge.Katalog.Finde(a.Text("maske").Trim());
+                    string ziel = KiMaskenziele.Ziel(eintrag.Maskenname);
+
+                    bool offen;
+                    try { offen = Dienste.Navigation.OeffneMaske(ziel); }
+                    catch (Exception ex)
+                    {
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_AKTION_OEFFNEN_FEHLER,
+                                          eintrag.Anzeigename, ex.Message));
+                    }
+
+                    if (!offen)
+                        return KiErgebnis.Abgelehnt(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_AKTION_OEFFNEN_KEIN_WEG,
+                                          eintrag.Anzeigename, ziel));
+
+                    var zeilen = KiHilfe.Liste();
+                    zeilen.Add(KiHilfe.Zeile(
+                        "maske", eintrag.Maskenname,
+                        "anzeigename", KiHilfe.Text(eintrag.Anzeigename),
+                        "ziel", ziel));
+
+                    return KiErgebnis.Ok(
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KI_AKTION_OEFFNEN_OK, eintrag.Anzeigename),
+                        zeilen, anzahl: 1);
                 });
         }
 
@@ -271,23 +289,27 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Traegt in GENAU EIN Feld einen Wert ein. Andockpunkt
-        /// <c>KiDialogZugriff.Setze</c>.
+        /// Traegt in GENAU EIN Feld der offenen Maske einen Wert ein. Andockpunkt
+        /// <c>KiFeldzugang.Setzen</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// UMKEHRBAR: Der bisherige Text wird VOR der Aenderung auf dem UI-Thread gelesen
-        /// und steht in der Vorschau („Feld · alt → neu") und im Ergebnis. Damit laesst er
-        /// sich als neuer, ebenfalls bestaetigungspflichtiger Aufruf zurueckschreiben
-        /// (Fachkonzept 4.4, Punkt 3).
+        /// UMKEHRBAR: Der bisherige Wert wird VOR der Aenderung gelesen und steht in der
+        /// Vorschau („Feld · alt → neu") und im Ergebnis. Damit laesst er sich als neuer,
+        /// ebenfalls bestaetigungspflichtiger Aufruf zurueckschreiben (Fachkonzept 4.4,
+        /// Punkt 3).
+        /// </para>
+        /// <para>
+        /// <b>Kein Sicherungspunkt</b> (Festlegung Paket F4): Die Aktion schreibt in das
+        /// Daten-Objekt des offenen Dialogs und beruehrt die Datenbank nie. In die
+        /// Datenbank kommt der Wert erst durch <c>dialog_speichern</c> — und die Aktion
+        /// bringt ihren Sicherungspunkt selbst mit.
         /// </para>
         /// <para>
         /// <b>Warum <c>wert</c> Pflicht ist und ein Feld sich nicht leeren laesst.</b>
-        /// <c>KiPruefung</c> behandelt einen leeren Text wie einen FEHLENDEN Parameter
-        /// (<c>KiKern\KiPruefung.cs:90</c>). Ein optionaler <c>wert</c> koennte deshalb
-        /// „ausdruecklich leeren" und „vergessen anzugeben" nicht unterscheiden - ein
-        /// vergessener Parameter wuerde stillschweigend zum Loeschen des Feldinhalts. Bis
-        /// es dafuer einen eigenen, sichtbar benannten Weg gibt, wird nur gesetzt.
+        /// <see cref="KiPruefung"/> behandelt einen leeren Text wie einen FEHLENDEN
+        /// Parameter (<c>KiKern\KiPruefung.cs:90</c>). Ein optionaler <c>wert</c> koennte
+        /// deshalb „ausdruecklich leeren" und „vergessen anzugeben" nicht unterscheiden.
         /// </para>
         /// </remarks>
         internal static KiAktion FeldSetzen()
@@ -298,14 +320,8 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelFeldSetzen,
                 beispiel: KiAktionsTexte.BeispielFeldSetzen,
                 stufe: Schutzstufe.Schreiben,
-                andockpunkt: "KiDialogZugriff.Setze",
+                andockpunkt: "KiFeldzugang.Setzen",
                 formularaktion: true,
-                // KEIN Sicherungspunkt (Festlegung Paket F4): Diese Aktion setzt
-                // TextBox.Text bzw. CheckBox.Checked und beruehrt die Datenbank nicht.
-                // Eine 90-MB-Kopie sicherte hier einen Zustand, den die Aktion gar nicht
-                // verlassen kann; in die Datenbank kommt der Wert erst durch den
-                // Aktionsknopf der Maske - und dessen Aktion bringt ihren Sicherungspunkt
-                // selbst mit (siehe dialog_aktion_ausfuehren).
                 datenbankwirksam: false,
                 umkehrbar: true,
                 wirkung: KiAktionsTexte.WirkungFeldSetzen,
@@ -313,43 +329,45 @@ namespace WindowsFormsApplication1
                 vorbedingung: a => EinzelfeldGrund(a),
                 vorschau: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-                    KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
 
-                    return KiFeldBlock.Felder(bezug.Eintrag.Anzeigename, new[]
+                    return KiFeldBlock.Felder(eintrag.Anzeigename, new[]
                     {
-                        new KiFeldAenderung(feld.Anzeigename,
-                                            KiDialogZugriff.LiesText(c), a.Text("wert"))
+                        new KiFeldAenderung(zugang.Feld.Anzeigename,
+                                            Feldtext(zugang), a.Text("wert"))
                     });
                 },
                 ausfuehren: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-                    if (!bezug.Ok) return KiErgebnis.Abgelehnt(bezug.Grund);
-
-                    KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
-                    if (feld == null)
-                        return KiErgebnis.Abgelehnt(FeldGrund(bezug, a.Text("feld")));
-
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
-                    string neu = a.Text("wert");
-                    string alt = KiDialogZugriff.LiesText(c);
-
-                    string grund = KiDialogZugriff.Setze(feld, c, neu);
+                    string grund = EinzelfeldGrund(a);
                     if (grund != null) return KiErgebnis.Abgelehnt(grund);
+
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+                    KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+
+                    string alt = Feldtext(zugang);
+                    string hindernis = Setze(zugang, a.Text("wert"));
+                    if (hindernis != null) return KiErgebnis.Abgelehnt(hindernis);
+
+                    haken.Auffrischung();
 
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
-                        "maske", bezug.Eintrag.Maskenname,
-                        "feld", feld.Name,
+                        "maske", eintrag.Maskenname,
+                        "feld", zugang.Name,
                         "wert_vorher", KiHilfe.Text(alt),
-                        "wert_nachher", KiHilfe.Text(KiDialogZugriff.LiesText(c))));
+                        "wert_nachher", KiHilfe.Text(Feldtext(zugang))));
 
-                    return KiErgebnis.Ok(
+                    KiErgebnis ergebnis = KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldGesetzt,
-                                      feld.Anzeigename, Sichtbar(neu), Sichtbar(alt)),
+                                      zugang.Feld.Anzeigename, Sichtbar(a.Text("wert")), Sichtbar(alt)),
                         zeilen, anzahl: 1);
+
+                    return MitBefund(ergebnis, haken);
                 });
         }
 
@@ -359,32 +377,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Traegt in mehrere Felder Werte ein - als EIN bestaetigter Block. Andockpunkt
-        /// <c>KiDialogZugriff.Setze</c>.
+        /// <c>KiFeldzugang.Setzen</c>.
         /// </summary>
         /// <remarks>
         /// <para>
         /// <b>Warum ein Textparameter „feld=wert; feld=wert" und kein Objekt.</b>
         /// <see cref="KiParameterTyp"/> laesst nur Primitive und Zahlenlisten zu
-        /// (Fachkonzept 3.2: „Alles Zusammengesetzte gehoert nicht in einen Modellaufruf");
-        /// ein Objektparameter waere eine Erweiterung des Kerns fuer genau eine Aktion. Der
-        /// Bestand loest dieselbe Aufgabe schon so: <c>KiHilfe.ProjektIds</c> nimmt mehrere
-        /// Projekte als eine mit Semikolon getrennte Aufzaehlung entgegen
-        /// (<c>KiAktionen.cs:243</c>). Diese Aktion folgt demselben Muster.
+        /// (Fachkonzept 3.2); ein Objektparameter waere eine Erweiterung des Kerns fuer
+        /// genau eine Aktion. Das ist zugleich der Weg, auf dem MEHRERE Felder in EINER
+        /// Bestaetigung gesetzt werden (Auftrag #201, Punkt 2).
         /// </para>
         /// <para>
         /// <b>Ein Block, ein Klick.</b> Alle Aenderungen stehen in EINEM Vorschaublock und
-        /// werden mit EINER Bestaetigung freigegeben - sonst waere Ausfuellen unbenutzbar
-        /// (Fachkonzept 11.5). Gesetzt wird danach in der genannten Reihenfolge; scheitert
-        /// ein Feld, melden das Ergebnis und die Meldungsliste, welche Felder standen und
-        /// welches nicht. Ein Zuruecksetzen der bereits gesetzten Felder gibt es NICHT: Die
-        /// Maske ist kein Transaktionsraum, und ein halb gefuelltes Formular ist fuer den
-        /// Anwender sichtbar - anders als ein halb geschriebener Datensatz.
-        /// </para>
-        /// <para>
-        /// <b>Felder, die sich nicht aendern, fallen heraus</b> - der Bestaetigungsblock
-        /// soll nur zeigen, was wirklich anders wird. Aendert sich gar nichts, wird schon
-        /// die Vorbedingung im Klartext ablehnen: <see cref="KiFeldBlock"/> laesst einen
-        /// leeren Block ausdruecklich nicht zu.
+        /// werden mit EINER Bestaetigung freigegeben. Gesetzt wird danach in der genannten
+        /// Reihenfolge; scheitert ein Feld, melden Ergebnis und Meldungsliste, welche
+        /// Felder standen und welches nicht. Ein Zuruecksetzen der bereits gesetzten
+        /// Felder gibt es NICHT: Die Maske ist kein Transaktionsraum, und ein halb
+        /// gefuelltes Formular ist fuer den Anwender sichtbar - anders als ein halb
+        /// geschriebener Datensatz.
         /// </para>
         /// </remarks>
         internal static KiAktion FormularAusfuellen()
@@ -395,10 +405,8 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelFormularAusfuellen,
                 beispiel: KiAktionsTexte.BeispielFormularAusfuellen,
                 stufe: Schutzstufe.Schreiben,
-                andockpunkt: "KiDialogZugriff.Setze",
+                andockpunkt: "KiFeldzugang.Setzen",
                 formularaktion: true,
-                // KEIN Sicherungspunkt - Begruendung wie bei feld_setzen: Es werden
-                // ausschliesslich Eingabefelder der offenen Maske gefuellt.
                 datenbankwirksam: false,
                 umkehrbar: true,
                 wirkung: KiAktionsTexte.WirkungFormularAusfuellen,
@@ -406,15 +414,20 @@ namespace WindowsFormsApplication1
                 vorbedingung: a => MehrfeldGrund(a),
                 vorschau: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
                     var aenderungen = new List<KiFeldAenderung>();
-                    Sammle(bezug, a.Text("werte"), aenderungen);
-                    return KiFeldBlock.Felder(bezug.Eintrag.Anzeigename, aenderungen);
+                    Sammle(maske, a.Text("werte"), aenderungen);
+                    return KiFeldBlock.Felder(eintrag.Anzeigename, aenderungen);
                 },
                 ausfuehren: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-                    if (!bezug.Ok) return KiErgebnis.Abgelehnt(bezug.Grund);
+                    string vorab = MehrfeldGrund(a);
+                    if (vorab != null) return KiErgebnis.Abgelehnt(vorab);
+
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
 
                     var namen = new List<string>();
                     var werte = new List<string>();
@@ -427,17 +440,15 @@ namespace WindowsFormsApplication1
 
                     for (int i = 0; i < namen.Count; i++)
                     {
-                        KiDialogFeld feld = bezug.Eintrag.FindeFeld(namen[i]);
-                        if (feld == null)
+                        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, namen[i]);
+                        if (zugang == null)
                         {
-                            meldungen.Add(FeldGrund(bezug, namen[i]));
+                            meldungen.Add(FeldzugangGrund(maske, namen[i]));
                             continue;
                         }
 
-                        Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
-                        string alt = KiDialogZugriff.LiesText(c);
-
-                        string hindernis = KiDialogZugriff.Setze(feld, c, werte[i]);
+                        string alt = Feldtext(zugang);
+                        string hindernis = Setze(zugang, werte[i]);
                         if (hindernis != null)
                         {
                             meldungen.Add(hindernis);
@@ -446,18 +457,116 @@ namespace WindowsFormsApplication1
 
                         gesetzt++;
                         zeilen.Add(KiHilfe.Zeile(
-                            "maske", bezug.Eintrag.Maskenname,
-                            "feld", feld.Name,
+                            "maske", eintrag.Maskenname,
+                            "feld", zugang.Name,
                             "wert_vorher", KiHilfe.Text(alt),
-                            "wert_nachher", KiHilfe.Text(KiDialogZugriff.LiesText(c))));
+                            "wert_nachher", KiHilfe.Text(Feldtext(zugang))));
                     }
+
+                    haken.Auffrischung();
 
                     KiErgebnis e = KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FelderGesetzt,
-                                      gesetzt, bezug.Eintrag.Anzeigename),
+                                      gesetzt, eintrag.Anzeigename),
                         zeilen, anzahl: gesetzt);
 
-                    return e.MitMeldungen(meldungen);
+                    return MitBefund(e.MitMeldungen(meldungen), haken);
+                });
+        }
+
+        // =====================================================================
+        // dialog_speichern  (Auftrag #201, Punkt 4 - Anwenderentscheid KI-D-Q4)
+        // =====================================================================
+
+        /// <summary>
+        /// Ruft den Speicherweg der offenen Maske - mit Bestaetigung UND Sicherungspunkt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Anwenderentscheid KI‑D‑Q4:</b> „Beides, Speichern nur mit Bestaetigung und
+        /// Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4)." Deshalb ist diese
+        /// Aktion ausdruecklich <c>datenbankwirksam</c> — sie ist die EINZIGE der
+        /// Dialogaktionen, vor der eine Datenbankkopie entsteht.
+        /// </para>
+        /// <para>
+        /// <b>Sie ist eine FORMULARAKTION</b>, obwohl sie schreibt: Sie verlangt die
+        /// offene Maske und muss deshalb an der Modalitaetssperre vorbei (die
+        /// Katalogeditoren stehen als Ueberlagerung). Am Riegel aendert das nichts — sie
+        /// gehoert zu <see cref="Schutzstufe.Schreiben"/> und braucht denselben Klick wie
+        /// jede Schreibaktion.
+        /// </para>
+        /// <para>
+        /// <b>Was sie NICHT tut: die Eingaben pruefen.</b> Das tut der Dialog in seinem
+        /// eigenen Speicherweg, genau wie beim Knopfdruck; sein Befund ist das Ergebnis.
+        /// Ein zweiter Pruefweg im Kern waere die zweite Wahrheit, die das Konzept
+        /// ausschliesst.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion DialogSpeichern()
+        {
+            return new KiAktion(
+                name: "dialog_speichern",
+                zweck: KiAktionsTexte.ZweckDialogSpeichern,
+                titel: KiAktionsTexte.TitelDialogSpeichern,
+                beispiel: KiAktionsTexte.BeispielDialogSpeichern,
+                stufe: Schutzstufe.Schreiben,
+                andockpunkt: "KiMaskenhaken.Speichern",
+                formularaktion: true,
+                datenbankwirksam: true,
+                umkehrbar: false,
+                wirkung: KiAktionsTexte.WirkungDialogSpeichern,
+                parameter: new[] { MaskeParameter() },
+                vorbedingung: a => SpeicherGrund(a),
+                vorschau: a =>
+                {
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    return string.Format(CultureInfo.CurrentCulture,
+                                         MyResource.Resource.KI_AKTION_SPEICHERN_VORSCHAU,
+                                         eintrag.Anzeigename, eintrag.Felder.Count);
+                },
+                ausfuehren: a =>
+                {
+                    string grund = SpeicherGrund(a);
+                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
+
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
+
+                    // Der Speicherweg des Dialogs ist asynchron (er schliesst die
+                    // Ueberlagerung und meldet an seinen Wirt). Gewartet wird HIER, auf
+                    // dem Oberflaechenfaden, auf dem der Ausfuehrer jede Aktion laufen
+                    // laesst - eine Fortsetzung auf einem anderen Faden waere genau der
+                    // Fall, den DataRepository mit seinem prozessweiten Modus verbietet.
+                    KiErgebnis ergebnis;
+                    try { ergebnis = haken.Speichern().GetAwaiter().GetResult(); }
+                    catch (Exception ex)
+                    {
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_AKTION_SPEICHERN_FEHLER,
+                                          eintrag.Anzeigename, ex.Message));
+                    }
+
+                    if (ergebnis == null)
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_AKTION_SPEICHERN_FEHLER,
+                                          eintrag.Anzeigename, ""));
+
+                    // Der Sicherungspfad gehoert in das Ergebnis (Auftrag #201, Punkt 4):
+                    // Der Anwender soll nach dem Schreiben wissen, wohin der Vorzustand
+                    // gesichert ist - nicht nur vorher in der Bestaetigung.
+                    string pfad = KiSicherungspunkt.Pfad;
+                    if (ergebnis.Erfolg && !string.IsNullOrEmpty(pfad))
+                        ergebnis = ergebnis.MitMeldungen(new[]
+                        {
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KI_AKTION_SPEICHERN_SICHERUNG, pfad)
+                        });
+
+                    return ergebnis;
                 });
         }
 
@@ -466,25 +575,24 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Loest einen Knopf der Positivliste aus. Andockpunkt
-        /// <c>KiDialogZugriff.Ausloesen</c> (<c>Button.PerformClick</c>).
+        /// Loest einen Knopf der Positivliste aus - seit Auftrag #201 die eine Aktion des
+        /// Registers OHNE Weg.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// NICHT umkehrbar: Was der Knopf ausloest, gehoert der Maske - ein Speichern
-        /// schreibt in die Datenbank, ein Abbrechen schliesst das Fenster. Der Assistent
-        /// kennt weder den Vorzustand noch einen Weg zurueck. Das sagt die Bestaetigung so.
+        /// <b>Warum sie bleibt, obwohl sie ablehnt.</b> Aus dem Register wird nichts
+        /// geloescht (Fachkonzept 5.4 nennt, was NIE hineingehoert - nicht, was wieder
+        /// hinaus soll): Der Werkzeugvertrag des Modells ist stabil, und ein Aufruf, der
+        /// ins Leere liefe, waere schlechter als eine benannte Ablehnung, die den Weg
+        /// nennt.
         /// </para>
         /// <para>
-        /// <b>Das Ergebnis ist die Meldung des Bestands - soweit sie greifbar ist.</b>
-        /// Laeuft die Aktion in <c>DataRepository.EngineModus()</c> (das tut sie, der
-        /// Ausfuehrer klammert jeden Lauf so ein), landen Datenbankmeldungen in der stillen
-        /// Sammlung und holt sie <c>StilleFehlerAbholen</c> unmittelbar danach ins
-        /// Ergebnis (<c>KiAusfuehrer.cs:599</c>). Die Eingabepruefung der Masken meldet
-        /// aber ueber <c>MessageBox</c> und nicht ueber das <c>DataRepository</c> - sie
-        /// erscheint also als eigener Dialog vor dem Anwender. Das Ergebnis sagt deshalb
-        /// ausdruecklich, dass die Maske selbst meldet, statt Vollstaendigkeit
-        /// vorzutaeuschen.
+        /// <b>Warum sie ablehnt.</b> Ihr Andockpunkt war <c>Button.PerformClick</c> - ein
+        /// WinForms-Steuerelement. Die fuenf Katalogmasken sind Razor-Komponenten; einen
+        /// Knopf „von aussen zu druecken" gibt es dort nicht, und es soll ihn nicht geben
+        /// (das waere die Reflexion, die Fachkonzept 3.2 ausschliesst). Was hinter dem
+        /// Speicherknopf steht, meldet der Dialog als HAKEN an, und dafuer gibt es
+        /// <c>dialog_speichern</c> - mit Bestaetigung UND Sicherungspunkt.
         /// </para>
         /// </remarks>
         internal static KiAktion DialogAktionAusfuehren()
@@ -495,14 +603,8 @@ namespace WindowsFormsApplication1
                 titel: KiAktionsTexte.TitelDialogAktion,
                 beispiel: KiAktionsTexte.BeispielDialogAktion,
                 stufe: Schutzstufe.Schreiben,
-                andockpunkt: "Button.PerformClick",
+                andockpunkt: "KiMaskenhaken.Speichern (abgeloest)",
                 formularaktion: true,
-                // MIT Sicherungspunkt (Festlegung Paket F4) - ausdruecklich gesetzt, obwohl
-                // es die Vorgabe ist: Diese Aktion ist der Grund, warum das Kennzeichen
-                // ueberhaupt je Aktion und nicht pauschal fuer alle Formularaktionen
-                // entschieden wird. Der ausgeloeste Knopf laeuft durch die Bestandslogik der
-                // Maske und schreibt dabei in die Datenbank (btn_Speichern ->
-                // InitDatensatzUpdate -> Insert/Update). Vor genau dem gehoert die Kopie.
                 datenbankwirksam: true,
                 umkehrbar: false,
                 wirkung: KiAktionsTexte.WirkungDialogAktion,
@@ -510,38 +612,14 @@ namespace WindowsFormsApplication1
                 vorbedingung: a => KnopfGrundVoll(a),
                 vorschau: a =>
                 {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-                    KiDialogKnopf knopf = bezug.Eintrag.FindeKnopf(a.Text("knopf"));
-                    return KiFeldBlock.Knopf(bezug.Eintrag.Anzeigename, knopf.Anzeigename);
+                    string maske = Maskenschluessel(a.Text("maske"));
+                    KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                    KiDialogKnopf knopf = eintrag?.FindeKnopf(a.Text("knopf"));
+                    return KiFeldBlock.Knopf(eintrag == null ? "" : eintrag.Anzeigename,
+                                             knopf == null ? "" : knopf.Anzeigename);
                 },
-                ausfuehren: a =>
-                {
-                    KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-                    if (!bezug.Ok) return KiErgebnis.Abgelehnt(bezug.Grund);
-
-                    KiDialogKnopf knopf = bezug.Eintrag.FindeKnopf(a.Text("knopf"));
-                    if (knopf == null)
-                        return KiErgebnis.Abgelehnt(KnopfGrund(bezug, a.Text("knopf")));
-
-                    // Anzeigenamen VOR dem Klick festhalten: „Abbrechen" schliesst die
-                    // Maske, danach ist ueber sie nichts mehr zu erfahren.
-                    string maskenname = bezug.Eintrag.Anzeigename;
-
-                    Control c = KiDialogZugriff.Aufloesen(bezug.Maske, knopf.Controlpfad);
-                    string grund = KiDialogZugriff.Ausloesen(knopf, c);
-                    if (grund != null) return KiErgebnis.Abgelehnt(grund);
-
-                    var zeilen = KiHilfe.Liste();
-                    zeilen.Add(KiHilfe.Zeile(
-                        "maske", bezug.Eintrag.Maskenname,
-                        "knopf", knopf.Name));
-
-                    return KiErgebnis.Ok(
-                        string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KnopfAusgeloest,
-                                      knopf.Anzeigename, maskenname),
-                        zeilen, anzahl: 1)
-                        .MitMeldungen(new[] { KiDialogTexte.KnopfHinweis });
-                });
+                ausfuehren: a => KiErgebnis.Abgelehnt(KnopfGrundVoll(a)
+                                                      ?? MyResource.Resource.KI_AKTION_KNOPF_KEIN_WEG));
         }
 
         // =====================================================================
@@ -549,14 +627,26 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Maskenparameter - bei allen fuenf Aktionen OPTIONAL: ohne Angabe gilt die
-        /// gerade offene Katalogmaske (Fachkonzept 11.4).
+        /// Der Maskenparameter - bei den Dialogaktionen OPTIONAL: ohne Angabe gilt die
+        /// zuletzt angemeldete Maske (Fachkonzept 11.4).
         /// </summary>
         private static KiParameter MaskeParameter()
         {
             return new KiParameter("maske", KiParameterTyp.Text,
                                    KiAktionsTexte.ErlMaske,
                                    pflicht: false,
+                                   anzeigename: KiAktionsTexte.MaskeName,
+                                   maxLaenge: KiDialog.MaxMaskenname);
+        }
+
+        /// <summary>
+        /// Der Maskenparameter von <c>dialog_oeffnen</c> - hier PFLICHT: Eine Maske zu
+        /// oeffnen, die man nicht genannt hat, ergaebe keinen Sinn.
+        /// </summary>
+        private static KiParameter MaskePflichtParameter()
+        {
+            return new KiParameter("maske", KiParameterTyp.Text,
+                                   KiAktionsTexte.ErlMaskeOeffnen,
                                    anzeigename: KiAktionsTexte.MaskeName,
                                    maxLaenge: KiDialog.MaxMaskenname);
         }
@@ -598,82 +688,282 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Vorbedingung von <c>feld_setzen</c>: Maske bedienbar, Feld deklariert, Control
-        /// da und setzbar, Wert zum Feld passend.
+        /// Der Maskenschluessel eines Aufrufs: der genannte, sonst die zuletzt
+        /// angemeldete Maske.
         /// </summary>
-        /// <remarks>
-        /// Die Vorbedingung laeuft VOR der Vorschau (<c>KiAusfuehrer.VorschauLauf</c>).
-        /// Deshalb darf die Vorschau anschliessend ohne weitere Pruefung auf Katalogeintrag
-        /// und Control zugreifen - das ist kein blindes Vertrauen, sondern die Reihenfolge
-        /// der Bestaetigungsschicht (Fachkonzept 3.5).
-        /// </remarks>
-        private static string EinzelfeldGrund(KiAufruf a)
+        private static string Maskenschluessel(string genannt)
         {
-            KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-            if (!bezug.Ok) return bezug.Grund;
-
-            KiDialogFeld feld = bezug.Eintrag.FindeFeld(a.Text("feld"));
-            if (feld == null) return FeldGrund(bezug, a.Text("feld"));
-
-            Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
-            string grund = KiDialogZugriff.PruefeSetzbar(feld, c);
-            if (grund != null) return grund;
-
-            return KiDialogZugriff.PruefeWert(feld, c, a.Text("wert"));
+            string gesucht = (genannt ?? "").Trim();
+            return gesucht.Length > 0 ? gesucht : KiMaskenbruecke.AktiveMaske();
         }
 
         /// <summary>
-        /// Vorbedingung von <c>formular_ausfuellen</c>: Maske bedienbar, Zuweisungen
-        /// lesbar, mindestens eine echte Aenderung darunter.
+        /// Warum die Bruecke diese Maske nicht liefern kann; <c>null</c> = sie kann.
         /// </summary>
-        private static string MehrfeldGrund(KiAufruf a)
+        /// <remarks>
+        /// Die Ablehnung NENNT, was es gibt — dieselbe Regel wie beim alten Weg
+        /// (Fachkonzept 11.4): Ein „geht nicht" ohne Liste zwaenge das Modell zum Raten.
+        /// </remarks>
+        private static string BrueckenGrund(string genannt)
         {
-            KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-            if (!bezug.Ok) return bezug.Grund;
+            string gesucht = (genannt ?? "").Trim();
 
-            var namen = new List<string>();
-            var werte = new List<string>();
-            string grund = Zerlegen(a.Text("werte"), namen, werte);
-            if (grund != null) return grund;
+            if (gesucht.Length > 0 && !KiDialoge.Katalog.Kennt(gesucht))
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
+                                     gesucht, Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
 
-            for (int i = 0; i < namen.Count; i++)
-            {
-                KiDialogFeld feld = bezug.Eintrag.FindeFeld(namen[i]);
-                if (feld == null) return FeldGrund(bezug, namen[i]);
+            string maske = Maskenschluessel(gesucht);
 
-                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
-                grund = KiDialogZugriff.PruefeSetzbar(feld, c);
-                if (grund != null) return grund;
-
-                grund = KiDialogZugriff.PruefeWert(feld, c, werte[i]);
-                if (grund != null) return grund;
-            }
-
-            var aenderungen = new List<KiFeldAenderung>();
-            Sammle(bezug, a.Text("werte"), aenderungen);
-            if (aenderungen.Count == 0)
-                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.OhneAenderung,
-                                     bezug.Eintrag.Anzeigename);
+            if (maske.Length == 0 || !KiMaskenbruecke.IstAngemeldet(maske))
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
+                                     Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
 
             return null;
         }
 
-        /// <summary>Vorbedingung von <c>dialog_aktion_ausfuehren</c>.</summary>
+        /// <summary>Warum <c>dialog_oeffnen</c> diese Maske nicht kennt; <c>null</c> = es geht.</summary>
+        private static string ZielGrund(string genannt)
+        {
+            string gesucht = (genannt ?? "").Trim();
+
+            if (gesucht.Length == 0 || !KiDialoge.Katalog.Kennt(gesucht))
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
+                                     gesucht, Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+
+            KiDialog eintrag = KiDialoge.Katalog.Finde(gesucht);
+            if (!KiMaskenziele.Kennt(eintrag.Maskenname))
+                return string.Format(CultureInfo.CurrentCulture,
+                                     MyResource.Resource.KI_AKTION_OEFFNEN_OHNE_ZIEL,
+                                     eintrag.Anzeigename);
+
+            return null;
+        }
+
+        /// <summary>Klartextgrund fuer ein Feld, das die Bruecke nicht fuehrt.</summary>
+        private static string FeldzugangGrund(string genannt, string feld)
+        {
+            string maske = Maskenschluessel(genannt);
+            KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+
+            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldUnbekannt,
+                                 feld ?? "",
+                                 eintrag == null ? maske : eintrag.Anzeigename,
+                                 Aufzaehlen(eintrag == null
+                                                ? Array.Empty<string>()
+                                                : eintrag.Feldnamen()));
+        }
+
+        /// <summary>
+        /// Vorbedingung von <c>feld_setzen</c>: Maske angemeldet, Feld da und setzbar,
+        /// kein Lesemodus, kein Schreibschutz, Wert zum Feld passend.
+        /// </summary>
+        /// <remarks>
+        /// Die Vorbedingung laeuft VOR der Vorschau (<c>KiAusfuehrung.VorschauLauf</c>).
+        /// Deshalb darf die Vorschau anschliessend ohne weitere Pruefung auf Katalogeintrag
+        /// und Feldzugang zugreifen - das ist kein blindes Vertrauen, sondern die
+        /// Reihenfolge der Bestaetigungsschicht (Fachkonzept 3.5).
+        /// </remarks>
+        private static string EinzelfeldGrund(KiAufruf a)
+        {
+            string grund = BrueckenGrund(a.Text("maske"));
+            if (grund != null) return grund;
+
+            string maske = Maskenschluessel(a.Text("maske"));
+
+            grund = SetzbarkeitAllgemein(maske);
+            if (grund != null) return grund;
+
+            KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+            if (zugang == null) return FeldzugangGrund(maske, a.Text("feld"));
+
+            grund = FeldSetzbar(zugang);
+            if (grund != null) return grund;
+
+            KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, a.Text("wert"));
+            return umsetzung.Ok ? null : umsetzung.Grund;
+        }
+
+        /// <summary>
+        /// Vorbedingung von <c>formular_ausfuellen</c>: Maske bedienbar, Zuweisungen
+        /// lesbar, jedes Feld setzbar, mindestens eine echte Aenderung darunter.
+        /// </summary>
+        private static string MehrfeldGrund(KiAufruf a)
+        {
+            string grund = BrueckenGrund(a.Text("maske"));
+            if (grund != null) return grund;
+
+            string maske = Maskenschluessel(a.Text("maske"));
+
+            grund = SetzbarkeitAllgemein(maske);
+            if (grund != null) return grund;
+
+            var namen = new List<string>();
+            var werte = new List<string>();
+            grund = Zerlegen(a.Text("werte"), namen, werte);
+            if (grund != null) return grund;
+
+            for (int i = 0; i < namen.Count; i++)
+            {
+                KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, namen[i]);
+                if (zugang == null) return FeldzugangGrund(maske, namen[i]);
+
+                grund = FeldSetzbar(zugang);
+                if (grund != null) return grund;
+
+                KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, werte[i]);
+                if (!umsetzung.Ok) return umsetzung.Grund;
+            }
+
+            var aenderungen = new List<KiFeldAenderung>();
+            Sammle(maske, a.Text("werte"), aenderungen);
+            if (aenderungen.Count == 0)
+            {
+                KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.OhneAenderung,
+                                     eintrag == null ? maske : eintrag.Anzeigename);
+            }
+
+            return null;
+        }
+
+        /// <summary>Vorbedingung von <c>dialog_speichern</c>.</summary>
+        private static string SpeicherGrund(KiAufruf a)
+        {
+            string grund = BrueckenGrund(a.Text("maske"));
+            if (grund != null) return grund;
+
+            string maske = Maskenschluessel(a.Text("maske"));
+
+            grund = SetzbarkeitAllgemein(maske);
+            if (grund != null) return grund;
+
+            if (KiMaskenbruecke.Haken(maske).Speichern == null)
+            {
+                KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                return string.Format(CultureInfo.CurrentCulture,
+                                     MyResource.Resource.KI_AKTION_SPEICHERN_KEIN_WEG,
+                                     eintrag == null ? maske : eintrag.Anzeigename);
+            }
+
+            return null;
+        }
+
+        /// <summary>Vorbedingung von <c>dialog_aktion_ausfuehren</c> - sie lehnt immer ab.</summary>
         private static string KnopfGrundVoll(KiAufruf a)
         {
-            KiDialogZugriff.Bezug bezug = KiDialogZugriff.Aufloesen(a.Text("maske"), true);
-            if (!bezug.Ok) return bezug.Grund;
+            string grund = BrueckenGrund(a.Text("maske"));
+            if (grund != null) return grund;
 
-            KiDialogKnopf knopf = bezug.Eintrag.FindeKnopf(a.Text("knopf"));
-            if (knopf == null) return KnopfGrund(bezug, a.Text("knopf"));
+            string maske = Maskenschluessel(a.Text("maske"));
+            KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+            KiDialogKnopf knopf = eintrag?.FindeKnopf(a.Text("knopf"));
 
-            Control c = KiDialogZugriff.Aufloesen(bezug.Maske, knopf.Controlpfad);
-            return KiDialogZugriff.PruefeKnopf(knopf, c);
+            if (knopf == null)
+                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KnopfUnbekannt,
+                                     a.Text("knopf") ?? "",
+                                     eintrag == null ? maske : eintrag.Anzeigename,
+                                     Aufzaehlen(eintrag == null
+                                                    ? Array.Empty<string>()
+                                                    : eintrag.Knopfnamen()));
+
+            return MyResource.Resource.KI_AKTION_KNOPF_KEIN_WEG;
+        }
+
+        /// <summary>
+        /// Was gegen JEDES Setzen in dieser Maske spricht: Lesemodus der Lizenz (iF30)
+        /// und ein schreibgeschuetzter Katalogsatz (<c>ReadOnly</c>, Fachkonzept 4.5).
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Lesemodus wird HIER ein zweites Mal gefragt.</b> Der Ausfuehrer prueft
+        /// ihn ohnehin vor jeder Schreibaktion (<c>Schreibvorbedingung</c>); diese Frage
+        /// steht trotzdem, weil sie die BESSERE Meldung gibt: Sie nennt die Maske und das
+        /// Feld, waehrend die des Ausfuehrers den Lizenzstatus nennt. Beide sind richtig,
+        /// und die naeher am Anwender kommt zuerst.
+        /// </remarks>
+        private static string SetzbarkeitAllgemein(string maske)
+        {
+            string lesemodus = SimulationLaufCtrl.LesemodusGrund();
+            if (lesemodus != null) return lesemodus;
+
+            if (KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt())
+            {
+                KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+                return string.Format(CultureInfo.CurrentCulture,
+                                     MyResource.Resource.KI_FELD_SATZ_GESCHUETZT,
+                                     eintrag == null ? maske : eintrag.Anzeigename);
+            }
+
+            return null;
+        }
+
+        /// <summary>Klartextgrund, warum DIESES Feld nicht setzbar ist; <c>null</c> = es ist es.</summary>
+        private static string FeldSetzbar(KiFeldzugang zugang)
+        {
+            if (zugang.Setzbar) return null;
+
+            return string.Format(CultureInfo.CurrentCulture,
+                                 MyResource.Resource.KI_FELD_NICHT_SETZBAR,
+                                 zugang.Feld.Anzeigename);
         }
 
         // =====================================================================
         // Hilfen
         // =====================================================================
+
+        /// <summary>
+        /// Setzt EIN Feld ueber die Bruecke. Rueckgabe: Klartextgrund oder <c>null</c>.
+        /// </summary>
+        private static string Setze(KiFeldzugang zugang, string wert)
+        {
+            string grund = FeldSetzbar(zugang);
+            if (grund != null) return grund;
+
+            KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, wert);
+            if (!umsetzung.Ok) return umsetzung.Grund;
+
+            try
+            {
+                zugang.Setzen(umsetzung.Wert);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return string.Format(CultureInfo.CurrentCulture,
+                                     MyResource.Resource.KI_FELD_SETZEN_FEHLER,
+                                     zugang.Feld.Anzeigename, ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Haengt den Befund der Dialogpruefung an das Ergebnis - er ist das Urteil DES
+        /// DIALOGS ueber den gesetzten Wert (Auftrag #201, Punkt 2).
+        /// </summary>
+        private static KiErgebnis MitBefund(KiErgebnis ergebnis, KiMaskenhaken haken)
+        {
+            string befund = haken.Befund();
+            if (befund.Length == 0) return ergebnis;
+
+            return ergebnis.MitMeldungen(new[]
+            {
+                string.Format(CultureInfo.CurrentCulture,
+                              MyResource.Resource.KI_FELD_DIALOGBEFUND, befund)
+            });
+        }
+
+        /// <summary>Der Wert eines Feldes als Anzeigetext; ein werfender Getter ergibt leer.</summary>
+        /// <remarks>
+        /// Formatiert wird ueber <see cref="KiMaskenbruecke.Anzeigetext"/> — dieselbe
+        /// Schreibweise, in der der Feldblock die Werte an das Modell gibt. Zwei
+        /// Fassungen desselben Wertes waeren genau die Stelle, an der Vorschau und
+        /// Ergebnis auseinanderliefen.
+        /// </remarks>
+        private static string Feldtext(KiFeldzugang zugang)
+        {
+            if (zugang == null) return "";
+
+            try { return KiMaskenbruecke.Anzeigetext(zugang.Lesen()); }
+            catch (Exception) { return ""; }
+        }
 
         /// <summary>
         /// Zerlegt „feld=wert; feld=wert" in zwei gleichlange Listen.
@@ -682,9 +972,8 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// Getrennt wird beim ERSTEN Gleichheitszeichen einer Zuweisung; alles danach ist
         /// Wert. Ein Wert darf damit „=" enthalten, aber kein Semikolon - das trennt die
-        /// Zuweisungen. Fuer Zahlen- und Bezeichnungsfelder der vier Startmasken reicht
-        /// das; ein Feldinhalt mit Semikolon gehoert in <c>feld_setzen</c>, das den Wert
-        /// unzerlegt entgegennimmt.
+        /// Zuweisungen. Ein Feldinhalt mit Semikolon gehoert in <c>feld_setzen</c>, das
+        /// den Wert unzerlegt entgegennimmt.
         /// </remarks>
         private static string Zerlegen(string werte, List<string> namen, List<string> inhalte)
         {
@@ -716,54 +1005,45 @@ namespace WindowsFormsApplication1
         /// Sammelt die ECHTEN Aenderungen fuer den Vorschaublock - Felder, die den Wert
         /// schon tragen, bleiben draussen.
         /// </summary>
-        private static void Sammle(KiDialogZugriff.Bezug bezug, string werte,
-                                   List<KiFeldAenderung> ziel)
+        private static void Sammle(string maske, string werte, List<KiFeldAenderung> ziel)
         {
             var namen = new List<string>();
             var inhalte = new List<string>();
             if (Zerlegen(werte, namen, inhalte) != null) return;
 
+            IReadOnlyList<KiFeldwert> gelesen = KiMaskenbruecke.Lesen(maske);
+
             for (int i = 0; i < namen.Count; i++)
             {
-                KiDialogFeld feld = bezug.Eintrag.FindeFeld(namen[i]);
-                if (feld == null) continue;
+                KiFeldwert stand = null;
+                foreach (KiFeldwert w in gelesen)
+                    if (string.Equals(w.Name, namen[i], StringComparison.Ordinal)) { stand = w; break; }
 
-                Control c = KiDialogZugriff.Aufloesen(bezug.Maske, feld.Eigenschaftspfad);
-                var aenderung = new KiFeldAenderung(feld.Anzeigename,
-                                                    KiDialogZugriff.LiesText(c), inhalte[i]);
+                if (stand == null) continue;
+
+                var aenderung = new KiFeldAenderung(stand.Anzeigename, stand.Text, inhalte[i]);
                 if (aenderung.IstAenderung) ziel.Add(aenderung);
             }
         }
 
-        /// <summary>Klartextgrund fuer ein nicht deklariertes Feld - nennt, was es gibt.</summary>
-        private static string FeldGrund(KiDialogZugriff.Bezug bezug, string feld)
+        /// <summary>Zaehlt Namen lesbar auf; lange Listen werden gekuerzt.</summary>
+        /// <remarks>
+        /// Wortgleich aus <c>KiDialogZugriff.Aufzaehlen</c> uebernommen (Auftrag #201) —
+        /// jene Klasse ist mit dem Controlweg gefallen, die Klartextregel „nenne, was es
+        /// gibt" bleibt.
+        /// </remarks>
+        internal static string Aufzaehlen(IReadOnlyList<string> namen)
         {
-            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldUnbekannt,
-                                 feld ?? "", bezug.Eintrag.Anzeigename,
-                                 KiDialogZugriff.Aufzaehlen(bezug.Eintrag.Feldnamen()));
-        }
+            const int HOECHSTENS = 20;
 
-        /// <summary>Klartextgrund fuer einen nicht freigegebenen Knopf.</summary>
-        private static string KnopfGrund(KiDialogZugriff.Bezug bezug, string knopf)
-        {
-            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KnopfUnbekannt,
-                                 knopf ?? "", bezug.Eintrag.Anzeigename,
-                                 KiDialogZugriff.Aufzaehlen(bezug.Eintrag.Knopfnamen()));
-        }
+            if (namen == null || namen.Count == 0) return "";
 
-        /// <summary>Der Hilfeeintrag zum Slug des Feldes; <c>null</c>, wenn keiner da ist.</summary>
-        private static HelpEntry Hilfetext(KiDialogFeld feld)
-        {
-            if (!feld.HatHilfe) return null;
-            try
-            {
-                WikiHelpCatalog katalog = WikiHelpCatalog.Aktueller;
-                return katalog != null ? katalog.Get(feld.HilfeSlug) : null;
-            }
-            catch
-            {
-                return null;
-            }
+            var teile = new List<string>();
+            for (int i = 0; i < namen.Count && i < HOECHSTENS; i++) teile.Add(namen[i]);
+
+            string text = string.Join(", ", teile);
+            if (namen.Count > HOECHSTENS) text += ", ... (" + (namen.Count - HOECHSTENS) + ")";
+            return text;
         }
 
         /// <summary>Die Feldart im Klartext.</summary>

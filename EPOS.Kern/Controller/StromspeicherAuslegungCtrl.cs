@@ -12,17 +12,24 @@ namespace WindowsFormsApplication1
     /// <para><b>Warum es diesen Controller gibt.</b> Bis hierher standen die zwölf
     /// Delegaten der zwei Speicherdialoge in der WINDOWS-Hülle
     /// (<c>SimulationErgebnisHuelle.Flotte.cs</c> und <c>.Optimierung.cs</c>): Vorbelegung
-    /// lesen, Stand und Profil schreiben, Flotte rechnen, Raster rechnen, Betriebsbild
-    /// nachzeichnen, Projektflotte aktivieren und deaktivieren, Bestpunkt übernehmen,
-    /// Leistungspreis schreiben. Das ist Datenbank- und Rechenarbeit und gehört nach der
-    /// Hausregel in den Kern — die Hülle behält nur, was die PLATTFORM beisteuert
-    /// (Dateiwähler, <c>Task.Run</c>, Fensterbesitz).</para>
+    /// lesen, Stand und Profil schreiben, Flotte rechnen, Projektflotte aktivieren und
+    /// deaktivieren, Größe übernehmen, Leistungspreis schreiben. Das ist Datenbank- und
+    /// Rechenarbeit und gehört nach der Hausregel in den Kern — die Hülle behält nur, was
+    /// die PLATTFORM beisteuert (Dateiwähler, <c>Task.Run</c>, Fensterbesitz).</para>
+    ///
+    /// <para><b>Der EINZELWEG ist mit #206 gefallen</b> (Anwenderentscheid SD‑E‑8 vom
+    /// 11.09.2026): Die Ansicht kennt nur noch die Flottenrechnung, ein Einzelspeicher ist
+    /// eine Flotte mit einer Einheit. Mit dem Modus fielen hier <c>EinzelVorbereiten</c>,
+    /// <c>EinzelRechnen</c>, <c>Betriebsbild</c> und <c>RasterCsv</c> — und damit das
+    /// gemerkte rohe Raster, an dem das Nachzeichnen des Betriebsbildes hing (W11b‑B‑25).
+    /// <b>Der Optimierer selbst bleibt</b> (<see cref="SpeicherOptimierungCtrl"/>,
+    /// <c>SpeicherOptimierer</c>): Er trägt das Betriebsbild des Berichts, die Vorbelegung
+    /// in <c>SpeicherAuslegungCtrl</c> und die KI-Aktion „speicher_optimieren".</para>
     ///
     /// <para><b>Er ist eine INSTANZ, kein statischer Satz.</b> Anders als
     /// <see cref="SpeicherFlottenStudieCtrl"/> hält er den ZUSTAND eines Arbeitsgangs:
-    /// das Projekt, den zugrunde liegenden Simulationslauf, die Vorbereitung und das rohe
-    /// Raster des letzten Suchlaufs. Genau daran hängt das Nachzeichnen des Betriebsbildes
-    /// ohne einen zweiten Datenbankzugriff (Befund W11b‑B‑25).</para>
+    /// das Projekt, den zugrunde liegenden Simulationslauf und die aktive
+    /// Speichervariante.</para>
     ///
     /// <para><b>Woher der Simulationslauf kommt.</b> Jede EPOS-Zeitreihe
     /// (Last, PV, BHKW, Preise) stammt aus einem abgeschlossenen Lauf —
@@ -33,7 +40,7 @@ namespace WindowsFormsApplication1
     /// derselbe Ablauf, den die Ergebnisseite fährt (Muster iU9‑W11a).</para>
     ///
     /// <para><b>Datenbank und Faden.</b> Lesen und Schreiben gehören auf den Bedienfaden;
-    /// nur die reinen Rechnungen (<see cref="FlotteRechnen"/>, <see cref="EinzelRechnen"/>,
+    /// nur die reinen Rechnungen (<see cref="FlotteRechnen"/>,
     /// <see cref="PeakZielBestimmen"/>, <see cref="SimulationslaufRechnen"/>) dürfen in ein
     /// <c>Task.Run</c> der Hülle. Die Aufteilung ist dieselbe wie beim Simulationslauf.</para>
     /// </summary>
@@ -45,8 +52,6 @@ namespace WindowsFormsApplication1
 
         private SimulationControl _lauf;
         private StromspeicherVarianteModel _variante;
-        private StromspeicherOptimierungVorbereitung _vorbereitung;
-        private OptimiererErgebnis _roh;
 
         /// <summary>Legt den Controller für ein Projekt an.</summary>
         /// <param name="projektId">Das Projekt; 0 oder kleiner ist kein Projekt.</param>
@@ -77,8 +82,6 @@ namespace WindowsFormsApplication1
         public void LaufUebernehmen(SimulationControl sim)
         {
             _lauf = sim;
-            _vorbereitung = null;
-            _roh = null;
         }
 
         /// <summary>
@@ -278,8 +281,6 @@ namespace WindowsFormsApplication1
                 }
                 meldung = EinstellungenSpeichern(v.Eingaben);
                 if (!string.IsNullOrEmpty(meldung)) return null;
-                _vorbereitung = v;
-                _roh = null;
                 return v;
             }
             catch (Exception ex)
@@ -473,116 +474,21 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Die Einzelspeicher-Rastersuche
+        //  Die Groesse einer Einheit zurueck in die Projektanlage
         // =================================================================
 
         /// <summary>
-        /// Beschafft Quellen und Kosten EINES Rasterlaufs. <b>Datenbank, Bedienfaden.</b>
-        /// </summary>
-        /// <param name="eingaben">Der Arbeitsstand.</param>
-        /// <param name="meldung">Der Grund, warum nichts vorbereitet werden konnte.</param>
-        /// <returns>Die Vorbereitung; <c>null</c>, wenn <paramref name="meldung"/> gesetzt ist.</returns>
-        public StromspeicherOptimierungVorbereitung EinzelVorbereiten(
-            SpeicherOptimierungEingaben eingaben, out string meldung)
-        {
-            meldung = "";
-            try
-            {
-                StromspeicherOptimierungVorbereitung v =
-                    SpeicherAuslegungCtrl.Vorbereiten(_lauf, _projektId, eingaben.Kopie());
-                _vorbereitung = v;
-                _roh = null;
-                if (v == null)
-                {
-                    meldung = MyResource.Resource.SIMENG_SPEICHER_KEIN_SPEICHER;
-                    return null;
-                }
-                meldung = EinstellungenSpeichern(v.Eingaben);
-                if (!string.IsNullOrEmpty(meldung)) return null;
-                return v;
-            }
-            catch (Exception ex)
-            {
-                meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Rechnet die Rastersuche. <b>Reine Rechnung</b> — sie gehört in
-        /// <c>Task.Run</c> und wirft nicht: Jeder Ausgang steht im Ergebnis.
-        /// </summary>
-        /// <param name="vorbereitung">Die Vorbereitung aus <see cref="EinzelVorbereiten"/>.</param>
-        /// <param name="eingaben">Der eingefrorene Laufstand (<c>vorbereitung.Eingaben</c>).</param>
-        /// <param name="fortschritt">Rasterpunktmeldung; <c>null</c> = keine.</param>
-        /// <param name="token">Abbruchmarke.</param>
-        public SpeicherOptimierungErgebnis EinzelRechnen(StromspeicherOptimierungVorbereitung vorbereitung,
-                                                        SpeicherOptimierungEingaben eingaben,
-                                                        IProgress<SpeicherOptimierungFortschritt> fortschritt,
-                                                        CancellationToken token)
-        {
-            try
-            {
-                SpeicherOptimierungErgebnis ergebnis =
-                    SpeicherOptimierungCtrl.Rechnen(vorbereitung, eingaben, fortschritt, token);
-
-                if (ergebnis != null && vorbereitung != null &&
-                    !string.IsNullOrWhiteSpace(vorbereitung.ZeitachsenHinweis))
-                {
-                    var hinweise = new List<string> { vorbereitung.ZeitachsenHinweis };
-                    if (ergebnis.Hinweise != null) hinweise.AddRange(ergebnis.Hinweise);
-                    ergebnis.Hinweise = hinweise;
-                }
-
-                // Das rohe Raster bleibt hier: Ein Umschalten des Betriebsbildes rechnet
-                // damit EINEN Jahreslauf nach statt der ganzen Rastersuche.
-                _roh = ergebnis != null ? ergebnis.Roh : null;
-                return ergebnis;
-            }
-            catch (Exception ex)
-            {
-                return new SpeicherOptimierungErgebnis
-                {
-                    Erfolg = false,
-                    Meldung = string.Format(MyResource.Resource.OPT_MSG_FEHLER, ex.Message)
-                };
-            }
-        }
-
-        /// <summary>
-        /// Zeichnet das Bild „Lastgang und Speicherbetrieb" neu — anderer Ausschnitt,
-        /// andere Reihenwahl, anderer Datenzoom (Befund W11b‑B‑25).
+        /// Schreibt Kapazität und Leistung EINER Speichereinheit in die Gerätedaten.
         /// </summary>
         /// <remarks>
-        /// <b>Ohne Datenbank und ohne neue Rastersuche.</b> Gerechnet wird EIN Jahreslauf
-        /// des Bestpunkts aus dem gemerkten Raster. Ohne Lauf gibt es nichts zu zeichnen —
-        /// dann kommt ein leeres Bild zurück, und die Ansicht zeigt es nicht.
-        /// </remarks>
-        /// <param name="ganzesJahr"><c>false</c> = die Woche der Jahresspitze.</param>
-        /// <param name="reihen">Die gewählten Reihenschlüssel.</param>
-        /// <param name="ausschnitt">Der Datenzoom; <c>null</c> = volle Ansicht.</param>
-        public SpeicherOptimierungBetriebsbild Betriebsbild(bool ganzesJahr,
-                                                            IReadOnlyList<string> reihen,
-                                                            ChartRenderer.Bildausschnitt ausschnitt)
-        {
-            if (_vorbereitung == null || _roh == null) return new SpeicherOptimierungBetriebsbild();
-            try
-            {
-                return SpeicherOptimierungCtrl.Betriebsbild(_vorbereitung, _roh, ganzesJahr, reihen, ausschnitt);
-            }
-            catch (Exception) { return new SpeicherOptimierungBetriebsbild(); }
-        }
-
-        /// <summary>Der CSV-Text des letzten Rasters; leer, solange keines vorliegt.</summary>
-        public string RasterCsv() => _roh == null ? "" : SpeicherOptimierungCtrl.RasterCsvText(_roh);
-
-        /// <summary>
-        /// Schreibt Kapazität und Leistung des Bestpunkts in die Gerätedaten.
-        /// </summary>
-        /// <remarks>
-        /// <b>Kein automatisches Nachrechnen</b> — wörtlich wie im Vorläufer: Die
+        /// <para><b>Kein automatisches Nachrechnen</b> — wörtlich wie im Vorläufer: Die
         /// Simulation ist danach nicht mehr aktuell, und der Anwender entscheidet selbst,
-        /// wann er den Lauf wiederholt.
+        /// wann er den Lauf wiederholt.</para>
+        /// <para><b>Er bleibt mit SD‑E‑8</b> (11.09.2026): Die Ansicht rechnet seither
+        /// immer die Flotte, aber der PROJEKTLAUF führt weiter zwei Pfade (SD‑Q2) — ohne
+        /// aktivierte Projektflotte rechnet er die Einzelanlage, und die ausgelegte Größe
+        /// käme dort ohne diesen Weg nie an. Aufgerufen wird er aus Schritt 5 der Ansicht,
+        /// für die eine Einheit mit Anlagenbezug.</para>
         /// </remarks>
         /// <param name="cNomKwh">Nennkapazität [kWh].</param>
         /// <param name="pKw">Leistung [kW].</param>

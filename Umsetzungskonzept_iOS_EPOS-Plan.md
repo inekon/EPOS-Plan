@@ -3502,6 +3502,68 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > 0 Parse-Fehler, Kategorien unverändert. Drei Textstellen, die der Upload vom 10.09. verdorben hatte (zwei Fettsätze über den
 > Zeilenumbruch, Protokollzeile ohne „Berechnungsart"), in `b8e59ae` berichtigt; Kern 2 580 und UI 3 604 grün auf diesem Stand
 > (reine Doku und Wächter, kein Gate nötig).
+>
+> **#200 (11.09.2026, `1e6cd38`, Merge `24a8b71`) — Assistent im Dialog, Stufe S2 (Weg 4 „Feldzustand mitgeben"; KI‑D‑Q2/Q3
+> umgesetzt).** Die **Maskenbrücke** `EPOS.Kern/Allgemein/KI/KiMaskenbruecke.cs` (531 Z.) führt je offenem Dialog seine Feldliste:
+> `KiFeldzugang` mit `Lesen` UND `Setzen` (Setzen angelegt und geprüft, noch von keinem Produktionsweg gerufen — das ist S3),
+> `KiFeldwert`, `KiDialogdaten`, Protokollsenke; An-/Abmelden idempotent, thread-sicher. Der **Dialogkatalog** hängt nicht mehr an
+> WinForms-Controlnamen: `KiDialogFeld` trägt einen `KiEigenschaftspfad` auf das Daten-Objekt der Razor-Komponente, `KiDialoge.cs`
+> ist neu geschrieben (`KiMaskennamen`), ein Wächter prüft jeden Pfad per Reflexion. **Fünf Masken** melden sich über den
+> Anmeldehelfer `EPOS.UI/Dienste/KiMaskenanmeldung.cs` (drei Zeilen je Dialog) an: Heizkessel 15 Felder, PV 3, Pufferspeicher 1,
+> Wärmepumpe 1 — Feldumfang bewusst unverändert (Fachkonzept 11.6) — und neu die **Stromspeicher-Ansicht** über das flache Sichtmodell
+> `StromspeicherKiSicht.cs` (16 Felder, 5 setzbar, 11 abgeleitet: Diagnose, Ergebnis der letzten Bewertung). **Einwilligungsstufe
+> „Dialogdaten"** in `KiEinwilligung` (eigener Merker, Fassung, Datum, Zurücknehmen; Text in den KI-Einstellungen). **Chat:** Schalter
+> „Feldwerte mitsenden" (nur bei angemeldeter Maske; ohne Einwilligung aus und gesperrt mit Grund), Vorschau zeigt den Feldblock
+> wörtlich; `KiChatService` bekam genau EINEN optionalen Parameter `KiDialogdaten` (Block hinter dem Bereich, vor den Hilfeabschnitten),
+> der Function-Calling-Vertrag ist unberührt, `dialog_lesen` liefert aus der Brücke. Die Komponente kennt die Brücke nicht — sie bekommt
+> `Feldwerte`/`FeldwerteEinwilligen`/`FeldwerteGesperrt` als Delegaten (§ 15.3), beide Hüllen legen sie aus denselben zwei Kernstellen.
+> Knöpfe behalten ihren `Controlpfad` und melden „nicht bedienbar" (Formularaktionen sind S3). Nebenbei: zwei `Schalter` der
+> Eingabezeile trugen denselben `@key` (Blazor-Abbruch „More than one sibling has the same key value") — behoben. **51 Ressourcen** de/en.
+> 40 Dateien, +4 599/−310; **+27 Kern-, +57 bunit-, +5 KiKern-Fälle** (`KiMaskenbrueckeTests`, `KiDialogdatenEinwilligungTests`,
+> `KiDialogkatalogTests`, `KiFeldwerteTests`). **Offen für S3 (#201):** Setzen über die Brücke, Knöpfe, `feld_setzen`/`formular_ausfuellen`
+> laufen noch über `KiDialogZugriff` und lehnen ab; iOS hat weiter keinen `Fragen`-Delegaten (`IProjektQuelle.KiAssistentGaben` leer, iU11).
+> Gate sept16 auf `24a8b71`: Kern 2 607, UI 3 661, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 342, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
+>
+> **#210 (11.09.2026, `0697dd6`, Merge `99e5f3f`) — Speicherflotte im Projektlauf: zwei Einheiten bleiben zwei.** Anwenderbefund aus zwei
+> Bildschirmfotos: „Kennzahlen je Speicher" und die Reihenwahl der Diagramme führten EINE Einheit, ebenso der Eingabestand `@Aktuell` —
+> das Projekt hat zwei Speicheranlagen. **Ursache** (`SpeicherFlottenStudieCtrl.Vorbelegung`, vorher Z. 61–70): Die erste Flotte eines Projekts
+> entstand aus `StromspeicherSimCtrl.LeseParameter(projektId)`, und der liefert per Bauart EINEN Satz — die Anlagenzeile der aktiven
+> Speichervariante (AP9b), im Rückfall die kapazitätsgewichtete Summe. Für den Einzelspeicherlauf richtig, für die Flotte ein stiller Verlust;
+> weil der Projektlauf den gespeicherten Stand `@Projektflotte` rechnet, fehlte die zweite Anlage danach überall. Die zwei anderen Hypothesen
+> (Zusammenfall gleicher `AnlageId`/Namen; veraltetes Ergebnis ohne Banner) sind mit Tests ausgeschlossen. **Fix:** `StromspeicherSimCtrl.Speicheranlagen(int)`
+> (alle `SP_TYP`-Anlagen in Anlagenreihenfolge, `REF_SP_TYP` bleibt draußen) und `SpeicherFlottenStudieCtrl.EinheitenAusProjektanlagen` — je Anlage ein
+> eigener `LeseParameter(projektId, anlageId)`-Satz (Gerätedaten aus der Anlage, SoC-Band aus deren Variantenzeile), Name = Anlagenbezeichner, `AnlageId`
+> gesetzt, Rückfall auf den Sammelsatz nur ohne Anlagensatz; gespeicherte Stände werden nie überschrieben. Der Stromspeicher-Reiter zeigt je Einheit die
+> Spalte **„Herkunft"** („Projektanlage ‹Id›" oder „nur im Eingabestand"). 6 Kern-Fälle (`SpeicherFlottenAnlagenEinheitenTests`, drei davon vor dem Fix
+> rot) und 4 bunit-Fälle. **Offen (#210‑O‑1, Anwenderentscheid):** Das Schema unterscheidet eine gleichzeitig betriebene Anlage nicht von einer
+> Vergleichsalternative — beides ist eine `SP_TYP`-Zeile; der Fix nimmt alle als Einheiten (sichtbarer statt stiller Fehler, überzählige löscht der
+> Anwender in Schritt 1). Die Referenzprojekte 1007/1046 führen je vier `SP_TYP`-Anlagen und bekämen beim ersten Öffnen der Auslegung vier
+> Vorbelegungs-Einheiten; regressionsrelevant ist das nicht (1046 rechnet seinen Stand `@Projektflotte`). Gate sept17 auf `99e5f3f`: Kern 2 613, UI 3 665,
+> Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49, Referenzlauf 5/5 byte-gleich gegen R7 (Agent: 13/13).
+>
+> **#206 (11.09.2026, `8a382b6` + `7cecc6e`, Merge `4fcb6a1`) — Stromspeicher-Auslegung, Paket P5: ein Modus statt zwei (Anwenderentscheid
+> SD‑E‑8: „Es ist nicht sinnvoll, einen Unterschied zwischen Einzelspeicher und Flotte zu machen … die bisherigen Berechnungsarten für
+> Einzelspeicher sind nicht mehr nötig").** Der Modus-Umschalter und `AuslegungModus` sind gefallen; die Ansicht `STROMSPEICHER_AUSLEGUNG`
+> rechnet immer die Flotte. **Ein Einzelspeicher ist eine Flotte mit einer Einheit:** Ohne gespeicherten Stand belegt der Kern je
+> Speicheranlage des Projekts eine Einheit vor (Vorbelegung aus #210 — Kapazität, Leistungen, Wirkungsgrade und SoC-Band aus der Anlage,
+> Name = Anlagenbezeichner). Die fünf Betriebsziele, Peak-Ziel, Diagnose, Vorprüfung und Größen-Sicht gelten für jede Einheitenzahl; die
+> **Verteilung erscheint erst ab zwei Einheiten** (`SpeicherFlottenBetriebEditor.VerteilungZeigen`, bei einer Einheit eine Erklärzeile).
+> Der **Leistungspreis** ist eine Eingabe in Schritt 2 (`LeistungspreisBlock`, derselbe Wert wie L_P des alten Einzelspeichers, mit Quelle);
+> **Rückschreiben in die Projektanlage** (Kapazität/Leistung über `UebernehmeAuslegung`, mit Rückfrage) steht in Schritt 5 für die Einheit
+> mit Anlagenbezug — damit bekommt auch der klassische Projektlauf ohne aktivierte Flotte die optimierte Größe. Schritt 4 heißt „Bewerten".
+> **Gelöscht:** `EinzelspeicherSuchraum/-Betrieb/-Ergebnis.razor` und der Einzel-Prüfstand (1 538 Z., 41 Fälle), der Suchraum-Teil des
+> `SpeicherAuslegungEditor`, `EinzelVorbereiten`/`EinzelRechnen`/`Betriebsbild`/`RasterCsv` in `StromspeicherAuslegungCtrl` und Hülle
+> (nur, was keinen Aufrufer mehr hatte). **Geblieben mit Grund:** `SpeicherOptimierer`/`OptimiererStrategie`/`SpeicherOptimierungCtrl` — Aufrufer
+> sind die KI-Aktion `speicher_optimieren` (`StromspeicherSimCtrl:688`), `SpeicherAuslegungCtrl.Vorbelegung` und das Bericht-`SpeicherBetriebsbild`;
+> `Strategien()` hat nur noch einen Testaufrufer. Ressourcen −38 (17 der Ansicht, 21 verwaiste `OPT_*`), +3, 5 894 Schlüssel je Sprache.
+> 18 neue bunit-Fälle (Wache „kein `AuslegungModus` in EPOS.UI"), 2 Kern-Fälle gegen Projekt 1017. **Wiki:** Bedienungsseite mit neuem Anker
+> `auslegung-anlage`, Rechenwegseite **Fassung 5** (Abschnitt `auslegung-kosten-zeitreihen` als Rechenweg des Einzelspeicher-Optimierers
+> gekennzeichnet — nicht mehr in der Ansicht, weiter im Bericht und Assistenten), Wächter nachgezogen; Upload durch die Orchestrierung.
+> **Offen:** Der zweite Wirt des Betriebseditors (`StromspeicherReiter`) zeigt die Verteilung weiter auch bei einer Einheit (Anwenderfrage);
+> Stufenplan-Zeile „Feinraster" heißt jetzt P6; Windows-Abnahme steht aus. SD‑Q1 revidiert, SD‑Q2 bleibt (Projektlaufpfade unverändert).
+> Gate sept18 auf `4fcb6a1`: Kern 2 615, UI 3 638, Engine 394, KiKern 474, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 49,
+> Referenzlauf 5/5 byte-gleich gegen R7.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
