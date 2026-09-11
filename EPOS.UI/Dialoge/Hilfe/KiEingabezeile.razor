@@ -27,9 +27,10 @@
 @namespace EPOS.UI.Dialoge.Hilfe
 
 <div class="epos-kieingabe">
-    <textarea class="epos-eingabe epos-eingabe--mehrzeilig epos-kieingabe-feld"
+    <textarea @ref="_feld"
+              class="epos-eingabe epos-eingabe--mehrzeilig epos-kieingabe-feld"
               rows="3" aria-label="@Bezeichnung" placeholder="@Platzhalter"
-              disabled="@Gesperrt" value="@_text"
+              disabled="@Gesperrt" autofocus="@(AutoFokus && !Gesperrt)" value="@_text"
               @oninput="BeiEingabe" @onkeydown="BeiTaste" @onkeydown:preventDefault="_abfangen"></textarea>
 
     <div class="epos-kieingabe-knoepfe">
@@ -74,6 +75,22 @@
     [Parameter] public bool Gesperrt { get; set; }
 
     /// <summary>
+    /// Soll das Feld die Eingabe von sich aus annehmen? (Befund <b>KI‑D‑B‑1</b>,
+    /// Anwender 11.09.2026: „die Eingabe funktioniert nicht".)
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Was der Schalter tut.</b> Er setzt das Merkmal <c>autofocus</c> und
+    /// laesst den Wirt <see cref="Fokussieren"/> rufen. Beides zusammen ist noetig:
+    /// <c>autofocus</c> wirkt nur beim ERSTEN Einfuegen in das Dokument — ein Fenster,
+    /// das ein zweites Mal nach vorn geholt wird, braucht den ausdruecklichen Griff.</para>
+    /// <para><b>Vorgabe <c>false</c>.</b> Ein Feld, das die Eingabe an sich zieht, ist
+    /// in einem Formular mit mehreren Feldern eine Zumutung; hier ist es das EINZIGE
+    /// Eingabefeld seines Fensters, und der Anwender hat es aufgemacht, um zu
+    /// schreiben.</para>
+    /// </remarks>
+    [Parameter] public bool AutoFokus { get; set; }
+
+    /// <summary>
     /// Links in der Knopfreihe — dort steht der Aktionsschalter (W15b‑E‑3);
     /// leer = nichts.
     /// </summary>
@@ -109,6 +126,9 @@
 
     private string _text = "";
 
+    /// <summary>Das Eingabefeld selbst — fuer <see cref="Fokussieren"/>.</summary>
+    private ElementReference _feld;
+
     /// <summary>Die zuletzt übernommene Vorbelegung; <c>null</c> = noch keine gesehen.</summary>
     private string? _uebernommen;
     private bool _abfangen;
@@ -121,6 +141,27 @@
 
     /// <summary>Der aktuelle Feldinhalt — für den Wirt, der ihn zurücksetzen darf.</summary>
     public string Frage => _text;
+
+    /// <summary>
+    /// Setzt den Schreibzeiger in das Feld — <b>gerufen vom Wirt</b>
+    /// (<c>KiChatDialog</c>), nicht von hier.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ein gesperrtes Feld nimmt keinen Zeiger an; der Griff bliebe wirkungslos
+    /// und stuende danach als „schon fokussiert" in den Buechern. Deshalb die Frage
+    /// nach <see cref="Gesperrt"/> — und der Wirt versucht es beim naechsten
+    /// Zeichenlauf erneut.</para>
+    /// <para>Der Fehlerfang ist kein Schmuck: Zwischen dem Zeichenlauf und dem
+    /// Aufruf kann das Feld weg sein (das Fenster wird geschlossen), und eine
+    /// Ausnahme aus <c>OnAfterRenderAsync</c> reisst in der WebView den ganzen
+    /// Zeichenlauf mit.</para>
+    /// </remarks>
+    public async Task Fokussieren()
+    {
+        if (Gesperrt) return;
+        try { await _feld.FocusAsync(); }
+        catch (Exception) { /* das Feld ist gerade nicht da */ }
+    }
 
     /// <summary>Übernimmt eine NEUE Vorbelegung in das Feld (Auftrag #199).</summary>
     protected override void OnParametersSet()

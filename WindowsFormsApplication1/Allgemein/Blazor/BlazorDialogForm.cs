@@ -326,6 +326,84 @@ namespace WindowsFormsApplication1
             Close();
         }
 
+        // ==================================================================
+        //  Die TASTATUR fuer ein NICHT-MODALES Fenster (Befund KI-D-B-1)
+        // ==================================================================
+
+        /// <summary>
+        /// Uebergibt diesem Fenster die Tastatur — <b>fuer den nicht-modalen Lauf</b>
+        /// (Befund <b>KI‑D‑B‑1</b>, Anwender 11.09.2026: „die Eingabe funktioniert
+        /// nicht").
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum das ein eigener Handgriff ist.</b> Ein <c>ShowDialog</c>
+        /// bringt seine eigene Nachrichtenschleife mit und holt die Eingabe damit von
+        /// selbst. Ein <c>Show(besitzer)</c> tut das nicht: Das Fenster erscheint, die
+        /// Tastatur bleibt aber bei dem Fenster, das sie hatte — und das ist beim
+        /// Hilfe-Assistenten die WebView2 des Hauptfensters, aus deren Rueckruf der
+        /// Klick kam. Der Anwender sieht ein aktives Eingabefeld und tippt ins
+        /// Leere.</para>
+        /// <para><b>Zweimal, nicht einmal.</b> Die WebView2 baut sich asynchron auf
+        /// (100–300 ms). Ein <c>Focus()</c> unmittelbar nach <c>Show</c> trifft ein
+        /// Steuerelement ohne Browser darin; deshalb wird derselbe Griff nach
+        /// <c>CoreWebView2InitializationCompleted</c> wiederholt. Steht die WebView
+        /// schon (zweites Oeffnen desselben Fensters), wirkt bereits der erste.</para>
+        /// <para><b>Die DOM-Seite gehoert der Komponente.</b> Dieser Weg gibt der
+        /// WebView die Tastatur des Betriebssystems; WELCHES Feld darin den Zeiger
+        /// bekommt, entscheidet die Razor-Komponente mit
+        /// <c>ElementReference.FocusAsync</c>. Beides zusammen ergibt eine
+        /// Eingabe.</para>
+        /// </remarks>
+        public void TastaturUebergeben()
+        {
+            if (IsDisposed) return;
+
+            if (InvokeRequired)
+            {
+                // Derselbe Umweg wie in Schliessen(): Der Ruf kann aus dem
+                // Blazor-Verteiler kommen.
+                try { BeginInvoke(new Action(TastaturUebergeben)); } catch { }
+                return;
+            }
+
+            try { Activate(); } catch (Exception) { }
+            Fokussieren();
+
+            if (_fokusAngehaengt) return;
+            _fokusAngehaengt = true;
+
+            try
+            {
+                _web.WebView.CoreWebView2InitializationCompleted += (s, e) =>
+                {
+                    if (e == null || !e.IsSuccess) return;
+                    try { BeginInvoke(new Action(Fokussieren)); } catch { }
+                };
+            }
+            catch (Exception) { /* aeltere Fassung ohne das Ereignis: dann nur der erste Griff */ }
+        }
+
+        private bool _fokusAngehaengt;
+
+        /// <summary>
+        /// Setzt den Tastaturzeiger auf die WebView2 dieses Fensters. Stillschweigend
+        /// folgenlos, wenn sie nicht (mehr) da ist.
+        /// </summary>
+        private void Fokussieren()
+        {
+            if (IsDisposed || _web == null || _web.IsDisposed) return;
+
+            try
+            {
+                // Die INNERE WebView2 bekommt den Zeiger, nicht die Huelle darum:
+                // Der WinForms-BlazorWebView ist nur ein Behaelter, und erst das
+                // GotFocus der WebView2 reicht die Eingabe an den Browser weiter.
+                if (_web.WebView != null && !_web.WebView.IsDisposed) _web.WebView.Focus();
+                else _web.Focus();
+            }
+            catch (Exception) { }
+        }
+
         // iU9-W16c.4 (Anwenderentscheid E-6 / iF21): DIE DPI-INSEL IST WEG.
         //
         // Bis hierher verdeckten zwei ShowDialog-Ueberladungen die von Form

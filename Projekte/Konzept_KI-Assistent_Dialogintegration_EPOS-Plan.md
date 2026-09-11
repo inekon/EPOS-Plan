@@ -208,6 +208,7 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
 | **S2** (Weg 4) — **umgesetzt #200** (11.09.2026) | **#200** | `KiMaskenbruecke` im Kern; `KiDialogKatalog` auf Eigenschaftsnamen; die vier Dialoge und die Stromspeicher-Ansicht melden ihre Felder an; Einwilligungsstufe „Dialogdaten"; Schalter „Feldwerte mitsenden" + Vorschau im Chat; `dialog_lesen` aus der Brücke | Kern: Brücke liest die fünf Masken; bunit: Schalter, Vorschau zeigt Werte, ohne Einwilligung nichts; Protokoll |
 | **S3** (Weg 5) — **umgesetzt #201** (11.09.2026, `d1bfb56`, Merge `9122812`; Wiki `Hilfe-Assistent` Rev. 542) | **#201** | `KiAktionen` in den Kern; `feld_setzen` über die Brücke mit Bestätigungsblock, Plausibilität des Dialogs, Lesemodus/ReadOnly; `dialog_oeffnen`; speichern mit Sicherungspunkt; rechnen mit `Fortschritt`; Protokoll alt → neu | Kern: Setzen, Ablehnung im Lesemodus, Sicherungspunkt; bunit: Bestätigung → Feld im Dialog; Referenzlauf unberührt |
 | **S3‑Rest** (Fortschritt und Abbruch) — **umgesetzt #214** (11.09.2026) | **#214** | `KiChatDialog` hält je Anforderung eine `CancellationTokenSource` und meldet Senke und Marke über `KiChatSteuerung` an; Baustein `Fortschritt` im Chat (Balken, Schritttext, „Abbrechen"), Schlusszeile im Verlauf mit Namen und Dauer; Senden und Aktionsknöpfe während eines Laufs gesperrt; lange Aktionen laufen im Hintergrund (`KiAusfuehrung.ImHintergrund`) statt über `AufOberflaeche`; Abbruch kommt in allen drei Rechenaktionen an (`SimulationRunner` mit `IProgress`/`CancellationToken`, `Dienste.Abbrechen` der Stromspeicher-Ansicht) | bunit: Balken während einer langen Aktion, „Abbrechen" setzt die Marke, Verlaufszeile „abgebrochen"; Kern: eine lange Aktion nutzt `AufOberflaeche` NICHT (Gegenprobe: eine kurze zweimal); KiKern: `KiLaufumgebung`/`KiFortschritt`; Referenzlauf 1030/1046 byte-gleich |
+| **Bedienung** (Befunde der Abnahme) — **umgesetzt #219** (11.09.2026) | **#219** | KI‑D‑B‑1 (Tastaturfokus des nicht-modalen Chatfensters): `Masken.KiAssistent` öffnet über `Blazorsprung.Verzoegert`, `BlazorDialogForm.TastaturUebergeben()` gibt der zweiten WebView2 die Eingabe (sofort und nach ihrer Initialisierung), das Textfeld trägt `autofocus` und bekommt den Schreibzeiger nach dem ersten Zeichnen sowie bei jedem neuen Aufrufkontext. KI‑D‑B‑2 (tote Verweise): eine ADRESSE geht über `Dienste.Datei.AdresseOeffnen` statt über `MitSystemOeffnen` — in `KiChatHuelle.Gaben` und im Rückfall von `WindowsHilfeDienst` | bunit: jedes Bedienelement des Chats einzeln (`KiChatBedienungTests`, 19 Fälle); Quelltextwachen `KiChatOeffnerTests` (Sprung, Fokusübergabe, Adressweg, kein leerer Delegat, kein Bedienelement ohne Weg — je mit Gegenprobe); Referenzlauf unberührt. **Am Gerät bleibt** der Fokusweg WinForms → WebView2 → DOM auf beiden Öffnungswegen |
 
 Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jeder Auftrag: Doku in
 `Konzept_KI-Assistent_Aufgabensteuerung.md` (Kapitel 8, Etappen) und `EPOS.UI/CLAUDE.md`; Wiki-Seite
@@ -225,3 +226,80 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 | **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | **entschieden 11.09.2026 (Empfehlung), umgesetzt #201**: `dialog_speichern` ruft den Speicherweg der offenen Maske — Stufe 2, `datenbankwirksam`, damit mit Sicherungspunkt VOR der Bestätigung; der Pfad steht in der Bestätigung und im Ergebnis. Ohne Freigabe wird der Speicherweg nicht einmal gerufen |
 
 **Entscheid 11.09.2026: alle vier nach Empfehlung.**
+
+---
+
+## 8. Befunde der Bedienung (Windows-Abnahme 11.09.2026)
+
+Die drei Wege stehen seit #199/#200/#201; die Abnahme am Gerät hat zwei Dinge zurückgegeben, die
+**keine** Fachfrage sind und trotzdem den ganzen Assistenten unbrauchbar machen. Beide sind mit
+**Auftrag #219** behoben.
+
+### KI‑D‑B‑1 — „die Eingabe funktioniert nicht"
+
+**Befund (Anwender, Bildschirmfoto).** Aus der Simulationsansicht (Werkzeugleiste, Hilfe-Pille)
+öffnet der Assistent als eigenes Fenster mit der richtigen Kontextzeile („Bereich: Detaillierte
+Simulation | Dialog: Simulation"). Eingabefeld und Knöpfe sehen aktiv aus — **Tippen kommt nicht
+an.**
+
+**Nicht die Ursache: die Sperre des Dialogs.** `KiChatDialog.Gesperrt` hätte Feld UND Knöpfe
+gesperrt gezeichnet; auf dem Foto ist nichts gesperrt. Nachgestellt und festgehalten in
+`EPOS.UI.Tests/Dialoge/Hilfe/KiChatBedienungTests` (Kontext aus einer Ansicht, kein `Belegt`,
+kein Lauf → kein `disabled`), samt Gegenprobe für den umgekehrten Fall.
+
+**Die Ursache: der TASTATURFOKUS.** Das Chatfenster ist das einzige nicht-modale Fenster des
+Hauses (Entscheid E‑6) und trägt eine ZWEITE WebView2. Zwei Dinge trafen zusammen:
+
+1. **Der Öffnungsweg lief am `Blazorsprung` vorbei.** Die Pille ruft
+   `KiAssistentWeg.AusDialog` → `Dienste.Navigation.OeffneMaske(Masken.KiAssistent, …)` →
+   `WinFormsNavigation`, und dort stand bis #219 der blanke Aufruf `KiChatHuelle.Oeffnen(…)`.
+   Damit entstand das zweite Fenster samt zweiter WebView2 **synchron im
+   `WebMessageReceived`-Rückruf der ersten** — genau die Lage der Befunde W16b‑B‑1 (leere
+   Startkacheldialoge), W13‑B‑1 (Dateiwähler) und W15b‑B‑1 (Einstellungen). Der MENÜweg tat das
+   nie: `HauptfensterHuelle.Weg` verzögert seit W16b jeden Punkt.
+2. **Niemand übergab die Tastatur.** Ein `ShowDialog` bringt seine eigene Nachrichtenschleife mit
+   und holt die Eingabe von selbst; ein `Show(besitzer)` tut das nicht. In `KiChatHuelle` stand
+   hinter `Show` nichts, und beim Nach-vorn-Holen eines offenen Fensters nur ein `Activate()` —
+   das stellt das Fenster vor die anderen und lässt den Tastaturzeiger, wo er war.
+
+**Behoben (#219) an drei Stellen, und alle drei werden gebraucht:**
+
+| Stelle | Was | Nachweis ohne Gerät |
+|---|---|---|
+| `WinFormsNavigation`, Fall `Masken.KiAssistent` | öffnet über `Blazorsprung.Verzoegert`; Besitzer und Aufrufkontext werden VORHER geholt und mitgegeben, die Rückgabe `true` bleibt sofort | `KiChatOeffnerTests.Der_Assistent_geht_ueber_den_Blazorsprung_auf` samt Gegenprobe |
+| `BlazorDialogForm<T>.TastaturUebergeben()` (neu), gerufen aus `KiChatHuelle` an BEIDEN Wegen | `Activate()`, dann Fokus auf die innere WebView2 — zweimal: sofort und nach `CoreWebView2InitializationCompleted`, weil die WebView sich asynchron aufbaut | `KiChatOeffnerTests.Die_Chathuelle_uebergibt_die_Tastatur_auf_beiden_Wegen`, `…Die_Dialoghuelle_fuehrt_die_Fokusuebergabe` |
+| `KiChatDialog` / `KiEingabezeile` | das Textfeld trägt `autofocus` und bekommt den Schreibzeiger nach dem ersten Zeichnen (`ElementReference.FocusAsync`) — einmal, nur wenn nicht gesperrt; ein NEUER Aufrufkontext setzt die Marke erneut (das zweite Öffnen kennt kein erstes Zeichnen) | `KiChatBedienungTests` (vier Fälle samt Gegenprobe bei laufender Aktion) |
+
+**Was am Gerät bleibt.** Ob die Tastatur beim Anwender wirklich in der zweiten WebView2 landet,
+sagt nur Windows: bunit kennt kein Fenster, und der Fokusweg WinForms → WebView2 → DOM ist keine
+Sache dieser Bibliothek. Die Abnahme prüft deshalb beide Öffnungswege — Pille aus einer Ansicht
+und Menü Hilfe → Assistent — und dazu das zweite Öffnen bei stehendem Fenster.
+
+### KI‑D‑B‑2 — „Online-Dokumentation öffnen tut nichts"
+
+**Befund (Anwender, während des Laufs von #219).** Der Fußleistenverweis des Chats reagiert nicht.
+
+**Die Ursache ist EINE Zeile, und sie ist im Haus schon einmal benannt worden.**
+`KiChatHuelle.Gaben.AdresseOeffnen` rief `Dienste.Datei.MitSystemOeffnen`, und dessen
+Windows-Fassung beginnt mit `if (!File.Exists(pfad)) return false;` — für eine Adresse also immer
+`false`, ohne Wirkung und ohne Meldung. Genau diesen Fall beschreibt `IDateiDienst.AdresseOeffnen`
+seit iU9‑W16c.3 in seiner eigenen Dokumentation; der Menüpunkt „Hilfe → Dokumentation" geht seither
+richtig, der Chat ging weiter am Dateiweg. **Betroffen war nicht nur der Fußleistenverweis**,
+sondern JEDER Verweis des Chats: die Wikitreffer der Suche und die Verweise aus einer
+Modellantwort laufen über denselben Rückweg `AdresseGewaehlt`. Dieselbe Verwechslung stand ein
+zweites Mal im Rückfall von `WindowsHilfeDienst.Oeffnen` (der Weg, den der i-Knopf nimmt, wenn das
+angeheftete Popup nicht aufgeht).
+
+**Behoben (#219):** beide Stellen rufen `Dienste.Datei.AdresseOeffnen`. Die Prüfung „nur http und
+https" bleibt, wo sie war — in derselben Anzeige landet Modelltext, und der ist Fremdtext.
+**Wache:** `KiChatOeffnerTests.Eine_Adresse_geht_nie_ueber_MitSystemOeffnen` liest jede
+`.cs`-Datei der Windows-Anwendung und meldet jedes `MitSystemOeffnen`, dessen Argument nach einer
+Adresse aussieht; dazu `…Kein_Weg_des_Assistenten_ist_ein_leerer_Delegat` und
+`…Jedes_Bedienelement_des_Assistenten_hat_seinen_Weg` — beide beantworten die Frage, die bis #219
+niemand gestellt hatte: **kommt der Klick überhaupt irgendwo an?**
+
+**Kein Befund waren** (geprüft, Auftrag #219): „Was wird gesendet?", „Protokoll anzeigen",
+„Verlauf kopieren" (den Text liefert die Komponente, die Zwischenablage schreibt die Hülle —
+`navigator.clipboard` kommt nicht vor), „Rechtshinweis anzeigen", „Einstellungen…", „Werkzeuge…",
+„Aktionen zulassen", „Fragen", „Nur suchen", „Schließen", der i-Knopf, der Kontextlink und der
+Tageszähler. Jedes dieser Elemente hat seitdem einen bunit-Fall.
