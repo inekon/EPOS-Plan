@@ -35,9 +35,19 @@ public class KiSimulationMaskeTests : IDisposable
 {
     private readonly Func<bool> _schreibrechtVorher = Schreibnaht.Schreibrecht;
 
+    // Die Maskenbrücke formatiert Feldwerte mit der PROZESSKULTUR (KiMaskenbruecke,
+    // CultureInfo.CurrentCulture); die Erwartungen unten ("420,5") sind de-DE. Ohne
+    // Pinnen hängt der Fall an der Laufreihenfolge — im Gate sept31 (Merge #221) fiel
+    // er mit "420.5". Hausvorrichtung seit #168, Rückstellung in Dispose.
+    private readonly Kulturvorrichtung _kultur = new();
+
     public KiSimulationMaskeTests() => Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
 
-    public void Dispose() => Schreibnaht.Schreibrecht = _schreibrechtVorher;
+    public void Dispose()
+    {
+        Schreibnaht.Schreibrecht = _schreibrechtVorher;
+        _kultur.Dispose();
+    }
 
     // =====================================================================
     //  Probendaten — die vier Stände der Ansicht
