@@ -132,7 +132,7 @@ meldet Memo als `adWChar` und verschluckt den Unterschied; DAO zeigt ihn.
 
 | Kennwert | Wert |
 |---|---|
-| Zentraler Zugriff | `DataRepository.GetConnectionString()` — **eine** Stelle ([DataRepository.cs:161](WindowsFormsApplication1/Allgemein/DataRepository.cs)) |
+| Zentraler Zugriff | `DataRepository.GetConnectionString()` — **eine** Stelle ([DataRepository.cs:161](EPOS.Kern/Allgemein/DataRepository.cs)) |
 | Ausführungsmethoden | 6 (`GetDataTable`, `ExecuteSQL`, `ExecuteNonQuery`, `ExecuteInsertAndGetId`, `ExecuteScalar`, `BeginTransaction`) |
 | SQL-Zeilen mit `?` | 974 |
 | `OleDbParameter`-Objekte | 2.270 |

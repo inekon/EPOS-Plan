@@ -234,11 +234,16 @@
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3) —
     /// dieselbe Bauart wie im Heizkesseleditor: zeichnen, prüfen, speichern nach Modus.
+    /// Seit Auftrag #211 dazu der SCHREIBSCHUTZ: <c>PufferSpKatalogDaten.NurLesen</c>
+    /// trägt das <c>ReadOnly</c> des geladenen Auslieferungssatzes (Fachkonzept 4.5,
+    /// Muster <c>WaermepumpeStammDaten.NurLesen</c>) — vorher lehnte erst der
+    /// Speicherweg des Controllers beim „Überschreiben" ab.
     /// </summary>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Schreibgeschuetzt = () => Daten.NurLesen,
         Speichern = KiSpeichern
     };
 

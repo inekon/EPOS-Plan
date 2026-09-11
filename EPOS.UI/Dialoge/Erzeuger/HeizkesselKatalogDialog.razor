@@ -391,11 +391,19 @@
     /// „Speichern" ihn unter seinem Namen an. Ein dritter Weg („Speichern unter") fragt
     /// einen NAMEN ab — den kann der Assistent nicht beisteuern, und er bietet ihn
     /// deshalb nicht an.</para>
+    /// <para><b>Seit Auftrag #211 kennt auch dieser Haken den SCHREIBSCHUTZ.</b>
+    /// <c>HeizkesselKatalogDaten.NurLesen</c> trägt das <c>ReadOnly</c> des geladenen
+    /// Auslieferungssatzes (Fachkonzept 4.5, Muster
+    /// <c>WaermepumpeStammDaten.NurLesen</c>): Vorher lehnte erst der Speicherweg des
+    /// Controllers beim „Überschreiben" ab — der Anwender bestätigte eine Feldsetzung
+    /// und scheiterte erst beim Speichern. Jetzt lehnt schon <c>feld_setzen</c> ab, ohne
+    /// den Speicherweg selbst anzufassen.</para>
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Schreibgeschuetzt = () => Daten.NurLesen,
         Speichern = KiSpeichern
     };
 

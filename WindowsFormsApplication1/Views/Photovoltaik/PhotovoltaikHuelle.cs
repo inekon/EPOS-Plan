@@ -429,7 +429,12 @@ namespace WindowsFormsApplication1
                 // Straenge dieser Anlage.
                 MitWechselrichter = string.Equals(m.PV_Wechselrichterweg,
                                                   DbWerte.PV_WR_WEG_KATALOG, StringComparison.Ordinal),
-                Straenge = StraengeZuZeile(m)
+                Straenge = StraengeZuZeile(m),
+
+                // Auftrag #211: das ReadOnly des Katalogsatzes fuer den Assistenten
+                // (KiMaskenhaken.Schreibgeschuetzt) - derselbe Bezeichner, mit dem oben
+                // auch PhotovoltaikStammCtrl.Detail nachschlaegt.
+                NurLesen = PhotovoltaikStammCtrl.IsReadOnlyStatic(m.Bezeichner ?? "")
             };
         }
 

@@ -628,10 +628,16 @@
     /// <para><b>Keine eigene Prüfung.</b> Die drei angemeldeten Felder sind Zahlenfelder,
     /// die sich selbst färben; eine Knopfprüfung wie in den Katalogeditoren hat dieser
     /// Dialog nicht.</para>
+    /// <para><b>Seit Auftrag #211 kennt auch dieser Haken den SCHREIBSCHUTZ.</b>
+    /// <c>ErzeugerZeile.NurLesen</c> trägt das <c>ReadOnly</c> des Geräts, auf das die
+    /// gewählte Zeile verweist (Fachkonzept 4.5, Muster
+    /// <c>WaermepumpeStammDaten.NurLesen</c>) — ohne gewählte Zeile ist nichts
+    /// schreibgeschützt.</para>
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
         Speichern = () => Task.FromResult(KiUebernehmen())
     };
 

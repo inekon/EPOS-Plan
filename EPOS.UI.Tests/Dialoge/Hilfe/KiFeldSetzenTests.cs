@@ -184,6 +184,57 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     }
 
     /// <summary>
+    /// Auftrag #211 (Restpunkt aus Bericht #201): Der Haken <c>Schreibgeschuetzt</c> war
+    /// bisher nur an der Wärmepumpe verdrahtet — bei Heizkessel, Photovoltaik und
+    /// Pufferspeicher lehnte erst der Speicherweg des Controllers beim „Überschreiben"
+    /// ab, der Anwender bestätigte also eine Feldsetzung und scheiterte erst beim
+    /// Speichern. Diese drei Fälle beweisen, dass jetzt schon <c>feld_setzen</c>
+    /// ablehnt — dasselbe Muster wie bei der Wärmepumpe oben, mit dem neuen Kennzeichen
+    /// <c>NurLesen</c> der drei Daten-Objekte.
+    /// </summary>
+    [Fact]
+    public async Task Heizkessel_Ein_schreibgeschuetzter_Katalogsatz_wird_sichtbar_abgelehnt()
+    {
+        var daten = new HeizkesselKatalogDaten { Ptherm = 100, NurLesen = true };
+
+        var haken = new KiMaskenhaken { Schreibgeschuetzt = () => daten.NurLesen };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => daten, haken);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL, "th_leistung", "250,5");
+
+        Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+        Assert.Equal(100, daten.Ptherm);
+    }
+
+    [Fact]
+    public async Task Photovoltaik_Ein_schreibgeschuetzter_Katalogsatz_wird_sichtbar_abgelehnt()
+    {
+        var zeile = new ErzeugerZeile { Neigung = 30, NurLesen = true };
+
+        var haken = new KiMaskenhaken { Schreibgeschuetzt = () => zeile.NurLesen };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => zeile, haken);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "35");
+
+        Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+        Assert.Equal(30, zeile.Neigung);
+    }
+
+    [Fact]
+    public async Task Pufferspeicher_Ein_schreibgeschuetzter_Katalogsatz_wird_sichtbar_abgelehnt()
+    {
+        var daten = new PufferSpKatalogDaten { Gesamtvolumen = 750, NurLesen = true };
+
+        var haken = new KiMaskenhaken { Schreibgeschuetzt = () => daten.NurLesen };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER, () => daten, haken);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PUFFERSPEICHER, "gesamtvolumen", "1500");
+
+        Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+        Assert.Equal(750, daten.Gesamtvolumen);
+    }
+
+    /// <summary>
     /// <b>Ohne Freigabe geschieht nichts</b> — der Riegel der Bestätigungsschicht sitzt im
     /// Ausführer und nicht nur im Chat (Fachkonzept 3.5).
     /// </summary>

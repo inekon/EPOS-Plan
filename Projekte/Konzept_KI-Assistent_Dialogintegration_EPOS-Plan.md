@@ -131,7 +131,14 @@ Register auf iOS — ohne Planer, aber mit allen übrigen Aktionen.
 Der Dialog zeigt den neuen Wert, prüft ihn wie eine Eingabe von Hand (Plausibilität, Pflicht, Einheit), und der
 Anwender speichert wie immer. Vorher steht der `KiBestaetigungBlock` mit dem Feldblock (Klartext aus der
 Deklaration, alt → neu). Ein Dialog im Lesemodus (iF30) oder ein `ReadOnly`-Katalogsatz lehnt das Setzen mit der
-benannten Meldung ab.
+benannten Meldung ab. **Restpunkt aus Bericht #201, erledigt mit Auftrag #211 (11.09.2026):** Der Haken
+`Schreibgeschuetzt` war zunächst nur an der Wärmepumpe verdrahtet, weil nur ihr Daten-Objekt
+(`WaermepumpeStammDaten.NurLesen`) das `ReadOnly` des Auslieferungskatalogs führte — bei Heizkessel,
+Photovoltaik und Pufferspeicher lehnte bis dahin erst der Speicherweg des Controllers beim „Überschreiben"
+ab, der Anwender bestätigte also eine Feldsetzung und scheiterte erst beim Speichern. Seit #211 tragen auch
+`HeizkesselKatalogDaten`, `ErzeugerZeile` (Photovoltaik) und `PufferSpKatalogDaten` ein `NurLesen` — aus dem
+geladenen Katalog- bzw. Gerätesatz befüllt, ohne den Speicherweg selbst anzufassen —, und alle vier Masken
+melden `Schreibgeschuetzt` an.
 
 **Aktionen aus dem Dialog.** Zusätzlich zu den Feldern die Aktionen der Stufen 1 bis 3 des Aufgabensteuerungskonzepts,
 bezogen auf den offenen Dialog: navigieren (`dialog_oeffnen` über `Dienste.Navigation`), speichern (Stufe 2,
@@ -188,7 +195,7 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 |---|---|---|
 | **KI‑D‑Q1** Ist der KI-Knopf auch ohne Einrichtung sichtbar? | Ja; er führt in die Einstellungen mit Hinweis, was fehlt. Ein fehlender Knopf ist nicht erklärbar. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #199**: `KiVerfuegbarkeit.Moeglich` fragt allein den Abschalter der Installation — Netz, Schlüssel und Einwilligung sind ausdrücklich keine Bedingung |
 | **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200**: eigener Merker samt `FASSUNG_DIALOGDATEN` und Datum in `KiEinwilligung`; gefragt wird EINMAL beim ersten Einschalten des Schalters, zurückgenommen wird im `KiEinstellungenDialog`. Ohne eingehängten Haken gibt es keinen Weg zu ihr — ein Lauf ohne Oberfläche überträgt keine Feldwerte |
-| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200 (lesen) und #201 (setzen)**: die vier auf Eigenschaftsnamen ihres Razor-Daten-Objekts umgestellt (Feldumfang unverändert 15/3/1/1), die Stromspeicher-Ansicht als fünfte Deklaration mit 16 Feldern. Mit #201 melden alle fünf ihre `KiMaskenhaken` an und sind in dieser Reihenfolge verdrahtet; je Maske führt `EPOS.UI.Tests/Dialoge/Hilfe/KiFeldSetzenTests` einen Fall |
+| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung), umgesetzt #200 (lesen) und #201 (setzen)**: die vier auf Eigenschaftsnamen ihres Razor-Daten-Objekts umgestellt (Feldumfang unverändert 15/3/1/1), die Stromspeicher-Ansicht als fünfte Deklaration mit 16 Feldern. Mit #201 melden alle fünf ihre `KiMaskenhaken` an und sind in dieser Reihenfolge verdrahtet; je Maske führt `EPOS.UI.Tests/Dialoge/Hilfe/KiFeldSetzenTests` einen Fall. **`Schreibgeschuetzt` trug dabei zunächst nur die Wärmepumpe** (Bericht #201, Restpunkt); Heizkessel, Photovoltaik und Pufferspeicher folgen mit **#211** |
 | **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | **entschieden 11.09.2026 (Empfehlung), umgesetzt #201**: `dialog_speichern` ruft den Speicherweg der offenen Maske — Stufe 2, `datenbankwirksam`, damit mit Sicherungspunkt VOR der Bestätigung; der Pfad steht in der Bestätigung und im Ergebnis. Ohne Freigabe wird der Speicherweg nicht einmal gerufen |
 
 **Entscheid 11.09.2026: alle vier nach Empfehlung.**

@@ -172,6 +172,11 @@ namespace WindowsFormsApplication1
             IReadOnlyDictionary<string, string> satz = PufferSpStammCtrl.KatalogsatzAnzeige(name);
             if (satz == null) return;
 
+            // Auftrag #211: das ReadOnly des geladenen Satzes fuer den Assistenten
+            // (KiMaskenhaken.Schreibgeschuetzt) - KatalogsatzAnzeige fuehrt die Spalte
+            // nicht, IsReadOnlyStatic fragt sie eigens nach.
+            daten.NurLesen = PufferSpStammCtrl.IsReadOnlyStatic(name);
+
             daten.Firma = Feld(satz, KatalogBrowserProfil.FeldFirma);
             daten.Bereitschaftsverluste = Kommazahl(satz, KatalogBrowserProfil.FeldVerluste);
             daten.Gesamtvolumen = Ganzzahl(satz, KatalogBrowserProfil.FeldVolumen);
