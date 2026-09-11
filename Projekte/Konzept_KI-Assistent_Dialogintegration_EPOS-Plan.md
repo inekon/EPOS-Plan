@@ -2,8 +2,8 @@
 
 Stand 11.09.2026 · Zweig `ios_migration_september` · Aufgabe #198 · Ablage `Projekte/` · Status: **entschieden am
 11.09.2026** (Anwender: „Stufe 1 mit den Wegen 1 und 2, Weg 4 danach für die vier deklarierten Masken und die
-Stromspeicher-Ansicht, Weg 5: Assistent soll steuern"). Umsetzung in drei Stufen nach Abschnitt 6; die offenen
-Fragen KI‑D‑Q1 bis KI‑D‑Q4 in Abschnitt 7 sind mit Empfehlung vorbelegt und blockieren Stufe 1 nicht.
+Stromspeicher-Ansicht, Weg 5: Assistent soll steuern"). Umsetzung in drei Stufen nach Abschnitt 6. **Die Fragen KI‑D‑Q1 bis KI‑D‑Q4 sind am 11.09.2026 nach Empfehlung
+entschieden** (Anwender: „KI‑D‑Q1 bis Q4: Empfehlung"), siehe Abschnitt 7.
 
 Dieses Konzept baut auf [`Konzept_KI-Assistent_Aufgabensteuerung.md`](../Konzept_KI-Assistent_Aufgabensteuerung.md)
 (Aktionsregister, drei Schutzstufen, Bestätigung, Sicherungspunkt, Protokoll) und auf
@@ -186,9 +186,9 @@ Reihenfolge S1 → S2 → S3; S2 und S3 können getrennt abgenommen werden. Jede
 
 | Frage | Empfehlung | Stand |
 |---|---|---|
-| **KI‑D‑Q1** Ist der KI-Knopf auch ohne Einrichtung sichtbar? | Ja; er führt in die Einstellungen mit Hinweis, was fehlt. Ein fehlender Knopf ist nicht erklärbar. | Empfehlung, wirkt in S1 |
-| **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | Empfehlung, wirkt in S2 |
-| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | Empfehlung, wirkt in S3 |
-| **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | Empfehlung, wirkt in S3 |
+| **KI‑D‑Q1** Ist der KI-Knopf auch ohne Einrichtung sichtbar? | Ja; er führt in die Einstellungen mit Hinweis, was fehlt. Ein fehlender Knopf ist nicht erklärbar. | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S1 |
+| **KI‑D‑Q2** Wie wird das Mitsenden von Feldwerten eingewilligt? | Eigene Stufe „Dialogdaten" einmal je Installation, zurücknehmbar, dazu je Anfrage der Schalter und die Vorschau. | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S2 |
+| **KI‑D‑Q3** Welche Masken zuerst für Weg 5? | Heizkessel, PV, Pufferspeicher, Wärmepumpe (deklariert), dann die Stromspeicher-Ansicht. | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S2/S3 |
+| **KI‑D‑Q4** Darf der Assistent speichern oder nur Felder füllen? | Beides, Speichern nur mit Bestätigung und Sicherungspunkt (datenbankwirksam, Aufgabensteuerung 4.4). | **entschieden 11.09.2026 (Empfehlung)**, wirkt in S3 |
 
-Antwortform wie gewohnt: `KI‑D‑Q1: Empfehlung` oder eine Abweichung in einem Satz.
+**Entscheid 11.09.2026: alle vier nach Empfehlung.**
