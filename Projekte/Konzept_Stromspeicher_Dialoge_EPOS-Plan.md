@@ -130,6 +130,54 @@ Rollbalken — das ist der Zustand aus Foto 1.
 **Lokalisierung:** Die fünf Flottenkomponenten führen außer den vier `FLOTTE_PLANER_*`-Schlüsseln
 (#170c) keine Ressourcen — deutsche Literale und Textbündel (Übergangsmuster aus `EPOS.UI/CLAUDE.md`).
 
+### 1.7 Zwei Speicher, eine Einheit — die Vorbelegung verlor jede Anlage außer der aktiven (#210)
+
+**Der Befund (Anwender, 11.09.2026, zwei Bildschirmfotos).** Der Stromspeicher-Reiter der
+detaillierten Simulation zeigte im Abschnitt „Kennzahlen je Speicher" EINE Zeile
+(„Shenzhen Growatt New Energy Co., Ltd.: WIT‑M+APX ESS", 1 060,67 / 856,70 kWh, 7,40 Vollzyklen),
+und auch die Reihenwahl der zwei Diagramme führte nur diese eine. Dasselbe im Foto darüber: Die
+Einheitentabelle des **Eingabestands `@Aktuell`** führte ebenfalls nur eine Einheit (129,00 kWh,
+100/100 kW). Das Projekt hat **zwei** Speicher.
+
+**Die Ursache steht in der Vorbelegung, nicht in der Anzeige** —
+`SpeicherFlottenStudieCtrl.Vorbelegung` (`EPOS.Kern/Controller/SpeicherFlottenStudieCtrl.cs:61`):
+Eine neu angelegte Flotte entstand aus `StromspeicherSimCtrl.LeseParameter(projektId)` und daraus
+wurde **genau eine** `FlottenEinheit`. Jener Aufruf liefert EINEN Parametersatz — die Anlagenzeile
+der AKTIVEN Variante (AP9b, Fachkonzept 7.3), im Rückfall die kapazitätsgewichtete Summe über alle
+`SP_TYP`-Anlagen. Für den Einzelspeicherlauf ist das richtig; für die Flotte war es ein stiller
+Verlust. Und weil der Projektlauf den GESPEICHERTEN Stand rechnet
+(`SpeicherFlottenProjektCtrl.Rechnen` → `@Projektflotte`), tauchte die zweite Anlage danach
+nirgends mehr auf — weder in den Kennzahlen je Speicher noch in der Reihenwahl.
+
+**Zwei geprüfte Gegenhypothesen, beide falsch.** (b) *Zusammenfallen gleicher Einheiten:* Weder
+Engine noch Anzeige verdichten — `FlottenSimulator` legt je Einheit der Konfiguration eine
+`FlottenSpeicherKennzahlen`-Zeile an und verlangt nur eindeutige `Id`
+(`SpeicherEngine/FlottenSimulator.cs:738`), die Ansicht zählt diese Zeilen. Zwei Einheiten mit
+demselben Namen UND demselben Anlagenbezug ergeben zwei Zeilen (Wachen in
+`EPOS.Kern.Tests/SpeicherFlottenAnlagenEinheitenTests` und
+`EPOS.UI.Tests/Dialoge/SpeicherFlottenErgebnisBetriebTests`). (c) *Veraltetes Ergebnis:* Das Banner
+„Flotte geändert" gibt es und es greift (`StromspeicherReiter.razor`,
+`Daten.FlottenAenderungOhneNeuenLauf`); der Eingabestand im zweiten Foto war ohnehin schon
+einheitig.
+
+**Die Behebung (#210).** `StromspeicherSimCtrl.Speicheranlagen(projektId)` liefert die
+`SP_TYP`-Anlagenzeilen in Anlagenreihenfolge; `SpeicherFlottenStudieCtrl.Vorbelegung` liest je
+Zeile über `LeseParameter(projektId, anlageId)` ihren **eigenen** Satz — Gerätedaten aus der
+Anlage, SoC-Band aus DEREN Variantenzeile — und macht daraus je eine Einheit mit Anlagennamen und
+`AnlageId`. Liefert keine Anlage einen Satz, bleibt es beim bisherigen Sammelsatz; ein
+GESPEICHERTER Stand wird wie bisher nie überschrieben, die Vorbelegung greift nur beim Anlegen. Im
+Reiter nennt die Einheitentabelle seither die **Herkunft** je Zeile („Projektanlage ‹Id›" bzw.
+„nur im Eingabestand").
+
+**Die fachliche Kante, die dabei bleibt.** Das Schema unterscheidet eine gleichzeitig betriebene
+Anlage nicht von einer bloßen Vergleichs-Alternative — beides ist eine `SP_TYP`-Zeile in
+`Tab_Energieanlagen` (Konzept Stromspeicher 7.3; die Spezifikation sagt in Kapitel 11 nur „eine
+vorhandene Einzelanlage → genau eine Einheit"). Von den zwei möglichen Fehlern ist deshalb der
+SICHTBARE gewählt: Eine Einheit zu viel sieht der Anwender im Flotteneditor und nimmt sie heraus;
+eine Einheit zu wenig erfährt er nirgends. Die Referenzliste `REF_SP_TYP` bleibt ausdrücklich
+draußen. **Der Referenzlauf ist unberührt** — 1046 rechnet seinen gespeicherten Stand
+`@Projektflotte`, nicht die Vorbelegung; 13/13 byte-gleich gegen R7.
+
 ---
 
 ## 2. Zielbild
