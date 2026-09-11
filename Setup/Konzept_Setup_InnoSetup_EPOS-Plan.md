@@ -794,6 +794,28 @@ und mit `Setup/pruefe_iss_kommentare.py` einen CI-Vorschritt „ISS-Kommentare
 prüfen" vor „Setup bauen" einzieht, der denselben Fehler künftig vor dem
 minutenlangen Lauf abfängt.
 
+Der **dritte** Setup-Lauf (34592377805, Lauf Nr. 256, 11.09.2026, 11:05:56–11:10:10 UTC,
+Kopf `d677c61` mit #181) ist **grün** — der erste vollständige Nachweis der Kette in der
+CI. Dauer **4 min 14 s** statt der befürchteten Stunde: Checkout 25 s, .NET-SDK 39 s,
+Inno-Setup-Prüfung 1 s, WebView2-Bootstrapper unter 1 s, ISS-Kommentar-Wächter 2 s,
+„Setup bauen" **2 min 51 s** (Veröffentlichung win-x64 eigenständig: Version 1.1.0.0,
+254,7 MB; Auslieferungsvorlage aus `Referenzlaeufe/Kenndaten_Test.sqlite` mit
+`-Kataloge alle`: 22,6 MB, Prüfbericht 0 Auffälligkeiten, Schemastand 73, 117 STRICT,
+0 Projekte, alle vier Datenschutzwächter grün; `ISCC.exe` 6.7.1 „Successful compile
+54.000 sec", LZMA in eigenem Prozess `islzma64.exe`, 691 Compressing-Zeilen). Ergebnis
+**`EPOS-Plan_Setup_1.1.0.0.exe`, 153,5 MB**, als Artefakt `epos-plan-setup` (160 455 754
+Byte gepackt), dazu `setup-protokoll` (Prüfbericht und Skriptprotokoll), 14 Tage. **Welche
+Versionsquelle trug:** Das Runner-Image führt `ISCC.exe` und `Compil32.exe` von Inno Setup
+6.7.1 **ohne jede Versionsangabe** — `FileVersion`, `FileVersionRaw`, `ProductVersion` und
+`ProductVersionRaw` beider Dateien melden 0.0.0.0; getragen hat die **Registry**
+(`DisplayVersion = 6.7.1` des Uninstall-Schlüssels, `InstallLocation` passend), das Skript
+meldet „Inno Setup 6.7.1 (Registry DisplayVersion)". Die Vier-Quellen-Ermittlung aus #180
+war also keine Vorsicht, sondern nötig. Damit ist der Anwenderentscheid „#160‑E‑1: CI"
+eingelöst (Aufgabe #176; Zwischenbefunde #177 Registrierung nur vom Standardzweig, #180
+Versionsquelle, #181 Kommentarklammer); die Vorgabe `-Kataloge readonly` des Werkzeugs
+blieb dabei unverändert — der Lauf übergibt `alle` ausdrücklich (6.1, #160‑F‑1), die
+Grundsatzfrage liegt beim Anwender.
+
 ---
 
 ## 9. Code-Signierung

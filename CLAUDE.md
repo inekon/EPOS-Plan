@@ -147,9 +147,10 @@ iOS-Lauf wurde nicht ausgelöst. Der Nachzug auf **Schemastand 74** (Auftrag #17
 Kern, Werkzeug und Testdatenbank, nicht die Hülle; das STRICT-Gate der iOS-CI zieht seine
 Erwartung aus der Seed-Datenbank selbst, es war nichts am Workflow zu ändern. Dieselbe Zurückhaltung gilt seit dem 11.09.2026
 (Anwenderentscheid „#160‑E‑1: CI") für den **Setup-Lauf**, der das Installationsprogramm auf
-`windows-latest` baut: Der Windows-Läufer zählt **doppelt** und ein Lauf braucht bis zu einer
-Stunde (Veröffentlichung, 186 MB Herstellerdaten, LZMA2-Solidkompression), deshalb hat er
-**nur** `workflow_dispatch` — nicht bei Push. Der Job (`installer`) lag zunächst in einer
+`windows-latest` baut: Der Windows-Läufer zählt **doppelt**, deshalb hat der Lauf
+**nur** `workflow_dispatch` — nicht bei Push (gemessen am 11.09.2026, Lauf 34592377805:
+4 min 14 s für Veröffentlichung, Auslieferungsvorlage und Inno-Setup-Übersetzung von 186 MB
+Herstellerdaten, Installer 153,5 MB — die befürchtete Stunde war es nicht). Der Job (`installer`) lag zunächst in einer
 eigenen Datei `setup.yml` (#176) und steht seit **#177** als zweiter Job in
 `.github/workflows/windows.yml`, weil GitHub eine Workflow-Datei erst registriert, wenn sie
 auf dem Standardzweig `main` liegt — ein `workflow_dispatch` auf eine neue Datei eines
