@@ -26,9 +26,16 @@ Wie geprueft wird
     AUSGENOMMEN). Die Zeichenketten einer Verkettung werden wieder zusammengesetzt -
     ueber ``+``, ueber ``sql += ...`` und ueber ``sb.Append(...).Append(...)``.
 2.  ``const string``-Konstanten werden AUFGELOEST (SchemaKatalog.TAB_*, SPALTE_*,
-    Controller-TABLE, SchemaStand.SQL_*). Ein Kurzname zaehlt nur, wenn es ihn in
-    genau EINER Klasse gibt - sonst zoege "TABLE" die Tabelle einer fremden Klasse
-    herein. Die Vereinbarung selbst ist ein Baustein; geprueft wird die VERWENDUNG.
+    Controller-TABLE, SchemaStand.SQL_*) - der Katalog kommt dabei NUR aus dem
+    Pruefbereich (WURZELN), nicht aus dem gesamten Baum (Befund #195: eine Konstante
+    aus einem Testprojekt darf keinen Namen im Produktcode aufloesen). Ein Kurzname
+    zaehlt nur, wenn es ihn in genau EINER Klasse gibt - sonst zoege "TABLE" die
+    Tabelle einer fremden Klasse herein. DREI Stufen (``_konstante``): zuerst die
+    EIGENE Klasse (ein lokaler Name sperrt sie nicht), dann - ohne eigenen Treffer -
+    der Ausschluss ueber ``_lokale_namen`` (gewoehnliche Variable, Schleifenkopf,
+    Parameter, Musterdeklaration; Befund #195: eine ``foreach``-Variable), erst danach
+    der Kurzname einer fremden Klasse. Die Vereinbarung selbst ist ein Baustein;
+    geprueft wird die VERWENDUNG.
 3.  Der fertige Text geht als ``EXPLAIN`` an eine nur lesend geoeffnete
     Testdatenbank. Das faengt Syntax UND Objekte ("no such column: ...").
 4.  Bleibt eine Luecke (Tabellen- oder Spaltenname entsteht erst zur Laufzeit),
@@ -55,6 +62,8 @@ import os
 import re
 import sqlite3
 import sys
+import tempfile
+import types
 
 LOCH = "\x01"          # Interpolationsloch  $"...{x}..."
 UNBEK = "\x02"         # nicht aufloesbarer Verkettungsteil
@@ -394,26 +403,39 @@ NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 def _konstante(ausdruck, kat, klasse, lokal=None):
     """Loest einen Ausdruck zu einem Konstantentext auf - oder gibt None.
 
-    ``lokal`` sind die Namen, die IN DIESER DATEI als gewoehnliche Variable
-    vereinbart sind (``string felder = ...``). Sie duerfen nicht ueber den
-    Kurznamen aus einer fremden Klasse aufgeloest werden: Was hier ``felder``
-    heisst, ist der Inhalt der lokalen Variablen und nicht die gleichnamige
-    Konstante irgendwo sonst im Bestand (Befund iU9-W6.7 - zwei falsche
-    Fundstellen in WirtschaftlichkeitCtrl, sobald die zweite Vereinbarung des
-    Namens mit einer geloeschten Maske verschwand und der Kurzname damit
-    "eindeutig" wurde).
+    ``lokal`` sind die Namen, die IN DIESER DATEI etwas anderes bedeuten als eine
+    Konstante (gewoehnliche Variable, ``foreach``-Kopf, Parameter, Musterdeklaration
+    - siehe ``_lokale_namen``). Sie duerfen NUR den Kurznamen aus einer FREMDEN
+    Klasse sperren, nicht den Bezug innerhalb der EIGENEN (Befund iU9-W6.7 - zwei
+    falsche Fundstellen in WirtschaftlichkeitCtrl, sobald die zweite Vereinbarung
+    des Namens mit einer geloeschten Maske verschwand und der Kurzname damit
+    "eindeutig" wurde; Befund #195 bestaetigt an sechs verschwundenen, statt
+    dynamischen, Fundstellen in Z_ProjGebCtrl/Z_ProjektGebGanglinieCtrl: dort heisst
+    sowohl ein Parameter der einen Methode als auch die Konstante der anderen
+    "sql" - der Bezug INNERHALB der Klasse bleibt eine echte Verwendung).
+
+    Reihenfolge je Kurzform (``teile == 1``): (1) die EIGENE Klasse zuerst - ein
+    lokaler Name sperrt sie nicht; (2) erst danach, wenn kein eigener Treffer
+    steht, sperrt ``lokal`` die Aufloesung; (3) sonst der (eindeutige) Kurzname
+    einer fremden Klasse.
     """
     a = ausdruck.strip()
     if NAME_RE.match(a):
         teile = a.split(".")
         if len(teile) == 1:
-            if lokal and teile[0] in lokal:
+            name = teile[0]
+            # 1) Bezug innerhalb der eigenen Klasse geht vor - IMMER, auch wenn
+            #    der Name hier lokal ist (er ist es fuer eine ANDERE Verwendung).
+            if klasse and ("%s.%s" % (klasse, name)) in kat.lang:
+                return kat.lang["%s.%s" % (klasse, name)]
+            # 2) Kein eigener Treffer: ein lokaler Name darf nicht ueber den
+            #    Kurznamen einer FREMDEN Klasse aufgeloest werden.
+            if lokal and name in lokal:
                 return None
-            # Bezug innerhalb der eigenen Klasse geht vor.
-            if klasse and ("%s.%s" % (klasse, teile[0])) in kat.lang:
-                return kat.lang["%s.%s" % (klasse, teile[0])]
-            return kat.kurz.get(teile[0])
-        # A.B / A.B.C: die letzten beiden Glieder sind Klasse.Name
+            # 3) Kurzname (nur, wenn er im Pruefbereich eindeutig ist).
+            return kat.kurz.get(name)
+        # A.B / A.B.C: die letzten beiden Glieder sind Klasse.Name - ausdruecklich
+        # benannt, kein lokaler Name im Sinn von ``_lokale_namen``.
         schl = ".".join(teile[-2:])
         if schl in kat.lang:
             return kat.lang[schl]
@@ -538,23 +560,108 @@ def ziehe_sql(pfad, kat):
 FORMATLOCH = re.compile(r"\{\d+(?::[^}]*)?\}")
 
 
-def _lokale_namen(toks):
-    """Namen, die in dieser Datei als gewoehnliche `string`-Variable vereinbart sind.
+PARAMETER_MODIFIKATOREN = ("out", "ref", "in", "params", "this")
 
-    Erfasst `string x = ...` und `var x = ...` OHNE `const`/`readonly` davor - also
-    genau die Faelle, in denen der Name fuer diese Datei etwas anderes bedeutet als
-    eine gleichnamige Konstante anderswo.
+
+def _lokale_namen(toks):
+    """Namen, die in dieser Datei NICHT als const/readonly-Konstante gelten.
+
+    Erfasst `string x = ...` / `var x = ...` (gewoehnliche Variable), `string x;`
+    (Deklaration ohne Zuweisung), `foreach (string x in ...)` / `foreach (var x in
+    ...)`, Methodenparameter (`string x`, auch mit den Modifikatoren `out`/`ref`/
+    `in`/`params`/`this`) und - soweit einfach - Tupel- und Musterdeklarationen:
+    `(string a, string b) = ...` laeuft ueber dieselbe Parameter-Erkennung, dazu
+    `var (a, b) = ...` und `x is string s`. Was hier als lokaler Name gilt, darf
+    NICHT ueber einen gleichnamigen Kurznamen aus einer fremden Klasse aufgeloest
+    werden - sonst zoege die Konstante einer fremden Klasse den falschen Text herein.
+
+    Befund #195: `foreach (string kind in plan.Kindtabellen)`
+    (`KomponentenUebernahmeCtrl.cs:344`) war bis dahin nicht erfasst - kein
+    `string x = ...`. Solange es im Bestand keine zweite Vereinbarung des
+    Kurznamens `kind` gab, war das folgenlos (kein Kurzname, keine Aufloesung).
+    Erst `EPOS.UI.Tests/UeberlagerungstitelTests.cs:98` legte mit
+    `const string kind = "<div class=\"epos-dialog-kopf\"> ..."` den ersten und
+    einzigen Kurznamen `kind` im Bestand an - und `_konstante()` loeste die
+    Schleifenvariable seither faelschlich darueber auf: `DELETE FROM
+    [<div class="epos-dialog-kopf"> ...] WHERE [...] = ?` scheiterte an SQLite
+    ("no such table"), obwohl `kind` zur Laufzeit einen echten Tabellennamen
+    (`Tab_Kenndaten`, `Tab_Kenndaten_Kuehlung`, ...) traegt - ein zur Laufzeit
+    entstehender, also DYNAMISCHER Text, keine Fundstelle.
     """
     raus = set()
     n = len(toks)
-    for i in range(n - 3):
-        if toks[i][0] != "ident" or toks[i][1] not in ("string", "var"):
+    for i in range(n):
+        a, w, _ = toks[i]
+        if a != "ident" or w not in ("string", "var"):
             continue
         if i > 0 and toks[i - 1][0] == "ident" and toks[i - 1][1] in ("const", "readonly"):
             continue
-        if toks[i + 1][0] == "ident" and toks[i + 2][0] == "op" and toks[i + 2][1] == "=" \
+        if i + 1 >= n or toks[i + 1][0] != "ident":
+            continue
+        name = toks[i + 1][1]
+        nachher = toks[i + 2] if i + 2 < n else None
+
+        # string x = ...  /  var x = ...   (nicht "==")
+        if nachher and nachher[0] == "op" and nachher[1] == "=" \
                 and not (i + 3 < n and toks[i + 3][0] == "op" and toks[i + 3][1] == "="):
-            raus.add(toks[i + 1][1])
+            raus.add(name)
+            continue
+
+        # string x;   (Deklaration ohne Zuweisung)
+        if nachher and nachher[0] == "op" and nachher[1] == ";":
+            raus.add(name)
+            continue
+
+        # foreach (string x in ...)  /  foreach (var x in ...)
+        if i >= 2 and toks[i - 1][0] == "op" and toks[i - 1][1] == "(" \
+                and toks[i - 2][0] == "ident" and toks[i - 2][1] == "foreach" \
+                and nachher and nachher[0] == "ident" and nachher[1] == "in":
+            raus.add(name)
+            continue
+
+        # x is string s   (Musterdeklaration - haengt an keinem Trenner dahinter)
+        if i > 0 and toks[i - 1][0] == "ident" and toks[i - 1][1] == "is":
+            raus.add(name)
+            continue
+
+        # Parameter- bzw. Tupelelement: "(" oder "," davor (auch hinter einem
+        # Modifikator), ")" oder "," dahinter - deckt "(string a, string b) = ..."
+        # gleich mit ab, denn jedes Element sieht fuer sich wie ein Parameter aus.
+        vor = toks[i - 1] if i > 0 else None
+        if vor and vor[0] == "ident" and vor[1] in PARAMETER_MODIFIKATOREN and i > 1:
+            vor = toks[i - 2]
+        if vor and vor[0] == "op" and vor[1] in ("(", ",") \
+                and nachher and nachher[0] == "op" and nachher[1] in (",", ")"):
+            raus.add(name)
+            continue
+
+    raus |= _tupel_dekonstruktion(toks)
+    return raus
+
+
+def _tupel_dekonstruktion(toks):
+    """`var (a, b) = ...` - ohne Typangabe je Element, darum eigens gelesen."""
+    raus = set()
+    n = len(toks)
+    for i in range(n - 1):
+        if not (toks[i][0] == "ident" and toks[i][1] == "var"):
+            continue
+        if not (toks[i + 1][0] == "op" and toks[i + 1][1] == "("):
+            continue
+        ende = _gruppe(toks, i + 1)
+        if not (ende < n and toks[ende][0] == "op" and toks[ende][1] == "="):
+            continue
+        tiefe = 0
+        for j in range(i + 1, ende):
+            b, v, _ = toks[j]
+            if b == "op" and v in "([":
+                tiefe += 1
+            elif b == "op" and v in ")]":
+                tiefe -= 1
+            elif b == "ident" and tiefe == 1 and v != "_":
+                nachfolger = toks[j + 1] if j + 1 < n else None
+                if nachfolger and nachfolger[0] == "op" and nachfolger[1] in (",", ")"):
+                    raus.add(v)
     return raus
 
 
@@ -902,18 +1009,6 @@ def dateien_im_bereich(basis):
     return sorted(out)
 
 
-def alle_cs(basis):
-    out = []
-    for dp, dn, fn in os.walk(basis):
-        # .claude: Worktrees paralleler Agenten - fremde Arbeitsstaende, die sich waehrend des
-        # Laufs bewegen (Gate 06.09.2026: FileNotFoundError mitten im Scan).
-        dn[:] = [d for d in dn if d not in ("obj", "bin", ".vs", ".git", "artifacts", ".claude")]
-        for f in fn:
-            if f.endswith(".cs"):
-                out.append(os.path.join(dp, f))
-    return sorted(out)
-
-
 def _lies(pfad):
     with open(pfad, "rb") as f:
         b = f.read()
@@ -1013,6 +1108,108 @@ DARF_DURCHGEHEN = [
 ]
 
 
+# -------------------------------------------------------------------------------------
+# Befund #195 (KomponentenUebernahmeCtrl.cs:344): kein Fehler im SQL-Text selbst, sondern
+# in der NAMENSAUFLOESUNG davor - die zwei Faelle unten prueft kein SQL-Muster ab, sondern
+# `tokenize`/`_lokale_namen`/`_konstante` bzw. `dateien_im_bereich`/`sammle_konstanten`
+# unmittelbar, auf synthetischem Quelltext ohne die Testdatenbank.
+# -------------------------------------------------------------------------------------
+
+def _selbsttest_lokale_namen():
+    """(a) Eine foreach-Variable wird NICHT ueber einen gleichnamigen Kurznamen
+    aufgeloest - nachgebildet nach dem Befund: `plan.Kindtabellen` liefert zur
+    Laufzeit echte Tabellennamen, `kind` ist keine Konstante. Ein Katalog, der
+    (wie die Testfixture aus #187) einen Kurznamen `kind` fuehrt, darf die
+    Schleifenvariable trotzdem nicht treffen.
+    """
+    quelle = (
+        "class KomponentenUebernahmeCtrl {\n"
+        "    void X(GewerkPlan plan, int alt, DbVorgang v) {\n"
+        "        foreach (string kind in plan.Kindtabellen)\n"
+        "            VersucheAusfuehren(v,\n"
+        "                \"DELETE FROM [\" + kind + \"] WHERE [\" + plan.KindFk + \"] = ?\",\n"
+        "                new DbParam(\"@fk\", alt));\n"
+        "    }\n"
+        "}\n"
+    )
+    toks = tokenize(quelle)
+    lokal = _lokale_namen(toks)
+    if "kind" not in lokal:
+        print("SELBSTTEST FEHLT: foreach-Variable 'kind' wird nicht als lokaler Name erkannt")
+        return 1
+    kat = types.SimpleNamespace(
+        lang={}, kurz={"kind": '<div class="epos-dialog-kopf"> ... </div>'})
+    getroffen = _konstante("kind", kat, "KomponentenUebernahmeCtrl", lokal=lokal)
+    if getroffen is not None:
+        print("SELBSTTEST FALSCHALARM: foreach-Variable 'kind' loeste trotzdem ueber "
+              "den Kurznamen auf -> %r" % getroffen)
+        return 1
+    return 0
+
+
+def _selbsttest_katalogbereich():
+    """(b) Eine Konstante aus einer Datei AUSSERHALB des Pruefbereichs (WURZELN)
+    erreicht den Konstantenkatalog nicht - gleich, wie eindeutig ihr Kurzname im
+    gesamten Baum waere. Echtes, aber Wegwerf-Dateisystem: eine .cs unter
+    `EPOS.Kern` (Pruefbereich) neben einer .cs unter `EPOS.UI.Tests` (ausserhalb,
+    wie die Fixture aus #187).
+    """
+    with tempfile.TemporaryDirectory(prefix="sqlpruefer_selbsttest_") as tmp:
+        kern_dir = os.path.join(tmp, "EPOS.Kern", "Controller")
+        os.makedirs(kern_dir, exist_ok=True)
+        with open(os.path.join(kern_dir, "Sonde.cs"), "w", encoding="utf-8") as f:
+            f.write("class Sonde {\n    void X() { }\n}\n")
+
+        test_dir = os.path.join(tmp, "EPOS.UI.Tests")
+        os.makedirs(test_dir, exist_ok=True)
+        with open(os.path.join(test_dir, "Fixture.cs"), "w", encoding="utf-8") as f:
+            f.write(
+                "class Fixture {\n"
+                "    const string selbsttestAussenKonstante = \"Tab_Ausserhalb\";\n"
+                "}\n")
+
+        dateien = dateien_im_bereich(tmp)
+        if any("EPOS.UI.Tests" in p for p in dateien):
+            print("SELBSTTEST FEHLT: dateien_im_bereich() nimmt eine Datei ausserhalb "
+                  "der WURZELN mit")
+            return 1
+        kat = sammle_konstanten(dateien)
+        if "selbsttestAussenKonstante" in kat.kurz:
+            print("SELBSTTEST FALSCHALARM: Konstante einer Datei ausserhalb der WURZELN "
+                  "erreichte den Katalog")
+            return 1
+        return 0
+
+
+def _selbsttest_eigene_klasse():
+    """(c) Ein lokaler Name sperrt nur den Kurznamen einer FREMDEN Klasse - der Bezug
+    innerhalb der EIGENEN Klasse geht immer vor (Befund iU9-W6.7 woertlich; von #195
+    bestaetigt an Z_ProjGebCtrl/Z_ProjektGebGanglinieCtrl: dieselbe Klasse fuehrt sowohl
+    eine eigene Konstante `sql` als auch, in einer anderen Methode, einen gleichnamigen
+    Parameter). Reihenfolge in `_konstante()`: (1) eigene Klasse, (2) lokal -> None,
+    (3) Kurzname.
+    """
+    lokal = {"sql"}
+    kat = types.SimpleNamespace(
+        lang={"Z_ProjGebCtrl.sql": "SELECT 1 FROM Tab_Gebaeude"},
+        kurz={"sql": "SELECT 2 FROM Tab_Fremd"})
+    # (c1) gleichnamiger Parameter UND klasseneigene Konstante -> die eigene Konstante
+    # wird aufgeloest, trotz `lokal`.
+    eigen = _konstante("sql", kat, "Z_ProjGebCtrl", lokal=lokal)
+    if eigen != "SELECT 1 FROM Tab_Gebaeude":
+        print("SELBSTTEST FEHLT: die eigene Klassenkonstante 'sql' wird trotz "
+              "gleichnamigem Parameter NICHT aufgeloest -> %r" % eigen)
+        return 1
+    # (c2) derselbe Parameter in einer Klasse OHNE eigene Konstante -> der Kurzname
+    # einer fremden Klasse bleibt gesperrt.
+    fremd = _konstante("sql", kat, "AndereKlasseOhneEigeneSql", lokal=lokal)
+    if fremd is not None:
+        print("SELBSTTEST FALSCHALARM: der Parameter 'sql' loeste ohne eigene Konstante "
+              "trotzdem ueber den Kurznamen einer fremden Klasse auf -> %r" % fremd)
+        return 1
+    return 0
+
+
 def selbsttest(conn, namen, klein, bool_ausnahmen):
     fehler = 0
     for sql in MUSS_AUFFALLEN:
@@ -1029,8 +1226,11 @@ def selbsttest(conn, namen, klein, bool_ausnahmen):
         if m or u or f:
             print("SELBSTTEST FALSCHALARM: %s -> %s %s %s" % (_kurz(sql, 90), m, u, f))
             fehler += 1
+    fehler += _selbsttest_lokale_namen()
+    fehler += _selbsttest_katalogbereich()
+    fehler += _selbsttest_eigene_klasse()
     print("Selbsttest: %d Anweisungen, %d Abweichungen."
-          % (len(MUSS_AUFFALLEN) + len(DARF_DURCHGEHEN), fehler))
+          % (len(MUSS_AUFFALLEN) + len(DARF_DURCHGEHEN) + 3, fehler))
     return fehler
 
 
@@ -1057,7 +1257,17 @@ def main():
     if args.selbsttest:
         return 1 if selbsttest(conn, namen, klein, bool_ausnahmen) else 0
 
-    kat = sammle_konstanten(alle_cs(basis))
+    # Befund #195: Der Katalog kommt NUR aus dem Pruefbereich (WURZELN), nicht aus dem
+    # gesamten Baum. Eine Konstante eines Testprojekts (EPOS.UI.Tests, Werkzeuge, Proben,
+    # ...) darf keinen Kurznamen im Produktcode aufloesen - genau das tat bis hierher
+    # `EPOS.UI.Tests/UeberlagerungstitelTests.cs:98` mit `const string kind = "<div ...>"`
+    # und liess `KomponentenUebernahmeCtrl.cs:344` (die echte foreach-Variable `kind`, siehe
+    # `_lokale_namen`) faelschlich als Fundstelle melden. Gegenprobe (Protokoll #195): Mit
+    # dem alten `alle_cs(basis)` UND der reparierten `_lokale_namen` loest keine einzige
+    # Konstante ausserhalb der WURZELN noch etwas im Pruefbereich auf - "in Ordnung" und
+    # "dynamisch" bleiben Zeile fuer Zeile gleich. Die Einschraenkung ist deshalb reiner
+    # Schutz gegen kuenftige Testfixtures dieser Art, keine Korrektur eines zweiten Fundes.
+    kat = sammle_konstanten(dateien_im_bereich(basis))
 
     zeilen = []
     anzahl = 0
