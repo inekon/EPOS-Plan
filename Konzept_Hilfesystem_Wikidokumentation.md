@@ -838,3 +838,6 @@ mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „E
 #221-Absätzen (Anwenderentscheid KI‑D‑E‑1: eine Marke je Bildschirm, die im Kopfband der Ansicht folgt und blau ausgefüllt bleibt, solange das
 Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher"; was der Assistent in der Simulation liest und setzt);
 die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.
+**Dazu `Simulation` Revision 551** (11.09.2026, Merge `97dc344`, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
+Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts das Ergebnis, ein Lauf zur Zeit); Nachprobe per
+`action=raw` findet den Anker.
