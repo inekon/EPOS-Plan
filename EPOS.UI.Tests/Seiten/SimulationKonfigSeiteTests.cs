@@ -784,4 +784,39 @@ public class SimulationKonfigSeiteTests : BunitContext
         var cut = Zeige(Daten());                                            // Zustand Verfuegbar
         Assert.Empty(cut.FindAll(".epos-stromspeicherkachel"));
     }
+
+    // ============================================== Pufferverwaltung (#194)
+
+    /// <summary>
+    /// Restfall aus #187 (Abnahmeliste, Befund Agent #187): Die Pufferverwaltung ist
+    /// die DRITTE Einbettung von <c>PufferSpProjektDialog</c> als Rolle (neben
+    /// <c>QuellePufferspeicherDialog</c> und <c>WaermesenkeDialog</c>) und trug den
+    /// Titel doppelt — die Überlagerung als <c>h2.epos-ueberlagerung-titel</c>, die
+    /// eingebettete Komponente unbedingt zugleich als eigenen
+    /// <c>h1.epos-dialog-titel</c>. Anders als bei den zwei bereits behobenen Stellen
+    /// (die selbst ein Dialog mit EIGENEM <c>h1.epos-dialog-titel</c> sind) hat die
+    /// Konfigurations-SEITE keinen solchen eigenen Kopf — der einzige Titel, der nach
+    /// der Behebung stehen bleibt, ist der der Überlagerung; die eingebettete
+    /// Komponente zeigt gar keinen <c>h1.epos-dialog-titel</c> mehr (Bauart b,
+    /// <c>TitelAnzeigen="false"</c> an der Einbettungsstelle).
+    /// </summary>
+    [Fact]
+    public void Die_Pufferverwaltung_zeigt_ihren_Titel_nur_an_der_Ueberlagerung()
+    {
+        var cut = Seite();
+
+        cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf")[0].Click();
+        Assert.Equal("Pufferverwaltung", cut.Instance.OffenerEditor);
+
+        // Die eingebettete Komponente zeichnet ihren EIGENEN Kopf nicht mehr.
+        Assert.Empty(cut.FindAll("h1.epos-dialog-titel"));
+
+        // ... sondern traegt die Markierung "ohne eigenen Titel" (Hausregel-Klasse).
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf--ohnetitel"));
+
+        // Genau EIN sichtbarer Titel bleibt - der der Ueberlagerung.
+        var ueberlagerungstitel = cut.FindAll("h2.epos-ueberlagerung-titel");
+        Assert.Single(ueberlagerungstitel);
+        Assert.Equal("Pufferspeicher im Projekt", ueberlagerungstitel[0].TextContent);
+    }
 }
