@@ -190,14 +190,16 @@ S1 ist ohne S2 abnehmbar. S2 setzt S1 voraus, weil es dasselbe Wörterbuch liefe
 
 ## 5. Fragen mit Empfehlung
 
+**Entscheid 11.09.2026: alle sechs nach Empfehlung** (Anwender: „SIM‑Q1 bis Q6: Empfehlung"). S1 = Aufgabe #207, S2 = Aufgabe #208.
+
 | Frage | Empfehlung | Stand |
 |---|---|---|
-| **SIM‑Q1** Schrittfolge: drei Schritte mit ② als Knopf, oder vier Blätter? | Drei; ② ist ein Knopf wie Schritt 4 der Auslegung — ein Lauf ist kein Blatt, das man ansieht | offen |
-| **SIM‑Q2** Auslegung als Schritt ④ derselben Ansicht oder eigene Ansicht mit Rückkehr? | Eigene Ansicht; Rückkehr mit Marke in ③/„Stromspeicher". Zwei Ablaufleisten ineinander wären das nächste Fenster im Fenster | offen |
-| **SIM‑Q3** Menüpunkt „Simulation…" im Kopf „Projekt" neben „Varianten und Bericht…"? | Ja — die Startseite ist heute der einzige Weg; ein Punkt, Ziel `SIMULATION` ①, kein Untermenü (Regel W16c‑E‑6) | offen |
-| **SIM‑Q4** Rückwegstapel mit Marke für alle Ansichten (Auslegung, KI-Assistent, Simulation)? | Ja; drei Felder werden ein Mechanismus, flach, kein Router | offen |
-| **SIM‑Q5** Bedarfs-Detail, Wärmepumpen-Detail, Variantenvergleich bleiben Überlagerungen? | Ja (Regel SD‑Q1: kurze Unterdialoge mit eigener Rückkehr) | offen |
-| **SIM‑Q6** S2 (iOS) direkt nach S1 starten, iOS-Lauf mit #202 bündeln? | Ja — die Simulation ist die erste Fachseite der iOS-Migration und heute dort nicht erreichbar | offen |
+| **SIM‑Q1** Schrittfolge: drei Schritte mit ② als Knopf, oder vier Blätter? | Drei; ② ist ein Knopf wie Schritt 4 der Auslegung — ein Lauf ist kein Blatt, das man ansieht | **entschieden 11.09.2026 (Empfehlung)** |
+| **SIM‑Q2** Auslegung als Schritt ④ derselben Ansicht oder eigene Ansicht mit Rückkehr? | Eigene Ansicht; Rückkehr mit Marke in ③/„Stromspeicher". Zwei Ablaufleisten ineinander wären das nächste Fenster im Fenster | **entschieden 11.09.2026 (Empfehlung)** |
+| **SIM‑Q3** Menüpunkt „Simulation…" im Kopf „Projekt" neben „Varianten und Bericht…"? | Ja — die Startseite ist heute der einzige Weg; ein Punkt, Ziel `SIMULATION` ①, kein Untermenü (Regel W16c‑E‑6) | **entschieden 11.09.2026 (Empfehlung)** |
+| **SIM‑Q4** Rückwegstapel mit Marke für alle Ansichten (Auslegung, KI-Assistent, Simulation)? | Ja; drei Felder werden ein Mechanismus, flach, kein Router | **entschieden 11.09.2026 (Empfehlung)** |
+| **SIM‑Q5** Bedarfs-Detail, Wärmepumpen-Detail, Variantenvergleich bleiben Überlagerungen? | Ja (Regel SD‑Q1: kurze Unterdialoge mit eigener Rückkehr) | **entschieden 11.09.2026 (Empfehlung)** |
+| **SIM‑Q6** S2 (iOS) direkt nach S1 starten, iOS-Lauf mit #202 bündeln? | Ja — die Simulation ist die erste Fachseite der iOS-Migration und heute dort nicht erreichbar | **entschieden 11.09.2026 (Empfehlung)** |
 
 ---
 
