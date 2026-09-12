@@ -74,11 +74,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (FlottenAuslegungsAchse achse in Achsen)
+                            @* Der Schluessel der Zeile ist eine WERTIDENTITAET, nie die
+                               Achse selbst — siehe Zeilenschluessel (Befund #245). *@
+                            @for (int zeile = 0; zeile < Achsen.Count; zeile++)
                             {
-                                FlottenAuslegungsAchse a = achse;
+                                FlottenAuslegungsAchse a = Achsen[zeile];
                                 bool frei = Aktiv && a.Aktiv;
-                                <tr @key="a">
+                                <tr @key="Zeilenschluessel(zeile)">
                                     <td>@Achsenname(a)</td>
                                     <td>
                                         <div class="epos-flotte-suchraum-zelle">
@@ -282,6 +284,43 @@
     private FlottenAuslegungEingang Auslegung => Flotte.Auslegung ??= new FlottenAuslegungEingang();
 
     private List<FlottenAuslegungsAchse> Achsen => Auslegung.Achsen ??= new List<FlottenAuslegungsAchse>();
+
+    /// <summary>
+    /// Der <c>@@key</c> EINER Suchraumzeile — eine WERTIDENTITÄT, nie das Achsenobjekt
+    /// (Anwenderbefund <b>#245</b>, 12.09.2026: „bei jeder Tastatureingabe springt der
+    /// Fokus aus dem Feld").
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum kein <c>@@key="achse"</c>.</b> Jedes gemeldete Zeichen läuft über
+    /// <c>Geaendert</c> in <c>StromspeicherAuslegungSeite.FlotteGeschrieben</c>, und das
+    /// setzt die Flotte auf eine JSON-Tiefenkopie (<c>SpeicherAuslegungKopie.Von</c>) —
+    /// aus gutem Grund, denn vier Blätter schreiben an derselben Konfiguration.
+    /// <see cref="FlottenAuslegungsAchse"/> überschreibt <c>Equals</c> nicht; nach der
+    /// Kopie ist jede Achse also eine neue Instanz und damit ein NEUER Schlüssel. Blazor
+    /// riss die <c>&lt;tr&gt;</c> samt <c>&lt;input&gt;</c> ab und baute sie neu — mit dem
+    /// abgerissenen Feld ging der Fokus, und ein frisches <c>Zahlenfeld</c> ohne
+    /// Texterinnerung nahm dem Anwender obendrein das angefangene Trennzeichen weg
+    /// („640," wurde zu „640").</para>
+    /// <para><b>Die Kennung</b> ist dieselbe, mit der auch der Optimierer die Achse ihrer
+    /// Einheit zuordnet (<c>FlottenOptimierer</c>: <c>ErsetztEinheitId ?? Vorlage.Id</c>).
+    /// Sie überlebt jede Kopie, weil sie ein Text ist. Fehlt sie oder trägt eine zweite
+    /// Achse dieselbe, entscheidet die ZEILENNUMMER — ein doppelter Schlüssel wäre
+    /// schlimmer als ein Neuaufbau, Blazor bricht darauf ab. Das <c>id:</c> davor hält die
+    /// zwei Räume auseinander.</para>
+    /// </remarks>
+    private string Zeilenschluessel(int zeile)
+    {
+        string kennung = Achsenkennung(Achsen[zeile]);
+        if (kennung.Length > 0)
+            for (int i = 0; i < zeile; i++)
+                if (string.Equals(Achsenkennung(Achsen[i]), kennung, StringComparison.Ordinal))
+                { kennung = ""; break; }
+        return kennung.Length > 0 ? "id:" + kennung
+                                  : "#" + zeile.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string Achsenkennung(FlottenAuslegungsAchse a)
+        => (a.ErsetztEinheitId ?? a.Vorlage?.Id ?? "").Trim();
 
     private static readonly IReadOnlyList<(int Id, string Text)> Kopplungen = new[]
     {

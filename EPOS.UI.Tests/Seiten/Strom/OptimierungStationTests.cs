@@ -7,6 +7,7 @@ using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -107,6 +108,72 @@ public sealed class OptimierungStationTests : EposBunitContext
         FlottenAuslegungsAchse achse =
             Assert.Single(cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen);
         Assert.Equal(640.0, achse.KapazitaetBisKWh, 9);
+    }
+
+    // =====================================================================
+    //  #245 — der Fokus bleibt beim Tippen im Feld
+    // =====================================================================
+
+    /// <summary>
+    /// EINE EINGABE LÄSST DIE ZEILE STEHEN (Anwenderbefund <b>#245</b>, 12.09.2026:
+    /// „bei jeder Tastatureingabe springt der Fokus aus dem Feld").
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Was hier wirklich gemessen wird.</b> Nicht die DOM-Knoten — bunit liest
+    /// das Markup nach jedem Zeichenlauf, der es ÄNDERT, komplett neu ein; ein
+    /// <c>&lt;tr&gt;</c> ist danach IMMER eine andere AngleSharp-Instanz, auch wenn
+    /// Blazor die Zeile im Browser stehen ließe. Gemessen wird deshalb die Identität der
+    /// KOMPONENTEN in der Zeile: Bleibt jedes <c>Zahlenfeld</c>/<c>Ganzzahlfeld</c>
+    /// dieselbe Instanz, hat Blazor den Teilbaum behalten — und damit im Browser auch
+    /// dessen <c>&lt;input&gt;</c> samt Fokus. Wird er abgerissen, sind es neue
+    /// Instanzen.</para>
+    /// <para><b>Vor dem Fix war das so</b>: <c>&lt;tr @@key="a"&gt;</c> hing an der
+    /// <c>FlottenAuslegungsAchse</c> (Referenzvergleich), und
+    /// <c>StromspeicherAuslegungSeite.FlotteGeschrieben</c> ersetzt die Konfiguration
+    /// nach JEDEM gemeldeten Wert durch eine JSON-Tiefenkopie — neuer Schlüssel je
+    /// Tastendruck, Zeile weg. Seither steht dort eine Wertidentität
+    /// (<c>OptimierungBlock.Zeilenschluessel</c>).</para>
+    /// </remarks>
+    [Fact]
+    public void Eine_Eingabe_im_Suchraum_laesst_die_Zeile_und_ihre_Felder_stehen()
+    {
+        var cut = Station();
+
+        IReadOnlyList<object> vorher = Zeilenkomponenten(cut);
+        // Die Zeile fuehrt zwei Ganzzahlfelder (Anzahl von/bis) und sechs Zahlenfelder
+        // (Kapazitaet und Leistung, je von/bis/Schritt) — die C-Rate ist abgeleitet.
+        Assert.Equal(8, vorher.Count);
+
+        Zellenfelder(cut, spalte: 4)[1].Input("640");
+
+        IReadOnlyList<object> nachher = Zeilenkomponenten(cut);
+        Assert.Equal(vorher.Count, nachher.Count);
+        for (int i = 0; i < vorher.Count; i++) Assert.Same(vorher[i], nachher[i]);
+
+        FlottenAuslegungsAchse achse =
+            Assert.Single(cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen);
+        Assert.Equal(640.0, achse.KapazitaetBisKWh, 9);
+    }
+
+    /// <summary>
+    /// Die ANGEFANGENE Dezimalzahl bleibt stehen: Wer „640," getippt hat, findet „640,"
+    /// vor und nicht „640" — die zweite Hälfte desselben Befunds #245.
+    /// </summary>
+    /// <remarks>
+    /// „640," ist bereits eine gültige Zahl (<c>Zahlen.ZahlParsen</c> nimmt Komma wie
+    /// Punkt), der Wert 640 geht also hinaus; <c>Zahlenfeld.OnParametersSet</c> lässt den
+    /// Text dann in Ruhe, weil er denselben Wert meint. Riss die Zeile ab, entstand ein
+    /// FRISCHES Feld ohne Texterinnerung — es schrieb den Anzeigetext „640" und nahm dem
+    /// Anwender mitten in der Eingabe das Trennzeichen weg.
+    /// </remarks>
+    [Fact]
+    public void Eine_angefangene_Dezimalzahl_bleibt_im_Feld_stehen()
+    {
+        var cut = Station();
+
+        Zellenfelder(cut, spalte: 4)[1].Input("640,");
+
+        Assert.Equal("640,", Zellenfelder(cut, spalte: 4)[1].GetAttribute("value"));
     }
 
     /// <summary>
@@ -535,6 +602,16 @@ public sealed class OptimierungStationTests : EposBunitContext
         => cut.FindAll("label")
               .Single(x => x.TextContent.Contains(Resource.FLOTTE_OPT_FEINRASTER, StringComparison.Ordinal))
               .QuerySelector("input")!;
+
+    /// <summary>
+    /// Die Zahlen- und Ganzzahlfelder der Suchraumzeile als KOMPONENTENinstanzen —
+    /// die Prüfgröße des Befunds #245 (siehe dort, warum nicht die DOM-Knoten).
+    /// </summary>
+    private static IReadOnlyList<object> Zeilenkomponenten(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => cut.FindComponents<Ganzzahlfeld>().Select(x => (object)x.Instance)
+              .Concat(cut.FindComponents<Zahlenfeld>().Select(x => (object)x.Instance))
+              .ToList();
 
     /// <summary>Die Eingabefelder EINER Spalte der Suchraumtabelle.</summary>
     private static IReadOnlyList<IElement> Zellenfelder(
