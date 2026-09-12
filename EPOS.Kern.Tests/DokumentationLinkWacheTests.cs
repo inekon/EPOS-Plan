@@ -58,16 +58,26 @@ namespace EPOS.Kern.Tests
         };
 
         /// <summary>
-        /// <b>Die vorbestehenden Lücken</b> — zwölf Fundstellen in elf Paarungen (in
-        /// <c>K3_BivalenzTemperatur_Protokoll.md</c> steht dasselbe Ziel zweimal) —
+        /// <b>Die vorbestehenden Lücken</b> — siebzehn Fundstellen in sechzehn Paarungen
+        /// (in <c>K3_BivalenzTemperatur_Protokoll.md</c> steht dasselbe Ziel zweimal) —
         /// Verweise, die schon vor dem Umzug ins
         /// Leere zeigten, weil ihr Ziel aus dem Arbeitsbaum verschwunden ist: die
-        /// Referenzbasen vor R4 (nur noch in der Git-Geschichte, Anwenderentscheid
-        /// SYNC‑Q1 vom 11.09.2026) und vier WinForms-Masken, die mit den Wellen iU9‑W13
-        /// und W14a gefallen sind. Sie sind mit #241 NICHT stillschweigend entlinkt
-        /// worden — ein Protokoll darf nennen, wogegen es gemessen hat, auch wenn die
-        /// Messung heute nicht mehr im Baum liegt. Wer eine dieser Stellen tilgt, streicht
-        /// hier die Zeile mit.
+        /// Referenzbasen vor R4 (seit AUF‑Q1 vom 12.09.2026 auch nicht mehr in der
+        /// Git-Geschichte; ihre Protokolle liegen unter
+        /// <c>Dokumentation/ueberholt/Referenzbasen/</c>) und vier WinForms-Masken, die mit
+        /// den Wellen iU9‑W13 und W14a gefallen sind. Sie sind mit #241 NICHT
+        /// stillschweigend entlinkt worden — ein Protokoll darf nennen, wogegen es gemessen
+        /// hat, auch wenn die Messung heute nicht mehr im Baum liegt. Wer eine dieser
+        /// Stellen tilgt, streicht hier die Zeile mit.
+        ///
+        /// <para><b>Die fünf letzten Paarungen kamen mit #244 dazu</b> (Anwenderentscheid
+        /// AUF‑Q1, 12.09.2026): Vor dem Umschreiben der Git-Geschichte sind die Protokolle
+        /// der 24 entfernten Referenzbasen byte-gleich nach
+        /// <c>Dokumentation/ueberholt/Referenzbasen/</c> gesichert worden. Fünf von ihnen
+        /// nennen den Ablageort ihrer Etappenprotokolle von damals
+        /// (<c>WindowsFormsApplication1/Allgemein/Simulation/…</c>, zwei Konzepte in der
+        /// Repository-Wurzel) — beide Orte gibt es seit #241 nicht mehr. Byte-gleich
+        /// gesichert heißt: unverändert, auch in den Verweisen.</para>
         /// </summary>
         private static readonly (string Datei, string Ziel)[] VorbestehendeLuecken =
         {
@@ -93,6 +103,18 @@ namespace EPOS.Kern.Tests
              "../../../../WindowsFormsApplication1/Views/Pufferspeicher/Form_PufferSp_einlesen.cs"),
             ("Dokumentation/ueberholt/Protokolle/Simulation/Befund_convertTxt2Double_Dezimaltrennzeichen.md",
              "../../../../WindowsFormsApplication1/Views/Photovoltaik/Form_AdminPV.cs"),
+
+            // #244 — die byte-gleich gesicherten Protokolle der entfernten Referenzbasen.
+            ("Dokumentation/ueberholt/Referenzbasen/2026-08-28_B2/lauf_protokoll.md",
+             "../../WindowsFormsApplication1/Allgemein/Simulation/B2_KesselTemperaturmodus_Protokoll.md"),
+            ("Dokumentation/ueberholt/Referenzbasen/2026-08-29_Booster/lauf_protokoll.md",
+             "../../WindowsFormsApplication1/Allgemein/Simulation/B3_QuelleUnbegrenzt_Protokoll.md"),
+            ("Dokumentation/ueberholt/Referenzbasen/2026-08-29_E1E2/lauf_protokoll.md",
+             "../../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md"),
+            ("Dokumentation/ueberholt/Referenzbasen/2026-09-02_PA1_nach-PaketA/lauf_protokoll.md",
+             "../../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md"),
+            ("Dokumentation/ueberholt/Referenzbasen/2026-09-03_PB1_nach-PaketB/lauf_protokoll.md",
+             "../../WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md"),
         };
 
         /// <summary>Ein Markdown-Verweis <c>[Text](Ziel)</c>.</summary>

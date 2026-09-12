@@ -1,6 +1,8 @@
 ﻿# Konzept: Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg
 
-Stand 11.09.2026, gemessen am Stand `1e71d30` (`ios_migration_september`). Anlass ist die
+Stand 11.09.2026, gemessen am Commit `1e71d30` des Zweigs `ios_migration_september` — einer
+**alten Kennung** von vor dem Umschreiben der Git-Geschichte am 12.09.2026 (AUF‑Q1, #244);
+übersetzt wird sie über `Dokumentation/ueberholt/Geschichte/commit-map_2026-09-12.txt`. Anlass ist die
 Anwenderrückmeldung vom 11.09.2026 zum Bildschirmfoto des Stromspeicher-Reiters der
 Simulationsergebnisse:
 

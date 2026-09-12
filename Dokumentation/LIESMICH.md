@@ -55,7 +55,7 @@ und `README.md`.
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
 | [`aktuell/Konzept_Projektstammdaten_EPOS-Plan.md`](aktuell/Konzept_Projektstammdaten_EPOS-Plan.md) | Projektstammdaten: Datumspflege, Kunde und Bearbeiter | 2026-09-02 |
 | [`aktuell/Konzept_Projekttransfer_EPOS-Plan.md`](aktuell/Konzept_Projekttransfer_EPOS-Plan.md) | Projekttransfer: Export und Import zwischen Rechnern | 2026-08-29 |
-| [`aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md`](aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md) | Repository aufräumen: Regel, Inventar, Stufenplan — Stufe 1 umgesetzt mit #242 | 2026-09-12 |
+| [`aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md`](aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md) | Repository aufräumen: Regel, Inventar, Stufenplan — Stufe 1 mit #242, Stufe 3 mit #243, Stufe 4 (Git-Geschichte umschreiben, AUF‑Q1) mit #244 | 2026-09-12 |
 | [`aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md`](aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md) | Installationsprogramm mit Inno Setup — Freigabekette, Auslieferungsdatenbank, Versionsquelle | 2026-09-11 |
 | [`aktuell/Konzept_Simulationsablauf_EPOS-Plan.md`](aktuell/Konzept_Simulationsablauf_EPOS-Plan.md) | Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg (Stufen S1–S3) | 2026-09-12 |
 | [`aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md) | Stromspeicher-Dialoge: eine Ansicht statt Fenster in Fenster (Pakete P1–P7) | 2026-09-12 |
@@ -126,6 +126,7 @@ Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren der M
 | [`ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md`](ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md) | Umstellung auf x64 (P0–P5) | 2026-08-29 | abgeschlossen am 22.08.2026; bleibt als Rückweg-Beleg (Tag `letzter-x86-stand`) |
 | [`ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md`](ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md) | iOS-Portierung, Rev. 1 (Machbarkeit) | 2026-09-04 | ersetzt durch `aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md` |
 | [`ueberholt/Projekt-ExportImport.md`](ueberholt/Projekt-ExportImport.md) | Handover-Notiz zum `.wpx`-Export/Import | 2026-08-29 | beschreibt den Access/x86-Stand; Nachfolger `aktuell/Konzept_Projekttransfer_EPOS-Plan.md` |
+| [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) | Wegweiser des Ordners: die Protokolle der 24 entfernten Referenzbasen, Tabelle Basis → Datum → Zweck → Protokoll | 2026-09-12 | vor dem Umschreiben der Git-Geschichte gesichert (AUF‑Q1, #244); die Messdaten der Basen sind endgültig weg |
 | [`ueberholt/STAND.md`](ueberholt/STAND.md) | datierte Stände des Anwendungsprojekts (03.09.2026) | 2026-09-06 | Momentaufnahme; die laufenden Zahlen stehen in den `CLAUDE.md` und im Umsetzungskonzept |
 | [`ueberholt/Umsetzung_iU0_iU1_Nachweise.md`](ueberholt/Umsetzung_iU0_iU1_Nachweise.md) | Nachweisliste iU0/iU1/iU4–iU7 | 2026-09-04 | Abnahme abgeschlossen |
 | [`ueberholt/Umsetzung_iU8_Nachweise.md`](ueberholt/Umsetzung_iU8_Nachweise.md) | Nachweisliste iU8 (erster Blazor-Dialog) | 2026-09-05 | Abnahme abgeschlossen |
@@ -151,6 +152,53 @@ Querverweise der Protokolle untereinander kurz bleiben.
 | [`ueberholt/Protokolle/Update/`](ueberholt/Protokolle/Update/) | 2 | Anlagenzeilen-Eindeutigkeit (Schritt 17) und die E6-Quellensaat |
 | [`ueberholt/Protokolle/Bericht/`](ueberholt/Protokolle/Bericht/) | 1 | `LIESMICH_Phase1.md` — Phasen-Historie des Berichtsmoduls |
 | [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 1 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69) |
+
+### ueberholt/Referenzbasen — die Protokolle der 24 entfernten Referenzbasen
+
+Mit dem Anwenderentscheid **AUF‑Q1** vom 12.09.2026 („ausführen", Auftrag #244) ist die
+Git-Geschichte umgeschrieben worden; die 24 historischen Referenzbasen unter `Referenzlaeufe/`
+sind seither weder im Arbeitsbaum noch in der Geschichte. **Vorher gesichert** wurde je Basis ihr
+Protokoll — byte-gleich, **25 Dateien, 603 913 Byte**. Der Wegweiser des Ordners ist
+[`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) mit der Tabelle
+Basis → Datum → Zweck; hier stehen die Dateien selbst. Sie sind **byte-gleiche Kopien** — auch
+in ihren Verweisen, von denen fünf ins Leere zeigen (die Wache führt sie als vorbestehende
+Lücken).
+
+| Basis | gesichertes Protokoll |
+|---|---|
+| `2026-08-27_V0` | [`ueberholt/Referenzbasen/2026-08-27_V0/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-27_V0/lauf_protokoll.md) |
+| `2026-08-27_K1` | [`ueberholt/Referenzbasen/2026-08-27_K1/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-27_K1/lauf_protokoll.md) |
+| `2026-08-27_A1` | [`ueberholt/Referenzbasen/2026-08-27_A1/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-27_A1/lauf_protokoll.md) |
+| `2026-08-27_E1` | [`ueberholt/Referenzbasen/2026-08-27_E1/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-27_E1/lauf_protokoll.md) |
+| `2026-08-28_P1` | [`ueberholt/Referenzbasen/2026-08-28_P1/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-28_P1/lauf_protokoll.md) |
+| `2026-08-28_B2` | [`ueberholt/Referenzbasen/2026-08-28_B2/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-28_B2/lauf_protokoll.md) |
+| `2026-08-28_E2` | [`ueberholt/Referenzbasen/2026-08-28_E2/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-28_E2/lauf_protokoll.md) |
+| `2026-08-29_Booster` | [`ueberholt/Referenzbasen/2026-08-29_Booster/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-29_Booster/lauf_protokoll.md) |
+| `2026-08-29_E1E2` | [`ueberholt/Referenzbasen/2026-08-29_E1E2/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-29_E1E2/lauf_protokoll.md) |
+| `2026-08-30_B3-Kaskade` | [`ueberholt/Referenzbasen/2026-08-30_B3-Kaskade/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-08-30_B3-Kaskade/lauf_protokoll.md) |
+| `2026-09-02_PA0_vor-PaketA` | [`ueberholt/Referenzbasen/2026-09-02_PA0_vor-PaketA/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-02_PA0_vor-PaketA/lauf_protokoll.md) |
+| `2026-09-02_PA1_nach-PaketA` | [`ueberholt/Referenzbasen/2026-09-02_PA1_nach-PaketA/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) |
+| `2026-09-03_M1_nach-Merge` | [`ueberholt/Referenzbasen/2026-09-03_M1_nach-Merge/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-03_M1_nach-Merge/lauf_protokoll.md) |
+| `2026-09-03_M2_nach-Merge2` | [`ueberholt/Referenzbasen/2026-09-03_M2_nach-Merge2/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-03_M2_nach-Merge2/lauf_protokoll.md) |
+| `2026-09-03_M3_nach-Merge3` | [`ueberholt/Referenzbasen/2026-09-03_M3_nach-Merge3/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-03_M3_nach-Merge3/lauf_protokoll.md) |
+| `2026-09-03_M4_nach-Merge4` | [`ueberholt/Referenzbasen/2026-09-03_M4_nach-Merge4/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-03_M4_nach-Merge4/lauf_protokoll.md) |
+| `2026-09-03_PB1_nach-PaketB` | [`ueberholt/Referenzbasen/2026-09-03_PB1_nach-PaketB/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) |
+| `2026-09-05_M5_nach-Merge5` | [`ueberholt/Referenzbasen/2026-09-05_M5_nach-Merge5/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-05_M5_nach-Merge5/lauf_protokoll.md) |
+| `2026-09-05_R2_Zeitbasis` | [`ueberholt/Referenzbasen/2026-09-05_R2_Zeitbasis/protokoll.txt`](ueberholt/Referenzbasen/2026-09-05_R2_Zeitbasis/protokoll.txt) |
+| `2026-09-06_R3_Straenge` | [`ueberholt/Referenzbasen/2026-09-06_R3_Straenge/protokoll.txt`](ueberholt/Referenzbasen/2026-09-06_R3_Straenge/protokoll.txt) |
+| `2026-09-07_M7_nach-Merge7` | [`ueberholt/Referenzbasen/2026-09-07_M7_nach-Merge7/lauf_protokoll.md`](ueberholt/Referenzbasen/2026-09-07_M7_nach-Merge7/lauf_protokoll.md), dazu [`vergleich_M5_zu_M7.txt`](ueberholt/Referenzbasen/2026-09-07_M7_nach-Merge7/vergleich_M5_zu_M7.txt) |
+| `2026-09-07_R4_Double` | [`ueberholt/Referenzbasen/2026-09-07_R4_Double/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R4_Double/protokoll.txt) |
+| `2026-09-07_R5_Zahlenrand` | [`ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt) |
+| `2026-09-07_R6_PvKoeffizienten` | [`ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt) |
+
+### ueberholt/Geschichte — die Commit-Karte des Umschreibens
+
+Der Ordner `ueberholt/Geschichte/` führt **keine** Markdown-Papiere, sondern die eine Textdatei
+`commit-map_2026-09-12.txt`: die Zuordnung **alte → neue Commit-Kennung** aus dem Umschreiben der
+Git-Geschichte (AUF‑Q1, #244). Sie ist der Schlüssel zu jeder Kennung, die in einem Statusblock,
+Protokoll oder Konzept von **vor dem 12.09.2026** steht — solche Kennungen treffen im heutigen
+Repository nichts. Eine Indexzeile braucht die Datei nicht: Der Index führt Papiere (`.md`), und
+die Wache prüft nur diese.
 
 ---
 

@@ -129,7 +129,7 @@ Das Projekt entsteht wiederholbar aus
 Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen im
 `protokoll.txt` der Basis `2026-09-11_R7_Speicherflotte`.
 
-## Entfernte Basen (11.09.2026, SYNC‑Q1)
+## Entfernte Basen (11.09.2026 SYNC‑Q1; endgültig 12.09.2026 AUF‑Q1)
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-09-11_R7_Speicherflotte`, `Kenndaten_Test.sqlite`, `Importproben`,
@@ -140,13 +140,26 @@ hinzugefügt, 0 geändert, 7 758 gelöscht): die 24 historischen Referenzbasen u
 1 016,7 MB) und den Ordner `Referenzlaeufe/Importproben` (27 Dateien) — Letzterer ist als
 `c28ec10` wiederhergestellt, weil 13 Testklassen ihn lesen. Der Anwenderentscheid **SYNC‑Q1**
 vom 11.09.2026 lautet **„entfernt lassen"**: Kein Test, kein Gate, keine CI liest eine entfernte
-Basis, nur Kommentare und Doku nennen sie noch. Jede entfernte Datei bleibt über die
-Git-Geschichte erreichbar — Stand **`1e71d30`**, der letzte Commit vor der Löschung:
+Basis, nur Kommentare und Doku nennen sie noch.
 
-```bash
-git show 1e71d30:Referenzlaeufe/<Basis>/protokoll.txt      # eine einzelne Datei
-git checkout 1e71d30 -- Referenzlaeufe/<Basis>              # ganzer Ordner
-```
+**Seit dem Anwenderentscheid AUF‑Q1 vom 12.09.2026 („ausführen", Auftrag #244) sind die Basen
+auch aus der Git-Geschichte verschwunden.** Das Umschreiben hat ihre Ordner aus jedem Commit
+entfernt; der frühere Abrufweg über den Stand vor der Löschung gibt es nicht mehr, und keine
+Commit-Kennung führt zu ihnen zurück. **Vorher gesichert** wurden die **Protokolle** aller
+24 Basen — byte-gleich, 25 Dateien, 603 913 Byte:
+
+> **[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)**
+> — je Basis ihr `lauf_protokoll.md` beziehungsweise `protokoll.txt` (bei
+> `2026-09-07_M7_nach-Merge7` zusätzlich `vergleich_M5_zu_M7.txt`). Dort steht, was gemessen
+> wurde, gegen welche Vorgängerbasis, welche Abweichung gewollt war und welche Gegenprobe sie
+> belegt.
+
+**Die Messdaten sind endgültig weg**: die rund **7 700 CSV-Dateien** der 24 Basen (etwa
+1 016,7 MB Ganglinien und Kennzahlen) sind weder im Arbeitsbaum noch in der Geschichte. Eine
+alte Zahl steht nur noch im Protokoll; ein Vergleich gegen eine dieser Basen ist nicht mehr
+möglich. **Gerechnet wird ausschließlich gegen die aktuelle Basis
+`2026-09-11_R7_Speicherflotte`** — sie ist die einzige, die im Arbeitsbaum liegt, und sie ist
+es, gegen die Gate und CI prüfen.
 
 | Ordner | Datum | Zweck |
 |---|---|---|
@@ -1071,7 +1084,7 @@ Clipping, Degradation).
 > Wechselrichterdaten **+3,37 %** (reiner Hay-Davies-Gewinn) und EVQ **62,97 %**. Alle
 > Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
 > abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert) und im
 > [Paket-B-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
 >
 > **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
@@ -1122,7 +1135,7 @@ PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austaus
 > Speicherfüllstand bis −2,3 %, (4) temperaturabhängige Größen der Wärmeseite.
 > **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
 > außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert) und im
 > [Paket-A-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
 >
 > **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
@@ -1154,7 +1167,7 @@ damit die einzige Quelle der Ganglinien im UTC-Raster.
 > lief während der Entnahme). **Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich.** Gegen
 > `2026-08-30_B3-Kaskade` waren acht Projekte byte-gleich; die Abweichungen bei 1030 und 1039
 > sind Datenänderungen des Anwenders. Vollständige Begründung im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-09-02_PA0_vor-PaketA/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
 
 ### Frühere Fassung: `2026-08-30_B3-Kaskade`
 
@@ -1189,7 +1202,7 @@ damit erledigt — es gilt wieder **eine** Basis.
 > `--ohne BHKWModul[0].Hilfsenergie,BHKWModul[1].Hilfsenergie,HeizkesselModul[0].Hilfsenergie`
 > meldet **elf Projekte PASS** und FAIL nur in 1030 und 1042 — der Rechenkern ist
 > unverändert. Zahlen und Zuordnung im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-08-30_B3-Kaskade/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
 >
 > **ACHTUNG bei 1030:** Das zweite Modul ist jetzt „EC-POWER XRGI 9" (9 kW el) statt
 > „Agenitor 306 (250 kw.el) Gas". Die Pfade bleiben abgedeckt (beide Module Erdgas, beide
@@ -1233,7 +1246,7 @@ EIN Stand.
 > und **„Booster-Lesepunkt: DAVOR"** (Default aus Paket B2). Gegen `2026-08-28_B2`:
 > **319/332 byte-gleich, alle 13 Abweichungen in 1042** (gewollt — Booster-JAZ
 > 4,60 → 3,05, die 45-°C-Fiktion ist weg; Zahlen im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`)).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-08-29_Booster/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert)).
 > **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei `projekt`-Läufe auf EINER festen
 > Quellkopie, Datenstand 29.08.2026 00:29).
 >
@@ -1270,7 +1283,7 @@ EIN Stand.
 > → „Wärmepumpe WG - BHKW", WP-Gewerk ohne Modul), **1040, 1041, 1042 gelöscht**.
 > Arbeitskopie migriert **54 → 57**; **Selbstvergleich 234/234 byte-/MD5-gleich**;
 > `pruefen` plausibel. Details im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-08-29_E1E2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
 > **ACHTUNG: Mit der Löschung von 1040–1042 und dem 1039-Umbau verliert dieser
 > Datenbestand die vier Konzept-11.1-Abdeckungen** (Mehrgebäude, zwei Puffer je
 > Kanal/Parallelverbund, Prozesswärme mit eigenem Puffer, Booster-Kette) — ihre
@@ -1294,7 +1307,7 @@ EIN Stand.
 > `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19). Die
 > Booster-Temperaturkopplung war in dieser Basis **nicht scharf** (an Anlage 14818
 > stand noch `WQ_Unbegrenzt = True`, konstant 45 °C) — Details im
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-08-28_B2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
 >
 > **Die feste Projektliste (dreizehn IDs):**
 >
@@ -1312,7 +1325,7 @@ EIN Stand.
 > A/B byte-gleich belegt; alle CSV-Unterschiede zur P1-Basis sind die 1042-Datenänderung.
 > **Selbstvergleich 332/332 byte-gleich** (zwei `projekt`-Läufe auf EINER festen
 > Quellkopie, Datenstand 28.08.2026 09:05). Details:
-> Laufprotokoll der Basis (entfernt, Stand `1e71d30`).
+> [Laufprotokoll der Basis](../Dokumentation/ueberholt/Referenzbasen/2026-08-28_E2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
 >
 > **Die feste Projektliste (dreizehn IDs):**
 >
@@ -1568,7 +1581,7 @@ dreizehn Projekte, 329 CSV) — die Basis des Meilensteins Z3; P1 war gegen sie 
 `2026-08-27_A1/` bleibt als **älterer Stand** liegen (Codestand A1, Schemastand 51,
 dreizehn Projekte, 329 CSV) — die erste Basis mit den vier Konzept-11.1-Projekten,
 Meilenstein „ein Rechenweg". A/B-Zuordnung des Altpfad-Abrisses im
-Laufprotokoll (entfernt, Stand `1e71d30`); 1042 dort noch mit drei WP-Modulen und
+[Laufprotokoll](../Dokumentation/ueberholt/Referenzbasen/2026-08-27_A1/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert); 1042 dort noch mit drei WP-Modulen und
 Kombi-Speicher 1054195 (vor der Datenänderung des Anwenders).
 
 `2026-08-27_K1/` bleibt als **älterer Stand** liegen (Codestand K1 auf `Pufferspeicher`,

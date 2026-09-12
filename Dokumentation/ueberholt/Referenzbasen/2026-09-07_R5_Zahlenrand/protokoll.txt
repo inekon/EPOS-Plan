@@ -1,0 +1,322 @@
+﻿# Referenzlauf (Kern) vom 07.09.2026 14:04
+
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-07_R5_Zahlenrand
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045
+Dauer:         00:00:04
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394
+Zielordner:    Referenzlaeufe/2026-09-07_R5_Zahlenrand
+
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394/Referenzlaeufe/Kenndaten_Test.sqlite
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (66 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/agent-af4a38846c1540394/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+24 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (12):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 29 CSV-Dateien, 99 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 21 CSV-Dateien, 101 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: 21 CSV-Dateien, 124 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 22 CSV-Dateien, 151 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 25 CSV-Dateien, 141 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 26 CSV-Dateien, 167 Skalare.
+  OK - 26 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 160 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 25 CSV-Dateien, 154 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 27 CSV-Dateien, 155 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 34 CSV-Dateien, 202 Skalare.
+  OK - 34 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+
+Fertig. Gesamtdauer 00:00:04
+Erfolgreich: 12 von 12
+```
+
+
+## Anlass: W8-O-5d-Q1/Q2 (Zahlenrand, keine int-Abschneidung) + Em-9.8 (zehn Emissionsskalare)
+
+Drei Anwenderentscheide vom 07.09.2026, alle "Empfehlung":
+
+  W8-O-5d-Q1  Die Betriebsschwellen, die bei der Umstellung auf double am letzten
+              Bit entschieden, tragen einen Zahlenrand.
+  W8-O-5d-Q2  "keine Treue zur alten DLL": Die drei Physik-Funktionen des
+              BHKW-Plan-Ports geben double zurueck, die (int)-Abschneidung faellt.
+  Em-9.8      Die zehn Emissionsgroessen der Simulation kommen in den Export
+              (Q1 = Z1 jetzt, Q2 = zehn Skalare mit CO, Q3 = Einheit im Namen,
+              Q4 = Einfrierregel angenommen).
+
+Codestand: der Zweig w143-r5 auf ios_migration (67cda00), Commits 8cbbff6 und
+880a9de.
+
+### Was genau anders gerechnet wird
+
+1. RECHENRAND (neu, EPOS.Kern/Allgemein/Simulation/Rechenrand.cs)
+
+       Rand = 1e-9 + 1e-12 * |Schwelle|
+       Rechenrand.SchwelleErreicht(wert, schwelle)  =>  wert >= schwelle - Rand
+
+   absolut UND relativ, weil die Schwellen Energien in kWh tragen und mehrere
+   Groessenordnungen spannen. Der Rand bleibt vier Groessenordnungen unter der
+   relativen Vergleichstoleranz dieser Suite (1e-4). Angewandt an
+   SimulationPufferspeicher.HystereseFortschreiben (Abschaltschwelle; die
+   Einschaltschwelle bleibt bewusst ohne Rand) und an beiden Stufen von
+   SimulationBHKW.Motorlauf_Waermegefuehrt.
+
+2. KEINE ABSCHNEIDUNG MEHR in BhkwPlan.TaeglHeizlastWG, SolareGewinneC und
+   SpezWaermeverlusteC. Drei Raster fallen damit weg:
+
+       Q_Tag  [Wh/Tag]  ganze Wattstunden, NACH der Flaechenskalierung
+       L      [W/K]     GANZE W/K - hier wirkte die Abschneidung doppelt: die
+                        Funktion gab (int)(L*100), und der Aufrufer teilte das
+                        int GANZZAHLIG durch 100
+       P_sol  [W]       Hundertstel Watt
+
+   Das erste Raster ist im alten Stand nachweisbar: In Projekt 1041 sind 257 der
+   365 Tagessummen von waermebedarf_gebaeude in R4 EXAKT ganzzahlig (1007: 281),
+   in R5 keine einzige.
+
+3. ZEHN SKALARE im Export (Em.Kessel.Co2T/So2Kg/NoxKg/CoKg/StaubKg und dieselben
+   fuenf fuer Em.Bhkw.), nur wenn die Stufe gelaufen ist. Die Zahl der Skalare
+   waechst von 1 722 auf 1 792; die Zahl der CSV-Dateien bleibt 312.
+
+   | Projekt | Skalare vorher | nachher | | Projekt | vorher | nachher |
+   |---|---:|---:|---|---|---:|---:|
+   | 1007 |  99 |  99 | | 1030 | 150 | 160 |
+   | 1008 | 101 | 101 | | 1039 | 149 | 154 |
+   | 1017 | 114 | 124 | | 1040 | 164 | 169 |
+   | 1018 | 141 | 151 | | 1041 | 150 | 155 |
+   | 1023 | 136 | 141 | | 1042 | 197 | 202 |
+   | 1024 | 157 | 167 | | 1045 | 164 | 169 |
+
+   1007 und 1008 fahren weder Kessel- noch BHKW-Stufe und bekommen deshalb
+   keinen neuen Schluessel - so will es Kapitel 11.2.2 des Emissionskonzepts.
+
+
+## Unterschied zur Vorgaengerbasis 2026-09-07_R4_Double
+
+Toleranz iF15 (rel 1e-4 ab Betrag 1, sonst abs 0,01), gemessen mit
+`EPOS.Referenzlauf vergleich ... --ohne <die zehn Em-Schluessel>`. Der Ausschluss
+ist noetig, weil der Vergleich einen Schluessel, den nur der neue Lauf traegt,
+als "Eintrag nur im Vergleichslauf" meldet - er stellt hier die Frage "sind die
+ALTEN Werte unveraendert?".
+
+| Projekt | Werte | Abw. ueber Toleranz | groesste rel. | groesste abs. |
+|---|---|---|---|---|
+| 1007 | 324 219 | 78 561 | 1,00e+00 (heizstab[168] 0 -> 0,00208 kWh)          | 234 242 Wh (Jahressumme waermebedarf_gebaeude) |
+| 1008 | 227 861 | 43 740 | 1,00e+00 (puffer_soc[7] 0 -> 5,060 kWh)            |  63 183 Wh (dieselbe Summe) |
+| 1017 | 254 154 | 48 481 | 1,00e+00 (bhkw_restwaerme[1368] 0 -> 0,00173 kWh)  |  56 560 Wh (dieselbe Summe) |
+| 1018 | 236 661 | 52 380 | 9,98e-01 (kessel_restwaerme[8687] 0,0179 -> 9,401) |  12 142 Wh (dieselbe Summe) |
+| 1023 | 262 936 | 44 700 | 1,00e+00 (heizstab[1728] 0 -> 0,328 kWh)           |  66 814 Wh (dieselbe Summe) |
+| 1024 | 271 717 | 52 571 | 1,00e+00 (heizstab[176] 0 -> 0,00203 kWh)          |  66 814 Wh (dieselbe Summe) |
+| 1030 | 236 670 |      0 | -                                                 |  0 - BYTE-GLEICH in 21 von 22 Dateien |
+| 1039 | 262 949 | 66 548 | 9,87e-01 (puffer_soc[7824] 32,93 -> 0,425 kWh)     | 126 917 Wh (dieselbe Summe) |
+| 1040 | 306 764 | 82 247 | 1,00e+00 (kessel_leistung[410] 0 -> 0,00272 kWh)   |  41 210 Wh (dieselbe Summe) |
+| 1041 | 280 470 | 38 457 | 1,17e-01 (waermebedarf_gebaeude[2919] 1 101,94 -> 1 247,44 Wh) | 41 210 Wh (dieselbe Summe) |
+| 1042 | 341 837 | 67 592 | 1,00e+00 (kessel_leistung[233] 0 -> 0,00269 kWh)   |  41 210 Wh (dieselbe Summe) |
+| 1045 | 306 764 | 83 044 | 1,00e+00 (kessel_leistung[410] 0 -> 0,00272 kWh)   |  41 210 Wh (dieselbe Summe) |
+
+Elf der zwoelf Projekte weichen ab. Das ist ein BEFUND, kein Fehler, und er hat
+genau eine Ursache - Q2:
+
+DIE DREI GROESSTEN ABWEICHUNGEN UND IHRE ERKLAERUNG
+
+1. DIE JAHRESSUMME DES GEBAEUDEWAERMEBEDARFS - die groesste ABSOLUTE Abweichung
+   in jedem der elf Projekte, 1007 mit 234 242 Wh (52 837 499 -> 53 071 741 Wh,
+   +0,44 %). Sie ist unmittelbar das gefallene Raster. Der spezifische
+   Waermeverlustkoeffizient L wurde zu einer GANZEN Zahl abgeschnitten:
+
+       Projekt 1007 (Wohnflaeche 74 m2):  L = 194,5722 -> 194 W/K   (-0,29 %)
+                                           bei -5 degC 189,7159 -> 189 (-0,38 %)
+       Projekt 1041 (Wohnflaeche 201 m2): L = 811,0302 -> 811 W/K   (-0,004 %)
+                                           bei -5 degC 794,9083 -> 794 (-0,11 %)
+
+   Je KLEINER das Gebaeude, desto groesser der relative Fehler - und genau so
+   verteilen sich die Abweichungen: 1007 verschiebt sich um +4,43e-3 relativ,
+   1041 um +6,95e-4. Die Spannweite ueber alle zwoelf Projekte reicht von
+   -1,15e-3 (1008) bis +4,43e-3 (1007); das Vorzeichen ist nicht durchweg positiv,
+   weil ein groesseres L den Raum auch schneller auskuehlen laesst und damit die
+   Verzweigung "Raum waermer als Sollwert -> diese Stunde zaehlt nicht" bewegt.
+
+2. DIE TAGESSUMME AN EINEM MILDEN TAG - die groesste RELATIVE Abweichung auf
+   einem Paar, das auf beiden Seiten eine echte Zahl traegt: Projekt 1041,
+   2. Mai, 31 484 -> 35 641 Wh (+13,2 %); die Stunde 2919 darin 1 101,94 ->
+   1 247,44 Wh. Der Verstaerker ist das instationaere 24-Stunden-Modell: Es
+   traegt die Raumtemperatur ueber die TAGE hinweg fort und enthaelt die
+   diskrete Verzweigung "Sollwert < Vortemperatur -> keine Heizung, diese Stunde
+   geht nicht in die Tagessumme ein". An einem milden Tag sitzt der Raum genau
+   auf dieser Kante, und eine Aenderung von 0,3 % an L kippt ganze Stunden hinein
+   oder heraus. Ueber das Jahr mittelt sich das weg: In 1041 liegt der Median der
+   Tagesabweichung bei 7,0e-4, das 90-%-Quantil bei 1,3e-3, und nur ZWEI von 326
+   Bedarfstagen reissen 1 %.
+
+3. DIE UMGESCHLAGENEN FAHRWEISEN - 1 961 Stellen im ganzen Satz, an denen eine
+   Reihe auf der einen Seite genau 0 traegt und auf der anderen nicht
+   (rel. 1,00e+00): puffer_soc, kessel_leistung, heizstab, bhkw_restwaerme,
+   kessel_restwaerme. Das sind Stunden, in denen der verschobene Bedarf eine
+   Schwelle anders trifft - die Speicherhysterese oder die Volllastgrenze des
+   BHKW. Sie sind FOLGE der verschobenen Eingangsgroesse, nicht des Zahlenrands:
+   Gegen 859 745 geaenderte Paare mit beidseitig echten Zahlen sind sie 0,2 %.
+
+### Der Gegenbeweis: Projekt 1030
+
+1030 ist das einzige Projekt OHNE Gebaeudewaermebedarf (die Reihe
+waermebedarf_gebaeude ist durchgaengig 0; der Bedarf kommt aus einer Ganglinie).
+Damit hat Q2 dort keinen Angriffspunkt - und genau so faellt der Vergleich aus:
+21 der 22 Dateien sind BYTE-GLEICH zu R4, die 22. (aggregate.csv) unterscheidet
+sich in GENAU den zehn neuen Emissionszeilen und in keiner anderen. Der
+Zahlenrand allein bewegt also kein Projekt, dessen Vergleiche nicht wirklich auf
+der Kante sitzen.
+
+### Was aus den zwei Verschiebungen der R4-Basis geworden ist
+
+PROJEKT 1024 (R4-Protokoll: "BHKW +11,2 %, Waermepumpe -14,4 %, Kessel -10,8 %").
+Die Verschiebung BLEIBT - der Zahlenrand nimmt sie nicht zurueck, er macht sie
+eindeutig. Jahressummen in kWh:
+
+    Groesse              R3 (float)   R4 (double)   R5 (Zahlenrand)   R5 gegen R4
+    bhkw_waerme          161 415,46   179 470,12    179 519,32        +2,74e-4
+    wp_produktion         83 120,82    71 186,81     71 189,68        +4,02e-5
+    kessel_leistung       53 179,43    47 431,77     47 444,30        +2,64e-4
+    heizstab              13 494,38    13 223,07     13 213,97        -6,88e-4
+    waermebedarf         389 729,72   389 729,71    389 796,53        +1,71e-4
+
+Der Sprung liegt zwischen R3 und R4 (der Umstellung auf double); von R4 auf R5
+bewegt sich nur noch, was der um 1,7e-4 gewachsene Bedarf mitbringt. Das Projekt
+sitzt weiterhin auf der Kante zwischen zwei gleichwertigen Fahrweisen - aber es
+faellt nicht mehr am letzten Bit auf die eine oder die andere Seite.
+
+PROJEKT 1018 (R4-Protokoll: "verschoben hat sich allein die Aufteilung des
+Puffers zwischen Umsatz und Durchfluss"). Auch diese Aufteilung BLEIBT bei der
+R4-Lage, und der Zahlenrand ist der Grund, warum sie jetzt zwingend ist:
+
+    Groesse                R3 (float)   R4 (double)   R5 (Zahlenrand)
+    Puffer.Ladung_gesamt    15 465,56    33 744,81     33 505,33
+    Durchsatz_Geladen       32 571,87    14 292,62     14 544,23
+    Summe                   48 037,43    48 037,43     48 049,56
+
+Die Summe war in R3 und R4 auf den Cent gleich; in R5 wachsen beide zusammen um
+12,13 kWh - genau um den Betrag, um den der Waermebedarf des Projekts gestiegen
+ist (46 869,30 -> 46 881,44 kWh). Die AUFTEILUNG ist damit die des R4-Standes,
+und sie ist es jetzt aus einem Grund und nicht aus Zufall: Die Ladung faehrt den
+Speicher auf genau Q_max * SchwelleAus, und der Zahlenrand sorgt dafuer, dass die
+Hysterese das auch dann als "erreicht" liest, wenn die Summe ihren Zielwert im
+letzten Bit verfehlt. Der Fuellstand geht in den UMSATZ, nicht in den Durchfluss.
+
+### Welcher Stand richtig ist: der neue
+
+Beide Entscheide zeigen in dieselbe Richtung. Q2 nimmt eine Quantisierung heraus,
+die nie fachlich gewollt war, sondern die Rueckgabekonvention einer
+Borland-C-Bibliothek von 1995 nachbildete - ein Waermeverlustkoeffizient von
+194,5722 W/K ist nicht 194 W/K. Q1 nimmt die Zufaelligkeit aus zwei Vergleichen,
+die an der Kante das Ergebnis ueber Stunden weitertrugen. Was bleibt, ist ein
+Lauf, der auf denselben Eingangsdaten zweimal dasselbe rechnet - und der es aus
+Gruenden tut, die man aufschreiben kann.
+
+
+## Determinismus
+
+Zweiter Lauf desselben Standes gegen diese Basis: 12/12 BYTE-GLEICH (`diff -rq`
+ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS
+(3 313 072 Werte - 70 mehr als in R4, das sind genau die zehn neuen Skalare
+ueber die zehn Projekte mit Kessel- bzw. BHKW-Stufe).
+
+
+## Laufzeit
+
+Gesamtdauer 00:00:04 (R4-Stand auf demselben Laeufer: 00:00:03). Der Zahlenrand
+kostet zwei Additionen je Vergleich; der Unterschied liegt im Rauschen des
+Laeufers.

@@ -4182,7 +4182,8 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > jede Stelle mit `git grep` belegt (31 Dateien, 70,2 MB): `.work/` — Einmal-Prüfprogramm `RealFleetHarness`, Prüfbericht und die
 > 70-MB-Kopie der Produktivdatenbank vom 11.09. (30 Projekte mit Kundennamen); das ist die **Rücknahme von SP‑O‑9** („.work behalten",
 > 11.09.2026) durch den Anwender, `.work/` steht seither in der `.gitignore`, die zwei Verweise (Fehleranalyse des Referenzpakets,
-> Mehrspeicher-Doku) tragen „nicht mehr im Repository; Stand 4c3b5210 in der Git-Geschichte" —; `DB-Backup/` (16 Git-LFS-Zeiger auf
+> Mehrspeicher-Doku) tragen „nicht mehr im Repository; Stand 4c3b5210 in der Git-Geschichte" (seit AUF‑Q1 am 12.09.2026 auch dort nicht
+> mehr; mit #244 umformuliert) —; `DB-Backup/` (16 Git-LFS-Zeiger auf
 > Access-Sicherungen, per `.gitignore` seit dem 02.09. ausgeschlossen, Objekte lagen nie auf dem Server); vier `.bak`-Kopien unter
 > `WindowsFormsApplication1`; `sqlite-probe/` (Spike vor der SQLite-Umstellung, drei Links in Index und `BETRIEB_SQLITE` umformuliert);
 > vier `Lizenzserver/*.original-2026-08-19`; `Reporting_Geruest.zip`. Verschoben: der Hydraulik-Entwurf nach `Mockups/`, die README des
