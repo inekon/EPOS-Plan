@@ -3962,6 +3962,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Wiki-Quelle Simulation (Upload durch die Orchestrierung). **Offen:** Windows-Sichtprüfung des Blocks.
 > Gate sept42 auf `2f57bcc`: Kern 2 685, UI 3 904, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#231/#232/#232b (12.09.2026, Anwenderentscheid „#231: Empfehlung umsetzen") — Race der prozessweiten Kulturpinnung: CI ohne parallele
+> Sammlungen, Kulturweitergabe an die Worker, UI-Kultur auf dem Testfaden.** **Teil a (#231a, `e491b5a`, Merge `a63d230`, direkt gepusht —
+> CI-Konfiguration und Doku, das Gate prüft Workflows nicht):** `windows.yml` und `kern.yml` fahren die Kern-slnf mit
+> `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2` wie das Gate; Nachweis Windows-Lauf 322 (6 min 29 s, nicht langsamer
+> als parallel) und Kern-Lauf 377 grün; `KiKern.Tests` hatte `DisableTestParallelization` schon. **Teil b (#232, `1472b6a`, Merge `6085a09`):**
+> `SpeicherEngine/Kulturweitergabe.cs` (264 Z.; Abhängigkeitsrichtung `EPOS.Kern → SpeicherEngine`, deshalb dort, eine Klasse für alle) —
+> `Erfassen`, `For`/`ForEach`, `Starten`/`StartenAsync`, `Kulturstand.Halter` setzt beide Werte auf dem Arbeitsfaden und stellt zurück, kein
+> `AsyncLocal`, kein Griff an `DefaultThreadCurrent*`; zwölf Stellen umgestellt (das `Parallel.For` der Rastersuche, drei `Task.Run` im KI-Teil
+> des Kerns, acht in den Hüllen von `EPOS.UI.Daten`), `FlottenOptimierer` rechnet sequenziell (nichts zu tun), die zwei `Task.Run` in
+> `EPOS.UI` bleiben außerhalb (Bedienfaden der WebView, begründet im Wächterkopf); Wächter `ParallelitaetWacheTests` (6 Fälle: keine nackte
+> Parallelität in Kern, Engine, KiKern, EPOS.UI.Daten); Belegtest `KulturweitergabeTests` (9 Fälle) mit Testdoppel-`TaskScheduler` auf drei
+> en-US-Fäden und Aufrufer `de-AT`: über die Hülle deutsch, mit nacktem `Parallel.For` englisch; Referenzlauf 1030/1046 byte-gleich.
+> **Messbefund, der #230 korrigiert:** ein AUSDRÜCKLICH auf dem Faden gesetzter Wert fließt seit .NET Core über den `ExecutionContext` in
+> `Task.Run`, `Parallel.For` und neue Threads mit — „Aufrufer gepinnt, Worker nicht" stimmte so nicht; die echte Lücke war der Aufrufer, der
+> selbst nichts setzt und seine UI-Kultur aus dem veränderlichen Vorgabewert bezieht. Genau das waren die wandernden Fälle aus Lauf 319:
+> `SpeicherOptimierungCtrlTests` und `SpeicherOptimierungLastspitzeTests` pinnten nur `CurrentCulture`, `PeakShavingBildTests` nichts.
+> **Rest (#232b, `aa668a4`):** die drei Klassen pinnen `CurrentCulture` und `CurrentUICulture` THREADGEBUNDEN (kein `DefaultThreadCurrent*`,
+> nicht die #230-Vorrichtung, die prozessweit setzt); Messung: EPOS.Kern.Tests parallel unter en-US 10/10 grün (2 700 Fälle) — vorher 2 von 10 rot.
+> `EPOS.Kern/CLAUDE.md` trägt Regel und Messung, `Doku_Mehrspeicher_Konzept_und_Umsetzung.md` den Satz zur Rastersuche.
+> **Windows-Abnahme #229:** Anwender 12.09.2026 „Programmsymbol ok" (nach Neubau; Taskleiste, Fenster, Explorer).
+> Gate sept43 auf `d5a3a29`: Kern 2 700, UI 3 904, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
