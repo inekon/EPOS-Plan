@@ -25,7 +25,7 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `VDI-3805-Daten/` | Auslieferung der Herstellerdaten (Setup-Komponente, W6‑O‑9), CEC-Listen, bslib | 186 MB | Setup, Importe, 40 Verweise | bleibt |
 | `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte), `EposSqliteMigrator/` | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
-| `BHKWPlan/`, `PV-Konzept_PV-Now/`, `Quellen/`, `VALERI/`, `Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt (Stufe 2: unter `Quellen/` sammeln, Vorschlag) |
+| `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
 | `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt |
 | `.work/` | Arbeitsordner der Windows-Seite: Einmal-Prüfprogramm, Bericht, **70-MB-Kopie der Produktivdatenbank** | 71 MB | nichts (Bericht liegt seit #241 in `Dokumentation/ueberholt`) | **geht (Stufe 1)** — Anwenderentscheid 12.09.2026 „Lösche .work", Rücknahme von SP‑O‑9 |
@@ -49,7 +49,7 @@ Verweise kennzeichnen; **Wache `RepositoryOrdnungWacheTests`** (kein `*.bak`, `*
 `.work/`, kein `DB-Backup/`, `*.sqlite` nur auf der Weißliste `Referenzlaeufe/Kenndaten_Test.sqlite`); Aufräumregel als Abschnitt in der
 Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten mehr im Baum.
 
-**Stufe 3 — umgesetzt #243 (12.09.2026).** Der entschiedene Punkt der Stufe 2:
+**Stufe 3 — umgesetzt #243 (12.09.2026).** Die zwei entschiedenen Punkte der Stufe 2:
 
 - **Git LFS (AUF‑Q2).** Die `.gitattributes` trägt vier neue Regeln — `Referenzlaeufe/Kenndaten_Test.sqlite` und
   `VDI-3805-Daten/**/*.zip|*.vdi|*.VDI`; die vier Access-Zeilen sind gefallen (seit #242 gibt es keine `.accdb` mehr im Repository).
@@ -60,6 +60,11 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
   einpackt) und prüfen je Job, dass keine Zeigerdatei liegengeblieben ist. Denselben Schutz tragen die drei Öffnungsstellen im Code
   (`EPOS.Kern.Tests/TestDatenbank.cs`, `Referenzlauf/DbUmgebung.cs`, `Werkzeuge/Auslieferungsvorlage/Argumente.cs`) und zwei neue Fälle
   der Wache. Einrichtung und Bandbreitenregel: `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS".
+- **Fremdquellen (AUF‑Q3).** `BHKWPlan/`, `PV-Konzept_PV-Now/` und `VALERI/` liegen als `Quellen/BHKWPlan/`, `Quellen/PV-Now/` und
+  `Quellen/VALERI/` neben den Emissionsfaktoren — elf Dateien, reine Verschiebung mit `git mv`, kein Inhalt geändert. Nachgezogen sind
+  die Pfadangaben in vier Konzepten (Kosten/Energieträger, Wirtschaftlichkeit konsolidiert, Photovoltaik-Wirtschaftlichkeit und dieses);
+  die übrigen Fundstellen nennen nur Dateinamen („`VALERI_Vorlage_V7.xlsx`") oder einen fremden Ablageort (`Z:\…\BHKWPlan\…`) und
+  bleiben, wie sie sind. `Mockups/` ist unberührt die eine Adresse für Entwürfe.
 
 Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
 (`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
@@ -78,9 +83,9 @@ Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTest
   Zu wissen: GitHub gibt frei 1 GB LFS-Speicher und 1 GB Bandbreite je Monat — jede neue Fassung der Testdatenbank kostet 68 MB Speicher,
   jeder Abruf ohne Cache 68 MB Bandbreite; bei Bedarf ein Datenpaket (50 GB / 5 US-$ je Monat). Jeder Rechner braucht einmal
   `git lfs install`, sonst kommen Zeigerdateien an (Git für Windows bringt LFS mit).
-- **Fremdquellen sammeln — entschieden 12.09.2026 (AUF‑Q3 „Empfehlung umsetzen"), Umsetzung #243.** `BHKWPlan/`, `PV-Konzept_PV-Now/`,
-  `VALERI/` ziehen unter `Quellen/` (dort liegen die Emissionsfaktoren schon), `Mockups/` bleibt die eine Adresse für Entwürfe. Reine
-  Verschiebung, Verweise nachziehen.
+- **Fremdquellen sammeln — entschieden 12.09.2026 (AUF‑Q3 „Empfehlung umsetzen"), umgesetzt #243 (Stufe 3).** `BHKWPlan/`,
+  `PV-Konzept_PV-Now/` und `VALERI/` sind unter `Quellen/` gezogen (dort lagen die Emissionsfaktoren schon), `Mockups/` bleibt die eine
+  Adresse für Entwürfe. Reine Verschiebung, Verweise nachgezogen.
 - **`WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs` und `EposSqliteMigrator/`.** Die letzten Access-Bezüge im Code;
   nach der Anwenderregel „nichts zu Access" prüfen, ob das Hauswerkzeug noch gebraucht wird (BETRIEB_SQLITE 1.1/7 sagt: für die Übernahme
   eines Altbestands). Entscheid: behalten, solange ein Altbestand denkbar ist.
@@ -99,5 +104,5 @@ Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTest
 | AUF‑E‑2 (12.09.2026) | Fernzweige löschen | vorerst nicht |
 | AUF‑Q1 | Git-Geschichte umschreiben (Klongröße)? | offen |
 | AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | **entschieden 12.09.2026** („Nehme VDI-Archive und Testdatenbanken in git-lfs"), **umgesetzt #243** |
-| AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um") |
+| AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um"), **umgesetzt #243** |
 | AUF‑Q4 | `retention-days` 14 in den Workflows? | offen |
