@@ -3772,7 +3772,7 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Text (`SimulationSeite` gehört #221; Nachrüstung danach), Stromtabelle Erzeugung/Anteil (Eigenverbrauch und Einspeisung je Erzeuger führt kein
 > DTO), Restzeile Wärme ohne Kanalaufteilung, Zusatzzeile „davon Eigenverbrauch der Wärmeerzeuger". 22 Ressourcen, 3 verwaiste entfernt,
 > Designer wiederholbar; 29 neue Fälle; Konzept Simulationsablauf Abschnitt 8; Wiki-Quelle Simulation (Upload durch die Orchestrierung).
-> **Offen:** Windows-Abnahme; `BildKuchen()` ohne Aufrufer (Aufräumschritt); Sprung aus dem 0‑%-Hinweis nach ① nach #221.
+> **Offen:** Windows-Abnahme; Sprung aus dem 0‑%-Hinweis nach ① nach #221. (`BildKuchen()` ohne Aufrufer ist mit **#240** erledigt — Pfad, Bildschlüssel und Testzeile entfernt, der Renderer bleibt für den Variantenbericht.)
 > Gate sept30 auf `d84af29`: Kern 2 670, UI 3 779, Engine 408, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 53,
 > Referenzlauf 5/5 byte-gleich gegen R7.
 >

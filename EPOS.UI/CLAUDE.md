@@ -475,6 +475,19 @@ entgegen — sie ist damit austauschbar.
   `.epos-zr-zelle .epos-eingabe` trägt seither dieselben zwei Zeilen (`min-width: 0`,
   `width: 100%`), sonst quillt die Einheit eines Zahlenfelds in die Nachbarspalte — dort
   Satz → Betrag der Kostenverwaltung.
+- **Die ZELLENPOLSTERUNG des Hauses steht doppelt im Blatt, und die zweite Fassung wiegt
+  absichtlich mehr** (Auftrag **#240**, Nebenbefund aus #235): `.epos-raster th,
+  .epos-raster td { padding: 4px 8px }` wiegt (0,1,1) und hat in einem QuickGrid-Raster
+  **nie** gegolten — QuickGrid bringt sein eigenes, scoped Blatt mit, und
+  `.quickgrid[theme=default] > tbody > tr > td` wiegt (0,2,3); gemessen standen die Zellen
+  mit **1,6 px** statt 4 px. Deshalb steht die Regel ein zweites Mal als
+  `table.epos-raster.quickgrid > tbody > tr > td` — (0,2,4), also unabhängig von der
+  Ladereihenfolge der zwei Blätter, und **ohne `!important`**, damit ein Wirt mit eigener
+  Spaltenklasse weiter überschreiben kann. Dieselbe Anhebung braucht der Rückweg
+  `.epos-raster--bearbeitbar` (0 px senkrecht), sonst bekäme eine Zelle mit Bedienelement
+  ihre 4 px zurück. **Folge fürs Zeilenmaß:** Die natürliche Höhe einer Katalogzeile geht
+  von 48,2 auf 53,0 px — genau auf `Raster.ZEILENHOEHE`; `ItemSize` bleibt 53, und das ist
+  der Beleg, nicht der Zufall (im Browser gemessen, `Proben/Rasterprobe` Fall F).
 - **Die gewählte `<option>` trägt `selected`, und jede `<option>` trägt ein `@key`**
   (`Standards/Auswahlfeld.razor`, seit W6‑B‑4). Ein `<select>` hat im DOM kein
   `value`-Attribut; Blazor merkt sich den Wert beim Einhängen und setzt `element.value`
@@ -633,10 +646,13 @@ Platzhalterzeilen („…" in jeder Zelle) und die Tabelle trägt `loading`, was
   `Raster.Zeilenhoehe` ist das Maß, mit dem `Virtualize` rechnet: Es teilt die Höhe des
   Rollbehälters dadurch und setzt danach seine zwei Abstandshalter. #212 leitete daraus
   53 px ab (44 px Berührungsziel + 2 × 4 px Zellenpolsterung + 1 px Trennlinie) — **die
-  Rechnung stimmte nie**: Die Polsterung kommt von QuickGrid
+  Rechnung stimmte damals nicht**: Die Polsterung kam von QuickGrid
   (`.quickgrid[theme=default] > tbody > tr > td`, Spezifität 0‑2‑3 gegen 0‑1‑1 von
-  `.epos-raster td`) und beträgt 1,6 px; die Zeile war 48,2 px hoch. Seit #235 geht dieselbe
+  `.epos-raster td`) und betrug 1,6 px; die Zeile war 48,2 px hoch. Seit #235 geht dieselbe
   Zahl als `ItemSize` **und** als `--epos-rasterzeile` ins Stilblatt, das sie jeder Zeile gibt.
+  **Seit #240 stimmt auch die Rechnung wieder** — die Hausregel wiegt jetzt mehr als
+  QuickGrids (siehe die Regel oben), die Polsterung steht bei 4 px, und die natürliche Zeile
+  misst 53,0 px.
 
 Zwei Pfähle dazu, damit niemand sie neu suchen muss: Der **Behälter** war in Ordnung
 (`.epos-raster-huelle--hoch`, `max-height: 420px`, `overflow-y: auto` — der nächste

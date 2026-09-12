@@ -523,6 +523,11 @@ public class RasterTests : BunitContext
     /// entscheidende Teil: In ihr steht kein Bedienelement, gemessen war sie 21,9 px
     /// hoch gegen 48,2 px der echten Zeile. Solange geladen wird, schrumpfte der
     /// gezeichnete Block damit auf 45 % dessen, was <c>Virtualize</c> annimmt.
+    ///
+    /// <para><b>Und die ZELLENPOLSTERUNG des Hauses gilt seit Auftrag #240 auch im
+    /// QuickGrid</b> — ohne die Anhebung auf (0,2,4) gewänne dessen eigene (0,2,3)-Regel
+    /// mit 0,1rem, und die echte Zeile fiele wieder auf 48,2 px unter das gesetzte Maß.
+    /// Die Höhe eines <c>tr</c> ist ein Mindestmaß, die Polsterung nicht.</para>
     /// </summary>
     [Fact]
     public void Das_Stilblatt_setzt_das_Zeilenmass_der_virtualisierten_Liste()
@@ -537,6 +542,13 @@ public class RasterTests : BunitContext
 
         // Der Rueckfall im Blatt und die Vorgabe im Programm sind DIESELBE Zahl.
         Assert.Equal(53f, Raster<Zeile>.ZEILENHOEHE);
+
+        // Auftrag #240: die Hausregel gegen QuickGrids eigene Zellenpolsterung -
+        // und daneben der Rueckweg fuer die BEARBEITBARE Zeile, die eng bleiben muss.
+        Assert.Contains("table.epos-raster.quickgrid > tbody > tr > td {\n    padding: 4px 8px;\n}",
+                        blatt);
+        Assert.Contains("table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {\n    padding: 0 8px;\n}",
+                        blatt);
     }
 
     /// <summary>Das Stilblatt der Bibliothek, aus dem Quellbaum gelesen.</summary>

@@ -47,6 +47,7 @@
 
         internal static string StammIdName => MyResource.Resource.KI_REG_STAMM_ID_NAME;
         internal static string BezeichnerName => MyResource.Resource.KI_REG_BEZEICHNER_NAME;
+        internal static string QuellprojektName => MyResource.Resource.KI_REG_QUELLPROJEKT_NAME;
         internal static string VarianteIdName => MyResource.Resource.KI_REG_VARIANTE_ID_NAME;
         internal static string PositionsIdName => MyResource.Resource.KI_REG_POSITIONS_ID_NAME;
         internal static string BetragName => MyResource.Resource.KI_REG_BETRAG_NAME;
@@ -160,6 +161,7 @@
 
         internal static string ErlStammId => MyResource.Resource.KI_REG_ERL_STAMM_ID;
         internal static string ErlBezeichner => MyResource.Resource.KI_REG_ERL_BEZEICHNER;
+        internal static string ErlQuellprojekt => MyResource.Resource.KI_REG_ERL_QUELLPROJEKT;
         internal static string ErlVarianteId => MyResource.Resource.KI_REG_ERL_VARIANTE_ID;
         internal static string ErlPositionsId => MyResource.Resource.KI_REG_ERL_POSITIONS_ID;
         internal static string ErlBetrag => MyResource.Resource.KI_REG_ERL_BETRAG;
@@ -171,6 +173,7 @@
         internal static string WirkungKostenpositionSetzen => MyResource.Resource.KI_REG_WIRKUNG_KOSTENPOSITION_SETZEN;
 
         internal static string VorschauVarianteAnlegen => MyResource.Resource.KI_REG_VORSCHAU_VARIANTE_ANLEGEN;
+        internal static string VorschauVarianteQuelle => MyResource.Resource.KI_REG_VORSCHAU_VARIANTE_QUELLE;
         internal static string VorschauSpeichervariante => MyResource.Resource.KI_REG_VORSCHAU_SPEICHERVARIANTE;
         internal static string VorschauKostenposition => MyResource.Resource.KI_REG_VORSCHAU_KOSTENPOSITION;
 
@@ -226,6 +229,7 @@
 
         internal static string KeinStammprojekt => MyResource.Resource.KI_REG_KEIN_STAMMPROJEKT;
         internal static string BezeichnerLeer => MyResource.Resource.KI_REG_BEZEICHNER_LEER;
+        internal static string QuelleIstStamm => MyResource.Resource.KI_REG_QUELLE_IST_STAMM;
         internal static string VarianteAngelegt => MyResource.Resource.KI_REG_VARIANTE_ANGELEGT;
         internal static string VarianteFehlgeschlagen => MyResource.Resource.KI_REG_VARIANTE_FEHLGESCHLAGEN;
 

@@ -47,13 +47,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt aus einem Stammprojekt eine Variante an. Andockpunkt
-        /// <c>VariantenCtrl.AnlegenAusStamm(int, string, string, out string)</c>
-        /// (<c>Controller\VariantenCtrl.cs:105</c>), der intern
-        /// <c>ProjektDuplizierenCtrl.Duplizieren</c> nutzt.
+        /// <c>VariantenCtrl.AnlegenAusStamm(int, string, string, int, out string)</c>,
+        /// der intern <c>ProjektDuplizierenCtrl.Duplizieren</c> nutzt.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// NICHT umkehrbar: <c>VariantenCtrl.LoescheVariante</c> steht ausdruecklich nicht
         /// im Register (Fachkonzept 5.4). Das sagt die Bestaetigung so.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Projekte, zwei Rollen</b> (Auftrag <b>#240</b>, nach #237). Der
+        /// PFLICHTparameter <c>stammprojekt</c> gibt Namen und Gruppenzugehoerigkeit,
+        /// der OPTIONALE <c>quellprojekt</c> den INHALT. Ohne ihn bleibt alles wie
+        /// bisher - er ist genau der Sonderfall „Quelle = Stamm", den die
+        /// Bestandsmethode selbst faehrt. Der Weg gibt es damit dreimal mit EINER
+        /// Regel: Kopfband, Menuepunkt „Als Variante speichern…" und hier.
+        /// </para>
+        /// <para>
+        /// <b>Die Namensregel steht im Kern</b> (<c>VariantenCtrl.Zielname</c>). Bis
+        /// #240 stand hier ein Spiegel davon, damit die Vorschau den Namen nennen
+        /// konnte, der hinterher wirklich dasteht; seit #237 gibt es die Regel als
+        /// oeffentliche Methode, und ein Spiegel waere seither nur noch eine zweite
+        /// Fassung, die auseinanderlaufen kann.
+        /// </para>
         /// </remarks>
         internal static KiAktion VarianteAnlegen()
         {
@@ -70,7 +86,13 @@ namespace WindowsFormsApplication1
                                              anzeigename: KiAktionsTexte.StammIdName),
                     new KiParameter("bezeichner", KiParameterTyp.Text,
                                     KiAktionsTexte.ErlBezeichner,
-                                    anzeigename: KiAktionsTexte.BezeichnerName, maxLaenge: 60)
+                                    anzeigename: KiAktionsTexte.BezeichnerName, maxLaenge: 60),
+                    // OPTIONAL (Auftrag #240): woher der INHALT kommt. Ohne Angabe wie
+                    // bisher aus dem Stamm - derselbe Sonderfall, den auch
+                    // VariantenCtrl.AnlegenAusStamm mit idQuelle = idStamm faehrt.
+                    KiHilfe.ProjektParameter(KiAktionsTexte.ErlQuellprojekt, pflicht: false,
+                                             name: "quellprojekt",
+                                             anzeigename: KiAktionsTexte.QuellprojektName)
                 },
                 vorbedingung: a => VarianteVorbedingung(a),
                 vorschau: a =>
@@ -78,11 +100,27 @@ namespace WindowsFormsApplication1
                     int idStamm = KiHilfe.ProjektId(a, "stammprojekt");
                     string stammName = KiHilfe.ProjektName(idStamm);
                     string bezeichner = a.Text("bezeichner").Trim();
-                    int anlagen = Skalar("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", idStamm);
 
-                    return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.VorschauVarianteAnlegen,
-                                         stammName, idStamm, bezeichner,
-                                         NeuerProjektname(stammName, bezeichner), anlagen);
+                    // Die Anlagenzahl gehoert zum INHALT, und der kommt seit #240
+                    // wahlweise aus einem anderen Projekt.
+                    int idQuelle = Quellprojekt(a, idStamm);
+                    int idInhalt = idQuelle > 0 ? idQuelle : idStamm;
+                    int anlagen = Skalar("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", idInhalt);
+
+                    // DIE Namensregel steht im Kern (VariantenCtrl.Zielname) und wird
+                    // hier gerufen, nicht nachgebaut (Auftrag #240): Die Vorschau muss
+                    // den Namen nennen, der hinterher wirklich dasteht.
+                    string ziel = new VariantenCtrl().Zielname(stammName, bezeichner);
+
+                    string satz = string.Format(CultureInfo.CurrentCulture,
+                                                KiAktionsTexte.VorschauVarianteAnlegen,
+                                                stammName, idStamm, bezeichner, ziel, anlagen);
+
+                    if (idQuelle > 0)
+                        satz += " " + string.Format(CultureInfo.CurrentCulture,
+                                                    KiAktionsTexte.VorschauVarianteQuelle,
+                                                    KiHilfe.ProjektName(idQuelle), idQuelle);
+                    return satz;
                 },
                 wirkung: KiAktionsTexte.WirkungVarianteAnlegen,
                 umkehrbar: false,
@@ -91,10 +129,12 @@ namespace WindowsFormsApplication1
                     int idStamm = KiHilfe.ProjektId(a, "stammprojekt");
                     string stammName = KiHilfe.ProjektName(idStamm);
                     string bezeichner = a.Text("bezeichner").Trim();
+                    int idQuelle = Quellprojekt(a, idStamm);
 
                     var ctrl = new VariantenCtrl();
                     string fehler;
-                    int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner, out fehler);
+                    int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner,
+                                                      idQuelle > 0 ? idQuelle : idStamm, out fehler);
 
                     if (neueId <= 0)
                         return KiErgebnis.Fehlgeschlagen(
@@ -138,32 +178,39 @@ namespace WindowsFormsApplication1
                 return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.KeinStammprojekt,
                                      idStamm, stammRef);
 
+            // Das QUELLPROJEKT ist freiwillig - steht es aber da, muss es aufloesbar
+            // sein und darf nicht der Stamm selbst sein (Auftrag #240): "Inhalt aus dem
+            // Stamm" ist genau der Fall OHNE Angabe, und zwei Wege fuer dieselbe Sache
+            // waeren zwei Wege, die auseinanderlaufen koennen.
+            if (QuelleGenannt(a))
+            {
+                string quellgrund = KiHilfe.ProjektMussAufloesbarSein(a, "quellprojekt");
+                if (quellgrund != null) return quellgrund;
+
+                if (KiHilfe.ProjektId(a, "quellprojekt") == idStamm)
+                    return string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.QuelleIstStamm,
+                                         KiHilfe.ProjektName(idStamm), idStamm);
+            }
+
             return KiSchreibschutz.Gesperrt("Tab_Projekt", "ID", idStamm);
         }
 
-        /// <summary>
-        /// Der Projektname, den <c>VariantenCtrl.AnlegenAusStamm</c> vergeben WUERDE.
-        /// </summary>
-        /// <remarks>
-        /// Das ist bewusst ein Spiegel der Namensbildung aus
-        /// <c>Controller\VariantenCtrl.cs:113-118</c> und keine zweite Regel: Die Vorschau
-        /// muss den Namen nennen, der hinterher wirklich dasteht, sonst bestaetigt der
-        /// Anwender etwas anderes, als er bekommt. Der Aktionsharnisch vergleicht Vorschau
-        /// und Ergebnis Zeichen fuer Zeichen - laufen die beiden Stellen auseinander,
-        /// faellt es dort auf.
-        /// </remarks>
-        private static string NeuerProjektname(string stammName, string bezeichner)
+        /// <summary>Steht im Aufruf ueberhaupt ein Quellprojekt? (Auftrag #240)</summary>
+        private static bool QuelleGenannt(KiAufruf a)
         {
-            var ctrl = new VariantenCtrl();
-            string basisName = (stammName ?? "") + " - " + (bezeichner ?? "");
-            string neuerName = basisName;
-            int n = 2;
-            try
-            {
-                while (ctrl.ProjektnameExistiert(neuerName)) { neuerName = basisName + " (" + n + ")"; n++; }
-            }
-            catch { return basisName; }
-            return neuerName;
+            return (a.Text("quellprojekt") ?? "").Trim().Length > 0;
+        }
+
+        /// <summary>
+        /// Das gewaehlte QUELLPROJEKT (Auftrag #240) oder <c>0</c>, wenn keines genannt
+        /// ist beziehungsweise der Stamm selbst genannt wurde. <c>0</c> bedeutet fuer
+        /// <c>VariantenCtrl.AnlegenAusStamm</c> „der Stamm" - der bisherige Weg.
+        /// </summary>
+        private static int Quellprojekt(KiAufruf a, int idStamm)
+        {
+            if (!QuelleGenannt(a)) return 0;
+            int id = KiHilfe.ProjektId(a, "quellprojekt");
+            return id > 0 && id != idStamm ? id : 0;
         }
 
         // =====================================================================

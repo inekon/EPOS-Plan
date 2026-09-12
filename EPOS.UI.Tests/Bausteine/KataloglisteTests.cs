@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -663,7 +663,7 @@ public class KataloglisteTests : EposBunitContext
     /// rechnete das Maß aus dem Hausstilblatt nach: 44 px Berührungsziel
     /// (<c>--epos-touchziel</c>) + 2 × 4 px Zellenpolsterung (<c>.epos-raster td</c>)
     /// + 1 px Trennlinie = 53. Die Polsterung kommt aber gar nicht von dort: QuickGrid
-    /// setzt sie selbst (<c>.quickgrid[theme=default] &gt; tbody &gt; tr &gt; td</c>,
+    /// setzte sie selbst (<c>.quickgrid[theme=default] &gt; tbody &gt; tr &gt; td</c>,
     /// Spezifität 0‑2‑3 gegen 0‑1‑1) auf 0,1rem = 1,6 px. Die echte Zeile war
     /// <b>48,2 px</b> hoch. Die Rechnung stimmte also nie — bunit hat keinen
     /// Kaskadenrechner und konnte es nicht merken.</para>
@@ -672,14 +672,30 @@ public class KataloglisteTests : EposBunitContext
     /// <c>Virtualize</c> UND als <c>--epos-rasterzeile</c> ins Stilblatt, das sie jeder
     /// Zeile des virtualisierten Rasters gibt (<c>RasterTests</c> hält die Regel). Hier
     /// wird geprüft, was diese Liste beiträgt: Sie reicht Raster das eine Maß, und es
-    /// liegt ÜBER der natürlichen Höhe ihrer Zeile — <c>height</c> an einer
+    /// liegt NICHT UNTER der natürlichen Höhe ihrer Zeile — <c>height</c> an einer
     /// Tabellenzeile ist ein Mindestmaß, ein zu kleiner Wert wüchse einfach mit.</para>
+    ///
+    /// <para><b>Seit Auftrag #240 stimmt die Rechnung von #212 wieder</b> — nicht,
+    /// weil sie richtig gewesen wäre, sondern weil die Hausregel jetzt WIRKT: Das
+    /// Stilblatt hebt ihre Spezifität auf (0,2,4) über die von QuickGrid
+    /// (<c>table.epos-raster.quickgrid &gt; tbody &gt; tr &gt; td</c>), die Polsterung
+    /// steht wieder bei 4 px, und die natürliche Zeile misst 44 + 2 × 4 + 1 = 53,0 px
+    /// (im Browser nachgemessen, <c>Proben/Rasterprobe</c> Fall F). Das gesetzte Maß
+    /// ist damit GLEICH der natürlichen Höhe — genau richtig, denn ein Mindestmaß darf
+    /// erreicht werden; es darf nur nicht darunter liegen.</para>
     /// </summary>
     [Fact]
     public void Das_Zeilenmass_der_Virtualisierung_liegt_ueber_der_natuerlichen_Hoehe()
     {
         Assert.Contains("--epos-touchziel: 44px", Stilblatt());
         Assert.Contains("border-bottom: 1px solid", Zellenregel());
+        Assert.Contains("padding: 4px 8px", Zellenregel());
+
+        // Auftrag #240: Die Hausregel gilt AUCH im QuickGrid - ohne diese Anhebung
+        // gewaenne QuickGrids eigene (0,2,3)-Regel, und die Zeile faende sich mit
+        // 1,6 px Polsterung und 48,2 px Hoehe unter dem gesetzten Mass wieder.
+        Assert.Contains("table.epos-raster.quickgrid > tbody > tr > td {\n    padding: 4px 8px;\n}",
+                        Stilblatt().Replace("\r\n", "\n"));
 
         var cut = Render<Katalogliste>(p => p
             .Add(x => x.Profil, Profil())
@@ -692,10 +708,11 @@ public class KataloglisteTests : EposBunitContext
         // Die EINE Zahl des Hauses - nicht eine zweite daneben.
         Assert.Equal(EPOS.UI.Standards.Raster<Katalogfilterzeile>.ZEILENHOEHE, mass);
 
-        // 44 px Knopf + 2 x 1,6 px Polsterung (QuickGrid) + 1 px Linie = 48,2 px.
-        Assert.True(mass > 44f + 2 * 1.6f + 1f,
-                    $"Das gesetzte Zeilenmass {mass} px liegt nicht ueber der natuerlichen " +
-                    "Hoehe von 48,2 px - dann waechst die Zeile ueber das Mass hinaus, und " +
+        // 44 px Knopf + 2 x 4 px Polsterung (Hausregel, seit #240 wirksam)
+        // + 1 px Linie = 53,0 px - im Browser nachgemessen (Rasterprobe, Fall F).
+        Assert.True(mass >= 44f + 2 * 4f + 1f,
+                    $"Das gesetzte Zeilenmass {mass} px liegt UNTER der natuerlichen " +
+                    "Hoehe von 53,0 px - dann waechst die Zeile ueber das Mass hinaus, und " +
                     "die zwei Sichtbarkeitsmelder von Virtualize streiten wieder (#235).");
     }
 

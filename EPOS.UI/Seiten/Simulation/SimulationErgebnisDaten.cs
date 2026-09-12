@@ -682,7 +682,6 @@ public static class Bilder
 {
     public const string BedarfWaerme = "BEDARF_WAERME";
     public const string BedarfStrom = "BEDARF_STROM";
-    public const string UebersichtKuchen = "UEBERSICHT_KUCHEN";
     public const string RingWaerme = "RING_WAERME";
     public const string RingStrom = "RING_STROM";
     public const string WpProduktion = "WP_PRODUKTION";

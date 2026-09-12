@@ -7746,6 +7746,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_REG_BEZEICHNER_NAME" xml:space="preserve">
     <value>Bezeichner</value>
   </data>
+  <data name="KI_REG_QUELLPROJEKT_NAME" xml:space="preserve">
+    <value>Quellprojekt</value>
+  </data>
   <data name="KI_REG_VARIANTE_ID_NAME" xml:space="preserve">
     <value>Speichervariante</value>
   </data>
@@ -7760,6 +7763,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name der neuen Variante, z. B. „Wärmepumpe statt Kessel“. Der Projektname entsteht daraus als „Stamm - Bezeichner“.</value>
+  </data>
+  <data name="KI_REG_ERL_QUELLPROJEKT" xml:space="preserve">
+    <value>Freiwillig: das Projekt, dessen INHALT die Variante bekommen soll. Ohne Angabe wird das Stammprojekt kopiert. Der Name der Variante bleibt in jedem Fall „Stamm - Bezeichner“, und sie hängt am Stammprojekt.</value>
   </data>
   <data name="KI_REG_ERL_VARIANTE_ID" xml:space="preserve">
     <value>Betriebsart der Speichervariante, wie sie speichervarianten_auflisten zeigt.</value>
@@ -7792,6 +7798,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Ich würde zum Stammprojekt „{0}“ (ID {1}) die Variante „{2}“ anlegen.
 Das neue Projekt hieße „{3}“ und wäre eine vollständige Kopie ({4} Energieanlagen).</value>
   </data>
+  <data name="KI_REG_VORSCHAU_VARIANTE_QUELLE" xml:space="preserve">
+    <value>Der Inhalt käme aus Projekt „{0}“ (ID {1}).</value>
+  </data>
   <data name="KI_REG_VORSCHAU_SPEICHERVARIANTE" xml:space="preserve">
     <value>Aktiv ist zurzeit Speichervariante {0}.
 Ich würde Speichervariante {1} (Energieanlage {2}) aktiv setzen; die übrigen {4} Varianten des Projekts {3} werden zurückgesetzt.</value>
@@ -7805,6 +7814,9 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   </data>
   <data name="KI_REG_BEZEICHNER_LEER" xml:space="preserve">
     <value>Für die Variante fehlt ein Bezeichner.</value>
+  </data>
+  <data name="KI_REG_QUELLE_IST_STAMM" xml:space="preserve">
+    <value>Das Quellprojekt „{0}“ (ID {1}) ist das Stammprojekt selbst. Ohne Quellprojekt wird ohnehin der Stamm kopiert — bitte die Angabe weglassen oder ein anderes Projekt nennen.</value>
   </data>
   <data name="KI_REG_VARIANTE_ANGELEGT" xml:space="preserve">
     <value>Variante „{0}“ angelegt: neues Projekt {1} („{2}“).</value>

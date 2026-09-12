@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,15 +9,17 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// Der Wächter über die PARALLELITÄT der vier plattformfreien Projekte
-    /// (Auftrag #232, Anwenderentscheid „#231: Empfehlung umsetzen" vom 12.09.2026).
+    /// Der Wächter über die PARALLELITÄT der fünf plattformfreien Projekte
+    /// (Auftrag #232, Anwenderentscheid „#231: Empfehlung umsetzen" vom 12.09.2026;
+    /// <c>EPOS.UI</c> kam mit Auftrag <b>#240</b> dazu).
     ///
     /// <para><b>Die Regel.</b> In <c>EPOS.Kern</c>, <c>SpeicherEngine</c>,
-    /// <c>KiKern</c> und <c>EPOS.UI.Daten</c> entsteht ein Arbeitsfaden ausschließlich
-    /// über <c>SpeicherEngine.Kulturweitergabe</c>. Ein nacktes <c>Parallel.For</c>,
-    /// <c>Parallel.ForEach</c>, <c>Parallel.Invoke</c>, <c>Task.Run</c>,
-    /// <c>new Thread</c>, <c>ThreadPool.QueueUserWorkItem</c> oder <c>AsParallel()</c>
-    /// fällt hier auf.</para>
+    /// <c>KiKern</c>, <c>EPOS.UI.Daten</c> und <c>EPOS.UI</c> entsteht ein Arbeitsfaden
+    /// ausschließlich über <c>SpeicherEngine.Kulturweitergabe</c>. Ein nacktes
+    /// <c>Parallel.For</c>, <c>Parallel.ForEach</c>, <c>Parallel.Invoke</c>,
+    /// <c>Task.Run</c>, <c>new Thread</c>, <c>ThreadPool.QueueUserWorkItem</c> oder
+    /// <c>AsParallel()</c> fällt hier auf — in <c>.cs</c> UND in <c>.razor</c>,
+    /// denn in <c>EPOS.UI</c> steht der Programmtext im <c>@code</c>-Block.</para>
     ///
     /// <para><b>Warum.</b> Ein Faden ohne eigene Kultur liest bei JEDEM Zugriff den
     /// prozessweiten <c>CultureInfo.DefaultThreadCurrentCulture</c> beziehungsweise
@@ -30,20 +32,33 @@ namespace EPOS.Kern.Tests
     /// sie je Arbeitspaket auf den Arbeitsfaden; der Beleg dafür steht in
     /// <see cref="KulturweitergabeTests"/>.</para>
     ///
-    /// <para><b>Was der Wächter NICHT prüft.</b> <c>EPOS.UI</c> steht bewusst nicht im
-    /// Bestand: Dort läuft alles am Bedienfaden der WebView, deren Sprache die Schale
-    /// prozessweit setzt; die zwei <c>Task.Run</c> des Projekttransfers sind
-    /// Oberfläche, nicht Rechenkern. Ebenso draußen sind die Testprojekte — die
-    /// Gegenprobe in <see cref="KulturweitergabeTests"/> BRAUCHT ein nacktes
-    /// <c>Parallel.For</c>, sonst bewiese sie nichts.</para>
+    /// <para><b>Warum <c>EPOS.UI</c> mit #240 dazukam.</b> #232 hatte es ausgenommen,
+    /// mit der Begründung „dort läuft alles am Bedienfaden der WebView" — die zwei
+    /// <c>Task.Run</c> des <c>ProjektTransferDialog</c> widerlegten sie: Export und
+    /// Import lesen und schreiben die ganze Datenbank und laufen minutenlang im
+    /// Hintergrund, also genau auf einem Faden ohne eigene Kultur. Sie gehen seither
+    /// über <c>Kulturweitergabe.Starten</c>, und die Ausnahme ist gefallen; die
+    /// Trefferliste ist leer.</para>
+    ///
+    /// <para><b>Was der Wächter NICHT prüft.</b> Die Testprojekte — die Gegenprobe in
+    /// <see cref="KulturweitergabeTests"/> BRAUCHT ein nacktes <c>Parallel.For</c>,
+    /// sonst bewiese sie nichts.</para>
     /// </summary>
     public class ParallelitaetWacheTests
     {
-        /// <summary>Die vier Projekte, über die der Wächter läuft.</summary>
+        /// <summary>Die fünf Projekte, über die der Wächter läuft.</summary>
         private static readonly string[] Projekte =
         {
-            "EPOS.Kern", "SpeicherEngine", "KiKern", "EPOS.UI.Daten",
+            "EPOS.Kern", "SpeicherEngine", "KiKern", "EPOS.UI.Daten", "EPOS.UI",
         };
+
+        /// <summary>
+        /// Die Dateiarten mit Programmtext. <c>.razor</c> gehört dazu, seit
+        /// <c>EPOS.UI</c> im Bestand steht (Auftrag #240): Dort steht der
+        /// Programmtext im <c>@code</c>-Block, und genau darin standen die zwei
+        /// <c>Task.Run</c> des Projekttransfers.
+        /// </summary>
+        private static readonly string[] Endungen = { "*.cs", "*.razor" };
 
         /// <summary>
         /// Die einzige erlaubte Ausnahme: die Vorrichtung selbst. Ihre nackten Aufrufe
@@ -169,11 +184,19 @@ namespace EPOS.Kern.Tests
                             "Aus " + projekt + " steht keine Datei im geprueften Bestand.");
             }
 
-            // Drei bekannte umgestellte Stellen - sie belegen, dass der Bestand die
-            // wirklich betroffenen Dateien enthaelt.
+            // Vier bekannte umgestellte Stellen - sie belegen, dass der Bestand die
+            // wirklich betroffenen Dateien enthaelt. Die vierte ist eine RAZOR-Datei
+            // (Auftrag #240): Ohne sie liefe der Waechter ueber EPOS.UI, ohne den
+            // Programmtext dieses Projekts je zu sehen.
             Assert.Contains(dateien, d => Path.GetFileName(d) == "SpeicherOptimierer.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "KiAusfuehrung.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "StromspeicherAuslegungHuelle.cs");
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "ProjektTransferDialog.razor");
+
+            // Und der Bestand traegt wirklich Razor-Dateien in nennenswerter Zahl.
+            Assert.True(dateien.Count(d => d.EndsWith(".razor", StringComparison.Ordinal)) > 100,
+                        "Der gepruefte Bestand fuehrt kaum Razor-Dateien - dann prueft der " +
+                        "Waechter in EPOS.UI praktisch nichts (Auftrag #240).");
         }
 
         /// <summary>
@@ -248,7 +271,10 @@ namespace EPOS.Kern.Tests
                 || s.StartsWith("@*", StringComparison.Ordinal);
         }
 
-        /// <summary>Alle <c>.cs</c>-Dateien der vier Projekte, ohne Bauordner und ohne die Vorrichtung.</summary>
+        /// <summary>
+        /// Alle <c>.cs</c>- und <c>.razor</c>-Dateien der fünf Projekte, ohne Bauordner
+        /// und ohne die Vorrichtung.
+        /// </summary>
         private static string[] Quelldateien()
         {
             string wurzel = Arbeitsbaum();
@@ -258,7 +284,8 @@ namespace EPOS.Kern.Tests
             {
                 string ordner = Path.Combine(wurzel, projekt);
                 Assert.True(Directory.Exists(ordner), "Ordner nicht gefunden: " + ordner);
-                dateien.AddRange(Directory.GetFiles(ordner, "*.cs", SearchOption.AllDirectories));
+                foreach (string endung in Endungen)
+                    dateien.AddRange(Directory.GetFiles(ordner, endung, SearchOption.AllDirectories));
             }
 
             return dateien

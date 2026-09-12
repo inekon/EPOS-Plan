@@ -235,7 +235,10 @@ namespace EPOS.Kern.Tests
             byte[] zweites = dienste.Bild(new Bildauftrag(Bilder.BedarfWaerme));
             Assert.Equal(erstes, zweites);
 
-            byte[] uebersicht = dienste.Bild(new Bildauftrag(Bilder.UebersichtKuchen));
+            // Seit Auftrag #240 ist die Torte der Uebersicht gefallen (kein Anforderer
+            // mehr, seit #222 zeichnet die Uebersicht den RING). Geprueft wird deshalb
+            // der Ring - dasselbe, was die Seite wirklich anfordert.
+            byte[] uebersicht = dienste.Bild(new Bildauftrag(Bilder.RingWaerme));
             Assert.NotNull(uebersicht);
             Assert.True(uebersicht.Length > 0);
         }

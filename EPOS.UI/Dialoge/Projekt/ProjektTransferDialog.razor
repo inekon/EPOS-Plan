@@ -27,12 +27,23 @@
    der Schalter "Sicherungskopie" gar nicht erst.
 
    KEINE DATENBANK (Hausregel EPOS.UI): Projektliste, Varianten, Vorschau, Export
-   und Import kommen als ProjektTransferDaten herein. *@
+   und Import kommen als ProjektTransferDaten herein.
+
+   ZWEI LAEUFE IM HINTERGRUND, BEIDE IN DER KULTURVORRICHTUNG (Auftrag #240,
+   Vorrichtung aus #232). Export und Import lesen und schreiben die ganze
+   Datenbank; auf dem Bedienfaden staende die WebView fuer Minuten. Sie laufen
+   deshalb ueber SpeicherEngine.Kulturweitergabe.Starten statt ueber ein nacktes
+   Task.Run - ein Faden ohne eigene Kultur liest den VERAENDERLICHEN
+   prozessweiten Vorgabewert, und ein Sprachwechsel mitten im Lauf brachte
+   Etikett und Zahlenbild auseinander (Befund #231). Der Waechter
+   EPOS.Kern.Tests/ParallelitaetWacheTests liest seit #240 auch dieses Projekt
+   - samt .razor. *@
 
 @namespace EPOS.UI.Dialoge.Projekt
 
 @using EPOS.UI.Bausteine
 @using EPOS.UI.Dienste
+@using SpeicherEngine
 @using WindowsFormsApplication1
 
 <div class="epos-dialog epos-projekttransfer" tabindex="-1" @onkeydown="BeiTaste">
@@ -353,7 +364,7 @@
         // ProjektTransferDialogTests: "... Tab_Projekt" statt "Export abgeschlossen.").
         // Nach dem Lauf werden Fortschrittsmeldungen deshalb verworfen.
         var melder = new Progress<string>(t => { if (!_laeuft) return; _status = t; StateHasChanged(); });
-        bool ok = await Task.Run(() => Daten.Exportieren(_projekt, varianten, ziel!, melder));
+        bool ok = await Kulturweitergabe.Starten(() => Daten.Exportieren(_projekt, varianten, ziel!, melder));
 
         _laeuft = false;
         if (!ok) { Melden(StatusExportFehler, WarnStufe.Fehler); return; }
@@ -430,7 +441,7 @@
         // ProjektTransferDialogTests: "... Tab_Projekt" statt "Export abgeschlossen.").
         // Nach dem Lauf werden Fortschrittsmeldungen deshalb verworfen.
         var melder = new Progress<string>(t => { if (!_laeuft) return; _status = t; StateHasChanged(); });
-        ImportErgebnis e = await Task.Run(() => Daten.Importieren(_paketpfad, name ?? "", _modus, melder));
+        ImportErgebnis e = await Kulturweitergabe.Starten(() => Daten.Importieren(_paketpfad, name ?? "", _modus, melder));
 
         _laeuft = false;
 

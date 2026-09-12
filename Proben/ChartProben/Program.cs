@@ -381,6 +381,38 @@ namespace ChartProben
                             "Leistung [kW]", ChartRenderer.Achse.Monate, false,
                             b2Speicher, "Speicherinhalt [kWh]"));
 
+            // --- #240: ERZEUGERSTAPEL MIT VIELEN REIHEN -------------------------------
+            //
+            // Neun Legendeneintraege mit langen Namen passen nicht in eine Zeile
+            // (Anschlag 100 px, Umbruch bei 1 210 px). Die Legende bricht um, und bis
+            // #240 lag die zweite Zeile auf dem y-Achsentitel, der 24 px ueber der
+            // Zeichenflaeche steht. Seither beginnt die Zeichenflaeche UNTER der
+            // gemessenen Legendenhoehe - dasselbe Muster wie in Verlaufsbild
+            // (W11b-B-28).
+            string[] LANGE_NAMEN =
+            {
+                "Waermepumpe Nord", "Waermepumpe Sued", "Heizstab Technikraum",
+                "Heizkessel Altbau", "Heizkessel Neubau", "Solarthermie Dach",
+                "BHKW Grundlast", "BHKW Spitzenlast", "Fernwaerme Uebergabe"
+            };
+            string[] KURZE_NAMEN = { "A", "B", "C", "D", "E", "F", "G", "H", "I" };
+
+            Pruefe(ziel, "erzeugerstapel_neun_reihen", 1240, 560,
+                   new[] { SKColors.Orange, SKColors.Yellow, SKColors.Blue, SKColors.Brown,
+                           SKColors.Red, SKColors.SeaGreen, SKColors.DarkOrchid,
+                           SKColors.SteelBlue, SKColors.Sienna },
+                   () => NeunReihenBild(LANGE_NAMEN));
+
+            // GEGENPROBE zum Versatz: DIESELBEN neun Reihen, nur mit kurzen Namen. Dann
+            // passt die Legende in EINE Zeile, und die Zeichenflaeche beginnt wieder bei
+            // 110 px. Gemessen wird die oberste RASTERLINIE (Gainsboro, ueber die volle
+            // Breite) - ohne den Versatz staende sie in beiden Bildern gleich hoch, und
+            // die zweite Legendenzeile laege im Titelbereich.
+            Zeichenflaechenversatz("erzeugerstapel_neun_reihen",
+                () => NeunReihenBild(KURZE_NAMEN),
+                () => NeunReihenBild(LANGE_NAMEN),
+                (int)ChartRenderer.LEGENDE_ZEILE);
+
             // Viertelstundenraster (Stromseite) mit vier Stapelreihen und zwei Linien.
             var b2Strom = new List<ChartRenderer.Reihe>
             {
@@ -1295,6 +1327,109 @@ namespace ChartProben
 
             Melde(name + " (wirkt)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
                   "-", "-", maengel);
+        }
+
+        /// <summary>
+        /// Das Bild des Erzeugerstapels mit NEUN Legendeneintraegen (#240) — der
+        /// Wortlaut der Namen ist der einzige Unterschied zwischen Probe und
+        /// Gegenprobe, die Reihen selbst sind dieselben.
+        /// </summary>
+        private static byte[] NeunReihenBild(string[] namen)
+        {
+            var farben = new[]
+            {
+                SKColors.Orange, SKColors.Yellow, SKColors.Blue, SKColors.Brown,
+                SKColors.Red, SKColors.SeaGreen, SKColors.DarkOrchid,
+                SKColors.SteelBlue, SKColors.Sienna
+            };
+
+            var stapel = new List<ChartRenderer.Reihe>();
+            for (int i = 0; i < farben.Length; i++)
+                stapel.Add(new ChartRenderer.Reihe(
+                    namen[i],
+                    Jahresreihe(8 + 2 * i, 6 + i, 3, 0.2 * i, Math.PI / 2),
+                    farben[i], ChartRenderer.Stapelart.Saeule));
+
+            return ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                        stapel, new List<ChartRenderer.Reihe>(), null,
+                        "Waermelast [kW]", ChartRenderer.Achse.Monate, false);
+        }
+
+        /// <summary>
+        /// <b>Die Zeichenflaeche macht der Legende Platz</b> (Auftrag #240): Bricht sie
+        /// in eine zweite Zeile um, beginnt die Flaeche genau eine Legendenzeile tiefer.
+        ///
+        /// <para>Gemessen wird an den BILDPUNKTEN: Die oberste waagerechte Rasterlinie
+        /// (Gainsboro, ueber die volle Breite) liegt auf der Oberkante der
+        /// Zeichenflaeche. Ohne den Versatz staende sie in beiden Bildern gleich hoch —
+        /// und die zweite Legendenzeile laege im Bereich des y-Achsentitels, der 24 px
+        /// darueber steht. Mass-, Farb- und Determinismuspruefung bemerken das nicht:
+        /// Das Bild ist deterministisch falsch.</para>
+        ///
+        /// <para>Geprueft wird ein VIELFACHES der Legendenzeile, keine feste Zahl: Wie
+        /// viele Zeilen neun lange Namen belegen, haengt an der Schriftbreite (heute
+        /// drei, also 60 px); dass es UEBERHAUPT eine ganze Zeilenhoehe ist und nicht
+        /// null, ist die Aussage.</para>
+        /// </summary>
+        private static void Zeichenflaechenversatz(string name, Func<byte[]> wenige,
+                                                   Func<byte[]> viele, int zeilenhoehe)
+        {
+            _bilder++;
+            var maengel = new List<string>();
+            int oben = -1, unten = -1;
+
+            try
+            {
+                oben = ObersteRasterlinie(wenige());
+                unten = ObersteRasterlinie(viele());
+            }
+            catch (Exception ex)
+            {
+                Melde(name + " (Versatz)", "-", "-", "-", "-",
+                      new List<string> { "Ausnahme: " + ex.GetType().Name + " - " + ex.Message });
+                return;
+            }
+
+            int versatz = oben < 0 || unten < 0 ? -1 : unten - oben;
+
+            if (versatz < 0)
+                maengel.Add("keine Rasterlinie gefunden (" + oben + " / " + unten + ")");
+            else if (versatz == 0)
+                maengel.Add("die Zeichenflaeche beginnt in beiden Bildern bei " + oben +
+                            " px - die zweite Legendenzeile liegt also weiter auf dem " +
+                            "y-Achsentitel (#240)");
+            else if (versatz % zeilenhoehe != 0)
+                maengel.Add("Versatz " + versatz + " px ist kein Vielfaches der " +
+                            "Legendenzeile (" + zeilenhoehe + " px) - Rasterlinie bei " +
+                            oben + " bzw. " + unten);
+
+            Melde(name + " (Versatz " + versatz + " px)", "-", "-", "-", "-", maengel);
+        }
+
+        /// <summary>
+        /// Die Bildzeile der obersten waagerechten Rasterlinie — sie ist die Oberkante
+        /// der Zeichenflaeche. Gesucht wird in einem Streifen weit rechts vom
+        /// Achsentitel, in dem sonst nichts Graues steht; die Linie ist Gainsboro
+        /// (220) und kann durch Kantenglaettung bis gegen Weiss aufgehellt sein.
+        /// </summary>
+        private static int ObersteRasterlinie(byte[] png)
+        {
+            using (SKBitmap bild = SKBitmap.Decode(png))
+            {
+                if (bild == null) return -1;
+                for (int y = 0; y < bild.Height; y++)
+                {
+                    int treffer = 0;
+                    for (int x = 700; x < 1100 && x < bild.Width; x++)
+                    {
+                        SKColor c = bild.GetPixel(x, y);
+                        if (c.Red == c.Green && c.Green == c.Blue &&
+                            c.Red >= 200 && c.Red <= 245) treffer++;
+                    }
+                    if (treffer >= 300) return y;
+                }
+            }
+            return -1;
         }
 
         private static void Melde(string name, string masse, string bytes, string farbzahl,
