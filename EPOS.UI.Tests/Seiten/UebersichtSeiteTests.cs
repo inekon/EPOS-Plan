@@ -40,7 +40,7 @@ public class UebersichtSeiteTests : EposBunitContext
                             Projektname = "Musterhaus", SimStand = "02.09.26 10:00",
                             SimZeitpunkt = "02.09.26 10:00", IstStamm = true },
         new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
-                            Projektname = "Musterhaus", SimStand = "— (fehlt) ⚠",
+                            Projektname = "Musterhaus - WP klein", SimStand = "— (fehlt) ⚠",
                             SimZeitpunkt = "", Auffaellig = true }
     };
 
@@ -295,11 +295,14 @@ public class UebersichtSeiteTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Der Stamm steht zuerst, dann die Varianten; der Text ist
-    /// „Bezeichner — Projektname" — die zwei Spalten, die die Tabelle bis W5‑E‑1
-    /// nebeneinander führte. Die Ids sind die Projekt-Ids (stabil über einen
-    /// Neuaufbau, dublettenfrei — die Bedingung der Hausregel für den Wirt eines
-    /// <c>Auswahlfeld</c>).
+    /// Der Stamm steht zuerst, dann die Varianten; der Text ist der PROJEKTNAME —
+    /// derselbe, den das Auswahlfeld „Projekt:" im Kopfband der Startseite zeigt.
+    /// Bis zum Anwenderbefund vom 12.09.2026 (<b>Auftrag #238</b>) stand hier
+    /// „Bezeichner — Projektname"; weil der Projektname einer Variante selbst
+    /// „&lt;Stamm&gt; - &lt;Bezeichner&gt;" ist, stand der Bezeichner DOPPELT im
+    /// Eintrag (z. B. „ein Speicher — Stromspeicher Optimierung - ein Speicher").
+    /// Die Ids sind die Projekt-Ids (stabil über einen Neuaufbau, dublettenfrei —
+    /// die Bedingung der Hausregel für den Wirt eines <c>Auswahlfeld</c>).
     /// </summary>
     [Fact]
     public void Das_Auswahlfeld_fuehrt_Stamm_und_Varianten_in_der_Reihenfolge_der_Gruppe()
@@ -310,10 +313,65 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal(2, eintraege.Count);
 
         Assert.Equal("1030", eintraege[0].GetAttribute("value"));
-        Assert.Equal("(Stammprojekt) — Musterhaus", eintraege[0].TextContent);
+        Assert.Equal("Musterhaus", eintraege[0].TextContent);
 
         Assert.Equal("1031", eintraege[1].GetAttribute("value"));
-        Assert.Equal("WP klein — Musterhaus", eintraege[1].TextContent);
+        Assert.Equal("Musterhaus - WP klein", eintraege[1].TextContent);
+
+        // Der Bezeichner "WP klein" steht in der Variantenzeile nur EINMAL - als
+        // Teil des Projektnamens, nicht zusaetzlich davor mit einem Trennzeichen.
+        Assert.DoesNotContain(" — ", eintraege[1].TextContent);
+    }
+
+    /// <summary>
+    /// Das genaue Anwenderbeispiel aus Auftrag #238 (Bildschirmfoto „Berichte &amp;
+    /// Kosten › Übersicht", Projekt „Stromspeicher Optimierung"): Der Eintrag der
+    /// Variante „ein Speicher" lautete vorher „ein Speicher — Stromspeicher
+    /// Optimierung - ein Speicher", der Stamm „(Stammprojekt) — Stromspeicher
+    /// Optimierung". Beide Einträge sind seither schlicht der Projektname.
+    /// </summary>
+    [Fact]
+    public void Das_Anwenderbeispiel_aus_Auftrag_238_zeigt_nur_noch_den_Projektnamen()
+    {
+        var stand = new UebersichtStand
+        {
+            Zeilen = new[]
+            {
+                new VarianteZeile { IdProjekt = 2000, Bezeichner = "(Stammprojekt)",
+                                     Projektname = "Stromspeicher Optimierung", IstStamm = true },
+                new VarianteZeile { IdProjekt = 2001, Bezeichner = "ein Speicher",
+                                     Projektname = "Stromspeicher Optimierung - ein Speicher" },
+                new VarianteZeile { IdProjekt = 2002, Bezeichner = "Stromspeicher mit Wärmepumpe",
+                                     Projektname = "Stromspeicher Optimierung - Stromspeicher mit Wärmepumpe" }
+            },
+            MarkierteId = 2000
+        };
+
+        IReadOnlyList<IElement> eintraege = Versionseintraege(Zeige(stand: stand));
+
+        Assert.Equal("Stromspeicher Optimierung", eintraege[0].TextContent);
+        Assert.Equal("Stromspeicher Optimierung - ein Speicher", eintraege[1].TextContent);
+        Assert.Equal("Stromspeicher Optimierung - Stromspeicher mit Wärmepumpe", eintraege[2].TextContent);
+    }
+
+    /// <summary>
+    /// Fehlt der Projektname (er ist im Datenmodell nicht Pflicht), bleibt der
+    /// Rückfall auf den Bezeichner — wie bisher.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektname_faellt_der_Eintrag_auf_den_Bezeichner_zurueck()
+    {
+        var stand = new UebersichtStand
+        {
+            Zeilen = new[]
+            {
+                new VarianteZeile { IdProjekt = 3000, Bezeichner = "Ohne Projektname",
+                                     Projektname = "", IstStamm = true }
+            },
+            MarkierteId = 3000
+        };
+
+        Assert.Equal("Ohne Projektname", Versionseintraege(Zeige(stand: stand))[0].TextContent);
     }
 
     /// <summary>Gewählt ist, was der Stand als markiert meldet.</summary>
@@ -322,6 +380,32 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         Assert.Equal("1030", Versionswahl(Zeige()).GetAttribute("value"));
         Assert.Equal("1031", Versionswahl(Zeige(stand: Unterschiedsansicht())).GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Die Variantenzeile (Auswahlfeld, Bezeichner, die Knöpfe) bricht bei
+    /// Platzmangel um, statt dass sich das Auswahlfeld, seine aufgeklappte Liste
+    /// und das Bezeichnerfeld überlappen (Anwenderrückmeldung 12.09.2026, Auftrag
+    /// #238, „korrigiere dabei auch die Überlappung"). Geprüft wird — wie in
+    /// <see cref="Die_Unterschiedstabelle_steht_im_hoeheren_Rahmen"/> — beides:
+    /// das MARKUP (die Zeilen tragen die Klasse, die im Stilblatt den Umbruch
+    /// setzt) UND die REGEL selbst (eine bunit-Probe allein sieht eine Stilregel
+    /// nicht, Lehre W6‑B‑1). Keine Pixelmessung — die gehört in
+    /// <c>Proben/Rasterprobe</c>, nicht hierher.
+    /// </summary>
+    [Fact]
+    public void Varianten_und_Stammzeile_tragen_die_Umbruchklasse_und_das_Auswahlfeld_hat_keine_Hoechstbreite()
+    {
+        var cut = Zeige();
+
+        Assert.Contains("epos-seite-zeile", cut.Find(".epos-variantenzeile").ClassName);
+        Assert.Contains("epos-seite-zeile", cut.Find(".epos-stammzeile").ClassName);
+
+        string zeilenregel = Stilblock(".epos-seite-zeile {");
+        Assert.Contains("flex-wrap: wrap", zeilenregel);
+
+        string feldregel = Stilblock(".epos-variantenzeile > .epos-feld:first-child {");
+        Assert.DoesNotContain("max-width", feldregel);
     }
 
     /// <summary>

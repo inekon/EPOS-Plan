@@ -16,10 +16,14 @@
    Projektname und Simulationsspalte brauchte vier bis fuenf Zeilen Hoehe fuer
    eine Angabe, die in EINE passt - und nahm sie dem, worum es auf der Seite
    geht: der Unterschiedstabelle. Was die Tabelle sonst noch sagte, bleibt:
-   die Reihenfolge (Stamm zuerst) durch die Reihenfolge der Eintraege, der
-   Bezeichner und der Projektname im Eintragstext, und der Simulationsstand
-   samt "⚠" in der Statuszeile darunter (aria-live, weil er beim Wechsel der
-   Version wechselt, ohne dass der Anwender dorthin sieht).
+   die Reihenfolge (Stamm zuerst) durch die Reihenfolge der Eintraege, und
+   der Projektname im Eintragstext - derselbe Text wie im Auswahlfeld
+   "Projekt:" des Kopfbands, seit dem Anwenderbefund vom 12.09.2026
+   (Auftrag #238) OHNE den Bezeichner davor, der sonst doppelt stand (der
+   Projektname einer Variante ist selbst "<Stamm> - <Bezeichner>") -, und
+   der Simulationsstand samt "⚠" in der Statuszeile darunter (aria-live,
+   weil er beim Wechsel der Version wechselt, ohne dass der Anwender
+   dorthin sieht).
 
    DIE SEITE VERGLEICHT NICHT SELBST. Beide Ansichten kommen als fertige
    Zeilen aus der Huelle (ProjektDetails + AbweichungsErmittler - dieselbe
@@ -407,10 +411,17 @@
 
     /// <summary>
     /// Die Einträge der Versionswahl in der Reihenfolge der Gruppe: der Stamm
-    /// zuerst, dann die Varianten. Der Text ist „Bezeichner — Projektname" — die
-    /// zwei Spalten, die die Tabelle bis W5‑E‑1 nebeneinander führte; die Spalte
-    /// „Art" braucht es nicht mehr, weil der Stamm seinen Bezeichner
-    /// („(Stammprojekt)") schon trägt und immer oben steht.
+    /// zuerst, dann die Varianten. Der Text ist der PROJEKTNAME — derselbe, den
+    /// das Auswahlfeld „Projekt:" im Kopfband der Startseite zeigt
+    /// (<c>StartseiteCtrl.VariantenEintrag.Name</c>). Bis zum Anwenderbefund
+    /// vom 12.09.2026 (<b>Auftrag #238</b>) stand hier „Bezeichner — Projektname"
+    /// — die zwei Spalten, die die Tabelle bis W5‑E‑1 nebeneinander führte —,
+    /// aber der Projektname einer Variante ist seit jeher selbst
+    /// „&lt;Stamm&gt; - &lt;Bezeichner&gt;" (<c>VariantenCtrl.Zielname</c>), und
+    /// der Stamm trug seinen Bezeichner zusätzlich als „(Stammprojekt) — " davor:
+    /// Der Bezeichner stand doppelt im Eintrag, z. B. „ein Speicher — Stromspeicher
+    /// Optimierung - ein Speicher". Seither bleibt nur der Projektname, der
+    /// Bezeichner ist der Rückfall für den Fall, dass er einmal leer ist.
     ///
     /// <para>Die Ids sind die Projekt-Ids und damit über einen Neuaufbau stabil —
     /// die Bedingung, die die Hausregel dem Wirt eines <c>Auswahlfeld</c>
@@ -428,14 +439,15 @@
         }
     }
 
+    /// <summary>
+    /// Der Projektname (Rückfall: der Bezeichner, wenn er fehlt) — siehe
+    /// <see cref="Versionen"/>.
+    /// </summary>
     private static string Eintragstext(VarianteZeile z)
     {
-        string bezeichner = z.Bezeichner ?? "";
         string projekt = z.Projektname ?? "";
-
-        if (bezeichner.Length == 0) return projekt;
-        if (projekt.Length == 0) return bezeichner;
-        return bezeichner + " — " + projekt;
+        if (projekt.Length > 0) return projekt;
+        return z.Bezeichner ?? "";
     }
 
     /// <summary>Die gewählte Version für das <c>Auswahlfeld</c>; <c>null</c> = keine.</summary>

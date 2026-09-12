@@ -2643,17 +2643,28 @@ body {
    Simulationsstand als leiser Satz.
    -------------------------------------------------------------------------- */
 
-/* Das Auswahlfeld darf wachsen (es traegt "Bezeichner - Projektname"), das
-   Bezeichnerfeld bleibt schmal, die Knoepfe stehen rechts daneben. Umbrochen
-   wird ueber das flex-wrap von .epos-seite-zeile - auf schmalem Schirm rutschen
-   die Knoepfe unter die Felder. */
+/* Das Auswahlfeld darf wachsen (es traegt den Projektnamen, seit Auftrag #238
+   OHNE den Bezeichner davor - "Stromspeicher Optimierung - ein Speicher" ist
+   laenger als der fruehere Text), das Bezeichnerfeld bleibt schmal, die
+   Knoepfe stehen rechts daneben. Umbrochen wird ueber das flex-wrap von
+   .epos-seite-zeile - auf schmalem Schirm rutschen die Knoepfe unter die
+   Felder.
+
+   KEIN max-width AM AUSWAHLFELD (Anwenderbefund 12.09.2026, Auftrag #238,
+   "korrigiere dabei auch die Ueberlappung"): Mit fester Obergrenze 34rem
+   (~550 px) schnitt das Feld einen laengeren Eintrag ab, UND die aufgeklappte
+   Liste eines <select> ist so breit wie ihr laengster Eintrag - sie ragte
+   damit ueber das Bezeichnerfeld daneben hinweg. Das Feld waechst jetzt frei
+   mit seinem Inhalt; das Bezeichnerfeld bekommt eine eigene Mindestbreite,
+   damit es nicht unter eine sinnvolle Eingabelaenge schrumpft, bevor die
+   Zeile umbricht. */
 .epos-variantenzeile > .epos-feld {
     flex: 0 1 14rem;
+    min-width: 10rem;
 }
 
 .epos-variantenzeile > .epos-feld:first-child {
-    flex: 1 1 20rem;
-    max-width: 34rem;
+    flex: 1 1 24rem;
 }
 
 /* Der Simulationsstand der gewaehlten Version - das, was die Spalte
