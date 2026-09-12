@@ -230,6 +230,28 @@ public sealed class StromspeicherKiSicht
     }
 
     /// <summary>
+    /// WAS der nächste Lauf variiert (Auftrag #247, SD‑E‑10): „Nur bewerten",
+    /// „Größe suchen" oder „Stückzahl suchen".
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur lesend.</b> Die Methode hängt an ZWEI Feldern desselben Standes
+    /// (<c>FlottenAuslegungEingang.Suchmethode</c> und
+    /// <c>SpeicherAuslegungKonfiguration.FlottenGroessenOptimieren</c>) und an der Frage,
+    /// ob überhaupt eine Einheit „variieren" trägt; sie zu SETZEN ist die Aufgabe der
+    /// Optionsgruppe in Station 4, die beides gleichzieht und die Sperre kennt.
+    /// </remarks>
+    public string Suchmethode
+    {
+        get
+        {
+            if (!GroessenOptimieren) return WindowsFormsApplication1.MyResource.Resource.FLOTTE_OPT_SUCHE_AUS;
+            return Auslegung?.Suchmethode == FlottenSuchmethode.Stueckzahl
+                ? WindowsFormsApplication1.MyResource.Resource.FLOTTE_OPT_METHODE_STUECKZAHL
+                : WindowsFormsApplication1.MyResource.Resource.FLOTTE_OPT_METHODE_GROESSE;
+        }
+    }
+
+    /// <summary>
     /// Läuft nach dem Grobraster die zweite Phase — das Feinraster um das Grob-Optimum
     /// (SD‑Q10)?
     /// </summary>

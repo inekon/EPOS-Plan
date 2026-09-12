@@ -477,7 +477,9 @@ namespace EPOS.Kern.Tests
                 // zweiten Hauptteil "Mehrere Speicher (Speicherflotte)" ergaenzt.
                 // Auftrag #215: Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle
                 // - die kausale Ratsche" (Spezifikation 5.1.1).
-                { "Stromspeicher", "2026-09-11 (Fassung 6: adaptive Entladeschwelle)" }
+                // Auftrag #247: Fassung 7 - der Abschnitt "Rastersuche" nennt die zwei
+                // Suchmethoden, ihre Kandidatenzahl und die drei benannten Ablehnungen.
+                { "Stromspeicher", "2026-09-12 (Fassung 7: zwei Suchmethoden der Rastersuche)" }
             };
 
         /// <summary>

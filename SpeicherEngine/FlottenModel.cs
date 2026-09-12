@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -1184,6 +1184,64 @@ public sealed class FlottenAuslegungsAchse
     public FlottenEinheit Vorlage { get; set; } = new();
 }
 
+/// <summary>
+/// WAS ein Lauf der Rastersuche variiert (Auftrag #247, Anwenderentscheid SD-E-10 vom
+/// 12.09.2026, Konzept „Stromspeicher-Dialoge" 8.3).
+/// </summary>
+/// <remarks>
+/// <para><b>Je Lauf EINE Variationsart</b> (SD-Q16): Groesse und Stueckzahl werden nie im
+/// selben Lauf variiert. Unter <see cref="Groesse"/> steht die Stueckzahl jeder
+/// eingeschalteten Einheit fest, unter <see cref="Stueckzahl"/> ihre Groesse. Wer beides
+/// pruefen will, faehrt zwei Laeufe — so bleibt die Kandidatenzahl beherrschbar (266
+/// Groessen ODER 4 Stueckzahlen je Einheit, nicht 1 064), und Karte und Kurve bleiben
+/// zweidimensional.</para>
+/// <para><b>Das Mischraster Stueckzahl × Groesse gibt es seit #247 nicht mehr.</b> Bis
+/// dahin lief <c>BildeAchse</c> Stueckzahl × erste Groesse × zweite Groesse in EINEM
+/// Lauf; ein Katalog- oder Projektspeicher bekam dabei Fantasiegroessen mit den
+/// Kostensaetzen seines Geraets (Konzept 8.2).</para>
+/// </remarks>
+public enum FlottenSuchmethode
+{
+    /// <summary>Nur die eingestellte Flotte bewerten — genau ein Kandidat, nichts wird variiert.</summary>
+    Bewerten = 0,
+
+    /// <summary>
+    /// Die GROESSE suchen: an jeder eingeschalteten Einheit zwei der drei Groessen nach
+    /// <see cref="FlottenAuslegungsmodus"/>; die Stueckzahl steht fest auf
+    /// <see cref="FlottenAuslegungsAchse.AnzahlVon"/> (0 gilt als 1).
+    /// </summary>
+    Groesse = 1,
+
+    /// <summary>
+    /// Die STUECKZAHL suchen: an jeder eingeschalteten Einheit die Stueckzahl von–bis
+    /// (0 = die Einheit entfaellt); die Groesse bleibt die der Vorlage. Kein Feinraster —
+    /// zwischen zwei ganzen Zahlen gibt es nichts zu verfeinern.
+    /// </summary>
+    Stueckzahl = 2
+}
+
+/// <summary>
+/// Der BEFUND der Vorpruefung eines Suchraums (Auftrag #247) — sprachneutral, weil die
+/// Engine keine Ressourcen kennt; den Wortlaut waehlt die Oberflaeche.
+/// </summary>
+public enum FlottenSuchbefund
+{
+    /// <summary>Der Suchraum ist brauchbar.</summary>
+    Inordnung = 0,
+
+    /// <summary>
+    /// Eine Suchmethode ist gewaehlt, aber keine Einheit traegt „variieren" — es gibt
+    /// nichts zu suchen. Abhilfe: auf einer Einheitenkarte „variieren" einschalten.
+    /// </summary>
+    KeineAktiveAchse = 1,
+
+    /// <summary>Ein Stueckzahlbereich ist leer oder negativ (Bis &lt; Von).</summary>
+    StueckzahlbereichLeer = 2,
+
+    /// <summary>Ein Groessenbereich ist unbrauchbar (leer, negativ, Schritt 0 bei echter Spanne).</summary>
+    GroessenbereichUnbrauchbar = 3
+}
+
 /// <summary>Der Suchraum der Auslegungsoptimierung.</summary>
 public sealed class FlottenAuslegungEingang
 {
@@ -1213,6 +1271,25 @@ public sealed class FlottenAuslegungEingang
     /// Kandidaten ohne Erkenntnis.</para>
     /// </remarks>
     public bool Feinraster { get; set; } = true;
+
+    /// <summary>
+    /// WAS dieser Lauf variiert (Auftrag #247, SD-E-10). Vorgabe
+    /// <see cref="FlottenSuchmethode.Groesse"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum die Vorgabe „Groesse" ist und warum sie ein
+    /// Eigenschaftsinitialisierer ist</b> — dieselbe Bauart und derselbe Grund wie bei
+    /// <see cref="Feinraster"/>: Ein Stand, der das Feld nicht fuehrt (jeder vor #247
+    /// gespeicherte), wird beim Einlesen ueber den Initialisierer auf
+    /// <see cref="FlottenSuchmethode.Groesse"/> gesetzt und rechnet damit wie bisher —
+    /// seine Stueckzahlbereiche gelten als fest auf dem Von-Wert (Konzept 8.3). Der
+    /// Aufzaehlungswert 0 waere <see cref="FlottenSuchmethode.Bewerten"/> gewesen und
+    /// haette jedem Altbestand still die Suche abgeschaltet.</para>
+    /// <para>Ob ueberhaupt gesucht wird, sagt daneben
+    /// <c>SpeicherAuslegungKonfiguration.FlottenGroessenOptimieren</c>; beide werden in
+    /// <c>SpeicherFlottenStudieCtrl.Konfiguration</c> gleichgezogen.</para>
+    /// </remarks>
+    public FlottenSuchmethode Suchmethode { get; set; } = FlottenSuchmethode.Groesse;
 }
 
 /// <summary>Aus welcher Phase der Rastersuche ein Kandidat stammt (Auftrag #224).</summary>
@@ -1244,7 +1321,15 @@ public enum FlottenKandidatPhase
 /// <param name="FeinHoechstens">Hoechstzahl der Kandidaten des Feinrasters; 0 = keines.</param>
 /// <param name="Grenze">Die eingestellte Obergrenze (<see cref="FlottenAuslegungEingang.MaximaleKandidaten"/>).</param>
 /// <param name="Gueltig">Der Suchraum ist lesbar; <c>false</c> = ein Bereich ist unbrauchbar und die Zahlen sagen nichts.</param>
-public readonly record struct FlottenKandidatenzahl(long Grob, long FeinHoechstens, int Grenze, bool Gueltig)
+/// <param name="Befund">
+/// Der BEFUND der Vorpruefung (Auftrag #247): Er nennt den Grund sprachneutral, damit die
+/// Oberflaeche die richtige Abhilfe zeigen kann — <see cref="FlottenSuchbefund.KeineAktiveAchse"/>
+/// laesst die Zahlen ausdruecklich GUELTIG (ein Lauf ohne Achse rechnet die eingestellte
+/// Flotte), verlangt aber eine Handlung des Anwenders.
+/// </param>
+public readonly record struct FlottenKandidatenzahl(long Grob, long FeinHoechstens, int Grenze,
+                                                   bool Gueltig,
+                                                   FlottenSuchbefund Befund = FlottenSuchbefund.Inordnung)
 {
     /// <summary>Beide Phasen zusammen.</summary>
     public long Gesamt => Grob + FeinHoechstens;
@@ -1358,6 +1443,23 @@ public sealed class FlottenKandidatZusammenfassung
     /// ein, nicht ueber einen Index.
     /// </remarks>
     public FlottenKandidatPhase Phase { get; set; } = FlottenKandidatPhase.Grob;
+
+    /// <summary>
+    /// Die STUECKZAHL je aktiver Suchachse, in deren Reihenfolge (Auftrag #247); leer,
+    /// wo es keine Suchachse gibt (Nullvariante, reine Bewertung).
+    /// </summary>
+    /// <remarks>
+    /// <para>Sie ist die Achsenauskunft der Methode <see cref="FlottenSuchmethode.Stueckzahl"/>:
+    /// Bei EINER variierten Einheit traegt sie die x-Achse der Kurve „Kapitalwert ueber
+    /// Stueckzahl", bei ZWEI die zwei ganzzahligen Achsen der Rasterkarte n1 × n2
+    /// (Konzept „Stromspeicher-Dialoge" 8.3, SD-Q17).</para>
+    /// <para><b>Warum eine eigene Liste und nicht die Zahl der Einheiten.</b>
+    /// <see cref="Einheiten"/> fuehrt ALLE Einheiten des Kandidaten — auch die festen,
+    /// die keine Achse ersetzt. Aus ihrer Zahl liesse sich die Stueckzahl EINER Achse
+    /// nicht zurueckrechnen, und aus den Kennungen abgelesen waere sie eine
+    /// Textvereinbarung.</para>
+    /// </remarks>
+    public List<int> Stueckzahlen { get; set; } = new();
 
     // =====================================================================
     // Die Betriebskennzahlen des Kandidatenlaufs (Auftrag #193)

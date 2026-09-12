@@ -752,6 +752,9 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
 
 ## 8. Zwei Suchmethoden — Anwenderrückmeldung 12.09.2026 (SD‑E‑10)
 
+> **Umgesetzt mit Auftrag #247.** Zielbild 8.3 und Darstellung 8.4 vollständig, samt der
+> Übernahme ins Projekt aus 8.3. Was davon abweicht, steht in 8.8.
+
 ### 8.1 Rückmeldung
 
 Zur Station „4 Optimierung" (Stand #224/#226, Bildschirmfoto mit dem Projekt „Stromspeicher Optimierung", eine Einheit
@@ -885,3 +888,63 @@ Abnahme umkehren.
 
 **Entschieden am 12.09.2026** (Wortlaut in 8.5): SD‑Q13 Empfehlung · SD‑Q14 variierbar · SD‑Q15 keine Markierung, Übernahmeknopf ·
 SD‑Q16 nur Stückzahl variieren (je Lauf eine Variationsart) · SD‑Q17 Empfehlung · SD‑Q18 Empfehlung. Umsetzung als #247.
+
+### 8.8 Was #247 umgesetzt hat — und wo es vom Zielbild abweicht
+
+**Umgesetzt** (Zielbild 8.3, Darstellung 8.4, Anwenderentscheid SD‑E‑10):
+
+| Gegenstand | Wo es jetzt steht |
+|---|---|
+| Die drei Suchmethoden | `SpeicherEngine/FlottenModel.cs`: `FlottenSuchmethode` { `Bewerten`, `Groesse`, `Stueckzahl` }, `FlottenAuslegungEingang.Suchmethode` mit dem Eigenschaftsinitialisierer `Groesse` — ein Stand ohne das Feld lädt damit als Größensuche und rechnet weiter wie bisher (dieselbe Bauart wie `Feinraster` seit #224) |
+| Was die Methode am Raster ändert | `FlottenOptimierer`: `Kandidatenzahl`, `Achsengroesse`, `FeinrasterHoechstzahl`, `Feinrasterwerte`, `BildeAchse`, `BildeFeinachse`, `BaueEinheiten` lesen sie. Unter `Groesse` zählt die Stückzahl als EIN Stützpunkt (`AnzahlVon`, 0 gilt als 1), unter `Stueckzahl` zählen erste und zweite Größe je einen (die Vorlage), unter `Bewerten` gibt es keine Suchachse. **Das Mischraster Stückzahl × Größe existiert nicht mehr** |
+| Kein Feinraster unter S | `Kandidatenzahl` liefert `FeinHoechstens = 0`, `Feinrasterwerte` eine leere Liste, und `Rechne` startet Phase 2 nur unter `Groesse` — zwischen zwei ganzen Zahlen gibt es nichts zu verfeinern |
+| Die Vorprüfung mit benannter Ablehnung | `FlottenSuchbefund` { `Inordnung`, `KeineAktiveAchse`, `StueckzahlbereichLeer`, `GroessenbereichUnbrauchbar` } als fünfter Teil von `FlottenKandidatenzahl`; `Rechne` wirft für jeden der drei Befunde eine eigene Meldung, die Ansicht sperrt den Rechenknopf und zeigt die Abhilfe |
+| Die Stückzahl je Kandidat | `FlottenKandidatZusammenfassung.Stueckzahlen` — je aktiver Achse eine Zahl, vom Optimierer mitgeschrieben. Ohne sie ließe sich die Achse der Ergebnissicht nur aus Einheitenkennungen raten |
+| Ergebnisdaten und Bilder der Stückzahlsuche | `EPOS.Kern/Controller/SpeicherFlottenAnzeigeCtrl.Stueckzahl.cs`: `VariierteEinheiten`, `Stueckzahlkurve` (+ `KandidatZuStueckzahl`), `Stueckzahlraster`, `Stueckzahlbild`, `Stueckzahlrasterbild`. Die Kurve zeichnet der neue Renderer `ChartRenderer.Stueckzahlkurve` (Balken, vorzeichenfähige Achse, Bestwert in `C_RASTER_GUT` samt Optimum-Marke, Schraffur für unzulässige Stückzahlen); die Karte n₁ × n₂ ist **dieselbe** `Optimierungsraster`-Zeichnung mit ganzzahligen Achsen |
+| Übernahme ins Projekt | `SpeicherFlottenStudieCtrl.Uebernahme.cs`: `Vorschau` (die zwei Zahlen der Rückfrage, ohne Schreibzugriff) und `EinheitenInProjektUebernehmen` — je Stück eine Anlage über `Tab_Stromspeicher` **und** `AnlagenSql.SQL_ANLAGE_INSERT`, alles in EINEM `DbVorgang`, Bezeichner im Vorgang auf Eindeutigkeit geprüft, Rückgabe je Anlage samt Einheitenkennung |
+| Station 4 nach 8.4 | `EPOS.UI/Seiten/Strom/OptimierungBlock.razor`: Kopfblock zweispaltig (drei Optionen mit Erklärsatz links, Bedienblock fester Breite rechts), Suchraum als **eine Karte je Einheit** mit Kopfzeile, methodenabhängigem Rumpf und Fußzeile „Kandidaten dieser Einheit"; die Neun-Spalten-Tabelle ist gefallen |
+| Gedimmte Suchoption mit Abhilfe | `Optionsgruppe.WeichGesperrt` (aria‑disabled statt `disabled`, damit der Grund ankommt — W16b‑E‑6) plus die Zeile `.epos-flotte-abhilfe` unter der Gruppe |
+| Bestes Ergebnis unter S | Die zweite Karte nennt die **Bestückung** („2 × Growatt … = 258 kWh · 200 kW") statt Kapazität · C‑Rate; die Phasenmarke entfällt (es gibt keine zweite Phase) |
+| Ergebnissicht unter S | `SpeicherFlottenGroessenAnsicht.Methode`: bei einer variierten Einheit die Stückzahlkurve, bei zwei die Karte n₁ × n₂, darüber hinaus nur die Kandidatentabelle — Rasterkarte, Schnitte und ihre zwei Schieber entstehen dann gar nicht |
+| „Kandidat übernehmen" | Unter G wie bisher (der Kandidat wird die Flotte, die Achsen fallen); unter S setzt er `AnzahlVon = AnzahlBis = n` in die Karten der variierten Einheiten und lässt die Einheiten stehen |
+| Schritt 1 mit Auswahl und Übernahmeknopf | `SpeicherFlottenEditor`: Auswahlkästchen je Einheitenkarte, Knopf neben „Speicher hinzufügen", Rückfrage mit den zwei Zahlen aus `Vorschau`, danach steht die `AnlageId` an der Einheit; ohne Delegat gibt es weder Kästchen noch Knopf, im Lesemodus ist er weich gesperrt |
+| Ressourcen | 37 neue `FLOTTE_*`- und `KI_DLG_*`-Schlüssel de/en (`Werkzeuge/ResourceDesigner`), kein deutscher Literaltext in den zwei Razor-Dateien |
+| Nachweise | `SpeicherEngine.Tests/FlottenSuchmethodeTests` (12), `EPOS.Kern.Tests/SpeicherFlottenStueckzahlCtrlTests` (8) und `…/SpeicherFlottenUebernahmeTests` (8, gegen eine Kopie der Testdatenbank), `EPOS.UI.Tests/StueckzahlsucheTests` (7) und der umgeschriebene `OptimierungStationTests`; `Proben/ChartProben` +2 Bilder +1 Gegenprobe (die Bestwertmarke der Stückzahlkurve ändert das Bild) |
+
+**Abweichungen vom Zielbild und vom Mockup — mit Grund:**
+
+1. **Die Karte zeigt ihre Bereiche im `Formularraster` mit je EIGENER Beschriftung** („Kapazität
+   von", „Kapazität bis", „Schritt") und nicht als eine Zeile „Kapazität 40 – 300 kWh, Schritt 20".
+   Das Mockup zeichnet die kompakte Zeile von Hand; im Haus gibt es dafür keinen Baustein — drei
+   Eingaben in EINER `epos-feld`-Zeile müsste jeder Dialog selbst bauen, und genau das verbietet
+   die Formularrasterregel (iU8‑E‑2). Die Beschriftungsschlüssel sind die des Einheiteneditors,
+   also unverändert; die Kompaktheit kommt aus der Anordnung des Rasters.
+2. **Die Abhilfe steht EINMAL unter der Optionsgruppe**, nicht je gesperrter Option. Beide
+   Suchoptionen haben denselben einen Grund — es trägt keine Einheit „variieren" —, und zwei
+   gleichlautende Warnzeilen untereinander sind eine Wiederholung ohne Gewinn. Am Bedienelement
+   selbst steht der Grund zusätzlich als `title`/`aria-disabled` (weiche Sperre).
+3. **Die Suchmethode steht an ZWEI Feldern desselben Standes.** `FlottenAuslegungEingang.Suchmethode`
+   sagt, WAS variiert wird; `SpeicherAuslegungKonfiguration.FlottenGroessenOptimieren` bleibt der
+   Schalter, an dem der Kern entscheidet, ob überhaupt eine Rastersuche läuft
+   (`SpeicherFlottenStudieCtrl.Rechnen`). Die Ansicht zieht beide in EINEM Schreibweg gleich
+   (`SuchmethodeSetzen`), und die Leserichtung (`Suchmethode`) kehrt einen alten Stand
+   „optimieren = an, Methode = Bewerten" auf `Groesse` um. Ein einziges Feld hätte den
+   Gate-Ausdruck des Kerns und damit den Projektlauf berührt — dafür gab es keinen Anlass.
+4. **`Rechne` lehnt einen Lauf ohne aktive Achse ab, statt ihn als „ein Kandidat" zu rechnen.**
+   Das Zielbild spricht nur von der gedimmten Option; ohne die Ablehnung im Kern hinge die Regel
+   allein an der Oberfläche, und ein gespeicherter Stand mit abgeschalteten Achsen rechnete
+   klaglos etwas anderes als der Anwender gewählt hat.
+5. **Der LESEMODUS kommt als Delegat aus der Hülle** (`StromspeicherAuslegungDienste.Schreibgeschuetzt`),
+   nicht aus einem `Schreibnaht`-Aufruf in der Razor-Komponente: Der Lesemodus ist eine
+   Lizenzaussage, und eine Komponente stellt keine Lizenzfragen (Hausregel S‑2).
+6. **Beim Rückschreiben in eine vertretene Anlage bleibt der BEZEICHNER stehen.** Geschrieben
+   werden die acht Gerätewerte; ein Umbenennen zöge `Tab_Energieanlagen.Bezeichner` und die
+   Zuordnung der Betriebsführung (`Tab_StromspeicherVariante` über die Anlage) nach sich und wäre
+   eine zweite Aussage, die niemand verlangt hat.
+7. **`Typ`, `Firma`, `Degradation`, `Zyklen_Zugesichert` und `Verschleisskosten` schreibt die
+   Übernahme nicht** — sie sind genau die Spalten, die `EinheitAusKatalog` auch nicht LIEST
+   (Konzept 1.8). Beim Anlegen bleiben sie leer, beim Rückschreiben unverändert stehen.
+8. **Der Referenzlauf ist nicht berührt.** Der Projektlauf rechnet den aktivierten Stand
+   `@Projektflotte` über `SpeicherFlottenProjektCtrl`, und der ruft die Rastersuche nicht
+   (`FlottenGroessenOptimieren` wird dort ausdrücklich auf `false` gesetzt). Die Basis
+   `2026-09-11_R7_Speicherflotte` und die Einfrierregel SP‑O‑8 bleiben unangetastet.

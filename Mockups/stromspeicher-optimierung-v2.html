@@ -11,10 +11,19 @@
   verweisen dorthin (8.3 Zielbild, 8.4 Darstellung).
 
   WAS ES ZEIGT. Station 4 der Ansicht „Stromspeicher-Auslegung" mit den DREI
-  Suchoptionen aus 8.3 — „nur bewerten", „Groesse suchen" (Methode G, freie
-  Einheit) und „Stueckzahl suchen" (Methode S, Speicher aus Projekt oder
-  Katalog) — und dem Suchraum als EINE KARTE JE EINHEIT statt der bisherigen
-  Neun-Spalten-Tabelle (8.4, Punkt 3 der Rueckmeldung).
+  Suchoptionen aus 8.3 — „nur bewerten", „Groesse suchen" und „Stueckzahl
+  suchen" — und dem Suchraum als EINE KARTE JE EINHEIT statt der bisherigen
+  Neun-Spalten-Tabelle (8.4, Punkt 3 der Rueckmeldung). Darunter die Skizze von
+  SCHRITT 1 mit dem Auswahlkaestchen je Karte und dem Knopf „Ausgewaehlte
+  Einheiten in Projekt uebernehmen".
+
+  NACHGEZOGEN AUF DEN ENTSCHEID (Auftrag #247, 12.09.2026): Die Einheiten
+  tragen KEINE Herkunftsmarkierung mehr (SD-Q15) — die Pillen „Katalog",
+  „Projektanlage" und „frei" sind gefallen. WELCHE Einheit variiert wird, sagt
+  seither der Schalter „variieren" auf IHRER Karte; WAS an ihr variiert wird,
+  sagt allein die gewaehlte Methode. Unter „Stueckzahl suchen" traegt jede
+  eingeschaltete Karte ihre Stueckzahlzeile, unter „Groesse suchen" ihre
+  Groessenzeilen.
 
   BEISPIELFLOTTE (aus dem Bildschirmfoto des Anwenders): eine Katalogeinheit
   „Shenzhen Growatt New Energy Co., Ltd.: WIT-M+APX ESS" mit 129 kWh / 100 kW
@@ -305,8 +314,8 @@ body {
 /* ==================================================================== */
 /* NEU MIT SD-E-10 — EINE KARTE JE EINHEIT (Konzept 8.4, zweiter        */
 /* Anstrich). Sie ersetzt die Neun-Spalten-Tabelle mit sieben kleinen   */
-/* Zahlenfeldern je Zeile: Kopfzeile (Name, Herkunftspille, feste       */
-/* Kenndaten, Schalter „variieren"), Rumpf je Methode, Fusszeile mit    */
+/* Zahlenfeldern je Zeile: Kopfzeile (Name, feste Kenndaten, Schalter   */
+/* „variieren"), Rumpf je Methode, Fusszeile mit                        */
 /* der Kandidatenzahl DIESER Einheit.                                   */
 /* ==================================================================== */
 .epos-flotte-einheitskarten { display: grid; gap: 0.65rem; }
@@ -336,28 +345,15 @@ body {
 }
 .epos-flotte-einheitskarte__fuss b { color: var(--epos-text); }
 
-/* DIE HERKUNFTSPILLE (Konzept 8.3, Feld FlottenEinheit.Herkunft). Drei
-   Werte, drei Farben — Projektanlage in der Speicherfarbe, Katalog in der
-   Quellfarbe, „frei" grau, weil dort noch kein Geraet steht. */
-.epos-flotte-herkunftspille {
-    display: inline-flex; align-items: center;
-    padding: 0.05rem 0.55rem; border-radius: 999px;
-    border: 1px solid var(--epos-rahmen-leise);
-    background: var(--epos-flaeche); color: var(--epos-text-leise);
-    font-size: 11px; font-weight: 600;
-}
-.epos-flotte-herkunftspille--projekt {
-    border-color: var(--epos-senke-rahmen);
-    background: var(--epos-badge-flaeche); color: var(--epos-badge-text);
-}
-.epos-flotte-herkunftspille--katalog {
-    border-color: var(--epos-quelle-rahmen);
-    background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text);
+/* DAS AUSWAHLKAESTCHEN der Karte in SCHRITT 1 (Auftrag #247, SD-Q15): Es
+   entscheidet, welche Einheiten der Uebernahmeknopf meint — und nichts sonst. */
+.epos-flotte-einheit__wahl {
+    width: 20px; height: 20px; margin: 0 0.2rem 0 0; flex: 0 0 auto;
 }
 
-/* DIE GEDIMMTE KARTE. Eine Einheit, die die gewaehlte Methode nicht
-   betrifft, verschwindet NICHT — sie steht gedimmt da und sagt mit
-   „fest: …", mit welchem Wert sie in jeden Kandidaten eingeht. */
+/* DIE GEDIMMTE KARTE. Eine Einheit OHNE den Schalter „variieren" verschwindet
+   NICHT — sie steht gedimmt da und sagt mit „fest: …", mit welchem Wert sie in
+   jeden Kandidaten eingeht. */
 .epos-flotte-einheitskarte--gedimmt {
     border-left-color: var(--epos-rahmen-leise);
     background: var(--epos-flaeche);
@@ -366,10 +362,6 @@ body {
 .epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__name,
 .epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__kenndaten,
 .epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__fuss b { color: var(--epos-text-sehr-leise); }
-.epos-flotte-einheitskarte--gedimmt .epos-flotte-herkunftspille {
-    border-color: var(--epos-rahmen-leise);
-    background: var(--epos-karte-flaeche); color: var(--epos-text-sehr-leise);
-}
 .epos-flotte-fest {
     display: flex; gap: 0.4rem; align-items: baseline; flex-wrap: wrap; margin: 0;
     padding: 0.5rem 0.7rem; color: var(--epos-text-leise);
@@ -482,7 +474,7 @@ body {
 
 <p class="mockup-hinweis">
     <b>Probieren:</b> die drei Optionen unter „Suche" schalten die ganze Station um — den
-    Bedienblock rechts, die Karten des Suchraums (welche variiert, welche fest steht) und die
+    Bedienblock rechts, den RUMPF jeder Einheitenkarte (Größenzeilen oder Stückzahlzeile) und die
     Ergebnissicht (Rasterkarte bei „Größe suchen", Balken über der Stückzahl bei
     „Stückzahl suchen"). Voreingestellt ist <b>Stückzahl suchen</b>, die neue Methode&nbsp;S.
 </p>
@@ -627,15 +619,14 @@ body {
 
             <div class="epos-flotte-einheitskarten">
 
-                <!-- (a) Katalogeinheit — variiert bei Methode S -->
-                <article class="epos-flotte-einheitskarte" data-dimm="groesse">
+                <!-- (a) Eine Einheit aus dem Katalog — eingeschaltet, ihr Rumpf folgt der Methode -->
+                <article class="epos-flotte-einheitskarte">
                     <div class="epos-flotte-einheitskarte__kopf">
                         <span class="epos-flotte-einheitskarte__name">Shenzhen Growatt New Energy Co., Ltd.: WIT‑M+APX ESS</span>
-                        <span class="epos-flotte-herkunftspille epos-flotte-herkunftspille--katalog">Katalog</span>
                         <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW</span>
                         <span class="epos-flotte-einheitskarte__fueller"></span>
                         <label class="epos-schalter">
-                            <input class="epos-schalter-kasten" type="checkbox" data-variieren="stueckzahl" checked>
+                            <input class="epos-schalter-kasten" type="checkbox" checked disabled>
                             <span class="epos-feld-text">variieren</span>
                         </label>
                     </div>
@@ -655,25 +646,63 @@ body {
                         </div>
                     </div>
 
-                    <p class="epos-flotte-fest" data-nur="groesse">
-                        <span>fest:</span><b>1 × 129 kWh</b>
-                        <span>— die Einheit geht unverändert in jeden Kandidaten ein.</span>
-                    </p>
+                    <div class="epos-flotte-einheitskarte__rumpf" data-nur="groesse">
+                        <div class="epos-formularraster epos-formularraster--einspaltig">
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Größenkopplung</span>
+                                <span class="epos-feld-zeile">
+                                    <select class="epos-eingabe epos-eingabe--breit" disabled>
+                                        <option selected>Kapazität und Leistung</option>
+                                        <option>Kapazität und C-Rate</option>
+                                        <option>Leistung und C-Rate</option>
+                                    </select>
+                                    <span class="epos-einheit">C-Rate folgt</span>
+                                </span>
+                            </label>
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Kapazität</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="100" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="200" readonly>
+                                    <span class="epos-einheit">kWh</span>
+                                    <span class="epos-einheit epos-einheit--bis">, Schritt</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="20" readonly>
+                                    <span class="epos-einheit">kWh</span>
+                                </span>
+                            </label>
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Leistung</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="80" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="160" readonly>
+                                    <span class="epos-einheit">kW</span>
+                                    <span class="epos-einheit epos-einheit--bis">, Schritt</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="20" readonly>
+                                    <span class="epos-einheit">kW</span>
+                                </span>
+                            </label>
+                            <p class="epos-herleitung">Die Stückzahl steht dabei fest auf 1 (SD‑Q16).</p>
+                        </div>
+                    </div>
 
                     <p class="epos-flotte-einheitskarte__fuss" data-nur="stueckzahl">
                         <span>Kandidaten dieser Einheit:</span><b>4</b>
                     </p>
+                    <p class="epos-flotte-einheitskarte__fuss" data-nur="groesse">
+                        <span>Kandidaten dieser Einheit:</span><b>30</b>
+                    </p>
                 </article>
 
-                <!-- (b) Freie Einheit — variiert bei Methode G -->
-                <article class="epos-flotte-einheitskarte" data-dimm="stueckzahl">
+                <!-- (b) Eine von Hand angelegte Einheit — ebenso eingeschaltet -->
+                <article class="epos-flotte-einheitskarte">
                     <div class="epos-flotte-einheitskarte__kopf">
                         <span class="epos-flotte-einheitskarte__name">Freie Auslegungseinheit</span>
-                        <span class="epos-flotte-herkunftspille">frei</span>
                         <span class="epos-flotte-einheitskarte__kenndaten">ohne Gerät — die Größe wird gesucht</span>
                         <span class="epos-flotte-einheitskarte__fueller"></span>
                         <label class="epos-schalter">
-                            <input class="epos-schalter-kasten" type="checkbox" data-variieren="groesse">
+                            <input class="epos-schalter-kasten" type="checkbox" checked disabled>
                             <span class="epos-feld-text">variieren</span>
                         </label>
                     </div>
@@ -719,21 +748,36 @@ body {
                         </div>
                     </div>
 
-                    <p class="epos-flotte-fest" data-nur="stueckzahl">
-                        <span>fest:</span><b>129 kWh · 100 kW</b>
-                        <span>— die Größe aus Schritt 1 bleibt stehen; variiert wird nur die Stückzahl der Geräte.</span>
-                    </p>
+                    <div class="epos-flotte-einheitskarte__rumpf" data-nur="stueckzahl">
+                        <div class="epos-formularraster epos-formularraster--einspaltig">
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Stückzahl</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="1" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="2" readonly>
+                                    <span class="epos-einheit">Stück</span>
+                                </span>
+                            </label>
+                            <p class="epos-herleitung">= 100 – 200 kWh · 100 – 200 kW</p>
+                        </div>
+                    </div>
 
                     <p class="epos-flotte-einheitskarte__fuss" data-nur="groesse">
                         <span>Kandidaten dieser Einheit:</span><b>266</b>
+                    </p>
+                    <p class="epos-flotte-einheitskarte__fuss" data-nur="stueckzahl">
+                        <span>Kandidaten dieser Einheit:</span><b>2</b>
                     </p>
                 </article>
             </div>
 
             <p class="epos-herleitung">
-                <b>Mischflotte (8.3):</b> „Größe suchen" variiert nur die freien Einheiten, „Stückzahl suchen"
-                nur die konkreten — die jeweils andere steht fest und wird gedimmt mit ihrem festen Wert gezeigt.
-                Beides zugleich ist nicht Teil der ersten Stufe (SD‑Q16).
+                <b>Der Schalter entscheidet, die Methode auch (8.3, SD‑Q15/SD‑Q16):</b> Variiert wird
+                JEDE Einheit mit „variieren" — und an ihr, was die Methode sagt: unter „Größe suchen"
+                zwei der drei Größen bei fester Stückzahl, unter „Stückzahl suchen" die Stückzahl bei
+                fester Größe. Eine Einheit ohne „variieren" steht gedimmt mit ihrem festen Wert da.
+                Beides im selben Lauf gibt es nicht; wer beides prüfen will, fährt zwei Läufe.
             </p>
         </section>
 
@@ -936,56 +980,72 @@ body {
 <!-- ================================================================== -->
 <div class="mockup-nebenfaelle">
     <div class="mockup-nebenfall">
-        <h3>Nebenfall A — Flotte ohne freie Einheit</h3>
-        <p>Dann gibt es nichts, dessen Größe zu suchen wäre. Die Option bleibt <b>sichtbar</b> und
-           gedimmt; die Abhilfe sagt, was in Schritt 1 zu tun ist.</p>
+        <h3>Nebenfall A — keine Einheit mit „variieren"</h3>
+        <p>Dann gibt es nichts zu suchen. <b>Beide</b> Suchoptionen bleiben <b>sichtbar</b> und
+           gedimmt; die Abhilfe sagt, was zu tun ist. „Nur bewerten" bleibt wählbar.</p>
         <div class="epos-flotte-suchoption epos-flotte-suchoption--gesperrt">
             <label class="epos-option">
                 <input class="epos-option-kasten" type="radio" name="nebenfall-a" disabled>
-                <span class="epos-feld-text">Größe suchen (freie Einheit)</span>
+                <span class="epos-feld-text">Größe suchen</span>
             </label>
-            <p class="epos-option-beschreibung">Variiert zwei der drei Größen an den freien
-               Auslegungseinheiten; die Stückzahl steht fest auf 1.</p>
+            <p class="epos-option-beschreibung">Variiert zwei der drei Größen an jeder
+               eingeschalteten Einheit; die Stückzahl steht dabei fest.</p>
             <p class="epos-flotte-abhilfe">
                 <span aria-hidden="true">→</span>
-                <span>In Schritt 1 eine <b>freie Einheit</b> hinzufügen.</span>
+                <span>Auf einer Einheitenkarte <b>„variieren"</b> einschalten.</span>
             </p>
         </div>
     </div>
 
     <div class="mockup-nebenfall">
-        <h3>Nebenfall B — Flotte ohne Speicher aus Projekt oder Katalog</h3>
-        <p>Dann gibt es kein Gerät, dessen Stückzahl zu suchen wäre — dieselbe Bauart, andere Abhilfe.</p>
+        <h3>Nebenfall B — dieselbe Sperre an der zweiten Methode</h3>
+        <p>Dieselbe Bauart, derselbe Grund: Ohne eingeschaltete Einheit gibt es keine Stückzahl
+           zu suchen.</p>
         <div class="epos-flotte-suchoption epos-flotte-suchoption--gesperrt">
             <label class="epos-option">
                 <input class="epos-option-kasten" type="radio" name="nebenfall-b" disabled>
-                <span class="epos-feld-text">Stückzahl suchen (Speicher aus Projekt oder Katalog)</span>
+                <span class="epos-feld-text">Stückzahl suchen</span>
             </label>
-            <p class="epos-option-beschreibung">Lässt die Gerätegröße stehen und variiert, wie viele
-               Geräte stehen (0 = Einheit entfällt).</p>
+            <p class="epos-option-beschreibung">Lässt jede Einheit so groß, wie sie eingestellt ist,
+               und variiert, wie viele davon stehen (0 = Einheit entfällt).</p>
             <p class="epos-flotte-abhilfe">
                 <span aria-hidden="true">→</span>
-                <span>In Schritt 1 einen <b>Speicher aus Projekt oder Katalog</b> aufnehmen.</span>
+                <span>Auf einer Einheitenkarte <b>„variieren"</b> einschalten.</span>
             </p>
         </div>
     </div>
 
     <div class="mockup-nebenfall">
-        <h3>Die dritte Herkunftspille</h3>
-        <p>Die Karte oben zeigt „Katalog" und „frei"; eine Einheit aus einer <b>Projektanlage</b>
-           trägt dieselbe Kopfzeile mit der dritten Pille. Sie wird wie eine Katalogeinheit
-           behandelt: feste Größe, variierbare Stückzahl.</p>
+        <h3>Schritt 1 — Auswahl und Übernahme ins Projekt (SD‑Q15)</h3>
+        <p>Weil die Einheiten <b>keine Herkunft</b> mehr tragen, braucht es einen ausdrücklichen
+           Weg vom Arbeitsstück zur Projektanlage: ein Auswahlkästchen je Karte und neben
+           „Speicher hinzufügen" den Knopf <b>„Ausgewählte Einheiten in Projekt übernehmen"</b>.
+           Er legt <b>je Stück eine Anlage</b> an (die Projekttabelle kennt keine Stückzahl) und
+           fragt vorher nach.</p>
+
+        <div class="epos-leiste" style="margin-bottom:8px">
+            <button type="button" class="epos-knopf">+ Speicher hinzufügen</button>
+            <button type="button" class="epos-knopf">Ausgewählte Einheiten in Projekt übernehmen</button>
+        </div>
+
         <div class="epos-flotte-einheitskarte">
             <div class="epos-flotte-einheitskarte__kopf">
-                <span class="epos-flotte-einheitskarte__name">Speicher Halle 2 (aus dem Projekt)</span>
-                <span class="epos-flotte-herkunftspille epos-flotte-herkunftspille--projekt">Projektanlage</span>
-                <span class="epos-flotte-einheitskarte__kenndaten">64 kWh · 50 kW</span>
+                <input class="epos-flotte-einheit__wahl" type="checkbox" checked disabled
+                       aria-label="Growatt WIT‑M+APX ESS für die Übernahme auswählen">
+                <span class="epos-flotte-einheitskarte__name">Growatt WIT‑M+APX ESS</span>
+                <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW · 2 Stück</span>
             </div>
             <p class="epos-flotte-einheitskarte__fuss">
-                <span>Kandidaten dieser Einheit:</span><b>3</b>
-                <span>(Stückzahl 0 – 2; 0 = Einheit entfällt)</span>
+                <span>Rückfrage:</span><b>2 Speicheranlagen werden angelegt, 0 geändert — fortfahren?</b>
             </p>
         </div>
+
+        <p class="epos-herleitung" style="margin-top:8px">
+            Die Stückzahl kommt aus der Karte in Station 4 — genau die Zahl, die
+            „Kandidat übernehmen" unter „Stückzahl suchen" dort abgelegt hat. Vertritt eine
+            Einheit schon eine Projektanlage, schreibt das erste Stück in DIESE Anlage zurück;
+            weitere entstehen daneben.
+        </p>
     </div>
 </div>
 
@@ -995,16 +1055,22 @@ body {
         <li><b>Drei Optionen statt zweier</b> (8.3, SD‑Q13): „nur bewerten" · „Größe suchen" ·
             „Stückzahl suchen". Die Methode wird ausdrücklich gewählt, nicht aus der Herkunft
             abgeleitet — bei einer Mischflotte wäre sonst nicht eindeutig, was variiert wird.</li>
-        <li><b>Herkunftspille an jeder Einheit</b> (8.3, SD‑Q15): <i>Projektanlage</i> · <i>Katalog</i> ·
-            <i>frei</i>. Sie ist das sichtbare Gegenstück zum neuen Feld
-            <code>FlottenEinheit.Herkunft</code>; Schritt 1 zeigt dieselbe Pille.</li>
+        <li><b>KEINE Herkunftsmarkierung</b> (8.3, SD‑Q15, Entscheid vom 12.09.2026): Die Pillen
+            <i>Projektanlage</i> · <i>Katalog</i> · <i>frei</i> sind gefallen — „die Einheiten
+            werden nur temporär für die Optimierung benötigt". WELCHE Einheit variiert wird, sagt
+            der <b>Schalter „variieren"</b> auf ihrer Karte; WAS an ihr variiert wird, sagt die
+            Methode. Den Weg ins Projekt öffnet stattdessen der Knopf „Ausgewählte Einheiten in
+            Projekt übernehmen" in Schritt 1.</li>
         <li><b>Karten statt Neun-Spalten-Tabelle</b> (8.4, SD‑Q18): je Einheit eine Karte mit Kopfzeile,
             methodenabhängigem Rumpf und einer Fußzeile „Kandidaten dieser Einheit". Sieben kleine
             Zahlenfelder je Tabellenzeile gleichen Gewichts entfallen; die Tabelle bleibt nur noch in
             der Kandidatenliste des Ergebnisses.</li>
-        <li><b>Keine Fantasiegeräte mehr</b> (8.2): Ein Katalog- oder Projektspeicher <i>hat</i> eine Größe.
-            Bei „Stückzahl suchen" steht sie fest, und die Herleitungszeile zeigt, was aus 1–4 Stück wird
+        <li><b>Keine Fantasiegeräte mehr</b> (8.2): Bei „Stückzahl suchen" steht die Größe jeder
+            Einheit fest, und die Herleitungszeile zeigt, was aus 1–4 Stück wird
             (129–516 kWh · 100–400 kW · 45 000–180 000 €).</li>
+        <li><b>Je Lauf EINE Variationsart</b> (8.3, SD‑Q16): Unter „Größe suchen" steht die
+            Stückzahl fest, unter „Stückzahl suchen" die Größe. Das Mischraster Stückzahl × Größe
+            gibt es nicht mehr; wer beides prüfen will, fährt zwei Läufe.</li>
         <li><b>Ergebnissicht über der Stückzahl</b> (8.3, SD‑Q17): Balken je Stückzahl bei einer
             variierten Einheit, Rasterkarte n₁ × n₂ bei zweien, darüber hinaus die Kandidatentabelle.</li>
         <li><b>Unberührt:</b> Ablaufleiste, Ziel, Grenze „Maximale Auslegungskandidaten", der Kasten
@@ -1017,24 +1083,19 @@ body {
 <script>
 // Das EINZIGE Verhalten dieses Blattes: die Wahl der Suchmethode. Sie setzt ein
 // Merkmal am <body>; alles Weitere haengt daran — data-nur nennt die Methoden,
-// in denen ein Element steht, data-dimm die Methode, in der eine Einheitskarte
-// fest steht (sie wird dann gedimmt gezeigt, nicht versteckt).
+// in denen ein Element steht.
+//
+// SEIT DEM ENTSCHEID (Auftrag #247): Die Karten haengen NICHT mehr an der
+// Methode. Beide Einheiten sind eingeschaltet („variieren"), und die Methode
+// entscheidet nur noch, welchen RUMPF ihre Karte zeigt — Groessenzeilen oder
+// Stueckzahlzeile. Das Dimmen und die Bindung „diese Karte gehoert zu jener
+// Methode" sind damit weg (SD-Q15).
 (function () {
     function umschalten(methode) {
         document.body.dataset.methode = methode;
 
         document.querySelectorAll('[data-nur]').forEach(function (el) {
             el.hidden = el.dataset.nur.split(' ').indexOf(methode) < 0;
-        });
-
-        document.querySelectorAll('[data-dimm]').forEach(function (el) {
-            el.classList.toggle('epos-flotte-einheitskarte--gedimmt',
-                                el.dataset.dimm === methode);
-        });
-
-        document.querySelectorAll('input[data-variieren]').forEach(function (kasten) {
-            kasten.checked = kasten.dataset.variieren === methode;
-            kasten.disabled = kasten.dataset.variieren !== methode;
         });
     }
 

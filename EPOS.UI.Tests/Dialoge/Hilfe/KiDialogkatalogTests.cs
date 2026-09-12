@@ -144,7 +144,7 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_sechsundzwanzig_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_siebenundzwanzig_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
@@ -152,7 +152,9 @@ public class KiDialogkatalogTests
         // 5.1.1); seit AUFTRAG #224 sechsundzwanzig: der SCHRITT der Ansicht, die vier
         // Felder der Station 4 („beste Größe suchen", Feinraster, maximale Kandidaten,
         // Kandidatenzahl des Suchraums) und die vier des Kastens „Bestes Ergebnis".
-        Assert.Equal(26, d.Felder.Count);
+        // Seit AUFTRAG #247 siebenundzwanzig: die SUCHMETHODE (nur lesend) sagt, WAS
+        // der nächste Lauf variiert — Größe oder Stückzahl (SD‑E‑10).
+        Assert.Equal(27, d.Felder.Count);
 
         // KEINE Knöpfe: „Berechnen", „Peak-Ziel bestimmen…" und „Speichern" sind
         // rechnende bzw. datenbankwirksame Aktionen und gehören in das Aktionsregister

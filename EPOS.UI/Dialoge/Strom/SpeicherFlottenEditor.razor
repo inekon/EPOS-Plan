@@ -62,8 +62,25 @@
                 <h3 id="flotte-einheiten-titel">@Texte.PhysischeEinheiten</h3>
                 <p>@Texte.EinheitenHinweis</p>
             </div>
-            <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
-                    @onclick="EinheitHinzufuegen">@Texte.Hinzufuegen</button>
+            <div class="epos-flotte-abschnitt__aktionen">
+                <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                        @onclick="EinheitHinzufuegen">@Texte.Hinzufuegen</button>
+
+                @* „AUSGEWAEHLTE EINHEITEN IN PROJEKT UEBERNEHMEN" (Auftrag #247,
+                   SD-Q15). Die Einheiten tragen KEINE Herkunftsmarkierung mehr —
+                   „die Einheiten werden nur temporaer fuer die Optimierung
+                   benoetigt"; dieser Knopf ist der Weg, aus einer gefundenen
+                   Bestueckung ein Projekt zu machen. Ohne Delegat gibt es ihn nicht
+                   (Hausregel „kein Delegat, kein Knopf"), im Lesemodus steht er
+                   WEICH gesperrt mit seinem Grund (W16b-E-6). *@
+                @if (EinheitenUebernehmen is not null && _wert.Einheiten.Count > 0)
+                {
+                    <button type="button" class="epos-knopf epos-flotte-aktion"
+                            aria-disabled="@((!Aktiv || Schreibgeschuetzt).ToString().ToLowerInvariant())"
+                            title="@UebernahmeGrund"
+                            @onclick="UebernahmeFragen">@Texte.Uebernahme</button>
+                }
+            </div>
         </div>
 
         @* DER NACHZUG (Auftrag #239, Anwenderrueckmeldung 12.09.2026 „Bei mehreren
@@ -95,6 +112,16 @@
                     bool offen = _offeneEinheiten.Contains(einheit.Id);
                     <article class="epos-flotte-einheit" @key="einheit.Id" data-einheit-id="@einheit.Id">
                         <div class="epos-flotte-einheit__kopf">
+                            @* DAS AUSWAHLKAESTCHEN (Auftrag #247): Es entscheidet, welche
+                               Einheiten der Uebernahmeknopf oben meint — und nichts
+                               sonst. Ohne den Delegaten steht es nicht da. *@
+                            @if (EinheitenUebernehmen is not null)
+                            {
+                                <input type="checkbox" class="epos-flotte-einheit__wahl"
+                                       checked="@_gewaehlt.Contains(einheit.Id)"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, Texte.AuswahlAria, EinheitName(einheit))"
+                                       @onchange="@(e => WahlUmschalten(einheit, e))" />
+                            }
                             <button type="button" class="epos-flotte-einheit__umschalter"
                                     aria-expanded="@offen" aria-controls="@InhaltId(einheit)"
                                     @onclick="@(() => OffenUmschalten(einheit))">
@@ -313,6 +340,11 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* Die RUECKFRAGE vor dem Schreiben (Konzept 8.3): Sie nennt, wie viele Anlagen
+       entstehen und wie viele geaendert werden — danach steht es in der Datenbank. *@
+    <Rueckfrage Offen="@_uebernahmeFrage" TitelText="@Texte.UebernahmeTitel"
+                Frage="@_uebernahmeText" Beantwortet="UebernahmeBeantwortet" />
+
 </section>
 
 @code {
@@ -362,6 +394,33 @@
     /// <summary>Baut aus einem Katalogsatz eine Einheit; <c>null</c> = keine Katalogquelle.</summary>
     [Parameter] public Func<int, FlottenEinheit?>? EinheitAusKatalog { get; set; }
 
+    // =====================================================================
+    //  „Ausgewählte Einheiten in Projekt übernehmen" (Auftrag #247, SD‑Q15)
+    // =====================================================================
+
+    /// <summary>
+    /// Macht aus den gewählten Einheiten Speicheranlagen des Projekts — je Stück eine.
+    /// <c>null</c> = kein Knopf und kein Auswahlkästchen (Hausregel „kein Delegat, kein
+    /// Bedienelement").
+    /// </summary>
+    /// <remarks>
+    /// Die zweite Liste sind die STÜCKZAHLEN in derselben Reihenfolge; sie kommen aus
+    /// dem Suchraum der Einheit (<c>FlottenAuslegungsAchse.AnzahlVon</c>) — das ist die
+    /// Zahl, die die Stückzahlsuche dort abgelegt hat.
+    /// </remarks>
+    [Parameter] public Func<IReadOnlyList<FlottenEinheit>, IReadOnlyList<int>,
+                            FlottenUebernahmeErgebnis>? EinheitenUebernehmen { get; set; }
+
+    /// <summary>
+    /// Steht die Datenbank im Lesemodus? Dann ist der Übernahmeknopf WEICH gesperrt und
+    /// nennt seinen Grund (Hausregel W16b‑E‑6: ein <c>disabled</c>-Knopf zeigt keinen
+    /// <c>title</c>).
+    /// </summary>
+    [Parameter] public bool Schreibgeschuetzt { get; set; }
+
+    /// <summary>Die Übernahme ist gelaufen — der Wirt zeigt die Meldung.</summary>
+    [Parameter] public EventCallback<string> Uebernommen { get; set; }
+
     /// <summary>Steuerwert der Optionsgruppe: eine Speicheranlage des Projekts.</summary>
     public const int QuelleAnlage = 0;
 
@@ -374,6 +433,12 @@
     private FlottenStudieKonfiguration _wert = new();
     private FlottenStudieKonfiguration? _eingangReferenz;
     private readonly HashSet<string> _offeneEinheiten = new(StringComparer.Ordinal);
+
+    /// <summary>Die für die Übernahme gewählten Einheiten (Auftrag #247).</summary>
+    private readonly HashSet<string> _gewaehlt = new(StringComparer.Ordinal);
+
+    private bool _uebernahmeFrage;
+    private string _uebernahmeText = "";
 
     private bool _quellenwahlOffen;
     private int _quelle = QuelleLeer;
@@ -711,6 +776,101 @@
     private async Task RainflowPunktEntfernen(FlottenEinheit e, FlottenRainflowPunkt p) { e.RainflowKurve.Remove(p); await Melden(); }
     private async Task BetriebsoptionenSetzen(FlottenSimulationOptionen wert) { _wert.Optionen = Kopie(wert ?? new()); await Melden(); }
 
+    // ------------------------------------- Übernahme ins Projekt (Auftrag #247)
+
+    /// <summary>Die gewählten Einheiten in Listenreihenfolge (Prüfhilfe).</summary>
+    public IReadOnlyList<FlottenEinheit> GewaehlteEinheiten
+        => _wert.Einheiten.Where(e => _gewaehlt.Contains(e.Id)).ToList();
+
+    /// <summary>
+    /// Die STÜCKZAHL je gewählter Einheit — <c>AnzahlVon</c> ihrer Suchachse, mindestens
+    /// 1. Das ist die Zahl, die „Kandidat übernehmen" unter „Stückzahl suchen" dort
+    /// abgelegt hat; ohne Suche steht die Vorbelegung 1.
+    /// </summary>
+    public IReadOnlyList<int> GewaehlteStueckzahlen
+        => GewaehlteEinheiten.Select(e => Math.Max(1, StueckzahlZu(e))).ToList();
+
+    private int StueckzahlZu(FlottenEinheit e)
+    {
+        FlottenAuslegungsAchse? a = _wert.Auslegung.Achsen.FirstOrDefault(x => x.Vorlage?.Id == e.Id);
+        return a?.AnzahlVon ?? 1;
+    }
+
+    private void WahlUmschalten(FlottenEinheit e, ChangeEventArgs args)
+    {
+        bool an = args.Value is bool b ? b
+                : bool.TryParse(args.Value?.ToString(), out bool p) && p;
+        if (an) _gewaehlt.Add(e.Id); else _gewaehlt.Remove(e.Id);
+    }
+
+    /// <summary>Warum der Übernahmeknopf gerade nicht handelt; leer = er handelt.</summary>
+    private string UebernahmeGrund => Schreibgeschuetzt ? Texte.UebernahmeGesperrt
+                                    : _gewaehlt.Count == 0 ? Texte.UebernahmeKeine : "";
+
+    /// <summary>
+    /// Fragt vor dem Schreiben — mit den zwei Zahlen, die der Kern aus denselben
+    /// Einheiten rechnet (<c>SpeicherFlottenStudieCtrl.Vorschau</c>). Eine zweite
+    /// Rechnung hier liefe bei der ersten Änderung der Regel auseinander.
+    /// </summary>
+    private async Task UebernahmeFragen()
+    {
+        if (!Aktiv || EinheitenUebernehmen is null) return;
+        if (Schreibgeschuetzt) { await Melde(Texte.UebernahmeGesperrt); return; }
+
+        IReadOnlyList<FlottenEinheit> gewaehlt = GewaehlteEinheiten;
+        if (gewaehlt.Count == 0) { await Melde(Texte.UebernahmeKeine); return; }
+
+        FlottenUebernahmeVorschau v = SpeicherFlottenStudieCtrl.Vorschau(
+            gewaehlt, GewaehlteStueckzahlen);
+        _uebernahmeText = string.Format(CultureInfo.CurrentCulture, Texte.UebernahmeFrage,
+                                        v.Angelegt, v.Geaendert);
+        _uebernahmeFrage = true;
+    }
+
+    /// <summary>
+    /// Nach dem Ja: schreiben, den Anlagenbezug der Einheiten setzen und melden.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Bezug kommt aus dem Ergebnis</b>, nicht aus einer zweiten Abfrage: Der Kern
+    /// liefert je angelegter oder geänderter Anlage die Kennung der Einheit, aus der sie
+    /// entstanden ist. Das ERSTE Stück trägt den Bezug — die weiteren sind eigene
+    /// Anlagen ohne Einheit im Arbeitsstand, und eine Einheit kann nur EINE vertreten.
+    /// </remarks>
+    private async Task UebernahmeBeantwortet(bool? antwort)
+    {
+        _uebernahmeFrage = false;
+        if (antwort != true || EinheitenUebernehmen is null) return;
+
+        IReadOnlyList<FlottenEinheit> gewaehlt = GewaehlteEinheiten;
+        if (gewaehlt.Count == 0) return;
+
+        FlottenUebernahmeErgebnis ergebnis;
+        try { ergebnis = EinheitenUebernehmen(gewaehlt, GewaehlteStueckzahlen); }
+        catch (Exception ex) { await Melde(ex.Message); return; }
+
+        if (ergebnis is null || !ergebnis.Erfolg)
+        {
+            await Melde(ergebnis?.Meldung ?? "");
+            return;
+        }
+
+        foreach (FlottenUebernahmeAnlage a in ergebnis.Anlagen.Where(x => x.Stueck == 1))
+        {
+            FlottenEinheit? e = _wert.Einheiten.FirstOrDefault(
+                x => string.Equals(x.Id, a.EinheitId, StringComparison.Ordinal));
+            if (e is not null)
+                e.AnlageId = a.AnlageId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        _gewaehlt.Clear();
+        await Melden();
+        await Melde(string.Format(CultureInfo.CurrentCulture, Texte.UebernahmeErfolg,
+                                  ergebnis.Angelegt, ergebnis.Geaendert));
+    }
+
+    private Task Melde(string text)
+        => Uebernommen.HasDelegate ? Uebernommen.InvokeAsync(text ?? "") : Task.CompletedTask;
+
     private FlottenAuslegungsAchse AchseZu(FlottenEinheit e) =>
         _wert.Auslegung.Achsen.First(x => x.Vorlage?.Id == e.Id);
 
@@ -781,11 +941,12 @@
     private static FlottenAuslegungEingang Kopie(FlottenAuslegungEingang q) => new()
     {
         Achsen=(q.Achsen ?? new()).Select(Kopie).ToList(), Betriebsziele=new(q.Betriebsziele ?? new()),
-        MaximaleKandidaten=q.MaximaleKandidaten, Feinraster=q.Feinraster
+        MaximaleKandidaten=q.MaximaleKandidaten, Feinraster=q.Feinraster, Suchmethode=q.Suchmethode
     };
     private static FlottenAuslegungsAchse Kopie(FlottenAuslegungsAchse q) => new()
     {
-        Aktiv=q.Aktiv, Modus=q.Modus, AnzahlVon=q.AnzahlVon, AnzahlBis=q.AnzahlBis,
+        Aktiv=q.Aktiv, ErsetztEinheitId=q.ErsetztEinheitId,
+        Modus=q.Modus, AnzahlVon=q.AnzahlVon, AnzahlBis=q.AnzahlBis,
         KapazitaetVonKWh=q.KapazitaetVonKWh, KapazitaetBisKWh=q.KapazitaetBisKWh, KapazitaetSchrittKWh=q.KapazitaetSchrittKWh,
         LeistungVonKw=q.LeistungVonKw, LeistungBisKw=q.LeistungBisKw, LeistungSchrittKw=q.LeistungSchrittKw,
         CRateVon=q.CRateVon, CRateBis=q.CRateBis, CRateSchritt=q.CRateSchritt, Vorlage=Kopie(q.Vorlage ?? new())
@@ -939,5 +1100,15 @@
 
         public string NachzugAufnehmen { get; set; } = Resource.FLOTTE_ED_NACHZUG_AUFNEHMEN;
         public string NachzugAufnehmenTitel { get; set; } = Resource.FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL;
+
+        // ------------------ „Ausgewählte Einheiten in Projekt übernehmen" (#247)
+
+        public string AuswahlAria { get; set; } = Resource.FLOTTE_ED_AUSWAHL_ARIA;
+        public string Uebernahme { get; set; } = Resource.FLOTTE_ED_UEBERNAHME;
+        public string UebernahmeTitel { get; set; } = Resource.FLOTTE_ED_UEBERNAHME_TITEL;
+        public string UebernahmeFrage { get; set; } = Resource.FLOTTE_ED_UEBERNAHME_FRAGE;
+        public string UebernahmeKeine { get; set; } = Resource.FLOTTE_ED_UEBERNAHME_KEINE;
+        public string UebernahmeGesperrt { get; set; } = Resource.FLOTTE_ED_UEBERNAHME_GESPERRT;
+        public string UebernahmeErfolg { get; set; } = Resource.FLOTTE_ED_UEBERNAHME_ERFOLG;
     }
 }

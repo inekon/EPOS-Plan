@@ -88,7 +88,32 @@
         @* ---------------------------------------------------------------- *@
         @* Rasterkarte links, die zwei Schnitte rechts                       *@
         @* ---------------------------------------------------------------- *@
-        @if (_raster.IstLeer)
+        @* DIE ERGEBNISSICHT HAENGT AN DER SUCHMETHODE (Auftrag #247, SD-Q17):
+           Unter „Stueckzahl suchen" gibt es keine Groessenachse — bei EINER
+           variierten Einheit steht die Kurve „Kapitalwert ueber Stueckzahl",
+           bei ZWEI die Rasterkarte n1 x n2, darueber hinaus nur die
+           Kandidatentabelle darunter. Die Karte der Groessensuche waere dort
+           eine Aussage ueber eine Achse, die der Lauf gar nicht gefahren hat. *@
+        @if (Methode == FlottenSuchmethode.Stueckzahl)
+        {
+            @if (_stueckbild is not null)
+            {
+                <section class="epos-simerg-block">
+                    <ChartBild Png="@_stueckbild" Alt="@Resource.FLOTTE_STUECK_BILD_ALT" />
+                </section>
+            }
+            else if (_stueckrasterbild is not null)
+            {
+                <section class="epos-simerg-block">
+                    <ChartBild Png="@_stueckrasterbild" Alt="@Resource.FLOTTE_STUECK_RASTER_ALT" />
+                </section>
+            }
+            else
+            {
+                <p class="epos-flotte-hinweis">@Resource.FLOTTE_GROESSEN_KEIN_RASTER</p>
+            }
+        }
+        else if (_raster.IstLeer)
         {
             <p class="epos-flotte-hinweis">@Resource.FLOTTE_GROESSEN_KEIN_RASTER</p>
         }
@@ -305,6 +330,15 @@
     [Parameter] public int Einheiten { get; set; } = 1;
 
     /// <summary>
+    /// WAS der Lauf variiert hat (Auftrag #247, SD‑Q17). Sie entscheidet, welche Bilder
+    /// über der Kandidatentabelle stehen — die Rasterkarte und die zwei Schnitte der
+    /// Größensuche oder die Stückzahlsicht. Vorgabe
+    /// <see cref="FlottenSuchmethode.Groesse"/>: Das ist der Stand bis #247 und der eines
+    /// Laufs, dessen Kandidaten keine Stückzahlen führen.
+    /// </summary>
+    [Parameter] public FlottenSuchmethode Methode { get; set; } = FlottenSuchmethode.Groesse;
+
+    /// <summary>
     /// „Kandidat übernehmen" — der Wirt macht die Variante zur Flotte. Ohne Delegat
     /// bleiben die Knöpfe gesperrt (Hausregel „kein Delegat, kein Bedienelement").
     /// </summary>
@@ -341,6 +375,12 @@
     private FlottenAuslegungErgebnis? _gezeichnet;
     private FlottenRasterdaten _raster = FlottenRasterdaten.Leer;
     private byte[]? _rasterbild, _spaltenbild, _zeilenbild;
+
+    /// <summary>
+    /// Die zwei Bilder der STÜCKZAHLSUCHE (Auftrag #247); höchstens eines ist belegt —
+    /// die Kurve bei EINER variierten Einheit, die Karte n₁ × n₂ bei ZWEI.
+    /// </summary>
+    private byte[]? _stueckbild, _stueckrasterbild;
     private string _offen = "";
     private int _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
 
@@ -390,6 +430,25 @@
     /// </summary>
     private void Zeichnen()
     {
+        // DIE STUECKZAHLSICHT ZUERST (Auftrag #247): Sie braucht weder Einheitenwahl noch
+        // Schieber — die Achse ist die Stueckzahl, und die steht im Kandidaten.
+        _stueckbild = null;
+        _stueckrasterbild = null;
+        if (Methode == FlottenSuchmethode.Stueckzahl)
+        {
+            _stueckbild = SpeicherFlottenAnzeigeCtrl.Stueckzahlbild(Ergebnis);
+            _stueckrasterbild = _stueckbild is null
+                ? SpeicherFlottenAnzeigeCtrl.Stueckzahlrasterbild(Ergebnis) : null;
+            // Die Groessenkarte und ihre zwei Schnitte entstehen dann GAR NICHT: Sie
+            // zeigten eine Achse, die dieser Lauf nie gefahren hat — und jedes Bild
+            // kostet einen vollen Zeichenlauf.
+            _raster = FlottenRasterdaten.Leer;
+            _rasterbild = null;
+            _spaltenbild = null;
+            _zeilenbild = null;
+            return;
+        }
+
         _raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(Ergebnis, _einheit);
         if (_raster.IstLeer)
         {

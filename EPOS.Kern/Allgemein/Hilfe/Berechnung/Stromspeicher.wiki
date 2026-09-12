@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-11 (Fassung 6: adaptive Entladeschwelle) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-12 (Fassung 7: zwei Suchmethoden der Rastersuche) | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
@@ -848,13 +848,37 @@ genau '''eine''' Einheit der Flotte durch Abwandlungen ihrer Vorlage; die übrig
 die Anzahl darf auch null sein. Beim Skalieren bleibt das Verhältnis von Lade- zu Entladeleistung
 der Vorlage erhalten, eine Nullrichtung bleibt null.
 
+'''Je Lauf wird genau eine Größe variiert.''' Welche, sagt die '''Suchmethode''':
+
+{| class="wikitable"
+! Methode !! Was die Achse aufspannt !! Kandidaten je Achse
+|-
+| '''Nur bewerten''' || nichts — es gibt keine Suchachse || <math>1</math>
+|-
+| '''Größe suchen''' || zwei der drei Größen Kapazität, Leistung und C-Rate, siehe (46); die '''Stückzahl steht fest''' auf dem Von-Wert der Einheit (0 gilt als 1) || <math>n_{1} \cdot n_{2}</math> — die Stützstellen der zwei Größen
+|-
+| '''Stückzahl suchen''' || die '''Stückzahl''' von–bis; '''Kapazität und Leistung bleiben''' die der Vorlage, es wird nichts skaliert || <math>a_{\max} - a_{\min} + 1</math>
+|}
+
+Die Gesamtzahl ist das Produkt über alle eingeschalteten Achsen, mal der Zahl der Betriebsziele.
+Die '''Kosten''' einer Bestückung sind die Kosten einer Einheit mal ihrer Stückzahl: Investition,
+Betrieb, Ersatz und Restwert gehen je Stück in (45) ein — deshalb ist der Kapitalwert über der
+Stückzahl keine Gerade, sondern kippt, sobald der zusätzliche Nutzen die zusätzliche Investition
+nicht mehr trägt.
+
+Ein Mischraster Stückzahl × Größe in EINEM Lauf gibt es nicht: Es vervielfachte die Kandidatenzahl
+und ließe sich weder als Karte noch als Kurve zeichnen. Wer beides prüfen will, fährt zwei Läufe.
+
+Eine Suchmethode ohne eine einzige eingeschaltete Achse wird '''benannt abgewiesen''' — ebenso ein
+Stückzahlbereich, dessen „bis" unter seinem „von" liegt, und ein unbrauchbarer Größenbereich.
+
 : <math>\displaystyle P = E \cdot r \quad \text{bzw.} \quad E = \frac{P}{r}</math> &nbsp;&nbsp;(46)
 :: <math>P</math> – AC-Nennleistung der Einheit [kW]
 :: <math>E</math> – Nennkapazität der Einheit [kWh]
 :: <math>r</math> – C-Rate [1/h]
 
-Eine Achse spannt zwei der drei Größen auf, die dritte folgt aus (46): Kapazität und Leistung,
-Kapazität und C-Rate oder Leistung und C-Rate. Das '''vollständige endliche kartesische Raster'''
+Bei '''„Größe suchen"''' spannt eine Achse zwei der drei Größen auf, die dritte folgt aus (46):
+Kapazität und Leistung, Kapazität und C-Rate oder Leistung und C-Rate. Das '''vollständige endliche kartesische Raster'''
 wird mit den ausgewählten Betriebszielen kombiniert. Übersteigt es die eingestellte Höchstzahl an
 Kandidaten, wird es '''abgewiesen und nicht gekürzt''' — ein stillschweigend beschnittenes Raster
 wäre eine Aussage über einen Suchraum, der nie geprüft wurde.
@@ -895,7 +919,9 @@ Rasterkarte — das Bild wird exportiert, der Text daneben nicht.
 
 ==== Phase 2: das Feinraster um das Grob-Optimum ====
 
-Genau gegen diesen Vorbehalt läuft die '''zweite Phase''': Nach dem Grobraster wird um seinen besten
+Genau gegen diesen Vorbehalt läuft die '''zweite Phase'''. Sie gehört zur Methode
+'''„Größe suchen"''' und nur zu ihr: Stückzahlen sind ganze Zahlen, und zwischen zwei und drei
+Geräten liegt nichts, was sich verfeinern ließe. Nach dem Grobraster wird um seinen besten
 Punkt ein zweites, engeres Raster gerechnet — '''nur auf der Größenachse''' (Kapazität; bei der
 Kopplung „Leistung und C-Rate" die Leistung). Die zweite Achse, die Stückzahl und das Betriebsziel
 bleiben beim Wert des Grob-Optimums; die C-Rate ändert oberhalb von etwa 1,0 C nichts mehr, eine

@@ -17618,6 +17618,111 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_GROESSEN_ACHSE_LEISTUNG" xml:space="preserve">
     <value>Discharge power [kW]</value>
   </data>
+  <data name="FLOTTE_STUECK_TITEL" xml:space="preserve">
+    <value>Net present value over unit count</value>
+  </data>
+  <data name="FLOTTE_STUECK_ACHSE" xml:space="preserve">
+    <value>Unit count [pcs]</value>
+  </data>
+  <data name="FLOTTE_STUECK_ACHSE_EINHEIT" xml:space="preserve">
+    <value>Unit count {0}</value>
+  </data>
+  <data name="FLOTTE_STUECK_RASTER_TITEL" xml:space="preserve">
+    <value>Net present value over the unit counts of two units</value>
+  </data>
+  <data name="FLOTTE_STUECK_BILD_ALT" xml:space="preserve">
+    <value>Net present value over the unit count, one bar per count; the best one is highlighted</value>
+  </data>
+  <data name="FLOTTE_STUECK_RASTER_ALT" xml:space="preserve">
+    <value>Grid map of the unit counts of two units; infeasible points hatched</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_KEIN_PROJEKT" xml:space="preserve">
+    <value>Without an open project no storage systems can be created.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_KEINE_EINHEIT" xml:space="preserve">
+    <value>No unit is selected.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
+    <value>The transfer failed; nothing was written: {0}</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
+    <value>Search for the size</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_STUECKZAHL" xml:space="preserve">
+    <value>Search for the unit count</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_BEWERTEN_ERL" xml:space="preserve">
+    <value>Computes the fleet from step 1 exactly once — nothing is varied.</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
+    <value>Varies two of the three sizes capacity, power and C rate on every unit switched on; the third follows from the coupling. The unit count stays fixed.</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
+    <value>Keeps every unit at the size it is set to and varies how many of them there are (0 = unit is omitted). The cost is the cost of one unit times the count.</value>
+  </data>
+  <data name="FLOTTE_OPT_ABHILFE" xml:space="preserve">
+    <value>Switch on ‚vary‘ on a unit card — without it there is nothing to search for.</value>
+  </data>
+  <data name="FLOTTE_OPT_BEWERTEN_HINWEIS" xml:space="preserve">
+    <value>One candidate — the fleet as it is set up in step 1.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_KENNDATEN" xml:space="preserve">
+    <value>{0} kWh · {1} kW · {2} pcs</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_KANDIDATEN" xml:space="preserve">
+    <value>Candidates of this unit:</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST" xml:space="preserve">
+    <value>fixed:</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST_GROESSE" xml:space="preserve">
+    <value>The size from step 1 stays; only the unit count is varied.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST_STUECK" xml:space="preserve">
+    <value>The unit count stays; only the size is varied.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_AUS" xml:space="preserve">
+    <value>This unit enters every candidate unchanged.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_GROESSEN" xml:space="preserve">
+    <value>Size range of this unit</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_STUECKZAHL" xml:space="preserve">
+    <value>Unit count of this unit</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_HERLEITUNG" xml:space="preserve">
+    <value>= {0} – {1} kWh · {2} – {3} kW</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_BESTUECKUNG" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_STUECK" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_SUMME" xml:space="preserve">
+    <value>= {0} kWh · {1} kW</value>
+  </data>
+  <data name="FLOTTE_ED_AUSWAHL_ARIA" xml:space="preserve">
+    <value>Select {0} for transfer into the project</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME" xml:space="preserve">
+    <value>Transfer selected units into the project</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Transfer units into the project</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_FRAGE" xml:space="preserve">
+    <value>{0} storage systems will be created, {1} changed — continue?</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_KEINE" xml:space="preserve">
+    <value>Select a unit first.</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_GESPERRT" xml:space="preserve">
+    <value>In read-only mode no storage systems can be created.</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_ERFOLG" xml:space="preserve">
+    <value>{0} storage systems created, {1} changed.</value>
+  </data>
   <data name="FLOTTE_GROESSEN_SKALA" xml:space="preserve">
     <value>Net present value [€]</value>
   </data>
@@ -18748,6 +18853,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_SPA_SCHRITT_ERL" xml:space="preserve">
     <value>Which of the five steps of the flow bar is currently in front: storage, data &amp; costs, operating strategy, optimisation or result.</value>
+  </data>
+  <data name="KI_DLG_SPA_METHODE_NAME" xml:space="preserve">
+    <value>Search method</value>
+  </data>
+  <data name="KI_DLG_SPA_METHODE_ERL" xml:space="preserve">
+    <value>What the next run varies: only evaluate, search for the size, or search for the unit count. Exactly one kind is varied per run.</value>
   </data>
   <data name="KI_DLG_SPA_SUCHE_NAME" xml:space="preserve">
     <value>Search for the best size</value>

@@ -3093,6 +3093,173 @@ namespace WindowsFormsApplication1
         }
 
 
+
+        // ==================================== Stueckzahlkurve (#247, SD-E-10 / SD-Q17)
+
+        /// <summary>
+        /// <b>B12 — KAPITALWERT ÜBER STÜCKZAHL</b> (Auftrag #247, Anwenderentscheid
+        /// SD‑E‑10 / SD‑Q17, Konzept „Stromspeicher-Dialoge" 8.3).
+        ///
+        /// <para><b>Warum Balken und keine Kurve.</b> Die Stückzahl ist eine GANZE Zahl.
+        /// Zwischen „zwei Geräten" und „drei Geräten" gibt es nichts — eine Linie
+        /// behauptete einen Zwischenwert, den es weder gibt noch je gerechnet wurde. Das
+        /// ist derselbe Grund, aus dem die Rasterkarte Zellen zeichnet und nicht
+        /// interpoliert, und derselbe, aus dem es unter „Stückzahl suchen" kein Feinraster
+        /// gibt.</para>
+        ///
+        /// <para><b>Die y-Achse ist vorzeichenfähig</b> und hebt ihre Null gestrichelt
+        /// hervor — genau wie in der Schnittkurve und der Jahresprojektion: Zu viele
+        /// Geräte tragen ihren Kapitaldienst nicht mehr, und das ist die Aussage des
+        /// Bildes. Eine bei null abgeschnittene Achse verschwiege sie.</para>
+        ///
+        /// <para><b>Drei Farben mit drei Aussagen.</b> Eine gewöhnliche Säule steht in
+        /// <see cref="C_STAMM"/>, die BESTE in <see cref="C_RASTER_GUT"/> samt der
+        /// schwarzen Optimum-Marke der Rasterkarte, eine NEGATIVE in
+        /// <see cref="C_RASTER_SCHLECHT"/> (Regel der Jahresprojektion). Unzulässige
+        /// Stückzahlen bekommen die Diagonalschraffur der Rasterkarte — eine
+        /// MUSTER-Aussage, die auch in Graustufen bleibt (WCAG 1.4.1).</para>
+        ///
+        /// <para>Bildmaß 720 × 460 wie die Schnittkurve daneben.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift, z. B. „Kapitalwert über Stückzahl".</param>
+        /// <param name="xTitel">Beschriftung der Stückzahlachse.</param>
+        /// <param name="yTitel">Beschriftung der Wertachse.</param>
+        /// <param name="stueckzahlen">Die geprüften Stückzahlen, aufsteigend.</param>
+        /// <param name="werte">Der Kapitalwert [€] dazu; nicht endliche Werte fallen weg.</param>
+        /// <param name="besteStelle">Stelle des Optimums in den Listen, oder -1 für „keine Marke".</param>
+        /// <param name="unzulaessig">Je Säule <c>true</c> = schraffieren; <c>null</c> = keine Schraffur.</param>
+        public static byte[] Stueckzahlkurve(string titel, string xTitel, string yTitel,
+                                             IReadOnlyList<int> stueckzahlen,
+                                             IReadOnlyList<double> werte,
+                                             int besteStelle,
+                                             IReadOnlyList<bool> unzulaessig = null)
+        {
+            int W = 720, H = 460;
+            using (var flaeche = Start(W, H))
+            {
+                SKCanvas g = flaeche.Canvas;
+                Titel(g, titel ?? "", W);
+
+                var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
+
+                int n = Math.Min(stueckzahlen?.Count ?? 0, werte?.Count ?? 0);
+                if (n < 1)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                double yRoh0 = 0.0, yRoh1 = 0.0;
+                bool etwas = false;
+                for (int i = 0; i < n; i++)
+                {
+                    double v = werte[i];
+                    if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+                    if (!etwas) { yRoh0 = v; yRoh1 = v; etwas = true; }
+                    if (v < yRoh0) yRoh0 = v;
+                    if (v > yRoh1) yRoh1 = v;
+                }
+                if (!etwas)
+                {
+                    Leerhinweis(g, rc);
+                    return Png(flaeche);
+                }
+
+                // Die Null gehoert IMMER auf die Achse: Eine Saeule waechst von ihr aus,
+                // und ohne sie stuende der Fuss der Saeule an einer erfundenen Grundlinie.
+                if (yRoh0 > 0.0) yRoh0 = 0.0;
+                if (yRoh1 < 0.0) yRoh1 = 0.0;
+
+                double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
+                double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
+                double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
+                if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
+
+                using (var raster = Strich(SKColors.Gainsboro, 1f))
+                using (var f = Schrift(14f))
+                    for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
+                    {
+                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
+                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+
+                float nullhoehe = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
+                if (yMin < 0.0 && yMax > 0.0)
+                    using (var strichel = SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f))
+                    using (var nulllinie = Strich(SKColors.DimGray, 1.5f))
+                    {
+                        nulllinie.PathEffect = strichel;
+                        g.DrawLine(rc.Left, nullhoehe, rc.Right, nullhoehe, nulllinie);
+                    }
+
+                float fach = rc.Width / n;
+                float breite = Math.Min(fach * 0.62f, 64f);
+
+                for (int i = 0; i < n; i++)
+                {
+                    double v = werte[i];
+                    if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+
+                    float y = (float)(rc.Bottom - (v - yMin) / (yMax - yMin) * rc.Height);
+                    float mitte = rc.Left + (i + 0.5f) * fach;
+                    float oben = Math.Min(y, nullhoehe);
+                    float hoehe = Math.Max(1f, Math.Abs(y - nullhoehe));
+                    var saeule = SKRect.Create(mitte - breite / 2f, oben, breite, hoehe);
+
+                    SKColor farbe = v < 0.0 ? C_RASTER_SCHLECHT
+                                  : i == besteStelle ? C_RASTER_GUT : C_STAMM;
+                    using (var b = Fuellung(farbe)) g.DrawRect(saeule, b);
+                    using (var rand = Strich(SKColors.White, 1f)) g.DrawRect(saeule, rand);
+
+                    if (Gesetzt(unzulaessig, i)) Schraffur(g, saeule);
+                }
+
+                // Die Marke des Optimums — dasselbe offene schwarze Quadrat wie in der
+                // Rasterkarte, damit beide Bilder dieselbe Zeichensprache sprechen.
+                if (besteStelle >= 0 && besteStelle < n && double.IsFinite(werte[besteStelle]))
+                    using (var marke = Strich(SKColors.Black, 3f))
+                    {
+                        float mx = rc.Left + (besteStelle + 0.5f) * fach;
+                        float my = (float)(rc.Bottom - (werte[besteStelle] - yMin) / (yMax - yMin) * rc.Height);
+                        float k = Math.Min(breite, 26f) * 0.36f;
+                        g.DrawRect(mx - k, my - k, 2f * k, 2f * k, marke);
+                    }
+
+                using (var achse = Strich(SKColors.DimGray, 2f))
+                {
+                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
+                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
+                }
+
+                using (var f = Schrift(14f))
+                {
+                    int jede = Math.Max(1, (int)Math.Ceiling(n * 46f / rc.Width));
+                    for (int i = 0; i < n; i += jede)
+                    {
+                        string lab = stueckzahlen[i].ToString("N0", DE);
+                        float x = rc.Left + (i + 0.5f) * fach;
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+                }
+
+                using (var f = Schrift(15f))
+                {
+                    Text(g, xTitel ?? "", f, SKColors.DimGray,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
+                }
+
+                return Png(flaeche);
+            }
+        }
+
+        /// <summary>Steht in der Sperrliste an dieser Stelle <c>true</c>?</summary>
+        private static bool Gesetzt(IReadOnlyList<bool> liste, int stelle)
+            => liste != null && stelle >= 0 && stelle < liste.Count && liste[stelle];
+
         // ============================================ Jahresprojektion (#184, P2)
 
         /// <summary>Der Grund der Ersatzjahr-Marke — Firebrick mit 40 von 255 Deckung.</summary>

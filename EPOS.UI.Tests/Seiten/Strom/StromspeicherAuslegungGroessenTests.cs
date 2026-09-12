@@ -314,7 +314,35 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
             EnergieAusgleichEuroProKWh = 0.2
         },
         Wirtschaftlichkeit = new FlottenWirtschaftlichkeitEingang
-        { ProjektjahreBeiWiederholung = 1 }
+        { ProjektjahreBeiWiederholung = 1 },
+
+        // SEIT AUFTRAG #247 braucht eine Suche mindestens EINE Einheit mit „variieren"
+        // (SD-E-10): Ohne sie ist die Suchoption gedimmt und der Rechenknopf gesperrt.
+        // Der Suchraum hier ist der kleinstmoegliche — zwei Kapazitaetsstufen.
+        Auslegung = new FlottenAuslegungEingang
+        {
+            MaximaleKandidaten = 10000,
+            Feinraster = false,
+            Suchmethode = FlottenSuchmethode.Groesse,
+            Achsen =
+            {
+                new FlottenAuslegungsAchse
+                {
+                    Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                    AnzahlVon = 1, AnzahlBis = 1,
+                    KapazitaetVonKWh = 20, KapazitaetBisKWh = 30, KapazitaetSchrittKWh = 10,
+                    LeistungVonKw = 10, LeistungBisKw = 12, LeistungSchrittKw = 2,
+                    CRateVon = 0.5, CRateBis = 1.0, CRateSchritt = 0.5,
+                    Vorlage = new FlottenEinheit
+                    {
+                        Id = "a", Name = "A", KapazitaetKWh = 24,
+                        LadeleistungKw = 10, EntladeleistungKw = 12,
+                        Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+                        SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+                    }
+                }
+            }
+        }
     };
 
     /// <summary>Ein gerechneter Flottenlauf OHNE Rastersuche.</summary>

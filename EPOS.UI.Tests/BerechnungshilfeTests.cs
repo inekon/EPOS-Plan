@@ -470,8 +470,9 @@ public sealed class BerechnungshilfeTests : EposBunitContext
             // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen, dazu der
             // zweite Hauptteil "Mehrere Speicher (Speicherflotte)". Auftrag #215:
             // Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle - die kausale
-            // Ratsche" (Spezifikation 5.1.1).
-            { "Stromspeicher", "Fassung 6" }
+            // Ratsche" (Spezifikation 5.1.1). Auftrag #247: Fassung 7 - der
+            // Abschnitt "Rastersuche" nennt die zwei Suchmethoden.
+            { "Stromspeicher", "Fassung 7" }
         };
 
     /// <summary>
