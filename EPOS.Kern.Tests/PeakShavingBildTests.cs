@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Threading;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
@@ -14,9 +16,36 @@ namespace EPOS.Kern.Tests
     /// den Ladezustand, im Viertelstundenraster ohne Kappung auf 8 760 Punkte, und
     /// deterministisch (dieselbe Reihe, dasselbe Bild). Die Zahl der ChartProben
     /// bleibt damit bei 30.</para>
+    ///
+    /// <para><b>Die Kultur ist seit #232b auf de-DE gepinnt</b> — THREADGEBUNDEN, im
+    /// Konstruktor und mit Rückstellung in <see cref="Dispose"/>: Diese Klasse pinnte bis
+    /// dahin gar keine Kultur und fiel deshalb gelegentlich unter
+    /// <c>LANG=en_US.UTF-8</c> mit paralleler Sammlungsausführung, wenn der prozessweite
+    /// Vorgabewert gerade auf en-US stand (Messbefund #232).</para>
     /// </summary>
-    public class PeakShavingBildTests
+    public class PeakShavingBildTests : IDisposable
     {
+        private readonly CultureInfo _vorher = CultureInfo.CurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.CurrentUICulture;
+
+        public PeakShavingBildTests()
+        {
+            CultureInfo de = new CultureInfo("de-DE");
+            CultureInfo.CurrentCulture = de;
+            Thread.CurrentThread.CurrentCulture = de;
+            CultureInfo.CurrentUICulture = de;
+            Thread.CurrentThread.CurrentUICulture = de;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            CultureInfo.CurrentCulture = _vorher;
+            Thread.CurrentThread.CurrentCulture = _vorher;
+            CultureInfo.CurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentUICulture = _vorherUi;
+        }
+
         private static double[] Lastgang()
         {
             double[] w = new double[35040];

@@ -905,3 +905,12 @@ die Vorrichtung erreicht ihn deshalb nicht. **Der Rest-Fix wäre zwei Zeilen je 
 threadgebunden, NICHT über `DefaultThreadCurrent*`, sonst entsteht dieselbe Race neu); er
 liegt außerhalb von #232, das den Fall `Die_Kennzahlen_tragen_die_Zahlen_des_Bestpunkts`
 ausdrücklich unverändert lassen sollte.
+
+**Auftrag #232b (12.09.2026) zieht genau diesen Rest-Fix.** `SpeicherOptimierungCtrlTests`,
+`SpeicherOptimierungLastspitzeTests` (bislang nur `CurrentCulture`) und `PeakShavingBildTests`
+(bislang gar keine Kultur) pinnen im Konstruktor jetzt THREADGEBUNDEN auch
+`CultureInfo.CurrentUICulture`/`Thread.CurrentThread.CurrentUICulture` auf `de-DE` und stellen
+sie in `Dispose` zurück — der `KulturwaechterTests` bleibt grün, weil er nur die zwei
+prozessweiten `DefaultThreadCurrent*`-Setzer prüft. Gemessen: zehn parallele Läufe von
+`EPOS.Kern.Tests` unter `LANG=en_US.UTF-8` mit xunit-Vorgabe **10/10 grün (2700/2700)**
+statt zuvor 2 von 10 rot, dazu je ein sequenzieller Lauf ohne und mit `LANG` (2700/2700 grün).
