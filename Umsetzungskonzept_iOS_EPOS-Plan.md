@@ -4105,6 +4105,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > parallelen Vollauf, isoliert und im sauberen Vollauf grün — beobachten (Muster W16b‑O‑2).
 > Gate sept48 auf `7c61416`: Kern 2 712, UI 3 945, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#239 (12.09.2026, Anwenderrückmeldung mit Bildschirmfoto Stromspeicher-Auslegung › „1 Speicher": „Stromspeicher hinzufügen geht nicht
+> für Speicher aus der Datenbank - nur für duplizierung des vorhandenen … Bei mehreren angelegten Stromspeichern wird nur einer angezeigt,
+> nach löschen steht er nicht mehr zur Auswahl") — Ursache belegt und behoben (`0dd09acd`, Merge `eba098cb`, Agent Opus; 16 Dateien,
+> +1 945/−4).** Drei Befunde mit einer Wurzel: „+ Speicher hinzufügen" legte nur eine generische Einheit an (100 kWh, 50/50 kW), es gab
+> keinen Weg zum Speicherkatalog und keinen zu den Speicheranlagen des Projekts; die Vorbelegung je `SP_TYP`-Anlage
+> (`SpeicherFlottenStudieCtrl.Vorbelegung`, #210) greift nur, solange kein Stand `@Aktuell` gespeichert ist — den schreibt die Ansicht an
+> vier Stellen (Einstellungen speichern, Flotte rechnen, Rückruf) —, danach war die Einheitenliste eingefroren: eine später angelegte
+> Speicheranlage erschien nie, eine entfernte kam nie zurück. **Fix im Kern an EINER Stelle:** `EinheitAusProjektanlage(projekt, anlage)`
+> geht DENSELBEN Weg wie die Vorbelegung (`LeseParameter` + `Einheit`), `Projektanlagenkandidaten(projekt)` baut jeden Kandidaten aus genau
+> dieser Einheit, `EinheitAusKatalog(id)` bildet den Katalogsatz ab (Name, Energie → Kapazität, Leistung → Lade- und Entladeleistung,
+> `eta_ch = eta_dis = sqrt(eta_RT)` wörtlich wie `SpeicherParameter` im Projektlauf, Rückfall 0,90; Modulkosten, Leistungskosten,
+> Investition fix, Standby W → kW; NICHT abgebildet, weil Annahme statt Zuordnung: Verschleißkosten je Nennkapazität und Zyklus,
+> zugesicherte Zyklen ohne Entladetiefe, Degradation). **Editor:** der Knopf öffnet eine Überlagerung mit drei Quellen — Speicheranlage des
+> Projekts (vertretene Zeilen gesperrt), Speicherkatalog (`Katalogliste` mit demselben Profil wie der Projekt-Stromspeicherdialog,
+> Doppelklick übernimmt), leere Einheit; darüber die Nachzugszeile „n Speicheranlagen des Projekts sind nicht in der Flotte: …" mit
+> „Aufnehmen" — sie erscheint auch nach dem Entfernen wieder. Ohne die fünf neuen Dienste (`StromspeicherAuslegungDienste`, Hülle
+> `DiensteSatz`) legt der Knopf wie bisher sofort eine leere Einheit an. Gespeicherter Stand und Vorbelegung bleiben unangetastet
+> (SP‑O‑8; Kern-Fall `Ein_gespeicherter_Stand_bleibt_unveraendert`). 19 Ressourcenschlüssel de/en; Tests Kern +10
+> (`SpeicherFlottenQuellenTests`), UI +11 (`Dialoge/SpeicherFlottenQuellenTests`), beide auch unter en-US grün; SQL-Prüfer 0 von 1 344.
+> Doku: Konzept Stromspeicher-Dialoge Abschnitt 1.8 mit der Abbildungstabelle Katalog → Einheit und Stufenplanzeile P9, ein Satz in
+> `EPOS.UI/CLAUDE.md`, Wiki-Bedienungsseite Stromspeicher Schritt 1 neu (Revision 564; der Satz „als Vorlage dient ein Satz aus dem
+> Speicherkatalog" beschrieb bis dahin etwas, das es nicht gab). Kein Rechenweg berührt, kein iOS-Lauf.
+> Gate sept49 auf `eba098cb`: Kern 2 722, UI 3 956, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 59,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
