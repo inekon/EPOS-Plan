@@ -7376,7 +7376,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresstunden ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresstunden [h] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_JAHRESSTUNDEN {
             get {
@@ -7385,20 +7385,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_LEISTUNG {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_LEISTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] / Speicherinhalt [kWh] ähnelt.
-        /// </summary>
-        public static string CHART_ACHSE_LEISTUNG_SPEICHERINHALT {
-            get {
-                return ResourceManager.GetString("CHART_ACHSE_LEISTUNG_SPEICHERINHALT", resourceCulture);
             }
         }
         
@@ -7426,6 +7417,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_QUELLTEMPERATUR {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_QUELLTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherinhalt [kWh] ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_SPEICHERINHALT_KWH {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_SPEICHERINHALT_KWH", resourceCulture);
             }
         }
         

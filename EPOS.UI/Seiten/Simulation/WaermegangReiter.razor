@@ -3,7 +3,21 @@
    VORBILD. NavigatorWaerme (1 083 Z.) - das reichste Diagramm der Anwendung:
    Jahresganglinie ODER Jahresdauerlinie, wahlweise als PRODUKTION je Erzeuger
    oder als DECKUNG je Bedarfsart, dazu die Fuellstaende aller Speicher und die
-   Bedarfslinie auf einer zweiten Y-Achse.
+   Bedarfslinie.
+
+   ANWENDERRUECKMELDUNG 12.09.2026 (#234), zwei Punkte an dieser Stelle:
+     VORBELEGUNG  Der Reiter startete ohne eine einzige gewaehlte Reihe - das
+                  Bild zeigte beim Oeffnen den Leerhinweis. Beim ERSTEN Befuellen
+                  sind jetzt alle vorhandenen Erzeuger, alle Speicher und die
+                  Bedarfslinie an (OnParametersSet, Muster _erstBelegt aus
+                  StromgangReiter).
+     GEDAECHTNIS  Reiterblatt zeichnet @if (Sichtbar); beim Blattwechsel entsteht
+                  diese Komponente NEU. Die Schalterstellung liegt deshalb in
+                  Ganglinienstand und ueberlebt die Sitzung (nicht dauerhaft, kein
+                  Datenzoom).
+   Die zweite Y-Achse traegt seither den SPEICHERINHALT [kWh] und nicht mehr die
+   Waermelast; die liegt als Leistung bei der Produktion auf der Primaerachse
+   (SimulationErgebnisHuelle.Bilder.BildWaermegang).
 
    DREI ZUSTANDSACHSEN, woertlich uebernommen:
      _bedarfskanal   -1 = Gesamt (Produktion), sonst Kanalindex (Deckung),
@@ -34,22 +48,22 @@
                      AuswahlChanged="BedarfsartGesetzt" />
 
         <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
-                  WertChanged="@(w => _sortiert = w)" />
+                  WertChanged="@(w => { _sortiert = w; Merken(); })" />
 
         <Schalter Bezeichnung="@Resource.SIM_CHK_WAERMEBEDARF_EINBLENDEN" Wert="@_bedarfslinie"
-                  WertChanged="@(w => _bedarfslinie = w)" />
+                  WertChanged="@(w => { _bedarfslinie = w; Merken(); })" />
     </div>
 
     <div class="epos-simerg-spalten">
         <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_ERZEUGERAUSWAHL"
                          Eintraege="@Eintraege(Vorhandene(Daten.Erzeuger))"
-                         Gewaehlt="@_erzeuger" GewaehltChanged="@(w => _erzeuger = w)" />
+                         Gewaehlt="@_erzeuger" GewaehltChanged="@(w => { _erzeuger = w; Merken(); })" />
 
         @if (Vorhandene(Daten.Speicher).Count > 0)
         {
             <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SPEICHERAUSWAHL"
                              Eintraege="@Eintraege(Vorhandene(Daten.Speicher))"
-                             Gewaehlt="@_speicher" GewaehltChanged="@(w => _speicher = w)" />
+                             Gewaehlt="@_speicher" GewaehltChanged="@(w => { _speicher = w; Merken(); })" />
         }
     </div>
 
@@ -83,6 +97,14 @@
     [Parameter] public EventCallback<(int Kanal, IReadOnlyList<string> Erzeuger,
                                       IReadOnlyList<string> Speicher)> Csv { get; set; }
 
+    /// <summary>
+    /// Das Sitzungsgedaechtnis dieses Reiters (#234). Ohne Angabe der prozessweite
+    /// Stand aus <see cref="Ganglinienregister"/> — genau wie
+    /// <c>Filterstandvorgabe</c> bei den Katalogdialogen (S2.5). Eine Probe gibt
+    /// ihren EIGENEN Stand herein und teilt mit keinem Nachbarfall.
+    /// </summary>
+    [Parameter] public Ganglinienstand? Gedaechtnis { get; set; }
+
     /// <summary>Die gewaehlte Bedarfsart; −1 = Gesamt/Produktion (Pruefhilfe).</summary>
     public int Bedarfsart => _bedarfsart ?? -1;
 
@@ -95,12 +117,97 @@
     /// <summary>Der aufgezogene Achsenbereich; <c>null</c> = das ganze Jahr (Pruefhilfe).</summary>
     public Diagrammbereich? Bereich => _bereich;
 
+    /// <summary>Ist die Bedarfslinie eingeblendet? (Pruefhilfe)</summary>
+    public bool Bedarfslinie => _bedarfslinie;
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
     private int? _bedarfsart = -1;
     private bool _sortiert;
     private Diagrammbereich? _bereich;
     private bool _bedarfslinie;
     private IReadOnlyList<int> _erzeuger = Array.Empty<int>();
     private IReadOnlyList<int> _speicher = Array.Empty<int>();
+    private Ganglinienstand _stand = new Ganglinienstand();
+    private bool _erstBelegt;
+
+    protected override void OnInitialized()
+        => _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.WAERMEGANG);
+
+    /// <summary>
+    /// <b>Das erste Befuellen — Anwenderrueckmeldung 12.09.2026 (#234).</b> Der Reiter
+    /// startete ohne eine einzige gewaehlte Reihe und zeigte deshalb beim Oeffnen den
+    /// Leerhinweis „Keine Simulationsdaten vorhanden."; der Anwender musste erst
+    /// zusammenklicken, was das Blatt zeigen soll. Jetzt sind beim ersten Aufbau ALLE
+    /// vorhandenen Erzeuger, ALLE vorhandenen Speicher und die Bedarfslinie an —
+    /// Bedarfsart bleibt „Gesamt" (−1), „sortiert" bleibt aus.
+    ///
+    /// <para>Gibt es schon ein GEDAECHTNIS dieser Sitzung, gilt es vor der
+    /// Vorbelegung (der zweite Teil der Rueckmeldung). Unbekannte Schluessel fallen
+    /// dabei still weg: Welche Reihen ein Lauf fuehrt, entscheidet er selbst.</para>
+    ///
+    /// <para>Die Wache <c>_erstBelegt</c> ist woertlich aus <c>StromgangReiter</c>:
+    /// <c>OnParametersSet</c> laeuft bei JEDER Parameteraenderung, und ohne sie
+    /// ueberschriebe der naechste Durchlauf die Anwenderwahl.</para>
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (_erstBelegt) return;
+
+        List<Ganglinienreihe> erz = Vorhandene(Daten.Erzeuger);
+        List<Ganglinienreihe> sp = Vorhandene(Daten.Speicher);
+        if (erz.Count == 0 && sp.Count == 0) return;
+
+        _erstBelegt = true;
+
+        if (_stand.Belegt)
+        {
+            _bedarfsart = _stand.Bedarfsart;
+            _sortiert = _stand.Sortiert;
+            _bedarfslinie = _stand.Bedarfslinie;
+            _erzeuger = Auswahl(erz, _stand.Reihen);
+            _speicher = Auswahl(sp, _stand.Reihen);
+            return;
+        }
+
+        _erzeuger = Alle(erz.Count);
+        _speicher = Alle(sp.Count);
+        _bedarfslinie = true;
+        Merken();
+    }
+
+    /// <summary>Die Plaetze 0…n−1 — „alles an".</summary>
+    private static IReadOnlyList<int> Alle(int anzahl)
+    {
+        var liste = new List<int>(anzahl);
+        for (int i = 0; i < anzahl; i++) liste.Add(i);
+        return liste;
+    }
+
+    /// <summary>
+    /// Die Plaetze zu den gemerkten SCHLUESSELN. Ein Schluessel, den dieser Lauf
+    /// nicht fuehrt, fehlt hier einfach — er kann damit auch nicht in den Export.
+    /// </summary>
+    private static IReadOnlyList<int> Auswahl(IReadOnlyList<Ganglinienreihe> reihen,
+                                              IReadOnlyList<string> schluessel)
+    {
+        var liste = new List<int>();
+        for (int i = 0; i < reihen.Count; i++)
+            if (schluessel.Contains(reihen[i].Schluessel)) liste.Add(i);
+        return liste;
+    }
+
+    /// <summary>
+    /// Schreibt die Schalterstellung ins Sitzungsgedaechtnis — nach JEDER Aenderung.
+    /// Der Datenzoom (<c>_bereich</c>) gehoert ausdruecklich NICHT dazu.
+    /// </summary>
+    private void Merken()
+    {
+        var reihen = new List<string>(GewaehlteErzeuger);
+        reihen.AddRange(GewaehlteSpeicher);
+        _stand.Merken(Bedarfsart, _sortiert, _bedarfslinie, reihen);
+    }
 
     private IReadOnlyList<(int Id, string Text)> Bedarfsarten
     {
@@ -112,7 +219,11 @@
         }
     }
 
-    private void BedarfsartGesetzt(int? wert) => _bedarfsart = wert ?? -1;
+    private void BedarfsartGesetzt(int? wert)
+    {
+        _bedarfsart = wert ?? -1;
+        Merken();
+    }
 
     /// <summary>
     /// Nur die Reihen, die der Lauf FUEHRT. Fehlende erscheinen gar nicht — und
@@ -142,7 +253,9 @@
 
     /// <summary>
     /// Die Reihenliste des Bildes: Erzeuger, Speicher und - als eigener
-    /// Schluessel - die Bedarfslinie auf der zweiten Achse (B3).
+    /// Schluessel - die Bedarfslinie. Wo die einzelne Reihe im Bild landet,
+    /// entscheidet die Huelle: Erzeuger und Bedarf auf der Primaerachse [kW],
+    /// die Speicherfuellstaende auf der zweiten [kWh] (#234).
     /// </summary>
     private IReadOnlyList<string> Reihen()
     {

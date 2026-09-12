@@ -26,12 +26,12 @@
 
     <div class="epos-simerg-schalter">
         <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
-                  WertChanged="@(w => _sortiert = w)" />
+                  WertChanged="@(w => { _sortiert = w; Merken(); })" />
     </div>
 
     <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SERIENAUSWAHL"
                      Eintraege="@Eintraege" Gewaehlt="@_gewaehlt"
-                     GewaehltChanged="@(w => _gewaehlt = w)" />
+                     GewaehltChanged="@(w => { _gewaehlt = w; Merken(); })" />
 
     @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
        laesst den Kern das Bild mit diesem Achsenbereich neu zeichnen. Bei 35 040
@@ -61,6 +61,14 @@
     /// <summary>Der CSV-Export - nur die angehakten Reihen. Ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> Csv { get; set; }
 
+    /// <summary>
+    /// Das Sitzungsgedaechtnis dieses Reiters (#234) — ohne Angabe der prozessweite
+    /// Stand aus <see cref="Ganglinienregister"/>. Die VORGABE bleibt hier „nur
+    /// Gesamt" (der Anwenderwunsch betraf das Waermeblatt); gemerkt wird die Wahl
+    /// aber auch hier, sonst faellt sie beim Blattwechsel zurueck.
+    /// </summary>
+    [Parameter] public Ganglinienstand? Gedaechtnis { get; set; }
+
     /// <summary>Die gewaehlten Serienschluessel (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Schluessel();
 
@@ -74,6 +82,10 @@
     private IReadOnlyList<int> _gewaehlt = Array.Empty<int>();
     private bool _erstBelegt;
     private Diagrammbereich? _bereich;
+    private Ganglinienstand _stand = new Ganglinienstand();
+
+    protected override void OnInitialized()
+        => _stand = Gedaechtnis ?? Ganglinienregister.Stand(Ganglinienregister.STROMGANG);
 
     private List<Ganglinienreihe> Vorhandene
     {
@@ -99,13 +111,44 @@
     /// <summary>
     /// Ausgangszustand „nur Gesamt an" — woertlich aus <c>SetControl</c> :224-228.
     /// Die erste Reihe der Liste ist die Kontrolllinie.
+    ///
+    /// <para><b>Seit #234 steht das SITZUNGSGEDAECHTNIS davor</b> (dieselbe Bauart wie
+    /// im Waermegang): Wer seine Reihen gewaehlt hat, findet sie nach einem
+    /// Blattwechsel wieder. Gemerkte Schluessel, die dieser Lauf nicht fuehrt, fallen
+    /// still weg.</para>
     /// </summary>
     protected override void OnParametersSet()
     {
         if (_erstBelegt || Vorhandene.Count == 0) return;
         _erstBelegt = true;
+
+        if (_stand.Belegt)
+        {
+            _sortiert = _stand.Sortiert;
+            _gewaehlt = Auswahl(Vorhandene, _stand.Reihen);
+            return;
+        }
+
         _gewaehlt = new[] { 0 };
+        Merken();
     }
+
+    /// <summary>Die Plaetze zu den gemerkten SCHLUESSELN; Unbekanntes faellt weg.</summary>
+    private static IReadOnlyList<int> Auswahl(IReadOnlyList<Ganglinienreihe> reihen,
+                                              IReadOnlyList<string> schluessel)
+    {
+        var liste = new List<int>();
+        for (int i = 0; i < reihen.Count; i++)
+            if (schluessel.Contains(reihen[i].Schluessel)) liste.Add(i);
+        return liste;
+    }
+
+    /// <summary>
+    /// Schreibt die Schalterstellung ins Sitzungsgedaechtnis — nach JEDER Aenderung.
+    /// Der Datenzoom (<c>_bereich</c>) gehoert ausdruecklich NICHT dazu; eine
+    /// Bedarfsart und eine Bedarfslinie kennt dieser Reiter nicht.
+    /// </summary>
+    private void Merken() => _stand.Merken(-1, _sortiert, false, Schluessel());
 
     private IReadOnlyList<string> Schluessel()
     {

@@ -646,9 +646,12 @@ namespace WindowsFormsApplication1
                                  sim.simulation_pv.Stundenwerte_zu_viertelstunden(
                                      sim.simulation_pv.Stromproduktion_Theoretisch), F_PV));
 
-            ChartRenderer.Reihe zweite = Gewaehlt(a, alle, "SPEICHERFUELLSTAND")
-                ? Reihe(MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,
-                        sim.Speicherfuellstand_viertelstuendlich, F_SPEICHER)
+            // #234: Die zweite Achse nimmt seither eine LISTE; hier steht genau eine
+            // Reihe darauf — der eine Stromspeicher des Projekts.
+            List<ChartRenderer.Reihe> zweite = Gewaehlt(a, alle, "SPEICHERFUELLSTAND")
+                ? new List<ChartRenderer.Reihe>
+                  { Reihe(MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,
+                          sim.Speicherfuellstand_viertelstuendlich, F_SPEICHER) }
                 : null;
 
             return ChartRenderer.ErzeugerStapel(
@@ -796,8 +799,12 @@ namespace WindowsFormsApplication1
                                  ChartRenderer.Stapelart.Saeule, a.Sortiert ? 4f : 0f));
             }
 
-            // Die Speicherfüllstände als Linien darüber.
-            var linien = new List<ChartRenderer.Reihe>();
+            // Die Speicherfüllstände auf die ZWEITE Achse (Anwenderrückmeldung
+            // 12.09.2026, #234): Sie führen kWh, alles andere in diesem Bild kW —
+            // und eine Achse, die beides trägt, sagt bei keiner der zwei Größen die
+            // Wahrheit. Bis dahin lagen sie auf der PRIMÄRachse und der Wärmebedarf
+            // (kW!) auf der zweiten; es war genau verkehrt herum.
+            var speicherreihen = new List<ChartRenderer.Reihe>();
             List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
             int nummer = 0;
             for (int i = 0; i < speicher.Count; i++)
@@ -806,8 +813,8 @@ namespace WindowsFormsApplication1
                 if (sp == null) continue;
                 string schluessel = sp.Schluessel(i);
                 if (wahl.Contains(schluessel))
-                    linien.Add(Reihe(sp.BezeichnerAnzeige(), sp.SOC_stuendlich,
-                                     F_SPEICHERREIHEN[nummer % F_SPEICHERREIHEN.Length]));
+                    speicherreihen.Add(Reihe(sp.BezeichnerAnzeige(), sp.SOC_stuendlich,
+                                             F_SPEICHERREIHEN[nummer % F_SPEICHERREIHEN.Length]));
                 nummer++;
             }
 
@@ -825,25 +832,33 @@ namespace WindowsFormsApplication1
                                                  ChartRenderer.Stapelart.Keine, false, 4f);
             }
 
-            // B3: die Bedarfslinie auf der zweiten Achse.
-            ChartRenderer.Reihe zweite = null;
+            // Die Bedarfslinie liegt auf der PRIMÄRACHSE (#234): Wärmelast und
+            // Produktion sind beide eine Leistung in kW und gehören auf EINE Skala —
+            // nur so ist abzulesen, ob die Erzeuger den Bedarf decken. Sie steht als
+            // letzte Linie und damit ganz oben (dieselbe Zeichenlage wie im Bestand).
+            var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("WAERMEBEDARF"))
             {
                 double[] bedarf = kanal < 0
                     ? _waermebedarf.Waermebedarf
                     : SimulationControl.BedarfKanalStuendlich(_waermebedarf, kanal);
-                zweite = Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, bedarf, SKColors.DarkCyan);
+                linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, bedarf,
+                                 SKColors.DarkCyan, ChartRenderer.Stapelart.Keine, 2f));
             }
 
             string titel = kanal < 0
                 ? MyResource.Resource.CHART_TITEL_WAERMEPRODUKTION_JAHRESGANGLINIE
                 : string.Format(MyResource.Resource.CHART_TITEL_DECKUNG_JE_BEDARFSART, KANALNAMEN[kanal]);
 
+            // Die zweite Achse steht NUR, wenn ein Speicher gewählt ist — sonst nimmt
+            // die Zeichenfläche die vollen 1 100 Bildpunkte wie jedes Bild ohne sie.
             return ChartRenderer.ErzeugerStapel(
                 titel, stapel, linien, kontur,
-                MyResource.Resource.CHART_ACHSE_LEISTUNG_SPEICHERINHALT,
+                MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert, zweite, MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                a.Sortiert,
+                speicherreihen.Count > 0 ? speicherreihen : null,
+                MyResource.Resource.CHART_ACHSE_SPEICHERINHALT_KWH,
                 Fenster(a, Kanalsatz.STUNDEN_JAHR));
         }
 

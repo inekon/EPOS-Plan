@@ -59,8 +59,11 @@ namespace WindowsFormsApplication1
                 new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_NEU, r.PNeuKw, FarbeNeu)
             };
 
-            ChartRenderer.Reihe soc = mitSoC
-                ? new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_SOC, r.SoCKwh, FarbeSoC)
+            // #234: Die zweite Achse nimmt seither eine LISTE. Hier steht genau eine
+            // Reihe darauf; die Achse traegt damit unveraendert deren Farbe.
+            List<ChartRenderer.Reihe> soc = mitSoC
+                ? new List<ChartRenderer.Reihe>
+                  { new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_SOC, r.SoCKwh, FarbeSoC) }
                 : null;
 
             return ChartRenderer.ErzeugerStapel(

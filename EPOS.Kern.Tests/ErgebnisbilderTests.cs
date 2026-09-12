@@ -93,7 +93,8 @@ namespace EPOS.Kern.Tests
                 new ChartRenderer.Reihe("Gesamt", Reihe(80, 60), SKColors.Green,
                                         ChartRenderer.Stapelart.Keine, false, 4f),
                 "kW", ChartRenderer.Achse.Monate, false,
-                new ChartRenderer.Reihe("Waermebedarf", Reihe(90, 70), SKColors.DarkCyan),
+                new List<ChartRenderer.Reihe>
+                { new ChartRenderer.Reihe("Waermebedarf", Reihe(90, 70), SKColors.DarkCyan) },
                 "kW");
 
             Assert.NotNull(png);
@@ -115,8 +116,9 @@ namespace EPOS.Kern.Tests
                                                        ChartRenderer.Achse.Monate, false);
             byte[] mit = ChartRenderer.ErzeugerStapel("T", stapel, null, null, "kW",
                                                       ChartRenderer.Achse.Monate, false,
-                                                      new ChartRenderer.Reihe("Bedarf", Reihe(90, 70),
-                                                                              SKColors.DarkCyan), "kW");
+                                                      new List<ChartRenderer.Reihe>
+                                                      { new ChartRenderer.Reihe("Bedarf", Reihe(90, 70),
+                                                                                SKColors.DarkCyan) }, "kW");
 
             Assert.Equal(Mass(ohne), Mass(mit));
             Assert.NotEqual(ohne, mit);

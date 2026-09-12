@@ -1914,13 +1914,10 @@ Ohne Quellpuffer steht hier 0,00.</value>
     <value>Energie-Bedarf &amp; Deckung (kWh)</value>
   </data>
   <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
-    <value>Jahresstunden</value>
+    <value>Jahresstunden [h]</value>
   </data>
   <data name="CHART_ACHSE_LEISTUNG" xml:space="preserve">
-    <value>Leistung</value>
-  </data>
-  <data name="CHART_ACHSE_LEISTUNG_SPEICHERINHALT" xml:space="preserve">
-    <value>Leistung [kW] / Speicherinhalt [kWh]</value>
+    <value>Leistung [kW]</value>
   </data>
   <data name="CHART_ACHSE_MONAT" xml:space="preserve">
     <value>Monat</value>
@@ -1930,6 +1927,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   </data>
   <data name="CHART_ACHSE_QUELLTEMPERATUR" xml:space="preserve">
     <value>Quelltemperatur [°C]</value>
+  </data>
+  <data name="CHART_ACHSE_SPEICHERINHALT_KWH" xml:space="preserve">
+    <value>Speicherinhalt [kWh]</value>
   </data>
   <data name="CHART_ACHSE_SPEICHER_KWH" xml:space="preserve">
     <value>Speicher [kWh]</value>
