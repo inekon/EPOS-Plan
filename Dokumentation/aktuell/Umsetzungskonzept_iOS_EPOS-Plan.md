@@ -4230,6 +4230,29 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > scheitert der Upload, bricht der Push ab. Kern-Tests 2 740 → 2 743; kein Rechenweg, keine Ressource, kein SQL berührt.
 > Gate sept53 auf `f41e5307`: Kern 2743, UI 3958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#244 (12.09.2026, Anwenderentscheid AUF‑Q1 „ausführen", Umfang „Variante 2: mit Access-Altbeständen") — umgesetzt; die Git-Geschichte
+> ist umgeschrieben.** Vorbereitung (Agent Opus, Merge alt `bdff8c15`, neu `ddc42aca`): die Protokolle der 24 entfernten Referenzbasen
+> liegen byte-gleich unter `Dokumentation/ueberholt/Referenzbasen/` (25 Dateien, 604 KB), jede Aussage „liegt in der Git-Geschichte
+> (Stand 1e71d30)" in CLAUDE.md, `Referenzlaeufe/LIESMICH.md` und den Konzepten ist berichtigt, das Aufräumkonzept führt Stufe 4; Gate sept54
+> darauf grün (Kern 2 743, UI 3 958, 5/5 byte-gleich, en-US grün), CI Kern 389 / Windows 334 grün. **Messung und Probe** (Agent Opus,
+> Spiegelklon, `git filter-repo` 2.47): versioniert waren jemals **38** Basisordner (24 aus SYNC‑Q1 plus 14 ältere), 156 MiB eindeutige
+> Blobs; `.work/` 70 MiB; 13 Fassungen der Testdatenbank (804 MiB roh, 12 ohne Zeiger); 67 VDI-Archive ohne Zeiger (96 MiB); dazu außerhalb
+> des Auftrags die Access-Altbestände der Frühgeschichte (42 Fassungen `Kenndaten.accdb`, 13 `.bak`, `AccessDatabaseEngine.exe`; 1 159 MiB
+> roh, 53 MiB im Pack) — der Anwender entschied für die erweiterte Variante. **Umschreiben:** frischer Spiegel, ein filter-repo-Lauf
+> (41 Verzeichnisse und 41 Access-Pfade per `--invert-paths`, 79 historische Blobs von Testdatenbank und VDI-Archiven per
+> `--strip-blobs-with-ids`; die 68 aktuellen LFS-Objekte bleiben, 11 ältere Testdatenbank-Fassungen sind endgültig weg), Verifikation
+> vollständig PASS: Baum des Arbeitszweigs vor = nach, jeder andere Zweig und der Tag nur Löschungen in den entfernten Pfaden, Autor/Datum/
+> Committer aller 2 145 Commits unverändert, Nachrichten nur um ersetzte Kennungen, fsck sauber, 69 LFS-Zeiger; 18 Commits wurden leer und
+> fielen (Testdatenbank-Nachzüge, ein Basen-Commit, 15 „add"-Commits der Access-Zeit). **Pack 554 → 358 MiB (−35 %)**; die 61 verwaisten
+> LFS-Zeiger auf Access-Objekte (4,9 GB referenziert) sind aus der Geschichte. **Push:** ein Gesamt-Push mit Tag wurde von der Umgebung mit
+> HTTP 403 abgewiesen — sie lässt Force-Pushes auf Zweige zu, aber keine Tag-Updates und keine Ref-Löschungen; deshalb alle **13 Zweige**
+> in drei Pushes mit `--force-with-lease` je Ref (Lease gegen den Stand vor dem Umschreiben, kein Sync dazwischen), Tag `vor-W16` bleibt
+> beim Anwender (neu `83c9508c`), ebenso das Löschen der zwei Probezweige `tmp-umschreibung-probe` und `tmp-probe-leer`. **Folgen:** alle
+> Commit-Kennungen ändern sich (Karte alt → neu mit 2149 Zeilen unter `Dokumentation/ueberholt/Geschichte/commit-map_2026-09-12.txt`;
+> jede Kennung in Statusblöcken vor diesem Block ist eine alte), die 1 355 Signaturen der alten Commits entfallen, jeder Rechner klont neu,
+> aus einem alten Klon wird nie wieder gepusht. GitHub gibt den Speicher erst nach eigener Bereinigung frei; `refs/pull/1/*` halten die alte
+> Geschichte bis dahin. Kein Rechenweg, keine Ressource, kein SQL berührt; Gate nicht nötig (Baum identisch).
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
