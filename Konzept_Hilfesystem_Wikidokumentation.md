@@ -868,4 +868,6 @@ einem bestehenden Projekt übernehmen", der Projektliste, dem vorbelegten Bezeic
 Quelle „Projektvarianten" ist verworfen, weil die Live-Seite schon bestand (Regel: erst die Live-Seite suchen, dann eine Quelle anlegen).
 Probe vor dem Upload 5+/1− (Kopfkommentar und der eine Absatz), Nachprobe 561 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Simulation` Revision 562** (12.09.2026, Merge `7f85837`, Gate sept47, #236) mit EINER Zeile zur Übersicht
 ohne gültiges Ergebnis (nur die zwei Bedarfszahlen und ein Hinweis, woran es liegt; nach einer Änderung in der Speicher-Auslegung gilt das
-Ergebnis als veraltet); Probe 1+/0− gegen Revision 560, Nachprobe 562 zeichengleich bis auf den Zeilenumbruch am Dateiende.
+Ergebnis als veraltet); Probe 1+/0− gegen Revision 560, Nachprobe 562 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Varianten` Revision 563** (12.09.2026, Merge `7c61416`, Gate sept48, #238): der Punkt „Variante" beschreibt
+das Auswahlfeld mit den Projektnamen (Stamm zuerst) statt der Tabelle von vor W5‑E‑1; Probe 3+/2− gegen Revision 561 (Kopfzeile und der
+eine Punkt), Nachprobe 563 zeichengleich bis auf den Zeilenumbruch am Dateiende.

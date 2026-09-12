@@ -4088,6 +4088,23 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Simulation (Revision 562). Kein Rechenweg berührt; iOS nutzt dieselbe Hülle, kein iOS-Lauf.
 > Gate sept47 auf `7f85837`: Kern 2 712, UI 3 942, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#238 (12.09.2026, Anwenderrückmeldung mit Bildschirmfoto Berichte & Kosten › Übersicht: „Im Name in der Auswahl Variante ist der
+> Variantenname doppelt enthalten … Der Name sollte so wie im Dropdown (Projekt und Variantenauswahl) sein", Zusatz „korrigiere dabei auch
+> die Überlappung") — behoben (`5dc2321`, Merge `7c61416`, Agent Sonnet; 4 Dateien, +137/−29).** Das Auswahlfeld „Variante:" baute seinen
+> Eintrag als „Bezeichner — Projektname" (`UebersichtSeite.Eintragstext`, Erbe der zwei Tabellenspalten bis W5‑E‑1), und der Projektname einer
+> Variante ist seit jeher `<Stamm> - <Bezeichner>` — daher „ein Speicher — Stromspeicher Optimierung - ein Speicher". Seither steht dort der
+> Projektname wie im Kopfband-Auswahlfeld „Projekt:" (`StartseiteCtrl.VariantenEintrag.Name`): Stamm „Stromspeicher Optimierung" zuerst,
+> Varianten „Stromspeicher Optimierung - ein Speicher"; Rückfall auf den Bezeichner nur bei leerem Projektnamen; Ids, Reihenfolge,
+> Markierung, Tabelle, Umbenennen und Löschen unverändert. **Überlappung:** die Regel `.epos-variantenzeile > .epos-feld:first-child`
+> deckelte das Auswahlfeld auf 34 rem (die ~550 px des Bildschirmfotos) — der Eintrag wurde abgeschnitten, und die aufgeklappte Liste eines
+> `<select>` ist so breit wie ihr längster Eintrag und ragte über das Bezeichnerfeld; die Obergrenze fällt (`flex: 1 1 24rem`), das
+> Bezeichnerfeld bekommt `min-width: 10rem`, der Umbruch bleibt das vorhandene `flex-wrap` der Zeile. Tests: UI +3 (Anwenderbeispiel
+> Stamm + zwei Varianten, Rückfall, Umbruch-/Höchstbreiten-Wache), `UebersichtSeiteTests` 37/37 auch unter en-US. Wiki: Punkt „Variante" auf
+> der Seite „Varianten" neu gefasst (Revision 563). Nebenbefund des Agenten: ein einmaliger Ausreißer in `ModulImportDialogTests` im
+> parallelen Vollauf, isoliert und im sauberen Vollauf grün — beobachten (Muster W16b‑O‑2).
+> Gate sept48 auf `7c61416`: Kern 2 712, UI 3 945, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
