@@ -623,7 +623,7 @@ nicht nur ein Rechenknopf:
   Block „Wirtschaftliche Jahresprojektion" wandert nach 2 (dort, wo die Wiki-Seite ihn beschreibt).
 - **Schritt 2 Daten & Kosten:** Zeitreihen, Kostensätze, dazu Zins, Jahresprojektion, Projektlaufzeit,
   Restwert der Studie, Energie-Ausgleichswert (jedes Expertenfeld mit Erklärzeile aus 7.3).
-- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt, Mockup `stromspeicher-optimierung.html`):
+- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt; das hier ursprünglich genannte Mockup `stromspeicher-optimierung.html` lag nie im Repository — Befund 12.09.2026; das Mockup zu Kapitel 8 ist `Mockups/stromspeicher-optimierung-v2.html`):
   1. Kopf: **Ziel** (Kapitalwert gegenüber „ohne Speicher" — die Mappe kannte drei Zielgrößen, das
      Programm legt seit P1 eine fest) und die Wahl **„Nur die eingestellte Flotte bewerten"** oder
      **„Wirtschaftlich beste Größe suchen"**.
@@ -749,3 +749,108 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
    („prüfen, heute steht es im Flotteneditor"). Bezugs- und Einspeisegrenze sind harte Grenzen des
    Anschlusses, die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht: Beides
    beschreibt den BETRIEB und nicht eine Einheit.
+
+## 8. Zwei Suchmethoden — Anwenderrückmeldung 12.09.2026 (SD‑E‑10)
+
+### 8.1 Rückmeldung
+
+Zur Station „4 Optimierung" (Stand #224/#226, Bildschirmfoto mit dem Projekt „Stromspeicher Optimierung", eine Einheit
+„Shenzhen Growatt WIT‑M+APX ESS [100 kW, 129,0 kWh]" aus dem Katalog, Suchraum 1–1 Stück, Kapazität 40–300/20, Leistung 40–400/20):
+
+1. „Es ergibt keinen Sinn, die Variation der Leistung, Kapazität … bei einem vorgegebenen Speicher vorzunehmen. Die Variation ergibt
+   nur Sinn für einen ohne Vorgabe des Speichertyps."
+2. „Für mehrere Speicher ist die Variante die Anzahl der Speicher die Variation und nicht die Variation der Leistung, Kapazität …
+   Das wäre eine zweite Methode."
+3. „Stelle den Dialog für die Variation übersichtlicher dar und insgesamt ein verbessertes Design des Dialogs."
+
+Dazu der Fehler, dass jedes Zahlenfeld der Suchraum-Tabelle bei jedem Tastendruck den Fokus verliert — der geht als **#245** getrennt
+und vor diesem Kapitel (Ursache: die Seite ersetzt die Flottenkonfiguration je Änderung durch eine JSON-Tiefenkopie, und die Zeilen
+hängen per `@key` an den Objektreferenzen).
+
+### 8.2 Befund — was die Suche heute tut
+
+- Es gibt **eine** Suchart. Jede Einheit der Flotte bekommt eine Suchachse (`FlottenAuslegungsAchse`) mit **Stückzahl von–bis UND**
+  einem Größenraster aus zwei der drei Größen Kapazität, Leistung, C-Rate (Kopplung, die dritte folgt). Die Rastersuche
+  (`FlottenOptimierer.BildeAchse`) läuft heute schon Stückzahl × erste Größe × zweite Größe; ein Kandidat ist eine vollständige
+  Flotte je Betriebsziel.
+- Die **Vorlage** der Achse ist die konkrete Einheit. Beim Katalogspeicher aus dem Bildschirmfoto erzeugt das Raster damit
+  Fantasiegeräte von 40 bis 300 kWh mit den Kostensätzen des 129‑kWh‑Geräts — genau der Einwand aus 8.1 Punkt 1: Ein Katalog- oder
+  Projektspeicher HAT eine Größe; variieren lässt sich bei ihm nur, wie viele davon stehen.
+- Die **Herkunft** einer Einheit ist im Modell nur halb bekannt: `FlottenEinheit.AnlageId` unterscheidet Projektanlage von
+  „keine Projektanlage"; Katalogeinheit und freie Einheit (#239, dritte Quelle „leer") sind ununterscheidbar. Station 4 liest die
+  Herkunft nirgends — sie behandelt jede Einheit wie eine freie.
+- Die Suchraum-Tabelle hat neun Spalten mit sieben kleinen Zahlenfeldern je Zeile, alle gleich gewichtet, ohne sichtbaren Bezug
+  dazu, was die Einheit ist. Das ist Punkt 3.
+
+### 8.3 Zielbild — zwei Suchmethoden, gewählt nach dem, was die Flotte enthält
+
+**Methode G „Größe suchen"** (freie Auslegung). Sie gilt für Einheiten **ohne** Speichertyp — die freie Einheit aus #239 („leer")
+oder eine dafür angelegte Auslegungseinheit. Variiert werden zwei der drei Größen nach Kopplung, genau wie heute; die Stückzahl
+steht fest auf 1 (SD‑Q14). Die Kosten kommen aus den spezifischen Koeffizienten (€/kWh, €/kW, Betrieb, Ersatz) wie heute bei
+`EigeneKosten`. Feinraster erlaubt. Ergebnis wie heute: Rasterkarte, Schnittkurve, Kandidatentabelle; „Kandidat übernehmen" setzt
+der freien Einheit die gefundene Größe.
+
+**Methode S „Stückzahl suchen"** (Bestückung mit konkreten Speichern). Sie gilt für Einheiten aus **Projektanlage oder Katalog**.
+Die Größe ist die des Geräts und bleibt fest; variiert wird die Stückzahl von–bis je Einheit (0 = Einheit entfällt). Ein Kandidat ist
+eine Kombination der Stückzahlen aller variierten Einheiten je Betriebsziel: Kandidatenzahl = Π (Stückzahlen) × Betriebsziele. Kein
+Feinraster (ganze Zahlen). Kosten = Katalogkosten des Geräts × Stückzahl (Investition, Betrieb, Ersatz und Restwert je Gerät).
+Ergebnis: bei EINER variierten Einheit die Kurve „Kapitalwert über Stückzahl" (Balken je Stückzahl), bei ZWEI die Rasterkarte
+n₁ × n₂ (dieselbe Karte wie heute, Achsen ganzzahlig), darüber hinaus die Kandidatentabelle; „Kandidat übernehmen" setzt die
+Stückzahlen in Schritt 1.
+
+**Wahl in „Suche"**: drei Optionen — *Nur die eingestellte Flotte bewerten* · *Größe suchen (freie Einheit)* · *Stückzahl suchen
+(Speicher aus Projekt oder Katalog)*. Eine Option ist nur wählbar, wenn die Flotte eine passende Einheit enthält; sonst steht sie
+gedimmt mit Abhilfe („In Schritt 1 eine freie Einheit hinzufügen" bzw. „… einen Speicher aus Projekt oder Katalog aufnehmen").
+**Mischflotte:** G variiert nur die freien Einheiten, die konkreten stehen fest mit ihrer Stückzahl; S variiert nur die konkreten,
+die freien stehen fest mit ihrer Größe. Beides zugleich ist nicht Teil der ersten Stufe (SD‑Q16).
+
+**Herkunft als Feld.** `FlottenEinheit.Herkunft` = *Projektanlage* | *Katalog* | *Frei*, gesetzt an den drei Anlegewegen aus #239
+(`EinheitAusProjektanlage`, `EinheitAusKatalog`, leere Einheit), serialisiert im Stand (`Tab_SpeicherAuslegung`). Altbestand ohne
+Feld: `AnlageId` gesetzt → Projektanlage, sonst Katalog — freie Einheiten gibt es erst seit #239, und wer eine hat, kann sie in
+Schritt 1 als „freie Auslegungseinheit" kennzeichnen (SD‑Q15). Schritt 1 zeigt die Herkunft als Pille an jeder Einheit.
+
+**Engine.** `FlottenAuslegungsAchse.Suchart` = *Groesse* | *Stueckzahl*. Bei *Stueckzahl* sind erste und zweite Größe je ein
+Stützpunkt (der Gerätewert), `Kandidatenzahl` rechnet Π (Stückzahlen) × Ziele, `Feinrasterwerte` liefert nichts. Vorprüfung:
+Suchart passt zur Herkunft (frei ↔ Größe, konkret ↔ Stückzahl), sonst benannte Ablehnung vor dem Lauf. Die Rastersuche selbst bleibt
+— `BildeAchse` läuft heute schon Stückzahl × Größen; neu ist nur die Einschränkung der Achse und die Ergebnissicht über der
+Stückzahl. Der Projektlauf (Stand `@Projektflotte`, Referenzprojekt 1046) ist nicht berührt; die Referenzbasis R7 bleibt.
+
+### 8.4 Darstellung — Karten je Einheit statt einer Neun-Spalten-Tabelle (Punkt 3)
+
+- **Kopfblock zweispaltig:** links „Suche" als drei untereinanderstehende Optionen mit je einem Erklärsatz; rechts das Ziel
+  („Kapitalwert gegenüber ‚ohne Speicher' [€]"), die Kandidatenzeile („266 Kandidaten von höchstens 10 000 · Raster zulässig"), der
+  Feinraster-Schalter (nur bei G sichtbar) und der Rechenknopf.
+- **Suchraum als eine Karte je Einheit.** Kopfzeile: Name · Herkunftspille (*Projektanlage* / *Katalog* / *frei*) · feste
+  Kenndaten („129 kWh · 100 kW") · Schalter „variieren". Rumpf je Methode: bei G die Kopplung und zwei Zeilen „Kapazität 40 – 300
+  kWh, Schritt 20" / „Leistung 40 – 400 kW, Schritt 20" mit der Einheit IM Feld (Zeilenraster-Regel W6‑B‑4); bei S eine Zeile
+  „Stückzahl 1 – 4" und darunter die Herleitungszeile „= 129 – 516 kWh · 100 – 400 kW · Investition 45 000 – 180 000 €". Fußzeile
+  „Kandidaten dieser Einheit: 14". Einheiten, die die gewählte Methode nicht betrifft, stehen gedimmt mit „fest: 1 × 129 kWh".
+- **Bestes Ergebnis:** die drei Karten von 7.9 bleiben; bei S nennt die zweite Karte die Stückzahl je Einheit statt
+  Kapazität · C-Rate. Rasterkarte/Schnittkurve/Kandidatentabelle wie 8.3.
+- Formularraster-Regeln (iU8‑E‑2), Bedienblock fester Breite wie #233, Ablaufleiste unverändert. Mockup
+  `Mockups/stromspeicher-optimierung-v2.html` mit beiden Methoden am Beispiel des Bildschirmfotos (S: Growatt 1–4 Stück) und einer
+  freien Einheit (G: 40–300 kWh × 40–400 kW).
+
+### 8.5 Fragen (SD‑Q13 … SD‑Q18) mit Empfehlung
+
+| Kennung | Frage | Empfehlung |
+|---|---|---|
+| SD‑Q13 | Methode ausdrücklich wählen (drei Optionen) oder automatisch aus der Herkunft ableiten? | **Ausdrücklich wählen.** Bei einer Mischflotte ist sonst nicht eindeutig, was variiert wird; die nicht passende Option bleibt gedimmt mit Abhilfe. |
+| SD‑Q14 | Freie Einheit: Stückzahl fest 1 oder auch variierbar? | **Fest 1.** n gleiche freie Einheiten sind dieselbe Flotte wie eine n-fach größere; wer zwei verschieden große will, legt zwei freie Einheiten an. |
+| SD‑Q15 | Herkunftsfeld und Regel für Altbestände? | **Feld `Herkunft` mit drei Werten;** alt ohne Feld: `AnlageId` → Projektanlage, sonst Katalog; in Schritt 1 umschaltbar auf „frei". |
+| SD‑Q16 | Größe und Stückzahl in EINEM Lauf kombinieren? | **Nicht in S1.** Kandidatenzahl multipliziert sich; als spätere Option C, wenn gebraucht. |
+| SD‑Q17 | Ergebnisdarstellung bei Stückzahl? | **Kurve/Balken über Stückzahl** (eine Einheit), **Rasterkarte n₁ × n₂** (zwei), Kandidatentabelle darüber hinaus; ChartProben +2 Bilder +1 Gegenprobe. |
+| SD‑Q18 | Karten je Einheit statt Tabelle? | **Ja,** nach 8.4 und Mockup; die Tabelle bleibt nur in der Kandidatenliste (Ergebnis). |
+
+### 8.6 Stufenplan
+
+- **S1 (nach Entscheid SD‑E‑10):** Herkunftsfeld + Pille in Schritt 1; `Suchart` an der Achse, Vorprüfung, Kandidatenzahl und
+  Feinraster je Suchart; Methodenwahl mit Abhilfen; Karten je Einheit; Ergebnissicht Stückzahl (Kurve, n₁ × n₂-Karte,
+  Kandidatentabelle, „Kandidat übernehmen" setzt Stückzahlen); Ressourcen de/en; SpeicherEngine-, Kern- und bunit-Tests;
+  ChartProben; Wiki-Bedienungsseite Schritt 4 und Rechenweg-Absatz „Rastersuche"; Referenzlauf 13/13 byte-gleich.
+- **S2 (optional):** Kombination G + S (SD‑Q16, Option C) mit Kandidatengrenze.
+- **Unabhängig davor:** #245 (Fokusverlust).
+
+### 8.7 Anwenderentscheid SD‑E‑10
+
+Offen (Stand 12.09.2026).
