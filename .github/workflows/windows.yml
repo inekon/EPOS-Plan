@@ -111,8 +111,17 @@ jobs:
       # ausgefuehrt: er braucht eine echte Kenndaten.accdb mit Projektdaten,
       # und die liegt nicht im Repository (iE6 / iF14). Der Referenzlauf bleibt
       # deshalb ein Werkzeug fuer den Arbeitsplatz.
+      #
+      # Sammlungen laufen seit #231 (12.09.2026) NICHT parallel: Lauf 319 (cf65e71,
+      # 11.09.2026 23:41 UTC) fiel mit genau einem Fall
+      # (SpeicherOptimierungCtrlTests.Die_Kennzahlen_tragen_die_Zahlen_des_Bestpunkts),
+      # Lauf 320 auf demselben Stand gruen - Ursache: ueber 50 Testklassen pinnen die
+      # Kultur prozessweit, und ein paralleler Worker-Thread liest beim Zurueckstellen
+      # eines Nachbarn kurzzeitig en-US statt de-DE. Der Schalter entspricht dem Gate
+      # ($S/orch/gate.sh), das dort seit jeher so laeuft (dort dauert EPOS.Kern.Tests
+      # 1 m 14 s als Anhalt fuer die Laufzeit hier).
       - name: Kerntests
-        run: dotnet test WP-Plan.Kern.slnf -c Release
+        run: dotnet test WP-Plan.Kern.slnf -c Release -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 
   installer:
     # Nur bei einem manuellen Run workflow mit gesetztem Schalter "setup" (#176, verlegt

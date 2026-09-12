@@ -178,7 +178,10 @@ Nebenzweigs scheitert bis dahin mit 404, während `windows.yml` bereits registri
 er über *Actions → Windows → Run workflow* mit Häkchen „setup" (Häkchen „schnell" schaltet
 zusätzlich auf `lzma2/normal`); ohne „setup" läuft nur der bisherige Job `build-test`, die
 beiden schließen sich über ihre `if`-Bedingungen gegenseitig aus. Im Zweifel vor dem Auslösen
-nachfragen.
+nachfragen. Seit **#231** (12.09.2026) laufen die Testschritte beider Workflows (`windows.yml`,
+`kern.yml`) ohne parallele Sammlungen (`xUnit.ParallelizeTestCollections=false`, zwei Threads),
+wie das Gate — Grund: über 50 Testklassen pinnen die Kultur prozessweit, und ein paralleler
+Worker-Thread liest dabei sonst gelegentlich die eines Nachbarn.
 
 **Werkzeuge, die vor der Arbeit an einer Maske oder am Rechenweg zu kennen sind:**
 
