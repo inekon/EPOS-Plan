@@ -72,8 +72,13 @@ jobs:
       # kurze Vierwochen-Fassung desselben Wegs laeuft mit; wer die Jahreszahl
       # braucht, nimmt den Skip von Hand heraus. "27 bestanden, 1 uebersprungen"
       # ist deshalb das erwartete Ergebnis dieses Projekts und kein Ausfall.
+      #
+      # Sammlungen laufen seit #231 (12.09.2026) NICHT parallel (Kulturpinnung ueber
+      # 50 Testklassen, Befund Windows-Lauf 319/320) - hier invariant und deshalb ohne
+      # eigene Wirkung, der Schalter steht nur zur Gleichheit mit windows.yml und dem
+      # Gate. Die Testdatenbank-Sammlung laeuft ohnehin schon seriell (#106).
       - name: Testen
-        run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+        run: dotnet test WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 
       # iU8-12: Das Formularkarten-Werkzeug hat eine EIGENE Projektmappe und
       # steht deshalb weder in WP-Plan.sln noch im Solution-Filter - der
