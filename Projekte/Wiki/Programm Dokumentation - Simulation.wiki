@@ -45,20 +45,15 @@ Seit dem 11.09.2026 ist dieser Reiter ein '''vollständiger Arbeitsplatz''': Er 
 
 Der Knopf ''Speicherflotte & Auslegung öffnen'' auf dem Ergebnisreiter ''Stromspeicher'' wechselt in die [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher-Auslegung]]. Deren '''← zurück''' bringt Sie wieder in das Ergebnis, und zwar auf denselben Reiter – der dann meldet, dass die Flotte geändert wurde und die Simulation neu zu starten ist. '''Das gilt auch für den Startseiten-Reiter''': Wer von dort aus in die Auslegung gegangen ist, steht danach wieder auf dem Reiter ''Simulation'' der Startseite, mit dem Blatt ''Stromspeicher'' vorn.
 
-=== Neu gegenüber der Vorversion ===
 {{Anker|ablauf-neu}}
 
 * Ergebnis und Konfiguration erscheinen '''nicht mehr als Fenster im Fenster'''; beide sind Schritte derselben Ansicht.
-* Der Weg heißt ''Simulation starten'' und '''startet den Lauf''' (Anwenderentscheid SIM‑E‑1, 11.09.2026); ist der Lauf gesperrt – ungespeicherte Konfiguration oder blockierte Datenbank –, nennt er den Grund.
-* Er rechnet seither '''im Reiter selbst''' und wechselt die Ansicht nicht mehr (Anwenderentscheid SIM‑E‑2, 11.09.2026); rechts im Reiter steht danach dasselbe Ergebnis wie in Schritt ③. Die rechte Hälfte des Reiters war vorher leer.
-* Seit dem 12.09.2026 ist er ein '''Hauptknopf in Blockbreite''' statt einer Bildkachel: Die linke Spalte hat eine feste Breite, alles darin ist gleich breit, und die Erläuterung steht als eine Zeile unter dem Knopf. Die Werte der ''Projektzusammenfassung'' stehen dabei nicht mehr blau – blau bedeutet im Programm einen Verweis.
-* Die Fußknöpfe ''Konfiguration …'' und ''Beenden'' der Ergebnisseite und ''Beenden'' der Konfiguration sind entfallen, ebenso die Fußleiste des Ergebnisses; die Werkzeugleiste oben rechts und das eine ''← zurück'' ersetzen sie.
-* Der Reiter ''Parameter'' des Ergebnisses ist entfallen: Netzverluste, BHKW-Betriebsart und Leistungsgrenze, Heizstab und Betriebsbereitschaft stehen in Schritt ① bei der Konfiguration, der Block der Einzelanlage im Reiter ''Stromspeicher''.
+* Der Weg heißt ''Simulation starten'' und '''startet den Lauf'''; ist der Lauf gesperrt – ungespeicherte Konfiguration oder blockierte Datenbank –, nennt er den Grund.
+* Er rechnet seither '''im Reiter selbst'''; rechts im Reiter steht danach dasselbe Ergebnis wie in Schritt ③. Die rechte Hälfte des Reiters war vorher leer.
+* Netzverluste, BHKW-Betriebsart und Leistungsgrenze, Heizstab und Betriebsbereitschaft stehen in Schritt ① bei der Konfiguration, der Block der Einzelanlage im Reiter ''Stromspeicher''.
 * Das Ergebnis öffnet mit der ''Übersicht'' statt mit den Parametern.
-* Die '''Übersicht''' zeigt jede Zahl nur noch '''einmal''' (Anwenderentscheid 11.09.2026): Sie ist ein Dashboard ''Wärme | Strom'', und das zweite Übersichtsblatt im Reiter ''Ergebnis'' ist entfallen. Die Legende der zwei Ringe steht als Text neben dem Bild statt darin – sie lässt sich kopieren und wird nicht mehr abgeschnitten; dafür tragen die Ringe keine Zoomleiste mehr, denn an einem Ring gibt es nichts zu zoomen.
+* Die '''Übersicht''' zeigt jede Zahl: Sie ist ein Dashboard ''Wärme | Strom'', und das zweite Übersichtsblatt im Reiter ''Ergebnis'' ist entfallen. Die Legende der zwei Ringe steht als Text neben dem Bild statt darin – sie lässt sich kopieren und wird nicht mehr abgeschnitten; dafür tragen die Ringe keine Zoomleiste mehr, denn an einem Ring gibt es nichts zu zoomen.
 * Der ungedeckte '''Rest''' ist in beiden Ringen ein graues Segment. Deckt kein Erzeuger den Strombedarf, steht dort ein '''voller grauer Ring''' mit ''0,0 % · Netzbezug 100 %'' und darunter der Hinweis, unter ''① Konfiguration'' einen Stromerzeuger aufzunehmen – vorher war der Kreis an dieser Stelle leer.
-* In den Erzeugertabellen steht der '''Spaltenkopf über seiner Zahl''' (rechtsbündig) und die Einheit einmal im Kopf statt in jeder Zelle.
-* Das Band ''n Hinweise zum Lauf'' ist '''kompakt''': Zähler, Kurztext und ''anzeigen ▾''.
 * Die Simulation steht zusätzlich im Menü unter '''Projekt → Simulation…'''.
 * '''Auf dem iPad''' erreichen Sie dieselbe Ansicht über den Knopf ''Simulation…'' in der Projektliste; nur der Wärmepumpen-Assistent (Doppeltipp auf eine Modulzeile im Reiter ''Wärmepumpe'') steht dort nicht zur Verfügung und sagt das auch.
 

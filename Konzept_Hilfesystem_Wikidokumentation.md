@@ -852,4 +852,13 @@ und Kasten „Bestes Ergebnis", Größen-Sicht dort statt in Schritt 5; 27 871 �
 beide Nachproben zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Simulation` Revision 557** (12.09.2026, Merge `2f57bcc`,
 Gate sept42, #233) mit dem neu gefassten Abschnitt zum Startreiter (Bedienblock mit Hauptknopf „Simulation starten", Zweitknopf
 „Simulation Konfiguration…", Leerzustand-Karte, „Ergebnis speichern" nur mit Ergebnis); Nachprobe zeichengleich bis auf den Zeilenumbruch
-am Dateiende.
+am Dateiende. **Dazu `Simulation` Revision 560** (12.09.2026, Merge `f6e0b58`, #234) mit dem Absatz zum Blatt
+„Wärmeproduktion" (Vorbelegung aller Reihen, Achsen mit Einheit, zweite Achse nur für den Speicherinhalt, Reihenwahl über die
+Sitzung). **Zwischenfall:** Revision 558 (12.09.2026, 07:39 UTC) war eine HANDBEARBEITUNG des Anwenders auf der Live-Seite — der
+Abschnitt „Neu gegenüber der Vorversion" wurde gekürzt, die Entscheidkennungen (SIM‑E‑1, SIM‑E‑2, „Anwenderentscheid 11.09.2026")
+und vier Aufzählungspunkte gestrichen —, die Revision 559 aus der Repo-Quelle versehentlich überschrieb (die Diff-Zeile des
+Uploaders meldete 12+/5− statt der erwarteten 2+/1−, das wurde übersehen). Revision 560 stellt 558 wieder her und legt nur den
+#234-Absatz darauf; die Repo-Quelle ist seither an die Handbearbeitung angeglichen (Commit nach Gate sept44). **Regel seither:**
+Vor jedem Upload `--probe` laufen lassen und die Diff-Zeilen lesen; weicht die Live-Seite über die beabsichtigte Änderung hinaus ab,
+zuerst die Live-Fassung in die Quelle übernehmen (Handbearbeitungen des Anwenders sind Anwenderentscheide), dann hochladen; der
+Uploader zeigt die Diff-Zeilen seither vor dem Schreiben an. Nachprobe 560 zeichengleich bis auf den Zeilenumbruch am Dateiende.

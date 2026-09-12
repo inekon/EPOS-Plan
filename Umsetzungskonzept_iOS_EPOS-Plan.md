@@ -3985,6 +3985,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > **Windows-Abnahme #229:** Anwender 12.09.2026 „Programmsymbol ok" (nach Neubau; Taskleiste, Fenster, Explorer).
 > Gate sept43 auf `d5a3a29`: Kern 2 700, UI 3 904, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#234 (12.09.2026, Anwenderrückmeldung mit zwei Bildschirmfotos „Ergebnis › Wärme Produktion Chart": „Die Grafik ist zu Beginn leer …
+> Einheiten X-Achse fehlen. Nur bei Pufferspeicher zweite Achse, nicht für Wärmelast") — Vorbelegung, Sitzungsgedächtnis,
+> Achseneinheiten, zweite Achse nur für den Speicherinhalt (`8411b60`, Merge `f6e0b58`).** Befund: `WaermegangReiter` startete ohne gewählte
+> Reihe und ohne Bedarfslinie (Leerhinweis des Renderers), `Reiterblatt` baut die Komponente je Blattwechsel neu (`@if (Sichtbar)`), so
+> dass jede Anwenderwahl verfiel; `ChartRenderer.XAchse`/`XAchseFenster` zeichneten Marken ohne Achsentitel; `BildWaermegang` legte den
+> Wärmebedarf [kW] auf die ZWEITE Achse („Wärmelast") und die Speicherfüllstände [kWh] auf die Primärachse — verkehrt herum, denn
+> Bedarf und Produktion sind dieselbe Größe. **Umsetzung (`8411b60`, Agent Opus; 16 Dateien, +663/−90):** `Ganglinienstand`/`Ganglinienregister` in `EPOS.UI/Seiten/Simulation/` (Bedarfsart,
+> sortiert, Bedarfslinie, Reihen als SCHLÜSSEL; ein Stand je Reiter, prozessweit unter Schloss, Bauart S2.5 „Filterstand je Katalog"; Testisolation
+> über den Parameter `Gedaechtnis`, kein Datenzoom, keine Dauerpersistenz); `WaermegangReiter` belegt beim ersten Aufbau alle Erzeuger, alle
+> Speicher und die Bedarfslinie vor, `StromgangReiter` behält „nur Gesamt" und bekommt dasselbe Gedächtnis. `ChartRenderer`: Helfer
+> `XAchsentitel` mittig bei `rc.Bottom + 30` aus `XAchse` und `XAchseFenster` (wirkt auf ErzeugerStapel, GanglinieNormiert, Speicherbetrieb,
+> gezoomten Jahresverlauf); `zweiteAchse` → `zweiteAchsen` (Liste, gemeinsame Nice-Obergrenze, Reihenfarbe bei einer, DimGray bei mehreren);
+> Zusatzfund: der y2-Titel stand starr bei `rc.Right − 40` und wurde abgeschnitten, rückt jetzt nach links. `BildWaermegang`: Wärmebedarf als Linie
+> auf der Primärachse „Leistung [kW]", Speicherfüllstände auf der zweiten Achse „Speicherinhalt [kWh]", nur mit gewähltem Speicher. Ressourcen:
+> `CHART_ACHSE_JAHRESSTUNDEN` → „Jahresstunden [h]" und `CHART_ACHSE_LEISTUNG` → „Leistung [kW]" umgewidmet (ohne bzw. nur kW-Nutzer), neu
+> `CHART_ACHSE_SPEICHERINHALT_KWH`, `CHART_ACHSE_LEISTUNG_SPEICHERINHALT` gelöscht (ohne Nutzer), `CHART_ACHSE_WAERMELAST` bleibt (vier Nutzer).
+> bunit +5 (`GangUndErgebnisReiterTests`), ChartProben 57/12 → 59/13 (`erzeugerstapel_zwei_speicher`, Gegenprobe `erzeugerstapel_zweite_achse`).
+> Wiki `Programm Dokumentation/Simulation` Revision 560 (Absatz zum Blatt Wärmeproduktion; Revision 558 war eine Handbearbeitung des Anwenders,
+> die Revision 559 überschrieb — 560 stellt sie wieder her, die Repo-Quelle ist angeglichen, Regel im Hilfesystem-Konzept).
+> **Offen:** bei vielen Reihen bricht die Legende des `ErzeugerStapel` in eine zweite Zeile und liegt auf dem y-Titel (kein Regress; Behebung
+> nach dem Muster W11b‑B‑28 aus `Speicherbetrieb`); der `Jahresverlauf` zeichnet seine Monatsnamen selbst und trägt in der Vollansicht keinen
+> Achsentitel (bewusst); Windows-Abnahme der drei Diagramme.
+> Gate sept44 auf `f6e0b58`: Kern 2 700, UI 3 909, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59
+> Bilder / 13 Gegenproben, Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
