@@ -679,3 +679,78 @@
 .epos-flotte-hinweiszeile__zeichen {
     flex: none;
 }
+
+/* ==================================================================== */
+/* „SPEICHER HINZUFUEGEN" — Nachzugszeile und Quellenwahl (#239)        */
+/*                                                                      */
+/* Die Nachzugszeile ist LEISE (dieselbe Farbe wie die Hinweiszeilen):  */
+/* Eine Speicheranlage ohne Einheit ist kein Fehler, sondern eine       */
+/* Beobachtung — der Anwender darf eine Anlage bewusst draussen lassen. */
+/* ==================================================================== */
+.epos-flotte-nachzug {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 0 0 0.6rem;
+    padding: 0.45rem 0.6rem;
+    border-inline-start: 4px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+    line-height: 1.45;
+}
+
+.epos-flotte-nachzug__text {
+    flex: 1 1 18rem;
+}
+
+.epos-flotte-quellenwahl {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.epos-flotte-quellenwahl__leiste {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Die Anlagenliste rollt innen, statt die Ueberlagerung zu spreizen. */
+.epos-flotte-anlagenliste {
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+.epos-flotte-anlagenliste .epos-tabelle {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-flotte-anlagenliste .epos-tabelle th,
+.epos-flotte-anlagenliste .epos-tabelle td {
+    padding: 0.3rem 0.5rem;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    text-align: start;
+}
+
+.epos-flotte-anlagenliste .epos-tabelle .epos-zahl {
+    text-align: end;
+}
+
+/* Eine bereits vertretene Anlage steht da, ist aber nicht waehlbar —  */
+/* sie zu verbergen hiesse, die Frage „wo ist meine Anlage?" offen zu  */
+/* lassen (genau die Frage der Rueckmeldung vom 12.09.2026).           */
+.epos-flotte-anlage--vertreten {
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-anlage__vermerk {
+    margin-inline-start: 0.4rem;
+    font-size: 0.85em;
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-katalogwahl {
+    min-width: 0;
+}

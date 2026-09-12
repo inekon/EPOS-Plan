@@ -30,6 +30,7 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using System.Globalization
 @using SpeicherEngine
+@using WindowsFormsApplication1
 
 <section class="epos-flotte-editor" aria-label="@Texte.Titel">
     <div class="epos-flotte-editor__kopf">
@@ -64,6 +65,23 @@
             <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
                     @onclick="EinheitHinzufuegen">@Texte.Hinzufuegen</button>
         </div>
+
+        @* DER NACHZUG (Auftrag #239, Anwenderrueckmeldung 12.09.2026 „Bei mehreren
+           angelegten Stromspeichern wird nur einer angezeigt, nach loeschen steht er
+           nicht mehr zur Auswahl"): Die Vorbelegung saet je Speicheranlage eine Einheit,
+           aber NUR beim Anlegen der Flotte. Steht ein Stand @Aktuell, ist die Liste
+           eingefroren. Diese leise Zeile sagt, welche Anlage fehlt, und der Knopf holt
+           sie — eine ANWENDERHANDLUNG; der gespeicherte Stand wird davon nicht von
+           selbst angefasst (SP-O-8). *@
+        @if (FehlendeAnlagen.Count > 0)
+        {
+            <p class="epos-flotte-nachzug">
+                <span class="epos-flotte-nachzug__text">@NachzugText</span>
+                <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
+                        title="@Texte.NachzugAufnehmenTitel"
+                        @onclick="FehlendeAnlagenAufnehmen">@Texte.NachzugAufnehmen</button>
+            </p>
+        }
 
         @if (_wert.Einheiten.Count == 0)
         {
@@ -197,6 +215,97 @@
         }
     </section>
 
+    @* DIE QUELLENWAHL (Auftrag #239). Sie steht als UEBERLAGERUNG im selben Fenster —
+       Hausmuster der Ansicht (PeakShavingDialog, StromganglinieDialog); ein zweites
+       Fenster gibt es auf iOS nicht. Ohne die Delegaten der Quellen erscheint sie gar
+       nicht, und der Knopf legt wie bisher sofort eine leere Einheit an. *@
+    <Ueberlagerung Offen="@_quellenwahlOffen" Titel="@Texte.QuelleTitel"
+                   Geschlossen="QuellenwahlSchliessen" SchliessenText="@Texte.Abbrechen">
+        <KindInhalt>
+            @if (_quellenwahlOffen)
+            {
+                <div class="epos-flotte-quellenwahl">
+                    <Optionsgruppe Bezeichnung="@Texte.QuelleFrage" Eintraege="@Quelleneintraege"
+                                   Beschreibungen="@Quellenbeschreibungen"
+                                   Auswahl="@_quelle" AuswahlChanged="QuelleSetzen" />
+
+                    @if (_quelle == QuelleAnlage)
+                    {
+                        @if (_kandidaten.Count == 0)
+                        {
+                            <p class="epos-flotte-leer">@Texte.KeineAnlage</p>
+                        }
+                        else
+                        {
+                            <div class="epos-flotte-anlagenliste">
+                                <table class="epos-tabelle">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col"></th>
+                                            <th scope="col">@Texte.AnlageSpalteName</th>
+                                            <th scope="col" class="epos-zahl">@Texte.AnlageSpalteKapazitaet</th>
+                                            <th scope="col" class="epos-zahl">@Texte.AnlageSpalteLeistung</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat k in _kandidaten)
+                                        {
+                                            bool vertreten = Vertreten(k.AnlageId);
+                                            string id = k.AnlageId;
+                                            <tr @key="k.AnlageId" class="@(vertreten ? "epos-flotte-anlage--vertreten" : "")">
+                                                <td>
+                                                    <input type="radio" name="flotte-anlagenwahl" value="@id"
+                                                           checked="@(_gewaehlteAnlage == id)" disabled="@vertreten"
+                                                           aria-label="@k.Name"
+                                                           @onchange="@(() => _gewaehlteAnlage = id)" />
+                                                </td>
+                                                <td>
+                                                    @k.Name
+                                                    @if (vertreten)
+                                                    {
+                                                        <span class="epos-flotte-anlage__vermerk">@Texte.AnlageVertreten</span>
+                                                    }
+                                                </td>
+                                                <td class="epos-zahl">@Zahl(k.KapazitaetKWh) kWh</td>
+                                                <td class="epos-zahl">@Zahl(k.LeistungKw) kW</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    }
+                    else if (_quelle == QuelleKatalog)
+                    {
+                        @if (_katalogzeilen.Count == 0)
+                        {
+                            <p class="epos-flotte-leer">@Texte.KeinKatalog</p>
+                        }
+                        else
+                        {
+                            <div class="epos-flotte-katalogwahl">
+                                <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalogzeilen"
+                                              Filterstand="@_katalogfilter"
+                                              Gewaehlt="@_gewaehlterKatalog"
+                                              GewaehltChanged="@(v => _gewaehlterKatalog = v ?? "")"
+                                              Doppelklick="KatalogsatzUebernehmen" />
+                            </div>
+                        }
+                    }
+
+                    <div class="epos-flotte-quellenwahl__leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf"
+                                @onclick="QuellenwahlSchliessen">@Texte.Abbrechen</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                disabled="@(!QuelleUebernehmbar)"
+                                @onclick="QuelleUebernehmen">@Texte.QuelleUebernehmen</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
 </section>
 
 @code {
@@ -223,9 +332,50 @@
     /// </remarks>
     [Parameter] public bool BetriebZeigen { get; set; } = true;
 
+    // =====================================================================
+    //  „Speicher hinzufügen" — die drei Quellen (Auftrag #239)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Speicheranlagen des Projekts als Kandidaten. <c>null</c> = der Wirt kennt das
+    /// Projekt nicht; dann gibt es weder die Quelle „Speicheranlage" noch die
+    /// Nachzugszeile.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>>? Projektanlagen { get; set; }
+
+    /// <summary>Baut aus einer Speicheranlage des Projekts eine Einheit; <c>null</c> = Weg nicht verfügbar.</summary>
+    [Parameter] public Func<string, FlottenEinheit?>? EinheitAusProjektanlage { get; set; }
+
+    /// <summary>Die Zeilen des Speicherkatalogs; <c>null</c> = keine Katalogquelle.</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Das Spaltenprofil des Speicherkatalogs — ohne Profil zeichnet die Liste nichts.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Baut aus einem Katalogsatz eine Einheit; <c>null</c> = keine Katalogquelle.</summary>
+    [Parameter] public Func<int, FlottenEinheit?>? EinheitAusKatalog { get; set; }
+
+    /// <summary>Steuerwert der Optionsgruppe: eine Speicheranlage des Projekts.</summary>
+    public const int QuelleAnlage = 0;
+
+    /// <summary>Steuerwert der Optionsgruppe: ein Satz des Speicherkatalogs.</summary>
+    public const int QuelleKatalog = 1;
+
+    /// <summary>Steuerwert der Optionsgruppe: eine leere Einheit mit Vorgabewerten.</summary>
+    public const int QuelleLeer = 2;
+
     private FlottenStudieKonfiguration _wert = new();
     private FlottenStudieKonfiguration? _eingangReferenz;
     private readonly HashSet<string> _offeneEinheiten = new(StringComparer.Ordinal);
+
+    private bool _quellenwahlOffen;
+    private int _quelle = QuelleLeer;
+    private string _gewaehlteAnlage = "";
+    private string _gewaehlterKatalog = "";
+    private IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat> _kandidaten
+        = Array.Empty<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>();
+    private IReadOnlyList<Katalogfilterzeile> _katalogzeilen = Array.Empty<Katalogfilterzeile>();
+    private readonly Katalogfilterstand _katalogfilter = new();
 
     public FlottenStudieKonfiguration AktuellerSnapshot => Kopie(_wert);
     public int EinheitenAnzahl => _wert.Einheiten.Count;
@@ -234,6 +384,7 @@
 
     protected override void OnParametersSet()
     {
+        KandidatenNachziehen();
         if (ReferenceEquals(_eingangReferenz, Wert)) return;
         _eingangReferenz = Wert;
         _wert = Kopie(Wert ?? new FlottenStudieKonfiguration());
@@ -241,6 +392,32 @@
         if (_wert.Einheiten.Count > 0 && _offeneEinheiten.Count == 0)
             _offeneEinheiten.Add(_wert.Einheiten[0].Id);
     }
+
+    /// <summary>
+    /// Liest die Kandidatenliste EINMAL je Delegat — sie kostet eine Datenbankabfrage je
+    /// Speicheranlage und darf deshalb nicht an jedem Zeichenlauf hängen.
+    /// </summary>
+    /// <remarks>
+    /// Ein Wechsel des Delegaten (anderes Projekt, anderer Arbeitsgang) liest neu; wer den
+    /// Stand von Hand auffrischen will, schließt und öffnet die Ansicht — genau wie bei
+    /// jeder anderen Vorbelegung dieser Seite.
+    /// </remarks>
+    private void KandidatenNachziehen()
+    {
+        if (ReferenceEquals(_anlagenquelle, Projektanlagen)) return;
+        _anlagenquelle = Projektanlagen;
+        _kandidaten = Array.Empty<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>();
+        if (Projektanlagen is null) return;
+        try { _kandidaten = Projektanlagen() ?? _kandidaten; }
+        catch (Exception ex)
+        {
+            // Eine fehlgeschlagene Auskunft darf den Editor nicht mitnehmen: Ohne
+            // Kandidaten fehlen Quelle und Hinweiszeile, alles Uebrige bleibt bedienbar.
+            Console.WriteLine("Die Speicheranlagen des Projekts konnten nicht gelesen werden: " + ex.Message);
+        }
+    }
+
+    private Func<IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>>? _anlagenquelle;
 
     private void Normalisieren()
     {
@@ -290,14 +467,205 @@
             _wert.Optionen.EndenergieZielKWh.RemoveRange(_wert.Einheiten.Count, _wert.Optionen.EndenergieZielKWh.Count - _wert.Einheiten.Count);
     }
 
+    /// <summary>
+    /// „+ Speicher hinzufügen": Mit Quellen öffnet der Knopf die Wahl, ohne sie legt er
+    /// wie bisher sofort eine leere Einheit an (Auftrag #239).
+    /// </summary>
+    /// <remarks>
+    /// Der zweite Fall ist nicht nur der Testfall: Der Reiter „Stromspeicher" führt
+    /// denselben Editor ohne Projektwege, und dort soll der Knopf tun, was er immer tat.
+    /// </remarks>
     private async Task EinheitHinzufuegen()
     {
+        if (!QuellenwahlMoeglich) { await LeereEinheitAnlegen(); return; }
+
+        _gewaehlteAnlage = "";
+        _gewaehlterKatalog = "";
+        _quelle = AnlagenquelleMoeglich ? QuelleAnlage
+                : KatalogquelleMoeglich ? QuelleKatalog : QuelleLeer;
+        if (_quelle == QuelleKatalog) KatalogzeilenLaden();
+        _quellenwahlOffen = true;
+    }
+
+    private async Task LeereEinheitAnlegen()
+    {
         var e = NeueEinheit(_wert.Einheiten.Count + 1);
+        await EinheitAufnehmen(e);
+    }
+
+    /// <summary>
+    /// Hängt eine fertige Einheit an: Achse dazu (wie bei jeder anderen Einheit, siehe
+    /// Kopf dieser Datei), aufgeklappt zeigen, melden.
+    /// </summary>
+    private async Task EinheitAufnehmen(FlottenEinheit e)
+    {
+        if (string.IsNullOrWhiteSpace(e.Id)) e.Id = NeueId();
+        if (string.IsNullOrWhiteSpace(e.Name))
+            e.Name = string.Format(CultureInfo.CurrentCulture, Texte.StandardEinheit, _wert.Einheiten.Count + 1);
         _wert.Einheiten.Add(e);
         _wert.Auslegung.Achsen.Add(NeueAchse(e));
         _offeneEinheiten.Add(e.Id);
         await Melden();
     }
+
+    // ------------------------------------------------------------ Quellenwahl
+
+    /// <summary>Steht die Quelle „Speicheranlage des Projekts" zur Verfügung?</summary>
+    private bool AnlagenquelleMoeglich => EinheitAusProjektanlage is not null && _kandidaten.Count > 0;
+
+    /// <summary>
+    /// Steht die Quelle „Speicherkatalog" zur Verfügung? Ohne Profil zeichnet
+    /// <c>Katalogliste</c> nichts — deshalb gehört es zur Bedingung.
+    /// </summary>
+    private bool KatalogquelleMoeglich => EinheitAusKatalog is not null && Katalogzeilen is not null
+                                          && Katalogprofil is not null;
+
+    /// <summary>
+    /// Gibt es überhaupt etwas zu wählen? Ohne Quelle bleibt es beim alten Verhalten:
+    /// ein Klick, eine leere Einheit, kein Zwischenschritt.
+    /// </summary>
+    private bool QuellenwahlMoeglich => AnlagenquelleMoeglich || KatalogquelleMoeglich;
+
+    private IReadOnlyList<(int Id, string Text)> Quelleneintraege
+    {
+        get
+        {
+            var liste = new List<(int, string)>();
+            if (AnlagenquelleMoeglich) liste.Add((QuelleAnlage, Texte.QuelleAnlage));
+            if (KatalogquelleMoeglich) liste.Add((QuelleKatalog, Texte.QuelleKatalog));
+            liste.Add((QuelleLeer, Texte.QuelleLeer));
+            return liste;
+        }
+    }
+
+    private IReadOnlyDictionary<int, string> Quellenbeschreibungen => new Dictionary<int, string>
+    {
+        [QuelleAnlage] = Texte.QuelleAnlageErl,
+        [QuelleKatalog] = Texte.QuelleKatalogErl,
+        [QuelleLeer] = Texte.QuelleLeerErl
+    };
+
+    private void QuelleSetzen(int? wert)
+    {
+        _quelle = wert ?? QuelleLeer;
+        if (_quelle == QuelleKatalog) KatalogzeilenLaden();
+    }
+
+    /// <summary>Die Katalogzeilen werden erst gelesen, wenn jemand den Katalog sehen will.</summary>
+    private void KatalogzeilenLaden()
+    {
+        if (_katalogzeilen.Count > 0 || Katalogzeilen is null) return;
+        try { _katalogzeilen = Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>(); }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Der Speicherkatalog konnte nicht gelesen werden: " + ex.Message);
+        }
+    }
+
+    private void QuellenwahlSchliessen() => _quellenwahlOffen = false;
+
+    /// <summary>Ist die gewählte Quelle übernehmbar? Ohne Wahl kein Knopf, der etwas verspricht.</summary>
+    private bool QuelleUebernehmbar => _quelle switch
+    {
+        QuelleAnlage => _gewaehlteAnlage.Length > 0,
+        QuelleKatalog => KatalogzeileZu(_gewaehlterKatalog) is not null,
+        _ => true
+    };
+
+    private Katalogfilterzeile? KatalogzeileZu(string schluessel)
+    {
+        if (string.IsNullOrEmpty(schluessel)) return null;
+        foreach (Katalogfilterzeile z in _katalogzeilen)
+            if (string.Equals(z.Schluessel, schluessel, StringComparison.Ordinal)) return z;
+        return null;
+    }
+
+    private async Task QuelleUebernehmen()
+    {
+        FlottenEinheit? e = _quelle switch
+        {
+            QuelleAnlage => EinheitAusProjektanlage?.Invoke(_gewaehlteAnlage),
+            QuelleKatalog => KatalogzeileZu(_gewaehlterKatalog) is { } z ? EinheitAusKatalog?.Invoke(z.Id) : null,
+            _ => NeueEinheit(_wert.Einheiten.Count + 1)
+        };
+
+        _quellenwahlOffen = false;
+        // Liefert der Kern nichts (Anlage inzwischen geloescht, Katalogsatz weg), bleibt
+        // es bei der geschlossenen Ueberlagerung — eine leere Einheit stillschweigend
+        // anzulegen waere eine andere Antwort als die gestellte Frage.
+        if (e is null) return;
+        await EinheitAufnehmen(e);
+    }
+
+    /// <summary>Ein Doppelklick in der Katalogliste übernimmt den Satz sofort (Hausmuster).</summary>
+    private async Task KatalogsatzUebernehmen(Katalogfilterzeile zeile)
+    {
+        _gewaehlterKatalog = zeile?.Schluessel ?? "";
+        FlottenEinheit? e = zeile is null ? null : EinheitAusKatalog?.Invoke(zeile.Id);
+        _quellenwahlOffen = false;
+        if (e is null) return;
+        await EinheitAufnehmen(e);
+    }
+
+    // ------------------------------------------------------ Nachzug (Befund #239)
+
+    /// <summary>
+    /// Die Speicheranlagen des Projekts, zu denen KEINE Einheit der Flotte gehört —
+    /// erkannt an <see cref="FlottenEinheit.AnlageId"/>.
+    /// </summary>
+    /// <remarks>
+    /// Sie ist die Antwort auf „bei mehreren angelegten Stromspeichern wird nur einer
+    /// angezeigt, nach löschen steht er nicht mehr zur Auswahl": Die Zeile erscheint
+    /// auch, nachdem jemand eine Anlageneinheit entfernt hat.
+    /// </remarks>
+    private IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat> FehlendeAnlagen
+    {
+        get
+        {
+            if (EinheitAusProjektanlage is null || _kandidaten.Count == 0)
+                return Array.Empty<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>();
+            var fehlend = new List<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>();
+            foreach (SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat k in _kandidaten)
+                if (!Vertreten(k.AnlageId)) fehlend.Add(k);
+            return fehlend;
+        }
+    }
+
+    private bool Vertreten(string anlageId) =>
+        _wert.Einheiten.Any(e => string.Equals(e.AnlageId, anlageId, StringComparison.Ordinal));
+
+    private string NachzugText
+    {
+        get
+        {
+            IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat> fehlend = FehlendeAnlagen;
+            string namen = string.Join(", ", fehlend.Select(x => x.Name));
+            return fehlend.Count == 1
+                ? string.Format(CultureInfo.CurrentCulture, Texte.NachzugEine, namen)
+                : string.Format(CultureInfo.CurrentCulture, Texte.Nachzug, fehlend.Count, namen);
+        }
+    }
+
+    private async Task FehlendeAnlagenAufnehmen()
+    {
+        if (EinheitAusProjektanlage is null) return;
+        bool etwas = false;
+        foreach (SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat k in FehlendeAnlagen)
+        {
+            FlottenEinheit? e = EinheitAusProjektanlage(k.AnlageId);
+            if (e is null) continue;
+            if (string.IsNullOrWhiteSpace(e.Id)) e.Id = NeueId();
+            if (string.IsNullOrWhiteSpace(e.Name))
+                e.Name = string.Format(CultureInfo.CurrentCulture, Texte.StandardEinheit, _wert.Einheiten.Count + 1);
+            _wert.Einheiten.Add(e);
+            _wert.Auslegung.Achsen.Add(NeueAchse(e));
+            _offeneEinheiten.Add(e.Id);
+            etwas = true;
+        }
+        if (etwas) await Melden();
+    }
+
+    private static string Zahl(double wert) => wert.ToString("0.##", CultureInfo.CurrentCulture);
 
     private async Task EinheitKopieren(FlottenEinheit quelle)
     {
@@ -536,5 +904,33 @@
         public string EinheitenAnzahl { get; set; } = Resource.FLOTTE_ED_EINHEITEN_ANZAHL;
         public string StandardEinheit { get; set; } = Resource.FLOTTE_ED_STANDARD_EINHEIT;
         public string Unbenannt { get; set; } = Resource.FLOTTE_ED_UNBENANNT;
+
+        // ---------------------------------------- „Speicher hinzufügen" (#239)
+
+        public string QuelleTitel { get; set; } = Resource.FLOTTE_ED_QUELLE_TITEL;
+        public string QuelleFrage { get; set; } = Resource.FLOTTE_ED_QUELLE_FRAGE;
+        public string QuelleAnlage { get; set; } = Resource.FLOTTE_ED_QUELLE_ANLAGE;
+        public string QuelleAnlageErl { get; set; } = Resource.FLOTTE_ED_QUELLE_ANLAGE_ERL;
+        public string QuelleKatalog { get; set; } = Resource.FLOTTE_ED_QUELLE_KATALOG;
+        public string QuelleKatalogErl { get; set; } = Resource.FLOTTE_ED_QUELLE_KATALOG_ERL;
+        public string QuelleLeer { get; set; } = Resource.FLOTTE_ED_QUELLE_LEER;
+        public string QuelleLeerErl { get; set; } = Resource.FLOTTE_ED_QUELLE_LEER_ERL;
+        public string QuelleUebernehmen { get; set; } = Resource.FLOTTE_ED_QUELLE_UEBERNEHMEN;
+        public string Abbrechen { get; set; } = Resource.FLOTTE_DLG_BTN_ABBRECHEN;
+        public string AnlageSpalteName { get; set; } = Resource.FLOTTE_ED_ANLAGE_SPALTE_NAME;
+        public string AnlageSpalteKapazitaet { get; set; } = Resource.FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET;
+        public string AnlageSpalteLeistung { get; set; } = Resource.FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG;
+        public string AnlageVertreten { get; set; } = Resource.FLOTTE_ED_ANLAGE_VERTRETEN;
+        public string KeineAnlage { get; set; } = Resource.FLOTTE_ED_KEINE_ANLAGE;
+        public string KeinKatalog { get; set; } = Resource.FLOTTE_ED_KEIN_KATALOG;
+
+        /// <summary>„{0} Speicheranlagen des Projekts sind nicht in der Flotte: {1}".</summary>
+        public string Nachzug { get; set; } = Resource.FLOTTE_ED_NACHZUG;
+
+        /// <summary>Dieselbe Aussage für genau eine Anlage — „{0}" ist ihr Name.</summary>
+        public string NachzugEine { get; set; } = Resource.FLOTTE_ED_NACHZUG_EINE;
+
+        public string NachzugAufnehmen { get; set; } = Resource.FLOTTE_ED_NACHZUG_AUFNEHMEN;
+        public string NachzugAufnehmenTitel { get; set; } = Resource.FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL;
     }
 }

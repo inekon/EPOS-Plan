@@ -147,6 +147,182 @@ public static class SpeicherFlottenStudieCtrl
         };
     }
 
+    // =====================================================================
+    //  „Speicher hinzufügen" — die QUELLEN einer neuen Einheit (Auftrag #239)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Eine Speicheranlage des Projekts als Kandidat für die Flotte</b>
+    /// (Anwenderrückmeldung 12.09.2026, Auftrag #239).
+    /// </summary>
+    /// <param name="AnlageId">
+    /// <c>Tab_Energieanlagen.ID</c> als Text — genau die Schreibweise, die
+    /// <see cref="FlottenEinheit.AnlageId"/> trägt; daran erkennt die Oberfläche, ob
+    /// die Anlage schon vertreten ist.
+    /// </param>
+    /// <param name="Name">Der Anlagenbezeichner, Rückfall der Gerätename.</param>
+    /// <param name="KapazitaetKWh">Nennkapazität C [kWh].</param>
+    /// <param name="LeistungKw">Lade- gleich Entladeleistung P [kW].</param>
+    public sealed record FlottenAnlagenkandidat(string AnlageId, string Name,
+                                                double KapazitaetKWh, double LeistungKw);
+
+    /// <summary>
+    /// <b>Eine Flotteneinheit aus EINER Speicheranlage des Projekts</b> — derselbe Weg,
+    /// den <see cref="Vorbelegung"/> je Anlage geht (<c>LeseParameter(projektId,
+    /// anlageId)</c> und <see cref="Einheit"/>).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum es diesen Weg braucht</b> (Anwenderrückmeldung 12.09.2026): Die
+    /// Vorbelegung greift ausschließlich beim ANLEGEN einer Flotte. Steht erst einmal ein
+    /// Stand <c>@Aktuell</c> in <c>Tab_SpeicherAuslegung</c>, ist die Einheitenliste
+    /// eingefroren — eine später angelegte Speicheranlage erscheint nie, und eine
+    /// entfernte kommt nie zurück. Der Anwender braucht deshalb eine Handlung, die
+    /// genau EINE Anlage nachzieht.</para>
+    /// <para><b>Keine zweite Abbildung.</b> Gelesen wird über einen EIGENEN
+    /// <c>StromspeicherSimCtrl</c>, damit der <c>LetzterKontext</c> eines Aufrufers
+    /// unberührt bleibt; gebaut wird die Einheit von derselben privaten Methode wie in
+    /// der Vorbelegung. Wer hier etwas ändert, ändert beides — das ist der Zweck.</para>
+    /// <para><b>Der gespeicherte Stand wird NICHT angefasst</b> (SP‑O‑8): Diese Methode
+    /// liest nur und gibt eine frische Einheit zurück; ob und wann sie in die Flotte
+    /// kommt, entscheidet die Oberfläche, und gespeichert wird wie bisher erst auf
+    /// Knopfdruck.</para>
+    /// </remarks>
+    /// <param name="projektId">Das Projekt.</param>
+    /// <param name="anlageId"><c>Tab_Energieanlagen.ID</c> der Speicheranlage.</param>
+    /// <param name="nummer">Laufende Nummer für den Namensrückfall einer Anlage ohne Bezeichner.</param>
+    /// <returns>Die Einheit; <c>null</c>, wenn die Anlage keinen brauchbaren Satz liefert.</returns>
+    public static FlottenEinheit EinheitAusProjektanlage(int projektId, int anlageId, int nummer = 1)
+    {
+        if (projektId <= 0 || anlageId <= 0) return null;
+
+        var ctrl = new StromspeicherSimCtrl();
+        SpeicherParameter p = ctrl.LeseParameter(projektId, anlageId);
+        if (p == null || !(p.CNomKwh > 0)) return null;
+        return Einheit(p, ctrl.LetzterKontext, nummer);
+    }
+
+    /// <summary>
+    /// <b>Alle Speicheranlagen des Projekts als Kandidaten</b>, in Anlagenreihenfolge
+    /// (<c>StromspeicherSimCtrl.Speicheranlagen</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Zahlen sind die der künftigen Einheit</b>, nicht ein zweiter Leseweg:
+    /// Jeder Kandidat entsteht aus <see cref="EinheitAusProjektanlage"/>. Was die Liste
+    /// nennt, steht danach im Editor — es gibt keine Stelle, an der beide auseinanderlaufen
+    /// könnten.</para>
+    /// <para><b>Eine Anlage ohne brauchbaren Satz steht nicht darin.</b> Sie könnte gar
+    /// nicht aufgenommen werden (dieselbe Bedingung wie in der Vorbelegung: es braucht
+    /// eine Kapazität), und ein Kandidat, dessen Übernahme nichts tut, wäre eine
+    /// Zusage ohne Deckung.</para>
+    /// <para><b>Ob eine Anlage schon in der Flotte steht, entscheidet die Oberfläche</b>
+    /// über <see cref="FlottenEinheit.AnlageId"/> — der Kern kennt den Arbeitsstand des
+    /// Editors nicht.</para>
+    /// </remarks>
+    /// <param name="projektId">Das Projekt.</param>
+    /// <returns>Die Kandidaten; leer, wenn das Projekt keine brauchbare Speicheranlage führt.</returns>
+    public static IReadOnlyList<FlottenAnlagenkandidat> Projektanlagenkandidaten(int projektId)
+    {
+        var liste = new List<FlottenAnlagenkandidat>();
+        if (projektId <= 0) return liste;
+
+        var ctrl = new StromspeicherSimCtrl();
+        foreach (int anlageId in ctrl.Speicheranlagen(projektId))
+        {
+            FlottenEinheit e = EinheitAusProjektanlage(projektId, anlageId, liste.Count + 1);
+            if (e == null) continue;
+            liste.Add(new FlottenAnlagenkandidat(
+                e.AnlageId ?? anlageId.ToString(CultureInfo.InvariantCulture),
+                e.Name, e.KapazitaetKWh, e.EntladeleistungKw));
+        }
+        return liste;
+    }
+
+    /// <summary>
+    /// <b>Eine Flotteneinheit aus EINEM Satz des Speicherkatalogs</b>
+    /// (<c>Tab_Stromspeicher_STAMM</c>, Auftrag #239).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Abbildung steht hier und nur hier</b> (Konzept „Stromspeicher-Dialoge"
+    /// 1.8). Sie folgt Feld für Feld den Regeln, mit denen
+    /// <c>StromspeicherSimCtrl.LeseParameter</c> eine PROJEKTANLAGE liest — sonst
+    /// rechnete dieselbe Zeile je nach Herkunft verschieden:</para>
+    /// <list type="table">
+    ///   <item><term><c>Bezeichner</c></term><description>→ <see cref="FlottenEinheit.Name"/></description></item>
+    ///   <item><term><c>Energie</c> [kWh]</term><description>→ <see cref="FlottenEinheit.KapazitaetKWh"/></description></item>
+    ///   <item><term><c>Leistung</c> [kW]</term><description>→ Lade- UND Entladeleistung; fehlt sie, gilt wie im Lauf <b>1 C</b> (Leistung = Kapazität)</description></item>
+    ///   <item><term><c>Wirkungsgrad_RT</c></term><description>→ beide Richtungen als <c>sqrt(eta_RT)</c> (<c>SpeicherParameter.EtaCh</c>/<c>EtaDis</c>); außerhalb (0…1] gilt <c>ETA_RT_STANDARD</c> = 0,90</description></item>
+    ///   <item><term>SoC-Band</term><description>10 / 90 % — die Vorgaben einer LEEREN Variantenzeile (<c>StromspeicherVarianteModel</c>); ein Katalogsatz hat keine Betriebsführung</description></item>
+    ///   <item><term><c>Ladezustand</c> [%]</term><description>→ Start-SoC, in das Band geklemmt (im Bestand fast überall 0 und damit SoC_min — Entscheid AP0, Frage 8)</description></item>
+    ///   <item><term><c>Modulkosten</c> [€/kWh]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKWh"/></description></item>
+    ///   <item><term><c>Leistungskosten</c> [€/kW]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKw"/></description></item>
+    ///   <item><term><c>Investition_Fix</c> [€]</term><description>→ <see cref="FlottenEinheit.InvestitionEuro"/></description></item>
+    ///   <item><term><c>Standby_Verbrauch</c> [W]</term><description>→ <see cref="FlottenEinheit.HilfsverbrauchKw"/> (W / 1000)</description></item>
+    /// </list>
+    /// <para><b>Was bewusst NICHT abgebildet wird.</b> <c>Verschleisskosten</c> steht im
+    /// Katalog in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
+    /// Kostenfelder der Flotte (<c>GrenzverschleissEuroProKWhEntladung</c>,
+    /// <c>DurchsatzkostenEuroProKWhEntladung</c>) rechnen je abgegebener AC-kWh. Die
+    /// Umrechnung hängt am nutzbaren Band und am Entladewirkungsgrad
+    /// (<c>SpeicherEngine/ArbitrageOptionen</c>) und ist damit keine Zuordnung, sondern
+    /// eine Annahme — sie bleibt dem Anwender. Ebenso bleiben <c>Zyklen_Zugesichert</c>
+    /// (eine Zahl ohne Entladetiefe ist keine Rainflow-Stützstelle), <c>Degradation</c>,
+    /// <c>Typ</c> und <c>Firma</c> draußen: Für sie gibt es in
+    /// <see cref="FlottenEinheit"/> kein Gegenstück.</para>
+    /// <para><b><c>EigeneKosten</c> nur mit Kosten:</b> Der Schalter geht an, wenn der
+    /// Satz wenigstens einen der drei Investitionswerte trägt — sonst überschrieben
+    /// lauter Nullen die gemeinsamen Kostensätze aus Schritt 2.</para>
+    /// </remarks>
+    /// <param name="katalogId"><c>Tab_Stromspeicher_STAMM.ID</c>.</param>
+    /// <returns>Die Einheit ohne Anlagenbezug; <c>null</c>, wenn es den Satz nicht gibt
+    /// oder er keine Kapazität führt.</returns>
+    public static FlottenEinheit EinheitAusKatalog(int katalogId)
+    {
+        StromspeicherModel m = StromspeicherStammCtrl.Katalogsatz(katalogId);
+        if (m == null || !(m.m_Energie > 0)) return null;
+
+        double kapazitaet = m.m_Energie;
+        double leistung = m.m_Leistung > 0.0 ? m.m_Leistung : kapazitaet;
+
+        double etaRt = m.m_WirkungsgradRT;
+        if (!(etaRt > 0.0) || etaRt > 1.0) etaRt = StromspeicherSimCtrl.ETA_RT_STANDARD;
+        double etaRichtung = Math.Sqrt(etaRt);
+
+        // Das SoC-Band einer LEEREN Variantenzeile — ein Katalogsatz trägt keine
+        // Betriebsführung, und zwei Sätze Vorgabewerte wären zwei Wahrheiten.
+        var variante = new StromspeicherVarianteModel();
+        double socMin = variante.SoC_Min_Prozent / 100.0;
+        double socMax = variante.SoC_Max_Prozent / 100.0;
+        if (!(socMax > socMin))
+        {
+            socMin = StromspeicherSimCtrl.SOC_MIN_ANTEIL;
+            socMax = StromspeicherSimCtrl.SOC_MAX_ANTEIL;
+        }
+
+        double socStart = m.m_Ladezustand / 100.0;
+        if (socStart < socMin) socStart = socMin;
+        if (socStart > socMax) socStart = socMax;
+
+        bool kosten = m.m_Modulkosten > 0.0 || m.m_Leistungskosten > 0.0 || m.m_InvestitionFix > 0.0;
+
+        return new FlottenEinheit
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Name = m.m_szBezeichner ?? "",
+            AnlageId = null,
+            KapazitaetKWh = kapazitaet,
+            LadeleistungKw = leistung,
+            EntladeleistungKw = leistung,
+            Ladewirkungsgrad = etaRichtung,
+            Entladewirkungsgrad = etaRichtung,
+            SocMin = socMin, SocMax = socMax, SocStart = socStart,
+            HilfsverbrauchKw = m.m_StandbyVerbrauch / 1000.0,
+            EigeneKosten = kosten,
+            InvestitionEuro = kosten ? m.m_InvestitionFix : 0.0,
+            InvestitionEuroProKWh = kosten ? m.m_Modulkosten : 0.0,
+            InvestitionEuroProKw = kosten ? m.m_Leistungskosten : 0.0
+        };
+    }
+
     /// <summary>
     /// Betriebsvorgaben einer NEU angelegten Flotte: das Peak-Ziel aus der Referenz
     /// (statt der früheren festen 50 kW), die Netzladung nach dem Betriebsziel

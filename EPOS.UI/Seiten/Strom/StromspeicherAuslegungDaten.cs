@@ -132,6 +132,47 @@ public sealed class StromspeicherAuslegungDienste
     /// <summary>Der hergeleitete Vorschlag für das Peak-Ziel H₀ (SD‑Q3).</summary>
     public Func<SpeicherOptimierungEingaben, FlottenPeakZielVorschlag>? PeakZielVorschlag;
 
+    // =====================================================================
+    //  „Speicher hinzufügen" — die drei Quellen (Auftrag #239)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Speicheranlagen des Projekts als Kandidaten für Schritt 1
+    /// (<c>StromspeicherAuslegungCtrl.Projektanlagen</c>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Delegat ist kein Knopf</b>: Ohne ihn kennt der Einheiteneditor die Quelle
+    /// „Speicheranlage des Projekts" nicht und zeigt auch die Hinweiszeile über fehlende
+    /// Anlagen nicht — dieselbe Regel wie bei jedem anderen Eintrag dieses Bündels.
+    /// </remarks>
+    public Func<IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat>>? Projektanlagen;
+
+    /// <summary>
+    /// Baut aus EINER Speicheranlage des Projekts eine Flotteneinheit — derselbe Weg wie
+    /// die Vorbelegung; <c>null</c>, wenn die Anlage keinen brauchbaren Satz liefert.
+    /// </summary>
+    public Func<string, FlottenEinheit?>? EinheitAusProjektanlage;
+
+    /// <summary>Die Zeilen des Speicherkatalogs (<c>StromspeicherStammCtrl.Katalogfilterzeilen</c>).</summary>
+    public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen;
+
+    /// <summary>
+    /// Das Spaltenprofil dazu — dasselbe wie im Projekt-Stromspeicherdialog
+    /// (<c>Katalogfilterprofil.MitVerwendung(Anlagenart.Stromspeicher, …)</c>).
+    /// </summary>
+    /// <remarks>
+    /// Ohne Profil zeichnet <c>Katalogliste</c> nichts; die Quelle „Speicherkatalog"
+    /// erscheint deshalb nur, wenn Profil UND Zeilen UND
+    /// <see cref="EinheitAusKatalog"/> da sind.
+    /// </remarks>
+    public Katalogfilterprofil? Katalogprofil;
+
+    /// <summary>
+    /// Baut aus EINEM Satz des Speicherkatalogs eine Flotteneinheit
+    /// (<c>SpeicherFlottenStudieCtrl.EinheitAusKatalog</c>); <c>null</c> bei unbekanntem Satz.
+    /// </summary>
+    public Func<int, FlottenEinheit?>? EinheitAusKatalog;
+
     /// <summary>
     /// Bestimmt das kleinste haltbare Peak-Ziel per Bisektion; <c>melder</c> bekommt
     /// Anteil und Lauftext. Ohne Delegat kein Knopf.

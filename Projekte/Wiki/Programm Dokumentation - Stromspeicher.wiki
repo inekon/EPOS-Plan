@@ -61,11 +61,19 @@ Alles Übrige ist gleich: dieselben Blätter, dieselben fünf Betriebsziele, das
 === Schritt 1 — Speicher ===
 {{Anker|auslegung-speicher}}
 
-Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Entladeleistung in kW, Lade- und Entladewirkungsgrad, das nutzbare Ladezustandsband, der Start-Ladezustand, die geschützte Peak-Reserve, der Hilfsverbrauch, der Grenzverschleiß und die Kostensätze. Einheiten lassen sich hinzufügen, kopieren und löschen; als '''Vorlage''' dient ein Satz aus dem Speicherkatalog.
+Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Entladeleistung in kW, Lade- und Entladewirkungsgrad, das nutzbare Ladezustandsband, der Start-Ladezustand, die geschützte Peak-Reserve, der Hilfsverbrauch, der Grenzverschleiß und die Kostensätze. Einheiten lassen sich hinzufügen, kopieren und löschen. Beim Hinzufügen fragt das Programm zuerst, '''woher''' die neue Einheit kommen soll:
+
+* aus einer '''Speicheranlage dieses Projekts''' – Kapazität, Leistung, Wirkungsgrade und Ladezustandsband werden übernommen. Eine Anlage, die bereits in der Flotte steht, wird mit angezeigt, ist aber nicht wählbar und trägt den Vermerk ''bereits in der Flotte''.
+* aus dem '''Speicherkatalog''' der Datenbank – mit derselben Liste, demselben Suchfeld und denselben Spaltenfiltern wie in der Stromspeicher-Verwaltung. Übernommen werden die Gerätedaten des gewählten Satzes; ein Doppelklick übernimmt sofort. Verschleißkosten und zugesicherte Zyklen des Katalogsatzes tragen Sie danach selbst nach.
+* als '''leere Einheit''' – eine Einheit mit Vorgabewerten, die Sie selbst ausfüllen.
+
+'''Kopieren''' legt eine zweite Einheit mit denselben Werten an; sie gehört danach zu keiner Anlage des Projekts.
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
 '''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier je Speicheranlage des Projekts bereits eine Einheit – mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Bei einer Anlage ist es genau eine Einheit; Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.
+
+'''Haben Sie Ihre Eingaben einmal gespeichert''', bleibt die Einheitenliste so, wie Sie sie hinterlassen haben: Eine Speicheranlage, die Sie später im Projekt anlegen, kommt nicht von selbst hinzu. Fehlt eine, sagt es eine Zeile über der Liste – etwa ''Eine Speicheranlage des Projekts ist nicht in der Flotte: Speicher Verwaltung''. Der Knopf '''Aufnehmen''' daneben holt alle fehlenden Anlagen als Einheiten herein. Dieselbe Zeile erscheint auch wieder, wenn Sie eine Anlageneinheit entfernt haben; eine entfernte Anlage lässt sich damit jederzeit zurückholen.
 
 '''Hier steht seit dem 11.09.2026 nur noch, WAS für Speicher es gibt''' – nicht mehr, in welchen Größen gesucht wird und nicht mehr, wie das Netz begrenzt ist. Drei Blöcke sind aus diesem Blatt ausgezogen:
 

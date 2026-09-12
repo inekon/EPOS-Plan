@@ -185,6 +185,94 @@ sind gleichzeitig betriebene Einheiten, keine Vergleichsalternativen. Das Datenm
 Unterscheidungsmerkmal; die Vorbelegung aus #210 (je `SP_TYP`-Anlage eine Einheit) ist damit die Regel.
 Wer eine Anlage nur zum Vergleich führt, nimmt sie in Schritt 1 der Auslegung aus der Flotte.
 
+### 1.8 „Speicher hinzufügen" ohne Quelle — Befund #239
+
+**Die Rückmeldung (Anwender, 12.09.2026, Bildschirmfoto „Stromspeicher-Auslegung › 1 Speicher"),
+wörtlich:** „Stromspeicher hinzufügen geht nicht für Speicher aus der Datenbank - nur für
+duplizierung des vorhandenen (optional kann vorhandener kopiert werden). Bei mehreren angelegten
+Stromspeichern wird nur einer angezeigt, nach löschen steht er nicht mehr zur Auswahl."
+
+**Drei Befunde, eine Wurzel.**
+
+1. **Der Knopf kannte keine Quelle.** `EPOS.UI/Dialoge/Strom/SpeicherFlottenEditor.razor`
+   `EinheitHinzufuegen` legte `NeueEinheit(n)` an — generisch „Speicher n", 100 kWh, 50/50 kW,
+   95 %, SoC 10/90/50 %. Daneben gab es nur `EinheitKopieren` (dieselbe Einheit noch einmal,
+   ohne Anlagenbezug) und `EinheitEntfernen`. Weder der Speicherkatalog
+   (`Tab_Stromspeicher_STAMM` über `StromspeicherStammCtrl.Katalogfilterzeilen`) noch die
+   Speicheranlagen des Projekts (`StromspeicherSimCtrl.Speicheranlagen`) waren von hier aus
+   erreichbar — obwohl beide Wege im Kern längst standen. Die Wiki-Bedienungsseite behauptete
+   in Schritt 1 sogar, „als Vorlage dient ein Satz aus dem Speicherkatalog": Das gab es im
+   Programm nicht.
+2. **„Nur einer angezeigt."** Die Vorbelegung aus #210 (§ 1.7) sät je Speicheranlage eine
+   Einheit — aber **nur beim Anlegen**: `SpeicherAuslegungCtrl.Vorbelegung` kehrt um, sobald ein
+   Stand `@Aktuell` für (Projekt, aktive Anlage) vorliegt, und den schreibt
+   `StromspeicherAuslegungCtrl` bei jedem Speichern, jedem Flottenlauf und jedem Rückruf.
+   Danach ist die Einheitenliste eingefroren: Eine später angelegte Speicheranlage erscheint
+   nie, eine entfernte kommt nie zurück.
+3. **„Nach Löschen nicht mehr zur Auswahl."** Folge von 1 + 2. § 1.7 sagt „eine Einheit zu viel
+   nimmt der Anwender heraus" — der Weg zurück fehlte.
+
+**Die Behebung (#239).**
+
+- **A — Kern, die Abbildung an EINER Stelle** (`SpeicherFlottenStudieCtrl`):
+  `Projektanlagenkandidaten(projektId)` nennt je `SP_TYP`-Anlage Kennung, Name, Kapazität und
+  Leistung; `EinheitAusProjektanlage(projektId, anlageId)` baut daraus eine Einheit über
+  **denselben** Weg wie die Vorbelegung (`LeseParameter(projektId, anlageId)` und die private
+  `Einheit(…)`) — es gibt keine zweite Abbildung, die auseinanderlaufen könnte;
+  `EinheitAusKatalog(katalogId)` bildet einen Katalogsatz ab (Tabelle unten), gelesen über den
+  neuen `StromspeicherStammCtrl.Katalogsatz(id)`. Alle drei LESEN nur.
+- **B — Dienste und Hülle:** `StromspeicherAuslegungDienste` führt `Projektanlagen`,
+  `EinheitAusProjektanlage`, `Katalogzeilen`, `Katalogprofil` und `EinheitAusKatalog`;
+  `EPOS.UI.Daten/Stromspeicher/StromspeicherAuslegungHuelle.DiensteSatz()` verdrahtet sie auf
+  den Kern. Das Katalogprofil ist **dasselbe** wie im Projekt-Stromspeicherdialog
+  (`Katalogfilterprofil.MitVerwendung(Anlagenart.Stromspeicher, …)`) — acht Spalten, derselbe
+  Filter, dieselbe Sortierung.
+- **C — Editor:** „+ Speicher hinzufügen" öffnet eine `Ueberlagerung` mit drei Quellen
+  (Speicheranlage des Projekts · Speicherkatalog · leere Einheit). Eine bereits vertretene
+  Anlage steht in der Liste, ist aber gesperrt und trägt den Vermerk „bereits in der Flotte" —
+  sie zu verbergen ließe genau die Frage offen, die der Anwender gestellt hat. Der Doppelklick
+  in der Katalogliste übernimmt sofort (Hausmuster). **Ohne die neuen Parameter legt der Knopf
+  wie bisher sofort eine leere Einheit an** — der zweite Wirt des Editors (Reiter
+  „Stromspeicher") kennt kein Projekt und keinen Katalog.
+- **D — Nachzug:** Über der Einheitenliste steht eine leise Zeile, sobald eine Speicheranlage
+  des Projekts keine Einheit hat: „n Speicheranlagen des Projekts sind nicht in der Flotte: A,
+  B" mit dem Knopf „Aufnehmen". Sie erscheint auch **nach dem Entfernen** einer
+  Anlageneinheit — damit ist „nach Löschen nicht mehr zur Auswahl" behoben.
+
+**Die Abbildung Katalog → Einheit** (sie folgt Feld für Feld den Regeln, mit denen
+`StromspeicherSimCtrl.LeseParameter` eine Projektanlage liest — sonst rechnete dieselbe Zeile je
+nach Herkunft verschieden):
+
+| `Tab_Stromspeicher_STAMM` | `FlottenEinheit` | Regel |
+|---|---|---|
+| `Bezeichner` | `Name` | unverändert |
+| `Energie` [kWh] | `KapazitaetKWh` | unverändert |
+| `Leistung` [kW] | `LadeleistungKw` = `EntladeleistungKw` | fehlt sie, gilt **1 C** (Leistung = Kapazität) — wörtlich die Regel des Laufs |
+| `Wirkungsgrad_RT` | `Ladewirkungsgrad` = `Entladewirkungsgrad` | `sqrt(eta_RT)` je Richtung (`SpeicherParameter.EtaCh`/`EtaDis`); außerhalb (0…1] gilt `ETA_RT_STANDARD` = 0,90 |
+| — | `SocMin` / `SocMax` | 10 / 90 % aus einer **leeren** `StromspeicherVarianteModel` — ein Katalogsatz trägt keine Betriebsführung |
+| `Ladezustand` [%] | `SocStart` | in das SoC-Band geklemmt; 0 heißt „nicht gepflegt" und wird SoC_min (AP0, Frage 8) |
+| `Modulkosten` [€/kWh] | `InvestitionEuroProKWh` | nur mit `EigeneKosten` |
+| `Leistungskosten` [€/kW] | `InvestitionEuroProKw` | nur mit `EigeneKosten` |
+| `Investition_Fix` [€] | `InvestitionEuro` | nur mit `EigeneKosten` |
+| `Standby_Verbrauch` [W] | `HilfsverbrauchKw` | W / 1000 |
+
+`EigeneKosten` geht **nur** an, wenn der Satz wenigstens einen der drei Investitionswerte trägt;
+sonst überschrieben lauter Nullen die gemeinsamen Kostensätze aus Schritt 2.
+
+**Was bewusst NICHT abgebildet wird — und warum.** `Verschleisskosten` steht im Katalog in
+€/(kWh·Zyklus) **bezogen auf die Nennkapazität**; die zwei Kostenfelder der Flotte
+(`GrenzverschleissEuroProKWhEntladung`, `DurchsatzkostenEuroProKWhEntladung`) rechnen je
+abgegebener AC-kWh. Die Umrechnung hängt am nutzbaren Band und am Entladewirkungsgrad
+(`SpeicherEngine/ArbitrageOptionen`) und ist damit keine Zuordnung, sondern eine Annahme — sie
+bleibt dem Anwender. `Zyklen_Zugesichert` ist eine Zahl ohne Entladetiefe und damit keine
+Rainflow-Stützstelle; `Degradation`, `Typ` und `Firma` haben in `FlottenEinheit` kein
+Gegenstück.
+
+**Die Kante, die bleibt.** Der **gespeicherte Stand wird nicht von selbst angefasst**
+(SP‑O‑8): Die Vorbelegung ist unverändert, die neuen Wege lesen nur, und der Nachzug ist eine
+Anwenderhandlung. **Der Referenzlauf ist unberührt** — 1046 rechnet seinen Stand
+`@Projektflotte`.
+
 ## 2. Zielbild
 
 ### 2.1 Eine Ansicht statt Fenster: „Stromspeicher-Auslegung" als freie Ansicht der `AppWurzel`
@@ -421,6 +509,7 @@ der Bisektion und die Fragen PS‑Q1…PS‑Q4 stehen in `Spezifikation_Stromspe
 | **P6 Feinraster** — **umgesetzt #224** (im selben Auftrag wie P8, Entscheid SD‑E‑9 Option A) | Zweite Phase im `FlottenOptimierer`: nach dem Grobraster ein engeres Raster um das Grob-Optimum, NUR auf der Größenachse (SD‑Q10), Fenster `[max(von, E*−Δ), min(bis, E*+Δ)]` mit Mindestbreite 1 kWh, Schrittweite `Δ/9`; zweite Achse, Stückzahl, übrige Achsen und Betriebsziel bleiben beim Grob-Optimum. **Das Feinraster gewinnt nur bei STRIKT besserem Kapitalwert** (Phase 2 läuft nach Phase 1, der Vergleich ist `>`); jeder Kandidat trägt seine `Phase`, `FlottenOptimierer.Kandidatenzahl` ist die EINE Zählregel für Lauf und Kandidatenzeile, `MaximaleKandidaten` zählt beide Phasen, `IProgress` und Abbruch laufen über beide. `FlottenAuslegungErgebnis` führt dazu `FeinrasterGerechnet` und `Rechendauer` | 13 neue Fälle in `SpeicherEngine.Tests/FlottenFeinrasterTests` (Bereich, Randlage, Mindestbreite, Zählregel, Grenzfall, Phasenmarke, Gleichstand, Abbruch in Phase 2, Fortschritt); Referenzlauf unberührt — der Projektlauf betritt die Rastersuche nicht |
 | **P8 Station „4 Optimierung" (SD‑E‑9 Option A)** — **umgesetzt #224** | Zielbild 7.4 vollständig: `AuslegungSchritt.Optimierung` als fünftes BLATT (die Ablaufleiste verliert ihren Aktionsplatz, `MitAktion="false"`), `Seiten/Strom/OptimierungBlock` mit Ziel, Suchwahl, Suchraumtabelle je Einheit, LIVE-Kandidatenzeile, Feinraster-Schalter, Rechenknopf und dem Kasten „Bestes Ergebnis"; die Größen-Sicht zieht von Schritt 5 nach 4. Der Einheiteneditor trägt nur noch die Einheiten — „Netz und Planung" wird `SpeicherFlottenNetzBlock` (Schritt 3), die Jahresprojektion `SpeicherFlottenWirtschaftBlock` (Schritt 2, SD‑Q12) mit den drei Erklärzeilen aus 7.3, der Kostenblock bekommt die eigene Überschrift „Kosten dieser Einheit". Dazu 7.8: Stufenleiste mit nummerierten Kreisen, `Zahlenfeld` höchstens vier Nachkommastellen (hausweit), `Seiten/Strom/Hinweiszeilen` für die Vorprüfung, Herleitungszeile und neutrale Pille im Editorkopf, Kartenkopf ohne Zahlenzusatz | Build 0 Fehler / 4 eindeutige Warnungen; EPOS.Kern.Tests 2 682, EPOS.UI.Tests 3 887, SpeicherEngine.Tests 425, KiKern.Tests 488, SpeicherPlanung.Tests 27; ChartProben 57; SQL-Prüfer 0 von 1 343; Referenzlauf 1030/1007/1017/1045/1046 byte-gleich gegen R7 |
 | **P7 Adaptive Lastspitzenkappung (Ratsche, S‑A)** — Anwenderbefund 11.09.2026, Spezifikation 5.1.1 (Fassung 1.4), PS‑Q1…PS‑Q4 entschieden 11.09.2026 (Empfehlung) — **umgesetzt #215** (`4bd5c8c`, Merge `74a3bb1`; Wiki hochgeladen 11.09.2026: Berechnung/Stromspeicher Fassung 6 Rev. 543, Stromspeicher Rev. 544) | `FlottenSimulationOptionen`: Peak-Ziel „adaptiv (kausal) | fest", Startwert H0; Ratsche im `FlottenSimulator` (H als Zustand, D_t aus `Grenzen()`), Ganglinie von H, Diagnose „Nachzüge"; Schritt 3 der Ansicht, Ergebnisansicht „kausal erreicht" neben „mit Vorausschau erreichbar" (Bisektion bleibt); Prüfstand mit dem Excel-Makro als Referenzrechnung auf synthetischem Lastgang | Opus; 1046 (festes Ziel) byte-gleich; Wiki Rechenweg Fassung 6 |
+| **P9 Quellen für „Speicher hinzufügen" (Befund #239)** — Anwenderrückmeldung 12.09.2026, Abschnitt 1.8 — **umgesetzt #239** | Kern: `SpeicherFlottenStudieCtrl.Projektanlagenkandidaten`, `.EinheitAusProjektanlage` (DERSELBE Weg wie die Vorbelegung) und `.EinheitAusKatalog` samt `StromspeicherStammCtrl.Katalogsatz(id)`; Dienste und Hülle um fünf Wege ergänzt; Editor mit `Ueberlagerung` und drei Quellen (Projektanlage — vertretene gesperrt —, Speicherkatalog mit dem Profil des Projektdialogs, leere Einheit) und der Nachzugszeile „n Speicheranlagen des Projekts sind nicht in der Flotte …" mit Knopf „Aufnehmen"; 19 Ressourcen de/en. **Ohne die neuen Parameter bleibt der Knopf, was er war**; Vorbelegung und gespeicherter Stand unverändert (SP‑O‑8) | EPOS.Kern.Tests 2 722 (+10), EPOS.UI.Tests 3 956 (+11), beide neuen Klassen auch unter `LANG=en_US.UTF-8` grün; SQL-Prüfer 0 von 1 344; Referenzlauf unberührt — kein Rechenweg berührt |
 
 Reihenfolge P1 → P2 → P3 → P4 → P5; P1 und P2 können parallel laufen (P2 zeigt die Diagnose aus P1,
 Schnittstelle = die Felder im `SpeicherFlottenErgebnis`, vorab vereinbart). Nach jedem Paket:

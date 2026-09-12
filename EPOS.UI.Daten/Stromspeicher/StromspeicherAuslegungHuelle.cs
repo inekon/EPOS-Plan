@@ -131,8 +131,31 @@ namespace WindowsFormsApplication1
 
                 Vorpruefen = eingaben => _ctrl.Vorpruefen(eingaben),
                 PeakZielVorschlag = eingaben => _ctrl.PeakZielVorschlag(eingaben),
-                PeakZielBestimmen = PeakZielBestimmen
+                PeakZielBestimmen = PeakZielBestimmen,
+
+                // „Speicher hinzufuegen" aus einer Projektanlage oder aus dem Katalog
+                // (Auftrag #239). Alle vier Wege sind reine DURCHREICHEN in den Kern —
+                // die Abbildung Katalog -> FlottenEinheit steht an EINER Stelle
+                // (SpeicherFlottenStudieCtrl), nicht hier.
+                Projektanlagen = _ctrl.Projektanlagen,
+                EinheitAusProjektanlage = _ctrl.EinheitAusProjektanlage,
+                Katalogzeilen = StromspeicherStammCtrl.Katalogfilterzeilen,
+                Katalogprofil = Katalogfilterprofil.MitVerwendung(Anlagenart.Stromspeicher, Text_),
+                EinheitAusKatalog = SpeicherFlottenStudieCtrl.EinheitAusKatalog
             };
+        }
+
+        /// <summary>
+        /// Ein Ressourcentext mit Rückfall auf den Schlüssel — der Übersetzer des
+        /// Katalogfilterprofils (Muster <c>StromspeicherHuelle.Text_</c>; der Kern kennt
+        /// keine Anzeigetexte, <c>Katalogfilterprofil.Finde</c> nimmt sie entgegen).
+        /// </summary>
+        private static string Text_(string schluessel)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { /* ein fehlender Schluessel darf keine Spalte kosten */ }
+            return string.IsNullOrEmpty(t) ? schluessel : t;
         }
 
         // =================================================================
