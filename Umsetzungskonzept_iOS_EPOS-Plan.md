@@ -4130,6 +4130,28 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Speicherkatalog" beschrieb bis dahin etwas, das es nicht gab). Kein Rechenweg berührt, kein iOS-Lauf.
 > Gate sept49 auf `eba098cb`: Kern 2 722, UI 3 956, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 59,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#240 (12.09.2026, Anwender: „Führe aus: Kleinpunkte ohne Auftrag") — sieben Kleinpunkte aus #234, #235, #237, #238 und zwei ältere
+> Restpunkte in EINEM Commit (`bf32eb61`, Merge `4f30192a`, Agent Opus; 28 Dateien, +914/−196), kein Rechenweg berührt.** (1) Die KI-Aktion
+> `variante_anlegen` nimmt ein optionales `quellprojekt` (Überladung `AnlegenAusStamm` mit Quelle aus #237), holt den Zielnamen aus
+> `VariantenCtrl.Zielname` statt aus dem gelöschten Spiegel `NeuerProjektname` und lehnt Quelle = Stamm ab; vier Schlüssel de/en, Kern +4
+> (`KiRegisterS3Tests`). (2) Berichte & Kosten › Übersicht öffnet denselben Variantendialog wie das Kopfband (`VarianteAnlegenOeffnen`,
+> `AlsVarianteHuelle.Zeige` über `Blazorsprung` mit dem Stamm der Seite, Liste lädt nach Erfolg neu; das Bezeichnerfeld gehört nur noch dem
+> Umbenennen), UI +3. (3) Die Hausregel `.epos-raster th, td { padding: 4px 8px }` verlor gegen QuickGrids `.quickgrid[theme=default] >
+> tbody > tr > td` (0,2,3 gegen 0,1,1) — jetzt `table.epos-raster.quickgrid > tbody > tr > td` ohne `!important`; Rasterprobe vorher →
+> nachher: virtualisierte Fälle 53,0 → 53,0 px (`ItemSize` 53 bleibt, die natürliche Zeilenhöhe ist jetzt genau dieses Maß), Fall ohne
+> gesetztes Maß 48,2 → 53,0 px, Gegenprobe weiter rot, 9/9; nicht virtualisierte Raster werden 4,8 px je Zeile höher (gewollt). (4) Der
+> `ErzeugerStapel` beginnt seine Zeichenfläche unter der GEMESSENEN Legendenhöhe — bei neun Reihen lag die mehrzeilige Legende auf dem
+> y-Titel (offen aus #234); ein Bild mit einer Legendenzeile bleibt byte-gleich; ChartProben 59 → **61 Bilder, 13 → 14 Gegenproben** (die
+> Gegenprobe misst den Versatz an den Bildpunkten). (5) `Bilder.UebersichtKuchen`/`BildKuchen()` hatte seit #222 keinen Anforderer mehr —
+> Pfad, Bildschlüssel und Testzeile entfernt, `ChartRenderer.Kuchen` bleibt für den Variantenbericht. (6) Die zwei `Task.Run` des
+> `ProjektTransferDialog` laufen über `SpeicherEngine.Kulturweitergabe`; der Wächter `ParallelitaetWacheTests` liest jetzt auch `EPOS.UI`
+> und `*.razor`, Trefferliste leer. (7) `ModulImportDialogTests.Der_Herstellerfilter_…`: drei Sofort-Asserts hinter dem Neubau des Rasters
+> (`@key`) standen ohne Warten — jetzt `WaitForAssertion`; Beleg 20 Läufe der Klasse hintereinander grün. Tests Kern +4, UI +2 (Saldo aus
+> Umbau und Wegfall), KiKern 488; SQL-Prüfer 0; `WP-Plan.sln` x64 baut. Doku: Werkzeugzeile ChartProben in der Wurzel-`CLAUDE.md`,
+> `EPOS.UI/CLAUDE.md` (Raster-Spezifität), `Proben/Rasterprobe/LIESMICH.md`, offener Punkt `BildKuchen()` im Block #222 geschlossen.
+> Gate sept50 auf `4f30192a`: Kern 2 726, UI 3 958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
