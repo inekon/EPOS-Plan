@@ -137,9 +137,17 @@
 
    Das Mass stimmte aus ZWEI Gruenden nicht, und bunit sieht keinen davon:
    Die echte Zeile war 48,2 px statt der von #212 gerechneten 53 (QuickGrids
-   eigenes Stilblatt gewinnt ueber die Zellenpolsterung - 0,1rem statt der
+   eigenes Stilblatt gewann ueber die Zellenpolsterung - 0,1rem statt der
    4 px des Hauses), und die PLATZHALTERzeile war nur 21,9 px hoch, denn in
    ihr steht kein Bedienelement.
+
+   SEIT AUFTRAG #240 GILT DIE HAUSREGEL AUCH IM QUICKGRID: epos-ui.css hebt
+   ihre Spezifitaet auf (0,2,4) ueber die (0,2,3) von QuickGrid
+   (table.epos-raster.quickgrid > tbody > tr > td). Damit ist die NATUERLICHE
+   Hoehe einer Katalogzeile 44 + 2 x 4 + 1 = 53,0 px - genau das gesetzte Mass.
+   Die Zahl aendert sich dadurch NICHT (height ist ein Mindestmass, und
+   erreicht werden darf es); gemessen wurde es in Fall F der Rasterprobe, der
+   als einziger ohne gesetztes Mass laeuft: 48,188 -> 53,0 px.
 
    DAHER WIRD DAS MASS NICHT MEHR GERATEN, SONDERN GESETZT: Dieselbe Zahl, die
    als ItemSize hineingeht, steht als --epos-rasterzeile an der Huelle, und das
@@ -192,9 +200,9 @@
     ///
     /// <para><b>Seit #235 ist die Zahl kein Schätzwert mehr, sondern eine ANSAGE</b>
     /// (im Browser gemessen, 12.09.2026). Die Rechnung von #212 war falsch — QuickGrids
-    /// eigenes Stilblatt gewinnt über die Zellenpolsterung (0,1rem = 1,6 px statt der
-    /// 4 px des Hauses), die echte Zeile war 48,2 px, die PLATZHALTERzeile gar nur
-    /// 21,9 px. Der Wert geht deshalb nicht nur als <c>ItemSize</c> an
+    /// eigenes Stilblatt gewann über die Zellenpolsterung (0,1rem = 1,6 px statt der
+    /// 4 px des Hauses — seit Auftrag #240 wiegt die Hausregel mehr), die echte Zeile
+    /// war 48,2 px, die PLATZHALTERzeile gar nur 21,9 px. Der Wert geht deshalb nicht nur als <c>ItemSize</c> an
     /// <c>Virtualize</c>, sondern steht zugleich als <c>--epos-rasterzeile</c> an der
     /// Hülle (<see cref="Hoehenstil"/>), und das Stilblatt gibt ihn JEDER Zeile des
     /// virtualisierten Rasters — der echten wie der Platzhalterzeile. Maß im Programm
@@ -212,11 +220,12 @@
     /// Vorgabe für <see cref="Zeilenhoehe"/> und zugleich der Rückfall, den das
     /// Stilblatt für <c>--epos-rasterzeile</c> führt.
     ///
-    /// <para>53 px liegt über der natürlichen Höhe einer Katalogzeile (44 px
-    /// Berührungsziel + 2 × 1,6 px Zellenpolsterung von QuickGrid + 1 px Trennlinie
-    /// = 48,2 px) — die Voraussetzung dafür, dass <c>height</c> als Mindestmaß auch
-    /// wirklich diese Höhe ergibt. <c>RasterTests</c> hält die Zahl gegen das
-    /// Stilblatt.</para>
+    /// <para>53 px ist seit Auftrag <b>#240</b> GENAU die natürliche Höhe einer
+    /// Katalogzeile (44 px Berührungsziel + 2 × 4 px Zellenpolsterung + 1 px
+    /// Trennlinie) — vorher waren es 48,2 px, weil QuickGrids eigene Regel die
+    /// Polsterung des Hauses überbot; das Stilblatt hebt die Hausregel jetzt darüber.
+    /// <c>height</c> ist ein Mindestmaß: Es darf erreicht, nicht aber unterschritten
+    /// werden. <c>RasterTests</c> hält die Zahl gegen das Stilblatt.</para>
     /// </summary>
     public const float ZEILENHOEHE = 53f;
 

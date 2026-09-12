@@ -1775,6 +1775,11 @@ namespace WindowsFormsApplication1
                                             Achsenfenster fenster = null)
         {
             int W = 1240, H = 560;
+
+            // Anschlag und Hoehe der Legende stehen als Namen da - das Rechteck
+            // unten rechnet mit denselben Werten (Muster aus Verlaufsbild, W11b-B-28).
+            const float LEGENDE_X = 100f, LEGENDE_Y = 66f;
+
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
@@ -1815,7 +1820,19 @@ namespace WindowsFormsApplication1
                 leg.AddRange(stapelG.Select(r => new Segment(r.Name, 0, r.Farbe)));
                 leg.AddRange(linienG.Select(r => new Segment(r.Name, 0, r.Farbe)));
                 leg.AddRange(y2G.Select(r => new Segment(r.Name, 0, r.Farbe)));
-                Legende(g, leg, 100f, 66f, W - 30f);
+
+                // AUFTRAG #240: DIE LEGENDE MACHT SICH SELBST PLATZ - dasselbe Muster
+                // wie in Verlaufsbild (W11b-B-28). Ein Waermebild mit zwei Speichern,
+                // Kontur, Bedarfslinie und fuenf Erzeugern traegt NEUN Eintraege; die
+                // brechen in eine zweite Zeile um, und die lag bis hierher auf dem
+                // y-Achsentitel, der 24 px ueber der Zeichenflaeche steht. Jede Zeile
+                // ueber der ersten schiebt das Rechteck um genau ihre Hoehe nach unten;
+                // die Flaeche wird dabei niedriger, statt den Platz unter der x-Achse
+                // aufzuzehren, wo deren Beschriftung steht. Bei EINER Legendenzeile ist
+                // der Versatz null - jedes bisherige Bild bleibt byte-gleich.
+                float legendenhoehe = Legende(g, leg, LEGENDE_X, LEGENDE_Y, W - 30f);
+                float schub = Math.Max(0f, legendenhoehe - LEGENDE_ZEILE);
+                if (schub > 0f) rc = SKRect.Create(rc.Left, rc.Top + schub, rc.Width, rc.Height - schub);
 
                 int n = stapelG.Count > 0 ? stapelG[0].Werte.Length
                       : linienG.Count > 0 ? linienG[0].Werte.Length

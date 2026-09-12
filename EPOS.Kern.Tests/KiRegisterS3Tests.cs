@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using KiKern;
@@ -471,6 +472,130 @@ namespace EPOS.Kern.Tests
             Assert.True(dialog.Gespeichert);
             Assert.NotEqual("", dialog.SicherungBeimAufruf);
             Assert.Contains(ergebnis.Meldungen, m => m.Contains(dialog.SicherungBeimAufruf));
+        }
+
+        // ==================================================================
+        //  variante_anlegen: das optionale QUELLPROJEKT (Auftrag #240)
+        // ==================================================================
+
+        /// <summary>Das Regressionsprojekt der Referenzlaeufe (Id 1030) — der STAMM.</summary>
+        private const string STAMM = "Referenz BHKW-Kaskade (Regressionstest)";
+
+        /// <summary>
+        /// Ein anderes Projekt der Testdatenbank — es fuehrt PV-Zeilen, der Stamm
+        /// nicht; daran ist die Tiefkopie zu erkennen (dieselbe Ausgangslage wie in
+        /// <c>ProjektpflegeTests</c>).
+        /// </summary>
+        private const string QUELLE = "Laurentiuskirche";
+
+        /// <summary>
+        /// <b>Mit Quellprojekt</b> (Auftrag #240): Die Variante traegt den INHALT der
+        /// Quelle, Name und Gruppenzugehoerigkeit kommen weiter vom STAMM.
+        /// </summary>
+        [Fact]
+        public async Task Variante_anlegen_nimmt_den_Inhalt_aus_dem_Quellprojekt()
+        {
+            if (!_db.Vorhanden) return;
+
+            KiErgebnis ergebnis = await MitFreigabe(Frisch(), "variante_anlegen",
+                new Dictionary<string, object>
+                {
+                    ["stammprojekt"] = STAMM,
+                    ["bezeichner"] = "KI aus Quelle",
+                    ["quellprojekt"] = QUELLE
+                });
+
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+
+            int neueId = new ProjektDuplizierenCtrl().GetProjektId(STAMM + " - KI aus Quelle");
+            Assert.True(neueId > 0, "Die Variante traegt nicht den Namen aus Zielname.");
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(QUELLE);
+            Assert.Equal(new VariantenCtrl().StammRefDerVariante(neueId),
+                         new ProjektDuplizierenCtrl().GetProjektId(STAMM));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + quelle),
+                         Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + neueId));
+            Assert.True(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + neueId) > 0,
+                        "Die Ausgangslage traegt nicht: die Quelle fuehrt keine PV-Zeilen.");
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe:</b> OHNE Quellprojekt bleibt alles wie vor #240 — kopiert wird
+        /// der Stamm, und der fuehrt keine PV-Zeilen.
+        /// </summary>
+        [Fact]
+        public async Task Variante_anlegen_ohne_Quelle_kopiert_weiterhin_den_Stamm()
+        {
+            if (!_db.Vorhanden) return;
+
+            KiErgebnis ergebnis = await MitFreigabe(Frisch(), "variante_anlegen",
+                new Dictionary<string, object>
+                {
+                    ["stammprojekt"] = STAMM,
+                    ["bezeichner"] = "KI ohne Quelle"
+                });
+
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+
+            int neueId = new ProjektDuplizierenCtrl().GetProjektId(STAMM + " - KI ohne Quelle");
+            Assert.True(neueId > 0);
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + neueId));
+        }
+
+        /// <summary>
+        /// Die VORSCHAU nennt den Zielnamen aus <c>VariantenCtrl.Zielname</c> — dieselbe
+        /// Regel, die das Anlegen gleich darauf anwendet (seit #240 kein Spiegel mehr) —
+        /// und bei gewaehlter Quelle auch diese.
+        /// </summary>
+        [Fact]
+        public async Task Die_Vorschau_nennt_Zielname_und_Quelle()
+        {
+            if (!_db.Vorhanden) return;
+
+            KiAusfuehrung schicht = Frisch();
+            KiAufruf aufruf = Aufruf(schicht, "variante_anlegen",
+                new Dictionary<string, object>
+                {
+                    ["stammprojekt"] = STAMM,
+                    ["bezeichner"] = "Vorschauprobe",
+                    ["quellprojekt"] = QUELLE
+                });
+
+            KiVorbereitung vorbereitung = await schicht.VorbereitenAsync(aufruf, CancellationToken.None);
+
+            Assert.True(vorbereitung.Freigabe != null, vorbereitung.Ablehnung?.Text);
+            Assert.Contains(new VariantenCtrl().Zielname(STAMM, "Vorschauprobe"),
+                            vorbereitung.Freigabe.Text);
+            Assert.Contains(QUELLE, vorbereitung.Freigabe.Text);
+        }
+
+        /// <summary>
+        /// Die Quelle DARF nicht der Stamm sein: „Inhalt aus dem Stamm" ist genau der
+        /// Fall ohne Angabe. Die Vorbedingung sagt das benannt und legt nichts an.
+        /// </summary>
+        [Fact]
+        public async Task Die_Quelle_darf_nicht_das_Stammprojekt_selbst_sein()
+        {
+            if (!_db.Vorhanden) return;
+
+            KiErgebnis ergebnis = await MitFreigabe(Frisch(), "variante_anlegen",
+                new Dictionary<string, object>
+                {
+                    ["stammprojekt"] = STAMM,
+                    ["bezeichner"] = "Quelle gleich Stamm",
+                    ["quellprojekt"] = STAMM
+                });
+
+            Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = '" +
+                                 STAMM + " - Quelle gleich Stamm'"));
+        }
+
+        /// <summary>Zaehlwert aus der Arbeitskopie.</summary>
+        private static int Zahl(string sql)
+        {
+            object o = DataRepository.ExecuteScalar(sql);
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
         }
 
         // ==================================================================

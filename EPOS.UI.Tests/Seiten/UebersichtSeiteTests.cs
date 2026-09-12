@@ -125,6 +125,27 @@ public class UebersichtSeiteTests : EposBunitContext
     private static IReadOnlyList<IElement> Pflegeknoepfe(IRenderedComponent<UebersichtSeite> cut)
         => cut.Find(".epos-variantenzeile").QuerySelectorAll("button");
 
+    /// <summary>
+    /// Ein Pflegeknopf über seine BESCHRIFTUNG (Auftrag #240). Bis dahin zählten die
+    /// Fälle Stellen — und seit „Variante anlegen" nur noch mit Öffner erscheint
+    /// (Hausregel A‑18), wandert jede Stelle mit dem Parametersatz. Der Text ist das,
+    /// was auch der Anwender sieht.
+    /// </summary>
+    private static IElement Knopf(IRenderedComponent<UebersichtSeite> cut, string text)
+        => Pflegeknoepfe(cut).First(b => b.TextContent.Trim() == text);
+
+    private static IElement Anlegenknopf(IRenderedComponent<UebersichtSeite> cut)
+        => Knopf(cut, "Variante anlegen");
+
+    private static IElement Loeschknopf(IRenderedComponent<UebersichtSeite> cut)
+        => Knopf(cut, "Variante löschen");
+
+    private static IElement Simulierknopf(IRenderedComponent<UebersichtSeite> cut)
+        => Knopf(cut, "Simulation starten");
+
+    private static IElement Umbenennknopf(IRenderedComponent<UebersichtSeite> cut)
+        => Knopf(cut, "Umbenennen");
+
     // =====================================================================
     // Feldbestand
     // =====================================================================
@@ -137,8 +158,11 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal(2, cut.FindAll("select").Count);                   // Stammprojekt, Version
         Assert.Single(cut.FindAll(".epos-stammzeile input[type=checkbox]"));  // nur Stämme
         Assert.Equal(2, Versionseintraege(cut).Count);
-        Assert.Single(cut.FindAll(".epos-variantenzeile input[type=text]"));  // Bezeichner
-        Assert.Equal(3, Pflegeknoepfe(cut).Count);                      // Anlegen, Löschen, Simulieren
+
+        // Seit #240: Das Bezeichnerfeld gehoert dem UMBENENNEN, und "Variante anlegen"
+        // erscheint nur mit Oeffner - ohne beide Delegaten bleiben zwei Knoepfe.
+        Assert.Empty(cut.FindAll(".epos-variantenzeile input[type=text]"));
+        Assert.Equal(2, Pflegeknoepfe(cut).Count);                      // Löschen, Simulieren
         Assert.Contains("im Vergleich", cut.Find(".epos-untergruppe").TextContent);
         Assert.Contains("2 Zeile(n)", cut.Find(".epos-status").TextContent);
     }
@@ -572,14 +596,14 @@ public class UebersichtSeiteTests : EposBunitContext
 
         Assert.Equal(1030, cut.Instance.MarkierteId);
         Assert.False(cut.Instance.MitAktionsspalte);
-        Assert.True(Pflegeknoepfe(cut)[1].HasAttribute("disabled"));      // Stamm: nicht löschbar
+        Assert.True(Loeschknopf(cut).HasAttribute("disabled"));           // Stamm: nicht löschbar
 
         Versionswahl(cut).Change("1031");
 
         Assert.Equal(1031, cut.Instance.MarkierteId);
         Assert.True(cut.Instance.MitAktionsspalte);
         Assert.Contains("WP klein", cut.Find(".epos-untergruppe").TextContent);
-        Assert.False(Pflegeknoepfe(cut)[1].HasAttribute("disabled"));     // Variante: löschbar
+        Assert.False(Loeschknopf(cut).HasAttribute("disabled"));          // Variante: löschbar
         Assert.Contains("noch nicht simuliert", Simulationszeile(cut).TextContent);
     }
 
@@ -599,30 +623,60 @@ public class UebersichtSeiteTests : EposBunitContext
         }));
 
         cut.Find(".epos-variantenzeile input[type=text]").Input("Kessel klein");
-        var knoepfe = Pflegeknoepfe(cut);
-        Assert.Equal(4, knoepfe.Count);
-        knoepfe[3].Click();
+        Assert.Equal(3, Pflegeknoepfe(cut).Count);      // Löschen, Simulieren, Umbenennen
+        Umbenennknopf(cut).Click();
 
         Assert.Equal("Kessel klein", bezeichner);
         Assert.Contains("heißt jetzt", cut.Instance.Status);
     }
 
+    /// <summary>
+    /// <b>EIN Dialog, drei Einstiege</b> (Auftrag <b>#240</b>): Der Knopf „Variante
+    /// anlegen" ÖFFNET nur — denselben <c>ProjektVarianteDialog</c>, den Kopfband und
+    /// Menüpunkt seit #237 zeigen. Meldet der Öffner <c>true</c>, lädt die Seite ihre
+    /// Variantenliste neu; den Bezeichner fragt der Dialog selbst, das inline Feld ist
+    /// dafür gefallen.
+    /// </summary>
     [Fact]
-    public void Anlegen_gibt_den_Bezeichner_weiter_und_meldet()
+    public void Anlegen_oeffnet_den_Dialog_und_laedt_danach_neu()
     {
-        string? bezeichner = null;
-        var cut = Zeige(p => p.Add(x => x.VarianteAnlegen, (string b) =>
-        {
-            bezeichner = b;
-            return "Variante „Kessel groß“ wurde angelegt.";
-        }));
+        int geoeffnet = 0;
+        var cut = Zeige(p => p.Add(x => x.VarianteAnlegenOeffnen,
+                                   () => { geoeffnet++; return Task.FromResult(true); }));
 
-        cut.Find(".epos-variantenzeile input[type=text]").Input("Kessel groß");
-        Pflegeknoepfe(cut)[0].Click();
+        Anlegenknopf(cut).Click();
 
-        Assert.Equal("Kessel groß", bezeichner);
-        Assert.Contains("wurde angelegt", cut.Instance.Status);
-        Assert.Equal(2, _geladen);
+        cut.WaitForAssertion(() => Assert.Equal(2, _geladen), TimeSpan.FromSeconds(10));
+        Assert.Equal(1, geoeffnet);
+    }
+
+    /// <summary>
+    /// GEGENPROBE: Bricht der Anwender den Dialog ab (<c>false</c>), bleibt die Liste
+    /// stehen — ein Neuladen ohne Änderung wäre ein Flackern ohne Aussage.
+    /// </summary>
+    [Fact]
+    public void Ein_abgebrochener_Dialog_laedt_die_Liste_nicht_neu()
+    {
+        var cut = Zeige(p => p.Add(x => x.VarianteAnlegenOeffnen,
+                                   () => Task.FromResult(false)));
+
+        Anlegenknopf(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.Laeuft), TimeSpan.FromSeconds(10));
+        Assert.Equal(1, _geladen);
+    }
+
+    /// <summary>
+    /// Hausregel A‑18: <b>kein Delegat, kein Knopf.</b> Ohne Öffner steht „Variante
+    /// anlegen" gar nicht erst da — ein Knopf, der beim Drücken nichts tut, wäre die
+    /// schlechtere Auskunft.
+    /// </summary>
+    [Fact]
+    public void Ohne_Oeffner_gibt_es_den_Anlegeknopf_nicht()
+    {
+        var cut = Zeige();
+
+        Assert.DoesNotContain(Pflegeknoepfe(cut), b => b.TextContent.Contains("Variante anlegen"));
     }
 
     [Fact]
@@ -630,7 +684,7 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         var cut = Zeige();   // Stammzeile markiert
 
-        Assert.True(Pflegeknoepfe(cut)[1].HasAttribute("disabled"));
+        Assert.True(Loeschknopf(cut).HasAttribute("disabled"));
     }
 
     [Fact]
@@ -643,13 +697,13 @@ public class UebersichtSeiteTests : EposBunitContext
             .Add(x => x.VarianteLoeschen, (bool a) => { geloescht++; alle = a; return "gelöscht."; }),
             stand: Unterschiedsansicht());
 
-        Pflegeknoepfe(cut)[1].Click();
+        Loeschknopf(cut).Click();
         Assert.Contains("wirklich löschen", cut.Find(".epos-rueckfrage-text").TextContent);
 
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // Nein
         Assert.Equal(0, geloescht);
 
-        Pflegeknoepfe(cut)[1].Click();
+        Loeschknopf(cut).Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
 
         Assert.Equal(1, geloescht);
@@ -690,7 +744,7 @@ public class UebersichtSeiteTests : EposBunitContext
             MitMehrdeutigkeit(p, 2);
         }, stand: Unterschiedsansicht());
 
-        Pflegeknoepfe(cut)[1].Click();
+        Loeschknopf(cut).Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja auf die Loeschfrage
 
         // Jetzt steht die ZWEITE Rueckfrage - und geloescht ist noch nichts.
@@ -726,7 +780,7 @@ public class UebersichtSeiteTests : EposBunitContext
             MitMehrdeutigkeit(p, 2);
         }, stand: Unterschiedsansicht());
 
-        Pflegeknoepfe(cut)[1].Click();
+        Loeschknopf(cut).Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja auf die Loeschfrage
         cut.WaitForAssertion(() => Assert.True(cut.Instance.MehrdeutigOffen),
                           TimeSpan.FromSeconds(10));
@@ -754,7 +808,7 @@ public class UebersichtSeiteTests : EposBunitContext
             MitMehrdeutigkeit(p, 1);
         }, stand: Unterschiedsansicht());
 
-        Pflegeknoepfe(cut)[1].Click();
+        Loeschknopf(cut).Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja
 
         cut.WaitForAssertion(() => Assert.Equal(1, geloescht), TimeSpan.FromSeconds(10));
@@ -779,7 +833,7 @@ public class UebersichtSeiteTests : EposBunitContext
             });
         }));
 
-        Pflegeknoepfe(cut)[2].Click();
+        Simulierknopf(cut).Click();
 
         Assert.Equal("2 Lauf/Läufe beendet.", cut.Instance.Status);
         Assert.Contains("8760 Stunden", cut.Find(".epos-warnbanner").TextContent);

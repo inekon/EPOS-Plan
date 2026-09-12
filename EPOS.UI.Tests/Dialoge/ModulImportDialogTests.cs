@@ -1155,6 +1155,15 @@ public class ModulImportDialogTests : EposBunitContext
     /// <c>VIRTUALISIEREN_AB</c> überschreitet und damit selbst die
     /// <c>OnAfterRenderAsync</c>-Werkstücke von QuickGrid und <c>Virtualize</c> auf den
     /// Zeichnerfaden legt — hinter denen das nächste Ereignis wartet.</para>
+    ///
+    /// <para><b>Seit Auftrag #240 wartet er ZWEIMAL</b> (der Fall fiel im parallelen
+    /// Vollauf von #238 noch einmal, isoliert grün): <see cref="Gefiltert"/> wartet auf
+    /// die RECHNUNG des Wirts und auf die Statuszeile, die drei Zusicherungen über das
+    /// gezeichnete <c>tbody</c> warteten bis dahin auf gar nichts. Das Raster ist aber
+    /// ein ANDERER Gegenstand: Der Wechsel des Virtualisierungsschalters baut es über
+    /// <c>@key</c> neu auf, und das geschieht einen Zeichenlauf nach der Rechnung.
+    /// Seither stehen auch sie in einem <c>WaitForAssertion</c>. Die Kultur pinnt
+    /// <c>EposBunitContext</c> für die ganze Klasse auf de‑DE (Hausmuster #167/#230).</para>
     /// </summary>
     [Fact]
     public void Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers()
@@ -1172,12 +1181,23 @@ public class ModulImportDialogTests : EposBunitContext
         Spaltenfilter(cut, 2, "SMA America");
 
         Gefiltert(cut, 5);
-        Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
 
-        string tabelle = cut.Find("tbody").TextContent;
-        Assert.Contains("SMA America", tabelle);
-        Assert.DoesNotContain("ABB", tabelle);
-        Assert.Equal(5, cut.FindAll("tbody tr").Count);
+        // AUCH DAS GEZEICHNETE RASTER WIRD ERWARTET, NICHT ABGEFRAGT (Auftrag #240).
+        // Gefiltert() wartet auf die Rechnung des Wirts (SichtbareZeilen) und auf die
+        // Statuszeile; das RASTER kommt eine Instanz spaeter, denn der Wechsel des
+        // Virtualisierungsschalters baut es ueber @key neu auf (W6-B-2). Die drei
+        // Zusicherungen darunter standen bis #240 als Sofort-Asserts hinter dem Warten
+        // auf etwas anderes - genau das Muster, das im Vollauf von #238 einmal riss
+        // ("Expected 5, Actual 155"). Jetzt warten sie auf ihren eigenen Gegenstand.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
+
+            string tabelle = cut.Find("tbody").TextContent;
+            Assert.Contains("SMA America", tabelle);
+            Assert.DoesNotContain("ABB", tabelle);
+            Assert.Equal(5, cut.FindAll("tbody tr").Count);
+        });
     }
 
     /// <summary>

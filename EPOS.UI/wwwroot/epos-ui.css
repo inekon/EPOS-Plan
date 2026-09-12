@@ -1250,6 +1250,34 @@ body {
     border-bottom: 1px solid var(--epos-rahmen-leise);
 }
 
+/* DIE ZELLENPOLSTERUNG DES HAUSES GILT AUCH IM QUICKGRID (Auftrag #240,
+   Nebenbefund aus #235).
+
+   Die Regel darueber wiegt (0,1,1) und hat in einem QuickGrid-Raster deshalb
+   NIE gegolten: QuickGrid bringt sein eigenes, scoped Stilblatt mit, und
+
+       .quickgrid[theme=default] > tbody > tr > td { padding: 0.1rem ... }
+
+   wiegt (0,2,3) - eine Klasse und ein Attributwaehler gegen eine Klasse. Die
+   Zellen standen dadurch mit 1,6 px oben und unten statt der 4 px des Hauses
+   (im Browser gemessen, #235). Es war keine Absicht und niemandem anzusehen:
+   Das Hausblatt sagte 4 px, der Baum zeigte 1,6.
+
+   DIESE Regel wiegt (0,2,4) - dieselben zwei Klassen plus den Typwaehler
+   "table" - und gewinnt damit unabhaengig von der Ladereihenfolge der zwei
+   Stilblaetter. Kein !important: Ein Wirt mit einer eigenen Spaltenklasse soll
+   die Polsterung weiterhin ueberschreiben koennen.
+
+   WAS SICH DAMIT AM ZEILENMASS AENDERT: nichts, und das ist der Punkt. Die
+   natuerliche Hoehe einer Katalogzeile geht von 48,2 px auf
+   44 + 2 x 4 + 1 = 53,0 px - also genau auf das Mass, das
+   Raster.ZEILENHOEHE ohnehin setzt (--epos-rasterzeile weiter oben). Gemessen
+   nach der Aenderung: 53,0 px in allen virtualisierten Faellen der
+   Rasterprobe, wie zuvor. */
+table.epos-raster.quickgrid > tbody > tr > td {
+    padding: 4px 8px;
+}
+
 /* Auswahl einer Zeile (Vorbild RadioButton): ein rundes Ziel von Touchgroesse,
    nicht die 88 px breite Knopfflaeche. */
 .epos-anlagenwahl {
@@ -1293,6 +1321,15 @@ body {
    ihre Spalte. Vorbild: die editierbaren Spalten der DataGridViews
    (Form_Emissionskatalog.dgvArten, ucFuelSettings). */
 .epos-raster--bearbeitbar td {
+    padding: 0 8px;
+}
+
+/* Dieselbe Anhebung wie oben, damit die bearbeitbare Zeile ihre ENGE behaelt:
+   Ohne sie gaebe ihr die neue (0,2,4)-Regel des Hauses 4 px zurueck, und ein
+   44-px-Feld triebe die Zeile auf ueber 60 px (Auftrag #240). Sie steht NACH
+   jener Regel und wiegt gleich viel - bei Gleichstand entscheidet die
+   Reihenfolge. */
+table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     padding: 0 8px;
 }
 

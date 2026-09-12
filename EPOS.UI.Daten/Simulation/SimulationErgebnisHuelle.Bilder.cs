@@ -101,7 +101,6 @@ namespace WindowsFormsApplication1
                 {
                     case Bilder.BedarfWaerme: return BildBedarfWaerme(a);
                     case Bilder.BedarfStrom: return BildBedarfStrom(a);
-                    case Bilder.UebersichtKuchen: return BildKuchen();
                     case Bilder.RingWaerme: return BildRingWaerme();
                     case Bilder.RingStrom: return BildRingStrom();
                     case Bilder.WpProduktion: return BildWpProduktion(a);
@@ -243,43 +242,17 @@ namespace WindowsFormsApplication1
                 a.Sortiert, Fenster(a, werte == null ? 0 : werte.Length));
         }
 
-        // ---- Kuchen und die zwei Ringe ----------------------------------
-
-        /// <summary>
-        /// Die Wärmebedarfsdeckung als Torte — wörtlich <c>FuelleUebersicht</c>
-        /// :3959-3969: je Segment nur bei Wert &gt; 0.
-        ///
-        /// <para><b>W8‑O‑5c / S1.2 — EINE Konvention (Befund U5).</b> Die fünf Segmente
-        /// kamen bis dahin aus DREI Konventionen: Wärmepumpe und Heizstab in kWh, hier
-        /// geteilt; Heizkessel und BHKW schon in MWh; der Rest als
-        /// <c>double</c>-Bilanzgröße. Das Bild stimmte, weil jemand jede der fünf Größen
-        /// einzeln nachgesehen hatte. Jetzt kommen alle fünf aus
-        /// <see cref="SimulationErgebnisCtrl.UebersichtKennzahlen"/> — in MWh, mit der
-        /// Einheit am Namen und in derselben Konvention wie die zwei Ringe.</para>
-        /// </summary>
-        private byte[] BildKuchen()
-        {
-            var k = Kennzahlen();
-            var segmente = new List<ChartRenderer.Segment>();
-
-            void Segment(string name, double wert, SKColor farbe)
-            {
-                if (wert > 0) segmente.Add(new ChartRenderer.Segment(name, wert, farbe));
-            }
-
-            Segment(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
-                    k.WpWaermeproduktionMwh, R_WP);
-            Segment(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                    k.HeizstabWaermeproduktionMwh, R_HEIZSTAB);
-            Segment(MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
-                    k.KesselWaermeproduktionMwh, R_KESSEL);
-            Segment(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                    k.BhkwWaermeproduktionMwh, R_BHKW);
-            Segment(MyResource.Resource.CHART_SEGMENT_REST, k.RestwaermeMwh, R_REST);
-
-            return ChartRenderer.Kuchen(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARFSDECKUNG,
-                                        segmente);
-        }
+        // ---- Die zwei Ringe ---------------------------------------------
+        //
+        // DIE TORTE IST MIT AUFTRAG #240 GEFALLEN. Sie zeichnete die
+        // Waermebedarfsdeckung als Kuchen (woertlich FuelleUebersicht :3959-3969)
+        // und hatte seit #222 keinen Anforderer mehr: Die Uebersicht des
+        // Simulationsergebnisses zeigt dieselbe Aussage seither als RING mit
+        // HTML-Legende daneben (BildRingWaerme), und kein Reiter und keine
+        // Berichtsseite fragte den Schluessel UEBERSICHT_KUCHEN noch an - nur ein
+        // Testfall tat es. Der RENDERER ChartRenderer.Kuchen bleibt: Der
+        // Variantenbericht zeichnet damit seine zwei Deckungsbilder
+        // (BausteineVergleich :213/:218).
 
         /// <summary>
         /// Der Ring „Wärmedeckung" (B5) — Segmente NUR für vorhandene Erzeuger, Werte

@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
             {
                 if (_uebersicht == null)
                 {
-                    _uebersicht = new UebersichtSeiteGaben { Vergleich = _vergleich };
+                    _uebersicht = new UebersichtSeiteGaben(_besitzer) { Vergleich = _vergleich };
                     _uebersicht.StammGewechselt += StammWechsel;
                     _uebersicht.ProjektMarkiert += Markierung;
                 }

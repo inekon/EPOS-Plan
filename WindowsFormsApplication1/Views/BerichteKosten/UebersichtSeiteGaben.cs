@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using EPOS.UI.Dialoge.Berichte;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Win32;
@@ -45,6 +46,18 @@ namespace WindowsFormsApplication1
         private const int MAX_VARIANTENSPALTEN = 8;
 
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
+
+        /// <summary>
+        /// Das Wirtsfenster für den Variantendialog (Auftrag <b>#240</b>) — dieselbe
+        /// Gabe, die auch <c>KostenSeiteGaben</c> und <c>WirtschaftlichkeitSeiteGaben</c>
+        /// bekommen. <c>null</c> heißt: kein Öffner, also kein Knopf.
+        /// </summary>
+        private readonly Func<Form> _besitzer;
+
+        internal UebersichtSeiteGaben(Func<Form> besitzer = null)
+        {
+            _besitzer = besitzer;
+        }
 
         /// <summary>
         /// Die Vergleichswahl der drei Seiten (Anwenderwunsch 08.09.2026, W5‑B‑5) — die
@@ -124,7 +137,7 @@ namespace WindowsFormsApplication1
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
                 ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
-                ["VarianteAnlegen"] = new Func<string, string>(VarianteAnlegen),
+                ["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(VarianteAnlegenOeffnen),
                 ["VarianteUmbenennen"] = new Func<string, string>(VarianteUmbenennen),
                 ["UmbenennenText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
                 ["LoeschFrage"] = new Func<string>(LoeschFrage),
@@ -587,30 +600,59 @@ namespace WindowsFormsApplication1
         // Variante anlegen und löschen
         // =====================================================================
 
-        private string VarianteAnlegen(string bezeichner)
+        /// <summary>
+        /// ÖFFNET den Variantendialog und meldet, ob eine Variante entstanden ist
+        /// (Auftrag <b>#240</b>).
+        ///
+        /// <para><b>Hier steht kein Anlegeweg mehr.</b> Bis #240 rief diese Hülle
+        /// <c>VariantenCtrl.AnlegenAusStamm</c> unmittelbar — mit dem Bezeichner aus dem
+        /// Feld der Seite und OHNE Quellprojekt, während Kopfband und Menüpunkt seit
+        /// #237 den <c>ProjektVarianteDialog</c> zeigen. Jetzt ruft sie denselben
+        /// Ablauf wie der Menüpunkt (<c>AlsVarianteHuelle.Zeige</c>) — nicht
+        /// nachgebaut, gerufen —, nur mit dem STAMM, den die Seite gewählt hat: Der
+        /// muss nicht das geöffnete Projekt sein. Meldungskasten, Wartezeiger und das
+        /// Nachziehen der Startseite bringt der Ablauf selbst mit.</para>
+        ///
+        /// <para><b>Eine Nachricht später</b> (<see cref="Blazorsprung"/>, Befund
+        /// W16b‑B‑1): Aus dem Blazor-Klick heraus bliebe das Fenster der zweiten
+        /// WebView leer. Der Seite antwortet deshalb eine Zusage, die erst fällt, wenn
+        /// der Dialog wieder zu ist — sie lädt danach ihre Liste neu.</para>
+        ///
+        /// <para><b>Und sie fällt auf jeden Fall.</b> <c>Blazorsprung</c> führt einen
+        /// Riegel: Steht schon ein Sprung an, wird dieser still verworfen. Ohne
+        /// Rückfall bliebe die Zusage dann für immer offen, und die Seite stünde bis zu
+        /// ihrem nächsten Aufbau auf „läuft" (Knöpfe gesperrt). Läuft der Sprung nicht
+        /// binnen fünf Sekunden an — das ist die Frist, nach der auch der Riegel selbst
+        /// verfällt —, antwortet die Zusage <c>false</c>.</para>
+        /// </summary>
+        private Task<bool> VarianteAnlegenOeffnen()
         {
-            if (_stammId <= 0) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+            if (_stammId <= 0) return Task.FromResult(false);
 
-            try
+            int idStamm = _stammId;
+            string stammName = _stammName;
+            var zusage = new TaskCompletionSource<bool>();
+            int gestartet = 0;
+
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), () =>
             {
-                string fehler;
-                int neueId = _ctrl.AnlegenAusStamm(_stammId, _stammName, bezeichner, out fehler);
-                if (neueId <= 0)
-                    return fehler ?? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN;
+                System.Threading.Interlocked.Exchange(ref gestartet, 1);
+                bool angelegt = false;
+                try
+                {
+                    angelegt = AlsVarianteHuelle.Zeige(_besitzer?.Invoke(), idStamm, stammName);
+                    if (angelegt) VerwirfDetails();
+                }
+                finally { zusage.TrySetResult(angelegt); }
+            });
 
-                VerwirfDetails();
-
-                // Ä19: Auch die Variantenliste des Projektkopfs kennt die neue
-                // Variante sofort.
-                StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren();
-
-                return string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT,
-                                     (bezeichner ?? "").Trim());
-            }
-            catch (Exception ex)
+            // Rueckfall fuer den verworfenen Sprung (siehe oben).
+            Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ =>
             {
-                return string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message);
-            }
+                if (System.Threading.Volatile.Read(ref gestartet) == 0) zusage.TrySetResult(false);
+            });
+
+            return zusage.Task;
         }
 
         /// <summary>

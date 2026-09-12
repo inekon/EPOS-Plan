@@ -44,7 +44,13 @@ namespace WindowsFormsApplication1
         /// <paramref name="idProjekt"/> ist das geöffnete Projekt (Stamm oder
         /// Variante), <paramref name="projektname"/> dessen Name.
         /// </summary>
-        internal static void Zeige(IWin32Window besitzer, int idProjekt, string projektname)
+        /// <returns>
+        /// <c>true</c>, wenn eine Variante entstanden ist. <b>Seit Auftrag #240</b>:
+        /// Der Menüweg wertet den Ausgang wie bisher nicht aus, der dritte Einstieg —
+        /// der Knopf „Variante anlegen" der Seite „Berichte &amp; Kosten › Übersicht" —
+        /// braucht ihn, um seine Variantenliste danach neu zu laden.
+        /// </returns>
+        internal static bool Zeige(IWin32Window besitzer, int idProjekt, string projektname)
         {
             var vor = ProjektVarianteHuelle.Vorbereiten(idProjekt, projektname);
             if (!vor.Bereit)
@@ -55,11 +61,11 @@ namespace WindowsFormsApplication1
                     MessageBoxButtons.OK,
                     vor.Fehlerschluessel == "VAR_MSG_KEIN_PROJEKT"
                         ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
-                return;
+                return false;
             }
 
             ProjektVarianteWahl? wahl = Fragen(besitzer, vor.IdStamm, vor.StammName);
-            if (wahl == null) return;
+            if (wahl == null) return false;
 
             Cursor alt = Cursor.Current;
             try
@@ -75,13 +81,14 @@ namespace WindowsFormsApplication1
                     MessageBox.Show(besitzer, ergebnis.Fehlertext,
                         MyResource.Resource.VAR_DLG_TITEL,
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    return false;
                 }
 
                 MessageBox.Show(besitzer,
                     string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, wahl.Value.Bezeichner),
                     MyResource.Resource.VAR_DLG_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
             }
             finally { Cursor.Current = alt; }
         }
@@ -90,12 +97,17 @@ namespace WindowsFormsApplication1
         /// Das FENSTER — der einzige Windows-Teil dieses Ablaufs, und deshalb die EINE
         /// Stelle, an der der Dialog aufgeht.
         ///
-        /// <para><b>Zwei Wege führen zu ihm</b> (seit dem Anwenderwunsch vom 08.09.2026):
-        /// der Menüpunkt „Als Variante speichern…" über <see cref="Zeige"/> und der
-        /// Eintrag im Auswahlfeld „Projekt:" des Kopfbands über
-        /// <c>StartseiteHuelle.VarianteAnlegenJetzt</c>. Sie unterscheiden sich NUR
-        /// darin, wie sie den Erfolg melden — Meldungskasten hier, Kurzhinweis der
-        /// Seite dort; der Dialog selbst ist derselbe und steht deshalb nur hier.</para>
+        /// <para><b>DREI Wege führen zu ihm</b> (seit Auftrag <b>#240</b>; die ersten
+        /// zwei seit dem Anwenderwunsch vom 08.09.2026): der Menüpunkt „Als Variante
+        /// speichern…" über <see cref="Zeige"/>, der Eintrag im Auswahlfeld „Projekt:"
+        /// des Kopfbands über <c>StartseiteHuelle.VarianteAnlegenJetzt</c> und der Knopf
+        /// „Variante anlegen" der Seite „Berichte &amp; Kosten › Übersicht" über
+        /// <c>UebersichtSeiteGaben.VarianteAnlegenOeffnen</c> — der ruft
+        /// <see cref="Zeige"/> mit dem STAMM, den die Seite gewählt hat, und der muss
+        /// nicht das geöffnete Projekt sein. Sie unterscheiden sich NUR darin, wie sie
+        /// den Erfolg melden — Meldungskasten hier und in der Übersicht, Kurzhinweis der
+        /// Seite im Kopfband; der Dialog selbst ist derselbe und steht deshalb nur
+        /// hier.</para>
         /// </summary>
         internal static ProjektVarianteWahl? Fragen(IWin32Window besitzer, int idStamm, string stammName)
         {

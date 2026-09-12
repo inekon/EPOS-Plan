@@ -25976,6 +25976,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freiwillig: das Projekt, dessen INHALT die Variante bekommen soll. Ohne Angabe wird das Stammprojekt kopiert. Der Name der Variante bleibt in jedem Fall „Stamm - Bezeichner“, und sie hängt am Stammprojekt. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_QUELLPROJEKT {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_QUELLPROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Obere Grenze des nutzbaren Ladebands. ähnelt.
         /// </summary>
         public static string KI_REG_ERL_SOC_MAX {
@@ -26525,6 +26534,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellprojekt „{0}“ (ID {1}) ist das Stammprojekt selbst. Ohne Quellprojekt wird ohnehin der Stamm kopiert — bitte die Angabe weglassen oder ein anderes Projekt nennen. ähnelt.
+        /// </summary>
+        public static string KI_REG_QUELLE_IST_STAMM {
+            get {
+                return ResourceManager.GetString("KI_REG_QUELLE_IST_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt ähnelt.
+        /// </summary>
+        public static string KI_REG_QUELLPROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_QUELLPROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Obere Bandgrenze ähnelt.
         /// </summary>
         public static string KI_REG_SOC_MAX_NAME {
@@ -26983,6 +27010,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_VORSCHAU_VARIANTE_ANLEGEN {
             get {
                 return ResourceManager.GetString("KI_REG_VORSCHAU_VARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Inhalt käme aus Projekt „{0}“ (ID {1}). ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_VARIANTE_QUELLE {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_VARIANTE_QUELLE", resourceCulture);
             }
         }
         

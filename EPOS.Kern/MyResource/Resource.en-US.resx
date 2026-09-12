@@ -7739,6 +7739,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_REG_BEZEICHNER_NAME" xml:space="preserve">
     <value>Label</value>
   </data>
+  <data name="KI_REG_QUELLPROJEKT_NAME" xml:space="preserve">
+    <value>Source project</value>
+  </data>
   <data name="KI_REG_VARIANTE_ID_NAME" xml:space="preserve">
     <value>Storage variant</value>
   </data>
@@ -7753,6 +7756,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="KI_REG_ERL_BEZEICHNER" xml:space="preserve">
     <value>Name of the new variant, e.g. “heat pump instead of boiler”. The project name is formed as “master - label”.</value>
+  </data>
+  <data name="KI_REG_ERL_QUELLPROJEKT" xml:space="preserve">
+    <value>Optional: the project whose CONTENT the variant should receive. Without it the master project is copied. The variant is named “master - label” in any case and stays attached to the master project.</value>
   </data>
   <data name="KI_REG_ERL_VARIANTE_ID" xml:space="preserve">
     <value>Operating mode of the storage variant as shown by speichervarianten_auflisten.</value>
@@ -7785,6 +7791,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>I would create the variant “{2}” for master project “{0}” (ID {1}).
 The new project would be called “{3}” and would be a full copy ({4} energy plants).</value>
   </data>
+  <data name="KI_REG_VORSCHAU_VARIANTE_QUELLE" xml:space="preserve">
+    <value>Its content would come from project “{0}” (ID {1}).</value>
+  </data>
   <data name="KI_REG_VORSCHAU_SPEICHERVARIANTE" xml:space="preserve">
     <value>The currently active storage variant is {0}.
 I would activate storage variant {1} (energy plant {2}); the remaining {4} variants of project {3} would be reset.</value>
@@ -7798,6 +7807,9 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="KI_REG_BEZEICHNER_LEER" xml:space="preserve">
     <value>The variant is missing a label.</value>
+  </data>
+  <data name="KI_REG_QUELLE_IST_STAMM" xml:space="preserve">
+    <value>The source project “{0}” (ID {1}) is the master project itself. Without a source project the master is copied anyway — please omit the argument or name a different project.</value>
   </data>
   <data name="KI_REG_VARIANTE_ANGELEGT" xml:space="preserve">
     <value>Variant “{0}” created: new project {1} (“{2}”).</value>

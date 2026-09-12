@@ -4,8 +4,16 @@
 
    AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl und
    Filter "nur Stammprojekte", darunter in EINER Zeile die Variantenwahl,
-   das Bezeichnerfeld und die drei Knoepfe (Variante anlegen, loeschen,
-   Simulation starten), darunter die leise Statuszeile des Simulationsstands.
+   das Bezeichnerfeld des UMBENENNENS und die Knoepfe (Variante anlegen,
+   loeschen, Simulation starten, umbenennen), darunter die leise Statuszeile
+   des Simulationsstands.
+
+   VARIANTE ANLEGEN OEFFNET DEN DIALOG (Auftrag #240). Bis dahin legte diese
+   Seite mit dem Bezeichner aus ihrem eigenen Feld an - ohne Quellprojekt,
+   waehrend Kopfband und Menuepunkt seit #237 den ProjektVarianteDialog
+   zeigen. EIN Dialog, drei Einstiege: Der Knopf ruft den Oeffner der Huelle,
+   danach laedt die Seite ihre Liste neu. Das inline Bezeichnerfeld gehoert
+   seither dem UMBENENNEN.
    Und dann der Komponentenbereich - auf der Stammzeile die GEGENUEBERSTELLUNG
    aller Versionen, auf einer Variante deren UNTERSCHIEDE zum Stamm samt
    Aktionsspalte.
@@ -70,17 +78,32 @@
         <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
                      Eintraege="@Versionen" Auswahl="@Markierung"
                      AuswahlChanged="BeiVersion" />
-        <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                  WertChanged="@(w => _bezeichner = w)" />
-        <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich)"
-                @onclick="Anlegen">@AnlegenText</button>
+        @* DAS BEZEICHNERFELD GEHOERT SEIT #240 ZUM UMBENENNEN - und nur dazu.
+           Bis dahin fuellte es BEIDE Wege: Anlegen und Umbenennen. Der Anlegeweg
+           oeffnet jetzt denselben Dialog wie Kopfband und Menuepunkt (ProjektVarianteDialog,
+           mit dem Kaestchen "Inhalt aus einem bestehenden Projekt uebernehmen"), und der
+           fragt den Bezeichner selbst - ein zweites Feld daneben waere eine zweite
+           Fassung derselben Eingabe. Ohne Umbenennweg steht das Feld deshalb nicht. *@
+        @if (VarianteUmbenennen is not null)
+        {
+            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
+                      WertChanged="@(w => _bezeichner = w)" />
+        }
+        @* EIN DIALOG, DREI EINSTIEGE (Auftrag #240): Der Knopf OEFFNET nur - was er
+           oeffnet, weiss die Huelle; danach laedt die Seite ihre Liste neu. Ohne
+           Oeffner gibt es den Knopf nicht (Hausregel A-18). *@
+        @if (VarianteAnlegenOeffnen is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich || _laeuft)"
+                    @onclick="Anlegen">@AnlegenText</button>
+        }
         <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
                 @onclick="LoeschenFragen">@LoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
                 @onclick="Simulieren">@SimulierenText</button>
         @* UMBENENNEN (08.09.2026): der Bezeichner im Feld wird der neue Name der
-           gewaehlten Variante. Hinter den drei Bestandsknoepfen, damit deren Reihenfolge
+           gewaehlten Variante. Hinter den Bestandsknoepfen, damit deren Reihenfolge
            (Anlegen, Loeschen, Simulieren) fuer Anwender und Proben dieselbe bleibt. *@
         @if (VarianteUmbenennen is not null)
         {
@@ -222,8 +245,24 @@
     /// </summary>
     [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
 
-    /// <summary>Legt eine Variante an und liefert die Meldung.</summary>
-    [Parameter] public Func<string, string>? VarianteAnlegen { get; set; }
+    /// <summary>
+    /// ÖFFNET den Variantendialog und meldet, ob dabei eine Variante entstanden ist
+    /// (Auftrag <b>#240</b>).
+    ///
+    /// <para><b>Warum ein Öffner und kein Anlegeweg.</b> Bis #240 stand hier
+    /// <c>Func&lt;string, string&gt;</c>: Bezeichner hinein, Meldung heraus — und die
+    /// Übersicht legte damit OHNE Quellprojekt an, während Kopfband und Menüpunkt seit
+    /// #237 den <c>ProjektVarianteDialog</c> zeigen (Kästchen „Inhalt aus einem
+    /// bestehenden Projekt übernehmen", Projektliste, Live-Zielname). Ein Haus, in dem
+    /// derselbe Vorgang an einer Stelle mehr kann als an der anderen, hat zwei
+    /// Vorgänge. Seither gibt es EINEN Dialog und drei Einstiege; die Seite entscheidet
+    /// nur noch, WANN er aufgeht, und lädt danach ihre Liste neu.</para>
+    ///
+    /// <para><c>true</c> = angelegt (Liste neu laden), <c>false</c> = abgebrochen oder
+    /// fehlgeschlagen. Die Meldung gehört dem Dialog beziehungsweise seiner Hülle —
+    /// sie sagt dort dasselbe wie im Menüweg.</para>
+    /// </summary>
+    [Parameter] public Func<Task<bool>>? VarianteAnlegenOeffnen { get; set; }
 
     /// <summary>
     /// Die gewählte Variante umbenennen (08.09.2026): Bezeichner aus dem Feld hinein, die
@@ -371,6 +410,9 @@
 
     /// <summary>Trägt der Komponentenbereich die Aktionsspalte? (Prüfhilfe)</summary>
     public bool MitAktionsspalte => _mitAktionsspalte;
+
+    /// <summary>Läuft gerade ein Vorgang (Simulation oder offener Variantendialog)? (Prüfhilfe)</summary>
+    public bool Laeuft => _laeuft;
 
     private bool _mitAktionsspalte;
 
@@ -549,13 +591,26 @@
     // Variante anlegen und löschen
     // =====================================================================
 
-    private void Anlegen()
+    /// <summary>
+    /// Öffnet den Variantendialog (Auftrag #240) und lädt die Liste neu, sobald er eine
+    /// Variante angelegt hat. Gezeichnet wird dabei zweimal: einmal gesperrt, solange
+    /// der Dialog offen steht, und einmal mit dem neuen Stand.
+    /// </summary>
+    private async Task Anlegen()
     {
-        if (VarianteAnlegen is null) return;
+        if (VarianteAnlegenOeffnen is null || _laeuft) return;
 
-        string meldung = VarianteAnlegen(_bezeichner ?? "");
-        Auffrischen();
-        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+        _laeuft = true;
+        StateHasChanged();
+        try
+        {
+            if (await VarianteAnlegenOeffnen()) Auffrischen();
+        }
+        finally
+        {
+            _laeuft = false;
+            StateHasChanged();
+        }
     }
 
     private void Umbenennen()

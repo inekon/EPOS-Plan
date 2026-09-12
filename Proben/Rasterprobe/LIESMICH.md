@@ -1,4 +1,4 @@
-# Rasterprobe — die virtualisierte Katalogliste im echten Browser
+﻿# Rasterprobe — die virtualisierte Katalogliste im echten Browser
 
 **Zweck.** `EPOS.UI/Bausteine/Katalogliste.razor` (über `EPOS.UI/Standards/Raster.razor`,
 QuickGrid 10.0.11 mit `Virtualize`) so zeigen, wie der Stromspeicherimport sie zeigt — und
@@ -138,6 +138,45 @@ Das Maß wird nicht zum dritten Mal geraten, sondern **gesetzt**: Dieselbe Zahl 
 (`Raster.razor`, `Hoehenstil`), und `epos-ui.css` gibt sie **beiden** Zeilenarten des
 virtualisierten Rasters. Wert und Baum können nicht mehr auseinanderlaufen. Die
 Virtualisierung bleibt vollständig erhalten; ein Rückfall auf `Pagination` war nicht nötig.
+
+---
+
+## Nachtrag vom 12.09.2026 (Auftrag #240) — die Hausregel für die Zellenpolsterung
+
+**Was geändert wurde.** Die Hausregel `.epos-raster th, .epos-raster td { padding: 4px 8px }`
+wog (0,1,1) und hat in einem QuickGrid-Raster deshalb **nie** gegolten — `#235` hat das
+nebenbei gemessen (1,6 px statt 4 px), aber nicht behoben. `epos-ui.css` führt seither
+zusätzlich
+
+```css
+table.epos-raster.quickgrid > tbody > tr > td { padding: 4px 8px; }            /* (0,2,4) */
+table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td { padding: 0 8px; } /* (0,2,4) */
+```
+
+Kein `!important`; die zweite Zeile hält die bearbeitbare Zeile eng, die sonst von der
+ersten 4 px zurückbekäme.
+
+**Messung vorher / nachher** (derselbe Wirt, Chromium headless, `node rasterprobe.mjs`):
+
+| Größe | vorher | nachher |
+|---|---|---|
+| Zeilenhöhe der virtualisierten Fälle A–E, G, I (Maß gesetzt) | 53,0 px | **53,0 px** |
+| Zeilenhöhe Fall F (119 Zeilen, **kein** gesetztes Maß) — die NATÜRLICHE Höhe | **48,188 px** | **53,0 px** |
+| Fall H (Gegenprobe, Maß weggenommen) | 47,7 … 48,2 px, 366 Melder | **52,5 px, 402 Melder** |
+| Rückgabe | 0 (9 von 9) | **0 (9 von 9)** |
+
+**`ItemSize` bleibt 53** — und das ist kein Zufall, sondern der Beleg: Die natürliche Höhe
+war 44 + 2 × 1,6 + 1 = 48,2 px und ist jetzt 44 + 2 × 4 + 1 = 53,0 px, also genau das Maß,
+das `Raster.ZEILENHOEHE` seit #235 setzt. `height` an einer Tabellenzeile ist ein
+Mindestmaß; erreicht werden darf es, unterschritten nicht. Fall F misst das ohne jedes
+gesetzte Maß und ist deshalb der eigentliche Nachweis der Änderung.
+
+**Die Gegenprobe H bleibt rot** — sie nimmt der Zeile ihr gesetztes Maß, und die restlichen
+0,5 px Unterschied (52,5 gegen 53) reichen den zwei Sichtbarkeitsmeldern aus: 402 Meldungen
+in drei Sekunden statt der erlaubten zwölf, 16 Platzhalterzeilen nach dem Rollen. Am
+Prüfprogramm war nichts zu ändern.
+
+---
 
 ### Was nur unter Windows prüfbar bleibt
 
