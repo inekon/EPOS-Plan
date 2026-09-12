@@ -1,13 +1,14 @@
 ﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Varianten
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Varianten.wiki
-     Stand: 2026-09-12 (Variante aus einem bestehenden Projekt anlegen: Kaestchen und Projektliste im Dialog Als Variante speichern)
+     Stand: 2026-09-12 (Variante aus einem bestehenden Projekt anlegen: Kaestchen und Projektliste im Dialog Als Variante speichern;
+     Auftrag #238: Auswahlfeld Variante zeigt den Projektnamen wie das Kopfband, ohne den Bezeichner davor)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Dialog '''Projektvarianten''' legt Varianten eines Projekts an und stellt sie gegenüber. Varianten sind eigenständige Kopien, die zusammen mit ihrem Stammprojekt eine Vergleichsgruppe bilden; das Stammprojekt ist dabei der Bezugspunkt jedes Vergleichs.
 
 == Eingaben ==
 
 * '''Stammprojekt''' – das Projekt auswählen, dessen Gruppe bearbeitet wird; ''nur Stammprojekte'' blendet die Varianten aus der Auswahlliste aus.
-* '''Stamm + Varianten''' – die Tabelle zeigt die Vergleichsgruppe mit Art, Bezeichner und Projektname.
+* '''Variante''' – das Auswahlfeld führt den Stamm und seine Varianten mit ihrem Projektnamen, den Stamm zuerst; darunter stehen die Unterschiede der gewählten Variante zum Stamm.
 * '''Bezeichner und Variante anlegen''' – legt unter dem eingetragenen Bezeichner eine Kopie des aktuellen Standes an; ändern Sie je Variante nur eine Größe, sonst lässt sich ein Unterschied keiner Ursache zuordnen.
 * '''Variante löschen''' – entfernt die gewählte Variante; das Stammprojekt bleibt unberührt.
 * '''Simulation starten''' – rechnet die beteiligten Projekte neu, damit der Vergleich auf einem einheitlichen Stand steht.
