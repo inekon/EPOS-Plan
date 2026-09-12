@@ -18812,4 +18812,61 @@ Do you want to allow this?</value>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>something was changed in the battery sizing view</value>
   </data>
+  <data name="FLOTTE_ED_QUELLE_TITEL" xml:space="preserve">
+    <value>Add battery unit</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_FRAGE" xml:space="preserve">
+    <value>Where should the new unit come from?</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_ANLAGE" xml:space="preserve">
+    <value>Battery system of the project</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_ANLAGE_ERL" xml:space="preserve">
+    <value>Capacity, power, efficiencies and state-of-charge band are taken from the selected system — exactly as when the view is opened for the first time.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_KATALOG" xml:space="preserve">
+    <value>Battery catalogue (database)</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_KATALOG_ERL" xml:space="preserve">
+    <value>The device data of a catalogue record. The unit then belongs to no system of the project; wear costs and guaranteed cycles have to be entered by hand.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_LEER" xml:space="preserve">
+    <value>Empty unit</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_LEER_ERL" xml:space="preserve">
+    <value>A unit with default values that you fill in yourself.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_NAME" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_VERTRETEN" xml:space="preserve">
+    <value>already in the fleet</value>
+  </data>
+  <data name="FLOTTE_ED_KEINE_ANLAGE" xml:space="preserve">
+    <value>The project has no battery system.</value>
+  </data>
+  <data name="FLOTTE_ED_KEIN_KATALOG" xml:space="preserve">
+    <value>The battery catalogue is empty.</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG" xml:space="preserve">
+    <value>{0} battery systems of the project are not in the fleet: {1}</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_EINE" xml:space="preserve">
+    <value>One battery system of the project is not in the fleet: {0}</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN" xml:space="preserve">
+    <value>Add to fleet</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL" xml:space="preserve">
+    <value>Add every missing battery system as a unit</value>
+  </data>
 </root>

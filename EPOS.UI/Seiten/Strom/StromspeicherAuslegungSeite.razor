@@ -172,8 +172,18 @@
             @* NUR NOCH DIE EINHEITEN (Auftrag #224): Der Groessenbereich und der
                Schalter „optimieren" stehen in Station 4, die Jahresprojektion in
                Schritt 2, „Netz und Planung" in Schritt 3. *@
+            @* SEIT AUFTRAG #239 kennt „+ Speicher hinzufuegen" drei QUELLEN — eine
+               Speicheranlage des Projekts, den Speicherkatalog oder eine leere Einheit —,
+               und ueber der Liste steht die Nachzugszeile, sobald eine Speicheranlage des
+               Projekts keine Einheit hat (Anwenderrueckmeldung 12.09.2026). Die vier Wege
+               fuehren ueber die Dienste in den Kern; ohne sie bleibt der Knopf, was er war. *@
             <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
-                                   BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar" />
+                                   BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar"
+                                   Projektanlagen="@Dienste?.Projektanlagen"
+                                   EinheitAusProjektanlage="@Dienste?.EinheitAusProjektanlage"
+                                   Katalogzeilen="@Dienste?.Katalogzeilen"
+                                   Katalogprofil="@Dienste?.Katalogprofil"
+                                   EinheitAusKatalog="@Dienste?.EinheitAusKatalog" />
         }
         else if (_schritt == AuslegungSchritt.Daten)
         {

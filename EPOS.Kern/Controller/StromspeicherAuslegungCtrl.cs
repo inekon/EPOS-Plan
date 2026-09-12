@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using SpeicherEngine;
 
@@ -218,6 +219,40 @@ namespace WindowsFormsApplication1
             if (_variante != null)
                 vorgaben.Eingaben.LeistungspreisEurProKwA = _variante.L_P;
             return vorgaben;
+        }
+
+        // =================================================================
+        //  „Speicher hinzufügen" — die drei Quellen (Auftrag #239)
+        // =================================================================
+
+        /// <summary>
+        /// Die Speicheranlagen DIESES Projekts als Kandidaten für die Flotte
+        /// (Anwenderrückmeldung 12.09.2026). <b>Datenbankzugriff</b>, deshalb auf dem
+        /// Bedienfaden.
+        /// </summary>
+        /// <remarks>
+        /// Durchreiche auf <see cref="SpeicherFlottenStudieCtrl.Projektanlagenkandidaten"/>
+        /// — die Ansicht kennt ihre Projekt-Id nicht und soll sie nicht kennen müssen.
+        /// </remarks>
+        public IReadOnlyList<SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat> Projektanlagen()
+            => SpeicherFlottenStudieCtrl.Projektanlagenkandidaten(_projektId);
+
+        /// <summary>
+        /// Eine Flotteneinheit aus EINER Speicheranlage dieses Projekts — derselbe Weg wie
+        /// die Vorbelegung. <b>Datenbankzugriff.</b>
+        /// </summary>
+        /// <param name="anlageId">
+        /// <c>Tab_Energieanlagen.ID</c> als Text, so wie
+        /// <c>FlottenEinheit.AnlageId</c> und
+        /// <see cref="SpeicherFlottenStudieCtrl.FlottenAnlagenkandidat.AnlageId"/> sie
+        /// führen.
+        /// </param>
+        /// <returns>Die Einheit; <c>null</c> bei unbekannter oder unbrauchbarer Anlage.</returns>
+        public FlottenEinheit EinheitAusProjektanlage(string anlageId)
+        {
+            if (!int.TryParse(anlageId, NumberStyles.Integer, CultureInfo.InvariantCulture, out int id))
+                return null;
+            return SpeicherFlottenStudieCtrl.EinheitAusProjektanlage(_projektId, id);
         }
 
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung <c>@Aktuell</c>.</summary>

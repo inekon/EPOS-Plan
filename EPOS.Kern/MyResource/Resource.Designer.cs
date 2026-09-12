@@ -10346,6 +10346,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANLAGE_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANLAGE_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bereits in der Flotte ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_ANLAGE_VERTRETEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_ANLAGE_VERTRETEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl bis: ähnelt.
         /// </summary>
         public static string FLOTTE_ED_ANZAHL_BIS {
@@ -10832,6 +10868,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine Speicheranlage. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KEINE_ANLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KEINE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Speichereinheit angelegt. ähnelt.
         /// </summary>
         public static string FLOTTE_ED_KEINE_EINHEIT {
@@ -10846,6 +10891,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_KEINE_RAINFLOW {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_KEINE_RAINFLOW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicherkatalog ist leer. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_KEIN_KATALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_KEIN_KATALOG", resourceCulture);
             }
         }
         
@@ -10927,6 +10981,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_MAX_KANDIDATEN {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_MAX_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Speicheranlagen des Projekts sind nicht in der Flotte: {1} ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NACHZUG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NACHZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufnehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NACHZUG_AUFNEHMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NACHZUG_AUFNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle fehlenden Speicheranlagen als Einheiten aufnehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Speicheranlage des Projekts ist nicht in der Flotte: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_NACHZUG_EINE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_NACHZUG_EINE", resourceCulture);
             }
         }
         
@@ -11089,6 +11179,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_PUNKT_WEG_ARIA {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_PUNKT_WEG_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicheranlage des Projekts ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_ANLAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität, Leistung, Wirkungsgrade und Ladezustandsband kommen aus der gewählten Anlage — genau wie beim ersten Öffnen der Ansicht. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher soll die neue Einheit kommen? ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_FRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherkatalog (Datenbank) ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_KATALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätedaten eines Katalogsatzes. Die Einheit gehört danach zu keiner Anlage des Projekts; Verschleißkosten und zugesicherte Zyklen tragen Sie selbst nach. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leere Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_LEER {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Einheit mit Vorgabewerten, die Sie danach selbst ausfüllen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_LEER_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_LEER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher hinzufügen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_QUELLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_QUELLE_UEBERNEHMEN", resourceCulture);
             }
         }
         

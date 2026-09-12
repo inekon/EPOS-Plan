@@ -548,6 +548,38 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// <b>EIN Katalogsatz ueber seinen Primaerschluessel</b> (Auftrag #239) — der
+        /// Leseweg hinter „Speicher hinzufuegen &gt; aus dem Speicherkatalog".
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum ueber die ID und nicht ueber den Bezeichner.</b> Die
+        /// Katalogliste liefert <see cref="Katalogfilterzeile.Id"/> mit; der Bezeichner
+        /// ist im Speicherkatalog zwar der Schluessel der Pflegemasken, aber die ID ist
+        /// der Primaerschluessel, und <see cref="ReadSingle"/> traegt seinen Satz in
+        /// <c>this</c> ein — ein Nebeneffekt, den ein Leser nicht braucht.</para>
+        /// <para><b>Dieselbe Fuellregel wie ueberall</b>
+        /// (<c>FillFromRow</c> mit der <c>Columns.Contains</c>-Wache): Auf einer
+        /// Datenbank vor Migrationsschritt 11a fehlen die sechs Geraetespalten, und der
+        /// Satz behaelt dort seine Nullwerte, statt dass der Aufruf scheitert.</para>
+        /// </remarks>
+        /// <param name="id"><c>Tab_Stromspeicher_STAMM.ID</c>.</param>
+        /// <returns>Der Satz; <c>null</c>, wenn es ihn nicht gibt.</returns>
+        public static StromspeicherModel Katalogsatz(int id)
+        {
+            if (id <= 0) return null;
+
+            DbParam pId = new DbParam("@id", DbParamTyp.Integer);
+            pId.Wert = id;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT * FROM [" + TABLE + "] WHERE ID = ?", pId);
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            StromspeicherModel m = new StromspeicherModel();
+            FillFromRow(m, dt.Rows[0]);
+            return m;
+        }
+
         // =================================================================================
         // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
         // =================================================================================

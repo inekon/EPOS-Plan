@@ -18819,4 +18819,61 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>in der Stromspeicher-Auslegung wurde etwas geändert</value>
   </data>
+  <data name="FLOTTE_ED_QUELLE_TITEL" xml:space="preserve">
+    <value>Speicher hinzufügen</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_FRAGE" xml:space="preserve">
+    <value>Woher soll die neue Einheit kommen?</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_ANLAGE" xml:space="preserve">
+    <value>Speicheranlage des Projekts</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_ANLAGE_ERL" xml:space="preserve">
+    <value>Kapazität, Leistung, Wirkungsgrade und Ladezustandsband kommen aus der gewählten Anlage — genau wie beim ersten Öffnen der Ansicht.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_KATALOG" xml:space="preserve">
+    <value>Speicherkatalog (Datenbank)</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_KATALOG_ERL" xml:space="preserve">
+    <value>Die Gerätedaten eines Katalogsatzes. Die Einheit gehört danach zu keiner Anlage des Projekts; Verschleißkosten und zugesicherte Zyklen tragen Sie selbst nach.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_LEER" xml:space="preserve">
+    <value>Leere Einheit</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_LEER_ERL" xml:space="preserve">
+    <value>Eine Einheit mit Vorgabewerten, die Sie danach selbst ausfüllen.</value>
+  </data>
+  <data name="FLOTTE_ED_QUELLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_NAME" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_SPALTE_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="FLOTTE_ED_ANLAGE_VERTRETEN" xml:space="preserve">
+    <value>bereits in der Flotte</value>
+  </data>
+  <data name="FLOTTE_ED_KEINE_ANLAGE" xml:space="preserve">
+    <value>Das Projekt führt keine Speicheranlage.</value>
+  </data>
+  <data name="FLOTTE_ED_KEIN_KATALOG" xml:space="preserve">
+    <value>Der Speicherkatalog ist leer.</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG" xml:space="preserve">
+    <value>{0} Speicheranlagen des Projekts sind nicht in der Flotte: {1}</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_EINE" xml:space="preserve">
+    <value>Eine Speicheranlage des Projekts ist nicht in der Flotte: {0}</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN" xml:space="preserve">
+    <value>Aufnehmen</value>
+  </data>
+  <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL" xml:space="preserve">
+    <value>Alle fehlenden Speicheranlagen als Einheiten aufnehmen</value>
+  </data>
 </root>
