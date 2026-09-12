@@ -4010,6 +4010,30 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Achsentitel (bewusst); Windows-Abnahme der drei Diagramme.
 > Gate sept44 auf `f6e0b58`: Kern 2 700, UI 3 909, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59
 > Bilder / 13 Gegenproben, Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
+>
+> **#235 (12.09.2026, Anwenderrückmeldung mit Bildschirmfoto „Stromspeicher Einlesen": „die Auswahlliste flackert bei großen Datenlisten
+> immer noch") — Restfall #212, diesmal im echten Browser gemessen und behoben (`64d82c6`, Merge `347c92e`, Agent Opus; 18 Dateien, +1 385/−43).**
+> #212 hatte drei Zeichenkosten beseitigt, aber nur in bunit gemessen — ohne Layout, ohne JavaScript, ohne die Sichtbarkeitsmelder von
+> `Virtualize`. **Messung** (Blazor-Server-Wirt mit `EPOS.UI`, Playwright 1.56 auf Chromium headless, 6 654 Sätze, echtes
+> Stromspeicher-Listenprofil, neun Fälle: 1 300 × 900, 1 300 × 700, Zoom 1,25, Ladeweg „CEC-Liste abrufen", 20 746 Zeilen, Filtern, 119 Zeilen,
+> Zeichentakt 10/s, Gegenprobe): die echte Zeile war **48,2 px** statt der von #212 gerechneten 53 (QuickGrids eigenes Stilblatt gewinnt über
+> die Zellenpolsterung: 1,6 px statt 4 px), die Platzhalterzeile **21,9 px**. `Virtualize` misst nicht, es rechnet mit `ItemSize` — die zwei
+> Abstandshalter kamen auf verschiedene Anfangszeilen und schoben das Fenster **alle 33 ms** gegeneinander (Sichtbarkeitsmelder 366–374 in
+> 3 s), jeder Sprung stellte QuickGrids Datenanforderung hinter der 100‑ms‑Entprellung neu an: nach Rollen um 2 000 px **16 Platzhalter,
+> dauerhaft**; das Bildschirmfoto der Probe glich dem des Anwenders. **Verworfen mit Messwert:** Rollbehälter (`clientHeight` 418, richtig),
+> sticky `thead` (vorderer Halter `isIntersecting: false`), Klasse `loading` (0 Umschaltungen in allen neun Fällen — das „Blinken" aus #212 war
+> nie die Klasse), `@key`-Wechsel beim Laden/Filtern, Fortschrittsmeldungen/Zeichentakt, Behältermaß beim ersten Messen.
+> **Fix an EINER Stelle:** dieselbe Zahl geht als `ItemSize` UND als `--epos-rasterzeile` an die Hülle (`Raster.Hoehenstil`), das Stilblatt gibt sie
+> beiden Zeilenarten (echte Zeile und Platzhalter je **53,0 px**). Danach: Sichtbarkeitsmelder in 3 s **4**, nach Rollen 0 Platzhalter / 16 echte
+> Zeilen binnen 115–139 ms, Abstandshalter stehen. Virtualisierung bleibt vollständig, **kein Rückfall** auf Seitenblättern. Die Probe ist
+> dauerhaft: `Proben/Rasterprobe/` (Skript 485 Z., minimaler Wirt, LIESMICH mit Messwerten; nicht in sln/slnf, keine CI; Rückgabe 0/1/2),
+> Werkzeugzeile in der Wurzel-`CLAUDE.md`; `RasterTests` +3, #212-Wache in `KataloglisteTests` berichtigt; Konzept Stromspeicherimport
+> „Befund #235", `EPOS.UI/CLAUDE.md`. **Offen:** Windows-Abnahme unter WebView2 mit 125 % DPI (WebView2 reicht sie als `zoomFactor`
+> weiter, Fall D nähert das nur an); der ganze `KatalogImportDialog` ist nicht gehostet; Nebenbefund: die Hausregel `.epos-raster th, td
+> { padding: 4px 8px }` wirkt in keinem QuickGrid-Raster (QuickGrids Regel ist spezifischer) — eigener Auftrag, weil sie jede Liste änderte.
+> Gate sept45 auf `347c92e` (gelaufen auf dem byte-gleichen Baum des ersten Merges `038d63b`; Welle und Merge wurden danach mit identischem
+> Baum nachsigniert, weil der Agentencommit aus dem Worktree unsigniert war): Kern 2 700, UI 3 912, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
+> Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
