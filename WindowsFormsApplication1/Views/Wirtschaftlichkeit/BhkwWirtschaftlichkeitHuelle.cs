@@ -36,7 +36,7 @@ namespace WindowsFormsApplication1
     /// diese Huelle schliesst den Dialog, oeffnet das Ziel und bringt den Dialog
     /// danach mit frisch geladenen Daten zurueck. <b>Aufloesung mit dem Baustein
     /// Ueberlagerung, Welle 4</b> (siehe
-    /// <c>Allgemein/Reporting/B5b_Blazor_Port_Protokoll.md</c>).</para>
+    /// <c>Dokumentation/ueberholt/Protokolle/Reporting/B5b_Blazor_Port_Protokoll.md</c>).</para>
     /// </summary>
     internal static class BhkwWirtschaftlichkeitHuelle
     {

@@ -94,7 +94,7 @@ dotnet build EPOS.iOS/EPOS.iOS.csproj -c Release -f net10.0-ios -r iossimulator-
 ```
 
 Was sich **ohne** Mac prüfen lässt, steht in
-[`../Umsetzung_iU10_Nachweise.md`](../Umsetzung_iU10_Nachweise.md): eine Restore-Probe mit
+[`../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md`](../Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md): eine Restore-Probe mit
 `net10.0`-Stub gegen die echte `Directory.Packages.props`, ein Übersetzungslauf der
 plattformfreien Dateien, ein Übersetzungslauf der **ganzen** Hülle gegen Attrappen der
 Plattform-API und ein Prüfstand der Datenseite gegen `Referenzlaeufe/Kenndaten_Test.sqlite`.

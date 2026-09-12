@@ -56,7 +56,7 @@ Fester Pfad je Fassung, falls `vswhere` nicht greift:
 
 Build seit 22.08.2026 **x64** (Paket P2; davor x86). Ist-Stand, Entscheidungen und offene
 Pakete (P3–P5) in
-[`../Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md);
+[`../Dokumentation/ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Dokumentation/ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md);
 Rückweg: Git-Tag `letzter-x86-stand`.
 
 **WFO1000 ist in .NET 10 standardmäßig ein *Fehler*** (WinForms-Designer-Serialisierung). Die
@@ -456,7 +456,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   die Überlagerung `EPOS.UI/Dialoge/Strom/SpeicherOptimierungDialog.razor`, und mit
   ihr sind **Sprungziel und Sprungbrücke leer beziehungsweise gelöscht**.
   Protokoll:
-  [`Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W11b_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W11b_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W11b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W11a ist KEINE Maske verschwunden** — die Welle verlegt, was ohne
   Oberfläche geht, in den Kern und hängt die sechs Ergebnismasken schon daran;
   W11b baut danach die Ergebnisseite in EINEM Schritt und löscht sie (Empfehlung
@@ -474,7 +474,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   **`Form_Simulation_Detail.btn_Simulation_Click` läuft seither NEBENLÄUFIG** —
   siehe „Nebenläufigkeit" unten. `KonfigurationCtrl.LiesProjekt` haben W10b und
   W11a gleichzeitig gebraucht; es gibt sie EINMAL (siehe dort). Protokoll:
-  [`Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md`](Allgemein/Reporting/iU9_W11a_Kern_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W11a_Kern_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W11a_Kern_Protokoll.md).
   **Mit iU9‑W12 sind sechs weitere Masken verschwunden — die Stromganglinien,
   die Lastspitzenkappung und der gemeinsame Konfliktdialog des Imports**,
   zusammen 2 134 Zeilen `.cs`, 1 409 Zeilen Designer, 10 `MessageBox` und
@@ -509,7 +509,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Excel-Zweig war überhaupt nicht benutzbar). **`Views/Import` führt seither
   keine Maske mehr**, `Views/Stromverbraucher` und `Views/Stromspeicher` je
   eine. Protokoll:
-  [`Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W12_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W12_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W12_Blazor_Port_Protokoll.md).
   **Mit iU9‑W13 sind sechs weitere Masken verschwunden — die Katalog-Importe**,
   zusammen 2 396 Zeilen `.cs`, 2 621 Zeilen Designer, 32 `MessageBox` und vier
   indirekte: `Form_Heizkessel_einlesen` (500 Z.), `Form_PufferSp_einlesen`
@@ -545,7 +545,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   mehr**; `Form_WP_einlesen.designer.cs` ist nicht gelöscht, sondern nach
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Wärmepumpe/` verschoben — er ist der
   Zeuge des Umlaut-Tests. Protokoll:
-  [`Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W13_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W13_Blazor_Port_Protokoll.md).
   **Mit iU9‑W14b sind vier weitere Masken verschwunden — die ruhenden
   Verwaltungen des Bedarfs**, zusammen 670 Zeilen `.cs`, 937 Zeilen Designer und
   11 `MessageBox`: `Form_Stromverbraucher_Admin` (177 Z.),
@@ -569,7 +569,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   ChartProbe noch Kern-Test (Befund W14‑B77).
   **`Views/Brauchwasser`, `Views/Prozesswärme` und `Views/Stromverbraucher`
   führen seither keine Designer-Maske mehr.** Protokoll:
-  [`Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14b_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14b_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W14a sind sieben weitere Masken verschwunden — die Erzeuger-Katalogverwaltung**,
   zusammen 2 387 Zeilen `.cs`, 2 369 Zeilen Designer, 39 `MessageBox` und 32 indirekte:
   `Form_Heizkessel_Admin` (365 Z.), `Form_BHKWAdmin` (465 Z.),
@@ -604,7 +604,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Form_PufferSp_Admin`) und `Form_SolarKollektorenAdmin` sind nicht gelöscht, sondern
   nach `Werkzeuge/Formularkarte.Tests/Pruefmuster/` VERSCHOBEN — sie sind der
   „unklar"-Anker und der `DataGridView`-Typzeuge. Protokoll:
-  [`Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14a_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14a_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14a_Blazor_Port_Protokoll.md).
   **Mit iU9‑W14c sind fünf weitere Masken verschwunden — der Gesetzeskatalog, die
   Klimaregionen, die Einstellungen und die Dublettensuche**, zusammen 2 198 Zeilen `.cs`,
   1 425 Zeilen Designer und 26 `MessageBox` (plus 2 indirekte):
@@ -635,7 +635,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   keine Maske mehr**; `Form_Klimadaten` ist nicht gelöscht, sondern nach
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Klimadaten/` VERSCHOBEN — sie war die einzige
   Maske, deren `btn_Help` im Designer stand, und trägt dort fünf Testanker. Protokoll:
-  [`Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14c_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W14c_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15b sind vier weitere Masken verschwunden — die KI-Masken**,
   zusammen 2 243 Zeilen `.cs`, 191 Zeilen Designer und die EINE `MessageBox` der
   Welle: `Form_TextAnzeige` (110 Z., ohne Designer), `Form_KiHinweis` (280 Z.,
@@ -672,7 +672,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Form_KiChat` verstreut lagen), `KiWerkzeugWerte` (die Kulturgrenze der
   Werkzeugliste), `KiChatKontext` (Positivliste und Bereichszuordnung, E‑9) und
   `Allgemein/Hilfe/Kurzbeschreibung` (Auflage H‑1). Protokoll:
-  [`Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W15b_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W15b_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W15b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W16a sind vier weitere Masken verschwunden — der PROJEKTASSISTENT**,
   zusammen 1 286 Zeilen `.cs`, 988 Zeilen Designer und 2 `MessageBox`:
   `Wizard_Stromlastgang` (108 Z.), `Wizard_Komponenten` (216 Z.), der Rahmen
@@ -708,7 +708,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Form_Start.tabPage1`; die dreizehn des Komponentenschritts sind gefallen.
   `Views/Wizard` führt seither KEINE Designer-Maske mehr, `Views/Projekt` ebenfalls
   nicht. Protokoll:
-  [`Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16a_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16a_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16a_Blazor_Port_Protokoll.md).
   **Mit iU9‑W16b ist die STARTSEITE verschwunden — und der Altzweig mit ihr**:
   fünf Masken, 34 Dateien, 6 175 Zeilen `.cs`, 2 276 Zeilen Designer und
   4 700 Zeilen `.resx`. `Form_Start` (2 339 Z. + 1 864 `.bak` + 1 381 Designer)
@@ -731,7 +731,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   `Werkzeuge/Formularkarte.Tests/Pruefmuster/Hauptformular/` verschoben — mit
   108 Kartenzeilen die größte Maske, die der Bestand je hatte, und seither der Zeuge
   für die fünf letzten Steuerelementtypen des Stapellaufs (Entscheid E‑9). Protokoll:
-  [`Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16b_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16b_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16b_Blazor_Port_Protokoll.md).
   **Mit iU9‑W16c ist die MISCHPHASE ZU ENDE — das Hauptfenster ist Razor.**
   `MDIMainForm.Designer.cs` (493 Z., 45 `ToolStripMenuItem`, 6
   `ToolStripSeparator`) und die drei `.resx` (1 729 / 1 086 / 1 185 Z.) sind
@@ -786,7 +786,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   Adresse nicht, Befund W16c‑B8). **Die Anwendung läuft seither „Per Monitor
   V2"** (Anwenderentscheid E‑6 / iF21) und die `DpiInsel` ist gelöscht — siehe
   „Fallstricke". Protokoll:
-  [`Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W16c_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16c_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W16c_Blazor_Port_Protokoll.md).
   **Mit iU9‑W15a sind fünf weitere Masken verschwunden — die Projektdialoge, der
   Projekttransfer und der Assistentenkopf**, zusammen 846 Zeilen `.cs`, 576 Zeilen
   Designer und 14 `MessageBox` (plus 3 über `Dienste.Dialog` und 7 über
@@ -820,7 +820,7 @@ Grob MVC, verschaltet über prozessweite Statics in `Program`:
   beide Sprachkataloge, davon 27 für eine Maske, die gar nicht übersetzt war (W15a‑B36).
   **`Views/Projekt` führt seither genau eine Designer-Maske** (das UserControl),
   `Views/Wizard` noch drei. Protokoll:
-  [`Allgemein/Reporting/iU9_W15a_Blazor_Port_Protokoll.md`](Allgemein/Reporting/iU9_W15a_Blazor_Port_Protokoll.md).
+  [`../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W15a_Blazor_Port_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/iU9_W15a_Blazor_Port_Protokoll.md).
 - **`Allgemein/`** (**38** `.cs`; 40 vor iU9‑W14c — `GrafikTools/ChartManager.cs` (560 Z. samt
   `ChartMouseWheel2`) und `GrafikTools/RoundedPanel.cs` sind mit ihrer letzten bzw. ohne
   Nutzerin gefallen; **die MS-Chart-Bindung der Anwendung endet damit außerhalb der
@@ -950,9 +950,9 @@ mit mindestens 16/32/48 px vorhanden und Setup wie Anwendung auf demselben Pfad.
   **Schlüssel** — Chart-Serien, ComboBox-Steuerwerte, Filter-Tokens: sprachneutral und ASCII
   (`PUFFER_12`, `WAERMEBEDARF`). **Anzeige** — ausschließlich über `MyResource.Resource.*`
   (Katalog in beiden Sprachen, Fundstellen in
-  [`Allgemein/Simulation/Lokalisierung_Katalog.md`](Allgemein/Simulation/Lokalisierung_Katalog.md)).
+  [`../Dokumentation/aktuell/Lokalisierung_Katalog.md`](../Dokumentation/aktuell/Lokalisierung_Katalog.md)).
   Kein Anzeigetext darf Steuerwert sein — Prüfrezeptur:
-  [`Allgemein/Simulation/Lokalisierung_Pruefung.md`](Allgemein/Simulation/Lokalisierung_Pruefung.md).
+  [`../Dokumentation/aktuell/Lokalisierung_Pruefung.md`](../Dokumentation/aktuell/Lokalisierung_Pruefung.md).
 
 ## Wichtige Pakete
 
@@ -1080,11 +1080,17 @@ Vor Releases `dotnet list package --include-transitive` prüfen.
 
 ## Stand & Konzepte
 
+Die Papiere dieses Abschnitts liegen seit Auftrag #241 (12.09.2026) unter
+[`../Dokumentation/`](../Dokumentation/LIESMICH.md) — der Umsetzungsstand und die
+Etappenprotokolle als Geschichte in `ueberholt/Protokolle/`, die noch angewandten
+Prüfrezepturen in `aktuell/`.
+
 Aktueller Umsetzungsstand von Bericht und Wirtschaftlichkeit:
-[`Allgemein/Reporting/UMSETZUNGSSTAND.md`](Allgemein/Reporting/UMSETZUNGSSTAND.md).
+[`../Dokumentation/ueberholt/Protokolle/Reporting/UMSETZUNGSSTAND.md`](../Dokumentation/ueberholt/Protokolle/Reporting/UMSETZUNGSSTAND.md).
 Konzepte daneben im selben Ordner (`Konzept_Berichtserstellung_EPOS-Plan.md`,
 `Konzept_Wirtschaftlichkeit.md`, `Konzept_Variantenbericht.md`), Phasen-Historie in
-`Allgemein/Bericht/LIESMICH_Phase1.md`. Simulationskonzepte in `Allgemein/Simulation/`:
+`../Dokumentation/ueberholt/Protokolle/Bericht/LIESMICH_Phase1.md`. Simulationskonzepte in
+`../Dokumentation/ueberholt/Protokolle/Simulation/`:
 `Konzept_Simulation_QuellenSenken.md` (umgesetzt) und
 `Konzept_Brauchwasser_Heizung_Pufferspeicher.md` — **vollständig umgesetzt 27./28.08.2026**
 (Dreikanalbilanz, Senkentabelle, Warnkriterien, Altpfad-Abriss, Schichtspeicher, Booster,

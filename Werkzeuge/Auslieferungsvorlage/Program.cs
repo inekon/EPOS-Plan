@@ -13,7 +13,7 @@ namespace Auslieferungsvorlage
     /// eingespielt werden.
     ///
     /// <para><b>Warum als Werkzeug und nicht von Hand.</b>
-    /// <c>Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1 beschrieb bis hierher vier
+    /// <c>Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1 beschrieb bis hierher vier
     /// HANDgriffe und vermerkte „noch nicht automatisiert"; offener Punkt S5 desselben
     /// Dokuments. Anwenderentscheid <b>#157-E-2</b> (09.09.2026, „Empfehlung"
     /// angenommen): automatisieren, und die Vorlage enthaelt Beispielprojekte. Der Grund

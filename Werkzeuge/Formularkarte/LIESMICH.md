@@ -183,7 +183,7 @@ Seit **iU8‑12f** rechnet das Werkzeug deshalb einen Erreichbarkeitsgraphen üb
 Projektbaum (`Erreichbarkeit.cs`). Er steht als Zeile **„Öffner erreichbar"** im Kopf jeder
 Feldkarte, als Spalte in `UEBERSICHT.md` und vollständig in `ERREICHBARKEIT.md` — der
 Stilllegungsliste **K6**. Der Befund vom 03.09.2026 liegt als
-[`Erreichbarkeit_2026-09-03.md`](Erreichbarkeit_2026-09-03.md) daneben.
+[`Erreichbarkeit_2026-09-03.md`](../../Dokumentation/ueberholt/Erreichbarkeit_2026-09-03.md) daneben.
 
 ### Knoten, Kanten, Wurzeln
 
@@ -485,7 +485,7 @@ Designer-Maske mehr — der Stapellauf-Test läuft deshalb über `Views/Heizkess
 | unklar | 2 (`Form_GebWohnflaeche`, `Form_PufferSp_Bearbeiten` — beide bleiben, siehe iF29) |
 
 Der vollständige Befund mit Pfad bzw. Öffner je Maske steht in
-[`Erreichbarkeit_2026-09-03.md`](Erreichbarkeit_2026-09-03.md).
+[`Erreichbarkeit_2026-09-03.md`](../../Dokumentation/ueberholt/Erreichbarkeit_2026-09-03.md).
 
 Steuerelemente je Typ (Auszug): `Label` 1551, `TextBox` 732, `Button` 504, `ComboBox` 108,
 `GroupBox` 83, `TabPage` 74, `Panel` 69, `CheckBox` 59, `NumericUpDown` 57, `ListBox` 50,

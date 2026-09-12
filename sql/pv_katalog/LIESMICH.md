@@ -12,14 +12,14 @@ Altbestände** und als Beleg der ursprünglichen Messung liegen.
 | Datei | Wofür |
 |---|---|
 | `messung_pv_katalog.py` | Liest `Tab_PV_STAMM` und `Tab_PV` **nur lesend** (URI `mode=ro`) und klassifiziert jedes der vier Felder: `=I_Kurzschluss`, `NULL`, `0`, `plausibel`, `unplausibel`. Markdown- und CSV-Bericht. **Die vier physikalischen Fenster dieses Skripts sind die Quelle** für `PvKoeffizientenReparatur.ALPHA_MIN…NOCT_MAX` |
-| `messung_tab_pv_VORHER.md` | Die Messung der Produktivdatenbank vom 02.09.2026 — der Befund im Original: elf reparaturbedürftige Zeilen |
-| `messung_tab_pv_NACHHER_probe.md` | Die Kontrollmessung nach dem Trockenlauf |
+| [`messung_tab_pv_VORHER.md`](../../Dokumentation/ueberholt/Protokolle/sql/messung_tab_pv_VORHER.md) | Die Messung der Produktivdatenbank vom 02.09.2026 — der Befund im Original: elf reparaturbedürftige Zeilen (seit Auftrag #241 unter `Dokumentation/ueberholt/Protokolle/sql/`) |
+| [`messung_tab_pv_NACHHER_probe.md`](../../Dokumentation/ueberholt/Protokolle/sql/messung_tab_pv_NACHHER_probe.md) | Die Kontrollmessung nach dem Trockenlauf (ebenda) |
 | `reparatur_pv_katalog.sql` | Elf `UPDATE`, **je mit einem Wächter auf die gemessenen Ist-Werte einer bestimmten ID**. Ein zweiter Lauf ändert 0 Zeilen |
 | `reparatur_pv_katalog.py` | Der Runner dazu: Vorbedingungen (keine `-wal`/`-shm`), datierte Sicherung, Transaktion, `changes()` je Anweisung, Kontrollmessung. Ohne `--ausfuehren` ein Trockenlauf mit `ROLLBACK`; die Produktivdatenbank braucht zusätzlich `--produktiv-freigegeben` |
 
 ## Warum die Skripte trotzdem bleiben
 
-* **Sie sind der Beleg.** `messung_tab_pv_VORHER.md` ist die Messung, aus der der Befund A1
+* **Sie sind der Beleg.** [`messung_tab_pv_VORHER.md`](../../Dokumentation/ueberholt/Protokolle/sql/messung_tab_pv_VORHER.md) ist die Messung, aus der der Befund A1
   überhaupt entstanden ist. Ohne sie stünde in `PvKoeffizientenReparatur` eine Regel ohne
   nachlesbare Herkunft.
 * **Sie arbeiten an einer Datei, die das Programm nicht anfasst.** Eine Sicherungskopie, ein

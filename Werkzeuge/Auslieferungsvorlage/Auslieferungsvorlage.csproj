@@ -5,7 +5,7 @@
     BEREINIGTE Auslieferungsdatenbank samt Beispielprojekten (Auftrag #160,
     Anwenderentscheid #157-E-2 vom 09.09.2026).
 
-    WARUM ES DAS GIBT. Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md 6.1 beschrieb den
+    WARUM ES DAS GIBT. Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md 6.1 beschrieb den
     Auslieferungsstand bis hierher als HANDARBEIT in vier Schritten ("noch nicht
     automatisiert"). Von Hand ist das der gefaehrlichste Schritt der ganzen Freigabe:
     Die Entwicklungsdatenbank enthaelt reale Kunden- und Objektdaten, und ein

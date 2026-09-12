@@ -117,7 +117,7 @@ jobs:
       # (c288e1c; SQLite faltet Gross/Klein nur bei ASCII) und ein
       # "UPDATE ... INNER JOIN ... SET" in Access-Schreibweise (dd4113f).
       # Der Pruefer haelt JEDEN SQL-Text des Bestands mit EXPLAIN gegen die
-      # Testdatenbank und gegen die Verbotsliste aus BETRIEB_SQLITE.md 6.2;
+      # Testdatenbank und gegen die Verbotsliste aus Dokumentation/aktuell/BETRIEB_SQLITE.md 6.2;
       # er endet mit 1, sobald eine Fundstelle bleibt.
       # NUR ubuntu: reines Python, plattformfrei - ein zweiter Lauf auf macOS
       # zeigte nichts Neues und kostet Minutenkontingent (Faktor 10).

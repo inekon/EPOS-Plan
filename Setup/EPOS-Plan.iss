@@ -9,7 +9,7 @@
 ;                                        voraus)
 ;
 ;  Konzept und Begründung der Entscheidungen:
-;  Setup\Konzept_Setup_InnoSetup_EPOS-Plan.md
+;  Dokumentation\aktuell\Konzept_Setup_InnoSetup_EPOS-Plan.md
 ; ============================================================================
 
 

@@ -1063,7 +1063,7 @@ namespace EPOS.Kern.Tests
         /// Profile mit dem echten Ressourcenkatalog und laesst keinen Schluessel
         /// unaufgeloest.</para>
         /// <para>Sie ersetzt keine Uebersetzung, sie prueft ihre ANWESENHEIT — die
-        /// Pruefrezeptur <c>Allgemein/Simulation/Lokalisierung_Pruefung.md</c> bleibt
+        /// Pruefrezeptur <c>Dokumentation/aktuell/Lokalisierung_Pruefung.md</c> bleibt
         /// daneben bestehen.</para>
         /// </remarks>
         [Theory]
