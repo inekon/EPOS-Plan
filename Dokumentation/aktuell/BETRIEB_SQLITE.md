@@ -214,9 +214,9 @@ Arbeitsspeicher (`-shm`) und funktioniert auf SMB-Freigaben nicht zuverlässig.
 **Mindestens SQLite 3.37** — darunter versteht das Werkzeug die `STRICT`-Tabellen des
 Zielschemas nicht. `VACUUM INTO` gibt es ab 3.27.
 
-Zum gefahrlosen Üben liegt eine kleine Beispieldatenbank samt Aufbauskript und
-Anleitung unter [`sqlite-probe\`](../../sqlite-probe/LIESMICH.md) — 8 Tabellen, erfundene
-Werte, jederzeit neu aufzubauen. **Kein Produktivdatenbestand.**
+Der frühere Übungsordner `sqlite-probe\` (8 Tabellen, erfundene Werte) ist mit #242 entfernt —
+seit dem 02.09.2026 durch dieses Betriebspapier und die Migration ersetzt (nicht mehr im
+Repository; Stand `a598b564` in der Git-Geschichte).
 
 > Fremdschlüssel sind in SQLite je Sitzung **standardmäßig aus**. EPOS-Plan schaltet sie
 > bei jeder Verbindung ein; ein Werkzeug tut das nicht von selbst. Wer mit einem Werkzeug
@@ -498,5 +498,4 @@ ein bestätigtes *Ja* nimmt Datenbank und Sicherungsordner unwiederbringlich mit
 | Mehrbenutzerbetrieb, `icacls` | [`BETRIEB_Mehrbenutzer_Datenbank.md`](../ueberholt/BETRIEB_Mehrbenutzer_Datenbank.md) |
 | Installer-Hinweise | [`BETRIEB_Installer_Hinweise.md`](../ueberholt/BETRIEB_Installer_Hinweise.md) |
 | Gesamtkonzept der Umstellung | [`Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md`](../ueberholt/Implementierungskonzept_DB-Migration_SQLite_EPOS-Plan.md) |
-| Beispieldatenbank zum Üben | [`sqlite-probe\LIESMICH.md`](../../sqlite-probe/LIESMICH.md) |
 | SQL-Dialekt-Prüfer (Aufruf, Regeln, Ausnahmen) | [`Werkzeuge\SqlDialektPruefer\LIESMICH.md`](../../Werkzeuge/SqlDialektPruefer/LIESMICH.md) |

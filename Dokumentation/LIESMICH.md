@@ -55,6 +55,7 @@ und `README.md`.
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
 | [`aktuell/Konzept_Projektstammdaten_EPOS-Plan.md`](aktuell/Konzept_Projektstammdaten_EPOS-Plan.md) | Projektstammdaten: Datumspflege, Kunde und Bearbeiter | 2026-09-02 |
 | [`aktuell/Konzept_Projekttransfer_EPOS-Plan.md`](aktuell/Konzept_Projekttransfer_EPOS-Plan.md) | Projekttransfer: Export und Import zwischen Rechnern | 2026-08-29 |
+| [`aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md`](aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md) | Repository aufräumen: Regel, Inventar, Stufenplan — Stufe 1 umgesetzt mit #242 | 2026-09-12 |
 | [`aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md`](aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md) | Installationsprogramm mit Inno Setup — Freigabekette, Auslieferungsdatenbank, Versionsquelle | 2026-09-11 |
 | [`aktuell/Konzept_Simulationsablauf_EPOS-Plan.md`](aktuell/Konzept_Simulationsablauf_EPOS-Plan.md) | Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg (Stufen S1–S3) | 2026-09-12 |
 | [`aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md) | Stromspeicher-Dialoge: eine Ansicht statt Fenster in Fenster (Pakete P1–P7) | 2026-09-12 |
@@ -130,6 +131,7 @@ Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren der M
 | [`ueberholt/Umsetzung_iU8_Nachweise.md`](ueberholt/Umsetzung_iU8_Nachweise.md) | Nachweisliste iU8 (erster Blazor-Dialog) | 2026-09-05 | Abnahme abgeschlossen |
 | [`ueberholt/Umsetzung_iU9_Nachweise.md`](ueberholt/Umsetzung_iU9_Nachweise.md) | Nachweisliste iU9, Wellen W0–W10a | 2026-09-07 | Abnahme abgeschlossen; fortgeschrieben wird `aktuell/Umsetzung_iU10_Nachweise.md` |
 | [`ueberholt/Umsetzungskonzept_Stromspeicher_EPOS-Plan.md`](ueberholt/Umsetzungskonzept_Stromspeicher_EPOS-Plan.md) | Umsetzungskonzept Stromspeicher V1.1 (16.08.2026) | 2026-09-11 | ergänzte Rev. 4 des Fachkonzepts; es gilt `aktuell/Konzept_Stromspeicher_EPOS-Plan.md` (Rev. 5) und `aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md` |
+| [`ueberholt/vdi_3805_importer_README.md`](ueberholt/vdi_3805_importer_README.md) | Anleitung des VDI-3805-Scrapers | 2026-08-29 | Werkzeug nicht mehr im Repository (#242); Überrest aus dem ehemaligen Werkzeugordner `WindowsFormsApplication1/Allgemein/vdi_3805_importer/` |
 | [`ueberholt/WP-Plan_Doku_Waermebedarf_Deckung_Pufferspeicher.md`](ueberholt/WP-Plan_Doku_Waermebedarf_Deckung_Pufferspeicher.md) | Wärmebedarf, Bedarfsdeckung, Pufferspeicher, **Zweikanal**-Logik | 2026-08-29 | Codestand Juni 2026; die Engine rechnet seit Paket K1 die Dreikanalbilanz (Quellen/Senken) |
 | [`ueberholt/WPPlan_Code_Befunde.md`](ueberholt/WPPlan_Code_Befunde.md) | Code-Prüfung gegen das Stromspeicher-Konzept Rev. 2 | 2026-08-29 | Prüfstand vom 16.08.2026, Befunde abgearbeitet |
 
@@ -163,11 +165,10 @@ ihrem Ladeort hängen:
 | [`../README.md`](../README.md) | Startseite des Repositoriums auf GitHub |
 | [`../Referenzlaeufe/LIESMICH.md`](../Referenzlaeufe/LIESMICH.md) | beschreibt die Regressionsbasen im selben Ordner und wird bei jedem Einfrieren fortgeschrieben |
 | [`../Proben/Rasterprobe/LIESMICH.md`](../Proben/Rasterprobe/LIESMICH.md), [`../Werkzeuge/Formularkarte/LIESMICH.md`](../Werkzeuge/Formularkarte/LIESMICH.md), [`../Werkzeuge/SqlDialektPruefer/LIESMICH.md`](../Werkzeuge/SqlDialektPruefer/LIESMICH.md) | Bedienungsanleitung des Werkzeugs daneben; `Formularkarte.Tests` liest ihre Datei sogar als Prüfmuster |
-| [`../sql/LIESMICH.md`](../sql/LIESMICH.md), [`../sql/pv_katalog/LIESMICH.md`](../sql/pv_katalog/LIESMICH.md), [`../sqlite-probe/LIESMICH.md`](../sqlite-probe/LIESMICH.md) | erklären die Skripte, Schemadateien und Beispieldatenbanken ihres Ordners |
+| [`../sql/LIESMICH.md`](../sql/LIESMICH.md), [`../sql/pv_katalog/LIESMICH.md`](../sql/pv_katalog/LIESMICH.md) | erklären die Skripte und Schemadateien ihres Ordners |
 | [`../Setup/Vorlage/LIESMICH.md`](../Setup/Vorlage/LIESMICH.md) | einziger versionierter Inhalt des Vorlagenordners, auf den die `.gitignore` verweist |
 | [`../EPOS-Plan_Beispiele_Geruest/Beispiele/README.md`](../EPOS-Plan_Beispiele_Geruest/Beispiele/README.md), [`../EPOS-Plan_Beispiele_Geruest/Beispiele/_vorlage/text.md`](../EPOS-Plan_Beispiele_Geruest/Beispiele/_vorlage/text.md) | Kurzfassung und **Vorlage** des Beispiel-Gerüsts; `neues-beispiel.ps1` kopiert `text.md` |
 | [`../Lizenzserver/EINBAU-Lizenzserver.md`](../Lizenzserver/EINBAU-Lizenzserver.md) | Einbauanleitung neben der PHP-Quelle des WordPress-Plugins |
-| [`../WindowsFormsApplication1/Allgemein/vdi_3805_importer/README.md`](../WindowsFormsApplication1/Allgemein/vdi_3805_importer/README.md) | Anleitung des VDI-3805-Scrapers im Werkzeugordner |
 | [`../VDI-3805-Daten/PV/LIESMICH_CEC_Inverters.md`](../VDI-3805-Daten/PV/LIESMICH_CEC_Inverters.md), [`../VDI-3805-Daten/Stromspeicher/LIESMICH_bslib.md`](../VDI-3805-Daten/Stromspeicher/LIESMICH_bslib.md) | Beipackzettel der ausgelieferten Katalogdateien — `LIESMICH_bslib.md` wird von einem Test gelesen |
 | [`../Projekte/Speichersimulation/`](../Projekte/Speichersimulation/) (11 Dateien) | das Python-**Referenzpaket** als Ganzes: Referenzkern, Spezifikationsteile, Beispieldaten, docx. „Referenz, kein Werkzeug" (Wurzel-`CLAUDE.md`); die fünf Verweis-Stummel darin zeigen auf die maßgeblichen Fassungen hier |
 

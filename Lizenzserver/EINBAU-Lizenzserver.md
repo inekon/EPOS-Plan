@@ -6,7 +6,8 @@ Alle Änderungen sind **bereits in die Plugin-Quelle eingearbeitet** unter
 Zu tun bleibt: **hochladen und prüfen**.
 
 Getestet ist nichts davon — auf diesem Rechner steht kein PHP zum Prüfen zur
-Verfügung. Die Originale liegen als `*.original-2026-08-19` in diesem Ordner.
+Verfügung. Die Originale als `*.original-2026-08-19` sind mit #242 entfernt; Stand
+19.08.2026 in der Git-Geschichte.
 
 Geänderte und neue Dateien:
 
