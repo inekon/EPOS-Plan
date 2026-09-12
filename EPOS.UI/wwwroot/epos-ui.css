@@ -5676,9 +5676,17 @@ body {
    NICHT UEBERNOMMEN ist die FARBE der Werte: label_Name/_WBedarf/_Strom/
    _Komponenten standen in Color.FromArgb(128, 128, 255) - hell-violettblau,
    auf 249,250,252 sind das 3,12:1 und damit unter der Hausschwelle von 4,5:1.
-   Die Werte nehmen deshalb den Markenton --epos-marke (#005aa0, 6,9:1) - die
-   gleiche Aussage ("das kommt aus dem Projekt") in derselben Farbfamilie,
-   nur lesbar (W16b-E-5). */
+   W16b-E-5 gab ihnen dafuer den Markenton --epos-marke (#005aa0, 6,9:1).
+
+   SEIT AUFTRAG #233 STEHEN SIE IN DER GEWOEHNLICHEN TEXTFARBE. Der Anwender
+   hat den Reiter am 12.09.2026 an einem Bildschirmfoto zurueckgegeben
+   ("Groesse, Lesbarkeit"), und vier blaue Werte untereinander lasen sich darin
+   wie vier Verweise: BLAU IST IN DIESER OBERFLAECHE DIE VERWEISFARBE (.epos-
+   verweis, die Quellenangaben, der Titel einer Karte). Die Zusammenfassung
+   verweist aber nirgendwohin - sie sagt, was im Projekt steht. Beschriftung
+   leise grau, Wert in --epos-text: derselbe Aufbau wie jede andere
+   Wertetabelle der Oberflaeche, und der Kontrast steigt dabei von 6,77:1 auf
+   13,4:1. Der Kasten selbst wird im Bedienblock kompakter (siehe dort). */
 
 .epos-startzusammenfassung {
     padding: 12px;
@@ -5701,8 +5709,8 @@ body {
 
 .epos-startzusammenfassung-liste > dd {
     margin: 0;
-    font-weight: 700;
-    color: var(--epos-marke);
+    font-weight: 600;
+    color: var(--epos-text);
 }
 
 /* ---- Fussleiste -------------------------------------------------------- */
@@ -5745,31 +5753,42 @@ body {
    rechts nichts - eine leere halbe Seite, und die Kachel wechselte in die
    Ansicht (Anwenderbefund an drei Bildschirmfotos vom 11.09.2026).
 
-   minmax(0, ...) an BEIDEN Spalten: Ohne die Null als Mindestbreite nimmt eine
-   Rasterspalte die groesste unteilbare Breite ihres Inhalts (min-content), und
-   die Ergebnisseite fuehrt Tabellen und Bilder, die breiter sind als ein
-   Drittel Bildschirm - die linke Spalte waere dann aus dem Bild geschoben.
+   minmax(0, ...) an der RECHTEN Spalte: Ohne die Null als Mindestbreite nimmt
+   eine Rasterspalte die groesste unteilbare Breite ihres Inhalts (min-content),
+   und die Ergebnisseite fuehrt Tabellen und Bilder, die breiter sind als ihr
+   Anteil - die linke Spalte waere dann aus dem Bild geschoben.
 
-   UNTER 1100 px stehen die zwei Spalten UNTEREINANDER. Die Schwelle ist eine
-   andere als die 900 px von Zweispaltenauswahl und Katalograhmen: Dort stehen
-   zwei Eingabebloecke nebeneinander, hier eine Eingabespalte neben einer ganzen
-   Ergebnisseite mit neun Reiterblaettern.
+   LINKS EINE FESTE BREITE (Auftrag #233, Anwenderrueckmeldung 12.09.2026).
+   Bis dahin war die Aufteilung 1fr : 2fr, und die linke Spalte wuchs mit dem
+   Fenster: Auf einem breiten Schirm stand darin ein 600 px breiter
+   Zusammenfassungskasten ueber einem 355 px breiten Knopf ueber einer 190 px
+   breiten Kachel - drei Elemente in drei Breiten, genau der Befund. Ein
+   BEDIENBLOCK hat eine Breite: minmax(320px, 360px). Er waechst nicht mit,
+   weil nichts darin davon besser wuerde - der Platz gehoert dem Ergebnis.
 
-   OHNE DIENSTE gibt es keine rechte Spalte (--allein); dann bleibt die linke
-   ueber die ganze Breite - der Reiter sieht aus wie vor #220. */
+   UNTER 900 px stehen die zwei Spalten UNTEREINANDER, der Bedienblock oben.
+   Die Schwelle lag bis #233 bei 1100 px; seit der Block nur noch 360 statt
+   bis zu 500 px nimmt, bleibt daneben schon ab 900 px genug fuer die
+   Ergebnisseite - dieselbe Schwelle wie bei Zweispaltenauswahl und
+   Katalograhmen, also eine Schwelle weniger im Haus.
+
+   OHNE DIENSTE gibt es keine rechte Spalte (--allein); dann steht der
+   Bedienblock allein - in derselben Breite, nicht ueber das ganze Blatt
+   gezogen. */
 .epos-simreiter {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
     gap: 16px;
     align-items: start;
 }
 
 .epos-simreiter--allein {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(320px, 360px);
 }
 
-@media (max-width: 1100px) {
-    .epos-simreiter {
+@media (max-width: 900px) {
+    .epos-simreiter,
+    .epos-simreiter--allein {
         grid-template-columns: minmax(0, 1fr);
     }
 }
@@ -5782,10 +5801,81 @@ body {
     min-width: 0;
 }
 
-/* Die Kachel darf die schmale Spalte fuellen: Das feste Raster aus W16b-E-7
-   deckelt sie bei 404 px, eine Untergrenze traegt es nicht. */
-.epos-simreiter-links .epos-kachelraster {
+/* ---- Der Bedienblock (Auftrag #233) -----------------------------------
+
+   ALLES IN EINER BREITE. Die Spalte ist eine Flexsaeule; ihre Kinder stehen
+   auf stretch und fuellen sie damit von selbst. Die zwei Knoepfe sitzen aber
+   in Leisten (.epos-startreiter-leiste) bzw. tragen .epos-knopf mit
+   flex: 0 1 auto - die muessen es ausdruecklich gesagt bekommen. */
+
+/* Der Kasten wird im Block KOMPAKTER: weniger Innenabstand, engere Zeilen.
+   Er ist hier kein Blickfang mehr, sondern die Auskunft, gegen die man den
+   Lauf startet. */
+.epos-simreiter-links .epos-startzusammenfassung {
+    padding: 10px 12px;
+}
+
+.epos-simreiter-links .epos-startzusammenfassung-liste {
+    gap: 3px 12px;
+    margin-top: 6px;
+}
+
+/* Hauptknopf, Erlaeuterung und Sperrgrund sind EIN Block: Der Knopf traegt die
+   Aktion, die zwei Zeilen darunter gehoeren zu ihm und nicht zum naechsten
+   Element - deshalb 4 px Fuge hier und 12 px zum Rest der Spalte. */
+.epos-simreiter-start {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* DER HAUPTKNOPF. 44 px hoch (--epos-touchziel), Blockbreite, Kacheltitelgroesse
+   und die Hauptfarbe des Rechenknopfs der Ansicht (.epos-knopf--primaer, #216).
+   Er ist der einzige Knopf dieses Reiters, der etwas RECHNET; alles andere
+   fuehrt nur woandershin. */
+.epos-simreiter-hauptknopf {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
+    min-height: var(--epos-touchziel);
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700;
+}
+
+/* Das Dreieck ist ein Zeichen, kein Wort: aria-hidden im Markup, hier eine
+   Spur kleiner als die Beschriftung, damit es die Zeile nicht anhebt. */
+.epos-simreiter-pfeil {
+    font-size: 0.8em;
+    line-height: 1;
+}
+
+/* Die eine Zeile unter dem Knopf - was der Lauf tut. Sie ersetzt den
+   Kacheluntertitel, der in der schmalen Kachel dreimal umbrach. */
+.epos-simreiter-erklaerung {
+    margin: 0;
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-start-text-leise);
+}
+
+/* Der Sperrgrund - dieselbe leise Stufe, aber halbfett: Er sagt, warum der
+   Knopf darueber nicht geht, und muss deshalb gelesen werden. */
+.epos-simreiter-sperrgrund {
+    margin: 0;
+    font-weight: 600;
+    color: var(--epos-start-text-leise);
+}
+
+/* Der Zweitknopf fuellt den Block. Sein Inhalt (Sinnbild + Beschriftung) bleibt
+   mittig - linksbuendig saehe er in Blockbreite aus wie ein Listeneintrag. */
+.epos-simreiter-links .epos-startreiter-leiste {
+    display: flex;
+}
+
+.epos-simreiter-konfig {
+    flex: 1 1 auto;
+    justify-content: center;
 }
 
 /* Der Kopf der rechten Spalte traegt die Ueberschrift und "Ergebnis speichern" -
@@ -5805,15 +5895,45 @@ body {
     font-weight: 700;
 }
 
-/* "Noch kein Ergebnis - Simulation starten." Kein Kasten und keine Warnflaeche:
-   Es fehlt nichts, was der Anwender beheben muesste - er hat nur noch nicht
-   gerechnet (Regel W16b-E-6, dritte Stufe). */
+/* OHNE ERGEBNIS SIEHT ER AUCH GESPERRT AUS (Auftrag #233). Der Hausknopf
+   graut im Zustand disabled nur seine SCHRIFT ab - auf dem Bildschirmfoto des
+   Anwenders sah "Ergebnis speichern" deshalb aus wie ein bedienbarer Knopf
+   ueber einer leeren Flaeche. Dieselbe Behandlung wie die gesperrten Knoepfe
+   der Fussleiste: zurueck auf die leise Hausflaeche und den leisen Rahmen. */
+.epos-simreiter-speichern:disabled {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen-leise);
+}
+
+/* DER LEERZUSTAND ALS KARTE (Auftrag #233). Vorher war es eine Textzeile, die
+   quer durch eine rund 1 200 px breite Flaeche lief und unten nichts mehr
+   hatte, woran sie sich hielt. Jetzt ist es eine Karte in der Mitte: das
+   kleine Sinnbild der Simulation, darunter EIN Satz. Kein Warnbanner und keine
+   Warnflaeche - es fehlt nichts, was der Anwender beheben muesste; er hat nur
+   noch nicht gerechnet (Regel W16b-E-6, dritte Stufe). */
 .epos-simreiter-leer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     margin: 0;
-    padding: 24px 0;
+    padding: 32px 16px;
     text-align: center;
     font-weight: 600;
     color: var(--epos-start-text-leise);
+    background: var(--epos-start-zusammenfassung);
+    border: 1px solid var(--epos-start-kasten-rahmen);
+    border-radius: var(--epos-ecke);
+}
+
+/* Dasselbe Sinnbild wie die gefallene Kachel, nur halb so gross: Es soll die
+   Karte begleiten und nicht fuellen. */
+.epos-simreiter-leerbild {
+    zoom: 0.5;
+}
+
+.epos-simreiter-leertext {
+    margin: 0;
 }
 
 /* ==========================================================================

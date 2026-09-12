@@ -330,8 +330,10 @@ public class StartseiteAnmutungTests : EposBunitContext
     // Dieselben Erlaeuterungen im Zusammenfassungskasten.
     [InlineData("--epos-start-text-leise", "--epos-start-zusammenfassung")]
     // Die Werte der Zusammenfassung - statt Color.FromArgb(128,128,255), das
-    // dort nur 3,12:1 traegt.
-    [InlineData("--epos-marke", "--epos-start-zusammenfassung")]
+    // dort nur 3,12:1 traegt. Seit Auftrag #233 stehen sie nicht mehr im
+    // Markenton, sondern in der gewoehnlichen Textfarbe (blau ist in dieser
+    // Oberflaeche die VERWEISfarbe, und die Zusammenfassung verweist nirgendwohin).
+    [InlineData("--epos-text", "--epos-start-zusammenfassung")]
     // Die Reiterbeschriftung auf dem grauen Grund der Leiste.
     [InlineData("--epos-text", "--epos-start-leiste-flaeche")]
     // Gattung und Claim im Kopfband - statt Color.FromArgb(150,156,162) fuer
@@ -397,6 +399,103 @@ public class StartseiteAnmutungTests : EposBunitContext
             .Add(x => x.Kacheln, Array.Empty<StartKachel>()));
 
         Assert.NotNull(cut.Find(".epos-startreiter-leiste .epos-knopf"));
+    }
+
+    // =====================================================================
+    //  Auftrag #233 - der Bedienblock des Reiters "Simulation"
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Bedienblock hat EINE Breite</b> (Anwenderrückmeldung 12.09.2026):
+    /// 360 px, mindestens 320 — keine <c>1fr</c>, die mit dem Fenster wächst. Genau
+    /// daran lag der Befund: Auf einem breiten Schirm standen darin drei Elemente in
+    /// drei Breiten (600 / 355 / 190 px).
+    /// </summary>
+    [Fact]
+    public void Der_Bedienblock_hat_eine_feste_Breite()
+    {
+        string block = Stilblock(".epos-simreiter {");
+
+        Assert.Contains("grid-template-columns: minmax(320px, 360px) minmax(0, 1fr)", block);
+
+        // Auch ohne rechte Spalte behaelt er sie - er wird nicht ueber das Blatt
+        // gezogen.
+        Assert.Contains("grid-template-columns: minmax(320px, 360px)",
+                        Stilblock(".epos-simreiter--allein {"));
+    }
+
+    /// <summary>
+    /// Unter 900 px stehen die zwei Spalten untereinander — dieselbe Schwelle wie bei
+    /// Zweispaltenauswahl und Katalograhmen; bis #233 lag sie bei 1100 px, weil die
+    /// linke Spalte damals bis zu einem Drittel des Fensters nahm.
+    /// </summary>
+    [Fact]
+    public void Der_Reiter_bricht_unter_900_px_um()
+    {
+        string css = Stilblatt().Replace("\r\n", "\n");
+
+        Assert.Contains("@media (max-width: 900px) {\n"
+                        + "    .epos-simreiter,\n"
+                        + "    .epos-simreiter--allein {\n"
+                        + "        grid-template-columns: minmax(0, 1fr);\n",
+                        css);
+    }
+
+    /// <summary>
+    /// Der Hauptknopf füllt den Block, ist 44 px hoch (das Hausmaß
+    /// <c>--epos-touchziel</c>) und trägt die Kacheltitelgröße — er ersetzt eine
+    /// 185 px hohe Kachel und muss deshalb als Hauptsache lesbar sein.
+    /// </summary>
+    [Fact]
+    public void Der_Hauptknopf_fuellt_den_Block_und_haelt_das_Touchziel()
+    {
+        string knopf = Stilblock(".epos-simreiter-hauptknopf {");
+
+        Assert.Contains("width: 100%", knopf);
+        Assert.Contains("min-height: var(--epos-touchziel)", knopf);
+        Assert.Contains("font-size: var(--epos-schriftgroesse-kartentitel)", knopf);
+    }
+
+    /// <summary>
+    /// Die Werte der Projektzusammenfassung stehen in der gewöhnlichen Textfarbe —
+    /// nicht im Markenton: Blau ist in dieser Oberfläche die VERWEISfarbe, und vier
+    /// blaue Werte untereinander lasen sich wie vier Verweise (#233).
+    /// </summary>
+    [Fact]
+    public void Die_Werte_der_Zusammenfassung_sind_nicht_blau()
+    {
+        string wert = Stilblock(".epos-startzusammenfassung-liste > dd {");
+
+        Assert.Contains("color: var(--epos-text)", wert);
+        Assert.DoesNotContain("--epos-marke", wert);
+    }
+
+    /// <summary>
+    /// Der Leerzustand der rechten Spalte ist eine KARTE (Fläche, Rahmen, Rundung) und
+    /// keine Textzeile mehr, die quer durch eine 1 200 px breite Fläche läuft.
+    /// </summary>
+    [Fact]
+    public void Der_Leerzustand_ist_eine_Karte()
+    {
+        string karte = Stilblock(".epos-simreiter-leer {");
+
+        Assert.Contains("background: var(--epos-start-zusammenfassung)", karte);
+        Assert.Contains("border: 1px solid var(--epos-start-kasten-rahmen)", karte);
+        Assert.Contains("border-radius: var(--epos-ecke)", karte);
+    }
+
+    /// <summary>
+    /// Und „Ergebnis speichern" sieht ohne Ergebnis auch gesperrt aus: Der Hausknopf
+    /// graut im Zustand <c>disabled</c> nur seine Schrift ab — hier fällt er wie die
+    /// gesperrten Knöpfe der Fußleiste auf die leise Hausfläche zurück.
+    /// </summary>
+    [Fact]
+    public void Ergebnis_speichern_sieht_gesperrt_auch_gesperrt_aus()
+    {
+        string gesperrt = Stilblock(".epos-simreiter-speichern:disabled {");
+
+        Assert.Contains("background: var(--epos-flaeche)", gesperrt);
+        Assert.Contains("border-color: var(--epos-rahmen-leise)", gesperrt);
     }
 
     // =====================================================================

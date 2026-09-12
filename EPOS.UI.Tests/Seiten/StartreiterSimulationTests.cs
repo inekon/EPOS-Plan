@@ -33,6 +33,16 @@ namespace EPOS.UI.Tests.Seiten;
 /// zurück (Marke mit Wirtkennung <c>wirt=START</c>). (5) Ein Lauf zur Zeit: Ansicht
 /// und Reiter sperren sich über die gemeinsame <see cref="SimulationLaufsperre"/>.</para>
 ///
+/// <para><b>SEIT AUFTRAG #233</b> (Anwenderrückmeldung 12.09.2026, Bildschirmfoto)
+/// ist die linke Spalte ein BEDIENBLOCK fester Breite: Die Kachel „Simulation
+/// starten" ist ein Hauptknopf in Blockbreite geworden
+/// (<c>.epos-simreiter-hauptknopf</c>), ihre Erläuterung eine leise Zeile darunter,
+/// der Sperrgrund eine zweite (<c>.epos-simreiter-sperrgrund</c>) statt eines
+/// Warnbanners am Fuß der Spalte; rechts ist aus der einsamen Hinweiszeile eine
+/// Karte geworden, und „Ergebnis speichern" nennt seinen Sperrgrund im
+/// <c>title</c>. Der WEG bleibt in allem derselbe — geprüft wird hier die
+/// Bedienung, nicht die Bauform.</para>
+///
 /// <para>Die Kultur ist auf de-DE gepinnt (Hausregel seit iU9‑W8). Die Fälle laufen in
 /// der SERIELLEN Sammlung <c>KiDialogweg</c>: Sie tauschen <c>Dienste.Navigation</c>
 /// und zeichnen eine <c>AppWurzel</c>, und beides ist prozessweiter Zustand.</para>
@@ -91,7 +101,8 @@ public class StartreiterSimulationTests : EposBunitContext
         {
             Schluessel = Kachelschluessel.SimulationErgebnis,
             Reiter = Reiterschluessel.Simulation,
-            Titel = WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T
+            Titel = WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T,
+            Beschreibung = WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_B
         }
     };
 
@@ -175,9 +186,12 @@ public class StartreiterSimulationTests : EposBunitContext
     private static void ReiterSimulation(IRenderedComponent<Startseite> cut)
         => cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[4].Click();
 
-    /// <summary>Die eine Bildkachel des Reiters — „Simulation starten".</summary>
-    private static IElement Kachel(IRenderedComponent<Startseite> cut)
-        => cut.Find(".epos-simreiter-links .epos-kachel");
+    /// <summary>
+    /// Der HAUPTKNOPF des Bedienblocks — „Simulation starten" (seit #233; bis dahin
+    /// die einzige Bildkachel des Reiters).
+    /// </summary>
+    private static IElement Hauptknopf(IRenderedComponent<Startseite> cut)
+        => cut.Find(".epos-simreiter-links .epos-simreiter-hauptknopf");
 
     private static IElement Speichern(IRenderedComponent<Startseite> cut)
         => cut.Find("button.epos-simreiter-speichern");
@@ -187,16 +201,16 @@ public class StartreiterSimulationTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// <b>SIM‑E‑2, Punkt 1:</b> Der Klick auf die Kachel startet den Lauf IM REITER —
-    /// der Laufdelegat wird gerufen, und es wird keine Ansicht gewechselt.
+    /// <b>SIM‑E‑2, Punkt 1:</b> Der Klick auf den Hauptknopf startet den Lauf IM
+    /// REITER — der Laufdelegat wird gerufen, und es wird keine Ansicht gewechselt.
     /// </summary>
     [Fact]
-    public void Die_Kachel_startet_den_Lauf_im_Reiter_ohne_Ansichtswechsel()
+    public void Der_Hauptknopf_startet_den_Lauf_im_Reiter_ohne_Ansichtswechsel()
     {
         var cut = Zeigen(Dienste());
         ReiterSimulation(cut);
 
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
 
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
         Assert.Empty(Navigation.Masken);
@@ -204,23 +218,42 @@ public class StartreiterSimulationTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der SPERRGRUND steht AN der Kachel und als Hinweis darunter (die weiche Hälfte
-    /// der Regel W16b‑E‑6) — und die Kachel rechnet dann nicht.
+    /// Der SPERRGRUND sperrt den Hauptknopf, steht in seinem <c>title</c> und als
+    /// ZEILE darunter (Auftrag #233; bis dahin an der Kachel und in einem Warnbanner
+    /// am Fuß der Spalte — dasselbe zweimal). Die weiche Hälfte der Regel
+    /// W16b‑E‑6 bleibt: Der Grund steht da, wo der gesperrte Knopf steht.
     /// </summary>
     [Fact]
-    public void Ein_Sperrgrund_steht_an_der_Kachel_und_als_Hinweis_darunter()
+    public void Ein_Sperrgrund_sperrt_den_Hauptknopf_und_steht_als_Zeile_darunter()
     {
         const string grund = "Die Datenbank ist blockiert.";
         var cut = Zeigen(Dienste(sperrgrund: grund));
         ReiterSimulation(cut);
 
-        Assert.True(Kachel(cut).HasAttribute("disabled"));
-        Assert.Contains(grund, Kachel(cut).TextContent);
-        Assert.Contains(grund,
-                        cut.Find(".epos-simreiter-links .epos-warnbanner").TextContent);
+        Assert.True(Hauptknopf(cut).HasAttribute("disabled"));
+        Assert.Equal(grund, Hauptknopf(cut).GetAttribute("title"));
+        Assert.Equal(grund, cut.Find(".epos-simreiter-sperrgrund").TextContent.Trim());
 
-        Kachel(cut).Click();
+        // Das Banner am Fuss der Spalte ist damit fort.
+        Assert.Empty(cut.FindAll(".epos-simreiter-links .epos-warnbanner"));
+
+        Hauptknopf(cut).Click();
         Assert.Equal(0, _laeufe);
+    }
+
+    /// <summary>
+    /// OHNE Sperrgrund steht weder die Zeile noch ein <c>title</c> am Knopf — ein
+    /// leerer Sprechblasentext ist schlimmer als keiner.
+    /// </summary>
+    [Fact]
+    public void Ohne_Sperrgrund_steht_weder_Zeile_noch_Sprechblase()
+    {
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        Assert.False(Hauptknopf(cut).HasAttribute("disabled"));
+        Assert.False(Hauptknopf(cut).HasAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-simreiter-sperrgrund"));
     }
 
     /// <summary>
@@ -234,7 +267,7 @@ public class StartreiterSimulationTests : EposBunitContext
         var cut = Zeigen(Dienste());
         ReiterSimulation(cut);
 
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-fortschritt")));
@@ -254,14 +287,25 @@ public class StartreiterSimulationTests : EposBunitContext
     /// <summary>
     /// <b>SIM‑E‑2, Punkt 2:</b> Ohne gerechneten Lauf steht rechts ein HINWEIS statt
     /// einer Leerfläche — und die Ergebniskomponente ist noch gar nicht aufgebaut.
+    ///
+    /// <para>Seit Auftrag <b>#233</b> ist der Hinweis eine KARTE mit kleinem Sinnbild
+    /// und einem Satz, keine einsame Textzeile in einer 1 200 px breiten Fläche.</para>
     /// </summary>
     [Fact]
-    public void Ohne_Ergebnis_steht_rechts_der_Hinweis_und_keine_Ergebnisseite()
+    public void Ohne_Ergebnis_steht_rechts_die_Leerkarte_und_keine_Ergebnisseite()
     {
         var cut = Zeigen(Dienste());
         ReiterSimulation(cut);
 
-        Assert.Contains("Noch kein Ergebnis", cut.Find(".epos-simreiter-leer").TextContent);
+        IElement karte = cut.Find(".epos-simreiter-rechts .epos-simreiter-leer");
+        Assert.Contains("Noch kein Ergebnis", karte.TextContent);
+        Assert.Single(cut.FindAll(".epos-simreiter-leer .epos-simreiter-leertext"));
+
+        // Das Sinnbild der gefallenen Kachel traegt jetzt die Karte.
+        IElement bild = cut.Find(".epos-simreiter-leer img");
+        Assert.Equal("_content/EPOS.UI/bilder/start/PDetailSim.jpg", bild.GetAttribute("src"));
+        Assert.Contains("epos-simreiter-leerbild", bild.ClassName);
+
         Assert.Empty(cut.FindAll(".epos-simerg"));
     }
 
@@ -275,7 +319,7 @@ public class StartreiterSimulationTests : EposBunitContext
         var cut = Zeigen(Dienste());
         ReiterSimulation(cut);
 
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
 
         cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
@@ -299,7 +343,12 @@ public class StartreiterSimulationTests : EposBunitContext
         Assert.Equal("Ergebnis speichern", Speichern(cut).TextContent.Trim());
         Assert.True(Speichern(cut).HasAttribute("disabled"));
 
-        Kachel(cut).Click();
+        // Und er sagt WARUM (Auftrag #233) - vorher stand er stumm ueber einer
+        // leeren Flaeche und sah aus wie ein bedienbarer Knopf.
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.START_SIM_KEIN_ERGEBNIS,
+                     Speichern(cut).GetAttribute("title"));
+
+        Hauptknopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
 
         // Waehrend des Laufs bleibt er gesperrt.
@@ -307,6 +356,9 @@ public class StartreiterSimulationTests : EposBunitContext
 
         cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
         cut.WaitForAssertion(() => Assert.False(Speichern(cut).HasAttribute("disabled")));
+
+        // Frei heisst auch: keine Sprechblase mehr.
+        Assert.False(Speichern(cut).HasAttribute("title"));
 
         Speichern(cut).Click();
         Assert.Equal(1, _gespeichert);
@@ -329,7 +381,7 @@ public class StartreiterSimulationTests : EposBunitContext
         Assert.Equal("", cut.Instance.AktuelleMarke);
 
         ReiterSimulation(cut);
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
         cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-simreiter-rechts .epos-simerg")));
@@ -438,7 +490,7 @@ public class StartreiterSimulationTests : EposBunitContext
 
         var reiter = Zeigen(Dienste(sperre: sperre));
         ReiterSimulation(reiter);
-        Kachel(reiter).Click();
+        Hauptknopf(reiter).Click();
         reiter.WaitForAssertion(() => Assert.Equal(1, _laeufe));
 
         // DIESELBE Sperre in einem zweiten Parametersatz - genau das tut
@@ -459,11 +511,11 @@ public class StartreiterSimulationTests : EposBunitContext
     }
 
     /// <summary>
-    /// Und umgekehrt: Hält ein FREMDER Wirt die Sperre, ist die Kachel des Reiters
-    /// gesperrt und nennt den Grund.
+    /// Und umgekehrt: Hält ein FREMDER Wirt die Sperre, ist der Hauptknopf des
+    /// Reiters gesperrt und nennt den Grund.
     /// </summary>
     [Fact]
-    public void Ein_fremder_Lauf_sperrt_die_Kachel_des_Reiters()
+    public void Ein_fremder_Lauf_sperrt_den_Hauptknopf_des_Reiters()
     {
         var sperre = new SimulationLaufsperre();
         Assert.True(sperre.Anmelden(new object()));
@@ -471,11 +523,11 @@ public class StartreiterSimulationTests : EposBunitContext
         var cut = Zeigen(Dienste(sperre: sperre));
         ReiterSimulation(cut);
 
-        Assert.True(Kachel(cut).HasAttribute("disabled"));
+        Assert.True(Hauptknopf(cut).HasAttribute("disabled"));
         Assert.Contains("an anderer Stelle",
-                        cut.Find(".epos-simreiter-links .epos-warnbanner").TextContent);
+                        cut.Find(".epos-simreiter-sperrgrund").TextContent);
 
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
         Assert.Equal(0, _laeufe);
     }
 
@@ -508,7 +560,7 @@ public class StartreiterSimulationTests : EposBunitContext
 
         // Die rechte Spalte steht - also sind die Dienste angekommen.
         cut.WaitForElement(".epos-simreiter-rechts");
-        cut.Find(".epos-simreiter-links .epos-kachel").Click();
+        cut.Find(".epos-simreiter-links .epos-simreiter-hauptknopf").Click();
 
         cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
         Assert.Empty(Navigation.Masken);
@@ -519,7 +571,7 @@ public class StartreiterSimulationTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Ohne Parametersatz gibt es keine rechte Spalte, und die Kachel meldet ihren
+    /// Ohne Parametersatz gibt es keine rechte Spalte, und der Hauptknopf meldet seinen
     /// Schlüssel wie vor #220 — der Fall „kein Projekt offen" und der Fall eines
     /// Prüfstands. Dieselbe Hausregel wie überall: kein Delegat, keine Bedienung.
     /// </summary>
@@ -532,10 +584,92 @@ public class StartreiterSimulationTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-simreiter-rechts"));
         Assert.Single(cut.FindAll(".epos-simreiter--allein"));
 
-        Kachel(cut).Click();
+        Hauptknopf(cut).Click();
 
         Assert.Equal(0, _laeufe);
         Assert.Equal(new[] { Masken.Simulation }, Navigation.Masken);
         Assert.Equal(SimulationMarke.SCHRITT_LAUF, Navigation.LetzteArgumente[0]);
+    }
+
+    // =====================================================================
+    //  Auftrag #233 - der Bedienblock statt des Kachelrasters
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Regel des Auftrags:</b> Ein Kachelraster gehört in einen Reiter mit DREI
+    /// Spalten (W16b‑E‑7); dieser Reiter hat zwei und zeichnet deshalb einen
+    /// BEDIENBLOCK. Weder Raster noch Kachel stehen noch darin.
+    /// </summary>
+    [Fact]
+    public void Der_Reiter_zeichnet_kein_Kachelraster_mehr()
+    {
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        Assert.Empty(cut.FindAll(".epos-simreiter-links .epos-kachelraster"));
+        Assert.Empty(cut.FindAll(".epos-simreiter-links .epos-kachel"));
+        Assert.Single(cut.FindAll(".epos-simreiter-links .epos-simreiter-hauptknopf"));
+    }
+
+    /// <summary>
+    /// DIE TEXTE BLEIBEN DIE DER KACHEL: Beschriftung und Erläuterung des Hauptknopfes
+    /// kommen weiter aus dem Kachelregister der Hülle — nur die Bauform ist eine
+    /// andere. Deshalb fällt auch kein Kachelschlüssel weg.
+    /// </summary>
+    [Fact]
+    public void Der_Hauptknopf_traegt_Titel_und_Erlaeuterung_des_Kachelregisters()
+    {
+        var cut = Render<SimulationReiter>(p => p
+            .Add(x => x.Kacheln, new[]
+            {
+                new StartKachel
+                {
+                    Schluessel = Kachelschluessel.SimulationErgebnis,
+                    Reiter = Reiterschluessel.Simulation,
+                    Titel = "Simulation starten",
+                    Beschreibung = "Präzise Jahressimulation mit allen Details"
+                }
+            }));
+
+        Assert.Contains("Simulation starten",
+                        cut.Find(".epos-simreiter-hauptknopf").TextContent);
+        Assert.Equal("Präzise Jahressimulation mit allen Details",
+                     cut.Find(".epos-simreiter-erklaerung").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Und ohne Kachelregister — ein Prüfstand, eine Plattform ohne Hülle — stehen die
+    /// Texte aus den Ressourcen: Der Block ist die Bauform des Reiters und hängt nicht
+    /// daran, ob jemand ihm Kacheln reicht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Kachelregister_stehen_die_Texte_aus_den_Ressourcen()
+    {
+        var cut = Render<SimulationReiter>(p => p
+            .Add(x => x.Kacheln, Array.Empty<StartKachel>()));
+
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T,
+                        cut.Find(".epos-simreiter-hauptknopf").TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_B,
+                     cut.Find(".epos-simreiter-erklaerung").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Der ZWEITKNOPF geht unverändert seinen Weg: Er meldet den Schlüssel
+    /// <c>SIMULATION_KONFIGURATION</c> nach oben (die Startseite wechselt damit in die
+    /// Ansicht, Schritt ①). Geändert hat sich allein seine Breite.
+    /// </summary>
+    [Fact]
+    public void Der_Zweitknopf_meldet_weiter_den_Konfigurationsschluessel()
+    {
+        List<string> gemeldet = new List<string>();
+
+        var cut = Render<SimulationReiter>(p => p
+            .Add(x => x.Kacheln, Kacheln())
+            .Add(x => x.Geklickt, (string s) => gemeldet.Add(s)));
+
+        cut.Find(".epos-startreiter-leiste .epos-simreiter-konfig").Click();
+
+        Assert.Equal(new[] { Kachelschluessel.SimulationKonfiguration }, gemeldet);
     }
 }

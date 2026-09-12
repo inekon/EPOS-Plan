@@ -103,6 +103,24 @@ entgegen — sie ist damit austauschbar.
   färbte sechzig Dialoge mit um. **Die Regel gilt allgemein:** Meint ein Vorbild nur EINE
   Seite, bekommt sie ein sprechendes eigenes Token — ein gemeinsames wird nicht gekippt.
   Wache: `Seiten/StartseiteAnmutungTests`.
+- **Ein Kachelraster gehört in einen Reiter mit DREI Spalten; ein Zweispalten-Reiter
+  bekommt einen BEDIENBLOCK** (Anwenderrückmeldung 12.09.2026, Auftrag **#233**). Das feste
+  Raster aus W16b‑E‑7 ist auf drei Spalten zu 404 px gebaut. Steht es in einer schmalen
+  Spalte, hat es nichts, woran es sich ausrichtet: Die einzelne Kachel wird zum Streifen, ihr
+  84-px-Sinnbild nimmt die halbe Breite, und der Untertitel bricht dreimal um — genau der
+  Befund am Reiter „Simulation“ (drei Elemente in drei Breiten: Kasten 600 px, Knopf 355 px,
+  Kachel 190 px). **Der Bedienblock ist die Gegenform:** EINE feste Breite
+  (`minmax(320px, 360px)`, sie wächst nicht mit — der Platz gehört der rechten Spalte), alles
+  darin von Rand zu Rand, der Rang durch die Bauform: **ein** Hauptknopf in der Hauptfarbe
+  (`epos-knopf--primaer`, 44 px) mit einer leisen Erklärzeile darunter, darunter die neutralen
+  Zweitknöpfe, darunter Fortschritt und Sperrgründe. **Die Kachel fällt dabei nur als
+  BAUFORM:** Beschriftung und Erläuterung kommen weiter aus dem Kachelregister
+  (`StartKachel`, `Kachelschluessel`, `Kachelbilder`), es verschwindet kein Schlüssel und kein
+  Bild — sonst brächen Hilfeschlüssel, Startfragen und `KiDialogKatalog`. Umgekehrt gilt:
+  **Ein gesperrter Knopf muss gesperrt AUSSEHEN** — `.epos-knopf:disabled` graut nur die
+  Schrift ab; wo ein Knopf allein auf einer Fläche steht („Ergebnis speichern“ ohne
+  Ergebnis), gehört die leise Hausfläche dazu und ein `title` mit dem Grund. Wachen:
+  `Seiten/StartreiterSimulationTests`, `Seiten/StartseiteAnmutungTests`.
 - **Jede neue Schrift-auf-Fläche-Paarung hält 4,5:1.** Drei Farben des Vorläufers sind
   deshalb bewusst NICHT übernommen (weiß auf `#6876df` bei kleiner Schrift 3,76:1, die
   Zusammenfassungswerte in 128,128,255 auf `#f9fafc` 3,12:1, die Versionsfarbe 150,156,162
@@ -477,7 +495,7 @@ entgegen — sie ist damit austauschbar.
 | `Zeilenraster` | Spaltenkopf, Bearbeitungszeilen, Abschlusszeile, Summenfuß — CSS-Raster mit `display:contents` | `Views/Kosten/Form_KostenKomponente` (pnlRasterKopf + pnlZeilen + pnlFuss) |
 | `Mehrfachauswahl` | Liste mit Haken samt „Alle"/„Keine" | `CheckedListBox` (`Form_Energietraeger.KatalogUebernahme`) |
 | `Reiter` + `Reiterblatt` | Reiterleiste; die Blätter melden sich selbst an, ein ungewähltes wird **gar nicht** gezeichnet (`role="tablist"/"tab"/"tabpanel"`, ←/→, Pos1/Ende, 44 px). Seit iU9‑W16b (**W16b‑E‑6**) **zwei Bauarten der Sperre**: `Bedienbar="false"` sperrt HART (`<button disabled>`, der Stand seit W5.0); nennt das Blatt dazu einen **`Sperrgrund`**, sperrt es WEICH — der Knopf bleibt ein Knopf, trägt `aria-disabled` und den Grund als `title`, und der Versuch meldet sich beim Wirt als **`Verweigert`**. Die Pfeiltasten überspringen beide gleichermaßen | die 21 `TabControl` mit 74 `TabPage` |
-| `Kachelraster` | Reihe gleich breiter Karten, `auto-fit`/`minmax` statt gerechneter Prozentspalten; mit `Hoechstbreite` (W16b‑E‑7, 05.09.2026) drei feste Spalten von höchstens `--epos-kachel-max`, linksbündig, ohne Mitwachsen — die Startreiter setzen 404 | `UcBkKosten.pnlKacheln`, `UcWirtschaftlichkeit.KachelnBauen` |
+| `Kachelraster` | Reihe gleich breiter Karten, `auto-fit`/`minmax` statt gerechneter Prozentspalten; mit `Hoechstbreite` (W16b‑E‑7, 05.09.2026) drei feste Spalten von höchstens `--epos-kachel-max`, linksbündig, ohne Mitwachsen — die Startreiter setzen 404. **Nur in einem Reiter, der drei Spalten hat** (#233): In einer schmalen Spalte wird die einzelne Kachel zum Streifen, dort steht ein Bedienblock (siehe Regeln) | `UcBkKosten.pnlKacheln`, `UcWirtschaftlichkeit.KachelnBauen` |
 | `Kennzahlkachel` | Überschrift, großer Wert, leise Herkunftszeile — **Anzeige, kein Knopf**; leerer Wert = „—" | `UcBkKosten.Kachel` |
 | `Bildkarte` | Anklickbare Landkarte: ein Bild plus benannte SVG-Flächen darüber (Zeigen, Wählen, Übernehmen per Doppelklick) — **mit Tastatur**, jede Fläche ein Fokusziel | `Allgemein/GrafikTools/KlimazonenKarte.cs` (Regex über eine eingebettete SVG, iU9‑W10a.0e) |
 | `Fortschritt` | Balken, Text und Abbrechen einer laufenden Rechnung. `Anteil = null` heißt **unbestimmt** (der Balken läuft) — ehrlicher als eine erfundene Prozentzahl; **ohne `Abbrechen`-Rückruf kein Knopf** (iU9‑W11a.7) | `Views/Stromspeicher/Form_SpeicherOptimierung.cs` (`bar_Fortschritt`, `lbl_Status`, `btn_Abbruch` — die einzige nebenläufige Rechnung des Bestands) |

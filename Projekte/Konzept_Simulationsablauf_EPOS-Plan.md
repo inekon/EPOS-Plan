@@ -669,3 +669,43 @@ Ansicht. Dieselbe Hausregel wie überall: kein Delegat, keine Bedienung.
 Rechenweg, Kern-Controller, die Reiterinhalte des Ergebnisses, die Ansicht `SIMULATION`
 selbst (außer der gemeinsamen Laufsteuerung), die Pille aus #221 (außer der Kontextmeldung)
 und die Auslegungsansicht. Der Referenzlauf 1030 und 1046 bleibt **byte-gleich** gegen R7.
+
+### 9.8 Darstellung nach Anwenderrückmeldung 12.09.2026 (Auftrag #233)
+
+Der Anwender hat den Reiter nach #220 ein zweites Mal zurückgegeben, diesmal zur
+DARSTELLUNG: „das Layout ist nicht gut/stimmt nicht — Größe, Lesbarkeit." Auf dem
+Bildschirmfoto standen links **drei Elemente in drei Breiten** — der Zusammenfassungskasten
+rund 600 px (mit blauen Werten), darunter der graue Knopf „Simulation Konfiguration…"
+355 px, darunter die 190 px schmale Startseiten-KACHEL „Simulation starten" mit
+84-px-Sinnbild und dreizeilig umgebrochenem Untertitel —, rechts eine leere Fläche mit
+einem „Ergebnis speichern", das bedienbar aussah, und einer einsamen Hinweiszeile.
+
+**Die Ursache ist das Kachelmuster am falschen Ort.** Das feste Raster aus W16b‑E‑7 ist auf
+drei Spalten zu 404 px gebaut; in einer schmalen Spalte hat es keine zweite Spalte, an der es
+sich ausrichten könnte. Daraus wurde die Hausregel (`EPOS.UI/CLAUDE.md`): **Kachelraster nur
+in einem Reiter mit drei Spalten; ein Zweispalten-Reiter bekommt einen Bedienblock.**
+
+| | seit #220 | seit #233 |
+|---|---|---|
+| linke Spalte | `1fr` — wächst mit dem Fenster | **Bedienblock fester Breite** `minmax(320px, 360px)`, alles darin von Rand zu Rand |
+| „Simulation starten" | Bildkachel im Kachelraster | **Hauptknopf** in Blockbreite, 44 px, `epos-knopf--primaer` wie der Rechenknopf der Ansicht (#216), mit ▶ |
+| Kacheluntertitel | dreizeilig in der Kachel | **eine leise Zeile** unter dem Knopf |
+| Sperrgrund | Statuszeile an der Kachel **und** Warnbanner am Fuß | **eine Zeile unter dem Hauptknopf** und dessen `title` — einmal statt zweimal |
+| „Simulation Konfiguration…" | 355 px breiter Knopf mit Sinnbild | derselbe Knopf, **in Blockbreite** (das Sinnbild bleibt, W16b‑E‑3) |
+| Werte der Zusammenfassung | Markenton `--epos-marke` (blau) | **`--epos-text`** — blau ist in dieser Oberfläche die Verweisfarbe, und die Zusammenfassung verweist nirgendwohin |
+| „Ergebnis speichern" ohne Ergebnis | `disabled`, sah aber bedienbar aus | `disabled` **auf der leisen Hausfläche**, `title` nennt den Grund |
+| Leerzustand rechts | eine Textzeile quer durch die Fläche | **ruhige Karte** mittig: kleines Sinnbild, ein Satz |
+| Umbruch | unter 1100 px untereinander | **unter 900 px** — dieselbe Schwelle wie `Zweispaltenauswahl` und `Katalograhmen` |
+
+**Was NICHT fällt:** kein Kachelschlüssel und kein Kachelbild. Beschriftung und Erläuterung
+des Hauptknopfes kommen weiter aus dem Kachelregister der Hülle (`START_K_DETAILSIM_T` /
+`_B` über `StartseiteHuelle`), das Bild `PDetailSim.jpg` trägt jetzt die Leerzustandskarte,
+und Hilfeschlüssel, Startfragen und `KiDialogKatalog` bleiben unberührt. Es ändert sich die
+BAUFORM, nicht der Weg: derselbe Schlüssel, dieselbe Sperrprüfung, derselbe Lauf, dieselbe
+Marke, derselbe Rückfall ohne Dienste. Der Reiter läuft unverändert auch in der iOS-Wurzel;
+eine Hüllenänderung war nicht nötig.
+
+Berührt sind `EPOS.UI/Seiten/Start/SimulationReiter.razor` und die Klassen `epos-simreiter*`
+in `EPOS.UI/wwwroot/epos-ui.css`; Wachen sind
+`EPOS.UI.Tests/Seiten/StartreiterSimulationTests` (Bedienung) und
+`…/StartseiteAnmutungTests` (Stilblatt).
