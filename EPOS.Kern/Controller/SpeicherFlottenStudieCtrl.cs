@@ -37,7 +37,7 @@ public sealed class SpeicherFlottenErgebnis
 /// Keine Datenbank im Kandidatenlauf; Preise werden hier genau einmal ct → EUR gewandelt.
 /// Fachgrundlage: Projekte/Speichersimulation/Spezifikation.md, Kapitel 4–9 und 13.
 /// </summary>
-public static class SpeicherFlottenStudieCtrl
+public static partial class SpeicherFlottenStudieCtrl
 {
     public static SpeicherOptimierungVorgaben Vorbelegung(int projektId, double peak, SimulationControl sim = null)
     {

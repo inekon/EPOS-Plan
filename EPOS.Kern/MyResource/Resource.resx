@@ -17607,6 +17607,111 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_GROESSEN_ACHSE_LEISTUNG" xml:space="preserve">
     <value>Entladeleistung [kW]</value>
   </data>
+  <data name="FLOTTE_STUECK_TITEL" xml:space="preserve">
+    <value>Kapitalwert über Stückzahl</value>
+  </data>
+  <data name="FLOTTE_STUECK_ACHSE" xml:space="preserve">
+    <value>Stückzahl [Stück]</value>
+  </data>
+  <data name="FLOTTE_STUECK_ACHSE_EINHEIT" xml:space="preserve">
+    <value>Stückzahl {0}</value>
+  </data>
+  <data name="FLOTTE_STUECK_RASTER_TITEL" xml:space="preserve">
+    <value>Kapitalwert über die Stückzahlen zweier Einheiten</value>
+  </data>
+  <data name="FLOTTE_STUECK_BILD_ALT" xml:space="preserve">
+    <value>Kapitalwert über der Stückzahl, je Stückzahl eine Säule; die beste ist hervorgehoben</value>
+  </data>
+  <data name="FLOTTE_STUECK_RASTER_ALT" xml:space="preserve">
+    <value>Rasterkarte der Stückzahlen zweier Einheiten; unzulässige Punkte schraffiert</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_KEIN_PROJEKT" xml:space="preserve">
+    <value>Ohne offenes Projekt lassen sich keine Speicheranlagen anlegen.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_KEINE_EINHEIT" xml:space="preserve">
+    <value>Es ist keine Einheit ausgewählt.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
+    <value>Die Übernahme ist fehlgeschlagen; es wurde nichts geschrieben: {0}</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
+    <value>Größe suchen</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_STUECKZAHL" xml:space="preserve">
+    <value>Stückzahl suchen</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_BEWERTEN_ERL" xml:space="preserve">
+    <value>Rechnet die Flotte aus Schritt 1 genau einmal — nichts wird variiert.</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
+    <value>Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest.</value>
+  </data>
+  <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
+    <value>Lässt jede Einheit so groß, wie sie eingestellt ist, und variiert, wie viele davon stehen (0 = Einheit entfällt). Die Kosten sind die Kosten einer Einheit mal Stückzahl.</value>
+  </data>
+  <data name="FLOTTE_OPT_ABHILFE" xml:space="preserve">
+    <value>Auf einer Einheitenkarte „variieren“ einschalten — ohne sie gibt es nichts zu suchen.</value>
+  </data>
+  <data name="FLOTTE_OPT_BEWERTEN_HINWEIS" xml:space="preserve">
+    <value>Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_KENNDATEN" xml:space="preserve">
+    <value>{0} kWh · {1} kW · {2} Stück</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_KANDIDATEN" xml:space="preserve">
+    <value>Kandidaten dieser Einheit:</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST" xml:space="preserve">
+    <value>fest:</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST_GROESSE" xml:space="preserve">
+    <value>Die Größe aus Schritt 1 bleibt stehen; variiert wird nur die Stückzahl.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_FEST_STUECK" xml:space="preserve">
+    <value>Die Stückzahl bleibt stehen; variiert wird nur die Größe.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_AUS" xml:space="preserve">
+    <value>Diese Einheit geht unverändert in jeden Kandidaten ein.</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_GROESSEN" xml:space="preserve">
+    <value>Größenbereich dieser Einheit</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_STUECKZAHL" xml:space="preserve">
+    <value>Stückzahl dieser Einheit</value>
+  </data>
+  <data name="FLOTTE_OPT_KARTE_HERLEITUNG" xml:space="preserve">
+    <value>= {0} – {1} kWh · {2} – {3} kW</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_BESTUECKUNG" xml:space="preserve">
+    <value>Bestückung</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_STUECK" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="FLOTTE_OPT_BEST_SUMME" xml:space="preserve">
+    <value>= {0} kWh · {1} kW</value>
+  </data>
+  <data name="FLOTTE_ED_AUSWAHL_ARIA" xml:space="preserve">
+    <value>{0} für die Übernahme ins Projekt auswählen</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME" xml:space="preserve">
+    <value>Ausgewählte Einheiten in Projekt übernehmen</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_TITEL" xml:space="preserve">
+    <value>Einheiten in das Projekt übernehmen</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_FRAGE" xml:space="preserve">
+    <value>{0} Speicheranlagen werden angelegt, {1} geändert — fortfahren?</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_KEINE" xml:space="preserve">
+    <value>Zuerst eine Einheit auswählen.</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_GESPERRT" xml:space="preserve">
+    <value>Im Lesemodus lassen sich keine Speicheranlagen anlegen.</value>
+  </data>
+  <data name="FLOTTE_ED_UEBERNAHME_ERFOLG" xml:space="preserve">
+    <value>{0} Speicheranlagen angelegt, {1} geändert.</value>
+  </data>
   <data name="FLOTTE_GROESSEN_SKALA" xml:space="preserve">
     <value>Kapitalwert [€]</value>
   </data>
