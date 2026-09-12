@@ -245,10 +245,14 @@ public class StartseiteTests : EposBunitContext
         {
             cut.FindAll("[role='tab']")[i].Click();
 
-            // Reiter 5 traegt EINEN Knopf ("Simulation Konfiguration...") UND eine
-            // Kachel; beide zaehlen als Kachel der Startseite.
+            // Reiter 5 traegt ZWEI Knoepfe und keine Kachel: den Hauptknopf
+            // "Simulation starten" und den Zweitknopf "Simulation
+            // Konfiguration...". Bis Auftrag #233 war der erste eine Bildkachel;
+            // beide zaehlen unveraendert als Kachel der Startseite - die Zahl 21
+            // haengt am Kachelregister, nicht an der Bauform.
             int kacheln = cut.FindAll(".epos-kachel").Count;
-            int knoepfe = cut.FindAll(".epos-startreiter-leiste .epos-knopf").Count;
+            int knoepfe = cut.FindAll(".epos-startreiter-leiste .epos-knopf").Count
+                          + cut.FindAll(".epos-simreiter-hauptknopf").Count;
 
             Assert.Equal(soll[i], kacheln + knoepfe);
             gezaehlt += kacheln + knoepfe;
@@ -281,8 +285,11 @@ public class StartseiteTests : EposBunitContext
     {
         var cut = Zeige();
 
-        // Die fünf Reiter mit Kachelraster; der sechste ist die Kostenseite.
-        for (int i = 0; i < 5; i++)
+        // Die VIER Reiter mit Kachelraster. Der sechste ist die Kostenseite, und
+        // der fünfte ("Simulation") trägt seit Auftrag #233 keines mehr: Er hat
+        // zwei Spalten, und ein festes Dreispaltenraster hätte darin nur eine
+        // einzige Kachel als Streifen (Anwenderrückmeldung 12.09.2026).
+        for (int i = 0; i < 4; i++)
         {
             cut.FindAll("[role='tab']")[i].Click();
 
@@ -735,7 +742,11 @@ public class StartseiteTests : EposBunitContext
 
         cut.FindAll("[role='tab']")[4].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
-        cut.Find(".epos-kachel").Click();
+
+        // Seit Auftrag #233 ist "Simulation starten" der HAUPTKNOPF des
+        // Bedienblocks und keine Kachel mehr - derselbe Schluessel, dieselbe
+        // Meldung, eine andere Bauform.
+        cut.Find(".epos-simreiter-hauptknopf").Click();
 
         Assert.Equal(new[] { Kachelschluessel.SimulationKonfiguration,
                              Kachelschluessel.SimulationErgebnis }, gemeldet);

@@ -54,10 +54,30 @@
       SimulationLaufsperre aus der Quelle und sperren sich gegenseitig.
 
    OHNE DIENSTE BLEIBT ALLES, WIE ES WAR: Dann gibt es keine rechte Spalte, und
-   der Klick auf die Kachel meldet wie bisher seinen Schluessel nach oben (die
+   der Klick auf den Hauptknopf meldet wie bisher seinen Schluessel nach oben (die
    Startseite wechselt dann ueber Dienste.Navigation in die Ansicht). Das ist der
    Fall „kein Projekt offen" und der Fall eines Pruefstands - dieselbe Hausregel
-   wie ueberall: kein Delegat, keine Bedienung. *@
+   wie ueberall: kein Delegat, keine Bedienung.
+
+   ======================================================================
+   SEIT AUFTRAG #233 IST DIE LINKE SPALTE EIN BEDIENBLOCK
+   (Anwenderrueckmeldung vom 12.09.2026 an einem Bildschirmfoto).
+   ======================================================================
+
+   DER BEFUND: „das Layout ist nicht gut/stimmt nicht - Groesse, Lesbarkeit."
+   Links standen DREI Breiten untereinander - Zusammenfassungskasten rund 600 px,
+   Konfigurationsknopf 355 px, Kachel „Simulation starten" 190 px mit einem
+   84-px-Sinnbild und dreizeilig umgebrochenem Untertitel -, rechts eine leere
+   Flaeche mit einem „Ergebnis speichern", das bedienbar aussah, und einer
+   einsamen Hinweiszeile.
+
+   DIE REGEL, DIE DARAUS FOLGT: Ein Kachelraster gehoert in einen Reiter mit DREI
+   Spalten (W16b-E-7); ein Zweispalten-Reiter bekommt einen BEDIENBLOCK - eine
+   feste Breite (360 px, mindestens 320), und alles darin von Rand zu Rand.
+   Die einzelne Kachel wird dabei zum Hauptknopf, die Kachelerlaeuterung zur
+   leisen Zeile darunter; rechts wird aus der Hinweiszeile eine ruhige Karte, und
+   „Ergebnis speichern" sieht ohne Ergebnis auch gesperrt aus. Unter 900 px
+   stehen die zwei Spalten untereinander, Bedienblock oben. *@
 
 @namespace EPOS.UI.Seiten.Start
 @using EPOS.UI.Seiten.Simulation
@@ -103,36 +123,75 @@
                 </section>
             }
 
-            @* Der Knopf traegt seit dem Anwenderwunsch vom 05.09.2026 das Sinnbild
-               seiner Kachel (W16b-E-3). Er IST die 21. Kachel dieser Seite - im Bestand
-               ein btn_SimKonfig ohne Bild, aber mit demselben Rang wie die
-               Bildkacheln daneben; ein Knopf mit Bild ist in dieser Maske Hausform
-               (btn_Speichern, btn_Help). *@
+            @* ==================================================================
+               DER BEDIENBLOCK (Auftrag #233, Anwenderrueckmeldung 12.09.2026)
+               ==================================================================
+
+               DER BEFUND. Links standen drei Elemente in DREI Breiten: der Kasten
+               der Zusammenfassung (rund 600 px), darunter der graue Knopf
+               "Simulation Konfiguration..." (355 px) und darunter eine 190 px
+               schmale KACHEL "Simulation starten" mit 84-px-Sinnbild und
+               dreizeilig umgebrochenem Untertitel. Der Anwender: "das Layout ist
+               nicht gut/stimmt nicht - Groesse, Lesbarkeit."
+
+               WARUM KEINE KACHEL MEHR. Das Kachelmuster der uebrigen Reiter ist
+               ein FESTES Raster aus drei Spalten zu 404 px (W16b-E-7). In einer
+               schmalen Spalte hat es keine zweite Spalte, an der es sich
+               ausrichten koennte: Die einzelne Kachel wird zum Streifen, ihr
+               Sinnbild nimmt die halbe Breite, und der Untertitel bricht dreimal
+               um. Ein ZWEISPALTEN-Reiter braucht keinen Kachelteppich, sondern
+               einen Bedienblock - eine Breite, drei Elemente untereinander.
+
+               WAS AN DIE STELLE DER KACHEL TRITT. Der HAUPTKNOPF: dieselbe
+               Beschriftung, dieselbe Erlaeuterung, derselbe Weg, aber in
+               Blockbreite, 44 px hoch und in der Hauptfarbe des Rechenknopfs der
+               Ansicht (epos-knopf--primaer, #216) - auf beiden Wegen in die
+               Simulation sieht der Anwender damit denselben Knopf. Die
+               Erlaeuterung steht als EINE leise Zeile darunter, der Sperrgrund als
+               zweite; das Banner am Fuss der Spalte entfaellt, es sagte dasselbe
+               ein zweites Mal.
+
+               DIE TEXTE BLEIBEN DIE DER KACHEL. Titel und Erlaeuterung kommen
+               weiter aus dem Kachelregister der Huelle (START_K_DETAILSIM_T/_B),
+               nur ihre Bauform ist eine andere - deshalb faellt weder ein
+               Kachelschluessel noch ein Kachelbild weg (das Bild traegt jetzt die
+               Leerzustandskarte der rechten Spalte). *@
+            <div class="epos-simreiter-start">
+                <button type="button"
+                        class="epos-knopf epos-knopf--primaer epos-simreiter-hauptknopf"
+                        disabled="@(!StartFrei)"
+                        title="@(Sperrgrund.Length > 0 ? Sperrgrund : null)"
+                        @onclick="@(() => BeiKachel(Kachelschluessel.SimulationErgebnis))">
+                    <span>@StartText</span>
+                    <span class="epos-simreiter-pfeil" aria-hidden="true">&#9654;</span>
+                </button>
+
+                @if (StartErklaerung.Length > 0)
+                {
+                    <p class="epos-simreiter-erklaerung">@StartErklaerung</p>
+                }
+
+                @if (Sperrgrund.Length > 0)
+                {
+                    @* Die weiche Auskunft zum gesperrten Lauf (Hausregel W16b-E-6) -
+                       eine Zeile unter dem Knopf, den sie sperrt, statt eines
+                       Banners am Fuss der Spalte. *@
+                    <p class="epos-simreiter-sperrgrund">@Sperrgrund</p>
+                }
+            </div>
+
+            @* DER ZWEITKNOPF. Er traegt seit dem Anwenderwunsch vom 05.09.2026 das
+               Sinnbild seiner Kachel (W16b-E-3) und behaelt es; geaendert hat sich
+               allein seine BREITE - er fuellt wie alles hier den Block. *@
             <div class="epos-startreiter-leiste">
-                <button type="button" class="epos-knopf epos-knopf--mit-bild"
+                <button type="button"
+                        class="epos-knopf epos-knopf--mit-bild epos-simreiter-konfig"
                         @onclick="@(() => Geklickt.InvokeAsync(Kachelschluessel.SimulationKonfiguration))">
                     <img class="epos-kachel-bild epos-kachel-bild--knopf @Kachelbilder.Klasse(Kachelschluessel.SimulationKonfiguration)"
                          src="@Kachelbilder.Quelle(Kachelschluessel.SimulationKonfiguration)" alt="" />
                     <span>@KonfigText</span>
                 </button>
             </div>
-
-            <Kachelraster Hoechstbreite="404">
-                <KindInhalt>
-                    @foreach (StartKachel kachel in Kacheln)
-                    {
-                        StartKachel k = kachel;
-                        <Kachel Titel="@k.Titel"
-                                Beschreibung="@k.Beschreibung"
-                                Zustand="@KachelZustand(k)"
-                                Status="@KachelStatus(k)"
-                                Aktiv="@KachelAktiv(k.Schluessel)"
-                                Bild="@Kachelbilder.Quelle(k.Schluessel)"
-                                Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
-                                Geklickt="@(() => BeiKachel(k.Schluessel))" />
-                    }
-                </KindInhalt>
-            </Kachelraster>
 
             @* Der Fortschritt des Laufs steht DORT, wo geklickt wurde (SIM-E-2,
                Punkt 1). Die Zahlen kommen aus der Ergebnisseite - es bleibt EIN Lauf
@@ -142,14 +201,6 @@
                          Text="@Steuerung.Fortschrittstext"
                          Abbrechen="@(Steuerung.AbbruchMoeglich ? EventCallback.Factory.Create(this, Abbrechen) : null)"
                          AbbrechenText="@AbbruchText" />
-
-            @if (Sperrgrund.Length > 0)
-            {
-                @* Die weiche Auskunft zur gesperrten Kachel (Hausregel W16b-E-6):
-                   Die Statuszeile an der Kachel erreicht den, der hinsieht, das
-                   Banner darunter jeden. *@
-                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Sperrgrund" />
-            }
         </div>
 
         @* ----------------------------------------------- rechte Spalte *@
@@ -161,8 +212,14 @@
             <div class="epos-simreiter-rechts">
                 <div class="epos-simreiter-rechtskopf">
                     <h3 class="epos-startreiter-titel">@ErgebnisTitelText</h3>
+                    @* GESPERRT OHNE ERGEBNIS (Auftrag #233): Der Knopf stand schon
+                       vorher auf disabled, sah aber aus wie ein bedienbarer. Seit
+                       #233 faellt er dabei auf die leise Hausflaeche zurueck
+                       (dieselbe Regel wie in der Fussleiste der Startseite), und
+                       sein title nennt den Grund. *@
                     <button type="button" class="epos-knopf epos-simreiter-speichern"
                             disabled="@(!SpeichernFrei)"
+                            title="@(SpeichernFrei ? null : ErgebnisFehltText)"
                             @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
                 </div>
 
@@ -175,7 +232,18 @@
                 }
                 else
                 {
-                    <p class="epos-simreiter-leer">@ErgebnisFehltText</p>
+                    @* DER LEERZUSTAND ALS RUHIGE KARTE (Auftrag #233). Vorher stand
+                       hier eine einsame Textzeile in einer rund 1 200 px breiten
+                       Flaeche - sie las sich wie ein vergessener Rest. Jetzt ist es
+                       eine Karte in der Mitte: das kleine Sinnbild der Simulation,
+                       darunter EIN Satz. Kein Warnbanner - es fehlt nichts, was der
+                       Anwender beheben muesste; er hat nur noch nicht gerechnet
+                       (Regel W16b-E-6, dritte Stufe). *@
+                    <div class="epos-simreiter-leer">
+                        <img class="epos-kachel-bild epos-simreiter-leerbild @Kachelbilder.Klasse(Kachelschluessel.SimulationErgebnis)"
+                             src="@Kachelbilder.Quelle(Kachelschluessel.SimulationErgebnis)" alt="" />
+                        <p class="epos-simreiter-leertext">@ErgebnisFehltText</p>
+                    </div>
                 }
             </div>
         }
@@ -183,7 +251,12 @@
 </div>
 
 @code {
-    /// <summary>Die Kacheln dieses Reiters — eine (die Ergebnisansicht).</summary>
+    /// <summary>
+    /// Die Kacheln dieses Reiters — eine (die Ergebnisansicht). Seit Auftrag
+    /// <b>#233</b> zeichnet der Reiter daraus kein Kachelraster mehr, sondern liest
+    /// den Eintrag <c>SIMULATION_ERGEBNIS</c> als Beschriftung und Erläuterung
+    /// seines Hauptknopfes (<see cref="StartEintrag"/>).
+    /// </summary>
     [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
 
     /// <summary>
@@ -316,26 +389,56 @@
     private bool Laeuft => Steuerung.Laeuft;
 
     /// <summary>
-    /// Die Kachel „Simulation starten" ist gesperrt, solange ein Grund vorliegt oder
-    /// gerade gerechnet wird; jede andere Kachel bleibt, wie sie war.
+    /// Der Eintrag „Simulation starten" des Kachelregisters; <c>null</c> = die Hülle
+    /// liefert ihn nicht (ein Prüfstand) — dann stehen die Texte aus den Ressourcen.
     /// </summary>
-    private bool KachelAktiv(string schluessel)
-        => !(LaufWirt && schluessel == Kachelschluessel.SimulationErgebnis
-             && (Sperrgrund.Length > 0 || Laeuft));
+    /// <remarks>
+    /// <b>Auftrag #233.</b> Die Kachel ist ein KNOPF geworden, ihr Eintrag im Register
+    /// nicht: Beschriftung und Erläuterung kommen weiter von dort
+    /// (<c>START_K_DETAILSIM_T</c> / <c>_B</c>, gesetzt in <c>StartseiteHuelle</c>) —
+    /// eine Bauform weniger, kein Text weniger.
+    /// </remarks>
+    private StartKachel? StartEintrag
+    {
+        get
+        {
+            foreach (StartKachel k in Kacheln)
+                if (k.Schluessel == Kachelschluessel.SimulationErgebnis) return k;
 
-    /// <summary>Der Sperrgrund steht AN der Kachel (SIM‑E‑2, Punkt 1).</summary>
-    private string KachelStatus(StartKachel k)
-        => LaufWirt && k.Schluessel == Kachelschluessel.SimulationErgebnis
-               ? Sperrgrund
-               : "";
+            return null;
+        }
+    }
 
-    /// <summary>Ein gesperrter Lauf färbt den Statuspunkt grau statt grün.</summary>
-    private Kachelstand? KachelZustand(StartKachel k)
-        => KachelStatus(k).Length > 0 ? Kachelstand.Aus : k.Zustand;
+    /// <summary>Die Beschriftung des Hauptknopfes.</summary>
+    private string StartText
+    {
+        get
+        {
+            string titel = StartEintrag?.Titel ?? "";
+            return titel.Length > 0 ? titel : Resource.START_K_DETAILSIM_T;
+        }
+    }
+
+    /// <summary>Die eine leise Zeile unter dem Hauptknopf.</summary>
+    private string StartErklaerung
+    {
+        get
+        {
+            string text = StartEintrag?.Beschreibung ?? "";
+            return text.Length > 0 ? text : Resource.START_K_DETAILSIM_B;
+        }
+    }
 
     /// <summary>
-    /// Ein Klick auf eine Kachel. Die Kachel „Simulation starten" RECHNET hier, sobald
-    /// dieser Reiter die Dienste führt (SIM‑E‑2, Punkt 1) — sonst meldet sie ihren
+    /// Darf der Hauptknopf handeln? Rechnet dieser Reiter selbst, sperrt ihn jeder
+    /// Sperrgrund und der eigene laufende Lauf; ohne Dienste meldet er wie vor #220
+    /// nur seinen Schlüssel und ist deshalb immer frei.
+    /// </summary>
+    private bool StartFrei => !LaufWirt || (Sperrgrund.Length == 0 && !Laeuft);
+
+    /// <summary>
+    /// Ein Klick auf den Hauptknopf (bis #233 die Kachel). Er RECHNET hier, sobald
+    /// dieser Reiter die Dienste führt (SIM‑E‑2, Punkt 1) — sonst meldet er seinen
     /// Schlüssel wie vor #220, und die Startseite wechselt in die Ansicht.
     /// </summary>
     private async Task BeiKachel(string schluessel)

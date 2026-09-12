@@ -27,6 +27,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// aus; der Knopf bleibt bei <c>schritt=1</c>. Das revidiert für diese Kachel den
 /// #207-Entscheid „sie öffnet ③ und startet nicht von selbst".</para>
 ///
+/// <para><b>Seit Auftrag #233</b> (Anwenderrückmeldung 12.09.2026) ist der Weg
+/// „Simulation starten" keine KACHEL mehr, sondern der HAUPTKNOPF des
+/// Bedienblocks (<c>.epos-simreiter-hauptknopf</c>): dieselbe Beschriftung,
+/// derselbe Schlüssel, dieselbe Marke — eine andere Bauform.</para>
+///
 /// <para>Der Fall tauscht <c>Dienste.Navigation</c> und gehört deshalb in die
 /// serielle Sammlung — dieselbe Regel wie die KI-Dialogwege aus #199.</para>
 /// </summary>
@@ -104,18 +109,18 @@ public class StartseiteSimulationwegTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Kachel „Simulation starten" öffnet dieselbe Ansicht und LÖST DEN LAUF
+    /// Der Hauptknopf „Simulation starten" öffnet dieselbe Ansicht und LÖST DEN LAUF
     /// AUS (SIM‑E‑1): Marke <c>schritt=2</c> — das ist derselbe Weg, den der
     /// Rechenknopf der Ablaufleiste geht, samt Sperrprüfung.
     /// </summary>
     [Fact]
-    public void Die_Kachel_Simulation_starten_loest_Schritt_zwei_aus()
+    public void Der_Hauptknopf_Simulation_starten_loest_Schritt_zwei_aus()
     {
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
 
         cut.FindAll("[role='tab']")[4].Click();
-        cut.Find(".epos-kachel").Click();
+        cut.Find(".epos-simreiter-hauptknopf").Click();
 
         Assert.Equal(new[] { Masken.Simulation }, Navigation.Masken);
         Assert.Equal(SimulationMarke.SCHRITT_LAUF, Navigation.LetzteArgumente[0]);
@@ -123,11 +128,11 @@ public class StartseiteSimulationwegTests : EposBunitContext
     }
 
     /// <summary>
-    /// Und die Kachel HEISST so — der Titel kommt aus <c>START_K_DETAILSIM_T</c>,
+    /// Und der Knopf HEISST so — der Titel kommt aus <c>START_K_DETAILSIM_T</c>,
     /// den die Hülle setzt; hier steht er als Probendatum und wird angezeigt.
     /// </summary>
     [Fact]
-    public void Die_Kachel_traegt_die_Beschriftung_Simulation_starten()
+    public void Der_Hauptknopf_traegt_die_Beschriftung_Simulation_starten()
     {
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
@@ -136,7 +141,8 @@ public class StartseiteSimulationwegTests : EposBunitContext
 
         Assert.Equal("Simulation starten",
                      WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T);
-        Assert.Contains("Simulation starten", cut.Find(".epos-kachel").TextContent);
+        Assert.Contains("Simulation starten",
+                        cut.Find(".epos-simreiter-hauptknopf").TextContent);
     }
 
     /// <summary>
@@ -154,7 +160,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
 
         cut.FindAll("[role='tab']")[4].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
-        cut.Find(".epos-kachel").Click();
+        cut.Find(".epos-simreiter-hauptknopf").Click();
 
         Assert.Equal(new[] { Kachelschluessel.SimulationKonfiguration,
                              Kachelschluessel.SimulationErgebnis }, gemeldet);
