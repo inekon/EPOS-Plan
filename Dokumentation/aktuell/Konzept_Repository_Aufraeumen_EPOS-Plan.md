@@ -43,7 +43,7 @@ das Sitzungs-Scratchpad der Orchestrierung (12.09. von 3,4 GB auf 220 MB bereini
 
 **Stufe 0 — erledigt.** Historische Referenzbasen aus dem Arbeitsbaum (SYNC‑Q1, 11.09.2026, 1 GB); Scratchpad bereinigt (12.09.2026).
 
-**Stufe 1 — umgesetzt #242 (Commit `46f1f0ab`).** `.work/` (71 MB), `DB-Backup/`, vier `.bak`, `sqlite-probe/`, vier Lizenzserver-Originale,
+**Stufe 1 — umgesetzt #242 (Commit `f6464b88`, Merge `d2e15bb1`).** `.work/` (71 MB), `DB-Backup/`, vier `.bak`, `sqlite-probe/`, vier Lizenzserver-Originale,
 `Reporting_Geruest.zip` entfernen; Entwurf nach `Mockups/`, Scraper-Reste nach `Dokumentation/ueberholt/`; `.work/` in die `.gitignore`;
 Verweise kennzeichnen; **Wache `RepositoryOrdnungWacheTests`** (kein `*.bak`, `*.orig`, `*.original-*`, `*.accdb`, `*.laccdb`, kein
 `.work/`, kein `DB-Backup/`, `*.sqlite` nur auf der Weißliste `Referenzlaeufe/Kenndaten_Test.sqlite`); Aufräumregel als Abschnitt in der
@@ -105,4 +105,4 @@ Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTest
 | AUF‑Q1 | Git-Geschichte umschreiben (Klongröße)? | offen |
 | AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | **entschieden 12.09.2026** („Nehme VDI-Archive und Testdatenbanken in git-lfs"), **umgesetzt #243** |
 | AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um"), **umgesetzt #243** |
-| AUF‑Q4 | `retention-days` 14 in den Workflows? | offen |
+| AUF‑Q4 | `retention-days` 14 in den Workflows? | **gegenstandslos** — stand bereits in allen drei Workflows (12.09.2026) |

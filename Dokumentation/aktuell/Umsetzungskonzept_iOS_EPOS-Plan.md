@@ -4176,6 +4176,59 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`.
 > Gate sept51 auf `a598b564`: Kern 2 733, UI 3 958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#242 (12.09.2026, Anwender: „Räume alte nicht mehr genutzte Läufe/Verzeichnisse auf", „Lösche .work", „EPOS-Plan_Beispiele_Geruest
+> ist wichtig", Fernzweige „vorerst nicht") — umgesetzt (`f6464b88`, Merge `d2e15bb1`, Agent Sonnet; 42 Dateien, +430/−3 286).** Entfernt,
+> jede Stelle mit `git grep` belegt (31 Dateien, 70,2 MB): `.work/` — Einmal-Prüfprogramm `RealFleetHarness`, Prüfbericht und die
+> 70-MB-Kopie der Produktivdatenbank vom 11.09. (30 Projekte mit Kundennamen); das ist die **Rücknahme von SP‑O‑9** („.work behalten",
+> 11.09.2026) durch den Anwender, `.work/` steht seither in der `.gitignore`, die zwei Verweise (Fehleranalyse des Referenzpakets,
+> Mehrspeicher-Doku) tragen „nicht mehr im Repository; Stand 4c3b5210 in der Git-Geschichte" —; `DB-Backup/` (16 Git-LFS-Zeiger auf
+> Access-Sicherungen, per `.gitignore` seit dem 02.09. ausgeschlossen, Objekte lagen nie auf dem Server); vier `.bak`-Kopien unter
+> `WindowsFormsApplication1`; `sqlite-probe/` (Spike vor der SQLite-Umstellung, drei Links in Index und `BETRIEB_SQLITE` umformuliert);
+> vier `Lizenzserver/*.original-2026-08-19`; `Reporting_Geruest.zip`. Verschoben: der Hydraulik-Entwurf nach `Mockups/`, die README des
+> nicht mehr versionierten Scrapers nach `Dokumentation/ueberholt/`. **Dauerhaft:** Wache `RepositoryOrdnungWacheTests` (7 Fälle: keine
+> `*.bak`/`*.orig`/`*.original-*`/`*.accdb`/`*.laccdb`, kein `.work/`, kein `DB-Backup/`, `*.sqlite` nur die Testdatenbank), das Konzept
+> `Dokumentation/aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md` (Regel, Inventar je Verzeichnis, Stufen 0–3, Entscheide SP‑O‑9
+> zurückgenommen / AUF‑E‑1 Beispiele-Gerüst bleibt / AUF‑E‑2 Fernzweige vorerst nicht / AUF‑Q2 LFS und AUF‑Q3 Quellen entschieden
+> → #243 / AUF‑Q4 gegenstandslos, `retention-days: 14` stand schon / AUF‑Q1 Geschichte umschreiben offen) und der Abschnitt „Aufräumen"
+> in der Wurzel-`CLAUDE.md`. Das Sitzungs-Scratchpad der Orchestrierung war zuvor von 3,4 GB auf 220 MB bereinigt worden. Die
+> Datenbankkopie bleibt in der Git-Geschichte, bis der Anwender AUF‑Q1 entscheidet. Kern-Tests 2 733 → 2 740; kein Rechenweg berührt.
+> **Gate sept52 auf `d2e15bb1`: ROT — allein durch die neue Wache selbst.** `Sqlite_Dateien_nur_auf_der_Weissliste` lief das Dateisystem
+> und traf die ignorierte `Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite`, die der Referenzlauf des Gates anlegt, und die
+> `.claude/worktrees/…` laufender Agenten; alles Übrige war grün (Kern 2 739 von 2 740, UI 3 958, en-US dieselbe eine Stelle, 5/5
+> byte-gleich). Fix `69bc9777` in #243 (Wache über `git ls-files -z`) — deshalb wurde #242 nicht einzeln gepusht, sondern mit #243.
+> Erster grüner Nachweis: Gate sept53 auf `f41e5307` (#242 und #243 zusammen): Kern 2743, UI 3958, Engine 425, KiKern 488, 5
+> eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#243 (12.09.2026, Anwenderentscheide AUF‑Q2 „Nehme VDI-Archive und Testdatenbanken in git-lfs" und AUF‑Q3 „Setze Empfehlung um")
+> — umgesetzt (`69bc9777`, `5743f218`, `42121e08`, Merge `f41e5307`, Agent Opus; 95 Dateien, +795/−744 665 — die Zeilen der VDI-Textkataloge
+> weichen ihren Drei-Zeilen-Zeigern).** **Git LFS ab jetzt, ohne Geschichtsumschreibung:** die `.gitattributes` führt vier Regeln
+> (`Referenzlaeufe/Kenndaten_Test.sqlite`, `VDI-3805-Daten/**/*.zip|*.vdi|*.VDI`), die vier Access-Zeilen sind gefallen;
+> `git lfs ls-files` = **69** (eine Testdatenbank, 68 Archive; 172 045 379 Byte = 164,1 MiB), die Arbeitsdateien byte-gleich (Testdatenbank
+> sha256 `449a8652…6626a9d7` vorher = nachher), die alten Blobs bleiben in der Geschichte (AUF‑Q1 offen). Bewusst NICHT in LFS: CSV (auch
+> `bslib_database.csv`, byteweise gegen ihre Importprobe geprüft), PAN, OND, PDF, XLSX, die Referenzbasis R7 und
+> `Referenzlaeufe/Importproben/**` — klein oder Gegenstand von Byte-Vergleichen, und jeder LFS-Abruf kostet Bandbreite. **Workflows**
+> (Checkout überall ohne `lfs: true`): `kern.yml` und `windows.yml/build-test` mit „LFS-Zwischenlager" (`actions/cache@v4` auf `.git/lfs`,
+> Schlüssel aus dem Zeiger) und „Testdatenbank aus LFS" (gezielter Pull; Prüfung: größer als 1 MB und beginnt nicht mit
+> `version https://git-lfs`); `windows.yml/installer` zieht ungefiltert und prüft die Testdatenbank UND jede Datei unter
+> `VDI-3805-Daten`, weil das Setup sie einpackt; `ios.yml` zieht die Seed-Datenbank gezielt vor dem Bau — **nur geändert, nicht ausgelöst**
+> (Regel vom 09.09.2026), der nächste freigegebene iOS-Lauf ist der Nachweis. **Zeiger-Schutz** an den drei Öffnungsstellen:
+> `EPOS.Kern.Tests/TestDatenbank.cs` (`LfsZeigerProbe`, benannter Abbruch), `Referenzlauf/DbUmgebung.cs` (verlinkt, gilt für
+> `Referenzlauf` UND `EPOS.Referenzlauf`; Protokollzeile, Rückgabe 2), `Werkzeuge/Auslieferungsvorlage/Argumente.cs` (Rückgabe 2).
+> **Ordnungs-Wache** (`69bc9777`, der Fix zum roten Gate sept52): Dateiliste aus `git ls-files -z` (UTF-8 — ein VDI-Pfad trägt ein „ä",
+> ohne `-z` fiele er aus jeder Zählung) statt Dateisystem, der Rückfall nimmt `.claude`, `TestResults` und
+> `Referenzlaeufe/Arbeitskopie` aus; 7 → **10 Fälle** (Gegenprobe des synthetischen Baums, vier LFS-Regeln, Testdatenbank kein Zeiger);
+> belegt 10/10 mit angelegter Arbeitskopie und 10/10 mit `PATH` ohne git. **Fremdquellen (AUF‑Q3):** `git mv BHKWPlan → Quellen/BHKWPlan`,
+> `PV-Konzept_PV-Now → Quellen/PV-Now`, `VALERI → Quellen/VALERI` (15 Dateien; Verweise in drei Konzepten und im Aufräumkonzept; reine
+> Dateinamen und fremde Ablageorte wie `Z:\…\BHKWPlan` unangetastet). Doku: `Referenzlaeufe/LIESMICH.md` Abschnitt „Git LFS",
+> Wurzel-`CLAUDE.md` (Absatz im Abschnitt „Aufräumen"), Setup-Konzept (Installer-Job zieht ungefiltert), Aufräumkonzept Stufe 3
+> „umgesetzt", AUF‑Q2/Q3 entschieden, AUF‑Q4 gegenstandslos. **Für den Anwender:** einmal `git lfs install` auf dem Windows-Rechner vor
+> dem nächsten Pull — sonst kommen Zeigerdateien an, und Wache, Tests und Werkzeuge sagen es mit Namen; GitHub gibt frei 1 GB
+> LFS-Speicher und 1 GB Bandbreite je Monat, jede neue Fassung der Testdatenbank kostet 68 MB Speicher. Orchestrierung: der Push lädt
+> die 68 Objekte (165 MB) über den pre-push-Haken hoch (`git lfs push --dry-run` vorher: 68 Objekte, Batch-Endpunkt antwortet 200);
+> scheitert der Upload, bricht der Push ab. Kern-Tests 2 740 → 2 743; kein Rechenweg, keine Ressource, kein SQL berührt.
+> Gate sept53 auf `f41e5307`: Kern 2743, UI 3958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
