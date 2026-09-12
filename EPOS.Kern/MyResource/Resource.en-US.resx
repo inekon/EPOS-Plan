@@ -18785,4 +18785,31 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SPA_BESTPHASE_ERL" xml:space="preserve">
     <value>Which phase of the search the best candidate comes from: coarse (the first grid) or fine (the narrower grid around the coarse optimum).</value>
   </data>
+  <data name="SIMERG_ZUSTAND_NICHT_GERECHNET" xml:space="preserve">
+    <value>Not calculated yet — start the simulation to see a result.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_VERALTET" xml:space="preserve">
+    <value>The result is out of date — {0}. Please start the simulation again.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_VERALTET_KURZ" xml:space="preserve">
+    <value>The result is out of date. Please start the simulation again.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN" xml:space="preserve">
+    <value>The run was stopped — {0}.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN_KURZ" xml:space="preserve">
+    <value>The run was stopped.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG" xml:space="preserve">
+    <value>The run was stopped, see the message above.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN" xml:space="preserve">
+    <value>the storage settings were changed</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
+    <value>the storage fleet was recalculated</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
+    <value>something was changed in the battery sizing view</value>
+  </data>
 </root>

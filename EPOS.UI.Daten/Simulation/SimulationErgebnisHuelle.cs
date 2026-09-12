@@ -72,12 +72,12 @@ namespace WindowsFormsApplication1
         /// #207). Daneben stand bis dahin ein statisches <c>Gaben(…)</c>, das die
         /// Hülle anlegte und gleich wieder vergass — <c>StartseiteHuelle</c> rief es
         /// bei JEDEM Kachelklick. Der gerechnete Lauf (<c>sim</c>), die zwölf Bilder
-        /// und die Gültigkeitsmarke <c>_ergebnisGueltig</c> leben aber HIER und nicht
+        /// und der Ergebniszustand <c>_ergebniszustand</c> leben aber HIER und nicht
         /// in der Razor-Seite: Wer die Ansicht wechselt — auf die
         /// Stromspeicher-Auslegung und zurück —, verliert die Seite, und nur eine
         /// GEHALTENE Hülle bringt den Lauf wieder mit. <c>SimulationHuelle</c> hält
         /// sie je Projekt; auch der Nachzug aus <see cref="AuslegungOeffnen"/>
-        /// (<c>_ergebnisGueltig = false</c>) findet so die Hülle wieder, die Schritt
+        /// (Zustand „veraltet") findet so die Hülle wieder, die Schritt
         /// ③ danach zeigt.</para>
         /// </remarks>
         internal static SimulationErgebnisHuelle Erzeugen(
@@ -125,16 +125,47 @@ namespace WindowsFormsApplication1
         /// <summary>Die aktive Speichervariante — die Parameterseite bearbeitet sie.</summary>
         private StromspeicherVarianteModel _speicherVariante;
 
-        /// <summary>Zustandsmaschine „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1).</summary>
-        private bool _ergebnisGueltig;
+        /// <summary>
+        /// Zustandsmaschine „Ergebnis speichern" (Nacharbeit Paket 8, Befund N1) — seit
+        /// Auftrag <b>#236</b> ein benannter ZUSTAND statt eines Schalters.
+        /// </summary>
+        /// <remarks>
+        /// Der Schalter sagte nur, ob gespeichert werden darf. Warum nicht, wusste
+        /// niemand — und die Uebersicht zeichnete deshalb in allen drei Faellen (nie
+        /// gerechnet, veraltet, abgebrochen) dasselbe Nullobjekt wie ein Ergebnis.
+        /// </remarks>
+        private ErgebnisZustand _ergebniszustand = ErgebnisZustand.NichtGerechnet;
+
+        /// <summary>Der Anlass des Zustands in Anwendersprache; leer = keiner bekannt.</summary>
+        private string _zustandsgrund = "";
+
+        /// <summary>Liegt ein vollstaendiges Ergebnis vor? (die alte Marke als Ableitung)</summary>
+        private bool ErgebnisIstGueltig => _ergebniszustand == ErgebnisZustand.Gueltig;
+
+        /// <summary>Merkt den Zustand samt Anlass (#236).</summary>
+        private void ZustandSetzen(ErgebnisZustand zustand, string grund)
+        {
+            _ergebniszustand = zustand;
+            _zustandsgrund = grund ?? "";
+        }
+
+        /// <summary>
+        /// Der Lauf ist nicht durchgegangen: Zustand merken und die Rueckmeldung
+        /// liefern, die die Seite als Warnbanner zeigt (#236).
+        /// </summary>
+        private EPOS.UI.Seiten.Simulation.Rueckmeldung Abbruch(string grund)
+        {
+            ZustandSetzen(ErgebnisZustand.Abgebrochen, grund);
+            return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, grund);
+        }
 
         /// <summary>
         /// Ist ueberhaupt schon einmal gerechnet worden? (Auftrag #207)
         /// </summary>
         /// <remarks>
-        /// <b>Nicht dasselbe wie <see cref="_ergebnisGueltig"/>.</b> Jene Marke sagt,
+        /// <b>Nicht dasselbe wie <see cref="_ergebniszustand"/>.</b> Jener Zustand sagt,
         /// ob das ANGEZEIGTE Ergebnis gespeichert werden darf, und faellt bei jeder
-        /// Aenderung an der Projektflotte auf <c>false</c>. Diese hier sagt nur, dass
+        /// Aenderung an der Projektflotte auf <c>Veraltet</c>. Diese hier sagt nur, dass
         /// Zahlen dastehen — Schritt ③ der Ablaufleiste haengt daran, und wer aus der
         /// Auslegung zurueckkommt, soll sie samt dem Banner „Flotte geaendert" sehen
         /// duerfen. Sie faellt nie zurueck: Ein Lauf, der gelaufen ist, ist gelaufen.
@@ -330,7 +361,12 @@ namespace WindowsFormsApplication1
             string[] tool = Tools();
 
             d.Parameter = Parametersatz();
-            d.ErgebnisGueltig = _ergebnisGueltig && !d.Gesperrt;
+
+            // DER ZUSTAND, NICHT NUR DIE MARKE (#236). Eine offene Schema-Migration
+            // sperrt alles; sie hat ihr eigenes Banner, und ihr Grund ist zugleich der
+            // Grund, aus dem hier kein Ergebnis steht.
+            d.Zustand = d.Gesperrt ? ErgebnisZustand.NichtGerechnet : _ergebniszustand;
+            d.Zustandsgrund = d.Gesperrt ? d.Sperrgrund : _zustandsgrund;
 
             // Die Reiterleiste folgt derselben Regel wie die Menüliste des Vorläufers
             // (BefuelleQuellenListe :2876-2970) - samt der drei Zweige für PV und
@@ -345,10 +381,17 @@ namespace WindowsFormsApplication1
                                     || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER);
 
             // ---- Die Zahlen der Reiter ------------------------------------
+            // DER BEDARF STEHT IN JEDEM ZUSTAND (#236). Er haengt nicht am Lauf,
+            // sondern am Projekt - und ohne ihn zeigte die Uebersicht auch im
+            // Leerzustand „0,00 MWh/a", wo die Zusammenfassung daneben die richtige
+            // Zahl nennt.
+            BedarfSicherstellen(idProjekt);
             var bedarf = SimulationErgebnisCtrl.Bedarf(_waermebedarf, _strombedarf);
             d.Bedarf = BedarfDaten(bedarf);
 
-            if (!_ergebnisGueltig) return d;
+            // OHNE gueltiges Ergebnis wird KEINE Uebersicht gebaut - das Feld bleibt
+            // null, und die Anzeige zeigt ihren Leerzustand samt Grund (#236).
+            if (d.Zustand != ErgebnisZustand.Gueltig) return d;
 
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
 
@@ -402,6 +445,54 @@ namespace WindowsFormsApplication1
                 : "";
 
             return d;
+        }
+
+        /// <summary>
+        /// Die beiden Bedarfsrechnungen sind gerechnet — EINMAL je Hülle (Auftrag
+        /// <b>#236</b>).
+        /// </summary>
+        private bool _bedarfGerechnet;
+
+        /// <summary>
+        /// Rechnet die zwei Bedarfe, wenn es noch niemand getan hat (Auftrag
+        /// <b>#236</b>).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum das hier stehen muss.</b> <see cref="BedarfDaten"/> liest die
+        /// zwei Bedarfsobjekte des Projekts (<see cref="BedarfsZustand"/>), und die sind
+        /// leer, solange sie niemand gerechnet hat. Unter Windows tut es die
+        /// Projektzusammenfassung des Startreiters beim Betreten — derselbe
+        /// <c>BedarfsZustand</c>, dieselben Zahlen. Wer aber die ANSICHT „Simulation"
+        /// betritt, ohne vorher im Reiter gewesen zu sein, sah bis #236 „0,00 MWh/a",
+        /// und auf iOS gibt es den Reiter gar nicht.</para>
+        /// <para><b>Es ist derselbe Weg wie im Lauf</b>
+        /// (<c>SimulationLaufCtrl.Bedarf</c>), nur ohne Simulation dahinter — und er
+        /// laeuft genau einmal je Huelle: Der Lauf selbst rechnet ihn ohnehin neu und
+        /// setzt die Marke.</para>
+        /// <para>Ein Fehlschlag (kein Projekt, keine Klimaregion, keine Zeitreihe) ist
+        /// hier KEIN Abbruch: Die Seite zeigt dann ihre Nullen, wie sie es vorher immer
+        /// tat, und der Lauf nennt den Grund beim Namen.</para>
+        /// </remarks>
+        private void BedarfSicherstellen(int idProjekt)
+        {
+            if (_bedarfGerechnet || idProjekt <= 0) return;
+
+            _bedarfGerechnet = true;   // auch ein Fehlschlag wird nicht bei jedem Zeichnen wiederholt
+
+            try
+            {
+                projektCtrl.ReadSingle(idProjekt);
+                int idKlimaregion = projektCtrl.m_ID_Klimaregion;
+                if (idKlimaregion <= 0) return;
+
+                SimulationLaufCtrl.Bedarf(idProjekt, idKlimaregion,
+                                          ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
+                                          _waermebedarf, _strombedarf);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Bedarf konnte nicht vorab gerechnet werden: " + ex.Message);
+            }
         }
 
         private string[] Tools()
@@ -976,12 +1067,13 @@ namespace WindowsFormsApplication1
         {
             // NACHARBEIT PAKET 8, BEFUND N1: ZUERST - ab hier ist das angezeigte
             // Ergebnis nicht mehr gültig, und jeder Frühausstieg lässt „Ergebnis
-            // speichern" gesperrt zurück.
-            _ergebnisGueltig = false;
+            // speichern" gesperrt zurück. Seit #236 merkt sich die Hülle dabei AUCH
+            // den Grund: Jeder Frühausstieg geht über Abbruch(...).
+            ZustandSetzen(ErgebnisZustand.Abgebrochen, "");
 
             string sperrgrund;
             if (SchemaStand.SimulationGesperrt(out sperrgrund))
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, sperrgrund);
+                return Abbruch(sperrgrund);
 
             // PAKET 8 (Konzept 13.4): EIN Protokollkanal je Lauf, angelegt VOR der
             // Bedarfsrechnung.
@@ -989,8 +1081,7 @@ namespace WindowsFormsApplication1
 
             ctrl.ProjektLesen(m_ID_Projekt);
             if (ctrl.rows == 0)
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
-                    false, MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT);
+                return Abbruch(MyResource.Resource.SIM_MSG_KONFIGURATION_FEHLT);
 
             projektCtrl.ReadSingle(m_ID_Projekt);
             int idKlimaregion = projektCtrl.m_ID_Klimaregion;
@@ -998,15 +1089,18 @@ namespace WindowsFormsApplication1
             // ÜBERGEBEN WIRD "ctrl" SELBST, nicht "ctrl.model" - wörtlich wie im
             // Vorläufer (:4132-4136, offener Punkt W11a-O-5).
             string fehler = SimulationLaufCtrl.Vorpruefen(m_ID_Projekt, ctrl, idKlimaregion);
-            if (fehler != null) return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, fehler);
+            if (fehler != null) return Abbruch(fehler);
 
             string bedarfsfehler = SimulationLaufCtrl.Bedarf(
                 m_ID_Projekt, idKlimaregion,
                 ctrl.m_Netzverluste, ctrl.m_szNetzverlusteEinheit,
                 _waermebedarf, _strombedarf);
 
-            if (bedarfsfehler != null)
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, Mitkanal(bedarfsfehler));
+            // Der Bedarf ist gerechnet - die Vorabrechnung aus BedarfSicherstellen
+            // braucht es danach nicht mehr (#236).
+            _bedarfGerechnet = true;
+
+            if (bedarfsfehler != null) return Abbruch(Mitkanal(bedarfsfehler));
 
             // Erst ein vollständig erfolgreicher Lauf ersetzt die vorherige Anzeige.
             // Die Flotte wird am Speicherzweig aus den frisch gerechneten Quellen
@@ -1024,8 +1118,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false,
-                    "Die Speicher-Einstellungen konnten nicht vorbereitet werden: " + ex.Message);
+                return Abbruch("Die Speicher-Einstellungen konnten nicht vorbereitet werden: " + ex.Message);
             }
 
             SimulationLaufCtrl.Bestuecken(neuerLauf, m_ID_Projekt, Tools(),
@@ -1044,11 +1137,11 @@ namespace WindowsFormsApplication1
             }
             catch (OperationCanceledException)
             {
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, "");
+                return Abbruch("");
             }
             catch (Exception ex)
             {
-                return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, ex.Message);
+                return Abbruch(ex.Message);
             }
             finally
             {
@@ -1058,7 +1151,7 @@ namespace WindowsFormsApplication1
             }
 
             string abbruch = SimulationLaufCtrl.Abbruchgrund(neuerLauf);
-            if (abbruch != null) return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false, abbruch);
+            if (abbruch != null) return Abbruch(abbruch);
 
             if (neuerLauf.SpeicherflottenEingaben is not null && neuerLauf.Speicherflottenlauf is { } flotte)
             {
@@ -1072,14 +1165,13 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception ex)
                 {
-                    return new EPOS.UI.Seiten.Simulation.Rueckmeldung(false,
-                        "Die gerechnete Speicherflotte konnte nicht übernommen werden: " + ex.Message);
+                    return Abbruch("Die gerechnete Speicherflotte konnte nicht übernommen werden: " + ex.Message);
                 }
             }
             sim = neuerLauf;
 
             // Erst JETZT ist ein Ergebnis da, das gespeichert werden darf (Befund N1).
-            _ergebnisGueltig = true;
+            ZustandSetzen(ErgebnisZustand.Gueltig, "");
             _laufGerechnet = true;
             _flotteProjektGeaendert = false;
             _autarkieGesetzt = false;
@@ -1111,7 +1203,7 @@ namespace WindowsFormsApplication1
                 return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
                     false, MyResource.Resource.SIM_MSG_KEIN_PROJEKT);
 
-            if (!_ergebnisGueltig)
+            if (!ErgebnisIstGueltig)
                 return new EPOS.UI.Seiten.Simulation.Rueckmeldung(
                     false, MyResource.Resource.SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS);
 

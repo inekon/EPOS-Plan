@@ -1,10 +1,12 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -508,5 +510,128 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Single(seite.FindAll("button.epos-simerg-knopf"));
         Assert.Equal("Wärmebedarf Übersicht...",
                      seite.Find("button.epos-simerg-knopf").TextContent.Trim());
+    }
+    // =====================================================================
+    //  Der LEERZUSTAND (Auftrag #236, Anwenderrückmeldung 12.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Bedarfsrechnung des gemeldeten Projekts (Ganglinie, kein Wärmebedarf).</summary>
+    private static BedarfDaten Bedarfszahlen() => new BedarfDaten
+    {
+        WaermebedarfGesamtMwh = 0.0,
+        StrombedarfGesamtMwh = 2850.2
+    };
+
+    private IRenderedComponent<UebersichtReiter> ZeichnenOhneErgebnis(
+        ErgebnisZustand zustand, string text = "", UebersichtDaten? daten = null)
+        => Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Daten, daten);
+            p.Add(x => x.Zustand, zustand);
+            p.Add(x => x.Zustandstext, text);
+            p.Add(x => x.Bedarf, Bedarfszahlen());
+        });
+
+    private static string Zahl(double wert)
+        => wert.ToString("N2", CultureInfo.CurrentCulture);
+
+    /// <summary>
+    /// <b>DER BEFUND #236.</b> Ohne gerechneten Lauf zeichnet der Reiter kein
+    /// Ergebnis: kein Ring, keine Deckung, keine Erzeugertabelle — und vor allem
+    /// nicht die Marke „kein Stromerzeuger im Projekt" über lauter Nullen. Der
+    /// STROMBEDARF steht trotzdem da, und zwar mit der Zahl der Bedarfsrechnung.
+    /// </summary>
+    [Fact]
+    public void Ohne_Ergebnis_steht_der_Bedarf_und_keine_Deckung()
+    {
+        var seite = ZeichnenOhneErgebnis(ErgebnisZustand.NichtGerechnet);
+
+        // Die zwei Spalten stehen, aber jede trägt nur EINE Kennzahl.
+        Assert.Equal(2, seite.FindAll("section.epos-simueb-spalte").Count);
+        Assert.Equal(2, seite.FindAll(".epos-simueb-kennzahl").Count);
+
+        // Die Zahl der Bedarfsrechnung — nicht 0,00.
+        Assert.Contains(Zahl(2850.2), seite.Markup, StringComparison.Ordinal);
+
+        // Nichts, was ein Ergebnis behaupten würde.
+        Assert.Empty(seite.FindAll("img"));
+        Assert.Empty(seite.FindAll("ul.epos-simueb-legende"));
+        Assert.Empty(seite.FindAll("table.epos-simueb-tabelle"));
+        Assert.DoesNotContain(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
+                              StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.SIMERG_MSG_OHNE_BEDARF, seite.Markup,
+                              StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.SIMUEB_LBL_DECKUNG, seite.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// An der Stelle des Ergebnisses steht EINE ruhige Karte mit dem Grund — kein
+    /// Warnbanner (Regel W16b‑E‑6, dritte Stufe).
+    /// </summary>
+    [Fact]
+    public void Der_Leerzustand_nennt_seinen_Grund_in_einer_ruhigen_Karte()
+    {
+        const string satz = "Das Ergebnis ist veraltet — die Speicher-Einstellungen wurden geändert.";
+        var seite = ZeichnenOhneErgebnis(ErgebnisZustand.Veraltet, satz);
+
+        var karte = seite.Find("p.epos-simueb-leerkarte");
+        Assert.Equal(satz, karte.TextContent.Trim());
+        Assert.Empty(seite.FindAll(".epos-warnbanner"));
+    }
+
+    /// <summary>Ohne eigenen Satz steht der allgemeine.</summary>
+    [Fact]
+    public void Ohne_Satz_steht_der_allgemeine_Leerzustandstext()
+    {
+        var seite = ZeichnenOhneErgebnis(ErgebnisZustand.NichtGerechnet);
+
+        Assert.Equal(Resource.SIMERG_ZUSTAND_NICHT_GERECHNET,
+                     seite.Find("p.epos-simueb-leerkarte").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>DIE WACHE.</b> Auch ein VORBELEGTES <c>UebersichtDaten</c> — genau das, was
+    /// die Hülle bis #236 stehen ließ — wird bei ungültigem Zustand nicht gezeichnet:
+    /// kein „0,00 MWh/a" an der Stelle des Strombedarfs, keine Marke, keine 0,0 %.
+    /// </summary>
+    [Fact]
+    public void Ein_vorbelegtes_Nullobjekt_wird_nicht_als_Ergebnis_gezeichnet()
+    {
+        var seite = ZeichnenOhneErgebnis(ErgebnisZustand.Veraltet,
+                                         daten: new UebersichtDaten());
+
+        // Die STROMSPALTE zeigt die Zahl der Bedarfsrechnung, nicht die 0,00 des
+        // vorbelegten DTO — das war das Bildschirmfoto des Anwenders.
+        var werte = seite.FindAll(".epos-simueb-kennzahl-wert");
+        Assert.Equal(2, werte.Count);
+        Assert.StartsWith(Zahl(2850.2), werte[1].TextContent.Trim(), StringComparison.Ordinal);
+
+        Assert.DoesNotContain(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
+                              StringComparison.Ordinal);
+        Assert.Single(seite.FindAll("p.epos-simueb-leerkarte"));
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Mit gültigem Zustand steht das Dashboard unverändert — Ring,
+    /// Legende, Tabelle und Marke; die Leerkarte gibt es dann nicht.
+    /// </summary>
+    [Fact]
+    public void Mit_gueltigem_Zustand_steht_das_Dashboard_unveraendert()
+    {
+        var seite = Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Daten, Daten(stromerzeuger: false));
+            p.Add(x => x.Zustand, ErgebnisZustand.Gueltig);
+            p.Add(x => x.Bedarf, Bedarfszahlen());
+            p.Add(x => x.RingWaerme, BILD);
+            p.Add(x => x.RingStrom, BILD);
+        });
+
+        Assert.Empty(seite.FindAll("p.epos-simueb-leerkarte"));
+        Assert.Equal(6, seite.FindAll(".epos-simueb-kennzahl").Count);
+        Assert.Equal(2, seite.FindAll("ul.epos-simueb-legende").Count);
+        Assert.Contains(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
+                        StringComparison.Ordinal);
     }
 }

@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
         private byte[] Bild(Bildauftrag a)
         {
             if (a == null) return null;
-            if (!_ergebnisGueltig && a.Bild != Bilder.BedarfWaerme && a.Bild != Bilder.BedarfStrom)
+            if (!ErgebnisIstGueltig && a.Bild != Bilder.BedarfWaerme && a.Bild != Bilder.BedarfStrom)
                 return null;
 
             try

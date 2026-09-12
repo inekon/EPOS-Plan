@@ -121,6 +121,26 @@ entgegen — sie ist damit austauschbar.
   Schrift ab; wo ein Knopf allein auf einer Fläche steht („Ergebnis speichern“ ohne
   Ergebnis), gehört die leise Hausfläche dazu und ein `title` mit dem Grund. Wachen:
   `Seiten/StartreiterSimulationTests`, `Seiten/StartseiteAnmutungTests`.
+- **Ein Reiter zeichnet nie ein VORBELEGTES DTO als Ergebnis — er prüft den Zustand und
+  zeigt sonst einen Leerzustand mit Grund** (Anwenderrückmeldung 12.09.2026, Auftrag
+  **#236**). Befund: Das Blatt „Übersicht" der Ergebnisseite meldete „Strombedarf
+  0,00 MWh/a", „Deckung 0,0 %" und „kein Stromerzeuger im Projekt", während die
+  Projektzusammenfassung daneben 2 850,20 MWh/a nannte. Gerechnet hatte der Kern richtig;
+  gezeichnet war das `= new UebersichtDaten()`, mit dem das DTO vorbelegt war — die Hülle
+  stieg bei ungültigem Ergebnis aus, bevor sie das Feld füllte, und eine Vorbelegung aus
+  lauter Nullen ist von einem Ergebnis aus lauter Nullen nicht zu unterscheiden. **Die
+  Regel in drei Teilen:** (1) Ein Feld, das es ohne Ergebnis nicht gibt, ist **nullbar**
+  und wird nicht vorbelegt. (2) Der Stand trägt einen benannten **Zustand** samt Anlass
+  (`ErgebnisZustand`: `NichtGerechnet` · `Gueltig` · `Veraltet` · `Abgebrochen`) statt
+  eines nackten `bool` — ein Schalter sagt, ob gespeichert werden darf, nicht warum nichts
+  dasteht. (3) Was **ohne** Lauf feststeht, wird trotzdem gezeigt: Die zwei Bedarfszahlen
+  kommen aus der Bedarfsrechnung und stehen in jedem Zustand — dieselben Zahlen wie in der
+  Zusammenfassung. An der Stelle des Ergebnisses steht EINE ruhige Karte mit dem Grund,
+  kein Warnbanner (Regel W16b‑E‑6, dritte Stufe); den SATZ baut die Seite, nicht die
+  Hülle — nur sie weiß, ob derselbe Grund schon als Banner darüber steht. Wachen:
+  `Seiten/UebersichtReiterTests` (darunter die Wache, die ein vorbelegtes DTO durch die
+  Komponente schickt), `Seiten/StartreiterSimulationTests`,
+  `EPOS.Kern.Tests/SimulationUebersichtZustandTests`.
 - **Jede neue Schrift-auf-Fläche-Paarung hält 4,5:1.** Drei Farben des Vorläufers sind
   deshalb bewusst NICHT übernommen (weiß auf `#6876df` bei kleiner Schrift 3,76:1, die
   Zusammenfassungswerte in 128,128,255 auf `#f9fafc` 3,12:1, die Versionsfarbe 150,156,162

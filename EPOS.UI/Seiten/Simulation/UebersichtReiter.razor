@@ -48,15 +48,50 @@
    die Vorgabe ist EINBLENDEN, und der Schalter merkt sich den Stand.
 
    BEFUND W11-B36 bleibt: Ohne Bedarf steht kein Ring, sondern der Satz, dass
-   sich ohne Bedarf keine Deckung ausweisen laesst. *@
+   sich ohne Bedarf keine Deckung ausweisen laesst.
+
+   ======================================================================
+   OHNE GERECHNETES ERGEBNIS WIRD NICHTS AUSGEWIESEN (Auftrag #236,
+   Anwenderrueckmeldung 12.09.2026)
+   ======================================================================
+
+   DER BEFUND. Der Startseiten-Reiter zeigte rechts „Strombedarf 0,00 MWh/a",
+   „Deckung 0,0 %" und die Marke „kein Stromerzeuger im Projekt", waehrend die
+   Projektzusammenfassung links 2 850,20 MWh/a nannte - aus einer eingelesenen
+   Stromganglinie. Gerechnet hatte der Kern richtig; gezeichnet war ein
+   NULLOBJEKT: Die Huelle stieg bei ungueltigem Ergebnis aus, bevor sie Daten
+   fuellte, und das mit `new UebersichtDaten()` vorbelegte Feld sah fuer diesen
+   Reiter aus wie ein Ergebnis. Ungueltig wird ein Lauf schon durch jeden Besuch
+   der Stromspeicher-Auslegung, der speichert oder rechnet.
+
+   WAS SICH AENDERT. `Daten` ist seither NULLBAR, und `Zustand` sagt, woran man
+   ist. Ist er nicht `Gueltig`, zeichnet der Reiter KEINEN Ring, keine Deckung,
+   keine Erzeugertabelle und keine Marke - sondern die beiden BEDARFSZAHLEN aus
+   der Bedarfsrechnung (dieselben, die die Zusammenfassung nennt) und darunter
+   EINEN ruhigen Leerzustand mit dem Grund. Kein Warnbanner: Es fehlt nichts, was
+   der Anwender beheben muesste; er hat nur noch nicht (oder nicht mehr aktuell)
+   gerechnet - Regel W16b-E-6, dritte Stufe, Bauform wie die Leerzustandskarte
+   aus #233. *@
 
 @namespace EPOS.UI.Seiten.Simulation
 
 <div class="epos-simueb">
-    <div class="epos-simueb-spalten">
-        @Spalte(true)
-        @Spalte(false)
-    </div>
+    @if (Ergebnisstand)
+    {
+        <div class="epos-simueb-spalten">
+            @Spalte(true)
+            @Spalte(false)
+        </div>
+    }
+    else
+    {
+        <div class="epos-simueb-spalten">
+            @Bedarfsspalte(true)
+            @Bedarfsspalte(false)
+        </div>
+
+        <p class="epos-simueb-leerkarte">@Leertext</p>
+    }
 </div>
 
 @code {
@@ -66,8 +101,41 @@
     [Parameter]
     public WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen? Kennzahlen { get; set; }
 
-    /// <summary>Praesenz, Ringe, Legenden und die zwei Erzeugertabellen.</summary>
-    [Parameter] public UebersichtDaten Daten { get; set; } = new UebersichtDaten();
+    /// <summary>
+    /// Praesenz, Ringe, Legenden und die zwei Erzeugertabellen; <c>null</c> = es gibt
+    /// kein gerechnetes Ergebnis (Auftrag #236).
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Vorbelegung ist mit #236 gefallen.</b> Hier stand ein
+    /// <c>= new UebersichtDaten()</c>, und genau das zeichnete der Reiter wie ein
+    /// Ergebnis, wenn die Huelle nichts geliefert hatte.
+    /// </remarks>
+    [Parameter] public UebersichtDaten? Daten { get; set; }
+
+    /// <summary>
+    /// Der Zustand des angezeigten Ergebnisses (Auftrag #236). Alles ausser
+    /// <see cref="ErgebnisZustand.Gueltig"/> zeigt den Leerzustand.
+    /// </summary>
+    /// <remarks>
+    /// Die Vorgabe ist <see cref="ErgebnisZustand.Gueltig"/>: Wer <see cref="Daten"/>
+    /// hereinreicht, hat gerechnet — die Pruefstaende aus #222 bleiben damit stehen.
+    /// </remarks>
+    [Parameter] public ErgebnisZustand Zustand { get; set; } = ErgebnisZustand.Gueltig;
+
+    /// <summary>
+    /// Der fertige Satz des Leerzustands (Auftrag #236); leer = der allgemeine Satz.
+    /// </summary>
+    /// <remarks>
+    /// Er kommt FERTIG herein und wird hier nicht gebaut: Nur die Ergebnisseite weiss,
+    /// ob derselbe Grund schon als Warnbanner ueber dem Reiterstapel steht.
+    /// </remarks>
+    [Parameter] public string Zustandstext { get; set; } = "";
+
+    /// <summary>
+    /// Die Zahlen der BEDARFSRECHNUNG (Auftrag #236) — sie haengen nicht am Lauf und
+    /// stehen deshalb auch im Leerzustand; <c>null</c> = keine.
+    /// </summary>
+    [Parameter] public BedarfDaten? Bedarf { get; set; }
 
     /// <summary>Der Ring „Waermedeckung" (Befund W11-B5, GDI-Donut des Navigators).</summary>
     [Parameter] public byte[]? RingWaerme { get; set; }
@@ -99,6 +167,40 @@
     private WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen K =>
         Kennzahlen ?? new WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen();
 
+    /// <summary>Die Zahlen eines Laufs — sonst der Leerzustand (#236).</summary>
+    private bool Ergebnisstand => Zustand == ErgebnisZustand.Gueltig && Daten is not null;
+
+    /// <summary>Steht ein Ergebnis? (Pruefhilfe)</summary>
+    public bool ErgebnisSteht => Ergebnisstand;
+
+    /// <summary>Das Dashboard; im Leerzustand wird es nie gelesen.</summary>
+    private UebersichtDaten D => Daten ?? new UebersichtDaten();
+
+    /// <summary>Der Satz des Leerzustands — herein gereicht oder der allgemeine.</summary>
+    private string Leertext
+        => Zustandstext.Length > 0 ? Zustandstext : Resource.SIMERG_ZUSTAND_NICHT_GERECHNET;
+
+    // =====================================================================
+    //  Eine Spalte OHNE Ergebnis: nur die Bedarfszahl (#236)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Leerzustand einer Spalte: das Kopfband OHNE Abzeichen und die EINE Zahl,
+    /// die auch ohne Lauf feststeht — der Bedarf aus der Bedarfsrechnung.
+    /// </summary>
+    private RenderFragment Bedarfsspalte(bool waerme) => @<section class="epos-simueb-spalte">
+
+        <Gruppenkopf Titel="@(waerme ? Resource.SIMERG_GRP_WAERME : Resource.SIMERG_GRP_STROM)" />
+
+        <div class="epos-simueb-kennzahlen epos-simueb-kennzahlen--allein">
+            @Kennzahl(waerme ? Resource.SIMUEB_LBL_WAERMEBEDARF : Resource.SIMUEB_LBL_STROMBEDARF,
+                      Zahl(waerme ? (Bedarf?.WaermebedarfGesamtMwh ?? 0.0)
+                                  : (Bedarf?.StrombedarfGesamtMwh ?? 0.0), "N2"),
+                      MWH, false)
+        </div>
+
+    </section>;
+
     // =====================================================================
     //  Eine Spalte des Dashboards
     // =====================================================================
@@ -110,12 +212,12 @@
 
         <div class="epos-simueb-kennzahlen">
             @Kennzahl(waerme ? Resource.SIMUEB_LBL_WAERMEBEDARF : Resource.SIMUEB_LBL_STROMBEDARF,
-                      Zahl(waerme ? Daten.WaermebedarfMwh : Daten.StrombedarfMwh, "N2"), MWH, false)
+                      Zahl(waerme ? D.WaermebedarfMwh : D.StrombedarfMwh, "N2"), MWH, false)
             @Kennzahl(Resource.SIMUEB_LBL_DECKUNG,
-                      Zahl(waerme ? Daten.WaermedeckungProzent : Daten.StromdeckungProzent, "N1"),
+                      Zahl(waerme ? D.WaermedeckungProzent : D.StromdeckungProzent, "N1"),
                       "%", false)
             @Kennzahl(waerme ? Resource.SIM_KACHEL_RESTWAERMEBEDARF : Resource.SIM_KACHEL_RESTSTROMBEDARF,
-                      Zahl(waerme ? Daten.RestwaermeMwh : Daten.ReststromMwh, "N2"), MWH, true)
+                      Zahl(waerme ? D.RestwaermeMwh : D.ReststromMwh, "N2"), MWH, true)
         </div>
 
         @* KEINE ZAHL GEHT VERLOREN. Die 13 Kennzahlen des Vorlaeufers stehen
@@ -130,7 +232,7 @@
             </p>
         }
 
-        @if (waerme ? Daten.WaermebedarfVorhanden : Daten.StrombedarfVorhanden)
+        @if (waerme ? D.WaermebedarfVorhanden : D.StrombedarfVorhanden)
         {
             <div class="epos-simueb-ringzeile">
                 <div class="epos-simueb-ring">
@@ -141,7 +243,7 @@
 
                 <div class="epos-simueb-legendenblock">
                     <ul class="epos-simueb-legende">
-                        @foreach (Ringanteil a in waerme ? Daten.WaermeLegende : Daten.StromLegende)
+                        @foreach (Ringanteil a in waerme ? D.WaermeLegende : D.StromLegende)
                         {
                             <li class="@(a.IstRest ? "epos-simueb-legende-rest" : null)">
                                 <span class="epos-simueb-farbe" style="@("background:" + a.Farbe)"
@@ -157,7 +259,7 @@
                                 @(waerme ? Resource.SIMUEB_LBL_WAERMEBEDARF : Resource.SIMUEB_LBL_STROMBEDARF)
                             </span>
                             <span class="epos-simueb-legende-wert">
-                                @Zahl(waerme ? Daten.WaermebedarfMwh : Daten.StrombedarfMwh, "N2") MWh
+                                @Zahl(waerme ? D.WaermebedarfMwh : D.StrombedarfMwh, "N2") MWh
                             </span>
                             <span class="epos-simueb-legende-anteil">@Zahl(100.0, "N1") %</span>
                         </li>
@@ -167,7 +269,7 @@
                        Vollring „alles Netz" - und dieser Satz sagt, was dagegen zu
                        tun ist. Schritt ① steht in der Ablaufleiste unmittelbar
                        darueber; die Ansicht wechselt ihn, nicht dieser Reiter. *@
-                    @if (!waerme && Daten.StromdeckungProzent <= 0)
+                    @if (!waerme && D.StromdeckungProzent <= 0)
                     {
                         <p class="epos-simueb-leerhinweis">
                             @string.Format(Resource.SIMUEB_HINWEIS_OHNE_STROMERZEUGER,
@@ -290,7 +392,7 @@
     // =====================================================================
 
     private Erzeugertabelle Tab(bool waerme)
-        => waerme ? Daten.WaermeTabelle : Daten.StromTabelle;
+        => waerme ? D.WaermeTabelle : D.StromTabelle;
 
     /// <summary>Die Zeilen, die dieser Stand des Schalters stehen laesst.</summary>
     private IEnumerable<Erzeugerzeile> Sichtbare(bool waerme)
@@ -313,11 +415,11 @@
     private string Abzeichen(bool waerme)
     {
         if (waerme)
-            return string.IsNullOrEmpty(Daten.Kaskade)
+            return string.IsNullOrEmpty(D.Kaskade)
                 ? ""
-                : string.Format(Resource.SIMUEB_BADGE_KASKADE, Daten.Kaskade);
+                : string.Format(Resource.SIMUEB_BADGE_KASKADE, D.Kaskade);
 
-        return Daten.StromerzeugerVorhanden ? "" : Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER;
+        return D.StromerzeugerVorhanden ? "" : Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER;
     }
 
     /// <summary>
@@ -327,11 +429,11 @@
     private List<string> Eigenverbrauch()
     {
         var teile = new List<string>();
-        if (Daten.Waermepumpe)
+        if (D.Waermepumpe)
             teile.Add(Resource.SIM_ERZEUGERNAME_WAERMEPUMPE + " " + Zahl(K.WpStromverbrauchMwh, "N2"));
-        if (Daten.Heizstab)
+        if (D.Heizstab)
             teile.Add(Resource.CHART_SEGMENT_HEIZSTAB + " " + Zahl(K.HeizstabStromverbrauchMwh, "N2"));
-        if (Daten.Heizkessel)
+        if (D.Heizkessel)
             teile.Add(Resource.SIM_TABELLE_HEIZKESSEL + " " + Zahl(K.KesselStromverbrauchMwh, "N2"));
         return teile;
     }

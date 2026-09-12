@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
@@ -85,6 +86,10 @@ public class StartreiterSimulationTests : EposBunitContext
     private int _gespeichert;
     private bool _laufGerechnet;
     private bool _ergebnisGueltig;
+
+    /// <summary>Ein ausdrücklich gesetzter Ergebniszustand (Auftrag #236); <c>null</c> = aus der Marke.</summary>
+    private ErgebnisZustand? _zustand;
+    private string _zustandsgrund = "";
     private TaskCompletionSource<Rueckmeldung>? _laufFertig;
 
     private readonly List<string> _gemeldet = new();
@@ -111,7 +116,13 @@ public class StartreiterSimulationTests : EposBunitContext
         Laden = _ => new SimulationErgebnisDaten
         {
             IdProjekt = 1030,
-            ErgebnisGueltig = _ergebnisGueltig,
+            // Der ZUSTAND ist seit #236 die Wahrheit; ohne eigenen Wert folgt er der
+            // alten Marke (gültig / noch nicht gerechnet).
+            Zustand = _zustand ?? (_ergebnisGueltig
+                                       ? ErgebnisZustand.Gueltig
+                                       : ErgebnisZustand.NichtGerechnet),
+            Zustandsgrund = _zustandsgrund,
+            Bedarf = new BedarfDaten { StrombedarfGesamtMwh = 2850.2 },
             ReiterStromspeicher = true
         },
         Bild = _ => null,
@@ -671,5 +682,105 @@ public class StartreiterSimulationTests : EposBunitContext
         cut.Find(".epos-startreiter-leiste .epos-simreiter-konfig").Click();
 
         Assert.Equal(new[] { Kachelschluessel.SimulationKonfiguration }, gemeldet);
+    }
+    // =====================================================================
+    //  7 — Der VERALTETE Lauf (Auftrag #236, Anwenderrückmeldung 12.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Befund #236.</b> Der Anwender kam aus der Stromspeicher-Auslegung
+    /// desselben Projekts zurück. <c>LaufGerechnet</c> bleibt dabei wahr — die rechte
+    /// Spalte steht also —, aber das Ergebnis ist VERALTET. Bis #236 zeigte die
+    /// Übersicht dort ein Nullobjekt („Strombedarf 0,00 MWh/a", Marke „kein
+    /// Stromerzeuger im Projekt"), während links 2 850,20 MWh/a standen. Jetzt steht
+    /// der Zustand SICHTBAR im Kopf der Spalte, und die Übersicht zeigt die
+    /// Bedarfszahl.
+    /// </summary>
+    [Fact]
+    public void Ein_veraltetes_Ergebnis_steht_sichtbar_im_Kopf_der_rechten_Spalte()
+    {
+        _laufGerechnet = true;
+        _zustand = ErgebnisZustand.Veraltet;
+        _zustandsgrund = "die Speicher-Einstellungen wurden geändert";
+
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        // Die Spalte steht (der Kommentar an ErgebnisVorhanden will das) …
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-simreiter-rechts .epos-simerg")));
+
+        // … und nennt den Zustand als leise Zeile, nicht als Banner.
+        var zeile = cut.Find(".epos-simreiter-rechtskopf p.epos-simreiter-zustand");
+        Assert.Contains(_zustandsgrund, zeile.TextContent, StringComparison.Ordinal);
+        Assert.Empty(cut.FindAll(".epos-simreiter-rechts .epos-warnbanner"));
+
+        // Die Übersicht zeigt die Bedarfszahl — kein „0,00" aus einem Nullobjekt.
+        Assert.Contains((2850.2).ToString("N2", CultureInfo.CurrentCulture),
+                        cut.Find(".epos-simreiter-rechts .epos-simueb").TextContent,
+                        StringComparison.Ordinal);
+        Assert.Empty(cut.FindAll(".epos-simreiter-rechts ul.epos-simueb-legende"));
+    }
+
+    /// <summary>
+    /// „Ergebnis speichern" bleibt bei einem veralteten Lauf GESPERRT — und sein
+    /// <c>title</c> nennt seit #236 den Zustand statt nur „Noch kein Ergebnis".
+    /// </summary>
+    [Fact]
+    public void Bei_veraltetem_Ergebnis_nennt_der_Speicherknopf_den_Grund()
+    {
+        _laufGerechnet = true;
+        _zustand = ErgebnisZustand.Veraltet;
+        _zustandsgrund = "die Speicherflotte wurde neu gerechnet";
+
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-simreiter-rechts .epos-simerg")));
+
+        IElement knopf = Speichern(cut);
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Contains(_zustandsgrund, knopf.GetAttribute("title") ?? "", StringComparison.Ordinal);
+        Assert.Equal(0, _gespeichert);
+    }
+
+    /// <summary>
+    /// Ein ABGEBROCHENER Lauf ist derselbe Fall mit einem anderen Satz: Die Spalte
+    /// steht, der Grund steht da, gespeichert wird nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_abgebrochener_Lauf_nennt_seinen_Abbruchgrund()
+    {
+        _laufGerechnet = true;
+        _zustand = ErgebnisZustand.Abgebrochen;
+        _zustandsgrund = "Die Klimaregion fehlt.";
+
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-simreiter-rechts .epos-simerg")));
+
+        Assert.Contains(_zustandsgrund,
+                        cut.Find(".epos-simreiter-rechtskopf p.epos-simreiter-zustand").TextContent,
+                        StringComparison.Ordinal);
+        Assert.True(Speichern(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Nach einem gültigen Lauf gibt es keine Zustandszeile, und
+    /// „Ergebnis speichern" ist frei.
+    /// </summary>
+    [Fact]
+    public void Ein_gueltiges_Ergebnis_traegt_keine_Zustandszeile()
+    {
+        _laufGerechnet = true;
+        _zustand = ErgebnisZustand.Gueltig;
+
+        var cut = Zeigen(Dienste());
+        ReiterSimulation(cut);
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-simreiter-rechts .epos-simerg")));
+
+        Assert.Empty(cut.FindAll(".epos-simreiter-rechtskopf p.epos-simreiter-zustand"));
+        cut.WaitForAssertion(() => Assert.False(Speichern(cut).HasAttribute("disabled")));
     }
 }

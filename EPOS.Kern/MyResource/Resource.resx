@@ -18792,4 +18792,31 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SPA_BESTPHASE_ERL" xml:space="preserve">
     <value>Aus welcher Phase der Suche der beste Kandidat stammt: Grob (das erste Raster) oder Fein (das engere Raster um das Grob-Optimum).</value>
   </data>
+  <data name="SIMERG_ZUSTAND_NICHT_GERECHNET" xml:space="preserve">
+    <value>Noch nicht gerechnet — starten Sie die Simulation, um ein Ergebnis zu sehen.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_VERALTET" xml:space="preserve">
+    <value>Das Ergebnis ist veraltet — {0}. Bitte Simulation erneut starten.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_VERALTET_KURZ" xml:space="preserve">
+    <value>Das Ergebnis ist veraltet. Bitte Simulation erneut starten.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN" xml:space="preserve">
+    <value>Der Lauf wurde abgebrochen — {0}.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN_KURZ" xml:space="preserve">
+    <value>Der Lauf wurde abgebrochen.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG" xml:space="preserve">
+    <value>Der Lauf wurde abgebrochen, siehe Meldung oben.</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN" xml:space="preserve">
+    <value>die Speicher-Einstellungen wurden geändert</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
+    <value>die Speicherflotte wurde neu gerechnet</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
+    <value>in der Stromspeicher-Auslegung wurde etwas geändert</value>
+  </data>
 </root>

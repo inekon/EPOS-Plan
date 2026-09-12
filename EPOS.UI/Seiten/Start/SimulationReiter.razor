@@ -211,7 +211,21 @@
         {
             <div class="epos-simreiter-rechts">
                 <div class="epos-simreiter-rechtskopf">
-                    <h3 class="epos-startreiter-titel">@ErgebnisTitelText</h3>
+                    <div>
+                        <h3 class="epos-startreiter-titel">@ErgebnisTitelText</h3>
+
+                        @* DER ZUSTAND STEHT SICHTBAR (Auftrag #236). Ein einmal
+                           gerechneter Lauf laesst die Spalte stehen, auch wenn er
+                           inzwischen ueberholt ist - jeder Besuch der
+                           Stromspeicher-Auslegung, der speichert oder rechnet, tut
+                           das. Bis #236 sah man davon nichts: Die Uebersicht zeigte
+                           lauter Nullen, als waeren sie gerechnet. Eine leise Zeile,
+                           kein Banner (Regel W16b-E-6). *@
+                        @if (Zustandszeile.Length > 0)
+                        {
+                            <p class="epos-simreiter-zustand">@Zustandszeile</p>
+                        }
+                    </div>
                     @* GESPERRT OHNE ERGEBNIS (Auftrag #233): Der Knopf stand schon
                        vorher auf disabled, sah aber aus wie ein bedienbarer. Seit
                        #233 faellt er dabei auf die leise Hausflaeche zurueck
@@ -219,7 +233,7 @@
                        sein title nennt den Grund. *@
                     <button type="button" class="epos-knopf epos-simreiter-speichern"
                             disabled="@(!SpeichernFrei)"
-                            title="@(SpeichernFrei ? null : ErgebnisFehltText)"
+                            title="@(SpeichernFrei ? null : SperrgrundSpeichern)"
                             @onclick="ErgebnisSpeichern">@ErgebnisSpeichernText</button>
                 </div>
 
@@ -500,6 +514,37 @@
     /// </summary>
     private bool SpeichernFrei
         => _ergebnisMontiert && _ergebnisSeite is not null && _ergebnisSeite.SpeichernMoeglich;
+
+    /// <summary>
+    /// Warum „Ergebnis speichern" gesperrt ist (Auftrag <b>#236</b>) — der Satz zum
+    /// ZUSTAND, wenn die Spalte steht („Das Ergebnis ist veraltet — …", „Der Lauf wurde
+    /// abgebrochen — …"), sonst der allgemeine „Noch kein Ergebnis".
+    /// </summary>
+    private string SperrgrundSpeichern
+    {
+        get
+        {
+            string zustand = _ergebnisSeite?.Zustandstext ?? "";
+            return zustand.Length > 0 ? zustand : ErgebnisFehltText;
+        }
+    }
+
+    /// <summary>
+    /// Die leise Zustandszeile im Kopf der rechten Spalte; leer = das Ergebnis steht
+    /// (oder die Spalte zeigt ohnehin ihre Leerzustandskarte).
+    /// </summary>
+    private string Zustandszeile
+    {
+        get
+        {
+            if (!_ergebnisMontiert || _ergebnisSeite is null) return "";
+            return _ergebnisSeite.ErgebnisSteht ? "" : _ergebnisSeite.Zustandstext;
+        }
+    }
+
+    /// <summary>Der Zustand der rechten Spalte (Prüfhilfe).</summary>
+    public ErgebnisZustand Ergebniszustand
+        => _ergebnisSeite?.Ergebniszustand ?? ErgebnisZustand.NichtGerechnet;
 
     private void ErgebnisSpeichern() => _ergebnisSeite?.ErgebnisSpeichern();
 
