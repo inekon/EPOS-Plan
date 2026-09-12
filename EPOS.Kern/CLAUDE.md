@@ -326,7 +326,7 @@ räumt aber nur Plottables und keine Panels; die Zeichenfläche schrumpfte je La
 Problem nicht. **Nicht endliche Werte fallen hier weg** statt das Bild zu Fall zu
 bringen — ein einziges ±∞ in der Matrix beendete ScottPlot beim RENDERN („min must be a
 real number"), also im Anstrich des Steuerelements und damit unfangbar. Der Aufrufer ist
-`Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (57 Bilder,
+`Controller/SpeicherOptimierungCtrl`; die Proben stehen in `ChartProben` (59 Bilder,
 dreizehn Gegenproben) und in `EPOS.Kern.Tests/SpeicherOptimierungCtrlTests`.
 
 **Ein LOCH im Raster ist seit Auftrag #226 (11.09.2026) hellgrau, nicht rot.**
@@ -397,8 +397,8 @@ Pixelvergleich wäre nur *innerhalb* einer Plattform sinnvoll (das tat der Modus
 **Nachweis in drei Stufen.** `EPOS.Kern.Tests/ChartRendererTests.cs` (iU7-8) prüft die
 Verdichtungen exakt und dass gezeichnet wird — seit iU9-W3.4 fünf Tests (die zwei neuen
 sichern Maß und Determinismus des Kostenprofils), in jedem Kern-Lauf dabei.
-`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet **57** Bilder (seit #224,
-vorher 55) und prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
+`Proben/ChartProben` (eigene `.sln`, referenziert dieses Projekt) zeichnet **59** Bilder (seit #234,
+vorher 57) und prüft Maße, Farbvorkommen und Determinismus; seit iU7-7 läuft die Probe in
 `.github/workflows/kern.yml` auf ubuntu **und** macos, die PNG gehen als Artefakt mit. Der
 Pixelvergleich gegen GDI+ läuft unter Windows.
 

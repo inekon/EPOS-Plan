@@ -345,8 +345,41 @@ namespace ChartProben
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
                                                     ChartRenderer.Stapelart.Keine, false, 4f),
                             "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
-                            new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan),
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan) },
                             "Bedarf [kW]"));
+
+            // --- #234: ZWEI Speicher auf der zweiten Achse ----------------------------
+            //
+            // Anwenderrueckmeldung 12.09.2026: Auf der zweiten Achse des Waermegangs
+            // steht seither der SPEICHERINHALT [kWh] - und ein Projekt fuehrt mehrere
+            // Pufferspeicher. Die Bedarfslinie liegt dafuer auf der PRIMAERachse, wo
+            // auch die Produktion steht (beides kW). Geprueft wird, dass beide
+            // Speicherfarben UND die Bedarfsfarbe im Bild vorkommen; die Achse selbst
+            // steht bei mehr als einer Reihe neutral in DimGray.
+            double[] soc1 = Jahresreihe(900, 600, 250, 0, Math.PI / 2);
+            double[] soc2 = Jahresreihe(500, 300, 150, 0, -Math.PI / 2);
+
+            var b2Speicher = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Pufferspeicher 1", soc1, SKColors.MediumVioletRed),
+                new ChartRenderer.Reihe("Pufferspeicher 2", soc2, SKColors.Teal)
+            };
+
+            Pruefe(ziel, "erzeugerstapel_zwei_speicher", 1240, 560,
+                   new[] { SKColors.Orange, SKColors.Yellow, SKColors.Blue, SKColors.Green,
+                           SKColors.DarkCyan, SKColors.MediumVioletRed, SKColors.Teal,
+                           SKColors.DimGray },
+                   () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                            b2Stapel,
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Waermebedarf", gesamtlast,
+                                                      SKColors.DarkCyan,
+                                                      ChartRenderer.Stapelart.Keine, false, 2f) },
+                            new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
+                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                            "Leistung [kW]", ChartRenderer.Achse.Monate, false,
+                            b2Speicher, "Speicherinhalt [kWh]"));
 
             // Viertelstundenraster (Stromseite) mit vier Stapelreihen und zwei Linien.
             var b2Strom = new List<ChartRenderer.Reihe>
@@ -753,6 +786,19 @@ namespace ChartProben
                         b2Stapel, new List<ChartRenderer.Reihe>(), null,
                         "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false,
                         null, null, fenster));
+
+            // #234: Die zweite Achse steht NUR mit gewaehltem Speicher. Ohne diese
+            // Gegenprobe bestuende ein Bild, das die Speicherliste stillschweigend
+            // uebergeht, jede Mass-, Farb- und Determinismuspruefung - und die
+            // Zeichenflaeche bliebe breit, obwohl rechts eine Skala stehen muesste.
+            Unterschiedlich("erzeugerstapel_zweite_achse",
+                () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                        b2Stapel, new List<ChartRenderer.Reihe>(), null,
+                        "Leistung [kW]", ChartRenderer.Achse.Monate, false),
+                () => ChartRenderer.ErzeugerStapel("Waermeproduktion Jahresganglinie",
+                        b2Stapel, new List<ChartRenderer.Reihe>(), null,
+                        "Leistung [kW]", ChartRenderer.Achse.Monate, false,
+                        b2Speicher, "Speicherinhalt [kWh]"));
 
             // Dasselbe fuer die ZEITSTUFEN des Bedarfsdialogs (W8-E-2): Ohne diese zwei
             // Gegenproben bestuende ein stillschweigend uebergangener Fensterparameter

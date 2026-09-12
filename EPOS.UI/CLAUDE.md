@@ -971,7 +971,16 @@ Der Hauptreiter ist seither das **Dashboard** — zwei Spalten Wärme | Strom, j
 Kopfband mit Abzeichen, drei Kennzahlen (Bedarf · Deckung · Rest), der Deckungsring mit
 **HTML-Legende** daneben, die Erzeugertabelle und ein Fuß mit Nullzeilenschalter und
 Bedarfsknopf —, und der **`ErgebnisReiter` führt DREI Blätter**: Autarkie-Analyse,
-Wärme- und Stromproduktion. Startblatt der Seite bleibt die „Übersicht" (#216). Was die
+Wärme- und Stromproduktion. Startblatt der Seite bleibt die „Übersicht" (#216).
+**Regel seit Auftrag #234 (Anwenderrückmeldung 12.09.2026): Ein Ganglinienreiter des
+Ergebnisses belegt beim ERSTEN Aufbau seine Reihen vor** — der Wärmegang alle
+vorhandenen Erzeuger, alle Speicher und die Bedarfslinie, der Stromgang wie bisher „nur
+Gesamt" — **und merkt die Wahl über die SITZUNG** (`Seiten/Simulation/Ganglinienstand`
+mit `Ganglinienregister`, Muster „Filterstand je Katalog", S2.5): `Reiterblatt` zeichnet
+`@if (Sichtbar)`, der Reiter entsteht bei jedem Blattwechsel neu und verlöre seine
+Schalterstellung sonst. Gemerkt werden Bedarfsart, „sortiert", Bedarfslinie und die
+Reihen als SCHLÜSSEL — nicht der Datenzoom, und nichts davon dauerhaft; für Proben
+tauscht der Parameter `Gedaechtnis` den Stand aus. Was die
 Umstellung im Einzelnen behebt — den leeren Ring bei 0 % (`SKPath.ArcTo` zieht bei 360°
 nichts), die Zahl weit weg von ihrem Kopf und die abgeschnittene Legende —, steht in
 [`Projekte/Konzept_Simulationsablauf_EPOS-Plan.md`](../Projekte/Konzept_Simulationsablauf_EPOS-Plan.md)

@@ -1712,7 +1712,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>B2 — ERZEUGERSTAPEL.</b> Das Arbeitspferd der Welle: gestapelte Erzeugung,
-        /// Linien darueber, eine Konturlinie darunter — und wahlweise eine Reihe auf
+        /// Linien darueber, eine Konturlinie darunter — und wahlweise Reihen auf
         /// einer zweiten y-Achse (B3). Es traegt SECHS der siebzehn Zeichenflaechen
         /// (<c>chart3</c>, <c>chart_Kessel</c>, <c>chart8</c>, <c>chart_BHKW_Waerme</c>,
         /// <c>chart_Waerme</c>, <c>chart7</c>).
@@ -1755,17 +1755,23 @@ namespace WindowsFormsApplication1
         /// <param name="yTitel">Beschriftung der linken y-Achse.</param>
         /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
         /// <param name="sortiert">Dauerlinie statt Ganglinie — dann ohne Stapel.</param>
-        /// <param name="zweiteAchse">B3: eine Reihe mit eigener Skala rechts; <c>null</c> = keine.</param>
+        /// <param name="zweiteAchsen">B3: die Reihen mit eigener Skala rechts;
+        /// <c>null</c> oder leer = keine zweite Achse. <b>Seit #234 eine LISTE</b>
+        /// (vorher genau eine Reihe): Auf der zweiten Achse des Wärmegangs stehen die
+        /// Füllstände ALLER gewählten Pufferspeicher, und die sind zu mehreren. Sie
+        /// teilen sich eine gemeinsame Obergrenze — zwei Speicher mit eigener Skala
+        /// wären zwei Kurven, die dasselbe Bild meinen und Verschiedenes zeigen.</param>
         /// <param name="y2Titel">Beschriftung der rechten y-Achse.</param>
         /// <param name="fenster">DATENZOOM (Windows-Abnahme 05.09.2026): der Ausschnitt,
         /// den der Anwender aufgezogen hat; <c>null</c> = das ganze Jahr. Zugeschnitten
-        /// wird ALLES — Stapel, Linien, Kontur und die Reihe der zweiten Achse —, und
+        /// wird ALLES — Stapel, Linien, Kontur und die Reihen der zweiten Achse —, und
         /// zwar VOR jeder Rechnung: Höchstwert, Sortierung und Stapelsumme beziehen sich
         /// dann auf den Ausschnitt, so wie es der Achsenzoom des Vorbilds tat.</param>
         public static byte[] ErzeugerStapel(string titel, IReadOnlyList<Reihe> stapel,
                                             IReadOnlyList<Reihe> linien, Reihe kontur,
                                             string yTitel, Achse achse, bool sortiert,
-                                            Reihe zweiteAchse = null, string y2Titel = null,
+                                            IReadOnlyList<Reihe> zweiteAchsen = null,
+                                            string y2Titel = null,
                                             Achsenfenster fenster = null)
         {
             int W = 1240, H = 560;
@@ -1776,40 +1782,45 @@ namespace WindowsFormsApplication1
 
                 // Der Zuschnitt steht GANZ oben: Alles darunter rechnet dann mit dem
                 // Ausschnitt, ohne davon zu wissen.
-                int gesamt = Laenge(stapel, linien, kontur);
+                int gesamt = Laenge(stapel, linien, kontur, zweiteAchsen);
                 if (fenster != null)
                 {
                     stapel = Zugeschnitten(stapel, fenster);
                     linien = Zugeschnitten(linien, fenster);
                     kontur = Zugeschnitten(kontur, fenster);
-                    zweiteAchse = Zugeschnitten(zweiteAchse, fenster);
+                    zweiteAchsen = Zugeschnitten(zweiteAchsen, fenster);
                 }
 
-                bool mitY2 = Brauchbar(zweiteAchse);
+                List<Reihe> y2G = Brauchbare(zweiteAchsen);
+                bool mitY2 = y2G.Count > 0;
                 var rc = SKRect.Create(100f, 110f, W - (mitY2 ? 190f : 140f), 360f);
 
                 List<Reihe> stapelG = Brauchbare(stapel);
                 List<Reihe> linienG = Brauchbare(linien);
                 bool mitKontur = Brauchbar(kontur);
 
-                if (stapelG.Count == 0 && linienG.Count == 0 && !mitKontur)
+                // Der Leerhinweis gilt erst, wenn AUCH die zweite Achse nichts trägt
+                // (#234): Wer alle Erzeuger abwählt und nur einen Speicher stehen lässt,
+                // hat eine Reihe gewählt — und bekommt sie zu sehen.
+                if (stapelG.Count == 0 && linienG.Count == 0 && !mitKontur && !mitY2)
                 {
                     Leerhinweis(g, rc);
                     return Png(flaeche);
                 }
 
                 // Legende: Kontur zuerst (sie steht im Bestand als erste Serie), dann der
-                // Stapel, dann die Linien, zuletzt die Reihe der zweiten Achse.
+                // Stapel, dann die Linien, zuletzt die Reihen der zweiten Achse.
                 var leg = new List<Segment>();
                 if (mitKontur) leg.Add(new Segment(kontur.Name, 0, kontur.Farbe));
                 leg.AddRange(stapelG.Select(r => new Segment(r.Name, 0, r.Farbe)));
                 leg.AddRange(linienG.Select(r => new Segment(r.Name, 0, r.Farbe)));
-                if (mitY2) leg.Add(new Segment(zweiteAchse.Name, 0, zweiteAchse.Farbe));
+                leg.AddRange(y2G.Select(r => new Segment(r.Name, 0, r.Farbe)));
                 Legende(g, leg, 100f, 66f, W - 30f);
 
                 int n = stapelG.Count > 0 ? stapelG[0].Werte.Length
                       : linienG.Count > 0 ? linienG[0].Werte.Length
-                      : kontur.Werte.Length;
+                      : mitKontur ? kontur.Werte.Length
+                      : y2G[0].Werte.Length;
 
                 // Obergrenze: die hoechste Stapelsumme JE GRUPPE — UNVERAENDERT durch
                 // W11b-B-18 (09.09.2026): Ob die Gruppen nebeneinander oder uebereinander
@@ -1884,17 +1895,28 @@ namespace WindowsFormsApplication1
                     ZeichneLinie(g, rc, sortiert ? AbsteigendKopie(r.Werte) : r.Werte,
                                  0, max, r.Farbe, r.Breite > 0 ? r.Breite : 2.5f);
 
-                // (4) B3 — die zweite y-Achse mit EIGENER Skala.
+                // (4) B3 — die zweite y-Achse mit EIGENER, GEMEINSAMER Skala.
+                //
+                // #234: Bis dahin trug sie genau EINE Reihe. Jetzt sind es beliebig
+                // viele, und sie teilen sich die Obergrenze — sonst zeigten zwei
+                // Speicherfuellstaende auf derselben Achse verschiedene Massstaebe.
+                // Die ACHSE selbst faerbt sich nur bei EINER Reihe in deren Farbe (wie
+                // bisher); bei mehreren waere das die Farbe einer beliebigen von ihnen,
+                // deshalb steht sie dann neutral in DimGray wie die linke.
                 if (mitY2)
                 {
-                    double[] w2 = sortiert ? AbsteigendKopie(zweiteAchse.Werte) : zweiteAchse.Werte;
-                    double max2 = Nice(w2.Max());
+                    double max2 = 0;
+                    foreach (Reihe r in y2G) max2 = Math.Max(max2, r.Werte.Max());
+                    max2 = Nice(max2);
                     if (max2 <= 0) max2 = 1;
 
-                    ZeichneLinie(g, rc, w2, 0, max2, zweiteAchse.Farbe,
-                                 zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f);
+                    SKColor achsenfarbe = y2G.Count == 1 ? y2G[0].Farbe : SKColors.DimGray;
 
-                    using (var achsenstift = Strich(zweiteAchse.Farbe, 2f))
+                    foreach (Reihe r in y2G)
+                        ZeichneLinie(g, rc, sortiert ? AbsteigendKopie(r.Werte) : r.Werte,
+                                     0, max2, r.Farbe, r.Breite > 0 ? r.Breite : 2f);
+
+                    using (var achsenstift = Strich(achsenfarbe, 2f))
                         g.DrawLine(rc.Right, rc.Top, rc.Right, rc.Bottom, achsenstift);
                     using (var f = Schrift(15f))
                     {
@@ -1902,10 +1924,18 @@ namespace WindowsFormsApplication1
                         {
                             double wert = max2 * i / 4.0;
                             float y = (float)(rc.Bottom - wert / max2 * rc.Height);
-                            Text(g, wert.ToString("N0", DE), f, zweiteAchse.Farbe,
+                            Text(g, wert.ToString("N0", DE), f, achsenfarbe,
                                  rc.Right + 8f, y - TextHoehe(f) / 2f);
                         }
-                        Text(g, y2Titel ?? "", f, zweiteAchse.Farbe, rc.Right - 40f, rc.Top - 24f);
+                        // #234: Der Titel der zweiten Achse stand starr bei
+                        // rc.Right − 40. „Waermelast" passte damit noch ins Bild,
+                        // „Speicherinhalt [kWh]" nicht mehr - die Einheit wurde am
+                        // rechten Rand abgeschnitten. Er rueckt jetzt so weit nach
+                        // links, wie er braucht, und endet 10 Bildpunkte vor der
+                        // Kante; kurze Titel stehen unveraendert.
+                        string t2 = y2Titel ?? "";
+                        Text(g, t2, f, achsenfarbe,
+                             Math.Min(rc.Right - 40f, W - 10f - f.MeasureText(t2)), rc.Top - 24f);
                     }
                 }
 
@@ -3332,6 +3362,12 @@ namespace WindowsFormsApplication1
         /// oder die vier Stundenmarken 2000/4000/6000/8000
         /// (<c>ConfigureXAxisWithHours</c>). <paramref name="n"/> ist die Laenge der
         /// Reihen und traegt damit die Unterscheidung Stunden/Viertelstunden.
+        ///
+        /// <para><b>Anwenderrückmeldung 12.09.2026 (#234): die Einheit fehlte.</b> Die
+        /// Marken standen nackt da — „0 … 12" bzw. „2.000 … 8.000" —, und weder Monat
+        /// noch Jahresstunde waren daran zu erkennen. Der Titel steht seither UNTER den
+        /// Marken (<see cref="XAchsentitel"/>); er kommt aus dem Ressourcenkatalog und
+        /// wechselt damit die Sprache mit der Oberfläche.</para>
         /// </summary>
         private static void XAchse(SKCanvas g, SKRect rc, Achse achse, int n)
         {
@@ -3347,23 +3383,44 @@ namespace WindowsFormsApplication1
                         string lab = m.ToString(DE);
                         Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
-                    return;
                 }
-
-                // Jahresstunden: die vier Marken des Vorlaeufers, auf die Reihenlaenge
-                // bezogen - damit stimmt das Bild auch im Viertelstundenraster.
-                int[] stunden = { 2000, 4000, 6000, 8000 };
-                double stundenJeWert = n > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
-                foreach (int h in stunden)
+                else
                 {
-                    double index = h / stundenJeWert;
-                    if (index >= n) continue;
-                    float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
-                    g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                    string lab = h.ToString("N0", DE);
-                    Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    // Jahresstunden: die vier Marken des Vorlaeufers, auf die Reihenlaenge
+                    // bezogen - damit stimmt das Bild auch im Viertelstundenraster.
+                    int[] stunden = { 2000, 4000, 6000, 8000 };
+                    double stundenJeWert = n > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
+                    foreach (int h in stunden)
+                    {
+                        double index = h / stundenJeWert;
+                        if (index >= n) continue;
+                        float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
+                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = h.ToString("N0", DE);
+                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
                 }
             }
+
+            XAchsentitel(g, rc, achse == Achse.Monate
+                                ? MyResource.Resource.CHART_ACHSE_MONAT
+                                : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+        }
+
+        /// <summary>
+        /// <b>Der Titel der x-Achse — EIN Weg für jedes Bild, das den Achsenhelfer
+        /// nimmt</b> (#234). Er steht MITTIG unter den Marken: Diese liegen bei
+        /// <c>rc.Bottom + 8</c> und sind rund 20 Bildpunkte hoch, der Titel beginnt
+        /// deshalb bei <c>rc.Bottom + 30</c>. Bei allen Bildern, die hierher kommen,
+        /// liegt <c>rc.Bottom</c> bei 460…470 und die Bildhöhe bei 542…560 — der Titel
+        /// bleibt damit innerhalb der Fläche, und kein Bildmaß ändert sich.
+        /// </summary>
+        private static void XAchsentitel(SKCanvas g, SKRect rc, string titel)
+        {
+            if (string.IsNullOrEmpty(titel)) return;
+            using (var f = Schrift(15f))
+                Text(g, titel, f, SKColors.DimGray,
+                     rc.Left + (rc.Width - f.MeasureText(titel)) / 2f, rc.Bottom + 30f);
         }
 
         // =================================================================== Schrift
@@ -3923,11 +3980,15 @@ namespace WindowsFormsApplication1
         /// Fenster, ob es Stunden oder Viertelstunden zählt.
         /// </summary>
         private static int Laenge(IReadOnlyList<Reihe> stapel, IReadOnlyList<Reihe> linien,
-                                  Reihe kontur)
+                                  Reihe kontur, IReadOnlyList<Reihe> zweiteAchsen = null)
         {
             foreach (Reihe r in Brauchbare(stapel)) return r.Werte.Length;
             foreach (Reihe r in Brauchbare(linien)) return r.Werte.Length;
-            return Brauchbar(kontur) ? kontur.Werte.Length : 0;
+            if (Brauchbar(kontur)) return kontur.Werte.Length;
+            // #234: Traegt NUR die zweite Achse eine Reihe, sagt sie die Laenge - sonst
+            // zaehlte das Fenster im Viertelstundenraster Stunden.
+            foreach (Reihe r in Brauchbare(zweiteAchsen)) return r.Werte.Length;
+            return 0;
         }
 
         /// <summary>
@@ -3959,6 +4020,10 @@ namespace WindowsFormsApplication1
                     Text(g, lab, schrift, SKColors.DimGray,
                          x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
+
+            // #234: derselbe Achsentitel wie in der Vollansicht - im Fenster zaehlt die
+            // Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen traegt.
+            XAchsentitel(g, rc, MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
         }
 
         /// <summary>
