@@ -4,6 +4,7 @@ using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Standards;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
@@ -225,9 +226,65 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         Assert.Single(cut.FindComponents<SpeicherFlottenBetriebEditor>());
     }
 
+    /// <summary>
+    /// DIE LEBENSDAUERKURVE IST DIE ZWEITE STELLE DESSELBEN BEFUNDS <b>#245</b>: Auch
+    /// hier hing der <c>@@key</c> ihrer Zeilen am PUNKTOBJEKT, und
+    /// <c>SpeicherFlottenEditor.OnParametersSet</c> baut <c>_wert</c> nach jedem
+    /// gemeldeten Feld neu auf (der Wirt reicht eine frische Tiefenkopie herein, also
+    /// eine neue Referenz) — jeder Tastendruck riss die Zeile ab, der Fokus ging mit.
+    /// Seither ist der Schlüssel die ZEILENNUMMER.
+    /// </summary>
+    /// <remarks>
+    /// Gemessen wird wie in <c>OptimierungStationTests</c> die Instanz der
+    /// <c>Zahlenfeld</c>-Komponente, nicht der DOM-Knoten: bunit liest das Markup nach
+    /// jeder Änderung neu ein, AngleSharp-Knoten sind danach immer neu.
+    /// </remarks>
+    [Fact]
+    public void Eine_Eingabe_an_der_Lebensdauerkurve_laesst_ihre_Zeile_stehen()
+    {
+        FlottenStudieKonfiguration flotte = Einheitenflotte();
+        flotte.Einheiten[0].RainflowKurve = new()
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 6000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 3000 }
+        };
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => new SpeicherOptimierungVorgaben
+            {
+                Eingaben = new SpeicherOptimierungEingaben
+                {
+                    Auslegung = new SpeicherAuslegungKonfiguration { Flotte = flotte }
+                }
+            },
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        });
+
+        Zahlenfeld vorher = Kurvenfeld(cut, "Zyklen bis EOL Punkt 1:");
+
+        Kurveneingabe(cut, "Zyklen bis EOL Punkt 1:").Input("6500,");
+
+        Assert.Same(vorher, Kurvenfeld(cut, "Zyklen bis EOL Punkt 1:"));
+        Assert.Equal("6500,", Kurveneingabe(cut, "Zyklen bis EOL Punkt 1:").GetAttribute("value"));
+    }
+
     // =====================================================================
     //  Hilfen
     // =====================================================================
+
+    /// <summary>Die <c>Zahlenfeld</c>-KOMPONENTE mit dieser Beschriftung.</summary>
+    private static Zahlenfeld Kurvenfeld(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string bezeichnung)
+        => cut.FindComponents<Zahlenfeld>()
+              .Select(x => x.Instance)
+              .Single(x => x.Bezeichnung == bezeichnung);
+
+    /// <summary>Das Eingabefeld im Markup mit dieser Beschriftung.</summary>
+    private static AngleSharp.Dom.IElement Kurveneingabe(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string bezeichnung)
+        => cut.FindAll("label")
+              .Single(x => x.TextContent.Contains(bezeichnung, StringComparison.Ordinal))
+              .QuerySelector("input")!;
 
     private static FlottenStudieKonfiguration Einheitenflotte() => new()
     {

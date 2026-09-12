@@ -688,6 +688,30 @@ Tabellenzeile ein Mindestmaß. **Die Probe dazu ist dauerhaft:**
 in keiner Projektmappe und in keiner CI) — sie gehört vor jede Änderung an
 `Raster`/`Katalogliste`/`.epos-raster*` gezogen.
 
+**`@key` nie auf ein Objekt, das eine Kopie je Änderung neu erzeugt — sonst geht der Fokus
+verloren; Wertidentität nehmen** (Befund **#245**, Anwender 12.09.2026: in der Suchraumtabelle
+der Station „4 Optimierung" sprang bei JEDER Tastatureingabe der Fokus aus dem Feld). Ein
+`@key` ohne `Equals`-Überschreibung vergleicht die REFERENZ. Schreibt die Seite ihren Stand
+nach jedem gemeldeten Zeichen als Tiefenkopie zurück — `SpeicherAuslegungKopie.Von`,
+`JsonSerializer`, ein `Kopie(...)` in `OnParametersSet`, ein `.ToList()` im Setter —, ist jedes
+Listenelement danach eine neue Instanz, also ein neuer Schlüssel: Blazor reißt die Zeile samt
+`<input>` ab und baut sie neu. Der Fokus geht mit, und ein frisches `Zahlenfeld` ohne
+Texterinnerung kürzt obendrein die angefangene Dezimalzahl („640," wurde zu „640"). Der
+Schlüssel gehört deshalb auf einen WERT, der die Kopie überlebt — eine Kennung
+(`OptimierungBlock.Zeilenschluessel`: `ErsetztEinheitId ?? Vorlage.Id`, dieselbe Zuordnung, die
+auch der Optimierer nimmt) oder die Zeilennummer innerhalb einer schon keyed Gruppe
+(`SpeicherFlottenEditor`, Punkte der Lebensdauerkurve unter `@key="einheit.Id"`); bei
+doppelter oder fehlender Kennung ist die Zeilennummer der Rückfall, denn ein DOPPELTER
+Schlüssel bricht den Zeichenlauf ab. Ein Objektschlüssel bleibt nur dort richtig, wo der
+Neuaufbau GEWOLLT ist (`WaermepumpenDialog`: `@key="_gewaehlt"` baut die eingebettete
+Detailansicht beim Zeilenwechsel bewusst neu). **Und: gemessen wird in bunit die Identität der
+KOMPONENTE, nicht die des DOM-Knotens** — bunit liest das Markup nach jeder Änderung neu ein,
+ein `<tr>` ist danach immer eine andere AngleSharp-Instanz, auch wenn Blazor die Zeile stehen
+ließe. Wachen:
+`OptimierungStationTests.Eine_Eingabe_im_Suchraum_laesst_die_Zeile_und_ihre_Felder_stehen`,
+`…Eine_angefangene_Dezimalzahl_bleibt_im_Feld_stehen` und
+`StromspeicherAuslegungFlotteTests.Eine_Eingabe_an_der_Lebensdauerkurve_laesst_ihre_Zeile_stehen`.
+
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des
 nicht gewählten Rechenmodells, statt ihn auszublenden — die Werte des anderen Modells gehen so

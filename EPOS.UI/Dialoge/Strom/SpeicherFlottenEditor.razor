@@ -157,7 +157,14 @@
                                     {
                                         int index = rainIndex;
                                         FlottenRainflowPunkt punkt = einheit.RainflowKurve[index];
-                                        <div class="epos-flotte-feldraster" @key="punkt">
+                                        @* Der Schluessel ist die ZEILENNUMMER, nicht der
+                                           Punkt: OnParametersSet baut _wert nach jedem
+                                           gemeldeten Feld neu auf, der Punkt ist danach
+                                           eine neue Instanz — und mit dem abgerissenen
+                                           Feld ginge der Fokus (Befund #245). Innerhalb
+                                           der Einheit (article @@key=einheit.Id) ist die
+                                           Nummer eindeutig. *@
+                                        <div class="epos-flotte-feldraster" @key="index">
                                             <Zahlenfeld Bezeichnung="@string.Format(Texte.Entladetiefe, index + 1)" Einheit="%" Wert="@(punkt.Entladetiefe * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
                                                         WertChanged="@(v => RainflowZahlSetzen(einheit, punkt, x => punkt.Entladetiefe = x / 100.0, v))" />
                                             <Zahlenfeld Bezeichnung="@string.Format(Texte.ZyklenBisEol, index + 1)" Einheit="Zyklen" Wert="@punkt.ZyklenBisEol" Min="0" Aktiv="@Aktiv"
