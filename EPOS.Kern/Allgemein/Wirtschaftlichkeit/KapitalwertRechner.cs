@@ -1,0 +1,720 @@
+using System;
+using System.Collections.Generic;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Reiner Rechenkern der Kapitalwertmethode (DIN EN 17463 / ValERI; Konzept
+    /// Kap. 5.1) — ohne DB- und UI-Abhängigkeit, dadurch gegen Referenzwerte
+    /// testbar (goetz_test.XLS, VALERI_Vorlage_V7).
+    ///
+    ///   KW = −I₀ + Σ_{t=1..T} (E_t − A_t) / (1+i)^t + RW_T / (1+i)^T
+    ///
+    /// Regeln der Ausbaustufe W1:
+    ///  - Ersatzbeschaffung: Position mit Nutzungsdauer n &lt; T wird in t = n, 2n, …
+    ///    (t &lt; T) erneut beschafft — seit Etappe W5‑B‑12 mit dem Preisänderungssatz
+    ///    der kapitalgebundenen Kosten p_I indiziert (bis dahin nominal unverändert,
+    ///    „Vereinfachung W1"; p_I = 0 rechnet unverändert so).
+    ///  - Restwert linear: je Position Investition × Restnutzungsdauer/Nutzungsdauer
+    ///    zum Zeitpunkt T, abgezinst (Entscheidung 11.08.2026).
+    ///  - Nutzungsdauer &lt; 1 a wird wie n = T behandelt (keine Ersatzbeschaffung,
+    ///    kein Restwert) — betrifft Positionen ohne (sinnvoll) gepflegte Nutzungsdauer.
+    ///  - Betriebskosten steigen mit p_B, Energiekosten mit p_E [%/a];
+    ///    Einspeiseerlöse bleiben nominal konstant (feste Vergütung, W1).
+    ///
+    /// Erweiterungen der Stufe W2 (Phase 7):
+    ///  - BEHG-CO₂-Abgabe: Jahr-1-Betrag [€/a], steigt mit p_E (CO₂-Preispfad).
+    ///  - Zusätzliche nominale Erlösreihen je Jahr (KWKG-Bonus mit Vbh-Kontingent,
+    ///    ab Etappe E4 zusätzlich die Steuergutschriften — die Jahreslogik baut der
+    ///    Aufrufer, hier wird nur abgezinst).
+    ///  - Nominalreihe + nominaler Restwert im Zahlungsbild → interner Zinsfuß
+    ///    (IRR) der Differenzreihe per Bisektion.
+    ///
+    /// <para><b>ETAPPE E4 (Leitentscheidung L1): benannte Reihen statt EINER Reihe.</b>
+    /// Bis dahin nahm <see cref="Rechne"/> genau ein <c>double[] zusatzErloesJeJahr</c>
+    /// entgegen — die KWKG-Reihe. Mit den drei Steuergutschriften gibt es erstmals mehr
+    /// als eine jahresscharfe Erlösreihe; der Parameter ist deshalb auf eine Liste
+    /// benannter Reihen umgestellt (<see cref="ErloesReihe"/>). Die Rechnung selbst
+    /// ändert sich nicht: Abgezinst wird die SUMME der Reihen je Jahr, und eine Liste
+    /// mit genau der KWKG-Reihe liefert Wert für Wert dasselbe wie vorher. Die Namen
+    /// werden im Bericht (Etappe E7) gebraucht, um die Gutschriften einzeln
+    /// auszuweisen.</para>
+    ///
+    /// <para><b>ETAPPE E7: das Zahlungsbild gibt die Einzelpositionen zurück.</b> Bis
+    /// dahin verließen dieses Verfahren nur Summen — die Jahresreihen von Betrieb,
+    /// Energie, CO₂-Abgabe, Ersatzbeschaffung, Einspeiseerlös und den benannten
+    /// Erlösreihen entstanden hier, gingen in die Nettoreihe ein und waren danach nicht
+    /// mehr zu haben. Die Mehrjahrestabelle des Berichts braucht sie einzeln; sie stehen
+    /// deshalb jetzt am <see cref="Zahlungsbild"/>. <b>Rein additiv</b> — der Rechenweg
+    /// der Summen ist unverändert, und die Referenzprobe belegt das.</para>
+    ///
+    /// <para><b>PAKET FX3 (Anwenderentscheid R-2, 02.09.2026): ZWEI Betriebstöpfe.</b>
+    /// Bis dahin wuchsen ALLE Betriebskostenpositionen mit der Betriebspreissteigerung
+    /// p_B — auch die, deren Betrag als Anteil der ENDENERGIE bemessen ist
+    /// („x % der Endenergiekosten/​des Endenergiebedarfs", Hilfsenergie nach
+    /// <c>Konzept_BHKW_Wirtschaftlichkeit</c> § 4.5, Wege A und B). Das ist ein
+    /// Widerspruch in sich: Eine Position, die definitionsgemäß ein Anteil der
+    /// Energiekosten ist, folgt nach VDI 2067 / DIN EN 17463 der
+    /// <b>Energie</b>preisentwicklung. Der Rechner nimmt deshalb neben
+    /// <c>betriebJahr</c> (p_B) einen zweiten Topf <c>endenergieJahr</c> entgegen, der
+    /// mit p_E fortgeschrieben wird — wie die Energiekosten.
+    /// <b>Ergebnisneutral, solange der Topf leer ist</b> (0 bzw. <c>null</c>): Der
+    /// Ausdruck für die Ausgaben bleibt dann Zeichen für Zeichen der von vorher, denn
+    /// addiert wird eine echte 0.</para>
+    ///
+    /// <para><b>PAKET FX4 (Anwenderentscheid vom 02.09.2026): der p_E-Topf wächst um die
+    /// zwei Alt-Arten und zieht in der Sensitivität mit.</b> Seit FX4-b gehören auch
+    /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c> — die projektweiten
+    /// Vorläufer von Weg A — in den Endenergie-Topf; sie sind derselben Sache nach ein
+    /// Anteil der Energiekosten. Seit FX4-c skaliert der Sensitivitäts-Ausschlag
+    /// „Energiekosten ±10 %" den Topf mit demselben Faktor wie die Energiekosten
+    /// (der Aufrufer reicht ihn bereits skaliert herein — <b>dieser Rechenkern sieht
+    /// davon nichts</b> und ist von FX4 unverändert geblieben).</para>
+    ///
+    /// <para><b>Was NICHT umgestellt ist</b> (dokumentierte Grenzen, Stand FX4):
+    /// der „Weg C" der Hilfsenergie — der feste Jahresbetrag
+    /// (<c>JAHRESBETRAG</c>/<c>BETRAG</c>) — bleibt bei p_B, denn ein fester Betrag trägt
+    /// keine Endenergie-Bemessung; die EINE Klammer
+    /// <c>(energieJahr + behgJahr) × (1+p_E)^(t−1)</c> des Bestandszweigs bleibt
+    /// unangetastet. Die Zuordnung einer Position zu einem der beiden Töpfe trifft der
+    /// Aufrufer (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>), nicht dieser
+    /// Rechenkern.</para>
+    ///
+    /// <para><b>ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): die Ersatzbeschaffung wird
+    /// PREISINDIZIERT.</b> VDI 2067 Blatt 1 schreibt die kapitalgebundenen Kosten mit einem
+    /// EIGENEN Preisänderungsfaktor fort: Eine Ersatzbeschaffung nach n Jahren kostet
+    /// A_n = A_0 · r^n mit r = 1 + p_I. Bis hierher trug dieser Rechenkern den heutigen
+    /// Betrag unverändert in jedes Ersatzjahr — die Anlage, die in 18 Jahren gekauft wird,
+    /// kostete so viel wie die von heute. Das weist den Kapitalwert einer Variante mit
+    /// kurzlebigen Positionen systematisch zu günstig aus und war die Lücke G4 des
+    /// VALERI-Abgleichs (W5‑B‑10). Der dritte Preisänderungssatz
+    /// <c>preisstInvestProzent</c> schließt sie. Er gilt für ALLE kapitalgebundenen
+    /// Kosten gemeinsam, nicht je Zeile: Damit ist zugleich entschieden, wie weit die
+    /// Lücke G2 („Preisänderung je Kostenart") reicht — genau bis zu diesem dritten
+    /// Topf.</para>
+    ///
+    /// <para><b>Die ERSTbeschaffung bleibt nominal</b> — auch die nach KD6 verschobene.
+    /// Der eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt und kein auf heute
+    /// zurückgerechneter Preisstand; ihn zu indizieren hieße, eine Angabe zu verändern,
+    /// die der Anwender bereits für sein Startjahr gemacht hat. Der RESTWERT steht auf
+    /// derselben Preisbasis wie die LETZTE Beschaffung der Position (VDI 2067: der
+    /// Restwert bemisst sich am zuletzt gezahlten Preis), linear und abgezinst wie
+    /// bisher.</para>
+    ///
+    /// <para><b>p_I = 0 rechnet bitgleich</b> wie vor dieser Etappe: Der Indexfaktor wird
+    /// dann gar nicht erst gebildet und nirgends multipliziert. Dieselbe IEEE-754-Vorsicht
+    /// wie bei FX4‑c/FX5‑a im Aufrufer — ein zusätzlicher Multiplikationsschritt mit 1,0
+    /// ist zwar wertgleich, aber der Regellauf soll denselben Ausdruck durchlaufen wie
+    /// vorher und nicht einen umgeformten.</para>
+    /// </summary>
+    public static class KapitalwertRechner
+    {
+        /// <summary>
+        /// Eine BENANNTE jahresscharfe Erlösreihe (Etappe E4, Leitentscheidung L1) —
+        /// nominal, unabgezinst, Index 1…T; Index 0 bleibt unbenutzt (dort steht in den
+        /// Zahlungsreihen die Investition).
+        ///
+        /// <para><b>Warum benannt.</b> Seit E4 gibt es vier solcher Reihen: den
+        /// KWK-Zuschlag und die drei Steuergutschriften. Sie werden zwar gemeinsam
+        /// abgezinst, müssen im Bericht (Etappe E7) und in der Sensitivität aber
+        /// einzeln adressierbar bleiben — das Novellen-Szenario streicht zum Beispiel
+        /// genau die KWKG-Reihe und lässt die Steuergutschriften stehen.</para>
+        ///
+        /// <para><b>Der Name ist ein Schlüssel, kein Anzeigetext</b> (Drei-Schichten-Regel):
+        /// sprachneutral, ASCII, eingefroren. Die Anzeigetexte stehen in
+        /// <c>MyResource.Resource.WIRT_REIHE_*</c>.</para>
+        /// </summary>
+        public sealed class ErloesReihe
+        {
+            /// <summary>KWK-Zuschlag nach KWKG 2025 (Phase 9 / Etappe E2).</summary>
+            public const string KWKG = "KWKG_ZUSCHLAG";
+
+            /// <summary>Energiesteuer-Entlastung nach § 53 bzw. § 53a EnergieStG (E4).</summary>
+            public const string ENERGIESTEUER = "ENERGIESTEUER_GUTSCHRIFT";
+
+            /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG (E4).</summary>
+            public const string STROMSTEUER_BEFREIUNG = "STROMSTEUER_BEFREIUNG";
+
+            /// <summary>Stromsteuer-Entlastung nach § 9b StromStG (E4).</summary>
+            public const string STROMSTEUER_ENTLASTUNG = "STROMSTEUER_ENTLASTUNG";
+
+            /// <summary>
+            /// ETAPPE K6 — pauschale Vorauszahlung nach § 9 KWKG für Anlagen bis
+            /// 2 kW<sub>el</sub>. Die einzige Reihe des Programms, deren Betrag im
+            /// <b>Index 0</b> steht: Das Gesetz zahlt einmalig aus, binnen zwei Monaten
+            /// nach der Zulassung, und ersetzt damit die laufende Abrechnung. Sie ist
+            /// deshalb ein Erlös im Jahr 0 — nicht, wie in der Altanwendung, eine
+            /// Minderung der Investition.
+            /// </summary>
+            public const string KWKG_PAUSCHALE = "KWKG_PAUSCHALE";
+
+            /// <summary>
+            /// ETAPPE P4 (PV-Konzept § 4.6): die jahresscharfe PV-Einspeisevergütung
+            /// aus dem Vergütungsdialog (<c>PvErloesRechner</c>). Ersetzt bei aktivem
+            /// Dialog den PV-Anteil des konstanten Einspeiseerlöses — nach Ablauf der
+            /// Vergütungsdauer fällt die Reihe auf den Marktwert (Direktvermarktung)
+            /// bzw. 0 (feste EV) zurück; die § 51a-Gutschrift liegt im letzten
+            /// Vergütungsjahr.
+            /// </summary>
+            public const string PV_VERGUETUNG = "PV_VERGUETUNG";
+
+            public ErloesReihe(string name, double[] jeJahr)
+            {
+                Name = name ?? "";
+                JeJahr = jeJahr;
+            }
+
+            /// <summary>Sprachneutraler Schlüssel der Reihe.</summary>
+            public string Name { get; private set; }
+
+            /// <summary>Nominale Jahresbeträge [€/a]; Index 1…T, <c>null</c> = keine Reihe.</summary>
+            public double[] JeJahr { get; private set; }
+
+            /// <summary>Betrag des ersten Betrachtungsjahres [€/a]; 0, wenn die Reihe leer ist.</summary>
+            public double Jahr1
+            {
+                get { return JeJahr != null && JeJahr.Length > 1 ? JeJahr[1] : 0; }
+            }
+
+            /// <summary>Wert des Jahres t [€/a]; außerhalb der Reihe 0.</summary>
+            public double Wert(int t)
+            {
+                return JeJahr != null && t >= 0 && t < JeJahr.Length ? JeJahr[t] : 0;
+            }
+        }
+
+        /// <summary>Eine Investitionsposition (Tab_ProjektWerte, Kategorie 1, Szenariowert).</summary>
+        public class InvestPosition
+        {
+            public double Betrag;          // [€]
+            public double Nutzungsdauer;   // [a]; < 1 → wie Betrachtungszeitraum
+
+            /// <summary>
+            /// ETAPPE KD6 (Konzept Kostendialoge § 11, FK10): Startzeitpunkt der
+            /// Investition. ≤ 1 = t0 (Bestand, zeichengleicher Rechenweg); Jahr
+            /// X ≥ 2 = die Zahlung fällt erst im Jahr X (abgezinst über die
+            /// Nominalreihe), Nutzungsdauer/Ersatz zählen ab X. Der Startzeitpunkt
+            /// VERSCHIEBT die Zahlung, er indexiert sie nicht.
+            ///
+            /// <para><b>ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): das gilt weiter.</b>
+            /// Auch bei gepflegtem Preisänderungssatz p_I bleibt die verschobene
+            /// ERSTbeschaffung nominal — der eingegebene Betrag ist der Betrag zum
+            /// Zahlungszeitpunkt (KD6). Indiziert werden allein die ERSATZbeschaffungen
+            /// dieser Position, mit (1 + p_I)^tj über dem ABSOLUTEN Jahr tj, nicht über
+            /// dem Abstand zum Startjahr: Preisstand des Rechenkerns ist immer t = 0.</para>
+            /// </summary>
+            public int StartJahr;
+        }
+
+        /// <summary>Zahlungsstrombild eines Projekts über den Betrachtungszeitraum.</summary>
+        public class Zahlungsbild
+        {
+            public double Investition;          // I₀ [€] — NACH Zuschussabzug
+
+            /// <summary>ETAPPE KD6 (§ 11): Summe der Positionen mit Startjahr ≥ 2 [€]
+            /// — sie zahlen über die Jahresreihe, nicht über I₀ (reiner Ausweis).</summary>
+            public double InvestitionVerschoben;
+
+            // ---- ETAPPE K5 — der Investitionszuschuss (Konzept § 7.4, L7) ----
+
+            /// <summary>
+            /// Summe der Investitionspositionen VOR Abzug des Zuschusses [€]. Die
+            /// Bezugsgröße jeder prozentualen Betriebskostenbemessung („% der
+            /// Investitionssumme") und die Zahl, die der Bericht als „Investition"
+            /// ausweist.
+            /// </summary>
+            public double InvestitionBrutto;
+
+            /// <summary>
+            /// Tatsächlich ANGESETZTER Zuschuss [€], positiv. Er ist auf
+            /// <see cref="InvestitionBrutto"/> geklemmt: Ein Zuschuss über der
+            /// Investitionssumme ergäbe ein negatives I₀ — also eine Zahlung, die das
+            /// Projekt im Jahr 0 einbringt. Das ist keine Investitionsrechnung mehr,
+            /// sondern eine Fehleingabe, und sie wird als solche gemeldet statt
+            /// gerechnet.
+            /// </summary>
+            public double Zuschuss;
+
+            /// <summary>
+            /// Übersteigender Teil eines zu hohen Zuschusses [€], 0 im Regelfall.
+            /// Größer als 0 heißt: Der Anwender hat mehr Zuschuss erfasst als
+            /// Investition — der Aufrufer setzt daraufhin einen Hinweis.
+            /// </summary>
+            public double ZuschussUeberhang;
+
+            public double BarwertAusgaben;      // Betrieb + Energie + Ersatz [€]
+            public double BarwertEinnahmen;     // Erlöse [€]
+            public double RestwertBarwert;      // [€]
+            public double Kapitalwert;          // KW [€]
+
+            /// <summary>Barwert-Zahlungsreihe: Index 0 = −I₀, Index t = Barwert des
+            /// Netto-Zahlungsstroms im Jahr t OHNE Restwert (für Amortisation).</summary>
+            public double[] BarwertReihe;
+
+            /// <summary>Nominale Zahlungsreihe (unabgezinst), gleicher Aufbau —
+            /// Grundlage des internen Zinsfußes (W2).</summary>
+            public double[] NominalReihe;
+
+            /// <summary>Restwert zum Zeitpunkt T, unabgezinst (für den IRR).</summary>
+            public double RestwertNominal;
+
+            // ---- ETAPPE E7 — der Rückgabekanal der EINZELPOSITIONEN ----
+            //
+            // Bis E7 gab dieses Bild nur die SUMMEN heraus: eine Nettoreihe, eine
+            // Barwertreihe, vier Barwertskalare. Die Jahresreihen der einzelnen
+            // Positionen entstanden in der Schleife unten, gingen in die Summe ein und
+            // wurden verworfen — vom KWK-Zuschlag überlebte allein der Wert des Jahres 1.
+            // Eine Mehrjahrestabelle nach Positionen war damit nicht baubar; es fehlte
+            // nicht ein Formatierer, sondern der Kanal.
+            //
+            // Die Felder sind REIN ADDITIV: Sie werden nur befüllt, nie gelesen, und
+            // der Rechenweg der Summen bleibt Zeichen für Zeichen der von vorher
+            // (siehe den Kommentar in der Jahresschleife). Nominal, unabgezinst,
+            // Index 1…T; Index 0 bleibt leer — dort steht die Investition.
+
+            /// <summary>
+            /// Betriebskosten je Jahr [€] — die GESAMTE Betriebszeile der
+            /// Mehrjahrestabelle.
+            /// <para><b>PAKET FX3 (R-2):</b> Sie trägt seither zwei Anteile: den
+            /// Betriebs-Topf mit p_B und den Endenergie-Topf mit p_E. Der zweite ist in
+            /// <see cref="EndenergieAnteilJeJahr"/> zusätzlich einzeln ausgewiesen —
+            /// <b>er steckt hier bereits drin und darf nicht addiert werden.</b> Dass
+            /// die Betriebszeile die Summe bleibt, ist Absicht: Nur so ist die Summe der
+            /// Positionsspalten weiterhin die Spalte „Netto nominal", und die
+            /// Selbstprüfung der Mehrjahrestabelle bleibt gültig.</para>
+            /// </summary>
+            public double[] BetriebJeJahr;
+
+            /// <summary>
+            /// PAKET FX3 (R-2) — der mit p_E fortgeschriebene Endenergie-Anteil der
+            /// Betriebskosten je Jahr [€]; <b>Teilmenge von <see cref="BetriebJeJahr"/></b>
+            /// (reiner Ausweis, nirgends aufsummiert). 0 in jedem Jahr = keine
+            /// Endenergie-Position im Projekt, dann rechnet alles wie vor FX3.
+            /// </summary>
+            public double[] EndenergieAnteilJeJahr;
+
+            /// <summary>Energiekosten je Jahr [€] OHNE CO₂-Abgabe, mit p_E fortgeschrieben.</summary>
+            public double[] EnergieJeJahr;
+
+            /// <summary>CO₂-Abgabe nach BEHG je Jahr [€], mit p_E fortgeschrieben.</summary>
+            public double[] BehgJeJahr;
+
+            /// <summary>
+            /// Ersatzbeschaffungen je Jahr [€] (Index 0…T). <b>ETAPPE W5‑B‑12</b>: seither mit
+            /// dem Preisänderungssatz der kapitalgebundenen Kosten indiziert —
+            /// A(tj) = A₀ · (1 + p_I)^tj (VDI 2067 Blatt 1). Die nach KD6 VERSCHOBENE
+            /// Erstbeschaffung steht ebenfalls hier und bleibt nominal. Bei p_I = 0 ist
+            /// die Reihe bitgleich die von vorher.
+            /// </summary>
+            public double[] ErsatzJeJahr;
+
+            /// <summary>Einspeiseerlös je Jahr [€] (nominal konstant, feste Vergütung).</summary>
+            public double[] EinspeiseerloesJeJahr;
+
+            /// <summary>Die benannten Erlösreihen, wie sie hereingereicht wurden —
+            /// KWK-Zuschlag und die drei Steuergutschriften (E4). <c>null</c> = keine.
+            /// Erst hierdurch wird das Auslaufen des KWK-Zuschlags im Bericht
+            /// sichtbar.</summary>
+            public IList<ErloesReihe> ErloesReihen;
+
+            /// <summary>Nominaler Jahresbetrag einer benannten Reihe [€]; 0, wenn die
+            /// Reihe fehlt.</summary>
+            public double ReihenWert(string name, int t)
+            {
+                if (ErloesReihen == null || name == null) return 0;
+                double summe = 0;
+                foreach (ErloesReihe r in ErloesReihen)
+                    if (r != null && string.Equals(r.Name, name, StringComparison.Ordinal))
+                        summe += r.Wert(t);
+                return summe;
+            }
+
+            /// <summary>true, wenn die Reihe überhaupt einen Betrag ungleich 0 führt.</summary>
+            public bool HatReihe(string name)
+            {
+                if (ErloesReihen == null || name == null) return false;
+                foreach (ErloesReihe r in ErloesReihen)
+                    if (r != null && string.Equals(r.Name, name, StringComparison.Ordinal) &&
+                        r.JeJahr != null)
+                        for (int t = 1; t < r.JeJahr.Length; t++)
+                            if (r.JeJahr[t] != 0) return true;
+                return false;
+            }
+        }
+
+        /// <summary>Annuitätenfaktor a(i,n); i als Dezimalzahl (0,03), n in Jahren.</summary>
+        public static double Annuitaet(double i, double n)
+        {
+            if (n <= 0) return 0;
+            if (Math.Abs(i) < 1e-12) return 1.0 / n;
+            double q = Math.Pow(1.0 + i, n);
+            return i * q / (q - 1.0);
+        }
+
+        /// <summary>
+        /// Absolutes Zahlungsbild eines Projekts. Kostenreihen in €/a (Jahr-1-Werte),
+        /// Zins/Preissteigerungen in Prozent. energieJahr = null → Energiekosten
+        /// unbestimmbar; der Aufrufer setzt dann Fehlgrund und lässt KW leer.
+        /// </summary>
+        /// <param name="zusatzErloesReihen">
+        /// Benannte jahresscharfe Erlösreihen (Etappe E4, L1) — KWK-Zuschlag und
+        /// Steuergutschriften. <c>null</c> oder leer = keine. Abgezinst wird die SUMME
+        /// je Jahr; eine Liste mit genau der KWKG-Reihe rechnet Wert für Wert wie der
+        /// frühere Parameter <c>double[] zusatzErloesJeJahr</c>.
+        /// </param>
+        /// <param name="zuschuss">
+        /// ETAPPE K5 (Konzept § 7.4, L7): Investitionszuschuss [€], positiv erfasst.
+        /// Er mindert I₀ <b>einmalig</b> und wird deshalb NICHT als
+        /// <see cref="InvestPosition"/> hereingereicht: Eine Position bekäme über ihre
+        /// Nutzungsdauer eine Ersatzbeschaffung und einen Restwert, und beides ist bei
+        /// einer Förderzahlung sinnlos (die Altanwendung tat genau das, mit einer
+        /// zufälligen Nutzungsdauer — Konzept Anhang A(e)). Der Abzug geschieht deshalb
+        /// NACH der Positionsschleife: Ersatzreihe und Restwert entstehen aus den
+        /// Bruttobeträgen und bleiben vom Zuschuss unberührt. 0 = kein Zuschuss.
+        /// </param>
+        /// <param name="behgJeJahr">
+        /// ETAPPE K6 (Konzept § 8.3, Entscheidung E5): die CO₂-Abgabe
+        /// <b>jahresscharf</b> [€], Index 1…T — der jahresgenaue Preispfad des
+        /// Gesetzeskatalogs. <c>null</c> = wie bisher: <paramref name="behgJahr"/> wird
+        /// mit der Energiepreissteigerung fortgeschrieben. Der Ausdruck für die Ausgaben
+        /// bleibt in diesem Fall ZEICHENGLEICH der Fassung vor K6 — insbesondere bleibt
+        /// <c>(energieJahr + behgJahr)</c> EINE Klammer, sonst verschöbe sich das
+        /// Ergebnis in der letzten Stelle (Warnung aus Etappe E7).
+        /// </param>
+        /// <param name="endenergieJahr">
+        /// PAKET FX3 (Anwenderentscheid R-2): der <b>Endenergie-Topf</b> der
+        /// Betriebskosten [€/a], Jahr-1-Wert — Positionen, deren Betrag an der
+        /// Endenergie bemessen ist (seit FX4-b auch die zwei Alt-Arten
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c>/<c>PROZENT_STROMKOSTEN</c>). Er wird mit
+        /// <paramref name="preisstEnergieProzent"/> (p_E) fortgeschrieben statt mit p_B.
+        /// <b>0 = kein solcher Topf</b>; dann ist die Rechnung Zeichen für Zeichen die
+        /// von vor FX3.
+        /// <para>Seit FX4-c reicht der Aufrufer diesen Wert im Sensitivitätslauf
+        /// <b>bereits mit dem Energiefaktor multipliziert</b> herein — hier ändert das
+        /// nichts, der Topf ist und bleibt ein Jahr-1-Betrag.</para>
+        /// </param>
+        /// <param name="endenergieAbJahr">
+        /// Dasselbe für Endenergie-Positionen mit Startjahr ≥ 2 (KD6) — (Betrag,
+        /// Startjahr) wie <paramref name="betriebAbJahr"/>, nur eben im p_E-Topf.
+        /// <c>null</c> = keine.
+        /// </param>
+        /// <param name="preisstInvestProzent">
+        /// ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026, VALERI-Lücke G4): der
+        /// <b>Preisänderungssatz der kapitalgebundenen Kosten</b> p_I [%/a] — der dritte
+        /// Topf neben p_B und p_E. Er indiziert jede ERSATZbeschaffung auf ihr Zahlungsjahr
+        /// (VDI 2067 Blatt 1: A_n = A₀ · (1 + p_I)^n) und trägt den Restwert auf derselben
+        /// Preisbasis. Die Erstbeschaffung bleibt nominal, auch die nach KD6 verschobene.
+        /// <para><b>0 = wie vor W5‑B‑12</b>: Der Indexfaktor wird dann nicht gebildet und
+        /// nicht multipliziert, der Rechenweg ist bitgleich der von vorher. Der Parameter
+        /// steht deshalb am ENDE der Signatur — jeder bestehende Aufrufer bleibt
+        /// unverändert gültig und rechnet unverändert.</para>
+        /// <para><b>EIN Satz für alle Positionen</b>, nicht einer je Zeile: Genau so weit
+        /// und nicht weiter reicht der Entscheid zu G2. Welcher Satz je Szenario gilt
+        /// (Erwartet, Best, Worst), entscheidet der Aufrufer.</para>
+        /// </param>
+        public static Zahlungsbild Rechne(List<InvestPosition> investitionen,
+                                          double betriebJahr, double energieJahr, double erloesJahr,
+                                          double zinsProzent, int jahre,
+                                          double preisstBetriebProzent, double preisstEnergieProzent,
+                                          double behgJahr = 0,
+                                          IList<ErloesReihe> zusatzErloesReihen = null,
+                                          double zuschuss = 0,
+                                          double[] behgJeJahr = null,
+                                          IList<KeyValuePair<double, int>> betriebAbJahr = null,
+                                          double endenergieJahr = 0,
+                                          IList<KeyValuePair<double, int>> endenergieAbJahr = null,
+                                          double preisstInvestProzent = 0)
+        {
+            double i = zinsProzent / 100.0;
+            double pB = preisstBetriebProzent / 100.0;
+            double pE = preisstEnergieProzent / 100.0;
+            int T = Math.Max(1, jahre);
+
+            // ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): der dritte Preisänderungssatz.
+            // Die WEICHE steht hier und nicht in der Positionsschleife, damit der Regellauf
+            // (p_I = 0) den Indexfaktor kein einziges Mal bildet — gleiche IEEE-754-Vorsicht
+            // wie bei FX4‑c/FX5‑a: Eine Multiplikation mit 1,0 ist wertgleich, aber der
+            // Regellauf soll denselben Ausdruck durchlaufen wie vor dieser Etappe.
+            double pI = preisstInvestProzent / 100.0;
+            bool investIndiziert = preisstInvestProzent != 0.0;
+
+            var z = new Zahlungsbild
+            {
+                BarwertReihe = new double[T + 1],
+                NominalReihe = new double[T + 1],
+                // ETAPPE E7 — Rückgabekanal der Einzelpositionen (rein additiv).
+                BetriebJeJahr = new double[T + 1],
+                EndenergieAnteilJeJahr = new double[T + 1],   // FX3 (R-2), reiner Ausweis
+                EnergieJeJahr = new double[T + 1],
+                BehgJeJahr = new double[T + 1],
+                EinspeiseerloesJeJahr = new double[T + 1],
+                ErloesReihen = zusatzErloesReihen
+            };
+
+            // ---------------- Investition t=0 + Ersatzbeschaffungen + Restwert ----------------
+            double[] ersatzJeJahr = new double[T + 1];
+            z.ErsatzJeJahr = ersatzJeJahr;                    // E7: dieselbe Reihe, nicht kopiert
+            double restwertT = 0;
+
+            if (investitionen != null)
+            {
+                foreach (InvestPosition pos in investitionen)
+                {
+                    if (pos == null || pos.Betrag == 0) continue;
+                    // Nutzungsdauern < 1 a sind fachlich nicht sinnvoll → wie T behandeln
+                    // (verhindert zugleich exzessive Ersatz-Schleifen bei Fehleingaben).
+                    double n = pos.Nutzungsdauer >= 1.0 ? pos.Nutzungsdauer : T;
+
+                    // ETAPPE KD6 (§ 11, FK10): Positionen mit Startjahr X ≥ 2 zahlen
+                    // erst im Jahr X — über die Jahresreihe (dort wird abgezinst),
+                    // NICHT über I₀. Ersatzkette und Restwert zählen ab X. Für
+                    // StartJahr ≤ 1 bleibt der Rechenweg Zeichen für Zeichen der
+                    // von vorher.
+                    int start = pos.StartJahr > 1 ? pos.StartJahr : 0;
+                    if (start > T)
+                    {
+                        // Investition außerhalb des Betrachtungszeitraums: keine
+                        // Zahlung, kein Ersatz, kein Restwert — nur Ausweis.
+                        z.InvestitionVerschoben += pos.Betrag;
+                        continue;
+                    }
+
+                    // ETAPPE W5‑B‑12: Preisbasis der LETZTEN Beschaffung dieser Position.
+                    // 1,0 für die Erst- und die verschobene Erstbeschaffung (KD6: der
+                    // eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt), sonst der
+                    // Indexfaktor des Ersatzjahres. Der Restwert unten liest ihn.
+                    int letzteBeschaffung;
+                    double letzterFaktor = 1.0;
+                    if (start == 0)
+                    {
+                        z.Investition += pos.Betrag;
+                        letzteBeschaffung = 0;
+                    }
+                    else
+                    {
+                        z.InvestitionVerschoben += pos.Betrag;
+                        ersatzJeJahr[start] += pos.Betrag;
+                        letzteBeschaffung = start;
+                    }
+
+                    // Ersatz auf ganze Jahre gerundet: tj = round(start + k·n),
+                    // 1 ≤ tj < T (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
+                    //
+                    // ETAPPE W5‑B‑12: Der Betrag der Position ist ein Preisstand von HEUTE
+                    // (t = 0); die Ersatzbeschaffung fällt aber im Jahr tj an und kostet dort
+                    // nach VDI 2067 Blatt 1 A(tj) = A₀ · (1 + p_I)^tj. Der Exponent ist das
+                    // ABSOLUTE Jahr, nicht der Abstand zum Startjahr — auch eine Position mit
+                    // Startjahr 5 wird 2041 zu den Preisen von 2041 ersetzt, nicht zu denen
+                    // von 2036. Ohne Satz läuft der Zweig von vorher, Zeichen für Zeichen.
+                    for (double t = start + n; ; t += n)
+                    {
+                        int tj = (int)Math.Round(t);
+                        if (tj >= T) break;
+                        if (tj < 1) continue;
+                        if (investIndiziert)
+                        {
+                            letzterFaktor = Math.Pow(1.0 + pI, tj);
+                            ersatzJeJahr[tj] += pos.Betrag * letzterFaktor;
+                        }
+                        else ersatzJeJahr[tj] += pos.Betrag;
+                        letzteBeschaffung = tj;
+                    }
+
+                    // Linearer Restwert der letzten Beschaffung zum Zeitpunkt T
+                    // (konsistent zum gerundeten Buchungsjahr).
+                    //
+                    // ETAPPE W5‑B‑12: Er steht auf der PREISBASIS DER LETZTEN BESCHAFFUNG.
+                    // Alles andere wäre in sich widersprüchlich: Wenn die Anlage im Jahr 16
+                    // für A₀ · (1 + p_I)^16 gekauft wurde, ist die Hälfte ihrer Nutzungsdauer
+                    // am Ende von T auch die Hälfte DIESES Betrags wert und nicht die Hälfte
+                    // des heutigen. Blieb es bei der Erstbeschaffung, ist letzterFaktor 1,0
+                    // und der Ausdruck der von vorher — auch das der bitgleiche Regellauf.
+                    double alter = T - letzteBeschaffung;
+                    double rest = n - alter;
+                    if (rest > 1e-9)
+                        restwertT += letzterFaktor != 1.0
+                            ? pos.Betrag * letzterFaktor * (rest / n)
+                            : pos.Betrag * (rest / n);
+                }
+            }
+
+            // ---------------- ETAPPE K5: Zuschuss mindert I₀ einmalig ----------------
+            // Der Abzug steht NACH der Positionsschleife und wirkt deshalb ausschließlich
+            // auf z.Investition — ersatzJeJahr und restwertT sind zu diesem Zeitpunkt
+            // fertig und bleiben Bruttogrößen. Genau das ist der Unterschied zur
+            // Altanwendung: Dort war der Zuschuss eine Position mit (zufälliger)
+            // Nutzungsdauer und erzeugte damit Ersatzbeschaffungen und einen Restwert
+            // auf Geld, das nie ersetzt werden muss.
+            z.InvestitionBrutto = z.Investition;
+            if (zuschuss > 0)
+            {
+                // Klemme auf die Investitionssumme: Ein negatives I₀ wäre eine Einzahlung
+                // im Jahr 0 - rechnerisch möglich, fachlich eine Fehleingabe. Der
+                // Überhang wird ausgewiesen, damit der Aufrufer ihn melden kann, statt
+                // ihn stillschweigend zu verschlucken.
+                z.Zuschuss = Math.Min(zuschuss, z.Investition);
+                z.ZuschussUeberhang = zuschuss - z.Zuschuss;
+                z.Investition -= z.Zuschuss;
+            }
+
+            // ---------------- ETAPPE K6: Einmalzahlung im Jahr 0 ----------------
+            // Index 0 einer benannten Erlösreihe ist eine EINMALZAHLUNG zum Zeitpunkt der
+            // Investition — heute nur die Pauschale des § 9 KWKG. Sie wird nicht
+            // abgezinst (t = 0) und mindert NICHT die Investition: I₀ bleibt, was die
+            // Anlage kostet, und die Zahlung steht als Einnahme daneben.
+            //
+            // ADDITIV: Jede Reihe vor K6 führt in Index 0 eine 0, damit ist einmalT0 dort
+            // 0 und beide Startwerte bleiben Zeichen für Zeichen die von vorher.
+            double einmalT0 = 0;
+            if (zusatzErloesReihen != null)
+                foreach (ErloesReihe reihe in zusatzErloesReihen)
+                    if (reihe != null) einmalT0 += reihe.Wert(0);
+
+            // ---------------- Jahresreihe abzinsen ----------------
+            z.BarwertReihe[0] = -z.Investition + einmalT0;
+            z.NominalReihe[0] = -z.Investition + einmalT0;
+            z.BarwertEinnahmen += einmalT0;
+            for (int t = 1; t <= T; t++)
+            {
+                double faktor = Math.Pow(1.0 + i, -t);
+                // ACHTUNG: Der Ausdruck für ausgaben bleibt ZEICHENGLEICH der Fassung vor
+                // Etappe E7 — insbesondere bleibt (energieJahr + behgJahr) EINE Klammer.
+                // Die getrennten Reihen darunter sind Ausweis und gehen NICHT in die
+                // Summe ein; sonst verschöbe sich das Ergebnis in der letzten Stelle.
+                //
+                // ETAPPE K6: Nur wenn eine jahresscharfe CO₂-Reihe hereingereicht wurde,
+                // tritt der zweite Zweig an ihre Stelle. Ohne sie (behgJeJahr = null)
+                // läuft der Bestandsausdruck unverändert — deshalb zwei Zweige und
+                // nicht eine umgeformte Zeile.
+                double behgT = behgJeJahr != null && t < behgJeJahr.Length ? behgJeJahr[t] : 0;
+
+                // ETAPPE KD6 (§ 11, FK10): Betriebskosten von Positionen mit
+                // Startjahr X laufen erst ab t ≥ X — mit derselben Preissteigerung
+                // ab t0 (der Betrag ist heutiges Preisniveau, gezahlt ab X). Ohne
+                // solche Positionen ist betriebT == betriebJahr (bitgleich) und der
+                // Ausdruck rechnet Zeichen für Zeichen wie vorher.
+                double betriebT = betriebJahr;
+                if (betriebAbJahr != null)
+                    foreach (KeyValuePair<double, int> vb in betriebAbJahr)
+                        if (t >= vb.Value) betriebT += vb.Key;
+
+                // PAKET FX3 (Anwenderentscheid R-2): der ZWEITE Betriebstopf. Er trägt
+                // die Positionen mit Endenergie-Bemessung und wächst mit p_E — dieselbe
+                // Rate wie die Energiekosten, weil eine Position „x % der
+                // Endenergiekosten" der Sache nach mit den Energiepreisen wächst
+                // (VDI 2067 / DIN EN 17463: bedarfsgebundene Kosten).
+                //
+                // ERGEBNISNEUTRAL OHNE TOPF: Ist endenergieT gleich 0, ist auch
+                // endenergieAusgabe eine echte 0; die Addition unten lässt jeden
+                // Summanden bitgenau, wie er war. Die Klammer (energieJahr + behgJahr)
+                // wird dabei NICHT angefasst.
+                double endenergieT = endenergieJahr;
+                if (endenergieAbJahr != null)
+                    foreach (KeyValuePair<double, int> ve in endenergieAbJahr)
+                        if (t >= ve.Value) endenergieT += ve.Key;
+                double endenergieAusgabe = endenergieT != 0
+                    ? endenergieT * Math.Pow(1.0 + pE, t - 1)
+                    : 0.0;
+
+                double ausgaben = (behgJeJahr == null
+                    ? betriebT * Math.Pow(1.0 + pB, t - 1)
+                      + (energieJahr + behgJahr) * Math.Pow(1.0 + pE, t - 1)
+                      + ersatzJeJahr[t]
+                    : betriebT * Math.Pow(1.0 + pB, t - 1)
+                      + energieJahr * Math.Pow(1.0 + pE, t - 1) + behgT
+                      + ersatzJeJahr[t]) + endenergieAusgabe;
+                double einnahmen = erloesJahr;   // feste Einspeisevergütung, nominal konstant
+                if (zusatzErloesReihen != null)
+                    foreach (ErloesReihe reihe in zusatzErloesReihen)
+                        if (reihe != null) einnahmen += reihe.Wert(t);   // KWKG + Steuern (E4)
+
+                // ETAPPE E7 — Einzelpositionen für die Mehrjahrestabelle.
+                // PAKET FX3: Die Betriebszeile bleibt die SUMME beider Töpfe — sonst
+                // stimmte die Summe der Positionsspalten nicht mehr mit „Netto nominal"
+                // überein und die Selbstprüfung der Mehrjahrestabelle fiele. Der
+                // p_E-Anteil steht daneben als eigener Ausweis.
+                z.BetriebJeJahr[t] = betriebT * Math.Pow(1.0 + pB, t - 1) + endenergieAusgabe;
+                z.EndenergieAnteilJeJahr[t] = endenergieAusgabe;
+                z.EnergieJeJahr[t] = energieJahr * Math.Pow(1.0 + pE, t - 1);
+                z.BehgJeJahr[t] = behgJeJahr == null ? behgJahr * Math.Pow(1.0 + pE, t - 1) : behgT;
+                z.EinspeiseerloesJeJahr[t] = erloesJahr;
+
+                z.BarwertAusgaben += ausgaben * faktor;
+                z.BarwertEinnahmen += einnahmen * faktor;
+                z.BarwertReihe[t] = (einnahmen - ausgaben) * faktor;
+                z.NominalReihe[t] = einnahmen - ausgaben;
+            }
+
+            z.RestwertNominal = restwertT;
+            z.RestwertBarwert = restwertT * Math.Pow(1.0 + i, -T);
+            z.Kapitalwert = -z.Investition - z.BarwertAusgaben + z.BarwertEinnahmen + z.RestwertBarwert;
+            return z;
+        }
+
+        /// <summary>
+        /// Interner Zinsfuß [%] der Differenzreihe Variante − Stamm (inkl. Restwert-
+        /// differenz im letzten Jahr): Nullstelle von KW(r) per Bisektion in
+        /// (−99 %, 1000 %). null = kein Vorzeichenwechsel (keine klassische
+        /// Investitionsreihe) oder keine Konvergenz.
+        /// </summary>
+        public static double? InternerZinsfuss(Zahlungsbild variante, Zahlungsbild stamm)
+        {
+            if (variante == null || stamm == null ||
+                variante.NominalReihe == null || stamm.NominalReihe == null) return null;
+            int T = Math.Min(variante.NominalReihe.Length, stamm.NominalReihe.Length) - 1;
+
+            double[] fluss = new double[T + 1];
+            for (int t = 0; t <= T; t++) fluss[t] = variante.NominalReihe[t] - stamm.NominalReihe[t];
+            fluss[T] += variante.RestwertNominal - stamm.RestwertNominal;
+
+            Func<double, double> kw = r =>
+            {
+                double summe = 0;
+                for (int t = 0; t <= T; t++) summe += fluss[t] / Math.Pow(1.0 + r, t);
+                return summe;
+            };
+
+            double lo = -0.99, hi = 10.0;
+            double fLo = kw(lo), fHi = kw(hi);
+            if (double.IsNaN(fLo) || double.IsNaN(fHi) || fLo * fHi > 0) return null;
+
+            for (int iter = 0; iter < 200; iter++)
+            {
+                double mid = (lo + hi) / 2.0, fMid = kw(mid);
+                if (Math.Abs(fMid) < 1e-6 || (hi - lo) < 1e-9) return Math.Round(mid * 100.0, 2);
+                if (fLo * fMid <= 0) { hi = mid; fHi = fMid; } else { lo = mid; fLo = fMid; }
+            }
+            return Math.Round((lo + hi) / 2.0 * 100.0, 2);
+        }
+
+        /// <summary>
+        /// Dynamische Amortisation der DIFFERENZ Variante − Stamm (Referenz = Stamm,
+        /// Entscheidung 11.08.2026): erstes Jahr, in dem der kumulierte Barwert der
+        /// Differenz-Zahlungsreihe ≥ 0 wird — ohne Restwert, mit linearer
+        /// Interpolation im Jahr. null = amortisiert sich im Betrachtungszeitraum nie.
+        /// </summary>
+        public static double? AmortisationDifferenz(Zahlungsbild variante, Zahlungsbild stamm)
+        {
+            if (variante == null || stamm == null) return null;
+            int T = Math.Min(variante.BarwertReihe.Length, stamm.BarwertReihe.Length) - 1;
+
+            double kum = variante.BarwertReihe[0] - stamm.BarwertReihe[0];   // −ΔI₀
+            if (kum >= 0)
+            {
+                // Keine Mehrinvestition: „amortisiert ab Jahr 0" gilt nur, wenn die
+                // Variante auch über den Zeitraum netto nicht schlechter fährt.
+                double summe = kum;
+                for (int t = 1; t <= T; t++) summe += variante.BarwertReihe[t] - stamm.BarwertReihe[t];
+                return summe >= 0 ? (double?)0 : null;
+            }
+            for (int t = 1; t <= T; t++)
+            {
+                double zufluss = variante.BarwertReihe[t] - stamm.BarwertReihe[t];
+                if (kum + zufluss >= 0 && zufluss > 0)
+                    return (t - 1) + (-kum / zufluss);                       // Interpolation im Jahr t
+                kum += zufluss;
+            }
+            return null;
+        }
+    }
+}

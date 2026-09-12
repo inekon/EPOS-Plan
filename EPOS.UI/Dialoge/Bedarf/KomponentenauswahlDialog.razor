@@ -1,0 +1,207 @@
+﻿@* Schritt 0 des Projektassistenten: Komponenten auswaehlen (iU9-W16a.3).
+
+   Vorbild: Views/Wizard/Wizard_Komponenten.cs (216 Z.) und .designer.cs (298 Z.,
+   24 Kartenzeilen, 1 MessageBox).
+
+   WOZU. Welche Komponenten enthaelt das Projekt? Dreizehn Kacheln, gespeist aus
+   KomponentenBestandCtrl - derselben Quelle und denselben Kriterien wie die
+   Bitmaske der Startmaske (Befund W16-B9, Entscheid E-3). Ein Klick schaltet die
+   zugehoerige Assistentenseite frei oder ab.
+
+   ZWEI ACHSEN, NICHT DREI (Befund W16a-B1). Die Farbe des Punktes haengt allein am
+   Bestand (Kachel.Zustand), die Anklickbarkeit allein daran, ob die Komponente eine
+   Assistentenseite hat (Kachel.Aktiv). Brauchwasser und Pufferspeicher sind
+   deshalb "nur Anzeige" UND gruen oder grau: Sie zeigen den Bestand ehrlich an,
+   lassen sich aber nicht umschalten - gepflegt werden sie ueber die Kacheln der
+   Startmaske, und der Speicherweg des Assistenten fasst beide nicht an.
+
+   DIE RUECKFRAGE IST WOERTLICH. Das Abwaehlen einer BELEGTEN Komponente fragt im
+   Bearbeiten-Modus mit Klartext nach - derselbe Satz, dieselben Namen, dieselbe
+   Vorbelegung "Nein" (MessageBoxDefaultButton.Button2 wird VorgabeNein). Der
+   Baustein bindet Enter ohnehin nicht (Lehre A-7 aus B5b), Esc antwortet wie
+   "Nein".
+
+   ERSATZLOS WEG: die vier toten Glieder des Vorlaeufers (Befund W16-B13) -
+   TextNeuesProjektFrage, TextNeuesProjektTitel, IstAn(int) und Bestand hatten im
+   ganzen Bestand keinen Aufrufer; die beiden Texte sind Reste eines entfallenen
+   Knopfes "Neues Projekt..." (WizardParent :903-907). Ebenso die 45 Zeilen
+   gerechnete Geometrie von AktionsKarte.NeuAnordnen (CSS-Fluss) und die vierzehn
+   Zeilen Cursors.Default (Kachel.Aktiv).
+
+   BEFUND W16-B12: label1 wich zwischen neutraler und de-DE-resx ab
+   ("Projektkonfiguration Erstellung" gegen "Projekt-Erstellungskonfiguration").
+   Uebernommen ist die de-DE-Fassung - sie ist die gepflegte.
+
+   TASTATUR: Die Kacheln sind Knoepfe und damit von selbst erreichbar; die
+   Schlussleiste stellt der Assistent. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+
+<div class="epos-seite epos-komponentenauswahl">
+
+    <Gruppenkopf Titel="@KopfText" />
+    <Herleitungszeile Text="@HinweisText" />
+    <h2 class="epos-untergruppe">@AuswahlText</h2>
+
+    <Kachelraster Mindestbreite="250">
+        <KindInhalt>
+            @foreach (KomponentenZeile zeile in Zeilen)
+            {
+                KomponentenZeile z = zeile;
+                <Kachel Titel="@z.Titel"
+                        Beschreibung="@Bestandssatz(z)"
+                        Zustand="@(z.An ? Kachelstand.An : Kachelstand.Aus)"
+                        Aktiv="@z.HatSeite"
+                        Geklickt="() => BeiKachel(z)" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+
+    @* Abwaehlen einer belegten Komponente - woertlich die MessageBox des
+       Vorlaeufers (Wizard_Komponenten :206-207), Vorbelegung "Nein". *@
+    <Rueckfrage Offen="@(_frage is not null)"
+                TitelText="@FrageTitelText"
+                Frage="@_fragesatz"
+                VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="BeiAntwort" />
+</div>
+
+@code {
+    // =====================================================================
+    // Eingaben und Delegaten
+    // =====================================================================
+
+    /// <summary>
+    /// Die dreizehn Kacheln in der Lesereihenfolge des Bestands
+    /// (<c>KomponentenBestandCtrl</c>: Bedarf → Strom → Erzeuger → Speicher).
+    /// Sie wird AN ORT UND STELLE bearbeitet — der Rahmen liest sie danach.
+    /// </summary>
+    [Parameter] public IReadOnlyList<KomponentenZeile> Zeilen { get; set; } =
+        System.Array.Empty<KomponentenZeile>();
+
+    /// <summary>
+    /// Bearbeiten-Modus (<c>WizardParent.WIZARD_MODE_BEARBEITEN</c>). Nur dort fragt
+    /// das Abwählen einer belegten Komponente nach — im Neu-Modus gibt es nichts zu
+    /// verlieren.
+    /// </summary>
+    [Parameter] public bool BearbeitenModus { get; set; }
+
+    /// <summary>
+    /// Eine Assistentenseite wird frei- oder abgeschaltet: Seitenindex
+    /// (<c>WizardItemClass</c>) und neuer Zustand. Ersetzt
+    /// <c>Wizard_Komponenten.SeiteSchalten</c>, das dem Rahmen direkt in die
+    /// Seitenliste griff.
+    /// </summary>
+    [Parameter] public Action<int, bool>? Geschaltet { get; set; }
+
+    // =====================================================================
+    // Texte - deutscher Rueckfall wie in allen Dialogen (iU8-Muster)
+    // =====================================================================
+
+    /// <summary>Kopfzeile — <c>label1</c>, de-DE-Fassung (Befund W16-B12).</summary>
+    [Parameter] public string KopfText { get; set; } = "Projekt-Erstellungskonfiguration";
+
+    /// <summary>Erläuterungsabsatz — <c>label2</c>.</summary>
+    [Parameter] public string HinweisText { get; set; } =
+        "Der Projektassistent führt Sie durch alle notwendigen Schritte. Alle zu einem " +
+        "Projekt notwendigen Eingaben werden dadurch vollständig durchgeführt. Navigieren " +
+        "Sie mit Weiter und Zurück, um die nächsten Eingaben zu machen bzw. um Eingaben " +
+        "nachträglich anzupassen.";
+
+    /// <summary>Überschrift über dem Kachelfeld — <c>label3</c>.</summary>
+    [Parameter] public string AuswahlText { get; set; } =
+        "Wärmeerzeuger bzw. Energieerzeuger Komponenten auswählen:";
+
+    /// <summary>Satzbaustein „{0} im Projekt" — <c>label_TextEnthalten</c>.</summary>
+    [Parameter] public string EnthaltenText { get; set; } = "{0} im Projekt";
+
+    /// <summary>Satzbaustein „nicht im Projekt" — <c>label_TextOhne</c>.</summary>
+    [Parameter] public string OhneText { get; set; } = "nicht im Projekt";
+
+    /// <summary>Satzbaustein „nur Anzeige" — <c>label_TextNurAnzeige</c>.</summary>
+    [Parameter] public string NurAnzeigeText { get; set; } = "nur Anzeige";
+
+    /// <summary>Die Rückfrage — <c>label_TextFrage</c>, drei Platzhalter.</summary>
+    [Parameter] public string FrageText { get; set; } =
+        "„{0}“ wird aus dem Projekt genommen.\n\nBeim Speichern werden {1} Einträge " +
+        "gelöscht:\n{2}\n\nWirklich entfernen?";
+
+    /// <summary>Überschrift der Rückfrage — <c>label_TextFrageTitel</c>.</summary>
+    [Parameter] public string FrageTitelText { get; set; } = "Komponente entfernen";
+
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private KomponentenZeile? _frage;
+    private string _fragesatz = "";
+
+    /// <summary>Die Zeile, zu der die Rückfrage steht (Prüfhilfe für die Tests).</summary>
+    public KomponentenZeile? OffeneFrage => _frage;
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// Der Beschreibungssatz einer Kachel — wörtlich
+    /// <c>Wizard_Komponenten.KachelZeichnen</c> (:162-172): „N im Projekt" oder
+    /// „nicht im Projekt", bei einer Kachel ohne Seite zusätzlich „ · nur Anzeige".
+    /// </summary>
+    private string Bestandssatz(KomponentenZeile z)
+    {
+        string text = z.An
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, EnthaltenText, z.Anzahl)
+            : OhneText;
+
+        return z.HatSeite ? text : text + " · " + NurAnzeigeText;
+    }
+
+    // =====================================================================
+    // Umschalten - woertlich karte_Geklickt (:186-214)
+    // =====================================================================
+
+    private void BeiKachel(KomponentenZeile z)
+    {
+        // Brauchwasser und Pufferspeicher: keine Assistentenseite, also nur Anzeige.
+        // Kachel.Aktiv nimmt sie schon aus der Bedienung; die Zeile hier ist der
+        // Riegel dahinter (der Vorlaeufer hatte beides ebenfalls).
+        if (!z.HatSeite) return;
+
+        bool neu = !z.An;
+
+        if (!neu && BearbeitenModus && z.Anzahl > 0)
+        {
+            _fragesatz = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                       FrageText, z.Titel, z.Anzahl,
+                                       string.Join(", ", z.Namen));
+            _frage = z;
+            return;
+        }
+
+        Umschalten(z, neu);
+    }
+
+    private void BeiAntwort(bool? antwort)
+    {
+        KomponentenZeile? z = _frage;
+        _frage = null;
+        _fragesatz = "";
+
+        // Nein und Abbrechen wirken gleich - der Vorlaeufer prueft
+        // "antwort != DialogResult.Yes".
+        if (z is null || antwort != true) return;
+
+        Umschalten(z, false);
+    }
+
+    private void Umschalten(KomponentenZeile z, bool an)
+    {
+        z.An = an;
+        Geschaltet?.Invoke(z.SeitenIndex, an);
+    }
+}

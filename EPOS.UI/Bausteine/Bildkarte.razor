@@ -1,0 +1,140 @@
+﻿@* Ein Bild mit KLICKFLAECHEN - der Baustein hinter der Klimazonenkarte
+   (iU9-W10a.0e).
+
+   VORBILD. WindowsFormsApplication1/Allgemein/GrafikTools/KlimazonenKarte.cs
+   (326 Z.): EIN eigenes Control, das ein PNG zeichnet und 15 Polygone per
+   Hit-Test prueft. Kein Raster aus PictureBox, wie die Auftragsannahme
+   vermutete (Befund W10-B3) - und deshalb auch in Blazor kein Raster aus
+   Knoepfen, sondern das Bild mit einem SVG-Overlay darueber.
+
+   WARUM DAS TRAEGT. Bild und Pfade teilen sich EINEN Koordinatenraum: Das PNG
+   ist eine hoeher aufgeloeste Wiedergabe genau der viewBox, aus der die Pfade
+   stammen. Ein <svg viewBox="..."> ueber dem <img> mit gleicher Groesse deckt
+   sich damit ohne jede Umrechnung - die Skalierung uebernimmt der Browser, und
+   sie bleibt bei jeder Fenstergroesse richtig. Der Vorlaeufer rechnete dafuer
+   einen gemeinsamen Faktor min(W/svgW, H/svgH) samt Zentrierung von Hand aus
+   (Massstab:219-227) und rechnete jeden Mausklick wieder zurueck.
+
+   FARBEN UND MASSE woertlich aus OnPaint:239-283 des Vorlaeufers:
+     Hover    Fuellung ARGB(70,30,80,160)   Rand rgb(30,80,160)  2 px
+     Auswahl  Fuellung ARGB(60,178,34,34)   Rand firebrick       3 px
+   Die Deckungen 70 und 60 von 255 sind hier 0,27 und 0,24.
+
+   BEDIENUNG. Klick meldet die Flaeche (Gewaehlt), Doppelklick uebernimmt sie
+   (Uebernommen) - dieselben zwei Ereignisse wie im Vorlaeufer. Zusaetzlich ist
+   jede Flaeche mit der TASTATUR erreichbar: Sie traegt tabindex und reagiert
+   auf Eingabe/Leertaste, was ein GraphicsPath nie konnte. Der Kurztext jeder
+   Flaeche steht als <title> im Pfad - die Sprachausgabe liest ihn, und der
+   Browser zeigt ihn als Kurzhinweis, wie es dort der ToolTip tat.
+
+   OHNE FLAECHEN bleibt das Bild stehen und darueber der Ladefehlertext. Genau
+   so verhielt sich der Vorlaeufer, wenn die Zuordnung nicht zustande kam - die
+   Auswahl blieb ueber die Liste des Elterndialogs moeglich (Befund W10-B4).
+   Der Elterndialog muss diese Liste deshalb behalten. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-bildkarte">
+
+    <img class="epos-bildkarte-bild" src="@BildUrl" alt="@Bildbeschreibung" />
+
+    @if (Flaechen is { Count: > 0 })
+    {
+        <svg class="epos-bildkarte-flaechen" viewBox="@ViewBox"
+             preserveAspectRatio="xMidYMid meet" role="group"
+             aria-label="@Bildbeschreibung">
+            @foreach (var f in Flaechen)
+            {
+                <path d="@f.Pfad" fill-rule="evenodd"
+                      class="@Klasse(f.Schluessel)"
+                      tabindex="0" role="button"
+                      aria-label="@f.Hinweis"
+                      aria-pressed="@(f.Schluessel == Gewaehlt ? "true" : "false")"
+                      @onclick="() => Waehlen(f.Schluessel)"
+                      @ondblclick="() => Uebernehmen(f.Schluessel)"
+                      @onkeydown="e => BeiTaste(e, f.Schluessel)">
+                    <title>@f.Hinweis</title>
+                </path>
+            }
+        </svg>
+    }
+    else if (!string.IsNullOrEmpty(LadefehlerText))
+    {
+        <p class="epos-bildkarte-ladefehler" role="status">@LadefehlerText</p>
+    }
+
+</div>
+
+@code {
+    /// <summary>
+    /// EINE Klickflaeche des Bildes.
+    /// </summary>
+    /// <param name="Schluessel">
+    /// Der Wert, den die Flaeche meldet — bei der Klimazonenkarte die Zonennummer.
+    /// <c>0</c> bedeutet „keine Auswahl" und sollte deshalb kein Flächenschlüssel sein.
+    /// </param>
+    /// <param name="Pfad">Die <c>d</c>-Angabe im Koordinatenraum der <see cref="ViewBox"/>.</param>
+    /// <param name="Hinweis">Kurztext der Fläche — Kurzhinweis und Beschriftung zugleich.</param>
+    public sealed record Flaeche(int Schluessel, string Pfad, string Hinweis);
+
+    /// <summary>Die Bildquelle, üblich ein statisches Asset (<c>_content/…</c>).</summary>
+    [Parameter] public string BildUrl { get; set; } = "";
+
+    /// <summary>Alternativtext des Bildes — er beschreibt, was zu sehen ist.</summary>
+    [Parameter] public string Bildbeschreibung { get; set; } = "";
+
+    /// <summary>
+    /// Der Koordinatenraum der Pfade als <c>viewBox</c>-Angabe („0 0 breite höhe").
+    /// Er muss der Box entsprechen, aus der das Bild gerendert wurde.
+    /// </summary>
+    [Parameter] public string ViewBox { get; set; } = "";
+
+    /// <summary>Die Klickflächen; leer heißt „Bild ohne Auswahl".</summary>
+    [Parameter] public IReadOnlyList<Flaeche>? Flaechen { get; set; }
+
+    /// <summary>Der Schlüssel der gewählten Fläche; <c>0</c> = keine.</summary>
+    [Parameter] public int Gewaehlt { get; set; }
+
+    /// <summary>Meldet die Auswahl (Einfachklick, Eingabe- oder Leertaste).</summary>
+    [Parameter] public EventCallback<int> GewaehltChanged { get; set; }
+
+    /// <summary>
+    /// Meldet die ÜBERNAHME (Doppelklick) — der Elterndialog schließt daraufhin
+    /// üblicherweise mit diesem Wert.
+    /// </summary>
+    [Parameter] public EventCallback<int> Uebernommen { get; set; }
+
+    /// <summary>
+    /// Der Text, der ANSTELLE der Flächen steht, wenn es keine gibt. Leer lässt das
+    /// Bild allein stehen.
+    /// </summary>
+    [Parameter] public string LadefehlerText { get; set; } = "";
+
+    private string Klasse(int schluessel)
+        => schluessel == Gewaehlt
+            ? "epos-bildkarte-flaeche epos-bildkarte-flaeche--gewaehlt"
+            : "epos-bildkarte-flaeche";
+
+    private async Task Waehlen(int schluessel)
+    {
+        if (schluessel == Gewaehlt) return;
+        Gewaehlt = schluessel;
+        await GewaehltChanged.InvokeAsync(schluessel);
+    }
+
+    private async Task Uebernehmen(int schluessel)
+    {
+        // Der Doppelklick meldet BEIDES: Der Vorlaeufer rief AuswahlAnzeigen() und
+        // setzte danach DialogResult - die Auswahl stand also fest, bevor der Dialog
+        // schloss (karte_ZoneUebernommen:90-94).
+        await Waehlen(schluessel);
+        await Uebernommen.InvokeAsync(schluessel);
+    }
+
+    /// <summary>
+    /// Tastaturweg: Eingabe und Leertaste wählen. Er ist NEU — ein
+    /// <c>GraphicsPath</c> kannte keinen Fokus (Abweichung im Protokoll W10a).
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e, int schluessel)
+        => e.Key is "Enter" or " " ? Waehlen(schluessel) : Task.CompletedTask;
+}

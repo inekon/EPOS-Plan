@@ -1,0 +1,231 @@
+@* Der PARAMETER-Reiter der Ergebnisseite (R1 samt P1, P2, P4, P5, iU9-W11b.1).
+
+   VORBILD. tabPage_Parameter mit tabControl_Einstellungen und seinen FUENF
+   Unterblaettern (Befund W11-B1: fuenf, nicht vier) — Bedarf, BHKW,
+   Stromspeicher, Waermepumpe, Heizkessel. Der TabListMapper (462 Z.) baute die
+   Reiterleiste noch einmal in eine Menueliste um; hier ist es EIN <Reiter>
+   (Befund W11-B11).
+
+   ES SIND JETZT VIER (Anwenderwunsch 10.09.2026, W11b-B-28): "bringe den Tab
+   Parameter -> Stromspeicher aus Dialog 'Detaillierte Simulation' in den Tab
+   'Stromspeicher'. Die Felder mit Parametern sollen aenderbar sein (und die
+   Moeglichkeit die geaenderten Parameter zu Speichern)." Das Blatt P3 ist als
+   Baustein SpeicherParameterBlock in den ERGEBNISreiter "Stromspeicher"
+   gezogen - samt Optimierungsknopf, der hier stand. Geblieben sind Bedarf,
+   BHKW, Waermepumpe und Heizkessel.
+
+   JEDES FELD SCHREIBT SOFORT — woertlich wie der Vorlaeufer
+   (SpeichereKonfigurationsAenderung :5394, SpeichereVariantenAenderung :6379).
+   Es gibt keinen Speichernknopf auf dieser Seite und gab nie einen.
+
+   DIE REGEL GILT WEITER - FUER DIESE SEITE. Der ausgezogene Speicherblock ist
+   die BENANNTE AUSNAHME und puffert, weil der Anwender das ausdruecklich
+   verlangt hat ("und die Moeglichkeit die geaenderten Parameter zu Speichern");
+   die Begruendung steht im Kopf von SpeicherParameterBlock.razor. Hier steht
+   ein Feld je Erzeuger, dort achtzehn mit Abhaengigkeiten untereinander.
+
+   ZWEI BEFUNDE ENTFALLEN ERSATZLOS.
+   - W11-B8: Die Ereignisrueckkopplung der Betriebsart (LeseKonfiguration
+     meldete das CheckedChanged nur fuer EINEN der drei RadioButton ab und
+     schrieb den gerade gelesenen Wert zurueck). Ein Modellfeld loest kein
+     Ereignis aus; die Sperre braucht es nicht mehr.
+   - W11-B10: Die vier leeren Ereignisbehandler. Die drei Einheitenlisten sind
+     fachlich fest und stehen als Text, das Leistungsfeld ist ein Geraetedatum
+     und steht als gesperrtes Zahlenfeld (Aktiv=false, Standard seit W2).
+
+   TOT UND NICHT PORTIERT: tabControl3 mit tabPage1/tabPage2 (8x8 px, leer,
+   Visible=false seit D2 — Befund W11-B50). *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+@* FORMULARRASTER (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026). Jeder
+   Feldkasten (epos-simerg-felder) stellt seine Felder in den Hausraster: Die
+   Beschriftung rueckt NEBEN das Feld, ein Zahlenfeld wird kurz und traegt
+   seine Einheit dahinter. Es sind seit W11b-B-28 vier statt neun - fuenf
+   gingen mit dem Speicherblock in den Ergebnisreiter.
+
+   EINSPALTIG, und zwar aus zwei Gruenden: Der Parameterblock ist die
+   SCHMALE Spalte der Ergebnisseite (epos-simerg-felder deckelt bei 640 px),
+   und unter mancher Zahl steht ihre Entsprechung (epos-simerg-aequivalent:
+   "= 4,8 kWh") bzw. ein Hinweisabsatz, der zu dem Feld UEBER ihm gehoert.
+   Zweispaltig fiele beides neben ein fremdes Feld.
+
+   Der Kasten selbst bleibt - er traegt den Deckel und den Abstand; der
+   Raster ordnet darin. *@
+
+<div class="epos-simerg-parameter">
+
+    <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@ReiterBezeichnung">
+        <KindInhalt>
+
+            @foreach (string schluessel in Daten.Unterblaetter)
+            {
+                string s = schluessel;
+                <Reiterblatt Schluessel="@s" Titel="@BlattTitel(s)">
+                    <KindInhalt>
+                        @BlattInhalt(s)
+                    </KindInhalt>
+                </Reiterblatt>
+            }
+
+        </KindInhalt>
+    </Reiter>
+
+</div>
+
+@code {
+    /// <summary>Die Werte der Seite; ohne sie steht nur das Bedarfsblatt da.</summary>
+    [Parameter] public ParameterDaten Daten { get; set; } = new ParameterDaten();
+
+    /// <summary>Die Datenseite; ohne Delegat schreibt kein Feld.</summary>
+    [Parameter] public SimulationErgebnisDienste? Dienste { get; set; }
+
+    /// <summary>Gesperrt (Schemamigration) — die Felder bleiben sichtbar und lesbar.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    // W11b-B-28: Optimierung und OptimierungMoeglich sind hier entfallen - der
+    // Knopf "Nach Auslegung optimieren" steht mit dem Speicherblock im
+    // Ergebnisreiter "Stromspeicher".
+
+    [Parameter] public string ReiterBezeichnung { get; set; } = "Parameter";
+
+    /// <summary>
+    /// Das sichtbare Unterblatt (Pruefhilfe). Ohne eigene Wahl steht das erste
+    /// angemeldete Blatt vorn — das weiss der <see cref="Reiter"/>, nicht der Wirt.
+    /// </summary>
+    public string AktivesBlatt => _reiter?.AktiverSchluessel ?? _blatt;
+
+    private Reiter? _reiter;
+    private string _blatt = "";
+
+    // =====================================================================
+    // Titel und Inhalt je Blatt
+    // =====================================================================
+
+    private static string BlattTitel(string schluessel) => schluessel switch
+    {
+        ParameterBlatt.Bedarf => Resource.SIMERG_TAB_BEDARF,
+        ParameterBlatt.Bhkw => Resource.SIM_ERZEUGERNAME_BHKW,
+        ParameterBlatt.Waermepumpe => Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+        ParameterBlatt.Heizkessel => Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
+        _ => schluessel
+    };
+
+    private RenderFragment BlattInhalt(string schluessel) => schluessel switch
+    {
+        ParameterBlatt.Bedarf => BlattBedarf,
+        ParameterBlatt.Bhkw => BlattBhkw,
+        ParameterBlatt.Waermepumpe => BlattWaermepumpe,
+        ParameterBlatt.Heizkessel => BlattHeizkessel,
+        _ => builder => { }
+    };
+
+    // ---- P1 -------------------------------------------------------------
+
+    private RenderFragment BlattBedarf => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+        <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_NETZVERLUSTE"
+                    Wert="@Daten.Netzverluste" Einheit="@Daten.NetzverlusteEinheit"
+                    Aktiv="@(!Gesperrt)"
+                    WertChanged="NetzverlusteGesetzt" />
+            </KindInhalt>
+        </Formularraster>
+    </div>;
+
+    private void NetzverlusteGesetzt(double? wert)
+    {
+        Daten.Netzverluste = wert ?? 0.0;
+        Dienste?.NetzverlusteSchreiben?.Invoke(Daten.Netzverluste, Daten.NetzverlusteEinheit);
+    }
+
+    // ---- P2 -------------------------------------------------------------
+
+    private RenderFragment BlattBhkw => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+        <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
+                       Eintraege="@BETRIEBSARTEN" Auswahl="@Daten.Betriebsart"
+                       Aktiv="@(!Gesperrt)" AuswahlChanged="BetriebsartGesetzt" />
+
+        @* W6-E-7 (07.09.2026): DIE PROJEKTWEITE UNTERGRENZE - hier und nur hier.
+           Sie war schon vor diesem Entscheid dieses Feld, schrieb aber in die
+           falsche Spalte (Befund am Feld _grenzleistungBhkw der Huelle) und trug
+           die feste "[30%]" in der Beschriftung. Beides ist berichtigt: Das Feld
+           fuehrt jetzt Tab_Einstellungen.Leistungsgrenze, traegt seine Einheit
+           am Feld und sagt in der Herleitungszeile, was 0 bedeutet - denn seit
+           W6-E-7 rechnet 0 als 0 und nicht mehr still als 30 %. *@
+        <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" Einheit="%"
+                      Wert="@Daten.UntersteLeistungsgrenze" Min="0" Max="100"
+                      Aktiv="@(!Gesperrt)" WertChanged="LeistungsgrenzeGesetzt" />
+        <Herleitungszeile Text="@Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" />
+
+        <p class="epos-simerg-info">@Resource.SIMERG_INFO_BHKW</p>
+            </KindInhalt>
+        </Formularraster>
+    </div>;
+
+    /// <summary>
+    /// Die drei Betriebsarten. Die Steuerwerte 0/1/2 sind die des Vorlaeufers
+    /// (RadioButton.Tag, <c>bhkwSimulationsArt</c>) und stehen so in
+    /// <c>Tab_Einstellungen</c>.
+    /// </summary>
+    private static readonly (int Id, string Text)[] BETRIEBSARTEN =
+    {
+        (0, Resource.SIMERG_OPT_WAERMEGEFUEHRT),
+        (1, Resource.SIMERG_OPT_STROMGEFUEHRT),
+        (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
+    };
+
+    private void BetriebsartGesetzt(int? wert)
+    {
+        Daten.Betriebsart = wert ?? 0;
+        Dienste?.BetriebsartSchreiben?.Invoke(Daten.Betriebsart);
+    }
+
+    private void LeistungsgrenzeGesetzt(int? wert)
+    {
+        Daten.UntersteLeistungsgrenze = wert ?? 0;
+        Dienste?.LeistungsgrenzeSchreiben?.Invoke(Daten.UntersteLeistungsgrenze);
+    }
+
+    // ---- P4 -------------------------------------------------------------
+
+    private RenderFragment BlattWaermepumpe => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+        <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@Daten.Heizstab"
+                  Aktiv="@(!Gesperrt)" WertChanged="HeizstabGesetzt" />
+            </KindInhalt>
+        </Formularraster>
+    </div>;
+
+    private void HeizstabGesetzt(bool wert)
+    {
+        Daten.Heizstab = wert;
+        Dienste?.HeizstabSchreiben?.Invoke(wert);
+    }
+
+    // ---- P5 -------------------------------------------------------------
+
+    private RenderFragment BlattHeizkessel => @<div class="epos-simerg-felder">
+        @* Formularraster (iU8-E-2, Paket P3) - siehe Dateikopf. *@
+        <Formularraster Einspaltig="true">
+            <KindInhalt>
+        <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
+                    Wert="@Daten.Bereitschaft" Einheit="h/a"
+                    Aktiv="@(!Gesperrt)" WertChanged="BereitschaftGesetzt" />
+            </KindInhalt>
+        </Formularraster>
+    </div>;
+
+    private void BereitschaftGesetzt(double? wert)
+    {
+        Daten.Bereitschaft = wert ?? 0.0;
+        Dienste?.BereitschaftSchreiben?.Invoke(Daten.Bereitschaft);
+    }
+
+}

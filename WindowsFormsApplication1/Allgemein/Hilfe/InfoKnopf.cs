@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -106,7 +106,8 @@ namespace WindowsFormsApplication1
         /// <param name="ziel">
         /// Aufnehmender Behaelter, wenn der Knopf nicht auf die Maske selbst gehoert,
         /// sondern in ein Kopfband oder eine Knopfleiste (Muster
-        /// <c>Form_Kosten.pnlHeader</c>, <c>Form_Klimadaten.panel2</c>). <c>null</c> =
+        /// <c>Form_KostenKomponente.pnlHeader</c>, <c>Form_Klimadaten.panel2</c>).
+        /// <c>null</c> =
         /// die Maske selbst.
         /// </param>
         /// <param name="breite">Breite in Pixeln; 51 fuer die Registerseiten der Startmaske.</param>
@@ -229,7 +230,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Kopfbaender sind 30 bis 74 Bildpunkte hoch (<c>UcBerichteKosten.lblKopf</c> 30,
-        /// <c>Form_LeistungspreisReihe.pnlKopf</c> 40, <c>Form_KostenKomponente.pnlKopf</c>
+        /// <c>Form_Energietraeger.pnlKopf</c> 48, <c>Form_KostenKomponente.pnlKopf</c>
         /// 74). Der Regelabstand von oben schnitte den Knopf dort unten ab. Passt er nicht
         /// mit Luft nach unten hinein, sitzt er mittig - in einem Band ohnehin der richtige
         /// Platz. Auf einer Maske greift die Regel nie, weil deren Client-Bereich um ein

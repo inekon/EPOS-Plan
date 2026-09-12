@@ -12,8 +12,14 @@ namespace SpeicherEngine
     /// darf deshalb nur Strategien verwenden, deren Zustandsfreiheit belegt ist
     /// (Fachkonzept 8.1). Eine von aussen hereingereichte Implementierung koennte diese
     /// Zusage nicht einhalten; der Optimierer erzeugt die Strategie deshalb selbst.
-    /// Peak-Shaving fehlt in der Liste, weil es einer anderen Zielgroesse folgt
-    /// (Lastspitze statt Residuallast) und eine eigene Maske hat (AP7).
+    /// Die Lastspitzenkappung stand bis 09.09.2026 NICHT in der Liste: Sie folgt
+    /// einer anderen Zielgroesse (Lastspitze statt Residuallast) und hat eine eigene
+    /// Maske (AP7). Der Anwenderentscheid W11b-E-3 (10.09.2026) nimmt sie auf, weil
+    /// ein Projekt OHNE Erzeugung sonst gar keine auswertbare Optimierung hat - ohne
+    /// PV und BHKW bewerten Dauer- und Nachtnutzung nichts, und alle Rasterpunkte
+    /// liefern denselben Wert (Befund W11b-B-25, Projekt 1050). Die eigene Maske
+    /// bleibt daneben bestehen (Fachkonzept 6.4); geteilt wird der Parametersatz
+    /// (<see cref="PeakShavingParameter.Nachziehend"/>).
     /// </remarks>
     public enum OptimiererStrategie
     {
@@ -21,7 +27,15 @@ namespace SpeicherEngine
         Dauernutzung = 0,
 
         /// <summary>Nachtnutzung im energetischen Produktivmodus (Fachkonzept 6.1).</summary>
-        Nachtnutzung = 1
+        Nachtnutzung = 1,
+
+        /// <summary>
+        /// Lastspitzenkappung mit nachziehender Schwelle (Fachkonzept 6.4,
+        /// Anwenderentscheid W11b-E-3 vom 10.09.2026). Bewertet wird der gesparte
+        /// Leistungspreis statt des genutzten Erzeugungsueberschusses; die Strategie
+        /// braucht deshalb <see cref="OptimiererOptionen.LeistungspreisEurProKwA"/>.
+        /// </summary>
+        Lastspitzenkappung = 2
     }
 
     /// <summary>
@@ -101,6 +115,23 @@ namespace SpeicherEngine
 
         /// <summary>Betriebsstrategie je Rasterpunkt, Default <see cref="OptimiererStrategie.Dauernutzung"/>.</summary>
         public OptimiererStrategie Strategie { get; init; } = OptimiererStrategie.Dauernutzung;
+
+        /// <summary>
+        /// Leistungspreis L_P [EUR/(kW*a)] der Berechnungsart
+        /// <see cref="OptimiererStrategie.Lastspitzenkappung"/>, Vorgabe 0
+        /// (Anwenderentscheid W11b-E-3, 10.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Vorgabe 0 heisst "nicht gepflegt", nicht "kostenlos".</b> Ein erfundener
+        /// Erfahrungswert wuerde die Wirtschaftlichkeit unbemerkt verfaelschen - das ist
+        /// dieselbe Begruendung, mit der die Peak-Shaving-Maske L_P bei 0 belaesst
+        /// (Fachkonzept 4.4, offener Punkt 3). <see cref="Pruefe"/> verlangt deshalb bei
+        /// Lastspitzenkappung einen Wert groesser 0: Mit L_P = 0 waere die
+        /// Leistungspreisersparnis jedes Rasterpunktes 0 und die Zielfunktion allein der
+        /// negative Kapitaldienst - das Optimum laege zwangslaeufig am kleinsten
+        /// Speicher, ohne dass die Anzeige den Grund nennen koennte.
+        /// </remarks>
+        public double LeistungspreisEurProKwA { get; init; }
 
         /// <summary>
         /// Zugesicherte Volladezyklen N_zyk des Geraets [1]. 0 = nicht gepflegt; dann
@@ -187,6 +218,15 @@ namespace SpeicherEngine
             if (MaxParallel == 0 || MaxParallel < -1)
                 throw new ArgumentOutOfRangeException(nameof(MaxParallel), MaxParallel,
                     "MaxParallel muss -1 (Vorgabe) oder groesser 0 sein.");
+            if (LeistungspreisEurProKwA < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(LeistungspreisEurProKwA), LeistungspreisEurProKwA,
+                    "Der Leistungspreis darf nicht negativ sein.");
+            // Die Lastspitzenkappung bewertet AUSSCHLIESSLICH gesparten Leistungspreis.
+            // Ohne L_P haette jeder Rasterpunkt denselben Ertrag 0 - die Suche liefe,
+            // ohne etwas zu unterscheiden.
+            if (Strategie == OptimiererStrategie.Lastspitzenkappung && !(LeistungspreisEurProKwA > 0.0))
+                throw new ArgumentOutOfRangeException(nameof(LeistungspreisEurProKwA), LeistungspreisEurProKwA,
+                    "Die Lastspitzenkappung braucht einen Leistungspreis groesser 0.");
         }
     }
 

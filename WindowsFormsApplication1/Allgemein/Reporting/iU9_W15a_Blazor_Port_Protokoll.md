@@ -1,0 +1,1378 @@
+﻿# iU9 Welle 15a — Projekt: Auswahl, Löschen, Speichern unter, Export/Import, Assistentenkopf
+
+> Umsetzungsprotokoll zur Vermessung `iU9_W15a_Vermessung.md` (2 088 Zeilen, Stand `fe22915`) und
+> zur Arbeitsanweisung `iU9_W15a_Arbeitsanweisung.md`. Basis der Umsetzung: `f7e2758`
+> (Merge der Welle 14c auf `ios_migration`). Form: `iU9_W14c_Blazor_Port_Protokoll.md`.
+
+## 0 — Was die Welle getan hat
+
+**Sechs Bauteile → ein Baustein, drei Dialoge, eine Assistentenseite, vier Hüllen.**
+
+| Gefallen | Zeilen (`.cs` / Designer) | Nachfolge |
+|---|---|---|
+| `Form_ProjektAuswahl` | 99 / 93 | `EPOS.UI/Dialoge/Projekt/ProjektWahlDialog.razor` (Zweck `Oeffnen`) |
+| `Form_ProjektDelete` | 55 / 85 | **dieselbe** Komponente (Zweck `Loeschen`) |
+| `Form_ProjektSpeichernUnter` | 268 / 205 | `EPOS.UI/Dialoge/Projekt/ProjektKopieDialog.razor` |
+| `Form_ProjektExportImport` | 320 / — (K4) | `EPOS.UI/Dialoge/Projekt/ProjektTransferDialog.razor` |
+| `Wizard_Projekt` | 104 / 193 | `EPOS.UI/Seiten/Assistent/ProjektKopfSeite.razor` |
+| **`ProjektAuswahl` (uc)** | **408 / 107 — BLEIBT bis W16** | Baustein `EPOS.UI/Bausteine/ProjektListe.razor` steht daneben |
+
+**Vier Hüllen:** `Views/Projekt/ProjektWahlHuelle.cs`, `Views/Projekt/ProjektKopieHuelle.cs`,
+`Views/Projekt/ProjektTransferHuelle.cs`, `Views/Wizard/ProjektKopfHuelle.cs`.
+
+**Der Hebel der Welle:** Der Bestand führte **vier Projektlisten nebeneinander** (Befund
+W15a‑B52) — `ProjektAuswahl` (ListView, drei Spalten, Suche, Sortierung, 408 Z.),
+`Form_ProjektSpeichernUnter.listView_Projekt` (ListView, zwei Spalten), `Form_ProjektDelete.comboBox_Projekte`
+(ComboBox über eine Erweiterungsmethode) und `Form_ProjektExportImport.cbProjekt` (ComboBox mit
+eigener Schleife); dazu als fünfte die fertige Razor-Seite `Seiten/Projektliste` (iOS-Einstieg).
+Sie sind jetzt **ein** Baustein. Damit ist „Eine Projektauswahl für alle"
+(`Konzept_Projektdialoge_Vereinheitlichung.md:177`) eingelöst.
+
+## 1 — Commits
+
+| Commit | Schritt | Inhalt |
+|---|---|---|
+| `7d8c93a` | W15a.0e (1/2) | `SchemaStand.Zielversion` im Kern; `SchemaMigration.ZIEL_VERSION` reicht weiter; `ProjektExportImportCtrl` verliert seinen unbenutzten `using System.Windows.Forms` |
+| `ea9ab71` | W15a.0j | `ProjekttransferTests` (P1–P5) **vor** dem Umzug — und der Befund W15a‑B55, den sie finden |
+| `45c6b45` | W15a.0e (2/2) | `git mv` des Controllers in den Kern; P1–P5 danach erneut grün |
+| `5255c75` | W15a.0a–0g, 0k | `ProjektAngaben.cs`, die vier Kern-Wege, `ProjektpflegeTests` (P7–P9) |
+| `6207e03` | W15a.0h/0i | `IProjektQuelle.TransferDaten()`, 83 Textschlüssel in beiden Sprachen |
+| `8777ebf` | W15a.1 / W15a.7 | Baustein `ProjektListe`; `Seiten/Projektliste` baut darauf auf |
+| `1b6d2be` | W15a.2 / W15a.3 | `ProjektWahlDialog`, Hülle, Sprungtabelle, `MenueCtrl.ProjektDelete`, `Form_Start` |
+| `a1ae656` | W15a.4 | `ProjektKopieDialog` und Hülle |
+| `c4e9575` | W15a.5 | `ProjektTransferDialog`, Hülle, `Dateiwahl.Speichern` |
+| `2a8f43c` | W15a.6 | `ProjektKopfSeite`, Hülle, `AssistentSeiten`, die sechs `WizardParent`-Stellen |
+| `62cdf63` | W15a.9 | die zwei Testanker, vier Schwellen, `Erreichbarkeit_2026-09-03.md`, `LIESMICH.md` |
+| (dieser) | W15a.10 | Protokoll und die drei `CLAUDE.md` |
+
+## 2 — Feldkartenabgleich
+
+Die Karten sind **vor** dem Port gezogen worden
+(`dotnet run --project Werkzeuge/Formularkarte -c Release -- --alle WindowsFormsApplication1
+--ziel <scratch> --erreichbarkeit`, 04.09.2026, 17 Masken / 18 Designer).
+
+### 2.1 `Form_ProjektDelete` (3 Kartenzeilen)
+
+| # | Steuerelement | Typ | de / en | Nachfolge in `ProjektWahlDialog` (Zweck `Loeschen`) |
+|---|---|---|---|---|
+| 1 | `comboBox_Projekte` | ComboBox | „Projekt:" / „Project:" | **A‑12:** der Baustein `ProjektListe` — Liste mit Suche, Kunde und Änderungsdatum statt einer Klappliste |
+| 2 | `btn_OK` | Button | „OK" / „OK" | `SpeichernLeiste`, Beschriftung „Löschen" (`PRJ_DEL_BTN_LOESCHEN`) |
+| 3 | `btn_Abbrechen` | Button | „Abbrechen" / „Cancel" | `SpeichernLeiste` |
+| — | (kein Hilfeknopf, B8) | — | — | **neu**: `InfoKnopf` mit `Form_ProjektDelete.btn_Help`, Eintrag in `help_mapping.txt` ergänzt |
+
+Vier Handler abgeglichen: `Load` (füllt die Liste → `ProjektCtrl.NamenListe`), `btn_OK_Click`
+(**ohne** Leerprüfung, B3 → der Dialog meldet jetzt `Text_Select`), `btn_Abbrechen_Click`,
+`comboBox_Projekte_SelectedIndexChanged` (**verkettetes SQL**, B1 → `ProjektCtrl.IdVonName`;
+die Id kommt jetzt ohnehin mit der Zeile).
+
+### 2.2 `Form_ProjektSpeichernUnter` (15 Kartenzeilen + 2 im Panel)
+
+| # | Steuerelement | de / en | Nachfolge in `ProjektKopieDialog` |
+|---|---|---|---|
+| 1 | `button_Open` | „OK" / (leer) | `SpeichernLeiste` |
+| 2 | `button_Abbrechen` | **„Abbrechen ❌" / „Cancel ❌"** | `SpeichernLeiste`, **A‑1: ohne ❌** |
+| 3 | `label1` | „Projektauswahl:" | `Gruppenkopf` |
+| 4 | `listView_Projekt` | (2 Laufzeitspalten) | `ProjektListe` |
+| 5 | `label2` | „Neuer Projektname:" | `Textfeld`-Beschriftung |
+| 6 | `textBox_NeuerProjektName` | — | `Textfeld` |
+| 7 | `label_Beschreibung` | „Beschreibung:" | `Textfeld`-Beschriftung |
+| 8 | `textBox_Beschreibung` | mehrzeilig | `Textfeld` `Mehrzeilig`, 4 Zeilen |
+| 9 | `label_Kunde` | „Kunde:" | `Textfeld`-Beschriftung |
+| 10 | `textBox_Kunde` | — | `Textfeld` |
+| 11 | `label_Bearbeiter` | „Bearbeiter:" | `Textfeld`-Beschriftung |
+| 12 | `textBox_Bearbeiter` | — | `Textfeld` |
+| 13 | `btn_Help` | — | `InfoKnopf` |
+| P1 | `lbl_Fortschritt` | — | `Fortschritt.Text` |
+| P2 | `progressBar_Duplizieren` | — | `Fortschritt.Anteil` |
+
+**Nachtrag von Hand (R‑W15a‑6):** Die **zwei ListView-Spalten** entstehen im `.ctor:38–41`
+(`MyResource.Resource.Text_Name`, `Text_Beschreibung`) und stehen in keiner Karte (B9). Sie sind
+in der neuen Liste die Spalten „Projektname" und „Kunde"/„Geändert" — die Beschreibung wird
+weiterhin DURCHSUCHT, aber nicht mehr als Spalte gezeigt (sie war im Vorläufer die zweite Spalte;
+die drei Spalten der `ProjektAuswahl`-Sicht sind die gemeinsame Form, A‑12).
+
+### 2.3 `Form_ProjektAuswahl` (4 Kartenzeilen) + `ProjektAuswahl` (3)
+
+| # | Steuerelement | de / en | Nachfolge |
+|---|---|---|---|
+| 1 | `ucAuswahl` (`ProjektAuswahl`) | — | Baustein `ProjektListe` |
+| 2 | `btn_OK` | „OK" | `SpeichernLeiste` |
+| 3 | `btn_Abbrechen` | „Abbrechen" / „Cancel" | `SpeichernLeiste` |
+| 4 | `btn_Help` | — | `InfoKnopf` |
+| uc 1 | `textBox_Suche` | „Suchen:" / „Search:" | `ProjektListe.SucheText` |
+| uc 2 | `listView_Projekte` | 3 `ColumnHeader` | die Tabelle des Bausteins |
+| uc 3 | `label_Anzahl` | **„{0} von {1} Projekten"** | `ProjektListe.AnzahlFormat` (B20 — jetzt ein Parameter, kein getarnter Steuerelementtext) |
+
+### 2.4 `Form_ProjektExportImport` — die Handkarte (R‑W15a‑6, B24)
+
+Die Maske hatte **keinen Designer**; die Karte ist von Hand aus `BaueUi():46–126` geschrieben.
+**23 Steuerelemente, alle Texte deutsche Literale im Quelltext.**
+
+| # | Bereich | Steuerelement | Text (deutsch, Literal) | Nachfolge |
+|---|---|---|---|---|
+| 1 | Fenster | `tabs` (`TabControl`) | — | `Reiter` |
+| 2 | Export | `TabPage` | „Exportieren" | `Reiterblatt` `EXPORT` |
+| 3 | Export | `Label` | „Projekt:" | `Auswahlfeld`-Beschriftung |
+| 4 | Export | `cbProjekt` (`ComboBox`, `DropDownList`) | — | `Auswahlfeld` |
+| 5 | Export | `Label` | „Varianten mitexportieren:" | `Mehrfachauswahl`-Beschriftung |
+| 6 | Export | `clbVarianten` (`CheckedListBox`, `CheckOnClick`) | — | `Mehrfachauswahl`, **alle vorbelegt an** (TF2) |
+| 7 | Export | `btnExport` | „Exportieren…" | Knopf `epos-transfer-export` |
+| 8 | Import | `TabPage` | „Importieren" | `Reiterblatt` `IMPORT` |
+| 9 | Import | `btnDatei` | „Datei wählen…" | `Dateiwahl.KnopfText` |
+| 10 | Import | `txtDatei` (`ReadOnly`) | — | `Dateiwahl.Pfad` |
+| 11 | Import | `lblInfo` (`DimGray`, 3 Zeilen) | Paketvorschau | `Warnbanner` (Stufe Hinweis / Warnung) |
+| 12 | Import | `Label` | „Zielname (leer = aus Datei):" | `Textfeld`-Beschriftung |
+| 13 | Import | `txtZielname` | — | `Textfeld` |
+| 14 | Import | `Label` | „Falls dieser Name bereits existiert:" | `Optionsgruppe`-Beschriftung |
+| 15 | Import | `rbNeuerName` (**`Checked`**) | „Unter neuem Namen importieren" | `Optionsgruppe`, Vorbelegung |
+| 16 | Import | `rbUeberschreiben` | „Vorhandenes Projekt überschreiben" | `Optionsgruppe` |
+| 17 | Import | `rbAbbrechen` | „Abbrechen" | `Optionsgruppe` |
+| 18 | Import | `chkSicherung` (**`Checked`**) | „Sicherungskopie der Datenbank vor dem Import anlegen" | `Schalter` — **nur mit Delegat** (A‑10) |
+| 19 | Import | `btnImport` (`Enabled = false`) | „Importieren…" | Knopf `epos-transfer-import`, gesperrt ohne Datei |
+| 20 | Fuß | `pb` (`ProgressBar`) | — | `Fortschritt` |
+| 21 | Fuß | `lblStatus` (`DimGray`) | — | `Warnbanner` bzw. `Fortschritt.Text` |
+| 22 | Fuß | `btnSchliessen` (`CancelButton`) | „Schließen" | `SpeichernLeiste` `OkText`, ohne Abbrechen |
+| 23 | Fenster | `InfoKnopf.Anbringen(this)` | — | `InfoKnopf` |
+
+**Der Wellenplan zählt „3 TabPage" — es sind zwei** (B26); die dritte Zeile der Inventarliste
+ist die gemeinsame Fußzeile.
+
+### 2.5 `Wizard_Projekt` (10 Kartenzeilen)
+
+| # | Steuerelement | de / en | Nachfolge in `ProjektKopfSeite` |
+|---|---|---|---|
+| 1 | `textBox_Name` | „Projektname" / „Project name" | `Textfeld`, `NurLesen` = `!NameAenderbar` |
+| 2 | `textBox_Beschreibung` | „Beschreibung" / „Description" | `Textfeld` `Mehrzeilig`, 5 Zeilen |
+| 3 | `textBox_Kunde` | „Kunde" / **„customer"** (klein, B43) | `Textfeld` — englisch jetzt „Customer" |
+| 4 | `textBox_Bearbeiter` | „Bearbeiter" / „Editor" | `Textfeld` |
+| 5 | `pictureBox1` | Zierbild | **entfällt** |
+| 6 | `label6` | „Geben Sie hier die administrativen Projektdaten ein:" | `Herleitungszeile` |
+| 7 | `textBox_Aenderungsdatum` | „Änderungsdatum" (gesperrt) | `Textfeld` `NurLesen`, **A‑9** |
+| 8 | `label7` (`Dock=Top`) | „Projektkonfiguration" | `Gruppenkopf` |
+| 9 | `comboBox_Klima` | „Klimaregion" / „Climate region" | `Auswahlfeld` |
+| 10 | `textBox_Erstelldatum` | „Erstelldatum" (gesperrt) | `Textfeld` `NurLesen`, **A‑9** |
+
+## 3 — Die Proben
+
+### 3.1 P1–P5 — Projekttransfer (`EPOS.Kern.Tests/ProjekttransferTests.cs`)
+
+Sie sind **vor** dem Umzug geschrieben worden (R‑W15a‑2). Jede Probe auf einer eigenen
+Arbeitskopie der 77‑MB-Testdatenbank.
+
+| Probe | Was sie prüft | vor dem Umzug | nach dem Umzug |
+|---|---|---|---|
+| **P1** Determinismus | Projekt 1030 zweimal exportieren; alle ZIP-Einträge außer `manifest.json` byteweise gleich, das Manifest ohne `exportedUtc` gleich | grün | grün |
+| **P2** Rundreise-Zählung | je Pakettabelle: Zeilen im Paket == `COUNT(*)` im Ziel; Quelle == Ziel (Ausnahme `Tab_ProjektWerte` wegen des T6-Filters) | **rot → grün nach B55** | grün |
+| **P3** Rundreise-Integrität | 0 FK-Waisen über `PRAGMA foreign_key_list` je Pakettabelle; 0 Kostenpositionen an Anlagen eines fremden Projekts | **rot → grün nach B55** | grün |
+| **P4** Variantenpaket | Stamm „Wöhler" + zwei Varianten; `Tab_Variante` zeigt danach auf die IMPORTIERTEN Projekte, Variantennamen „Test1"/„Test2" | **rot → grün nach B55** | grün |
+| **P5** Versions-Ablehnung | `schemaVersion = <Ziel−1>` abgelehnt mit der Meldung aus `:331–335`; `schemaVersion = 0` (V1-Altpaket) angenommen | **rot → grün nach B55** | grün |
+
+**Der Umzug selbst ist ein reines `git mv`** — der Dateiinhalt ist unverändert. Damit ist
+bezeugt, dass er nichts geändert hat.
+
+> **Nachtrag zum Abschluss-Merge:** `origin/ios_migration` bringt mit `a0e6707` einen echten
+> SQLite-Migrationsschritt 62 (`SCHRITT_62_KLIMAWAISEN`) und hebt damit den Zielstand auf **62**;
+> `FREEZE_VERSION = 61` bleibt in `SchemaMigration` für den Access-Zweig. Die Kern-Konstante
+> `SchemaStand.Zielversion` trägt seither **62**, `SchemaMigration.ZIEL_VERSION` zeigt weiter auf
+> sie. P5 prüft die Ablehnung deshalb relativ (`Zielversion − 1`): **61 wird jetzt ebenfalls
+> abgelehnt**, ein Paket muss 62 tragen; `0` bleibt als Altpaket zugelassen. Alle fünf Proben
+> nach dem Merge erneut grün.
+
+### 3.2 P7–P9 — Projektpflege (`EPOS.Kern.Tests/ProjektpflegeTests.cs`)
+
+**Sie sind wichtiger als P1–P5**: Der Transfercontroller wird nur verschoben, diese drei Wege
+werden neu gebaut.
+
+| Probe | Was sie prüft | Ergebnis |
+|---|---|---|
+| **P7** Duplizieren | 1030 duplizieren: je Plantabelle dieselbe Zeilenzahl wie die Quelle; die Quelle bleibt unverändert | grün |
+| **P7b** Vorprüfungen | die vier Ausgänge von `PruefeNamen` — und die **Gegenprobe zur Präfixsuche**: „Wöhl" wird ZUGELASSEN, obwohl es „Wöhler" gibt (B10) | grün |
+| **P7c** Abbruch | ein bereits ausgelöstes `CancellationToken` lässt keine halbe Kopie zurück (`GetProjektId` = 0) | grün |
+| **P8** Verwaltungsfelder | die drei Texte stehen auf der Kopie, `ID_Klimaregion` und `Erstelldatum` sind UNVERÄNDERT (der Befund aus `c631053`) | grün |
+| **P8b** | eine nicht vorhandene Kopie meldet `KopieFehlt` statt zu werfen | grün |
+| **P9** Löschkaskade | „Wöhler" (zwei Puffer mit Anlagenverweis, eine Berichtskonfiguration, zwei Varianten): danach 0 Zeilen in `Tab_Projekt`, `Berichtskonfiguration`, `Tab_Variante` (**beide Richtungen**), `Tab_Energieanlagen`, `Tab_Pufferspeicher`; **die Varianten selbst bleiben** | grün |
+| **P9b** | ohne Namen wird nichts angefasst | grün |
+| **P9c** mehrdeutiger Name | Arbeitskopie OHNE den eindeutigen Index `Projektname`, ein zweites Projekt desselben Namens: `LoeschenMitVorarbeiten` meldet `Mehrdeutig` mit Anzahl 2, **beide Zeilen stehen noch**, keine Vorarbeit ist gelaufen (Entscheid W15a‑O‑3) | grün |
+| **P9d** mit Freigabe | derselbe Stand mit `mehrdeutigZugelassen: true`: **beide** Projekte fallen, alle Vorarbeiten sind gelaufen | grün |
+| **P9e** Variante, mehrdeutig | dieselbe Arbeitskopie ohne den Index, ein zweites Projekt mit dem Namen der Variante 1023 („Wöhler ‑ Test1"): `VariantenCtrl.LoescheVariante` meldet `Mehrdeutig` mit Anzahl 2, **beide Zeilen stehen noch**, die `Tab_Variante`-Verknüpfung auch (Entscheid W15a‑O‑4) | grün |
+| **P9f** mit Freigabe | derselbe Stand mit `mehrdeutigZugelassen: true`: **beide** Projekte fallen, dazu Verknüpfung und `Tab_Energieanlagen` der Variante | grün |
+| **P9g** Stammprojekt | ein Stamm fällt über diesen Weg nicht — `LoeschStand.KeineVariante`, nichts angefasst (unverändert, nur als Befund statt als `false` + `out`) | grün |
+| + 5 Fälle | `NamenListe` (Zahl, Sortierung, Kunde/Beschreibung/Datum), `IdVonName` (auch mit Apostroph), `AnzahlGleicherNamen` (Zählung, leerer Name, Apostroph), `ProjektCtrl.Kopf` (neun Felder, leerer Zweig, geratener Name), `KlimaregionStammCtrl` (Projektkopie und STAMM-Rückfall) | grün |
+
+**17 Fälle, 17 grün** (11 aus der Welle, 3 aus dem Entscheid W15a‑O‑3 und 3 aus dem Entscheid
+W15a‑O‑4, beide vom 04.09.2026).
+
+### 3.3 P6 (optional) — Referenzlauf auf ein importiertes Projekt
+
+**Nicht gelaufen.** Begründung: Der Referenzlauf vergleicht CSV-Dateien einer festen Projekt-Id
+gegen die eingefrorene Basis; ein importiertes Projekt bekommt bewusst eine **neue Id**
+(`BerechneOffset`/`Umschluessele`, B33), und `EPOS.Referenzlauf` kennt keinen Weg, eine andere Id
+gegen die Basiszahlen eines Projekts zu halten. Der Nachweis wäre eine Werkzeugänderung, keine
+Probe. Was P6 leisten sollte — „die Rundreise verliert keine Fachdaten" — leisten P2 und P3
+zeilen- und beziehungsgenau. **Offener Punkt W15a‑O‑1** für die Windows-Abnahme: einmal von Hand
+ein Projekt exportieren, importieren und in beiden die Simulation rechnen.
+
+### 3.4 Die Komponentenproben (`EPOS.UI.Tests`)
+
+| Datei | Fälle | Gegenstand |
+|---|---|---|
+| `Bausteine/ProjektListeTests.cs` | 14 | Spalten, Suche über die unsichtbare Beschreibung, Sortierung mit Gleichstand, Zählzeile, `NurName`, `AutoVorauswahl`, Doppelklick, Spaltensatz „Einstieg", Datumsanzeige |
+| `Dialoge/ProjektWahlDialogTests.cs` | 15 | beide Zwecke, Meldung ohne Auswahl, Rückfrage mit Vorgabe „Nein", Doppelklick, Esc/Enter, Vorauswahl der Kachel, Hilfeknopf — dazu **vier Fälle zum Entscheid W15a‑O‑3**: die zweite Rückfrage bei mehrdeutigem Namen (auch sie mit Vorgabe „Nein"), „Nein" lässt den Dialog stehen, „Ja" meldet die Freigabe mit, ein eindeutiger Name fragt nicht nach |
+| `Dialoge/ProjektKopieDialogTests.cs` | 11 | Felder, Vorbelegung aus der Quelle, die drei Prüfungen, **die Gegenprobe zur Präfixsuche**, Fortschritt, Fehlerpolitik der Verwaltungsfelder, Doppelklick |
+| `Dialoge/ProjektTransferDialogTests.cs` | 15 | zwei Blätter, Variantenhaken „alle an", Paketvorschau, drei Konfliktmodi, beide Rückfragen, „kein Delegat = kein Schalter", Bericht |
+| `Seiten/ProjektKopfSeiteTests.cs` | 8 | neun Felder, gesperrte Datumsfelder, beide Betriebsarten, Schreiben AN ORT UND STELLE, Klimaregion über Id und über den Namen |
+| `Seiten/ProjektlisteTests.cs` | 5 | **unverändert** (R‑W15a‑13) |
+| `Seiten/AppWurzelTests.cs` | 7 | **unverändert** |
+| `Seiten/UebersichtSeiteTests.cs` | +3 | **aus dem Entscheid W15a‑O‑4**: die zweite Rückfrage der Variantenlöschung bei mehrdeutigem Projektnamen (Vorgabe „Nein" am betonten Knopf, Name und Anzahl im Text), „Nein" löscht nichts, „Ja" gibt alle Gleichnamigen frei, ein eindeutiger Name fragt nicht nach. Die Klasse pinnt dafür die Sprache selbst auf `de-DE` |
+
+## 4 — Die zwölf Angleichungen (A‑1 … A‑12)
+
+| Nr | Was sich ändert | Umgesetzt | Windows-Abnahme |
+|---|---|---|---|
+| **A‑1** | Das ❌ auf „Abbrechen" entfällt (B16 — der einzige Knopf des Bestands mit einem Emoji in der Beschriftung) | ja | „Speichern unter" öffnen: der Knopf heißt „Abbrechen", ohne Symbol |
+| **A‑2** | Der Duplizierlauf ist **abbrechbar**: `Duplizieren` bekommt ein `CancellationToken`, der Abbruch rollt die eine Transaktion zurück und liefert `-1` | ja (kein toter Knopf — der Baustein `Fortschritt` zeigt ihn nur mit Rückruf) | Duplizieren starten, „Abbrechen" drücken: der Dialog bleibt offen, es entsteht kein Projekt |
+| **A‑3** | Das Fenster wächst nicht mehr; der Fortschrittsbereich blendet sich ein (B12) | ja | Fenstergröße bleibt während des Kopierens |
+| **A‑4** | **Die Dublettenprüfung wird richtig** (B10): `PruefeNamen` statt `FindItemWithText` mit Präfix-Semantik | ja | Bei vorhandenem „Musterprojekt" den Namen „Muster" eingeben: er wird **angenommen** |
+| **A‑5** | Die 1 000‑ms-Fertig-Anzeige bleibt | ja | „Fertig" steht kurz, bevor das Fenster zugeht |
+| **A‑6** | Doppelklick in der Quellliste **markiert nur** und lädt die Felder; gestartet wird über OK (B13) | ja | Doppelklick startet keinen Kopierlauf |
+| **A‑7** | Der Löschdialog bekommt Esc und einen Standardknopf (B6) | ja | Esc schließt „Projekt löschen" |
+| **A‑8** | Der Transferdialog ist **übersetzt** (B36: 27 Texte, bis dahin 0 %) | ja | Programm auf Englisch: „Export / import project" |
+| **A‑9** | Die Datumsanzeige folgt der Programmsprache (B32a: vier Stellen fest `de-DE`) | ja | Englische Oberfläche: Assistentenkopf und Paketvorschau zeigen englische Datumsform |
+| **A‑10** | Die Sicherungskopie bekommt einen **Delegaten** statt „fest neben die DB" (B28) | ja — Windows-Vorgabe unverändert | Import mit Haken: Datei `<Name>_vor_Import_…` neben der Datenbank |
+| **A‑11** | Der Importbericht bekommt einen **Delegaten** statt „fest neben das Paket" (B29) | ja — Windows-Vorgabe unverändert | Nach dem Import: `<paket>.wpx.importbericht.txt` und derselbe Text im Dialog |
+| **A‑12** | **Eine Projektliste für alle**: „Löschen" und „Export" zeigen die Liste mit Suche statt einer Klappliste (B52) | „Löschen" ja; **„Export" bewusst nicht** — siehe unten | „Projekt löschen": Liste mit Suche, Kunde, Änderungsdatum |
+
+> **A‑12, Einschränkung.** Der **Transferdialog behält sein Auswahlfeld** (`Auswahlfeld` statt
+> `ProjektListe`). Grund: Sein Exportblatt trägt darunter die Variantenliste und den
+> Exportknopf; eine volle Projektliste mit Suche und Zählzeile hätte das Blatt auf die doppelte
+> Höhe gebracht, und die Wahl ist dort ein Einzeiler ohne Kunden- oder Datumsbezug. Die
+> Datenquelle ist trotzdem dieselbe (`ProjektCtrl.NamenListe`), es gibt also **keine fünfte
+> Liste** mehr. **Anwenderfrage E‑5 gilt damit nur für „Löschen"**.
+>
+> **Entschieden am 04.09.2026** (W15a‑O‑2): Der Anwender hat die Empfehlung
+> angenommen — **der Transferdialog behält sein Auswahlfeld**, im Export gibt es keine
+> volle Projektliste. Die Begründung dieses Abschnitts gilt damit als Entscheid:
+> Variantenliste und Exportknopf stehen darunter, die Wahl ist ein Einzeiler ohne Kunden-
+> oder Datumsbezug, und die Datenquelle bleibt `ProjektCtrl.NamenListe`.
+
+## 5 — Anwenderfragen
+
+| Nr | Frage | Entscheid dieser Welle |
+|---|---|---|
+| **E‑1** | Bleibt das ❌ auf „Abbrechen"? | **nein**, gestrichen (A‑1) |
+| **E‑2** | Duplizierlauf abbrechbar (Kern-Parameter)? | **ja** — `Duplizieren(…, CancellationToken)`; der Abbruch wird ZWISCHEN den Tabellen geprüft und rollt zurück. Kein toter Knopf |
+| **E‑3** | Doppelklick: sofort duplizieren oder nur markieren? | **nur markieren** (A‑6) |
+| **E‑4** | Datumsformat: `de-DE` fest oder Programmsprache? | **Programmsprache** (A‑9) |
+| **E‑5** | Klapplisten durch die volle Projektliste ersetzen? | **„Löschen" ja, „Export" nein** — Begründung oben. **Für „Export" entschieden: nein** (Anwender, 04.09.2026, W15a‑O‑2) |
+| **E‑6** | „Projekt → Öffnen…" wieder ins MDI-Menü? | **gegenstandslos.** Befund W15a‑B56: Der Menüpunkt IST da — `MenuItem_ProjektOeffnen` steht im Designer, in beiden `.resx` („Öffnen…" / „Open…") und ruft `MenuItem_ProjektOeffnen_Click:592` → `MenueCtrl.ProjektOeffnen()` ohne Argument, also den Zweig MIT Dialog. Die Vermessung (B25) hat nur `MDIMainForm:567–571` gelesen |
+
+## 6 — Befunde
+
+Die Vermessung führt B1…B54. Was diese Welle daraus gemacht hat, und zwei neue.
+
+| Nr | Befund | Entscheid |
+|---|---|---|
+| B1 | verkettetes SQL mit Anwendertext, ungeprüftes `rs.Next`, `SELECT *` (`Form_ProjektDelete:45–52`) | **behoben** — `ProjektCtrl.IdVonName` (parametriert); die Maske ist weg |
+| B2 | kein `Sprungziel` in der ganzen Welle | bestätigt — `Sprungbruecke` führt weiter EINEN Zweig (`SpeicherOptimierung`), unangetastet |
+| B3 | `btn_OK_Click` ohne Leerprüfung | **behoben** — der Dialog meldet `Text_Select` und bleibt offen |
+| B4 | zwei tote Felder (`szklima`, `ID_Klima`) | mit der Maske gefallen |
+| B5 | `FillComboBox` als Erweiterungsmethode | der Projektzweig ist weg; `ControllerListen` bleibt für `FormMain:632` (Klimaregionen) |
+| B6 | keine Fensterpolitur, kein Esc | **behoben** (A‑7) |
+| B7 | englische `.resx` verschiebt Steuerelemente | ersatzlos entfallen (Razor) |
+| B8 | kein Hilfeknopf am Löschdialog | **behoben** — `help_mapping.txt` führt jetzt `Form_ProjektDelete.btn_Help` |
+| B9 | Laufzeitspalten für die Feldkarte unsichtbar | von Hand nachgetragen (§ 2.2) |
+| B10 | **Dublettenprüfung mit Präfix-Semantik** | **behoben** (A‑4); Gegenprobe in P7b und in den Komponententests |
+| B11 / B47 | zwei bzw. drei Transaktionsstufen mit zwei Fehlerpolitiken | **unverändert übernommen** (R‑W15a‑11), Kommentare wortgleich im Kern |
+| B12 | wachsendes Fenster | **angeglichen** (A‑3) |
+| B13 | Doppelklick startet die Duplizierung | **angeglichen** (A‑6) |
+| B14 | sechs tote öffentliche Felder | mit der Maske gefallen |
+| B15 | „Speichern unter" ohne Menüpunkt | unverändert — nur die Kachel; der Maskenschlüssel bleibt |
+| B16 | ❌ in der Knopfbeschriftung | **gestrichen** (A‑1) |
+| B17 | sechs hartkodiert deutsche Meldungen | **behoben** — sechs Schlüssel in beiden Sprachen |
+| B18 | `Abgebrochen`/`Anzahl` ohne Abnehmer | ersatzlos entfallen |
+| B19 | zwei Wege zum selben Ziel | ersatzlos entfallen — der Baustein meldet EINEN Weg |
+| B20 | Formatstring als Steuerelementtext | **behoben** — `AnzahlFormat` ist ein Parameter, `PRJ_LIST_ANZAHL` ein Schlüssel |
+| B21 | `_markiert` als WinForms-Umweg | ersatzlos entfallen |
+| B22 | Suche über die unsichtbare Beschreibung | **mitgenommen**, eigener Testfall |
+| B23 | `Laden()` schluckt jeden Fehler | **übernommen** — `ProjektCtrl.NamenListe` protokolliert auf die Konsole und liefert eine leere Liste; der Dialog zeigt seinen Leertext |
+| B24 | Transfermaske im Vollständigkeitsnetz unsichtbar | Handkarte § 2.4; die Maske ist weg |
+| B25 | „Projekt → Öffnen…" fehle im MDI | **widerlegt** — siehe B56 |
+| B26 | „3 TabPage" sind zwei | bestätigt, im Komponentenkopf vermerkt |
+| B27 | SQL uneinheitlich (Varianten) | **behoben** — beide Abfragen parametriert (`ProjektTransferHuelle.Varianten`) |
+| B28 | Sicherung kopiert die ganze DB | **Delegat** (A‑10); Windows-Vorgabe unverändert, iOS blendet den Schalter aus |
+| B29 | Bericht neben die Paketdatei | **Delegat** (A‑11) |
+| B30 | Kern-Umzug kostet EINE Konstante | **umgesetzt** — `SchemaStand.Zielversion` |
+| B31 | `Wizard_Projekt` nutzt `FillComboBox` nicht | bestätigt; die Schleife ist ein `Auswahlfeld` |
+| B32 / B32a | fünf verkettete SQL-Stellen, `de-DE` festgenagelt | **behoben** — `KlimaregionStammCtrl.IdVonName`/`NameZuProjektregion`; A‑9 |
+| B33 | „bitgleich" ist beim Transfer das falsche Kriterium | bestätigt — P1 prüft die Einträge, P2/P3 die Rundreise |
+| B34 | der Transfernachweis ist verloren | **behoben** — P1–P5 |
+| B35 | tote `Form_ProjektExportImport.resx` | gelöscht |
+| B36 / B51 | 0 % übersetzt | **behoben** — 83 Schlüssel in beiden Sprachen |
+| B37 | zwei tote Ergebnisfelder, `DialogResult` ungeprüft | **behoben** — die Hülle liefert ehrlich, ob ein Import gelang |
+| B38 | `HilfeKontext` ohne Transfermaske | unverändert gelassen (die Datei führt Namen gefallener Masken auch aus W14c weiter) |
+| B39 | `GetDatum()` liefert `Now` | **behoben** — `ProjektkopfUebernehmen` setzt das Änderungsdatum ausdrücklich auf jetzt |
+| B40 | `GetErstellDatum()` ohne Kultur, ohne `TryParse` | **behoben** — das Datum reist als `DateTime` |
+| B41 | toter `using Json.Schema.Generation.Intents` | mit der Maske gefallen |
+| B42 | einzige Seite mit `Get*`-Rückweg | **Weg (a)**: einelementige geteilte Liste, kein neuer Vertrag |
+| B43 | englisch „customer" klein | **behoben** — `PKOPF_LBL_KUNDE` englisch „Customer" |
+| B44 | Menü und Kachel tun Verschiedenes | unverändert — beide Wege laufen wie bisher |
+| B45 | Projektwechsel ist entkoppelt | **bestätigt und geschützt**: Das `Projektwahl`-Fach ist unverändert; die Hülle füllt es genau wie `WahlUebernehmen` |
+| B46 | die Razor-Projektliste in der falschen Bauform | **behoben** — sie baut auf dem Baustein auf |
+| B48 | `SELECT *` für eine Spalte, ein Parameter für zwei Zuweisungen | **halb behoben** — das `SELECT` holt nur `ID_Projekt`; die Zuweisung `ID_Projekt = 0` bleibt eine Konstante (das war schon vorher richtig) |
+| B49 | `Delete` löscht über den NAMEN | **unverändert im Schreibweg, mit Vorprüfung** — der Löschweg ist bitgleich (`WHERE Projektname=?` in `Delete` und den drei Vorarbeiten). **Entschieden am 04.09.2026** (W15a‑O‑3): `LoeschenMitVorarbeiten` zählt VOR dem ersten Schritt `SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = ?`; bei mehr als einem Treffer meldet es den neuen Befund `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an. Der Löschdialog fragt daraufhin mit Vorgabe „Nein" nach (`PROJ_MSG_NAME_MEHRDEUTIG`), und erst `mehrdeutigZugelassen: true` lässt den Weg wie zuvor laufen |
+| B50 | doppelt gesicherte Löschreihenfolge | **unverändert, mit Kommentar** (R‑W15a‑12): `PufferReferenzenLoesen` bleibt in `ProjektCtrl.Delete` |
+| B52 | vier Projektlisten | **behoben** — ein Baustein, vier Nutzer |
+| B53 / B54 | `ProjektAuswahl` in zwei Wirten, Typzeuge | **Weg (a)** — das Control bleibt bis W16, `StapelTests:227` unverändert |
+| **B55** *(neu)* | **Der Projektimport war seit der SQLite-Umstellung kaputt.** `FuelleKatalog` und `LoeseKatalogAuf` trugen benannte Platzhalter (`@id`, `@k0`, `@c0`) im SQL-Text; die Zugriffsschicht bindet nach POSITION und benennt jeden Parameter in `@p0…@pN` um (`SqliteDatenzugriff.UebersetzeParameterzeichen`). Jeder Import brach mit „Must add values for the following parameters: @k0". Gefunden von P2–P5 | **behoben** — vier Stellen auf `?` umgestellt; die Parameternamen bleiben, weil die Diagnose sie ausgibt |
+| **B56** *(neu)* | **B25 stimmt nicht.** Der Menüpunkt „Projekt → Öffnen…" ist vorhanden und verdrahtet (`MDIMainForm.Designer.cs:113–117`, `.resx` „Öffnen…" / „Open…", Handler `:592`). Die Vermessung hat nur `MDIMainForm:567–571` gelesen | E‑6 gegenstandslos; nichts geändert |
+
+## 7 — Die iZ5-Ausnahme: `ProjektAuswahl` (uc) bleibt
+
+Das UserControl lebt in **zwei** Wirten: `Form_ProjektAuswahl` (mit dieser Welle gefallen) und
+**`WizardParent.pnlLeft`** (`WizardParent.designer.cs:35`, `:53`, `:72–80`), das erst mit
+**Welle 16** fällt. Die drei Wege der Vermessung § 3.f:
+
+* **(a) Control bleibt, Hülle wird Razor** — gewählt (R‑W15a‑1).
+* (b) Control mitportieren, Assistent bekommt eine zweite WebView für die linke Spalte — **nein**,
+  Verstoß gegen R‑W11‑2 (zwei WebViews in einem Fenster).
+* (c) Control löschen, Assistent bekommt eine ListBox zurück — **nein**, genau das hat P4 abgeschafft.
+
+**Damit gibt es für genau eine Welle zwei Fassungen derselben Liste** — die ausdrückliche
+Ausnahme von der Arbeitsregel iZ5, dieselbe Begründung wie W4‑O1
+(`BlazorSeite`/`ucVorlagenZeile`).
+
+**W16-Auftrag:** `Views/Projekt/ProjektAuswahl.cs`, `.Designer.cs` und die drei `.resx` löschen,
+zusammen mit `pnlLeft` und den sieben `ucProjektAuswahl.*`-Bezügen in `WizardParent`. Danach ist
+`Views/Projekt/` leer bis auf die drei Hüllen.
+
+## 8 — Die zwei Testanker und die W16-Aufträge
+
+| Anker | vorher | nachher | W16 |
+|---|---|---|---|
+| **T1** `DieSprungtabelleLoestDieMaskenschluesselAuf` | `Form_ProjektSpeichernUnter` / `Masken.ProjektSpeichernUnter` (W14a) | **`FormMain` / `Masken.ProjektDetail`** | **streichen oder auf ein Prüfmuster umziehen** — danach gibt es keinen `Masken.*`-Schlüssel mit einer WinForms-Maske mehr (R‑W15a‑10). Der Auftrag steht als Kommentar im Test |
+| **T2** `DerAssistentZiehtSeineDreizehnSeitenMit` | drei Zeugen (`Wizard_Komponenten`, `Wizard_Projekt`, `Wizard_Stromlastgang`) | **zwei** | **ganz streichen** — beide verbliebenen Seiten fallen mit W16. Der Auftrag steht als Kommentar im Test |
+
+**Unverändert geblieben** (wie in der Vermessung § 12.1 vorgesehen):
+`StapelTests.cs` Schreibweisen-Zeugen (`WizardParent.designer.cs`, `MDIMainForm.Designer.cs`),
+`StapelTests.cs:227` (`ProjektAuswahl` als bekannter Fremdtyp),
+`ErreichbarkeitTests` Ordnungszeugen (`MDIMainForm`),
+`EPOS.Kern.Tests/DiensteTests.cs:162` (die drei `Masken.*`-Schlüssel überleben die Welle — nur
+die Fassung dahinter wechselt).
+
+**Schwellen auf den gemessenen Stand:** Designer-Dateien ≥ 16, Masken ≥ 13, lokalisiert ≥ 7,
+erreichbar ≥ 13.
+
+## 9 — Texte
+
+**83 Schlüssel** in `EPOS.Kern/MyResource/Resource.resx` und `.en-US.resx` (die Vermessung
+schätzte ~74):
+
+| Gruppe | Zahl | Bemerkung |
+|---|---|---|
+| `PRJ_LIST_*` | 6 | die Spalten, das Suchfeld, der Zählsatz, der Leertext |
+| `PRJ_WAHL_*` / `PRJ_DEL_*` | 10 | Titel, Knopftext, Rückfrage, Erfolgs- und Fehlermeldung des Löschwegs |
+| `PRJ_KOPIE_*` | 16 | fünf Beschriftungen, sechs Meldungen, drei Fortschrittstexte |
+| `PTR_*` | 40 | die **27 sichtbaren Texte** der Transfermaske plus Meldungen, Statuszeilen und zwei Rückfragen |
+| `PKOPF_*` | 10 | die Beschriftungen der Assistentenseite |
+| `PRJ_MENUE_OEFFNEN` | 1 | Reserve für E‑6 (nicht gebraucht, siehe B56) |
+
+Beide Dateien führen danach 4 385 Einträge, **ohne Doppelschlüssel** (geprüft).
+Der Ressourcendesigner ist **nicht** angefasst: Alle neuen Schlüssel werden über
+`MyResource.Resource.ResourceManager.GetString` gelesen (Hausmuster `Text_(…)` der Hüllen) — so
+entsteht keine `CS0102`-Falle, wenn Visual Studio den Designer später selbst regeneriert.
+
+## 10 — Gate
+
+| Prüfung | Sollwert | Ergebnis |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler, 6 Warnungen | **0 / 6** |
+| `dotnet test WP-Plan.Kern.slnf -c Release` | Basis 3 436 + 75 neue, dazu 7 aus dem Entscheid W15a‑O‑3 und 6 aus dem Entscheid W15a‑O‑4 | **3 524** (KiKern 450, SpeicherEngine 337, EPOS.UI.Tests 1 933, EPOS.Kern.Tests 804) |
+| dieselben Tests unter `LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8` | gleich | grün |
+| `dotnet test Werkzeuge/Formularkarte.Tests -c Release` | 124 | **124** |
+| Stapellauf `--alle … --erreichbarkeit` | 13 Masken / 14 Designer, 13 / 0 / 0 / 0 | **13 / 14, 13 ja** |
+| `SqlDialektPruefer` | 0 Fundstellen | **0** (1 235 Texte, 184 dynamisch, 1 051 in Ordnung — der eine neue Text ist die Zählung aus W15a‑O‑3; W15a‑O‑4 bringt keinen weiteren, es ist dieselbe Zählung) |
+| `ChartProben` | 32 unverändert | **32** |
+| Referenzlauf 1030 / 1007 / 1017 gegen `2026-08-30_B3-Kaskade` | byte-gleich | **PASS, 815 043 Werte; `diff -rq` byte-gleich in allen drei** |
+| Wächter `Program.*`/`MessageBox`/`Registry`/DPAPI/`SpecialFolder`/`System.Windows.Forms` im Kern | leer | **leer** |
+| `git grep` auf die fünf gefallenen Klassen | nur Kommentare, Protokolle und die drei `Masken.*`-Werte | erfüllt |
+| `ProjektAuswahl` (uc) | genau **ein** Wirt (`WizardParent`) | erfüllt |
+
+**Der Referenzlauf sieht diese Welle nicht** — keine der sechs Masken ist
+Simulationseingang; der Lauf rechnet einen bestehenden Projektstand nach. Dass er trotzdem
+byte-gleich ist, ist der Beweis, dass nichts danebengegriffen hat. Der eine Weg der Welle, der
+den Rechenweg BERÜHRT, ist der Import (er legt Projektzeilen an) — dafür stehen P2 und P3.
+
+## 11 — Windows-Abnahme
+
+Was am Gerät zu prüfen ist — die Welle greift in den Projektwechsel ein, und der ist nur
+dort vollständig zu sehen.
+
+1. **Projektwechsel über alle vier Wege** (§ 6.1 der Vermessung), jeweils mit **offenen
+   Blazor-Seiten** (Reiter „Berichte & Kosten", Simulationskonfiguration, Ergebnisseite):
+   Menü „Projekt → Öffnen…", Menü „Zuletzt geöffnet", Kachel „Zuletzt geöffnet" (auch der
+   Rückfall, wenn das gemerkte Projekt gelöscht wurde) und der Knopf „Projekt öffnen" im
+   Assistenten. Kopfband, Klimaregion, Reiterfreigabe und Kachelstatus müssen nachziehen.
+2. **Löschen mit Kaskade**: ein Projekt mit Pufferspeichern, Berichtskonfiguration und
+   Varianten löschen. Die Rückfrage steht **im Dialog**, Vorgabe „Nein"; danach die
+   Erfolgsmeldung. Die Varianten bleiben als eigenständige Projekte stehen.
+3. **Speichern unter**: Fortschritt, **Abbrechen** (A‑2), **Dublettenprüfung** (A‑4 — „Muster"
+   neben „Musterprojekt" muss durchgehen), die drei Verwaltungsfelder auf der Kopie, die
+   1 000‑ms-Fertig-Anzeige.
+4. **Export → Import als Rundreise**, mit Variantenpaket und Sicherungskopie: Datei schreiben,
+   Paketvorschau lesen, unter neuem Namen importieren, Bericht neben der Paketdatei prüfen;
+   danach **beide Projekte rechnen** und die Kennzahlen vergleichen (Ersatz für P6, W15a‑O‑1).
+   Zusätzlich der Überschreiben-Weg mit seiner Rückfrage.
+5. **Assistent** mit der neuen Kopfseite: neu und bearbeiten, vor und zurück, Klimaregion
+   wechseln, speichern.
+6. **de / en** und **125 %** Skalierung in allen vier Fenstern.
+
+## 12 — Offene Punkte
+
+| Nr | Punkt |
+|---|---|
+| **W15a‑O‑1** | P6 (Referenzlauf auf ein importiertes Projekt) ist nicht gelaufen — der Referenzlauf kann eine geänderte Projekt-Id nicht gegen die Basis halten. Ersatz: Abnahmepunkt 4 |
+| **W15a‑O‑2** | E‑5 für den Transferdialog: Auswahlfeld statt Projektliste (Begründung § 4). **Entschieden 04.09.2026: Empfehlung angenommen, Auswahlfeld bleibt** — keine volle Projektliste im Export; die Datenquelle bleibt `ProjektCtrl.NamenListe` |
+| **W15a‑O‑3** | B49: `ProjektCtrl.Delete` löscht über den NAMEN; zwei Projekte gleichen Namens würden beide gelöscht. **Entschieden 04.09.2026** — der Anwender wörtlich: „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem Fall." **Deutung:** Projektnamen SIND eindeutig — `Tab_Projekt` trägt seit der SQLite-Migration den eindeutigen Index `Projektname` (`CREATE UNIQUE INDEX "Projektname" ON "Tab_Projekt" ("Projektname")`, nachgesehen im `sqlite_master` von `Referenzlaeufe/Kenndaten_Test.sqlite`), und „Speichern unter" prüft über `ProjektDuplizierenCtrl.PruefeNamen`. **Das Löschen über den Namen bleibt deshalb bitgleich.** Für einen Altbestand OHNE diesen Index wird VOR dem Löschen nachgefragt, statt still beide Projekte mitzunehmen: `LoeschenMitVorarbeiten` zählt zuerst, meldet `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; der Löschdialog stellt die Rückfrage mit Vorgabe „Nein" hinter der unveränderten Sicherheitsabfrage (A‑7), und erst `mehrdeutigZugelassen: true` lässt alle fallen. Proben: P9c/P9d in `ProjektpflegeTests` (Arbeitskopie ohne Index) und vier bunit-Fälle in `ProjektWahlDialogTests` |
+| **W15a‑O‑4** | `VariantenCtrl.LoescheVariante` rief `new ProjektCtrl().Delete(projektname)` direkt und kannte die Vorprüfung aus O‑3 nicht — der letzte ihrer drei Schritte läuft damit über den NAMEN. **Entschieden 04.09.2026 (Empfehlung angenommen): Die Variantenlöschung geht über dieselbe Vorprüfung und dieselbe Rückfrage.** Umsetzung wie O‑3, nur an der zweiten Stelle: `LoescheVariante` zählt vor dem ersten Schritt über `ProjektCtrl.AnzahlGleicherNamen`, meldet bei mehr als einem Treffer `LoeschStand.Mehrdeutig` mit der Anzahl und fasst nichts an; mit `mehrdeutigZugelassen: true` läuft sie bitgleich wie zuvor. Sie liefert dafür denselben `LoeschBefund` wie `LoeschenMitVorarbeiten` statt `bool` + `out fehler` (neu darin `KeineVariante` und `Loeschfehler`, die nur dieser Weg meldet). **Einziger Aufrufer** ist `UebersichtSeiteGaben` hinter der Razor-Seite `UebersichtSeite`; die stellt hinter der unveränderten Löschfrage die zweite Rückfrage mit Vorgabe „Nein" und **denselben Textschlüsseln** wie der `ProjektWahlDialog` (`PROJ_MSG_NAME_MEHRDEUTIG`, `PROJ_MSG_NAME_MEHRDEUTIG_TITEL`) — es ist dieselbe Frage, deshalb kein neuer Text. Proben: P9e/P9f/P9g in `ProjektpflegeTests` und drei bunit-Fälle in `UebersichtSeiteTests`. Commit `5104ea3` |
+| **W16** | `ProjektAuswahl` (uc) löschen (§ 7); T1 streichen oder auf ein Prüfmuster umziehen, T2 streichen (§ 8) |
+
+---
+
+## 13 — Windows-Abnahme 05.09.2026 (Befund W15a‑B‑1)
+
+### 13.1 Befund W15a‑B‑1 — „Geändert Datum nicht ersichtlich"
+
+**Beobachtung.** In „Projekt Speichern unter" (`ProjektKopieDialog`, Fenster
+940 × 660) zeigt die Projektliste links die Spalten **Wahl / Projektname / Kunde /
+Geändert**. Die dritte ist rechts abgeschnitten; der Anwender sieht das
+Änderungsdatum nicht.
+
+**Ursache — zwei Regeln, die sich gegenseitig aufheben.**
+
+1. Der Dialog stellt Liste und Formular **nebeneinander**:
+   `.epos-projektkopie-raster` ist ein Raster `minmax(0,3fr) minmax(0,2fr)`, und der
+   Umbruch auf eine Spalte kam erst bei **780 px**. Im 940‑px‑Fenster stand das
+   Formular (Neuer Projektname, Beschreibung, Kunde, Bearbeiter) also neben der
+   Liste und ließ ihr drei Fünftel — rund **535 px** für vier Spalten.
+2. Die Hausregel `.epos-raster td { white-space: nowrap }` hält jede Zelle in EINER
+   Zeile. Sie ist richtig für ein Raster mit kurzen Bezeichnern („Namen brechen
+   nicht in drei Zeilen") und falsch für eine Liste mit Projektnamen: Ein langer
+   Name macht die Tabelle breiter, als die Spalte ist. Die Hülle rollt dann
+   waagerecht (`overflow-x: auto`) — und die dritte Spalte liegt hinter dem
+   Rollbalken. Der Anwender suchte auch keinen: **Die Tabelle sah vollständig
+   aus.**
+
+**Behebung — an beiden Enden.**
+
+* **Der Umbruch kommt früher.** `@media (max-width: 780px)` wird
+  `@media (max-width: 1100px)`: Die Liste steht dann über die **volle Breite**, das
+  Formular darunter. Das trägt bei 1 024 px Fensterbreite, im 940‑px‑Dialog **und**
+  auf dem iPad hochkant (768 × 1024). Auf einem breiten Schirm bleiben die zwei
+  Spalten — dort ist der Platz da.
+* **Die Spalten brechen um, statt die Tabelle zu treiben.** Jede Spalte der
+  Auswahl trägt jetzt ihre Stilklasse: `epos-projektliste-name` und
+  `…-kunde` bekommen `white-space: normal` und `overflow-wrap: anywhere`,
+  `…-geaendert` bleibt `nowrap` mit fester Breite (7,5 rem). Das Datum ist die
+  kürzeste Spalte und die einzige, deren Umbruch nichts brächte.
+
+**Das Datumsformat bleibt, wie es war.** `Zelle(…, SPALTE_GEAENDERT)` liefert
+`ToShortDateString()` — auf Deutsch also bereits `dd.MM.yyyy` („01.03.2026"), auf
+Englisch die dortige Kurzform. Ein fest verdrahtetes `dd.MM.yyyy` wäre in der
+englischen Oberfläche falsch; der Fall
+`Das_Aenderungsdatum_steht_kurz_und_leer_wenn_keines_da_ist` hält die deutsche
+Schreibweise fest.
+
+**Die zwei Geschwister mitgeprüft.**
+
+| Dialog | Liste | Befund |
+|---|---|---|
+| `ProjektWahlDialog` (Öffnen / Löschen) | `ProjektListe` über die **volle** Fensterbreite (760 px), kein Formular daneben | war nicht betroffen; die Umbruchregeln machen lange Namen dort trotzdem lesbar, statt waagerecht zu rollen |
+| `ProjektTransferDialog` (Export / Import) | **keine** `ProjektListe` — ein `Auswahlfeld` mit den Projektnamen (Entscheid W15a‑O‑2, 04.09.2026) | nicht betroffen |
+
+**Wachen.** `EPOS.UI.Tests/Bausteine/ProjektListeTests`:
+`Jede_Spalte_der_Auswahl_traegt_ihre_Stilklasse` (Markup),
+`Name_und_Kunde_brechen_um_das_Datum_nicht` und
+`Speichern_unter_stapelt_Liste_und_Formular_bis_1100_Pixel` (die Regeln im
+Stilblatt — eine bunit-Probe sieht sie nicht, Lehre W6‑B‑1).
+
+**Abnahmepunkt A‑W15a‑B‑1.** „Projekt Speichern unter" im Vorgabemaß und bei
+1 024 px Breite: Projektname, Kunde **und** Geändert sind vollständig lesbar, die
+Liste rollt nicht waagerecht, das Formular steht darunter. Ein sehr langer
+Projektname bricht um, statt die Spalten zu verschieben. Dasselbe in „Projekt
+öffnen" und „Projekt löschen".
+
+## 14 — Anwenderwunsch 05.09.2026 (W15a‑E‑1): Varianten in den Projektlisten
+
+> **„Projekt öffnen: Es sollte wie zuvor kenntlich sein, welches Variantenprojekte
+> sind."**
+
+### 14.1 Das Bildschirmfoto
+
+Projektassistent, Seite 0 in Betriebsart BEARBEITEN, linke Spalte „Bestehendes
+Projekt auswählen". Die Liste zeigt zwei Spalten — **Wahl** und **Projektname ▲** —,
+darunter „24 von 24 Projekten" und den Knopf „Projekt öffnen". Drei aufeinander
+folgende Zeilen lesen sich gleich:
+
+```
+Booster-Kette mit Kombi-Spe…
+Booster-Kette mit Kombi-Spe…
+Booster-Kette mit Kombi-Spe…
+```
+
+In `Referenzlaeufe/Kenndaten_Test.sqlite` sind das die Projekte 1042
+„Booster-Kette mit Kombi-Speicher", 1043 „… (2)" (eine Kopie aus „Speichern
+unter") und 1044 „… ‑ Schichtspeicher" (die **Variante** von 1042,
+`Tab_Variante`-Zeile 8). Unterscheidbar waren sie nur an dem Teil des Namens, den
+der waagerechte Rollbalken abschnitt.
+
+### 14.2 Das Vorbild — wie es „zuvor" war
+
+**Als eigene Spalte gab es die Variante nie.** Weder das gelöschte UserControl
+`ProjektAuswahl` (`git show d6e2433^:WindowsFormsApplication1/Views/Projekt/ProjektAuswahl.cs`,
+418 Zeilen) noch die gelöschte Maske `Form_ProjektAuswahl`
+(`git show 1b6d2be^:…/Form_ProjektAuswahl.cs`, 99 Zeilen) enthalten das Wort
+„Variante" auch nur einmal. Kenntlich war eine Variante **am NAMEN**:
+
+* `VariantenCtrl.AnlegenAusStamm` (`EPOS.Kern/Controller/VariantenCtrl.cs` :124)
+  bildet den Projektnamen der Kopie als **`"<Stamm> - <Bezeichner>"`**, bei
+  Namensgleichheit mit einem Zähler dahinter.
+* `Form_Start.FuelleVariantenCombo`
+  (`git show 428443f^:…/Views/Hauptformular/Form_Start.cs` :2087‑2143) zeigte in
+  der Klappliste des Projektkopfes **genau diese Zeichenkette** — ausdrücklich
+  „ohne Vorsatz »Stamm: «", weil das Feld an der Stelle des früheren blauen
+  Projekttextes steht „und deshalb genau dessen Format" trägt.
+* Die Reihenfolge dort kam aus `VariantenCtrl.LadeGruppe` (:40‑65): **der Stamm als
+  erste Zeile**, danach seine Varianten `ORDER BY Variantenname`.
+
+Das Vorbild ist also: *der volle Name*, und *die Gruppe beieinander, Stamm zuerst,
+Varianten nach Bezeichner.*
+
+### 14.3 Warum es nicht mehr trug
+
+Der Name allein trägt nur, solange man ihn ganz sieht. Das Assistentenband ist
+**280 px** breit (`.epos-assistent-band { width: 280px }`), und ausgerechnet der
+abgeschnittene Teil (` - <Bezeichner>`) ist der, der die Variante ausmacht.
+
+Dazu kommt ein zweiter, älterer Fehler: Die Umbruchregel aus **Befund W15a‑B‑1**
+(§ 13) stand seit dem Vormittag im Stilblatt und **wirkte nicht**.
+`.epos-raster td` hat die Spezifität (0,1,1), `.epos-projektliste-name` nur
+(0,1,0) — die Hausregel `white-space: nowrap` gewann jedes Mal. In „Speichern
+unter" fiel das nicht auf, weil dort § 13 zusätzlich den Umbruch des Rasters auf
+1 100 px vorzog und die Liste damit die volle Breite bekam; im 280‑px‑Band gab es
+diesen Ausweg nicht.
+
+### 14.4 Die Umsetzung
+
+**Kern — die Herkunft reist in der Zeile mit.**
+
+* `ProjektKopfZeile` (`EPOS.Kern/Model/ProjektAngaben.cs`) trägt drei Felder mehr:
+  `StammId` (0 = keine Variante), `Bezeichner` und `StammName`, dazu die
+  abgeleitete Frage `IstVariante`.
+* `ProjektCtrl.NamenListe` liest sie in **EINER** Abfrage mit zwei LEFT JOINs
+  (`Tab_Projekt` → `Tab_Variante` → `Tab_Projekt` als Stamm), nicht mit einer
+  zweiten Abfrage je Zeile: Die Liste wird bei jedem Suchtastendruck neu
+  gezeichnet. Die Klammerung im FROM ist die von `VariantenCtrl.EntferneWaisen`
+  (Jet verlangt sie bei zwei JOINs, SQLite nimmt sie klaglos an).
+* **Ohne `Tab_Variante` läuft die alte Abfrage.** Die Tabelle legt
+  `StelleVariantentabelleSicher` erst beim ersten Anlegen einer Variante an; ein
+  LEFT JOIN auf eine fehlende Tabelle bräche die **ganze** Abfrage, und der
+  Anwender sähe eine leere Projektliste. `VariantentabelleLesbar()` fragt vorher —
+  still über `StilleDb`, wie jede Selbstheilungsauskunft des Hauses.
+
+**Baustein `ProjektListe` — drei Mittel, alle drei aus dem Vorbild.**
+
+1. **Der Name bricht um.** Die Regel aus § 13 bekommt den Tabellenselektor davor
+   (`.epos-projektliste-raster .epos-projektliste-name`, (0,2,0)) und schlägt die
+   Hausregel damit — eine Klasse mehr, keine Wichtigkeitsmarke.
+2. **Die Gruppe steht beieinander.** `Gruppiert(…)` ordnet die **Stämme** nach der
+   gewählten Sortierspalte und hängt jede Variante unmittelbar unter ihren Stamm,
+   dort nach **Bezeichner** — die Ordnung von `LadeGruppe`. Auch absteigend, denn
+   eine Gruppe ist keine Reihenfolge, sondern eine Zugehörigkeit. Fällt der Stamm
+   durch den Suchfilter, steht die Variante selbst oben; sonst wäre sie nach einer
+   Suche unauffindbar. Ein Sicherheitsnetz hängt ans Ende, was eine ringförmige
+   Verweiskette sonst verschlucken würde — eine Liste darf eine Zeile nicht
+   **verlieren**, auch nicht bei kaputten Daten.
+3. **Die Auskunft steht da, wo Platz ist.** Im Spaltensatz `Auswahl` als Spalte
+   **„Art"** zwischen Name und Kunde (»Stamm« / »Variante« mit dem Bezeichner
+   darunter); in der schmalen Namenssicht des Assistenten und im iOS-Einstieg als
+   **leise Zeile** „Variante von &lt;Stamm&gt;" unter dem Namen. Beides zugleich
+   wäre dieselbe Auskunft zweimal, deshalb schließen sie einander aus.
+   Zusätzlich ist jede Variantenzeile **eingerückt** und trägt eine senkrechte
+   Linie zum Stamm hin — dieselbe Lesart wie die Einrückung der `Baumansicht`.
+
+**Drei Entscheidungen, die begründet sein wollen.**
+
+* **Die Artspalte erscheint nur, wenn die Liste überhaupt eine Variante führt.**
+  Eine in allen 24 Zeilen leere Spalte nimmt dem Namen Platz weg und sagt nichts.
+  Nebenwirkung: In einer Datenbank ohne Varianten sieht die Liste aus wie zuvor.
+* **Ein Projekt ohne Varianten trägt in der Artspalte NICHTS** — es ist weder Stamm
+  noch Variante, und ein Wort dafür hatte der Bestand nicht. »Stamm« steht nur an
+  einem Projekt, an dem wirklich eine Variante hängt.
+* **Die Suche greift über den Bezeichner.** Er hat nirgends eine eigene Spalte;
+  wer ihn nicht durchsucht, macht ihn unauffindbar — dieselbe Lehre wie die
+  unsichtbare Beschreibung (Befund W15a‑B22).
+
+**Texte.** Vier neue Schlüssel in beiden `MyResource`-Katalogen:
+`PRJ_LIST_SP_ART` (Art / Type), `PRJ_LIST_ART_STAMM` (Stamm / Base),
+`PRJ_LIST_ART_VARIANTE` (Variante / Variant), `PRJ_LIST_VARIANTE_VON`
+(„Variante von {0}" / „Variant of {0}"). Ohne Stammnamen — der Stamm ist gelöscht
+— bleibt das bloße Wort stehen: „Variante von " ohne Namen wäre ein angefangener
+Satz.
+
+### 14.5 Wo die Kennzeichnung überall gilt
+
+| Ort | Spaltensatz | Kennzeichnung |
+|---|---|---|
+| Assistent Seite 0, linkes Band (`AssistentSeite`) | `NurName` | Einrückung + leise Zeile „Variante von …" |
+| „Projekt öffnen" / „Projekt löschen" (`ProjektWahlDialog`) | `Auswahl` | Artspalte + Einrückung |
+| „Projekt Speichern unter" (`ProjektKopieDialog`) | `Auswahl` | Artspalte + Einrückung |
+| iOS-Einstieg (`Seiten/Projektliste`) | `Einstieg` | Einrückung + leise Zeile |
+| „Export / Import" (`ProjektTransferDialog`) | — | keine `ProjektListe`, ein `Auswahlfeld` (Entscheid W15a‑O‑2) — unverändert |
+| Startseite, Klappliste des Projektkopfes (`Startseite.Varianten`) | — | **schon gekennzeichnet und unverändert**: Sie führt nur die Gruppe des offenen Projekts, Stamm zuerst, und zeigt den vollen Namen „&lt;Stamm&gt; ‑ &lt;Bezeichner&gt;" — genau `FuelleVariantenCombo` |
+
+### 14.6 Wachen
+
+`EPOS.Kern.Tests/ProjektpflegeTests.Die_Namensliste_nennt_zu_jeder_Variante_ihren_Stamm`
+hält jede Zeile gegen `Tab_Variante` selbst (nur lesend).
+`EPOS.UI.Tests/Bausteine/ProjektListeTests` führt neun Fälle: Artspalte mit
+Bezeichner, leere Art am gewöhnlichen Projekt, keine Artspalte ohne Varianten,
+Gruppierung nach Bezeichner (auch unter Datumssortierung), Einrückung und leise
+Zeile im schmalen Band, kein Doppel aus Spalte und Zeile, Suche über den
+Bezeichner, Variante ohne ihren Stamm, Variante ohne Stammnamen — dazu
+`Die_Umbruchregel_schlaegt_die_Hausregel_des_Rasters` und
+`Die_Variantenzeile_ist_im_Stilblatt_eingerueckt`, die die **Regeln** prüfen (eine
+bunit-Probe sieht ein Stilblatt nicht, Lehre W6‑B‑1).
+
+### 14.7 Abnahmepunkt A‑W15a‑E‑1
+
+„Projekt öffnen": Über den drei „Booster-Kette…"-Zeilen steht die Spalte **Art**;
+1044 trägt dort »Variante« mit dem Bezeichner „Schichtspeicher", 1042 »Stamm«,
+1043 nichts. 1044 steht **unmittelbar unter** 1042 und ist eingerückt. Der
+Projektname ist in jeder Zeile **vollständig** lesbar, die Liste rollt nicht
+waagerecht. Die Suche nach „Schichtspeicher" findet 1044. Dasselbe in „Projekt
+löschen" und „Speichern unter".
+
+Assistent, Seite 0: In der 280 px breiten Spalte steht der volle Projektname
+(umgebrochen, nicht abgeschnitten); unter jeder Variante steht leise „Variante von
+Booster-Kette mit Kombi-Speicher", und die Zeile ist eingerückt. Dasselbe auf dem
+iPad hochkant.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Projekt/ProjektTransferDialog.razor` | 5 | 3 | **ja, alle drei** | Klasse A. Exportreiter: Projekt und Variantenliste (eine Reihenfolge, und die Liste braucht die Breite). Importreiter: das Pfadfeld allein in einem Raster, darunter Zielname → Konfliktmodus → Sicherung als der Weg des Imports von oben nach unten. **Nicht** umgestellt: der Berichtskasten (ein festbreites Textfeld über sechs Zeilen) und der Fortschrittsbereich. |
+| `Dialoge/Projekt/ProjektKopieDialog.razor` | 4 | 1 | **ja** | Klasse A. Die vier Eingabefelder stehen in der **schmalen** rechten Spalte (2 von 5 Teilen) neben der Quellliste — dort ist für zwei Feldpaare nebeneinander kein Platz, also einspaltig. Der Kasten `epos-projektkopie-felder` bleibt: Er ist die Rasterzelle des Zweispalters und der Anker von acht Proben. **Nicht** umgestellt: die Quellliste (`ProjektListe`) und der Fortschrittsbereich. |
+
+**Probe.** `Die_Felder_stehen_im_einspaltigen_Formularraster` (beide Reiter) und
+`Die_Eingabefelder_stehen_im_einspaltigen_Formularraster`.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.
+
+## W16b‑O‑2 (06.09.2026) — flatterhafter Test des Transferdialogs
+
+Der Windows‑Lauf **34017401022** (`cb8379e`) war rot mit genau einem Fall:
+`ProjektTransferDialogTests.Schliessen_meldet_ob_ein_Import_gelungen_ist`,
+`Assert.True(ergebnis)` — „Expected True, Actual False". Auf Linux grün, im
+Wiederholungslauf grün, seit W16b als offener Punkt **W16b‑O‑2** notiert (Befund
+W16b‑B7). Der Fall ist jetzt geschlossen: Es war **kein Fehler des Dialogs**,
+sondern **zwei Wettläufe im Test**.
+
+### Ursache
+
+**Erster Wettlauf — auf das Kennzeichen der Attrappe gewartet statt auf den
+gezeichneten Zustand.** Der Test wartete mit
+`cut.WaitForAssertion(() => Assert.True(kern.ImportGerufen))` und klickte
+unmittelbar danach „Schließen". `ImportGerufen` fällt aber in der **Attrappe**, und
+die läuft im `Task.Run` des Dialogs
+(`EPOS.UI/Dialoge/Projekt/ProjektTransferDialog.razor:433`) — das Kennzeichen steht
+also **beim Betreten** des Imports, nicht an seinem Ende. In diesem Augenblick ist
+`_laeuft` noch `true`, `_importErfolgreich` ungesetzt, der Bericht leer. Und ein
+laufender Import meldet gar nichts: `Schliessen()` beginnt mit
+`if (_laeuft) return Task.CompletedTask;` (Zeile 468) — der Rückruf `Geschlossen`
+fällt dann **nie**. Ob der Test gewinnt, entscheidet allein, ob die **erste**
+Prüfung von `WaitForAssertion` das Kennzeichen schon sieht (dann geht es sofort
+weiter, zu früh) oder noch nicht (dann wartet bunit auf das nächste Zeichnen —
+und das ist der Abschluss).
+
+**Zweiter Wettlauf — bunits synchrones `Click()` wartet nicht.** In bunit 2.9 gibt
+`EventHandlerDispatchExtensions.Click` das Ereignis nur beim Zeichner ab; nur
+`ClickAsync` liefert „a task that completes when the event handler is done" (die
+XML‑Dokumentation des Pakets sagt es genau so). Gemessen: ein Klick, dessen
+Behandler 400 ms rechnet, kehrt nach **6 ms** zurück. Ein `Assert` unmittelbar
+hinter `Click()` prüft also einen Rückruf, der noch nicht gefallen sein muss.
+
+Beide Wettläufe enden im selben Bild: `ergebnis` trägt noch das `false` aus dem
+ersten Teil des Falls — „Expected True, Actual False".
+
+### Nachweis der Ursache
+
+Ein temporärer Fall (`ZZ_Wettlauf_Nachweis`, nach dem Nachweis gelöscht) mit einer
+Attrappe, die `ImportGerufen` sofort setzt und **danach 400 ms rechnet**:
+
+| Muster | Ergebnis |
+|---|---|
+| alt: warten auf `kern.ImportGerufen`, dann klicken, dann `Assert.True` | **12 von 15 Läufen rot** |
+| neu: warten auf das gezeichnete Berichtsfeld, klicken, `WaitForAssertion` auf das Ergebnis | **0 von 15 Läufen rot** |
+
+Die Zwischenmessung des alten Musters: `Click()` kehrt nach 6 ms zurück, das
+Berichtsfeld ist noch nicht da, `WaitForAssertion` ist nach 17 ms fertig — 383 ms
+bevor der Import zurück ist. Der zweite Wettlauf wurde eigens belegt: in **5 von
+12** Läufen war der Dialog nach dem Warten nachweislich fertig (kein
+Fortschrittsbalken, Berichtsfeld gezeichnet) und `ergebnis` gleich hinter dem
+`Click()` trotzdem noch `null`.
+
+Ohne die künstliche Rechenzeit ist der Fall auf Linux nicht zu kippen: 10 von 10
+Läufen grün, auch auf **einen** Kern eingeschnürt (`taskset -c 0`). Der geladene
+Windows‑Läufer kippt ihn.
+
+### Änderung — nur der Test, kein Produktcode
+
+`EPOS.UI.Tests/Dialoge/ProjektTransferDialogTests.cs`:
+
+- neue Hilfe **`ImportFertig(cut)`** — wartet auf das **gezeichnete** Berichtsfeld
+  (`.epos-projekttransfer textarea` mit „Zeile eins"). Das Feld entsteht erst
+  hinter dem `await` des Imports, belegt also den Dialog, nicht die Attrappe. Der
+  XML‑Kommentar der Hilfe nennt Ursache und CI‑Lauf, damit das Muster nicht
+  zurückkommt.
+- **vier** Wartestellen auf `kern.ImportGerufen` durch `ImportFertig(cut)` ersetzt;
+  wo die Aussage gebraucht wird, steht das Kennzeichen jetzt als gewöhnliches
+  `Assert.True(kern.ImportGerufen)` **nach** dem Warten.
+- im flatterhaften Fall zusätzlich beide Ergebnisprüfungen in
+  `cut.WaitForAssertion(…)` gefasst (zweiter Wettlauf).
+- `Der_Import_legt_erst_die_Sicherung_an_und_laeuft_dann` wartete schon richtig und
+  benutzt nun dieselbe Hilfe.
+
+Der Dialog selbst bleibt unverändert: `if (_laeuft) return` ist kein Fehler,
+sondern die Regel „ein laufender Import wird nicht geschlossen".
+
+### Gleichartige Muster im Bestand
+
+Gesucht wurde nach „`WaitForAssertion` auf ein Kennzeichen der Attrappe, gefolgt
+von einem Klick oder einem `Assert`" über alle 28 Wartestellen von
+`EPOS.UI.Tests`.
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `ProjektTransferDialogTests` (4 Stellen) | echter Wettlauf — Kennzeichen fällt im `Task.Run` des Dialogs | **berichtigt** |
+| `StromganglinieDialogTests:524,532`, `WaermebedarfExternDialogTests:337` | Warten auf eine mitgeschriebene Ortsvariable, danach ein weiteres `Assert` — die Variable fällt aber im **Zeichnerfaden** (`Task.FromResult`, kein `Task.Run`), also kein Fadenwettlauf | unverändert |
+| `ErststartDialogTests:196`, `LizenzVerwaltungDialogTests:440` | Warten auf eine Zählvariable, danach `Assert` bzw. ein zweites `WaitForAssertion` auf das Markup | unverändert |
+| übrige 20 Wartestellen | warten auf `cut.Markup`, `cut.Find…` oder `cut.Instance` — also auf den gezeichneten Zustand | unverändert |
+
+**Der Kern des Musters:** `ProjektTransferDialog` ist die **einzige** Komponente in
+`EPOS.UI`, die selbst ein `Task.Run` fährt (alle anderen legen den Lauf der Hülle
+in die Hand). Nur dort kann ein Kennzeichen der Attrappe vor dem Dialog fertig
+sein — deshalb blieb es bei diesen vier Stellen.
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Schliessen_meldet_ob_ein_Import_gelungen_ist`, 30 Läufe, `de` | Windows‑CI 34017401022 rot; lokal 1 von 4 rot (Fremdbefund), auf Linux 10/10 grün — auch auf **einen** Kern eingeschnürt | **30 von 30 grün** |
+| `Schliessen_meldet_ob_ein_Import_gelungen_ist`, 30 Läufe, `en_US.UTF-8` | — | **30 von 30 grün** |
+| ganze `ProjektTransferDialogTests`, je 30 Läufe `de` und `en_US.UTF-8` | — | **je 30 von 30 grün** |
+| Wettlauf-Nachweis mit 400 ms Rechenzeit, 15 Läufe | 12 von 15 rot | **0 von 15 rot** |
+| gesamte `EPOS.UI.Tests` | — | **2 721 grün, 0 rot** |
+
+
+## W6‑B‑2‑O‑1 (07.09.2026) — die ZWEITE Fundstelle desselben Musters
+
+Der Kern-Lauf **216** (`kern.yml`, Ereignis `pull_request`, Head `833ff69`) war rot mit
+genau einem Fall von 3 202:
+`ModulImportDialogTests.Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`,
+`Assert.Equal(5, cut.Instance.SichtbareZeilen)` — „Expected 5, Actual 155". Der
+Push-Lauf **215** auf DEMSELBEN Commit war grün. Wieder **kein Fehler des Dialogs**,
+wieder ein Wettlauf im Test — aber **eine Stufe allgemeiner als W16b‑O‑2**.
+
+### Ursache
+
+W16b‑O‑2 nannte zwei Wettläufe; der zweite war „bunits synchrones `Click()` wartet
+nicht auf den Ereignisbehandler". Genau der ist es hier, und er gilt **für jedes
+synchrone bunit-Ereignis** — `Click()`, `Change()`, `Input()`, `DoubleClick()`. Die
+XML-Dokumentation des Pakets sagt es: Nur die `…Async`-Fassungen tragen den Satz
+„A task that completes when the event handler is done"; den synchronen fehlt er.
+
+Wann das gutgeht und wann nicht, entscheidet der **Zeichnerfaden**. bunits Zeichner
+führt `Microsoft.AspNetCore.Components.Rendering.RendererSynchronizationContextDispatcher`
+(nachgemessen; `CheckAccess()` ist auf dem Prüffaden `false`). Dieser Zusammenhang
+arbeitet ein Werkstück **auf dem aufrufenden Faden ab, solange seine Warteschlange
+leer ist** — dann läuft der Ereignisbehandler noch innerhalb von `Click()`, und das
+`Assert` dahinter stimmt. Liegt dort aber schon ein Werkstück, wird das Ereignis
+**eingereiht**, `Click()` kehrt sofort zurück, und die nächste Zeile liest den Stand
+**vor** dem Ereignis.
+
+Im Geräteimport legt der Ladegang dieses Werkstück selbst hin: 155 Zeilen liegen über
+der Schwelle `VIRTUALISIEREN_AB` (120), das Raster schaltet auf `Virtualize`, und
+QuickGrid und `Virtualize` melden sich mit `OnAfterRenderAsync` samt JS-Aufruf zurück.
+Zwischen „geladen" und „gefiltert" ist der Zeichnerfaden deshalb regelmäßig besetzt —
+und der Fall greift den Zwischenstand ab: 155, die ungefilterte Zeilenzahl. Genau die
+stand im Lauf 216 im Fehlertext.
+
+### Nachweis der Ursache
+
+Eine temporäre Prüfklasse (`ZZ_WettlaufNachweis`, nach der Messung gelöscht) mit dem
+**wörtlichen** Prüfstand des Falls — `Netz` gibt eine FERTIGE Aufgabe zurück:
+
+| Muster | Bedingung | Laden | Filter |
+|---|---|---|---|
+| alt: klicken, sofort lesen | ohne Fremdlast, 600 Läufe | 0 rot | 0 rot |
+| alt | 8 Rechenfäden auf 4 Kernen, 400 Läufe | **23 von 400 rot** | **68–95 von 400 rot** (gemessen: 0 und 155) |
+| alt | Quelle gibt EINMAL nach (`Task.Yield`), 60 Läufe | **59 von 60 rot** | **58 von 60 rot** |
+| neu: auf den gezeichneten Stand warten | 8 Rechenfäden, 400 Läufe | 0 rot | **0 von 400 rot** |
+| neu | Quelle gibt einmal nach, 60 Läufe | 0 rot | **0 von 60 rot** |
+
+Die dritte Zeile ist der Beleg für die *Art* der Ursache: Sobald der Ladeweg
+überhaupt nachgibt — und die echte Quelle tut das, sie ruft das Netz —, fällt das
+alte Muster fast immer um. Die zweite Zeile ist der Beleg für die *Häufigkeit* im
+Feld: Auf einer freien Maschine ist der Fall grün (Lauf 215), unter Last nicht
+(Lauf 216).
+
+### Behebung — nur am Test
+
+Vier Helfer in `ModulImportDialogTests`, drei in `KatalogImportDialogTests`; jeder
+wartet auf den **gezeichneten** Stand, nicht auf ein Feld der Komponente allein:
+
+| Helfer | wartet auf |
+|---|---|
+| `Geladen(cut)` | Statuszeile trägt „Filter Auswahl (…)" statt der Bereitmeldung **und** die Quellenknöpfe sind wieder bedienbar |
+| `Gefiltert(cut, n)` | `SichtbareZeilen == n` **und** die Statuszeile trägt dieselbe Zahl |
+| `Gemeldet(cut, text)` | die Meldung des Wirts nach dem `async` `Schreibgang` |
+| `Ueberlagert(cut, wahl)` | die gezeichnete Überlagerung (Konflikt, Rückfrage) |
+| `Einlesen(cut, n)` / `Gezeichnet(cut, n)` (Katalog) | Auswahlzeile „… von n Einträgen geladen." |
+| `Markiert(cut, …)` (Katalog) | die Markierung nach einem Zeilenklick |
+
+`Laden(cut)` und `CecLaden(cut)` klicken UND warten; die drei Dateiwege (PAN, OND,
+CEC-Datei) rufen `Geladen(cut)` unmittelbar nach dem Klick. Der FEHLERWEG setzt keine
+Statuszeile — dort wartet der Fall auf das gezeichnete Warnbanner. Die zwei Fälle,
+die den Dateiwähler absichtlich offen halten, benutzen weiterhin die Fassung **ohne**
+Warten; das ist ihr Prüfgegenstand.
+
+**Kein Produktcode.** `ModulImportDialog` und `KatalogImportDialog` bleiben
+unverändert: Der Ladeweg setzt `_zeilen`, baut die Listen auf, filtert und zeichnet —
+in dieser Reihenfolge, ohne späte Fortsetzung, die den Anwenderfilter zurücksetzte.
+Die Hypothese, `ListenAufbauen()` könne den vom Anwender gesetzten Hersteller später
+auf „alle" zurückstellen, ist widerlegt: `ListenAufbauen()` läuft **vor** `Filtern()`
+im selben synchronen Zug, und nach dem Ladeweg ruft ihn nichts mehr.
+
+### Gleichartige Muster im Bestand
+
+Die Regel aus W16b‑O‑2 heißt seither allgemeiner: **Nach einem synchronen bunit-Ereignis
+wird auf den GEZEICHNETEN Zustand gewartet, nicht sofort geprüft.** Durchgesehen und
+nachgezogen wurden beide Importklassen vollständig — Ladewege, Filterschritte,
+Zeilenklicks und Schreibgänge.
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `ModulImportDialogTests` (Ladewege, Filter, Schreibgänge) | derselbe Wettlauf | **berichtigt** |
+| `KatalogImportDialogTests` (Lesegänge, Filter, Markierung, Schreibgänge) | derselbe Wettlauf, nur bisher nicht rot geworden | **berichtigt** |
+| `ProjektTransferDialogTests` | mit `c3b1513` berichtigt | unverändert |
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers`, 30 Läufe, `de` | Kern-CI 216 rot | **30 von 30 grün** |
+| derselbe Fall, 30 Läufe, `en_US.UTF-8` | — | **30 von 30 grün** |
+| `ModulImportDialogTests` + `KatalogImportDialogTests`, je 30 Läufe `de` und `en_US.UTF-8`, unter Rechenlast | — | **je 30 von 30 grün** |
+| Wettlauf-Nachweis, wörtlicher Prüfstand unter Rechenlast, 400 Läufe | 68 von 400 rot | **0 von 400 rot** |
+| Wettlauf-Nachweis, nachgebende Quelle, 60 Läufe | 58 von 60 rot | **0 von 60 rot** |
+| gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 202 grün, 0 rot** |
+| `dotnet build WP-Plan.sln -c Release --no-incremental` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
+
+## W14a‑E‑10‑O‑13 (07.09.2026) — flatterhafter Fall der Katalogliste
+
+Die Windows-Sandbox meldete am 07.09.2026 `EPOS.UI.Tests` **3 216 von 3 217 grün**;
+der eine Fall war `EPOS.UI.Tests/Bausteine/KataloglisteTests.cs`
+`Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie` — „flackert unter
+Last und ist allein grün" (`Referenzlaeufe/LIESMICH.md`, Abschnitt M7). Auf Linux ist
+er in jedem Gate grün. Der Fall ist geschlossen: Es war **kein Fehler der
+`Katalogliste`**, sondern **derselbe Wettlauf im Test** wie in W16b‑O‑2 (`c3b1513`)
+und W6‑B‑2‑O‑1 (`586d8b5`) — die dritte Fundstelle derselben Regel.
+
+### Ursache
+
+**Bunits synchrone Ereignisse warten nicht.** `Click()`, `Change()` und `Input()`
+geben das Ereignis nur beim Zeichner ab; nur die `…Async`-Fassungen liefern laut
+bunit-Dokumentation „a task that completes when the event handler is done". Der
+Zeichnerfaden (`RendererSynchronizationContext`) arbeitet ein Werkstück auf dem
+AUFRUFENDEN Faden ab, **solange seine Warteschlange frei ist**; liegt dort schon
+eines, wird das Ereignis EINGEREIHT, der Aufruf kehrt sofort zurück, und die nächste
+Zeile des Falls liest den Stand VOR dem Ereignis.
+
+**Das Werkstück legt in DIESEM Fall der `@key`-Fix W6‑B‑2 selbst hin.** Der Schlüssel
+des Rasters ist `(Virtualisiert, Zeilenzahl)` (`EPOS.UI/Standards/Raster.razor:92`,
+`Rasterstand`). Beim Übergang **20 749 → 15** ändern sich **beide** Werte: Blazor
+verwirft das alte QuickGrid und baut ein **neues** auf — mitsamt dessen
+`OnAfterRenderAsync` (Modulimport und `init`) und dem asynchronen Datenabruf, aus dem
+die fünfzehn Körperzeilen erst in einem **späteren** Zeichenlauf fallen als die
+Trefferzeile, die `Katalogliste` selbst zeichnet. Genau der Übergang, für den es den
+Fall gibt, ist also zugleich der Übergang, der ihn flattern lässt.
+
+Verloren geht der Wettlauf mit dem gemeldeten Bild: Die Trefferzeile trägt noch
+„20.749 von 20.749 Sätzen" statt „15 von 20.749 Sätzen".
+
+### Nachweis der Ursache
+
+Mit einer temporären Prüfklasse am **wörtlichen** Prüfstand (`ZZ_Wettlauf151`, nach
+der Messung gelöscht), die den Fall in einer Schleife fährt:
+
+| Messreihe | Ergebnis |
+|---|---|
+| altes Muster, ohne Fremdlast, 60 Läufe | **0 rot** |
+| altes Muster, 8 Rechenfäden auf 4 Kernen, 60 Läufe | **1 rot** — „Trefferzeile = 20.749 von 20.749 Sätzen" |
+| altes Muster, 8 Rechenfäden, 300 Läufe | 0 rot |
+| altes Muster, 16 Rechenfäden, 200 Läufe | 0 rot |
+| altes Muster, **belegte Warteschlange**, 15 Läufe | **15 von 15 rot** |
+| neues Muster, **belegte Warteschlange**, 15 Läufe | **0 von 15 rot** |
+
+Die zweite Zeile belegt die **Häufigkeit** im Feld — auf dieser Linux-Maschine ein
+Treffer in 560 Läufen, auf der Windows-Sandbox unter Last sichtbar. Die zwei letzten
+Zeilen belegen die **Art** der Ursache: Belegt ein FREMDER Faden die Warteschlange des
+Zeichners (`cut.InvokeAsync` mit einem Sperrobjekt, aus einem `Task.Run` gestellt),
+fällt das alte Muster **immer** um und das neue **nie**. Das ist dieselbe Gegenprobe
+wie die „nachgebende Quelle" in W6‑B‑2‑O‑1.
+
+### Behebung — nur am Test, kein Produktcode
+
+`Katalogliste.razor` und `Raster.razor` bleiben unverändert. In
+`KataloglisteTests` warten jetzt drei Stellen auf den GEZEICHNETEN Zustand:
+
+| Helfer | wartet auf |
+|---|---|
+| `Filter(cut, spalte, ausdruck)` | das gezeichnete Popover zwischen Trichterklick und `Change()` (`WaitForElement` statt `Find`) |
+| `Gezeichnet(cut, trefferzeile, zeilen)` | die Trefferzeile UND die Zahl der Körperzeilen |
+| `Sortiert(cut, pfeil, namen…)` | den gezeichneten Sortierpfeil und die Reihenfolge |
+
+Nachgezogen sind alle Stellen der Klasse, an denen hinter einem synchronen Ereignis
+sofort geprüft wurde — Suche, Rücksetzer, Trichter, Popover, Spaltenfilter,
+Zahlenausdruck, Sortierzyklus, Markierung und der flatterhafte Fall selbst. Wo eine
+Prüfung auf **Abwesenheit** folgt (der Rücksetzer steht NICHT da), wartet der Fall
+zuerst auf den gezeichneten Sucherfolg: Eine Abwesenheitsprüfung wäre sonst auch dann
+grün, wenn das Ereignis noch in der Warteschlange liegt, und beweist damit nichts.
+
+### Gleichartige Muster im Bestand
+
+| Fundstelle | Befund | Stand |
+|---|---|---|
+| `KataloglisteTests` (Suche, Filter, Sortierung, Markierung, 20 749 → 15) | derselbe Wettlauf | **berichtigt** |
+| `SpaltenfilterTests` | **kein** Wettlauf: Jede Liste dort bleibt unter `VirtualisierenAb` = 120, das Raster wird nie neu aufgebaut, und die neun Popover-Fälle zeichnen `Spaltenfilter` ganz ohne Raster | unverändert |
+| `ModulImportDialogTests`, `KatalogImportDialogTests` | mit `586d8b5` berichtigt | unverändert |
+| `ProjektTransferDialogTests` | mit `c3b1513` berichtigt | unverändert |
+
+### Wiederholungsnachweis
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `Zwanzigtausend_Zeilen_werden_zu_fuenfzehn_und_das_Raster_zeigt_sie`, 30 Läufe unter Rechenlast, `de` | Windows-Sandbox flatterhaft | **30 von 30 grün** |
+| derselbe Fall, 30 Läufe unter Rechenlast, `en_US.UTF-8` | — | **30 von 30 grün** |
+| Wettlauf-Nachweis, belegte Warteschlange, 15 Läufe | 15 von 15 rot | **0 von 15 rot** |
+| `KataloglisteTests` + `SpaltenfilterTests`, `de` und `en_US.UTF-8` | — | **je 29 grün, 0 rot** |
+| gesamte `EPOS.UI.Tests`, `de` und `en_US.UTF-8` | — | **je 3 239 grün, 0 rot** |
+| `dotnet build WP-Plan.sln -c Release` | 6 eindeutige Warnungen (Kern und UI) | **unverändert 6** |
+
+---
+
+## W14a‑E‑10‑O‑12 (07.09.2026) — die toten Filterfelder der zwei Importprofile
+
+Mit Stufe **S3.4** (Frage Q10 des Anwenderentscheids W14a‑E‑10) sind die sieben
+Importmasken auf die gemeinsame `Katalogliste` umgestellt worden; ihre
+handgeschriebenen Filterleisten — zwei Zahlenleisten, eine Herstellerklappliste, ein
+Technologiefilter, ein eigenes Suchfeld — sind gefallen (Entscheide **O‑10**: keine
+Filtervorbelegung mehr, **O‑11**: Suche über alle Spalten). Die zwei Importprofile im
+Kern trugen die zugehörigen Daten weiter. Offener Punkt **O‑12** hat sie aufgezählt.
+
+**Die Aufzählung in O‑12 war eine Verdachtsliste, keine Streichliste.** Gemessen
+wurde deshalb zuerst, geschnitten danach.
+
+### Die Messung
+
+Repositoryweit über `*.cs` **und** `*.razor`, ohne `obj/` und `bin/`; „Leser“ heißt
+lesender Zugriff, nicht die Erwähnung in einem Kommentar. Zwei Namen der Liste
+kollidieren mit gleichnamigen Dingen aus anderen Zusammenhängen — sie sind in der
+Tabelle ausdrücklich getrennt.
+
+| Feld / Typ | Setzer | Leser | Urteil |
+|---|---|---|---|
+| `KatalogImportProfil.FilterBezeichnung` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:151` | **tot → gefallen** |
+| `KatalogImportProfil.FilterVon` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:72`, `StromspeicherUebernahmeTests:121` | **tot → gefallen** |
+| `KatalogImportProfil.FilterBis` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:73`, `StromspeicherUebernahmeTests:122` | **tot → gefallen** |
+| `KatalogImportProfil.FilterMaximum` | 5 Fabrikmethoden | nur `KatalogImportAblaufTests:75` | **tot → gefallen** |
+| `KatalogImportProfil.HerstellerFilter` | 1 (Stromspeicher) | nur `StromspeicherUebernahmeTests:116,148` | **tot → gefallen** |
+| `KatalogFilterbereich.Bezeichnung` | 1 (Stromspeicher) | keiner | **tot → gefallen** |
+| `KatalogFilterbereich.Von` / `.Bis` | 1 (Stromspeicher) | nur `StromspeicherUebernahmeTests:123,124` | **tot → gefallen** |
+| `KatalogFilterbereich.Maximum` | 1 (Stromspeicher) | keiner | **tot → gefallen** |
+| `KatalogFilterbereich` (der Typ) | — | Halter `Zweitfilter` **lebt** | **bleibt**, auf `Nachkommastellen` verkürzt |
+| `KatalogImportProfil.Zweitfilter` | 1 (Stromspeicher) | **`KatalogImportDialog.razor:629`** (`Zweitfilter?.Nachkommastellen ?? 1`) | **lebendig → bleibt** |
+| `KatalogImportProfil.FilterNachkommastellen` | 5 Fabrikmethoden | **`KatalogImportDialog.razor:619,626`** | **lebendig → bleibt** |
+| `KatalogImportProfil.FilterSpaltentitel` / `.FilterSpalteneinheit` | 4 Fabrikmethoden | **`BaueListenprofil:380/381`** → Kopf und Einheit der Zahlenspalte | **mittelbar lebendig → bleibt** |
+| `KatalogImportProfil.Filterspalte` / `.Zweitfilterspalte` | 5 bzw. 1 | **`KatalogImportDialog.razor:625,627`**, `BaueListenprofil` | **lebendig → bleibt** |
+| `KatalogImportProfil.Quellen` / `.Listenspalten` / `.Hinweis` | 5 | **`KatalogImportDialog.razor:84,615,146`** | **lebendig → bleibt** |
+| `ModulImportProfil.FilterHersteller` | 2 Fabrikmethoden | keiner (`PvStrangDaten.FilterHersteller` und `PvStraengeFelder.razor` sind **ein anderer Typ**, W6‑O‑4) | **tot → gefallen** |
+| `ModulImportProfil.FilterTechnologie` | 2 Fabrikmethoden | keiner | **tot → gefallen** |
+| `ModulImportProfil.FilterSuche` | 2 Fabrikmethoden | keiner | **tot → gefallen** |
+| `ModulImportProfil.SuchePlatzhalter` | 2 Fabrikmethoden | keiner (`Katalogfiltertexte.SuchePlatzhalter` ist **der neue** Spaltenfilter) | **tot → gefallen** |
+| `ModulImportProfil.TextAlle` | 2 Fabrikmethoden | keiner (`GebaeudeDialog.TextAlle` und `GebaeudeHuelle` sind **ein anderer Zusammenhang**) | **tot → gefallen** |
+| `ModulImportProfil.Zahlenfilter` | 2 Fabrikmethoden (3 Bereiche) | nur `OndImportTests:476` (`NotEmpty`) | **tot → gefallen** |
+| `ImportZahlenfilter` (der Typ, 8 Eigenschaften) | 3 Konstruktionen | Halter `Zahlenfilter` fällt → **kein Halter mehr** | **tot → gefallen** |
+| `ImportZeile.Hersteller` | `ZeilePv`, `ZeileCec`, `ZeileOnd` | keiner (der Wert steht zweitens in `Spalten["HERSTELLER"]`, und die liest der Dialog) | **tot → gefallen** |
+| `ImportZeile.Technologie` | `ZeilePv` | keiner (zweitens in `Spalten["TECHNOLOGIE"]`) | **tot → gefallen** |
+| `ModulImportProfil.Zahlspalten` | 2 Fabrikmethoden | **`ModulImportDialog.razor:342,343`**, `BaueListenprofil` | **lebendig → bleibt** |
+| `ImportZeile.Zahl1` / `.Zahl2` | 3 Zeilenbauer | **`ModulImportDialog.razor:343`** | **lebendig → bleibt** |
+| `Texte.Zu`, 5 × `case "IMP_KAT_FILTER_*"` | — | einziger Aufrufer war `FilterBezeichnung` | **tot → gefallen** |
+| `KatalogImportAblauf.Anzeigeindex(von, bis, suchtext)` | — | kein Produktcode, nur `KatalogImportAblaufTests:483…497` | **fachlich tot → bewusst stehen gelassen**, siehe unten |
+
+### Was mit Begründung stehen geblieben ist
+
+**`Zweitfilter`** ist der Punkt, an dem die Verdachtsliste irrt: Der zweite
+Zahlenbereich des Stromspeicherimports (W13‑E‑2) hat einen lebenden Leser im
+Razor-Dialog. Gefallen sind nur die vier Teile des Bereichs, die die alte
+Zahlenleiste beschrieben — Beschriftung „Leistung [kW] von:“, Vorbelegung 0…100 000
+und die Obergrenze; geblieben ist die eine Nachkommastelle, mit der die zweite
+Zahlenspalte ihre Zahl zeigt, und die Tatsache, dass es sie überhaupt gibt
+(`null` = die Ausprägung führt nur eine Größe).
+
+**`FilterSpaltentitel` und `FilterSpalteneinheit`** sind der Fall, den O‑12 als
+Möglichkeit vorwegnimmt: Sie werden nur noch in `BaueListenprofil` gelesen und
+erzeugen dort einen Spaltenkopf. Ein Feld mit einem Leser ist kein totes Feld; sie
+könnten in die Erzeugungsstelle eingezogen werden, aber dann stünden vier
+Ausprägungswerte nicht mehr bei den anderen vier Ausprägungswerten. Sie bleiben, wo
+sie sind.
+
+**`KatalogImportAblauf.Anzeigeindex`** hat im Produktcode keinen Aufrufer mehr — die
+`Katalogliste` filtert seit S3.4 selbst. Er bleibt trotzdem stehen, weil sein
+einziger Prüffall (`DerFilterVerbindetZahlenbereichUndSuchtext`) der einzige Ort ist,
+an dem die Regel „Zahlenbereich UND Suchtext“ gegen eine **echte** VDI-Datei
+zugesichert wird: `pufferspeicher_vaillant.vdi` mit 9 Sätzen, davon 7 unter 1 000 l
+und 6 mit „exclusiv“ im Namen. Die `Katalogliste` erbringt dasselbe, aber ihr
+Zeilenaufbau steht im Razor-Dialog und nicht im Kern; ein Kern-Prüffall müsste ihn
+nachbauen. Eine Zusicherung gegen eine echte Datei gegen eine nachgebaute
+einzutauschen wäre ein schlechter Tausch — und O‑12 ist eine Aufräum-, keine
+Umbauaufgabe.
+
+**Die Ressourcenschlüssel bleiben.** `IMP_KAT_FILTER_LEISTUNG`, `…_VOLUMEN`,
+`…_APERTUR`, `…_ENERGIE`, `…_LEISTUNG_KW`, `IMP_KAT_FILTER_BIS`,
+`PVIMP_LBL_HERSTELLER`, `PVIMP_LBL_TECHNOLOGIE`, `PVIMP_LBL_SUCHE`,
+`PVIMP_PLATZHALTER_SUCHE`, `PVIMP_ALLE`, `PVIMP_LBL_LEISTUNG_VON`,
+`PVIMP_LBL_EFFIZIENZ_VON` und `WRK_IMP_LBL_P_AC_VON` stehen weiter in beiden `.resx`.
+Sie zu streichen hieße, `Resource.Designer.cs` neu zu erzeugen und Übersetzungen zu
+verlieren, ohne dass am laufenden Programm irgendetwas anders würde; das ist eine
+eigene Aufgabe. (`WRK_LBL_FIRMA` wird ohnehin weiter gebraucht — `ModulKatalogProfil`
+liest ihn.)
+
+### Die Prüffälle
+
+| Fall | Behandlung |
+|---|---|
+| `KatalogImportAblaufTests.DasProfilTraegtDieFiltervorbelegungDesDesigners` | **nur beschnitten** und umbenannt in `DasProfilTraegtDieNachkommastellenUndDenDateifilterDesDesigners`. Gefallen sind die Zusicherungen auf `FilterVon`/`FilterBis`/`FilterMaximum` und damit die Zahlen 10…200, 0…1000, 0…5, 0…100 und 100 000 — die Vorbelegung, die es seit **O‑10** nicht mehr gibt. Geblieben sind die vier Ausprägungen mit ihren Nachkommastellen (1 / 0 / 2 / 0) und der Dateifilter |
+| `KatalogImportAblaufTests.DerUebersetzerGehtDurchAlleBeschriftungen` | **nur beschnitten**: `FilterBezeichnung` heraus, an seine Stelle tritt `FilterSpaltentitel` — dieselbe Zusicherung („der Übersetzer greift auch außerhalb der Detailfelder“) an einem lebenden Feld |
+| `StromspeicherUebernahmeTests.DasProfilFuehrtDreiQuellenSiebenSpaltenUndZweiZahlenbereiche` | **nur beschnitten** (der Fall prüft neun lebendige Dinge mit): `HerstellerFilter`, `FilterVon`, `FilterBis`, `Zweitfilter.Von`, `Zweitfilter.Bis` heraus; dafür herein `Filterspalte`, `Zweitfilterspalte`, `FilterNachkommastellen` und `Zweitfilter.Nachkommastellen` — die zwei Zahlengrößen sind damit weiter zugesichert, jetzt über das, was die Maske wirklich liest |
+| `StromspeicherUebernahmeTests.DieVierVdiAuspraegungenBleibenOhneQuellknoepfeUndZweitfilter` | **nur beschnitten**: `Assert.False(p.HerstellerFilter)` heraus, `Assert.Equal("", p.Zweitfilterspalte)` herein |
+| `OndImportTests.Beide_Auspraegungen_sind_vollstaendig` | **nur beschnitten**: `Assert.NotEmpty(p.Zahlenfilter)` → `Assert.NotEmpty(p.Zahlspalten)`. Dieselbe Zusage („jede Ausprägung führt mindestens eine Zahlengröße“) am Nachfolger |
+| `KatalogfilterImportTests` (5 Fälle) | **unverändert** — sie decken seit S3.4 ab, was die gefallenen Felder beschrieben: Spaltenkopf samt Einheit für alle vier VDI-Ausprägungen, `Katalogspaltenart.Zahl`, die sieben Listenspalten des Stromspeichers und die `Zahlspalten` beider Geräteimporte. Ein neuer Fall war deshalb nicht zu schreiben |
+
+**Kein Prüffall ist ersatzlos entfallen, und keiner ist dazugekommen** — die
+Fallzahlen bleiben bei 2 033 / 3 239 / 337 / 469.
+
+### Nachweis
+
+| Lauf | vorher (`601c0b8`) | nachher |
+|---|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | 0 Fehler | **0 Fehler**, Warnungsmenge unverändert |
+| `EPOS.Kern.Tests`, `de` / `en_US.UTF-8` | 2 033 | **2 033 / 2 033 grün** |
+| `EPOS.UI.Tests`, `de` / `en_US.UTF-8` | 3 239 | **3 239 / 3 239 grün** |
+| `SpeicherEngine.Tests`, `de` / `en_US.UTF-8` | 337 | **337 / 337 grün** |
+| `KiKern.Tests`, `de` / `en_US.UTF-8` | 469 | **469 / 469 grün** |
+| `Werkzeuge/Formularkarte` | 122 | **122 grün** |
+| `Werkzeuge/SqlDialektPruefer` | 0 Fundstellen | **0 Fundstellen** (1 297 SQL-Texte) |
+| `Proben/ChartProben` | 44 Bilder | **44 grün, 0 Verstöße** |
+| `EPOS.Referenzlauf`, Projekte 1030 / 1007 / 1017 / 1045 gegen `2026-09-07_R6_PvKoeffizienten` | Basis | **4 × PASS**, 102 Dateien, 1 121 832 Werte |
+
+Der Referenzlauf war nicht zwingend — angefasst sind zwei Datenklassen der
+Importmasken und drei Prüffälle, kein Rechenweg —, ist aber gefahren worden, weil
+die Änderung im Kern liegt.
+
+### Zeilenbilanz
+
+| Datei | Zeilen |
+|---|---|
+| `EPOS.Kern/Allgemein/Import/ModulImportProfil.cs` | −92 |
+| `EPOS.Kern/Allgemein/Import/KatalogImportProfil.cs` | −51 |
+| `EPOS.UI/Dialoge/Import/KatalogImportDaten.cs` | −6 |
+| `EPOS.Kern.Tests` (3 Dateien) | +3 |
+| **Summe** | **−146** |
+
+## W13‑B‑6 (09.09.2026) — „die Liste blinkt und ist nicht sichtbar" (6 654 Stromspeicher)
+
+### Befund
+
+Windows-Abnahme 09.09.2026, **Administration → Daten & Import → Stromspeicher**
+(`KatalogImportDialog` mit `Art = Stromspeicher`). Nach „CEC-Liste abrufen" stehen
+6 654 Sätze in der Liste. Der Anwender meldet zweierlei:
+
+1. **„Die Liste blinkt und ist nicht sichtbar."** Auf dem Bildschirmfoto steht die
+   Trefferzeile richtig auf „6.654 von 6.654 Sätzen", die Kopfzeile ist heil, rechts
+   steht eine Bildlaufleiste — und im Körper stehen rund acht Zeilen, die in **jeder
+   Zelle nur „…"** tragen. Auf einem zweiten Foto (Filter-Popover offen) stehen
+   dahinter ECHTE Zeilen („9,6 kW · Lithium-Eisen-Phosphat"): Die Liste ist also
+   zeitweise da.
+2. **„Der Filter funktioniert nicht."** Im Trichter der kW-Spalte greift die Eingabe
+   nicht erkennbar.
+
+Nicht Teil des Befundes: „bslib laden" zeigt wenige Einträge — die mitgelieferte
+`bslib_database.csv` führt laut `LIESMICH_bslib.md` genau 7 Datensätze (4 Speicher).
+
+### Ursache
+
+**Eine einzige Stelle im Markup der Katalogliste**, und QuickGrids Vergleich seiner
+Datenquelle. `Katalogliste.razor` reichte dem Raster
+
+```
+<Raster TZeile="Katalogfilterzeile" Zeilen="@_gefiltert.AsQueryable()" …>
+```
+
+— also **bei jedem Zeichenlauf ein frisches `EnumerableQuery`**, und dazu über
+`OnParametersSet() => Neuberechnen()` eine jedes Mal frisch gebaute Trefferliste
+(`Katalogfilter.Anwenden` legt `new List<>` an). Der Kopfkommentar von `Raster.razor`
+nannte das seit W6‑B‑2 sogar beiläufig („Die Wirte reichen bei jedem Render ein
+frisches AsQueryable() herein") — für den FLACHEN Zweig ist es nur Arbeit, für den
+virtualisierten ist es der Fehler.
+
+**Beleg aus QuickGrid 10.0.11** (Paketquelle `QuickGrid.razor.cs`; die Feld- und
+Methodennamen sind in der ausgelieferten
+`Microsoft.AspNetCore.Components.QuickGrid.dll` nachgelesen — `_lastAssignedItemsOrProvider`,
+`_pendingDataLoadCancellationTokenSource`, `RefreshDataCoreAsync`,
+`ProvideVirtualizedItems`, `RenderPlaceholderRow` stehen dort alle):
+
+```csharp
+// OnParametersSetAsync
+var _newItemsOrItemsProvider = Items ?? (object?)ItemsProvider;
+var dataSourceHasChanged = _newItemsOrItemsProvider != _lastAssignedItemsOrProvider;
+…
+return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync() : Task.CompletedTask;
+
+// RefreshDataCoreAsync
+_pendingDataLoadCancellationTokenSource?.Cancel();
+var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
+if (_virtualizeComponent is not null) { await _virtualizeComponent.RefreshDataAsync(); … }
+
+// ProvideVirtualizedItems
+// "Debounce the requests. This eliminates a lot of redundant queries …"
+await Task.Delay(100);
+if (request.CancellationToken.IsCancellationRequested) { return default; }
+```
+
+Der Vergleich ist ein **Referenzvergleich** (`!=` auf `object`). Ein frisches
+`AsQueryable()` über DERSELBEN Liste ist damit eine neue Datenquelle; QuickGrid bricht
+die laufende Ladung ab und stellt hinter der 100‑ms‑Entprellung eine neue an. Kommt
+der nächste Zeichenlauf schneller als diese 100 ms, ist auch sie hinfällig.
+`Virtualize.RefreshDataCoreAsync` übernimmt sein Ergebnis nämlich nur bei
+NICHT abgebrochener Ladung:
+
+```csharp
+var result = await _itemsProvider(request);
+if (!cancellationToken.IsCancellationRequested)
+{
+    _itemCount = result.TotalItemCount;
+    _loadedItems = result.Items;
+    _loadedItemsStartIndex = request.StartIndex;
+    _loading = false;
+    …
+}
+```
+
+Und **beide gemeldeten Bilder stehen wörtlich in QuickGrids eigenem Stilblatt**
+(`Microsoft.AspNetCore.Components.QuickGrid.boiwgh0w5b.bundle.scp.css`):
+
+```css
+.quickgrid[theme=default].loading > tbody {
+    opacity: 0.25;
+    transition: opacity linear 100ms;
+    transition-delay: 25ms; /* Don't want flicker if the queries are resolving almost immediately */
+}
+.quickgrid[theme=default] > tbody > tr > td.grid-cell-placeholder:after {
+    content: '\2026';
+    opacity: 0.75;
+}
+```
+
+* Die Klasse `loading` hängt an genau dieser Kennung
+  (`GridClass()`: `_pendingDataLoadCancellationTokenSource is null ? null : "loading"`).
+  Eine Kette abgebrochener Ladungen lässt sie stehen und wieder gehen — der Körper
+  blendet auf ein Viertel ab und zurück: **das „Blinken"**.
+* `content: '\2026'` IST der Halbgeviertpunkt „…" in jeder Zelle. Er kommt aus
+  `RenderPlaceholderRow`, also aus dem Zweig, den `Virtualize` zeichnet, solange
+  `_loadedItems` leer ist.
+
+Der gemeldete Anfangszustand ergibt sich daraus zwanglos: Die erste Ladung läuft, bevor
+das JavaScript gemessen hat — mit `_visibleItemCapacity == 0` liefert sie 0 Zeilen, setzt
+aber `_itemCount = 6654`. Die zweite, die nach der Messung die sichtbaren ~10 Zeilen
+holen soll, fällt der Abbruchkette zum Opfer. `Virtualize` zeichnet dann `_itemCount`
+Zeilen Abstandhalter (daher die Bildlaufleiste über 6 654 × 44 px) und im Fenster
+`_visibleItemCapacity` **Platzhalter** — im 420‑px‑Rahmen rund neun. Genau das Foto.
+
+**Der zweite Teil des Befundes ist derselbe Fehler.** Ein Spaltenfilter ändert die
+Zeilenzahl, der `@key`-Fix W6‑B‑2 baut deshalb ein NEUES QuickGrid auf — mit leerem
+`_loadedItems`. Bleibt die gefilterte Menge über der Schwelle von 120 (6 654 → einige
+tausend), virtualisiert es weiter, und die erste Ladung der neuen Instanz gerät in
+dieselbe Abbruchkette: Die Trefferzeile rechnet richtig, die Liste zeigt nichts.
+„Der Filter funktioniert nicht" ist die richtige Beschreibung dessen, was man sieht.
+
+Der Fall W6‑B‑2 deckte den Übergang auf den FLACHEN Zweig ab (20 749 → 15); **beidseits
+der Schwelle virtualisiert** war bisher nicht geprüft.
+
+### Messungen (bunit, Wegwerf-Prüfstand, nach der Messung gelöscht)
+
+| Messung | vorher | nachher |
+|---|---|---|
+| `QuickGrid.Items` über 10 Zeichenläufe der `Katalogliste` (6 654 Zeilen) | **10 verschiedene Instanzen** | **1 Instanz** (`Assert.Same`) |
+| gefilterte Menge (`Angezeigt`) über dieselben 10 Läufe | 10 neue Listen | **1 Liste** |
+| vollständige Filterrechnungen (500 Zeilen, gezählt am Indexer der Quellliste) | **1 je Zeichenlauf** | 1 je Zeichenlauf (**absichtlich**, siehe unten) |
+| Klasse `loading` an der Tabelle, 10 Läufe im Abstand von 20 ms | **10 von 10** | **0 von 10** |
+| überlebende virtualisierte Ladungen bei 10 Läufen | **2 von 10** | 10 von 10 |
+| volle Durchläufe über die Menge für den `@key` (`Raster.Zeilenzahl`, 6 654 Zeilen, 10 Läufe) | **10** | **0** |
+
+Was bunit **nicht** zeigen kann: den Platzhalterzustand selbst. Ohne echten
+`IntersectionObserver` treibt bunit `Virtualize` anders an und behält geladene Zeilen;
+die 100‑ms‑Entprellung und der Abbruch sind dagegen voll sichtbar (Zeile 4 und 5 der
+Tabelle). Der fehlende Teil ist eine gerade Folge der oben zitierten acht Zeilen aus
+`Virtualize.RefreshDataCoreAsync`/`BuildRenderTree`; ein Playwright-Prüfstand hätte dafür
+einen eigenen Blazor-Server-Wirt gebraucht und wäre am Zeitverhalten des Browsers
+ohnehin nur so belastbar wie das Foto des Anwenders, das dieses Bild bereits zeigt.
+**Er ist deshalb nicht gebaut worden**; statt dessen steht unten eine gezielte
+Sichtabnahme.
+
+### Fix
+
+**`EPOS.UI/Bausteine/Katalogliste.razor` — die Datenquelle behält ihre Instanz.**
+Das Markup reicht jetzt ein Feld `_rasterzeilen` herein statt eines Ausdrucks, und
+`Neuberechnen` legt es nur neu an, wenn WIRKLICH eine andere Menge herauskommt:
+
+```csharp
+IReadOnlyList<Katalogfilterzeile> neu = Profil is null
+    ? Zeilen : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
+if (GleicheMenge(neu, _gefiltert)) return;
+_gefiltert = neu;
+_rasterzeilen = neu.AsQueryable();
+```
+
+**Gerechnet wird weiter bei JEDEM Zeichenlauf, und das ist der Kern der Sache.** Der
+erste Anlauf sparte die Rechnung und hängte sie an die REFERENZ von `Zeilen`, an
+`Profil` und an einen neuen Zählstand im `Katalogfilterstand`. Er war schneller und
+**falsch**: Mehrere Wirte ändern ihre Zeilenliste an Ort und Stelle — der
+Ganglinienverwalter löscht mit `RemoveAll` aus derselben Liste, die er hereinreicht.
+Vier Fälle fielen darüber (`SolarganglinieAdminDialogTests.Ja_loescht_und_meldet`
+„Expected 2, Actual 3", `…Ein_erfolgreicher_Import_laedt_den_Katalog_neu`,
+zwei in `StromganglinieDialogTests`). Der Zählstand im Kern ist mit diesem Anlauf
+wieder zurückgenommen worden; festgehalten wird das ERGEBNIS, nicht die Vermutung, dass
+sich nichts geändert habe. Der Vergleich ist ein Referenzvergleich Zeile für Zeile — für
+20 749 PV‑Module 20 749 Zeigervergleiche, billiger als die Filterrechnung davor.
+
+**`EPOS.UI/Standards/Raster.razor` — die Zeilenzahl wird je Menge einmal geholt.**
+Sie steht im `@key` und wurde deshalb bei jedem Zeichenlauf berechnet; ein
+`AsQueryable()` über einer Liste ist keine `ICollection`, sein `Count()` läuft
+also wirklich über alle Zeilen. Der Zwischenspeicher hängt an der Referenz der Menge —
+derselbe Maßstab, den QuickGrid an seine Datenquelle legt. Dazu ein Absatz im
+Kopfkommentar, der die Regel benennt: **wer `Virtualisiert` setzt, reicht eine STABILE
+Instanz herein.** Geglättet wird im Raster ausdrücklich nichts — ein Raster, das eine
+neue Menge stillschweigend für die alte hielte, wäre die nächste Fehlerquelle.
+
+**Die Schranke sitzt damit an EINER Stelle für alle 21 Wirte:** `Katalogliste.razor`
+ist die einzige Komponente des Hauses, die `Virtualisiert` überhaupt setzt
+(`grep -rn "Virtualisiert=" EPOS.UI --include=*.razor` findet außerhalb von
+`Raster.razor` genau eine Fundstelle). Die 20 749 PV‑Module des `ModulImportDialog`,
+der Wärmepumpenkatalog, der Heizkessel-/Katalogbrowser und die übrigen achtzehn Wirte
+tragen denselben Fehler und sind mit derselben Änderung mit erledigt.
+
+### Die Kultur des Zahlenfilters — kein Fehler
+
+Zum Befund gehörte die Frage, ob der Filter „9,6" überhaupt versteht: Die Oberfläche
+läuft in einer `BlazorWebView`, und `StandardSprache.KulturUebernehmen` setzt
+**ausdrücklich nur** `CurrentUICulture`/`DefaultThreadCurrentUICulture` — die
+Rechenkultur bleibt die des Betriebssystems (Drei-Schichten-Regel, Konzept 13.6).
+
+Die Antwort ist: **immer**, denn beide Seiten hängen an DERSELBEN Größe.
+`Katalogwert.AusZahl` schreibt mit `CultureInfo.CurrentCulture` („N1"), und
+`Katalogfilter.PasstSpalte` liest über `Zahlenausdruck.Lesen` ohne ausdrückliche Kultur,
+also ebenfalls mit `CurrentCulture`. Was dasteht, ist damit auch das, was man tippen
+kann — eine englische Oberfläche auf deutschem Windows ändert daran nichts. Die fremde
+Schreibweise ist kein stiller Fehltreffer, sondern **unverstanden**, und ein
+unverstandener Ausdruck ist kein Filter: Die Liste bleibt vollständig stehen, statt
+leer zu werden. Beides ist jetzt festgeschrieben
+(`KatalogfilterstandTests.Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur`, de‑DE und
+en‑US). Der Fall stellt bewusst nur `Thread.CurrentThread.CurrentCulture` um und nicht
+`DefaultThreadCurrentCulture`: Letzteres gilt prozessweit, und xunit fährt
+Testsammlungen nebenläufig.
+
+Eine Eigenheit bleibt und ist so gewollt: Die Spalte schreibt mit Tausendertrennzeichen
+(„1.200,0"), `Zahlenausdruck` liest ohne `AllowThousands` — wer nach 1 200 kWh sucht,
+tippt `1200`. Die Begründung steht bei `Zahlenausdruck.Zahl`; ohne sie wäre `1.5` unter
+de‑DE die Zahl 15.
+
+### Nachweis
+
+| Lauf | Ausgang (HEAD `7a45d8e6`) | nachher |
+|---|---|---|
+| `MSBuild WP-Plan.sln -p:Configuration=Debug -p:Platform=x64` | 0 Fehler | **0 Fehler** |
+| `EPOS.Kern.Tests` | 2 195 | **2 197 / 2 197 grün** (+2) |
+| `EPOS.UI.Tests` | 3 362 | **3 368 / 3 368 grün** (+6) |
+| `EPOS.UI.Tests`, zwei Wiederholungsläufe | — | **2 × 3 368 grün** |
+
+Neue Fälle:
+
+| Fall | was er festhält |
+|---|---|
+| `KataloglisteTests.Die_Datenquelle_des_Rasters_bleibt_ueber_Zeichenlaeufe_dieselbe` | 6 654 Zeilen, zehn Zeichenläufe: `QuickGrid.Items` und `Angezeigt` bleiben dieselbe Instanz, die Tabelle trägt kein `loading` |
+| `KataloglisteTests.Ein_Filterwechsel_gibt_dem_Raster_eine_neue_Datenquelle` | die Gegenprobe — eine WIRKLICHE Änderung kommt durch |
+| `KataloglisteTests.Eine_an_Ort_und_Stelle_geaenderte_Liste_wird_bemerkt` | die zweite Gegenprobe: dieselbe Listeninstanz, anderer Inhalt (der Fall, über den der erste Anlauf fiel) |
+| `KataloglisteTests.Der_Zahlenfilter_greift_auch_wenn_die_Liste_virtualisiert_bleibt` | 500 → 224 über `>50` in der kW-Spalte, **beidseits virtualisiert**; keine Platzhalter, kein `loading` |
+| `RasterTests.Eine_stabile_Zeilenmenge_laesst_die_virtualisierte_Liste_zur_Ruhe_kommen` | der Wächter gegen QuickGrids Referenzvergleich: mit frischem `AsQueryable` bekommt das QuickGrid in 10/10 Zeichenläufen eine ANDERE Datenquelle, mit stabiler Instanz in 0/10 (Fassung seit 10.09.2026, siehe Nachtrag) |
+| `RasterTests.Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` | der `@key` kostet keinen weiteren Durchlauf über 6 654 Zeilen — elf Zeichenläufe, EINE Zählung |
+| `KatalogfilterstandTests.Anzeige_und_Zahlenfilter_teilen_sich_EINE_Kultur` (2) | Anzeige und Filter teilen sich `CurrentCulture`; die fremde Schreibweise ist kein Filter |
+
+### Nachtrag 10.09.2026 — die zwei Zählfälle messen nicht mehr über die Uhr
+
+Beide Fälle **flatterten unter Parallellast** und liefen allein grün (zweimal beobachtet,
+zuletzt am 10.09.2026: erwartet 3 Durchläufe, gemessen 5). Der Grund lag in der MESSART, nicht
+in der Aussage:
+
+* `Eine_stabile_Zeilenmenge_…` sah der Tabelle die Klasse `loading` nach — und zwar innerhalb
+  von QuickGrids Entprellung (`await Task.Delay(100)`). Zehn Zeichenläufe müssen dafür in
+  100 ms durchlaufen; unter Last taten sie das nicht.
+* `Dieselbe_Zeilenmenge_…` nahm ihren Ausgangsstand nach `WaitForAssertion` und zählte danach
+  ALLE Durchläufe — auch die, die QuickGrids asynchrone Ladung noch nachschob.
+
+**Neu wird die Ursache gemessen statt ihrer Folge**, und beide Fälle lösen ihre Zeichenläufe
+ausdrücklich aus (`cut.Render(…)`), ohne auf eine Frist zu warten:
+
+| Fall | misst jetzt |
+|---|---|
+| `Eine_stabile_Zeilenmenge_…` | die **Identität der Datenquelle** am QuickGrid (`QuickGrid.Items`) je Zeichenlauf — genau die Frage, die QuickGrid selbst stellt (`_newItemsOrItemsProvider != _lastAssignedItemsOrProvider`), und die Ursache des `loading`. Dazu: dieselbe Rasterinstanz über alle Läufe |
+| `Dieselbe_Zeilenmenge_…` | die **Zählungen des Rasters** über die Prüfhilfe `Zaehlmenge` — ein `IQueryable<Zeile>`, dessen eigenes `GetEnumerator` NUR der `Enumerable.Count`-Weg des Rasters trifft; QuickGrid fasst die Menge ausschliesslich über `Provider`/`Expression` an und läuft an der Zählung vorbei. Was die Prüfhilfe zählt, kann eine Ladung QuickGrids nicht mehr verändern. Dazu die Gegenprobe: eine ANDERE Menge wird wieder gezählt |
+
+Die **Aussage beider Fälle bleibt** — eine stabile Menge kommt unverändert am QuickGrid an und
+wird einmal gezählt, ein frisches `AsQueryable()` je Zeichenlauf ist jedes Mal eine neue.
+`WaitForAssertion` und die Zeitfenster sind aus beiden Fällen verschwunden. Nachweis:
+`EPOS.UI.Tests` **3 380 / 3 380 grün**, dazu sieben Wiederholungsläufe (einer davon unter voller
+Parallellast, 2 m 38 s) ohne Fehlschlag — auf dem Ausgangsstand fiel
+`Dieselbe_Zeilenmenge_wird_nur_einmal_gezaehlt` in genau so einem Lauf („erwartet 3,
+tatsächlich 5"). Geändert wurde nur die Testdatei `EPOS.UI.Tests/Standards/RasterTests.cs`;
+`Raster.razor` blieb unberührt.
+
+### Offene Punkte
+
+| Nr. | offen |
+|---|---|
+| **W13‑B‑6‑O‑1** | **Sichtabnahme am Programm** (der Anwender): „Stromspeicher Einlesen" → „CEC-Liste abrufen" → stehen die 6 654 Sätze SOFORT und ruhig da (keine „…"-Zeilen, kein Ab- und Aufblenden des Körpers)? Dann im Trichter der kW-Spalte `>10` eingeben: Ändert sich die Trefferzeile UND zeigt die Liste die gefilterten Zeilen? Zur Gegenprobe `10..60` und `=9,6`. Dasselbe im PV-Modulimport (20 749 Sätze) und im Wärmepumpenkatalog |
+| **W13‑B‑6‑O‑2** | Beim Filtern springt der Eingabepunkt aus dem Popover: Ändert sich die Zeilenzahl, baut der `@key`-Fix W6‑B‑2 das QuickGrid samt Kopfzeile neu auf, und das Feld im Trichter ist ein neues Element. Nicht Teil dieses Befundes (das Popover bleibt offen, und `onfocusout` übernimmt den Wert), aber beim Nachtippen eines zweiten Ausdrucks lästig. Erst ansehen, wenn der Anwender es meldet — der Weg dorthin führt an den `@key`, und der trägt den Fehler W6‑B‑2 |

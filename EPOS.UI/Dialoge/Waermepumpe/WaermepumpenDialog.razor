@@ -1,0 +1,381 @@
+﻿@* Waermepumpen Verwaltung - der HOST des Gewerks (iU9-W7.5), seit W7-B-3
+   (Anwenderwunsch 08.09.2026) EIN Dialog nach dem Muster von Photovoltaik und
+   Stromspeicher: "Der Dialog Waermepumpenverwaltung und der Dialog unter
+   Aendern (Detailansicht) sollten zusammengefuehrt werden ... in einer
+   Darstellung mit einer Auswahl an Waermepumpen; die im Projekt ausgewaehlten
+   sollen in der Liste der ausgewaehlten sichtbar sein."
+
+   AUFBAU. Oben die Zweispaltenauswahl: LINKS die Waermepumpen des Projekts
+   (Hersteller, Typ, Leistung, Vorlauf, Ruecklauf, Betriebsart), RECHTS der
+   Katalog mit Filterzeile und der Spalte "im Projekt verwendet" (Q12); die
+   Pfeile dazwischen uebernehmen aus dem Katalog bzw. entfernen aus dem
+   Projekt. DARUNTER die Detailansicht der markierten Anlage - dieselbe
+   Komponente wie bisher in der Ueberlagerung, jetzt EINGEBETTET: ohne eigenen
+   Rahmen, ohne eigenes OK. Die Wege "Neu..", "Aendern..", "Ansicht" und die
+   zwei Ueberlagerungen des Vorlaeufers entfallen.
+
+   PRUEFEN VOR DEM WECHSEL. Die Detailansicht prueft beim eigenen OK
+   (Betriebsart, Waermepumpe, Temperaturen, Sperrzeiten, Nutzungsdauer,
+   Heizstab). Eingebettet ruft der Wirt dieselbe Pruefung, bevor er die Zeile
+   wechselt, eine neue anlegt oder schliesst: Ein Mangel haelt die Wahl an,
+   das Band nennt ihn - und die Zeile geht erst fehlerfrei ins Modell
+   (Uebernehmen). Im Assistenten gibt es kein OK; die markierte Zeile geht
+   beim Verlassen der Seite ins Modell, wenn sie fehlerfrei ist (Dispose).
+
+   DIE ZEILE IST DER SCHLUESSEL, nicht ihr Index (Entfernen - dieselbe
+   Fehlerklasse wie W6 A-5). TASTATUR: Esc schliesst. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiLoeschen">
+
+        <Links>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster">
+                    <thead>
+                        <tr>
+                            <th>@SpalteWahl</th>
+                            @* W7-B-1: Hersteller vor Typ; Typ ist die MODELLBEZEICHNUNG. *@
+                            <th>@SpalteHersteller</th>
+                            <th>@SpalteTyp</th>
+                            <th>@SpalteLeistung</th>
+                            <th>@SpalteVorlauf</th>
+                            <th>@SpalteRuecklauf</th>
+                            <th>@SpalteBetriebsart</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (WaermepumpeAnlageDaten zeile in Zeilen)
+                        {
+                            WaermepumpeAnlageDaten z = zeile;
+                            <tr class="@(z == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(z == _gewaehlt)" Kurztext="@SpalteWahl"
+                                                Gewaehltwerden="() => ZeileWaehlen(z)" />
+                                </td>
+                                <td>@z.Firma</td>
+                                <td>@z.Bezeichner</td>
+                                <td>@z.Nennleistung</td>
+                                <td>@z.Vorlauf</td>
+                                <td>@z.Ruecklauf</td>
+                                <td>@z.Betriebsart</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Links>
+
+        <Rechts>
+            @* Der Katalog mit Filterzeile (W14a-E-10 / S2.2) und der Spalte "im Projekt
+               verwendet" (Q12) - dieselbe Liste, die bis W7-B-3 in der Ueberlagerung
+               "Modul-Katalog..." stand. *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
+                          Vergleichsparameter="@Vergleichsparameter" />
+
+            @* W7-B-3 Nachtrag (08.09.2026): Die markierte Projektzeile auf die markierte
+               Katalogzeile UMSTELLEN - Sperrzeit, Bivalenz, Heizstab und Kosten der Zeile
+               bleiben. Das ersetzt die Innenliste "Waermepumpen Auswahl" der
+               Detailansicht, die eingebettet nicht mehr steht (dieselben Zeilen ein
+               zweites Mal). "In das Projekt uebernehmen" legt dagegen eine NEUE Zeile an. *@
+            <div class="epos-leiste epos-wp-umstellen">
+                <button type="button" class="epos-knopf" title="@TipUmstellen"
+                        disabled="@(_gewaehlt is null || _katalogZeile is null)"
+                        @onclick="BeiUmstellen">@LabelUmstellen</button>
+            </div>
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    @* --- Die Detailansicht der markierten Anlage, EINGEBETTET (W7-B-3) ----------
+       @key: Jede Zeile bekommt ihre eigene Instanz - die Ansicht liest Stammliste,
+       Vorlaufstufen und Kennlinien beim Aufbau (OnInitialized), nicht bei jedem
+       Parameterwechsel. *@
+    @if (_anlageGaben is not null && _gewaehlt is not null)
+    {
+        <div class="epos-wp-eingebettet" @key="_gewaehlt">
+            <WaermepumpeAnlageDialog @ref="_anlage" @attributes="_anlageGaben"
+                                     Eingebettet="true" TitelText="" />
+        </div>
+    }
+    else
+    {
+        <Herleitungszeile Text="@LeerText" />
+    }
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Die Wärmepumpen des Projekts — die Liste gehört der Hülle und wird AN ORT UND
+    /// STELLE bearbeitet, wie in den fünf Erzeugerdialogen der Welle 6.
+    /// </summary>
+    [Parameter] public List<WaermepumpeAnlageDaten> Zeilen { get; set; } = new();
+
+    /// <summary>Der Katalog — <c>WPStammCtrl.Katalogfilterzeilen()</c> (Stufe S2.2).</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalog { get; set; }
+
+    /// <summary>Die Spalten des Katalogs, hier MIT der Spalte „im Projekt verwendet" (Q12).</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Zeilen des VERGLEICHS (Q3, Stufe S3.3) — gehen an den Katalog weiter.</summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste (Suche, Trefferzahl, Filter).</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Vorbelegung des Filterstands; ohne = das Register der Anlagenart.</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz der Detailansicht zu einer Zeile. Die Hülle baut ihn samt der
+    /// Delegaten, die dort hängen (Kennlinien, Kosten, Stammdialog, Trägerkatalog).
+    /// </summary>
+    [Parameter] public Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? AnlageGaben { get; set; }
+
+    /// <summary>
+    /// Legt eine neue Zeile zu einem Katalogbezeichner an — die Hülle holt die Stamm-Id
+    /// und die Stammfelder. <c>null</c> = nichts angelegt.
+    /// </summary>
+    [Parameter] public Func<string, WaermepumpeAnlageDaten?>? Anlegen { get; set; }
+
+    /// <summary>Übernimmt den bearbeiteten Stand in das Modell der Hülle.</summary>
+    [Parameter] public Action<WaermepumpeAnlageDaten>? Uebernehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<WaermepumpeAnlageDaten>? Entfernen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmepumpen Verwaltung";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie die Daten der Wärmepumpe ein";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Wärmepumpen:";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Wärmepumpen aus Datenbank:";
+
+    /// <summary>„Markierte auf diese Wärmepumpe umstellen" (<c>WPV_BTN_UMSTELLEN</c>, W7‑B‑3 Nachtrag).</summary>
+    [Parameter] public string LabelUmstellen { get; set; } = "Markierte auf diese Wärmepumpe umstellen";
+
+    /// <summary>Werkzeugtipp des Umstellens (<c>WPV_TIP_UMSTELLEN</c>).</summary>
+    [Parameter] public string TipUmstellen { get; set; } =
+        "Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben.";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+
+    /// <summary>Spaltenkopf „Hersteller" (<c>Firma</c>) — W7‑B‑1.</summary>
+    [Parameter] public string SpalteHersteller { get; set; } = "Hersteller";
+
+    /// <summary>Spaltenkopf „Typ" — die MODELLBEZEICHNUNG (<c>Bezeichner</c>), W7‑B‑1.</summary>
+    [Parameter] public string SpalteTyp { get; set; } = "Typ";
+
+    [Parameter] public string SpalteLeistung { get; set; } = "Leistung [kW]";
+    [Parameter] public string SpalteVorlauf { get; set; } = "Vorlauf [°C]";
+    [Parameter] public string SpalteRuecklauf { get; set; } = "Rücklauf [°C]";
+    [Parameter] public string SpalteBetriebsart { get; set; } = "Betriebsart";
+
+    /// <summary>Satz unter der Auswahl, solange keine Wärmepumpe markiert ist.</summary>
+    [Parameter] public string LeerText { get; set; }
+        = "Links eine Wärmepumpe markieren oder rechts eine aus der Datenbank übernehmen.";
+
+    /// <summary>Das Band bei einem Mangel der markierten Zeile: {0} = Typ, {1} = der Wortlaut.</summary>
+    [Parameter] public string MangelFormat { get; set; } = "„{0}“: {1}";
+
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "❌Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPAuswahl.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private WaermepumpeAnlageDaten? _gewaehlt;
+    private IReadOnlyDictionary<string, object>? _anlageGaben;
+    private WaermepumpeAnlageDialog? _anlage;
+    private string _meldung = "";
+
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _katalogGewaehlt = "";
+    private Katalogfilterzeile? _katalogZeile;
+
+    /// <summary>Die gewählte Zeile — Prüfhilfe für die Tests.</summary>
+    public WaermepumpeAnlageDaten? Gewaehlt => _gewaehlt;
+
+    /// <summary>Steht die Detailansicht (eingebettet)? Prüfhilfe für die Tests.</summary>
+    public bool DetailOffen => _anlageGaben is not null;
+
+    /// <summary>Das Band der Seite (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnInitialized()
+    {
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Waermepumpe);
+        _katalog = Katalog?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+        if (Zeilen.Count > 0) Zeigen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Assistent: kein OK — die markierte Zeile geht beim Verlassen der Seite ins Modell,
+    /// wenn sie fehlerfrei ist. Ein Mangel lässt das Modell, wie es war.
+    /// </summary>
+    public void Dispose()
+    {
+        if (!Wizard || _gewaehlt is null) return;
+        try { if (_anlage?.Pruefen() is null) Uebernehmen?.Invoke(_gewaehlt); }
+        catch { }
+    }
+
+    // =================================================================================
+    // Die Wahl links
+    // =================================================================================
+
+    private void Zeigen(WaermepumpeAnlageDaten zeile)
+    {
+        _gewaehlt = zeile;
+        _anlageGaben = AnlageGaben?.Invoke(zeile);
+    }
+
+    private void ZeileWaehlen(WaermepumpeAnlageDaten zeile)
+    {
+        if (zeile == _gewaehlt) return;
+        if (!AktuelleUebernehmen()) return;          // der Mangel haelt die Wahl an
+        Zeigen(zeile);
+    }
+
+    /// <summary>
+    /// Prüft die eingebettete Ansicht und übernimmt die markierte Zeile ins Modell.
+    /// <c>false</c> = Mangel; das Band nennt ihn, die Zeile bleibt markiert.
+    /// </summary>
+    private bool AktuelleUebernehmen()
+    {
+        if (_gewaehlt is null) return true;
+        string? fehler = _anlage?.Pruefen();
+        if (fehler is not null)
+        {
+            _meldung = string.Format(MangelFormat, _gewaehlt.Bezeichner, fehler);
+            return false;
+        }
+        _meldung = "";
+        Uebernehmen?.Invoke(_gewaehlt);
+        return true;
+    }
+
+    // =================================================================================
+    // Der Katalog rechts
+    // =================================================================================
+
+    /// <summary>Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste.</summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
+
+    private void KatalogZeileWaehlen(string bezeichner)
+    {
+        _katalogGewaehlt = bezeichner ?? "";
+        _katalogZeile = null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Bezeichner == _katalogGewaehlt) { _katalogZeile = z; break; }
+    }
+
+    /// <summary>„▶": Aus der Katalogwahl entsteht eine Zeile; sie steht sofort in Liste und Modell.</summary>
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Anlegen is null) return;
+        if (!AktuelleUebernehmen()) return;
+
+        WaermepumpeAnlageDaten? neu = Anlegen(_katalogZeile.Bezeichner);
+        if (neu is null) return;
+
+        Zeilen.Add(neu);
+        Uebernehmen?.Invoke(neu);
+        VerwendungStempeln();
+        Zeigen(neu);
+    }
+
+    /// <summary>
+    /// Umstellen (W7‑B‑3 Nachtrag): die markierte Projektzeile wird zur markierten
+    /// Katalogzeile — über die eingebettete Ansicht, die dabei Stammfelder, Vorlaufstufen
+    /// und Kennlinien nachzieht. Ins Modell geht die Zeile wie jede Änderung beim
+    /// nächsten Zeilenwechsel bzw. mit OK; Abbrechen lässt das Modell, wie es war.
+    /// </summary>
+    private void BeiUmstellen()
+    {
+        if (_gewaehlt is null || _katalogZeile is null || _anlage is null) return;
+        if (!_anlage.WaermepumpeUmstellen(_katalogZeile.Bezeichner)) return;
+        _meldung = "";
+        VerwendungStempeln();
+    }
+
+    /// <summary>„◀": Entfernt GENAU die gewählte Zeile (nicht ihren Index).</summary>
+    private void BeiLoeschen()
+    {
+        if (_gewaehlt is null) return;
+
+        WaermepumpeAnlageDaten zeile = _gewaehlt;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+        VerwendungStempeln();
+
+        _meldung = "";
+        _gewaehlt = null;
+        _anlageGaben = null;
+        _anlage = null;
+        if (Zeilen.Count > 0) Zeigen(Zeilen[0]);
+    }
+
+    // =================================================================================
+    // Abschluss
+    // =================================================================================
+
+    private Task BeiErgebnis(bool ok)
+    {
+        if (ok && !AktuelleUebernehmen()) return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(ok);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

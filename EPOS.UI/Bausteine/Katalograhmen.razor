@@ -1,0 +1,86 @@
+﻿@* Der Rahmen eines KATALOGDIALOGS - Liste und Eingabeblock in EINEM Fenster
+   (Anwenderwunsch 05.09.2026: "Admin-Menues sind nicht an Groesse Bildschirm
+   angepasst").
+
+   DER BEFUND. Der Katalogdialog "Administration Solarkollektoren" zeigte
+   uebereinander: Ueberschrift, den Balken "Auswahl in DB:", eine Liste in
+   ihrem eigenen kleinen Rollrahmen und darunter - nur ueber den
+   SEITENrollbalken erreichbar - den Balken "Eingabe der Solarkollektoren" mit
+   den Feldern. Das Fenster nutzte weder Breite noch Hoehe des Schirms.
+
+   DIE VORBILDER TATEN ES ANDERS. Alle sechs Verwaltungsmasken des Bestands
+   stellten Liste und Eingabe NEBENEINANDER:
+     Form_Heizkessel_Admin       726 x 383   Liste 302 x 157 links, Felder rechts ab x 448
+     Form_BHKWAdmin              856 x 517   Liste 403 x 369 links, Gruppe 405 x 421 rechts
+     Form_SolarKollektorenAdmin  825 x 494   Liste 359 x 302 links, Felder rechts ab x 402
+     Form_PufferSp_Admin         721 x 330   Liste 299 x 191 links, Felder rechts ab x 346
+     Form_AdminPV                607 x 489   Liste 211 x 259 links, Felder rechts ab x 253
+     Form_AdminStromspeicher     614 x 367   Liste 201 x 293 links, Felder rechts ab x 240
+   Wo das Vorbild gestapelt war (Form_AdminWaermeeinlesen 676 x 433 - Liste
+   ueber die volle Breite, Einlesen darunter), bleibt es gestapelt: dafuer
+   steht Gestapelt.
+
+   SEIT DEM ANWENDERENTSCHEID W14a-E-10 (07.09.2026) STEHEN SIE
+   UNTEREINANDER - Liste ueber die GANZE Breite, Eingabe darunter. Der
+   Anwender hat es begruendet: "Liste wie zuvor ueber ganze Breite, sonst zu
+   schmale Liste." Gemessen im Mockup (Chromium, 1 366 px): neben dem
+   Eingabeblock hatten FUENF Parameterspalten Platz, ueber die ganze Breite
+   sind es SECHS BIS NEUN - und die neunspaltige Liste rollt dabei um 0 px
+   statt um 118 px in sich. Das ist EINE Aenderung an diesem Baustein, nicht
+   an acht Dialogen (Konzept_Katalogfilter 5.6.1, Schritt S1.7).
+
+   WAS DER RAHMEN TUT. Er ist die EINE Stelle, an der die drei Regeln stehen:
+     * Die LISTE ist hoehenbegrenzt und rollt in sich: 1,3 x
+       --epos-listenhoehe = 458 px, bei 45 px Kopfzelle und 37 px Zeilenhoehe
+       ELF Zeilen. Bis W14a-E-10 nahm sie die verbleibende Hoehe, weil der
+       Eingabeblock daneben stand und nichts geschoben wurde; jetzt steht er
+       DARUNTER, und ohne diese Grenze schoebe eine lange Liste ihn beliebig
+       weit nach unten. Die Ausnahme zu W9-B-2 faellt damit - die Hausregel
+       gilt wieder ueberall, nur hier mit dem groesseren Mass.
+     * Der EINGABEBLOCK ist so hoch wie sein Inhalt und rollt NICHT selbst.
+       Was ueber die Fensterhoehe hinausgeht, nimmt der Rollbalken der Maske
+       (offener Punkt O-7: gemessen 1 152 bis 1 228 px Dialoghoehe bei
+       1 366 px Breite - der Preis der Anordnung).
+     * Es gibt nur noch EINE Anordnung; die Medienabfrage bei 900 px
+       entfaellt, weil untereinander schon der schmale Fall war.
+
+   KEIN EIGENES CSS JE DIALOG. Wer den Rahmen benutzt, setzt an der Wurzel
+   seines Dialogs zusaetzlich die Klasse epos-katalog-dialog - die gibt dem
+   Fenster die volle Hoehe und nimmt die Breitenbremse von .epos-dialog. *@
+
+<div class="epos-katalog-paar epos-katalog-fuellend@(Gestapelt ? " epos-katalog-paar--gestapelt" : "")">
+
+    <div class="epos-katalog-liste">
+        @Liste
+    </div>
+
+    <div class="epos-katalog-eingabe">
+        @Eingabe
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Der OBERE Block: Suchzeile, Listenueberschrift und die Liste selbst,
+    /// ueber die ganze Breite. Ihre <c>.epos-raster-huelle</c> traegt hier die
+    /// Hoechsthoehe 1,3 × <c>--epos-listenhoehe</c> (elf Zeilen) und rollt
+    /// darin.
+    /// </summary>
+    [Parameter] public RenderFragment? Liste { get; set; }
+
+    /// <summary>
+    /// Der UNTERE Block: der Eingabe- oder Detailblock, ebenfalls ueber die
+    /// ganze Breite. Er ist so hoch wie sein Inhalt; was ueber die
+    /// Fensterhoehe hinausgeht, nimmt der Rollbalken der Maske.
+    /// </summary>
+    [Parameter] public RenderFragment? Eingabe { get; set; }
+
+    /// <summary>
+    /// <b>Seit W14a-E-10 ohne Wirkung</b> — untereinander ist die EINZIGE
+    /// Anordnung. Der Parameter bleibt benannt stehen, weil zwei Masken ihn
+    /// setzen (<c>WaermebedarfAdminDialog</c>, <c>BedarfAdminDialog</c>, deren
+    /// Vorbild <c>Form_AdminWaermeeinlesen</c> schon gestapelt war); ihn zu
+    /// streichen waere eine Aenderung an Wirten ohne einen Gewinn.
+    /// </summary>
+    [Parameter] public bool Gestapelt { get; set; }
+}

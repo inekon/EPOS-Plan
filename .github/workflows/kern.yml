@@ -1,0 +1,180 @@
+# Kern-Lauf: baut und testet die Projekte ohne Windowsbindung (KiKern,
+# KiKern.Tests, SpeicherEngine, SpeicherEngine.Tests, seit iU3 EPOS.Kern und
+# seit iU4 EPOS.Kern.Tests).
+# Ausgewaehlt werden sie ueber den Solution-Filter WP-Plan.Kern.slnf; die
+# WinForms-App und das alte Referenzlauf-Werkzeug bleiben damit aussen vor.
+# Dazu kommen drei Laeufe, die NICHT im Filter stehen: der Referenzlauf (iU3)
+# und seit iU7-7 die ChartProben - beides ausfuehrbare Programme statt
+# Testprojekte, die belegen, dass Rechenkern und Diagramm-Renderer ohne Windows
+# arbeiten - sowie seit iU8-12 die Tests des Formularkarten-Werkzeugs, das eine
+# eigene Projektmappe hat und deshalb im Filter nicht auftaucht (nur ubuntu).
+#
+# Zweck (Umsetzungskonzept iOS, Paket iU1): fruehzeitig belegen, dass der Kern
+# plattformfrei bleibt. Bricht ein Kernprojekt die Portierbarkeit, faellt das
+# hier auf, nicht erst beim iOS-Bau.
+name: Kern
+
+# Anwenderregel (03.09.2026): Der macOS-Laeufer zaehlt zehnfach auf das Actions-
+# Kontingent und laeuft deshalb NICHT bei jedem Push, sondern nur auf Abruf
+# (Actions -> Kern -> Run workflow -> "macos" ankreuzen) - und nur nach Rueckfrage
+# beim Anwender. Push und Pull Request pruefen auf ubuntu.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      macos:
+        description: 'Zusaetzlich auf macos-latest bauen und testen (zehnfaches Kontingent)'
+        type: boolean
+        default: false
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  build-test:
+    # fail-fast aus: schlaegt ubuntu fehl, soll macos trotzdem zu Ende laufen -
+    # nur so wird sichtbar, ob ein Fehler plattformabhaengig ist.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ github.event_name == 'workflow_dispatch' && inputs.macos && fromJSON('["ubuntu-latest","macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Die SDK-Fassung kommt aus global.json (10.0.400), damit CI und
+      # Arbeitsplatz nicht auseinanderlaufen.
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Bauen
+        run: dotnet build WP-Plan.Kern.slnf -c Release
+
+      - name: Testen
+        run: dotnet test WP-Plan.Kern.slnf -c Release --no-build
+
+      # iU8-12: Das Formularkarten-Werkzeug hat eine EIGENE Projektmappe und
+      # steht deshalb weder in WP-Plan.sln noch im Solution-Filter - der
+      # Test-Schritt oben sieht es nicht. Es ist die Abnahmecheckliste von iU9
+      # (Feldkarte je Maske), und eine stumpfe Checkliste faellt niemandem auf.
+      # Seine Tests zerfallen seit iU8-12e in zwei Arten: Werkzeugtests lesen
+      # eingefrorene Pruefmuster, Bestandstests (StapelTests) lesen die echten
+      # Designer-Dateien. Die zweite Art faellt absichtlich rot aus, sobald eine
+      # Maske umgestellt wird, ohne dass jemand den Stapellauf nachzieht.
+      # NUR ubuntu: Das Werkzeug ist plattformfrei, ein zweiter Lauf auf macOS
+      # brauchte Minutenkontingent (Faktor 10) und wuerde nichts Neues zeigen.
+      - name: Formularkarte-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
+
+      # Auftrag #160: Auch das Werkzeug, das den AUSLIEFERUNGSSTAND der Datenbank
+      # erzeugt, hat eine eigene Projektmappe und steht nicht in WP-Plan.sln.
+      # Es haengt an zwei Dingen, die sich weiterbewegen: am SCHEMA (es leitet
+      # seine Tabellenliste daraus ab - ein neuer Schemaschritt mit Projektbezug
+      # muss von selbst erfasst werden) und am Projekttransfer
+      # (ProjektExportImportCtrl spielt die Beispiele ein). Faellt eines von
+      # beiden aus, liefe die naechste Freigabe mit einer halben Vorlage - und
+      # das faellt erst beim Kunden auf. Die Proben starten das Werkzeug als
+      # PROGRAMM gegen eine Kopie der Testdatenbank; ohne diese Datei
+      # ueberspringen sie still.
+      # NUR ubuntu: plattformfrei, ein zweiter Lauf auf macOS zeigte nichts Neues
+      # und kostet Minutenkontingent (Faktor 10).
+      - name: Auslieferungsvorlage-Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release
+
+      # 03.09.2026: SQL-Dialekt-Audit. Der Referenzlauf weiter unten deckt den
+      # RECHENWEG ab - Dialog- und Pflegepfade nicht. Genau dort sassen zwei
+      # Access-Altlasten, die erst Wochen nach dem Cutover beim Anwender
+      # auffielen: "id_ENERGIETRÄGER" gegen die Spalte "ID_Energieträger"
+      # (c288e1c; SQLite faltet Gross/Klein nur bei ASCII) und ein
+      # "UPDATE ... INNER JOIN ... SET" in Access-Schreibweise (dd4113f).
+      # Der Pruefer haelt JEDEN SQL-Text des Bestands mit EXPLAIN gegen die
+      # Testdatenbank und gegen die Verbotsliste aus BETRIEB_SQLITE.md 6.2;
+      # er endet mit 1, sobald eine Fundstelle bleibt.
+      # NUR ubuntu: reines Python, plattformfrei - ein zweiter Lauf auf macOS
+      # zeigte nichts Neues und kostet Minutenkontingent (Faktor 10).
+      # Der Selbsttest laeuft immer, auch ohne Testdatenbank: er belegt, dass
+      # die Regeln greifen - ein Pruefer, der nichts findet, ist erst dann eine
+      # gute Nachricht, wenn er etwas finden WUERDE.
+      - name: SQL-Dialekt gegen SQLite
+        if: matrix.os == 'ubuntu-latest' && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite --selbsttest
+          python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
+
+      # iU7-7: Der Renderer des Berichts liegt seit iU7-5 im Kern. Die Probe
+      # zeichnet neun Bilder aus synthetischen Reihen und prueft je Bild
+      # PNG-Signatur, Bildmasse, Farbvorkommen und Determinismus - ohne
+      # Datenbank, ohne Oberflaeche. Sie faellt rot aus, sobald der Renderer
+      # eine Windows-API braucht ODER sich das Bild aendert. Eigene .sln,
+      # deshalb nicht im Solution-Filter; gebaut wird sie vom dotnet run.
+      - name: ChartProben (Renderer plattformfrei)
+        run: dotnet run --project Proben/ChartProben -c Release
+
+      # Die Bilder selbst als Artefakt - bei einer Abweichung will man sie
+      # ansehen und nicht nur die Byte-Zahl lesen.
+      - name: ChartProben-Bilder als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chartproben-${{ matrix.os }}
+          path: artifacts/chartproben
+          retention-days: 14
+
+      # iU3: Der Rechenkern soll nicht nur uebersetzen, sondern rechnen. Der
+      # Referenzlauf gehoert nicht in den Solution-Filter (er ist eine Exe, kein
+      # Testprojekt) und wird deshalb einzeln gebaut.
+      - name: Referenzlauf bauen
+        run: dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+
+      # Die reduzierte Testdatenbank liegt nicht in jedem Checkout. Fehlt sie,
+      # wird der Schritt uebersprungen statt rot - der Bauteil oben ist der
+      # eigentliche Waechter, dieser Schritt der Zugewinn.
+      # iU4-7: drei Projekte statt einem. 1030 ist die Kaskade; 1007 und 1017
+      # fuehren aktive Stromspeicher-Varianten und decken damit den K8-Haken ab
+      # (SimulationControl.Stromspeicher.cs samt ModuleInitializer), der mit iU4
+      # in den Kern gezogen ist. Ohne sie wuerde ein stillgelegter Haken hier
+      # nicht auffallen.
+      # W6-O-7 (06.09.2026): 1045 kommt als VIERTES dazu - das Pruefprojekt
+      # "Ost/West Straenge". Es ist das einzige Projekt der Basis mit Zeilen in
+      # Z_AnlageStrang und deshalb der einzige Lauf, der den Strangweg der Stufe S3
+      # (Clipping, Wirkungsgradkennlinie, Nachtverbrauch, Modul je Strang)
+      # ueberhaupt betritt. Ohne es haette die CI fuer diesen Rechenweg nichts in
+      # der Hand als den Pruefstand.
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: >
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build --
+          lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
+          --projekte 1030,1007,1017,1045 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+
+      # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
+      # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
+      # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
+      # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
+      # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
+      - name: Vergleich mit Referenzbasis 2026-09-07_R6_PvKoeffizienten
+        if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        run: |
+          mkdir -p artifacts/reflauf/ref
+          cp -r Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/Projekt_1045 artifacts/reflauf/ref/
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
+          echo "--- Byte-Diff (nur Information) ---"
+          for p in 1030 1007 1017 1045; do
+            if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
+          done
+
+      - name: Ergebnis-CSV als Artefakt
+        if: always() && hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: reflauf-kern-${{ matrix.os }}
+          path: artifacts/reflauf/${{ matrix.os }}_kern
+          retention-days: 14

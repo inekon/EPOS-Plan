@@ -87,6 +87,18 @@
 # Strombedarf / ...). Es ist die Hilfe zum Formular als Ganzem, also zum
 # Ablauf des Programms - nicht zur Klimaregion (dafuer Form_Klimadaten) und
 # nicht zur Kurzanleitung (dafuer btn_Help_Kurzanleitung auf Reiter 1).
+# iU9-W16b.3: Die Startmaske ist die Razor-Seite EPOS.UI/Seiten/Start/Startseite.
+# Ihre fuenf Infoknoepfe tragen die Schluessel des Vorlaeufers WOERTLICH weiter
+# (InfoKnopf Schluessel="Form_Start.btn_Help_*"), damit die Hilfeziele stehen
+# bleiben. "Form_Start.btn_Help" war der Knopf des FENSTERS.
+#
+# iU9-W16c.6 (offener Punkt W16b-O-4): Er ist umgehaengt. Die Fensterhilfe sitzt
+# jetzt im Kopfband von EPOS.UI/Seiten/Hauptfenster.razor und heisst
+# "Hauptfenster.btn_Help"; das ZIEL ist unveraendert "Programmablauf". Die alte
+# Zeile bleibt daneben stehen: Ein Anwender, der eine aeltere help_cache.json
+# mitbringt, findet damit weiterhin dieselbe Seite, und der Schluessel kostet
+# nichts.
+Hauptfenster.btn_Help             = Programmablauf
 Form_Start.btn_Help               = Programmablauf
 
 # Reiter "Projekt": Einstieg in die Bedienung.
@@ -100,9 +112,6 @@ Form_Start.btn_Help_Strombedarf   = Strombedarf
 
 # --- Klimadaten ----------------------------------------------------------
 Form_Klimadaten.btn_Help          = Klimadaten
-
-# --- Kosten --------------------------------------------------------------
-Form_Kosten.btn_Help              = Kosten
 
 # ===========================================================================
 # Flaechendeckung: ein Infobutton je Bereich unter Views
@@ -132,6 +141,11 @@ Form_Stromspeicher.btn_Help         = Stromspeicher
 # Prozesswaerme sind seine fachlichen Bestandteile und haben je eine eigene
 # Unterseite.
 Form_Waermebedarf.btn_Help          = Wärmebedarf
+# iU9-W9-E-3: der Infoknopf am Formathinweis der Knopfleiste "CSV-Datei
+# importieren..." - dieselbe Seite, eigener Schluessel wie beim Stromlastgang
+# (Form_Stromganglinie.btn_Help_Import). Er traegt den vollen Wortlaut des
+# Formats als Kurztext.
+Form_Waermebedarf.btn_Help_Import   = Wärmebedarf
 Form_Gebaeude.btn_Help              = Gebäude
 Form_Brauchwasser.btn_Help          = Brauchwasser
 Form_Prozesswaerme.btn_Help         = Prozesswärme
@@ -147,14 +161,12 @@ Form_Simulation_Config.btn_Help     = Simulation
 
 # --- Wirtschaftlichkeit ---------------------------------------------------
 #
-# Das Praefix ist das UserControl, nicht das Formular: Form_Wirtschaftlichkeit
-# ist nur eine Huelle um UcWirtschaftlichkeit, und dasselbe UserControl haengt
-# auch im Reiter "Berichte & Kosten". Ueber den UserControl-Namen gilt die
-# Zeile an beiden Orten (HilfeAutomatik, UnterPraefixeAnwenden).
+# Das Praefix war das UserControl, nicht das Formular: UcWirtschaftlichkeit
+# hing im Reiter "Berichte & Kosten". Die Dialoghuelle Form_Wirtschaftlichkeit
+# ist mit iU9-W0 entfallen, das UserControl mit iU9-W5.6; den Schluessel
+# traegt seither die Razor-Komponente WirtschaftlichkeitSeite (ihr Infoknopf
+# fragt IHilfeDienst mit genau diesem Text).
 UcWirtschaftlichkeit.btn_Help       = Wirtschaftlichkeit
-
-# --- Varianten ------------------------------------------------------------
-Form_Variantentest.btn_Help         = Varianten
 
 # --- Projekt --------------------------------------------------------------
 Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
@@ -164,6 +176,12 @@ Form_ProjektSpeichernUnter.btn_Help = Projektverwaltung
 # "Zuletzt geoeffnet" - dieselbe Projektliste, dieselbe Seite wie beim
 # Duplizieren daneben.
 Form_ProjektAuswahl.btn_Help        = Projektverwaltung
+
+# iU9-W15a: "Projekt loeschen" hatte als einzige der drei Projektdialoge keinen
+# Hilfeknopf (Befund W15a-B8), obwohl der Loeschweg in denselben Wikibereich
+# fuehrt. Seit dem Port ist es dieselbe Komponente wie "Projekt oeffnen" - sie
+# traegt den Knopf, also braucht sie ein Ziel.
+Form_ProjektDelete.btn_Help         = Projektverwaltung
 
 # --- Import ---------------------------------------------------------------
 #
@@ -175,7 +193,7 @@ Form_ImportKonflikte.btn_Help       = Projektverwaltung#konfliktliste
 #
 # Der Assistent fuehrt Schritt fuer Schritt durch ein neues Projekt - das ist
 # genau der Stoff der Kurzanleitung.
-WizardParent.btn_Help               = Kurzanleitung
+AssistentSeite.btn_Help             = Kurzanleitung
 
 # --- Admin ----------------------------------------------------------------
 Form_AdminSettings.btn_Help         = Einstellungen
@@ -186,6 +204,11 @@ Form_AdminSettings.btn_Help         = Einstellungen
 # er zeigte auf sich. Der Bereich wird ueber den Hilfe-Assistenten versorgt:
 # dort steht der Knopf fuer die geschriebene Hilfe neben dem Assistenten.
 Form_KiChat.btn_Help                = Hilfe-Assistent
+
+# Die Werkzeugliste ("Aktionen von Hand ausfuehren") hat seit dem Anwenderbefund
+# W15b-E-4 einen eigenen Infoknopf. Er springt auf denselben Wiki-Abschnitt, den
+# das eingebaute Wissen unter "Aktionen des Assistenten" fuehrt.
+KiWerkzeugliste.btn_Help            = Hilfe-Assistent#Aktionen des Assistenten
 
 # ---------------------------------------------------------------------------
 # Zielvorrat: die 23 Unterseiten der Rubrik
@@ -214,12 +237,20 @@ Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
-Form_Betriebskosten.btn_Help = Kosten
 Form_CaseEingabe.btn_Help = Kosten
 Form_Energietraeger.btn_Help = Kosten
 Form_KostenAdmin.btn_Help = Kosten
 Form_KostenKomponente.btn_Help = Kosten
 Form_Kostenprofil.btn_Help = Kosten
+# Erster Dialog als Razor-Komponente (iU8/iZ5). Der Schluessel steht in der
+# Komponente selbst (EnergietraegerVarianteDialog.razor, HilfeSchluessel);
+# gesucht wird er nicht ueber ein Steuerelement, sondern ueber
+# HelpExtender.ZielFuer.
+Form_Kosten_Auswahl.btn_Help = Kosten
+# iU9-W1.1: Zeileneditor der Vorlagenposition, jetzt VorlagenPositionDialog.razor.
+# Die WinForms-Maske hatte keinen Infoknopf; die Komponente hat einen, und er
+# zeigt dieselbe Wikiseite wie die uebrigen Kostendialoge.
+Form_VorlagenPosition.btn_Help = Kosten
 Form_LeistungspreisReihe.btn_Help = Kosten
 Form_SpotpreisImport.btn_Help = Kosten
 Form_VorlagenUebernahme.btn_Help = Kosten
@@ -230,10 +261,16 @@ Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
 # Rubrikseite; der Konfliktdialog springt auf seinen eigenen Anker.
 Form_ProjektExportImport.btn_Help = Projektverwaltung#export-import
-FormMain.btn_Help = Projektverwaltung
+# iU9-W16b.1 (E-7, K6-a): FormMain.btn_Help ist entfallen - das Detailformular
+# "Konfiguration Projekt" ist geloescht.
 Form_EingProzTyp.btn_Help = Prozesswärme
 Form_Prozesswaerme_Admin.btn_Help = Prozesswärme
 Form_PufferSp_Admin.btn_Help = Pufferspeicher
+# iU9-W14a.2 (Befund W14-B23): Der Katalogeditor der Pufferspeicher hatte als
+# EINZIGE Maske des Gewerks keine Zeile - der Vorlaeufer haengte KiAufrufKnopf
+# statt InfoKnopf an und hatte deshalb gar keinen Hilfeknopf. Die Razor-Fassung
+# PufferSpKatalogDialog hat einen; hier ist sein Ziel.
+Form_PufferSp_Bearbeiten.btn_Help = Pufferspeicher
 Form_PufferSp_Projekt.btn_Help = Pufferspeicher
 Form_PufferSp_einlesen.btn_Help = Pufferspeicher
 Form_Quellprofil.btn_Help = Simulation
@@ -245,8 +282,10 @@ Form_Solarganglinie.btn_Help = Solarthermie
 Form_Solarganglinie_Admin.btn_Help = Solarthermie
 Form_GanglinieImportOptionen.btn_Help = Strombedarf
 Form_Stromganglinie.btn_Help = Strombedarf
+Form_Stromganglinie.btn_Help_Import = Strombedarf
 Form_Stromganglinie_Admin.btn_Help = Strombedarf
 Form_AdminStromspeicher.btn_Help = Stromspeicher
+Form_Stromspeicher_einlesen.btn_Help = Stromspeicher
 Form_PeakShaving.btn_Help = Stromspeicher
 Form_SpeicherOptimierung.btn_Help = Stromspeicher
 Form_SpeicherVariantenVergleich.btn_Help = Stromspeicher
@@ -256,6 +295,10 @@ Form_ErgStromverbraucher.btn_Help = Stromverbraucher
 Form_Stromverbraucher_Admin.btn_Help = Stromverbraucher
 UcBkUebersicht.btn_Help = Varianten
 UcBkKosten.btn_Help = Kosten
+# iU9-W5.1: Der Uebernahmedialog der Uebersichtsseite ist seither die
+# Razor-Komponente BkUebernahmeDialog. Sie fuehrt einen Infoknopf (die
+# WinForms-Fassung hatte keinen) und traegt den Schluessel der alten Maske.
+Form_BkUebernahme.btn_Help = Varianten
 Form_AdminWaermeeinlesen.btn_Help = Wärmebedarf
 Form_ErgProzesswaerme.btn_Help = Wärmebedarf
 Wizard_WPItem.btn_Help = Wärmepumpe
@@ -263,12 +306,20 @@ Form_WPAuswahl.btn_Help = Wärmepumpe
 Form_WpFilterAuswahl.btn_Help = Wärmepumpe
 Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
-Form_KwkgModule.btn_Help = Wirtschaftlichkeit
 Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit
 Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
 UcBericht.btn_Help = Bericht
 Form_Simulation_Detail.btn_Help = Simulationsergebnisse
 Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.1 (Befund W10-B2, Abweichung A-1): Der Betriebsmodus-Dialog hatte als
+# einziger der Simulationsdialoge keinen Hilfeeinstieg. Die Razor-Fassung traegt
+# einen; die Zeile hier ist sein Ziel.
+Form_Betriebsmodus.btn_Help = Simulation
+# iU9-W10a.2 (Befund W10-B2): dasselbe fuer die Klimazonenkarte.
+Form_Klimazonenkarte.btn_Help = Wärmequelle Erdreich
+# iU9-W10a.5 (Befund W10-B13): Der Quellendialog "Pufferspeicher" hatte einen
+# HilfeKontext-Eintrag, aber keine Zeile hier - der Infoknopf lief ins Leere.
+Form_QuellePufferspeicher.btn_Help = Simulation
 Form_Lizenz.btn_Help = Lizenz
 Form_LizenzVerwaltung.btn_Help = Lizenz
 Form_Gesetzesparameter.btn_Help = Gesetzesparameter
@@ -297,10 +348,9 @@ Form_Emissionskatalog.btn_Help = Emissionen
 #    Eingabefeld selbst.
 #
 # 3. NUR SICHTBARE Steuerelemente. Stillgelegtes bleibt aussen vor -
-#    Form_Simulation_Config.groupBox_Tools/groupBox_PufferSp/label12/label21
-#    (AltSteuerelementeStilllegen), Form_Kosten.tabEnergie samt Inhalt und die
-#    drei entsorgten Kopfleisten, Wizard_WPItem.groupBox1 und die entfernten
-#    Modulkostenfelder.
+#    Wizard_WPItem.groupBox1 und die entfernten Modulkostenfelder. (Die vier
+#    stillgelegten Steuerelemente von Form_Simulation_Config sind mit der Maske
+#    selbst gefallen - iU9-W10b.1.)
 #
 # 4. EIN Anker darf mehrfach vorkommen. Drei Schwellenbeschriftungen zeigen
 #    bewusst auf denselben Stichpunkt; zwei Ferien-Gruppen ebenso.
@@ -316,19 +366,17 @@ Form_Emissionskatalog.btn_Help = Emissionen
 # ---------------------------------------------------------------------------
 
 # --- Simulation: Form_Simulation_Config -----------------------------------
-# label11 ist die einzige sichtbare Ueberschrift der Maske; die beiden
-# Kartenspalten flow_Erzeuger/flow_Speicher sind die eigentliche Bedienflaeche
-# (D2-Umbau). Quellprofil, Waermequelle und Betriebsmodus sitzen auf den
-# ErzeugerKarten - die sind UserControls OHNE Namen und damit heute nicht
-# ansprechbar (Befund, siehe H12-Protokoll).
-Form_Simulation_Config.label11        = Simulation#erzeuger-und-speicher
-Form_Simulation_Config.flow_Erzeuger  = Simulation#erzeugerliste
-Form_Simulation_Config.flow_Speicher  = Simulation#puffer-zuordnung
-Form_Simulation_Config.label_Ansicht  = Simulation#ansicht
-# panel_Schema (SchemaAnsicht) BEWUSST NICHT: die Zeichenflaeche ist bedienbar -
-# Klick waehlt einen Knoten, Ueberfahren zeigt einen eigenen Knotenhinweis und
-# wechselt den Zeiger (SchemaAnsicht.OnMouseDown/OnMouseMove). Ein angeheftetes
-# Hilfepopup laege der Bedienung im Weg. Regel 2 dieses Blocks.
+#
+# iU9-W10b.1: DIE VIER FELDZEILEN SIND ENTFALLEN. Sie sprachen label11,
+# flow_Erzeuger, flow_Speicher und label_Ansicht an - WinForms-Steuerelemente
+# einer Maske, die es nicht mehr gibt; der HelpExtender haengt sich an
+# Control.Name und findet in einer WebView keinen. Die Seite traegt ihren
+# Infoknopf im Fluss ihres Inhalts (Baustein InfoKnopf) und zeigt damit
+# dieselbe Wikiseite wie btn_Help oben.
+#
+# Die Zeile Form_Simulation_Config.btn_Help (oben) BLEIBT: Der Schluessel
+# benennt die Wikiseite, nicht die Formularklasse - dieselbe Regel wie bei den
+# sieben Dialogen der Welle 10a.
 
 # --- Simulation: Form_Waermesenke -----------------------------------------
 # Die Maske baut ihre Oberflaeche im Code auf und vergab bisher keine Namen;
@@ -359,15 +407,6 @@ Form_Klimadaten.label8           = Klimadaten#bezeichnung
 Form_Klimadaten.label1           = Klimadaten#daten-einlesen
 Form_Klimadaten.panel1           = Klimadaten#regionsliste
 Form_Klimadaten.panel_KlimaGraph = Klimadaten#diagramme
-
-# --- Kosten ---------------------------------------------------------------
-# Der Dialog fuehrt seit KD4 nur noch Investition und Betrieb; Energietraeger
-# und Preise stehen in Form_Energietraeger (eigene Zeile weiter oben).
-Form_Kosten.panel3                      = Kosten#komponentenliste
-Form_Kosten.flpContainer                = Kosten#investitionspositionen
-Form_Kosten.panel4                      = Kosten#komponentenliste
-Form_Kosten.flpContainer_Betriebskosten = Kosten#betriebspositionen
-Form_Kosten.pnlFooter                   = Kosten#summen
 
 # --- Pufferspeicher: Form_PufferSp_Projekt --------------------------------
 # Fuehrend fuer die Nutzung ist das Klassen-Set (_lblKlassenSet), nicht das
@@ -427,21 +466,120 @@ Form_Stromverbraucher.Label19   = Stromverbraucher#summe
 Form_Stromverbraucher.groupBox1 = Stromverbraucher#verbrauch-aendern
 
 # --- Bericht: UcBericht ---------------------------------------------------
-# Das UserControl haengt im Reiter "Berichte & Kosten" UND in der Dialoghuelle
-# Form_Bericht - die Zeilen gelten ueber sein eigenes Praefix an beiden Orten.
-# Es fuehrt keine GroupBox; die Bereiche werden ueber ihre Leitbeschriftung
-# angesprochen.
+# Das UserControl hing im Reiter "Berichte & Kosten"; die Zeilen galten ueber
+# sein eigenes Praefix. Die Dialoghuelle Form_Bericht ist mit iU9-W0 entfallen,
+# das UserControl selbst mit iU9-W5.6 (Nachfolge: die Razor-Komponente
+# BerichtSeite).
+#
+# DIE VIER FELDZEILEN SIND SEITHER OHNE ANSCHRIFT. Der HelpExtender haengt
+# seine Anker an WinForms-Steuerelemente; eine Razor-Seite fuehrt EINEN
+# Infoknopf (UcBericht.btn_Help, oben) statt vier Feldanker. Die Zeilen bleiben
+# stehen, weil sie die Wikiabschnitte benennen - sie werden wieder gebraucht,
+# sobald die Seite je Abschnitt einen eigenen Infoknopf bekommt.
 UcBericht.lblVarianten = Bericht#varianten
 UcBericht.lblBausteine = Bericht#bausteine
 UcBericht.lblAusgabe   = Bericht#ausgabeformat
 UcBericht.lblZiel      = Bericht#zielordner
 
 # --- Nicht aufgenommen (Befunde, siehe H12-Protokoll) ---------------------
-# UcBkKosten            baut seine Oberflaeche im Code auf und setzt an KEINEM
-#                       Kind einen Namen - ohne Control.Name gibt es keine
-#                       Anschrift. Waere mit einem Namensnachtrag nachzuholen.
+# UcBkKosten            baute seine Oberflaeche im Code auf und setzte an
+#                       KEINEM Kind einen Namen - ohne Control.Name gab es
+#                       keine Anschrift. Mit iU9-W5.6 ist die Maske geloescht;
+#                       die Nachfolge KostenSeite traegt EINEN Infoknopf
+#                       (UcBkKosten.btn_Help).
 # ErzeugerKarte /       UserControls ohne Namen. Sie sind zugleich die Grenze
 # SpeicherKarte         der Tiefensuche - erst ein (ID-abhaengiger) Name macht
 #                       Quellprofil, Waermequelle und Betriebsmodus feldgenau
 #                       ansprechbar.
-# ucKostenZeile         dito, die Kostenpositionszeile in Form_Kosten.
+
+# ===========================================================================
+# H13 - Rubrik Berechnung (06.09.2026, Anwenderwunsch "Erweiterung Hilfe")
+# ===========================================================================
+# Die Details der Berechnung gehoeren nicht in die allgemeine Erklaerung der
+# Funktionen, sondern in eine EIGENE Wikirubrik - und die allgemeinen Seiten
+# verweisen darauf. Die Rubrik heisst
+#
+#     Programm Dokumentation/Berechnung/<Seitenname>
+#
+# und das ZIEL einer Zeile ist deshalb "Berechnung/<Seitenname>" - ein Ziel MIT
+# Schraegstrich. Der Katalog loest es ueber den PFADWEG auf
+# (WikiHelpCatalog.UeberPfad): "/berechnung/photovoltaik/" ist das eindeutige
+# Ende von "/wiki/programm_dokumentation/berechnung/photovoltaik/". Leerzeichen
+# im Seitennamen sind zulaessig - PfadNormalisieren ebnet sie zu Unterstrichen
+# ein, so wie MediaWiki es im Titel tut.
+#
+# Der SCHLUESSEL folgt dem Muster <Formname>.Berechnung. Er steht NEBEN dem
+# bestehenden <Formname>.btn_Help, ersetzt ihn nicht: Der Fensterknopf oben
+# rechts bleibt die Bedienhilfe, der neue Knopf sitzt am Kopf des Abschnitts,
+# der die Rechnung parametriert.
+#
+# Die Seiten sind im Wiki ANZULEGEN (Handgriffe im Protokoll
+# H13_Berechnungshilfe_Protokoll.md). Bis dahin traegt der mitgelieferte
+# Startbestand help_cache.json Kurztext und Adresse; ein erfolgreicher
+# Onlineabruf loescht sie nicht (WikiHelpCatalog.BerechnungsRueckfallErgaenzen).
+#
+# JEDES ZIEL TRAEGT SEIT O-H13b-3 (07.09.2026) EINEN ANKER. Die Knoepfe dieser
+# Rubrik fuehren auf "#rechenweg" und damit auf den Abschnitt, der die Rechnung
+# beschreibt - nicht auf den Seitenanfang. Das ist der Unterschied zum
+# Fensterknopf <Form>.btn_Help: Der zeigt weiter auf die allgemeine Seite OHNE
+# Anker, denn dort ist der Anfang die Antwort.
+#
+# Die Anker sind auf jeder der 13 Seiten dieselben sieben, kleingeschrieben und
+# ohne Umlaut: was, eingang, zeichen, rechenweg, grenzen, ergebnisse, bezuege;
+# die Photovoltaikseite fuehrt achtens "wechselrichter". Gesetzt werden sie im
+# Wiki mit {{Anker|<name>}} unmittelbar UNTER der Ueberschrift (Vorlage:Anker,
+# Hausform dieses Wikis, gemessen am 07.09.2026). Wer eine Ueberschrift
+# umbenennt, laesst den Anker stehen - genau dafuer gibt es ihn.
+
+# Teil A (Ablauf und Bedarf)
+Form_Simulation_Config.Berechnung      = Berechnung/Simulationsablauf#rechenweg
+Form_Gebaeude.Berechnung               = Berechnung/Wärmebedarf#rechenweg
+Form_Waermebedarf.Berechnung           = Berechnung/Wärmebedarf#rechenweg
+Form_Brauchwasser.Berechnung           = Berechnung/Brauchwasser#rechenweg
+Form_Prozesswaerme.Berechnung          = Berechnung/Prozesswärme#rechenweg
+Form_Stromverbraucher.Berechnung       = Berechnung/Strombedarf#rechenweg
+Form_Stromganglinie.Berechnung         = Berechnung/Strombedarf#rechenweg
+Form_QuelleErdreich.Berechnung         = Berechnung/Wärmequelle Erdreich#rechenweg
+
+# Teil B (Erzeuger und Speicher)
+Form_Heizkessel.Berechnung       = Berechnung/Heizkessel#rechenweg
+Form_BHKWEing.Berechnung         = Berechnung/BHKW#rechenweg
+Form_WP.Berechnung               = Berechnung/Wärmepumpe#rechenweg
+Form_Betriebsmodus.Berechnung    = Berechnung/Wärmepumpe#rechenweg
+Form_PufferSp.Berechnung         = Berechnung/Pufferspeicher#rechenweg
+Form_PufferSp_Projekt.Berechnung = Berechnung/Pufferspeicher#rechenweg
+Form_SolarKollektoren.Berechnung = Berechnung/Solarthermie#rechenweg
+Form_Solarganglinie.Berechnung   = Berechnung/Solarthermie#rechenweg
+Form_PV.Berechnung               = Berechnung/Photovoltaik#rechenweg
+Form_Stromspeicher.Berechnung    = Berechnung/Stromspeicher#rechenweg
+
+# Teil C (Katalogeditoren) - Anwenderentscheid O-H13b-5 vom 07.09.2026
+# ---------------------------------------------------------------------------
+# Bis hierher fuehrten nur die PROJEKTdialoge in die Rubrik. Wer einen
+# Katalogsatz pflegt, entscheidet aber genauso ueber den Rechenweg: Der
+# Wirkungsgrad eines Kessels, die Stromkennzahl eines BHKW-Moduls und die
+# Kennlinie eines Kollektors kommen aus dem STAMMSATZ. Die acht Verwaltungen
+# tragen deshalb denselben zweiten Knopf am Kopf ihres Detailblocks.
+#
+# DREI RAZOR-KOMPONENTEN, ACHT SCHLUESSEL. KatalogBrowserDialog bedient vier
+# Auspraegungen (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher),
+# ModulKatalogDialog drei (Stromspeicher, PV Module, Wechselrichter);
+# WaermepumpeStammDialog steht fuer sich. Welcher Schluessel gilt, sagt in den
+# ersten beiden Faellen das Profil im Kern (KatalogBrowserProfil bzw.
+# ModulKatalogProfil) - dasselbe Vorgehen wie bei den drei Auspraegungen des
+# BedarfsProfileDialog.
+#
+# ZWEI ABWEICHUNGEN, beide belegt:
+#   Form_AdminWechselrichter zeigt auf die Seite Photovoltaik - der
+#   Wechselrichter ist ein ABSCHNITT darauf und keine eigene Seite.
+#   Form_WP_Stamm statt Form_WP: Form_WP.Berechnung gehoert seit H13b
+#   (Abweichung A-1) dem Anlagendialog, weil dessen Fensterschluessel noch
+#   Wizard_WPItem.btn_Help lautet.
+Form_Heizkessel_Admin.Berechnung    = Berechnung/Heizkessel#rechenweg
+Form_BHKWAdmin.Berechnung           = Berechnung/BHKW#rechenweg
+Form_WP_Stamm.Berechnung            = Berechnung/Wärmepumpe#rechenweg
+Form_SolarKollektorenAdmin.Berechnung = Berechnung/Solarthermie#rechenweg
+Form_PufferSp_Admin.Berechnung      = Berechnung/Pufferspeicher#rechenweg
+Form_AdminPV.Berechnung             = Berechnung/Photovoltaik#rechenweg
+Form_AdminWechselrichter.Berechnung = Berechnung/Photovoltaik#wechselrichter
+Form_AdminStromspeicher.Berechnung  = Berechnung/Stromspeicher#rechenweg

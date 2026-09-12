@@ -1,0 +1,70 @@
+@* Der Bestaetigungsblock einer offenen Freigabe (iU9-W15b.7, Fachkonzept 3.5).
+
+   EIN BLOCK IM VERLAUF, KEIN MODALER DIALOG. Die Begruendung steht woertlich im
+   Bestand (Form_KiChat.cs:609-613): "Ein MessageBox-Dialog wuerde die
+   Modalitaetspruefung des Ausfuehrers selbst ausloesen und den Verlauf verdecken -
+   der Anwender soll die Vorschau neben dem lesen koennen, was zu ihr gefuehrt
+   hat."
+
+   E-3: In einer scrollenden Liste ist "neben" = UNTEN. Der Block steht deshalb
+   im Fussbereich des Gespraechsverlaufs, nicht oben am Fenster wie im Vorlaeufer
+   (:417). Er wandert mit, statt oben zu kleben.
+
+   DER TEXT STEHT ZUSAETZLICH IM VERLAUF (Bestand :731-733). Das bleibt so: Wenn
+   der Block verschwindet, muss nachlesbar bleiben, worum es ging.
+
+   VIER AUSGAENGE, und alle vier gehen durch den Ausfuehrer (Fachkonzept 3.5):
+   Erteilt, Abgelehnt, Verfallen, Abgebrochen. Diese Komponente kennt nur die
+   ersten beiden als KNOEPFE; Verfall und Abbruch meldet der Wirt. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-kibest" role="group" aria-label="@Titel">
+    <p class="epos-kibest-titel">@Titel</p>
+
+    @* Der Vorschautext stammt aus KiBestaetigung - NIE aus Modelltext
+       (Fachkonzept 3.5, Punkt 2). Er wird trotzdem als Text gesetzt, nicht als
+       Markup: Er nennt Aktionsnamen und Werte, und die kommen mittelbar aus der
+       Aeusserung des Anwenders. *@
+    <p class="epos-kibest-text">@Vorschau</p>
+
+    <div class="epos-kibest-fuss">
+        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="Ausfuehren">
+            @AusfuehrenText
+        </button>
+        <button type="button" class="epos-knopf" @onclick="Abbrechen">
+            @AbbrechenText
+        </button>
+        <span class="epos-kibest-verfall" role="timer" aria-live="off">@Verfallstext</span>
+    </div>
+</div>
+
+@code {
+    /// <summary>Titel des Blocks (<c>KI_AKT_BESTAETIGUNG_TITEL</c>).</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Der Vorschautext der Freigabe.</summary>
+    [Parameter] public string Vorschau { get; set; } = "";
+
+    /// <summary>
+    /// Die Restzeit als fertiger Text (<c>KI_AKT_BESTAETIGUNG_VERFALL</c> mit den
+    /// Sekunden). Der Wirt zaehlt herunter — die Frist gehoert der Freigabe im Kern,
+    /// nicht dieser Anzeige.
+    /// </summary>
+    [Parameter] public string Verfallstext { get; set; } = "";
+
+    /// <summary>Beschriftung „Ausführen" (<c>KI_AKT_BESTAETIGUNG_AUSFUEHREN</c>).</summary>
+    [Parameter] public string AusfuehrenText { get; set; } = "";
+
+    /// <summary>Beschriftung „Abbrechen" (<c>KI_AKT_BESTAETIGUNG_ABBRECHEN</c>).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "";
+
+    /// <summary>
+    /// Die Entscheidung des Anwenders: <c>true</c> = ausführen, <c>false</c> =
+    /// ablehnen. Verfall und Abbruch meldet der Wirt, nicht diese Komponente.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Entschieden { get; set; }
+
+    private Task Ausfuehren() => Entschieden.InvokeAsync(true);
+    private Task Abbrechen() => Entschieden.InvokeAsync(false);
+}

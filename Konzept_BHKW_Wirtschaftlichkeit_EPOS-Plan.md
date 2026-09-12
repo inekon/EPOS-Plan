@@ -296,10 +296,24 @@ C  fester Jahresbetrag        Betrag [€/a] = Eingabe
 > **Die Menge ist ein Ergebniswert, kein Eingabewert** (Festlegung 29.08.2026). Endenergiebedarf und
 > Endenergiekosten stehen erst nach dem Simulationslauf fest. **Im Dialog wird ausschließlich der
 > Satz gepflegt** — oder der absolute Jahresbetrag, und der ist der einzige Weg, der **ohne
-> Simulation** funktioniert. Daraus folgt für den Rechenweg: Die Menge wird bei jedem Lesen frisch
+> Simulation** funktioniert. Ohne Lauf entsteht auf den Wegen A und B deshalb **keine ermittelte
+> Menge**; für den **Betrag** der Zeile gilt der Grundsatz seit FX2 nicht mehr uneingeschränkt —
+> dazu die Fußnote unten. Daraus folgt für den Rechenweg: Die Menge wird bei jedem Lesen frisch
 > aus dem jüngsten Lauf geholt, nicht aus der Datenbank. Die Spalte `Tab_ProjektWerte.Menge` bleibt
 > Ausweisgröße („Stand des Laufs vom …"), sie ist nicht die Rechenwahrheit — sonst rechnet die
 > Anwendung nach einer neuen Simulation stillschweigend mit der alten Bezugsgröße weiter.
+
+> **Nicht-rechenbar-Fußnote (FX2 / Entscheid I-2, 02.09.2026):** Der Grundsatz oben gilt für die
+> **Menge** unverändert — für den **Betrag** einer Zeile unterscheidet `BetriebskostenCtrl.Betrag`
+> seit Paket FX2 (Commit `5d86655`) zwei Fälle. Ist die Basis einer abgeleiteten Bemessung **nicht
+> rechenbar** (Menge ODER Satz fehlt — etwa eine Endenergie-Zeile ohne Simulationslauf), trägt die
+> Zeile den **erfassten Wert** (`EingegebenerWert`) statt 0; ist die Ableitung **echt** und ergibt
+> Menge 0, bleibt der Betrag 0 („ermittelt und null"). Anwenderentscheid I-2: „wenn eine
+> Bemessungsart 0 ergibt, nimm den erfassten Wert." Bestandsneutral gemessen (0 Zeilen mit
+> abgeleiteter Art und Wert > 0 bei fehlender Basis); Proben: Endenergie-Zeile ohne Lauf, erfasste
+> 1.234 → vorher 0,00, nachher **1.234,00**; Gegenprobe Satz 653,60 bei Menge 0 → **0,00** in
+> beiden Ständen. Messwerte:
+> [`FX2_Rechenwege_Befunde_Protokoll.md`](WindowsFormsApplication1/Allgemein/Reporting/FX2_Rechenwege_Befunde_Protokoll.md) § 1.
 
 **Die Endenergie ist je Komponente eine andere Größe — und nicht jede Komponente hat eine:**
 
@@ -373,6 +387,49 @@ Investitions- und Betriebskosten werden über die **vorhandene** Komponentenzuor
 ausgewertet. Eine anlagenscharfe Kapitalwert- oder Gestehungskostenrechnung entsteht dadurch
 **nicht** — sie wäre eine andere Aufgabe (Variantenvergleich) und ist ausdrücklich nicht Teil dieses
 Konzepts.
+
+### 4.7 Die Investition des BHKW — drei Eingabewege, eine Größe (W14a‑E‑8‑B3)
+
+**Anwenderentscheid vom 07.09.2026, im Wortlaut:** „Entweder Investitionskosten als Summe/Gesamt
+oder Investitionskosten auf kWh elektrisch × Kosten pro kWh elektrisch (sollte umgerechnet werden,
+je nach Eingabe)."
+
+Der Katalogeditor nimmt die Investition eines BHKW-Moduls seither **wahlweise** entgegen — als
+**Gesamtsumme** [€], als **spezifischen Wert** [€/kW_el] oder, wie seit dem Nutzerentscheid vom
+22.08.2026, als die **fünf Einzelposten**. Die zuletzt geänderte Eingabe führt, das jeweils andere
+Feld folgt aus ihr. Die Rechenregel steht in `EPOS.Kern/Model/BHKWKosten.cs` und **nur** dort:
+
+| Richtung | Formel | Methode |
+|---|---|---|
+| Posten → Gesamt | `Gesamt = Modul + Montage + Lieferung + Schallschutzhaube + Abgasreinigung` | `BHKWKosten.Gesamt` |
+| Gesamt → je kW | `je kW = Gesamt / P_el` | `BHKWKosten.JeKWel` (exakt, für die Spalte), `JeKWelEingabe` (auf 1 €/kW gerundet, für das Feld) |
+| je kW → Gesamt | `Gesamt = je kW × P_el` | `BHKWKosten.GesamtAusJeKWel` |
+| Gesamt → Posten | `Modul = Gesamt − (Montage + Lieferung + Schallschutzhaube + Abgasreinigung)` | `BHKWKosten.ModulAusGesamt` |
+
+**Der Ausgleich läuft immer über `Kosten_Modul`.** Wer Gesamt oder je kW eingibt, ändert den
+Modulpreis; die vier Nebenposten bleiben stehen. Damit ändert sich an der **Kostenplanung nichts**:
+`TechnikPlanwertCtrl.BasenFuellen` rechnet weiter mit der Basis `MODULPREIS` und den vier
+`Neben(…)`-Zeilen, und keine Eingabe erzeugt einen sechsten Betrag, der zweimal zählen würde.
+`Investition_kwel` bleibt die **Ableitung** der Posten und wird beim Speichern nachgezogen
+(`BHKWStammCtrl.Update`, `BHKWCtrl.Update`) — der Rechenweg liest die Spalte nach wie vor nicht,
+sie ist aber keine Dublette mehr, sondern die Anzeige eines Eingabewegs (Befund W14a‑E‑8‑B3 damit
+geschlossen).
+
+**Zwei Randfälle, die der Dialog benennt statt sie zu verschweigen:**
+
+* **P_el = 0** — dann gibt es keinen Wert je kW. Das Feld ist **gesperrt und leer** (keine
+  erfundene 0,00), die Gesamtsumme bleibt erfasst, und die Herleitungszeile sagt es.
+* **Nebenposten > eingegebene Gesamtsumme** — der Modulpreis wird **0 und nicht negativ**; die
+  Herleitungszeile meldet den Deckel (`BHKWKosten.NebenpostenUeberschreiten`). Das getippte Feld
+  behält dabei seinen Text, sonst wäre ein Weitertippen unmöglich.
+
+**Rundung:** Eurobeträge kaufmännisch auf den **Cent**, der spezifische Wert in der Anzeige auf
+**1 €/kW**. Der gespeicherte `Investition_kwel` bleibt ungerundet, damit `Investition_kwel × P_el`
+die erfasste Summe wieder trifft.
+
+Umgesetzt am 07.09.2026 (Zweig `ios_migration`, Präfix `W14a-E-8-B3:`); Nachweise:
+`EPOS.Kern.Tests/BhkwKostenTests` (16 Fälle) und
+`EPOS.UI.Tests/Dialoge/BhkwKatalogDialogTests` (25 Fälle).
 
 ---
 

@@ -12,24 +12,77 @@ namespace WindowsFormsApplication1
 {
     static class Program
     {
-        public static MDIMainForm mdifrm = null;
-        public static FormMain mainfrm = null;
-        public static Form_Start startfrm = null;
+        /// <summary>
+        /// Das Anwendungsfenster, das <c>Application.Run</c> traegt.
+        /// </summary>
+        /// <remarks>
+        /// Anwenderentscheid E-10 (04.09.2026): Klasse und Feld heissen seither
+        /// <c>Hauptfensterrahmen</c> bzw. <c>rahmen</c> - vorher
+        /// <c>MDIMainForm</c> bzw. <c>mdifrm</c>, obwohl es seit jeher kein MDI
+        /// gibt (Befund W16-B10). Ausserhalb dieser Klasse liest das Feld
+        /// niemand; die Umbenennung hat deshalb keinen zweiten Aufrufer.
+        /// </remarks>
+        public static Hauptfensterrahmen rahmen = null;
+
+        // iU9-W16b.1 (Anwenderentscheid E-7, K6-a): Das Feld "mainfrm" ist ersatzlos
+        // entfallen - das Detailformular FormMain ("Konfiguration Projekt") mit seinen
+        // zwoelf Gewerkslisten und elf Kontextmenues ist geloescht. Was es zeigte, fuehrt
+        // die Startseite als Kacheln.
+        //
+        // iU9-W16b.3: Ebenso "startfrm". Die Startseite ist eine Razor-Seite
+        // (EPOS.UI/Seiten/Start/Startseite.razor) in einer BlazorSeite<>; wer sie
+        // erreichen will, geht ueber StartseiteHuelle.Aktuelle, und wer das offene
+        // Projekt braucht, ueber Dienste.Projekt (ProjektKontextCtrl, K2).
+        public static ProjektKontextCtrl projektkontext = null;
         public static MenueCtrl menuectrl = null;
         public static WizardCtrl wizardctrl = null;
-        public static string ApplicationPath_Common = "";
-        public static string ApplicationPath_User = "";
-        public static int nLanguage = 0; // 0=de, 1=en  
+        /// <summary>
+        /// <c>C:\ProgramData\WP-Plan</c> — seit iU5 nur noch eine Weiterleitung auf
+        /// <c>Dienste.Pfade.Gemeinsam</c>. Die Masken lesen unveraendert weiter; wer neu
+        /// schreibt, nimmt den Dienst.
+        /// </summary>
+        public static string ApplicationPath_Common
+        {
+            get { return Dienste.Pfade.Gemeinsam; }
+        }
+
+        /// <summary>
+        /// <c>LocalApplicationData\WP-Plan</c> — Weiterleitung auf
+        /// <c>Dienste.Pfade.BenutzerLokal</c>, siehe <see cref="ApplicationPath_Common"/>.
+        /// </summary>
+        public static string ApplicationPath_User
+        {
+            get { return Dienste.Pfade.BenutzerLokal; }
+        }
+        /// <summary>
+        /// 0=de, 1=en — der Wert liegt seit iU4-1 in <see cref="Sprache.Nummer"/>,
+        /// damit Kern-Code (Berichtstexte) ihn ohne <c>Program</c> lesen kann. Diese
+        /// Weiterleitung bleibt, damit die vorhandenen Leser und die eine Setzstelle
+        /// aus der Registry unverändert weiterlaufen.
+        /// </summary>
+        public static int nLanguage
+        {
+            get { return Sprache.Nummer; }
+            set { Sprache.Nummer = value; }
+        }
 
         /// <summary>
         /// Not-Rückfall für die Basis-URL der Wiki-Dokumentation, falls der
-        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Derselbe Wert steht
-        /// als Werksvorgabe in der <c>app.config</c>.
+        /// Einstellwert <c>WordPressUrl</c> leer ist (A2). Seit iU5 nur noch eine
+        /// Weiterleitung auf <see cref="WikiWissen.WIKI_STANDARD"/>, damit Kern-Code
+        /// den Rückfall ohne <c>Program</c> erreicht.
         /// </summary>
-        public const string WIKI_STANDARD = "https://wiki.epos-plan.de";
+        public const string WIKI_STANDARD = WikiWissen.WIKI_STANDARD;
 
-        // Der globale Katalog, auf den alle Formulare zugreifen können
-        public static WikiHelpCatalog HelpCatalog { get; private set; }
+        /// <summary>
+        /// Der globale Hilfekatalog, auf den alle Formulare zugreifen — seit iU5 nur
+        /// noch eine Weiterleitung auf <see cref="WikiHelpCatalog.Aktueller"/>, damit
+        /// Kern-naher Programmtext ihn ohne <c>Program</c> erreicht.
+        /// </summary>
+        public static WikiHelpCatalog HelpCatalog
+        {
+            get { return WikiHelpCatalog.Aktueller; }
+        }
 
         /// <summary>
         /// Der anwendungsweite Infobutton-Extender (Konzept Hilfesystem, F5).
@@ -39,8 +92,6 @@ namespace WindowsFormsApplication1
         /// braucht dafür noch eigenen Programmtext.
         /// </summary>
         public static HelpExtender HelpExtender { get; private set; }
-
-        private static Process _webServerProcess;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -59,67 +110,163 @@ namespace WindowsFormsApplication1
             // ihren Aufrufknopf anbringen, während der Zustand noch nicht feststeht.
             FeldsicherungSchalterAuswerten();
 
-            // Aktiviert die moderne High-DPI-Unterstützung (Verfügbar ab .NET Framework 4.7)
+            // DIE DIENSTE VOR ALLEM ANDEREN (Umsetzungskonzept iU5).
+            //
+            // Kern-Code - Zugriffsschicht, Controller, Modelle - spricht die Umgebung
+            // ueber neun kleine Schnittstellen an (Dienste.Dialog, .Datei, .Pfade,
+            // .Einstellungen, .Lizenzablage, .GeraeteId, .Sprache, .Navigation,
+            // .Projekt). Ohne Oberflaeche gilt die Vorbelegung des Kerns; hier werden
+            // die Windows-Fassungen eingelegt.
+            //
+            // WARUM AN DIESER STELLE. Vor jedem Programmtext, der eine Meldung absetzen
+            // koennte - insbesondere vor DataRepository.DatenbankVorhanden() weiter
+            // unten. Stuende die Belegung darunter, ginge genau die erste Meldung eines
+            // Startfehlers auf die Konsole statt in einen Dialog.
+            //
+            // MELDUNG.* WIRD NICHT MEHR BELEGT. Die vier Melde-Haken zeigen seit iU5
+            // selbst auf Dienste.Dialog (siehe Meldung.cs); eine Belegung hier waere
+            // eine zweite Wahrheit. Ein Nebeneffekt ist beabsichtigt: Meldung.Hinweis
+            // traegt damit wieder das Informationssymbol, das die Hinweisdialoge des
+            // Kerns bis iU3-2 hatten.
+            WindowsSprache sprache = new WindowsSprache();
+
+            Dienste.Dialog = new WindowsDialogDienst();
+            Dienste.Datei = new WindowsDateiDienst();
+            Dienste.Pfade = new WindowsPfade();
+            Dienste.Einstellungen = new SettingsEinstellungen();
+            Dienste.Lizenzablage = new DpapiLizenzAblage();
+            Dienste.GeraeteId = new WindowsGeraeteId();
+            Dienste.Sprache = sprache;
+            Dienste.Navigation = new WinFormsNavigation();
+
+            // iU9-W16b.3 (K2): Der Projektkontext liegt im KERN. Bis hierher stand
+            // hier FormStartProjektKontext - eine Fassade auf Program.startfrm, also
+            // auf ein FELD der Startmaske (Befund W16-B6).
+            projektkontext = new ProjektKontextCtrl();
+            Dienste.Projekt = projektkontext;
+
+            // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
+            // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
+            // GeraeteWaisen zieht dafuer aber die Oberflaeche mit. Unter Windows soll sich
+            // nichts aendern - deshalb hier, vor dem ersten moeglichen Loeschvorgang.
+            // Lambda, nicht Methodengruppe: Aufraeumen hat einen Vorgabeparameter
+            // (OleDbConnection) und liefert einen Bericht zurueck, den der Loeschweg
+            // wie bisher verwirft.
+            WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
+
+            // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
+            //
+            // Bis hierher stand hier HighDpiMode.DpiUnaware, passend zum
+            // app.manifest: Windows skalierte jedes Fenster als Bitmap, und bei
+            // 125-200 % war die Oberflaeche sichtbar unscharf. Der Grund dafuer
+            // waren die fest gerechneten Pixelkoordinaten der gewachsenen
+            // WinForms-Masken - und die gibt es seit Welle 16 nicht mehr: Die
+            // Oberflaeche ist eine Razor-Seite in einer WebView, es bleibt genau
+            // eine Designer-Maske (Form_HelpPopup) und die DPI-freie Huelle.
+            //
+            // Fuehrend ist das MANIFEST (dpiAware true/pm + dpiAwareness
+            // PerMonitorV2); dieser Aufruf haelt den verwalteten Zustand
+            // deckungsgleich - stuende hier weiter DpiUnaware, waeren es zwei
+            // Wahrheiten.
             if (Environment.OSVersion.Version.Major >= 10)
             {
-                Application.SetHighDpiMode(HighDpiMode.DpiUnaware); // Für .NET Core / .NET 5+
-                                                                     // Für älteres .NET Framework 4.7+ nutzt man stattdessen oft:
-                                                                     // Application.EnableVisualStyles();
+                Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
             }
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var key = Registry.CurrentUser.OpenSubKey(@"Software\\wp-plan", true);
-            if (key == null)
-            {
-                key = Registry.CurrentUser.CreateSubKey(@"Software\\wp-plan");
-            }
+            // Die zuletzt eingestellte Oberflaechensprache uebernehmen: Registry-Wert
+            // Language lesen, Sprache.Nummer setzen, Anzeigekultur setzen. Der Weg
+            // dorthin liegt seit iU5 in WindowsSprache; nLanguage bleibt die
+            // Weiterleitung auf Sprache.Nummer, damit die Masken unveraendert lesen.
+            sprache.AusRegistryUebernehmen();
 
-            nLanguage = (int)key.GetValue("Language", 0);
-            if (nLanguage == 0)
+            // WEBVIEW2-RIEGEL (iU9-W15c.6a, Entscheid E-8 Weg 2).
+            //
+            // Ab dieser Welle laufen ZWEI Startschritte über eine Blazor-Hülle: der
+            // Erststart der Datenbank und die Zustimmung zur Lizenzvereinbarung. Beide
+            // liefern "false", wenn ihr Fenster leer bleibt, und beide beenden dann das
+            // Programm. Ohne WebView2-Laufzeit wäre EPOS-Plan damit nicht mehr nur
+            // unbequem (leere Dialoge, iR12), sondern unstartbar — und der Anwender
+            // sähe kein Wort dazu (Befund W15c-B10).
+            //
+            // Deshalb: EINE Prüfung, EINE Meldung mit der Bezugsquelle, dann Ende.
+            // Keine WinForms-Rückfallmasken — zwei Fassungen derselben Maske sind
+            // ausgeschlossen (Regel M1). NACH der Sprachwahl, damit die Meldung in der
+            // eingestellten Sprache kommt; VOR dem ersten besitzerlosen Dialog.
+            //
+            // Die Meldung ist bewusst eine native MessageBox und kein Dienste.Dialog:
+            // Die Windows-Fassung von Dienste.Dialog zeigt zwar ebenfalls eine
+            // MessageBox, aber hier soll unmissverständlich sein, dass an dieser Stelle
+            // keine Oberfläche mehr angenommen wird.
+            if (!WebView2Vorhanden())
             {
-                var culture_de = new CultureInfo("de-DE");
-                Thread.CurrentThread.CurrentUICulture = culture_de;
-            }
-            else
-            {
-                var culture_en = new CultureInfo("en-US");
-                Thread.CurrentThread.CurrentUICulture = culture_en;
-            }
-
-            // Startprüfung x64-Umstellung P1.3: Ohne registrierten ACE-Provider ist jede
-            // DB-Operation unmöglich — sprechende Meldung statt später einer nackten
-            // InvalidOperationException tief im Startpfad (erste Fundstelle wäre
-            // SchemaMigration.Ausfuehren). NACH der Sprachwahl, damit die Meldung in der
-            // eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
-            if (!DataRepository.ProviderVorhanden())
-            {
-                string bitness = Environment.Is64BitProcess ? "64 Bit" : "32 Bit";
                 MessageBox.Show(
-                    string.Format(MyResource.Resource.START_ACE_FEHLT_TEXT, bitness),
-                    MyResource.Resource.START_ACE_FEHLT_TITEL,
+                    MyResource.Resource.START_WEBVIEW2_FEHLT,
+                    MyResource.Resource.START_WEBVIEW2_FEHLT_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
+            // Startprüfung (vormals x64-Umstellung P1.3, jetzt DB-Migration SQLite 2.8):
+            // Ohne lesbare Datenbankdatei ist jede DB-Operation unmöglich — sprechende
+            // Meldung statt später einer nackten Ausnahme tief im Startpfad (erste
+            // Fundstelle wäre SchemaMigration.Ausfuehren). NACH der Sprachwahl, damit die
+            // Meldung in der eingestellten Sprache kommt, und VOR jedem Datenbankzugriff.
+            // Einen registrierungspflichtigen Provider gibt es nach der Umstellung nicht
+            // mehr; geprüft wird jetzt die Datei selbst.
+            //
+            // ERSTBEREITSTELLUNG (Anwenderentscheid #157-E-1, Weg W3 vom 09.09.2026):
+            // Auf einem frischen Rechner gibt es die SQLite-Datei beim allerersten Start
+            // noch gar nicht - DatenbankVorhanden() prüft aber genau sie. Bevor ihre
+            // Fehlermeldung erscheint, wird deshalb die AUSGELIEFERTE VORLAGE
+            // ({app}\Vorlage\Kenndaten.sqlite) in den Datenordner kopiert; danach läuft
+            // alles Weitere (Lizenz, Schemapflege, Oberfläche) unverändert - insbesondere
+            // SchemaMigration.Ausfuehren, das die frisch kopierte Vorlage auf den
+            // benötigten Stand hebt, falls sie älter ist.
+            //
+            // Der Access-Weg (Übernahme-Assistent, ACE-Engine) ist mit W3 GEFALLEN: Access
+            // wurde beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands
+            // ist seither ein Hauswerkzeug (EposSqliteMigrator), kein Kundenweg.
+            if (!DataRepository.DatenbankVorhanden())
+            {
+                if (!DatenbankBereitstellen()) return;
+            }
+
             // Zustimmung zur Lizenzvereinbarung beim ersten Start (einmal je
-            // Windows-Benutzer; Ablage HKCU\Software\wp-plan\LizenzZugestimmt mit
-            // Programmversion und Datum, siehe Form_Lizenz.ZustimmungMerken).
+            // Windows-Benutzer; Ablage ueber Dienste.Einstellungen und damit
+            // unveraendert HKCU\Software\wp-plan\LizenzZugestimmt mit
+            // Programmversion und Datum, siehe ZustimmungCtrl.Merken). Seit
+            // iU9-W15c.11 zeigt die Huelle dafuer den Razor-Dialog - BESITZERLOS,
+            // es gibt noch kein Fenster.
             // NACH der ACE-Prüfung - eine nicht startfähige Installation braucht
             // keine Zustimmung - und VOR der Schema-Migration: Wer ablehnt, dessen
             // Datenbank wird nicht angefasst.
-            if (!Form_Lizenz.ZustimmungSicherstellen()) return;
+            if (!LizenzHuelle.ZustimmungSicherstellen()) return;
 
             // Textlieferant des KI-Kerns einhaengen - NACH der Sprachwahl, damit
             // KiKern seine Schluessel in der eingestellten Sprache beantwortet
             // bekommt (Fachkonzept 3.7; KiKern darf MyResource nicht kennen).
             KiTextlieferant.Einrichten();
 
+            // Ausfuehrungsschicht des KI-Assistenten einlegen (iU9-W15b.0a). KiChatService
+            // liegt seit dieser Welle im Kern und kennt KiAusfuehrer nicht mehr - der
+            // Ausfuehrer haengt an Control, Application.OpenForms und Form.ActiveForm.Modal
+            // und bleibt deshalb in der Windows-Anwendung. Ohne diesen Aufruf antwortet die
+            // stille Fassung KeineAusfuehrung: leeres Register, jede Aktion abgelehnt.
+            KiAusfuehrungsweg.Aktuell = new KiAusfuehrungAdapter();
+
+            // Bedienkontext des Assistenten: Die ZUORDNUNG (Positivliste, Tabellen)
+            // liegt seit iU9-W15b.0f im Kern, die ERMITTLUNG des aktiven Fensters
+            // bleibt hier - Form.ActiveForm gibt es auf iOS nicht (Befund W15b-B19).
+            // Ohne diesen Aufruf bleibt der Bereich "Unbekannter Bereich".
+            HilfeKontext.Einhaengen();
+
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.
-            Form_KiHinweis.Einhaengen();
+            KiHinweisHuelle.Einhaengen();
 
             // -----------------------------------------------------------------------
             // Schema-Ausrollung (ADR-001): die versionierte Migration laeuft genau
@@ -148,10 +295,10 @@ namespace WindowsFormsApplication1
             menuectrl = new MenueCtrl();
             wizardctrl = new WizardCtrl();
 
-            ApplicationPath_Common = Environment.GetFolderPath(System.Environment.SpecialFolder.CommonApplicationData);
-            ApplicationPath_Common = Path.Combine(ApplicationPath_Common, "WP-Plan");
-            ApplicationPath_User = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            ApplicationPath_User = Path.Combine(ApplicationPath_User, "WP-Plan");
+            // Anmeldung beim eigenen Halter (iU5): Programmtext ausserhalb der Masken
+            // erreicht den Assistenten-Controller ueber WizardCtrl.Aktueller und nicht
+            // mehr ueber Program.wizardctrl.
+            WizardCtrl.Aktueller = wizardctrl;
 
             // Katalog-Objekt einmalig erstellen
             //
@@ -162,13 +309,14 @@ namespace WindowsFormsApplication1
             // "WordPressUrl" — eine Umbenennung würde gespeicherte Anwenderwerte
             // in der user.config verwerfen (Entscheid 7.3 des Konzepts).
             // WIKI_STANDARD greift nur, wenn der Einstellwert leer ist.
-            string dokuBasis = Properties.Settings.Default.WordPressUrl;
+            string dokuBasis = Dienste.Einstellungen.Lies(WikiWissen.EINSTELLUNG_BASIS);
             if (string.IsNullOrWhiteSpace(dokuBasis)) dokuBasis = WIKI_STANDARD;
 
-            HelpCatalog = new WikiHelpCatalog(dokuBasis);
+            WikiHelpCatalog.Aktueller = new WikiHelpCatalog(dokuBasis);
 
             // F6 / Startwettlauf: Der Katalog wird SOFORT belegt — aus der lokalen
-            // Sicherung, sonst aus dem mitgelieferten Startbestand. MDIMainForm_Load
+            // Sicherung, sonst aus dem mitgelieferten Startbestand.
+            // Hauptfensterrahmen.BeimLaden
             // stößt den Onlineabruf danach bewusst ohne await an; ohne diese
             // Vorbelegung sähe jedes Formular, das früher öffnet, einen leeren
             // Katalog. Rangfolge insgesamt: Online > AppData-Sicherung > Beilage.
@@ -180,14 +328,101 @@ namespace WindowsFormsApplication1
             // gepflegt wird.
             HelpExtender = HilfeAutomatik.Starten(HelpCatalog);
 
-            // nur zum Testen, Testserver wird in dieser Funktion beim Starten des Programms automatisch aufgerufen,
-            // kein separates CMD Fensetr mit Aufruf nötig
-            //StartLocalWebServer();
+            rahmen = new Hauptfensterrahmen();
+            Application.Run(rahmen);
 
-            mdifrm = new MDIMainForm();
-            Application.Run(mdifrm);
-           
             Application.Exit();
+        }
+
+        /// <summary>
+        /// Ist die Microsoft-Edge-WebView2-Laufzeit auf diesem Rechner installiert?
+        /// </summary>
+        /// <remarks>
+        /// <para>Gefragt wird die Laufzeit selbst, nicht die Registry:
+        /// <c>CoreWebView2Environment.GetAvailableBrowserVersionString()</c> liefert
+        /// die Fassung der Laufzeit, die eine <c>WebView2</c> in diesem Prozess
+        /// tatsächlich benutzen würde — einschließlich einer mitgelieferten
+        /// „Fixed Version". Das Setup prüft dieselbe Sache über zwei
+        /// Registry-Schlüssel (<c>WebView2Vorhanden</c>,
+        /// <c>Setup/EPOS-Plan.iss:444</c>); dort gibt es keinen Prozess, der fragen
+        /// könnte.</para>
+        /// <para>Fehlt die Laufzeit, wirft der Aufruf eine
+        /// <c>WebView2RuntimeNotFoundException</c>; jeder andere Fehlschlag (etwa eine
+        /// nicht ladbare <c>WebView2Loader.dll</c>) ist für den Anwender dieselbe Lage.
+        /// Deshalb wird breit gefangen — das Programm soll hier melden, nicht
+        /// abstürzen.</para>
+        /// </remarks>
+        private static bool WebView2Vorhanden()
+        {
+            try
+            {
+                string fassung = Microsoft.Web.WebView2.Core.CoreWebView2Environment
+                                          .GetAvailableBrowserVersionString();
+                return !string.IsNullOrEmpty(fassung);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Die Erstbereitstellung der Datenbank (Anwenderentscheid <b>#157‑E‑1 / W3</b>,
+        /// 09.09.2026): Es gibt keine lesbare SQLite-Datei — dann wird die ausgelieferte
+        /// Vorlage in den Datenordner kopiert.
+        /// </summary>
+        /// <returns><c>true</c> = weiterstarten, <c>false</c> = Programm beenden.</returns>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Access-Weg ist mit W3 gefallen.</b> Bis dahin stand hier der
+        /// Übernahme-Assistent aus Arbeitspaket S8: Lag im Datenordner eine
+        /// <c>Kenndaten.accdb</c>, wurde sie einmalig nach SQLite umgestellt. Access wurde
+        /// beim Kunden nie produktiv eingesetzt; die Übernahme eines Altbestands ist
+        /// seither ein <b>Hauswerkzeug</b> (<c>EposSqliteMigrator</c>) und läuft nicht mehr
+        /// im Programmstart.
+        /// </para>
+        /// <para>
+        /// <b>Der Kern entscheidet, die Hülle meldet.</b> Kopieren, Prüfen und Aufräumen
+        /// stehen in <see cref="Erstbereitstellung"/> — plattformfrei, damit auf iOS
+        /// derselbe Gedanke gilt (dort kopiert
+        /// <c>EPOS.iOS/Datenbankbereitstellung</c> aus dem Anwendungspaket). Hier bleibt
+        /// nur die Meldung.
+        /// </para>
+        /// <para>
+        /// Nach dem Kopieren wird die Startprüfung WIEDERHOLT — erst ein zweites
+        /// <c>DatenbankVorhanden()</c> beweist, dass die neue Datei auch wirklich zu öffnen
+        /// ist. Nur dann geht es weiter; die Schemapflege
+        /// (<c>SchemaMigration.Ausfuehren</c>) hebt eine ältere Vorlage unmittelbar danach
+        /// auf den benötigten Stand.
+        /// </para>
+        /// </remarks>
+        private static bool DatenbankBereitstellen()
+        {
+            string ziel = DataRepository.GetDBPath();
+            string vorlage = Dienste.Pfade.Auslieferungsvorlage;
+
+            Erstbereitstellungsergebnis ergebnis = Erstbereitstellung.Sicherstellen(ziel, vorlage);
+
+            // Kopiert (oder wider Erwarten doch schon da): die Datei muss sich jetzt
+            // oeffnen lassen, sonst war die Bereitstellung wertlos.
+            if (ergebnis.Bereit && DataRepository.DatenbankVorhanden()) return true;
+
+            // Ab hier startet das Programm nicht. Die Meldung nennt IMMER beide Orte -
+            // wo die Datenbank erwartet wurde und wo die Vorlage gesucht wurde.
+            string text = string.Format(MyResource.Resource.START_DB_FEHLT, ziel) +
+                          Environment.NewLine + Environment.NewLine +
+                          string.Format(MyResource.Resource.START_VORLAGE_FEHLT, vorlage);
+
+            if (ergebnis.Lage != Erstbereitstellungslage.VorlageFehlt &&
+                !string.IsNullOrEmpty(ergebnis.Meldung))
+            {
+                text += Environment.NewLine + Environment.NewLine + ergebnis.Meldung;
+            }
+
+            MessageBox.Show(text,
+                            MyResource.Resource.START_DB_FEHLT_TITEL,
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return false;
         }
 
         /// <summary>
@@ -348,30 +583,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Parst eine Zahl mit Dezimal-Komma ODER -Punkt. Gleiche Regel wie
-        /// WaermequelleClass.ZahlParsen, nur in double-Genauigkeit - gedacht für
-        /// Eingabefelder, deren Wert als double weiterverarbeitet wird.
-        /// Kein Tausendertrennzeichen: "1.234,5" wird bewusst abgelehnt, statt
-        /// wie double.Parse(CurrentCulture) still zu 12345 zu werden.
+        /// Weiterleitung auf <see cref="ZahlText.Parsen"/> (dort steht der Rumpf seit
+        /// iU4-1) — parst eine Zahl mit Dezimal-Komma ODER -Punkt, ohne
+        /// Tausendertrennzeichen. Bleibt stehen, damit die Masken ihren gewohnten
+        /// Aufruf behalten.
         /// </summary>
         public static bool ZahlParsen(string text, out double wert)
         {
-            wert = 0.0;
-            if (string.IsNullOrEmpty(text)) return false;
-            text = text.Trim().Replace(',', '.');
-            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.Parsen(text, out wert);
         }
 
         /// <summary>
-        /// Ganzzahl-Gegenstück zu <see cref="ZahlParsen"/>: invariant geparst.
-        /// Komma und Punkt sind hier bewusst KEINE gültigen Zeichen - es geht um
-        /// Stückzahlen, Tage, Nutzungsdauern und ganze Grad.
+        /// Weiterleitung auf <see cref="ZahlText.GanzzahlParsen"/> — Ganzzahl-
+        /// Gegenstück zu <see cref="ZahlParsen"/>, invariant geparst.
         /// </summary>
         public static bool GanzzahlParsen(string text, out int wert)
         {
-            wert = 0;
-            if (string.IsNullOrEmpty(text)) return false;
-            return int.TryParse(text.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out wert);
+            return ZahlText.GanzzahlParsen(text, out wert);
         }
 
         // ------------------------------------------------------------------
@@ -574,42 +802,6 @@ namespace WindowsFormsApplication1
             public const string MoveDown = "⬇";   // \u2B07
             public const string Add = "➕";   // \u2795
             public const string Remove = "➖";   // \u2796
-        }
-
-        private static void StartLocalWebServer()
-        {
-            try
-            {
-                _webServerProcess = new Process();
-
-                // Da 'dotnet' ein globaler Systembefehl ist, können wir ihn direkt beim Namen nennen
-                _webServerProcess.StartInfo.FileName = "dotnet";
-
-                // Hier sagen wir dotnet-serve, welchen Ordner es auf welchem Port öffnen soll:
-                // "serve" = Tool aufrufen
-                // "-d C:\WPFake" = Dieses Verzeichnis ausliefern
-                // "-p 8080" = Port 8080 nutzen
-                _webServerProcess.StartInfo.Arguments = @"serve -d C:\WPFake -p 8080";
-
-                // WICHTIG: Macht das CMD-Fenster für den Benutzer unsichtbar
-                _webServerProcess.StartInfo.CreateNoWindow = true;
-                _webServerProcess.StartInfo.UseShellExecute = false;
-
-                _webServerProcess.Start();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Fehler beim Starten von dotnet-serve: " + ex.Message);
-            }
-        }
-
-        private static void StopLocalWebServer()
-        {
-            if (_webServerProcess != null && !_webServerProcess.HasExited)
-            {
-                _webServerProcess.Kill(); // Schließt dotnet-serve im Hintergrund wieder
-                _webServerProcess.Dispose();
-            }
         }
 
      }

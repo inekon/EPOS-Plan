@@ -1,0 +1,170 @@
+﻿@* Gruppe sich gegenseitig ausschliessender Optionen - der RadioButton des
+   Bestands (45 Stueck, u. a. Views/Kosten/Form_VorlagenUebernahme.Designer.cs
+   rbQuelleVorlage/rbQuelleProjekt und Views/Kosten/Form_CaseEingabe.cs
+   rbCaseAbsolut/rbCaseProzent).
+
+   WARUM NICHT AUSWAHLFELD. Eine Klappliste verbirgt die Moeglichkeiten, bis
+   man sie oeffnet; eine Optionsgruppe zeigt sie alle. Genau darauf beruhen die
+   Masken des Bestands: Der Anwender sieht, dass es zwei Quellen gibt, bevor er
+   waehlt. Bei mehr als etwa fuenf Eintraegen ist das Auswahlfeld die bessere
+   Wahl.
+
+   BAUWEISE. <fieldset role="radiogroup"> mit einem <legend> als Gruppentitel;
+   jeder Eintrag ist ein <label> um ein <input type="radio">. Damit gehoert die
+   Beschriftung zum Bedienelement (ein Klick auf den Text schaltet mit), und die
+   ganze Zeile ist 44 px hoch - Fingerbetrieb wie beim Schalter (M2).
+
+   Alle Eintraege teilen sich einen Namen, damit der Browser die Gruppe kennt
+   und die Pfeiltasten darin wandern. Der Name ist je Instanz eindeutig; sonst
+   wuerden zwei Gruppen auf derselben Seite einander umschalten. *@
+
+<fieldset class="epos-optionsgruppe" role="radiogroup" aria-label="@Bezeichnung">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
+    }
+    @foreach (var eintrag in Eintraege)
+    {
+        int id = eintrag.Id;
+        <label class="epos-option">
+            <input class="epos-option-kasten" type="radio" name="@_name"
+                   value="@id" checked="@(Auswahl == id)"
+                   disabled="@HartGesperrt(id)"
+                   aria-disabled="@AriaGesperrt(id)"
+                   title="@Sperrtipp(id)"
+                   @onchange="@(() => BeiWahl(id))" />
+            <span class="epos-feld-text">@eintrag.Text</span>
+        </label>
+        @if (Beschreibung(id) is { Length: > 0 } erlaeuterung)
+        {
+            <p class="epos-option-beschreibung">@erlaeuterung</p>
+        }
+    }
+</fieldset>
+
+@code {
+    /// <summary>Titel der Gruppe (die <c>legend</c>). Leer = ohne Titel.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Optionen in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Id der gewaehlten Option; <c>null</c> = keine. Bindbar ueber @@bind-Auswahl.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neu gewaehlte Id.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt die ganze Gruppe.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Ids, die EINZELN gesperrt sind - alles Uebrige bleibt waehlbar.
+    /// <c>null</c> = keine Sperre.
+    ///
+    /// <para>Gebraucht von Masken, die eine Quelle nur unter Bedingungen
+    /// anbieten: <c>Form_VorlagenUebernahme</c> sperrt „Aus Vorlage/Variante",
+    /// solange der Katalog fuer diese Komponente keine Vorlage fuehrt
+    /// (<c>rbQuelleVorlage.Enabled = _vorlagen.Count &gt; 0</c>), und
+    /// <c>Form_CaseEingabe</c> sperrt „Eingabe in %", solange kein
+    /// Erwartungswert vorliegt (<c>_rbProzent.Enabled = _daten.Betrag != 0</c>).</para>
+    /// </summary>
+    [Parameter] public IReadOnlyList<int>? Gesperrt { get; set; }
+
+    /// <summary>
+    /// ERLAEUTERUNG unter einer Option, Schluessel ist die Id; ohne Eintrag steht
+    /// keine (iU9-W10a.1).
+    ///
+    /// <para>Der Betriebsmodus-Dialog stellt drei Moeglichkeiten nebeneinander, von
+    /// denen keine sich von selbst erklaert: „Laufzeitoptimiert" heisst volle Leistung
+    /// mit Speicherladung, „PV-optimiert" heisst erhoehte Leistung NUR bei
+    /// PV-Ueberschuss. Der Vorlaeufer <c>Form_Betriebsmodus</c> setzte deshalb unter
+    /// jeden RadioButton ein eigenes Label mit zwei bis drei Zeilen Text
+    /// (<c>_lblLaufzeit</c>/<c>_lblLeistung</c>/<c>_lblPV</c>, 460 px breit). Ohne
+    /// diese Saetze waere die Auswahl eine Ratefrage.</para>
+    ///
+    /// <para>Die Erlaeuterung steht AUSSERHALB des <c>label</c>: Ein Klick darauf soll
+    /// nicht umschalten - im Vorlaeufer waren es eigene Labels, die auf Klicks nicht
+    /// reagierten.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? Beschreibungen { get; set; }
+
+    /// <summary>
+    /// WEICH gesperrte Optionen samt ihrem GRUND, Schluessel ist die Id
+    /// (Anwenderwunsch <b>W16b-E-6</b>, uebernommen aus
+    /// <c>Reiterblatt.Sperrgrund</c> / <c>Reiter.Verweigert</c>).
+    ///
+    /// <para><b>Warum eine zweite Sperrart.</b> Ein <c>disabled</c>-Bedienelement
+    /// nimmt keine Zeigerereignisse an: Der Browser zeigt seinen <c>title</c> nicht,
+    /// er feuert kein <c>click</c>, und eine Sprachausgabe sagt „nicht verfuegbar"
+    /// ohne den Grund. Wer ERKLAEREN will, warum eine Option gerade nicht offensteht,
+    /// nimmt <c>aria-disabled</c> und meldet den VERSUCH — genau die Staffelung, die
+    /// W16b-E-6 fuer die Reiter der Startseite festgelegt hat.</para>
+    ///
+    /// <para>Eine Id in <see cref="Gesperrt"/> bleibt HART gesperrt; steht sie hier,
+    /// gewinnt die weiche Form. Beide sehen gleich aus — die Stilregel nennt
+    /// <c>:disabled</c> und <c>[aria-disabled="true"]</c> in EINEM Selektor, weil ein
+    /// Anwender „geht nicht" nicht nach der Bauart unterscheidet.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? WeichGesperrt { get; set; }
+
+    /// <summary>
+    /// Meldet den VERSUCH, eine weich gesperrte Option zu waehlen — mit ihrer Id.
+    /// Der Wirt zeigt daraufhin seinen Hinweis; gewaehlt wird nichts.
+    /// </summary>
+    [Parameter] public EventCallback<int> Verweigert { get; set; }
+
+    /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
+    private readonly string _name = "og" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Der Sperrgrund einer Option, oder leer.</summary>
+    private string Grund(int id)
+        => WeichGesperrt is not null && WeichGesperrt.TryGetValue(id, out string? g) ? (g ?? "") : "";
+
+    /// <summary>
+    /// HART gesperrt heisst <c>disabled</c> — der Stand des Bestands und die Vorgabe.
+    /// Nennt <see cref="WeichGesperrt"/> einen Grund, bleibt die Option anklickbar.
+    /// </summary>
+    private bool HartGesperrt(int id)
+        => (!Aktiv || !IstWaehlbar(id)) && Grund(id).Length == 0;
+
+    /// <summary>Die weiche Sperre traegt sie als ARIA-Zustand; die harte sagt <c>disabled</c>.</summary>
+    private string? AriaGesperrt(int id)
+        => Grund(id).Length > 0 ? "true" : null;
+
+    /// <summary>
+    /// Der Grund am Bedienelement. Er ist zugleich die BESCHREIBUNG fuer die
+    /// Sprachausgabe: Ohne <c>aria-describedby</c> liest sie den <c>title</c> als
+    /// Beschreibung vor — ein Satz, EINE Wahrheit (wortgleich <c>Reiter.Sperrtipp</c>).
+    /// </summary>
+    private string? Sperrtipp(int id)
+    {
+        string g = Grund(id);
+        return g.Length == 0 ? null : g;
+    }
+
+    private string Beschreibung(int id)
+        => Beschreibungen is not null && Beschreibungen.TryGetValue(id, out string? t) ? t : "";
+
+    private bool IstWaehlbar(int id)
+    {
+        if (Gesperrt is null) return true;
+        foreach (int gesperrt in Gesperrt)
+        {
+            if (gesperrt == id) return false;
+        }
+        return true;
+    }
+
+    private Task BeiWahl(int id)
+    {
+        // Weich gesperrt: Der Versuch ist ein EREIGNIS, keine Wahl. Hart gesperrt
+        // kommt hier nie an - ein disabled-Element feuert nicht (Muster Reiter.Waehlen).
+        if (Grund(id).Length > 0) return Verweigert.InvokeAsync(id);
+
+        if (!Aktiv || !IstWaehlbar(id)) return Task.CompletedTask;
+        Auswahl = id;
+        return AuswahlChanged.InvokeAsync(id);
+    }
+}

@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katalogfilter-Mockup EPOS-Plan</title>
+<!--
+  MOCKUP zum Anwenderentscheid W14a-E-10 vom 07.09.2026:
+
+    "Q1 bis Q12: aendere den Katalogfilter - nur Suche (Screenshot 2),
+     Hersteller, Brennstoff etc. sollte an Spalte mit Sortieren und Suchen
+     (Beispiel Screenshot 1) erfolgen. Das Schema des Dialogs sollte immer
+     gleich aussehen (Waermepumpe aehnlich wie PV-Module und Heizkessel)."
+
+  ... und die ZWEITE Rueckmeldung des Anwenders vom selben Tag zu diesem
+  Mockup, die diesen Stand traegt:
+
+    "Die Filter sollten ueber den Spaltennamen sitzen (Hersteller, Modell,
+     Leistung, ...) und nicht separat, ausser 'Suche' ueber alle Felder.
+     Liste wie zuvor ueber ganze Breite, sonst zu schmale Liste. Erstelle
+     neues Mockup."
+
+  Damit faellt die Filterleiste der Vorfassung (Zonenmodell 5.2) weg - und
+  mit diesem Stand auch die Filter-/TREFFERZEILE, die noch darunter stand.
+  Aus jedem Filterkriterium wird eine SPALTE: Sortierpfeil und Trichter
+  sitzen im Spaltenkopf, der Trichter oeffnet ein kleines Popover mit EINEM
+  Feld ("enthaelt...") und "Filter loeschen". Ueber der Liste steht nur noch
+  EINE Zeile: links das Suchfeld ueber alle Spalten, rechts die Trefferzahl
+  (im Vorbild "126 Projekt(e)"). Dass gefiltert wird, sagt allein der
+  GEFUELLTE Trichter im Spaltenkopf - gefuellt gegen Umriss, damit der
+  Unterschied auch ohne Farbe traegt.
+
+  Die LISTE laeuft ueber die ganze Breite; der Eingabe- bzw. Detailblock
+  steht DARUNTER, ebenfalls ueber die ganze Breite, im Formularraster. Das
+  Paar "Liste links, Eingabe rechts" ist damit in allen drei Reitern
+  aufgeloest - auch in M2, wo bisher die Zweispaltenauswahl stand (dazu die
+  Frage W14a-E-10-Q2 im Konzept).
+
+  Gehoert zu Konzept_Katalogfilter_EPOS-Plan.md, Kapitel 5.6; die
+  Kapitelnummern in den Fussnoten verweisen dorthin.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen. Die
+  Farben, Masse und Bausteinnamen sind aus EPOS.UI/wwwroot/epos-ui.css
+  uebernommen (Kopfbaender #0F1F3D, Reiterband AliceBlue #f0f8ff, cremefarbene
+  Knoepfe #f5f4ef, Beschriftungsspalte 12 rem, kurze Zahlenfelder 8 em,
+  Beruehrungsziel 44 px, Ecke 6 px). KEINE neue Farbe.
+
+  ES IST EIN BILD, aber ein bedienbares: Reiterwechsel, Trichter auf/zu,
+  "Filter loeschen" und "Filter zuruecksetzen" (dann erscheinen die Zeilen
+  wieder und der Zaehler zaehlt neu) und ein echter Klick auf den
+  Spaltenkopf, der die sichtbaren Zeilen sortiert - auf, ab, aus. Die
+  Eingabefelder selbst sind schreibgeschuetzt.
+
+  ALLE ZAHLEN SIND GEMESSEN - am 07.09.2026 gegen
+  Referenzlaeufe/Kenndaten_Test.sqlite und VDI-3805-Daten/PV/CEC Modules.csv.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-gruppenkopf: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-erfolg-rahmen: rgb(34, 139, 34);
+    --epos-erfolg-flaeche: rgb(240, 250, 240);
+    --epos-erfolg-text: rgb(24, 98, 24);
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-karte-text: #5A6270;
+
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-summe: #93C5FD;
+    --epos-gruppenkopf-hoehe: 40px;
+    --epos-gruppenkopf-symbolbreite: 30px;
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+    --epos-listenhoehe: 22rem;
+
+    --epos-beschriftung-breite: 12rem;
+    --epos-kurzfeld-breite: 8em;
+    --epos-formularspalte: 26rem;
+
+    --epos-marke: #005aa0;
+    --epos-marke-trennlinie: #dee3e8;
+    --epos-menue-flaeche: #f0f8ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: #ffffff;
+}
+
+/* ================= Kopf der Mockup-Seite (nicht Teil der Maske) ========= */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 24px 10px 24px;
+    background: #ffffff;
+}
+.mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
+.mockup-kopf p  { margin: 4px 0 0 0; color: var(--epos-text-leise); max-width: 104ch; }
+
+.mockup-reiter {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 10px 24px 0 24px;
+    background: var(--epos-menue-flaeche);
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+.mockup-reiter button {
+    font: inherit; padding: 8px 16px; min-height: 40px; cursor: pointer;
+    border: 1px solid var(--epos-rahmen); border-bottom: none;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    background: var(--epos-flaeche); color: var(--epos-text);
+}
+.mockup-reiter button[aria-selected="true"] {
+    background: var(--epos-marke); color: #ffffff;
+    border-color: var(--epos-marke); font-weight: 700;
+}
+
+.mockup-blatt { display: none; padding: 20px 24px 0 24px; }
+.mockup-blatt.aktiv { display: block; }
+
+.mockup-hinweis {
+    max-width: 1340px; margin: 0 0 14px 0; padding: 8px 12px;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel);
+}
+.mockup-fussnote { max-width: 1340px; margin: 12px 0 28px 0; color: var(--epos-text-leise); }
+.mockup-fussnote code { font-size: 12px; }
+.mockup-fussnote ul { margin: 6px 0 0 0; padding-left: 20px; }
+.mockup-fussnote li { margin-bottom: 3px; }
+
+.mockup-legende {
+    display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: center;
+    max-width: 1340px; margin: 0 24px 8px 24px; padding: 6px 12px;
+    border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    color: var(--epos-text-leise);
+}
+.mockup-legende b { color: var(--epos-text); }
+
+/* ================= Baustein: Dialog ==================================== */
+.epos-dialog {
+    display: flex; flex-direction: column; gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    max-width: 1160px;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    background: #ffffff;
+}
+.epos-dialog--breit { max-width: 1400px; }
+
+.epos-dialog-kopf { display: flex; align-items: center; gap: var(--epos-rand); }
+.epos-dialog-titel {
+    flex: 1 1 auto; margin: 0;
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 700; color: var(--epos-karte-titel);
+}
+.epos-infoknopf {
+    width: 28px; height: 28px; padding: 0; line-height: 1;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: 50%;
+    background: transparent; color: var(--epos-marke); cursor: default;
+    font: inherit; font-weight: 700; flex: 0 0 auto;
+}
+.epos-kontextzeile { margin: 0; font-weight: 600; }
+.epos-herleitung { margin: 0; color: var(--epos-text-leise); }
+
+/* ================= Baustein: Gruppenkopf =============================== */
+.epos-gruppenkopf { background: var(--epos-karte-flaeche); }
+.epos-gruppenkopf-balken {
+    display: flex; align-items: center;
+    min-height: var(--epos-gruppenkopf-hoehe);
+    background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text);
+}
+.epos-gruppenkopf-symbol { flex: 0 0 var(--epos-gruppenkopf-symbolbreite); text-align: center; }
+.epos-gruppenkopf-titel {
+    flex: 1 1 auto; margin: 0;
+    font-size: var(--epos-schriftgroesse-gruppenkopf); font-weight: 700;
+}
+.epos-gruppenkopf-summe {
+    flex: 0 0 auto; padding-right: var(--epos-rand);
+    color: var(--epos-gruppenkopf-summe); text-align: right;
+}
+.epos-gruppenkopf-koerper {
+    padding: var(--epos-rand);
+    border: 1px solid var(--epos-rahmen-leise); border-top: none;
+}
+
+/* ================= ZONE A: die EINE Suchzeile ==========================
+   Was vom Zonenmodell uebrig bleibt - und nach der zweiten Rueckmeldung des
+   Anwenders (W14a-E-10, 07.09.2026) noch weniger als vorher: EIN Suchfeld
+   ueber alle Spalten links, die Trefferzahl rechts. Die FILTERZEILE mit
+   ihrer Aufzaehlung ("Brennstoff enthaelt Gas . P_th 10..60 ... Alle
+   loeschen") ist gefallen - der Anwender will nichts Getrenntes ausser der
+   Suche. Dass gefiltert wird, sagt der gefuellte Trichter im Spaltenkopf.
+
+   Das Vorbild traegt ueber der Tabelle nur "126 Projekt(e)"; genau diese
+   eine Zahl steht hier rechts. Der Ruecksetzer daneben ist KEIN Filter,
+   sondern nimmt alle zurueck - er erscheint deshalb nur, wenn ueberhaupt
+   einer gesetzt ist (im Konzept als optional gefuehrt).                  */
+.epos-suchzeile { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 14px; }
+.epos-suchfeld { display: flex; flex-direction: column; gap: 3px; flex: 1 1 26em; max-width: 42em; }
+.epos-suchfeld > span { color: var(--epos-text-leise); }
+.epos-suchzeile > .epos-herleitung { flex: 1 1 16em; align-self: center; }
+
+.epos-suchzeile-rechts {
+    display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+    flex: 0 0 auto; margin-left: auto; min-height: var(--epos-touchziel);
+}
+.epos-treffer { white-space: nowrap; font-weight: 700; color: var(--epos-text-leise); }
+
+/* Ein Textknopf, kein Kasten: Er soll nicht wie ein Filter aussehen.
+   44 px hoch bleibt er trotzdem (Regel iL4, --epos-touchziel). */
+.epos-textknopf {
+    min-height: var(--epos-touchziel); padding: 0 4px; white-space: nowrap;
+    font: inherit; color: var(--epos-marke); text-decoration: underline;
+    background: none; border: none; cursor: pointer;
+}
+
+.epos-eingabe {
+    min-height: var(--epos-touchziel); padding: 0 8px;
+    font: inherit; color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+}
+.epos-eingabe--kurz  { flex: 0 0 var(--epos-kurzfeld-breite); width: var(--epos-kurzfeld-breite); }
+.epos-eingabe--suche { width: 100%; }
+.epos-eingabe--breit { width: 100%; }
+.epos-eingabe--lesen { background: var(--epos-flaeche); color: var(--epos-text-leise); }
+.epos-einheit { flex: 0 0 auto; color: var(--epos-text-leise); align-self: center; }
+
+/* ================= Baustein: Knopfleiste =============================== */
+.epos-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.epos-leiste-fueller { flex: 1 1 auto; }
+.epos-knopf {
+    flex: 0 1 auto; min-height: var(--epos-touchziel); min-width: 88px;
+    padding: 4px 12px; font: inherit; color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+.epos-knopf--schmal { min-width: 0; }
+.epos-knopf--primaer {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel); border-color: var(--epos-karte-titel);
+}
+.epos-knopf:disabled {
+    color: var(--epos-text-sehr-leise); cursor: default;
+    background: var(--epos-flaeche); border-color: var(--epos-rahmen-leise);
+}
+
+/* ================= Baustein: Raster (Tabelle) ========================== */
+.epos-raster-huelle {
+    width: 100%; overflow: auto;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+/* GEMESSEN: Kopfzelle 44 px Beruehrungsziel + Trennlinie = 45 px,
+   Datenzeile 37 px (der Wahlknopf ist 26 px hoch, dazu 2x4 px Polsterung
+   und die Trennlinie). Elf Zeilen brauchen also 45 + 11x37 = 452 px - das 1,3fache von
+   --epos-listenhoehe. Ein Vielfaches des Tokens statt einer eigenen Zahl
+   ist die Bauart des Hauses (epos-ui.css benutzt an einer Stelle schon
+   calc(var(--epos-listenhoehe) * 1.6)). Alle drei Reiter benutzen
+   dieselbe Hoehe: Die Liste rollt in sich, der Eingabeblock DARUNTER
+   bleibt ohne Seitenrollen erreichbar (Hausregeln W9-B-2 und #82). */
+.epos-raster-huelle--katalog { max-height: calc(var(--epos-listenhoehe) * 1.3); }
+/* Die kurze Projektliste in M2 - VIER Zeilen (45 + 4x37 = 193 px);
+   laenger wird sie nicht, weil ein Projekt eine Handvoll Anlagen fuehrt,
+   keine Hundert. */
+.epos-raster-huelle--kurz    { max-height: 12rem; }
+.epos-raster { width: 100%; border-collapse: collapse; }
+.epos-raster th, .epos-raster td {
+    padding: 4px 8px; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.epos-raster th {
+    position: sticky; top: 0; z-index: 1; padding: 0 4px;
+    background: var(--epos-flaeche); color: var(--epos-text);
+    border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-raster tr.gewaehlt td { background: var(--epos-karte-flaeche-hover); }
+.epos-raster td.zahl, .epos-raster th.zahl { text-align: right; }
+.epos-raster td.leise { color: var(--epos-text-leise); }
+/* Ueber die ganze Breite haben die langen Namen mehr Platz als im Paar
+   60/40: der Hersteller "Vaillant Deutschland GmbH & Co. KG" steht ganz da,
+   wo er vorher nach 9 rem abbrach. Das ist der sichtbare Gewinn der
+   Anordnung - deshalb sind die zwei Kappungen hier grosszuegiger. Die
+   17 rem der langen Spalte sind GEMESSEN: bei 22 rem rollte die
+   Katalogliste in M2 (zehn Spalten) bei 1 366 px um 58 px in sich. */
+.epos-raster td.kurz  { max-width: 17rem; overflow: hidden; text-overflow: ellipsis; }
+.epos-raster td.eng   { max-width: 17rem; overflow: hidden; text-overflow: ellipsis; }
+.epos-raster tr.leer td { color: var(--epos-text-leise); font-style: italic; }
+
+/* Eine gefilterte Spalte ist auch in den ZELLEN erkennbar - QuickGrid
+   setzt die Klasse aus ColumnBase.Class auf Kopf UND Koerper. */
+.epos-raster th.gefiltert  { background: var(--epos-karte-flaeche-hover); }
+.epos-raster td.gefiltert  { background: rgba(239, 246, 255, .55); }
+
+/* ---- Der Spaltenkopf nach dem Muster aus Screenshot 1 -----------------
+   Titel + Sortierpfeil sind EIN Knopf, der Trichter ein ZWEITER. Beide
+   sind <button> - Klick und Tastatur, kein :hover (Regel iL4). Die Zelle
+   ist 44 px hoch, die zwei Knoepfe fuellen sie aus.                     */
+.epos-kopfzelle {
+    display: flex; align-items: stretch; gap: 2px;
+    min-height: var(--epos-touchziel);
+}
+.zahl .epos-kopfzelle { justify-content: flex-end; }
+.epos-kopf-titel {
+    display: inline-flex; align-items: center; gap: 5px;
+    font: inherit; font-weight: 700; color: inherit;
+    background: none; border: none; padding: 0 2px; cursor: pointer;
+    border-radius: 4px;
+}
+.epos-kopf-titel:hover, .epos-kopf-titel:focus,
+.epos-kopf-trichter:hover, .epos-kopf-trichter:focus {
+    background: var(--epos-karte-flaeche); outline: none;
+}
+.epos-sortpfeil { font-size: 11px; color: var(--epos-text-sehr-leise); }
+.epos-kopf-titel[data-richtung="auf"] .epos-sortpfeil,
+.epos-kopf-titel[data-richtung="ab"]  .epos-sortpfeil { color: var(--epos-marke); }
+
+.epos-kopf-trichter {
+    flex: 0 0 auto; width: 22px; padding: 0; cursor: pointer;
+    background: none; border: none; color: var(--epos-text-sehr-leise);
+    border-radius: 4px;
+}
+.epos-kopf-trichter svg {
+    width: 13px; height: 13px; vertical-align: middle;
+    fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: round;
+}
+/* GESETZT gegen NICHT GESETZT: gefuellt gegen Umriss - nicht blau gegen
+   grau. Der Anwender hat das ausdruecklich verlangt: Der Unterschied muss
+   ohne Farbe tragen. In Graustufen bleibt ein voller Trichter ein voller
+   Trichter; die Farbe kommt nur obendrauf. Der dickere Strich haelt die
+   Kontur auch bei 13 px erkennbar. */
+.epos-kopf-trichter--gesetzt { color: var(--epos-marke); }
+.epos-kopf-trichter--gesetzt svg { fill: currentColor; stroke-width: 2; }
+
+/* ---- Das Popover unter dem Spaltenkopf --------------------------------
+   QuickGrid zeichnet dafuer ColumnOptions in ein absolut gesetztes
+   .col-options unter der Kopfzelle; ein <th> mit position:sticky ist ein
+   positioniertes Element und damit sein Bezugsrahmen. Steht die Spalte
+   rechts aussen, wandert das Popover nach rechts (QuickGrid tut das ueber
+   .col-justify-end und rueckt es per JavaScript zusaetzlich in das Raster
+   hinein - checkColumnOptionsPosition).                                 */
+th.offen { z-index: 6; }
+.epos-spaltenfilter {
+    position: absolute; top: 100%; left: 0; z-index: 6;
+    min-width: 16rem; padding: 10px;
+    font-weight: 400; white-space: normal; text-align: left;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    box-shadow: 0 4px 14px rgba(15, 31, 61, .22);
+}
+.epos-spaltenfilter--rechts { left: auto; right: 0; }
+.epos-spaltenfilter-titel {
+    margin: 0 0 6px 0; font-weight: 700; color: var(--epos-karte-titel);
+}
+.epos-spaltenfilter .epos-eingabe { width: 100%; }
+.epos-spaltenfilter-fuss { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.epos-spaltenfilter-hinweis { margin: 6px 0 0 0; color: var(--epos-text-leise); }
+
+/* Die Zeilenwahl - ein Knopf je Zeile (Baustein Zeilenwahl). */
+.epos-zeilenwahl {
+    width: 26px; height: 26px; padding: 0; cursor: pointer;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: 50%;
+    background: var(--epos-karte-flaeche);
+}
+.epos-zeilenwahl[aria-pressed="true"] {
+    background: var(--epos-karte-titel); border-color: var(--epos-karte-titel);
+}
+
+/* ================= Baustein: Katalograhmen, NEUE Anordnung =============
+   Bis zu diesem Stand ein Paar (Liste 60 %, Eingabe 40 %). Der Anwender
+   hat es aufgeloest: "Liste wie zuvor ueber ganze Breite, sonst zu schmale
+   Liste." Aus dem Nebeneinander wird ein UNTEREINANDER - Liste ganz oben
+   ueber die volle Breite, Eingabe darunter, ebenfalls ueber die volle
+   Breite. Der Gewinn steht in Zahlen in der Fussnote jedes Reiters. */
+.epos-katalogblock { display: flex; flex-direction: column; gap: var(--epos-rand); }
+.epos-katalog-liste,
+.epos-katalog-eingabe { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+/* ================= Uebernahmeleiste (statt Zweispaltenauswahl) =========
+   Stehen Projektliste und Katalogliste UNTEREINANDER, koennen die zwei
+   Pfeilknoepfe nicht mehr in einer Mittelspalte stehen. Sie werden zu
+   einer Zeile ZWISCHEN den Listen - mit dem Pfeil als Zeichen und der
+   Richtung im Text, weil ein Pfeil ohne Nachbarspalte nichts mehr zeigt.
+   Das ist die Anordnung, zu der Frage W14a-E-10-Q2 gestellt ist. */
+.epos-uebernahme { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.epos-uebernahme-pfeil { font-size: 15px; line-height: 1; margin-right: 6px; }
+
+/* ================= Baustein: Formularraster (iU8-E-2 / W14a-E-7) ======= */
+.epos-formularraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--epos-formularspalte), 1fr));
+    align-items: start; column-gap: var(--epos-rand); row-gap: 4px;
+}
+.epos-formularraster--einspaltig { grid-template-columns: minmax(0, 1fr); }
+.epos-formulargruppe-titel {
+    grid-column: 1 / -1; margin: 8px 0 0 0;
+    font-weight: 700; color: var(--epos-text-leise);
+}
+.epos-formularraster .epos-feld {
+    display: grid; grid-template-columns: var(--epos-beschriftung-breite) minmax(0, 1fr);
+    align-items: center; gap: 6px;
+}
+.epos-formularraster .epos-feld--breit { grid-column: 1 / -1; }
+.epos-feld-zeile { display: flex; align-items: center; gap: 6px; }
+.epos-feld-zeile .epos-eingabe { flex: 1 1 auto; }
+.epos-feld-zeile .epos-eingabe--kurz { flex: 0 0 var(--epos-kurzfeld-breite); }
+
+/* Der Aufklapper "Alle Parameter und ihre Verwendung" (W14a-E-8). */
+.epos-uebersicht { margin-top: 8px; border-top: 1px solid var(--epos-rahmen-leise); padding-top: 6px; }
+.epos-uebersicht summary { cursor: pointer; color: var(--epos-marke); min-height: 30px; }
+.epos-uebersicht table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.epos-uebersicht td, .epos-uebersicht th {
+    padding: 3px 6px; text-align: left; border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.epos-stufe {
+    display: inline-block; padding: 1px 6px; border-radius: 999px; font-size: 11px;
+    border: 1px solid var(--epos-rahmen-leise); color: var(--epos-text-leise);
+}
+.epos-stufe--sim  { border-color: var(--epos-erfolg-rahmen); color: var(--epos-erfolg-text); background: var(--epos-erfolg-flaeche); }
+.epos-stufe--wirt { border-color: var(--epos-warn-rahmen);   color: var(--epos-warn-text);   background: var(--epos-warn-flaeche); }
+
+/* ================= Umbruch bei 900 px ==================================
+   Dieselbe Schwelle wie Katalograhmen und Zweispaltenauswahl. Das
+   Nebeneinander von Liste und Eingabe gibt es nicht mehr - beide stehen
+   ohnehin untereinander; zu regeln bleibt nur die Suchzeile, deren rechte
+   Haelfte auf einem schmalen Schirm unter das Suchfeld faellt.          */
+@media (max-width: 900px) {
+    .epos-eingabe--suche { width: 100%; }
+    .epos-suchzeile-rechts { margin-left: 0; justify-content: flex-start; }
+    .epos-suchzeile > .epos-herleitung { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="sym-trichter" viewBox="0 0 16 16">
+    <path d="M1.6 2.6h12.8l-5.1 5.7v4.4l-2.6 1.3V8.3z"/>
+  </symbol>
+</svg>
+
+<div class="mockup-kopf">
+  <h1>Katalogfilter EPOS-Plan &ndash; Mockup zum Anwenderentscheid W14a&#8209;E&#8209;10</h1>
+  <p>Der Filter sitzt <b>im Spaltenkopf, neben dem Namen</b> &ndash; nicht in einer eigenen
+     Zeile: je Spalte ein Sortierpfeil und ein Trichter, der ein kleines Popover mit
+     <i>einem</i> Feld &bdquo;enth&auml;lt&hellip;&ldquo; und &bdquo;Filter l&ouml;schen&ldquo;
+     &ouml;ffnet. &Uuml;ber der Liste steht nur noch <b>eine</b> Zeile: links das Suchfeld
+     &uuml;ber alle Spalten, rechts die Trefferzahl. Die <b>Liste l&auml;uft &uuml;ber die
+     ganze Breite</b>, der Eingabe&#8209; bzw. Detailblock steht <b>darunter</b>. Alle drei
+     Reiter zeigen <b>dasselbe Schema</b> &ndash; die W&auml;rmepumpe sieht aus wie der
+     Heizkessel und wie die PV-Module. Alle Namen und Zahlen sind gemessen: aus
+     <code>Referenzlaeufe/Kenndaten_Test.sqlite</code> und
+     <code>VDI-3805-Daten/PV/CEC&nbsp;Modules.csv</code>.</p>
+</div>
+
+<div class="mockup-reiter" role="tablist" aria-label="Beispiele">
+  <button type="button" role="tab" id="reiter-m1" aria-controls="blatt-m1" aria-selected="true">M1&nbsp;&middot; Heizkessel (Verwaltung)</button>
+  <button type="button" role="tab" id="reiter-m2" aria-controls="blatt-m2" aria-selected="false">M2&nbsp;&middot; W&auml;rmepumpe (Projektauswahl)</button>
+  <button type="button" role="tab" id="reiter-m3" aria-controls="blatt-m3" aria-selected="false">M3&nbsp;&middot; PV-Module (20&nbsp;749 Zeilen)</button>
+</div>
+
+<p class="mockup-legende">
+  <span><b>Bedienbar:</b> Reiter &middot; Trichter auf/zu &middot; &bdquo;Filter
+        l&ouml;schen&ldquo; &middot; &bdquo;Filter zur&uuml;cksetzen&ldquo; &middot; Klick auf
+        einen Spaltentitel sortiert (auf &rarr; ab &rarr; aus).</span>
+  <span><b>&#8645;</b> unsortiert &nbsp; <b>&#9650;/&#9660;</b> sortiert</span>
+  <span><svg style="width:13px;height:13px;vertical-align:middle;fill:none;stroke:#888780;stroke-width:1.3"><use href="#sym-trichter"/></svg>
+        <b>Umriss</b> = kein Spaltenfilter &nbsp;
+        <svg style="width:13px;height:13px;vertical-align:middle;fill:#005aa0;stroke:#005aa0;stroke-width:2"><use href="#sym-trichter"/></svg>
+        <b>gef&uuml;llt</b> = gefiltert (tr&auml;gt auch ohne Farbe)</span>
+  <span>Kein Trichter, nur <b>&#8645;</b> &rarr; die Spalte l&auml;sst sich sortieren, aber
+        nicht filtern (Kennzeichen ja/nein).</span>
+</p>
+
+<!-- ==================================================================== -->
+<!-- M1 - HEIZKESSEL-VERWALTUNG                                           -->
+<!-- ==================================================================== -->
+<div class="mockup-blatt aktiv" id="blatt-m1" role="tabpanel" aria-labelledby="reiter-m1">
+
+  <p class="mockup-hinweis">
+    <b>M1 &ndash; Administration &rarr; W&auml;rmebedarf &amp; Heizung &rarr; Heizkessel.</b>
+    Das Schema von oben nach unten: <b>Zone A</b> Titel und die eine Suchzeile (Suche links,
+    Trefferzahl rechts). <b>Zone B</b> die Liste mit den Parameterspalten &uuml;ber die
+    <b>ganze Breite</b>, darunter der Eingabeblock &ndash; ebenfalls &uuml;ber die ganze
+    Breite, im <code>Formularraster</code>. <b>Zone C</b> die Aktionsleiste. Drei Spalten sind
+    gefiltert (gef&uuml;llter Trichter); an <b>Brennstoff</b> ist das Popover ge&ouml;ffnet
+    gezeichnet. <b>Brennwert</b> tr&auml;gt nur den Sortierpfeil &ndash; ein Kennzeichen
+    ja/nein braucht keinen Trichter. Heute steht hier eine Liste mit <i>einer</i> Spalte und
+    zwei Klapplisten ohne Trefferzahl.
+  </p>
+
+  <div class="epos-dialog epos-dialog--breit" data-mockup="m1">
+
+    <!-- ---------------- ZONE A ---------------------------------------- -->
+    <div class="epos-dialog-kopf">
+      <h1 class="epos-dialog-titel">Verwaltung Heizkessel</h1>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+    </div>
+
+    <div class="epos-suchzeile" role="search">
+      <label class="epos-suchfeld">
+        <span>Suche &uuml;ber alle Spalten:</span>
+        <input class="epos-eingabe epos-eingabe--suche" type="text" readonly value=""
+               placeholder="Bezeichner, Hersteller, Brennstoff, Beschreibung &ndash; * und ? erlaubt">
+      </label>
+      <span class="epos-herleitung">Mehrere Begriffe wirken als UND
+        (<code>Suchmuster</code>, <code>VdiAuswahlFilter</code>).</span>
+      <span class="epos-suchzeile-rechts">
+        <span class="epos-treffer" data-zaehler
+              data-treffer='{"brennstoff+eta+leistung":15,"brennstoff+leistung":43,"brennstoff+eta":22,"eta+leistung":25,"brennstoff":52,"leistung":54,"eta":32,"":63}'
+              data-form="{0} von 63 S&auml;tzen">15 von 63 S&auml;tzen</span>
+        <button type="button" class="epos-textknopf" data-ruecksetzer>Filter zur&uuml;cksetzen</button>
+      </span>
+    </div>
+
+    <!-- ---------------- ZONE B: Liste ganz oben, Eingabe darunter ------ -->
+    <div class="epos-katalogblock">
+
+      <div class="epos-katalog-liste">
+        <div class="epos-gruppenkopf-balken">
+          <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
+          <h2 class="epos-gruppenkopf-titel">Heizkessel in der Datenbank</h2>
+          <span class="epos-gruppenkopf-summe">Mehrfachwahl mit Strg / Umschalt</span>
+        </div>
+        <div class="epos-raster-huelle epos-raster-huelle--katalog">
+          <table class="epos-raster">
+            <thead>
+              <tr>
+                <th scope="col">Wahl</th>
+                <th scope="col" data-spalte="bezeichner">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Bezeichner<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Bezeichner"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Bezeichner</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" data-spalte="hersteller">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Hersteller<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Hersteller"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Hersteller</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" class="gefiltert" data-spalte="brennstoff" data-aktiv="true"
+                    data-titel="Brennstoff" data-text="enth&auml;lt &bdquo;Gas&ldquo;">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Brennstoff<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="true" aria-label="Filter f&uuml;r Brennstoff"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter">
+                    <p class="epos-spaltenfilter-titel">Brennstoff</p>
+                    <input class="epos-eingabe" type="text" readonly value="Gas" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">Gro&szlig;/klein und Umlaute egal.
+                       &bdquo;Gas&ldquo; trifft Stadtgas, Erdgas, Fl&uuml;ssiggas und Biogas
+                       &ndash; genau die heutige Klappliste.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="leistung" data-aktiv="true"
+                    data-titel="P_th [kW]" data-text="10&hellip;60">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere data-richtung="auf">P_th [kW]<span class="epos-sortpfeil">&#9650;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r P_th"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">P_th [kW]</p>
+                    <input class="epos-eingabe" type="text" readonly value="10..60" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="eta" data-aktiv="true"
+                    data-titel="&eta;" data-text="&ge;&nbsp;0,95">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>&eta;<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Wirkungsgrad"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">&eta;</p>
+                    <input class="epos-eingabe" type="text" readonly value="&gt;=0,95" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <!-- Kennzeichen ja/nein: nur SORTIEREN, kein Trichter - wie
+                     "PRIORITAET" im Vorbild des Anwenders. Ein Feld
+                     "enthaelt ja" waere hier ein Bedienelement fuer zwei
+                     Werte; die Sortierung stellt sie ohnehin zusammen. -->
+                <th scope="col" data-spalte="brennwert" data-ohnefilter="true">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Brennwert<span class="epos-sortpfeil">&#8645;</span></button>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody data-zeilen>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 10CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">11,0</td><td class="zahl gefiltert">0,969</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 90</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td>ecoTEC plus VC 15CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">16,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 90</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VCC 206/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 20CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">22,1</td><td class="zahl gefiltert">0,968</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 266/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 266/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 25CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VCC 266/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">30,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 30CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">33,1</td><td class="zahl gefiltert">0,978</td><td class="leise">nein</td></tr>
+
+              <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>atmoTEC exclusiv VC 104/4-7 E</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">10,0</td><td class="zahl gefiltert">0,900</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>GBH192i-15 T 150S Schichtenladespeicher</td><td class="leise eng" title="Buderus">Buderus</td><td class="gefiltert">Erdgas LL</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,882</td><td>ja</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoVIT VKK 186/5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">19,3</td><td class="zahl gefiltert">0,874</td><td>ja</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>icoVIT exlcusiv VKO 156/3-7</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Heiz&ouml;l EL</td><td class="zahl gefiltert">15,8</td><td class="zahl gefiltert">1,000</td><td>ja</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>eloBLOCK VE 15</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>eloBLOCK VE 21</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,994</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Vitocrossal 200 CM2 raumluftabh&auml;ngig</td><td class="leise eng" title="Viessmann GmbH &amp; Co">Viessmann GmbH &amp; Co</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">80,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCRAFT VKK 806/3</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">84,1</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="epos-herleitung">Die Liste zeigt einen Auszug &ndash; der Z&auml;hler oben nennt
+           die gemessene Wahrheit. Klick auf einen Spaltentitel sortiert: auf, ab, aus.</p>
+      </div>
+
+      <div class="epos-katalog-eingabe">
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken">
+            <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9998;</span>
+            <h2 class="epos-gruppenkopf-titel">Eingabe der Heizkesseldaten</h2>
+          </div>
+          <div class="epos-gruppenkopf-koerper">
+            <!-- Ueber die ganze Breite legt auto-fill mehrere Feldpaare
+                 nebeneinander (--epos-formularspalte 26 rem, Hausregel
+                 iU8-E-2). Die zwei Zwischenueberschriften spannen ueber
+                 alle Spalten und halten die Gruppen auseinander. -->
+            <div class="epos-formularraster">
+              <p class="epos-formulargruppe-titel">Stammdaten</p>
+              <label class="epos-feld"><span>Name:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="ecoTEC plus VC 15CS/1-5"></span></label>
+              <label class="epos-feld"><span>Hersteller:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Vaillant Deutschland GmbH &amp; Co. KG"></span></label>
+              <label class="epos-feld"><span>Brennstoff:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Erdgas E"></span></label>
+              <label class="epos-feld"><span>Beschreibung:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen epos-eingabe--breit" readonly value="Brennwert-Kessel"></span></label>
+              <label class="epos-feld"><span>Brennwert:</span>
+                <span class="epos-feld-zeile"><input type="checkbox" disabled> <span class="epos-einheit">(Kennzeichen im Katalog)</span></span></label>
+
+              <p class="epos-formulargruppe-titel">Kenndaten und Kosten</p>
+              <label class="epos-feld"><span>Nennleistung:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="16,6"><span class="epos-einheit">kW</span></span></label>
+              <label class="epos-feld"><span>Wirkungsgrad Gas:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="0,970"><span class="epos-einheit">&ndash;</span></span></label>
+              <label class="epos-feld"><span>Betriebsbereitschaft:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="0,048"><span class="epos-einheit">%</span></span></label>
+              <label class="epos-feld"><span>Vorlauf / R&uuml;cklauf:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" readonly value="&ndash; / &ndash;"><span class="epos-einheit">&deg;C</span></span></label>
+              <label class="epos-feld"><span>Investitionskosten:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="0,00"><span class="epos-einheit">&euro;</span></span></label>
+            </div>
+
+            <details class="epos-uebersicht">
+              <summary>Alle Parameter und ihre Verwendung (W14a&#8209;E&#8209;8)</summary>
+              <table>
+                <thead><tr><th>Parameter</th><th>Wert</th><th>Verwendung</th></tr></thead>
+                <tbody>
+                  <tr><td>Ptherm</td><td>16,6 kW</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span> <span class="epos-stufe epos-stufe--wirt">Wirtschaftlichkeit</span></td></tr>
+                  <tr><td>Brennstoff</td><td>Erdgas E</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span> <span class="epos-stufe epos-stufe--wirt">Wirtschaftlichkeit</span></td></tr>
+                  <tr><td>Wirkungsgrad_Gas</td><td>0,970</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Betriebsbereitschaftverlust</td><td>0,048 %</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Investitionskosten</td><td>0,00 &euro;</td><td><span class="epos-stufe epos-stufe--wirt">Wirtschaftlichkeit</span></td></tr>
+                  <tr><td>CO2 / SO2 / NOx / CO / Staub</td><td>&ndash;</td><td><span class="epos-stufe">nur Anzeige</span></td></tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------------- ZONE C ---------------------------------------- -->
+    <div class="epos-leiste">
+      <button type="button" class="epos-knopf">Speichern</button>
+      <span class="epos-leiste-fueller"></span>
+      <button type="button" class="epos-knopf">Neu&hellip;</button>
+      <button type="button" class="epos-knopf">Kopieren&hellip;</button>
+      <button type="button" class="epos-knopf" disabled>Vergleichen</button>
+      <button type="button" class="epos-knopf">L&ouml;schen</button>
+      <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
+    </div>
+  </div>
+
+  <div class="mockup-fussnote">
+    <b>Herkunft der Zahlen</b> (gemessen 07.09.2026 auf <code>Kenndaten_Test.sqlite</code>,
+    Tabelle <code>Tab_Heizkessel_STAMM</code>, 63 S&auml;tze):
+    <ul>
+      <li>Der Spaltenfilter arbeitet auf dem <b>angezeigten</b> Wert, nicht auf der
+          Datenbankspalte: <code>Brennstoff</code> ist dort eine Zahl, in der Spalte steht der
+          Name aus <code>Tab_Brennstoff_Stamm</code>. &bdquo;enth&auml;lt Gas&ldquo; trifft
+          deshalb 52 S&auml;tze &ndash; dieselbe Menge, die heute die Klappliste
+          &bdquo;Brennstoffgruppe&ldquo; liefert.</li>
+      <li>Mit <code>P_th&nbsp;10..60</code> (54 S&auml;tze) und <code>&eta;&nbsp;&gt;=0,95</code>
+          (32) bleiben <b>15</b>. Ohne den Wirkungsgradfilter sind es 43, ohne den
+          Leistungsfilter 22, ohne den Brennstofffilter 25.</li>
+      <li>&eta; ist der <b>angezeigte</b> Wirkungsgrad: <code>Wirkungsgrad_Gas</code>, ersatzweise
+          <code>Wirkungsgrad_&Ouml;l</code>; ein Wert &gt;&nbsp;2 gilt als Prozent und wird durch
+          100 geteilt (<b>Befund D&#8209;2</b> &ndash; <code>eloBLOCK VE 10</code> f&uuml;hrt 94,0
+          statt 0,94; ein Satz von 63).</li>
+      <li><b>Befund D&#8209;1 steht jetzt als Spalte da.</b> Alle 15 Treffer tragen
+          <code>Brennwert&nbsp;=&nbsp;nein</code>, obwohl ihre Beschreibung
+          &bdquo;Brennwert-Kessel&ldquo; bzw. &bdquo;Brennwert-Kombi-Kessel&ldquo; lautet; die
+          Schattenzeilen <code>GBH192i-15&nbsp;T&nbsp;150S</code>,
+          <code>ecoVIT&nbsp;VKK&nbsp;186/5</code> und
+          <code>icoVIT&nbsp;exlcusiv&nbsp;VKO&nbsp;156/3-7</code> tragen &bdquo;ja&ldquo;.
+          Gemessen: <b>6 von 63</b> S&auml;tzen tragen das Kennzeichen, <b>46</b> nennen es im
+          Text. Vor dem Spaltenmodell musste man dazu 63 Datens&auml;tze einzeln aufschlagen.</li>
+      <li><b>Sechs Parameterspalten</b> statt einer &ndash; und keine davon f&auml;llt weg,
+          weil die Liste jetzt &uuml;ber die ganze Breite l&auml;uft (vorher waren es
+          f&uuml;nf neben dem Eingabeblock). <code>Brennwert</code> tr&auml;gt nur den
+          Sortierpfeil: ein Kennzeichen mit zwei Werten braucht kein Feld
+          &bdquo;enth&auml;lt ja&ldquo;, die Sortierung stellt die sechs S&auml;tze ohnehin
+          zusammen.</li>
+      <li><b>Was NICHT als Spalte steht und warum</b> &ndash; gemessen, nicht gesch&auml;tzt:
+          <code>Vorlauf</code> und <code>R&uuml;cklauf</code> sind in <b>0 von 63</b>
+          S&auml;tzen gepflegt, <code>Investitionskosten</code> in <b>4 von 63</b>. Eine
+          Spalte, die fast immer leer ist, kostet Breite und tr&auml;gt nichts; beide stehen
+          deshalb im Detailblock (Kapitel 4.1 f&uuml;hrt sie unter &bdquo;A&ldquo;).</li>
+      <li>Neu gegen&uuml;ber heute: Sortierung und Spaltenfilter an jeder Parameterspalte und
+          das Suchfeld mit der Trefferzahl. Weg sind: die zwei Klapplisten, die sechs festen
+          Leistungsstufen und &ndash; gegen&uuml;ber den zwei Vorfassungen dieses Mockups
+          &ndash; erst die Filterleiste mit ihren Chips, jetzt auch die Filter&#8209;/
+          Trefferzeile. Unver&auml;ndert: Formularraster, Parameter&uuml;bersicht,
+          Aktionsleiste; ge&auml;ndert ist die <b>Anordnung</b> des Katalograhmens &ndash;
+          Liste oben &uuml;ber die volle Breite, Eingabe darunter statt daneben.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================================================================== -->
+<!-- M2 - WAERMEPUMPE, PROJEKTAUSWAHL MIT PFEILEN                         -->
+<!-- ==================================================================== -->
+<div class="mockup-blatt" id="blatt-m2" role="tabpanel" aria-labelledby="reiter-m2">
+
+  <p class="mockup-hinweis">
+    <b>M2 &ndash; Projektseite: Erzeuger &rarr; W&auml;rmepumpe.</b>
+    Derselbe Aufbau wie M1 und M3 &ndash; das ist der Kern des Entscheids
+    (&bdquo;W&auml;rmepumpe &auml;hnlich wie PV-Module und Heizkessel&ldquo;). Weil auch hier
+    &bdquo;die Liste &uuml;ber die ganze Breite&ldquo; gilt, stehen die zwei Listen
+    <b>untereinander</b> statt nebeneinander: oben die kurze Projektliste, dann die
+    &Uuml;bernahmeleiste mit den zwei Pfeilen <i>als Text</i>, dann die Suchzeile und die
+    Katalogliste mit <b>denselben Spaltenk&ouml;pfen</b> wie M1/M3, darunter die Kenndaten.
+    Damit steht die Suche unmittelbar &uuml;ber der Liste, auf die sie wirkt &ndash; Hausregel
+    <b>#76</b> w&ouml;rtlich statt im Klartext. Das &auml;ndert die Anordnung des Entscheids
+    #76 (Projekt links, Katalog rechts); dazu ist die Frage <b>W14a&#8209;E&#8209;10&#8209;Q2</b>
+    gestellt. Das Popover ist an <b>Quelle</b> ge&ouml;ffnet gezeichnet.
+    Heute ersetzt diesen ganzen Aufbau eine &Uuml;berlagerung
+    &bdquo;Modul-Katalog&hellip;&ldquo; mit <b>elf</b> Bedienelementen nebeneinander.
+  </p>
+
+  <div class="epos-dialog epos-dialog--breit" data-mockup="m2">
+
+    <div class="epos-dialog-kopf">
+      <h1 class="epos-dialog-titel">W&auml;rmepumpen des Projekts</h1>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+    </div>
+    <p class="epos-kontextzeile">Projekt: Heinestr 15 &nbsp;&middot;&nbsp; Variante: Grundvariante</p>
+
+    <div class="epos-katalogblock">
+
+      <!-- --------- oben: die kurze Projektliste, volle Breite -------- -->
+      <div class="epos-katalog-liste" role="group" aria-label="W&auml;rmepumpen im Projekt">
+        <div class="epos-gruppenkopf-balken">
+          <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
+          <h2 class="epos-gruppenkopf-titel">W&auml;rmepumpen im Projekt</h2>
+          <span class="epos-gruppenkopf-summe">2 Anlagen</span>
+        </div>
+        <div class="epos-raster-huelle epos-raster-huelle--kurz">
+          <table class="epos-raster">
+            <thead><tr>
+              <th scope="col">Wahl</th>
+              <th scope="col"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>Bezeichner<span class="epos-sortpfeil">&#8645;</span></button></div></th>
+              <th scope="col"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>Hersteller<span class="epos-sortpfeil">&#8645;</span></button></div></th>
+              <th scope="col"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>Quelle<span class="epos-sortpfeil">&#8645;</span></button></div></th>
+              <th scope="col" class="zahl"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>P_N [kW]<span class="epos-sortpfeil">&#8645;</span></button></div></th>
+              <th scope="col" class="zahl"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>Zuheizung [kW]<span class="epos-sortpfeil">&#8645;</span></button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="CS5800i AW 12 M + AW 5 OR-S">CS5800i AW 12 M + AW 5 OR-S</td><td class="leise eng" title="Bosch">Bosch</td><td>Luft-Wasser</td><td class="zahl">3</td><td class="zahl">6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="CS7800iLW 16">CS7800iLW 16</td><td class="leise eng" title="Bosch">Bosch</td><td>Sole-Wasser</td><td class="zahl">15</td><td class="zahl">9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="epos-herleitung">Sortierbar, aber <b>ohne</b> Spaltenfilter: kein Profil,
+           kein Bedienelement (<code>ModulKatalogDialog.Filterbar</code>).</p>
+      </div>
+
+      <!-- --------- dazwischen: die zwei Pfeile als Textknoepfe ------- -->
+      <div class="epos-uebernahme" role="group" aria-label="&Uuml;bernehmen und Entfernen">
+        <button type="button" class="epos-knopf">
+          <span class="epos-uebernahme-pfeil" aria-hidden="true">&#9650;</span>ins Projekt &uuml;bernehmen
+        </button>
+        <button type="button" class="epos-knopf" disabled>
+          <span class="epos-uebernahme-pfeil" aria-hidden="true">&#9660;</span>aus dem Projekt entfernen
+        </button>
+        <span class="epos-herleitung">Untereinander zeigt der Pfeil nach oben und unten
+          &ndash; die Richtung steht im Text.</span>
+      </div>
+
+      <!-- --------- unten: der Katalog, volle Breite ------------------ -->
+      <div class="epos-katalog-liste" role="group" aria-label="W&auml;rmepumpen in der Datenbank">
+
+        <div class="epos-suchzeile" role="search">
+          <label class="epos-suchfeld">
+            <span>Suche &uuml;ber alle Spalten des Katalogs:</span>
+            <input class="epos-eingabe epos-eingabe--suche" type="text" readonly value=""
+                   placeholder="Modell, Hersteller, Quelle &ndash; * und ? erlaubt">
+          </label>
+          <span class="epos-herleitung">Steht unmittelbar &uuml;ber der Liste, auf die sie
+            wirkt (Hausregel #76).</span>
+          <span class="epos-suchzeile-rechts">
+            <span class="epos-treffer" data-zaehler
+                  data-treffer='{"leistung+quelle+vorlauf":7,"leistung+quelle":24,"quelle+vorlauf":11,"leistung+vorlauf":10,"quelle":34,"leistung":31,"vorlauf":18,"":51}'
+                  data-form="{0} von 51 S&auml;tzen">7 von 51 S&auml;tzen</span>
+            <button type="button" class="epos-textknopf" data-ruecksetzer>Filter zur&uuml;cksetzen</button>
+          </span>
+        </div>
+
+        <div class="epos-gruppenkopf-balken">
+          <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
+          <h2 class="epos-gruppenkopf-titel">W&auml;rmepumpen in der Datenbank</h2>
+          <span class="epos-gruppenkopf-summe">Mehrfachwahl mit Strg / Umschalt</span>
+        </div>
+
+        <div class="epos-raster-huelle epos-raster-huelle--katalog">
+          <table class="epos-raster">
+            <thead>
+              <tr>
+                <th scope="col">Wahl</th>
+                <th scope="col" data-spalte="hersteller">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Hersteller<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Hersteller"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Hersteller</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" data-spalte="modell">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Modell<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Modell"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Modell</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" class="gefiltert" data-spalte="quelle" data-aktiv="true"
+                    data-titel="Quelle" data-text="enth&auml;lt &bdquo;Luft&ldquo;">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Quelle<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="true" aria-label="Filter f&uuml;r Quelle"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter">
+                    <p class="epos-spaltenfilter-titel">Quelle</p>
+                    <input class="epos-eingabe" type="text" readonly value="Luft" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">34 Luft-, 14 Sole-, 1 Wasser-Wasser,
+                       2 ohne Angabe.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="leistung" data-aktiv="true"
+                    data-titel="P_N [kW]" data-text="5&hellip;12">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere data-richtung="auf">P_N [kW]<span class="epos-sortpfeil">&#9650;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Nennleistung"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">P_N [kW]</p>
+                    <input class="epos-eingabe" type="text" readonly value="5..12" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" class="zahl" data-spalte="vorlaufmin">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>VL min [&deg;C]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Vorlauf minimal"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">VL min [&deg;C]</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">Gemessen nur zwei Werte im ganzen
+                       Katalog: 25&nbsp;&deg;C (10 S&auml;tze) und 35&nbsp;&deg;C (40); einer
+                       ohne Kennlinie.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="vorlauf" data-aktiv="true"
+                    data-titel="VL max [&deg;C]" data-text="&ge;&nbsp;60">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>VL max [&deg;C]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Vorlauf"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">VL max [&deg;C]</p>
+                    <input class="epos-eingabe" type="text" readonly value="&gt;=60" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">Gerechnet aus den Kennlinien
+                       (<code>Tab_Kenndaten_STAMM</code>, 1 960 Punkte) &ndash; nach dieser
+                       Spalte l&auml;sst sich deshalb auch sortieren.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl" data-spalte="zuheizung">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Zuheizung [kW]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r elektrische Zuheizung"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">el. Zuheizung [kW]</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis"><code>Tab_WP_STAMM.Heizung</code> &ndash;
+                       37 von 51 S&auml;tzen tragen einen Wert &gt; 0.</p>
+                  </div>
+                </th>
+                <!-- Kennzeichen ja/nein: nur SORTIEREN, kein Trichter - wie
+                     "Brennwert" in M1 und "PRIORITAET" im Vorbild. -->
+                <th scope="col" data-spalte="kuehlen" data-ohnefilter="true">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>K&uuml;hlen<span class="epos-sortpfeil">&#8645;</span></button>
+                  </div>
+                </th>
+                <th scope="col" class="zahl" data-spalte="cop">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>COP<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r COP"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">COP bei A2/W35</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody data-zeilen>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="FHA-Center-14/17-300-S50-400V, DE">FHA-Center-14/17-300-S50-400V, DE</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">6</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">6</td><td>ja</td><td class="zahl">3,49</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW">WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">9</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">4,00</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS6800iAW MB + AW 10 OR-T">CS6800iAW MB + AW 10 OR-T</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 20/24 (400V) mit E-Heizelement">WP CHA-Monoblock 20/24 (400V) mit E-Heizelement</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 20/24 (400V) ohne E-Heizelement">WP CHA-Monoblock 20/24 (400V) ohne E-Heizelement</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS5800i AW 12 M + AW 4 OR-S">CS5800i AW 12 M + AW 4 OR-S</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">3,20</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS6800iAW MB + AW 12 OR-T">CS6800iAW MB + AW 12 OR-T</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,70</td></tr>
+
+              <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="STIEBEL ELTRON">STIEBEL ELTRON</td><td class="kurz" title="WPL 19 I Set">WPL 19 I Set</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,12</td></tr>
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="STIEBEL ELTRON">STIEBEL ELTRON</td><td class="kurz" title="WPL 20 A hybrid Set">WPL 20 A hybrid Set</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,14</td></tr>
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP BWL-1-08-I, Ausbla&szlig; links">WP BWL-1-08-I, Ausbla&szlig; links</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">3,80</td></tr>
+              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS7800iLW 8 M">CS7800iLW 8 M</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
+              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS7800iLW 12">CS7800iLW 12</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS5800i AW 12 M + AW 5 OR-S">CS5800i AW 12 M + AW 5 OR-S</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">3</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP FHA-05/06-230V o. EHZ, DE">WP FHA-05/06-230V o. EHZ, DE</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">2</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">0</td><td>ja</td><td class="zahl">4,24</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="epos-leiste">
+          <button type="button" class="epos-knopf">Bearbeiten&hellip;</button>
+          <button type="button" class="epos-knopf">L&ouml;schen</button>
+          <button type="button" class="epos-knopf">Verwaltung&hellip;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- --------- Detailblock ganz unten, ueber die volle Breite -------
+         Er stand hier schon (unter dem Paar) und bleibt, wo er ist - nur
+         steht ueber ihm jetzt eine Liste ueber die ganze Breite statt
+         einer halben. -->
+    <div class="epos-gruppenkopf">
+      <div class="epos-gruppenkopf-balken">
+        <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
+        <h2 class="epos-gruppenkopf-titel">Kenndaten der gew&auml;hlten W&auml;rmepumpe</h2>
+        <span class="epos-gruppenkopf-summe">Katalogsatz &ndash; nur Anzeige</span>
+      </div>
+      <div class="epos-gruppenkopf-koerper">
+        <div class="epos-formularraster">
+          <label class="epos-feld"><span>Modell:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW"></span></label>
+          <label class="epos-feld"><span>Hersteller:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Wolf"></span></label>
+          <label class="epos-feld"><span>Quelle:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Luft-Wasser"></span></label>
+          <label class="epos-feld"><span>Regelung:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="stetig"></span></label>
+          <label class="epos-feld"><span>Bauart:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="&ndash;" title="in 45 von 51 S&auml;tzen leer &ndash; deshalb keine Spalte"></span></label>
+          <label class="epos-feld"><span>K&uuml;hlleistung:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz epos-eingabe--lesen" readonly value="&ndash;"><span class="epos-einheit">kW</span></span></label>
+          <label class="epos-feld"><span>Nennleistung:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="9"><span class="epos-einheit">kW</span></span></label>
+          <label class="epos-feld"><span>el. Zuheizung:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="9"><span class="epos-einheit">kW</span></span></label>
+          <label class="epos-feld"><span>Vorlauf min / max:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="25 / 65"><span class="epos-einheit">&deg;C</span></span></label>
+          <label class="epos-feld"><span>COP bei A2/W35:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="4,00"><span class="epos-einheit">&ndash;</span></span></label>
+          <label class="epos-feld"><span>P_th bei A2/W35:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="18,10"><span class="epos-einheit">kW</span></span></label>
+          <label class="epos-feld"><span>Aufstellung:</span>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="innen/au&szlig;en"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="epos-leiste">
+      <span class="epos-leiste-fueller"></span>
+      <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
+      <button type="button" class="epos-knopf">Abbrechen</button>
+    </div>
+  </div>
+
+  <div class="mockup-fussnote">
+    <b>Herkunft der Zahlen</b> (gemessen 07.09.2026, <code>Tab_WP_STAMM</code> 51 S&auml;tze,
+    <code>Tab_Kenndaten_STAMM</code> 1 960 Kennlinienpunkte):
+    <ul>
+      <li>&bdquo;Quelle enth&auml;lt Luft&ldquo; trifft 34 S&auml;tze, <code>P_N&nbsp;5..12</code>
+          trifft 31, <code>VL&nbsp;max&nbsp;&gt;=60</code> trifft 18; zusammen bleiben <b>7</b>.
+          Ohne den Vorlauffilter sind es 24, ohne den Leistungsfilter 11, ohne den Quellenfilter 10.</li>
+      <li>Die <b>elf</b> Bedienelemente des heutigen <code>WaermepumpenKatalogDialog</code>
+          (7 Klapplisten + 4 Zahlenfelder) verteilen sich auf die Spalten: Hersteller, Quelle
+          (<code>Typ</code>), Auslegung, Regelung, Bauart, Aufstellung und Zuheizung werden
+          Textspalten, VL&nbsp;min/max und P_N&nbsp;min/max werden <b>je eine</b> Zahlenspalte
+          mit einem Feld (&bdquo;5..12&ldquo; statt zweier K&auml;sten).</li>
+      <li><b>Neun Parameterspalten</b> &ndash; drei mehr als in der Vorfassung, weil die Liste
+          nicht mehr die halbe, sondern die ganze Breite hat: <code>VL&nbsp;min</code>,
+          <code>Zuheizung</code> und <code>K&uuml;hlen</code> sind dazugekommen. Genau das war
+          der Einwand des Anwenders (&bdquo;sonst zu schmale Liste&ldquo;), und er ist damit
+          erledigt: <b>O&#8209;5 ist gegenstandslos</b> &ndash; die Katalogliste rollt bei
+          1&nbsp;366&nbsp;px nicht mehr in sich.</li>
+      <li><code>Zuheizung</code> ist <code>Tab_WP_STAMM.Heizung</code>: 37 von 51 S&auml;tzen
+          tragen einen Wert &gt; 0. Die Spalte macht nebenbei einen Datenbefund sichtbar &ndash;
+          <code>WP&nbsp;CHA-Monoblock&nbsp;20/24&nbsp;(400V)&nbsp;<b>mit</b>&nbsp;E-Heizelement</code>
+          tr&auml;gt <b>0&nbsp;kW</b>, genau wie der Satz &bdquo;ohne E-Heizelement&ldquo;
+          daneben. In einer Liste mit einer Spalte f&auml;llt so etwas nie auf.</li>
+      <li><code>K&uuml;hlen</code> ist <code>Kuehlleistung&nbsp;&gt;&nbsp;0</code>: <b>15 von
+          51</b> S&auml;tzen; 18 stehen auf 0, 18 sind leer. Wie <code>Brennwert</code> in M1
+          tr&auml;gt die Spalte nur den Sortierpfeil &ndash; ein Kennzeichen ja/nein braucht
+          keinen Trichter.</li>
+      <li><code>VL&nbsp;min</code> f&uuml;hrt gemessen nur <b>zwei</b> Werte (25&nbsp;&deg;C
+          10&nbsp;S&auml;tze, 35&nbsp;&deg;C 40, einer ohne Kennlinie). Als Spalte ist sie
+          trotzdem richtig: Wer eine Fu&szlig;bodenheizung auslegt, sortiert danach; einen
+          Trichter braucht sie kaum, sie hat aber einen, weil sie eine Zahlenspalte ist und
+          alle Zahlenspalten gleich aussehen sollen.</li>
+      <li><code>Bauart</code> ist in <b>45 von 51</b> S&auml;tzen leer (5 Split, 1 Monoblock) &ndash;
+          sie steht deshalb im Detailblock und nicht als Spalte, obwohl Kapitel 4.3 sie f&uuml;hrt.
+          Dieselbe Regel wie im Bestand: eine Spalte, die fast immer leer ist, kostet Breite und
+          tr&auml;gt nichts.</li>
+      <li><b>VL min/max</b> und <b>COP A2/W35</b> stehen in keiner Spalte von
+          <code>Tab_WP_STAMM</code>; sie kommen aus den Kennlinien und werden beim Aufbau der
+          Zeilenliste <b>einmal</b> gerechnet (<code>WPStammCtrl.KatalogZeilen</code> tut das
+          f&uuml;r die Vorlaufgrenzen heute schon). Nur so kann die Liste nach ihnen sortieren.</li>
+      <li><b>Die zwei Listen stehen untereinander</b> statt nebeneinander &ndash; die Anordnung,
+          zu der Frage <b>W14a&#8209;E&#8209;10&#8209;Q2</b> gestellt ist. Der Vorschlag: so
+          lassen. Die Projektliste f&uuml;hrt zwei Zeilen und verschenkt nebeneinander die halbe
+          Breite, die Katalogliste braucht sie; und die Suche steht dann unmittelbar &uuml;ber
+          der Liste, auf die sie wirkt. Die Alternative &ndash; nebeneinander erst ab
+          1&nbsp;920&nbsp;px &ndash; steht im Konzept.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================================================================== -->
+<!-- M3 - PV-MODULE, 20 749 ZEILEN                                        -->
+<!-- ==================================================================== -->
+<div class="mockup-blatt" id="blatt-m3" role="tabpanel" aria-labelledby="reiter-m3">
+
+  <p class="mockup-hinweis">
+    <b>M3 &ndash; Administration &rarr; Energiesysteme &rarr; Photovoltaik &rarr; PV Module.</b>
+    Derselbe Aufbau wie M1 &ndash; Suchzeile, Liste &uuml;ber die ganze Breite, Eingabeblock
+    darunter &ndash; nur ist der Katalog nach dem CEC-Import <b>20 749</b> Zeilen lang. Das
+    Popover ist hier an einer <b>Zahlenspalte</b> ge&ouml;ffnet gezeichnet
+    (<code>P_STC</code> mit <code>500..600</code>) &ndash; genau die Bedienung, zu der die Frage
+    <b>W14a&#8209;E&#8209;10&#8209;Q1</b> gestellt ist. Heute hat diese Verwaltung <b>keinen</b>
+    Filter und <b>eine</b> Spalte.
+  </p>
+
+  <div class="epos-dialog epos-dialog--breit" data-mockup="m3">
+
+    <div class="epos-dialog-kopf">
+      <h1 class="epos-dialog-titel">Verwaltung PV-Module</h1>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+    </div>
+
+    <div class="epos-suchzeile" role="search">
+      <label class="epos-suchfeld">
+        <span>Suche &uuml;ber alle Spalten:</span>
+        <input class="epos-eingabe epos-eingabe--suche" type="text" readonly value=""
+               placeholder="Bezeichner, Hersteller, Technologie &ndash; * und ? erlaubt">
+      </label>
+      <span class="epos-herleitung">Bei 20 749 Zeilen &uuml;bersetzt der Controller Suche
+        <b>und</b> Spaltenfilter in ein <code>WHERE</code>.</span>
+      <span class="epos-suchzeile-rechts">
+        <span class="epos-treffer" data-zaehler
+              data-treffer='{"eta+hersteller+leistung":15,"eta+hersteller":31,"hersteller+leistung":18,"eta+leistung":789,"hersteller":252,"leistung":2158,"eta":2172,"":20749}'
+              data-form="{0} von 20 749 S&auml;tzen">15 von 20 749 S&auml;tzen</span>
+        <button type="button" class="epos-textknopf" data-ruecksetzer>Filter zur&uuml;cksetzen</button>
+      </span>
+    </div>
+
+    <div class="epos-katalogblock">
+
+      <div class="epos-katalog-liste">
+        <div class="epos-gruppenkopf-balken">
+          <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
+          <h2 class="epos-gruppenkopf-titel">PV-Module in der Datenbank</h2>
+          <span class="epos-gruppenkopf-summe">virtualisiert (Raster.Virtualisiert)</span>
+        </div>
+        <div class="epos-raster-huelle epos-raster-huelle--katalog">
+          <table class="epos-raster">
+            <thead>
+              <tr>
+                <th scope="col">Wahl</th>
+                <th scope="col" data-spalte="bezeichner">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Bezeichner<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Bezeichner"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Bezeichner</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" class="gefiltert" data-spalte="hersteller" data-aktiv="true"
+                    data-titel="Hersteller" data-text="enth&auml;lt &bdquo;LONGi&ldquo;">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Hersteller<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Hersteller"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">Hersteller</p>
+                    <input class="epos-eingabe" type="text" readonly value="LONGi" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">258 Hersteller &ndash; ein Feld
+                       &bdquo;enth&auml;lt&ldquo; ist hier schneller als eine Klappliste mit
+                       258 Eintr&auml;gen.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="leistung" data-aktiv="true"
+                    data-titel="P_STC [W]" data-text="500&hellip;600">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere data-richtung="ab">P_STC [W]<span class="epos-sortpfeil">&#9660;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="true" aria-label="Filter f&uuml;r Nennleistung"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter">
+                    <p class="epos-spaltenfilter-titel">P_STC [W]</p>
+                    <input class="epos-eingabe" type="text" readonly value="500..600" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis"><b>Frage W14a&#8209;E&#8209;10&#8209;Q1:</b>
+                       EIN Feld je Zahlenspalte, das <code>&gt;10</code>, <code>&lt;60</code>,
+                       <code>10..60</code> und <code>=15</code> versteht &ndash; oder zwei Felder
+                       &bdquo;von / bis&ldquo;? Empfehlung: ein Feld.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl gefiltert" data-spalte="eta" data-aktiv="true"
+                    data-titel="&eta; [%]" data-text="&ge;&nbsp;21,5">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>&eta; [%]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Wirkungsgrad"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter" hidden>
+                    <p class="epos-spaltenfilter-titel">&eta; [%]</p>
+                    <input class="epos-eingabe" type="text" readonly value="&gt;=21,5" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                  </div>
+                </th>
+                <th scope="col" data-spalte="technologie">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>Technologie<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Technologie"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">Technologie</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="enth&auml;lt&hellip;">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">Mono-c-Si 15 274 &middot; Multi-c-Si
+                       5 177 &middot; Thin Film 157 &middot; CdTe 119 &middot; CIGS 16.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl" data-spalte="flaeche">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>A_Modul [m&sup2;]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Modulfl&auml;che"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">A_Modul [m&sup2;]</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">Aus der CEC-Spalte <code>A_c</code>;
+                       in <code>Tab_PV_STAMM</code> aus <code>Laenge&nbsp;&times;&nbsp;Breite</code>.
+                       Die Strangauslegung rechnet damit &ndash; deshalb geh&ouml;rt sie in die
+                       Liste, nicht nur in den Detailblock.</p>
+                  </div>
+                </th>
+                <th scope="col" class="zahl" data-spalte="noct">
+                  <div class="epos-kopfzelle">
+                    <button type="button" class="epos-kopf-titel" data-sortiere>T_NOCT [&deg;C]<span class="epos-sortpfeil">&#8645;</span></button>
+                    <button type="button" class="epos-kopf-trichter" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r T_NOCT"><svg><use href="#sym-trichter"/></svg></button>
+                  </div>
+                  <div class="epos-spaltenfilter epos-spaltenfilter--rechts" hidden>
+                    <p class="epos-spaltenfilter-titel">T_NOCT [&deg;C]</p>
+                    <input class="epos-eingabe" type="text" readonly value="" placeholder="z. B. &gt;10, &lt;60, 10..60, =15">
+                    <div class="epos-spaltenfilter-fuss">
+                      <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
+                    </div>
+                    <p class="epos-spaltenfilter-hinweis">In allen 20 743 CEC-S&auml;tzen
+                       gepflegt &ndash; anders als in <code>Tab_PV_STAMM</code>, wo ein Satz
+                       0,0 f&uuml;hrt und einer leer ist.</p>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody data-zeilen>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-570M">LONGi &hellip; LR5-72HPH-570M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">570,4</td><td class="zahl gefiltert">22,91</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-565M">LONGi &hellip; LR5-72HBD-565M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">565,2</td><td class="zahl gefiltert">22,52</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-565M">LONGi &hellip; LR5-72HPH-565M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">564,8</td><td class="zahl gefiltert">22,68</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-560M">LONGi &hellip; LR5-72HBD-560M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,35</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-560M">LONGi &hellip; LR5-72HPH-560M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,53</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-555M">LONGi &hellip; LR5-72HBD-555M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,12</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-555M">LONGi &hellip; LR5-72HPH-555M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,30</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-550M">LONGi &hellip; LR5-72HBD-550M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">21,95</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-550M">LONGi &hellip; LR5-72HPH-550M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">22,13</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-545M">LONGi &hellip; LR5-72HBD-545M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-545M">LONGi &hellip; LR5-72HPH-545M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,89</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-540M">LONGi &hellip; LR5-72HBD-540M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,55</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-540M">LONGi &hellip; LR5-72HPH-540M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-535M">LONGi &hellip; LR5-72HBD-535M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-535M">LONGi &hellip; LR5-72HPH-535M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+
+              <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-530M">LONGi &hellip; LR5-72HBD-530M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">530,7</td><td class="zahl gefiltert">21,32</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-525M">LONGi &hellip; LR5-72HBD-525M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">525,3</td><td class="zahl gefiltert">21,10</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-66HBD-495M">LONGi &hellip; LR5-66HBD-495M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">494,7</td><td class="zahl gefiltert">21,60</td><td>Mono-c-Si</td><td class="zahl">2,29</td><td class="zahl">47,7</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR4-72HPH-465M">LONGi &hellip; LR4-72HPH-465M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">465,2</td><td class="zahl gefiltert">21,94</td><td>Mono-c-Si</td><td class="zahl">2,12</td><td class="zahl">45,1</td></tr>
+              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Tangshan Haitai New Energy Technology Co, Ltd, HTM600MH8-60(1500)">Tangshan Haitai &hellip; HTM600MH8-60(1500)</td><td class="leise gefiltert eng" title="Tangshan Haitai New Energy Technology Co, Ltd,">Tangshan Haitai New Energy Technology Co, Ltd,</td><td class="zahl gefiltert">600,0</td><td class="zahl gefiltert">26,78</td><td>Mono-c-Si</td><td class="zahl">2,24</td><td class="zahl">45,6</td></tr>
+              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="VIETNAM SUNERGY JOINT STOCK COMPANY VSUN600N-144BMH">VIETNAM SUNERGY &hellip; VSUN600N-144BMH</td><td class="leise gefiltert eng" title="VIETNAM SUNERGY JOINT STOCK COMPANY">VIETNAM SUNERGY JOINT STOCK COMPANY</td><td class="zahl gefiltert">599,9</td><td class="zahl gefiltert">23,25</td><td>Mono-c-Si</td><td class="zahl">2,58</td><td class="zahl">46,1</td></tr>
+              <tr data-verletzt="hersteller eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Philadelphia Solar PS-M144(HCBF)-530W">Philadelphia Solar PS-M144(HCBF)-530W</td><td class="leise gefiltert eng" title="Philadelphia Solar">Philadelphia Solar</td><td class="zahl gefiltert">530,8</td><td class="zahl gefiltert">20,73</td><td class="leise">&ndash;</td><td class="zahl leise">&ndash;</td><td class="zahl">45,3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="epos-herleitung">Der Auszug zeigt 15 von 15 Treffern; ohne Filter rollt die
+           Liste virtualisiert &uuml;ber 20 749 Zeilen.</p>
+      </div>
+
+      <div class="epos-katalog-eingabe">
+        <div class="epos-gruppenkopf">
+          <div class="epos-gruppenkopf-balken">
+            <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9998;</span>
+            <h2 class="epos-gruppenkopf-titel">Eingabe der Moduldaten</h2>
+          </div>
+          <div class="epos-gruppenkopf-koerper">
+            <div class="epos-formularraster">
+              <p class="epos-formulargruppe-titel">Stammdaten</p>
+              <label class="epos-feld epos-feld--breit"><span>Modulname:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen epos-eingabe--breit" readonly
+                       value="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-570M"></span></label>
+              <label class="epos-feld"><span>Hersteller:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="LONGi Green Energy Technology Co, Ltd,"></span></label>
+              <label class="epos-feld"><span>Zelltechnologie:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Mono-c-Si"></span></label>
+
+              <p class="epos-formulargruppe-titel">Kenndaten</p>
+              <label class="epos-feld"><span>Nennleistung:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="570,40"><span class="epos-einheit">W</span></span></label>
+              <label class="epos-feld"><span>Wirkungsgrad:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="22,91"><span class="epos-einheit">%</span></span></label>
+              <label class="epos-feld"><span>U MPP:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="42,60"><span class="epos-einheit">V</span></span></label>
+              <label class="epos-feld"><span>I MPP:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="13,39"><span class="epos-einheit">A</span></span></label>
+              <label class="epos-feld"><span>U Leerlauf:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="50,50"><span class="epos-einheit">V</span></span></label>
+              <label class="epos-feld"><span>I Kurzschluss:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="14,22"><span class="epos-einheit">A</span></span></label>
+              <label class="epos-feld"><span>Temperaturkoeffizient:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="-0,375"><span class="epos-einheit">%/K</span></span></label>
+              <label class="epos-feld"><span>T_NOCT:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="46,6"><span class="epos-einheit">&deg;C</span></span></label>
+              <label class="epos-feld"><span>Modulfl&auml;che:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="2,49"><span class="epos-einheit">m&sup2;</span></span></label>
+              <label class="epos-feld"><span>Modulkosten:</span>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--kurz" readonly value="0,00"><span class="epos-einheit">&euro;</span></span></label>
+            </div>
+
+            <details class="epos-uebersicht">
+              <summary>Alle Parameter und ihre Verwendung (W14a&#8209;E&#8209;8)</summary>
+              <table>
+                <thead><tr><th>Parameter</th><th>Wert</th><th>Verwendung</th></tr></thead>
+                <tbody>
+                  <tr><td>Leistung</td><td>570,40 W</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Wirkungsgrad</td><td>22,91 %</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Technologie</td><td>Mono-c-Si</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>gamma_PMP</td><td>-0,375 %/K</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>T_NOCT</td><td>46,6 &deg;C</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Laenge &times; Breite</td><td>2,49 m&sup2;</td><td><span class="epos-stufe epos-stufe--sim">Simulation</span></td></tr>
+                  <tr><td>Modulkosten</td><td>0,00 &euro;</td><td><span class="epos-stufe epos-stufe--wirt">Wirtschaftlichkeit</span></td></tr>
+                  <tr><td>U_Mpp, I_Mpp, U_Leerlauf, I_Kurzschluss</td><td>&hellip;</td><td><span class="epos-stufe">nur Anzeige</span></td></tr>
+                </tbody>
+              </table>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="epos-leiste">
+      <button type="button" class="epos-knopf">Speichern</button>
+      <span class="epos-leiste-fueller"></span>
+      <button type="button" class="epos-knopf">Neu&hellip;</button>
+      <button type="button" class="epos-knopf">Kopieren&hellip;</button>
+      <button type="button" class="epos-knopf" disabled>Vergleichen</button>
+      <button type="button" class="epos-knopf">L&ouml;schen</button>
+      <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
+    </div>
+  </div>
+
+  <div class="mockup-fussnote">
+    <b>Herkunft der Zahlen</b> (gemessen 07.09.2026):
+    <ul>
+      <li><code>VDI-3805-Daten/PV/CEC&nbsp;Modules.csv</code> f&uuml;hrt <b>20 743</b>
+          Datenzeilen von <b>258</b> Herstellern in <b>5</b> Zelltechnologien; dazu kommen die
+          <b>6</b> S&auml;tze, die <code>Tab_PV_STAMM</code> in
+          <code>Kenndaten_Test.sqlite</code> schon enth&auml;lt &ndash; zusammen 20 749.</li>
+      <li>&bdquo;Hersteller enth&auml;lt LONGi&ldquo; trifft 252 Module,
+          <code>P_STC&nbsp;500..600</code> trifft 2 158, <code>&eta;&nbsp;&gt;=21,5</code>
+          trifft 2 172; zusammen bleiben <b>15</b> &ndash; genau die Zeilen, die oben stehen.
+          Ohne den Herstellerfilter w&auml;ren es 789, ohne den Leistungsfilter 31, ohne den
+          Wirkungsgradfilter 18.</li>
+      <li>Der Wirkungsgrad ist hier <b>gerechnet</b>: P_STC / A_c / 10. Die CEC-Liste f&uuml;hrt
+          keine Wirkungsgradspalte &ndash; <code>Tab_PV_STAMM.Wirkungsgrad</code> entsteht beim
+          Import genauso. Weil er eine Spalte ist, l&auml;sst sich nach ihm sortieren
+          <i>und</i> filtern.</li>
+      <li>Die letzte Schattenzeile <code>Philadelphia Solar PS-M144(HCBF)-530W</code> stammt aus
+          der Testdatenbank: 530,8&nbsp;W im Fenster, aber anderer Hersteller und 20,73&nbsp;%
+          &ndash; sie erscheint erst, wenn <i>beide</i> Filter gel&ouml;scht sind. Ihre
+          Zelltechnologie <i>und</i> ihre Modulfl&auml;che sind nicht gepflegt
+          (<code>Laenge&nbsp;=&nbsp;Breite&nbsp;=&nbsp;0</code>) und stehen deshalb als
+          Halbgeviertstrich, nicht als 0 (Regel aus W6&#8209;E&#8209;1). In der Liste sieht man
+          das jetzt, ohne den Satz aufzuschlagen.</li>
+      <li><b>Sieben Parameterspalten</b> &ndash; zwei mehr als in der Vorfassung, weil die
+          Liste die ganze Breite hat: <code>A_Modul</code> und <code>T_NOCT</code> sind
+          dazugekommen. Beide stehen in Kapitel 4.6 und werden gebraucht &ndash; die
+          Modulfl&auml;che f&uuml;r die Strangauslegung, T_NOCT f&uuml;r das Ertragsmodell;
+          sortieren l&auml;sst sich nur nach dem, was als Spalte dasteht. Im Detailblock
+          bleiben die vier elektrischen Kennwerte (U_MPP, I_MPP, U_Leerlauf, I_Kurzschluss),
+          &gamma;_PMP und die Modulkosten.</li>
+      <li>Bei 20 749 Zeilen filtert nicht mehr der Speicher, sondern die Datenbank: Der
+          Controller &uuml;bersetzt Suche und Spaltenfilter in ein <code>WHERE</code> mit
+          <code>DbParam</code> und reicht dem <code>Raster</code> eine bereits
+          eingeschr&auml;nkte Menge herein (Konzept 5.6 und Frage Q6). Das Raster
+          virtualisiert nur noch, was &uuml;brig ist &ndash; und der <code>@key</code>-Fix
+          <b>W6&#8209;B&#8209;2</b> sorgt daf&uuml;r, dass es beim Wechsel zwischen
+          virtualisiert und flach nicht die alte Liste zeigt.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    /* ---------- Reiter ---------------------------------------------- */
+    var reiter   = [].slice.call(document.querySelectorAll('.mockup-reiter button'));
+    var blaetter = [].slice.call(document.querySelectorAll('.mockup-blatt'));
+
+    function blattZeigen(id) {
+        for (var i = 0; i < reiter.length; i++) {
+            reiter[i].setAttribute('aria-selected',
+                reiter[i].getAttribute('aria-controls') === id ? 'true' : 'false');
+        }
+        for (var b = 0; b < blaetter.length; b++) {
+            if (blaetter[b].id === id) { blaetter[b].classList.add('aktiv'); }
+            else { blaetter[b].classList.remove('aktiv'); }
+        }
+        nachpassen();
+    }
+
+    /* Ein Popover kann erst eingepasst werden, wenn sein Blatt sichtbar ist -
+       vorher misst der Browser lauter Nullen. */
+    function nachpassen() {
+        var offen = document.querySelectorAll('.mockup-blatt.aktiv [data-mockup]');
+        for (var i = 0; i < offen.length; i++) {
+            if (typeof offen[i].nachpassen === 'function') { offen[i].nachpassen(); }
+        }
+    }
+    window.addEventListener('resize', nachpassen);
+
+    for (var r = 0; r < reiter.length; r++) {
+        (function (knopf) {
+            knopf.addEventListener('click', function () {
+                blattZeigen(knopf.getAttribute('aria-controls'));
+            });
+        })(reiter[r]);
+    }
+
+    /* ---------- Zahl aus einer Zelle --------------------------------
+       "22,91" -> 22.91, "1 234" -> 1234, "-" -> null.               */
+    function zahl(text) {
+        var t = (text || '').replace(/ /g, ' ').replace(/\s/g, '').replace(',', '.');
+        if (!/^-?\d+(\.\d+)?$/.test(t)) { return null; }
+        return parseFloat(t);
+    }
+
+    /* ---------- Sortierung: auf -> ab -> aus -------------------------
+       Steht ausserhalb der Dialogschleife, weil sie fuer JEDE Liste gilt -
+       auch fuer die Projektliste in M2, die sortierbar ist, aber keine
+       Spaltenfilter traegt (kein Profil, kein Bedienelement). Es ist immer
+       HOECHSTENS EINE Spalte sortiert, und der dritte Klick stellt die
+       Reihenfolge des Controllers wieder her.                          */
+    function sortierungVerdrahten(tabelle) {
+        var koerper = tabelle.tBodies[0];
+        if (!koerper) { return; }
+        var urOrdnung = [].slice.call(koerper.querySelectorAll('tr'));
+        var koepfe = [].slice.call(tabelle.querySelectorAll('thead th'));
+
+        function sortieren(spalte, richtung) {
+            var zeilen = [].slice.call(koerper.querySelectorAll('tr'));
+            if (!richtung) {
+                for (var u = 0; u < urOrdnung.length; u++) { koerper.appendChild(urOrdnung[u]); }
+                return;
+            }
+            zeilen.sort(function (a, b) {
+                var ta = (a.cells[spalte] ? a.cells[spalte].textContent : '').trim();
+                var tb = (b.cells[spalte] ? b.cells[spalte].textContent : '').trim();
+                var za = zahl(ta), zb = zahl(tb);
+                var v;
+                if (za !== null && zb !== null) { v = za - zb; }
+                else if (za !== null) { v = -1; }
+                else if (zb !== null) { v = 1; }
+                else { v = ta.localeCompare(tb, 'de'); }
+                return (richtung === 'auf') ? v : -v;
+            });
+            for (var i = 0; i < zeilen.length; i++) { koerper.appendChild(zeilen[i]); }
+        }
+
+        for (var k = 0; k < koepfe.length; k++) {
+            (function (th) {
+                var titel = th.querySelector('[data-sortiere]');
+                if (!titel) { return; }
+                titel.addEventListener('click', function () {
+                    var alt = titel.getAttribute('data-richtung');
+                    var neu = (alt === 'auf') ? 'ab' : (alt === 'ab') ? null : 'auf';
+                    for (var i = 0; i < koepfe.length; i++) {
+                        var t = koepfe[i].querySelector('[data-sortiere]');
+                        if (!t) { continue; }
+                        t.removeAttribute('data-richtung');
+                        var pf = t.querySelector('.epos-sortpfeil');
+                        if (pf) { pf.innerHTML = '&#8645;'; }
+                        koepfe[i].removeAttribute('aria-sort');
+                    }
+                    var pfeil = titel.querySelector('.epos-sortpfeil');
+                    if (neu) {
+                        titel.setAttribute('data-richtung', neu);
+                        if (pfeil) { pfeil.innerHTML = (neu === 'auf') ? '&#9650;' : '&#9660;'; }
+                        th.setAttribute('aria-sort', (neu === 'auf') ? 'ascending' : 'descending');
+                    }
+                    sortieren(th.cellIndex, neu);
+                });
+            })(koepfe[k]);
+        }
+    }
+
+    var tabellen = document.querySelectorAll('table.epos-raster');
+    for (var tb = 0; tb < tabellen.length; tb++) { sortierungVerdrahten(tabellen[tb]); }
+
+    /* ---------- Ein Dialog ------------------------------------------ */
+    var dialoge = [].slice.call(document.querySelectorAll('[data-mockup]'));
+
+    for (var d = 0; d < dialoge.length; d++) {
+        (function (dlg) {
+            var koerper = dlg.querySelector('[data-zeilen]');
+            var zaehler = dlg.querySelector('[data-zaehler]');
+            var alle    = dlg.querySelector('[data-ruecksetzer]');
+            if (!koerper || !zaehler) { return; }
+
+            var tabelle = koerper.parentNode;
+            var koepfe  = [].slice.call(tabelle.querySelectorAll('thead th[data-spalte]'));
+            var offenEinpassen = [];
+
+            var treffer = {};
+            try { treffer = JSON.parse(zaehler.getAttribute('data-treffer')); }
+            catch (e) { treffer = {}; }
+            var form = zaehler.getAttribute('data-form') || '{0}';
+
+            /* --- welche Spaltenfilter sind gesetzt? --- */
+            function aktiveSchluessel() {
+                var aus = [];
+                for (var i = 0; i < koepfe.length; i++) {
+                    if (koepfe[i].getAttribute('data-aktiv') === 'true') {
+                        aus.push(koepfe[i].getAttribute('data-spalte'));
+                    }
+                }
+                aus.sort();
+                return aus;
+            }
+
+            /* --- der Ruecksetzer ist KEIN Filter: Er steht nur da, wenn
+                   ueberhaupt einer gesetzt ist. Statt "gesperrt" also
+                   "nicht vorhanden" - ein gesperrter Knopf, der nie etwas
+                   tut, ist ein Kasten ohne Aussage.                     */
+            function ruecksetzerZeigen(aktiv) {
+                if (alle) { alle.hidden = (aktiv.length === 0); }
+            }
+
+            /* --- Zeilen ein- und ausblenden, Zaehler nachfuehren --- */
+            function neuZeichnen() {
+                var aktiv = aktiveSchluessel();
+                var zeilen = koerper.querySelectorAll('tr[data-mockup-leer]');
+                for (var l = 0; l < zeilen.length; l++) {
+                    zeilen[l].parentNode.removeChild(zeilen[l]);
+                }
+                var alleZeilen = koerper.querySelectorAll('tr');
+                var sichtbar = 0;
+                for (var z = 0; z < alleZeilen.length; z++) {
+                    var verletzt = (alleZeilen[z].getAttribute('data-verletzt') || '').split(/\s+/);
+                    var raus = false;
+                    for (var v = 0; v < verletzt.length; v++) {
+                        if (verletzt[v] && aktiv.indexOf(verletzt[v]) >= 0) { raus = true; }
+                    }
+                    alleZeilen[z].hidden = raus;
+                    if (!raus) { sichtbar++; }
+                }
+                ruecksetzerZeigen(aktiv);
+
+                var schluessel = aktiv.join('+');
+                if (treffer.hasOwnProperty(schluessel)) {
+                    zaehler.innerHTML = form.replace('{0}',
+                        String(treffer[schluessel]).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
+                }
+            }
+
+            /* --- Popover in das Raster hineinruecken ------------------
+               QuickGrid.razor.js macht genau das (checkColumnOptionsPosition):
+               ragt das Popover links oder rechts ueber die Tabelle hinaus,
+               wird es um den Ueberhang verschoben. Ohne das schneidet die
+               Rollhuelle es ab.                                           */
+            function einpassen(pop) {
+                pop.style.marginLeft = '0px';
+                var huelle = pop.closest('.epos-raster-huelle');
+                if (!huelle) { return; }
+                var r = pop.getBoundingClientRect();
+                var h = huelle.getBoundingClientRect();
+                var links  = Math.max(0, h.left + 8 - r.left);
+                var rechts = Math.max(0, r.right - (h.right - 8));
+                var weg = links ? links : -rechts;
+                if (weg) { pop.style.marginLeft = weg + 'px'; }
+            }
+
+            /* --- Popover auf/zu --- */
+            function allesSchliessen(ausser) {
+                for (var i = 0; i < koepfe.length; i++) {
+                    var th = koepfe[i];
+                    if (th === ausser) { continue; }
+                    var pop = th.querySelector('.epos-spaltenfilter');
+                    var kn  = th.querySelector('[data-trichter]');
+                    if (pop) { pop.hidden = true; }
+                    if (kn) { kn.setAttribute('aria-expanded', 'false'); }
+                    th.classList.remove('offen');
+                }
+            }
+
+            for (var k = 0; k < koepfe.length; k++) {
+                (function (th) {
+                    var trichter = th.querySelector('[data-trichter]');
+                    var pop      = th.querySelector('.epos-spaltenfilter');
+                    var titel    = th.querySelector('[data-sortiere]');
+                    var loeschen = th.querySelector('[data-filterloeschen]');
+
+                    if (pop && !pop.hidden) { th.classList.add('offen'); offenEinpassen.push(pop); }
+
+                    if (trichter && pop) {
+                        trichter.addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            var auf = pop.hidden;
+                            allesSchliessen(th);
+                            pop.hidden = !auf;
+                            trichter.setAttribute('aria-expanded', auf ? 'true' : 'false');
+                            if (auf) { th.classList.add('offen'); einpassen(pop); }
+                            else { th.classList.remove('offen'); }
+                        });
+                    }
+
+                    if (loeschen) {
+                        loeschen.addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            th.setAttribute('data-aktiv', 'false');
+                            th.classList.remove('gefiltert');
+                            var feld = th.querySelector('.epos-spaltenfilter .epos-eingabe');
+                            if (feld) { feld.value = ''; }
+                            if (trichter) { trichter.classList.remove('epos-kopf-trichter--gesetzt'); }
+                            var spalte = th.cellIndex;
+                            var zellen = koerper.querySelectorAll('tr > *:nth-child(' + (spalte + 1) + ')');
+                            for (var c = 0; c < zellen.length; c++) { zellen[c].classList.remove('gefiltert'); }
+                            if (pop) { pop.hidden = true; }
+                            if (trichter) { trichter.setAttribute('aria-expanded', 'false'); }
+                            th.classList.remove('offen');
+                            neuZeichnen();
+                        });
+                    }
+
+                })(koepfe[k]);
+            }
+
+            if (alle) {
+                alle.addEventListener('click', function () {
+                    for (var i = 0; i < koepfe.length; i++) {
+                        var th = koepfe[i];
+                        if (th.getAttribute('data-aktiv') !== 'true') { continue; }
+                        var kn = th.querySelector('[data-filterloeschen]');
+                        if (kn) { kn.click(); }
+                    }
+                });
+            }
+
+            dlg.addEventListener('click', function (ev) {
+                if (ev.target.closest && ev.target.closest('th[data-spalte]')) { return; }
+                allesSchliessen(null);
+            });
+
+            dlg.nachpassen = function () {
+                for (var i = 0; i < offenEinpassen.length; i++) { einpassen(offenEinpassen[i]); }
+            };
+
+            neuZeichnen();
+        })(dialoge[d]);
+    }
+    nachpassen();
+
+    /* Reiter aus der Adresszeile: "...#m2" oeffnet gleich das zweite Blatt.
+       So laesst sich jedes Blatt einzeln als Bild aufnehmen. */
+    function ausAdresse() {
+        var w = (location.hash || '').replace('#', '');
+        if (w && document.getElementById('blatt-' + w)) { blattZeigen('blatt-' + w); }
+    }
+    ausAdresse();
+    window.addEventListener('hashchange', ausAdresse);
+
+    /* Esc schliesst jedes offene Popover - wie QuickGrid.razor.js es tut. */
+    document.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Escape') { return; }
+        var offen = document.querySelectorAll('th.offen');
+        for (var i = 0; i < offen.length; i++) {
+            var pop = offen[i].querySelector('.epos-spaltenfilter');
+            var kn  = offen[i].querySelector('[data-trichter]');
+            if (pop) { pop.hidden = true; }
+            if (kn) { kn.setAttribute('aria-expanded', 'false'); }
+            offen[i].classList.remove('offen');
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

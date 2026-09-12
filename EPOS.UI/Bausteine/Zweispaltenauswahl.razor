@@ -1,0 +1,173 @@
+﻿@* Die EINE Projekt/Datenbank-Auswahl des Hauses - Anwenderentscheid #76 vom
+   05.09.2026, in seiner ANORDNUNG geaendert durch W14a-E-10-Q2 vom 07.09.2026.
+
+   DER ENTSCHEID #76. "Alle Dialoge, in denen links 'im Projekt ausgewaehlt' und
+   rechts 'aus der Datenbank/Katalog' mit Pfeilknoepfen dazwischen stehen,
+   folgen dem alten BHKW-PLAN-Schema." Zwei Listen, Uebernahmeknoepfe
+   dazwischen, der Filter ueber der Liste, auf die er wirkt - das gilt
+   unveraendert.
+
+   WAS Q2 GEAENDERT HAT: die ANORDNUNG, nicht die Aussage. Die zwei Listen
+   stehen seit dem 07.09.2026 UNTEREINANDER - oben die kurze Projektliste, dann
+   die UEBERNAHMELEISTE mit den zwei Knoepfen als Textzeile, darunter die
+   Katalogliste ueber die GANZE Breite. Der Anwender hat es begruendet: "Liste
+   wie zuvor ueber ganze Breite, sonst zu schmale Liste."
+
+   DREI GRUENDE, ALLE GEMESSEN (Konzept_Katalogfilter 8.2, Mockup-Reiter M2 bei
+   1 366 px):
+     1. Die KATALOGLISTE braucht die Breite. Nebeneinander rollte sie schon mit
+        SECHS Parameterspalten um 118 px in sich (offener Punkt O-5);
+        untereinander traegt sie NEUN und rollt um 0 px.
+     2. Die PROJEKTLISTE ist kurz - im Pruefprojekt zwei Zeilen. Nebeneinander
+        verschenkte sie die halbe Breite.
+     3. Die SUCHZEILE steht damit UNMITTELBAR ueber der Liste, auf die sie
+        wirkt - Hausregel #76 woertlich statt im Klartext.
+   Der Preis ist die Hoehe (offener Punkt O-7): gemessen 1 228 px bei 1 366 px
+   Breite. Deshalb ist die PROJEKTLISTE hoehenbegrenzt (12 rem = vier Zeilen);
+   die Katalogliste bringt ihre eigene Grenze aus dem Katalograhmen mit.
+
+   DER BAUSTEIN IST DABEI KLEINER GEWORDEN. Die Umbruchregel bei 900 px, die
+   ihn bis hierher auf schmalem Schirm senkrecht stellte, ist die EINZIGE
+   Anordnung geworden - dieselbe Bewegung, die S1.7 am Katalograhmen gemacht
+   hat. Damit faellt die Medienabfrage, es faellt die schmale Mittelspalte
+   (--epos-zweispalten-mitte) und es faellt das WAAGERECHTE Pfeilpaar: Jeder
+   Knopf trug bis hierher BEIDE Zeichen im Markup (◀▶ nebeneinander, ▲▼
+   untereinander), weil eine Komponente nicht weiss, wie breit sie gezeichnet
+   wird. Bei EINER Anordnung braucht es nur noch EIN Zeichen je Knopf.
+
+   BESCHRIFTUNG UND KURZTEXT (Befund W9-B-3). Der Vorlaeufer stellte blanke
+   Zeichen hin, und der Anwender meldete: "nicht so recht klar, auf was sich
+   die oberen 2 Buttons beziehen." Jeder Knopf traegt seither seine Aufgabe
+   im Klartext UND als Kurztext; das Zeichen sagt nur noch die Richtung.
+   Es steht deshalb als aria-hidden daneben - eine Sprachausgabe liest den
+   Satz, nicht das Dreieck. Die Texte sind Ressourcenschluessel beider
+   Sprachen (AUSWAHL_BTN_UEBERNEHMEN / _ENTFERNEN und ihre _HINWEIS-Zwillinge).
+
+   NUR UNTEN. Der Gebaeudedialog kennt eine Verwaltungsbetriebsart, in der
+   es keine Projektliste gibt (Form_Gebaeude_Load:608-620). Dann faellt der
+   obere Block MIT der Uebernahmeleiste weg, und der Katalog steht allein.
+
+   TASTATURWEG. Die drei Bereiche stehen in der Reihenfolge oben - Leiste -
+   unten im Markup; der Tabulator laeuft damit von der Projektliste ueber die
+   zwei Knoepfe in den Katalog. Jeder Block traegt seine Ueberschrift als
+   aria-label, damit eine Sprachausgabe beim Wechsel sagt, wo man ist. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-zweispalten @Zusatzklasse">
+
+    @if (!NurRechts)
+    {
+        @* ------------------------------------------ oben: das Projekt ----- *@
+        <div class="epos-zweispalten-spalte epos-zweispalten-spalte--oben"
+             role="group" aria-label="@LinksTitel">
+            <h2 class="epos-untergruppe epos-zweispalten-titel">@LinksTitel</h2>
+            @Links
+        </div>
+
+        @* ------------------------------------------ die Uebernahmeleiste -- *@
+        <div class="epos-zweispalten-uebernahme" role="group" aria-label="@MitteTitel">
+            <button type="button" class="epos-knopf epos-zweispalten-knopf"
+                    title="@UebernehmenHinweis" disabled="@UebernehmenGesperrt"
+                    @onclick="Uebernehmen">
+                <span class="epos-zweispalten-pfeil" aria-hidden="true">▲</span>
+                <span class="epos-zweispalten-knopftext">@UebernehmenText</span>
+            </button>
+
+            <button type="button" class="epos-knopf epos-zweispalten-knopf"
+                    title="@EntfernenHinweis" disabled="@EntfernenGesperrt"
+                    @onclick="Entfernen">
+                <span class="epos-zweispalten-pfeil" aria-hidden="true">▼</span>
+                <span class="epos-zweispalten-knopftext">@EntfernenText</span>
+            </button>
+        </div>
+    }
+
+    @* ---------------------------------------------- unten: der Katalog ---- *@
+    <div class="epos-zweispalten-spalte epos-zweispalten-spalte--unten"
+         role="group" aria-label="@RechtsTitel">
+        <h2 class="epos-untergruppe epos-zweispalten-titel">@RechtsTitel</h2>
+        @Rechts
+    </div>
+
+</div>
+
+@code {
+    // =====================================================================
+    // Die zwei Bloecke
+    // =====================================================================
+
+    /// <summary>Überschrift des OBEREN Blocks („ausgewählt im Projekt").</summary>
+    [Parameter] public string LinksTitel { get; set; } = "";
+
+    /// <summary>
+    /// Inhalt des OBEREN Blocks: die Projektliste und, was unmittelbar zu ihr
+    /// gehört (Summenzeile, Kanalwahl). Filter und Katalogknöpfe gehören
+    /// NACH UNTEN — dort steht die Liste, auf die sie wirken.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Name bleibt <c>Links</c>.</b> Q2 hat die Anordnung geändert, nicht
+    /// die Rolle: Es ist weiter der PROJEKT-Block, und die elf Wirte benennen
+    /// ihn seit #76 so. Ein Umbenennen wäre eine Änderung an elf Dateien ohne
+    /// einen Gewinn — der Baustein heißt aus demselben Grund weiter
+    /// <c>Zweispaltenauswahl</c>.
+    /// </remarks>
+    [Parameter] public RenderFragment? Links { get; set; }
+
+    /// <summary>Überschrift des UNTEREN Blocks („aus der Datenbank").</summary>
+    [Parameter] public string RechtsTitel { get; set; } = "";
+
+    /// <summary>
+    /// Inhalt des UNTEREN Blocks: die Suchzeile ÜBER der Katalogliste, die
+    /// Liste selbst und darunter die Katalogknöpfe („neu", „ändern",
+    /// „löschen") — so wie im Vorbild.
+    /// </summary>
+    [Parameter] public RenderFragment? Rechts { get; set; }
+
+    /// <summary>
+    /// Verwaltungsbetriebsart: Nur der Katalog. Der obere Block und die
+    /// Übernahmeleiste entfallen.
+    /// </summary>
+    [Parameter] public bool NurRechts { get; set; }
+
+    /// <summary>Zusätzliche Klasse am Wirt, falls ein Dialog nachstellen muss.</summary>
+    [Parameter] public string? Zusatzklasse { get; set; }
+
+    // =====================================================================
+    // Die zwei Richtungsknoepfe
+    // =====================================================================
+
+    /// <summary>
+    /// Beschriftung des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN</c>.
+    /// OHNE Zeichen: das steht als eigener, sprachausgabe-blinder Span daneben.
+    /// </summary>
+    [Parameter] public string UebernehmenText { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN;
+
+    /// <summary>Kurztext des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string UebernehmenHinweis { get; set; } =
+        Resource.AUSWAHL_BTN_UEBERNEHMEN_HINWEIS;
+
+    /// <summary>Gesperrt, solange im Katalog keine Zeile markiert ist.</summary>
+    [Parameter] public bool UebernehmenGesperrt { get; set; }
+
+    /// <summary>Der Klick auf „in das Projekt uebernehmen".</summary>
+    [Parameter] public EventCallback Uebernehmen { get; set; }
+
+    /// <summary>Beschriftung des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN</c>.</summary>
+    [Parameter] public string EntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
+
+    /// <summary>Kurztext des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN_HINWEIS</c>.</summary>
+    [Parameter] public string EntfernenHinweis { get; set; } =
+        Resource.AUSWAHL_BTN_ENTFERNEN_HINWEIS;
+
+    /// <summary>Gesperrt, solange in der Projektliste keine Zeile markiert ist.</summary>
+    [Parameter] public bool EntfernenGesperrt { get; set; }
+
+    /// <summary>Der Klick auf „aus dem Projekt entfernen".</summary>
+    [Parameter] public EventCallback Entfernen { get; set; }
+
+    /// <summary>
+    /// Name der Knopfgruppe fuer die Sprachausgabe — <c>AUSWAHL_GRP_PFEILE</c>.
+    /// </summary>
+    [Parameter] public string MitteTitel { get; set; } = Resource.AUSWAHL_GRP_PFEILE;
+}

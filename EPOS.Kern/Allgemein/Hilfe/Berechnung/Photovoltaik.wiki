@@ -1,0 +1,755 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Photovoltaik | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs,
+     EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
+     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
+     EPOS.Kern/Controller/WechselrichterCtrl.cs, EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs;
+     Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
+
+== Was berechnet wird ==
+{{Anker|was}}
+
+Der Photovoltaik-Zweig rechnet für jede PV-Anlage des Projekts den Wechselstromertrag Stunde für
+Stunde über ein volles Jahr und verrechnet ihn anschließend mit dem Strombedarf. Ergebnisgrößen sind
+die '''Erzeugung''' [kWh], der '''Direktverbrauch''' (der Teil der Erzeugung, der in derselben Stunde
+im Haus verbraucht wird), der '''Überschuss''' (die Einspeisung ins Netz) und der '''Reststrom''' (der
+verbleibende Netzbezug). Der Stromspeicher wird hier '''nicht''' gerechnet — er sieht Überschuss und
+Reststrom als Eingang und wird getrennt bilanziert.
+
+Es gibt zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotrope Einstrahlung,
+linearer Temperaturgang, pauschaler Wechselrichter-Wirkungsgrad) und '''erweitert''' (anisotrope
+Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld, Wechselrichterkennlinie mit Clipping).
+
+== Eingangsgrößen ==
+{{Anker|eingang}}
+
+{| class="wikitable"
+! Größe !! Einheit !! Herkunft im Programm
+|-
+| Globalstrahlung, Direktstrahlung, Diffusstrahlung, Außentemperatur || W/m², °C || Klimadatenreihe der Klimaregion des Projekts, 8&nbsp;760 Stundenwerte
+|-
+| Längengrad, Breitengrad || ° || Klimaregion des Projekts (Sonnenstand)
+|-
+| Neigung || ° || Dialog „Verwaltung Photovoltaik Module", Abschnitt „PV Anlage Eigenschaften", Feld „Neigung"
+|-
+| Azimut || ° || derselbe Abschnitt, Feld „Azimut"
+|-
+| Anzahl Module || Stück || derselbe Abschnitt, Feld „Anzahl Module"
+|-
+| Rechenmodell (einfach / erweitert) || — || derselbe Abschnitt, Klappliste „Rechenmodell"
+|-
+| Wechselrichter-Wirkungsgrad || — (0…1) || derselbe Abschnitt; wirkt '''nur''' im einfachen Modell. Leer = 0,95
+|-
+| Systemverluste || % || derselbe Abschnitt; wirkt in beiden Modellen. Leer = 0&nbsp;%
+|-
+| AC-Nennleistung des Wechselrichters || kW || Knopf „Wechselrichter…"; nur im erweiterten Modell. Leer = kein Clipping
+|-
+| Kennlinienpunkte η bei 10 / 50 / 100&nbsp;% Auslastung || — (0…1) || Knopf „Wechselrichter…"; leer = 0,94 / 0,975 / 0,97
+|-
+| Modul-Nennleistung || W || Modulkatalog, Feld „Leistung"
+|-
+| Modulwirkungsgrad || % || Modulkatalog, Feld „Wirkungsgrad" (nur im Rückfall, siehe Schritt 1)
+|-
+| Modullänge, Modulbreite || m || Modulkatalog (nur im Rückfall, siehe Schritt 1)
+|-
+| Temperaturkoeffizient γ<sub>PMP</sub> || %/K || Modulkatalog
+|-
+| Zelltemperatur-Kennzahl NOCT || °C || Modulkatalog
+|-
+| Zelltechnologie || — || Modulkatalog; nur im erweiterten Modell (Schwachlichtmodell)
+|-
+| Wechselrichterweg (vereinfacht / mit Wechselrichter) || — || Dialog „Verwaltung Photovoltaik Module", Abschnitt „Wechselrichter und Stränge". Leer = vereinfacht
+|-
+| Strangzuordnung (Gerät, Gerätenummer, MPP-Eingang, Module in Reihe, parallele Stränge, Neigung, Azimut) || — || derselbe Abschnitt, Strangtabelle. Neigung und Azimut leer = Anlagenwert
+|-
+| Gerätedaten (AC-Nennleistung, sechs Kennlinienpunkte, Einschaltschwelle, Nachtverbrauch, Kosten) || kW, —, W, W, € || Wechselrichterkatalog über die Projektkopie; nur im Weg „mit Wechselrichter"
+|-
+| Strombedarf des Projekts || kWh je Viertelstunde || Strombedarf des Projekts, nach Abzug der vorgelagerten Erzeuger
+|}
+
+== Formelzeichen und Parameter ==
+{{Anker|zeichen}}
+
+Die Schreibweise ist die der ganzen Rubrik: <math>t</math> ist die Stunde des Jahres
+(1…8&nbsp;760), <math>P</math> eine Leistung, <math>G</math> eine Bestrahlungsstärke,
+<math>\vartheta</math> eine Temperatur in Grad Celsius, <math>\eta</math> ein Wirkungsgrad. Der
+Index sagt, worauf sich die Größe bezieht — <math>\mathrm{DC}</math> vor dem Wechselrichter,
+<math>\mathrm{AC}</math> dahinter. Umlaute stehen in den Formeln in ASCII-Umschrift: der Überschuss
+heißt <math>P_{\mathrm{ueber}}</math>, das Gerät <math>\mathrm{Geraet}</math>. Ein Strich am Symbol
+(<math>G'</math>) bezeichnet eine bezogene Größe.
+
+=== Parameter ===
+
+Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eines Laufs nicht.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| <math>\beta</math> || Neigung der Modulebene gegen die Waagerechte || ° || Dialog „Verwaltung Photovoltaik Module", Abschnitt „PV Anlage Eigenschaften", Feld „Neigung"; im Strangweg wahlweise je Strang
+|-
+| <math>\gamma</math> || Azimut der Modulebene || ° || derselbe Abschnitt, Feld „Azimut"; im Strangweg wahlweise je Strang
+|-
+| <math>n</math> || Anzahl Module der Anlage || Stück || derselbe Abschnitt, Feld „Anzahl Module" (Anlagenzeile <code>PV_Leistung</code>)
+|-
+| <math>P_{\mathrm{Mod}}</math> || Nennleistung eines Moduls unter Standardbedingungen || W || Modulkatalog, Feld „Leistung"
+|-
+| <math>\eta_{\mathrm{Mod}}</math> || Modulwirkungsgrad || % || Modulkatalog, Feld „Wirkungsgrad" — nur im Rückfall der Flächenformel
+|-
+| <math>l</math>, <math>b</math> || Modullänge, Modulbreite || m || Modulkatalog — nur im Rückfall der Flächenformel
+|-
+| <math>\gamma_{\mathrm{PMP}}</math> || Temperaturkoeffizient der MPP-Leistung || %/K || Modulkatalog, Feld „Temperaturkoeffizient"
+|-
+| <math>\mathrm{NOCT}</math> || Zelltemperatur bei Normalbetrieb || °C || Modulkatalog; außerhalb 20…60&nbsp;°C gilt der Rückfall 45&nbsp;°C
+|-
+| <math>k_{1} \dots k_{6}</math> || Koeffizienten des Schwachlichtmodells || — || fest je Zelltechnologie, Tabelle in Schritt 4
+|-
+| <math>\eta_{\mathrm{WR}}</math> || pauschaler Wechselrichter-Wirkungsgrad || — || Anlagenzeile <code>PV_WrWirkungsgrad</code>; '''Vorgabe: 0,95'''. Nur im einfachen Modell
+|-
+| <math>v_{\mathrm{Sys}}</math> || Systemverluste (Verschmutzung, Leitung, Mismatch) || % || Anlagenzeile <code>PV_Systemverluste</code>; '''Vorgabe: 0&nbsp;%'''
+|-
+| <math>P_{\mathrm{AC,nenn}}</math> || AC-Nennleistung des Wechselrichters || kW || Anlagenzeile <code>PV_WrNennleistungKw</code> bzw. Wechselrichterkatalog; leer = kein Clipping
+|-
+| <math>\eta_{10}</math>, <math>\eta_{50}</math>, <math>\eta_{100}</math> || Stützstellen der Anlagenkennlinie bei 10 / 50 / 100&nbsp;% Auslastung || — || Anlagenzeile <code>PV_WrEta10/50/100</code>; '''Vorgaben: 0,94 / 0,975 / 0,97'''
+|-
+| <math>\eta_{5} \dots \eta_{100}</math> || sechs Stützstellen der Gerätekennlinie (5, 10, 20, 30, 50, 100&nbsp;%) || — || Wechselrichterkatalog; fehlende Punkte werden übersprungen
+|-
+| <math>P_{\mathrm{ein}}</math> || Einschaltschwelle des Geräts || W || Wechselrichterkatalog; leer = 0
+|-
+| <math>P_{\mathrm{Nacht}}</math> || Nachtverbrauch des Geräts || W || Wechselrichterkatalog; leer = 0
+|-
+| <math>n_{\mathrm{R}}</math>, <math>n_{\mathrm{P}}</math> || Module in Reihe, parallele Stränge eines Strangs || Stück || Strangtabelle des Abschnitts „Wechselrichter und Stränge"
+|-
+| <math>\rho</math> || Boden-Albedo || — || '''Konstante: 0,2''' — in beiden Transpositionsmodellen, nicht einstellbar
+|-
+| <math>G_{\mathrm{STC}}</math> || Bestrahlungsstärke der Standardbedingungen || W/m² || '''Konstante: 1 000'''
+|-
+| <math>\vartheta_{\mathrm{STC}}</math> || Zelltemperatur der Standardbedingungen || °C || '''Konstante: 25'''
+|-
+| <math>G_{\mathrm{SC}}</math> || Solarkonstante || W/m² || '''Konstante: 1 367'''
+|-
+| <math>G_{\mathrm{NOCT}}</math> || Bezugsbestrahlungsstärke des NOCT-Modells || W/m² || '''Konstante: 800'''
+|-
+| <math>\vartheta_{\mathrm{NOCT}}</math> || Bezugslufttemperatur des NOCT-Modells || °C || '''Konstante: 20'''
+|-
+| <math>G'_{\mathrm{min}}</math> || untere Klemme des Schwachlichtmodells || — || '''Konstante: 0,001''' (entspricht 1&nbsp;W/m²)
+|-
+| <math>f_{\mathrm{Kat}}</math> || zulässige Abweichung der Katalogwerte voneinander || — || '''Konstante: 0,03''' (3&nbsp;%)
+|}
+
+=== Variablen ===
+
+Größen, die der Lauf je Stunde oder je Anlage bildet.
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| <math>t</math> || Stunde des Jahres, 1…8&nbsp;760 || — || Laufindex der Stundenschleife
+|-
+| <math>d(t)</math> || Tag des Jahres, 1…365 || — || Zeitmarke der Klimadatenzeile
+|-
+| <math>\mathrm{GHI}(t)</math>, <math>\mathrm{DNI}(t)</math>, <math>\mathrm{DHI}(t)</math> || Global-, Direkt- und Diffusstrahlung || W/m² || Klimadatenreihe (Eingang)
+|-
+| <math>\vartheta_{\mathrm{Luft}}(t)</math> || Außentemperatur || °C || Klimadatenreihe (Eingang)
+|-
+| <math>\theta(t)</math> || Einfallswinkel der Direktstrahlung auf die Modulebene || ° || Sonnenstand aus Längen- und Breitengrad, <math>\beta</math> und <math>\gamma</math> (Schritt 2)
+|-
+| <math>\theta_{\mathrm{z}}(t)</math> || Zenitwinkel der Sonne || ° || Sonnenstand (Schritt 2)
+|-
+| <math>P_{\mathrm{STC}}</math> || Nennleistung des Modulfeldes || kWp || (1)
+|-
+| <math>A_{\mathrm{ges}}</math> || Modulfläche des Feldes || m² || (2), nur im Rückfall
+|-
+| <math>G_{\mathrm{t}}(t)</math> || Bestrahlungsstärke in der Modulebene || W/m² || (4) einfach, (8) erweitert
+|-
+| <math>R_{\mathrm{b}}(t)</math> || Geometriefaktor der Direktstrahlung || — || (5)
+|-
+| <math>G_{\mathrm{0n}}(t)</math> || extraterrestrische Normalstrahlung || W/m² || (6)
+|-
+| <math>A_{\mathrm{i}}(t)</math> || Anisotropieindex nach Hay-Davies || — || (7)
+|-
+| <math>\vartheta_{\mathrm{Z}}(t)</math> || Zelltemperatur || °C || (9)
+|-
+| <math>f_{\vartheta}(t)</math> || Temperaturfaktor des linearen Modells || — || (10)
+|-
+| <math>G'(t)</math> || Bestrahlungsstärke, auf 1 000 W/m² bezogen || — || (13)
+|-
+| <math>\vartheta'(t)</math> || Abstand der Zelltemperatur von 25&nbsp;°C || K || (14)
+|-
+| <math>\eta_{\mathrm{rel}}(t)</math> || relativer Modulwirkungsgrad des Schwachlichtmodells || — || (15)
+|-
+| <math>P_{\mathrm{DC}}(t)</math> || Gleichstromleistung der Anlage || kW || (11), (12) bzw. (16)
+|-
+| <math>P_{\mathrm{DC,sys}}(t)</math> || Gleichstromleistung nach Systemverlusten || kW || (18)
+|-
+| <math>x(t)</math> || Auslastung des Wechselrichters || — || (19) bzw. (32)
+|-
+| <math>\eta_{\mathrm{WR}}(x)</math> || Wirkungsgrad des Wechselrichters bei der Auslastung <math>x</math> || — || (20)
+|-
+| <math>P_{\mathrm{AC,roh}}(t)</math> || Wechselstromleistung vor dem Clipping || kW || (21)
+|-
+| <math>P_{\mathrm{AC}}(t)</math> || Wechselstromleistung der Anlage bzw. des Geräts || kW || (17), (22) bzw. (33), (34)
+|-
+| <math>P_{\mathrm{PV}}(t)</math> || Erzeugung aller PV-Anlagen des Projekts || kW || (23)
+|-
+| <math>B(t)</math> || zu deckender Strombedarf der Stunde || kW || (24)
+|-
+| <math>P_{\mathrm{direkt}}(t)</math> || Direktverbrauch || kW || (25)
+|-
+| <math>P_{\mathrm{ueber}}(t)</math> || Überschuss, Einspeisung ins Netz || kW || (26)
+|-
+| <math>P_{\mathrm{netz}}(t)</math> || Reststrom, Netzbezug || kW || (27)
+|-
+| <math>P_{\mathrm{Rest}}(t)</math> || Reststrombedarf nach den vorgelagerten Erzeugern || kW || Eingang aus der Strombilanz
+|-
+| <math>\eta_{\mathrm{euro}}</math> || europäischer Wirkungsgrad des Geräts || — || (28)
+|-
+| <math>n_{\mathrm{s}}</math> || Module eines Strangs || Stück || (29)
+|-
+| <math>P_{\mathrm{STC,s}}</math> || Nennleistung eines Strangs || kWp || (30)
+|-
+| <math>P_{\mathrm{DC,s}}(t)</math> || Gleichstromleistung eines Strangs || kW || Modulformel des Modells mit <math>P_{\mathrm{STC,s}}</math>
+|-
+| <math>P_{\mathrm{DC,ger}}(t)</math> || Gleichstromleistung eines Geräts nach Systemverlusten || kW || (31)
+|}
+
+== Rechenweg ==
+{{Anker|rechenweg}}
+
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen
+Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht
+wiederholt. Der Strombedarf kommt viertelstündlich herein und wird zuerst zum Stundenmittel
+zusammengefasst; die Ergebnisreihen gehen am Schluss als Treppenfunktion wieder auf Viertelstunden
+zurück.
+
+Die Klimadatenreihe wird in '''Ortszeit''' gelesen: Die gespeicherte Reihe steht in UTC, gelesen wird
+sie um eine Stunde (Normalzeit) beziehungsweise zwei Stunden (Sommerzeit) versetzt. Die Umstellung
+liegt auf dem letzten Sonntag im März und im Oktober. Sonnenstand und Einfallswinkel rechnen weiter
+auf der UTC-Zeitmarke, die jede Zeile mitführt.
+
+=== Schritt 1 — Nennleistung des Modulfeldes ===
+
+: <math>\displaystyle P_{\mathrm{STC}} = \frac{P_{\mathrm{Mod}}}{1\,000} \cdot n</math> &nbsp;&nbsp;(1)
+:: <math>P_{\mathrm{STC}}</math> – Nennleistung des Modulfeldes [kWp]
+:: <math>P_{\mathrm{Mod}}</math> – Nennleistung eines Moduls unter Standardbedingungen [W]
+:: <math>n</math> – Anzahl Module der Anlage [Stück]
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
+
+Führt der Katalog keine Nennleistung (<math>P_{\mathrm{Mod}} = 0</math>), gilt ersatzweise die
+'''Flächenformel''' über Länge, Breite und Wirkungsgrad; sie tritt an die Stelle der Modulformel
+(12), nicht an die Stelle dieser Gleichung:
+
+: <math>\displaystyle A_{\mathrm{ges}} = l \cdot b \cdot n</math> &nbsp;&nbsp;(2)
+:: <math>A_{\mathrm{ges}}</math> – Modulfläche des Feldes [m²]
+:: <math>l</math>, <math>b</math> – Länge und Breite eines Moduls [m]
+:: <math>n</math> – Anzahl Module der Anlage [Stück]
+
+Der Lauf schreibt dazu einen Hinweis ins Simulationsprotokoll. Weichen Nennleistung und
+Flächenformel um mehr als <math>f_{\mathrm{Kat}} = 3</math>&nbsp;% voneinander ab, meldet der Lauf
+das ebenfalls:
+
+: <math>\displaystyle \frac{\left| P_{\mathrm{Mod}} - l \cdot b \cdot \frac{\eta_{\mathrm{Mod}}}{100} \cdot 1\,000 \right|}{P_{\mathrm{Mod}}} > f_{\mathrm{Kat}}</math> &nbsp;&nbsp;(3)
+:: <math>P_{\mathrm{Mod}}</math> – Nennleistung eines Moduls aus dem Katalog [W]
+:: <math>l</math>, <math>b</math> – Länge und Breite eines Moduls [m]
+:: <math>\eta_{\mathrm{Mod}}</math> – Modulwirkungsgrad des Katalogs [%]
+:: <math>1\,000</math> – Umrechnung von kW in W [W/kW]
+:: <math>f_{\mathrm{Kat}}</math> – zulässige Abweichung der Katalogwerte [–], Konstante 0,03
+
+Gerechnet wird dann mit der Nennleistung, weil die Vergütungsrechnung ihre kWp aus derselben Größe
+bildet.
+
+=== Schritt 2 — Einstrahlung auf die Modulebene ===
+
+Im '''einfachen''' Modell isotrop:
+
+: <math>\displaystyle G_{\mathrm{t}}(t) = \mathrm{DNI}(t) \cdot \cos\theta(t) + \mathrm{DHI}(t) \cdot \frac{1 + \cos\beta}{2} + \mathrm{GHI}(t) \cdot \rho \cdot \frac{1 - \cos\beta}{2}</math> &nbsp;&nbsp;(4)
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>\mathrm{DNI}(t)</math> – Direktstrahlung (senkrecht zur Sonne) [W/m²]
+:: <math>\theta(t)</math> – Einfallswinkel der Direktstrahlung auf die Modulebene [°]
+:: <math>\mathrm{DHI}(t)</math> – Diffusstrahlung auf die Horizontale [W/m²]
+:: <math>\beta</math> – Neigung der Modulebene [°]
+:: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
+:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
+
+Im '''erweiterten''' Modell anisotrop nach Hay-Davies — nur der Diffusanteil ändert sich:
+
+: <math>\displaystyle R_{\mathrm{b}}(t) = \frac{\cos\theta(t)}{\max\left( \cos\theta_{\mathrm{z}}(t) , \cos 85^{\circ} \right)}</math> &nbsp;&nbsp;(5)
+:: <math>R_{\mathrm{b}}(t)</math> – Geometriefaktor der Direktstrahlung [–]
+:: <math>\theta(t)</math> – Einfallswinkel auf die Modulebene [°]
+:: <math>\theta_{\mathrm{z}}(t)</math> – Zenitwinkel der Sonne [°]
+:: <math>\cos 85^{\circ}</math> – Klemme am Horizont; sie hält den Nenner endlich [–]
+
+: <math>\displaystyle G_{\mathrm{0n}}(t) = G_{\mathrm{SC}} \cdot \left( 1 + 0{,}033 \cdot \cos\left( 360^{\circ} \cdot \frac{d(t)}{365} \right) \right)</math> &nbsp;&nbsp;(6)
+:: <math>G_{\mathrm{0n}}(t)</math> – extraterrestrische Normalstrahlung [W/m²]
+:: <math>G_{\mathrm{SC}}</math> – Solarkonstante [W/m²], Konstante 1 367
+:: <math>0{,}033</math> – Schwankung durch die Bahnexzentrizität der Erde [–]
+:: <math>d(t)</math> – Tag des Jahres, 1…365 [–]
+
+: <math>\displaystyle A_{\mathrm{i}}(t) = \min\left( \max\left( \frac{\mathrm{DNI}(t)}{G_{\mathrm{0n}}(t)} , 0 \right) , 1 \right)</math> &nbsp;&nbsp;(7)
+:: <math>A_{\mathrm{i}}(t)</math> – Anisotropieindex nach Hay-Davies; auf 0…1 begrenzt [–]
+:: <math>\mathrm{DNI}(t)</math> – Direktstrahlung [W/m²]
+:: <math>G_{\mathrm{0n}}(t)</math> – extraterrestrische Normalstrahlung aus (6) [W/m²]
+
+: <math>\displaystyle G_{\mathrm{t}}(t) = \mathrm{DNI}(t) \cdot \cos\theta(t) + \mathrm{DHI}(t) \cdot \left[ A_{\mathrm{i}}(t) \cdot R_{\mathrm{b}}(t) + \left( 1 - A_{\mathrm{i}}(t) \right) \cdot \frac{1 + \cos\beta}{2} \right] + \mathrm{GHI}(t) \cdot \rho \cdot \frac{1 - \cos\beta}{2}</math> &nbsp;&nbsp;(8)
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>\mathrm{DNI}(t)</math> – Direktstrahlung [W/m²]
+:: <math>\theta(t)</math> – Einfallswinkel auf die Modulebene [°]
+:: <math>\mathrm{DHI}(t)</math> – Diffusstrahlung auf die Horizontale [W/m²]
+:: <math>A_{\mathrm{i}}(t)</math> – Anisotropieindex aus (7) [–]
+:: <math>R_{\mathrm{b}}(t)</math> – Geometriefaktor aus (5) [–]
+:: <math>\beta</math> – Neigung der Modulebene [°]
+:: <math>\mathrm{GHI}(t)</math> – Globalstrahlung auf die Horizontale [W/m²]
+:: <math>\rho</math> – Boden-Albedo [–], Konstante 0,2
+
+Die Klemme auf <math>\cos 85^{\circ}</math> in (5) hält den Geometriefaktor am Horizont endlich. Bei
+Nacht — Sonne unter dem Horizont — ist <math>G_{\mathrm{t}}(t) = 0</math>.
+
+=== Schritt 3 — Zelltemperatur ===
+
+: <math>\displaystyle \vartheta_{\mathrm{Z}}(t) = \vartheta_{\mathrm{Luft}}(t) + \frac{G_{\mathrm{t}}(t)}{G_{\mathrm{NOCT}}} \cdot \left( \mathrm{NOCT} - \vartheta_{\mathrm{NOCT}} \right)</math> &nbsp;&nbsp;(9)
+:: <math>\vartheta_{\mathrm{Z}}(t)</math> – Zelltemperatur [°C]
+:: <math>\vartheta_{\mathrm{Luft}}(t)</math> – Außentemperatur der Stunde [°C]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>G_{\mathrm{NOCT}}</math> – Bezugsbestrahlungsstärke des NOCT-Modells [W/m²], Konstante 800
+:: <math>\mathrm{NOCT}</math> – Zelltemperatur bei Normalbetrieb aus dem Katalog [°C]
+:: <math>\vartheta_{\mathrm{NOCT}}</math> – Bezugslufttemperatur des NOCT-Modells [°C], Konstante 20
+
+Liegt der NOCT des Katalogs außerhalb des Fensters '''20…60&nbsp;°C''', gilt der Rückfallwert
+'''45&nbsp;°C''' und der Lauf meldet es. Das Fenster ist eng gewählt, weil im Altbestand des
+Katalogs an dieser Stelle vielfach der Kurzschlussstrom des Moduls steht.
+
+=== Schritt 4 — Gleichstromleistung ===
+
+'''Einfaches Modell''' (linearer Temperaturgang):
+
+: <math>\displaystyle f_{\vartheta}(t) = 1 + \frac{\gamma_{\mathrm{PMP}}}{100} \cdot \left( \vartheta_{\mathrm{Z}}(t) - \vartheta_{\mathrm{STC}} \right)</math> &nbsp;&nbsp;(10)
+:: <math>f_{\vartheta}(t)</math> – Temperaturfaktor des linearen Modells [–]
+:: <math>\gamma_{\mathrm{PMP}}</math> – Temperaturkoeffizient der MPP-Leistung [%/K]
+:: <math>\vartheta_{\mathrm{Z}}(t)</math> – Zelltemperatur aus (9) [°C]
+:: <math>\vartheta_{\mathrm{STC}}</math> – Zelltemperatur der Standardbedingungen [°C], Konstante 25
+
+: <math>\displaystyle P_{\mathrm{DC}}(t) = P_{\mathrm{STC}} \cdot \frac{G_{\mathrm{t}}(t)}{G_{\mathrm{STC}}} \cdot f_{\vartheta}(t)</math> &nbsp;&nbsp;(11)
+:: <math>P_{\mathrm{DC}}(t)</math> – Gleichstromleistung der Anlage [kW]
+:: <math>P_{\mathrm{STC}}</math> – Nennleistung des Modulfeldes aus (1) [kWp]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>G_{\mathrm{STC}}</math> – Bestrahlungsstärke der Standardbedingungen [W/m²], Konstante 1 000
+:: <math>f_{\vartheta}(t)</math> – Temperaturfaktor aus (10) [–]
+
+Ohne gepflegte Nennleistung tritt die Flächenformel an ihre Stelle:
+
+: <math>\displaystyle P_{\mathrm{DC}}(t) = \frac{G_{\mathrm{t}}(t) \cdot A_{\mathrm{ges}} \cdot \frac{\eta_{\mathrm{Mod}}}{100} \cdot f_{\vartheta}(t)}{1\,000}</math> &nbsp;&nbsp;(12)
+:: <math>P_{\mathrm{DC}}(t)</math> – Gleichstromleistung der Anlage [kW]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>A_{\mathrm{ges}}</math> – Modulfläche des Feldes aus (2) [m²]
+:: <math>\eta_{\mathrm{Mod}}</math> – Modulwirkungsgrad des Katalogs [%]
+:: <math>f_{\vartheta}(t)</math> – Temperaturfaktor aus (10) [–]
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
+
+<math>\gamma_{\mathrm{PMP}}</math> geht so in die Rechnung, wie er im Katalog steht. Ein Wert 0
+(„kein Temperaturgang hinterlegt"), ein positiver Wert oder ein Wert unter −1&nbsp;%/K werden
+gemeldet, aber nicht korrigiert.
+
+'''Erweitertes Modell''' (Schwachlichtmodell nach Huld):
+
+: <math>\displaystyle G'(t) = \frac{G_{\mathrm{t}}(t)}{G_{\mathrm{STC}}}</math> &nbsp;&nbsp;(13)
+:: <math>G'(t)</math> – Bestrahlungsstärke, auf 1 000 W/m² bezogen [–]
+:: <math>G_{\mathrm{t}}(t)</math> – Bestrahlungsstärke in der Modulebene [W/m²]
+:: <math>G_{\mathrm{STC}}</math> – Bestrahlungsstärke der Standardbedingungen [W/m²], Konstante 1 000
+
+: <math>\displaystyle \vartheta'(t) = \vartheta_{\mathrm{Z}}(t) - \vartheta_{\mathrm{STC}}</math> &nbsp;&nbsp;(14)
+:: <math>\vartheta'(t)</math> – Abstand der Zelltemperatur von 25&nbsp;°C [K]
+:: <math>\vartheta_{\mathrm{Z}}(t)</math> – Zelltemperatur aus (9) [°C]
+:: <math>\vartheta_{\mathrm{STC}}</math> – Zelltemperatur der Standardbedingungen [°C], Konstante 25
+
+: <math>\displaystyle \eta_{\mathrm{rel}}(t) = 1 + k_{1} \cdot \ln G' + k_{2} \cdot \left( \ln G' \right)^{2} + k_{3} \cdot \vartheta' + k_{4} \cdot \vartheta' \cdot \ln G' + k_{5} \cdot \vartheta' \cdot \left( \ln G' \right)^{2} + k_{6} \cdot \vartheta'^{2}</math> &nbsp;&nbsp;(15)
+:: <math>\eta_{\mathrm{rel}}(t)</math> – relativer Modulwirkungsgrad des Schwachlichtmodells [–]
+:: <math>k_{1} \dots k_{6}</math> – Koeffizienten der Zelltechnologie [–], Tabelle unten
+:: <math>G'</math> – bezogene Bestrahlungsstärke aus (13) [–]
+:: <math>\vartheta'</math> – Abstand der Zelltemperatur von 25&nbsp;°C aus (14) [K]
+
+: <math>\displaystyle P_{\mathrm{DC}}(t) = P_{\mathrm{STC}} \cdot G'(t) \cdot \eta_{\mathrm{rel}}(t)</math> &nbsp;&nbsp;(16)
+:: <math>P_{\mathrm{DC}}(t)</math> – Gleichstromleistung der Anlage [kW]
+:: <math>P_{\mathrm{STC}}</math> – Nennleistung des Modulfeldes aus (1) [kWp]
+:: <math>G'(t)</math> – bezogene Bestrahlungsstärke aus (13) [–]
+:: <math>\eta_{\mathrm{rel}}(t)</math> – relativer Modulwirkungsgrad aus (15) [–]
+
+Unterhalb <math>G' = G'_{\mathrm{min}} = 0{,}001</math> (also 1&nbsp;W/m²) ist
+<math>P_{\mathrm{DC}}(t) = 0</math>; ein rechnerisch negatives Ergebnis wird auf 0 gesetzt. Die
+sechs Koeffizienten hängen an der Zelltechnologie:
+
+{| class="wikitable"
+! Zelltechnologie !! <math>k_{1}</math> !! <math>k_{2}</math> !! <math>k_{3}</math> !! <math>k_{4}</math> !! <math>k_{5}</math> !! <math>k_{6}</math>
+|-
+| kristallines Silizium (C_SI) || −0,017237 || −0,040465 || −0,004702 || 0,000149 || 0,000170 || 0,000005
+|-
+| CIS/CIGS || −0,005554 || −0,038724 || −0,003723 || −0,000905 || −0,001256 || 0,000001
+|-
+| CdTe || −0,046689 || −0,072844 || −0,002262 || 0,000276 || 0,000159 || −0,000006
+|}
+
+Für amorphes Silizium und für „Sonstige" gibt es keinen veröffentlichten Satz. Fehlt die
+Technologie, fehlt der Satz oder fehlt die Nennleistung, rechnet das erweiterte Modell die
+'''Modulformel des einfachen Modells''' — also (10) und (11) —, aber mit der Hay-Davies-Einstrahlung
+(8). Jeder dieser drei Rückfälle wird einzeln im Protokoll benannt.
+
+=== Schritt 5 — Systemverluste und Wechselrichter ===
+
+'''Einfaches Modell''' — ein fester Faktor je Stunde:
+
+: <math>\displaystyle P_{\mathrm{AC}}(t) = P_{\mathrm{DC}}(t) \cdot \eta_{\mathrm{WR}} \cdot \left( 1 - \frac{v_{\mathrm{Sys}}}{100} \right)</math> &nbsp;&nbsp;(17)
+:: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung der Anlage [kW]
+:: <math>P_{\mathrm{DC}}(t)</math> – Gleichstromleistung der Anlage [kW]
+:: <math>\eta_{\mathrm{WR}}</math> – pauschaler Wechselrichter-Wirkungsgrad [–], Vorgabe 0,95
+:: <math>v_{\mathrm{Sys}}</math> – Systemverluste [%], Vorgabe 0
+
+mit der Vorgabe <math>\eta_{\mathrm{WR}} = 0{,}95</math> und <math>v_{\mathrm{Sys}} = 0</math>&nbsp;%.
+Es gibt in diesem Modell '''kein''' Clipping.
+
+'''Erweitertes Modell''' — Teillastkennlinie und Clipping:
+
+: <math>\displaystyle P_{\mathrm{DC,sys}}(t) = P_{\mathrm{DC}}(t) \cdot \left( 1 - \frac{v_{\mathrm{Sys}}}{100} \right)</math> &nbsp;&nbsp;(18)
+:: <math>P_{\mathrm{DC,sys}}(t)</math> – Gleichstromleistung nach Systemverlusten [kW]
+:: <math>P_{\mathrm{DC}}(t)</math> – Gleichstromleistung der Anlage [kW]
+:: <math>v_{\mathrm{Sys}}</math> – Systemverluste [%]
+
+: <math>\displaystyle x(t) = \frac{P_{\mathrm{DC,sys}}(t)}{P_{\mathrm{AC,nenn}}}</math> &nbsp;&nbsp;(19)
+:: <math>x(t)</math> – Auslastung des Wechselrichters [–]
+:: <math>P_{\mathrm{DC,sys}}(t)</math> – Gleichstromleistung nach Systemverlusten aus (18) [kW]
+:: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennleistung des Wechselrichters [kW]
+
+: <math>\displaystyle \eta_{\mathrm{WR}}(x) = \eta_{\mathrm{u}} + \left( \eta_{\mathrm{o}} - \eta_{\mathrm{u}} \right) \cdot \frac{x - x_{\mathrm{u}}}{x_{\mathrm{o}} - x_{\mathrm{u}}}</math> &nbsp;&nbsp;(20)
+:: <math>\eta_{\mathrm{WR}}(x)</math> – Wirkungsgrad des Wechselrichters bei der Auslastung <math>x</math> [–]
+:: <math>\eta_{\mathrm{u}}</math>, <math>\eta_{\mathrm{o}}</math> – Wirkungsgrad an der unteren und der oberen Stützstelle [–]
+:: <math>x</math> – Auslastung des Wechselrichters [–]
+:: <math>x_{\mathrm{u}}</math>, <math>x_{\mathrm{o}}</math> – Auslastung der unteren und der oberen Stützstelle [–]
+
+: <math>\displaystyle P_{\mathrm{AC,roh}}(t) = P_{\mathrm{DC,sys}}(t) \cdot \eta_{\mathrm{WR}}\left( x(t) \right)</math> &nbsp;&nbsp;(21)
+:: <math>P_{\mathrm{AC,roh}}(t)</math> – Wechselstromleistung vor dem Clipping [kW]
+:: <math>P_{\mathrm{DC,sys}}(t)</math> – Gleichstromleistung nach Systemverlusten [kW]
+:: <math>\eta_{\mathrm{WR}}\left( x(t) \right)</math> – Wirkungsgrad bei der Auslastung der Stunde aus (20) [–]
+
+: <math>\displaystyle P_{\mathrm{AC}}(t) = \min\left( P_{\mathrm{AC,roh}}(t) , P_{\mathrm{AC,nenn}} \right)</math> &nbsp;&nbsp;(22)
+:: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung der Anlage [kW]
+:: <math>P_{\mathrm{AC,roh}}(t)</math> – Wechselstromleistung vor dem Clipping aus (21) [kW]
+:: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennleistung des Wechselrichters [kW]
+
+Die Kennlinie (20) ist '''stückweise linear'''; die zwei Stützstellen, zwischen denen
+<math>x</math> liegt, sind <math>\left( x_{\mathrm{u}} , \eta_{\mathrm{u}} \right)</math> und
+<math>\left( x_{\mathrm{o}} , \eta_{\mathrm{o}} \right)</math>:
+
+{| class="wikitable"
+! Auslastung <math>x</math> !! untere Stützstelle !! obere Stützstelle
+|-
+| <math>x < 0{,}1</math> || <math>\left( 0 , 0 \right)</math> || <math>\left( 0{,}1 , \eta_{10} \right)</math>
+|-
+| <math>0{,}1 \le x < 0{,}5</math> || <math>\left( 0{,}1 , \eta_{10} \right)</math> || <math>\left( 0{,}5 , \eta_{50} \right)</math>
+|-
+| <math>0{,}5 \le x < 1{,}0</math> || <math>\left( 0{,}5 , \eta_{50} \right)</math> || <math>\left( 1{,}0 , \eta_{100} \right)</math>
+|-
+| <math>x \ge 1{,}0</math> || colspan="2" | konstant <math>\eta_{100}</math> — dahinter greift das Clipping (22)
+|}
+
+Vorgaben der Kennlinie, wenn die Anlage keine führt: '''<math>\eta_{10} = 0{,}94</math>''',
+'''<math>\eta_{50} = 0{,}975</math>''', '''<math>\eta_{100} = 0{,}97</math>''' (typischer
+Strang-Wechselrichter). Ohne gepflegte AC-Nennleistung entfällt das Clipping, und die Auslastung
+(19) bezieht sich ersatzweise auf <math>P_{\mathrm{STC}}</math>; beides steht im Protokoll.
+
+'''Weg „mit Wechselrichter"''' — an die Stelle der Schritte 1 bis 5 tritt der Strangweg des
+Abschnitts „Wechselrichter", Option 2. Er gilt in '''beiden''' Rechenmodellen; die Modellwahl
+entscheidet weiterhin über Einstrahlung und Modulformel, nicht über den Wechselrichter.
+
+=== Schritt 6 — Summe über alle Anlagen und Verbrauchsbilanz ===
+
+Die stündlichen Wechselstromleistungen aller PV-Anlagen des Projekts werden aufsummiert:
+
+: <math>\displaystyle P_{\mathrm{PV}}(t) = \sum_{\mathrm{Anlagen}} P_{\mathrm{AC}}(t)</math> &nbsp;&nbsp;(23)
+:: <math>P_{\mathrm{PV}}(t)</math> – Erzeugung aller PV-Anlagen des Projekts [kW]
+:: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung einer Anlage [kW]
+
+Danach gilt je Stunde:
+
+: <math>\displaystyle B(t) = \max\left( 0 , P_{\mathrm{Rest}}(t) \right)</math> &nbsp;&nbsp;(24)
+:: <math>B(t)</math> – zu deckender Strombedarf der Stunde [kW]
+:: <math>P_{\mathrm{Rest}}(t)</math> – Reststrombedarf nach den vorgelagerten Erzeugern; negativ = BHKW-Überschuss [kW]
+
+: <math>\displaystyle P_{\mathrm{direkt}}(t) = \min\left( P_{\mathrm{PV}}(t) , B(t) \right)</math> &nbsp;&nbsp;(25)
+:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch der Stunde [kW]
+:: <math>P_{\mathrm{PV}}(t)</math> – Erzeugung aller PV-Anlagen aus (23) [kW]
+:: <math>B(t)</math> – zu deckender Strombedarf aus (24) [kW]
+
+: <math>\displaystyle P_{\mathrm{ueber}}(t) = P_{\mathrm{PV}}(t) - P_{\mathrm{direkt}}(t)</math> &nbsp;&nbsp;(26)
+:: <math>P_{\mathrm{ueber}}(t)</math> – Überschuss, Einspeisung ins Netz [kW]
+:: <math>P_{\mathrm{PV}}(t)</math> – Erzeugung aller PV-Anlagen [kW]
+:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch aus (25) [kW]
+
+: <math>\displaystyle P_{\mathrm{netz}}(t) = B(t) - P_{\mathrm{direkt}}(t)</math> &nbsp;&nbsp;(27)
+:: <math>P_{\mathrm{netz}}(t)</math> – Reststrom, Netzbezug [kW]
+:: <math>B(t)</math> – zu deckender Strombedarf aus (24) [kW]
+:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch aus (25) [kW]
+
+<math>P_{\mathrm{ueber}}</math> ist die Einspeisung, <math>P_{\mathrm{netz}}</math> der Netzbezug.
+Ein '''negativer''' Reststrombedarf <math>P_{\mathrm{Rest}}(t)</math> ist BHKW-Überschuss aus einer
+vorgelagerten Kaskadenstufe. Er ist keine PV-Erzeugung, wird deshalb in (24) auf 0 geklemmt und
+getrennt ausgewiesen — sonst würde er als PV-Einspeisung vergütet.
+
+== Wechselrichter ==
+{{Anker|wechselrichter}}
+
+Für den Wechselrichter gibt es zwei Wege. Welcher gilt, ist ein Anwenderentscheid (W6‑E‑3 vom
+06.09.2026).
+
+=== Option 1 — vereinfacht, ohne Wechselrichter, mit Pauschalen ===
+
+Das ist der heutige Weg und die Vorbelegung. Der Wechselrichter ist '''kein eigenes Gerät''', sondern
+ein Wirkungsgrad:
+
+* im '''einfachen''' Modell ein konstanter Faktor <math>\eta_{\mathrm{WR}}</math> (Vorgabe 0,95)
+  nach (17), dazu pauschale Systemverluste;
+* im '''erweiterten''' Modell die Dreipunkt-Kennlinie (20) mit einer frei eingebbaren
+  AC-Nennleistung, an der (22) klippt.
+
+Beides hängt an der '''Anlage''', nicht an einem Gerät aus einem Katalog. Es gibt keine Stränge,
+keine MPP-Tracker, keine Auslegungsprüfung und keine Nachtverbrauchsrechnung. Für eine Anlage mit
+einer Ausrichtung und einem Wechselrichtertyp ist das eine tragfähige Näherung.
+
+=== Option 2 — mit Wechselrichter (umgesetzt, Stand 06.09.2026) ===
+
+Der Wechselrichter ist ein '''Katalogobjekt''' mit Projektkopie — wie Kessel, BHKW oder Modul —, und
+die Anlage bekommt eine '''Strangzuordnung''': je Strang die Zahl der Module in Reihe, die Zahl
+paralleler Stränge, das Gerät, die Gerätenummer, der MPP-Eingang, wahlweise eine eigene Neigung und
+ein eigener Azimut und — seit dem 06.09.2026 — wahlweise ein '''eigener Modultyp'''. Damit werden
+das Ost/West-Feld und die um einen zweiten Modultyp erweiterte Anlage rechenbar.
+
+Der Katalog führt AC-Nennwirkleistung, maximale AC-Scheinleistung, maximale DC-Eingangsleistung,
+MPP-Spannungsfenster, maximale DC-Spannung, maximalen DC-Strom je MPP-Tracker, Zahl der
+MPP-Tracker, '''sechs Stützstellen''' der Wirkungsgradkennlinie (5, 10, 20, 30, 50, 100&nbsp;%), den
+europäischen Wirkungsgrad, die Einschaltschwelle, den Nachtverbrauch und den Gerätepreis. Der
+europäische Wirkungsgrad ist dabei die bekannte Wichtung
+
+: <math>\displaystyle \eta_{\mathrm{euro}} = 0{,}03 \cdot \eta_{5} + 0{,}06 \cdot \eta_{10} + 0{,}13 \cdot \eta_{20} + 0{,}10 \cdot \eta_{30} + 0{,}48 \cdot \eta_{50} + 0{,}20 \cdot \eta_{100}</math> &nbsp;&nbsp;(28)
+:: <math>\eta_{\mathrm{euro}}</math> – europäischer Wirkungsgrad des Geräts [–]
+:: <math>\eta_{5} \dots \eta_{100}</math> – die sechs Stützstellen der Gerätekennlinie bei 5, 10, 20, 30, 50 und 100&nbsp;% Auslastung [–]
+:: <math>0{,}03 \dots 0{,}20</math> – die Wichtungen der Norm; sie summieren sich zu 1 [–]
+
+'''Wann dieser Weg rechnet''' — zwei Bedingungen müssen zusammenkommen: Die Anlage steht auf „mit
+Wechselrichter", '''und''' sie führt mindestens einen Strang mit einem Gerät. Fehlt eines von
+beidem, rechnet die Anlage Zeichen für Zeichen den Weg der Option 1, und der Lauf sagt es im
+Protokoll.
+
+==== Der Stundenweg ====
+
+Der Stundenweg wird um zwei Ebenen tiefer. Je Stunde:
+
+'''Schritt A — je Strang die Gleichstromleistung.''' Neigung und Azimut sind die des Strangs,
+ersatzweise die der Anlage. Die Einstrahlung wird je '''Ausrichtungspaar''' (<math>\beta</math>,
+<math>\gamma</math>) genau einmal gerechnet — ein Ost/West-Feld mit acht Strängen rechnet die
+Sonnengeometrie zweimal, nicht achtmal.
+
+: <math>\displaystyle n_{\mathrm{s}} = n_{\mathrm{R}} \cdot n_{\mathrm{P}}</math> &nbsp;&nbsp;(29)
+:: <math>n_{\mathrm{s}}</math> – Module eines Strangs [Stück]
+:: <math>n_{\mathrm{R}}</math> – Module in Reihe [Stück]
+:: <math>n_{\mathrm{P}}</math> – parallele Stränge [Stück]
+
+: <math>\displaystyle P_{\mathrm{STC,s}} = \frac{P_{\mathrm{Mod}}}{1\,000} \cdot n_{\mathrm{s}}</math> &nbsp;&nbsp;(30)
+:: <math>P_{\mathrm{STC,s}}</math> – Nennleistung eines Strangs [kWp]
+:: <math>P_{\mathrm{Mod}}</math> – Nennleistung eines Moduls [W]
+:: <math>n_{\mathrm{s}}</math> – Module des Strangs aus (29) [Stück]
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
+
+<math>P_{\mathrm{DC,s}}(t)</math> ist dann die Modulformel des gewählten Rechenmodells — (11)
+beziehungsweise (16) — mit <math>P_{\mathrm{STC,s}}</math> an der Stelle von
+<math>P_{\mathrm{STC}}</math>.
+
+'''Jeder Strang rechnet mit SEINEM Modul.''' Führt die Strangzeile einen eigenen Modultyp, so
+kommen <math>P_{\mathrm{Mod}}</math> in (30) und alle übrigen Modulgrößen der Stundenrechnung —
+Zelltemperatur über <math>T_{\mathrm{NOCT}}</math> in (7), Temperaturgang
+<math>\gamma_{\mathrm{PMP}}</math> in (11), Fläche und Wirkungsgrad der Rückfallformel (12) sowie
+der Schwachlichtsatz nach Zelltechnologie in (16) — aus DIESEM Modul; sonst aus dem Modul der
+Anlage. Ein Strang mit einem Modul, das das Projekt nicht (mehr) führt, rechnet wie einer ohne
+Angabe, und der Lauf sagt es im Protokoll. '''Ohne eigenen Modultyp ändert sich nichts''' — genau
+das ist der Regelfall, eine Anlage mit einem Modultyp.
+
+Die '''Nennleistung eines Geräts''' ist damit die Summe seiner Stränge, jeder mit seiner eigenen
+Modulleistung; die kWp der Anlagenzeile bleibt daneben stehen und wird nur noch verglichen. Weichen
+beide voneinander ab, meldet der Lauf es und rechnet mit der Strangsumme.
+
+'''Schritt B — Summe je MPP-Eingang und je Gerät.''' Der MPP-Eingang ist eine reine
+'''Prüfgröße''' (Prüfungen P4 und P5); eine eigene Leistungsgrenze je Tracker gibt es nicht. Die
+Summe über die MPP-Eingänge eines Geräts ist damit die Summe über seine Stränge. Ein Gerät ist das
+Paar aus '''Wechselrichtertyp und Gerätenummer''' — Gerät 1 der Anlage „Dach Süd" und Gerät 1 der
+Anlage „Halle" sind zwei Geräte.
+
+: <math>\displaystyle P_{\mathrm{DC,ger}}(t) = \left( \sum_{s \in \mathrm{Geraet}} P_{\mathrm{DC,s}}(t) \right) \cdot \left( 1 - \frac{v_{\mathrm{Sys}}}{100} \right)</math> &nbsp;&nbsp;(31)
+:: <math>P_{\mathrm{DC,ger}}(t)</math> – Gleichstromleistung eines Geräts nach Systemverlusten [kW]
+:: <math>P_{\mathrm{DC,s}}(t)</math> – Gleichstromleistung eines Strangs <math>s</math> des Geräts [kW]
+:: <math>v_{\mathrm{Sys}}</math> – Systemverluste der Anlage [%]
+
+Die Systemverluste bleiben ein '''Anlagenwert''': Verschmutzung, Leitungsverluste und Mismatch
+gelten für das Feld, nicht für den Strang.
+
+'''Schritt C — Kennlinie, Clipping, Nachtverbrauch je Gerät.'''
+
+: <math>\displaystyle x(t) = \frac{P_{\mathrm{DC,ger}}(t)}{P_{\mathrm{AC,nenn}}}</math> &nbsp;&nbsp;(32)
+:: <math>x(t)</math> – Auslastung des Geräts [–]
+:: <math>P_{\mathrm{DC,ger}}(t)</math> – Gleichstromleistung des Geräts aus (31) [kW]
+:: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennleistung des Geräts [kW]
+
+: <math>\displaystyle P_{\mathrm{AC}}(t) = \min\left( P_{\mathrm{DC,ger}}(t) \cdot \eta_{\mathrm{WR}}\left( x(t) \right) , P_{\mathrm{AC,nenn}} \right)</math> &nbsp;&nbsp;(33)
+:: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung des Geräts [kW]
+:: <math>P_{\mathrm{DC,ger}}(t)</math> – Gleichstromleistung des Geräts aus (31) [kW]
+:: <math>\eta_{\mathrm{WR}}\left( x(t) \right)</math> – Wirkungsgrad bei der Auslastung der Stunde, Kennlinie (20) über sechs Stützstellen [–]
+:: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennleistung des Geräts; hier klippt es [kW]
+
+: <math>\displaystyle P_{\mathrm{DC,ger}}(t) \le \frac{P_{\mathrm{ein}}}{1\,000} \; \to \; P_{\mathrm{AC}}(t) = - \frac{P_{\mathrm{Nacht}}}{1\,000}</math> &nbsp;&nbsp;(34)
+:: <math>P_{\mathrm{AC}}(t)</math> – Wechselstromleistung des Geräts; unter der Schwelle negativ [kW]
+:: <math>P_{\mathrm{DC,ger}}(t)</math> – Gleichstromleistung des Geräts aus (31) [kW]
+:: <math>P_{\mathrm{ein}}</math> – Einschaltschwelle des Geräts [W]
+:: <math>P_{\mathrm{Nacht}}</math> – Nachtverbrauch des Geräts [W]
+:: <math>1\,000</math> – Umrechnung von W in kW [W/kW]
+
+Die Kennlinie <math>\eta_{\mathrm{WR}}(x)</math> ist dieselbe stückweise Interpolation (20), nur
+über die '''sechs''' Stützstellen des Katalogs statt über drei; unter der kleinsten läuft sie linear
+von <math>\left( 0 , 0 \right)</math>, über <math>x = 1{,}0</math> bleibt sie konstant — dahinter
+greift das Clipping. Eine fehlende Stützstelle wird '''übersprungen'''; interpoliert wird dann
+zwischen den beiden nächsten vorhandenen Punkten. Führt der Katalog keine einzige, gilt die
+Dreipunkt-Vorgabe 0,94 / 0,975 / 0,97, und der Lauf meldet es. Die drei Stützstellen 10 / 50 /
+100&nbsp;% des vereinfachten Wegs sind in den sechs enthalten — an den gemeinsamen Punkten ändert
+sich nichts, dazwischen wird die Kennlinie genauer.
+
+Der '''Nachtverbrauch''' (34) ist eine negative Erzeugung: Unterhalb der Einschaltschwelle speist das
+Gerät nicht ein, sondern verbraucht. Beide Gerätewerte stehen im Katalog in Watt und gehen als
+Kilowatt in die Rechnung. Führt der Katalog keinen Nachtverbrauch, ist das Ergebnis 0. Ohne gepflegte
+Einschaltschwelle ist <math>P_{\mathrm{ein}} = 0</math> — dann sind es genau die Stunden ohne
+Einstrahlung.
+
+'''Schritt D — Summe je Anlage.''' Die Wechselstromleistungen aller Geräte der Anlage werden
+addiert; ab da läuft Schritt 6 unverändert weiter.
+
+==== Kennzahlen ====
+
+Je Gerät und je Anlage schreibt der Lauf ins '''Simulationsprotokoll''' und in den Ergebnisreiter
+„Photovoltaik":
+
+{| class="wikitable"
+! Kennzahl !! Formel !! Einheit
+|-
+| DC/AC-Verhältnis || <math>\frac{\sum_{s \in \mathrm{Geraet}} P_{\mathrm{STC,s}}}{P_{\mathrm{AC,nenn}}}</math> || —
+|-
+| Clipping-Verlust || <math>\sum_{t} \max\left( 0 , P_{\mathrm{AC,roh}}(t) - P_{\mathrm{AC,nenn}} \right)</math> || kWh/a
+|-
+| Clipping-Anteil || <math>\frac{\mathrm{Clipping}}{\mathrm{Ertrag} + \mathrm{Clipping}}</math> || %
+|-
+| Volllaststunden AC || <math>\frac{\mathrm{Ertrag}}{P_{\mathrm{AC,nenn}}}</math> || h/a
+|-
+| Jahresnutzungsgrad || <math>\frac{\sum_{t} P_{\mathrm{AC}}(t)}{\sum_{t} P_{\mathrm{DC,ger}}(t)}</math> || —
+|-
+| Nachtverbrauch || <math>\sum_{t} P_{\mathrm{Nacht}}</math> über die Stunden unter der Einschaltschwelle || kWh/a
+|}
+
+Der Jahresnutzungsgrad ist die Zahl, mit der sich der europäische Wirkungsgrad
+<math>\eta_{\mathrm{euro}}</math> des Datenblatts gegen das tatsächliche Betriebsverhalten
+'''dieser''' Anlage vergleichen lässt.
+
+==== Kosten ====
+
+Der Gerätepreis des Katalogs geht als eigener Posten in die '''Investition''' der Photovoltaik ein:
+Preis je Gerät × Zahl der Geräte dieses Typs. Gezählt werden nur Geräte an Anlagen, die auf dem Weg
+„mit Wechselrichter" rechnen — eine Anlage, die vereinfacht rechnet, trägt auch keine
+Gerätekosten.
+
+Dazu kommen '''acht Auslegungsprüfungen''' als Ampel im Dialog und als Meldung beim Simulationsstart,
+gerechnet für −10&nbsp;°C (kalter Fall, höchste Spannung) und 70&nbsp;°C Zelltemperatur (heißer Fall,
+niedrigste Spannung, höchster Strom):
+
+{| class="wikitable"
+! Nr. !! Prüfung !! Bewertung bei Verletzung
+|-
+| P1 || Leerlaufspannung des Strangs im kalten Fall gegen die maximale DC-Spannung || rot
+|-
+| P2 || MPP-Spannung im heißen Fall gegen die untere Grenze des MPP-Fensters || rot
+|-
+| P3 || MPP-Spannung im kalten Fall gegen die obere Grenze des MPP-Fensters || gelb
+|-
+| P4 || Eingangsstrom je MPP-Tracker im heißen Fall gegen den zulässigen DC-Strom || rot
+|-
+| P5 || Zahl paralleler Stränge je MPP-Tracker gegen den zulässigen Wert || gelb
+|-
+| P6 || DC/AC-Verhältnis außerhalb 1,0…1,5 || gelb
+|-
+| P7 || DC-Nennleistung des Geräts gegen die maximale DC-Eingangsleistung || gelb
+|-
+| P8 || Summe der Module aller Stränge gegen die Modulanzahl <math>n</math> der Anlage || gelb
+|}
+
+Fehlt ein Modulwert, entfällt die zugehörige Prüfung und wird als „nicht prüfbar" gemeldet — sie
+schlägt nicht fehl. Für die MPP-Spannung setzen P2 und P3 den Temperaturkoeffizienten
+<math>\beta_{\mathrm{OC}}</math> der Leerlaufspannung ein; einen eigenen Koeffizienten für die
+MPP-Spannung führt der Modulkatalog nicht.
+
+'''Ergebnisneutral für Bestandsprojekte:''' Solange eine Anlage nicht auf „mit Wechselrichter"
+steht '''und''' eine Strangzeile mit Gerät führt, rechnet sie Zeichen für Zeichen wie zuvor. Erst
+beide Bedingungen zusammen schalten den Strangweg ein.
+
+== Grenzen und Annahmen ==
+{{Anker|grenzen}}
+
+* '''Keine Verschattung.''' Weder Horizont noch Eigenverschattung der Modulreihen gehen ein.
+* '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und
+  <math>\gamma</math> hängen an der Anlagenzeile; im Strangweg trägt jeder Strang wahlweise eigene,
+  und damit ist das Ost/West-Feld eine Anlage (siehe Abschnitt „Wechselrichter", Option 2).
+* '''Kein Ein-Dioden-Modell.''' Spannungen und Ströme des Strangs werden nicht gerechnet. Die sechs
+  elektrischen Kenngrößen des Modulkatalogs (<math>U_{\mathrm{MPP}}</math>,
+  <math>U_{\mathrm{OC}}</math>, <math>I_{\mathrm{MPP}}</math>, <math>I_{\mathrm{SC}}</math>,
+  <math>\alpha_{\mathrm{SC}}</math>, <math>\beta_{\mathrm{OC}}</math>) gehen in die
+  '''Auslegungsprüfungen''' P1 bis P5 ein, aber in keine Stundenrechnung.
+* '''Keine Leistungsgrenze je MPP-Eingang.''' Der MPP-Eingang ist eine Prüfgröße; geklemmt wird am
+  Gerät.
+* '''Ein Modultyp je STRANG''' (seit dem 06.09.2026). Ein Strang rechnet mit genau einem Modultyp;
+  verschiedene Stränge derselben Anlage dürfen verschiedene tragen. Ohne eigene Angabe gilt das
+  Modul der Anlage. '''Was es nicht gibt:''' zwei Modultypen INNERHALB eines Strangs — dafür wären
+  zwei Stränge anzulegen.
+* '''Keine Kennzahlen je Strang.''' Ertrag und Volllaststunden werden je Gerät ausgewiesen, nicht je
+  Strang.
+* '''Keine Alterung im Stundenlauf.''' Die Degradation ist eine Größe der Wirtschaftlichkeit
+  (Jahresreihe), nicht der Stundensimulation.
+* '''Kein Clipping im einfachen Modell''' auf dem vereinfachten Weg, auch dann nicht, wenn eine
+  AC-Nennleistung gepflegt ist — sie wirkt dort nur im erweiterten Modell (22). Im Weg „mit
+  Wechselrichter" klemmt das Gerät dagegen in '''beiden''' Modellen (33): Ein Wechselrichter ist ein
+  Gerät, keine Modellverfeinerung.
+* '''Keine Netzeinspeisebegrenzung''' (etwa eine feste Kappung der Einspeiseleistung) im Stundenlauf.
+* Der '''Boden-Albedo <math>\rho</math> ist fest 0,2''' und nicht einstellbar.
+* Zwei Stunden im Jahr sind durch die Ortszeitumstellung doppelt beziehungsweise gar nicht belegt.
+  Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null, die Jahressumme der
+  Globalstrahlung bleibt unverändert.
+* Der '''Stromspeicher''' gehört nicht hierher: Er wird getrennt gerechnet und verändert den hier
+  ausgewiesenen PV-Ertrag nicht.
+
+== Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
+
+* '''Simulationsergebnis, Reiter „Photovoltaik"''' — je Modulfeld Name, Gesamtfläche, Anzahl und
+  Jahresertrag; im erweiterten Modell zusätzlich das DC/AC-Verhältnis, der Clipping-Verlust und der
+  Wechselrichterverlust. Rechnet eine Anlage auf der Strangebene, steht darüber eine zweite Tabelle
+  mit einer Zeile je '''Gerät''' (DC/AC, Ertrag, Clipping in kWh und %, Volllaststunden AC,
+  Jahresnutzungsgrad, Nachtverbrauch).
+* '''Karte „Photovoltaik" der Simulationskonfiguration''' — Zahl der Geräte und Stränge sowie das
+  DC/AC-Verhältnis, sobald eine Strangzuordnung rechnet.
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauch, Einspeisung, Netzbezug und Autarkie.
+* '''Simulationsergebnis, Reiter „Stromgang"''' — die Ganglinien von Erzeugung, Direktverbrauch,
+  Überschuss und Reststrom, also <math>P_{\mathrm{PV}}</math>, <math>P_{\mathrm{direkt}}</math>,
+  <math>P_{\mathrm{ueber}}</math> und <math>P_{\mathrm{netz}}</math>.
+* '''Simulationsprotokoll''' — jeder Rückfallwert und jede Katalogunstimmigkeit im Klartext, dazu im
+  erweiterten Modell die Kennzahlen je Anlage (DC/AC, Jahresertrag, Volllaststunden,
+  Wechselrichter- und Clipping-Verlust) und im Weg „mit Wechselrichter" eine Zeile je Gerät und
+  eine je Anlage.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Jahreserträge, Eigenverbrauchsquote und die
+  Vergütungsrechnung bauen auf denselben Zahlen auf.
+
+== Bezüge ==
+{{Anker|bezuege}}
+
+* [[Programm Dokumentation/Photovoltaik|Photovoltaik]] — Bedienung des Dialogs, Modulkatalog, Import
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Reihenfolge der Erzeuger, Kaskade und Stundenschleife
+* [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]] — was mit Überschuss und Reststrom danach geschieht
+* [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]] — dieselbe Sonnengeometrie, anderes Kollektormodell
+* [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]] — Herkunft des BHKW-Stromüberschusses
+* [[Programm Dokumentation/Klimadaten|Klimadaten]] — Herkunft und Pflege der Strahlungsreihen
+* [[Programm Dokumentation/Wirtschaftlichkeit|Wirtschaftlichkeit]] — Vergütung, Degradation und Marktwert

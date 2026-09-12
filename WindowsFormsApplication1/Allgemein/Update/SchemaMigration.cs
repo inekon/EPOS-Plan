@@ -10,9 +10,23 @@ using System.Text;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Versionierte In-Code-Migration der Access-Datenbank nach ADR-001.
+    /// Versionierte In-Code-Migration nach ADR-001.
     ///
-    /// Ablauf (einmalig beim Programmstart, aus <c>Program.Main</c> vor dem MDI-Fenster):
+    /// <para><b>ARBEITSPAKET S6 - ZWEI ZWEIGE.</b> Bis S5 gab es nur den Access-Zweig;
+    /// seither ist die Klasse gegabelt (die ausführliche Begründung steht beim Abschnitt
+    /// „Einstiegspunkte"):</para>
+    /// <list type="bullet">
+    ///   <item><description><see cref="Ausfuehren"/> - NORMALSTART auf der
+    ///     SQLite-Datei. Setzt den Freeze-Stand 61 voraus (<see cref="FREEZE_VERSION"/>)
+    ///     und arbeitet die Liste der Schritte ab 62 bis <see cref="ZIEL_VERSION"/> ab:
+    ///     62 die Altbereinigung der verwaisten Klimadaten (iU9‑W14c), 63 und 64 das
+    ///     PV-Ertragsmodell (Paket A und B). Keine OleDb-Verbindung.</description></item>    ///   <item><description><see cref="HebeAltbestand"/> - EINGEFROREN. Fährt die
+    ///     Schritte 1-61 auf einer Access-Datei; einziger Zweck ist die einmalige Hebung
+    ///     eines Kundenbestands vor der Erstmigration (Implementierungskonzept 5.1 und
+    ///     8).</description></item>
+    /// </list>
+    ///
+    /// Ablauf im Access-Zweig (unverändert):
     ///   1. Bootstrap: <c>Tab_Applikation.SchemaVersion</c> anlegen und die Einzelzeile
     ///      der Statustabelle sicherstellen.
     ///   2. Alle registrierten Schritte mit Nummer &gt; gespeicherter Version in
@@ -20,17 +34,22 @@ namespace WindowsFormsApplication1
     ///   3. Den Marker NACH jedem nachgewiesen erfolgreichen Schritt anheben.
     ///   4. Beim ersten Fehlschlag anhalten - der Marker bleibt stehen, damit ein halb
     ///      migriertes Schema nie als fertig gilt.
+    /// Der SQLite-Zweig teilt die Punkte 2 bis 4; Punkt 1 entfällt dort (die
+    /// Markerspalte bringt die Erstmigration mit).
     ///
     /// Fehler werden gesammelt und EINMAL gemeldet. <see cref="MigrationOk"/> und
     /// <see cref="Fehlerbericht"/> tragen das Ergebnis; der Simulationsbereich fragt sie
     /// über <see cref="SimulationGesperrt"/> ab.
     ///
-    /// Bewusst NICHT über <see cref="DataRepository"/>: dessen Methoden zeigen bei
-    /// Fehlern MessageBoxen und schlucken den Fehlertext, womit sich "Spalte existiert
-    /// schon" nicht von "Datei schreibgeschützt" unterscheiden ließe. Der Verbindungs-
-    /// string kommt trotzdem von dort, also läuft alles über
-    /// <see cref="DataRepository.GetDBPath"/> - der offene Punkt O6 des Konzepts ist
-    /// damit gegenstandslos.
+    /// Der ACCESS-ZWEIG arbeitet bewusst NICHT über <see cref="DataRepository"/>: dessen
+    /// Methoden zeigen bei Fehlern MessageBoxen und schlucken den Fehlertext, womit sich
+    /// "Spalte existiert schon" nicht von "Datei schreibgeschützt" unterscheiden ließe.
+    /// Seinen Verbindungsstring baut er seit S6 selbst aus dem übergebenen
+    /// <c>.accdb</c>-Pfad - <see cref="DataRepository.GetConnectionString"/> liefert seit
+    /// S4a den SQLite-String und wäre dort schlicht falsch.
+    /// Der SQLITE-ZWEIG geht umgekehrt ausschließlich über die Zugriffsschicht, aber
+    /// durchgängig im <c>EngineModus</c>: kein Dialog, und der Fehlertext landet trotzdem
+    /// im Bericht (siehe den Abschnitt „SQLite-Werkzeugkasten").
     ///
     /// ETAPPE 1 deckt die Schritte 1-4 ab (Schema), ETAPPE 2 den Schritt 5 - die
     /// einmalige Projektdatenmigration nach Konzept 5.5. Schritt 6 kommt mit Paket 4
@@ -107,10 +126,57 @@ namespace WindowsFormsApplication1
         /// Schritt M-2): <see cref="SCHRITT_61_STEUER_JE_ANLAGE"/> — Steuerwahl und
         /// Hilfsenergie je Anlage. In derselben Reihenfolge angelegt: erst
         /// Schrittkonstante, Methode (<c>Schritt_61_SteuerJeAnlage</c>) und
-        /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel. <b>Neue Schritte ab 62.</b>
+        /// <see cref="SCHRITTE"/>-Eintrag, DANN das Ziel.
+        ///
+        /// 04.09.2026, iU9‑W14c (Anwenderentscheid E‑6 „Altbereinigung ausführen"):
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die verwaisten Klimadaten-Zeilen.
+        /// <b>Der erste Schritt des SQLITE-Zweigs</b>, also ein Eintrag in
+        /// <see cref="SCHRITTE_SQLITE"/> und nicht in <see cref="SCHRITTE"/>. Wieder in
+        /// derselben Reihenfolge angelegt: erst Schrittkonstante, Methode
+        /// (<c>Schritt_62_KlimaWaisen</c>) und Eintrag, DANN das Ziel.
+        /// <b>Neue Schritte ab 63</b> — seit Merge 5 (05.09.2026) <b>ab 65</b>, siehe unten.
+        ///
+        /// <para>iU9‑W15a: Die ZAHL steht seither als <see cref="SchemaStand.Zielversion"/>
+        /// im Kern und wird von hier nur noch WEITERGEREICHT. Grund ist der
+        /// Projekttransfer: <c>ProjektExportImportCtrl</c> schreibt sie ins Paketmanifest
+        /// und war allein wegen dieser Konstante an das Anwendungsprojekt gebunden
+        /// (Befund W15a‑B30). Die öffentliche Fläche bleibt unverändert — jeder
+        /// bestehende Aufrufer von <c>SchemaMigration.ZIEL_VERSION</c> gilt weiter.
+        /// <b>Geändert wird die Nummer künftig in <see cref="SchemaStand"/>.</b>
+        /// <see cref="FREEZE_VERSION"/> bleibt hier: Sie gehört dem eingefrorenen
+        /// ACCESS-Zweig, den der Kern nicht kennt.</para>
+        ///
+        /// <para><b>05.09.2026, Merge 5:</b> Die PV-Schritte des
+        /// <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c> (Paket A, Stufe E1.3, und
+        /// Paket B, Stufe E2) kamen auf dem zweiten Rechner als 62 und 63 zur Welt und
+        /// kollidierten beim Zusammenführen mit <see cref="SCHRITT_62_KLIMAWAISEN"/>. Sie
+        /// heißen seither <see cref="SCHRITT_63_PV_ANLAGENPARAMETER"/> und
+        /// <see cref="SCHRITT_64_PV_MODELLWAHL"/>; keine Anwenderdatenbank hatte die alten
+        /// Nummern gefahren (Produktivstand beider Rechner 61 bzw. 62). Das Ziel steht auf 64.
+        /// <b>Neue Schritte ab 65.</b></para>
         /// </summary>
-        public const int ZIEL_VERSION = 61;
+        public const int ZIEL_VERSION = SchemaStand.Zielversion;
 
+        /// <summary>
+        /// Der <b>Freeze-Stand</b>: der Schemastand, den der <c>EposSqliteMigrator</c>
+        /// fertig abliefert und den der eingefrorene ACCESS-Zweig
+        /// (<see cref="SCHRITTE"/>, Schritte 1 bis 61) erreicht.
+        ///
+        /// <para><b>Seit iU9‑W14c ist er NICHT mehr dasselbe wie
+        /// <see cref="ZIEL_VERSION"/></b>, und genau dafür gibt es ihn: Mit dem ersten
+        /// Schritt des SQLite-Zweigs (<see cref="SCHRITT_62_KLIMAWAISEN"/>) steht das
+        /// ZIEL auf 62, während der Freeze-Stand bei 61 bleibt. Wo „Freeze-Stand"
+        /// gemeint ist, muss diese Konstante stehen — sonst würde
+        /// <see cref="SchritteAbarbeitenSqlite"/> eine frisch migrierte Datei (Stand 61)
+        /// als „nicht auf Freeze-Stand" abweisen, statt Schritt 62 auf ihr zu fahren,
+        /// und <c>HebeAltbestand</c> meldete einen Fehlschlag, obwohl der Access-Zweig
+        /// alles getan hat, was er kann.</para>
+        ///
+        /// <para><b>Er wird nie wieder angehoben.</b> Der Access-Zweig ist eingefroren;
+        /// jeder neue Schritt gehört in <see cref="SCHRITTE_SQLITE"/> und hebt allein
+        /// <see cref="ZIEL_VERSION"/>.</para>
+        /// </summary>
+        public const int FREEZE_VERSION = 61;
         /// <summary>
         /// Nummer der einmaligen Projektdatenmigration Quellen/Senken (Konzept 5.5).
         /// Sie ist seit ETAPPE 2 in <see cref="SCHRITTE"/> registriert und hebt den
@@ -131,8 +197,11 @@ namespace WindowsFormsApplication1
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
         /// Konzept 13.4). Die SPALTE entsteht bereits in Schritt 2; dieser Schritt setzt
         /// ihren WERT einmalig auf WAHR und ist damit das zweite DML des Vorhabens.
+        ///
+        /// <para>Der Wert steht seit iU3 bei <see cref="SchemaStand"/> (Kante K2), damit
+        /// <c>KonfigurationCtrl</c> ihn ohne die Migration prüfen kann.</para>
         /// </summary>
-        public const int SCHRITT_7_EXTRAPOLATION = 7;
+        public const int SCHRITT_7_EXTRAPOLATION = SchemaStand.SCHRITT_7_EXTRAPOLATION;
 
         /// <summary>
         /// Nummer des Energieträger-Verweises <c>Tab_Energieanlagen.ID_Carrier</c>.
@@ -704,7 +773,9 @@ namespace WindowsFormsApplication1
         /// ununterscheidbar. Sie läuft deshalb NUR, wenn die Spalte in eben diesem Lauf
         /// entstanden ist (Muster <c>WirtschaftlichkeitCtrl.SpalteSicher</c>).
         /// </summary>
-        public const int SCHRITT_25_EINHEITENKONSISTENZ = 25;
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const int SCHRITT_25_EINHEITENKONSISTENZ = SchemaStand.SCHRITT_25_EINHEITENKONSISTENZ;
 
         /// <summary>
         /// Nummer der Etappe <b>K3</b> aus
@@ -792,8 +863,8 @@ namespace WindowsFormsApplication1
         ///   <item><description><b>27b</b>: je Gruppe eine HAUPTposition in
         ///     <c>Tab_Kostenfaktor</c> (<c>IsMainComponent = True</c>, gleicher Wortlaut
         ///     wie die Komponente) — ohne sie fände
-        ///     <c>KostenPositionCtrl.StammIdHaupt</c> nichts, und
-        ///     <c>Form_Kosten.EnsureMainComponentExists</c> bräche wortlos ab.</description></item>
+        ///     <c>KostenPositionCtrl.StammIdHaupt</c> nichts, und die Vorsorge der
+        ///     Kostenmasken bräche wortlos ab.</description></item>
         ///   <item><description><b>27c</b>: die Nebenpositionen des Katalogs
         ///     (<see cref="SchemaKatalog.Schritt27_Erfassungsgruppen"/>), Original-
         ///     Beschriftungen der Altanwendung.</description></item>
@@ -808,8 +879,8 @@ namespace WindowsFormsApplication1
         /// <c>Tab_Kostenfaktor</c> vor. Der Befund vom 20.08.2026: Sie existieren bereits —
         /// als Felder <c>EmpfehlungVon</c>/<c>EmpfehlungBis</c> des VDI-Katalogs in
         /// <c>BetriebskostenCtrl.Katalog</c>, mit exakt den sieben Wertepaaren aus § 7.6,
-        /// und <c>Form_Betriebskosten.Bezugstext</c> zeigt sie seit Etappe E3 am Satzfeld
-        /// an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
+        /// und der Bezugstext der Betriebskostenpflege zeigt sie seit Etappe E3 am
+        /// Satzfeld an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
         /// Zahl — und zwar die schlechtere, weil die VDI-Positionen ihren
         /// Empfehlungsbereich aus der Norm beziehen und nicht je Datenbank abweichen
         /// dürfen. Der Schritt legt sie deshalb bewusst nicht an.
@@ -1022,8 +1093,8 @@ namespace WindowsFormsApplication1
         /// Access-Abfragen verweisen aber weiter darauf. Der Doc-Kommentar an Schritt 29
         /// hat das ausdruecklich in Kauf genommen („Gespeicherte Access-Abfragen
         /// blockieren die Drops nicht … sie bleiben Philipps manuelle Checkliste"). Die
-        /// Rechnung war richtig, die Folge nicht: <c>Form_Kosten.LoadKostenFaktoren</c>
-        /// liest <c>Abfrage_Kostenfaktoren</c>, und die joint <c>Tab_KostenKategorie</c>.
+        /// Rechnung war richtig, die Folge nicht: Die Kostenmasken lesen
+        /// <c>Abfrage_Kostenfaktoren</c>, und die joint <c>Tab_KostenKategorie</c>.
         /// Seit dem Drop bricht der Kosteneditor bei JEDEM Gewerk mit „cannot find the
         /// input table or query 'Tab_KostenKategorie'" ab. Eine manuelle Checkliste
         /// erreicht keine Bestandsinstallation — deshalb dieser Schritt.
@@ -1057,7 +1128,7 @@ namespace WindowsFormsApplication1
         /// <b><c>CREATE PROCEDURE</c>, nicht <c>CREATE VIEW</c>.</b> Die Sortierung der
         /// Abfrage ist fachlich tragend: Sie stellt die Hauptposition an den Anfang, die
         /// Nebenzeilen folgen darunter (<c>Kostenuebernahme_Protokoll.md</c>), und
-        /// <c>Form_Kosten</c> setzt selbst KEIN <c>ORDER BY</c>. ACE laesst in einem
+        /// die Kostenmasken setzen selbst KEIN <c>ORDER BY</c>. ACE laesst in einem
         /// <c>CREATE VIEW</c> aber kein <c>ORDER BY</c> zu — nur <c>CREATE PROCEDURE</c>
         /// kann es. Beides ist ueber OLE DB verfuegbar (und nur dort, nicht in der
         /// Access-Oberflaeche); DAO ueber COM braucht es deshalb nicht, die Migration
@@ -2217,6 +2288,442 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_61_STEUER_JE_ANLAGE = 61;
 
+        /// <summary>
+        /// Schritt 62 — <b>die Altbereinigung der verwaisten Klimadaten</b>
+        /// (Anwenderentscheid E-6 vom 04.09.2026: „Altbereinigung ausführen").
+        /// <b>Der ERSTE Schritt des SQLite-Zweigs</b> (<see cref="SCHRITTE_SQLITE"/>).
+        ///
+        /// <para><b>Anlass.</b> Bis iU9‑W14c löschte <c>Form_Klimadaten</c> nur den
+        /// Kopfsatz einer Klimaregion aus <c>Tab_Klimaregion_STAMM</c>; die 8 760
+        /// Stunden- und 365 Tageswerte blieben stehen (Befund W14c‑B23). Der Löschweg
+        /// räumt seit A‑8 mit ab — was VORHER liegen blieb, räumt dieser Schritt ab.</para>
+        ///
+        /// <para><b>Ergebnisneutralität.</b> Eine Waise hat keinen Kopfsatz und ist damit
+        /// über keine Oberfläche und über keinen Rechenweg erreichbar: Jede Abfrage auf
+        /// die zwei Datenblöcke geht über <c>ID_Klimaregion</c> einer VORHANDENEN Region
+        /// (<c>SolardatenCtrl.ReadAllStamm</c>, die Projektkopie beim Anlegen). Der
+        /// Referenzlauf rechnet ohnehin auf den PROJEKTtabellen.</para>
+        ///
+        /// <para><b>Idempotenz.</b> Zwei <c>DELETE</c> mit <c>NOT IN</c> auf den Kopfsatz;
+        /// ein zweiter Lauf findet nichts mehr und ändert nichts. Die zwei Anweisungen
+        /// stehen in <see cref="KlimaWaisenBereinigung"/> im Kern — dort liest sie auch
+        /// der Nachweis, damit es EINE Wahrheit über sie gibt.</para>
+        ///
+        /// <para><b>Auf dem Auslieferungsstand ein No-op:</b> Auf
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> gibt es 32 Regionen, 280 320
+        /// Stunden- und 11 680 Tageswerte und NULL Waisen (Zählung zu E‑6 im
+        /// Portprotokoll). Der Schritt ist für die ANWENDERdatenbanken da.</para>
+        ///
+        /// <para><b>Paketfolge:</b> Wie jeder Schemaschritt hebt er den Zielstand — ein
+        /// Projektpaket mit Schemastand 61 wird nach dem Update abgewiesen (Regel B2,
+        /// <c>ProjektExportImportCtrl</c>); beide Rechner müssen auf denselben Stand.</para>
+        /// </summary>
+        public const int SCHRITT_62_KLIMAWAISEN = 62;
+
+        /// <summary>
+        /// PAKET A des <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>, Stufe E1.3:
+        /// <b>die beiden PV-Anlagenparameter</b> <c>PV_WrWirkungsgrad</c> und
+        /// <c>PV_Systemverluste</c> an <c>Tab_Energieanlagen</c>
+        /// (<see cref="SchemaKatalog.Schritt63_PvAnlagenparameter"/>).
+        ///
+        /// <para><b>Der ZWEITE Schritt des SQLite-Zweigs</b> (nach
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/>; bis Merge 5 am 05.09.2026 hieß er 62). Er steht in
+        /// <see cref="SCHRITTE_SQLITE"/>, nicht in <see cref="SCHRITTE"/>, und benutzt
+        /// ausschließlich <see cref="SqliteSpalteAnlegen"/> — <c>Lauf.Conn</c> ist im
+        /// SQLite-Zweig <c>null</c>, jeder Zugriff über <c>Ddl</c>/<c>TabellenSchema</c>
+        /// liefe ins Leere.</para>
+        ///
+        /// <para><b>Wozu.</b> Bis Paket A stand der Wechselrichter-Wirkungsgrad als
+        /// Konstante 0,95 im Rechenweg (<c>SimulationPV.Berechnung</c>), Systemverluste
+        /// gab es gar nicht. Beides ist eine Anlageneigenschaft und gehört in die
+        /// Anlagenzeile — dort liegen mit Neigung, Azimut und Modulanzahl schon alle
+        /// übrigen Angaben des Modulfelds.</para>
+        ///
+        /// <para><b>KEIN DML — das ist die Ergebnisneutralität.</b> Beide Spalten bleiben
+        /// nach <c>ADD COLUMN</c> NULL; NULL heißt 0,95 bzw. 0 % und damit exakt das
+        /// bisherige Verhalten. Ein DDL-<c>DEFAULT</c> auf einem Fachwert kommt nicht in
+        /// Frage (Hausregel): Er machte „nie gepflegt" und „auf den Vorgabewert gesetzt"
+        /// ununterscheidbar.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 63
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 62
+        /// geschnürt wurden. Das ist die eingebaute Zusage des Formats („nur gleicher
+        /// Schemastand") und gilt für jeden Migrationsschritt gleichermaßen.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte und meldet sie als „bereits vorhanden"; es gibt kein UPDATE,
+        /// das ein zweiter Lauf wiederholen könnte. Der Zweitlauf meldet den Schritt als
+        /// „bereits erledigt" und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_63_PV_ANLAGENPARAMETER = 63;
+
+        /// <summary>
+        /// PAKET B des <c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c>, Stufe E2
+        /// (Nachtrag 2): <b>die Modellwahl je Anlage</b> und was das erweiterte Modell
+        /// dafür braucht — <c>PV_Modell</c>, <c>PV_WrNennleistungKw</c>,
+        /// <c>PV_WrEta10/50/100</c> an <c>Tab_Energieanlagen</c>, <c>Technologie</c> an
+        /// <c>Tab_PV</c> und <c>Tab_PV_STAMM</c>, <c>Degradation</c> an
+        /// <c>Tab_ProjektPhotovoltaik</c>
+        /// (<see cref="SchemaKatalog.Schritt64_PvModellwahl"/> und
+        /// <see cref="SchemaKatalog.Schritt64_PvStammUndDegradation"/>).
+        ///
+        /// <para><b>Wozu.</b> Stufe E2 ist kein Ersatz, sondern eine zweite Rechentiefe:
+        /// Hay-Davies statt isotroper Transposition, Huld-Schwachlichtmodell statt
+        /// linearem <c>P ∝ G</c>, Wechselrichter-Teillastkennlinie mit Clipping statt
+        /// eines konstanten Faktors. Der Anwender wählt sie <b>je Anlage</b> — die
+        /// Wechselrichterdaten gelten je Anlage, und ein Projekt darf gemischt sein
+        /// (ein Feld mit bekanntem Wechselrichter, eines ohne).</para>
+        ///
+        /// <para><b>KEIN DML — und hier ist es das ZENTRALE Abnahmekriterium.</b> Alle
+        /// acht Spalten bleiben nach <c>ADD COLUMN</c> NULL. NULL heißt bei
+        /// <c>PV_Modell</c> „EINFACH", also der Rechenweg von Paket A Zeichen für
+        /// Zeichen; die übrigen wirken ausschließlich in ERWEITERT bzw. sind mit
+        /// NULL = 0 ergebnisneutral (Degradation). Der Referenzlauf nach Paket B muss
+        /// deshalb <b>bitgleich</b> zu <c>2026-09-02_PA1_nach-PaketA</c> sein
+        /// (Konzept N2.5, Kriterium 1). Ein DDL-<c>DEFAULT</c> auf einem Fachwert kommt
+        /// wie immer nicht in Frage.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 64
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 63
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; es gibt kein UPDATE, das ein zweiter Lauf wiederholen
+        /// könnte. Der Zweitlauf meldet „bereits erledigt" und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_64_PV_MODELLWAHL = 64;
+
+        /// <summary>
+        /// <b>Der Wechselrichterkatalog</b> — Stufe S1 des
+        /// <c>Konzept_Wechselrichter_EPOS-Plan.md</c> (Anwenderentscheid <b>W6‑E‑2</b>
+        /// vom 06.09.2026): <c>Tab_Wechselrichter_STAMM</c> und die Projektkopie
+        /// <c>Tab_Wechselrichter</c>, spaltengleich, plus <c>ID_Projekt</c>, ohne
+        /// <c>ReadOnly</c>. Die DDL steht in <see cref="WechselrichterSchema"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Wechselrichter war die einzige Gerätefamilie ohne
+        /// Katalog: Seine Kennlinie stand als drei Zahlen an der Anlagenzeile
+        /// (<see cref="SCHRITT_64_PV_MODELLWAHL"/>), von Hand getippt, ohne Herkunft und
+        /// ohne Prüfung. Mit dem Katalog bekommt er Datenblattwerte (CEC-Import),
+        /// Eingangsgrenzen für die Auslegungsprüfung und einen Gerätepreis.</para>
+        ///
+        /// <para><b>KEIN DML, und das ist die Ergebnisneutralität.</b> Der Schritt legt
+        /// zwei LEERE Tabellen an. Nach der Migration führt kein Projekt eine Kopie, und
+        /// kein Rechenweg liest die zwei Tabellen — S1 fasst <c>SimulationPV</c> nicht
+        /// an. Der Referenzlauf gegen <c>2026-09-05_R2_Zeitbasis</c> bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 65
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 64
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>CREATE TABLE IF NOT EXISTS</c> — SQLite kann das
+        /// selbst; es gibt kein UPDATE, das ein zweiter Lauf wiederholen könnte. Der
+        /// Zweitlauf legt nichts an und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_65_WECHSELRICHTERKATALOG = 65;
+
+        /// <summary>
+        /// <b>Die Strangzuordnung und der sichtbare Wechselrichterweg</b> — Stufe S2 des
+        /// <c>Konzept_Wechselrichter_EPOS-Plan.md</c> (Anwenderentscheide <b>W6‑E‑2</b>
+        /// und <b>W6‑E‑3</b> vom 06.09.2026): die Tabelle <c>Z_AnlageStrang</c>
+        /// (DDL in <see cref="AnlageStrangSchema"/>) und die Spalte
+        /// <c>Tab_Energieanlagen.PV_Wechselrichterweg</c>
+        /// (<see cref="SchemaKatalog.Schritt66_PvWechselrichterweg"/>).
+        ///
+        /// <para><b>Wozu.</b> Bis hierher gilt der Wechselrichter für die GANZE Anlage:
+        /// fünf Zahlen an der Anlagenzeile (<see cref="SCHRITT_64_PV_MODELLWAHL"/>),
+        /// ohne Zuordnung zu einem Strang, ohne zweites Gerät, ohne MPPT und ohne
+        /// Spannungsgrenzen. Ein Ost/West-Dach war nur als zwei getrennte Anlagen
+        /// abbildbar — und damit ohne das gemeinsame Clipping, für das ein
+        /// Ost/West-Gerät überhaupt gebaut wird. <c>Z_AnlageStrang</c> hebt die
+        /// Zuordnung auf die Strangebene; die Spalte macht aus der stillen Vorrangregel
+        /// eine sichtbare Wahl (W6‑E‑3, Konzept 7.1).</para>
+        ///
+        /// <para><b>KEIN DML, und das ist die Ergebnisneutralität.</b> Der Schritt legt
+        /// eine LEERE Tabelle und eine NULL-Spalte an. Kein Projekt führt danach eine
+        /// Strangzeile, kein Anlagensatz hat den Schalter gesetzt, und
+        /// <c>SimulationPV</c> liest weder das eine noch das andere — S2 rechnet nicht.
+        /// Der Referenzlauf gegen <c>2026-09-05_R2_Zeitbasis</c> bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 66
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 65
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>CREATE TABLE IF NOT EXISTS</c> für die Tabelle,
+        /// <see cref="SqliteSpalteAnlegen"/> für die Spalte (es überspringt eine
+        /// vorhandene). Es gibt kein UPDATE, das ein zweiter Lauf wiederholen könnte;
+        /// der Zweitlauf legt nichts an und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_66_ANLAGESTRANG = 66;
+
+        /// <summary>
+        /// <b>Die sichtbare BHKW-Leistungsuntergrenze</b> — Anwenderentscheid
+        /// <b>W6‑E‑7</b> vom 07.09.2026 (er revidiert PAKET BHKW-REGULÄR vom 17.08.2026,
+        /// Punkt 2): <c>Tab_Einstellungen.Leistungsgrenze</c> <b>NULL → 30</b>. Die eine
+        /// Anweisung steht in <see cref="BhkwLeistungsgrenzeVorgabe"/> im Kern.
+        ///
+        /// <para><b>Wozu.</b> <c>SimulationBHKW.Moduldaten_Einlesen</c> trug bis hierher
+        /// einen STILLEN Fallback: War die projektweite Untergrenze 0 (oder NULL, was
+        /// <c>KonfigurationCtrl</c> als 0 liest), rechnete der Lauf mit 30 %. Der
+        /// Anwender hat das revidiert — „Es soll kein Fallback geben, wenn 0 dann bleibt
+        /// es so oder es soll in der Einstellung sichtbar sein". Der Fallback ist
+        /// gefallen; 0 rechnet seither als 0 (keine Untergrenze).</para>
+        ///
+        /// <para><b>DML, und genau deshalb ergebnisNEUTRAL.</b> Er ist der Preis dafür,
+        /// dass der Fallback fallen kann, ohne ein Bestandsprojekt anders rechnen zu
+        /// lassen: Ein Satz OHNE gepflegten Wert lief bisher über die Rücklage mit 30 %
+        /// und trägt danach dieselben 30 % — nur eben sichtbar in der
+        /// Simulationskonfiguration statt unsichtbar im Rechenweg. Der Referenzlauf
+        /// gegen <c>2026-09-06_R3_Straenge</c> bleibt <b>byte-gleich</b>; der Nachweis
+        /// ist Projekt 1017, das einzige Projekt der Testdatenbank mit BHKW UND ohne
+        /// gepflegten Wert (sein Modul führt keine eigene Grenzleistung, greift also auf
+        /// den Projektwert durch).</para>
+        ///
+        /// <para><b>Nur <c>IS NULL</c>, nicht die 0.</b> Eine gepflegte 0 ist eine
+        /// ANGABE („keine Untergrenze") und bleibt unangetastet. Der Access-Teilschritt
+        /// 13b des Pakets BHKW-REGULÄR hob noch „0 ODER 1" mit an — mit W6‑E‑7 ist
+        /// genau das nicht mehr gewollt.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 67
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 66
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Das <c>UPDATE</c> trägt sein <c>WHERE … IS NULL</c>
+        /// selbst; nach dem ersten Lauf gibt es keine NULL-Zeile mehr, der Zweitlauf
+        /// findet nichts und ändert nichts.</para>
+        /// </summary>
+        public const int SCHRITT_67_BHKW_LEISTUNGSGRENZE = 67;
+
+        /// <summary>
+        /// <b>Der Hersteller des Stromspeicherkatalogs</b> — Anwenderentscheid
+        /// <b>W14a‑E‑10‑Q7</b> vom 07.09.2026 (Konzept_Katalogfilter Befund D‑3,
+        /// Stufe S2): die Spalte <c>Firma</c> in <c>Tab_Stromspeicher_STAMM</c>
+        /// <b>und</b> in der Projektkopie <c>Tab_Stromspeicher</c>, dazu der
+        /// einmalige Nachtrag aus dem Bezeichnerpräfix. Die DDL steht in
+        /// <see cref="SchemaKatalog.Schritt68_StromspeicherFirma"/>, das DML in
+        /// <see cref="StromspeicherFirmaNachtrag"/> — beide im Kern.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_Stromspeicher_STAMM</c> war der EINZIGE
+        /// Gerätekatalog des Hauses ohne Herstellerspalte. Solange der Hersteller ein
+        /// Klapplistenwert war, genügte das Bezeichnerpräfix; mit dem Spaltenmodell
+        /// (W14a‑E‑10) ist er eine SPALTE, nach der sortiert und gefiltert wird — und
+        /// „eine Spalte, die es in der Tabelle gar nicht gibt, kann man nicht
+        /// sortieren" (Konzept 9.1, Q7).</para>
+        ///
+        /// <para><b>DDL und DML, und trotzdem ergebnisNEUTRAL.</b> Kein Rechenweg
+        /// liest den Hersteller: <c>SimulationSpeicher</c> und die Wirtschaftlichkeit
+        /// kennen die Spalte nicht, der Speicher wird über Bezeichner und ID gefunden.
+        /// Der Schritt ändert eine ANZEIGE- und SUCHgröße. Der Referenzlauf gegen
+        /// <c>2026-09-07_R5_Zahlenrand</c> bleibt <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Der Nachtrag rät nicht.</b> Er trägt nur ein, was im Bezeichner
+        /// schon steht — den Text vor dem ersten Doppelpunkt, wie ihn der Import
+        /// schreibt (<c>StromspeicherImportSatz.Bezeichner</c>) und wie ihn
+        /// <c>CecWechselrichter.HerstellerAus</c> zurückgewinnt. Ein Satz ohne Präfix
+        /// bleibt leer; die Anzeige fällt dort weiter auf das Präfix zurück.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 68
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 67
+        /// geschnürt wurden — die eingebaute Zusage des Formats, wie bei jedem
+        /// Schritt.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; das <c>UPDATE</c> trägt sein
+        /// <c>WHERE Firma IS NULL OR Firma = ''</c> selbst und schließt Sätze ohne
+        /// Präfix über <c>instr</c> aus — der Zweitlauf findet nichts.</para>
+        /// </summary>
+        public const int SCHRITT_68_STROMSPEICHER_FIRMA = 68;
+
+        /// <summary>
+        /// <b>Die Reparatur der verdorbenen PV-Modulkoeffizienten</b> — Befund
+        /// <b>W6‑B‑5</b> mit den Anwenderentscheiden <b>Q1 bis Q3</b> vom 07.09.2026
+        /// („Q1‑Q3: Empfehlung"): <c>alpha_SC</c>, <c>beta_OC</c>, <c>gamma_PMP</c> und
+        /// <c>T_NOCT</c> in <c>Tab_PV_STAMM</c> <b>und</b> in der Projektkopie
+        /// <c>Tab_PV</c>. Die Regel, die Fenster, die eingebetteten Werte und alle
+        /// Anweisungen stehen in <see cref="PvKoeffizientenReparatur"/> im Kern.
+        ///
+        /// <para><b>Wozu.</b> Paket‑A‑Befund <b>A1</b>
+        /// (<c>Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md</c> N3.3): Der alte
+        /// Katalogeditor <c>Form_AdminPV</c> schrieb die drei Koeffizienten beim
+        /// Speichern mit 0 zurück, ein älterer Schreibweg hatte sie mit dem Wert von
+        /// <c>I_Kurzschluss</c> gefüllt. Der SCHREIBWEG ist seit Schemastand 62
+        /// repariert — die DATEN waren es nie („sie brauchen Neuimport oder
+        /// Handpflege"). Dieser Schritt ist die Handpflege, als Programm.</para>
+        ///
+        /// <para><b>Q1: aus der CEC-Liste, nicht bloß leer.</b> Die Werte kommen aus
+        /// <c>VDI-3805-Daten/PV/CEC Modules.csv</c> — die vier ausgelieferten Module,
+        /// die dort stehen, sind im Schritt EINGEBETTET (der Ordner ist seit W6‑O‑9 eine
+        /// abwählbare Setup-Komponente und kann fehlen), und liegt die Datei am
+        /// Herstellerdatenpfad, kommt der ganze Rest der Liste dazu. Gelesen wird sie
+        /// mit <c>CECDataService</c>, also mit der Leseroutine des Imports.</para>
+        ///
+        /// <para><b>Q2: die Projektkopien mit.</b> <c>Tab_PV</c> trägt dieselbe
+        /// Giftsignatur; zusätzlich holt sich eine Projektzeile den GESUNDEN Wert ihres
+        /// Stammsatzes, wenn die Liste sie nicht kennt.</para>
+        ///
+        /// <para><b>Q3: nicht ergebnisneutral — und das ist der Zweck.</b>
+        /// <c>alpha_SC</c> und <c>beta_OC</c> liest kein Rechenweg (nur
+        /// <c>StrangPlausibilitaet</c> und die Importprüfung). <c>T_NOCT</c> dagegen geht
+        /// in beide PV-Modelle: Wo der Katalogwert ausserhalb des Fensters 20…60 °C lag,
+        /// rechnete <c>SimulationPV.NoctDesModuls</c> mit dem Rückfall 45 °C; steht dort
+        /// nach dem Schritt der Listenwert, rechnet sie mit ihm. Der Rechenweg bleibt
+        /// Zeichen für Zeichen — die ZAHLEN ändern sich, und dafür führt
+        /// <c>Referenzlaeufe/</c> eine neue Basis.</para>
+        ///
+        /// <para><b>Nie ein erfundener Wert.</b> Was verdorben ist und keinen Treffer
+        /// hat, wird <c>NULL</c>; je Satz nennt der Bericht eine Zeile mit Grund. NULL
+        /// heisst „nicht gepflegt": Die Ampel des PV-Dialogs sagt „fehlt", die Simulation
+        /// nimmt den NOCT-Rückfall.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 69
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 68
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Repariert wird nur, was nicht gesund ist, geleert nur,
+        /// was verdorben ist. Nach dem ersten Lauf ist jede angefasste Spalte gesund oder
+        /// <c>NULL</c> — beides schliesst die Bedingung des zweiten Laufs aus.</para>
+        /// </summary>
+        public const int SCHRITT_69_PV_KOEFFIZIENTEN = 69;
+
+        /// <summary>
+        /// <b>Die PV-Strangprüfung</b> — Anwenderentscheide <b>W6‑B‑10</b> und
+        /// <b>W6‑B‑11</b> vom 09.09.2026 („setze Empfehlungen 1–5 um", Prüfbericht
+        /// vom 08.09.2026, offene Punkte <b>O‑3</b> und <b>O‑9</b>). Vier Spalten in
+        /// drei Tabellen:
+        ///
+        /// <list type="bullet">
+        ///   <item><description><c>Tab_Wechselrichter_STAMM.I_Sc_Max</c> und
+        ///     <c>Tab_Wechselrichter.I_Sc_Max</c> — der maximale KURZSCHLUSSstrom je
+        ///     MPPT [A] (W6‑B‑10). DDL in
+        ///     <see cref="SchemaKatalog.Schritt70_WrKurzschlussstrom"/>.</description></item>
+        ///   <item><description><c>Tab_Einstellungen.Ausleg_T_Kalt</c> und
+        ///     <c>…Ausleg_T_Heiss</c> — die zwei Auslegungstemperaturen je Projekt
+        ///     [°C] (W6‑B‑11). DDL in
+        ///     <see cref="SchemaKatalog.Schritt70_Auslegungstemperaturen"/>.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Wozu.</b> P4 verglich den temperaturkorrigierten Strangstrom
+        /// gegen <c>I_Dc_Max</c> und färbte ROT — ohne zu wissen, ob der Katalog dort
+        /// den Arbeits- oder den Kurzschlussstrom führt (Prüfbericht V6). Mit der
+        /// neuen Spalte ist P4 zweistufig: über <c>I_Sc_Max</c> rot (Schaden), nur
+        /// über <c>I_Dc_Max</c> gelb (Abregeln). Und die Auslegungstemperaturen waren
+        /// zwei Konstanten für jedes Projekt, obwohl IEC 62548 die STANDORTbezogen
+        /// niedrigste Temperatur verlangt (Prüfbericht 2.1 und V7).</para>
+        ///
+        /// <para><b>KEIN DML, ergebnisNEUTRAL.</b> Alle vier Spalten bleiben nach
+        /// <c>ADD COLUMN</c> NULL, und NULL heisst bei allen vieren „wie bisher":
+        /// keine Prüfung gegen den Kurzschlussstrom, −10 °C und +70 °C als
+        /// Auslegungstemperaturen. Kein Rechenweg liest eine davon — die
+        /// Strangprüfung ist eine Ampel, kein Rechenergebnis. Der Referenzlauf bleibt
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Warum die zwei Wechselrichterspalten NACHgetragen werden, obwohl
+        /// Schritt 65 die Tabellen anlegt.</b> <c>CREATE TABLE IF NOT EXISTS</c> lässt
+        /// eine vorhandene Tabelle unberührt; eine Datenbank, die Schritt 65 schon
+        /// hinter sich hat, bekäme die Spalte sonst nie.
+        /// <see cref="WechselrichterSchema"/> führt sie trotzdem im CREATE mit —
+        /// dann bekommt eine frisch angelegte Datenbank sie in EINEM Zug, und beide
+        /// Wege enden bei demselben Schema.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 70
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 69
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_70_PV_STRANGPRUEFUNG = 70;
+
+        /// <summary>
+        /// Schritt 71 — der <b>Szenario-Parametersatz</b> der Wirtschaftlichkeit
+        /// (<b>W5‑B‑9</b>, Anwenderentscheid vom 09.09.2026). Zwölf nullbare
+        /// <c>DOUBLE</c>-Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>, sechs je
+        /// Szenario: Kalkulationszins, Preissteigerung Energie, Preissteigerung Betrieb,
+        /// Investitionsänderung [%], Ertragsänderung [%] und Nutzungsdaueränderung [a].
+        /// DDL in <see cref="SchemaKatalog.Schritt71_SzenarioBest"/> und
+        /// <see cref="SchemaKatalog.Schritt71_SzenarioWorst"/>.
+        ///
+        /// <para><b>Wozu.</b> Die Seite „Wirtschaftlichkeit“ bot drei Szenarien an und
+        /// zeigte in allen dreien dieselben Zahlen (Anwenderbefund 08.09.2026): Sie
+        /// unterschieden sich ausschließlich über die ZEILENwerte
+        /// <c>Tab_ProjektWerte.BestCase</c>/<c>WorstCase</c>, und die stehen im Bestand
+        /// bei nahezu jeder Position auf 0. Der Parametersatz spannt die Bandbreite dort
+        /// auf, wo DIN EN 17463 (VALERI) sie erwartet — auf der Projektebene.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle zwölf Spalten bleiben nach <c>ADD COLUMN</c> NULL,
+        /// und NULL heißt bei allen zwölfen „Vorgabe“ (Best: i − 1 %‑Pkt, Investition
+        /// − 10 %, … — die Regel steht in <c>SzenarioSatz</c>). Ein DEFAULT gälte nur für
+        /// künftige Zeilen und nähme der Nullsemantik ihre Aussage.</para>
+        ///
+        /// <para><b>Wirkung auf die Rechnung, ausdrücklich.</b> <b>ERWARTET bleibt
+        /// zahlengleich</b> — der Erwartungsfall bekommt keinen Satz und geht den
+        /// Rechenweg von vorher (<c>WirtschaftlichkeitParameter.FuerSzenario</c> gibt
+        /// für ihn <c>this</c> zurück, dieselbe Referenz). <b>BEST und WORST ändern sich</b>,
+        /// sobald der Schritt gelaufen ist: Sie rechnen dann mit den Vorgaben statt mit
+        /// dem Erwartungswert. Genau das ist der Zweck des Entscheids. Der
+        /// Referenzlauf ist nicht berührt — er rechnet Simulationen, keine
+        /// Wirtschaftlichkeit.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 71
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 70
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_71_SZENARIOPARAMETER = 71;
+
+        /// <summary>
+        /// Schritt 72 — die <b>Preisindizierung der Ersatzbeschaffung</b> und die
+        /// <b>nicht monetären Wirkungen</b> (<b>W5‑B‑12</b>, Anwenderentscheid vom
+        /// 09.09.2026). Vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// der Preisänderungssatz der kapitalgebundenen Kosten p_I als Projektwert und je
+        /// einer für Best und Worst (<c>DOUBLE</c>) sowie ein Freitextfeld
+        /// (<c>MEMO</c>). DDL in <see cref="SchemaKatalog.Schritt72_PreisInvestition"/>
+        /// und <see cref="SchemaKatalog.Schritt72_NichtMonetaer"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Rechenkern trug den heutigen Betrag einer
+        /// Investitionsposition unverändert in jedes Ersatzjahr — die Wärmepumpe, die in
+        /// 18 Jahren ersetzt wird, kostete so viel wie die von heute. VDI 2067 Blatt 1
+        /// schreibt die kapitalgebundenen Kosten dagegen mit einem eigenen
+        /// Preisänderungsfaktor fort (A_n = A₀ · (1 + p_I)^n); das war die Lücke <b>G4</b>
+        /// des VALERI-Abgleichs W5‑B‑10. Das Freitextfeld schließt <b>G6</b>: DIN EN 17463
+        /// verlangt zu jeder Bewertung eine qualitative Beschreibung dessen, was sich
+        /// nicht in Euro fassen lässt.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle vier Spalten bleiben nach <c>ADD COLUMN</c> NULL.
+        /// Bei <c>Preissteigerung_Investition</c> heißt NULL <b>„wie p_B“</b> — nicht
+        /// „0 %“: Der einzige gepflegte Satz im Haus, der eine allgemeine
+        /// Kostensteigerung ausdrückt, ist die Preissteigerung der Betriebskosten, und
+        /// eine 0 als Vorbelegung hätte behauptet, Investitionsgüter würden nie teurer.
+        /// Bei den zwei Szenariospalten heißt NULL „Vorgabe“, also das wirksame p_B
+        /// desselben Szenarios; beim Freitext heißt NULL „nichts erfasst“.</para>
+        ///
+        /// <para><b>Wirkung auf die Rechnung, ausdrücklich.</b> DIESER Schritt ändert
+        /// KEINE Zahl — er legt Spalten an, und der Rechenkern bekommt p_I als Parameter,
+        /// der ohne den Lesepfad des Teils 12b auf 0 steht (dann rechnet er bitgleich wie
+        /// vorher). <b>Sobald der Parametersatz nachgezogen ist</b>, rechnen
+        /// Bestandsprojekte mit Ersatzbeschaffungen mit p_I = p_B, und ihre Kapitalwerte
+        /// sinken leicht. Das ist gewollt: Der bisherige Ausweis war der zu günstige.
+        /// Projekte ohne Ersatzbeschaffung (n ≥ T) bleiben in jedem Fall
+        /// zahlengleich.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 72
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 71
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; ein DML, das ein zweites Mal etwas täte, gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const int SCHRITT_72_VALERI_ERGAENZUNG = 72;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -2224,14 +2731,35 @@ namespace WindowsFormsApplication1
         /// false, sobald ein Lauf einen Schritt nicht abschließen konnte. Vor dem ersten
         /// Lauf true - Werkzeuge, die die Migration gar nicht anstoßen (Referenzlauf-Suite),
         /// sollen dadurch nicht blockiert werden.
+        ///
+        /// <para>Der Wert liegt seit iU3 bei <see cref="SchemaStand"/>; hier steht nur noch
+        /// die Weiterleitung, damit alle bestehenden Aufrufer gültig bleiben.</para>
         /// </summary>
-        public static bool MigrationOk { get; private set; }
+        public static bool MigrationOk
+        {
+            get { return SchemaStand.MigrationOk; }
+            private set { SchemaStand.MigrationOk = value; }
+        }
 
-        /// <summary>Vollständiger Bericht des letzten Laufs; erste Zeile ist der DB-Pfad.</summary>
-        public static string Fehlerbericht { get; private set; }
+        /// <summary>
+        /// Vollständiger Bericht des letzten Laufs; erste Zeile ist der DB-Pfad.
+        /// Weiterleitung auf <see cref="SchemaStand.Fehlerbericht"/>.
+        /// </summary>
+        public static string Fehlerbericht
+        {
+            get { return SchemaStand.Fehlerbericht; }
+            private set { SchemaStand.Fehlerbericht = value; }
+        }
 
-        /// <summary>true, sobald <see cref="Ausfuehren"/> mindestens einmal gelaufen ist.</summary>
-        public static bool Ausgefuehrt { get; private set; }
+        /// <summary>
+        /// true, sobald <see cref="Ausfuehren"/> mindestens einmal gelaufen ist.
+        /// Weiterleitung auf <see cref="SchemaStand.Ausgefuehrt"/>.
+        /// </summary>
+        public static bool Ausgefuehrt
+        {
+            get { return SchemaStand.Ausgefuehrt; }
+            private set { SchemaStand.Ausgefuehrt = value; }
+        }
 
         /// <summary>Schemastand vor bzw. nach dem letzten Lauf.</summary>
         public static int StandVorher { get; private set; }
@@ -2692,11 +3220,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int DatenQuellPufferOffen { get; private set; }
 
-        static SchemaMigration()
-        {
-            MigrationOk = true;
-            Fehlerbericht = "";
-        }
+        // Die Vorbelegung (MigrationOk = true, Fehlerbericht = "") steht seit iU3 bei
+        // SchemaStand als Feldinitialisierung. Ein statischer Konstruktor hier hätte sie
+        // beim ERSTEN Zugriff auf diese Klasse erneut gesetzt und damit ein zuvor von
+        // SchemaStand gesetztes Ergebnis überschrieben; deshalb ist er entfallen.
 
         // =================================================================================
         // Schrittregister
@@ -3354,12 +3881,84 @@ namespace WindowsFormsApplication1
         };
 
         // =================================================================================
-        // Einstiegspunkt
+        // Einstiegspunkte - die Gabelung des ARBEITSPAKETS S6
         // =================================================================================
+        //
+        // Bis S5 gab es GENAU EINEN Einstieg: Ausfuehren() fuhr die Schritte 1-61 ueber
+        // eine eigene OleDb-Verbindung, deren Verbindungsstring aus
+        // DataRepository.GetConnectionString() kam. Seit S4a liefert der aber den
+        // SQLITE-String - der Access-Zweig wuerde also eine ACE-Verbindung auf eine
+        // SQLite-Datei aufbauen. Genau das ist der Grund, warum die Anwendung nach S5
+        // noch nicht startete.
+        //
+        // Die Gabelung trennt die beiden Aufgaben, die bis dahin in einer Methode staken:
+        //
+        //   Ausfuehren(out bericht)          NORMALSTART. Fährt AUSSCHLIESSLICH den
+        //                                    SQLite-Zweig: Stand lesen, Freeze-Stand 61
+        //                                    voraussetzen, die Liste SCHRITTE_SQLITE
+        //                                    abarbeiten. Kein Bootstrap,
+        //                                    kein OleDb, keine Abschlusspruefungen des
+        //                                    Altzweigs - die arbeiten allesamt auf
+        //                                    l.Conn und traegen unter SQLite nicht.
+        //
+        //   HebeAltbestand(accdbPfad, out)   EINGEFRORENER ACCESS-ZWEIG. Fährt die
+        //                                    unveraenderte Logik der Schritte 1-61 auf
+        //                                    einer AUSDRUECKLICH benannten
+        //                                    ACE-Verbindung. HAUSWERKZEUG seit W3
+        //                                    (#157-E-1, 09.09.2026): Der Erststart-
+        //                                    Assistent aus S8 ist gefallen; gehoben wird
+        //                                    ein eingeschickter Kundenbestand vor dem
+        //                                    Lauf des EposSqliteMigrator - von Hand, nicht
+        //                                    im Programmstart (BETRIEB_SQLITE.md 1.1/7).
+        //
+        // WARUM ZWEI SCHLEIFEN STATT EINER MIT WEICHE: Die beiden Zweige teilen zwar die
+        // Marker-Semantik ("Nr <= Version -> bereits erledigt", Marker einzeln nach
+        // Erfolg, Abbruch beim ersten Fehler), aber SONST nichts: andere DDL-Sprache,
+        // andere Vorhandenseinsprobe, andere Versionsleser, andere Abschlusspruefungen.
+        // Eine gemeinsame Schleife mit Weichen darin waere die Stelle, an der der
+        // eingefrorene Zweig doch wieder angefasst werden muss.
+        //
+        // KEIN Aufrufer von Ausfuehren musste geaendert werden (Program.cs:138).
+        //
+        // ---------------------------------------------------------------------------
+        // BEFUND S6 - ZWEI SCHRITTKOERPER GREIFEN AN DER VERBINDUNG VORBEI
+        // ---------------------------------------------------------------------------
+        // Die Schritte 1-61 arbeiten mit einer Ausnahme durchgaengig ueber Lauf.Conn,
+        // also ueber die Verbindung, die HebeAltbestand aufbaut. Die Ausnahme sind zwei
+        // Stellen, die statt dessen DataRepository rufen - und das ist seit S4a die
+        // SQLITE-Datei, nicht die gerade gehobene .accdb:
+        //
+        //   * BrennstoffStammId(...)      SELECT MAX(ID) FROM Tab_Brennstoff_Stamm ...
+        //                                 gerufen aus Schritt 42 und (zweimal) 43
+        //   * Schritt_43_VdiTraeger(...)  SELECT pricing_model FROM energy_carrier
+        //                                 WHERE [name] = 'Koks'
+        //
+        // WIRKUNG. Beide sind reine LESEPROBEN mit gutmuetigem Rueckfall (0 bzw.
+        // "GASEOUS_FUEL"); geschrieben wird ausschliesslich ueber NonQuery(l, ...), also
+        // in die richtige Datei. Ein Altbestand unterhalb Stand 43 bekaeme dort im
+        // schlimmsten Fall einen fehlenden Brennstoff-Stammverweis (ID_Brennstoff = 0)
+        // und das Rueckfall-Preismodell. Ist die SQLite-Datei noch gar nicht angelegt -
+        // der Normalfall der Erstmigration -, laufen beide Proben in den stillen
+        // Fehlerpfad und liefern eben diesen Rueckfall.
+        //
+        // NICHT UMGEBAUT, WEIL EINGEFROREN. Die Schrittkoerper 1-61 bleiben Zeichen fuer
+        // Zeichen unberuehrt; das ist die Zusage dieses Arbeitspakets. Fuer die
+        // Alt-Hebung eines Bestands UNTERHALB Stand 43 ist der Punkt vor S8 gesondert zu
+        // entscheiden (die naheliegende Loesung waere, beide Proben auf Scalar(l, ...)
+        // zu ziehen - eine Zeile je Stelle, aber eben eine Aenderung an einem
+        // eingefrorenen Koerper). Auf einem Bestand ab Stand 43 - dem gemessenen
+        // Regelfall, auch dem der Live-Datenbank - werden beide Schritte uebersprungen
+        // und der Punkt ist gegenstandslos.
 
         /// <summary>
-        /// Führt alle noch ausstehenden Migrationsschritte aus.
+        /// Führt alle noch ausstehenden Migrationsschritte des SQLITE-Zweigs aus
+        /// (Normalstart aus <c>Program.Main</c>).
         /// Rückgabe true, wenn die Datenbank danach auf <see cref="ZIEL_VERSION"/> steht.
+        ///
+        /// <para>Die Datei selbst ist zu diesem Zeitpunkt bereits geprüft:
+        /// <c>Program.Main</c> bricht vor diesem Aufruf mit eigener Meldung ab, wenn
+        /// <see cref="DataRepository.DatenbankVorhanden"/> false liefert
+        /// (Program.cs:101).</para>
         /// </summary>
         /// <param name="fehlerbericht">
         /// Immer gefüllt. Erste Zeile ist der tatsächlich verwendete Datenbankpfad,
@@ -3368,6 +3967,108 @@ namespace WindowsFormsApplication1
         public static bool Ausfuehren(out string fehlerbericht)
         {
             Ausgefuehrt = true;
+            ZaehlerZuruecksetzen();
+
+            var l = new Lauf();
+            string dbPfad;
+            try { dbPfad = DataRepository.GetDBPath(); }
+            catch (Exception ex) { dbPfad = "(Pfad nicht ermittelbar: " + ex.Message + ")"; }
+
+            l.DbPfad = dbPfad;
+            l.Kopf(dbPfad);
+            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+
+            bool erfolg = false;
+            try
+            {
+                // AUSNAHME DER SCHREIBNAHT (Welle iF30, Anwenderentscheid 04.09.2026).
+                // Die Schemamigration laeuft in Program.Main VOR jedem Fenster und muss
+                // auch im Lesemodus durchlaufen: Ein Anwender mit abgelaufener Lizenz
+                // duerfte seine Datenbank sonst nicht einmal mehr OEFFNEN, weil das
+                // Programm sie erst auf den heutigen Stand heben muss. Die Freigabe traegt
+                // ihren Grund; sie gilt nur fuer diesen Aufruf und endet mit ihm.
+                using (Schreibnaht.Freigabe(Schreibnaht.GRUND_MIGRATION))
+                {
+                    erfolg = SchritteAbarbeitenSqlite(l);
+                }
+            }
+            catch (Exception ex)
+            {
+                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
+                erfolg = false;
+            }
+
+            MigrationOk = erfolg;
+            Fehlerbericht = l.Text();
+            fehlerbericht = Fehlerbericht;
+
+            ProtokollSchreiben(dbPfad, Fehlerbericht);
+            return erfolg;
+        }
+
+        /// <summary>
+        /// EINGEFRORENER ACCESS-ZWEIG: hebt einen Altbestand (<c>.accdb</c>) über die
+        /// Schritte 1-61 auf den Freeze-Stand <see cref="FREEZE_VERSION"/>. Der einzige        /// verbliebene Zweck des Access-Zweigs (Implementierungskonzept 5.1). <b>Seit W3
+        /// (#157‑E‑1, 09.09.2026) ist das ein HAUSWERKZEUG</b>: Der Erststart-Assistent
+        /// ist gefallen, gehoben wird ein eingeschickter Kundenbestand von Hand, VOR dem
+        /// Lauf des <c>EposSqliteMigrator</c> (BETRIEB_SQLITE.md 1.1 und 7).
+        ///
+        /// <para><b>Die Verbindung kommt ausdrücklich NICHT aus
+        /// <see cref="DataRepository.GetConnectionString"/></b> - der liefert seit S4a den
+        /// SQLite-String. Statt dessen wird ein ACE-Verbindungsstring auf
+        /// <paramref name="accdbPfad"/> gebaut; ebenso lesen und schreiben Versionsmarker
+        /// hier über <c>SchemaVersionAccess.GetSchemaVersionOleDb</c> /
+        /// <c>SetSchemaVersionOleDb</c> auf genau dieser Verbindung.</para>
+        ///
+        /// <para><b>Rührt <see cref="MigrationOk"/>, <see cref="Ausgefuehrt"/> und damit
+        /// <see cref="SimulationGesperrt"/> bewusst NICHT an:</b> Diese drei beantworten
+        /// die Frage „ist die Datenbank in Ordnung, mit der das Programm gerade
+        /// arbeitet". Der gehobene Altbestand ist das gerade nicht - er wird im nächsten
+        /// Schritt erst nach SQLite migriert. Der Bericht kommt deshalb nur über den
+        /// out-Parameter zurück.</para>
+        ///
+        /// <para><see cref="StandVorher"/>/<see cref="StandNachher"/> werden hingegen
+        /// beschrieben (sie stecken in der eingefrorenen Schleife). Das ist unschädlich:
+        /// Sie werden nur innerhalb dieser Klasse gelesen, und beim nächsten
+        /// Programmstart auf der migrierten Datei läuft <see cref="Ausfuehren"/> und setzt
+        /// sie auf den Stand der SQLite-Datei.</para>
+        /// </summary>
+        /// <param name="accdbPfad">Vollständiger Pfad der zu hebenden Access-Datenbank.</param>
+        /// <param name="bericht">Immer gefüllt - gleiche Form wie bei <see cref="Ausfuehren"/>.</param>
+        public static bool HebeAltbestand(string accdbPfad, out string bericht)
+        {
+            ZaehlerZuruecksetzen();
+
+            var l = new Lauf();
+            string pfad = accdbPfad ?? "";
+            l.DbPfad = pfad;
+            l.Kopf(pfad);
+            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
+            l.Kopf("Alt-Hebung des Access-Bestands (eingefrorener Zweig, Schritte 1-" +
+                   FREEZE_VERSION + ")");
+            bool erfolg = false;
+            try
+            {
+                erfolg = DurchfuehrenAltbestand(l, pfad);
+            }
+            catch (Exception ex)
+            {
+                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
+                erfolg = false;
+            }
+
+            bericht = l.Text();
+            ProtokollSchreiben(pfad, bericht);
+            return erfolg;
+        }
+
+        /// <summary>
+        /// Setzt das gesamte Zählwerk zurück. Bis S6 stand dieser Block am Anfang von
+        /// <see cref="Ausfuehren"/>; seit der Gabelung brauchen ihn BEIDE Einstiege -
+        /// deshalb genau einmal hier, damit nicht zwei Listen auseinanderlaufen.
+        /// </summary>
+        private static void ZaehlerZuruecksetzen()
+        {
             IdPufferGemappt = 0;
             IdPufferGenullt = 0;
             DatenPufferVerwendung = 0;
@@ -3443,36 +4144,30 @@ namespace WindowsFormsApplication1
             _bhkwPostenGeprueft = false;
             _eindeutigkeitGeprueft = false;
             _katalogIndizesGeprueft = false;
-
-            var l = new Lauf();
-            string dbPfad;
-            try { dbPfad = DataRepository.GetDBPath(); }
-            catch (Exception ex) { dbPfad = "(Pfad nicht ermittelbar: " + ex.Message + ")"; }
-
-            l.DbPfad = dbPfad;
-            l.Kopf(dbPfad);
-            l.Kopf("Zeitpunkt: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture));
-
-            bool erfolg = false;
-            try
-            {
-                erfolg = Durchfuehren(l, dbPfad);
-            }
-            catch (Exception ex)
-            {
-                l.Zeile("ABBRUCH: unerwarteter Fehler - " + ex.Message);
-                erfolg = false;
-            }
-
-            MigrationOk = erfolg;
-            Fehlerbericht = l.Text();
-            fehlerbericht = Fehlerbericht;
-
-            ProtokollSchreiben(dbPfad, Fehlerbericht);
-            return erfolg;
         }
 
-        private static bool Durchfuehren(Lauf l, string dbPfad)
+        /// <summary>
+        /// Verbindungsstring auf einen ACCESS-Altbestand. Wortgleich mit dem, den
+        /// <c>EposSqliteMigrator.Kern.Migrator</c> und die Referenzlauf-Suite benutzen -
+        /// es gibt keinen zweiten Weg in eine <c>.accdb</c>.
+        ///
+        /// <para>Er wird ausdrücklich HIER gebaut und nicht aus
+        /// <see cref="DataRepository.GetConnectionString"/> gezogen: Die eine Wahrheit der
+        /// Zugriffsschicht ist seit S4a die SQLite-Datei. Der Access-Zweig hat seine
+        /// eigene Wahrheit, und die ist der übergebene Pfad.</para>
+        /// </summary>
+        private static string AccessVerbindungsstring(string accdbPfad)
+        {
+            return "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=" + accdbPfad + ";";
+        }
+
+        /// <summary>
+        /// Der eingefrorene Access-Durchlauf. Bis S6 hieß diese Methode
+        /// <c>Durchfuehren</c> und war der einzige; geändert wurde an ihr ausschließlich
+        /// die Herkunft des Verbindungsstrings (siehe
+        /// <see cref="AccessVerbindungsstring"/>).
+        /// </summary>
+        private static bool DurchfuehrenAltbestand(Lauf l, string dbPfad)
         {
             // --- Datei überhaupt vorhanden? ------------------------------------------
             bool dateiDa;
@@ -3489,7 +4184,7 @@ namespace WindowsFormsApplication1
             // --- Verbindung ------------------------------------------------------------
             try
             {
-                using (var conn = new OleDbConnection(DataRepository.GetConnectionString()))
+                using (var conn = new OleDbConnection(AccessVerbindungsstring(dbPfad)))
                 {
                     conn.Open();
                     l.Conn = conn;
@@ -3506,6 +4201,16 @@ namespace WindowsFormsApplication1
             finally { l.Conn = null; }
         }
 
+        /// <summary>
+        /// Die eingefrorene Schleife über die Schritte 1-61 (ACCESS-ZWEIG).
+        ///
+        /// <para>Geändert wurde in S6 ausschließlich der Weg zum Versionsmarker: Er lief
+        /// über <c>ApplikationCtrl.GetSchemaVersion</c>/<c>SetSchemaVersion</c>, und die
+        /// zeigen seit S4b auf die SQLITE-Datei. Hier stehen jetzt die
+        /// OleDb-Geschwisterfassungen, die die Verbindung dieses Laufs bekommen. Alles
+        /// andere - Bootstrap, Schrittkörper, Abschlussprüfungen, Berichtsform - ist
+        /// Zeichen für Zeichen unverändert.</para>
+        /// </summary>
         private static bool SchritteAbarbeiten(Lauf l)
         {
             // --- Bootstrap: Versionsmarker --------------------------------------------
@@ -3525,10 +4230,10 @@ namespace WindowsFormsApplication1
             l.Zeile("Bootstrap Schemamarker Tab_Applikation.SchemaVersion: OK");
             l.Detail();
 
-            int version = ApplikationCtrl.GetSchemaVersion();
+            int version = SchemaVersionAccess.GetSchemaVersionOleDb(l.Conn);
             StandVorher = version;
             StandNachher = version;
-            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + FREEZE_VERSION + ")");
             l.Leerzeile();
 
             bool alleOk = true;
@@ -3561,7 +4266,7 @@ namespace WindowsFormsApplication1
                 }
 
                 // Marker erst NACH nachgewiesenem Erfolg anheben.
-                if (!ApplikationCtrl.SetSchemaVersion(s.Nr))
+                if (!SchemaVersionAccess.SetSchemaVersionOleDb(l.Conn, s.Nr))
                 {
                     l.Zeile("Schritt " + s.Nr + "  " + s.Name +
                             ": ausgeführt, aber der Schemamarker konnte nicht fortgeschrieben werden.");
@@ -3643,7 +4348,7 @@ namespace WindowsFormsApplication1
             }
 
             l.Leerzeile();
-            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + FREEZE_VERSION + ")");
             if (IdPufferGemappt > 0 || IdPufferGenullt > 0)
                 l.Zeile("ID_PUFFER-Bereinigung: " + IdPufferGemappt + " auf die Projektkopie umgesetzt, " +
                         IdPufferGenullt + " geleert.");
@@ -3891,7 +4596,639 @@ namespace WindowsFormsApplication1
                             : " - jede BHKW-Zeile fuehrt ihre Investition jetzt in den fuenf " +
                               "Einzelposten, aus denen TechnikPlanwertCtrl.BasenFuellen sie liest."));
 
+            // iU9-W14c: gemessen wird am FREEZE-Stand, nicht am Ziel. Der Access-Zweig
+            // endet bei 61 und wird nie wieder erweitert; die Schritte ab 62 laufen im
+            // SQLite-Zweig.
+            return alleOk && StandNachher >= FREEZE_VERSION;        }
+
+        // =================================================================================
+        // SQLITE-ZWEIG (ARBEITSPAKET S6) - der Normalstart
+        // =================================================================================
+
+        /// <summary>
+        /// Die Schritte des SQLite-Zweigs, also alles ab Nummer 62.
+        ///
+        /// <para><b>Seit iU9‑W14c nicht mehr leer:</b> Der erste Eintrag ist
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/> — die Altbereinigung der verwaisten
+        /// Klimadaten (Anwenderentscheid E-6 vom 04.09.2026). Der Freeze-Stand 61 kommt
+        /// weiterhin fertig aus dem <c>EposSqliteMigrator</c>; was danach kommt, steht
+        /// hier und nicht in <see cref="SCHRITTE"/>, also nicht im eingefrorenen
+        /// Access-Zweig.</para>
+        ///
+        /// <para><b>Seither sind Freeze-Stand und Ziel zweierlei:</b>
+        /// <see cref="FREEZE_VERSION"/> bleibt 61 (was der Migrator liefert),
+        /// <see cref="ZIEL_VERSION"/> stand damit auf 62. Wer beide verwechselt, weist eine
+        /// frisch migrierte Datei als „nicht auf Freeze-Stand" ab.</para>
+        ///
+        /// <para><b>Seit Merge 5 (05.09.2026) drei Einträge:</b> nach
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/> folgen <see cref="SCHRITT_63_PV_ANLAGENPARAMETER"/>
+        /// (Paket A des PV-Ertragsmodells) und <see cref="SCHRITT_64_PV_MODELLWAHL"/> (Paket B);
+        /// <see cref="ZIEL_VERSION"/> steht auf 64.</para>
+        ///
+        /// <para><b>Seit dem Wechselrichter-Konzept (06.09.2026) fünf:</b>
+        /// <see cref="SCHRITT_65_WECHSELRICHTERKATALOG"/> (Stufe S1 — Katalog und
+        /// Projektkopie) und <see cref="SCHRITT_66_ANLAGESTRANG"/> (Stufe S2 —
+        /// Strangzuordnung und der sichtbare Wechselrichterweg aus W6‑E‑3);
+        /// <see cref="ZIEL_VERSION"/> steht auf 66.</para>
+        ///
+        /// <para><b>Seit dem Katalogfilter (07.09.2026) sieben:</b>
+        /// <see cref="SCHRITT_67_BHKW_LEISTUNGSGRENZE"/> (W6‑E‑7) und
+        /// <see cref="SCHRITT_68_STROMSPEICHER_FIRMA"/> (W14a‑E‑10‑Q7, Stufe S2 des
+        /// Konzept_Katalogfilter); <see cref="ZIEL_VERSION"/> steht auf 68.</para>
+        ///
+        /// <para><b>Seit der Katalogpflege der PV-Module (07.09.2026) acht:</b>
+        /// <see cref="SCHRITT_69_PV_KOEFFIZIENTEN"/> (Befund W6‑B‑5, Entscheide Q1–Q3);
+        /// <see cref="ZIEL_VERSION"/> steht auf 69. Er ist der erste Schritt des
+        /// SQLite-Zweigs, der ein Rechenergebnis ÄNDERT — mit Absicht (Q3).</para>
+        ///
+        /// <para><b>Regeln für einen Eintrag hier</b> (dieselbe Reihenfolge, die der
+        /// E6-Vorfall vom 29.08.2026 erzwungen hat: erst Schrittkonstante, Methode und
+        /// Eintrag, DANN <see cref="ZIEL_VERSION"/>):</para>
+        /// <list type="number">
+        ///   <item><description>Nummer ab 62, lückenlos aufsteigend.</description></item>
+        ///   <item><description>Der Schrittkörper benutzt AUSSCHLIESSLICH
+        ///     <see cref="SqliteDdl"/>, <see cref="SqliteSpalteAnlegen"/>,
+        ///     <see cref="SqliteSpalteVorhanden"/> und
+        ///     <see cref="SqliteTabelleVorhanden"/> - NIE <c>Ddl</c>,
+        ///     <c>TabellenSchema</c>, <c>StillAusfuehren</c>, <c>NonQuery</c>,
+        ///     <c>Scalar</c> oder <c>Abfrage</c>: die arbeiten alle auf
+        ///     <c>Lauf.Conn</c>, und die ist im SQLite-Zweig <c>null</c>.</description></item>
+        ///   <item><description>Nach dem Eintrag <see cref="ZIEL_VERSION"/> anheben -
+        ///     sonst meldet jeder Programmstart einen unerreichten Zielstand und sperrt
+        ///     den Simulationsbereich.</description></item>
+        /// </list>
+        /// </summary>
+        private static readonly Schritt[] SCHRITTE_SQLITE =
+        {
+            new Schritt(SCHRITT_62_KLIMAWAISEN,
+                        "Verwaiste Klimadaten abraeumen (Stunden- und Tageswerte ohne Kopfsatz)",
+                        "Verwaiste Zeilen in Tab_Solar_STAMM bzw. Tab_Klimadaten_STAMM bleiben " +
+                        "stehen; sie stoeren keine Rechnung, blaehen die Datei aber auf.",
+                        Schritt_62_KlimaWaisen),
+
+            // PAKET A des PV-Ertragsmodell-Konzepts, Stufe E1.3. Begruendung,
+            // Ergebnisneutralitaet und Idempotenzzusage bei der Schrittkonstanten.
+            new Schritt(SCHRITT_63_PV_ANLAGENPARAMETER,
+                        "PV-Anlagenparameter (PV_WrWirkungsgrad, PV_Systemverluste) " +
+                        "an Tab_Energieanlagen anlegen (Paket A, Stufe E1.3)",
+                        "Wechselrichter-Wirkungsgrad und Systemverluste bleiben dann " +
+                        "unveraenderlich: Die Simulation rechnet weiter mit dem festen " +
+                        "Faktor 0,95 und ohne Systemverluste, und die beiden Felder der " +
+                        "PV-Anlagenmaske haetten keine Spalte zum Speichern.",
+                        Schritt_63_PvAnlagenparameter),
+
+            // PAKET B desselben Konzepts, Stufe E2. Begruendung, Ergebnisneutralitaet
+            // (NULL = Modell EINFACH = Paket-A-Rechenweg) und Idempotenzzusage bei der
+            // Schrittkonstanten.
+            new Schritt(SCHRITT_64_PV_MODELLWAHL,
+                        "PV-Modellwahl (PV_Modell, Wechselrichterangaben, Technologie, " +
+                        "Degradation) anlegen (Paket B, Stufe E2)",
+                        "Das erweiterte PV-Rechenmodell bleibt dann unerreichbar: Die " +
+                        "Modellwahl, die Wechselrichterdaten je Anlage, die Modultechnologie " +
+                        "und die Degradation haetten keine Spalte zum Speichern. Gerechnet " +
+                        "wird weiter ausschliesslich im vereinfachten Modell.",
+                        Schritt_64_PvModellwahl),
+
+            // STUFE S1 des Konzept_Wechselrichter_EPOS-Plan.md (Anwenderentscheid
+            // W6-E-2 vom 06.09.2026). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // WechselrichterSchema - EINE Quelle fuer Migration und Testdatenbank.
+            new Schritt(SCHRITT_65_WECHSELRICHTERKATALOG,
+                        "Wechselrichterkatalog (Tab_Wechselrichter_STAMM) und seine " +
+                        "Projektkopie (Tab_Wechselrichter) anlegen (Stufe S1)",
+                        "Der Wechselrichterkatalog bleibt dann unerreichbar: Die " +
+                        "Verwaltung, der CEC-Import und die Projektkopie haetten keine " +
+                        "Tabelle. Gerechnet wird unveraendert mit den drei " +
+                        "Wechselrichterzahlen an der Anlagenzeile.",
+                        Schritt_65_Wechselrichterkatalog),
+
+            // STUFE S2 desselben Konzepts (Anwenderentscheide W6-E-2 und W6-E-3 vom
+            // 06.09.2026). Begruendung, Ergebnisneutralitaet und Idempotenzzusage bei
+            // der Schrittkonstanten; die DDL der Tabelle steht in AnlageStrangSchema,
+            // die Spalte in SchemaKatalog.Schritt66_PvWechselrichterweg - EINE Quelle
+            // fuer Migration und Testdatenbank.
+            new Schritt(SCHRITT_66_ANLAGESTRANG,
+                        "Strangzuordnung (Z_AnlageStrang) und den sichtbaren " +
+                        "Wechselrichterweg (Tab_Energieanlagen.PV_Wechselrichterweg) " +
+                        "anlegen (Stufe S2)",
+                        "Die Strangzuordnung bleibt dann unerreichbar: Der PV-Dialog " +
+                        "haette keine Tabelle fuer die Straenge und keine Spalte fuer " +
+                        "die Wahl zwischen vereinfachter Rechnung und Wechselrichter. " +
+                        "Gerechnet wird unveraendert mit den Wechselrichterzahlen an " +
+                        "der Anlagenzeile.",
+                        Schritt_66_Strangzuordnung),
+
+            // ANWENDERENTSCHEID W6-E-7 vom 07.09.2026 (er revidiert PAKET BHKW-REGULAER
+            // vom 17.08.2026, Punkt 2). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die eine Anweisung steht in
+            // BhkwLeistungsgrenzeVorgabe - EINE Quelle fuer Migration, Testdatenbank und
+            // Nachweis.
+            new Schritt(SCHRITT_67_BHKW_LEISTUNGSGRENZE,
+                        "Die projektweite BHKW-Leistungsuntergrenze sichtbar machen: " +
+                        "Tab_Einstellungen.Leistungsgrenze NULL -> 30 (W6-E-7)",
+                        "Projekte ohne gepflegte Leistungsuntergrenze rechneten dann " +
+                        "OHNE Untergrenze weiter, statt wie bisher mit 30 %: Der stille " +
+                        "Fallback im Rechenweg ist mit W6-E-7 entfallen, und dieser " +
+                        "Schritt ist es, der den Wert an seine Stelle setzt.",
+                        Schritt_67_BhkwLeistungsgrenze),
+
+            // ANWENDERENTSCHEID W14a-E-10-Q7 vom 07.09.2026 (Konzept_Katalogfilter
+            // Befund D-3, Stufe S2). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt68_StromspeicherFirma, das DML in
+            // StromspeicherFirmaNachtrag - EINE Quelle fuer Migration, Testdatenbank
+            // und Nachweis.
+            new Schritt(SCHRITT_68_STROMSPEICHER_FIRMA,
+                        "Den Hersteller des Stromspeicherkatalogs anlegen: " +
+                        "Tab_Stromspeicher_STAMM.Firma und Tab_Stromspeicher.Firma, " +
+                        "Nachtrag aus dem Bezeichnerpraefix (W14a-E-10-Q7)",
+                        "Der Speicherkatalog bliebe dann der einzige Geraetekatalog " +
+                        "ohne Herstellerspalte: Die Katalogliste koennte nach dem " +
+                        "Hersteller weder sortieren noch filtern, und die Projektkopie " +
+                        "verloere ihn beim Uebernehmen. Gerechnet wird unveraendert - " +
+                        "kein Rechenweg liest den Hersteller.",
+                        Schritt_68_StromspeicherFirma),
+
+            // BEFUND W6-B-5 mit den ANWENDERENTSCHEIDEN Q1 bis Q3 vom 07.09.2026
+            // ("Q1-Q3: Empfehlung"). Begruendung, die drei Entscheide und die
+            // Idempotenzzusage bei der Schrittkonstanten; Regel, Fenster, eingebettete
+            // Werte und saemtliche Anweisungen stehen in PvKoeffizientenReparatur -
+            // EINE Quelle fuer Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_69_PV_KOEFFIZIENTEN,
+                        "Die verdorbenen PV-Modulkoeffizienten reparieren: alpha_SC, " +
+                        "beta_OC, gamma_PMP und T_NOCT in Tab_PV_STAMM und Tab_PV aus " +
+                        "der CEC-Liste (W6-B-5)",
+                        "Der Modulkatalog fuehrte dann weiter den Kurzschlussstrom in " +
+                        "seinen drei Temperaturkoeffizienten: Die Strangampel des " +
+                        "PV-Dialogs bliebe grau, und die Simulation rechnete mit dem " +
+                        "NOCT-Rueckfall 45 Grad C statt mit dem Katalogwert.",
+                        Schritt_69_PvKoeffizienten),
+
+            // ANWENDERENTSCHEIDE W6-B-10 und W6-B-11 vom 09.09.2026 ("setze
+            // Empfehlungen 1-5 um"). Begruendung, Ergebnisneutralitaet und
+            // Idempotenzzusage bei der Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt70_WrKurzschlussstrom und
+            // SchemaKatalog.Schritt70_Auslegungstemperaturen - EINE Quelle fuer
+            // Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_70_PV_STRANGPRUEFUNG,
+                        "Die PV-Strangpruefung: den Kurzschlussstrom je MPPT " +
+                        "(Tab_Wechselrichter(_STAMM).I_Sc_Max) und die zwei " +
+                        "Auslegungstemperaturen (Tab_Einstellungen.Ausleg_T_Kalt/" +
+                        "Ausleg_T_Heiss) anlegen (W6-B-10, W6-B-11)",
+                        "Die Strangampel bliebe dann bei den Regeln von bisher: P4 " +
+                        "faerbt jede Ueberschreitung von I_Dc_Max rot, auch wo das " +
+                        "Geraet nur abregelt, und die Auslegungstemperaturen blieben " +
+                        "fuer jedes Projekt bei minus 10 und plus 70 Grad C. Gerechnet " +
+                        "wird unveraendert - keine der vier Spalten geht in einen " +
+                        "Rechenweg.",
+                        Schritt_70_PvStrangpruefung),
+
+            // ANWENDERENTSCHEID W5-B-9 vom 09.09.2026 ("Wirtschaftlichkeit:
+            // Szenarioparameter und VALERI-Etappe umsetzen"). Begruendung,
+            // Nullsemantik und die Zusage "Erwartet bleibt zahlengleich" stehen bei der
+            // Schrittkonstanten; die DDL steht in
+            // SchemaKatalog.Schritt71_SzenarioBest und ...Worst - EINE Quelle fuer
+            // Migration, Testdatenbank und Nachweis.
+            new Schritt(SCHRITT_71_SZENARIOPARAMETER,
+                        "Den Szenario-Parametersatz der Wirtschaftlichkeit anlegen: " +
+                        "zwoelf nullbare Spalten an Tab_ProjektWirtschaftlichkeit " +
+                        "(Zins, Preissteigerungen, Investitions-, Ertrags- und " +
+                        "Nutzungsdaueraenderung je Best und Worst) (W5-B-9)",
+                        "Die drei Szenarien Erwartet/Best/Worst lieferten dann weiter " +
+                        "identische Ergebnisse, solange niemand je Kostenzeile einen " +
+                        "Best- oder Worst-Case-Betrag pflegt - und das ist im Bestand " +
+                        "bei nahezu jeder Position der Fall.",
+                        Schritt_71_Szenarioparameter),
+
+            // ANWENDERENTSCHEID W5-B-12 vom 09.09.2026 ("Preisindizierung der
+            // Ersatzbeschaffung und nicht monetaere Wirkungen umsetzen", VALERI-Luecken
+            // G4 und G6). Begruendung, Nullsemantik ("NULL heisst wie p_B") und die
+            // Wirkung auf Bestandsprojekte stehen bei der Schrittkonstanten; die DDL
+            // steht in SchemaKatalog.Schritt72_PreisInvestition und
+            // ...Schritt72_NichtMonetaer - EINE Quelle fuer Migration, Testdatenbank
+            // und Nachweis.
+            new Schritt(SCHRITT_72_VALERI_ERGAENZUNG,
+                        "Die VALERI-Ergaenzung anlegen: den Preisaenderungssatz der " +
+                        "kapitalgebundenen Kosten p_I (Projektwert, Best, Worst) und das " +
+                        "Freitextfeld fuer die nicht monetaeren Wirkungen an " +
+                        "Tab_ProjektWirtschaftlichkeit (W5-B-12)",
+                        "Ersatzbeschaffungen wuerden dann weiter zum heutigen Preis " +
+                        "angesetzt - die Waermepumpe, die in 18 Jahren ersetzt wird, so " +
+                        "teuer wie die von heute (Vereinfachung W1). Der Kapitalwert " +
+                        "einer Variante mit kurzlebigen Positionen bliebe damit zu " +
+                        "guenstig, und die nicht monetaeren Wirkungen haetten weiter " +
+                        "kein Feld.",
+                        Schritt_72_ValeriErgaenzung),
+        };
+
+        /// <summary>
+        /// Die Schritte, die ein SQLite-Lauf abarbeitet: <see cref="SCHRITTE_SQLITE"/>
+        /// plus - falls gesetzt - der über den Test-Seam registrierte Wegwerf-Schritt.
+        ///
+        /// <para>Der Seam bekommt den DDL-Helfer als Rückruf hereingereicht, statt dass
+        /// der <c>Lauf</c> nach außen sichtbar würde. So bleibt bewiesen, was die Probe
+        /// beweisen soll: dass ein Schritt ≥ 62 mit <see cref="SqliteDdl"/> allein
+        /// auskommt.</para>
+        /// </summary>
+        private static IEnumerable<Schritt> SchritteSqlite()
+        {
+            foreach (Schritt s in SCHRITTE_SQLITE) yield return s;
+
+            Func<Func<string, string, bool>, bool> probe = ProbeSchrittAktion;
+            if (probe == null) yield break;
+
+            yield return new Schritt(
+                ProbeSchrittNr,
+                ProbeSchrittName ?? "Probe-Schritt (Test-Seam)",
+                "Der über den Test-Seam registrierte Wegwerf-Schritt schlug fehl.",
+                lauf => probe((sql, bezeichnung) => SqliteDdl(lauf, sql, bezeichnung)));
+        }
+
+        // --- Test-Seam (nur Proben; per Reflexion befüllt, Muster wie Probe 11) --------
+        //
+        // Solange SCHRITTE_SQLITE leer ist, gibt es keinen einzigen echten SQLite-Schritt,
+        // an dem sich Marker-Semantik und Idempotenz nachweisen ließen. Der Seam schließt
+        // genau diese Lücke: Die Probe hängt einen Wegwerf-Schritt 62 ein, lässt ihn
+        // zweimal laufen und räumt ihn danach wieder ab. Im Programmbetrieb sind die drei
+        // Felder unbesetzt, die Schleife sieht dann nur SCHRITTE_SQLITE.
+
+        // Die drei sind AUSDRUECKLICH vorbelegt, obwohl das die Vorgabewerte sind: Ohne
+        // Initialisierer meldet der Compiler CS0649 ("wird nie zugewiesen") - im Bestand
+        // wird ihnen ja tatsaechlich nirgends etwas zugewiesen, das tut nur die Probe von
+        // aussen per Reflexion.
+
+        /// <summary>Nummer des Probe-Schritts (nur Proben).</summary>
+        internal static int ProbeSchrittNr = 0;
+
+        /// <summary>Anzeigename des Probe-Schritts (nur Proben).</summary>
+        internal static string ProbeSchrittName = null;
+
+        /// <summary>
+        /// Körper des Probe-Schritts (nur Proben). Bekommt den DDL-Rückruf
+        /// <c>(sql, bezeichnung) =&gt; bool</c> und liefert Erfolg/Misserfolg.
+        /// <c>null</c> = kein Probe-Schritt.
+        /// </summary>
+        internal static Func<Func<string, string, bool>, bool> ProbeSchrittAktion = null;
+
+        /// <summary>
+        /// Die Schleife des SQLite-Zweigs. Gleiche Marker-Semantik und gleiche
+        /// Berichtsform wie <see cref="SchritteAbarbeiten"/> - aber ohne Bootstrap, ohne
+        /// OleDb und ohne die Abschlussprüfungen des Altzweigs.
+        ///
+        /// <para><b>Kein Bootstrap.</b> Die Markerspalte anzulegen ist Sache der
+        /// Erstmigration; fehlt sie, liefert <c>GetSchemaVersion</c> 0 und dieser Lauf
+        /// sagt genau das - statt an einer halb aufgebauten Datenbank herumzureparieren,
+        /// von der niemand weiß, wo sie herkommt.</para>
+        /// </summary>
+        private static bool SchritteAbarbeitenSqlite(Lauf l)
+        {
+            int version = ApplikationCtrl.GetSchemaVersion();
+            StandVorher = version;
+            StandNachher = version;
+            l.Kopf("Schemastand vorher: " + version + "   (Zielstand " + ZIEL_VERSION + ")");
+            l.Leerzeile();
+
+            // --- Zwei Abbruchgründe, die KEINE Migration sind, sondern eine falsche Datei -
+            if (version <= 0)
+            {
+                l.Zeile("Die Datenbank führt keine Schemaversion - Erstmigration nötig.");
+                l.Zeile("        In Tab_Applikation fehlt der Schemamarker (Spalte, Zeile oder " +
+                        "die Tabelle selbst). Eine so beschaffene Datei ist kein migrierter " +
+                        "Bestand; sie ist mit dem EposSqliteMigrator aus der Access-Datenbank " +
+                        "zu erzeugen.");
+                return false;
+            }
+
+            if (version < FREEZE_VERSION)
+            {
+                l.Zeile("Bestand ist nicht auf Freeze-Stand " + FREEZE_VERSION +
+                        " - bitte Erstmigration mit EposSqliteMigrator fahren.");
+                l.Zeile("        Gefunden wurde Stand " + version + ". Die Schritte 1 bis " +
+                        FREEZE_VERSION + " sind der eingefrorene ACCESS-Zweig; sie lassen sich " +                        "auf einer SQLite-Datei nicht nachspielen. Der Weg führt über den " +
+                        "Altbestand: erst SchemaMigration.HebeAltbestand auf der .accdb, " +
+                        "dann der EposSqliteMigrator.");
+                return false;
+            }
+
+            // --- Die Schritte ab 62 ----------------------------------------------------
+            bool alleOk = true;
+
+            foreach (Schritt s in SchritteSqlite())
+            {
+                if (s.Nr <= version)
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": bereits erledigt");
+                    continue;
+                }
+
+                l.LetzterFehler = null;
+                bool ok;
+                try { ok = s.Aktion(l); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = Kurzmeldung(ex);
+                    ok = false;
+                }
+
+                if (!ok)
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": FEHLGESCHLAGEN");
+                    l.Zeile("        " + s.Fehlertext);
+                    if (l.LetzterFehler != null) l.Zeile("        Meldung der Datenbank: " + l.LetzterFehler);
+                    l.Detail();
+                    alleOk = false;
+                    break; // beim ersten Fehler anhalten - kein halb migriertes Schema fortschreiben
+                }
+
+                // Marker erst NACH nachgewiesenem Erfolg anheben.
+                if (!ApplikationCtrl.SetSchemaVersion(s.Nr))
+                {
+                    l.Zeile("Schritt " + s.Nr + "  " + s.Name +
+                            ": ausgeführt, aber der Schemamarker konnte nicht fortgeschrieben werden.");
+                    l.Detail();
+                    alleOk = false;
+                    break;
+                }
+
+                version = s.Nr;
+                StandNachher = version;
+                l.Zeile("Schritt " + s.Nr + "  " + s.Name + ": OK");
+                l.Detail();
+            }
+
+            l.Leerzeile();
+            l.Zeile("Schemastand nachher: " + StandNachher + "   (Zielstand " + ZIEL_VERSION + ")");
             return alleOk && StandNachher >= ZIEL_VERSION;
+        }
+
+        // =================================================================================
+        // SQLITE-WERKZEUGKASTEN (ARBEITSPAKET S6)
+        // =================================================================================
+        //
+        // Das Gegenstück zu Ddl / TabellenSchema / SpalteVorhanden / AbfrageVorhanden -
+        // fuer Schritte AB 62. Die alten Helfer bleiben unangetastet neben diesen stehen;
+        // sie gehoeren zum eingefrorenen Access-Zweig und arbeiten auf Lauf.Conn.
+        //
+        // DER EINE UNTERSCHIED, AUF DEN ES ANKOMMT: VORABPROBE STATT FEHLERTEXT-DEUTUNG.
+        // Der alte Ddl-Helfer laesst "existiert schon" als Erfolg durchgehen, indem er die
+        // Ausnahme liest - ueber IstBereitsVorhanden, das DEUTSCHE ACE-Meldungstexte
+        // vergleicht (die Jet-Fehlernummern laufen unter .NET 8 ins Leere, weil
+        // OleDbException.Errors dort leer ist; gemessen 22.08.2026). Unter SQLite traegt
+        // das nicht: andere Bibliothek, andere Codes, englische Texte. Es waere schon
+        // immer der zerbrechlichste Punkt der Migration gewesen - hier faellt er weg.
+        //
+        //   CREATE TABLE ... IF NOT EXISTS      kann SQLite selbst
+        //   CREATE INDEX ... IF NOT EXISTS      kann SQLite selbst
+        //   ALTER TABLE ... ADD COLUMN          kann SQLite NICHT bedingt
+        //                                       -> vorher PRAGMA table_info fragen
+        //                                          (SqliteSpalteAnlegen)
+        //
+        // GRENZE DES MUSTERS, EHRLICH BENANNT (Implementierungskonzept 5.5): Ein
+        // NACHTRAEGLICHER FREMDSCHLUESSEL und eine SPALTENAENDERUNG (Typ, NOT NULL,
+        // DEFAULT, Umbenennung vor SQLite 3.25, Loeschen vor 3.35) sind per ALTER TABLE
+        // NICHT moeglich. Die 14 x "ADD CONSTRAINT ... FOREIGN KEY" und das eine
+        // "DROP CONSTRAINT" aus der Historie stecken deshalb kuenftig im Grundschema
+        // (sql\schema\*.sql). Braucht ein Schritt ab 62 so etwas doch, gilt das
+        // TABELLENNEUBAU-REZEPT des SQLite-Handbuchs (12 Schritte, "Making Other Kinds Of
+        // Table Schema Changes"): foreign_keys AUS -> Transaktion -> neue Tabelle mit dem
+        // Zielschema unter Hilfsnamen -> INSERT INTO ... SELECT -> alte Tabelle loeschen
+        // -> umbenennen -> Indizes/Trigger/Views neu -> foreign_key_check -> Commit ->
+        // foreign_keys AN. Ein Helfer dafuer entsteht ERST, wenn der erste Schritt ihn
+        // wirklich braucht - vorher waere er ungeprueftes Geruest.
+        //
+        // ALLE DREI SIND STILL. Sie laufen ueber DataRepository, und das zeigt bei Fehlern
+        // MessageBoxen - beim Programmstart vor dem ersten Fenster ist das nicht
+        // hinnehmbar (derselbe Grund wie bei ApplikationCtrl.GetSchemaVersion). Deshalb
+        // durchgaengig EngineModus + StilleFehlerAbholen, das Muster von
+        // BrennstoffStammId. Der Unterschied zum alten Ddl bleibt damit gewahrt: Der
+        // Fehlertext geht NICHT verloren, er landet im Bericht.
+
+        /// <summary>
+        /// Führt eine DDL-Anweisung des SQLite-Zweigs aus und notiert das Ergebnis im
+        /// Bericht. Für Schritte ab 62.
+        ///
+        /// <para>Anders als <c>Ddl</c> deutet diese Fassung KEINE Fehlertexte: Was
+        /// idempotent sein soll, muss es über <c>IF NOT EXISTS</c> oder eine Vorabprobe
+        /// selbst sein (siehe <see cref="SqliteSpalteAnlegen"/>). Ein Fehler ist hier
+        /// immer ein Fehler.</para>
+        /// </summary>
+        /// <param name="l">Der laufende Bericht.</param>
+        /// <param name="sql">Die Anweisung - vollständig, ohne Parameter.</param>
+        /// <param name="objektName">Was angelegt wird; erscheint so im Bericht.</param>
+        private static bool SqliteDdl(Lauf l, string sql, string objektName)
+        {
+            return SqliteAusfuehren(l, sql, objektName, "angelegt");
+        }
+
+        /// <summary>
+        /// Dasselbe für eine DATENanweisung des SQLite-Zweigs (iU9-W14c, Entscheid E-6).
+        /// Gleiche Bauart wie <see cref="SqliteDdl"/> - derselbe Weg über
+        /// <c>DataRepository.ExecuteSQL</c>, nie über <c>Lauf.Conn</c>; nur das
+        /// Erfolgswort im Bericht ist ein anderes, denn ein <c>DELETE</c> legt nichts an.
+        /// </summary>
+        private static bool SqliteDml(Lauf l, string sql, string bezeichnung)
+        {
+            return SqliteAusfuehren(l, sql, bezeichnung, "ausgefuehrt");
+        }
+
+        /// <summary>
+        /// Der gemeinsame Körper von <see cref="SqliteDdl"/> und <see cref="SqliteDml"/>.
+        /// </summary>
+        private static bool SqliteAusfuehren(Lauf l, string sql, string bezeichnung,
+                                             string erfolgswort)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                bool ok = DataRepository.ExecuteSQL(sql);
+                string[] meldungen = DataRepository.StilleFehlerAbholen();
+
+                if (ok)
+                {
+                    if (l != null) l.Notiz(bezeichnung + ": " + erfolgswort);
+                    return true;
+                }
+
+                string text = meldungen.Length > 0
+                    ? string.Join(" | ", meldungen)
+                    : "(die Zugriffsschicht meldete einen Fehler ohne Text)";
+                text = text.Replace("\r", " ").Replace("\n", " ").Trim();
+                if (text.Length > 300) text = text.Substring(0, 297) + "...";
+
+                if (l != null)
+                {
+                    l.LetzterFehler = text;
+                    l.Notiz(bezeichnung + ": FEHLER - " + text);
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Eine Zählung des SQLite-Zweigs (iU9-W14c, Entscheid E-6). <c>-1</c>, wenn sie
+        /// nicht gelesen werden konnte - der Bericht sagt dann „unbekannt", der Schritt
+        /// läuft trotzdem: Die Zahl ist Auskunft, keine Bedingung.
+        ///
+        /// <para>Bewusst NICHT über <c>Scalar(Lauf, …)</c>: Das arbeitet auf
+        /// <c>Lauf.Conn</c>, und die ist im SQLite-Zweig <c>null</c>.</para>
+        /// </summary>
+        private static long SqliteZahl(string sql)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object wert = DataRepository.ExecuteScalar(sql);
+                DataRepository.StilleFehlerAbholen();
+
+                if (wert == null || wert == DBNull.Value) return -1;
+                try { return Convert.ToInt64(wert, CultureInfo.InvariantCulture); }
+                catch { return -1; }
+            }
+        }
+
+        /// <summary>
+        /// Ein TEXT des SQLite-Zweigs — dasselbe wie <see cref="SqliteZahl"/>, nur ohne
+        /// die Wandlung in eine Zahl. <c>""</c>, wenn nichts zu lesen war.
+        ///
+        /// <para>Angelegt für Schritt 69 (W6‑B‑5): Der SQLite-Zweig kann nur Skalare
+        /// lesen, und der Schritt braucht ZEILEN — die Bezeichner der zu reparierenden
+        /// Module und die Protokollzeilen der geleerten Sätze. Beide kommen deshalb als
+        /// EIN Text mit Zeilenumbrüchen (<c>group_concat</c>) und werden vom Aufrufer
+        /// mit <c>PvKoeffizientenReparatur.Zerlege</c> zerlegt.</para>
+        /// </summary>
+        private static string SqliteText(string sql)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                object wert = DataRepository.ExecuteScalar(sql);
+                DataRepository.StilleFehlerAbholen();
+
+                if (wert == null || wert == DBNull.Value) return "";
+                return Convert.ToString(wert, CultureInfo.InvariantCulture) ?? "";
+            }
+        }
+
+        /// <summary>
+        /// Gibt es diese Tabelle (oder Sicht) in der SQLite-Datei? Ersetzt im
+        /// SQLite-Zweig sowohl <c>TabellenSchema(l, …) != null</c> als auch
+        /// <c>AbfrageVorhanden</c> - <c>sqlite_master</c> führt beide Arten.
+        /// </summary>
+        private static bool SqliteTabelleVorhanden(string tabelle)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                bool da = DataRepository.TabelleVorhanden(tabelle);
+                DataRepository.StilleFehlerAbholen();
+                return da;
+            }
+        }
+
+        /// <summary>
+        /// Gibt es diese Spalte? Antwort aus <c>PRAGMA table_info</c> (über
+        /// <see cref="DataRepository.SpalteVorhanden"/>), nicht aus einem
+        /// <c>FillSchema</c> - Ersatz für <c>SpalteVorhanden(Lauf, …)</c> im
+        /// SQLite-Zweig.
+        /// </summary>
+        private static bool SqliteSpalteVorhanden(string tabelle, string spalte)
+        {
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                bool da = DataRepository.SpalteVorhanden(tabelle, spalte);
+                DataRepository.StilleFehlerAbholen();
+                return da;
+            }
+        }
+
+        /// <summary>
+        /// Legt eine Spalte an, WENN es sie noch nicht gibt - der Regelfall eines
+        /// Schritts ab 62. Vorhandene Spalte = Erfolg, ohne dass eine Ausnahme entsteht,
+        /// die jemand deuten müsste (SQLite kennt kein
+        /// <c>ADD COLUMN IF NOT EXISTS</c>).
+        ///
+        /// <para><paramref name="typDefinition"/> ist alles hinter dem Spaltennamen, also
+        /// z. B. <c>"INTEGER"</c>, <c>"REAL"</c>, <c>"TEXT"</c> oder
+        /// <c>"INTEGER DEFAULT 0"</c>. Zu beachten: SQLite lässt beim nachträglichen
+        /// <c>ADD COLUMN</c> weder <c>PRIMARY KEY</c> noch <c>UNIQUE</c> zu, und ein
+        /// <c>NOT NULL</c> nur mit <c>DEFAULT</c>.</para>
+        /// </summary>
+        private static bool SqliteSpalteAnlegen(Lauf l, string tabelle, string spalte, string typDefinition)
+        {
+            string bezeichnung = tabelle + "." + spalte;
+
+            if (!SqliteTabelleVorhanden(tabelle))
+            {
+                if (l != null)
+                {
+                    l.LetzterFehler = "Tabelle " + tabelle + " ist nicht vorhanden.";
+                    l.Notiz(bezeichnung + ": FEHLER - die Tabelle gibt es nicht.");
+                }
+                return false;
+            }
+
+            if (SqliteSpalteVorhanden(tabelle, spalte))
+            {
+                if (l != null) l.Notiz(bezeichnung + ": bereits vorhanden");
+                return true;
+            }
+
+            return SqliteDdl(l,
+                             "ALTER TABLE [" + tabelle + "] ADD COLUMN [" + spalte + "] " + typDefinition,
+                             bezeichnung);
+        }
+
+        // =================================================================================
+        // Schritt 62 - die Altbereinigung der verwaisten Klimadaten (Entscheid E-6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 62. Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_62_KLIMAWAISEN"/>.
+        ///
+        /// <para><b>Zwei DML-Anweisungen, KEIN DDL</b> — und beide aus
+        /// <see cref="KlimaWaisenBereinigung"/> im Kern, damit der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> DIESELBEN Texte fährt und nicht eine Abschrift.</para>
+        ///
+        /// <para><b>Die Zahlen stehen im Bericht</b>: Waisen je Tabelle vor und nach dem
+        /// Lauf. Sie sind Auskunft, keine Bedingung — lässt sich eine Zählung nicht
+        /// lesen, meldet der Bericht „unbekannt" und der Schritt läuft trotzdem.</para>
+        /// </summary>
+        private static bool Schritt_62_KlimaWaisen(Lauf l)
+        {
+            string[] tabellen = KlimaWaisenBereinigung.Datenblocktabellen();
+            long gesamtVorher = 0;
+
+            foreach (string tabelle in tabellen)
+            {
+                long vorher = SqliteZahl(KlimaWaisenBereinigung.ZaehlungZu(tabelle));
+                if (vorher > 0) gesamtVorher += vorher;
+
+                if (!SqliteDml(l, KlimaWaisenBereinigung.LoeschungZu(tabelle),
+                               tabelle + ": verwaiste Zeilen loeschen"))
+                    return false;
+
+                long nachher = SqliteZahl(KlimaWaisenBereinigung.ZaehlungZu(tabelle));
+
+                l.Zeile("Schritt 62 - " + tabelle + ": Waisen vorher " + Zahltext(vorher) +
+                        ", nachher " + Zahltext(nachher) + ".");
+            }
+
+            l.Notiz("62: Altbereinigung der Klimadaten-Waisen (Entscheid E-6). " +
+                    (gesamtVorher == 0
+                        ? "Es gab nichts zu tun - kein Datenblock ohne Kopfsatz."
+                        : gesamtVorher.ToString(CultureInfo.InvariantCulture) +
+                          " verwaiste Zeile(n) abgeraeumt.") +
+                    " KEIN Rechenergebnis aendert sich: Eine Waise hat keinen Kopfsatz und " +
+                    "ist ueber keine Abfrage des Programms erreichbar.");
+            return true;
+        }
+
+        /// <summary>Zahl oder „unbekannt" — <c>-1</c> heißt „nicht gelesen" (Schritt 62).</summary>
+        private static string Zahltext(long wert)
+        {
+            return wert < 0 ? "unbekannt" : wert.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -4160,7 +5497,7 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ? WHERE [" +
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] IS NULL OR [" +
                 SchemaKatalog.SPALTE_PW_BEMESSUNG + "] = ''",
-                new OleDbParameter("@b", DbWerte.BEMESSUNG_BETRAG));
+                new DbParam("@b", DbWerte.BEMESSUNG_BETRAG));
 
             if (betroffen < 0)
             {
@@ -4184,9 +5521,9 @@ namespace WindowsFormsApplication1
             int summeArt = 0;
             var zuordnung = new[]
             {
-                new { Kategorie = Form_Kosten.KATEGORIE_INVESTITION, Art = DbWerte.KOSTENART_KAPITALGEBUNDEN },
-                new { Kategorie = Form_Kosten.KATEGORIE_BETRIEB,     Art = DbWerte.KOSTENART_BETRIEBSGEBUNDEN },
-                new { Kategorie = Form_Kosten.KATEGORIE_ENERGIE,     Art = DbWerte.KOSTENART_BEDARFSGEBUNDEN }
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_INVESTITION, Art = DbWerte.KOSTENART_KAPITALGEBUNDEN },
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_BETRIEB,     Art = DbWerte.KOSTENART_BETRIEBSGEBUNDEN },
+                new { Kategorie = DbWerte.KOSTEN_KATEGORIE_ENERGIE,     Art = DbWerte.KOSTENART_BEDARFSGEBUNDEN }
             };
 
             foreach (var z in zuordnung)
@@ -4196,8 +5533,8 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] = ? WHERE KategorieID = ? AND ([" +
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] IS NULL OR [" +
                     SchemaKatalog.SPALTE_PW_KOSTENART + "] = '')",
-                    new OleDbParameter("@a", z.Art),
-                    new OleDbParameter("@k", z.Kategorie));
+                    new DbParam("@a", z.Art),
+                    new DbParam("@k", z.Kategorie));
 
                 if (n < 0)
                 {
@@ -4267,7 +5604,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -4367,7 +5704,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTTARIF + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -4473,7 +5810,7 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "] SET [" +
                     z.Spalte + "] = ? WHERE [" + z.Spalte + "] IS NULL OR [" +
                     z.Spalte + "] = ''",
-                    new OleDbParameter("@w", z.Wert));
+                    new DbParam("@w", z.Wert));
 
                 if (n < 0)
                 {
@@ -4669,7 +6006,7 @@ namespace WindowsFormsApplication1
                 int gas = NonQuery(l,
                     "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE [id_brennstoff] IN (" +
                     gasIds + ")" + leer,
-                    new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                    new DbParam("@n", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
                 if (gas < 0)
                 {
@@ -4690,7 +6027,7 @@ namespace WindowsFormsApplication1
             int rest = NonQuery(l,
                 "UPDATE [" + tab + "] SET [" + sp + "] = ? WHERE ([" + sp + "] IS NULL OR [" +
                 sp + "] = '')",
-                new OleDbParameter("@n", DbWerte.UMRECHNUNG_NAME_STANDARD));
+                new DbParam("@n", DbWerte.UMRECHNUNG_NAME_STANDARD));
 
             if (rest < 0)
             {
@@ -4721,7 +6058,7 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
                 "ORDER BY [ID_Brennstoff]",
-                new OleDbParameter("@pm", CARRIER_GAS));
+                new DbParam("@pm", CARRIER_GAS));
 
             if (dt == null) return null;
 
@@ -4839,9 +6176,9 @@ namespace WindowsFormsApplication1
             int traeger = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.ENERGY_CARRIER + "] SET [billing_unit] = ? " +
                 "WHERE [pricing_model] = ? AND [billing_unit] = ?",
-                new OleDbParameter("@neu", neu),
-                new OleDbParameter("@pm", CARRIER_GAS),
-                new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu),
+                new DbParam("@pm", CARRIER_GAS),
+                new DbParam("@alt", alt));
 
             if (traeger < 0) { l.Notiz("26a: billing_unit-UPDATE fehlgeschlagen"); ok = false; }
             else
@@ -4868,8 +6205,8 @@ namespace WindowsFormsApplication1
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = ? " +
                 "AND [to_unit] <> ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt),
-                new OleDbParameter("@ausnahme", neu));
+                new DbParam("@neu", neu), new DbParam("@alt", alt),
+                new DbParam("@ausnahme", neu));
 
             if (von < 0) { l.Notiz("26a: from_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += von;
@@ -4878,7 +6215,7 @@ namespace WindowsFormsApplication1
                 "UPDATE [" + SchemaKatalog.ENERGY_CONVERSION + "] SET [to_unit] = ? " +
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [to_unit] = ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu), new DbParam("@alt", alt));
 
             if (nach < 0) { l.Notiz("26a: to_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += nach;
@@ -4892,7 +6229,7 @@ namespace WindowsFormsApplication1
                 "UPDATE [energy_price] SET [arbeitspreis_unit] = ? WHERE [arbeitspreis_unit] = ? " +
                 "AND [carrier_id] IN (SELECT [id] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = '" + CARRIER_GAS + "')",
-                new OleDbParameter("@neu", neu), new OleDbParameter("@alt", alt));
+                new DbParam("@neu", neu), new DbParam("@alt", alt));
 
             if (preise < 0) { l.Notiz("26a: arbeitspreis_unit-UPDATE fehlgeschlagen"); ok = false; }
             else codes += preise;
@@ -4933,7 +6270,7 @@ namespace WindowsFormsApplication1
                 "SELECT DISTINCT [ID_Brennstoff] FROM [" + SchemaKatalog.ENERGY_CARRIER + "] " +
                 "WHERE [pricing_model] = ? AND [ID_Brennstoff] IS NOT NULL " +
                 "ORDER BY [ID_Brennstoff]",
-                new OleDbParameter("@pm", CARRIER_GAS));
+                new DbParam("@pm", CARRIER_GAS));
 
             if (brennstoffe == null)
             {
@@ -4952,9 +6289,9 @@ namespace WindowsFormsApplication1
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM [" + SchemaKatalog.ENERGY_CONVERSION + "] " +
                     "WHERE [id_brennstoff] = ? AND [from_unit] = ? AND [to_unit] = ?",
-                    new OleDbParameter("@b", brennstoff),
-                    new OleDbParameter("@von", alt),
-                    new OleDbParameter("@nach", neu));
+                    new DbParam("@b", brennstoff),
+                    new DbParam("@von", alt),
+                    new DbParam("@nach", neu));
 
                 if (da == null) { l.Notiz("26b: Prüfung für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
                 if (Zahl(da) > 0) { vorhanden++; continue; }
@@ -4967,11 +6304,11 @@ namespace WindowsFormsApplication1
                     "([ID], [id_brennstoff], [from_unit], [to_unit], [factor], [user_edited], [" +
                     SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "], [" + SchemaKatalog.SPALTE_EC_AKTIV + "]) " +
                     "VALUES (?, ?, ?, ?, 1, FALSE, ?, TRUE)",
-                    new OleDbParameter("@id", neueId),
-                    new OleDbParameter("@b", brennstoff),
-                    new OleDbParameter("@von", alt),
-                    new OleDbParameter("@nach", neu),
-                    new OleDbParameter("@name", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                    new DbParam("@id", neueId),
+                    new DbParam("@b", brennstoff),
+                    new DbParam("@von", alt),
+                    new DbParam("@nach", neu),
+                    new DbParam("@name", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
                 if (n <= 0) { l.Notiz("26b: INSERT für Brennstoff " + brennstoff + " fehlgeschlagen"); ok = false; continue; }
                 gesaet++;
@@ -5010,8 +6347,8 @@ namespace WindowsFormsApplication1
                 "WHERE [id_brennstoff] IN (" + gasIds + ") AND [from_unit] = [to_unit] " +
                 "AND [" + SchemaKatalog.SPALTE_EC_FAKTOR_NAME + "] = ? " +
                 "AND ([user_edited] = FALSE OR [user_edited] IS NULL)",
-                new OleDbParameter("@neu", DbWerte.UMRECHNUNG_NAME_STANDARD),
-                new OleDbParameter("@alt", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
+                new DbParam("@neu", DbWerte.UMRECHNUNG_NAME_STANDARD),
+                new DbParam("@alt", DbWerte.UMRECHNUNG_NAME_Z_FAKTOR));
 
             if (n < 0)
             {
@@ -5100,7 +6437,7 @@ namespace WindowsFormsApplication1
             object da = Scalar(l,
                 "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                 "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                new OleDbParameter("@k", komponente));
+                new DbParam("@k", komponente));
 
             if (da == null)
             {
@@ -5116,8 +6453,8 @@ namespace WindowsFormsApplication1
             int n = NonQuery(l,
                 "INSERT INTO [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] ([ID], [" +
                 SchemaKatalog.SPALTE_KK_KOMPONENTE + "]) VALUES (?, ?)",
-                new OleDbParameter("@id", neueId),
-                new OleDbParameter("@k", komponente));
+                new DbParam("@id", neueId),
+                new DbParam("@k", komponente));
 
             if (n <= 0)
             {
@@ -5145,7 +6482,7 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] " +
                 "WHERE [" + SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? AND [" +
                 SchemaKatalog.SPALTE_KF_IST_HAUPT + "] = " + (hauptposition ? "TRUE" : "FALSE"),
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@b", bezeichnung));
 
             if (da == null)
             {
@@ -5164,8 +6501,8 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "], [" +
                 SchemaKatalog.SPALTE_KF_IST_HAUPT + "]) VALUES (?, ?, " +
                 (hauptposition ? "TRUE" : "FALSE") + ")",
-                new OleDbParameter("@sid", neueId),
-                new OleDbParameter("@b", bezeichnung));
+                new DbParam("@sid", neueId),
+                new DbParam("@b", bezeichnung));
 
             if (n <= 0)
             {
@@ -5262,9 +6599,9 @@ namespace WindowsFormsApplication1
                 "UPDATE [" + TAB + "] SET [Wert] = 80, [Status] = ?, Quelle = ? " +
                 "WHERE Schluessel = ? AND JahrVon = 2028 AND [Wert] = 95 " +
                 "AND Quelle LIKE '%Projektionsbericht%'",
-                new OleDbParameter("@sta", DbWerte.GESETZ_STATUS_PROGNOSE),
-                new OleDbParameter("@que", QUELLE_NEU),
-                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+                new DbParam("@sta", DbWerte.GESETZ_STATUS_PROGNOSE),
+                new DbParam("@que", QUELLE_NEU),
+                new DbParam("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
 
             if (n < 0)
                 l.Notiz("28b: Berichtigung der 2028er-Stuetzstelle fehlgeschlagen - der " +
@@ -5281,7 +6618,7 @@ namespace WindowsFormsApplication1
                 "DELETE FROM [" + TAB + "] " +
                 "WHERE Schluessel = ? AND JahrVon = 2030 AND [Wert] = 125 " +
                 "AND Quelle LIKE '%Projektionsbericht%'",
-                new OleDbParameter("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
+                new DbParam("@sch", DbWerte.GESETZ_CO2_PREIS_NEHS));
 
             if (d < 0)
                 l.Notiz("28b: Die 2030er-Stuetzstelle des mittleren Szenarios liess sich nicht " +
@@ -5436,7 +6773,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Soll-SQL von <see cref="ABFRAGE_KOSTENFAKTOREN"/>.</b> Es liefert exakt die
-        /// Spalten, die <c>Form_Kosten.LoadKostenFaktoren</c> auswaehlt und filtert —
+        /// Spalten, die die Kostenmasken auswaehlen und filtern —
         /// <c>ID</c>, <c>ProjektID</c>, <c>StammID</c>, <c>KategorieName</c>,
         /// <c>Komponente</c>, <c>Bezeichnung</c>, <c>Gruppe</c>, <c>EingegebenerWert</c>,
         /// <c>WorstCase</c>, <c>BestCase</c>, <c>Nutzungsdauer</c>,
@@ -5450,12 +6787,12 @@ namespace WindowsFormsApplication1
         ///     die Tabelle gibt es seit Schritt 29 nicht mehr.</description></item>
         ///   <item><description><c>KategorieName</c> entsteht stattdessen aus
         ///     <c>Tab_ProjektWerte.KategorieID</c>. Die Abbildung 1/2/3 → Name ist
-        ///     dieselbe, die <c>Form_Kosten</c> in seinen drei Reiterzweigen fuehrt; die
+        ///     dieselbe, die die Kostenmasken fuehren; die
         ///     Namen stehen als Persistenzwerte im
         ///     <see cref="SchemaKatalog.KATEGORIE_NAME_INVESTITION">Schemakatalog</see>.
-        ///     Die Spalte MUSS bleiben: <c>Form_Kosten</c> filtert ueber sie
+        ///     Die Spalte bleibt: Bestandsinstallationen filtern ueber sie
         ///     (<c>WHERE KategorieName = ?</c>), sie liesse sich also nicht streichen,
-        ///     ohne den Aufrufer zu aendern.</description></item>
+        ///     ohne die Abfrage unvertraeglich zu machen.</description></item>
         ///   <item><description><c>KategorieID</c> kommt als ZUSAETZLICHE Spalte mit.
         ///     Sie kostet nichts (der Aufrufer zaehlt seine Spalten namentlich auf) und
         ///     macht den kuenftigen Umbau auf einen sprachneutralen Filter moeglich, ohne
@@ -6747,7 +8084,7 @@ namespace WindowsFormsApplication1
             int n = NonQuery(l,
                 "UPDATE [" + tabelle + "] SET [" + spalte + "]=? WHERE ID=" +
                 id.ToString(CultureInfo.InvariantCulture),
-                new OleDbParameter("@wert", wert));
+                new DbParam("@wert", wert));
 
             if (n == 1) return true;
 
@@ -6976,7 +8313,7 @@ namespace WindowsFormsApplication1
                     DataTable projekte = Abfrage(l,
                         "SELECT DISTINCT ProjektID FROM Tab_ProjektWerte " +
                         "WHERE KomponentenID = ? AND ID_Anlage IS NULL",
-                        new OleDbParameter("@k", kid));
+                        new DbParam("@k", kid));
                     if (projekte == null) continue;
 
                     foreach (DataRow pr in projekte.Rows)
@@ -6986,14 +8323,14 @@ namespace WindowsFormsApplication1
                         object a = Scalar(l,
                             "SELECT MIN(ID) FROM Tab_Energieanlagen " +
                             "WHERE ID_Projekt = ? AND [" + spalte + "] IS NOT NULL",
-                            new OleDbParameter("@p", pid));
+                            new DbParam("@p", pid));
                         if (a == null || a == DBNull.Value) { ohneAnlage++; continue; }
                         zugeordnet += NonQuery(l,
                             "UPDATE Tab_ProjektWerte SET ID_Anlage = ? " +
                             "WHERE ProjektID = ? AND KomponentenID = ? AND ID_Anlage IS NULL",
-                            new OleDbParameter("@a", Convert.ToInt32(a)),
-                            new OleDbParameter("@p", pid),
-                            new OleDbParameter("@k", kid));
+                            new DbParam("@a", Convert.ToInt32(a)),
+                            new DbParam("@p", pid),
+                            new DbParam("@k", kid));
                     }
                 }
 
@@ -7559,7 +8896,7 @@ namespace WindowsFormsApplication1
                 // steht auf oberster Ebene, die ID als ganzzahliges Literal.
                 DataTable dt = Abfrage(l,
                     "SELECT id, co2 FROM energy_carrier WHERE [name] = ?",
-                    new OleDbParameter("@n", name));
+                    new DbParam("@n", name));
                 if (dt == null) return false;
 
                 if (dt.Rows.Count == 0)
@@ -7582,7 +8919,7 @@ namespace WindowsFormsApplication1
                     if (NonQuery(l,
                             "UPDATE energy_carrier SET co2 = ? WHERE id = " +
                             id.ToString(CultureInfo.InvariantCulture),
-                            new OleDbParameter("@c", neu)) < 0)
+                            new DbParam("@c", neu)) < 0)
                         return false;
 
                     l.Notiz(name + " (id " + id + "): co2 " +
@@ -7971,7 +9308,7 @@ namespace WindowsFormsApplication1
             {
                 object vorhanden = Scalar(l,
                     "SELECT COUNT(*) FROM " + SchemaKatalog.TAB_EMISSIONSART + " WHERE kuerzel = ?",
-                    new OleDbParameter("@k", a.Kuerzel));
+                    new DbParam("@k", a.Kuerzel));
                 if (vorhanden != null && Convert.ToInt32(vorhanden) > 0) { artenDa++; continue; }
 
                 if (NonQuery(l,
@@ -8062,36 +9399,36 @@ namespace WindowsFormsApplication1
 
         /// <summary>Parameter mit ausdrücklichem Typ — <c>DBNull</c> braucht ihn, weil
         /// OleDb den Typ sonst aus dem Wert ableitet und bei NULL nichts ableiten kann.</summary>
-        private static OleDbParameter EwText(string wert, int laenge)
+        private static DbParam EwText(string wert, int laenge)
         {
-            return new OleDbParameter("@t", OleDbType.VarWChar, laenge)
-            { Value = (object)wert ?? DBNull.Value };
+            return new DbParam("@t", DbParamTyp.VarWChar, laenge)
+            { Wert = (object)wert ?? DBNull.Value };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwGanz(int? wert)
+        private static DbParam EwGanz(int? wert)
         {
-            return new OleDbParameter("@i", OleDbType.Integer)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam("@i", DbParamTyp.Integer)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwKomma(double wert)
+        private static DbParam EwKomma(double wert)
         {
-            return new OleDbParameter("@d", OleDbType.Double) { Value = wert };
+            return new DbParam("@d", DbParamTyp.Double) { Wert = wert };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwJaNein(bool wert)
+        private static DbParam EwJaNein(bool wert)
         {
-            return new OleDbParameter("@b", OleDbType.Boolean) { Value = wert };
+            return new DbParam("@b", DbParamTyp.Boolean) { Wert = wert };
         }
 
         /// <inheritdoc cref="EwText"/>
-        private static OleDbParameter EwDatum(DateTime? wert)
+        private static DbParam EwDatum(DateTime? wert)
         {
-            return new OleDbParameter("@dt", OleDbType.Date)
-            { Value = wert.HasValue ? (object)wert.Value : DBNull.Value };
+            return new DbParam("@dt", DbParamTyp.Date)
+            { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
         }
 
         /// <summary>Kürzel → ID des Artenkatalogs; null, wenn nicht lesbar.</summary>
@@ -8838,7 +10175,7 @@ namespace WindowsFormsApplication1
                 object kidObj = Scalar(l,
                     "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                     "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                    new OleDbParameter("@k", v.Komponente));
+                    new DbParam("@k", v.Komponente));
                 if (kidObj == null || kidObj == DBNull.Value) continue;   // Komponente fehlt
                 int komponentenId = Zahl(kidObj);
 
@@ -8848,9 +10185,9 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_NAME + "] = ?",
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
                 if (vidObj == null || vidObj == DBNull.Value) continue;   // Vorlage fehlt
                 int vorlageId = Zahl(vidObj);
 
@@ -8863,8 +10200,8 @@ namespace WindowsFormsApplication1
                         "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
                         "] WHERE [" + SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung));
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung));
                     if (daObj == null) { ok = false; continue; }
 
                     if (Zahl(daObj) == 0)
@@ -8883,10 +10220,10 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "] <> ?",
-                        new OleDbParameter("@f", p.IstPflicht),
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@f2", p.IstPflicht));
+                        new DbParam("@f", p.IstPflicht),
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@f2", p.IstPflicht));
 
                     // Bemessung auf den Sollwert (Hilfsenergie an der Endenergie;
                     // Instandhaltung Heizkessel als Prozentsatz der Investition).
@@ -8896,10 +10233,10 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                         SchemaKatalog.SPALTE_KVP_BEMESSUNG + "] <> ?",
-                        new OleDbParameter("@bm", p.Bemessung),
-                        new OleDbParameter("@vid", vorlageId),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@bm2", p.Bemessung));
+                        new DbParam("@bm", p.Bemessung),
+                        new DbParam("@vid", vorlageId),
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@bm2", p.Bemessung));
 
                     // Empfehlungsbereich nur NACHTRAGEN, wo keiner steht - ein vom
                     // Anwender gepflegter Bereich der Standardvariante bleibt.
@@ -8911,10 +10248,10 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? AND [" +
                             SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? AND [" +
                             SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] IS NULL",
-                            new OleDbParameter("@ev", p.EmpfehlungVon.Value),
-                            new OleDbParameter("@eb", p.EmpfehlungBis.Value),
-                            new OleDbParameter("@vid", vorlageId),
-                            new OleDbParameter("@b", p.Bezeichnung));
+                            new DbParam("@ev", p.EmpfehlungVon.Value),
+                            new DbParam("@eb", p.EmpfehlungBis.Value),
+                            new DbParam("@vid", vorlageId),
+                            new DbParam("@b", p.Bezeichnung));
 
                     // Projektzeilen derselben Komponente und Kategorie kennzeichnen.
                     // NUR IstPflicht - die Bemessung der Projektzeile bleibt, wie sie ist
@@ -8932,16 +10269,16 @@ namespace WindowsFormsApplication1
                             "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                             SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                             SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                            new OleDbParameter("@b", p.Bezeichnung));
+                            new DbParam("@b", p.Bezeichnung));
                         if (sidObj != null && sidObj != DBNull.Value)
                             projektzeilen += NonQuery(l,
                                 "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [" +
                                 SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = TRUE " +
                                 "WHERE [KomponentenID] = ? AND [KategorieID] = ? AND [" +
                                 SchemaKatalog.SPALTE_PW_IST_PFLICHT + "] = FALSE AND [StammID] = ?",
-                                new OleDbParameter("@kid", komponentenId),
-                                new OleDbParameter("@kat", v.KategorieId),
-                                new OleDbParameter("@sid", Zahl(sidObj)));
+                                new DbParam("@kid", komponentenId),
+                                new DbParam("@kat", v.KategorieId),
+                                new DbParam("@sid", Zahl(sidObj)));
                     }
                 }
             }
@@ -8968,8 +10305,8 @@ namespace WindowsFormsApplication1
         /// am 29.08.2026 ist der <b>Altkatalogname</b>.
         ///
         /// <para><b>Zwei Fälle.</b> Existiert der Zielname noch nicht — der Regelfall, weil
-        /// der Altkatalogeintrag erst bei Benutzung des abgelösten Dialogs
-        /// <c>Form_Betriebskosten</c> entsteht —, wird der vorhandene Eintrag schlicht
+        /// der Altkatalogeintrag erst bei Benutzung des abgelösten
+        /// Betriebskostendialogs entstand —, wird der vorhandene Eintrag schlicht
         /// <b>umbenannt</b>. Alle Verweise über <c>StammID</c> bleiben damit gültig, im
         /// Projekt ändert sich nichts als der angezeigte Wortlaut. Existieren beide, wird
         /// nichts zusammengelegt: Der Vorgang hängt Vorlagen- und Projektzeilen auf die
@@ -8982,7 +10319,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", WARTUNG_BHKW_ALT));
+                new DbParam("@b", WARTUNG_BHKW_ALT));
             if (altObj == null || altObj == DBNull.Value)
             {
                 // Kein Alteintrag - nichts zu tun (frische Datenbank oder schon gelaufen).
@@ -8994,7 +10331,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", DbWerte.VDI_POS_WARTUNG_BHKW));
+                new DbParam("@b", DbWerte.VDI_POS_WARTUNG_BHKW));
 
             if (zielObj == null || zielObj == DBNull.Value)
             {
@@ -9003,14 +10340,14 @@ namespace WindowsFormsApplication1
                     "UPDATE [" + SchemaKatalog.TAB_KOSTENFAKTOR + "] SET [" +
                     SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KF_STAMMID + "] = ?",
-                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                    new OleDbParameter("@sid", altId));
+                    new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new DbParam("@sid", altId));
                 int v = NonQuery(l,
                     "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
                     SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                    new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                    new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+                    new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                    new DbParam("@alt", WARTUNG_BHKW_ALT));
                 l.Notiz("59d: Katalogeintrag \"" + WARTUNG_BHKW_ALT + "\" in \"" +
                         DbWerte.VDI_POS_WARTUNG_BHKW + "\" umbenannt (" + n +
                         " Katalogzeile, " + v + " Vorlagenposition[en]); StammID " + altId +
@@ -9024,16 +10361,16 @@ namespace WindowsFormsApplication1
             int pw = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.TAB_PROJEKTWERTE + "] SET [StammID] = ? " +
                 "WHERE [StammID] = ?",
-                new OleDbParameter("@z", zielId),
-                new OleDbParameter("@a", altId));
+                new DbParam("@z", zielId),
+                new DbParam("@a", altId));
             int vp = NonQuery(l,
                 "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
                 SchemaKatalog.SPALTE_KVP_STAMMID + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ? WHERE [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@z", zielId),
-                new OleDbParameter("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
-                new OleDbParameter("@alt", WARTUNG_BHKW_ALT));
+                new DbParam("@z", zielId),
+                new DbParam("@neu", DbWerte.VDI_POS_WARTUNG_BHKW),
+                new DbParam("@alt", WARTUNG_BHKW_ALT));
             l.Notiz("59d: Beide Wortlaute vorhanden - " + pw + " Projekt- und " + vp +
                     " Vorlagenposition(en) von StammID " + altId + " auf " + zielId +
                     " umgehaengt. Der Katalogeintrag \"" + WARTUNG_BHKW_ALT +
@@ -9068,7 +10405,7 @@ namespace WindowsFormsApplication1
                 "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                 SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                 SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                new OleDbParameter("@b", p.Bezeichnung));
+                new DbParam("@b", p.Bezeichnung));
 
             int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
                                        SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
@@ -9086,19 +10423,19 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "], [" +
                 SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "]) " +
                 "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?, ?)",
-                new OleDbParameter("@id", posId),
-                new OleDbParameter("@vid", vorlageId),
-                ParamOderNull("@sid", OleDbType.Integer,
+                new DbParam("@id", posId),
+                new DbParam("@vid", vorlageId),
+                ParamOderNull("@sid", DbParamTyp.Integer,
                               sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
-                new OleDbParameter("@b", p.Bezeichnung),
-                new OleDbParameter("@ka", p.Kostenart),
-                new OleDbParameter("@bm", p.Bemessung),
-                ParamOderNull("@ev", OleDbType.Double,
+                new DbParam("@b", p.Bezeichnung),
+                new DbParam("@ka", p.Kostenart),
+                new DbParam("@bm", p.Bemessung),
+                ParamOderNull("@ev", DbParamTyp.Double,
                               p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
-                ParamOderNull("@eb", OleDbType.Double,
+                ParamOderNull("@eb", DbParamTyp.Double,
                               p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
-                new OleDbParameter("@so", sort),
-                new OleDbParameter("@pf", p.IstPflicht));
+                new DbParam("@so", sort),
+                new DbParam("@pf", p.IstPflicht));
 
             if (n > 0) return true;
             l.Notiz("59: Position \"" + p.Bezeichnung + "\" konnte in Vorlage " + vorlageId +
@@ -9205,6 +10542,540 @@ namespace WindowsFormsApplication1
                     "KEIN DML: alle fuenf Spalten bleiben NULL, und NULL heisst \"kein " +
                     "eigener Wert, es gilt der Projektwert\" bzw. \"keine Hilfsenergie\". " +
                     "KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 63 - PV-Anlagenparameter (Paket A des PV-Ertragsmodells, Stufe E1.3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 63 - der zweite Schritt des SQLite-Zweigs (nach 62, den Klimawaisen). Anlass,
+        /// Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_63_PV_ANLAGENPARAMETER"/>.
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/>, kein <c>SpaltenAnlegen</c>.</b>
+        /// Der Access-Helfer <c>SpaltenAnlegen</c> arbeitet über <c>TabellenSchema</c> und
+        /// damit über <c>Lauf.Conn</c> — die im SQLite-Zweig <c>null</c> ist. Der Typ
+        /// des Katalogs (<c>DOUBLE</c>) wird deshalb hier ausgeschrieben als
+        /// <c>REAL</c>: Alle Tabellen des Zielschemas sind <c>STRICT</c> und lassen bei
+        /// <c>ADD COLUMN</c> nur INT/INTEGER/REAL/TEXT/BLOB/ANY zu
+        /// (<c>StilleDb.SqliteSpaltenTyp</c> übersetzt an der Rückfallebene dasselbe).</para>
+        /// </summary>
+        private static bool Schritt_63_PvAnlagenparameter(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt63_PvAnlagenparameter)
+            {
+                // DOUBLE des Katalogs -> REAL der STRICT-Tabelle.
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name, "REAL")) return false;
+            }
+
+            l.Notiz("63: 2 Spalte(n) (" + SchemaKatalog.SPALTE_EA_PV_WR_WIRKUNGSGRAD + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_SYSTEMVERLUSTE + ") an " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + " sichergestellt. " +
+                    "KEIN DML: beide Spalten bleiben NULL, und NULL heisst 0,95 " +
+                    "(Wechselrichter-Wirkungsgrad) bzw. 0 % (Systemverluste) - genau der " +
+                    "bisher fest verdrahtete Rechenweg. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 64 - PV-Modellwahl (Paket B des PV-Ertragsmodells, Stufe E2)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 64 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_64_PV_MODELLWAHL"/>.
+        ///
+        /// <para><b>Der Typ kommt aus dem Katalog, übersetzt wird beim Verbrauch.</b>
+        /// Anders als Schritt 63, der <c>"REAL"</c> ausgeschrieben hat, geht dieser
+        /// Schritt über <see cref="StilleDb.SqliteSpaltenTyp"/> — er führt neben
+        /// <c>DOUBLE</c> auch zwei <c>TEXT(n)</c>-Spalten, und die Übersetzung nach
+        /// <c>TEXT CHECK (length(…) &lt;= n)</c> ist genau dieselbe, die die
+        /// Rückfallebene (<c>WaermequelleClass.SchemaSicherstellen</c>) benutzt. Zwei
+        /// Schreibweisen derselben Spalte wären zwei Spaltendefinitionen.</para>
+        /// </summary>
+        private static bool Schritt_64_PvModellwahl(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvModellwahl)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt64_PvStammUndDegradation)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("64: 8 Spalte(n) sichergestellt - " +
+                    SchemaKatalog.SPALTE_EA_PV_MODELL + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_NENNLEISTUNG + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA10 + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA50 + ", " +
+                    SchemaKatalog.SPALTE_EA_PV_WR_ETA100 + " an " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + ", " +
+                    SchemaKatalog.SPALTE_PV_TECHNOLOGIE + " an " + SchemaKatalog.TAB_PV +
+                    " und " + SchemaKatalog.TAB_PV_STAMM + ", " +
+                    SchemaKatalog.SPALTE_PPV_DEGRADATION + " an " +
+                    SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + ". " +
+                    "KEIN DML: alle acht Spalten bleiben NULL. NULL heisst bei " +
+                    SchemaKatalog.SPALTE_EA_PV_MODELL + " \"Modell EINFACH\", also der " +
+                    "Rechenweg aus Paket A, und bei der Degradation 0 %/a. KEIN " +
+                    "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 65 - der Wechselrichterkatalog (Konzept Wechselrichter, Stufe S1)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 65 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_65_WECHSELRICHTERKATALOG"/>.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="WechselrichterSchema"/>)
+        /// und steht nicht hier: Dasselbe Schema legt
+        /// <c>Werkzeuge/Testdatenbankschema</c> an, wenn die Messlatte
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird. Zwei
+        /// abgeschriebene <c>CREATE TABLE</c> wären zwei Schemata — dieselbe
+        /// Begründung, mit der Schritt 62 seine zwei <c>DELETE</c> aus
+        /// <c>KlimaWaisenBereinigung</c> holt.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDdl"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>Ddl</c>, <c>TabellenSchema</c> und <c>NonQuery</c> arbeiten auf
+        /// <c>Lauf.Conn</c>, und die ist hier <c>null</c>. Die Idempotenz trägt
+        /// <c>IF NOT EXISTS</c> in der Anweisung selbst.</para>
+        /// </summary>
+        private static bool Schritt_65_Wechselrichterkatalog(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (KeyValuePair<string, string> a in WechselrichterSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            l.Notiz("65: " + angelegt + " von 2 Tabelle(n) angelegt (" +
+                    SchemaKatalog.TAB_WECHSELRICHTER_STAMM + ", " +
+                    SchemaKatalog.TAB_WECHSELRICHTER + "). " +
+                    "KEIN DML: beide Tabellen sind nach dem Schritt LEER, kein Projekt " +
+                    "fuehrt eine Kopie, und kein Rechenweg liest sie. KEIN " +
+                    "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 66 - Strangzuordnung und Wechselrichterweg (Konzept Wechselrichter, S2)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 66 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_66_ANLAGESTRANG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene DDL:
+        /// die TABELLE aus <see cref="AnlageStrangSchema"/>, die SPALTE aus
+        /// <see cref="SchemaKatalog.Schritt66_PvWechselrichterweg"/>. Aus denselben
+        /// zwei Quellen bedient sich <c>Werkzeuge/Testdatenbankschema</c>, wenn die
+        /// Messlatte <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird.</para>
+        ///
+        /// <para><b>Reihenfolge: erst die Tabelle, dann die Spalte.</b> Sie ist
+        /// sachlich beliebig — die zwei Anweisungen kennen einander nicht —, folgt aber
+        /// der Ordnung des Konzepts (3.4 vor 7.1) und macht die Notiz lesbar.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteSpalteAnlegen"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>Ddl</c>, <c>TabellenSchema</c> und <c>NonQuery</c> arbeiten auf
+        /// <c>Lauf.Conn</c>, und die ist hier <c>null</c>. Der Typ der Spalte geht wie
+        /// in Schritt 64 über <see cref="StilleDb.SqliteSpaltenTyp"/> — es ist eine
+        /// <c>TEXT(20)</c>-Spalte, und die Übersetzung nach
+        /// <c>TEXT CHECK (length(…) &lt;= 20)</c> ist genau die, die auch die
+        /// Rückfallebene benutzt.</para>
+        /// </summary>
+        private static bool Schritt_66_Strangzuordnung(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (KeyValuePair<string, string> a in AnlageStrangSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt66_PvWechselrichterweg)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("66: " + angelegt + " von 1 Tabelle(n) angelegt (" +
+                    SchemaKatalog.Z_ANLAGESTRANG + "), 1 Spalte sichergestellt (" +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." +
+                    SchemaKatalog.SPALTE_EA_PV_WECHSELRICHTERWEG + "). " +
+                    "KEIN DML: die Tabelle ist nach dem Schritt LEER, die Spalte bleibt " +
+                    "NULL, und NULL heisst \"vereinfacht\" - der Rechenweg von heute, " +
+                    "Zeichen fuer Zeichen. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 67 - die sichtbare BHKW-Leistungsuntergrenze (Entscheid W6-E-7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 67 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_67_BHKW_LEISTUNGSGRENZE"/>.
+        ///
+        /// <para><b>Eine DML-Anweisung, KEIN DDL</b> — und sie kommt aus
+        /// <see cref="BhkwLeistungsgrenzeVorgabe"/> im Kern, damit der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> und das Werkzeug <c>Werkzeuge/Testdatenbankschema</c>
+        /// DENSELBEN Text fahren und nicht zwei Abschriften. Dieselbe Bauart wie
+        /// Schritt 62, der seine zwei <c>DELETE</c> aus
+        /// <see cref="KlimaWaisenBereinigung"/> holt.</para>
+        ///
+        /// <para><b>Die Zahlen stehen im Bericht</b>: Sätze ohne gepflegten Wert vor und
+        /// nach dem Lauf. Sie sind Auskunft, keine Bedingung — lässt sich eine Zählung
+        /// nicht lesen, meldet der Bericht „unbekannt" und der Schritt läuft
+        /// trotzdem.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDml"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>NonQuery</c> arbeitet auf <c>Lauf.Conn</c>, und die ist hier
+        /// <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_67_BhkwLeistungsgrenze(Lauf l)
+        {
+            long vorher = SqliteZahl(BhkwLeistungsgrenzeVorgabe.Zaehlung());
+
+            if (!SqliteDml(l, BhkwLeistungsgrenzeVorgabe.Anhebung(),
+                           BhkwLeistungsgrenzeVorgabe.TABELLE + "." +
+                           BhkwLeistungsgrenzeVorgabe.SPALTE + ": NULL auf " +
+                           BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " anheben"))
+                return false;
+
+            long nachher = SqliteZahl(BhkwLeistungsgrenzeVorgabe.Zaehlung());
+
+            l.Zeile("Schritt 67 - " + BhkwLeistungsgrenzeVorgabe.TABELLE + ": Saetze ohne " +
+                    "gepflegte Leistungsgrenze vorher " + Zahltext(vorher) +
+                    ", nachher " + Zahltext(nachher) + ".");
+
+            l.Notiz("67: Die projektweite BHKW-Leistungsuntergrenze wird sichtbar " +
+                    "(Entscheid W6-E-7). " +
+                    (vorher == 0
+                        ? "Es gab nichts zu tun - jeder Satz fuehrt einen gepflegten Wert."
+                        : vorher.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze ohne gepflegten Wert auf " +
+                          BhkwLeistungsgrenzeVorgabe.VORGABE_PROZENT + " % gehoben.") +
+                    " KEIN Rechenergebnis aendert sich: Genau diese Saetze rechneten " +
+                    "bisher ueber den stillen Fallback in SimulationBHKW mit denselben " +
+                    "30 %. Eine gepflegte 0 bleibt 0 - sie ist eine Angabe des " +
+                    "Anwenders (\"keine Untergrenze\"), keine Luecke.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 68 - der Hersteller des Stromspeicherkatalogs (W14a-E-10-Q7)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 68 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_68_STROMSPEICHER_FIRMA"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: die SPALTEN aus
+        /// <see cref="SchemaKatalog.Schritt68_StromspeicherFirma"/>, der NACHTRAG aus
+        /// <see cref="StromspeicherFirmaNachtrag"/>. Aus denselben zwei Quellen
+        /// bedient sich <c>Werkzeuge/Testdatenbankschema</c>.</para>
+        ///
+        /// <para><b>Reihenfolge: erst die Spalten, dann der Nachtrag.</b> Sie ist hier
+        /// NICHT beliebig — das <c>UPDATE</c> nennt <c>Firma</c> und liefe auf einer
+        /// Datenbank ohne die Spalte in einen Fehler.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/> und <see cref="SqliteDml"/>.</b>
+        /// Der Schritt gehört dem SQLite-Zweig; <c>Ddl</c>, <c>TabellenSchema</c> und
+        /// <c>NonQuery</c> arbeiten auf <c>Lauf.Conn</c>, und die ist hier
+        /// <c>null</c>. Der Typ geht wie in Schritt 64 über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/>.</para>
+        /// </summary>
+        private static bool Schritt_68_StromspeicherFirma(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt68_StromspeicherFirma)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            long vorher = SqliteZahl(StromspeicherFirmaNachtrag.Zaehlung());
+
+            if (!SqliteDml(l, StromspeicherFirmaNachtrag.Nachtrag(),
+                           StromspeicherFirmaNachtrag.TABELLE + "." +
+                           StromspeicherFirmaNachtrag.SPALTE +
+                           ": aus dem Bezeichnerpraefix nachtragen"))
+                return false;
+
+            long nachher = SqliteZahl(StromspeicherFirmaNachtrag.Zaehlung());
+
+            l.Zeile("Schritt 68 - " + StromspeicherFirmaNachtrag.TABELLE + ": Saetze mit " +
+                    "Praefix und ohne Hersteller vorher " + Zahltext(vorher) +
+                    ", nachher " + Zahltext(nachher) + " (Katalog gesamt " +
+                    Zahltext(SqliteZahl(StromspeicherFirmaNachtrag.Gesamtzahl())) + ").");
+
+            l.Notiz("68: Der Stromspeicherkatalog bekommt seine Herstellerspalte " +
+                    "(Entscheid W14a-E-10-Q7) - " +
+                    SchemaKatalog.Schritt68_StromspeicherFirma.Length +
+                    " Spalte(n) sichergestellt (" +
+                    SchemaKatalog.TAB_STROMSPEICHER_STAMM + " und " +
+                    SchemaKatalog.TAB_STROMSPEICHER + "). " +
+                    (vorher == 0
+                        ? "Nachzutragen gab es nichts - kein Satz traegt ein Bezeichnerpraefix."
+                        : vorher.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze aus dem Bezeichnerpraefix nachgetragen.") +
+                    " KEIN Rechenergebnis aendert sich: Kein Rechenweg liest den " +
+                    "Hersteller - der Speicher wird ueber Bezeichner und ID gefunden.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 69 - die verdorbenen PV-Modulkoeffizienten (Befund W6-B-5, Q1 bis Q3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 69 — Anlass, die drei Entscheide, die Nicht-Ergebnisneutralität und
+        /// die Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_69_PV_KOEFFIZIENTEN"/>.
+        ///
+        /// <para><b>Eine Quelle, im KERN</b>: <see cref="PvKoeffizientenReparatur"/>. Von
+        /// dort kommen die Wertequelle (eingebettete Auslieferungsmodule und, wenn sie
+        /// da ist, die CEC-Datei), die Giftsignatur als SQL-Bedingung und alle
+        /// Anweisungen. Aus derselben Quelle bedient sich
+        /// <c>Werkzeuge/Testdatenbankschema</c>, und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> prüft sie.</para>
+        ///
+        /// <para><b>Die Reihenfolge ist tragend</b>: erst <c>Tab_PV_STAMM</c>, dann
+        /// <c>Tab_PV</c> — die Übernahme aus dem Stammsatz (Regel d) fände sonst einen
+        /// noch nicht reparierten Stand vor. Und je Tabelle: reparieren, übernehmen,
+        /// Protokoll lesen, leeren — das Protokoll VOR dem Leeren, danach ist seine
+        /// Bedingung falsch.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteDml"/>, <see cref="SqliteZahl"/> und
+        /// <see cref="SqliteText"/>.</b> Der Schritt gehört dem SQLite-Zweig;
+        /// <c>NonQuery</c> und <c>Scalar</c> arbeiten auf <c>Lauf.Conn</c>, und die ist
+        /// hier <c>null</c>.</para>
+        /// </summary>
+        private static bool Schritt_69_PvKoeffizienten(Lauf l)
+        {
+            PvKoeffizientenquelle quelle = PvKoeffizientenReparatur.Quelle();
+
+            l.Zeile("Schritt 69 - Wertequelle: " +
+                    quelle.Eingebettet.ToString(CultureInfo.InvariantCulture) +
+                    " eingebettete Auslieferungsmodule" +
+                    (quelle.DateiGelesen
+                         ? ", dazu " + quelle.AusDerDatei.ToString(CultureInfo.InvariantCulture) +
+                           " aus der CEC-Liste (" + quelle.Dateipfad + ")"
+                         : " (die CEC-Liste liegt nicht am Herstellerdatenpfad" +
+                           (string.IsNullOrEmpty(quelle.Dateipfad) ? "" : ": " + quelle.Dateipfad) +
+                           " - es gelten die eingebetteten Werte)") + ".");
+
+            long geheilt = 0, geleert = 0;
+
+            foreach (string tabelle in PvKoeffizientenReparatur.TABELLEN)
+            {
+                long vorher = SqliteZahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle));
+
+                // a) und b) - reparieren, was die Wertequelle kennt.
+                foreach (string bezeichner in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(PvKoeffizientenReparatur.BezeichnerAbfrage(tabelle))))
+                {
+                    if (!quelle.Finde(bezeichner, null, out PvModulKoeffizienten satz)) continue;
+
+                    string sql = PvKoeffizientenReparatur.Reparatur(tabelle, satz);
+                    if (sql == null) continue;   // die Liste fuehrt fuer diesen Satz nichts Brauchbares
+
+                    if (!SqliteDml(l, sql,
+                                   tabelle + " \"" + bezeichner + "\": Koeffizienten aus der CEC-Liste"))
+                        return false;
+                }
+
+                // c) - die Projektkopie holt sich, was der Stammsatz gesund fuehrt.
+                if (tabelle == PvKoeffizientenReparatur.TAB_PROJEKT)
+                {
+                    foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                        if (!SqliteDml(l, PvKoeffizientenReparatur.UebernahmeAusStamm(spalte),
+                                       tabelle + "." + spalte + ": aus dem Stammsatz uebernehmen"))
+                            return false;
+                }
+
+                // d) - je Satz eine Protokollzeile, DANN leeren.
+                foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(PvKoeffizientenReparatur.Protokollabfrage(tabelle))))
+                    l.Zeile("Schritt 69 - " + zeile);
+
+                foreach (string spalte in PvKoeffizientenReparatur.SPALTEN)
+                    if (!SqliteDml(l, PvKoeffizientenReparatur.Leerung(tabelle, spalte),
+                                   tabelle + "." + spalte + ": verdorbene Werte ohne Treffer auf leer"))
+                        return false;
+
+                long nachher = SqliteZahl(PvKoeffizientenReparatur.ZaehlungVerdorben(tabelle));
+
+                l.Zeile("Schritt 69 - " + tabelle + ": Saetze mit verdorbenem Koeffizienten " +
+                        "vorher " + Zahltext(vorher) + ", nachher " + Zahltext(nachher) +
+                        " (Katalog gesamt " +
+                        Zahltext(SqliteZahl(PvKoeffizientenReparatur.Gesamtzahl(tabelle))) + ").");
+
+                if (vorher > 0) geheilt += vorher;
+                if (nachher > 0) geleert += nachher;
+            }
+
+            l.Notiz("69: Die verdorbenen PV-Modulkoeffizienten sind repariert " +
+                    "(Befund W6-B-5, Entscheide Q1 bis Q3). " +
+                    (geheilt == 0
+                        ? "Es gab nichts zu tun - kein Satz fuehrte einen verdorbenen Wert."
+                        : geheilt.ToString(CultureInfo.InvariantCulture) +
+                          " Satz/Saetze angefasst, in Stammtabelle und Projektkopie.") +
+                    " Was keinen Treffer in der CEC-Liste hat, steht jetzt auf leer - " +
+                    "der Modulkatalog sagt \"nicht gepflegt\", statt den Kurzschlussstrom " +
+                    "als Temperaturkoeffizient auszugeben. " +
+                    "ANDERS ALS DIE SCHRITTE 62 BIS 68 ist dieser NICHT ergebnisneutral: " +
+                    "T_NOCT geht in beide PV-Modelle, und wo der Katalogwert bisher " +
+                    "ausserhalb des Fensters 20 bis 60 Grad C lag, rechnete die " +
+                    "Simulation mit dem Rueckfall 45 Grad C. Genau das war der Zweck " +
+                    "(Entscheid Q3).");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 70 - die PV-Strangpruefung (W6-B-10 und W6-B-11)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 70 — Anlass, Ergebnisneutralität und Idempotenzzusage stehen bei
+        /// <see cref="SCHRITT_70_PV_STRANGPRUEFUNG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt70_WrKurzschlussstrom"/> und
+        /// <see cref="SchemaKatalog.Schritt70_Auslegungstemperaturen"/>. Aus denselben
+        /// zwei Quellen bedienen sich <c>Werkzeuge/Testdatenbankschema</c> und der
+        /// Nachweis in <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/>.</b> Der Schritt gehört dem
+        /// SQLite-Zweig; <c>Ddl</c> und <c>NonQuery</c> arbeiten auf <c>Lauf.Conn</c>,
+        /// und die ist hier <c>null</c>. Der Typ geht wie in Schritt 68 über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/> — <c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>, dem einzigen Fliesskommatyp einer STRICT-Tabelle.</para>
+        /// </summary>
+        private static bool Schritt_70_PvStrangpruefung(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_WrKurzschlussstrom)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt70_Auslegungstemperaturen)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("70: Die PV-Strangpruefung bekommt ihre vier Spalten " +
+                    "(Entscheide W6-B-10 und W6-B-11) - " +
+                    SchemaKatalog.Schritt70_WrKurzschlussstrom.Length +
+                    " am Wechselrichter (" + WechselrichterSchema.SPALTE_I_SC_MAX +
+                    " in Katalog und Projektkopie) und " +
+                    SchemaKatalog.Schritt70_Auslegungstemperaturen.Length +
+                    " an " + SchemaKatalog.TAB_EINSTELLUNGEN + " (" +
+                    SchemaKatalog.SPALTE_AUSLEG_T_KALT + ", " +
+                    SchemaKatalog.SPALTE_AUSLEG_T_HEISS + "). Alle vier bleiben NULL, " +
+                    "und NULL heisst bei allen vieren \"wie bisher\": keine Pruefung " +
+                    "gegen den Kurzschlussstrom, minus 10 und plus 70 Grad C als " +
+                    "Auslegungstemperaturen. KEIN Rechenergebnis aendert sich - die " +
+                    "Strangpruefung ist eine Ampel im Dialog und ein Laufhinweis, " +
+                    "keine Rechnung.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 71 - der Szenario-Parametersatz der Wirtschaftlichkeit (W5-B-9)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 71 — Anlass, Nullsemantik und Wirkung stehen bei
+        /// <see cref="SCHRITT_71_SZENARIOPARAMETER"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt71_SzenarioBest"/> und
+        /// <see cref="SchemaKatalog.Schritt71_SzenarioWorst"/> (zusammengefasst in
+        /// <c>SchemaKatalog.Schritt71_Szenarioparameter</c>). Aus derselben Quelle
+        /// bedienen sich <c>Werkzeuge/Testdatenbankschema</c>, die Testdatenbank der
+        /// Kern-Tests und der Nachweis.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/></b> — wortgleiche Begründung
+        /// wie bei Schritt 70: Der Schritt gehört dem SQLite-Zweig, und der Typ geht
+        /// über <see cref="StilleDb.SqliteSpaltenTyp"/> (<c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>).</para>
+        /// </summary>
+        private static bool Schritt_71_Szenarioparameter(Lauf l)
+        {
+            int spalten = 0;
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt71_Szenarioparameter)
+            {
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                spalten++;
+            }
+
+            l.Notiz("71: Die Wirtschaftlichkeit bekommt ihren Szenario-Parametersatz " +
+                    "(Entscheid W5-B-9) - " + spalten + " Spalten an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ", sechs je Szenario " +
+                    "(Zins, Preissteigerung Energie, Preissteigerung Betrieb, " +
+                    "Investitionsaenderung, Ertragsaenderung, Nutzungsdaueraenderung). " +
+                    "Alle bleiben NULL, und NULL heisst Vorgabe: Best rechnet dann mit " +
+                    "einem Prozentpunkt weniger Zins, zehn Prozent weniger Investition, " +
+                    "zehn Prozent mehr Ertrag und zwei Jahren mehr Nutzungsdauer, Worst " +
+                    "spiegelbildlich. ERWARTET bleibt zahlengleich - es bekommt keinen " +
+                    "Satz. Ein gepflegter Best-/Worst-Wert je Kostenzeile behaelt " +
+                    "Vorrang vor dem pauschalen Ausschlag.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 72 - Preisindizierung der Ersatzbeschaffung und nicht monetaere
+        //              Wirkungen (W5-B-12)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 72 — Anlass, Nullsemantik und Wirkung stehen bei
+        /// <see cref="SCHRITT_72_VALERI_ERGAENZUNG"/>.
+        ///
+        /// <para><b>Zwei Quellen, beide im KERN</b> und keine hier abgeschriebene
+        /// Anweisung: <see cref="SchemaKatalog.Schritt72_PreisInvestition"/> und
+        /// <see cref="SchemaKatalog.Schritt72_NichtMonetaer"/> (zusammengefasst in
+        /// <c>SchemaKatalog.Schritt72_ValeriErgaenzung</c>). Aus derselben Quelle bedienen
+        /// sich <c>Werkzeuge/Testdatenbankschema</c>, die Testdatenbank der Kern-Tests und
+        /// der Nachweis — wortgleiches Muster wie bei Schritt 71.</para>
+        ///
+        /// <para><b>Nur <see cref="SqliteSpalteAnlegen"/></b>, und der Typ geht über
+        /// <see cref="StilleDb.SqliteSpaltenTyp"/>: <c>DOUBLE</c> wird dort zu
+        /// <c>REAL</c>, <c>MEMO</c> zu <c>TEXT</c> ohne Längenprüfung — dem einzigen
+        /// Texttyp, der einen Fließtext unbekannter Länge in einer STRICT-Tabelle
+        /// aufnimmt.</para>
+        /// </summary>
+        private static bool Schritt_72_ValeriErgaenzung(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("72: Die Wirtschaftlichkeit bekommt die VALERI-Ergaenzung " +
+                    "(Entscheid W5-B-12) - " +
+                    SchemaKatalog.Schritt72_PreisInvestition.Length +
+                    " Spalten fuer den Preisaenderungssatz der kapitalgebundenen Kosten " +
+                    "p_I (" + SchemaKatalog.SPALTE_PW_PREIS_I + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + ") und " +
+                    SchemaKatalog.Schritt72_NichtMonetaer.Length + " Freitextspalte (" +
+                    SchemaKatalog.SPALTE_PW_NICHT_MONETAER + ") an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". Alle vier bleiben NULL. Bei " +
+                    "p_I heisst NULL \"wie die Preissteigerung der Betriebskosten\" - " +
+                    "NICHT \"null Prozent\": Nach VDI 2067 werden Ersatzbeschaffungen " +
+                    "preisindiziert, und eine 0 haette behauptet, Investitionsgueter " +
+                    "wuerden nie teurer. DIESER Schritt aendert keine Zahl - er legt " +
+                    "Spalten an. Sobald der Parametersatz sie liest, rechnen " +
+                    "Bestandsprojekte MIT Ersatzbeschaffung mit p_I = p_B, und ihre " +
+                    "Kapitalwerte sinken leicht; das ist gewollt, denn der bisherige " +
+                    "Ausweis war der zu guenstige. Projekte ohne Ersatzbeschaffung " +
+                    "bleiben zahlengleich.");
             return true;
         }
 
@@ -9931,9 +11802,9 @@ namespace WindowsFormsApplication1
                 // das Ergebnis, statt es zu erhalten. Uebernommen wird, was die Engine
                 // liest.
                 if (NonQuery(l, ProjektPuffer.SQL_PUFFER_TEMPERATUREN_UPDATE,
-                             new OleDbParameter("@v", vorlauf),
-                             new OleDbParameter("@r", ruecklauf),
-                             new OleDbParameter("@id", idPuffer)) < 0)
+                             new DbParam("@v", vorlauf),
+                             new DbParam("@r", ruecklauf),
+                             new DbParam("@id", idPuffer)) < 0)
                     return false;
 
                 uebernommen++;
@@ -10040,7 +11911,7 @@ namespace WindowsFormsApplication1
         {
             object da = Scalar(l,
                 "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
-                new OleDbParameter("@n", "Flüssiggas"));
+                new DbParam("@n", "Flüssiggas"));
             if (da != null && Convert.ToInt32(da) > 0)
             {
                 l.Zeile("Fluessiggas (Schritt 42): bereits vorhanden - nichts zu tun.");
@@ -10058,8 +11929,8 @@ namespace WindowsFormsApplication1
                     " co2, so2, nox, is_active) " +
                     "VALUES (?, ?, 'Flüssiggas', 'Fluessiggas', 'Gas', 'GASEOUS_FUEL', 'kg', " +
                     " 12.87, 14.0, 0, 0, 0, 239, 0, 0, TRUE)",
-                    new OleDbParameter("@id", id),
-                    new OleDbParameter("@b", idBrennstoff)) < 0)
+                    new DbParam("@id", id),
+                    new DbParam("@b", idBrennstoff)) < 0)
                 return false;
 
             l.Zeile("Fluessiggas (Schritt 42): als Katalogtraeger " + id + " gesaet" +
@@ -10084,7 +11955,7 @@ namespace WindowsFormsApplication1
                 DataRepository.StilleFehlerAbholen();
                 object b = DataRepository.ExecuteScalar(
                     "SELECT MAX(ID) FROM Tab_Brennstoff_Stamm WHERE [Bezeichner] LIKE ?",
-                    new OleDbParameter("@n", namensanfang + "%"));
+                    new DbParam("@n", namensanfang + "%"));
                 DataRepository.StilleFehlerAbholen();
                 return (b == null || b == DBNull.Value) ? 0 : Convert.ToInt32(b);
             }
@@ -10131,7 +12002,7 @@ namespace WindowsFormsApplication1
                 string name = (string)t[0];
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM energy_carrier WHERE [name] = ?",
-                    new OleDbParameter("@n", name));
+                    new DbParam("@n", name));
                 if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
 
                 object max = Scalar(l, "SELECT MAX(id) FROM energy_carrier");
@@ -10142,15 +12013,15 @@ namespace WindowsFormsApplication1
                         " hi_kwh_per_unit, hs_kwh_per_unit, price_work, price_base, price_power, " +
                         " co2, so2, nox, is_active) " +
                         "VALUES (?, ?, ?, ?, ?, ?, 'kg', ?, ?, 0, 0, 0, ?, 0, 0, TRUE)",
-                        new OleDbParameter("@id", id),
-                        new OleDbParameter("@b", BrennstoffStammId(name)),
-                        new OleDbParameter("@n", name),
-                        new OleDbParameter("@c", name),
-                        new OleDbParameter("@g", (string)t[1]),
-                        new OleDbParameter("@m", modell),
-                        new OleDbParameter("@hi", (double)t[2]),
-                        new OleDbParameter("@hs", (double)t[3]),
-                        new OleDbParameter("@co2", (double)t[4])) < 0)
+                        new DbParam("@id", id),
+                        new DbParam("@b", BrennstoffStammId(name)),
+                        new DbParam("@n", name),
+                        new DbParam("@c", name),
+                        new DbParam("@g", (string)t[1]),
+                        new DbParam("@m", modell),
+                        new DbParam("@hi", (double)t[2]),
+                        new DbParam("@hs", (double)t[3]),
+                        new DbParam("@co2", (double)t[4])) < 0)
                     return false;
                 neu++;
             }
@@ -10162,7 +12033,7 @@ namespace WindowsFormsApplication1
                 NonQuery(l,
                     "UPDATE energy_carrier SET ID_Brennstoff = ? " +
                     "WHERE [name] = 'Flüssiggas' AND ID_Brennstoff = 0",
-                    new OleDbParameter("@b", flgStamm));
+                    new DbParam("@b", flgStamm));
 
             l.Zeile("VDI-3805-Traeger (Schritt 43): " + neu + " gesät, " + vorhanden +
                     " bereits vorhanden (Steinkohle, Braunkohlebrikett, Scheitholz, " +
@@ -10197,8 +12068,8 @@ namespace WindowsFormsApplication1
                 object da = Scalar(l,
                     "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                     "WHERE Bezeichner = ? AND Jahr = ? AND ID_Projekt IS NULL",
-                    new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                    new OleDbParameter("@j", jahrVon[j]));
+                    new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                    new DbParam("@j", jahrVon[j]));
                 if (da != null && Convert.ToInt32(da) > 0) { vorhanden++; continue; }
 
                 object maxKopf = Scalar(l, "SELECT MAX(ID) FROM [" + SchemaKatalog.TAB_PREISREIHE + "]");
@@ -10207,11 +12078,11 @@ namespace WindowsFormsApplication1
                         "INSERT INTO [" + SchemaKatalog.TAB_PREISREIHE + "] " +
                         "(ID, ID_Projekt, Bezeichner, Jahr, Aufloesung, Einheit, ID_Energietraeger) " +
                         "VALUES (?, NULL, ?, ?, ?, ?, NULL)",
-                        new OleDbParameter("@id", kopfId),
-                        new OleDbParameter("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
-                        new OleDbParameter("@j", jahrVon[j]),
-                        new OleDbParameter("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
-                        new OleDbParameter("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
+                        new DbParam("@id", kopfId),
+                        new DbParam("@b", DbWerte.PV_MARKTWERT_BEZEICHNER),
+                        new DbParam("@j", jahrVon[j]),
+                        new DbParam("@a", DbWerte.PREISREIHE_AUFLOESUNG_MONAT),
+                        new DbParam("@e", DbWerte.PREISREIHE_EINHEIT_CT_KWH)) < 0)
                     return false;
 
                 object maxDaten = Scalar(l, "SELECT MAX(ID) FROM [Tab_PreisreiheDaten]");
@@ -10221,9 +12092,9 @@ namespace WindowsFormsApplication1
                     datenId++;
                     if (NonQuery(l,
                             "INSERT INTO [Tab_PreisreiheDaten] (ID, ID_Preisreihe, Wert) VALUES (?, ?, ?)",
-                            new OleDbParameter("@id", datenId),
-                            new OleDbParameter("@k", kopfId),
-                            new OleDbParameter("@w", wert)) < 0)
+                            new DbParam("@id", datenId),
+                            new DbParam("@k", kopfId),
+                            new DbParam("@w", wert)) < 0)
                         return false;
                 }
                 neu++;
@@ -10237,10 +12108,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Nullbarer Parameter mit ausdruecklichem OleDb-Typ - ein DBNull ohne
         /// Typ kann der Provider nicht binden.</summary>
-        private static OleDbParameter ParamOderNull(string name, OleDbType typ, object wert)
+        private static DbParam ParamOderNull(string name, DbParamTyp typ, object wert)
         {
-            var p = new OleDbParameter(name, typ);
-            p.Value = wert ?? DBNull.Value;
+            var p = new DbParam(name, typ);
+            p.Wert = wert ?? DBNull.Value;
             return p;
         }
 
@@ -10271,7 +12142,7 @@ namespace WindowsFormsApplication1
                 object idObj = Scalar(l,
                     "SELECT MAX([ID]) FROM [" + SchemaKatalog.TAB_KOSTENKOMPONENTE + "] " +
                     "WHERE [" + SchemaKatalog.SPALTE_KK_KOMPONENTE + "] = ?",
-                    new OleDbParameter("@k", v.Komponente));
+                    new DbParam("@k", v.Komponente));
                 if (idObj == null || idObj == DBNull.Value)
                 {
                     l.Notiz("39: Komponente \"" + v.Komponente + "\" ist nicht aufloesbar.");
@@ -10287,9 +12158,9 @@ namespace WindowsFormsApplication1
                     "WHERE [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_KATEGORIEID + "] = ? AND [" +
                     SchemaKatalog.SPALTE_KV_NAME + "] = ?",
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD));
                 if (da == null) { ok = false; continue; }
                 if (Zahl(da) > 0) { vorhanden++; continue; }
 
@@ -10306,11 +12177,11 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KV_READONLY + "], [" +
                     SchemaKatalog.SPALTE_KV_GEAENDERT_AM + "]) " +
                     "VALUES (?, ?, ?, ?, TRUE, TRUE, ?)",
-                    new OleDbParameter("@id", vorlageId),
-                    new OleDbParameter("@kid", komponentenId),
-                    new OleDbParameter("@kat", v.KategorieId),
-                    new OleDbParameter("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
-                    ParamOderNull("@am", OleDbType.Date, DateTime.Now));
+                    new DbParam("@id", vorlageId),
+                    new DbParam("@kid", komponentenId),
+                    new DbParam("@kat", v.KategorieId),
+                    new DbParam("@n", SchemaKatalog.VORLAGE_NAME_STANDARD),
+                    ParamOderNull("@am", DbParamTyp.Date, DateTime.Now));
                 if (kopf <= 0)
                 {
                     l.Notiz("39: INSERT der Vorlage \"" + v.Komponente + "\" (Kategorie " +
@@ -10332,7 +12203,7 @@ namespace WindowsFormsApplication1
                         "SELECT MAX([" + SchemaKatalog.SPALTE_KF_STAMMID + "]) FROM [" +
                         SchemaKatalog.TAB_KOSTENFAKTOR + "] WHERE [" +
                         SchemaKatalog.SPALTE_KF_BEZEICHNUNG + "] = ?",
-                        new OleDbParameter("@b", p.Bezeichnung));
+                        new DbParam("@b", p.Bezeichnung));
 
                     int posId = Zahl(Scalar(l, "SELECT MAX([ID]) FROM [" +
                                                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "]")) + 1;
@@ -10349,18 +12220,18 @@ namespace WindowsFormsApplication1
                         SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
                         SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
                         "VALUES (?, ?, ?, ?, ?, ?, FALSE, ?, ?, ?)",
-                        new OleDbParameter("@id", posId),
-                        new OleDbParameter("@vid", vorlageId),
-                        ParamOderNull("@sid", OleDbType.Integer,
+                        new DbParam("@id", posId),
+                        new DbParam("@vid", vorlageId),
+                        ParamOderNull("@sid", DbParamTyp.Integer,
                                       sid == null || sid == DBNull.Value ? null : (object)Zahl(sid)),
-                        new OleDbParameter("@b", p.Bezeichnung),
-                        new OleDbParameter("@ka", p.Kostenart),
-                        new OleDbParameter("@bm", p.Bemessung),
-                        ParamOderNull("@ev", OleDbType.Double,
+                        new DbParam("@b", p.Bezeichnung),
+                        new DbParam("@ka", p.Kostenart),
+                        new DbParam("@bm", p.Bemessung),
+                        ParamOderNull("@ev", DbParamTyp.Double,
                                       p.EmpfehlungVon.HasValue ? (object)p.EmpfehlungVon.Value : null),
-                        ParamOderNull("@eb", OleDbType.Double,
+                        ParamOderNull("@eb", DbParamTyp.Double,
                                       p.EmpfehlungBis.HasValue ? (object)p.EmpfehlungBis.Value : null),
-                        new OleDbParameter("@so", sort));
+                        new DbParam("@so", sort));
                     if (pn <= 0) { posOk = false; break; }
                     positionen++;
                 }
@@ -10458,8 +12329,8 @@ namespace WindowsFormsApplication1
                 "SELECT ID, Bezeichner, WQ_Puffer FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND WQ_Typ = ? AND WQ_Puffer IS NOT NULL " +
                 "  AND (WQ_ID_Puffer IS NULL OR WQ_ID_Puffer = 0) ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", WaermequelleClass.TYP_PUFFER));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", WaermequelleClass.TYP_PUFFER));
 
             if (q == null) return false;
 
@@ -10475,8 +12346,8 @@ namespace WindowsFormsApplication1
                 // und die Anzahl entscheidet hier über das Verhalten.
                 int treffer = Zahl(Scalar(l,
                     "SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer)));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer)));
 
                 if (treffer == 0)
                 {
@@ -10502,13 +12373,13 @@ namespace WindowsFormsApplication1
 
                 int idPuffer = Zahl(Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer)));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer)));
                 if (idPuffer <= 0) { DatenQuellPufferOffen++; continue; }
 
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET WQ_ID_Puffer = ? WHERE ID = ?",
-                             new OleDbParameter("@puf", idPuffer),
-                             new OleDbParameter("@id", idAnlage)) < 0)
+                             new DbParam("@puf", idPuffer),
+                             new DbParam("@id", idAnlage)) < 0)
                 {
                     ok = false;
                     continue;
@@ -10782,7 +12653,7 @@ namespace WindowsFormsApplication1
                 "WHERE ID_Projekt = ? AND ID_Type IN (" +
                 WizardItemClass.SP_TYP.ToString(CultureInfo.InvariantCulture) + ", " +
                 WizardItemClass.REF_SP_TYP.ToString(CultureInfo.InvariantCulture) + ") ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (anlagen == null) return false;
             if (anlagen.Rows.Count == 0) return true;   // Projekt ohne Speicher - nichts zu tun
@@ -10797,7 +12668,7 @@ namespace WindowsFormsApplication1
                 "SELECT COUNT(*) FROM Tab_StromspeicherVariante AS v " +
                 "INNER JOIN Tab_Energieanlagen AS a ON v.ID_Energieanlage = a.ID " +
                 "WHERE a.ID_Projekt = ? AND v.Aktiv = TRUE",
-                new OleDbParameter("@proj", idProjekt))) > 0;
+                new DbParam("@proj", idProjekt))) > 0;
 
             bool ok = true;
             foreach (DataRow r in anlagen.Rows)
@@ -10807,31 +12678,31 @@ namespace WindowsFormsApplication1
 
                 // IDEMPOTENZ: eine bestehende Variante wird nie überschrieben.
                 if (Zahl(Scalar(l, "SELECT COUNT(*) FROM Tab_StromspeicherVariante WHERE ID_Energieanlage = ?",
-                                new OleDbParameter("@anl", idAnlage))) > 0)
+                                new DbParam("@anl", idAnlage))) > 0)
                     continue;
 
                 bool aktiv = !aktivVergeben;
                 int neueId = Zahl(Scalar(l, "SELECT MAX(ID) FROM Tab_StromspeicherVariante")) + 1;
 
                 int betroffen = NonQuery(l, SQL_INSERT_SPVARIANTE,
-                    Par("@id", OleDbType.Integer, neueId),
-                    Par("@anl", OleDbType.Integer, idAnlage),
-                    Par("@bart", OleDbType.VarWChar, DbWerte.SP_BETRIEBSART_GRUENSTROM),
-                    Par("@pv", OleDbType.Boolean, true),      // Grünstrom-Vorbelegung: PV
-                    Par("@bhkw", OleDbType.Boolean, true),    //   und BHKW-Überschuss an
-                    Par("@bhkwstrom", OleDbType.Boolean, false),
-                    Par("@netzent", OleDbType.Boolean, false),
-                    Par("@socmin", OleDbType.Double, socMin),
-                    Par("@socmax", OleDbType.Double, socMax),
-                    Par("@rart", OleDbType.VarWChar, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
-                    Par("@pquelle", OleDbType.VarWChar, DbWerte.SP_PREISQUELLE_FIXPREIS),
-                    Par("@kompat", OleDbType.Boolean, false),
-                    Par("@zins", OleDbType.Double, StromspeicherVarianteModel.KAPITALZINS_VORGABE),
-                    Par("@nutz", OleDbType.Double, StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE),
-                    Par("@lp", OleDbType.Double, 0.0),
-                    Par("@anetz", OleDbType.Double, 0.0),
-                    Par("@aktiv", OleDbType.Boolean, aktiv),
-                    Par("@schwelle", OleDbType.Double, schwelle));
+                    Par("@id", DbParamTyp.Integer, neueId),
+                    Par("@anl", DbParamTyp.Integer, idAnlage),
+                    Par("@bart", DbParamTyp.VarWChar, DbWerte.SP_BETRIEBSART_GRUENSTROM),
+                    Par("@pv", DbParamTyp.Boolean, true),      // Grünstrom-Vorbelegung: PV
+                    Par("@bhkw", DbParamTyp.Boolean, true),    //   und BHKW-Überschuss an
+                    Par("@bhkwstrom", DbParamTyp.Boolean, false),
+                    Par("@netzent", DbParamTyp.Boolean, false),
+                    Par("@socmin", DbParamTyp.Double, socMin),
+                    Par("@socmax", DbParamTyp.Double, socMax),
+                    Par("@rart", DbParamTyp.VarWChar, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
+                    Par("@pquelle", DbParamTyp.VarWChar, DbWerte.SP_PREISQUELLE_FIXPREIS),
+                    Par("@kompat", DbParamTyp.Boolean, false),
+                    Par("@zins", DbParamTyp.Double, StromspeicherVarianteModel.KAPITALZINS_VORGABE),
+                    Par("@nutz", DbParamTyp.Double, StromspeicherVarianteModel.NUTZUNGSDAUER_VORGABE),
+                    Par("@lp", DbParamTyp.Double, 0.0),
+                    Par("@anetz", DbParamTyp.Double, 0.0),
+                    Par("@aktiv", DbParamTyp.Boolean, aktiv),
+                    Par("@schwelle", DbParamTyp.Double, schwelle));
 
                 if (betroffen < 0) { ok = false; continue; }
 
@@ -10877,7 +12748,7 @@ namespace WindowsFormsApplication1
                 "SELECT Ladefuellstand_Min, Ladefuellstand_Min_Auswahl, Ladefuellstand_Max, " +
                 "Ladefuellstand_Max_Auswahl, Ladeleistung_Max, Ladeschwellwert " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (dt == null || dt.Rows.Count == 0)
             {
@@ -10953,17 +12824,17 @@ namespace WindowsFormsApplication1
         /// Viertelstunde), <c>Einheit</c> die Anzeige- und Rechen-Einheit (ct/kWh).
         /// Beide sind eingefrorene Persistenzwerte, keine Anzeigetexte.
         /// </summary>
-        public const string SQL_CREATE_PREISREIHE =
-            "CREATE TABLE Tab_Preisreihe (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Projekt LONG, Bezeichner TEXT(255), Jahr LONG, " +
-            "Aufloesung TEXT(50), Einheit TEXT(50), ID_Energietraeger LONG)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_PREISREIHE = SchemaStand.SQL_CREATE_PREISREIHE;
         // ID_Energietraeger: seit Schritt 40 (Etappe KD4, FK6a) Teil des CREATE, damit
         // auch die tolerante Rueckfallebene (PreisreiheCtrl.StelleTabellenSicher) die
         // Spalte mitbringt; Bestandstabellen ruestet Schritt 40 nach.
 
         /// <summary>Index über den Projektbezug - der Suchweg der Auswahllisten.</summary>
-        public const string SQL_INDEX_PREISREIHE =
-            "CREATE INDEX idx_Preisreihe ON Tab_Preisreihe (ID_Projekt)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_PREISREIHE = SchemaStand.SQL_INDEX_PREISREIHE;
 
         /// <summary>
         /// Werte einer Preisreihe, Muster <c>Tab_StromganglinieDaten</c>: eine Zeile je
@@ -10976,13 +12847,14 @@ namespace WindowsFormsApplication1
         /// hängt dann nicht mehr davon ab, dass der Provider AutoWerte aufsteigend
         /// vergibt.
         /// </summary>
-        public const string SQL_CREATE_PREISREIHEDATEN =
-            "CREATE TABLE Tab_PreisreiheDaten (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Preisreihe LONG, Wert DOUBLE)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_PREISREIHEDATEN = SchemaStand.SQL_CREATE_PREISREIHEDATEN;
 
         /// <summary>Index über den Kopfverweis - der einzige Suchweg auf die Werte.</summary>
-        public const string SQL_INDEX_PREISREIHEDATEN =
-            "CREATE INDEX idx_PreisreiheDaten ON Tab_PreisreiheDaten (ID_Preisreihe)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_PREISREIHEDATEN = SchemaStand.SQL_INDEX_PREISREIHEDATEN;
 
         /// <summary>
         /// Löschweitergabe vom Kopf auf die Werte - ohne sie blieben nach dem Löschen
@@ -10990,9 +12862,9 @@ namespace WindowsFormsApplication1
         /// MAX(ID)+1-Vergabe später auf eine FREMDE Reihe zeigen würden (dieselbe
         /// Begründung wie bei <c>FK_ErgPuffer</c>, Konzept 13.7).
         /// </summary>
-        public const string SQL_FK_PREISREIHEDATEN =
-            "ALTER TABLE Tab_PreisreiheDaten ADD CONSTRAINT FK_PreisreiheDaten " +
-            "FOREIGN KEY (ID_Preisreihe) REFERENCES Tab_Preisreihe (ID) ON DELETE CASCADE";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_FK_PREISREIHEDATEN = SchemaStand.SQL_FK_PREISREIHEDATEN;
 
         /// <summary>
         /// Kostenprofil (Fachkonzept 4.1 b): 12 Monats- und 7 × 24 Wochenwerte als
@@ -11003,13 +12875,14 @@ namespace WindowsFormsApplication1
         /// <b>TEXT(255) und MEMO</b> wie im Spaltenkatalog: 12 Werte passen in 255
         /// Zeichen, 168 nicht.
         /// </summary>
-        public const string SQL_CREATE_KOSTENPROFIL =
-            "CREATE TABLE Tab_Kostenprofil (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Projekt LONG, Bezeichner TEXT(255), Monatswerte TEXT(255), Wochenwerte MEMO)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_CREATE_KOSTENPROFIL = SchemaStand.SQL_CREATE_KOSTENPROFIL;
 
         /// <summary>Index über den Projektbezug.</summary>
-        public const string SQL_INDEX_KOSTENPROFIL =
-            "CREATE INDEX idx_Kostenprofil ON Tab_Kostenprofil (ID_Projekt)";
+        /// <para>Der Wert steht seit iU4-2 bei <see cref="SchemaStand"/>; diese
+        /// Weiterleitung haelt jeden bestehenden Aufrufer gueltig.</para>
+        public const string SQL_INDEX_KOSTENPROFIL = SchemaStand.SQL_INDEX_KOSTENPROFIL;
 
         private const string CARRIER_STROM = "ELECTRICITY";
 
@@ -11195,7 +13068,7 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ? WHERE [" +
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] IS NULL OR [" +
                     SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] = ''",
-                    new OleDbParameter("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
+                    new DbParam("@e", DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR));
 
                 if (betroffen < 0)
                 {
@@ -11454,8 +13327,8 @@ namespace WindowsFormsApplication1
             DataTable zeilen = Abfrage(l,
                 "SELECT ID, Bezeichner FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                 "WHERE ID_Projekt = ? AND [" + sperre.Spalte + "] = ? ORDER BY ID",
-                new OleDbParameter("@proj", OleDbType.Integer) { Value = idProjekt },
-                new OleDbParameter("@ger", OleDbType.Integer) { Value = idGeraet });
+                new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt },
+                new DbParam("@ger", DbParamTyp.Integer) { Wert = idGeraet });
 
             if (zeilen == null || zeilen.Rows.Count < 2) return;
 
@@ -11473,7 +13346,7 @@ namespace WindowsFormsApplication1
 
             string geraetName = Txt(Scalar(l,
                 "SELECT Bezeichner FROM [" + sperre.Tabelle + "] WHERE ID = ?",
-                new OleDbParameter("@id", OleDbType.Integer) { Value = idGeraet }));
+                new DbParam("@id", DbParamTyp.Integer) { Wert = idGeraet }));
 
             for (int i = 1; i < zeilen.Rows.Count; i++)
             {
@@ -11503,9 +13376,9 @@ namespace WindowsFormsApplication1
                 int n = NonQuery(l,
                     "UPDATE [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] SET [" + sperre.Spalte +
                     "] = ?, Bezeichner = ? WHERE ID = ?",
-                    new OleDbParameter("@ger", OleDbType.Integer) { Value = neu },
-                    new OleDbParameter("@bez", OleDbType.VarWChar) { Value = name },
-                    new OleDbParameter("@id", OleDbType.Integer) { Value = idZeile });
+                    new DbParam("@ger", DbParamTyp.Integer) { Wert = neu },
+                    new DbParam("@bez", DbParamTyp.VarWChar) { Wert = name },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = idZeile });
 
                 if (n < 0)
                 {
@@ -11539,11 +13412,11 @@ namespace WindowsFormsApplication1
             {
                 if (kind == null || kind.Length < 2) continue;
                 NonQuery(l, "DELETE FROM [" + kind[0] + "] WHERE [" + kind[1] + "] = ?",
-                         new OleDbParameter("@fk", OleDbType.Integer) { Value = idNeu });
+                         new DbParam("@fk", DbParamTyp.Integer) { Wert = idNeu });
             }
 
             NonQuery(l, "DELETE FROM [" + sperre.Tabelle + "] WHERE ID = ?",
-                     new OleDbParameter("@id", OleDbType.Integer) { Value = idNeu });
+                     new DbParam("@id", DbParamTyp.Integer) { Wert = idNeu });
         }
 
         // =================================================================================
@@ -11663,7 +13536,7 @@ namespace WindowsFormsApplication1
                     }
 
                     int n = NonQuery(l, "DELETE FROM [" + tabelle + "] WHERE ID = ?",
-                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                                     new DbParam("@id", DbParamTyp.Integer) { Wert = idDub });
                     if (n < 0)
                     {
                         l.Notiz(tabelle + ", ID " + idDub + " \"" + g.Key +
@@ -11888,7 +13761,7 @@ namespace WindowsFormsApplication1
                     if (!DatenbloeckeLoeschen(l, k, idDub, g.Key, ref offen)) continue;
 
                     int n = NonQuery(l, "DELETE FROM [" + k.Tabelle + "] WHERE [" + k.IdSpalte + "] = ?",
-                                     new OleDbParameter("@id", OleDbType.Integer) { Value = idDub });
+                                     new DbParam("@id", DbParamTyp.Integer) { Wert = idDub });
                     if (n < 0)
                     {
                         l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + g.Key +
@@ -11940,7 +13813,7 @@ namespace WindowsFormsApplication1
             foreach (KatalogDatenblock b in k.Datenbloecke)
             {
                 int n = NonQuery(l, "DELETE FROM [" + b.Tabelle + "] WHERE [" + b.FkSpalte + "] = ?",
-                                 new OleDbParameter("@fk", OleDbType.Integer) { Value = idDub });
+                                 new DbParam("@fk", DbParamTyp.Integer) { Wert = idDub });
                 if (n < 0)
                 {
                     l.Notiz(k.Tabelle + ", " + k.IdSpalte + " " + idDub + " \"" + name +
@@ -12114,18 +13987,22 @@ namespace WindowsFormsApplication1
         /// durch NULL ausgedrückt. Fachlich kommt das hier gar nicht vor: Eine Zeile ohne
         /// Anlage oder ohne Puffer hat keine Bedeutung, und <c>AnlagePufferVerbundCtrl</c>
         /// schreibt nur vollständige Paare.
+        ///
+        /// <para>Der SQL-Text steht seit iU3 bei <see cref="SchemaStand"/> (Kante K3) —
+        /// <c>AnlagePufferVerbundCtrl</c> braucht ihn im Rechenpfad, die Migration
+        /// nicht.</para>
         /// </summary>
         public const string SQL_CREATE_ANLAGEPUFFERVERBUND =
-            "CREATE TABLE Z_AnlagePufferVerbund (ID LONG NOT NULL PRIMARY KEY, " +
-            "ID_Anlage LONG, ID_Puffer LONG)";
+            SchemaStand.SQL_CREATE_ANLAGEPUFFERVERBUND;
 
         /// <summary>
         /// Index über den Anlagenverweis — der Suchweg des Dialogs (Mitglieder EINER
         /// Anlage). Die Registry-Speisung liest projektweit über einen Verbund zu
         /// <c>Tab_Energieanlagen</c> und profitiert davon ebenfalls.
+        /// Weiterleitung auf <see cref="SchemaStand.SQL_INDEX_ANLAGEPUFFERVERBUND"/>.
         /// </summary>
         public const string SQL_INDEX_ANLAGEPUFFERVERBUND =
-            "CREATE INDEX idx_AnlagePufferVerbund ON Z_AnlagePufferVerbund (ID_Anlage)";
+            SchemaStand.SQL_INDEX_ANLAGEPUFFERVERBUND;
 
         /// <summary>
         /// Löschweitergabe von der ANLAGE auf ihre Verbundzeilen, Muster
@@ -12275,7 +14152,7 @@ namespace WindowsFormsApplication1
         {
             DataTable traeger = Abfrage(l,
                 "SELECT id, name FROM energy_carrier WHERE pricing_model = ? ORDER BY id",
-                Par("@pm", OleDbType.VarWChar, CARRIER_STROM));
+                Par("@pm", DbParamTyp.VarWChar, CARRIER_STROM));
 
             if (traeger == null)
             {
@@ -12308,16 +14185,16 @@ namespace WindowsFormsApplication1
                 if (idTraeger <= 0) continue;
 
                 int betroffen = NonQuery(l, sql,
-                    Par("@netz", OleDbType.Double, StromAufschlagModel.NETZENTGELT_VORGABE),
-                    Par("@uml", OleDbType.Double, StromAufschlagModel.UMLAGEN_VORGABE),
-                    Par("@steuer", OleDbType.Double, StromAufschlagModel.STROMSTEUER_REGELFALL),
-                    Par("@konz", OleDbType.Double, StromAufschlagModel.KONZESSION_VORGABE),
-                    Par("@vertr", OleDbType.Double, StromAufschlagModel.VERTRIEB_VORGABE),
-                    Par("@modus", OleDbType.VarWChar, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT),
-                    Par("@over", OleDbType.Double, 0.0),
-                    Par("@vpv", OleDbType.Double, StromAufschlagModel.VERGUETUNG_PV_VORGABE),
-                    Par("@vbhkw", OleDbType.Double, StromAufschlagModel.VERGUETUNG_BHKW_VORGABE),
-                    Par("@eid", OleDbType.Integer, idTraeger));
+                    Par("@netz", DbParamTyp.Double, StromAufschlagModel.NETZENTGELT_VORGABE),
+                    Par("@uml", DbParamTyp.Double, StromAufschlagModel.UMLAGEN_VORGABE),
+                    Par("@steuer", DbParamTyp.Double, StromAufschlagModel.STROMSTEUER_REGELFALL),
+                    Par("@konz", DbParamTyp.Double, StromAufschlagModel.KONZESSION_VORGABE),
+                    Par("@vertr", DbParamTyp.Double, StromAufschlagModel.VERTRIEB_VORGABE),
+                    Par("@modus", DbParamTyp.VarWChar, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT),
+                    Par("@over", DbParamTyp.Double, 0.0),
+                    Par("@vpv", DbParamTyp.Double, StromAufschlagModel.VERGUETUNG_PV_VORGABE),
+                    Par("@vbhkw", DbParamTyp.Double, StromAufschlagModel.VERGUETUNG_BHKW_VORGABE),
+                    Par("@eid", DbParamTyp.Integer, idTraeger));
 
                 if (betroffen < 0) { ok = false; continue; }
                 if (betroffen == 0) continue;
@@ -12560,8 +14437,8 @@ namespace WindowsFormsApplication1
                 {
                     DataTable treffer = Abfrage(l,
                         "SELECT ID FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@bez", bezeichner));
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@bez", bezeichner));
                     if (treffer != null && treffer.Rows.Count == 1) ziel = Zahl(treffer.Rows[0][0]);
                 }
 
@@ -12748,8 +14625,8 @@ namespace WindowsFormsApplication1
                 "SELECT ID, ID_Pufferspeicher, Pufferspeicher, Vorlauf, Ruecklauf, Prioritaet, " +
                 "       Schwelle_Ein, Schwelle_Aus " +
                 "FROM Z_ProjektPufferSp WHERE ID_Projekt = ? AND Erzeuger = ? ORDER BY Prioritaet, ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@erz", ERZEUGER_WAERMEPUMPE));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@erz", ERZEUGER_WAERMEPUMPE));
 
             if (z == null) return false;
             if (z.Rows.Count == 0) return true;
@@ -12783,15 +14660,15 @@ namespace WindowsFormsApplication1
                 int n = NonQuery(l,
                     "UPDATE Tab_Pufferspeicher SET Verwendung = ?, Vorlauf = ?, Ruecklauf = ?, " +
                     "Schwelle_Ein = ?, Schwelle_Aus = ?, Schwelle_Aus_Nachrang = ? WHERE ID = ?",
-                    new OleDbParameter("@verw", VERWENDUNG_HEIZUNG),
-                    Par("@vor", OleDbType.Integer, paar ? (object)zVor.Value : DBNull.Value),
-                    Par("@rue", OleDbType.Integer, paar ? (object)zRue.Value : DBNull.Value),
-                    Par("@sEin", OleDbType.Double, Wert(erste, "Schwelle_Ein")),
-                    Par("@sAus", OleDbType.Double, sAus),
+                    new DbParam("@verw", VERWENDUNG_HEIZUNG),
+                    Par("@vor", DbParamTyp.Integer, paar ? (object)zVor.Value : DBNull.Value),
+                    Par("@rue", DbParamTyp.Integer, paar ? (object)zRue.Value : DBNull.Value),
+                    Par("@sEin", DbParamTyp.Double, Wert(erste, "Schwelle_Ein")),
+                    Par("@sAus", DbParamTyp.Double, sAus),
                     // Ohne Reservezone: nachrangige Erzeuger schalten bei derselben
                     // Schwelle ab wie der vorrangige -> verhaltensneutral (Konzept 3.4).
-                    Par("@sNach", OleDbType.Double, sAus),
-                    new OleDbParameter("@id", idPuffer));
+                    Par("@sNach", DbParamTyp.Double, sAus),
+                    new DbParam("@id", idPuffer));
 
                 if (n >= 0 && !paar)
                     Hinweis(l, "Projekt " + idProjekt + " R1: Zuordnung " + idZuordnung +
@@ -12810,10 +14687,10 @@ namespace WindowsFormsApplication1
                     int nAnlagen = NonQuery(l,
                         "UPDATE Tab_Energieanlagen SET WS_Ziel = ?, WS_ID_Puffer = ? " +
                         "WHERE ID_Projekt = ? AND ID_Type = ?",
-                        new OleDbParameter("@ziel", WS_ZIEL_PUFFER_HEIZUNG),
-                        new OleDbParameter("@puf", idPuffer),
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@typ", TYP_WP));
+                        new DbParam("@ziel", WS_ZIEL_PUFFER_HEIZUNG),
+                        new DbParam("@puf", idPuffer),
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@typ", TYP_WP));
 
                     if (nAnlagen < 0) ok = false;
                     else
@@ -12857,8 +14734,8 @@ namespace WindowsFormsApplication1
             {
                 object treffer = Scalar(l,
                     "SELECT ID FROM Tab_Pufferspeicher WHERE ID = ? AND ID_Projekt = ?",
-                    new OleDbParameter("@id", idPuffer),
-                    new OleDbParameter("@proj", idProjekt));
+                    new DbParam("@id", idPuffer),
+                    new DbParam("@proj", idProjekt));
                 if (treffer != null) return Zahl(treffer);
             }
 
@@ -12866,8 +14743,8 @@ namespace WindowsFormsApplication1
             {
                 object ueberNamen = Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezeichner));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezeichner));
                 if (ueberNamen != null) return Zahl(ueberNamen);
             }
 
@@ -12888,8 +14765,8 @@ namespace WindowsFormsApplication1
             DataTable z = Abfrage(l,
                 "SELECT ID, Erzeuger, Pufferspeicher FROM Z_ProjektPufferSp " +
                 "WHERE ID_Projekt = ? AND (Erzeuger IS NULL OR Erzeuger <> ?) ORDER BY Prioritaet, ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@erz", ERZEUGER_WAERMEPUMPE));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@erz", ERZEUGER_WAERMEPUMPE));
 
             if (z == null) return;
 
@@ -12911,8 +14788,8 @@ namespace WindowsFormsApplication1
             DataTable q = Abfrage(l,
                 "SELECT ID, Bezeichner, WQ_Puffer FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND WQ_Typ = ? AND WQ_Puffer IS NOT NULL ORDER BY ID",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", WaermequelleClass.TYP_PUFFER));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", WaermequelleClass.TYP_PUFFER));
 
             if (q == null) return false;
 
@@ -12925,8 +14802,8 @@ namespace WindowsFormsApplication1
 
                 object treffer = Scalar(l,
                     "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@bez", bezPuffer));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@bez", bezPuffer));
 
                 int idPuffer = Zahl(treffer);
                 if (idPuffer <= 0)
@@ -12940,8 +14817,8 @@ namespace WindowsFormsApplication1
                 }
 
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET WQ_ID_Puffer = ? WHERE ID = ?",
-                             new OleDbParameter("@puf", idPuffer),
-                             new OleDbParameter("@id", idAnlage)) < 0)
+                             new DbParam("@puf", idPuffer),
+                             new DbParam("@id", idAnlage)) < 0)
                 {
                     ok = false;
                     continue;
@@ -12982,7 +14859,7 @@ namespace WindowsFormsApplication1
             DataTable puffer = Abfrage(l,
                 "SELECT Bezeichner, MIN(ID) AS ErsteID FROM Tab_Pufferspeicher " +
                 "WHERE ID_Projekt = ? GROUP BY Bezeichner",
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@proj", idProjekt));
 
             if (puffer == null) return false;
 
@@ -13001,9 +14878,9 @@ namespace WindowsFormsApplication1
                 object vorhanden = Scalar(l,
                     "SELECT COUNT(*) FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
-                    new OleDbParameter("@proj", idProjekt),
-                    new OleDbParameter("@typ", TYP_PUFFER),
-                    new OleDbParameter("@bez", bez));
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", TYP_PUFFER),
+                    new DbParam("@bez", bez));
 
                 if (Zahl(vorhanden) > 0)
                 {
@@ -13023,10 +14900,10 @@ namespace WindowsFormsApplication1
                         "UPDATE Tab_Energieanlagen SET ID_PUFFER = ? " +
                         "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? " +
                         "  AND (ID_PUFFER IS NULL OR ID_PUFFER = 0)",
-                        new OleDbParameter("@puf", idPuffer),
-                        new OleDbParameter("@proj", idProjekt),
-                        new OleDbParameter("@typ", TYP_PUFFER),
-                        new OleDbParameter("@bez", bez));
+                        new DbParam("@puf", idPuffer),
+                        new DbParam("@proj", idProjekt),
+                        new DbParam("@typ", TYP_PUFFER),
+                        new DbParam("@bez", bez));
 
                     if (n < 0) { ok = false; continue; }
                     if (n > 0)
@@ -13086,8 +14963,8 @@ namespace WindowsFormsApplication1
                 "UPDATE Tab_Energieanlagen SET WS_Ziel = ? WHERE ID_Projekt = ? " +
                 "AND ID_Type IN (" + TYP_WP + "," + TYP_SOLARTHERMIE + "," + TYP_KESSEL + "," + TYP_BHKW + ") " +
                 "AND (WS_Ziel IS NULL OR WS_Ziel = '')",
-                new OleDbParameter("@ziel", WS_ZIEL_HEIZKREIS),
-                new OleDbParameter("@proj", idProjekt));
+                new DbParam("@ziel", WS_ZIEL_HEIZKREIS),
+                new DbParam("@proj", idProjekt));
 
             if (nHeizkreis < 0) ok = false; else DatenAnlagenHeizkreis += nHeizkreis;
 
@@ -13096,17 +14973,17 @@ namespace WindowsFormsApplication1
             {
                 if (NonQuery(l, "UPDATE Tab_Energieanlagen SET [" + spalte + "] = 0 " +
                                 "WHERE ID_Projekt = ? AND [" + spalte + "] IS NULL",
-                             new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                             new DbParam("@proj", idProjekt)) < 0) ok = false;
             }
 
             if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Entladeprio = 0 " +
                             "WHERE ID_Projekt = ? AND Entladeprio IS NULL",
-                         new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                         new DbParam("@proj", idProjekt)) < 0) ok = false;
 
             if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Schwelle_Aus_Nachrang = Schwelle_Aus " +
                             "WHERE ID_Projekt = ? AND Schwelle_Aus_Nachrang IS NULL " +
                             "AND Schwelle_Aus IS NOT NULL",
-                         new OleDbParameter("@proj", idProjekt)) < 0) ok = false;
+                         new DbParam("@proj", idProjekt)) < 0) ok = false;
 
             return ok;
         }
@@ -13130,14 +15007,14 @@ namespace WindowsFormsApplication1
         private static bool Regel6_BhkwPendelspeicher(Lauf l, int idProjekt)
         {
             object roh = Scalar(l, "SELECT TOP 1 Pendelspeicher FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                                new OleDbParameter("@proj", idProjekt));
+                                new DbParam("@proj", idProjekt));
             double volumenM3 = Kommazahl(roh);
             if (volumenM3 <= 0) return true;
 
             int anzahlBhkw = Zahl(Scalar(l,
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@typ", TYP_BHKW)));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@typ", TYP_BHKW)));
 
             if (anzahlBhkw == 0)
             {
@@ -13151,8 +15028,8 @@ namespace WindowsFormsApplication1
 
             int idPuffer = Zahl(Scalar(l,
                 "SELECT MIN(ID) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Bezeichner = ?",
-                new OleDbParameter("@proj", idProjekt),
-                new OleDbParameter("@bez", BEZ_PENDELSPEICHER)));
+                new DbParam("@proj", idProjekt),
+                new DbParam("@bez", BEZ_PENDELSPEICHER)));
 
             if (idPuffer > 0)
             {
@@ -13160,8 +15037,8 @@ namespace WindowsFormsApplication1
                 // vorhandenen Speichers bleibt stehen - es ist die jüngere Angabe.
                 if (NonQuery(l, "UPDATE Tab_Pufferspeicher SET Verwendung = ? " +
                                 "WHERE ID = ? AND (Verwendung IS NULL OR Verwendung = '')",
-                             new OleDbParameter("@verw", VERWENDUNG_HEIZUNG),
-                             new OleDbParameter("@id", idPuffer)) < 0) return false;
+                             new DbParam("@verw", VERWENDUNG_HEIZUNG),
+                             new DbParam("@id", idPuffer)) < 0) return false;
 
                 l.Notiz("Projekt " + idProjekt + " R6: vorhandener Puffer '" + BEZ_PENDELSPEICHER +
                         "' (ID " + idPuffer + ") wiederverwendet.");
@@ -13247,9 +15124,9 @@ namespace WindowsFormsApplication1
         /// <see cref="DBNull"/> sein kann: aus DBNull allein kann der OLE-DB-Provider
         /// den Spaltentyp nicht ableiten.
         /// </summary>
-        private static OleDbParameter Par(string name, OleDbType typ, object wert)
+        private static DbParam Par(string name, DbParamTyp typ, object wert)
         {
-            return new OleDbParameter(name, typ) { Value = wert ?? DBNull.Value };
+            return new DbParam(name, typ) { Wert = wert ?? DBNull.Value };
         }
 
         // =================================================================================
@@ -13259,39 +15136,40 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// true, wenn die Migration gelaufen ist und NICHT durchkam. Der Simulationsbereich
         /// verweigert dann den Start, statt auf halb migriertem Schema zu rechnen.
+        ///
+        /// <para><b>Unverändert seit ARBEITSPAKET S6 - und das ist geprüft, nicht
+        /// unterlassen.</b> Verlangt ist die Semantik „Stand &lt; <see cref="ZIEL_VERSION"/>
+        /// ⇒ gesperrt". Sie kommt im SQLite-Zweig genauso zustande wie vorher im
+        /// Access-Zweig, nämlich über <see cref="MigrationOk"/>: <see cref="Ausfuehren"/>
+        /// liefert <c>alleOk &amp;&amp; StandNachher &gt;= ZIEL_VERSION</c>, und
+        /// <c>SchritteAbarbeitenSqlite</c> bricht bei Stand 0 und bei Stand &lt; 61 mit
+        /// <c>false</c> ab. Ein Stand unter 61 kann daher gar nicht als „ok" durchgehen.
+        /// Eine zweite Prüfung auf <see cref="StandNachher"/> stünde hier nur als
+        /// Wiederholung - und würde die Sperre an einen Zähler koppeln, den auch
+        /// <see cref="HebeAltbestand"/> beschreibt (siehe die Begründung dort).</para>
+        ///
+        /// <para><see cref="HebeAltbestand"/> rührt <see cref="Ausgefuehrt"/> und
+        /// <see cref="MigrationOk"/> nicht an; eine Alt-Hebung kann diese Sperre also
+        /// weder setzen noch aufheben.</para>
+        ///
+        /// <para>Die Entscheidung selbst liegt seit iU3 bei
+        /// <see cref="SchemaStand.SimulationGesperrt"/> — der Rechenkern fragt dort,
+        /// ohne die Migration zu kennen. Hier steht die Weiterleitung für die
+        /// Oberfläche.</para>
         /// </summary>
         public static bool SimulationGesperrt(out string grund)
         {
-            if (!Ausgefuehrt || MigrationOk)
-            {
-                grund = null;
-                return false;
-            }
-
-            grund = "Die Datenbank ist nicht auf dem für die Simulation benötigten Stand." +
-                    Environment.NewLine + Environment.NewLine +
-                    FehlerKopf() + Environment.NewLine + Environment.NewLine +
-                    "Der Simulationsbereich bleibt gesperrt, bis die Aktualisierung der " +
-                    "Datenbank erfolgreich war.";
-            return true;
+            return SchemaStand.SimulationGesperrt(out grund);
         }
 
         /// <summary>
         /// Die ersten Zeilen des Berichts - genug für eine verständliche Meldung,
         /// ohne den Anwender mit dem vollständigen Protokoll zu erschlagen.
+        /// Weiterleitung auf <see cref="SchemaStand.FehlerKopf"/>.
         /// </summary>
         public static string FehlerKopf()
         {
-            if (string.IsNullOrEmpty(Fehlerbericht)) return "(kein Bericht vorhanden)";
-
-            string[] zeilen = Fehlerbericht.Replace("\r\n", "\n").Split('\n');
-            var kopf = new List<string>();
-            foreach (string z in zeilen)
-            {
-                kopf.Add(z);
-                if (kopf.Count >= 12) break;
-            }
-            return string.Join(Environment.NewLine, kopf).TrimEnd();
+            return SchemaStand.FehlerKopf();
         }
 
         /// <summary>Vollständiger Pfad der Protokolldatei neben der Datenbank.</summary>
@@ -13406,13 +15284,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static int NonQuery(Lauf l, string sql, params OleDbParameter[] p)
+        private static int NonQuery(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     return cmd.ExecuteNonQuery();
                 }
             }
@@ -13424,13 +15304,15 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static object Scalar(Lauf l, string sql, params OleDbParameter[] p)
+        private static object Scalar(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     object v = cmd.ExecuteScalar();
                     return v == DBNull.Value ? null : v;
                 }
@@ -13442,14 +15324,16 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static DataTable Abfrage(Lauf l, string sql, params OleDbParameter[] p)
+        private static DataTable Abfrage(Lauf l, string sql, params DbParam[] p)
         {
             try
             {
                 var dt = new DataTable();
                 using (var cmd = new OleDbCommand(sql, l.Conn))
                 {
-                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(p);
+                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
+                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
+                    if (p != null && p.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(p));
                     using (var adapter = new OleDbDataAdapter(cmd)) adapter.Fill(dt);
                 }
                 return dt;

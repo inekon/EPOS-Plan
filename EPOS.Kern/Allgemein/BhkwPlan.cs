@@ -1,0 +1,438 @@
+﻿using System;
+
+namespace WPPlan.Core
+{
+    /// <summary>
+    /// Verwalteter C#-Port des nativen Rechenkerns <c>BHKWPLAN.DLL</c> (Borland C, x86, __stdcall).
+    ///
+    /// Portiert wurden ausschließlich die 15 Funktionen, die WP-Plan tatsächlich über
+    /// <c>[DllImport("bhkwplan.dll")]</c> (CSExeCOMServer\SimpleObject.cs) aufruft. Die im
+    /// Reverse-Engineering-Dossier zusätzlich gefundenen BHKW-/Kessel-/Strommarkt-Funktionen
+    /// (bhkw_sys_*, heizkessel_betrieb, eigennutz, rest_strombezug, verguetungsstunden_c,
+    /// tarifcodes_c, strom_ht_nt) sind in diesem WP-Plan-Zweig NICHT eingebunden – ihre Logik
+    /// liegt bereits nativ in C# (SimulationSPK/SimulationPV/SimulationControl) vor und ist für
+    /// den Port irrelevant.
+    ///
+    /// Treue-Prinzipien:
+    ///  * Feldgrößen fest wie im Binär: 8760 (Jahresstunden), 168 (Wochenstunden),
+    ///    365 (Tage), 12 (Monate), 24 (Tagesstunden).
+    ///  * Datentyp der Vektoren ist seit dem Anwenderentscheid W8‑O‑5d (07.09.2026) durchgehend
+    ///    <c>double</c>. Die DLL führte die Vektoren in <c>float</c> (Single) und rundete nach
+    ///    jeder Rechnung auf die Speicherzelle zurück; dieses FPU-Verhalten wurde bis dahin
+    ///    nachgebildet. Es ist bewusst aufgegeben: der ganze Rechenweg rechnet und speichert in
+    ///    <c>double</c>, Zwischenwert und Speicherzelle haben dieselbe Breite.
+    ///  * Arrays werden IN-PLACE überschrieben – exakt wie die native Seite (die Rückgabe-int
+    ///    wird vom Aufrufer fast überall ignoriert).
+    ///  * Die drei Physik-Funktionen geben seit dem Anwenderentscheid W8-O-5d-Q2 (07.09.2026)
+    ///    double zurück. Die DLL gab int zurück (Borland _ftol = Abschneiden Richtung Null,
+    ///    entspricht dem C#-(int)-Cast); das war bis dahin nachgebildet. Der Entscheid lautet
+    ///    "keine Treue zur alten DLL": Eine Stelle hinter dem Komma entschied über eine ganze
+    ///    Einheit, und weil der WP-Plan-Aufrufer SpezWaermeverlusteC und SolareGewinneC
+    ///    anschließend durch 100 teilt, wanderte die Quantisierung als Hundertstel in die
+    ///    Tagesheizlast (Projekt 1041: 0,39 % über einen ganzen Januartag). Es wird nicht mehr
+    ///    abgeschnitten.
+    ///
+    /// Jede Methode nennt in der Doku die RVA der Originalfunktion und die belegten Konstanten.
+    /// Vor produktivem Einsatz gegen die Original-DLL golden-mastern (siehe README).
+    /// </summary>
+    public static class BhkwPlan
+    {
+        public const int Hours = 8760;       // 0x2238
+        public const int WeekHours = 168;    // 0xA8
+        public const int Days = 365;         // 0x16D
+        public const int Months = 12;        // 0xC
+        public const int HoursPerDay = 24;   // 0x18
+
+        // ----- Globaler Zustand -----
+        // Die DLL hält in 0x4211F8 die "Vortemperatur" des Kapazitätsmodells und nullt sie in
+        // DllMain (DLL_PROCESS_ATTACH). TaeglHeizlastWG liest/schreibt diese Variable über die
+        // 24-Stunden-Schleife UND über aufeinanderfolgende Tagesaufrufe hinweg. Für bit-nahe
+        // Ergebnisse muss dieser Zustand exakt so mitgeführt werden.
+        private static double _prevRoomTemp; // Spiegelt DATA:0x4211F8
+
+        /// <summary>Setzt den globalen Zustand zurück (entspricht DllMain/DLL_PROCESS_ATTACH: 0).</summary>
+        public static void ResetState() => _prevRoomTemp = 0.0;
+
+        // =========================================================================================
+        // Gruppe A – Vektor-/Struktur-Primitive (trivial, direkt aus Disassembly)
+        // =========================================================================================
+
+        /// <summary>vector_init @0x4163CC – nullt die 8760 Elemente. ret 4.</summary>
+        public static int VectorInit(double[] v)
+        {
+            for (int i = 0; i < Hours; i++) v[i] = 0.0;
+            return 0;
+        }
+
+        /// <summary>
+        /// Watt_To_kW @0x41600F – multipliziert jedes der 8760 Elemente mit 0.001 (W→kW). ret 4.
+        /// Konstante 0.001 (f80 @0x416033).
+        /// </summary>
+        public static int WattToKw(double[] v)
+        {
+            for (int i = 0; i < Hours; i++) v[i] = v[i] * 0.001;
+            return 0;
+        }
+
+        /// <summary>
+        /// vectoren_addieren @0x416362 – ziel[i] += quelle[i] über 8760 Elemente. ret 8.
+        /// Native fld [ziel]; fadd [quelle]; fstp [ziel]. Argumentreihenfolge des Wrappers
+        /// CSharp_I_vectoren_addieren(Quelle, Ziel): Quelle wird addiert, Ziel modifiziert.
+        /// </summary>
+        public static long VectorenAddieren(double[] quelle, double[] ziel)
+        {
+            for (int i = 0; i < Hours; i++) ziel[i] = ziel[i] + quelle[i];
+            return 0;
+        }
+
+        /// <summary>
+        /// vector_summe @0x41603F – Summe aller 8760 Elemente, danach ×0.001. ret 8.
+        /// Die DLL akkumulierte in einer float-Speicherzelle (jede Addition rundete auf float);
+        /// seit W8‑O‑5d läuft die Akkumulation in <c>double</c>. Konstante 0.001 (f80 @0x41606F).
+        /// </summary>
+        public static int VectorSumme(double[] v, ref double summe)
+        {
+            double acc = 0.0;
+            for (int i = 0; i < Hours; i++) acc = acc + v[i];
+            summe = acc * 0.001;
+            return 0;
+        }
+
+        /// <summary>
+        /// normieren @0x415FE3 – v[i] = v[i] / maxWert * 100 (Prozent). ret 8.
+        /// Konstante 100.0 (f32 @0x41600B).
+        /// </summary>
+        public static int Normieren(double[] v, double maxWert)
+        {
+            for (int i = 0; i < Hours; i++) v[i] = v[i] / maxWert * 100.0;
+            return 0;
+        }
+
+        /// <summary>
+        /// netzverlustec @0x4153C0 – addiert den konstanten stündlichen Netzverlust auf alle
+        /// 8760 Elemente (Grundlast-Offset). ret 8.
+        /// </summary>
+        public static int NetzverlusteC(double[] v, double stundlNetzverluste)
+        {
+            for (int i = 0; i < Hours; i++) v[i] = v[i] + stundlNetzverluste;
+            return 0;
+        }
+
+        /// <summary>
+        /// monats_summe @0x416266 – Summiert Stundenwerte je Monat in sum[12], jeweils ×0.001.
+        /// moAnfang/moEnde sind Stundenindizes [0..8759]; die obere Grenze ist INKLUSIVE
+        /// (native: while d &lt;= moEnde). Akkumulation in double. Konstante 0.001 (f80 @0x4162AE).
+        /// ret 0x10.
+        /// </summary>
+        public static int MonatsSumme(double[] value, double[] sum, int[] moAnfang, int[] moEnde)
+        {
+            for (int m = 0; m < Months; m++)
+            {
+                sum[m] = 0.0;
+                for (int d = moAnfang[m]; d <= moEnde[m]; d++)
+                    sum[m] = 0.001 * value[d] + sum[m];
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// monats_grenzen @0x4161B3 – schreibt die Stunden-Monatsgrenzen eines NICHT-Schaltjahres.
+        /// (In WP-Plan importiert, aber nicht aufgerufen – die App berechnet die Grenzen selbst.
+        /// Hier aus Vollständigkeit/Referenz enthalten.) ret 8.
+        /// </summary>
+        public static int MonatsGrenzen(int[] anfang, int[] ende)
+        {
+        int[] a = { 0, 744, 1416, 2160, 2880, 3624, 4344, 5088, 5832, 6552, 7296, 8016 };
+        int[] e = { 743, 1415, 2159, 2879, 3623, 4343, 5087, 5831, 6551, 7295, 8015, 8759 };
+            for (int m = 0; m < Months; m++) { anfang[m] = a[m]; ende[m] = e[m]; }
+            return 0;
+        }
+
+        // =========================================================================================
+        // Jahresdauerlinie
+        // =========================================================================================
+
+        /// <summary>
+        /// heapsort @0x414FF0 – kopiert src[8760] → dst und sortiert dst AUFSTEIGEND
+        /// (internes Heapsort @0x415035, Numerical-Recipes-Stil, 1-basiert). Rückgabe 0 = OK.
+        /// Der WP-Plan-Aufrufer führt anschließend Array.Reverse(dst) aus → absteigende
+        /// Jahresdauerlinie. ret 8.
+        /// </summary>
+        public static int Heapsort(double[] src, double[] dst)
+        {
+            for (int i = 0; i < Hours; i++) dst[i] = src[i];
+            Array.Sort(dst); // aufsteigend – identische Ordnung wie das native Heapsort
+            return 0;
+        }
+
+        // =========================================================================================
+        // Woche→Jahr-Expansion (Strom, Prozesswärme, Brauchwasser)
+        // =========================================================================================
+
+        /// <summary>
+        /// strom_wochetojahr @0x4162BA – expandiert ein 168h-Wochenprofil auf 8760h und
+        /// normiert je Monat auf die 12 Monatsverbräuche (×1000, kWh→Wh). ret 0x14.
+        ///
+        /// ALTKONVENTION, unverändert: Das Jahr beginnt mit einem SONNTAG. Diese Fassung
+        /// delegiert deshalb mit <c>wochentagJan1 = 6</c> und ist Anweisung für Anweisung
+        /// das bisherige Verhalten — für jeden Aufrufer außerhalb der Bedarfsrechnung
+        /// bleibt das Ergebnis bitgleich.
+        ///
+        /// Phase 1 (Kachelung): out[0..23] = wo[144..167] (Sonntag zuerst → Kalenderausrichtung
+        /// 1. Januar), danach 52× wo[0..167] angehängt (24 + 52·168 = 8760).
+        /// Phase 2 (Monatsnormierung): pro Monat sum = Σ out[Monat]; out[h] = out[h]/sum ·
+        /// monatsverbrauch[m] · 1000. sum in double akkumuliert. Konstante 1000.0 (f32 @0x41635E).
+        /// Monatsgrenzen (moAnfang/moEnde) sind Stundenindizes, obere Grenze inklusive.
+        /// </summary>
+        public static int StromWocheToJahr(double[] wo, double[] monatsverbrauch, double[] outJahr,
+                                           int[] moAnfang, int[] moEnde)
+        {
+            return StromWocheToJahr(wo, monatsverbrauch, outJahr, moAnfang, moEnde, 6);
+        }
+
+        /// <summary>
+        /// Dieselbe Expansion mit FREIEM KALENDERSTART (Konzept-Entscheidung F3,
+        /// Paket K1): Das 168-Stunden-Wochenprofil wird ab dem tatsächlichen Wochentag
+        /// des 1. Januar gekachelt statt fest ab Sonntag.
+        ///
+        /// HERKUNFT DER ALTKONVENTION. Die native DLL kachelte hart „Sonntag zuerst":
+        /// 24 Stunden aus <c>wo[144..167]</c>, danach 52 volle Wochen. Damit fiel der
+        /// Profilpfad (Strom, Prozesswärme, Brauchwasser) mit keinem der beiden anderen
+        /// Kalender des Programms zusammen — weder mit dem Gebäudepfad
+        /// (<c>Tab_Klimadaten.WE</c>) noch mit dem WP-Quellprofil
+        /// (<c>WaermequelleClass.cs:934-938</c>, „nächstes Nicht-Schaltjahr"). F3 zieht
+        /// alle drei auf den Klimadaten-Kalender zusammen.
+        ///
+        /// KONVENTION: <c>wochentagJan1</c> zählt <b>Montag = 0 … Sonntag = 6</b> —
+        /// identisch mit der Umrechnung in <c>WaermequelleClass</c>
+        /// (<c>((int)DayOfWeek + 6) % 7</c>). Das Wochenprofil ist entsprechend gelesen:
+        /// <c>wo[0..23]</c> ist Montag, <c>wo[144..167]</c> ist Sonntag.
+        ///
+        /// Phase 1 wird damit zur MODULO-KACHELUNG:
+        /// <code>outJahr[h] = wo[((wochentagJan1 · 24) + h) mod 168]</code>
+        /// Für <c>wochentagJan1 = 6</c> ist das nachweislich EXAKT die bisherige Sequenz
+        /// (<c>wo[144..167]</c>, danach 52 × <c>wo[0..167]</c>), denn 8760 = 24 + 52·168.
+        ///
+        /// Phase 2 (Monatsnormierung) bleibt unverändert. Die Kalenderumstellung ist
+        /// deshalb ENERGIEWIRKUNGSFREI je Monat: Sie verschiebt allein die
+        /// Stundenverteilung innerhalb des Monats, nicht die Monatsmenge.
+        /// </summary>
+        /// <param name="wochentagJan1">Wochentag des 1. Januar, Montag = 0 … Sonntag = 6.</param>
+        public static int StromWocheToJahr(double[] wo, double[] monatsverbrauch, double[] outJahr,
+                                           int[] moAnfang, int[] moEnde, int wochentagJan1)
+        {
+            // Phase 1 – Kachelung ab dem Wochentag des 1. Januar. Der Modulo auf 7 faengt
+            // einen Fremdwert ab, ohne zu werfen: Der Rechenkern bricht nirgends ab.
+            int start = (((wochentagJan1 % 7) + 7) % 7) * HoursPerDay;
+            for (int h = 0; h < Hours; h++)
+                outJahr[h] = wo[(start + h) % WeekHours];
+
+            // Phase 2 – Monatsnormierung
+            for (int m = 0; m < Months; m++)
+            {
+                double sum = 0.0;
+                for (int h = moAnfang[m]; h <= moEnde[m]; h++)
+                    sum = sum + outJahr[h];
+                for (int h = moAnfang[m]; h <= moEnde[m]; h++)
+                    outJahr[h] = outJahr[h] / sum * monatsverbrauch[m] * 1000.0;
+            }
+            return 0;
+        }
+
+        // =========================================================================================
+        // Tages→Stunden-Disaggregation (Std-Werte, "nach VDI 2067")
+        // =========================================================================================
+
+        /// <summary>
+        /// StdWerte @0x4153DF – verteilt 365 Tageslasten über typtag-spezifische 24h-Profile
+        /// auf die 8760h-Ganglinie. ret 0x10.
+        ///
+        /// Ablauf (exakt nach Disassembly):
+        ///  1. Maximaler Tagtyp-Index = max(tagTyp[0..364]).
+        ///  2. Für jeden Typ t=1..maxTyp: das 24h-Profil tagesgang[(t-1)*24 + h] wird auf
+        ///     Tagessumme 1 normiert (IN-PLACE-Nebeneffekt! Das übergebene tagesgang-Array wird
+        ///     verändert).
+        ///  3. Für jeden Tag d=0..364, Stunde h=0..23:
+        ///     waermebedarf[d*24+h] = tageslast[d] · tagesgang[(tagTyp[d]-1)*24 + h] + (bisheriger Wert)
+        ///     → additiv auf den vorhandenen Inhalt von waermebedarf.
+        /// </summary>
+        public static int StdWerte(double[] waermebedarf, int[] tagTyp, double[] tagesgang, double[] tageslast)
+        {
+            // 1. maximaler Tagtyp
+            int maxTyp = 0;
+            for (int d = 0; d < Days; d++)
+                if (maxTyp < tagTyp[d]) maxTyp = tagTyp[d];
+
+            // 2. Tagesprofile je Typ auf Summe 1 normieren (in-place)
+            for (int t = 1; t <= maxTyp; t++)
+            {
+                double sumcol = 0.0;
+                int baseIdx = (t - 1) * HoursPerDay;
+                for (int h = 0; h < HoursPerDay; h++)
+                    sumcol = sumcol + tagesgang[baseIdx + h];
+                for (int h = 0; h < HoursPerDay; h++)
+                    tagesgang[baseIdx + h] = tagesgang[baseIdx + h] / sumcol;
+            }
+
+            // 3. Verteilung, additiv auf vorhandenen Inhalt
+            for (int d = 0; d < Days; d++)
+            {
+                for (int h = 0; h < HoursPerDay; h++)
+                {
+                    double basewert = waermebedarf[d * HoursPerDay + h];
+                    int profIdx = (tagTyp[d] - 1) * HoursPerDay + h;
+                    double val = tageslast[d] * tagesgang[profIdx];
+                    waermebedarf[d * HoursPerDay + h] = val + basewert;
+                }
+            }
+            return 0;
+        }
+
+        // =========================================================================================
+        // Gruppe B – Physik (Wärmebedarf). Rückgabe double: die Trunkierung der DLL
+        // (Borland _ftol, Richtung 0) ist mit W8-O-5d-Q2 gefallen.
+        // =========================================================================================
+
+        /// <summary>
+        /// SolareGewinneC @0x41526C – nutzbare solare Gewinne eines Tages (×100). ret 0x20.
+        /// Ergebnis = ( En·An + ((Eo+Ew)·0.5)·Awo + Es·u_As ) · Transmissionsgrad · 100
+        /// Konstanten 0.5 (f32 @0x4152A8), 100.0 (f32 @0x4152AC).
+        ///
+        /// Bemerkung: Ost- und West-Einstrahlung (Eo, Ew) werden gemittelt und mit EINER
+        /// Ost-/West-Fensterfläche (Awo) multipliziert; die West-Fensterfläche existiert nicht
+        /// als eigenes Argument. Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026, „keine Treue zur alten
+        /// DLL"). Die DLL schnitt hier mit <c>_ftol</c> auf eine ganze Zahl ab; nach der
+        /// Division durch 100 beim Aufrufer war das ein Raster von 0,01 W auf den solaren
+        /// Gewinnen eines Tages. Der Faktor 100 selbst bleibt stehen — er gehört zur
+        /// Schnittstelle, die der Aufrufer bedient.</para>
+        /// </summary>
+        public static double SolareGewinneC(double en, double an, double ew, double eo,
+                                            double awo, double es, double uAs, double transmissionsgrad)
+        {
+            double tmp = ((double)eo + ew) * 0.5;
+            double s = (double)en * an + tmp * awo + (double)es * uAs;
+            s = s * transmissionsgrad * 100.0;
+            return s; // W8-O-5d-Q2: kein _ftol mehr
+        }
+
+        /// <summary>
+        /// SpezWaermeverlusteC @0x4152B0 – spezifischer Wärmeverlustkoeffizient (×100). ret 0x50.
+        ///
+        /// Transmission = 0.83·Kw·Aw + Kf·Af + 0.95·Kd·Ad + 0.45·Kg·Ag + Ks·As
+        /// Wärmebrücken = (Kwb1·Lwb1 + Kwb2·Lwb2 + Kwb3·Lwb3) · 0.83
+        /// Lüftung      = f · (Wohnflaeche · Raumhoehe) · 1.2 · LWR · 0.277777…
+        ///   mit f = (AussenTemp·0.025 + 1.0)  falls AussenTemp &lt; 0, sonst f = 1.0
+        /// Ergebnis = (Transmission + Wärmebrücken + Lüftung) · 100
+        /// Konstanten: 0.83/0.95/0.45 (f64 @0x415380/0x415388/0x415390), 0.025 (f64 @0x41539C),
+        ///   1.0 (f32 @0x4153A4), 1.2 (f64 @0x4153A8), 0.2777777777777778 (f80 @0x4153B0, = 1/3.6·1,
+        ///   spez. Wärmekapazität Luft ≈ 0,28 Wh/(kg·K)), 100.0 (f32 @0x4153BC).
+        ///
+        /// Argumentnamen wie in SimpleObject.cs; "u_As" ist die FLÄCHE sonstiger Bauteile.
+        /// Der WP-Plan-Aufrufer teilt das Ergebnis anschließend durch 100.
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026). Die Trunkierung der DLL
+        /// rasterte den Wärmeverlustkoeffizienten auf 0,01 W/K — und weil er in der
+        /// Tagesheizlast mit der Temperaturdifferenz multipliziert wird, wuchs das Raster dort
+        /// auf ein Vielfaches an. <b>Der Aufrufer folgt mit:</b>
+        /// <c>SimulationWaermebedarf</c> teilte das int-Ergebnis mit <c>/ 100</c>, also
+        /// GANZZAHLIG — zwei Abschneidungen hintereinander. Beide sind gefallen.</para>
+        /// </summary>
+        public static double SpezWaermeverlusteC(
+            double kw, double aw, double kf, double af, double kd, double ad, double kg, double ag,
+            double ks, double uAs, double kwb1, double lwb1, double kwb2, double lwb2, double kwb3,
+            double lwb3, double aussenTemp, double wohnflaeche, double raumhoehe, double lwr)
+        {
+            double transmission = 0.83 * kw * aw
+                                + (double)kf * af
+                                + 0.95 * kd * ad
+                                + 0.45 * kg * ag
+                                + (double)ks * uAs;
+
+            double bruecken = ((double)kwb1 * lwb1 + (double)kwb2 * lwb2 + (double)kwb3 * lwb3) * 0.83;
+
+            double lueftung;
+            if (aussenTemp < 0.0)
+                lueftung = ((double)aussenTemp * 0.025 + 1.0) * wohnflaeche * raumhoehe * 1.2 * lwr * 0.2777777777777778;
+            else
+                lueftung = (double)wohnflaeche * raumhoehe * 1.2 * lwr * 0.2777777777777778;
+
+            return (transmission + bruecken + lueftung) * 100.0; // W8-O-5d-Q2: kein _ftol mehr
+        }
+
+        /// <summary>
+        /// TaeglHeizlastWG @0x4150E0 – tägliche Heizlast eines Wohngebäudes über ein instationäres
+        /// 24-Stunden-Kapazitätsmodell (Handbuch Gl. 1.1.12/1.1.13). Rückgabe double (Wh/Tag ·
+        /// Gesamtflaeche/Wohnflaeche). ret 0x3C (15 Argumente).
+        ///
+        /// <para><b>Rückgabe double seit W8-O-5d-Q2</b> (07.09.2026, „keine Treue zur alten
+        /// DLL"). Die DLL schnitt die Tagesheizlast auf ganze Wh ab. Das klingt klein, war es
+        /// aber nicht: Die Tagessumme geht über das Tagesprofil in 24 Stundenwerte, und die
+        /// Schwellen des Modells (Speicherhysterese, Volllastgrenze des BHKW) tragen eine
+        /// Verschiebung über Stunden weiter. In Projekt 1041 verschob eine Stelle hinter dem
+        /// Komma die Tagesheizlast eines Januartags um 0,39 %.</para>
+        ///
+        /// Zustandsführung: Die "Vortemperatur" wird in einer globalen Variablen (0x4211F8,
+        /// hier <see cref="_prevRoomTemp"/>) über Stunden UND Tagesaufrufe hinweg mitgeführt.
+        /// Bei day == 1 wird sie mit raumsolltempNacht initialisiert; sonst aus dem globalen Wert
+        /// übernommen. Vor dem eigentlichen Jahreslauf ruft WP-Plan die Funktion für Vorlauftage
+        /// (350..364) zum Einschwingen auf. Deshalb <see cref="ResetState"/> nur bewusst nutzen.
+        ///
+        /// Konstanten: 4.0 (f32 @0x41525C – Solar-Faktor für die Tagesstunden), 0.0/1.0/-1.0.
+        /// Setpoint-Logik je Stunde h (1..24):
+        ///   WE-Absenkung && !Ferien → WETemp; Ferien → FerienTemp;
+        ///   sonst 7 &lt;= h &lt;= 22 → Tag-Sollwert; sonst Nacht-Sollwert.
+        /// Solargewinn wirkt nur in den Stunden 9..14 (mit Faktor 4.0).
+        /// </summary>
+        public static double TaeglHeizlastWG(
+            int day, int weAbsenkung, double weTemp, int ferienAbsenkung, double ferienTemp,
+            double raumsolltempTag, double raumsolltempNacht, double innereGewinne, double solareGewinne,
+            double spezWaermeverluste, double gebaeudeKapazitaet, double aussenTemp, double maxRaumtemp,
+            double gesamtflaeche, double wohnflaeche)
+        {
+            double L = spezWaermeverluste;
+            double C = gebaeudeKapazitaet;
+
+            double acc = 0.0;                              // ebp-0x10: Summe der Stunden-Heizlast
+            double tPrev = (day == 1) ? raumsolltempNacht  // ebp-0xc: Vortemperatur
+                                      : _prevRoomTemp;
+
+            for (int h = 1; h <= 24; h++)
+            {
+                // --- Sollwert der Stunde (ebp-4) ---
+                double tSoll;
+                if (weAbsenkung != 0 && ferienAbsenkung == 0) tSoll = weTemp;
+                else if (ferienAbsenkung != 0) tSoll = ferienTemp;
+                else if (h >= 7 && h <= 22) tSoll = raumsolltempTag;
+                else tSoll = raumsolltempNacht;
+
+                // --- Heizleistung dieser Stunde (ebp-8) ---
+                double pHzg;
+                if (tSoll < tPrev)
+                {
+                    pHzg = 0.0; // Raum wärmer als Sollwert → keine Heizung
+                }
+                else
+                {
+                    pHzg = (tPrev - aussenTemp) * L + (tSoll - tPrev) * C - innereGewinne;
+                    if (h > 8 && h < 15)           // Stunden 9..14: solare Entlastung
+                        pHzg = pHzg - 4.0 * solareGewinne;
+                    if (pHzg < 0.0) pHzg = 0.0;    // keine negative Heizlast
+                    acc += pHzg;
+                }
+
+                // --- Fortschreibung der Raumtemperatur (RC-Modell) ---
+                double a = 1.0 - Math.Exp(-L / C);            // 1 - exp(-L/C)
+                int solarFlag = (h > 8 && h < 15) ? 1 : 0;    // Solar nur tagsüber
+                double pGesTerm = a * (4.0 * solareGewinne * solarFlag + L * aussenTemp + innereGewinne + pHzg) / L;
+                tPrev = Math.Exp(-L / C) * tPrev + pGesTerm;
+                if (tPrev > maxRaumtemp) tPrev = maxRaumtemp; // Kappung auf Maximaltemperatur
+            }
+
+            _prevRoomTemp = tPrev; // globalen Zustand fortschreiben (0x4211F8)
+
+            return acc * gesamtflaeche / wohnflaeche; // W8-O-5d-Q2: kein _ftol mehr
+        }
+    }
+}

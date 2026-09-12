@@ -3,7 +3,7 @@
 ;  Inno Setup 6.3 oder neuer (wegen der Architekturbezeichner, siehe unten)
 ;
 ;  Ablage:      <Repo>\Setup\EPOS-Plan.iss
-;  Übersetzen:  Setup\build-setup.ps1   (ruft MSBuild-Publish und ISCC auf)
+;  Übersetzen:  Setup\build-setup.ps1   (ruft dotnet publish und ISCC auf)
 ;  Von Hand:    ISCC.exe EPOS-Plan.iss  (setzt eine fertige Veröffentlichung
 ;                                        unter <Repo>\artifacts\publish\win-x64
 ;                                        voraus)
@@ -23,10 +23,11 @@
 #define AppSupportURL  "https://epos-plan.de/support"
 
 ; Name der ausführbaren Datei im Veröffentlichungsordner.
-; Solange das Projekt <AssemblyName>WindowsFormsApplication1</AssemblyName>
-; trägt, muss hier dieser Name stehen. Nach der Umbenennung (Konzept 7.3) nur
-; diese Zeile ändern — build-setup.ps1 liest den Namen aus dieser Datei.
-#define AppExeName     "WindowsFormsApplication1.exe"
+; Das Projekt trägt seit dem 29.08.2026 <AssemblyName>EPOS_Plan</AssemblyName>
+; (Umbenennung nach Konzept 7.3), daher dieser Name. Bei einer weiteren
+; Umbenennung nur diese Zeile ändern — build-setup.ps1 liest den Namen aus
+; dieser Datei.
+#define AppExeName     "EPOS_Plan.exe"
 
 ; SourcePath ist der Ordner dieser Datei. Ob er einen abschließenden Backslash
 ; trägt, sagt die Dokumentation nicht zu — deshalb wie in allen offiziellen
@@ -34,17 +35,39 @@
 #define SetupDir       AddBackslash(SourcePath)
 #define RepoDir        SetupDir + "..\"
 
-; Ergebnis des MSBuild-Publish (win-x64, eigenständig) — siehe build-setup.ps1.
+; Ergebnis von dotnet publish (win-x64, eigenständig) — siehe build-setup.ps1.
 #ifndef PublishDir
   #define PublishDir   RepoDir + "artifacts\publish\win-x64"
 #endif
 
 ; Auslieferungsdatenbank — NICHT die Arbeitsdatenbank aus dem Repository!
-; Wie dieser Stand erzeugt wird, steht im Konzept, Abschnitt 6.1.
-#define VorlageDb      SetupDir + "Vorlage\Kenndaten.accdb"
+; Seit dem Anwenderentscheid #157-E-1 (Weg W3, 09.09.2026) ist sie eine
+; SQLITE-Datei; die Anwendung kopiert sie beim ersten Start in den Datenordner
+; (EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs). Erzeugt wird sie vor
+; jedem Uebersetzungslauf neu von build-setup.ps1 ueber das Werkzeug
+; Werkzeuge/Auslieferungsvorlage; sie liegt deshalb nicht im Repository
+; (.gitignore: Setup/Vorlage/*.sqlite). Konzept, Abschnitt 6.1.
+#define VorlageDb      SetupDir + "Vorlage\Kenndaten.sqlite"
+#if !FileExists(VorlageDb)
+  #error Die Auslieferungsvorlage Setup\Vorlage\Kenndaten.sqlite fehlt. Sie wird von build-setup.ps1 ueber Werkzeuge\Auslieferungsvorlage erzeugt und gehoert NICHT ins Repository; siehe Konzept, Abschnitt 6.1.
+#endif
 
-; Microsoft Access Database Engine 2016 Redistributable, 64 Bit
-#define AceInstaller   SetupDir + "Voraussetzungen\AccessDatabaseEngine_X64.exe"
+; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
+; vom 06.09.2026: „ja". Der Ordner liegt im Repository und wandert unveraendert
+; nach {app}\VDI-3805-Daten; rund 186 MB (WP 134, KWK 25, PV 13, SPK 10,
+; Pufferspeicher 4,4, Solarthermie 1,1). Er ist eine eigene, VORGEWAEHLTE und
+; ABWAEHLBARE Komponente — siehe [Components].
+#define HerstellerdatenDir  RepoDir + "VDI-3805-Daten"
+#if !DirExists(HerstellerdatenDir)
+  #error Der Ordner VDI-3805-Daten fehlt in der Repowurzel. Ohne ihn laesst sich die Komponente Herstellerdaten nicht packen; siehe Konzept, Entscheidung E10.
+#endif
+
+; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
+; die passende Fassung selbst nachlaedt. Gebraucht seit Paket iU8: Die neuen
+; Dialoge sind Blazor-Komponenten und laufen in einer WebView2. Auf Windows 11
+; ist die Laufzeit Bestandteil des Systems, auf Windows 10, LTSC und Server
+; nicht zwingend.
+#define WebView2Installer  SetupDir + "Voraussetzungen\MicrosoftEdgeWebview2Setup.exe"
 
 ; Version. Einzige Quelle ist die gebaute EXE; gepflegt wird sie in
 ; WindowsFormsApplication1\Properties\AssemblyInfo.cs
@@ -95,9 +118,8 @@ PrivilegesRequired=admin
 ; x64-Binärdateien ausführen kann, also x64-Windows und ARM64-Windows mit
 ; x64-Emulation.
 ArchitecturesAllowed=x64compatible
-; EPOS-Plan ist seit der Umstellung eine x64-Anwendung und braucht
-; Microsoft.ACE.OLEDB.12.0 als 64-Bit-Engine. Mit dem 64-Bit-Modus zeigt
-; {autopf} auf "Programme" und HKLM auf die 64-Bit-Registry-Sicht.
+; EPOS-Plan ist seit der Umstellung eine x64-Anwendung. Mit dem 64-Bit-Modus
+; zeigt {autopf} auf "Programme" und HKLM auf die 64-Bit-Registry-Sicht.
 ArchitecturesInstallIn64BitMode=x64compatible
 
 MinVersion=10.0
@@ -162,8 +184,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 
 [CustomMessages]
-german.AceInstallieren=Microsoft Access Database Engine (64 Bit) wird installiert …
-english.AceInstallieren=Installing Microsoft Access Database Engine (64-bit) …
+german.WebView2Installieren=Microsoft Edge WebView2 Runtime wird installiert …
+english.WebView2Installieren=Installing Microsoft Edge WebView2 Runtime …
 
 german.RechteSetzen=Zugriffsrechte des gemeinsamen Datenordners werden gesetzt …
 english.RechteSetzen=Setting permissions on the shared data folder …
@@ -177,26 +199,64 @@ english.Deinstallieren=Uninstall {#AppName}
 german.Dokumentation=Dokumentation im Internet
 english.Dokumentation=Online documentation
 
-german.UebernahmeTitel=Vorhandene Datenbank gefunden
-english.UebernahmeTitel=Existing database found
-german.UebernahmeKopf=Ihre Projekte bleiben erhalten
-english.UebernahmeKopf=Your projects will be kept
-german.UebernahmeText=Auf diesem Rechner liegt bereits eine Datenbank unter%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nAb dieser Version arbeitet EPOS-Plan mit einer Datenbank je Windows-Konto. Beim ersten Start übernimmt das Programm die vorhandene Datenbank einschließlich aller Projekte in Ihr Benutzerprofil. Die bisherige Datei bleibt unverändert liegen und kann nach einer Kontrolle von Hand entfernt werden.%n%nDas Setup selbst verändert Ihre Daten nicht.
-english.UebernahmeText=This computer already holds a database at%n%n    C:\ProgramData\EPOS_PLAN\Kenndaten.accdb%n%nFrom this version on, EPOS-Plan uses one database per Windows account. On first start the application copies the existing database including all projects into your user profile. The previous file is left untouched and may be removed manually after verification.%n%nSetup itself does not modify your data.
+german.WebView2Fehlt=Die Microsoft Edge WebView2 Runtime konnte nicht installiert werden.%n%nOhne sie bleiben die neueren Dialoge von EPOS-Plan leer; alles Uebrige arbeitet weiter.%n%nHaeufigste Ursache ist eine fehlende Internetverbindung: Der mitgelieferte Installer laedt die Laufzeit nach. Sie laesst sich jederzeit nachtraeglich installieren — Bezugsquelle "Microsoft Edge WebView2" auf den Microsoft-Seiten. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
+english.WebView2Fehlt=The Microsoft Edge WebView2 Runtime could not be installed.%n%nWithout it the newer EPOS-Plan dialogs stay blank; everything else keeps working.%n%nThe most common cause is a missing internet connection: the bundled installer downloads the runtime. It can be installed later at any time — look for "Microsoft Edge WebView2" on the Microsoft pages. When in doubt, contact support.%n%nSetup will continue.
 
-german.Office32Hinweis=Auf diesem Rechner ist ein 32-Bit-Microsoft-Office installiert.%n%nDie 64-Bit-Access-Engine kann daneben von Microsoft offiziell nicht unterstützt installiert werden.%n%nDie Installation wird trotzdem versucht. Schlägt sie fehl, aktualisieren Sie Office auf 64 Bit oder folgen Sie dem Microsoft-Artikel KB 5004577.
-english.Office32Hinweis=A 32-bit Microsoft Office is installed on this computer.%n%nMicrosoft does not officially support installing the 64-bit Access engine alongside it.%n%nSetup will try anyway. Should it fail, update Office to 64-bit or follow Microsoft article KB 5004577.
+; Die Uebernahme-Seite (UebernahmeTitel/Kopf/Text) und die drei ACE-Meldungen
+; (AceInstallieren, Office32Hinweis, AceFehlt) sind mit dem Anwenderentscheid
+; #157-E-1 (Weg W3, 09.09.2026) ENTFALLEN: Access wurde beim Kunden nie
+; produktiv eingesetzt, die Uebernahme eines Altbestands ist ein Hauswerkzeug
+; (EposSqliteMigrator) und kein Kundenweg. Das Setup liefert stattdessen
+; {app}\Vorlage\Kenndaten.sqlite aus.
 
-german.AceFehlt=Die Microsoft Access Database Engine (64 Bit) konnte nicht installiert werden.%n%nOhne sie kann EPOS-Plan nicht auf seine Datenbank zugreifen.%n%nHäufigste Ursache ist ein installiertes 32-Bit-Microsoft-Office, das die 64-Bit-Engine blockiert. Abhilfe ist ein Wechsel auf 64-Bit-Office oder der Weg aus dem Microsoft-Artikel KB 5004577; er steht auch in der Liesmich-Datei im Programmordner. Im Zweifel hilft der Support weiter.%n%nDie Installation wird fortgesetzt.
-english.AceFehlt=The Microsoft Access Database Engine (64-bit) could not be installed.%n%nWithout it EPOS-Plan cannot access its database.%n%nThe most common cause is an installed 32-bit Microsoft Office blocking the 64-bit engine. Either switch Office to 64-bit or follow Microsoft article KB 5004577, which is also described in the readme file in the program folder. When in doubt, contact support.%n%nSetup will continue.
+; Seit Auftrag #161 (09.09.2026): Die Rückfrage zeigt den tatsächlichen, seit
+; dem SQLite-Cutover für ALLE Windows-Konten dieses Rechners gemeinsamen
+; Datenordner {commonappdata}\EPOS_PLAN (Datenbank samt Sicherungsordner
+; DB-Backup) — vorher richtete sie sich an {localappdata}\EPOS_PLAN, einen
+; Ordner, den nichts anlegt (Befund Auftrag #157). Der alte Satz "Daten
+; anderer Windows-Konten bleiben in jedem Fall erhalten" traf deshalb nie zu:
+; Ein gemeinsamer Ordner trifft beim Löschen zwangsläufig alle Konten. Die
+; Registrierungseinstellungen (HKEY_CURRENT_USER\Software\wp-plan) und die
+; zwei Datenverzeichnisse WP-Plan löscht der Code nach wie vor nicht — das
+; sagt der Text jetzt ausdrücklich, statt es fälschlich mitzuversprechen.
+german.DatenLoeschen=Soll auch die Datenbank samt Sicherungsordner unter%n%n    %1%n%ngelöscht werden?%n%nDieser Ordner gehört gemeinsam ALLEN Windows-Konten auf diesem Rechner — das Löschen trifft also nicht nur das angemeldete Konto, sondern auch die Projekte der anderen Konten. Ein Rückweg besteht danach nicht.%n%nErhalten bleiben in jedem Fall die beiden Datenverzeichnisse WP-Plan sowie die Registrierungseinstellungen des angemeldeten Kontos.
+english.DatenLoeschen=Do you also want to delete the database and its backup folder under%n%n    %1%n%nThis folder is shared by ALL Windows accounts on this computer — deleting it therefore also removes the projects of the other accounts, not just those of the signed-in one. This cannot be undone.%n%nThe two WP-Plan data directories and the registry settings of the signed-in account are kept in any case.
 
-german.DatenLoeschen=Sollen auch die Projektdatenbank und die Einstellungen des angemeldeten Windows-Kontos gelöscht werden?%n%n%1%n%nDiese Daten lassen sich danach nicht wiederherstellen. Daten anderer Windows-Konten bleiben in jedem Fall erhalten und sind dort von Hand zu entfernen.
-english.DatenLoeschen=Do you also want to delete the project database and settings of the signed-in Windows account?%n%n%1%n%nThis cannot be undone. Data belonging to other Windows accounts is always kept and must be removed there manually.
+; Neu seit Auftrag #161: DelTree scheiterte bislang still, wenn eine Datei im
+; Ordner noch geöffnet war (z. B. eine laufende EPOS-Plan-Instanz oder ein
+; Sicherungswerkzeug) — der Anwender glaubte dann an ein vollständiges
+; Löschen, das nicht stattgefunden hatte.
+german.DatenLoeschenFehlgeschlagen=Der Ordner%n%n    %1%n%nkonnte nicht vollständig gelöscht werden — vermutlich ist eine Datei darin noch geöffnet, etwa weil EPOS-Plan oder ein Sicherungswerkzeug noch läuft.%n%nSchließen Sie alle Programme, die auf diesen Ordner zugreifen, und entfernen Sie den Rest von Hand.
+english.DatenLoeschenFehlgeschlagen=The folder%n%n    %1%n%ncould not be deleted completely — most likely a file inside it is still open, for example because EPOS-Plan or a backup tool is still running.%n%nClose every program accessing this folder and remove the remainder by hand.
+
+german.TypVoll=Vollständige Installation
+english.TypVoll=Full installation
+german.TypBenutzer=Benutzerdefinierte Installation
+english.TypBenutzer=Custom installation
+
+german.KompProgramm=Programm und Auslieferungsdatenbank
+english.KompProgramm=Program and shipped database
+german.KompHerstellerdaten=Herstellerdaten (VDI 3805, CEC)
+english.KompHerstellerdaten=Manufacturer data (VDI 3805, CEC)
 
 
 ; ---------------------------------------------------------------------------
 ;  4. Auswahl
 ; ---------------------------------------------------------------------------
+
+; 4.1 Bestandteile (W6-O-9, 06.09.2026). Das Programm ist "fixed" — es abzuwählen
+;     ergäbe keine Installation. Die Herstellerdaten sind VORGEWÄHLT (sie stehen im
+;     Typ "voll", und der ist der Vorschlag) und ABWÄHLBAR: Wer die 186 MB nicht
+;     braucht — etwa, weil die Datensätze im Netz liegen und der Pfad in den
+;     Einstellungen darauf zeigt —, nimmt das Häkchen heraus; Inno wechselt dann von
+;     selbst auf den Typ "benutzerdefiniert".
+[Types]
+Name: "voll";   Description: "{cm:TypVoll}"
+Name: "custom"; Description: "{cm:TypBenutzer}"; Flags: iscustom
+
+[Components]
+Name: "programm";        Description: "{cm:KompProgramm}";        Types: voll custom; Flags: fixed
+Name: "herstellerdaten"; Description: "{cm:KompHerstellerdaten}"; Types: voll
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopSymbol}"; GroupDescription: "{cm:AdditionalIcons}"
@@ -207,11 +267,16 @@ Name: "desktopicon"; Description: "{cm:DesktopSymbol}"; GroupDescription: "{cm:A
 ; ---------------------------------------------------------------------------
 
 [Dirs]
-; Gemeinsamer Datenordner. Im Regelbetrieb wird er für die Datenbank nicht
-; mehr gebraucht (die liegt je Konto), bleibt aber für die Betriebsart
-; "eine gemeinsame Datenbank für alle Konten" und für maschinenweite
-; Protokolle bestehen. users-modify vergibt der Gruppe Benutzer vererbende
-; Änderungsrechte — sprachneutral über die bekannte SID.
+; Gemeinsamer Datenordner. Er IST der Datenbankordner: DataRepository.GetDBPath
+; fällt ohne gesetzte Einstellung DBPath auf %ProgramData%\EPOS_PLAN zurück, und
+; genau dorthin kopiert die Anwendung beim ersten Start die ausgelieferte Vorlage
+; {app}\Vorlage\Kenndaten.sqlite (Erstbereitstellung, #157-E-1 vom 09.09.2026).
+; (Bis Auftrag #157, 09.09.2026, stand hier "die liegt je Konto" — eine Datenbank
+; je Windows-Konto war ein Vorschlag des Setup-Konzepts, den der Code nie
+; umgesetzt hat.)
+; users-modify vergibt der Gruppe Benutzer vererbende Änderungsrechte —
+; sprachneutral über die bekannte SID; ohne sie könnte die Anwendung die Vorlage
+; hier gar nicht ablegen.
 Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 
 
@@ -225,21 +290,42 @@ Name: "{commonappdata}\EPOS_PLAN"; Permissions: users-modify
 ; Vorlagen\Berichtsvorlage.docx).
 Source: "{#PublishDir}\*"; DestDir: "{app}"; \
     Excludes: "*.pdb,*.xml"; \
-    Flags: ignoreversion recursesubdirs createallsubdirs
+    Flags: ignoreversion recursesubdirs createallsubdirs; \
+    Components: programm
 
-; Auslieferungsdatenbank als Vorlage. Sie wird nie direkt benutzt — die
-; Anwendung legt daraus beim ersten Start die Datenbank des Kontos an.
-Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion
+; Auslieferungsdatenbank als Vorlage. Sie wird nie direkt benutzt: Findet die
+; Anwendung beim Start keine Datenbank im Datenordner, kopiert sie diese Datei
+; einmalig dorthin und laesst sie danach unberuehrt liegen (Erstbereitstellung,
+; Anwenderentscheid #157-E-1 vom 09.09.2026). Der Datenordner ist und bleibt
+; %ProgramData%\EPOS_PLAN — der Ablageort aendert sich nicht.
+Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
+; Herstellerdaten (W6-O-9). NEBEN das Programm, nicht nach {commonappdata}:
+;   * Die Importmasken LESEN daraus und schreiben nie hinein — damit gehört der
+;     Ordner in die Zeile "nur das Setup schreibt" der Rechtetabelle (Konzept 2.1),
+;     also nach %ProgramFiles%\EPOS-Plan. Genau dort liegt aus demselben Grund
+;     schon die Vorlagendatenbank ({app}\Vorlage).
+;   * Ein Update ersetzt den Bestand mit dem Programm (ignoreversion), und die
+;     Deinstallation nimmt ihn mit. %ProgramData%\EPOS_PLAN bleibt dagegen
+;     ABSICHTLICH stehen (dort liegen Anwenderdaten) — 186 MB Auslieferungsbestand
+;     blieben dann als Leiche zurück.
+;   * Die Anwendung findet den Ordner ohne Einstellung: Der Pfaddienst sucht
+;     VDI-3805-Daten von der laufenden EXE aus aufwärts und trifft ihn auf der
+;     ersten Stufe (IPfade.Herstellerdaten, EinstellungenCtrl.HerstellerdatenpfadOderVorgabe).
+Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
+    Flags: ignoreversion recursesubdirs createallsubdirs; \
+    Components: herstellerdaten
 
 ; Voraussetzung: nur mitnehmen, wenn sie auf diesem Rechner fehlt.
-Source: "{#AceInstaller}"; DestDir: "{tmp}"; \
-    Flags: deleteafterinstall; Check: not AceVorhanden
+Source: "{#WebView2Installer}"; DestDir: "{tmp}"; \
+    Flags: deleteafterinstall; Check: not WebView2Vorhanden
 
 #if FileExists(SetupDir + "Lizenz.rtf")
-Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SetupDir}Lizenz.rtf";   DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif
 #if FileExists(SetupDir + "Liesmich.rtf")
-Source: "{#SetupDir}Liesmich.rtf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SetupDir}Liesmich.rtf"; DestDir: "{app}"; Flags: ignoreversion; Components: programm
 #endif
 
 
@@ -276,13 +362,15 @@ Root: HKLM; Subkey: "SOFTWARE\{#AppPublisher}\{#AppName}"; \
 ; ---------------------------------------------------------------------------
 
 [Run]
-; 9.1 Datenbanktreiber. BeforeInstall warnt vor der Mischbitness mit einem
-;     vorhandenen 32-bit-Office, AfterInstall prüft den Erfolg nach.
-Filename: "{tmp}\AccessDatabaseEngine_X64.exe"; Parameters: "/quiet"; \
-    StatusMsg: "{cm:AceInstallieren}"; \
-    Check: not AceVorhanden; \
+; 9.1 WebView2-Laufzeit. Der Bootstrapper laedt die passende Fassung online
+;     nach und ist danach fertig; er bringt selbst keine Oberflaeche mit.
+;     AfterInstall prueft den Erfolg nach — ohne die Laufzeit startet EPOS-Plan
+;     zwar, aber jeder Blazor-Dialog bliebe leer.
+Filename: "{tmp}\MicrosoftEdgeWebview2Setup.exe"; Parameters: "/silent /install"; \
+    StatusMsg: "{cm:WebView2Installieren}"; \
+    Check: not WebView2Vorhanden; \
     Flags: waituntilterminated skipifdoesntexist; \
-    BeforeInstall: Office32Hinweisen; AfterInstall: AceNachpruefen
+    AfterInstall: WebView2Nachpruefen
 
 ; 9.2 Rechte am gemeinsamen Datenordner reparieren.
 ;     [Dirs] setzt die vererbenden Rechte am Ordner; Dateien einer
@@ -311,6 +399,10 @@ Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; \
 Type: files;      Name: "{app}\*.log"
 Type: files;      Name: "{app}\db_update_log.txt"
 Type: filesandordirs; Name: "{app}\Vorlage"
+; Herstellerdaten (W6-O-9): Der Deinstallierer entfernt zwar, was er selbst
+; kopiert hat — aber nicht, was der Anwender nachträglich hineingelegt hat. Der
+; Ordner gehört der Auslieferung; er geht mit ihr.
+Type: filesandordirs; Name: "{app}\VDI-3805-Daten"
 Type: dirifempty; Name: "{app}"
 
 
@@ -329,74 +421,64 @@ const
 
 var
   G_LegacyOrdner:  Boolean;   { C:\ProgramData\EPOS_PLAN gab es schon vor dieser Installation }
-  G_LegacyDb:      Boolean;   { … und darin lag eine Kenndaten.accdb }
-  G_HinweisSeite:  TOutputMsgWizardPage;
 
 
-{ ---- Voraussetzung: Microsoft.ACE.OLEDB.12.0 in der 64-Bit-Registrierung ----
-  Die Anwendung fordert ausdrücklich 12.0 an; ein vorhandenes 16.0 allein
-  genügt nicht. HKCR64 ist die 64-Bit-Sicht der zusammengeführten
-  Klassenregistrierung — dort registriert sich die 64-Bit-Engine.
-  Geprüft wird die ganze Kette ProgID → CLSID → InprocServer32 → Datei: Eine
-  ProgID allein kann als Leiche ohne Server dastehen, wenn eine Engine unsauber
-  entfernt wurde. }
-function AceVorhanden(): Boolean;
+{ ---- KEINE Access-Engine mehr (Anwenderentscheid #157-E-1, Weg W3, 09.09.2026) ----
+  Bis hierher standen an dieser Stelle AceVorhanden, Office32Vorhanden,
+  Office32Hinweisen und AceNachpruefen: Das Setup schleppte den 64-Bit-Redist der
+  Microsoft Access Database Engine mit und installierte ihn still nach, damit die
+  Anwendung eine vorhandene Kenndaten.accdb uebernehmen konnte.
+
+  Access wurde beim Kunden nie produktiv eingesetzt. Die Uebernahme eines
+  Altbestands ist damit ein HAUSWERKZEUG (EposSqliteMigrator, Konsolenfassung) und
+  kein Kundenweg; die Anwendung selbst kommt ohne Fremdtreiber aus
+  (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Die Datenbank einer
+  Neuinstallation entsteht aus {app}\Vorlage\Kenndaten.sqlite.
+
+  Der WebView2-Bootstrapper darunter bleibt: Ohne die Laufzeit startet EPOS-Plan
+  seit iU9-W15c gar nicht. }
+
+{ ---- Voraussetzung: Microsoft Edge WebView2 Runtime (iU8) ----
+  Die Evergreen-Laufzeit traegt ihre Fassung unter der festen Produkt-GUID
+  F3017226-FE2A-4295-8BDF-00C3A9A7E4C5 im EdgeUpdate-Zweig (in den beiden
+  Zeichenketten unten steht sie mit den geschweiften Klammern, hier ohne -
+  eine schliessende Klammer wuerde diesen Kommentar beenden). Microsoft
+  dokumentiert genau diese Abfrage zur Erkennung.
+
+  Beide Ablagen zaehlen: Die maschinenweite Installation schreibt nach
+  HKLM (auf einem 64-Bit-System in die 32-Bit-Sicht WOW6432Node), die
+  Installation je Benutzer nach HKCU. Eine davon genuegt.
+
+  '0.0.0.0' ist ausdruecklich AUSGESCHLOSSEN: Diesen Wert hinterlaesst eine
+  entfernte Laufzeit — der Schluessel steht dann noch da, die Laufzeit nicht.
+  (Dieselbe Falle hatte die gefallene ACE-Pruefung: eine ProgID ohne Server.) }
+function WebView2Vorhanden(): Boolean;
 var
-  Clsid, Server: String;
+  Fassung: String;
 begin
   Result := False;
-  if RegQueryStringValue(HKCR64, 'Microsoft.ACE.OLEDB.12.0\CLSID', '', Clsid) then
-    if RegQueryStringValue(HKCR64, 'CLSID\' + Clsid + '\InprocServer32', '', Server) then
-    begin
-      Server := RemoveQuotes(Server);
-      { Pfade mit Umgebungsvariablen (REG_EXPAND_SZ) lassen sich hier nicht
-        auflösen — sie gelten als vorhanden, statt fälschlich zu fehlen. }
-      Result := (Pos('%', Server) > 0) or FileExists(Server);
-    end;
-end;
 
-
-{ 32-Bit-Microsoft-Office auf diesem Rechner? Click-to-Run hinterlegt die
-  Bitness in Configuration\Platform als 'x86' oder 'x64'. Je nachdem, welcher
-  Installer den Schlüssel geschrieben hat, steht er in der 32- oder in der
-  64-Bit-Sicht — deshalb beide prüfen. }
-function Office32Vorhanden(): Boolean;
-var
-  Plattform: String;
-begin
-  Result := False;
-  if RegQueryStringValue(HKLM32, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-                         'Platform', Plattform) then
-    Result := (CompareText(Plattform, 'x86') = 0);
+  if RegQueryStringValue(HKLM,
+       'SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+       'pv', Fassung) then
+    Result := (Fassung <> '') and (Fassung <> '0.0.0.0');
 
   if not Result then
-    if RegQueryStringValue(HKLM64, 'SOFTWARE\Microsoft\Office\ClickToRun\Configuration',
-                           'Platform', Plattform) then
-      Result := (CompareText(Plattform, 'x86') = 0);
+    if RegQueryStringValue(HKCU,
+         'Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}',
+         'pv', Fassung) then
+      Result := (Fassung <> '') and (Fassung <> '0.0.0.0');
 end;
 
 
-{ Hinweis VOR dem stillen Lauf des Redistributables: Neben einem 32-Bit-Office
-  ist die 64-Bit-Engine offiziell nicht unterstützt, sie lässt sich nur über den
-  in KB 5004577 beschriebenen Weg daneben registrieren. Versucht wird es
-  trotzdem, abgebrochen wird nichts. Hängt an der [Run]-Zeile, deren Check
-  bereits sicherstellt, dass die Engine fehlt — die Meldung kommt daher genau
-  einmal. }
-procedure Office32Hinweisen();
+{ Nach dem stillen Lauf des Bootstrappers pruefen, ob er gegriffen hat.
+  Haeufigster Fehlschlag: keine Internetverbindung — der Bootstrapper laedt die
+  Laufzeit nach. Abgebrochen wird nichts: Ohne WebView2 bleiben nur die neueren
+  Dialoge leer, das uebrige Programm arbeitet weiter. }
+procedure WebView2Nachpruefen();
 begin
-  if Office32Vorhanden() and (not AceVorhanden()) then
-    MsgBox(CustomMessage('Office32Hinweis'), mbInformation, MB_OK);
-end;
-
-
-{ Nach dem stillen Lauf des Redistributables prüfen, ob er tatsächlich
-  gegriffen hat. Häufigster Fehlschlag: installiertes 32-Bit-Office. Die
-  Installation wird nicht abgebrochen — ohne Treiber startet EPOS-Plan zwar,
-  meldet aber beim ersten Datenbankzugriff einen Fehler. }
-procedure AceNachpruefen();
-begin
-  if not AceVorhanden() then
-    MsgBox(CustomMessage('AceFehlt'), mbError, MB_OK);
+  if not WebView2Vorhanden() then
+    MsgBox(CustomMessage('WebView2Fehlt'), mbError, MB_OK);
 end;
 
 
@@ -411,7 +493,6 @@ begin
   { Zustand VOR der Installation festhalten — [Dirs] läuft vor [Run] und legt
     den Ordner sonst an, bevor die Check-Funktion ausgewertet wird. }
   G_LegacyOrdner := DirExists(ExpandConstant('{commonappdata}\EPOS_PLAN'));
-  G_LegacyDb     := FileExists(ExpandConstant('{commonappdata}\EPOS_PLAN\Kenndaten.accdb'));
   Result := True;
 end;
 
@@ -421,11 +502,11 @@ end;
   der 64-Bit-Sicht an. Eine vorhandene 32-bit-Installation gilt damit NICHT als
   dieselbe Anwendung — es blieben zwei Einträge in "Apps und Features" und zwei
   Programmordner. Sie wird deshalb vorher still entfernt.
-  Die Nutzdaten sind davon nicht berührt: Datenbank unter %ProgramData%\EPOS_PLAN
-  bzw. je Windows-Konto, Lizenz und KI-Schlüssel unter %APPDATA%\wp-plan; der
-  alte Deinstallierer fasst laut seinem [UninstallDelete] nur den Programmordner
-  an. Seine Rückfrage nach den Kontodaten kommt mit Voreinstellung "Nein" und
-  ist beim Setup-Test zu erwarten. }
+  Die Nutzdaten sind davon nicht berührt: Datenbank unter %ProgramData%\EPOS_PLAN,
+  Lizenz und KI-Schlüssel unter %APPDATA%\wp-plan; der alte Deinstallierer fasst
+  laut seinem [UninstallDelete] nur den Programmordner an. Seine Rückfrage nach
+  den Kontodaten kommt mit Voreinstellung "Nein" und ist beim Setup-Test zu
+  erwarten. }
 procedure AlteX86InstallationEntfernen();
 var
   Befehl: String;
@@ -469,20 +550,11 @@ begin
 end;
 
 
-procedure InitializeWizard();
-begin
-  G_HinweisSeite := CreateOutputMsgPage(wpSelectTasks,
-    CustomMessage('UebernahmeTitel'),
-    CustomMessage('UebernahmeKopf'),
-    CustomMessage('UebernahmeText'));
-end;
-
-
-function ShouldSkipPage(PageID: Integer): Boolean;
-begin
-  { Die Übernahme-Seite nur zeigen, wenn es wirklich eine Bestandsdatenbank gibt. }
-  Result := (PageID = G_HinweisSeite.ID) and (not G_LegacyDb);
-end;
+{ InitializeWizard und ShouldSkipPage sind mit dem Anwenderentscheid #157-E-1
+  (Weg W3, 09.09.2026) ENTFALLEN. Beide gab es nur fuer die eine zusaetzliche
+  Assistentenseite "Vorhandene Datenbank gefunden", die den Anwender auf die
+  einmalige Umstellung seiner Kenndaten.accdb vorbereitete; die Umstellung ist
+  jetzt ein Hauswerkzeug und findet im Setup nicht mehr statt. }
 
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
@@ -491,14 +563,38 @@ var
 begin
   if CurUninstallStep = usPostUninstall then
   begin
-    { Achtung: {localappdata} ist das Profil des Kontos, unter dem die
-      Deinstallation läuft. Wird sie mit fremden Administratorrechten
-      gestartet, bleiben die Daten des eigentlichen Anwenders liegen —
-      der Meldungstext benennt das. }
-    Ordner := ExpandConstant('{localappdata}\EPOS_PLAN');
+    { Bis zum 09.09.2026 stand hier die Konstante localappdata, aufgelöst zu
+      %LocalAppData%\EPOS_PLAN — dem Profil des Kontos, unter dem die
+      Deinstallation läuft. Herkunft:
+      Konzept_Setup_InnoSetup_EPOS-Plan.md, Abschnitt 6.2, schlug ursprünglich
+      EINE Datenbank je Windows-Konto im Benutzerprofil vor; die
+      SQLite-Umstellung hat das nie umgesetzt, DataRepository.GetDBPath kennt
+      kein Benutzerprofil (siehe Kommentar bei [Dirs] oben). Die Rückfrage
+      zielte damit auf einen Ordner, den nichts anlegt, und DirExists lieferte
+      praktisch immer False — sie erschien de facto nie (Befund Auftrag #157).
+      Richtiggestellt mit Auftrag #161 (09.09.2026): Die Datenbank samt dem
+      Sicherungsordner DB-Backup liegt unter %ProgramData%\EPOS_PLAN — dem
+      Ordner, den [Dirs] oben tatsächlich anlegt (dort als Konstante
+      commonappdata), gemeinsam für alle Windows-Konten dieses Rechners. Die
+      zwei Datenverzeichnisse WP-Plan und die Registrierungseinstellungen
+      (HKEY_CURRENT_USER\Software\wp-plan) löscht dieser Code bewusst nicht —
+      der bestehende Code hat sie noch nie gelöscht (er zielte ja nie auf die
+      Registry, sondern auf einen Ordner, der nie entstand), und der
+      Meldungstext sagt das jetzt auch so. Achtung beim Weiterschreiben dieses
+      Kommentars: eine der Ordnerkonstanten oben wörtlich in geschweiften
+      Klammern hineinzuschreiben würde ihn an deren schließender Klammer
+      vorzeitig beenden, denn geschweifte Klammern kommentieren hier nicht
+      verschachtelt (siehe die Warnung bei WebView2Vorhanden oben). }
+    Ordner := ExpandConstant('{commonappdata}\EPOS_PLAN');
     if DirExists(Ordner) then
       if MsgBox(FmtMessage(CustomMessage('DatenLoeschen'), [Ordner]),
                 mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
-        DelTree(Ordner, True, True, True);
+        { DelTree meldet per Rückgabewert, ob wirklich alles weg ist — bei
+          einer offenen Datei (laufendes EPOS-Plan, Sicherungswerkzeug) löscht
+          es, was es kann, und lässt den Rest stehen. Was früher stillschweigend
+          hingenommen wurde, meldet seit Auftrag #161 eine eigene Meldung. }
+        if not DelTree(Ordner, True, True, True) then
+          MsgBox(FmtMessage(CustomMessage('DatenLoeschenFehlgeschlagen'), [Ordner]),
+                 mbError, MB_OK);
   end;
 end;

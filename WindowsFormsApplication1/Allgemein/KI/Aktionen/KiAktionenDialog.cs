@@ -79,6 +79,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_lesen",
                 zweck: KiAktionsTexte.ZweckDialogLesen,
+                titel: KiAktionsTexte.TitelDialogLesen,
+                beispiel: KiAktionsTexte.BeispielDialogLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KiDialogZugriff.Aufloesen / LiesText",
                 parameter: new[] { MaskeParameter() },
@@ -152,8 +154,8 @@ namespace WindowsFormsApplication1
         /// gar keine Antwort.
         /// </para>
         /// <para>
-        /// <b>Der Hilfekatalog darf fehlen.</b> <c>Program.HelpCatalog</c> wird erst in
-        /// <c>Program.Main</c> angelegt; im Aktionsharnisch und in Prueflaeufen gibt es ihn
+        /// <b>Der Hilfekatalog darf fehlen.</b> <c>WikiHelpCatalog.Aktueller</c> wird erst
+        /// in <c>Program.Main</c> belegt; im Aktionsharnisch und in Prueflaeufen gibt es ihn
         /// nicht. Ein fehlender Hilfetext ist ein Schoenheitsfehler und kein Grund, die
         /// Erklaerung scheitern zu lassen.
         /// </para>
@@ -163,6 +165,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_parameter_erklaeren",
                 zweck: KiAktionsTexte.ZweckDialogErklaeren,
+                titel: KiAktionsTexte.TitelDialogErklaeren,
+                beispiel: KiAktionsTexte.BeispielDialogErklaeren,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KiDialogKatalog / WikiHelpCatalog.Get",
                 parameter: new[] { MaskeParameter(), FeldParameter() },
@@ -245,6 +249,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "feld_setzen",
                 zweck: KiAktionsTexte.ZweckFeldSetzen,
+                titel: KiAktionsTexte.TitelFeldSetzen,
+                beispiel: KiAktionsTexte.BeispielFeldSetzen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KiDialogZugriff.Setze",
                 formularaktion: true,
@@ -340,6 +346,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "formular_ausfuellen",
                 zweck: KiAktionsTexte.ZweckFormularAusfuellen,
+                titel: KiAktionsTexte.TitelFormularAusfuellen,
+                beispiel: KiAktionsTexte.BeispielFormularAusfuellen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KiDialogZugriff.Setze",
                 formularaktion: true,
@@ -438,6 +446,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "dialog_aktion_ausfuehren",
                 zweck: KiAktionsTexte.ZweckDialogAktion,
+                titel: KiAktionsTexte.TitelDialogAktion,
+                beispiel: KiAktionsTexte.BeispielDialogAktion,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "Button.PerformClick",
                 formularaktion: true,
@@ -701,7 +711,7 @@ namespace WindowsFormsApplication1
             if (!feld.HatHilfe) return null;
             try
             {
-                WikiHelpCatalog katalog = Program.HelpCatalog;
+                WikiHelpCatalog katalog = WikiHelpCatalog.Aktueller;
                 return katalog != null ? katalog.Get(feld.HilfeSlug) : null;
             }
             catch

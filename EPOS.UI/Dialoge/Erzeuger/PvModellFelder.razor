@@ -1,0 +1,104 @@
+﻿@* Die PV-MODELLFELDER einer Projektzeile - Paket A und B des PV-Ertragsmodells
+   (Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md), mit Merge 5 am 05.09.2026 aus
+   Form_PV (PvAnlagenfelderAnlegen, Z. 8-128) und Form_PVModell (225 Z.) nachgezogen,
+   nachdem beide WinForms-Masken mit iU9-W6.5 gefallen waren.
+
+   VORBILD. Form_PV zeigte im Anlagenpanel drei Zusatzfelder - das Rechenmodell
+   (Klappliste Einfach/Erweitert), den Wechselrichter-Wirkungsgrad und die
+   Systemverluste - und den Knopf "Wechselrichter...", der Form_PVModell oeffnete.
+
+   WAS MIT STUFE S2 DES WECHSELRICHTERKONZEPTS HIER WEGGEHT (Anwenderentscheid
+   W6-E-2 vom 06.09.2026, Entscheidungsfrage Q5):
+
+     * DER GESPERRTE KNOPF und mit ihm die Sperrregel
+       disabled="@(!Zeile.ModellErweitert)". Sie stammte woertlich aus
+       Form_PV.ModellUmschalten (Z. 118-124) und war bestimmungsgemaess - und
+       trotzdem der Anlass des Anwenderwunsches: Ein gesperrter Knopf ohne
+       sichtbaren Grund liest sich als Fehler. Der Wechselrichter ist ein GERAET,
+       keine Modellverfeinerung; er rechnet in beiden Modellen.
+     * DIE UEBERLAGERUNG mit den fuenf Anlagenwerten. Sie BLEIBT als
+       Anlagenrueckfall erreichbar, steht aber jetzt dort, wo alles zum
+       Wechselrichter steht: im Abschnitt "Wechselrichter und Straenge"
+       (PvStraengeFelder). Zwei Orte fuer dieselbe Sache waeren zwei Wahrheiten.
+
+   WAS BLEIBT: die drei Felder des Anlagenpanels - und NEU eine Zeile darunter,
+   die sagt, was die Modellwahl UEBERHAUPT unterscheidet (Konzept 7): "Einfach:
+   isotrope Einstrahlung, linearer Temperaturgang. Der Wechselrichter rechnet in
+   beiden Modellen." Der Wirkungsgrad bleibt im Modell EINFACH frei und in
+   ERWEITERT gesperrt - dort rechnet die Kennlinie.
+
+   DIE UEBRIGEN REGELN DES VORBILDS, woertlich uebernommen:
+     * Leer heisst NULL - 0,95 beim Wirkungsgrad, 0 % bei den Verlusten (PvWertAusFeld).
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Werte stehen in der ErzeugerZeile, die
+   Huelle schreibt sie in das WErzeugerModel (PhotovoltaikHuelle.Uebernehmen). Jede
+   Aenderung meldet Geaendert - derselbe Weg wie Neigung, Azimut und Anzahl. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Bausteine
+
+<div class="epos-pvmodell">
+    <div title="@Texte.TipModell">
+        <Auswahlfeld Bezeichnung="@Texte.LabelModell" Eintraege="@_modelle"
+                     Auswahl="@(Zeile.ModellErweitert ? 1 : 0)" AuswahlChanged="BeiModell" />
+    </div>
+    <div title="@Texte.TipWrWirkungsgrad">
+        <Zahlenfeld Bezeichnung="@Texte.LabelWrWirkungsgrad" Wert="@Zeile.WrWirkungsgrad"
+                    WertChanged="BeiWirkungsgrad" Min="0" Max="1" Nachkommastellen="3"
+                    Aktiv="@(!Zeile.ModellErweitert)" Feldname="WrWirkungsgrad" />
+    </div>
+    <div title="@Texte.TipSystemverluste">
+        <Zahlenfeld Bezeichnung="@Texte.LabelSystemverluste" Wert="@Zeile.Systemverluste"
+                    WertChanged="BeiSystemverluste" Min="0" Max="100" Nachkommastellen="2"
+                    Feldname="Systemverluste" />
+    </div>
+
+    @* Was die Modellwahl unterscheidet - und was sie NICHT unterscheidet (Konzept 7). *@
+    <p class="epos-herleitung epos-pvmodell-zeile">@Modellzeile</p>
+</div>
+
+@code {
+    /// <summary>Die Projektzeile, deren Felder hier stehen. Wird IN PLACE geaendert.</summary>
+    [Parameter, EditorRequired] public ErzeugerZeile Zeile { get; set; } = new();
+
+    /// <summary>Die Beschriftungen; fuellen sich selbst aus MyResource.</summary>
+    [Parameter] public PvModellTexte Texte { get; set; } = new();
+
+    /// <summary>Meldet jede Aenderung an der Zeile - die Huelle schreibt dann in das Modell.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private IReadOnlyList<(int Id, string Text)> _modelle = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Die Zeile unter dem Rechenmodell: Sie nennt, was sich zwischen den zwei
+    /// Modellen unterscheidet, und sagt im selben Satz, dass der Wechselrichter davon
+    /// NICHT betroffen ist (Konzept 7, Entscheidungsfrage Q5). Pruefhilfe fuer Tests.
+    /// </summary>
+    public string Modellzeile
+        => Zeile.ModellErweitert ? Texte.ZeileErweitert : Texte.ZeileEinfach;
+
+    protected override void OnParametersSet()
+    {
+        _modelle = new[] { (0, Texte.ModellEinfach), (1, Texte.ModellErweitert) };
+    }
+
+    private Task BeiModell(int? id)
+    {
+        Zeile.ModellErweitert = id == 1;
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task BeiWirkungsgrad(double? wert)
+    {
+        // Leer = NULL = 0,95 (Bestand). Ein Wert ausserhalb 0..1 ist eine Fehleingabe,
+        // die das Feld faerbt (Zahlenfeld); uebernommen wird er nicht.
+        Zeile.WrWirkungsgrad = wert.HasValue && wert.Value > 0.0 && wert.Value <= 1.0 ? wert : null;
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task BeiSystemverluste(double? wert)
+    {
+        Zeile.Systemverluste = wert.HasValue && wert.Value > 0.0 ? wert : null;
+        return Geaendert.InvokeAsync();
+    }
+}

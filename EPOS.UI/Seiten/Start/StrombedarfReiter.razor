@@ -1,0 +1,50 @@
+﻿@* Reiter 3 der Startseite: „Strombedarf" (iU9-W16b.2).
+
+   Vorbild: Form_Start.tabPage3 - Kopfzeile (label27), Erlaeuterung (label26) und
+   DREI Bildkacheln, saemtlich ueber den Namensverteiler CentralControl_Click
+   (Befund W16-B19). Kein Hinweiskasten, kein Tipp. *@
+
+@namespace EPOS.UI.Seiten.Start
+
+<div class="epos-startreiter">
+
+    <div class="epos-startreiter-kopf">
+        <div>
+            <h2 class="epos-startreiter-titel">@KopfText</h2>
+            <p class="epos-startreiter-text">@Text</p>
+        </div>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <Kachelraster Hoechstbreite="404">
+        <KindInhalt>
+            @foreach (StartKachel kachel in Kacheln)
+            {
+                StartKachel k = kachel;
+                <Kachel Titel="@k.Titel"
+                        Beschreibung="@k.Beschreibung"
+                        Zustand="@k.Zustand"
+                        Bild="@Kachelbilder.Quelle(k.Schluessel)"
+                        Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
+                        Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
+            }
+        </KindInhalt>
+    </Kachelraster>
+</div>
+
+@code {
+    /// <summary>Die Kacheln dieses Reiters — drei.</summary>
+    [Parameter] public IReadOnlyList<StartKachel> Kacheln { get; set; } = Array.Empty<StartKachel>();
+
+    /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
+    [Parameter] public EventCallback<string> Geklickt { get; set; }
+
+    /// <summary>Überschrift (<c>label27</c>).</summary>
+    [Parameter] public string KopfText { get; set; } = "Strombedarf definieren";
+
+    /// <summary>Erläuterung (<c>label26</c>).</summary>
+    [Parameter] public string Text { get; set; } = "Erfassen Sie den elektrischen Energiebedarf";
+
+    /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Strombedarf";
+}

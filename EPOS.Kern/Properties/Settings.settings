@@ -1,0 +1,33 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="WindowsFormsApplication1.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="VDI3805Path" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DBExportPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="PVGISUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://re.jrc.ec.europa.eu/api/tmy</Value>
+    </Setting>
+    <Setting Name="AllgemeinPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DBImportPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="GeoKodierung" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://nominatim.openstreetmap.org</Value>
+    </Setting>
+    <Setting Name="DBPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="DBName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Kenndaten.sqlite</Value>
+    </Setting>
+    <Setting Name="WordPressUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://wiki.epos-plan.de</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

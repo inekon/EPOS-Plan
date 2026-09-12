@@ -1,191 +1,126 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
-using System.Windows.Forms;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Die Menuewege der Anwendung: Projekt anlegen, oeffnen, duplizieren, loeschen
+    /// und die Stammdaten- und Einlesemasken.
+    ///
+    /// <para><b>Seit iU5 kennt dieser Controller keine Maske mehr.</b> Er nennt einen
+    /// sprachneutralen Maskenschluessel (<see cref="Masken"/>) und ueberlaesst das
+    /// Bauen und Zeigen <c>Dienste.Navigation</c>; das offene Projekt fuehrt
+    /// <c>Dienste.Projekt</c>. Vorher standen hier 25 Aufrufe der Bauform
+    /// <c>new Form_X(); frm.ShowDialog();</c> und neun Zugriffe auf
+    /// <c>Program.startfrm</c> — das Feld selbst ist mit iU9-W16b.3 entfallen.</para>
+    ///
+    /// <para>Das Feld <c>wizparent</c> ist mit iU5 entfallen: Es wurde ausschliesslich
+    /// beschrieben und von niemandem gelesen; der Assistentenrahmen haengt seit Paket P4
+    /// ueber <c>WizardParent.Aktiver</c> und <c>WizardCtrl.Aktueller</c>.</para>
+    /// </summary>
     class MenueCtrl
     {
-        public WizardParent wizparent;
-
-        public MenueCtrl()
-        {
-            wizparent = null;
-        }
-
-        public void SetProjektname()
-        {
-            ApplikationCtrl ctrl = new ApplikationCtrl();
-            ctrl.ReadSingle();
-            FormMain frm = (FormMain)Program.mainfrm;
-            frm.SetProjekt(ctrl.m_szProjektname);
-        }
-
         /// <summary>
         /// Öffnet den Projektassistenten für ein NEUES Projekt.
         ///
         /// <para>
         /// <b>P4 (Projektdialoge vereinheitlichen): eine Seitenliste statt zwei.</b>
         /// Die dreizehn Zeilen Seitenaufbau standen hier und in
-        /// <see cref="ProjektBearbeiten"/> wortgleich doppelt; sie liegen jetzt in
-        /// <see cref="AssistentSeiten"/>. Reihenfolge und Inhalt sind unverändert —
-        /// die beiden Einstiege unterscheiden sich nur noch im <c>SetWizardMode</c>.
+        /// <see cref="ProjektBearbeiten"/> wortgleich doppelt; sie liegen seit
+        /// iU9-W16a.5 in <c>EPOS.UI/Seiten/Assistent/AssistentSeite.razor</c>.
+        /// Reihenfolge und Inhalt sind unverändert — die beiden Einstiege
+        /// unterscheiden sich nur noch in der Betriebsart.
         /// </para>
         /// </summary>
         public void ProjektNeu()
         {
-            AssistentZeigen(WizardParent.WIZARD_MODE_NEU);
+            AssistentZeigen(AssistentCtrl.BETRIEBSART_NEU);
         }
 
         /// <summary>
         /// Öffnet den Projektassistenten für ein BESTEHENDES Projekt (linke Spalte =
-        /// <see cref="ProjektAuswahl"/>). Seitenliste wie in <see cref="ProjektNeu"/>.
+        /// der Baustein <c>ProjektListe</c>). Seitenliste wie in
+        /// <see cref="ProjektNeu"/>.
         /// </summary>
         public void ProjektBearbeiten()
         {
-            AssistentZeigen(WizardParent.WIZARD_MODE_BEARBEITEN);
+            AssistentZeigen(AssistentCtrl.BETRIEBSART_BEARBEITEN);
         }
 
         private void AssistentZeigen(int betriebsart)
         {
-            wizparent = new WizardParent(AssistentSeiten.Erzeugen());
-            Program.wizardctrl.parentform = wizparent;
-            wizparent.SetWizardMode(betriebsart);
-            wizparent.ShowDialog();
-
-            if (wizparent.gespeichert)
-            {
-                MessageBox.Show("Daten gespeichert");
-            }
+            // Aufgabe #62b (Anwenderentscheid W16a-E-1 / W16b-O-5): Der Assistent ist
+            // eine freie ANSICHT. Der Aufruf schaltet sie und kehrt sofort zurueck -
+            // er kann deshalb nicht mehr wissen, ob gespeichert wurde, und die
+            // Meldung "Daten gespeichert" steht seither dort, wo die Antwort
+            // bekannt ist (AssistentHuelle, hinter dem gelungenen Speicherlauf).
+            Dienste.Navigation.OeffneMaske(Masken.Assistent, betriebsart);
         }
 
         /// <summary>
-        /// Öffnet ein Projekt im Detailformular <see cref="FormMain"/>.
+        /// Öffnet ein Projekt — es wird das AKTIVE Projekt der Startseite.
         ///
         /// <para>
         /// <b>P3 (Projektdialoge vereinheitlichen): „Öffnen" öffnet jetzt wirklich.</b>
-        /// Bis dahin zeigte dieser Menüweg <see cref="Form_ProjektSpeichernUnter"/>,
+        /// Bis dahin zeigte dieser Menüweg <c>Form_ProjektSpeichernUnter</c>,
         /// verlangte einen NEUEN Projektnamen und DUPLIZIERTE das Projekt; erst danach
         /// wurde das Ausgangsprojekt geöffnet. Duplizieren heißt jetzt ausschließlich
-        /// „Speichern unter…"; hier steht die neue <see cref="Form_ProjektAuswahl"/>
-        /// (Liste, Suche, Sortierung).
+        /// „Speichern unter…"; hier steht die Projektauswahl (seit iU9-W15a die
+        /// Razor-Komponente <c>ProjektWahlDialog</c>) mit Liste, Suche und Sortierung.
         /// </para>
         /// <para>
-        /// <b>Ein Ladeweg statt zwei.</b> Die rund 40 Zeilen Set*/Add_*-Aufrufe standen
-        /// zweimal wortgleich hier (Zweig „gewähltes Projekt" und Zweig „zuletzt
-        /// geöffnet"). Sie liegen jetzt in <see cref="ProjektInFormMainLaden"/> — damit
-        /// entfällt auch der Befund „MenueCtrl:158": dort las der Zweig „zuletzt
-        /// geöffnet" <c>frm.m_szProjekt</c> vom NIE ANGEZEIGTEN Speichern-unter-Dialog
-        /// und übergab an <c>SetWaermebedarfExternControl</c> garantiert einen leeren
-        /// Namen; die Liste „Wärmebedarf einlesen" blieb im Detailformular leer.
+        /// <b>iU9-W16b.1 (Anwenderentscheid E-7, K6-a): kein Detailformular mehr.</b>
+        /// Bis hierher lud der Weg das Projekt in <c>FormMain</c> — zwölf
+        /// Gewerkslisten, elf Kontextmenüs, modal. Dieses Fenster ist mit dem
+        /// Altzweig stillgelegt (3 811 Zeilen); an seine Stelle tritt die Startseite,
+        /// die dieselben zwölf Gewerke als Kacheln führt. Beide Einstiege — „Öffnen…"
+        /// und „Zuletzt geöffnet" — machen das gewählte Projekt deshalb nur noch
+        /// AKTIV, genau wie die gleichnamigen Kacheln (<see cref="ProjektAktivSetzen"/>).
         /// </para>
         /// </summary>
         /// <param name="zuletzt">true = ohne Dialog das zuletzt geöffnete Projekt laden.</param>
-        public void ProjektOeffnen(bool zuletzt = false)
+        public bool ProjektOeffnen(bool zuletzt = false)
         {
             if (!zuletzt)
             {
-                using (Form_ProjektAuswahl frm = new Form_ProjektAuswahl())
-                {
-                    if (frm.ShowDialog() != DialogResult.OK) return;
-                    if (frm.m_ID_Projekt <= 0 || frm.m_szProjekt == "") return;
-                    ProjektInFormMainLaden(frm.m_szProjekt, frm.m_ID_Projekt);
-                }
-                return;
+                Projektwahl wahl = new Projektwahl();
+                if (!Dienste.Navigation.OeffneMaske(Masken.ProjektAuswahl, wahl)) return false;
+                if (wahl.Id <= 0 || wahl.Name == "") return false;
+
+                return ProjektAktivSetzen(wahl.Name, wahl.Id);
             }
 
             ApplikationCtrl ctrl = new ApplikationCtrl();
             ctrl.ReadSingle();
-            if (ctrl.m_szProjektname == "") return;
-            ProjektInFormMainLaden(ctrl.m_szProjektname, ctrl.m_ID_Projekt);
+            if (ctrl.m_szProjektname == "") return false;
+            return ProjektAktivSetzen(ctrl.m_szProjektname, ctrl.m_ID_Projekt);
         }
 
         /// <summary>
-        /// Der EINE Ladeweg ins Detailformular: Stammdaten, alle Listen, alle
-        /// Kontextmenüs, Anzeige als Dialog, danach den Projektkontext der Startseite
-        /// nachziehen. Inhaltlich unverändert gegenüber den beiden bisherigen Zweigen
-        /// von <see cref="ProjektOeffnen"/>; die Klimaregion wird — wie im Zweig
-        /// „zuletzt geöffnet" — aus dem Projekt gelesen (der frühere Weg über
-        /// <c>Form_ProjektSpeichernUnter.m_szKlimaregion</c> lieferte immer "").
-        /// </summary>
-        public void ProjektInFormMainLaden(string szProjekt, int idProjekt)
-        {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            ctrlproj.ReadSingle(szProjekt);
-
-            Program.mainfrm = new FormMain();
-            FormMain frmmain = (FormMain)Program.mainfrm;
-
-            string szKlima = frmmain.GetKlimaregion(ctrlproj.m_ID_Klimaregion);
-
-            frmmain.SetProjekt(szProjekt);
-            frmmain.SetIDProjekt(idProjekt);
-            frmmain.SetKlima(szKlima);
-            Program.startfrm.SetKlima(szKlima);
-            frmmain.SetBearbeiter(ctrlproj.m_szBearbeiter);
-            frmmain.SetKunde(ctrlproj.m_szKunde);
-            frmmain.SetAenderungsdatum(ctrlproj.m_Aenderungsdatum);
-            frmmain.SetBeschreibung(ctrlproj.m_szBeschreibung);
-            frmmain.SetWPControl(szProjekt);
-            frmmain.SetBHKWControl(szProjekt);
-            frmmain.SetSPControl(szProjekt);
-            frmmain.SetHeizkesselControl(szProjekt);
-            frmmain.SetGebaeudeControl(szProjekt);
-            frmmain.SetWaermebedarfExternControl(szProjekt);
-            frmmain.SetProzesswaermeControl(idProjekt);
-            frmmain.SetStrombedarfControl(idProjekt);
-            frmmain.SetStromganglinieControl(szProjekt);
-            frmmain.SetPVControl(szProjekt);
-            frmmain.SetPufferSpControl(szProjekt);
-            frmmain.SetSolarControl(szProjekt);
-            frmmain.Add_WPKontext();
-            frmmain.Add_BHKWKontext();
-            frmmain.Add_GebäudeKontext();
-            frmmain.Add_HeizkesselKontext();
-            frmmain.Add_WaermebedarfExternKontext();
-            frmmain.Add_ProzesswaermeKontext();
-            frmmain.Add_StrombedarfKontext();
-            frmmain.Add_StromganglinieKontext();
-            frmmain.Add_SpKontext();
-            frmmain.Add_PVKontext();
-            frmmain.Add_SolarKontext();
-
-            frmmain.ShowDialog();
-
-            Program.startfrm.m_szProjektname = szProjekt;
-            Program.startfrm.m_ID_Projekt = idProjekt;
-            Program.startfrm.SetTextProjekt(szProjekt);
-        }
-
-        /// <summary>
-        /// Macht ein Projekt zum AKTIVEN Projekt der Startmaske — <b>ohne</b> das
-        /// Detailformular <see cref="FormMain"/>.
+        /// Macht ein Projekt zum AKTIVEN Projekt der Startmaske.
         ///
         /// <para>
-        /// <b>Abgrenzung zu <see cref="ProjektInFormMainLaden"/>.</b> Dort ist das
-        /// Detailformular „Konfiguration Projekt" der Zweck: Es wird gebaut, mit allen
-        /// Listen und Kontextmenüs bestückt und modal gezeigt; der Projektkontext der
-        /// Startmaske wird erst nachgezogen, wenn der Anwender es schließt. Diesen Weg
-        /// gehen weiterhin das Menü „Projekt → Öffnen…", „Zuletzt geöffnet" und die
-        /// Kachel „Projekt Details". Hier dagegen wird das Projekt einfach das aktive:
-        /// Startmaske zeigt es, „zuletzt geöffnet" merkt es sich, kein Fenster geht auf
-        /// (Nutzerwunsch 30.08.2026 zum Knopf „Projekt öffnen" im Assistenten).
+        /// <b>Seit iU9-W16b.1 ist das der EINZIGE Öffnungsweg.</b> Bis dahin stand
+        /// daneben <c>ProjektInFormMainLaden</c>: Es baute das Detailformular
+        /// „Konfiguration Projekt", bestückte zwölf Listen und elf Kontextmenüs und
+        /// zeigte es modal. Mit dem Anwenderentscheid E-7 (K6-a) ist dieses Fenster
+        /// gelöscht; „Öffnen…", „Zuletzt geöffnet" und die gleichnamigen Kacheln gehen
+        /// jetzt alle hier durch. Das Projekt wird das aktive: Startseite zeigt es,
+        /// „zuletzt geöffnet" merkt es sich, kein Fenster geht auf (Nutzerwunsch
+        /// 30.08.2026 zum Knopf „Projekt öffnen" im Assistenten).
         /// </para>
         /// <para>
         /// <b>Eine Wahrheit.</b> Alles, was die Startmaske nachziehen muss — Name/ID,
         /// Kopfband, Klimaregion, Statuszeichen, Freischaltung der Reiter, Kachelstatus
         /// (Bitmaske) und Variantenanzeige —, steht bereits in
-        /// <see cref="Form_Start.ProjektKontextUebernehmen"/>; das Merken in
-        /// <c>Tab_Applikation</c> in <see cref="Form_Start.ZuletztGeoeffnetMerken"/>.
+        /// <see cref="ProjektKontextCtrl"/> (K2, seit iU9-W16b.0 im Kern); das Merken
+        /// in <c>Tab_Applikation</c> ebenfalls dort.
         /// Beides wird hier nur AUFGERUFEN, nichts davon nachgebaut. Die Klimaregion
-        /// braucht deshalb auch keinen eigenen Leseweg über eine
-        /// <see cref="FormMain"/>-Instanz (<c>GetKlimaregion</c>):
-        /// <c>ProjektKontextUebernehmen</c> füllt dasselbe Feld, das
-        /// <c>Form_Start.SetKlima</c> beschreibt, und liest dafür über
-        /// <c>GetProjektKlimaregion</c> die PROJEKTKOPIE der Klimaregion
-        /// (<c>Tab_Klimaregion</c>) statt des Stammsatzes.
+        /// liest dabei über <c>StartseiteCtrl.ProjektKlimazone</c> die PROJEKTKOPIE
+        /// (<c>Tab_Klimaregion</c>) statt des Stammsatzes — seit dem
+        /// Anwenderentscheid W16b‑O‑3 (04.09.2026) auf beiden Plattformen dieselbe
+        /// Antwort; die abweichende Stammabfrage der iOS-Hülle ist gefallen.
         /// </para>
         /// </summary>
         /// <param name="szProjekt">Projektname — der führende Schlüssel.</param>
@@ -199,20 +134,7 @@ namespace WindowsFormsApplication1
         /// </returns>
         public bool ProjektAktivSetzen(string szProjekt, int idProjekt)
         {
-            Form_Start start = Program.startfrm;
-            if (start == null) return false;
-
-            if (string.IsNullOrWhiteSpace(szProjekt) && idProjekt > 0)
-            {
-                ProjektCtrl ctrlproj = new ProjektCtrl();
-                ctrlproj.ReadSingle(idProjekt);
-                szProjekt = ctrlproj.rows > 0 ? ctrlproj.m_szProjektname : "";
-            }
-
-            if (!start.ProjektKontextUebernehmen(szProjekt)) return false;
-
-            start.ZuletztGeoeffnetMerken();
-            return true;
+            return Dienste.Projekt.Uebernehmen(idProjekt, szProjekt);
         }
 
         /// <summary>
@@ -224,212 +146,229 @@ namespace WindowsFormsApplication1
         /// <returns>true, wenn dupliziert wurde.</returns>
         public bool ProjektSpeichernUnter()
         {
-            using (Form_ProjektSpeichernUnter frm = new Form_ProjektSpeichernUnter())
-                return frm.ShowDialog() == DialogResult.OK;
-        }
-
-        public string ProjektDelete(bool zuletzt = false)
-        {
-            ProjektCtrl ctrlproj = new ProjektCtrl();
-            WErzeugerCtrl ctrlwerz = new WErzeugerCtrl();
-            Form_ProjektDelete frm = new Form_ProjektDelete();
-            string szProjekt = "";
-
-            DialogResult ret = frm.ShowDialog();
-            if (ret == DialogResult.OK && frm.szProjekt != "")
-            {
-                // --- NEU: MessageBox Sicherheitsabfrage vor dem tatsächlichen Löschen ---
-                DialogResult dialogResult = MessageBox.Show(
-                    $"Sind Sie sicher, dass Sie das Projekt '{frm.szProjekt}' und alle dazugehörigen Daten unwiderruflich löschen möchten?",
-                    "Projekt löschen bestätigen",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning,
-                    MessageBoxDefaultButton.Button2 // Fokus liegt zur Sicherheit auf "Nein"
-                );
-
-                // Wenn der Nutzer nicht auf "Ja" klickt, wird der Löschvorgang abgebrochen
-                if (dialogResult != DialogResult.Yes)
-                {
-                    return "";
-                }
-
-                try
-                {
-                    // 1. Unhandlichen OdbcDataAdapter durch sauberes DataRepository.GetDataTable (OLEDB) ersetzt
-                    string selectSql = "SELECT * FROM Tab_Applikation";
-                    DataTable dt = DataRepository.GetDataTable(selectSql);
-
-                    if (dt != null && dt.Rows.Count > 0)
-                    {
-                        DataRow row = dt.Rows[0];
-                        if (row["ID_Projekt"] != DBNull.Value && Convert.ToInt32(row["ID_Projekt"]) == frm.ID_Projekt)
-                        {
-                            // 2. Statt speicherintensiven CommandBuilder upzudaten, führen wir ein gezieltes UPDATE per Repository aus
-                            string updateSql = "UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0";
-                            OleDbParameter pName = new OleDbParameter("?", "");
-
-                            DataRepository.ExecuteNonQuery(updateSql, pName);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Fehler beim Zurücksetzen der Tab_Applikation: " + ex.Message);
-                    MessageBox.Show($"Fehler beim Zurücksetzen der Applikationsdaten: {ex.Message}", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return "";
-                }
-
-                ctrlwerz.ID_Projekt = frm.ID_Projekt;
-                ctrlwerz.Delete();
-
-                ctrlproj.m_szProjektname = frm.szProjekt;
-                ctrlproj.Delete(frm.szProjekt);
-                szProjekt = frm.szProjekt;
-
-                // --- NEU: Erfolgsmeldung nach erfolgreichem Löschen ---
-                MessageBox.Show($"Das Projekt '{szProjekt}' wurde erfolgreich gelöscht.", "Projekt gelöscht", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            return szProjekt;
-        }
-
-        public void WP_Administration()
-        {
-            Form_WP frm = new Form_WP();
-            frm.ShowDialog();
-        }
-
-        public void StromspeicherBearbeiten()
-        {
-            Form_AdminStromspeicher frm = new Form_AdminStromspeicher();
-            frm.ShowDialog();
+            return Dienste.Navigation.OeffneMaske(Masken.ProjektSpeichernUnter);
         }
 
         /// <summary>
-        /// Öffnet die Lastspitzenkappung (Peak-Shaving) – eigener Einstieg nach
-        /// Fachkonzept 6.4 (AP7). Ein geöffnetes Projekt ist ausdrücklich nicht
-        /// nötig: ohne Projekt stehen Stammganglinien und der Direktimport zur
-        /// Verfügung, deshalb hier auch keine Projektprüfung.
+        /// Der LOESCHWEG eines Projekts — Auswahl, Sicherheitsabfrage, die drei
+        /// Loeschschritte, Erfolgsmeldung.
+        ///
+        /// <para><b>iU9-W15a.2:</b> Die Auswahl UND die Sicherheitsabfrage stehen jetzt in
+        /// derselben Razor-Komponente (<c>ProjektWahlDialog</c> mit
+        /// <c>ProjektZweck.Loeschen</c>) — der Anwender sieht die Frage dort, wo er
+        /// gerade ist. Die REIHENFOLGE der sechs Schritte ist unveraendert; die Schritte
+        /// 3 bis 5 (Tab_Applikation zuruecksetzen, Energieanlagen, Projekt) liegen seit
+        /// iU9-W15a.0d als <see cref="ProjektCtrl.LoeschenMitVorarbeiten"/> im Kern.</para>
+        ///
+        /// <para><b>Ein mehrdeutiger Projektname</b> (Entscheid W15a-O-3 vom 04.09.2026):
+        /// Der Loeschweg laeuft ueber den NAMEN. Traegt eine Datenbank zwei Projekte
+        /// desselben Namens — regulaer unmoeglich, <c>Tab_Projekt</c> hat den eindeutigen
+        /// Index <c>Projektname</c>, aber ein Altbestand ohne ihn kann es —, dann fragt
+        /// der DIALOG nach und meldet die Zustimmung ueber
+        /// <c>Projektwahl.AlleGleichenNamens</c>; ohne sie bricht der Kern ab und es wird
+        /// nichts geloescht.</para>
+        ///
+        /// <para>Der Rueckgabewert bleibt der Projektname bei Erfolg und <c>""</c> sonst —
+        /// beide Aufrufer werten genau das aus.</para>
         /// </summary>
-        public void PeakShavingBearbeiten()
+        public string ProjektDelete(bool zuletzt = false)
         {
-            int idProjekt = Program.startfrm != null ? Program.startfrm.m_ID_Projekt : 0;
-            using (Form_PeakShaving frm = new Form_PeakShaving(idProjekt))
-                frm.ShowDialog();
+            Projektwahl wahl = new Projektwahl();
+
+            // Der Dialog liefert nur mit OK zurueck, und OK gibt es im Loeschmodus erst
+            // nach der Sicherheitsabfrage (warnend, Vorgabe "Nein" - damit die
+            // Eingabetaste kein Projekt loescht).
+            if (!Dienste.Navigation.OeffneMaske(Masken.ProjektDelete, wahl) || wahl.Name == "")
+                return "";
+
+            // Sicherungskopie und Mehrfachauswahl (Nutzerauftrag 02.09.2026; mit Merge 5 aus
+            // Form_ProjektDelete in den ProjektWahlDialog portiert). Der Dialog hat bereits
+            // mit der vollstaendigen Liste zurueckgefragt.
+            if (wahl.SicherungGewuenscht && !DatenbankSichern("vor_Loeschen")) return "";
+            if (wahl.Mehrere.Count > 1) return MehrereLoeschen(wahl.Mehrere);
+
+            LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(
+                wahl.Id, wahl.Name, wahl.AlleGleichenNamens);
+
+            // Der Kern hat abgebrochen, ohne etwas anzufassen: Der Name trifft mehrere
+            // Projekte, und die Zustimmung fehlt. Hier ist das das SICHERUNGSNETZ - die
+            // Rueckfrage steht im Dialog; ein "Nein" kommt gar nicht bis hierher.
+            if (befund.Stand == LoeschStand.Mehrdeutig)
+            {
+                if (!Dienste.Dialog.Frage(
+                        string.Format(Text_("PROJ_MSG_NAME_MEHRDEUTIG",
+                            "Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden "
+                            + "gelöscht. Fortfahren?"), befund.Projektname, befund.Anzahl),
+                        Text_("PROJ_MSG_NAME_MEHRDEUTIG_TITEL", "Projektname mehrfach vergeben"),
+                        warnend: true, vorgabeNein: true))
+                    return "";
+
+                befund = ProjektCtrl.LoeschenMitVorarbeiten(wahl.Id, wahl.Name,
+                                                           mehrdeutigZugelassen: true);
+            }
+
+            if (befund.Stand == LoeschStand.ApplikationsdatenFehler)
+            {
+                Dienste.Dialog.Fehler(
+                    string.Format(Text_("PRJ_DEL_MSG_APPFEHLER",
+                        "Fehler beim Zurücksetzen der Applikationsdaten: {0}"), befund.Fehlertext),
+                    Text_("SIM_TITEL_FEHLER", "Fehler"));
+                return "";
+            }
+
+            if (befund.Stand != LoeschStand.Geloescht) return "";
+
+            Dienste.Dialog.Meldung(
+                string.Format(Text_("PRJ_DEL_MSG_ERFOLG",
+                    "Das Projekt '{0}' wurde erfolgreich gelöscht."), befund.Projektname),
+                Text_("PRJ_DEL_MSG_ERFOLG_TITEL", "Projekt gelöscht"));
+
+            return befund.Projektname;
         }
 
-        public void GebaeudeBearbeiten()
+        /// <summary>
+        /// Loescht mehrere Projekte hintereinander - Varianten VOR ihren Staemmen, wie der
+        /// Dialog sie liefert. Je Projekt der Kernweg (Anlagen, Ergebnisse, Projektzeile samt
+        /// Kaskaden). Rueckgabe wie beim Einzelweg ein Name: der des aktiven Projekts, falls
+        /// es dabei war (Form_Start setzt dann seinen Platzhalter), sonst der zuletzt
+        /// geloeschte; leer, wenn nichts geschah.
+        /// </summary>
+        private string MehrereLoeschen(List<ProjektKopfZeile> liste)
         {
-            Form_Gebaeude frm = new Form_Gebaeude();
-            frm.m_bAdmin = true;
-            frm.SetControls("");
-            frm.ShowDialog();
+            int aktuell = AktuelleProjektId();
+            string aktuellerName = "", letzter = "";
+            int n = 0;
+            var fehler = new List<string>();
+            foreach (ProjektKopfZeile p in liste)
+            {
+                LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(p.Id, p.Name, mehrdeutigZugelassen: false);
+                if (befund.Stand != LoeschStand.Geloescht)
+                {
+                    fehler.Add(p.Name + (string.IsNullOrEmpty(befund.Fehlertext) ? "" : " (" + befund.Fehlertext + ")"));
+                    continue;
+                }
+                n++;
+                letzter = p.Name;
+                if (p.Id == aktuell) aktuellerName = p.Name;
+            }
+
+            string meldung = string.Format(Text_("PDLG_ERFOLG", "{0} Projekt(e) gelöscht."), n);
+            if (fehler.Count > 0)
+                meldung += Environment.NewLine + Text_("PDLG_FEHLER", "Fehler bei:") + " " + string.Join(", ", fehler);
+            string titel = Text_("PDLG_TITEL", "Projekte löschen");
+            if (fehler.Count > 0) Dienste.Dialog.Warnung(meldung, titel);
+            else Dienste.Dialog.Meldung(meldung, titel);
+
+            return aktuellerName.Length > 0 ? aktuellerName : letzter;
         }
 
-        public void GebaeudetypenBearbeiten()
+        // ------------------------------------------------------------------
+        // Sicherungshelfer des Löschwegs mit Mehrfachauswahl (Nutzerauftrag 02.09.2026,
+        // WinForms-Fassung Form_ProjektDelete). Die Maske ist mit iU9‑W15a.2 durch
+        // ProjektWahlDialog ersetzt; die Helfer bleiben für die Portierung der
+        // Mehrfachlöschung samt Sicherungskopie (Merge 5, 05.09.2026).
+        // ------------------------------------------------------------------
+        // Das aktive Projekt (Tab_Applikation.ID_Projekt), 0 wenn keins.
+        private static int AktuelleProjektId()
         {
-            Form_EingGebTyp frm = new Form_EingGebTyp();
-            frm.SetControls();
-            frm.ShowDialog();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Applikation");
+                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Projekt"] != DBNull.Value)
+                    return Convert.ToInt32(dt.Rows[0]["ID_Projekt"]);
+            }
+            catch { }
+            return 0;
         }
 
-        public void WaermebedarfExtern()
+        // Gezieltes UPDATE statt CommandBuilder (Bestandsweg vor dem Umbau).
+        private static void AktuellesProjektZuruecksetzen()
         {
-            Form_AdminWaermeeinlesen frm = new Form_AdminWaermeeinlesen();
-            frm.SetControls();
-            frm.ShowDialog();
+            DbParam pName = new DbParam("?", "");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Projektname = ?, ID_Projekt = 0", pName);
         }
 
-        public void Prozesswaerme()
+        /// <summary>
+        /// Sicherungskopie der aktiven Datenbank — in den Ordner „DB-Backup" neben der
+        /// Datei, falls es ihn gibt (der Migrationsstrang legt ihn an), sonst daneben;
+        /// Zweck und Zeitstempel im Namen. Wirft bei Fehlern (der Aufrufer entscheidet, ob
+        /// er fortfährt). Gemeinsame Wahrheit für „Projekte löschen" und den Projektimport.
+        /// </summary>
+        /// <remarks>
+        /// Zieht die Kopie seit Auftrag #158 über <see cref="Datenbanksicherung.KopieAnlegen"/> —
+        /// dieselbe EINE Sicherungswahrheit im Kern, die auch <c>KiSicherungspunkt</c> nutzt.
+        /// <c>VACUUM INTO</c> über eine geöffnete SQLite-Verbindung liest durch die
+        /// <c>-wal</c> hindurch und liefert eine in sich geschlossene Kopie ohne
+        /// Begleitdateien; das frühere manuelle Mitkopieren von <c>-wal</c>/<c>-shm</c> als
+        /// byteweise Dateikopie entfällt damit — eine reine Kopie der Hauptdatei allein
+        /// griff nur den letzten Checkpoint ab (BETRIEB_SQLITE.md § 2/§ 3.2).
+        /// </remarks>
+        public static string DatenbankKopieAnlegen(string zweck)
         {
-            Form_Prozesswaerme_Admin frm = new Form_Prozesswaerme_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
+            string dbPfad = DataRepository.GetDBPath();
+            string ordner = System.IO.Path.GetDirectoryName(dbPfad) ?? "";
+            string backupOrdner = System.IO.Path.Combine(ordner, "DB-Backup");
+            if (System.IO.Directory.Exists(backupOrdner)) ordner = backupOrdner;
+            string praefix = System.IO.Path.GetFileNameWithoutExtension(dbPfad) + "_" + zweck;
+            return Datenbanksicherung.KopieAnlegen(dbPfad, ordner, praefix);
         }
 
-        public void Stromverbraucher()
+        // Sicherungskopie vor dem Löschen; false = der Anwender möchte nach einem
+        // Sicherungsfehler NICHT fortfahren.
+        private static bool DatenbankSichern(string zweck)
         {
-            Form_Stromverbraucher_Admin frm = new Form_Stromverbraucher_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
+            try
+            {
+                DatenbankKopieAnlegen(zweck);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // warnend + vorgabeNein: dieselbe Aussage wie zuvor über
+                // MessageBoxIcon.Warning und MessageBoxDefaultButton.Button2 — ohne
+                // Sicherung soll die Eingabetaste nicht löschen.
+                return Dienste.Dialog.Frage(
+                    string.Format(Text_("PDLG_SICHERUNG_FEHLER",
+                        "Die Sicherungskopie konnte nicht angelegt werden:\r\n{0}\r\n\r\nTrotzdem löschen?"), ex.Message),
+                    Text_("PDLG_TITEL", "Projekte löschen"),
+                    warnend: true,
+                    vorgabeNein: true);
+            }        }
+
+        /// <summary>Anzeigetext aus dem Ressourcenkatalog; Rueckfall = der deutsche Satz.</summary>
+        private static string Text_(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
 
-        public void Stromganglinie()
-        {
-            Form_Stromganglinie_Admin frm = new Form_Stromganglinie_Admin();
-            frm.SetControls();
-            frm.ShowDialog();
-        }
-
-        public void Solarganglinie()
-        {
-            Form_Solarganglinie_Admin frm = new Form_Solarganglinie_Admin();
-            frm.SetControls();
-            frm.ShowDialog();
-        }
-
-        public void WPImport()
-        {
-            Form_WP_einlesen frm = new Form_WP_einlesen();
-            frm.ShowDialog();
-        }
-
-        public void Kessel()
-        {
-            Form_Heizkessel_Admin frm = new Form_Heizkessel_Admin();
-            frm.ShowDialog();
-        }
-
-        public void BHKW()
-        {
-            Form_BHKWAdmin frm = new Form_BHKWAdmin();
-            frm.ShowDialog();
-        }
-        public void Solarkollektoren()
-        {
-            Form_SolarKollektorenAdmin frm = new Form_SolarKollektorenAdmin();
-            frm.ShowDialog();
-        }
-
-        public void PV()
-        {
-            Form_AdminPV frm = new Form_AdminPV();
-            frm.ShowDialog();
-        }
-
-        public void SPKImport()
-        {
-            Form_Heizkessel_einlesen frm = new Form_Heizkessel_einlesen();
-            frm.ShowDialog();
-        }
-
-        public void PufferSPImport()
-        {
-            Form_PufferSp_einlesen frm = new Form_PufferSp_einlesen();
-            frm.ShowDialog();
-        }
-
-        public void PufferSp()
-        {
-            Form_PufferSp_Admin frm = new Form_PufferSp_Admin();
-            frm.ShowDialog();
-        }
-
-        public void Brauchwasser()
-        {
-            Form_Brauchwasser_Admin frm = new Form_Brauchwasser_Admin();
-            frm.SetControls("");
-            frm.ShowDialog();
-        }
-
-        public void PVImport()
-        {
-
-        }
-
-        public void SolarThermieImport()
-        {
-            Form_SolarKollektoren_einlesen frm = new Form_SolarKollektoren_einlesen();
-            frm.ShowDialog();
-        }
+        // ==================================================================
+        //  iU9-W16c.3: DIE EINUNDZWANZIG EINZEILER SIND WEG
+        //
+        //  Bis hierher standen hier 21 Methoden der Bauform
+        //      public void X() { Dienste.Navigation.OeffneMaske(Masken.X); }
+        //  - WP_Administration, StromspeicherBearbeiten, PeakShavingBearbeiten,
+        //  GebaeudeBearbeiten, GebaeudetypenBearbeiten, WaermebedarfExtern,
+        //  Prozesswaerme, Stromverbraucher, Stromganglinie, Solarganglinie,
+        //  WPImport, Kessel, BHKW, Solarkollektoren, PV, SPKImport,
+        //  PufferSPImport, PufferSp, Brauchwasser, PVImport,
+        //  SolarThermieImport.
+        //
+        //  IHR EINZIGER AUFRUFER WAR DAS MENUE DES HAUPTFENSTERS - je einer der
+        //  34 Ereignishandler von Hauptfensterrahmen. Seit W16c.1 steht der
+        //  Maskenschluessel in der Menuetabelle selbst, und
+        //  HauptfensterHuelle.Weg reicht ihn unmittelbar an
+        //  Dienste.Navigation.OeffneMaske weiter. Eine Methode, die nichts tut,
+        //  als einen Schluessel weiterzugeben, waere danach eine Zwischenstufe
+        //  ohne Aufgabe.
+        //
+        //  WAS BLEIBT, sind die ZUSAMMENGESETZTEN Ablaeufe: der Assistent mit
+        //  seinen zwei Betriebsarten, das Oeffnen samt Aktivsetzen, das
+        //  Duplizieren und der sechsschrittige Loeschweg. Sie haben Aufrufer in
+        //  der Startseiten- und der Assistentenhuelle - und sie tun mehr als
+        //  einen Schluessel zu nennen.
+        // ==================================================================
     }
 }

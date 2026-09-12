@@ -282,6 +282,8 @@ bleiben gültig; die neuen Konstanten kommen hinzu, Altdaten werden nicht migrie
 Jahresbetrag" und „€/a" werden auf **einen** Persistenzwert gelegt (zwei Anzeigetexte wären
 Doppelpflege; die Folie 19 zeigt beide nur historisch) — Anzeige einheitlich „fester Jahresbetrag".
 
+**Die Spalte „Bezugsgröße im Projekt" nennt nur das LEITGEWERK je Art.** Welche Kombination Art ↔ Gewerk tatsächlich rechnet, entscheidet seit dem Anwenderbefund 10.09.2026 eine Regel statt einer Liste — und sie gilt für BEIDE Kategorien: siehe **Nachtrag 10.09.2026 (H4c) unten** und die Matrix im Protokoll `H4a_Bezugsgroessen_Protokoll.md`, Abschnitt 3b.
+
 ### 5.4 Kopplung Satz ⛓ Betrag
 
 - Admin-Kontext (Stammvorlage): Bezugsgrößen existieren noch nicht → bei bezugsgrößen-abhängigen
@@ -631,6 +633,7 @@ erstellt**, damit sie ohne KI-Unterstützung nachbearbeitbar sind (Ä6). Umsetzu
 | Ä23 | Leistungsspalte der WP-Verwaltung („Leistung [kW]" zeigte 0 trotz gepflegter 12 kW): Die Liste baute mit `Nennleistung` auf, AKTUALISIERTE die Zeile nach „Neu"/„Ändern" aber aus `maxPTherm` — das Feld ist am Listenobjekt nie gefüllt und schrieb eine 0 über den korrekten Wert. Vereinheitlicht auf die Nennleistung; der Neu-Fluss füllt das Listenobjekt vor dem Einreihen über `GeraetedatenFuellen` (zweistufig — ID_WP ist dort noch die Stamm-Id, Ä22); die ECHTE WP-Wahl in der Detailansicht übernimmt die Stammdaten (Nennleistung, Regelung, Modulkosten, Baujahr, Beschreibung, Firma, Typ, Heizung) jetzt auch ins Listenobjekt (die stille Ä21-Vorwahl bleibt unverändert außen vor); der Doppelklick-Leser der Verwaltung läuft ebenfalls zweistufig statt über die frühere „nicht gefunden"-Box | Nutzerauftrag 27.08.2026 (Screenshot Verwaltungsliste 0 kW neben 12-kW-Stammdaten); kd6 88/88 (X9: echte Wahl übernimmt die Stamm-Nennleistung ins Listenobjekt), Sweep 115/0/5 |
 | Ä24 | ANKER FOLGT DEM GERÄT — Wurzelbehandlung „Wärmepumpe ohne Anlagenzuordnung trotz verbauter WP" (Befund Projekt 1037): Der Del+Add-Speicherweg aller Erzeuger materialisiert Geräte über `CopyFromStamm` per BEZEICHNER; wechselt dabei die Gerätekopie einer Anlage (Geräte-Neuwahl, Umbenennung, Duplikat-Gerätekopie), blieben die Kostenanker (`ID_AnlageGeraet`) auf der alten Kopie stehen, `GeraeteWaisen.Aufraeumen` räumte sie ab und die Ä21-Selbstheilung löste die Zuordnung „ehrlich" — gelbe Zeile trotz verbauter Anlage. DREI Reparaturen: (1) `WizardCtrl.KostenAnkerUmziehen` im EINEN Schreibweg aller Erzeuger: Beim Gerätetausch ziehen die Anker der Positionen DIESER Anlagenzeile (`item.ID`) auf die neue Gerätekopie um; die frische Anlagen-Id (AutoWert) läuft zurück ans Listenobjekt. (2) Duplizierer: `ID_AnlageGeraet` ist komponentenabhängig und kann nicht generisch versetzt werden — nach dem Kopieren leitet `KostenProjektPositionenCtrl.AnkerNachziehen` die Anker der Kopie aus der bereits versetzten `ID_Anlage` neu ab; MIGRATIONSSCHRITT 47 (ZIEL_VERSION 47) macht dasselbe einmalig für den Bestand (Produktivlauf: 118 Positionen). (3) Kosten-Seite: Die Erfassungsgruppen ohne Anlagenbezug (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) erschienen seit Ä20 fälschlich als gelbe „ohne Anlagenzuordnung"-Zeilen — sie sind NICHT anlagenfähig (Ä7-Prädikat `IstWaehlbar`) und stehen wieder als reguläre Komponentenzeile (Zeilen-Tag öffnet die Verwaltung im Komponentenmodus). BESTANDSLEICHEN mit totem Anker (Gerät wurde ersetzt, bevor der Fix da war) bleiben bewusst lose — eine Zuordnung wäre bei mehreren Anlagen der Komponente nicht beweisbar; der Ä21-Doppelklick-Löschweg besteht. Antwort auf die Nutzerfrage: Die Mechanik traf ALLE 7 anlagenfähigen Komponenten (der eine Schreibweg), der Anzeige-Fehler die 3 Erfassungsgruppen | Nutzerauftrag 27.08.2026 („die Wärmepumpe ohne Zuordnung ist falsch … Trifft das Problem auch auf andere Komponenten zu?"); kd6 92/92 (X10 AnkerNachziehen, X11 Erfassungsgruppen-Zeile, X12/X12b Gerätetausch end-to-end über Del+Add samt Selbstheilung), kd2/kd4/pv6 grün, Sweep 115/0/5, Migration 41→47 auf frischer Produktivkopie OK, Fehlerjagd 1019 + 1037 je 0 Befunde |
 
+| Ä25 | ÜBERNAHME-DIALOG MIT OK/ABBRECHEN: „OK = aus der Maske heraus und übernehmen, Abbrechen = aus der Maske raus, nicht speichern." Der Primärknopf hieß bis dahin „Übernehmen", schrieb sofort und LIESS die Maske stehen, um die Meldung des Controllers dort zu zeigen, wo sie entstand (A-7 aus B5b) — daneben stand ein Knopf „Abbrechen", der nur schloss. Jetzt: **OK** führt die Übernahme aus und schließt mit `Geschlossen(true)`; **Abbrechen** und Esc schließen mit `false`, ohne zu schreiben; die Erfolgsmeldung bestätigt die KOSTENVERWALTUNG (`MeldungUebernommen`), die danach ohnehin neu lädt. EINE benannte Ausnahme: Ein FEHLSCHLAG hält die Maske offen — er trägt einen Grund, den sonst niemand mehr läse, und eine Wahl, die sich noch korrigieren lässt. Die Vorschauzeile bleibt Entscheidungsgrundlage, OK ist gesperrt, solange sie nichts anzulegen hat (`_uebernahmeMoeglich`). Beschriftungen aus den allgemeinen Ressourcen (`ALLG_BTN_OK`/`ALLG_BTN_ABBRECHEN`), keine eigenen Schlüssel. DAZU zwei Anzeige-Befunde derselben Meldung: (1) Die Überschrift „Übernahme ins Projekt" stand DOPPELT — im Kopf der Überlagerung und im `h1` der Maske; die Hülle gibt seither `TitelText = ""`, der `h1` entfällt, der Hilfeknopf bleibt. (2) Der Rahmen über der Kostenverwaltung trug den Text des KNOPFES („Kostenverwaltung öffnen…", `VerwaltungText` war zugleich Überlagerungstitel) — und damit auch über jedem ihrer Unterdialoge; die Kostenseite führt dafür jetzt `VerwaltungTitel` (`KDLG_TITEL` ohne Gewerke-Platzhalter), der volle Titel samt Gewerk und Projekt steht unverändert in der Maske selbst | Anwenderentscheid 10.09.2026; `EPOS.UI.Tests/Dialoge/VorlagenUebernahmeDialogTests.cs` (OK schreibt und schließt mit true · Abbrechen schreibt nicht · gesperrtes OK schreibt auch beim Klick nicht · ohne Titeltext nur EINE Überschrift); Sichtabnahme offen |
 Alle übrigen Beschlüsse (L1–L9, E1–E8, insbesondere E2 „kein Nahwärmenetz", L7 Zuschuss, L8
 Gesetzeswerte, Netto-Prinzip, ValERI) gelten unverändert.
 
@@ -697,3 +700,118 @@ bereits in KD4). Das Konzept ist umsetzungsreif; KD1 startet auf Zuruf.
 | 27 | Berichte & Kosten (Betriebskosten-Karte, Kosteneditor reduziert) |
 | 28–33 | Emissions-/PE-Faktoren GModG (bereits umgesetzt: Methodenwechsel-Protokoll, Schritt 23) + Quellen |
 | 34 | Worst/Best-Dialog, %-Eingabe, Investitions-Startzeitpunkt, VALERI-Verweis |
+
+---
+
+## Nachtrag 08.09.2026 (W5‑B‑7) — § 5.3/§ 5.4: EIN Rechenweg für die Investitionspositionen
+
+**Anlass (Anwenderbefund):** „% der Investitionskosten ist immer 0. … Sollten auf der Seite
+Kosten nicht die Kosten aus dem Kostendialog stehen?"
+
+**Was falsch war.** Die Kaskade des § 5.3 (Hauptposition → % der Erzeugerkosten → Summe →
+% der Investition, § 5.4) lebte nur in der Kapitalwertrechnung. Der Dialog Kostenverwaltung las
+je Zeile die **gespeicherte** `Menge`, und für „% der Investition" wird in Kategorie 1 keine
+gespeichert — die Basis ist Kaskadenmaterie, keine Einzelzeilen-Größe. Die Seite
+„Berichte & Kosten" summierte `EingegebenerWert` roh. Dieselbe Photovoltaik-Anlage zeigte
+damit 6.961,80 € (Wirtschaftlichkeit), 5.660,00 € (Dialog) und 1.500,00 € (Anlagentabelle).
+
+**Festlegung.** Die Kaskade des § 5.3 ist **die eine Wahrheit der Kategorie 1**. Sie steht seit
+dem 08.09.2026 in `EPOS.Kern/Controller/InvestKaskade.cs` und wird von allen drei Stellen
+gelesen:
+
+| Stelle | liest |
+|---|---|
+| Kapitalwertrechnung (`WirtschaftlichkeitCtrl.LiesInvestitionen`) | `InvestKaskade.Lies` — Rechenweg unverändert, nur noch Zuschussabzug und Übersetzung in `InvestPosition` eigen |
+| Dialog Kostenverwaltung (`KostenProjektPositionenCtrl.Lies`/`Speichern`) | `InvestKaskade.NachId` |
+| Seite „Berichte & Kosten", WP-Maske, PV-Vergütung (`KostenSummenCtrl`) | `InvestKaskade.Summen` |
+
+Die Kategorie 2 liest an denselben drei Stellen die Nachweisliste
+`WirtschaftlichkeitCtrl.LiesBetriebskostenPositionen` (E7) — dieselbe Zahl wie die Kachel
+„Betrieb" der Kostenseite.
+
+**Regeln, die dabei ausdrücklich gelten:**
+
+- Eine Prozentzeile trägt neben ihrem Betrag ihre **Basis**. Sie ist reine Auskunft (Werkzeugtipp
+  „3 % von 5.660,00 €") und wird **nicht** nach `Tab_ProjektWerte.Menge` zurückgeschrieben —
+  dort ist die Menge Ausweisgröße des Simulationslaufs (Konzept BHKW-Wirtschaftlichkeit § 4.5).
+- **Zuschusszeilen** (Kostenart `ZUSCHUSS`) gehen in keine Anzeigesumme ein — genauso wie in
+  `LiesInvestitionen`, sonst zeigte die Anlagentabelle eine andere Investition als die Kachel
+  darüber. Ihre Gruppe bleibt aber bestehen, damit eine Komponente mit reiner Zuschusszeile
+  weiter als „hat Positionen" gilt.
+- Auf einer Datenbank ohne die Spalten aus Schritt 19 fällt alles auf den Bestandsweg
+  (`SUM(EingegebenerWert)`) zurück.
+
+~~**Offen (vor eine Anwenderentscheidung gestellt):** Die Bezugsgröße der KATEGORIE‑2‑Bemessung
+„x % der Investitionssumme" kommt weiterhin aus `BetriebskostenCtrl.InvestSummeFuer`, also aus
+der rohen Spaltensumme statt aus der Kaskade. Eine Umstellung veränderte die Betriebskosten
+p. a. und damit Kapitalwert und Sensitivität (FX5‑a) — sie ist deshalb hier bewusst
+unterblieben.~~ → **entschieden am 09.09.2026, siehe Nachtrag W5‑B‑8 unten.**
+
+## Nachtrag 09.09.2026 (W5‑B‑8) — § 5.3/§ 7.4: die KATEGORIE‑2‑Basis „% der Investitionssumme"
+
+**Anwenderentscheid.** Die Betriebskosten-Bemessung „x % der Investitionssumme" (Kategorie 2)
+rechnet auf die **Kaskade** — nicht mehr auf die rohe Spaltensumme.
+
+**Festlegung.** Die Bezugsgröße einer Kategorie-2-Zeile mit `PROZENT_INVESTITION` ist die Summe
+der `InvestKaskade` (§ 5.3), in derselben Stufung wie deren Runde 3:
+
+| Stufe | Bezugsgröße |
+|---|---|
+| Die Betriebszeile trägt eine Anlage, an der Investitionszeilen hängen | Kaskadensumme **dieser Anlage** |
+| sonst, wenn sie eine Komponente trägt | Kaskadensumme **der Komponente** |
+| sonst | Kaskadensumme **des Projekts** |
+
+Damit zählen satzbasierte Investitionszeilen (Menge × Satz) und die Prozentzeilen der Investseite
+(„% der Erzeugerkosten", „% der Investition") in der Basis mit — genau die Beträge, die die
+Kachel „Investition", der Dialog und die Anlagentabelle seit W5‑B‑7 zeigen.
+
+**Was unverändert gilt:**
+
+- **§ 7.4 / K5 — vor Zuschussabzug.** Zuschusszeilen tragen 0 zur Kaskadensumme bei; die
+  prozentuale Instandhaltung bemisst sich weiter an der Anlage, nicht am Eigenanteil.
+- **Die Investseite selbst.** Kachel, Dialog, Anlagentabelle, I₀ und der Zuschussausweis rechnen
+  Zahl für Zahl wie vorher — geändert hat sich nur, WORAUF sich die Betriebsseite bezieht.
+- **Rückfall.** Ohne die Spalten aus Schritt 19 gilt der Bestandsweg `SUM(EingegebenerWert)`.
+  Auf so einer Datenbank rechnet die Kaskade ohnehin Zeile für Zeile `EingegebenerWert`; die
+  beiden Wege fallen dort zusammen.
+
+**Folge, ausdrücklich:** Betriebskosten p. a., Kapitalwert, Annuität, Amortisation und die
+Sensitivität „Investition ±10 %" (FX5‑a) ändern sich in Projekten, deren Investitionszeilen
+satzbasiert oder prozentual bemessen sind. Der Anwender hat das akzeptiert. Nachweis, Beispiel
+und Regressionsliste stehen im Protokoll
+`WindowsFormsApplication1/Allgemein/Reporting/iU9_W5_Blazor_Port_Protokoll.md`, Abschnitt
+„Anwenderentscheid 09.09.2026 — W5‑B‑8".
+
+## Nachtrag 10.09.2026 (H4c) — § 5.3: die Bemessungen der BETRIEBSKOSTEN rechnen mit der Baugröße
+
+**Anwenderbefund.** Projekt 1050, Komponente Stromspeicher (Growatt 100 kW / 129 kWh): Die
+Betriebskostenzeile „Wartung / Sichtprüfung Speicher" mit der Bemessung „je kWh elektrisch" und
+1 €/kWh wies **0 €/a** aus. Erwartet: ein Satz je kW bzw. je kWh wird mit Leistung bzw. Kapazität
+des Speichers in €/a umgerechnet — *„analog zu Investitionskosten"*. Dazu: *„Prüfe bei anderen
+Kostenpositionen ebenfalls."*
+
+**Festlegung.** Die Zuordnung *Bemessungsart ↔ Gewerk* des § 5.3 folgt einer **Regel**: Eine
+Kombination rechnet, wenn das Gewerk **genau eine** Größe führt, die die Art meint. Sie gilt für
+BEIDE Kategorien — Investition und Betrieb lesen dieselbe Landkarte
+(`TechnikPlanwertCtrl.Geraetespalte`).
+
+Damit rechnen zusätzlich: Wärmepumpe „je kW Leistung" (= ihre eine Nennleistung), Heizkessel und
+BHKW „je kW Heizleistung" (= `Ptherm`), Photovoltaik „je kW elektrisch" (= dieselben kWp),
+Stromspeicher „je kW Leistung" und „je kW elektrisch" (= `Tab_Stromspeicher.Leistung`) sowie
+Stromspeicher „je kWh elektrisch" (= die **entladene** Jahresenergie des jüngsten Laufs,
+`Tab_ErgebnisStromspeicher.Entladung_Gesamt`; die Ladung enthielte die Verluste). Ohne
+Bezugsgröße bleiben bewusst: BHKW „je kW Leistung" (`Pel` **und** `Ptherm` — die Art ist nicht
+qualifiziert) und der Pufferspeicher (ohne Temperaturpaar keine belastbare kWh-Kapazität).
+
+**Der Dialog nennt den Grund.** Eine Zeile ohne ermittelbare Bezugsgröße fällt weiterhin über den
+Anwenderentscheid I-2 auf den erfassten Betrag zurück — bei einer satzbasierten Zeile also auf 0.
+Neu ist, dass sie sagt, warum: Der Werkzeugtipp des Betragsfelds zeigt „Keine Bezugsgröße: … Es
+gilt der erfasste Betrag." mit einem der fünf Gründe (`BASISGRUND_GEWERK`, `GERAET`, `LAUF`,
+`INVEST`, `KONSERVE`). Beim WECHSEL der Bemessung zieht der Dialog die Bezugsgröße frisch nach,
+statt bis zum Speichern mit der Basis der alten Art zu rechnen.
+
+**Folge, ausdrücklich:** In Projekten mit einer der acht neu zugeordneten Kombinationen steigt der
+Betrag von 0 auf Menge × Satz — auf der Betriebs- und auf der Investitionsseite. Genau das war der
+Auftrag. Nachweis, Matrix Bemessung × Gewerk und Testliste:
+`WindowsFormsApplication1/Allgemein/Reporting/H4a_Bezugsgroessen_Protokoll.md`, Abschnitt
+„3b Nachtrag 10.09.2026 (H4c)".

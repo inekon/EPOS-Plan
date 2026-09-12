@@ -60,6 +60,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "variante_anlegen",
                 zweck: KiAktionsTexte.ZweckVarianteAnlegen,
+                titel: KiAktionsTexte.TitelVarianteAnlegen,
+                beispiel: KiAktionsTexte.BeispielVarianteAnlegen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "VariantenCtrl.AnlegenAusStamm",
                 parameter: new[]
@@ -183,6 +185,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "speichervariante_aktiv_setzen",
                 zweck: KiAktionsTexte.ZweckSpeichervarianteAktiv,
+                titel: KiAktionsTexte.TitelSpeichervarianteAktiv,
+                beispiel: KiAktionsTexte.BeispielSpeichervarianteAktiv,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "StromspeicherVarianteCtrl.SetzeAktiv",
                 parameter: new[]
@@ -308,7 +312,7 @@ namespace WindowsFormsApplication1
                 {
                     dt = DataRepository.GetDataTable(
                         "SELECT ID, KomponentenID, StammID FROM Tab_ProjektWerte WHERE ProjektID = ?",
-                        new OleDbParameter("@id", (Int32)idProjekt));
+                        new DbParam("@id", (Int32)idProjekt));
                 }
                 catch { }
 
@@ -373,6 +377,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "kostenposition_setzen",
                 zweck: KiAktionsTexte.ZweckKostenpositionSetzen,
+                titel: KiAktionsTexte.TitelKostenpositionSetzen,
+                beispiel: KiAktionsTexte.BeispielKostenpositionSetzen,
                 stufe: Schutzstufe.Schreiben,
                 andockpunkt: "KostenPositionCtrl.SetzeBetragNachId / LiesBetrag",
                 parameter: new[]
@@ -479,9 +485,9 @@ namespace WindowsFormsApplication1
             try
             {
                 dt = DataRepository.GetDataTable(
-                    "SELECT TOP 1 ID, ProjektID, KomponentenID, StammID, EingegebenerWert " +
-                    "FROM Tab_ProjektWerte WHERE ID = ?",
-                    new OleDbParameter("@id", (Int32)idPosition));
+                    "SELECT ID, ProjektID, KomponentenID, StammID, EingegebenerWert " +
+                    "FROM Tab_ProjektWerte WHERE ID = ? LIMIT 1",
+                    new DbParam("@id", (Int32)idPosition));
             }
             catch { return null; }
 
@@ -541,7 +547,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                object o = DataRepository.ExecuteScalar(sql, new OleDbParameter("@id", (Int32)id));
+                object o = DataRepository.ExecuteScalar(sql, new DbParam("@id", (Int32)id));
                 return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
             }
             catch { return 0; }
@@ -551,7 +557,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                object o = DataRepository.ExecuteScalar(sql, new OleDbParameter("@id", (Int32)id));
+                object o = DataRepository.ExecuteScalar(sql, new DbParam("@id", (Int32)id));
                 return o == null || o == DBNull.Value ? "" : Convert.ToString(o);
             }
             catch { return ""; }

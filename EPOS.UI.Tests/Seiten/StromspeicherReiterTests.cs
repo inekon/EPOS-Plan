@@ -1,0 +1,558 @@
+﻿using System.Globalization;
+using Bunit;
+using EPOS.UI.Dienste;
+using EPOS.UI.Seiten.Simulation;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.UI.Tests.Seiten;
+
+/// <summary>
+/// Der STROMSPEICHER-Reiter (iU9-W11b.9), Vorbild <c>tabPage_Stromspeicher</c> —
+/// die Seite mit NULL Designer-Kindern, die im Vorlaeufer vollstaendig
+/// programmatisch entstand.
+///
+/// <para>Soll: Kopfzeile mit bzw. ohne Lauf, zwoelf Kacheln, das Bild „Lastgang
+/// und Speicherbetrieb" samt Umschalter und Reihenwahl (W11b‑B‑26), die
+/// 39 Kennzahlzeilen in drei Gruppen mit ihrer Warnstufe, die Vergleichsspalte
+/// nur mit Vergleichslauf, die Ampel, die Warnzeile „ohne Erzeugung" und der
+/// Vergleichsknopf erst ab zwei Varianten.</para>
+/// <para>Der Selektor nennt seit der Windows-Abnahme 05.09.2026 die Klasse
+/// <c>epos-simerg-knopf</c>: Jedes Diagramm steht seither im Baustein
+/// <c>Diagramm</c> und bringt seine eigenen Knöpfe („1:1“, „Bereich“) mit.
+/// <c>FindAll("button")</c> zählte die mit und prüfte damit nicht mehr, was
+/// der Fall behauptet — nämlich die Knöpfe DIESES Reiters.</para>
+///
+/// <para><b>Seit W11b‑B‑28 steht der SPEICHERPARAMETERBLOCK ganz oben</b>
+/// (Anwenderwunsch 10.09.2026). Er bringt eigene Kontrollkästchen, eigene
+/// Hinweisabsätze und — mit Diensten — eigene Knöpfe mit. Die Fälle, die den
+/// BILDbereich meinen, greifen deshalb ausdrücklich in
+/// <c>section.epos-simerg-diagrammzeile</c>; was der Block selbst tut, steht in
+/// <c>SpeicherParameterBlockTests</c>.</para>
+/// </summary>
+public class StromspeicherReiterTests : EposBunitContext
+{
+    private readonly List<Bildauftrag> _auftraege = new();
+
+    public StromspeicherReiterTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    private static SpeicherKennzahlenBlock.Zeile Z(string gruppe, string name, string wert,
+                                                   string vergleich = "",
+                                                   KennzahlStufe stufe = KennzahlStufe.Unbestimmt,
+                                                   string untergruppe = "",
+                                                   KennzahlArt art = KennzahlArt.Normal,
+                                                   string hinweis = "")
+        => new SpeicherKennzahlenBlock.Zeile(gruppe, name, wert, vergleich, "kWh/a", stufe,
+                                             untergruppe, art, hinweis);
+
+    private static SpeicherErgebnisDaten Daten(bool lauf = true, bool vergleich = false,
+                                               bool mehrere = true, string hinweis = "")
+        => new SpeicherErgebnisDaten
+        {
+            LaufVorhanden = lauf,
+            Kopf = lauf ? "Speicher 1 · Grünstrom · Dauernutzung" : "Noch keine Speicherrechnung",
+            Kacheln = lauf
+                ? new (string, string)[]
+                {
+                    ("Kapazität", "10,0"), ("Leistung", "11,0"), ("SoC [%]", "10 … 90"),
+                    ("SoC [kWh]", "1,0 … 9,0"), ("Betriebsart", "Grünstrom"),
+                    ("Berechnungsart", "Dauernutzung"), ("Ertrag", "312,50"),
+                    ("Überschuss", "40,00"), ("Amortisation", "12,5"),
+                    ("Vollzyklen", "180,0"), ("Eigenverbrauch", "62,5"), ("Autarkie", "38,1")
+                }
+                : Array.Empty<(string, string)>(),
+            Kennzahlen = lauf
+                ? new[]
+                {
+                    Z(SpeicherKennzahlenBlock.GRUPPE_ENERGIE, "Last", "12.000", vergleich ? "11.500" : ""),
+                    Z(SpeicherKennzahlenBlock.GRUPPE_SPEICHER, "Vollzyklen", "180,0",
+                      vergleich ? "175,0" : "", KennzahlStufe.Knapp),
+                    Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Ertrag", "312,50",
+                      vergleich ? "300,00" : "", KennzahlStufe.Ok)
+                }
+                : Array.Empty<SpeicherKennzahlenBlock.Zeile>(),
+            MitVergleich = vergleich,
+            Ampel = lauf ? "180 von 250 Zyklen" : "",
+            AmpelWarnung = false,
+            Erzeugungshinweis = hinweis,
+            MehrereVarianten = mehrere
+        };
+
+    private IRenderedComponent<StromspeicherReiter> Zeichnen(SpeicherErgebnisDaten daten,
+                                                             Action? csv = null,
+                                                             Action? vergleich = null,
+                                                             bool mitBild = true,
+                                                             SpeicherParameterDaten? parameter = null,
+                                                             bool optimierung = false)
+        => Render<StromspeicherReiter>(p =>
+        {
+            p.Add(x => x.Daten, daten);
+            p.Add(x => x.Parameter, parameter ?? new SpeicherParameterDaten());
+            if (optimierung)
+            {
+                p.Add(x => x.OptimierungMoeglich, true);
+                p.Add(x => x.Optimierung, EventCallback.Factory.Create(this, () => _optimierungen++));
+            }
+            if (mitBild) p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
+            if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
+            if (vergleich is not null) p.Add(x => x.Vergleich, EventCallback.Factory.Create(this, vergleich));
+        });
+
+    private int _optimierungen;
+
+    /// <summary>Die Kontrollkästchen DES BILDES — nicht die des Parameterblocks.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Bildschalter(
+        IRenderedComponent<StromspeicherReiter> seite)
+        => seite.FindAll("section.epos-simerg-diagrammzeile input[type='checkbox']");
+
+    /// <summary>Die Knöpfe DES BILDES (CSV, Vergleich) — nicht die des Parameterblocks.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Bildknoepfe(
+        IRenderedComponent<StromspeicherReiter> seite)
+        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
+
+    /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
+    private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);
+
+    // =====================================================================
+
+    [Fact]
+    public void Die_Kopfzeile_nennt_Variante_Betriebsart_und_Berechnungsart()
+    {
+        var seite = Zeichnen(Daten());
+        Assert.Contains("Grünstrom", seite.Find("p.epos-simerg-status").TextContent);
+    }
+
+    /// <summary>
+    /// Ohne Speicherlauf steht nur die Warnzeile da - kein Bild, keine Kacheln,
+    /// keine Kennzahlen (<c>SpeicherErgebnisAnzeigen</c> :7196-7211).
+    /// </summary>
+    [Fact]
+    public void Ohne_Lauf_bleibt_nur_die_Warnzeile()
+    {
+        var seite = Zeichnen(Daten(lauf: false));
+
+        Assert.Contains("epos-simerg-warn", seite.Find("p.epos-simerg-status").ClassName);
+        Assert.Empty(seite.FindAll("img"));
+        Assert.Empty(seite.FindAll("table"));
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf"));
+    }
+
+    /// <summary>
+    /// <b>W11b‑B‑28: Der Parameterblock steht ÜBER den Kacheln.</b> Geprüft wird die
+    /// Reihenfolge im Markup — die Kopfzeile, dann der Block, dann das Kachelraster;
+    /// so, wie der Anwender es beschrieben hat („bringe den Tab Parameter →
+    /// Stromspeicher … in den Tab ‚Stromspeicher‘").
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_steht_ueber_den_Kacheln()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
+
+        string markup = seite.Markup;
+        Assert.True(markup.IndexOf("epos-simerg-speicherparameter", StringComparison.Ordinal)
+                    < markup.IndexOf("epos-kachelraster", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Und er steht auch OHNE Lauf da. Bis W11b‑B‑28 zeigte der Reiter dann nur eine
+    /// Warnzeile — gerade vor dem ERSTEN Lauf will der Anwender aber die
+    /// Betriebsführung einstellen.
+    /// </summary>
+    [Fact]
+    public void Der_Parameterblock_steht_auch_ohne_Lauf()
+    {
+        var seite = Zeichnen(Daten(lauf: false),
+                             parameter: new SpeicherParameterDaten
+                             {
+                                 VarianteVorhanden = true,
+                                 Variantenstatus = "Aktive Variante: Speicher 1"
+                             });
+
+        Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SP_PARAM_LABEL_SOC_MIN,
+                        seite.Markup);
+        Assert.Empty(seite.FindAll(".epos-kennzahlkachel"));
+    }
+
+    /// <summary>
+    /// <b>Der Optimierungsknopf steht jetzt HIER</b> (W11b‑B‑28) und nicht mehr auf der
+    /// Parameterseite — er gehört zu den Parametern, und die sind umgezogen. Ohne
+    /// Delegat bleibt er weg (Regel seit W2.2).
+    /// </summary>
+    [Fact]
+    public void Der_Optimierungsknopf_steht_im_Parameterblock()
+    {
+        Assert.DoesNotContain(Zeichnen(Daten()).FindAll("button"),
+                              b => b.TextContent.Contains("optimieren"));
+
+        var mit = Zeichnen(Daten(), optimierung: true);
+        var knopf = mit.FindAll("button").First(b => b.TextContent.Contains("optimieren"));
+        knopf.Click();
+
+        Assert.Equal(1, _optimierungen);
+    }
+
+    [Fact]
+    public void Zwoelf_Kacheln_stehen_im_Kachelraster()
+    {
+        var seite = Zeichnen(Daten());
+        Assert.Equal(12, seite.FindAll(".epos-kennzahlkachel").Count);
+    }
+
+    /// <summary>
+    /// W11b‑B‑26: EIN Bild statt des blossen Ladezustands — vorbelegt mit ALLEN vier
+    /// Reihen und als Ganglinie (nicht sortiert).
+    /// </summary>
+    [Fact]
+    public void Das_Betriebsbild_wird_angefordert()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.SpeicherBetrieb);
+        Assert.False(Letzter.Sortiert);
+        Assert.Equal(new[]
+        {
+            SpeicherBetriebsbild.REIHE_OHNE,
+            SpeicherBetriebsbild.REIHE_MIT,
+            SpeicherBetriebsbild.REIHE_SPEICHER,
+            SpeicherBetriebsbild.REIHE_SOC
+        }, seite.Instance.GewaehlteReihen);
+
+        // Das SoC-Bild geht darin auf - es wird nicht daneben noch einmal angefordert.
+        Assert.Single(seite.FindAll("img"));
+    }
+
+    /// <summary>
+    /// Der Umschalter „sortiert" des Bedarfsreiters, hier fuer das eine Bild: Er
+    /// wechselt NUR den Bildauftrag — dieselbe Schalterstellung, derselbe Schluessel.
+    /// </summary>
+    [Fact]
+    public void Der_Schalter_sortiert_wechselt_den_Bildauftrag()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Single(seite.FindAll("label.epos-schalter")
+                           .Where(l => l.TextContent.Trim() == "sortiert"));
+
+        _auftraege.Clear();
+        Bildschalter(seite)[0].Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.True(Letzter.Sortiert);
+    }
+
+    /// <summary>
+    /// Je Reihe ein Schalter, beschriftet mit DERSELBEN Ressource wie die Legende
+    /// (Doku_Simulationsergebnis_Darstellung.md, 5). Eine abgewaehlte Reihe faellt aus
+    /// dem Auftrag — und eine LEERE Liste ist etwas anderes als keine Angabe.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenschalter_stehen_im_Bildauftrag()
+    {
+        var seite = Zeichnen(Daten());
+
+        // [0] sortiert, [1..4] die vier Reihen - mehr Kaestchen hat die Diagrammzeile
+        // nicht. Der Parameterblock darueber bringt eigene mit (W11b-B-28); sie
+        // gehoeren nicht zu diesem Fall und stehen deshalb ausserhalb des Selektors.
+        var kaesten = Bildschalter(seite);
+        Assert.Equal(5, kaesten.Count);
+
+        var namen = seite.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()).ToArray();
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_BETRIEB_R_OHNE, namen);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_CHART_Y2, namen);
+
+        _auftraege.Clear();
+        Bildschalter(seite)[4].Change(false);   // der Ladezustand geht weg
+
+        Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, seite.Instance.GewaehlteReihen);
+        Assert.DoesNotContain(SpeicherBetriebsbild.REIHE_SOC, Letzter.Reihen!);
+        Assert.Equal(3, Letzter.Reihen!.Count);
+    }
+
+    /// <summary>
+    /// Alle vier abgewaehlt: Der Auftrag traegt eine LEERE Liste, nicht <c>null</c> —
+    /// der Renderer zeichnet dann seinen Leerhinweis (Hausregel der Ergebnisseite).
+    /// </summary>
+    [Fact]
+    public void Alles_abgewaehlt_ist_nicht_dasselbe_wie_keine_Angabe()
+    {
+        var seite = Zeichnen(Daten());
+
+        for (int i = 1; i <= 4; i++) Bildschalter(seite)[i].Change(false);
+
+        Assert.NotNull(Letzter.Reihen);
+        Assert.Empty(Letzter.Reihen!);
+    }
+
+    /// <summary>
+    /// „Kein Delegat ist kein Knopf": Ohne Bilddelegat gaebe es nichts neu zu zeichnen —
+    /// dann stehen weder der Umschalter noch die Reihenwahl da.
+    /// </summary>
+    [Fact]
+    public void Ohne_Bilddelegat_bleiben_die_Schalter_weg()
+    {
+        var seite = Zeichnen(Daten(), mitBild: false);
+
+        Assert.Empty(Bildschalter(seite));
+        Assert.Empty(_auftraege);
+    }
+
+    /// <summary>Drei Gruppen mit je einer Ueberschriftszeile.</summary>
+    [Fact]
+    public void Die_Kennzahlen_stehen_in_drei_Gruppen()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(3, seite.FindAll("table.epos-simerg-kennzahlen tbody").Count);
+        Assert.Contains("Energie", seite.Markup);
+        Assert.Contains("Wirtschaft", seite.Markup);
+    }
+
+    /// <summary>
+    /// Die Warnstufe faerbt die Zeile - dieselben Werte, die <c>SpWarnfarbe</c> als
+    /// <c>Color.FromArgb</c> setzte.
+    ///
+    /// <para><b>Ausser „unbestimmt“</b> (Anwenderwunsch 08.09.2026, W11b‑B‑14):
+    /// Sie ist die Vorgabe von <c>KennzahlStufe</c> und damit die Stufe von 37 der 39
+    /// Zeilen; die Klasse legte Grau unter die GANZE Tabelle, und die drei Warnfarben
+    /// gingen darin unter. Eine Zeile ohne Aussage traegt jetzt gar keine Klasse.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Warnstufe_faerbt_die_Zeile()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Single(seite.FindAll("tr.epos-stufe-knapp"));
+        Assert.Single(seite.FindAll("tr.epos-stufe-ok"));
+        Assert.Empty(seite.FindAll("tr.epos-stufe-unbestimmt"));
+        Assert.DoesNotContain("epos-stufe-unbestimmt", seite.Markup);
+    }
+
+    /// <summary>Ohne Vergleichslauf gibt es die Vergleichsspalte gar nicht.</summary>
+    [Fact]
+    public void Die_Vergleichsspalte_haengt_am_Vergleichslauf()
+    {
+        Assert.Equal(3, Zeichnen(Daten()).FindAll("table.epos-simerg-kennzahlen thead th").Count);
+        Assert.Equal(4, Zeichnen(Daten(vergleich: true))
+                        .FindAll("table.epos-simerg-kennzahlen thead th").Count);
+    }
+
+    /// <summary>Vergleichen laesst sich erst ab zwei Varianten (Fachkonzept 7.3).</summary>
+    [Fact]
+    public void Der_Vergleichsknopf_erscheint_erst_ab_zwei_Varianten()
+    {
+        var eine = Zeichnen(Daten(mehrere: false), csv: () => { }, vergleich: () => { });
+        Assert.Single(Bildknoepfe(eine));
+
+        var zwei = Zeichnen(Daten(), csv: () => { }, vergleich: () => { });
+        Assert.Equal(2, Bildknoepfe(zwei).Count);
+    }
+
+    /// <summary>Die Warnzeile eines Laufs ohne jede Erzeugung (Abnahmebefund 2).</summary>
+    [Fact]
+    public void Ein_Lauf_ohne_Erzeugung_bekommt_seine_Warnzeile()
+    {
+        Assert.Empty(Zeichnen(Daten()).FindAll("[role='alert']"));
+        Assert.Single(Zeichnen(Daten(hinweis: "Der Lauf führte keine Erzeugung."))
+                      .FindAll("[role='alert']"));
+    }
+
+    [Fact]
+    public void Die_beiden_Knoepfe_melden_ihren_Klick()
+    {
+        int csv = 0, vgl = 0;
+        var seite = Zeichnen(Daten(), () => csv++, () => vgl++);
+
+        var knoepfe = Bildknoepfe(seite);
+        knoepfe[0].Click();
+        knoepfe[1].Click();
+
+        Assert.Equal(1, csv);
+        Assert.Equal(1, vgl);
+    }
+
+    // =====================================================================
+    // Anwenderwunsch 08.09.2026, W11b-B-14: der gegliederte Wirtschaftsblock
+    // =====================================================================
+
+    private const string UG_JAHR = "Referenzjahr";
+    private const string UG_DAUER = "\u00dcber die Nutzungsdauer";
+    private const string UG_NACH = "Nachrichtlich";
+
+    /// <summary>
+    /// Ein Wirtschaftsblock, wie ihn der Kern seit W11b-B-14 liefert: drei
+    /// Unterabschnitte, eine Summe, ein Ergebnis, eine nachrichtliche Zeile.
+    /// </summary>
+    private static SpeicherErgebnisDaten Gegliedert()
+    {
+        var d = Daten();
+        d.Kennzahlen = new[]
+        {
+            Z(SpeicherKennzahlenBlock.GRUPPE_ENERGIE, "Last", "12.000"),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Ertrag: vermiedener Netzbezug",
+              "244,88", untergruppe: UG_JAHR),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Kosten: Netzladung",
+              "-12,00", untergruppe: UG_JAHR),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Ertrag Referenzjahr E_a,1",
+              "177,29", untergruppe: UG_JAHR, art: KennzahlArt.Summe,
+              hinweis: "E_a,1 \u2014 Ertrag des Referenzjahrs"),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Investition I",
+              "0,00", untergruppe: UG_DAUER),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Kapitalwert (NPV)",
+              "2.604,13", untergruppe: UG_DAUER, art: KennzahlArt.Ergebnis),
+            Z(SpeicherKennzahlenBlock.GRUPPE_WIRTSCHAFT, "Betriebskosten: Verschlei\u00df K_ver",
+              "40,33", untergruppe: UG_NACH, art: KennzahlArt.Nachrichtlich)
+        };
+        return d;
+    }
+
+    /// <summary>
+    /// Jeder Unterabschnitt bekommt GENAU EINE Zwischenueberschrift - auch wenn
+    /// mehrere Zeilen dieselbe Untergruppe tragen.
+    /// </summary>
+    [Fact]
+    public void Jeder_Unterabschnitt_bekommt_eine_Zwischenueberschrift()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        var koepfe = seite.FindAll("tr.epos-simerg-untergruppe th");
+        Assert.Equal(3, koepfe.Count);
+        Assert.Equal(UG_JAHR, koepfe[0].TextContent.Trim());
+        Assert.Equal(UG_DAUER, koepfe[1].TextContent.Trim());
+        Assert.Equal(UG_NACH, koepfe[2].TextContent.Trim());
+
+        // Ohne Untergruppe keine Ueberschrift: Die Energiezeile bekommt keine.
+        Assert.Equal(3, seite.FindAll("table.epos-simerg-kennzahlen tbody").Count);
+    }
+
+    /// <summary>
+    /// Summe, Ergebnis und Nachrichtliches tragen ihre Klasse. WAS sie sind, sagt der
+    /// Kern (<c>KennzahlArt</c>) - hier steht nur, dass die Klasse ankommt.
+    /// </summary>
+    [Fact]
+    public void Summe_Ergebnis_und_Nachrichtliches_tragen_ihre_Klasse()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        Assert.Single(seite.FindAll("tr.epos-simerg-summe"));
+        Assert.Single(seite.FindAll("tr.epos-simerg-ergebnis"));
+        Assert.Single(seite.FindAll("tr.epos-simerg-nachrichtlich"));
+
+        Assert.Contains("Ertrag Referenzjahr", seite.Find("tr.epos-simerg-summe").TextContent);
+        Assert.Contains("NPV", seite.Find("tr.epos-simerg-ergebnis").TextContent);
+    }
+
+    /// <summary>Der Werkzeugtipp des Kerns steht als <c>title</c> an seiner Zeile.</summary>
+    [Fact]
+    public void Der_Werkzeugtipp_steht_an_seiner_Zeile()
+    {
+        var seite = Zeichnen(Gegliedert());
+
+        Assert.Equal("E_a,1 \u2014 Ertrag des Referenzjahrs",
+                     seite.Find("tr.epos-simerg-summe").GetAttribute("title"));
+
+        // Eine Zeile ohne Hinweis bekommt gar kein Attribut - nicht title="".
+        var ohne = seite.FindAll("tr.epos-simerg-nachrichtlich")[0];
+        Assert.Null(ohne.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Die Zyklenampel gehoert unter die Gruppe SPEICHER, ueber die sie etwas sagt -
+    /// und nicht als loser Absatz unter die ganze Tabelle, also unter die Wirtschaft.
+    /// </summary>
+    [Fact]
+    public void Die_Zyklenampel_steht_unter_der_Gruppe_Speicher()
+    {
+        var seite = Zeichnen(Daten());
+
+        var ampel = seite.Find("tr.epos-simerg-ampelzeile");
+        Assert.Contains("180 von 250 Zyklen", ampel.TextContent);
+
+        var koerper = seite.FindAll("table.epos-simerg-kennzahlen tbody");
+        Assert.Contains("epos-simerg-ampelzeile", koerper[1].InnerHtml);
+        Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[0].InnerHtml);
+        Assert.DoesNotContain("epos-simerg-ampelzeile", koerper[2].InnerHtml);
+
+        // Kein loser Absatz mehr. Der Parameterblock hat eigene Hinweisabsaetze
+        // (W11b-B-28) - gemeint ist die Spaltenzeile mit Bild und Tabelle.
+        Assert.Empty(seite.FindAll("div.epos-simerg-spalten p.epos-simerg-hinweis"));
+    }
+
+    /// <summary>Ohne Ampeltext gibt es die Zeile gar nicht.</summary>
+    [Fact]
+    public void Ohne_Ampeltext_bleibt_die_Ampelzeile_weg()
+    {
+        var d = Daten();
+        d.Ampel = "";
+
+        Assert.Empty(Zeichnen(d).FindAll("tr.epos-simerg-ampelzeile"));
+    }
+
+    /// <summary>
+    /// Die Kennzahlenliste steht ueber die GANZE Zeile des Spaltenrasters (W11b-B-14).
+    /// In einer Spalte war sie auf die Mindestbreite von 320 Bildpunkten gequetscht.
+    /// </summary>
+    [Fact]
+    public void Die_Kennzahlenliste_steht_ueber_die_ganze_Zeile()
+    {
+        var seite = Zeichnen(Daten());
+
+        var abschnitt = seite.Find("section.epos-simerg-kennzahlenzeile");
+        Assert.NotNull(abschnitt.QuerySelector("table.epos-simerg-kennzahlen"));
+    }
+
+    // =====================================================================
+    //  W11b‑B‑24 — DER DATENZOOM AM BILD DES REITERS
+    //  (Anwenderentscheid 09.09.2026; seit W11b‑B‑26 traegt ihn das Bild
+    //  „Lastgang und Speicherbetrieb", in dem das SoC-Bild aufgegangen ist)
+    // =====================================================================
+
+    /// <summary>
+    /// Das aufgezogene Rechteck geht UNVERÄNDERT in den Bildauftrag, „1:1" nimmt es
+    /// zurück. Gerade dieses Bild braucht den Ausschnitt: Ein Speicher lädt und
+    /// entlädt im TAGESrhythmus, und in der Vollansicht liegen rund 40 Viertelstunden
+    /// auf einem Bildpunkt.
+    /// </summary>
+    [Fact]
+    public async Task Das_Betriebsbild_traegt_den_aufgezogenen_Bereich()
+    {
+        var seite = Zeichnen(Daten());
+        EPOS.UI.Bausteine.Diagramm rahmen =
+            seite.FindComponent<EPOS.UI.Bausteine.Diagramm>().Instance;
+
+        await seite.InvokeAsync(() => rahmen.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
+        Assert.Equal(0.5, Letzter.Bereich!.XBis);
+
+        seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+             .FindAll("button.epos-diagramm-knopf")
+             .First(k => k.TextContent.Trim() == "1:1").Click();
+
+        Assert.Null(seite.Instance.Bereich);
+        Assert.Null(Letzter.Bereich);
+    }
+
+    /// <summary>
+    /// Sichtbar wird der Datenzoom am Umschalter „Bereich" — kein Rückruf, kein
+    /// Knopf. Vor W11b‑B‑24 stand an diesem Bild nur „1:1".
+    /// </summary>
+    [Fact]
+    public void Das_Betriebsbild_traegt_den_Bereichsknopf()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+                          .FindAll("button.epos-diagramm-knopf")
+                          .Select(k => k.TextContent.Trim()).ToArray());
+    }
+}

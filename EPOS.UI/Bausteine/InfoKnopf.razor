@@ -1,0 +1,45 @@
+﻿@* Der runde Fragezeichenknopf oben rechts in jeder Maske.
+
+   Vorbild: Allgemein/Hilfe/InfoKnopf.cs - 28x28, Bild help_icon.png, ohne
+   Rahmen. Die Verkabelung ist eine andere: In WinForms scannt HilfeAutomatik
+   im Leerlauf die offenen Formulare und haengt den Knopf selbst an; hier setzt
+   ihn der Dialog dorthin, wo er hingehoert, und nennt seinen Schluessel. Das
+   ist derselbe Schluessel wie links in help_mapping.txt, z. B.
+   "Form_Kosten_Auswahl.btn_Help".
+
+   Die Komponente kennt den Hilfekatalog nicht, nur IHilfeDienst. *@
+
+@inject IHilfeDienst Hilfe
+
+<button type="button" class="epos-infoknopf" title="@Kurztext" aria-label="@Kurztext"
+        @onclick="BeimKlick">
+    <img src="_content/EPOS.UI/help_icon.png" alt="" width="28" height="28" />
+</button>
+
+@code {
+    /// <summary>Schluessel im Hilfekatalog, z. B. "Form_Kosten_Auswahl.btn_Help".</summary>
+    [Parameter] public string Schluessel { get; set; } = "";
+
+    /// <summary>
+    /// Kurztext, solange der Katalog den Schluessel nicht kennt. Kennt er ihn,
+    /// gewinnt der Tooltip aus dem Katalog.
+    /// </summary>
+    [Parameter] public string StandardKurztext { get; set; } = "Hilfe zu diesem Fenster";
+
+    private HilfeEintrag? _eintrag;
+
+    /// <summary>Der aufgeloeste Katalogeintrag (Pruefhilfe fuer Tests).</summary>
+    public HilfeEintrag? Eintrag => _eintrag;
+
+    private string Kurztext => string.IsNullOrEmpty(_eintrag?.Tooltip) ? StandardKurztext : _eintrag!.Tooltip;
+
+    protected override void OnParametersSet()
+    {
+        _eintrag = string.IsNullOrEmpty(Schluessel) ? null : Hilfe.Aufloesen(Schluessel);
+    }
+
+    private void BeimKlick()
+    {
+        if (!string.IsNullOrEmpty(Schluessel)) Hilfe.Oeffnen(Schluessel);
+    }
+}

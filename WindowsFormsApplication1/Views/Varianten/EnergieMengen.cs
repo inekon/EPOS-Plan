@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.OleDb;
 
 namespace WindowsFormsApplication1
 {
@@ -68,14 +67,19 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT eff_hi, eff_hs, billing_unit FROM Abfrage_Energietraeger_Effektiv " +
                 "WHERE ID_Projekt = ? AND carrier_id = ?",
-                new OleDbParameter("@p", projektId),
-                new OleDbParameter("@c", carrierId));
+                new DbParam("@p", projektId),
+                new DbParam("@c", carrierId));
             if (dt == null || dt.Rows.Count == 0) return 0;
 
             DataRow r = dt.Rows[0];
             double heizwert = useHs ? ToD(r["eff_hs"]) : ToD(r["eff_hi"]);   // kWh je Einheit
             einheit = r["billing_unit"] != DBNull.Value ? r["billing_unit"].ToString() : "";
-            return heizwert > 0 ? (verbrauchMWh * 1000.0) / heizwert : 0;
+
+            // W8-O-5c / S1.2 (Befund U6): Der Heizwert steht in kWh je Abrechnungs-
+            // einheit, die Menge in MWh. Umgerechnet wird ueber Energieeinheit und
+            // nicht mit einem nackten Faktor 1000 - in einer Huelle steht keine
+            // Energie-Umrechnung mehr ausser dieser einen, benannten.
+            return heizwert > 0 ? Energieeinheit.KWh.AusMWh(verbrauchMWh) / heizwert : 0;
         }
 
         // ------------------------------------------------------------------ intern

@@ -1,7 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Threading;
 
 namespace WindowsFormsApplication1
@@ -10,7 +9,7 @@ namespace WindowsFormsApplication1
     /// Lädt die Daten von Stamm + Varianten lesend in BerichtsDaten-DTOs
     /// (Konzept Kap. 8.2) — das aktive Projekt der App wird dabei NICHT umgeschaltet.
     /// Optional wird je Projekt vorab headless simuliert (SimulationRunner, frische
-    /// Instanz je Projekt — Muster aus Form_Variantentest.btnSimulieren_Click).
+    /// Instanz je Projekt — Muster aus der Variantenseite UcBkUebersicht).
     /// Fehler eines einzelnen Projekts brechen den Lauf nicht ab (VariantenDaten.Fehler).
     ///
     /// Für einen BERICHTSLAUF (Word und/oder Excel) ist ausschließlich
@@ -86,9 +85,9 @@ namespace WindowsFormsApplication1
             try
             {
                 object o = DataRepository.ExecuteScalar(
-                    "SELECT TOP 1 Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
-                    " WHERE ID_Projekt = ? ORDER BY ID DESC",
-                    new OleDbParameter("@p", idProjekt));
+                    "SELECT Zeitstempel FROM " + ErgebnisCtrl.TAB_KOPF +
+                    " WHERE ID_Projekt = ? ORDER BY ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }
@@ -101,7 +100,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Aenderungsdatum FROM Tab_Projekt WHERE ID = ?",
-                    new OleDbParameter("@p", idProjekt));
+                    new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
             }
             catch { }
@@ -356,7 +355,7 @@ namespace WindowsFormsApplication1
                 //
                 // NACHARBEIT PAKET 8, BEFUND N2: über SimuliereUndSpeichere statt über
                 // Simuliere + eigenem Save. Dieser Pfad läuft in Task.Run auf einem
-                // ThreadPool-Thread (Form_Bericht, Form_Wirtschaftlichkeit,
+                // ThreadPool-Thread (UcBericht, UcWirtschaftlichkeit,
                 // Form_WirtschaftlichkeitVerlauf); ein hier selbst gerufenes
                 // ErgebnisCtrl.Save stand AUSSERHALB des dialogfreien Engine-Modus und
                 // hätte bei einem Datenbankfehler eine MessageBox auf dem Worker-Thread
@@ -436,12 +435,32 @@ namespace WindowsFormsApplication1
                                "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
                                "insoweit nicht aus den Projektdaten.");
 
+            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Dasselbe Muster für die
+            // zweite stille Lücke der Kostenkette — ein Heizkessel hat Wärme erzeugt,
+            // aber sein Brennstoffverbrauch steht nicht im Ergebnis. Die Kennzahlen
+            // bleiben unverändert (nichts wird abgeleitet), der Fehlbetrag wird nur
+            // benannt. Wortlaut wie die Hinweiszeile der Wirtschaftlichkeit
+            // (WIRT_KESSELBRENNSTOFF_FEHLT), damit beide Kanäle dasselbe sagen.
+            if (v.KesselVerbrauchFehlt && _warnungen != null)
+                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
+                               "': Energiekosten/CO₂-Bilanz unvollständig: Der Brennstoffverbrauch " +
+                               "des Heizkessels " + Kesselnamen(v) + " liegt im Simulationsergebnis " +
+                               "nicht vor — Kesselbrennstoff fehlt in Energiekosten, CO₂-Bilanz " +
+                               "und BEHG-Abgabe.");
+
             // 6. Detail-Daten (Gebäude, Anlage, Komponenten, Klimaregion) für
             //    Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung.
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
             catch { v.Details = null; }
 
             // 7. Zeitreihen für Ganglinien: Phase 3 (In-Memory-Lauf liefert die Reihen).
+        }
+
+        /// <summary>Die betroffenen Kessel als Aufzählung für die Meldung (B-1/N1).</summary>
+        private static string Kesselnamen(VariantenDaten v)
+        {
+            return (v.KesselOhneVerbrauch == null || v.KesselOhneVerbrauch.Count == 0)
+                ? "?" : string.Join(", ", v.KesselOhneVerbrauch);
         }
 
         /// <summary>

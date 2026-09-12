@@ -12,9 +12,9 @@ namespace WindowsFormsApplication1
     /// ein Einzeiler bleibt.
     ///
     /// <para><b>Kontexte:</b> Mit <c>projektId &gt; 0</c> (Projekt-Anlagendialog)
-    /// öffnen Invest/Betrieb den reduzierten Kosteneditor (<see cref="Form_Kosten"/>,
+    /// öffnen Invest/Betrieb den Kostendialog (<see cref="Form_KostenKomponente"/>,
     /// § 6.4) mit vorgewählter Komponente; im Stammkontext der Gerätedatenbank
-    /// (<c>projektId = 0</c>) die Stammvorlage (<see cref="Form_KostenKomponente"/>).
+    /// (<c>projektId = 0</c>) dieselbe Maske als Stammvorlage.
     /// „Energiekosten…" führt in die Energieträgerverwaltung, im Projektkontext
     /// vorgefiltert auf den Träger.</para>
     ///
@@ -53,13 +53,8 @@ namespace WindowsFormsApplication1
             Button energie = Knopf(T("KDLG_KNOPF_ENERGIE", "Energiekosten…"), 8 + 316);
             energie.Click += (s, e) =>
             {
-                using (var dlg = new Form_Energietraeger())
-                {
-                    dlg.SetControls(projektId());
-                    int? traeger = carrierId != null ? carrierId() : null;
-                    if (traeger.HasValue) dlg.WaehleTraeger(traeger.Value);
-                    dlg.ShowDialog(eigner);
-                }
+                int? traeger = carrierId != null ? carrierId() : null;
+                EnergietraegerHuelle.Oeffnen(eigner, projektId(), traeger ?? 0);
             };
             leiste.Controls.Add(energie);
 
@@ -97,22 +92,14 @@ namespace WindowsFormsApplication1
         {
             if (projektId > 0)
             {
-                // KD6a: Der Projektkontext läuft über den NEUEN Kostendialog —
-                // Form_Kosten bleibt nur noch Logikträger (LiesKomponentenSummen u. a.).
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetProjekt(projektId, ProjektName(projektId), komponente, betrieb);
-                    dlg.ShowDialog(eigner);
-                }
+                // KD6a: Der Projektkontext läuft über den NEUEN Kostendialog; die
+                // Leselogik der Altmaske steht seit iU9-W0 in KostenSummenCtrl.
+                KostenKomponenteHuelle.OeffnenProjekt(eigner, projektId,
+                                                      ProjektName(projektId), komponente, betrieb);
             }
             else
             {
-                using (var dlg = new Form_KostenKomponente())
-                {
-                    dlg.SetControls(komponente);
-                    if (betrieb) dlg.WaehleBetrieb();
-                    dlg.ShowDialog(eigner);
-                }
+                KostenKomponenteHuelle.Oeffnen(eigner, komponente, betrieb);
             }
         }
 
@@ -138,7 +125,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
-                    new System.Data.OleDb.OleDbParameter("@p", projektId));
+                    new DbParam("@p", projektId));
                 return o == null || o == DBNull.Value ? "" : Convert.ToString(o);
             }
             catch { return ""; }
@@ -164,7 +151,7 @@ namespace WindowsFormsApplication1
                     "SELECT MAX(ID_Carrier) FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND [" + geraeteSpalte + "] IS NOT NULL " +
                     "AND ID_Carrier IS NOT NULL",
-                    new System.Data.OleDb.OleDbParameter("@p", projektId));
+                    new DbParam("@p", projektId));
                 if (o == null || o == DBNull.Value) return null;
                 int id = Convert.ToInt32(o);
                 return id > 0 ? (int?)id : null;

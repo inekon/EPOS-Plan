@@ -1,0 +1,150 @@
+﻿@* Eingabefeld fuer eine Dezimalzahl.
+
+   Semantik aus WindowsFormsApplication1/Program.cs (ZahlParsen ab Z. 449,
+   ZahlFaerben ab Z. 486): Komma ODER Punkt, kein Tausendertrennzeichen,
+   invariant. Eine Fehleingabe FAERBT das Feld (rgb(255,235,235)), sie meldet
+   nicht - gemeldet wird erst beim OK-Knopf, und das entscheidet der Dialog
+   ueber OkErlaubt der SpeichernLeiste. Abbrechen bleibt dadurch immer frei.
+
+   Ein leeres Feld ist neutral, kein Fehler: Ob leer erlaubt ist, weiss nur
+   der jeweilige Dialog. Ein Wert ausserhalb von Min/Max gilt wie eine
+   Fehleingabe - er faerbt und wird nicht nach aussen gemeldet.
+
+   inputmode="decimal" blendet auf Touchgeraeten die Zifferntastatur ein,
+   type bleibt "text": type="number" wuerde je nach Browsersprache genau eines
+   der beiden Trennzeichen verweigern. *@
+
+@* epos-feld--kurz meldet dem Formularraster (iU8-E-2 / W14a-E-7), dass der
+   Wert KURZ ist: Dort bekommt das Eingabefeld --epos-kurzfeld-breite statt
+   der vollen Feldspalte, und die Einheit steht unmittelbar dahinter statt am
+   rechten Rand des Blocks - so wie im Vorbild (Form_AdminPV: Feld 62 px,
+   Einheit 4 px dahinter). Ausserhalb eines Formularrasters aendert die Klasse
+   nichts. *@
+<label class="epos-feld epos-feld--kurz">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
+               type="text" inputmode="decimal" value="@_text"
+               aria-invalid="@(Fehlerhaft ? "true" : null)"
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
+        @if (!string.IsNullOrEmpty(Einheit))
+        {
+            <span class="epos-einheit">@Einheit</span>
+        }
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der Wert; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public double? Wert { get; set; }
+
+    /// <summary>Meldet jeden gueltigen neuen Wert - auch <c>null</c> beim Leeren.</summary>
+    [Parameter] public EventCallback<double?> WertChanged { get; set; }
+
+    /// <summary>Einheit hinter dem Feld, z. B. "kWh". Leer = keine.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Kleinster zulaessiger Wert; <c>null</c> = keine Untergrenze.</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Feste Nachkommastellen der Anzeige; <c>null</c> = so genau wie noetig.</summary>
+    [Parameter] public int? Nachkommastellen { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld - dieselbe Eigenschaft, die
+    /// <see cref="Schalter"/> und <see cref="Auswahlfeld"/> schon fuehren
+    /// (iU9-W2.3).
+    ///
+    /// <para>Gebraucht wird sie von Dialogen, die ZWEI Rechenmodelle
+    /// nebeneinander zeigen und nur eines gelten lassen: Der Tarifdialog sperrt
+    /// den Block des nicht gewaehlten Modells, statt ihn auszublenden - die
+    /// Werte des anderen Modells bleiben damit lesbar und erhalten
+    /// (<c>Form_Tarifstruktur.ModusUebernehmen</c>: Enabled, nicht Visible).</para>
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Name des Feldes fuer die Sammelmeldung des Dialogs (iU9-W6.1). Leer = das Feld
+    /// meldet sich nicht.
+    ///
+    /// <para>Der WinForms-Bestand prueft beim Speicherknopf jedes Zahlenfeld einzeln
+    /// (<c>Program.ZahlPruefen(feld, "Thermische Leistung", …)</c>) und nennt in der
+    /// Meldung genau das Feld, an dem es haengt. Hier faerbt das Feld waehrend der
+    /// Eingabe wie bisher und meldet SEINEN NAMEN an den Dialog, der ihn beim Speichern
+    /// in dieselbe Meldung setzt. So bleibt die Regel erhalten, ohne dass der Dialog
+    /// fuenfzehn <c>@@ref</c> auf seine Felder halten muss.</para>
+    /// </summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>
+    /// Meldet jede AENDERUNG des Fehlerzustands - <c>true</c>, sobald der Text keine
+    /// gueltige Zahl (mehr) ist, <c>false</c>, sobald er es wieder ist. Ohne
+    /// <see cref="Feldname"/> wird nichts gemeldet.
+    /// </summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    private string _text = "";
+
+    /// <summary>Der Text im Feld ist gerade keine gueltige Zahl (Pruefhilfe fuer Tests).</summary>
+    public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Die Anzeige nur dann neu setzen, wenn sie den Wert noch nicht meint -
+        // sonst springt der Text waehrend der Eingabe zurueck. Eine laufende
+        // Fehleingabe bleibt ebenfalls stehen; der Anwender soll sehen, was er
+        // getippt hat.
+        if (Fehlerhaft) return;
+        if (!Wert.HasValue && _text.Trim().Length == 0) return;
+        if (Wert.HasValue && Zahlen.ZahlParsen(_text, out double dVorhanden) && dVorhanden == Wert.Value) return;
+
+        _text = Zahlen.Anzeigetext(Wert, Nachkommastellen);
+    }
+
+    private async Task BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+
+        if (_text.Trim().Length == 0)
+        {
+            await FehlerSetzen(false);
+            Wert = null;
+            await WertChanged.InvokeAsync(null);
+            return;
+        }
+
+        if (Zahlen.ZahlParsen(_text, out double dWert) && ImBereich(dWert))
+        {
+            await FehlerSetzen(false);
+            Wert = dWert;
+            await WertChanged.InvokeAsync(dWert);
+            return;
+        }
+
+        await FehlerSetzen(true);
+    }
+
+    private bool ImBereich(double dWert)
+    {
+        if (Min.HasValue && dWert < Min.Value) return false;
+        if (Max.HasValue && dWert > Max.Value) return false;
+        return true;
+    }
+}

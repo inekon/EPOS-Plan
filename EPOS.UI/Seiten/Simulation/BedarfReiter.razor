@@ -1,0 +1,269 @@
+@* Der BEDARFS-Reiter der Ergebnisseite (R4, iU9-W11b.3).
+
+   VORBILD. tabPage_Bedarf mit chart1 (Waermelast, normiert) und chart2
+   (Strombedarf, Viertelstunden), den drei Kanalzeilen aus Paket E1/E2, zwei
+   „Details…"-Knoepfen in die Bedarfsergebnisdialoge (W8) und dem CSV-Export.
+
+   EINE FUELLLOGIK STATT ZWEIER (Befund W11-B14, A-Zeile). Der Vorlaeufer fuellte
+   chart2 auf ZWEI Wegen: beim Lauf ueber ConfigureXAxisWithHours2 mit
+   Schrittweite 4 bzw. 10, beim Umschalten ueber ConfigureXAxisWithHours mit
+   Schrittweite 1 - DIESELBE Schalterstellung ergab zwei verschiedene Bilder.
+   Hier gibt es EINEN Weg: ein Bildauftrag mit der Schalterstellung, gerendert
+   von ChartRenderer.GanglinieNormiert (B1). Der Renderer zeichnet ueber die
+   Laenge der Reihe und untertastet selbst.
+
+   WAS ENTFAELLT. Die beiden Maus-ToolTips (Befund W11-B13: der Y-Wert stand in
+   der FORMATZEICHENKETTE von DateTime.ToString, und .ToString() auf einem
+   string ist wirkungslos - beide Handler waren zeichengleich fehlerhaft), Zoom
+   und Cursor aus init_Chart, und die Einpassung der Kanalbeschriftungen
+   (BedarfKanalBeschriftungEinpassen, BedarfMaximalzeilenEntzerren,
+   ZeileUnterBeschriftung - 90 Zeilen Geometrie).
+
+   EIN SCHALTER „SORTIERT" (Anwenderwunsch 08.09.2026, W11b‑B‑16). Bis dahin
+   trug JEDE Spalte einen eigenen: der der Waermespalte stand in ihrer
+   Schalterzeile bei „Gesamt" und den Bedarfskanaelen, der der Stromspalte
+   allein darunter. Im Zwei-Spalten-Raster kam der STROM-Schalter damit
+   optisch neben „Waermebedarf je Bedarfsart" zu stehen - der Anwender hielt
+   ihn fuer den der Waerme, hakte ihn an, sah die Waermeganglinie unveraendert
+   und meldete: „funktioniert nicht". Jetzt gibt es EINEN Zustand und EINEN
+   Schalter, und der steht GANZ OBEN ueber beiden Spalten, wo sichtbar ist,
+   dass er fuer BEIDE Ganglinien gilt. Die Zeile „Gesamt / Heizung /
+   Brauchwasser" bleibt bei der Waermeganglinie: Sie waehlt REIHEN, nicht die
+   Darstellungsart. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @* W11b‑B‑16: DER EINE SCHALTER, ganz oben und ueber beiden Spalten - er
+       gilt fuer BEIDE Ganglinien, die Waermelast wie den Strombedarf. *@
+    <div class="epos-simerg-schalter">
+        <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                  WertChanged="SortiertGesetzt" />
+    </div>
+
+    <div class="epos-simerg-spalten">
+
+        @* ---- Waerme ----
+
+           DIE ZWEI SPALTEN TRAGEN SEIT W11b‑B‑15 IHREN NAMEN
+           (Anwenderrueckmeldung 08.09.2026). Die Ordnung Waerme links, Strom
+           rechts stand hier schon immer, aber nur als Kommentar im Quelltext:
+           Auf dem Schirm standen zwei namenlose Listen nebeneinander. Die zwei
+           Balken sind dieselben wie in der Uebersicht — derselbe Reiterstapel,
+           dieselben zwei Kategorien. „Bedarf je Kanal" wird damit zum
+           UNTERABSCHNITT der Waerme (h3), denn ein Balken im Balken waere eine
+           Hierarchie, die es nicht gibt. *@
+        <section class="epos-simerg-block">
+            <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
+            @* DIE SUMMENZEILE SCHLIESST DIE GRUPPE BETONT AB (W11b‑B‑23) -
+               dieselbe Sprache, die jede andere Kennzahlenliste der
+               Ergebnisseite fuer ihre Rest- und Summenzeile spricht. Und sie
+               traegt MWh/a wie die Zeile darueber, aus der sie stammt: Beide
+               nennen Daten.WaermebedarfGesamtMwh, die eine bis heute in „MWh",
+               die andere in „MWh/a". *@
+            <dl class="epos-simerg-werte">
+                @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, Daten.WaermebedarfGesamtMwh, MWH)
+                @Wertzeile(Resource.SIMERG_LBL_MAX_WAERMELAST, Daten.WaermelastMaxKw, "kW")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_WAERMEBEDARF, Daten.WaermebedarfGesamtMwh, MWH,
+                           betont: true)
+            </dl>
+
+            @* PAKET E1: die drei Bedarfskanaele unter der Summe - nur die, die
+               der Lauf fuehrt. *@
+            @if (KanalzeilenDa)
+            {
+                <h3 class="epos-untergruppe">@Resource.SIM_LABEL_BEDARF_JE_KANAL</h3>
+                <dl class="epos-simerg-werte">
+                    @for (int k = 0; k < Daten.KanalMwh.Count; k++)
+                    {
+                        if (!Da(k)) { continue; }
+                        @Wertzeile(Kanalname(k), Daten.KanalMwh[k], MWH)
+                    }
+                </dl>
+            }
+
+            <div class="epos-simerg-schalter">
+                @* PAKET E2: „Gesamt" plus je vorhandenem Kanal ein Schalter. *@
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_GESAMT" Wert="@_gesamtAn"
+                          WertChanged="GesamtGesetzt" />
+                @for (int k = 0; k < Daten.KanalMwh.Count; k++)
+                {
+                    if (!Da(k)) { continue; }
+                    int index = k;
+                    <Schalter Bezeichnung="@Kanalname(index)" Wert="@KanalAn(index)"
+                              WertChanged="@(w => KanalGesetzt(index, w))" />
+                }
+            </div>
+
+        </section>
+
+        @* ---- Strom ---- *@
+        <section class="epos-simerg-block">
+            <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
+            <dl class="epos-simerg-werte">
+                @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH)
+                @Wertzeile(Resource.SIMERG_LBL_MAX_STROMBEDARF, Daten.StrombedarfMaxKw, "kW")
+                @Wertzeile(Resource.SIMERG_LBL_GESAMT_STROMBEDARF, Daten.StrombedarfGesamtMwh, MWH,
+                           betont: true)
+            </dl>
+
+        </section>
+
+        @* ---- Die beiden Ganglinien, jede ueber die volle Breite ----
+
+           Befund W11b-B-2 der Windows-Abnahme 05.09.2026: In der halben
+           Rasterspalte kam ein 1 240 Bildpunkte breites Diagramm auf etwa 480 an -
+           „briefmarkengross", die Legende nicht mehr zu lesen. Die Zahlenbloecke
+           bleiben nebeneinander, die Diagramme stehen darunter ueber beide Spalten
+           (.epos-simerg-diagrammzeile).
+
+           BereichGewaehlt gibt den Achsenzoom des WinForms-Vorbilds zurueck
+           (Befund A-1): Ein aufgezogenes Rechteck laesst den Kern das Bild mit
+           diesem Zeitausschnitt neu zeichnen; „1:1" holt das ganze Jahr zurueck. *@
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildWaerme" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                       BereichGewaehlt="WaermeBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _waermeBereich = null)" />
+
+            @if (WaermeDetails.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="WaermeDetails">
+                    @Resource.SIMERG_BTN_DETAILS
+                </button>
+            }
+        </section>
+
+        <section class="epos-simerg-block epos-simerg-diagrammzeile">
+            <ChartBild Png="@BildStrom" Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                       BereichGewaehlt="StromBereichGewaehlt"
+                       Zurueckgesetzt="@(() => _stromBereich = null)" />
+
+            @if (StromDetails.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-knopf" @onclick="StromDetails">
+                    @Resource.SIMERG_BTN_DETAILS
+                </button>
+            }
+        </section>
+
+    </div>
+
+    @if (Csv.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
+                title="@Resource.SIM_TOOLTIP_CSV_BEDARF">@Resource.SIM_BTN_CSV_EXPORT</button>
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    /// <summary>Die vier Zahlen und die drei Kanaele.</summary>
+    [Parameter] public BedarfDaten Daten { get; set; } = new BedarfDaten();
+
+    /// <summary>Liefert ein Bild zur aktuellen Schalterstellung; ohne ihn bleibt es leer.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>„Details…" der Waermeseite (BedarfErgebnisDialog, W8).</summary>
+    [Parameter] public EventCallback WaermeDetails { get; set; }
+
+    /// <summary>„Details…" der Stromseite.</summary>
+    [Parameter] public EventCallback StromDetails { get; set; }
+
+    /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Die gewaehlten Kanalschluessel (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    /// <summary>Stehen die Dauerlinien vorn? EIN Zustand fuer BEIDE Bilder (Pruefhilfe).</summary>
+    public bool Sortiert => _sortiert;
+
+    /// <summary>Der aufgezogene Zeitausschnitt des Waermebildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? WaermeBereich => _waermeBereich;
+
+    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
+    public Diagrammbereich? StromBereich => _stromBereich;
+
+    private bool _sortiert;
+    private bool _gesamtAn = true;
+    private readonly HashSet<int> _kanaele = new HashSet<int>();
+    private Diagrammbereich? _waermeBereich;
+    private Diagrammbereich? _stromBereich;
+
+    private bool KanalzeilenDa
+    {
+        get
+        {
+            for (int k = 0; k < Daten.KanalMwh.Count; k++) if (Da(k)) return true;
+            return false;
+        }
+    }
+
+    private bool Da(int k) => k < Daten.KanalDa.Count && Daten.KanalDa[k];
+
+    private string Kanalname(int k) => k < Daten.Kanalnamen.Count ? Daten.Kanalnamen[k] : "";
+
+    private bool KanalAn(int k) => _kanaele.Contains(k);
+
+    private void SortiertGesetzt(bool wert) => _sortiert = wert;
+
+    private void GesamtGesetzt(bool wert) => _gesamtAn = wert;
+
+    private void KanalGesetzt(int k, bool wert)
+    {
+        if (wert) _kanaele.Add(k); else _kanaele.Remove(k);
+    }
+
+    /// <summary>
+    /// Die Serienschluessel des Waermebildes: „Gesamt" und je angehaktem Kanal
+    /// einer. Sprachneutral — die Beschriftung setzt der Renderer.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_gesamtAn) liste.Add("GESAMT");
+        for (int k = 0; k < Daten.KanalMwh.Count; k++)
+            if (Da(k) && KanalAn(k)) liste.Add("KANAL_" + k);
+        return liste;
+    }
+
+    /// <summary>
+    /// Der Anwender hat im Waermebild einen Bereich aufgezogen. Der Ausschnitt geht
+    /// unveraendert in den Bildauftrag; was daraus fuer ein Achsenbereich wird, weiss
+    /// nur der Renderer, der das Bild gezeichnet hat.
+    /// </summary>
+    private void WaermeBereichGewaehlt(Diagrammbereich bereich) => _waermeBereich = bereich;
+
+    /// <summary>Dasselbe fuer das Strombild.</summary>
+    private void StromBereichGewaehlt(Diagrammbereich bereich) => _stromBereich = bereich;
+
+    private byte[]? BildWaerme =>
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _sortiert, -1, Reihen(),
+                                     0.0, _waermeBereich));
+
+    private byte[]? BildStrom =>
+        Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _sortiert, -1, null,
+                                     0.0, _stromBereich));
+
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe - hier die Summenzeile (W11b‑B‑23, sonst
+    /// die Restzeile, W11b‑B‑15); ohne den Schalter bleibt das Markup
+    /// unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, double wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+    </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+}

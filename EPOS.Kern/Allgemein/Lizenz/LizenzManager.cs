@@ -1,0 +1,461 @@
+using System;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>Gesamtzustand der Lizenz auf diesem Arbeitsplatz.</summary>
+    public enum LizenzStatus
+    {
+        NichtAktiviert,     // kein (gültiges) Token vorhanden
+        Gueltig,            // alles in Ordnung
+        NachpruefungFaellig,// Offline-Leine abgelaufen, Karenzzeit läuft
+        Kulanz,             // Lizenz abgelaufen, Kulanzfenster läuft
+        Lesemodus,          // abgelaufen/Karenz überschritten: nur noch lesen
+        UhrManipuliert,     // Systemuhr steht vor dem letzten bekannten Zeitpunkt
+    }
+
+    /// <summary>
+    /// Zentrale Lizenzlogik des Clients (vgl. Konzept "Zeitlich beschränkte
+    /// Lizenzierung", Kap. 4): signiertes Token mit zwei Fristen
+    /// (gueltig_bis = Lizenzende, token_bis = Offline-Leine), verschlüsselte
+    /// Ablage per DPAPI, monotoner Zeitanker gegen Zurückstellen der Uhr,
+    /// stille Nachprüfung im Hintergrund und Lesemodus statt harter Sperre.
+    /// </summary>
+    public static class LizenzManager
+    {
+        /// <summary>Karenzzeit in Tagen nach Ablauf der Offline-Leine (token_bis).</summary>
+        public const int KARENZ_TAGE = 14;
+
+        /// <summary>Hintergrund-Nachprüfung, sobald die letzte Prüfung älter ist (Tage).</summary>
+        public const int NACHPRUEFUNG_ALLE_TAGE = 14;
+
+        /// <summary>Adresse des Lizenzportals für Hinweise an den Benutzer.</summary>
+        public const string PORTAL_URL = "https://epos-plan.de/lizenzportal/";
+
+        // ------------------------------------------------------------------
+        //  Die drei Warnstufen vor dem Ablauf (Konzept § 6, Welle iF30)
+        // ------------------------------------------------------------------
+
+        /// <summary>Erste Warnstufe: 30 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_1 = 30;
+
+        /// <summary>Zweite Warnstufe: 14 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_2 = 14;
+
+        /// <summary>Dritte Warnstufe: 7 Tage vor Ablauf.</summary>
+        public const int WARNSTUFE_3 = 7;
+
+        private static readonly object _sperre = new object();
+        private static LizenzToken _token;
+        private static bool _geladen;
+
+        // ------------------------------------------------------------------
+        //  Ablageorte
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// <c>%APPDATA%\wp-plan</c>, angelegt falls noetig — unveraendert derselbe
+        /// Ordner wie vor iU5, nur ueber <c>Dienste.Pfade</c> gebildet.
+        /// </summary>
+        private static string Verzeichnis()
+        {
+            return Dienste.Pfade.Unterordner(Dienste.Pfade.Anwendungsdaten);
+        }
+
+        /// <summary>Name der Ablage mit dem signierten Lizenztoken.</summary>
+        private const string TOKEN_ABLAGE = "lizenz.dat";
+
+        /// <summary>Name der Ablage mit dem Datumsanker (Schutz gegen Zurueckdrehen der Uhr).</summary>
+        private const string ANKER_ABLAGE = "lizenz-zeit.dat";
+
+        /// <summary>Name des zweiten Datumsankers in den Einstellungen.</summary>
+        private const string REGISTRY_ANKER = "LizenzAnker";
+
+        // ------------------------------------------------------------------
+        //  Öffentliche Sicht
+        // ------------------------------------------------------------------
+
+        /// <summary>Das aktuell gespeicherte (signaturgeprüfte) Token, sonst null.</summary>
+        public static LizenzToken Token
+        {
+            get { TokenLaden(); return _token; }
+        }
+
+        /// <summary>
+        /// Lizenzstatus bestimmen (rein offline, ohne Serverkontakt).
+        /// Wird beim Programmstart und vor lizenzpflichtigen Aktionen gerufen.
+        /// </summary>
+        /// <remarks>
+        /// Seit iU9-W15c.1 ist das nur noch die FASSADE: Token laden, Anker lesen,
+        /// <see cref="Bewerten"/> rufen, Anker fortschreiben. Die Rechnung selbst steht
+        /// in <see cref="Bewerten"/> und ist damit ohne Ablage und mit vorgegebenem
+        /// Datum prüfbar (Entscheid W15c-E-10, Weg W2). <b>Das Verhalten ist
+        /// unverändert</b> — dieselben Zeilen, nur verschoben.
+        /// </remarks>
+        public static LizenzStatus Pruefe()
+        {
+            TokenLaden();
+            DateTime heute = DateTime.UtcNow.Date;
+            DateTime anker = AnkerLesen();
+
+            // Die Geraete-Id wird NUR ermittelt, wenn es ueberhaupt ein Token gibt -
+            // genau wie vor der Zerlegung: Ohne Token bricht Bewerten vorher ab, und
+            // GeraeteId.Ermitteln() liest unter Windows Registry und Laufwerkskennung.
+            LizenzStatus status = Bewerten(_token,
+                                           _token == null ? "" : GeraeteId.Ermitteln(),
+                                           heute, anker);
+
+            // Der Anker wird fortgeschrieben, sobald die Uhrpruefung bestanden ist -
+            // dieselbe Stelle wie vorher (unmittelbar nach der Pruefung, vor allem
+            // Weiteren).
+            if (status != LizenzStatus.UhrManipuliert) AnkerSchreiben(heute);
+
+            return status;
+        }
+
+        /// <summary>
+        /// Die reine Zustandsrechnung: aus Token, Gerätebindung, Tagesdatum und
+        /// Zeitanker wird genau einer der sechs <see cref="LizenzStatus"/>-Werte.
+        /// Ohne Ablage, ohne Netz, ohne Nebenwirkung.
+        /// </summary>
+        /// <param name="token">Das geladene Token, oder <c>null</c>.</param>
+        /// <param name="geraeteId">Geräte-Id dieses Arbeitsplatzes (nur bei vorhandenem Token nötig).</param>
+        /// <param name="heute">Der heutige Tag (UTC, ohne Uhrzeit).</param>
+        /// <param name="anker">Höchster je gesehener Tag; <see cref="DateTime.MinValue"/> = keiner.</param>
+        /// <remarks>
+        /// <b>Die Reihenfolge ist Bedeutung</b> (Konzept „Zeitlich beschränkte
+        /// Lizenzierung", Kap. 4): Uhrprüfung, Token, Gerät, Lizenzlaufzeit,
+        /// Offline-Leine. Die Laufzeit sticht die Leine — wer abgelaufen ist, kommt nie
+        /// in <see cref="LizenzStatus.NachpruefungFaellig"/>. Ein fremdes Gerät sieht
+        /// aus wie „nicht aktiviert" und nicht wie „ungültig": Ein kopiertes Token soll
+        /// den Anwender zur Aktivierung führen.
+        /// </remarks>
+        internal static LizenzStatus Bewerten(LizenzToken token, string geraeteId,
+                                              DateTime heute, DateTime anker)
+        {
+            // Uhr-Manipulationsschutz: Systemzeit darf nicht vor dem höchsten
+            // je gesehenen Zeitpunkt liegen (1 Tag Toleranz für Zeitzonen u. Ä.).
+            // Beim allerersten Start existiert noch kein Anker (DateTime.MinValue) —
+            // dann entfällt die Prüfung; AddDays auf "heute" statt auf dem Anker,
+            // damit MinValue.AddDays(-1) keine ArgumentOutOfRangeException wirft.
+            if (anker > DateTime.MinValue && heute.AddDays(1) < anker)
+                return LizenzStatus.UhrManipuliert;
+
+            if (token == null)
+                return LizenzStatus.NichtAktiviert;
+
+            // Gerätebindung
+            if (!string.Equals(token.GeraeteId, geraeteId, StringComparison.Ordinal))
+                return LizenzStatus.NichtAktiviert;
+
+            // Lizenzlaufzeit
+            if (token.GueltigBis.HasValue && heute > token.GueltigBis.Value)
+            {
+                DateTime kulanzEnde = token.GueltigBis.Value.AddDays(Math.Max(0, token.KulanzTage));
+                return heute <= kulanzEnde ? LizenzStatus.Kulanz : LizenzStatus.Lesemodus;
+            }
+
+            // Offline-Leine
+            if (token.TokenBis.HasValue && heute > token.TokenBis.Value)
+            {
+                DateTime karenzEnde = token.TokenBis.Value.AddDays(KARENZ_TAGE);
+                return heute <= karenzEnde ? LizenzStatus.NachpruefungFaellig : LizenzStatus.Lesemodus;
+            }
+
+            return LizenzStatus.Gueltig;
+        }
+
+        /// <summary>Kurztext zum Status für Titelzeile, Dialoge und Hinweise.</summary>
+        public static string StatusText()
+        {
+            LizenzStatus status = Pruefe();
+            return StatusText(status, _token);
+        }
+
+        /// <summary>
+        /// Derselbe Kurztext zu einem BEREITS ermittelten Zustand — ohne Ablage.
+        /// </summary>
+        /// <remarks>
+        /// Seit iU9-W15c.3 kommen die sechs Sätze aus <c>MyResource.Resource.LIZ_ST_*</c>
+        /// statt aus dem Quelltext. Sie waren der letzte unlokalisierte Anwendertext des
+        /// Lizenzwegs und erscheinen an drei Stellen: in der Lizenzverwaltung, in der
+        /// Fußzeile des Lizenzdialogs und in der Ablehnungsmeldung des KI-Assistenten.
+        /// </remarks>
+        internal static string StatusText(LizenzStatus status, LizenzToken t)
+        {
+            switch (status)
+            {
+                case LizenzStatus.Gueltig:
+                    return string.Format(MyResource.Resource.LIZ_ST_GUELTIG,
+                                         t.TypText(), Datum(t.GueltigBis));
+                case LizenzStatus.Kulanz:
+                    return string.Format(MyResource.Resource.LIZ_ST_KULANZ, Datum(t.GueltigBis));
+                case LizenzStatus.NachpruefungFaellig:
+                    return MyResource.Resource.LIZ_ST_NACHPRUEFUNG;
+                case LizenzStatus.Lesemodus:
+                    return MyResource.Resource.LIZ_ST_LESEMODUS;
+                case LizenzStatus.UhrManipuliert:
+                    return MyResource.Resource.LIZ_ST_UHR;
+                default:
+                    return MyResource.Resource.LIZ_ST_NICHTAKTIVIERT;
+            }
+        }
+
+        /// <summary>
+        /// Dürfen neue Arbeitsergebnisse erzeugt werden (Simulation, neue
+        /// Projekte, Änderungen)? Im Lesemodus bleibt Ansehen/Exportieren möglich.
+        /// </summary>
+        public static bool DarfSchreiben()
+        {
+            return DarfSchreiben(Pruefe());
+        }
+
+        /// <summary>
+        /// Dieselbe Frage zu einem BEREITS ermittelten Zustand — ohne Ablage und ohne
+        /// Zeitanker (iU9-W15c.1). Genau drei Zustände sagen ja.
+        /// </summary>
+        internal static bool DarfSchreiben(LizenzStatus s)
+        {
+            return s == LizenzStatus.Gueltig
+                || s == LizenzStatus.Kulanz
+                || s == LizenzStatus.NachpruefungFaellig;
+        }
+
+        // ------------------------------------------------------------------
+        //  Restlaufzeit und Warnstufe (Welle iF30, Konzept § 6)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Tage bis zum Ablauf der Lizenz (<c>gueltig_bis</c>); <c>null</c> bei fehlendem
+        /// oder unbefristetem Token, negativ, wenn der Tag schon vorbei ist.
+        /// </summary>
+        /// <remarks>
+        /// Gemessen wird gegen <c>GueltigBis</c> — die LIZENZLAUFZEIT — und nicht gegen
+        /// <c>TokenBis</c>, die Offline-Leine: Letztere erneuert sich bei jeder stillen
+        /// Nachprüfung von selbst, und ein Hinweis darauf wäre für den Anwender kein
+        /// Handlungsauftrag. Dieselbe Rangfolge wie in <see cref="Bewerten"/>.
+        /// </remarks>
+        internal static int? RestTage(LizenzToken token, DateTime heute)
+        {
+            if (token == null || !token.GueltigBis.HasValue) return null;
+            return (int)(token.GueltigBis.Value.Date - heute.Date).TotalDays;
+        }
+
+        /// <summary>
+        /// Die erreichte Warnstufe: <c>0</c> (keine), sonst
+        /// <see cref="WARNSTUFE_1"/>, <see cref="WARNSTUFE_2"/> oder
+        /// <see cref="WARNSTUFE_3"/>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Nach dem Ablauf gibt es keine Warnstufe mehr</b>, sondern einen ZUSTAND
+        /// (Kulanz oder Lesemodus) — die Stufen warnen VOR dem Ablauf. Der Tag des Ablaufs
+        /// selbst zählt noch zur dritten Stufe: An ihm ist die Lizenz gültig.
+        /// </remarks>
+        internal static int Warnstufe(LizenzToken token, DateTime heute)
+        {
+            int? rest = RestTage(token, heute);
+            if (!rest.HasValue || rest.Value < 0) return 0;
+            if (rest.Value <= WARNSTUFE_3) return WARNSTUFE_3;
+            if (rest.Value <= WARNSTUFE_2) return WARNSTUFE_2;
+            if (rest.Value <= WARNSTUFE_1) return WARNSTUFE_1;
+            return 0;
+        }
+
+        // ------------------------------------------------------------------
+        //  Aktivierung / Nachprüfung / Freigabe
+        // ------------------------------------------------------------------
+
+        /// <summary>Mit Lizenzschlüssel und E-Mail online aktivieren.</summary>
+        public static async Task<LizenzServerAntwort> Aktivieren(string schluessel, string email)
+        {
+            LizenzServerAntwort antwort = await new LizenzServerClient().Aktivieren(schluessel, email).ConfigureAwait(false);
+            if (antwort.Ok && antwort.TokenJson != null)
+            {
+                string fehler;
+                LizenzToken token = LizenzToken.Laden(antwort.TokenJson, out fehler);
+                if (token == null)
+                {
+                    antwort.Ok = false;
+                    antwort.Meldung = fehler;
+                    return antwort;
+                }
+                TokenSpeichern(token);
+            }
+            return antwort;
+        }
+
+        /// <summary>
+        /// Lizenzschlüssel und E-Mail aus einer Lizenzdatei (.lic) lesen.
+        /// Der Dialog übernimmt die Werte in die Eingabefelder; die eigentliche
+        /// Aktivierung läuft anschließend online über <see cref="Aktivieren"/>.
+        /// </summary>
+        public static void LicDateiLesen(string licPfad, out string schluessel, out string email)
+        {
+            schluessel = null; email = null;
+            try
+            {
+                using JsonDocument doc = JsonDocument.Parse(File.ReadAllText(licPfad, Encoding.UTF8));
+                JsonElement wurzel = doc.RootElement;
+                if (wurzel.TryGetProperty("format", out JsonElement fmt) && fmt.GetString() == "epos-signiert-1")
+                {
+                    byte[] nutzdaten = Convert.FromBase64String(wurzel.GetProperty("nutzdaten").GetString() ?? "");
+                    using JsonDocument innen = JsonDocument.Parse(Encoding.UTF8.GetString(nutzdaten));
+                    JsonElement lic = innen.RootElement;
+                    if (lic.TryGetProperty("schluessel", out JsonElement s)) schluessel = s.GetString();
+                    if (lic.TryGetProperty("email", out JsonElement m)) email = m.GetString();
+                }
+            }
+            catch { /* Dialog zeigt eine Meldung, wenn nichts gefunden wurde */ }
+        }
+
+        /// <summary>
+        /// Stille Nachprüfung im Hintergrund (Aufruf z. B. beim Programmstart).
+        /// Erneuert das Token, wenn die letzte Prüfung länger zurückliegt;
+        /// Fehler bleiben bewusst folgenlos, solange die Karenzzeit läuft.
+        /// </summary>
+        public static async Task NachpruefungImHintergrund()
+        {
+            try
+            {
+                TokenLaden();
+                if (_token == null || _token.TokenId == null) return;
+
+                bool faellig = true;
+                if (_token.Ausgestellt.HasValue)
+                    faellig = (DateTimeOffset.UtcNow - _token.Ausgestellt.Value).TotalDays >= NACHPRUEFUNG_ALLE_TAGE;
+                if (!faellig) return;
+
+                LizenzServerAntwort antwort = await new LizenzServerClient().Nachpruefen(_token.TokenId).ConfigureAwait(false);
+                if (antwort.Ok && antwort.TokenJson != null)
+                {
+                    string fehler;
+                    LizenzToken frisch = LizenzToken.Laden(antwort.TokenJson, out fehler);
+                    if (frisch != null) TokenSpeichern(frisch);
+                }
+                else if (!antwort.Ok && !antwort.NetzwerkFehler)
+                {
+                    // Der Server hat das Token ausdrücklich abgelehnt
+                    // (Lizenz gesperrt, Gerät deaktiviert, Benutzer entfernt):
+                    // lokales Token verwerfen.
+                    TokenLoeschen();
+                }
+            }
+            catch { /* Hintergrundlauf darf die Anwendung nie stören */ }
+        }
+
+        /// <summary>Dieses Gerät von der Lizenz lösen (Platz freigeben).</summary>
+        public static async Task<LizenzServerAntwort> Freigeben()
+        {
+            TokenLaden();
+            if (_token == null)
+                return new LizenzServerAntwort { Ok = true, Meldung = "Es ist keine Lizenz gespeichert." };
+
+            LizenzServerAntwort antwort = await new LizenzServerClient().Deaktivieren(_token.TokenId).ConfigureAwait(false);
+            if (antwort.Ok || !antwort.NetzwerkFehler)
+                TokenLoeschen();
+            return antwort;
+        }
+
+        // ------------------------------------------------------------------
+        //  Ablage (DPAPI) und Zeitanker
+        // ------------------------------------------------------------------
+
+        private static void TokenLaden()
+        {
+            lock (_sperre)
+            {
+                if (_geladen) return;
+                _geladen = true;
+                try
+                {
+                    // nurDiesesGeraet: true = Geraetebereich (DPAPI LocalMachine). NUR so
+                    // gilt eine einmal aktivierte Lizenz fuer alle Windows-Konten
+                    // desselben Rechners. Wird der Bereich je umgestellt, ist jede
+                    // installierte Lizenz entwertet - der Inhalt ist dann nicht mehr zu
+                    // entschluesseln.
+                    byte[] klartext = Dienste.Lizenzablage.Lesen(TOKEN_ABLAGE, true);
+                    if (klartext == null) return;
+
+                    string fehler;
+                    _token = LizenzToken.Laden(Encoding.UTF8.GetString(klartext), out fehler);
+                }
+                catch { _token = null; }
+            }
+        }
+
+        private static void TokenSpeichern(LizenzToken token)
+        {
+            lock (_sperre)
+            {
+                byte[] klartext = Encoding.UTF8.GetBytes(token.RohJson);
+                Dienste.Lizenzablage.Schreiben(TOKEN_ABLAGE, klartext, true);
+                _token = token;
+                _geladen = true;
+            }
+
+            // Welle iF30: Die Schreibnaht speichert ihre Antwort ein paar Sekunden lang
+            // zwischen. Eine frisch aktivierte Lizenz soll SOFORT tragen und nicht erst
+            // nach Ablauf der Haltbarkeit - deshalb hier verwerfen.
+            Schreibnaht.Neubewerten();
+        }
+
+        private static void TokenLoeschen()
+        {
+            lock (_sperre)
+            {
+                try { Dienste.Lizenzablage.Loeschen(TOKEN_ABLAGE); } catch { }
+                _token = null;
+                _geladen = true;
+            }
+
+            // Umgekehrt genauso: Ein abgelehntes oder freigegebenes Gerät verliert sein
+            // Schreibrecht mit dem Token, nicht fünf Sekunden später.
+            Schreibnaht.Neubewerten();
+        }
+
+        /// <summary>Höchsten je gesehenen Tag lesen (Datei und Registry, Maximum).</summary>
+        private static DateTime AnkerLesen()
+        {
+            DateTime wert = DateTime.MinValue;
+            try
+            {
+                byte[] roh = Dienste.Lizenzablage.Lesen(ANKER_ABLAGE, true);
+                if (roh != null && long.TryParse(Encoding.UTF8.GetString(roh), out long ticks))
+                    wert = new DateTime(ticks, DateTimeKind.Utc).Date;
+            }
+            catch { }
+            try
+            {
+                if (long.TryParse(Dienste.Einstellungen.Lies(REGISTRY_ANKER), out long ticks2))
+                {
+                    DateTime reg = new DateTime(ticks2, DateTimeKind.Utc).Date;
+                    if (reg > wert) wert = reg;
+                }
+            }
+            catch { }
+            return wert;
+        }
+
+        private static void AnkerSchreiben(DateTime heuteUtc)
+        {
+            if (heuteUtc <= AnkerLesen()) return; // monoton: nie zurückschreiben
+            try
+            {
+                byte[] roh = Encoding.UTF8.GetBytes(heuteUtc.Ticks.ToString());
+                Dienste.Lizenzablage.Schreiben(ANKER_ABLAGE, roh, true);
+            }
+            catch { }
+            try
+            {
+                Dienste.Einstellungen.Schreib(REGISTRY_ANKER, heuteUtc.Ticks.ToString());
+            }
+            catch { }
+        }
+
+        private static string Datum(DateTime? d) => d.HasValue ? d.Value.ToString("dd.MM.yyyy") : "-";
+    }
+}

@@ -1,0 +1,117 @@
+﻿@* Die TRAEGERWAHL einer Anlage in der Gliederung des Katalogs: Energietraeger
+   (die Gruppe: Fernwaerme, Gas, Holz, Strom ...) und Art (der Traeger in der
+   Gruppe: Erdgas E, Biogas, Elektrische Energie ...). Anwenderentscheid
+   08.09.2026 (ET-5): "es handelt sich um diese Struktur, keine neue Struktur"
+   - die zwei Ebenen sind group_code und name des Katalogs, so wie sie die
+   Energietraegerverwaltung listet.
+
+   ZWEI AUSWAHLFELDER, EIN WERT. Nach aussen zaehlt allein die Traeger-Id
+   (Tab_Energieanlagen.ID_Carrier); die Gruppe ist die Sicht darauf. Ein
+   Gruppenwechsel waehlt den ersten Traeger der neuen Gruppe - eine Anlage
+   ohne Traeger gibt es danach nicht. Der Baustein haelt keinen eigenen
+   Zustand: Auswahl kommt herein, AuswahlChanged meldet die neue Id. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-traegerwahl">
+    <Auswahlfeld Bezeichnung="@LabelGruppe" Eintraege="@Gruppen" Auswahl="@GruppenIndex"
+                 Aktiv="@Aktiv" AuswahlChanged="BeiGruppe" />
+    <Auswahlfeld Bezeichnung="@LabelArt" Eintraege="@Arten" Auswahl="@Auswahl"
+                 Aktiv="@Aktiv" AuswahlChanged="BeiArt" />
+</div>
+
+@code {
+    /// <summary>Ein Traeger des Katalogs: Id, Gruppe (group_code) und Name.</summary>
+    public sealed record Eintrag(int Id, string Gruppe, string Name);
+
+    /// <summary>Der Katalog in Anzeigereihenfolge (Gruppe, dann Name).</summary>
+    [Parameter] public IReadOnlyList<Eintrag> Eintraege { get; set; } = Array.Empty<Eintrag>();
+
+    /// <summary>Die gewaehlte Traeger-Id; null = keine.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neue Traeger-Id.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    [Parameter] public bool Aktiv { get; set; } = true;
+    [Parameter] public string LabelGruppe { get; set; } = "Energieträger:";
+    [Parameter] public string LabelArt { get; set; } = "Art:";
+
+    /// <summary>Name der Gruppe fuer Traeger ohne group_code (wie in der Verwaltung).</summary>
+    [Parameter] public string GruppeSonstige { get; set; } = "Sonstige";
+
+    /// <summary>Die gezeigte Gruppe, solange keine Auswahl sie bestimmt.</summary>
+    private string? _gruppe;
+
+    private string GruppeVon(Eintrag e) => string.IsNullOrEmpty(e.Gruppe) ? GruppeSonstige : e.Gruppe;
+
+    private List<string> Gruppennamen()
+    {
+        var l = new List<string>();
+        foreach (Eintrag e in Eintraege)
+        {
+            string g = GruppeVon(e);
+            if (!l.Contains(g)) l.Add(g);
+        }
+        return l;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Gruppen
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            int i = 0;
+            foreach (string g in Gruppennamen()) l.Add((i++, g));
+            return l;
+        }
+    }
+
+    private string? AktuelleGruppe
+    {
+        get
+        {
+            if (Auswahl.HasValue)
+                foreach (Eintrag e in Eintraege)
+                    if (e.Id == Auswahl.Value) return GruppeVon(e);
+            return _gruppe;
+        }
+    }
+
+    private int? GruppenIndex
+    {
+        get
+        {
+            string? g = AktuelleGruppe;
+            if (g is null) return null;
+            int i = Gruppennamen().IndexOf(g);
+            return i >= 0 ? i : null;
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Arten
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            string? g = AktuelleGruppe;
+            if (g is null) return l;
+            foreach (Eintrag e in Eintraege)
+                if (GruppeVon(e) == g) l.Add((e.Id, e.Name));
+            return l;
+        }
+    }
+
+    private Task BeiGruppe(int? index)
+    {
+        if (!index.HasValue) return Task.CompletedTask;
+        List<string> namen = Gruppennamen();
+        if (index.Value < 0 || index.Value >= namen.Count) return Task.CompletedTask;
+        _gruppe = namen[index.Value];
+        foreach (Eintrag e in Eintraege)
+            if (GruppeVon(e) == _gruppe) return AuswahlChanged.InvokeAsync(e.Id);
+        return AuswahlChanged.InvokeAsync(null);
+    }
+
+    private Task BeiArt(int? id) => AuswahlChanged.InvokeAsync(id);
+}

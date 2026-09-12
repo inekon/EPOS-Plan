@@ -3,8 +3,8 @@ using System;
 namespace SpeicherEngine
 {
     /// <summary>
-    /// Adapterschicht zwischen dem Hausdatentyp <c>float[]</c> von EPOS-Plan und dem
-    /// internen <c>double[]</c> der Engine (Fachkonzept 3.3, Umsetzungskonzept AP2).
+    /// Adapterschicht zwischen dem STUNDENraster von EPOS-Plan und dem internen
+    /// VIERTELSTUNDENraster der Engine (Fachkonzept 3.3, Umsetzungskonzept AP2).
     /// </summary>
     /// <remarks>
     /// <para>
@@ -26,10 +26,11 @@ namespace SpeicherEngine
     /// Engine den SoC nativ viertelstuendlich liefert.
     /// </para>
     /// <para>
-    /// <b>Verlustfreiheit.</b> <c>float</c> nach <c>double</c> ist eine erweiternde
-    /// Umwandlung und damit exakt. Der Rueckweg <see cref="ZuFloat"/> rundet auf die
-    /// naechste <c>float</c>-Zahl - er ist ausschliesslich fuer Charts und CSV-Export
-    /// gedacht, nie fuer Rechenwege.
+    /// <b>Verlustfreiheit.</b> Bis zum Anwenderentscheid W8-O-5d (07.09.2026) fuehrte
+    /// EPOS-Plan seine Zeitreihen in <c>float</c>; der Adapter weitete beim Hinweg auf
+    /// <c>double</c> und rundete beim Rueckweg (<c>ZuFloat</c>) wieder ab. Seit der Kern
+    /// durchgehend in <c>double</c> rechnet, gibt es keine Rundung mehr - Hin- und Rueckweg
+    /// sind reine Rasterwechsel, der Rueckweg entfaellt ersatzlos.
     /// </para>
     /// <para>
     /// <b>Schaltjahr.</b> Bewusst noch nicht unterstuetzt: 8.784 / 35.136 lehnt die
@@ -56,11 +57,11 @@ namespace SpeicherEngine
         /// </param>
         /// <returns>
         /// Neues Array mit 35.040 Werten. Bei 8.760 Eingangswerten per
-        /// Wertwiederholung, bei 35.040 als 1:1-Kopie nach <c>double</c>.
+        /// Wertwiederholung, bei 35.040 als 1:1-Kopie.
         /// </returns>
         /// <exception cref="ArgumentNullException">Wenn <paramref name="reihe"/> <c>null</c> ist.</exception>
         /// <exception cref="ArgumentException">Bei jeder anderen Laenge.</exception>
-        public static double[] ZuViertelstundenDouble(float[] reihe)
+        public static double[] ZuViertelstundenDouble(double[] reihe)
         {
             if (reihe == null) throw new ArgumentNullException(nameof(reihe));
 
@@ -93,30 +94,17 @@ namespace SpeicherEngine
         }
 
         /// <summary>
-        /// Rueckweg fuer Charts und CSV-Export: 1:1-Kopie nach <c>float</c>, ohne
-        /// jede Rasteraenderung.
+        /// 1:1-Kopie ohne Laengenpruefung - fuer Reihen, deren Raster der Aufrufer bereits
+        /// kennt (z. B. Teilstuecke in Tests). Bis W8-O-5d hiess der Weg <c>ZuDouble</c>
+        /// und nahm <c>float[]</c> entgegen; die Umwandlung ist mit dem double-Kern entfallen.
         /// </summary>
         /// <exception cref="ArgumentNullException">Wenn <paramref name="reihe"/> <c>null</c> ist.</exception>
-        public static float[] ZuFloat(double[] reihe)
-        {
-            if (reihe == null) throw new ArgumentNullException(nameof(reihe));
-
-            float[] ziel = new float[reihe.Length];
-            for (int i = 0; i < reihe.Length; i++) ziel[i] = (float)reihe[i];
-            return ziel;
-        }
-
-        /// <summary>
-        /// 1:1-Kopie nach <c>double</c> ohne Laengenpruefung - fuer Reihen, deren
-        /// Raster der Aufrufer bereits kennt (z. B. Teilstuecke in Tests).
-        /// </summary>
-        /// <exception cref="ArgumentNullException">Wenn <paramref name="reihe"/> <c>null</c> ist.</exception>
-        public static double[] ZuDouble(float[] reihe)
+        public static double[] Kopie(double[] reihe)
         {
             if (reihe == null) throw new ArgumentNullException(nameof(reihe));
 
             double[] ziel = new double[reihe.Length];
-            for (int i = 0; i < reihe.Length; i++) ziel[i] = reihe[i];
+            Array.Copy(reihe, ziel, reihe.Length);
             return ziel;
         }
 

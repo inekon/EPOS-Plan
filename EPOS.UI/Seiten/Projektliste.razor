@@ -1,0 +1,112 @@
+﻿@* Die Projektliste - der Einstieg der iOS-Huelle (Umsetzungskonzept iOS, iU10-2).
+
+   Vorbild ist die Variantenliste der Startmaske (Views/Hauptformular/Form_Start,
+   Reiter "Projekte"): Nummer, Name, Klimaregion, Ausstattung. Uebernommen ist die
+   SPALTENFOLGE, nicht der Aufbau.
+
+   iU9-W15a.7: DIE TABELLE IST DER BAUSTEIN ProjektListe. Bis dahin stand hier ein
+   eigenes Raster - die FUENFTE Projektliste des Bestands neben den vier der
+   WinForms-Masken (Befund W15a-B52). Der Baustein traegt beide Sichten: den
+   Spaltensatz "Auswahl" der drei Projektdialoge und den Spaltensatz "Einstieg"
+   dieser Seite. Was hier bleibt, ist die Seite drumherum - Kopfzeile mit Zaehler,
+   Leertext und die ZWEI AKTIONSKNOEPFE je Zeile; die gehoeren dieser Seite und
+   nicht dem Baustein.
+
+   Suche, Zaehlzeile und Zeilenmarkierung sind hier ABGESCHALTET: Diese Liste ist
+   kein Auswahldialog, sondern der Einstieg - ihre Knoepfe oeffnen Masken, sie
+   liefert kein Ergebnis zurueck. Aus demselben Grund sortiert sie nicht: Die
+   Reihenfolge kommt fertig aus IProjektQuelle.Projekte().
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen kommen fertig als [Parameter];
+   geladen werden sie von der Huelle ueber IProjektQuelle.
+
+   BERUEHRUNG. Die beiden Knoepfe je Zeile tragen die Hausklasse epos-knopf und
+   damit das Mindestziel von 44 px (--epos-touchziel) - auf dem iPad wird mit dem
+   Finger getroffen, nicht mit dem Mauszeiger.
+*@
+
+@namespace EPOS.UI.Seiten
+
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-seite">
+
+    <div class="epos-seite-kopf">
+        <h1 class="epos-seite-titel">@TitelText</h1>
+        <span class="epos-seite-anzahl">@Zeilen.Count</span>
+    </div>
+
+    <ProjektListe Zeilen="@Kopfzeilen"
+                  Spalten="ProjektListe.Spaltensatz.Einstieg"
+                  MitSuche="false" MitZaehler="false" MitAuswahl="false" MitSortierung="false"
+                  SpalteNummer="@SpalteNummer" SpalteName="@SpalteName"
+                  SpalteKlima="@SpalteKlimazone" SpalteAusstattung="@SpalteAusstattung"
+                  AktionenText="@SpalteAktionen" LeerText="@LeerText">
+        <Zeilenaktionen Context="kopf">
+            <button type="button" class="epos-knopf epos-projekt-energie"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.Energietraeger))">
+                @KnopfEnergietraeger
+            </button>
+            <button type="button" class="epos-knopf epos-projekt-bhkw"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.BhkwWirtschaftlichkeit))">
+                @KnopfBhkw
+            </button>
+        </Zeilenaktionen>
+    </ProjektListe>
+</div>
+
+@code {
+    /// <summary>Die anzuzeigenden Projekte, fertig geladen und in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<ProjektZeile> Zeilen { get; set; } = Array.Empty<ProjektZeile>();
+
+    /// <summary>
+    /// Der Anwender will zu einem Projekt eine Maske oeffnen. Uebergeben werden das
+    /// Projekt und der sprachneutrale Maskenschluessel; geoeffnet wird von der
+    /// Wurzel, nicht von dieser Liste.
+    /// </summary>
+    [Parameter] public EventCallback<(ProjektZeile Projekt, string Maske)> Oeffnen { get; set; }
+
+    /// <summary>Ueberschrift der Seite.</summary>
+    [Parameter] public string TitelText { get; set; } = "Projekte";
+
+    /// <summary>Text, wenn die Datenbank kein Projekt fuehrt.</summary>
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Spaltentitel „Nr." (Tab_Projekt.ID).</summary>
+    [Parameter] public string SpalteNummer { get; set; } = "Nr.";
+
+    /// <summary>Spaltentitel „Projekt".</summary>
+    [Parameter] public string SpalteName { get; set; } = "Projekt";
+
+    /// <summary>Spaltentitel „Klimaregion".</summary>
+    [Parameter] public string SpalteKlimazone { get; set; } = "Klimaregion";
+
+    /// <summary>Spaltentitel „Ausstattung".</summary>
+    [Parameter] public string SpalteAusstattung { get; set; } = "Ausstattung";
+
+    /// <summary>Spaltentitel der Knopfspalte.</summary>
+    [Parameter] public string SpalteAktionen { get; set; } = "Öffnen";
+
+    /// <summary>Beschriftung des Knopfes „Energieträger anlegen".</summary>
+    [Parameter] public string KnopfEnergietraeger { get; set; } = "Energieträger…";
+
+    /// <summary>Beschriftung des Knopfes „BHKW-Wirtschaftlichkeit".</summary>
+    [Parameter] public string KnopfBhkw { get; set; } = "BHKW-Wirtschaftlichkeit…";
+
+    /// <summary>
+    /// Die Zeilen in der Form des Bausteins. Klimaregion und Ausstattung sind die zwei
+    /// Zusatzfelder von <c>ProjektKopfZeile</c>, die es nur fuer diesen Einstieg gibt;
+    /// Kunde, Beschreibung und Aenderungsdatum kennt diese Seite nicht.
+    /// </summary>
+    private IReadOnlyList<ProjektKopfZeile> Kopfzeilen
+        => Zeilen.Select(z => new ProjektKopfZeile(z.Id, z.Name,
+                                                   Klimazone: z.Klimazone,
+                                                   Ausstattung: z.Ausstattung)).ToList();
+
+    private Task Oeffne(int id, string maske)
+    {
+        ProjektZeile? projekt = Zeilen.FirstOrDefault(z => z.Id == id);
+        return projekt is null ? Task.CompletedTask : Oeffnen.InvokeAsync((projekt, maske));
+    }
+}

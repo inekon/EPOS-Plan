@@ -1,0 +1,306 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EPOS.Kern - der RECHENKERN von EPOS-Plan als plattformfreie Bibliothek
+    (Umsetzungskonzept iOS, Paket iU3; Entscheidungsregister § 2.2).
+
+    Die Dateien liegen seit iU4-5 HIER - VERSCHOBEN, nicht verlinkt. Bis iU4-4
+    waren sie aus WindowsFormsApplication1 verlinkt; das war die Vorstufe, in der
+    beide Projekte dieselben Dateien uebersetzten und der Kern seine
+    Portabilitaet nachweisen konnte, ohne den Bestand anzufassen. Jetzt gibt es
+    sie nur noch einmal, und zwar hier: Die Anwendung uebersetzt sie nicht mehr,
+    sie referenziert dieses Projekt (ProjectReference in
+    WindowsFormsApplication1.csproj). Eine Fachaenderung am Rechenkern wird
+    damit an genau einer Stelle gemacht.
+
+    Aufgenommen wird per GLOBBING (Standardverhalten des SDK) - alles unter
+    diesem Ordner gehoert zum Kern. Die einzige Ausnahme ist der generierte
+    Typkatalog aus sql\schema, der weiterhin verlinkt wird: seine Quelle ist das
+    Erzeugungsskript, nicht dieses Projekt.
+
+    <EnableWindowsTargeting>false</EnableWindowsTargeting> ist die eigentliche
+    Pruefung: Directory.Build.props schaltet die Eigenschaft auf Nicht-Windows
+    ein, damit die net*-windows-Projekte dort uebersetzbar bleiben. Hier wird sie
+    ausdruecklich wieder abgeschaltet - jede WinForms-Beruehrung in einer
+    verlinkten Datei bricht damit den Build, statt erst auf iOS zur Laufzeit
+    aufzufallen.
+
+    KEIN NoWarn CA1416. Mit iU6 ist das Restinventar auf NULL abgetragen: kein
+    System.Data.OleDb mehr, weder als PackageReference noch im Quelltext. Die
+    Regel bleibt scharf, damit eine neue Windows-API sofort als Warnung auffaellt.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+
+    <RootNamespace>WindowsFormsApplication1</RootNamespace>
+    <AssemblyName>EPOS.Kern</AssemblyName>
+
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <SatelliteResourceLanguages>de-DE;en-US</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- ================================================================== -->
+  <!-- Rechenbibliotheken                                                  -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
+    <!-- Aufgabensteuerung des KI-Assistenten (iU5-U2): UI- und DB-frei, net10.0. -->
+    <ProjectReference Include="..\KiKern\KiKern.csproj" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Die Anwendung sieht die internen Typen des Kerns (iU4-4).           -->
+  <!--                                                                    -->
+  <!-- Etliche Controller und Modelle sind ohne Zugriffsangabe deklariert  -->
+  <!-- und damit internal (ProjektCtrl, KlimaregionCtrl, WPStammCtrl,      -->
+  <!-- Properties.Settings, Init ...). Solange sie in derselben Assembly   -->
+  <!-- lagen, fiel das nicht auf; mit dem Umzug in EPOS.Kern (iU4-5)       -->
+  <!-- braucht die Anwendung diese Freigabe. Die Alternative - jeden       -->
+  <!-- betroffenen Typ auf public heben - waere eine breite Aenderung an   -->
+  <!-- der Sichtbarkeit des Bestands ohne fachlichen Grund.                -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="EPOS_Plan" />
+    <!-- Dasselbe fuer das Testprojekt (iU4-6): Init und andere Kerntypen sind
+         internal, sollen aber pruefbar sein. -->
+    <InternalsVisibleTo Include="EPOS.Kern.Tests" />
+    <!-- Und fuer die iOS-Huelle (iU10-3): Sie belegt dieselben Dienste wie Program.Main
+         und laedt fuer die Projektliste ProjektCtrl - beides ist internal, genau wie in
+         der Windows-Huelle. -->
+    <InternalsVisibleTo Include="EPOS.iOS" />
+    <!-- Und fuer das Werkzeug, das Referenzlaeufe\Kenndaten_Test.sqlite auf den
+         Zielschemastand nachzieht (Aufgabe 92): Es faehrt bewusst DIESELBE
+         Typuebersetzung wie die Migration - StilleDb.SqliteSpaltenTyp -, statt
+         die DDL abzuschreiben. Ohne die Freigabe bliebe nur die Abschrift. -->
+    <InternalsVisibleTo Include="Testdatenbankschema" />
+    <!-- Und fuer das Werkzeug, das den Auslieferungsstand der Datenbank erzeugt
+         (Auftrag #160): Es zieht seine Arbeitskopie ueber Datenbanksicherung.KopieAnlegen -
+         die EINE Sicherungswahrheit des Kerns seit #158 (VACUUM INTO durch das WAL
+         hindurch) - statt eine zweite Kopierweise danebenzustellen. Das Testprojekt liest
+         die eingespielten Beispiele ueber ProjektCtrl.NamenListe, also den Weg, ueber den
+         auch die Startseite ihre Projektliste holt; beide Typen sind internal. -->
+    <InternalsVisibleTo Include="Auslieferungsvorlage" />
+    <InternalsVisibleTo Include="Auslieferungsvorlage.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <!-- Properties\Settings.Designer.cs erbt von ApplicationSettingsBase. -->
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
+
+    <!--
+      KEINE iOS-SONDERZEILE MEHR (iU10-1).
+
+      Bis iU10 stand hier eine bedingte PackageReference auf SQLitePCLRaw.bundle_green fuer
+      die noch nicht existierenden Ziele net10.0-ios / net10.0-maccatalyst. Sie ist mit
+      iU10-1 ersatzlos entfallen, und zwar aus drei Gruenden:
+
+        1. Die Fassung gibt es nicht. bundle_green endet bei 2.1.11; ein Restore mit
+           2.1.12 bricht mit NU1102 (Restore-Probe B des iU10-Plans, 03.09.2026).
+        2. Die Begruendung war ueberholt. bundle_e_sqlite3 laedt auf iOS gar nichts
+           dynamisch: Fuer die iOS-Kennungen liefert das Paket provider.internal
+           (DllImport __Internal) und eine statisch gelinkte e_sqlite3.a.
+        3. bundle_green haette die SQLite-Fassung an das Geraet gebunden. Die Datenbank
+           fuehrt 114 STRICT-Tabellen (SQLite >= 3.37) - das darf nicht am iPadOS-Stand
+           haengen.
+
+      Der Kern bekommt ausserdem gar kein zweites TargetFramework: Die iOS-Huelle EPOS.iOS
+      referenziert ihn als net10.0-Bibliothek und zieht ihre Nativen selbst. Die
+      Langfassung der Begruendung steht in Directory.Packages.props beim Eintrag
+      SQLitePCLRaw.bundle_e_sqlite3.
+    -->
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- LIZENZ UND KATALOGIMPORT (Paket iU5-U1)                             -->
+  <!--                                                                    -->
+  <!-- BouncyCastle prueft die Ed25519-Signatur des Lizenztokens           -->
+  <!-- (Allgemein\Lizenz\LizenzToken.cs); ClosedXML liest Excel-Mappen im  -->
+  <!-- Ganglinienimport (Allgemein\Import\GanglinienDatei.cs). Beide       -->
+  <!-- Pakete sind plattformfrei - sie standen bisher nur deshalb in der   -->
+  <!-- Anwendung, weil die Dateien dort lagen.                             -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="ClosedXML" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- AUSGABE DES BERICHTS (Paket iU5-U3)                                 -->
+  <!--                                                                    -->
+  <!-- Word (DocumentFormat.OpenXml) und Excel (ClosedXML, oben) sind      -->
+  <!-- Dateiformate, keine Windows-APIs - die Ausgabe laeuft damit auch    -->
+  <!-- auf iOS. SixLabors.Fonts misst fuer ClosedXML die Spaltenbreiten;   -->
+  <!-- die Fassung ist auf 1.0.1 gepinnt (ab 2.x gilt die                  -->
+  <!-- Six-Labors-Split-Lizenz), deshalb steht das Paket ausdruecklich     -->
+  <!-- hier und nicht nur transitiv ueber ClosedXML.                       -->
+  <!--                                                                    -->
+  <!-- Der eingefrorene GDI+-Stand (ChartRendererGdi) ist mit iF23 am      -->
+  <!-- 03.09.2026 geloescht; die Berichtskette hat keine GDI+-Stelle mehr. -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="SixLabors.Fonts" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- SEMANTIKSUCHE DES KI-ASSISTENTEN (Paket iU5-U2)                     -->
+  <!--                                                                    -->
+  <!-- Allgemein\KI\SemantikModell.cs bettet Textstellen mit einem lokalen  -->
+  <!-- ONNX-Modell ein und zerlegt den Text mit Microsoft.ML.Tokenizers.   -->
+  <!-- Beide Pakete sind verwaltet und plattformfrei; die nativen          -->
+  <!-- Laufzeitteile von OnnxRuntime bringt das Paket je Kennung selbst    -->
+  <!-- mit. Sie standen bisher nur deshalb allein in der Anwendung, weil   -->
+  <!-- die Datei dort lag.                                                 -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- DIAGRAMME DES BERICHTS (Paket iU7-5)                                -->
+  <!--                                                                    -->
+  <!-- Allgemein\Bericht\ChartRenderer.cs zeichnet seit iU7-2 mit          -->
+  <!-- SkiaSharp statt GDI+ und ist damit die erste Bericht-Datei ohne     -->
+  <!-- Windowsbindung. Sie liegt seit iU7-5 hier; die AUSGABE (Word,       -->
+  <!-- Excel, Bausteine) bleibt bis zu ihrer Etappe in der Anwendung.      -->
+  <!--                                                                    -->
+  <!-- WARUM DIE NATIVEN BIBLIOTHEKEN BEDINGT SIND. SkiaSharp ist zur      -->
+  <!-- Haelfte verwaltet und zur Haelfte nativ; das verwaltete Paket       -->
+  <!-- allein zeichnet nicht. Welche native Fassung passt, entscheidet     -->
+  <!-- das BAUSYSTEM, nicht das Ziel-Framework - deshalb                   -->
+  <!-- IsOSPlatform und nicht TargetFramework: derselbe Kern wird auf      -->
+  <!-- Linux (CI), macOS (CI) und Windows (Arbeitsplatz) gebaut, und       -->
+  <!-- jede Umgebung soll genau ihre eigene Native ziehen statt aller      -->
+  <!-- drei. Win32 steht mit dabei, weil windows.yml die Kerntests         -->
+  <!-- ausfuehrt (dotnet test WP-Plan.Kern.slnf) - dort gibt es die        -->
+  <!-- Native der Anwendung nicht, EPOS.Kern.Tests haengt allein an        -->
+  <!-- diesem Projekt. Fuer iOS/Mac Catalyst gilt das erst mit iU10:       -->
+  <!-- die dortigen Nativen kommen mit dem Multi-Targeting dazu.           -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies"
+                      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+  </ItemGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- ================================================================== -->
+  <!-- DER KERNSATZ - 168 Dateien, hier im Projektordner (iU4-5)           -->
+  <!--                                                                    -->
+  <!-- Aufgenommen per Globbing; die Ordnerstruktur ist die aus            -->
+  <!-- WindowsFormsApplication1 uebernommene: Allgemein\..., Controller\,  -->
+  <!-- Model\, MyResource\, Properties\. Was dazugehoert und was mit       -->
+  <!-- Absicht in der Anwendung geblieben ist, steht in EPOS.Kern\CLAUDE.md-->
+  <!-- (kurz: Rechenkern, Zugriffsschicht, Modelle, Wirtschaftlichkeit und -->
+  <!-- die DATEN-Haelfte des Berichts sind hier; Bericht-AUSGABE,          -->
+  <!-- Schemamigration, Kataloge, Import, KI, Hilfe, Lizenz, Export und    -->
+  <!-- alles mit WinForms sind dort).                                      -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <!-- Generierter Typkatalog aus sql\schema - dieselbe EINE Quelle, die auch
+         das Hauptprojekt bis iU4-4 verlinkt hat (Arbeitspaket S2). Bleibt als
+         Link, weil die Datei von sql\tools\Erzeuge-Schema.ps1 erzeugt wird. -->
+    <Compile Include="..\sql\schema\SchemaTypKatalog.g.cs" Link="Allgemein\SchemaTypKatalog.g.cs" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Entwurfszeit-Verknuepfungen (aus WindowsFormsApplication1.csproj    -->
+  <!-- uebernommen, damit Visual Studio die erzeugten Dateien weiterhin    -->
+  <!-- ihren Quellen zuordnet).                                            -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Update="MyResource\Resource.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!-- H13 (06.09.2026): Hilferubrik "Berechnung" - eine .wiki-Datei je Wikiseite, eingebettet fuer
+       das KI-Wissen (HilfeWissen) und als Quelle der Wikiseiten (Anwender kopiert sie ins Wiki). -->
+  <ItemGroup>
+    <EmbeddedResource Include="Allgemein\Hilfe\Berechnung\*.wiki" LogicalName="EPOS.Kern.Hilfe.Berechnung.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- ================================================================== -->
+  <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
+  <!--                                                                    -->
+  <!-- Der Basisname steht in MyResource\Resource.Designer.cs:43 als       -->
+  <!-- "WindowsFormsApplication1.MyResource.Resource"; der LogicalName     -->
+  <!-- schreibt ihn fest, damit er nicht am Ordnerpfad dieses Projekts     -->
+  <!-- haengt. Beide .resx fuehren ausschliesslich Zeichenketten.          -->
+  <!-- ================================================================== -->
+  <ItemGroup>
+    <!-- KEIN Code-Generator mehr (06.09.2026, Anwenderbefund beim Pull): Visual Studio
+         schrieb Resource.Designer.cs bei jeder .resx-Aenderung neu und wich damit vom
+         eingecheckten Stand ab, den Werkzeuge/ResourceDesigner/designer_neu.py erzeugt.
+         Die Designer-Datei entsteht seither NUR ueber dieses Werkzeug (EPOS.Kern/CLAUDE.md). -->
+    <EmbeddedResource Update="MyResource\Resource.resx">
+      <SubType>Designer</SubType>
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.resources</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Update="MyResource\Resource.en-US.resx">
+      <LogicalName>WindowsFormsApplication1.MyResource.Resource.en-US.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

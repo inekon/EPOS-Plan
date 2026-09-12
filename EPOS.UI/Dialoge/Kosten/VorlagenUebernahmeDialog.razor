@@ -1,0 +1,353 @@
+﻿@* Uebernahme Stamm -> Projekt (iU9-W1.4).
+
+   Vorbild: Views/Kosten/Form_VorlagenUebernahme.cs (253 Z.) und .Designer.cs
+   (Etappe KD3, Konzept Kostendialoge Rev. 1.2, § 8). Uebernommen sind der
+   Feldbestand der Feldkarte, das Sperrwerk der drei Klapplisten
+   (Auswahl_Geaendert), das Nachziehen der Anlagenliste beim Projektwechsel
+   (QuellProjekt_Geaendert) und die Klartext-Vorschau nach jeder Aenderung.
+
+   DER DIALOG ZAEHLT UND SCHREIBT NICHT SELBST. Beides erledigt die Huelle
+   Views/Kosten/VorlagenUebernahmeHuelle.cs ueber KostenVorlagenUebernahmeCtrl —
+   mit denselben Filterparametern wie der Vorlaeufer (Regel F4/F5). Die
+   Komponente kennt nur drei Delegaten: AnlagenZu, Vorschau, Uebernehmen.
+
+   ANWENDERENTSCHEID 10.09.2026 (Ae25) — OK UND ABBRECHEN. "OK = aus der Maske
+   heraus und uebernehmen, Abbrechen = aus der Maske raus, nicht speichern."
+   Bis dahin galt A-7 aus B5b: Der Primaerknopf hiess "Uebernehmen", schrieb
+   sofort und LIESS DIE MASKE STEHEN, um die Meldung des Controllers dort zu
+   zeigen, wo sie entstanden war. Der Anwender hat das am 10.09.2026 verworfen —
+   eine Maske mit einem Knopf, der schreibt, und einem zweiten, der nur
+   schliesst, sagt nicht, wie man sie ohne Wirkung wieder verlaesst.
+
+   Geblieben ist die Entscheidungsgrundlage VOR dem Schreiben: Die Vorschauzeile
+   zaehlt, was angelegt wuerde, und OK ist gesperrt, solange das nichts ist.
+
+   DIE EINE AUSNAHME: ein FEHLSCHLAG haelt die Maske offen. Ein Lauf, der nicht
+   geschrieben hat, muss seinen Grund zeigen koennen, und er muss sich
+   korrigieren lassen; wegzuschliessen, was man noch braucht, waere kein
+   Abbrechen, sondern ein Verlust (dieselbe Ueberlegung wie beim
+   Hintergrundklick der Ueberlagerung). *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    @* Ae25: Die Ueberschrift steht nur, wo sie nicht schon ueber der Maske
+       steht. Als Bereich einer Ueberlagerung traegt DEREN Kopf den Titel; der
+       Wirt setzt TitelText dann leer, und hier bleibt der Hilfeknopf. *@
+    <div class="epos-dialog-kopf">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    <p class="epos-kontextzeile">@KontextText</p>
+
+    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+       EINSPALTIG, weil der Block eine Reihenfolge traegt - Ziel, dann Quelle,
+       dann die Quelle im Einzelnen; nebeneinander gestellt liest sie sich nicht
+       mehr als Weg. *@
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@LabelZielProjekt"
+                         Eintraege="@Zielprojekte"
+                         Auswahl="@_zielProjekt"
+                         Aktiv="@ZielWaehlbar"
+                         AuswahlChanged="BeiZielProjekt" />
+
+            <Optionsgruppe Bezeichnung="@LabelQuelle"
+                           Eintraege="@_quellen"
+                           Auswahl="@(_ausVorlage ? QUELLE_VORLAGE : QUELLE_PROJEKT)"
+                           Gesperrt="@_gesperrteQuellen"
+                           AuswahlChanged="BeiQuelle" />
+
+            <Auswahlfeld Bezeichnung="@LabelQuellVorlage"
+                         Eintraege="@Quellvorlagen"
+                         Auswahl="@_quellVorlage"
+                         Aktiv="@_ausVorlage"
+                         AuswahlChanged="BeiQuellVorlage" />
+
+            <Auswahlfeld Bezeichnung="@LabelQuellProjekt"
+                         Eintraege="@Quellprojekte"
+                         Auswahl="@_quellProjekt"
+                         Aktiv="@(!_ausVorlage)"
+                         AuswahlChanged="BeiQuellProjekt" />
+
+            <Auswahlfeld Bezeichnung="@LabelQuellAnlage"
+                         Eintraege="@_quellAnlagen"
+                         Auswahl="@_quellAnlage"
+                         Aktiv="@(!_ausVorlage)"
+                         AuswahlChanged="BeiQuellAnlage" />
+        </KindInhalt>
+    </Formularraster>
+
+    <Herleitungszeile Text="@_vorschau" />
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@(_meldungIstFehler ? WarnStufe.Fehler : WarnStufe.Hinweis)"
+                    Text="@_meldung" />
+    }
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(!_uebernahmeMoeglich)" @onclick="BeiOk">@OkText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Id der Option „Aus Vorlage/Variante".</summary>
+    public const int QUELLE_VORLAGE = 0;
+
+    /// <summary>Id der Option „Aus Projekt/Anlage".</summary>
+    public const int QUELLE_PROJEKT = 1;
+
+    /// <summary>Die waehlbaren Zielprojekte (Id, Anzeigetext).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Zielprojekte { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorgewaehltes Zielprojekt; <c>null</c> = der erste Eintrag.</summary>
+    [Parameter] public int? ZielProjektVorwahl { get; set; }
+
+    /// <summary>
+    /// Darf das Ziel gewechselt werden? Im Projektmodus steht es fest
+    /// (<c>cmbZielProjekt.Enabled = zielProjektId &lt;= 0</c>).
+    /// </summary>
+    [Parameter] public bool ZielWaehlbar { get; set; } = true;
+
+    /// <summary>Die Vorlagen/Varianten des Admin-Katalogs (Ä11).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Quellvorlagen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorgewaehlte Quellvorlage; <c>null</c> = der erste Eintrag.</summary>
+    [Parameter] public int? QuellVorlageVorwahl { get; set; }
+
+    /// <summary>Die waehlbaren Quellprojekte (Ä21: auch das eigene).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Quellprojekte { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Vorgewaehltes Quellprojekt; <c>null</c> = der erste Eintrag.</summary>
+    [Parameter] public int? QuellProjektVorwahl { get; set; }
+
+    /// <summary>
+    /// Die Anlagen der Komponente im gewaehlten Quellprojekt, plus
+    /// „(ohne Anlagenzuordnung)", wo lose Positionen liegen (Ä21). Die Huelle
+    /// liest sie ueber <c>ProjektEnergietraegerCtrl.AnlagenMitTraeger</c>.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<(int Id, string Text)>>? AnlagenZu { get; set; }
+
+    /// <summary>Der Klartext der Vorschau und die Frage, ob sich uebernehmen laesst.</summary>
+    [Parameter] public Func<VorlagenUebernahmeWahl, VorlagenUebernahmeVorschau>? Vorschau { get; set; }
+
+    /// <summary>Der Schreibweg. Rueckgabe = die Meldungen des Controllers.</summary>
+    [Parameter] public Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>? Uebernehmen { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist zu Ende. <c>true</c> = die Uebernahme lief und hat
+    /// geschrieben (Ae25: der Rueckgabewert von OK), <c>false</c> = abgebrochen.
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Fenstertitel (Designer: lblKopfTitel); leer = die Ueberschrift
+    /// steht schon ueber der Maske (Ae25, Ueberlagerungskopf).</summary>
+    [Parameter] public string TitelText { get; set; } = "Übernahme ins Projekt";
+
+    /// <summary>Kontextzeile „‹Komponente› · ‹Kategorie›" (Designer: lblKontext).</summary>
+    [Parameter] public string KontextText { get; set; } = "";
+
+    /// <summary>Beschriftung der Zielliste (Designer: lblZiel).</summary>
+    [Parameter] public string LabelZielProjekt { get; set; } = "Zielprojekt:";
+
+    /// <summary>Titel der Quellgruppe. Der Vorlaeufer hatte keinen.</summary>
+    [Parameter] public string LabelQuelle { get; set; } = "";
+
+    /// <summary>Erste Option (rbQuelleVorlage).</summary>
+    [Parameter] public string LabelQuelleVorlage { get; set; } = "Aus Vorlage/Variante:";
+
+    /// <summary>Zweite Option (rbQuelleProjekt, Ä21).</summary>
+    [Parameter] public string LabelQuelleProjekt { get; set; } = "Aus Projekt/Anlage:";
+
+    /// <summary>Beschriftung der Vorlagenliste. Der Vorlaeufer liess sie leer —
+    /// die Beschriftung stand im Optionsknopf darueber (A-11).</summary>
+    [Parameter] public string LabelQuellVorlage { get; set; } = "Vorlage/Variante:";
+
+    /// <summary>Beschriftung der Quellprojektliste (A-11).</summary>
+    [Parameter] public string LabelQuellProjekt { get; set; } = "Quellprojekt:";
+
+    /// <summary>Beschriftung der Quellanlagenliste (A-11).</summary>
+    [Parameter] public string LabelQuellAnlage { get; set; } = "Quellanlage:";
+
+    /// <summary>Ae25: Beschriftung des Primaerknopfes — uebernehmen UND schliessen.</summary>
+    [Parameter] public string OkText { get; set; } = "OK";
+
+    /// <summary>Ae25: Beschriftung des Knopfes, der ohne Wirkung schliesst.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_VorlagenUebernahme.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _zielProjekt;
+    private int? _quellVorlage;
+    private int? _quellProjekt;
+    private int? _quellAnlage;
+    private bool _ausVorlage = true;
+    private bool _uebernahmeMoeglich;
+
+    private string _vorschau = "";
+    private string _meldung = "";
+    private bool _meldungIstFehler;
+
+    private (int Id, string Text)[] _quellen = Array.Empty<(int, string)>();
+    private int[]? _gesperrteQuellen;
+    private IReadOnlyList<(int Id, string Text)> _quellAnlagen = Array.Empty<(int, string)>();
+
+    /// <summary>Steht die Quelle auf „Vorlage"? (Pruefhilfe fuer Tests.)</summary>
+    public bool AusVorlage => _ausVorlage;
+
+    /// <summary>Die gewaehlte Quellanlage (Pruefhilfe fuer Tests.)</summary>
+    public int? QuellAnlage => _quellAnlage;
+
+    /// <summary>Ist der Uebernehmen-Knopf bedienbar? (Pruefhilfe fuer Tests.)</summary>
+    public bool UebernahmeMoeglich => _uebernahmeMoeglich;
+
+    protected override void OnInitialized()
+    {
+        _quellen = new[]
+        {
+            (QUELLE_VORLAGE, LabelQuelleVorlage),
+            (QUELLE_PROJEKT, LabelQuelleProjekt)
+        };
+
+        _zielProjekt = ZielProjektVorwahl ?? ErsteId(Zielprojekte);
+        _quellVorlage = QuellVorlageVorwahl ?? ErsteId(Quellvorlagen);
+        _quellProjekt = QuellProjektVorwahl ?? ErsteId(Quellprojekte);
+
+        // rbQuelleVorlage.Enabled = _vorlagen.Count > 0;
+        // if (_vorlagen.Count == 0) rbQuelleProjekt.Checked = true;
+        if (Quellvorlagen.Count == 0)
+        {
+            _gesperrteQuellen = new[] { QUELLE_VORLAGE };
+            _ausVorlage = false;
+        }
+
+        AnlagenNachziehen();
+        VorschauAktualisieren();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private static int? ErsteId(IReadOnlyList<(int Id, string Text)> liste)
+        => liste.Count > 0 ? liste[0].Id : (int?)null;
+
+    private void BeiZielProjekt(int? id)
+    {
+        _zielProjekt = id;
+        VorschauAktualisieren();
+    }
+
+    /// <summary>Wie <c>Auswahl_Geaendert</c>: Die Sperren der drei Listen folgen
+    /// der Quelle, danach wird die Vorschau neu gezogen.</summary>
+    private void BeiQuelle(int? id)
+    {
+        _ausVorlage = id != QUELLE_PROJEKT;
+        VorschauAktualisieren();
+    }
+
+    private void BeiQuellVorlage(int? id)
+    {
+        _quellVorlage = id;
+        VorschauAktualisieren();
+    }
+
+    /// <summary>Wie <c>QuellProjekt_Geaendert</c>: erst die Anlagenliste, dann die Vorschau.</summary>
+    private void BeiQuellProjekt(int? id)
+    {
+        _quellProjekt = id;
+        AnlagenNachziehen();
+        VorschauAktualisieren();
+    }
+
+    private void BeiQuellAnlage(int? id)
+    {
+        _quellAnlage = id;
+        VorschauAktualisieren();
+    }
+
+    /// <summary>Wie <c>QuellAnlagenFuellen</c>: Liste holen, ersten Eintrag waehlen.</summary>
+    private void AnlagenNachziehen()
+    {
+        _quellAnlagen = AnlagenZu is null || !_quellProjekt.HasValue
+            ? Array.Empty<(int, string)>()
+            : AnlagenZu(_quellProjekt.Value);
+        _quellAnlage = ErsteId(_quellAnlagen);
+    }
+
+    /// <summary>Wie <c>VorschauAktualisieren</c>: Klartext und Knopfzustand in einem Zug.</summary>
+    private void VorschauAktualisieren()
+    {
+        if (Vorschau is null)
+        {
+            _vorschau = "";
+            _uebernahmeMoeglich = false;
+            return;
+        }
+
+        VorlagenUebernahmeVorschau antwort = Vorschau(Wahl());
+        _vorschau = antwort.Text;
+        _uebernahmeMoeglich = antwort.UebernahmeMoeglich;
+    }
+
+    private VorlagenUebernahmeWahl Wahl() => new(
+        _ausVorlage,
+        _zielProjekt ?? 0,
+        _quellVorlage ?? 0,
+        _quellProjekt ?? 0,
+        _quellAnlage ?? 0);
+
+    /// <summary>
+    /// ANWENDERENTSCHEID 10.09.2026 (Ae25): OK uebernimmt die aktuelle Wahl UND
+    /// verlaesst die Maske. Der Erfolg wird nicht mehr in der Maske gemeldet — die
+    /// Kostenverwaltung laedt danach ohnehin neu und zeigt die angelegten Zeilen.
+    ///
+    /// <para>Ein FEHLSCHLAG haelt die Maske offen (Begruendung im Kopfkommentar):
+    /// Er traegt einen Grund, den niemand mehr lesen koennte, und eine Wahl, die
+    /// sich noch korrigieren laesst.</para>
+    /// </summary>
+    private Task BeiOk()
+    {
+        if (!_uebernahmeMoeglich || Uebernehmen is null) return Task.CompletedTask;
+
+        VorlagenUebernahmeAntwort antwort = Uebernehmen(Wahl());
+        if (antwort.Fehler)
+        {
+            _meldung = antwort.Meldung;
+            _meldungIstFehler = true;
+            // Nach einem Teillauf stimmt die Vorschau nicht mehr — sie zaehlt neu.
+            VorschauAktualisieren();
+            return Task.CompletedTask;
+        }
+
+        return Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>Ae25: Abbrechen verlaesst die Maske, ohne zu schreiben.</summary>
+    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter bleibt unbelegt: OK schreibt (A-7 aus B5b, von Ae25 nicht beruehrt).
+        "Escape" => BeiAbbrechen(),
+        _ => Task.CompletedTask
+    };
+}

@@ -1,0 +1,186 @@
+﻿@* Die Eingabezeile des Chats: Frage tippen, "Fragen" oder "Nur suchen"
+   (iU9-W15b.7, Vorbild Form_KiChat._eingabe + _btnSenden + _btnSuchen).
+
+   ENTER SENDET, UMSCHALT+ENTER MACHT EINE NEUE ZEILE (Bestand :954-966). Das ist
+   die Bedienregel des Chatfensters und bleibt woertlich: Wer eine mehrzeilige
+   Frage tippen will, kommt mit Umschalt weiter; wer fertig ist, drueckt Enter.
+
+   IM HILFE-BETRIEB gibt es nur einen Knopf. "Nur suchen" grenzt die kostenlose
+   Suche gegen "Fragen" ab - ist die KI abgeschaltet, gibt es nichts abzugrenzen,
+   und der Knopf heisst schlicht "Suchen" (KI_HILFEBETRIEB_SUCHEN_BTN). Diese
+   Komponente bekommt beide Beschriftungen fertig herein.
+
+   SIE SENDET NICHTS. Sie meldet "der Anwender moechte fragen" bzw. "... suchen"
+   und leert danach das Feld - genau wie der Bestand (:996).
+
+   EINE KNOPFREIHE (Anwenderbefund W15b-E-3, Windows-Abnahme 05.09.2026). Die
+   Knoepfe standen rechts UNTEREINANDER, und der Aktionsschalter samt "Werkzeuge..."
+   stand als eigener Block darueber. Jetzt gibt es eine Reihe unter dem Feld:
+   links der Vorspann (der Aktionsschalter), rechts Fragen, Nur suchen und der
+   Zusatz ("Werkzeuge..."). Beide Schlitze sind leer, wenn der Wirt nichts
+   hineingibt - die Zeile bleibt dann, wie sie war.
+
+   DAS FELD WIRD NACH DEM SENDEN WIRKLICH LEER (Anwenderbefund W15b-B-2, zweiter
+   Teil: "Der ganze Block steht ZWEIMAL untereinander im Verlauf"). Warum es das
+   vorher nicht wurde, steht bei BeiTaste. *@
+
+@namespace EPOS.UI.Dialoge.Hilfe
+
+<div class="epos-kieingabe">
+    <textarea class="epos-eingabe epos-eingabe--mehrzeilig epos-kieingabe-feld"
+              rows="3" aria-label="@Bezeichnung" placeholder="@Platzhalter"
+              disabled="@Gesperrt" value="@_text"
+              @oninput="BeiEingabe" @onkeydown="BeiTaste" @onkeydown:preventDefault="_abfangen"></textarea>
+
+    <div class="epos-kieingabe-knoepfe">
+        <span class="epos-kieingabe-vorspann">@Vorspann</span>
+        <span class="epos-kieingabe-fueller"></span>
+
+        @if (MitModell)
+        {
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@Gesperrt" @onclick="() => Klick(true)">@FragenText</button>
+        }
+        <button type="button" class="epos-knopf"
+                disabled="@Gesperrt" @onclick="() => Klick(false)">@SuchenText</button>
+        @Zusatzknoepfe
+    </div>
+</div>
+
+@code {
+    /// <summary>Beschriftung des Feldes fuer Sprachausgaben.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Grauer Hinweistext im leeren Feld.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>
+    /// Steht der Knopf „Fragen" (Modellbetrieb)? Im Hilfe-Betrieb <c>false</c> —
+    /// dann gibt es nur die lokale Suche.
+    /// </summary>
+    [Parameter] public bool MitModell { get; set; } = true;
+
+    /// <summary>Beschriftung „Fragen" (<c>KI_CHAT_BTN_FRAGEN</c>).</summary>
+    [Parameter] public string FragenText { get; set; } = "";
+
+    /// <summary>
+    /// Beschriftung der Suche — im Regelbetrieb „Nur suchen"
+    /// (<c>KI_CHAT_BTN_SUCHEN</c>), im Hilfe-Betrieb „Suchen"
+    /// (<c>KI_HILFEBETRIEB_SUCHEN_BTN</c>).
+    /// </summary>
+    [Parameter] public string SuchenText { get; set; } = "";
+
+    /// <summary>Es läuft etwas — Feld und Knöpfe sind gesperrt.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Links in der Knopfreihe — dort steht der Aktionsschalter (W15b‑E‑3);
+    /// leer = nichts.
+    /// </summary>
+    [Parameter] public RenderFragment? Vorspann { get; set; }
+
+    /// <summary>
+    /// Hinter „Nur suchen" — dort steht „Werkzeuge…" (W15b‑E‑3); leer = nichts.
+    /// </summary>
+    [Parameter] public RenderFragment? Zusatzknoepfe { get; set; }
+
+    /// <summary>
+    /// Der Anwender will fragen. <c>true</c> = mit Modell, <c>false</c> = nur suchen.
+    /// Der Text kommt über <see cref="Frage"/> mit.
+    /// </summary>
+    [Parameter] public EventCallback<(string Frage, bool MitKi)> Abgeschickt { get; set; }
+
+    private string _text = "";
+    private bool _abfangen;
+
+    /// <summary>
+    /// Merkt, dass gerade per Enter gesendet wurde — das nächste Eingabeereignis
+    /// ist dann der Zeilenumbruch des Browsers und wird verworfen.
+    /// </summary>
+    private bool _nachEnter;
+
+    /// <summary>Der aktuelle Feldinhalt — für den Wirt, der ihn zurücksetzen darf.</summary>
+    public string Frage => _text;
+
+    /// <summary>
+    /// Übernimmt die Eingabe — <b>außer</b> der, die unmittelbar auf ein sendendes
+    /// Enter folgt.
+    /// </summary>
+    /// <remarks>
+    /// Das ist die Behebung von <b>W15b‑B‑2</b> (zweiter Teil): Der Block stand
+    /// zweimal im Verlauf, weil die Frage nach dem Absenden im Feld stehen blieb
+    /// und der Anwender ein zweites Mal Enter drückte. Warum sie stehen blieb,
+    /// steht bei <see cref="BeiTaste"/>.
+    /// </remarks>
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        if (_nachEnter)
+        {
+            _nachEnter = false;
+            _text = "";
+            StateHasChanged();
+            return;
+        }
+
+        _text = e.Value?.ToString() ?? "";
+    }
+
+    /// <summary>
+    /// Enter sendet, Umschalt+Enter macht eine neue Zeile (Bestand <c>:954-966</c>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b><c>@@onkeydown:preventDefault</c> wird beim ZEICHNEN ausgewertet, nicht beim
+    /// Ereignis.</b> Blazor backt den Wert in die Ereignisanmeldung ein. Beim ersten
+    /// sendenden Enter steht <see cref="_abfangen"/> deshalb noch auf <c>false</c>
+    /// (die vorherige Taste war ein Buchstabe) — der Browser führt seine
+    /// Standardaktion aus und trägt einen Zeilenumbruch in das Feld ein. Das
+    /// anschließende <c>oninput</c> meldet „alte Frage + \n" und macht damit das
+    /// <c>_text = ""</c> aus <see cref="Senden"/> wieder zunichte: Die Frage stand
+    /// nach dem Absenden weiter im Feld.
+    /// </para>
+    /// <para>
+    /// Der Anwender sah eine unveränderte Eingabe, drückte noch einmal Enter — und
+    /// dieselbe Frage ging ein zweites Mal hinaus. Genau das ist der doppelte Block
+    /// des Bildschirmfotos zu <b>W15b‑B‑2</b>. Ein <c>preventDefault="true"</c> wäre
+    /// die falsche Behebung: Es nähme Umschalt+Enter den Zeilenumbruch. Statt dessen
+    /// wird das EINE nachfolgende Eingabeereignis verworfen
+    /// (<see cref="BeiEingabe"/>) — die Merkstelle wird von jeder anderen Taste
+    /// wieder gelöscht, damit sie nicht die nächste Eingabe schluckt.
+    /// </para>
+    /// </remarks>
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        bool sendet = e.Key == "Enter" && !e.ShiftKey;
+        _abfangen = sendet;
+
+        if (!sendet)
+        {
+            _nachEnter = false;
+            return;
+        }
+
+        // Nur wenn wirklich etwas hinausgeht, ist mit einem nachlaufenden
+        // Eingabeereignis zu rechnen. Ein Enter auf leerem Feld sendet nichts und
+        // duerfte sonst die naechste Eingabe schlucken.
+        _nachEnter = await Senden(MitModell);
+    }
+
+    /// <summary>
+    /// Der Knopfweg. Er wirft den Rueckgabewert weg — ein <c>Task&lt;bool&gt;</c>
+    /// waere an einem <c>@@onclick</c> nur mit einer stillen Umwandlung zu binden,
+    /// und still soll hier nichts sein.
+    /// </summary>
+    private Task Klick(bool mitKi) => Senden(mitKi);
+
+    /// <summary>Sendet; liefert <c>true</c>, wenn wirklich etwas hinausgegangen ist.</summary>
+    private async Task<bool> Senden(bool mitKi)
+    {
+        string frage = (_text ?? "").Trim();
+        if (frage.Length == 0 || Gesperrt) return false;
+
+        _text = "";
+        await Abgeschickt.InvokeAsync((frage, mitKi));
+        return true;
+    }
+}

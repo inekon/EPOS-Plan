@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1.Referenzlauf
     /// Referenzlauf-Suite (Paket B1, Kapitel 9 des Simulationskonzepts).
     ///
     /// Modi:
-    ///   lauf       [--ziel &lt;ordner&gt;] [--projekte 1007,1009] [--timeout &lt;sek&gt;]
+    ///   lauf       [--ziel &lt;ordner&gt;] [--projekte 1007,1009] [--timeout &lt;sek&gt;] [--quelle &lt;db&gt;]
     ///   vergleich  &lt;refOrdner&gt; &lt;neuOrdner&gt; [--ohne &lt;schluessel,schluessel&gt;]
     ///   pruefen    &lt;ordner&gt;
     ///   liste      [&lt;dbOrdner&gt;]
@@ -43,6 +43,14 @@ namespace WindowsFormsApplication1.Referenzlauf
             try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
 
             OberflaechenspracheSetzen();
+
+            // DIE WERKZEUG-FREIGABE DER SCHREIBNAHT (Welle iF30) - EINE benannte Zeile,
+            // ausdruecklich und nicht durch Auslassen. Die Suite laeuft ohne Lizenz und
+            // SCHREIBT (SimuliereUndSpeichere legt je Projekt einen Ergebniskopf an, der
+            // Migrationsmodus hebt eine Datenbank). Ohne sie fiele der Rechennachweis rot
+            // aus - aus einem Grund, der mit dem Rechenweg nichts zu tun hat.
+            Schreibnaht.WerkzeugFreigabe("Referenzlauf-Suite (Rechennachweis ohne Lizenz)");
+            Console.WriteLine("Schreibnaht: freigegeben für " + Schreibnaht.WerkzeugGrund);
 
             if (args.Length == 0) { Hilfe(); return 2; }
 
@@ -122,7 +130,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         {
             Console.WriteLine("Referenzlauf-Suite EPOS-Plan (Paket B1)");
             Console.WriteLine();
-            Console.WriteLine("  Referenzlauf.exe lauf [--ziel <ordner>] [--projekte 1007,1009] [--timeout <sek>]");
+            Console.WriteLine("  Referenzlauf.exe lauf [--ziel <ordner>] [--projekte 1007,1009] [--timeout <sek>] [--quelle <db>]");
             Console.WriteLine("  Referenzlauf.exe vergleich <refOrdner> <neuOrdner> [--ohne <schluessel,schluessel>]");
             Console.WriteLine("  Referenzlauf.exe pruefen <ordner>");
             Console.WriteLine("  Referenzlauf.exe liste [<dbOrdner>]");
@@ -155,10 +163,13 @@ namespace WindowsFormsApplication1.Referenzlauf
             log.Leerzeile();
 
             // --- 1. Arbeitskopie ---------------------------------------------------------
-            string quelle = DbUmgebung.ProduktivQuelleFinden(log);
+            // --quelle richtet den Lauf auf eine ausdruecklich benannte Datenbank statt auf
+            // die produktive Ablage. Die Endung entscheidet ueber den Zweig: .accdb oder
+            // .sqlite (Paket S7, Verhaltensbeweis auf EINEM eingefrorenen Datenstand).
+            string quelle = DbUmgebung.ProduktivQuelleFinden(log, Argument(args, "--quelle"));
             if (quelle == null)
             {
-                log.FehlerZeile("Keine Kenndaten.accdb gefunden - Abbruch.");
+                log.FehlerZeile("Keine Datenbank gefunden - Abbruch.");
                 return 2;
             }
             DbUmgebung.ArbeitskopieAnlegen(quelle, arbeitskopieOrdner, log);
@@ -415,7 +426,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             if (arbeitskopieOrdner == null)
             {
                 arbeitskopieOrdner = Path.Combine(wurzel, ORDNER_REFERENZLAEUFE, ORDNER_ARBEITSKOPIE);
-                string quelle = DbUmgebung.ProduktivQuelleFinden(log);
+                string quelle = DbUmgebung.ProduktivQuelleFinden(log, Argument(args, "--quelle"));
                 if (quelle == null) return 2;
                 DbUmgebung.ArbeitskopieAnlegen(quelle, arbeitskopieOrdner, log);
             }
@@ -478,7 +489,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             kopf.Add("");
             kopf.Add("**Quelle (produktiv, nur gelesen):** `" + quelle + "`");
             kopf.Add("");
-            kopf.Add("**Arbeitskopie (beschrieben):** `" + Path.Combine(arbeitskopie, DbUmgebung.DB_DATEINAME) + "`");
+            kopf.Add("**Arbeitskopie (beschrieben):** `" + DbUmgebung.ArbeitskopieDatei(arbeitskopie) + "`");
             kopf.Add("");
             kopf.Add("**Zielordner:** `" + zielWurzel + "`");
             kopf.Add("");

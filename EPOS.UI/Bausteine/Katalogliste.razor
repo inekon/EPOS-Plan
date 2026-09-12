@@ -1,0 +1,801 @@
+﻿@* DIE EINE KATALOGLISTE DES HAUSES (Anwenderentscheid W14a-E-10 vom 07.09.2026,
+   Konzept_Katalogfilter Rev. 3, Kapitel 5.6, Schritte S1.2, S1.3 und S1.8).
+
+   DER ENTSCHEID IN EINEM SATZ: Ueber der Liste steht nur noch die SUCHE; alles,
+   wonach gefiltert wird, sitzt IM SPALTENKOPF neben dem Namen - mit Sortierung
+   und einem Feld "enthaelt...". Und: jeder Katalogdialog sieht gleich aus, die
+   Waermepumpe wie der Heizkessel wie die PV-Module.
+
+   ZONE A ist EINE Zeile (5.6.4): links das Suchfeld ueber alle Spalten, rechts
+   die Trefferzahl ("15 von 63 Saetzen") und - nur wenn ein Spaltenfilter
+   gesetzt ist - der Textknopf "Filter zuruecksetzen". KEINE Filterzeile, KEINE
+   Chips, KEINE Aufzaehlung der gesetzten Filter: Die hat der Anwender mit
+   "nicht separat, ausser 'Suche' ueber alle Felder" abgewaehlt. Woran man
+   sieht, dass gefiltert wird, ist der GEFUELLTE Trichter im Spaltenkopf und die
+   Trefferzahl.
+
+   GEFILTERT WIRD VOR DEM RASTER (5.6.6) - das ist der Punkt, an dem eine
+   Umsetzung schiefgehen kann. Raster.razor ist eine duenne Huelle um QuickGrid,
+   und QUICKGRID FILTERT NICHT: ColumnOptions ist nur ein Ort im Kopf, an dem
+   ein Bedienelement stehen darf. Diese Komponente laesst Katalogfilter.Anwenden
+   im KERN die Menge einschraenken und reicht die BEREITS EINGESCHRAENKTE Liste
+   als Zeilen weiter. Fuer die 20 749 PV-Module heisst das: Das Raster bekommt
+   nach dem Filtern 15 Zeilen und virtualisiert gar nicht mehr - genau der
+   Uebergang, den der @key-Fix W6-B-2 abdeckt. Der Spaltenfilter geht deshalb
+   NICHT ueber RefreshDataAsync(); die Begruendung steht im Kopf von
+   Raster.razor.
+
+   DER FILTERZUSTAND LEBT IM WIRT, nicht im Popover (offener Punkt O-6): Ein
+   neues QuickGrid heisst auch ein geschlossenes Popover. Der Stand kommt
+   deshalb als Parameter herein (Katalogfilterstand); mit Stufe S2.5 haelt ihn
+   ein Woerterbuch je Katalog ueber die Sitzung, ohne dass sich hier etwas
+   aendert.
+
+   DIE MARKIERUNG HAENGT AM BEZEICHNER, nicht an der Zeilennummer. Damit BLEIBT
+   die gewaehlte Zeile gewaehlt, auch wenn der Filter sie ausblendet (Hausregel
+   aus dem EnergietraegerDialog, W4), und sie steht nach einem Filter- oder
+   Sortierwechsel wieder da, wo sie hingehoert (S1.8).
+
+   NICHT JEDE LISTE BEKOMMT TRICHTER (5.6.5): Ohne Profil zeichnet diese
+   Komponente gar nichts - "kein Delegat, kein Bedienelement". Eine Spalte ohne
+   Filterbar traegt nur den Sortierpfeil; das sind die Wahlspalte und die
+   Kennzeichen ja/nein (Brennwert, Kuehlen).
+
+   KEIN display:flex AUF EINER ZELLE (Befund W5-B-1): Der Kopfinhalt steht in
+   einem eigenen <div class="epos-spaltenkopf"> IN der Zelle. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using WindowsFormsApplication1
+
+@if (Profil is not null)
+{
+<div class="epos-katalogliste">
+
+    @* ---------------- ZONE A - die EINE Suchzeile (5.6.4) ---------------- *@
+    <div class="epos-katalog-suchzeile">
+        <label class="epos-katalog-suchfeld">
+            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
+            <input type="search" class="epos-eingabe" value="@Stand.Suche"
+                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
+                   @oninput="BeiSuche" />
+        </label>
+
+        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
+           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
+           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
+           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
+           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
+        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
+        {
+            <label class="epos-wahl-alle"
+                   title="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                <input type="checkbox" checked="@AlleSichtbarenGewaehlt"
+                       aria-label="@(AlleSichtbarenGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                       @onchange="BeiAllewahl" />
+                <span>@Texte.AlleWaehlen</span>
+            </label>
+        }
+
+        <span class="epos-leiste-fueller"></span>
+
+        <span class="epos-katalog-treffer">@Trefferzeile</span>
+
+        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
+           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
+           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
+           markiert (Strg-Klick ist unsichtbar). *@
+        @if (!Mehrfach)
+        {
+            <button type="button" class="epos-katalog-vergleichknopf"
+                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
+                    @onclick="BeiVergleichen">@Vergleichtext</button>
+        }
+
+        @if (Stand.Gesetzt)
+        {
+            <button type="button" class="epos-katalog-ruecksetzer"
+                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
+        }
+    </div>
+
+    @if (_markierhinweis.Length > 0)
+    {
+        <p class="epos-katalog-markierhinweis" role="alert">@_markierhinweis</p>
+    }
+
+    @* ---------------- ZONE B oben - die Liste ---------------------------- *@
+    <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen"
+            Virtualisiert="@Virtualisiert">
+        <KindInhalt>
+            <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
+                            Class="epos-spalte-wahl">
+                @* EIN Klickziel, zwei Bedeutungen (S3.3): Ein blanker Klick waehlt
+                   die Zeile fuer den Detailblock - wie seit S1. Strg oder Umschalt
+                   MARKIEREN sie fuer den Vergleich und lassen die Wahl in Ruhe;
+                   Zeilenwahl meldet die Zusatztasten ueber Tastenwahl, und der
+                   Rueckruf laeuft VOR Gewaehltwerden. Eine zweite Spalte mit
+                   Kaestchen haette alle fuenfzehn Wirte um eine Spalte
+                   verbreitert - fuer eine Wahl, die man selten trifft. *@
+                @if (Mehrfach)
+                {
+                    @* MEHRFACHWAHL (Stufe S3.4): das Kontrollkaestchen der zwei
+                       Importmasken. Die REGEL - Klick schaltet um, Umschalt nimmt
+                       den Bereich dazu (W6-E-5) - bleibt beim Wirt: Sie haengt an
+                       seiner Zeilenmarkierung und an den QUELLindizes, die nur er
+                       kennt. Die Liste meldet, WAS angeklickt wurde. *@
+                    <Zeilenwahl Mehrfach="true"
+                                Gewaehlt="@(IstGewaehlt is not null && IstGewaehlt(context))"
+                                Kurztext="@Texte.SpalteWahl"
+                                Tastenwahl="@(k => BeiMehrfachwahl(context, k))"
+                                Doppelklick="@(() => Doppelklick.InvokeAsync(context))" />
+                }
+                else
+                {
+                    <Zeilenwahl Gewaehlt="@(context.Schluessel == Gewaehlt)"
+                                Kurztext="@Wahlkurztext(context)"
+                                Zusatzklasse="@Wahlklasse(context)"
+                                Tastenwahl="@(k => BeiTastenwahl(context, k))"
+                                Gewaehltwerden="@(() => BeiZeile(context))" />
+                }
+            </TemplateColumn>
+
+            @for (int i = 0; i < Profil.Spalten.Count; i++)
+            {
+                Katalogspalte spalte = Profil.Spalten[i];
+                bool rechtsbuendig = i >= Profil.Spalten.Count - 2;
+
+                <TemplateColumn TGridItem="Katalogfilterzeile" Class="@Spaltenklasse(spalte)">
+                    <HeaderTemplate>
+                        <div class="epos-spaltenkopf">
+                            @if (spalte.Sortierbar)
+                            {
+                                <button type="button" class="epos-spaltenkopf-titel"
+                                        title="@Kurztext(Texte.Sortieren, spalte)"
+                                        aria-label="@Kurztext(Texte.Sortieren, spalte)"
+                                        @onclick="@(() => BeiSortieren(spalte))">
+                                    <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                    <span class="epos-sortierpfeil" aria-hidden="true">@Sortierzeichen(spalte)</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                            }
+
+                            @if (spalte.Filterbar)
+                            {
+                                <button type="button" class="@Trichterklasse(spalte)"
+                                        aria-expanded="@((_offen == spalte.Schluessel).ToString().ToLowerInvariant())"
+                                        title="@Trichterkurztext(spalte)"
+                                        aria-label="@Trichterkurztext(spalte)"
+                                        @onclick="@(() => BeiTrichter(spalte))">
+                                    @* GEFUELLT GEGEN UMRISS und nicht nur eine andere
+                                       Farbe (Auflage des Anwenders zu Rev. 3): In
+                                       Graustufen bleibt ein voller Trichter ein voller
+                                       Trichter. Der Unterschied steht deshalb im
+                                       MARKUP (fill), die Farbe kommt nur obendrauf. *@
+                                    <svg class="epos-trichter-bild" viewBox="0 0 16 16"
+                                         width="14" height="14" aria-hidden="true" focusable="false">
+                                        <path d="M1.5 2.5 h13 l-5 6 v5.5 l-3 1.5 v-7 z"
+                                              fill="@(Stand.Gefiltert(spalte.Schluessel) ? "currentColor" : "none")"
+                                              stroke="currentColor"
+                                              stroke-width="@(Stand.Gefiltert(spalte.Schluessel) ? "2" : "1.3")"
+                                              stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+
+                                @if (_offen == spalte.Schluessel)
+                                {
+                                    <Spaltenfilter Spaltenname="@spalte.Kopftext"
+                                                   Wert="@Stand.Ausdruck(spalte.Schluessel)"
+                                                   Platzhalter="@Platzhalter(spalte)"
+                                                   Hinweis="@Hinweis(spalte)"
+                                                   TextLoeschen="@Texte.FilterLoeschen"
+                                                   RechtsBuendig="@rechtsbuendig"
+                                                   WertChanged="@(w => BeiFilter(spalte, w))"
+                                                   Geschlossen="SchliessePopover" />
+                                }
+                            }
+                        </div>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <span class="@Zellenklasse(context)">@context.Text(spalte.Schluessel)</span>
+                    </ChildContent>
+                </TemplateColumn>
+            }
+        </KindInhalt>
+    </Raster>
+
+    @if (_gefiltert.Count == 0)
+    {
+        <p class="epos-katalog-leer">@Texte.KeinTreffer</p>
+    }
+
+    @* --------- ZONE C: der VERGLEICH als Ueberlagerung (5.5, Q3) ---------
+       EINE Zeile je Parameter, EINE Spalte je Geraet. Abweichende Werte stehen
+       hervorgehoben, gleiche leise - dieselbe Anmutung wie die Kohaerenzzeile
+       ("stimmig"/"abweichend"), und die Kennzeichnung traegt WORTE, nicht nur
+       Farbe. Breit, weil drei Geraetespalten plus Parameterspalte in die
+       Regelbreite von 900 px nicht passen (epos-ueberlagerung--breit, W7-E-2). *@
+    <Ueberlagerung Offen="@_vergleichOffen" Titel="@Texte.VergleichTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit"
+                   SchliessenText="@Texte.VergleichSchliessen"
+                   Geschlossen="() => _vergleichOffen = false">
+        <KindInhalt>
+            @if (_vergleichOffen)
+            {
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster epos-vergleich">
+                        <thead>
+                            <tr>
+                                <th scope="col">@Texte.VergleichSpalteParameter</th>
+                                @foreach (Katalogfilterzeile z in Vergleichszeilen())
+                                {
+                                    <th scope="col">@z.Bezeichner</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Vergleichzeile v in _vergleich)
+                            {
+                                <tr class="@Vergleichsklasse(v)">
+                                    <th scope="row" class="epos-vergleich-name">
+                                        <span class="epos-vergleich-zeichen" aria-hidden="true">@(v.Abweichend ? "≠" : "✓")</span>
+                                        <span>@v.Name</span>
+                                        <span class="epos-vergleich-stufe">@(v.Abweichend ? Texte.VergleichAbweichend : Texte.VergleichStimmig)</span>
+                                    </th>
+                                    @foreach (string wert in v.Werte)
+                                    {
+                                        <td>@wert</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+}
+
+@code {
+    /// <summary>
+    /// Die Spalten dieses Katalogs — <c>Katalogfilterprofil.Finde(art, uebersetzer)</c>.
+    /// Ohne Profil zeichnet die Komponente nichts.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Profil { get; set; }
+
+    /// <summary>Alle Zeilen des Katalogs, UNGEFILTERT — aus <c>…StammCtrl.Katalogfilterzeilen()</c>.</summary>
+    [Parameter] public IReadOnlyList<Katalogfilterzeile> Zeilen { get; set; }
+        = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// Der Filterzustand. Er gehört dem WIRT (O-6); ohne Vorgabe führt die Komponente
+    /// einen eigenen, damit ein einfacher Wirt nichts anlegen muss.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstand { get; set; }
+
+    /// <summary>Der gewählte Bezeichner — die Markierung hängt am NAMEN, nicht an der Zeilennummer.</summary>
+    [Parameter] public string Gewaehlt { get; set; } = "";
+
+    /// <summary>
+    /// <b>Die Parameterzeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) —
+    /// derselbe Weg, aus dem die Parameterübersicht aus W14a‑E‑8 ihre Zeilen holt
+    /// (<c>ParameterUebersichtCtrl.Werte</c>): alle verfügbaren Parameter des
+    /// Katalogs, die im Rechenweg verwendeten gekennzeichnet. <b>Keine zweite
+    /// Liste.</b>
+    ///
+    /// <para><b>Ohne den Delegaten vergleicht die Liste ihre eigenen SPALTEN.</b>
+    /// Die Bedarfs- und Zeitreihenkataloge aus S3.1/S3.2 haben keine
+    /// Parameterübersicht — sie sind keine Anlagen. Für sie reicht ein Wirt den
+    /// Weg <c>BedarfStammCtrl.Vergleichszeilen</c> herein (Typ, Beschreibung,
+    /// Jahressumme und die zwölf MONATSWERTE — der Monatsgang ist der Grund, warum
+    /// zwei Profile mit derselben Jahressumme verschieden rechnen); wo auch das
+    /// fehlt, stehen die Profilspalten, und das ist immer noch mehr, als der
+    /// Bestand zeigte.</para>
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>Eine Zeile wurde gewählt.</summary>
+    [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
+
+    // =====================================================================
+    //  Mehrfachwahl (Stufe S3.4 — die zwei Importmasken)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wahlspalte trägt Kontrollkästchen statt des einen Wahlknopfes</b>
+    /// (Stufe S3.4). Damit steht die Kandidatenliste der zwei Importmasken in
+    /// derselben Liste wie die fünfzehn Katalogwirte — mit Suchfeld,
+    /// Spaltentrichtern und Sortierpfeil.
+    ///
+    /// <para><b>Die REGEL bleibt beim Wirt</b> (W6‑E‑5: Klick schaltet um,
+    /// Umschalt nimmt den Bereich dazu, Doppelklick übernimmt sofort). Sie hängt
+    /// an seiner <c>Zeilenmarkierung</c> und an den QUELLindizes, über die er die
+    /// Wahl durch einen Filterwechsel rettet — beides weiß die Liste nicht. Sie
+    /// meldet, was angeklickt wurde, und fragt über <see cref="IstGewaehlt"/>
+    /// zurück, was gewählt ist.</para>
+    ///
+    /// <para><b>Der Vergleich (S3.3) entfällt in dieser Betriebsart</b>: Strg und
+    /// Umschalt bedeuten hier die Mehrfachwahl, und zwei Bedeutungen auf einer
+    /// Taste wären keine.</para>
+    /// </summary>
+    [Parameter] public bool Mehrfach { get; set; }
+
+    /// <summary>Ist diese Zeile gewählt? Nur bei <see cref="Mehrfach"/>.</summary>
+    [Parameter] public Func<Katalogfilterzeile, bool>? IstGewaehlt { get; set; }
+
+    /// <summary>Ein Klick auf ein Kästchen — mit Zeile, ANZEIGEindex und Zusatztasten.</summary>
+    [Parameter] public EventCallback<Mehrfachklick> Mehrfachwahl { get; set; }
+
+    /// <summary>Ein Doppelklick auf eine Zeile („wählen und übernehmen", W6‑E‑5).</summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Doppelklick { get; set; }
+
+    /// <summary>
+    /// Ein Klick in der Mehrfachwahl. <paramref name="Index"/> ist die Stelle in der
+    /// GEFILTERTEN Liste — genau das, worauf <c>Zeilenmarkierung</c> rechnet.
+    /// </summary>
+    public sealed record Mehrfachklick(Katalogfilterzeile Zeile, int Index,
+                                       bool Strg, bool Umschalt);
+
+    /// <summary>
+    /// „Alle" in der Mehrfachwahl (W13‑B‑5): <paramref name="Waehlen"/> = alle sichtbaren
+    /// Zeilen wählen, sonst abwählen; <paramref name="Zeilen"/> die gefilterte Liste in
+    /// Anzeigereihenfolge — dieselbe, auf der die <c>Zeilenmarkierung</c> des Wirts rechnet.
+    /// </summary>
+    public sealed record Mehrfachalle(bool Waehlen, IReadOnlyList<Katalogfilterzeile> Zeilen);
+
+    /// <summary>Der Alle-Schalter (W13‑B‑5) — ohne Delegat steht er nicht in der Suchzeile.</summary>
+    [Parameter] public EventCallback<Mehrfachalle> Allewahl { get; set; }
+
+    /// <summary>Der Filter oder die Sortierung haben sich geändert (der Wirt merkt sich den Stand).</summary>
+    [Parameter] public EventCallback Gefiltert { get; set; }
+
+    /// <summary>Die Beschriftungen — EIN Bündel (Hausregel).</summary>
+    [Parameter] public Katalogfiltertexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Ab wie vielen GEFILTERTEN Zeilen virtualisiert wird (Hausregel W6-B-2:
+    /// „Virtualisierung ab 120 Zeilen"). Der Schalter hängt an der gefilterten Zahl —
+    /// genau deshalb wechselt er beim Filtern, und genau dafür gibt es das <c>@key</c>.
+    /// </summary>
+    [Parameter] public int VirtualisierenAb { get; set; } = 120;
+
+    private Katalogfilterstand Stand => Filterstand ??= new Katalogfilterstand();
+
+    private IReadOnlyList<Katalogfilterzeile> _gefiltert = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// <b>Die Zeilenmenge, die das Raster bekommt — EINE Instanz je gefilterter
+    /// Menge</b> (Befund <b>W13‑B‑6</b>, Windows-Abnahme 09.09.2026: „die Liste
+    /// blinkt und ist nicht sichtbar", 6 654 Stromspeicher).
+    ///
+    /// <para><b>Warum das ein Feld ist und kein <c>@key</c>-Ausdruck im Markup.</b> Hier
+    /// stand <c>Zeilen="@_gefiltert.AsQueryable()"</c> — bei JEDEM Zeichenlauf ein
+    /// frisches <c>EnumerableQuery</c>. QuickGrid vergleicht seine Datenquelle mit
+    /// <c>!=</c>, also nach REFERENZ (<c>OnParametersSetAsync</c>:
+    /// <c>dataSourceHasChanged = _newItemsOrItemsProvider != _lastAssignedItemsOrProvider</c>),
+    /// und hielt darum jeden Zeichenlauf für eine neue Menge. Es bricht dann die
+    /// laufende Ladung ab (<c>RefreshDataCoreAsync</c>:
+    /// <c>_pendingDataLoadCancellationTokenSource?.Cancel()</c>) und stellt im
+    /// virtualisierten Zweig eine neue an — hinter <c>await Task.Delay(100)</c>,
+    /// QuickGrids Entprellung. Kommt der nächste Zeichenlauf schneller als diese
+    /// 100 ms, wird auch sie abgebrochen, <c>Virtualize</c> behält sein leeres
+    /// <c>_loadedItems</c> und zeichnet nur Platzhalterzeilen — deren Inhalt das
+    /// Stilblatt von QuickGrid als <c>content: '\2026'</c> setzt: der Halbgeviertpunkt
+    /// „…" in jeder Zelle, den der Anwender fotografiert hat. Und weil dieselbe
+    /// Kennung die Klasse <c>loading</c> an die Tabelle hängt
+    /// (<c>.quickgrid.loading &gt; tbody { opacity: .25; transition: opacity linear 100ms }</c>),
+    /// blendet der Körper dabei ein und aus: <b>das „Blinken"</b>.</para>
+    ///
+    /// <para><b>Gemessen</b> (bunit, 6 654 Zeilen, zehn Zeichenläufe in Folge): mit
+    /// frischem <c>AsQueryable()</c> überlebten 2 von 10 Ladungen, mit einer stabilen
+    /// Instanz 10 von 10.</para>
+    /// </summary>
+    private IQueryable<Katalogfilterzeile> _rasterzeilen =
+        Array.Empty<Katalogfilterzeile>().AsQueryable();
+
+    /// <summary>Der Schlüssel der Spalte, deren Popover offen steht; leer = keines.</summary>
+    private string _offen = "";
+
+    // =====================================================================
+    //  Der Vergleich (Frage Q3, Stufe S3.3)
+    // =====================================================================
+
+    /// <summary>Höchstens DREI Geräte (5.5): Vier Spalten plus Parameterspalte passen nicht.</summary>
+    public const int HOECHSTENS = 3;
+
+    /// <summary>Die markierten SCHLÜSSEL, in der Reihenfolge des Markierens.</summary>
+    private readonly List<string> _markiert = new();
+
+    /// <summary>
+    /// Trug der letzte Klick eine Zusatztaste? Dann markiert er, statt zu wählen.
+    /// <c>Zeilenwahl</c> ruft <c>Tastenwahl</c> VOR <c>Gewaehltwerden</c>.
+    /// </summary>
+    private bool _tastenklick;
+
+    private string _markierhinweis = "";
+    private bool _vergleichOffen;
+
+    private List<Vergleichzeile> _vergleich = new();
+
+    /// <summary>Eine Zeile des Vergleichs: ein Parameter über alle markierten Geräte.</summary>
+    public sealed record Vergleichzeile(string Name, IReadOnlyList<string> Werte, bool Abweichend);
+
+    /// <summary>Die markierten Schlüssel (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Markiert => _markiert;
+
+    /// <summary>Steht die Vergleichs-Überlagerung? (Prüfhilfe für Tests.)</summary>
+    public bool VergleichOffen => _vergleichOffen;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichzeile> Vergleich => _vergleich;
+
+    /// <summary>Der Hinweis unter der Suchzeile (Prüfhilfe für Tests).</summary>
+    public string Markierhinweis => _markierhinweis;
+
+    /// <summary>Die angezeigten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Angezeigt => _gefiltert;
+
+    /// <summary>Steht ein Popover offen? (Prüfhilfe für Tests.)</summary>
+    public string OffenesPopover => _offen;
+
+    /// <summary>Wird virtualisiert? Der Schalter hängt an der GEFILTERTEN Zeilenzahl.</summary>
+    public bool Virtualisiert => _gefiltert.Count >= VirtualisierenAb;
+
+    protected override void OnParametersSet() => Neuberechnen();
+
+    /// <summary>
+    /// <b>Dieselbe Menge behält ihre Instanz</b> (Befund <b>W13‑B‑6</b>). Gerechnet
+    /// wird weiter bei jedem Zeichenlauf — das MUSS so bleiben: Mehrere Wirte
+    /// verändern ihre Zeilenliste an Ort und Stelle (der Ganglinienverwalter löscht
+    /// mit <c>RemoveAll</c> aus derselben Liste), und wer sich auf eine geänderte
+    /// Referenz verlässt, sieht das nicht. Was sich ändert, ist das ERGEBNIS: Kommt
+    /// dieselbe Menge in derselben Reihenfolge heraus, bleiben
+    /// <see cref="_gefiltert"/> und <see cref="_rasterzeilen"/> stehen.
+    ///
+    /// <para><b>Warum das der ganze Fix ist.</b> QuickGrid vergleicht seine
+    /// Datenquelle nach REFERENZ; eine neue Instanz ist für es eine neue Menge, und
+    /// es bricht dafür seine laufende Ladung ab (die Herleitung steht bei
+    /// <see cref="_rasterzeilen"/>). Genau diese Instanz hier festzuhalten ist
+    /// billiger und ehrlicher, als raten zu wollen, ob sich etwas geändert HAT.</para>
+    ///
+    /// <para><b>Der Vergleich ist ein Referenzvergleich Zeile für Zeile</b> — die
+    /// Zeilen sind dieselben Objekte, die der Controller geliefert hat, und ein
+    /// Inhaltsvergleich über sechs Spalten wäre teurer als die Filterrechnung selbst.
+    /// Für 20 749 PV‑Module sind das 20 749 Zeigervergleiche.</para>
+    ///
+    /// <para><b>Gemessen</b> (bunit, 6 654 Zeilen, zehn Zeichenläufe in Folge): vorher
+    /// zehn neue Datenquellen und die Klasse <c>loading</c> in 10 von 10 Läufen,
+    /// danach eine Datenquelle und 0 von 10.</para>
+    /// </summary>
+    private void Neuberechnen()
+    {
+        IReadOnlyList<Katalogfilterzeile> neu = Profil is null
+            ? Zeilen
+            : Katalogfilter.Anwenden(Profil, Zeilen, Stand);
+
+        if (GleicheMenge(neu, _gefiltert)) return;
+
+        _gefiltert = neu;
+
+        // DIE EINE Stelle, an der die Datenquelle des Rasters entsteht.
+        _rasterzeilen = neu.AsQueryable();
+    }
+
+    /// <summary>Dieselben Zeilen in derselben Reihenfolge?</summary>
+    private static bool GleicheMenge(IReadOnlyList<Katalogfilterzeile> a,
+                                     IReadOnlyList<Katalogfilterzeile> b)
+    {
+        if (ReferenceEquals(a, b)) return true;
+        if (a is null || b is null || a.Count != b.Count) return false;
+
+        for (int i = 0; i < a.Count; i++)
+            if (!ReferenceEquals(a[i], b[i])) return false;
+
+        return true;
+    }
+
+    // =====================================================================
+    //  Zone A
+    // =====================================================================
+
+    /// <summary>
+    /// „15 von 20.749 Sätzen" — die Zahlen mit Tausendertrennzeichen der Kultur
+    /// (<c>N0</c>). Bei fünfstelligen Katalogen ist es der Unterschied zwischen einer
+    /// Zahl und einer Ziffernfolge; die Hausregel „ohne Tausendertrennzeichen" gilt
+    /// dem EINLESEN einer Eingabe, nicht dem Anzeigen einer Anzahl.
+    /// </summary>
+    private string Trefferzeile =>
+        string.Format(CultureInfo.CurrentCulture, Texte.Treffer,
+                      _gefiltert.Count.ToString("N0", CultureInfo.CurrentCulture),
+                      Zeilen.Count.ToString("N0", CultureInfo.CurrentCulture));
+
+    private Task BeiSuche(ChangeEventArgs e)
+    {
+        Stand.Suche = e.Value?.ToString() ?? "";
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// „Filter zurücksetzen" nimmt ALLE Spaltenfilter zurück. Die Suche bleibt — sie
+    /// hat ihr eigenes Feld, und der Knopf ist der Rücksetzer der Trichter (5.6.4).
+    /// </summary>
+    private Task BeiZuruecksetzen()
+    {
+        Stand.Zuruecksetzen();
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    // =====================================================================
+    //  Der Spaltenkopf
+    // =====================================================================
+
+    private void BeiTrichter(Katalogspalte spalte)
+    {
+        _offen = _offen == spalte.Schluessel ? "" : spalte.Schluessel;
+    }
+
+    private void SchliessePopover() => _offen = "";
+
+    private Task BeiFilter(Katalogspalte spalte, string ausdruck)
+    {
+        Stand.Setzen(spalte.Schluessel, ausdruck);
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    private Task BeiSortieren(Katalogspalte spalte)
+    {
+        Stand.Sortieren(spalte.Schluessel);
+        _offen = "";
+        Neuberechnen();
+        return Gefiltert.InvokeAsync();
+    }
+
+    /// <summary>⇅ unsortiert, ▲ auf, ▼ ab (5.6.2).</summary>
+    private string Sortierzeichen(Katalogspalte spalte)
+    {
+        if (Stand.Sortierspalte != spalte.Schluessel) return "⇅";
+        return Stand.Aufsteigend ? "▲" : "▼";
+    }
+
+    private string Trichterklasse(Katalogspalte spalte) =>
+        Stand.Gefiltert(spalte.Schluessel)
+            ? "epos-trichter epos-trichter--gesetzt"
+            : "epos-trichter";
+
+    private string Trichterkurztext(Katalogspalte spalte) =>
+        Kurztext(Stand.Gefiltert(spalte.Schluessel) ? Texte.TrichterGesetzt : Texte.Trichter,
+                 spalte);
+
+    private static string Kurztext(string muster, Katalogspalte spalte) =>
+        string.Format(CultureInfo.CurrentCulture, muster ?? "{0}", spalte.Kopftext);
+
+    private string Platzhalter(Katalogspalte spalte) =>
+        spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : Texte.PlatzhalterText;
+
+    /// <summary>
+    /// Die Zeile unter dem Feld — nur bei einer Zahlenspalte, und dort nennt sie die
+    /// Formen, die <see cref="Zahlenausdruck"/> versteht.
+    /// </summary>
+    private string Hinweis(Katalogspalte spalte) =>
+        spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : "";
+
+    /// <summary>
+    /// Die Spaltenklasse steht über <c>ColumnBase.Class</c> an Kopf UND Körperzellen.
+    /// Damit ist eine gefilterte Spalte auch in den ZELLEN erkennbar — eine leise
+    /// Tönung, keine neue Farbe (5.6.2).
+    /// </summary>
+    private string Spaltenklasse(Katalogspalte spalte)
+    {
+        string k = spalte.Rechtsbuendig ? "epos-spalte-zahl" : "epos-spalte-text";
+        return Stand.Gefiltert(spalte.Schluessel) ? k + " epos-spalte--gefiltert" : k;
+    }
+
+    /// <summary>
+    /// Ein Auslieferungssatz steht gedimmt — der Vorläufer zeichnete ihn grau
+    /// (<c>Form_BHKWAdmin.cs:202-203</c>, <c>Form_WP.listBox_WP_DrawItem</c>).
+    /// </summary>
+    private static string Zellenklasse(Katalogfilterzeile zeile) =>
+        zeile.Geschuetzt ? "epos-gesperrt" : "";
+
+    private Task BeiZeile(Katalogfilterzeile zeile)
+    {
+        // Der Klick trug Strg oder Umschalt - er hat MARKIERT, nicht gewaehlt.
+        if (_tastenklick) { _tastenklick = false; return Task.CompletedTask; }
+
+        Gewaehlt = zeile.Schluessel;
+        return GewaehltChanged.InvokeAsync(zeile.Schluessel);
+    }
+
+    /// <summary>
+    /// Der Klick in der Mehrfachwahl geht UNVERÄNDERT an den Wirt — samt der Stelle
+    /// in der gefilterten Liste, denn darauf rechnet seine <c>Zeilenmarkierung</c>.
+    /// </summary>
+    /// <summary>Sind alle sichtbaren Zeilen gewählt? (Stellung des Alle-Schalters.)</summary>
+    private bool AlleSichtbarenGewaehlt
+        => _gefiltert.Count > 0 && IstGewaehlt is not null && _gefiltert.All(z => IstGewaehlt(z));
+
+    private Task BeiAllewahl()
+        => Allewahl.InvokeAsync(new Mehrfachalle(!AlleSichtbarenGewaehlt, _gefiltert));
+
+    private Task BeiMehrfachwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        int i = -1;
+        for (int n = 0; n < _gefiltert.Count; n++)
+            if (ReferenceEquals(_gefiltert[n], zeile)) { i = n; break; }
+
+        return Mehrfachwahl.InvokeAsync(
+            new Mehrfachklick(zeile, i, klick.Strg, klick.Umschalt));
+    }
+
+    // =====================================================================
+    //  Der Vergleich (Frage Q3, Stufe S3.3)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick MIT Zusatztaste markiert die Zeile für den Vergleich — und schaltet
+    /// dabei um, wie ein Kontrollkästchen (dieselbe Regel wie
+    /// <see cref="Zeilenmarkierung.Anklicken"/> seit W6‑E‑5).
+    ///
+    /// <para><b>Umschalt tut hier dasselbe wie Strg</b> und wählt KEINEN Bereich: Bei
+    /// höchstens drei Geräten wäre ein Bereich in aller Regel schon zu groß, und ein
+    /// Bedienelement, das meistens an seiner eigenen Grenze scheitert, ist keine
+    /// Hilfe.</para>
+    ///
+    /// <para><b>Die VIERTE Markierung fällt, nicht die älteste</b> (Auflage 5.5,
+    /// „bei vier Markierungen: Hinweis"): Wer drei Geräte nebeneinandergelegt hat,
+    /// hat sie ausgesucht — ihm still das erste wegzunehmen wäre die
+    /// überraschendere Antwort. Der Hinweis sagt, was zu tun ist.</para>
+    /// </summary>
+    private void BeiTastenwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        _tastenklick = klick.Strg || klick.Umschalt;
+        if (!_tastenklick) return;
+
+        _markierhinweis = "";
+        string schluessel = zeile.Schluessel;
+
+        if (_markiert.Remove(schluessel)) return;
+
+        if (_markiert.Count >= HOECHSTENS)
+        {
+            _markierhinweis = Texte.VergleichGrenze;
+            return;
+        }
+        _markiert.Add(schluessel);
+    }
+
+    /// <summary>Zwei oder drei markierte Zeilen machen den Knopf frei (5.5).</summary>
+    private bool VergleichFrei => _markiert.Count >= 2 && _markiert.Count <= HOECHSTENS;
+
+    private string Vergleichtext => _markiert.Count == 0
+        ? Texte.Vergleichen
+        : Texte.Vergleichen + " (" +
+          string.Format(CultureInfo.CurrentCulture, Texte.VergleichMarkiert, _markiert.Count) + ")";
+
+    /// <summary>
+    /// Am gesperrten Knopf steht, WIE man markiert — Strg-Klick sieht man nicht.
+    /// </summary>
+    private string Vergleichkurztext => VergleichFrei ? Texte.Vergleichen : Texte.VergleichHinweis;
+
+    /// <summary>Die markierten Zeilen in der Reihenfolge des Markierens.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Vergleichszeilen()
+    {
+        var liste = new List<Katalogfilterzeile>();
+        foreach (string s in _markiert)
+            foreach (Katalogfilterzeile z in Zeilen)
+                if (z.Schluessel == s) { liste.Add(z); break; }
+        return liste;
+    }
+
+    /// <summary>
+    /// Baut die Vergleichstabelle und öffnet die Überlagerung. Gerechnet wird EINMAL
+    /// beim Öffnen, nicht je Zeichendurchgang: Hinter
+    /// <see cref="Vergleichsparameter"/> steht ein Datenbankzugriff je Gerät.
+    /// </summary>
+    private void BeiVergleichen()
+    {
+        if (!VergleichFrei) return;
+
+        IReadOnlyList<Katalogfilterzeile> geraete = Vergleichszeilen();
+        if (geraete.Count < 2) return;
+
+        _vergleich = Vergleichsparameter is null
+            ? AusSpalten(geraete)
+            : AusParametern(geraete);
+
+        _markierhinweis = "";
+        _vergleichOffen = true;
+    }
+
+    /// <summary>
+    /// Der Vergleich über die PARAMETERÜBERSICHT (W14a‑E‑8) — alle verfügbaren
+    /// Parameter des Katalogs. Die Reihenfolge ist die des ERSTEN Geräts; ein
+    /// Parameter, den ein anderes Gerät nicht führt, bleibt dort leer.
+    /// </summary>
+    private List<Vergleichzeile> AusParametern(IReadOnlyList<Katalogfilterzeile> geraete)
+    {
+        var saetze = new List<IReadOnlyList<Parameterwert>>();
+        foreach (Katalogfilterzeile z in geraete)
+            saetze.Add(Vergleichsparameter!(z.Bezeichner) ?? Array.Empty<Parameterwert>());
+
+        var zeilen = new List<Vergleichzeile>();
+        foreach (Parameterwert p in saetze[0])
+        {
+            var werte = new List<string>();
+            foreach (IReadOnlyList<Parameterwert> satz in saetze)
+                werte.Add(Wert(satz, p.Eintrag.Spalte));
+
+            zeilen.Add(new Vergleichzeile(Beschriftung(p.Eintrag), werte, Abweichend(werte)));
+        }
+        return zeilen;
+    }
+
+    private static string Wert(IReadOnlyList<Parameterwert> satz, string spalte)
+    {
+        foreach (Parameterwert p in satz)
+            if (p.Eintrag.Spalte == spalte) return p.Wert;
+        return ParameterVerwendung.LEER;
+    }
+
+    private static string Beschriftung(ParameterEintrag eintrag)
+        => eintrag.Einheit.Length > 0
+            ? eintrag.Anzeigetext + " [" + eintrag.Einheit + "]"
+            : eintrag.Anzeigetext;
+
+    /// <summary>
+    /// Der Vergleich über die SPALTEN des Profils — der Rückfall für einen Katalog
+    /// ohne Parameterübersicht.
+    /// </summary>
+    private List<Vergleichzeile> AusSpalten(IReadOnlyList<Katalogfilterzeile> geraete)
+    {
+        var zeilen = new List<Vergleichzeile>();
+        foreach (Katalogspalte spalte in Profil!.Spalten)
+        {
+            var werte = new List<string>();
+            foreach (Katalogfilterzeile z in geraete) werte.Add(z.Text(spalte.Schluessel));
+
+            zeilen.Add(new Vergleichzeile(spalte.Kopftext, werte, Abweichend(werte)));
+        }
+        return zeilen;
+    }
+
+    /// <summary>Weichen die Werte voneinander ab? Zeichengenau, wie sie dastehen.</summary>
+    private static bool Abweichend(IReadOnlyList<string> werte)
+    {
+        for (int i = 1; i < werte.Count; i++)
+            if (!string.Equals(werte[0], werte[i], StringComparison.Ordinal)) return true;
+        return false;
+    }
+
+    private static string Vergleichsklasse(Vergleichzeile v)
+        => v.Abweichend ? "epos-vergleich--abweichend" : "epos-vergleich--stimmig";
+
+    /// <summary>
+    /// Eine markierte Zeile ist am WAHLKNOPF erkennbar — ein Rahmen in der Warnfarbe,
+    /// keine neue Farbe.
+    ///
+    /// <para><b>Warum am Knopf und nicht an der Zelle:</b> <c>ColumnBase.Class</c>
+    /// gilt der ganzen SPALTE, nicht einer Zeile; eine Markierung je Zeile ist damit
+    /// nicht zu setzen. <c>Zeilenwahl.Zusatzklasse</c> gibt es genau dafür.</para>
+    /// </summary>
+    private string Wahlklasse(Katalogfilterzeile zeile)
+        => _markiert.Contains(zeile.Schluessel) ? "epos-anlagenwahl--markiert" : "";
+
+    /// <summary>
+    /// Der Kurztext der Wahlzelle nennt die Markierung — sie trägt sonst nur eine
+    /// Tönung, und die hört eine Sprachausgabe nicht.
+    /// </summary>
+    private string Wahlkurztext(Katalogfilterzeile zeile)
+        => _markiert.Contains(zeile.Schluessel)
+            ? Texte.SpalteWahl + " · " + Texte.VergleichTitel
+            : Texte.SpalteWahl;
+}

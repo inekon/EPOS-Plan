@@ -1,0 +1,1295 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.Kern.Tests
+{
+    /// <summary>
+    /// <b>Die acht Auslegungsprüfungen P1 bis P8</b> der Strangzuordnung
+    /// (<c>Konzept_Wechselrichter_EPOS-Plan.md</c> 4.2, Stufe S2, Anwenderentscheid
+    /// <b>W6‑E‑2</b> vom 06.09.2026).
+    ///
+    /// <para><b>Die Messlatte ist ANHANG A des Konzepts</b> — dieselben Zahlen, die im
+    /// Mockup stehen: Modul Ablytek 6MN6A275 (275,19 W; U_oc 38,4 V; U_mpp 31,4 V;
+    /// I_sc 9,34 A; beta_OC −0,118 V/K; alpha_SC +0,0047 A/K) an einem
+    /// Muster 2500TL (2,50 kW; 1 MPPT; MPP 80…500 V; U_dc,max 600 V; I_dc,max 12,0 A),
+    /// zehn Module in Reihe. Der Anhang nennt für diesen Fall SECHS grüne Prüfungen und
+    /// dazu drei Gegenproben — 14 Module (gelb, P6), 15 Module (rot, P1) und zwei
+    /// Stränge parallel (rot, P4). Alle vier stehen hier.</para>
+    ///
+    /// <para><b>Geprüft werden die ZAHLEN, nicht die Sätze.</b> Ein Prüfstand, der Text
+    /// vergleicht, prüft die Sprache. Der Befund trägt die Größen selbst
+    /// (<c>UocKalt</c>, <c>UmppHeiss</c>, <c>UmppKalt</c>, <c>Strom</c>,
+    /// <c>DcAc</c>), und genau die sind gegen den Anhang nachzurechnen.</para>
+    ///
+    /// <para><b>Ohne Datenbank und ohne Oberfläche</b> — die Klasse braucht keine
+    /// Arbeitskopie und steht deshalb in keiner Sammlung.</para>
+    /// </summary>
+    public class StrangPlausibilitaetTests
+    {
+        // =================================================================================
+        // 1 - Anhang A: der grüne Fall
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Fall des Mockups: zehn Module in Reihe — alles grün.</b> Die sechs
+        /// Zeilen des Anhangs A, Zahl für Zahl.
+        /// </summary>
+        [Fact]
+        public void Anhang_A_zehn_Module_in_Reihe_sind_gruen()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+
+            // P1: 10 · [38,4 + (−0,118)·(−35)] = 10 · 42,53 = 425,3 V ≤ 600 V
+            Assert.Equal(425.3, s.UocKalt.Value, 6);
+
+            // P2: 10 · [31,4 + (−0,118)·45] = 10 · 26,09 = 260,9 V ≥ 80 V
+            Assert.Equal(260.9, s.UmppHeiss.Value, 6);
+
+            // P3: 10 · [31,4 + (−0,118)·(−35)] = 10 · 35,53 = 355,3 V ≤ 500 V
+            Assert.Equal(355.3, s.UmppKalt.Value, 6);
+
+            // P4: 1 · [9,34 + 0,0047·45] = 9,5515 A ≤ 12,0 A
+            StrangPlausibilitaet.Mpptbefund m = Assert.Single(g.Mppts);
+            Assert.Equal(9.5515, m.Strom.Value, 6);
+            Assert.Equal(1, m.Straenge);
+
+            // P6: 10 · 275,19 W = 2,7519 kWp / 2,50 kW = 1,10076
+            Assert.Equal(2.7519, g.Kwp, 6);
+            Assert.Equal(1.10076, g.DcAc.Value, 6);
+
+            // P8: 10 · 1 = 10 = „Anzahl Module"
+            Assert.Equal(10, b.Modulsumme);
+            Assert.True(b.ModulsummeStimmt);
+
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, s.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, g.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        // =================================================================================
+        // 2 - Anhang A: die drei Gegenproben
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Gegenprobe 1 — 14 Module: GELB über P6.</b> `14 · 42,53 = 595,4 V` bleibt
+        /// unter 600 V (P1 also grün), aber `14 · 275,19 = 3,853 kWp` gegen 2,50 kW
+        /// ist DC/AC 1,54 und damit ausserhalb des Bandes 1,0…1,5.
+        /// </summary>
+        [Fact]
+        public void Anhang_A_vierzehn_Module_sind_gelb_ueber_P6()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+
+            Assert.Equal(595.42, s.UocKalt.Value, 6);           // < 600 -> P1 haelt
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, s.Farbe);
+
+            Assert.Equal(3.85266, g.Kwp, 6);
+            Assert.Equal(1.541064, g.DcAc.Value, 6);            // > 1,5 -> P6
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe 2 — 15 Module: ROT über P1.</b> `15 · 42,53 = 637,95 V`
+        /// überschreitet die maximale DC-Spannung von 600 V; das Gerät kann bei Frost
+        /// und Sonne Schaden nehmen.
+        /// </summary>
+        [Fact]
+        public void Anhang_A_fuenfzehn_Module_sind_rot_ueber_P1()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 15, parallel: 1, anzahlModuleAnlage: 15);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+
+            Assert.Equal(637.95, s.UocKalt.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, s.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, b.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe 3 — zwei Stränge parallel: ROT über P4.</b>
+        /// `2 · 9,5515 = 19,103 A` überschreitet den maximalen DC-Strom von 12,0 A
+        /// <b>je MPPT</b>.
+        /// </summary>
+        [Fact]
+        public void Anhang_A_zwei_Straenge_parallel_sind_rot_ueber_P4()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 2, anzahlModuleAnlage: 20);
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            StrangPlausibilitaet.Mpptbefund m = Assert.Single(g.Mppts);
+
+            Assert.Equal(2, m.Straenge);
+            Assert.Equal(19.103, m.Strom.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, b.Farbe);
+        }
+
+        // =================================================================================
+        // 3 - Grenzfälle je Prüfung
+        // =================================================================================
+
+        /// <summary>
+        /// <b>P1 ist eine „kleiner oder gleich"-Prüfung.</b> Genau auf der Grenze bleibt
+        /// die Ampel grün — die Auslegungsgrenze ist ein zulässiger Wert.
+        /// </summary>
+        [Fact]
+        public void P1_genau_auf_der_Grenze_bleibt_gruen()
+        {
+            // 10 Module ergeben 425,3 V; die Grenze wird genau darauf gesetzt.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                  geraet: Geraet(uDcMax: 425.3));
+
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Straenge[0].Farbe);
+        }
+
+        /// <summary>
+        /// <b>P2 — der Strang regelt im Sommer ab: ROT.</b> Bei nur zwei Modulen liegt
+        /// die MPP-Spannung im heissen Fall bei 52,18 V und damit unter dem Fenster.
+        /// </summary>
+        [Fact]
+        public void P2_unter_dem_MPP_Fenster_ist_rot()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 2, parallel: 1, anzahlModuleAnlage: 2);
+
+            Assert.Equal(52.18, b.Straenge[0].UmppHeiss.Value, 6);   // < 80 V
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, b.Straenge[0].Farbe);
+        }
+
+        /// <summary>
+        /// <b>P3 — das Gerät regelt an der oberen Grenze: GELB, nicht rot.</b> Der
+        /// Strang liefert dann weniger, aber nichts geht kaputt (Konzept 4.2).
+        /// </summary>
+        [Fact]
+        public void P3_ueber_dem_MPP_Fenster_ist_gelb()
+        {
+            // 14 Module: U_mpp(−10 °C) = 14 · 35,53 = 497,4 V; das Fenster wird auf
+            // 480 V gedeckelt, U_dc,max bleibt bei 600 V (P1 haelt).
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14,
+                                                  geraet: Geraet(uMppMax: 480.0));
+
+            Assert.Equal(497.42, b.Straenge[0].UmppKalt.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Straenge[0].Farbe);
+        }
+
+        /// <summary>
+        /// <b>P5 — mehr Stränge am MPPT als zulässig: GELB.</b> Zwei parallele Stränge
+        /// an einem Gerät, das nur einen führt.
+        /// </summary>
+        [Fact]
+        public void P5_zu_viele_Straenge_je_MPPT_sind_gelb()
+        {
+            // Der Strom bleibt unter der Grenze (I_dc,max grosszuegig), damit P4 nicht
+            // dazwischenfunkt und allein P5 die Farbe setzt.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 2, anzahlModuleAnlage: 20,
+                                                  geraet: Geraet(iDcMax: 30.0, straengeJeMppt: 1,
+                                                                 pAcNenn: 5.0));
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(2, g.Mppts[0].Straenge);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+        }
+
+        /// <summary>
+        /// <b>P6 unterhalb des Bandes: GELB.</b> Eine zu klein ausgelegte
+        /// Modulfläche an einem grossen Gerät ist ebenso ein Hinweis wie eine zu
+        /// grosse — das Band gilt in BEIDE Richtungen (Konzept 4.2).
+        /// </summary>
+        [Fact]
+        public void P6_unter_dem_Band_ist_ebenfalls_gelb()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                  geraet: Geraet(pAcNenn: 5.0));
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(0.55038, g.DcAc.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+        }
+
+        /// <summary>
+        /// <b>P7 — über der DC-Eingangsgrenze: GELB.</b>
+        /// </summary>
+        [Fact]
+        public void P7_ueber_der_DC_Grenze_ist_gelb()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                  geraet: Geraet(pDcMax: 2.6));
+
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, Assert.Single(b.Geraete).Farbe);
+        }
+
+        /// <summary>
+        /// <b>P8 — die Modulsumme weicht vom Anlagenwert ab: GELB</b>, und der Hinweis
+        /// steht am ersten Strang, wo der Anwender ihn liest.
+        /// </summary>
+        [Fact]
+        public void P8_eine_abweichende_Modulsumme_ist_gelb()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 12);
+
+            Assert.Equal(10, b.Modulsumme);
+            Assert.False(b.ModulsummeStimmt);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Straenge[0].Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Farbe);
+        }
+
+        // =================================================================================
+        // 4 - Fehlende Werte
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ein fehlender Modulwert macht GELB, nicht rot und nicht grün</b>
+        /// (Konzept 4.2, offener Punkt W6‑O‑2). Die Prüfung entfällt, der Befund führt
+        /// dann keinen Wert, und der Satz sagt, welche Angabe fehlt.
+        ///
+        /// <para><b>Seit <b>W6‑B‑9</b> gilt das für P1 nicht mehr</b>: Fehlt allein
+        /// <c>beta_OC</c>, rechnet P1 über den Faktor 1,15 weiter (eigene Fälle unten).
+        /// Geprüft wird hier deshalb das MPP-Fenster, dessen zwei Prüfungen ohne
+        /// Koeffizient wirklich entfallen — und die den Strang gelb machen.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_fehlender_Modulwert_macht_gelb_und_nicht_pruefbar()
+        {
+            PhotovoltaikModel modul = Modul();
+            modul.m_beta_OC = 0;                       // 0 heisst hier "nicht gepflegt"
+
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   modul: modul);
+
+            Assert.Null(b.Straenge[0].UmppHeiss);
+            Assert.Null(b.Straenge[0].UmppKalt);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Straenge[0].Farbe);
+            Assert.Contains("beta_OC", b.Straenge[0].Satz, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Fehlt die MPPT-Zahl</b> — die CEC-Liste führt sie nicht (W6‑O‑2) —, wird
+        /// auf EINEM Tracker gerechnet, dem konservativen Fall, und der Satz sagt es.
+        /// Zwei Stränge auf verschiedenen MPPT-Nummern landen dann auf demselben
+        /// Tracker und summieren ihren Strom.
+        /// </summary>
+        [Fact]
+        public void Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker()
+        {
+            // Der Satz kommt aus den Ressourcen der laufenden UI-Kultur; der Windows-Laeufer
+            // der CI steht auf en-US und lieferte "MPP trackers" statt "MPP-Tracker"
+            // (CI 06.09.2026, dreimal rot). Muster LizenzTokenTests: Kultur pinnen und im
+            // finally zuruecklegen.
+            var kulturVorher = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("de-DE");
+            try
+            {
+                var geraet = Geraet(anzahlMppt: null);
+
+                StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                    new StrangPlausibilitaet.Gaben
+                    {
+                        Straenge = new List<AnlageStrangModel>
+                        {
+                            new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                    Mppt = 1, Module_Reihe = 10 },
+                            new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
+                                                    Mppt = 2, Module_Reihe = 10 }
+                        },
+                        Modul = Modul(),
+                        Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                        AnzahlModuleAnlage = 20
+                    });
+
+                StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+                StrangPlausibilitaet.Mpptbefund m = Assert.Single(g.Mppts);   // EIN Tracker
+                Assert.Equal(2, m.Straenge);
+                Assert.Equal(19.103, m.Strom.Value, 6);                       // > 12,0 A -> P4 rot
+                Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
+                Assert.Contains("MPP-Tracker", g.Satz, StringComparison.Ordinal);
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = kulturVorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein Strang ohne Gerät</b> ist gelb, nicht rot: Er steht in der Tabelle,
+        /// rechnet aber nicht mit, und die Ampel sagt genau das.
+        /// </summary>
+        [Fact]
+        public void Ein_Strang_ohne_Geraet_ist_gelb()
+        {
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, Module_Reihe = 10 }
+                    },
+                    Modul = Modul(),
+                    Geraete = new Dictionary<int, WechselrichterModel>(),
+                    AnzahlModuleAnlage = 10
+                });
+
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, Assert.Single(b.Geraete).Farbe);
+        }
+
+        // =================================================================================
+        // 5 - Ost/West: ein Gerät, zwei MPPT
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Fall, für den die Stufe gebaut wird:</b> zwei Stränge mit eigener
+        /// Ausrichtung an EINEM Gerät und zwei Trackern. Jeder Tracker führt seinen
+        /// eigenen Strom, das DC/AC-Verhältnis gilt für beide zusammen — eine
+        /// Clipping-Grenze über beiden Dachhälften.
+        /// </summary>
+        [Fact]
+        public void Ost_West_ist_ein_Geraet_mit_zwei_Trackern()
+        {
+            var geraet = Geraet(pAcNenn: 5.0, anzahlMppt: 2, uMppMax: 800.0, uDcMax: 800.0);
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, Bezeichner = "Dach Ost",
+                                                ID_Wechselrichter = GERAET_ID, Geraetenummer = 1,
+                                                Mppt = 1, Module_Reihe = 11, Azimut = -90 },
+                        new AnlageStrangModel { Rang = 2, Bezeichner = "Dach West",
+                                                ID_Wechselrichter = GERAET_ID, Geraetenummer = 1,
+                                                Mppt = 2, Module_Reihe = 11, Azimut = 90 }
+                    },
+                    Modul = Modul(),
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                    AnzahlModuleAnlage = 22
+                });
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(2, g.Mppts.Count);
+            Assert.All(g.Mppts, m => Assert.Equal(9.5515, m.Strom.Value, 6));
+
+            // 22 · 275,19 W = 6,05418 kWp auf 5,00 kW = 1,21
+            Assert.Equal(6.05418, g.Kwp, 6);
+            Assert.Equal(1.210836, g.DcAc.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+            Assert.Equal(22, b.Modulsumme);
+        }
+
+        /// <summary>
+        /// Zwei GERÄTE derselben Bauart sind zwei Befunde — die Gruppierung läuft über
+        /// (Wechselrichter, Gerätenummer), und daran hängt das Clipping je Gerät
+        /// (Konzept 3.4, Q6).
+        /// </summary>
+        [Fact]
+        public void Zwei_Geraetenummern_sind_zwei_Befunde()
+        {
+            var geraet = Geraet();
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 1, Module_Reihe = 10 },
+                        new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 2, Module_Reihe = 10 }
+                    },
+                    Modul = Modul(),
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                    AnzahlModuleAnlage = 20
+                });
+
+            Assert.Equal(2, b.Geraete.Count);
+            Assert.Equal(new[] { 1, 2 }, b.Geraete.Select(g => g.Geraetenummer).ToArray());
+            Assert.All(b.Geraete, g => Assert.Equal(1.10076, g.DcAc.Value, 6));
+        }
+
+        /// <summary>
+        /// <b>Ohne Strangzeile ist der Befund leer und grün</b> — dann rechnet die
+        /// Anlage wie bisher, und es gibt nichts zu melden.
+        /// </summary>
+        [Fact]
+        public void Ohne_Strang_ist_der_Befund_leer_und_gruen()
+        {
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>(),
+                    Modul = Modul(),
+                    AnzahlModuleAnlage = 10
+                });
+
+            Assert.Empty(b.Straenge);
+            Assert.Empty(b.Geraete);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+            Assert.True(b.ModulsummeStimmt);
+        }
+
+        /// <summary>
+        /// <c>Pruefe(null)</c> wirft nicht — der Dialog ruft den Prüfstand auch, bevor
+        /// er etwas geladen hat.
+        /// </summary>
+        [Fact]
+        public void Ohne_Gaben_wirft_die_Pruefung_nicht()
+        {
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(null);
+
+            Assert.Empty(b.Straenge);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        // =================================================================================
+        // 6 - Das Modul: die gewählte Zeile (W6‑O‑5) und der Strang (W6‑O‑6)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>W6‑O‑5 — die Ampel prüft gegen das Modul der GEWÄHLTEN Zeile.</b>
+        /// Anwenderentscheid vom 06.09.2026, wörtlich: „Modul der gewählten Zeile".
+        ///
+        /// <para>Bis dahin gab die Hülle das ERSTE Modul herein, das der Katalog kannte;
+        /// bei zwei Projektzeilen mit verschiedenen Modulen prüfte die Ampel damit gegen
+        /// das falsche. Der Prüfstand sieht davon nur die Wirkung: DIESELBE Strangzeile
+        /// liefert mit einem anderen <c>Modul</c> einen anderen Befund — und genau das
+        /// Modul reicht die Hülle jetzt je Projektzeile herein.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Ampel_prueft_gegen_das_Modul_der_gewaehlten_Zeile()
+        {
+            StrangPlausibilitaet.Befund a = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   modul: ZweitesModul());
+
+            // P1: 10 · [38,4 + (−0,118)·(−35)] gegen 10 · [45,0 + (−0,13)·(−35)]
+            Assert.Equal(425.3, a.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(495.5, b.Straenge[0].UocKalt.Value, 6);
+
+            // Und die Nennleistung des Strangs ist die des jeweiligen Moduls.
+            Assert.Equal(2.7519, a.Kwp, 6);
+            Assert.Equal(4.0, b.Kwp, 6);
+        }
+
+        /// <summary>
+        /// <b>W6‑O‑6 — ein Strang mit eigenem Modul prüft gegen DIESES.</b>
+        /// Anwenderentscheid vom 06.09.2026, wörtlich: „jeder Strang mit nur einem
+        /// Modultyp, unterschiedliche Stränge können jeweils einen anderen Modultyp
+        /// haben."
+        ///
+        /// <para>Zwei Stränge an EINEM Gerät, an zwei Trackern: der erste ohne
+        /// <c>ID_PV</c> (also mit dem Modul der Anlage), der zweite mit einem eigenen.
+        /// Jede Grösse hängt danach am Modul SEINES Strangs — Spannung, Strom und
+        /// Nennleistung —, und die Geräte-kWp ist die Summe beider.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_Strang_mit_eigenem_Modul_prueft_gegen_dieses()
+        {
+            var geraet = Geraet(pAcNenn: 5.0, anzahlMppt: 2, uMppMax: 800.0, uDcMax: 800.0);
+
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 1, Mppt = 1, Module_Reihe = 10 },
+                        new AnlageStrangModel { Rang = 2, ID_Wechselrichter = GERAET_ID,
+                                                Geraetenummer = 1, Mppt = 2, Module_Reihe = 10,
+                                                ID_PV = MODUL_ID }
+                    },
+                    Modul = Modul(),
+                    Module = new Dictionary<int, PhotovoltaikModel> { { MODUL_ID, ZweitesModul() } },
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, geraet } },
+                    AnzahlModuleAnlage = 20
+                });
+
+            // P1 je Strang mit SEINEM Modul.
+            Assert.Equal(425.3, b.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(495.5, b.Straenge[1].UocKalt.Value, 6);
+
+            // Nennleistung je Strang und Summe.
+            Assert.Equal(2.7519, b.Straenge[0].Kwp, 6);
+            Assert.Equal(4.0, b.Straenge[1].Kwp, 6);
+            Assert.Equal(6.7519, b.Kwp, 6);
+
+            // P4 je Tracker: jeder Strang bringt den Kurzschlussstrom SEINES Moduls mit.
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(9.5515, g.Mppts[0].Strom.Value, 6);
+            Assert.Equal(11.225, g.Mppts[1].Strom.Value, 6);
+
+            // P6 rechnet mit der Summe beider Module: 6,7519 kWp / 5,00 kW.
+            Assert.Equal(6.7519, g.Kwp, 6);
+            Assert.Equal(1.35038, g.DcAc.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Eine unbekannte <c>ID_PV</c> ist derselbe Fall wie keine</b>: Der Strang
+        /// prüft gegen das Modul der Anlage. Eine gelöschte Modulkopie darf die Ampel
+        /// nicht anders prüfen lassen — sonst stünde ein Strang plötzlich ohne Modul da
+        /// und würde gelb, obwohl der Anwender nichts geändert hat.
+        /// </summary>
+        [Fact]
+        public void Eine_unbekannte_Modul_Id_faellt_auf_das_Anlagenmodul_zurueck()
+        {
+            StrangPlausibilitaet.Befund b = StrangPlausibilitaet.Pruefe(
+                new StrangPlausibilitaet.Gaben
+                {
+                    Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel { Rang = 1, ID_Wechselrichter = GERAET_ID,
+                                                Module_Reihe = 10, ID_PV = 999999 }
+                    },
+                    Modul = Modul(),
+                    Module = new Dictionary<int, PhotovoltaikModel>(),
+                    Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, Geraet() } },
+                    AnzahlModuleAnlage = 10
+                });
+
+            Assert.Equal(425.3, b.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(2.7519, b.Kwp, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        // =================================================================================
+        // Der Prüfaufbau — Anhang A des Konzepts
+        // =================================================================================
+
+        private const int GERAET_ID = 4711;
+
+        /// <summary>Die Projektkopie des ABWEICHENDEN Strangmoduls (W6‑O‑6).</summary>
+        private const int MODUL_ID = 815;
+
+        /// <summary>
+        /// Das Modul <b>Ablytek 6MN6A275</b> mit den Katalogwerten des Anhangs A.
+        /// </summary>
+        private static PhotovoltaikModel Modul()
+        {
+            return new PhotovoltaikModel
+            {
+                m_szName = "Ablytek 6MN6A275",
+                m_Leistung = 275.19,
+                m_U_Leerlauf = 38.4,
+                m_U_Mpp = 31.4,
+                m_I_Kurzschluss = 9.34,
+                m_beta_OC = -0.118,
+                m_alpha_SC = 0.0047
+            };
+        }
+
+        /// <summary>
+        /// Ein ZWEITES Modul für die Fälle zu W6‑O‑5 und W6‑O‑6 — bewusst in jeder
+        /// geprüften Grösse verschieden, damit ein Befund nicht zufällig gleich
+        /// ausfällt: 400 W statt 275,19 W, <c>U_oc</c> 45,0 statt 38,4 V.
+        /// </summary>
+        private static PhotovoltaikModel ZweitesModul()
+        {
+            return new PhotovoltaikModel
+            {
+                m_szName = "Fremd 60Z400",
+                m_Leistung = 400.0,
+                m_U_Leerlauf = 45.0,
+                m_U_Mpp = 37.0,
+                m_I_Kurzschluss = 11.0,
+                m_beta_OC = -0.13,
+                m_alpha_SC = 0.005
+            };
+        }
+
+        /// <summary>
+        /// Das Gerät <b>Muster 2500TL</b> des Anhangs A; jeder Wert ist einzeln
+        /// austauschbar, damit ein Grenzfall genau EINE Prüfung anspricht.
+        /// </summary>
+        private static WechselrichterModel Geraet(double pAcNenn = 2.5,
+                                                  double uMppMin = 80.0,
+                                                  double uMppMax = 500.0,
+                                                  double uDcMax = 600.0,
+                                                  double iDcMax = 12.0,
+                                                  int? anzahlMppt = 1,
+                                                  int? straengeJeMppt = null,
+                                                  double? pDcMax = null,
+                                                  double? iScMax = null)
+        {
+            return new WechselrichterModel
+            {
+                m_ID = GERAET_ID,
+                m_szName = "Muster 2500TL",
+                m_P_AC_Nenn = pAcNenn,
+                m_U_Mpp_Min = uMppMin,
+                m_U_Mpp_Max = uMppMax,
+                m_U_Dc_Max = uDcMax,
+                m_I_Dc_Max = iDcMax,
+                m_Anzahl_Mppt = anzahlMppt,
+                m_Straenge_Je_Mppt = straengeJeMppt,
+                m_P_DC_Max = pDcMax,
+                m_I_Sc_Max = iScMax
+            };
+        }
+
+        private static StrangPlausibilitaet.Befund Pruefe(int reihe, int parallel,
+                                                          double anzahlModuleAnlage,
+                                                          WechselrichterModel geraet = null,
+                                                          PhotovoltaikModel modul = null,
+                                                          double? tKalt = null,
+                                                          double? tHeiss = null)
+        {
+            WechselrichterModel g = geraet ?? Geraet();
+
+            return StrangPlausibilitaet.Pruefe(new StrangPlausibilitaet.Gaben
+            {
+                Straenge = new List<AnlageStrangModel>
+                {
+                    new AnlageStrangModel
+                    {
+                        Rang = 1,
+                        ID_Wechselrichter = GERAET_ID,
+                        Module_Reihe = reihe,
+                        Straenge_Parallel = parallel
+                    }
+                },
+                Modul = modul ?? Modul(),
+                Geraete = new Dictionary<int, WechselrichterModel> { { GERAET_ID, g } },
+                AnzahlModuleAnlage = anzahlModuleAnlage,
+                TKalt = tKalt,
+                THeiss = tHeiss
+            });
+        }
+
+        // =================================================================================
+        // W6-B-4 (Windows-Abnahme 07.09.2026): die Meldung nennt den EINEN fehlenden
+        // Wert und den Weg, auf dem man ihn pflegt
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Fehlt allein <c>alpha_SC</c>, nennt der Satz allein <c>alpha_SC</c></b>
+        /// (W6‑B‑4). Bis hierher hiess es „Kurzschlussstrom oder alpha_SC des Moduls" —
+        /// ein Paar mit „oder", obwohl der Prüfstand jeden der beiden Werte einzeln
+        /// abfragt. Der Anwender fragte darauf: „Welche Werte?"
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlendes_alpha_SC_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_alpha_SC = 0;                      // 0 heisst "nicht gepflegt"
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Geraete[0].Satz);
+                Assert.Contains("alpha_SC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("oder", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("Kurzschlussstrom", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// Dasselbe für den Kurzschlussstrom: Fehlt <c>I_SC</c>, steht <c>I_SC</c> da —
+        /// und nicht der Koeffizient, der gepflegt ist.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlender_Kurzschlussstrom_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_I_Kurzschluss = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Geraete[0].Satz);
+                Assert.Contains("I_SC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("alpha_SC", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt <c>beta_OC</c>, steht es EINMAL da</b> — obwohl es zwei Prüfungen
+        /// unbrauchbar macht (P1 über <c>U_OC</c> und P2/P3 über <c>U_MPP</c>). Das ist
+        /// das Muster <c>FehltEinmal</c>: je Wert eine Meldung, nicht je Prüfung.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ein_fehlendes_beta_OC_steht_genau_einmal_im_Satz()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Equal(1, Zaehle(fehlt, "beta_OC"));
+                Assert.DoesNotContain("U_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("U_MPP", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt die Leerlaufspannung, steht sie da — und beta_OC nicht.</b>
+        /// </summary>
+        [Fact]
+        public void W6B4_Eine_fehlende_Leerlaufspannung_wird_einzeln_benannt()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_U_Leerlauf = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Contains("U_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("beta_OC", fehlt, StringComparison.Ordinal);
+                Assert.DoesNotContain("U_MPP", fehlt, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Ohne „Module in Reihe" klagt die Meldung NICHT über die Modulwerte.</b>
+        /// Genau das stand im Bildschirmfoto des Anwenders: „Werte fehlen: Module in
+        /// Reihe, Leerlaufspannung oder beta_OC des Moduls, MPP-Spannung oder beta_OC
+        /// des Moduls" — die zwei letzten Angaben waren gepflegt, nur die Reihe fehlte.
+        /// <c>SpannungReihe</c> liefert eben auch dann <c>null</c>, wenn allein die
+        /// Reihe 0 ist.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ohne_Module_in_Reihe_klagt_die_Meldung_nur_ueber_die_Reihe()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 0, parallel: 1,
+                                                       anzahlModuleAnlage: 10);
+
+                string fehlt = Fehlteil(b.Straenge[0].Satz);
+                Assert.Equal("Module in Reihe", fehlt);
+                Assert.DoesNotContain("PV Module", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt ein MODULWERT, nennt der Satz den PFLEGEWEG</b> (W6‑B‑4) — genau
+        /// EINMAL je Strangzeile und nur dann, wenn wirklich ein Modulwert fehlt. Die
+        /// zweite Frage des Anwenders war „wo pflege ich das?"; ohne diesen Satz steht
+        /// die Antwort nur im Konzept.
+        /// </summary>
+        [Fact]
+        public void W6B4_Der_Satz_nennt_den_Pflegeweg_genau_einmal()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_alpha_SC = 0;
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                Assert.Equal(1, Zaehle(b.Straenge[0].Satz, "PV Module"));
+                Assert.Contains("alpha_SC, beta_OC, T_NOCT", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Contains("CEC Modules.csv", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Ohne fehlenden Modulwert steht der Pflegeweg NICHT da.</b> Ein Hinweis,
+        /// der immer dasteht, wird nicht gelesen — der Fall des Anhangs A ist grün und
+        /// bleibt still.
+        /// </summary>
+        [Fact]
+        public void W6B4_Ohne_fehlenden_Modulwert_bleibt_der_Pflegeweg_fort()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10);
+
+                Assert.DoesNotContain("PV Module", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+            });
+        }
+
+        /// <summary>
+        /// <b>Auch auf Englisch</b> — die Sätze stehen in beiden Ressourcen, und der
+        /// Windows-Läufer der CI steht auf <c>en-US</c> (Lehre aus
+        /// <c>Ohne_MPPT_Zahl_rechnet_die_Pruefung_auf_einem_Tracker</c>).
+        /// </summary>
+        [Fact]
+        public void W6B4_Der_Pflegeweg_steht_auch_auf_Englisch()
+        {
+            MitSprache("en-US", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                Assert.Contains("beta_OC", Fehlteil(b.Straenge[0].Satz), StringComparison.Ordinal);
+                Assert.Contains("CEC Modules.csv", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.DoesNotContain(" or ", Fehlteil(b.Straenge[0].Satz), StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// Der Abschnitt „Werte fehlen: …" eines Satzes — OHNE den Pflegeweg dahinter.
+        /// Der nennt alpha_SC, beta_OC und T_NOCT selbst; eine Prüfung „steht nicht im
+        /// Satz" träfe ihn sonst mit.
+        /// </summary>
+        private static string Fehlteil(string satz)
+        {
+            string kopf = WindowsFormsApplication1.MyResource.Resource.PVS_WERTE_FEHLEN;
+            int marke = kopf.IndexOf("{0}", StringComparison.Ordinal);
+            string vorspann = marke > 0 ? kopf.Substring(0, marke) : kopf;
+
+            int a = satz.IndexOf(vorspann, StringComparison.Ordinal);
+            Assert.True(a >= 0, "Der Satz nennt keine fehlenden Werte: " + satz);
+            a += vorspann.Length;
+
+            int e = satz.IndexOf(WindowsFormsApplication1.MyResource.Resource.PVS_TRENNER, a, StringComparison.Ordinal);
+            return (e < 0 ? satz.Substring(a) : satz.Substring(a, e - a)).Trim();
+        }
+
+        /// <summary>Kultur pinnen und im <c>finally</c> zurücklegen (Hausregel seit W8).</summary>
+        private static void MitSprache(string kuerzel, Action fall)
+        {
+            System.Globalization.CultureInfo vorherUi = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo vorher = System.Globalization.CultureInfo.CurrentCulture;
+            try
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo(kuerzel);
+                System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo(kuerzel);
+                fall();
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = vorherUi;
+                System.Globalization.CultureInfo.CurrentCulture = vorher;
+            }
+        }
+
+        /// <summary>Wie oft <paramref name="teil"/> in <paramref name="satz"/> steht.</summary>
+        private static int Zaehle(string satz, string teil)
+        {
+            int n = 0;
+            for (int i = satz.IndexOf(teil, StringComparison.Ordinal); i >= 0;
+                 i = satz.IndexOf(teil, i + teil.Length, StringComparison.Ordinal))
+                n++;
+            return n;
+        }
+
+        // =================================================================================
+        // Auslegungshilfe (08.09.2026): Der Befund sagt, was passen wuerde
+        // =================================================================================
+
+        [Fact]
+        public void Ein_roter_Strang_traegt_die_Empfehlung_zur_Reihe()
+        {
+            // Zwei Module: 2 · 26,09 = 52,2 V < 80 V -> P2 rot; passend waeren 4…14.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 2, parallel: 1, anzahlModuleAnlage: 2);
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, s.Farbe);
+            Assert.Contains("4", s.Empfehlung);
+            Assert.Contains("14", s.Empfehlung);
+        }
+
+        [Fact]
+        public void Ein_gruener_Strang_traegt_keine_Empfehlung()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+            Assert.Equal("", Assert.Single(b.Straenge).Empfehlung);
+            Assert.Equal("", Assert.Single(b.Geraete).Empfehlung);
+        }
+
+        [Fact]
+        public void Ein_gelbes_Geraet_traegt_die_Empfehlung_je_Geraet()
+        {
+            // 14 Module: DC/AC 1,54 > 1,5 -> P6 gelb; passend waeren 10…13 Module je Geraet.
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14);
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+            Assert.Contains("10", g.Empfehlung);
+            Assert.Contains("13", g.Empfehlung);
+        }
+
+        // =================================================================================
+        // W6-B-9 (Anwenderentscheid 09.09.2026): P1 mit dem Rueckfall 1,15 ohne beta_OC
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ohne <c>beta_OC</c> rechnet P1 über den Faktor 1,15 weiter</b>
+        /// (<b>W6‑B‑9</b>, Vorschlag V4 des Prüfberichts). Anhang-A-Modul ohne
+        /// Koeffizient, zehn in Reihe: <c>10 · 38,4 V · 1,15 = 441,60 V</c> — unter
+        /// 600 V, P1 hält also. Der Strang bleibt trotzdem GELB, denn P2 und P3
+        /// brauchen den Koeffizienten wirklich.
+        /// </summary>
+        [Fact]
+        public void W6B9_Ohne_beta_OC_rechnet_P1_mit_dem_Faktor_115()
+        {
+            PhotovoltaikModel modul = Modul();
+            modul.m_beta_OC = 0;
+
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                   anzahlModuleAnlage: 10, modul: modul);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(441.6, s.UocKalt.Value, 6);
+            Assert.True(s.UocOhneKoeffizient);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, s.Farbe);   // wegen P2/P3
+        }
+
+        /// <summary>
+        /// <b>Der Rückfall kann auch ROT werden</b> — genau dafür gibt es ihn: 15
+        /// Module ohne Koeffizient sind <c>15 · 38,4 · 1,15 = 662,40 V</c> gegen 600 V.
+        /// Bis <b>W6‑B‑9</b> entfiel P1 hier ganz und der Strang war nur gelb, obwohl
+        /// das Gerät bei Frost und Sonne Schaden nehmen kann.
+        /// </summary>
+        [Fact]
+        public void W6B9_Ohne_beta_OC_wird_P1_bei_Ueberschreitung_rot()
+        {
+            PhotovoltaikModel modul = Modul();
+            modul.m_beta_OC = 0;
+
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 15, parallel: 1,
+                                                   anzahlModuleAnlage: 15, modul: modul);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(662.4, s.UocKalt.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, s.Farbe);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, b.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Der Satz sagt, dass ohne Koeffizient gerechnet wurde</b> — sonst hielte
+        /// jemand 441,6 V für eine Messung. Der Faktor steht mit darin.
+        /// </summary>
+        [Fact]
+        public void W6B9_Der_Satz_nennt_den_Faktor()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                Assert.Contains("1,15", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Contains("beta_OC", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Fehlt auch <c>U_oc</c>, bleibt es bei „Werte fehlen"</b>: Der Faktor
+        /// braucht eine Spannung, auf die er wirken kann. Der Befund führt dann keinen
+        /// Wert, und der Satz nennt die Leerlaufspannung.
+        /// </summary>
+        [Fact]
+        public void W6B9_Ohne_U_oc_bleibt_P1_unpruefbar()
+        {
+            MitSprache("de-DE", () =>
+            {
+                PhotovoltaikModel modul = Modul();
+                modul.m_beta_OC = 0;
+                modul.m_U_Leerlauf = 0;
+
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 10, modul: modul);
+
+                StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+                Assert.Null(s.UocKalt);
+                Assert.False(s.UocOhneKoeffizient);
+                Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, s.Farbe);
+                Assert.Contains("Leerlaufspannung", s.Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Mit gepflegtem <c>beta_OC</c> ändert sich NICHTS</b> — der Rückfall ist
+        /// ein Rückfall. Der Anhang-A-Fall bleibt bei 425,30 V.
+        /// </summary>
+        [Fact]
+        public void W6B9_Mit_beta_OC_bleibt_die_Koeffizientenrechnung()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+
+            Assert.Equal(425.3, s.UocKalt.Value, 6);
+            Assert.False(s.UocOhneKoeffizient);
+        }
+
+        /// <summary>
+        /// <b>Der Werkzeugtipp nennt die Bemessung mit 1,25</b> (<b>W6‑B‑9</b>): P4
+        /// rechnet nur die thermische Korrektur; DC-Leitungen, Sicherungen und Schalter
+        /// gehören zum 1,25-fachen Kurzschlussstrom und liegen ausserhalb dieses
+        /// Werkzeugs. Der Satz steht neben der benannten Näherung von P2/P3.
+        /// </summary>
+        [Fact]
+        public void W6B9_Der_Werkzeugtipp_nennt_die_Strombemessung()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+
+                Assert.Contains("1,25", b.HinweisStrombemessung, StringComparison.Ordinal);
+                Assert.Contains(b.NaeherungMpp, b.Werkzeugtipp, StringComparison.Ordinal);
+                Assert.Contains(b.HinweisStrombemessung, b.Werkzeugtipp, StringComparison.Ordinal);
+            });
+        }
+
+        // =================================================================================
+        // W6-B-10 (Anwenderentscheid 09.09.2026): P4 zweistufig mit I_Sc_Max
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Über dem Kurzschlussstrom wird P4 ROT</b>: Zwei Stränge parallel bringen
+        /// <c>2 · 9,5515 = 19,103 A</c>; das Gerät führt <c>I_Sc_Max</c> 15,0 A. Über
+        /// dieser Grenze kann es Schaden nehmen.
+        /// </summary>
+        [Fact]
+        public void W6B10_Ueber_dem_Kurzschlussstrom_wird_P4_rot()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 2, anzahlModuleAnlage: 20,
+                                                   geraet: Geraet(iScMax: 15.0));
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(19.103, Assert.Single(g.Mppts).Strom.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Nur über dem Arbeitsstrom wird P4 GELB</b>: Derselbe Strom von 19,103 A
+        /// gegen <c>I_Dc_Max</c> 12,0 A, aber <c>I_Sc_Max</c> 25,0 A. Das Gerät nimmt
+        /// keinen Schaden — es regelt ab, und genau das sagt der Satz.
+        /// </summary>
+        [Fact]
+        public void W6B10_Nur_ueber_dem_Arbeitsstrom_wird_P4_gelb()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 2, anzahlModuleAnlage: 20,
+                                                       geraet: Geraet(iScMax: 25.0));
+
+                StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+                Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, g.Farbe);
+                Assert.Contains("abgeregelt", g.Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Ohne <c>I_Sc_Max</c> bleibt es beim ROT von bisher.</b> Bestandsprojekte
+        /// färben durch W6‑B‑10 nicht um: Solange die neue Spalte NULL ist — der
+        /// Regelfall, denn weder CEC noch OND führen sie —, trägt <c>I_Dc_Max</c>
+        /// beide Bedeutungen und darf nicht stillschweigend entschärft werden.
+        /// </summary>
+        [Fact]
+        public void W6B10_Ohne_Kurzschlussstrom_bleibt_P4_rot()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 2, anzahlModuleAnlage: 20);
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, g.Farbe);
+        }
+
+        /// <summary>
+        /// <b>Unter beiden Grenzen bleibt alles grün</b> — und der Satz nennt die
+        /// Grenze, an der der Strom als nächstes anschlüge: den Arbeitsstrom.
+        /// </summary>
+        [Fact]
+        public void W6B10_Unter_beiden_Grenzen_bleibt_P4_gruen()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   geraet: Geraet(iScMax: 15.0));
+
+            StrangPlausibilitaet.Geraetebefund g = Assert.Single(b.Geraete);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, g.Farbe);
+        }
+
+        // =================================================================================
+        // W6-B-11 (Anwenderentscheid 09.09.2026): die Auslegungstemperaturen als Parameter
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ohne Parameter gilt die Vorgabe</b> — der Anhang-A-Fall Zahl für Zahl.
+        /// Das ist die Zusicherung, an der die Ergebnisneutralität des
+        /// Migrationsschritts 70 hängt: NULL heisst „wie bisher".
+        /// </summary>
+        [Fact]
+        public void W6B11_Ohne_Parameter_gilt_die_Vorgabe()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   tKalt: null, tHeiss: null);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(425.3, s.UocKalt.Value, 6);
+            Assert.Equal(260.9, s.UmppHeiss.Value, 6);
+            Assert.Equal(9.5515, Assert.Single(b.Geraete[0].Mppts).Strom.Value, 6);
+        }
+
+        /// <summary>
+        /// <b>Ein kälterer Standort verschiebt P1 und P3.</b> Bei −20 °C statt −10 °C
+        /// ist <c>U_oc = 10 · [38,4 + (−0,118)·(−45)] = 437,10 V</c> (statt 425,30) und
+        /// <c>U_mpp = 10 · [31,4 + (−0,118)·(−45)] = 367,10 V</c> (statt 355,30).
+        /// </summary>
+        [Fact]
+        public void W6B11_Ein_kaelterer_Standort_hebt_die_Strangspannung()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   tKalt: -20.0);
+
+            StrangPlausibilitaet.Strangbefund s = Assert.Single(b.Straenge);
+            Assert.Equal(437.1, s.UocKalt.Value, 6);
+            Assert.Equal(367.1, s.UmppKalt.Value, 6);
+        }
+
+        /// <summary>
+        /// <b>Ein heisserer Fall senkt die MPP-Spannung und hebt den Strom.</b> Bei
+        /// 80 °C statt 70 °C ist <c>U_mpp = 10 · [31,4 + (−0,118)·55] = 249,10 V</c>
+        /// (statt 260,90) und <c>I = 9,34 + 0,0047·55 = 9,5985 A</c> (statt 9,5515).
+        /// </summary>
+        [Fact]
+        public void W6B11_Ein_heisserer_Fall_senkt_die_MPP_Spannung()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10,
+                                                   tHeiss: 80.0);
+
+            Assert.Equal(249.1, b.Straenge[0].UmppHeiss.Value, 6);
+            Assert.Equal(9.5985, b.Geraete[0].Mppts[0].Strom.Value, 6);
+        }
+
+        /// <summary>
+        /// <b>Die Temperatur kann die Farbe kippen</b> — sonst wäre der Parameter
+        /// Zierde. Bei −45 °C ist <c>U_oc = 10 · [38,4 + (−0,118)·(−70)] = 466,60 V</c>
+        /// … das hält noch; erst 14 Module reissen die 600 V:
+        /// <c>14 · 46,66 = 653,24 V</c>. Bei der Vorgabe −10 °C wären es 595,42 V und
+        /// damit grün (Gegenprobe 1 des Anhangs A).
+        /// </summary>
+        [Fact]
+        public void W6B11_Die_Temperatur_kippt_die_Farbe_von_P1()
+        {
+            StrangPlausibilitaet.Befund kalt = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14,
+                                                      tKalt: -45.0);
+            Assert.Equal(653.24, kalt.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Rot, kalt.Straenge[0].Farbe);
+
+            StrangPlausibilitaet.Befund vorgabe = Pruefe(reihe: 14, parallel: 1, anzahlModuleAnlage: 14);
+            Assert.Equal(595.42, vorgabe.Straenge[0].UocKalt.Value, 6);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, vorgabe.Straenge[0].Farbe);
+        }
+
+        // =================================================================================
+        // W6-B-12 (Anwenderentscheid 09.09.2026): P8 gegen den gespeicherten Anlagenwert
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ein abweichender Anlagenwert macht die erste Strangzeile GELB</b> und
+        /// nennt beide Zahlen. Bis <b>W6‑B‑12</b> war das über die Oberfläche
+        /// unerreichbar: Die Hülle gab die abgeleitete Summe als Anlagenwert herein,
+        /// und der Vergleich war damit immer erfüllt (Befund A11 des Prüfberichts).
+        /// </summary>
+        [Fact]
+        public void W6B12_Ein_abweichender_Anlagenwert_macht_gelb()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
+                                                       anzahlModuleAnlage: 12);
+
+                Assert.Equal(10, b.Modulsumme);
+                Assert.False(b.ModulsummeStimmt);
+                Assert.Equal(StrangPlausibilitaet.Ampel.Gelb, b.Straenge[0].Farbe);
+                Assert.Contains("10", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Contains("12", b.Straenge[0].Satz, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Stimmt der Anlagenwert, schweigt P8</b> — der Zustand nach jedem
+        /// Handgriff in der Maske (Q9-Abgleich).
+        /// </summary>
+        [Fact]
+        public void W6B12_Ein_stimmender_Anlagenwert_bleibt_still()
+        {
+            StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1, anzahlModuleAnlage: 10);
+
+            Assert.True(b.ModulsummeStimmt);
+            Assert.Equal(StrangPlausibilitaet.Ampel.Gruen, b.Farbe);
+        }
+
+        // =================================================================================
+        // W6-B-13 (Anwenderentscheid 09.09.2026): die Prüfmeldung beim Simulationsstart
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Laufhinweis wiederholt den Satz der Ampel</b> und setzt nur den
+        /// Vorspann davor (<b>W6‑B‑13</b>). Zwei Formulierungen für denselben Befund
+        /// wären zwei Wahrheiten.
+        /// </summary>
+        [Fact]
+        public void W6B13_Der_Laufhinweis_traegt_Anlage_und_Satz()
+        {
+            MitSprache("de-DE", () =>
+            {
+                StrangPlausibilitaet.Befund b = Pruefe(reihe: 15, parallel: 1, anzahlModuleAnlage: 15);
+                string satz = b.Straenge[0].Satz;
+
+                string hinweis = StrangPlausibilitaet.Laufhinweis("Dach Süd", satz);
+
+                Assert.Contains("Dach Süd", hinweis, StringComparison.Ordinal);
+                Assert.Contains(satz, hinweis, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>ROT wird Warnung, GELB wird Hinweis, GRÜN schweigt</b> — die Zuordnung
+        /// des Laufhinweises (<b>W6‑B‑13</b>), geprüft am Protokollkanal selbst.
+        /// </summary>
+        [Fact]
+        public void W6B13_Rot_wird_Warnung_und_gelb_wird_Hinweis()
+        {
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+
+            SimulationPV.StrangbefundMelden("Dach Süd", "strang-1",
+                                            StrangPlausibilitaet.Ampel.Rot, "Strang 1: rot");
+            SimulationPV.StrangbefundMelden("Dach Süd", "strang-2",
+                                            StrangPlausibilitaet.Ampel.Gelb, "Strang 2: gelb");
+            SimulationPV.StrangbefundMelden("Dach Süd", "strang-3",
+                                            StrangPlausibilitaet.Ampel.Gruen, "Strang 3: gruen");
+
+            Assert.Single(p.Warnungen);
+            Assert.Single(p.Hinweise);
+            Assert.Contains("Strang 1: rot", p.Warnungen[0], StringComparison.Ordinal);
+            Assert.Contains("Strang 2: gelb", p.Hinweise[0], StringComparison.Ordinal);
+            Assert.DoesNotContain("Strang 3", p.AlsText(), StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Je Befund EINE Zeile.</b> Ein zweiter Aufruf desselben Laufs erzeugt keine
+        /// zweite — sonst stünde eine Anlage mit acht Strängen nach zwei Durchgängen
+        /// sechzehnmal im Protokoll.
+        /// </summary>
+        [Fact]
+        public void W6B13_Derselbe_Befund_steht_nur_einmal_im_Protokoll()
+        {
+            SimulationProtokoll p = SimulationProtokoll.NeuStarten();
+
+            for (int i = 0; i < 3; i++)
+                SimulationPV.StrangbefundMelden("Dach Süd", "strang-1",
+                                                StrangPlausibilitaet.Ampel.Rot, "Strang 1: rot");
+
+            Assert.Single(p.Warnungen);
+        }
+    }
+}

@@ -21,6 +21,25 @@ Mitgeliefert: `EPOS-Plan.iss` (lauffähiges Setup-Skript) und `build-setup.ps1`
 > Entscheidungen und Abnahmeplan stehen in
 > [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md).
 
+> **Stand 06.09.2026 — Herstellerdaten.** Anwenderentscheid **W6‑O‑9** („ja"):
+> Das Setup liefert den Ordner `VDI-3805-Daten` (rund 186 MB) als **vorgewählte,
+> abwählbare Komponente** nach `{app}\VDI-3805-Daten` aus. Neu sind dadurch die
+> Abschnitte `[Types]` und `[Components]` im Skript, eine Zeile in `[Files]`, eine
+> in `[UninstallDelete]` und eine Vorbedingung in `build-setup.ps1`. Begründung
+> der Lage: Entscheidung **E10** in Abschnitt 3. Fachlicher Bezug:
+> [`Konzept_Wechselrichter_EPOS-Plan.md`](../Konzept_Wechselrichter_EPOS-Plan.md),
+> Kapitel 12.
+
+> **Stand 09.09.2026 — Deinstallations-Rückfrage.** Anwenderentscheid
+> **#157‑E‑3** („Empfehlung"): Die Rückfrage `DatenLoeschen` zielte auf
+> `%LocalAppData%\EPOS_PLAN` — einen Ordner, den nichts anlegt (Befund
+> Auftrag #157) — und erschien deshalb praktisch nie. Auftrag #161 stellt sie
+> auf den tatsächlichen, seit dem SQLite-Cutover für alle Windows-Konten
+> gemeinsamen Datenordner `%ProgramData%\EPOS_PLAN` um (Datenbank samt
+> `DB-Backup`), Voreinstellung weiterhin *Nein*, und meldet einen
+> fehlgeschlagenen `DelTree` (offene Datei) statt still weiterzulaufen.
+> Abschnitte 2.4 und 6.3 sind entsprechend nachgezogen.
+
 ---
 
 ## 1. Ausgangslage
@@ -75,6 +94,7 @@ kann, ohne die Installation zu wiederholen.
 |---|---|---|---|
 | `%ProgramFiles%\EPOS-Plan` | Programm, Laufzeit, Satelliten, `Vorlagen\`, `runtimes\` | Standard (Benutzer: nur lesen) | nur das Setup |
 | `…\EPOS-Plan\Vorlage\Kenndaten.accdb` | Auslieferungsdatenbank, unverändert | Standard | nur das Setup |
+| `…\EPOS-Plan\VDI-3805-Daten` | **Herstellerdaten** (VDI 3805, CEC-Modul- und Wechselrichterliste), rund 186 MB — abwählbare Komponente (E10) | Standard (Benutzer: nur lesen) | nur das Setup |
 | `%LOCALAPPDATA%\EPOS_PLAN` | **Arbeitsdatenbank des Kontos**, Protokolle | Konto hat Vollzugriff | die Anwendung |
 | `%LOCALAPPDATA%\EPOS-Plan\…\user.config` | Einstellungen (`DBPath`, `WordPressUrl` …) | Konto | .NET-Einstellungssystem |
 | `%ProgramData%\EPOS_PLAN` | leer im Regelbetrieb; Ablage für die Betriebsart „gemeinsame Datenbank" und für Altbestände | Gruppe *Benutzer*: ändern (vererbend) | Anwendung, wenn ausdrücklich konfiguriert |
@@ -155,9 +175,16 @@ Datenverlust mit Ansage.
 ### 2.4 Deinstallation
 
 Programmdateien und Verknüpfungen verschwinden. Die Deinstallation fragt
-einmal, ob die Datenbank des angemeldeten Kontos mitgelöscht werden soll —
-Vorgabe *Nein*. Daten anderer Konten bleiben grundsätzlich liegen; das steht
-so auch im Meldungstext.
+einmal, ob der gemeinsame Datenordner `%ProgramData%\EPOS_PLAN` — Datenbank
+samt Sicherungsordner `DB-Backup` — mitgelöscht werden soll; Vorgabe *Nein*.
+Dieser Ordner gehört seit dem SQLite-Cutover allen Windows-Konten des
+Rechners gemeinsam, ein „Ja" trifft also auch deren Projekte, nicht nur die
+des angemeldeten Kontos — das steht so auch im Meldungstext (Auftrag #161,
+09.09.2026; zuvor richtete sich die Rückfrage fälschlich an
+`%LocalAppData%\EPOS_PLAN`, einen Ordner, den nichts anlegt, siehe Auftrag
+#157). Ausdrücklich **nicht** angefasst werden dabei die beiden
+Datenverzeichnisse `WP-Plan` und die Registrierungseinstellungen
+(`HKEY_CURRENT_USER\Software\wp-plan`) des angemeldeten Kontos.
 
 ---
 
@@ -174,6 +201,7 @@ so auch im Meldungstext.
 | **E7** | **Ein Setup, keine Produktvarianten** | Demo und Vollversion unterscheiden sich ausschließlich im Lizenz-Token. Zwei Setups zu pflegen brächte nichts als zwei Fehlerquellen |
 | **E8** | **Version einzig aus `AssemblyInfo.cs`** | Setup-Dateiname, Softwareliste, Registry und `Hilfe → Info` zeigen zwangsläufig denselben Stand |
 | **E9** | **Klimadaten nicht im Setup** | Rund 330 `.xls` mit etwa 300 MB verdoppelten das Setup. Offen ist, wie sie stattdessen zum Anwender kommen — siehe Abschnitt 11 |
+| **E10** | **Herstellerdaten im Setup — als abwählbare Komponente unter `{app}\VDI-3805-Daten`** | Anwenderentscheid **W6‑O‑9** vom 06.09.2026: „ja". Ohne die Datensätze steht der Kunde vor leeren Importmasken; die zwei CEC-Listen sind zudem der einzige Weg zu einem gefüllten Modul- und Wechselrichterkatalog (W6‑O‑3). 186 MB rechtfertigen aber keine Zwangsinstallation, deshalb eine **vorgewählte, abwählbare** Komponente. **Nach `{app}` und nicht nach `%ProgramData%`**, weil die Masken den Bestand nur LESEN: Er gehört damit in die Zeile „nur das Setup schreibt" der Tabelle 2.1 — dieselbe Lage und derselbe Grund wie bei der Vorlagendatenbank (E3). `%ProgramData%\EPOS_PLAN` bleibt dagegen bei der Deinstallation absichtlich stehen (dort liegen Anwenderdaten); 186 MB Auslieferungsbestand blieben dort als Leiche zurück |
 
 ---
 
@@ -188,13 +216,14 @@ Architekturbezeichner `x64compatible` noch UTF-8 ohne BOM).
 | `[Setup]` | `AppId` als feste GUID, `{autopf}`, `PrivilegesRequired=admin`, `ArchitecturesAllowed=x64compatible`, `ArchitecturesInstallIn64BitMode=x64compatible`, `MinVersion=10.0`, `CloseApplications=yes` |
 | `[Languages]` | Deutsch und Englisch — passend zur zweisprachigen Oberfläche |
 | `[CustomMessages]` | Alle eigenen Texte zweisprachig, keine Zeichenkette im Code |
+| `[Types]` / `[Components]` | Zwei Typen (`voll`, `custom`) und zwei Bestandteile: `programm` (`Flags: fixed`) und `herstellerdaten` — vorgewählt, abwählbar (E10) |
 | `[Tasks]` | Desktopsymbol |
 | `[Dirs]` | `%ProgramData%\EPOS_PLAN` mit `Permissions: users-modify` |
-| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, ACE-Installer nach `{tmp}` — letzterer nur, wenn er gebraucht wird |
+| `[Files]` | Veröffentlichungsordner rekursiv (ohne `*.pdb`, `*.xml`), Vorlagendatenbank, Herstellerdatenordner `VDI-3805-Daten` rekursiv (`Components: herstellerdaten`), ACE- und WebView2-Installer nach `{tmp}` — letztere nur, wenn sie gebraucht werden |
 | `[Icons]` | Startmenü, Web-Verknüpfung, Deinstallation, optional Desktop |
 | `[Registry]` | `HKLM\SOFTWARE\INEKON\EPOS-Plan` (64-Bit-Sicht): `InstallDir`, `Version` |
 | `[Run]` | ACE-Installation mit Gegenprüfung, `icacls` bei Altbestand, Programmstart anbieten |
-| `[UninstallDelete]` | Gezielt: Protokolle, `Vorlage\`, dann `dirifempty` auf `{app}`. **Kein** pauschales Löschen des gewählten Ordners |
+| `[UninstallDelete]` | Gezielt: Protokolle, `Vorlage\`, `VDI-3805-Daten\`, dann `dirifempty` auf `{app}`. **Kein** pauschales Löschen des gewählten Ordners |
 | `[Code]` | `AceVorhanden`, `AceNachpruefen`, `Office32Vorhanden` mit Hinweisdialog, `AlteX86InstallationEntfernen` (aus `PrepareToInstall`), Zustandsaufnahme in `InitializeSetup`, Hinweisseite, Rückfrage bei der Deinstallation |
 
 Drei Feinheiten, die beim Ändern leicht kippen:
@@ -216,9 +245,15 @@ Drei Feinheiten, die beim Ändern leicht kippen:
 
 ## 5. Voraussetzungen und Prüfungen
 
-### 5.1 Microsoft Access Database Engine, 64 Bit
+### 5.1 Microsoft Access Database Engine, 64 Bit — GEFALLEN (W3, 09.09.2026)
 
-Die einzige echte Voraussetzung. Geprüft wird `Microsoft.ACE.OLEDB.12.0` in der
+> **Dieser Abschnitt beschreibt einen Stand, den es nicht mehr gibt.** Mit dem
+> Anwenderentscheid `#157-E-1` (Weg W3) liefert das Setup die Access-Engine nicht mehr
+> mit und prueft sie nicht mehr: Access wurde beim Kunden nie produktiv eingesetzt, und
+> die Anwendung liest ihre `Kenndaten.sqlite` ohne Fremdtreiber. Was aus dem Skript
+> verschwunden ist, steht in Abschnitt 6.3. Der Abschnitt bleibt zur Geschichte stehen.
+
+Die einzige echte Voraussetzung (bis 09.09.2026). Geprüft wird `Microsoft.ACE.OLEDB.12.0` in der
 **64-Bit-Sicht** (`HKCR64`) — genau die Kennung, die
 `DataRepository.GetConnectionString()` anfordert. Ein vorhandenes
 `Microsoft.ACE.OLEDB.16.0` allein genügt nicht; die 64-Bit-Redist registriert
@@ -295,111 +330,228 @@ COM-Interop für Import und Export — eine laufende Excel-Sitzung stört die
 Installation nicht. Die Prüfung zu übernehmen hieße, Anwender ohne Grund
 auszusperren.
 
+### 5.5 Microsoft Edge WebView2 Runtime (seit Paket iU8)
+
+Die **zweite** echte Voraussetzung, seit die ersten Dialoge Blazor-Komponenten
+sind und in einer WebView2 laufen (`Allgemein\Blazor\BlazorDialogForm.cs`).
+Ohne die Laufzeit startet EPOS-Plan zwar, aber jeder Blazor-Dialog bliebe leer.
+Der erste davon ist „Energieträger Variante" aus `Form_Kosten`.
+
+Was das Setup mitbringt, ist nur das **SDK** — `Microsoft.Web.WebView2.Core.dll`
+und `WebView2Loader.dll` kommen mit `dotnet publish`. Die **Laufzeit** ist ein
+Systembestandteil und muss auf dem Rechner sein: Auf Windows 11 ist sie es, auf
+Windows 10, LTSC und Server nicht zwingend.
+
+Geprüft wird die Fassung unter der festen Produkt-GUID
+`F3017226-FE2A-4295-8BDF-00C3A9A7E4C5` im EdgeUpdate-Zweig — die von Microsoft
+dokumentierte Erkennung:
+
+```
+HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{…}\pv      (maschinenweit)
+HKCU\Software\Microsoft\EdgeUpdate\Clients\{…}\pv                   (je Benutzer)
+```
+
+Eine der beiden genügt. Der Wert `0.0.0.0` gilt ausdrücklich als **nicht
+vorhanden**: Ihn hinterlässt eine entfernte Laufzeit — der Schlüssel steht dann
+noch da, die Laufzeit nicht. Derselbe Befund wie bei der ACE-Leiche in 5.1.
+
+Fehlt die Laufzeit, läuft der mitgelieferte
+`MicrosoftEdgeWebview2Setup.exe /silent /install`; danach wird erneut geprüft
+und bei Fehlschlag gemeldet. **Abgebrochen wird nichts** — ohne WebView2
+arbeitet alles außer den neueren Dialogen weiter (dieselbe Linie wie E5 bei der
+Access-Engine).
+
+> **Online oder offline — offene Anwenderentscheidung.** Mitgeliefert wird der
+> *Evergreen-Bootstrapper* (rund 2 MB,
+> <https://go.microsoft.com/fwlink/p/?LinkId=2124703>). Er lädt die Laufzeit
+> beim Anwender **online** nach; ohne Internetverbindung auf dem Zielrechner
+> schlägt er fehl. Die Alternativen sind der *Standalone-Installer* (rund
+> 150 MB, offline lauffähig) und die *Fixed-Version-Verteilung* (die Laufzeit
+> liegt im Programmordner, angesprochen über
+> `CoreWebView2CreationProperties.BrowserExecutableFolder`; dann liegt die
+> Aktualisierung bei uns statt bei Microsoft). Welcher Weg gilt, entscheidet
+> der Anwender — bis dahin bleibt der Bootstrapper.
+
+
 ---
 
 ## 6. Die Datenbank
 
+> **Stand 09.09.2026 — Anwenderentscheid `#157‑E‑1`, Weg W3.** Dieser Abschnitt ist
+> gebaut. Das Setup liefert `{app}\Vorlage\Kenndaten.sqlite` aus, der Kern kopiert sie
+> beim ersten Start in den Datenordner, und der Access-Weg (Übernahme-Assistent,
+> ACE-Engine, `.accdb`-Vorlage) ist gefallen. Der Betriebsstand steht in
+> [`../BETRIEB_SQLITE.md`](../BETRIEB_SQLITE.md), Abschnitt 1.
+
 ### 6.1 Den Auslieferungsstand erzeugen
 
-**Die Datenbank im Repository darf nicht ausgeliefert werden.**
-`WindowsFormsApplication1\Kenndaten.accdb` ist 92 MB groß und enthält reale
-Projekte aus der Entwicklung — also Kunden- und Objektdaten. Sie in ein Setup
-zu packen, das an Dritte geht, wäre eine Datenpanne.
+**Die Datenbank im Repository darf nicht ausgeliefert werden.** Die Arbeitsdatenbank
+enthält reale Projekte aus der Entwicklung — also Kunden- und Objektdaten. Sie in ein
+Setup zu packen, das an Dritte geht, wäre eine Datenpanne.
 
-Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.accdb` und
-entsteht in vier Schritten:
+Der Auslieferungsstand liegt getrennt unter `Setup\Vorlage\Kenndaten.sqlite`.
+**Seit dem 09.09.2026 erzeugt ihn ein Werkzeug** — Anwenderentscheid
+**#157‑E‑2** („Empfehlung" angenommen: automatisieren, und die Vorlage enthält
+Beispielprojekte), umgesetzt als `Werkzeuge\Auslieferungsvorlage` (Auftrag
+#160). Die vier Handgriffe von früher sind damit fünf Schritte des Werkzeugs;
+sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
 
-1. Kopie der produktiven Datenbank ziehen (vorher prüfen, ob `Kenndaten.laccdb`
-   existiert — dann ist sie geöffnet)
-2. Alle Projektdaten löschen. Die Löschweitergaben tragen das meiste mit: Ein
-   `DELETE FROM Tab_Projekt` räumt über die 68 Beziehungen mit `DEL-CASCADE`
-   die abhängigen Tabellen ab. Die dokumentierten Ausnahmen —
-   `Tab_Pufferspeicher` hängt **nicht** an der Projektkaskade, `ID_PUFFER` hat
-   **keine** Beziehung — sind einzeln nachzuziehen
-3. In den `*_STAMM`-Tabellen behalten, was `ReadOnly = TRUE` trägt; das ist
-   laut Namenskonvention genau der Auslieferungskatalog
-4. „Komprimieren und reparieren", dann die Datei schreibgeschützt ablegen
+1. **Arbeitskopie** über `Datenbanksicherung.KopieAnlegen` — die eine
+   Sicherungswahrheit des Kerns seit Auftrag #158, ein `VACUUM INTO` über eine
+   frisch geöffnete Verbindung. Es liest durch das WAL hindurch und lässt die
+   Quelle byte-gleich, auch wenn EPOS-Plan gerade läuft; eine reine Dateikopie
+   griffe nur den letzten Checkpoint ab (`BETRIEB_SQLITE.md` § 2 und § 3.2).
+   Die alte Prüfung auf `Kenndaten.laccdb` entfällt mit Access.
+2. **Alle Projektdaten löschen.** Ein `DELETE FROM Tab_Projekt` räumt über die
+   Beziehungen mit `ON DELETE CASCADE` das meiste mit ab; die Tabellen ohne
+   Fremdschlüssel und die Detailtabellen darunter räumt das Werkzeug einzeln
+   nach — in **einer** Transaktion mit `PRAGMA defer_foreign_keys = ON`, damit
+   die Reihenfolge unkritisch ist (dieselbe Bauart wie
+   `sql\tools\Reduziere-Testdatenbank.sql`). Die dokumentierte Ausnahme
+   `Tab_Pufferspeicher` ist damit erledigt: Sie hängt seit der SQLite-Migration
+   **doch** an der Projektkaskade, und `Tab_Energieanlagen.ID_PUFFER` ist ein
+   `NO ACTION`-Verweis, den die aufgeschobene Prüfung abfängt. **Die
+   Tabellenliste wird nicht gepflegt, sondern abgeleitet** — aus dem Schema der
+   geöffneten Datei: jede Tabelle mit Spalte `ID_Projekt`/`ProjektID` (47) plus
+   die transitive Hülle darunter (25) plus `Tab_Projekt`. Ein Schemaschritt, der
+   eine Projekttabelle ergänzt (zuletzt 65/66 mit `Tab_Wechselrichter` und
+   `Z_AnlageStrang`), wird damit von selbst erfasst.
+3. **Kataloge und Personenbezug.** In den `*_STAMM`-Tabellen bleibt, was
+   `ReadOnly = TRUE` trägt (`--kataloge readonly`, Vorgabe) — siehe aber den
+   **Befund** unten. Dazu leert das Werkzeug `Tab_Applikation`: `Projektname`,
+   `Beschreibung`, `Icon` und `ID_Projekt` (auf 0, der Zustand „kein Projekt
+   geöffnet", den auch `ProjektCtrl.LoeschenMitVorarbeiten` schreibt). Nötig ist
+   das, weil diese Tabelle an keinem Projekt hängt und sonst den Namen des
+   zuletzt geöffneten **Kunden**projekts mit ausliefern würde. Lizenztoken,
+   Zeitanker und KI-Schlüssel liegen nicht in der Datenbank, sondern über
+   `Dienste.Lizenzablage` im Anmeldeinformationsspeicher.
+4. **Beispielprojekte einspielen** als `.wpx`-Pakete über
+   `ProjektExportImportCtrl` (`--beispiele <ordner-oder-liste>`). Damit ist der
+   offene Punkt aus `Konzept_Projektbeispiele_Dokumentation.md` § 6.2 („ein
+   Projektexport existiert nicht") geschlossen; Katalogbezüge lösen sich beim
+   Import über die fachlichen Schlüssel neu auf, nicht über IDs — genau so, wie
+   es das Beispielkonzept verlangt. Ohne `--beispiele` bleibt die Vorlage
+   projektfrei.
+5. **Verdichten und prüfen.** `VACUUM`, dann `PRAGMA journal_mode = WAL` (die
+   Betriebserwartung aus `BETRIEB_SQLITE.md`; `VACUUM INTO` liefert sonst eine
+   Datei im Standardmodus). Danach Schemastand, STRICT-Tabellenzahl,
+   `integrity_check`, `foreign_key_check`, Projektliste, Datenschutzwächter und
+   die Frage, ob wirklich nur **eine** Datei entstanden ist.
 
-Dieser Schritt ist **noch nicht automatisiert** und gehört als Skript in
-`Setup\Vorlage\` (Aufwandsschätzung in Abschnitt 12). Bis dahin ist er von Hand
-zu gehen und das Ergebnis vor jeder Auslieferung gegenzuprüfen: Projektliste
-leer, Katalogzahlen plausibel, Dateigröße deutlich unter 92 MB.
-
-Das Build-Skript bricht ab, wenn `Setup\Vorlage\Kenndaten.accdb` fehlt — und
-greift bewusst **nicht** ersatzweise auf die Arbeitsdatenbank zurück.
-
-### 6.2 Erstkopie und Übernahme des Bestands
-
-Die Anwendung entscheidet, welche Datenbank sie benutzt — nicht das Setup. Der
-Vorschlag für `DataRepository`:
-
-```csharp
-public static string GetDBPath()
-{
-    // Ausdrücklich konfigurierter Ordner (Admin-Einstellungen) hat Vorrang.
-    // Das ist zugleich die Betriebsart "gemeinsame Datenbank".
-    string ordner = Properties.Settings.Default.DBPath;
-    if (!string.IsNullOrWhiteSpace(ordner))
-        return Path.Combine(ordner, DB_DATEINAME);
-
-    string benutzerOrdner = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "EPOS_PLAN");
-    string ziel = Path.Combine(benutzerOrdner, DB_DATEINAME);
-
-    if (!File.Exists(ziel))
-        DatenbankBereitstellen(benutzerOrdner, ziel);
-
-    return ziel;
-}
-
-private static void DatenbankBereitstellen(string ordner, string ziel)
-{
-    Directory.CreateDirectory(ordner);
-
-    // 1. Bestand aus der bisherigen gemeinsamen Ablage übernehmen -
-    //    der Anwender behält seine Projekte.
-    string alt = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-        "EPOS_PLAN", DB_DATEINAME);
-
-    // 2. sonst die Auslieferungsvorlage neben dem Programm.
-    string vorlage = Path.Combine(
-        AppDomain.CurrentDomain.BaseDirectory, "Vorlage", DB_DATEINAME);
-
-    string quelle = File.Exists(alt) ? alt : vorlage;
-    if (!File.Exists(quelle))
-        throw new FileNotFoundException(
-            "Weder Bestandsdatenbank noch Auslieferungsvorlage gefunden.", quelle);
-
-    // Über eine Zwischendatei, damit ein Abbruch keine halbe
-    // Datenbank hinterlässt, die beim nächsten Start als gültig gilt.
-    string zwischen = ziel + ".neu";
-    File.Copy(quelle, zwischen, true);
-    File.SetAttributes(zwischen, File.GetAttributes(zwischen) & ~FileAttributes.ReadOnly);
-    File.Move(zwischen, ziel);
-}
+```bash
+dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
+    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]
 ```
 
-Drei Punkte dazu:
+Rückgabe `0` = erzeugt und abgenommen. Jeder andere Wert ist ein Abbruch mit
+Grund auf `stderr`, und dann entsteht **keine** Zieldatei: `2` Aufruf oder Quelle,
+`3` Ziel im Repository außerhalb von `Setup\Vorlage\`, `4` Katalogwächter,
+`5` fachlicher Abbruch, `1` unerwartet. Neben der Vorlage entsteht
+`<ziel>.bericht.txt` — der **Prüfbericht**, der die frühere Gegenprüfung von Hand
+ersetzt: je Tabelle die Zeilen vorher und nachher, Katalogzahlen, geleerte Felder,
+Projektliste, Größe vorher/nachher und jede Prüfzeile. Er ist vor jeder
+Auslieferung zu lesen; `Setup\Vorlage\LIESMICH.md` nennt die drei Zeilen, auf die
+es ankommt.
 
-- **Reihenfolge.** Das muss vor `SchemaMigration.Ausfuehren()` in `Program.Main`
-  greifen. Da die Migration ihren Pfad laut Entscheidung 13.2 des
-  Simulationskonzepts über `DataRepository.GetDBPath()` bezieht, geschieht das
-  von selbst — beim Umbau dieser Stelle aber mit prüfen.
-- **Dauer.** 92 MB kopieren dauert je nach Datenträger einige Sekunden. Der
-  erste Start braucht deshalb einen sichtbaren Hinweis, sonst wirkt das Programm
-  hängengeblieben.
-- **Der Altbestand bleibt liegen.** Bewusst: Erst wenn der Anwender bestätigt
-  hat, dass seine Projekte da sind, darf die alte Datei weg. Das gehört in die
-  Liesmich-Datei, nicht in eine automatische Löschung.
+> **Befund #160‑F‑1 — die Marke `ReadOnly` trägt die Regel heute nicht.**
+> Schritt 3 in seiner ursprünglichen Fassung („in `*_STAMM` bleibt nur
+> `ReadOnly = TRUE`") leert am Bestand der Testdatenbank **22 der 28
+> Katalogtabellen: 419 722 Zeilen bleiben 101.** Betroffen sind unter anderem
+> `Tab_Kenndaten_STAMM` (1 960 Wärmepumpen-Kennfelder), `Tab_Heizkessel_STAMM`
+> (63), `Tab_Gebaeude_STAMM` (277) und `Tab_PV_STAMM` (6 — dieselben Module,
+> deren Koeffizienten Schemaschritt 69 gerade erst repariert hat). Drei weitere
+> Tabellen **ohne** Spalte `ReadOnly` reißt die Kaskade mit:
+> `Tab_Klimaregion_STAMM` nimmt `Tab_Klimadaten_STAMM` (11 680) und
+> `Tab_Solar_STAMM` (280 320) mit, `Tab_WP_STAMM` nimmt
+> `Tab_Kenndaten_Kuehlung_STAMM` (174) mit. Ursache: Im Code ist `ReadOnly` ein
+> **Schreibschutz der Oberfläche** (`HeizkesselStammCtrl`, `GebaeudeStammCtrl`,
+> `KostenVorlagenCtrl` verweigern damit das Ändern), nicht die
+> Auslieferungsmarke, als die die Namenskonvention sie beschreibt.
+> **Deshalb bricht das Werkzeug mit Code 4 ab**, statt eine Vorlage mit leerem
+> Katalog abzulegen — das fiele erst beim Kunden auf. Zwei Wege stehen offen und
+> beide sind ausdrücklich zu wählen: `--kataloge alle` liefert den vollständigen
+> Katalog aus (heute der einzige brauchbare Stand), `--katalogleerung-zulassen`
+> setzt die Regel trotzdem durch. Dauerhaft ist zu entscheiden, ob die Marke im
+> Bestand nachgepflegt wird oder ob die Regel fällt.
 
-### 6.3 Was das Setup mit der Datenbank nie tut
+Der Stand **entsteht vor jedem Übersetzungslauf neu** — er liegt deshalb NICHT im Repository
+(`.gitignore`: `Setup/Vorlage/*.sqlite`, dazu `-wal`/`-shm` und der Prüfbericht `*.bericht.txt`). Aufruf des
+Werkzeugs (Rückgabe 0 = erzeugt und abgenommen, sonst Grund auf stderr und keine Zieldatei):
 
-Es überschreibt sie nicht, es migriert sie nicht, es löscht sie nicht (außer auf
-ausdrückliche Rückfrage bei der Deinstallation, und dann nur die des
-angemeldeten Kontos). Alles Weitere macht die Anwendung, die den Schema- und
-Lizenzzustand kennt.
+```powershell
+dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele …] [--trocken]
+```
+
+`build-setup.ps1` ruft es selbst auf, unmittelbar vor `ISCC`:
+
+```powershell
+.\build-setup.ps1 -Quelldatenbank D:\Auslieferung\Kenndaten_Stand.sqlite
+```
+
+Die Quelle kommt aus dem Parameter `-Quelldatenbank` oder aus der Umgebungsvariablen
+`EPOS_VORLAGE_QUELLE`. **Ohne Angabe bricht das Skript ab** und greift bewusst **nicht**
+ersatzweise auf die Arbeitsdatenbank zurück; ebenso bei einem Rückgabecode ≠ 0 des
+Werkzeugs oder einer fehlenden Zieldatei. Auch `ISCC` selbst prüft die Datei noch einmal
+(`#if !FileExists(VorlageDb)` im `.iss`).
+
+Was das Werkzeug tut — Projektdaten entfernen, den Auslieferungskatalog behalten,
+Beispielprojekte auswählen, verdichten —, steht bei ihm; hier zählt nur, dass es genau
+eine Quelle für diesen Stand gibt.
+
+### 6.2 Erstkopie beim ersten Programmstart
+
+**Gebaut, und zwar im Kern.** Die Anwendung entscheidet, welche Datenbank sie benutzt —
+nicht das Setup:
+
+| Schritt | Fundstelle |
+|---|---|
+| Startprüfung | `Program.Main` → `DataRepository.DatenbankVorhanden()` |
+| Bereitstellung | `Program.DatenbankBereitstellen()` → `Erstbereitstellung.Sicherstellen(Ziel, Vorlage)` |
+| Ablauf | `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs` |
+| Pfad der Vorlage | `IPfade.Auslieferungsvorlage` (`StandardPfade`, Aufstieg von `AppContext.BaseDirectory`) |
+
+**Der Ablageort ist und bleibt `%ProgramData%\EPOS_PLAN`.** Der Vorschlag der früheren
+Fassung dieses Abschnitts — eine Datenbank je Windows-Konto unter `%LOCALAPPDATA%` — ist
+nie gebaut worden; `DataRepository.GetDBPath()` kennt kein Benutzerprofil (Befund #157
+vom 09.09.2026). Der `[Dirs]`-Eintrag des Setups gibt der Gruppe Benutzer deshalb
+vererbende Änderungsrechte auf diesen Ordner (`users-modify`) — ohne sie könnte die
+Anwendung die Vorlage dort gar nicht ablegen.
+
+Drei Zusicherungen der Bereitstellung: **nie überschreiben** (eine vorhandene Datei bleibt
+unberührt, auch eine beschädigte — dort stehen die Projekte des Anwenders), **nie halb
+liegen lassen** (bei jedem Fehler wird die Zieldatei wieder entfernt), **erst prüfen, dann
+melden** (`PRAGMA integrity_check` und `Tab_Applikation.SchemaVersion`). Eine Vorlage mit
+älterem Schemastand ist zulässig; `SchemaMigration.Ausfuehren` hebt sie beim selben Start
+an.
+
+**Fehlt auch die Vorlage**, startet das Programm nicht: Meldung `START_DB_FEHLT`, ergänzt
+um den erwarteten Vorlagenpfad (`START_VORLAGE_FEHLT`).
+
+**Auf iOS gilt derselbe Gedanke** — `EPOS.iOS/Datenbankbereitstellung.cs` kopiert die
+mitgelieferte `Kenndaten.sqlite` aus dem Anwendungspaket in die Sandbox.
+
+### 6.3 Kein Access mehr im Setup
+
+Mit Weg W3 sind aus diesem Skript verschwunden: `#define AceInstaller`, die
+`[Files]`- und `[Run]`-Zeile des Redistributables, die vier Pascal-Funktionen
+`AceVorhanden`/`Office32Vorhanden`/`Office32Hinweisen`/`AceNachpruefen`, die drei
+Meldungen `AceInstallieren`/`Office32Hinweis`/`AceFehlt` (de+en) und die
+Assistentenseite „Vorhandene Datenbank gefunden" samt `G_LegacyDb`,
+`InitializeWizard` und `ShouldSkipPage`. Abschnitt 5.1 dieses Konzepts beschreibt
+damit einen Stand, den es nicht mehr gibt.
+
+Die Übernahme eines `.accdb`-Altbestands ist seither ein **Hauswerkzeug**
+(`EposSqliteMigrator.exe`); wer sie fährt, installiert die ACE-Engine dort, wo sie
+läuft — beim Anwender wird sie nicht mehr gebraucht. `AccessDatabaseEngine_X64.exe`
+gehört damit auch nicht mehr in `Setup\Voraussetzungen\`.
+
+### 6.4 Was das Setup mit der Datenbank nie tut
+
+Es überschreibt sie nicht, es migriert sie nicht, es löscht sie nicht (außer
+auf ausdrückliche Rückfrage bei der Deinstallation — und dann den ganzen
+gemeinsamen Ordner `%ProgramData%\EPOS_PLAN`, nicht nur einen Anteil des
+angemeldeten Kontos; Auftrag #161, 09.09.2026, siehe Abschnitt 2.4). Alles
+Weitere macht die Anwendung, die den Schema- und Lizenzzustand kennt.
 
 ---
 
@@ -455,7 +607,11 @@ Setup\
   Liesmich.rtf                         Neuerungen, ACE-Supportfall, DB-Übernahme
   Vorlage\Kenndaten.accdb              Auslieferungsstand (NICHT versionieren)
   Voraussetzungen\AccessDatabaseEngine_X64.exe
+  Voraussetzungen\MicrosoftEdgeWebview2Setup.exe
   Ausgabe\                             Ergebnis (NICHT versionieren)
+
+<Repo>\VDI-3805-Daten\                 Herstellerdaten, rund 186 MB (versioniert),
+                                      Komponente "herstellerdaten" (E10)
 ```
 
 Nach `.gitignore`: `Setup/Ausgabe/`, `Setup/Vorlage/*.accdb`,
@@ -469,9 +625,14 @@ cd C:\Waermeplan\WP_Plan\Setup
 ```
 
 Das Skript veröffentlicht eigenständig nach `artifacts\publish\win-x64`, prüft
-Vorlagendatenbank, Voraussetzungs-Installer und Inno-Setup-Version, übersetzt
-und meldet Pfad und Größe. `-SkipPublish` überspringt den Bau, `-Schnell`
-schaltet auf `lzma2/normal` für Testläufe.
+Vorlagendatenbank, **Herstellerdatenordner**, Voraussetzungs-Installer und
+Inno-Setup-Version, übersetzt und meldet Pfad und Größe. `-SkipPublish`
+überspringt den Bau, `-Schnell` schaltet auf `lzma2/normal` für Testläufe.
+
+Fehlt `VDI-3805-Daten`, bricht schon `build-setup.ps1` mit der Bezugsquelle ab;
+`EPOS-Plan.iss` hat für den Handlauf mit `ISCC.exe` denselben Abbruch als
+`#error` (`DirExists`). **Ein Setup ohne Herstellerdaten entsteht nicht aus
+Versehen** — nur, wenn der Anwender die Komponente im Assistenten abwählt.
 
 Veröffentlicht wird bewusst mit dem **MSBuild aus Visual Studio 2022**
 (`-restore -t:Publish -p:Platform=x64 -p:RuntimeIdentifier=win-x64
@@ -480,6 +641,11 @@ COM-Referenzen (Excel-Interop, VBIDE), und das SDK-MSBuild bricht dabei mit
 **MSB4803** ab — `ResolveComReference` gibt es nur im vollen MSBuild. Eine
 Bitness-Option hat das Skript nicht; es gibt nur noch `win-x64`
 (Entscheidung 5.1 des Umstellungskonzepts).
+
+> **Nachtrag 02.09.2026:** Der Absatz zu MSB4803 ist überholt. Mit der
+> Umstellung des Excel-Interops auf ClosedXML hält das Projekt keine
+> COM-Referenzen mehr; `build-setup.ps1` veröffentlicht seither mit
+> `dotnet publish`, Visual Studio wird zum Bauen nicht mehr benötigt.
 
 **Freigabeprobe vor jeder Auslieferung** — auf einer frischen
 Windows-Installation, nicht auf dem Entwicklungsrechner:
@@ -501,12 +667,66 @@ Windows-Installation, nicht auf dem Entwicklungsrechner:
 8. Deinstallation mit und ohne Datenlöschung
 9. `dotnet list package --include-transitive` — Lizenzprüfung, insbesondere die
    Bindung von `SixLabors.Fonts` auf 1.0.x
+10. **Komponentenseite** (E10): Der Assistent zeigt zwischen Zielordner und
+    Aufgaben eine Seite „Komponenten auswählen" mit dem Typ „Vollständige
+    Installation" und zwei Häkchen — „Programm und Auslieferungsdatenbank"
+    (fest) und „Herstellerdaten (VDI 3805, CEC)" (gesetzt, rund 186 MB). Zwei
+    Fälle: **mit** Häkchen → nach der Installation liegt `VDI-3805-Daten` neben
+    dem Programm, und der Dateiwähler von Administration → Datenimport macht
+    ohne jede Einstellung darin auf; **ohne** Häkchen → der Ordner fehlt, das
+    Programm läuft unverändert, und der Wähler startet im bisherigen
+    Vorgabeordner
 
 Eine Automatisierung über GitHub Actions ist möglich (`windows-latest` bringt
 das .NET-SDK mit, Inno Setup ist per `choco install innosetup` nachrüstbar),
 scheitert aber vorerst an der Vorlagendatenbank: 92 MB Binärdatei mit
 Kundenbezug gehören nicht in ein Repository. Solange dieser Schritt manuell ist,
 bleibt die Kette es auch.
+
+### 8.1 Laufanleitung Windows
+
+Anlass (Anwender, 10.09.2026): Inno Setup läuft nicht zentral installiert,
+sondern im Ordner `Setup` des eigenen Repository-Klons — beim Anwender unter
+`C:\Waermeplan\WP_Plan\Setup`. `build-setup.ps1` findet `ISCC.exe` seit dem
+Parameter `-Iscc` auch dort (Auftrag #164); dieser Abschnitt beschreibt den
+vollständigen Handlauf.
+
+1. Klon aktualisieren: im Repository-Wurzelordner `git checkout ios_migration`,
+   dann `git pull`.
+2. PowerShell im Ordner `Setup` öffnen, z. B. `cd C:\Waermeplan\WP_Plan\Setup`.
+3. Aufruf:
+
+   ```powershell
+   .\build-setup.ps1 -Quelldatenbank <Pfad>\Kenndaten.sqlite -Beispiele <Ordner mit .wpx oder leer> -Kataloge alle [-Iscc <Pfad>]
+   ```
+
+   `-Kataloge alle` ist bis zum Entscheid #160‑E‑1 verpflichtend (Befund
+   #160‑F‑1, Abschnitt 6.1) — ohne den Schalter bricht
+   `Werkzeuge\Auslieferungsvorlage` mit Code 4 ab. `-Iscc` nur angeben, wenn das
+   Skript `ISCC.exe` nicht selbst findet (Suchreihenfolge: `-Iscc` →
+   Umgebungsvariable `EPOS_ISCC` → neben `build-setup.ps1` → Program Files →
+   Registry); Pfad zur `ISCC.exe` selbst oder zu deren Ordner, z. B.
+   `-Iscc C:\Waermeplan\WP_Plan\Setup\Inno Setup 6`.
+4. Was der Lauf ausgibt: die vier Schritte „Vorbedingungen prüfen",
+   „Veröffentlichung bauen", „Auslieferungsvorlage erzeugen" und „Setup
+   übersetzen" auf der Konsole (Abschnitt 4), dazwischen Version und Größe der
+   Veröffentlichung sowie der Vorlage. Der Prüfbericht der Vorlage entsteht
+   daneben als `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` (Abschnitt 6.1); das
+   fertige Setup liegt danach unter `Setup\Ausgabe`.
+5. Rückgabecode von `Werkzeuge\Auslieferungsvorlage` — `build-setup.ps1` bricht
+   in jedem Fall mit ab und gibt die Meldung des Werkzeugs weiter:
+   - **2** — Aufruf oder Quelle falsch: `-Quelldatenbank` und den angegebenen
+     Pfad prüfen.
+   - **3** — Ziel liegt im Repository außerhalb von `Setup\Vorlage\`: nicht
+     selbst eingreifen, den Pfad setzt das Skript.
+   - **4** — Katalogwächter (#160‑F‑1): mit `-Kataloge alle` erneut aufrufen
+     (siehe Schritt 3 oben).
+   - **5** — fachlicher Abbruch: Meldung auf der Konsole lesen, betrifft die
+     Quelle selbst (z. B. eine gescheiterte Prüfung).
+6. Nach dem Lauf zurückmelden: die vollständige Konsolenausgabe, der Inhalt von
+   `Setup\Vorlage\Kenndaten.sqlite.bericht.txt` und — sobald `ISCC.exe` lief —
+   dessen Meldungen (Erfolg mit Pfad und Größe, oder der Fehlertext mit
+   Zeilennummer im `.iss`).
 
 ---
 
@@ -543,7 +763,10 @@ Verpacken und das Setup danach.
   (`.eposlic`); `.lic` ist nicht geschützt und wird von anderen Programmen belegt.
 - **Kein automatischer Programmupdater.** Es gibt keinen im Code, und das Setup
   ersetzt ihn nicht.
-- **Keine Klimadaten** (E9).
+- **Keine Klimadaten** (E9). Die **Herstellerdaten** dagegen liegen seit dem
+  06.09.2026 bei (E10) — der Unterschied ist die Größe: 186 MB gegen 300 MB,
+  und die Herstellerdaten sind die Voraussetzung dafür, dass die Importmasken
+  überhaupt etwas zu lesen finden.
 
 ---
 
@@ -554,8 +777,11 @@ Verpacken und das Setup danach.
 | S1 | Wie kommen die Klimadaten zum Anwender? Rund 330 `.xls`, etwa 300 MB. Nachladen aus der Anwendung, eigenes Datenpaket oder doch ins Setup? | Klären, wie die Anwendung sie heute erwartet — Pfad, Zeitpunkt, Pflicht oder Kür |
 | S2 | `help_mapping.txt` liegt in der heutigen Release-Ausgabe, ist aber nicht im Projekt eingetragen — bei `dotnet publish` fehlt es | Prüfen, ob die Anwendung es braucht; wenn ja, als `Content` ins `.csproj` |
 | S3 | `AccessDatabaseEngine_X64.exe` (ADE 2016 Redistributable, **64 Bit**) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Aus dem Microsoft Download Center beschaffen und unverändert in die Repo-Wurzel legen (5.1). Die 32-bit-Fassung der x86-Ära entfällt ersatzlos |
+| S8 | `MicrosoftEdgeWebview2Setup.exe` (Evergreen-Bootstrapper) liegt noch nicht in der Repo-Wurzel — ohne sie bricht `build-setup.ps1` ab | Von <https://go.microsoft.com/fwlink/p/?LinkId=2124703> beschaffen und unverändert in die Repo-Wurzel legen (5.5) |
+| S9 | `.gitignore` deckt `/AccessDatabaseEngine*.exe` ab, den WebView2-Bootstrapper in der Repo-Wurzel aber **nicht** — `GitHub_Sync.bat` committet mit `git add -A` | Zeile `/MicrosoftEdgeWebview2Setup.exe` in `.gitignore` ergänzen |
+| S10 | Online- oder Offline-Verteilung der WebView2-Laufzeit (5.5) | **Entschieden 03.09.2026 (iF20): Bootstrapper.** Der Standalone-Installer wird erst beigelegt, wenn ein Kunde ohne Internet installiert |
 | S4 | Herausgebername: „INEKON" oder die vollständige Firmierung? Steht in Setup, Softwareliste und später im Zertifikat | Festlegen, danach `#define AppPublisher` |
-| S5 | Automatisierte Erzeugung der Auslieferungsdatenbank (6.1) | Skript schreiben; bis dahin Handlauf mit Gegenprüfung |
+| S5 | ~~Automatisierte Erzeugung der Auslieferungsdatenbank (6.1)~~ **Erledigt 09.09.2026 (Entscheid #157‑E‑2, Auftrag #160):** `Werkzeuge/Auslieferungsvorlage`, 17 Proben, Prüfbericht neben der Zieldatei | Offen bleibt allein **Befund #160‑F‑1**: Die Marke `ReadOnly` trägt die Katalogregel aus 6.1 Schritt 3 heute nicht (22 von 28 Katalogtabellen würden leer). Bis zur Entscheidung läuft die Freigabe mit `--kataloge alle` |
 | S6 | `Settings.Default.Upgrade()` beim Versionswechsel vorhanden? (7.7) | Im Code nachsehen |
 | S7 | ~~Wird noch ein 64-Bit-Stand gebraucht?~~ **Erledigt 22.08.2026:** ja — EPOS-Plan ist vollständig auf x64 umgestellt, einen x86-Stand gibt es nicht mehr | Keiner. Herleitung und Abnahmeplan in [`Konzept_Umstellung_64Bit_EPOS-Plan.md`](../Konzept_Umstellung_64Bit_EPOS-Plan.md) |
 
@@ -567,7 +793,7 @@ Verpacken und das Setup danach.
 |---|---|---|
 | S-1 | Setup-Skript einrichten, Symbol, Lizenz- und Liesmich-Text, erster Übersetzungslauf | 0,5 |
 | S-2 | Änderungen an der Anwendung 7.1, 7.2, 7.5, 7.6 | 1,0 |
-| S-3 | Auslieferungsdatenbank: Bereinigung festlegen und einmal durchführen (6.1) | 1,0 |
+| S-3 | ~~Auslieferungsdatenbank: Bereinigung festlegen und einmal durchführen (6.1)~~ **erledigt 09.09.2026 als Werkzeug** (#160) | 1,0 |
 | S-4 | Freigabeprobe auf frischer Windows-Installation, neun Fälle (Abschnitt 8) | 1,0 |
 | S-5 | Assemblyumbenennung 7.3 mit Regressionsprobe | 0,5 |
 | S-6 | Mutex 7.4, `Settings.Upgrade()` 7.7 | 0,5 |

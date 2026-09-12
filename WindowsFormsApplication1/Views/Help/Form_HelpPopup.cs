@@ -153,81 +153,19 @@ namespace WindowsFormsApplication1
         // H11 (7.6) - Umbruch der Kurzbeschreibung
         // --------------------------------------------------------------------
 
-        /// <summary>Ziellänge einer Zeile der Kurzbeschreibung, in Zeichen.</summary>
-        internal const int BESCHREIBUNG_ZEICHEN = 70;
-
-        /// <summary>Mehr als so viele Zeilen zeigt das Popup nicht.</summary>
-        internal const int BESCHREIBUNG_ZEILEN = 2;
-
         /// <summary>
-        /// Bricht die Kurzbeschreibung an Wortgrenzen auf höchstens
-        /// <see cref="BESCHREIBUNG_ZEILEN"/> Zeilen zu je rund
-        /// <see cref="BESCHREIBUNG_ZEICHEN"/> Zeichen um. Was nicht mehr
-        /// hineinpasst, endet mit einem Auslassungszeichen.
+        /// Bricht die Kurzbeschreibung an Wortgrenzen um - die Rechnung selbst steht
+        /// seit iU9-W15b.0e im Kern (<see cref="Kurzbeschreibung"/>) und ist dort mit
+        /// <c>KurzbeschreibungTests</c> geprueft (Auflage H-1, Befund W15b-B18).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// Umgebrochen wird über die Zeichenzahl, nicht über die gemessene
-        /// Textbreite. Das ist bewusst grob: Das Popup ist AutoSize, die
-        /// Randklemmung in <c>Anzeigen</c> holt jede Breite wieder auf den
-        /// Bildschirm, und eine Messung über <c>TextRenderer</c> bräuchte einen
-        /// Grafikkontext an einer Stelle, die sonst ohne auskommt.
-        /// </para>
-        /// <para>
-        /// Ein einzelnes überlanges Wort wird NICHT getrennt - es bekommt seine
-        /// Zeile und darf länger sein. Getrennte Fachwörter wären schlimmer als
-        /// eine zu lange Zeile.
-        /// </para>
-        /// <para>
-        /// <c>internal</c> statt <c>private</c>, damit der Prüfstand die Kappung
-        /// ohne Bildschirm nachrechnen kann.
-        /// </para>
+        /// Die Weiterleitung bleibt <c>internal static</c>, damit die Aufrufstelle in
+        /// <c>Anzeigen</c> unveraendert lesbar bleibt und der Name im Bestand steht,
+        /// unter dem H11 ihn eingefuehrt hat.
         /// </remarks>
         internal static string BeschreibungUmbrechen(string text)
         {
-            if (string.IsNullOrWhiteSpace(text)) return "";
-
-            // Der Katalog liefert bereits einzeilig; ein Umbruch aus einer alten
-            // Sicherung würde die Zeilenrechnung sonst durcheinanderbringen.
-            string flach = System.Text.RegularExpressions.Regex.Replace(text, @"\s+", " ").Trim();
-            if (flach.Length == 0) return "";
-
-            string[] woerter = flach.Split(' ');
-            var zeilen = new System.Collections.Generic.List<string>();
-            var aktuell = new System.Text.StringBuilder();
-
-            int i = 0;
-            for (; i < woerter.Length; i++)
-            {
-                string wort = woerter[i];
-
-                if (aktuell.Length == 0)
-                {
-                    aktuell.Append(wort);
-                }
-                else if (aktuell.Length + 1 + wort.Length <= BESCHREIBUNG_ZEICHEN)
-                {
-                    aktuell.Append(' ').Append(wort);
-                }
-                else if (zeilen.Count + 1 >= BESCHREIBUNG_ZEILEN)
-                {
-                    // Die angefangene Zeile ist die letzte erlaubte - hier ist Schluss.
-                    break;
-                }
-                else
-                {
-                    zeilen.Add(aktuell.ToString());
-                    aktuell.Clear();
-                    aktuell.Append(wort);
-                }
-            }
-
-            // Rest übrig? Dann wurde gekappt und das muss man sehen.
-            if (i < woerter.Length) aktuell.Append('…');
-
-            zeilen.Add(aktuell.ToString());
-
-            return string.Join("\r\n", zeilen);
+            return Kurzbeschreibung.Umbrechen(text);
         }
 
         /// <summary>

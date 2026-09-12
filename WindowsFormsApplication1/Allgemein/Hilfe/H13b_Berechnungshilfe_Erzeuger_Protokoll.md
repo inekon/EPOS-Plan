@@ -1,0 +1,933 @@
+# H13b — Hilferubrik „Berechnung", Teil B: Erzeuger und Speicher (Umsetzungsprotokoll, 06.09.2026)
+
+Ausgangsstand `0785680` (Zweig `ios_migration`). Vorgänger: `H1H2_Umsetzung_Protokoll.md`,
+`H7_InfoButtons_Protokoll.md`, `H11_Sammelpaket_Protokoll.md`, `H12_FeldHilfe_Protokoll.md`.
+Teil A desselben Pakets (Rubrikaufbau, Kern-Lader, Bedarfsseiten) läuft parallel und wird getrennt
+protokolliert.
+
+**Anwenderwunsch vom 06.09.2026, wörtlich:**
+
+> „Erweiterung Hilfe: Erläutere in der Hilfe jeweils die Berechnungswege, Warmwasser, Brauchwasser,
+> Pufferspeicher … PV-Module-Berechnung, optional mit Wechselrichter, Solarthermie. Setze
+> entsprechende Hilfen an die Info-Buttons in den relevanten Dialogen."
+> „und weitere Komponenten (mit Hilfe Berechnung)."
+> „(die Details der Berechnung sollten in einer Separaten Hilferubrik auf der wiki sein und nicht in
+> der allgemeine Erklärung der Funktionen. Die Erläuterung sollte aber aufrufbar sein aus den
+> allgemeine Erklärungen mit Bezügen)."
+
+**Ergebnis in einem Satz:** Sieben Seiten der neuen Wikirubrik `Programm Dokumentation/Berechnung/`
+liegen als MediaWiki-Markup im Rechenkern (**1 512 Zeilen**, eine Datei je Seite, über ein Glob
+eingebettet), **zehn** neue Zuordnungszeilen führen aus **zehn** Razor-Dialogen dorthin, und
+**53 Testfälle** halten Aufbau, Zuordnung, Einbettung und Knopf. Build `WP-Plan.Kern.slnf`
+0 Fehler / 0 Warnungen; `EPOS.UI.Tests` **2 774/2 774**, `EPOS.Kern.Tests` **1 351/1 351**.
+
+---
+
+## 1. Die Bauform
+
+| Punkt | Umsetzung |
+|---|---|
+| Ort der Texte | `EPOS.Kern/Allgemein/Hilfe/Berechnung/<Seite>.wiki` — MediaWiki-Markup, unverändert in die Wikiseite kopierbar |
+| Kopfblock | Wiki-Kommentar in Zeile 1–4: Rubrik, Seite, Stand, die Fundstellen im Rechenkern. Auf der Wikiseite unsichtbar — er gehört dem Entwickler |
+| Gliederung | sechs Abschnitte auf jeder Seite: `Was berechnet wird`, `Eingangsgrößen`, `Rechenweg`, `Grenzen und Annahmen`, `Ergebnisse und wo sie stehen`, `Bezüge`. Die Photovoltaikseite führt einen siebten (`Wechselrichter`) |
+| Einbettung | `EPOS.Kern.csproj`, ein Glob mit `LogicalName="EPOS.Kern.Hilfe.Berechnung.%(Filename)%(Extension)"` |
+| Zuordnung | `help_mapping.txt`, neuer Abschnitt `# H13 — Rubrik Berechnung` am Dateiende, darin `# Teil B (Erzeuger und Speicher)` |
+| Schlüssel | `<Formname>.Berechnung` → `Berechnung/<Seitenname>` |
+| Knopf | vorhandener Baustein `InfoKnopf`, am Kopf des Abschnitts, der den Rechenweg parametriert. **Der Fensterknopf oben rechts bleibt** |
+
+**Keine Quelltextpfade im sichtbaren Text.** Eine Wikiseite, die auf `.cs`-Dateien zeigt, altert mit
+dem nächsten Umbau und hilft dem Anwender nie; die Fundstellen stehen im Kopfkommentar. Ein
+Testfall hält das.
+
+---
+
+## 2. Die sieben Seiten
+
+Jede Zahl, jede Formel und jeder Rückfallwert ist aus dem Rechenkern gelesen, nicht aus dem
+Gedächtnis. Was der Kern **nicht** tut, steht auf jeder Seite unter „Grenzen und Annahmen" — das
+ist der Teil, für den die Rubrik überhaupt angelegt wurde.
+
+### 2.1 `Photovoltaik` (293 Zeilen)
+
+Belegt: der Ortszeit-Lesepfad (UTC + 1 h bzw. + 2 h, Umstellung letzter Sonntag März/Oktober,
+Sonnenstand weiter auf der UTC-Zeitmarke); `P_STC` aus Modulleistung mal Anzahl mit dem Rückfall auf
+die Flächenformel und der 3‑%‑Konsistenzprüfung; das NOCT-Fenster 20…60 °C mit Rückfall 45 °C und
+seiner Begründung (im Altbestand steht dort vielfach der Kurzschlussstrom); isotrope Transposition
+mit Albedo 0,2 bzw. Hay-Davies mit `R_b`, `I_0n` und `A_i`; linearer γ‑Gang bzw. Huld mit **allen
+drei Koeffizientensätzen** (C_SI, CIS, CdTe) samt der Klemme bei G′ = 0,001; Systemverluste;
+Wechselrichter-Vorgaben 0,95 (einfach) und 0,94 / 0,975 / 0,97 (Kennlinie); Clipping; die
+Verbrauchsbilanz mit der BHKW-Klemme.
+
+**Der Abschnitt „Wechselrichter"** trägt die zwei Optionen des Anwenderentscheids **W6‑E‑3**:
+Option 1 „vereinfacht, ohne Wechselrichter, mit Pauschalen" (der heutige Weg) und Option 2 „mit
+Wechselrichter" als **Ausblick, in Umsetzung, Stand 06.09.2026** — Katalogobjekt mit Projektkopie,
+Strangzuordnung, sechs Stützstellen samt der η_euro-Wichtung, der fünfstufige Stundenweg
+(Strang → MPPT → Gerät → Kennlinie/Clipping/Nacht → Anlage) und die **acht Auslegungsprüfungen**
+P1…P8 mit ihrer Rot/Gelb-Bewertung, den Auslegungstemperaturen −10 °C und 70 °C und der Näherung
+„β_OC statt eines eigenen MPP-Koeffizienten". Dazu die Zusage, dass eine Anlage ohne Strangzeile
+Zeichen für Zeichen weiterrechnet.
+
+Lücken: keine Verschattung, eine Ausrichtung je Anlage, kein Ein-Dioden-Modell — und die **sechs
+elektrischen Kenngrößen des Modulkatalogs** (U_MPP, U_Leerlauf, I_MPP, I_Kurzschluss, α_SC, β_OC)
+stehen im Dialog und gehen in **keine** Rechnung ein.
+
+### 2.2 `Heizkessel` (210 Zeilen)
+
+Belegt: die Wirkungsgradweiche Öl/Gas über die Brennstoff-IDs 6…9 und 18…22; die Prozentschwelle
+**1,5** (Brennwertkessel liefern Hi-basiert bis rund 104 %, die naheliegende Schwelle 1,0 hätte sie
+auf 0,01 zerlegt) und der Rückfall **0,90**; der Bereitschaftsverlust mit Schwelle 1,0 und als
+Faktor mal Nennleistung in der Stillstandsstunde; die Brennstoffbilanz **genau einmal je Stunde und
+Kessel** nach allen Phasen samt der Begründung (je Kanal getroffen fiele der Stillstandsverlust
+doppelt an); der Jahresnutzungsgrad aus den Jahressummen mit den Klemmen 110 → 108 und < 1 → 1;
+die zehn Brennstoffzähler samt Sammelposten; die Gasspitze und ihre 0,1‑MWh‑Schwelle; die
+Kessel-Kaskade mit `Anteil`, `Q_Puffer` und der zweifachen Schranke von `MaxAbgabe`.
+
+**Lücke, ausdrücklich benannt (Befund W14a‑E‑8‑B1):** Die fünf Emissionsspalten des Kesselkatalogs
+werden gepflegt, aber **nicht gerechnet** — die Faktoren kommen aus dem Energieträgerkatalog. Und
+weil dieser **kein CO** führt, ist die CO-Emission des Kessels immer 0. Weitere Lücken: kein
+Teillastwirkungsgrad, keine Taktung, keine Übertragergrenze zwischen Quellpuffer und Kessel,
+höchstens zehn Kessel.
+
+### 2.3 `BHKW` (200 Zeilen)
+
+Belegt: die drei Fahrweisen als Stundenschritt mit ihren Zuschaltfällen (wärmegeführt W1/W2,
+stromgeführt, Zero-Export mit zwei Durchläufen und der Regel „reicht der Strombedarf nicht, bleibt
+das Modul aus"); die Modulationsgrenze als **Faktor** aus Katalog beziehungsweise Anlage
+(Prozent/100) mit dem Rückfall **30 %**; die Stromkennzahl `P_el/P_therm`; der Verbrauch
+`(Wärme + Strom)/η`; die Emissionen aus den **Gerätewerten** (der Gegenfall zum Kessel); die
+Gasspitze `P_therm·(1 + SKZ)/η`; die Energieprobe „Produktion = Direktdeckung + Speicherladung +
+Überschuss"; die Vollbenutzungsstunden thermisch und elektrisch samt der leistungsgewichteten
+Anlagenkennzahl.
+
+Lücken: die Betriebsart gilt **projektweit**; ein Wirkungsgrad ohne Teillastkennlinie und mit
+unveränderter Stromkennzahl in Teillast; keine Taktung, keine Bereitschaftsverluste. Der
+**Sommerbetrieb des Vorläufers** (Tagesstunden 11…21 samt zwei Notschaltungen) ist als
+unerreichbarer Zweig entfallen — das steht als Grenze auf der Seite, weil es sonst niemand mehr
+nachlesen kann. Dazu `Investition_kwel`, das in **keine Rechnung des Laufs** eingeht (Befund W14a‑E‑8‑B3; seit dem Anwenderentscheid vom 07.09.2026 keine Dublette mehr, sondern die Ableitung eines von drei Eingabewegen der Investition).
+
+### 2.4 `Wärmepumpe` (240 Zeilen)
+
+Belegt: die **sieben Wege der Quelltemperatur** (Außenluft, konstant, Erdsonde und Kollektor nach
+VDI 4640, Quellprofil in drei Betriebsarten, CSV, Pufferspeicher mit Stundenkopplung an der
+Entnahmehöhe) samt der Ersatzannahme „Außentemperatur" mit voller Wirkung auf die
+Jahresarbeitszahl; die Kennfeldauswertung mit Kappung nach oben, linearer Interpolation und den
+**zwei** Wegen nach unten (Kappung beim Booster, sonst Extrapolation nach der Projekteinstellung
+oder Abbruch); `P_el = P_therm/COP`; die drei bivalenten Betriebsarten samt ihrer Vergleichsgrenze
+(teilparallel ≤, alternativ <) und der **wörtlich geltenden** Vorbelegung 0 °C; die Sperrzeit; die
+Quellbegrenzung über `Q_Quelle = P_therm − P_el` mit proportionaler Kürzung; die Laufzeit als
+Vollbenutzungsstunde; die drei Leistungssteuerungen mit der Ausnahme für reine Ladeanlagen und der
+Regel „das PV-Budget wird erst in der Ladephase verbraucht"; der Heizstab als Phase F mit COP 1;
+der **Bivalenzpunkt als Ergebnis** (höchste Außentemperatur mit offenem Rest, gemessen vor dem
+Heizstab); die JAZ einschließlich Heizstabstrom.
+
+**Lücke (Befund W14a‑E‑8‑B2):** Länge, Breite, Höhe, Gewicht und Raumbedarf haben im ganzen Bestand
+**keinen Leser** — die einzigen fünf Spalten aller sieben Gerätekataloge ohne jede Verwendung.
+Weitere Lücken: keine Abtauverluste, keine witterungsgeführte Heizkurve, kein Kühlbetrieb in der
+Jahressimulation.
+
+### 2.5 `Pufferspeicher` (201 Zeilen)
+
+Belegt: `Q_max = Volumen · 1,16 · (VL − RL)/1000` mit dem Rückfall-ΔT **10 K** (BHKW-Pendelspeicher
+**20 K**, mit Begründung); Verlust je Stunde = Tageswert/24; die Auflösung der Ladeobergrenze
+(eigene Ladegrenze → Abschaltschwelle → Abschaltschwelle für Nachrangige) samt Solar-Reservezone und
+der PV-Sonderregel; Ladefähigkeit und Bilanzraum; der Speicher als **hydraulische Weiche** mit der
+Zerlegung Umsatz/Durchfluss; Lade- und Entladegrenze als **Budget der Stunde**; die Hysterese; der
+füllstandsanteilige Bereitschaftsverlust einmal je Stunde; die Vollzyklen; das Schichtmodell
+(N = 1…10, Schicht-Invariante, ideale Einschichtung und Verdrängung, Ausgleichskappung **25 %**,
+Inversion, Vorbelegungen λ = 1,5 W/(m·K) und H/D = 2,5) samt der Zusage, dass N = 1 wirkungslos
+bleibt.
+
+Lücken: Energiebilanz statt Strömung, ideale Schichtung, gleich große Zonen, Bereitschaftsverlust
+als Tageswert ohne Umgebungsbezug, statischer eigenständiger Quellspeicher, Durchfluss außerhalb der
+Schichten, kein interner Wärmeübertrager.
+
+### 2.6 `Solarthermie` (159 Zeilen)
+
+Belegt: derselbe Ortszeit-Lesepfad wie bei der Photovoltaik samt Begründung; isotrope Transposition
+mit Albedo 0,2; die b₀-Näherung des IAM aus K_dir(50°) mit der Klemme gegen die Division durch null;
+der Wirkungsgrad nach EN 12975; das Bruttopotenzial über **Aperturfläche mal Anzahl**; die drei Wege
+der Wärme und die Regel, dass der Restbedarf aus der **Direktdeckung** gebildet wird.
+
+**Vier fest verdrahtete Annahmen, die im Dialog nirgends stehen**, sind ausdrücklich benannt:
+Speichertemperatur **50 °C**, Leitungsverluste **0,92**, isotrope Einstrahlung ohne Hay-Davies,
+keine Stagnation und keine Solarkreispumpe. Dazu drei Katalogbefunde: `Kdfu` („K_diff") ohne Leser,
+`Modulflaeche` ist Anzeige, Vor- und Rücklauf des Katalogs ohne Leser.
+
+**Der wichtigste Punkt für den Anwender:** Die **Solarthermie-Ganglinien** werden gepflegt, kopiert
+und exportiert — der Simulationslauf liest sie **nicht**. Er rechnet den Ertrag aus Klimadaten und
+Kollektorkennwerten. Genau deshalb trägt auch der Ganglinien-Dialog einen Knopf auf diese Seite.
+
+### 2.7 `Stromspeicher` (209 Zeilen)
+
+Belegt: das viertelstündliche Raster (35 040 Intervalle, dt = 0,25 h); die kapazitäts- beziehungsweise
+leistungsgewichtete Mittelung mehrerer Anlagen; das SoC-Band aus der Variante mit dem Rückfall
+10…90 %; η_ch = η_dis = √η_RT mit dem Rückfall 0,90; die Rückfälle 1 C, 0,025 €/(kWh·Zyklus), 3 %
+Zins und 20 a; die Investition `c_cap·C + c_pow·P + I_fix`; die Vorverarbeitung mit ihren sechs
+Zeilen und der Zusage, dass Überschuss und Defizit einander ausschließen; der Dispatch der drei
+Strategien (Dauernutzung, Nachtnutzung, Arbitrage mit Planvorlauf und der Bitgleichheit ohne
+Netzpfade); die Bewertung mit der Merit-Order **PV vor BHKW**; Vollzyklen, Annuitätsfaktor,
+Rentenbarwertfaktor und `RBF_deg` samt Grenzfällen; die zweistufige Auslegungssuche mit dem
+Jahresüberschuss nach Kapitaldienst als Zielfunktion.
+
+Ausdrücklich benannt: Der **Excel-Kompatibilitätsmodus rechnet bewusst wie die Vorlage** (Start bei
+0, erstes Intervall ohne Bilanz, Preis nur zur Bewertung, Wirkungsgrad 1) — er ist zum Nachstellen
+da, nicht zum Bewerten. Und die **Amortisationszeit ist bewusst nicht die Zielfunktion** der
+Auslegung: Sie ignoriert die Nutzungsdauer und liefert systematisch zu kleine Speicher.
+
+---
+
+## 3. Die zehn Zuordnungen
+
+| Schlüssel | Ziel | Razor-Dialog | Ort des Knopfes |
+|---|---|---|---|
+| `Form_Heizkessel.Berechnung` | `Berechnung/Heizkessel` | `Dialoge/Erzeuger/HeizkesselDialog` | Abschnitt „Modul" (Brennstoffvariante, Vorlauf, Rücklauf) |
+| `Form_BHKWEing.Berechnung` | `Berechnung/BHKW` | `Dialoge/Erzeuger/BhkwDialog` | Abschnitt „Modul" (Brennstoffvariante, Grenzleistung, Temperaturen) |
+| `Form_WP.Berechnung` | `Berechnung/Wärmepumpe` | `Dialoge/Waermepumpe/WaermepumpeAnlageDialog` | Abschnitt „Spitzenlast und Betrieb" (Heizstab, Sperrzeit, Bivalenz) |
+| `Form_Betriebsmodus.Berechnung` | `Berechnung/Wärmepumpe` | `Dialoge/Simulation/BetriebsmodusDialog` | über der Optionsgruppe — die Wahl dort **ist** der Rechenweg |
+| `Form_PufferSp.Berechnung` | `Berechnung/Pufferspeicher` | `Dialoge/Erzeuger/PufferspeicherDialog` | Abschnitt „Modul" (Volumen, Bereitschaftsverluste) |
+| `Form_PufferSp_Projekt.Berechnung` | `Berechnung/Pufferspeicher` | `Dialoge/Simulation/PufferSpProjektDialog` | Abschnitt „Eigenschaften" (Temperaturen, Schwellen, Grenzen) |
+| `Form_SolarKollektoren.Berechnung` | `Berechnung/Solarthermie` | `Dialoge/Solarthermie/SolarkollektorenDialog` | Abschnitt „Kollektor" (Anzahl, Fläche, Neigung, Azimut) |
+| `Form_Solarganglinie.Berechnung` | `Berechnung/Solarthermie` | `Dialoge/Solarthermie/SolarganglinieDialog` | über dem Detailblock der Ganglinien |
+| `Form_PV.Berechnung` | `Berechnung/Photovoltaik` | `Dialoge/Erzeuger/PhotovoltaikDialog` | Abschnitt „PV Anlage Eigenschaften", vor den Modellfeldern |
+| `Form_Stromspeicher.Berechnung` | `Berechnung/Stromspeicher` | `Dialoge/Erzeuger/StromspeicherDialog` | Abschnitt „Modul Eigenschaften" |
+
+**Abweichung A‑1 — der Präfix `Form_WP`.** Die Bauform verlangt `<Formname>.Berechnung` neben dem
+Fensterschlüssel; der Fensterschlüssel von `WaermepumpeAnlageDialog` ist aber `Wizard_WPItem.btn_Help`
+(die Maske hieß im Bestand `Wizard_WPItem`). Der Auftrag nennt ausdrücklich `Form_WP.Berechnung`, und
+das ist auch die tragfähigere Wahl: `Form_WP.btn_Help` zeigt bereits auf die allgemeine Seite
+„Wärmepumpe", der Berechnungsschlüssel steht damit unmittelbar daneben. `Wizard_WPItem` wäre ein
+Maskenname, den es nicht mehr gibt.
+
+**Zwei Schlüssel auf eine Seite** — bei Wärmepumpe, Pufferspeicher und Solarthermie. Das ist dieselbe
+bewusste Zusammenfassung, die `help_mapping.txt` seit H2 für Wärmebedarf, Projektverwaltung und
+Kurzanleitung kennt, kein Ersatzziel.
+
+---
+
+## 4. Eine eigene Stilklasse für den Knopf
+
+Der erste Entwurf setzte den Berechnungsknopf in die Knopfleiste `.epos-leiste`. Das ging schief:
+`BetriebsmodusDialogTests` zählt „zwei Fußknöpfe" über `.epos-leiste button` und wurde durch den
+dritten Knopf rot — zweimal.
+
+Die Lehre steht jetzt als Kommentar im Stilblatt: **Die Knopfleiste des Hauses ist eine AUFZÄHLUNG
+von Aktionen.** Ein Hilfeknopf ist keine Aktion der Maske; er gehört dem Abschnitt darunter und darf
+dessen Knopfzahl nicht verändern. Alle zehn Wirte tragen deshalb `.epos-berechnungshilfe` —
+rechtsbündig, halber Rand nach unten, sonst nichts.
+
+---
+
+## 5. Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | **0 Fehler / 0 Warnungen** |
+| `dotnet build EPOS.Kern/EPOS.Kern.csproj -c Release` | 0 Fehler / 5 Warnungen (die bekannten, unverändert) |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 774 / 2 774 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 351 / 1 351 grün** |
+| Einbettung | alle sieben Ressourcen `EPOS.Kern.Hilfe.Berechnung.*.wiki` in `EPOS.Kern.dll` |
+| Rechenweg | **unberührt** — kein `.cs` des Rechenkerns geändert, kein Referenzlauf nötig |
+| SQL | **keine** neue oder geänderte Anweisung |
+| Ressourcen | **kein** neuer Schlüssel, `Resource.Designer.cs` unverändert |
+
+**Die neuen Testfälle (53):**
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — 50 Fälle:
+
+* je Seite (7 × 4 = 28): Datei vorhanden; Kopfblock in den ersten vier Zeilen mit Seite, Stand und
+  Fundstellen; die sechs Abschnitte der Bauform **in der vorgegebenen Reihenfolge**; kein
+  Quelltextpfad im sichtbaren Text.
+* die Zuordnungen (2): jedes Ziel `Berechnung/<Seite>` hat eine Datei; jeder Schlüssel steht in
+  **genau einem** Razor-Dialog (nicht null — tote Zeile —, nicht zwei — zwei Masken mit demselben
+  Ziel).
+* je Wirt (10 × 2 = 20): Der Dialog zeichnet auf dem Weg der Windows-Hülle (Wörterbuch →
+  Parametersatz, Muster `StartkachelDialogeTests`) und trägt seinen Berechnungsknopf; der
+  Fensterknopf steht daneben. Geprüft wird über die **Komponente**, weil der `InfoKnopf` seinen
+  Schlüssel nirgends hinzeichnet.
+
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` — 3 Fälle: Der Ordner trägt mindestens sieben
+Seiten; zu jeder Datei gibt es eine Ressource unter `EPOS.Kern.Hilfe.Berechnung.<Datei>`; ihr Inhalt
+ist zeichengleich zur Datei. **Ohne Lader** — ein Glob ist still, wenn er ins Leere greift.
+
+Der Leser ist gegen sich selbst abgesichert (Mindestzahlen für Zuordnungen und Razor-Dateien), und
+geprüft wird **nur** der Abschnitt „Teil B" der Zuordnungsdatei: Teil A hängt seine Zeilen an
+derselben Stelle an, und die zwei Teile sollen sich nicht gegenseitig rot färben.
+
+---
+
+## 6. Was der Anwender im Wiki tun muss
+
+Die Dateien sind die **Quelle**, nicht die Wikiseiten. Das Programm kopiert nichts ins Wiki; die
+Rubrik entsteht von Hand:
+
+1. **Rubrik anlegen.** Unter `Programm Dokumentation` eine Unterrubrik `Berechnung` — sie entsteht
+   im MediaWiki mit der ersten Seite von selbst; ein eigener Anlageschritt ist nicht nötig. Der
+   Hilfekatalog lädt die Rubrikseiten über `apprefix=Programm Dokumentation/`, findet die neuen
+   Seiten also ohne Zutun.
+2. **Sieben Seiten anlegen** unter genau diesen Titeln — die Schreibweise samt Umlauten entscheidet,
+   ob der Knopf trifft:
+   `Programm Dokumentation/Berechnung/Heizkessel`, `…/BHKW`, `…/Wärmepumpe`,
+   `…/Pufferspeicher`, `…/Solarthermie`, `…/Photovoltaik`, `…/Stromspeicher`.
+3. **Inhalt einfügen.** Den Inhalt der gleichnamigen `.wiki`-Datei aus
+   `EPOS.Kern/Allgemein/Hilfe/Berechnung/` vollständig hineinkopieren — einschließlich des
+   Kommentarblocks am Anfang; er ist auf der Seite unsichtbar und sagt dem nächsten Bearbeiter, wo
+   die Zahlen herkommen.
+4. **Bezüge in den allgemeinen Seiten setzen.** Auf jeder allgemeinen Seite
+   (`Programm Dokumentation/Heizkessel` und so fort) eine Zeile ergänzen, etwa:
+   `''Wie gerechnet wird:'' [[Programm Dokumentation/Berechnung/Heizkessel|Berechnungsweg Heizkessel]]`.
+   Das ist die Hälfte des Anwenderwunsches, die im Wiki liegt: „Die Erläuterung sollte aber
+   aufrufbar sein aus den allgemeinen Erklärungen mit Bezügen."
+5. **Rubrikseite fortschreiben.** Auf `Programm Dokumentation`, Abschnitt „Hilfeseiten", die sieben
+   neuen Seiten aufnehmen — dort sieht man, was an einer Seite hängt, bevor man sie umbenennt.
+
+**Wer eine Seite umbenennt, benennt beides um:** die Wikiseite (mit bleibender Weiterleitung) und
+die `.wiki`-Datei im Kern. Der Testfall „jedes Ziel hat eine Datei" fängt die Hälfte davon ab, die
+im Repository liegt.
+
+---
+
+## 7. Abnahmepunkte für den Anwender (Windows)
+
+| Nr. | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑1** | Dialog „Heizkessel", Abschnitt „Modul": der zweite Fragezeichenknopf | öffnet `Programm Dokumentation/Berechnung/Heizkessel`; der Knopf oben rechts öffnet weiterhin die allgemeine Seite |
+| **A‑H13b‑2** | Dialog „BHKW", Abschnitt „Modul" | öffnet `…/Berechnung/BHKW` |
+| **A‑H13b‑3** | Wärmepumpe → Anlage ändern, Abschnitt „Spitzenlast und Betrieb" | öffnet `…/Berechnung/Wärmepumpe` |
+| **A‑H13b‑4** | Simulationskonfiguration → Betriebsmodus einer Wärmepumpe | der Knopf über der Auswahl öffnet `…/Berechnung/Wärmepumpe` |
+| **A‑H13b‑5** | Dialog „Pufferspeicher", Abschnitt „Modul" | öffnet `…/Berechnung/Pufferspeicher` |
+| **A‑H13b‑6** | Pufferspeicher-Projektverwaltung, Abschnitt „Eigenschaften" | öffnet `…/Berechnung/Pufferspeicher` |
+| **A‑H13b‑7** | Dialog „Solarkollektoren", Abschnitt „Kollektor" (nur bei gewählter Projektzeile sichtbar) | öffnet `…/Berechnung/Solarthermie` |
+| **A‑H13b‑8** | Dialog „Solarthermieganglinien", über dem Namensfeld | öffnet `…/Berechnung/Solarthermie` |
+| **A‑H13b‑9** | Dialog „Photovoltaik Module", Abschnitt „PV Anlage Eigenschaften" (nur bei gewählter Projektzeile) | öffnet `…/Berechnung/Photovoltaik`; die Seite führt den Abschnitt „Wechselrichter" mit beiden Optionen |
+| **A‑H13b‑10** | Dialog „Stromspeicher", Abschnitt „Modul Eigenschaften" | öffnet `…/Berechnung/Stromspeicher` |
+| **A‑H13b‑11** | alle zehn Knöpfe bei **englischer** Oberfläche | dieselbe Seite durch den Übersetzungs-Proxy — es gibt keine englischen Wikiseiten (Entscheid 7.1a) |
+| **A‑H13b‑12** | Fachlicher Gegenlesetest, Seite für Seite | Jede Zahl, jeder Rückfallwert und jede Grenze stimmt mit dem überein, was der Anwender im Betrieb sieht. Besonders zu prüfen sind die Punkte, die im Dialog **nirgends** stehen: Speichertemperatur 50 °C und Leitungsverluste 0,92 der Solarthermie, der Rückfall 0,90 des Kesselwirkungsgrads, die 1‑C‑Annahme des Stromspeichers |
+| **A‑H13b‑13** | Bei 125 % und 150 % Skalierung | Der zweite Knopf sitzt rechtsbündig über seinem Abschnitt und verdeckt nichts |
+
+---
+
+## 8. Nicht angefasst
+
+Rechenweg (kein `.cs` im Kern geändert), SQL, `Resource.resx` und `Resource.Designer.cs`,
+`help_cache.json`, `HelpCatalog.cs`, `HilfeAutomatik.cs`, `DokuUebersetzung.cs`, `HilfeWissen.cs`,
+`WikiWissen.cs`, `Menuetabelle.cs`, `ModulKatalog*`, `PvModulImport*`, `KatalogRegistry`,
+`LizenzLage`, `AppWurzel`, `WaermepumpeStammDialog`, `Umsetzungskonzept_iOS_EPOS-Plan.md`.
+
+Ein **Lader** für die eingebetteten Seiten gehört zu Teil A; dieser Teil setzt keinen voraus. Ein
+Wissensabschnitt für den KI-Assistenten (`HilfeWissen`) ist ebenfalls Teil A.
+
+---
+
+## 9. Offene Punkte
+
+| Nr. | Punkt |
+|---|---|
+| **O‑H13b‑1** | Die Seiten liegen im Repository, im Wiki noch nicht. Bis Schritt 6.2 getan ist, laufen die zehn Knöpfe ins Leere — der Katalog kennt das Ziel dann nicht und schaltet den Knopf ab (Verhalten seit H2, kein Fehler). |
+| **O‑H13b‑2** | Der Ausblick „Option 2 — mit Wechselrichter" trägt den Stand 06.09.2026. **Wenn die Umsetzung kommt, ist die Photovoltaikseite mitzuführen** — Rechenweg, die acht Prüfungen und die Kennzahlen stehen dort bereits im Wortlaut des Konzepts. |
+| **O‑H13b‑3** | ~~Anker je Abschnitt (`{{Anker|…}}`) sind nicht gesetzt. Ein Knopf könnte damit unmittelbar auf „Rechenweg, Schritt 4" springen statt an den Seitenanfang; das Format von `help_mapping.txt` kann es seit H2 (`Slug#Anker`).~~ **Erledigt am 07.09.2026, § 13** — 92 Marken auf 13 Seiten, 26 Zuordnungszeilen mit Anker, zwei Wächter. Die Feinstufe „Rechenweg, **Schritt 4**" ist bewusst NICHT gesetzt: Die Schrittnummern ändern sich beim Umschreiben einer Seite, die sieben Abschnitte nicht. |
+| **O‑H13b‑4** | Die drei Bedarfsseiten und die Rubrik-Startseite kommen aus Teil A. Die Bezüge dieser sieben Seiten zeigen bereits darauf (`Berechnung/Simulationsablauf`, `Berechnung/Wärmebedarf`, `Berechnung/Strombedarf`) — nach der Zusammenführung ist zu prüfen, dass die Seitennamen wörtlich übereinstimmen. |
+
+---
+
+## 10. Fassung 2 — Formelzeichen, Parameter und mathematische Schreibweise (06.09.2026)
+
+**Anwenderwunsch, wörtlich:**
+
+> „Definiere in der hochgeladenen Dokumentation die Definition der Parameter und Variablen. Stell
+> wenn möglich die Formeln in mathematischer Schreibweise (mathematische Zeichen) dar."
+
+**Ergebnis in einem Satz:** Alle sieben Seiten dieses Teils tragen einen neuen Abschnitt
+**„Formelzeichen und Parameter"** mit je einer Parameter- und einer Variablentabelle, und ihre
+Formeln stehen als **129 nummerierte Anzeige-Gleichungen** in Unicode-Notation. `EPOS.UI.Tests`
+**2 857/2 857**, `EPOS.Kern.Tests` **1 485 von 1 486** (der eine rote Fall gehört Teil A, siehe
+10.6); Build `WP-Plan.Kern.slnf` 0 Fehler / 0 Warnungen.
+
+### 10.1 Der Befund, der alles entschieden hat: das Wiki kann kein `<math>`
+
+Gemessen am 06.09.2026 über die Vorschau-Schnittstelle von `wiki.epos-plan.de`
+(`action=parse&contentmodel=wikitext`): Die Installation führt **keine Math-Erweiterung**. Ein
+`<math>…</math>` erschiene dort als Klartext, ein `\frac` als Backslash. Damit war die Formatfrage
+entschieden, bevor die erste Formel geschrieben war — **Unicode-Notation, keine Auszeichnung**:
+
+| Mittel | Verwendung |
+|---|---|
+| `·` (U+00B7), `−` (U+2212), `Σ`, `Δ`, `√`, `≤`, `≥`, `≠`, `±`, `→`, `∈` | Rechenzeichen |
+| `η ϑ ρ λ α β γ ε τ φ θ κ χ` | griechische Buchstaben direkt |
+| `<sub>` / `<sup>` | Indizes, mehrteilig mit Komma: `P<sub>AC,nenn</sub>` |
+| `: <big>…</big> &nbsp;&nbsp;(n)` | **Anzeige-Formel**: eigene, eingerückte Zeile mit laufender Nummer |
+| `{| class="wikitable"` | Fallunterscheidungen, wo eine geschweifte Klammer über mehrere Zeilen nötig wäre |
+
+**Eine Abweichung von der Vorlage, bewusst:** Argumente von `min(…)` und `max(…)` werden mit
+**Semikolon** getrennt, nicht mit Komma. Das Komma ist in dieser Notation bereits vergeben — es
+trennt mehrteilige Indizes (`P<sub>AC,nenn</sub>`); `min(P_AC,roh , P_AC,nenn)` wäre nicht mehr
+eindeutig lesbar. Die Fassung 1 schrieb es an dieser Stelle bereits so.
+
+### 10.2 Die Bauform des neuen Abschnitts
+
+`== Formelzeichen und Parameter ==` steht **zwischen** „Eingangsgrößen" und „Rechenweg" — wer die
+Formeln liest, hat die Zeichen unmittelbar davor gelesen. Er trägt zwei Tabellen:
+
+* **Parameter** (`Symbol | Bedeutung | Einheit | Herkunft`) — Eingaben, Katalogwerte, Vorgaben und
+  Konstanten. Die Spalte **Herkunft** ist der Grund, warum der Anwender die Tabelle liest: Sie nennt
+  Dialog und Feld, Katalog und Spalte, oder sie sagt „**Vorgabe: 0,95**" beziehungsweise
+  „**Konstante: 1 000**". Wo der Rechenkern eine andere Bezeichnung führt, steht sie dabei
+  (`PV_WrEta10`, `PV_Systemverluste`).
+* **Variablen** (`Symbol | Bedeutung | Einheit | berechnet in`) — was der Lauf je Stunde,
+  je Viertelstunde oder je Lauf bildet. Die letzte Spalte verweist auf die **Gleichungsnummer**;
+  reine Ergebnisgrößen sind als „Ausgabe" gekennzeichnet, Eingangsreihen als „(Eingang)".
+
+Regel: **Jedes Symbol einer Formel steht in einer der zwei Tabellen, und jedes Tabellensymbol kommt
+in einer Formel vor.** Die einzige Zeile ohne Symbol steht mit Absicht da — auf der Solarthermieseite
+die vierte fest verdrahtete Annahme („keine Stagnation, keine Kollektorabschaltung, keine
+Solarkreispumpe"), für die es weder Parameter noch Formel gibt.
+
+Der Kopfblock nennt seither die Fassung:
+`Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)`.
+
+### 10.3 Die sieben Seiten in Zahlen
+
+| Seite | Gleichungen | Parameterzeilen | Variablenzeilen | Zeilen |
+|---|---:|---:|---:|---:|
+| Heizkessel | 16 | 16 | 20 | 318 |
+| BHKW | 13 | 11 | 20 | 316 |
+| Wärmepumpe | 14 | 12 | 24 | 363 |
+| Pufferspeicher | 19 | 18 | 26 | 342 |
+| Solarthermie | 10 | 15 | 16 | 258 |
+| Photovoltaik | 34 | 25 | 34 | 586 |
+| Stromspeicher | 23 | 17 | 30 | 342 |
+| **Summe** | **129** | **114** | **170** | **2 525** |
+
+Was inhaltlich dazugekommen ist und nicht nur umgesetzt wurde:
+
+* **Photovoltaik** — die stückweise Wechselrichterkennlinie ist als Interpolationsformel (20) samt
+  Intervalltabelle gefasst, statt als vier Textzeilen; die Flächenformel des Rückfalls und die
+  3‑%‑Konsistenzprüfung sind eigene Gleichungen; der Strangweg trägt seine Gleichungen (29) bis
+  (34) einschließlich des Nachtverbrauchs mit der Umrechnung W → kW.
+* **Pufferspeicher** — die **Schichtung** stand als Fließtext ohne eine einzige Formel da. Jetzt
+  stehen dort die Geometrie des Ersatzbehälters aus H/D = 2,5, die Querschnittsfläche, der
+  Wärmeleitwert `k = λ_eff · A_q · N / H / 1 000` [kWh/K], die Schichtkapazität
+  `C_Sch = (Q_max/N) / (ϑ_VL − ϑ_RL)` [kWh/K] und der auf κ = 0,25 gekappte Ausgleich.
+* **Stromspeicher** — die einzige Seite im **Viertelstundenraster**: Laufindex `k = 1…35 040`,
+  `Δt = 0,25 h`, beides als Konstante in der Parametertabelle, und jede Reihe trägt `(k)` statt
+  `(t)`. Die Grenzfälle des Rentenbarwertfaktors (d = 0; i = 0; i = 0 und d > 0; beide 0) stehen
+  jetzt vollständig.
+* **Solarthermie** — die **vier fest verdrahteten Annahmen** sind eigene Zeilen der Parametertabelle
+  (ϑ_Sp = 50 °C, f_L = 0,92, ρ = 0,2 samt „keine Hay-Davies", und die vierte ohne Symbol), mit einem
+  Absatz darunter, der sie als die Zahlen benennt, die im Dialog nirgends stehen.
+
+### 10.4 Drei berichtigte Unstimmigkeiten und zwei nachgereichte Korrekturen
+
+Beim Gegenlesen gegen den Rechenkern sind drei Aussagen der Fassung 1 als ungenau aufgefallen und
+auf der Seite berichtigt worden:
+
+| Nr. | Seite | Was ungenau war | Was gilt |
+|---|---|---|---|
+| **F2‑1** | Heizkessel | „η_Jahr = Nutzwärme / Gesamtverbrauch" | Im Zähler steht die **brennstoffbasierte** Nutzwärme `Q_K,a`. Bei einem Kessel mit Quellpuffer ist das weniger als seine Abgabe — der Puffer-Anteil hat ihn keinen Brennstoff gekostet (`SimulationSPK.cs`: `_kesselStunde` führt `ladung − ausQuelle`, und daraus bildet Schritt 5 den Nutzungsgrad) |
+| **F2‑2** | Pufferspeicher | „Vollzyklen = entnommene Energie / nutzbare Kapazität" | Der Bezug ist **rollenabhängig**: beim **Quellspeicher** die Jahresentladung, bei jedem anderen die Jahres**ladung** (`KennzahlenBerechnen`: `umsatz = (Verwendung == VERWENDUNG_QUELLE) ? Entladung_gesamt : Ladung_gesamt`) |
+| **F2‑3** | Pufferspeicher | Entladung als `min(angefordert ; Füllstand)`, „danach auf das Entladebudget begrenzt" | Die Entladeleistungsgrenze ist das **Budget der Stunde** und wirkt auf das **Restbudget**; sie gehört deshalb nicht als dritter Term in das `min()`. Gleichung (6) sagt es jetzt so |
+
+Dazu die zwei Korrekturen, die die Orchestrierung während der Umsetzung nachgereicht hat:
+
+* **BHKW, „Ergebnisse und wo sie stehen"** — die **Energieprobe** des Moduls (Jahresbilanz mit
+  1 kWh Toleranz, Stundenbedingung mit 0,01 kWh) ist ein **Entwickler-Selbsttest auf der Konsole**
+  und steht **nicht** im Simulationsprotokoll des Anwenders. Der Punkt zählt jetzt die sichtbaren
+  Protokollmeldungen auf (Stromüberschuss, Kaskade, Speicherstufe, „BHKW-Pendelspeicher: keine
+  Puffer-Senke am BHKW", Senkenzeile ohne Puffer, Senke ohne Ladeauftrag, Quelle gleich eigene
+  Senke, nachgezogene Ladeprioritäts-Vorbelegung) und nennt die Probe als das, was sie ist. Ihre
+  zwei Toleranzen stehen unter „Grenzen und Annahmen".
+* **BHKW und Solarthermie, „Vorlauf und Rücklauf des Katalogs rechnen nicht mit"** — umformuliert
+  nach dem Anwenderentscheid vom 06.09.2026: Der Katalogsatz ist die **Vorbelegung** beim Anlegen
+  der Anlage im Projekt und dort änderbar; gerechnet wird mit den Werten der **Projektzeile**.
+  Ein paralleler Agent setzt dieses Verhalten im Kern um; Formelzeichen und Notation sind davon
+  nicht berührt.
+
+### 10.5 Die zwei Wächter dieses Teils
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — aus 50 werden **78 Fälle**:
+
+* Die Pflichtabschnitte sind **sieben** statt sechs; „Formelzeichen und Parameter" steht zwischen
+  Eingangsgrößen und Rechenweg, die Reihenfolgeprüfung bleibt.
+* **Keine Math-Auszeichnung, kein LaTeX-Befehl** (`<math`, `\frac`, `\sum`, `\cdot`, `\eta`,
+  `\begin`, `\text`, `\sqrt`) — was hier rot ausfällt, wäre beim Anwender unlesbar.
+* **Jede Anzeige-Formel trägt ihre Nummer**, und die Nummern laufen **lückenlos** von 1 an. Eine
+  gestrichene Gleichung, deren Nummer stehen bleibt, macht jeden Verweis der Spalte „berechnet in"
+  falsch.
+* **Beide Tabellen sind da**, mit ihren Spaltenköpfen — geprüft wird der Kopf, nicht der Inhalt:
+  Eine Tabelle mit drei Spalten hätte die Herkunft verloren.
+* Der Kopfblock **nennt die Fassung**.
+
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` — aus 3 werden **10 Fälle**: Die Formelzeichen
+überstehen die **Einbettung**. Gelesen wird aus der **Assembly**, nicht von der Platte — was der
+KI-Assistent und der Hilfeleser sehen, ist die Ressource. Geprüft werden zwei Zeichen, die auf jeder
+Seite stehen (Malpunkt und typografisches Minus), dazu mindestens einer der zwölf griechischen und
+mathematischen Buchstaben der Rubrik; ein **bestimmter** griechischer Buchstabe taugt dafür nicht —
+die Wärmepumpe rechnet mit COP statt mit η, der Pufferspeicher mit λ. Dazu die zwei Verbote auf dem
+Weg, auf dem die Seiten wirklich ausgeliefert werden.
+
+Beide Wächter prüfen **nur die sieben Seiten dieses Teils**. Solange Teil A nicht zusammengeführt
+ist, tragen dessen sechs Seiten ihre Fassung 1 — sie sollen davon nicht rot werden. Nach der
+Zusammenführung schaltet die Orchestrierung beide auf „alle 13".
+
+### 10.6 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | **0 Fehler / 0 Warnungen** |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 857 / 2 857 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 485 / 1 486** — ein roter Fall, siehe unten |
+| Vorschau-Probe je Seite (`action=parse`, MediaWiki-API) | **7 / 7 bestanden** — kein `&lt;sub&gt;`-Klartext, keine zerrissene Tabelle, kein Parserfehler |
+| Rechenweg | **unberührt** — keine Quelldatei des Rechenkerns geändert, kein Referenzlauf nötig |
+| SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`, `HelpCatalog` | **unverändert** |
+
+**Der eine rote Fall gehört Teil A:** `EPOS.Kern.Tests/BerechnungsHilfeTests.Der_Stand_ist_ein_Datum`
+parst das Feld `Stand` mit `TryParseExact("yyyy-MM-dd")`. Der Kopfblock der Fassung 2 lautet nach der
+gemeinsamen Bauform `Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)` — damit fällt der
+Fall für **jede** umgestellte Seite rot aus, auch für die sechs des Teils A. Er steht in der Datei,
+die Teil A anpasst (`BerechnungsHilfeTests.cs`, großes H), und wird deshalb hier nicht angefasst.
+Die Behebung ist eine Zeile: die ersten zehn Zeichen parsen statt der ganzen Zeichenkette.
+
+### 10.7 Offene Punkte der Fassung 2
+
+| Nr. | Punkt |
+|---|---|
+| **O‑H13b‑5** | Teil A schreibt den Abschnitt „Schreibweise" auf die Rubrikstartseite `_Index.wiki`. Nach der Zusammenführung ist zu prüfen, dass die dortige Zeichentabelle und die Notation dieser sieben Seiten wörtlich übereinstimmen — insbesondere die Semikolon-Regel in `min(…)`/`max(…)` und der Viertelstundenindex `k` des Stromspeichers. |
+| **O‑H13b‑6** | Der KI-Klartext (`BerechnungsHilfe.Klartext`: `<sub>x</sub>` → `_x`, `<sup>x</sup>` → `^x`, `<big>` weg) gehört zu Teil A. Bis er steht, liest der Assistent die Indizes als Markup. |
+| **O‑H13b‑7** | Die Gleichungsnummern sind **seitenlokal**. Ein Verweis von einer Seite auf eine Gleichung einer anderen gibt es bewusst nicht — er wäre beim nächsten Einschub falsch. Wer eine Gleichung einfügt, nummeriert die folgenden neu; der Wächter „lückenlos von 1" fängt ein Vergessen ab. |
+
+---
+
+## 11. Fassung 3 — LaTeX-Formeln (`<math>`) und Legende unter jeder Gleichung (06.09.2026)
+
+**Anwenderwunsch, wörtlich (nach Sichtung der Seiten im Wiki):**
+
+> „stelle die Berechnungsdokumentation mit mathematischen Zeichen (z.B. Summenzeichen,
+> Integralzeichen, Index/Symbol als Formel wie LaTeX mathematisch dar. Die Definitionen der
+> Parameter/Variablen ist nicht erläutert (sollte unter der verwendeten Formel — oder an geeigneter
+> sichtbarer Stelle — beschrieben werden) — z.B. bei Blockheizkraftwerk: SKZ = P_el / P_therm —
+> P_el: elektrische Leistung des BHKW — P_therm: thermische Leistung des BHKW"
+
+> „mathe erweiterung soll für die Formeln installiert werden auf wiki"
+
+**Ergebnis in einem Satz:** Die **129 Anzeige-Gleichungen** dieser sieben Seiten stehen als LaTeX in
+`<math>` — dieselbe Zahl wie in der Fassung 2, keine ist verlorengegangen oder hinzugekommen —, und
+unter jeder steht die **Legende**: **488 Zeilen**, je Zeichen eine. Zusammen mit den Symbolen der
+Tabellen und des Fließtexts sind es **1 291 Formeln**, alle gegen die frisch installierte
+Math-Erweiterung des Wikis geprüft: **0 Fehler**. `EPOS.UI.Tests/BerechnungshilfeTests` **154/154**,
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` **16/16**.
+
+### 11.1 Was sich gegenüber der Fassung 2 ändert
+
+| | Fassung 2 | Fassung 3 |
+|---|---|---|
+| Anzeige-Gleichung | `: <big>SKZ = P<sub>el</sub> / P<sub>th</sub></big>  (1)` | `: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math>  (1)` |
+| Zeichenerklärung | nur in den zwei Tabellen | zusätzlich **unter jeder Gleichung**, je Zeichen eine Zeile `:: <math>…</math> – Bedeutung [Einheit]` |
+| Symbolspalte der Tabellen | `P<sub>el</sub>` | `<math>P_{\mathrm{el}}</math>` — dieselbe Schreibweise wie in der Formel |
+| Symbole im Fließtext | `<sub>`-Auszeichnung | `<math>`, damit ein Zeichen im Satz aussieht wie in der Gleichung |
+| `<big>` | die Formelzeile | **kommt nicht mehr vor** |
+| Kopfblock | `Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)` | `… (Fassung 3: LaTeX-Formeln und Legenden)` |
+
+Das Beispiel des Anwenders steht **wörtlich so** auf der BHKW-Seite als Gleichung (1):
+
+```
+: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(1)
+:: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
+:: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
+:: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
+```
+
+**Die Regel der Legende:** ALLE Zeichen der Gleichung, in der Reihenfolge ihres Auftretens, die
+Ergebnisgröße zuerst, die Einheit in eckigen Klammern, eine Konstante mit ihrem Wert. Die einzige
+Ausnahme ist der Zeitindex — <math>t</math> beziehungsweise <math>k</math> beim Stromspeicher —, der
+einmal am Anfang des Rechenwegs erklärt wird und danach in keiner Legende mehr auftaucht. Wer
+mitten in eine Seite hineinspringt, findet damit unter der Gleichung, die er gerade liest, jedes
+ihrer Zeichen; die Herkunft (Dialog, Katalog, Vorgabe) bleibt Sache der zwei Tabellen.
+
+### 11.2 Die sieben Seiten in Zahlen
+
+| Seite | Gleichungen | Legendezeilen | Formeln gesamt | Zeilen |
+|---|---:|---:|---:|---:|
+| Heizkessel | 16 | 54 | 140 | 378 |
+| BHKW | 13 | 48 | 130 | 370 |
+| Wärmepumpe | 14 | 53 | 155 | 421 |
+| Pufferspeicher | 19 | 74 | 198 | 430 |
+| Solarthermie | 10 | 42 | 120 | 308 |
+| Photovoltaik | 34 | 132 | 322 | 732 |
+| Stromspeicher | 23 | 85 | 226 | 441 |
+| **Summe** | **129** | **488** | **1 291** | **3 080** |
+
+„Formeln gesamt" zählt jedes `<math>` der Seite — Gleichungen, Legendezeilen, Symbolspalten und die
+Zeichen im Fließtext.
+
+### 11.3 Die LaTeX-Teilmenge, und was sie gekostet hat
+
+Gesetzt wird nur, was **WikiTexVC** kennt: `\frac`, `\sqrt`, `\sum`, `\min`, `\max`, `\cdot`,
+`\left(`/`\right)`, `\mathrm{…}` für Wort-Indizes, `\begin{cases}` für Fallunterscheidungen,
+`\displaystyle`, `\operatorname{…}`, die griechischen Buchstaben als Befehl, die Vergleichszeichen
+und die Abstände. Acht Befehle mussten über die Liste der Bauform hinaus dazukommen, alle
+texvc-sicher und alle unvermeidlich:
+
+| Befehl | wo | warum |
+|---|---|---|
+| `\pi` | Pufferspeicher (14) | Der Ersatzbehälter ist ein Zylinder — eine Konstante, keine Schreibweise |
+| `\kappa` | Pufferspeicher (18) | die Kappung des vertikalen Ausgleichs; dasselbe Zeichen führt die Brauchwasserseite |
+| `\theta`, `\cos`, `\circ` | Solarthermie (1)–(3), Photovoltaik (4)–(8) | Einfallswinkel, Kosinus und Gradzeichen der Sonnengeometrie |
+| `\sin` | Sonnengeometrie | dieselbe Rechnung |
+| `\ln` | Photovoltaik (15) | das Schwachlichtmodell nach Huld ist logarithmisch |
+| `\chi` | Stromspeicher (11) | die Zulässigkeit einer Ladequelle |
+
+**Umlaute gehen nicht in einen Index.** Wo die Fassung 2 <code>Q<sub>über</sub></code>,
+<code>η<sub>Öl</sub></code>, <code>z<sub>äq</sub></code> oder
+<code>Σ<sub>s ∈ Gerät</sub></code> schrieb, steht jetzt die ASCII-Umschrift
+<math>Q_{\mathrm{ueber}}</math>, <math>\eta_{\mathrm{Oel}}</math>, <math>z_{\mathrm{aeq}}</math>,
+<math>\mathrm{Geraet}</math>. Jede betroffene Seite sagt das in einem Halbsatz im Abschnitt
+„Formelzeichen und Parameter"; die Tabellen nennen das Katalogfeld weiterhin mit Umlaut
+(„Wirkungsgrad Öl").
+
+**`\lvert` und `\rvert` sind gestrichen** (Befund vom 06.09.2026): Die Vorschau-Probe gegen die
+installierte Erweiterung meldete „Fehler beim Parsen (Unbekannte Funktion `\lvert`)" für
+Pufferspeicher (18) und Photovoltaik (3) — obwohl `latex2mathml` beide klaglos umsetzt. Der
+Betragsstrich ist seither `\left| … \right|`. Dieselbe Beobachtung kommt aus Teil A
+(Wärmequelle Erdreich). Der Wächter dieses Teils führt die Streichung samt Begründung.
+
+### 11.4 Sechs Stellen, die präziser geworden sind — ohne die Aussage zu ändern
+
+Eine Begrenzung, die in der Fassung 2 als Halbsatz hinter der Formel stand, steht jetzt **in** der
+Formel; ein Zuweisungspfeil, der Programmiersprache war, ist ein zweites Symbol geworden:
+
+| Seite | Stelle | vorher | jetzt |
+|---|---|---|---|
+| Heizkessel | (4) | „auf 0…1 begrenzt" | <math>\min\left( \max\left( \dots , 0 \right) , 1 \right)</math> |
+| Heizkessel | (8) | <code>ID<sub>B</sub> ∈ {6…9, 18…22}</code> | Fallunterscheidung mit <math>6 \le \mathrm{ID}_{\mathrm{B}} \le 9</math> |
+| Wärmepumpe | (7) | <code>P<sub>th</sub> ← P<sub>th</sub> · k</code> | <math>P'_{\mathrm{th}}(t) = P_{\mathrm{th}}(t) \cdot k(t)</math> |
+| Wärmepumpe | (13) | <code>max { ϑ<sub>Luft</sub>(t) &#124; Q<sub>Rest</sub>(t) > 0 }</code> | <math>\max_{Q_{\mathrm{Rest}}(t) > 0} \vartheta_{\mathrm{Luft}}(t)</math> |
+| Pufferspeicher | (6), (11) | „danach auf das Restbudget begrenzt", <code>SOC ← SOC − Q<sub>V</sub></code> | drittes Argument im Minimum; <math>\mathrm{SOC}'(t)</math> |
+| Stromspeicher | (17), (19) | „für i = 0: …" | `\begin{cases}` mit beiden Fällen |
+
+Der **Rechenweg ist dabei unberührt**. Jede dieser Umsetzungen wurde gegen den Kern gegengelesen:
+die Klammer 0…1 des Quellanteils steht in `SimulationSPK.AnteilAus`, die des Anisotropieindex als
+`Clamp(ai, 0, 1)` in `SolarPVGISCalculator`, die des IAM als `Math.Max(Math.Min(iam, 1), 0)` in
+`SimulationSolarthermie`. **Keine neue Unstimmigkeit gefunden** — die drei der Fassung 2 waren
+bereits berichtigt.
+
+### 11.5 Die zwei Wächter dieses Teils
+
+`EPOS.UI.Tests/BerechnungshilfeTests` — aus 78 werden **154 Fälle**:
+
+* **Auf jede Anzeige-Gleichung folgt ihre Legende** (`:: <math>…`). Das ist der Kern des
+  Anwenderwunsches: Eine Gleichung ohne Legende ist genau der Zustand, den er beanstandet hat.
+* **Jede Anzeige-Gleichung ist LaTeX in `<math>`** und beginnt mit `\displaystyle` — Summenlimits
+  über und unter dem Zeichen, echte Brüche —, trägt ihre Nummer am Zeilenende und läuft lückenlos
+  von 1; **`<big>` kommt auf der Seite nicht mehr vor**.
+* **Jeder Befehl steht in der erlaubten Teilmenge** — geprüft nur innerhalb von `<math>`, denn
+  außerhalb ist ein Backslash gewöhnlicher Text. Was WikiTexVC nicht kennt, erschiene beim Anwender
+  als roter Fehlerkasten.
+* **Die Symbolspalte beider Tabellen steht in `<math>`** — ein Symbol, das in der Tabelle anders
+  aussieht als in der Formel, ist für den Leser ein zweites Symbol. Ausgenommen ist eine Zeile,
+  deren Symbolzelle nur den Gedankenstrich trägt: Die Solarthermieseite führt so ihre vier
+  Annahmen ohne Formelzeichen.
+
+`EPOS.Kern.Tests/BerechnungshilfeEinbettungTests` — **16 Fälle**: Für eine Seite der Fassung 3
+überstehen `<math>` und mindestens einer der tragenden Befehle (`\cdot`, `\frac`, `\sum`) die
+Einbettung, und `<big>` kommt nicht mehr vor; für eine Seite der Fassung 2 gilt unverändert die
+Unicode-Prüfung. Gelesen wird aus der **Assembly**, nicht von der Platte.
+
+**Beide Wächter arbeiten mit einer Übergangsliste `SeitenDiesesTeils`** (die sieben Seiten dieses
+Teils) und tragen an jeder betroffenen Stelle den Vermerk
+`// TODO Zusammenführung Fassung 3: auf SeitenDerRubrik umstellen`. Die Seiten des Teils A bleiben
+bis zur Zusammenführung in Fassung 2 und werden weiter nach deren Regeln geprüft — beide Zustände
+sind grün.
+
+### 11.6 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| Lokale LaTeX-Probe (`latexprobe_b.py`, `latex2mathml`) | **1 291 Formeln, 0 Fehler**, kein Befehl außerhalb der Teilmenge |
+| Wiki-Probe je Seite (`action=parse` gegen die installierte Math-Erweiterung) | **7 / 7 ohne einen einzigen „Fehler beim Parsen"**; Tabellen, Tabellenzeilen, Abschnitte und Formelzahl je Seite gleich |
+| `dotnet test EPOS.UI.Tests` (dieser Wächter) | **154 / 154 grün** |
+| `dotnet test EPOS.Kern.Tests` (dieser Wächter) | **16 / 16 grün** |
+| Rechenweg | **unberührt** — keine Quelldatei des Rechenkerns geändert, kein Referenzlauf nötig |
+| SQL, Ressourcen, `help_mapping.txt`, `help_cache.json`, `HelpCatalog`, `_Index.wiki`, `BerechnungsHilfe.cs` | **unverändert** |
+
+**Die roten Fälle gehören Teil A** — 21 Stück, alle in dessen zwei Wächtern, die dieser Auftrag
+nicht anfassen darf:
+
+| Wächter | Fälle | Ursache |
+|---|---:|---|
+| `EPOS.Kern.Tests/BerechnungsHilfeTests.Jede_Seite_kommt_ohne_LaTeX_aus` | 7 | verbietet `<math>` und jeden Backslash-Befehl für alle 13 Seiten |
+| `EPOS.Kern.Tests/BerechnungsHilfeTests.Jede_Seite_traegt_nummerierte_Anzeigeformeln` | 7 | sucht die `<big>`-Formelzeile der Fassung 2 |
+| `EPOS.UI.Tests/BerechnungsknopfTests.Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2` | 7 | dieselben zwei Regeln in einem Fall |
+
+Die Behebung ist dieselbe wie hier: eine Übergangsliste der umgestellten Seiten, und für sie die
+Fassung-3-Regeln statt der Fassung-2-Verbote. Ohne Teil A stehen `EPOS.UI.Tests` bei
+**2 942 / 2 949** und `EPOS.Kern.Tests` bei **1 544 / 1 558**.
+
+### 11.7 Offene Punkte der Fassung 3
+
+| Nr. | Punkt |
+|---|---|
+| **O‑H13b‑8** | Die zwei Wächter dieses Teils führen `SeitenDiesesTeils` als Übergangsliste. Nach der Zusammenführung beider Teile ist sie auf `SeitenDerRubrik` umzustellen und der Fassung-2-Zweig zu streichen; die Stellen tragen den TODO-Vermerk. |
+| **O‑H13b‑9** | Der Abschnitt „Schreibweise" auf `_Index.wiki` (Teil A) beschreibt die Unicode-Notation der Fassung 2 und muss auf LaTeX nachgezogen werden — einschließlich der acht zusätzlichen Befehle aus 11.3, der ASCII-Umschrift der Umlaute und der Streichung von `\lvert`/`\rvert`. |
+| **O‑H13b‑10** | Der KI-Klartext (`BerechnungsHilfe.Klartext`, Teil A) löst `<sub>`/`<sup>`/`<big>` auf. Für die Fassung 3 ist zu entscheiden, was der Assistent aus einem `<math>`-Block lesen soll — der LaTeX-Quelltext ist lesbar, aber `\frac{a}{b}` ist kein „a / b". |
+| **O‑H13b‑11** | Die Gleichungsnummern bleiben **seitenlokal** (O‑H13b‑7 gilt fort). Wer eine Gleichung einfügt, nummeriert die folgenden neu **und** zieht die Legende mit; der Wächter fängt eine vergessene Nummer ab, eine vergessene Legende ebenfalls. |
+
+---
+
+## 12. Nachtrag O‑H13b‑5 (07.09.2026) — der Berechnungsknopf in den acht Katalogeditoren
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Der Knopf
+„Berechnung", den zehn Projektdialoge seit diesem Paket tragen, kommt **zusätzlich in die
+Katalogeditoren**.
+
+> **Zur Kennung.** Die Orchestrierung führt diesen Punkt als `O‑H13b‑5`. Die Kennung ist in
+> § 10.7 schon einmal vergeben (Abgleich der Zeichentabelle nach der Zusammenführung); jener
+> Punkt ist mit der Fassung 3 erledigt. In diesem Protokoll meint `O‑H13b‑5` ab hier den
+> Berechnungsknopf in den Katalogeditoren.
+
+**Der Grund in einem Satz.** Bis hierher führten nur die PROJEKTdialoge in die Rubrik. Wer einen
+Katalogsatz pflegt, entscheidet aber genauso über den Rechenweg: Der Wirkungsgrad eines Kessels, die
+Stromkennzahl eines BHKW-Moduls, die Kennlinie eines Kollektors und die Zyklenzahl eines
+Stromspeichers kommen aus dem **Stammsatz**, nicht aus dem Projektdialog. Wer dort Zahlen einträgt,
+soll nachlesen können, was das Programm mit ihnen tut.
+
+### 12.1 Es sind ACHT Editoren, und sie hängen an DREI Komponenten
+
+Die Zahl war zu prüfen — der Auftrag nannte „sieben, dazu Pufferspeicher = acht". Es sind acht, aber
+anders geschnitten, als die Aufzählung vermuten ließ:
+
+| Menüpunkt (Administration) | Razor-Komponente | Ausprägung | Schlüssel | Ziel |
+|---|---|---|---|---|
+| Heizkessel | `KatalogBrowserDialog` | `KatalogBrowserArt.Heizkessel` | `Form_Heizkessel_Admin.Berechnung` | `Berechnung/Heizkessel` |
+| BHKW | `KatalogBrowserDialog` | `Bhkw` | `Form_BHKWAdmin.Berechnung` | `Berechnung/BHKW` |
+| Solarkollektoren | `KatalogBrowserDialog` | `Solarkollektoren` | `Form_SolarKollektorenAdmin.Berechnung` | `Berechnung/Solarthermie` |
+| Pufferspeicher | `KatalogBrowserDialog` | `Pufferspeicher` | `Form_PufferSp_Admin.Berechnung` | `Berechnung/Pufferspeicher` |
+| Stromspeicher | `ModulKatalogDialog` | `ModulKatalogArt.Stromspeicher` | `Form_AdminStromspeicher.Berechnung` | `Berechnung/Stromspeicher` |
+| PV Module | `ModulKatalogDialog` | `Pv` | `Form_AdminPV.Berechnung` | `Berechnung/Photovoltaik` |
+| Wechselrichter | `ModulKatalogDialog` | `Wechselrichter` | `Form_AdminWechselrichter.Berechnung` | `Berechnung/Photovoltaik` |
+| Wärmepumpen (Stammdatenpflege) | `WaermepumpeStammDialog` | — | `Form_WP_Stamm.Berechnung` | `Berechnung/Wärmepumpe` |
+
+`KatalogBrowserDialog` führt **Pufferspeicher** und nicht Wärmepumpe — die Wärmepumpen-Stammpflege
+ist eine eigene Komponente (`Masken.WpAdministration` → `WaermepumpeStammHuelle` →
+`WaermepumpeStammDialog`). `PufferSpKatalogDialog` und `HeizkesselKatalogDialog` sind **nicht**
+gemeint: Das sind die Satzeditoren INNERHALB des Browsers, keine Verwaltungen.
+
+**Zwei Abweichungen, beide belegt.**
+
+* **Wechselrichter → `Berechnung/Photovoltaik`.** Der Wechselrichter ist ein **Abschnitt** dieser
+  Seite (`== Wechselrichter ==`, Option 1 und Option 2), keine eigene Seite. Mit den Ankern aus
+  O‑H13b‑3 zielt die Zeile auf diesen Abschnitt.
+* **`Form_WP_Stamm` statt `Form_WP`.** `Form_WP.Berechnung` gehört seit diesem Paket (Abweichung
+  A‑1, § 3) dem **Anlagendialog**, weil dessen Fensterschlüssel noch `Wizard_WPItem.btn_Help`
+  lautet. Zwei Masken, zwei Schlüssel — die Regel „ein Schlüssel gehört genau einem Dialog" bleibt
+  damit unangetastet.
+
+### 12.2 Wo der Schlüssel steht: im Profil, nicht in der Komponente
+
+Drei Komponenten bedienen acht Kataloge. Der Schlüssel gehört deshalb dorthin, wo auch
+`HilfeSchluessel` und `Stammtabelle` stehen — in das **Profil im Kern**:
+
+| Datei | neu |
+|---|---|
+| `EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs` | `BerechnungsSchluessel`, `BerechnungsSeite`, `BerechnungsKurztext` (berechnet); vier Ausprägungen gefüllt |
+| `EPOS.Kern/Allgemein/Katalog/ModulKatalogProfil.cs` | dieselben drei; drei Ausprägungen gefüllt |
+
+Das ist dasselbe Vorgehen wie bei den drei Ausprägungen des `BedarfsProfileDialog`, nur eine Stufe
+tiefer: Dort reicht die Windows-Hülle den Schlüssel herein, hier das Profil — und das gilt unter
+Windows **und** auf iOS.
+
+**Kein neuer Ressourcenschlüssel.** `BerechnungsKurztext` ist
+`BerechnungsHilfe.RUBRIK_KURZ + ": " + BerechnungsSeite`, also wörtlich der Tooltip, den der
+mitgelieferte Startbestand für dieselbe Seite führt („Berechnung: Heizkessel"). Er greift ohnehin
+nur, solange der Katalog den Schlüssel nicht kennt. Damit bleibt die Regel des Profils gewahrt:
+Der Kern kennt keine Anzeigetexte — der Rubrikname ist ein Wikititel, kein Anzeigetext.
+
+### 12.3 Wo der Knopf sitzt
+
+Am Kopf des Blocks, der die Kennwerte führt — nicht im Dialogkopf und **nicht in der Knopfleiste**:
+
+| Komponente | Stelle |
+|---|---|
+| `KatalogBrowserDialog` | im Detailblock (`Gruppenkopf Titel="@Profil.Detailueberschrift"`), über dem Formularraster |
+| `ModulKatalogDialog` | am Kopf der ersten Feldgruppe (`Profil.GruppeBestand`) |
+| `WaermepumpeStammDialog` | am Kopf des Stammdatenblocks (`GruppeStammdaten`) |
+
+Die Bauform ist unverändert die aus § 4: ein `<div class="epos-berechnungshilfe">` mit einem
+`<InfoKnopf>` darin. Die Lehre von damals gilt weiter — die Knopfleiste `.epos-leiste` ist eine
+**Aufzählung von Aktionen**, und mehrere Masken zählen ihre Knöpfe.
+
+### 12.4 Die Wächter
+
+`EPOS.UI.Tests/BerechnungsknopfTests` (10 → **11 Fälle**, mit Theoriezeilen **41/41 grün**):
+
+| Fall | was er hält |
+|---|---|
+| `Jeder_Katalogeditor_fuehrt_auf_seinen_Rechenweg` (8 Zeilen) | jeder der acht Schlüssel hat seine Zeile, sie zeigt auf die Seite **seines** Katalogs, und der Schlüssel steht wirklich im Quelltext |
+| `Jeder_Katalogeditor_traegt_den_Knopf` (3 Zeilen) | die drei Wirte tragen `.epos-berechnungshilfe` mit einem `<InfoKnopf>` — und der steht nicht in der Knopfleiste |
+
+Dazu **eine Erweiterung des Lesers**: `Quelldateien()` liest seit O‑H13b‑5 auch
+`EPOS.Kern/Allgemein/Katalog/*.cs`. Ohne sie meldete `Jeder_Berechnungsschluessel_hat_einen_Infoknopf`
+acht vermeintlich tote Zeilen — der Schlüssel steht ja im Profil und nicht in der Razor-Datei.
+
+**Eine Falle beim Umsetzen.** Der Schlüsselleser (`\bForm_[A-Za-z0-9_]+\.Berechnung\b`) liest auch
+**Kommentare**. Ein erklärender Satz im Kopf von `WaermepumpeStammDialog.razor`, der den Schlüssel
+des Anlagendialogs beim Namen nannte, ließ `Jeder_Schluessel_gehoert_genau_einem_Dialog` rot
+werden — zwei Razor-Dateien für `Form_WP.Berechnung`. Der Satz nennt den Schlüssel jetzt
+umschrieben. Das ist kein Fehler des Wächters: Ein Schlüssel im Kommentar ist genau die Art
+Zeichenkette, die später als echte Verdrahtung missverstanden wird.
+
+### 12.5 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 eindeutige Warnungen — der Stand der Basis, keine neue |
+| `dotnet test EPOS.UI.Tests -c Release` | **3 075 / 3 075 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 744 / 1 744 grün** |
+| Rechenweg | **unberührt** — kein `.cs` der Simulation angefasst |
+| SQL, Ressourcen, `help_cache.json`, `HelpCatalog.cs`, `.wiki` | **unverändert** |
+
+### 12.6 Abnahmepunkte (Windows)
+
+| Nr. | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑14** | Administration → Wärmebedarf & Heizung → Heizkessel; im Detailblock rechts der zweite Fragezeichenknopf | öffnet `…/Berechnung/Heizkessel`; der Knopf oben rechts öffnet weiterhin die allgemeine Katalogseite |
+| **A‑H13b‑15** | dasselbe in BHKW, Solarkollektoren und Pufferspeicher | je eigene Seite; die Knopfleiste unten zählt unverändert vier bzw. fünf Knöpfe |
+| **A‑H13b‑16** | Administration → Energiesysteme → Photovoltaik → PV Module und → Wechselrichter | **beide** öffnen `…/Berechnung/Photovoltaik` |
+| **A‑H13b‑17** | Administration → Strom → Stromspeicher | öffnet `…/Berechnung/Stromspeicher` |
+| **A‑H13b‑18** | Administration → Wärmebedarf & Heizung → Wärmepumpen, Block „Stammdaten" | öffnet `…/Berechnung/Wärmepumpe` — dieselbe Seite wie der Knopf im Anlagendialog |
+| **A‑H13b‑19** | bei 125 % und 150 % Skalierung | der zweite Knopf sitzt rechtsbündig über seinem Block und verdeckt kein Feld |
+
+---
+
+## 13. Nachtrag O‑H13b‑3 (07.09.2026) — eine Sprungmarke je Abschnitt
+
+**Anwenderentscheid vom 07.09.2026** („Empfehlung" zu den drei offenen Hilfepunkten): Jeder
+Standardabschnitt aller 13 Rechenwegseiten bekommt einen **Anker**, die Knöpfe zielen auf
+`…#rechenweg`, und ein Wächter hält beides zusammen.
+
+### 13.1 Die Ankerregel — belegt, nicht vermutet
+
+Der offene Punkt § 9 nannte `{{Anker|…}}` mit dem Zusatz, die Vorlage sei „nicht sicher
+installiert". Sie ist es. Gemessen am 07.09.2026 gegen `wiki.epos-plan.de`:
+
+| Messung | Befehl | Ergebnis |
+|---|---|---|
+| Fassung | `action=query&meta=siteinfo&siprop=general\|extensions` | MediaWiki **1.46.0**; unter den `parserhook`-Erweiterungen steht **Math** (damit ist H13‑F3‑1 erledigt) |
+| Vorlage vorhanden? | `action=query&titles=Vorlage:Anker` | **pageid 33** — vorhanden. (`Vorlage:Anchor` fehlt.) |
+| Was sie setzt | `action=parse&page=Vorlage:Anker&prop=wikitext` | `<includeonly><span class="epos-anker" id="{{{1\|}}}"></span>…` — bis zu **drei** Namen für dieselbe Stelle |
+| Wie sie benutzt wird | `action=query&list=embeddedin&eititle=Vorlage:Anker` | die Seiten der Rubrik **Grundlagen** — dort steht sie je **eine Zeile UNTER** der Überschrift |
+| Wie sie aussieht | `MediaWiki:Common.css` | `.epos-anker { display:inline-block; width:0; height:0; overflow:hidden; }` — sie nimmt keinen Platz ein |
+
+**Entschieden ist damit die Hausform, nicht eine Neuerfindung:**
+
+> `{{Anker|<name>}}` auf einer eigenen Zeile **unmittelbar unter** der Überschrift.
+
+`<span id="…">` wäre gleichwertig gerendert, aber es gäbe zwei Schreibweisen im selben Wiki. Die
+**automatischen Überschriftenanker** von MediaWiki (`#Rechenweg`, `#Grenzen_und_Annahmen`)
+bleiben daneben bestehen — nur taugen sie als Ziel eines ausgelieferten Programms nicht: Sie
+wechseln mit der Überschrift, und `help_mapping.txt` liegt eingebettet in der EXE und altert bis
+zum nächsten Release. Genau dafür gibt es die Marke.
+
+Die Regel steht auf der Rubrikstartseite: `_Index.wiki`, neuer Abschnitt **„Sprungmarken"** mit
+der Namenstabelle, der Begründung und dem Satz, der beim nächsten Umbau zählt — *Überschriften
+dürfen sich ändern, Sprungmarken nicht.*
+
+### 13.2 Die Namen
+
+Auf allen 13 Seiten dieselben sieben, kleingeschrieben und ohne Umlaut:
+
+| Abschnitt | Marke |
+|---|---|
+| Was berechnet wird | `was` |
+| Eingangsgrößen | `eingang` |
+| Formelzeichen und Parameter | `zeichen` |
+| Rechenweg | `rechenweg` |
+| Grenzen und Annahmen | `grenzen` |
+| Ergebnisse und wo sie stehen | `ergebnisse` |
+| Bezüge | `bezuege` |
+| **Wechselrichter** (nur Photovoltaik) | `wechselrichter` |
+
+**92 Marken** in 13 Dateien: 12 × 7 + 8.
+
+### 13.3 Die Zuordnungen zielen auf den Rechenweg
+
+Alle **26** Zeilen `<Form>.Berechnung` bekommen einen Anker — die acht aus Teil A, die zehn aus
+Teil B und die acht aus O‑H13b‑5. Fünfundzwanzig zeigen auf `#rechenweg`; die einzige Ausnahme ist
+`Form_AdminWechselrichter.Berechnung → Berechnung/Photovoltaik#wechselrichter`, weil der Rechenweg
+des Wechselrichters ein **Abschnitt** dieser Seite ist.
+
+**Die Fensterknöpfe `<Form>.btn_Help` bleiben ohne Anker.** Sie zeigen auf die allgemeine Seite,
+und dort ist der Anfang die Antwort — dasselbe gilt für F1.
+
+Getragen wird der Anker vom Bestand, ohne eine Zeile Programmtext: `HelpExtender.ZielFuer` trennt
+ihn mit `AnkerAbtrennen` ab, löst die Seite auf und hängt ihn in `MitAnker` wieder an die Adresse
+(seit H2). Der iOS-Dienst tut dasselbe in `IosHilfeDienst.Adresse`. Geprüft, nicht angenommen.
+
+### 13.4 Der Assistent sieht keine Marke
+
+`BerechnungsHilfe` bekommt zwei Zeilen: In `AlsKlartext` fällt eine Zeile weg, die **nur** aus
+einer Vorlage besteht (der Regelfall — die Marke steht allein), in `Saeubern` fällt eine
+Vorlage **mitten im Satz**. Beide stehen vor dem Tabellengerüst bzw. vor der Verweisauflösung:
+`{{` trifft der Test auf `{|` nicht, und ein gieriges Muster fräße in einer Tabellenzeile alles
+zwischen der ersten und der letzten Klammer.
+
+### 13.5 Die Wächter
+
+`EPOS.Kern.Tests/BerechnungsHilfeTests` — **28 neue Theoriezeilen/Fälle**:
+
+| Fall | was er hält |
+|---|---|
+| `Jeder_Abschnitt_traegt_seine_Sprungmarke` (13 Zeilen) | je Seite: alle sieben Marken, jede **unmittelbar unter** ihrer Überschrift |
+| `Die_Photovoltaikseite_traegt_die_Marke_des_Wechselrichters` | der achte Abschnitt und sein Ziel |
+| `Der_Klartext_traegt_keine_Sprungmarke` (13 Zeilen) | kein `{{` im Klartext — **mit Gegenprobe**, dass das Markup sie führt |
+| `Der_Klartext_entfernt_eine_Sprungmarke_ohne_den_Satz_zu_kuerzen` | die Marke fällt, der Satz bleibt, und eine Tabelle bleibt eine Tabelle |
+
+`EPOS.UI.Tests/BerechnungsknopfTests` — **zwei neue Fälle**:
+
+| Fall | was er hält |
+|---|---|
+| `Jede_Zuordnung_zielt_auf_einen_vorhandenen_Anker` | jede der 26 Zeilen trägt einen Anker, und die Zielseite führt ihn wirklich |
+| `Die_Knoepfe_zielen_auf_den_Rechenweg` | 25 × `#rechenweg`, genau eine belegte Ausnahme |
+
+**Warum die zweite Hälfte wichtig ist:** Ein Ziel `…#rechenwg` öffnet die richtige Seite und
+springt nirgendwohin. Der Browser meldet nichts, der Leser landet am Seitenanfang und hält es für
+die Absicht. Der Wächter hält beide Hälften.
+
+Angepasst hat sich dabei `Jeder_Knopf_fuehrt_auf_eine_Seite_der_Fassung_2`: Er verglich das Ziel
+zeichengleich mit `Berechnung/<Seite>` und schneidet den Anker jetzt ab (`OhneAnker`).
+
+### 13.6 Wiki-Probe (ohne Upload)
+
+Jede der 13 Seiten und die Rubrikstartseite wurden mit ihrem Dateiinhalt über `action=parse` gegen
+das Wiki gerendert — **nichts hochgeladen**, nur gerendert:
+
+| Seiten | Anker im HTML | Formelfehler |
+|---|---|---|
+| die zwölf ohne Wechselrichter | je 7 × `<span class="epos-anker" id="…">` | **0** |
+| Photovoltaik | 8 | **0** |
+| `_Index` | 0 (die Startseite führt keine Standardabschnitte) | **0** |
+
+### 13.7 Nachweise
+
+| Nachweis | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.sln -c Release -p:Platform=x64` | **0 Fehler**, 6 eindeutige Warnungen — Stand der Basis |
+| `dotnet test EPOS.UI.Tests -c Release` | **3 085 / 3 085 grün** |
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 772 / 1 772 grün** |
+| Rechenweg | **unberührt** — kein `.cs` der Simulation angefasst |
+| SQL, Ressourcen, `help_cache.json` | **unverändert** |
+
+### 13.8 Was der Anwender im Wiki tun muss
+
+**Alle 14 Seiten sind neu hochzuladen** — die 13 Rechenwegseiten und die Rubrikstartseite
+`Programm Dokumentation/Berechnung` (sie trägt den neuen Abschnitt „Sprungmarken"). Der Text ist
+sonst unverändert; wer die Anker nicht einspielt, hat Knöpfe, die auf den Seitenanfang führen —
+kein Fehler, nur der Zustand von vorher.
+
+### 13.9 Abnahme auf Windows
+
+| Punkt | Was zu prüfen ist | Erwartung |
+|---|---|---|
+| **A‑H13b‑20** | Nach dem Upload: im Heizkesseldialog den Berechnungsknopf drücken | der Browser öffnet `…/Berechnung/Heizkessel#rechenweg` und steht beim Abschnitt „Rechenweg", nicht am Seitenanfang |
+| **A‑H13b‑21** | Administration → Energiesysteme → Photovoltaik → Wechselrichter, Berechnungsknopf | steht beim Abschnitt „Wechselrichter" |
+| **A‑H13b‑22** | Denselben Dialog mit dem Knopf **oben rechts** öffnen | die allgemeine Seite, **ohne** Sprung — der Anker gehört nur dem Berechnungsknopf |
+| **A‑H13b‑23** | Eine Berechnungsseite im Wiki ansehen | zwischen Überschrift und erstem Satz steht **kein sichtbarer Zwischenraum** (`.epos-anker` ist null Pixel hoch) |
+| **A‑H13b‑24** | Hilfe-Assistent nach einem Rechenweg fragen | die Antwort enthält **kein** `{{Anker|…}}` |

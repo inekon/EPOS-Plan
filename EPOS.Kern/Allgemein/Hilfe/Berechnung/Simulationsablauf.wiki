@@ -1,0 +1,335 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Simulationsablauf | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+     EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs,
+     EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
+     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs,
+     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Allgemein/Simulation/Warnkriterien.cs,
+     EPOS.Kern/Allgemein/Simulation/Init.cs -->
+
+== Was berechnet wird ==
+{{Anker|was}}
+
+Ein Simulationslauf rechnet ein '''volles Jahr''' durch und beantwortet damit die Frage,
+welcher Erzeuger wann wie viel deckt. Ergebnis sind die Stundenganglinien von Bedarf,
+Produktion und Speicherfuellstand, die Jahresmengen je Erzeuger, der '''Restwaermebedarf'''
+und der '''Reststrombedarf''' (das, was aus dem Netz kommt) — die Grundlage aller
+Kennzahlen, des Berichts und der Wirtschaftlichkeitsrechnung.
+
+Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt sie voraus:
+Zuerst wird der Bedarf gebildet, dann arbeiten die Erzeuger ihn ab.
+
+== Eingangsgrößen ==
+{{Anker|eingang}}
+
+{| class="wikitable"
+! Groesse !! Einheit !! Herkunft im Programm
+|-
+| Klimaregion des Projekts || — || Projektverwaltung, Feld „Klimaregion"; fehlt sie, bricht der Lauf ab
+|-
+| Waermebedarf, stuendlich || kWh || wird zu Beginn des Laufs gerechnet, siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]
+|-
+| Strombedarf, viertelstuendlich || kW || wird zu Beginn des Laufs gerechnet, siehe [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]]
+|-
+| Netzverluste und ihre Einheit || % oder kWh/a || Simulationskonfiguration, Feld „Netzverluste"
+|-
+| Kaskadenbelegung Platz 1 bis 4 || — || Simulationskonfiguration, Bereich „Waermeerzeuger" (Platz 1 = hoechste Prioritaet)
+|-
+| Stromerzeuger || — || Simulationskonfiguration, Bereich „Stromerzeuger" (Photovoltaik)
+|-
+| Energiespeicher || — || Simulationskonfiguration, Bereich „Energiespeicher" (Stromspeicher)
+|-
+| Ladepriorität je Anlage || 1…99 || Erzeugerkarte der Simulationskonfiguration; nicht gepflegt = 99
+|-
+| Ein- und Abschaltschwelle je Puffer || % der Kapazitaet || Speicherregelung in der Simulationskonfiguration
+|-
+| Knappheitsreihenfolge der Kanaele || — || Einstellungen; Vorbelegung Brauchwasser, Prozess, Heizung
+|-
+| Extrapolation der Waermepumpen-Kennlinie || ja/nein || Simulationskonfiguration; ohne Konfigurationssatz gilt „erlaubt"
+|}
+
+== Formelzeichen und Parameter ==
+{{Anker|zeichen}}
+
+=== Parameter ===
+
+Was in den Lauf hereinkommt:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! Herkunft
+|-
+| <math>t</math> || Stunde des Jahres, t = 1 … 8 760 || — || Zeitraster der Waermerechnung (Konstante: 8 760 Stunden je Jahr)
+|-
+| <math>k</math> || Viertelstunde des Jahres, k = 1 … 35 040 || — || Zeitraster der Stromrechnung (Konstante: 35 040 = 8 760 · 4)
+|-
+| <math>i</math> || Tagesindex des ersten Wochenend-Samstags, i = 0 … 13 || — || Wochenendkennzeichen der Klimadaten der Projektregion
+|-
+| <math>\Delta t(L)</math> || Versatz Ortszeit − UTC in der Stunde L || h || Konstante: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ)
+|-
+| <math>r_{\mathrm{Lade}}(A)</math> || Ladepriorität der Anlage A, r<sub>Lade</sub> = 1 … 99 || — || Erzeugerkarte, Feld „Ladepriorität"; Vorgabe nach Grenzkosten: 10 Solarthermie, 20 Waermepumpe, 30 BHKW, 40 Heizkessel, 50 sonstige; nicht gepflegt = 99
+|-
+| <math>s_{\mathrm{ein}}</math> || Einschaltschwelle eines Pufferspeichers || % || Speicherregelung; Vorgabe: 10
+|-
+| <math>s_{\mathrm{aus}}</math> || Abschaltschwelle eines Pufferspeichers || % || Speicherregelung; Vorgabe: 95
+|-
+| <math>Q_{\mathrm{Sp,max}}</math> || nutzbare Kapazitaet eines Pufferspeichers || kWh || Pufferspeicherkatalog, siehe [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]
+|}
+
+=== Variablen ===
+
+Was der Lauf selbst bildet:
+
+{| class="wikitable"
+! Symbol !! Bedeutung !! Einheit !! berechnet in
+|-
+| <math>w</math> || Wochentag des 1. Januar, w = 0 (Montag) … 6 (Sonntag) || — || (3)
+|-
+| <math>L</math> || Ortszeit-Index einer Klimadatenstunde, L = 0 … 8 759 || — || (4)
+|-
+| <math>U</math> || UTC-Index derselben Stunde in der gelieferten Reihe || — || (4)
+|-
+| <math>P(k)</math> || Wert einer Viertelstundenreihe (Leistung) || kW || je nach Reihe: Strombedarf, Erzeugung, Netzbezug
+|-
+| <math>Q(t)</math> || Wert einer Stundenreihe (Waermemenge) || kWh || je nach Reihe: Bedarf, Erzeugung, Speicherinhalt
+|-
+| <math>E_{\mathrm{a}}</math> || Jahresmenge einer Viertelstundenreihe || MWh || (1)
+|-
+| <math>Q_{\mathrm{a}}</math> || Jahresmenge einer Stundenreihe || MWh || (2)
+|-
+| <math>Q_{\mathrm{Sp}}(t)</math> || Inhalt eines Pufferspeichers in der Stunde t || kWh || (6), (7)
+|-
+| <math>Q_{\mathrm{offen}}(t)</math> || nach der Kaskade ungedeckter Waermebedarf der Stunde t || kWh || Ergebnis der Kaskade
+|-
+| <math>P_{\mathrm{Netz}}(k)</math> || nach Photovoltaik und Speicher verbleibender Netzbezug || kW || Ergebnis der Phasen 3 und 4
+|-
+| <math>Q_{\mathrm{Rest}}</math> || Restwaermebedarf des Laufs || MWh || (8)
+|-
+| <math>E_{\mathrm{Rest}}</math> || Reststrombedarf des Laufs (Netzbezug) || MWh || (9)
+|}
+
+== Rechenweg ==
+{{Anker|rechenweg}}
+
+=== 1. Zeitraster ===
+
+Waerme wird in '''8 760 Stunden''' je Jahr gefuehrt, Strom in '''35 040 Viertelstunden'''
+(8 760 × 4). Das Jahr hat immer 365 Tage; einen 29. Februar kennt der Rechenkern nicht.
+
+Die Werte einer Viertelstundenreihe sind '''Leistungen''' [kW] — ein Stundenwert, der ins
+Viertelstundenraster gespreizt wird, steht in allen vier Vierteln gleich hoch und wird
+nicht geviertelt. Deshalb steht in der Jahressumme der Teiler 4 000 (= 4 Viertel je Stunde ·
+1 000 kWh je MWh) und in der Stundenreihe der Teiler 1 000:
+
+: <math>\displaystyle E_{\mathrm{a}} = \frac{\sum_{k=1}^{35\,040} P(k)}{4\,000}</math> &nbsp;&nbsp;(1)
+:: <math>E_{\mathrm{a}}</math> – Jahresmenge einer Viertelstundenreihe [MWh]
+:: <math>P(k)</math> – Wert der Reihe in der Viertelstunde, eine Leistung [kW]
+:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
+: <math>\displaystyle Q_{\mathrm{a}} = \frac{\sum_{t=1}^{8\,760} Q(t)}{1\,000}</math> &nbsp;&nbsp;(2)
+:: <math>Q_{\mathrm{a}}</math> – Jahresmenge einer Stundenreihe [MWh]
+:: <math>Q(t)</math> – Wert der Reihe in der Stunde, eine Waermemenge [kWh]
+:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
+=== 2. Vorpruefungen — der Lauf bricht ab, wenn ===
+
+# die Datenbankmigration nicht abgeschlossen ist,
+# das Projekt keinen Konfigurationssatz hat,
+# die Netzverluste in Prozent angegeben sind und ueber 100 % liegen,
+# das Projekt keine Klimaregion traegt,
+# die Strombedarfsrechnung selbst abbricht.
+
+Der Abbruch ist bewusst hart: Ein Lauf, der mit leerem Stromprofil weiterrechnet, liefert
+ein Ergebnis, das vollstaendig aussieht und keines ist.
+
+=== 3. Bedarf zuerst ===
+
+Vor jedem Erzeuger werden Waerme- und Strombedarf gerechnet. Beide benutzen '''denselben
+Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der Klimadaten
+abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben. Steht der Samstag
+des ersten Wochenendpaares am Tagesindex ''i'', so gilt
+
+: <math>\displaystyle w = (5 - i)\ \operatorname{mod}\ 7</math> &nbsp;&nbsp;(3)
+:: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
+:: <math>i</math> – Tagesindex des ersten Wochenend-Samstags, 0 bis 13 [–]
+:: <math>5</math> – Wochentagsnummer des Samstags [–]
+:: <math>7</math> – Tage je Woche [d]
+Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben
+Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein
+Wochenendpaar gibt — stehen unter
+[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1.
+
+Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht:
+
+{| class="wikitable"
+! Kanal !! Inhalt
+|-
+| 0 || Heizung
+|-
+| 1 || Brauchwasser
+|-
+| 2 || Prozesswaerme
+|}
+
+=== 4. Zeitbasis der Klimadaten: Ortszeit ===
+
+Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaenge und
+Profile laufen dagegen in '''Ortszeit'''. Der Rechenkern verschiebt die Reihe deshalb beim
+Lesen: Zum Ortszeit-Index ''L'' gehoert der gelieferte Index
+
+: <math>\displaystyle U = \begin{cases} L - \Delta t(L) & L - \Delta t(L) \ge 0 \\ L - \Delta t(L) + 8\,760 & L - \Delta t(L) < 0 \end{cases}</math> &nbsp;&nbsp;(4)
+:: <math>U</math> – Index derselben Stunde in der gelieferten UTC-Reihe [–]
+:: <math>L</math> – Ortszeit-Index der Stunde, 0 bis 8 759 [–]
+:: <math>\Delta t(L)</math> – Versatz Ortszeit minus UTC: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ) [h]
+:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h]
+Fuer den Versatz gilt <math>\Delta t(L)</math> = 1 h in der Normalzeit (MEZ) und <math>\Delta t(L)</math> = 2 h in der Sommerzeit
+(MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ =
+31. Dezember 23:00 UTC".
+
+Die Sommerzeit laeuft nach der EU-Regel vom letzten Maerzsonntag 02:00 Ortszeit bis zum
+letzten Oktobersonntag 03:00 Ortszeit; die Regel ist im Rechenkern fest hinterlegt, damit
+das Ergebnis eines Laufs nicht von der Zeitzonentabelle des Rechners abhaengt. Weil das
+Raster starre 8 760 Faecher hat, wird an der Fruehjahrsumstellung '''eine UTC-Stunde
+doppelt gelesen''' und an der Herbstumstellung '''eine ausgelassen'''. Beide liegen nachts;
+Einstrahlung und Sonnenwinkel sind dort null.
+
+Verschoben werden immer '''ganze Zeilen''' — Einstrahlung, Sonnenwinkel und Aussentemperatur
+einer Stunde bleiben zusammen.
+
+=== 5. Der Lauf in fuenf Phasen ===
+
+{| class="wikitable"
+! Phase !! Was geschieht !! Fortschritt
+|-
+| Start || Vorpruefungen, Speicherregister aufbauen, Warnkriterien melden || 0 %
+|-
+| Kaskade || die Waermeerzeuger decken den Waermebedarf || ab 10 %
+|-
+| Photovoltaik || PV-Erzeugung wird vom Reststrombedarf abgezogen || ab 60 %
+|-
+| Stromspeicher || die Entladung des Speichers senkt den Netzbezug weiter || ab 75 %
+|-
+| Abschluss || Restmengen, Speicherkennzahlen, Erdreichauswertung || ab 90 %
+|}
+
+Ein Abbruch durch den Anwender wirkt '''nur zwischen den Phasen'''. Mitten in der Kaskade
+abzubrechen hiesse, mit halb gefuellten Kanaelen zurueckzubleiben.
+
+=== 6. Die Kaskade — was in EINER Stunde geschieht ===
+
+Die vier Waermeerzeuger-Plaetze werden in ihrer Reihenfolge abgearbeitet: Platz 1 deckt so
+viel wie moeglich, Platz 2 uebernimmt den Rest '''derselben Stunde''', und so fort. Innerhalb
+der Stunde laeuft immer dieselbe Folge:
+
+# '''Vorabentladung''' — die Pufferspeicher decken Bedarf aus ihrem Inhalt, Kanal fuer Kanal in der Knappheitsreihenfolge, je Kanal in der Entladereihenfolge der Speicher.
+# '''Bedarfsdeckung''' — die Erzeugerstufen in Kaskadenreihenfolge; jede Anlage deckt ueber ihre Direktsenken in deren Rangfolge.
+# '''Ladephasen''' — Rang fuer Rang aufsteigend: alle Puffersenken des Rangs 1 aller Anlagen, dann Rang 2, dann Rang 3 — dabei '''kaskadenuebergreifend''' nach Ladepriorität dieser Stunde.
+# '''Nachentladung''' — die Speicher decken den dann noch offenen Bedarf.
+# '''Heizstab''' — auf den verbleibenden Kanalrest.
+# '''Stundenabschluss''' je Speicher — genau einmal je Stunde.
+
+Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in
+derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet,
+gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
+
+=== 7. Ladepriorität — wer den Speicher zuerst fuellen darf ===
+
+Die Reihenfolge der Bedarfsdeckung (Schritt 2 oben) ist die '''Kaskade'''. Die Reihenfolge
+des Ladens ist eine andere: Sie folgt der Ladepriorität, und die '''kleinere''' Zahl laedt
+zuerst:
+
+: <math>\displaystyle r_{\mathrm{Lade}}(A) < r_{\mathrm{Lade}}(B) \;\to\; A\ \text{laedt vor}\ B</math> &nbsp;&nbsp;(5)
+:: <math>r_{\mathrm{Lade}}(A)</math> – Ladeprioritaet der Anlage A, 1 bis 99; nicht gepflegt = 99 [–]
+:: <math>A</math>, <math>B</math> – zwei Anlagen, die in derselben Stunde laden wollen [–]
+Die Vorgabewerte stehen nach Grenzkosten:
+
+{| class="wikitable"
+! Anlagenart !! <math>r_{\mathrm{Lade}}</math> !! warum dieser Platz
+|-
+| Solarthermie || 10 || Grenzkosten nahe null — nicht genutzte Einstrahlung ist verloren
+|-
+| Waermepumpe || 20 || Strompreis / Jahresarbeitszahl; profitiert vom leeren Speicher
+|-
+| BHKW || 30 || Waerme ist Koppelprodukt, Bewertung haengt an der Stromgutschrift
+|-
+| Heizkessel || 40 || hoechste Grenzkosten — soll nur nachheizen
+|-
+| Sonstige || 50 ||
+|}
+
+Von Hand ist jeder Wert von '''1 bis 99''' einstellbar. Eine Anlage ohne gepflegte Priorität
+wird wie '''99''' behandelt, steht also hinter jeder konfigurierten Anlage.
+
+=== 8. Speicherregelung ===
+
+Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die
+Einschaltschwelle, wird geladen, bis die Abschaltschwelle erreicht ist.
+
+: <math>\displaystyle Q_{\mathrm{Sp}}(t) < \frac{s_{\mathrm{ein}}}{100} \cdot Q_{\mathrm{Sp,max}} \;\to\; \text{Ladebeginn}</math> &nbsp;&nbsp;(6)
+:: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
+:: <math>s_{\mathrm{ein}}</math> – Einschaltschwelle des Speichers; Vorgabe 10 [%]
+:: <math>Q_{\mathrm{Sp,max}}</math> – nutzbare Kapazitaet des Speichers [kWh]
+:: <math>100</math> – Umrechnung Prozent in Anteil [–]
+: <math>\displaystyle Q_{\mathrm{Sp}}(t) \ge \frac{s_{\mathrm{aus}}}{100} \cdot Q_{\mathrm{Sp,max}} \;\to\; \text{Ladeende}</math> &nbsp;&nbsp;(7)
+:: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
+:: <math>s_{\mathrm{aus}}</math> – Abschaltschwelle des Speichers; Vorgabe 95 [%]
+:: <math>Q_{\mathrm{Sp,max}}</math> – nutzbare Kapazitaet des Speichers [kWh]
+:: <math>100</math> – Umrechnung Prozent in Anteil [–]
+Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}}</math> = 10 % und <math>s_{\mathrm{aus}}</math> = 95 % der nutzbaren
+Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste
+den Fuellstand laufend absenken.
+
+=== 9. Warnkriterien am Laufstart ===
+
+Vor der ersten Stunde prueft der Lauf die Zuordnung von Erzeugern und Speichern und meldet
+ins Laufprotokoll. Zuordnungen sind frei — aber nur sinnvolle bleiben unkommentiert:
+
+* '''W1''' Ladeziel liegt ausserhalb des Klassen-Sets des Speichers (geladen wuerde mit einem Zweck, den der Speicher nie entlaedt).
+* '''W2''' Bauform des Speichers widerspricht dem Klassen-Set.
+* '''W3''' Erzeuger-Vorlauf liegt unter dem wirksamen Vorlauf oder unter der Nutztemperatur des Zielspeichers.
+* '''W4''' Nutztemperatur liegt ueber dem wirksamen Vorlauf — der Lauf klemmt sie.
+* '''W5''' ein als Waermequelle konfigurierter Puffer hat keinen einzigen Lader.
+* '''W6''' Schichtung am Leitspeicher eines Parallelverbunds — wird abgewiesen, nicht nur gemeldet.
+* '''hart''' Kurzschluss (Quelle ist zugleich eigenes Ladeziel), Ring in der Kaskadenkette, leeres Klassen-Set.
+
+=== 10. Abschluss ===
+
+Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch aus dem Netz
+kommt, sind die zwei Restmengen des Laufs — gebildet nach denselben Regeln (1) und (2):
+
+: <math>\displaystyle Q_{\mathrm{Rest}} = \frac{\sum_{t=1}^{8\,760} Q_{\mathrm{offen}}(t)}{1\,000}</math> &nbsp;&nbsp;(8)
+:: <math>Q_{\mathrm{Rest}}</math> – Restwaermebedarf des Laufs [MWh]
+:: <math>Q_{\mathrm{offen}}(t)</math> – nach der Kaskade ungedeckter Waermebedarf der Stunde [kWh]
+:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
+: <math>\displaystyle E_{\mathrm{Rest}} = \frac{\sum_{k=1}^{35\,040} P_{\mathrm{Netz}}(k)}{4\,000}</math> &nbsp;&nbsp;(9)
+:: <math>E_{\mathrm{Rest}}</math> – Reststrombedarf des Laufs, also der Netzbezug [MWh]
+:: <math>P_{\mathrm{Netz}}(k)</math> – nach Photovoltaik und Speicher verbleibender Netzbezug der Viertelstunde [kW]
+:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
+Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand,
+Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
+
+== Grenzen und Annahmen ==
+{{Anker|grenzen}}
+
+* '''Ein Jahr, keine Alterung.''' Gerechnet wird ein einziges Jahr mit dem Klimadatensatz der gewaehlten Region. Degradation, Verschleiss und Betriebsjahre kommen erst in der Wirtschaftlichkeitsrechnung vor.
+* '''Kein Schaltjahr.''' 365 Tage, 8 760 Stunden — fest.
+* '''Stundenaufloesung in der Waerme.''' Vorgaenge innerhalb einer Stunde (Takten, Anfahrverluste, Regelschwingungen) bildet der Lauf nicht ab.
+* '''Keine Hydraulik im engeren Sinn.''' Rohrnetze, Druckverluste, Pumpen und Mischer werden nicht gerechnet; die Netzverluste sind ein pauschaler Aufschlag.
+* '''Zwei Umstellstunden je Jahr''' liegen wegen des starren Rasters doppelt bzw. gar nicht vor (siehe Schritt 4 und Gleichung (4)). Sie liegen nachts und veraendern die Jahressumme der Einstrahlung nicht.
+* '''Ein Lauf zur Zeit.''' Der Rechenkern ist nicht darauf ausgelegt, zwei Simulationen gleichzeitig zu fahren.
+* '''Kein Ergebnis bei Abbruch.''' Bricht eine Stufe ab, wird nichts gespeichert — statt eines halben Ergebnisses gibt es eine Meldung im Laufprotokoll.
+
+== Ergebnisse und wo sie stehen ==
+{{Anker|ergebnisse}}
+
+* '''Simulationsergebnis''', Reiter „Parameter" — die Einstellungen, mit denen gerechnet wurde.
+* '''Simulationsergebnis''', Reiter „Übersicht" — Jahresmengen und Deckungsgrade je Erzeuger, <math>Q_{\mathrm{Rest}}</math> nach (8) und <math>E_{\mathrm{Rest}}</math> nach (9).
+* '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — die Jahresganglinien und die Jahresdauerlinien des Bedarfs.
+* '''Simulationsergebnis''', je ein Reiter pro beteiligtem Erzeuger.
+* '''Laufprotokoll''' — Hinweise, Warnungen und der Abbruchgrund; hier stehen auch die Warnkriterien aus Schritt 9.
+* '''Bericht und Wirtschaftlichkeit''' rechnen auf denselben Jahresmengen weiter.
+
+== Bezüge ==
+{{Anker|bezuege}}
+
+* [[Programm Dokumentation/Simulation|Simulation]] — Bedienung des Simulationsdialogs
+* [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] — die Reiter des Ergebnisfensters
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]
+* [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]]
+* [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]
+* [[Programm Dokumentation/Berechnung|Berechnung]] — alle Rechenwege im Überblick

@@ -1,10 +1,27 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <!--
+    RAZOR-SDK statt Microsoft.NET.Sdk (Umsetzungskonzept iOS, Paket iU8,
+    Strang B). Das ist KEINE Web-Anwendung: Die Anwendung bleibt WinExe und
+    WinForms. Der Razor-SDK wird gebraucht, damit die statischen Web-Anteile
+    der Bibliothek EPOS.UI ueberhaupt hier ankommen - Komponenten-CSS,
+    help_icon.png, epos-ui.css und blazor.webview.js.
+
+    Belegt in der Vermessung zu iU8 (Gegenprobe b2): Mit dem einfachen
+    Microsoft.NET.Sdk uebersetzt alles fehlerfrei, aber der Veroeffentlichungs-
+    ordner enthaelt KEIN wwwroot - weder index.html noch _content noch
+    _framework/blazor.webview.js. Der erste Blazor-Dialog bliebe damit auf dem
+    Anwenderrechner leer. Der Razor-SDK bringt das StaticWebAssets-Ziel mit,
+    das die Anteile einsammelt.
+
+    Die Umstellung kostet keine Warnung: Der Bauvergleich vor/nach zeigt
+    dieselben Warnungscodes (WFO1000, CS0108, CS0109, WFO0003, CA2255).
+  -->
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
     <RootNamespace>WindowsFormsApplication1</RootNamespace>
@@ -31,11 +48,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
 
-    <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
 
     <!-- Tolerant gegenüber Legacy-Warnungen:
-         CA1416  - WinForms-APIs nur unter Windows (wir TARGETEN net8.0-windows, also irrelevant)
+         CA1416  - WinForms-APIs nur unter Windows (wir TARGETEN net10.0-windows, also irrelevant)
          MSB3568 - doppelte Ressourcennamen aus historischem WinForms-Designer (ignoriert, harmlos)
          CS1701/1702/NU1701 - Mixed-Framework-Hinweise
          NETSDK1206 - RID-Hinweise -->
@@ -50,129 +66,114 @@
   <Compile Remove=".claude\**" />
   <EmbeddedResource Remove=".claude\**" />
   <None Remove=".claude\**" />
-  <Page Remove=".claude\**" />
-  <Resource Remove=".claude\**" />
-  <ApplicationDefinition Remove=".claude\**" />
 </ItemGroup>
 
-  <!-- Dateien auf der Platte, die nie ins alte Projekt aufgenommen waren -->
-  <ItemGroup>
-    <Compile Remove="Allgemein\GrafikTools\ChartManagerNeu.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Detail - Kopie.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Detail.Designer - Kopie.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.cs" />
-    <Compile Remove="Views\Simulation\Form_Simulation_Kurz.Designer.cs" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.de-DE - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Detail.en-US - Kopie.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.de-DE.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.en-US.resx" />
-    <EmbeddedResource Remove="Views\Simulation\Form_Simulation_Kurz.resx" />
-  </ItemGroup>
+  <!-- Die Ausschlussliste "Dateien auf der Platte, die nie ins alte Projekt
+       aufgenommen waren" ist mit iU9-W0 entfallen: Die Kurzansicht der Simulation,
+       die "- Kopie"-Dateien und der zweite Diagrammverwalter sind geloescht
+       (Anwenderentscheid iF29). Was nicht uebersetzt werden soll, liegt damit auch
+       nicht mehr im Baum. -->
 
   <!-- Projektreferenzen -->
   <ItemGroup>
-    <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net8.0, AnyCPU).
-         Die Engine hat selbst keine Referenzen und bindet nichts nach. -->
+    <!-- DER RECHENKERN (Umsetzungskonzept iOS, iU4-5). Die 168 Kerndateien
+         liegen seit iU4-5 unter ..\EPOS.Kern\ und werden von diesem Projekt
+         NICHT mehr uebersetzt - eine Fachaenderung am Rechenkern wird an genau
+         einer Stelle gemacht. Der Kern bringt den generierten Typkatalog aus
+         sql\schema und den Anzeigetext-Katalog MyResource\Resource.resx samt
+         Satellit mit; beide waren bis iU4-4 hier eingebunden. -->
+    <ProjectReference Include="..\EPOS.Kern\EPOS.Kern.csproj" />
+
+    <!-- Stromspeicher-Modul AP1: UI-freie Rechenbibliothek (net10.0, AnyCPU).
+         Die Engine hat selbst keine Referenzen und bindet nichts nach.
+         Bleibt hier eingetragen, obwohl EPOS.Kern sie ebenfalls referenziert -
+         Views\ spricht sie direkt an. -->
     <ProjectReference Include="..\SpeicherEngine\SpeicherEngine.csproj" />
 
     <!-- KI-Assistent B1: UI-freier, DB-freier Kern der Aufgabensteuerung
-         (net8.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
+         (net10.0, AnyCPU, ohne Paketreferenzen). Fachkonzept KI-Assistent 3.7. -->
     <ProjectReference Include="..\KiKern\KiKern.csproj" />
+
+    <!-- EposSqliteMigrator.Kern ist mit W3 (#157-E-1, 09.09.2026) NICHT MEHR
+         referenziert: Der Erststart-Assistent aus S8 ist gefallen, die Anwendung
+         uebernimmt keinen Access-Altbestand mehr. Die Uebernahme ist seither ein
+         HAUSWERKZEUG - die Konsolenfassung EposSqliteMigrator.exe aus der eigenen
+         Projektmappe EposSqliteMigrator\ (sie bleibt in WP-Plan.sln und wird
+         weitergebaut). Wer sie wieder in die Anwendung holt, holt sich die
+         ACE-Engine als Laufzeitvoraussetzung zurueck. -->
+
+    <!-- DIE OBERFLAECHENBIBLIOTHEK (iU8). Razor-Komponenten ohne WinForms,
+         ohne System.Drawing und ohne Datenbank; sie laufen hier in einer
+         BlazorWebView und auf iOS unveraendert in einer WKWebView. Jeder NEUE
+         Dialog entsteht dort, diese Anwendung liefert nur noch die Huelle
+         (Allgemein\Blazor\BlazorDialogForm.cs). -->
+    <ProjectReference Include="..\EPOS.UI\EPOS.UI.csproj" />
   </ItemGroup>
 
   <!-- NuGet-Pakete -->
   <ItemGroup>
     <!-- Chart-Ersatz: Port mit identischem Namespace System.Windows.Forms.DataVisualization.Charting -->
-    <PackageReference Include="DocumentFormat.OpenXml" Version="3.5.1" />
-    <PackageReference Include="WinForms.DataVisualization" Version="1.10.2" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="WinForms.DataVisualization" />
 
     <!-- Berichtsmodul Phase 4: Excel-Ausgabe ohne Office (MIT-Lizenz).
          SixLabors.Fonts bewusst auf 1.0.x gepinnt — ab 2.x gilt die Six Labors
          Split License (Release-Checkliste: dotnet list package - -include-transitive). -->
-    <PackageReference Include="ClosedXML" Version="0.105.1" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.1" />
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="SixLabors.Fonts" />
 
-    <!-- Datenzugriff (Access via ACE OLEDB) -->
-    <PackageReference Include="System.Data.OleDb" Version="8.0.1" />
+    <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
+         EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+
+    <!-- BLEIBT: OleDbParameter ist nach der Umstellung nur noch DATENTRAEGER an den
+         ~2.300 Aufrufstellen; DataRepository uebersetzt innen (Konzept 2). -->
+    <PackageReference Include="System.Data.OleDb" />
 
     <!-- Konfiguration / Settings -->
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" />
 
     <!-- Lizenzverwaltung: Ed25519-Signaturprüfung + DPAPI-Ablage -->
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
 
     <!-- Originalbestand -->
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="JsonSchema.Net" Version="7.3.4" />
-    <PackageReference Include="JsonSchema.Net.Generation" Version="5.0.4" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="Mscc.GenerativeAI" Version="3.1.0" />
-    <PackageReference Include="ScottPlot.WinForms" Version="5.1.57" />
-    <PackageReference Include="SkiaSharp" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.0" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="8.3.1.1" />
+    <PackageReference Include="Humanizer.Core" />
+    <PackageReference Include="JsonSchema.Net" />
+    <PackageReference Include="JsonSchema.Net.Generation" />
+    <PackageReference Include="MathNet.Numerics" />
+    <PackageReference Include="Mscc.GenerativeAI" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="SkiaSharp.Views.WindowsForms" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" />
 
     <!-- Microsoft.Extensions.* (Mscc.GenerativeAI 3.1 fordert >= 10.0.3) -->
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <!-- Semantische Doku-Suche (H10): oertliche Einbettungen, CPU, x64.
          Beide MIT; die Modelldateien liegen NICHT im Repo, sondern werden
          einmalig nach %APPDATA%\wp-plan\semantik\ geholt (SemantikModell). -->
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
-    <PackageReference Include="Microsoft.ML.Tokenizers" Version="2.0.0" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" />
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
+
+    <!-- Blazor-Huelle (iU8): BlazorWebView fuer WinForms. Zieht
+         Microsoft.Web.WebView2 mit (SDK und WebView2Loader.dll) - NICHT die
+         Laufzeit selbst. Die Evergreen-Runtime bringt das Setup mit
+         (Setup\EPOS-Plan.iss, WebView2Vorhanden). -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" />
   </ItemGroup>
 
-  <!-- COM-Interop-Server (sibling .NET-Framework EXE) -->
-
-  <!-- COM-Referenzen (Office Excel Interop, VBIDE) -->
+  <!-- Entwurfszeit-Verknuepfung. Properties\Settings.* und
+       MyResource\Resource.* sind mit iU4-5 nach EPOS.Kern gezogen; ihre
+       Verknuepfungen stehen jetzt dort. -->
   <ItemGroup>
-    <COMReference Include="Microsoft.Office.Interop.Excel">
-      <Guid>{00020813-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>7</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="VBIDE">
-      <Guid>{0002E157-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>5</VersionMajor>
-      <VersionMinor>3</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
-
-  <!-- Settings (klassisches Properties\Settings.settings) -->
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Update="MyResource\Resource.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resource.resx</DependentUpon>
-    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
 
@@ -184,7 +185,6 @@
        nicht am Ordnerpfad hängt. -->
   <ItemGroup>
     <None Remove="Allgemein\Hilfe\help_mapping.txt" />
-    <None Remove="Views\Hauptformular\Form_Start.cs.bak" />
     <EmbeddedResource Include="Allgemein\Hilfe\help_mapping.txt">
       <LogicalName>help_mapping.txt</LogicalName>
     </EmbeddedResource>
@@ -208,40 +208,20 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <!-- Klimazonenkarte DIN 4710 (Anwenderwunsch 29.08.2026): das vom Anwender
-       erstellte Kartenbild (PNG) als Anzeige plus seine SVG-Quelle, aus der
-       KlimazonenKarte zur Laufzeit die 15 Zonenpolygone fuer Hit-Test und
-       Hervorhebung liest (Gruppen "zonenflaechen"/"zonennummern", reine
-       M/L/Z-Pfade). Quelle im Repo: "Klimazonen DIN4710\" in der Wurzel.
-       LogicalName festgeschrieben, damit der Ressourcenname nicht am
-       Ordnerpfad haengt (Muster help_cache.json). -->
-  <ItemGroup>
-    <None Remove="Ressourcen\Zonenkarte_Klimazonen.png" />
-    <None Remove="Ressourcen\Zonenkarte_Klimazonen.svg" />
-    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.png">
-      <LogicalName>Zonenkarte_Klimazonen.png</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Ressourcen\Zonenkarte_Klimazonen.svg">
-      <LogicalName>Zonenkarte_Klimazonen.svg</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
+  <!-- Klimazonenkarte DIN 4710: die beiden eingebetteten Ressourcen sind mit
+       iU9-W10a.3 ENTFALLEN. Das Kartenbild liegt jetzt als statisches Web-Asset
+       der Oberflaechenbibliothek unter EPOS.UI\wwwroot\bilder\ und kommt ueber
+       "_content/EPOS.UI/bilder/Zonenkarte_Klimazonen.png" beim Anwender an; die
+       15 Zonenpfade stehen als erzeugter Quelltext in
+       EPOS.Kern\Allgemein\Simulation\KlimazonenPfade.cs (Werkzeug
+       Werkzeuge\KlimazonenPfade\erzeugen.py, dort liegt auch die SVG-Quelle).
+       Das zugehoerige Steuerelement KlimazonenKarte ist geloescht. -->
 
   <!-- Resources-Generator-Verknüpfungen -->
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <!-- Nur die NEUTRALE Datei trägt den Code-Generator. Er läuft ausschließlich zur
-         Entwurfszeit in Visual Studio, nicht im Build; MyResource\Resource.Designer.cs ist
-         daher eingecheckter Quelltext und muss beim Ergänzen von Schlüsseln mitgepflegt werden
-         (Paket 9 / L2). Satellitendateien dürfen KEINEN Generator haben — die frühere
-         Verknüpfung auf die 0-Byte-Datei Resource.en-US.Designer.cs war ein Altbestand und
-         wurde mit Paket 9 / L1 entfernt. -->
-    <EmbeddedResource Update="MyResource\Resource.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
@@ -259,6 +239,16 @@
       <Link>Vorlagen\Berichtsvorlage.docx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage.docx</TargetPath>
     </None>
+  </ItemGroup>
+
+  <!-- Die Startseite der Huelle. HostPage="wwwroot\index.html" sucht sie neben
+       der EXE; ohne diese Zeile stuende sie nur im Quellbaum. Die Anteile aus
+       EPOS.UI (_content\EPOS.UI\*) und das Blazor-Skript (_framework\*) legt
+       der Razor-SDK selbst daneben. -->
+  <ItemGroup>
+    <Content Update="wwwroot\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

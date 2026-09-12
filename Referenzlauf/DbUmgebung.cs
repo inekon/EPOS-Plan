@@ -14,28 +14,83 @@ namespace WindowsFormsApplication1.Referenzlauf
     /// </summary>
     internal static class DbUmgebung
     {
-        /// <summary>Dateiname wie in DataRepository.DB_DATEINAME.</summary>
+        /// <summary>Dateiname des Access-Zweigs (DataRepository.DB_DATEINAME bis zur Umstellung).</summary>
         public const string DB_DATEINAME = "Kenndaten.accdb";
+
+        /// <summary>Dateiname des SQLite-Zweigs (DataRepository.DB_DATEINAME seit Paket S4).</summary>
+        public const string DB_DATEINAME_SQLITE = "Kenndaten.sqlite";
 
         /// <summary>Fallback-Quelle, falls unter %ProgramData% nichts liegt.</summary>
         private const string QUELLE_FALLBACK = @"C:\Waermeplan\Kenndaten.accdb";
 
+        /// <summary>Endungsprobe - sie entscheidet ueber Access- oder SQLite-Zweig.</summary>
+        public static bool IstSqlite(string pfad)
+        {
+            return pfad != null && pfad.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
-        /// Sucht die produktive Datenbank: erst %ProgramData%\EPOS_PLAN\Kenndaten.accdb,
-        /// dann der Fallback. Liefert null, wenn beides fehlt.
+        /// Voller Pfad der Arbeitskopie in diesem Ordner. Liegt dort eine
+        /// <c>Kenndaten.sqlite</c>, gilt der SQLite-Zweig, sonst der Access-Zweig.
+        ///
+        /// Die Probe laeuft ueber das DATEISYSTEM und nicht ueber ein gemerktes Kennzeichen,
+        /// weil der Kindprozess (Modus "projekt") nur den ORDNER uebergeben bekommt und
+        /// jede statische Merkung dort wieder auf ihrem Anfangswert stuende.
+        /// </summary>
+        public static string ArbeitskopieDatei(string ordner)
+        {
+            string sqlite = Path.Combine(ordner, DB_DATEINAME_SQLITE);
+            return File.Exists(sqlite) ? sqlite : Path.Combine(ordner, DB_DATEINAME);
+        }
+
+        /// <summary>
+        /// Sucht die produktive Datenbank: erst %ProgramData%\EPOS_PLAN (SQLite vor Access,
+        /// weil die Umstellung die .accdb als Altbestand liegen laesst), dann der Fallback.
+        /// Liefert null, wenn nichts davon existiert.
         /// </summary>
         public static string ProduktivQuelleFinden(Protokoll log)
         {
-            string programData = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "EPOS_PLAN", DB_DATEINAME);
+            return ProduktivQuelleFinden(log, null);
+        }
 
-            if (File.Exists(programData))
+        /// <summary>
+        /// Wie <see cref="ProduktivQuelleFinden(Protokoll)"/>, aber mit ausdruecklicher
+        /// Vorgabe (Schalter <c>--quelle</c>).
+        ///
+        /// ZWECK: Der Verhaltensbeweis der Umstellung (Paket S7) laesst beide Backends auf
+        /// EINEM eingefrorenen Datenstand rechnen - der Access-Datei und der daraus
+        /// migrierten SQLite-Datei. Beide liegen ausserhalb der produktiven Ablage; ohne
+        /// Vorgabe waere jeder Lauf auf den jeweils aktuellen Produktivstand angewiesen und
+        /// damit auf Datendrift zwischen den beiden Laeufen.
+        /// </summary>
+        public static string ProduktivQuelleFinden(Protokoll log, string vorgabe)
+        {
+            if (!string.IsNullOrWhiteSpace(vorgabe))
             {
-                log.Zeile("Quelle gefunden (ProgramData): " + programData);
-                return programData;
+                string voll = Path.GetFullPath(vorgabe.Trim());
+                if (!File.Exists(voll))
+                {
+                    log.FehlerZeile("Vorgegebene Quelle (--quelle) nicht vorhanden: " + voll);
+                    return null;
+                }
+                log.Zeile("Quelle vorgegeben (--quelle): " + voll);
+                return voll;
             }
-            log.Zeile("Quelle NICHT vorhanden: " + programData);
+
+            string ordner = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "EPOS_PLAN");
+
+            foreach (string name in new[] { DB_DATEINAME_SQLITE, DB_DATEINAME })
+            {
+                string kandidat = Path.Combine(ordner, name);
+                if (File.Exists(kandidat))
+                {
+                    log.Zeile("Quelle gefunden (ProgramData): " + kandidat);
+                    return kandidat;
+                }
+                log.Zeile("Quelle NICHT vorhanden: " + kandidat);
+            }
 
             if (File.Exists(QUELLE_FALLBACK))
             {
@@ -54,21 +109,47 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// </summary>
         public static string ArbeitskopieAnlegen(string quelle, string zielOrdner, Protokoll log)
         {
-            string sperrdatei = Path.ChangeExtension(quelle, ".laccdb");
-            if (File.Exists(sperrdatei))
+            bool sqlite = IstSqlite(quelle);
+
+            if (sqlite)
             {
-                log.Warnung("Die Quelldatenbank ist geoeffnet (" + Path.GetFileName(sperrdatei) +
-                            " vorhanden). Es wird trotzdem lesend kopiert; die Kopie kann " +
-                            "noch nicht geschriebene Aenderungen der laufenden Sitzung nicht enthalten.");
+                // Gegenstueck zur .laccdb-Probe: -wal/-shm neben der Quelle heissen, dass die
+                // Datenbank nicht sauber geschlossen wurde. Eine reine Dateikopie ohne diese
+                // Begleitdateien zeigt dann nur den eingecheckpointeten Stand.
+                foreach (string anhang in new[] { "-wal", "-shm" })
+                    if (File.Exists(quelle + anhang))
+                        log.Warnung("Neben der Quelldatenbank liegt " +
+                                    Path.GetFileName(quelle) + anhang + ". Die Datenbank wurde " +
+                                    "nicht sauber geschlossen; die Kopie enthaelt nur den " +
+                                    "eingecheckpointeten Stand.");
+            }
+            else
+            {
+                string sperrdatei = Path.ChangeExtension(quelle, ".laccdb");
+                if (File.Exists(sperrdatei))
+                {
+                    log.Warnung("Die Quelldatenbank ist geoeffnet (" + Path.GetFileName(sperrdatei) +
+                                " vorhanden). Es wird trotzdem lesend kopiert; die Kopie kann " +
+                                "noch nicht geschriebene Aenderungen der laufenden Sitzung nicht enthalten.");
+                }
             }
 
             Directory.CreateDirectory(zielOrdner);
-            string ziel = Path.Combine(zielOrdner, DB_DATEINAME);
+            string ziel = Path.Combine(zielOrdner, sqlite ? DB_DATEINAME_SQLITE : DB_DATEINAME);
 
             // Reste eines fruehen Laufs entfernen, damit nicht mit Altdaten gerechnet wird.
             foreach (string alt in Directory.GetFiles(zielOrdner, "*.laccdb"))
             {
                 try { File.Delete(alt); } catch { /* egal, wird gleich ueberschrieben */ }
+            }
+
+            // Dasselbe fuer SQLite - und hier ist es KEINE Kosmetik: ein liegengebliebenes
+            // -wal des Vorlaufs wuerde beim ersten Oeffnen in die frisch kopierte Datei
+            // eingespielt. Die Arbeitskopie waere dann weder der Quellstand noch ein
+            // gueltiger Stand.
+            foreach (string alt in new[] { ziel + "-wal", ziel + "-shm" })
+            {
+                try { if (File.Exists(alt)) File.Delete(alt); } catch { }
             }
 
             File.Copy(quelle, ziel, true);
@@ -135,9 +216,21 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// </summary>
         public static void AufArbeitskopieUmschaltenUndPruefen(string arbeitskopieOrdner, Protokoll log)
         {
-            DbPfadSetzen(arbeitskopieOrdner);
+            string erwartet = Path.GetFullPath(ArbeitskopieDatei(arbeitskopieOrdner));
 
-            string erwartet = Path.GetFullPath(Path.Combine(arbeitskopieOrdner, DB_DATEINAME));
+            if (IstSqlite(erwartet))
+            {
+                // SQLite-Zweig: DataRepository.PfadUeberschreibung (Haken aus Paket S4a)
+                // schlaegt jede Einstellung und laesst die Einstellungen des Anwenders
+                // unangetastet.
+                DataRepository.PfadUeberschreibung = erwartet;
+            }
+            else
+            {
+                // Access-Zweig (eingefrorener Altstand): Umbiegung ueber Settings.DBPath.
+                DbPfadSetzen(arbeitskopieOrdner);
+            }
+
             string tatsaechlich = Path.GetFullPath(AktuellerDbPfad());
 
             if (!string.Equals(erwartet, tatsaechlich, StringComparison.OrdinalIgnoreCase))
@@ -149,12 +242,16 @@ namespace WindowsFormsApplication1.Referenzlauf
             }
 
             // Zweiter Riegel: selbst wenn jemand den Arbeitskopie-Ordner falsch setzt,
-            // darf das Ziel niemals eine der bekannten produktiven Ablagen sein.
+            // darf das Ziel niemals eine der bekannten produktiven Ablagen sein - seit der
+            // Umstellung gehoert die SQLite-Datei jeder dieser Ablagen mit dazu.
+            string produktivOrdner = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EPOS_PLAN");
             foreach (string verboten in new[]
                      {
-                         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                                      "EPOS_PLAN", DB_DATEINAME),
-                         QUELLE_FALLBACK
+                         Path.Combine(produktivOrdner, DB_DATEINAME),
+                         Path.Combine(produktivOrdner, DB_DATEINAME_SQLITE),
+                         QUELLE_FALLBACK,
+                         Path.ChangeExtension(QUELLE_FALLBACK, ".sqlite")
                      })
             {
                 if (string.Equals(Path.GetFullPath(verboten), tatsaechlich, StringComparison.OrdinalIgnoreCase))

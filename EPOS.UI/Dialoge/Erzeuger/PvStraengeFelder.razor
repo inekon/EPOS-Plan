@@ -1,0 +1,1337 @@
+﻿@* Der Abschnitt "Wechselrichter und Straenge" im PV-Dialog - Stufe S2 des
+   Konzept_Wechselrichter_EPOS-Plan.md (Anwenderentscheide W6-E-2 und W6-E-3
+   vom 06.09.2026, Kapitel 7 und 7.1, Mockup M1).
+
+   WAS ER ABLOEST. Bis hierher stand hier ein einziger, AUSGEGRAUTER Knopf
+   "Wechselrichter..." mit der Sperrbedingung disabled="@(!Zeile.ModellErweitert)"
+   (PvModellFelder, wortgleich aus Form_PV.ModellUmschalten). Er war
+   bestimmungsgemaess gesperrt und trotzdem der Anlass des Anwenderwunsches: Ein
+   gesperrter Knopf ohne sichtbaren Grund liest sich als Fehler. Mit
+   Entscheidungsfrage Q5 faellt die Sperrregel - der Wechselrichter ist ein
+   GERAET, keine Modellverfeinerung, und rechnet in beiden Modellen.
+
+   DIE ZWEI SICHTBAREN OPTIONEN (W6-E-3, woertlich: "Gebe zwei Optionen -
+   vereinfacht -> Berechnung ohne wechselrichter (pauschalen) 2. mit
+   Wechselrichter (wie Vorschlag)"). Sie stehen als Optionsgruppe UEBER der
+   Tabelle und liegen im Datenmodell als eigene Spalte
+   Tab_Energieanlagen.PV_Wechselrichterweg (Konzept 7.1, Empfehlung a): Eine
+   Option, die man nur durch LOESCHEN der Strangzeilen abwaehlen koennte, ist
+   keine Option.
+
+   DIE WEICHE SPERRE IST FORT (Befund W6-B-3, Windows-Abnahme 07.09.2026:
+   "die gesamte Zuordnung Wechselrichter zum PV-Modul und Strang funktioniert
+   nicht - Auswahl Wechselrichter nicht vorhanden"). Bis hierher trug die Option
+   "mit Wechselrichter" eine WEICHE SPERRE nach W16b-E-6, solange die Anlage
+   keinen Strang fuehrte: Der Klick MELDETE "Es ist noch kein Strang zugeordnet"
+   und schaltete nicht um. Der einzige Weg, einen Strang anzulegen, stand aber
+   INNERHALB des gesperrten Weges - also gab es keinen. Wer eine frische Anlage
+   umstellen wollte, sah danach weiter den vereinfachten Weg mit seinem einen
+   Knopf "Wechselrichter der Anlage...", und der oeffnete die PAUSCHALEN. Genau
+   das zeigt das Bildschirmfoto der Abnahme.
+
+   Die weiche Sperre war am falschen Ort: "noch kein Strang" ist keine
+   Voraussetzung der Wahl, sondern ihre FOLGE - der erste Zustand danach. Sie
+   faellt ersatzlos; der Satz steht seither als Hinweis IM Abschnitt, dort wo er
+   etwas erklaert. Kapitel 7 des Konzepts hatte es von jeher so beschrieben:
+   "Die Tabelle ist leer, solange niemand einen Strang anlegt. Dann steht dort
+   die Zeile ..."
+
+   DIE GERAETEZEILE STEHT IMMER (W6-B-3). Bei "mit Wechselrichter" zeigt der
+   Abschnitt auch OHNE Strang den Herstellerfilter, die Klappliste der
+   Katalog-Wechselrichter und den Knopf "Strang anlegen" - die Wahl trifft der
+   Anwender VOR dem Anlegen, und der erste Strang traegt sie sofort. Ist der
+   Katalog leer, steht statt der Klappliste der Weg zum Import; ein stummer
+   leerer Abschnitt waere derselbe Befund noch einmal.
+
+   DER S3-HINWEIS IST FORT. Bis Stufe S2 stand unter der Optionsgruppe die
+   Zeile "Die Strangrechnung folgt mit Stufe S3"; seit S3 rechnet der Kern die
+   Straenge, und der Satz waere falsch.
+
+   DER HERSTELLERFILTER (W6-O-4 vom 06.09.2026, woertlich: "Hersteller kann vom
+   Modul verschieden sein. Herstellerfilter etc. wie in Modulliste einfuegen").
+   Er steht als eigene Zeile UEBER der Tabelle - in ihr haette er keinen Platz -
+   und wirkt auf die Klappliste ALLER Zeilen; ein bereits gewaehltes Geraet
+   bleibt in seiner Zeile sichtbar, auch wenn der Filter es ausschliesst.
+
+   SEINE VORAUSWAHL (W6-E-6 vom 07.09.2026, woertlich: "Der Wechselrichter soll
+   beliebig waehlbar sein und nur die Vorauswahl auf den Modulhersteller
+   verweisen (falls Wechselrichter von dem Modulhersteller verfuegbar)").
+   Der Filter STEHT beim Aufmachen auf dem Hersteller des Anlagenmoduls, sofern
+   der Wechselrichterkatalog ueberhaupt ein Geraet dieses Herstellers fuehrt -
+   sonst auf "Alle". Er SPERRT nichts: Jeder andere Hersteller bleibt eine
+   Klapplistenwahl entfernt, und wer den Filter umstellt, behaelt seine
+   Umstellung (Vorgestellt wird nur, wenn der Modulhersteller WECHSELT - sonst
+   naehme jedes Neuzeichnen dem Anwender die eigene Wahl wieder ab).
+
+   DER NAMENSABGLEICH ist zweistufig, weil Modul- und Geraetekatalog aus
+   verschiedenen Quellen kommen und denselben Hersteller verschieden schreiben:
+   erst GLEICHHEIT ohne Ruecksicht auf Gross-/Kleinschreibung und
+   Randleerzeichen, dann "der eine Name beginnt mit dem anderen" (Modul "SMA"
+   trifft "SMA America", Modul "SMA Solar Technology" trifft "SMA"). Der zweite
+   Versuch verlangt drei Zeichen: Ein Praefix von einem oder zwei Buchstaben
+   traefe zu viel - "S" stuende auf "Siemens" so gut wie auf "SMA". Gibt es
+   mehrere Treffer, gilt der ERSTE der Katalogliste; sie ist sortiert, also ist
+   die Vorauswahl wiederholbar.
+
+   DIE MODULSPALTE (W6-O-6, woertlich: "jeder Strang mit nur einem Modultyp,
+   unterschiedliche Straenge koennen jeweils einen anderen Modultyp haben").
+   Leer heisst "das Modul der Anlage" - dieselbe Rueckfallregel wie bei Neigung
+   und Azimut, nur als Klapplisteneintrag statt als Klammer, weil ein Modulname
+   kein Zahlenfeld ist.
+
+   DIE AUSLEGUNGSHILFE IN DER OBERFLAECHE (Anwenderwunsch 08.09.2026, W6-B-8).
+   Der Kern rechnet die Auslegung seit dem 08.09.2026 rueckwaerts
+   (StrangAuslegung: Reihe, Straenge je Tracker, Module je Geraet, Vorschlagen,
+   GeraeteBewerten); sichtbar war davon nur der Satz hinter jedem roten oder
+   gelben Ampelbefund. Zwei Handgriffe machen sie jetzt bedienbar:
+
+   1. DIE KATALOGWAHL IST SORTIERT UND BESCHRIFTET. Das Auswahlfeld
+      "Wechselrichter aus dem Katalog" listet die Geraete in der Reihenfolge von
+      GeraeteBewerten - passende zuerst, mit ihrem DC/AC und der Geraetezahl im
+      Text ("Muster 2500TL - DC/AC 1,10 - 1 Geraet"), unpassende dahinter mit
+      "passt nicht". Die Klapplisten JE ZEILE bleiben alphabetisch und
+      unbeschriftet: Dort steht das Geraet EINES Strangs, und die Bewertung gilt
+      dem ganzen Modulfeld.
+
+   2. "AUSLEGUNG VORSCHLAGEN" FUELLT DIE TABELLE. Der Knopf steht neben
+      "Strang anlegen" und ersetzt die Strangtabelle durch die Aufteilung, die
+      der Kern zum gewaehlten Katalogsatz nennt (Vorschlagen + Aufteilen: je
+      Geraet und Tracker eine Zeile). Ohne Delegat gibt es den Knopf NICHT -
+      "kein Delegat ist kein Knopf", dieselbe Regel wie bei der Katalogwahl;
+      ohne gewaehltes Geraet, ohne Modul oder ohne Modulzahl ist er gesperrt.
+      Gerechnet und formuliert wird ausserhalb: der Kern rechnet, die Huelle
+      formatiert, die Komponente zeigt.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Zeilen stehen in der ErzeugerZeile,
+   die Huelle schreibt sie nach Z_AnlageStrang. Die AMPEL rechnet der Kern
+   (StrangPlausibilitaet); die Komponente erfragt sie ueber den Delegaten
+   Pruefen und zeigt Farbe und Satz. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Bausteine
+@using System.Globalization
+@* W6-B-4: die Vorbelegung eines neuen Strangs rechnet der Kern
+   (WindowsFormsApplication1.Strangvorbelegung) - eine Wahrheit fuer Windows und iOS. *@
+@using WindowsFormsApplication1
+
+<div class="epos-straenge">
+
+    @* --- Die zwei Optionen aus W6-E-3 ---------------------------------------- *@
+    @* W6-B-3: BEIDE Optionen sind frei. Die weiche Sperre auf "mit
+       Wechselrichter" verschloss den Weg, auf dem der erste Strang entsteht. *@
+    <Optionsgruppe Bezeichnung="@Texte.Wahl" Eintraege="@_optionen"
+                   Auswahl="@(Zeile.MitWechselrichter ? WEG_KATALOG : WEG_VEREINFACHT)"
+                   AuswahlChanged="BeiWeg" />
+
+    @if (Zeile.MitWechselrichter)
+    {
+        @* --- Kopf: Abschnittstitel und DC/AC je Geraet ----------------------- *@
+        <div class="epos-strangkopf">
+            <span class="epos-strangkopf-titel">@Texte.Abschnitt</span>
+            @foreach (Ampelzeile g in _befund.Geraete)
+            {
+                <span class="epos-chip @Chipklasse(g.Farbe)" title="@_befund.Werkzeugtipp">@g.Satz</span>
+            }
+        </div>
+
+        @* --- W6-B-11: die AUSLEGUNGSTEMPERATUREN des Projekts ---------------- *@
+        @* Sie stehen im Kopf des Abschnitts, weil sie fuer ALLE Straenge gelten und
+           weil die Ampel darunter mit ihnen prueft: Wer die Zahl aendert, sieht die
+           Wirkung in derselben Ansicht. Leer heisst Vorgabe - die Herleitungszeile
+           sagt, welche Werte gerade gelten. *@
+        <div class="epos-strangtemperaturen" title="@Texte.TipTemperaturen">
+            <span class="epos-strangkopf-titel">@Texte.LabelTemperaturen</span>
+            <Zahlenfeld Bezeichnung="@Texte.LabelTKalt" Wert="@_tKalt"
+                        WertChanged="BeiTKalt" Min="-60" Max="40" Nachkommastellen="1"
+                        Feldname="AuslegTKalt" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelTHeiss" Wert="@_tHeiss"
+                        WertChanged="BeiTHeiss" Min="0" Max="120" Nachkommastellen="1"
+                        Feldname="AuslegTHeiss" />
+            @* "Kein Delegat ist kein Knopf" - dieselbe Regel wie bei der
+               Auslegungshilfe (W6-B-8). Ohne Klimadatenweg gaebe es nichts
+               vorzuschlagen. *@
+            @if (TemperaturenVorschlagen is not null)
+            {
+                <button type="button" class="epos-knopf epos-straenge-tvorschlag"
+                        @onclick="TemperaturVorschlagen">@Texte.BtnTemperaturvorschlag</button>
+            }
+        </div>
+
+        <p class="epos-herleitung">@Temperaturzeile</p>
+
+        @* --- W6-O-4: die Filterzeile UEBER der Tabelle, nicht in ihr ---------- *@
+        @if (Hersteller.Count > 0)
+        {
+            <div class="epos-strangfilter">
+                <Auswahlfeld Bezeichnung="@Texte.FilterHersteller" Eintraege="@_herstellerwahl"
+                             Auswahl="@_hersteller" AuswahlChanged="BeiHersteller"
+                             Kurzname="@Texte.FilterHersteller" />
+            </div>
+
+            @* W6-E-6: Die Herleitung sagt, WOHER die Vorauswahl kommt - und im
+               selben Satz, dass sie nichts sperrt. *@
+            <p class="epos-herleitung">@Filterherleitung</p>
+        }
+
+        @* --- W6-B-3: die KATALOGWAHL, auch ohne Strang ----------------------- *@
+        @* Sie steht ueber der Tabelle und gilt dem NAECHSTEN Strang; jede
+           bestehende Zeile hat ihre eigene Klappliste. Ohne diese Zeile hatte
+           eine frische Anlage kein einziges Bedienelement, das ein Geraet
+           nennt - der Befund des Anwenders. *@
+        @if (Geraete.Count == 0)
+        {
+            @* Leerer Katalog: der WEG dorthin, nicht bloss ein leeres Feld. *@
+            <p class="epos-katalogleer">@Texte.HinweisKatalogLeer</p>
+        }
+        else
+        {
+            @* W6-B-8: Die Reihenfolge und die Beschriftung kommen aus der
+               Auslegungshilfe des Kerns; ohne den Delegaten steht hier die
+               alphabetische Liste von bisher. *@
+            <div class="epos-geraetewahl">
+                <Auswahlfeld Bezeichnung="@Texte.LabelGeraetewahl" Eintraege="@_katalogliste"
+                             Auswahl="@_neuesGeraet" AuswahlChanged="BeiNeuemGeraet"
+                             Kurzname="@Texte.LabelGeraetewahl" />
+            </div>
+
+            <p class="epos-herleitung">@Texte.HerleitungGeraetewahl</p>
+        }
+
+        @if (Zeile.Straenge.Count == 0)
+        {
+            @* Der Satz nennt den naechsten Handgriff - aber nur, wenn es die
+               Klappliste gibt, auf die er zeigt. Beim leeren Katalog steht der
+               Weg zum Import schon darueber, und zwei Anweisungen nacheinander
+               widerspraechen einander. *@
+            @if (Geraete.Count > 0)
+            {
+                <p class="epos-herleitung">@Texte.HinweisOhneStrang</p>
+            }
+        }
+        else
+        {
+            @* --- W6-B-4: die Spaltenfolge --------------------------------------
+               Bis zur Windows-Abnahme vom 07.09.2026 standen die zwei breiten
+               Klapplisten VOR den Zahlen. Ein Geraetename wie "SMA America:
+               SB30-1SP-US-40 {240V}" trieb seine Spalte auf 302 px und die Tabelle
+               auf 1 974 px; bei 1 046 px Platz im Dialog lagen Geraet, MPPT, Module
+               in Reihe, Straenge parallel, Neigung und Azimut ausserhalb des
+               sichtbaren Bereichs. Der Anwender fragte: "Anzahl Module fehlt?"
+
+               Seither stehen ALLE schmalen Spalten vorn und die zwei ELASTISCHEN
+               zuletzt. Der Grund ist der Unterschied ihrer Natur: Ein Zahlenfeld hat
+               eine feste, kleine Breite; eine Klappliste ist so breit wie ihr
+               laengster Eintrag und laesst sich nur deckeln (max-width) und
+               abschneiden (text-overflow). Was gedeckelt werden MUSS, gehoert ans
+               Ende - dort kostet das Abschneiden am wenigsten, und keine Zahl kann
+               davon nach rechts geschoben werden.
+
+               Geraet und MPPT bleiben beim Paar: "Geraet 1, Tracker 2" ist eine
+               Angabe in zwei Spalten. *@
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-strangtabelle">
+                    <thead>
+                        <tr>
+                            <th>@Texte.SpalteWahl</th>
+                            <th>@Texte.SpalteRang</th>
+                            <th class="epos-strangtabelle-text">@Texte.SpalteBezeichner</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteGeraet</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteMppt</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteReihe</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteParallel</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteNeigung</th>
+                            <th class="epos-strangtabelle-zahl">@Texte.SpalteAzimut</th>
+                            <th class="epos-strangtabelle-liste">@Texte.SpalteModul</th>
+                            <th class="epos-strangtabelle-liste">@Texte.SpalteWechselrichter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Zeile.Straenge.Count; i++)
+                        {
+                            int nr = i;
+                            StrangZeile s = Zeile.Straenge[nr];
+                            <tr class="@(s == _gewaehlt ? "epos-zeile--markiert" : null)">
+                                <td>
+                                    <Zeilenwahl Gewaehlt="@(s == _gewaehlt)" Kurztext="@Texte.SpalteWahl"
+                                                Gewaehltwerden="() => _gewaehlt = s" />
+                                </td>
+                                <td>@s.Rang</td>
+                                <td class="epos-strangtabelle-text">
+                                    <Textfeld Wert="@s.Bezeichner"
+                                              WertChanged="@(w => Setzen(s, () => s.Bezeichner = w ?? ""))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    @* Leer heisst 1 - und das steht seit der Windows-Abnahme
+                                       vom 07.09.2026 als Platzhalter IM Feld: Zwei Straenge auf
+                                       demselben Typ landeten stumm auf Geraet 1, der Anwender
+                                       fand keinen Weg zu einem zweiten Geraet desselben Typs. *@
+                                    <Ganzzahlfeld Wert="@s.Geraetenummer" Min="1" Platzhalter="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Geraetenummer = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Mppt" Min="1" Platzhalter="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.Mppt = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.ModuleReihe" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.ModuleReihe = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.StraengeParallel" Min="1"
+                                                  WertChanged="@(w => Setzen(s, () => s.StraengeParallel = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Neigung" Platzhalter="@Geerbt(NeigungAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Neigung = w))" />
+                                </td>
+                                <td class="epos-strangtabelle-zahl">
+                                    <Ganzzahlfeld Wert="@s.Azimut" Platzhalter="@Geerbt(AzimutAnlage)"
+                                                  WertChanged="@(w => Setzen(s, () => s.Azimut = w))" />
+                                </td>
+                                @* Der volle Name steht im Werkzeugtipp - die Spalte
+                                   schneidet ab, die Auskunft geht nicht verloren. *@
+                                <td class="epos-strangtabelle-liste"
+                                    title="@Modultipp(s)">
+                                    <Auswahlfeld Eintraege="@Modulwahl(s)" Auswahl="@ModulAuswahl(s)"
+                                                 AuswahlChanged="@(id => BeiModul(s, id))"
+                                                 Kurzname="@Texte.SpalteModul" />
+                                </td>
+                                <td class="epos-strangtabelle-liste"
+                                    title="@(s.WechselrichterName.Length > 0 ? s.WechselrichterName : Texte.KeinGeraet)">
+                                    <Auswahlfeld Eintraege="@Geraetewahl(s)" Auswahl="@GeraetAuswahl(s)"
+                                                 AuswahlChanged="@(id => BeiGeraet(s, id))"
+                                                 Kurzname="@Texte.SpalteWechselrichter" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="epos-herleitung">@Texte.HerleitungModul</p>
+
+            @* --- Die Ampel: EIN Satz je Strangzeile, unter der Tabelle -------- *@
+            <div class="epos-ampelzeilen">
+                @foreach (Ampelzeile a in _befund.Straenge)
+                {
+                    <p class="epos-ampel @Ampelklasse(a.Farbe)" title="@_befund.Werkzeugtipp">
+                        <span class="epos-ampel-punkt" aria-hidden="true">●</span>
+                        <span>@a.Satz</span>
+                    </p>
+                }
+            </div>
+        }
+
+        @* --- W6-B-8: was die Auslegungshilfe zuletzt gesagt hat ------------- *@
+        @* Er steht UEBER der Leiste, also unmittelbar unter dem, was er erklaert,
+           und bleibt stehen, bis der naechste Vorschlag ihn ersetzt: Der Satz ist
+           das Protokoll dessen, was der Knopf getan hat, keine zweite Ampel. Der
+           moegliche Vorschlag ist ein HINWEIS (die Tabelle steht ja jetzt so da),
+           der ausgebliebene eine WARNUNG - dort ist nichts geschehen. *@
+        @if (_vorschlagsatz.Length > 0)
+        {
+            <Warnbanner Stufe="@_vorschlagstufe" Text="@_vorschlagsatz" />
+        }
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="StrangAnlegen">@Texte.BtnAnlegen</button>
+            @* W6-B-8: "Kein Delegat ist kein Knopf" - ohne die Auslegungshilfe
+               waere er ein Bedienelement, das nichts tut. *@
+            @if (AuslegungVorschlagen is not null)
+            {
+                <button type="button" class="epos-knopf epos-straenge-vorschlag"
+                        disabled="@(!VorschlagFrei)"
+                        @onclick="Auslegen">@Texte.BtnVorschlag</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
+                    @onclick="StrangEntfernen">@Texte.BtnEntfernen</button>
+        </div>
+    }
+
+    @* --- Der ANLAGENRUECKFALL, in BEIDEN Wegen erreichbar ------------------- *@
+    @* W6-B-3: Er steht in einer EIGENEN Zeile am Fuss des Abschnitts und nicht
+       mehr in der Leiste neben "Strang anlegen" - dort las ihn der Anwender als
+       die Katalogwahl, die er nie war. Sein Text nennt seither, was hinter ihm
+       steht: die Pauschalen der Anlage. Im Weg "vereinfacht" ist er der einzige
+       Weg und sagt in derselben Zeile den Wirkungsgrad, der wirklich gilt. *@
+    <div class="epos-strangrueckfall">
+        <p class="epos-herleitung">
+            @(Zeile.MitWechselrichter ? Texte.HerleitungRueckfall : VereinfachtText)
+        </p>
+        <button type="button" class="epos-knopf epos-straenge-anlagenknopf"
+                @onclick="Oeffnen">@Texte.BtnAnlage</button>
+    </div>
+
+    @* --- Ueberlagerung: die fuenf Anlagenwerte (bisher Form_PVModell) -------- *@
+    @* Sie bleibt der ANLAGENRUECKFALL ohne Zuordnung (Konzept 7) und ist in
+       BEIDEN Wegen erreichbar - nur nicht mehr gesperrt. Bis S2 hing sie an
+       PvModellFelder; sie steht jetzt dort, wo alles zum Wechselrichter steht. *@
+    <Ueberlagerung Offen="@_offen" Titel="@Titel" Geschlossen="() => _offen = false">
+        <KindInhalt>
+            <p class="epos-kontextzeile">@AnlagenTexte.KopfErweitert</p>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <div title="@AnlagenTexte.TipNennleistung">
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelNennleistung" Wert="@_nenn"
+                                    WertChanged="@(w => _nenn = w)" Min="0" Max="100000" Nachkommastellen="2"
+                                    Feldname="WrNennleistung" />
+                    </div>
+                    <div title="@AnlagenTexte.TipEta">
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta10" Wert="@_eta10"
+                                    WertChanged="@(w => _eta10 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta10" />
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50" Wert="@_eta50"
+                                    WertChanged="@(w => _eta50 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta50" />
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100" Wert="@_eta100"
+                                    WertChanged="@(w => _eta100 = w)" Min="0" Max="1" Nachkommastellen="3"
+                                    Feldname="WrEta100" />
+                    </div>
+                </KindInhalt>
+            </Formularraster>
+            <p class="epos-pvmodell-dcac"><b>@DcAcText</b></p>
+            <SpeichernLeiste OkText="@AnlagenTexte.Ok" AbbrechenText="@AnlagenTexte.Abbrechen"
+                             Ergebnis="BeiErgebnis" />
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Id der Option „vereinfacht" in der Optionsgruppe.</summary>
+    private const int WEG_VEREINFACHT = 0;
+
+    /// <summary>Id der Option „mit Wechselrichter".</summary>
+    private const int WEG_KATALOG = 1;
+
+    /// <summary>Die Projektzeile, deren Straenge hier stehen. Wird IN PLACE geaendert.</summary>
+    [Parameter, EditorRequired] public ErzeugerZeile Zeile { get; set; } = new();
+
+    /// <summary>Neigung der ANLAGE [°] — der geerbte Wert in der Klammer.</summary>
+    [Parameter] public int? NeigungAnlage { get; set; }
+
+    /// <summary>Azimut der ANLAGE [°] — der geerbte Wert in der Klammer.</summary>
+    [Parameter] public int? AzimutAnlage { get; set; }
+
+    /// <summary>kWp der Anlage fuer die DC/AC-Anzeige der Ueberlagerung; 0 = unbekannt.</summary>
+    [Parameter] public double KwpAnlage { get; set; }
+
+    /// <summary>
+    /// Die Wechselrichter des KATALOGS als Klapplisteneintraege (Id =
+    /// <c>Tab_Wechselrichter_STAMM.ID</c>), bereits nach Hersteller gefiltert.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Geraete { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt einen Katalogsatz in das Projekt auf und liefert die PROJEKTKOPIE
+    /// (<c>WechselrichterCtrl.CopyFromStamm</c>) — genau wie bei einem Modul. Ohne
+    /// Delegat bleibt die Klappliste wirkungslos.
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? GeraetUebernehmen { get; set; }
+
+    /// <summary>
+    /// <b>Die Zahl der MPP-Tracker eines KATALOGgeräts</b> (<c>Anzahl_Mppt</c>) —
+    /// gebraucht für die Vorbelegung eines neuen Strangs (<b>W6‑B‑4</b>): Der zweite
+    /// Strang an demselben Gerät bekommt den nächsten freien Tracker. <c>null</c> als
+    /// Rückgabe und ein fehlender Delegat sind derselbe Fall: Die Angabe ist unbekannt
+    /// (die CEC-Liste führt sie nicht, W6‑O‑2), und dann bleibt es bei Tracker 1 —
+    /// demselben konservativen Fall, auf dem auch die Prüfung P4/P5 rechnet.
+    /// </summary>
+    [Parameter] public Func<int, int?>? TrackerZahl { get; set; }
+
+    /// <summary>
+    /// Die Hersteller des WECHSELRICHTERkatalogs, „Alle" voran (Index 0) — die
+    /// Auswahlliste der Filterzeile UEBER der Tabelle (<b>W6‑O‑4</b>). Leer = keine
+    /// Filterzeile.
+    ///
+    /// <para><b>Sie ist vom Modulfilter UNABHAENGIG</b> (Anwenderentscheid, woertlich:
+    /// „Hersteller kann vom Modul verschieden sein"): Wer Module von A verbaut, kann
+    /// Geraete von B einsetzen.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyList<string> Hersteller { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Die Geraeteliste zu einem Hersteller
+    /// (<c>WechselrichterStammCtrl.Filtern</c>) — dieselbe Bauart wie
+    /// <c>PhotovoltaikDialog.Filtern</c> ueber der Modulliste. Ohne Delegat wirkt der
+    /// Filter nicht, und die Klappliste zeigt <see cref="Geraete"/>.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<(int Id, string Text)>>? GeraeteFiltern { get; set; }
+
+    /// <summary>
+    /// Der Hersteller des Moduls DER ANLAGE — die VORAUSWAHL des Herstellerfilters
+    /// (Anwenderentscheid <b>W6‑E‑6</b> vom 07.09.2026, wörtlich: „Der Wechselrichter
+    /// soll beliebig wählbar sein und nur die Vorauswahl auf den Modulhersteller
+    /// verweisen (falls Wechselrichter von dem Modulhersteller verfügbar)").
+    /// Leer = keine Vorauswahl, der Filter steht auf „Alle".
+    ///
+    /// <para><b>Es ist das Modul der ANLAGE, auch bei Strängen mit eigenem Modul</b>
+    /// (W6‑O‑6): Der Filter ist EINER für alle Zeilen — eine Vorauswahl je Zeile gäbe
+    /// es nicht, weil es das Bedienelement je Zeile nicht gibt.</para>
+    ///
+    /// <para><b>Die Trefferprüfung steht in der KOMPONENTE</b>, nicht in der Hülle:
+    /// Sie fragt nur die Liste <see cref="Hersteller"/> ab, die ohnehin hereinkommt,
+    /// und damit hat iOS denselben Weg ohne eine zweite Fassung derselben Regel.</para>
+    /// </summary>
+    [Parameter] public string Modulhersteller { get; set; } = "";
+
+    /// <summary>
+    /// Die PV-Module des KATALOGS als Klapplisteneintraege (Id =
+    /// <c>Tab_PV_STAMM.ID</c>) — die Modulspalte je Strang (<b>W6‑O‑6</b>). Leer =
+    /// nur „(Modul der Anlage)".
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Module { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Nimmt ein Modul aus dem Katalog in das Projekt auf und liefert die PROJEKTKOPIE
+    /// (<c>PhotovoltaikCtrl.CopyFromStamm</c>) — genau wie beim Wechselrichter. Ohne
+    /// Delegat bleibt die Modulspalte wirkungslos.
+    /// </summary>
+    [Parameter] public Func<int, GeraetWahl>? ModulUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die AMPEL zum aktuellen Stand der Tabelle. Die Komponente rechnet nicht — der
+    /// Kern prueft (<c>StrangPlausibilitaet</c>), die Huelle reicht das Ergebnis
+    /// herein. Ohne Delegat bleibt die Ampel leer.
+    ///
+    /// <para><b>Die GEWAEHLTE Zeile geht mit</b> (Anwenderentscheid <b>W6‑O‑5</b> vom
+    /// 06.09.2026, woertlich „Modul der gewaehlten Zeile"): Bis dahin bekam die Huelle
+    /// nur die Strangliste und nahm deshalb das ERSTE Modul, das der Katalog kannte.
+    /// Welche Projektzeile gewaehlt ist, weiss aber nur die Komponente — genau sie ist
+    /// hier <c>Zeile</c>.</para>
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, IReadOnlyList<StrangZeile>, StrangBefund>? Pruefen { get; set; }
+
+    /// <summary>
+    /// <b>Die Katalogliste in der Reihenfolge der AUSLEGUNGSHILFE</b> (Anwenderwunsch
+    /// 08.09.2026, <b>W6‑B‑8</b>): Zeile und Herstellerfilter hinein, die
+    /// Klapplisteneinträge des Feldes „Wechselrichter aus dem Katalog" heraus —
+    /// passende Geräte zuerst, beschriftet mit ihrem DC/AC und der Gerätezahl.
+    ///
+    /// <para><b>Er ERSETZT <see cref="GeraeteFiltern"/> nur für dieses eine Feld.</b>
+    /// Die Klapplisten JE STRANGZEILE bleiben alphabetisch und unbeschriftet: Sie
+    /// tragen das Gerät EINES Strangs, während die Bewertung dem ganzen Modulfeld gilt
+    /// — und ihr Band zur Zeile ist der reine Bezeichner
+    /// (<see cref="GeraetAuswahl"/>).</para>
+    ///
+    /// <para><b>Gerechnet wird im KERN</b> (<c>StrangAuslegung.GeraeteBewerten</c>),
+    /// <b>formatiert in der HÜLLE</b>. Ohne Delegat — und ohne Modul oder Modulzahl,
+    /// was die Hülle entscheidet — bleibt es bei der Liste von bisher. Die Ids sind
+    /// unverändert <c>Tab_Wechselrichter_STAMM.ID</c>, damit Übernehmen und
+    /// Trackerzahl weiter greifen.</para>
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, string, IReadOnlyList<(int Id, string Text)>>? GeraeteBewerten { get; set; }
+
+    /// <summary>
+    /// <b>Der Vorschlag für eine ganze Strangtabelle</b> (<b>W6‑B‑8</b>): Projektzeile
+    /// und KATALOGSATZ hinein, die Aufteilung heraus
+    /// (<c>StrangAuslegung.Vorschlagen</c> + <c>Aufteilen</c>, gerechnet in der Hülle).
+    ///
+    /// <para><b>Ohne Delegat gibt es den Knopf nicht</b> — dieselbe Regel wie bei den
+    /// übrigen Wegen dieses Abschnitts: Ein Bedienelement, das nichts tun kann, ist
+    /// schlimmer als keines (Befund W6‑B‑3).</para>
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, int, StrangVorschlag>? AuslegungVorschlagen { get; set; }
+
+    /// <summary>
+    /// <b>Auslegungstemperatur kalt [°C]</b> des Projekts (<b>W6‑B‑11</b>);
+    /// <c>null</c> = die Vorgabe <see cref="TKaltVorgabe"/>. Sie kommt aus
+    /// <c>Tab_Einstellungen.Ausleg_T_Kalt</c> und wird über
+    /// <see cref="TemperaturenSetzen"/> zurückgeschrieben.
+    /// </summary>
+    [Parameter] public double? TKalt { get; set; }
+
+    /// <summary>
+    /// <b>Auslegungstemperatur heiß [°C]</b>, Zelltemperatur (<b>W6‑B‑11</b>);
+    /// <c>null</c> = die Vorgabe <see cref="THeissVorgabe"/>.
+    /// </summary>
+    [Parameter] public double? THeiss { get; set; }
+
+    /// <summary>Die Vorgabe des kalten Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double TKaltVorgabe { get; set; } = -10.0;
+
+    /// <summary>Die Vorgabe des heißen Falls [°C] — für die Herleitungszeile.</summary>
+    [Parameter] public double THeissVorgabe { get; set; } = 70.0;
+
+    /// <summary>
+    /// Schreibt die zwei Auslegungstemperaturen in die Projekteinstellungen
+    /// (<c>KonfigurationCtrl.AuslegungstemperaturenSchreiben</c>). Ohne Delegat
+    /// bleiben die Felder bedienbar, aber flüchtig — die Ampel prüft trotzdem sofort
+    /// mit dem neuen Wert, denn den holt sie sich beim nächsten
+    /// <see cref="Pruefen"/> aus der Hülle.
+    /// </summary>
+    [Parameter] public Action<double?, double?>? TemperaturenSetzen { get; set; }
+
+    /// <summary>
+    /// Der VORSCHLAG aus den Klimadaten des Projekts (<b>W6‑B‑11</b>) — gerechnet im
+    /// Kern (<c>AuslegungstemperaturVorschlag</c>), hereingereicht von der Hülle.
+    /// <b>Ohne Delegat gibt es den Knopf NICHT</b> („kein Delegat ist kein Knopf").
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, Temperaturvorschlag>? TemperaturenVorschlagen { get; set; }
+
+    /// <summary>Meldet jede Aenderung — die Huelle schreibt dann in das Modell.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die Beschriftungen; fuellen sich selbst aus MyResource.</summary>
+    [Parameter] public PvStrangTexte Texte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen der Ueberlagerung (dieselben wie bisher).</summary>
+    [Parameter] public PvModellTexte AnlagenTexte { get; set; } = new();
+
+    private IReadOnlyList<(int Id, string Text)> _optionen = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _geraetewahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _modulwahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _herstellerwahl = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _gefiltert = Array.Empty<(int, string)>();
+    private int? _hersteller = 0;
+
+    /// <summary>
+    /// W6‑B‑8: die BEWERTETEN Einträge der Katalogwahl über der Tabelle (ohne
+    /// „(kein Gerät)"). Ohne den Delegaten <see cref="GeraeteBewerten"/> ist es
+    /// <see cref="_gefiltert"/> selbst — dieselbe Liste, dieselbe Reihenfolge.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> _bewertet = Array.Empty<(int, string)>();
+
+    /// <summary>Die Klappliste über der Tabelle: „(kein Gerät)" + <see cref="_bewertet"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> _katalogliste = Array.Empty<(int, string)>();
+
+    /// <summary>Der zuletzt gemeldete Satz der Auslegungshilfe; leer = keiner (W6‑B‑8).</summary>
+    private string _vorschlagsatz = "";
+
+    /// <summary>Hinweis beim Vorschlag, Warnung ohne — die Stufe des Banners (W6‑B‑8).</summary>
+    private WarnStufe _vorschlagstufe = WarnStufe.Hinweis;
+
+    /// <summary>
+    /// Das Geraet der KATALOGWAHL ueber der Tabelle (<b>W6‑B‑3</b>) — es gilt dem
+    /// NAECHSTEN Strang; 0 heisst „(kein Gerät)". Es steht nicht in der
+    /// <see cref="ErzeugerZeile"/>: Gewaehlt ist hier noch nichts, uebernommen wird
+    /// erst mit „Strang anlegen".
+    /// </summary>
+    private int? _neuesGeraet = 0;
+
+    /// <summary>
+    /// Der Modulhersteller, fuer den zuletzt VORGESTELLT wurde; <c>null</c> = noch nie.
+    /// Er ist das Gedaechtnis der Regel aus W6-E-6: Vorgestellt wird nur beim ersten
+    /// Zeichnen und beim WECHSEL des Anlagenmoduls - sonst naehme jedes Neuzeichnen der
+    /// Huelle (jede Zellenaenderung meldet Geaendert) dem Anwender seine Filterwahl ab.
+    /// </summary>
+    private string? _vorgestelltFuer;
+
+    /// <summary>Hat die Vorauswahl einen Hersteller GETROFFEN? Sonst steht sie auf „Alle".</summary>
+    private bool _vorauswahlTrifft;
+
+    private StrangBefund _befund = StrangBefund.Leer;
+    private StrangZeile? _gewaehlt;
+
+    /// <summary>Die zwei Auslegungstemperaturen der Maske; <c>null</c> = Vorgabe (W6‑B‑11).</summary>
+    private double? _tKalt, _tHeiss;
+
+    /// <summary>
+    /// Sind die zwei Temperaturen schon aus den Parametern geholt? Sie werden GENAU
+    /// EINMAL übernommen: Jede Zellenänderung meldet <c>Geaendert</c>, der Wirt
+    /// zeichnet neu, und ein zweites Übernehmen nähme dem Anwender seine Eingabe
+    /// wieder ab — dieselbe Falle wie bei <c>_vorgestelltFuer</c> (W6‑E‑6).
+    /// </summary>
+    private bool _temperaturenGeholt;
+
+    /// <summary>Die Herleitung des zuletzt gerechneten Vorschlags; leer = keiner (W6‑B‑11).</summary>
+    private string _temperatursatz = "";
+
+    private bool _offen;
+    private double? _nenn, _eta10, _eta50, _eta100;
+
+    /// <summary>Steht die Anlagen-Ueberlagerung? (Pruefhilfe fuer Tests.)</summary>
+    public bool WechselrichterOffen => _offen;
+
+    /// <summary>Der aktuelle Befund (Pruefhilfe fuer Tests).</summary>
+    public StrangBefund Befund => _befund;
+
+    /// <summary>Die gewaehlte Strangzeile (Pruefhilfe fuer Tests).</summary>
+    public StrangZeile? Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Stand des Herstellerfilters, 0 = „Alle" (Pruefhilfe fuer Tests).</summary>
+    public int? Herstellerfilter => _hersteller;
+
+    /// <summary>Das Geraet der Katalogwahl ueber der Tabelle (Pruefhilfe fuer Tests).</summary>
+    public int? Katalogwahl => _neuesGeraet;
+
+    /// <summary>
+    /// Die Eintraege der Katalogwahl ueber der Tabelle, „(kein Gerät)" voran
+    /// (Pruefhilfe fuer Tests, W6‑B‑8).
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Katalogliste => _katalogliste;
+
+    /// <summary>Der Satz der Auslegungshilfe; leer = keiner (Pruefhilfe fuer Tests).</summary>
+    public string Vorschlagsatz => _vorschlagsatz;
+
+    /// <summary>Die Auslegungstemperatur kalt der Maske (Pruefhilfe fuer Tests).</summary>
+    public double? AuslegungKalt => _tKalt;
+
+    /// <summary>Die Auslegungstemperatur heiss der Maske (Pruefhilfe fuer Tests).</summary>
+    public double? AuslegungHeiss => _tHeiss;
+
+    /// <summary>
+    /// Die Zeile unter den zwei Temperaturfeldern: die Herleitung des zuletzt
+    /// gerechneten Vorschlags, solange es einen gibt — sonst der Satz, welche Werte
+    /// gerade gelten und was leer bedeutet (Pruefhilfe fuer Tests).
+    /// </summary>
+    public string Temperaturzeile
+        => _temperatursatz.Length > 0
+            ? _temperatursatz
+            : string.Format(CultureInfo.CurrentCulture, Texte.HerleitungTemperaturen,
+                            Grad(_tKalt ?? TKaltVorgabe), Grad(_tHeiss ?? THeissVorgabe),
+                            Grad(TKaltVorgabe), Grad(THeissVorgabe));
+
+    private static string Grad(double wert) => wert.ToString("N1", CultureInfo.CurrentCulture);
+
+    /// <summary>
+    /// <b>Ist „Auslegung vorschlagen" frei?</b> (W6‑B‑8, zugleich Pruefhilfe fuer
+    /// Tests.) Es braucht alle vier: den Delegaten, einen gewaehlten Katalogsatz, das
+    /// Modul der Anlage und eine Modulzahl. Ohne eines davon haette der Kern nichts,
+    /// woraus er eine Aufteilung rechnen koennte.
+    /// </summary>
+    public bool VorschlagFrei =>
+        AuslegungVorschlagen is not null
+        && _neuesGeraet is int gewaehlt && gewaehlt > 0
+        && Zeile.Bezeichner.Length > 0
+        && Modulzahl > 0;
+
+    /// <summary>
+    /// Die Modulzahl, gegen die die Auslegungshilfe rechnet: die ABGELEITETE Summe der
+    /// Straenge, sobald eine Strangtabelle steht — sonst der Anlagenwert. Dieselbe
+    /// Regel wie im Wirt (Entscheidungsfrage <b>Q9</b>: „Anzahl Module" ist abgeleitet,
+    /// sobald es Straenge gibt), damit Knopf und Bewertung auf derselben Zahl stehen
+    /// wie die Ampel.
+    /// </summary>
+    private int Modulzahl
+    {
+        get
+        {
+            if (Zeile.Straenge.Count == 0)
+                return (int)Math.Round(Zeile.AnzahlModule ?? 0.0, MidpointRounding.AwayFromZero);
+
+            int summe = 0;
+            foreach (StrangZeile s in Zeile.Straenge) summe += s.Modulzahl;
+            return summe;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _optionen = new[]
+        {
+            (WEG_VEREINFACHT, Texte.OptionVereinfacht),
+            (WEG_KATALOG, Texte.OptionKatalog)
+        };
+
+        // W6-O-4: die Herstellerliste der Filterzeile - "Alle" steht als Index 0 in
+        // der Liste selbst, genau wie ueber der Modulliste.
+        var hersteller = new List<(int, string)>();
+        for (int i = 0; i < Hersteller.Count; i++) hersteller.Add((i, Hersteller[i]));
+        _herstellerwahl = hersteller;
+
+        // W6-E-6: die VORAUSWAHL auf den Modulhersteller. Sie steht VOR dem Laden der
+        // Geraeteliste - sonst zeigte die Klappliste einen Zug lang den Stand des alten
+        // Filters.
+        Vorstellen();
+
+        // Die Klappliste fuehrt "(kein Geraet)" als Id 0 voran - dieselbe Bauart wie
+        // "Alle" im Herstellerfilter der Modulliste.
+        GeraeteNeuLaden();
+
+        // W6-O-6: die Modulspalte fuehrt "(Modul der Anlage)" als Id 0 voran -
+        // dieselbe Bauart und dieselbe Bedeutung: Id 0 ist der RUECKFALL, kein Eintrag.
+        var module = new List<(int, string)> { (0, Texte.ModulDerAnlage) };
+        foreach (var m in Module) module.Add(m);
+        _modulwahl = module;
+
+        // W6-B-11: die zwei Auslegungstemperaturen GENAU EINMAL aus den Parametern -
+        // Begruendung bei _temperaturenGeholt.
+        if (!_temperaturenGeholt)
+        {
+            _tKalt = TKalt;
+            _tHeiss = THeiss;
+            _temperaturenGeholt = true;
+        }
+
+        Nachpruefen();
+    }
+
+    // =================================================================================
+    // Die zwei Optionen
+    // =================================================================================
+
+    private Task BeiWeg(int? id)
+    {
+        // Der Schalter PARKT die Zuordnung, er loescht sie nicht (Konzept 7.1, Grund 1):
+        // Der Planer verloere sonst genau die Arbeit, die er vergleichen will.
+        Zeile.MitWechselrichter = id == WEG_KATALOG;
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    // =================================================================================
+    // W6-B-3: die Katalogwahl ueber der Tabelle
+    // =================================================================================
+
+    /// <summary>
+    /// Merkt das Geraet fuer den NAECHSTEN Strang. Uebernommen (<c>CopyFromStamm</c>)
+    /// wird es erst beim Anlegen — eine Klapplistenwahl allein darf keine Projektkopie
+    /// anlegen, sonst fuellte ein Durchblaettern die Projekttabelle.
+    /// </summary>
+    private void BeiNeuemGeraet(int? id)
+    {
+        _neuesGeraet = id ?? 0;
+    }
+
+    /// <summary>
+    /// Fuehrt die Klappliste UEBER der Tabelle diesen Stammsatz? Gefragt ist die Liste,
+    /// die der Anwender dort sieht — seit <b>W6‑B‑8</b> die bewertete
+    /// (<see cref="_bewertet"/>); ohne Bewertungsdelegat ist sie die gefilterte von
+    /// bisher.
+    /// </summary>
+    private bool ImKatalog(int stammId)
+    {
+        foreach (var e in _bewertet) if (e.Id == stammId) return true;
+        return false;
+    }
+
+    // =================================================================================
+    // Die Strangtabelle
+    // =================================================================================
+
+    private Task StrangAnlegen()
+    {
+        var neu = new StrangZeile { Rang = Zeile.Straenge.Count + 1 };
+
+        // W6-B-3: Der neue Strang traegt das Geraet der Katalogwahl - das ist der
+        // Sinn der Zeile darueber. "(kein Geraet)" legt wie bisher eine leere Zeile
+        // an; die Ampel sagt dann, was fehlt.
+        int? trackerzahl = null;
+        if (_neuesGeraet is int stammId && stammId > 0 && GeraetUebernehmen is not null)
+        {
+            GeraetWahl wahl = GeraetUebernehmen(stammId);
+            neu.WechselrichterId = wahl.Id;
+            neu.WechselrichterName = wahl.Name;
+            trackerzahl = TrackerZahl?.Invoke(stammId);
+        }
+
+        Vorbelegen(neu, trackerzahl);
+
+        Zeile.Straenge.Add(neu);
+        _gewaehlt = neu;
+
+        // Der erste Strang macht die Wahl "mit Wechselrichter" moeglich - und wer
+        // einen Strang anlegt, will ihn auch gerechnet sehen.
+        Zeile.MitWechselrichter = true;
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// <b>Womit der neue Strang anfängt</b> (<b>W6‑B‑4</b>). Bis zur Windows-Abnahme
+    /// vom 07.09.2026 waren alle vier Zahlenfelder leer, und die Ampel meldete
+    /// darunter „0 Module in Reihe … Werte fehlen: Module in Reihe" — der Anwender las
+    /// das als Fehler und fragte „Anzahl Module fehlt?".
+    ///
+    /// <para><b>Gerechnet wird im KERN</b> (<c>Strangvorbelegung.FuerNeuenStrang</c>);
+    /// die Komponente sammelt nur, was der Kern wissen muss: die Modulzahl der Anlage,
+    /// die Zahl der bestehenden Stränge, ihre Modulsumme und den höchsten schon
+    /// belegten Tracker AM SELBEN Gerät.</para>
+    /// </summary>
+    private void Vorbelegen(StrangZeile neu, int? trackerzahl)
+    {
+        int belegteModule = 0;
+        int hoechsterMppt = 0;
+
+        foreach (StrangZeile s in Zeile.Straenge)
+        {
+            belegteModule += s.Modulzahl;
+
+            // Nur Stränge AM SELBEN Gerät belegen dessen Tracker.
+            if (s.WechselrichterId == neu.WechselrichterId &&
+                (s.Geraetenummer ?? 1) == 1 && (s.Mppt ?? 1) > hoechsterMppt)
+                hoechsterMppt = s.Mppt ?? 1;
+        }
+
+        Strangvorbelegung.Vorschlag v = Strangvorbelegung.FuerNeuenStrang(
+            Zeile.AnzahlModule ?? 0.0, Zeile.Straenge.Count, belegteModule,
+            hoechsterMppt, trackerzahl);
+
+        neu.ModuleReihe = v.ModuleReihe;
+        neu.StraengeParallel = v.StraengeParallel;
+        neu.Mppt = v.Mppt;
+        neu.Geraetenummer = v.Geraetenummer;
+    }
+
+    /// <summary>
+    /// <b>„Auslegung vorschlagen"</b> (Anwenderwunsch 08.09.2026, <b>W6‑B‑8</b>): Der
+    /// Kern rechnet zum GEWAEHLTEN Katalogsatz eine ganze Aufteilung
+    /// (<c>StrangAuslegung.Vorschlagen</c> + <c>Aufteilen</c>, gebuendelt im Delegaten
+    /// <see cref="AuslegungVorschlagen"/>), und die Komponente setzt sie um.
+    ///
+    /// <para><b>Sie ERSETZT die Tabelle, sie ergaenzt sie nicht.</b> Ein Vorschlag ist
+    /// eine GANZE Aufteilung des Modulfelds — gleich lange Straenge, gleich belegte
+    /// Geraete; an bestehende Zeilen angehaengt ergaebe er eine Anlage mit der
+    /// doppelten Modulzahl. Der Satz darunter sagt es ausdruecklich
+    /// („… die Strangtabelle wurde ersetzt").</para>
+    ///
+    /// <para><b>Neigung und Azimut bleiben leer</b> — sie heissen dann „der
+    /// Anlagenwert" (Konzept 3.4); ein Vorschlag weiss nichts ueber Teilfelder.</para>
+    ///
+    /// <para><b>Ohne Vorschlag bleibt alles stehen</b> und der Grund des Kerns
+    /// erscheint als Warnung: Die Tabelle hat der Anwender gebaut, und ein Grund ist
+    /// kein Anlass, sie zu verwerfen.</para>
+    /// </summary>
+    private async Task Auslegen()
+    {
+        if (AuslegungVorschlagen is null) return;
+        if (_neuesGeraet is not int stammId || stammId <= 0) return;
+
+        StrangVorschlag v = AuslegungVorschlagen(Zeile, stammId) ?? StrangVorschlag.Leer;
+        _vorschlagsatz = v.Satz ?? "";
+        _vorschlagstufe = v.Moeglich ? WarnStufe.Hinweis : WarnStufe.Warnung;
+
+        if (!v.Moeglich || v.Zeilen.Count == 0) return;
+
+        // Derselbe Weg wie bei "Strang anlegen": Der KATALOGsatz wird in das Projekt
+        // kopiert, und die Zeilen tragen die Projektkopie.
+        int geraetId = 0;
+        string geraetName = "";
+        if (GeraetUebernehmen is not null)
+        {
+            GeraetWahl wahl = GeraetUebernehmen(stammId);
+            geraetId = wahl.Id;
+            geraetName = wahl.Name;
+        }
+
+        Zeile.Straenge.Clear();
+        foreach (StrangVorgabe g in v.Zeilen)
+        {
+            Zeile.Straenge.Add(new StrangZeile
+            {
+                Rang = Zeile.Straenge.Count + 1,
+                WechselrichterId = geraetId,
+                WechselrichterName = geraetName,
+                Geraetenummer = g.Geraetenummer,
+                Mppt = g.Mppt,
+                ModuleReihe = g.ModuleReihe,
+                StraengeParallel = g.StraengeParallel
+            });
+        }
+
+        // Die alte Wahl zeigte auf eine Zeile, die es nicht mehr gibt.
+        _gewaehlt = null;
+
+        Nachpruefen();
+        await Geaendert.InvokeAsync();
+    }
+
+    private Task StrangEntfernen()
+    {
+        if (_gewaehlt is null) return Task.CompletedTask;
+
+        Zeile.Straenge.Remove(_gewaehlt);
+        _gewaehlt = null;
+        Raengeneu();
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Raenge bleiben lueckenlos ab 1 — dieselbe Regel wie im Controller.</summary>
+    private void Raengeneu()
+    {
+        for (int i = 0; i < Zeile.Straenge.Count; i++) Zeile.Straenge[i].Rang = i + 1;
+    }
+
+    /// <summary>Setzt einen Wert, prueft nach und meldet — der Weg jeder Zellenaenderung.</summary>
+    private Task Setzen(StrangZeile s, Action aenderung)
+    {
+        aenderung();
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    // =================================================================================
+    // W6-O-4: der Herstellerfilter ueber der Tabelle
+    // =================================================================================
+
+    /// <summary>
+    /// Zieht die Geraeteliste zum gewaehlten Hersteller. Ohne Delegat bleibt es bei
+    /// <see cref="Geraete"/> — der Filter ist dann eine Anzeige ohne Wirkung, und das
+    /// ist besser als eine leere Klappliste.
+    /// </summary>
+    private void GeraeteNeuLaden()
+    {
+        string hersteller = (_hersteller.HasValue && _hersteller.Value < Hersteller.Count)
+                          ? Hersteller[_hersteller.Value] : "";
+
+        _gefiltert = GeraeteFiltern is null
+                   ? Geraete
+                   : (GeraeteFiltern(hersteller) ?? Array.Empty<(int, string)>());
+
+        // W6-B-8: die Katalogwahl UEBER der Tabelle steht in der Reihenfolge der
+        // Auslegungshilfe und traegt DC/AC und Geraetezahl im Text. Ohne Delegat -
+        // und ohne Modul oder Modulzahl, was die Huelle entscheidet - ist es
+        // dieselbe Liste wie die der Zeilenklapplisten.
+        _bewertet = GeraeteBewerten is null
+                  ? _gefiltert
+                  : (GeraeteBewerten(Zeile, hersteller) ?? _gefiltert);
+
+        var liste = new List<(int, string)> { (0, Texte.KeinGeraet) };
+        foreach (var g in _gefiltert) liste.Add(g);
+        _geraetewahl = liste;
+
+        var oben = new List<(int, string)> { (0, Texte.KeinGeraet) };
+        foreach (var g in _bewertet) oben.Add(g);
+        _katalogliste = oben;
+
+        // W6-B-3: Fuehrt die Klappliste das vorgemerkte Geraet nicht mehr - der
+        // Anwender hat den Herstellerfilter umgestellt, oder der Katalogsatz ist fort -,
+        // faellt die Katalogwahl auf "(kein Geraet)" zurueck. Sonst naehme
+        // "Strang anlegen" ein Geraet mit, das in der Liste gar nicht mehr steht.
+        if (_neuesGeraet is int vorgemerkt && vorgemerkt > 0 && !ImKatalog(vorgemerkt))
+            _neuesGeraet = 0;
+    }
+
+    private void BeiHersteller(int? id)
+    {
+        _hersteller = id ?? 0;
+        GeraeteNeuLaden();
+    }
+
+    // =================================================================================
+    // W6-E-6: die Vorauswahl des Filters auf den Modulhersteller
+    // =================================================================================
+
+    /// <summary>
+    /// Kuerzeste Namenslaenge, mit der der zweite Versuch („beginnt mit") noch zaehlt.
+    /// Ein Praefix von einem oder zwei Buchstaben traefe zu viel — „S" stuende auf
+    /// „Siemens" so gut wie auf „SMA".
+    /// </summary>
+    private const int PRAEFIX_MINDESTLAENGE = 3;
+
+    /// <summary>
+    /// Stellt den Herstellerfilter auf den Modulhersteller vor (<b>W6‑E‑6</b>) — aber
+    /// nur beim ERSTEN Zeichnen und bei jedem WECHSEL des Anlagenmoduls.
+    ///
+    /// <para><b>Warum nicht bei jedem <c>OnParametersSet</c>.</b> Die Hülle zeichnet
+    /// nach jeder Zellenänderung neu (jede Änderung meldet <c>Geaendert</c>); ein
+    /// Vorstellen bei jedem Durchlauf nähme dem Anwender seine eigene Filterwahl im
+    /// selben Augenblick wieder ab, in dem er sie trifft. Gemerkt wird deshalb, WOFÜR
+    /// zuletzt vorgestellt wurde: Bleibt das Anlagenmodul dasselbe, gehört der Filter
+    /// dem Anwender; wechselt es, gilt die Vorauswahl von Neuem.</para>
+    /// </summary>
+    private void Vorstellen()
+    {
+        string modul = (Modulhersteller ?? "").Trim();
+        if (_vorgestelltFuer is not null &&
+            string.Equals(_vorgestelltFuer, modul, StringComparison.Ordinal)) return;
+
+        _vorgestelltFuer = modul;
+        int treffer = Herstellertreffer(modul);
+        _vorauswahlTrifft = treffer > 0;
+        _hersteller = treffer;
+    }
+
+    /// <summary>
+    /// Der Eintrag der Herstellerliste, der zum Modulhersteller passt; <c>0</c> = keiner,
+    /// also „Alle". Index 0 ist „Alle" selbst und bleibt draussen.
+    ///
+    /// <para><b>Zwei Versuche</b>, weil Modul- und Gerätekatalog aus verschiedenen
+    /// Quellen stammen und denselben Hersteller verschieden schreiben: erst GLEICHHEIT
+    /// ohne Rücksicht auf Gross-/Kleinschreibung und Randleerzeichen, dann „der eine
+    /// Name beginnt mit dem anderen" — in BEIDE Richtungen, denn mal ist der
+    /// Katalogname der längere („SMA" → „SMA America"), mal der Modulname
+    /// („SMA Solar Technology" → „SMA"). Mehrere Treffer entscheidet der ERSTE der
+    /// Liste; sie ist sortiert, die Vorauswahl damit wiederholbar.</para>
+    /// </summary>
+    private int Herstellertreffer(string modulhersteller)
+    {
+        if (modulhersteller.Length == 0) return 0;
+
+        for (int i = 1; i < Hersteller.Count; i++)
+            if (string.Equals((Hersteller[i] ?? "").Trim(), modulhersteller,
+                              StringComparison.OrdinalIgnoreCase)) return i;
+
+        for (int i = 1; i < Hersteller.Count; i++)
+        {
+            string katalog = (Hersteller[i] ?? "").Trim();
+            if (Math.Min(katalog.Length, modulhersteller.Length) < PRAEFIX_MINDESTLAENGE) continue;
+
+            if (katalog.StartsWith(modulhersteller, StringComparison.OrdinalIgnoreCase)
+                || modulhersteller.StartsWith(katalog, StringComparison.OrdinalIgnoreCase)) return i;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Die Zeile unter dem Filter: woher die Vorauswahl kommt — und dass sie nichts
+    /// sperrt. Ohne bekannten Modulhersteller bleibt nur der zweite Halbsatz übrig.
+    /// </summary>
+    private string Filterherleitung
+    {
+        get
+        {
+            string modul = _vorgestelltFuer ?? "";
+            if (modul.Length == 0) return Texte.HerleitungFilterFrei;
+
+            return string.Format(CultureInfo.CurrentCulture,
+                                 _vorauswahlTrifft ? Texte.HerleitungFilter
+                                                   : Texte.HerleitungFilterOhne,
+                                 modul);
+        }
+    }
+
+    /// <summary>
+    /// Die Klappliste DIESER Zeile. Der Filter engt die Auswahl ein — <b>das bereits
+    /// gewaehlte Geraet bleibt aber sichtbar</b>, auch wenn es von einem anderen
+    /// Hersteller stammt: Sonst stuende in der Zeile nichts, und der Anwender hielte
+    /// die Zuordnung fuer verloren.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Geraetewahl(StrangZeile s)
+    {
+        if (s.WechselrichterId <= 0 || s.WechselrichterName.Length == 0) return _geraetewahl;
+
+        foreach (var g in _gefiltert)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal))
+                return _geraetewahl;
+
+        foreach (var g in Geraete)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal))
+            {
+                var liste = new List<(int, string)>(_geraetewahl) { g };
+                return liste;
+            }
+
+        return _geraetewahl;
+    }
+
+    /// <summary>
+    /// Der gewaehlte Eintrag der Geraeteklappliste. Das Band zwischen Zeile und Liste
+    /// ist der BEZEICHNER: Katalogsatz und Projektkopie tragen denselben, und genau
+    /// darueber findet <c>CopyFromStamm</c> eine vorhandene Kopie wieder. Ist der
+    /// Katalogsatz inzwischen geloescht, steht nichts gewaehlt da — die Zeile behaelt
+    /// ihr Geraet trotzdem.
+    /// </summary>
+    private int? GeraetAuswahl(StrangZeile s)
+    {
+        if (s.WechselrichterId <= 0) return 0;
+        foreach (var g in Geraete)
+            if (string.Equals(g.Text, s.WechselrichterName, StringComparison.Ordinal)) return g.Id;
+        return null;
+    }
+
+    // =================================================================================
+    // W6-O-6: das Modul je Strang
+    // =================================================================================
+
+    /// <summary>
+    /// Die Modulklappliste DIESER Zeile — <c>_modulwahl</c>, ergaenzt um das bereits
+    /// gewaehlte Modul, falls der Katalog es nicht (mehr) fuehrt. Derselbe Gedanke wie
+    /// bei <see cref="Geraetewahl"/>.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Modulwahl(StrangZeile s)
+    {
+        if (s.ModulId <= 0 || s.ModulName.Length == 0) return _modulwahl;
+
+        foreach (var m in Module)
+            if (string.Equals(m.Text, s.ModulName, StringComparison.Ordinal)) return _modulwahl;
+
+        var liste = new List<(int, string)>(_modulwahl) { (-1, s.ModulName) };
+        return liste;
+    }
+
+    /// <summary>
+    /// Der Werkzeugtipp der Modulspalte (<b>W6‑B‑4</b>): der volle Modulname, wenn der
+    /// Strang einen eigenen trägt — sonst der Satz, was „leer" bedeutet. Die Spalte ist
+    /// gedeckelt und schneidet ab; die Auskunft darf dabei nicht verlorengehen.
+    /// </summary>
+    private string Modultipp(StrangZeile s)
+        => s.ModulName.Length > 0 ? s.ModulName : Texte.HerleitungModul;
+
+    /// <summary>
+    /// Der gewaehlte Eintrag der Modulklappliste; 0 heisst „das Modul der Anlage".
+    /// Das Band ist wieder der BEZEICHNER (siehe <see cref="GeraetAuswahl"/>).
+    /// </summary>
+    private int? ModulAuswahl(StrangZeile s)
+    {
+        if (s.ModulId <= 0) return 0;
+        foreach (var m in Module)
+            if (string.Equals(m.Text, s.ModulName, StringComparison.Ordinal)) return m.Id;
+        return -1;
+    }
+
+    /// <summary>
+    /// Ein anderer Modultyp fuer DIESEN Strang. „(Modul der Anlage)" nimmt die
+    /// Abweichung wieder heraus — der Rueckweg muss ausdruecklich moeglich sein, sonst
+    /// waere eine einmal gesetzte Abweichung nicht mehr aufzuheben.
+    /// </summary>
+    private Task BeiModul(StrangZeile s, int? stammId)
+    {
+        if (stammId is null or 0)
+        {
+            s.ModulId = 0;
+            s.ModulName = "";
+        }
+        else if (stammId.Value > 0 && ModulUebernehmen is not null)
+        {
+            GeraetWahl wahl = ModulUebernehmen(stammId.Value);
+            s.ModulId = wahl.Id;
+            s.ModulName = wahl.Name;
+        }
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task BeiGeraet(StrangZeile s, int? stammId)
+    {
+        if (stammId is null or 0)
+        {
+            s.WechselrichterId = 0;
+            s.WechselrichterName = "";
+        }
+        else if (GeraetUebernehmen is not null)
+        {
+            GeraetWahl wahl = GeraetUebernehmen(stammId.Value);
+            s.WechselrichterId = wahl.Id;
+            s.WechselrichterName = wahl.Name;
+        }
+
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    // =================================================================================
+    // W6-B-11: die Auslegungstemperaturen
+    // =================================================================================
+
+    /// <summary>
+    /// Ein geaenderter kalter Fall. ERST schreiben, DANN pruefen: Die Ampel holt sich
+    /// die Temperatur beim naechsten <see cref="Pruefen"/> aus der Huelle, und die
+    /// kennt sie erst nach <see cref="TemperaturenSetzen"/>.
+    /// </summary>
+    private Task BeiTKalt(double? wert)
+    {
+        _tKalt = wert;
+        return TemperaturUebernehmen();
+    }
+
+    /// <summary>Ein geaenderter heisser Fall — dieselbe Reihenfolge.</summary>
+    private Task BeiTHeiss(double? wert)
+    {
+        _tHeiss = wert;
+        return TemperaturUebernehmen();
+    }
+
+    private Task TemperaturUebernehmen()
+    {
+        // Eine Handeingabe ersetzt die Herleitung des letzten Vorschlags: Sie erklaerte
+        // Zahlen, die jetzt nicht mehr dastehen.
+        _temperatursatz = "";
+        TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Der Knopf „Vorschlag aus Klimadaten uebernehmen" (<b>W6‑B‑11</b>): Der Kern
+    /// rechnet, die Maske traegt die zwei Zahlen ein und zeigt die Herleitung. Gibt es
+    /// keinen Vorschlag, bleiben die Felder stehen und der Satz nennt den Grund.
+    /// </summary>
+    private Task TemperaturVorschlagen()
+    {
+        if (TemperaturenVorschlagen is null) return Task.CompletedTask;
+
+        Temperaturvorschlag v = TemperaturenVorschlagen(Zeile);
+        _temperatursatz = v.Satz;
+        if (!v.Moeglich) return Task.CompletedTask;
+
+        _tKalt = Math.Round(v.Kalt, 1, MidpointRounding.AwayFromZero);
+        _tHeiss = Math.Round(v.Heiss, 1, MidpointRounding.AwayFromZero);
+        TemperaturenSetzen?.Invoke(_tKalt, _tHeiss);
+        Nachpruefen();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Fragt den Pruefstand des Kerns; ohne Delegat bleibt die Ampel leer.</summary>
+    private void Nachpruefen()
+    {
+        _befund = Pruefen is null ? StrangBefund.Leer : Pruefen(Zeile, Zeile.Straenge);
+    }
+
+    private static string Ampelklasse(Ampelfarbe f) => f switch
+    {
+        Ampelfarbe.Rot => "epos-ampel--rot",
+        Ampelfarbe.Gelb => "epos-ampel--gelb",
+        _ => "epos-ampel--gruen"
+    };
+
+    private static string Chipklasse(Ampelfarbe f) => f switch
+    {
+        Ampelfarbe.Rot => "epos-chip--rot",
+        Ampelfarbe.Gelb => "epos-chip--warnung",
+        _ => "epos-chip--gruen"
+    };
+
+    /// <summary>
+    /// Der geerbte Anlagenwert als PLATZHALTER in Klammern (Konzept 7): Die Klammer
+    /// zeigt, dass der Wert von der Anlage kommt und nicht in dieser Zeile steht. Wer
+    /// hineinschreibt, macht das Teilfeld eigenstaendig; wer das Feld leert, erbt wieder.
+    /// </summary>
+    private static string Geerbt(int? anlagenwert)
+        => anlagenwert.HasValue
+            ? "(" + anlagenwert.Value.ToString(CultureInfo.CurrentCulture) + ")"
+            : "";
+
+    /// <summary>Die Zeile des Weges „vereinfacht" — mit dem Wirkungsgrad, der wirklich gilt.</summary>
+    private string VereinfachtText
+        => string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
+                         (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+
+    // =================================================================================
+    // Die Ueberlagerung mit den fuenf Anlagenwerten
+    // =================================================================================
+
+    private string Titel => string.Format(CultureInfo.CurrentCulture,
+                                          AnlagenTexte.DialogTitel, Zeile.Bezeichner);
+
+    /// <summary>Die DC/AC-Zeile der Ueberlagerung (Pruefhilfe fuer Tests).</summary>
+    public string DcAcText
+    {
+        get
+        {
+            if (!_nenn.HasValue || _nenn.Value <= 0.0 || KwpAnlage <= 0.0) return AnlagenTexte.DcAcOhne;
+            return string.Format(CultureInfo.CurrentCulture, AnlagenTexte.DcAc,
+                                 KwpAnlage, _nenn.Value, KwpAnlage / _nenn.Value);
+        }
+    }
+
+    private void Oeffnen()
+    {
+        _nenn = Zeile.WrNennleistungKw;
+        _eta10 = Zeile.WrEta10;
+        _eta50 = Zeile.WrEta50;
+        _eta100 = Zeile.WrEta100;
+        _offen = true;
+    }
+
+    /// <summary>OK uebernimmt die vier Werte (0 = nicht bekannt = NULL); Abbrechen verwirft sie.</summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        _offen = false;
+        if (!ok) return;
+        Zeile.WrNennleistungKw = Positiv(_nenn);
+        Zeile.WrEta10 = Positiv(_eta10);
+        Zeile.WrEta50 = Positiv(_eta50);
+        Zeile.WrEta100 = Positiv(_eta100);
+        await Geaendert.InvokeAsync();
+    }
+
+    private static double? Positiv(double? wert) => wert.HasValue && wert.Value > 0.0 ? wert : null;
+}

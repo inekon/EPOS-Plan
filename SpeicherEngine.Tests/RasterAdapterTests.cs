@@ -7,8 +7,9 @@ namespace SpeicherEngine.Tests
     /// <summary>
     /// Adaptertest des Arbeitspakets AP2 (Umsetzungskonzept 4, Fachkonzept 3.3):
     /// <see cref="RasterAdapter.ZuViertelstundenDouble"/> muss wertgleich zur
-    /// Wertwiederholung des Bestands sein, der Rueckweg
-    /// <see cref="RasterAdapter.ZuFloat"/> chartverlustfrei.
+    /// Wertwiederholung des Bestands sein, <see cref="RasterAdapter.Kopie"/> bitgleich.
+    /// Seit W8-O-5d (07.09.2026) rechnet EPOS-Plan durchgehend in <c>double</c>; die
+    /// frueheren Rueckwege <c>ZuFloat</c>/<c>ZuDouble</c> sind entfallen.
     /// </summary>
     public sealed class RasterAdapterTests
     {
@@ -22,9 +23,9 @@ namespace SpeicherEngine.Tests
         /// referenziert das Hauptprojekt bewusst nicht (COM-Referenzen, MSB4803),
         /// deshalb steht die Vergleichsfassung hier.
         /// </summary>
-        private static float[] BestandsExpansion(float[] stundenwerte)
+        private static double[] BestandsExpansion(double[] stundenwerte)
         {
-            float[] viertelstundenwerte = new float[stundenwerte.Length * 4];
+            double[] viertelstundenwerte = new double[stundenwerte.Length * 4];
             for (int i = 0; i < stundenwerte.Length; i++)
             {
                 viertelstundenwerte[i * 4] = stundenwerte[i];
@@ -39,21 +40,21 @@ namespace SpeicherEngine.Tests
         /// Synthetische Stundenreihe: gemischte Groessenordnungen und Vorzeichen,
         /// dazu die haeufigen Sonderfaelle 0 und exakte Zweierpotenzen.
         /// </summary>
-        private static float[] SyntheticheStundenreihe(int n = RasterAdapter.StundenJahr)
+        private static double[] SyntheticheStundenreihe(int n = RasterAdapter.StundenJahr)
         {
             var zufall = new Random(Seed);
-            float[] reihe = new float[n];
+            double[] reihe = new double[n];
             for (int i = 0; i < n; i++)
             {
                 switch (i % 7)
                 {
-                    case 0: reihe[i] = 0f; break;
-                    case 1: reihe[i] = (float)(zufall.NextDouble() * 1000.0); break;
-                    case 2: reihe[i] = (float)(zufall.NextDouble() * 1e-6); break;
-                    case 3: reihe[i] = (float)(-zufall.NextDouble() * 500.0); break;
-                    case 4: reihe[i] = 0.25f; break;
-                    case 5: reihe[i] = (float)(zufall.NextDouble() * 1e6); break;
-                    default: reihe[i] = (float)zufall.NextDouble(); break;
+                    case 0: reihe[i] = 0.0; break;
+                    case 1: reihe[i] = zufall.NextDouble() * 1000.0; break;
+                    case 2: reihe[i] = zufall.NextDouble() * 1e-6; break;
+                    case 3: reihe[i] = -zufall.NextDouble() * 500.0; break;
+                    case 4: reihe[i] = 0.25; break;
+                    case 5: reihe[i] = zufall.NextDouble() * 1e6; break;
+                    default: reihe[i] = zufall.NextDouble(); break;
                 }
             }
             return reihe;
@@ -68,8 +69,8 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void ZuViertelstundenDouble_Ist_Wertwiederholung_Wie_Im_Bestand()
         {
-            float[] stunden = SyntheticheStundenreihe();
-            float[] soll = BestandsExpansion(stunden);
+            double[] stunden = SyntheticheStundenreihe();
+            double[] soll = BestandsExpansion(stunden);
             double[] ist = RasterAdapter.ZuViertelstundenDouble(stunden);
 
             Assert.Equal(RasterAdapter.ViertelstundenJahr, ist.Length);
@@ -87,7 +88,7 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void ZuViertelstundenDouble_Legt_Jeden_Stundenwert_Auf_Vier_Intervalle()
         {
-            float[] stunden = SyntheticheStundenreihe();
+            double[] stunden = SyntheticheStundenreihe();
             double[] ist = RasterAdapter.ZuViertelstundenDouble(stunden);
 
             for (int i = 0; i < stunden.Length; i++)
@@ -103,7 +104,7 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void ZuViertelstundenDouble_Uebernimmt_Viertelstundenreihe_Eins_Zu_Eins()
         {
-            float[] viertel = SyntheticheStundenreihe(RasterAdapter.ViertelstundenJahr);
+            double[] viertel = SyntheticheStundenreihe(RasterAdapter.ViertelstundenJahr);
             double[] ist = RasterAdapter.ZuViertelstundenDouble(viertel);
 
             Assert.Equal(RasterAdapter.ViertelstundenJahr, ist.Length);
@@ -127,7 +128,7 @@ namespace SpeicherEngine.Tests
         [InlineData(35136)]    // Schaltjahr, viertelstuendlich
         public void ZuViertelstundenDouble_Lehnt_Andere_Laengen_Ab(int laenge)
         {
-            Assert.Throws<ArgumentException>(() => RasterAdapter.ZuViertelstundenDouble(new float[laenge]));
+            Assert.Throws<ArgumentException>(() => RasterAdapter.ZuViertelstundenDouble(new double[laenge]));
         }
 
         /// <summary><c>null</c> ist kein gueltiger Eingang.</summary>
@@ -135,8 +136,7 @@ namespace SpeicherEngine.Tests
         public void Adapter_Weist_Null_Ab()
         {
             Assert.Throws<ArgumentNullException>(() => RasterAdapter.ZuViertelstundenDouble(null!));
-            Assert.Throws<ArgumentNullException>(() => RasterAdapter.ZuDouble(null!));
-            Assert.Throws<ArgumentNullException>(() => RasterAdapter.ZuFloat(null!));
+            Assert.Throws<ArgumentNullException>(() => RasterAdapter.Kopie(null!));
             Assert.Throws<ArgumentNullException>(() => RasterAdapter.Addiere(null!, new double[1]));
             Assert.Throws<ArgumentNullException>(() => RasterAdapter.Addiere(new double[1], null!));
         }
@@ -144,50 +144,49 @@ namespace SpeicherEngine.Tests
         // ------------------------------------------------------------- Roundtrip
 
         /// <summary>
-        /// Der Rueckweg ist fuer Werte, die aus <c>float</c> stammen, verlustfrei:
-        /// <c>ZuFloat(ZuDouble(x)) == x</c> bitgleich.
+        /// <c>Kopie</c> gibt jeden Wert bitgleich zurueck - seit W8-O-5d ist das eine
+        /// reine Kopie, keine Umwandlung mehr (frueher <c>ZuFloat(ZuDouble(x))</c>).
         /// </summary>
         [Fact]
-        public void Roundtrip_Float_Double_Float_Erhaelt_Jeden_Wert()
+        public void Kopie_Erhaelt_Jeden_Wert_Bitgleich()
         {
-            float[] original = SyntheticheStundenreihe();
-            float[] zurueck = RasterAdapter.ZuFloat(RasterAdapter.ZuDouble(original));
+            double[] original = SyntheticheStundenreihe();
+            double[] zurueck = RasterAdapter.Kopie(original);
 
             Assert.Equal(original.Length, zurueck.Length);
             for (int i = 0; i < original.Length; i++)
-                Assert.True(BitConverter.SingleToInt32Bits(original[i]) ==
-                            BitConverter.SingleToInt32Bits(zurueck[i]),
+                Assert.True(BitConverter.DoubleToInt64Bits(original[i]) ==
+                            BitConverter.DoubleToInt64Bits(zurueck[i]),
                     "Intervall " + i + ": " + zurueck[i].ToString("R", CultureInfo.InvariantCulture) +
                     " statt " + original[i].ToString("R", CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// Auch ueber die Expansion hinweg bleibt der Chartweg verlustfrei:
-        /// <c>ZuFloat(ZuViertelstundenDouble(x))</c> ist bitgleich zur
-        /// Bestandsexpansion.
+        /// Auch ueber die Expansion hinweg bleibt der Weg verlustfrei:
+        /// <c>Kopie(ZuViertelstundenDouble(x))</c> ist bitgleich zur Bestandsexpansion.
         /// </summary>
         [Fact]
         public void Roundtrip_Ueber_Expansion_Trifft_Bestandsreihe()
         {
-            float[] stunden = SyntheticheStundenreihe();
-            float[] soll = BestandsExpansion(stunden);
-            float[] ist = RasterAdapter.ZuFloat(RasterAdapter.ZuViertelstundenDouble(stunden));
+            double[] stunden = SyntheticheStundenreihe();
+            double[] soll = BestandsExpansion(stunden);
+            double[] ist = RasterAdapter.Kopie(RasterAdapter.ZuViertelstundenDouble(stunden));
 
             Assert.Equal(soll.Length, ist.Length);
             for (int i = 0; i < soll.Length; i++)
-                Assert.True(BitConverter.SingleToInt32Bits(soll[i]) ==
-                            BitConverter.SingleToInt32Bits(ist[i]), "Intervall " + i);
+                Assert.True(BitConverter.DoubleToInt64Bits(soll[i]) ==
+                            BitConverter.DoubleToInt64Bits(ist[i]), "Intervall " + i);
         }
 
         /// <summary>Der Adapter kopiert - er reicht keine Referenz auf den Eingang durch.</summary>
         [Fact]
         public void Adapter_Kopiert_Statt_Zu_Verweisen()
         {
-            float[] stunden = new float[RasterAdapter.StundenJahr];
-            stunden[0] = 5f;
+            double[] stunden = new double[RasterAdapter.StundenJahr];
+            stunden[0] = 5.0;
 
             double[] viertel = RasterAdapter.ZuViertelstundenDouble(stunden);
-            stunden[0] = 99f;
+            stunden[0] = 99.0;
 
             Assert.Equal(5.0, viertel[0]);
             Assert.Equal(5.0, viertel[3]);

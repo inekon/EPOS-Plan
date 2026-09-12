@@ -1,0 +1,1501 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AngleSharp.Dom;
+using Bunit;
+using EPOS.UI.Dialoge.Photovoltaik;
+using EPOS.UI.Dienste;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.UI.Tests.Dialoge;
+
+/// <summary>
+/// Der EINE Geräteimport (Anwenderentscheid <b>W6‑O‑1</b> vom 06.09.2026) — beide
+/// Ausprägungen in einer Prüfklasse, weil sie eine Komponente sind.
+///
+/// <para><b>Herkunft der Fälle.</b> Die Abschnitte 1 bis 5 sind die 17 bunit-Fälle des
+/// abgelösten <c>PvModulImportDialog</c> (iU9‑W13.3, 594 Zeilen) — Soll ist weiterhin
+/// die Feldkarte von <c>Form_CECImport</c> (Klasse <c>Main_PV_Test</c>, 75
+/// Steuerelemente: zehn Gitterspalten, sechs Knöpfe, zwei Klapplisten, vier
+/// Zahlenfelder, drei Reiter mit 21 Textfeldern). Abschnitt 6 sind die Fälle des
+/// abgelösten <c>WechselrichterImportDialog</c> (W6‑E‑2/S1.5), Abschnitt 7 der neue
+/// OND-Zweig und Abschnitt 8 der Dateiweg der Auslieferungsliste (W6‑O‑3).</para>
+///
+/// <para>Die Kultur ist auf de-DE gepinnt: Die Erwartungswerte sind deutsche
+/// Beschriftungen, und der Windows-Läufer läuft mit englischer Oberfläche.</para>
+/// </summary>
+public class ModulImportDialogTests : EposBunitContext
+{
+    public ModulImportDialogTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    // =====================================================================
+    // Prüfstand
+    // =====================================================================
+
+    /// <summary>Drei CEC-Module mit steigender Leistung.</summary>
+    private static List<object> DreiModule()
+    {
+        return new List<object>
+        {
+            Cec("Ablytek 6MN6A270", "Ablytek", "Mono-c-Si", 270.643, 242.1, 1.627, 8.81, 30.72),
+            Cec("Ablytek 6MN6A400", "Ablytek", "Mono-c-Si", 400.0, 360.0, 2.0, 10.0, 40.0),
+            Cec("Trina TSM-650", "Trina Solar", "Multi-c-Si", 650.0, 600.0, 3.1, 17.27, 37.7)
+        };
+    }
+
+    private static UnifiedModule Cec(string name, string firma, string technologie,
+                                     double stc, double ptc, double flaeche,
+                                     double imp, double vmp)
+    {
+        var roh = new PVModule
+        {
+            Database = "CEC",
+            Name = name,
+            Manufacturer = firma,
+            Technology = technologie,
+            Bifacial = "0",
+            STC = stc,
+            PTC = ptc,
+            A_c = flaeche,
+            Length = 1.64,
+            Width = 0.992,
+            I_sc_ref = 9.34,
+            V_oc_ref = 38.63,
+            I_mp_ref = imp,
+            V_mp_ref = vmp,
+            alpha_sc = 0.00486614,
+            beta_oc = -0.121182,
+            gamma_pmp = -0.4509,
+            T_NOCT = 47.4,
+            Date = 2024
+        };
+        return UnifiedModule.FromPanCec(roh);
+    }
+
+    /// <summary>Ein PAN-Modul — es führt keine Temperaturkoeffizienten und kein NOCT.</summary>
+    private static UnifiedModule Pan()
+    {
+        var pan = new PanModule
+        {
+            Manufacturer = "Trina Solar",
+            Model = "TSM-650DEG21C.20",
+            Technol = "mtSiMono",
+            PNom = 650,
+            Isc = 18.35,
+            Voc = 45.5,
+            Imp = 17.27,
+            Vmp = 37.7,
+            muPmpReq = -0.34,
+            Width = 1.303,
+            Height = 2.384,
+            BifacialityFactor = 0.70,
+            YearBegin = 2020
+        };
+        var svc = new PanDataService();
+        svc.Aufnehmen(pan);
+        return UnifiedModule.FromPanCec(svc.AllModules[0]);
+    }
+
+    /// <summary>Ein Gerät der CEC-Wechselrichterliste.</summary>
+    private static CecWechselrichter Geraet(string name, double paco, double pdco = 0)
+    {
+        return new CecWechselrichter
+        {
+            Name = name,
+            Paco = paco,
+            Pdco = pdco > 0 ? pdco : paco * 1.05,
+            Pso = paco * 0.006,
+            Vdco = 340,
+            C0 = -8.0e-06,
+            Pnt = 0.1,
+            Vdcmax = 600,
+            Idcmax = 12,
+            MpptLow = 100,
+            MpptHigh = 480,
+            CecDatum = "2024-01-01"
+        };
+    }
+
+    private static List<object> DreiGeraete() => new List<object>
+    {
+        Geraet("Alpha AG: A-3000", 3000),
+        Geraet("Alpha AG: A-5000", 5000),
+        Geraet("Beta GmbH: B-10000", 10000)
+    };
+
+    /// <summary>Das Muster 2500TL aus Anhang A des Konzepts, als OND-Satz.</summary>
+    private static OndWechselrichter Ond()
+    {
+        return OndWechselrichterDienst.Zerlege(
+            File.ReadAllText(Probe("ond_muster_2500tl.ond"), AnsiEncoding.Get()),
+            "ond_muster_2500tl.ond");
+    }
+
+    /// <summary>
+    /// Die Importprobe unter <c>Referenzlaeufe/Importproben</c> — dasselbe
+    /// Aufwärtssuchen wie in <c>KatalogImportTests</c>.
+    /// </summary>
+    private static string Probe(string name)
+    {
+        var d = new DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+        {
+            string kandidat = Path.Combine(d.FullName, "Referenzlaeufe", "Importproben", name);
+            if (File.Exists(kandidat)) return kandidat;
+        }
+
+        Assert.Fail("Die Importprobe " + name + " wurde nicht gefunden.");
+        return "";
+    }
+
+    private IRenderedComponent<ModulImportDialog> Bauen(
+        ModulImportArt art = ModulImportArt.Photovoltaik,
+        List<object>? saetze = null,
+        string quelle = "CEC",
+        Func<object, Task<ImportVorpruefung>>? vorpruefen = null,
+        Func<object, string, Task<bool>>? anlegen = null,
+        Func<object, int, Task<bool>>? ueberschreiben = null,
+        Func<ImportQuelle, Task<string?>>? dateiWaehlen = null,
+        Func<ImportQuelle, string, Task<ImportLeseErgebnis>>? dateiLaden = null,
+        Action<bool>? geschlossen = null,
+        Func<ImportQuelle, Task<IReadOnlyList<string>>>? dateienWaehlen = null)
+    {
+        var wege = new ModulImportWege
+        {
+            DateienWaehlen = dateienWaehlen,
+            Netz = (_, __, ___) => Task.FromResult(new ImportLeseErgebnis(
+                true, saetze ?? new List<object>(),
+                new CecFortschritt("CEC_MSG_GELADEN", "3"))),
+            DateiWaehlen = dateiWaehlen,
+            DateiLaden = dateiLaden,
+            Vorpruefen = vorpruefen,
+            Anlegen = anlegen,
+            Ueberschreiben = ueberschreiben,
+            Meldungstext = Uebersetzen
+        };
+
+        return Render<ModulImportDialog>(p => p
+            .Add(x => x.Art, art)
+            .Add(x => x.Quelle, quelle)
+            .Add(x => x.Wege, wege)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+    }
+
+    private static string Uebersetzen(CecFortschritt f)
+    {
+        string vorlage = WindowsFormsApplication1.MyResource.Resource
+            .ResourceManager.GetString(f.Schluessel ?? "") ?? f.Schluessel ?? "";
+        return f.Werte.Length == 0
+            ? vorlage
+            : string.Format(CultureInfo.CurrentCulture, vorlage, f.Werte);
+    }
+
+    private static IElement Knopf(IRenderedComponent<ModulImportDialog> cut, string teil)
+        => cut.FindAll("button").First(b => b.TextContent.Contains(teil));
+
+    /// <summary>Der Anfang der Treffermeldung — beide Ausprägungen teilen ihn.</summary>
+    private const string GEFUNDEN = "Filter Auswahl (";
+
+    /// <summary>Die GEZEICHNETE Statuszeile des Dialogs.</summary>
+    private static string Statuszeile(IRenderedComponent<ModulImportDialog> cut)
+        => cut.Find(".epos-pvimport-status").TextContent;
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines Ladewegs: Die Statuszeile trägt die
+    /// Trefferzahl („Filter Auswahl (n … gefunden)") statt der Bereitmeldung, und die
+    /// Quellenknöpfe sind wieder bedienbar (<c>_laeuft</c> ist zurück auf <c>false</c>).
+    ///
+    /// <para><b>W6‑B‑2‑O‑1: bunits synchrone Ereignisse warten NICHT.</b> <c>Click()</c>
+    /// und <c>Change()</c> geben das Ereignis nur beim Zeichner ab; nur die
+    /// <c>…Async</c>-Fassungen liefern laut bunit-Dokumentation „a task that completes
+    /// when the event handler is done". Der Zeichnerfaden
+    /// (<c>RendererSynchronizationContext</c>) führt das Ereignis auf dem Prüffaden aus,
+    /// SOLANGE seine Warteschlange frei ist; liegt dort schon ein Werkstück — nach dem
+    /// Laden regelmäßig das <c>OnAfterRenderAsync</c> von QuickGrid und
+    /// <c>Virtualize</c>, das der Ladegang selbst auslöst, sobald die Zeilenzahl die
+    /// Schwelle <c>VIRTUALISIEREN_AB</c> überschreitet —, wird das Ereignis EINGEREIHT,
+    /// und die nächste Zeile des Falls liest den Stand VOR dem Ereignis.
+    /// Verloren ging der Wettlauf im Kern-Lauf <b>216</b>
+    /// (<c>Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers</c>,
+    /// „Expected 5, Actual 155" — genau die ungefilterte Zeilenzahl); derselbe Commit
+    /// war im Lauf 215 grün. Gemessen mit dem WÖRTLICHEN Prüfstand unter Rechenlast:
+    /// altes Muster 68 bis 95 von 400 Läufen rot (zwei Messreihen), neues 0 von 400.</para>
+    /// </summary>
+    private static void Geladen(IRenderedComponent<ModulImportDialog> cut)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Contains(GEFUNDEN, Statuszeile(cut));
+            Assert.False(cut.Find(".epos-leiste .epos-knopf--primaer").HasAttribute("disabled"));
+        });
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Stand nach einem Filterschritt: <paramref name="zeilen"/>
+    /// sichtbare Zeilen, und die Statuszeile trägt dieselbe Zahl. Begründung wie bei
+    /// <see cref="Geladen"/> — auch <c>Change()</c> und <c>Input()</c> kehren zurück,
+    /// ohne dass der Behandler gelaufen sein muss.
+    /// </summary>
+    /// <summary>
+    /// Setzt den Filter einer Spalte über ihren TRICHTER (Stufe S3.4). Er ersetzt die
+    /// zwei Klapplisten und die ein bis zwei von/bis-Paare: <paramref name="trichter"/>
+    /// zählt die Spalten von links (die Wahlspalte trägt keinen),
+    /// <paramref name="ausdruck"/> ist „enthält…" bzw. ein <c>Zahlenausdruck</c>.
+    /// </summary>
+    private static void Spaltenfilter(IRenderedComponent<ModulImportDialog> cut,
+                                      int trichter, string ausdruck)
+    {
+        cut.FindAll(".epos-trichter")[trichter].Click();
+        cut.Find(".epos-spaltenfilter input").Change(ausdruck);
+    }
+
+    /// <summary>Tippt in das EINE Suchfeld über allen Spalten (Stufe S3.4).</summary>
+    private static void Suchen(IRenderedComponent<ModulImportDialog> cut, string text)
+        => cut.Find(".epos-katalog-suchzeile input").Input(text);
+
+    private static void Gefiltert(IRenderedComponent<ModulImportDialog> cut, int zeilen)
+        => cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(zeilen, cut.Instance.SichtbareZeilen);
+            Assert.Contains("(" + zeilen + " ", Statuszeile(cut));
+        });
+
+    /// <summary>„CEC laden" — Klick UND Warten auf den gezeichneten Abschluss.</summary>
+    private static void CecLaden(IRenderedComponent<ModulImportDialog> cut)
+    {
+        Knopf(cut, "CEC laden").Click();
+        Geladen(cut);
+    }
+
+    /// <summary>
+    /// Der erste Quellenknopf der Leiste — der Netzabruf, mit demselben Warten
+    /// (<see cref="Geladen"/>).
+    /// </summary>
+    private static void Laden(IRenderedComponent<ModulImportDialog> cut)
+    {
+        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
+        Geladen(cut);
+    }
+
+    /// <summary>Der Knopf „Übernehmen" der Fußleiste.</summary>
+    private static IElement Uebernehmen(IRenderedComponent<ModulImportDialog> cut)
+        => cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[0];
+
+    /// <summary>
+    /// Wartet auf den GEZEICHNETEN Abschluss eines Schreibgangs: Der Wirt hat gemeldet.
+    /// <c>Schreibgang</c> ist <c>async</c> und läuft über <c>Vorpruefen</c> und
+    /// <c>Anlegen</c> — dieselbe Regel und dieselbe Begründung wie bei
+    /// <see cref="Geladen"/> (W6‑B‑2‑O‑1).
+    /// </summary>
+    private static void Gemeldet(IRenderedComponent<ModulImportDialog> cut, string text)
+        => cut.WaitForAssertion(() => Assert.Contains(text, cut.Instance.Meldung));
+
+    /// <summary>
+    /// Wartet auf die GEZEICHNETE Überlagerung, in die ein Schreibgang abgezweigt ist
+    /// (Konfliktdialog oder Rückfrage). Begründung wie bei <see cref="Geladen"/>.
+    /// </summary>
+    private static void Ueberlagert(IRenderedComponent<ModulImportDialog> cut, string wahl)
+        => cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(wahl)));
+
+    // =====================================================================
+    // 1 — Feldbestand
+    // =====================================================================
+
+    /// <summary>
+    /// Die zehn Gitterspalten, die drei Reiter, die Quellenknöpfe und die Filterleiste —
+    /// wörtlich die Feldkarte des Vorläufers, ergänzt um die dritte Quelle „CEC-Datei"
+    /// (W6‑O‑3).
+    /// </summary>
+    [Fact]
+    public void Die_Maske_zeigt_ihre_Spalten_Reiter_und_Filter()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        dateiWaehlen: _ => Task.FromResult<string?>(""),
+                        dateiLaden: (_, __) => Task.FromResult(
+                            new ImportLeseErgebnis(true, new List<object>(),
+                                                   new CecFortschritt("PAN_MSG_GELESEN", "0"))));
+        CecLaden(cut);
+
+        Assert.Equal("Photovoltaik Module Import", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Contains("Import - CEC und PAN Module", cut.Markup);
+
+        string kopf = cut.Find("thead").TextContent;
+        foreach (string spalte in new[]
+                 { "Quelle", "Modulname", "Hersteller", "Technologie", "Pmp (W)",
+                   "Effizienz (%)", "Isc [A]", "Bifazial", "Voc [V]", "Jahr" })
+            Assert.Contains(spalte, kopf);
+
+        Assert.Contains("📋 Übersicht", cut.Markup);
+        Assert.Contains("⚡ Elektrisch", cut.Markup);
+        Assert.Contains("🌡 Thermisch", cut.Markup);
+
+        Assert.Contains("🌐 CEC laden", cut.Markup);
+        Assert.Contains("📄 CEC-Datei laden", cut.Markup);
+        Assert.Contains("🌿 PAN laden", cut.Markup);
+        Assert.Contains("✖ Zurücksetzen", cut.Markup);
+        Assert.Contains("✔ Auswahl übernehmen", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die vier Zahlenfelder und ihre Vorbelegung sind mit Stufe S3.4 entfallen</b>
+    /// (0…999 W, 0…50 %). Ihre AUFGABE bleibt: Leistung und Effizienz sind
+    /// ZAHLENspalten mit Trichter, und darin steht ein <c>Zahlenausdruck</c>
+    /// („&gt;300", „300..500") statt zweier Felder. Der Gewinn ist nicht nur Platz —
+    /// die Größe ist jetzt auch SICHTBAR, wonach gefiltert wird.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Groessen_sind_Zahlenspalten_statt_Feldpaare()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        // Keine Filterleiste mehr - und kein Zahlenfeld.
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-katalogliste input[inputmode]"));
+
+        // Zehn Spalten, alle mit Trichter.
+        Assert.Equal(10, cut.FindAll(".epos-raster thead .epos-trichter").Count);
+
+        // Und der Zahlenausdruck wirkt auf die Leistung: 270,6 | 400 | 651,1 W
+        Spaltenfilter(cut, 4, ">300");
+        Gefiltert(cut, 2);
+    }
+
+    /// <summary>
+    /// Ohne Dateiwähler bleiben die zwei DATEIQUELLEN weg — kein Delegat, kein Knopf.
+    /// Der Netzabruf bleibt, er braucht keinen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Dateiwaehler_gibt_es_die_Dateiknoepfe_nicht()
+    {
+        string ohne = Bauen(saetze: DreiModule()).Markup;
+        Assert.DoesNotContain("PAN laden", ohne);
+        Assert.DoesNotContain("CEC-Datei laden", ohne);
+        Assert.Contains("CEC laden", ohne);
+
+        string mit = Bauen(saetze: DreiModule(),
+                           dateiWaehlen: _ => Task.FromResult<string?>(""),
+                           dateiLaden: (_, __) => Task.FromResult(
+                               new ImportLeseErgebnis(true, new List<object>(),
+                                                      new CecFortschritt("PAN_MSG_GELESEN", "0")))).Markup;
+        Assert.Contains("PAN laden", mit);
+        Assert.Contains("CEC-Datei laden", mit);
+    }
+
+    /// <summary>Die Statuszeile des Vorläufers, wörtlich.</summary>
+    [Fact]
+    public void Die_Statuszeile_meldet_bereit_und_dann_die_Trefferzahl()
+    {
+        var cut = Bauen(saetze: DreiModule());
+
+        Assert.Contains("Bereit. Bitte CEC Datenbank oder PAN Datei laden.", cut.Markup);
+
+        CecLaden(cut);
+
+        Assert.Contains("Filter Auswahl (3 Module gefunden)", cut.Markup);
+    }
+
+    // =====================================================================
+    // 2 — Filter
+    // =====================================================================
+
+    [Fact]
+    public void Nach_dem_Laden_stehen_die_Module_im_Gitter()
+    {
+        var cut = Bauen(saetze: DreiModule());
+
+        CecLaden(cut);
+
+        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Assert.Contains("Ablytek 6MN6A270", cut.Find("tbody").TextContent);
+        Assert.Contains("Trina TSM-650", cut.Find("tbody").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Aus der Herstellerklappliste ist ein Spaltenfilter „enthält…" geworden</b>
+    /// (Stufe S3.4). Damit ist auch die Frage nach dem STEUERWERT „(alle)" erledigt,
+    /// die den Vorläufer beschäftigte (Befund W13‑B39): Ein leerer Ausdruck IST
+    /// „alle" — es gibt keinen Anzeigetext mehr, gegen den verglichen würde und den
+    /// eine Übersetzung still zerreißen könnte.
+    ///
+    /// <para>Und er kann etwas, das die Klappliste nie konnte: einen NAMENSTEIL.
+    /// Bei 258 Herstellern der CEC-Liste ist das der Unterschied zwischen Suchen
+    /// und Finden.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Herstellerfilter_ist_eine_Spalte_mit_Trichter()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        // Trichter 2 ist die Spalte "Hersteller" (nach Quelle und Modulname).
+        Spaltenfilter(cut, 2, "Trina");
+        Gefiltert(cut, 1);
+        Assert.Contains("Trina TSM-650", cut.Find("tbody").TextContent);
+
+        Spaltenfilter(cut, 2, "");
+        Gefiltert(cut, 3);
+    }
+
+    /// <summary>
+    /// Die Suche ist eine PLATZHALTERSUCHE über <c>Suchmuster</c> — der Kern
+    /// führt sie seit W9; der Vorläufer brachte eine dritte Fassung mit
+    /// (Befund W13-B41, Abweichung A-23).
+    /// </summary>
+    [Fact]
+    public void Die_Suche_kennt_Platzhalter()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        // S3.4: Es ist das EINE Suchfeld der Katalogliste - dieselben Platzhalter,
+        // denn Katalogfilter ruft dasselbe Suchmuster.
+        Suchen(cut, "Ablytek*");
+        Gefiltert(cut, 2);
+
+        Suchen(cut, "*650*");
+        Gefiltert(cut, 1);
+
+        // Ohne Platzhalter ist es eine Teilsuche.
+        Suchen(cut, "6MN");
+        Gefiltert(cut, 2);
+    }
+
+    /// <summary>
+    /// Der Leistungsfilter rechnet mit <c>I_mp · V_mp</c>, und eine Obergrenze
+    /// von 0 zählt als „keine Obergrenze" — wörtlich <c>ApplyFilter</c> :228.
+    /// </summary>
+    [Fact]
+    public void Der_Leistungsfilter_rechnet_mit_Imp_mal_Vmp()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        // 8,81 * 30,72 = 270,6 | 10 * 40 = 400 | 17,27 * 37,7 = 651,1
+        // S3.4: EIN Zahlenausdruck in der Spalte statt zweier Felder. Die Regel
+        // "Obergrenze 0 heisst keine Obergrenze" braucht es damit nicht mehr -
+        // ">=300" IST der offene Bereich.
+        Spaltenfilter(cut, 4, ">=300");
+        Gefiltert(cut, 2);
+
+        Spaltenfilter(cut, 4, "300..500");
+        Gefiltert(cut, 1);
+
+        Spaltenfilter(cut, 4, ">=300");
+        Gefiltert(cut, 2);
+    }
+
+    /// <summary>
+    /// „Zurücksetzen" gibt die Liste wieder frei — Suche UND Spaltenfilter. Er
+    /// bleibt als eigener Knopf neben dem „Filter zurücksetzen" der Katalogliste
+    /// stehen, weil nur ER auch die WAHL leert (W6‑E‑5).
+    /// </summary>
+    [Fact]
+    public void Zuruecksetzen_gibt_die_Liste_wieder_frei()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        Suchen(cut, "Trina*");
+        Gefiltert(cut, 1);
+
+        Spaltenfilter(cut, 2, "Trina");
+        Gefiltert(cut, 1);
+
+        Knopf(cut, "Zurücksetzen").Click();
+
+        Gefiltert(cut, 3);
+        Assert.Equal("", cut.Find(".epos-katalog-suchzeile input").GetAttribute("value"));
+    }
+
+    // =====================================================================
+    // 3 — Die 21 Detailfelder
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick füllt die drei Reiter. Die Quellenweiche liegt seit W13.0j am
+    /// Modell und nicht mehr als dreizehn Ternäre im Anzeigecode (Befund
+    /// W13-B43); seit W6‑O‑1 baut das PROFIL die Werte, und die Maske zeigt nur
+    /// noch, was in der Zeile steht.
+    /// </summary>
+    [Fact]
+    public void Ein_Klick_fuellt_die_Detailfelder()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        Assert.NotNull(cut.Instance.Gewaehlt);
+        Assert.Equal("Ablytek 6MN6A270", ((UnifiedModule)cut.Instance.Gewaehlt!).Name);
+
+        string uebersicht = cut.Find(".epos-formularraster").TextContent;
+        Assert.Contains("Modulname:", uebersicht);
+        Assert.Contains("Fläche [m²]:", uebersicht);
+
+        var felder = cut.FindAll(".epos-formularraster input");
+        Assert.Equal("Ablytek 6MN6A270", felder[0].GetAttribute("value"));
+        Assert.Equal("Ablytek", felder[1].GetAttribute("value"));
+        Assert.Equal("1,63", felder[6].GetAttribute("value"));    // Flaeche A_c
+    }
+
+    /// <summary>
+    /// <b>Ein PAN-Modul zeigt „-" für die Werte, die es nicht führt</b> — wörtlich
+    /// wie <c>ShowDetail</c> :425‑427 und :438. Die PTC-Leistung wird dagegen
+    /// GESCHÄTZT (Befund W13-B43).
+    /// </summary>
+    [Fact]
+    public void Ein_PAN_Modul_zeigt_Strich_wo_es_nichts_fuehrt()
+    {
+        var cut = Bauen(saetze: new List<object> { Pan() });
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        // Reiter "Elektrisch" oeffnen
+        cut.FindAll("[role='tab']")[1].Click();
+
+        var felder = cut.FindAll(".epos-formularraster input");
+        Assert.Equal("-", felder[5].GetAttribute("value"));    // alpha_Isc
+        Assert.Equal("-", felder[6].GetAttribute("value"));    // beta_Voc
+        Assert.Equal("-0,3400", felder[7].GetAttribute("value"));  // gamma_pmp = muPmpReq
+        Assert.Equal("650,00", felder[8].GetAttribute("value"));   // STC = PNom
+        Assert.Equal("605,80", felder[9].GetAttribute("value"));   // PTC geschaetzt
+
+        cut.FindAll("[role='tab']")[2].Click();
+        Assert.Equal("-", cut.FindAll(".epos-formularraster input")[0].GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Der Bifazialtext ist ein ÜBERSETZTER Text und kein deutsches Literal des
+    /// Kerns (Befund W13-B50, Abweichung A-18). Er entsteht seit W6‑O‑1 im Profil —
+    /// das die Hülle bzw. die Komponente mit dem Übersetzer baut, so dass er
+    /// weiterhin in der Sprache der Oberfläche steht.
+    /// </summary>
+    [Fact]
+    public void Der_Bifazialtext_steht_in_der_Sprache_der_Oberflaeche()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        Assert.Contains("Nein", cut.Find("tbody").TextContent);
+        var felder = cut.FindAll(".epos-formularraster input");
+        Assert.Equal("Nein", felder[5].GetAttribute("value"));
+    }
+
+    // =====================================================================
+    // 4 — Übernehmen
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Auswahl_meldet_die_Uebernahme_sich()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        vorpruefen: _ => Task.FromResult(Vorpruefung(ImportBefund.Neu)));
+        CecLaden(cut);
+
+        Knopf(cut, "Auswahl übernehmen").Click();
+
+        Gemeldet(cut, "Bitte ein PV-Modul selektieren!");
+    }
+
+    /// <summary>
+    /// Ein neuer Bezeichner geht ohne Konfliktdialog durch und meldet sich —
+    /// der Dialog bleibt OFFEN, weil er ein Katalogfenster ist, aus dem der
+    /// Anwender mehrere Module nacheinander übernimmt.
+    /// </summary>
+    [Fact]
+    public void Ein_neues_Modul_wird_ohne_Rueckfrage_angelegt()
+    {
+        string? angelegt = null;
+        var cut = Bauen(saetze: DreiModule(),
+            vorpruefen: _ => Task.FromResult(Vorpruefung(ImportBefund.Neu)),
+            anlegen: (_, name) => { angelegt = name; return Task.FromResult(true); });
+
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Auswahl übernehmen").Click();
+
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
+        Assert.Equal("Ablytek 6MN6A270", angelegt);
+        Assert.Empty(cut.FindAll("[role='dialog']"));
+    }
+
+    /// <summary>
+    /// Ein Namenskonflikt öffnet den Konfliktdialog als ÜBERLAGERUNG — kein
+    /// zweites Fenster (Risiko R2).
+    /// </summary>
+    [Fact]
+    public void Ein_Namenskonflikt_oeffnet_die_Ueberlagerung()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+            vorpruefen: _ => Task.FromResult(Vorpruefung(ImportBefund.NameVorhanden)),
+            ueberschreiben: (_, __) => Task.FromResult(true));
+
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Auswahl übernehmen").Click();
+
+        Ueberlagert(cut, "[role='dialog']");
+        Assert.Single(cut.FindAll("[role='dialog']"));
+        Assert.Contains("Import: Konflikte prüfen", cut.Markup);
+    }
+
+    [Fact]
+    public void Ein_Schreibfehler_wird_gemeldet()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+            vorpruefen: _ => Task.FromResult(Vorpruefung(ImportBefund.Neu)),
+            anlegen: (_, __) => Task.FromResult(false));
+
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Auswahl übernehmen").Click();
+
+        Gemeldet(cut, "Fehler beim Speichern des Datensatzes!");
+    }
+
+    // =====================================================================
+    // 5 — PAN und Tastatur
+    // =====================================================================
+
+    /// <summary>
+    /// „PAN laden" wählt eine Datei und nimmt sie in die Sitzungsliste auf.
+    /// Der Vorläufer verwarf das Ergebnis von <c>ParsePan</c> und verließ sich
+    /// auf eine STATISCHE Nebenwirkung (Befunde W13-B45 und B46).
+    /// </summary>
+    [Fact]
+    public void PAN_laden_nimmt_die_Datei_auf()
+    {
+        string? gelesen = null;
+        ImportQuelle? benutzt = null;
+
+        var cut = Bauen(saetze: new List<object>(),
+            dateiWaehlen: q => { benutzt = q; return Task.FromResult<string?>(@"D:\module\trina.pan"); },
+            dateiLaden: (q, pfad) =>
+            {
+                gelesen = pfad;
+                return Task.FromResult(new ImportLeseErgebnis(
+                    true, new List<object> { Pan() },
+                    new CecFortschritt("PAN_MSG_GELESEN", "1")));
+            });
+
+        Knopf(cut, "PAN laden").Click();
+        Geladen(cut);
+
+        Assert.Equal(@"D:\module\trina.pan", gelesen);
+        Assert.Equal(ModulImportProfil.QuellePan, benutzt!.Schluessel);
+        Assert.Equal("(*.pan)|*.pan", benutzt.Dateifilter);
+        Assert.Equal("PAN", benutzt.Unterordner);
+        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        Assert.Contains("PAN", cut.Find("tbody").TextContent);
+    }
+
+    [Fact]
+    public void Ein_Lesefehler_erscheint_als_Warnbanner()
+    {
+        var cut = Bauen(saetze: new List<object>(),
+            dateiWaehlen: _ => Task.FromResult<string?>(@"D:\module\kaputt.pan"),
+            dateiLaden: (_, __) => Task.FromResult(new ImportLeseErgebnis(
+                false, null, new CecFortschritt("PAN_MSG_LESEFEHLER", "Zugriff verweigert"))));
+
+        Knopf(cut, "PAN laden").Click();
+
+        // Der FEHLERWEG setzt keine Statuszeile - er zeichnet ein Warnbanner. Also
+        // wartet der Fall auf das gezeichnete Banner statt auf die Trefferzahl
+        // (Begruendung bei Geladen, W6-B-2-O-1).
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Zugriff verweigert", cut.Find("[role='alert']").TextContent));
+        Assert.Contains("Zugriff verweigert", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Esc_schliesst_den_Dialog()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(saetze: DreiModule(), geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    /// <summary>
+    /// Der Rückgabewert sagt, ob etwas geschrieben wurde. Der Vorläufer setzte
+    /// nie ein <c>DialogResult</c>, und seine beiden Aufrufer werteten nichts aus.
+    /// </summary>
+    [Fact]
+    public void Der_Rueckgabewert_sagt_ob_geschrieben_wurde()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(saetze: DreiModule(),
+            vorpruefen: _ => Task.FromResult(Vorpruefung(ImportBefund.Neu)),
+            anlegen: (_, __) => Task.FromResult(true),
+            geschlossen: b => ergebnis = b);
+
+        CecLaden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Auswahl übernehmen").Click();
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        cut.WaitForAssertion(() => Assert.True(ergebnis));
+    }
+
+    /// <summary>
+    /// Die drei Detailreiter stehen im Formularraster; der handgebaute Kasten
+    /// <c>epos-pvimport-details</c> ist fort. Die zwei FILTERLEISTEN über dem Gitter
+    /// bleiben Leisten — sie sind kein Formularblock.
+    ///
+    /// <para>Geprüft wird das MARKUP: Der Block trägt <c>epos-formularraster</c>, und
+    /// darin stehen Felder. Was der Raster daraus MACHT, steht als Stilblattprobe in
+    /// <c>FormularrasterTests</c> — eine bunit-Probe rechnet kein CSS aus
+    /// (Lehre W6‑B‑1).</para>
+    /// </summary>
+    [Fact]
+    public void Die_Detailfelder_stehen_im_Formularraster()
+    {
+        var cut = Bauen(saetze: DreiModule());
+
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+
+        // S3.4: Die zwei Filterleisten sind gefallen - und die Katalogliste ist
+        // KEIN Formularraster geworden.
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
+        Assert.Empty(cut.FindAll(".epos-katalog-suchzeile .epos-formularraster"));
+    }
+
+    // =====================================================================
+    // 6 — Die zweite Ausprägung: Wechselrichter aus der CEC-Liste
+    // =====================================================================
+
+    /// <summary>
+    /// Vor dem Laden ist das Raster leer; „CEC-Liste laden" füllt es und meldet die
+    /// Zahl der Treffer. Der Titel nennt seit dem OND-Zweig beide Quellen.
+    /// </summary>
+    [Fact]
+    public void Der_Import_laedt_die_Liste_in_das_Raster()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+
+        Assert.Equal("Wechselrichter einlesen (CEC und OND)",
+                     cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(0, cut.Instance.SichtbareZeilen);
+
+        Laden(cut);
+
+        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+        Assert.Contains("Filter Auswahl (3 Geräte gefunden)", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die Ausprägung entscheidet den Spaltensatz</b> (W6‑O‑1): sieben Spalten
+    /// statt zehn, mit AC-Nennleistung, Euro-Wirkungsgrad und MPP-Fenster — und ohne
+    /// Technologieklappliste, denn ein Wechselrichter hat keine.
+    /// </summary>
+    [Fact]
+    public void Die_Wechselrichter_Auspraegung_traegt_ihren_eigenen_Spaltensatz()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+        Laden(cut);
+
+        string kopf = cut.Find("thead").TextContent;
+        foreach (string spalte in new[]
+                 { "Quelle", "Gerät", "Hersteller", "P_AC [kW]", "η euro",
+                   "MPP-Fenster [V]", "U_dc max [V]" })
+            Assert.Contains(spalte, kopf);
+
+        Assert.DoesNotContain("Bifazial", kopf);
+
+        // S3.4: SIEBEN Spalten mit Trichter - keine Klappliste, kein Zahlenfeld.
+        Assert.Equal(7, cut.FindAll(".epos-raster thead .epos-trichter").Count);
+        Assert.Empty(cut.FindAll(".epos-pvimport-filter"));
+    }
+
+    /// <summary>
+    /// Die Filterleiste: Herstellerwahl und Suchmuster engen ein, „Zurücksetzen" gibt
+    /// die Liste wieder frei. Der erste Eintrag der Herstellerliste ist ein
+    /// STEUERWERT und kein Anzeigetext, gegen den verglichen wird.
+    /// </summary>
+    [Fact]
+    public void Der_Import_filtert_nach_Hersteller_und_Suchmuster()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+        Laden(cut);
+
+        // S3.4: Der Hersteller ist Spalte 2 - "Alpha" trifft die zwei Geraete.
+        Spaltenfilter(cut, 2, "Alpha");
+        Gefiltert(cut, 2);
+
+        // Suche UND Spaltenfilter gelten gleichzeitig: "*10000*" liegt bei Beta.
+        Suchen(cut, "*10000*");
+        Gefiltert(cut, 0);
+
+        Knopf(cut, "Zurücksetzen").Click();
+        Gefiltert(cut, 3);
+    }
+
+    /// <summary>
+    /// Die Wahl einer Zeile füllt die Detailfelder — und die Kennlinie steht als
+    /// gerechnete Stützstelle da, nicht als Rohwert der Datei.
+    /// </summary>
+    [Fact]
+    public void Eine_gewaehlte_Zeile_zeigt_ihre_gerechnete_Kennlinie()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+        Laden(cut);
+
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        Assert.NotNull(cut.Instance.Gewaehlt);
+
+        var g = (CecWechselrichter)cut.Instance.Gewaehlt!;
+        Assert.Equal("Alpha AG: A-3000", g.Name);
+
+        // Der Pruefwert aus Konzept 3.3.3: eta bei Nennlast ist Paco/Pdco.
+        double?[] etas = g.Stuetzstellen();
+        Assert.Equal(3000.0 / (3000.0 * 1.05), etas[5]!.Value, 12);
+
+        // ... und genau das steht im Reiter "Wirkungsgrad" (F4).
+        cut.FindAll("[role='tab']")[1].Click();
+        Assert.Equal(etas[5]!.Value.ToString("F4", CultureInfo.CurrentCulture),
+                     cut.FindAll(".epos-formularraster input")[5].GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// „Übernehmen" ohne Auswahl ist gesperrt; mit Auswahl geht der Satz an den
+    /// Schreibweg — und zwar unter seinem Bezeichner.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_ohne_Auswahl_meldet_sich()
+    {
+        string? angelegt = null;
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt = name; return Task.FromResult(true); });
+
+        Laden(cut);
+
+        Assert.True(Uebernehmen(cut).HasAttribute("disabled"));
+
+        cut.FindAll(".epos-anlagenwahl")[1].Click();
+        Uebernehmen(cut).Click();
+
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
+        Assert.Equal("Alpha AG: A-5000", angelegt);
+    }
+
+    /// <summary>
+    /// <b>Ein Plausibilitätsfehler SPERRT die Übernahme</b>, eine Warnung fragt
+    /// zurück — dieselbe Zweiteilung wie beim Modulimport, und seit W6‑O‑1
+    /// derselbe Programmcode.
+    /// </summary>
+    [Fact]
+    public void Ein_Plausibilitaetsfehler_sperrt_die_Uebernahme()
+    {
+        string? angelegt = null;
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(
+                new ImportVorpruefung(ImportBefund.Neu, null, null, "Die Kennlinie taugt nicht.", true)),
+            anlegen: (_, name) => { angelegt = name; return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        Uebernehmen(cut).Click();
+
+        Gemeldet(cut, "Die Kennlinie taugt nicht.");
+        Assert.Null(angelegt);
+        Assert.False(cut.Instance.PlausiOffen);
+    }
+
+    /// <summary>Eine Warnung fragt zurück; „Nein" schreibt nichts.</summary>
+    [Fact]
+    public void Eine_Plausibilitaetswarnung_fragt_zurueck()
+    {
+        string? angelegt = null;
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(
+                new ImportVorpruefung(ImportBefund.Neu, null, null, "Die MPPT-Zahl fehlt.", false)),
+            anlegen: (_, name) => { angelegt = name; return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        Uebernehmen(cut).Click();
+
+        Ueberlagert(cut, ".epos-rueckfrage");
+        Assert.True(cut.Instance.PlausiOffen);
+        Assert.Null(angelegt);
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf").Last().Click();   // Nein
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.PlausiOffen));
+        Assert.Null(angelegt);
+    }
+
+    /// <summary>
+    /// <b>Der Dublettenweg</b>: Ein bereits vorhandenes Gerät führt in den
+    /// Konfliktdialog — dieselbe Überlagerung wie beim Modulimport und bei den vier
+    /// VDI-Importen.
+    /// </summary>
+    [Fact]
+    public void Eine_Dublette_fuehrt_in_den_Konfliktdialog()
+    {
+        var pruefung = new ImportPruefung
+        {
+            Kandidat = new ImportKandidat { Name = "Alpha AG: A-3000" },
+            Befund = ImportBefund.NameVorhanden,
+            Vorhanden = new KatalogSatz { Id = 7, Name = "Alpha AG: A-3000" }
+        };
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(
+                ImportBefund.NameVorhanden, new[] { pruefung }, new[] { "alpha ag: a-3000" })));
+
+        Laden(cut);
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        Uebernehmen(cut).Click();
+
+        Ueberlagert(cut, ".epos-ueberlagerung");
+    }
+
+    /// <summary>
+    /// „Abbrechen" meldet, dass nichts geschrieben wurde — der Rückgabewert, an dem
+    /// die Hülle ihr Fenster schließt.
+    /// </summary>
+    [Fact]
+    public void Schliessen_meldet_ob_geschrieben_wurde()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+                        geschlossen: b => ergebnis = b);
+
+        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[1].Click();
+
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    // =====================================================================
+    // 7 — Der OND-Zweig (W6‑O‑1, Konzept 5.2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die dritte Quelle der zweiten Ausprägung.</b> Der Dateiwähler bietet
+    /// <c>.ond</c> an und macht im Herstellerdatenordner auf; die gelesene Datei steht
+    /// mit Herkunft OND im Raster, neben CEC-Geräten in derselben Liste.
+    /// </summary>
+    [Fact]
+    public void OND_laden_stellt_das_Geraet_mit_seiner_Herkunft_ins_Raster()
+    {
+        ImportQuelle? benutzt = null;
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            dateiWaehlen: q => { benutzt = q; return Task.FromResult<string?>(@"D:\wr\muster.ond"); },
+            dateiLaden: (q, pfad) => Task.FromResult(new ImportLeseErgebnis(
+                true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
+
+        Knopf(cut, "OND laden").Click();
+        Geladen(cut);
+
+        Assert.Equal(ModulImportProfil.QuelleOnd, benutzt!.Schluessel);
+        Assert.Equal("(*.ond)|*.ond", benutzt.Dateifilter);
+        Assert.Equal("PV", benutzt.Unterordner);
+
+        Assert.Equal(1, cut.Instance.SichtbareZeilen);
+        string zeile = cut.Find("tbody").TextContent;
+        Assert.Contains("Musterwerk Muster 2500TL", zeile);
+        Assert.Contains("OND", zeile);
+    }
+
+    /// <summary>
+    /// <b>Die Kennlinie einer OND-Datei kommt aus der Datei</b> und nicht aus dem
+    /// Sandia-Modell (Konzept 5.2): die sechs Stützstellen des Anhangs A und der
+    /// Euro-Wirkungsgrad, den das Datenblatt selbst nennt (<c>EfficEuro</c>).
+    /// </summary>
+    [Fact]
+    public void Ein_OND_Geraet_zeigt_die_Stuetzstellen_der_Datei()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, new List<object>(),
+            dateiWaehlen: _ => Task.FromResult<string?>(@"D:\wr\muster.ond"),
+            dateiLaden: (_, __) => Task.FromResult(new ImportLeseErgebnis(
+                true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
+
+        Knopf(cut, "OND laden").Click();
+        Geladen(cut);
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll("[role='tab']")[1].Click();
+
+        var felder = cut.FindAll(".epos-formularraster input");
+        Assert.Equal("0,9000", felder[0].GetAttribute("value"));   // 5 %
+        Assert.Equal("0,9400", felder[1].GetAttribute("value"));   // 10 %
+        Assert.Equal("0,9620", felder[2].GetAttribute("value"));   // 20 %
+        Assert.Equal("0,9700", felder[3].GetAttribute("value"));   // 30 %
+        Assert.Equal("0,9750", felder[4].GetAttribute("value"));   // 50 %
+        Assert.Equal("0,9700", felder[5].GetAttribute("value"));   // 100 %
+        Assert.Equal("0,9680", felder[6].GetAttribute("value"));   // EfficEuro der Datei
+        Assert.Equal("0,9750", felder[7].GetAttribute("value"));   // EfficMax der Datei
+
+        // Eine OND-Datei fuehrt kein Sandia-Modell.
+        Assert.Equal("–", felder[8].GetAttribute("value"));        // Sandia Pdco
+        Assert.Equal("350,0", felder[9].GetAttribute("value"));    // VMppNom als Bezugsspannung
+        Assert.Equal("–", felder[10].GetAttribute("value"));       // Sandia C0
+    }
+
+    /// <summary>
+    /// <b>Was der OND-Import kann und der CEC-Import nicht</b> (offener Punkt W6‑O‑2):
+    /// MPPT-Zahl, Scheinleistung, DC-Leistung und Einschaltspannung stehen in der
+    /// Datei; die CEC-Liste führt sie nicht und zeigt dort einen Strich.
+    /// </summary>
+    [Fact]
+    public void Der_OND_Satz_fuellt_was_die_CEC_Liste_offen_laesst()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, new List<object>(),
+            dateiWaehlen: _ => Task.FromResult<string?>(@"D:\wr\muster.ond"),
+            dateiLaden: (_, __) => Task.FromResult(new ImportLeseErgebnis(
+                true, new List<object> { Ond() }, new CecFortschritt("OND_MSG_GELESEN", "1"))));
+
+        Knopf(cut, "OND laden").Click();
+        Geladen(cut);
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+
+        ImportZeile zeile = cut.Instance.GewaehlteZeile!;
+        Assert.Equal("2,500", zeile.Feld(ModulImportProfil.FeldPAcNenn));
+        Assert.Equal("2,500", zeile.Feld(ModulImportProfil.FeldSAcMax));
+        Assert.Equal("2,750", zeile.Feld(ModulImportProfil.FeldPDcMax));
+        Assert.Equal("100,0", zeile.Feld(ModulImportProfil.FeldUStart));
+        Assert.Equal("1", zeile.Feld(ModulImportProfil.FeldAnzahlMppt));
+        Assert.Equal("OND", zeile.Feld(ModulImportProfil.FeldHerkunft));
+
+        // Zum Vergleich: derselbe Feldsatz aus der CEC-Zeile.
+        ImportZeile cec = ModulImportProfil.Finde(ModulImportArt.Wechselrichter, ImportTexte.Zu)
+                                           .Zeile(0, Geraet("Alpha AG: A-3000", 3000));
+        Assert.Equal("–", cec.Feld(ModulImportProfil.FeldSAcMax));
+        Assert.Equal("–", cec.Feld(ModulImportProfil.FeldPDcMax));
+        Assert.Equal("–", cec.Feld(ModulImportProfil.FeldUStart));
+        Assert.Equal("–", cec.Feld(ModulImportProfil.FeldAnzahlMppt));
+        Assert.Equal("CEC", cec.Feld(ModulImportProfil.FeldHerkunft));
+    }
+
+    // =====================================================================
+    // 8 — Die Auslieferungsliste als DATEI (W6‑O‑3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Weg des Anwenderentscheids W6‑O‑3</b> („Liste als Datei und dann über
+    /// Import"): Administration → Import öffnen → „CEC-Datei laden" → Datei wählen →
+    /// Zeile wählen → Übernehmen. Der Dateiwähler fragt mit dem CSV-Filter und macht im
+    /// Unterordner <c>PV</c> auf — dort liegen <c>CEC Modules.csv</c> und
+    /// <c>CEC Inverters.csv</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(ModulImportArt.Photovoltaik)]
+    [InlineData(ModulImportArt.Wechselrichter)]
+    public void Die_Auslieferungsliste_wird_ueber_den_Dateiweg_eingelesen(ModulImportArt art)
+    {
+        ImportQuelle? benutzt = null;
+        string? gelesen = null;
+        List<object> saetze = art == ModulImportArt.Photovoltaik ? DreiModule() : DreiGeraete();
+
+        var cut = Bauen(art, new List<object>(),
+            dateiWaehlen: q => { benutzt = q; return Task.FromResult<string?>(@"C:\daten\PV\CEC.csv"); },
+            dateiLaden: (q, pfad) =>
+            {
+                gelesen = pfad;
+                return Task.FromResult(new ImportLeseErgebnis(
+                    true, saetze, new CecFortschritt("CEC_MSG_GELADEN", "3")));
+            });
+
+        Knopf(cut, "CEC-Datei laden").Click();
+        Geladen(cut);
+
+        Assert.Equal(ModulImportProfil.QuelleCecDatei, benutzt!.Schluessel);
+        Assert.Equal("(*.csv)|*.csv", benutzt.Dateifilter);
+        Assert.Equal("PV", benutzt.Unterordner);
+        Assert.Equal(@"C:\daten\PV\CEC.csv", gelesen);
+        Assert.Equal(3, cut.Instance.SichtbareZeilen);
+    }
+
+    // =====================================================================
+    // 9 — Der Herstellerfilter im langen Raster (Befund W6‑B‑2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Befund W6‑B‑2</b> (Windows 07.09.2026): Der Anwender wählte
+    /// „SMA America", die Statuszeile meldete richtig „109 Geräte gefunden" — und im
+    /// Raster standen weiter die ABB-Zeilen der ungefilterten Liste.
+    ///
+    /// <para>Der Fall stellt die Lage nach: 150 Geräte einer Firma und 5 einer zweiten,
+    /// also über der Schwelle <c>VIRTUALISIEREN_AB</c> (120); der Herstellerfilter auf
+    /// die kleine Firma nimmt die Liste unter die Schwelle, und genau dabei WECHSELT der
+    /// Virtualisierungsschalter — der belegte Auslöser.</para>
+    ///
+    /// <para><b>Was er beweist und was nicht.</b> Er beweist, dass die Filterrechnung,
+    /// die Statuszeile UND die gezeichneten Zeilen zusammenpassen. Er beweist NICHT das
+    /// Rollverhalten des Browsers: bunit rechnet kein CSS und misst keine Behälterhöhe,
+    /// also zeichnet das <c>Virtualize</c> ohne seinen JavaScript-Teil VOR dem Filter
+    /// überhaupt keine Zeile — geprüft wird deshalb der Stand DANACH. Der Nachweis am
+    /// laufenden Browser ist die Playwright-Probe im Arbeitsordner (elf Fälle, rot
+    /// vor dem Fix), der Wächter am Standard ist
+    /// <c>RasterTests.Der_Wechsel_des_Virtualisierungsschalters_baut_das_Raster_neu_auf</c>.</para>
+    ///
+    /// <para><b>Und er wartet auf den GEZEICHNETEN Stand</b> (<b>W6‑B‑2‑O‑1</b>): Genau
+    /// dieser Fall war im Kern-Lauf 216 der einzige rote — „Expected 5, Actual 155",
+    /// also die Zeilenzahl VOR dem Filter, auf demselben Commit, den der Lauf 215 grün
+    /// gerechnet hat. Die Herleitung steht bei <see cref="Geladen"/>; hier wiegt sie
+    /// doppelt, weil der Ladegang mit 155 Zeilen die Schwelle
+    /// <c>VIRTUALISIEREN_AB</c> überschreitet und damit selbst die
+    /// <c>OnAfterRenderAsync</c>-Werkstücke von QuickGrid und <c>Virtualize</c> auf den
+    /// Zeichnerfaden legt — hinter denen das nächste Ereignis wartet.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Herstellerfilter_zeigt_nur_noch_die_Zeilen_des_Herstellers()
+    {
+        var viele = new List<object>();
+        for (int i = 0; i < 150; i++) viele.Add(Geraet("ABB: PVI-" + i.ToString("D3"), 3000 + i));
+        for (int i = 0; i < 5; i++) viele.Add(Geraet("SMA America: SB-" + i.ToString("D3"), 5000 + i));
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, viele);
+        Laden(cut);
+
+        Gefiltert(cut, 155);
+
+        // S3.4: der Hersteller als Spaltenfilter statt als Klappliste.
+        Spaltenfilter(cut, 2, "SMA America");
+
+        Gefiltert(cut, 5);
+        Assert.Contains("Filter Auswahl (5 Geräte gefunden)", cut.Markup);
+
+        string tabelle = cut.Find("tbody").TextContent;
+        Assert.Contains("SMA America", tabelle);
+        Assert.DoesNotContain("ABB", tabelle);
+        Assert.Equal(5, cut.FindAll("tbody tr").Count);
+    }
+
+    /// <summary>
+    /// <b>Nebenbefund zu W6‑B‑2:</b> Der Spaltenkopf hieß „Hersteller:" — die
+    /// Feldbeschriftung <c>WRK_LBL_FIRMA</c> war als Spaltentitel wiederverwendet.
+    /// Ein Spaltenkopf trägt keinen Doppelpunkt, eine Feldbeschriftung schon; seither
+    /// steht dafür ein eigener Schlüssel (<c>PVIMP_SP_HERSTELLER</c>,
+    /// <c>PVIMP_SP_TECHNOLOGIE</c>, <c>PVIMP_SP_MODULNAME</c>) und für das FELD
+    /// <c>PVIMP_LBL_MODULNAME</c> bzw. <c>WRK_IMP_LBL_GERAET</c>.
+    /// </summary>
+    [Theory]
+    [InlineData(ModulImportArt.Photovoltaik)]
+    [InlineData(ModulImportArt.Wechselrichter)]
+    public void Kein_Spaltenkopf_traegt_einen_Doppelpunkt(ModulImportArt art)
+    {
+        var cut = Bauen(art, art == ModulImportArt.Photovoltaik ? DreiModule() : DreiGeraete());
+        Laden(cut);
+
+        foreach (IElement kopf in cut.FindAll("thead th"))
+            Assert.DoesNotContain(":", kopf.TextContent);
+
+        Assert.Contains("Hersteller", cut.Find("thead").TextContent);
+
+        // Die Detailfelder daneben tragen ihn weiterhin - sie sind Beschriftungen.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        string uebersicht = cut.Find(".epos-formularraster").TextContent;
+        Assert.Contains(art == ModulImportArt.Photovoltaik ? "Modulname:" : "Gerät:", uebersicht);
+        Assert.Contains("Hersteller:", uebersicht);
+    }
+
+    // =====================================================================
+    // 10 — Mehrfachwahl und Doppelklick (Anwenderentscheid W6‑E‑5)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Kern von W6‑E‑5</b> („die Mehrfachauswahl funktioniert nicht"): Zwei
+    /// EINFACHE Klicks wählen zwei Geräte, und „Übernehmen" schreibt beide in einem
+    /// Zug. Vorher ersetzte der zweite Klick die Wahl des ersten — und der Wirt
+    /// schrieb ohnehin nur einen Satz.
+    ///
+    /// <para>Geprüft wird mit den ausgelieferten Importproben
+    /// <c>cec_module_50.csv</c> und <c>cec_wechselrichter_21.csv</c>, also mit
+    /// denselben Sätzen, die der Anwender über „CEC-Datei laden" bekommt.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(ModulImportArt.Photovoltaik)]
+    [InlineData(ModulImportArt.Wechselrichter)]
+    public void Zwei_einfache_Klicks_uebernehmen_zwei_Saetze(ModulImportArt art)
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(art, AusDerProbe(art),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+        Assert.True(cut.Instance.SichtbareZeilen >= 3);
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+        Assert.Contains("2 gewählt", cut.Markup);
+
+        Uebernehmen(cut).Click();
+
+        Gemeldet(cut, "2 übernommen, 0 übersprungen.");
+        Assert.Equal(2, angelegt.Count);
+
+        // Ein dritter Klick auf dieselbe Zeile nimmt sie wieder aus der Wahl.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.Instance.Gewaehlte));
+    }
+
+    /// <summary>
+    /// <b>Der Doppelklick</b> (W6‑E‑5, „und die Auswahl per Doppelklick geht nicht"):
+    /// Er nimmt die Zeile in die Wahl und übernimmt SIE sofort — die übrige Wahl
+    /// bleibt stehen.
+    ///
+    /// <para>Der Fall schickt die Ereignisfolge des Browsers: <c>click</c>,
+    /// <c>click</c>, <c>dblclick</c>. Mit der Umschaltregel heben sich die zwei
+    /// Klicks auf; deshalb muss der Wirt die Zeile im Doppelklick ausdrücklich
+    /// HINZUFÜGEN.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Doppelklick_uebernimmt_genau_diese_Zeile()
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+
+        // Zeile 0 ist schon gewaehlt - sie darf der Doppelklick nicht verlieren.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+
+        var zeile = cut.FindAll("tbody .epos-anlagenwahl")[2];
+        zeile.Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[2].DoubleClick();
+
+        Gemeldet(cut, "Datensatz erfolgreich gespeichert.");
+        Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
+
+        // Die doppelt geklickte Zeile steht jetzt MIT in der Wahl, die erste auch.
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+    }
+
+    /// <summary>
+    /// <b>Ein Konflikt unter zweien</b>: EIN Konfliktdialog für die ganze Auswahl,
+    /// und die Antwort steuert je Satz — der eine wird überschrieben, der andere
+    /// ganz normal angelegt.
+    /// </summary>
+    [Fact]
+    public void Ein_Konflikt_unter_zweien_steuert_je_Satz()
+    {
+        var angelegt = new List<string>();
+        var ueberschrieben = new List<int>();
+
+        var pruefung = new ImportPruefung
+        {
+            Kandidat = new ImportKandidat { Name = "Alpha AG: A-3000" },
+            Befund = ImportBefund.NameVorhanden,
+            Vorhanden = new KatalogSatz { Id = 7, Name = "Alpha AG: A-3000" }
+        };
+
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: satz => Task.FromResult(
+                ((CecWechselrichter)satz).Name == "Alpha AG: A-3000"
+                    ? new ImportVorpruefung(ImportBefund.NameVorhanden,
+                                            new[] { pruefung }, new[] { "alpha ag: a-3000" })
+                    : new ImportVorpruefung(ImportBefund.Neu, null, null)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); },
+            ueberschreiben: (_, id) => { ueberschrieben.Add(id); return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();   // Alpha AG: A-3000 (Konflikt)
+        cut.FindAll("tbody .epos-anlagenwahl")[2].Click();   // Beta GmbH: B-10000 (neu)
+
+        Uebernehmen(cut).Click();
+
+        // EINE Ueberlagerung mit genau EINER Pruefzeile - die konfliktfreie steht
+        // nicht darin, sie braucht keine Entscheidung.
+        Ueberlagert(cut, ".epos-importkonflikte tbody tr");
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Single(cut.FindAll(".epos-importkonflikte tbody tr"));
+
+        // "Ueberschreiben" waehlen (Auslassen = 0, Ueberschreiben = 1, Umbenennen = 2)
+        // und mit OK bestaetigen.
+        cut.Find(".epos-importkonflikte tbody tr").QuerySelectorAll("select")[0].Change("1");
+        cut.Find(".epos-importkonflikte .epos-knopf--primaer").Click();
+
+        Gemeldet(cut, "2 übernommen, 0 übersprungen.");
+        Assert.Equal(new[] { 7 }, ueberschrieben);
+        Assert.Equal(new[] { "Beta GmbH: B-10000" }, angelegt);
+    }
+
+    /// <summary>
+    /// <b>Warnungen fragen EINMAL für alle zurück</b>, mit der Liste der betroffenen
+    /// Geräte — nicht je Satz eine Rückfrage. „Nein" schreibt gar nichts.
+    /// </summary>
+    [Fact]
+    public void Zwei_Warnungen_fragen_nur_einmal_zurueck()
+    {
+        var angelegt = new List<string>();
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete(),
+            vorpruefen: _ => Task.FromResult(new ImportVorpruefung(
+                ImportBefund.Neu, null, null, "Die MPPT-Zahl fehlt.", false)),
+            anlegen: (_, name) => { angelegt.Add(name); return Task.FromResult(true); });
+
+        Laden(cut);
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+
+        Uebernehmen(cut).Click();
+
+        Ueberlagert(cut, ".epos-rueckfrage");
+        Assert.True(cut.Instance.PlausiOffen);
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Contains("Alpha AG: A-3000", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Contains("Alpha AG: A-5000", cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Empty(angelegt);
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf").Last().Click();     // Nein
+        Assert.Empty(angelegt);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl überlebt das Umfiltern</b> (W6‑E‑5): Der Anwender geht
+    /// nacheinander mehrere Hersteller durch und sammelt; ein ausgefilterter Satz
+    /// fällt NICHT heraus. „Zurücksetzen" leert die Wahl — und die Detailreiter
+    /// zeigen immer die zuletzt angeklickte Zeile.
+    /// </summary>
+    [Fact]
+    public void Umfiltern_behaelt_die_Wahl_und_Zuruecksetzen_leert_sie()
+    {
+        var cut = Bauen(ModulImportArt.Wechselrichter, DreiGeraete());
+        Laden(cut);
+
+        // Zwei Geraete der Firma "Alpha AG" waehlen ...
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+
+        // ... dann auf die zweite Firma filtern: die beiden sind unsichtbar,
+        // bleiben aber gewaehlt.
+        Spaltenfilter(cut, 2, "Beta");
+        Gefiltert(cut, 1);
+        Assert.Equal(2, cut.Instance.Gewaehlte.Count);
+        Assert.Empty(cut.FindAll("tbody .epos-knopf--primaer"));   // keine markierte Zeile sichtbar
+
+        // Das dritte Geraet dazu - jetzt sind es drei.
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Assert.Equal(3, cut.Instance.Gewaehlte.Count);
+        Assert.Contains("3 gewählt", cut.Markup);
+
+        // Die Detailreiter zeigen die ZULETZT angeklickte Zeile.
+        Assert.Equal("Beta GmbH: B-10000", ((CecWechselrichter)cut.Instance.Gewaehlt!).Name);
+
+        Knopf(cut, "Zurücksetzen").Click();
+        Assert.Empty(cut.Instance.Gewaehlte);
+        Assert.DoesNotContain("gewählt", cut.Markup);
+    }
+
+    /// <summary>Die Sätze der ausgelieferten Importprobe zur Ausprägung.</summary>
+    private static List<object> AusDerProbe(ModulImportArt art)
+    {
+        if (art == ModulImportArt.Photovoltaik)
+        {
+            var svc = new CECDataService();
+            Assert.True(svc.LoadFromFile(Probe("cec_module_50.csv")).success);
+            return svc.AllModules.Select(m => (object)UnifiedModule.FromPanCec(m)).ToList();
+        }
+
+        var wr = new CecWechselrichterDienst();
+        Assert.True(wr.AusDatei(Probe("cec_wechselrichter_21.csv")).Erfolg);
+        return wr.AlleGeraete.Select(g => (object)g).ToList();
+    }
+
+    // =====================================================================
+    // Hilfen
+    // =====================================================================
+
+    private static ImportVorpruefung Vorpruefung(ImportBefund befund)
+    {
+        var pruefungen = new List<ImportPruefung>
+        {
+            new() { Kandidat = new ImportKandidat { Name = "Ablytek 6MN6A270", Tag = null },
+                    Befund = befund,
+                    Vorhanden = befund == ImportBefund.Neu
+                        ? null
+                        : new KatalogSatz { Id = 5, Name = "Ablytek 6MN6A270" } }
+        };
+        return new ImportVorpruefung(befund, pruefungen, new[] { "ablytek 6mn6a270" });
+    }
+
+    // =====================================================================
+    // Windows-Abnahme 08.09.2026: W13-B-3 (mehrere Dateien), W13-B-4 (OK),
+    // W13-B-5 (Alle-Schalter)
+    // =====================================================================
+
+    /// <summary>
+    /// Zwei .pan-Dateien auf einmal: beide Sätze stehen in der Liste, und die
+    /// Statusmeldung nennt die Zahl der Dateien.
+    /// </summary>
+    [Fact]
+    public void Mehrere_Dateien_kommen_zusammen_in_die_Liste()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        dateienWaehlen: _ => Task.FromResult<IReadOnlyList<string>>(new[] { "a.pan", "b.pan" }),
+                        dateiLaden: (_, pfad) => Task.FromResult(new ImportLeseErgebnis(
+                            true,
+                            new List<object> { Cec(pfad, "Firma", "Mono", 400, 20, 10, 40, 2024) },
+                            new CecFortschritt("PAN_MSG_GELESEN", "1"))));
+
+        Knopf(cut, "PAN laden").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.SichtbareZeilen));
+        Assert.Contains("2 Dateien gelesen, 2 Sätze.", cut.Markup);
+    }
+
+    /// <summary>Eine schlechte Datei kostet nicht die andere: eine Zeile bleibt, die Meldung steht.</summary>
+    [Fact]
+    public void Eine_unlesbare_Datei_nimmt_die_lesbare_nicht_mit()
+    {
+        var cut = Bauen(saetze: DreiModule(),
+                        dateienWaehlen: _ => Task.FromResult<IReadOnlyList<string>>(new[] { "kaputt.pan", "gut.pan" }),
+                        dateiLaden: (_, pfad) => Task.FromResult(pfad == "gut.pan"
+                            ? new ImportLeseErgebnis(true,
+                                new List<object> { Cec("Gut", "Firma", "Mono", 400, 20, 10, 40, 2024) },
+                                new CecFortschritt("PAN_MSG_GELESEN", "1"))
+                            : new ImportLeseErgebnis(false, null,
+                                new CecFortschritt("PAN_MSG_LESEFEHLER", "kaputt"))));
+
+        Knopf(cut, "PAN laden").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(1, cut.Instance.SichtbareZeilen));
+        Assert.Contains("kaputt", cut.Markup);
+    }
+
+    /// <summary>Der Knopf, der das Fenster schließt, heißt OK - nicht Abbrechen (W13-B-4).</summary>
+    [Fact]
+    public void Der_Schliessknopf_heisst_OK()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        var knoepfe = cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button");
+        Assert.Equal("OK", knoepfe[1].TextContent.Trim());
+    }
+
+    /// <summary>Der Alle-Schalter waehlt alle sichtbaren Zeilen und nimmt sie wieder weg (W13-B-5).</summary>
+    [Fact]
+    public void Der_Alle_Schalter_waehlt_alle_sichtbaren_Zeilen()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        CecLaden(cut);
+
+        cut.Find(".epos-wahl-alle input").Change(true);
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.Instance.Gewaehlte.Count));
+
+        cut.Find(".epos-wahl-alle input").Change(false);
+        cut.WaitForAssertion(() => Assert.Empty(cut.Instance.Gewaehlte));
+    }
+}

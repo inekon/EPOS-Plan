@@ -1,0 +1,270 @@
+﻿@* Der UEBERSICHTS-Reiter der Ergebnisseite (R2 + NavigatorUebersicht, iU9-W11b.2).
+
+   ZWEI ROLLEN, EINE KOMPONENTE. Sie erscheint als Hauptreiter „Uebersicht"
+   (voll: die zwei Kennzahlengruppen Waerme und Strom UND der Navigatorteil) und als
+   erstes Blatt des Ergebnisreiters (NurNavigator: nur die zwei Ringe, die zwei
+   Kacheln und das Eigenanteilsraster). Dieselbe Ueberlegung wie beim
+   PufferSpProjektDialog aus W10a, der in drei Rollen erscheint: Zwei Fassungen
+   derselben Anzeige waeren zwei Wahrheiten.
+
+   PRAESENZ STATT NULLZEILEN. In einem Projekt aus Waermepumpe und Kessel stand
+   im Ergebnisblock „Waermeproduktion BHKW: 0,00", eine leere „Solare Waerme"
+   und eine leere „Stromproduktion PV". Die Zeilen werden nach ErgebnisPraesenz
+   AUSGEBLENDET; das Nachruecken auf die Entwurfsanker (AnkerAnordnen,
+   SpalteAnordnen, 90 Z. Geometrie) entfaellt ersatzlos - ein Rasterfluss ordnet
+   sich selbst.
+
+   BEFUND W11-B36. Ohne Strombedarf setzte der Vorlaeufer den Mittelwert des
+   Strom-Rings HART AUF 100 - das Bild behauptete 100 % Deckung, wo es gar
+   keinen Bedarf gibt. Ohne Bedarf steht jetzt kein Ring, sondern der Satz, dass
+   sich ohne Bedarf keine Deckung ausweisen laesst.
+
+   BEFUND W11-B35 ist in W11a behoben: Die sechs Summen standen zweimal und
+   wichen um den BHKW-Term voneinander ab; hier kommt EIN DTO herein. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (!NurNavigator)
+    {
+        <div class="epos-simerg-spalten">
+
+            @* NACH WAERME UND STROM GEGLIEDERT (Anwenderrueckmeldung 08.09.2026,
+               W11b‑B‑15): „Es sollte nach Kategorie Strom und Wärme gruppiert werden."
+               Der Vorlaeufer und die erste Fassung dieses Reiters fuehrten ZWEI
+               Balken untereinander — „Energiebedarf" mit den beiden Bedarfszahlen
+               und „Ergebnisse" mit neun Zeilen, in denen sich Waerme- und
+               Stromgroessen abwechselten. Wer wissen wollte, was die Waerme macht,
+               las jede zweite Zeile. Jetzt stehen die zwei Gruppen NEBENEINANDER,
+               in derselben Ordnung wie die zwei Ringe darunter: links Waerme,
+               rechts Strom. Jede Gruppe beginnt mit ihrem BEDARF, listet die
+               Erzeuger bzw. Verbraucher und schliesst mit dem REST — der einen
+               Zahl, die nach allem uebrig bleibt und deshalb betont steht.
+
+               Die Praesenzregel je Zeile bleibt unveraendert (W11-B21: keine
+               Nullzeilen fuer Komponenten, die das Projekt nicht hat), die
+               Ressourcentexte bleiben dieselben, und es verschwindet keine Zahl:
+               dieselben 13 Groessen, nur auf zwei Spalten sortiert. *@
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF_NETZ, K.WaermebedarfGesamtMwh, MWH)
+
+                    @* Die vier Waermezeilen in der Reihenfolge des Entwurfs
+                       (UebersichtZeilenVorbereiten :4067-4072). *@
+                    @if (Daten.Waermepumpe)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, K.WpWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Bhkw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_BHKW, K.BhkwWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Solarthermie)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_SOLARE_WAERME, K.SolarWaermeproduktionMwh, MWH)
+                    }
+                    @if (Daten.Heizkessel)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, K.KesselWaermeproduktionMwh, MWH)
+                    }
+
+                    @* Die Restzeile beschreibt das PROJEKT und nicht eine Komponente -
+                       sie bleibt immer stehen und schliesst die Gruppe ab.
+
+                       ANWENDERENTSCHEID 04.09.2026 (W11a-O-1): Es gibt nur noch EINE
+                       Restwaermezahl. Der Vorlaeufer fuehrte zwei - das Feld
+                       „Restwaermebedarf" (sim.RestwaermeMwh) und den Ergebnisblock
+                       (Bedarf minus PRODUKTION), und die zweite konnte negativ werden.
+                       Beide Felder des DTO tragen jetzt denselben Wert; die Kachel
+                       unten zeigt dieselbe Zahl. *@
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, K.RestwaermeMwh, MWH, betont: true)
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, K.StrombedarfGesamtMwh, MWH)
+
+                    @* Erst die drei VERBRAUCHER (:4075-4081), dann die zwei
+                       ERZEUGER - in der Gruppe Strom ist das die Ordnung, in der
+                       sich die Restzahl darunter ergibt. *@
+                    @if (Daten.Waermepumpe)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, K.WpStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Heizstab)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, K.HeizstabStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Heizkessel)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_SPK, K.KesselStromverbrauchMwh, MWH)
+                    }
+                    @if (Daten.Bhkw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_BHKW, K.BhkwStromproduktionMwh, MWH)
+                    }
+                    @if (Daten.Photovoltaik)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION_PV, K.PvStromproduktionMwh, MWH)
+                    }
+
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, K.ReststromMwh, MWH, betont: true)
+                </dl>
+            </section>
+
+            @* KEIN KUCHEN MEHR (Befund W11b-B-11, Windows-Abnahme 08.09.2026):
+               "Waermebedarfsdeckung ist doppelt als Diagramm" - der Kuchen des
+               Vorlaeufers (ueb_chart) und der Ring des Navigators zeigten dieselbe
+               Deckung. Es bleiben die zwei Ringe NEBENEINANDER (unten), und ihre
+               Legende traegt seither je Segment MWh und Prozent - die Zahlen, die
+               bis dahin nur der Kuchen nannte. Der Parameter Kuchen bleibt fuer
+               die Huelle bestehen, gezeichnet wird er nicht mehr. *@
+
+        </div>
+    }
+
+    @* ---- Der Navigatorteil: zwei Ringe, zwei Kacheln, das Eigenanteilsraster ---- *@
+
+    <div class="epos-simerg-spalten">
+        <section class="epos-simerg-block">
+            @if (Daten.WaermebedarfVorhanden)
+            {
+                <ChartBild Png="@RingWaerme" Rund="true" Alt="@Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG" />
+            }
+            else
+            {
+                <p class="epos-simerg-hinweis">@Resource.SIMERG_MSG_OHNE_BEDARF</p>
+            }
+        </section>
+
+        <section class="epos-simerg-block">
+            @if (Daten.StrombedarfVorhanden)
+            {
+                <ChartBild Png="@RingStrom" Rund="true" Alt="@Resource.SIMERG_KACHEL_STROMDECKUNG" />
+            }
+            else
+            {
+                <p class="epos-simerg-hinweis">@Resource.SIMERG_MSG_OHNE_BEDARF</p>
+            }
+        </section>
+    </div>
+
+    @* ANWENDERWUNSCH 08.09.2026 (W11b-B-12): Restwaerme unter dem Waermering,
+       Reststrom unter dem Stromring - die Kachelreihe tauscht die Reihenfolge,
+       damit sie zu den zwei Ringen darueber passt (links Waerme, rechts Strom). *@
+    <Kachelraster>
+        <KindInhalt>
+            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTWAERMEBEDARF"
+                            Wert="@Zahl(Daten.RestwaermeMwh, "N2")" Quelle="@MWH" />
+            <Kennzahlkachel Titel="@Resource.SIM_KACHEL_RESTSTROMBEDARF"
+                            Wert="@Zahl(Daten.ReststromMwh, "N2")" Quelle="@MWH" />
+        </KindInhalt>
+    </Kachelraster>
+
+    @if (Daten.Eigenanteil.Count > 0)
+    {
+        <table class="epos-raster">
+            <thead>
+                <tr>
+                    @foreach (string kopf in Daten.EigenanteilSpalten)
+                    {
+                        <th scope="col">@kopf</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Rasterzeile z in Daten.Eigenanteil)
+                {
+                    <tr>
+                        @* Die erste Spalte traegt den Namen, alle uebrigen Zahlen.
+                           <c>null</c> statt "" laesst Blazor das Attribut ganz weg
+                           (W11b‑B‑23) — dieselbe Regel wie bei der betonten Zeile;
+                           ein leeres class="" stand hier als einziges im Reiterstapel. *@
+                        @for (int i = 0; i < z.Zellen.Count; i++)
+                        {
+                            <td class="@(i == 0 ? null : "epos-simerg-zahl")">@z.Zellen[i]</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (BedarfDetails.HasDelegate)
+    {
+        <button type="button" class="epos-simerg-knopf" @onclick="BedarfDetails">
+            @Resource.SIM_BTN_WAERMEBEDARF_UEBERSICHT
+        </button>
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    /// <summary>Die 13 Zahlen und die sechs Summen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen? Kennzahlen { get; set; }
+
+    /// <summary>Praesenz, Ringmittelwerte und das Eigenanteilsraster.</summary>
+    [Parameter] public UebersichtDaten Daten { get; set; } = new UebersichtDaten();
+
+    /// <summary>
+    /// Der Kuchen der Waermebedarfsdeckung (<c>ueb_chart</c>) — seit W11b‑B‑11 (08.09.2026)
+    /// NICHT mehr gezeichnet (doppelt zum Ring); der Parameter bleibt, damit die Hülle ihn
+    /// weiter reichen darf.
+    /// </summary>
+    [Parameter] public byte[]? Kuchen { get; set; }
+
+    /// <summary>Der Ring „Waermedeckung" (Befund W11-B5, GDI-Donut des Navigators).</summary>
+    [Parameter] public byte[]? RingWaerme { get; set; }
+
+    /// <summary>Der Ring „Stromdeckung".</summary>
+    [Parameter] public byte[]? RingStrom { get; set; }
+
+    /// <summary>
+    /// Nur der Navigatorteil — die Rolle im Ergebnisreiter. Voll: mit den
+    /// zwei Kennzahlengruppen Waerme und Strom davor.
+    /// </summary>
+    [Parameter] public bool NurNavigator { get; set; }
+
+    /// <summary>„Waermebedarf Uebersicht…" — ohne Rueckruf kein Knopf.</summary>
+    [Parameter] public EventCallback BedarfDetails { get; set; }
+
+    private WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen K =>
+        Kennzahlen ?? new WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen();
+
+    /// <summary>
+    /// Eine Wertzeile: Beschriftung, Zahl, Einheit. Format „N2" (W11b‑B‑13,
+    /// vorher „F2" woertlich wie <c>FuelleUebersicht</c> :3936-3954).
+    /// </summary>
+    /// <param name="betont">
+    /// Die ABSCHLUSSZEILE einer Gruppe — der Rest, der nach allen Erzeugern
+    /// uebrig bleibt (W11b‑B‑15). Sie steht fett und mit einer Linie darueber;
+    /// ohne den Schalter bleibt die Zeile ohne Klasse, das Markup also
+    /// unveraendert.
+    /// </param>
+    private RenderFragment Wertzeile(string text, double wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@Zahl(wert, "N2")</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+    </text>;
+
+    /// <summary>
+    /// Klasse der betonten Zeile — <c>null</c> laesst Blazor das Attribut ganz
+    /// weg, damit die gewoehnliche Zeile kein leeres <c>class=""</c> traegt.
+    /// </summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+
+    private static string Zahl(double wert, string format)
+        => wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture);
+}

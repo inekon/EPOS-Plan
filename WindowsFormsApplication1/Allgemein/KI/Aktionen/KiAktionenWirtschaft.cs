@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.OleDb;
 using System.Globalization;
 using KiKern;
 
@@ -26,6 +25,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "ergebnisse_lesen",
                 zweck: KiAktionsTexte.ZweckErgebnisseLesen,
+                titel: KiAktionsTexte.TitelErgebnisseLesen,
+                beispiel: KiAktionsTexte.BeispielErgebnisseLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeErgebnisse / ErgebnisAktuell",
                 parameter: new[]
@@ -86,6 +87,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "wirtschaftlichkeit_parameter_lesen",
                 zweck: KiAktionsTexte.ZweckParameterLesen,
+                titel: KiAktionsTexte.TitelParameterLesen,
+                beispiel: KiAktionsTexte.BeispielParameterLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "WirtschaftlichkeitCtrl.LadeParameter / LadeTarif",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -105,6 +108,15 @@ namespace WindowsFormsApplication1
                         "betrachtungszeitraum_a", p.Betrachtungszeitraum,
                         "preissteigerung_energie_prozent", KiHilfe.Wert(p.PreissteigerungEnergie),
                         "preissteigerung_betrieb_prozent", KiHilfe.Wert(p.PreissteigerungBetrieb),
+                        // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): p_I - der Satz,
+                        // mit dem die Ersatzbeschaffungen fortgeschrieben werden. Gemeldet
+                        // wird der WIRKSAME Wert samt Herkunft: Ein leeres Feld heisst
+                        // "wie p_B" und nicht "0 %/a", und ohne die Herkunft koennte der
+                        // Assistent beides nicht auseinanderhalten.
+                        "preissteigerung_investition_prozent", KiHilfe.Wert(p.PreisInvestWirksam),
+                        "preissteigerung_investition_herkunft",
+                        p.PreissteigerungInvestition.HasValue ? "gepflegt" : "wie_betrieb",
+                        "nicht_monetaere_wirkungen", KiHilfe.Text(p.NichtMonetaer),
                         "einspeiseverguetung_eur_kwh", KiHilfe.Wert(p.Einspeiseverguetung),
                         "co2_preis_eur_t", KiHilfe.Wert(p.CO2Preis),
                         "kwkg_bonus_ct_kwh", KiHilfe.Wert(p.KwkgBonus),
@@ -143,6 +155,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "kostenlage_pruefen",
                 zweck: KiAktionsTexte.ZweckKostenlagePruefen,
+                titel: KiAktionsTexte.TitelKostenlagePruefen,
+                beispiel: KiAktionsTexte.BeispielKostenlagePruefen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "KostenPositionCtrl.Pruefe / TechnikPlanwertCtrl.LiesAnlagen",
                 parameter: new[]
@@ -183,7 +197,7 @@ namespace WindowsFormsApplication1
                                                                   komponente));
 
                     KostenPositionCtrl.Abweichung ab = KostenPositionCtrl.Pruefe(
-                        id, komponente, Form_Kosten.KATEGORIE_INVESTITION, komponentenId);
+                        id, komponente, DbWerte.KOSTEN_KATEGORIE_INVESTITION, komponentenId);
 
                     List<TechnikPlanwertCtrl.Anlage> anlagen = TechnikPlanwertCtrl.LiesAnlagen(id, komponente);
 
@@ -191,7 +205,7 @@ namespace WindowsFormsApplication1
                     // Ohne sie koennte kostenposition_setzen nicht angesteuert werden,
                     // ohne dass das Modell eine ID erfindet.
                     int idPosition = KostenPositionCtrl.FindeHauptposition(
-                        id, Form_Kosten.KATEGORIE_INVESTITION, komponentenId, komponente);
+                        id, DbWerte.KOSTEN_KATEGORIE_INVESTITION, komponentenId, komponente);
 
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
@@ -240,7 +254,7 @@ namespace WindowsFormsApplication1
             {
                 object o = DataRepository.ExecuteScalar(
                     "SELECT MIN(ID) FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new OleDbParameter("@k", komponente ?? ""));
+                    new DbParam("@k", komponente ?? ""));
                 return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }

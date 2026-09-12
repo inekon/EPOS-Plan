@@ -1,0 +1,867 @@
+﻿# iU9 Welle 8 — Bedarfsblätter (W8a + W8b) — Portprotokoll
+
+> Umsetzung 03.09.2026 auf `ios_migration`, Basis `e5114e1` (nach dem Merge der
+> Welle 7). Vorbild in Aufbau und Tiefe: das Protokoll der Welle 7 im selben
+> Ordner. Regeln: Wellenplan Abschnitt F, `EPOS.UI/CLAUDE.md`,
+> `EPOS.Kern/CLAUDE.md`.
+
+---
+
+## 1. Auftrag und Ergebnis
+
+**Zehn WinForms-Masken der drei Bedarfsblätter** (Stromverbraucher,
+Prozesswärme, Brauchwasser) und die Gebäudetypen-Verwaltung sind **vier**
+Razor-Komponenten in `EPOS.UI/Dialoge/Bedarf/`; ihre WinForms-Fassungen sind im
+selben Commit gelöscht (Regel M1). Zusammen **2 569 Zeilen** Oberflächencode,
+**41 `MessageBox`**-Aufrufe und **369 Kartenzeilen**.
+
+**Zehn Masken, vier Komponenten** — das ist der Ertrag dieser Welle. Die drei
+Bedarfsblätter sind Drillinge desselben Blatts: Sie unterscheiden sich in Titel,
+Typbeschriftung, Zieltabelle und in einer Handvoll Meldungen, nicht im Aufbau.
+Die Ausprägung ist deshalb ein Aufzählungstyp (`BedarfsArt`) und keine dritte
+Fassung.
+
+| Komponente | ersetzt | Zeilen | Hülle |
+|---|---|---|---|
+| `TypStammDialog` | `Form_EingDBStromverbraucher` (146), `Form_EingDBProzess` (174), `Form_EingDBBrauchwasser` (139) | 459 | `Views/Bedarf/TypStammHuelle.cs` |
+| `BedarfErgebnisDialog` | `Form_ErgStromverbraucher` (169), `Form_ErgProzesswaerme` (215), `Form_ErgBrauchwasserwaerme` (425) | 809 | `Views/Bedarf/BedarfErgebnisHuelle.cs` |
+| `TypProfilDialog` | `Form_EingStromTyp` (334), `Form_EingProzTyp` (366), `Form_EingBrauchwasserTyp` (257) | 957 | dieselbe Datei wie W8.1 |
+| `GebaeudetypDialog` | `Form_EingGebTyp` (344) | 344 | `Views/Bedarf/GebaeudetypHuelle.cs` |
+
+**Neu im Kern**: der Aufzählungstyp `BedarfsArt`, zwei Controller
+(`BedarfStammCtrl`, `TypProfilCtrl`), die Gebäudetyp-Verwaltung in `TagVCtrl`,
+die Schreibwege des `ProzesswaermeStammCtrl` und **drei** Renderer-Bilder
+(Bausteinlücke 12) samt drei Proben in `ChartProben`.
+
+### Commits
+
+| Hash | Betreff |
+|---|---|
+| `e9d7ad6` | iU9-W8.0a: `ProzesswaermeStammCtrl` auf den Schnitt seiner beiden Zwillinge |
+| `fec0a20` | iU9-W8.0b: `BedarfsArt`, `BedarfStammCtrl` und `TypProfilCtrl` im Kern |
+| `c046c07` | iU9-W8.0c: drei Bedarfsbilder im `ChartRenderer` samt drei Proben |
+| `b1d8a4b` | iU9-W8.0d: `TagVCtrl` trägt die Gebäudetyp-Verwaltung |
+| `34e69ff` | iU9-W8.2: `BedarfErgebnisDialog`, drei Ergebnismasken gelöscht |
+| `1e9c8fc` | iU9-W8.1: `TypStammDialog`, drei Stammkopfmasken gelöscht |
+| `6b65f2e` | iU9-W8.3: `TypProfilDialog`, drei Typprofilmasken gelöscht |
+| `2119e18` | iU9-W8.4: `GebaeudetypDialog`, `Form_EingGebTyp` gelöscht |
+| `cbb358e` | iU9-W8.5: 130 Textschlüssel für die zehn Masken, de und en |
+| `04dd413` | iU9-W8.6: Formularkarte-Tests auf den Stand nach Welle 8 |
+
+**Anzeige vor Eingabe:** Erst der Ergebnisdialog (W8.2) — er ist reine Anzeige,
+hat 15 Aufrufstellen und braucht keinen einzigen Schreibweg —, dann die drei
+Eingabeblätter. Das W8.0e-Datenobjekt ist mit W8.2 entstanden, weil es nur dort
+gebraucht wird.
+
+---
+
+## 2. Bauweise
+
+### 2.1 Drei neue Bilder im Kern
+
+Die zehn Masken zeigten zusammen **drei** Diagramme, jedes mehrfach. Sie sind
+drei Methoden geworden:
+
+| Methode | Maß | Vorbild | Wer zeigt es |
+|---|---|---|---|
+| `ChartRenderer.MonatsSaeulen` | 978 × 542 | `ZeigeStromGrafik`:83 / `ZeigeMonatsGrafik` | die drei Ergebnismasken, vier Sichten |
+| `ChartRenderer.Stundenprofil` | 1244 × 464 | `ChartAktualisieren`:37 (168 h) **und** `init_Chart`:171 (24 h) | die drei Typprofilmasken und der Gebäudetyp |
+| `ChartRenderer.Jahresverlauf` | 978 × 542 | `ZeigeJahresGrafik`:166 | die Brauchwasser-Ergebnismaske |
+
+Drei Entscheidungen mit Grund:
+
+* **Die „schönen Schritte" sind wörtlich übernommen.** `SkaliereYAchse` stand
+  dreimal gleichlautend in den drei Ergebnismasken: Schrittweiten
+  0,1/0,2/0,25/0,5/1/2/2,5/5/10, Zielschrittweite `max × 1,1 / 4,5`, Obergrenze
+  `ceil(max × 1,05 / Schritt) × Schritt`, Nachkommaformat N0/N1/N2 — samt dem
+  Rückfall „Maximum 5, Intervall 1", wenn alle zwölf Werte null sind. Das ist
+  eine **andere** Reihe als die des Kapitalwert-Verlaufs (dort 1/2/2,5/5/10):
+  Bedarfswerte brauchen auch Zehntel.
+* **Ein Bild für zwei Vorbilder.** Der Unterschied Fläche (Typprofil) gegen
+  Linie (Gebäudetyp) war keine Entscheidung, sondern die Voreinstellung zweier
+  verschiedener Diagrammverwalter. `Stundenprofil` zeichnet immer die Fläche mit
+  ihrer Randlinie und nimmt das Intervall der x-Beschriftung als Parameter
+  (24 = Tagesgrenzen, 2 = jede zweite Stunde).
+* **Der Jahresverlauf trägt Monatsgrenzen statt Stundenzahlen.** Der Vorläufer
+  ließ die Achse am Mausrad spreizen und passte die Beschriftung mit; ein PNG
+  kann das nicht (A-1). „Stunde 5 832" sagt nichts, „Sep" schon.
+
+### 2.2 Die Datenseite im Kern
+
+| Was | Wo | Herkunft |
+|---|---|---|
+| `BedarfsArt` | `EPOS.Kern/Model/` | neu — die Ausprägung als Aufzählungstyp |
+| `BedarfStammCtrl` | `EPOS.Kern/Controller/` | die Konstruktoren und `SetControls` der drei Stammkopfmasken |
+| `TypProfilCtrl` | dito | `DatenEinlesen`, die Speicher-, Neu- und Löschwege der drei Typprofilmasken |
+| `ProzesswaermeStammCtrl.Exists/SaveHead/TypIsReadOnly/TypNew/TypDelete` | dito | `Form_EingDBProzess`:82-174 und `Form_EingProzTyp`:252-357 (dort inline) |
+| `TagVCtrl.Typen/Lies/Speichern/Anlegen/Loeschen/KurvenNamen` | dito | `Form_EingGebTyp`:32-336, fast die ganze Maske |
+| `ChartRenderer.MonatsSaeulen/Stundenprofil/Jahresverlauf` | `EPOS.Kern/Allgemein/Bericht/` | die neun `Chart`-Steuerelemente der zehn Masken |
+
+**Die drei Stammcontroller sind jetzt gleich geschnitten** (W8.0a). Zwei von
+ihnen trugen `Exists`/`SaveHead`/`TypIsReadOnly`/`TypNew`/`TypDelete` schon; die
+Prozessmaske hatte ihr SQL inline. Die **Anweisungen** bleiben die des
+Vorläufers (Regel F3): Der Prozesskatalog überlässt seine Id weiterhin der
+Datenbank (`AUTOINCREMENT`), während Strom und Brauchwasser sie mit
+`GetMaxID + 1` selbst vergeben.
+
+**Die ReadOnly-Sperre prüft die HÜLLE, nicht der Controller.** `SaveHead` und
+`TypDelete` melden sie über `Meldung.Hinweis`, und das wäre in einer WebView ein
+modaler Kasten über dem Dialog. Die Hüllen fragen deshalb vorher (`IstReadOnly`)
+und geben die Meldung als Ergebnis zurück, wo sie als Warnbanner stehen bleibt.
+
+### 2.3 Drei Transaktionen mehr
+
+`Tab_*typ_STAMM` und `Tab_DBTagVDaten_STAMM` sind **Simulationseingang**. Drei
+Schreibwege liefen bisher ohne Klammer und konnten bei einem Fehler in der Mitte
+einen halben Stand hinterlassen:
+
+| Weg | vorher | jetzt |
+|---|---|---|
+| Typprofil speichern (Strom, Brauchwasser) | 169 Einzelanweisungen | eine Transaktion (wie `Form_EingProzTyp` schon) |
+| Gebäudetyp speichern | bis zu 192 Einzelanweisungen | eine Transaktion |
+| Gebäudetyp anlegen | 193 Einzelanweisungen — ein Fehler ließ einen Kopf OHNE Verteilungen zurück | eine Transaktion |
+
+Alle drei sind ergebnisgleich; der Referenzlauf ist byte-gleich (§ 7.7).
+
+### 2.4 Ein eingefrorenes Rechenobjekt
+
+Die drei Ergebnismasken bekamen das **lebende** `SimulationStrombedarf` bzw.
+`SimulationWaermebedarf` in die Hand und lasen bei jedem Optionswechsel neu
+daraus. Sie sind reine Anzeigen — nichts schreibt zurück. Also baut die Hülle
+einmal `BedarfErgebnisDaten`, rendert die bis zu vier Bilder vorab und reicht
+PNGs hinein; die Komponente kennt die Simulationsklassen nicht (Risiko R-W8-2).
+`Form_Simulation_Detail` und `NavigatorUebersicht` sind dabei nur an ihren
+Aufrufstellen angefasst (iR10).
+
+### 2.5 Zwei Stände statt einem
+
+`TypProfilDialog` und `GebaeudetypDialog` führen **zwei** Stände: die
+übernommenen Werte (7 × 24 bzw. n × 24) und die 24 Felder eines Tages. Genau so
+arbeiteten die Vorläufer, und genau daran hängen zwei Verhaltensweisen, die
+sonst verloren gegangen wären:
+
+* **Im Typprofil verwirft ein Tageswechsel nicht übernommene Eingaben.**
+  `Tagesdaten` überschrieb die 24 Felder aus `arr`, ohne zu fragen.
+* **Im Gebäudetyp überträgt ein Kurvenwechsel STILL.** `RefreshArrayValues`:145
+  schrieb die Felder der vorigen Kurve zurück; ein leeres oder ungültiges Feld
+  ließ den bisherigen Wert stehen, ohne zu melden. Gemeldet wird erst am
+  Speichern-Knopf.
+
+Der Unterschied ist Absicht des Bestands und keine Unachtsamkeit: Das Typprofil
+hat einen eigenen Übernahmeknopf, der Gebäudetyp nicht.
+
+---
+
+## 3. Feldkarten-Abgleich — je AUSPRÄGUNG
+
+Die zehn Karten wurden am 03.09.2026 neu gezogen (Stand nach W7) und liegen
+unter `scratchpad/iU9/karten_w8/`. Abgeglichen ist der **Feldbestand nach Zahl
+und Beschriftung**, und zwar je Ausprägung, nicht je Komponente (Risiko
+R-W8-1): Jede der zehn Masken hat einen eigenen bunit-Fall.
+
+| Maske | Karte | Komponente | Anmerkung |
+|---|---|---|---|
+| EingDBStromverbraucher | 31 Zeilen, 13 TextBox, 1 ComboBox, 4 Button | 12 Zahlenfelder, 1 Klappliste, 2 Textfelder, 4 Knöpfe | „Novmember" berichtigt (A-2) |
+| EingDBProzess | 31 Zeilen, dieselbe Form | dieselbe Komponente, Ausprägung `Prozesswaerme` | Titel und Typbeschriftung je Ausprägung |
+| EingDBBrauchwasser | 31 Zeilen, dieselbe Form | Ausprägung `Brauchwasser` | einzige der drei ohne Satelliten-`.resx` |
+| ErgStromverbraucher | 35 Zeilen, 16 TextBox, 3 TabPage | 4 Kennzahlen, 12 Monate, 1 Bild, 3 Reiter | keine Optionsgruppe — eine Reihe |
+| ErgProzesswaerme | 45 Zeilen, 19 TextBox, 4 RadioButton | 7 Kennzahlen, 2 Sichten | zwei Optionsgruppen, wie im Vorläufer |
+| ErgBrauchwasserwaerme | 48 Zeilen, 6 RadioButton, 1 CheckBox | 7 Kennzahlen, 3 Sichten, Jahresschalter | der Schalter nur bei der Brauchwassersicht |
+| EingStromTyp | 39 Zeilen, 24 `st*`, `listBox_Tag` mit 7 Einträgen | 24 Zahlenfelder, 7 Optionen, 2 Reiter, 8 Knöpfe | +2 = Tagknöpfe mit Wirkung (A-6) |
+| EingProzTyp | 38 Zeilen, dieselbe Form | Ausprägung `Prozesswaerme` | Stundenfelder ohne festes Format |
+| EingBrauchwasserTyp | 38 Zeilen, dieselbe Form | Ausprägung `Brauchwasser` | Stundenfelder `F4` |
+| EingGebTyp | 33 Zeilen, 25 TextBox, 2 ListBox, 4 Button | 24 Zahlenfelder, 2 Listen, 1 Bild, 4 Knöpfe | −1 = das Beschreibungsfeld ist Anzeige |
+
+**Beschriftungen aus dem DESIGNER, nicht aus der Karte.** Die Karte ordnet bei
+den Typprofilmasken die Stundenbeschriftungen um eine Zeile versetzt zu (`st10`
+ohne Text, `st18` mit „10", `listBox_Tag` mit „18") und beim Gebäudetyp
+`listBox_Kurve` die „18" statt „Kurvenverlauf für den Tag:". Die `.resx` sagt es
+richtig; die Tests halten die Designer-Fassung fest.
+
+---
+
+## 4. Abweichungen (mit Begründung)
+
+| # | Was | Warum |
+|---|---|---|
+| **A‑1** | Der Mausrad-Zoom der Jahresansicht entfällt; die x-Achse trägt stattdessen Monatsgrenzen | Ein PNG kann nicht spreizen. Zoomen ist W3‑O2/W11 — dieselbe Lage wie beim Kostenprofil. Die Monatsgrenzen sind der Ersatz: Sie sagen an jeder Stelle, wo im Jahr man ist |
+| **A‑2** | „Novmember" heißt jetzt „November" | Ein Tippfehler im Designer der Strommaske; die beiden Zwillinge schreiben es richtig. Der Text ist eine Beschriftung, kein Steuerwert |
+| **A‑3** | Die Positionierung an der Knopfposition (`PointToScreen`) entfällt bei vier Aufrufwegen | Eine Blazor-Hülle kennt kein `PointToScreen` und erscheint mittig über dem Besitzer — dieselbe Umstellung wie iU9‑W2.1 |
+| **A‑4** | 41 `MessageBox` werden `Warnbanner`, `Rueckfrage` oder Meldungstext | Wie A‑13 aus Welle 7: Bestätigungen bleiben Bestätigungen, Ablehnungen bleiben als Banner stehen und lassen den Dialog offen |
+| **A‑5** | Der 500‑ms-Bildblitz von „Änderungen Übernehmen" wird eine Meldung samt neu gezeichnetem Diagramm | Der Vorläufer hielt dafür den Oberflächenfaden mit `Thread.Sleep(500)` an — in der WebView wäre das ein eingefrorener Dialog (wie W7 A‑24). Dass das Bild mitgeht, ist der zweite Teil: Ein Diagramm, das nach einer ausdrücklichen Übernahme veraltete Werte zeigt, sieht wie ein Fehler aus |
+| **A‑6** | „Tag kopieren" und „Tag einfügen" tun etwas | Befund W8‑B1: Die beiden Knöpfe stehen im Designer aller drei Typprofilmasken, haben dort aber KEINEN Handler — sie waren sichtbar und wirkungslos. Sie sind jetzt ein Kopierpuffer in die FELDER; fest wird der Tag erst mit „Übernehmen", also auf demselben Weg wie beim Tippen |
+| **A‑7** | Der gelbe ToolTip mit dem Sperrgrund des Gebäudetyps wird eine `Herleitungszeile` | Ein Tooltip ist auf einem Berührungsgerät nicht erreichbar (wie W7 A‑19) |
+| **A‑8** | „Typ Löschen" im Gebäudetyp fragt nach | Der Vorläufer löschte Kopf und 192 Datenzeilen auf einen Klick, ohne Rückfrage — und der Katalog gilt für alle Projekte (wie W6 A‑4) |
+| **A‑9** | Die Typprofile werden in EINER Transaktion geschrieben, ebenso Anlegen und Löschen des Gebäudetyps | Siehe § 2.3. Ergebnisgleich, Referenzlauf byte-gleich |
+| **A‑10** | Ein Bestandswert außerhalb der Typliste wird ihr VORANGESTELLT | Der Vorläufer hatte eine frei beschreibbare `ComboBox` und zeigte auch einen Typ, den der Katalog nicht (mehr) führt. Ein `select` würde ihn still verwerfen (wie W7 A‑16) |
+| **A‑11** | Die tote Wochenansicht `ZeigeWochenGrafik`/`ExtrahiereWoche` entfällt ersatzlos | Befund W8‑B2: 64 Zeilen ohne Aufrufer (`Form_ErgBrauchwasserwaerme`:222‑285) |
+| **A‑12** | Der Ergebnisdialog schließt auch mit **Enter** | Er zeigt nur an und trägt genau einen Knopf; hier kann Enter nichts versehentlich schreiben. Die übrigen drei Dialoge lassen Enter unbelegt (Hausregel) |
+| **A‑13** | Die zwölf Monatsfelder stehen im Modus „Neu" LEER statt auf 0 | So fordert die Pflichtprüfung sie ein, statt still zwölf Nullen zu speichern (wie W7 A‑11). Der Vorläufer tat dasselbe — er fand keinen Satz und ließ die Felder unberührt |
+| **A‑14** | Kein KI-Aufrufknopf, kein `FensterEinpassung`, kein `Paint`-Rahmen, keine `pictureBox1` | Wie A‑1 aus Welle 7: Der KI-Einstieg hat in `EPOS.UI` noch keinen Baustein (W15b); die übrigen sind WinForms-Layoutkorrekturen, die Hülle und CSS erledigen |
+
+---
+
+## 5. Texte
+
+**130 Schlüssel** in `EPOS.Kern/MyResource/Resource.resx`,
+`Resource.en-US.resx` und — von Hand, weil hier kein Visual Studio läuft —
+`Resource.Designer.cs`, dazu die 13 Kurvennamen aus W8.0d. Alle drei Dateien
+geprüft: **3 615 de = 3 615 en**, 143 neue Schlüssel in allen dreien.
+
+| Präfix | Zahl | Wofür |
+|---|---|---|
+| `BERG_*` | 32 | Ergebnisdialog |
+| `BTYP_*` | 26 | Typstamm |
+| `BPRO_*` | 30 | Typprofil |
+| `GTYP_*` | 12 (+13 aus W8.0d) | Gebäudetyp |
+| `ALLG_MONAT_*` | 12 | die Monatsnamen — vier Dialoge brauchen sie |
+| `ALLG_MONAT_KURZ_*` | 12 | die x-Achse der Monatssäulen („Mrz" wie im Vorläufer) |
+| `ALLG_WOCHENTAG_*` | 7 | die `listBox_Tag`-Einträge der drei Typprofilmasken |
+
+**Alle zehn Masken zeichneten über `ApplyResources`**, sieben mit englischen
+Satelliten (`.en-US.resx`: 15 + 15 + 20 + 27 + 40 + 16 + 34 = **167**). Alle
+Texte sind **wörtlich** übernommen; die drei Brauchwassermasken trugen deutsche
+Literale und sind neu übersetzt. Die Zahl der lokalisierten Masken sinkt
+dadurch von 47 auf **37**.
+
+**Nicht übersetzt sind die Steuerwerte:** die Typnamen selbst kommen aus
+`Tab_Stromverbrauchertyp_STAMM`, `Tab_Prozesstyp_STAMM` und
+`Tab_Brauchwassertyp_STAMM` und werden mit dem Datenbankinhalt verglichen.
+
+**`help_mapping.txt` bleibt unverändert.** Die zehn Zeilen `Form_X.btn_Help`
+gelten weiter — der Schlüssel benennt die Wikiseite, nicht die Klasse; jede
+Komponente trägt ihren alten Schlüssel als `HilfeSchluessel`, je Ausprägung den
+richtigen.
+
+**`Allgemein/KI/HilfeKontext.cs`:** die zehn Einträge der gelöschten Masken
+entfernt, jeweils im Commit ihrer Maske (Regel F10).
+
+---
+
+## 6. WinForms-Seite
+
+**Gelöscht** (44 Dateien):
+
+```
+Views/Stromverbraucher/Form_EingDBStromverbraucher.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Stromverbraucher/Form_ErgStromverbraucher.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Stromverbraucher/Form_EingStromTyp.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Prozesswärme/Form_EingDBProzess.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Prozesswärme/Form_ErgProzesswaerme.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Prozesswärme/Form_EingProzTyp.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+Views/Brauchwasser/Form_EingDBBrauchwasser.{cs,designer.cs,resx}
+Views/Brauchwasser/Form_ErgBrauchwasserwaerme.{cs,designer.cs,resx}
+Views/Brauchwasser/Form_EingBrauchwasserTyp.{cs,designer.cs,resx}
+Views/Gebäude/Form_EingGebTyp.{cs,designer.cs,resx,de-DE.resx,en-US.resx}
+```
+
+**Neu auf der Windows-Seite** (3) — ein neuer Ordner `Views/Bedarf/`:
+`BedarfErgebnisHuelle.cs`, `TypStammHuelle.cs` (trägt W8.1 **und** W8.3, weil
+„DB ändern" und „Typ ändern" derselbe Aufrufweg sind), `GebaeudetypHuelle.cs`.
+
+**`Form_Simulation_Detail - Kopie.cs` gibt es nicht mehr** — sie ist mit iU9‑W0
+(iF29) gelöscht worden; Risiko R‑W8‑5 ist damit gegenstandslos.
+
+**Aufrufer umgestellt** (36 Stellen in 11 Dateien): `Form_Stromverbraucher`
+(5), `Form_Stromverbraucher_Admin` (5), `Form_Prozesswaerme` (5),
+`Form_Prozesswaerme_Admin` (5), `Form_Brauchwasser` (5),
+`Form_Brauchwasser_Admin` (5), `Form_Start` (1, die Kachel „eigenes
+Stromprofil"), `Form_Simulation_Detail` (2 — nur diese beiden Stellen,
+Wachstumsstopp iR10), `NavigatorUebersicht` (1), `Form_Gebaeude` (1),
+`WinFormsNavigation` (1, `Masken.GebaeudetypenAdmin`).
+
+**Keine Typverwendung ist übrig:**
+
+```
+grep -rn "(new|typeof|:)\s*(Form_EingDBStromverbraucher|Form_EingDBProzess|
+    Form_EingDBBrauchwasser|Form_ErgStromverbraucher|Form_ErgProzesswaerme|
+    Form_ErgBrauchwasserwaerme|Form_EingStromTyp|Form_EingProzTyp|
+    Form_EingBrauchwasserTyp|Form_EingGebTyp)\b" --include=*.cs .
+→ 0 Treffer im Code
+```
+
+Restfundstellen der alten Namen sind ausschließlich (a) `HilfeSchluessel`- und
+`help_mapping`-Zeichenketten, (b) Kommentare, die die Herkunft nennen, und
+(c) der eingefrorene Erreichbarkeitsbericht
+`Werkzeuge/Formularkarte/Erreichbarkeit_2026-09-03.md` (ein datierter
+Messstand, kein Code).
+
+---
+
+## 7. Nachweise
+
+### 7.1 Build
+
+```
+dotnet build WP-Plan.sln -c Release -p:Platform=x64 -t:Rebuild
+→ 0 Fehler, 20 Warnungen
+```
+
+Gleichauf mit der Basis nach Welle 7 (20). Aufteilung unverändert: 14 WFO1000,
+2 CS0108, 2 CS0109, 1 WFO0003, 1 CA2255 — keine der zehn gelöschten Masken trug
+eine WFO1000-Fundstelle, und keine neue ist dazugekommen.
+
+### 7.2 Tests
+
+```
+dotnet test WP-Plan.Kern.slnf -c Release
+→ KiKern.Tests         450 gruen
+  SpeicherEngine.Tests  337 gruen
+  EPOS.UI.Tests       1 006 gruen   (+66 aus Welle 8)
+  EPOS.Kern.Tests       113 gruen   (+20 aus Welle 8)
+  zusammen            1 906 gruen, 0 rot
+```
+
+**66 neue bunit-Fälle**: `BedarfErgebnisDialog` 12, `TypStammDialog` 17,
+`TypProfilDialog` 22, `GebaeudetypDialog` 15. Jeder Satz prüft den Feldbestand
+(Zahl UND Beschriftungen) **je Ausprägung**, die Vorbelegung, die Prüfregeln,
+die Rückrufe und die Tastatur; die Kultur ist auf de‑DE gepinnt.
+
+**20 neue Kern-Fälle**: `BedarfProfilTests` 9 (Typliste und Monatswerte je Art,
+`ProzesswaermeStammCtrl.SaveHead` neu/überschreiben/ReadOnly, `TypProfilCtrl`
+Lies/Neu/Speichern/Löschen je Art, `SpeichernUnter` auf der Ausprägung mit der
+abweichenden Schlüsselspalte), `TagVCtrlTests` 8 (`KurvenNamen(4)/(5)/(8)`,
+`Typen`, `Lies`, `Anlegen` mit Kopf **und** 192 Datenzeilen, `Speichern`,
+`Loeschen`), `ChartRendererTests` +3 (Maß und Determinismus der drei Bilder,
+der Rückfall „alles null", leere Reihen).
+
+### 7.3 Formularkarte
+
+```
+dotnet test Werkzeuge/Formularkarte/Formularkarte.sln -c Release
+→ 123 gruen
+```
+
+Kein Test hing an einer der zehn Masken — nur drei Zähler haben sich bewegt:
+66 Designer-Dateien (76), 63 Masken (73), 37 lokalisierte (47) und 61 von 63
+erreichbar (71 von 73).
+
+### 7.4 Stapellauf
+
+```
+dotnet run --project Werkzeuge/Formularkarte -- --alle WindowsFormsApplication1 --erreichbarkeit
+→ Masken 63 (73 nach W7), lokalisiert 37 (47), erreichbar 61,
+  unerreichbar 0, verwaist 0
+```
+
+**63 = 73 − 10.**
+
+### 7.5 SQL-Dialektprüfer
+
+```
+python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
+→ 1 254 SQL-Texte geprueft: 0 Fundstellen, 174 dynamisch, 1 080 in Ordnung
+python3 … --selbsttest
+→ 32 Anweisungen, 0 Abweichungen
+```
+
+Keine Nachbesserung am Prüfer nötig. Die Zahl der geprüften Texte sinkt von
+1 272 auf 1 254, weil die zehn Masken ihre SQL verloren oder mitgenommen haben.
+Gezogen wurde er nach **jedem** der vier Kern-Schritte.
+
+### 7.6 ChartProben
+
+```
+dotnet run --project Proben/ChartProben -c Release
+→ 15 Bilder geprueft, 0 Verstoesse. ERGEBNIS: alle gruen.
+```
+
+**Drei Bilder mehr als nach Welle 7**: `monatssaeulen` (978 × 542, zwölf Werte
+mit EINEM Nullmonat — der Rückfall „alles null" darf davon nicht ausgelöst
+werden), `stundenprofil_woche` (1244 × 464, fünf Werktage und zwei ruhigere
+Wochenendtage) und `jahresverlauf_bedarf` (978 × 542, 8 760 Stunden). Alle drei
+deterministisch; geprüft wird bei der Fläche die deckende Randlinie **und** die
+Mischfarbe der halbtransparenten Füllung über Weiß.
+
+### 7.7 Referenzlauf
+
+**Pflicht in dieser Welle**, weil vier Kern-Controller angefasst werden
+(`ProzesswaermeStammCtrl`, `BedarfStammCtrl`, `TypProfilCtrl`, `TagVCtrl`) und
+der Renderer drei neue Methoden bekommt.
+
+```
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017 \
+  --ziel artifacts/reflauf/w8
+→ Erfolgreich: 3 von 3
+
+dotnet run --project EPOS.Referenzlauf -c Release --no-build -- \
+  vergleich artifacts/reflauf/ref artifacts/reflauf/w8
+→ Projekt_1007: PASS (29 Dateien, 324 219 Werte)
+  Projekt_1017: PASS (21 Dateien, 254 154 Werte)
+  Projekt_1030: PASS (22 Dateien, 236 670 Werte)
+  GESAMT: PASS (815 043 Werte innerhalb der Toleranz)
+
+diff -rq je Projekt
+→ BYTE-GLEICH: Projekt_1030, Projekt_1007, Projekt_1017
+```
+
+**Byte-gleich, nicht nur innerhalb der Toleranz.** Das ist der Nachweis, dass
+die drei neuen Transaktionen und die Verlagerung der Schreibwege
+zeichengleich waren.
+
+### 7.8 Veröffentlichung
+
+```
+dotnet publish WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Release -p:Platform=x64
+→ wwwroot/index.html, wwwroot/_framework/blazor.webview.js,
+  wwwroot/_content/EPOS.UI/epos-ui.css — vollstaendig
+```
+
+---
+
+## 8. Grenzen
+
+* **Am Gerät ungeprüft.** Alles hier ist ohne Windows entstanden. Die
+  Abnahmeliste in § 9 ist der Prüfplan.
+* **Die drei Bilder sind neu gezeichnet, nicht nachgebaut.** Der Modus
+  `bildvergleich` der Referenzlauf-Suite ist mit iF23 gelöscht; ein Vergleich
+  mit den GDI-Bildern ist nur von Hand am Gerät möglich (Abnahmepunkt 3). Die
+  ChartProben sichern Maß, Farben und Determinismus.
+* **Die ID-Vergabe `GetMaxID + 1` bleibt** (R‑W8‑4): Zwei gleichzeitige
+  Schreiber auf `Tab_DBTagV_STAMM` würden dieselbe Id ziehen. Wörtlich
+  übernommen und jetzt wenigstens in einer Transaktion; siehe W8‑O‑4.
+* **Drei Bestandsbefunde bleiben stehen** (§ 10) — sie sind Fachentscheidungen,
+  keine Portfragen.
+
+---
+
+## 9. Abnahmeliste Windows (iZ5) für diese zehn Masken
+
+Je Dialog: öffnen mittig, kein weißes Aufblitzen, ziehbar und maximierbar,
+Tabellen ohne Umbruch, de **und** en (`HKCU\Software\wp-plan\Language`),
+Hochkontrast, 125 % und 150 % scharf, Maus **und** Finger (44 px), Tab-Zyklus
+bleibt im Dialog, Esc schließt, Infoknopf zeigt die Wikiseite.
+
+| # | Aufrufweg | Was besonders zu prüfen ist |
+|---|---|---|
+| 1 | Startbild → **Stromverbraucher** → „Simulation" | Ergebnis mit Startreiter „monatlich"; vier Kennzahlen; EINE Monatsreihe, also KEINE Optionsgruppe; die Säulen sind gelbgrün |
+| 2 | Startbild → **Prozesswärme** → „Simulation" | Sieben Kennzahlen, über der Reiterleiste das Wahlfeld „Einheit" auf MWh; zwei Optionsgruppen, die sich NICHT gegenseitig umschalten; Säulen rot bzw. blau. Umschalten auf kWh nimmt Kennzahlen, Monatstabelle UND Säulenbild mit (Entscheid W8‑O‑5) |
+| 3 | Startbild → **Brauchwasser** → „Berechnen" | Titel trägt „ - ‹Name›"; Startreiter „Grafik" UND Brauchwassersicht; „Wärmebedarf Brauchwasser" in MWh (der Wert liegt in kWh vor, siehe W8‑O‑5); der Schalter „Jahresverlauf" erscheint nur hier und zeigt 8 760 Stunden über Monatsgrenzen |
+| 4 | In 1–3 → **„DB ändern"** | Name gesperrt, Typliste gefüllt, zwölf Monatswerte mit vier Nachkommastellen; „Speichern" gesperrt; ein leeres Monatsfeld meldet den Monatsnamen (Strom) bzw. „Monat n" (Prozess/Brauchwasser) |
+| 5 | In 4 → **„Speichern unter"** | Namensabfrage IM Fenster mit Vorbelegung; belegter Name meldet; danach zeigt das Namensfeld den neuen Namen, „Überschreiben" trifft aber weiterhin den ALTEN Satz |
+| 6 | In 1–3 → **„DB neu"** | Erst der Name, dann der Dialog im Modus Neu: zwölf LEERE Felder, nur „Speichern" frei; leerer Typ meldet vor den Zahlen |
+| 7 | In 1–3 → **„Typ ändern"** | Typliste links, 24 Stundenfelder, sieben Wochentage; Tagwechsel verwirft nicht übernommene Eingaben; „Änderungen Übernehmen" meldet und zeichnet das 168‑h‑Bild neu; „Tag kopieren"/„Tag einfügen" wirken (A‑6) |
+| 8 | In 7 → **„Speichern in DB" / „Neu" / „Speichern unter" / „Löschen"** | Auslieferungstyp meldet und schreibt nicht; „Löschen" fragt nach; nach „Neu" steht der neue Typ gewählt mit 168 Nullen; „Speichern unter" nimmt die aktuellen Werte mit |
+| 9 | Startbild → Kachel **„eigenes Stromprofil"** | Derselbe Profildialog, Ausprägung Stromverbraucher |
+| 10 | Menü → **Gebäudetypen** (`Masken.GebaeudetypenAdmin`) und Gebäude → „Gebäudetyp ändern" | Fünf bzw. acht Kurvennamen je nach KURVENZAHL; Kurvenwechsel überträgt still; Katalogtyp sperrt „Typ Speichern" und nennt den Grund als Zeile; „Typ hinzufügen" fragt Name UND Beschreibung; „Typ Löschen" fragt nach (A‑8) |
+| 11 | **Simulation-Detail** → „Strom-Details" und „Wärmebedarf-Details" | Strom ohne Startreiter (Kennzahlen vorn), Wärme mit Reiter „monatlich"; die Datei ist sonst unberührt |
+| 12 | **Navigator Übersicht** → „Wärmebedarf" | Startreiter „Grafik" und Brauchwassersicht |
+| 13 | Die drei **Admin-Masken** (W14b) → alle Knöpfe | Besonders `Form_Brauchwasser_Admin` → „Ergebnisse Verbrauch": Dort öffnet sich wie bisher die PROZESS-Ansicht ohne Brauchwassersicht (Befund W8‑B3) — „davon Brauchwasser" zeigt seit dem Entscheid W8‑O‑5 aber DIESELBE Zahl wie Punkt 3 und nicht mehr das Tausendfache |
+
+---
+
+## 10. Offene Punkte
+
+| # | Was | Vorschlag |
+|---|---|---|
+| **W8‑O‑1** | Die Prüfmeldungen heißen je Ausprägung anders: „Monatswert Januar" gegen „Monat 1", „Stundenwert 7" gegen „Stunde 7". Das ist keine Fachlage, sondern gewachsen | Wörtlich übernommen (Regel F3), je Ausprägung ein Test. **Entscheid des Anwenders**, ob alle drei Blätter denselben Wortlaut bekommen sollen — es wäre eine Zeile je Hülle |
+| **W8‑O‑2** | „Speichern in DB" der drei Typprofilmasken ruft KEIN `VerteilungUebernehmen`: Was im Feld steht und nicht mit „Änderungen Übernehmen" festgeschrieben wurde, geht nicht mit. Der Gebäudetyp macht es umgekehrt (`btn_Speichern_Click` übernimmt zuerst) | Wörtlich übernommen. **Entscheid des Anwenders**: Soll „Speichern" die Felder mitnehmen? Dann fällt der Unterschied zwischen den beiden Masken weg — der Übernahmeknopf bliebe für die Vorschau |
+| **W8‑B3 / W8‑O‑3** | `Form_Brauchwasser_Admin`:95 („Ergebnisse Verbrauch") öffnete den PROZESS-Ergebnisdialog aus der BRAUCHWASSER-Verwaltung — also ohne Brauchwassersicht und ohne den Teiler 1000 | Wörtlich übernommen (`mitBrauchwasser: false`). **Frage an den Anwender:** War das Absicht, oder soll dort dieselbe Ansicht stehen wie unter Punkt 3 der Abnahmeliste? |
+| **W8‑O‑4** | `Tab_DBTagV_STAMM` und `Tab_DBTagVDaten_STAMM` bekommen ihre Id über `GetMaxID + 1`; zwei gleichzeitige Schreiber zögen dieselbe (R‑W8‑4) | Wörtlich übernommen, jetzt in einer Transaktion. Die saubere Lösung wäre `AUTOINCREMENT` wie beim Prozesskatalog — das ist eine Schemafrage und gehört in ein eigenes Paket |
+| **W8‑B4 / W8‑O‑5** — **erledigt** | Der Brauchwasserwert wurde NUR in der Brauchwassermaske durch 1000 geteilt (`Form_ErgBrauchwasserwaerme.Init`:36 gegen `Form_ErgProzesswaerme.Init`:32) — dieselbe Größe, zwei Anzeigen | **Entscheid (Anwender, 04.09.2026):** MWh als Vorgabe, kWh wählbar, konsistent in den Ansichten — umgesetzt in `e665c41` (Kernklasse `Energieeinheit`/`BedarfEinheitWahl` in `7d8eb4f`). Der nackte Teiler ist weg; die Hülle nennt je Kennzahl die **Einheit, in der ihr Wert vorliegt** (`Waermebedarf_Brauchwasser` in **kWh** — es kommt aus `brauchwasserwerte.Sum()` —, jede andere Energiemenge in **MWh**, die beiden Spitzenwerte in kW, die zwölf Monatswerte in MWh), und der Dialog rechnet auf die gewählte Anzeigeeinheit um. Bei der Vorgabe MWh sind alle Zahlen **zeichengleich zum Bestand**; die einzige Ausnahme ist genau die Inkonsistenz, die der Entscheid beseitigt — der Weg aus W8‑B3 (`Form_Brauchwasser_Admin` → „Ergebnisse Verbrauch") zeigte „davon Brauchwasser" ohne den Teiler und damit um Faktor 1000 größer als derselbe Wert unter „Simulation". Das Säulenbild kommt in zwei Fassungen aus der Hülle — ein PNG lässt sich nicht umrechnen |
+| **W8‑O‑5b** | Der Entscheid W8‑O‑5 legte die Quelleneinheit je Kennzahl in der Hülle fest — `Waermebedarf_Brauchwasser` in **kWh**, weil es aus `brauchwasserwerte.Sum()` kommt. Für die beiden Vorschauwege stimmt das (`Form_Brauchwasser_Admin`:84 und der Bedarfsprofildialog setzen die blanke Summe). Der **Simulationsweg** liefert dasselbe Feld aber schon in MWh: `SimulationWaermebedarf.Waermebedarf_berechnen`:393 rechnet `brauchwasserwerte.Sum() / 1000`, und `SimulationErgebnisHuelle`:193 reicht genau dieses Objekt in dieselbe Hülle. Unter Simulation → „Wärmebedarf-Details" wird der Wert deshalb ein **zweites Mal** geteilt und steht um den Faktor 1000 zu klein | **Anwenderentscheid ausstehend.** Ein Feld, vier Schreiber, zwei Einheiten — die Hülle kann nur eine annehmen. Sauber wäre, dass alle Schreiber `Waermebedarf_Brauchwasser` in MWh führen (so wie es der Kern tut und wie es seit dem Nachtrag zu W9‑O‑3 für `Waermebedarf_Prozess` durchgehend gilt); dann nennt die Hülle für **jede** Energiekennzahl MWh und kennt nur noch eine Regel. Das ändert zwei Anzeigen: Der Simulationsweg würde richtig, die beiden Vorschauwege müssten im selben Schritt auf MWh gehoben werden — sonst kippt dort die heute richtige Zahl. Der Nachtrag zu W9‑O‑3 hat den Brauchwasserzweig deshalb bewusst NICHT mitgedreht |
+| **W8‑O‑6** | Der KI-Aufrufknopf fehlt in allen vier Dialogen (A‑14) | Mit W15b, wenn `Gespraechsverlauf` steht — wie W6‑O‑6 und W7‑O‑6 |
+| **W8‑O‑7** | Die drei Renderer-Bilder sind neu gezeichnet; ein Bildvergleich mit den abgelösten WinForms-Charts ist nur von Hand möglich (`bildvergleich` ist mit iF23 gelöscht) | Abnahmepunkt 3. Die ChartProben sichern Maß, Farben und Determinismus |
+
+---
+
+## 11. Geänderte und neue Dateien
+
+**Neu in `EPOS.UI`** (8): `Dialoge/Bedarf/BedarfErgebnisDaten.cs`,
+`BedarfErgebnisDialog.razor`, `TypStammDaten.cs`, `TypStammDialog.razor`,
+`TypProfilDaten.cs`, `TypProfilDialog.razor`, `GebaeudetypDaten.cs`,
+`GebaeudetypDialog.razor`.
+
+**Neu im Kern** (3): `Model/BedarfsArt.cs`, `Controller/BedarfStammCtrl.cs`,
+`Controller/TypProfilCtrl.cs`.
+**Geändert im Kern** (3 + Renderer + Ressourcen):
+`Controller/ProzesswaermeStammCtrl.cs`, `Controller/TagVCtrl.cs`,
+`Allgemein/Bericht/ChartRenderer.cs`; dazu die drei Ressourcendateien.
+
+**Neu in der Anwendung** (3): die drei Hüllen unter `Views/Bedarf/`.
+
+**Neu in den Tests** (6): vier bunit-Klassen in `EPOS.UI.Tests/Dialoge/`,
+`EPOS.Kern.Tests/BedarfProfilTests.cs`, `EPOS.Kern.Tests/TagVCtrlTests.cs`.
+
+**Geändert in den Proben**: `Proben/ChartProben/Program.cs` (drei Bilder).
+
+---
+
+## Windows-Abnahme 05.09.2026 — Bedarfsrechnung
+
+### W8‑B‑1 — Bedarfsergebnis zeigt 0 und ein leeres Bild — **Ursache liegt nicht hier**
+
+**Gemeldet** im PDF „iOS_Migration_Probleme", S. 4–5: Kachel „Prozesswärme" →
+„Simulation…" → Überlagerung **Bedarfsergebnis** (`BedarfErgebnisDialog`,
+`BedarfErgebnisDaten`) mit Einheit MWh: „Simulation bringt Ergebnis 0
+(monatlicher Verlauf), Grafik bleibt leer" — das Bild „Prozesswärme [MWh]" zeigt
+leere Achsen 0–5. Dasselbe beim Standardlastprofil.
+
+**Der Ergebnisdialog ist entlastet, und die Einheitenwahl auch.** Der Verdacht
+lag auf den beiden Nachträgen vom 04.09.2026 — W8‑O‑5 (`e665c41`, Einheit am Wert
+statt Sonderteiler) und W9‑O‑3 (`a3906ca`, Prozesssumme über die
+Einheitenklasse) —, weil eine zweimal angewandte Umrechnung kWh→MWh den Faktor
+10⁻⁶ ergäbe und damit gerundet 0. Geprüft und ausgeschlossen:
+
+* `ProzesssummeUebernehmen()` hat **genau einen** Aufrufer
+  (`BedarfsProfileHuelle`:398).
+* `Energieeinheit.MWh.AusMWh` ist die **bitgleiche Identität** — bei der Vorgabe
+  MWh wird überhaupt nicht gerechnet (`EnergieeinheitTests`).
+* Kein Feldname der Ergebnis-DTOs ist vertauscht: `Waermebedarf_Prozess_Monat`
+  steht in der Sicht „Prozesse", `Waermebedarf_Gebaeude_Monat` in „Gebäude".
+* Der Ergebnisdialog bekommt die Reihe **schon leer** — die Monatswerte sind
+  bereits im Rechenobjekt 0.
+
+**Die eigentliche Ursache** ist die Namensauflösung der Vorschau im
+Bedarfsprofil-Dialog (Welle 9): Der Dialog gibt die Namen der **Projektkopien**
+weiter, die Vorschau schlug sie ausschließlich im `_STAMM`-Katalog nach. Analyse,
+Behebung, Wache und Abnahmepunkte stehen im Protokoll der Welle 9 unter
+**W9‑B‑4** (Prozesswärme) und **W9‑B‑5** (Standardlastprofil); behoben mit
+`b8090b0`, Zeuge `66c80b6`.
+
+**Auch der Renderer ist entlastet.** Die leeren Achsen 0–5 sind das korrekte Bild
+einer reinen Nullreihe: `ChartRenderer.MonatsSaeulen` ermittelt `maxWert = 0`,
+bekommt daraus die Vorgabeskala und zeichnet zwölf Säulen der Höhe 0
+(`hoehe > 0` ist die Zeichenbedingung). Bei einer Reihe mit Werten zeichnet er
+die Säulen — nachgewiesen durch `Proben/ChartProben` (32 Bilder, 0 Verstöße). Am
+Renderer wurde **nichts geändert**.
+
+**Was in Welle 8 unverändert bleibt:** die Einheitenwahl MWh/kWh, das doppelt
+gerenderte Säulenbild (eine Fassung je Einheit), die Einheit am Wert und die
+Sonderstellung des Brauchwassers in kWh (offener Punkt W8‑O‑5b).
+
+
+## Windows-Abnahme 05.09.2026 — Stundenverteilung (W8‑E‑1, W8‑B‑2)
+
+Betroffen ist `EPOS.UI/Dialoge/Bedarf/TypProfilDialog.razor` — in der Oberfläche
+„Stromverbrauchertyp Stundenverteilung", erreichbar auf **zwei** Wegen, die
+dieselbe Komponente zeigen: als Überlagerung „Typ in DB ändern…" aus dem Dialog
+„Standard Stromprofil" (`BedarfsProfileDialog`) und als Assistentenseite
+(„eigenes Lastprofil"). Beide bekommen ihren Parametersatz aus **einer** Stelle,
+`TypStammHuelle.ProfilGaben` — es ist nichts gedoppelt.
+
+### W8‑E‑1 — Anordnung wie das WinForms-Vorbild
+
+**Gemeldet.** Der Anwender will den Dialog „so wie zuvor (vor‑W16‑Branch)". Die
+Razor-Fassung zeigte die Typen als **hohe Wahlzeilen**, die Wochentage als
+**sieben untereinander stehende Optionsknöpfe** und die Stundenwerte als
+**24 Zeilen untereinander** — der Dialog war damit rund dreimal so hoch wie sein
+Vorbild und musste rollen.
+
+**Das Vorbild.** Die drei abgelösten Masken sind zeichengleich; gelesen wurde
+`Form_EingStromTyp` aus dem Stand **vor** `6b65f2e` („iU9‑W8.3: TypProfilDialog,
+drei Typprofilmasken geloescht") — Designer und `.resx`, dazu die Feldkarte aus
+`Werkzeuge/Formularkarte`. Alle Maße sind Entwurfspixel bei 96 dpi:
+
+| Baustein | Ort | Maß | Anmerkung |
+|---|---|---|---|
+| `$this` | — | **607 × 544** | ClientSize |
+| `Label1` „Liste der Typen in der DB:" | 14, 14 | 157 × 17 | |
+| `listBox_Typname` | 17, 35 | **197 × 157** | ≈ 9 sichtbare Zeilen, Rollbalken |
+| `Label2` „Beschreibung des ausgewählten Typs:" | 245, 24 | 227 × 17 | |
+| `textBox_Beschreibung` | 248, 46 | **343 × 73** | mehrzeilig |
+| `tabControl1` „Wochenwerte" \| „Grafik" | 17, 199 | 578 × 297 | |
+| `label28` „Stundenwerte [KW, KWh oder %]" | 36, 10 | 200 × 17 | |
+| `st1`…`st8` / `Label3`…`Label10` | x = 37 / 16 | je 70 × 22 | y = 34, 58, 81, 105, 128, 152, 175, 199 |
+| `st9`…`st16` / `Label11`…`Label18` | x = 147 / 117 | je 70 × 22 | dieselben acht Zeilen |
+| `st17`…`st24` / `Label19`…`Label26` | x = 258 / 228 | je 70 × 22 | dieselben acht Zeilen |
+| `Label27` „Auswahl Wochentag" | 338, 26 | 124 × 17 | |
+| `listBox_Tag` | 345, 52 | **109 × 123** | alle sieben Tage sichtbar |
+| `btn_Tagkopieren` | 345, 185 | 109 × 26 | |
+| `btn_Tageinfuegen` | 345, 217 | 109 × 26 | |
+| `btn_WocheUebernehmen` | 37, 230 | 224 × 27 | `Image = Resources.speichern` (Diskette) |
+| `chart1` (Blatt „Grafik") | 15, 16 | 537 × 232 | |
+| Fußleiste, y = 507, Höhe 31 | | | **Speichern unter** (x 9, b 119) \| **Speichern in DB** (144, 113) \| **Löschen** (271, 87) \| **Neu** (373, 102) \| **Schließen** (511, 84) |
+
+**Umgesetzt** ist die **Anordnung und die Reihenfolge**, nicht das Pixelmaß:
+
+* Kopfzeile — Typliste **links**, Beschreibung **rechts** im `epos-auswahlpaar`
+  (`flex 1 : 2`, dem Verhältnis 197 : 343 des Designers nachgebildet); die zwei
+  Reiter stehen **darunter** über die volle Breite.
+* Beide Listen sind eine **kompakte einzeilige Liste**: `epos-raster-huelle` +
+  `epos-raster epos-raster--wahlliste` mit je einer breiten `Zeilenwahl`
+  (`Beschriftung`, Muster W4‑E‑1) — **ein** Klickziel und **ein** Tabulatorhalt je
+  Zeile, wie eine ListBox-Zeile auch. Die Zellenpolsterung und die Trennlinie
+  fallen weg, sonst kämen 8 px je Zeile zu den 44 px des Knopfes hinzu.
+* Die 24 Stundenwerte stehen in **drei Spalten zu acht Zeilen** (1–8, 9–16,
+  17–24) mit der **Zeilennummer vor** dem Feld. Das macht das Stilblatt
+  (`.epos-stundenraster`: `grid-template-rows: repeat(8, auto)` +
+  `grid-auto-flow: column`), **im Markup laufen die Felder weiter 1…24** — so
+  bleibt der Tabulatorweg der Maske (`st1`…`st24`, TabIndex 119…165) erhalten.
+* Rechts daneben die Wochentagsliste, **darunter** „Tag kopieren" und
+  „Tag einfügen"; **unter** dem Raster „Änderungen Übernehmen", wieder mit seinem
+  Diskettenzeichen (`aria-hidden`, `epos-knopf--mit-bild`).
+* Die Fußleiste in der Reihenfolge des Designers: **Speichern unter | Speichern in
+  DB | Löschen | Neu | Schließen** (vorher begann sie mit „Neu").
+
+**Was bewusst NICHT übernommen ist.** Die Pixelhöhen: Eine ListBox-Zeile ist im
+Vorbild 17 px hoch, ein Stundenfeld 22 px. Das Haus hält `--epos-touchziel`
+(44 px), und die Regel wird für eine Maske nicht aufgeweicht. Folge: Im Rahmen
+`--epos-listenhoehe` (22 rem) stehen **acht** Typzeilen statt neun, der Rest
+rollt — im eigenen Rahmen, nie die Seite (Regel W9‑B‑2). Die sieben Wochentage
+passen ganz hinein. Ebenfalls nicht übernommen ist `pictureBox1` (28 × 27,
+`setup_trans`) — ein Schmuckbild ohne Aussage.
+
+**Kein Inline-Stil, kein Nesting.** Das neue CSS steht am Ende von
+`EPOS.UI/wwwroot/epos-ui.css` in einem Block; `StilblattTests` bleibt grün.
+
+### W8‑B‑2 — „Neu" mit einem vorhandenen Namen warf einen Datenbankfehler
+
+**Gemeldet** (Bildschirmfoto 3): Im Dialog „Neu" den Namen „test" eingeben, den
+es schon gibt → modaler Kasten
+
+> Datenbankfehler: SQLite Error 19: 'UNIQUE constraint failed:
+> Tab_Stromverbrauchertyp_STAMM.Typname'. Anweisung: INSERT INTO
+> Tab_Stromverbrauchertyp_STAMM (ID, Typname, ReadOnly) VALUES (?, ?, ?)
+
+**Ursache.** `TypProfilCtrl.Anlegen` (`EPOS.Kern/Controller/TypProfilCtrl.cs`)
+prüfte den Namen **nicht** und rief unmittelbar
+`StromverbraucherStammCtrl.TypNew` (:280) bzw. die Zwillinge in
+`ProzesswaermeStammCtrl` (:303) und `BrauchwasserStammCtrl` (:274). Die
+Namensspalte ist eindeutig; der Wurf lief über
+`SqliteDatenzugriff` (:431) in `DataRepository.FehlerMelden` und von dort als
+`Meldung.Zeigen` in `Dienste.Dialog` — **eine MessageBox aus einem
+Blazor-Ereignis** (Hausregel A‑8, W16b-Protokoll § 12, Befund W13‑B‑1), dazu ein
+Wortlaut, der den Anwender nichts angeht. Dieselbe Lücke hatte „Speichern unter".
+
+**Behoben in zwei Hälften.**
+
+* **Kern (Vorprüfung, kein Werfen).** Neu ist `TypProfilCtrl.TypExists(art, name)`
+  — eine Frage auf dieselbe Spalte, die auch der Schlüssel ist
+  (`BedarfStammCtrl.TypKatalog`). `Anlegen` fragt sie **vor** dem Schreiben;
+  `Neu` und `SpeichernUnter` geben seither `TypAnlageErgebnis`
+  (`Angelegt` / `NameBelegt` / `Fehlgeschlagen`) zurück statt `bool` — dasselbe
+  Muster wie `BedarfLoeschErgebnis` aus W14b. Ein belegter Name ist damit ein
+  **Wert** und kein Wurf.
+* **Oberfläche (Banner, Abfrage bleibt offen).** Der Dialog führt
+  `[Parameter] Existiert` und `MeldungNameBelegt` und reicht die Prüfung als
+  `NamensDialog.Pruefung` hinein — der Baustein hält die Namensabfrage dann
+  **offen** und zeigt den Grund als `Warnbanner` über dem Feld. Es entsteht kein
+  `Dienste.Dialog`-Aufruf.
+
+**Text.** Neuer Schlüssel `BPRO_MSG_NAME_BELEGT` in `MyResource`:
+de „Ein Typ mit diesem Namen ist schon vorhanden",
+en „A type with this name already exists".
+
+### Nachweise
+
+| Wache | Ort | Was sie hält |
+|---|---|---|
+| `BedarfProfilTests.Ein_belegter_Name_meldet_sich_ohne_Dialog_und_schreibt_nichts` | `EPOS.Kern.Tests` | je Ausprägung: `NameBelegt` statt Wurf, **leere Dialogmitschrift**, unveränderte Typzahl |
+| `BedarfProfilTests.TypExists_laesst_einen_freien_Namen_durch_und_kennt_ihn_danach` | `EPOS.Kern.Tests` | die Gegenprobe — ein freier Name geht durch, derselbe danach nicht mehr |
+| `TypProfilDialogTests.Neu_mit_einem_belegten_Namen_meldet_und_laesst_die_Abfrage_offen` | `EPOS.UI.Tests` | Banner in der Überlagerung, `Namensfrage` steht noch, `Neu` ungerufen |
+| `…Speichern_unter_mit_einem_belegten_Namen_meldet_und_schreibt_nicht` | `EPOS.UI.Tests` | dasselbe für den zweiten Weg |
+| `…Ein_freier_Name_geht_durch_und_die_Abfrage_schliesst_sich` | `EPOS.UI.Tests` | die Gegenprobe |
+| `…Typliste_und_Beschreibung_stehen_nebeneinander_ueber_den_Reitern` | `EPOS.UI.Tests` | die Kopfzeile des Vorbilds |
+| `…Die_Stundenwerte_stehen_in_einem_Raster_und_laufen_im_Markup_von_1_bis_24` | `EPOS.UI.Tests` | Raster **und** Tabulatorreihenfolge |
+| `…Das_Stundenraster_traegt_im_Stilblatt_acht_Zeilen_und_Spaltenfluss` | `EPOS.UI.Tests` | die REGEL — eine bunit-Probe sieht sie nicht (Lehre W6‑B‑1) |
+| `…Die_Wochentage_stehen_neben_dem_Raster_mit_ihren_zwei_Knoepfen_darunter` | `EPOS.UI.Tests` | die rechte Spalte des Wochenblatts |
+| `…Die_Fussleiste_steht_in_der_Reihenfolge_des_Vorbilds` | `EPOS.UI.Tests` | Speichern unter \| Speichern in DB \| Löschen \| Neu \| Schließen |
+| `…Beide_Listen_stehen_im_Rahmen_mit_Rollbalken` | `EPOS.UI.Tests` | Regel W9‑B‑2 für beide Listen |
+
+Gate zum Stand: **EPOS.Kern.Tests 1076**, **EPOS.UI.Tests 2493** (beide auch unter
+`LANG=en_US.UTF-8`), **Formularkarte 122**, `SqlDialektPruefer` 1201 SQL-Texte /
+**0 Fundstellen**, beide Kern-Wächter leer.
+
+### Abnahmepunkte am Gerät
+
+1. Startseite → Kachel „Standard Stromprofil" → „Typ in DB ändern…": Die Typliste
+   steht **links**, die Beschreibung **rechts daneben**, die zwei Reiter darunter.
+2. Reiter „Wochenwerte": die 24 Stundenwerte in **drei Spalten zu acht Zeilen**
+   mit den Nummern 1–24 **vor** den Feldern; rechts die Wochentagsliste, darunter
+   „Tag kopieren" / „Tag einfügen"; unter dem Raster „Änderungen Übernehmen".
+3. Der Dialog passt **ohne Rollen** ins Fenster (Vergleichsmaß: das Vorbild war
+   607 × 544).
+4. Tabulator vom ersten Stundenfeld: Er läuft **1 → 2 → … → 24**, nicht
+   spaltenweise.
+5. „Neu" → einen **vorhandenen** Namen eingeben → OK: Die Namensabfrage **bleibt
+   offen** und zeigt „Ein Typ mit diesem Namen ist schon vorhanden"; **kein**
+   Datenbankfehler-Kasten. Dasselbe mit „Speichern unter".
+6. „Neu" → einen **freien** Namen → OK: Die Abfrage schließt sich, der neue Typ
+   steht in der Liste und ist gewählt.
+7. Auf Englisch (Menü „Sprache"): Die Meldung lautet „A type with this name
+   already exists".
+8. Alle drei Ausprägungen — Stromverbraucher, Prozesswärme, Brauchwasser — zeigen
+   dieselbe Anordnung; die Beschriftungen bleiben je Ausprägung verschieden.
+
+## Windows-Abnahme 05.09.2026 — Ergebnisdialog Strom (W8‑E‑2, W8‑B‑3)
+
+Weg des Befunds: Kachel „Standardlastprofil" → Dialog **„Standard Stromprofil"**
+(`BedarfsProfileDialog`, Ausprägung Strom) → Knopf **„Simulation"** →
+Überlagerung **„Simulation Ergebnisse"** (`BedarfErgebnisDialog`). Das
+Bildschirmfoto zeigt bei Einheit kWh, Profil `EFH_3_Pers`, Typ `REH_1` und
+8 000 kWh Jahresbedarf:
+
+```
+max. Strombedarf      3,72   kW
+Gesamter Strombedarf  0      kWh
+Stromganglinie        0      kWh
+Strombedarf Gebäude   0      kWh
+```
+
+### W8‑B‑3 — „Strombedarf Gebäude" und „Gesamter Strombedarf" standen auf null
+
+**Die Ursache ist eine fehlende Zeile in einer ABSCHRIFT** — dieselbe Klasse
+Fehler wie W9‑B‑4/B‑5, nur eine Ebene weiter: nicht die Namensauflösung, sondern
+eine zweite Fassung derselben Rechnung.
+
+`BedarfsProfileHuelle.Rechenstand.Rechnen` trug die Vorschaurechnung des Stroms
+von Hand nachgezogen im Oberflächencode:
+
+```csharp
+_strom.Strombedarf_gesamt = ergebnis.Sum();          // kWh - und gleich wieder weg
+Array.Copy(ergebnis, _strom.Strombedarf_viertelStundenwerte, ergebnis.Length);
+BhkwPlan.MonatsSumme(...);
+_strom.Strombedarf_Max = _strom.Maximaler_Strombedarf(...);
+_strom.Strombedarf_gesamt = _strom.Strombedarf_Gebaeude_gesamt;   // ← 0
+```
+
+Es fehlte `Strombedarf_Gebaeude_gesamt = reihe.Sum() / 1000`. Das Feld blieb auf
+seinem Anfangswert 0, und die letzte Zeile überschrieb damit auch
+`Strombedarf_gesamt`. Der Spitzenwert stand daneben richtig da, weil er aus der
+REIHE kommt und nicht aus einer Summe — genau das machte den Befund so
+verwirrend: eine gerechnete Leistung neben drei Nullen.
+
+Die Zeile war nicht verloren, sie stand nur woanders: `BedarfsVorschauCtrl.Strom`
+(die KATALOGvorschau der drei Bedarfsverwaltungen, iU9‑W14b) hatte sie seit jeher.
+Zwei Vorschauwege, zwei Abschriften, eine davon unvollständig.
+
+**Behebung.** Die sechs Zuweisungen stehen jetzt einmal im Kern, an der Klasse,
+deren Felder sie belegen — `SimulationStrombedarf.ProfilbedarfUebernehmen(float[])`,
+Zwilling von `ProzesssummeUebernehmen()` aus W9‑O‑3. Katalogvorschau und
+Projektvorschau nehmen dieselbe Fassung, und die Projektvorschau selbst ist von
+der Hülle in den Kern gezogen: **`BedarfsVorschauCtrl.ProjektVorschau(art,
+idProjekt, namen)`** trägt alle drei Ausprägungen. `BedarfsProfileHuelle` hält
+den Stand nur noch, sie rechnet nicht mehr.
+
+Einheiten unverändert wie im Lauf: die drei Energiemengen in MWh,
+`Strombedarf_Max` als LEISTUNG in kW, `Strombedarf_monat` aus
+`BhkwPlan.MonatsSumme` ebenfalls in MWh. `Stromganglinie_gesamt` bleibt in der
+Vorschau 0 — eine Vorschau rechnet die AUSGEWÄHLTEN PROFILE, nicht das ganze
+Projekt —, und „Gesamter Strombedarf" ist die Summe beider Posten, nur mit einem
+Summanden 0. Es ist damit dieselbe Rechnung wie im Lauf, nicht eine zweite.
+
+**Wache.** `EPOS.Kern.Tests/BedarfsProfilVorschauTests`, Abschnitt 4: Projekt 1017
+liefert **672,000 MWh** aus dem Profil (eingefroren), Gesamtsumme = Profil +
+Ganglinie, Summe der zwölf Monatswerte = Gesamtsumme, `Stuetzstellen` = 8 760.
+Dazu die Wache, dass die zwei Wärmewege der Projektvorschau unverändert bleiben
+(Prozess 30,0 MWh, Brauchwasser 4 059,7 kWh — W9‑O‑3 und W8‑O‑5 gelten weiter).
+
+### W8‑E‑2 — Darstellung: drei Kategorien, Summe unten, Woche und Tag
+
+Vier Wünsche des Anwenders, alle umgesetzt:
+
+1. **Saubere Tabelle mit Beschriftung, Wert, Einheit.** Das Blatt trägt die
+   Hausklasse `epos-raster` plus `epos-kennzahlen`: Die Beschriftungsspalte
+   wächst, Zahl und Einheit bleiben schmal, die Einheit steht leise rechts.
+
+2. **„max. Strombedarf" → „max. Leistung", eigene Kategorie.** Der Wert ist eine
+   LEISTUNG in kW und war nie ein Strombedarf. Er steht jetzt in einem eigenen
+   Block mit der Zwischenüberschrift **„Leistung"**, getrennt von den
+   Energieposten unter **„Energie"** — und **nicht** in der Summe. Getragen wird
+   das von `Kennzahlart` (`Leistung` / `Energie` / `Summe`) an
+   `ErgebnisKennzahl`; Vorgabe ist `Energie`, ein Datensatz ohne Kategorien
+   rendert deshalb unverändert als schlichte Liste.
+
+3. **„Strombedarf Gebäude" → „Strombedarf aus Profil"** — die Zeile trägt seit
+   W8‑B‑3 den aus den Profilen gerechneten Bedarf und heißt jetzt nach dem, was
+   sie zeigt. **„Gesamter Strombedarf"** ist die abgesetzte Summenzeile am Fuß
+   (`tfoot`, Rechenstrich darüber, halbfett); ihr Wert ist der des KERNS, keine
+   in der Oberfläche addierte Zahl — die Anzeige rechnet nicht, sie zeigt.
+
+4. **Grafik Strombedarf: Jahr | Woche | Tag.** Neuer Baustein
+   `EPOS.UI/Dialoge/Bedarf/BedarfGangGrafik.razor`. **Jahr** ist wörtlich die
+   Sicht des Bestands (Monatssäulen, beim Brauchwasser samt Schalter
+   „Jahresverlauf") — sie geht unverändert als `JahresInhalt` hinein. **Woche**
+   (168 h) und **Tag** (24 h) kommen mit einem Navigator ◀ ▶, der als **Ring**
+   läuft: hinter Woche 52 steht Woche 1. Die Stelle wird JE STUFE gemerkt.
+
+   **Kein neues Renderer-Bild.** Gezeichnet wird mit
+   `ChartRenderer.Jahresverlauf` und einem `Achsenfenster` — dem Zuschnitt, den
+   die Ergebnisseite (W11b) für ihren Datenzoom schon benutzt. Der Renderer hat
+   dafür einen optionalen Fensterparameter bekommen: zugeschnitten wird ZUERST,
+   Höchstwert und Skala beziehen sich danach auf den Ausschnitt (dieselbe Regel
+   wie bei `ErzeugerStapel`), und die x‑Achse wechselt von den Monatsgrenzen auf
+   die wirklichen Jahresstunden (`XAchseFenster`) — in einer Julinacht sagt
+   „Jan" nichts mehr. **Ohne Fenster ist das Bild byte‑gleich zum Bestand**
+   (`jahresverlauf_bedarf`, 45 100 Bytes, unverändert).
+
+   Die 52 + 365 Bilder entstehen **auf Zuruf**, nicht auf Vorrat: Die Hülle gibt
+   einen Delegaten `Func<Gangstufe,int,byte[]>` hinein — dasselbe Muster wie beim
+   Stromgang-Reiter der Ergebnisseite. Die Komponente ruft weiterhin keinen
+   Renderer, sie ruft die Hülle. Das Raster (Stunden oder Viertelstunden) sagt
+   das neue Kernfeld `SimulationStrombedarf.Stuetzstellen`; ohne es träfe
+   „Woche 12" nach einem vollen Lauf die falschen Stunden.
+
+**Die Wärmeausprägung ist konsistent mitgezogen** und verschlechtert sich nicht:
+`max. Wärmelast` steht ebenfalls im Leistungsblock, `Gesamter Wärmebedarf` als
+Summe am Fuß statt als zweite Zeile mitten unter seinen eigenen Bestandteilen.
+Eine Ganglinienquelle bekommt sie **nicht** — Umschalter und Navigator erscheinen
+dort gar nicht, Sichtwahl und Schalter „Jahresverlauf" bleiben, wie sie waren
+(eigene Wache in `BedarfErgebnisDialogTests`). W9‑B‑4/B‑5 und W8‑O‑5 sind
+unberührt; die Sonderstellung des Brauchwassers in kWh (W8‑O‑5b) bleibt offen.
+
+**Neue Ressourcenschlüssel** (beide Sprachen): `BERG_LBL_MAX_LEISTUNG`,
+`BERG_LBL_STROM_PROFIL`, `BERG_GRP_LEISTUNG`, `BERG_GRP_ENERGIE`,
+`BERG_STUFE_JAHR`, `BERG_STUFE_WOCHE`, `BERG_STUFE_TAG`, `BERG_GANG_MARKE`,
+`BERG_BILD_STROM_GANG`, `BERG_ACHSE_STROMBEDARF`.
+
+### Nachweise
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet test EPOS.Kern.Tests -c Release` | **1 077** grün (de‑DE und `LANG=en_US.UTF-8`) |
+| `dotnet test EPOS.UI.Tests -c Release` | **2 491** grün (de‑DE und `LANG=en_US.UTF-8`) |
+| `Proben/ChartProben -c Release` | **40** Prüfungen grün — 36 Bilder + **4** Gegenproben (neu: `jahresverlauf_woche`, `jahresverlauf_tag`, `jahresverlauf_woche_fenster`, `jahresverlauf_tag_fenster`) |
+| `EPOS.Referenzlauf … lauf/vergleich` (1030, 1007, 1017) | **PASS**, `diff -r` byte‑gleich zu `Referenzlaeufe/2026-08-30_B3-Kaskade` |
+| `SqlDialektPruefer` | 1 201 SQL-Texte, **0 Fundstellen** (keine neue SQL in dieser Änderung) |
+| iU5‑Wächter / Plattform‑Wächter | beide **leer** |
+
+### Abnahmepunkte für den Anwender
+
+1. „Standard Stromprofil" → Profil wählen → **„Simulation"**: Der Reiter
+   „Strombedarf Ergebnisse" zeigt **„Leistung"** mit „max. Leistung … kW",
+   darunter **„Energie"** mit „Stromganglinie" und „Strombedarf aus Profil", und
+   ganz unten abgesetzt **„Gesamter Strombedarf"**.
+2. „Strombedarf aus Profil" trägt den Jahresbedarf des Profils (bei 8 000 kWh/a
+   und Einheit kWh also 8 000, bei MWh 8,00) — **nicht mehr 0**.
+3. „Gesamter Strombedarf" = „Stromganglinie" + „Strombedarf aus Profil".
+4. Einheit auf kWh und zurück auf MWh umschalten: Leistung bleibt in kW, die
+   Energiezeilen und die Summe folgen der Wahl.
+5. Reiter **„Grafik Strombedarf"**: Umschalter **Jahr | Woche | Tag**. „Jahr"
+   zeigt das gewohnte Säulenbild. „Woche" und „Tag" zeigen die Ganglinie mit
+   ◀ ▶ und der Marke „Woche 1 von 52" bzw. „Tag 1 von 365"; über den ersten
+   Schritt zurück landet man beim letzten.
+6. Prozesswärme und Brauchwasser: dieselbe Gliederung (max. Wärmelast oben,
+   Gesamter Wärmebedarf unten), Grafikreiter **unverändert** — kein Umschalter,
+   Sichtwahl und „Jahresverlauf" wie bisher.
+
+## Windows-Abnahme 05.09.2026 — Formularraster, Paket P3 (iU8‑E‑2)
+
+**Der Wortlaut** (Anwender, 05.09.2026): „Darstellung der Dialoge kompakter und
+übersichtlicher — Parameterblöcke rechts. Genauso für andere Dialoge prüfen."
+Aufgabe #90 hat daraus die hausweite Regel gemacht (Bausteine
+`Formularraster`/`Formulargruppe`, Regel in `epos-ui.css`, Bestandsaufnahme aller
+92 Dateien im Protokoll `iU9_W14a`); Paket **P3** hängt Bedarf, Simulation und
+Projekt ein. **Kein Feld umbenannt, kein Text geändert, keine Regel je Dialog** —
+ein Dialog stellt nur seinen vorhandenen Feldlauf in den Raster.
+
+| Datei | Felder | Raster | Einspaltig | Klasse‑B‑Entscheid |
+|---|---|---|---|---|
+| `Dialoge/Bedarf/BedarfsProfileDialog.razor` | 7 | 2 | nein | Klasse A. Infoblock und „Jahresverbrauch" in den Raster; der Knopf „Übernehmen" ist **kein** Feld und bleibt darunter stehen. Die zwei Listen der `Zweispaltenauswahl` bleiben Listen. |
+| `Dialoge/Bedarf/TypStammDialog.razor` | 4 | 2 | nein | Klasse A. Kopfblock und die **zwölf Monatswerte**; im Vorbild (659 × 426) standen die Monate in zwei Spalten zu sechs — genau das stellt der Raster jetzt von selbst her. |
+
+**Nicht angefasst** (heute mit W8‑E‑1 bzw. W8‑E‑2 abgenommen):
+`TypProfilDialog` und `BedarfErgebnisDialog`.
+
+**Probe.** In beiden Testklassen je ein Fall
+(`Infoblock_und_Jahresverbrauch_stehen_im_Formularraster`,
+`Kopf_und_Monatswerte_stehen_im_Formularraster`): Der Block trägt
+`epos-formularraster`, die zwölf Monate sind **kurze** Felder.
+
+**Eine Zeile Stilblatt kam dazu** — der Unterblock „Formularraster — Paket P3" in
+`epos-ui.css`: Eine `Herleitungszeile` als Rasterkind spannt über **alle** Spalten.
+Sie gehört zu dem Feld ÜBER ihr („Vorgabe 0,6", „aus dem Kesselwirkungsgrad");
+als gewöhnliches Rasterkind fiele sie im zweispaltigen Raster **neben** ein fremdes
+Feld und läse sich wie dessen Erläuterung. Sonst kein CSS, keine Inline‑Stile.

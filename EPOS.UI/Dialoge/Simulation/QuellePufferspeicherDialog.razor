@@ -1,0 +1,534 @@
+﻿@* Waermequelle PUFFERSPEICHER (iU9-W10a.5, Konzept 4.3 / Etappe D5b).
+
+   VORBILD. Views/Simulation/Form_QuellePufferspeicher (1 089 Z., Designer 251 Z.,
+   620 x 508 plus zwei zur Laufzeit angebaute Bloecke, 29 Steuerelemente, fuenf
+   MessageBox). Er waehlt den PROJEKT-Pufferspeicher, der als Waermequelle dient -
+   fuer die WAERMEPUMPE (Verdampferwaerme) oder, seit Etappe D5b, fuer den
+   HEIZKESSEL (Kaskade: Eintrittstemperatur aus dem Puffer statt aus dem
+   Systemruecklauf).
+
+   ZWEI ARTEN, EINE MASKE. IstKessel entscheidet:
+     WP     - der Parameterblock (Quelltemperatur, Spreizung, Regeneration,
+              "unbegrenzt verfuegbar") und der Quellwaermehinweis,
+     Kessel - kein Parameterblock, dafuer der Kaskadenhinweis und der
+              TEMPERATURBEZUG (berechnet aus der Anlage oder fest vorgegeben).
+   Die Quell-Entnahmehoehe gilt fuer BEIDE (Paket Q1, Konzept 8.4).
+
+   WOERTLICH TROTZ BEFUND (W10-B15): Beim Kessel bleiben Quelltemperatur,
+   Spreizung, Regeneration und "unbegrenzt" UNANGETASTET. Das ist bewusst: Sonst
+   ueberschriebe eine Kesselbearbeitung die WP-Vorgaben mit 10 Grad und 5 K.
+
+   ZWEI HINWEISE, ZWEI STUFEN (Befund W10-B16). Im Vorlaeufer trug EIN Label
+   zwei ganz verschiedene Aussagen: "Das Projekt enthaelt noch keinen
+   Pufferspeicher" (Leerhinweis) und "Quelle bisher nur ueber den Namen …"
+   (Altbezeichner-Warnung). Hier sind es zwei Warnbanner mit eigener Stufe.
+
+   DER KONFLIKT "UNBEGRENZT" WIRD ANGEZEIGT, NICHT KORRIGIERT
+   (UnbegrenztKonfliktAnzeigen:934-953): Haken UND gewaehlter Puffer ergeben eine
+   Warnung samt der Temperatur, die dann gaelte - der Dialog verwirft nichts.
+
+   DIE PUFFERLISTE IST UNGEFILTERT (:783-785): Als QUELLE taugt jeder Speicher
+   des Projekts; die Verwendung steuert nur die Senkenseite.
+
+   ENTFALLEN: AnschlusshoeheAnbauen (:257-302) und TemperaturbezugAnbauen
+   (:311-375) - elf Steuerelemente, die nur zur Laufzeit entstanden, weil die
+   Designer-Datei nicht von Hand bearbeitet werden darf, samt ihrer
+   Pixelarithmetik (Befund W10-B14).
+
+   TASTATUR: Esc bricht ab - erst die Pufferverwaltung, dann der Dialog. Enter
+   ist NICHT belegt: Fuenf Pruefregeln haengen an OK. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <p class="epos-erdreich-pruefung">@KopfText</p>
+    <Herleitungszeile Text="@(Daten.IstKessel ? HinweisKaskade : HinweisQuellwaerme)" />
+
+    @* --- Die Speicherliste -------------------------------------------------- *@
+    @if (Puffer.Count == 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@HinweisKeinProjektpuffer" />
+    }
+    else
+    {
+        @if (Altbezeichnerhinweis.Length > 0)
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@Altbezeichnerhinweis" />
+        }
+
+        <Zeilenraster Bezeichnung="@KopfText" Spaltenmass="44px 1fr" Spalten="@Listenspalten">
+            <KindInhalt>
+                @foreach (QuellPufferzeile z in Puffer)
+                {
+                    <div class="epos-zr-zeile">
+                        <div class="epos-zr-zelle">
+                            <Zeilenwahl Gewaehlt="@(z.Id == _idPuffer)" Kurztext="@z.Anzeige"
+                                        Gewaehltwerden="() => PufferWaehlen(z.Id)" />
+                        </div>
+                        <div class="epos-zr-zelle">@z.Anzeige</div>
+                    </div>
+                }
+            </KindInhalt>
+        </Zeilenraster>
+
+        <Herleitungszeile Text="@Speicherdaten" />
+    }
+
+    @if (PufferAnlegenMoeglich)
+    {
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf"
+                    @onclick="() => _verwaltungOffen = true">@BtnPufferAnlegen</button>
+        </div>
+    }
+
+    @* --- Nur WÄRMEPUMPE: die vier Parameter --------------------------------- *@
+    @if (!Daten.IstKessel)
+    {
+        <Gruppenkopf Titel="@GbParameter">
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LblQuelltemperatur" Einheit="°C"
+                            Feldname="@LblQuelltemperatur" Wert="@_temperatur"
+                            WertChanged="w => { _temperatur = w; StateHasChanged(); }" />
+                <Zahlenfeld Bezeichnung="@LblSpreizung" Einheit="K" Feldname="@LblSpreizung"
+                            Wert="@_spreizung" WertChanged="w => { _spreizung = w; StateHasChanged(); }" />
+                <Zahlenfeld Bezeichnung="@LblRegeneration" Einheit="kW" Feldname="@LblRegeneration"
+                            Wert="@_regeneration" WertChanged="w => _regeneration = w" />
+
+                <Schalter Bezeichnung="@UnbegrenztText" Wert="@_unbegrenzt"
+                          WertChanged="w => { _unbegrenzt = w; StateHasChanged(); }" />
+                @if (UnbegrenztKonflikt)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@UnbegrenztKonflikttext" />
+                }
+
+                <Herleitungszeile Text="@Kapazitaetszeile" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* --- Nur HEIZKESSEL: der Temperaturbezug -------------------------------- *@
+    @if (Daten.IstKessel)
+    {
+        <Gruppenkopf Titel="@LblTempBezug">
+            <KindInhalt>
+                <Optionsgruppe Eintraege="@Temperaturbezuege" Auswahl="@(_fest ? FEST : BERECHNET)"
+                               AuswahlChanged="TemperaturbezugUmschalten" />
+                @if (_fest)
+                {
+                    <Ganzzahlfeld Bezeichnung="@LblTbVorlauf" Einheit="°C" Feldname="@LblTbVorlauf"
+                                  Wert="@_tbVorlauf" WertChanged="w => _tbVorlauf = w" />
+                    <Ganzzahlfeld Bezeichnung="@LblTbRuecklauf" Einheit="°C" Feldname="@LblTbRuecklauf"
+                                  Wert="@_tbRuecklauf" WertChanged="w => _tbRuecklauf = w" />
+                }
+                <Herleitungszeile Text="@LblTbHinweis" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @* --- Für BEIDE: die Quell-Entnahmehöhe ---------------------------------- *@
+    <Zahlenfeld Bezeichnung="@LblAnschlusshoehe" Feldname="@LblAnschlusshoehe"
+                Wert="@_anschlusshoehe" WertChanged="w => _anschlusshoehe = w" />
+    <Herleitungszeile Text="@LblAnschlusshoeheHinweis" />
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* --- Die Pufferverwaltung als ÜBERLAGERUNG ------------------------------ *@
+    @if (VerwaltungGaben is not null)
+    {
+        <Ueberlagerung Offen="@_verwaltungOffen" Titel="@VerwaltungTitel"
+                       Geschlossen="() => _verwaltungOffen = false">
+            <KindInhalt>
+                <PufferSpProjektDialog @attributes="VerwaltungGaben"
+                                       Geschlossen="VerwaltungGeschlossen" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+</div>
+
+@code {
+    /// <summary>Listenplatz „berechnet (aus der Anlage)".</summary>
+    public const int BERECHNET = 0;
+
+    /// <summary>Listenplatz „fest vorgegeben".</summary>
+    public const int FEST = 1;
+
+    /// <summary>Der Vorschlag beim Umschalten auf „fest" — nur bei LEEREN Feldern.</summary>
+    public const int VORSCHLAG_VORLAUF = 70;
+
+    /// <summary>Der Rücklaufteil desselben Vorschlags.</summary>
+    public const int VORSCHLAG_RUECKLAUF = 50;
+
+    // --- Was hereinkommt --------------------------------------------------------
+
+    /// <summary>Der Satz Übergabefelder (Vermessung §4 b).</summary>
+    [Parameter] public QuellePufferspeicherDaten Daten { get; set; } = new();
+
+    /// <summary>Die Projektpuffer, fertig beschriftet — UNGEFILTERT (:783-785).</summary>
+    [Parameter] public IReadOnlyList<QuellPufferzeile> Puffer { get; set; }
+        = Array.Empty<QuellPufferzeile>();
+
+    /// <summary>
+    /// Der Parametersatz der Pufferverwaltung (<c>PufferSpProjektHuelle.Gaben</c>).
+    /// Ohne ihn fehlt der Knopf „Pufferspeicher anlegen…" — Hausregel.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
+
+    /// <summary>
+    /// Lädt die Pufferliste neu — nach der Verwaltung, die sofort schreibt. Der
+    /// Rückgabewert ist die neue Liste.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<QuellPufferzeile>>? Neuladen { get; set; }
+
+    /// <summary>Nutzbare Kapazität [kWh] aus Volumen [l] und Spreizung [K].</summary>
+    [Parameter] public Func<double, double, double>? Kapazitaet { get; set; }
+
+    /// <summary>Der Steuerwert für „berechnet" (<c>DbWerte.WQ_TEMPMODUS_BERECHNET</c>).</summary>
+    [Parameter] public string SteuerwertBerechnet { get; set; } = "berechnet";
+
+    /// <summary>Der Steuerwert für „fest" (<c>DbWerte.WQ_TEMPMODUS_FEST</c>).</summary>
+    [Parameter] public string SteuerwertFest { get; set; } = "fest";
+
+    /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
+    [Parameter] public EventCallback<QuellePufferspeicherDaten?> Geschlossen { get; set; }
+
+    // --- Texte ------------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Wärmequelle Pufferspeicher";
+    [Parameter] public string TitelMitWp { get; set; } = "Wärmequelle Pufferspeicher — {0}";
+    [Parameter] public string KopfText { get; set; } = "Pufferspeicher des Projekts:";
+    [Parameter] public string GbParameter { get; set; } = "Quellparameter";
+    [Parameter] public string LblQuelltemperatur { get; set; } = "Quelltemperatur:";
+    [Parameter] public string LblSpreizung { get; set; } = "Nutzbare Spreizung:";
+    [Parameter] public string LblRegeneration { get; set; } = "Regeneration:";
+    [Parameter] public string UnbegrenztText { get; set; } = "Quelle unbegrenzt verfügbar";
+    [Parameter] public string UnbegrenztKonfliktMuster { get; set; }
+        = "Quelle unbegrenzt verfügbar — Speicherkopplung AUS, konstant {0} °C!";
+    [Parameter] public string HinweisQuellwaerme { get; set; } = "";
+    [Parameter] public string HinweisKaskade { get; set; } = "";
+    [Parameter] public string HinweisKeinProjektpuffer { get; set; }
+        = "Das Projekt enthält noch keinen Pufferspeicher. Über „Pufferspeicher anlegen…“ " +
+          "einen anlegen.";
+    [Parameter] public string HinweisAltbezeichner { get; set; }
+        = "Quelle bisher nur über den Namen „{0}“. Mit OK wird der markierte Speicher fest " +
+          "zugeordnet.";
+    [Parameter] public string AnzeigeKapazitaet { get; set; } = "Nutzbare Kapazität: {0} kWh";
+    [Parameter] public string BtnPufferAnlegen { get; set; } = "Pufferspeicher anlegen…";
+    [Parameter] public string VerwaltungTitel { get; set; } = "Pufferspeicher im Projekt";
+    [Parameter] public string LblTempBezug { get; set; } = "Temperaturbezug";
+    [Parameter] public string RbBerechnet { get; set; } = "berechnet (aus der Anlage)";
+    [Parameter] public string RbFest { get; set; } = "fest vorgegeben";
+    [Parameter] public string LblTbVorlauf { get; set; } = "Vorlauf:";
+    [Parameter] public string LblTbRuecklauf { get; set; } = "Rücklauf:";
+    [Parameter] public string LblTbHinweis { get; set; } = "";
+    [Parameter] public string LblAnschlusshoehe { get; set; } = "Quell-Entnahmehöhe:";
+    [Parameter] public string LblAnschlusshoeheHinweis { get; set; } = "";
+    [Parameter] public string SpalteSpeicher { get; set; } = "Pufferspeicher";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    // Die fünf Prüfregeln aus btnOk_Click:984-1055, wörtlich.
+    [Parameter] public string MsgAuswahl { get; set; } = "Bitte einen Pufferspeicher auswählen!";
+    [Parameter] public string MsgAnschlusshoehe { get; set; }
+        = "Die Quell-Entnahmehöhe muss zwischen 0 und 1 liegen (1 = ganz oben, 0 = ganz " +
+          "unten).\nLeer lassen heißt oben.";
+    [Parameter] public string MsgTemperaturpaar { get; set; }
+        = "Bitte Vorlauf und Rücklauf als ganze Zahlen eintragen: Rücklauf über 0 °C und " +
+          "Vorlauf über Rücklauf. Wer keine Vorgabe machen möchte, wählt „berechnet " +
+          "(aus der Anlage)“.";
+    [Parameter] public string MsgZahlenwerte { get; set; } = "Bitte gültige Zahlenwerte eintragen!";
+    [Parameter] public string MsgSpreizung { get; set; }
+        = "Die nutzbare Spreizung muss größer als 0 K sein!";
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_QuellePufferspeicher.btn_Help";
+
+    // --- Stand ------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private IReadOnlyList<QuellPufferzeile> _puffer = Array.Empty<QuellPufferzeile>();
+    private int _idPuffer;
+
+    private double? _temperatur;
+    private double? _spreizung;
+    private double? _regeneration;
+    private bool _unbegrenzt;
+    private double? _anschlusshoehe;
+
+    private bool _fest;
+    private int? _tbVorlauf;
+    private int? _tbRuecklauf;
+
+    private bool _verwaltungOffen;
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+
+    // --- Prüfhilfen für die Tests -----------------------------------------------
+
+    /// <summary>Der gewählte Speicher; <c>0</c> = keiner.</summary>
+    public int GewaehlterPuffer => _idPuffer;
+
+    /// <summary>Die stehende Meldung.</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht die Pufferverwaltung?</summary>
+    public bool VerwaltungOffen => _verwaltungOffen;
+
+    /// <summary>Steht der Temperaturbezug auf „fest"?</summary>
+    public bool Fest => _fest;
+
+    /// <summary>Das Temperaturpaar in den beiden Feldern.</summary>
+    public (int? Vorlauf, int? Ruecklauf) Temperaturpaar => (_tbVorlauf, _tbRuecklauf);
+
+    /// <summary>Der Haken „unbegrenzt verfügbar".</summary>
+    public bool Unbegrenzt => _unbegrenzt;
+
+    /// <summary>Steht der Konflikt „unbegrenzt UND Puffer gewählt"?</summary>
+    public bool UnbegrenztKonflikt => _unbegrenzt && _idPuffer > 0;
+
+    // --- Listen und Texte -------------------------------------------------------
+
+    public string Titel => string.IsNullOrEmpty(Daten.WPName)
+        ? TitelText : string.Format(TitelMitWp, Daten.WPName);
+
+    private IReadOnlyList<string> Listenspalten => new[] { "", SpalteSpeicher };
+
+    private IReadOnlyList<(int Id, string Text)> Temperaturbezuege => new[]
+    {
+        (BERECHNET, RbBerechnet),
+        (FEST, RbFest)
+    };
+
+    private bool PufferAnlegenMoeglich => VerwaltungGaben is not null;
+
+    /// <summary>
+    /// Der Altbezeichner-Hinweis (<c>PufferListeLaden</c>:819-821): Er steht NUR,
+    /// solange der Fremdschlüssel fehlt und ein Name dasteht — Migrationsschritt 9 hat
+    /// ihn dann nicht auflösen können, und mit OK wird die Zuordnung festgeschrieben.
+    /// </summary>
+    public string Altbezeichnerhinweis
+        => Daten.IdPuffer <= 0 && !string.IsNullOrEmpty(Daten.Pufferspeicher)
+            ? string.Format(HinweisAltbezeichner, Daten.Pufferspeicher)
+            : "";
+
+    /// <summary>Der Detailblock unter der Liste; leer, solange nichts markiert ist.</summary>
+    public string Speicherdaten
+    {
+        get
+        {
+            foreach (QuellPufferzeile z in Puffer) if (z.Id == _idPuffer) return z.Daten;
+            return "";
+        }
+    }
+
+    /// <summary>
+    /// Die Konfliktzeile mit der Temperatur, die dann gälte
+    /// (<c>UnbegrenztKonfliktAnzeigen</c>:934-953). Der Dialog verwirft nichts.
+    /// </summary>
+    public string UnbegrenztKonflikttext
+        => string.Format(UnbegrenztKonfliktMuster,
+                         (_temperatur ?? 0).ToString("0.#",
+                             System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>
+    /// Die Kapazitätszeile (<c>BerechneKapazitaet</c>:873-886): leer, solange kein
+    /// Speicher markiert ist oder die Spreizung keine Zahl ergibt. Eine Spreizung 0
+    /// zeigt dagegen die 0,0 — wörtlich wie im Vorläufer.
+    /// </summary>
+    public string Kapazitaetszeile
+    {
+        get
+        {
+            if (Kapazitaet is null || _spreizung is null) return "";
+
+            int volumen = 0;
+            bool gefunden = false;
+            foreach (QuellPufferzeile z in Puffer)
+                if (z.Id == _idPuffer) { volumen = z.Gesamtvolumen; gefunden = true; break; }
+            if (!gefunden) return "";
+
+            return string.Format(AnzeigeKapazitaet,
+                Kapazitaet(volumen, _spreizung.Value)
+                    .ToString("F1", System.Globalization.CultureInfo.CurrentCulture));
+        }
+    }
+
+    // --- Aufbau -----------------------------------------------------------------
+
+    protected override void OnInitialized()
+    {
+        _puffer = Puffer;
+
+        _temperatur = Daten.Quelltemperatur;
+        _spreizung = Daten.Spreizung;
+        _regeneration = Daten.Regeneration;
+        _unbegrenzt = Daten.Unbegrenzt;
+        _anschlusshoehe = Daten.Anschlusshoehe;
+
+        // TemperaturbezugSetzen:383-395 - beide Zahlen bleiben LEER, solange kein
+        // vollstaendiges Paar dasteht: "0/0 Grad" waere eine Angabe, die es nicht gibt.
+        bool paar = Daten.RuecklaufAnlage > 0 && Daten.VorlaufAnlage > Daten.RuecklaufAnlage;
+        _tbVorlauf = paar ? Daten.VorlaufAnlage : null;
+        _tbRuecklauf = paar ? Daten.RuecklaufAnlage : null;
+        _fest = string.Equals(Daten.TemperaturModus, SteuerwertFest, StringComparison.Ordinal);
+
+        VorauswahlSetzen();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// <c>VorauswahlSetzen</c>:829-847 — Fremdschlüssel (führend), sonst Bezeichner
+    /// (Altweg), sonst der erste Eintrag.
+    /// </summary>
+    private void VorauswahlSetzen()
+    {
+        _idPuffer = 0;
+        if (Puffer.Count == 0) return;
+
+        if (Daten.IdPuffer > 0)
+            foreach (QuellPufferzeile z in Puffer)
+                if (z.Id == Daten.IdPuffer) { _idPuffer = z.Id; return; }
+
+        if (!string.IsNullOrEmpty(Daten.Pufferspeicher))
+            foreach (QuellPufferzeile z in Puffer)
+                if (string.Equals(z.Bezeichner, Daten.Pufferspeicher,
+                                  StringComparison.OrdinalIgnoreCase))
+                { _idPuffer = z.Id; return; }
+
+        _idPuffer = Puffer[0].Id;
+    }
+
+    private void PufferWaehlen(int id)
+    {
+        _idPuffer = id;
+    }
+
+    /// <summary>
+    /// <c>rbTemperaturbezug_CheckedChanged</c>:478-490 — der Vorschlag 70/50 °C
+    /// erscheint NUR, wenn beide Felder leer sind. Er wird erst mit OK geschrieben;
+    /// bis dahin steht er sichtbar da und lässt sich überschreiben.
+    /// </summary>
+    private void TemperaturbezugUmschalten(int? welches)
+    {
+        _fest = welches == FEST;
+        if (!_fest) return;
+
+        if (_tbVorlauf is null && _tbRuecklauf is null)
+        {
+            _tbVorlauf = VORSCHLAG_VORLAUF;
+            _tbRuecklauf = VORSCHLAG_RUECKLAUF;
+        }
+    }
+
+    // --- Pufferverwaltung -------------------------------------------------------
+
+    /// <summary>
+    /// Die Verwaltung schreibt SOFORT — die Liste wird deshalb unabhängig davon neu
+    /// aufgebaut, wie sie verlassen wurde (<c>btnPufferAnlegen_Click</c>:966-982).
+    /// </summary>
+    private void VerwaltungGeschlossen(int neuerPuffer)
+    {
+        _verwaltungOffen = false;
+        if (Neuladen is not null) Puffer = Neuladen();
+
+        if (neuerPuffer > 0 && Puffer.Any(z => z.Id == neuerPuffer)) _idPuffer = neuerPuffer;
+        else if (!Puffer.Any(z => z.Id == _idPuffer)) VorauswahlSetzen();
+    }
+
+    // --- Ergebnis ---------------------------------------------------------------
+
+    /// <summary>
+    /// Die fünf Prüfregeln aus <c>btnOk_Click</c>:984-1055, in derselben Reihenfolge.
+    /// Die Quell-Entnahmehöhe wird VOR der Kessel-Abkürzung geprüft — sie gilt für
+    /// beide Arten (Paket Q1).
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Geschlossen.InvokeAsync(null);
+
+        if (_idPuffer <= 0)
+        {
+            // Zwei Faelle, zwei Meldungen: gar kein Projektpuffer (dann hilft nur der
+            // Absprung) oder einfach nichts markiert.
+            return Meldet(Puffer.Count == 0 ? HinweisKeinProjektpuffer : MsgAuswahl);
+        }
+
+        // AnschlusshoeheUebernehmen:1066-1087 - leer ist gueltig (null = oben), sonst
+        // 0…1; ausserhalb wird ABGEWIESEN statt geklemmt.
+        if (_anschlusshoehe is not null &&
+            (_anschlusshoehe.Value < 0 || _anschlusshoehe.Value > 1))
+            return Meldet(MsgAnschlusshoehe);
+
+        QuellPufferzeile gewaehlt = Puffer.First(z => z.Id == _idPuffer);
+
+        if (Daten.IstKessel)
+        {
+            // Der Temperaturbezug ist die EINZIGE Eingabe, die der Kessel hier macht.
+            if (_fest && !(_tbRuecklauf > 0 && _tbVorlauf > _tbRuecklauf))
+                return Meldet(MsgTemperaturpaar);
+
+            _meldung = "";
+
+            // Beim Kessel bleiben die vier WP-Parameter UNANGETASTET (Befund W10-B15).
+            return Geschlossen.InvokeAsync(Daten with
+            {
+                IdPuffer = gewaehlt.Id,
+                Pufferspeicher = gewaehlt.Bezeichner,
+                Anschlusshoehe = _anschlusshoehe,
+                TemperaturModus = _fest ? SteuerwertFest : SteuerwertBerechnet,
+                VorlaufAnlage = _fest ? (_tbVorlauf ?? 0) : Daten.VorlaufAnlage,
+                RuecklaufAnlage = _fest ? (_tbRuecklauf ?? 0) : Daten.RuecklaufAnlage
+            });
+        }
+
+        if (_temperatur is null || _spreizung is null || _regeneration is null)
+            return Meldet(MsgZahlenwerte);
+        if (_spreizung.Value <= 0) return Meldet(MsgSpreizung);
+
+        _meldung = "";
+        return Geschlossen.InvokeAsync(Daten with
+        {
+            IdPuffer = gewaehlt.Id,
+            Pufferspeicher = gewaehlt.Bezeichner,
+            Anschlusshoehe = _anschlusshoehe,
+            Quelltemperatur = _temperatur.Value,
+            Spreizung = _spreizung.Value,
+            Regeneration = _regeneration.Value,
+            Unbegrenzt = _unbegrenzt
+        });
+    }
+
+    private Task Meldet(string text)
+    {
+        _meldung = text;
+        _meldungStufe = WarnStufe.Warnung;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Esc: erst die Pufferverwaltung, dann der Dialog.</summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        if (_verwaltungOffen) { _verwaltungOffen = false; return Task.CompletedTask; }
+        return Geschlossen.InvokeAsync(null);
+    }
+}

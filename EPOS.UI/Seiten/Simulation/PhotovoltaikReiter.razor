@@ -1,0 +1,286 @@
+@* Der PHOTOVOLTAIK-Reiter der Ergebnisseite (R9, iU9-W11b.8).
+
+   VORBILD. tabPage_Photovoltaik mit sechs Feldern, der programmatischen
+   Modultabelle (listView_SimPV) und chart_PV: vier Reihen im
+   Viertelstundenraster, von denen zwei beim Aufbau ABGESCHALTET werden
+   (Speicherfuellstand und Ueberschuss) und ueber zwei Haken wieder dazukommen.
+
+   B3 - DIE ZWEITE Y-ACHSE. Der Speicherfuellstand geht in kWh auf die rechte
+   Achse; der Vorlaeufer rechnete dafuer InnerPlotPosition von Hand
+   (checkBox_Speicherzustand_CheckedChanged :5168-5243, 75 Zeilen samt
+   NaN-Schutz und Untergrenze 10). Der Renderer macht das selbst - der
+   Bildauftrag traegt nur, WELCHE Reihen an sind.
+
+   BEFUND W11-B22 IST IN W11a BEHOBEN: Der Deckungsgrad teilte ungepruefte
+   Summen; in zwei von drei Referenzprojekten stand hier „NaN". Das DTO liefert
+   0,00.
+
+   WINDOWS-ABNAHME V3 (07.09.2026): "Die PV-Simulation scheint nicht zu
+   funktionieren." Vier Befunde an diesem Reiter, alle im DTO bzw. der Huelle
+   behoben, hier nur die Anzeige: W11b-B-6 Erzeugung und Kurve zeigten den
+   GENUTZTEN Anteil (0 ohne Strombedarf) statt der Erzeugung - jetzt beide
+   Zeilen, "Gesamte Stromerzeugung" und "davon direkt genutzt"; W11b-B-7 die
+   Einheit der Einstrahlung ist W/m2, nicht kW; W11b-B-8 eine aus Nennleistung
+   und Wirkungsgrad GESCHAETZTE Flaeche traegt ein "≈" und den Grund als
+   Tooltip.
+
+   EINE SCHALTERZEILE FUER ALLE VIER REIHEN (Anwenderwunsch 09.09.2026,
+   W11b‑B‑19). Bis dahin standen dort ZWEI Schalter „Ueberschuss anzeigen" und
+   „Speicherfuellung anzeigen"; Strombedarf und Photovoltaik waren fest an und
+   nirgends abwaehlbar. Jetzt traegt die Zeile JEDE Reihe des Bildes, in der
+   Beschriftung ihrer LEGENDE - man hakt ab, was man dort liest. Die Vorbelegung
+   bleibt, wie sie war: die zwei Grundreihen an, die zwei Zusatzreihen aus
+   (woertlich :4676-4679). ALLE ABGEWAEHLT heisst KEINE Reihe und nicht „alle" -
+   die Huelle zeichnet dann den Leerhinweis des Renderers, genau wie im
+   Waermepumpenreiter (W11b‑B‑17). Die zweite Y-Achse der Speicherfuellung
+   bleibt unveraendert.
+
+   DIE KENNZAHLENLISTE (Anwenderwunsch 09.09.2026, W11b‑B‑20). Sieben Zeilen
+   in EINER Liste, in der sich Erzeugung, Bedarf und Einstrahlung abwechselten,
+   und JEDE Beschriftung trug ihre Einheit ZWEIMAL: einmal im Text
+   („Gesamte Stromerzeugung der Module [MWh/a]:") und einmal in der
+   Einheitenspalte daneben. Die Einheit steht jetzt nur noch in ihrer Spalte,
+   die Ressourcentexte sind entsprechend gekuerzt (de + en), und drei
+   Unterabschnitte tragen die Ordnung: „Erzeugung", „Bedarf und Deckung"
+   (mit dem Reststrombedarf als betonter Zeile) und „Einstrahlung". Keine Zahl
+   faellt weg.
+
+   … UND SIE LAEUFT UEBER DIE GANZE RASTERZEILE. Sie sass in EINER Spalte des
+   auto-fit-Rasters (minmax(320px, 1fr)), obwohl neben ihr nichts steht: Die
+   langen Beschriftungen liefen rechts aus dem Raster, .epos-simerg-werte
+   (width: max-content, max-width: 100%, overflow-x: auto) schnitt die
+   Einheitenspalte ab und schob die Liste in einen Rollbalken.
+   .epos-simerg-kennzahlenzeile gibt ihr die ganze Zeile; kompakt
+   (max-content) bleibt sie trotzdem. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_PHOTOVOLTAIK</p>
+    }
+    else
+    {
+        <div class="epos-simerg-spalten">
+
+            @* ERSTE RASTERZEILE: die zwei Hauptgruppen nebeneinander
+               (W11b‑B‑23). Sieben Zeilen standen bis W11b‑B‑20 in EINER Liste,
+               in der sich Erzeugung, Bedarf und Einstrahlung abwechselten;
+               seither tragen Gruppen die fachliche Ordnung (Erzeugung → Bedarf
+               und Deckung → Einstrahlung), der Reststrombedarf betont. Jetzt
+               sind es dunkle Balken statt h3 - dieselbe Bauform wie in jedem
+               anderen Reiter des Stapels. *@
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_ERZEUGUNG" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                </dl>
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BEDARF_DECKUNG" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_PV_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_REST, Zahl(Daten.ReststrombedarfMwh), MWH,
+                               betont: true)
+                    @Wertzeile(Resource.SIMERG_LBL_PV_DECKUNG, Zahl(Daten.DeckungProzent), "%")
+                </dl>
+            </section>
+
+        </div>
+
+        @* ZWEITE RASTERZEILE: die Einstrahlung und darunter das Bild. Die
+           Liste steht ALLEIN in ihrer Zeile und traegt deshalb
+           .epos-simerg-kennzahlenzeile (W11b‑B‑20). *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_EINSTRAHLUNG" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
+                </dl>
+            </section>
+
+            @* Schalter und Diagramm ueber BEIDE Spalten (Befund W11b-B-2). *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* W11b‑B‑19: EINE Zeile mit ALLEN vier Reihen, jede in der
+                   Beschriftung ihrer Legende. Die zwei Grundreihen stehen an, die
+                   zwei Zusatzreihen aus - woertlich :4676-4679. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.CHART_ACHSE_STROMBEDARF" Wert="@_strombedarf"
+                              WertChanged="@(w => _strombedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.SIM_PHOTOVOLTAIK" Wert="@_photovoltaik"
+                              WertChanged="@(w => _photovoltaik = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_UEBERSCHUSS" Wert="@_ueberschuss"
+                              WertChanged="@(w => _ueberschuss = w)" />
+                    <Schalter Bezeichnung="@Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND" Wert="@_speicher"
+                              WertChanged="@(w => _speicher = w)" />
+                </div>
+
+                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
+                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
+                   zurück. *@
+                <ChartBild Png="@BildPv" Alt="@Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE"
+                           BereichGewaehlt="@(b => _bereich = b)"
+                           Zurueckgesetzt="@(() => _bereich = null)" />
+            </section>
+
+        </div>
+
+        @* STUFE S3 des Wechselrichterkonzepts: die Tabelle steht NUR, wenn eine Anlage
+           auf der Strangebene gerechnet hat. Ohne Strangzuordnung ist die Liste leer
+           und der Reiter sieht aus wie bisher. *@
+        @if (Daten.Wechselrichter.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIMERG_TITEL_PV_WR</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_GERAET</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_DCAC</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
+                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NACHT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var w in Daten.Wechselrichter)
+                    {
+                        <tr>
+                            <td>@w.Anlage</td>
+                            <td>@w.Geraet</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.DcAc)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ErtragMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ClippingKwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.ClippingProzent)</td>
+                            <td class="epos-simerg-zahl">@w.VolllaststundenAc.ToString("N0", Kultur)</td>
+                            <td class="epos-simerg-zahl">@w.Jahresnutzungsgrad.ToString("F4", Kultur)</td>
+                            <td class="epos-simerg-zahl">@Zahl(w.NachtverbrauchKwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_PHOTOVOLTAIK</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var m = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            <td>@m.Name</td>
+                            @if (m.FlaecheGeschaetzt)
+                            {
+                                <td class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_FLAECHE_GESCHAETZT">≈ @Zahl(m.FlaecheM2)</td>
+                            }
+                            else
+                            {
+                                <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
+                            }
+                            <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.StromproduktionMwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.PhotovoltaikErgebnis? Daten { get; set; }
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
+    // W11b‑B‑24: der Zeitausschnitt des Datenzooms. Das Bild zählt VIERTELstunden -
+    // die Hülle sagt dem Kern, wieviele Stützstellen es sind.
+    private Diagrammbereich? _bereich;
+
+    // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die alte: die zwei
+    // GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
+    private bool _strombedarf = true;
+    private bool _photovoltaik = true;
+    private bool _ueberschuss;
+    private bool _speicher;
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes — sprachneutral, die Beschriftung setzt
+    /// die Huelle. Seit W11b‑B‑19 ist JEDE Reihe abwaehlbar; eine LEERE Liste
+    /// heisst „keine Reihe" und nicht „alle": Der Auftrag traegt immer eine
+    /// Liste, deshalb kann die Huelle leer von „ohne Angabe" (<c>null</c>)
+    /// unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_strombedarf) liste.Add("STROMBEDARF");
+        if (_photovoltaik) liste.Add("PHOTOVOLTAIK");
+        if (_ueberschuss) liste.Add("UEBERSCHUSS");
+        if (_speicher) liste.Add("SPEICHERFUELLSTAND");
+        return liste;
+    }
+
+    private byte[]? BildPv =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Photovoltaik, false, -1, Reihen(),
+                                     0.0, _bereich));
+
+    /// <summary>
+    /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
+    /// 08.09.2026 (W11b‑B‑13): F2 schreibt „4485", N2 schreibt „4.485" — dieselbe
+    /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
+    /// </summary>
+    private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe — den Rest, der nach der Photovoltaik
+    /// uebrig bleibt (W11b‑B‑20); ohne den Schalter bleibt das Markup
+    /// unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+    </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+}

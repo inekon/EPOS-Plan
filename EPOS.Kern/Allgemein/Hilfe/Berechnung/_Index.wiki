@@ -1,0 +1,222 @@
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+     EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
+<!-- KEINE Themenseite, sondern die STARTSEITE der Rubrik. Der Anwender legt sie im Wiki
+     unter "Programm Dokumentation/Berechnung" an und kopiert diesen Text hinein. Die
+     Datei traegt deshalb einen fuehrenden Unterstrich: BerechnungsHilfe liest sie nicht
+     als Seite ein, und das Wissen des Assistenten bekommt keinen Abschnitt daraus. -->
+
+Diese Rubrik erklaert, '''wie EPOS-Plan rechnet'''. Sie ist der Unterbau der allgemeinen
+Programmdokumentation: Dort steht, was ein Dialog tut und wie er bedient wird — hier steht,
+welche Formel dahinter liegt, welche Zahl das Programm einsetzt, wenn Sie keine angeben, und
+was der Rechenkern bewusst '''nicht''' abbildet.
+
+Jede Seite folgt derselben Gliederung:
+
+* '''Was berechnet wird''' — die Ergebnisgroessen in zwei, drei Saetzen.
+* '''Eingangsgroessen''' — je Groesse die Einheit und die Stelle im Programm, an der sie herkommt.
+* '''Formelzeichen und Parameter''' — die Zeichen der Formeln, getrennt nach Parametern (was hereinkommt) und Variablen (was die Seite rechnet).
+* '''Rechenweg''' — die Schritte in ihrer Reihenfolge, jeder mit Formel.
+* '''Grenzen und Annahmen''' — was der Rechenkern nicht tut.
+* '''Ergebnisse und wo sie stehen''' — Reiter des Simulationsergebnisses, Bericht, Kennzahlen.
+* '''Bezuege''' — die allgemeine Hilfeseite zum Thema und die verwandten Rechenwege.
+
+== Die Seiten der Rubrik ==
+
+{| class="wikitable"
+! Seite !! Worum es geht
+|-
+| [[Programm Dokumentation/Berechnung/Simulationsablauf|Simulationsablauf]] || Reihenfolge eines Laufs: Bedarf, Kaskade, Photovoltaik, Stromspeicher, Abschluss
+|-
+| [[Programm Dokumentation/Berechnung/Wärmebedarf|Wärmebedarf]] || Gebaeudewaerme, externe Ganglinien, die drei Bedarfskanaele und die Netzverluste
+|-
+| [[Programm Dokumentation/Berechnung/Brauchwasser|Brauchwasser]] || Jahressumme, Monatswerte und Wochen-Stundenprofil nach VDI 6002
+|-
+| [[Programm Dokumentation/Berechnung/Prozesswärme|Prozesswärme]] || dieselbe Profilroutine fuer den Prozesskanal
+|-
+| [[Programm Dokumentation/Berechnung/Strombedarf|Strombedarf]] || Stromverbraucherprofile und eingelesene Messlastgaenge im Viertelstundenraster
+|-
+| [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Wärmequelle Erdreich]] || Erdreichtemperatur nach Kusuda und die Auslegungspruefung nach VDI 4640
+|-
+| [[Programm Dokumentation/Berechnung/Heizkessel|Heizkessel]] || Nutzwaerme, Wirkungsgrad und Brennstoffeinsatz
+|-
+| [[Programm Dokumentation/Berechnung/BHKW|BHKW]] || Fahrweise, Strom- und Waermekennzahl, Pendelspeicher
+|-
+| [[Programm Dokumentation/Berechnung/Wärmepumpe|Wärmepumpe]] || Kennlinie, COP, Bivalenzpunkt und Heizstab
+|-
+| [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]] || Kapazitaet, Hysterese, Bereitschaftsverluste
+|-
+| [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]] || Kollektorertrag aus Einstrahlung und Kennlinie
+|-
+| [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]] || Einstrahlung, Modultemperatur, Wechselrichter
+|-
+| [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] || Lade- und Entladefahrweise, Eigenverbrauch
+|}
+
+== Schreibweise ==
+
+Die Formeln dieser Rubrik stehen seit der '''Fassung 3''' in '''LaTeX''' innerhalb der
+Auszeichnung <code>&lt;math&gt;…&lt;/math&gt;</code>. Die '''Math-Erweiterung''' dieses Wikis
+setzt sie in natives MathML um — Sie sehen also einen echten Bruchstrich, ein Summenzeichen mit
+Grenzen darueber und darunter und eine geschweifte Klammer ueber mehrere Zeilen, nicht deren
+Nachbildung mit Textzeichen.
+
+'''Anzeige-Gleichungen und ihre Nummern.''' Eine Gleichung, auf die der Text sich beruft, steht
+als eigene, eingerueckte Zeile, beginnt mit <code>\displaystyle</code> und traegt am Zeilenende
+eine '''Nummer''' in runden Klammern. Die Nummern laufen '''je Seite''' von 1 an; im Text wird
+eine Gleichung mit ihrer Nummer angesprochen („nach (3)").
+
+'''Unter jeder Gleichung steht ihre Legende.''' Je Zeichen eine Zeile, in der Reihenfolge, in
+der die Zeichen in der Gleichung auftreten, die Ergebnisgroesse zuerst; die Einheit steht in
+eckigen Klammern. Sie wiederholt sich bewusst von Gleichung zu Gleichung — Sie sollen mitten in
+eine Seite springen koennen, ohne zurueckblaettern zu muessen:
+
+: <math>\displaystyle \mathrm{SKZ} = \frac{P_{\mathrm{el}}}{P_{\mathrm{th}}}</math> &nbsp;&nbsp;(2)
+:: <math>\mathrm{SKZ}</math> – Stromkennzahl des Moduls [–]
+:: <math>P_{\mathrm{el}}</math> – elektrische Nennleistung des BHKW-Moduls [kW]
+:: <math>P_{\mathrm{th}}</math> – thermische Nennleistung des BHKW-Moduls [kW]
+
+Nur der '''Zeitindex''' <math>t</math> beziehungsweise <math>k</math> steht nicht in jeder
+Legende — er wird einmal am Anfang des Rechenwegs erklaert und gilt fuer die ganze Seite.
+
+'''Wie eine Formel gesetzt ist.''' Tiefgestellte Indizes stehen als <code>_{…}</code> und
+aufrecht (<math>P_{\mathrm{AC,nenn}}</math>), Hochzahlen als <code>^{…}</code>
+(<math>T^{2}</math>), die Abhaengigkeit vom Zeitschritt in runden Klammern
+(<math>P_{\mathrm{AC}}(t)</math>). Der Dezimaltrenner ist das '''Komma'''
+(<math>0{,}95</math>), Tausender trennt ein schmales Leerzeichen (<math>8\,760</math>). Die
+Argumente von <math>\min</math> und <math>\max</math> trennt ein '''Komma''' —
+<math>\min(a, b)</math> —; die Semikolon-Regel der Fassung 2 ist damit hinfaellig, weil ein
+mehrteiliger Index in LaTeX innerhalb seiner eigenen Klammer steht und nichts mehr verwechselt
+werden kann.
+
+'''Fallunterscheidungen''' stehen als geschweifte Klammer (<code>cases</code>) — Wert links,
+Bedingung rechts. Sie ersetzt die Aufzaehlung „fuer … gilt …" der Fassung 2.
+
+'''Warum eine kleine LaTeX-Teilmenge.''' Die Erweiterung prueft jede Formel mit WikiTexVC, und
+was sie nicht kennt, erscheint dem Leser als rote Fehlerzeile statt als Formel. Die Rubrik
+beschraenkt sich deshalb auf einen festen Vorrat: <code>\frac \sqrt \sum \int \prod \min \max
+\cdot \left \right \mathrm \text \operatorname \displaystyle \quad \cos \sin \ln \circ</code>, die
+Vergleichs- und Mengenzeichen <code>\le \ge \ne \approx \pm \to \infty \in \dots</code>, die
+griechischen Buchstaben als Befehl (auch <code>\theta \chi \omega \kappa \Psi</code>), <code>\ell</code>, <code>\dot</code> und <code>\begin{cases}…\end{cases}</code>. Kein
+<code>\tag</code>, kein <code>\label</code>, kein <code>\newcommand</code>, kein
+<code>align</code> — und keine Umlaute innerhalb einer Formel. Zwei Waechter im Quellbaum
+halten das fest.
+
+'''Der Abschnitt „Formelzeichen und Parameter"''' steht auf jeder Seite zwischen den
+Eingangsgroessen und dem Rechenweg und traegt zwei Tabellen. Er bleibt neben den Legenden
+bestehen, denn er sagt etwas anderes: die '''Herkunft''' eines Wertes und die '''Gleichung''',
+in der eine Groesse entsteht.
+
+* '''Parameter''' — was in die Rechnung hereinkommt: Eingaben, Katalogwerte, Vorgabewerte und Konstanten. Die Spalte „Herkunft" nennt Dialog und Feld, Katalogtabelle und Spalte oder den Vorgabewert mit seiner Zahl.
+* '''Variablen''' — was die Seite selbst rechnet, je Stunde oder je Lauf. Die Spalte „berechnet in" nennt die Gleichung, in der die Groesse entsteht; „Ausgabe" steht dort, wo eine Groesse nur ausgewiesen und nicht weiterverrechnet wird.
+
+Jedes Zeichen einer Formel steht in einer der beiden Tabellen, und jedes Zeichen der Tabellen
+kommt in einer Formel vor.
+
+'''Die gemeinsamen Zeichen aller 13 Seiten:'''
+
+{| class="wikitable"
+! Groesse !! Symbol !! Einheit
+|-
+| Zeitschritt || <math>t = 1 \dots 8\,760</math> (Stunde des Jahres); <math>k = 1 \dots 35\,040</math> (Viertelstunde, Stromseite und Stromspeicher) || —
+|-
+| Leistung || <math>P</math>, elektrisch <math>P_{\mathrm{el}}</math>, thermisch <math>P_{\mathrm{th}}</math> || kW
+|-
+| Energie, Arbeit || <math>Q</math> (Waerme), <math>E</math> (Strom) || kWh; Jahressummen in MWh, wo die Seite es so zeigt
+|-
+| Temperatur || <math>\vartheta</math> (Celsius), <math>T</math> (Kelvin, nur wo noetig) || °C, K
+|-
+| Wirkungsgrad, Nutzungsgrad || <math>\eta</math>, Jahresnutzungsgrad <math>\eta_{\mathrm{a}}</math> || —
+|-
+| Leistungszahl Waermepumpe || <math>\operatorname{COP}</math> (Stunde), <math>\operatorname{JAZ}</math> (Jahr) || —
+|-
+| Einstrahlung || <math>G</math> (Bestrahlungsstaerke), <math>H</math> (Summe) || W/m², kWh/m²
+|-
+| Flaeche, Volumen, Massenstrom || <math>A</math>, <math>V</math>, <math>\dot{m}</math> || m²; m³ bzw. l; kg/h
+|-
+| Neigung, Azimut || <math>\beta</math>, <math>\gamma</math> || °
+|-
+| Speicherinhalt, Ladezustand || <math>Q_{\mathrm{Sp}}(t)</math>, <math>\operatorname{SOC}(t)</math> || kWh, —
+|-
+| Indizes || nenn, max, min, el, th, DC, AC, WR, WP, K (Kessel), BHKW, Sol, PV, Sp, Q (Quelle), S (Senke), Netz — aufrecht gesetzt, also <code>_{\mathrm{nenn}}</code> || —
+|}
+
+Wo der Rechenkern eine andere Bezeichnung fuehrt (etwa <code>PV_WrEta10</code> fuer den
+Wechselrichter-Wirkungsgrad bei 10 % Auslastung), nennt die Parametertabelle der Seite diesen
+Namen in der Spalte „Herkunft"; das '''Symbol''' bleibt das der Rubrik.
+
+'''Ohne Math-Erweiterung.''' Sollte eine Seite die Formeln als Klartext zeigen —
+<code>\displaystyle …</code> mitten im Satz —, ist die Erweiterung im Wiki nicht aktiv. Das ist
+kein Fehler des Textes; die Formeln erscheinen, sobald sie eingeschaltet ist.
+
+== Sprungmarken ==
+
+Jeder Abschnitt jeder Seite dieser Rubrik traegt eine '''Sprungmarke'''. Sie steht als
+<code><nowiki>{{Anker|<name>}}</nowiki></code> unmittelbar '''unter''' der Ueberschrift — die
+Hausform dieses Wikis, dieselbe wie auf den Seiten der Rubrik „Grundlagen".
+
+Die Namen sind auf allen 13 Seiten '''dieselben''', kleingeschrieben und ohne Umlaut:
+
+{| class="wikitable"
+! Abschnitt !! Sprungmarke
+|-
+| Was berechnet wird || <code>was</code>
+|-
+| Eingangsgroessen || <code>eingang</code>
+|-
+| Formelzeichen und Parameter || <code>zeichen</code>
+|-
+| Rechenweg || <code>rechenweg</code>
+|-
+| Grenzen und Annahmen || <code>grenzen</code>
+|-
+| Ergebnisse und wo sie stehen || <code>ergebnisse</code>
+|-
+| Bezuege || <code>bezuege</code>
+|-
+| Wechselrichter ''(nur Photovoltaik)'' || <code>wechselrichter</code>
+|}
+
+'''Wozu das gut ist.''' Der Knopf „Berechnung" in den Dialogen des Programms zielt auf
+<code>…#rechenweg</code> und bringt den Leser damit unmittelbar zu den Schritten, nicht an den
+Seitenanfang. Die Zuordnungsdatei des Programms (<code>help_mapping.txt</code>) traegt den Anker
+hinter dem Seitennamen; ein ausgeliefertes Programm hat sie eingebettet bei sich und altert bis
+zum naechsten Release.
+
+'''Deshalb gilt: Ueberschriften duerfen sich aendern, Sprungmarken nicht.''' Eine umbenannte
+Ueberschrift wechselt ihren automatischen Anker (aus „Rechenweg" wird <code>#Rechenweg</code>,
+aus „Der Rechenweg" wuerde <code>#Der_Rechenweg</code>) und bricht damit jeden Verweis von
+aussen. Die Sprungmarke bleibt. Wer einen Abschnitt umbenennt, laesst sie stehen; wer einen
+Abschnitt aufteilt, gibt der neuen Haelfte eine eigene und behaelt die alte am urspruenglichen
+Ort.
+
+Die automatischen Ueberschriftenanker von MediaWiki (<code>#Rechenweg</code>,
+<code>#Grenzen_und_Annahmen</code>) bleiben daneben bestehen und sind fuer einen Verweis von
+Hand weiterhin brauchbar.
+
+== Wie diese Seiten zu lesen sind ==
+
+; Zeitraster
+: Die Waermerechnung laeuft in '''8 760 Stundenschritten''' je Jahr, die Stromrechnung in
+  '''35 040 Viertelstunden''' (8 760 × 4). Das Jahr hat immer 365 Tage — einen 29. Februar
+  kennt der Rechenkern nicht.
+
+; Vorgabewerte
+: Wo eine Zahl genannt ist, die Sie nicht eingegeben haben, ist sie ein '''Vorgabewert des
+  Rechenkerns'''. Er steht auf der Seite ausdruecklich als solcher da — in der
+  Parametertabelle in der Spalte „Herkunft" —, damit Sie ihn wiedererkennen, wenn er in einem
+  Ergebnis auftaucht.
+
+; Ausblick
+: Absaetze, die mit „in Umsetzung, Stand 06.09.2026" gekennzeichnet sind, beschreiben, was
+  ein Konzeptdokument vorsieht, aber '''noch nicht gerechnet wird'''. Sie sind kein Teil des
+  aktuellen Ergebnisses.
+
+; Ingenieurvorbehalt
+: Die Rechenwege sind Planungsmodelle. Sie ersetzen keine Auslegung nach den einschlaegigen
+  Regelwerken; die Ergebnisse sind fachlich auf Plausibilitaet zu pruefen.
+
+== Bezüge ==
+
+* [[Programm Dokumentation]] — die allgemeine Programmdokumentation
+* [[Programm Dokumentation/Simulation|Simulation]] — Bedienung des Simulationsdialogs
+* [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] — die Reiter des Ergebnisfensters

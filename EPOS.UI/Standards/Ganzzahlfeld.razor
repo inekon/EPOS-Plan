@@ -1,0 +1,131 @@
+﻿@* Eingabefeld fuer eine ganze Zahl - Stueckzahlen, Tage, Nutzungsdauern,
+   ganze Grad.
+
+   Gegenstueck zum Zahlenfeld, Semantik aus WindowsFormsApplication1/Program.cs
+   (GanzzahlParsen ab Z. 466): Komma und Punkt sind hier KEINE gueltigen
+   Zeichen. Auch hier faerbt eine Fehleingabe, statt zu melden.
+
+   inputmode="numeric" statt "decimal": auf Touchgeraeten erscheint dann eine
+   Tastatur ohne Trennzeichen. *@
+
+@* epos-feld--kurz: kurzes Feld im Formularraster, Einheit direkt dahinter
+   (iU8-E-2 / W14a-E-7). Siehe Zahlenfeld. *@
+<label class="epos-feld epos-feld--kurz">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
+               type="text" inputmode="numeric" value="@_text"
+               placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
+               aria-invalid="@(Fehlerhaft ? "true" : null)"
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
+        @if (!string.IsNullOrEmpty(Einheit))
+        {
+            <span class="epos-einheit">@Einheit</span>
+        }
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Der Wert; <c>null</c> bei leerem Feld. Bindbar ueber @@bind-Wert.</summary>
+    [Parameter] public int? Wert { get; set; }
+
+    /// <summary>Meldet jeden gueltigen neuen Wert - auch <c>null</c> beim Leeren.</summary>
+    [Parameter] public EventCallback<int?> WertChanged { get; set; }
+
+    /// <summary>Einheit hinter dem Feld, z. B. "Jahre". Leer = keine.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>
+    /// Blasser Text im LEEREN Feld; leer = keiner. Gegenstueck zu
+    /// <c>Textfeld.Platzhalter</c> und <c>Auswahlfeld.Platzhalter</c>.
+    ///
+    /// <para>Gebraucht seit der Strangtabelle des PV-Dialogs (Stufe S2 des
+    /// Wechselrichterkonzepts, W6-E-2): Neigung und Azimut eines Strangs sind leer,
+    /// solange sie von der ANLAGE geerbt werden, und der geerbte Wert steht dann in
+    /// KLAMMERN im Feld. Er ist damit sichtbar, ohne gespeichert zu sein - denn eine
+    /// geschriebene 0 waere eine gueltige Ausrichtung (Sueden) und nicht mehr von
+    /// einem geerbten Wert zu unterscheiden.</para>
+    /// </summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>Kleinster zulaessiger Wert; <c>null</c> = keine Untergrenze.</summary>
+    [Parameter] public int? Min { get; set; }
+
+    /// <summary>Groesster zulaessiger Wert; <c>null</c> = keine Obergrenze.</summary>
+    [Parameter] public int? Max { get; set; }
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt das Feld — Gegenstueck zu
+    /// <see cref="Zahlenfeld.Aktiv"/> (iU9-W2.3). Der Tarifdialog sperrt damit
+    /// die HT-Grenzen, sobald das Rollenmodell gilt: Dort gibt es kein HT/NT
+    /// (Leitentscheidung L10), die Zahlen bleiben aber stehen.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Name des Feldes fuer die Sammelmeldung des Dialogs (iU9-W6.1) - Gegenstueck zu
+    /// <see cref="Zahlenfeld.Feldname"/>, dort steht die Begruendung.
+    /// </summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>Meldet jede AENDERUNG des Fehlerzustands; ohne <see cref="Feldname"/> nichts.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    private string _text = "";
+
+    /// <summary>Der Text im Feld ist gerade keine ganze Zahl (Pruefhilfe fuer Tests).</summary>
+    public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Fehlerhaft) return;
+        if (!Wert.HasValue && _text.Trim().Length == 0) return;
+        if (Wert.HasValue && Zahlen.GanzzahlParsen(_text, out int nVorhanden) && nVorhanden == Wert.Value) return;
+
+        _text = Zahlen.Anzeigetext(Wert);
+    }
+
+    private async Task BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+
+        if (_text.Trim().Length == 0)
+        {
+            await FehlerSetzen(false);
+            Wert = null;
+            await WertChanged.InvokeAsync(null);
+            return;
+        }
+
+        if (Zahlen.GanzzahlParsen(_text, out int nWert) && ImBereich(nWert))
+        {
+            await FehlerSetzen(false);
+            Wert = nWert;
+            await WertChanged.InvokeAsync(nWert);
+            return;
+        }
+
+        await FehlerSetzen(true);
+    }
+
+    private bool ImBereich(int nWert)
+    {
+        if (Min.HasValue && nWert < Min.Value) return false;
+        if (Max.HasValue && nWert > Max.Value) return false;
+        return true;
+    }
+}

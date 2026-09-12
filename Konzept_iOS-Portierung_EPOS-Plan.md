@@ -1,4 +1,4 @@
-# Konzept: EPOS-Plan autonom auf dem iPad
+﻿# Konzept: EPOS-Plan autonom auf dem iPad
 
 **Rev. 1 — 30.08.2026 — zur Abnahme durch Philipp**
 
@@ -7,6 +7,13 @@ dem Gerät, keine Serverpflicht. Dieses Dokument klärt, was das technisch bedeu
 werden kann, was neu entsteht, und in welcher Reihenfolge — **nur Konzept, keine Umsetzung**.
 
 Vermessungsbasis: Repo-Stand `Pufferspeicher` vom 30.08.2026, Zählungen mit Fundstellen in § 2.
+
+> **Nachfolgedokument (02.09.2026):**
+> [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) führt dieses Konzept in
+> Arbeitspakete (iU0–iU13), Meilensteine und Nachweise über, behandelt die **Anpassung der
+> Entwicklungsumgebung** als eigenes Kapitel und korrigiert einzelne Zählungen dieses Dokuments
+> (dort § 1.5). Die Leitentscheidungen iL1–iL8 und die Migrationsregeln M1–M10 bleiben gültig;
+> **iL2 ist präzisiert** (kein ACE-Parallelbetrieb — siehe iF9) und **M3 entfällt**.
 
 ---
 
@@ -232,7 +239,8 @@ unverändert WinForms, bis ihre Reihe kommt.
 | **M6** | **Raster-Standard vor der ersten Tabelle festlegen** (Kandidat: QuickGrid) — 16 Grid-Masken warten darauf | nachträglicher Rasterwechsel hieße 16 Masken zweimal bauen |
 | **M7** | **Drei-Schichten-Regel unverändert**: `MyResource.Resource.*` ist eine normale Klasse und läuft in Blazor auf beiden Plattformen; `DbWerte` bleibt eingefroren | die Lokalisierungsinvestition überlebt die Migration vollständig |
 | **M8** | **Referenzläufe je Plattform als Pflicht**: Kern-Wertgleichheit Windows ↔ iOS ist die Definition von „fertig", Mac-Build in der CI | ohne den Beweis je Plattform driftet der Kern unbemerkt |
-| **M9** | **Übergangszeit benennen**: zwei Optiken in einer App (WinForms-Altdialoge neben Blazor-Seiten) sind gewollt und enden erst mit der letzten Maske; Windows braucht die WebView2-Laufzeit (auf Windows 11 vorhanden) | wer die Mischphase nicht ausdrücklich beschließt, bricht sie beim ersten Optik-Einwand ab |
+| **M9** ✅ | **Übergangszeit benennen**: zwei Optiken in einer App (WinForms-Altdialoge neben Blazor-Seiten) sind gewollt und enden erst mit der letzten Maske; Windows braucht die WebView2-Laufzeit (auf Windows 11 vorhanden) | wer die Mischphase nicht ausdrücklich beschließt, bricht sie beim ersten Optik-Einwand ab |
+| | **ABGESCHLOSSEN am 04.09.2026 mit iU9‑W16c.** Die Mischphase ist zu Ende: `WindowsFormsApplication1` führt **eine** Designer-Maske (`Form_HelpPopup`, eine Hilfe-Sprechblase ohne Fachinhalt — sie fällt mit `HelpCatalog`/`HelpExtender` in iU11) und **eine** Hülle ohne Designer (`MDIMainForm`, 129 Zeilen). Es gibt **keine Fachmaske und keine zwei Optiken mehr**: Menüband, Kopfband, Startseite, Assistent, Simulation und Berichte sind Razor. Der einzige bewusst gebliebene Übergang ist die `Sprungbruecke` mit **einem** Zweig (`Form_SpeicherOptimierung`, Entscheid iF22). Die WebView2-Laufzeit ist seit iU9‑W15c eine **harte** Voraussetzung — `Program.Main` prüft sie und meldet ihr Fehlen mit der Bezugsquelle. | |
 | **M10** | Die 93 cp1252-Dateien beim Umzug nach `EPOS.Kern`/`EPOS.UI` **einmalig** auf UTF-8 normalisieren | die Kodierungsfalle darf nicht in die neuen Projekte wandern |
 
 ### 6a.4 Das komplette Arbeitsprogramm des Vollausbaus

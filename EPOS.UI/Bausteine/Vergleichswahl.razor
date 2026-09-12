@@ -1,0 +1,67 @@
+﻿@* Die VERGLEICHSWAHL - welche Versionen einer Vergleichsgruppe nebeneinander
+   stehen (Anwenderwunsch 08.09.2026, W5-B-5: "Es soll ausgewaehlt werden
+   koennen, welche Varianten dargestellt werden").
+
+   EINE ZEILE aus Schaltern, kein Raster und keine rollende Liste: Eine Gruppe
+   hat zwei bis acht Versionen, und die Wahl steht direkt ueber der Tabelle, die
+   sie steuert. Der Stamm ist die Referenz und immer dabei - sein Schalter ist
+   gesetzt und gesperrt, der Werkzeugtipp sagt warum (Vorbild
+   UcWirtschaftlichkeit.lvVarianten_ItemCheck).
+
+   Die Auswahl gehoert dem Aufrufer: Gewaehlt kommt herein, GewaehltChanged
+   meldet jede Aenderung mit der vollstaendigen neuen Liste in Reihenfolge der
+   Eintraege (feste Eintraege eingeschlossen). Der Baustein haelt keinen
+   eigenen Zustand. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-vergleichswahl" role="group" aria-label="@Bezeichnung">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-vergleichswahl-titel">@Bezeichnung</span>
+    }
+    @foreach (Eintrag e in Eintraege)
+    {
+        Eintrag eintrag = e;
+        <span class="epos-vergleichswahl-eintrag" title="@(eintrag.Fest ? FestTipp : "")">
+            <Schalter Bezeichnung="@eintrag.Text"
+                      Wert="@(eintrag.Fest || Gewaehlt.Contains(eintrag.Id))"
+                      Aktiv="@(Aktiv && !eintrag.Fest)"
+                      WertChanged="@(w => Umschalten(eintrag.Id, w))" />
+        </span>
+    }
+</div>
+
+@code {
+    /// <summary>Eine waehlbare Version; <c>Fest</c> = immer im Vergleich (der Stamm).</summary>
+    public sealed record Eintrag(int Id, string Text, bool Fest = false);
+
+    /// <summary>Beschriftung vor den Schaltern; leer = ohne.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Versionen in Anzeigereihenfolge, Stamm zuerst.</summary>
+    [Parameter] public IReadOnlyList<Eintrag> Eintraege { get; set; } = Array.Empty<Eintrag>();
+
+    /// <summary>Die Ids der Versionen im Vergleich.</summary>
+    [Parameter] public IReadOnlyList<int> Gewaehlt { get; set; } = Array.Empty<int>();
+
+    /// <summary>Meldet die neue Auswahl (vollstaendig, in Reihenfolge der Eintraege).</summary>
+    [Parameter] public EventCallback<IReadOnlyList<int>> GewaehltChanged { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt alle Schalter.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Werkzeugtipp am festen Eintrag.</summary>
+    [Parameter] public string FestTipp { get; set; } = "Das Stammprojekt ist die Referenz und immer enthalten.";
+
+    private Task Umschalten(int id, bool an)
+    {
+        var neu = new List<int>();
+        foreach (Eintrag e in Eintraege)
+        {
+            bool drin = e.Fest || (e.Id == id ? an : Gewaehlt.Contains(e.Id));
+            if (drin) neu.Add(e.Id);
+        }
+        return GewaehltChanged.InvokeAsync(neu);
+    }
+}

@@ -1,0 +1,396 @@
+﻿@* Verwaltung Stromspeicher - der PROJEKTDIALOG (iU9-W6.6).
+
+   VORBILD. Views/Stromspeicher/Form_Stromspeicher (354 Z., lokalisiert de/en,
+   16 Kartenzeilen, KEINE einzige MessageBox). Die schmalste der fuenf
+   Erzeugermasken: keine Traegervariante, keine Projektkopie, kein Filter, kein
+   Katalogeditor. Der Detailblock ist reine Anzeige - gepflegt wird in
+   Form_AdminStromspeicher.
+
+   JE KLICK EINE EIGENE ZEILE. btn_Hinzu_Click legt seit AP2b bewusst eine
+   NEUE Modellinstanz an: Bis dahin landete immer dasselbe Feldobjekt in der
+   Liste, mehrfaches Hinzufuegen legte n Verweise auf einen Datensatz ab, und
+   jede spaetere Aenderung schlug auf alle Eintraege durch. Zweimal derselbe
+   Speicher sind also zwei Zeilen.
+
+   DAS DETAIL KOMMT IMMER AUS DEM KATALOG. Beide Listen lesen denselben
+   Stammsatz ueber den Bezeichner (listBox_SP_SelectedIndexChanged und
+   dataGridView1_Click sind zeichengleich); es gibt keine Projektkopie, die
+   abweichen koennte.
+
+   ZWEI BESCHRIFTUNGEN KOMMEN AUS DEM RESSOURCENKATALOG, nicht aus dem
+   Designer: "Energie (Kapazitaet) [kWh]" und "Modulkosten [EUR/kWh]". Der
+   Designer trug dort "Energie [kW]" und "Modulkosten" - beides fachlich falsch
+   (Abnahmebefund 1 zum ersten App-Start, EinheitenBeschriftungKorrigieren).
+   Die Huelle setzt SP_LABEL_ENERGIE und SP_LABEL_MODULKOSTEN ein.
+
+   TASTATUR wie in den uebrigen Erzeugerdialogen: Esc schliesst, Enter ist
+   nicht belegt.
+
+   ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
+   Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
+   des Hauses. Nebeneinander wie im BHKW-PLAN, auf schmalem Schirm untereinander;
+   die Knoepfe tragen seither Klartext, das Zeichen setzt der Baustein je nach
+   Anordnung (◀▶ nebeneinander, ▲▼ untereinander). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
+    @* Der Knopf "Bearbeiten" oeffnete bis hierher Form_AdminStromspeicher ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
+    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
+                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
+        <KindInhalt>
+            @if (_verwaltungGaben is not null)
+            {
+                <ModulKatalogDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+</div>
+
+    <p class="epos-kontextzeile">@KopfbandText</p>
+
+    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        UebernehmenText="@LabelHinzu"
+                        UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
+                        EntfernenText="@LabelEntfernen"
+                        EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+
+        <Links>
+            <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteWahl">
+                        <Zeilenwahl Gewaehlt="@(_projektZeile == context)" Kurztext="@SpalteWahl"
+                                    Gewaehltwerden="() => ProjektZeileWaehlen(context)" />
+                    </TemplateColumn>
+                    <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
+                                    Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                </KindInhalt>
+            </Raster>
+        </Links>
+
+        <Rechts>
+            @* DIE EINE KATALOGLISTE (W14a-E-10, Stufe S2.1). Der Speicherkatalog
+               hatte als einziger gar keinen Filter - bei fuenf Saetzen fiel das
+               nicht auf, bei den 6 654 der CEC-Liste (W13-E-2) schon. Statt der
+               Sammelspalte "Eigenschaften" mit ihren Zeilen in EINER Zelle stehen
+               jetzt ACHT Spalten, jede sortierbar; der Hersteller kommt seit
+               Schritt 68 aus der Spalte Firma (Q7). *@
+            <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
+                          Vergleichsparameter="@Vergleichsparameter" />
+
+            @if (VerwaltungGaben is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                </div>
+            }
+        </Rechts>
+
+    </Zweispaltenauswahl>
+
+    <Gruppenkopf Titel="@GruppeModul">
+        <KindInhalt>
+            @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
+               weil dieser Abschnitt die Geraetewerte zeigt, die die Speicherengine als
+               Parametersatz liest - Kapazitaet, Leistung, Ladezustand, Wirkungsgrad,
+               Degradation, Zyklen. Der Fensterknopf oben rechts bleibt, was er ist. *@
+            <div class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_Stromspeicher.Berechnung"
+                           StandardKurztext="Berechnungsweg Stromspeicher" />
+            </div>
+            @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
+               eine Spalte voller Felder ueber die ganze Breite. *@
+            <Formularraster>
+                <KindInhalt>
+            <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
+            @foreach (var feld in _detail.Felder)
+            {
+                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
+            }
+            @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der markierten
+               PROJEKTzeile in der Gliederung des Katalogs (Gruppe > Art); Vorgabe der
+               Stromtraeger des Projekts. Beim Katalogsatz gibt es nichts zu waehlen. *@
+            @if (_projektZeile is not null && Traegerkatalog.Count > 0)
+            {
+                <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                    LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
+                                    Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                    AuswahlChanged="BeiTraegerwechsel" />
+            }
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+</div>
+
+@code {
+    /// <summary>Die Zeilen der linken Liste — sie gehört der Hülle und wird in place bearbeitet.</summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>
+    /// <b>Die Spalten der Katalogliste</b> — <c>Katalogfilterprofil.MitVerwendung(
+    /// Anlagenart.Stromspeicher, uebersetzer)</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+
+    /// <summary>
+    /// Die Zeilen des Katalogs, UNGEFILTERT —
+    /// <c>StromspeicherStammCtrl.Katalogfilterzeilen()</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste; sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit den anderen Dialogen desselben Katalogs). Ein Prüfstand gibt
+    /// hier seinen eigenen herein und bleibt damit von den anderen Fällen getrennt;
+    /// dass das Register wirklich teilt, prüft <c>KatalogfilterstandTests</c>.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+
+    /// <summary>Der Detailblock zu einem Speicher — für beide Listen dieselbe Quelle.</summary>
+    [Parameter] public Func<string, ErzeugerDetail?>? Detail { get; set; }
+
+    /// <summary>Nimmt den Speicher auf — je Klick eine EIGENE Zeile.</summary>
+    [Parameter] public Func<int, AufnahmeErgebnis>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste.</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>Die markierte Anlage bekommt einen anderen Energieträger (Zeile, Träger-Id).</summary>
+    [Parameter] public Action<ErzeugerZeile, int>? TraegerWechseln { get; set; }
+
+    [Parameter] public string LabelTraegerGruppe { get; set; } = "Energieträger:";
+    [Parameter] public string LabelTraegerArt { get; set; } = "Art:";
+
+    /// <summary>
+    /// Der Parametersatz der MODULVERWALTUNG. Sie erscheint seit iU9-W14a als
+    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
+    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
+    /// kein Knopf.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    [Parameter] public bool Wizard { get; set; }
+
+    /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
+
+    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
+    public bool VerwaltungOffen => _verwaltungGaben is not null;
+
+    /// <summary>
+    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
+    /// nach der Rückkehr aus dem zweiten Fenster.
+    /// </summary>
+    private void VerwaltungFertig(ModulErgebnis? ergebnis)
+    {
+        _verwaltungGaben = null;
+        KatalogNeuLaden();
+    }
+
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Verwaltung Stromspeicher";
+    [Parameter] public string KopfbandText { get; set; } = "Geben Sie Daten der Stromspeicher ein";
+    [Parameter] public string LabelProjektliste { get; set; } = "ausgewählte Stromspeicher:";
+    [Parameter] public string LabelKatalogliste { get; set; } = "Stromspeicher aus Datenbank:";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+    [Parameter] public string GruppeModul { get; set; } = "Modul";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Stromspeicher.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private ErzeugerZeile? _projektZeile;
+    private Katalogfilterzeile? _katalogZeile;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Der gewählte Bezeichner der KATALOGliste — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
+
+    /// <summary>Der Filterstand je Katalog über die Sitzung (S2.5, Frage Q2).</summary>
+    private Katalogfilterstand _filterstand = new();
+    private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewaehlte Katalogzeile (Pruefhilfe fuer Tests).</summary>
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Die Zeilen des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Der Filterzustand des Katalogs (Pruefhilfe fuer Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    protected override void OnParametersSet()
+    {
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
+    protected override void OnInitialized()
+    {
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Stromspeicher);
+
+        KatalogNeuLaden();
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>
+    /// Liest den Katalog neu — nach einem SCHREIBweg (Verwaltung). Der FILTER ruft
+    /// sie nicht: Er wirkt auf die Anzeige, nie auf die Auswahl.
+    /// </summary>
+    private void KatalogNeuLaden()
+    {
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        VerwendungStempeln();
+
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
+        if (_katalogZeile is null) _katalogGewaehlt = "";
+    }
+
+    /// <summary>Die Spalte „im Projekt verwendet" (Q12) — EINMAL für die ganze Liste.</summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Zeilen.Select(z => z.Bezeichner));
+
+    /// <summary>Der Katalogsatz zu einem Bezeichner; <c>null</c>, wenn es ihn nicht gibt.</summary>
+    private Katalogfilterzeile? Katalogsatz(string bezeichner)
+    {
+        if (string.IsNullOrEmpty(bezeichner)) return null;
+        foreach (Katalogfilterzeile z in _katalog)
+            if (z.Bezeichner == bezeichner) return z;
+        return null;
+    }
+
+    /// <summary>ET‑5: Trägerwechsel der markierten Anlage — an die Hülle, dann in die Zeile.</summary>
+    private void BeiTraegerwechsel(int? neu)
+    {
+        if (_projektZeile is null || !neu.HasValue) return;
+        if (neu.Value == _projektZeile.CarrierId) return;
+        TraegerWechseln?.Invoke(_projektZeile, neu.Value);
+        _projektZeile.CarrierId = neu.Value;
+    }
+
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _katalogZeile = null;
+        _katalogGewaehlt = "";
+        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+    }
+
+    private void KatalogZeileWaehlen(string bezeichner)
+    {
+        _katalogGewaehlt = bezeichner ?? "";
+        _katalogZeile = Katalogsatz(_katalogGewaehlt);
+        _projektZeile = null;
+        _detail = (Detail is not null ? Detail(_katalogGewaehlt) : null) ?? Leer(_katalogGewaehlt);
+    }
+
+    private static ErzeugerDetail Leer(string name)
+        => new(name, "", Array.Empty<(string, string)>());
+
+    /// <summary>„◀": je Klick eine eigene Zeile (AP2b).</summary>
+    private void BeiHinzu()
+    {
+        if (_katalogZeile is null || Aufnehmen is null) return;
+
+        AufnahmeErgebnis aufnahme = Aufnehmen(_katalogZeile.Id);
+        if (aufnahme.Zeile is null) return;
+
+        Zeilen.Add(aufnahme.Zeile);
+        VerwendungStempeln();                 // Q12
+        ProjektZeileWaehlen(aufnahme.Zeile);
+    }
+
+    /// <summary>
+    /// „▶": Die GEWAEHLTE Zeile geht. Der Vorlaeufer nahm die erste Zeile gleichen
+    /// Namens - bei zwei gleichen Speichern also nicht zwingend die markierte
+    /// (Abweichung A-17). Bleibt nichts uebrig, wandert die Auswahl in die rechte
+    /// Liste, wie es <c>btn_Entfernen_Click</c> ueber einen nachgebauten Mausklick tat.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        if (_projektZeile is null) return;
+
+        ErzeugerZeile zeile = _projektZeile;
+        Zeilen.Remove(zeile);
+        Entfernen?.Invoke(zeile);
+        VerwendungStempeln();                 // Q12
+
+        _projektZeile = null;
+        _detail = Leer("");
+
+        if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+        else if (_katalog.Count > 0) KatalogZeileWaehlen(_katalog[0].Bezeichner);
+    }
+
+    private async Task BeiBearbeiten()
+    {
+        if (VerwaltungGaben is null) return;
+        _verwaltungGaben = VerwaltungGaben();
+        await Task.CompletedTask;
+    }
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+        return Geschlossen.InvokeAsync(false);
+    }
+}

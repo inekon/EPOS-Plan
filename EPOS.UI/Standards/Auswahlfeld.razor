@@ -1,0 +1,107 @@
+﻿@* Auswahlliste ueber Id und Text.
+
+   Ersetzt die datengebundene ComboBox des Bestands (DataSource = DataTable,
+   DisplayMember/ValueMember). Die Komponente bleibt datenbankfrei: Sie bekommt
+   fertige (Id, Text)-Paare und meldet die gewaehlte Id zurueck - genau das,
+   was der Bestand als SelectedValue las.
+
+   <select> ist auf Touchgeraeten ein Gewinn: Edge oeffnet dafuer eine
+   fingerfreundliche Liste, ohne dass die Komponente etwas dafuer tun muss.
+
+   DIE GEWAEHLTE OPTION TRAEGT selected (Befund W6-B-4, Windows-Abnahme
+   07.09.2026). Bis hierher stand die Wahl AUSSCHLIESSLICH im Attribut value
+   des <select> - und ein <select> hat im DOM gar kein value-Attribut: Der
+   Blazor-Zeichner merkt sich den Wert beim Einhaengen und setzt danach die
+   Eigenschaft element.value nach (_blazorDeferredValue). Das geschieht GENAU
+   EINMAL, beim Erzeugen des Elements. Werden die <option> spaeter
+   AUSGETAUSCHT - der Herstellerfilter ueber der Strangtabelle tut das in jeder
+   Zeile -, patcht Blazor sie an Ort und Stelle, der Browser behaelt seinen
+   selectedIndex, und in der Zeile steht danach der Name, der zufaellig an
+   diesem Platz gelandet ist. Gemessen am 07.09.2026 mit einer Playwright-Probe:
+   Ein Strang mit "SMA America: SB30-1SP-US-40 {240V}" zeigte nach einem
+   Filterwechsel "ABB: PVI-3.0-OUTD-S-US-A {208V}" - ein Geraet, das er nie
+   hatte. Mit selected im Markup steht die Wahl DA, wo der Browser sie ohnehin
+   liest; sie haengt an keiner nachgereichten Zuweisung mehr.
+
+   Der Wert bleibt trotzdem am <select>: Er ist der Weg, den Blazor beim
+   ERSTEN Zeichnen geht, und er kostet nichts. *@
+
+<label class="epos-feld">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <select class="epos-eingabe" value="@(Auswahl?.ToString() ?? "")"
+                aria-label="@(string.IsNullOrEmpty(Kurzname) ? null : Kurzname)"
+                disabled="@(!Aktiv)" @onchange="BeiAuswahl">
+            @if (Platzhalter is not null)
+            {
+                <option @key="PLATZHALTERSCHLUESSEL" value=""
+                        selected="@(!Auswahl.HasValue)">@Platzhalter</option>
+            }
+            @foreach (var eintrag in Eintraege)
+            {
+                <option @key="eintrag.Id" value="@eintrag.Id"
+                        selected="@(Auswahl.HasValue && eintrag.Id == Auswahl.Value)">@eintrag.Text</option>
+            }
+        </select>
+    </span>
+</label>
+
+@code {
+    /// <summary>
+    /// Schluessel der leeren Zeile im <c>@@key</c> der Optionen. Er muss von jeder
+    /// Eintrags-Id verschieden sein; <c>int.MinValue</c> kommt als Katalog-Id nicht vor.
+    /// </summary>
+    private const int PLATZHALTERSCHLUESSEL = int.MinValue;
+
+    /// <summary>Beschriftung links bzw. ueber dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Auswahlmoeglichkeiten in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Id des gewaehlten Eintrags; <c>null</c> = nichts gewaehlt. Bindbar.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neu gewaehlte Id - <c>null</c>, wenn der Platzhalter gewaehlt wurde.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>
+    /// Text der leeren Zeile ganz oben, z. B. "(bitte waehlen)".
+    /// <c>null</c> = keine leere Zeile.
+    /// </summary>
+    [Parameter] public string? Platzhalter { get; set; }
+
+    /// <summary>
+    /// Ein ausfuehrlicherer Name fuer die Sprachausgabe (<c>aria-label</c>); leer =
+    /// keiner, dann benennt das umschliessende <c>&lt;label&gt;</c> das Feld wie
+    /// bisher.
+    ///
+    /// <para>Gebraucht wird er dort, wo die sichtbare Beschriftung aus Platzgruenden
+    /// nur ein Wort ist, die Liste aber mehr meint: Die Uebersichtsseite beschriftet
+    /// ihre Variantenwahl mit "Variante:" und nennt der Sprachausgabe
+    /// "Version waehlen" (Anwenderwunsch 05.09.2026, W5-E-1).</para>
+    /// </summary>
+    [Parameter] public string Kurzname { get; set; } = "";
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt die Liste - dieselbe Eigenschaft, die
+    /// <see cref="Schalter"/> schon fuehrt.
+    ///
+    /// <para>Gebraucht wird sie von Feldern, die ANGEKUENDIGT, aber noch nicht
+    /// pflegbar sind: Der Dialog "BHKW-Wirtschaftlichkeit" zeigt so den Modus des
+    /// § 9 Abs. 1 Nr. 3, dessen Spalte erst mit Etappe B6 entsteht (Luecke K3).
+    /// Ein gesperrtes Feld ist ehrlicher als ein fehlendes - es sagt, dass die
+    /// Groesse existiert und wo sie hingehoert.</para>
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    private Task BeiAuswahl(ChangeEventArgs e)
+    {
+        string szRoh = e.Value?.ToString() ?? "";
+        Auswahl = Zahlen.GanzzahlParsen(szRoh, out int nId) ? nId : null;
+        return AuswahlChanged.InvokeAsync(Auswahl);
+    }
+}

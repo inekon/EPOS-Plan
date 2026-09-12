@@ -1,0 +1,302 @@
+@* Der BHKW-Reiter der Ergebnisseite (R8, iU9-W11b.7).
+
+   VORBILD. tabPage_BHKW mit 15 Feldern (davon drei programmatischen
+   Kennzahlzeilen), dem Brennstoffblock aus zehn Aufrufstellen von
+   ErstelleBrennstoffZeile, der Modultabelle (dataGridView_BHKW - trotz des
+   Namens eine ListView) und chart_BHKW_Waerme samt Umschalter „sortiert".
+
+   BEFUND W11-B21 ENTFAELLT. Die drei Texte SIMDET_BHKW_* lagen in der
+   Form-.resx und wurden ueber einen ZWEITEN ResourceManager gelesen
+   (TextAusFormResx :2148-2174). Sie stehen seit W11b.0 im gemeinsamen Katalog;
+   das hartkodierte „MWh/a" der Brennstoffzeile (:7676) ist eine Einheit und
+   steht als solche.
+
+   BEZUGSGROESSEN, WOERTLICH UEBERNOMMEN. Der Deckungsgrad bezieht sich auf den
+   PROJEKTbedarf, die Bedarfslinie des Diagramms auf den STUFENEINGANG - die
+   Begruendung steht im Blockkommentar des Vorlaeufers (:2129-2147): Die
+   Restwaerme-Ganglinie des Kerns ist stundenweise als „Stufeneingang −
+   Direktdeckung − zugerechnete Entladung" definiert; mit dem Projektbedarf als
+   Linie ginge die Summe im Bild sichtbar nicht auf.
+
+   ETAPPE E2. Die beiden Bestandszeilen heissen richtig „Vbh thermisch, Summe
+   Module" und „…, Mittel Module" - sie fuehrten nie Betriebsstunden. Darunter
+   die elektrischen Vollbenutzungsstunden; ohne gepflegte elektrische
+   Nennleistung steht dort „—" und keine erfundene Zahl.
+
+   WAEHLBARE REIHEN (W11b‑B‑23, 09.09.2026). Die Jahresganglinie war das
+   letzte Bild der Ergebnisreiter, das IMMER alles zeichnete - Waermeproduktion,
+   Speicherladung, Restwaerme und Waermebedarf. Sie traegt jetzt dieselbe
+   Steuerung wie jedes andere: oben „sortiert" (die Darstellungsart), darunter
+   je Reihe ein Schalter (die Reihen), alle vorbelegt AN, beschriftet mit der
+   Ressource ihrer Legende. ALLE ABGEWAEHLT heisst KEINE Reihe und nicht
+   „alle" (W11b‑B‑17).
+
+   KENNZAHLEN IN VIER GRUPPEN (W11b‑B‑23). „Waerme", „Strom" und „Betrieb"
+   standen als h3-Unterabschnitte UNTEREINANDER in einer Spalte, der
+   Brennstoffblock als einzige Gruppe mit dunklem Balken daneben. Jetzt sind es
+   vier gleichrangige Hauptgruppen mit Balken in ZWEI Rasterzeilen: oben
+   Waerme | Strom, darunter Betrieb | Brennstoffverbrauch - dieselbe Bauform
+   wie im Heizkesselreiter (W11b‑B‑22). Keine Zahl faellt weg. *@
+
+@namespace EPOS.UI.Seiten.Simulation
+
+<div class="epos-simerg-block">
+
+    @if (Daten is null)
+    {
+        <p class="epos-simerg-hinweis">@Resource.SIM_MSG_KEINE_DATEN_BHKW</p>
+    }
+    else
+    {
+        @* ERSTE RASTERZEILE: die zwei Kategorien nebeneinander (W11b‑B‑23).
+           Fuenfzehn Zeilen standen bis W11b‑B‑15 in EINER Liste: drei
+           Stundenzeilen, dann Waerme und Strom im Wechsel, die Restzahlen in der
+           Mitte und die zwei Deckungsgrade ganz unten. Seither tragen Gruppen
+           die Ordnung; jetzt sind es dunkle Balken statt h3, denn Waerme und
+           Strom sind HAUPTgruppen - wie im Bedarfs-, Uebersichts- und
+           Heizkesselreiter. Jede Gruppe schliesst mit ihrem Rest. *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_WAERME" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEUEBERSCHUSS, Zahl(Daten.WaermeueberschussMwh), MWH)
+
+                    @* Der Speicherbeitrag, im Vorlaeufer bis Live-Test 1 nirgends
+                       sichtbar: wohin die Produktion geht und woher die Deckung kommt.
+                       Beide Zeilen folgen der Praesenzregel des Diagramms. *@
+                    @if (Praesent)
+                    {
+                        @Wertzeile(Resource.SIMDET_BHKW_SPEICHERLADUNG, Zahl(Daten.SpeicherladungMwh), MWH)
+                        @Wertzeile(Resource.SIMDET_BHKW_SPEICHERDECKUNG, Zahl(Daten.SpeicherdeckungMwh), MWH)
+                    }
+
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
+                               WaermebedarfVorhanden ? Zahl(Daten.WaermedeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+                </dl>
+
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_STROM" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARF, Zahl(Daten.StrombedarfMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMPRODUKTION, Zahl(Daten.StromproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_STROMBEDARFSDECKUNG,
+                               StrombedarfVorhanden ? Zahl(Daten.StromdeckungProzent) : "0", "%")
+                    @Wertzeile(Resource.SIMERG_LBL_RESTSTROMBEDARF, Zahl(Daten.ReststrombedarfMwh), MWH, betont: true)
+                </dl>
+            </section>
+
+        </div>
+
+        @* ZWEITE RASTERZEILE: die zwei uebrigen Gruppen (W11b‑B‑23). *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BETRIEB" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_SUMME,
+                               Daten.BetriebsstundenThermisch.ToString("N0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIM_BHKW_VBH_TH_MITTEL,
+                               Daten.BetriebsstundenDurchschnitt.ToString("N0", Kultur), "h/a")
+                    @if (Praesent)
+                    {
+                        @Wertzeile(Resource.SIM_BHKW_VBH_EL,
+                                   Daten.VbhElektrischBekannt
+                                       ? Daten.VbhElektrisch.ToString("N0", Kultur)
+                                       : "—", "h/a")
+                    }
+                </dl>
+
+            </section>
+
+            <section class="epos-simerg-block">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_BRENNSTOFF" />
+                @if (SichtbareBrennstoffe == 0)
+                {
+                    @* „Falls GAR kein Brennstoff aktiv war" - woertlich :7614. *@
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF" />
+                }
+                else
+                {
+                    <dl class="epos-simerg-werte">
+                        @foreach (Brennstoffzeile b in Brennstoffe)
+                        {
+                            if (!b.Sichtbar) { continue; }
+                            @Wertzeile(b.Bezeichnung, Zahl(b.Wert), MWH)
+                        }
+                    </dl>
+                }
+            </section>
+
+        </div>
+
+        @if (Daten.Module.Count > 0)
+        {
+            <table class="epos-raster">
+                <thead>
+                    <tr>
+                        <th scope="col">@Resource.SIM_ERZEUGERNAME_BHKW</th>
+                        <th scope="col">@Resource.SIM_SPALTE_NAME</th>
+                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Daten.Module.Count; i++)
+                    {
+                        var m = Daten.Module[i];
+                        <tr>
+                            <td class="epos-simerg-zahl">@(i + 1)</td>
+                            @* Der Ersatztext bleibt in der Oberflaeche - das DTO fuehrt den
+                               Namen des Laufs und erfindet keinen (:4770). *@
+                            <td>@(string.IsNullOrEmpty(m.Name) ? Resource.SIM_BHKW_MODUL_STANDARD : m.Name)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.WaermeMwh)</td>
+                            <td class="epos-simerg-zahl">@Zahl(m.StromMwh)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Praesent)
+        {
+            @* W11b‑B‑23: ZUERST die Darstellungsart, DANN die Reihen - dieselbe
+               Trennung und dieselbe Reihenfolge wie im Waermepumpen- und im
+               Heizkesselreiter. Die vier Beschriftungen sind die der Legende, in
+               der Reihenfolge des Bildes. *@
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                          WertChanged="@(w => _sortiert = w)" />
+            </div>
+
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                          Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
+                <Schalter Bezeichnung="@Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG"
+                          Wert="@_speicherladung" WertChanged="@(w => _speicherladung = w)" />
+                <Schalter Bezeichnung="@Resource.CHART_SEGMENT_RESTWAERME"
+                          Wert="@_restwaerme" WertChanged="@(w => _restwaerme = w)" />
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                          Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
+            </div>
+
+            @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
+               mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
+               zurück. Der Ausschnitt gilt in BEIDEN Zweigen — auch die Dauerlinie
+               lässt sich aufziehen, so wie im Bedarfsreiter seit dem 05.09.2026. *@
+            <ChartBild Png="@BildBhkw" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                       BereichGewaehlt="@(b => _bereich = b)"
+                       Zurueckgesetzt="@(() => _bereich = null)" />
+        }
+    }
+
+</div>
+
+@code {
+    private const string MWH = "MWh/a";
+
+    private static System.Globalization.CultureInfo Kultur
+        => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Zahlen aus dem Kern.</summary>
+    [Parameter]
+    public WindowsFormsApplication1.SimulationErgebnisCtrl.BhkwErgebnis? Daten { get; set; }
+
+    /// <summary>Die Brennstoffzeilen - nur die mit Verbrauch &gt; 0 (woertlich :7566-7612).</summary>
+    [Parameter] public IReadOnlyList<Brennstoffzeile> Brennstoffe { get; set; }
+        = Array.Empty<Brennstoffzeile>();
+
+    /// <summary>
+    /// Gehoert das BHKW zum Ergebnis (<c>ErgebnisPraesenz.BHKW</c>)? Nur dann stehen
+    /// Diagramm, Umschalter, die zwei Speicherzeilen und die Vbh-Zeile da
+    /// (<c>BhkwErgebnisAnzeigen</c> :2178-2196).
+    /// </summary>
+    [Parameter] public bool Praesent { get; set; } = true;
+
+    [Parameter] public bool WaermebedarfVorhanden { get; set; } = true;
+    [Parameter] public bool StrombedarfVorhanden { get; set; } = true;
+
+    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
+    /// <summary>Die eingeschalteten Reihen des Bildes (Pruefhilfe).</summary>
+    public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
+    public Diagrammbereich? Bereich => _bereich;
+
+    private bool _sortiert;
+
+    // W11b‑B‑24: der Zeitausschnitt des Datenzooms.
+    private Diagrammbereich? _bereich;
+
+    // W11b‑B‑23: je Reihe ein Zustand, ALLE vorbelegt an.
+    private bool _produktion = true;
+    private bool _speicherladung = true;
+    private bool _restwaerme = true;
+    private bool _bedarf = true;
+
+    /// <summary>
+    /// Die Serienschluessel des Bildes - sprachneutral, die Beschriftung setzt
+    /// die Huelle. Eine LEERE Liste heisst „keine Reihe" und nicht „alle": Der
+    /// Auftrag traegt immer eine Liste, deshalb kann die Huelle leer von „ohne
+    /// Angabe" (<c>null</c>) unterscheiden.
+    /// </summary>
+    private IReadOnlyList<string> Reihen()
+    {
+        var liste = new List<string>();
+        if (_produktion) liste.Add("WAERMEPRODUKTION");
+        if (_speicherladung) liste.Add("SPEICHERLADUNG");
+        if (_restwaerme) liste.Add("RESTWAERME");
+        if (_bedarf) liste.Add("WAERMEBEDARF");
+        return liste;
+    }
+
+    private int SichtbareBrennstoffe
+    {
+        get
+        {
+            int n = 0;
+            foreach (Brennstoffzeile b in Brennstoffe) if (b.Sichtbar) n++;
+            return n;
+        }
+    }
+
+    private byte[]? BildBhkw =>
+        Bild?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen(),
+                                     0.0, _bereich));
+
+    /// <summary>
+    /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
+    /// 08.09.2026 (W11b‑B‑13): F2 schreibt „4485", N2 schreibt „4.485" — dieselbe
+    /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
+    /// </summary>
+    private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>
+    /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
+    /// die ABSCHLUSSZEILE einer Gruppe (W11b‑B‑15); ohne den Schalter bleibt das
+    /// Markup unveraendert.
+    /// </summary>
+    private RenderFragment Wertzeile(string text, string wert, string einheit,
+                                     bool betont = false) => @<text>
+        <dt class="@Zeilenklasse(betont)">@text</dt>
+        <dd class="@Zeilenklasse(betont)">@wert</dd>
+        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+    </text>;
+
+    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
+    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
+
+    private static string Einheitsklasse(bool betont) =>
+        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+}

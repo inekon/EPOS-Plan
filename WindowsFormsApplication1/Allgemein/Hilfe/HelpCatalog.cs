@@ -60,6 +60,23 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public class WikiHelpCatalog
     {
+        /// <summary>
+        /// Der eine Hilfekatalog des laufenden Programms.
+        ///
+        /// <para><b>Wozu.</b> Bis iU5 lag er als <c>Program.HelpCatalog</c> im
+        /// WinForms-Einstiegspunkt; Kern-naher Programmtext, der einen Hilfetext
+        /// nachschlagen wollte (<c>KiAktionenDialog</c>), kam nur ueber <c>Program</c>
+        /// dorthin. Die Anmeldung hier ist dasselbe Hausmuster wie
+        /// <c>WizardCtrl.Aktueller</c>: EIN statischer Halter, gesetzt von
+        /// <c>Program.Main</c>; <c>Program.HelpCatalog</c> ist seither nur noch die
+        /// Weiterleitung fuer die Masken.</para>
+        ///
+        /// <para><c>null</c> ist ein zulaessiger Zustand — im Aktionsharnisch und in
+        /// Prueflaeufen gibt es keinen Katalog. Ein fehlender Hilfetext ist ein
+        /// Schoenheitsfehler und kein Grund, eine Erklaerung scheitern zu lassen.</para>
+        /// </summary>
+        public static WikiHelpCatalog Aktueller { get; set; }
+
         private readonly HttpClient _http = new();
 
         // -------------------------------------------------------------------
@@ -103,6 +120,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string RubrikPraefix = "Programm Dokumentation/";
 
+        /// <summary>
+        /// H13 - die Unterrubrik "Berechnung" innerhalb der Rubrik. Ihre Seiten
+        /// erklaeren den RECHENWEG einer Komponente und liegen eine Stufe
+        /// tiefer: "Programm Dokumentation/Berechnung/Photovoltaik".
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Am Abruf aendert das nichts.</b> <c>apprefix</c> der
+        /// MediaWiki-Action-API ist ein reiner ZEICHENKETTEN-Praefix, kein
+        /// Namensraum-Filter: Am 06.09.2026 gegen wiki.epos-plan.de gemessen
+        /// liefert <c>apprefix=Programm Dokumentation/W</c> genau die vier
+        /// Seiten mit W. Eine Seite zweiter Stufe kommt also von selbst mit,
+        /// sobald sie im Wiki angelegt ist - <see cref="EintragAusTitel"/>
+        /// nimmt sie auf, ihr Kurzname lautet dann "Berechnung/Photovoltaik".
+        /// </para>
+        /// <para>
+        /// Was NICHT von selbst geht, ist der Zustand DAVOR: Solange die Seiten
+        /// im Wiki fehlen, wuerde ein erfolgreicher Onlineabruf den
+        /// mitgelieferten Startbestand vollstaendig ersetzen und die Rubrik
+        /// damit aus dem Katalog werfen. Dagegen steht
+        /// <see cref="BerechnungsRueckfallErgaenzen"/>.
+        /// </para>
+        /// </remarks>
+        private const string BerechnungsPraefix = RubrikPraefix + "Berechnung/";
+
         private string _baseUrl;
 
         public WikiHelpCatalog(string baseUrl) => _baseUrl = (baseUrl ?? "").TrimEnd('/');
@@ -110,7 +152,7 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl der bekannten Hilfeseiten.</summary>
         public int SeitenAnzahl => _nachPfad.Count;
 
-        // Meldet, wann der Ladelauf durch ist. MDIMainForm_Load ruft LoadAllAsync
+        // Meldet, wann der Ladelauf durch ist. Hauptfensterrahmen.BeimLaden ruft LoadAllAsync
         // bewusst ohne await auf; Formulare, die frueher oeffnen, saehen sonst einen
         // leeren Katalog und wuerden ihre Infobuttons voreilig abschalten (F3).
         private readonly TaskCompletionSource<bool> _geladen =
@@ -285,6 +327,17 @@ namespace WindowsFormsApplication1
             catch (Exception) { /* die Rohform genuegt */ }
 
             pfad = pfad.Replace('\\', '/').Trim();
+
+            // H13 - Leerzeichen und Unterstrich sind im Wiki DASSELBE Zeichen.
+            // MediaWiki bildet den Titel "Wärmequelle Erdreich" auf die Adresse
+            // ".../W%C3%A4rmequelle_Erdreich" ab; wer in help_mapping.txt das
+            // Ziel "Berechnung/Wärmequelle Erdreich" schreibt, meint dieselbe
+            // Seite. Ohne diese Zeile traefe der Pfadweg sie nicht - der
+            // Slugweg tut es laengst, weil er den Kurznamen unveraendert
+            // vergleicht. Fuer die 32 vorhandenen Seiten aendert sich nichts:
+            // keine ihrer Adressen fuehrt ein Leerzeichen.
+            pfad = pfad.Replace(' ', '_');
+
             if (pfad.Length == 0) return "";
             if (!pfad.StartsWith("/")) pfad = "/" + pfad;
             if (!pfad.EndsWith("/")) pfad += "/";
@@ -574,6 +627,12 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // H13: Was das Wiki unter "Programm Dokumentation/Berechnung/" noch
+            // nicht fuehrt, kommt aus dem mitgelieferten Startbestand dazu -
+            // sonst waere die Rubrik nach einem erfolgreichen Abruf verschwunden
+            // und jeder Knopf "Berechnungsweg ..." stumm.
+            BerechnungsRueckfallErgaenzen(tempCache);
+
             IndizesAufbauen(tempCache);
 
             // Als lokale Sicherung für den nächsten Offline-Start wegschreiben.
@@ -829,10 +888,33 @@ namespace WindowsFormsApplication1
 
         return new HelpEntry
         {
-            Tooltip = kurzname,
+            Tooltip = Kapitelname(kurzname),
             Url = SeitenUrl(titel),
             Slug = kurzname
         };
+    }
+
+    /// <summary>
+    /// Der Kapitelname, den das Popup ueber die Beschreibung setzt. Fuer die
+    /// Seiten der Rubrik ist das der Kurzname selbst; fuer eine Seite der
+    /// Unterrubrik "Berechnung" wird aus "Berechnung/Photovoltaik" das lesbare
+    /// "Berechnung: Photovoltaik" (H13).
+    /// </summary>
+    /// <remarks>
+    /// Der SLUG bleibt unangetastet - er ist die Adresse und muss zum
+    /// Wiki-Titel passen. Nur die Anzeige wird gedreht, und zwar hier UND im
+    /// mitgelieferten Startbestand (<c>help_cache.json</c>), damit beide
+    /// Bezugsquellen denselben Text zeigen.
+    /// </remarks>
+    internal static string Kapitelname(string kurzname)
+    {
+        if (string.IsNullOrWhiteSpace(kurzname)) return "";
+
+        string name = kurzname.Trim();
+        int strich = name.IndexOf('/');
+
+        return strich <= 0 ? name
+                           : name.Substring(0, strich).Trim() + ": " + name.Substring(strich + 1).Trim();
     }
 
     /// <summary>
@@ -854,7 +936,7 @@ namespace WindowsFormsApplication1
     /// Belegt den Katalog VOR dem Onlineabruf, damit er nie leer ist.
     /// </summary>
     /// <remarks>
-    /// Entschaerft den Startwettlauf: <c>MDIMainForm_Load</c> stoesst
+    /// Entschaerft den Startwettlauf: <c>Hauptfensterrahmen.BeimLaden</c> stoesst
     /// <see cref="LoadAllAsync"/> bewusst ohne <c>await</c> an, damit der Start
     /// nicht blockiert. Formulare, die frueher oeffnen, sahen bisher einen
     /// leeren Katalog. Nach diesem Aufruf sehen sie den Startbestand; der
@@ -876,14 +958,17 @@ namespace WindowsFormsApplication1
         }
     }
 
-    /// <summary>Ablageort der lokalen Sicherung im AppData-Verzeichnis.</summary>
+    /// <summary>
+    /// Ablageort der lokalen Sicherung im AppData-Verzeichnis.
+    ///
+    /// <para>Das ist <c>%APPDATA%\&lt;Produktname&gt;</c> und damit ein ANDERER Ordner
+    /// als <c>%APPDATA%\wp-plan</c>, unter dem Lizenz und KI-Schluessel liegen. Der
+    /// Unterschied ist gewachsen und bleibt: <c>Dienste.Pfade.Produktdaten</c> bildet
+    /// zeichengleich, was bisher <c>Application.ProductName ?? "WP-Plan"</c> ergab.</para>
+    /// </summary>
     private static string SicherungsPfad()
     {
-        string ordner = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            Application.ProductName ?? "WP-Plan");
-
-        return Path.Combine(ordner, StartbestandDateiName);
+        return Dienste.Pfade.Verbinde(Dienste.Pfade.Produktdaten, StartbestandDateiName);
     }
 
     private bool LokaleSicherungLaden(string pfad)
@@ -894,6 +979,11 @@ namespace WindowsFormsApplication1
         {
             var gesichert = JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(File.ReadAllText(pfad));
             if (gesichert == null || gesichert.Count == 0) return false;
+
+            // H13: Eine Sicherung aus der Zeit VOR diesem Paket kennt die Rubrik
+            // "Berechnung" nicht - sie stammt aus einem Abruf, den es damals noch
+            // nicht gab. Derselbe Rueckfall wie beim Onlineabruf.
+            BerechnungsRueckfallErgaenzen(gesichert);
 
             IndizesAufbauen(gesichert);
             System.Diagnostics.Debug.WriteLine(
@@ -915,6 +1005,27 @@ namespace WindowsFormsApplication1
     /// </summary>
     private bool MitgelieferterStartbestandLaden()
     {
+        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
+        if (startbestand == null || startbestand.Count == 0) return false;
+
+        IndizesAufbauen(startbestand);
+        System.Diagnostics.Debug.WriteLine(
+            $"[Help] Katalog aus mitgeliefertem Startbestand ({_nachPfad.Count} Seiten).");
+
+        return _nachPfad.Count > 0;
+    }
+
+    /// <summary>
+    /// Liest den eingebetteten Startbestand, ohne ihn einzuhaengen; <c>null</c>,
+    /// wenn er fehlt oder unlesbar ist.
+    /// </summary>
+    /// <remarks>
+    /// Getrennt von <see cref="MitgelieferterStartbestandLaden"/> seit H13:
+    /// <see cref="BerechnungsRueckfallErgaenzen"/> braucht denselben Bestand,
+    /// darf aber die bereits aufgebauten Register nicht ueberschreiben.
+    /// </remarks>
+    private static Dictionary<string, HelpEntry> StartbestandLesen()
+    {
         try
         {
             using (Stream stream = typeof(WikiHelpCatalog).Assembly
@@ -926,27 +1037,103 @@ namespace WindowsFormsApplication1
                         $"[Help] FEHLER: Eingebetteter Startbestand '{StartbestandDateiName}' fehlt. " +
                         "Ist er in der .csproj als EmbeddedResource mit passendem LogicalName eingetragen? " +
                         "Ohne Netz bleibt die Hilfe sonst leer.");
-                    return false;
+                    return null;
                 }
 
                 using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true))
                 {
-                    var startbestand = JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(reader.ReadToEnd());
-                    if (startbestand == null || startbestand.Count == 0) return false;
-
-                    IndizesAufbauen(startbestand);
-                    System.Diagnostics.Debug.WriteLine(
-                        $"[Help] Katalog aus mitgeliefertem Startbestand ({_nachPfad.Count} Seiten).");
-
-                    return _nachPfad.Count > 0;
+                    return JsonSerializer.Deserialize<Dictionary<string, HelpEntry>>(reader.ReadToEnd());
                 }
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine("[Help] FEHLER beim Lesen des Startbestandes: " + ex);
-            return false;
+            return null;
         }
+    }
+
+    // -----------------------------------------------------------------------
+    //  H13 - die Unterrubrik "Berechnung" ueberlebt einen Onlineabruf
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Ergaenzt einen frisch abgerufenen Bestand um die Seiten der Unterrubrik
+    /// "Berechnung", die das Wiki (noch) nicht fuehrt. Liefert die Zahl der
+    /// ergaenzten Seiten.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Warum es diese Ausnahme gibt.</b> Die Rangfolge F6 lautet: Online
+    /// SCHLAEGT lokale Sicherung SCHLAEGT Startbestand - und zwar vollstaendig,
+    /// nicht feldweise. Das ist richtig fuer die 32 allgemeinen Seiten: Wer eine
+    /// davon im Wiki loescht, soll sie nicht durch eine veraltete Beilage
+    /// wiederauferstehen sehen. Fuer die Rubrik "Berechnung" ist es falsch. Ihre
+    /// Seiten legt der Anwender ERST NOCH an (H13, Handgriffe im Protokoll); bis
+    /// dahin antwortet das Wiki erfolgreich und ohne sie, der Startbestand faellt
+    /// weg, und jeder Knopf "Berechnungsweg …" waere stumm - unter Windows
+    /// abgeschaltet (F3), im Blazor-Dialog ohne Wirkung.
+    /// </para>
+    /// <para>
+    /// <b>Die Regel, eng gefasst:</b> Ergaenzt wird ausschliesslich, was unter
+    /// <see cref="BerechnungsPraefix"/> liegt UND im Abruf fehlt. Sobald der
+    /// Anwender eine Berechnungsseite anlegt, gewinnt die Wikifassung - sie steht
+    /// schon in <paramref name="bestand"/>, und ergaenzt wird nur Fehlendes. Fuer
+    /// alle uebrigen Seiten bleibt die Rangfolge F6 unangetastet.
+    /// </para>
+    /// <para>
+    /// Die ergaenzten Eintraege wandern mit in die lokale Sicherung. Das ist
+    /// gewollt: Der naechste Start ohne Netz kennt die Rubrik dann ebenfalls.
+    /// </para>
+    /// </remarks>
+    private int BerechnungsRueckfallErgaenzen(Dictionary<string, HelpEntry> bestand)
+    {
+        if (bestand == null) return 0;
+
+        Dictionary<string, HelpEntry> startbestand = StartbestandLesen();
+        if (startbestand == null || startbestand.Count == 0) return 0;
+
+        int ergaenzt = 0;
+
+        foreach (HelpEntry eintrag in startbestand.Values)
+        {
+            if (eintrag == null) continue;
+            if (!IstBerechnungsseite(eintrag)) continue;
+
+            string pfad = PfadNormalisieren(eintrag.Url);
+            if (pfad.Length == 0 || bestand.ContainsKey(pfad)) continue;
+
+            bestand[pfad] = eintrag;
+            ergaenzt++;
+        }
+
+        if (ergaenzt > 0)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"[Help] H13: {ergaenzt} Seite(n) der Rubrik '{BerechnungsPraefix}' stehen im Wiki noch " +
+                "nicht und kommen aus dem mitgelieferten Startbestand. Anzulegen sind sie im Wiki " +
+                "(siehe H13_Berechnungshilfe_Protokoll.md); bis dahin zeigt der Knopf Kurztext und Adresse.");
+        }
+
+        return ergaenzt;
+    }
+
+    /// <summary>
+    /// Gehoert der Eintrag zur Unterrubrik "Berechnung"? Massgeblich ist der
+    /// Kurzname (<see cref="HelpEntry.Slug"/>), ersatzweise der Link-Pfad.
+    /// </summary>
+    private static bool IstBerechnungsseite(HelpEntry eintrag)
+    {
+        if (eintrag == null) return false;
+
+        if (!string.IsNullOrWhiteSpace(eintrag.Slug) &&
+            eintrag.Slug.Trim().StartsWith("Berechnung/", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        string pfad = PfadNormalisieren(eintrag.Url);
+        return pfad.Length > 0 && pfad.IndexOf("/berechnung/", StringComparison.Ordinal) >= 0;
     }
 
         private static string StripHtml(string s)
@@ -1082,8 +1269,8 @@ namespace WindowsFormsApplication1
         /// <para>
         /// Der Unterschied zu <see cref="RegisterControl"/>: Neben dem Praefix der
         /// Wurzel werden auch die Praefixe aller eingebetteten Formulare und
-        /// UserControls angewandt. <c>MDIMainForm</c> traegt <c>Form_Start</c> als
-        /// eingebettetes Formular (<c>TopLevel=false</c>), und <c>Form_Kosten</c>
+        /// UserControls angewandt. <c>Hauptfensterrahmen</c> traegt <c>Form_Start</c> als
+        /// eingebettetes Formular (<c>TopLevel=false</c>), und <c>Form_KostenKomponente</c>
         /// haengt <c>ucFuelSettings</c> zur Laufzeit ein - beide sollen ihre eigenen
         /// Zeilen aus <c>help_mapping.txt</c> bekommen, ohne dass jemand dafuer Code
         /// in ihr Formular schreiben muss.
@@ -1091,7 +1278,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Reihenfolge ist hier entscheidend.</b> Erst werden ALLE Praefixe des
         /// Baumes angewandt, danach erst wird abgeschaltet. Andernfalls loeschte der
-        /// Durchgang fuer <c>MDIMainForm</c> die Infobuttons von <c>Form_Start</c>,
+        /// Durchgang fuer <c>Hauptfensterrahmen</c> die Infobuttons von <c>Form_Start</c>,
         /// bevor deren eigene Zeilen ueberhaupt an der Reihe waeren.
         /// </para>
         /// <para>
@@ -1382,7 +1569,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wertet die Katalogtreffer aus - aber erst, wenn der Katalog fertig ist.
-        /// MDIMainForm_Load startet LoadAllAsync bewusst ohne await; wer vorher
+        /// Hauptfensterrahmen.BeimLaden startet LoadAllAsync bewusst ohne await; wer vorher
         /// urteilt, faerbt nach dem Start saemtliche Infobuttons grau.
         /// </summary>
         private void NachKatalogAuswerten(Control rootContainer, List<Control> registrierte)
@@ -1545,7 +1732,7 @@ namespace WindowsFormsApplication1
             string ankerEn = "";
             if (teile.Length > 1) zielEn = AnkerAbtrennen(teile[1], out ankerEn);
 
-            bool englisch = Program.nLanguage != 0;
+            bool englisch = Dienste.Sprache.IstEnglisch;
             string bevorzugt = englisch ? zielEn : zielDe;
             string bevorzugtAnker = englisch ? ankerEn : ankerDe;
             string ersatz = englisch ? zielDe : zielEn;
@@ -1738,6 +1925,81 @@ namespace WindowsFormsApplication1
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Die BRUECKE fuer Oberflaechen ohne Steuerelemente (Umsetzungskonzept iOS,
+        /// Paket iU8): Was steht im Hilfekatalog zu dieser Zuordnungszeile?
+        /// </summary>
+        /// <param name="schluessel">
+        /// Die linke Seite einer Zeile aus <c>help_mapping.txt</c>, also
+        /// <c>Praefix.Controlpfad</c> - zum Beispiel
+        /// <c>Form_Kosten_Auswahl.btn_Help</c>.
+        /// </param>
+        /// <returns>
+        /// Kurztext, Beschreibung und Adresse; <c>null</c>, wenn die Zuordnung
+        /// fehlt, der Katalog das Ziel nicht kennt oder noch nichts geladen ist.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum das noetig ist.</b> Der ganze uebrige Weg des Hilfesystems
+        /// haengt an einem <see cref="Control"/>: <see cref="ZuordnungenAnwenden"/>
+        /// SUCHT das Steuerelement zu einer Zeile und haengt Ereignisse daran.
+        /// Ein Blazor-Dialog hat keine Steuerelemente - sein Infoknopf ist ein
+        /// <c>&lt;button&gt;</c> in einer WebView2. Er kennt nur denselben
+        /// Schluessel und fragt hier nach.
+        /// </para>
+        /// <para>
+        /// Aufgeloest wird genau wie beim Klick auf einen Infobutton
+        /// (<see cref="EintragHolen"/>): Zuordnungszeile -&gt; Ziel, Ziel gegen die
+        /// Oberflaechensprache und den Katalog (<see cref="ZielAufloesen(string, out string)"/>),
+        /// Anker wieder anhaengen (<see cref="MitAnker"/>). Nur das Abschalten des
+        /// Steuerelements bei leerem Katalog entfaellt - es gibt keines.
+        /// </para>
+        /// <para>
+        /// <b>Die letzte passende Zeile gewinnt</b>, wie in
+        /// <see cref="ZuordnungenAnwenden"/>: Die Zeilen der Datei neben der EXE
+        /// stehen hinter den eingebetteten und uebersteuern sie damit (F2).
+        /// </para>
+        /// </remarks>
+        public EPOS.UI.Dienste.HilfeEintrag ZielFuer(string schluessel)
+        {
+            if (_catalog == null || string.IsNullOrWhiteSpace(schluessel)) return null;
+
+            // Zuordnungszeile suchen: "Praefix.Controlpfad = Ziel".
+            string zeilenziel = "";
+            foreach (string rohzeile in ZuordnungsZeilen())
+            {
+                string line = rohzeile == null ? "" : rohzeile.Trim('\uFEFF', ' ', '\t');
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+
+                int gleich = line.IndexOf('=');
+                if (gleich <= 0) continue;
+
+                string linkeSeite = line.Substring(0, gleich).Trim();
+                if (!string.Equals(linkeSeite, schluessel.Trim(), StringComparison.OrdinalIgnoreCase)) continue;
+
+                string ziel = line.Substring(gleich + 1).Trim();
+                if (ziel.Length > 0) zeilenziel = ziel;   // spaetere Zeile schlaegt fruehere
+            }
+
+            if (zeilenziel.Length == 0)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[Help] WARNUNG: help_mapping.txt kennt '{schluessel}' nicht - der Infoknopf bleibt wirkungslos.");
+                return null;
+            }
+
+            string adresse = ZielAufloesen(zeilenziel, out string anker);
+            if (string.IsNullOrEmpty(adresse)) return null;
+
+            HelpEntry eintrag = MitAnker(_catalog.Get(adresse), anker);
+            if (eintrag == null || string.IsNullOrEmpty(eintrag.Tooltip)) return null;
+
+            return new EPOS.UI.Dienste.HilfeEintrag(
+                eintrag.Tooltip,
+                eintrag.Beschreibung,
+                string.IsNullOrEmpty(eintrag.Url) ? null : eintrag.Url);
         }
 
         private void PopupBereitstellen()

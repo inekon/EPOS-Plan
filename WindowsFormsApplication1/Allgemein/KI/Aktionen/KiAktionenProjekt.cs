@@ -22,6 +22,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekte_auflisten",
                 zweck: KiAktionsTexte.ZweckProjekteAuflisten,
+                titel: KiAktionsTexte.TitelProjekteAuflisten,
+                beispiel: KiAktionsTexte.BeispielProjekteAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadAll",
                 ausfuehren: delegate
@@ -52,7 +54,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// GENAU das gerade geoeffnete Projekt. Andockpunkt <c>Program.startfrm</c>,
+        /// GENAU das gerade geoeffnete Projekt. Andockpunkt <c>Dienste.Projekt</c>,
         /// ersatzweise <c>ApplikationCtrl.ReadSingle()</c>; die Kopfdaten liest
         /// <c>ProjektCtrl.ReadSingle(int)</c>.
         /// </summary>
@@ -68,7 +70,7 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// <b>Dieselbe Quelle wie die Kontextsaeuberung.</b> Gelesen wird
-        /// <c>Program.startfrm</c> - genau das Feld, das
+        /// <c>Dienste.Projekt</c> - genau die Quelle, aus der
         /// <c>HilfeKontext.OhneKlarnamen</c> ausschneidet. Damit kann die Aktion nie
         /// ein anderes Projekt melden als das, dessen Name aus dem Kontext entfernt
         /// wird. Erst wenn es kein Startfenster gibt (Pruefharnisch, Konsole), gilt
@@ -92,8 +94,10 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_aktiv",
                 zweck: KiAktionsTexte.ZweckProjektAktiv,
+                titel: KiAktionsTexte.TitelProjektAktiv,
+                beispiel: KiAktionsTexte.BeispielProjektAktiv,
                 stufe: Schutzstufe.Lesen,
-                andockpunkt: "Program.startfrm / ApplikationCtrl.ReadSingle + ProjektCtrl.ReadSingle(int)",
+                andockpunkt: "Dienste.Projekt / ApplikationCtrl.ReadSingle + ProjektCtrl.ReadSingle(int)",
                 ausfuehren: delegate { return AktivesProjektErgebnis(); });
         }
 
@@ -149,7 +153,7 @@ namespace WindowsFormsApplication1
         /// offen ist - dann sind <paramref name="id"/> 0 und <paramref name="name"/> leer.
         /// </summary>
         /// <remarks>
-        /// Reihenfolge: erst die laufende Oberflaeche (<c>Program.startfrm</c>), dann
+        /// Reihenfolge: erst der laufende Projektkontext (<c>Dienste.Projekt</c>), dann
         /// das zuletzt geoeffnete Projekt aus <c>Tab_Applikation</c>. Fehlt die ID,
         /// wird sie ueber den Namen nachgeschlagen; fehlt der Name, ueber die ID. Jeder
         /// Datenbankzugriff ist eingefangen: Die Aktion darf an einer nicht erreichbaren
@@ -163,11 +167,14 @@ namespace WindowsFormsApplication1
 
             try
             {
-                if (Program.startfrm != null)
+                // Vorhanden und nicht Id > 0: Laeuft die Oberflaeche, gilt ihr Stand
+                // AUCH dann, wenn gerade kein Projekt offen ist - die Antwort lautet
+                // dann "keins" und nicht "das zuletzt geoeffnete".
+                if (Dienste.Projekt.Vorhanden)
                 {
                     oberflaecheLaeuft = true;
-                    id = Program.startfrm.m_ID_Projekt;
-                    name = Program.startfrm.m_szProjektname ?? "";
+                    id = Dienste.Projekt.Id;
+                    name = Dienste.Projekt.Name ?? "";
                 }
             }
             catch { oberflaecheLaeuft = false; id = 0; name = ""; }
@@ -257,6 +264,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_suchen",
                 zweck: KiAktionsTexte.ZweckProjektSuchen,
+                titel: KiAktionsTexte.TitelProjektSuchen,
+                beispiel: KiAktionsTexte.BeispielProjektSuchen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadAll (lokaler Teiltreffer)",
                 parameter: new[]
@@ -309,6 +318,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "projekt_lesen",
                 zweck: KiAktionsTexte.ZweckProjektLesen,
+                titel: KiAktionsTexte.TitelProjektLesen,
+                beispiel: KiAktionsTexte.BeispielProjektLesen,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "ProjektCtrl.ReadSingle(int)",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -357,6 +368,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "varianten_auflisten",
                 zweck: KiAktionsTexte.ZweckVariantenAuflisten,
+                titel: KiAktionsTexte.TitelVariantenAuflisten,
+                beispiel: KiAktionsTexte.BeispielVariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "VariantenCtrl.LadeGruppe / StammRefDerVariante",
                 parameter: new[] { KiHilfe.ProjektParameter() },
@@ -423,6 +436,8 @@ namespace WindowsFormsApplication1
             return new KiAktion(
                 name: "speichervarianten_auflisten",
                 zweck: KiAktionsTexte.ZweckSpeichervariantenAuflisten,
+                titel: KiAktionsTexte.TitelSpeichervariantenAuflisten,
+                beispiel: KiAktionsTexte.BeispielSpeichervariantenAuflisten,
                 stufe: Schutzstufe.Lesen,
                 andockpunkt: "StromspeicherVarianteCtrl.ReadAllByProjekt / ReadAktiveVariante",
                 parameter: new[] { KiHilfe.ProjektParameter() },

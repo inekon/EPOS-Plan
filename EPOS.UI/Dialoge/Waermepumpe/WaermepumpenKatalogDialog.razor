@@ -1,0 +1,208 @@
+﻿@* Waermepumpen-Katalog - die Auswahl aus dem Stammkatalog (iU9-W7.1),
+   seit dem Anwenderentscheid W14a-E-10 im SPALTENMODELL (Stufe S2.2).
+
+   DER KERN DES ENTSCHEIDS. "Das Schema des Dialogs sollte immer gleich
+   aussehen (Waermepumpe aehnlich wie PV-Module und Heizkessel)." Bis hierher
+   war dieser Dialog der GEGENENTWURF dazu: eine Filterleiste mit ELF
+   Bedienelementen - sieben Klapplisten (Hersteller, Auslegung, Quelle,
+   Regelung, Bauart, Aufstellung, Zuheizung) und vier Zahlenfeldern (VL min/max,
+   P_N min/max) -, darunter zwei Knoepfe "Daten filtern" und "Filter
+   zuruecksetzen", eine Herleitungszeile und erst dann die Liste mit sieben
+   Spalten. Er ist jetzt gebaut wie M1 und M3: EINE Suchzeile ueber alle
+   Spalten, die Liste ueber die ganze Breite, und jeder Filter sitzt im
+   SPALTENKOPF neben dem Namen.
+
+   WOHIN DIE ELF BEDIENELEMENTE GEGANGEN SIND (Konzept 5.6.5, Reiter M2):
+     Hersteller  -> Textspalte mit Trichter
+     Quelle      -> Textspalte mit Trichter (Tab_WP_STAMM.Typ)
+     P_N min/max -> EINE Zahlenspalte mit EINEM Feld ("5..12" statt zwei Kaesten)
+     VL min      -> Zahlenspalte (Min(Vorlauf) je ID_WP aus den Kennlinien)
+     VL max      -> Zahlenspalte (Max(Vorlauf) je ID_WP)
+     Zuheizung   -> Zahlenspalte (Tab_WP_STAMM.Heizung [kW])
+   Und DREI stehen NICHT als Spalte - das ist kein Versehen, sondern gemessen:
+     Bauart      -> 45 von 51 Saetzen LEER (5 Split, 1 Monoblock). Eine Spalte,
+                    die fast immer leer ist, kostet Breite und traegt nichts;
+                    sie steht im Kenndatenblock der Detailansicht.
+     Auslegung   -> "Heizen" / "Heizen/Kuehlen" ist GERECHNET aus
+                    Kuehlleistung > 0 - und genau das sagt schon die Spalte
+                    "Kuehlen" (ja/nein). Zwei Spalten fuer eine Aussage waeren
+                    eine zu viel.
+     Aufstellung -> im Kenndatenblock; der Planer sucht danach nicht, er liest
+                    es am gewaehlten Geraet nach.
+     Regelung    -> ebenso im Kenndatenblock.
+   Die Suche ueber ALLE Spalten findet die verbliebenen Textwerte weiterhin.
+
+   ZWEI KNOEPFE FALLEN ERSATZLOS. "Daten filtern" war schon im Vorlaeufer
+   redundant (jede Eingabe rief ApplyFilter ohnehin), und "Filter
+   zuruecksetzen" ist der Textknopf der Suchzeile geworden - er erscheint dort
+   nur, solange etwas gesetzt ist. Die Trefferzahl steht ebenfalls in der
+   Suchzeile ("7 von 51 Saetzen") statt als eigene Herleitungszeile; der
+   Vorlaeufer schrieb sie in die FENSTERUEBERSCHRIFT, die eine Ueberlagerung
+   nicht hat (A-7).
+
+   DIE ZEILEN KOMMEN AUS DEMSELBEN WEG WIE IN DER VERWALTUNG -
+   WPStammCtrl.Katalogfilterzeilen(). Es gibt keine zweite Fassung der Liste
+   und keinen zweiten Filter: WaermepumpenKatalogFilter mit seinen elf
+   Kriterien hat mit diesem Dialog seinen letzten Wirt verloren.
+
+   "IM PROJEKT VERWENDET" (Q12) steht nur, wenn der Wirt eine Projektliste hat:
+   Die Waermepumpenverwaltung reicht ihre Namen herein, die Stammpflege und die
+   Anlagenmaske nicht. Ohne Namen traegt die Spalte ueberall "Nein" - deshalb
+   entscheidet das PROFIL, ob es sie ueberhaupt gibt.
+
+   TASTATUR: Esc schliesst. Enter ist NICHT belegt - "Uebernehmen" schreibt in
+   den Wirt zurueck, und ein versehentliches Enter waere dort kein Bestaetigen,
+   sondern ein Zufall. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @* DIE EINE KATALOGLISTE - Suchzeile, Trefferzahl, Spaltenkoepfe mit
+       Sortierpfeil und Trichter. Dasselbe Bild wie im Heizkessel- und im
+       PV-Katalog; das ist der Entscheid. *@
+    <div class="epos-katalog-liste epos-katalog-fuellend">
+        <Katalogliste Profil="@Spaltenprofil" Zeilen="@Zeilen"
+                      Filterstand="@_filterstand" Texte="@Filtertexte"
+                      Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen"
+                      Vergleichsparameter="@Vergleichsparameter" />
+    </div>
+
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                disabled="@(_gewaehlt.Length == 0)" @onclick="Uebernehmen">@BtnUebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Der ganze Stammkatalog, UNGEFILTERT — <c>WPStammCtrl.Katalogfilterzeilen()</c>,
+    /// derselbe Weg wie in der Verwaltung. Gefiltert wird VOR dem Raster, im Kern
+    /// (Konzept 5.6.6).
+    /// </summary>
+    [Parameter] public IReadOnlyList<Katalogfilterzeile> Zeilen { get; set; }
+        = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// Die Spalten der Liste. Die Hülle reicht das übersetzte Profil herein
+    /// (<c>Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, …)</c>, im
+    /// Projektdialog <c>MitVerwendung</c>); ohne Vorgabe baut die Komponente es
+    /// selbst, dann tragen die Köpfe die Schlüssel.
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Profil { get; set; }
+    /// <summary>
+    /// <b>Die Zeilen des VERGLEICHS</b> (Frage <b>Q3</b>, Stufe S3.3) — derselbe Weg,
+    /// aus dem die Parameterübersicht (W14a‑E‑8) ihre Zeilen holt. Ohne ihn
+    /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+
+    /// <summary>
+    /// Die Beschriftungen der Katalogliste (Suche, Trefferzahl, „Filter
+    /// zurücksetzen", „Kein Treffer.", Trichter). Sie füllen sich selbst aus
+    /// <c>MyResource</c>.
+    /// </summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein eigener Filterstand statt des Registers</b> — dasselbe Muster wie
+    /// <c>ProfilVorgabe</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c> (S2.5: je Katalog EINER, für die Sitzung,
+    /// gemeinsam mit der Wärmepumpenverwaltung).
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>
+    /// Die Bezeichner der Wärmepumpen, die im PROJEKT stehen (Q12, Stufe S2.3).
+    /// Nur die Wärmepumpenverwaltung hat eine Projektliste und reicht sie herein;
+    /// ohne sie trägt die Spalte überall „Nein" — und ohne die Spalte im
+    /// <see cref="Profil"/> gibt es sie gar nicht.
+    /// </summary>
+    [Parameter] public IReadOnlyCollection<string>? ImProjektVerwendet { get; set; }
+
+    /// <summary>
+    /// Das Ergebnis: der Bezeichner der gewählten Wärmepumpe, <c>null</c> bei Abbruch.
+    /// Der Vorläufer gab das ganze <c>WPData</c> zurück; alle drei Aufrufer lasen daraus
+    /// ausschließlich <c>SelectedWP.Bezeichnung</c>.
+    /// </summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = Resource.WPK_TITEL;
+    [Parameter] public string BtnUebernehmenText { get; set; } = Resource.WPK_BTN_UEBERNEHMEN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Kopf der Wahlspalte — dasselbe Wort in allen Katalogdialogen.</summary>
+    [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPFilterAuswahl.btn_Help";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    /// <summary>
+    /// Der gewählte BEZEICHNER. Die Markierung hängt am NAMEN und nicht an der
+    /// Zeilennummer — deshalb bleibt sie über einen Filter- oder Sortierwechsel
+    /// stehen (Hausregel aus dem <c>EnergietraegerDialog</c>, W4).
+    /// </summary>
+    private string _gewaehlt = "";
+
+    private Katalogfilterstand _filterstand = new();
+
+    private Katalogfilterprofil? _profil;
+
+    /// <summary>Das Profil, das die Liste wirklich benutzt.</summary>
+    private Katalogfilterprofil? Spaltenprofil => Profil ?? _profil;
+
+    /// <summary>Der gewählte Bezeichner — Prüfhilfe für die Tests.</summary>
+    public string Gewaehlt => _gewaehlt;
+
+    /// <summary>Der Filterzustand der Liste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    protected override void OnInitialized()
+    {
+        _profil = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe);
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
+    }
+
+    protected override void OnParametersSet()
+    {
+        Filtertexte.SpalteWahl = SpalteWahl;
+
+        // Q12: EINMAL fuer die ganze Liste aus der Projektliste des Wirtes - nicht
+        // je Zeile und nicht aus der Datenbank.
+        Katalogverwendung.Stempeln(Zeilen, ImProjektVerwendet);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    private void Waehlen(string bezeichner) => _gewaehlt = bezeichner ?? "";
+
+    /// <summary>
+    /// „Übernehmen" ohne Zeile tut nichts — <c>SelectAndClose</c>:181 prüfte dafür
+    /// <c>dgv.CurrentRow != null</c>. Hier ist der Knopf zusätzlich gesperrt.
+    /// </summary>
+    private Task Uebernehmen()
+        => _gewaehlt.Length == 0 ? Task.CompletedTask : Geschlossen.InvokeAsync(_gewaehlt);
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+}

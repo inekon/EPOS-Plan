@@ -1,0 +1,877 @@
+﻿@* Katalogimport - EINE Komponente, FUENF Auspraegungen (iU9-W13.1, W13-E-2).
+
+   Vorbilder: Views/Heizkessel/Form_Heizkessel_einlesen.cs (500 Z., Blatt 3),
+   Views/Pufferspeicher/Form_PufferSp_einlesen.cs (383 Z., Blatt 20),
+   Views/Solarthermie/Form_SolarKollektoren_einlesen.cs (264 Z., Blatt 19) und
+   Views/Waermepumpe/Form_WP_einlesen.cs (424 Z., Blatt 22).
+
+   WARUM EINE STATT VIER. Der Bauplan der vier Masken steht viermal WORTGLEICH
+   im Bestand - dieselben dreizehn Bausteine, dieselben Kommentare, bis hin zum
+   falschen Handlernamen Liste_WP_SelectedIndexChanged in DREI von vier
+   (Befund W13-B15). Was sie trennt, sind sieben Werte; die stehen seit W13.0a
+   als KatalogImportProfil im Kern. Vier Komponenten zu bauen hiesse, denselben
+   Fehler ein zweites Mal zu machen - diesmal in einer Technik, die
+   Parametrisierung billig macht. Der FELDKARTENABGLEICH laeuft deshalb je
+   AUSPRAEGUNG, nicht je Komponente (Muster W8).
+
+   DER ABLAUF LIEGT IM KERN. KatalogImportAblauf liest, filtert, prueft vor und
+   fuehrt aus (W13.0b); diese Komponente zeigt an und entscheidet, wann.
+   Reihenfolge wie im Bestand: Vorpruefung -> Konfliktdialog -> Ausfuehrung ->
+   EINE Sammelmeldung.
+
+   DER KONFLIKTDIALOG IST EINE UEBERLAGERUNG, kein zweites Fenster (Risiko R2).
+   Er wartet auf eine TaskCompletionSource, die er beim Schliessen aufloest -
+   dasselbe Muster wie die drei Ueberlagerungen der Stromganglinien-Kette (W12.4).
+
+   MEHRFACHAUSWAHL. Die ListBox des Vorlaeufers stand auf MultiExtended; hier
+   traegt das Raster eine Wahlspalte mit Kontrollkaestchen, und die Regel
+   (Klick / Strg / Umschalt) liegt im Baustein Zeilenmarkierung (W13.0l). Das
+   Raster ist virtualisiert - ein Herstellerkatalog bringt bis zu 190 Saetze.
+
+   SEIT W6-E-5 (Anwender, 07.09.2026) SCHALTET DER EINFACHE KLICK UM, statt die
+   Wahl zu ersetzen: Ein Kontrollkaestchen verspricht das, und wer zwei Zeilen
+   anklickte, hatte vorher am Ende eine ("die Mehrfachauswahl funktioniert
+   nicht"). Die Regel steht im Baustein, also gilt sie fuer alle sechs Importe
+   auf einen Schlag. Dazu kommt der DOPPELKLICK: Er nimmt die Zeile in die
+   Markierung und uebernimmt SIE sofort, ohne die uebrige Markierung zu leeren.
+
+   DIE FUENFTE AUSPRAEGUNG IST DER STROMSPEICHER (Anwenderentscheid W13-E-2 vom
+   07.09.2026, Stufe S1 des Konzept_Stromspeicherimport_EPOS-Plan.md). Sie hat
+   keinen WinForms-Vorlaeufer - der Bestand kannte fuer Stromspeicher gar keinen
+   Import - und bringt drei Dinge mit, die die vier VDI-Auspraegungen nicht
+   brauchen; alle drei stehen als DATEN im KatalogImportProfil und sind bei den
+   vier leer:
+     1. QUELLKNOEPFE statt eines Dateiwaehlers ("CEC-Liste abrufen" aus dem Netz,
+        "CEC-Datei laden", "bslib laden"). Die CEC-Speicherliste wird NICHT
+        mitgeliefert (Entscheid Q2: ihre Nutzungsbedingungen untersagen die
+        kommerzielle Nutzung), bslib schon (CC BY 4.0).
+     2. Ein ZWEITER Zahlenfilter und eine HERSTELLERKLAPPLISTE. Eine Liste von
+        6 654 Geraeten, 1 bis 10 032 kWh und 0,4 bis 4 904 kW, ist mit einem
+        Filter nicht einzugrenzen.
+     3. SPALTEN in der Liste (Quelle, Hersteller, Modell, kWh, kW, eta, Chemie).
+        Die VDI-Dateien kommen je Hersteller; da genuegen Eintrag und Firma.
+   Was die Quellen NICHT liefern - Kosten, Degradation, Zyklen (Entscheide Q3
+   und Q6) -, sagt die Herleitungszeile des Profils.
+
+   SEIT W13-E-3 (Anwenderentscheid, 09.09.2026) BLEIBT DER DIALOG NACH JEDER
+   UEBERNAHME OFFEN. Vorher schloss er sich, sobald etwas geschrieben wurde;
+   bei einer Liste von 6 654 Stromspeichern hiesse das: Dialog zu, Dialog
+   wieder auf, Quelle (Netzabruf!) neu laden, Liste neu aufbauen - nur um den
+   naechsten Satz zu uebernehmen. Das Schreiben leert jetzt nur noch die
+   MARKIERUNG (_wahl, _detailSatz), damit dieselben Saetze nicht doppelt
+   geschrieben werden; von Hand geaenderte Bezeichner (_bezeichner) bleiben
+   stehen. Erst der FUSSKNOPF ("OK") oder Esc schliessen wirklich - und melden
+   dabei ueber den Merker _geschrieben, ob die Huelle den Aufruferkatalog
+   nachladen muss.
+
+   ABWEICHUNGEN gegenueber den vier Vorlaeufern stehen im Portprotokoll
+   iU9_W13_Blazor_Port_Protokoll.md als A-Zeilen; die vier wichtigsten:
+   Solar bekommt Dublettenpruefung und Konfliktdialog (es war die einzige ohne,
+   Befund W13-B24), die Waermepumpe meldet die leere Auswahl (B29), alle vier
+   schreiben transaktional (B33), und der Bezeichner kommt in allen vier aus
+   dem FELD statt aus der Liste (B26). Dass die Waermepumpe nach Erfolg
+   schloss (B4b), ist mit W13-E-3 ueberholt: Der Dialog schliesst jetzt bei
+   KEINER der fuenf Auspraegungen mehr von selbst.
+
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist NICHT belegt - der
+   Uebernehmen-Knopf schreibt sofort. *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using System.Globalization
+@using SpeicherEngine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog epos-katalogimport" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @* --- Die Quelle: ein Waehler oder mehrere Knoepfe ------------------- *@
+    @if (Profil.Quellen.Count == 0)
+    {
+        <Dateiwahl Bezeichnung="" KnopfText="@DateiText" Filter="@Dateifilter"
+                   Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                   Aktiv="@(!_laeuft)" />
+    }
+    else
+    {
+        <div class="epos-leiste epos-katalogimport-quellen">
+            @foreach (KatalogImportQuelle quelle in Profil.Quellen)
+            {
+                KatalogImportQuelle q = quelle;
+                <button type="button" class="@Quellenklasse(q)" disabled="@_laeuft"
+                        @onclick="() => BeiQuelle(q)">@q.Beschriftung</button>
+            }
+        </div>
+    }
+
+    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
+                 Abbrechen="@(_abbruch is null ? null : AbbrechenCallback)"
+                 AbbrechenText="@AbbrechenText" />
+
+    @* --- Die Auswahlliste ------------------------------------------------
+       STUFE S3.4 (Anwenderentscheid W14a-E-10, Frage Q10): Die Kandidatenliste
+       steht in der EINEN Katalogliste des Hauses. Damit fallen die zwei
+       Bedienelemente der Filterzeile - die Herstellerklappliste und das
+       von/bis-Paar (beim Stromspeicher zwei Paare) - samt dem Suchfeld: Der
+       Hersteller ist eine Spalte mit Trichter ("enthaelt ..."), die gefilterte
+       Groesse eine ZAHLENspalte mit Zahlenausdruck (">10", "10..60"), und die
+       Suche steht als EIN Feld ueber allen Spalten.
+
+       DREI DINGE BLEIBEN, WIE SIE WAREN. Die Mehrfachwahl mit ihrer Klicksemantik
+       (W6-E-5) liegt weiter beim Wirt - sie haengt an der Zeilenmarkierung und an
+       den QUELLindizes, ueber die die Wahl einen Filterwechsel ueberlebt; die
+       Statuszeile darunter zaehlt unveraendert; und virtualisiert wird weiter ab
+       120 Zeilen, jetzt an der GEFILTERTEN Zahl (VirtualisierenAb). *@
+    <Katalogliste Profil="@Profil.Listenprofil" Zeilen="@_katalogzeilen"
+                  Filterstand="@_filterstand" Texte="@Filtertexte"
+                  Mehrfach="true" IstGewaehlt="@Gewaehlt"
+                  Mehrfachwahl="BeiMehrfachwahl" Doppelklick="BeiDoppelklickZeile"
+                  Allewahl="BeiMehrfachalle"
+                  Gefiltert="ListeAufbauen"
+                  VirtualisierenAb="@VIRTUALISIEREN_AB" />
+
+    <Herleitungszeile Text="@AuswahlZeile" />
+
+    @* --- Die Detailfelder der Auspraegung -------------------------------- *@
+    <Gruppenkopf Titel="@GruppeText" />
+
+    <div class="epos-katalogimport-details">
+        @foreach (ImportDetailfeld feld in Profil.Detailfelder)
+        {
+            <Textfeld Bezeichnung="@Beschriftung(feld)" Wert="@Feldwert(feld.Schluessel)"
+                      WertChanged="@(w => FeldSetzen(feld.Schluessel, w))"
+                      NurLesen="@(!feld.Editierbar)"
+                      Mehrzeilig="@(feld.Schluessel == "BESCHREIBUNG")" Zeilen="2" />
+        }
+    </div>
+
+    @* Die Zeile, die sagt, was die Quelle NICHT liefert - bei der Waermepumpe
+       die Bedeutung der Stufe 0, beim Stromspeicher die fehlenden Kosten
+       (Entscheid W13-E-2-Q3). Sie steht seit W13-E-2 im PROFIL; vorher stand
+       sie als Sonderfall der Waermepumpe hier im Markup. *@
+    @if (Profil.Hinweis.Length > 0)
+    {
+        <Herleitungszeile Text="@Profil.Hinweis" />
+    }
+
+    <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+                @onclick="BeiUebernehmen">@UebernehmenText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@OkText</button>
+    </div>
+
+    @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
+    <Ueberlagerung Offen="@_konflikteOffen" Titel="" Schliessbar="false">
+        <KindInhalt>
+            @if (_konflikteOffen)
+            {
+                <ImportKonflikteDialog Pruefungen="@_konfliktPruefungen"
+                                       VergebeneNamen="@_konfliktNamen"
+                                       Geschlossen="KonflikteFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>
+    /// Eine Zeile der gefilterten Auswahlliste. <c>Satz</c> ist der gelesene
+    /// Eintrag — die Auspraegungen mit eigenen Listenspalten (Stromspeicher)
+    /// holen ihre Zellen daraus; <c>Name</c> bleibt daneben stehen, weil er der
+    /// vom Anwender geaenderte Bezeichner sein kann.
+    /// </summary>
+    public sealed record Anzeigezeile(int Zeile, int Quelle, string Name, string Firma,
+                                      KatalogZeile Satz);
+
+    // =====================================================================
+    // Die Auspraegung
+    // =====================================================================
+
+    /// <summary>
+    /// Welcher der fuenf Katalogimporte. Ohne Angabe der Heizkessel — die
+    /// Referenzauspraegung (Δ 5, die aktivste der Welle).
+    /// </summary>
+    [Parameter] public KatalogImportArt Art { get; set; } = KatalogImportArt.Heizkessel;
+
+    /// <summary>
+    /// Das Profil zur <see cref="Art"/>. Die Huelle reicht es fertig uebersetzt
+    /// herein; ohne Angabe baut die Komponente es selbst mit dem Katalog.
+    /// </summary>
+    [Parameter] public KatalogImportProfil? ProfilVorgabe { get; set; }
+
+    private KatalogImportProfil Profil => ProfilVorgabe ?? _profil!;
+    private KatalogImportProfil? _profil;
+
+    // =====================================================================
+    // Delegaten — die Datenseite liegt in der Huelle
+    // =====================================================================
+
+    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
+    /// Liest die Quelle — in der Huelle auf <c>Task.Run</c>, weil eine
+    /// VDI-Datei bis 8,3 MB und die CEC-Mappe 1,3 MB gross wird
+    /// (Risiko R-W13-2). Liefert die Zeilen und die Meldungen des Lesens.
+    ///
+    /// <para><b>Der erste Parameter ist der QUELLSCHLUESSEL</b>
+    /// (<c>KatalogImportProfil.Quellen</c>), der zweite der Pfad. Die vier
+    /// VDI-Auspraegungen fuehren nur eine Quelle und geben einen leeren
+    /// Schluessel; der Stromspeicher braucht ihn, weil <c>bslib_database.csv</c>
+    /// und eine ausgeleitete CEC-CSV an der Endung nicht zu unterscheiden sind.
+    /// <b>Ein leerer Pfad ist erlaubt</b> — bei „CEC-Liste abrufen" und
+    /// „bslib laden" beschafft die Huelle die Datei selbst.</para>
+    /// </summary>
+    [Parameter]
+    public Func<string, string, IProgress<ImportFortschritt>, CancellationToken,
+                Task<KatalogLeseErgebnis>>? Lesen { get; set; }
+
+    /// <summary>Vorpruefung der Auswahl gegen den Katalog (<c>KatalogImportAblauf.Vorpruefen</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<int>, IReadOnlyDictionary<int, string>,
+                            Task<KatalogVorpruefung>>? Vorpruefen { get; set; }
+
+    /// <summary>Fuehrt die Entscheidungen aus und liefert die fuenf Zaehler.</summary>
+    [Parameter]
+    public Func<int, List<KonfliktEntscheidung>, IReadOnlyDictionary<int, string>,
+                IProgress<ImportFortschritt>, CancellationToken, Task<ImportBilanz>>? Ausfuehren { get; set; }
+
+    /// <summary>Die Sammelmeldung zur Bilanz (<c>VdiAuswahlFilter.LadeMeldung</c>).</summary>
+    [Parameter] public Func<ImportBilanz, string>? Sammelmeldung { get; set; }
+
+    /// <summary>Uebersetzt einen Meldungsschluessel des Ablaufs.</summary>
+    [Parameter] public Func<PruefMeldung, string>? Meldungstext { get; set; }
+
+    /// <summary>Uebersetzt einen Fortschrittsschluessel des Ablaufs.</summary>
+    [Parameter] public Func<ImportFortschritt, string>? Fortschrittstext { get; set; }
+
+    /// <summary>
+    /// Der Dialog ist wirklich zu Ende (Fussknopf, Esc). <c>true</c> = in
+    /// dieser Sitzung wurde etwas geschrieben - auch wenn die schreibende
+    /// Uebernahme laenger zurueckliegt (ANWENDERENTSCHEID W13-E-3, 09.09.2026:
+    /// der Dialog schliesst nicht mehr von selbst nach dem Schreiben).
+    /// </summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // =====================================================================
+    // Texte
+    // =====================================================================
+
+    [Parameter] public string? TitelVorgabe { get; set; }
+    [Parameter] public string DateiText { get; set; } = Resource.IMP_KAT_BTN_DATEI;
+    [Parameter] public string UebernehmenText { get; set; } = Resource.IMP_KAT_BTN_UEBERNEHMEN;
+    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
+    [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+    [Parameter] public string GruppeText { get; set; } = Resource.IMP_KAT_GRP_EIGENSCHAFTEN;
+    [Parameter] public string KeineAuswahlText { get; set; } = Resource.IMP_KAT_MSG_KEINE_AUSWAHL;
+    [Parameter] public string VorlageAuswahl { get; set; } = Resource.IMP_LADE_GELADEN;
+
+    private string TitelText => TitelVorgabe ?? Art switch
+    {
+        KatalogImportArt.Pufferspeicher => Resource.IMP_KAT_TITEL_PUFFERSPEICHER,
+        KatalogImportArt.Solarkollektoren => Resource.IMP_KAT_TITEL_SOLAR,
+        KatalogImportArt.Waermepumpe => Resource.IMP_KAT_TITEL_WP,
+        KatalogImportArt.Stromspeicher => Resource.IMP_KAT_TITEL_STROMSPEICHER,
+        _ => Resource.IMP_KAT_TITEL_HEIZKESSEL
+    };
+
+    /// <summary>
+    /// Der Bereichsschluessel des Infoknopfs — je Auspraegung ein anderer.
+    /// Der Stromspeicher hat keinen WinForms-Vorlaeufer; sein Schluessel folgt
+    /// trotzdem der Schreibweise der vier anderen, damit help_mapping.txt EINE
+    /// Form kennt.
+    /// </summary>
+    private string HilfeSchluessel => Art switch
+    {
+        KatalogImportArt.Pufferspeicher => "Form_PufferSp_einlesen.btn_Help",
+        KatalogImportArt.Solarkollektoren => "Form_SolarKollektoren_einlesen.btn_Help",
+        KatalogImportArt.Waermepumpe => "Form_WP_einlesen.btn_Help",
+        KatalogImportArt.Stromspeicher => "Form_Stromspeicher_einlesen.btn_Help",
+        _ => "Form_Heizkessel_einlesen.btn_Help"
+    };
+
+    /// <summary>Die Klasse eines Quellknopfes — der zuletzt benutzte ist hervorgehoben.</summary>
+    private string Quellenklasse(KatalogImportQuelle q) =>
+        q.Schluessel == _quelle ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
+
+    private string Dateifilter => Profil.Dateifilter;
+
+    private string Beschriftung(ImportDetailfeld feld) => feld.Einheit.Length > 0
+        ? feld.Bezeichnung + " [" + feld.Einheit + "]"
+        : feld.Bezeichnung;
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private CancellationTokenSource? _abbruch;
+
+    private string _pfad = "";
+
+    /// <summary>Der zuletzt benutzte Quellschluessel; leer bei den vier VDI-Auspraegungen.</summary>
+    private string _quelle = "";
+
+    /// <summary>
+    /// Die Kandidaten als Katalogzeilen (Stufe S3.4) — der SCHLUESSEL ist der
+    /// Satzindex, nicht der Bezeichner: Eine Importliste bringt Namensdubletten,
+    /// und der Bezeichner ist hier obendrein aenderbar.
+    /// </summary>
+    private IReadOnlyList<Katalogfilterzeile> _katalogzeilen = Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>
+    /// Der Filterstand dieser Liste. Er gehoert dem WIRT und NICHT dem
+    /// <c>Katalogfilterregister</c>: Der Import zeigt Kandidaten aus einer DATEI,
+    /// keinen Katalog — ein Filter, der eine Sitzung lang stehenbliebe, verstellte
+    /// beim naechsten Einlesen den Blick auf eine ganz andere Menge.
+    /// </summary>
+    private readonly Katalogfilterstand _filterstand = new();
+
+    /// <summary>Die Beschriftungen der Katalogliste (Buendel, Hausregel).</summary>
+    private readonly Katalogfiltertexte _filtertexte = new();
+
+    private IReadOnlyList<KatalogZeile> _saetze = Array.Empty<KatalogZeile>();
+    private List<Anzeigezeile> _anzeige = new();
+    private readonly Zeilenmarkierung _wahl = new();
+
+    /// <summary>Die von Hand geaenderten Bezeichner, Satzindex → Text.</summary>
+    private readonly Dictionary<int, string> _bezeichner = new();
+
+    /// <summary>Der Satz, dessen Detailfelder gerade stehen (<c>ZeigeDetails</c>).</summary>
+    private int _detailSatz = -1;
+
+    /// <summary>
+    /// Ob in dieser Sitzung schon etwas geschrieben wurde (ANWENDERENTSCHEID
+    /// W13-E-3, 09.09.2026). Der Dialog bleibt nach „Speichern DB" offen — erst
+    /// beim wirklichen Schliessen (Fussknopf, Esc) muss die Huelle wissen, ob
+    /// sie den Aufruferkatalog nachladen soll; <see cref="Geschlossen"/> meldet
+    /// deshalb diesen Merker statt fest <c>false</c>.
+    /// </summary>
+    private bool _geschrieben;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    private bool _konflikteOffen;
+    private IReadOnlyList<ImportPruefung>? _konfliktPruefungen;
+    private IReadOnlyCollection<string>? _konfliktNamen;
+    private TaskCompletionSource<List<KonfliktEntscheidung>?>? _konflikteWartet;
+
+    /// <summary>
+    /// Ab wie vielen Zeilen sich das Virtualisieren lohnt. Ein Herstellerkatalog
+    /// bringt bis zu 190 Saetze (PART20_Bosch), die groessten Blatt-22-Dateien
+    /// ueber 100; darunter kostet die Virtualisierung mehr, als sie bringt — und
+    /// sie braucht einen Behaelter mit fester Hoehe, in dem dann kaum etwas steht.
+    /// </summary>
+    private const int VIRTUALISIEREN_AB = 120;
+
+    /// <summary>Die Beschriftungen der Katalogliste; „Wahl" kommt vom Wirt.</summary>
+    private Katalogfiltertexte Filtertexte
+    {
+        get
+        {
+            _filtertexte.SpalteWahl = SpalteWahlText;
+            return _filtertexte;
+        }
+    }
+
+    /// <summary>Ist dieser Kandidat markiert? (Rueckfrage der Katalogliste, S3.4.)</summary>
+    private bool Gewaehlt(Katalogfilterzeile zeile) => _wahl.IstGewaehlt(Anzeigeindex(zeile));
+
+    /// <summary>Die Stelle eines Kandidaten in der ANGEZEIGTEN Liste; −1, wenn ausgefiltert.</summary>
+    private int Anzeigeindex(Katalogfilterzeile zeile)
+    {
+        for (int i = 0; i < _anzeige.Count; i++)
+            if (_anzeige[i].Quelle == zeile.Id) return i;
+        return -1;
+    }
+
+    private EventCallback AbbrechenCallback =>
+        EventCallback.Factory.Create(this, () => _abbruch?.Cancel());
+
+    /// <summary>Die markierten Quellindizes (Pruefhilfe fuer Tests).</summary>
+    public IReadOnlyList<int> Markiert => _wahl.QuellIndizes(_anzeige.Select(z => z.Quelle).ToList());
+
+    /// <summary>Der Text des Warnbanners (Pruefhilfe fuer Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Zahl der sichtbaren Zeilen (Pruefhilfe fuer Tests).</summary>
+    public int SichtbareZeilen => _anzeige.Count;
+
+    /// <summary>Ob in dieser Sitzung schon geschrieben wurde (Pruefhilfe fuer Tests).</summary>
+    public bool Geschrieben => _geschrieben;
+
+    private bool UebernehmenErlaubt => !_laeuft && _saetze.Count > 0;
+
+    private string AuswahlZeile => string.Format(VorlageAuswahl, _wahl.Anzahl, _anzeige.Count);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnParametersSet()
+    {
+        if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
+            _profil = KatalogImportProfil.Finde(Art, Texte.Zu);
+
+        // S3.4: Die Filtervorbelegung des Designers (10...200 kW, 0...1000 l,
+        // 0...5 m2, 0...100 kW) faellt WEG. Sie war die Vorbelegung von ZWEI
+        // Zahlenfeldern; im Spaltenmodell gibt es kein Feld, das etwas
+        // vorbelegen koennte - und eine Vorbelegung, die beim Aufmachen Zeilen
+        // verschwinden liesse, war schon beim Stromspeicher als unerklaerlich
+        // verworfen worden (Entscheid W13-E-2). Wer eingrenzen will, schreibt
+        // "10..200" in den Trichter der Spalte.
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Datei lesen (btn_VDI3805_Click)
+    // =====================================================================
+
+    private Task BeiDatei(string pfad)
+    {
+        _pfad = pfad;
+        if (string.IsNullOrEmpty(pfad)) return Task.CompletedTask;
+        return Einlesen(_quelle, pfad);
+    }
+
+    /// <summary>
+    /// Ein Klick auf einen Quellknopf (nur Auspraegungen mit
+    /// <c>Profil.Quellen</c>). Braucht die Quelle eine Datei, geht erst der
+    /// Waehler auf; sonst beschafft die Huelle den Inhalt selbst — Netzabruf
+    /// oder Auslieferungsdatei — und bekommt einen leeren Pfad.
+    ///
+    /// <para>Ein ABGEBROCHENER Waehler liest nichts und meldet nichts: Der
+    /// Anwender hat gerade selbst entschieden, es zu lassen.</para>
+    /// </summary>
+    private async Task BeiQuelle(KatalogImportQuelle quelle)
+    {
+        if (_laeuft) return;
+        _quelle = quelle.Schluessel;
+
+        if (!quelle.AusDatei)
+        {
+            await Einlesen(quelle.Schluessel, "");
+            return;
+        }
+
+        if (DateiWaehlen is null) return;
+        string? pfad = await DateiWaehlen(
+            quelle.Dateifilter.Length > 0 ? quelle.Dateifilter : Profil.Dateifilter);
+        if (string.IsNullOrEmpty(pfad)) return;
+
+        await Einlesen(quelle.Schluessel, pfad!);
+    }
+
+    /// <summary>Der Lesegang selbst — fuer beide Wege derselbe.</summary>
+    private async Task Einlesen(string quelle, string pfad)
+    {
+        if (Lesen is null) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _meldung = "";
+        _saetze = Array.Empty<KatalogZeile>();
+        _katalogzeilen = Array.Empty<Katalogfilterzeile>();
+        _anzeige.Clear();
+        _wahl.Leeren();
+        _bezeichner.Clear();
+        // Eine NEUE Quelle ist eine andere Menge: Der Filter faellt zurueck,
+        // sonst zeigte die Liste nach dem Quellenwechsel grundlos nichts (das
+        // tat vorher die Herstellerklappliste an dieser Stelle).
+        _filterstand.Zuruecksetzen();
+        _filterstand.Suche = "";
+        _detailSatz = -1;
+        _abbruch = new CancellationTokenSource();
+
+        try
+        {
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = Fortschrittstext?.Invoke(f) ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            KatalogLeseErgebnis erg = await Lesen(quelle, pfad, melder, _abbruch.Token);
+
+            _saetze = erg.Zeilen;
+            KatalogzeilenAufbauen();
+            ListeAufbauen();
+
+            // Was der Parser gemeldet hat, steht als Warnbanner - im Bestand fiel
+            // es entweder ganz weg oder riss die Datei mit (Befund W13-B35).
+            if (erg.Meldungen.Count > 0 && Meldungstext is not null)
+            {
+                // Die Stufe der SCHWERSTEN Meldung bestimmt die Farbe. Bis
+                // W13-E-2 wurde alles unterhalb von "Fehler" als Warnung
+                // gezeigt; der Stromspeicherimport meldet aber auch
+                // Nachrichten (den Stand der CEC-Liste, die uebergangenen
+                // bslib-Zeilen), und die sind keine Auffaelligkeit.
+                Melden(string.Join(Environment.NewLine, erg.Meldungen.Select(Meldungstext)),
+                       erg.Meldungen.Any(m => m.Stufe == PruefStufe.Fehler) ? WarnStufe.Fehler
+                       : erg.Meldungen.Any(m => m.Stufe == PruefStufe.Warnung) ? WarnStufe.Warnung
+                       : WarnStufe.Hinweis);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Stiller Ausstieg - der Anwender hat abgebrochen.
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+            _pfad = "";
+        }
+    }
+
+    // =====================================================================
+    // Filtern (FuelleListe)
+    // =====================================================================
+
+    /// <summary>
+    /// Baut die Anzeigeliste neu — mit dem Zahlen- UND dem Suchfilter.
+    ///
+    /// <para>Die Markierung wird ueber die QUELLINDIZES gerettet: Was weiterhin
+    /// sichtbar ist, bleibt markiert, was ausgefiltert wurde, faellt heraus.
+    /// Genau das tat <c>FuelleListe</c> auch, nur ueber
+    /// <c>ListBox.SetSelected</c>.</para>
+    /// </summary>
+    private void ListeAufbauen()
+    {
+        List<int> vorher = _wahl.QuellIndizes(_anzeige.Select(z => z.Quelle).ToList());
+
+        // S3.4: GEFILTERT WIRD IM KERN, mit DERSELBEN reinen Funktion und
+        // DEMSELBEN Filterstand, mit denen die Katalogliste ihre Zeilen
+        // bestimmt - die Reihenfolge ist deshalb Zeile fuer Zeile dieselbe.
+        // Der Wirt braucht sie, weil an ihr seine Markierung und die
+        // Statuszeile haengen; er liest sie nicht aus der Komponente zurueck,
+        // sondern rechnet sie selbst (kein Zustand an zwei Orten).
+        IReadOnlyList<Katalogfilterzeile> sichtbar =
+            Katalogfilter.Anwenden(Profil.Listenprofil, _katalogzeilen, _filterstand);
+
+        _anzeige = new List<Anzeigezeile>(sichtbar.Count);
+        foreach (Katalogfilterzeile k in sichtbar)
+        {
+            int i = k.Id;
+            if (i < 0 || i >= _saetze.Count) continue;
+            _anzeige.Add(new Anzeigezeile(_anzeige.Count, i, Bezeichner(i), _saetze[i].Firma,
+                                          _saetze[i]));
+        }
+
+        _wahl.Leeren();
+        for (int zeile = 0; zeile < _anzeige.Count; zeile++)
+            if (vorher.Contains(_anzeige[zeile].Quelle)) _wahl.Hinzufuegen(zeile);
+
+        // Die Detailfelder auf die verbleibende Markierung nachziehen, damit sie
+        // nicht auf einen ausgefilterten Eintrag zeigen.
+        if (_detailSatz >= 0 && _anzeige.All(z => z.Quelle != _detailSatz)) _detailSatz = -1;
+        if (_detailSatz < 0 && _anzeige.Count > 0 && _wahl.Anzahl > 0)
+            _detailSatz = _anzeige.First(z => _wahl.IstGewaehlt(z.Zeile)).Quelle;
+    }
+
+    /// <summary>
+    /// Ein Klick auf die Wahlzelle. Die Regel — Klick schaltet um, <c>Umschalt</c>
+    /// nimmt den Bereich dazu (W6‑E‑5) — steht im Baustein
+    /// <see cref="Zeilenmarkierung"/> und gilt damit für alle sechs Importe gleich.
+    /// Die Detailfelder zeigen die ZULETZT angeklickte Zeile.
+    /// </summary>
+    private void Anklicken(int zeile, Zeilenwahl.Zeilenklick klick)
+    {
+        _wahl.Anklicken(zeile, klick.Strg, klick.Umschalt);
+        _detailSatz = _wahl.Anzahl > 0 && zeile < _anzeige.Count ? _anzeige[zeile].Quelle : -1;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Der Klick, den die <c>Katalogliste</c> meldet (S3.4). Sie nennt die Stelle
+    /// in der GEFILTERTEN Liste — und genau darauf rechnet
+    /// <see cref="Zeilenmarkierung"/>; die Regel selbst bleibt unveraendert.
+    /// </summary>
+    /// <summary>„Alle" in der Suchzeile (W13‑B‑5): alle sichtbaren Zeilen markieren oder freigeben.</summary>
+    private void BeiMehrfachalle(Katalogliste.Mehrfachalle alle)
+    {
+        if (alle.Waehlen) _wahl.AlleWaehlen(_anzeige.Count); else _wahl.Leeren();
+        _detailSatz = _wahl.Anzahl > 0 && _anzeige.Count > 0 ? _anzeige[0].Quelle : -1;
+        _meldung = "";
+    }
+
+    private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
+    {
+        Anklicken(klick.Index, new Zeilenwahl.Zeilenklick(klick.Strg, klick.Umschalt));
+    }
+
+    /// <summary>Der Doppelklick der <c>Katalogliste</c> — auf den Anzeigeindex umgesetzt.</summary>
+    private Task BeiDoppelklickZeile(Katalogfilterzeile zeile)
+        => BeiDoppelklick(Anzeigeindex(zeile));
+
+    /// <summary>
+    /// <b>Die Kandidaten als Katalogzeilen</b> (Stufe S3.4). Der Schluessel ist der
+    /// SATZINDEX: Eine Importliste bringt Namensdubletten, und der Bezeichner ist
+    /// hier obendrein aenderbar — er taugt nicht als Kennung.
+    ///
+    /// <para>Die Werte sind dieselben, die die Maske vorher in ihren Spalten und in
+    /// ihren zwei Zahlenfeldern zeigte: <c>Filterwert</c> (und beim Stromspeicher
+    /// <c>Filterwert2</c>) stehen als ZAHL da, damit ein Zahlenausdruck darauf
+    /// wirken kann.</para>
+    /// </summary>
+    private void KatalogzeilenAufbauen()
+    {
+        var liste = new List<Katalogfilterzeile>(_saetze.Count);
+        for (int i = 0; i < _saetze.Count; i++)
+        {
+            KatalogZeile z = _saetze[i];
+            var zeile = new Katalogfilterzeile(i, Bezeichner(i))
+            {
+                Schluessel = i.ToString(CultureInfo.InvariantCulture)
+            };
+            zeile.MitText(KatalogImportProfil.SpalteEintrag, Bezeichner(i));
+
+            if (Profil.Listenspalten.Count == 0)
+            {
+                zeile.MitText(KatalogImportProfil.FeldFirma, z.Firma);
+                zeile.MitZahl(KatalogImportProfil.SpalteFilterwert, z.Filterwert,
+                              Profil.FilterNachkommastellen);
+            }
+            else
+            {
+                foreach (KatalogImportSpalte sp in Profil.Listenspalten)
+                {
+                    if (sp.Schluessel == Profil.Filterspalte)
+                        zeile.MitZahl(sp.Schluessel, z.Filterwert, Profil.FilterNachkommastellen);
+                    else if (sp.Schluessel == Profil.Zweitfilterspalte)
+                        zeile.MitZahl(sp.Schluessel, z.Filterwert2,
+                                      Profil.Zweitfilter?.Nachkommastellen ?? 1);
+                    else
+                        zeile.MitText(sp.Schluessel, z.Wert(sp.Schluessel));
+                }
+            }
+
+            liste.Add(zeile);
+        }
+        _katalogzeilen = liste;
+    }
+
+    // =====================================================================
+    // Detailfelder (ZeigeDetails)
+    // =====================================================================
+
+    private string Bezeichner(int satz)
+    {
+        if (_bezeichner.TryGetValue(satz, out string? eigen) && eigen.Length > 0) return eigen;
+        return satz >= 0 && satz < _saetze.Count ? _saetze[satz].Name : "";
+    }
+
+    private string Feldwert(string schluessel)
+    {
+        if (_detailSatz < 0 || _detailSatz >= _saetze.Count) return "";
+        if (schluessel == KatalogImportProfil.FeldName) return Bezeichner(_detailSatz);
+        return _saetze[_detailSatz].Wert(schluessel);
+    }
+
+    /// <summary>
+    /// Nur der Bezeichner ist aenderbar — in allen vier Designern traegt jedes
+    /// andere Detailfeld ein <c>Enabled = false</c>. Was hier ankommt, gilt fuer
+    /// die Vorpruefung UND fuer das Schreiben (Abweichung A-4).
+    /// </summary>
+    private void FeldSetzen(string schluessel, string wert)
+    {
+        if (schluessel != KatalogImportProfil.FeldName || _detailSatz < 0) return;
+        _bezeichner[_detailSatz] = wert ?? "";
+        // Der Bezeichner steht in der Spalte "Eintrag" - die Zeilen der
+        // Katalogliste tragen ihn und muessen deshalb mit (S3.4).
+        KatalogzeilenAufbauen();
+        ListeAufbauen();
+    }
+
+    // =====================================================================
+    // Uebernehmen (btn_Uebernehmen_Click)
+    // =====================================================================
+
+    private Task BeiUebernehmen()
+    {
+        if (!UebernehmenErlaubt || Vorpruefen is null || Ausfuehren is null) return Task.CompletedTask;
+
+        List<int> markiert = _wahl.QuellIndizes(_anzeige.Select(z => z.Quelle).ToList());
+        if (markiert.Count == 0)
+        {
+            // A-ZEILE: Die Waermepumpe brach hier WORTLOS ab (Befund W13-B29);
+            // die drei anderen meldeten je einen eigenen Text. Jetzt einer fuer alle.
+            Melden(KeineAuswahlText, WarnStufe.Hinweis);
+            return Task.CompletedTask;
+        }
+
+        return Schreibgang(markiert);
+    }
+
+    /// <summary>
+    /// Der Doppelklick: diese Zeile in die Markierung NEHMEN und sie sofort
+    /// übernehmen — die übrige Markierung bleibt stehen (Anwenderentscheid
+    /// <b>W6‑E‑5</b>, 07.09.2026: „und die Auswahl per Doppelklick geht nicht").
+    ///
+    /// <para>Der Browser schickt vor dem Doppelklick zwei einfache Klicks; mit der
+    /// Umschaltregel heben die sich auf. Deshalb <c>Hinzufuegen</c> statt
+    /// <c>Anklicken</c> — sonst stünde die Zeile danach zufällig da.</para>
+    /// </summary>
+    private Task BeiDoppelklick(int zeile)
+    {
+        if (_laeuft || Vorpruefen is null || Ausfuehren is null) return Task.CompletedTask;
+        if (zeile < 0 || zeile >= _anzeige.Count) return Task.CompletedTask;
+
+        _wahl.Hinzufuegen(zeile);
+        _detailSatz = _anzeige[zeile].Quelle;
+        _meldung = "";
+
+        return Schreibgang(new List<int> { _anzeige[zeile].Quelle });
+    }
+
+    /// <summary>
+    /// Der Schreibgang über eine Auswahl — aus „Übernehmen" mit allen markierten
+    /// Sätzen, aus dem Doppelklick mit genau einem.
+    /// </summary>
+    private async Task Schreibgang(List<int> markiert)
+    {
+        if (Vorpruefen is null || Ausfuehren is null) return;
+
+        _laeuft = true;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            KatalogVorpruefung vor = await Vorpruefen(markiert, _bezeichner);
+
+            List<KonfliktEntscheidung>? entscheidungen;
+            if (vor.Konfliktbehaftet)
+            {
+                // EIN Dialog fuer die ganze Auswahl statt einer Meldung je Satz.
+                entscheidungen = await KonflikteFragen(vor.Pruefungen, vor.VergebeneNamen);
+                if (entscheidungen is null) return;      // Abbruch: nichts schreiben
+            }
+            else
+            {
+                entscheidungen = vor.AllesImportieren;
+            }
+
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = Fortschrittstext?.Invoke(f) ?? "";
+                InvokeAsync(StateHasChanged);
+            });
+
+            ImportBilanz bilanz = await Ausfuehren(markiert.Count, entscheidungen, _bezeichner,
+                                                   melder, _abbruch.Token);
+
+            Melden(Sammelmeldung?.Invoke(bilanz) ?? "",
+                   bilanz.Fehler > 0 ? WarnStufe.Warnung : WarnStufe.Erfolg);
+
+            // ANWENDERENTSCHEID W13-E-3 (09.09.2026): Der Dialog bleibt nach einer
+            // erfolgreichen Uebernahme OFFEN - auch Ueberschreiben und Umbenennen
+            // sind Erfolge. Vorher schloss er sich genau hier (die A-ZEILE zur
+            // Waermepumpe, die sich NIE schloss - Befund W13-B4b - ist damit
+            // ueberholt: jetzt schliesst KEINE der fuenf Auspraegungen mehr von
+            // selbst). Bei 6 654 Stromspeichern will der Anwender mehrere
+            // Uebernahmen hintereinander machen, ohne Dialog und Quelle
+            // (Netzabruf!) jedes Mal neu zu laden.
+            //
+            // Die MARKIERUNG wird geleert, damit dieselben Saetze nicht
+            // versehentlich ein zweites Mal geschrieben werden; die von Hand
+            // geaenderten Bezeichner (_bezeichner) bleiben stehen - sie haengen
+            // am SATZ, nicht an der Markierung. _geschrieben merkt sich den
+            // Erfolg fuer den Fussknopf/Esc (BeiSchliessen/BeiTaste); erst DORT
+            // meldet Geschlossen der Huelle, ob sie den Aufruferkatalog
+            // nachladen muss. Ohne einen einzigen Treffer bleibt der Dialog
+            // unveraendert offen, damit der Anwender Filter und Auswahl
+            // korrigieren kann.
+            if (bilanz.EtwasGeschrieben)
+            {
+                _geschrieben = true;
+                _wahl.Leeren();
+                _detailSatz = -1;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+    }
+
+    private async Task<List<KonfliktEntscheidung>?> KonflikteFragen(
+        IReadOnlyList<ImportPruefung> pruefungen, IReadOnlyCollection<string> namen)
+    {
+        _konfliktPruefungen = pruefungen;
+        _konfliktNamen = namen;
+        _konflikteOffen = true;
+        _konflikteWartet = new TaskCompletionSource<List<KonfliktEntscheidung>?>();
+        await InvokeAsync(StateHasChanged);
+        return await _konflikteWartet.Task;
+    }
+
+    private void KonflikteFertig(List<KonfliktEntscheidung>? entscheidungen)
+    {
+        _konflikteOffen = false;
+        _konflikteWartet?.TrySetResult(entscheidungen);
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    // ANWENDERENTSCHEID W13-E-3 (09.09.2026): meldet den Merker _geschrieben
+    // statt fest false - die Huelle laedt den Aufruferkatalog nur nach, wenn
+    // in dieser Sitzung tatsaechlich etwas geschrieben wurde.
+    private Task BeiSchliessen() => Geschlossen.InvokeAsync(_geschrieben);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return Task.CompletedTask;
+
+        // Jede Ebene prueft ihre eigenen Schalter, bevor sie Esc fuer sich
+        // auswertet - so schliesst Esc immer nur die oberste (Muster W7.5).
+        if (_konflikteOffen) return Task.CompletedTask;
+        if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
+
+        // ANWENDERENTSCHEID W13-E-3 (09.09.2026): wie BeiSchliessen - _geschrieben
+        // statt fest false.
+        return Geschlossen.InvokeAsync(_geschrieben);
+    }
+}
