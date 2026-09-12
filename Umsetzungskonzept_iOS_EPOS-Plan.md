@@ -4034,6 +4034,31 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Gate sept45 auf `347c92e` (gelaufen auf dem byte-gleichen Baum des ersten Merges `038d63b`; Welle und Merge wurden danach mit identischem
 > Baum nachsigniert, weil der Agentencommit aus dem Worktree unsigniert war): Kern 2 700, UI 3 912, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
 > Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
+>
+> **#237 (12.09.2026, Anwenderwunsch mit Bildschirmfoto „Als Variante speichern": „Ermögliche eine Variante aus einem bestehenden Projekt
+> anzulegen (Auswahl Checkbox im Dialog) … default ist Variantenbezeichner = Projektname des ausgewählten zu übernehmenden Projektes")
+> — umgesetzt (`47f1337`, Merge `8169757`, Agent Opus; 13 Dateien, +1 386/−113).** Der Dialog „Als Variante speichern" bekommt das
+> Kontrollkästchen „Inhalt aus einem bestehenden Projekt übernehmen"; angehakt erscheint darunter die Projektliste (Baustein `ProjektListe`,
+> ohne Vorauswahl, begrenzte Höhe), die Wahl belegt den Bezeichner mit dem Projektnamen der Quelle vor — ein von Hand getippter Bezeichner
+> bleibt stehen (Von-Hand-Merker) —, und unter dem Feld steht laufend der Zielname aus DERSELBEN Kernregel (`VariantenCtrl.Zielname`:
+> `<Stamm> - <Bezeichner>`, bei Kollision Zählnummer). **Kern:** `AnlegenAusStamm(idStamm, stammName, bezeichner, idQuelle)` — der Stamm gibt
+> Name und `Tab_Variante.ID_ProjektRef`, die Quelle den Inhalt (Tiefkopie über `ProjektDuplizierenCtrl`, Energieeinstellungen aus der Quelle);
+> die alte Signatur ruft die neue mit Quelle = Stamm und ist Zeile für Zeile unverändert. Beleg: Quelle 1007 gegen Stamm 1030 an drei
+> sichtbaren Stellen (`Tab_PV` 2/0, `Tab_Energieanlagen` 11/4, `energy_project_settings` 0/2) — die Variante trägt jeweils die Zahl der
+> Quelle; die Gegenprobe zeigt für die alte Signatur die Zahlen des Stamms. **Oberfläche:** neuer plattformfreier Dialog
+> `EPOS.UI/Dialoge/Projekt/ProjektVarianteDialog.razor` (+ `ProjektVarianteDaten`, Titelregel W11b‑B‑9, keine Datenbank), Hülle
+> `EPOS.UI.Daten/Projekt/ProjektVarianteHuelle.cs` (Stamm bestimmen, Zeilen, Zielnamensregel, Anlegen mit Rückruf zum Nachziehen der
+> Startseite); `AlsVarianteHuelle` ist ein dünner Adapter (`BlazorDialogForm<ProjektVarianteDialog>`), und — wichtig — der Weg des
+> Bildschirmfotos (Auswahlfeld „Projekt:" im Kopfband) lief bis dahin NICHT über diese Hülle, sondern über `StartseiteHuelle.VarianteAnlegenJetzt`
+> mit eigener `NamensDialogHuelle`-Abfrage; beide Wege öffnen jetzt dasselbe Fenster. Der generische `NamensDialog` ist unverändert. Vier
+> Ressourcenschlüssel de/en (`VAR_DLG_QUELLE_HAKEN`, `VAR_DLG_HINWEIS_QUELLE`, `VAR_DLG_ZIELNAME`, `VAR_MSG_QUELLE_WAEHLEN`); der Hinweistext
+> ohne Haken bleibt wortgleich. Tests: Kern +8 (`ProjektpflegeTests`, Tiefkopie/Gegenprobe/Zähler/Umbenennen/Hülle), UI +18 bunit
+> (`ProjektVarianteDialogTests`), beide auch unter en-US grün; SQL-Prüfer 0 von 1 343. **Unverändert:** der zweite Anlegeweg im Reiter
+> „Berichte & Kosten" und die KI-Aktion `variante_anlegen` (alte Signatur, Stamm = Quelle); `KiAktionenSchreiben.NeuerProjektname` bleibt ein
+> eigener Spiegel der Namensregel (offener Kleinpunkt). Wiki: Absatz „Als Variante speichern" in Anwendersprache; iOS nicht betroffen
+> (der Weg ist auf iOS nicht belegt), kein iOS-Lauf.
+> Gate sept46 auf `8169757`: Kern 2 708, UI 3 930, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
+> Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

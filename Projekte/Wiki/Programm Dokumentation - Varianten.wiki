@@ -1,0 +1,31 @@
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Varianten
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Varianten.wiki
+     Stand: 2026-09-12 (Variante aus einem bestehenden Projekt anlegen: Kaestchen und Projektliste im Dialog Als Variante speichern)
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Projektvarianten''' legt Varianten eines Projekts an und stellt sie gegenüber. Varianten sind eigenständige Kopien, die zusammen mit ihrem Stammprojekt eine Vergleichsgruppe bilden; das Stammprojekt ist dabei der Bezugspunkt jedes Vergleichs.
+
+== Eingaben ==
+
+* '''Stammprojekt''' – das Projekt auswählen, dessen Gruppe bearbeitet wird; ''nur Stammprojekte'' blendet die Varianten aus der Auswahlliste aus.
+* '''Stamm + Varianten''' – die Tabelle zeigt die Vergleichsgruppe mit Art, Bezeichner und Projektname.
+* '''Bezeichner und Variante anlegen''' – legt unter dem eingetragenen Bezeichner eine Kopie des aktuellen Standes an; ändern Sie je Variante nur eine Größe, sonst lässt sich ein Unterschied keiner Ursache zuordnen.
+* '''Variante löschen''' – entfernt die gewählte Variante; das Stammprojekt bleibt unberührt.
+* '''Simulation starten''' – rechnet die beteiligten Projekte neu, damit der Vergleich auf einem einheitlichen Stand steht.
+* '''Bericht erstellen…''' und '''Wirtschaftlichkeit (Kapitalwertmethode)…''' – erzeugen den Word- und Excel-Bericht der Gruppe beziehungsweise öffnen die Kapitalwertrechnung.
+
+== Varianten am Projekt-Auswahlfeld ==
+{{Anker|variante-anlegen|umbenennen}}
+
+Eine Variante lässt sich auch unmittelbar am Auswahlfeld ''Projekt:'' der Startseite anlegen und umbenennen. Hinter einem Trennstrich stehen dort am Ende der Liste zwei Einträge:
+
+* '''➕ Neue Variante anlegen…''' – öffnet den Dialog ''Als Variante speichern'' (derselbe Dialog steht im Menü ''Projekt'' unter ''Als Variante speichern…''). Ohne weitere Angabe legt er die Variante als Kopie des aktuellen Standes an – auch aus einer geöffneten Variante heraus, dann bezogen auf deren Stammprojekt. Mit dem Kästchen '''Inhalt aus einem bestehenden Projekt übernehmen''' erscheint darunter die Projektliste: Die Variante übernimmt dann den Inhalt des dort gewählten Projekts – Anlagen, Bedarfe, Zeitreihen und Energieträgereinstellungen –, während Name und Zugehörigkeit zur Vergleichsgruppe weiter vom Stammprojekt kommen. Als Bezeichner trägt das Programm den Namen des gewählten Projekts ein; ein selbst eingetippter Bezeichner bleibt stehen. Unter dem Feld steht laufend der Name, den die neue Variante bekommen wird (''Stamm - Bezeichner'', bei schon vergebenem Namen mit Zählnummer); ''Variante anlegen'' bleibt gesperrt, solange der Bezeichner fehlt oder bei gesetztem Kästchen kein Projekt gewählt ist. Danach führt das Auswahlfeld die neue Variante, und ein Band meldet die Anlage.
+* '''✏️ Variante umbenennen…''' – erscheint nur, wenn das geöffnete Projekt eine Variante ist. Der bisherige Bezeichner ist vorbelegt; mit dem neuen Bezeichner ändern sich auch der Projektname (''Stamm - Bezeichner''), das Kopfband und der Fenstertitel. Ein Stammprojekt bekommt seinen Namen dagegen über ''Speichern unter…''.
+* '''Umbenennen in der Übersicht''' – dieselbe Umbenennung steht im Bereich ''Berichte & Kosten'' auf der Seite ''Übersicht'' als vierter Knopf der Variantenzeile, hinter Anlegen, Löschen und Simulieren; frei ist er, sobald eine Variante gewählt ist.
+
+== Siehe auch ==
+
+* [[Varianten und Bericht]] – Vergleichsgruppe, Berichtslauf und Aufbau der Ausgabe
+* [[Programm Dokumentation/Berichte und Kosten#vergleichswahl|Berichte & Kosten: Vergleichswahl]] – welche Varianten nebeneinanderstehen
+* [[Grundlagen/Vergleich Energiebilanz]] – Bilanzgrenzen und Bezugsgrößen des Vergleichs
+
+[[Kategorie:Programm Dokumentation]]

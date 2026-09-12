@@ -861,4 +861,9 @@ Uploaders meldete 12+/5− statt der erwarteten 2+/1−, das wurde übersehen). 
 #234-Absatz darauf; die Repo-Quelle ist seither an die Handbearbeitung angeglichen (Commit nach Gate sept44). **Regel seither:**
 Vor jedem Upload `--probe` laufen lassen und die Diff-Zeilen lesen; weicht die Live-Seite über die beabsichtigte Änderung hinaus ab,
 zuerst die Live-Fassung in die Quelle übernehmen (Handbearbeitungen des Anwenders sind Anwenderentscheide), dann hochladen; der
-Uploader zeigt die Diff-Zeilen seither vor dem Schreiben an. Nachprobe 560 zeichengleich bis auf den Zeilenumbruch am Dateiende.
+Uploader zeigt die Diff-Zeilen seither vor dem Schreiben an. Nachprobe 560 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Varianten` Revision 561** (12.09.2026, Merge `8169757`, Gate sept46, #237): Die Bedienungsseite
+„Programm Dokumentation/Varianten" hat seither eine Repo-Quelle (`Projekte/Wiki/Programm Dokumentation - Varianten.wiki`, aus dem Live-Stand
+Revision 500 übernommen) und beschreibt am Eintrag „Neue Variante anlegen…" den Dialog „Als Variante speichern" mit dem Kästchen „Inhalt aus
+einem bestehenden Projekt übernehmen", der Projektliste, dem vorbelegten Bezeichner und der Zielnamen-Vorschau; die vom Agenten neu angelegte
+Quelle „Projektvarianten" ist verworfen, weil die Live-Seite schon bestand (Regel: erst die Live-Seite suchen, dann eine Quelle anlegen).
+Probe vor dem Upload 5+/1− (Kopfkommentar und der eine Absatz), Nachprobe 561 zeichengleich bis auf den Zeilenumbruch am Dateiende.
