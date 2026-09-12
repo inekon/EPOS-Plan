@@ -183,7 +183,10 @@
                                    EinheitAusProjektanlage="@Dienste?.EinheitAusProjektanlage"
                                    Katalogzeilen="@Dienste?.Katalogzeilen"
                                    Katalogprofil="@Dienste?.Katalogprofil"
-                                   EinheitAusKatalog="@Dienste?.EinheitAusKatalog" />
+                                   EinheitAusKatalog="@Dienste?.EinheitAusKatalog"
+                                   EinheitenUebernehmen="@Dienste?.EinheitenUebernehmen"
+                                   Schreibgeschuetzt="@(Dienste?.Schreibgeschuetzt?.Invoke() == true)"
+                                   Uebernommen="UebernahmeGemeldet" />
         }
         else if (_schritt == AuslegungSchritt.Daten)
         {
@@ -248,8 +251,9 @@
         }
         else if (_schritt == AuslegungSchritt.Optimierung)
         {
-            <OptimierungBlock Flotte="@Flotte" Suchen="@Auslegung.FlottenGroessenOptimieren"
-                              SuchenChanged="SuchlaufSetzen" Aktiv="@(!_laeuft)"
+            <OptimierungBlock Flotte="@Flotte" Methode="@Suchmethode"
+                              MethodeChanged="SuchmethodeSetzen" Aktiv="@(!_laeuft)"
+                              MethodeVerweigert="MethodeVerweigert"
                               Geaendert="FlotteGeschrieben"
                               Ergebnis="@_flottenErgebnis?.Auslegung"
                               Einheiten="@Einheitenzahl"
@@ -657,7 +661,7 @@
     };
 
     private string RechnenText =>
-        Auslegung.FlottenGroessenOptimieren ? RechnenGroessenText : RechnenFlotteText;
+        Suchmethode == FlottenSuchmethode.Bewerten ? RechnenFlotteText : RechnenGroessenText;
 
     private bool RechnenFrei => !_laeuft && Rechendelegat is not null && Eingabefehler.Length == 0;
 
@@ -902,10 +906,51 @@
         PeakVorschlagHolen();
     }
 
-    private void SuchlaufSetzen(bool wert)
+    /// <summary>
+    /// Die gewählte SUCHMETHODE (Auftrag #247, SD‑E‑10). <b>Sie steht an zwei Stellen
+    /// desselben Standes</b> — als <c>FlottenAuslegungEingang.Suchmethode</c> (die
+    /// Engine liest sie) und als <c>FlottenGroessenOptimieren</c> (der Kern entscheidet
+    /// daran, ob überhaupt eine Rastersuche läuft). Gelesen wird DIE Methode; ein alter
+    /// Stand ohne sie meldet sich als <c>Groesse</c> und wird über den Schalter richtig
+    /// gestellt.
+    /// </summary>
+    public FlottenSuchmethode Suchmethode
+        => Auslegung.FlottenGroessenOptimieren
+            ? (Flotte.Auslegung.Suchmethode == FlottenSuchmethode.Bewerten
+                 ? FlottenSuchmethode.Groesse : Flotte.Auslegung.Suchmethode)
+            : FlottenSuchmethode.Bewerten;
+
+    private void SuchmethodeSetzen(FlottenSuchmethode wert)
     {
-        Auslegung.FlottenGroessenOptimieren = wert;
-        Geaendert();
+        Flotte.Auslegung.Suchmethode = wert;
+        Auslegung.FlottenGroessenOptimieren = wert != FlottenSuchmethode.Bewerten;
+        FlotteGeschrieben();
+    }
+
+    /// <summary>
+    /// Der Versuch, eine gesperrte Suchoption zu wählen — die Seite meldet den Grund
+    /// (weiche Sperre, Hausregel W16b‑E‑6).
+    /// </summary>
+    private void MethodeVerweigert(string grund)
+    {
+        _meldungErfolg = false;
+        _meldung = grund ?? "";
+    }
+
+    /// <summary>
+    /// Der Übernahmeknopf aus Schritt 1 hat gemeldet (Auftrag #247). <b>Die Seite zeigt
+    /// die Meldung, der Editor nicht</b> — sie führt die eine Meldezeile über der
+    /// Ablaufleiste, und zwei Meldeorte für dieselbe Handlung wären zwei Wahrheiten.
+    /// </summary>
+    private void UebernahmeGemeldet(string text)
+    {
+        _meldung = text ?? "";
+        // Eine Erfolgsmeldung nennt Zahlen, ein Fehlschlag einen Grund; unterschieden
+        // wird am Ergebnis des Kerns, nicht am Wortlaut — deshalb meldet der Editor
+        // Fehlschläge über denselben Weg und die Seite färbt neutral erfolgreich, sobald
+        // der Anlagenbezug gesetzt wurde.
+        _meldungErfolg = Flotte.Einheiten.Any(e => !string.IsNullOrWhiteSpace(e.AnlageId));
+        StateHasChanged();
     }
 
     /// <summary>
@@ -1088,12 +1133,20 @@
                     string.IsNullOrWhiteSpace(einheit.Name) ? einheit.Id : einheit.Name));
         }
 
-        if (Auslegung.FlottenGroessenOptimieren)
+        // DIE SUCHRAUMPRUEFUNG haengt seit #247 an der METHODE: Unter „Stueckzahl
+        // suchen" liest niemand einen Groessenbereich, unter „Groesse suchen" niemand
+        // einen Stueckzahlbereich ueber dem Von-Wert — was nicht gelesen wird, darf den
+        // Lauf auch nicht sperren.
+        FlottenSuchmethode methode = Suchmethode;
+        if (methode != FlottenSuchmethode.Bewerten)
         {
             // DIE KANDIDATENGRENZE SPERRT SEIT #224 VORHER (Konzept 7.4 Punkt 3): Bis
             // dahin flog ein zu grosses Raster erst beim START als Ausnahme auf. Die
-            // Zaehlregel kommt aus dem Kern — dieselbe, die die Kandidatenzeile zeigt.
+            // Zaehlregel kommt aus dem Kern — dieselbe, die die Kandidatenzeile zeigt,
+            // und seit #247 nennt sie auch den Grund einer Ablehnung.
             FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(Flotte);
+            if (zahl.Befund == FlottenSuchbefund.KeineAktiveAchse)
+                fehler.Add(Resource.FLOTTE_OPT_ABHILFE);
             if (zahl.Gueltig && !zahl.Zulaessig) fehler.Add(Resource.FLOTTE_OPT_RASTER_ZUVIEL);
 
             foreach (FlottenAuslegungsAchse achse in Flotte.Auslegung.Achsen.Where(x => x.Aktiv))
@@ -1101,6 +1154,9 @@
                 string name = string.IsNullOrWhiteSpace(achse.Vorlage.Name) ? achse.Vorlage.Id : achse.Vorlage.Name;
                 if (achse.AnzahlVon < 0 || achse.AnzahlBis < achse.AnzahlVon)
                     fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_ANZAHL, name));
+
+                if (methode != FlottenSuchmethode.Groesse) continue;
+
                 if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate &&
                     UngueltigerBereich(achse.KapazitaetVonKWh, achse.KapazitaetBisKWh, achse.KapazitaetSchrittKWh))
                     fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_KAPAZITAET, name));
@@ -1260,6 +1316,7 @@
     {
         Auslegung.Flotte = SpeicherAuslegungKopie.Von(konfiguration);
         Auslegung.Flotte.Auslegung.Achsen.Clear();
+        Auslegung.Flotte.Auslegung.Suchmethode = FlottenSuchmethode.Bewerten;
         Auslegung.FlottenGroessenOptimieren = false;
         Geaendert();
     }
@@ -1319,6 +1376,21 @@
     {
         try
         {
+            // UNTER „STUECKZAHL SUCHEN" ist die Antwort die STUECKZAHL und nicht eine
+            // neue Groesse (Auftrag #247, Konzept 8.3): Uebernommen wird sie in die
+            // KARTEN — AnzahlVon = AnzahlBis = n je variierter Einheit. Die Einheiten
+            // selbst bleiben, wie sie sind; ihre Groesse hat der Lauf gar nicht
+            // variiert.
+            if (Suchmethode == FlottenSuchmethode.Stueckzahl &&
+                kandidat.Stueckzahlen is { Count: > 0 } zahlen)
+            {
+                StueckzahlenUebernehmen(zahlen);
+                _schritt = AuslegungSchritt.Speicher;
+                _meldungErfolg = true;
+                _meldung = string.Format(Kultur, KandidatBannerFormat, kandidat.KandidatId);
+                return Task.CompletedTask;
+            }
+
             FlottenStudieKonfiguration konfiguration = SpeicherFlottenAnzeigeCtrl
                 .KandidatKonfiguration(_flottenErgebnis?.Auslegung, Flotte, kandidat);
             if (konfiguration is null) return Task.CompletedTask;
@@ -1333,6 +1405,27 @@
         }
         catch (Exception ex) { _fehler = ex.Message; }
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Die gefundenen STÜCKZAHLEN in die Karten der variierten Einheiten (Auftrag #247).
+    /// </summary>
+    /// <remarks>
+    /// <b>Von und Bis werden gleichgesetzt</b>: Was übernommen ist, ist eine feste
+    /// Bestückung und kein Suchbereich mehr — dieselbe Aussage, die
+    /// <see cref="FlotteSetzen"/> unter der Größensuche über die geleerten Achsen macht.
+    /// Die Achsen bleiben dabei STEHEN: Unter S beschreiben sie die Einheit, nicht einen
+    /// erfundenen Zwischenwert, und ein zweiter Lauf mit anderer Stückzahl braucht sie.
+    /// </remarks>
+    private void StueckzahlenUebernehmen(IReadOnlyList<int> zahlen)
+    {
+        var aktive = Flotte.Auslegung.Achsen.Where(a => a.Aktiv).ToList();
+        for (int i = 0; i < aktive.Count && i < zahlen.Count; i++)
+        {
+            aktive[i].AnzahlVon = zahlen[i];
+            aktive[i].AnzahlBis = zahlen[i];
+        }
+        FlotteGeschrieben();
     }
 
     /// <summary>Der Variantenvergleich als CSV — er führt ALLE Kandidaten des Laufs.</summary>

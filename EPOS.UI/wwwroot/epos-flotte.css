@@ -1,4 +1,4 @@
-.epos-flotte-editor {
+﻿.epos-flotte-editor {
     display: grid;
     gap: 1rem;
     color: var(--epos-text);
@@ -527,28 +527,155 @@
     color: var(--epos-text-leise);
 }
 
-/* DIE SUCHRAUMTABELLE. Elastische Spalten stehen HINTEN und Zahlenfelder
-   bekommen eine feste kleine Breite (Hausregel aus Befund W6-B-4): Ohne sie
-   ist ein <input> rund 196 px breit und schiebt die drei Groessenspalten aus
-   dem Bild. Der Flexkasten steht IN der Zelle, nie auf ihr (W5-B-1). */
-.epos-flotte-suchraum-zelle {
+/* ==================================================================== */
+/* DER KOPFBLOCK DER STATION 4 (Auftrag #247, Konzept 8.4): links die drei */
+/* Suchoptionen, rechts der BEDIENBLOCK fester Breite. Er soll nicht      */
+/* mitwachsen, wenn die Optionstexte links laenger werden (Hausregel      */
+/* #233: ein Zweispalten-Reiter bekommt einen Bedienblock).               */
+/* ==================================================================== */
+.epos-flotte-suche {
+    flex: 1 1 34rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.epos-flotte-bedienblock {
+    flex: 0 0 26rem;
+    max-width: 100%;
+    display: grid;
+    gap: 0.4rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+
+/* DIE ABHILFE zu einer gedimmten Suchoption: Sie sagt, was in Schritt 1 zu tun
+   ist. Sie steht als eigene Zeile unter der Optionsgruppe und nicht nur als
+   title am Bedienelement — ein Grund, den man erst durch Hovern findet, ist
+   auf dem iPad kein Grund. */
+.epos-flotte-abhilfe {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    margin: -6px 0 10px 28px;
+    padding: 4px 8px;
+    border-left: 3px solid var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+    max-width: 62ch;
+}
+
+/* ==================================================================== */
+/* EINE KARTE JE EINHEIT (Auftrag #247, Konzept 8.4, SD-Q18). Sie ersetzt */
+/* die Neun-Spalten-Tabelle mit sieben kleinen Zahlenfeldern je Zeile:    */
+/* Kopfzeile (Name, feste Kenndaten, Schalter „variieren"), Rumpf je      */
+/* Methode, Fusszeile mit der Kandidatenzahl DIESER Einheit.              */
+/* Eine Herkunftspille gibt es ausdruecklich NICHT (SD-Q15).              */
+/* ==================================================================== */
+.epos-flotte-einheitskarten {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.epos-flotte-einheitskarte {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-left: 4px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    overflow: clip;
+}
+
+.epos-flotte-einheitskarte__kopf {
     display: flex;
     align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    padding: 0.35rem 0.7rem;
+    background: var(--epos-flaeche);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-flotte-einheitskarte__name {
+    font-weight: 700;
+}
+
+.epos-flotte-einheitskarte__kenndaten {
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-einheitskarte__fueller {
+    flex: 1 1 auto;
+}
+
+.epos-flotte-einheitskarte__rumpf {
+    display: grid;
     gap: 0.35rem;
-    flex-wrap: nowrap;
+    padding: 0.6rem 0.7rem;
 }
 
-.epos-flotte-suchraum-zelle .epos-eingabe {
-    min-width: 0;
-    width: 5.5rem;
+.epos-flotte-einheitskarte__fuss {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0.35rem 0.7rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
 }
 
-.epos-flotte-suchraum-zelle select.epos-eingabe {
-    width: 11rem;
+.epos-flotte-einheitskarte__fuss b {
+    color: var(--epos-text);
 }
 
-.epos-flotte-suchraum-leer {
+/* DIE GEDIMMTE KARTE. Eine Einheit ohne „variieren" verschwindet NICHT — sie
+   steht gedimmt da und sagt mit „fest: …", mit welchem Wert sie in jeden
+   Kandidaten eingeht. */
+.epos-flotte-einheitskarte--gedimmt {
+    border-left-color: var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
     color: var(--epos-text-sehr-leise);
+}
+
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__name,
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__kenndaten {
+    color: var(--epos-text-sehr-leise);
+}
+
+.epos-flotte-fest {
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0.5rem 0.7rem;
+    color: var(--epos-text-leise);
+}
+
+.epos-flotte-fest b {
+    color: var(--epos-text);
+}
+
+/* Das AUSWAHLKAESTCHEN der Einheitenkarte in Schritt 1 (Auftrag #247): Es
+   entscheidet, welche Einheiten der Uebernahmeknopf meint. */
+.epos-flotte-einheit__wahl {
+    width: 20px;
+    height: 20px;
+    margin: 0 0.2rem 0 0.4rem;
+    flex: 0 0 auto;
+}
+
+/* Die AKTIONEN ueber der Einheitenliste: „+ Speicher hinzufuegen" und
+   „Ausgewaehlte Einheiten in Projekt uebernehmen" nebeneinander. */
+.epos-flotte-abschnitt__aktionen {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 /* DIE KANDIDATENZEILE — live gegen „Maximale Auslegungskandidaten". Rot ist

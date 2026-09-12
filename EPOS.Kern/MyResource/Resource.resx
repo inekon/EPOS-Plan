@@ -18861,6 +18861,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SPA_SCHRITT_ERL" xml:space="preserve">
     <value>Welcher der fünf Schritte der Ablaufleiste gerade vorn steht: Speicher, Daten &amp; Kosten, Betriebsführung, Optimierung oder Ergebnis.</value>
   </data>
+  <data name="KI_DLG_SPA_METHODE_NAME" xml:space="preserve">
+    <value>Suchmethode</value>
+  </data>
+  <data name="KI_DLG_SPA_METHODE_ERL" xml:space="preserve">
+    <value>Was der nächste Lauf variiert: nur bewerten, die Größe suchen oder die Stückzahl suchen. Je Lauf wird genau eine Art variiert.</value>
+  </data>
   <data name="KI_DLG_SPA_SUCHE_NAME" xml:space="preserve">
     <value>Beste Größe suchen</value>
   </data>

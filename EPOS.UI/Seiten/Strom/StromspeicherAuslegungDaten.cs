@@ -174,6 +174,31 @@ public sealed class StromspeicherAuslegungDienste
     public Func<int, FlottenEinheit?>? EinheitAusKatalog;
 
     /// <summary>
+    /// <b>„Ausgewählte Einheiten in Projekt übernehmen"</b> (Auftrag #247, SD‑Q15) —
+    /// je Stück eine Speicheranlage, alles in EINER Transaktion
+    /// (<c>SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen</c>).
+    /// </summary>
+    /// <remarks>
+    /// Die zweite Liste sind die STÜCKZAHLEN in derselben Reihenfolge. <b>Kein Delegat
+    /// ist kein Knopf</b>: Ohne ihn zeigt Schritt 1 weder Auswahlkästchen noch
+    /// Übernahmeknopf — so ist es im Reiter „Stromspeicher", der dasselbe Blatt ohne
+    /// Projektwege führt.
+    /// </remarks>
+    public Func<IReadOnlyList<FlottenEinheit>, IReadOnlyList<int>,
+                FlottenUebernahmeErgebnis>? EinheitenUebernehmen;
+
+    /// <summary>
+    /// Steht die Datenbank im LESEMODUS? Dann ist der Übernahmeknopf weich gesperrt und
+    /// nennt seinen Grund. <c>null</c> = keine Sperre.
+    /// </summary>
+    /// <remarks>
+    /// Die Frage stellt die HÜLLE (<c>Schreibnaht.DarfSchreiben</c>) und nicht die
+    /// Ansicht: Der Lesemodus ist eine Lizenzaussage, und eine Razor-Komponente stellt
+    /// keine Lizenzfragen (Hausregel S‑2).
+    /// </remarks>
+    public Func<bool>? Schreibgeschuetzt;
+
+    /// <summary>
     /// Bestimmt das kleinste haltbare Peak-Ziel per Bisektion; <c>melder</c> bekommt
     /// Anteil und Lauftext. Ohne Delegat kein Knopf.
     /// </summary>

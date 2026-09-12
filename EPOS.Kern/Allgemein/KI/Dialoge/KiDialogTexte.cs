@@ -294,6 +294,8 @@
         internal static string SpaSchrittErl => MyResource.Resource.KI_DLG_SPA_SCHRITT_ERL;
         internal static string SpaSucheName => MyResource.Resource.KI_DLG_SPA_SUCHE_NAME;
         internal static string SpaSucheErl => MyResource.Resource.KI_DLG_SPA_SUCHE_ERL;
+        internal static string SpaMethodeName => MyResource.Resource.KI_DLG_SPA_METHODE_NAME;
+        internal static string SpaMethodeErl => MyResource.Resource.KI_DLG_SPA_METHODE_ERL;
         internal static string SpaFeinrasterName => MyResource.Resource.KI_DLG_SPA_FEINRASTER_NAME;
         internal static string SpaFeinrasterErl => MyResource.Resource.KI_DLG_SPA_FEINRASTER_ERL;
         internal static string SpaMaxKandidatenName => MyResource.Resource.KI_DLG_SPA_MAXKAND_NAME;

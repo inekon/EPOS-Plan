@@ -24443,6 +24443,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was der nächste Lauf variiert: nur bewerten, die Größe suchen oder die Stückzahl suchen. Je Lauf wird genau eine Art variiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_METHODE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_METHODE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchmethode ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_METHODE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_METHODE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die bezogene Energie über den Rechenzeitraum im Lauf mit Flotte. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_NETZBEZUG_ERL {

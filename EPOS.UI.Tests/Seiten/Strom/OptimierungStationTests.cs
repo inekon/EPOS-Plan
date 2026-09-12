@@ -52,25 +52,109 @@ public sealed class OptimierungStationTests : EposBunitContext
 
         Assert.Contains(Resource.FLOTTE_OPT_ZIEL_TEXT, cut.Markup, StringComparison.Ordinal);
         Assert.Contains(Resource.FLOTTE_OPT_SUCHE_AUS, cut.Markup, StringComparison.Ordinal);
-        Assert.Contains(Resource.FLOTTE_OPT_SUCHE_AN, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_METHODE_GROESSE, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_METHODE_STUECKZAHL, cut.Markup, StringComparison.Ordinal);
+
+        // Drei Optionen, je ein Erklaersatz (Konzept 8.3, SD-Q13).
+        Assert.Equal(3, cut.FindAll(".epos-flotte-suche input[type=radio]").Count);
+        Assert.Equal(3, cut.FindAll(".epos-flotte-suche p.epos-option-beschreibung").Count);
     }
 
     /// <summary>
-    /// Die Wahl SETZT <c>Auslegung.FlottenGroessenOptimieren</c> — denselben Wert, den
-    /// bis #224 der Schalter unter der Einheitenliste in Schritt 1 trug — und der
-    /// Suchraum erscheint erst dann.
+    /// Die Wahl SETZT beide Felder desselben Standes — die <c>Suchmethode</c> der Engine
+    /// und <c>FlottenGroessenOptimieren</c>, an dem der Kern entscheidet, ob überhaupt
+    /// eine Rastersuche läuft — und der Suchraum erscheint erst dann.
     /// </summary>
     [Fact]
-    public void Die_Wahl_schaltet_den_Suchlauf_und_zeigt_erst_dann_den_Suchraum()
+    public void Die_Wahl_schaltet_die_Suchmethode_und_zeigt_erst_dann_den_Suchraum()
     {
-        var cut = Station(suchen: false);
+        var cut = Station(FlottenSuchmethode.Bewerten);
 
         Assert.DoesNotContain(Resource.FLOTTE_OPT_SUCHRAUM, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_BEWERTEN_HINWEIS, cut.Markup, StringComparison.Ordinal);
 
-        Suchwahl(cut, Resource.FLOTTE_OPT_SUCHE_AN).Change(true);
+        Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_GROESSE).Change(true);
 
         Assert.True(cut.Instance.Eingaben.Auslegung!.FlottenGroessenOptimieren);
+        Assert.Equal(FlottenSuchmethode.Groesse,
+                     cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Suchmethode);
         Assert.Contains(Resource.FLOTTE_OPT_SUCHRAUM, cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die zweite Methode</b> (Auftrag #247, SD‑Q14/SD‑Q16): „Stückzahl suchen"
+    /// variiert an jeder eingeschalteten Einheit die Stückzahl — der Rumpf ihrer Karte
+    /// zeigt dann die zwei Stückzahlfelder statt der Größenbereiche, und das Feinraster
+    /// verschwindet (zwischen zwei ganzen Zahlen gibt es nichts zu verfeinern).
+    /// </summary>
+    [Fact]
+    public void Die_Stueckzahlsuche_tauscht_den_Rumpf_der_Karte_und_nimmt_das_Feinraster_weg()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse);
+
+        Assert.Contains(Resource.FLOTTE_OPT_FEINRASTER, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_KAPAZITAET_VON, cut.Markup, StringComparison.Ordinal);
+
+        Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_STUECKZAHL).Change(true);
+
+        Assert.Equal(FlottenSuchmethode.Stueckzahl,
+                     cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Suchmethode);
+        Assert.True(cut.Instance.Eingaben.Auslegung!.FlottenGroessenOptimieren);
+        Assert.DoesNotContain(Resource.FLOTTE_OPT_FEINRASTER, cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_ED_KAPAZITAET_VON, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_ANZAHL_VON, cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die Kandidatenzeile hängt an der Methode</b> — dieselbe Zählregel des Kerns,
+    /// anderes Ergebnis: unter „Größe" das Größenraster bei fester Stückzahl, unter
+    /// „Stückzahl" die Stückzahlen bei fester Größe.
+    /// </summary>
+    [Fact]
+    public void Die_Kandidatenzeile_zaehlt_je_Methode_anders()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse);
+
+        // 5 Kapazitaetsstufen (100…300/50) x 3 Leistungsstufen (40…80/20) = 15.
+        Assert.Contains("15", cut.Find("p.epos-flotte-kandidatenzeile").TextContent,
+                        StringComparison.Ordinal);
+
+        Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_STUECKZAHL).Change(true);
+
+        // Stueckzahl 1…3 (siehe Pruefstand) = 3 Kandidaten.
+        FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(
+            cut.Instance.Eingaben.Auslegung!.Flotte!);
+        Assert.Equal(3, zahl.Grob);
+        Assert.Equal(0, zahl.FeinHoechstens);
+        Assert.Contains("3", cut.Find("p.epos-flotte-kandidatenzeile").TextContent,
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ohne eine Einheit mit „variieren" ist keine Suchoption wählbar</b>
+    /// (Konzept 8.3): Beide stehen gedimmt da und die ABHILFE sagt, was zu tun ist.
+    /// Gedimmt heißt WEICH gesperrt — ein <c>disabled</c>-Bedienelement könnte seinen
+    /// Grund gar nicht zeigen (Hausregel W16b‑E‑6).
+    /// </summary>
+    [Fact]
+    public void Ohne_variierte_Einheit_stehen_die_Suchoptionen_gedimmt_mit_Abhilfe()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse, variieren: false);
+
+        IElement groesse = Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_GROESSE);
+        IElement stueck = Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_STUECKZAHL);
+        IElement bewerten = Suchwahl(cut, Resource.FLOTTE_OPT_SUCHE_AUS);
+
+        Assert.Equal("true", groesse.GetAttribute("aria-disabled"));
+        Assert.Equal("true", stueck.GetAttribute("aria-disabled"));
+        Assert.False(groesse.HasAttribute("disabled"));      // WEICH, damit der Grund ankommt
+        Assert.NotEqual("true", bewerten.GetAttribute("aria-disabled"));
+
+        Assert.Single(cut.FindAll("p.epos-flotte-abhilfe"));
+        Assert.Contains(Resource.FLOTTE_OPT_ABHILFE, cut.Markup, StringComparison.Ordinal);
+
+        // Und der Rechenknopf ist gesperrt — der Lauf wuerde im Kern benannt abgelehnt.
+        Assert.True(cut.Find(".epos-flotte-optimierung-lauf button").HasAttribute("disabled"));
     }
 
     // =====================================================================
@@ -78,36 +162,72 @@ public sealed class OptimierungStationTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// EINE ZEILE JE EINHEIT (Zielbild 7.4 Punkt 2) — mit Namen, Schalter „variieren",
-    /// Größenkopplung, Anzahl und den drei Größenbereichen. Die Bereiche, die die
-    /// Kopplung RECHNET statt zu rastern, stehen als „—" da.
+    /// EINE KARTE JE EINHEIT (Konzept 8.4, SD‑Q18) — Kopfzeile mit Namen, festen
+    /// Kenndaten und dem Schalter „variieren", Rumpf je Methode, Fußzeile mit den
+    /// Kandidaten DIESER Einheit. Die Neun-Spalten-Tabelle gibt es nicht mehr.
     /// </summary>
     [Fact]
-    public void Der_Suchraum_traegt_eine_Zeile_je_Einheit()
+    public void Der_Suchraum_traegt_eine_Karte_je_Einheit()
     {
         var cut = Station();
 
-        IElement tabelle = cut.Find("table.epos-flotte-suchraum");
-        IElement zeile = Assert.Single(tabelle.QuerySelectorAll("tbody tr"));
+        Assert.Empty(cut.FindAll("table.epos-flotte-suchraum"));
 
-        Assert.Contains("Hauptspeicher", zeile.TextContent, StringComparison.Ordinal);
-        Assert.Equal(7, tabelle.QuerySelectorAll("thead th").Length);
-
-        // Kopplung „Kapazitaet und Leistung": die C-Raten-Spalte ist abgeleitet.
-        Assert.Single(zeile.QuerySelectorAll("span.epos-flotte-suchraum-leer"));
+        IElement karte = Assert.Single(cut.FindAll("article.epos-flotte-einheitskarte"));
+        Assert.Contains("Hauptspeicher",
+                        karte.QuerySelector(".epos-flotte-einheitskarte__name")!.TextContent,
+                        StringComparison.Ordinal);
+        Assert.Contains("100", karte.QuerySelector(".epos-flotte-einheitskarte__kenndaten")!.TextContent,
+                        StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_SP_VARIIEREN, karte.TextContent, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_KARTE_KANDIDATEN,
+                        karte.QuerySelector(".epos-flotte-einheitskarte__fuss")!.TextContent,
+                        StringComparison.Ordinal);
     }
 
-    /// <summary>Ein Bereich der Tabelle schreibt in die Achse der Einheit.</summary>
+    /// <summary>
+    /// Eine Einheit OHNE „variieren" verschwindet nicht — ihre Karte steht GEDIMMT da
+    /// und sagt mit „fest: …", mit welchem Wert sie in jeden Kandidaten eingeht.
+    /// </summary>
     [Fact]
-    public void Ein_Bereich_der_Tabelle_schreibt_in_die_Achse()
+    public void Eine_Einheit_ohne_variieren_steht_gedimmt_mit_ihrem_festen_Wert()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse, variieren: false);
+
+        IElement karte = Assert.Single(cut.FindAll("article.epos-flotte-einheitskarte"));
+        Assert.Contains("epos-flotte-einheitskarte--gedimmt", karte.ClassName!, StringComparison.Ordinal);
+        Assert.Single(karte.QuerySelectorAll("p.epos-flotte-fest"));
+        Assert.Empty(karte.QuerySelectorAll(".epos-flotte-einheitskarte__rumpf"));
+        Assert.Contains(Resource.FLOTTE_OPT_KARTE_FEST, karte.TextContent, StringComparison.Ordinal);
+    }
+
+    /// <summary>Ein Bereich der Karte schreibt in die Achse der Einheit.</summary>
+    [Fact]
+    public void Ein_Bereich_der_Karte_schreibt_in_die_Achse()
     {
         var cut = Station();
 
-        Zellenfelder(cut, spalte: 4)[1].Input("640");
+        Kartenfeld(cut, Resource.FLOTTE_ED_KAPAZITAET_BIS).Input("640");
 
         FlottenAuslegungsAchse achse =
             Assert.Single(cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen);
         Assert.Equal(640.0, achse.KapazitaetBisKWh, 9);
+    }
+
+    /// <summary>
+    /// Der Schalter „variieren" auf der Karte SETZT <c>FlottenAuslegungsAchse.Aktiv</c> —
+    /// er entscheidet, WELCHE Einheiten die Methode variiert (Konzept 8.3, SD‑Q15).
+    /// </summary>
+    [Fact]
+    public void Der_Schalter_variieren_setzt_die_Achse_der_Einheit()
+    {
+        var cut = Station();
+
+        IElement schalter = cut.Find("article.epos-flotte-einheitskarte .epos-schalter input");
+        schalter.Change(false);
+
+        Assert.False(Assert.Single(
+            cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen).Aktiv);
     }
 
     // =====================================================================
@@ -140,11 +260,12 @@ public sealed class OptimierungStationTests : EposBunitContext
         var cut = Station();
 
         IReadOnlyList<object> vorher = Zeilenkomponenten(cut);
-        // Die Zeile fuehrt zwei Ganzzahlfelder (Anzahl von/bis) und sechs Zahlenfelder
-        // (Kapazitaet und Leistung, je von/bis/Schritt) — die C-Rate ist abgeleitet.
-        Assert.Equal(8, vorher.Count);
+        // Die Karte fuehrt unter „Groesse suchen" sechs Zahlenfelder (Kapazitaet und
+        // Leistung, je von/bis/Schritt) — die C-Rate ist abgeleitet, und die Stueckzahl
+        // steht seit #247 fest.
+        Assert.Equal(6, vorher.Count);
 
-        Zellenfelder(cut, spalte: 4)[1].Input("640");
+        Kartenfeld(cut, Resource.FLOTTE_ED_KAPAZITAET_BIS).Input("640");
 
         IReadOnlyList<object> nachher = Zeilenkomponenten(cut);
         Assert.Equal(vorher.Count, nachher.Count);
@@ -171,9 +292,9 @@ public sealed class OptimierungStationTests : EposBunitContext
     {
         var cut = Station();
 
-        Zellenfelder(cut, spalte: 4)[1].Input("640,");
+        Kartenfeld(cut, Resource.FLOTTE_ED_KAPAZITAET_BIS).Input("640,");
 
-        Assert.Equal("640,", Zellenfelder(cut, spalte: 4)[1].GetAttribute("value"));
+        Assert.Equal("640,", Kartenfeld(cut, Resource.FLOTTE_ED_KAPAZITAET_BIS).GetAttribute("value"));
     }
 
     /// <summary>
@@ -185,18 +306,18 @@ public sealed class OptimierungStationTests : EposBunitContext
     {
         var cut = Station();
 
-        cut.Find("table.epos-flotte-suchraum tbody tr")
-           .QuerySelectorAll("select")[0]
+        cut.Find("article.epos-flotte-einheitskarte select")
            .Change(((int)FlottenAuslegungsmodus.LeistungUndCRate).ToString());
 
         FlottenAuslegungsAchse achse =
             Assert.Single(cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen);
         Assert.Equal(FlottenAuslegungsmodus.LeistungUndCRate, achse.Modus);
 
-        // Jetzt ist die KAPAZITAET die abgeleitete Groesse.
-        IElement zeile = cut.Find("table.epos-flotte-suchraum tbody tr");
-        Assert.Empty(zeile.QuerySelectorAll("td")[4].QuerySelectorAll("input"));
-        Assert.Equal(3, zeile.QuerySelectorAll("td")[5].QuerySelectorAll("input").Length);
+        // Jetzt ist die KAPAZITAET die abgeleitete Groesse — ihre drei Felder fehlen,
+        // dafuer stehen die der C-Rate da.
+        Assert.DoesNotContain(Resource.FLOTTE_ED_KAPAZITAET_VON, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_CRATE_VON, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_LEISTUNG_VON, cut.Markup, StringComparison.Ordinal);
     }
 
     // =====================================================================
@@ -452,18 +573,28 @@ public sealed class OptimierungStationTests : EposBunitContext
         => System.Globalization.CultureInfo.CurrentCulture;
 
     /// <summary>Die Ansicht, auf Station 4 gestellt.</summary>
+    /// <param name="methode">Die gewählte Suchmethode (Auftrag #247, SD‑E‑10).</param>
+    /// <param name="maximaleKandidaten">Die Grenze, gegen die die Kandidatenzeile prüft.</param>
+    /// <param name="ausgleich">Der Energie-Ausgleichswert; <c>null</c> = 0,3.</param>
+    /// <param name="hinweise">Die Hinweise der Vorprüfung.</param>
+    /// <param name="variieren">Trägt die Einheit den Schalter „variieren"?</param>
     private IRenderedComponent<StromspeicherAuslegungSeite> Station(
-        bool suchen = true, int maximaleKandidaten = 10000, double? ausgleich = null,
-        IReadOnlyList<FlottenHinweis>? hinweise = null)
+        FlottenSuchmethode methode = FlottenSuchmethode.Groesse,
+        int maximaleKandidaten = 10000, double? ausgleich = null,
+        IReadOnlyList<FlottenHinweis>? hinweise = null, bool variieren = true)
     {
+        FlottenStudieKonfiguration flotte = Flotte(maximaleKandidaten, ausgleich);
+        flotte.Auslegung.Suchmethode = methode;
+        flotte.Auslegung.Achsen[0].Aktiv = variieren;
+
         var vorgaben = new SpeicherOptimierungVorgaben
         {
             Eingaben = new SpeicherOptimierungEingaben
             {
                 Auslegung = new SpeicherAuslegungKonfiguration
                 {
-                    Flotte = Flotte(maximaleKandidaten, ausgleich),
-                    FlottenGroessenOptimieren = suchen
+                    Flotte = flotte,
+                    FlottenGroessenOptimieren = methode != FlottenSuchmethode.Bewerten
                 }
             }
         };
@@ -580,7 +711,10 @@ public sealed class OptimierungStationTests : EposBunitContext
                     new()
                     {
                         Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
-                        AnzahlVon = 1, AnzahlBis = 1,
+                        // Stueckzahl 1…3: Unter „Groesse suchen" steht sie fest auf 1
+                        // (der Von-Wert), unter „Stueckzahl suchen" ergibt sie drei
+                        // Kandidaten (Auftrag #247).
+                        AnzahlVon = 1, AnzahlBis = 3,
                         KapazitaetVonKWh = 100, KapazitaetBisKWh = 300, KapazitaetSchrittKWh = 50,
                         LeistungVonKw = 40, LeistungBisKw = 80, LeistungSchrittKw = 20,
                         CRateVon = 0.5, CRateBis = 2.0, CRateSchritt = 0.5,
@@ -604,7 +738,7 @@ public sealed class OptimierungStationTests : EposBunitContext
               .QuerySelector("input")!;
 
     /// <summary>
-    /// Die Zahlen- und Ganzzahlfelder der Suchraumzeile als KOMPONENTENinstanzen —
+    /// Die Zahlen- und Ganzzahlfelder der Einheitenkarte als KOMPONENTENinstanzen —
     /// die Prüfgröße des Befunds #245 (siehe dort, warum nicht die DOM-Knoten).
     /// </summary>
     private static IReadOnlyList<object> Zeilenkomponenten(
@@ -613,11 +747,11 @@ public sealed class OptimierungStationTests : EposBunitContext
               .Concat(cut.FindComponents<Zahlenfeld>().Select(x => (object)x.Instance))
               .ToList();
 
-    /// <summary>Die Eingabefelder EINER Spalte der Suchraumtabelle.</summary>
-    private static IReadOnlyList<IElement> Zellenfelder(
-        IRenderedComponent<StromspeicherAuslegungSeite> cut, int spalte)
-        => cut.Find("table.epos-flotte-suchraum tbody tr")
-              .QuerySelectorAll("td")[spalte]
-              .QuerySelectorAll("input")
-              .ToList();
+    /// <summary>Das Eingabefeld der Einheitenkarte mit dieser Beschriftung.</summary>
+    private static IElement Kartenfeld(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string beschriftung)
+        => cut.Find("article.epos-flotte-einheitskarte")
+              .QuerySelectorAll("label.epos-feld")
+              .Single(x => x.TextContent.Contains(beschriftung, StringComparison.Ordinal))
+              .QuerySelector("input")!;
 }

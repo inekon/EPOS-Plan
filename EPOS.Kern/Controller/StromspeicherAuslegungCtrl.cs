@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -254,6 +254,22 @@ namespace WindowsFormsApplication1
                 return null;
             return SpeicherFlottenStudieCtrl.EinheitAusProjektanlage(_projektId, id);
         }
+
+        /// <summary>
+        /// <b>„Ausgewählte Einheiten in Projekt übernehmen"</b> (Auftrag #247, SD‑Q15) —
+        /// je Stück eine Speicheranlage, alles in EINER Transaktion. <b>Datenbankzugriff.</b>
+        /// </summary>
+        /// <remarks>
+        /// Durchreiche auf
+        /// <see cref="SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen"/>: Die
+        /// Ansicht kennt ihre Projekt-Id nicht und soll sie nicht kennen müssen — dieselbe
+        /// Aufteilung wie bei <see cref="Projektanlagen"/>.
+        /// </remarks>
+        /// <param name="einheiten">Die gewählten Einheiten des Arbeitsstands.</param>
+        /// <param name="stueckzahlen">Die Stückzahl je Einheit, in derselben Reihenfolge.</param>
+        public FlottenUebernahmeErgebnis EinheitenInProjektUebernehmen(
+            IReadOnlyList<FlottenEinheit> einheiten, IReadOnlyList<int> stueckzahlen)
+            => SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(_projektId, einheiten, stueckzahlen);
 
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung <c>@Aktuell</c>.</summary>
         /// <param name="eingaben">Der Arbeitsstand.</param>

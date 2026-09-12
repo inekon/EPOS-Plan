@@ -18854,6 +18854,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SPA_SCHRITT_ERL" xml:space="preserve">
     <value>Which of the five steps of the flow bar is currently in front: storage, data &amp; costs, operating strategy, optimisation or result.</value>
   </data>
+  <data name="KI_DLG_SPA_METHODE_NAME" xml:space="preserve">
+    <value>Search method</value>
+  </data>
+  <data name="KI_DLG_SPA_METHODE_ERL" xml:space="preserve">
+    <value>What the next run varies: only evaluate, search for the size, or search for the unit count. Exactly one kind is varied per run.</value>
+  </data>
   <data name="KI_DLG_SPA_SUCHE_NAME" xml:space="preserve">
     <value>Search for the best size</value>
   </data>

@@ -141,7 +141,16 @@ namespace WindowsFormsApplication1
                 EinheitAusProjektanlage = _ctrl.EinheitAusProjektanlage,
                 Katalogzeilen = StromspeicherStammCtrl.Katalogfilterzeilen,
                 Katalogprofil = Katalogfilterprofil.MitVerwendung(Anlagenart.Stromspeicher, Text_),
-                EinheitAusKatalog = SpeicherFlottenStudieCtrl.EinheitAusKatalog
+                EinheitAusKatalog = SpeicherFlottenStudieCtrl.EinheitAusKatalog,
+
+                // „Ausgewaehlte Einheiten in Projekt uebernehmen" (Auftrag #247, SD-Q15)
+                // — ebenfalls eine reine Durchreiche: Die Transaktion, die Namensvergabe
+                // und die Rueckabbildung der Werte stehen im Kern.
+                EinheitenUebernehmen = _ctrl.EinheitenInProjektUebernehmen,
+
+                // Der LESEMODUS ist eine Lizenzaussage und wird deshalb HIER gestellt:
+                // Eine Razor-Komponente stellt keine Lizenzfragen (Hausregel S-2).
+                Schreibgeschuetzt = () => !Schreibnaht.DarfSchreiben()
             };
         }
 
