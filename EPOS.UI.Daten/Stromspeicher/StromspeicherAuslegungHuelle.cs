@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                string abbruch = await Task.Run(
+                string abbruch = await Kulturweitergabe.Starten(
                     () => _ctrl.SimulationslaufRechnen(neuerLauf, fortschritt, marke), marke);
                 return abbruch == null ? Rueckmeldung.Still : new Rueckmeldung(false, abbruch);
             }
@@ -211,7 +211,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return await Task.Run(() => _ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
+                return await Kulturweitergabe.Starten(
+                    () => _ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
             }
             catch (OperationCanceledException)
             {
@@ -252,7 +253,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return await Task.Run(() => _ctrl.PeakZielBestimmen(vorbereitung, fortschritt, marke), marke);
+                return await Kulturweitergabe.Starten(
+                    () => _ctrl.PeakZielBestimmen(vorbereitung, fortschritt, marke), marke);
             }
             finally
             {
@@ -318,7 +320,7 @@ namespace WindowsFormsApplication1
             if (!info.Exists) throw new FileNotFoundException(MyResource.Resource.FLOTTE_DLG_DATEI_FEHLT, pfad);
             if (info.Length > maximal) throw new IOException(MyResource.Resource.FLOTTE_DLG_DATEI_ZU_GROSS);
 
-            byte[] inhalt = await Task.Run(() => File.ReadAllBytes(pfad));
+            byte[] inhalt = await Kulturweitergabe.Starten(() => File.ReadAllBytes(pfad));
             if (inhalt.LongLength > maximal) throw new IOException(MyResource.Resource.FLOTTE_DLG_DATEI_ZU_GROSS);
             return new SpeicherImportDatei { Dateiname = Path.GetFileName(pfad), Inhalt = inhalt };
         }

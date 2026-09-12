@@ -155,7 +155,10 @@ namespace WindowsFormsApplication1
 
             if (Interlocked.CompareExchange(ref _aufbau, 1, 0) != 0) return;
 
-            Task.Run(async () =>
+            // Ueber die Kulturweitergabe (Auftrag #232): Der Aufbau protokolliert und
+            // liest Seitentexte; der Arbeitsfaden traegt dafuer die Kultur des Anstossers
+            // statt des veraenderlichen prozessweiten Vorgabewerts.
+            SpeicherEngine.Kulturweitergabe.StartenAsync(async () =>
             {
                 try { await AufbauenAsync(basis, CancellationToken.None).ConfigureAwait(false); }
                 catch (Exception ex) { Debug.WriteLine("[Semantik] Indexaufbau: " + ex.Message); }

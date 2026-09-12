@@ -162,7 +162,8 @@ namespace WindowsFormsApplication1
                     _zustand == Lage.Nichtverfuegbar) return;
 
                 _zustand = Lage.Laedt;
-                _vorbereitung = Task.Run((Action)Vorbereiten);
+                // Ueber die Kulturweitergabe (Auftrag #232) - siehe SpeicherEngine.
+                _vorbereitung = SpeicherEngine.Kulturweitergabe.Starten((Action)Vorbereiten);
             }
         }
 

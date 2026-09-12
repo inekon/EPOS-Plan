@@ -397,7 +397,8 @@ namespace WindowsFormsApplication1
                        string.Format(CultureInfo.CurrentCulture, "{0} / {1}",
                                      i + 1, _vergleichsanlagen.Count));
 
-                Vergleichszeile z = await Task.Run(() => ZeileRechnen(r, varianten, protokoll));
+                Vergleichszeile z = await Kulturweitergabe.Starten(
+                    () => ZeileRechnen(r, varianten, protokoll));
                 zeilen.Add(z);
             }
 

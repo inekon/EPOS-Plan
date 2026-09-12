@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
         private static Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
             Simulationslauf(QuelleErdreichDaten daten)
         {
-            return idProjekt => Task.Run(() =>
+            return idProjekt => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
                 string fehler;
                 bool ok = new SimulationRunner().Simuliere(idProjekt, out fehler);
@@ -155,7 +155,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Func<double[], double[], Task<byte[]>> Bildzeichner()
         {
-            return (quelle, aussen) => Task.Run(() =>
+            return (quelle, aussen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
                 var reihen = new List<ChartRenderer.Reihe>
                 {

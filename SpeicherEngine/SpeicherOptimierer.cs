@@ -34,7 +34,9 @@ namespace SpeicherEngine
     /// </para>
     /// <para>
     /// <b>Nebenlaeufigkeit.</b> Die Rasterpunkte sind unabhaengig und laufen ueber
-    /// <see cref="Parallel.For(int,int,ParallelOptions,Action{int})"/>. Zulaessig ist
+    /// <see cref="Kulturweitergabe.For"/> — die Huelle um
+    /// <see cref="Parallel.For(int,int,ParallelOptions,Action{int})"/>, die jedem
+    /// Arbeitspaket die Kultur des Aufrufers mitgibt (Auftrag #232). Zulaessig ist
     /// das, weil <see cref="SpeicherEingang"/> und <see cref="SpeicherParameter"/>
     /// unveraenderlich sind und die Strategien zustandsfrei (Fachkonzept 8.1, seit
     /// AP6/AP7 getestet). Jeder Punkt schreibt ausschliesslich in sein eigenes Feld;
@@ -329,7 +331,12 @@ namespace SpeicherEngine
             // Ergebnis auch nicht abhaengig von der Parallelitaet.
             int zaehler = erledigt;
 
-            Parallel.For(0, zeilen * spalten, po, index =>
+            // Die Arbeitspakete tragen die Kultur des Aufrufers (Auftrag #232, Entscheid
+            // zu #231): Ein Arbeitsfaden ohne eigene Kultur liest sonst bei jedem Zugriff
+            // den PROZESSWEITEN Vorgabewert, und eine Sprachumschaltung mitten im Lauf
+            // trifft die Faeden einzeln - der Fortschrittsrueckruf und jeder Text, den ein
+            // Rasterpunkt erzeugt, wechselten dann mitten in der Rechnung die Sprache.
+            Kulturweitergabe.For(0, zeilen * spalten, po, index =>
             {
                 abbruch.ThrowIfCancellationRequested();
 
