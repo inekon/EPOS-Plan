@@ -1039,8 +1039,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                await Task.Run(() => SimulationLaufCtrl.Laufen(neuerLauf, m_ID_Projekt, fortschritt, marke),
-                               marke);
+                await SpeicherEngine.Kulturweitergabe.Starten(
+                    () => SimulationLaufCtrl.Laufen(neuerLauf, m_ID_Projekt, fortschritt, marke), marke);
             }
             catch (OperationCanceledException)
             {

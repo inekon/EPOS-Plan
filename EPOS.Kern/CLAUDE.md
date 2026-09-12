@@ -837,3 +837,71 @@ Windows-Lauf kann deshalb vereinzelt einen ANDEREN, hier nicht behobenen Fall ze
 dass das auf einen neuen Kulturfehler in den fünf (plus dem 13.) hier behandelten Klassen
 hindeutet — ein erneuter Lauf (die Race trifft selten zweimal denselben Fall) unterscheidet
 das zuverlässig von einer echten Regression.
+
+**Auftrag #232 (12.09.2026, Anwenderentscheid „#231: Empfehlung umsetzen") schließt die
+systemische Lücke an der Stelle, an der sie wirklich liegt — und korrigiert dabei die
+Beschreibung von #230.** Gemessen wurde (Proben auf net10.0, Linux): Setzt ein Aufrufer
+seine Kultur AUSDRÜCKLICH (`Thread.CurrentThread.CurrentCulture = …` oder
+`CultureInfo.CurrentCulture = …`), so trägt .NET sie seit .NET Core **von selbst** in jeden
+`Task.Run`, in jedes Arbeitspaket eines `Parallel.For` und sogar in einen frisch gestarteten
+`Thread` — diese Setzer schreiben intern einen `AsyncLocal`-Wert, der über den
+`ExecutionContext` fließt. Der Satz aus #230, die Worker eines gepinnten Aufrufers seien
+ungepinnt, gilt so **nicht**. Die Lücke ist der ANDERE Fall: Hat der Aufrufer nichts gesetzt
+und bezieht seine Kultur selbst nur aus dem prozessweiten
+`CultureInfo.DefaultThreadCurrent(UI)Culture`, dann gibt es nichts zu erben — Aufrufer und
+Arbeitsfäden lesen denselben **veränderlichen** Wert bei jedem Zugriff neu, und eine
+Umschaltung von außen trifft sie einzeln und zu verschiedenen Zeitpunkten.
+
+**Die Vorrichtung: `SpeicherEngine/Kulturweitergabe.cs`.** Sie erfasst
+`CultureInfo.CurrentCulture` und `…CurrentUICulture` des Aufrufers EINMAL am Einstieg (den
+aufgelösten Wert, gleich ob gepinnt oder aus dem Vorgabewert) und legt sie je Arbeitspaket
+auf den Arbeitsfaden, mit Rückstellung des Vorstands danach — Arbeitsfäden sind Pool-Fäden.
+Vier Hüllen: `For`, `ForEach` (mit `ParallelOptions`), `Starten` (`Action`/`Func<T>`) und
+`StartenAsync` (`Func<Task>`). **Kein eigener `AsyncLocal`** (dieselbe Begründung wie in
+`Allgemein/Vorgangsklammer.cs`) und **kein Griff an `DefaultThreadCurrent*`** — das wäre der
+Fehler selbst. Sie liegt in `SpeicherEngine`, weil die Abhängigkeit `EPOS.Kern → SpeicherEngine`
+läuft und die einzige echte Rechenparallelität des Bestands (`SpeicherOptimierer`, Rastersuche)
+dort steht; `EPOS.Kern` und `EPOS.UI.Daten` sehen das Projekt und benutzen dieselbe Klasse.
+
+**Hausregel: Parallelität im Kern nur über die Vorrichtung; Worker tragen die Kultur des
+Aufrufers.** In `EPOS.Kern`, `SpeicherEngine`, `KiKern` und `EPOS.UI.Daten` entsteht ein
+Arbeitsfaden ausschließlich über `Kulturweitergabe`; ein nacktes `Parallel.For`,
+`Parallel.ForEach`, `Parallel.Invoke`, `Task.Run`, `new Thread`,
+`ThreadPool.QueueUserWorkItem` oder `.AsParallel()` fällt im Wächter
+`EPOS.Kern.Tests/ParallelitaetWacheTests` auf (Kommentarzeilen ausgenommen, einzige Ausnahme
+die Vorrichtung selbst). Umgestellt sind damit **zwölf** Stellen: die Rastersuche
+(`SpeicherOptimierer.RechnePhase`), drei im Kern (`KI/KiAusfuehrung.ImHintergrund`,
+`KI/SemantikIndex.Anstossen`, `KI/SemantikModell.Anstossen`) und acht in `EPOS.UI.Daten`
+(Simulationslauf, Variantenvergleich, Flottenrechnung, Peak-Ziel, Erdreich- und
+Quellprofilhüllen, Dateilesen). `EPOS.UI` steht bewusst NICHT im Bestand des Wächters: Die
+zwei `Task.Run` des Projekttransfers laufen am Bedienfaden der WebView, deren Sprache die
+Schale prozessweit setzt. `FlottenOptimierer` rechnet sequenziell und hat keine geplante
+Parallelität (geprüft).
+
+**Der Beleg steht in `EPOS.Kern.Tests/KulturweitergabeTests` (9 Fälle) — und er fasst den
+Prozess nicht an.** Der naheliegende Versuchsaufbau (den prozessweiten Vorgabewert mitten im
+Lauf umschalten) wurde gebaut, gemessen und **verworfen**: Er riss genau die Klassen mit, die
+er beschreibt (2 von 3 Läufen unter `LANG=en_US.UTF-8` ließen `SpeicherOptimierungCtrlTests`
+fallen, ohne ihn 4 von 4 grün). Stattdessen steht der Aufruferfaden auf **`de-AT`** — eine
+Kultur, die im ganzen Repository sonst NIEMAND setzt, mit demselben Dezimalkomma und
+demselben Rückfall auf die neutrale (deutsche) `.resx`; ein `de-AT` auf einem Arbeitsfaden
+kann nur aus der Vorrichtung stammen. Die Arbeitsfäden gehören einem Testdoppel-Planer
+(`TaskScheduler` mit drei eigenen, fest auf `en-US` stehenden Fäden), und der
+`ExecutionContext`-Fluss ist im Versuch unterdrückt. Damit sind alle drei Aussagen
+deterministisch: über die Hülle deutsch (Komma, deutscher Ressourcentext), mit nacktem
+`Parallel.For` englisch (Punkt, englischer Ressourcentext), und ohne Flussunterdrückung
+deutsch auch ohne Hülle — der gemessene Vererbungsbefund von oben.
+
+**Was #232 NICHT behebt — gemessen.** Die wandernden Fehlschläge unter
+`LANG=en_US.UTF-8` bleiben, und zwar unverändert: **ohne** die neuen Fälle 2 von 10 Läufen
+rot, **mit** ihnen 2 von 5 — dieselbe Rate wie die in #230 dokumentierte („ein Fall in fünf
+Läufen"). Sie liegen nämlich nicht auf den Arbeitsfäden, sondern auf dem **Testfaden selbst**:
+`SpeicherOptimierungCtrlTests`, `SpeicherOptimierungLastspitzeTests` und `PeakShavingBildTests`
+pinnen `CurrentCulture` (Zahlenbild), lassen aber `CurrentUICulture` unberührt — und der
+fällt auf den prozessweiten Vorgabewert zurück, den über 50 andere Klassen laufend umschalten.
+Der Auswertungsteil dieser Fälle läuft SEQUENZIELL auf dem Testfaden, nicht in einem Worker;
+die Vorrichtung erreicht ihn deshalb nicht. **Der Rest-Fix wäre zwei Zeilen je Klasse**
+(`CultureInfo.CurrentUICulture` im Konstruktor mitpinnen und in `Dispose` zurückstellen —
+threadgebunden, NICHT über `DefaultThreadCurrent*`, sonst entsteht dieselbe Race neu); er
+liegt außerhalb von #232, das den Fall `Die_Kennzahlen_tragen_die_Zahlen_des_Bestpunkts`
+ausdrücklich unverändert lassen sollte.

@@ -108,7 +108,8 @@ namespace WindowsFormsApplication1
                                   p.Abgeschlossen, p.Gesamt)));
             try
             {
-                return await Task.Run(() => ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
+                return await Kulturweitergabe.Starten(
+                    () => ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
             }
             catch (OperationCanceledException)
             {

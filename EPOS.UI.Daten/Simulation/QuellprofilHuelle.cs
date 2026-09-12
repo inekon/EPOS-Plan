@@ -167,7 +167,8 @@ namespace WindowsFormsApplication1
 
             if (string.IsNullOrEmpty(pfad)) return new double[0];
 
-            return await Task.Run(() => WaermequelleClass.WerteAusCsv(pfad, soll));
+            return await SpeicherEngine.Kulturweitergabe.Starten(
+                () => WaermequelleClass.WerteAusCsv(pfad, soll));
         }
 
         /// <summary>
@@ -180,7 +181,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Func<string, double[], Task<byte[]>> Bildzeichner(QuellprofilDaten daten)
         {
-            return (betriebsart, werte) => Task.Run(() =>
+            return (betriebsart, werte) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
                 double[] profil = QuellprofilCtrl.Jahresprofil(betriebsart, werte);
                 if (profil == null) return null;

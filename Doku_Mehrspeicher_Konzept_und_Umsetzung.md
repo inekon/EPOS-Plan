@@ -111,6 +111,16 @@ Das vollständige endliche kartesische Raster wird mit den ausgewählten Zielen 
 
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
+**Nebenläufigkeit und Sprache (Auftrag #232, 12.09.2026).** Die Flotten-Rastersuche
+(`FlottenOptimierer`) rechnet **sequenziell**; parallel läuft allein die Rastersuche der
+Einzelspeicher-Auslegung (`SpeicherOptimierer.RechnePhase`), und die tut es seit #232 über
+`SpeicherEngine/Kulturweitergabe.For` statt über ein nacktes `Parallel.For` — jedes
+Arbeitspaket trägt damit die Kultur des Aufrufers, statt den veränderlichen prozessweiten
+Vorgabewert bei jedem Zugriff neu zu lesen. Wird die Flottensuche eines Tages ebenfalls
+parallelisiert, gilt dieselbe Hausregel: nur über die Vorrichtung — der Wächter
+`EPOS.Kern.Tests/ParallelitaetWacheTests` lässt in `SpeicherEngine` kein nacktes
+`Parallel.For`, `Task.Run` oder `new Thread` mehr zu.
+
 ## Diagnose und Peak-Ziel (P1, #183)
 
 Anlass ist der Befund **SP‑O‑10** vom 11.09.2026: „Mit Flotte" war byte-gleich „Ohne Speicher", weil die Flotte im ganzen Jahr weder geladen noch entladen hatte — und niemand sagte es. Drei Sperren wirkten zusammen: das fest vorbelegte Peak-Ziel 50 kW bei einer Spitze von 789 kW, das Netzladeverbot an einem Standort ohne Überschuss und ein Start-Ladezustand auf dem SoC-Minimum. Umgesetzt sind die Anwenderentscheide **SD‑Q3**, **SD‑Q4** und **SD‑Q5** (11.09.2026, je „Empfehlung"); Grundlage ist Abschnitt 2.4 des [Konzepts der Stromspeicher-Dialoge](Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md). **Kein Rechenwert ändert sich**: Der Referenzlauf bleibt 13/13 byte-gleich gegen `2026-09-11_R7_Speicherflotte`.

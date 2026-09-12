@@ -835,10 +835,18 @@ namespace WindowsFormsApplication1
         /// Oberflaechenfaden. Sie lesen und schreiben ueber die Bestandscontroller, und
         /// die sind nicht threadsicher; sie dauern dafuer Millisekunden.
         /// </para>
+        /// <para>
+        /// <b>Ueber die Kulturweitergabe</b> (Auftrag #232): Der Arbeitsfaden bekommt die
+        /// Kultur des Aufrufers mit. Die drei langen Aktionen erzeugen Meldungs- und
+        /// Fortschrittstexte aus <c>MyResource.Resource</c>, und die Ressourcensprache
+        /// haengt an <c>CurrentUICulture</c> - ohne die Huelle laese der Arbeitsfaden den
+        /// veraenderlichen prozessweiten Vorgabewert und wechselte mitten im Lauf die
+        /// Sprache, sobald ihn jemand umstellt.
+        /// </para>
         /// </remarks>
         private static Task<T> ImHintergrund<T>(Func<T> arbeit)
         {
-            return Task.Run(arbeit);
+            return SpeicherEngine.Kulturweitergabe.Starten(arbeit);
         }
 
         /// <summary>Fragt die Modalitaet ueber den eingestellten Weg; im Zweifel frei.</summary>
