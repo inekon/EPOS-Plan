@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using EPOS.UI.Dialoge.Projekt;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -643,6 +644,278 @@ namespace EPOS.Kern.Tests
             Assert.Equal(PROJEKT, StartseiteCtrl.Projektname(stamm));
             Assert.False(ctrl.Umbenennen(stamm, "Egal", out fehler, out neuerName));
             Assert.Contains("Variante", fehler);
+        }
+
+        // =============================================================================
+        //  Variante aus einem BESTEHENDEN Projekt (Auftrag #237, 12.09.2026)
+        // =============================================================================
+
+        /// <summary>Das Quellprojekt der Proben — es fuehrt Photovoltaik, das Stammprojekt nicht.</summary>
+        private const string QUELLE = "Laurentiuskirche";
+
+        /// <summary>
+        /// DER NACHWEIS DER TIEFKOPIE: Die Variante traegt den Inhalt der QUELLE, nicht
+        /// den des Stamms.
+        ///
+        /// <para>Gemessen an drei Stellen, die Quelle und Stamm sichtbar unterscheiden:
+        /// <c>Tab_PV</c> (Quelle 1007 fuehrt zwei Zeilen, Stamm 1030 keine),
+        /// <c>Tab_Energieanlagen</c> (11 gegen 4) und <c>energy_project_settings</c>
+        /// (Quelle KEINE, Stamm zwei — die letzte belegt zugleich, dass auch
+        /// <c>KopiereEnergieEinstellungen</c> die Quelle liest und nicht den Stamm).
+        /// Der NAME und die Verknuepfung kommen dagegen vom STAMM: Eine Variante haengt
+        /// an ihm, sonst waere die Vergleichsgruppe der Wirtschaftlichkeit keine
+        /// Gruppe.</para>
+        /// </summary>
+        [Fact]
+        public void Eine_Variante_aus_einer_fremden_Quelle_traegt_deren_Inhalt_und_haengt_am_Stamm()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var dup = new ProjektDuplizierenCtrl();
+            int stamm = dup.GetProjektId(PROJEKT);
+            int quelle = dup.GetProjektId(QUELLE);
+            Assert.True(stamm > 0 && quelle > 0);
+            Assert.NotEqual(stamm, quelle);
+
+            // Die Ausgangslage - ohne sie belegt der Fall nichts.
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + stamm));
+            Assert.True(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + quelle) > 0);
+            Assert.True(Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = " + stamm) > 0);
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = " + quelle));
+
+            var ctrl = new VariantenCtrl();
+            string fehler;
+            int variante = ctrl.AnlegenAusStamm(stamm, PROJEKT, "Aus Quelle", quelle, out fehler);
+            Assert.True(variante > 0, fehler);
+
+            // Der NAME kommt vom Stamm.
+            Assert.Equal(PROJEKT + " - Aus Quelle", StartseiteCtrl.Projektname(variante));
+
+            // Die VERKNUEPFUNG zeigt auf den Stamm, nicht auf die Quelle.
+            Assert.Equal(stamm, Zahl("SELECT ID_ProjektRef FROM Tab_Variante WHERE ID_Projekt = " + variante));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + variante +
+                                 " AND Variantenname = 'Aus Quelle'"));
+
+            // Der INHALT kommt von der Quelle.
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + quelle),
+                         Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + variante));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + quelle),
+                         Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + variante));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = " + variante));
+
+            // Und die Quelle selbst bleibt unberuehrt.
+            Assert.Equal(QUELLE, StartseiteCtrl.Projektname(quelle));
+        }
+
+        /// <summary>
+        /// GEGENPROBE: Die BISHERIGE Signatur kopiert unveraendert das Stammprojekt.
+        /// Sie ist seit #237 nur noch die Ueberladung mit <c>idQuelle = idStamm</c>;
+        /// waere dabei etwas verrutscht, saehe man es hier an denselben drei Stellen.
+        /// </summary>
+        [Fact]
+        public void Die_bisherige_Signatur_kopiert_weiterhin_das_Stammprojekt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var dup = new ProjektDuplizierenCtrl();
+            int stamm = dup.GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            string fehler;
+            int variante = new VariantenCtrl().AnlegenAusStamm(stamm, PROJEKT, "Wie bisher", out fehler);
+            Assert.True(variante > 0, fehler);
+
+            Assert.Equal(PROJEKT + " - Wie bisher", StartseiteCtrl.Projektname(variante));
+            Assert.Equal(stamm, Zahl("SELECT ID_ProjektRef FROM Tab_Variante WHERE ID_Projekt = " + variante));
+
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + variante));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + stamm),
+                         Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + variante));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = " + stamm),
+                         Zahl("SELECT COUNT(*) FROM energy_project_settings WHERE ID_Projekt = " + variante));
+        }
+
+        /// <summary>
+        /// Die ZIELNAMENSREGEL ist eine — der Dialog zeigt sie live, das Anlegen wendet
+        /// sie an. Bei Kollision haengt ein Zaehler an.
+        /// </summary>
+        [Fact]
+        public void Der_Zielname_ist_dieselbe_Regel_wie_beim_Anlegen_und_zaehlt_bei_Kollision()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new VariantenCtrl();
+            int stamm = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            // Vor dem Anlegen sagt die Regel den Namen voraus ...
+            Assert.Equal(PROJEKT + " - Zaehlprobe", ctrl.Zielname(PROJEKT, "Zaehlprobe"));
+            Assert.Equal(PROJEKT + " - Zaehlprobe", ctrl.Zielname(PROJEKT, "  Zaehlprobe  "));
+
+            string fehler;
+            int erste = ctrl.AnlegenAusStamm(stamm, PROJEKT, "Zaehlprobe", out fehler);
+            Assert.True(erste > 0, fehler);
+            Assert.Equal(PROJEKT + " - Zaehlprobe", StartseiteCtrl.Projektname(erste));
+
+            // ... danach nennt dieselbe Regel den naechsten freien Namen.
+            Assert.Equal(PROJEKT + " - Zaehlprobe (2)", ctrl.Zielname(PROJEKT, "Zaehlprobe"));
+
+            int zweite = ctrl.AnlegenAusStamm(stamm, PROJEKT, "Zaehlprobe", out fehler);
+            Assert.True(zweite > 0, fehler);
+            Assert.Equal(PROJEKT + " - Zaehlprobe (2)", StartseiteCtrl.Projektname(zweite));
+        }
+
+        /// <summary>
+        /// Das UMBENENNEN gibt es bereits (<c>VariantenCtrl.Umbenennen</c>); der Fall
+        /// belegt, dass es auch fuer eine Variante aus fremder Quelle traegt — es war
+        /// die zweite Haelfte des Anwenderwunsches vom 12.09.2026.
+        /// </summary>
+        [Fact]
+        public void Eine_Variante_aus_fremder_Quelle_laesst_sich_danach_umbenennen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var dup = new ProjektDuplizierenCtrl();
+            int stamm = dup.GetProjektId(PROJEKT);
+            int quelle = dup.GetProjektId(QUELLE);
+            Assert.True(stamm > 0 && quelle > 0);
+
+            var ctrl = new VariantenCtrl();
+            string fehler;
+            int variante = ctrl.AnlegenAusStamm(stamm, PROJEKT, QUELLE, quelle, out fehler);
+            Assert.True(variante > 0, fehler);
+            Assert.Equal(PROJEKT + " - " + QUELLE, StartseiteCtrl.Projektname(variante));
+
+            string neuerName;
+            Assert.True(ctrl.Umbenennen(variante, "Fassung B", out fehler, out neuerName), fehler);
+            Assert.Equal(PROJEKT + " - Fassung B", neuerName);
+            Assert.Equal(neuerName, StartseiteCtrl.Projektname(variante));
+            Assert.Contains(ctrl.LadeGruppe(stamm, PROJEKT),
+                            v => v.IdProjekt == variante && v.Variantenname == "Fassung B");
+
+            // Der Inhalt der Quelle bleibt dabei stehen.
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + quelle),
+                         Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + variante));
+        }
+
+        /// <summary>Eine Quelle, die es nicht gibt, legt NICHTS an und sagt warum.</summary>
+        [Fact]
+        public void Eine_unbekannte_Quelle_legt_nichts_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int stamm = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            string fehler;
+            int variante = new VariantenCtrl().AnlegenAusStamm(stamm, PROJEKT, "Ins Leere", 987654, out fehler);
+
+            Assert.Equal(-1, variante);
+            Assert.Contains("Quellprojekt", fehler);
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE Projektname = '" +
+                                 PROJEKT + " - Ins Leere'"));
+        }
+
+        // =============================================================================
+        //  Die Huelle des Dialogs (EPOS.UI.Daten, Auftrag #237)
+        // =============================================================================
+
+        /// <summary>
+        /// Die plattformfreie Huelle bestimmt den STAMM: Zu einem gewoehnlichen Projekt
+        /// ist es das Projekt selbst, zu einer VARIANTE ihr Stammprojekt — eine Variante
+        /// haengt nie an einer anderen Variante.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_bestimmt_den_Stamm_und_meldet_fehlende_Voraussetzungen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int stamm = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            var eigen = ProjektVarianteHuelle.Vorbereiten(stamm, PROJEKT);
+            Assert.True(eigen.Bereit);
+            Assert.Equal(stamm, eigen.IdStamm);
+            Assert.Equal(PROJEKT, eigen.StammName);
+
+            // Eine bestehende Variante der Testdatenbank (1023 haengt an 1019).
+            int variante = Zahl("SELECT MIN(ID_Projekt) FROM Tab_Variante");
+            int ihrStamm = Zahl("SELECT ID_ProjektRef FROM Tab_Variante WHERE ID_Projekt = " + variante);
+            var ausVariante = ProjektVarianteHuelle.Vorbereiten(variante, StartseiteCtrl.Projektname(variante));
+            Assert.True(ausVariante.Bereit);
+            Assert.Equal(ihrStamm, ausVariante.IdStamm);
+            Assert.Equal(StartseiteCtrl.Projektname(ihrStamm), ausVariante.StammName);
+
+            // Ohne offenes Projekt sagt sie, welche Meldung zu zeigen ist.
+            Assert.False(ProjektVarianteHuelle.Vorbereiten(0, "").Bereit);
+            Assert.Equal("VAR_MSG_KEIN_PROJEKT", ProjektVarianteHuelle.Vorbereiten(0, "").Fehlerschluessel);
+            Assert.Equal("BK_MSG_KEIN_STAMM", ProjektVarianteHuelle.Vorbereiten(987654, "").Fehlerschluessel);
+        }
+
+        /// <summary>
+        /// Der PARAMETERSATZ der Huelle traegt die Projektzeilen und DIE Namensregel —
+        /// und ihr Anlegeweg reicht das gewaehlte Quellprojekt durch.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_liefert_Zeilen_Zielname_und_legt_aus_der_gewaehlten_Quelle_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var dup = new ProjektDuplizierenCtrl();
+            int stamm = dup.GetProjektId(PROJEKT);
+            int quelle = dup.GetProjektId(QUELLE);
+            Assert.True(stamm > 0 && quelle > 0);
+
+            var gaben = ProjektVarianteHuelle.Gaben(stamm, PROJEKT);
+            Assert.Equal(PROJEKT, Assert.IsType<string>(gaben["StammName"]));
+
+            var zeilen = Assert.IsAssignableFrom<IReadOnlyList<ProjektKopfZeile>>(gaben["Zeilen"]);
+            Assert.Contains(zeilen, z => z.Id == quelle && z.Name == QUELLE);
+
+            var zielname = Assert.IsType<Func<string, string>>(gaben["Zielname"]);
+            Assert.Equal(PROJEKT + " - Huellenprobe", zielname("Huellenprobe"));
+
+            bool nachgezogen = false;
+            var ergebnis = ProjektVarianteHuelle.Anlegen(
+                stamm, PROJEKT, new ProjektVarianteWahl("Huellenprobe", quelle),
+                () => nachgezogen = true);
+
+            Assert.True(ergebnis.Gelungen, ergebnis.Fehlertext);
+            Assert.True(nachgezogen);
+            Assert.Equal(PROJEKT + " - Huellenprobe", StartseiteCtrl.Projektname(ergebnis.NeueId));
+            Assert.Equal(stamm, Zahl("SELECT ID_ProjektRef FROM Tab_Variante WHERE ID_Projekt = " + ergebnis.NeueId));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + quelle),
+                         Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + ergebnis.NeueId));
+        }
+
+        /// <summary>
+        /// Ohne gewaehlte Quelle (<c>IdQuelle = 0</c>) legt die Huelle wie bisher aus dem
+        /// STAMM an — das ist der Weg, den der Dialog ohne Haken geht.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_ohne_Quelle_legt_aus_dem_Stamm_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int stamm = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Assert.True(stamm > 0);
+
+            var ergebnis = ProjektVarianteHuelle.Anlegen(
+                stamm, PROJEKT, new ProjektVarianteWahl("Ohne Haken", 0));
+
+            Assert.True(ergebnis.Gelungen, ergebnis.Fehlertext);
+            Assert.Equal(PROJEKT + " - Ohne Haken", StartseiteCtrl.Projektname(ergebnis.NeueId));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_PV WHERE ID_Projekt = " + ergebnis.NeueId));
+            Assert.Equal(Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + stamm),
+                         Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + ergebnis.NeueId));
         }
     }
 }

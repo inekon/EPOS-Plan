@@ -8727,6 +8727,18 @@ The seat becomes available for another device; a new activation is required to c
   <data name="VAR_DLG_HINWEIS" xml:space="preserve">
     <value>The current state is saved as a separate variant of the master project &#8220;{0}&#8221;. The open project remains unchanged.</value>
   </data>
+  <data name="VAR_DLG_QUELLE_HAKEN" xml:space="preserve">
+    <value>Copy the content of an existing project</value>
+  </data>
+  <data name="VAR_DLG_HINWEIS_QUELLE" xml:space="preserve">
+    <value>The project &#8220;{0}&#8221; is copied as variant &#8220;{1}&#8221; of the master project &#8220;{2}&#8221;. The open project remains unchanged.</value>
+  </data>
+  <data name="VAR_DLG_ZIELNAME" xml:space="preserve">
+    <value>New project name: {0}</value>
+  </data>
+  <data name="VAR_MSG_QUELLE_WAEHLEN" xml:space="preserve">
+    <value>Please select a project whose content should be copied.</value>
+  </data>
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>No project is open. Please open the project you want to save as a variant first.</value>
   </data>

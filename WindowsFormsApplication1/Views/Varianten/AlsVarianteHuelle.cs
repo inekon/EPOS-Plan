@@ -1,123 +1,133 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Projekt;
+using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Der Ablauf „Als Variante speichern…" (Menü Projekte › Als Variante
-    /// speichern…) — iU9-W2.1.
+    /// speichern…) — iU9-W2.1, seit Auftrag <b>#237</b> nur noch ein ADAPTER.
     ///
     /// <para><b>Was sich geändert hat.</b> Bis iU9-W2.1 war das die WinForms-Maske
     /// <c>Form_AlsVariante</c>: ein programmatisch aufgebautes Fenster mit einem
     /// Hinweistext, einem Bezeichnerfeld und zwei Knöpfen — also die fünfte
-    /// zeichengleiche Namensabfrage des Bestands. Die Abfrage stellt jetzt
-    /// <see cref="NamensDialogHuelle.FragenMitHinweis"/> (Razor-Komponente
-    /// <c>EPOS.UI/Dialoge/Allgemein/NamensDialog.razor</c>); die Maske ist im
-    /// selben Schritt gelöscht (Regel M1). Übrig bleibt der ABLAUF, und der
-    /// gehört auf die Windows-Seite: Er redet mit <see cref="VariantenCtrl"/>,
-    /// mit <c>Program.startfrm</c> und mit dem Meldungsdienst.</para>
+    /// zeichengleiche Namensabfrage des Bestands; danach stellte die generische
+    /// <c>NamensDialog</c>-Komponente die Frage. <b>Seit dem Anwenderwunsch vom
+    /// 12.09.2026 (#237) ist es ein eigener Dialog</b>
+    /// (<see cref="ProjektVarianteDialog"/>): Ein Kontrollkästchen schaltet eine
+    /// Projektauswahl frei, aus der die Variante ihren INHALT bekommt. Die
+    /// generische Namensabfrage bleibt unverändert — sie bedient vier weitere
+    /// Masken.</para>
     ///
-    /// <para>
-    /// IST DAS GEÖFFNETE PROJEKT SELBST EINE VARIANTE, wird ihr Stammprojekt
-    /// verwendet: Eine Variante hängt immer am Stamm, nie an einer anderen Variante —
-    /// sonst wäre die Vergleichsgruppe keine Gruppe mehr, sondern eine Kette, und die
-    /// Differenz-Kennzahlen der Wirtschaftlichkeit hätten keinen gemeinsamen Bezug.
-    /// </para>
+    /// <para><b>Die Datenseite liegt in <c>EPOS.UI.Daten</c></b>
+    /// (<c>Projekt/ProjektVarianteHuelle</c>, Regel Auftrag #208): Stamm bestimmen,
+    /// Zeilen liefern, Zielnamensregel, Anlegen. Hier bleibt, was nur Windows kann —
+    /// das Fenster, die Meldungskästen, der Wartezeiger und das Nachziehen der
+    /// Startseite.</para>
     ///
-    /// <para>Gerechnet wird in <see cref="VariantenCtrl.AnlegenAusStamm"/>; hier
-    /// steht bewusst keine eigene Anlegelogik.</para>
+    /// <para>Gerechnet wird in <c>VariantenCtrl.AnlegenAusStamm</c>; hier steht
+    /// bewusst keine eigene Anlegelogik.</para>
     /// </summary>
     internal static class AlsVarianteHuelle
     {
         /// <summary>
-        /// Fragt den Bezeichner ab und legt bei OK die Variante an.
-        /// <paramref name="idProjekt"/> ist das in Form_Start geöffnete Projekt
-        /// (Stamm oder Variante), <paramref name="projektname"/> dessen Name.
+        /// Innenmaß des Fensters. Es ist größer als das der abgelösten Namensabfrage
+        /// (520 × 360), weil mit gesetztem Haken eine Projektliste darin steht — sie
+        /// bringt Suchfeld, vier Spalten und ihren eigenen Rollbalken mit.
+        /// </summary>
+        private static readonly Size FENSTER = new Size(760, 640);
+
+        /// <summary>
+        /// Fragt Bezeichner und Quellprojekt ab und legt bei OK die Variante an.
+        /// <paramref name="idProjekt"/> ist das geöffnete Projekt (Stamm oder
+        /// Variante), <paramref name="projektname"/> dessen Name.
         /// </summary>
         internal static void Zeige(IWin32Window besitzer, int idProjekt, string projektname)
         {
-            if (idProjekt <= 0)
+            var vor = ProjektVarianteHuelle.Vorbereiten(idProjekt, projektname);
+            if (!vor.Bereit)
             {
                 MessageBox.Show(besitzer,
-                    MyResource.Resource.VAR_MSG_KEIN_PROJEKT,
+                    Text_(vor.Fehlerschluessel),
                     MyResource.Resource.VAR_DLG_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBoxButtons.OK,
+                    vor.Fehlerschluessel == "VAR_MSG_KEIN_PROJEKT"
+                        ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
                 return;
             }
 
-            VariantenCtrl ctrl = new VariantenCtrl();
-
-            // Stamm bestimmen: ist das geöffnete Projekt eine Variante, deren Stamm nehmen.
-            int idStamm = ctrl.StammRefDerVariante(idProjekt);
-            bool istVariante = idStamm > 0;
-            if (!istVariante) idStamm = idProjekt;
-
-            string stammName = istVariante ? LiesProjektname(idStamm) : (projektname ?? "");
-            if (string.IsNullOrWhiteSpace(stammName)) stammName = LiesProjektname(idStamm);
-            if (string.IsNullOrWhiteSpace(stammName))
-            {
-                MessageBox.Show(besitzer, MyResource.Resource.BK_MSG_KEIN_STAMM,
-                    MyResource.Resource.VAR_DLG_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // Der Dialog: Hinweis, Bezeichnerfeld, „Variante anlegen"/„Abbrechen".
-            // Der Anlegeknopf bleibt gesperrt, solange das Feld leer ist —
-            // wortgleich zu btnAnlegen.Enabled = Bezeichner.Length > 0.
-            string bezeichner = NamensDialogHuelle.FragenMitHinweis(
-                besitzer,
-                MyResource.Resource.VAR_DLG_TITEL,
-                string.Format(MyResource.Resource.VAR_DLG_HINWEIS, stammName),
-                MyResource.Resource.BK_LBL_BEZEICHNER,
-                MyResource.Resource.BK_BTN_ANLEGEN,
-                MyResource.Resource.SIM_BTN_ABBRECHEN);
-            if (bezeichner == null) return;
+            ProjektVarianteWahl? wahl = Fragen(besitzer, vor.IdStamm, vor.StammName);
+            if (wahl == null) return;
 
             Cursor alt = Cursor.Current;
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
 
-                string fehler;
-                int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner, out fehler);
-                if (neueId <= 0)
+                var ergebnis = ProjektVarianteHuelle.Anlegen(
+                    vor.IdStamm, vor.StammName, wahl.Value,
+                    () => StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren());
+
+                if (!ergebnis.Gelungen)
                 {
-                    MessageBox.Show(besitzer,
-                        string.IsNullOrEmpty(fehler)
-                            ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler,
+                    MessageBox.Show(besitzer, ergebnis.Fehlertext,
                         MyResource.Resource.VAR_DLG_TITEL,
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Startseite nachziehen: Variantenauswahl und – falls schon aufgebaut –
-                // der Reiter „Berichte & Kosten" kennen die neue Variante sonst nicht.
-                StartseiteHuelle.Aktuelle?.VariantenAnzeigeAktualisieren();
-
                 MessageBox.Show(besitzer,
-                    string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner),
+                    string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, wahl.Value.Bezeichner),
                     MyResource.Resource.VAR_DLG_TITEL,
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(besitzer,
-                    string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message),
-                    MyResource.Resource.VAR_DLG_TITEL,
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             finally { Cursor.Current = alt; }
         }
 
-        // Liest den Projektnamen zu einer ID (leer, wenn nicht gefunden) – wie in Form_Start.
-        private static string LiesProjektname(int idProjekt)
+        /// <summary>
+        /// Das FENSTER — der einzige Windows-Teil dieses Ablaufs, und deshalb die EINE
+        /// Stelle, an der der Dialog aufgeht.
+        ///
+        /// <para><b>Zwei Wege führen zu ihm</b> (seit dem Anwenderwunsch vom 08.09.2026):
+        /// der Menüpunkt „Als Variante speichern…" über <see cref="Zeige"/> und der
+        /// Eintrag im Auswahlfeld „Projekt:" des Kopfbands über
+        /// <c>StartseiteHuelle.VarianteAnlegenJetzt</c>. Sie unterscheiden sich NUR
+        /// darin, wie sie den Erfolg melden — Meldungskasten hier, Kurzhinweis der
+        /// Seite dort; der Dialog selbst ist derselbe und steht deshalb nur hier.</para>
+        /// </summary>
+        internal static ProjektVarianteWahl? Fragen(IWin32Window besitzer, int idStamm, string stammName)
         {
-            ProjektCtrl pc = new ProjektCtrl();
-            pc.ReadAll();
-            foreach (ProjektModel p in pc.items)
-                if (p.m_ID == idProjekt) return p.m_szProjektname;
-            return "";
+            ProjektVarianteWahl? ergebnis = null;
+            BlazorDialogForm<ProjektVarianteDialog> dlg = null;
+
+            var werte = new Dictionary<string, object>(ProjektVarianteHuelle.Gaben(idStamm, stammName))
+            {
+                ["Geschlossen"] = EventCallback.Factory.Create<ProjektVarianteWahl?>(new object(), w =>
+                {
+                    ergebnis = w;
+                    if (dlg != null) dlg.Schliessen(w != null);
+                })
+            };
+
+            dlg = new BlazorDialogForm<ProjektVarianteDialog>(
+                MyResource.Resource.VAR_DLG_TITEL, FENSTER, werte);
+
+            using (dlg)
+            {
+                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Anzeigetext zu einem Meldungsschluessel der Huelle (Rueckfall: der Schluessel).</summary>
+        internal static string Text_(string schluessel)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { /* ein fehlender Katalog darf keine Meldung mitreissen */ }
+            return string.IsNullOrEmpty(t) ? schluessel : t;
         }
     }
 }

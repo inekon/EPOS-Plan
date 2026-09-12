@@ -8734,6 +8734,18 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="VAR_DLG_HINWEIS" xml:space="preserve">
     <value>Der aktuelle Stand wird als eigenst&#228;ndige Variante des Stammprojekts &#8222;{0}&#8220; gesichert. Das ge&#246;ffnete Projekt bleibt unver&#228;ndert.</value>
   </data>
+  <data name="VAR_DLG_QUELLE_HAKEN" xml:space="preserve">
+    <value>Inhalt aus einem bestehenden Projekt &#252;bernehmen</value>
+  </data>
+  <data name="VAR_DLG_HINWEIS_QUELLE" xml:space="preserve">
+    <value>Das Projekt &#8222;{0}&#8220; wird als Variante &#8222;{1}&#8220; des Stammprojekts &#8222;{2}&#8220; kopiert. Das ge&#246;ffnete Projekt bleibt unver&#228;ndert.</value>
+  </data>
+  <data name="VAR_DLG_ZIELNAME" xml:space="preserve">
+    <value>Neuer Projektname: {0}</value>
+  </data>
+  <data name="VAR_MSG_QUELLE_WAEHLEN" xml:space="preserve">
+    <value>Bitte ein Projekt w&#228;hlen, dessen Inhalt &#252;bernommen werden soll.</value>
+  </data>
   <data name="VAR_MSG_KEIN_PROJEKT" xml:space="preserve">
     <value>Es ist kein Projekt ge&#246;ffnet. &#214;ffnen Sie zuerst ein Projekt, das als Variante gesichert werden soll.</value>
   </data>

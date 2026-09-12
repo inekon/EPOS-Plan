@@ -312,8 +312,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Variante anlegen — Eintrag im Auswahlfeld „Projekt:" (08.09.2026, zweite Fassung).
-        /// Der Namensdialog öffnet EINE NACHRICHT SPÄTER (<see cref="Blazorsprung"/>): Aus dem
+        /// Variante anlegen — Eintrag im Auswahlfeld „Projekt:" (08.09.2026, zweite Fassung;
+        /// seit Auftrag <b>#237</b> derselbe Dialog <c>ProjektVarianteDialog</c> wie im
+        /// Menüweg, also mit dem Kästchen „Inhalt aus einem bestehenden Projekt übernehmen").
+        /// Der Dialog öffnet EINE NACHRICHT SPÄTER (<see cref="Blazorsprung"/>): Aus dem
         /// Blazor-Klick heraus blieb sein Fenster leer (Wiedereintritt, Befund W16b‑B‑1 — der
         /// Anwender sah am 08.09.2026 „Als Variante speichern" als leere Fläche). Deshalb kein
         /// Rückgabewert: Erfolg kommt als Kurzhinweis über den Zustand, ein Fehler als
@@ -328,38 +330,23 @@ namespace WindowsFormsApplication1
         {
             IWin32Window besitzer = _besitzer?.Invoke();
             int idProjekt = _kontext.Id;
-            if (idProjekt <= 0) { Warnen(besitzer, MyResource.Resource.VAR_MSG_KEIN_PROJEKT); return; }
-            VariantenCtrl ctrl = new VariantenCtrl();
-            int idStamm = ctrl.StammRefDerVariante(idProjekt);
-            if (idStamm <= 0) idStamm = idProjekt;
-            string stammName = StartseiteCtrl.Projektname(idStamm);
-            if (string.IsNullOrWhiteSpace(stammName)) { Warnen(besitzer, MyResource.Resource.BK_MSG_KEIN_STAMM); return; }
 
-            string bezeichner = NamensDialogHuelle.FragenMitHinweis(
-                besitzer,
-                MyResource.Resource.VAR_DLG_TITEL,
-                string.Format(MyResource.Resource.VAR_DLG_HINWEIS, stammName),
-                MyResource.Resource.BK_LBL_BEZEICHNER,
-                MyResource.Resource.BK_BTN_ANLEGEN,
-                MyResource.Resource.SIM_BTN_ABBRECHEN);
-            if (bezeichner == null) return;
-            try
-            {
-                string fehler;
-                int neueId = ctrl.AnlegenAusStamm(idStamm, stammName, bezeichner, out fehler);
-                if (neueId <= 0)
-                {
-                    Warnen(besitzer, string.IsNullOrEmpty(fehler)
-                        ? MyResource.Resource.BK_MSG_ANLEGEN_FEHLGESCHLAGEN : fehler);
-                    return;
-                }
-                _kurzhinweis = string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, bezeichner.Trim());
-                VariantenAnzeigeAktualisieren();
-            }
-            catch (Exception ex)
-            {
-                Warnen(besitzer, string.Format(MyResource.Resource.BK_MSG_ANLEGEFEHLER, ex.Message));
-            }
+            // Stamm bestimmen, Dialog zeigen, anlegen - alle drei Schritte stehen
+            // EINMAL: die Datenseite plattformfrei in ProjektVarianteHuelle, das
+            // Fenster in AlsVarianteHuelle.Fragen. Hier bleibt nur, was diesen Weg
+            // vom Menueweg unterscheidet: Der Erfolg meldet sich als Kurzhinweis der
+            // Seite, nicht als Meldungskasten.
+            var vor = ProjektVarianteHuelle.Vorbereiten(idProjekt, StartseiteCtrl.Projektname(idProjekt));
+            if (!vor.Bereit) { Warnen(besitzer, AlsVarianteHuelle.Text_(vor.Fehlerschluessel)); return; }
+
+            ProjektVarianteWahl? wahl = AlsVarianteHuelle.Fragen(besitzer, vor.IdStamm, vor.StammName);
+            if (wahl == null) return;
+
+            var ergebnis = ProjektVarianteHuelle.Anlegen(vor.IdStamm, vor.StammName, wahl.Value);
+            if (!ergebnis.Gelungen) { Warnen(besitzer, ergebnis.Fehlertext); return; }
+
+            _kurzhinweis = string.Format(MyResource.Resource.BK_MSG_VARIANTE_ANGELEGT, wahl.Value.Bezeichner);
+            VariantenAnzeigeAktualisieren();
         }
 
         /// <summary>

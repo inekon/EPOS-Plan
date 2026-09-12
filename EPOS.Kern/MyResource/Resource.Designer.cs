@@ -49585,6 +49585,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ wird als Variante „{1}“ des Stammprojekts „{2}“ kopiert. Das geöffnete Projekt bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string VAR_DLG_HINWEIS_QUELLE {
+            get {
+                return ResourceManager.GetString("VAR_DLG_HINWEIS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhalt aus einem bestehenden Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string VAR_DLG_QUELLE_HAKEN {
+            get {
+                return ResourceManager.GetString("VAR_DLG_QUELLE_HAKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Als Variante speichern ähnelt.
         /// </summary>
         public static string VAR_DLG_TITEL {
@@ -49608,6 +49626,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_DLG_UMBENENNEN_TITEL {
             get {
                 return ResourceManager.GetString("VAR_DLG_UMBENENNEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Projektname: {0} ähnelt.
+        /// </summary>
+        public static string VAR_DLG_ZIELNAME {
+            get {
+                return ResourceManager.GetString("VAR_DLG_ZIELNAME", resourceCulture);
             }
         }
         
@@ -49754,6 +49781,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VAR_MSG_NUR_VARIANTE {
             get {
                 return ResourceManager.GetString("VAR_MSG_NUR_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein Projekt wählen, dessen Inhalt übernommen werden soll. ähnelt.
+        /// </summary>
+        public static string VAR_MSG_QUELLE_WAEHLEN {
+            get {
+                return ResourceManager.GetString("VAR_MSG_QUELLE_WAEHLEN", resourceCulture);
             }
         }
         
