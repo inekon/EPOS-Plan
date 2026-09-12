@@ -67,7 +67,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void CsvWaermepumpe()
         {
-            if (!_ergebnisGueltig || !sim.bSimulationWP || sim.simulation_wp == null)
+            if (!ErgebnisIstGueltig || !sim.bSimulationWP || sim.simulation_wp == null)
             {
                 WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SIM_MSG_KEINE_DATEN_WAERMEPUMPE,
                                        MyResource.Resource.SIM_BTN_CSV_EXPORT);
@@ -108,7 +108,7 @@ namespace WindowsFormsApplication1
         /// <summary>Heizkessel (wörtlich <c>btn_CsvExportKessel_Click</c> :1228-1245).</summary>
         private void CsvHeizkessel()
         {
-            if (!_ergebnisGueltig || !sim.bSimulationKessel || sim.simulation_spk == null)
+            if (!ErgebnisIstGueltig || !sim.bSimulationKessel || sim.simulation_spk == null)
             {
                 WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SIM_MSG_KEINE_DATEN_HEIZKESSEL,
                                        MyResource.Resource.SIM_BTN_CSV_EXPORT);
@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void CsvSpeicher()
         {
-            if (!_ergebnisGueltig || sim.Speicherergebnis == null)
+            if (!ErgebnisIstGueltig || sim.Speicherergebnis == null)
             {
                 WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SP_ERG_KEIN_LAUF,
                                        MyResource.Resource.SIM_STROMSPEICHER);
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         private void CsvWaermegang(int kanal, IReadOnlyList<string> erzeuger,
                                    IReadOnlyList<string> speicher)
         {
-            if (!_ergebnisGueltig)
+            if (!ErgebnisIstGueltig)
             {
                 WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION,
                                        MyResource.Resource.SIM_BTN_CSV_EXPORT);
@@ -263,7 +263,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void CsvStromgang(IReadOnlyList<string> reihen)
         {
-            if (!_ergebnisGueltig)
+            if (!ErgebnisIstGueltig)
             {
                 WindowsFormsApplication1.Dienste.Dialog.Meldung(MyResource.Resource.SIM_MSG_KEINE_DATEN_SIMULATION,
                                        MyResource.Resource.SIM_BTN_CSV_EXPORT);

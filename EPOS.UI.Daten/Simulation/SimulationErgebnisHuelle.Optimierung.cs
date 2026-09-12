@@ -70,7 +70,11 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(fehler))
             {
                 _flotteProjektGeaendert = true;
-                _ergebnisGueltig = false;
+
+                // #236: Das angezeigte Ergebnis ist damit VERALTET, nicht „leer" - und
+                // der Anlass steht dabei, damit die Uebersicht ihn nennen kann.
+                ZustandSetzen(ErgebnisZustand.Veraltet,
+                              MyResource.Resource.SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN);
             }
             return Task.FromResult(fehler);
         }
@@ -97,7 +101,8 @@ namespace WindowsFormsApplication1
             if (vorbereitung == null) return new SpeicherFlottenErgebnis { Meldung = meldung };
 
             _flotteProjektGeaendert = true;
-            _ergebnisGueltig = false;
+            ZustandSetzen(ErgebnisZustand.Veraltet,
+                          MyResource.Resource.SIMERG_ZUSTAND_ANLASS_FLOTTE);
 
             _auslegungAbbruch = new CancellationTokenSource();
             CancellationToken marke = _auslegungAbbruch.Token;
@@ -140,7 +145,8 @@ namespace WindowsFormsApplication1
             StromspeicherAuslegungHuelle.Anmelden(Auslegung(), () =>
             {
                 _flotteProjektGeaendert = true;
-                _ergebnisGueltig = false;
+                ZustandSetzen(ErgebnisZustand.Veraltet,
+                              MyResource.Resource.SIMERG_ZUSTAND_ANLASS_AUSLEGUNG);
             });
 
             EPOS.UI.Dienste.Navigationsziel.Aktuell?.OeffneMaske(

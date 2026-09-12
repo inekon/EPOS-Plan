@@ -1,10 +1,12 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -477,5 +479,81 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         // Ohne Bilddelegat wird kein Bild angefordert; der Baustein zeigt seinen
         // Platzhalter.
         Assert.Empty(_auftraege);
+    }
+    // =====================================================================
+    // Der ERGEBNISZUSTAND (Auftrag #236, Anwenderrückmeldung 12.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>DIE WACHE ÜBER DIE GANZE SEITE.</b> Der Stand kommt genau so herein, wie ihn
+    /// die Hülle bis #236 gebaut hat — ein VORBELEGTES <c>UebersichtDaten</c> bei
+    /// ungültigem Ergebnis — und trägt die Bedarfszahl des gemeldeten Projekts. Das
+    /// Blatt „Übersicht" darf daraus kein Ergebnis machen: kein „0,00" an der Stelle
+    /// des Strombedarfs, keine Marke „kein Stromerzeuger im Projekt", keine Deckung.
+    /// </summary>
+    [Fact]
+    public void Ein_ungueltiges_Ergebnis_zeichnet_kein_Nullobjekt()
+    {
+        _daten = Voll();
+        _daten.Zustand = ErgebnisZustand.Veraltet;
+        _daten.Zustandsgrund = "die Speicher-Einstellungen wurden geändert";
+        _daten.Uebersicht = new UebersichtDaten();          // die alte Vorbelegung
+        _daten.Bedarf = new BedarfDaten { StrombedarfGesamtMwh = 2850.2 };
+
+        var seite = Zeichnen();
+
+        var werte = seite.FindAll(".epos-simueb-kennzahl-wert");
+        Assert.Equal(2, werte.Count);
+        Assert.StartsWith((2850.2).ToString("N2", CultureInfo.CurrentCulture),
+                          werte[1].TextContent.Trim(), StringComparison.Ordinal);
+
+        Assert.DoesNotContain(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
+                              StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.SIMUEB_LBL_DECKUNG, seite.Markup, StringComparison.Ordinal);
+        Assert.False(seite.Instance.ErgebnisSteht);
+        Assert.False(seite.Instance.SpeichernMoeglich);
+    }
+
+    /// <summary>
+    /// Der SATZ des Leerzustands nennt den Anlass — und die Seite baut ihn, nicht die
+    /// Hülle: Sie weiß als Einzige, ob derselbe Grund schon als Banner darüber steht.
+    /// </summary>
+    [Fact]
+    public void Der_Zustandstext_nennt_den_Anlass_des_veralteten_Ergebnisses()
+    {
+        _daten = Voll();
+        _daten.Zustand = ErgebnisZustand.Veraltet;
+        _daten.Zustandsgrund = "die Speicherflotte wurde neu gerechnet";
+
+        var seite = Zeichnen();
+
+        Assert.Equal(ErgebnisZustand.Veraltet, seite.Instance.Ergebniszustand);
+        Assert.Contains("die Speicherflotte wurde neu gerechnet", seite.Instance.Zustandstext,
+                        StringComparison.Ordinal);
+        Assert.Equal(seite.Instance.Zustandstext,
+                     seite.Find("p.epos-simueb-leerkarte").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Ein ABGEBROCHENER Lauf, dessen Grund schon als Warnbanner über dem Reiterstapel
+    /// steht, bekommt in der Leerkarte keinen zweiten Abdruck desselben Satzes.
+    /// </summary>
+    [Fact]
+    public void Ein_Abbruchgrund_steht_nicht_zweimal()
+    {
+        var seite = Zeichnen();
+
+        _daten = Voll();
+        _daten.Zustand = ErgebnisZustand.Abgebrochen;
+        _daten.Zustandsgrund = "Simulation abgebrochen: keine Klimaregion";
+
+        seite.InvokeAsync(() => seite.Instance.LaufStarten());
+        seite.InvokeAsync(() => _laufFertig!.SetResult(
+            new Rueckmeldung(false, "Simulation abgebrochen: keine Klimaregion")));
+        seite.WaitForState(() => !seite.Instance.Laeuft);
+
+        seite.WaitForAssertion(() => Assert.Equal(
+            Resource.SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG,
+            seite.Find("p.epos-simueb-leerkarte").TextContent.Trim()));
     }
 }

@@ -509,6 +509,37 @@ public sealed class VergleichDaten
 // =========================================================================
 
 /// <summary>
+/// In welchem Zustand das ANGEZEIGTE Ergebnis ist (Auftrag <b>#236</b>,
+/// Anwenderrueckmeldung 12.09.2026).
+///
+/// <para><b>Warum ein Zustand und kein Schalter.</b> Bis #236 trug der Stand nur die
+/// Marke <c>ErgebnisGueltig</c>. Sie sagte, ob gespeichert werden darf — nicht, WARUM
+/// nicht. Die Uebersicht zeichnete deshalb in JEDEM dieser Faelle ein vorbelegtes DTO
+/// wie ein Ergebnis: „Strombedarf 0,00 MWh/a", „Deckung 0,0 %" und die Marke „kein
+/// Stromerzeuger im Projekt", obwohl die Zusammenfassung daneben 2 850,20 MWh/a
+/// nannte. Wer nicht gerechnet hat, hat kein Ergebnis; wer es veraltet hat, hat ein
+/// altes — beides ist eine Aussage, und beides ist nicht „alles null".</para>
+/// </summary>
+public enum ErgebnisZustand
+{
+    /// <summary>Es ist noch nie gerechnet worden (oder ein Projektwechsel hat den Lauf verworfen).</summary>
+    NichtGerechnet = 0,
+
+    /// <summary>Ein vollstaendiger Lauf steht; nur hier darf gespeichert werden.</summary>
+    Gueltig = 1,
+
+    /// <summary>
+    /// Es ist gerechnet worden, aber seither wurde etwas geaendert, das den Lauf
+    /// ueberholt — jeder Besuch der Stromspeicher-Auslegung, der speichert oder
+    /// rechnet. <c>LaufGerechnet</c> bleibt dabei wahr.
+    /// </summary>
+    Veraltet = 2,
+
+    /// <summary>Der Lauf ist nicht durchgegangen: Vorpruefung, Fehler oder Abbruch.</summary>
+    Abgebrochen = 3
+}
+
+/// <summary>
 /// Was die Ergebnisseite nach EINEM Lauf zeigt (iU9-W11b.1). Die Huelle traegt es
 /// zusammen; die Seite und ihre Reiter rechnen nichts nach.
 /// </summary>
@@ -520,8 +551,40 @@ public sealed class SimulationErgebnisDaten
     public bool Gesperrt;
     public string Sperrgrund = "";
 
-    /// <summary>Liegt ein vollstaendiger Lauf vor? Nur dann darf gespeichert werden.</summary>
-    public bool ErgebnisGueltig;
+    /// <summary>
+    /// Der Zustand des angezeigten Ergebnisses (Auftrag #236). Er ist die WAHRHEIT;
+    /// <see cref="ErgebnisGueltig"/> leitet sich daraus ab.
+    /// </summary>
+    public ErgebnisZustand Zustand = ErgebnisZustand.NichtGerechnet;
+
+    /// <summary>
+    /// Der ANLASS des Zustands, in Anwendersprache und ohne Satzzeichen am Ende — bei
+    /// <see cref="ErgebnisZustand.Veraltet"/> die Aenderung, die den Lauf ueberholt hat,
+    /// bei <see cref="ErgebnisZustand.Abgebrochen"/> der Abbruchgrund. Leer = keiner
+    /// bekannt; die Seite setzt dann ihren allgemeinen Satz.
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur der Anlass, nicht der ganze Satz.</b> Wie der Satz lautet, entscheidet die
+    /// ANZEIGE (<c>SimulationErgebnisSeite.Zustandstext</c>): Sie weiss als Einzige, ob
+    /// derselbe Grund schon als Warnbanner ueber dem Reiterstapel steht.
+    /// </remarks>
+    public string Zustandsgrund = "";
+
+    /// <summary>
+    /// Liegt ein vollstaendiger Lauf vor? Nur dann darf gespeichert werden.
+    /// </summary>
+    /// <remarks>
+    /// <b>Seit #236 eine ABLEITUNG</b> aus <see cref="Zustand"/>. Der Setzer bleibt als
+    /// Kurzform fuer Pruefstaende und alten Programmtext: <c>true</c> setzt
+    /// <see cref="ErgebnisZustand.Gueltig"/>, <c>false</c>
+    /// <see cref="ErgebnisZustand.NichtGerechnet"/>. Wer „veraltet" oder „abgebrochen"
+    /// meint, setzt den Zustand selbst — sonst geht der Grund verloren.
+    /// </remarks>
+    public bool ErgebnisGueltig
+    {
+        get => Zustand == ErgebnisZustand.Gueltig;
+        set => Zustand = value ? ErgebnisZustand.Gueltig : ErgebnisZustand.NichtGerechnet;
+    }
 
     /// <summary>Die Parameterseite.</summary>
     public ParameterDaten Parameter = new ParameterDaten();
@@ -536,7 +599,26 @@ public sealed class SimulationErgebnisDaten
 
     // ---- Die Zahlen je Reiter; null = der Lauf fuehrt die Komponente nicht ----
     public WindowsFormsApplication1.SimulationErgebnisCtrl.UebersichtKennzahlen? Kennzahlen;
-    public UebersichtDaten Uebersicht = new UebersichtDaten();
+
+    /// <summary>
+    /// Das Dashboard der Uebersicht; <c>null</c> = es gibt kein gerechnetes Ergebnis
+    /// (<see cref="Zustand"/> sagt, warum).
+    /// </summary>
+    /// <remarks>
+    /// <b>BEFUND #236.</b> Hier stand bis zum 12.09.2026 ein <c>= new UebersichtDaten()</c>.
+    /// Die Huelle stieg bei ungueltigem Ergebnis aus, bevor sie das Feld fuellte — und
+    /// der Reiter zeichnete die Vorbelegung wie ein Ergebnis: lauter Nullen, dazu die
+    /// Marke „kein Stromerzeuger im Projekt". Ein Reiter zeichnet nie ein vorbelegtes
+    /// DTO als Ergebnis; ohne Lauf steht hier <c>null</c>, und die Anzeige zeigt ihren
+    /// Leerzustand mit Grund.
+    /// </remarks>
+    public UebersichtDaten? Uebersicht;
+
+    /// <summary>
+    /// Die Zahlen der BEDARFSRECHNUNG. Sie stehen in JEDEM Zustand da (#236) — sie
+    /// haengen nicht am Lauf, sondern am Projekt, und es sind dieselben Zahlen, die die
+    /// Projektzusammenfassung des Startreiters nennt.
+    /// </summary>
     public BedarfDaten Bedarf = new BedarfDaten();
     public WindowsFormsApplication1.SimulationErgebnisCtrl.WaermepumpeErgebnis? Waermepumpe;
     public WindowsFormsApplication1.SimulationErgebnisCtrl.HeizkesselErgebnis? Heizkessel;

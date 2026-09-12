@@ -5950,6 +5950,14 @@ body {
     padding-bottom: 6px;
 }
 
+/* Die leise Zustandszeile unter der Ueberschrift (Auftrag #236): Sie sagt, dass
+   das Ergebnis rechts veraltet oder abgebrochen ist - kein Banner, nur ein Satz
+   (Regel W16b-E-6). */
+.epos-simreiter-zustand {
+    margin: 2px 0 0;
+    color: var(--epos-start-text-leise);
+}
+
 .epos-simreiter-speichern {
     font-weight: 700;
 }
@@ -8599,6 +8607,30 @@ body {
     background: var(--epos-flaeche);
     border-radius: var(--epos-ecke);
     color: var(--epos-text-leise);
+}
+
+/* --- Der LEERZUSTAND der Uebersicht (Auftrag #236) ----------------------- */
+
+/* OHNE LAUF STEHT NUR DER BEDARF. Die Kennzahlenreihe traegt dann EINE Zahl je
+   Spalte statt drei; ohne diese Regel stuende sie im Drittelraster links und
+   liesse zwei Drittel leer. */
+.epos-simueb-kennzahlen--allein {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Die ruhige Karte mit dem Grund - dieselbe Bauform wie der Leerzustand des
+   Startreiters (#233): eine Karte in der Mitte, EIN Satz, kein Warnbanner. Es
+   fehlt nichts, was der Anwender beheben muesste; er hat nur noch nicht (oder
+   nicht mehr aktuell) gerechnet - Regel W16b-E-6, dritte Stufe. */
+.epos-simueb-leerkarte {
+    margin: 0;
+    padding: 32px 16px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--epos-text-leise);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
 }
 
 /* --- Die Erzeugertabelle ------------------------------------------------- */

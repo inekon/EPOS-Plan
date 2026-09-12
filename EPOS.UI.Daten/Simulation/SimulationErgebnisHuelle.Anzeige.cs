@@ -641,7 +641,7 @@ namespace WindowsFormsApplication1
             _autarkieGesetzt = true;
 
             var d = new AutarkieDaten { SpeicherKwh = kwh };
-            if (!_ergebnisGueltig) return d;
+            if (!ErgebnisIstGueltig) return d;
 
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
             d.HatPv = p.Photovoltaik;
@@ -816,7 +816,7 @@ namespace WindowsFormsApplication1
         private List<Temperaturreihe> Temperaturreihen()
         {
             var liste = new List<Temperaturreihe>();
-            if (!_ergebnisGueltig) return liste;
+            if (!ErgebnisIstGueltig) return liste;
 
             List<SimulationPufferspeicher> speicher = sim.AlleSpeicher();
             int nummer = 0;

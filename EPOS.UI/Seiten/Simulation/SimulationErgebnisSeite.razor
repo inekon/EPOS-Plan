@@ -102,9 +102,16 @@
 
                 <Reiterblatt Schluessel="@Blatt.Uebersicht" Titel="@Resource.SIMERG_TAB_UEBERSICHT">
                     <KindInhalt>
+                        @* OHNE gerechnetes Ergebnis zeichnet der Reiter KEIN
+                           Nullobjekt (Auftrag #236): Er bekommt den ZUSTAND, den
+                           fertigen Satz dazu und die Bedarfszahlen, die auch ohne
+                           Lauf feststehen. Die Ringe holt er sich nur, wenn es
+                           etwas zu zeigen gibt. *@
                         <UebersichtReiter Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht"
-                                          RingWaerme="@Bild(Bilder.RingWaerme)"
-                                          RingStrom="@Bild(Bilder.RingStrom)"
+                                          Zustand="@_daten.Zustand" Zustandstext="@Zustandstext"
+                                          Bedarf="@_daten.Bedarf"
+                                          RingWaerme="@(ErgebnisSteht ? Bild(Bilder.RingWaerme) : null)"
+                                          RingStrom="@(ErgebnisSteht ? Bild(Bilder.RingStrom) : null)"
                                           BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                           StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)" />
                     </KindInhalt>
@@ -137,7 +144,7 @@
                         <KindInhalt>
                             <HeizkesselReiter Daten="@_daten.Heizkessel" Bild="BildHolen"
                                               Brennstoffe="@_daten.KesselBrennstoffe"
-                                              BedarfVorhanden="@_daten.Uebersicht.WaermebedarfVorhanden"
+                                              BedarfVorhanden="@(_daten.Uebersicht?.WaermebedarfVorhanden ?? false)"
                                               Csv="@Rueckruf(Dienste?.CsvHeizkessel)" />
                         </KindInhalt>
                     </Reiterblatt>
@@ -158,9 +165,9 @@
                         <KindInhalt>
                             <BhkwReiter Daten="@_daten.Bhkw" Bild="BildHolen"
                                         Brennstoffe="@_daten.BhkwBrennstoffe"
-                                        Praesent="@_daten.Uebersicht.Bhkw"
-                                        WaermebedarfVorhanden="@_daten.Uebersicht.WaermebedarfVorhanden"
-                                        StrombedarfVorhanden="@_daten.Uebersicht.StrombedarfVorhanden" />
+                                        Praesent="@(_daten.Uebersicht?.Bhkw ?? false)"
+                                        WaermebedarfVorhanden="@(_daten.Uebersicht?.WaermebedarfVorhanden ?? false)"
+                                        StrombedarfVorhanden="@(_daten.Uebersicht?.StrombedarfVorhanden ?? false)" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -456,6 +463,13 @@
         if (!firstRender || _startGelaufen) return;
         _startGelaufen = true;
 
+        // DER WIRT ERFÄHRT VOM ERSTEN STAND (Auftrag #236). Er zeichnet seine
+        // Werkzeugleiste, BEVOR diese Seite steht — „Ergebnis speichern" und die
+        // Zustandszeile hängen aber an ihr. Ohne diese eine Meldung blieben beide auf
+        // dem Stand „es gibt nichts", bis den Wirt etwas anderes neu zeichnet; genau
+        // das war beim Rückweg aus der Stromspeicher-Auslegung der Fall.
+        Melden();
+
         if (_daten.Gesperrt)
         {
             Blattwahl(Blatt.Uebersicht);
@@ -578,6 +592,60 @@
     /// Knopf.
     /// </summary>
     public bool SpeichernMoeglich => !_laeuft && _daten.ErgebnisGueltig;
+
+    // =====================================================================
+    //  Der Ergebniszustand (Auftrag #236)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zustand des angezeigten Ergebnisses (der Parametername <c>Zustand</c> ist
+    /// schon vergeben — er trägt den geteilten <c>SeitenZustand</c> der Hülle).
+    /// </summary>
+    public ErgebnisZustand Ergebniszustand => _daten.Zustand;
+
+    /// <summary>Steht ein gerechnetes, gültiges Ergebnis?</summary>
+    public bool ErgebnisSteht => _daten.Zustand == ErgebnisZustand.Gueltig;
+
+    /// <summary>
+    /// Der SATZ zum Zustand — der Leerzustand der Übersicht, der <c>title</c> eines
+    /// gesperrten „Ergebnis speichern" und die Zustandszeile eines Wirts lesen ihn
+    /// (Auftrag #236). Bei einem gültigen Ergebnis leer.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum der Satz HIER entsteht und nicht in der Hülle.</b> Nur diese Seite
+    /// weiß, ob derselbe Abbruchgrund schon als Warnbanner über dem Reiterstapel
+    /// steht (<c>_meldung</c>) — dann sagt der Leerzustand „siehe Meldung oben"
+    /// statt denselben Text ein zweites Mal.
+    /// </remarks>
+    public string Zustandstext
+    {
+        get
+        {
+            string grund = _daten.Zustandsgrund ?? "";
+
+            switch (_daten.Zustand)
+            {
+                case ErgebnisZustand.Gueltig:
+                    return "";
+
+                case ErgebnisZustand.Veraltet:
+                    return grund.Length > 0
+                        ? string.Format(Resource.SIMERG_ZUSTAND_VERALTET, grund)
+                        : Resource.SIMERG_ZUSTAND_VERALTET_KURZ;
+
+                case ErgebnisZustand.Abgebrochen:
+                    if (grund.Length == 0) return Resource.SIMERG_ZUSTAND_ABGEBROCHEN_KURZ;
+
+                    // Kein zweites Banner mit demselben Wortlaut.
+                    return _meldung == grund
+                        ? Resource.SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG
+                        : string.Format(Resource.SIMERG_ZUSTAND_ABGEBROCHEN, grund);
+
+                default:
+                    return grund.Length > 0 ? grund : Resource.SIMERG_ZUSTAND_NICHT_GERECHNET;
+            }
+        }
+    }
 
     /// <summary>
     /// Sagt dem Wirt, dass sich der Stand geaendert hat, an dem seine

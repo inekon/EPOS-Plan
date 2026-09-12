@@ -40649,6 +40649,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf wurde abgebrochen — {0}. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ABGEBROCHEN {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ABGEBROCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf wurde abgebrochen. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ABGEBROCHEN_KURZ {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ABGEBROCHEN_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf wurde abgebrochen, siehe Meldung oben. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in der Stromspeicher-Auslegung wurde etwas geändert ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ANLASS_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Speicher-Einstellungen wurden geändert ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Speicherflotte wurde neu gerechnet ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ANLASS_FLOTTE {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch nicht gerechnet — starten Sie die Simulation, um ein Ergebnis zu sehen. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_NICHT_GERECHNET {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ergebnis ist veraltet — {0}. Bitte Simulation erneut starten. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_VERALTET {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ergebnis ist veraltet. Bitte Simulation erneut starten. ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_VERALTET_KURZ {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_VERALTET_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter für die Simulation ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_LAUFPARAMETER {

@@ -709,3 +709,122 @@ Berührt sind `EPOS.UI/Seiten/Start/SimulationReiter.razor` und die Klassen `epo
 in `EPOS.UI/wwwroot/epos-ui.css`; Wachen sind
 `EPOS.UI.Tests/Seiten/StartreiterSimulationTests` (Bedienung) und
 `…/StartseiteAnmutungTests` (Stilblatt).
+
+## 10. Befund #236 (12.09.2026) — die Übersicht zeichnete ein Nullobjekt
+
+### 10.1 Die Rückmeldung
+
+Bildschirmfoto vom 12.09.2026, Startseiten-Reiter „Simulation", Projekt „Stromspeicher
+Optimierung - ein Speicher" (Technologie Stromspeicher, Wärmebedarf 0, Strombedarf aus einer
+eingelesenen Stromganglinie). **Links** in der Projektzusammenfassung steht „Strombedarf:
+2850,20 MWh/a", **rechts** im Blatt „Übersicht" derselben Ansicht „Strombedarf 0,00 MWh/a",
+„Deckung durch Erzeuger 0,0 %", die Marke „kein Stromerzeuger im Projekt" und der Satz „Ohne
+Bedarf lässt sich keine Deckung ausweisen."; „Ergebnis speichern" ist gesperrt. Wörtlich: „Der
+Strombedarf wird in der Übersicht (Simulation) nicht korrekt dargestellt."
+
+### 10.2 Was nicht die Ursache war
+
+**Der Rechenweg ist in Ordnung.** `SimulationStrombedarf.Berechnung` addiert die Ganglinien aus
+`Z_ProjektStromganglinie` auch dann, wenn das Projekt keine Stromverbraucher-Profile führt —
+`Stromprofil_Strombedarf_berechnen` liefert dafür eine Nullreihe, nicht `null`. Beleg ist das
+Referenzprojekt **1030** der Testdatenbank: eine Ganglinie, kein Verbraucherprofil, und die
+Basis R7 führt `Energiebedarf.Strombedarf_Gesamt;4790.09`. Die linke Spalte des Startreiters
+rechnet über **genau diese** Methode.
+
+Ebenso unbeteiligt: `SimulationLaufCtrl.Bedarf` (füllt die zwei Bedarfsobjekte an Ort und
+Stelle), `SimulationErgebnisCtrl.Uebersicht` (liest `sb.StrombedarfGesamtMwh` daraus) und der
+Eigenverbrauchszuschlag aus W8‑O‑5c. Bei einem gültigen Lauf stünde rechts dieselbe Zahl wie
+links.
+
+### 10.3 Die Ursache: ein vorbelegtes DTO, das wie ein Ergebnis aussah
+
+`EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Zusammentragen` stieg bei ungültigem
+Ergebnis aus, **bevor** `d.Kennzahlen` und `d.Uebersicht` gebaut waren:
+
+```csharp
+d.Bedarf = BedarfDaten(bedarf);
+if (!_ergebnisGueltig) return d;          //  <- hier
+d.Kennzahlen = SimulationErgebnisCtrl.Uebersicht(…);
+d.Uebersicht = UebersichtDaten(…);
+```
+
+`SimulationErgebnisDaten.Uebersicht` war dabei mit `= new UebersichtDaten()` **vorbelegt**, und
+`UebersichtReiter.razor` zeichnete diese Vorbelegung wie ein Ergebnis: `StrombedarfMwh` 0,
+`StrombedarfVorhanden` false → „Ohne Bedarf …", `StromerzeugerVorhanden` false → die Marke
+„kein Stromerzeuger im Projekt", Deckung 0,0 %. Das ist Zeile für Zeile das Bildschirmfoto.
+
+### 10.4 Warum das Ergebnis so leicht ungültig wird
+
+Der Startreiter montiert seine rechte Spalte, sobald `Dienste.ErgebnisVorhanden()` wahr ist —
+und das ist `LaufGerechnet`, eine Marke, die **nie** zurückfällt („ein Lauf, der gelaufen ist,
+ist gelaufen"). Die Gültigkeit dagegen fiel an **drei** Stellen in
+`SimulationErgebnisHuelle.Optimierung.cs`:
+
+| Stelle | Anlass |
+|---|---|
+| `OptimierungEinstellungenSpeichern` | der Reiter „Stromspeicher" speichert die Betriebsoptionen |
+| `OptimierungFlottenRechnen` | eine Flottenstudie wird gerechnet |
+| Rückruf aus `AuslegungOeffnen` | die Ansicht `STROMSPEICHER_AUSLEGUNG` meldet eine Änderung zurück |
+
+Jeder Besuch der Stromspeicher-Auslegung, der etwas speichert oder rechnet, machte das
+Ergebnis damit „veraltet" — und der Anwender kam genau von dort. Dazu kommen zwei weitere
+Zustände mit demselben Bild: **vor dem ersten Lauf** (die Ansicht schaltet den Automatikstart
+ab) und **nach einem abgebrochenen Lauf**.
+
+### 10.5 Der Entscheid: Zustand statt Schalter, Bedarfszahlen aus der Bedarfsrechnung
+
+1. **`ErgebnisZustand` statt `bool`.** `SimulationErgebnisDaten` trägt seither
+   `Zustand` (`NichtGerechnet` · `Gueltig` · `Veraltet` · `Abgebrochen`) und `Zustandsgrund`
+   (den ANLASS in Anwendersprache). `ErgebnisGueltig` bleibt als Ableitung stehen, damit
+   `SpeichernMoeglich` und die vorhandenen Prüfstände unberührt sind. Die Hülle setzt den
+   Zustand an den Stellen, an denen vorher die Marke fiel — Laufbeginn, jeder Frühausstieg des
+   Laufs (`Abbruch(grund)`), Laufende, die drei Setzer der Auslegung.
+2. **Kein Nullobjekt mehr.** `SimulationErgebnisDaten.Uebersicht` ist **nullbar** und wird bei
+   ungültigem Zustand gar nicht gebaut. `UebersichtReiter` zeichnet dann kein Ergebnis: kein
+   Ring, keine Deckung, keine Erzeugertabelle, keine Marke „kein Stromerzeuger", nicht den Satz
+   „Ohne Bedarf …".
+3. **Die Bedarfszahlen kommen aus der BEDARFSRECHNUNG, nicht aus dem Lauf.** Sie hängen am
+   Projekt und stehen in jedem Zustand: Wärmebedarf gesamt und Strombedarf gesamt aus
+   `d.Bedarf` — dieselben Zahlen, die die Projektzusammenfassung links nennt. Damit die
+   Bedarfsobjekte auch dann gefüllt sind, wenn niemand vorher den Startreiter betreten hat
+   (die Ansicht `SIMULATION`, und auf iOS jeder Weg), rechnet die Hülle sie beim ERSTEN Laden
+   einmal selbst (`BedarfSicherstellen`, derselbe Weg wie im Lauf, danach nie wieder).
+4. **Ein ruhiger Leerzustand mit Grund** an der Stelle des Ergebnisses — Bauform wie die
+   Leerzustandskarte aus #233, kein Warnbanner (Regel W16b‑E‑6, dritte Stufe): „Noch nicht
+   gerechnet — …", „Das Ergebnis ist veraltet — &lt;Anlass&gt;. Bitte Simulation erneut
+   starten." oder „Der Lauf wurde abgebrochen — &lt;Grund&gt;.". Steht derselbe Abbruchgrund
+   schon als Warnbanner über dem Reiterstapel, sagt die Karte „…, siehe Meldung oben" statt
+   denselben Text ein zweites Mal. Den Satz baut die SEITE, nicht die Hülle — nur sie kennt
+   das Banner.
+5. **Der Startreiter zeigt den Zustand sichtbar.** Die rechte Spalte darf bei
+   `LaufGerechnet && !Gueltig` weiter stehen (so war es gemeint), trägt aber im Kopf eine leise
+   Zustandszeile, und „Ergebnis speichern" bleibt gesperrt — sein `title` nennt seither den
+   Zustand statt nur „Noch kein Ergebnis". Damit der Wirt den ersten Stand überhaupt erfährt,
+   meldet `SimulationErgebnisSeite` nach ihrem ersten Zeichenlauf einmal `StandGeaendert`; ohne
+   diese Meldung blieben Knopf und Zeile auf dem Stand „es gibt nichts", bis den Wirt etwas
+   anderes neu zeichnet.
+
+**Am Rechenweg ändert sich nichts.** `SimulationStrombedarf`, `SimulationControl` und
+`SimulationErgebnisCtrl.Uebersicht` bleiben unangetastet; der Referenzlauf ist byte-gleich zur
+Basis `2026-09-11_R7_Speicherflotte` (5/5 Projekte).
+
+### 10.6 Die Reproduktion
+
+Drei Fälle in `EPOS.Kern.Tests/SimulationUebersichtZustandTests` halten den Befund fest — alle
+über die Hülle, headless, gegen eine Arbeitskopie der Testdatenbank:
+
+| Fall | vorher | nachher |
+|---|---|---|
+| Projekt 1030 laden, ohne Lauf | Bedarf 0,00 **und** Übersicht 0,00 | Bedarf **4790,09**, Übersicht `null`, Zustand `NichtGerechnet` |
+| danach rechnen | Übersicht 4790,09 | unverändert, Zustand `Gueltig` |
+| danach in der Auslegung speichern | Übersicht wieder 0,00, Marke „kein Stromerzeuger" | Übersicht `null`, Zustand `Veraltet` samt Anlass, Bedarf weiter 4790,09 |
+
+Ein vierter Fall baut in der Arbeitskopie das Projekt des Anwenders nach — aus 1030 abgeleitet,
+Kaskadenplätze leer, Ganglinie behalten, eine Speicheranlage und ein Flottenstand mit EINER
+Einheit: **der Lauf geht durch**, danach nennt die Übersicht 4790,09 MWh/a bei einem
+Wärmebedarf von 0. Der Fehler lag also nicht am Rechenweg, sondern an der Anzeige.
+
+Auf der Oberflächenseite prüfen `EPOS.UI.Tests/Seiten/UebersichtReiterTests` den Leerzustand
+(darunter die Wache, die ein vorbelegtes `UebersichtDaten` durch die Komponente schickt und
+„0,00" an der Stelle des Strombedarfs nicht mehr findet) und
+`…/StartreiterSimulationTests` die drei Zustände der rechten Spalte.
