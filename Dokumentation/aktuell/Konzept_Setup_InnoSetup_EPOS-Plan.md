@@ -774,7 +774,14 @@ LZMA2-Solidkompression füllen den Lauf; Zeitlimit 60 Minuten, zusätzliches
 Häkchen „schnell" schaltet auf `lzma2/normal`). Ohne das Häkchen „setup" läuft
 weiterhin nur der bisherige Job `build-test` — die zwei Jobs schließen sich
 über ihre `if`-Bedingungen gegenseitig aus, ein Setup-Lauf fährt nicht
-zusätzlich die Testkette. Der Job `installer` lädt den WebView2-Bootstrapper
+zusätzlich die Testkette. Der Job `installer` fährt seit **#243**
+(Anwenderentscheid AUF‑Q2 vom 12.09.2026) als ersten Schritt ein
+ungefiltertes `git lfs pull`: Testdatenbank und die 68 Herstellerarchive unter
+`VDI-3805-Daten/` liegen seither in Git LFS, und das Setup packt
+`VDI-3805-Daten\*` mit ein — Zeigerdateien von 130 Byte im Installer wären ein
+Auslieferungsfehler, der erst beim Kunden aufträte. Ein eigener Prüfschritt
+bricht deshalb ab, sobald darunter noch eine Datei mit
+`version https://git-lfs` beginnt. Er lädt den WebView2-Bootstrapper
 nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
 Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
 Referenzlaeufe/Kenndaten_Test.sqlite`, ohne `-Kataloge` (Vorgabe seit

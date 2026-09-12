@@ -49,12 +49,28 @@ Verweise kennzeichnen; **Wache `RepositoryOrdnungWacheTests`** (kein `*.bak`, `*
 `.work/`, kein `DB-Backup/`, `*.sqlite` nur auf der Weißliste `Referenzlaeufe/Kenndaten_Test.sqlite`); Aufräumregel als Abschnitt in der
 Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten mehr im Baum.
 
+**Stufe 3 — umgesetzt #243 (12.09.2026).** Der entschiedene Punkt der Stufe 2:
+
+- **Git LFS (AUF‑Q2).** Die `.gitattributes` trägt vier neue Regeln — `Referenzlaeufe/Kenndaten_Test.sqlite` und
+  `VDI-3805-Daten/**/*.zip|*.vdi|*.VDI`; die vier Access-Zeilen sind gefallen (seit #242 gibt es keine `.accdb` mehr im Repository).
+  Der Bestand ist **ohne Geschichtsumschreibung** überführt (`git rm --cached` + `git add` mit aktivem Clean-Filter): 69 LFS-Dateien,
+  rund 165 MB; die Arbeitsdateien sind byte-gleich geblieben, die alten Blobs bleiben in der Geschichte (AUF‑Q1 offen). Die drei
+  Workflows checken **ohne** `lfs: true` aus und ziehen gezielt (`kern.yml`, `windows.yml`/`build-test`, `ios.yml` nur die
+  Testdatenbank, mit `actions/cache` auf `.git/lfs`; allein `windows.yml`/`installer` vollständig, weil das Setup `VDI-3805-Daten\*`
+  einpackt) und prüfen je Job, dass keine Zeigerdatei liegengeblieben ist. Denselben Schutz tragen die drei Öffnungsstellen im Code
+  (`EPOS.Kern.Tests/TestDatenbank.cs`, `Referenzlauf/DbUmgebung.cs`, `Werkzeuge/Auslieferungsvorlage/Argumente.cs`) und zwei neue Fälle
+  der Wache. Einrichtung und Bandbreitenregel: `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS".
+
+Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
+(`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
+`.claude/worktrees/`, beides gitignored.
+
 **Stufe 2 — Vorschläge, je Punkt ein Anwenderentscheid.**
 - **Git-Geschichte verkleinern.** Die 24 Referenzbasen (1 GB) und die 70-MB-Datenbankkopie bleiben in der Geschichte; jeder Klon
   trägt sie. Ein Umschreiben der Geschichte (`git filter-repo`) brächte den Klon von ~1,5 GB auf einen Bruchteil, verlangt aber einen
   Force-Push aller Zweige und ein frisches Klonen auf beiden Rechnern. Empfehlung: nur, wenn die Klongröße wirklich stört; dann als
   eigener, angekündigter Schritt an einem Tag ohne Sync.
-- **Git-LFS — entschieden 12.09.2026 (AUF‑Q2 „Nehme VDI-Archive und Testdatenbanken in git-lfs"), Umsetzung Stufe 3 / #243.**
+- **Git-LFS — entschieden 12.09.2026 (AUF‑Q2 „Nehme VDI-Archive und Testdatenbanken in git-lfs"), umgesetzt #243 (Stufe 3).**
   Ab dem LFS-Commit liegen `Referenzlaeufe/Kenndaten_Test.sqlite` (68 MB, bisher 12 Fassungen in der Geschichte) und die 68 VDI-Archive
   (`VDI-3805-Daten/**/*.zip|*.vdi|*.VDI`, 97 MB) als LFS-Objekte; CSV, PAN, PDF, XLSX und die Importproben bleiben normale Blobs. Die
   alten Blobs bleiben in der Geschichte (kein Umschreiben, AUF‑Q1 offen). Die Workflows ziehen GEZIELT (Testläufe nur die Testdatenbank,
@@ -82,6 +98,6 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
 | AUF‑E‑1 (12.09.2026) | `EPOS-Plan_Beispiele_Geruest/` ist wichtig | bleibt |
 | AUF‑E‑2 (12.09.2026) | Fernzweige löschen | vorerst nicht |
 | AUF‑Q1 | Git-Geschichte umschreiben (Klongröße)? | offen |
-| AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | offen |
-| AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | offen |
+| AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | **entschieden 12.09.2026** („Nehme VDI-Archive und Testdatenbanken in git-lfs"), **umgesetzt #243** |
+| AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um") |
 | AUF‑Q4 | `retention-days` 14 in den Workflows? | offen |

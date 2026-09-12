@@ -89,7 +89,38 @@ jobs:
     if: ${{ github.event_name != 'workflow_dispatch' || !inputs.setup }}
     runs-on: windows-latest
     steps:
+      # OHNE "lfs: true" - siehe kern.yml (Auftrag #243, Anwenderentscheid AUF-Q2 vom
+      # 12.09.2026): das zoege bei jedem Lauf alle 69 LFS-Objekte (rund 165 MB) und
+      # ginge voll auf das LFS-Bandbreitenkontingent. Dieser Job braucht davon nur die
+      # Testdatenbank.
       - uses: actions/checkout@v4
+
+      - name: LFS-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-testdb-${{ hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') }}
+
+      # Gezielt eine Datei. Die Probe danach faengt einen liegengebliebenen Zeiger ab,
+      # bevor er als "file is not a database" in den Kerntests auftaucht.
+      - name: Testdatenbank aus LFS
+        shell: pwsh
+        run: |
+          git lfs pull --include="Referenzlaeufe/Kenndaten_Test.sqlite" --exclude=""
+          $datei = 'Referenzlaeufe/Kenndaten_Test.sqlite'
+          $groesse = (Get-Item $datei).Length
+          $kopf = Get-Content $datei -TotalCount 1 -Encoding utf8
+          if ($kopf -like 'version https://git-lfs*') {
+            Write-Host "FEHLER: $datei ist ein Git-LFS-Zeiger ($groesse Byte) statt der Datenbank."
+            Write-Host "Abhilfe: einmal je Rechner 'git lfs install', danach"
+            Write-Host "         git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite"
+            exit 1
+          }
+          if ($groesse -lt 1000000) {
+            Write-Host "FEHLER: $datei ist mit $groesse Byte zu klein - der LFS-Abruf ist nicht durchgekommen."
+            exit 1
+          }
+          Write-Host "Testdatenbank aus LFS: $groesse Byte"
 
       # SDK-Fassung aus global.json (10.0.400) - gleiche Quelle wie kern.yml.
       - uses: actions/setup-dotnet@v4
@@ -131,7 +162,48 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      # OHNE "lfs: true" (Auftrag #243) - der Pull unten holt dasselbe, nutzt aber das
+      # Zwischenlager darueber und gibt bei einem Fehlschlag eine eigene Meldung.
       - uses: actions/checkout@v4
+
+      # Hier VOLLSTAENDIG: Das Setup packt VDI-3805-Daten\* mit ein (rund 186 MB
+      # Herstellerdaten). Zeigerdateien von 130 Byte im Installer waeren ein
+      # Auslieferungsfehler, der erst beim Kunden auffiele. Der Job laeuft ohnehin nur
+      # von Hand (Schalter "setup"), das Bandbreitenkontingent traegt das.
+      # Der Schluessel deckt alles ab, was hier gezogen wird: die Regeln selbst, die
+      # Testdatenbank und die Archive.
+      - name: LFS-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-voll-${{ hashFiles('.gitattributes', 'Referenzlaeufe/Kenndaten_Test.sqlite', 'VDI-3805-Daten/**/*.zip', 'VDI-3805-Daten/**/*.vdi', 'VDI-3805-Daten/**/*.VDI') }}
+
+      - name: Alle LFS-Dateien holen (Testdatenbank und VDI-3805-Daten)
+        shell: pwsh
+        run: |
+          git lfs pull
+          $datei = 'Referenzlaeufe/Kenndaten_Test.sqlite'
+          $groesse = (Get-Item $datei).Length
+          if ((Get-Content $datei -TotalCount 1 -Encoding utf8) -like 'version https://git-lfs*' -or $groesse -lt 1000000) {
+            Write-Host "FEHLER: $datei ist ein Git-LFS-Zeiger ($groesse Byte) statt der Datenbank."
+            Write-Host "Abhilfe: einmal je Rechner 'git lfs install', danach 'git lfs pull'."
+            exit 1
+          }
+          Write-Host "Testdatenbank aus LFS: $groesse Byte"
+
+          $zeiger = @()
+          Get-ChildItem VDI-3805-Daten -Recurse -File -Include *.zip, *.vdi, *.VDI | ForEach-Object {
+            if ((Get-Content $_.FullName -TotalCount 1 -Encoding utf8) -like 'version https://git-lfs*') {
+              $zeiger += $_.FullName
+            }
+          }
+          if ($zeiger.Count -gt 0) {
+            Write-Host "FEHLER: $($zeiger.Count) Herstellerdatei(en) sind noch Git-LFS-Zeiger - der Installer wuerde sie so einpacken:"
+            $zeiger | Select-Object -First 10 | ForEach-Object { Write-Host "  $_" }
+            Write-Host "Abhilfe: 'git lfs install', danach 'git lfs pull'."
+            exit 1
+          }
+          Write-Host "VDI-3805-Daten: kein Zeiger uebrig."
 
       # SDK-Fassung aus global.json (10.0.400) - gleiche Quelle wie windows.yml und
       # kern.yml. build-setup.ps1 prueft selbst, dass "dotnet" ueberhaupt da ist.

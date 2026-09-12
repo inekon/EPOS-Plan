@@ -118,10 +118,45 @@ namespace Auslieferungsvorlage
             a.Ziel = Path.GetFullPath(frei[1]);
 
             if (!File.Exists(a.Quelle)) return a.Mit("Quelldatenbank nicht gefunden: " + a.Quelle);
+            if (IstLfsZeiger(a.Quelle))
+                return a.Mit("Die Quelldatenbank ist ein Git-LFS-Zeiger, keine Datenbank: " + a.Quelle +
+                             Environment.NewLine +
+                             "Einmal je Rechner \"git lfs install\", dann " +
+                             "\"git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite\".");
             if (string.Equals(a.Quelle, a.Ziel, StringComparison.Ordinal))
                 return a.Mit("Quelle und Ziel sind dieselbe Datei.");
 
             return a;
+        }
+
+        /// <summary>Die erste Zeile jeder Git-LFS-Zeigerdatei (Spezifikation v1).</summary>
+        private const string LfsKennung = "version https://git-lfs";
+
+        /// <summary>
+        /// Ist die angegebene Quelle in Wahrheit nur ein GIT-LFS-ZEIGER? (Auftrag #243,
+        /// Anwenderentscheid AUF‑Q2 vom 12.09.2026.)
+        ///
+        /// <para>Seit #243 liegt <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> — die Quelle,
+        /// mit der der CI-Job <c>installer</c> dieses Werkzeug ruft — in Git LFS. Ein Klon
+        /// OHNE aktiven LFS-Filter legt dort eine Textdatei von rund 130 Byte ab; ohne
+        /// diese Probe faellt das erst beim ersten SELECT als „file is not a database" auf.
+        /// Rueckgabe 2 („Aufruf falsch oder Quelle nicht lesbar") ist dafuer der richtige
+        /// Ausgang.</para>
+        /// </summary>
+        private static bool IstLfsZeiger(string pfad)
+        {
+            try
+            {
+                using FileStream s = File.OpenRead(pfad);
+                byte[] puffer = new byte[LfsKennung.Length];
+                int gelesen = s.Read(puffer, 0, puffer.Length);
+                return gelesen == puffer.Length
+                    && System.Text.Encoding.ASCII.GetString(puffer) == LfsKennung;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
 
         private Argumente Mit(string fehler) { Fehler = fehler; return this; }

@@ -46,10 +46,25 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
-*accdb filter=lfs diff=lfs merge=lfs -text
-*.accdb filter=lfs diff=lfs merge=lfs -text
-Kenndaten.accdb filter=lfs diff=lfs merge=lfs -text
-Kenndaten_Backup.accdb filter=lfs diff=lfs merge=lfs -text
+###############################################################################
+# Grosse Binaerdateien in Git LFS (Auftrag #243, Anwenderentscheid AUF-Q2 vom
+# 12.09.2026: "Nehme VDI-Archive und Testdatenbanken in git-lfs")
+#
+# Die Regeln gelten AB diesem Commit; die alten Blobs bleiben in der Geschichte
+# (keine Geschichtsumschreibung). Wer die Testdatenbank aendert, committet sie
+# NUR mit aktivem LFS-Filter - einmal je Rechner "git lfs install", sonst
+# landet wieder ein 68-MB-Blob in der Geschichte. Die Werkbaenke der CI ziehen
+# gezielt (Bandbreitenkontingent); Einzelheiten in Referenzlaeufe/LIESMICH.md,
+# Abschnitt "Git LFS".
+#
+# Die vier frueheren Access-Zeilen (*accdb, *.accdb, Kenndaten.accdb,
+# Kenndaten_Backup.accdb) sind mit #243 gefallen: Seit #242 gibt es keine
+# .accdb mehr im Repository.
+###############################################################################
+Referenzlaeufe/Kenndaten_Test.sqlite filter=lfs diff=lfs merge=lfs -text
+VDI-3805-Daten/**/*.zip filter=lfs diff=lfs merge=lfs -text
+VDI-3805-Daten/**/*.vdi filter=lfs diff=lfs merge=lfs -text
+VDI-3805-Daten/**/*.VDI filter=lfs diff=lfs merge=lfs -text
 
 ###############################################################################
 # Ganglinien-Proben der Welle iU9-W12 (Schritt W12.0i)

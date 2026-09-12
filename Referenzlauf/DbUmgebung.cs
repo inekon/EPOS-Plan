@@ -29,6 +29,43 @@ namespace WindowsFormsApplication1.Referenzlauf
             return pfad != null && pfad.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Die erste Zeile jeder Git-LFS-Zeigerdatei (Spezifikation v1).</summary>
+        private const string LFS_KENNUNG = "version https://git-lfs";
+
+        /// <summary>
+        /// Ist die gefundene Quelle in Wahrheit nur ein GIT-LFS-ZEIGER? (Auftrag #243,
+        /// Anwenderentscheid AUF-Q2 vom 12.09.2026.)
+        ///
+        /// <para>Seit #243 liegt <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> in Git LFS.
+        /// Ein Klon OHNE aktiven LFS-Filter legt an ihrer Stelle eine Textdatei von rund
+        /// 130 Byte ab. Ohne diese Probe faellt das erst beim ersten SELECT als "file is
+        /// not a database" auf - eine Meldung, aus der niemand den Grund liest. Trifft die
+        /// Probe zu, wird der Grund PROTOKOLLIERT und die Quelle verworfen; der Aufrufer
+        /// bricht dann mit Rueckgabe 2 ab.</para>
+        /// </summary>
+        private static bool IstLfsZeiger(string pfad, Protokoll log)
+        {
+            try
+            {
+                using (FileStream s = File.OpenRead(pfad))
+                {
+                    byte[] puffer = new byte[LFS_KENNUNG.Length];
+                    int gelesen = s.Read(puffer, 0, puffer.Length);
+                    if (gelesen < puffer.Length) return false;
+                    if (System.Text.Encoding.ASCII.GetString(puffer) != LFS_KENNUNG) return false;
+                }
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+
+            log.FehlerZeile("Die Quelldatenbank ist ein Git-LFS-Zeiger, keine Datenbank: " + pfad);
+            log.FehlerZeile("Einmal je Rechner \"git lfs install\", dann " +
+                            "\"git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite\".");
+            return true;
+        }
+
         /// <summary>
         /// Voller Pfad der Arbeitskopie in diesem Ordner. Liegt dort eine
         /// <c>Kenndaten.sqlite</c>, gilt der SQLite-Zweig, sonst der Access-Zweig.
@@ -73,6 +110,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                     log.FehlerZeile("Vorgegebene Quelle (--quelle) nicht vorhanden: " + voll);
                     return null;
                 }
+                if (IstLfsZeiger(voll, log)) return null;
                 log.Zeile("Quelle vorgegeben (--quelle): " + voll);
                 return voll;
             }
@@ -86,6 +124,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                 string kandidat = Path.Combine(ordner, name);
                 if (File.Exists(kandidat))
                 {
+                    if (IstLfsZeiger(kandidat, log)) return null;
                     log.Zeile("Quelle gefunden (ProgramData): " + kandidat);
                     return kandidat;
                 }

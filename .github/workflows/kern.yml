@@ -43,7 +43,47 @@ jobs:
         os: ${{ github.event_name == 'workflow_dispatch' && inputs.macos && fromJSON('["ubuntu-latest","macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
+      # OHNE "lfs: true" - das ist Absicht (Auftrag #243, Anwenderentscheid AUF-Q2 vom
+      # 12.09.2026). Seit #243 liegen 69 Dateien in Git LFS: die Testdatenbank
+      # (rund 68 MB) und die 68 VDI-3805-Archive (rund 97 MB). "lfs: true" zoege bei
+      # JEDEM Lauf alle 165 MB und ginge voll auf das LFS-Bandbreitenkontingent des
+      # Kontos. Dieser Lauf braucht davon genau EINE Datei; sie wird unten gezielt
+      # geholt.
       - uses: actions/checkout@v4
+
+      # Das LFS-Zwischenlager haengt am Hash des ZEIGERS - der aendert sich genau
+      # dann, wenn sich die Testdatenbank aendert. Ein Treffer spart den Download
+      # vollstaendig.
+      - name: LFS-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-testdb-${{ hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') }}
+
+      # Gezielt: nur die Testdatenbank, nicht die 68 Herstellerarchive. Danach die
+      # Probe aufs Exempel - ohne sie schluege ein liegengebliebener Zeiger erst
+      # weit unten als "file is not a database" auf, und niemand faende den Grund.
+      # Die Laeufer (ubuntu, macos) bringen git-lfs mit; ein Installationsschritt
+      # ist nicht noetig.
+      - name: Testdatenbank aus LFS
+        run: |
+          git lfs pull --include="Referenzlaeufe/Kenndaten_Test.sqlite" --exclude=""
+          datei=Referenzlaeufe/Kenndaten_Test.sqlite
+          groesse=$(wc -c < "$datei" | tr -d ' ')
+          kopf=$(head -c 40 "$datei")
+          case "$kopf" in
+            "version https://git-lfs"*)
+              echo "FEHLER: $datei ist ein Git-LFS-Zeiger ($groesse Byte) statt der Datenbank."
+              echo "Abhilfe: einmal je Rechner 'git lfs install', danach"
+              echo "         git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite"
+              exit 1
+              ;;
+          esac
+          if [ "$groesse" -lt 1000000 ]; then
+            echo "FEHLER: $datei ist mit $groesse Byte zu klein - der LFS-Abruf ist nicht durchgekommen."
+            exit 1
+          fi
+          echo "Testdatenbank aus LFS: $groesse Byte"
 
       # Die SDK-Fassung kommt aus global.json (10.0.400), damit CI und
       # Arbeitsplatz nicht auseinanderlaufen.

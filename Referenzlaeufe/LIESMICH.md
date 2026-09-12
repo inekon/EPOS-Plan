@@ -10,6 +10,52 @@ gesetzt — oder ein Fehler.
 Grundlage: `WindowsFormsApplication1/Allgemein/Simulation/Konzept_Simulation_QuellenSenken.md`,
 Paket B1, Kapitel 9.
 
+## Git LFS (Anwenderentscheid AUF‑Q2 vom 12.09.2026, Auftrag #243)
+
+**Die Testdatenbank `Kenndaten_Test.sqlite` (68 MB) liegt seit #243 in Git LFS**, zusammen
+mit den 68 Herstellerarchiven unter `VDI-3805-Daten/**/*.zip|*.vdi|*.VDI` (97 MB) — 69
+Dateien, rund 165 MB. Alles andere bleibt ein normaler Git-Blob: die CSV der Basen, die
+Importproben, die CEC- und PAN-Listen, PDF, JPG, XLSX. Die Regeln stehen in der
+`.gitattributes`; die Wache `EPOS.Kern.Tests/RepositoryOrdnungWacheTests` prüft, dass sie
+dort stehen.
+
+Die Umstellung gilt **ab** dem Commit von #243. Die alten Fassungen bleiben als volle Blobs
+in der Geschichte — die Geschichte wird nicht umgeschrieben (AUF‑Q1 ist offen).
+
+**Einmal je Rechner:**
+
+```
+git lfs install
+```
+
+**Nach dem Klonen** (oder wenn statt der Datenbank eine 130-Byte-Textdatei daliegt):
+
+```
+git lfs pull                                                   # alles, 165 MB
+git lfs pull --include="Referenzlaeufe/Kenndaten_Test.sqlite"  # nur die Testdatenbank
+```
+
+**Gezielt ziehen ist die Regel, nicht die Ausnahme.** GitHub gibt je Konto 1 GB
+LFS-Speicher und **1 GB Bandbreite je Monat** frei; ein einziger ungefilterter Abruf kostet
+165 MB davon. Die Workflows halten sich daran: `actions/checkout` läuft **ohne** `lfs: true`,
+`kern.yml`, `windows.yml` (Job `build-test`) und `ios.yml` ziehen nur die Testdatenbank und
+legen `.git/lfs` in den Actions-Cache (Schlüssel aus dem Hash des Zeigers — er wechselt genau
+mit der Datenbank). Ungefiltert zieht allein der Job `installer`, weil das Setup
+`VDI-3805-Daten\*` mit einpackt und Zeigerdateien im Installer ein Auslieferungsfehler wären.
+
+**Wer die Testdatenbank ändert, committet sie nur mit aktivem LFS-Filter.** Ohne
+`git lfs install` legt Git wieder einen 68-MB-Blob in die Geschichte, und der ist nicht mehr
+herauszubekommen. Die Probe: `git show :Referenzlaeufe/Kenndaten_Test.sqlite | head -3` muss
+`version https://git-lfs.github.com/spec/v1` zeigen, `git lfs ls-files | wc -l` muss 69
+ergeben.
+
+**Liegt ein Zeiger statt der Datenbank**, bricht nicht irgendwann ein SELECT mit „file is not
+a database" ab, sondern es meldet sich der, der die Datei öffnet — mit Ursache und Abhilfe:
+`EPOS.Kern.Tests/TestDatenbank.cs` (Aufbau jeder Datenbank-Testklasse),
+`Referenzlauf/DbUmgebung.cs` (beide Referenzlauf-Werkzeuge) und
+`Werkzeuge/Auslieferungsvorlage/Argumente.cs` (Rückgabe 2). Dieselbe Probe fährt jeder der
+drei Workflows, bevor er etwas baut.
+
 ## Die Einfrierregel (Anwenderentscheid Em‑9.8‑Q4 vom 07.09.2026)
 
 Seit dem Entscheid **Em‑9.8** führt `aggregate.csv` zehn Emissionsskalare je Projekt mit

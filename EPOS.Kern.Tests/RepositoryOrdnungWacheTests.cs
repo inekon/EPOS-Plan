@@ -137,9 +137,55 @@ namespace EPOS.Kern.Tests
                 string.Join("\n", funde));
         }
 
+        /// <summary>
+        /// <b>Auftrag #243 (Anwenderentscheid AUF‑Q2, 12.09.2026).</b> Die
+        /// <c>.gitattributes</c> trägt die vier LFS-Regeln — Testdatenbank und die drei
+        /// Archivmuster unter <c>VDI-3805-Daten/</c>. Fällt eine davon bei einem Merge
+        /// heraus, landet die nächste Änderung an der Datenbank wieder als 68-MB-Blob in
+        /// der Geschichte, und das ist nicht mehr rückgängig zu machen (AUF‑Q1: keine
+        /// Geschichtsumschreibung).
+        /// </summary>
+        [Fact]
+        public void Die_gitattributes_traegt_die_vier_LFS_Regeln()
+        {
+            string wurzel = Arbeitsbaum();
+            Assert.Contains(".gitattributes", Bestand().Dateien);
+
+            string text = File.ReadAllText(Path.Combine(wurzel, ".gitattributes"));
+            foreach (string muster in LfsMuster)
+                Assert.True(text.Contains(muster + " filter=lfs diff=lfs merge=lfs -text", StringComparison.Ordinal),
+                    "In .gitattributes fehlt die LFS-Regel fuer \"" + muster + "\" (Auftrag #243). " +
+                    "Ohne sie wandert die naechste Fassung dieser Dateien als voller Blob in die " +
+                    "Geschichte - und dort bleibt sie.");
+        }
+
+        /// <summary>
+        /// <b>Auftrag #243.</b> Die Testdatenbank im Arbeitsbaum ist die Datenbank und
+        /// nicht ihr LFS-Zeiger. Ohne diesen Fall faellt ein Klon ohne aktiven LFS-Filter
+        /// erst tief in den Datenbankfaellen als „file is not a database" auf.
+        /// </summary>
+        [Fact]
+        public void Die_Testdatenbank_ist_kein_LFS_Zeiger()
+        {
+            string pfad = Path.Combine(Arbeitsbaum(), WeisslisteSqlite.Replace('/', Path.DirectorySeparatorChar));
+            Assert.Contains(WeisslisteSqlite, Bestand().Dateien);
+            if (!File.Exists(pfad)) return;   // Umgebung ohne die Datei - andere Faelle ueberspringen ebenso
+
+            Assert.False(LfsZeigerProbe.IstZeiger(pfad), LfsZeigerProbe.Meldung(pfad));
+        }
+
         // =====================================================================
         //  Die Regel als Funktion — dieselbe für den Bestand und die Gegenproben
         // =====================================================================
+
+        /// <summary>Die vier Muster, die seit #243 in Git LFS liegen.</summary>
+        private static readonly string[] LfsMuster =
+        {
+            "Referenzlaeufe/Kenndaten_Test.sqlite",
+            "VDI-3805-Daten/**/*.zip",
+            "VDI-3805-Daten/**/*.vdi",
+            "VDI-3805-Daten/**/*.VDI",
+        };
 
         /// <summary>Alle Sicherungskopien in einer übergebenen Pfadliste (repo-relativ).</summary>
         private static List<string> FundeSicherungskopien(IEnumerable<string> dateien)

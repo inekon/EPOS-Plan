@@ -48,7 +48,40 @@ jobs:
     timeout-minutes: 60
 
     steps:
+      # OHNE "lfs: true" - siehe kern.yml (Auftrag #243, Anwenderentscheid AUF-Q2 vom
+      # 12.09.2026): seit #243 liegen 69 Dateien in Git LFS (Testdatenbank und die
+      # 68 VDI-3805-Archive, zusammen rund 165 MB). "lfs: true" zoege alles und ginge
+      # voll auf das LFS-Bandbreitenkontingent. Dieser Job braucht davon genau die
+      # SEED-Datenbank; die Herstellerarchive gehen in die iOS-App nicht ein.
       - uses: actions/checkout@v4
+
+      - name: LFS-Zwischenlager
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: lfs-testdb-${{ hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') }}
+
+      # Der Bau unten reicht die Datei als -p:SeedDb weiter, und der STRICT-Waechter
+      # weiter unten liest sie mit sqlite3. Ein liegengebliebener Zeiger von 130 Byte
+      # faellt dort erst als "file is not a database" auf - deshalb hier die Probe.
+      - name: Seed-Datenbank aus LFS
+        run: |
+          git lfs pull --include="${{ env.SEED }}" --exclude=""
+          groesse=$(wc -c < "${{ env.SEED }}" | tr -d ' ')
+          kopf=$(head -c 40 "${{ env.SEED }}")
+          case "$kopf" in
+            "version https://git-lfs"*)
+              echo "FEHLER: ${{ env.SEED }} ist ein Git-LFS-Zeiger ($groesse Byte) statt der Datenbank."
+              echo "Abhilfe: einmal je Rechner 'git lfs install', danach"
+              echo "         git lfs pull --include=${{ env.SEED }}"
+              exit 1
+              ;;
+          esac
+          if [ "$groesse" -lt 1000000 ]; then
+            echo "FEHLER: ${{ env.SEED }} ist mit $groesse Byte zu klein - der LFS-Abruf ist nicht durchgekommen."
+            exit 1
+          fi
+          echo "Seed-Datenbank aus LFS: $groesse Byte"
 
       # SDK-Fassung aus global.json (10.0.400), damit CI und Arbeitsplatz nicht
       # auseinanderlaufen. setup-dotnet legt es nach ~/.dotnet - damit braucht die
