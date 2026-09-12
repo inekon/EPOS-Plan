@@ -4288,6 +4288,42 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > Methoden. Der in 7.4 genannte Pfad `stromspeicher-optimierung.html` existierte nie, der Verweis ist berichtigt. **Gate sept55 auf
 > `a35b1022`** (#245-Merge; das Mockup kam danach hinzu und ändert nichts, was das Gate misst): Kern 2 743, UI 3 961, Engine 425, KiKern 488,
 > 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61 Bilder und 14 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#246/#247 (12.09.2026, Anwenderentscheid SD‑E‑10 zur Station „4 Optimierung": SD‑Q13 Empfehlung · SD‑Q14 „variierbar" · SD‑Q15 „die
+> Markierung einer Einheit ist nicht erforderlich, sie werden nur temporär für die Optimierung benötigt; ein Button ‚Einheiten in
+> Projekt übernehmen' für die ausgewählten Einheiten" · SD‑Q16 „nur Stückzahl variieren" · SD‑Q17/Q18 Empfehlung; „Größensuche
+> bleibt") — umgesetzt (Konzept `316152dd`; Engine `51166101`, Kern `d51c91d1`, Oberfläche `57baf809`, Doku `8e00629b`, Merge
+> `80e2788f`, Agent Opus; 37 Dateien, +4 564/−414).** Das Konzeptkapitel 8 ist auf die Entscheide umgeschrieben: Einheiten tragen keinen
+> Typ, je Einheitenkarte ein Schalter „variieren", die gewählte Methode bestimmt, WAS an den eingeschalteten Einheiten variiert —
+> **Größe suchen** (zwei der drei Größen nach Kopplung, Stückzahl fest auf dem Kartenwert, Feinraster erlaubt) oder **Stückzahl suchen**
+> (Stückzahl von–bis je Einheit, 0 = entfällt, Größe fest, Kandidaten = Π Stückzahlbereiche × Ziele, kein Feinraster, Kosten je Stück);
+> je Lauf EINE Variationsart, das Mischraster Stückzahl × Größe gibt es nicht mehr. Zwei Folgefragen entschied die Orchestrierung
+> (8.5): Übernahme je Stück EINE Projektanlage, Rückschreiben statt Dublette bei `AnlageId`. **Engine:** `FlottenAuslegungEingang.Suchmethode`
+> (Bewerten/Groesse/Stueckzahl, Vorgabe Groesse, damit ein Stand ohne Feld weiterrechnet — Bauart wie `Feinraster`), `Kandidatenzahl`,
+> `Achsengroesse`, `FeinrasterHoechstzahl`, `Feinrasterwerte`, `BildeAchse`, `BaueEinheiten` lesen sie; `FlottenSuchbefund` (keine
+> aktive Achse, Stückzahlbereich leer, Größenbereich unbrauchbar) als benannte Ablehnung VOR dem Bau der Achsen; Stückzahlen je Kandidat
+> in der Zusammenfassung; 12 Engine-Tests (266/4/1 Kandidaten am Konzeptbeispiel, zwei JSON-Rundläufe). **Kern:**
+> `SpeicherFlottenAnzeigeCtrl.Stueckzahl.cs` (Kurve „Kapitalwert über Stückzahl" mit Bestwertmarke und Schraffur, Rasterkarte n₁ × n₂
+> als dieselbe `Optimierungsraster`-Zeichnung mit ganzzahligen Achsen), `ChartRenderer.Stueckzahlkurve`, ChartProben 61 → **64 Bilder**
+> (+2) und **15 Gegenproben** (+1: die Bestwertmarke ändert das Bild); `SpeicherFlottenStudieCtrl.Uebernahme.cs` mit `Vorschau` und
+> `EinheitenInProjektUebernehmen` — je Stück eine Anlage über `Tab_Stromspeicher` UND `AnlagenSql.SQL_ANLAGE_INSERT` in EINEM
+> `DbVorgang`, Bezeichner im Vorgang eindeutig, acht Gerätewerte, Bezeichner bleibt beim Rückschreiben stehen; 16 Kern-Tests gegen eine
+> Kopie der Testdatenbank; KI-Maskenbrücke meldet „Suchmethode" (Katalogfelder 26 → 27). **Oberfläche:** `OptimierungBlock.razor` neu
+> nach 8.4 — Kopfblock zweispaltig (drei Optionen mit Erklärsatz, gedimmte Suchoption mit EINER Abhilfezeile und weicher Sperre
+> `Optionsgruppe.WeichGesperrt`; rechts Ziel, Kandidatenzeile live, Feinraster nur bei G, Rechenknopf), Suchraum als eine Karte je
+> Einheit (Kopf Name · Kenndaten · „variieren", Rumpf je Methode im `Formularraster` mit eigener Beschriftung je Feld statt der
+> Mockup-Kompaktzeile — iU8‑E‑2, Fußzeile „Kandidaten dieser Einheit", nicht eingeschaltet gedimmt „fest: …"), die Neun-Spalten-Tabelle
+> ist gefallen; „Bestes Ergebnis" nennt unter S die Bestückung; `SpeicherFlottenGroessenAnsicht.Methode` zeigt unter S Stückzahlkurve
+> bzw. n₁ × n₂-Karte, Rasterkarte/Schnitte/Schieber entstehen dann nicht; „Kandidat übernehmen" setzt unter S `AnzahlVon = AnzahlBis`;
+> Schritt 1 mit Auswahlkästchen je Karte und Knopf „Ausgewählte Einheiten in Projekt übernehmen" (Rückfrage mit den zwei Zahlen aus
+> `Vorschau`, Lesemodus als Delegat `Schreibgeschuetzt` aus der Hülle — Hausregel S‑2); 37 Ressourcen de/en; UI-Tests 3 961 → **3 973**.
+> Acht begründete Abweichungen in Konzept 8.8. Mockup v2 auf den Entscheid nachgezogen (Herkunftspille weg). **Wiki:** Bedienungsseite
+> Revision 565 (Schritt 1 Übernahme, Schritt 4 drei Suchmethoden, Karte je Einheit), Rechenwegseite Fassung 7 Revision 566
+> (Tabelle der drei Methoden mit Kandidatenzahl, Kostenregel je Stück, die drei Ablehnungen); drei Fassungs-Erwartungswerte der
+> H13-Wächter nachgezogen. Der Projektlauf ist nicht berührt (`SpeicherFlottenProjektCtrl` setzt `FlottenGroessenOptimieren` weiter auf
+> `false`), Referenzbasis R7 und Einfrierregel SP‑O‑8 bleiben. **Gate sept56 auf `80e2788f`:** Kern 2 759, UI 3 973, Engine 437,
+> KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf
+> grün. Windows-Abnahme der Station 4 und des Übernahmeknopfs beim Anwender offen.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
