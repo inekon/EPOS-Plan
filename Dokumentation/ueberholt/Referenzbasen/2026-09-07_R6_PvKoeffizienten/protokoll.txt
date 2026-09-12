@@ -1,0 +1,317 @@
+﻿# Referenzlauf (Kern) vom 07.09.2026 20:30
+
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-07_R6_PvKoeffizienten
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045
+Dauer:         00:00:04
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2
+Zielordner:    Referenzlaeufe/2026-09-07_R6_PvKoeffizienten
+
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2/Referenzlaeufe/Kenndaten_Test.sqlite
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (66 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/agent-a070abbde35d98af2/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+24 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (12):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 29 CSV-Dateien, 99 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 21 CSV-Dateien, 101 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: 21 CSV-Dateien, 124 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 22 CSV-Dateien, 151 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 25 CSV-Dateien, 141 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 26 CSV-Dateien, 167 Skalare.
+  OK - 26 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 160 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 25 CSV-Dateien, 154 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 27 CSV-Dateien, 155 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 34 CSV-Dateien, 202 Skalare.
+  OK - 34 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+
+Fertig. Gesamtdauer 00:00:04
+Erfolgreich: 12 von 12
+```
+
+
+## Anlass: W6-B-5 mit den Entscheiden Q1 bis Q3 (Schemaschritt 69)
+
+Drei Anwenderentscheide vom 07.09.2026, alle "Empfehlung":
+
+  W6-B-5-Q1   Die verdorbenen PV-Modulkoeffizienten werden AUS DER CEC-LISTE
+              repariert, nicht bloss auf leer gesetzt.
+  W6-B-5-Q2   Die Projektkopien Tab_PV werden mitrepariert.
+  W6-B-5-Q3   Weichen Ergebnisse ab, wird die Basis neu eingefroren und der
+              Wechsel hier begruendet.
+
+Der Befund dahinter ist Paket-A-Befund A1 des
+Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md (N3.3): Der alte Katalogeditor
+Form_AdminPV schrieb alpha_SC, beta_OC und T_NOCT beim Speichern mit 0 zurueck,
+und ein aelterer Schreibweg hatte dieselben drei Spalten mit dem Wert von
+I_Kurzschluss gefuellt. Der SCHREIBWEG ist seit Schemastand 62 repariert, die
+DATEN waren es nie - N3.3 schrieb dazu "sie brauchen Neuimport oder Handpflege".
+Der Migrationsschritt 69 ist diese Handpflege, als Programm.
+
+
+## Was der Schritt an Kenndaten_Test.sqlite geaendert hat
+
+Tab_PV_STAMM (6 Saetze, davon 4 verdorben):
+
+    ID  Bezeichner                              vorher                        nachher
+     5  Ablytek 6MN6A270                        0 / 0 / -0,4509 / 0           0,00486614 / -0,121182 / -0,4509 / 47,4
+     6  Ablytek 6MN6A275                        9,42 / 9,42 / -0,4509 / 9,42  0,00490782 / -0,122249 / -0,4509 / 47,4
+     7  Ablytek 6MN6A290                        9,67 / 9,67 / -0,4509 / 9,67  0,00503807 / -0,125449 / -0,4509 / 47,4
+     8  Jinkosolar JKM 260P-60                  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+     9  LG Electronics LG 320 N1K-A5            NULL / NULL / -0,394 / NULL   unveraendert
+    21  Philadelphia Solar PS-M144(HCBF)-530W   0,00272 / -0,128904 /         unveraendert
+                                                -0,385 / 45,3
+
+Tab_PV (9 Saetze, davon 7 verdorben):
+
+    ID        Projekt  Bezeichner              vorher                        nachher
+    1007005   1007     Ablytek 6MN6A270        9,34 / 9,34 / -0,4509 / 9,34  0,00486614 / -0,121182 / -0,4509 / 47,4
+    1007006   1007     Ablytek 6MN6A275        9,42 / 9,42 / -0,4509 / 9,42  0,00490782 / -0,122249 / -0,4509 / 47,4
+    1011008   1011     Jinkosolar JKM 260P-60  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+    1015244   1026     Jinkosolar JKM 260P-60  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+    1015245   1028     Jinkosolar JKM 260P-60  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+    1015246   1029     Jinkosolar JKM 260P-60  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+    1015247   1040     Jinkosolar JKM 260P-60  9,014 / 9,014 / 0 / 9,014     NULL / NULL / NULL / NULL
+    1015248   1045     Ablytek 6MN6A275        0,0047 / -0,118 /             unveraendert
+                                               -0,4509 / 45,0
+    1015249   1045     Ablytek 6MN6A290        0,0048 / -0,128 /             unveraendert
+                                               -0,4509 / 45,0
+
+(Spaltenfolge jeweils alpha_SC / beta_OC / gamma_PMP / T_NOCT.)
+
+Die drei Ablytek-Module und das Philadelphia-Modul stehen namensgleich in der
+ausgelieferten Liste VDI-3805-Daten/PV/CEC Modules.csv und werden aus ihr
+repariert. "Jinkosolar JKM 260P-60" und "LG Electronics LG 320 N1K-A5" stehen
+NICHT darin - die Liste fuehrt zwar aehnlich benannte Schwesterzeilen ("Jinko
+Solar Co, Ltd JKM260P-60" mit I_sc 8,98 statt 9,014, "LG Electronics Inc,
+LG320N1K-A5" mit 10,19 statt 10,35), aber das ist ein anderes Pruefprotokoll und
+damit ein anderes Modul. Ihre verdorbenen Werte werden deshalb LEER; der Schritt
+raet nicht. Genau diese Zuordnung hatte schon der Handlauf
+sql/pv_katalog/reparatur_pv_katalog.sql ausdruecklich auskommentiert gelassen.
+
+Schemastand der Datei 68 -> 69, STRICT-Tabellen unveraendert 117 (der Schritt
+legt keine Tabelle und keine Spalte an - er ist reines DML).
+
+
+## Unterschied zur Vorgaengerbasis 2026-09-07_R5_Zahlenrand
+
+ELF der zwoelf Projekte sind BYTE-GLEICH. Nur Projekt 1007 weicht ab, und dort
+nur die acht Dateien der PV-Kette:
+
+    Projekt   Dateien   Werte     ueber Toleranz
+    1007      29        324 219   19 198
+    alle uebrigen                 0  (byte-gleich, diff -rq ohne Unterschied)
+
+Die acht Dateien: aggregate.csv, pv_produktion.csv,
+pv_produktion_theoretisch.csv, pv_reststrom.csv, pv_speicherfuellstand.csv,
+pv_ueberschuss.csv, reststrom_viertelstunde.csv und
+ssp_gespeichert_viertelstunde.csv. Die 21 uebrigen Dateien des Projekts - Waerme,
+Waermepumpe, Kessel, Solarthermie, Puffer - sind byte-gleich.
+
+Die vierzehn geaenderten Skalare des Projekts 1007:
+
+    Groesse                                        R5            R6      rel.
+    Sim.Reststrom                          50,5102403    50,5386766   +5,63e-4
+    Energiebedarf.Stromrestbedarf               50,51         50,54    +5,94e-4
+    Photovoltaik.Reststrombedarf                50,51         50,54    +5,94e-4
+    Photovoltaik.Stromproduktion                 5,15          5,13    -3,88e-3
+    Photovoltaik.Strombedarfsdeckung             9,16          9,12    -4,37e-3
+    Photovoltaik.Ueberschuss                     0,32          0,31    -3,13e-2
+    PhotovoltaikModul[0].Stromproduktion         6,06          6,01    -8,25e-3
+    Vektor.reststrom_viertelstunde.Summe   202 040,961   202 154,706  +5,63e-4
+    Vektor.pv_produktion.Summe              5 148,297     5 126,662   -4,20e-3
+    Vektor.pv_produktion_theoretisch.Summe  6 055,971     6 014,289   -6,88e-3
+    Vektor.pv_ueberschuss.Summe               907,674       887,627   -2,21e-2
+    Vektor.pv_reststrom.Summe              51 046,879    51 068,514   +4,24e-4
+    Vektor.ssp_gespeichert_viertelstunde.S 55 796,122    55 516,474   -5,01e-3
+    Vektor.pv_speicherfuellstand.Summe     13 949,031    13 879,119   -5,01e-3
+
+Kein Schluessel ist neu, keiner entfallen: 1 792 Skalare wie in R5.
+
+Die groesste RELATIVE Abweichung auf einem einzelnen Vektorwert steht in
+reststrom_viertelstunde[16212] (0,1208 -> 1,3970 kW). Das ist keine grosse
+Energiemenge, sondern eine kleine Zahl in einem Viertelstundenrest: Faellt die
+PV-Erzeugung einer Stunde um ein Prozent, springt der verbleibende Netzbezug
+dieser Viertelstunde von "fast null" auf "etwas mehr als null". Die Jahressumme
+derselben Reihe verschiebt sich um +5,63e-4.
+
+
+## Die Ursache: T_NOCT, und NICHTS SONST
+
+Von den vier reparierten Spalten liest der Rechenweg genau eine:
+
+  alpha_SC, beta_OC   werden von KEINEM Rechenweg gelesen. Sie gehen in die
+                      Strangplausibilitaet (StrangPlausibilitaet, die Ampel des
+                      PV-Dialogs) und in die Importpruefung - beides Anzeigen.
+  gamma_PMP           geht in beide PV-Modelle, wurde hier aber nur dort
+                      geaendert, wo es 0 war (Jinkosolar) - und 0 wird NULL, was
+                      der Leseweg PhotovoltaikCtrl wieder als 0 liest. Rechnerisch
+                      unveraendert.
+  T_NOCT              geht in beide PV-Modelle: In EINFACH ueber
+                      BerechnePV(..., tNoct), in ERWEITERT ueber dieselbe
+                      Zelltemperaturformel T_Zelle = T_amb + (G/800)*(NOCT-20).
+
+SimulationPV.NoctDesModuls faengt einen Katalogwert ausserhalb des Fensters
+20...60 Grad C ab und rechnet mit dem Rueckfall 45 Grad C (Stufe E1.2). Genau das
+war bisher der Fall: 1007005 fuehrte T_NOCT = 9,34 (der Kurzschlussstrom), also
+ausserhalb des Fensters. Nach dem Schritt steht dort der Listenwert 47,4.
+
+    NOCT 45,0 -> 47,4 Grad C  =>  (NOCT-20)/800: 0,031250 -> 0,034250
+    bei G = 800 W/m2: Zelltemperatur +2,4 K
+    gamma_PMP = -0,4509 %/K   =>  -1,08 % Leistung in der vollen Sonne
+
+Ueber das Jahr, gewichtet mit der Einstrahlung, bleiben davon -0,69 % der
+theoretischen Erzeugung (6 055,97 -> 6 014,29 kWh). Das ist die gemessene Zahl,
+und sie passt zur Rechnung: Die meisten Stunden liegen weit unter 800 W/m2, und
+dort ist der Temperaturzuschlag entsprechend kleiner.
+
+Die zwei anderen Projekte mit PV in der Referenzmenge bleiben aus je eigenem
+Grund unberuehrt:
+
+  1040  fuehrt das Jinkosolar-Modul. Sein T_NOCT war 9,014 (ausserhalb des
+        Fensters, Rueckfall 45) und ist jetzt NULL - PhotovoltaikCtrl liest NULL
+        als 0, und 0 liegt ebenfalls ausserhalb des Fensters. Derselbe Rueckfall
+        45 Grad C vorher wie nachher: byte-gleich.
+  1045  fuehrt die zwei von Hand gepflegten Zeilen aus W6-O-7 (T_NOCT 45,0,
+        alpha 0,0047 / 0,0048, beta -0,118 / -0,128). Sie sind GESUND und werden
+        vom Schritt nicht angefasst: byte-gleich.
+
+Die uebrigen neun Projekte haben keine PV-Anlage.
+
+
+### Der Gegenbeweis: T_NOCT zurueck auf 45,0
+
+Auf einer Kopie der reparierten Testdatenbank wurde in Tab_PV nur T_NOCT der
+zwei Zeilen 1007005 und 1007006 wieder auf 45,0 gesetzt - den Wert, mit dem der
+Rueckfall bisher rechnete. alpha_SC, beta_OC und gamma_PMP blieben auf ihren
+REPARIERTEN Werten stehen. Ergebnis des Laufs fuer Projekt 1007:
+
+    diff -rq Referenzlaeufe/2026-09-07_R5_Zahlenrand/Projekt_1007 <gegenprobe>
+    -> kein Unterschied, 29 von 29 Dateien BYTE-GLEICH
+
+Damit ist zweierlei belegt: Die Abweichung dieser Basis kommt AUSSCHLIESSLICH aus
+T_NOCT, und die reparierten alpha_SC/beta_OC/gamma_PMP aendern am Rechenergebnis
+NICHTS. Der Rechenweg selbst ist unangetastet - kein Simulations-, Strang- oder
+Rechenrandmodul wurde fuer diese Basis geaendert.
+
+
+### Welcher Stand richtig ist: der neue
+
+Der Katalogwert 47,4 Grad C stammt aus derselben CEC-Zeile, aus der auch I_sc,
+V_oc, I_mp, V_mp, Laenge und Breite des Moduls stammen - die Zuordnung ist ueber
+diese sechs Kennwerte belegt. Der bisherige Stand rechnete nicht mit einem
+anderen Messwert, sondern mit einem RUECKFALL, weil im Katalog ein
+Kurzschlussstrom in der Spalte der Nennbetriebstemperatur stand. Ein Modul mit
+NOCT 47,4 Grad C wird in der Sonne waermer als eines mit 45, und ein waermeres
+Modul liefert weniger. Der neue Stand ist der gemessene.
+
+
+## Determinismus
+
+Zweiter Lauf desselben Standes: 12/12 BYTE-GLEICH (diff -rq ohne einen einzigen
+Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 072 Werte). Der
+Schritt selbst ist ebenfalls wiederholbar: Ein zweiter Lauf des Werkzeugs
+Testdatenbankschema meldet "verdorbene Saetze vorher 0" in beiden Tabellen und
+aendert keine Zeile.
+
+
+## Laufzeit
+
+Gesamtdauer 00:00:04 - wie der R5-Stand auf demselben Laeufer.

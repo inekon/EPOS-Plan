@@ -1,0 +1,202 @@
+﻿# Referenzlauf (Kern) vom 07.09.2026 11:13
+
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-07_R4_Double
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045
+Dauer:         00:00:03
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134
+Zielordner:    Referenzlaeufe/2026-09-07_R4_Double
+
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134/Referenzlaeufe/Kenndaten_Test.sqlite
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (66 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/agent-a7362c7b9de2ff134/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+24 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (12):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 29 CSV-Dateien, 99 Skalare.
+  OK - 29 Dateien in 00:00
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 21 CSV-Dateien, 101 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: 21 CSV-Dateien, 114 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 22 CSV-Dateien, 141 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 25 CSV-Dateien, 136 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 26 CSV-Dateien, 157 Skalare.
+  OK - 26 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 150 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 25 CSV-Dateien, 149 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 164 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 27 CSV-Dateien, 150 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 34 CSV-Dateien, 197 Skalare.
+  OK - 34 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 30 CSV-Dateien, 164 Skalare.
+  OK - 30 Dateien in 00:00
+
+Fertig. Gesamtdauer 00:00:03
+Erfolgreich: 12 von 12
+```
+
+
+## Anlass: W8-O-5d — der Rechenkern rechnet in double
+
+Anwenderentscheid vom 07.09.2026: "alles in double, ist kein Nachteil und systematisch.
+Summenfunktionen aus Original BHKW-Plan ebenfalls double." Damit fallen die 59 Stundenreihen,
+alle Akkumulatoren und die Summenfunktionen des BHKW-Plan-Ports (VectorSumme, MonatsSumme und
+die uebrigen dreizehn) von float auf double; die bewusste Nachbildung des FPU-Verhaltens der
+alten BHKWPLAN.DLL (Zwischenwert in double, Ergebnis auf float zurueckgeschrieben) ist
+aufgegeben. Codestand: der Zweig w135-double auf ios_migration (76fafe5), Commit 6272845.
+
+## Unterschied zur Vorgaengerbasis 2026-09-06_R3_Straenge
+
+Toleranz iF15 (rel 1e-4 / abs 0,01), gemessen mit `EPOS.Referenzlauf vergleich`:
+
+| Projekt | Werte | Abw. ueber Toleranz | groesste rel. | groesste abs. |
+|---|---|---|---|---|
+| 1007 | 324 219 |    306 | 2,57e-01 (Waermepumpe.Bivalenzpunkt 18,11 -> 24,36 degC) |    76,5 |
+| 1008 | 227 861 |  1 287 | 9,49e-01 (puffer_entladung[952] 0,348 -> 6,877 kWh)      |    35,0 |
+| 1017 | 254 154 |     36 | 1,08e-04 (waermebedarf_gebaeude[2371] 527,095 -> 527,038) |   0,063 |
+| 1018 | 236 661 |  9 619 | 1,00e+00 (kessel_restwaerme[2169] 9,375 -> 0 kWh)        | 18 770 |
+| 1023 | 262 936 |    928 | 1,00e+00 (puffer_soc[6147] 7,525 -> 0 kWh)               |   620,6 |
+| 1024 | 271 717 | 27 899 | 1,00e+00 (bhkw_waerme[7337] 0 -> 8,874 kWh)              | 70 251 |
+| 1030 | 236 670 |      0 | 4,92e-05 (BHKWModul[1].VbhThermisch)                     | 4,5e-07 |
+| 1039 | 262 949 |  1 574 | 1,00e+00 (puffer_soc[1084] 0 -> 26,919 kWh)              |   712,1 |
+| 1040 | 306 764 |    334 | 4,65e-02 (kessel_leistung[509] 0,8216 -> 0,7834 kWh)     |   129,9 |
+| 1041 | 280 470 |    285 | 3,94e-03 (waermebedarf_gebaeude[525] 30 998 -> 30 876 W) |   129,9 |
+| 1042 | 341 837 |    339 | 1,00e+00 (kessel_restwaerme[7969] 0 -> 0,612 kWh)        |    400 |
+| 1045 | 306 764 |    334 | 4,65e-02 (kessel_leistung[509] 0,8216 -> 0,7834 kWh)     |   129,9 |
+
+Ein Projekt (1030) ist auch unter der alten Basis PASS; die elf uebrigen reissen die Toleranz.
+Das ist ein BEFUND, keine Rundungsstreuung, und er ist erklaerbar:
+
+1. DIE EINGANGSGROESSE AENDERT SICH NUR IM LETZTEN float-BIT. Die Jahressumme des
+   Waermebedarfs bleibt in allen zwoelf Projekten innerhalb 3e-5 relativ (groesste
+   Abweichung 1007: -1,98e-05), die erste Differenz einer Stundenreihe liegt bei rund
+   1e-7 relativ - genau eine float-Stufe. Beispiel 1024, Stunde 0: 72,6195374 (float)
+   gegen 72,6195311 (double).
+
+2. DAS MODELL VERSTAERKT SIE AN DREI SCHWELLEN.
+   a) `SimulationPufferspeicher.HystereseFortschreiben` vergleicht `SOC >= Q_max *
+      SchwelleAus`. Die Ladung fuellt den Speicher ueber `Ladefaehigkeit` auf genau
+      `Q_max * grenze`; in Gleitkomma ist `a + (b - a)` nicht bitgleich `b`, der Vergleich
+      entscheidet also am letzten Bit. Er ist bistabil (Hysterese) und traegt das Ergebnis
+      ueber Stunden weiter. Das ist die Ursache in 1008, 1018, 1023, 1039 und 1042.
+   b) `SimulationBHKW.Motorlauf_Waermegefuehrt` vergleicht `bhkwWaermeLeistung[motor] <
+      restWaerme + restSpeicher` (Volllast gegen Modulation). Ein Kippen dieser Bedingung
+      aendert die Stundenproduktion sprunghaft - in 1024 ab Stunde 312 (41,83 -> 46,00 kWh).
+   c) `BhkwPlan.TaeglHeizlastWG`, `SolareGewinneC` und `SpezWaermeverlusteC` geben `int`
+      zurueck (Borland `_ftol`, Abschneiden). Eine Stelle hinter dem Komma entscheidet
+      ueber eine ganze Einheit; in 1041 verschiebt das die Tagesheizlast eines Januartags
+      um 0,39 % (waermebedarf_gebaeude 30 998 -> 30 876 W ueber den ganzen Tag).
+
+3. DIE ENERGIE BLEIBT ERHALTEN. Projekt 1018 zeigt es am schaerfsten: Waermebedarf,
+   BHKW-Waerme, Kesselleistung, Puffer-SOC und Verluste sind identisch (7 bis 8 Stellen);
+   verschoben hat sich allein die Aufteilung des Puffers zwischen Umsatz und Durchfluss -
+   Ladung_gesamt 15 465,56 + Durchsatz_Geladen 32 571,87 = 48 037,43 vorher wie nachher.
+   In 1024 verschiebt sich dagegen die Fahrweise wirklich: BHKW +11,2 %, Waermepumpe
+   -14,4 %, Kessel -10,8 % bei unveraendertem Gesamtbedarf (389 729,72 -> 389 729,71 kWh).
+   Das Projekt fuehrt WP, Kessel UND BHKW an einem Puffer und sitzt damit auf der Kante
+   zwischen zwei gleichwertigen Fahrweisen.
+
+Welcher Stand richtig ist: der NEUE. Die Entscheidungen fallen in beiden Faellen am letzten
+Bit; der neue Lauf trifft sie auf ungerundeten Eingangswerten. Ein Beleg dafuer steht in
+`EPOS.Kern.Tests/BedarfVerwaltungTests`: die Brauchwasser-Jahressumme trifft die Katalogmenge
+jetzt exakt (742,9000 statt 742,9008 kWh bei 0,7429 MWh Katalogwert).
+
+## Determinismus
+
+Zweiter Lauf desselben Standes gegen diese Basis: 12/12 byte-gleich (`diff -rq` ohne einen
+einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 002 Werte).
+
+## Laufzeit
+
+Gesamtdauer 00:00:03 (R3-Stand auf demselben Laeufer: 00:00:04). double ist nicht langsamer.

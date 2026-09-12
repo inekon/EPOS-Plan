@@ -215,21 +215,31 @@ nur, wenn die Flotte gerechnet hat. Herleitung, Wahl des Peak-Ziels und die drei
 stehen im `protokoll.txt` der Basis; das Projekt entsteht wiederholbar aus
 `Referenzlaeufe/Skripte/pruefprojekt_1046_speicherflotte.py`.
 Die Vorgängerbasis `2026-09-07_R6_PvKoeffizienten` (zwölf Projekte, 312 CSV, 1 792 Skalare)
-liegt seit dem 11.09.2026 (Anwenderentscheid SYNC‑Q1) nicht mehr im Arbeitsbaum, sondern nur noch
-in der Git-Geschichte (Stand `1e71d30`) — sie entstand nach dem
-Befund **W6‑B‑5** mit den Entscheiden
+liegt seit dem 11.09.2026 (Anwenderentscheid SYNC‑Q1) nicht mehr im Arbeitsbaum und seit dem
+12.09.2026 (Anwenderentscheid **AUF‑Q1**, Auftrag #244) auch nicht mehr in der Git-Geschichte —
+sie entstand nach dem Befund **W6‑B‑5** mit den Entscheiden
 **Q1–Q3**: Schemaschritt 69 repariert die verdorbenen PV-Modulkoeffizienten aus der CEC-Liste.
 **Elf der zwölf Projekte waren byte-gleich zu IHRER Vorgängerbasis; nur 1007 wich ab**, und dort
 nur in den acht Dateien der PV-Kette — die Ursache ist genau eine Spalte: `T_NOCT` springt vom
 Rückfall 45 °C auf den Katalogwert 47,4 °C, das sind −0,69 % theoretische PV-Erzeugung. Der
 Gegenbeweis (allein `T_NOCT` zurück auf 45 → 29 von 29 Dateien byte-gleich zu R5) steht im
-`protokoll.txt` der Basis, abrufbar mit
-`git show 1e71d30:Referenzlaeufe/2026-09-07_R6_PvKoeffizienten/protokoll.txt`. Die Vorgängerbasis
-`2026-09-07_R5_Zahlenrand` liegt ebenso seit dem 11.09.2026 (SYNC‑Q1) nur noch in der
-Git-Geschichte (Stand `1e71d30`) — sie entstand nach den drei
-Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis, abrufbar mit
-`git show 1e71d30:Referenzlaeufe/2026-09-07_R5_Zahlenrand/protokoll.txt`. Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") liegt ebenso seit dem 11.09.2026 (SYNC‑Q1) nur noch in der Git-Geschichte (Stand `1e71d30`), ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen; die CI rechnet bei
+`protokoll.txt` der Basis — byte-gleich gesichert unter
+[`Dokumentation/ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt`](Dokumentation/ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt).
+Die Vorgängerbasis
+`2026-09-07_R5_Zahlenrand` liegt ebenso seit dem 11.09.2026 (SYNC‑Q1) nicht mehr im Arbeitsbaum
+und seit AUF‑Q1 auch nicht mehr in der Git-Geschichte — sie entstand nach den drei
+Anwenderentscheiden **W8‑O‑5d‑Q1** (Zahlenrand), **W8‑O‑5d‑Q2** („keine Treue zur alten DLL") und **Em‑9.8** (zehn Emissionsskalare). **Elf der zwölf Projekte wichen damals gewollt von IHRER Vorgängerbasis R4 ab, und die Ursache war Q2:** Die drei Physik-Funktionen des BHKW-Plan-Ports schnitten ihre Ergebnisse auf ganze Zahlen ab — der spezifische Wärmeverlustkoeffizient landete dadurch auf ganzen W/K (194,5722 → 194 im Projekt 1007) und die Tagesheizlast auf ganzen Wattstunden. Ohne das Raster verschiebt sich die Jahressumme des Gebäudewärmebedarfs um −0,12 % … +0,44 %, an einzelnen milden Tagen um bis zu 13 %; die Zahlen und der Gegenbeweis (Projekt **1030** ohne Gebäudebedarf ist byte-gleich zu R4) stehen im `protokoll.txt` der Basis — byte-gleich gesichert unter
+[`Dokumentation/ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt`](Dokumentation/ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt). Q1 gibt den zwei Schwellen, die vorher am letzten Bit entschieden — die Speicherhysterese `SOC >= Q_max · SchwelleAus` und die Volllast/Modulations-Grenze des BHKW —, einen benannten Zahlenrand (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`). Die Vorgängerbasis `2026-09-07_R4_Double` (Entscheid **W8‑O‑5d**, „alles in double") ist ebenso seit dem 11.09.2026 (SYNC‑Q1) aus dem Arbeitsbaum und seit AUF‑Q1 aus der Git-Geschichte, ebenso `2026-09-06_R3_Straenge`, `2026-09-05_R2_Zeitbasis` und `2026-08-30_B3-Kaskade`, deren Projekte 1011 und 1021 nicht in der Testdatenbank stehen; die CI rechnet bei
 jedem Push die Projekte 1030, 1007, 1017, 1045 **und 1046** gegen die aktuelle Basis.
+
+**Die 24 entfernten Basen sind endgültig weg — ihre Protokolle nicht.** Mit dem
+Anwenderentscheid **AUF‑Q1** vom 12.09.2026 („ausführen") ist die Git-Geschichte umgeschrieben
+worden; die rund 7 700 CSV-Dateien der Basen (1 016,7 MB) gibt es weder im Arbeitsbaum noch in
+der Geschichte, ein Vergleich gegen eine von ihnen ist nicht mehr möglich. **Vorher gesichert**
+wurde je Basis ihr Protokoll — byte-gleich, 25 Dateien, 603 913 Byte, unter
+[`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
+Dort steht die Herleitung jeder Basiswahl; gerechnet wird ausschließlich gegen
+`2026-09-11_R7_Speicherflotte`.
 
 **Die Basis führt seit dem Anwenderentscheid Em‑9.8 (07.09.2026) auch zehn
 Emissionsskalare** je Projekt mit Kessel- bzw. BHKW-Stufe (`Em.Kessel.Co2T` in t/a,
@@ -388,12 +398,25 @@ Erster Durchgang: Auftrag #242 (12.09.2026) entfernte `.work/`, die Access-Siche
 `DB-Backup/`, vier `.bak`-Kopien, den SQLite-Spike `sqlite-probe/`, vier Lizenzserver-Originale
 und das Berichtsgerüst-Archiv.
 
+**Die Git-Geschichte ist am 12.09.2026 umgeschrieben worden** (Anwenderentscheid **AUF‑Q1**:
+„ausführen", Auftrag #244, Stufe 4 des Aufräumkonzepts): Die 24 historischen Referenzbasen,
+`.work/`, `DB-Backup/` und alle älteren Fassungen der Testdatenbank und der VDI-Archive sind
+aus jedem Commit entfernt; die Protokolle der Basen sind vorher nach
+[`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md)
+gesichert worden, die Messdaten sind endgültig weg. **Damit hat jeder Commit eine neue
+Kennung** — eine Kennung aus einem Dokument von vor dem 12.09.2026 ist eine ALTE Kennung und
+wird über die Karte `Dokumentation/ueberholt/Geschichte/commit-map_2026-09-12.txt` übersetzt.
+**Jeder Rechner klont neu**; aus einem alten Klon wird nie wieder gepusht, schon gar nicht mit
+Force — sonst kommt die alte Geschichte zurück. Verfahren und Folgen im Einzelnen stehen im
+Aufräumkonzept, Abschnitt „Stufe 4".
+
 **Git LFS (Anwenderentscheid AUF‑Q2 vom 12.09.2026, Auftrag #243).** Vier Muster der
 `.gitattributes` liegen seit #243 in Git LFS: `Referenzlaeufe/Kenndaten_Test.sqlite` und
 `VDI-3805-Daten/**/*.zip|*.vdi|*.VDI` — 69 Dateien, rund 165 MB; die vier Access-Zeilen sind
 dafür gefallen. **Die Testdatenbank darf nur mit aktivem LFS-Filter committet werden** — wer
 `git lfs install` auf seinem Rechner nie gefahren hat, legt wieder einen 68-MB-Blob in die
-Geschichte, und die wird nicht umgeschrieben (AUF‑Q1 offen). Die Workflows checken **ohne**
+Geschichte — und die ist mit AUF‑Q1 am 12.09.2026 EINMAL umgeschrieben worden, ein zweites Mal
+wird sie es nicht. Die Workflows checken **ohne**
 `lfs: true` aus und ziehen gezielt: `kern.yml`, `windows.yml`/`build-test` und `ios.yml` nur
 die Testdatenbank (mit Actions-Cache auf `.git/lfs`), allein `windows.yml`/`installer`
 vollständig, weil das Setup `VDI-3805-Daten\*` mit einpackt. Einrichtung, Bandbreitenregel und
@@ -407,7 +430,10 @@ Beim Verdichten des Gesprächs (`/compact` wie automatische Verdichtung) bleibt 
 
 - **Auftrag und Stand**: der Arbeitsauftrag im Wortlaut, der Zweig, der zuletzt zusammengeführte
   und der zuletzt gepushte Commit (SHA), die laufende Welle bzw. der laufende Schritt und was
-  davon noch offen ist.
+  davon noch offen ist. **Achtung bei Commit-Kennungen:** Die Git-Geschichte ist am 12.09.2026
+  umgeschrieben worden (AUF‑Q1, #244) — jede Kennung in einem Statusblock, Protokoll oder
+  Konzept von VOR diesem Tag ist eine ALTE Kennung und trifft im heutigen Repository nichts;
+  übersetzt wird sie über `Dokumentation/ueberholt/Geschichte/commit-map_2026-09-12.txt`.
 - **Laufende Arbeiten**: Kennungen und Worktree-Pfade laufender Agenten samt Auftrag, armierte
   Check-ins (Trigger-Kennung, Uhrzeit), laufende CI- und iOS-Läufe (Run-Kennung, Commit).
 - **Entscheide des Anwenders**: jeder in der Sitzung getroffene Entscheid mit Kennung

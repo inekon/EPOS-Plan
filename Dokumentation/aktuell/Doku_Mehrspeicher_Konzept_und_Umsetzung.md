@@ -718,8 +718,10 @@ Blätter.
 | gesamtes `EPOS.Kern.Tests` | 2.400/2.400 bestanden | `.work/flotte_kern_abnahme.log` |
 
 Die vier `.work/*.log` waren nie versioniert und sind seither ohnehin lokale Läufe; der
-Arbeitsordner `.work/` selbst ist mit #242 aus dem Repository entfernt (nicht mehr im
-Repository; Stand 4c3b5210 in der Git-Geschichte).
+Arbeitsordner `.work/` selbst ist mit #242 aus dem Repository entfernt — und seit dem
+Anwenderentscheid **AUF‑Q1** vom 12.09.2026 (#244, Umschreiben der Git-Geschichte) auch nicht
+mehr in der Geschichte abrufbar. Was von der Prüfung bleibt, steht im
+[Prüfbericht der realen Projektintegration](../ueberholt/Bericht_Stromspeicher_Optimierung.md).
 
 Die alten, datierten Gesamtzahlen bleiben unverändert im [Prüfnachweis Version 1.2](../ueberholt/Doku_Speicherauslegung_Pruefnachweis.md).
 
