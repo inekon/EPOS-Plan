@@ -656,34 +656,47 @@ public class KataloglisteTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Das Zeilenmaß der Virtualisierung ist GERECHNET, nicht geraten</b> (Befund
-    /// <b>#212</b>). <c>Virtualize</c> teilt die Höhe des Rollbehälters durch dieses Maß,
-    /// um zu wissen, wie viele Zeilen sichtbar sind; liegt es unter der Wahrheit, stimmen
-    /// die Abstandshalter nicht mit dem Gezeichneten überein, und jede
-    /// Sichtbarkeitsmeldung stellt die Datenanforderung neu an.
+    /// <b>Das Zeilenmaß der Virtualisierung wird GESETZT, nicht gerechnet</b> (Befund
+    /// <b>#235</b>, 12.09.2026 im Browser gemessen — der Restfall zu <b>#212</b>).
     ///
-    /// <para>Die Zahl kommt aus dem STILBLATT: 44 px Berührungsziel des Wahlknopfs
+    /// <para><b>Was hier vorher stand und warum es falsch war.</b> Die Wache zu #212
+    /// rechnete das Maß aus dem Hausstilblatt nach: 44 px Berührungsziel
     /// (<c>--epos-touchziel</c>) + 2 × 4 px Zellenpolsterung (<c>.epos-raster td</c>)
-    /// + 1 px Trennlinie. Eine bunit-Probe misst keine Pixel (Lehre W6‑B‑1) — geprüft
-    /// wird deshalb die RECHNUNG gegen die drei Werte im Blatt.</para>
+    /// + 1 px Trennlinie = 53. Die Polsterung kommt aber gar nicht von dort: QuickGrid
+    /// setzt sie selbst (<c>.quickgrid[theme=default] &gt; tbody &gt; tr &gt; td</c>,
+    /// Spezifität 0‑2‑3 gegen 0‑1‑1) auf 0,1rem = 1,6 px. Die echte Zeile war
+    /// <b>48,2 px</b> hoch. Die Rechnung stimmte also nie — bunit hat keinen
+    /// Kaskadenrechner und konnte es nicht merken.</para>
+    ///
+    /// <para><b>Seit #235 ist die Zahl eine Ansage.</b> Sie geht als <c>ItemSize</c> an
+    /// <c>Virtualize</c> UND als <c>--epos-rasterzeile</c> ins Stilblatt, das sie jeder
+    /// Zeile des virtualisierten Rasters gibt (<c>RasterTests</c> hält die Regel). Hier
+    /// wird geprüft, was diese Liste beiträgt: Sie reicht Raster das eine Maß, und es
+    /// liegt ÜBER der natürlichen Höhe ihrer Zeile — <c>height</c> an einer
+    /// Tabellenzeile ist ein Mindestmaß, ein zu kleiner Wert wüchse einfach mit.</para>
     /// </summary>
     [Fact]
-    public void Das_Zeilenmass_der_Virtualisierung_stimmt_mit_dem_Stilblatt()
+    public void Das_Zeilenmass_der_Virtualisierung_liegt_ueber_der_natuerlichen_Hoehe()
     {
-        string zelle = Zellenregel();
-
         Assert.Contains("--epos-touchziel: 44px", Stilblatt());
-        Assert.Contains("padding: 4px 8px;", zelle);
-        Assert.Contains("border-bottom: 1px solid", zelle);
+        Assert.Contains("border-bottom: 1px solid", Zellenregel());
 
         var cut = Render<Katalogliste>(p => p
             .Add(x => x.Profil, Profil())
             .Add(x => x.Zeilen, Grosser_Katalog(6654))
             .Add(x => x.Filterstand, new Katalogfilterstand()));
 
-        Assert.Equal(44f + 2 * 4f + 1f,
-                     cut.FindComponent<EPOS.UI.Standards.Raster<Katalogfilterzeile>>()
-                        .Instance.Zeilenhoehe);
+        float mass = cut.FindComponent<EPOS.UI.Standards.Raster<Katalogfilterzeile>>()
+                        .Instance.Zeilenhoehe;
+
+        // Die EINE Zahl des Hauses - nicht eine zweite daneben.
+        Assert.Equal(EPOS.UI.Standards.Raster<Katalogfilterzeile>.ZEILENHOEHE, mass);
+
+        // 44 px Knopf + 2 x 1,6 px Polsterung (QuickGrid) + 1 px Linie = 48,2 px.
+        Assert.True(mass > 44f + 2 * 1.6f + 1f,
+                    $"Das gesetzte Zeilenmass {mass} px liegt nicht ueber der natuerlichen " +
+                    "Hoehe von 48,2 px - dann waechst die Zeile ueber das Mass hinaus, und " +
+                    "die zwei Sichtbarkeitsmelder von Virtualize streiten wieder (#235).");
     }
 
     /// <summary>Das Stilblatt der Bibliothek, aus dem Quellbaum gelesen.</summary>

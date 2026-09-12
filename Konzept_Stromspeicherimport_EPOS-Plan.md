@@ -796,10 +796,114 @@ einem markierten) — kein Befund.
 `ModulImportDialogTests.Der_Wechselrichterimport_kommt_mit_6654_Geraeten_zur_Ruhe` und in
 `KataloglisteTests` die vier Fälle `Zehn_Zeichenlaeufe_ohne_Aenderung_kosten_eine_Rechnung`,
 `Ein_Filterwechsel_rechnet_neu`, `Eine_an_Ort_und_Stelle_geaenderte_Liste_rechnet_neu` und
-`Das_Zeilenmass_der_Virtualisierung_stimmt_mit_dem_Stilblatt`.
+`Das_Zeilenmass_der_Virtualisierung_stimmt_mit_dem_Stilblatt` (seit #235
+`…liegt_ueber_der_natuerlichen_Hoehe`, siehe unten).
 
 **Kein Rechenweg berührt** — Referenzlauf 1030 und 1046 gegen
 `Referenzlaeufe/2026-09-11_R7_Speicherflotte` byte-gleich.
+
+### Befund #235 — Restfall zu #212, im Browser gemessen (Anwender, 12.09.2026)
+
+Der Anwender meldete dieselbe Maske erneut, mit demselben Bildschirmfoto: „die
+Auswahlliste flackert bei großen Datenlisten immer noch. Problem wurde schon betrachtet."
+Trefferzeile „6.654 von 6.654 Sätzen" und Statuszeile „6.654 von 6.654 Einträgen geladen."
+sind seit #212 richtig — das Raster zeigt trotzdem drei **Platzhalterzeilen** („…" in jeder
+Zelle) und darunter rund 300 px leere Rasterfläche.
+
+**Warum zwei Anläufe daneben gingen.** W13‑B‑6 und #212 haben beide etwas Richtiges
+beseitigt (die instabile Datenquelle, drei Kosten je Zeichenlauf) und beide **nur in bunit
+gemessen**. bunit rendert ohne Layout, ohne JavaScript und ohne Stilkaskade — es sieht
+weder die Pixelhöhe einer Zeile noch die `IntersectionObserver`, an denen `Virtualize`
+hängt. Die Wache zu #212 prüfte die *Rechnung* „44 + 2 × 4 + 1 = 53 px" gegen das
+Hausstilblatt und war grün, obwohl die Zeile im Browser nie 53 px hoch war.
+
+**Diesmal wurde im echten Browser gemessen.** Dafür entstand
+[`Proben/Rasterprobe`](Proben/Rasterprobe/LIESMICH.md): ein minimaler Blazor-Server-Wirt,
+der die `Katalogliste` mit dem **echten** Listenprofil des Stromspeicherimports (acht
+Spalten + Wahlspalte) und 6 654 synthetischen Sätzen zeigt, dazu ein Playwright-Skript,
+das im Chromium neun Fälle misst — auch 1 300 × 700 und `deviceScaleFactor` 1,25 für die
+125 % DPI des Anwenders.
+
+**Die Ursache — ein Maß, das an zwei Stellen auseinanderlief.** `Virtualize` misst nicht,
+es rechnet: Es teilt die Höhe des Rollbehälters durch `ItemSize`, setzt danach die Höhen
+seiner zwei Abstandshalter und lässt je einen Sichtbarkeitsmelder darauf laufen. Weicht das
+Maß von dem ab, was wirklich im Baum steht, kommen die zwei Melder auf **verschiedene**
+Anfangszeilen und schieben das Fenster gegeneinander. Gemessen (6 654 Zeilen, Behälter
+418 px, nach einem Rollen um 2 000 px):
+
+| | vorher | nachher |
+|---|---|---|
+| Höhe einer echten Zeile | **47,7 … 48,2 px** gegen `ItemSize` 53 | **53,0 px** = `ItemSize` |
+| Höhe einer Platzhalterzeile | **21,9 px** | 53,0 px |
+| Abstandshalter nach dem Rollen | Sprung **alle 33 ms** zwischen 1 713/377 281 px und 2 284/376 710 px | steht |
+| Rückmeldungen der Sichtbarkeitsmelder in 3 s | **366 … 374** (≈ 123/s, einer je Bildaufbau) | **4** |
+| Platzhalter 3 s nach dem Rollen | **16**, echte Zeilen 0 — dauerhaft | **0**, echte Zeilen 16 |
+| echte Zeilen nach dem Rollen | nie | nach **115 … 139 ms** |
+
+Jeder dieser Sprünge stellt QuickGrids Datenanforderung neu an, und die fällt hinter dessen
+`await Task.Delay(100)`: Bei 33 ms Takt wird **jede** abgebrochen, bevor sie fertig wird.
+Die Liste bleibt deshalb in ihren Platzhalterzeilen stehen — und weil die mit 21,9 px so
+viel kürzer sind als die echten, halten sie den Streit selbst am Leben. Ein
+sich selbst tragender Stillstand, kein Ladeproblem.
+
+**Zwei Maße, zwei Irrtümer.** Erstens: Die Zellenpolsterung kommt gar nicht aus dem
+Hausstilblatt. QuickGrid setzt sie selbst
+(`.quickgrid[theme=default] > tbody > tr > td`, Spezifität 0‑2‑3 gegen 0‑1‑1 von
+`.epos-raster td`) auf 0,1rem = 1,6 px statt 4 px — die echte Zeile ist 44 + 2 × 1,6 + 1 =
+**48,2 px**. Zweitens: In der **Platzhalterzeile** steht kein Bedienelement, sondern nur
+QuickGrids `:after`-Zeichen; sie ist 21,9 px hoch. Während geladen wird, schrumpft der
+gezeichnete Block damit auf 45 % dessen, was `Virtualize` annimmt.
+
+**Was NICHT die Ursache war** (jede Hypothese mit ihrem Messwert):
+
+* *Der Rollbehälter wird nicht gefunden.* `Virtualize.ts` sucht den nächsten Vorfahren mit
+  `overflow-y ≠ visible`; gemessen findet es `div.epos-raster-huelle--hoch` mit
+  `clientHeight` 418 px — richtig.
+* *Das klebende `thead` verdeckt den vorderen Abstandshalter.* Der Kopf ist 52,5 px hoch und
+  `position: sticky`; der vordere Abstandshalter meldete am oberen Rand `isIntersecting:
+  false`. Kein Beitrag.
+* *Die Klasse `loading` blendet den Körper ab (das „Blinken" aus #212).* Über alle neun
+  Fälle **0 Umschaltungen** — im virtualisierten Zweig trägt die Tabelle diese Klasse nie.
+  Was flackert, sind die Platzhalterzeilen selbst.
+* *Der `@key`-Wechsel über die Zeilenzahl während des Ladens.* Fall B lädt wie der Anwender
+  (zehn Fortschrittsmeldungen, dann die volle Liste) und Fall I filtert danach im Suchfeld
+  von 6 654 auf 444 Zeilen — beide kommen nach dem Fix mit 4 Meldungen zur Ruhe, beide
+  bleiben ohne ihn hängen. Der `@key` (W6‑B‑2) ist nicht beteiligt.
+* *Fortschrittsmeldungen des Wirtes nach dem Laden / ein Zeichentakt gegen die
+  100‑ms‑Entprellung.* Fall E legt nach dem Laden **zehn zusätzliche Zeichenläufe je
+  Sekunde** auf die Seite: 4 Meldungen, 0 Platzhalter. Die Entprellung allein trägt den
+  Fehler nicht — sie trägt ihn erst zusammen mit dem 33‑ms‑Takt der Melder.
+* *Ein zu kleines Behältermaß beim ersten Messen.* Der Behälter ist von Anfang an 420 px
+  hoch (`max-height`, gemessene `height` 420 px); bei `scrollTop = 0` stand die Liste auch
+  vorher still — dort klemmt `itemsBefore` bei 0, und die zwei Melder sind sich zwangsläufig
+  einig. Der Streit beginnt erst, sobald gerollt oder das Fenster verschoben wird.
+
+**Der Fix — das Maß wird gesetzt, nicht zum dritten Mal geraten.** Dieselbe Zahl geht als
+`ItemSize` an `Virtualize` **und** als CSS-Variable `--epos-rasterzeile` an die Hülle
+(`EPOS.UI/Standards/Raster.razor`, `Hoehenstil`); `epos-ui.css` gibt sie **beiden**
+Zeilenarten des virtualisierten Rasters
+(`.epos-raster-huelle--hoch .epos-raster > tbody > tr` und `… > td`). Wert im Programm und
+Wert im Baum können nicht mehr auseinanderlaufen. Die Zahl bleibt 53 px, weil `height` an
+einer Tabellenzeile ein **Mindest**maß ist: Sie muss über der natürlichen Höhe (48,2 px)
+liegen, damit die gesetzte Höhe auch die gemessene wird. Eine zweite Regel hält `nowrap`
+für virtualisierte Zeilen fest — drei umbrochene Textzeilen wären 58,8 px und brächten den
+Streit zurück.
+
+**Die Virtualisierung bleibt.** Der im Auftrag vorgesehene Rückfall auf QuickGrids
+`Pagination` war **nicht nötig**: Die Ursache lag nicht in `Virtualize`, sondern in dem, was
+wir ihm über unsere Zeilen sagen.
+
+**Wachen:** `RasterTests.Die_virtualisierte_Huelle_gibt_das_Zeilenmass_ans_Stilblatt_weiter`,
+`…Ohne_Virtualisierung_bleibt_die_Huelle_ohne_Zeilenmass`,
+`…Das_Stilblatt_setzt_das_Zeilenmass_der_virtualisierten_Liste` und —
+statt der falschen Rechnung von #212 —
+`KataloglisteTests.Das_Zeilenmass_der_Virtualisierung_liegt_ueber_der_natuerlichen_Hoehe`.
+Dazu die Browserprobe selbst, die eine **Gegenprobe** führt: Fall H nimmt der Zeile ihr
+gesetztes Maß wieder weg und muss den Fehler zeigen (372 Meldungen, 16 Platzhalter) — sonst
+belegt der Fix nichts.
+
+**Kein Rechenweg berührt** — es ist eine Stilblatt- und Komponentenänderung ohne jeden
+Bezug zu Kern, Datenbank oder Simulation; der Referenzlauf bleibt unangetastet.
 
 ---
 

@@ -609,14 +609,14 @@ Platzhalterzeilen („…" in jeder Zelle) und die Tabelle trägt `loading`, was
   Sätzen kostete ein Zeichenlauf **89 ms** (Katalogimport) bzw. **108 ms** (Modulimport, dort
   `List.Contains`), nach dem Fix 3 ms bzw. 1,4 ms. Wörterbuch oder Menge, nicht Schleife — und
   die Liste selbst bestimmt den Schalterstand seither **einmal** je Zeichenlauf statt dreimal.
-* **Das Zeilenmaß ist gerechnet, nicht geraten.** `Raster.Zeilenhoehe` (Vorgabe 44) ist das Maß,
-  mit dem `Virtualize` rechnet, bevor es gemessen hat: Es teilt die Höhe des Rollbehälters
-  dadurch und setzt danach seine zwei Abstandshalter. Eine Katalogzeile ist **53 px** hoch
-  (44 px Berührungsziel des Wahlknopfs + 2 × 4 px Zellenpolsterung + 1 px Trennlinie) — mit 44
-  nimmt `Virtualize` rund 17 % zu viele Zeilen an, die Abstandshalter passen nicht zum
-  Gezeichneten, und jede Sichtbarkeitsmeldung stellt die Anforderung neu an. Wer eine Liste
-  virtualisiert, gibt das Maß SEINER Zeile mit; `KataloglisteTests` rechnet es aus dem Stilblatt
-  nach (eine bunit-Probe misst keine Pixel — Lehre W6‑B‑1).
+* **Das Zeilenmaß wird GESETZT, nicht gerechnet** (berichtigt durch **#235**, siehe unten).
+  `Raster.Zeilenhoehe` ist das Maß, mit dem `Virtualize` rechnet: Es teilt die Höhe des
+  Rollbehälters dadurch und setzt danach seine zwei Abstandshalter. #212 leitete daraus
+  53 px ab (44 px Berührungsziel + 2 × 4 px Zellenpolsterung + 1 px Trennlinie) — **die
+  Rechnung stimmte nie**: Die Polsterung kommt von QuickGrid
+  (`.quickgrid[theme=default] > tbody > tr > td`, Spezifität 0‑2‑3 gegen 0‑1‑1 von
+  `.epos-raster td`) und beträgt 1,6 px; die Zeile war 48,2 px hoch. Seit #235 geht dieselbe
+  Zahl als `ItemSize` **und** als `--epos-rasterzeile` ins Stilblatt, das sie jeder Zeile gibt.
 
 Zwei Pfähle dazu, damit niemand sie neu suchen muss: Der **Behälter** war in Ordnung
 (`.epos-raster-huelle--hoch`, `max-height: 420px`, `overflow-y: auto` — der nächste
@@ -626,6 +626,31 @@ der einen Komponente; `Katalogliste` führt dafür `Zeichenlaeufe` und `Neurechn
 Prüfhilfen. Wachen: die vier #212-Fälle in `KataloglisteTests`, die `[Theory]` über alle fünf
 Ausprägungen in `KatalogImportDialogTests` und
 `ModulImportDialogTests.Der_Wechselrichterimport_kommt_mit_6654_Geraeten_zur_Ruhe`.
+
+**Ein virtualisiertes Raster wird im BROWSER gemessen, nicht in bunit** (Befund **#235**,
+Anwender 12.09.2026: „die Auswahlliste flackert bei großen Datenlisten immer noch"). W13‑B‑6
+und #212 haben je etwas Richtiges beseitigt und beide nur in bunit gemessen — das hat kein
+Layout, kein JavaScript und keinen Kaskadenrechner, also weder die Pixelhöhe einer Zeile noch
+die `IntersectionObserver`, an denen `Virtualize` hängt; die #212-Wache prüfte deshalb eine
+falsche Rechnung und war grün. **Die Ursache:** `Virtualize` lässt je einen
+Sichtbarkeitsmelder auf seinen zwei Abstandshaltern laufen; weicht `ItemSize` von der
+wirklichen Zeilenhöhe ab, kommen die beiden auf verschiedene Anfangszeilen und schieben das
+Fenster endlos gegeneinander — gemessen **alle 33 ms**, 370 Meldungen in drei Sekunden. Jeder
+Sprung stellt QuickGrids Datenanforderung neu an, und die fällt hinter dessen
+100‑ms‑Entprellung: Keine wird je fertig, die Liste bleibt in ihren Platzhalterzeilen stehen
+— und die sind mit **21,9 px** (kein Bedienelement darin, nur QuickGrids `:after`-Zeichen)
+so viel kürzer als die echten **48,2 px**, dass sie den Streit selbst am Leben halten. Nicht
+beteiligt und ausdrücklich ausgeschlossen: der Rollbehälter (richtig gefunden), das klebende
+`thead`, der `@key` über die Zeilenzahl, Fortschrittsmeldungen des Wirts, und die Klasse
+`loading` — sie schaltet im virtualisierten Zweig **nie** (0 Umschaltungen in neun Fällen),
+das „Blinken" sind die Platzhalter selbst. **Die Regel:** Wer virtualisiert, gibt EIN Maß an,
+und dieses Maß gilt im Baum — `Raster` legt es als `--epos-rasterzeile` an die Hülle, und
+`epos-ui.css` gibt es **beiden** Zeilenarten (`… > tbody > tr` und `… > td`), Platzhalter
+eingeschlossen. Es muss ÜBER der natürlichen Zeilenhöhe liegen, denn `height` ist an einer
+Tabellenzeile ein Mindestmaß. **Die Probe dazu ist dauerhaft:**
+`Proben/Rasterprobe` (minimaler Blazor-Server-Wirt + Playwright, neun Fälle samt Gegenprobe,
+in keiner Projektmappe und in keiner CI) — sie gehört vor jede Änderung an
+`Raster`/`Katalogliste`/`.epos-raster*` gezogen.
 
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des

@@ -1,0 +1,7 @@
+# Die Rasterprobe erzeugt Bildschirmfotos und braucht (wenn playwright nicht
+# global liegt) ein node_modules. Beides gehoert nicht ins Repository - die
+# Messwerte stehen in LIESMICH.md, die Bilder sind Beiwerk.
+node_modules/
+package-lock.json
+fotos/
+*.png

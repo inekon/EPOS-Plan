@@ -369,24 +369,28 @@
     [Parameter] public int VirtualisierenAb { get; set; } = 120;
 
     /// <summary>
-    /// <b>Die wirkliche Höhe einer Katalogzeile in Pixeln</b> (Befund <b>#212</b>): 44 px
-    /// Berührungsziel des Wahlknopfs (<c>.epos-knopf</c>, <c>--epos-touchziel</c>) + 2 × 4 px
-    /// Zellenpolsterung (<c>.epos-raster th, .epos-raster td</c>) + 1 px Trennlinie.
+    /// <b>Die Höhe einer Katalogzeile in Pixeln</b> — seit Befund <b>#235</b>
+    /// (12.09.2026, im Browser gemessen) keine Rechnung mehr, sondern eine ANSAGE: Der
+    /// Wert geht als <c>ItemSize</c> an <c>Virtualize</c> UND als
+    /// <c>--epos-rasterzeile</c> ins Stilblatt, das ihn jeder Zeile des virtualisierten
+    /// Rasters gibt (<see cref="Raster{TZeile}.ZEILENHOEHE"/>).
     ///
-    /// <para>Der Vorgabewert 44 des <c>Raster</c>s ist die Höhe des KNOPFS, nicht die der
-    /// Zeile — <c>Virtualize</c> rechnete damit rund 17 % zu klein: Es teilt die Höhe des
-    /// Rollbehälters durch dieses Maß, um zu wissen, wie viele Zeilen sichtbar sind, und
-    /// setzt danach die Höhen seiner zwei Abstandshalter. Liegt das Maß unter der Wahrheit,
-    /// stimmen die Abstandshalter nicht mit dem Gezeichneten überein, die
-    /// Sichtbarkeitsmeldungen der Beobachter kommen weiter, und jede davon stellt die
-    /// Datenanforderung des Rasters neu an — hinter QuickGrids 100‑ms‑Entprellung.</para>
+    /// <para><b>Warum die Rechnung von #212 falsch war.</b> Sie las 44 px
+    /// Berührungsziel des Wahlknopfs + 2 × 4 px Zellenpolsterung
+    /// (<c>.epos-raster th, .epos-raster td</c>) + 1 px Trennlinie = 53 px. Die
+    /// Polsterung kommt aber gar nicht aus dem Hausstilblatt: QuickGrid setzt sie selbst
+    /// (<c>.quickgrid[theme=default] &gt; tbody &gt; tr &gt; td</c>, Spezifität 0‑2‑3
+    /// gegen 0‑1‑1) auf 0,1rem = 1,6 px. Gemessen war die Zeile <b>48,2 px</b> hoch, die
+    /// Platzhalterzeile sogar nur 21,9 px — bunit sieht weder das eine noch das andere,
+    /// es hat keinen Kaskadenrechner und kein Layout.</para>
     ///
-    /// <para>JEDE Zeile dieser Liste trägt den Wahlknopf (die Wahlspalte steht in beiden
-    /// Betriebsarten), das Maß gilt also ohne Ausnahme. Ändert jemand die Zellenpolsterung
-    /// oder das Berührungsziel, gehört diese Zahl nachgezogen; <c>KataloglisteTests</c>
-    /// rechnet sie aus dem Stilblatt nach.</para>
+    /// <para>Die Zahl bleibt 53, weil <c>height</c> an einer Tabellenzeile ein
+    /// MINDESTmaß ist: Sie muss über der natürlichen Höhe (48,2 px) liegen, damit die
+    /// gesetzte Höhe auch die gemessene wird. JEDE Zeile dieser Liste trägt den
+    /// Wahlknopf (die Wahlspalte steht in beiden Betriebsarten), das Maß gilt also ohne
+    /// Ausnahme; <c>KataloglisteTests</c> hält es gegen das Stilblatt.</para>
     /// </summary>
-    private const float ZEILENHOEHE = 53f;
+    private const float ZEILENHOEHE = Raster<Katalogfilterzeile>.ZEILENHOEHE;
 
     private Katalogfilterstand Stand => Filterstand ??= new Katalogfilterstand();
 

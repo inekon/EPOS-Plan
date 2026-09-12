@@ -1,0 +1,28 @@
+@* Die Huelle der Rasterprobe — dieselben zwei Stilblaetter wie
+   WindowsFormsApplication1/wwwroot/index.html, damit die Probe misst, was der
+   Anwender sieht:
+
+     _content/EPOS.UI/epos-ui.css    Thema und Bausteine der Bibliothek
+     Rasterprobe.Wirt.styles.css     das gebuendelte Komponenten-CSS (".razor.css").
+                                     DARIN steckt QuickGrids eigenes Stilblatt:
+                                     .quickgrid.loading > tbody { opacity: .25 }
+                                     und der Platzhalterinhalt content: '\2026'.
+                                     Der Dateiname folgt dem WIRT, nicht der
+                                     Bibliothek. Fehlte er, zeigte die Probe
+                                     weder das Blinken noch die "…"-Zellen. *@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link href="_content/EPOS.UI/epos-ui.css" rel="stylesheet" />
+    <link href="_content/EPOS.UI/epos-flotte.css" rel="stylesheet" />
+    <link href="Rasterprobe.Wirt.styles.css" rel="stylesheet" />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
