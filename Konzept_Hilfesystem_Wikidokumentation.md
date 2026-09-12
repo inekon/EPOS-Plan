@@ -866,4 +866,6 @@ Uploader zeigt die Diff-Zeilen seither vor dem Schreiben an. Nachprobe 560 zeich
 Revision 500 übernommen) und beschreibt am Eintrag „Neue Variante anlegen…" den Dialog „Als Variante speichern" mit dem Kästchen „Inhalt aus
 einem bestehenden Projekt übernehmen", der Projektliste, dem vorbelegten Bezeichner und der Zielnamen-Vorschau; die vom Agenten neu angelegte
 Quelle „Projektvarianten" ist verworfen, weil die Live-Seite schon bestand (Regel: erst die Live-Seite suchen, dann eine Quelle anlegen).
-Probe vor dem Upload 5+/1− (Kopfkommentar und der eine Absatz), Nachprobe 561 zeichengleich bis auf den Zeilenumbruch am Dateiende.
+Probe vor dem Upload 5+/1− (Kopfkommentar und der eine Absatz), Nachprobe 561 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Simulation` Revision 562** (12.09.2026, Merge `7f85837`, Gate sept47, #236) mit EINER Zeile zur Übersicht
+ohne gültiges Ergebnis (nur die zwei Bedarfszahlen und ein Hinweis, woran es liegt; nach einer Änderung in der Speicher-Auslegung gilt das
+Ergebnis als veraltet); Probe 1+/0− gegen Revision 560, Nachprobe 562 zeichengleich bis auf den Zeilenumbruch am Dateiende.

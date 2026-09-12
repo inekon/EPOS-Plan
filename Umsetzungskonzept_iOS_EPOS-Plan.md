@@ -4059,6 +4059,35 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > (der Weg ist auf iOS nicht belegt), kein iOS-Lauf.
 > Gate sept46 auf `8169757`: Kern 2 708, UI 3 930, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
 > Referenzlauf 5/5 byte-gleich gegen R7 (kein Rechenweg berührt); en-US-Lauf grün.
+>
+> **#236 (12.09.2026, Anwenderrückmeldung mit Bildschirmfoto Startseiten-Reiter „Simulation" › Übersicht, Projekt „Stromspeicher Optimierung -
+> ein Speicher": „Der Strombedarf wird in der Übersicht (Simulation) nicht korrekt dargestellt … eingelesener Strombedarf") — Ursache belegt und
+> behoben (`3b0539f`, Merge `7f85837`, Agent Opus; 20 Dateien, +1 373/−71).** Links nannte die Projektzusammenfassung 2 850,20 MWh/a, rechts
+> stand „Strombedarf 0,00 MWh/a", „Deckung 0,0 %", die Marke „kein Stromerzeuger im Projekt" und „Ohne Bedarf lässt sich keine Deckung
+> ausweisen", „Ergebnis speichern" gesperrt. **Der Kern rechnet richtig** — Referenzprojekt 1030 (nur Ganglinie, keine Verbraucherprofile)
+> liefert 4 790,09 MWh, und die linke Spalte nutzt dieselbe `SimulationStrombedarf.Berechnung`. **Die Übersicht zeichnete ein Nullobjekt:**
+> `SimulationErgebnisHuelle.Zusammentragen` stieg bei ungültigem Ergebnis aus, BEVOR `d.Uebersicht` gebaut war, und
+> `SimulationErgebnisDaten.Uebersicht` war mit `new UebersichtDaten()` vorbelegt, das der `UebersichtReiter` wie ein Ergebnis zeichnete.
+> Ungültig wird ein gerechnetes Ergebnis an drei Stellen der Stromspeicher-Auslegung (Einstellungen speichern, Flotte rechnen, Rückruf aus der
+> Ansicht), während `LaufGerechnet` wahr bleibt und der Startreiter die Spalte deshalb montiert — genau der Weg des Anwenders, der aus der
+> Auslegung dieses Projekts kam. Headless-Beleg VOR der Änderung (Projekt 1030): ohne Lauf `bedarfStrom 0,00 / uebStrom 0,00`; nach Lauf
+> `4 790,09 / 4 790,09`, Deckung 9,0 %; nach `OptimierungEinstellungenSpeichern` `gueltig=false, bedarfStrom 4 790,09, uebStrom 0,00,
+> erzeugerDa=false` — das Bildschirmfoto. **Zweite Reproduktion** mit einem Speicher-Projekt (aus 1030 abgeleitet: Kaskadenplätze leer,
+> Ganglinie behalten, eine Einheit aus dem Flottenstand von 1046): der Lauf geht durch, danach 4 790,09 — kein Fehler im Rechenweg, reine
+> Anzeige. **Fix:** `enum ErgebnisZustand` (NichtGerechnet, Gueltig, Veraltet, Abgebrochen) mit `Zustandsgrund` statt Bool
+> (`ErgebnisGueltig` bleibt als Ableitung), `ZustandSetzen`/`Abbruch(grund)` an den acht Frühausstiegen des Laufs, die drei Ungültig-Setzer
+> nennen ihren Anlass („Veraltet"), `BedarfSicherstellen` rechnet den Bedarf einmal je Hülle über denselben Weg wie der Lauf, `Uebersicht`
+> ist nullbar ohne Vorbelegung; der `UebersichtReiter` zeigt ohne gültiges Ergebnis die zwei Bedarfszahlen und EINE ruhige Leerkarte mit
+> Grund (kein Ring, keine Deckung, keine Tabelle, keine Marke), der Startreiter eine leise Zustandszeile, „Ergebnis speichern" nennt den
+> Zustand im `title`; neun Ressourcenschlüssel `SIMERG_ZUSTAND_*` de/en, drei Stilregeln. **Nebenbefund mitbehoben:** die Ergebnisseite
+> meldete `StandGeaendert` nie beim Aufbau — nach dem Rückweg aus der Auslegung blieb „Ergebnis speichern" auch bei gültigem Ergebnis
+> gesperrt, bis etwas anderes den Wirt neu zeichnete (eine Zeile in `OnAfterRenderAsync`). Tests: Kern +4 (`SimulationUebersichtZustandTests`,
+> die drei Zustände und das Speicher-Projekt), UI +12 (`UebersichtReiterTests` +5 mit Wache über ein vorbelegtes DTO, `SimulationErgebnisSeiteTests` +3,
+> `StartreiterSimulationTests` +4), alle auch unter en-US grün; SQL-Prüfer 0 von 1 343. Doku: Abschnitt 10 „Befund #236" im Konzept
+> Simulationsablauf, Hausregel in `EPOS.UI/CLAUDE.md` („kein vorbelegtes DTO als Ergebnis zeichnen"), eine Zeile in der Wiki-Quelle
+> Simulation (Revision 562). Kein Rechenweg berührt; iOS nutzt dieselbe Hülle, kein iOS-Lauf.
+> Gate sept47 auf `7f85837`: Kern 2 712, UI 3 942, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 59,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
