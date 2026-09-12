@@ -325,7 +325,9 @@ Programm offen hat (Sperrdatei nicht beschreibbar) — Ursache, `icacls`-Lösung
 in [`BETRIEB_Mehrbenutzer_Datenbank.md`](Dokumentation/ueberholt/BETRIEB_Mehrbenutzer_Datenbank.md).
 
 `.accdb` ist in `.gitignore` ausgeschlossen: Änderungen an der Datenbank landen nie in einem Commit
-und müssen separat gesichert werden (`DB-Backup/`).
+und müssen separat gesichert werden — in den Ordner `DB-Backup/` NEBEN der Datenbank im
+Datenverzeichnis des Anwenders (`%ProgramData%\EPOS_PLAN`), nicht im Repository; ein gleichnamiger
+Repo-Ordner mit alten Access-Sicherungen ist mit #242 entfernt.
 
 
 ## Brauchwasser / TWW-Profile
@@ -370,6 +372,21 @@ Papier ohne Indexzeile, keine `.md` in der Wurzel außer `CLAUDE.md` und `README
 
 Lizenzierungskonzept:
 [`Dokumentation/aktuell/EPOS-Plan_Konzept_Lizenzierung.md`](Dokumentation/aktuell/EPOS-Plan_Konzept_Lizenzierung.md).
+
+
+## Aufräumen
+
+Ins Repository gehören nie Arbeitsordner (`.work/`), Kopien oder Sicherungen von Datenbanken
+(`*.accdb`, `*.sqlite` außer der Testdatenbank `Referenzlaeufe/Kenndaten_Test.sqlite`) und
+Sicherungskopien von Quelltexten (`*.bak`, `*.orig`, `*.original-*`) — die `.gitignore` schließt
+sie aus. Was seine Aufgabe erfüllt hat — ein Spike, ein Prüfprogramm, ein Gerüst-Archiv, eine
+Sicherung — wird im selben Auftrag entfernt, der es überflüssig macht, nicht „später". Die Wache
+`EPOS.Kern.Tests/RepositoryOrdnungWacheTests` hält das dauerhaft und meldet jeden Treffer der
+verbotenen Muster im ganzen Arbeitsbaum. Die Regel, das Inventar und der Stufenplan stehen in
+[`Konzept_Repository_Aufraeumen_EPOS-Plan.md`](Dokumentation/aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md).
+Erster Durchgang: Auftrag #242 (12.09.2026) entfernte `.work/`, die Access-Sicherungen unter
+`DB-Backup/`, vier `.bak`-Kopien, den SQLite-Spike `sqlite-probe/`, vier Lizenzserver-Originale
+und das Berichtsgerüst-Archiv.
 
 
 ## Compact instructions

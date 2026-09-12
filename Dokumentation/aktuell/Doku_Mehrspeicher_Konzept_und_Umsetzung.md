@@ -717,6 +717,10 @@ Blätter.
 | gesamtes `EPOS.UI.Tests` | 3.434/3.434 bestanden | `.work/flotte_ui_final_complete.log` |
 | gesamtes `EPOS.Kern.Tests` | 2.400/2.400 bestanden | `.work/flotte_kern_abnahme.log` |
 
+Die vier `.work/*.log` waren nie versioniert und sind seither ohnehin lokale Läufe; der
+Arbeitsordner `.work/` selbst ist mit #242 aus dem Repository entfernt (nicht mehr im
+Repository; Stand 4c3b5210 in der Git-Geschichte).
+
 Die alten, datierten Gesamtzahlen bleiben unverändert im [Prüfnachweis Version 1.2](../ueberholt/Doku_Speicherauslegung_Pruefnachweis.md).
 
 ## Ehrliche Grenzen
