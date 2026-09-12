@@ -22,7 +22,7 @@ AUFRUF
   Rein LESEND, was den Quellbaum angeht.
   Unter Windows-Konsolen empfiehlt sich  PYTHONIOENCODING=utf-8.
 
-SOLLWERTE NACH S5 und die bewussten Ausnahmen: siehe sql/MIGRATION_Pruefrezepte.md.
+SOLLWERTE NACH S5 und die bewussten Ausnahmen: siehe Dokumentation/ueberholt/Protokolle/sql/MIGRATION_Pruefrezepte.md.
 """
 import io
 import json

@@ -5,7 +5,7 @@
 # WOZU. Der iOS-Bau ist auf Windows und Linux unmoeglich (NETSDK1147 - die Workload
 # gibt es dort nicht). Dieser Job ist deshalb der EINZIGE Ort, an dem sich die Huelle
 # ueberhaupt uebersetzen laesst; alles, was ohne Mac nachweisbar ist, steht in
-# Umsetzung_iU10_Nachweise.md.
+# Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md.
 #
 # WARUM VON HAND. macOS-Laeufer werden mit Faktor 10 auf das Minutenkontingent
 # angerechnet, und ein Lauf dauert 15-20 Minuten (Workload 3-6, Bau 5-8, Simulator

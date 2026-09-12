@@ -12,7 +12,7 @@ namespace Auslieferungsvorlage
     /// einzuchecken; <c>.gitignore</c> deckt <c>*.sqlite</c> NICHT pauschal ab (die
     /// Referenzdatenbank steht bewusst im Repository). Deshalb weigert sich das Werkzeug:
     /// Innerhalb des Repositorys ist genau ein Ziel erlaubt, <c>Setup/Vorlage/</c> — der
-    /// Ort, den <c>Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1 nennt und den
+    /// Ort, den <c>Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1 nennt und den
     /// <c>.gitignore</c> ausnimmt.</para>
     ///
     /// <para><b>Die Wurzel ist da, wo <c>WP-Plan.sln</c> liegt</b> — dieselbe Erkennung

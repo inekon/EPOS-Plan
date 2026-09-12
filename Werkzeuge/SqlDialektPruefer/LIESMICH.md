@@ -192,7 +192,7 @@ größeren Änderung einmal durchzusehen.
 
 1. Zeile lesen: `FUND Datei:Zeile`, darunter der zusammengesetzte SQL-Text und der Befund.
 2. **`MUSTER …`** → die Entsprechung steht in
-   [`BETRIEB_SQLITE.md`](../../BETRIEB_SQLITE.md), Abschnitt 6.2.
+   [`BETRIEB_SQLITE.md`](../../Dokumentation/aktuell/BETRIEB_SQLITE.md), Abschnitt 6.2.
 3. **`UMLAUT x -> Schema schreibt y`** → Schreibweise aus dem Schema übernehmen.
 4. **`SYNTAX …`** / **`OBJEKT …`** → die Meldung stammt wörtlich von SQLite. Zum
    Nachfassen die Anweisung von Hand vorbereiten:

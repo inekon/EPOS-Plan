@@ -3,7 +3,7 @@
     Baut die Projektbeispiele und veroeffentlicht sie auf epos-plan.de.
 
 .DESCRIPTION
-    Konzept: claude/Konzept_Projektbeispiele_Dokumentation.md
+    Konzept: Dokumentation/aktuell/Konzept_Projektbeispiele_Dokumentation.md
 
     STAND: Geruest. Umgesetzt sind die Ermittlung der Beispiele, die
     Statusuebersicht und -Pruefen (Kapitel 9.2). Die Schritte 2 bis 7 des

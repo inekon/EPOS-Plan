@@ -699,7 +699,7 @@ namespace WindowsFormsApplication1
         /// Aufrufer bleibt erhalten: leer (oder null) ergibt 0, nicht parsbarer
         /// Text wirft FormatException - die Einlese-Dialoge fangen sie und zählen
         /// den Eintrag als Fehler. Aufruferkataster und Herleitung:
-        /// Allgemein\Simulation\Befund_convertTxt2Double_Dezimaltrennzeichen.md.
+        /// Dokumentation\ueberholt\Protokolle\Simulation\Befund_convertTxt2Double_Dezimaltrennzeichen.md.
         /// </summary>
         public static double convertTxt2Double(string txt)
         {

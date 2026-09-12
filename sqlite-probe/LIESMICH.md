@@ -1,7 +1,7 @@
 # Beispieldatenbank zum Erproben von SQLiteStudio
 
 **Stand 31.08.2026** · gehört zu
-[`Konzept_DB-Migration_SQLite_EPOS-Plan.md`](../../Konzept_DB-Migration_SQLite_EPOS-Plan.md) (Rev. 2)
+[`Konzept_DB-Migration_SQLite_EPOS-Plan.md`](../Dokumentation/ueberholt/Konzept_DB-Migration_SQLite_EPOS-Plan.md) (Rev. 2)
 
 | | |
 |---|---|

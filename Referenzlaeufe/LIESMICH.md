@@ -32,7 +32,7 @@ folgt eine Regel, die vorher keine war:
 
 Ohne diese Regel fiele die CI beim nächsten Katalogschritt rot aus, ohne dass jemand mit
 dem Zusammenhang rechnete. Herleitung und Messung stehen in
-[`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](../Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
+[`Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md`](../Dokumentation/aktuell/Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md)
 § 11.2.6; der Entscheid selbst in § 8 („Em‑9.8 / Em‑9.9 — die sieben Fragen aus § 11.5").
 
 ## Die zweite Einfrierregel: PV-Modulkoeffizienten (Befund W6‑B‑5, 07.09.2026)
@@ -788,7 +788,7 @@ zwei neu — **90 Dateien, +860 / −10 877**.
 > `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
 > INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
 > Berührungsfläche und das Inventar der Stilllegung im
-> [Merge-4-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge4_ios_2026-09-03_Protokoll.md).
+> [Merge-4-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/Merge4_ios_2026-09-03_Protokoll.md).
 >
 > **Noch nicht gebaut: der Hauptbaum.** `bin\x64\Debug` ist bewusst nicht neu erzeugt worden
 > — Visual Studio war offen, mit ungespeicherten Designer-Änderungen. Der Nachweis hängt
@@ -858,7 +858,7 @@ Kapitalwert-Verlauf).
 > `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
 > INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
 > Berührungsfläche und die Liste der portierten Dialoge im
-> [Merge-3-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge3_ios_2026-09-03_Protokoll.md).
+> [Merge-3-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/Merge3_ios_2026-09-03_Protokoll.md).
 >
 > **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
 > Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
@@ -917,7 +917,7 @@ Wirtschaftlichkeitspaketen FX2–FX5/B5.
 > `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
 > dieselben Zahlen wie bei Merge 1. Einzelheiten, Konfliktliste und die Begründung des
 > Doppel-Fixes im
-> [Merge-2-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge2_ios_2026-09-03_Protokoll.md).
+> [Merge-2-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/Merge2_ios_2026-09-03_Protokoll.md).
 >
 > **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
 > Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
@@ -966,7 +966,7 @@ Rechenkerns von `WindowsFormsApplication1/` nach **`EPOS.Kern/`** (und `EPOS.UI/
 > **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
 > `migration` 24 PASS, INEKON `pv6` 28 PASS — durchgehend **0 FAIL**. Einzelheiten,
 > Konfliktliste und Entscheidungen im
-> [Merge-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/Merge_ios_2026-09-03_Protokoll.md).
+> [Merge-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/Merge_ios_2026-09-03_Protokoll.md).
 >
 > **Neue Pfade.** Wer die Suite nachbaut: Der Rechenkern liegt jetzt in `EPOS.Kern.dll`
 > (`DataRepository`, `DbParam`, `SimulationPV`, `SolarZeitbasis`, `PvErweitertesModell`,
@@ -1026,7 +1026,7 @@ Clipping, Degradation).
 > Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
 > abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
 > Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
-> [Paket-B-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
+> [Paket-B-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
 >
 > **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
 > Modus `pv6`) ist gegen den Paket-B-Build **28 PASS / 0 FAIL** und Zahl für Zahl
@@ -1077,7 +1077,7 @@ PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austaus
 > **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
 > außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
 > Laufprotokoll der Basis (entfernt, Stand `1e71d30`) und im
-> [Paket-A-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
+> [Paket-A-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
 >
 > **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
 > EINFACH musste gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1) — **erfüllt,
@@ -1283,7 +1283,7 @@ EIN Stand.
 > (28 Einträge in 9 `aggregate.csv`; die Quellspeicherzeile von 1021 bleibt leer).
 > Toleranzvergleich mit `--ohne` dieser Schlüssel: **13/13 PASS (3 532 029 Werte)**.
 > Details und N>1-Wirkproben im
-> [P1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/P1_Schichtmodell_Protokoll.md).
+> [P1-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/P1_Schichtmodell_Protokoll.md).
 > Datenquelle: produktive `Kenndaten.accdb` (27.08.2026 20:45, nur gelesen), Arbeitskopie
 > migriert auf Schemastand **53**.
 >
@@ -1301,7 +1301,7 @@ EIN Stand.
 > Durchsatzsummen, `ID_Anlage`, `T_oben_*`-Vorgriff); geänderte Bestandswerte sind allein
 > die vier `Kapazitaet_Pufferspeicher` der dokumentierten `puffer_wp`-Ablösung (S-1) —
 > alle Ganglinien der zwölf unveränderten Projekte byte-gleich, Kanal-Summenprobe 54/54
-> (Details im [E1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/E1_ErgebnisJeKanal_Protokoll.md)).
+> (Details im [E1-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/E1_ErgebnisJeKanal_Protokoll.md)).
 > Projekt **1042** trägt zusätzlich eine **Datenänderung des Anwenders** (WP-Module 3 → 2,
 > Kombi-Speicher 1054195 entfernt — die Basis friert den neuen Stand ein; das
 > Warnkriterium `QUELLE_FEHLT` der unkonfigurierten Booster-Quelle steht im Protokoll).
@@ -1333,7 +1333,7 @@ EIN Stand.
 > (Energieträger-Zuordnung, Rückfall-ΔT), 0 Fehler.
 >
 > **Codestand:** Paket K1 auf `Pufferspeicher` (Details
-> [K1-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/K1_Dreikanal_Protokoll.md)).
+> [K1-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/K1_Dreikanal_Protokoll.md)).
 > **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel 26.08.2026 23:39, nur gelesen;
 > Arbeitskopie migriert auf Schemastand **48**. **Selbstvergleich:** zweiter Lauf
 > **216/216 byte-/MD5-gleich** — reproduzierbar.
@@ -1343,7 +1343,7 @@ EIN Stand.
 > (Mehrgebäude-Doppelzählung V0-1: Wärmebedarf 98,26 → 54,88 MWh), **1007** und **1011**
 > (Stromprofile werden summiert statt überschrieben, V0-2: 12 → 24 bzw. 5 462 → 6 806 MWh) —
 > vollständig zugeordnet im
-> [V0-Protokoll](../WindowsFormsApplication1/Allgemein/Simulation/V0_Bestandsfehler_Protokoll.md)
+> [V0-Protokoll](../Dokumentation/ueberholt/Protokolle/Simulation/V0_Bestandsfehler_Protokoll.md)
 > über einen Vorher/Nachher-Lauf auf **gemeinsamer** Datenbankkopie (dort 6/9 byte-stabil).
 > Ein PASS/FAIL-Vergleich B6 → V0 wird bewusst **nicht** geführt: Zwischen beiden Ständen
 > liegen neben V0 auch der Merge des Branches `kostenformulare` (Migrationsschritte bis 44),
@@ -1604,7 +1604,7 @@ Laufprotokoll der Basis `2026-08-15_B3` (Basis gelöscht, Geschichte in diesem D
 Wärmepumpenbetriebs schaltet ab jetzt an der **Bivalenztemperatur**
 (`Tab_Energieanlagen.Abschaltpunkt`) statt stundenweise nach Leistungsunterdeckung — in
 beiden Rechenwegen. Umsetzung, Datenbefund, Regelentscheidung und alle Zahlen:
-[`../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md`](../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md).
+[`../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Simulation/K3_BivalenzTemperatur_Protokoll.md).
 
 **Davon betroffene Referenzprojekte: keines.** Der Datenbefund vor dem Lauf zeigt, dass im
 gesamten Bestand **keine einzige** Anlage `Bivalenter_Betrieb = TRUE` **und**

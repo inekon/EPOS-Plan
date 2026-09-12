@@ -1045,7 +1045,7 @@ Reihen als SCHLÜSSEL — nicht der Datenzoom, und nichts davon dauerhaft; für 
 tauscht der Parameter `Gedaechtnis` den Stand aus. Was die
 Umstellung im Einzelnen behebt — den leeren Ring bei 0 % (`SKPath.ArcTo` zieht bei 360°
 nichts), die Zahl weit weg von ihrem Kopf und die abgeschnittene Legende —, steht in
-[`Projekte/Konzept_Simulationsablauf_EPOS-Plan.md`](../Projekte/Konzept_Simulationsablauf_EPOS-Plan.md)
+[`Projekte/Konzept_Simulationsablauf_EPOS-Plan.md`](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md)
 Abschnitt 8.
 
 **Sechs Masken, eine Kette** (iU9‑W12): Die AP5-Importkette der

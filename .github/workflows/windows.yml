@@ -16,7 +16,7 @@
 # Datei GENAU dieses Zweigs, auch bevor der Zweig auf main steht. Deshalb liegt der Job
 # hier: Actions -> Windows -> Run workflow -> Haekchen "setup".
 #
-# Setup-Lauf: faehrt die Freigabekette aus Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md 8.1
+# Setup-Lauf: faehrt die Freigabekette aus Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md 8.1
 # einmal komplett durch - Veroeffentlichung (win-x64, eigenstaendig), Auslieferungsvorlage,
 # Inno Setup - und legt Installer, Pruefbericht und Skriptprotokoll als Artefakte ab.
 #

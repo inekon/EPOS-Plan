@@ -103,7 +103,7 @@ namespace Auslieferungsvorlage
         // =================================================================================
 
         /// <summary>
-        /// Setzt die Regel aus <c>Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1
+        /// Setzt die Regel aus <c>Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md</c> 6.1
         /// Schritt 3 um: „In den <c>*_STAMM</c>-Tabellen behalten, was <c>ReadOnly = TRUE</c>
         /// traegt; das ist laut Namenskonvention genau der Auslieferungskatalog." Diese
         /// Regel greift nur noch, wenn <c>--kataloge readonly</c> ausdruecklich gewaehlt

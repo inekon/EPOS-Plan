@@ -5,7 +5,7 @@ Vorlage mit den Auslieferungskatalogen und den Beispielprojekten, aus der die An
 Erststart die Arbeitsdatenbank des Kontos anlegt.
 
 > **Nichts davon wird eingecheckt.** `Kenndaten.sqlite`, ihre Beidateien und der Prüfbericht
-> stehen in [`.gitignore`](../.gitignore). Diese Liesmich-Datei ist der einzige versionierte
+> stehen in [`.gitignore`](../../.gitignore). Diese Liesmich-Datei ist der einzige versionierte
 > Inhalt des Ordners. Der Grund: Die Vorlage entsteht aus der **produktiven**
 > Entwicklungsdatenbank, die reale Kunden- und Objektdaten führt — sie in ein Repository zu
 > legen wäre der Umweg, auf dem genau diese Daten doch wieder herauskommen.
@@ -50,7 +50,7 @@ Setup-Lauf nicht als gültig durchgehen.
 
 Was das Werkzeug tut, warum, und was `--kataloge alle` mit dem offenen Befund zur Marke
 `ReadOnly` zu tun hat, steht in
-[`Setup/Konzept_Setup_InnoSetup_EPOS-Plan.md`](Konzept_Setup_InnoSetup_EPOS-Plan.md) § 6.1.
+[`Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md`](../../Dokumentation/aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md) § 6.1.
 
 ---
 

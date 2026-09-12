@@ -311,7 +311,7 @@ namespace WindowsFormsApplication1
         /// <b>Warum es diese Spalte gibt.</b> Bis zum 18.08.2026 hatte
         /// <c>Wartungskosten</c> in der ganzen Anwendung keine Oberfläche und stand in
         /// Katalog wie Projekten durchgehend auf 0; die Einheit war damit nicht belegbar
-        /// (Recherche in <c>Allgemein\Reporting\Kostenuebernahme_Protokoll.md</c>,
+        /// (Recherche in <c>Dokumentation\ueberholt\Protokolle\Reporting\Kostenuebernahme_Protokoll.md</c>,
         /// Abschnitt 4). Statt eine Einheit zu erraten, ist sie seit der Entscheidung des
         /// Anwenders vom 18.08.2026 <b>je Kessel wählbar</b>. Anders als beim BHKW, dessen
         /// Feld <c>Wartungskosten_kwhel</c> die Einheit schon im Namen trägt und in

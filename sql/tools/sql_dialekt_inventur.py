@@ -22,7 +22,7 @@ AUFRUF
   Rein LESEND. Schreibt nichts in den Quellbaum.
   Unter Windows-Konsolen empfiehlt sich  PYTHONIOENCODING=utf-8.
 
-SOLLWERTE NACH S5 und die bewussten Ausnahmen: siehe sql/MIGRATION_Pruefrezepte.md.
+SOLLWERTE NACH S5 und die bewussten Ausnahmen: siehe Dokumentation/ueberholt/Protokolle/sql/MIGRATION_Pruefrezepte.md.
 
 Extrahiert echte C#-String-Literale mit einem Lexer (Kommentare, Char-Literale,
 Verbatim-/Interpolierte Strings korrekt behandelt) und misst SQL-Dialekt-Merkmale.

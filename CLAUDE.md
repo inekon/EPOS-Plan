@@ -92,7 +92,7 @@ Die Windows-Hülle `Views/Simulation/SimulationHuelle.cs` ist seither ein **Adap
 64 Zeilen** (vorher 122), und `EPOS.iOS/Dienste/IosProjektQuelle.SimulationGaben` liefert
 denselben Parametersatz aus derselben Quelle — **die Simulation ist damit die erste Fachseite,
 die auf dem iPad wirklich rechnet** (Stufe S2 des Konzepts
-[`Projekte/Konzept_Simulationsablauf_EPOS-Plan.md`](Projekte/Konzept_Simulationsablauf_EPOS-Plan.md)).
+[`Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md`](Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md)).
 
 Die **iOS-Hülle steht seit dem 03.09.2026 (Paket iU10) in [`EPOS.iOS`](EPOS.iOS/CLAUDE.md)** — eine
 MAUI-Blazor-Hybrid-App mit **einer** Seite und darin **einer** `BlazorWebView`, die
@@ -104,7 +104,7 @@ die CI. **Sie hat eine eigene Projektmappe `EPOS.iOS/EPOS.iOS.sln`** und steht b
 Restore dort bräche mit `NETSDK1147`. Gebaut und im Simulator geprüft wird sie **ausschließlich** im
 CI-Job `.github/workflows/ios.yml` (`macos-26`, Workload-Set `10.0.400.1`, Xcode 26.6), den man von
 Hand auslöst: GitHub → Actions → iOS → *Run workflow*. Was ohne Mac nachweisbar ist und was nicht,
-steht in [`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md).
+steht in [`Umsetzung_iU10_Nachweise.md`](Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md).
 
 Die **Mehrspeicherrechnung** liegt seit dem 11.09.2026 in **zwei eigenen Projekten**:
 [`SpeicherEngine`](SpeicherEngine/) rechnet die Flotte — AC-Physik, Verteilung,
@@ -112,16 +112,16 @@ Wirtschaftlichkeit, Rainflow-Zyklen und die begrenzte Rastersuche (`Flotten*.cs`
 Datenbank und ohne Oberfläche, und **`SpeicherPlanung`** bindet **Google OR-Tools 9.15.6755
 (SCIP)** als gemischt-ganzzahligen Fahrplaner an. Die Naht dazu führt der Kern
 (`SpeicherFlottenStudieCtrl`, `SpeicherFlottenProjektCtrl`, `SpeicherAuslegungCtrl` samt
-`.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche seit **#192** (11.09.2026, Paket P3 des Konzepts `Projekte/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`) die **freie Ansicht `STROMSPEICHER_AUSLEGUNG`** der `AppWurzel` (`EPOS.UI/Seiten/Strom/StromspeicherAuslegungSeite.razor` mit Ablaufleiste, Diagnosebanner und Peak-Ziel-Block; die Überlagerungsdialoge `SpeicherFlottenDialog` und `SpeicherOptimierungDialog` sind gefallen), die Editoren und Bausteine unter `EPOS.UI/Dialoge/Strom/` — darunter seit **#193** die Größen-Sicht `SpeicherFlottenGroessenAnsicht` (Paket P4) — und den Reiter `StromspeicherReiter.razor`;
+`.Rechnung`, `SpeicherZeitreihenImport`, `SpeicherFlottenCsvImport`), die Oberfläche seit **#192** (11.09.2026, Paket P3 des Konzepts `Dokumentation/aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`) die **freie Ansicht `STROMSPEICHER_AUSLEGUNG`** der `AppWurzel` (`EPOS.UI/Seiten/Strom/StromspeicherAuslegungSeite.razor` mit Ablaufleiste, Diagnosebanner und Peak-Ziel-Block; die Überlagerungsdialoge `SpeicherFlottenDialog` und `SpeicherOptimierungDialog` sind gefallen), die Editoren und Bausteine unter `EPOS.UI/Dialoge/Strom/` — darunter seit **#193** die Größen-Sicht `SpeicherFlottenGroessenAnsicht` (Paket P4) — und den Reiter `StromspeicherReiter.razor`;
 **Schemaschritt 73** legt `Tab_SpeicherAuslegung` für die gespeicherten Auslegungsprofile,
 Suchbereiche und importierten Zeitreihen an; **Schemaschritt 74** (Auftrag #178, 11.09.2026)
 baut dieselbe Tabelle als **STRICT**-Tabelle neu auf — sie war die einzige Fachtabelle des
 Zielschemas ohne `STRICT`, und SQLite kennt kein `ALTER TABLE … STRICT`. Was umgesetzt ist, steht in
-[`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Doku_Mehrspeicher_Konzept_und_Umsetzung.md),
+[`Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](Dokumentation/aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md),
 die Fachgrundlage in
-[`Projekte/Spezifikation_Stromspeicher_Optimierung.md`](Projekte/Spezifikation_Stromspeicher_Optimierung.md)
+[`Dokumentation/aktuell/Spezifikation_Stromspeicher_Optimierung.md`](Dokumentation/aktuell/Spezifikation_Stromspeicher_Optimierung.md)
 (Fassung 1.2 vom 11.09.2026, 14 Kapitel); der ältere Einzelspeicherstand bleibt als
-[`Doku_Speicherauslegung_Kosten_Zeitreihen.md`](Doku_Speicherauslegung_Kosten_Zeitreihen.md)
+[`Doku_Speicherauslegung_Kosten_Zeitreihen.md`](Dokumentation/ueberholt/Doku_Speicherauslegung_Kosten_Zeitreihen.md)
 datiert liegen.
 
 **Regel: `Google.OrTools` hängt NUR an `SpeicherPlanung`** — und damit nur an der
@@ -194,7 +194,7 @@ Worker-Thread liest dabei sonst gelegentlich die eines Nachbarn.
 | `Referenzlauf` (Windows) | die vollständige Suite mit den Modi `lauf`, `projekt`, `vergleich`, `pruefen` (dazu `liste` und `migration`). Der frühere Modus `bildvergleich` ist mit iF23 (03.09.2026) samt dem GDI+-Renderer gelöscht | `Referenzlauf.exe <modus> …` |
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` vollständig neu aus der neutralen `.resx` (Format des StronglyTypedResourceBuilder). **Nach jedem neuen Ressourcenschlüssel ziehen** statt die Designer-Datei von Hand zu ergänzen — ohne Visual Studio gibt es keinen anderen Generator. Der Lauf ist **wiederholbar** (seit #152, 07.09.2026): Ändert sich kein Schlüssel, lässt ein zweiter Lauf die Datei byte-gleich liegen, und jeder Aufruf prüft das selbst | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen — nennt die Zeichenbilanz) |
 | `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die **bereinigte Auslieferungsdatenbank** samt Beispielprojekten (#157‑E‑2, Auftrag #160) — Projektdaten weg, Kataloge vollständig (Vorgabe `alle` seit #160‑E‑1a, `readonly` wählbar), `Tab_Applikation` ohne Kundennamen, `VACUUM`, `journal_mode = WAL`, Prüfbericht `<ziel>.bericht.txt` daneben. Die Tabellenliste kommt aus dem SCHEMA, nicht aus einer gepflegten Liste; die Quelle bleibt byte-gleich. **Vor jeder Auslieferung ziehen** statt die vier Handgriffe aus Setup-Konzept 6.1 zu wiederholen. Rückgabe 0 = erzeugt und abgenommen; 2 Aufruf, 3 Schreibort, 4 Katalogwächter (nur bei `readonly`), 5 fachlich | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]`, Proben mit `dotnet test Werkzeuge/Auslieferungsvorlage/Auslieferungsvorlage.sln -c Release` |
-| `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
+| `Werkzeuge/SqlDialektPruefer` | hält **jeden** SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Access-Verbotsliste (`UPDATE … JOIN`, `Nz`, `TOP n`, `LIKE '*'`, `&`, Umlaut-Schreibweise). **Nach jeder neuen oder geänderten SQL-Anweisung ziehen** — der Referenzlauf deckt nur den Rechenweg ab, nicht die Dialog- und Pflegepfade. Regeln in [`BETRIEB_SQLITE.md`](Dokumentation/aktuell/BETRIEB_SQLITE.md) Abschnitt 6 | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 
 **Das Regressionsnetz ist die Abnahme, nicht die Meinung.** Jede Änderung am Rechenweg wird
 gegen `Referenzlaeufe/2026-09-11_R7_Speicherflotte` gehalten (**dreizehn Projekte, 345 CSV,
@@ -269,10 +269,10 @@ Bezeichner als `@Projektflotte` erreichen den Projektlauf nicht und bleiben frei
 C#, `net10.0-windows` (Anhebung am 02.09.2026, Paket iU1), WinForms (MDI), Build zwingend
 **x64**. Bis 22.08.2026 x86; Umstellungsplan, offene Pakete und Rückweg
 (Git-Tag `letzter-x86-stand`) in
-[`Konzept_Umstellung_64Bit_EPOS-Plan.md`](Konzept_Umstellung_64Bit_EPOS-Plan.md).
+[`Konzept_Umstellung_64Bit_EPOS-Plan.md`](Dokumentation/ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md).
 
 Die Datenhaltung ist seit dem 02.09.2026 **SQLite** (`Kenndaten.sqlite`, siehe
-[`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md)); die native Bibliothek bringt
+[`BETRIEB_SQLITE.md`](Dokumentation/aktuell/BETRIEB_SQLITE.md)); die native Bibliothek bringt
 `Microsoft.Data.Sqlite` mit. **Seit dem Anwenderentscheid `#157‑E‑1` (Weg W3,
 09.09.2026) kommt die Access-Engine im ausgelieferten Programm nicht mehr vor:** Das
 Setup installiert sie nicht mehr nach, und der Erststart-Assistent ist gefallen. Eine
@@ -290,7 +290,7 @@ läuft (BETRIEB_SQLITE.md Abschnitt 1.1 und 7).
 
 > Dieser Abschnitt beschreibt den Stand **vor** der SQLite-Umstellung vom 02.09.2026. Er gilt
 > weiterhin für Altbestände und für das Verständnis des Schemas; der laufende Betrieb steht in
-> [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md).
+> [`BETRIEB_SQLITE.md`](Dokumentation/aktuell/BETRIEB_SQLITE.md).
 
 Alles in einer einzigen Access-Datei `Kenndaten.accdb` — Kataloge **und** Projektdaten. Eine
 separate Projektdatei gibt es nicht.
@@ -322,7 +322,7 @@ Anlegen neuer Dateien, nicht das Ändern vorhandener — eine vom Installer ange
 ist deshalb schreibgeschützt, bis sie einmal über „Komprimieren und reparieren" neu geschrieben
 wurde. Dieselbe ACL blockiert den Start auf einem **zweiten Windows-Konto**, solange das erste das
 Programm offen hat (Sperrdatei nicht beschreibbar) — Ursache, `icacls`-Lösung und Installer-Hinweis
-in [`BETRIEB_Mehrbenutzer_Datenbank.md`](BETRIEB_Mehrbenutzer_Datenbank.md).
+in [`BETRIEB_Mehrbenutzer_Datenbank.md`](Dokumentation/ueberholt/BETRIEB_Mehrbenutzer_Datenbank.md).
 
 `.accdb` ist in `.gitignore` ausgeschlossen: Änderungen an der Datenbank landen nie in einem Commit
 und müssen separat gesichert werden (`DB-Backup/`).
@@ -333,14 +333,43 @@ und müssen separat gesichert werden (`DB-Backup/`).
 Der Brauchwasserkatalog wurde am 02.08.2026 um 11 Wochen-Stundenprofile und 13 Monatswertsätze nach
 VDI 6002 erweitert. Alles dazu — Datenmodell, sämtliche Zahlenwerte, Herleitung, Werkzeugkette zum
 Bearbeiten der `.accdb` ohne Access und die offene Migrationsbaustelle — steht in
-[`KONTEXT_Brauchwassertypen_VDI6002.md`](KONTEXT_Brauchwassertypen_VDI6002.md).
+[`KONTEXT_Brauchwassertypen_VDI6002.md`](Dokumentation/aktuell/KONTEXT_Brauchwassertypen_VDI6002.md).
 
 
-## Grundlagen- und Konzeptdokumente
+## Dokumentation
 
-Nehme aktuelle .md Dateien jeweils zur bearbeteten Thematik. Teilweise gibt es ältere .MD Dateien, die nur teilweise noch Gültigkeit haben.
-Lizenzierungskonzept als
-`EPOS-Plan_Konzept_Lizenzierung.md` in der Wurzel.
+**Alle Markdown-Papiere liegen seit Auftrag #241 (Anwender, 12.09.2026) unter
+[`Dokumentation/`](Dokumentation/LIESMICH.md)** — geordnet nach zwei Ordnern:
+
+- **[`Dokumentation/aktuell/`](Dokumentation/aktuell/)** — die gültigen Arbeitsgrundlagen:
+  Betriebs- und Rechenwegdoku, fortgeschriebene Konzepte, Nachweis- und Statusdokumente,
+  Spezifikationen, Grundlagenberichte, angewandte Prüfrezepturen. **Wer an einer Thematik
+  arbeitet, liest hier** — und schreibt hier fort. Der Ordner ist flach; einzig
+  `Wirtschaftlichkeit_Kosten/` bleibt als Ordner (Rechenwege, Mockups, Beispielprojekt).
+- **[`Dokumentation/ueberholt/`](Dokumentation/ueberholt/)** — was abgeschlossen, ersetzt
+  oder nur noch Geschichte ist, darunter in `Protokolle/` die Etappen- und
+  Wellenprotokolle mit ihrer bisherigen Ordnung. **Diese Papiere begründen, wie etwas
+  geworden ist — sie sind nie die Regelquelle.** Wer hier einen Widerspruch zu `aktuell/`
+  findet, folgt `aktuell/`.
+
+**Pflegeregel.** Ein neues Konzept entsteht in `Dokumentation/aktuell/`. Ist sein Gegenstand
+umgesetzt, verworfen oder von einem anderen Papier abgelöst, wandert es im selben Schritt mit
+`git mv` nach `Dokumentation/ueberholt/` und bekommt im Index eine Zeile mit „warum /
+ersetzt durch". Ein Protokoll entsteht gleich unter `Dokumentation/ueberholt/Protokolle/`.
+Fortgeschrieben wird weiterhin am Ort: die **Statusblöcke** in
+[`Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`](Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md),
+die **Wiki-Vermerke** in
+[`Dokumentation/aktuell/Konzept_Hilfesystem_Wikidokumentation.md`](Dokumentation/aktuell/Konzept_Hilfesystem_Wikidokumentation.md).
+
+**Der Index ist [`Dokumentation/LIESMICH.md`](Dokumentation/LIESMICH.md)**: zwei Tabellen
+(aktuell, ueberholt) mit Gegenstand und letztem Stand je Datei, dazu der Abschnitt
+„Bleibt am Ort" mit den Papieren, die an ihrem Werkzeug hängen. Die fünf `CLAUDE.md` bleiben
+dort, wo sie stehen — Claude Code lädt sie am Ort. Die Wache
+`EPOS.Kern.Tests/DokumentationLinkWacheTests` hält die Ordnung: kein toter Verweis, kein
+Papier ohne Indexzeile, keine `.md` in der Wurzel außer `CLAUDE.md` und `README.md`.
+
+Lizenzierungskonzept:
+[`Dokumentation/aktuell/EPOS-Plan_Konzept_Lizenzierung.md`](Dokumentation/aktuell/EPOS-Plan_Konzept_Lizenzierung.md).
 
 
 ## Compact instructions
@@ -368,6 +397,6 @@ von Commit und Ergebnis.
 
 Während der iOS-Migration (Arbeitszweig seit dem 11.09.2026 `ios_migration_september`, davor `ios_migration`;
 Anwenderentscheid 11.09.2026 „ios_migration_september wird der Arbeitszweig") gilt zusätzlich: Der dauerhafte Stand steht in den
-Statusblöcken von [`Umsetzungskonzept_iOS_EPOS-Plan.md`](Umsetzungskonzept_iOS_EPOS-Plan.md) und in
-[`Umsetzung_iU10_Nachweise.md`](Umsetzung_iU10_Nachweise.md). Nach einer Verdichtung wird der
+Statusblöcken von [`Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`](Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md) und in
+[`Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md`](Dokumentation/aktuell/Umsetzung_iU10_Nachweise.md). Nach einer Verdichtung wird der
 Wellenstand von dort und aus `git log origin/ios_migration_september` nachgelesen, nicht aus dem Gedächtnis.

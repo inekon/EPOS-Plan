@@ -3,7 +3,7 @@
 Quellordner der Anwendungsbeispiele, die unter
 `https://epos-plan.de/epos-plan/epos-plan-schulung/beispiele/` veröffentlicht werden.
 
-**Konzept:** `claude/Konzept_Projektbeispiele_Dokumentation.md` — dieses README ist die
+**Konzept:** [`Dokumentation/aktuell/Konzept_Projektbeispiele_Dokumentation.md`](../../Dokumentation/aktuell/Konzept_Projektbeispiele_Dokumentation.md) — dieses README ist die
 Kurzfassung für den Alltag, das Konzept begründet die Festlegungen.
 
 > **Stand: Gerüst.** Angelegt sind Ordnerstruktur, Vorlagen, Schemata und der Rumpf des
