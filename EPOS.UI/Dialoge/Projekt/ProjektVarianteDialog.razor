@@ -1,0 +1,280 @@
+﻿@* „Als Variante speichern" - Bezeichner, wahlweise ein QUELLPROJEKT (Auftrag #237).
+
+   ANWENDERWUNSCH 12.09.2026, woertlich: „Ermoegliche eine Variante aus einem
+   bestehenden Projekt anzulegen (Auswahl Checkbox im Dialog). Die Projektvariante
+   wird dann mit dem Basisnamen und dem Variantenbezeichner (wie bisher) angelegt.
+   Eine Umbenennung der Variante soll moeglich sein (default ist Variantenbezeichner
+   = Projektname des ausgewaehlten zu uebernehmenden Projektes)."
+
+   WAS ER ABLOEST. Bis #237 stellte die generische NamensDialog-Komponente diese
+   Frage (NamensDialogHuelle.FragenMitHinweis: Hinweis, ein Feld, zwei Knoepfe). Sie
+   bleibt unveraendert - sie bedient vier weitere Masken, und ein Kontrollkaestchen
+   mit einer Projektliste gehoert nicht in eine NAMENSABFRAGE. Dies hier ist der
+   eigene Dialog, den der Wunsch braucht.
+
+   DREI DINGE, DIE MAN LEICHT FALSCH BAUT:
+     * DER VON-HAND-MERKER. Die Projektwahl belegt den Bezeichner mit dem
+       Projektnamen vor - aber nur, solange der Anwender NICHT selbst getippt hat.
+       Wer den Merker weglaesst, loescht dem Anwender bei jedem Auswahlwechsel
+       seinen eigenen Text weg. (Das ist der Unterschied zu ProjektKopieDialog:
+       Dort ueberschreibt ein Auswahlwechsel die drei Verwaltungsfelder BEWUSST,
+       weil sie sichtbar zum gewaehlten Projekt gehoeren; ein Bezeichner gehoert
+       dem Anwender.)
+     * DER ZIELNAME KOMMT AUS DEM KERN. „<Stamm> - <Bezeichner>" samt Zaehler bei
+       Kollision rechnet VariantenCtrl.Zielname; der Dialog fragt ihn ueber den
+       Delegaten Zielname. Eine zweite Fassung derselben Regel liefe auseinander -
+       der Zaehler ist es, den man beim Nachbauen vergisst.
+     * DER KNOPF IST GESPERRT, NICHT DIE MELDUNG NACHTRAEGLICH. Ohne Bezeichner
+       (wie bisher) und - mit Haken - ohne gewaehltes Projekt bleibt „Variante
+       anlegen" gesperrt; warum, sagt das Hinweisband darueber.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Projektzeilen und die Namensregel
+   kommen als [Parameter] bzw. Delegat herein - aus EPOS.UI.Daten
+   /Projekt/ProjektVarianteHuelle. *@
+
+@namespace EPOS.UI.Dialoge.Projekt
+
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-dialog" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+        }
+    </div>
+
+    <Herleitungszeile Text="@HinweisZeile" />
+
+    <Schalter Bezeichnung="@QuelleHakenText" Wert="@_ausQuelle" WertChanged="BeiHaken" />
+
+    @if (_ausQuelle)
+    {
+        <ProjektListe Zeilen="@Zeilen"
+                      Suche="@_suche" SucheChanged="@(s => _suche = s)"
+                      Markiert="@_idQuelle" MarkiertChanged="BeiMarkierung"
+                      Gewaehlt="BeiMarkierung"
+                      AutoVorauswahl="false"
+                      AnzahlFormat="@AnzahlFormat"
+                      SpalteName="@SpalteName" SpalteKunde="@SpalteKunde"
+                      SpalteGeaendert="@SpalteGeaendert" SpalteArt="@SpalteArt"
+                      ArtStammText="@ArtStammText" ArtVarianteText="@ArtVarianteText"
+                      VarianteVonFormat="@VarianteVonFormat" SucheText="@SucheText"
+                      WahlText="@WahlText" LeerText="@LeerText" />
+    }
+
+    <label class="epos-feld">
+        <span class="epos-feld-text">@FrageText</span>
+        <span class="epos-feld-zeile">
+            <input class="epos-eingabe" type="text" value="@_bezeichner" @ref="_feld"
+                   @oninput="BeiEingabe" />
+        </span>
+    </label>
+
+    @if (!string.IsNullOrEmpty(Zielzeile))
+    {
+        <Herleitungszeile Text="@Zielzeile" />
+    }
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@OkErlaubt" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Fenstertitel und Kopfzeile (<c>VAR_DLG_TITEL</c>); leer = kein eigener Titel.</summary>
+    [Parameter] public string TitelText { get; set; } = "Als Variante speichern";
+
+    /// <summary>Der Name des STAMMPROJEKTS — er bildet den Zielnamen mit.</summary>
+    [Parameter] public string StammName { get; set; } = "";
+
+    /// <summary>Die wählbaren Quellprojekte (<c>ProjektCtrl.NamenListe</c>).</summary>
+    [Parameter] public IReadOnlyList<ProjektKopfZeile> Zeilen { get; set; } = Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>
+    /// Der Zielname zu einem Bezeichner — <c>VariantenCtrl.Zielname</c>. Ohne den
+    /// Delegaten bleibt die Vorschauzeile leer (Prüfstand).
+    /// </summary>
+    [Parameter] public Func<string, string>? Zielname { get; set; }
+
+    /// <summary>
+    /// Die Antwort: der Bezeichner samt gewähltem Quellprojekt, oder <c>null</c> bei
+    /// Abbruch.
+    /// </summary>
+    [Parameter] public EventCallback<ProjektVarianteWahl?> Geschlossen { get; set; }
+
+    /// <summary>Der Satz ohne Haken (<c>VAR_DLG_HINWEIS</c>, <c>{0}</c> = Stamm) — fertig gefüllt.</summary>
+    [Parameter] public string HinweisText { get; set; } = "";
+
+    /// <summary>
+    /// Der Satz MIT gewählter Quelle (<c>VAR_DLG_HINWEIS_QUELLE</c>): <c>{0}</c> = Quelle,
+    /// <c>{1}</c> = Zielname, <c>{2}</c> = Stamm.
+    /// </summary>
+    [Parameter] public string HinweisQuelleFormat { get; set; } =
+        "Das Projekt „{0}“ wird als Variante „{1}“ des Stammprojekts „{2}“ kopiert. " +
+        "Das geöffnete Projekt bleibt unverändert.";
+
+    /// <summary>Beschriftung des Kontrollkästchens (<c>VAR_DLG_QUELLE_HAKEN</c>).</summary>
+    [Parameter] public string QuelleHakenText { get; set; } =
+        "Inhalt aus einem bestehenden Projekt übernehmen";
+
+    /// <summary>Die Vorschauzeile (<c>VAR_DLG_ZIELNAME</c>); <c>{0}</c> = Zielname.</summary>
+    [Parameter] public string ZielnameFormat { get; set; } = "Neuer Projektname: {0}";
+
+    /// <summary>Warum der Knopf gesperrt ist, solange kein Projekt gewählt ist (<c>VAR_MSG_QUELLE_WAEHLEN</c>).</summary>
+    [Parameter] public string MeldungQuelleWaehlen { get; set; } =
+        "Bitte ein Projekt wählen, dessen Inhalt übernommen werden soll.";
+
+    /// <summary>Beschriftung des Bezeichnerfeldes (<c>BK_LBL_BEZEICHNER</c>).</summary>
+    [Parameter] public string FrageText { get; set; } = "Bezeichner:";
+
+    /// <summary>Beschriftung des Anlegeknopfes (<c>BK_BTN_ANLEGEN</c>).</summary>
+    [Parameter] public string OkText { get; set; } = "Variante anlegen";
+
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    [Parameter] public string AnzahlFormat { get; set; } = "{0} von {1} Projekten";
+    [Parameter] public string SpalteName { get; set; } = "Projektname";
+    [Parameter] public string SpalteKunde { get; set; } = "Kunde";
+    [Parameter] public string SpalteGeaendert { get; set; } = "Geändert";
+    [Parameter] public string SpalteArt { get; set; } = "Art";
+    [Parameter] public string ArtStammText { get; set; } = "Stamm";
+    [Parameter] public string ArtVarianteText { get; set; } = "Variante";
+    [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+    [Parameter] public string SucheText { get; set; } = "Suchen:";
+    [Parameter] public string WahlText { get; set; } = "Wahl";
+    [Parameter] public string LeerText { get; set; } = "Es ist noch kein Projekt angelegt.";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private ElementReference _feld;
+    private bool _ersterAufbau = true;
+
+    private bool _ausQuelle;
+    private int _idQuelle;
+    private string _quellName = "";
+    private string _suche = "";
+
+    private string _bezeichner = "";
+
+    /// <summary>
+    /// Hat der Anwender den Bezeichner SELBST getippt? Dann überschreibt ihn keine
+    /// Projektwahl mehr — der Merker ist der ganze Unterschied zwischen „Vorbelegung"
+    /// und „Bevormundung".
+    /// </summary>
+    private bool _vonHand;
+
+    private string _meldung = "";
+
+    /// <summary>Der Feldinhalt (Prüfhilfe für Tests).</summary>
+    public string Bezeichner => _bezeichner;
+
+    /// <summary>Das gewählte Quellprojekt, 0 = keines (Prüfhilfe für Tests).</summary>
+    public int IdQuelle => _idQuelle;
+
+    /// <summary>Ist das Kästchen angehakt? (Prüfhilfe für Tests.)</summary>
+    public bool AusQuelle => _ausQuelle;
+
+    /// <summary>Ist „Variante anlegen" gerade anklickbar? (Prüfhilfe für Tests.)</summary>
+    public bool OkErlaubt
+        => !string.IsNullOrWhiteSpace(_bezeichner) && (!_ausQuelle || _idQuelle > 0);
+
+    /// <summary>
+    /// Der Hinweissatz folgt dem Zustand: ohne Haken (oder ohne gewählte Quelle) der
+    /// bisherige Satz, sonst der Satz mit Quelle, Zielname und Stamm.
+    /// </summary>
+    public string HinweisZeile
+    {
+        get
+        {
+            if (!_ausQuelle || _idQuelle <= 0) return HinweisText;
+            return string.Format(HinweisQuelleFormat, _quellName, ZielnameJetzt, StammName);
+        }
+    }
+
+    /// <summary>Die Vorschauzeile; leer, solange kein Bezeichner dasteht.</summary>
+    public string Zielzeile
+    {
+        get
+        {
+            string ziel = ZielnameJetzt;
+            return string.IsNullOrEmpty(ziel) ? "" : string.Format(ZielnameFormat, ziel);
+        }
+    }
+
+    /// <summary>
+    /// Der Zielname aus DER Kernregel (<c>VariantenCtrl.Zielname</c>); leer ohne
+    /// Bezeichner. Ein Fehlschlag der Namensfrage (die Datenbank antwortet nicht)
+    /// darf den Dialog nicht mitreißen — dann bleibt die Vorschau eben leer.
+    /// </summary>
+    private string ZielnameJetzt
+    {
+        get
+        {
+            string b = (_bezeichner ?? "").Trim();
+            if (b.Length == 0 || Zielname is null) return "";
+            try { return Zielname(b) ?? ""; }
+            catch { return ""; }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _feld.FocusAsync();
+    }
+
+    private void BeiHaken(bool an)
+    {
+        _ausQuelle = an;
+        _meldung = an && _idQuelle <= 0 ? MeldungQuelleWaehlen : "";
+    }
+
+    private void BeiMarkierung(ProjektKopfZeile? z)
+    {
+        _idQuelle = z?.Id ?? 0;
+        _quellName = z?.Name ?? "";
+        _meldung = _ausQuelle && _idQuelle <= 0 ? MeldungQuelleWaehlen : "";
+
+        // Die Vorbelegung des Anwenderwunsches: „default ist Variantenbezeichner =
+        // Projektname des ausgewaehlten zu uebernehmenden Projektes" - aber nur,
+        // solange der Anwender nicht selbst getippt hat.
+        if (!_vonHand) _bezeichner = _quellName;
+    }
+
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        _bezeichner = e.Value?.ToString() ?? "";
+        _vonHand = true;
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(null); return; }
+        if (!OkErlaubt) return;
+
+        await Geschlossen.InvokeAsync(
+            new ProjektVarianteWahl(_bezeichner.Trim(), _ausQuelle ? _idQuelle : 0));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        // Enter tut nichts, solange der Knopf gesperrt ist - sonst umginge die Taste
+        // genau die Regel, die der Knopf sichtbar macht (Hausmuster NamensDialog).
+        "Enter" => OkErlaubt ? BeiErgebnis(true) : Task.CompletedTask,
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

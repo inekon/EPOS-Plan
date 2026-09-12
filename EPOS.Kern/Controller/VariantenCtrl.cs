@@ -103,16 +103,72 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------- Anlegen
 
         /// <summary>
+        /// Der ZIELNAME einer neuen Variante: „&lt;Stamm&gt; - &lt;Bezeichner&gt;", bei
+        /// Kollision mit Zähler („ (2)", „ (3)" …).
+        ///
+        /// <para><b>Warum die Regel eine eigene Methode ist</b> (Auftrag #237): Der Dialog
+        /// „Als Variante speichern" zeigt den Namen seit dem Anwenderwunsch vom 12.09.2026
+        /// LIVE an, während der Anwender tippt. Er darf ihn nicht selbst zusammensetzen —
+        /// eine zweite Fassung derselben Regel liefe über kurz oder lang auseinander
+        /// (der Zähler ist es, der beim Nachbauen vergessen wird). Er fragt deshalb
+        /// dieselbe Methode, die <see cref="AnlegenAusStamm(int, string, string, int, out string)"/>
+        /// gleich darauf anwendet.</para>
+        /// </summary>
+        public string Zielname(string stammName, string bezeichner)
+        {
+            string basisName = (stammName ?? "") + " - " + (bezeichner ?? "").Trim();
+            string neuerName = basisName;
+            int n = 2;
+            while (ProjektnameExistiert(neuerName)) { neuerName = basisName + " (" + n + ")"; n++; }
+            return neuerName;
+        }
+
+        /// <summary>
         /// Legt aus einem Stammprojekt eine Variante an: Projekt duplizieren,
         /// Tab_Variante-Verknüpfung eintragen, Energieträger-Einstellungen kopieren.
         /// Rückgabe: neue Projekt-ID der Variante, -1 bei Fehler (fehler beschreibt die Ursache).
         /// </summary>
         public int AnlegenAusStamm(int idStamm, string stammName, string bezeichner, out string fehler)
         {
+            return AnlegenAusStamm(idStamm, stammName, bezeichner, idStamm, out fehler);
+        }
+
+        /// <summary>
+        /// Dieselbe Anlage, der INHALT aber aus einem beliebigen QUELLPROJEKT
+        /// (Anwenderwunsch 12.09.2026, Auftrag #237: „Ermögliche eine Variante aus einem
+        /// bestehenden Projekt anzulegen").
+        ///
+        /// <para><b>Zwei Projekte, zwei Rollen.</b> Der STAMM
+        /// (<paramref name="idStamm"/>/<paramref name="stammName"/>) gibt den Namen und
+        /// die Gruppenzugehörigkeit: Der neue Projektname bleibt
+        /// „&lt;Stamm&gt; - &lt;Bezeichner&gt;", und <c>Tab_Variante.ID_ProjektRef</c> zeigt
+        /// auf ihn — sonst wäre die Vergleichsgruppe der Wirtschaftlichkeit keine Gruppe
+        /// mehr. Die QUELLE (<paramref name="idQuelle"/>) gibt den INHALT: Sie wird
+        /// tiefkopiert, und auch die Energieträger-Einstellungen kommen aus ihr, damit die
+        /// Variante fachlich das gewählte Projekt IST.</para>
+        ///
+        /// <para><b>Der bisherige Weg ist der Sonderfall Quelle = Stamm</b> — dann läuft
+        /// hier Zeile für Zeile dasselbe wie vorher, einschließlich des Namens, unter dem
+        /// dupliziert wird (<paramref name="stammName"/> selbst, nicht ein zweites Mal
+        /// aus der Datenbank gelesen).</para>
+        /// </summary>
+        /// <param name="idQuelle">Das zu kopierende Projekt; <c>&lt;= 0</c> oder gleich
+        /// <paramref name="idStamm"/> heißt: der Stamm selbst.</param>
+        public int AnlegenAusStamm(int idStamm, string stammName, string bezeichner,
+                                   int idQuelle, out string fehler)
+        {
             fehler = null;
             bezeichner = (bezeichner ?? "").Trim();
             if (idStamm <= 0 || string.IsNullOrWhiteSpace(stammName)) { fehler = "Kein Stammprojekt angegeben."; return -1; }
             if (bezeichner.Length == 0) { fehler = "Bitte einen Bezeichner für die Variante eingeben."; return -1; }
+
+            // Die Quelle: der Stamm, solange keine andere genannt ist. Ihr NAME ist der
+            // Schlüssel des Kopierlaufs (ProjektDuplizierenCtrl arbeitet über den Namen,
+            // Projektnamen sind eindeutig — W15a-O-3).
+            bool eigeneQuelle = idQuelle > 0 && idQuelle != idStamm;
+            string quellName = eigeneQuelle ? StartseiteCtrl.Projektname(idQuelle) : stammName;
+            if (string.IsNullOrWhiteSpace(quellName)) { fehler = "Das Quellprojekt wurde nicht gefunden."; return -1; }
+            int idInhalt = eigeneQuelle ? idQuelle : idStamm;
 
             StelleVariantentabelleSicher();
 
@@ -121,14 +177,11 @@ namespace WindowsFormsApplication1
             EntferneWaisen();
 
             // Eindeutigen Projektnamen bilden: "<Stamm> - <Bezeichner>" (ggf. mit Zähler).
-            string basisName = stammName + " - " + bezeichner;
-            string neuerName = basisName;
-            int n = 2;
-            while (ProjektnameExistiert(neuerName)) { neuerName = basisName + " (" + n + ")"; n++; }
+            string neuerName = Zielname(stammName, bezeichner);
 
             try
             {
-                int neueId = new ProjektDuplizierenCtrl().Duplizieren(stammName, neuerName);
+                int neueId = new ProjektDuplizierenCtrl().Duplizieren(quellName, neuerName);
                 if (neueId <= 0) { fehler = "Variante konnte nicht angelegt werden (Duplizieren fehlgeschlagen)."; return -1; }
 
                 int vid = DataRepository.GetMaxID(TAB_VARIANTE, "ID") + 1;
@@ -139,7 +192,7 @@ namespace WindowsFormsApplication1
                     new DbParam("@ref", idStamm),
                     new DbParam("@name", bezeichner));
 
-                KopiereEnergieEinstellungen(idStamm, neueId);
+                KopiereEnergieEinstellungen(idInhalt, neueId);
                 return neueId;
             }
             catch (Exception ex)

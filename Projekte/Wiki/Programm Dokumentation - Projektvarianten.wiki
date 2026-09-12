@@ -1,0 +1,20 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Projektvarianten
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Projektvarianten.wiki
+     Stand: 2026-09-12 (Variante aus einem bestehenden Projekt anlegen)
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Eine '''Projektvariante''' ist eine eigenständige Kopie eines Projekts, die dauerhaft an ihrem '''Stammprojekt''' hängt. Varianten eines Stammprojekts bilden eine Vergleichsgruppe: Der Bericht und die Wirtschaftlichkeitsrechnung stellen sie einander gegenüber. Der Name einer Variante entsteht aus dem Namen des Stammprojekts und einem frei wählbaren '''Bezeichner''' – etwa ''Laurentiuskirche - Gasbrennwert''.
+
+== Als Variante speichern ==
+
+Der Dialog erscheint über das Auswahlfeld ''Projekt'' im Kopfband der Startseite und über den Menüpunkt ''Als Variante speichern…''. Ist gerade eine Variante geöffnet, wird ihr Stammprojekt verwendet – eine Variante hängt immer am Stamm, nie an einer anderen Variante.
+
+* '''Bezeichner''' – der Zusatz, der den Namen der Variante bildet. Ohne Bezeichner bleibt ''Variante anlegen'' gesperrt. Unter dem Feld steht laufend der Name, den die neue Variante bekommen wird; ist er schon vergeben, hängt das Programm eine Zählnummer an.
+* '''Inhalt aus einem bestehenden Projekt übernehmen''' – ohne Haken wird der aktuelle Stand des Stammprojekts gesichert; das ist der bisherige Weg. Mit Haken erscheint darunter die Projektliste, und die Variante übernimmt den Inhalt des dort gewählten Projekts – alle Anlagen, Bedarfe, Zeitreihen und Energieträgereinstellungen. Der Name und die Zugehörigkeit zur Vergleichsgruppe kommen weiterhin vom Stammprojekt.
+* '''Vorbelegter Bezeichner''' – wird ein Projekt gewählt, trägt das Programm dessen Projektnamen als Bezeichner ein. Ein selbst eingetippter Bezeichner bleibt dabei stehen und wird nicht überschrieben.
+* '''Variante anlegen''' – legt die Kopie an. Das geöffnete Projekt bleibt unverändert; die neue Variante erscheint anschließend im Auswahlfeld des Kopfbands und im Reiter ''Berichte & Kosten''.
+
+Solange das Kästchen gesetzt, aber kein Projekt gewählt ist, bleibt ''Variante anlegen'' gesperrt und ein Hinweis nennt den Grund.
+
+== Variante umbenennen ==
+
+Über ''Variante umbenennen…'' lässt sich der Bezeichner nachträglich ändern. Der Projektname zieht mit: Aus ''Laurentiuskirche - Gasbrennwert'' wird zum Beispiel ''Laurentiuskirche - Fassung B''. Ein Stammprojekt lässt sich auf diesem Weg nicht umbenennen – sein Name ist der Schlüssel der ganzen Gruppe und wird über ''Speichern unter…'' vergeben.
