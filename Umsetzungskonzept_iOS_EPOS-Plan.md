@@ -3946,6 +3946,22 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > kein iOS-Lauf (trifft die Hülle nicht), optischer Beleg auf dem iPad fehlt.
 > Gate sept41 auf `c0be2cf` (Stand nach #230b): Kern 2 685, UI 3 893, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#233 (12.09.2026, `c4857b5`, Merge `2f57bcc`) — Startseiten-Reiter „Simulation" als Bedienblock (Anwenderrückmeldung „das Layout ist nicht
+> gut/stimmt nicht — Größe, Lesbarkeit", Bildschirmfoto).** Befund: links drei Elemente in drei Breiten (Projektzusammenfassung ~600 px mit
+> blauen Werten, grauer Knopf „Simulation Konfiguration…" ~355 px, eine 190 px schmale Startseiten-Kachel „Simulation starten" mit 84-px-Sinnbild
+> und dreizeilig umgebrochenem Untertitel), rechts eine große leere Fläche „Ergebnis" mit aktivem „Ergebnis speichern" und einer einsamen
+> Hinweiszeile — das Kachelraster der Drei-Spalten-Reiter (W16b‑E‑7) passt in einer schmalen Spalte nicht. Jetzt: linker Bedienblock fester
+> Breite (360 px) mit kompakter Zusammenfassung (Werte halbfett in Textfarbe statt Markenblau, Kontrast 6,8 → 13,4 : 1), Hauptknopf
+> „Simulation starten ▶" in Blockbreite mit grauer Erklärzeile, Zweitknopf „Simulation Konfiguration…" in Blockbreite (Text und Sinnbild
+> bleiben: Ressourcen liegen im Kern, W16b‑E‑3), darunter Fortschritt/Abbrechen/Sperrgrund; rechts „Ergebnis speichern" ohne Ergebnis
+> gesperrt (Tooltip = Hinweistext), Leerzustand als ruhige Karte mit dem Kachelbild; unter 1 100 px untereinander. Gefallen: das Kachelraster
+> im Reiter, drei Kachelhelfer, das Warnbanner am Spaltenfuß, die 1fr:2fr-Aufteilung; geblieben: alle Kachelschlüssel/-bilder, Ressourcen,
+> Wege, Sperrprüfung, Lauf, Marke — keine Hüllenänderung, kein iOS-Lauf. Elf neue bunit-Fälle (5 Bedienung, 6 Stilblatt); Regel in
+> `EPOS.UI/CLAUDE.md` („Kachelraster nur in Drei-Spalten-Reitern, im Zweispalten-Reiter ein Bedienblock"); Konzept Simulationsablauf 9.8;
+> Wiki-Quelle Simulation (Upload durch die Orchestrierung). **Offen:** Windows-Sichtprüfung des Blocks.
+> Gate sept42 auf `2f57bcc`: Kern 2 685, UI 3 904, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 343, ChartProben 57,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >

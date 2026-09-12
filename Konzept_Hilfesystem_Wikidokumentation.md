@@ -849,4 +849,7 @@ Minimumfarbe); 27 366 → 27 872 Zeichen, Nachprobe zeichengleich bis auf den Ze
 die Bedienungsseite beschreibt die fünf Stationen neu (Station „4 Optimierung" mit Suchraumtabelle, Kandidatenzeile, Feinraster-Schalter
 und Kasten „Bestes Ergebnis", Größen-Sicht dort statt in Schritt 5; 27 871 → 36 499 Zeichen), die Rechenwegseite trägt den Unterabschnitt
 „Phase 2: das Feinraster um das Grob-Optimum" mit den Gleichungen 47–49 und nachgezogenen Folgegleichungen (76 391 → 79 130 Zeichen);
-beide Nachproben zeichengleich bis auf den Zeilenumbruch am Dateiende.
+beide Nachproben zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Simulation` Revision 557** (12.09.2026, Merge `2f57bcc`,
+Gate sept42, #233) mit dem neu gefassten Abschnitt zum Startreiter (Bedienblock mit Hauptknopf „Simulation starten", Zweitknopf
+„Simulation Konfiguration…", Leerzustand-Karte, „Ergebnis speichern" nur mit Ergebnis); Nachprobe zeichengleich bis auf den Zeilenumbruch
+am Dateiende.
