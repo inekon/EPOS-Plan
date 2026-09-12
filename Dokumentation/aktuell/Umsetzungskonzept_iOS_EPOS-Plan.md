@@ -4253,6 +4253,41 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > jede Kennung in Statusblöcken vor diesem Block ist eine alte), die 1 355 Signaturen der alten Commits entfallen, jeder Rechner klont neu,
 > aus einem alten Klon wird nie wieder gepusht. GitHub gibt den Speicher erst nach eigener Bereinigung frei; `refs/pull/1/*` halten die alte
 > Geschichte bis dahin. Kein Rechenweg, keine Ressource, kein SQL berührt; Gate nicht nötig (Baum identisch).
+>
+> **#245 (12.09.2026, Anwenderbefund per Bildschirmfoto: in Station „4 Optimierung" springt bei jeder Tastatureingabe der Fokus aus den
+> Zahlenfeldern der Tabelle „Suchraum je Einheit") — umgesetzt (`7deecd56`, Merge `a35b1022`, Agent Opus; 5 Dateien, +208/−4).** Ursache
+> in jedem Glied am Code belegt: `Zahlenfeld`/`Ganzzahlfeld` melden per `@oninput` je Tastendruck, `OptimierungBlock` reicht über
+> `Geaendert` an `StromspeicherAuslegungSeite.FlotteGeschrieben()`, und das ersetzt die Flottenkonfiguration durch eine JSON-Tiefenkopie
+> (`SpeicherAuslegungKopie.Von`) — aus gutem Grund, vier Blätter schreiben an derselben Konfiguration; `FlottenAuslegungsAchse`
+> überschreibt `Equals` nicht, `<tr @key="a">` verglich also Referenzen, sah je Tastendruck einen neuen Schlüssel, und Blazor riss die
+> Zeile samt `<input>` ab. Zweite Hälfte des Befunds, die niemand gemeldet hatte: ein frisch aufgebautes `Zahlenfeld` hat keine
+> Texterinnerung und schrieb „640," zu „640" — das Dezimaltrennzeichen ging mitten in der Eingabe verloren. **Fix a) allein:** `@key` auf
+> Wertidentität — `OptimierungBlock.Zeilenschluessel` = „id:" + (`ErsetztEinheitId` ?? `Vorlage.Id`), dieselbe Zuordnung, mit der der
+> Optimierer die Achse ihrer Einheit zuordnet, als Text kopiefest; fehlt die Kennung oder trägt eine zweite Achse dieselbe, entscheidet
+> „#" + Zeilennummer (ein doppelter `@key` bricht den Zeichenlauf ab). **Fix b) geprüft und begründet verworfen:** die Tiefenkopie je
+> Tastendruck ist lasttragend — drei Editoren (`SpeicherFlottenEditor`, `SpeicherFlottenBetriebEditor`, `SpeicherAuslegungEditor`)
+> frischen ihre Arbeitskopie nur an einer geänderten REFERENZ auf; bliebe sie stehen, schriebe jeder beim nächsten Feld seinen alten Stand
+> zurück. Aufwandspunkt, kein Fehler: die Kopie serialisiert je Tastendruck die ganze Konfiguration; eine Fassungsnummer statt der
+> Referenzprüfung wäre der saubere Weg, falls es je spürbar wird. **Zweite Stelle desselben Musters** in `SpeicherFlottenEditor.razor`
+> (Lebensdauerkurve, `@key="punkt"` — `OnParametersSet` baut `_wert` je gemeldetem Feld neu auf): Schlüssel ist jetzt die Zeilennummer
+> innerhalb der per `einheit.Id` getrennten Einheit. Alle übrigen `@key` in EPOS.UI gesichtet und belassen — Wertidentitäten
+> (`einheit.Id`, `k.AnlageId`, `zeile.Id`, `z.Kennung`, `eintrag.Id`, `Rasterstand`) oder gewollte Neuaufbauten über Zähler (`_stand`,
+> `_wahlfeldSchluessel`, `_extrapolationSchluessel`, KiChat); die einzige verbleibende Objektreferenz `WaermepumpenDialog` (`_gewaehlt`)
+> wechselt nur bei Zeilenwahl und MUSS die Detailansicht neu aufbauen (W7‑B‑3). **Wachen:** drei bunit-Fälle, vor dem Fix rot
+> (`Assert.Same` „not the same instance", Erwartet „640," / Tatsächlich „640"), messen die Identität der KOMPONENTEN-Instanzen statt der
+> DOM-Knoten — bunit liest das Markup nach jeder Änderung neu ein, AngleSharp-Knoten sind danach immer neu; Hausregel in `EPOS.UI/CLAUDE.md`
+> nach dem #235-Absatz: „`@key` nie auf ein Objekt, das eine Kopie je Änderung neu erzeugt — Wertidentität nehmen". UI-Tests 3 958 → 3 961.
+> Kein Rechenweg, keine Ressource, kein SQL berührt. **Dazu #246 (Konzept, SD‑E‑10):** die Anwenderrückmeldung zur Suchsemantik
+> („Variation der Größe ergibt nur Sinn ohne vorgegebenen Speichertyp; für mehrere Speicher ist die Stückzahl die Variable — eine zweite
+> Methode; Dialog übersichtlicher") steht als Kapitel 8 im Konzept `Dokumentation/aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`
+> (`a47e0f54`): zwei Suchmethoden „Größe suchen" (freie Einheit, Stückzahl fest 1) und „Stückzahl suchen" (Einheit aus Projektanlage oder
+> Katalog, Größe fest, Stückzahl von–bis je Einheit, Kandidaten = Produkt der Stückzahlbereiche × Ziele, kein Feinraster), Herkunftsfeld
+> `FlottenEinheit.Herkunft` (Altbestand: `AnlageId` → Projektanlage, sonst Katalog), Engine-Feld `FlottenAuslegungsAchse.Suchart`, Karten
+> je Einheit statt der Neun-Spalten-Tabelle, Fragen SD‑Q13…Q18 mit Empfehlung — **Entscheid offen**; das Mockup
+> `Mockups/stromspeicher-optimierung-v2.html` (Agent Opus, `ff2f12bb`, Merge `82f00552`) zeigt Kopfblock, Karten und Ergebniskasten für beide
+> Methoden. Der in 7.4 genannte Pfad `stromspeicher-optimierung.html` existierte nie, der Verweis ist berichtigt. **Gate sept55 auf
+> `a35b1022`** (#245-Merge; das Mockup kam danach hinzu und ändert nichts, was das Gate misst): Kern 2 743, UI 3 961, Engine 425, KiKern 488,
+> 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61 Bilder und 14 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
