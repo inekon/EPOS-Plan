@@ -4,7 +4,7 @@
 **Grundlagen:**
 - `Bestandsaufnahme_Kosten-Energie-Dialogstruktur.md` (19.08.2026)
 - Verifikationslauf „tote Tabellen/Abfragen" (19.08.2026, Agentenlauf über Repo + `Referenzlaeufe\Arbeitskopie\Kenndaten.accdb`)
-- Kosteneingabe-Extraktion der Altanwendung `BHKWPlan\BHKW-WP-PLAN.XLSM` + `TABELLEN.XLS` (19.08.2026, UserForm-Designerdaten + VBA + Blattzellen)
+- Kosteneingabe-Extraktion der Altanwendung `Quellen\BHKWPlan\BHKW-WP-PLAN.XLSM` + `TABELLEN.XLS` (19.08.2026, UserForm-Designerdaten + VBA + Blattzellen)
 - `WindowsFormsApplication1\Allgemein\Reporting\Analyse_Altanwendung_BHKW-Plan.md`
 - `Grundlagen_KWKG_Energiesteuer_Stromsteuer.md` (18.08.2026)
 
@@ -303,7 +303,7 @@ Mit den Entscheidungen vom 19.08.2026 (§ 11) ist das Konzept **umsetzungsreif**
 
 ## Anhang A — Kosteneingabe der Altanwendung (Extraktion 19.08.2026)
 
-Quelle: `BHKWPlan\BHKW-WP-PLAN.XLSM` (VBA/UserForms) + `TABELLEN.XLS` (Blatt `Tab_Kosten`, `Tab_Wirtschaftlichkeit`); Passwort-geschützte Dateien rein lesend entschlüsselt; Belege je Zeile beim Extraktionslauf.
+Quelle: `Quellen\BHKWPlan\BHKW-WP-PLAN.XLSM` (VBA/UserForms) + `TABELLEN.XLS` (Blatt `Tab_Kosten`, `Tab_Wirtschaftlichkeit`); Passwort-geschützte Dateien rein lesend entschlüsselt; Belege je Zeile beim Extraktionslauf.
 
 ### A(a) Investitionspositionen (`Dial_KostenEing`, alle netto)
 

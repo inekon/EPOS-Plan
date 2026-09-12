@@ -388,6 +388,18 @@ Erster Durchgang: Auftrag #242 (12.09.2026) entfernte `.work/`, die Access-Siche
 `DB-Backup/`, vier `.bak`-Kopien, den SQLite-Spike `sqlite-probe/`, vier Lizenzserver-Originale
 und das Berichtsgerüst-Archiv.
 
+**Git LFS (Anwenderentscheid AUF‑Q2 vom 12.09.2026, Auftrag #243).** Vier Muster der
+`.gitattributes` liegen seit #243 in Git LFS: `Referenzlaeufe/Kenndaten_Test.sqlite` und
+`VDI-3805-Daten/**/*.zip|*.vdi|*.VDI` — 69 Dateien, rund 165 MB; die vier Access-Zeilen sind
+dafür gefallen. **Die Testdatenbank darf nur mit aktivem LFS-Filter committet werden** — wer
+`git lfs install` auf seinem Rechner nie gefahren hat, legt wieder einen 68-MB-Blob in die
+Geschichte, und die wird nicht umgeschrieben (AUF‑Q1 offen). Die Workflows checken **ohne**
+`lfs: true` aus und ziehen gezielt: `kern.yml`, `windows.yml`/`build-test` und `ios.yml` nur
+die Testdatenbank (mit Actions-Cache auf `.git/lfs`), allein `windows.yml`/`installer`
+vollständig, weil das Setup `VDI-3805-Daten\*` mit einpackt. Einrichtung, Bandbreitenregel und
+die Meldung bei einer Zeigerdatei stehen in
+[`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md), Abschnitt „Git LFS".
+
 
 ## Compact instructions
 

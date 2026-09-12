@@ -538,7 +538,7 @@ Gemessener Förderverlust je Kohorte (LfL, SMARD-Profil): Neuanlagen 2023: 6,7 %
 
 ## Nachtrag 1 (25.08.2026) — Abgleich mit pv@now („PV-Now", DGS Franken)
 
-Quellen (Ordner `PV-Konzept_PV-Now\`, Stand 25.08.2026): `Betreibermodelle_Verguetungen_PV_Uebersicht (1).docx`
+Quellen (Ordner `Quellen\PV-Now\`, bis #243 `PV-Konzept_PV-Now\`, Stand 25.08.2026): `Betreibermodelle_Verguetungen_PV_Uebersicht (1).docx`
 (Systematik des pv@now manager 10.0.0: Betreibermodelle, Erlöswege, Rechtsrahmen),
 `Betreibermodelle_Verguetungen_PV (2).xlsx` (11 Blätter: Modellkatalog, Erlöswege, Methodik,
 Kennzahlen-Herleitung, Vergütungssätze, Marktwerte, Projektvergleich „INEKON Schulung 01"),
@@ -638,7 +638,7 @@ Der pv@now-Schulungsfall „INEKON Schulung 01" wird Referenz-Testfall des EPOS-
 83,4 %, feste EV 7,47 ct/kWh (Mischsatz IBN 2023), Betriebskosten 2.040 €/a · Plan Volleinspeisung:
 11,60 ct/kWh, 1.600 €/a. Soll-Kennzahlen (pv@now): Kapitalwert **+92.568 €** / **−22.979 €**,
 IRR 15,99 % / −2,10 %, Amortisation 8/9 Jahre bzw. keine, LCOE 17,85/16,47 (LCOE₀ 14,64/13,25)
-ct/kWh. `kennzahlen_modell.py` (Ordner PV-Konzept_PV-Now, reines Python ohne Abhängigkeiten)
+ct/kWh. `kennzahlen_modell.py` (Ordner `Quellen\PV-Now`, bis #243 `PV-Konzept_PV-Now`, reines Python ohne Abhängigkeiten)
 reproduziert diese Werte monatsgenau mit Ø 0,20 % Abweichung und dient als **Prüfstand**: Der
 EPOS-Rechenweg muss den Fall in derselben Größenordnung treffen (Toleranzvorschlag ±1 % auf den
 Kapitalwert; Abweichungsquellen dokumentieren — EPOS rechnet jahresweise/ValERI, pv@now

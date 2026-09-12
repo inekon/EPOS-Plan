@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -25,12 +27,25 @@ namespace EPOS.Kern.Tests
     /// nur vor einem NEUEN <c>git add</c>, nicht vor einem bereits versionierten Fund, der
     /// über einen anderen Zweig zurückgemischt wird.</para>
     ///
-    /// <para><b>Was der Wächter NICHT prüft.</b> Er betritt <c>.git</c>, <c>bin</c>,
-    /// <c>obj</c> und <c>node_modules</c> nicht — dort liegen Bauartefakte, keine
-    /// versionierten Dateien. Die eine erlaubte Ausnahme von der <c>*.sqlite</c>-Regel ist
-    /// die Testdatenbank <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> (Setup- und
-    /// Vorlagendatenbanken liegen unter <c>Setup/Vorlage/</c> bzw. sind ohnehin
-    /// gitignored und stehen damit gar nicht im Arbeitsbaum eines sauberen Checkouts).</para>
+    /// <para><b>Der Wächter prüft, was VERSIONIERT ist — nicht, was im Ordner liegt.</b>
+    /// Bis zum ersten Gate nach #242 lief er über das Dateisystem und schlug dabei bei
+    /// jedem Entwickler an, der vorher einen Referenzlauf gefahren hatte: Der legt
+    /// <c>Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite</c> an (<c>.gitignore</c>), und die
+    /// Agenten-Arbeitsbäume unter <c>.claude/worktrees/…</c> tragen je eine vollständige
+    /// zweite Kopie des Bestands. Beides ist ausdrücklich nicht versioniert und geht den
+    /// Wächter nichts an — sein Gegenstand ist der Merge, nicht der Arbeitsplatz. Die
+    /// Dateiliste kommt deshalb aus <c>git ls-files -z</c>; Git-LFS-Zeiger stehen darin
+    /// wie jede andere Datei. Lässt sich <c>git</c> nicht starten (eine Umgebung ohne Git,
+    /// ein entpacktes Archiv), fällt der Wächter auf den Dateisystemlauf zurück, nimmt
+    /// dann aber <c>.claude</c>, <c>TestResults</c> und <c>Referenzlaeufe/Arbeitskopie</c>
+    /// zusätzlich aus — er besteht NIE still.</para>
+    ///
+    /// <para><b>Was der Wächter NICHT prüft.</b> <c>.git</c>, <c>bin</c>, <c>obj</c> und
+    /// <c>node_modules</c> — dort liegen Bauartefakte, keine versionierten Dateien. Die
+    /// eine erlaubte Ausnahme von der <c>*.sqlite</c>-Regel ist die Testdatenbank
+    /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> (Setup- und Vorlagendatenbanken liegen
+    /// unter <c>Setup/Vorlage/</c> bzw. sind ohnehin gitignored und stehen damit gar nicht
+    /// im versionierten Bestand).</para>
     /// </summary>
     public sealed class RepositoryOrdnungWacheTests : IDisposable
     {
@@ -38,14 +53,30 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _kultur.Dispose();
 
-        /// <summary>Ordnernamen, die es im Arbeitsbaum an KEINER Stelle geben darf.</summary>
+        /// <summary>Ordnernamen, die es im versionierten Bestand an KEINER Stelle geben darf.</summary>
         private static readonly string[] VerboteneOrdnernamen = { ".work", "DB-Backup" };
 
         /// <summary>
         /// Ordnernamen, die der Wächter nie betritt — Bauordner und Fremdwerkzeuge, keine
-        /// versionierten Dateien.
+        /// versionierten Dateien. <c>git ls-files</c> führt sie ohnehin nicht; für den
+        /// Rückfallweg über das Dateisystem sind sie die erste Ausnahmeliste.
         /// </summary>
         private static readonly string[] AusgenommeneOrdnernamen = { ".git", "bin", "obj", "node_modules" };
+
+        /// <summary>
+        /// NUR für den Rückfallweg über das Dateisystem: Ordner, die zwar im Arbeitsbaum
+        /// liegen, aber nicht versioniert sind — die Agenten-Arbeitsbäume
+        /// (<c>.claude/worktrees/…</c>) und die Testergebnisse. Über <c>git ls-files</c>
+        /// entstehen sie gar nicht erst.
+        /// </summary>
+        private static readonly string[] NurDateisystemAusgenommeneOrdnernamen = { ".claude", "TestResults" };
+
+        /// <summary>
+        /// NUR für den Rückfallweg: der Ablageort der Referenzlauf-Arbeitskopie, repo-relativ.
+        /// <c>EPOS.Referenzlauf</c> legt dort bei JEDEM Lauf eine <c>Kenndaten.sqlite</c> an
+        /// (<c>.gitignore</c>) — sie ist ein Laufartefakt, kein Repositoryinhalt.
+        /// </summary>
+        private const string NurDateisystemAusgenommenerPfad = "Referenzlaeufe/Arbeitskopie";
 
         /// <summary>
         /// Die verbotenen Dateimuster — Sicherungskopien von Quelltexten und
@@ -60,25 +91,18 @@ namespace EPOS.Kern.Tests
             ("*.laccdb",     new Regex(@"\.laccdb$",        RegexOptions.IgnoreCase | RegexOptions.Compiled)),
         };
 
-        /// <summary>Die einzige erlaubte <c>*.sqlite</c>-Datei im ganzen Arbeitsbaum, repo-relativ.</summary>
+        /// <summary>Die einzige erlaubte <c>*.sqlite</c>-Datei im Bestand, repo-relativ.</summary>
         private const string WeisslisteSqlite = "Referenzlaeufe/Kenndaten_Test.sqlite";
 
         // =====================================================================
         //  Der Wächter
         // =====================================================================
 
-        /// <summary>Keine Sicherungskopie von Quelltext oder Datenbank im Arbeitsbaum.</summary>
+        /// <summary>Keine Sicherungskopie von Quelltext oder Datenbank im Bestand.</summary>
         [Fact]
         public void Keine_Sicherungskopien_und_keine_Datenbankdateien()
         {
-            var funde = new List<string>();
-            foreach (string datei in Erfasse(Arbeitsbaum()).Dateien)
-            {
-                string name = Path.GetFileName(datei);
-                foreach (var muster in VerboteneDateimuster)
-                    if (muster.Muster.IsMatch(name))
-                        funde.Add(Kurzname(datei) + "  (" + muster.Name + ")");
-            }
+            List<string> funde = FundeSicherungskopien(Bestand().Dateien);
 
             Assert.True(funde.Count == 0,
                 "Diese Dateien gehoeren nicht ins Repository (Auftrag #242, Konzept " +
@@ -90,13 +114,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Kein_Arbeitsordner_und_kein_Datenbank_Sicherungsordner()
         {
-            var funde = new List<string>();
-            foreach (string ordner in Erfasse(Arbeitsbaum()).Ordner)
-            {
-                string name = Path.GetFileName(ordner);
-                if (VerboteneOrdnernamen.Contains(name, StringComparer.Ordinal))
-                    funde.Add(Kurzname(ordner) + "/");
-            }
+            List<string> funde = FundeVerboteneOrdner(Bestand().Ordner);
 
             Assert.True(funde.Count == 0,
                 "Diese Ordner gehoeren nicht ins Repository (Auftrag #242): Arbeitsordner " +
@@ -110,19 +128,100 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Sqlite_Dateien_nur_auf_der_Weissliste()
         {
-            string wurzel = Arbeitsbaum();
-            var funde = new List<string>();
-            foreach (string datei in Erfasse(wurzel).Dateien)
-            {
-                if (!datei.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase)) continue;
-                string kurz = Kurzname(datei);
-                if (kurz == WeisslisteSqlite) continue;
-                funde.Add(kurz);
-            }
+            List<string> funde = FundeFremdeSqlite(Bestand().Dateien);
 
             Assert.True(funde.Count == 0,
-                "Diese *.sqlite-Dateien stehen nicht auf der Weissliste - einzig erlaubt " +
-                "ist " + WeisslisteSqlite + " (Auftrag #242):\n" + string.Join("\n", funde));
+                "Diese *.sqlite-Dateien stehen VERSIONIERT im Repository - einzig erlaubt " +
+                "ist " + WeisslisteSqlite + " (Auftrag #242). Eine nicht versionierte Kopie " +
+                "im Arbeitsbaum (z. B. Referenzlaeufe/Arbeitskopie) ist hier NICHT gemeint:\n" +
+                string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// <b>Auftrag #243 (Anwenderentscheid AUF‑Q2, 12.09.2026).</b> Die
+        /// <c>.gitattributes</c> trägt die vier LFS-Regeln — Testdatenbank und die drei
+        /// Archivmuster unter <c>VDI-3805-Daten/</c>. Fällt eine davon bei einem Merge
+        /// heraus, landet die nächste Änderung an der Datenbank wieder als 68-MB-Blob in
+        /// der Geschichte, und das ist nicht mehr rückgängig zu machen (AUF‑Q1: keine
+        /// Geschichtsumschreibung).
+        /// </summary>
+        [Fact]
+        public void Die_gitattributes_traegt_die_vier_LFS_Regeln()
+        {
+            string wurzel = Arbeitsbaum();
+            Assert.Contains(".gitattributes", Bestand().Dateien);
+
+            string text = File.ReadAllText(Path.Combine(wurzel, ".gitattributes"));
+            foreach (string muster in LfsMuster)
+                Assert.True(text.Contains(muster + " filter=lfs diff=lfs merge=lfs -text", StringComparison.Ordinal),
+                    "In .gitattributes fehlt die LFS-Regel fuer \"" + muster + "\" (Auftrag #243). " +
+                    "Ohne sie wandert die naechste Fassung dieser Dateien als voller Blob in die " +
+                    "Geschichte - und dort bleibt sie.");
+        }
+
+        /// <summary>
+        /// <b>Auftrag #243.</b> Die Testdatenbank im Arbeitsbaum ist die Datenbank und
+        /// nicht ihr LFS-Zeiger. Ohne diesen Fall faellt ein Klon ohne aktiven LFS-Filter
+        /// erst tief in den Datenbankfaellen als „file is not a database" auf.
+        /// </summary>
+        [Fact]
+        public void Die_Testdatenbank_ist_kein_LFS_Zeiger()
+        {
+            string pfad = Path.Combine(Arbeitsbaum(), WeisslisteSqlite.Replace('/', Path.DirectorySeparatorChar));
+            Assert.Contains(WeisslisteSqlite, Bestand().Dateien);
+            if (!File.Exists(pfad)) return;   // Umgebung ohne die Datei - andere Faelle ueberspringen ebenso
+
+            Assert.False(LfsZeigerProbe.IstZeiger(pfad), LfsZeigerProbe.Meldung(pfad));
+        }
+
+        // =====================================================================
+        //  Die Regel als Funktion — dieselbe für den Bestand und die Gegenproben
+        // =====================================================================
+
+        /// <summary>Die vier Muster, die seit #243 in Git LFS liegen.</summary>
+        private static readonly string[] LfsMuster =
+        {
+            "Referenzlaeufe/Kenndaten_Test.sqlite",
+            "VDI-3805-Daten/**/*.zip",
+            "VDI-3805-Daten/**/*.vdi",
+            "VDI-3805-Daten/**/*.VDI",
+        };
+
+        /// <summary>Alle Sicherungskopien in einer übergebenen Pfadliste (repo-relativ).</summary>
+        private static List<string> FundeSicherungskopien(IEnumerable<string> dateien)
+        {
+            var funde = new List<string>();
+            foreach (string datei in dateien)
+            {
+                string name = Dateiname(datei);
+                foreach (var muster in VerboteneDateimuster)
+                    if (muster.Muster.IsMatch(name))
+                        funde.Add(datei + "  (" + muster.Name + ")");
+            }
+            return funde;
+        }
+
+        /// <summary>Alle verbotenen Ordner in einer übergebenen Ordnerliste (repo-relativ).</summary>
+        private static List<string> FundeVerboteneOrdner(IEnumerable<string> ordner)
+        {
+            var funde = new List<string>();
+            foreach (string o in ordner)
+                if (VerboteneOrdnernamen.Contains(Dateiname(o), StringComparer.Ordinal))
+                    funde.Add(o + "/");
+            return funde;
+        }
+
+        /// <summary>Alle <c>*.sqlite</c> ausserhalb der Weissliste (repo-relativ).</summary>
+        private static List<string> FundeFremdeSqlite(IEnumerable<string> dateien)
+        {
+            var funde = new List<string>();
+            foreach (string datei in dateien)
+            {
+                if (!datei.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase)) continue;
+                if (datei == WeisslisteSqlite) continue;
+                funde.Add(datei);
+            }
+            return funde;
         }
 
         // =====================================================================
@@ -162,29 +261,39 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Waechter_sieht_einen_grossen_Bestand_samt_Unterordnern()
         {
-            var (dateien, _) = Erfasse(Arbeitsbaum());
+            var (dateien, ordner) = Bestand();
             Assert.True(dateien.Length > 2000, "Nur " + dateien.Length + " Dateien gefunden.");
 
-            Assert.Contains(dateien, d => Kurzname(d) == "CLAUDE.md");
-            Assert.Contains(dateien, d => Kurzname(d) == WeisslisteSqlite);
+            Assert.Contains("CLAUDE.md", dateien);
+            Assert.Contains(WeisslisteSqlite, dateien);
+            Assert.Contains("EPOS.Kern/Allgemein/Simulation", ordner);
         }
 
         /// <summary>
-        /// <b>Gegenprobe zu den Bauordnern:</b> Eine Datei unter <c>bin/</c> oder <c>obj/</c>
-        /// darf niemals im erfassten Bestand auftauchen — sonst würde jeder lokale Build
-        /// den Wächter mit Fundstellen fluten, die kein Merge je zurückholt.
+        /// <b>Gegenprobe zur Quelle der Liste:</b> Der Bestand enthält keine Datei aus
+        /// <c>bin/</c>, <c>obj/</c>, <c>.git/</c> oder <c>node_modules/</c> — und seit dem
+        /// Befund im Gate nach #242 auch nichts aus <c>.claude/worktrees/…</c>,
+        /// <c>TestResults/</c> oder <c>Referenzlaeufe/Arbeitskopie/</c>. Das sind
+        /// Laufartefakte; sie fluteten den Wächter mit Fundstellen, die kein Merge je
+        /// zurückholt. Über <c>git ls-files</c> entstehen sie gar nicht, auf dem
+        /// Rückfallweg nimmt die Ausnahmeliste sie heraus — der Fall prüft beides.
         /// </summary>
         [Fact]
-        public void Bauordner_und_git_Ordner_bleiben_aussen_vor()
+        public void Bauordner_Worktrees_und_Laufartefakte_bleiben_aussen_vor()
         {
-            var (dateien, ordner) = Erfasse(Arbeitsbaum());
+            var (dateien, ordner) = Bestand();
 
-            bool InBauordner(string pfad) =>
-                pfad.Split(Path.DirectorySeparatorChar)
-                    .Any(teil => AusgenommeneOrdnernamen.Contains(teil, StringComparer.OrdinalIgnoreCase));
+            string[] tabu = AusgenommeneOrdnernamen
+                            .Concat(NurDateisystemAusgenommeneOrdnernamen)
+                            .ToArray();
 
-            Assert.DoesNotContain(dateien, InBauordner);
-            Assert.DoesNotContain(ordner, InBauordner);
+            bool Verboten(string pfad) =>
+                pfad.Split('/').Any(teil => tabu.Contains(teil, StringComparer.OrdinalIgnoreCase))
+                || pfad == NurDateisystemAusgenommenerPfad
+                || pfad.StartsWith(NurDateisystemAusgenommenerPfad + "/", StringComparison.Ordinal);
+
+            Assert.DoesNotContain(dateien, Verboten);
+            Assert.DoesNotContain(ordner, Verboten);
         }
 
         /// <summary>
@@ -193,7 +302,8 @@ namespace EPOS.Kern.Tests
         /// Weißliste — fällt in einem eigens angelegten, synthetischen Arbeitsbaum auf; ein
         /// unauffälliger Bestand bleibt sauber. Ohne diesen Fall wäre offen, ob die drei
         /// Regeln wirklich anschlagen, statt nur zufällig auf den heutigen Bestand zu
-        /// passen.
+        /// passen. Geprüft werden hier die REGELN — woher die Pfadliste kommt (Git oder
+        /// Dateisystem), ist dafür gleichgültig.
         /// </summary>
         [Fact]
         public void Ein_eingeschmuggelter_Fund_faellt_in_einem_synthetischen_Baum_auf()
@@ -205,7 +315,7 @@ namespace EPOS.Kern.Tests
                 Directory.CreateDirectory(Path.Combine(wurzel, "bin", "Debug"));
                 Directory.CreateDirectory(Path.Combine(wurzel, ".work", "RealFleetHarness"));
                 Directory.CreateDirectory(Path.Combine(wurzel, "DB-Backup"));
-                Directory.CreateDirectory(Path.Combine(wurzel, "Referenzlaeufe"));
+                Directory.CreateDirectory(Path.Combine(wurzel, "Referenzlaeufe", "Arbeitskopie"));
 
                 File.WriteAllText(Path.Combine(wurzel, "EPOS.Kern", "Foo.cs"), "class Foo {}");
                 File.WriteAllText(Path.Combine(wurzel, "EPOS.Kern", "Foo.cs.bak"), "class Foo {}");
@@ -214,24 +324,49 @@ namespace EPOS.Kern.Tests
                 File.WriteAllText(Path.Combine(wurzel, "DB-Backup", "Kenndaten-alt.accdb"), "x");
                 File.WriteAllText(Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite"), "x");
                 File.WriteAllText(Path.Combine(wurzel, "Referenzlaeufe", "Fremd.sqlite"), "x");
+                File.WriteAllText(Path.Combine(wurzel, "Referenzlaeufe", "Arbeitskopie", "Kenndaten.sqlite"), "x");
 
-                var (dateien, ordner) = Erfasse(wurzel);
+                var (dateien, ordner) = Dateisystembestand(wurzel);
 
                 // Die eingeschmuggelte Sicherungskopie im Quellordner faellt auf ...
-                Assert.Contains(dateien, d => Path.GetFileName(d) == "Foo.cs.bak");
+                Assert.Contains(FundeSicherungskopien(dateien), f => f.StartsWith("EPOS.Kern/Foo.cs.bak", StringComparison.Ordinal));
                 // ... die im Bauordner NICHT, weil bin/ nie betreten wird.
-                Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "Geheim.bak");
-                // Die zwei verbotenen Ordner stehen im erfassten Ordnerbestand.
-                Assert.Contains(ordner, o => Path.GetFileName(o) == ".work");
-                Assert.Contains(ordner, o => Path.GetFileName(o) == "DB-Backup");
+                Assert.DoesNotContain(dateien, d => d.EndsWith("Geheim.bak", StringComparison.Ordinal));
+                // ... und die Arbeitskopie des Referenzlaufs ebenso wenig (Befund Gate #242).
+                Assert.DoesNotContain(dateien, d => d.StartsWith("Referenzlaeufe/Arbeitskopie", StringComparison.Ordinal));
+
+                // Die zwei verbotenen Ordner faellt die Ordnerregel an.
+                List<string> ordnerfunde = FundeVerboteneOrdner(ordner);
+                Assert.Contains(".work/", ordnerfunde);
+                Assert.Contains("DB-Backup/", ordnerfunde);
+
                 // Weissliste greift nur fuer IHREN Pfad.
-                Assert.Contains(dateien, d => Path.GetFileName(d) == "Fremd.sqlite");
-                Assert.Contains(dateien, d => Path.GetFileName(d) == "Kenndaten_Test.sqlite");
+                List<string> sqlitefunde = FundeFremdeSqlite(dateien);
+                Assert.Contains("Referenzlaeufe/Fremd.sqlite", sqlitefunde);
+                Assert.DoesNotContain(WeisslisteSqlite, sqlitefunde);
             }
             finally
             {
                 Directory.Delete(wurzel, recursive: true);
             }
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe zur Liste aus Git:</b> <c>git ls-files -z</c> läuft im
+        /// Arbeitsbaum, liefert NUL-getrennte, unverkürzte Pfade (auch mit Umlaut) und
+        /// führt die Testdatenbank, obwohl sie seit #243 ein LFS-Zeiger im Index ist.
+        /// Geht Git in dieser Umgebung nicht, greift der Rückfallweg — dann bleibt dieser
+        /// Fall still, der Wächter selbst aber nicht (er prüft dann das Dateisystem).
+        /// </summary>
+        [Fact]
+        public void Die_Liste_aus_Git_traegt_die_Testdatenbank_und_Pfade_mit_Umlaut()
+        {
+            string[] ausGit = VersionierteDateien(Arbeitsbaum());
+            if (ausGit == null) return;   // keine Git-Umgebung - der Rueckfallweg ist geprueft
+
+            Assert.Contains(WeisslisteSqlite, ausGit);
+            Assert.DoesNotContain(ausGit, p => p.StartsWith("\"", StringComparison.Ordinal));
+            Assert.Contains(ausGit, p => p.Any(z => z > 127));
         }
 
         // =====================================================================
@@ -241,14 +376,102 @@ namespace EPOS.Kern.Tests
         private static Regex Muster(string name)
             => VerboteneDateimuster.Single(w => w.Name == name).Muster;
 
+        /// <summary>Der letzte Pfadteil einer repo-relativen Angabe.</summary>
+        private static string Dateiname(string pfad)
+        {
+            int i = pfad.LastIndexOf('/');
+            return i < 0 ? pfad : pfad.Substring(i + 1);
+        }
+
         /// <summary>
-        /// Alle Dateien und alle Ordner unter <paramref name="wurzel"/>, rekursiv, ohne
-        /// <see cref="AusgenommeneOrdnernamen"/>.
+        /// Der zu prüfende Bestand: Dateien und Ordner, repo-relativ mit '/'.
+        ///
+        /// <para>Erste Wahl ist <c>git ls-files -z</c> — was nicht versioniert ist, geht
+        /// den Wächter nichts an. Erst wenn sich Git nicht starten lässt, läuft er über das
+        /// Dateisystem; still bestehen tut er nie.</para>
         /// </summary>
-        private static (string[] Dateien, string[] Ordner) Erfasse(string wurzel)
+        private static (string[] Dateien, string[] Ordner) Bestand()
+        {
+            string wurzel = Arbeitsbaum();
+            string[] ausGit = VersionierteDateien(wurzel);
+            if (ausGit != null) return (ausGit, OrdnerAusDateien(ausGit));
+            return Dateisystembestand(wurzel);
+        }
+
+        /// <summary>
+        /// Die versionierten Dateien aus <c>git ls-files -z</c>, repo-relativ mit '/'.
+        /// Liefert <c>null</c>, wenn Git nicht startet oder mit einem Fehler endet.
+        ///
+        /// <para><c>-z</c> ist wesentlich: Ohne den Schalter verkürzt Git Pfade mit
+        /// Sonderzeichen zu <c>"…\303\244…"</c> in Anführungszeichen — eine der
+        /// VDI-3805-Dateien trägt ein „ä" im Namen. Mit <c>-z</c> kommen die Bytes roh und
+        /// NUL-getrennt, deshalb wird die Ausgabe ausdrücklich als UTF-8 gelesen.</para>
+        /// </summary>
+        private static string[] VersionierteDateien(string wurzel)
+        {
+            try
+            {
+                var start = new ProcessStartInfo("git", "ls-files -z")
+                {
+                    WorkingDirectory = wurzel,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = new UTF8Encoding(false),
+                    StandardErrorEncoding = new UTF8Encoding(false),
+                };
+
+                using Process p = Process.Start(start);
+                if (p == null) return null;
+
+                string ausgabe = p.StandardOutput.ReadToEnd();
+                p.StandardError.ReadToEnd();
+                if (!p.WaitForExit(120_000)) return null;
+                if (p.ExitCode != 0) return null;
+
+                string[] pfade = ausgabe.Split('\0', StringSplitOptions.RemoveEmptyEntries);
+                return pfade.Length == 0 ? null : pfade;
+            }
+            catch (Exception)
+            {
+                // Kein Git in dieser Umgebung (entpacktes Archiv, schmales Abbild) -
+                // der Aufrufer nimmt den Dateisystemweg.
+                return null;
+            }
+        }
+
+        /// <summary>Alle Ordnerpfade, die in einer Dateiliste vorkommen — repo-relativ, ohne Dubletten.</summary>
+        private static string[] OrdnerAusDateien(string[] dateien)
+        {
+            var ordner = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (string datei in dateien)
+            {
+                int i = datei.IndexOf('/');
+                while (i >= 0)
+                {
+                    ordner.Add(datei.Substring(0, i));
+                    i = datei.IndexOf('/', i + 1);
+                }
+            }
+            return ordner.ToArray();
+        }
+
+        /// <summary>
+        /// Rückfallweg: alle Dateien und Ordner unter <paramref name="wurzel"/>, rekursiv,
+        /// repo-relativ mit '/'. Ausgenommen sind die Bauordner
+        /// (<see cref="AusgenommeneOrdnernamen"/>) UND die drei nicht versionierten
+        /// Laufablagen (<see cref="NurDateisystemAusgenommeneOrdnernamen"/>,
+        /// <see cref="NurDateisystemAusgenommenerPfad"/>).
+        /// </summary>
+        private static (string[] Dateien, string[] Ordner) Dateisystembestand(string wurzel)
         {
             var dateien = new List<string>();
             var ordner = new List<string>();
+
+            string Relativ(string voll)
+                => voll.Substring(wurzel.Length).TrimStart(Path.DirectorySeparatorChar, '/')
+                       .Replace(Path.DirectorySeparatorChar, '/');
 
             void Rekursiv(string aktuell)
             {
@@ -259,29 +482,22 @@ namespace EPOS.Kern.Tests
                     // Ordnerausnahme und stuende faelschlich im erfassten Bestand.
                     string dateiname = Path.GetFileName(datei);
                     if (AusgenommeneOrdnernamen.Contains(dateiname, StringComparer.OrdinalIgnoreCase)) continue;
-                    dateien.Add(datei);
+                    dateien.Add(Relativ(datei));
                 }
                 foreach (string unter in Directory.EnumerateDirectories(aktuell))
                 {
                     string name = Path.GetFileName(unter);
                     if (AusgenommeneOrdnernamen.Contains(name, StringComparer.OrdinalIgnoreCase)) continue;
-                    ordner.Add(unter);
+                    if (NurDateisystemAusgenommeneOrdnernamen.Contains(name, StringComparer.OrdinalIgnoreCase)) continue;
+                    string relativ = Relativ(unter);
+                    if (relativ == NurDateisystemAusgenommenerPfad) continue;
+                    ordner.Add(relativ);
                     Rekursiv(unter);
                 }
             }
 
             Rekursiv(wurzel);
             return (dateien.ToArray(), ordner.ToArray());
-        }
-
-        /// <summary>Der Pfad ab der übergebenen Wurzel — das nennt die Meldung.</summary>
-        private static string Kurzname(string pfadUnterWurzel)
-        {
-            string wurzel = Arbeitsbaum();
-            return pfadUnterWurzel.StartsWith(wurzel, StringComparison.Ordinal)
-                 ? pfadUnterWurzel.Substring(wurzel.Length).TrimStart(Path.DirectorySeparatorChar)
-                       .Replace(Path.DirectorySeparatorChar, '/')
-                 : pfadUnterWurzel;
         }
 
         /// <summary>Die Wurzel des Arbeitsbaums — derselbe Weg wie in <c>ParallelitaetWacheTests</c>.</summary>

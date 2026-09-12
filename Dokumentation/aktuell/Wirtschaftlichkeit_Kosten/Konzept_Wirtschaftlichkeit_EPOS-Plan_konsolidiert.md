@@ -489,7 +489,7 @@ nichts Eigenes.
 
 *Quellen: der Normtext DIN EN 17463:2021-12 (vom Anwender bereitgestellt, vollständig ausgewertet —
 alle Anforderungen hier paraphrasiert, Abschnittsnummern der Norm in Klammern) und als reales
-Zahlenbeispiel die Altmappe `BHKWPlan\BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
+Zahlenbeispiel die Altmappe `Quellen\BHKWPlan\BHKW_Höfingen_Erneuerung_20kWel.XLS`, Blatt
 `Tab_kurz_KWKG2020`. Mockups: siehe Artifact-Tabelle am Dokumentanfang.*
 
 ### 2.11.1 Die Kernaussage

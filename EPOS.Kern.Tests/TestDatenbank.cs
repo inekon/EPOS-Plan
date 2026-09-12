@@ -29,6 +29,53 @@ namespace EPOS.Kern.Tests
     public sealed class TestdatenbankSammlung { }
 
     /// <summary>
+    /// Ist eine Datei in Wahrheit nur ein GIT-LFS-ZEIGER? (Auftrag #243, Anwenderentscheid
+    /// AUF-Q2 vom 12.09.2026.)
+    ///
+    /// <para><b>Warum das eine eigene Probe braucht.</b> Seit #243 liegt
+    /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> in Git LFS. Ein Klon OHNE aktiven
+    /// LFS-Filter legt an ihrer Stelle eine Textdatei von rund 130 Byte ab, die mit
+    /// <c>version https://git-lfs.github.com/spec/v1</c> beginnt. Ohne diese Probe faellt
+    /// das erst tief drinnen als "file is not a database" auf - eine Meldung, aus der
+    /// niemand den Grund liest.</para>
+    /// </summary>
+    internal static class LfsZeigerProbe
+    {
+        /// <summary>Die erste Zeile jeder LFS-Zeigerdatei (Spezifikation v1).</summary>
+        private const string Kennung = "version https://git-lfs";
+
+        /// <summary>Beginnt die Datei mit der LFS-Kennung?</summary>
+        public static bool IstZeiger(string pfad)
+        {
+            try
+            {
+                if (!File.Exists(pfad)) return false;
+                using FileStream s = File.OpenRead(pfad);
+                byte[] puffer = new byte[Kennung.Length];
+                int gelesen = s.Read(puffer, 0, puffer.Length);
+                if (gelesen < puffer.Length) return false;
+                return System.Text.Encoding.ASCII.GetString(puffer) == Kennung;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>Die eine benannte Meldung - Ursache und Abhilfe in zwei Zeilen.</summary>
+        public static string Meldung(string pfad) =>
+            "Die Testdatenbank ist ein Git-LFS-Zeiger (" + pfad + ") statt der Datenbank. " +
+            "Einmal je Rechner \"git lfs install\", dann " +
+            "\"git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite\".";
+
+        /// <summary>Bricht mit <see cref="Meldung"/> ab, wenn die Datei ein Zeiger ist.</summary>
+        public static void Sicherstellen(string pfad)
+        {
+            if (IstZeiger(pfad)) throw new InvalidOperationException(Meldung(pfad));
+        }
+    }
+
+    /// <summary>
     /// Eine ARBEITSKOPIE der Testdatenbank fuer die Dauer einer Testklasse (iU9-W6.0a).
     ///
     /// <para><b>Warum es das jetzt gibt.</b> Bis Welle 6 pruefte dieses Projekt
@@ -82,6 +129,13 @@ namespace EPOS.Kern.Tests
 
             string quelle = Quelle();
             if (quelle == null) return;
+
+            // Seit Auftrag #243 (Anwenderentscheid AUF-Q2, 12.09.2026) liegt die
+            // Testdatenbank in Git LFS. Wer ohne aktiven LFS-Filter klont, hat an
+            // dieser Stelle eine 130-Byte-Textdatei statt 68 MB SQLite - und saehe
+            // sonst nur "file is not a database" in einem beliebigen der Faelle
+            // weiter unten. Deshalb hier EINE benannte Meldung.
+            LfsZeigerProbe.Sicherstellen(quelle);
 
             _ordner = Path.Combine(Path.GetTempPath(),
                                    "epos-kerntest-" + Guid.NewGuid().ToString("N").Substring(0, 8));
