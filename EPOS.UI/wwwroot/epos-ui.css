@@ -1178,6 +1178,65 @@ body {
     background: var(--epos-flaeche);
 }
 
+/* ---------------------------------------------------------------------
+   DIE ZEILE EINER VIRTUALISIERTEN LISTE IST GENAU SO HOCH, WIE Virtualize
+   SIE RECHNET (Befund #235, im Browser gemessen; Restfall zu #212)
+   ---------------------------------------------------------------------
+
+   Virtualize kennt keine gemessene Zeile - es rechnet mit ItemSize und setzt
+   danach die Hoehen seiner zwei Abstandshalter. Stimmt dieses Mass nicht mit
+   dem, was wirklich im Baum steht, ueberein, streiten sich seine beiden
+   Sichtbarkeitsmelder:
+
+     * OnSpacerBeforeVisible setzt das Fenster nach der Hoehe des VORDEREN
+       Abstandshalters,
+     * OnSpacerAfterVisible nach der des HINTEREN,
+
+   und beide kommen auf verschiedene Anfangszeilen. Gemessen (Chromium,
+   Behaelter 418 px, 6 654 Zeilen, nach einem Rollen um 2 000 px): Die zwei
+   Abstandshalter sprangen ALLE 33 ms zwischen 1 713/377 281 px und
+   2 284/376 710 px hin und her - zehn Zeilen auf und zehn Zeilen ab, endlos.
+   Jeder Sprung stellt QuickGrids Datenanforderung neu an, und die faellt
+   hinter dessen 100-ms-Entprellung; bei 33 ms Takt wird jede vor ihrer Zeit
+   abgebrochen. Die Liste zeigte deshalb DAUERHAFT Platzhalterzeilen ("..."
+   in jeder Zelle) und darunter leere Rasterflaeche - das gemeldete Flackern.
+
+   ZWEI Masse gingen auseinander, und bunit sieht beide nicht:
+
+     1. Die ECHTE Zeile war 48,2 px hoch, nicht 53. #212 rechnete
+        44 px Beruehrungsziel + 2 x 4 px Zellenpolsterung + 1 px Linie aus dem
+        HAUSstilblatt - aber QuickGrids eigenes Stilblatt gewinnt ueber die
+        Polsterung (.quickgrid[theme=default] > tbody > tr > td, Spezifitaet
+        0-2-3 gegen 0-1-1 von .epos-raster td): 0,1rem oben und unten, also
+        1,6 px statt 4. 44 + 2 x 1,6 + 1 = 48,2.
+     2. Die PLATZHALTERzeile war nur 21,9 px hoch - in ihr steht kein
+        Bedienelement, sondern nur das ":after"-Zeichen von QuickGrid. Waehrend
+        geladen wird, schrumpft der gezeichnete Block damit auf 45 % dessen,
+        was Virtualize annimmt; genau das haelt den Streit oben in Gang.
+
+   DER FIX RAET DAS MASS NICHT ZUM DRITTEN MAL, SONDERN SETZT ES. Der Wirt
+   gibt seine Zeilenhoehe als --epos-rasterzeile an die Huelle (Raster.razor
+   setzt sie aus DEMSELBEN Wert, den es als ItemSize weiterreicht), und beide
+   Zeilenarten - echte wie Platzhalter - bekommen sie hier. Damit koennen der
+   Wert im Programm und der im Baum nicht mehr auseinanderlaufen.
+
+   height an einer Tabellenzeile ist ein MINDESTmass: Das Mass muss also ueber
+   der natuerlichen Hoehe liegen (48,2 px), sonst waechst die Zeile trotzdem.
+   53 px ist genau das - und der Wert, den die Katalogliste ohnehin fuehrt. */
+.epos-raster-huelle--hoch .epos-raster > tbody > tr,
+.epos-raster-huelle--hoch .epos-raster > tbody > tr > td {
+    height: var(--epos-rasterzeile, 53px);
+}
+
+/* Zwei Zeilen umbrochenen Textes waeren 40,6 px und blieben unter dem Mass,
+   drei nicht mehr. Die Hausregel nowrap steht an .epos-raster td (0-1-1) und
+   wuerde von einem Wirt mit einer eigenen Spaltenklasse ueberboten - hier
+   steht sie fester, weil ein Umbruch in einer virtualisierten Liste nicht nur
+   haesslich waere, sondern den Streit von oben zurueckbraechte. */
+.epos-raster-huelle--hoch .epos-raster > tbody > tr > td {
+    white-space: nowrap;
+}
+
 .epos-raster {
     width: 100%;
     border-collapse: collapse;

@@ -446,6 +446,113 @@ public class RasterTests : BunitContext
         Assert.Equal((true, 109), cut.Instance.Rasterstand);
     }
 
+    // =====================================================================
+    //  Das Zeilenmass wird GESETZT, nicht geraten (Befund #235)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Dieselbe Zahl geht an <c>Virtualize</c> UND ins Stilblatt</b> (Befund
+    /// <b>#235</b>, 12.09.2026 im Browser gemessen).
+    ///
+    /// <para>Virtualize misst nicht, es rechnet: Es teilt die Höhe des Rollbehälters
+    /// durch <c>ItemSize</c> und setzt danach die Höhen seiner zwei Abstandshalter.
+    /// Weicht das Maß von dem ab, was wirklich im Baum steht, kommen seine zwei
+    /// Sichtbarkeitsmelder auf verschiedene Anfangszeilen und schieben das Fenster
+    /// gegeneinander — gemessen alle 33 ms, endlos, mit dauerhaften Platzhalterzeilen.
+    /// Deshalb reicht <c>Raster</c> den Wert nicht nur als <c>ItemSize</c> weiter,
+    /// sondern legt ihn als <c>--epos-rasterzeile</c> an die Hülle; das Stilblatt gibt
+    /// ihn jeder Zeile.</para>
+    ///
+    /// <para>Eine bunit-Probe misst keine Pixel (Lehre W6‑B‑1) — geprüft wird die
+    /// VERBINDUNG der zwei Wege: dieselbe Zahl im Stil der Hülle und in
+    /// <c>ItemSize</c>. Dass sie im Browser auch ankommt, prüft
+    /// <c>Proben/Rasterprobe</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Die_virtualisierte_Huelle_gibt_das_Zeilenmass_ans_Stilblatt_weiter()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = Enumerable.Range(0, 2000)
+                               .Select(i => new Zeile(i, "Modul " + i))
+                               .AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal("--epos-rasterzeile: 53px", cut.Find("div").GetAttribute("style"));
+        Assert.Equal(Raster<Zeile>.ZEILENHOEHE,
+                     cut.FindComponent<QuickGrid<Zeile>>().Instance.ItemSize);
+
+        // Ein eigenes Mass des Wirtes geht BEIDE Wege - sonst liefen sie auseinander.
+        cut.Render(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Virtualisiert, true)
+            .Add(x => x.Zeilenhoehe, 61f)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Equal("--epos-rasterzeile: 61px", cut.Find("div").GetAttribute("style"));
+        Assert.Equal(61f, cut.FindComponent<QuickGrid<Zeile>>().Instance.ItemSize);
+    }
+
+    /// <summary>
+    /// <b>Nur die VIRTUALISIERTE Liste bekommt das feste Zeilenmass</b> (Befund
+    /// <b>#235</b>). Eine kurze Liste zeichnet QuickGrid vollständig; dort gibt es
+    /// keine Abstandshalter, nichts zu rechnen und damit auch keinen Grund, die Zeile
+    /// höher zu machen, als ihr Inhalt sie braucht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Virtualisierung_bleibt_die_Huelle_ohne_Zeilenmass()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var zeilen = new[] { new Zeile(1, "Erdgas") }.AsQueryable();
+
+        var cut = Render<Raster<Zeile>>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.KindInhalt, Bezeichnerspalte()));
+
+        Assert.Null(cut.Find("div").GetAttribute("style"));
+    }
+
+    /// <summary>
+    /// <b>Das Stilblatt setzt das Maß wirklich</b> (Befund <b>#235</b>) — und zwar für
+    /// BEIDE Zeilenarten des virtualisierten Rasters. Die Platzhalterzeile war der
+    /// entscheidende Teil: In ihr steht kein Bedienelement, gemessen war sie 21,9 px
+    /// hoch gegen 48,2 px der echten Zeile. Solange geladen wird, schrumpfte der
+    /// gezeichnete Block damit auf 45 % dessen, was <c>Virtualize</c> annimmt.
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_setzt_das_Zeilenmass_der_virtualisierten_Liste()
+    {
+        string blatt = Stilblatt().Replace("\r\n", "\n");
+
+        Assert.Contains(
+            ".epos-raster-huelle--hoch .epos-raster > tbody > tr,\n" +
+            ".epos-raster-huelle--hoch .epos-raster > tbody > tr > td {\n" +
+            "    height: var(--epos-rasterzeile, 53px);\n}",
+            blatt);
+
+        // Der Rueckfall im Blatt und die Vorgabe im Programm sind DIESELBE Zahl.
+        Assert.Equal(53f, Raster<Zeile>.ZEILENHOEHE);
+    }
+
+    /// <summary>Das Stilblatt der Bibliothek, aus dem Quellbaum gelesen.</summary>
+    private static string Stilblatt()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+        {
+            string kandidat = System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css");
+            if (System.IO.File.Exists(kandidat)) return System.IO.File.ReadAllText(kandidat);
+        }
+
+        Assert.Fail("epos-ui.css wurde nicht gefunden.");
+        return "";
+    }
+
     private static RenderFragment Bezeichnerspalte() => bau =>
     {
         bau.OpenComponent<PropertyColumn<Zeile, string>>(0);

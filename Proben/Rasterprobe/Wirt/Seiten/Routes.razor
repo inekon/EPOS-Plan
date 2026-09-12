@@ -1,0 +1,9 @@
+@* Eine einzige Seite: /probe. *@
+<Router AppAssembly="@typeof(Routes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <p>nicht gefunden</p>
+    </NotFound>
+</Router>

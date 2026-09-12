@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!--
+    Der minimale Blazor-Server-Wirt der RASTERPROBE (Auftrag #235).
+
+    Er gehoert NICHT zur Anwendung: Er steht in keiner Projektmappe
+    (WP-Plan.sln, WP-Plan.Kern.slnf) und wird von keiner CI gebaut - wie der
+    Python-Referenzkern unter Projekte/Speichersimulation/code/ ist er
+    Nachweis, kein Werkzeug der Auslieferung.
+
+    Sein einziger Zweck: EPOS.UI in einem ECHTEN Browser zeigen, damit sich
+    Layout, JavaScript und die Beobachter von Virtualize messen lassen. bunit
+    kann das nicht - es hat kein Layout und kein JavaScript, und genau daran
+    ist der erste Anlauf zu #212 vorbeigegangen.
+
+    Paketversionen stehen hier ausdruecklich (kein Directory.Packages.props im
+    Probenordner): Der Wirt macht sich von der zentralen Paketverwaltung des
+    Hauses nicht abhaengig.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Rasterprobe.Wirt</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\EPOS.UI\EPOS.UI.csproj" />
+  </ItemGroup>
+
+</Project>

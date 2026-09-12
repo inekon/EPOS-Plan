@@ -115,11 +115,41 @@
    Raster, das eine neue Menge stillschweigend fuer die alte haelt, waere die
    naechste Fehlerquelle. Wer Virtualisiert setzt, reicht eine STABILE
    Instanz herein; Raster zaehlt sie dafuer nur noch einmal (siehe
-   Zeilenzahl). *@
+   Zeilenzahl).
+
+   UND SIE BRAUCHT EIN ZEILENMASS, DAS STIMMT (Befund #235, im Browser
+   gemessen; Restfall zu #212, Anwenderrueckmeldung 12.09.2026: "die
+   Auswahlliste flackert bei grossen Datenlisten immer noch").
+
+   Virtualize misst nicht, es RECHNET: Es teilt die Hoehe des Rollbehaelters
+   durch ItemSize, setzt danach die Hoehen seiner zwei Abstandshalter und
+   laesst zwei Sichtbarkeitsmelder darauf laufen - einen am vorderen, einen am
+   hinteren. Weicht das Mass von dem ab, was wirklich im Baum steht, kommen die
+   beiden auf verschiedene Anfangszeilen und schieben das Fenster
+   gegeneinander. Gemessen (Chromium 1 300 x 900, 6 654 Zeilen, nach einem
+   Rollen um 2 000 px): ein Sprung ALLE 33 ms zwischen zwei Staenden - die
+   Abstandshalter zwischen 1 713/377 281 px und 2 284/376 710 px, also zehn
+   Zeilen auf und zehn Zeilen ab, endlos. Jeder Sprung stellt QuickGrids
+   Datenanforderung neu an, und die faellt hinter dessen 100-ms-Entprellung:
+   Bei 33 ms Takt wird jede abgebrochen, bevor sie fertig wird. Ergebnis -
+   dauerhaft Platzhalterzeilen ("..." in jeder Zelle) und darunter leere
+   Rasterflaeche.
+
+   Das Mass stimmte aus ZWEI Gruenden nicht, und bunit sieht keinen davon:
+   Die echte Zeile war 48,2 px statt der von #212 gerechneten 53 (QuickGrids
+   eigenes Stilblatt gewinnt ueber die Zellenpolsterung - 0,1rem statt der
+   4 px des Hauses), und die PLATZHALTERzeile war nur 21,9 px hoch, denn in
+   ihr steht kein Bedienelement.
+
+   DAHER WIRD DAS MASS NICHT MEHR GERATEN, SONDERN GESETZT: Dieselbe Zahl, die
+   als ItemSize hineingeht, steht als --epos-rasterzeile an der Huelle, und das
+   Stilblatt gibt sie BEIDEN Zeilenarten (epos-ui.css,
+   .epos-raster-huelle--hoch .epos-raster > tbody > tr). Der Wert im Programm
+   und der im Baum koennen damit nicht mehr auseinanderlaufen. *@
 
 @typeparam TZeile
 
-<div class="@HuellenKlasse">
+<div class="@HuellenKlasse" style="@Hoehenstil">
     <QuickGrid @key="@Rasterstand" Items="@Zeilen" Class="@Klasse"
                Virtualize="@Virtualisiert" ItemSize="@Zeilenhoehe">
         @KindInhalt
@@ -159,8 +189,50 @@
     /// <see cref="Virtualisiert"/> setzt, gibt das Mass SEINER Zeile mit</b>: Zellenpolsterung
     /// und Trennlinie kommen zur Hoehe des Inhalts hinzu. Die <c>Katalogliste</c> rechnet
     /// dafuer 44 + 2 × 4 + 1 = 53 px.</para>
+    ///
+    /// <para><b>Seit #235 ist die Zahl kein Schätzwert mehr, sondern eine ANSAGE</b>
+    /// (im Browser gemessen, 12.09.2026). Die Rechnung von #212 war falsch — QuickGrids
+    /// eigenes Stilblatt gewinnt über die Zellenpolsterung (0,1rem = 1,6 px statt der
+    /// 4 px des Hauses), die echte Zeile war 48,2 px, die PLATZHALTERzeile gar nur
+    /// 21,9 px. Der Wert geht deshalb nicht nur als <c>ItemSize</c> an
+    /// <c>Virtualize</c>, sondern steht zugleich als <c>--epos-rasterzeile</c> an der
+    /// Hülle (<see cref="Hoehenstil"/>), und das Stilblatt gibt ihn JEDER Zeile des
+    /// virtualisierten Rasters — der echten wie der Platzhalterzeile. Maß im Programm
+    /// und Maß im Baum können damit nicht mehr auseinanderlaufen; genau das
+    /// Auseinanderlaufen war der Fehler (siehe Kopf dieser Datei).</para>
+    ///
+    /// <para><c>height</c> an einer Tabellenzeile ist ein MINDESTmaß: Wer diesen Wert
+    /// setzt, setzt ihn ÜBER die natürliche Höhe seiner Zeile, sonst wächst sie
+    /// trotzdem und der Streit der zwei Sichtbarkeitsmelder beginnt von vorn.</para>
     /// </summary>
-    [Parameter] public float Zeilenhoehe { get; set; } = 44f;
+    [Parameter] public float Zeilenhoehe { get; set; } = ZEILENHOEHE;
+
+    /// <summary>
+    /// <b>Das Zeilenmaß einer virtualisierten Liste in Pixeln</b> (Befund <b>#235</b>) —
+    /// Vorgabe für <see cref="Zeilenhoehe"/> und zugleich der Rückfall, den das
+    /// Stilblatt für <c>--epos-rasterzeile</c> führt.
+    ///
+    /// <para>53 px liegt über der natürlichen Höhe einer Katalogzeile (44 px
+    /// Berührungsziel + 2 × 1,6 px Zellenpolsterung von QuickGrid + 1 px Trennlinie
+    /// = 48,2 px) — die Voraussetzung dafür, dass <c>height</c> als Mindestmaß auch
+    /// wirklich diese Höhe ergibt. <c>RasterTests</c> hält die Zahl gegen das
+    /// Stilblatt.</para>
+    /// </summary>
+    public const float ZEILENHOEHE = 53f;
+
+    /// <summary>
+    /// Das Zeilenmaß als CSS-Variable an der Hülle — die eine Zahl, aus der sowohl
+    /// <c>ItemSize</c> als auch die Höhe im Baum kommt (Befund <b>#235</b>). Nur für
+    /// die virtualisierte Liste: Eine kurze Liste soll ihre Zeilen weiter so hoch
+    /// machen, wie ihr Inhalt sie braucht.
+    ///
+    /// <para><c>InvariantCulture</c> ist hier keine Förmlichkeit: Unter <c>de-DE</c>
+    /// schriebe <c>53,5</c> ein Komma, und CSS läse die Angabe gar nicht.</para>
+    /// </summary>
+    private string? Hoehenstil => Virtualisiert
+        ? "--epos-rasterzeile: " +
+          Zeilenhoehe.ToString(System.Globalization.CultureInfo.InvariantCulture) + "px"
+        : null;
 
     /// <summary>
     /// Steht die Liste in einem festen Rahmen mit Rollbalken? Vorgabe <c>true</c> —

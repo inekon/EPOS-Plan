@@ -1,0 +1,142 @@
+@page "/probe"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@*  DIE SEITE DER RASTERPROBE (#235).
+
+    Sie stellt die Katalogliste GENAU so, wie der Stromspeicherimport sie
+    stellt: das echte Listenprofil (acht Spalten aus KatalogImportProfil,
+    dazu die Wahlspalte = neun), Mehrfach mit Kontrollkaestchen, IstGewaehlt,
+    VirtualisierenAb = 120. Nichts daran ist nachgebaut ausser den ZEILEN.
+
+    Zwei Betriebsarten ueber die Adresse:
+      ?modus=sofort   Die Zeilen stehen beim ersten Zeichnen da.
+      ?modus=laden    Die Zeilen kommen nach dem ersten Zeichnen, begleitet von
+                      Fortschrittsmeldungen im Takt - der Weg des Anwenders
+                      ("CEC-Liste abrufen"), auf dem das Foto entstand.
+      ?zeilen=6654    Wie viele Zeilen (119 ist die Gegenprobe unter der
+                      Virtualisierungsschwelle).
+      ?takt=0         Zusaetzliche Zeichenlaeufe je Sekunde NACH dem Laden
+                      (Hypothese "Fortschrittsmeldungen nach dem Laden").
+*@
+
+<h1 class="epos-ueberschrift">Rasterprobe #235</h1>
+
+<p id="probe-stand" class="epos-hinweis">
+    Modus @_modus · @_zeilen.Count Zeilen · Takt @_takt/s · geladen: @(_geladen ? "ja" : "nein")
+    · Zeichenlaeufe @_zeichenlaeufe
+</p>
+
+<Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+<Katalogliste Profil="@_profil" Zeilen="@_zeilen"
+              Filterstand="@_filterstand" Texte="@_texte"
+              Mehrfach="true" IstGewaehlt="@Gewaehlt"
+              Mehrfachwahl="BeiMehrfachwahl"
+              Allewahl="BeiAlle"
+              VirtualisierenAb="120" />
+
+<p id="probe-fuss" class="epos-hinweis">@_zeilen.Count von @_zeilen.Count Eintraegen geladen.</p>
+
+@code {
+    private readonly Katalogfilterstand _filterstand = new();
+    private readonly Katalogfiltertexte _texte = new();
+    private readonly HashSet<int> _gewaehlt = new();
+
+    // Das ECHTE Listenprofil des Stromspeicherimports: acht Spalten, dazu die
+    // Wahlspalte der Katalogliste - die neun des Bildschirmfotos. Die
+    // Beschriftungen kommen aus derselben Ressource wie in der Anwendung, damit
+    // die Spaltenkoepfe im Bildschirmfoto lesbar sind und so breit wie dort.
+    private Katalogfilterprofil _profil =
+        KatalogImportProfil.Finde(KatalogImportArt.Stromspeicher,
+                                  s => Resource.ResourceManager.GetString(s) ?? s).Listenprofil;
+
+    private IReadOnlyList<Katalogfilterzeile> _zeilen = Array.Empty<Katalogfilterzeile>();
+    private IReadOnlyList<Katalogfilterzeile> _fertig = Array.Empty<Katalogfilterzeile>();
+
+    private string _modus = "sofort";
+    private int _anzahl = 6654;
+    private int _takt;
+    private bool _geladen;
+    private bool _laeuft;
+    private double _anteil;
+    private string _fortschrittText = "";
+    private int _zeichenlaeufe;
+
+    private Timer? _uhr;
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+
+        if (abfrage.TryGetValue("modus", out var m)) _modus = m.ToString();
+        if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("takt", out var t) && int.TryParse(t, out int k)) _takt = k;
+
+        _fertig = Zeilenbau.Bauen(_anzahl);
+
+        if (_modus == "sofort")
+        {
+            _zeilen = _fertig;
+            _geladen = true;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _zeichenlaeufe++;
+
+        if (!firstRender) return;
+
+        if (_modus == "laden") _ = Laden();
+        else if (_takt > 0) Taktgeber();
+    }
+
+    // Der Weg des Anwenders: Knopf "CEC-Liste abrufen", Fortschrittsmeldungen,
+    // dann EINMAL die volle Liste - so, wie KatalogImportDialog.BeiQuelle es
+    // ueber Progress<ImportFortschritt> tut.
+    private async Task Laden()
+    {
+        _laeuft = true;
+        for (int i = 1; i <= 10; i++)
+        {
+            _anteil = i / 10.0;
+            _fortschrittText = $"lese Satz {i * _anzahl / 10} von {_anzahl}";
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(80);
+        }
+
+        _zeilen = _fertig;
+        _geladen = true;
+        _laeuft = false;
+        _fortschrittText = "";
+        await InvokeAsync(StateHasChanged);
+
+        if (_takt > 0) Taktgeber();
+    }
+
+    // Ein Zeichentakt NACH dem Laden - fuer die Hypothese, ein Wirt, der nach
+    // dem Laden weiterzeichnet, halte das Raster im Platzhalterzustand fest.
+    private void Taktgeber()
+    {
+        int ms = Math.Max(1, 1000 / _takt);
+        _uhr = new Timer(_ => InvokeAsync(StateHasChanged), null, ms, ms);
+    }
+
+    private bool Gewaehlt(Katalogfilterzeile zeile) => _gewaehlt.Contains(zeile.Id);
+
+    private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
+    {
+        if (!_gewaehlt.Add(klick.Zeile.Id)) _gewaehlt.Remove(klick.Zeile.Id);
+    }
+
+    private void BeiAlle(Katalogliste.Mehrfachalle alle)
+    {
+        _gewaehlt.Clear();
+        if (!alle.Waehlen) return;
+        foreach (Katalogfilterzeile z in alle.Zeilen) _gewaehlt.Add(z.Id);
+    }
+
+    public void Dispose() => _uhr?.Dispose();
+}
