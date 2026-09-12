@@ -4152,6 +4152,30 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `EPOS.UI/CLAUDE.md` (Raster-Spezifität), `Proben/Rasterprobe/LIESMICH.md`, offener Punkt `BildKuchen()` im Block #222 geschlossen.
 > Gate sept50 auf `4f30192a`: Kern 2 726, UI 3 958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
 > Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+>
+> **#241 (12.09.2026, Anwender: „Verschiebe alle .MD Dateien in ein Verzeichnis und strukturiere nach aktuell und überholt. Sie sollen
+> nach wie vor für Claude genutzt werden") — umgesetzt (`c71a1dae`, Merge `a598b564`, Agent Opus; 310 Dateien, +970/−4 310).** Die 303
+> versionierten Markdown-Dateien liegen seither unter `Dokumentation/`: **49** in `aktuell/` (gültige Arbeitsgrundlagen, flach;
+> `Wirtschaftlichkeit_Kosten/` als mitgezogener Ordner), **43** in `ueberholt/` (abgeschlossen, ersetzt, nur noch Geschichte) und **172**
+> Protokolle in `ueberholt/Protokolle/` mit ihrer bisherigen Unterstruktur (Reporting 82, Simulation 61, sql 10, Hilfe 6, KI 5, Views 4,
+> Update 2, Bericht 1, EPOS.Kern_Import 1); **8** byte-gleiche Dubletten entfernt (Wurzelkopie des konsolidierten Wirtschaftlichkeits-
+> Konzepts, `vdi3805_importer.md` zweimal, fünf Kopien unter `Allgemein/Waermespeicher/`); **31** bleiben am Ort — die fünf `CLAUDE.md`
+> (Claude Code lädt sie dort; das ist die Bedingung „nach wie vor für Claude"), `README.md` (jetzt drei Sätze statt „Test"), acht
+> Werkzeug- und Daten-LIESMICH, das Beispiele-Gerüst (Anwender 12.09.: „ist wichtig"), das Referenzpaket `Projekte/Speichersimulation/`.
+> Index `Dokumentation/LIESMICH.md` mit Regel (aktuell = Arbeitsgrundlage, ueberholt = nur Geschichte, nie Regelquelle) und Pflegeregel
+> (neues Konzept nach `aktuell/`, Ersetztes per `git mv` nach `ueberholt/` mit Indexzeile; die Statusblöcke leben hier weiter, die
+> Wiki-Vermerke in `aktuell/Konzept_Hilfesystem_Wikidokumentation.md`); Zweifelsfälle mit Grund im Bericht entschieden (u. a.
+> `Entscheidungsregister_iOS`, `Konzept_Stromspeicher` und `Konzept_Projektbeispiele_Dokumentation` aktuell; `Konzept_Hilfesystem_Infobutton`,
+> `Projekt-ExportImport`, `Konzept_Projektdialoge_Vereinheitlichung`, die drei Access-Papiere ueberholt). **311 Links in 104 Dateien**
+> nachgezogen, dazu die fünf CLAUDE.md, README, drei Workflow-Kommentare, `build-beispiele.ps1`, die Stummel des Referenzpakets und elf
+> pfadtragende Kommentare; tote Altlinks 21 → 12 (die zwölf zeigen auf entfernte Referenzbasen und mit iU9‑W13/W14a gelöschte Masken und
+> stehen als benannte Ausnahmen in der Wache). Wurzel-`CLAUDE.md`: Abschnitt „Dokumentation" statt „Grundlagen- und Konzeptdokumente",
+> „Compact instructions" auf die neuen Pfade. **Wache** `DokumentationLinkWacheTests` (7 Fälle): jeder relative Link löst auf, der Index
+> nennt jede Datei, in der Wurzel liegen nur `CLAUDE.md` und `README.md`, keine `*_Protokoll.md` mehr unter `WindowsFormsApplication1/Allgemein/`.
+> Kein Rechenweg, keine Ressource, kein SQL berührt. Orchestrierung: die Statusblock-Skripte schreiben seither in
+> `Dokumentation/aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`.
+> Gate sept51 auf `a598b564`: Kern 2 733, UI 3 958, Engine 425, KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61,
+> Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
