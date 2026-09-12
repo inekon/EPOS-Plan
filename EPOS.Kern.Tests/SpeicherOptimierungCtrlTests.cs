@@ -35,17 +35,23 @@ namespace EPOS.Kern.Tests
     ///
     /// <para><b>Die Kultur ist auf de-DE gepinnt.</b> Die Kennzahlen und die
     /// Statuszeile sind TEXT; ihre Dezimaltrennung hängt an der Kultur, und ein
-    /// CI-Läufer steht auf en-US.</para>
+    /// CI-Läufer steht auf en-US. Seit #232b pinnt der Konstruktor THREADGEBUNDEN auch
+    /// <c>CurrentUICulture</c> (Ressourcentexte über <c>Resource.*</c> fallen sonst auf den
+    /// prozessweiten Vorgabewert zurück, den über 50 andere Klassen laufend umschalten —
+    /// Messbefund #232).</para>
     /// </summary>
     public sealed class SpeicherOptimierungCtrlTests : IDisposable
     {
         private readonly CultureInfo _vorher = CultureInfo.CurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.CurrentUICulture;
 
         public SpeicherOptimierungCtrlTests()
         {
             CultureInfo de = new CultureInfo("de-DE");
             CultureInfo.CurrentCulture = de;
             Thread.CurrentThread.CurrentCulture = de;
+            CultureInfo.CurrentUICulture = de;
+            Thread.CurrentThread.CurrentUICulture = de;
         }
 
         /// <inheritdoc />
@@ -53,6 +59,8 @@ namespace EPOS.Kern.Tests
         {
             CultureInfo.CurrentCulture = _vorher;
             Thread.CurrentThread.CurrentCulture = _vorher;
+            CultureInfo.CurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentUICulture = _vorherUi;
         }
 
         // =================================================================

@@ -35,12 +35,15 @@ namespace EPOS.Kern.Tests
     public sealed class SpeicherOptimierungLastspitzeTests : IDisposable
     {
         private readonly CultureInfo _vorher = CultureInfo.CurrentCulture;
+        private readonly CultureInfo _vorherUi = CultureInfo.CurrentUICulture;
 
         public SpeicherOptimierungLastspitzeTests()
         {
             CultureInfo de = new CultureInfo("de-DE");
             CultureInfo.CurrentCulture = de;
             Thread.CurrentThread.CurrentCulture = de;
+            CultureInfo.CurrentUICulture = de;
+            Thread.CurrentThread.CurrentUICulture = de;
         }
 
         /// <inheritdoc />
@@ -48,6 +51,8 @@ namespace EPOS.Kern.Tests
         {
             CultureInfo.CurrentCulture = _vorher;
             Thread.CurrentThread.CurrentCulture = _vorher;
+            CultureInfo.CurrentUICulture = _vorherUi;
+            Thread.CurrentThread.CurrentUICulture = _vorherUi;
         }
 
         private const double LeistungspreisEurProKwA = 100.0;
