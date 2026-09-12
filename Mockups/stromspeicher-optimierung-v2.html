@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Station 4 „Optimierung" — zwei Suchmethoden (Mockup v2)</title>
+<!--
+  MOCKUP zur Anwenderrueckmeldung SD-E-10 vom 12.09.2026, Auftrag #246.
+  Gehoert zu Dokumentation/aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md,
+  Kapitel 8 („Zwei Suchmethoden"); die Abschnittsnummern in den Fussnoten
+  verweisen dorthin (8.3 Zielbild, 8.4 Darstellung).
+
+  WAS ES ZEIGT. Station 4 der Ansicht „Stromspeicher-Auslegung" mit den DREI
+  Suchoptionen aus 8.3 — „nur bewerten", „Groesse suchen" (Methode G, freie
+  Einheit) und „Stueckzahl suchen" (Methode S, Speicher aus Projekt oder
+  Katalog) — und dem Suchraum als EINE KARTE JE EINHEIT statt der bisherigen
+  Neun-Spalten-Tabelle (8.4, Punkt 3 der Rueckmeldung).
+
+  BEISPIELFLOTTE (aus dem Bildschirmfoto des Anwenders): eine Katalogeinheit
+  „Shenzhen Growatt New Energy Co., Ltd.: WIT-M+APX ESS" mit 129 kWh / 100 kW
+  und eine freie Auslegungseinheit mit dem Suchraum 40-300 kWh x 40-400 kW,
+  Schritt 20.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen.
+  Farben, Masse und Bausteinnamen sind aus EPOS.UI/wwwroot/epos-ui.css und
+  epos-flotte.css uebernommen (Kopfbaender #0F1F3D, Flaeche #f5f4ef,
+  Beschriftungsspalte 12 rem, kurze Zahlenfelder, Touchziel 44 px, Ecke 6 px).
+
+  ES IST EIN BILD, KEINE ANWENDUNG: Alle Felder sind schreibgeschuetzt. Belegt
+  ist einzig die Wahl der drei Suchoptionen — sie stellt den Kopfblock, die
+  Karten des Suchraums und das Ergebnis um. Nichts davon ist umgesetzt.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-gruppenkopf: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-speicher: #D85A30;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-rahmen: #D85A30;
+    --epos-senke-text: #993C1D;
+    --epos-badge-flaeche: #FAECE7;
+    --epos-badge-text: #712B13;
+
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-fehleingabe: rgb(255, 235, 235);
+
+    --epos-ampel-gruen: #007800;
+    --epos-ampel-rot: rgb(176, 0, 32);
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-karte-text: #5A6270;
+
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-summe: #93C5FD;
+    --epos-gruppenkopf-hoehe: 40px;
+    --epos-gruppenkopf-symbolbreite: 30px;
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+
+    --epos-beschriftung-breite: 12rem;
+    --epos-kurzfeld-breite: 8em;
+    --epos-formularspalte: 26rem;
+
+    --epos-marke: #005aa0;
+    --epos-marke-text: #ffffff;
+    --epos-marke-trennlinie: #dee3e8;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: #ffffff;
+}
+
+/* ---------- Kopfband der Mockup-Seite (nicht Teil der Maske) ---------- */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 24px 10px 24px;
+}
+.mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
+.mockup-kopf p { margin: 6px 0 0 0; color: var(--epos-text-leise); max-width: 104ch; }
+.mockup-blatt { padding: 16px 24px 0 24px; }
+.mockup-hinweis {
+    max-width: 1180px;
+    margin: 0 0 14px 0;
+    padding: 8px 12px;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-karte-titel);
+}
+.mockup-fussnoten {
+    max-width: 1180px;
+    margin: 20px 0 0 0;
+    padding: 12px 14px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+}
+.mockup-fussnoten h2 { margin: 0 0 6px 0; font-size: 13px; color: var(--epos-karte-titel); }
+.mockup-fussnoten ul { margin: 0; padding-left: 20px; }
+.mockup-fussnoten li { margin: 3px 0; line-height: 1.45; }
+.mockup-fussnoten code { font-size: 12px; }
+.mockup-marke {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px solid var(--epos-marke);
+    border-radius: 999px;
+    background: var(--epos-karte-flaeche-hover);
+    color: var(--epos-marke);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ---------- Baustein: Ablaufleiste (epos-ui.css) ---------- */
+.epos-ablaufleiste { border-bottom: 1px solid var(--epos-rahmen-leise); max-width: 1180px; }
+.epos-ablaufleiste-schritte {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 0; margin: 0; padding: 0; list-style: none;
+}
+.epos-ablaufleiste-schritt { margin: 0; padding: 0; }
+.epos-ablaufleiste-knopf {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: var(--epos-touchziel); padding: 6px 16px;
+    border: 0; border-right: 1px solid var(--epos-rahmen-leise);
+    border-bottom: 3px solid transparent;
+    background: transparent; color: var(--epos-text); font: inherit; cursor: default;
+}
+.epos-ablaufleiste-knopf--aktiv {
+    background: var(--epos-flaeche);
+    border-bottom-color: var(--epos-marke);
+    color: var(--epos-marke); font-weight: 600;
+}
+.epos-ablaufleiste-knopf[aria-disabled="true"] { color: var(--epos-text-sehr-leise); }
+.epos-ablaufleiste-stufe {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 28px; height: 28px;
+    border: 1px solid var(--epos-rahmen); border-radius: 50%;
+    background: var(--epos-karte-flaeche); color: var(--epos-text-leise);
+    font-size: 13px; font-weight: 600; line-height: 1;
+}
+.epos-ablaufleiste-knopf--aktiv .epos-ablaufleiste-stufe {
+    border-color: var(--epos-marke); background: var(--epos-marke); color: var(--epos-marke-text);
+}
+.epos-ablaufleiste-stufe--erledigt { border-color: var(--epos-marke); color: var(--epos-marke); }
+.epos-ablaufleiste-stufe--gesperrt { border-color: var(--epos-rahmen-leise); color: var(--epos-text-sehr-leise); }
+
+/* ---------- Baustein: Gruppenkopf ---------- */
+.epos-gruppenkopf { max-width: 1180px; background: var(--epos-karte-flaeche); margin: 14px 0 0 0; }
+.epos-gruppenkopf-balken {
+    display: grid;
+    grid-template-columns: var(--epos-gruppenkopf-symbolbreite) 1fr auto;
+    column-gap: 8px; align-items: center;
+    min-height: var(--epos-gruppenkopf-hoehe);
+    padding-inline: var(--epos-rand);
+    background: var(--epos-gruppenkopf-flaeche);
+    color: var(--epos-gruppenkopf-text);
+}
+.epos-gruppenkopf-symbol { grid-column: 1; text-align: center; }
+.epos-gruppenkopf-titel {
+    grid-column: 2; margin: 0;
+    font-size: var(--epos-schriftgroesse-gruppenkopf); font-weight: 700;
+}
+.epos-gruppenkopf-summe { grid-column: 3; color: var(--epos-gruppenkopf-summe); text-align: right; }
+.epos-gruppenkopf-koerper {
+    padding: var(--epos-karte-rand);
+    border: 1px solid var(--epos-rahmen-leise); border-top: none;
+}
+
+/* ---------- Baustein: Abschnitt, Formularraster, Felder ---------- */
+.epos-flotte-optimierung { display: grid; gap: 1rem; }
+.epos-flotte-abschnitt {
+    display: grid; gap: 0.75rem; padding: 0.9rem;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+.epos-flotte-abschnitt > h3 { margin: 0; font-size: 13px; color: var(--epos-karte-titel); }
+
+.epos-formularraster {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--epos-formularspalte), 1fr));
+    align-items: start; column-gap: var(--epos-rand); row-gap: 4px;
+}
+.epos-formularraster--einspaltig { grid-template-columns: minmax(0, 1fr); }
+.epos-formularraster .epos-feld {
+    display: grid;
+    grid-template-columns: var(--epos-beschriftung-breite) minmax(0, 1fr);
+    align-items: center; column-gap: 8px; min-height: var(--epos-touchziel);
+}
+.epos-formularraster > .epos-herleitung { grid-column: 1 / -1; }
+.epos-feld-text { grid-column: 1; color: var(--epos-text); }
+.epos-feld-zeile { grid-column: 2; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.epos-eingabe {
+    flex: 1 1 auto; min-height: var(--epos-touchziel); padding: 0 8px;
+    font: inherit; color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+}
+.epos-eingabe--zahl { flex: 0 0 5.5rem; width: 5.5rem; text-align: right; }
+.epos-eingabe--breit { flex: 0 0 16rem; width: 16rem; }
+.epos-einheit { flex: 0 0 auto; color: var(--epos-text-leise); }
+.epos-einheit--bis { padding: 0 2px; color: var(--epos-text-sehr-leise); }
+.epos-herleitung { margin: 0; color: var(--epos-text-leise); line-height: 1.45; }
+.epos-schalter { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); }
+.epos-schalter-kasten { width: 20px; height: 20px; }
+
+/* ---------- Baustein: Knopfleiste ---------- */
+.epos-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.epos-knopf {
+    flex: 0 1 auto; min-height: var(--epos-touchziel); min-width: 88px;
+    padding: 4px 12px; font: inherit; color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); cursor: pointer;
+}
+.epos-knopf--primaer {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel); border-color: var(--epos-karte-titel);
+}
+
+/* ==================================================================== */
+/* NEU MIT SD-E-10 — der Kopfblock (Konzept 8.4, erster Anstrich)        */
+/*                                                                      */
+/* ZWEISPALTIG: links die Wahl der Methode, rechts der Bedienblock mit   */
+/* Ziel, Kandidatenzeile, Feinraster und Rechenknopf. Der Bedienblock    */
+/* hat eine FESTE Breite (Hausregel #233) — er soll nicht mitwachsen,    */
+/* wenn die Optionstexte links laenger werden.                          */
+/* ==================================================================== */
+.epos-flotte-optimierung-kopf {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+}
+.epos-flotte-suche { flex: 1 1 34rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.epos-flotte-suche > legend { padding: 0; font-weight: 700; color: var(--epos-karte-titel); }
+.epos-flotte-bedienblock {
+    flex: 0 0 26rem; max-width: 100%;
+    display: grid; gap: 0.4rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+.epos-flotte-optimierung-ziel { margin: 0; display: grid; gap: 0.2rem; }
+.epos-flotte-optimierung-ziel__name { color: var(--epos-text-leise); }
+
+/* DIE DREI OPTIONEN. Jede traegt ihren Erklaersatz; eine Option, zu der die
+   Flotte keine passende Einheit fuehrt, bleibt SICHTBAR und gedimmt und sagt
+   in einer Abhilfezeile, was in Schritt 1 zu tun ist (Konzept 8.3). */
+.epos-option { display: flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); }
+.epos-option-kasten { width: 20px; height: 20px; }
+.epos-option .epos-feld-text { font-weight: 600; }
+.epos-option-beschreibung {
+    margin: -6px 0 10px 28px; color: var(--epos-text-leise);
+    line-height: 1.4; max-width: 62ch;
+}
+.epos-flotte-suchoption--gesperrt .epos-option .epos-feld-text,
+.epos-flotte-suchoption--gesperrt .epos-option-beschreibung { color: var(--epos-text-sehr-leise); }
+.epos-flotte-abhilfe {
+    display: flex; gap: 6px; align-items: baseline;
+    margin: -6px 0 10px 28px; padding: 4px 8px;
+    border-left: 3px solid var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+    max-width: 62ch;
+}
+
+/* DIE KANDIDATENZEILE — live gegen „Maximale Auslegungskandidaten". Die
+   Aussage steht in WORTEN neben der Farbe (WCAG 1.4.1). */
+.epos-flotte-kandidatenzeile {
+    display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;
+    margin: 0; color: var(--epos-text-leise);
+}
+.epos-flotte-kandidatenzeile strong { color: var(--epos-ampel-gruen); }
+.epos-flotte-kandidatenzeile--rot strong { color: var(--epos-ampel-rot); }
+.epos-flotte-beispielmarke {
+    padding: 0 6px; border: 1px solid var(--epos-rahmen-leise); border-radius: 8px;
+    background: var(--epos-karte-flaeche); color: var(--epos-text-sehr-leise);
+    font-size: 11px;
+}
+
+/* ==================================================================== */
+/* NEU MIT SD-E-10 — EINE KARTE JE EINHEIT (Konzept 8.4, zweiter        */
+/* Anstrich). Sie ersetzt die Neun-Spalten-Tabelle mit sieben kleinen   */
+/* Zahlenfeldern je Zeile: Kopfzeile (Name, Herkunftspille, feste       */
+/* Kenndaten, Schalter „variieren"), Rumpf je Methode, Fusszeile mit    */
+/* der Kandidatenzahl DIESER Einheit.                                   */
+/* ==================================================================== */
+.epos-flotte-einheitskarten { display: grid; gap: 0.65rem; }
+.epos-flotte-einheitskarte {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-left: 4px solid var(--epos-rahmen-speicher);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    overflow: clip;
+}
+.epos-flotte-einheitskarte__kopf {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    padding: 0.35rem 0.7rem;
+    background: var(--epos-flaeche);
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.epos-flotte-einheitskarte__name { font-weight: 700; }
+.epos-flotte-einheitskarte__kenndaten { color: var(--epos-text-leise); }
+.epos-flotte-einheitskarte__fueller { flex: 1 1 auto; }
+.epos-flotte-einheitskarte__rumpf { display: grid; gap: 0.35rem; padding: 0.6rem 0.7rem; }
+.epos-flotte-einheitskarte__fuss {
+    display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap;
+    margin: 0; padding: 0.35rem 0.7rem;
+    border-top: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
+}
+.epos-flotte-einheitskarte__fuss b { color: var(--epos-text); }
+
+/* DIE HERKUNFTSPILLE (Konzept 8.3, Feld FlottenEinheit.Herkunft). Drei
+   Werte, drei Farben — Projektanlage in der Speicherfarbe, Katalog in der
+   Quellfarbe, „frei" grau, weil dort noch kein Geraet steht. */
+.epos-flotte-herkunftspille {
+    display: inline-flex; align-items: center;
+    padding: 0.05rem 0.55rem; border-radius: 999px;
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche); color: var(--epos-text-leise);
+    font-size: 11px; font-weight: 600;
+}
+.epos-flotte-herkunftspille--projekt {
+    border-color: var(--epos-senke-rahmen);
+    background: var(--epos-badge-flaeche); color: var(--epos-badge-text);
+}
+.epos-flotte-herkunftspille--katalog {
+    border-color: var(--epos-quelle-rahmen);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text);
+}
+
+/* DIE GEDIMMTE KARTE. Eine Einheit, die die gewaehlte Methode nicht
+   betrifft, verschwindet NICHT — sie steht gedimmt da und sagt mit
+   „fest: …", mit welchem Wert sie in jeden Kandidaten eingeht. */
+.epos-flotte-einheitskarte--gedimmt {
+    border-left-color: var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+    color: var(--epos-text-sehr-leise);
+}
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__name,
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__kenndaten,
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-einheitskarte__fuss b { color: var(--epos-text-sehr-leise); }
+.epos-flotte-einheitskarte--gedimmt .epos-flotte-herkunftspille {
+    border-color: var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche); color: var(--epos-text-sehr-leise);
+}
+.epos-flotte-fest {
+    display: flex; gap: 0.4rem; align-items: baseline; flex-wrap: wrap; margin: 0;
+    padding: 0.5rem 0.7rem; color: var(--epos-text-leise);
+}
+.epos-flotte-fest b { color: var(--epos-text); }
+
+/* ---------- „Bestes Ergebnis" (unveraendert aus epos-flotte.css) ---------- */
+.epos-flotte-bestes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+}
+.epos-flotte-bestes__karte {
+    display: grid; gap: 0.15rem; padding: 0.7rem 0.8rem;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+}
+.epos-flotte-bestes__karte b { font-size: 18px; color: var(--epos-marke); }
+.epos-flotte-bestes__karte small { color: var(--epos-text-leise); }
+.epos-flotte-phasenmarke {
+    margin-left: 0.5rem; padding: 0.05rem 0.5rem;
+    border: 1px solid var(--epos-rahmen-leise); border-radius: 10px;
+    background: var(--epos-flaeche); color: var(--epos-text-leise);
+    font-size: 11px; font-weight: 400;
+}
+
+/* ==================================================================== */
+/* NEU MIT SD-E-10 — die Ergebnissicht der Methode S (Konzept 8.3,      */
+/* SD-Q17): „Kapitalwert ueber Stueckzahl" als Balken je Stueckzahl.    */
+/* Bei ZWEI variierten Einheiten traete hier die Rasterkarte n1 x n2.   */
+/* ==================================================================== */
+.epos-flotte-bildplatz {
+    display: grid; gap: 0.5rem;
+    padding: 0.8rem;
+    border: 1px dashed var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+.epos-flotte-bildplatz__kopf {
+    display: flex; gap: 0.6rem; align-items: baseline; flex-wrap: wrap;
+    margin: 0; font-weight: 700; color: var(--epos-karte-titel);
+}
+.epos-flotte-bildplatz__vermerk {
+    padding: 0 6px; border: 1px solid var(--epos-rahmen-leise); border-radius: 8px;
+    background: var(--epos-flaeche); color: var(--epos-text-sehr-leise);
+    font-size: 11px; font-weight: 400;
+}
+.epos-flotte-balken {
+    display: flex; align-items: flex-end; gap: 1.4rem;
+    height: 172px; padding: 0 0.4rem;
+    border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-flotte-balken__saeule {
+    flex: 0 0 5.5rem;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    height: 100%; text-align: center;
+}
+.epos-flotte-balken__wert { color: var(--epos-text-leise); padding-bottom: 2px; }
+.epos-flotte-balken__stab {
+    background: #9dbee4; border: 1px solid #6f9bd4;
+    border-radius: 3px 3px 0 0;
+}
+.epos-flotte-balken__saeule--bester .epos-flotte-balken__stab {
+    background: var(--epos-marke); border-color: var(--epos-karte-titel);
+}
+.epos-flotte-balken__saeule--bester .epos-flotte-balken__wert {
+    color: var(--epos-marke); font-weight: 700;
+}
+.epos-flotte-balkenachse {
+    display: flex; gap: 1.4rem; padding: 4px 0.4rem 0 0.4rem;
+    color: var(--epos-text-leise);
+}
+.epos-flotte-balkenachse span { flex: 0 0 5.5rem; text-align: center; }
+
+/* ---------- Nebenfaelle am Fuss der Seite ---------- */
+.mockup-nebenfaelle {
+    max-width: 1180px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: var(--epos-rand); margin-top: 18px;
+}
+.mockup-nebenfall {
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    padding: 10px 12px; background: var(--epos-karte-flaeche);
+}
+.mockup-nebenfall h3 { margin: 0 0 4px 0; font-size: 13px; color: var(--epos-karte-titel); }
+.mockup-nebenfall > p { margin: 0 0 8px 0; color: var(--epos-text-leise); }
+
+@media (max-width: 900px) {
+    .epos-formularraster { grid-template-columns: minmax(0, 1fr); }
+    .epos-formularraster .epos-feld { grid-template-columns: minmax(0, 1fr); row-gap: 4px; min-height: 0; }
+    .epos-formularraster .epos-feld-text,
+    .epos-formularraster .epos-feld-zeile { grid-column: 1; }
+    .epos-flotte-bedienblock { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body data-methode="stueckzahl">
+
+<div class="mockup-kopf">
+    <h1>Station 4 „Optimierung" — zwei Suchmethoden <span class="mockup-marke">Mockup v2</span></h1>
+    <p>Entwurf zur Anwenderrückmeldung <b>SD‑E‑10</b> vom 12.09.2026 (Auftrag #246), Kapitel 8 des
+       Konzepts <code>Konzept_Stromspeicher_Dialoge_EPOS-Plan.md</code>. Beispielflotte aus dem
+       Bildschirmfoto des Anwenders: eine Katalogeinheit <b>Growatt WIT‑M+APX ESS</b> (129 kWh,
+       100 kW) und eine <b>freie Auslegungseinheit</b> (40–300 kWh × 40–400 kW, Schritt 20).
+       <b>Nichts davon ist umgesetzt</b> — alle Felder sind schreibgeschützt; belegt ist einzig
+       die Wahl der drei Suchoptionen links im Kopfblock.</p>
+</div>
+
+<main class="mockup-blatt">
+
+<p class="mockup-hinweis">
+    <b>Probieren:</b> die drei Optionen unter „Suche" schalten die ganze Station um — den
+    Bedienblock rechts, die Karten des Suchraums (welche variiert, welche fest steht) und die
+    Ergebnissicht (Rasterkarte bei „Größe suchen", Balken über der Stückzahl bei
+    „Stückzahl suchen"). Voreingestellt ist <b>Stückzahl suchen</b>, die neue Methode&nbsp;S.
+</p>
+
+<!-- ================================================================== -->
+<!-- Ablaufleiste — statische Kopfzeile, Station 4 steht                  -->
+<!-- ================================================================== -->
+<nav class="epos-ablaufleiste" aria-label="Ablauf der Stromspeicher-Auslegung">
+    <ol class="epos-ablaufleiste-schritte">
+        <li class="epos-ablaufleiste-schritt">
+            <button type="button" class="epos-ablaufleiste-knopf">
+                <span class="epos-ablaufleiste-stufe epos-ablaufleiste-stufe--erledigt" aria-hidden="true">✓</span>
+                <span class="epos-ablaufleiste-titel">Speicher</span>
+            </button>
+        </li>
+        <li class="epos-ablaufleiste-schritt">
+            <button type="button" class="epos-ablaufleiste-knopf">
+                <span class="epos-ablaufleiste-stufe epos-ablaufleiste-stufe--erledigt" aria-hidden="true">✓</span>
+                <span class="epos-ablaufleiste-titel">Daten &amp; Kosten</span>
+            </button>
+        </li>
+        <li class="epos-ablaufleiste-schritt">
+            <button type="button" class="epos-ablaufleiste-knopf">
+                <span class="epos-ablaufleiste-stufe epos-ablaufleiste-stufe--erledigt" aria-hidden="true">✓</span>
+                <span class="epos-ablaufleiste-titel">Betriebsführung</span>
+            </button>
+        </li>
+        <li class="epos-ablaufleiste-schritt">
+            <button type="button" class="epos-ablaufleiste-knopf epos-ablaufleiste-knopf--aktiv" aria-current="step">
+                <span class="epos-ablaufleiste-stufe" aria-hidden="true">4</span>
+                <span class="epos-ablaufleiste-titel">Optimierung</span>
+            </button>
+        </li>
+        <li class="epos-ablaufleiste-schritt">
+            <button type="button" class="epos-ablaufleiste-knopf" aria-disabled="true">
+                <span class="epos-ablaufleiste-stufe epos-ablaufleiste-stufe--gesperrt" aria-hidden="true">5</span>
+                <span class="epos-ablaufleiste-titel">Ergebnis</span>
+            </button>
+        </li>
+    </ol>
+</nav>
+
+<!-- ================================================================== -->
+<!-- Station 4                                                          -->
+<!-- ================================================================== -->
+<section class="epos-gruppenkopf">
+    <div class="epos-gruppenkopf-balken">
+        <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
+        <h2 class="epos-gruppenkopf-titel">Stromspeicher-Optimierung — wirtschaftlich beste Größe</h2>
+        <span class="epos-gruppenkopf-summe">Projekt „Stromspeicher Optimierung" · 2 Einheiten</span>
+    </div>
+
+    <div class="epos-gruppenkopf-koerper">
+    <div class="epos-flotte-optimierung">
+
+        <!-- ------------------------------------------- Kopfblock (8.4) -->
+        <div class="epos-flotte-optimierung-kopf">
+
+            <fieldset class="epos-flotte-suche" role="radiogroup" aria-label="Suche">
+                <legend>Suche</legend>
+
+                <div class="epos-flotte-suchoption">
+                    <label class="epos-option">
+                        <input class="epos-option-kasten" type="radio" name="methode" value="bewerten">
+                        <span class="epos-feld-text">Nur die eingestellte Flotte bewerten</span>
+                    </label>
+                    <p class="epos-option-beschreibung">Rechnet die Flotte aus Schritt 1 genau einmal —
+                       nichts wird variiert, je Betriebsziel entsteht ein Kandidat.</p>
+                </div>
+
+                <div class="epos-flotte-suchoption">
+                    <label class="epos-option">
+                        <input class="epos-option-kasten" type="radio" name="methode" value="groesse">
+                        <span class="epos-feld-text">Größe suchen (freie Einheit)</span>
+                    </label>
+                    <p class="epos-option-beschreibung">Variiert an den <b>freien</b> Auslegungseinheiten zwei
+                       der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung, die
+                       Stückzahl steht fest auf 1. Speicher aus Projekt oder Katalog behalten ihre Größe.</p>
+                </div>
+
+                <div class="epos-flotte-suchoption">
+                    <label class="epos-option">
+                        <input class="epos-option-kasten" type="radio" name="methode" value="stueckzahl" checked>
+                        <span class="epos-feld-text">Stückzahl suchen (Speicher aus Projekt oder Katalog)</span>
+                    </label>
+                    <p class="epos-option-beschreibung">Lässt jedes Gerät so groß, wie es im Katalog steht, und
+                       variiert, <b>wie viele</b> davon stehen (0 = Einheit entfällt). Die Kosten sind die
+                       Gerätekosten × Stückzahl.</p>
+                </div>
+            </fieldset>
+
+            <div class="epos-flotte-bedienblock">
+                <p class="epos-flotte-optimierung-ziel">
+                    <span class="epos-flotte-optimierung-ziel__name">Ziel</span>
+                    <strong>Kapitalwert gegenüber „ohne Speicher" [€]</strong>
+                </p>
+
+                <p class="epos-flotte-kandidatenzeile" role="status" data-nur="groesse">
+                    <span>266 Kandidaten von höchstens 10 000</span>
+                    <strong>· Raster zulässig.</strong>
+                </p>
+                <p class="epos-flotte-kandidatenzeile" role="status" data-nur="stueckzahl">
+                    <span>4 Kandidaten von höchstens 10 000</span>
+                    <strong>· Raster zulässig.</strong>
+                </p>
+                <p class="epos-herleitung" data-nur="bewerten">
+                    Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist.
+                </p>
+
+                <p class="epos-flotte-kandidatenzeile epos-flotte-kandidatenzeile--rot"
+                   data-nur="groesse stueckzahl">
+                    <span class="epos-flotte-beispielmarke">Beispiel</span>
+                    <span>14 630 Kandidaten von höchstens 10 000</span>
+                    <strong>· Das Raster reißt die Grenze.</strong>
+                </p>
+                <p class="epos-herleitung" data-nur="groesse stueckzahl">
+                    Dann wird der Lauf <b>abgewiesen und nicht gekürzt</b>: Bereich oder Schrittweite
+                    verkleinern, das Feinraster abschalten oder die Grenze „Maximale Auslegungskandidaten"
+                    in Schritt 2 erhöhen.
+                </p>
+
+                <label class="epos-schalter" data-nur="groesse">
+                    <input class="epos-schalter-kasten" type="checkbox" checked disabled>
+                    <span class="epos-feld-text">Phase 2: Feinraster um das Grob-Optimum</span>
+                </label>
+                <p class="epos-herleitung" data-nur="groesse">
+                    Nur bei „Größe suchen": Das Feinraster rastert die Größenachse nach; bei ganzen
+                    Stückzahlen gibt es nichts zu verfeinern.
+                </p>
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf epos-knopf--primaer" data-nur="groesse stueckzahl">Optimieren</button>
+                    <button type="button" class="epos-knopf epos-knopf--primaer" data-nur="bewerten">Bewerten</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- --------------------------------- Suchraum: eine Karte je Einheit -->
+        <section class="epos-flotte-abschnitt" data-nur="groesse stueckzahl"
+                 aria-labelledby="suchraum-titel">
+            <h3 id="suchraum-titel">Suchraum je Einheit</h3>
+
+            <div class="epos-flotte-einheitskarten">
+
+                <!-- (a) Katalogeinheit — variiert bei Methode S -->
+                <article class="epos-flotte-einheitskarte" data-dimm="groesse">
+                    <div class="epos-flotte-einheitskarte__kopf">
+                        <span class="epos-flotte-einheitskarte__name">Shenzhen Growatt New Energy Co., Ltd.: WIT‑M+APX ESS</span>
+                        <span class="epos-flotte-herkunftspille epos-flotte-herkunftspille--katalog">Katalog</span>
+                        <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW</span>
+                        <span class="epos-flotte-einheitskarte__fueller"></span>
+                        <label class="epos-schalter">
+                            <input class="epos-schalter-kasten" type="checkbox" data-variieren="stueckzahl" checked>
+                            <span class="epos-feld-text">variieren</span>
+                        </label>
+                    </div>
+
+                    <div class="epos-flotte-einheitskarte__rumpf" data-nur="stueckzahl">
+                        <div class="epos-formularraster epos-formularraster--einspaltig">
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Stückzahl</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="1" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="4" readonly>
+                                    <span class="epos-einheit">Stück</span>
+                                </span>
+                            </label>
+                            <p class="epos-herleitung">= 129 – 516 kWh · 100 – 400 kW · Investition 45 000 – 180 000 €</p>
+                        </div>
+                    </div>
+
+                    <p class="epos-flotte-fest" data-nur="groesse">
+                        <span>fest:</span><b>1 × 129 kWh</b>
+                        <span>— die Einheit geht unverändert in jeden Kandidaten ein.</span>
+                    </p>
+
+                    <p class="epos-flotte-einheitskarte__fuss" data-nur="stueckzahl">
+                        <span>Kandidaten dieser Einheit:</span><b>4</b>
+                    </p>
+                </article>
+
+                <!-- (b) Freie Einheit — variiert bei Methode G -->
+                <article class="epos-flotte-einheitskarte" data-dimm="stueckzahl">
+                    <div class="epos-flotte-einheitskarte__kopf">
+                        <span class="epos-flotte-einheitskarte__name">Freie Auslegungseinheit</span>
+                        <span class="epos-flotte-herkunftspille">frei</span>
+                        <span class="epos-flotte-einheitskarte__kenndaten">ohne Gerät — die Größe wird gesucht</span>
+                        <span class="epos-flotte-einheitskarte__fueller"></span>
+                        <label class="epos-schalter">
+                            <input class="epos-schalter-kasten" type="checkbox" data-variieren="groesse">
+                            <span class="epos-feld-text">variieren</span>
+                        </label>
+                    </div>
+
+                    <div class="epos-flotte-einheitskarte__rumpf" data-nur="groesse">
+                        <div class="epos-formularraster epos-formularraster--einspaltig">
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Größenkopplung</span>
+                                <span class="epos-feld-zeile">
+                                    <select class="epos-eingabe epos-eingabe--breit" disabled>
+                                        <option selected>Kapazität und Leistung</option>
+                                        <option>Kapazität und C-Rate</option>
+                                        <option>Leistung und C-Rate</option>
+                                    </select>
+                                    <span class="epos-einheit">C-Rate folgt</span>
+                                </span>
+                            </label>
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Kapazität</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="40" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="300" readonly>
+                                    <span class="epos-einheit">kWh</span>
+                                    <span class="epos-einheit epos-einheit--bis">, Schritt</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="20" readonly>
+                                    <span class="epos-einheit">kWh</span>
+                                </span>
+                            </label>
+                            <label class="epos-feld">
+                                <span class="epos-feld-text">Leistung</span>
+                                <span class="epos-feld-zeile">
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="40" readonly>
+                                    <span class="epos-einheit epos-einheit--bis">–</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="400" readonly>
+                                    <span class="epos-einheit">kW</span>
+                                    <span class="epos-einheit epos-einheit--bis">, Schritt</span>
+                                    <input class="epos-eingabe epos-eingabe--zahl" type="text" value="20" readonly>
+                                    <span class="epos-einheit">kW</span>
+                                </span>
+                            </label>
+                            <p class="epos-herleitung">= 14 Kapazitätsstufen × 19 Leistungsstufen · Stückzahl fest 1 (SD‑Q14)</p>
+                        </div>
+                    </div>
+
+                    <p class="epos-flotte-fest" data-nur="stueckzahl">
+                        <span>fest:</span><b>129 kWh · 100 kW</b>
+                        <span>— die Größe aus Schritt 1 bleibt stehen; variiert wird nur die Stückzahl der Geräte.</span>
+                    </p>
+
+                    <p class="epos-flotte-einheitskarte__fuss" data-nur="groesse">
+                        <span>Kandidaten dieser Einheit:</span><b>266</b>
+                    </p>
+                </article>
+            </div>
+
+            <p class="epos-herleitung">
+                <b>Mischflotte (8.3):</b> „Größe suchen" variiert nur die freien Einheiten, „Stückzahl suchen"
+                nur die konkreten — die jeweils andere steht fest und wird gedimmt mit ihrem festen Wert gezeigt.
+                Beides zugleich ist nicht Teil der ersten Stufe (SD‑Q16).
+            </p>
+        </section>
+
+        <!-- ------------------------------------------- Bestes Ergebnis -->
+        <section class="epos-flotte-abschnitt" aria-labelledby="bestes-titel">
+            <h3 id="bestes-titel">
+                <span data-nur="groesse stueckzahl">Bestes Ergebnis</span>
+                <span data-nur="bewerten">Ergebnis der Bewertung</span>
+                <span class="epos-flotte-phasenmarke" data-nur="groesse">Grobraster</span>
+            </h3>
+
+            <div class="epos-flotte-bestes">
+                <div class="epos-flotte-bestes__karte">
+                    <small>Kapitalwert gegenüber „ohne Speicher"</small>
+                    <b data-nur="groesse">46 910 €</b>
+                    <b data-nur="stueckzahl">41 280 €</b>
+                    <b data-nur="bewerten">31 750 €</b>
+                    <small data-nur="groesse">jährliche Ersparnis 10 480 €/a</small>
+                    <small data-nur="stueckzahl">jährliche Ersparnis 9 640 €/a</small>
+                    <small data-nur="bewerten">jährliche Ersparnis 8 120 €/a</small>
+                </div>
+
+                <div class="epos-flotte-bestes__karte">
+                    <small data-nur="groesse">Kapazität · C-Rate · Leistung</small>
+                    <small data-nur="stueckzahl">Bestückung</small>
+                    <small data-nur="bewerten">Eingestellte Flotte</small>
+                    <b data-nur="groesse">180 kWh · 0,89 1/h · 160 kW</b>
+                    <b data-nur="stueckzahl">2 × Growatt WIT‑M+APX ESS</b>
+                    <b data-nur="bewerten">1 × Growatt + 1 freie Einheit</b>
+                    <small data-nur="groesse">1 freie Einheit · Growatt fest mit 1 × 129 kWh</small>
+                    <small data-nur="stueckzahl">= 258 kWh · 200 kW</small>
+                    <small data-nur="bewerten">2 Einheiten</small>
+                </div>
+
+                <div class="epos-flotte-bestes__karte">
+                    <small>Geprüft</small>
+                    <b data-nur="groesse">266 Kandidaten</b>
+                    <b data-nur="stueckzahl">4 Kandidaten</b>
+                    <b data-nur="bewerten">1 Kandidat</b>
+                    <small data-nur="groesse">251 zulässig · Rechendauer 214,60 s</small>
+                    <small data-nur="stueckzahl">4 zulässig · Rechendauer 15,60 s</small>
+                    <small data-nur="bewerten">1 zulässig · Rechendauer 3,90 s</small>
+                </div>
+            </div>
+
+            <!-- Bildplatz: Rasterkarte (Methode G) bzw. Balken (Methode S) -->
+            <div class="epos-flotte-bildplatz" data-nur="groesse">
+                <p class="epos-flotte-bildplatz__kopf">
+                    Rasterkarte Kapazität × Leistung
+                    <span class="epos-flotte-bildplatz__vermerk">Platzhalter — gezeichnet wird sie vom Diagramm-Renderer des Kerns</span>
+                </p>
+                <div style="overflow-x:auto">
+                <svg viewBox="0 0 620 280" width="620" height="280" role="img"
+                     aria-label="Platzhalter der Rasterkarte: Kapitalwert über Kapazität und Leistung, Optimum bei 180 Kilowattstunden und 160 Kilowatt">
+                    <defs>
+                        <pattern id="schraffur" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                            <rect width="6" height="6" fill="#f5f4ef"/>
+                            <line x1="0" y1="0" x2="0" y2="6" stroke="#b4b2a9" stroke-width="1.6"/>
+                        </pattern>
+                    </defs>
+                    <rect x="70.0" y="16.0" width="65.0" height="34.0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="16.0" width="65.0" height="34.0" fill="url(#schraffur)" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="16.0" width="65.0" height="34.0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="16.0" width="65.0" height="34.0" fill="url(#schraffur)" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="16.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="16.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="16.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="16.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="16.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="16.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="50.0" width="65.0" height="34.0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="50.0" width="65.0" height="34.0" fill="url(#schraffur)" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="50.0" width="65.0" height="34.0" fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="50.0" width="65.0" height="34.0" fill="url(#schraffur)" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="50.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="50.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="50.0" width="65.0" height="34.0" fill="#3f74bb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="50.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="50.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="50.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="84.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="84.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="84.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="84.0" width="65.0" height="34.0" fill="#3f74bb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="84.0" width="65.0" height="34.0" fill="#3f74bb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="84.0" width="65.0" height="34.0" fill="#3f74bb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="84.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="84.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="118.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="118.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="118.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="118.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="118.0" width="65.0" height="34.0" fill="#3f74bb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="118.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="118.0" width="65.0" height="34.0" fill="#6f9bd4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="118.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="152.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="152.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="152.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="152.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="152.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="152.0" width="65.0" height="34.0" fill="#9dbee4" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="152.0" width="65.0" height="34.0" fill="#c3d9ef" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="152.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="70.0" y="186.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="135.0" y="186.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="200.0" y="186.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="265.0" y="186.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="330.0" y="186.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="395.0" y="186.0" width="65.0" height="34.0" fill="#e0eaf6" stroke="#ffffff" stroke-width="1"/>
+            <rect x="460.0" y="186.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+            <rect x="525.0" y="186.0" width="65.0" height="34.0" fill="#f4f7fb" stroke="#ffffff" stroke-width="1"/>
+                    <!-- Marke des Optimums -->
+                    <circle cx="362.5" cy="101.0" r="9" fill="none" stroke="#ffffff" stroke-width="3"/>
+                    <circle cx="362.5" cy="101.0" r="9" fill="none" stroke="#0F1F3D" stroke-width="1.6"/>
+                    <line x1="348.5" y1="101.0" x2="376.5" y2="101.0" stroke="#0F1F3D" stroke-width="1.6"/>
+                    <line x1="362.5" y1="87.0" x2="362.5" y2="115.0" stroke="#0F1F3D" stroke-width="1.6"/>
+                    <text x="380.5" y="87.0" font-family="Segoe UI, sans-serif" font-size="11" fill="#0F1F3D">180 kWh · 160 kW</text>
+
+                    <!-- Achsen -->
+                    <line x1="70" y1="220" x2="590" y2="220" stroke="#b4b2a9" stroke-width="1"/>
+                    <line x1="70" y1="16" x2="70" y2="220" stroke="#b4b2a9" stroke-width="1"/>
+                    <text x="70"  y="236" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">40</text>
+                    <text x="320" y="236" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">170</text>
+                    <text x="566" y="236" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">300</text>
+                    <text x="260" y="254" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a">Kapazität [kWh]</text>
+                    <text x="40"  y="24"  font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">400</text>
+                    <text x="46"  y="222" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">40</text>
+                    <text x="16"  y="150" font-family="Segoe UI, sans-serif" font-size="12" fill="#2c2c2a"
+                          transform="rotate(-90 16 150)">Leistung [kW]</text>
+
+                    <!-- Legende -->
+                    <rect x="70"  y="264" width="40" height="10" fill="#e0eaf6" stroke="#d9d7cf"/>
+                    <rect x="110" y="264" width="40" height="10" fill="#c3d9ef" stroke="#d9d7cf"/>
+                    <rect x="150" y="264" width="40" height="10" fill="#9dbee4" stroke="#d9d7cf"/>
+                    <rect x="190" y="264" width="40" height="10" fill="#6f9bd4" stroke="#d9d7cf"/>
+                    <rect x="230" y="264" width="40" height="10" fill="#3f74bb" stroke="#d9d7cf"/>
+                    <text x="278" y="273" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">Kapitalwert gering → hoch</text>
+                    <rect x="430" y="264" width="20" height="10" fill="url(#schraffur)" stroke="#d9d7cf"/>
+                    <text x="456" y="273" font-family="Segoe UI, sans-serif" font-size="11" fill="#5f5e5a">unzulässig (C-Rate)</text>
+                </svg>
+                </div>
+                <p class="epos-herleitung">
+                    Dazu wie bisher die zwei Schnittkurven und die Kandidatentabelle
+                    (<code>SpeicherFlottenGroessenAnsicht</code>) — unverändert.
+                </p>
+            </div>
+
+            <div class="epos-flotte-bildplatz" data-nur="stueckzahl">
+                <p class="epos-flotte-bildplatz__kopf">
+                    Kapitalwert über Stückzahl
+                    <span class="epos-flotte-bildplatz__vermerk">neu mit SD‑E‑10 (SD‑Q17): eine variierte Einheit → Balken; zwei → Rasterkarte n₁ × n₂</span>
+                </p>
+                <div class="epos-flotte-balken" role="img"
+                     aria-label="Kapitalwert über Stückzahl: 1 Stück 28 400 Euro, 2 Stück 41 280 Euro (bester), 3 Stück 33 700 Euro, 4 Stück 18 900 Euro">
+                    <div class="epos-flotte-balken__saeule">
+                        <span class="epos-flotte-balken__wert">28 400 €</span>
+                        <div class="epos-flotte-balken__stab" style="height:69%"></div>
+                    </div>
+                    <div class="epos-flotte-balken__saeule epos-flotte-balken__saeule--bester">
+                        <span class="epos-flotte-balken__wert">41 280 €</span>
+                        <div class="epos-flotte-balken__stab" style="height:100%"></div>
+                    </div>
+                    <div class="epos-flotte-balken__saeule">
+                        <span class="epos-flotte-balken__wert">33 700 €</span>
+                        <div class="epos-flotte-balken__stab" style="height:82%"></div>
+                    </div>
+                    <div class="epos-flotte-balken__saeule">
+                        <span class="epos-flotte-balken__wert">18 900 €</span>
+                        <div class="epos-flotte-balken__stab" style="height:46%"></div>
+                    </div>
+                </div>
+                <div class="epos-flotte-balkenachse" aria-hidden="true">
+                    <span>1 Stück</span><span>2 Stück</span><span>3 Stück</span><span>4 Stück</span>
+                </div>
+                <p class="epos-herleitung">
+                    Ganze Zahlen, deshalb Balken statt Fläche und <b>kein Feinraster</b>. Darunter steht
+                    wie bisher die Kandidatentabelle.
+                </p>
+            </div>
+
+            <div class="epos-leiste" data-nur="groesse stueckzahl">
+                <button type="button" class="epos-knopf">Kandidat übernehmen</button>
+                <button type="button" class="epos-knopf">Variantenvergleich als CSV…</button>
+            </div>
+            <p class="epos-herleitung" data-nur="groesse">
+                „Kandidat übernehmen" setzt der freien Einheit in Schritt 1 die gefundene Größe.
+            </p>
+            <p class="epos-herleitung" data-nur="stueckzahl">
+                „Kandidat übernehmen" setzt die Stückzahlen der Einheiten in Schritt 1.
+            </p>
+        </section>
+
+    </div>
+    </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- Nebenfaelle: die GESPERRTE Option mit ihrer Abhilfe (Konzept 8.3)   -->
+<!-- ================================================================== -->
+<div class="mockup-nebenfaelle">
+    <div class="mockup-nebenfall">
+        <h3>Nebenfall A — Flotte ohne freie Einheit</h3>
+        <p>Dann gibt es nichts, dessen Größe zu suchen wäre. Die Option bleibt <b>sichtbar</b> und
+           gedimmt; die Abhilfe sagt, was in Schritt 1 zu tun ist.</p>
+        <div class="epos-flotte-suchoption epos-flotte-suchoption--gesperrt">
+            <label class="epos-option">
+                <input class="epos-option-kasten" type="radio" name="nebenfall-a" disabled>
+                <span class="epos-feld-text">Größe suchen (freie Einheit)</span>
+            </label>
+            <p class="epos-option-beschreibung">Variiert zwei der drei Größen an den freien
+               Auslegungseinheiten; die Stückzahl steht fest auf 1.</p>
+            <p class="epos-flotte-abhilfe">
+                <span aria-hidden="true">→</span>
+                <span>In Schritt 1 eine <b>freie Einheit</b> hinzufügen.</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="mockup-nebenfall">
+        <h3>Nebenfall B — Flotte ohne Speicher aus Projekt oder Katalog</h3>
+        <p>Dann gibt es kein Gerät, dessen Stückzahl zu suchen wäre — dieselbe Bauart, andere Abhilfe.</p>
+        <div class="epos-flotte-suchoption epos-flotte-suchoption--gesperrt">
+            <label class="epos-option">
+                <input class="epos-option-kasten" type="radio" name="nebenfall-b" disabled>
+                <span class="epos-feld-text">Stückzahl suchen (Speicher aus Projekt oder Katalog)</span>
+            </label>
+            <p class="epos-option-beschreibung">Lässt die Gerätegröße stehen und variiert, wie viele
+               Geräte stehen (0 = Einheit entfällt).</p>
+            <p class="epos-flotte-abhilfe">
+                <span aria-hidden="true">→</span>
+                <span>In Schritt 1 einen <b>Speicher aus Projekt oder Katalog</b> aufnehmen.</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="mockup-nebenfall">
+        <h3>Die dritte Herkunftspille</h3>
+        <p>Die Karte oben zeigt „Katalog" und „frei"; eine Einheit aus einer <b>Projektanlage</b>
+           trägt dieselbe Kopfzeile mit der dritten Pille. Sie wird wie eine Katalogeinheit
+           behandelt: feste Größe, variierbare Stückzahl.</p>
+        <div class="epos-flotte-einheitskarte">
+            <div class="epos-flotte-einheitskarte__kopf">
+                <span class="epos-flotte-einheitskarte__name">Speicher Halle 2 (aus dem Projekt)</span>
+                <span class="epos-flotte-herkunftspille epos-flotte-herkunftspille--projekt">Projektanlage</span>
+                <span class="epos-flotte-einheitskarte__kenndaten">64 kWh · 50 kW</span>
+            </div>
+            <p class="epos-flotte-einheitskarte__fuss">
+                <span>Kandidaten dieser Einheit:</span><b>3</b>
+                <span>(Stückzahl 0 – 2; 0 = Einheit entfällt)</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="mockup-fussnoten">
+    <h2>Was dieses Blatt gegenüber dem Stand #224/#226 ändert</h2>
+    <ul>
+        <li><b>Drei Optionen statt zweier</b> (8.3, SD‑Q13): „nur bewerten" · „Größe suchen" ·
+            „Stückzahl suchen". Die Methode wird ausdrücklich gewählt, nicht aus der Herkunft
+            abgeleitet — bei einer Mischflotte wäre sonst nicht eindeutig, was variiert wird.</li>
+        <li><b>Herkunftspille an jeder Einheit</b> (8.3, SD‑Q15): <i>Projektanlage</i> · <i>Katalog</i> ·
+            <i>frei</i>. Sie ist das sichtbare Gegenstück zum neuen Feld
+            <code>FlottenEinheit.Herkunft</code>; Schritt 1 zeigt dieselbe Pille.</li>
+        <li><b>Karten statt Neun-Spalten-Tabelle</b> (8.4, SD‑Q18): je Einheit eine Karte mit Kopfzeile,
+            methodenabhängigem Rumpf und einer Fußzeile „Kandidaten dieser Einheit". Sieben kleine
+            Zahlenfelder je Tabellenzeile gleichen Gewichts entfallen; die Tabelle bleibt nur noch in
+            der Kandidatenliste des Ergebnisses.</li>
+        <li><b>Keine Fantasiegeräte mehr</b> (8.2): Ein Katalog- oder Projektspeicher <i>hat</i> eine Größe.
+            Bei „Stückzahl suchen" steht sie fest, und die Herleitungszeile zeigt, was aus 1–4 Stück wird
+            (129–516 kWh · 100–400 kW · 45 000–180 000 €).</li>
+        <li><b>Ergebnissicht über der Stückzahl</b> (8.3, SD‑Q17): Balken je Stückzahl bei einer
+            variierten Einheit, Rasterkarte n₁ × n₂ bei zweien, darüber hinaus die Kandidatentabelle.</li>
+        <li><b>Unberührt:</b> Ablaufleiste, Ziel, Grenze „Maximale Auslegungskandidaten", der Kasten
+            „Bestes Ergebnis" mit seinen drei Karten und der Projektlauf (Referenzbasis R7).</li>
+    </ul>
+</div>
+
+</main>
+
+<script>
+// Das EINZIGE Verhalten dieses Blattes: die Wahl der Suchmethode. Sie setzt ein
+// Merkmal am <body>; alles Weitere haengt daran — data-nur nennt die Methoden,
+// in denen ein Element steht, data-dimm die Methode, in der eine Einheitskarte
+// fest steht (sie wird dann gedimmt gezeigt, nicht versteckt).
+(function () {
+    function umschalten(methode) {
+        document.body.dataset.methode = methode;
+
+        document.querySelectorAll('[data-nur]').forEach(function (el) {
+            el.hidden = el.dataset.nur.split(' ').indexOf(methode) < 0;
+        });
+
+        document.querySelectorAll('[data-dimm]').forEach(function (el) {
+            el.classList.toggle('epos-flotte-einheitskarte--gedimmt',
+                                el.dataset.dimm === methode);
+        });
+
+        document.querySelectorAll('input[data-variieren]').forEach(function (kasten) {
+            kasten.checked = kasten.dataset.variieren === methode;
+            kasten.disabled = kasten.dataset.variieren !== methode;
+        });
+    }
+
+    document.querySelectorAll('input[name="methode"]').forEach(function (knopf) {
+        knopf.addEventListener('change', function () { umschalten(knopf.value); });
+    });
+
+    umschalten(document.querySelector('input[name="methode"]:checked').value);
+})();
+</script>
+
+</body>
+</html>
