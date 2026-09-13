@@ -415,3 +415,5 @@ api_gemini.txt
 # Repository und wurde am selben Abend wieder entfernt; Referenzmappen bleiben ausserhalb)
 *.xlsm
 *.xlsb
+# Marker laufender Agentenarbeit im Hauptbaum (12.09.2026): GitHub_Sync.bat bricht ab, solange sie liegt.
+/AGENT_LAEUFT

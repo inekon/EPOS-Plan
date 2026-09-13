@@ -334,10 +334,9 @@ Windows in die `InvalidOperationException` und damit still in `return false` gel
 `SetSchemaVersionOleDb` sollte laut Plan als `partial`-Hälfte in der Anwendung landen. Das trägt
 nicht: `ApplikationCtrl` liegt seit iU4 in `EPOS.Kern`, und eine `partial`-Hälfte lässt sich über
 eine Assemblygrenze hinweg nicht beisteuern. Beide Methoden sind ohnehin `static` und berühren
-keinen Instanzzustand; sie stehen jetzt wörtlich in der statischen Anwendungsklasse
-`WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs`
-(`[SupportedOSPlatform("windows")]`). Aus `ApplikationCtrl` brauchen sie nur die Namenskonstante
-`SPALTE_SCHEMAVERSION`.
+keinen Instanzzustand; sie kamen deshalb wörtlich in eine statische Anwendungsklasse
+(`[SupportedOSPlatform("windows")]`) und brauchten aus `ApplikationCtrl` nur die Namenskonstante
+`SPALTE_SCHEMAVERSION`. Mit dem Ausbau des Access-Zweigs sind sie entfallen; die Lehre bleibt.
 
 **Der Masken-Sweep musste vor die Streichung.** Die Views hängen an genau dem impliziten Operator
 und an `DbParam.Von()`, die T3b entfernt — in der geplanten Reihenfolge wäre der Zwischenstand
@@ -357,13 +356,10 @@ Die 36 Objektinitialisierer waren der einzige Fall, den die Vermessung nicht gel
 `null`-Value bisher auch. Die dokumentierte Überladungsfalle `new DbParam("x", 0)` wurde vor dem
 Lauf erneut geprüft — **0 Stellen**. Von Hand nachgearbeitet wurde nichts.
 
-**Was von OleDb übrig ist.** In der Anwendung: `DbParamOleDb` (die verschobene Brücke),
-`SchemaVersionAccess`, `SchemaMigration`, `GeraeteWaisen`, `ErststartMigration` — der eingefrorene
-Access-Zweig, der einen `.accdb`-Bestand vor der Erstmigration auf Zielstand 61 hebt. Dazu drei
-`catch (OleDbException)` aus der Access-Zeit (`KiAktionenProjekt`, `KiAktionenSchreiben`,
-`PeakShavingCtrl`) — kein Parameterweg, deshalb nicht Teil von iU6. `DbParamOleDb.Aus()` und
-`.Von()` haben nach dem Sweep **keinen** Nutzer mehr und bleiben nur als Rückfalltür stehen;
-getragen wird allein `.Nach()` mit vier Aufrufstellen.
+**Was von OleDb übrig ist: nichts.** In der Anwendung gibt es weder eine `OleDb`-Verwendung noch
+das Paket `System.Data.OleDb`. Access lebt allein im Hauswerkzeug `EposSqliteMigrator/` mit eigener
+Projektmappe und eigener Paketreferenz; das Referenzlaufwerkzeug `Referenzlauf/` führt für seinen
+Modus `migration` eine eigene.
 
 **`EPOS.Daten` entsteht nicht.** Der Vertrag ist ein Interface und eine Klasse. Ein eigenes Projekt
 hätte den Kern von seiner Zugriffsschicht getrennt, ohne dass ein zweiter Anbieter in Sicht wäre —

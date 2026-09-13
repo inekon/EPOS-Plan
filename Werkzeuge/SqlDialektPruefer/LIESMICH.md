@@ -164,20 +164,10 @@ Schema gehalten. Das ist die Regel aus `c288e1c`, jetzt automatisch.
 
 ## Was nicht geprüft wird
 
-**Der eingefrorene Access-Zweig der Schemapflege** — dort ist Access-SQL richtig, und
-die ACE-Engine führt es aus. Seit W3 (#157‑E‑1, 09.09.2026) ist er ein **Hauswerkzeug**:
-`ErststartMigration.cs` ist gelöscht, die Anwendung übernimmt keinen `.accdb`-Bestand
-mehr; was bleibt, hebt einen Altbestand für `EposSqliteMigrator` auf Stand 61.
-
-```
-WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs
-WindowsFormsApplication1/Allgemein/Update/GeraeteWaisen.cs
-WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs
-WindowsFormsApplication1/Allgemein/DbParamOleDb.cs
-```
-
-Die Liste steht als `AUSGENOMMEN` im Kopf des Skripts. Wer sie erweitert, schreibt dazu,
-**warum** eine Datei Access sprechen darf.
+**Ausgenommene Dateien** — die Liste `AUSGENOMMEN` im Kopf des Skripts ist **leer**: Im
+Programm gibt es keinen Access-Zweig mehr, jede geprüfte Datei spricht SQLite. Wer die
+Liste erweitert, schreibt dazu, **warum** eine Datei Access sprechen darf. Das
+Hauswerkzeug `EposSqliteMigrator/` liegt außerhalb der geprüften Wurzeln.
 
 **Die rund 150 dynamischen Texte** lassen sich nicht abschließend beurteilen, weil ihr
 Tabellen- oder Spaltenname erst zur Laufzeit entsteht (`KomponentenUebernahmeCtrl`,

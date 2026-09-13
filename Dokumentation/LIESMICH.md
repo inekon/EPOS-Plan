@@ -67,8 +67,9 @@ und `README.md`.
 | [`aktuell/Lokalisierung_Katalog.md`](aktuell/Lokalisierung_Katalog.md) | Ressourcenkatalog des Simulationsbereichs — Schlüssel, Texte, Fundstellen | 2026-08-29 |
 | [`aktuell/Lokalisierung_Pruefung.md`](aktuell/Lokalisierung_Pruefung.md) | Prüfrezeptur Lokalisierung — angewandt, von `WindowsFormsApplication1/CLAUDE.md` genannt | 2026-08-29 |
 | [`aktuell/Spezifikation_Stromspeicher_Optimierung.md`](aktuell/Spezifikation_Stromspeicher_Optimierung.md) | Simulation mehrerer Stromspeicher — die fachliche Spezifikation (14 Kapitel) | 2026-09-11 |
+| [`aktuell/Status_iOS_Migration.md`](aktuell/Status_iOS_Migration.md) | Stand der iOS-Migration: Pakete iU0–iU13, Wellen W0–W16c, Aufträge #nnn und was offen ist — je Schritt eine Zeile, das Konzept bleibt im Umsetzungskonzept | 2026-09-12 |
 | [`aktuell/Umsetzung_iU10_Nachweise.md`](aktuell/Umsetzung_iU10_Nachweise.md) | Nachweisliste iU10 (iOS-Hülle): was ohne Mac nachweisbar ist und was nicht — wird fortgeschrieben | 2026-09-11 |
-| [`aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`](aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md) | Umsetzungskonzept iOS mit den **Statusblöcken** der laufenden Wellen | 2026-09-12 |
+| [`aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`](aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md) | Umsetzungskonzept iOS: Pakete iU0–iU13, Bausteine, Risiken, Entscheidungsbedarf — der Stand der Umsetzung steht in `aktuell/Status_iOS_Migration.md` | 2026-09-12 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md`](aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md) | Wegweiser des Ordners: Mockups, Rechenwege, Beispielprojekt | 2026-09-02 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md) | **Führende Fassung** des Wirtschaftlichkeitskonzepts (Dialoge, Felder, Formeln) | 2026-09-02 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/Beispielprojekt.md`](aktuell/Wirtschaftlichkeit_Kosten/Beispielprojekt.md) | „Musterprojekt Gewerbepark" — die eine Zahlenquelle aller Rechenwege | 2026-09-02 |
@@ -127,6 +128,7 @@ Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren der M
 | [`ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md`](ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md) | iOS-Portierung, Rev. 1 (Machbarkeit) | 2026-09-04 | ersetzt durch `aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md` |
 | [`ueberholt/Projekt-ExportImport.md`](ueberholt/Projekt-ExportImport.md) | Handover-Notiz zum `.wpx`-Export/Import | 2026-08-29 | beschreibt den Access/x86-Stand; Nachfolger `aktuell/Konzept_Projekttransfer_EPOS-Plan.md` |
 | [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) | Wegweiser des Ordners: die Protokolle der 24 entfernten Referenzbasen, Tabelle Basis → Datum → Zweck → Protokoll | 2026-09-12 | vor dem Umschreiben der Git-Geschichte gesichert (AUF‑Q1, #244); die Messdaten der Basen sind endgültig weg |
+| [`ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md`](ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md) | Die Basenhistorie der Referenzlauf-Suite: welche Referenzbasis wann von welcher abgelöst wurde und warum — wortgetreu aus `Referenzlaeufe/LIESMICH.md` ausgelagert | 2026-09-12 | die beschriebenen Basen liegen weder im Arbeitsbaum noch in der Git-Geschichte; gültig ist allein die aktuelle Basis R7 in [`Referenzlaeufe/LIESMICH.md`](../Referenzlaeufe/LIESMICH.md) |
 | [`ueberholt/STAND.md`](ueberholt/STAND.md) | datierte Stände des Anwendungsprojekts (03.09.2026) | 2026-09-06 | Momentaufnahme; die laufenden Zahlen stehen in den `CLAUDE.md` und im Umsetzungskonzept |
 | [`ueberholt/Umsetzung_iU0_iU1_Nachweise.md`](ueberholt/Umsetzung_iU0_iU1_Nachweise.md) | Nachweisliste iU0/iU1/iU4–iU7 | 2026-09-04 | Abnahme abgeschlossen |
 | [`ueberholt/Umsetzung_iU8_Nachweise.md`](ueberholt/Umsetzung_iU8_Nachweise.md) | Nachweisliste iU8 (erster Blazor-Dialog) | 2026-09-05 | Abnahme abgeschlossen |
@@ -150,6 +152,8 @@ Querverweise der Protokolle untereinander kurz bleiben.
 | [`ueberholt/Protokolle/KI/`](ueberholt/Protokolle/KI/) | 5 | KI-Assistent: H4/H5, H8, H10 Semantikindex, Klarnamenschutz |
 | [`ueberholt/Protokolle/Views/`](ueberholt/Protokolle/Views/) | 4 | Projektdialoge P1–P6 und das Redesign „Berichte & Kosten" |
 | [`ueberholt/Protokolle/Update/`](ueberholt/Protokolle/Update/) | 2 | Anlagenzeilen-Eindeutigkeit (Schritt 17) und die E6-Quellensaat |
+| [`ueberholt/Protokolle/CLAUDE-Historie/`](ueberholt/Protokolle/CLAUDE-Historie/) | 4 | Die ausführlichen Fassungen der vier `CLAUDE.md` (Wurzel, `EPOS.Kern`, `EPOS.UI`, `WindowsFormsApplication1`) vor der Kürzung auf den gültigen Stand; die relativen Verweise sind auf den Ablageort umgeschrieben |
+| [`ueberholt/Protokolle/Statusbloecke/`](ueberholt/Protokolle/Statusbloecke/) | 1 | Die Statusblöcke, die bis zum 12.09.2026 im Umsetzungskonzept iOS standen: die Paketblöcke iU1–iU10, die 25 Wellenblöcke iU9‑W0…W16c und die Gesamtübersicht § 4.0 — wortgetreu, mit alten Commit-Kennungen; fortgeschrieben wird `aktuell/Status_iOS_Migration.md` |
 | [`ueberholt/Protokolle/Bericht/`](ueberholt/Protokolle/Bericht/) | 1 | `LIESMICH_Phase1.md` — Phasen-Historie des Berichtsmoduls |
 | [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 1 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69) |
 

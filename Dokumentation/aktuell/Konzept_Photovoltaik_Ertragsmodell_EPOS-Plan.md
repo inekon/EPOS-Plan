@@ -447,7 +447,7 @@ Umsetzungsprotokoll mit allen Zahlen, Fundstellen und Nebenbefunden:
   Regression. **Neue Migrationsschritte beginnen bei 63.**
 * **Neue Konstante `SchemaMigration.FREEZE_VERSION_ACCESS = 61`.** Der eingefrorene
   Access-Zweig endet bei 61 und kann 62 nie erreichen. Ohne die Trennung hätten
-  `HebeAltbestand` jede Alt-Hebung als Misserfolg gemeldet und der SQLite-Zweig jede Datei auf
+  die Alt-Hebung jeden Lauf als Misserfolg gemeldet und der SQLite-Zweig jede Datei auf
   Stand 61 als „nicht erstmigriert" abgewiesen.
 * **Bestandsfehler in `Form_AdminPV` geschlossen:** Das Speichern eines Katalogmoduls schrieb
   `alpha_SC`, `beta_OC` und `T_NOCT` mit 0 zurück und löschte damit die Werte des CEC-Imports.

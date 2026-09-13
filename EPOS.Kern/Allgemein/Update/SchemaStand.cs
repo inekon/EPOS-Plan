@@ -212,22 +212,14 @@ namespace WindowsFormsApplication1
         /// Sperrt den Simulationsbereich, wenn ein Migrationslauf stattgefunden HAT und
         /// dabei etwas fehlschlug.
         ///
-        /// <para><b>Unverändert seit ARBEITSPAKET S6 - und das ist geprüft, nicht
-        /// unterlassen.</b> Verlangt ist die Semantik „Stand &lt;
-        /// <c>SchemaMigration.ZIEL_VERSION</c> ⇒ gesperrt". Sie kommt im SQLite-Zweig
-        /// genauso zustande wie vorher im Access-Zweig, nämlich über
-        /// <see cref="MigrationOk"/>: <c>SchemaMigration.Ausfuehren</c> liefert
+        /// <para>Verlangt ist die Semantik „Stand &lt;
+        /// <c>SchemaMigration.ZIEL_VERSION</c> ⇒ gesperrt". Sie kommt über
+        /// <see cref="MigrationOk"/> zustande: <c>SchemaMigration.Ausfuehren</c> liefert
         /// <c>alleOk &amp;&amp; StandNachher &gt;= ZIEL_VERSION</c>, und
         /// <c>SchritteAbarbeitenSqlite</c> bricht bei Stand 0 und bei Stand &lt; 61 mit
         /// <c>false</c> ab. Ein Stand unter 61 kann daher gar nicht als „ok" durchgehen.
-        /// Eine zweite Prüfung auf <c>StandNachher</c> stünde hier nur als Wiederholung -
-        /// und würde die Sperre an einen Zähler koppeln, den auch
-        /// <c>SchemaMigration.HebeAltbestand</c> beschreibt (siehe die Begründung
-        /// dort).</para>
-        ///
-        /// <para><c>SchemaMigration.HebeAltbestand</c> rührt <see cref="Ausgefuehrt"/> und
-        /// <see cref="MigrationOk"/> nicht an; eine Alt-Hebung kann diese Sperre also
-        /// weder setzen noch aufheben.</para>
+        /// Eine zweite Prüfung auf <c>StandNachher</c> stünde hier nur als
+        /// Wiederholung.</para>
         /// </summary>
         public static bool SimulationGesperrt(out string grund)
         {

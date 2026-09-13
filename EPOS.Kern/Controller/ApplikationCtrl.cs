@@ -98,22 +98,15 @@ namespace WindowsFormsApplication1
         // dorthin ist seit ARBEITSPAKET S4b nicht mehr eine eigene OleDb-Verbindung,
         // sondern StilleDb (dieselbe Zusage, aber auf der Zugriffsschicht).
         //
-        // VORMERKUNG S6/S8 - ERSTMIGRATIONS-HEBUNG: Die beiden Methoden hier lesen und
-        // schreiben ab sofort den Schemastand der SQLITE-Datei. Fuer die einmalige
-        // Hebung eines Altbestands ("Kenndaten.accdb" ist da, die .sqlite noch nicht)
-        // braucht es einen EIGENEN, ausdruecklich benannten OleDb-Leser auf die
-        // Alt-.accdb - er gehoert zur Hebung (S6/S8), nicht hierher. Diese Methoden
-        // duerfen dafuer NICHT umgebogen werden: Sie beantworten die Frage "welchen
-        // Stand hat die Datenbank, mit der das Programm gerade arbeitet".
+        // Die beiden Methoden hier lesen und schreiben den Schemastand der SQLITE-Datei.
+        // Sie beantworten die Frage "welchen Stand hat die Datenbank, mit der das
+        // Programm gerade arbeitet" - und duerfen dafuer auf nichts anderes umgebogen
+        // werden.
         //
-        // EINGELOEST MIT ARBEITSPAKET S6: Der angekuendigte OleDb-Leser (und der dazu
-        // gehoerende Schreiber) heissen GetSchemaVersionOleDb / SetSchemaVersionOleDb.
-        // Sie standen bis iU6-T2 weiter unten in dieser Datei und liegen jetzt in der
-        // ANWENDUNG (Allgemein/Update/SchemaVersionAccess.cs) - siehe den Verweis dort,
-        // wo sie standen. Sie bekommen die Verbindung HEREINGEREICHT und ziehen sich
-        // ausdruecklich KEINEN Verbindungsstring aus DataRepository - der liefert seit
-        // S4a den SQLite-String. Benutzt werden sie ausschliesslich vom eingefrorenen
-        // Access-Zweig SchemaMigration.HebeAltbestand.
+        // EIN ACCESS-GEGENSTUECK GIBT ES NICHT MEHR. Einen Altbestand hebt allein das
+        // Hauswerkzeug EposSqliteMigrator (eigene Projektmappe); auf den Freeze-Stand 61
+        // bringt ihn zuvor die letzte Access-Fassung von EPOS-Plan (Git-Zweig
+        // version_august_2026). Siehe BETRIEB_SQLITE.md 1.1 und 7.
         // =========================================================================
 
         /// <summary>Name der Markerspalte in Tab_Applikation.</summary>
@@ -173,19 +166,11 @@ namespace WindowsFormsApplication1
         }
 
         // =========================================================================
-        // Schemamarker im ALTBESTAND (ARBEITSPAKET S6, eingefrorener Access-Zweig)
+        // Schemamarker im ALTBESTAND: gibt es hier nicht.
         //
-        // ARBEITSPAKET iU6-T2: WOERTLICH AUSGELAGERT, NICHT GEAENDERT. Die beiden
-        // OleDb-Fassungen GetSchemaVersionOleDb/SetSchemaVersionOleDb stehen jetzt in
-        // der Anwendung: WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs
-        // (statische Klasse SchemaVersionAccess, [SupportedOSPlatform("windows")]).
-        //
-        // Grund: EPOS.Kern ist plattformfrei und darf System.Data.OleDb nicht mehr
-        // sehen. Eine partial-Haelfte konnte die Anwendung nicht beisteuern - partial
-        // geht nicht ueber Assemblygrenzen -, und die beiden Methoden sind static und
-        // beruehren keinen Instanzzustand dieser Klasse; sie brauchen von hier nur
-        // SPALTE_SCHEMAVERSION. Aufrufer ist ausschliesslich der eingefrorene
-        // Access-Zweig SchemaMigration.HebeAltbestand.
+        // Die beiden OleDb-Fassungen GetSchemaVersionOleDb/SetSchemaVersionOleDb standen
+        // bis iU6-T2 hier und danach in der Anwendung; mit dem Access-Zweig sind sie
+        // entfallen. EPOS.Kern ist plattformfrei und darf System.Data.OleDb nicht sehen.
         //
         // Die SQLite-Fassungen GetSchemaVersion/SetSchemaVersion darueber bleiben hier.
         // =========================================================================

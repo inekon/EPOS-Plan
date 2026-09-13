@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -10,18 +9,14 @@ using WindowsFormsApplication1;
 namespace ZugriffsschichtProben
 {
     /// <summary>
-    /// Proben zur umgebauten Zugriffsschicht (Arbeitspaket S4a) und zur
-    /// Schemapflege-Gabelung (Arbeitspaket S6, Faelle 13 bis 15).
-    ///
-    /// Fall 16 (Erststart-Assistent, Arbeitspaket S8) ist mit W3 vom 09.09.2026
-    /// entfallen - die Anwendung uebernimmt keinen Access-Altbestand mehr.
+    /// Proben zur umgebauten Zugriffsschicht (Arbeitspaket S4a) und zur Schemapflege
+    /// (Arbeitspaket S6, Faelle 13 und 14).
     ///
     /// AUFRUF:
     ///   ZugriffsschichtProben.exe --quelle=&lt;Pfad zur SQLite-Datei&gt; [--arbeit=&lt;Ordner&gt;]
-    ///                             [--altbestand=&lt;Pfad zur .accdb&gt;]
     /// oder ueber die Umgebungsvariable EPOS_PROBEN_QUELLE. Es wird IMMER auf einer
     /// KOPIE gearbeitet - die Quelldatei wird nur gelesen und nie geoeffnet, waehrend
-    /// geschrieben wird. Das gilt auch fuer den Altbestand aus Fall 15.
+    /// geschrieben wird.
     ///
     /// Rueckgabewert = Anzahl der fehlgeschlagenen Faelle (0 = alles bestanden).
     /// Uebersprungene Faelle sind KEIN Fehlschlag; sie nennen ihren Grund.
@@ -36,9 +31,6 @@ namespace ZugriffsschichtProben
 
         /// <summary>Wegwerfspalte des synthetischen SQLite-Schritts aus Fall 14.</summary>
         private const string PROBE_SPALTE = "S6_Probespalte";
-
-        /// <summary>Vorgabe fuer Fall 15, ueberschreibbar mit --altbestand=.</summary>
-        private const string ALTBESTAND_VORGABE = @"C:\ProgramData\EPOS_PLAN\Kenndaten.accdb";
 
         private static int _faelle;
         private static int _fehlschlaege;
@@ -98,21 +90,18 @@ namespace ZugriffsschichtProben
                 Fall11KeinBeginTransaction();
                 Fall12DatenbankVorhanden(kopie);
 
-                // --- ARBEITSPAKET S6: die Schemapflege-Gabelung -----------------------
-                // Jeder der drei Faelle arbeitet auf einer EIGENEN Wegwerf-Kopie und
+                // --- ARBEITSPAKET S6: die Schemapflege --------------------------------
+                // Jeder der beiden Faelle arbeitet auf einer EIGENEN Wegwerf-Kopie und
                 // setzt PfadUeberschreibung selbst; am Ende steht sie wieder auf der
                 // gemeinsamen Arbeitskopie, damit der Nachlauf dort aufraeumt.
                 Fall13SqliteZweig(quelle, arbeitsordner);
                 Fall14SqliteSchritt(quelle, arbeitsordner);
-                Fall15Altbestand(args, arbeitsordner);
 
-                // ARBEITSPAKET S8, Fall 16 - der Erststart-Assistent - ist mit W3
-                // (#157-E-1, 09.09.2026) ENTFALLEN: Die Anwendung uebernimmt keinen
-                // Access-Altbestand mehr; ErststartMigration ist geloescht. Die
-                // Uebernahme ist seither ein Hauswerkzeug (EposSqliteMigrator) mit
-                // eigener Konsolenfassung. Fall 15 (Alt-Hebung ueber
-                // SchemaMigration.HebeAltbestand) BLEIBT - der Access-Zweig der
-                // Schemapflege ist das Hauswerkzeug, das diese Probe deckt.
+                // Die Anwendung uebernimmt keinen Access-Altbestand: Weder der
+                // Erststart-Assistent (Fall 16) noch die Alt-Hebung (Fall 15) stehen
+                // noch im Programm. Die Uebernahme ist ein Hauswerkzeug - die letzte
+                // Access-Fassung hebt auf Stand 61, der EposSqliteMigrator uebernimmt
+                // nach SQLite; beide haben ihre eigenen Nachweise.
 
                 DataRepository.PfadUeberschreibung = kopie;
 
@@ -134,7 +123,7 @@ namespace ZugriffsschichtProben
 
 
         // =============================================================================
-        // Die Faelle 1 bis 16
+        // Die Faelle 1 bis 14
         // =============================================================================
 
         private static void Fall01Uebersetzer()
@@ -718,83 +707,6 @@ namespace ZugriffsschichtProben
             });
         }
 
-        /// <summary>
-        /// FALL 15 - der eingefrorene Access-Zweig ueber HebeAltbestand.
-        ///
-        /// Faehrt gegen eine KOPIE der Live-.accdb (Vorgabe C:\ProgramData\EPOS_PLAN\
-        /// Kenndaten.accdb, ueberschreibbar mit --altbestand=). Deren Stand ist 61, der
-        /// Lauf muss also durchkommen und ausschliesslich "bereits erledigt" melden - der
-        /// Nachweis, dass der Zweig nach der Gabelung noch faehrt und dass er seine
-        /// Verbindung NICHT mehr aus DataRepository zieht (die zeigt hier auf eine
-        /// SQLite-Datei; mit ihr waere kein einziger Schritt lesbar).
-        ///
-        /// Ist ACE/OleDb nicht verfuegbar oder fehlt die Datei, wird der Fall MIT GRUND
-        /// uebersprungen statt als Fehlschlag gewertet.
-        /// </summary>
-        private static void Fall15Altbestand(string[] args, string arbeitsordner)
-        {
-            const string BEZEICHNUNG = "15 HebeAltbestand auf einer Kopie der Live-.accdb (Access-Zweig)";
-
-            string quelle = Argument(args, "--altbestand") ?? ALTBESTAND_VORGABE;
-            if (!File.Exists(quelle))
-            {
-                Ueberspringe(BEZEICHNUNG, "Altbestand nicht vorhanden: " + quelle +
-                                          " (mit --altbestand=<Pfad> setzen).");
-                return;
-            }
-
-            if (!AceVerfuegbar())
-            {
-                Ueberspringe(BEZEICHNUNG,
-                             "Microsoft.ACE.OLEDB.12.0 ist im Probenkontext nicht verfuegbar " +
-                             "(Provider nicht registriert oder Bitness passt nicht).");
-                return;
-            }
-
-            string ordner = Path.Combine(arbeitsordner, "fall15");
-            string kopie = null;
-            try
-            {
-                Directory.CreateDirectory(ordner);
-                kopie = Path.Combine(ordner, "Kenndaten_S6_Fall15.accdb");
-                Console.WriteLine("       (Fall 15 kopiert " +
-                                  (new FileInfo(quelle).Length / (1024 * 1024)) + " MB - das dauert.)");
-                DateiEntfernen(kopie);
-                File.Copy(quelle, kopie, true);
-                new FileInfo(kopie).IsReadOnly = false;
-            }
-            catch (Exception ex)
-            {
-                Ueberspringe(BEZEICHNUNG, "Kopie des Altbestands misslang: " + ex.Message);
-                DateiEntfernen(kopie);
-                return;
-            }
-
-            string wegwerf = kopie;
-            Fuehre(BEZEICHNUNG, fall =>
-            {
-                string bericht;
-                bool ok = SchemaMigration.HebeAltbestand(wegwerf, out bericht);
-
-                fall.Muss(ok, "HebeAltbestand lieferte false. Bericht: " + Erste(bericht));
-                fall.Muss(bericht.IndexOf("bereits erledigt", StringComparison.Ordinal) >= 0,
-                          "der Bericht enthaelt keine \"bereits erledigt\"-Zeile: " + Erste(bericht));
-                fall.Muss(bericht.IndexOf("FEHLGESCHLAGEN", StringComparison.Ordinal) < 0,
-                          "der Bericht enthaelt eine Fehlerzeile: " + Erste(bericht));
-                fall.Muss(bericht.IndexOf("Schemastand nachher: 61", StringComparison.Ordinal) >= 0,
-                          "der Bericht meldet nicht den Schemastand 61: " + Erste(bericht));
-                fall.Muss(bericht.IndexOf("Bootstrap Schemamarker", StringComparison.Ordinal) >= 0,
-                          "der Bericht meldet keinen Bootstrap - der Access-Zweig lief also nicht");
-
-                Gleich(fall, "StandVorher", 61, SchemaMigration.StandVorher);
-                Gleich(fall, "StandNachher", 61, SchemaMigration.StandNachher);
-            });
-
-            // Die 144-MB-Kopie geht sofort wieder weg; das Protokoll des Laufs bleibt
-            // als Beleg liegen.
-            DateiEntfernen(kopie);
-        }
-
         /// <summary>Loescht einen Wegwerf-Ordner samt Inhalt, ohne je zu stoeren.</summary>
         private static void OrdnerLeeren(string ordner)
         {
@@ -806,35 +718,6 @@ namespace ZugriffsschichtProben
             {
                 Console.WriteLine("       (Hinweis: " + ordner + " liess sich nicht raeumen: " +
                                   ex.Message + ")");
-            }
-        }
-
-        /// <summary>Laesst sich der ACE-Provider ueberhaupt laden?</summary>
-        private static bool AceVerfuegbar()
-        {
-            try
-            {
-                using (OleDbConnection probe =
-                           new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=;"))
-                {
-                    try { probe.Open(); }
-                    catch (Exception ex)
-                    {
-                        // "Provider nicht registriert" ist das Aus; jeder andere Fehler
-                        // (leerer Pfad, Datei nicht gefunden) beweist gerade, dass der
-                        // Provider da ist.
-                        string m = (ex.Message ?? "").ToLowerInvariant();
-                        if (m.Contains("nicht registriert") || m.Contains("not registered") ||
-                            m.Contains("provider cannot be found") ||
-                            m.Contains("provider konnte nicht gefunden"))
-                            return false;
-                    }
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
             }
         }
 

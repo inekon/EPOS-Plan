@@ -19,8 +19,22 @@ name: Kern
 # Kontingent und laeuft deshalb NICHT bei jedem Push, sondern nur auf Abruf
 # (Actions -> Kern -> Run workflow -> "macos" ankreuzen) - und nur nach Rueckfrage
 # beim Anwender. Push und Pull Request pruefen auf ubuntu.
+# Entkopplung (Anwenderentscheid 12.09.2026, "CI-Laeufe entkoppeln"): Der Sync stoesst
+# oft mehrere Pushes binnen Minuten an; nur der letzte Stand zaehlt. Ein neuer Lauf
+# desselben Zweigs bricht den ueberholten ab. Dazu loesen Aenderungen, die kein Test
+# liest (Wiki-Quellen, Mockups, Fremdquellen, Lizenzserver-Plugin), keinen Lauf aus -
+# Dokumentation/ und die CLAUDE.md bleiben Ausloeser, weil die Wachen sie pruefen.
+concurrency:
+  group: kern-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
+    paths-ignore:
+      - 'Projekte/Wiki/**'
+      - 'Mockups/**'
+      - 'Quellen/**'
+      - 'Lizenzserver/**'
   pull_request:
   workflow_dispatch:
     inputs:

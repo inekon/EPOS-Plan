@@ -2,9 +2,12 @@
 # danach die Kerntests laufen (Job "build-test"); auf Zuruf baut derselbe Lauf statt
 # dessen das Installationsprogramm (Job "installer", Schalter "setup" beim Run workflow).
 #
-# "build-test" laeuft bewusst nicht bei jedem Push: nur auf den Hauptzweigen, naechtlich
-# und auf Zuruf. Der Lauf ist deutlich teurer als der Kern-Lauf (kern.yml), und die
-# schnelle Rueckmeldung liefert dort ohnehin schon ubuntu/macos.
+# "build-test" laeuft bewusst nicht bei jedem Push: nur bei Push auf main, naechtlich
+# und auf Zuruf (Anwenderentscheid 12.09.2026, "CI-Laeufe entkoppeln": die Arbeitszweige
+# sind kein Ausloeser mehr). Der Lauf ist deutlich teurer als der Kern-Lauf (kern.yml)
+# und zaehlt doppelt; die schnelle Rueckmeldung zu jedem Push liefert der Kern-Lauf auf
+# ubuntu. Ein neuer Lauf derselben Ereignisart und desselben Zweigs bricht den
+# ueberholten ab (concurrency).
 #
 # =====================================================================================
 # WARUM HIER UND NICHT IN EINER EIGENEN DATEI (#177). Der Job "installer" stand bis #177
@@ -56,9 +59,13 @@
 # =====================================================================================
 name: Windows
 
+concurrency:
+  group: windows-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: [main, sqlite, ios_migration, ios_migration_september]
+    branches: [main]
   schedule:
     # 03:00 UTC, taeglich.
     - cron: '0 3 * * *'
