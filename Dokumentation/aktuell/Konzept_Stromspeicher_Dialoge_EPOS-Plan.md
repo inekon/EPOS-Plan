@@ -1026,3 +1026,61 @@ Flotteninstanz (`Assert.Same`), Netzblock und Betriebseditor schreiben denselben
 Name aus Schritt 1 steht in der Suchraumkarte der Station 4. Die drei #245-Wachen sind
 unverändert grün. **Der Referenzlauf ist nicht berührt** — der Umbau betrifft nur die
 Oberfläche, kein Rechenweg des Kerns.
+
+#### #253 — das Schrittfeld ließ sich nicht leeren, und der Balken stand außer Sicht (13.09.2026)
+
+**Der Befund der Windows-Abnahme.** Im Suchraum der Station 4 (eine Einheit 4180 kWh / 125 kW,
+Kopplung *Kapazität und Leistung*, Kapazität 50…5000 kWh Schritt 10, Leistung 50…5000 kW
+Schritt 20, Feinraster an): „Fehler in Eingabefeld ‚Kapazität Schritt': 1 bleibt stehen,
+Eingabe nicht korrekt möglich." Dazu die Ablehnung „123504 Kandidaten im Grobraster, bis zu 19
+im Feinraster — zusammen 123523 von höchstens 10000" und, getrennt gemeldet: „Progress bar bei
+Berechnung nicht mehr vorhanden."
+
+**Ursache 1 — der Rückweg des Zahlenfeldes war zu.** Wer „10" rückwärts löscht, meldet erst
+„1" — `OptimierungBlock.ZahlSetzen` schrieb sie in den Suchraum — und dann die **leere**
+Eingabe. Ein leeres Feld meldet `null`; `ZahlSetzen` verwarf `null`, der Suchraum behielt seine
+1, und `Zahlenfeld.OnParametersSet` sah einen Text, der den Wert nicht mehr meinte, und schrieb
+die 1 in die Anzeige zurück. Damit ließ sich das Feld nicht leeren, jedes weitere Zeichen landete
+hinter der 1 (im Browser steht die Schreibmarke nach dem Rückschreiben am Textende), und die
+Schrittweite blieb bei 10 — woraus der zweite Befund folgt: Der Anwender **konnte** das Raster
+gar nicht verkleinern.
+
+**Zwei Hypothesen ausgeschlossen, mit Messwerten.** Der Live-Kandidatenzähler baut *kein* Raster
+auf: `FlottenOptimierer.Kandidatenzahl` multipliziert Stützstellen (je Achse
+`floor((bis − von)/schritt) + 1`, Obergrenze eingeschlossen). Ein ganzer Tastendruck der Ansicht
+— Zählung, Vorprüfung des Suchraums, Neuzeichnen der Seite — kostet im bunit-Prüfstand
+**0,4 bis 1 ms**, bei Schrittweite 1 kWh (1 232 799 Kandidaten) so viel wie bei 1000 kWh. Die
+Zählung selbst nennt sogar ein Raster von fünf Milliarden Stützstellen ohne messbare Pause; ein
+aufgebautes Raster gäbe es nie her. Auch die Fassungsnummer aus #248 setzt den Text nicht
+zurück: Bei jeder **gültigen** Eingabe zeigte das Feld stets das Getippte.
+
+**Die Behebung.** `Zahlenfeld` und `Ganzzahlfeld` merken sich, dass der Anwender das Feld
+**geleert** hat, und schreiben bis zum nächsten Tastendruck nichts mehr in die Anzeige — dieselbe
+Regel, nach der eine laufende Fehleingabe stehen bleibt: Der Anwender sieht, was er getippt hat,
+auch das Nichts. Im Suchraum der Station 4 ist die leere Eingabe **die 0**, also ein benannt
+ungültiges Raster: Die Kandidatenzeile sagt „Raster ungültig", die Vorprüfung sperrt den
+Rechenknopf und nennt das Feld. Der alte Wert bleibt damit nicht unsichtbar stehen, und ein Lauf
+mit einer Zahl, die niemand mehr sieht, ist ausgeschlossen.
+
+**Die Kandidatenzahl der Abnahme ist richtig.** 496 Kapazitätsstufen (4950 kWh / 10 glatt, plus
+Anfangswert) × 249 Leistungsstufen (4950 / 20 = 247,5 → 248 im Schrittmaß, die Obergrenze dazu)
+= 123 504; das Feinraster zählt zwei Grobschrittweiten in Neunteln, also 19. Anzeige,
+Fußzeile der Karte und Vorprüfung fragen dieselbe Regel. Der Sekundärfehler war die **Folge** des
+hängenden Feldes, kein eigener Fehler.
+
+**Ursache 2 — der Fortschrittsbalken stand außer Sicht.** Er sitzt seit jeher über der
+Ablaufleiste, am Kopf der Ansicht; der Rechenknopf steht seit #224 in Station 4, am Ende einer
+langen Seite. Wer ihn dort drückt, hat den Kopf nicht im Bild und sieht nur eine Seite, die
+erstarrt. Station 4 zeichnet den Balken jetzt unter ihrem Rechenknopf, und die Ansicht lässt
+ihren eigenen weg, solange diese Station vorn steht — EIN Lauf, EIN Fortschritt aus denselben
+Werten, nur an der Stelle, an der geklickt wurde (Muster #220). Der Simulationslauf (Schritt ②
+der Ansicht SIMULATION und der Startseiten-Reiter) war nicht betroffen; beide führen den Balken
+an der Ergebnisseite und sind jetzt mit einer Wache belegt.
+
+**Nachweise.** `EPOS.UI.Tests` und `SpeicherEngine.Tests` grün; neu sind fünf Fälle in
+`EPOS.UI.Tests/Seiten/Strom/SchrittfeldUndFortschrittTests` (Eingabefolge, geleertes Feld sperrt
+den Lauf, die Zahlen der Abnahme, der Balken in Station 4, der Balken auf den anderen Blättern),
+je ein Fall in `ZahlenfeldTests` und `GanzzahlfeldTests` (ein geleertes Feld bleibt leer — beide
+rot ohne die Behebung), acht Fälle in `SpeicherEngine.Tests/FlottenKandidatenzaehlungTests`
+(Zählung ohne Rasteraufbau, Schrittweite ≤ 0) und eine Wache in `SimulationSeiteTests`.
+**Der Referenzlauf ist nicht berührt** — die Zählregel und der Rechenweg sind unverändert.

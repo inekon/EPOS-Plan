@@ -80,6 +80,67 @@ public class ZahlenfeldTests : BunitContext
         Assert.False(cut.Instance.Fehlerhaft);
     }
 
+    /// <summary>
+    /// <b>Ein GELEERTES Feld bleibt leer</b> — auch dann, wenn der Wirt das gemeldete
+    /// <c>null</c> nicht annimmt und seinen alten Wert behält (Windows-Abnahme
+    /// 13.09.2026: „1 bleibt stehen, Eingabe nicht korrekt möglich").
+    /// </summary>
+    /// <remarks>
+    /// Wer „10" rückwärts löscht, meldet erst „1" — der Wirt nimmt sie — und dann die
+    /// leere Eingabe. Schriebe das Feld darauf den Wert der Anzeige zurück, stünde die 1
+    /// wieder da und ließe sich nicht mehr entfernen; jedes weitere Zeichen landete
+    /// dahinter. Dieselbe Regel wie bei einer laufenden Fehleingabe: Der Anwender sieht,
+    /// was er getippt hat — auch das Nichts.
+    /// </remarks>
+    [Fact]
+    public void Ein_geleertes_Feld_bleibt_leer_wenn_der_Wirt_seinen_Wert_behaelt()
+    {
+        // Der Wirt übergeht null und bleibt bei seinem Wert — genau der Fall des Befunds.
+        double wirt = 10.0;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, wirt)
+            .Add(x => x.WertChanged, (double? w) => { if (w.HasValue) wirt = w.Value; }));
+
+        // „10" rückwärts gelöscht: erst bleibt die 1 stehen …
+        cut.Find("input").Input("1");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+        Assert.Equal(1.0, wirt);
+        Assert.Equal("1", cut.Find("input").GetAttribute("value"));
+
+        // … dann wird auch sie gelöscht. Der Wirt behält seine 1; das Feld bleibt LEER.
+        cut.Find("input").Input("");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+
+        Assert.True(cut.Instance.Geleert);
+        Assert.Equal("", cut.Find("input").GetAttribute("value"));
+
+        // Und der nächste Tastendruck räumt die Merke weg.
+        cut.Find("input").Input("100");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+        Assert.False(cut.Instance.Geleert);
+        Assert.Equal(100.0, wirt);
+        Assert.Equal("100", cut.Find("input").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Dasselbe, wenn der Wirt das leere Feld als 0 führt: Die Anzeige bleibt leer und
+    /// zeigt keine 0, die der Anwender nicht getippt hat.
+    /// </summary>
+    [Fact]
+    public void Ein_geleertes_Feld_zeigt_keine_Null_die_der_Wirt_daraus_macht()
+    {
+        double wirt = 10.0;
+        var cut = Render<Zahlenfeld>(p => p
+            .Add(x => x.Wert, wirt)
+            .Add(x => x.WertChanged, (double? w) => wirt = w ?? 0.0));
+
+        cut.Find("input").Input("");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+
+        Assert.Equal(0.0, wirt);
+        Assert.Equal("", cut.Find("input").GetAttribute("value"));
+    }
+
     [Fact]
     public void Wert_ausserhalb_des_Bereichs_faerbt_und_meldet_nicht()
     {

@@ -51,6 +51,36 @@ public class GanzzahlfeldTests : BunitContext
         Assert.False(cut.Instance.Fehlerhaft);
     }
 
+    /// <summary>
+    /// <b>Ein GELEERTES Feld bleibt leer</b> — Gegenstück zu
+    /// <c>ZahlenfeldTests.Ein_geleertes_Feld_bleibt_leer_wenn_der_Wirt_seinen_Wert_behaelt</c>,
+    /// dort steht der Befund.
+    /// </summary>
+    [Fact]
+    public void Ein_geleertes_Feld_bleibt_leer_wenn_der_Wirt_seinen_Wert_behaelt()
+    {
+        int wirt = 12;
+        var cut = Render<Ganzzahlfeld>(p => p
+            .Add(x => x.Wert, wirt)
+            .Add(x => x.WertChanged, (int? w) => { if (w.HasValue) wirt = w.Value; }));
+
+        cut.Find("input").Input("1");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+        Assert.Equal(1, wirt);
+
+        cut.Find("input").Input("");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+
+        Assert.True(cut.Instance.Geleert);
+        Assert.Equal("", cut.Find("input").GetAttribute("value"));
+
+        cut.Find("input").Input("25");
+        cut.Render(p => p.Add(x => x.Wert, wirt));
+        Assert.False(cut.Instance.Geleert);
+        Assert.Equal(25, wirt);
+        Assert.Equal("25", cut.Find("input").GetAttribute("value"));
+    }
+
     [Fact]
     public void Wert_ausserhalb_des_Bereichs_faerbt()
     {

@@ -94,8 +94,32 @@
 
     private string _text = "";
 
+    /// <summary>
+    /// Der Anwender hat das Feld GELEERT - nicht: es ist leer. Solange das gilt,
+    /// schreibt <see cref="OnParametersSet"/> keinen Wert in die Anzeige zurueck.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Der Befund</b> (Windows-Abnahme 13.09.2026, Feld „Kapazitaet Schritt"
+    /// der Stromspeicher-Auslegung): „1 bleibt stehen, Eingabe nicht korrekt
+    /// moeglich". Wer „10" rueckwaerts loescht, meldet erst „1" - der Wirt nimmt die
+    /// 1 in sein Modell - und dann die LEERE Eingabe. Ein leeres Feld meldet
+    /// <c>null</c>, und ein Wirt, der <c>null</c> nicht annimmt, behaelt seine 1.
+    /// <see cref="OnParametersSet"/> sah darauf einen Text, der den Wert nicht mehr
+    /// meint, und schrieb die 1 zurueck: Das Feld liess sich nicht leeren, und jedes
+    /// weitere Zeichen landete HINTER der 1.</para>
+    /// <para>Die Merke schliesst denselben Rueckweg wie <see cref="Fehlerhaft"/> - und
+    /// genauso unbedingt: Was der Anwender getippt hat, bleibt stehen, auch das
+    /// Nichts, und zwar unabhaengig davon, was der Wirt aus dem gemeldeten
+    /// <c>null</c> macht (behalten, auf 0 setzen, selbst leeren). Der naechste
+    /// Tastendruck raeumt sie weg.</para>
+    /// </remarks>
+    private bool _geleert;
+
     /// <summary>Der Text im Feld ist gerade keine gueltige Zahl (Pruefhilfe fuer Tests).</summary>
     public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Der Anwender hat das Feld geleert (Pruefhilfe fuer Tests).</summary>
+    public bool Geleert => _geleert;
 
     /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
     private async Task FehlerSetzen(bool fehlerhaft)
@@ -112,6 +136,10 @@
         // Fehleingabe bleibt ebenfalls stehen; der Anwender soll sehen, was er
         // getippt hat.
         if (Fehlerhaft) return;
+
+        // Ein GELEERTES Feld bleibt leer, bis der Anwender wieder tippt (siehe _geleert).
+        if (_geleert) return;
+
         if (!Wert.HasValue && _text.Trim().Length == 0) return;
         if (Wert.HasValue && Zahlen.ZahlParsen(_text, out double dVorhanden) && dVorhanden == Wert.Value) return;
 
@@ -125,10 +153,13 @@
         if (_text.Trim().Length == 0)
         {
             await FehlerSetzen(false);
+            _geleert = true;
             Wert = null;
             await WertChanged.InvokeAsync(null);
             return;
         }
+
+        _geleert = false;
 
         if (Zahlen.ZahlParsen(_text, out double dWert) && ImBereich(dWert))
         {
