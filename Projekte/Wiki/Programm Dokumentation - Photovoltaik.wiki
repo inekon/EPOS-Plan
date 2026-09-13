@@ -1,0 +1,49 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Photovoltaik
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Photovoltaik.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Photovoltaik''' beschreibt die PV-Anlage des Projekts über Modultyp, Modulanzahl, Neigung und Azimut. Aus den Moduldaten und den Klimadaten berechnet EPOS-Plan Einstrahlung, Zelltemperatur, temperaturkorrigierten Wirkungsgrad und Ertrag.
+
+== Eingaben ==
+
+* '''Filtern nach Hersteller''' – schränkt die Liste ''Module aus Datenbank'' ein.
+* '''Modul-Eigenschaften''' – Hersteller und Modul-Leistung in kW; aus dem Katalogeintrag stammen außerdem Fläche, Wirkungsgrad und Temperaturkoeffizient.
+* '''PV-Anlage-Eigenschaften''' – Name, Beschreibung, Anzahl der Module und die daraus folgende Gesamtleistung in kW.
+* '''Ausrichtung''' – Neigung und Azimut in Grad.
+* '''Mehrere Teilfelder''' – für unterschiedliche Dachflächen legen Sie mehrere Anlagen an; das ist in der Praxis oft sinnvoll.
+* '''Modul Bearbeiten… und Modul Löschen''' – pflegen den Katalog der PV-Module.
+* {{Anker|energietraeger}}'''Energieträger''' – im Anlagenblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
+
+== Wechselrichter und Stränge ==
+{{Anker|wechselrichter|straenge}}
+
+Der Abschnitt bietet zwei Wege: ''vereinfacht'' rechnet mit den Pauschalen der Anlage ohne Wechselrichter, ''mit Wechselrichter'' mit Katalog, Strängen, Kennlinie und Clipping.
+
+* {{Anker|geraetewahl}}'''Wechselrichter aus dem Katalog''' – das Auswahlfeld führt die Geräte nach ihrer Eignung für das Modulfeld: passende zuerst, jeweils mit ihrem DC/AC-Verhältnis und der Zahl der nötigen Geräte im Text; unpassende Geräte stehen mit dem Zusatz ''passt nicht'' am Ende. Das gewählte Gerät bekommt der nächste Strang; in der Tabelle lässt es sich je Strang ändern. Die Klapplisten der einzelnen Zeilen bleiben alphabetisch, denn dort steht das Gerät eines Strangs, die Bewertung gilt dem ganzen Modulfeld.
+* {{Anker|strangtabelle}}'''Strangtabelle''' – je Zeile Rang, Bezeichner, Wechselrichter, Modul, Gerät, MPPT, ''Module in Reihe'', ''Stränge parallel'' sowie Neigung und Azimut. ''Gerät'' und ''MPPT'' sind Nummern, leer heißt 1: Stränge mit derselben Gerätenummer hängen an einem Wechselrichter, ein zweiter Wechselrichter desselben Typs bekommt Gerät 2. Ein leeres Modulfeld bedeutet: Der Strang rechnet mit dem Modul der Anlage.
+* {{Anker|auslegungstemperaturen}}'''Auslegungstemperaturen''' – die zwei Zelltemperaturen, mit denen die Ampel rechnet: ''kalt'' und ''heiß'' in °C, Vorgabe −10 und +70. Eine Zeile darunter nennt die gerade geltenden Werte. Der Knopf ''Vorschlag aus Klimadaten übernehmen'' schlägt aus dem Klimadatensatz des Projekts eigene Werte vor – kalt aus dessen Jahresminimum der Außentemperatur, heiß aus dessen Jahresmaximum und der Nennbetriebstemperatur des Anlagenmoduls – und übernimmt sie erst auf erneuten Klick.
+
+=== Die Ampel ===
+{{Anker|ampel}}
+
+Zu jedem Strang und zu jedem Gerät prüft das Programm die Auslegung und zeigt das Ergebnis als farbigen Satz – grün, gelb oder rot. Geprüft wird je Strang die Leerlaufspannung im kalten Fall und das MPP-Fenster im heißen wie im kalten Fall, je Gerät der Eingangsstrom und die Strangzahl an jedem MPP-Tracker, das Verhältnis von Modulleistung zu Wechselrichterleistung (DC/AC, zulässig 1,0 bis 1,5), die DC-Eingangsleistung sowie die Summe der Module gegen die ''Anzahl Module'' der Anlage. Fehlt ein Katalogwert, wird die betroffene Prüfung gelb und nennt den fehlenden Wert.
+
+* '''Kurzschlussstrom je MPPT''' – der Wechselrichter-Gerätedialog führt zusätzlich das optionale Katalogfeld ''max. Kurzschlussstrom je MPPT [A]''. Ist es gepflegt, unterscheidet die Stromprüfung zwei Farben: '''rot''', wenn der Trackerstrom diesen Kurzschlussstrom übersteigt (das Gerät kann Schaden nehmen), '''gelb''', wenn er nur den Betriebsstrom (''max. DC-Strom je MPPT'') übersteigt („Leistung wird abgeregelt"). Ohne das Feld gilt die rote Grenze am Betriebsstrom.
+* {{Anker|meldungen}}'''Meldungen''' – die Sätze nennen den Befund und, wo nötig, die Folge: etwa ''U_oc(−10 °C) … V > … V — der Wechselrichter kann bei Frost und Sonne Schaden nehmen'', ''MPP im Sommer … V < … V — der Strang regelt ab'', ''DC/AC … liegt außerhalb 1,0…1,5'' oder ''Modulsumme … weicht von „Anzahl Module" … ab''.
+* {{Anker|auslegungshilfe}}'''passend wären …''' – hinter jedem roten oder gelben Befund steht der Bereich, der passen würde: ''passend wären 17…18 Module in Reihe'' am Strang, ''passend wären 12…16 Module je Gerät'' am Gerät. Passt zu einem Gerät überhaupt keine Reihenlänge, sagt der Satz auch das.
+* {{Anker|vorschlag}}'''Auslegung vorschlagen''' – die Schaltfläche neben ''Strang anlegen'' füllt die Strangtabelle aus der Auslegungshilfe: Module in Reihe, Stränge parallel je MPP-Tracker und die Gerätenummer, gleich lange Stränge und gleich belegte Geräte. Der Vorschlag '''ersetzt''' die vorhandenen Zeilen, denn er teilt das ganze Modulfeld auf; eine Zeile darunter nennt das Ergebnis („Vorschlag: … — die Strangtabelle wurde ersetzt"). Neigung und Azimut bleiben leer und gelten damit als Anlagenwert. Kommt kein Vorschlag zustande, bleibt die Tabelle unverändert und eine Warnung nennt den Grund. Die Schaltfläche ist gesperrt, solange Gerät, Modul oder Modulzahl fehlen.
+
+Beim Start der Simulation stehen dieselben Sätze zusätzlich in den ''Hinweisen zum Lauf'' – rote Befunde als Warnung, gelbe als Hinweis; das verhindert die Berechnung nicht.
+
+Nicht geprüft werden Verschattung, Kabel- und Anschlussverluste sowie gemischte Ausrichtungen an einem Tracker; die Ampel ist Prüfung und Rat, kein Rechenergebnis.
+
+== Siehe auch ==
+
+* [[Photovoltaik]] – Ertragsberechnung, Strombilanz und Eigenverbrauch
+* [[Grundlagen/Photovoltaik]] – die fachlichen Hintergründe
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Einstrahlung, Modultemperatur, Wechselrichter und Einspeisung stehen unter
+[[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]].
