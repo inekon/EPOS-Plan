@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Bezuege | Stand: 2026-09-06 | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Bezuege | Rechenkern:
      EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
 <!-- KEINE Wikiseite, sondern die ARBEITSVORLAGE fuer den Anwender: je allgemeiner
      Hilfeseite ein kopierfertiger Abschnitt "== Berechnung ==", der auf die

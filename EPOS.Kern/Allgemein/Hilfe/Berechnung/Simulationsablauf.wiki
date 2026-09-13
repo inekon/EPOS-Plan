@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Simulationsablauf | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Simulationsablauf | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs,
      EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
      EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs,
