@@ -99,8 +99,18 @@
     /// </summary>
     [Parameter] public bool VerteilungZeigen { get; set; } = true;
 
+    /// <summary>
+    /// <b>Die Fassung des Standes beim Wirt</b> (Auftrag <b>#248</b>). Schreibt ein
+    /// NACHBARBLATT an denselben Optionen — „Netz und Planung" tut das —, bleibt
+    /// <see cref="Wert"/> dieselbe Instanz, und der Editor sähe die Änderung nie. Der
+    /// Wirt zählt deshalb bei jeder gemeldeten Änderung hoch; ein Wirt, der die Fassung
+    /// nicht führt, lässt sie auf 0 und bleibt bei der Referenzprüfung.
+    /// </summary>
+    [Parameter] public int Fassung { get; set; }
+
     private FlottenSimulationOptionen _wert = new();
     private FlottenSimulationOptionen? _eingangReferenz;
+    private int _gelesenFassung;
 
     private bool PlanerFehlt => !(PlanerVerfuegbar ?? FlottenPlanerLage.Verfuegbar);
 
@@ -167,8 +177,9 @@
 
     protected override void OnParametersSet()
     {
-        if (ReferenceEquals(_eingangReferenz, Wert)) return;
+        if (ReferenceEquals(_eingangReferenz, Wert) && _gelesenFassung == Fassung) return;
         _eingangReferenz = Wert;
+        _gelesenFassung = Fassung;
         _wert = Kopie(Wert ?? new FlottenSimulationOptionen());
     }
 

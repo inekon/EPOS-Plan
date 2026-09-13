@@ -50,7 +50,7 @@ und `README.md`.
 | [`aktuell/Konzept_Hilfesystem_Wikidokumentation.md`](aktuell/Konzept_Hilfesystem_Wikidokumentation.md) | Hilfesystem auf die Wiki-Dokumentation — Katalog, Zuordnung, Wiki-Vermerke (wird fortgeschrieben) | 2026-09-12 |
 | [`aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md`](aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md) | KI-Assistent mit Aufgabensteuerung: Schutzstufen, Aktionen, Grenzen | 2026-09-11 |
 | [`aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md) | Der Hilfe-Assistent im Dialog: Aufruf, Kontext, Feldzustand, Steuerung | 2026-09-11 |
-| [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-09 |
+| [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-13 |
 | [`aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md) | PV-Ertragsmodell aus den Modulstammdaten (T_NOCT, Temperaturkoeffizienten) | 2026-09-07 |
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
 | [`aktuell/Konzept_Projektstammdaten_EPOS-Plan.md`](aktuell/Konzept_Projektstammdaten_EPOS-Plan.md) | Projektstammdaten: Datumspflege, Kunde und Bearbeiter | 2026-09-02 |
@@ -58,7 +58,7 @@ und `README.md`.
 | [`aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md`](aktuell/Konzept_Repository_Aufraeumen_EPOS-Plan.md) | Repository aufräumen: Regel, Inventar, Stufenplan — Stufe 1 mit #242, Stufe 3 mit #243, Stufe 4 (Git-Geschichte umschreiben, AUF‑Q1) mit #244 | 2026-09-12 |
 | [`aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md`](aktuell/Konzept_Setup_InnoSetup_EPOS-Plan.md) | Installationsprogramm mit Inno Setup — Freigabekette, Auslieferungsdatenbank, Versionsquelle | 2026-09-11 |
 | [`aktuell/Konzept_Simulationsablauf_EPOS-Plan.md`](aktuell/Konzept_Simulationsablauf_EPOS-Plan.md) | Simulationsablauf ohne Dialog — eine Ansicht, ein Rückweg (Stufen S1–S3) | 2026-09-12 |
-| [`aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md) | Stromspeicher-Dialoge: eine Ansicht statt Fenster in Fenster (Pakete P1–P7) | 2026-09-12 |
+| [`aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`](aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md) | Stromspeicher-Dialoge: eine Ansicht statt Fenster in Fenster (Pakete P1–P7) | 2026-09-13 |
 | [`aktuell/Konzept_Stromspeicher_EPOS-Plan.md`](aktuell/Konzept_Stromspeicher_EPOS-Plan.md) | Fach- und Umsetzungskonzept Stromspeicher-Modul, Rev. 5 (Lastspitzenkappung) | 2026-09-10 |
 | [`aktuell/Konzept_Stromspeicherimport_EPOS-Plan.md`](aktuell/Konzept_Stromspeicherimport_EPOS-Plan.md) | Stromspeicherimport: Quellenprüfung, Abbildung, Stufenplan (CEC, bslib) | 2026-09-12 |
 | [`aktuell/Konzept_TWW-Zapfprofile_WP-Plan_1.md`](aktuell/Konzept_TWW-Zapfprofile_WP-Plan_1.md) | TWW-Zapfprofile: Methodik und Umsetzungsplan, Fassung V1.2 (die jüngere der zwei) | 2026-08-29 |

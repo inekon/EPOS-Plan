@@ -900,6 +900,16 @@ Die Liste ist deshalb **höhenbegrenzt und rollt in sich** (Hausregel W9‑B‑2
 Ohne diese Grenze schöbe eine lange Liste den Eingabeblock beliebig weit nach unten. Die
 kurze **Projektliste** in M2 bekommt 12 rem = **vier Zeilen**.
 
+> **Nachtrag 13.09.2026 (Auftrag #248).** Die zwei Zeilenzahlen sind die des MOCKUPS und
+> gelten für den gebauten Baustein nicht mehr. Am fertigen Stand gemessen (Chromium,
+> 1 300 × 900, gleiche Messweise wie `Proben/Rasterprobe`): Die Katalogliste steht in
+> 457,6 px (border-box; innen 456 px) mit **52,5 px** Kopfzelle — Spaltenkopf mit
+> Sortierknopf und Trichter — und **53,0 px** Zeilenhöhe, also **sieben** ganze Zeilen;
+> die Projektliste in 192 px (innen 190 px) mit **29,9 px** Kopfzelle (kein Trichter) und
+> derselben Zeilenhöhe, also **drei**. Die Zeile ist seit Auftrag **#240** 53,0 px hoch —
+> genau `Raster.ZEILENHOEHE` —, weil die Zellenpolsterung des Hauses jetzt auch im
+> QuickGrid gilt. **Kein Maß ist dabei geändert worden**, nur die Herleitung berichtigt.
+
 **Nicht jede Liste bekommt Trichter.** Die **Projektliste** führt Zeilen im einstelligen
 Bereich; sie bekommt sortierbare Spaltenköpfe, aber **keine** Spaltenfilter. Die Hausregel dazu
 steht schon da: *kein Delegat, kein Bedienelement* (`ModulKatalogDialog.Filterbar`) — kein
@@ -1422,7 +1432,10 @@ je Reiter ein PNG bei `1 366 × 768` und `1 920 × 1 080`:
 
 Kopfzelle 45 px, Datenzeile 37 px (der Wahlknopf misst 26 px, dazu 2 × 4 px Polsterung und die
 Trennlinie); daraus die Listenhöhe von 1,3 × `--epos-listenhoehe` = 458 px für elf Zeilen und
-12 rem = 192 px für die vier Zeilen der Projektliste.
+12 rem = 192 px für die vier Zeilen der Projektliste. **Das sind die Maße des Mockups**; am
+gebauten Baustein gemessen (Auftrag #248, 13.09.2026) sind es 52,5 px Kopfzelle und 53,0 px
+Datenzeile — der Wahlknopf ist dort ein 44‑px‑Berührungsziel — und damit sieben bzw. drei
+Zeilen (Nachtrag in 5.6.5).
 
 ## Anhang B — Was dieses Papier nicht behandelt
 

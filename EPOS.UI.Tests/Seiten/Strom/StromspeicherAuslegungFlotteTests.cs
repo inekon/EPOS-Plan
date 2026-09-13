@@ -282,8 +282,9 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
     /// DIE LEBENSDAUERKURVE IST DIE ZWEITE STELLE DESSELBEN BEFUNDS <b>#245</b>: Auch
     /// hier hing der <c>@@key</c> ihrer Zeilen am PUNKTOBJEKT, und
     /// <c>SpeicherFlottenEditor.OnParametersSet</c> baut <c>_wert</c> nach jedem
-    /// gemeldeten Feld neu auf (der Wirt reicht eine frische Tiefenkopie herein, also
-    /// eine neue Referenz) — jeder Tastendruck riss die Zeile ab, der Fokus ging mit.
+    /// gemeldeten Feld neu auf (bis #248 reichte der Wirt dafür eine frische
+    /// Tiefenkopie herein, seither zählt er eine Fassungsnummer hoch — beides ergibt
+    /// neue Punktobjekte) — jeder Tastendruck riss die Zeile ab, der Fokus ging mit.
     /// Seither ist der Schlüssel die ZEILENNUMMER.
     /// </summary>
     /// <remarks>
@@ -321,8 +322,101 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
     }
 
     // =====================================================================
+    //  DIE FASSUNGSNUMMER STATT EINER TIEFENKOPIE JE TASTENDRUCK (#248)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Eine Eingabe erzeugt KEINE neue Konfigurationsinstanz mehr</b> (Auftrag
+    /// <b>#248</b>). Bis hierher setzte <c>FlotteGeschrieben()</c> nach jedem gemeldeten
+    /// Zeichen eine JSON-Tiefenkopie der ganzen Flotte ein — allein, damit die REFERENZ
+    /// eine andere war und die Blätter mit eigener Arbeitskopie auffrischten. Seither
+    /// sagt das eine Fassungsnummer, und die Konfiguration bleibt dieselbe Instanz.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_in_der_Betriebsfuehrung_erzeugt_keine_neue_Flotteninstanz()
+    {
+        var cut = Betriebsblatt();
+        FlottenStudieKonfiguration vorher = cut.Instance.Eingaben.Auslegung.Flotte;
+
+        Feldeingabe(cut, Resource.FLOTTE_ED_BEZUGSGRENZE).Input("111");
+
+        Assert.Same(vorher, cut.Instance.Eingaben.Auslegung.Flotte);
+        Assert.Equal(111.0, cut.Instance.Eingaben.Auslegung.Flotte.Optionen.NetzbezugGrenzeKw);
+    }
+
+    /// <summary>
+    /// <b>Zwei Blöcke DESSELBEN Blattes schreiben denselben Stand</b> (Auftrag #248).
+    /// „Netz und Planung" schreibt an Ort und Stelle in <c>Flotte.Optionen</c>, der
+    /// Betriebseditor hält davon eine eigene Arbeitskopie — frischte er sie nicht auf,
+    /// überschriebe sein nächstes Feld die Bezugsgrenze wieder. Genau dafür gibt es die
+    /// Fassung; die Tiefenkopie je Tastendruck ist dafür nicht nötig.
+    /// </summary>
+    [Fact]
+    public void Der_Netzblock_und_der_Betriebseditor_schreiben_denselben_Stand()
+    {
+        var cut = Betriebsblatt();
+
+        Feldeingabe(cut, Resource.FLOTTE_ED_BEZUGSGRENZE).Input("111");
+        Feldeingabe(cut, Resource.FLOTTE_BETRIEB_LBL_PEAKZIEL).Input("22");
+
+        FlottenSimulationOptionen optionen = cut.Instance.Eingaben.Auslegung.Flotte.Optionen;
+        Assert.Equal(111.0, optionen.NetzbezugGrenzeKw);
+        Assert.Equal(22.0, optionen.WirtschaftlicherPeakZielwertKw);
+    }
+
+    /// <summary>
+    /// <b>Eine Eingabe in Blatt 1 steht in Station 4</b> (Auftrag #248): Der Name der
+    /// Einheit wird im Einheiteneditor geschrieben und benennt danach die Suchraumkarte
+    /// der Station „Optimierung" — beide lesen denselben Stand.
+    /// </summary>
+    [Fact]
+    public void Ein_Name_aus_Schritt_1_steht_in_der_Suchraumkarte()
+    {
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => MitSuchachse(),
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        });
+
+        // Erst die Suchmethode: Unter „Nur bewerten" gibt es keinen Suchraum und damit
+        // keine Karte, die einen Namen zeigen koennte (#247).
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        cut.FindAll("input[type=radio]")
+           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_METHODE_GROESSE))
+           .Change(true);
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
+        Feldeingabe(cut, Resource.FLOTTE_ED_NAME).Input("Nordspeicher");
+
+        Assert.Equal("Nordspeicher", cut.Instance.Eingaben.Auslegung.Flotte.Einheiten[0].Name);
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        Assert.Contains("Nordspeicher", cut.Markup, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
+
+    /// <summary>Die Ansicht auf Blatt 3 („Betriebsführung"), mit Peak-Ziel.</summary>
+    private IRenderedComponent<StromspeicherAuslegungSeite> Betriebsblatt()
+    {
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => MitSuchachse(),
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        });
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Betrieb);
+        return cut;
+    }
+
+    /// <summary>Das Eingabefeld hinter dieser Beschriftung — genau eines.</summary>
+    private static AngleSharp.Dom.IElement Feldeingabe(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string bezeichnung)
+        => cut.FindAll("label")
+              .Where(x => x.TextContent.Contains(bezeichnung, StringComparison.Ordinal))
+              .Select(x => x.QuerySelector("input"))
+              .Single(x => x is not null)!;
 
     /// <summary>Die <c>Zahlenfeld</c>-KOMPONENTE mit dieser Beschriftung.</summary>
     private static Zahlenfeld Kurvenfeld(

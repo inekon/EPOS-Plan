@@ -157,7 +157,18 @@
     [Parameter] public Func<Task<SpeicherImportDatei>>? DateiWaehlen { get; set; }
     [Parameter] public SpeicherAuslegungTexte Texte { get; set; } = new();
 
+    /// <summary>
+    /// <b>Die Fassung des Standes beim Wirt</b> (Auftrag <b>#248</b>). Ein Nachbarblatt —
+    /// die Jahresprojektion in Schritt 2 — schreibt AN ORT UND STELLE in dieselbe
+    /// Konfiguration; <see cref="Wert"/> bleibt dabei dieselbe Instanz. Der Editor liest
+    /// seinen Stand deshalb neu, sobald die Fassung sich ändert. Ein Wirt ohne Fassung
+    /// lässt sie auf 0; dann entscheidet allein die Referenz.
+    /// </summary>
+    [Parameter] public int Fassung { get; set; }
+
     private SpeicherOptimierungEingaben _wert = new();
+    private SpeicherOptimierungEingaben? _eingangReferenz;
+    private int _gelesenFassung;
     private int? _profilIndex;
     private string _profilname = "";
     private string _fehler = "";
@@ -184,7 +195,20 @@
     private bool EposModelljahrZuordnen => Auslegung.EposModelljahrZuordnen;
     private string KostenmodulText => $"{Texte.KostenmodulHerkunft}: {Modulkosten.Herkunft}; {Modulkosten.InvestEurProKw:g} €/kW, {Modulkosten.InvestEurProKwh:g} €/kWh, {Modulkosten.BetriebEurProKwJahr:g} €/(kW·a), {Modulkosten.BetriebEurProKwhJahr:g} €/(kWh·a), {Modulkosten.BetriebEurProKwhEntladen:g} €/kWh";
 
-    protected override void OnParametersSet() { if (!ReferenceEquals(Wert, _wert)) _wert = Wert.Kopie(); }
+    // AUFFRISCHEN AN REFERENZ ODER FASSUNG (Auftrag #248). Bis hierher stand hier
+    // "if (!ReferenceEquals(Wert, _wert))" - und weil _wert IMMER eine Kopie von Wert
+    // ist, traf das bei JEDEM Zeichenlauf zu: Der Editor kopierte den ganzen
+    // Arbeitsstand (JSON, samt Flotte und eingelesenen Zeitreihen) auch dann, wenn sich
+    // nichts geaendert hatte. Jetzt entscheidet die Referenz des EINGANGS und die
+    // Fassung des Wirtes; beides zusammen deckt auch den Fall ab, dass ein Nachbarblatt
+    // an Ort und Stelle geschrieben hat.
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_eingangReferenz, Wert) && _gelesenFassung == Fassung) return;
+        _eingangReferenz = Wert;
+        _gelesenFassung = Fassung;
+        _wert = (Wert ?? new SpeicherOptimierungEingaben()).Kopie();
+    }
     private async Task Geaendert() { _fehler=""; _erfolg=""; await WertChanged.InvokeAsync(_wert.Kopie()); }
     private async Task QuelleSetzen(int? v, Action<SpeicherAuslegungQuelle> set) { set((SpeicherAuslegungQuelle)(v??0)); await Geaendert(); }
     private async Task KostenQuelleSetzen(int? v, Action<SpeicherKostenQuelle> set) { set((SpeicherKostenQuelle)(v??0)); await Geaendert(); }
