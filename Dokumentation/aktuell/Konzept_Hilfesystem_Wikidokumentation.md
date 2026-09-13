@@ -796,6 +796,24 @@ rundet und benennt um.
 - Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
   die Orchestrierung vor jedem Upload mit derselben Liste.
 
+### 13.3 Veröffentlichung höchstens einmal je Woche
+
+**Regel:** Die Repo-Quellen der Wiki-Seiten werden mit jedem Auftrag fortgeschrieben und von den
+Wächtern geprüft; ins Wiki geladen wird gebündelt, höchstens einmal je Woche, für alle seit dem
+letzten Upload geänderten Seiten. Früher wird nur geladen, wenn eine Änderung wesentlich ist: eine
+neue oder geänderte Bedienung, die ein Anwender bereits in Händen hat, ein neuer Rechenweg oder eine
+Aussage auf einer Seite, die nicht mehr zutrifft.
+
+**Warum:** Jeder Upload kostet Probe, Nachprobe, Revisionsvermerk und Logbuchpflege; Zwischenstände
+einer Woche erreichen den Anwender ohnehin erst mit dem nächsten Programmstand. Ein gebündelter
+Upload hält Wiki und Auslieferung beieinander und erspart den Lesern halbfertige Seiten.
+
+**Ablauf:** Die Statusdatei führt ausstehende Seiten unter dem Punkt des jeweiligen Auftrags
+(„Upload ausstehend: <Seiten>"). Der Wochenupload nimmt alle, prüft je Seite den Live-Stand gegen
+die Quelle (Regel 3 des Abschnitts „Bedienungsseiten mit Repo-Quelle"), lädt, vermerkt die Revisionen
+in diesem Konzept und veröffentlicht die gesammelten Logbuch-Einträge in einem Zug; die Versionsnummer
+für das Logbuch erfragt die Orchestrierung beim Anwender.
+
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
 Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.

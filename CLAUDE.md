@@ -261,6 +261,12 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   (VDI 3805, CEC-Liste, PVsyst-Formate) dürfen genannt werden. Der Wächter
   `EPOS.Kern.Tests/WikiProduktdatenWacheTests` hält die Repo-Quellen gegen die Katalognamen
   der Testdatenbank; Regel und Prüfung: Konzept Hilfesystem, Abschnitt 13.
+  **Veröffentlichung gebündelt:** Repo-Quellen werden je Auftrag fortgeschrieben und geprüft;
+  ins Wiki geladen wird höchstens einmal je Woche, gesammelt für alle seither geänderten
+  Seiten. Früher nur bei einer wesentlichen Änderung: eine neue oder geänderte Bedienung, die
+  ein Anwender schon in Händen hat, ein neuer Rechenweg oder eine Aussage, die nicht mehr
+  zutrifft. Ausstehende Uploads stehen in der Statusdatei; die Logbuch-Einträge werden mit dem
+  Auftrag entworfen und mit dem Upload veröffentlicht (Regel: Konzept Hilfesystem 13.3).
   Repo-Quellen der Bedienungsseiten: `Projekte/Wiki/*.wiki`; Konzept und
   Zuordnung der Hilfe: [`Konzept_Hilfesystem_Wikidokumentation.md`](Dokumentation/aktuell/Konzept_Hilfesystem_Wikidokumentation.md).
 - Weitere Einstiege: Lizenzierung
