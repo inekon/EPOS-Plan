@@ -255,7 +255,8 @@
                die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
                Bis #224 stand der Block unter den Einheiten in Schritt 1. *@
             <SpeicherFlottenNetzBlock Wert="@Flotte.Optionen" Einheiten="@Flotte.Einheiten"
-                                      Aktiv="@(!_laeuft)" Geaendert="FlotteGeschrieben" />
+                                      Aktiv="@(!_laeuft)" Geaendert="FlotteGeschrieben"
+                                      PrognoseHinweis="@PrognoseHinweis" />
         }
         else if (_schritt == AuslegungSchritt.Optimierung)
         {
@@ -270,7 +271,7 @@
                               Csv="@(Dienste?.Csv is null ? default
                                      : EventCallback.Factory.Create(this, KandidatenCsv))"
                               Rechnen="Starten" RechnenFrei="@RechnenFrei"
-                              RechnenGrund="@Eingabefehler" RechnenText="@RechnenText"
+                              RechnenGrund="@Laufsperre" RechnenText="@RechnenText"
                               Laeuft="@_laeuft" Anteil="@_anteil" Fortschrittstext="@_fortschritt"
                               Abbrechen="@Abbruchweg"
                               AbbrechenText="@Resource.FLOTTE_DLG_BTN_ABBRECHEN" />
@@ -294,10 +295,12 @@
                                            : EventCallback.Factory.Create(this, PeakZielBestimmen))"
                                        NetzladungErlauben="@(EventCallback.Factory.Create(this, NetzladungErlauben))"
                                        ZurBetriebsfuehrung="@(EventCallback.Factory.Create(this, ZurBetriebsfuehrung))"
+                                       IdealwissenSetzen="@(EventCallback.Factory.Create(this, IdealwissenSetzen))"
                                        ArbeitslosText="@ArbeitslosText" HinweiseText="@HinweiseText"
                                        Hilfeschluessel="@HilfeSchluessel" Dialogname="@TitelText"
                                        PeakZielText="@PeakBestimmenText" NetzladungText="@NetzladungText"
-                                       BetriebsfuehrungText="@ZuBetriebText" />
+                                       BetriebsfuehrungText="@ZuBetriebText"
+                                       IdealwissenText="@IdealwissenText" />
 
                 @* DIE GROESSEN-SICHT IST MIT #224 NACH STATION 4 GEZOGEN (Zielbild
                    7.4): Schritt 5 bewertet die GEWAEHLTE Flotte — Kacheln, Delta-Tabelle,
@@ -500,6 +503,7 @@
     private static string PeakBestimmenText => Resource.FLOTTE_BANNER_BTN_PEAKZIEL;
     private static string NetzladungText => Resource.FLOTTE_BANNER_BTN_NETZLADUNG;
     private static string ZuBetriebText => Resource.FLOTTE_BANNER_BTN_BETRIEB;
+    private static string IdealwissenText => Resource.FLOTTE_ABHILFE_IDEALWISSEN;
     private static string PeakTitelText => Resource.FLOTTE_PEAK_TITEL;
     private static string PeakFrageFormat => Resource.FLOTTE_PEAK_FRAGE;
     private static string PeakGesperrtText => Resource.FLOTTE_PEAK_GESPERRT;
@@ -650,6 +654,38 @@
     /// <summary>Die Hinweise der Vorprüfung (Prüfhilfe).</summary>
     public IReadOnlyList<FlottenHinweis> Vorpruefung => _vorpruefung;
 
+    /// <summary>Die Fassung des Arbeitsstandes (Prüfhilfe).</summary>
+    public int Fassung => _fassung;
+
+    /// <summary>
+    /// Der Befund „planendes Ziel ohne geladene Prognose" im Wortlaut des Kerns; leer,
+    /// solange die Regel nicht greift (Auftrag #256). EIN Wortlaut, drei Anzeigeorte:
+    /// die Hinweiszeile über der Ablaufleiste, die Zeile am Auswahlfeld
+    /// „Informationsstand" und — nach einem Lauf — die Liste des Diagnosebanners.
+    /// </summary>
+    private string PrognoseHinweis => _vorpruefung
+        .FirstOrDefault(x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt)?.Text ?? "";
+
+    /// <summary>
+    /// Die BLOCKIERENDEN Befunde der Vorprüfung (Stufe „Problem"). Sie sperren den
+    /// Rechenknopf wie ein Eingabefehler — ihr Text steht aber nur in der Hinweisliste
+    /// und am Knopf, nicht zusätzlich im Warnband darüber.
+    /// </summary>
+    private string Vorpruefungssperre => string.Join(Environment.NewLine, _vorpruefung
+        .Where(x => x.Stufe == FlottenHinweisStufe.Problem).Select(x => x.Text));
+
+    /// <summary>Alles, was den Lauf sperrt: der Eingabefehler UND die blockierende Vorprüfung.</summary>
+    private string Laufsperre
+    {
+        get
+        {
+            string fehler = Eingabefehler, sperre = Vorpruefungssperre;
+            if (fehler.Length == 0) return sperre;
+            if (sperre.Length == 0) return fehler;
+            return fehler + Environment.NewLine + sperre;
+        }
+    }
+
     /// <summary>Ist der Ergebnisschritt veraltet? (Prüfhilfe)</summary>
     public bool Veraltet => _veraltet;
 
@@ -713,7 +749,7 @@
     private string RechnenText =>
         Suchmethode == FlottenSuchmethode.Bewerten ? RechnenFlotteText : RechnenGroessenText;
 
-    private bool RechnenFrei => !_laeuft && Rechendelegat is not null && Eingabefehler.Length == 0;
+    private bool RechnenFrei => !_laeuft && Rechendelegat is not null && Laufsperre.Length == 0;
 
     /// <summary>Der Eingabefehler, der den Lauf SPERRT — laufend gerechnet.</summary>
     private string Eingabefehler => FlotteEingabenPruefen();
@@ -796,7 +832,7 @@
            .Rechenweg("flotte_bewerten", KiBewerten)
            .Rechenweg("peak_ziel_bestimmen", KiPeakZiel);
 
-    private string KiVorpruefung() => Eingabefehler;
+    private string KiVorpruefung() => Laufsperre;
 
     private async Task<KiKern.KiErgebnis> KiSpeichern()
     {
@@ -812,7 +848,7 @@
     private async Task<KiKern.KiErgebnis> KiBewerten(KiKern.KiLaufumgebung umgebung)
     {
         if (_laeuft) return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AUS_LAEUFT_BEREITS);
-        if (!RechnenFrei) return KiKern.KiErgebnis.Abgelehnt(Eingabefehler);
+        if (!RechnenFrei) return KiKern.KiErgebnis.Abgelehnt(Laufsperre);
 
         await KiLaufKlammer(umgebung, Starten);
         await InvokeAsync(StateHasChanged);
@@ -1264,6 +1300,11 @@
         // sich nichts.
         Vorpruefen();
 
+        // EIN BEFUND DER STUFE „PROBLEM" HAELT DEN LAUF AN (Auftrag #256): Er steht in
+        // der frisch gerechneten Hinweisliste, und der Kern wuerde ihn ohnehin benannt
+        // abweisen - das hier spart den Weg dorthin und laesst den Befund stehen.
+        if (Vorpruefungssperre.Length > 0) return;
+
         _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = Resource.FLOTTE_DLG_STATUS_PRUEFEN;
         try
         {
@@ -1436,6 +1477,22 @@
     {
         _schritt = AuslegungSchritt.Betrieb;
         PeakVorschlagHolen();
+    }
+
+    /// <summary>
+    /// DER VIERTE ABHILFEWEG (Auftrag #256): „Informationsstand auf Idealwissen setzen".
+    /// </summary>
+    /// <remarks>
+    /// Die VORBELEGUNG bleibt „Archivierte Prognose-Snapshots" — sie ist die bewusste
+    /// Wahl des Wissensstandes und wird nicht still umgestellt. Wer den Ausweg will,
+    /// waehlt ihn: hier mit einem Knopf, in Schritt 3 im Auswahlfeld daneben. Danach
+    /// laeuft alles wie bei jeder anderen Aenderung — Fassung hoch, Ergebnis veraltet,
+    /// Vorpruefung frisch.
+    /// </remarks>
+    private void IdealwissenSetzen()
+    {
+        Flotte.Optionen.PrognoseArt = PrognoseArt.Oracle;
+        Geaendert();
     }
 
     // =====================================================================

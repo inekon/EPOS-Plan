@@ -15,7 +15,12 @@
 
    DAS DIAGNOSEBANNER DES ERGEBNISSES BLEIBT, WIE ES IST (Konzept 2.4): Es
    meldet einen Zustand, den der Anwender beheben MUSS — eine Flotte, die nichts
-   getan hat —, und traegt dafuer seine drei Abhilfeknoepfe. *@
+   getan hat —, und traegt dafuer seine Abhilfeknoepfe.
+
+   EINE DRITTE STUFE SPERRT (Auftrag #256): Ein Hinweis der Stufe „Problem" sagt,
+   dass der Lauf mit diesem Stand NICHT rechenbar ist. Er bleibt eine ZEILE wie
+   die anderen — die Liste bleibt eine Liste —, traegt aber sein eigenes Zeichen,
+   und der Wirt sperrt an ihm seinen Rechenknopf. *@
 
 @namespace EPOS.UI.Seiten.Strom
 @using SpeicherEngine
@@ -88,14 +93,20 @@ else if (Hinweise.Count > 1)
         }
     </p>;
 
-    private static string Zeilenklasse(FlottenHinweis hinweis)
-        => hinweis.Stufe == FlottenHinweisStufe.Warnung
-            ? "epos-flotte-hinweiszeile epos-flotte-hinweiszeile--warnung"
-            : "epos-flotte-hinweiszeile";
+    private static string Zeilenklasse(FlottenHinweis hinweis) => hinweis.Stufe switch
+    {
+        FlottenHinweisStufe.Problem => "epos-flotte-hinweiszeile epos-flotte-hinweiszeile--problem",
+        FlottenHinweisStufe.Warnung => "epos-flotte-hinweiszeile epos-flotte-hinweiszeile--warnung",
+        _ => "epos-flotte-hinweiszeile"
+    };
 
     /// <summary>Das Zeichen trägt die Stufe MIT — Farbe allein trägt keine Aussage.</summary>
-    private static string Zeichen(FlottenHinweis hinweis)
-        => hinweis.Stufe == FlottenHinweisStufe.Warnung ? "⚠" : "ℹ";
+    private static string Zeichen(FlottenHinweis hinweis) => hinweis.Stufe switch
+    {
+        FlottenHinweisStufe.Problem => "✖",
+        FlottenHinweisStufe.Warnung => "⚠",
+        _ => "ℹ"
+    };
 
     private static string Kennung(FlottenHinweis hinweis)
         => hinweis is null ? "" : KiMeldungskennung.Fuer(hinweis.Kennung);

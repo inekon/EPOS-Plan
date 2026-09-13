@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Assistent;
@@ -112,7 +112,9 @@ public sealed class StromspeicherAuslegungBannerTests : EposBunitContext
     private IRenderedComponent<StromspeicherAuslegungSeite> Ansicht(StromspeicherAuslegungDienste dienste)
         => Render<StromspeicherAuslegungSeite>(p => p
             .Add(x => x.Dienste, dienste)
-            .Add(x => x.PlanerVerfuegbar, true));
+            .Add(x => x.PlanerVerfuegbar, true)
+            // OHNE ENTPRELLUNG: Der Pruefstand wartet auf keine Wanduhr (Muster #254).
+            .Add(x => x.EntprellungMs, 0));
 
     // =====================================================================
     //  Das Diagnosebanner (Konzept 2.2 Punkt 2)
@@ -268,6 +270,160 @@ public sealed class StromspeicherAuslegungBannerTests : EposBunitContext
         Assert.False(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
         Auslegungshilfe.Rechenknopf(cut).Click();
         Assert.Equal(1, laeufe);
+    }
+
+    // =====================================================================
+    //  Die Prognosepflicht planender Ziele (Auftrag #256)
+    // =====================================================================
+
+    /// <summary>
+    /// DIE REGEL SPERRT: Ein planendes Betriebsziel auf dem Informationsstand
+    /// „Archivierte Prognose-Snapshots" ohne geladene Prognose ist ein Befund der Stufe
+    /// „Problem" — er steht in der Hinweisliste, und der Rechenknopf nennt ihn als Grund.
+    /// </summary>
+    [Fact]
+    public void Ein_planendes_Ziel_ohne_Prognose_sperrt_den_Rechenknopf_mit_seinem_Grund()
+    {
+        var cut = Ansicht(Prognosedienste(Planend()));
+
+        FlottenHinweis befund = Assert.Single(cut.Instance.Vorpruefung,
+            x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+        Assert.Equal(FlottenHinweisStufe.Problem, befund.Stufe);
+
+        AngleSharp.Dom.IElement knopf = Auslegungshilfe.Rechenknopf(cut);
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Contains(befund.Text, knopf.GetAttribute("title") ?? "", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// DERSELBE WORTLAUT steht als Zeile unter dem Auswahlfeld „Informationsstand" —
+    /// dort, wo der Anwender den einen der zwei Auswege mit einem Griff geht. Und er
+    /// geht ihn: Das Feld auf „Idealwissen" räumt den Befund weg.
+    /// </summary>
+    [Fact]
+    public void Die_Hinweiszeile_steht_am_Auswahlfeld_und_Idealwissen_raeumt_sie_weg()
+    {
+        var cut = Ansicht(Prognosedienste(Planend()));
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Betrieb);
+
+        string befund = cut.Instance.Vorpruefung
+            .Single(x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt).Text;
+        Assert.Equal(befund, cut.Find("p.epos-flotte-hinweis--problem").TextContent.Trim());
+
+        // KEIN ZWEITER WORTLAUT: die Zeile am Feld und die Hinweiszeile ueber der
+        // Ablaufleiste tragen denselben Satz - und keinen dritten.
+        Assert.Equal(2, Vorkommen(cut.Markup, befund));
+
+        // Das Auswahlfeld steht DIREKT darueber.
+        int feld = cut.Markup.IndexOf(Resource.FLOTTE_ED_INFORMATIONSSTAND, StringComparison.Ordinal);
+        int zeile = cut.Markup.IndexOf("epos-flotte-hinweis--problem", StringComparison.Ordinal);
+        Assert.True(feld >= 0 && zeile > feld, "Die Zeile steht NICHT unter dem Auswahlfeld.");
+
+        int fassungVorher = cut.Instance.Fassung;
+        cut.FindAll("label").Single(x => x.TextContent.Contains(Resource.FLOTTE_ED_INFORMATIONSSTAND))
+           .QuerySelector("select")!.Change("1");
+
+        Assert.Equal(PrognoseArt.Oracle,
+                     cut.Instance.Eingaben.Auslegung!.Flotte!.Optionen.PrognoseArt);
+        Assert.Empty(cut.Instance.Vorpruefung);
+        Assert.True(cut.Instance.Fassung > fassungVorher);
+        Assert.False(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// Der VIERTE Abhilfeknopf des Diagnosebanners erscheint nur MIT der Kennung
+    /// <c>PrognoseFehlt</c> — ein Lauf ohne diesen Befund trägt ihn nicht.
+    /// </summary>
+    [Fact]
+    public void Der_vierte_Abhilfeknopf_erscheint_nur_mit_der_Kennung()
+    {
+        FlottenStudieKonfiguration flotte = Flotte();
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => Vorgaben(flotte),
+            FlotteRechnen = (_, _) => Task.FromResult(Arbeitslos(flotte))
+        });
+
+        Auslegungshilfe.Rechenknopf(cut).Click();
+
+        Assert.False(cut.FindComponent<FlottenDiagnosebanner>().Instance.PrognoseFehlt);
+        Assert.DoesNotContain(Resource.FLOTTE_ABHILFE_IDEALWISSEN, cut.Markup);
+    }
+
+    /// <summary>
+    /// MIT der Kennung steht er da — und sein Klick setzt den Informationsstand auf
+    /// Idealwissen: Fassung hoch, Ergebnis veraltet, wie bei jeder anderen Änderung.
+    /// </summary>
+    [Fact]
+    public void Der_vierte_Abhilfeknopf_setzt_Idealwissen()
+    {
+        FlottenStudieKonfiguration flotte = Planend();
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => Vorgaben(flotte),
+            FlotteRechnen = (_, _) => Task.FromResult(MitPrognosebefund(flotte))
+        });
+
+        Auslegungshilfe.Rechenknopf(cut).Click();
+
+        var banner = cut.FindComponent<FlottenDiagnosebanner>().Instance;
+        Assert.True(banner.PrognoseFehlt);
+        Assert.False(cut.Instance.Veraltet);
+        int fassungVorher = cut.Instance.Fassung;
+
+        Auslegungshilfe.Knopf(cut, Resource.FLOTTE_ABHILFE_IDEALWISSEN).Click();
+
+        Assert.Equal(PrognoseArt.Oracle,
+                     cut.Instance.Eingaben.Auslegung!.Flotte!.Optionen.PrognoseArt);
+        Assert.True(cut.Instance.Fassung > fassungVorher);
+        Assert.True(cut.Instance.Veraltet);
+    }
+
+    /// <summary>Die Regel des KERNS — die Ansicht schreibt sie nicht ab.</summary>
+    private static IReadOnlyList<FlottenHinweis> Prognoseregel(SpeicherOptimierungEingaben e)
+    {
+        FlottenHinweis h = FlottenPlausibilitaet.Prognosepflicht(
+            e?.Auslegung?.Flotte, e?.Auslegung?.FlottenPrognosen);
+        return h is null ? Array.Empty<FlottenHinweis>() : new[] { h };
+    }
+
+    /// <summary>Beide Stufen der Vorprüfung fahren dieselbe Regel des Kerns.</summary>
+    private static StromspeicherAuslegungDienste Prognosedienste(FlottenStudieKonfiguration flotte)
+        => new()
+        {
+            Vorgaben = () => Vorgaben(flotte),
+            Vorpruefen = Prognoseregel,
+            VorpruefenSchnell = Prognoseregel,
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
+            { Erfolg = true, Konfiguration = flotte })
+        };
+
+    /// <summary>Eine Flotte mit planendem Ziel und dem vorbelegten Informationsstand.</summary>
+    private static FlottenStudieKonfiguration Planend()
+    {
+        FlottenStudieKonfiguration f = Flotte(netzladung: true);
+        f.Optionen.Betriebsziel = FlottenBetriebsziel.PvPlanung;
+        return f;
+    }
+
+    /// <summary>Ein Laufergebnis, dessen Prüfhinweise den Befund tragen.</summary>
+    private static SpeicherFlottenErgebnis MitPrognosebefund(FlottenStudieKonfiguration flotte)
+        => new()
+        {
+            Erfolg = true,
+            Konfiguration = flotte,
+            Pruefhinweise = new List<FlottenHinweis>(Prognoseregel(new SpeicherOptimierungEingaben
+            {
+                Auslegung = new SpeicherAuslegungKonfiguration { Flotte = flotte }
+            }))
+        };
+
+    private static int Vorkommen(string text, string teil)
+    {
+        int zahl = 0, ab = 0;
+        while ((ab = text.IndexOf(teil, ab, StringComparison.Ordinal)) >= 0) { zahl++; ab += teil.Length; }
+        return zahl;
     }
 
     // =====================================================================
