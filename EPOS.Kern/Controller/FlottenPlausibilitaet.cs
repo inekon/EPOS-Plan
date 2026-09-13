@@ -13,7 +13,14 @@ namespace WindowsFormsApplication1
         Hinweis = 0,
 
         /// <summary>Warnung; der Lauf liefert voraussichtlich kein brauchbares Ergebnis.</summary>
-        Warnung = 1
+        Warnung = 1,
+
+        /// <summary>
+        /// Problem; der Lauf ist mit diesem Stand NICHT rechenbar und wird benannt
+        /// abgewiesen — die Oberfläche sperrt ihren Rechenknopf damit wie mit einem
+        /// Eingabefehler.
+        /// </summary>
+        Problem = 2
     }
 
     /// <summary>
@@ -35,7 +42,13 @@ namespace WindowsFormsApplication1
         StartSoCAufMinimum = 3,
 
         /// <summary>Die Flotte hat im ganzen Zeitraum weder geladen noch entladen.</summary>
-        FlotteArbeitslos = 4
+        FlotteArbeitslos = 4,
+
+        /// <summary>
+        /// Ein planendes Betriebsziel soll auf dem Informationsstand „Archivierte
+        /// Prognose-Snapshots" rechnen, ohne dass ein solcher Snapshot geladen ist.
+        /// </summary>
+        PrognoseFehlt = 5
     }
 
     /// <summary>Ein Vorprüfungshinweis zu einer Flottenstudie.</summary>
@@ -83,7 +96,7 @@ namespace WindowsFormsApplication1
             FlottenStudieKonfiguration konfiguration,
             SpeicherKostensaetze kosten,
             FlottenDiagnose diagnose = null)
-            => Pruefe(eingang?.Istwerte, konfiguration, kosten, diagnose);
+            => Pruefe(eingang?.Istwerte, konfiguration, kosten, diagnose, eingang?.Prognosen);
 
         /// <summary>
         /// Wie <see cref="Pruefe(FlottenEingang, FlottenStudieKonfiguration, SpeicherKostensaetze, FlottenDiagnose)"/>,
@@ -102,22 +115,70 @@ namespace WindowsFormsApplication1
         /// <param name="konfiguration">Die Flotte samt Betriebsoptionen.</param>
         /// <param name="kosten">Die aufgelösten Kostensätze; <c>null</c> = mit den Sätzen der Einheiten rechnen.</param>
         /// <param name="diagnose">Die Diagnose eines bereits gerechneten Laufs; <c>null</c> vor dem Lauf.</param>
+        /// <param name="prognosen">Die geladenen Prognose-Snapshots; <c>null</c> oder leer = keine geladen.</param>
         /// <returns>Die Hinweise in fester Reihenfolge; eine leere Liste, wenn nichts zu beanstanden ist.</returns>
         public static List<FlottenHinweis> Pruefe(
             IReadOnlyList<FlottenNetzintervall> istwerte,
             FlottenStudieKonfiguration konfiguration,
             SpeicherKostensaetze kosten,
-            FlottenDiagnose diagnose = null)
+            FlottenDiagnose diagnose = null,
+            IReadOnlyList<FlottenPrognoseSnapshot> prognosen = null)
         {
             var hinweise = new List<FlottenHinweis>();
             if (konfiguration?.Optionen == null) return hinweise;
             CultureInfo k = CultureInfo.CurrentCulture;
+
+            // DIE PROGNOSEPFLICHT STEHT VORN: Sie ist der einzige Befund der Stufe
+            // „Problem" — ohne Snapshot rechnet der Lauf nicht, alles Weitere wäre ein
+            // Hinweis zu einem Lauf, den es nicht gibt.
+            if (Prognosepflicht(konfiguration, prognosen) is { } fehlt) hinweise.Add(fehlt);
 
             PruefePeakZiel(hinweise, istwerte, konfiguration, k);
             PruefeBetriebskosten(hinweise, konfiguration, kosten, k);
             PruefeStartSoC(hinweise, konfiguration, diagnose);
             PruefeDiagnose(hinweise, diagnose, k);
             return hinweise;
+        }
+
+        /// <summary>
+        /// DIE PROGNOSEPFLICHT — die EINE Regel, die drei Wege rufen (Auftrag #256).
+        /// </summary>
+        /// <remarks>
+        /// <para>Die drei PLANENDEN Betriebsziele (<see cref="FlottenPlanerLage.IstPlanend"/>)
+        /// verlangen je Planungsschritt einen Prognose-Snapshot der eingestellten
+        /// <see cref="PrognoseArt"/>. Für <see cref="PrognoseArt.VerifiziertBekannt"/> nimmt
+        /// der Kern ausschließlich ARCHIVIERTE Snapshots: Die Istreihe wird nie still als
+        /// historische Prognose verwendet (Spezifikation 9.4). Ist keiner geladen, wirft der
+        /// <c>FlottenSimulator</c> beim ersten Planungsschritt — diese Regel sagt es VORHER.</para>
+        /// <para><b>Nur die ART wird geprüft, nicht der Horizont.</b> Ob ein geladener
+        /// Snapshot jeden Entscheidungszeitpunkt lückenlos abdeckt, entscheidet der Simulator
+        /// mit der Reihe in der Hand; eine Vorprüfung ohne Reihe kann das nicht und soll es
+        /// nicht behaupten.</para>
+        /// <para><see cref="PrognoseArt.Oracle"/> ist ausgenommen: Für sie baut
+        /// <c>SpeicherFlottenStudieCtrl.Eingang</c> den Snapshot „Idealwissen-Standortreihe"
+        /// aus der Istreihe — das ist der ausdrücklich gewählte Ausweg, nicht die Lücke.</para>
+        /// </remarks>
+        /// <param name="konfiguration">Die Flotte samt Betriebsoptionen.</param>
+        /// <param name="prognosen">Die geladenen Snapshots; <c>null</c> oder leer = keine geladen.</param>
+        /// <returns>Der blockierende Hinweis; <c>null</c>, wenn die Regel nicht greift.</returns>
+        public static FlottenHinweis Prognosepflicht(
+            FlottenStudieKonfiguration konfiguration,
+            IReadOnlyList<FlottenPrognoseSnapshot> prognosen)
+        {
+            FlottenSimulationOptionen o = konfiguration?.Optionen;
+            if (o == null) return null;
+            if (!FlottenPlanerLage.IstPlanend(o.Betriebsziel)) return null;
+            if (o.PrognoseArt != PrognoseArt.VerifiziertBekannt) return null;
+            if (prognosen != null && prognosen.Any(x => x != null && x.Art == PrognoseArt.VerifiziertBekannt))
+                return null;
+
+            return new FlottenHinweis
+            {
+                Kennung = FlottenHinweisKennung.PrognoseFehlt,
+                Stufe = FlottenHinweisStufe.Problem,
+                Text = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.FLOTTE_MSG_PROGNOSE_FEHLT, o.Betriebsziel)
+            };
         }
 
         /// <summary>Beide Prüfungen des Peak-Ziels gegen die Referenzzeitreihe.</summary>

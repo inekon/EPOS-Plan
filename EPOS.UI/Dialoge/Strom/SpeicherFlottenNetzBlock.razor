@@ -13,7 +13,12 @@
    Aenderung (StromspeicherAuslegungSeite.FlotteNeuAufsetzen).
 
    DIE PROGNOSEPLANUNG ERSCHEINT NUR BEI EINEM PLANENDEN ZIEL — ohne Planer gibt
-   es keinen Planungshorizont, und ein Feld ohne Wirkung ist eine Behauptung. *@
+   es keinen Planungshorizont, und ein Feld ohne Wirkung ist eine Behauptung.
+
+   DER HINWEIS STEHT AM FELD (Auftrag #256). Wer „Archivierte Prognose-Snapshots"
+   waehlt, ohne welche geladen zu haben, bekommt den Befund der Vorpruefung DORT
+   zu lesen, wo er ihn beheben kann — kein zweiter Wortlaut, der Text kommt vom
+   Wirt aus derselben Ressource wie die Hinweiszeile ueber der Ablaufleiste. *@
 
 @namespace EPOS.UI.Dialoge.Strom
 @using System.Globalization
@@ -38,6 +43,11 @@
                 <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_INFORMATIONSSTAND" Eintraege="@Prognosearten"
                              Auswahl="@((int)Wert.PrognoseArt)" Aktiv="@Aktiv"
                              AuswahlChanged="PrognoseArtSetzen" />
+                @if (PrognoseHinweis.Length > 0)
+                {
+                    <p class="epos-flotte-hinweis epos-flotte-hinweis--problem epos-flotte-feldraster__zeile"
+                       role="status">@PrognoseHinweis</p>
+                }
                 <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_PLANUNGSHORIZONT" Einheit="Intervalle"
                               Wert="@Wert.PlanungshorizontIntervalle" Min="1" Aktiv="@Aktiv"
                               WertChanged="@(v => GanzSetzen(x => Wert.PlanungshorizontIntervalle = x, v))" />
@@ -85,6 +95,13 @@
 
     /// <summary>Etwas wurde geschrieben — der Wirt sichert und zeichnet neu.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Der Befund „planendes Ziel ohne geladene Prognose" im Wortlaut der Vorprüfung;
+    /// leer = die Regel greift nicht (Auftrag #256). Er steht unter dem Auswahlfeld
+    /// „Informationsstand", weil genau dort der eine der zwei Auswege liegt.
+    /// </summary>
+    [Parameter] public string PrognoseHinweis { get; set; } = "";
 
     /// <summary>Der Block zeigt sich nur bei einem PLANENDEN Betriebsziel (Prüfhilfe).</summary>
     public bool HatPrognoseplanung => Wert.Betriebsziel

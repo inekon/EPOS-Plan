@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -318,6 +318,103 @@ namespace EPOS.Kern.Tests
             Assert.Contains("mit Vorausschau erreichbar", e.Herleitung);
         }
 
+        // ====================================== Prognosepflicht planender Ziele (#256)
+
+        /// <summary>
+        /// DIE REGEL: planendes Ziel + Informationsstand „Archivierte Prognose-Snapshots"
+        /// + kein Snapshot dieser Art = ein Befund der Stufe „Problem".
+        /// </summary>
+        [Theory]
+        [InlineData(FlottenBetriebsziel.PvPlanung)]
+        [InlineData(FlottenBetriebsziel.Arbitrage)]
+        [InlineData(FlottenBetriebsziel.MultiUse)]
+        public void EinPlanendesZielOhneGeladenePrognose_IstEinProblem(FlottenBetriebsziel ziel)
+        {
+            FlottenStudieKonfiguration f = Planend(ziel);
+
+            List<FlottenHinweis> hinweise = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, null);
+
+            FlottenHinweis h = Assert.Single(hinweise,
+                x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+            Assert.Equal(FlottenHinweisStufe.Problem, h.Stufe);
+            // Der Text nennt das ZIEL, den INFORMATIONSSTAND und BEIDE Auswege.
+            Assert.Contains(ziel.ToString(), h.Text, StringComparison.Ordinal);
+            Assert.Contains("Archivierte Prognose-Snapshots", h.Text, StringComparison.Ordinal);
+            Assert.Contains("Idealwissen", h.Text, StringComparison.Ordinal);
+            Assert.Contains("Prognosen", h.Text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// IDEALWISSEN ist der ausdrücklich gewählte Ausweg — für ihn baut der Kern den
+        /// Snapshot aus der Istreihe, und die Regel schweigt.
+        /// </summary>
+        [Fact]
+        public void MitIdealwissen_GreiftDieRegelNicht()
+        {
+            FlottenStudieKonfiguration f = Planend(FlottenBetriebsziel.Arbitrage);
+            f.Optionen.PrognoseArt = PrognoseArt.Oracle;
+
+            List<FlottenHinweis> hinweise = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, null);
+
+            Assert.DoesNotContain(hinweise, x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+            Assert.Null(FlottenPlausibilitaet.Prognosepflicht(f, null));
+        }
+
+        /// <summary>Die zwei REAKTIVEN Ziele planen nicht und brauchen keine Prognose.</summary>
+        [Theory]
+        [InlineData(FlottenBetriebsziel.PeakShaving)]
+        [InlineData(FlottenBetriebsziel.PvGreedy)]
+        public void EinReaktivesZiel_BrauchtKeinePrognose(FlottenBetriebsziel ziel)
+        {
+            FlottenStudieKonfiguration f = Planend(ziel);
+
+            List<FlottenHinweis> hinweise = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, null);
+
+            Assert.DoesNotContain(hinweise, x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+        }
+
+        /// <summary>
+        /// Ein GELADENER Snapshot der verlangten Art hebt den Befund auf. Geprüft wird
+        /// allein die ART — ob er jeden Horizont abdeckt, entscheidet der Simulator mit
+        /// der Reihe in der Hand.
+        /// </summary>
+        [Fact]
+        public void EinGeladenerSnapshotDerVerlangtenArt_HebtDenBefundAuf()
+        {
+            FlottenStudieKonfiguration f = Planend(FlottenBetriebsziel.PvPlanung);
+            FlottenEingang e = Eingang(100, 50, 100, 60);
+            e.Prognosen.Add(new FlottenPrognoseSnapshot("p1",
+                e.Istwerte[0].Zeitstempel, e.Istwerte[0].Zeitstempel,
+                PrognoseArt.VerifiziertBekannt, e.Istwerte));
+
+            Assert.DoesNotContain(FlottenPlausibilitaet.Pruefe(e, f, null),
+                x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+
+            // Ein Snapshot der ANDEREN Art zaehlt nicht: Idealwissen ist kein Nachweis
+            // dafuer, dass ein Stand vorher bekannt war.
+            var nurOracle = new List<FlottenPrognoseSnapshot>
+            {
+                new FlottenPrognoseSnapshot("o1", e.Istwerte[0].Zeitstempel,
+                    e.Istwerte[0].Zeitstempel, PrognoseArt.Oracle, e.Istwerte)
+            };
+            Assert.NotNull(FlottenPlausibilitaet.Prognosepflicht(f, nurOracle));
+        }
+
+        /// <summary>
+        /// Die Regel braucht KEINE Zeitreihe — deshalb trägt sie auch die schnelle Stufe
+        /// der Vorprüfung (Auftrag #254).
+        /// </summary>
+        [Fact]
+        public void OhneReihe_StehtDerBefundGenauso()
+        {
+            FlottenStudieKonfiguration f = Planend(FlottenBetriebsziel.MultiUse);
+
+            List<FlottenHinweis> ohneReihe = FlottenPlausibilitaet.Pruefe(
+                Array.Empty<FlottenNetzintervall>(), f, null);
+
+            Assert.Contains(ohneReihe, x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
+        }
+
         // ================================================================= Prüfstand
 
         private static FlottenEingang Eingang(params double[] lasten) => new()
@@ -334,6 +431,14 @@ namespace EPOS.Kern.Tests
                 BatterieVerkaufspreisEuroProKWh = 0.05
             }).ToList()
         };
+
+        /// <summary>Dieselbe Flotte, aber mit einem anderen Betriebsziel.</summary>
+        private static FlottenStudieKonfiguration Planend(FlottenBetriebsziel ziel)
+        {
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 80, netzladung: true);
+            f.Optionen.Betriebsziel = ziel;
+            return f;
+        }
 
         private static FlottenStudieKonfiguration Flotte(double peakZiel, bool netzladung) => new()
         {

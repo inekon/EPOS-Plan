@@ -48,6 +48,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Flotte hat im ganzen Zeitraum weder geladen noch entladen.</summary>
         public const string FLOTTE_ARBEITSLOS = "FLOTTE_ARBEITSLOS";
 
+        /// <summary>Planendes Betriebsziel ohne geladenen Prognose-Snapshot.</summary>
+        public const string FLOTTE_PROGNOSE_FEHLT = "FLOTTE_PROGNOSE_FEHLT";
+
         // ------------------------------------------------------------------
         //  Simulationslauf (SimulationLaufCtrl, #190)
         // ------------------------------------------------------------------
@@ -96,7 +99,7 @@ namespace WindowsFormsApplication1
         {
             FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM, FLOTTE_PEAKZIEL_UEBER_REFERENZSPITZE,
             FLOTTE_BETRIEBSKOSTEN_SEHR_NIEDRIG, FLOTTE_START_SOC_AUF_MINIMUM,
-            FLOTTE_ARBEITSLOS,
+            FLOTTE_ARBEITSLOS, FLOTTE_PROGNOSE_FEHLT,
             LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ, LAUF_W_ERZEUGER_OHNE_STROMPLATZ,
             PV_STRANG_P1, PV_STRANG_P2, PV_STRANG_P3, PV_STRANG_P4,
             PV_STRANG_P5, PV_STRANG_P6, PV_STRANG_P7, PV_STRANG_P8
@@ -121,6 +124,8 @@ namespace WindowsFormsApplication1
                     return FLOTTE_START_SOC_AUF_MINIMUM;
                 case FlottenHinweisKennung.FlotteArbeitslos:
                     return FLOTTE_ARBEITSLOS;
+                case FlottenHinweisKennung.PrognoseFehlt:
+                    return FLOTTE_PROGNOSE_FEHLT;
                 default:
                     return "";
             }

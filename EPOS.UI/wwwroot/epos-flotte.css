@@ -91,6 +91,13 @@
     align-items: end;
 }
 
+/* EINE ZEILE IM FELDRASTER (Auftrag #256): Ein Hinweis, der zum Feld darueber
+   gehoert, steht unter ihm und nicht in der Nachbarzelle — er spannt deshalb
+   ueber alle Spalten. */
+.epos-flotte-feldraster__zeile {
+    grid-column: 1 / -1;
+}
+
 .epos-flotte-feldraster--kompakt {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 }
@@ -213,6 +220,15 @@
     color: var(--epos-warn-text);
 }
 
+/* STUFE „PROBLEM" (Auftrag #256): Der Lauf ist mit diesem Stand nicht rechenbar.
+   Dieselbe Bauform wie die Warnung, nur in der Fehlerfarbe des Hauses. */
+.epos-flotte-hinweis--problem {
+    padding: 0.55rem 0.7rem;
+    border-left: 4px solid var(--epos-senke-rahmen);
+    background: var(--epos-fehleingabe);
+    color: var(--epos-senke-text);
+}
+
 .epos-flotte-leer {
     padding: 1rem;
     border: 1px dashed var(--epos-rahmen);
@@ -239,7 +255,8 @@
 @media (forced-colors: active) {
     .epos-flotte-einheit,
     .epos-flotte-editor__zaehler,
-    .epos-flotte-hinweis--warnung {
+    .epos-flotte-hinweis--warnung,
+    .epos-flotte-hinweis--problem {
         border-color: CanvasText;
     }
 }
@@ -813,6 +830,14 @@
 
 .epos-flotte-hinweiszeile--warnung {
     color: var(--epos-warn-text);
+}
+
+/* STUFE „PROBLEM" (Auftrag #256): Der Lauf ist mit diesem Stand nicht rechenbar.
+   Die Zeile bleibt eine Zeile — sie bekommt nur die Fehlerfarbe und ihr eigenes
+   Zeichen; die Aussage traegt damit nicht die Farbe allein. */
+.epos-flotte-hinweiszeile--problem {
+    color: var(--epos-senke-text);
+    font-weight: 600;
 }
 
 .epos-flotte-hinweiszeile__zeichen {

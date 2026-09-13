@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using SpeicherEngine;
@@ -166,6 +166,10 @@ public sealed class FlottenPlanerLageTests : IDisposable
         MitFabrik(() => new StillerPlaner(), () =>
         {
             SpeicherOptimierungEingaben eingaben = FlottenEingaben(FlottenBetriebsziel.Arbitrage);
+            // MIT Planer bleibt die zweite Bedingung planender Ziele stehen (Auftrag
+            // #256): Sie brauchen ausserdem einen Informationsstand, der traegt. Hier
+            // ist es Idealwissen — sonst meldete dieselbe Pruefung die fehlende Prognose.
+            eingaben.Auslegung.Flotte.Optionen.PrognoseArt = PrognoseArt.Oracle;
 
             Assert.True(SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, false).Rechenbar);
         });

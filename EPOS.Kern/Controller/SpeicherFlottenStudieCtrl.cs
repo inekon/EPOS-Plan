@@ -537,6 +537,11 @@ public static partial class SpeicherFlottenStudieCtrl
         // Vorprüfung VOR der Rechnung (Konzept Stromspeicher-Dialoge 2.4 Punkt 3): Sie sagt,
         // was an den Eingaben das Ergebnis schon jetzt entwertet.
         HinweiseUebernehmen(result, FlottenPlausibilitaet.Pruefe(input, f, v.Eingaben.Auslegung?.VerwendeteKosten));
+        // EIN BEFUND DER STUFE „PROBLEM" WEIST DEN LAUF BENANNT AB (Auftrag #256):
+        // Bis hierher lief die Optimierung an und der FlottenSimulator warf beim ersten
+        // Planungsschritt. Die Vorprüfung kennt den Grund schon — und nennt ihn.
+        if (result.Pruefhinweise.FirstOrDefault(x => x.Stufe == FlottenHinweisStufe.Problem) is { } problem)
+            throw new InvalidOperationException(problem.Text);
         if (v.Eingaben.Auslegung.FlottenGroessenOptimieren)
         {
             result.Auslegung = FlottenOptimierer.Rechne(input, f, planer, fortschritt, token);
