@@ -5142,3 +5142,31 @@ steht aus und ist die eigentliche Aufgabe von
 > nichts." geschärft; Revision 592, Nachprobe per `action=raw` zeichengleich, 40 Listenpunkte gerendert ohne Fehler. Regel
 > als Abschnitt 13.3 im Konzept Hilfesystem (Regel, Warum, Ablauf mit „Upload ausstehend" in der Statusdatei) und als Absatz
 > im Wiki-Punkt der `CLAUDE.md`. Kein Code, kein Gate nötig; die zwei Dokumentationswachen laufen vor dem Push.
+
+## #253 — Suchraumfelder lassen sich leeren, Fortschrittsbalken in Station 4 (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderbefund 13.09.2026 (zwei Bildschirmfotos, Stromspeicher-Auslegung › 4 Optimierung, „Größe suchen"):**
+> „Fehler in Eingabefeld ‚Kapazität Schritt': 1 bleibt stehen, Eingabe nicht korrekt möglich"; „Sekundärfehler –
+> Anzahl Auslegungskandidaten" (123 504 von höchstens 10 000, Lauf abgewiesen); „prüfe alle Felder – gleiches Problem"
+> (alle Suchraumfelder zeigen nur noch eine Ziffer); „Progress bar bei Berechnung nicht mehr vorhanden".
+>
+> **Befund (Agent Opus, bunit-Prüfstand mit den Werten der Fotos):** H1 „Kandidatenzähler baut je Tastendruck das Raster"
+> ausgeschlossen — `FlottenOptimierer.Kandidatenzahl` multipliziert Stützstellen, ein Tastendruck der ganzen Ansicht kostet
+> 0,39–0,97 ms, auch bei 1,2 Millionen Kandidaten. H3 zutreffend: Ein geleertes Zahlenfeld meldet `null`, `OptimierungBlock.
+> ZahlSetzen` verwarf `null`, der Suchraum behielt die letzte Ziffer, und `Zahlenfeld.OnParametersSet` schrieb sie zurück —
+> „1 bleibt stehen" wörtlich; die Schreibmarke stand danach hinter der Ziffer, weitere Zeichen landeten dahinter, ein Feld ließ
+> sich nie leeren. Die Kandidatenzahl 123 504 (496 × 249, Obergrenze eingeschlossen) plus 19 Feinrasterpunkte war richtig und
+> die Folge des hängenden Felds. Der Fortschrittsbalken wurde gesetzt und gezeichnet, stand aber am Kopf der Ansicht, seit der
+> Rechenknopf ans Ende des Blattes Optimierung gewandert war — außer Sicht; Simulationslauf nicht betroffen (Wache grün).
+>
+> **Umsetzung (Merge `79a1a572`, Commit `904255b3`):** `Zahlenfeld`/`Ganzzahlfeld` merken „geleert" und schreiben bis zum
+> nächsten Tastendruck nichts zurück (Prüfhilfe `Geleert`); `OptimierungBlock` schreibt bei `null` 0 („kein Wert"), das Raster
+> gilt benannt als ungültig, Kandidatenzeile „Raster ungültig", Vorprüfung sperrt den Rechenknopf und nennt das Feld;
+> `Fortschritt` unter dem Rechenknopf von Station 4, gespeist aus dem Wirt, der eigene Balken der Ansicht bleibt aus, solange
+> Station 4 vorn steht. Keine Engine-Änderung, keine neue Ressource. Tests: `SchrittfeldUndFortschrittTests` (5),
+> `ZahlenfeldTests`/`GanzzahlfeldTests` (+1, rot ohne Behebung), `FlottenKandidatenzaehlungTests` (8), `SimulationSeiteTests` (+1);
+> #245/#248-Wachen grün. Referenzlauf 1046 byte-gleich. Konzept Stromspeicher-Dialoge Abschnitt #253; Wiki-Quelle Stromspeicher
+> zwei Sätze (Upload ausstehend, gebündelt nach 13.3). **Gate sept63 auf `79a1a572`:** GRÜN — Kern 2 782, UI 3 996, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (1 übersprungen), Formularkarte 122; 5 eindeutige Warnungen (vorbestehend); SQL-Dialektprüfer 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US grün. Gate sept63 auf `79a1a572` war rot durch einen fremden Bruch: Der Sync-Commit `17aa33fe` der Gegenseite hatte das Hauswerkzeug EposSqliteMigrator entfernt, `WP-Plan.sln` verwies weiter darauf (MSB3202, Vollbau rot, Tests auf alten Binärdateien); bereinigt mit `769a8fcb` (sln, windows.yml, Wurzel-CLAUDE.md-Tabellenzeile, EPOS.Kern/CLAUDE.md).
+> **Offen:** #254 (Vorprüfung je Tastendruck mit Tiefenkopien und Datenbankzugriffen in der Anwendung messen und entkoppeln;
+> Anwenderentscheid ausstehend). Ein geleertes Feld bleibt leer, auch wenn der Wirt von außen einen neuen Wert setzt, bis der
+> Anwender wieder tippt.
