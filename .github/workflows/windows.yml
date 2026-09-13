@@ -139,9 +139,6 @@ jobs:
       - name: WP-Plan bauen
         run: dotnet build WP-Plan.sln -c Release -p:Platform=x64
 
-      - name: EposSqliteMigrator bauen
-        run: dotnet build EposSqliteMigrator/EposSqliteMigrator.sln -c Release -p:Platform=x64
-
       - name: ZugriffsschichtProben bauen
         run: dotnet build Proben/ZugriffsschichtProben/ZugriffsschichtProben.sln -c Release -p:Platform=x64
 
