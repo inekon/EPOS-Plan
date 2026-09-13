@@ -330,6 +330,68 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     // =====================================================================
+    // Ansicht „Projektassistent" (Befund W16a-O-4)
+    // =====================================================================
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <para><b>Es wird nichts nachgebaut</b> - dieselbe Quelle, die auch die
+    /// Windows-Schale benutzt (<c>AssistentAnsichtQuelle</c> in
+    /// <c>EPOS.UI.Daten</c>). Sie legt je Lauf einen <c>AssistentCtrl</c> an, haengt
+    /// die Ablaufdelegaten daran und liefert den Schluesselsatz, den
+    /// <c>AssistentSeite</c> erwartet - samt <c>HatAenderungen</c>, also samt der
+    /// Rueckfrage „Speichern / Verwerfen / Bleiben" aus dem Anwenderentscheid
+    /// <b>62b-E-1</b>, die ausdruecklich auf BEIDEN Plattformen gilt.</para>
+    ///
+    /// <para><b>Der EINE Unterschied ist die Naht <c>AssistentPlattformwege</c>:</b>
+    /// Elf der dreizehn Assistentenseiten bekommen ihren Parametersatz bis heute aus
+    /// Huellen in <c>WindowsFormsApplication1/Views</c>, die einen Fensterbesitzer an
+    /// die Katalogdialoge weiterreichen (<c>GebaeudeHuelle.Gaben(IWin32Window, …)</c>
+    /// und zehn Geschwister). Sie stehen deshalb hier nicht zur Verfuegung und werden
+    /// BENANNT abgelehnt: Wer den Schritt betritt, liest den Grund, statt vor einer
+    /// leeren Flaeche zu stehen. Die zwei plattformfreien Schritte -
+    /// Komponentenauswahl und Projektkopf - laufen vollstaendig, und mit ihnen der
+    /// Speicherlauf; sie sind der Weg, auf dem ein Projekt entsteht. Die uebrigen elf
+    /// kommen mit dem Umzug der Fachmasken (iU11).</para>
+    ///
+    /// <para><b>Die Vorauswahl.</b> Der iOS-Einstieg kommt aus der ZEILE eines
+    /// Projekts (Knopf „Bearbeiten…" der Projektliste); das Projekt geht als
+    /// Vorauswahl des linken Bandes hinein. Unter Windows gibt es diesen Einstieg
+    /// nicht - dort markiert der Anwender im Band selbst, und die Vorauswahl bleibt
+    /// 0.</para>
+    ///
+    /// <para><b>„Zuletzt geoeffnet" merkt JEDER Lauf</b> - Anwenderentscheid
+    /// <b>W16a-O-4-Q1</b> vom 13.09.2026, Weg (a): „auf iOS wird IMMER gemerkt". Der
+    /// Nachzug geht ueber <c>Dienste.Projekt.Uebernehmen</c>, also die merkende
+    /// Fassung, die <c>Tab_Applikation</c> fortschreibt; eine zweite, nicht merkende
+    /// Variante gibt es hier NICHT. Die Windows-Unterscheidung <c>Setzen</c> gegen
+    /// <c>Uebernehmen</c> trennt ZWEI Einstiege - die Startkacheln merken, die zwei
+    /// Menuewege nicht -, und beide gibt es auf iOS nicht: Die Projektliste ist die
+    /// EINE Startansicht, ein Menue gibt es gar nicht. Der Windows-Weg bleibt davon
+    /// unberuehrt.</para>
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? AssistentGaben(int betriebsart, int idProjekt)
+    {
+        try
+        {
+            int vorauswahl =
+                betriebsart == AssistentCtrl.BETRIEBSART_BEARBEITEN && idProjekt > 0
+                    ? idProjekt : 0;
+
+            return AssistentAnsichtQuelle.AnsichtGaben(
+                betriebsart,
+                AssistentPlattformwege.Ohne(
+                    WindowsFormsApplication1.MyResource.Resource.WIZ_SEITE_NICHT_HIER),
+                vorauswahl);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Projektassistent: " + ex.Message);
+            return null;
+        }
+    }
+
+    // =====================================================================
 
     /// <summary>
     /// Das Lagebild der Lizenz fuer das Banner der <c>AppWurzel</c> (Welle iF30).
