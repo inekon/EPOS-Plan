@@ -747,8 +747,10 @@ allein gegen die maximale Eingangsspannung des gewählten Geräts.
 beziehungsweise mA/K. Der Modulkatalog von EPOS-Plan führt sie '''absolut''' in V/K und A/K. Ein
 ungerechnet übernommener Prozentwert verschiebt die Prüfungen P1 bis P4 um Größenordnungen. Die
 Umrechnung lautet
-
-: <math>\beta_{\mathrm{OC}}\;[\mathrm{V/K}] = \frac{\beta_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot U_{\mathrm{OC}}\;[\mathrm{V}]}{100} \qquad \alpha_{\mathrm{SC}}\;[\mathrm{A/K}] = \frac{\alpha_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot I_{\mathrm{SC}}\;[\mathrm{A}]}{100}</math>
+<math>\beta_{\mathrm{OC}}\;[\mathrm{V/K}] = \frac{\beta_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot U_{\mathrm{OC}}\;[\mathrm{V}]}{100}</math>
+für die Spannung und
+<math>\alpha_{\mathrm{SC}}\;[\mathrm{A/K}] = \frac{\alpha_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot I_{\mathrm{SC}}\;[\mathrm{A}]}{100}</math>
+für den Strom.
 
 Der Import aus PVsyst-Dateien (.PAN) rechnet selbsttätig um; ein von Hand gepflegter Wert wird
 beim Speichern auf Plausibilität geprüft. Der Leistungskoeffizient
