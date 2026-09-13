@@ -28,7 +28,8 @@
 
 <div class="epos-flotte-peakziel">
 
-    <SpeicherFlottenBetriebEditor Wert="@Wert" WertChanged="WertChanged" Aktiv="@Aktiv"
+    <SpeicherFlottenBetriebEditor Wert="@Wert" Fassung="@Fassung"
+                                  WertChanged="WertChanged" Aktiv="@Aktiv"
                                   PlanerVerfuegbar="@PlanerVerfuegbar"
                                   VerteilungZeigen="@VerteilungZeigen" />
 
@@ -73,6 +74,13 @@
 @code {
     /// <summary>Die Betriebsoptionen der Flotte.</summary>
     [Parameter] public FlottenSimulationOptionen Wert { get; set; } = new();
+
+    /// <summary>
+    /// Durchreiche an <see cref="SpeicherFlottenBetriebEditor.Fassung"/> (Auftrag #248):
+    /// Die Fassung des Wirtes sagt dem Editor, dass sein Stand neu zu lesen ist — auch
+    /// wenn <see cref="Wert"/> DIESELBE Instanz geblieben ist.
+    /// </summary>
+    [Parameter] public int Fassung { get; set; }
 
     /// <summary>Der Editor hat geschrieben.</summary>
     [Parameter] public EventCallback<FlottenSimulationOptionen> WertChanged { get; set; }

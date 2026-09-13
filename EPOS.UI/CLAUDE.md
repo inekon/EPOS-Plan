@@ -712,6 +712,26 @@ ließe. Wachen:
 `…Eine_angefangene_Dezimalzahl_bleibt_im_Feld_stehen` und
 `StromspeicherAuslegungFlotteTests.Eine_Eingabe_an_der_Lebensdauerkurve_laesst_ihre_Zeile_stehen`.
 
+**Der Grund für die Tiefenkopie war eine neue REFERENZ — und dafür genügt eine
+FASSUNGSNUMMER** (Auftrag **#248**, 13.09.2026). Die Kopie je gemeldetem Zeichen war nie
+Selbstzweck: Sie gab den drei Blättern mit eigener Arbeitskopie (`SpeicherFlottenEditor`,
+`SpeicherFlottenBetriebEditor`, `SpeicherAuslegungEditor`) das Zeichen „lies neu", weil deren
+`OnParametersSet` mit `ReferenceEquals` verglich. Gemessen kostete sie an der
+Stromspeicher-Auslegung **102–116 µs** je Tastendruck bei zwei Einheiten, **527–783 µs** bei
+zehn, und auf dem Datenblatt **3,3 ms und 1,6 MB**, sobald eine 8 760er Zeitreihe eingelesen
+war. Seit #248 zählt `StromspeicherAuslegungSeite.Geaendert()` stattdessen ein `int _fassung`
+hoch, die drei Blätter bekommen es als Parameter `Fassung` und lesen ihren Stand neu, sobald
+es sich ändert — **die Konfiguration bleibt dabei DIESELBE Instanz**. Die Regel daraus:
+**Wer eine Kopie nur macht, damit eine Referenz sich ändert, nimmt eine Fassungsnummer.**
+Eine Kopie bleibt dort, wo sie fachlich etwas ENTKOPPELT — der Rechenlauf, das Speichern, die
+Übernahme eines Kandidaten —, und ein Blatt, das seinen Stand nach oben meldet, reicht ihn
+weiterhin als eigene Kopie heraus; der Wirt kopiert ihn dann nicht ein zweites Mal. Am
+`@key`-Befund ändert das nichts: Ein Auffrischen an der Fassung erzeugt dieselben neuen
+Objekte, der Schlüssel gehört weiter auf einen Wert. Wachen:
+`StromspeicherAuslegungFlotteTests.Eine_Eingabe_in_der_Betriebsfuehrung_erzeugt_keine_neue_Flotteninstanz`,
+`…Der_Netzblock_und_der_Betriebseditor_schreiben_denselben_Stand` und
+`…Ein_Name_aus_Schritt_1_steht_in_der_Suchraumkarte`.
+
 `Zahlenfeld`, `Ganzzahlfeld`, `Auswahlfeld` und `Schalter` führen `Aktiv` (Vorgabe `true`):
 Ein gesperrtes Feld bleibt **sichtbar und lesbar**. Der Tarifdialog sperrt damit den Block des
 nicht gewählten Rechenmodells, statt ihn auszublenden — die Werte des anderen Modells gehen so

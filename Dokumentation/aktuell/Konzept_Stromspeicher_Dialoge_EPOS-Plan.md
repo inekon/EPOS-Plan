@@ -948,3 +948,73 @@ SD‑Q16 nur Stückzahl variieren (je Lauf eine Variationsart) · SD‑Q17 Empfe
    `@Projektflotte` über `SpeicherFlottenProjektCtrl`, und der ruft die Rastersuche nicht
    (`FlottenGroessenOptimieren` wird dort ausdrücklich auf `false` gesetzt). Die Basis
    `2026-09-11_R7_Speicherflotte` und die Einfrierregel SP‑O‑8 bleiben unangetastet.
+
+#### #248 — die Tiefenkopie je Tastendruck ist einer Fassungsnummer gewichen (13.09.2026)
+
+**Was der Zustand war.** Seit #224 schreiben vier Blätter an derselben
+`FlottenStudieKonfiguration`. Drei davon halten eine eigene Arbeitskopie und frischten sie nur
+auf, wenn sich die **Referenz** änderte (`SpeicherFlottenEditor`,
+`SpeicherFlottenBetriebEditor`, `SpeicherAuslegungEditor` — je ein `ReferenceEquals` in
+`OnParametersSet`). Damit das zutraf, setzte `StromspeicherAuslegungSeite.FlotteGeschrieben()`
+nach **jeder gemeldeten Eingabe** eine JSON-Tiefenkopie der ganzen Konfiguration ein
+(`SpeicherAuslegungKopie.Von` = `JsonSerializer.Serialize`/`Deserialize`). Der Fokusverlust, den
+das bis **#245** auslöste, war dort behoben (Zeilenschlüssel auf Wertidentität); geblieben war
+der Aufwand.
+
+**Gemessen, bevor gebaut wurde** (Linux, .NET 10, Release, Median über 1 000 Aufrufe):
+
+| Kopie | Median | Mittel | p95 | Zuteilung |
+|---|---|---|---|---|
+| Flotte, typisch — 2 Einheiten, je 5 Rainflow-Punkte, 2 Achsen | **102–116 µs** | 113–136 µs | 155–216 µs | 14,7 kB |
+| Flotte, groß — 10 Einheiten, je 20 Punkte, 2 Achsen | **527–783 µs** | 525–760 µs | 665–875 µs | 56,3 kB |
+| Flotte, leer — 0 Einheiten | 9–27 µs | | | 3,8 kB |
+| `SpeicherOptimierungEingaben.Kopie()` ohne Zeitreihe | **163 µs** | 179 µs | 228 µs | 17,8 kB |
+| dieselbe Kopie **mit** eingelesener 8 760er Lastreihe | **3 305 µs** | 3 593 µs | 4 900 µs | **1,63 MB** |
+
+(Zwei Läufe desselben Programms, daher die Spannen; die Zahlen entscheiden nichts — der
+Anwender hatte den Umbau schon entschieden —, sie benennen den Preis.)
+
+**Wozu die drei Editoren ihre Arbeitskopie halten** (Analyse): Sie **normalisieren** den
+eingehenden Stand (`SpeicherFlottenEditor.Normalisieren` füllt fehlende Listen), sie **schreiben
+in ihre eigene Kopie** und melden erst danach nach oben — eine halbfertige Eingabe erreicht den
+Wirt also nie —, und sie führen Bedienzustand daneben (aufgeklappte Einheiten, Auswahl der
+Übernahme). Rücknahme („Abbrechen") ist ausdrücklich **nicht** der Grund: Es gibt sie nicht.
+
+**Was an der neuen Referenz hing — und was nicht.** Am Auffrischen der drei Arbeitskopien: ja,
+das war ihr einziger Zweck. **Nicht** daran hingen: das „Veraltet"-Signal und der Merker
+„ungespeichert" (beide setzt `Geaendert()`), der Kandidatenzähler und die Vorprüfung der
+Station 4 (sie lesen die Konfiguration unmittelbar, es genügt der Zeichenlauf), die Entkopplung
+des Ergebnisses (die macht `FlotteStarten()` mit `_eingaben.Kopie()` **zum Rechenzeitpunkt**,
+und `SpeicherFlottenErgebnis.Konfiguration` ist deshalb der Stand des Laufs), das Speichern
+(`EinstellungenSichern` reicht `e.Kopie()` weiter), der Blattwechsel (das alte Blatt wird
+abgebaut, das neue liest beim ersten `OnParametersSet` ohnehin) und „Kandidat übernehmen"
+(`FlotteSetzen` kopiert die Konfiguration des Ergebnisses — sie gehört dem Lauf und darf von
+späteren Eingaben nicht verändert werden). Die Projektübernahme aus #247 meldet über denselben
+Weg wie jede andere Eingabe.
+
+**Der Umbau.** `StromspeicherAuslegungSeite` führt ein `int _fassung`, das **allein**
+`Geaendert()` hochzählt — der eine Trichter, durch den jede gemeldete Änderung läuft. Die drei
+Blätter bekommen es als Parameter `Fassung` (der `PeakZielBlock` reicht es durch) und frischen
+auf, wenn sich **Referenz oder Fassung** geändert hat; ein Wirt ohne Fassung — der
+`StromspeicherReiter` der Ergebnisseite — bleibt bei der reinen Referenzprüfung. Damit fällt in
+`FlotteGeschrieben()` die Tiefenkopie ersatzlos weg, und zwei weitere Kopien fallen mit ihr,
+weil sie dasselbe doppelt taten: `FlotteGeaendert` und `BetriebsoptionenGeaendert` bekamen den
+Stand vom Editor bereits **als dessen eigene Kopie** herein und kopierten ihn ein zweites Mal;
+ebenso `EingabenGeaendert`. Nebenbefund und mitgenommen: `SpeicherAuslegungEditor.OnParametersSet`
+verglich `Wert` mit `_wert` — und weil `_wert` immer eine Kopie **von** `Wert` ist, traf das bei
+**jedem** Zeichenlauf zu; der Editor kopierte den ganzen Arbeitsstand also auch dann, wenn sich
+nichts geändert hatte (mit Zeitreihe: 3,3 ms je Zeichenlauf). Er vergleicht jetzt die Referenz
+des Eingangs und die Fassung.
+
+**Was bleibt.** Je Tastendruck bleibt genau die Kopie, die das meldende Blatt selbst herausgibt
+— sie ist die Grenze zwischen „halbfertig im Editor" und „gilt" — und die Auffrischung der
+Arbeitskopie des Blattes, das gerade liest. Beide sind handgeschrieben
+(`SpeicherFlottenEditor.Kopie`), nicht JSON. Die drei fachlich nötigen Tiefenkopien (Lauf,
+Speichern, Kandidatenübernahme) sind unberührt.
+
+**Nachweise.** `EPOS.UI.Tests` 3 976 grün (vorher 3 973): drei neue Fälle in
+`StromspeicherAuslegungFlotteTests` — eine Eingabe in der Betriebsführung erzeugt **keine** neue
+Flotteninstanz (`Assert.Same`), Netzblock und Betriebseditor schreiben denselben Stand, und ein
+Name aus Schritt 1 steht in der Suchraumkarte der Station 4. Die drei #245-Wachen sind
+unverändert grün. **Der Referenzlauf ist nicht berührt** — der Umbau betrifft nur die
+Oberfläche, kein Rechenweg des Kerns.

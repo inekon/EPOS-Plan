@@ -421,6 +421,16 @@
     /// <summary>Die Übernahme ist gelaufen — der Wirt zeigt die Meldung.</summary>
     [Parameter] public EventCallback<string> Uebernommen { get; set; }
 
+    /// <summary>
+    /// <b>Die Fassung des Standes beim Wirt</b> (Auftrag <b>#248</b>). Vier Blätter der
+    /// Auslegungsansicht schreiben an DERSELBEN Konfiguration; bis #248 setzte der Wirt
+    /// dafür nach jedem gemeldeten Zeichen eine JSON-Tiefenkopie ein, allein damit die
+    /// Referenz eine andere war. Seither zählt er diese Zahl hoch, und der Editor liest
+    /// seinen Stand neu, sobald sie sich ändert. Ein Wirt ohne Fassung lässt sie auf 0;
+    /// dann entscheidet wie bisher allein die Referenz.
+    /// </summary>
+    [Parameter] public int Fassung { get; set; }
+
     /// <summary>Steuerwert der Optionsgruppe: eine Speicheranlage des Projekts.</summary>
     public const int QuelleAnlage = 0;
 
@@ -432,6 +442,7 @@
 
     private FlottenStudieKonfiguration _wert = new();
     private FlottenStudieKonfiguration? _eingangReferenz;
+    private int _gelesenFassung;
     private readonly HashSet<string> _offeneEinheiten = new(StringComparer.Ordinal);
 
     /// <summary>Die für die Übernahme gewählten Einheiten (Auftrag #247).</summary>
@@ -457,8 +468,9 @@
     protected override void OnParametersSet()
     {
         KandidatenNachziehen();
-        if (ReferenceEquals(_eingangReferenz, Wert)) return;
+        if (ReferenceEquals(_eingangReferenz, Wert) && _gelesenFassung == Fassung) return;
         _eingangReferenz = Wert;
+        _gelesenFassung = Fassung;
         _wert = Kopie(Wert ?? new FlottenStudieKonfiguration());
         Normalisieren();
         if (_wert.Einheiten.Count > 0 && _offeneEinheiten.Count == 0)

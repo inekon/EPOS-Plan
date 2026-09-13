@@ -177,7 +177,8 @@
                und ueber der Liste steht die Nachzugszeile, sobald eine Speicheranlage des
                Projekts keine Einheit hat (Anwenderrueckmeldung 12.09.2026). Die vier Wege
                fuehren ueber die Dienste in den Kern; ohne sie bleibt der Knopf, was er war. *@
-            <SpeicherFlottenEditor Wert="@Flotte" WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
+            <SpeicherFlottenEditor Wert="@Flotte" Fassung="@_fassung"
+                                   WertChanged="FlotteGeaendert" Aktiv="@(!_laeuft)"
                                    BetriebZeigen="false" PlanerVerfuegbar="@PlanerVerfuegbar"
                                    Projektanlagen="@Dienste?.Projektanlagen"
                                    EinheitAusProjektanlage="@Dienste?.EinheitAusProjektanlage"
@@ -191,7 +192,8 @@
         else if (_schritt == AuslegungSchritt.Daten)
         {
             <p class="epos-herleitung">@Resource.FLOTTE_DLG_HINWEIS_KOSTENSAETZE</p>
-            <SpeicherAuslegungEditor Wert="@_eingaben" WertChanged="EingabenGeaendert" Aktiv="@(!_laeuft)"
+            <SpeicherAuslegungEditor Wert="@_eingaben" Fassung="@_fassung"
+                                     WertChanged="EingabenGeaendert" Aktiv="@(!_laeuft)"
                                      Auslegungsprofile="@_vorgaben.Auslegungsprofile"
                                      Strompreisprofile="@_vorgaben.Strompreisprofile"
                                      Modulkosten="@_vorgaben.Modulkosten"
@@ -226,7 +228,8 @@
             @* Die fuenf Betriebsziele gelten fuer JEDE Einheitenzahl (SD-E-8); die
                VERTEILUNG erst ab zwei Einheiten — sie verteilt eine Anforderung auf
                mehrere Speicher, und bei einem gibt es nichts zu verteilen. *@
-            <PeakZielBlock Wert="@Flotte.Optionen" WertChanged="BetriebsoptionenGeaendert"
+            <PeakZielBlock Wert="@Flotte.Optionen" Fassung="@_fassung"
+                           WertChanged="BetriebsoptionenGeaendert"
                            Aktiv="@(!_laeuft)" PlanerVerfuegbar="@PlanerVerfuegbar"
                            VerteilungZeigen="@(Flotte.Einheiten.Count >= 2)"
                            Vorschlag="@_peakVorschlag"
@@ -565,6 +568,22 @@
     /// </summary>
     private FlottenPeakZielErgebnis? _peakVorausschau;
     private bool _laeuft, _veraltet, _projektAktiv, _ungespeichert, _prognosenOffen;
+
+    /// <summary>
+    /// <b>Die Fassung des Arbeitsstandes</b> (Auftrag <b>#248</b>) — sie zählt bei JEDER
+    /// gemeldeten Änderung um eins hoch (<see cref="Geaendert"/>).
+    /// </summary>
+    /// <remarks>
+    /// <para>Die drei Blätter mit eigener Arbeitskopie — <c>SpeicherFlottenEditor</c>,
+    /// <c>SpeicherAuslegungEditor</c> und (über <c>PeakZielBlock</c>)
+    /// <c>SpeicherFlottenBetriebEditor</c> — bekommen sie als Parameter und lesen ihren
+    /// Stand neu, sobald sie sich ändert. Vorher tat das eine JSON-Tiefenkopie der ganzen
+    /// Konfiguration je Tastendruck, allein damit die REFERENZ eine andere war; eine
+    /// <c>int</c>-Erhöhung sagt dasselbe und kostet nichts.</para>
+    /// <para>Sie ist <b>kein</b> Teil des gespeicherten Standes und wird nirgends
+    /// serialisiert — sie lebt und stirbt mit der Ansicht.</para>
+    /// </remarks>
+    private int _fassung;
     private double? _anteil;
     private string _fortschritt = "", _fehler = "", _meldung = "";
     private bool _meldungErfolg;
@@ -853,8 +872,14 @@
     /// Ohne ihn bliebe ein alter Fehlertext stehen, und der Auslegungseditor bekäme
     /// seinen aufgefrischten Stand nie zu sehen.
     /// </summary>
+    /// <remarks>
+    /// <b>Hier — und nur hier — zählt die Fassung hoch</b> (Auftrag #248). Sie ist der
+    /// EINE Trichter, durch den jede gemeldete Änderung läuft; die drei Blätter mit
+    /// eigener Arbeitskopie bekommen sie als Parameter und frischen daran auf.
+    /// </remarks>
     private void Geaendert()
     {
+        _fassung++;
         _fehler = "";
         _meldung = "";
         _ungespeichert = true;
@@ -863,15 +888,25 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Schritt 1 hat gemeldet. <b>Der Editor hat seine Meldung schon kopiert</b>
+    /// (<c>SpeicherFlottenEditor.Melden</c> reicht <c>Kopie(_wert)</c> heraus), also ist
+    /// <paramref name="f"/> ein Stand, den sonst niemand hält — eine zweite Kopie wäre
+    /// Arbeit ohne Wirkung (Auftrag #248).
+    /// </summary>
     private void FlotteGeaendert(FlottenStudieKonfiguration f)
     {
-        Auslegung.Flotte = SpeicherAuslegungKopie.Von(f);
+        Auslegung.Flotte = f ?? new FlottenStudieKonfiguration();
         Geaendert();
     }
 
+    /// <summary>
+    /// Schritt 2 hat gemeldet. Auch hier kommt der Stand bereits als eigene Kopie herein
+    /// (<c>SpeicherAuslegungEditor.Geaendert</c> reicht <c>_wert.Kopie()</c> heraus).
+    /// </summary>
     private void EingabenGeaendert(SpeicherOptimierungEingaben e)
     {
-        _eingaben = e.Kopie();
+        if (e is not null) _eingaben = e;
         Geaendert();
     }
 
@@ -887,7 +922,9 @@
     {
         FlottenBetriebsziel vorher = Flotte.Optionen.Betriebsziel;
         bool ratscheVorher = Flotte.Optionen.PeakZielAdaptiv;
-        Flotte.Optionen = SpeicherAuslegungKopie.Von(optionen);
+        // Der Betriebseditor reicht bereits Kopie(_wert) heraus - der Stand gehoert
+        // danach uns allein, eine zweite Kopie waere Arbeit ohne Wirkung (#248).
+        Flotte.Optionen = optionen ?? new FlottenSimulationOptionen();
         if (Flotte.Optionen.Betriebsziel != vorher)
         {
             Flotte.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(Flotte.Optionen.Betriebsziel);
@@ -957,21 +994,28 @@
     /// Ein Blatt hat den Flottenstand AN ORT UND STELLE beschrieben (Auftrag #224).
     /// </summary>
     /// <remarks>
-    /// <para><b>Warum die Flotte danach neu aufgesetzt wird.</b> Seit #224 schreiben VIER
+    /// <para><b>Warum es dafür eine FASSUNGSNUMMER gibt.</b> Seit #224 schreiben VIER
     /// Stellen an derselben <see cref="FlottenStudieKonfiguration"/>: der Einheiteneditor
     /// in Schritt 1, die Jahresprojektion in Schritt 2, „Netz und Planung" in Schritt 3
-    /// und der Suchraum in Station 4. Der Einheiteneditor hält eine eigene KOPIE und
-    /// frischt sie nur auf, wenn sich die REFERENZ ändert
-    /// (<c>SpeicherFlottenEditor.OnParametersSet</c>) — bliebe sie dieselbe, schriebe er
-    /// beim nächsten Feld seinen alten Stand zurück und löschte damit still, was die drei
-    /// anderen Blätter gesetzt haben. Eine frische Kopie ist die billigste Fassung von
-    /// „alle lesen denselben Stand".</para>
+    /// und der Suchraum in Station 4. Drei davon halten eine eigene ARBEITSKOPIE
+    /// (<c>SpeicherFlottenEditor</c>, <c>SpeicherFlottenBetriebEditor</c>,
+    /// <c>SpeicherAuslegungEditor</c>) — frischten sie diese nicht auf, schriebe das
+    /// nächste Feld ihren alten Stand zurück und löschte still, was die anderen Blätter
+    /// gesetzt haben.</para>
+    /// <para><b>Bis #248 war das Mittel dazu eine neue REFERENZ:</b> Diese Methode setzte
+    /// eine JSON-Tiefenkopie der ganzen Konfiguration ein
+    /// (<c>SpeicherAuslegungKopie.Von</c>), und die Editoren verglichen mit
+    /// <c>ReferenceEquals</c>. Das kostete je gemeldetem Zeichen ein
+    /// Serialize/Deserialize des GANZEN Standes — gemessen 102–116 µs im Median bei zwei
+    /// Einheiten, 527–783 µs bei zehn (Auftrag #248). <b>Seither zählt
+    /// <see cref="Geaendert"/> eine Fassungsnummer hoch</b>, die Blätter bekommen sie als
+    /// Parameter und frischen daran auf; die Konfiguration selbst bleibt DIESELBE
+    /// Instanz. Die Kopien, die fachlich etwas entkoppeln, sind geblieben: der Lauf
+    /// (<c>_eingaben.Kopie()</c> in <c>FlotteStarten</c>), das Speichern
+    /// (<c>EinstellungenSichern</c>) und die Übernahme eines Kandidaten
+    /// (<see cref="FlotteSetzen"/>).</para>
     /// </remarks>
-    private void FlotteGeschrieben()
-    {
-        Auslegung.Flotte = SpeicherAuslegungKopie.Von(Flotte);
-        Geaendert();
-    }
+    private void FlotteGeschrieben() => Geaendert();
 
     /// <summary>Die Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.</summary>
     private void Vorpruefen()
