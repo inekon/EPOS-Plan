@@ -122,6 +122,13 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   gewollt ist (`WaermepumpenDialog`, `_gewaehlt`). Wachen: `OptimierungStationTests` (Zeile und
   Felder bleiben stehen, angefangene Dezimalzahl bleibt), `StromspeicherAuslegungFlotteTests`
   (Lebensdauerkurve); bunit misst dabei die Identität der Komponente, nicht des DOM-Knotens.
+- **Wer eine Kopie nur macht, damit eine Referenz sich ändert, nimmt eine Fassungsnummer** (ein
+  `int _fassung` auf der Seite, als Parameter `Fassung` an die Blätter, die ihren Stand neu lesen, sobald
+  Referenz ODER Fassung wechselt): Die Konfiguration bleibt dieselbe Instanz, statt je Tastendruck als
+  JSON-Tiefenkopie neu zu entstehen. Eine Kopie bleibt nur, wo sie fachlich entkoppelt (Rechenlauf,
+  Speichern, Übernahme eines Kandidaten); ein meldendes Blatt reicht seinen Stand als eigene Kopie
+  heraus, der Wirt kopiert nicht ein zweites Mal. Wachen: `StromspeicherAuslegungFlotteTests` (keine
+  neue Flotteninstanz je Eingabe, Netzblock und Betriebseditor schreiben denselben Stand).
 - **Ein Delegat, der Oberfläche der Plattform öffnet, wird `await`et und nie synchron
   ausgewertet** — synchron stürzt die WebView2 ab.
 - **Jede Wurzelkomponente steht in der `Fehlerschranke`** (über `Bausteine/Wurzel<T>`; eine

@@ -154,10 +154,16 @@
     /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026;
        Anordnung seit W14a-E-10-Q2 vom 07.09.2026 UNTEREINANDER).
        HOEHE DER PROJEKTLISTE: Sie ist kurz - im Pruefprojekt zwei Zeilen -
-       und bleibt es. 12 rem = 192 px, bei 45 px Kopfzelle und 37 px
-       Zeilenhoehe VIER Zeilen (Konzept_Katalogfilter 5.6.5, im Mockup
-       gemessen). Ohne die Grenze schoebe eine lange Projektliste den
-       Katalog beliebig weit nach unten.
+       und bleibt es. 12 rem = 192 px; der Rahmen zaehlt mit (border-box),
+       innen bleiben 190 px. Bei 29,9 px Kopfzelle (Spaltenkopf OHNE
+       Trichter - die Projektliste bekommt keine Spaltenfilter) und 53,0 px
+       Zeilenhoehe sind das DREI ganze Zeilen (160,1 / 53 = 3,0).
+       Im Browser gemessen (Chromium, 1 300 x 900, Auftrag #248 vom
+       13.09.2026). Die Zahlen des Mockups zu 5.6.5 (vier Zeilen) gelten
+       fuer den gebauten Baustein nicht mehr: Seit Auftrag #240 ist eine
+       Rasterzeile mit Wahlspalte 53,0 px hoch (Raster.ZEILENHOEHE). Ohne
+       die Grenze schoebe eine lange Projektliste den Katalog beliebig weit
+       nach unten.
        DIE BREITE DER MITTELSPALTE (--epos-zweispalten-mitte) IST MIT Q2
        ENTFALLEN: Es gibt keine Mittelspalte mehr, sondern eine
        Uebernahmeleiste als Textzeile.
@@ -2201,11 +2207,16 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 /* --epos-zweispalten-umbruch bleibt - das Formularraster, der           */
 /* Dublettenbaum und die Kennzahlzeile benutzen es weiter.               */
 /*                                                                      */
-/* DIE PROJEKTLISTE IST HOEHENBEGRENZT (Konzept 5.6.5): 12 rem = 192 px, */
-/* bei 45 px Kopfzelle und 37 px Zeilenhoehe VIER Zeilen. Ohne die       */
-/* Grenze schoebe eine lange Projektliste den Katalog beliebig weit nach */
-/* unten - genau der Grund, aus dem die Katalogliste ihre eigene Grenze  */
-/* aus dem Katalograhmen mitbringt.                                      */
+/* DIE PROJEKTLISTE IST HOEHENBEGRENZT (Konzept 5.6.5): 12 rem = 192 px; */
+/* der Rahmen zaehlt mit (border-box), innen bleiben 190 px. Bei 29,9 px */
+/* Kopfzelle (Spaltenkopf OHNE Trichter) und 53,0 px Zeilenhoehe sind    */
+/* das DREI ganze Zeilen (160,1 / 53 = 3,0) - im Browser gemessen        */
+/* (Chromium, 1 300 x 900, Auftrag #248 vom 13.09.2026). Die             */
+/* Mockup-Zahlen des Konzepts (vier Zeilen) gelten seit Auftrag #240     */
+/* nicht mehr: Eine Rasterzeile mit Wahlspalte ist 53,0 px hoch, genau   */
+/* Raster.ZEILENHOEHE. Ohne die Grenze schoebe eine lange Projektliste   */
+/* den Katalog beliebig weit nach unten - genau der Grund, aus dem die   */
+/* Katalogliste ihre eigene Grenze aus dem Katalograhmen mitbringt.      */
 /* ==================================================================== */
 
 .epos-zweispalten {
@@ -2226,8 +2237,9 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     margin-top: 0;
 }
 
-/* Die PROJEKTliste ist kurz und bleibt es: vier Zeilen, danach rollt sie
-   in sich (Konzept 5.6.5). Der Katalog darunter hat seine eigene Grenze. */
+/* Die PROJEKTliste ist kurz und bleibt es: drei Zeilen (12 rem, gemessen
+   #248), danach rollt sie in sich (Konzept 5.6.5). Der Katalog darunter hat
+   seine eigene Grenze. */
 .epos-zweispalten-spalte--oben .epos-raster-huelle {
     flex: 0 1 auto;
     max-height: var(--epos-projektlistenhoehe);
@@ -6379,7 +6391,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 /* ZWEI REIHEN AUTO und nicht minmax(0,1fr): Beide Bloecke sind so hoch  */
 /* wie ihr Inhalt, die Liste bis zu ihrer Hoechsthoehe. Eine 1fr-Reihe   */
 /* zoege die Liste auf die volle Dialoghoehe auf und liesse unter den    */
-/* elf Zeilen eine leere Flaeche stehen.                                 */
+/* sieben Zeilen eine leere Flaeche stehen.                              */
 /*                                                                      */
 /* DIE MEDIENABFRAGE BEI 900 px ENTFAELLT: Es gibt nur noch EINE         */
 /* Anordnung, und die ist die schmale. Das Token                         */
@@ -6435,11 +6447,17 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    ihr steht, schoebe eine lange Liste sie beliebig weit nach unten - deshalb
    gilt die Hausregel auch hier, nur mit einem groesseren Mass:
 
-     1,3 x --epos-listenhoehe = 1,3 x 22 rem = 28,6 rem = 458 px
-     bei 45 px Kopfzelle und 37 px Zeilenhoehe sind das ELF Zeilen.
+     1,3 x --epos-listenhoehe = 1,3 x 22 rem = 28,6 rem = 457,6 px
+     (border-box, abzueglich des 1-px-Rahmens 456 px innen)
+     bei 52,5 px Kopfzelle und 53,0 px Zeilenhoehe sind das SIEBEN
+     ganze Zeilen (403,5 / 53 = 7,6).
 
-   Gemessen im Mockup; die kurze Projektliste der Stufe S2 bekommt spaeter
-   12 rem = vier Zeilen. */
+   IM BROWSER GEMESSEN, nicht im Mockup (Chromium, 1 300 x 900, Auftrag #248
+   vom 13.09.2026, gleiche Messweise wie Proben/Rasterprobe). Die alte
+   Mockup-Zahl (elf Zeilen) gilt seit Auftrag #240 nicht mehr: Mit der
+   Zellenpolsterung des Hauses ist die Katalogzeile 53,0 px hoch, genau
+   Raster.ZEILENHOEHE. Die kurze Projektliste bekommt 12 rem = drei
+   Zeilen. */
 .epos-katalog-liste .epos-raster-huelle {
     flex: 0 1 auto;
     max-height: calc(var(--epos-listenhoehe) * 1.3);
