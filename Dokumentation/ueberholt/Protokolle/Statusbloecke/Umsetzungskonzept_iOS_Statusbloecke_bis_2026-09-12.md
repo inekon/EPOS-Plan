@@ -5130,3 +5130,15 @@ steht aus und ist die eigentliche Aufgabe von
 > Kataloge, Platzhalter und Kurznamen ausgenommen), eine feste Liste von 55 Herstellern und ein Typcode-Muster mit
 > Normausnahmen; Seiten ohne Repo-Quelle prüft die Orchestrierung vor jedem Upload. **Gate sept60 auf `ef432b9f`:** siehe #250.
 > **Upload:** Stromspeicher und Kosten zusammen mit #250 (Revisionen 582 und 591).
+
+## #252 — Update-Logbuch 1.2.0.0 und Regel zum Upload-Rhythmus (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwender 13.09.2026:** Versionsnummer 1.2.0.0 für die 20 Logbuch-Einträge; „aktualisiere die wiki nicht nach jeder
+> änderung, maximal ein mal pro woche oder bei wesentlichen Änderungen. Nehme die Regel in die entsprechenden .md
+> Dokumentation auf."
+>
+> **Umsetzung:** Seite „Update-Logbuch" — Live-Stand gleich der Kopie, Abschnitt „Version 1.2.0.0 – September 2026" um die
+> 20 Einträge aus #250 (nach Datum, neueste zuerst) ergänzt, Einleitungssatz auf „An der Bedienung ändert die Umstellung
+> nichts." geschärft; Revision 592, Nachprobe per `action=raw` zeichengleich, 40 Listenpunkte gerendert ohne Fehler. Regel
+> als Abschnitt 13.3 im Konzept Hilfesystem (Regel, Warum, Ablauf mit „Upload ausstehend" in der Statusdatei) und als Absatz
+> im Wiki-Punkt der `CLAUDE.md`. Kein Code, kein Gate nötig; die zwei Dokumentationswachen laufen vor dem Push.
