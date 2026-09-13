@@ -103,6 +103,15 @@
                         title="@(string.IsNullOrWhiteSpace(RechnenGrund) ? null : RechnenGrund)"
                         @onclick="Starten">@RechnenText</button>
             </div>
+
+            @* DER FORTSCHRITT STEHT, WO GEKLICKT WURDE (Muster #220). Der Balken der
+               Ansicht steht ueber der Ablaufleiste, ganz oben; der Rechenknopf steht
+               HIER, am Ende einer langen Seite. Wer ihn drueckt, hat den oberen Balken
+               nicht im Bild und saehe nur eine Seite, die erstarrt. Es bleibt EIN Lauf
+               mit EINEM Fortschritt aus DENSELBEN Werten; der Wirt schaltet seinen
+               eigenen Balken ab, solange diese Station vorn steht. *@
+            <Fortschritt Sichtbar="@Laeuft" Anteil="@Anteil" Text="@Fortschrittstext"
+                         Abbrechen="@Abbrechen" AbbrechenText="@AbbrechenText" />
         </div>
     </div>
 
@@ -338,6 +347,25 @@
 
     /// <summary>Meldet den Versuch, eine gesperrte Suchoption zu wählen.</summary>
     [Parameter] public EventCallback<string> MethodeVerweigert { get; set; }
+
+    /// <summary>
+    /// Läuft gerade eine Rechnung? Dann zeichnet die Station ihren Fortschrittsbalken
+    /// unter dem Rechenknopf (Muster #220: EIN Lauf, EIN Fortschritt, dort, wo
+    /// geklickt wurde).
+    /// </summary>
+    [Parameter] public bool Laeuft { get; set; }
+
+    /// <summary>Der Fortschritt 0…1; <c>null</c> = unbestimmt (der Balken läuft).</summary>
+    [Parameter] public double? Anteil { get; set; }
+
+    /// <summary>Was gerade läuft — der Schritttext des Balkens.</summary>
+    [Parameter] public string Fortschrittstext { get; set; } = "";
+
+    /// <summary>Der Abbruch; ohne Rückruf kein Knopf (Hausregel).</summary>
+    [Parameter] public EventCallback? Abbrechen { get; set; }
+
+    /// <summary>Beschriftung des Abbrechen-Knopfs; leer = die Vorgabe des Bausteins.</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "";
 
     private FlottenAuslegungEingang Auslegung => Flotte.Auslegung ??= new FlottenAuslegungEingang();
 
@@ -585,11 +613,28 @@
         return Geaendert.InvokeAsync();
     }
 
+    /// <summary>
+    /// Ein Zahlenfeld des Suchraums hat gemeldet. <b>Ein GELEERTES Feld meldet
+    /// <c>null</c>, und <c>null</c> ist hier die 0</b> — „kein Wert" (Windows-Abnahme
+    /// 13.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum nicht „übergehen".</b> Bis dahin verwarf dieser Weg jedes
+    /// <c>null</c>: Der alte Wert blieb im Suchraum stehen, das Feld war leer, und der
+    /// Lauf hätte mit einer Zahl gerechnet, die der Anwender nicht mehr sieht. Ein
+    /// Suchraum, den man nicht sieht, ist schlimmer als einer, der abweist.</para>
+    /// <para><b>Die 0 ist kein stiller Wert, sondern eine benannte Ablehnung.</b>
+    /// <c>FlottenOptimierer.Kandidatenzahl</c> hält einen Schritt ≤ 0 (wie eine
+    /// Untergrenze ≤ 0) für unbrauchbar — die Kandidatenzeile sagt „Raster ungültig",
+    /// und die Vorprüfung der Seite sperrt den Rechenknopf mit dem Feldnamen. Eine
+    /// Division durch null oder ein Endlosraster entsteht nirgends.</para>
+    /// </remarks>
     private Task ZahlSetzen(Action<double> setzen, double? wert)
-        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+        => Setzen(() => setzen(wert ?? 0.0));
 
+    /// <summary>Gegenstück für die Stückzahlfelder; ein geleertes Feld ist die 0.</summary>
     private Task GanzSetzen(Action<int> setzen, int? wert)
-        => wert.HasValue ? Setzen(() => setzen(wert.Value)) : Task.CompletedTask;
+        => Setzen(() => setzen(wert ?? 0));
 
     private Task KopplungGesetzt(FlottenAuslegungsAchse a, int? wert)
         => wert.HasValue ? Setzen(() => a.Modus = (FlottenAuslegungsmodus)wert.Value)

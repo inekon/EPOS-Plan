@@ -79,8 +79,17 @@
 
     private string _text = "";
 
+    /// <summary>
+    /// Der Anwender hat das Feld GELEERT - Gegenstueck zu
+    /// <see cref="Zahlenfeld.Geleert"/>, dort steht der Befund und die Begruendung.
+    /// </summary>
+    private bool _geleert;
+
     /// <summary>Der Text im Feld ist gerade keine ganze Zahl (Pruefhilfe fuer Tests).</summary>
     public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Der Anwender hat das Feld geleert (Pruefhilfe fuer Tests).</summary>
+    public bool Geleert => _geleert;
 
     /// <summary>Setzt den Fehlerzustand und meldet ihn, wenn er sich geaendert hat.</summary>
     private async Task FehlerSetzen(bool fehlerhaft)
@@ -93,6 +102,10 @@
     protected override void OnParametersSet()
     {
         if (Fehlerhaft) return;
+
+        // Ein GELEERTES Feld bleibt leer, bis der Anwender wieder tippt.
+        if (_geleert) return;
+
         if (!Wert.HasValue && _text.Trim().Length == 0) return;
         if (Wert.HasValue && Zahlen.GanzzahlParsen(_text, out int nVorhanden) && nVorhanden == Wert.Value) return;
 
@@ -106,10 +119,13 @@
         if (_text.Trim().Length == 0)
         {
             await FehlerSetzen(false);
+            _geleert = true;
             Wert = null;
             await WertChanged.InvokeAsync(null);
             return;
         }
+
+        _geleert = false;
 
         if (Zahlen.GanzzahlParsen(_text, out int nWert) && ImBereich(nWert))
         {

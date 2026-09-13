@@ -274,6 +274,30 @@ public class SimulationSeiteTests : EposBunitContext
         Assert.True(Speichern(cut).HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// <b>Der Fortschrittsbalken steht, solange gerechnet wird</b> (Windows-Abnahme
+    /// 13.09.2026: „Progress bar bei Berechnung nicht mehr vorhanden"). Schritt ②
+    /// wechselt auf ③ und stößt den Lauf dort an; der Balken gehört der Ergebnisseite
+    /// und steht an ihrem Kopf — EIN Lauf, EIN Fortschritt.
+    /// </summary>
+    [Fact]
+    public void Der_Fortschritt_steht_waehrend_des_Laufs_und_verschwindet_danach()
+    {
+        var cut = Zeigen();
+
+        Assert.Empty(cut.FindAll(".epos-fortschritt"));
+
+        Rechnen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Equal(1, _laeufe));
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-fortschritt")));
+        Assert.NotNull(cut.Find(".epos-fortschritt progress"));
+
+        cut.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-fortschritt")));
+    }
+
     /// <summary>Ohne Marke steht Schritt ① — und nur er.</summary>
     [Fact]
     public void Ohne_Marke_steht_die_Konfiguration()

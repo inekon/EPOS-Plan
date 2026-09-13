@@ -153,9 +153,13 @@
         </div>
     }
 
-    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschritt"
-                 Abbrechen="@(Dienste?.Abbrechen is null ? (EventCallback?)null
-                              : EventCallback.Factory.Create(this, Abbrechen))"
+    @* DER BALKEN GEHOERT DER SEITE — aber nicht immer an DIESE Stelle (Muster #220).
+       Steht Station 4 vorn, sitzt der Rechenknopf am
+       Ende einer langen Seite, und dieser Balken liegt ausserhalb des Bildes: Die
+       Station zeichnet ihn dann aus DENSELBEN Werten unter ihrem Knopf. Es bleibt EIN
+       Lauf mit EINEM Fortschritt, nur an einer anderen Stelle. *@
+    <Fortschritt Sichtbar="@(_laeuft && !FortschrittInStation4)" Anteil="@_anteil" Text="@_fortschritt"
+                 Abbrechen="@Abbruchweg"
                  AbbrechenText="@Resource.FLOTTE_DLG_BTN_ABBRECHEN" />
 
     @* ------------------------------------------------------------- Blatt *@
@@ -265,7 +269,10 @@
                               Csv="@(Dienste?.Csv is null ? default
                                      : EventCallback.Factory.Create(this, KandidatenCsv))"
                               Rechnen="Starten" RechnenFrei="@RechnenFrei"
-                              RechnenGrund="@Eingabefehler" RechnenText="@RechnenText" />
+                              RechnenGrund="@Eingabefehler" RechnenText="@RechnenText"
+                              Laeuft="@_laeuft" Anteil="@_anteil" Fortschrittstext="@_fortschritt"
+                              Abbrechen="@Abbruchweg"
+                              AbbrechenText="@Resource.FLOTTE_DLG_BTN_ABBRECHEN" />
         }
         else if (_schritt == AuslegungSchritt.Ergebnis)
         {
@@ -1086,6 +1093,17 @@
     }
 
     private void Abbrechen() => Dienste?.Abbrechen?.Invoke();
+
+    /// <summary>Der Abbruchweg des Fortschrittsbalkens; ohne Rückruf kein Knopf.</summary>
+    private EventCallback? Abbruchweg => Dienste?.Abbrechen is null
+        ? null : EventCallback.Factory.Create(this, Abbrechen);
+
+    /// <summary>
+    /// Zeichnet STATION 4 den Fortschrittsbalken statt der Seitenkopf? Ja, solange sie
+    /// vorn steht — ihr Rechenknopf steht am Ende der Seite, der Kopf ist dann außer
+    /// Sicht (Muster #220).
+    /// </summary>
+    private bool FortschrittInStation4 => _schritt == AuslegungSchritt.Optimierung;
 
     /// <summary>
     /// Die Laufumgebung des Assistenten, solange ER rechnen lässt; sonst <c>null</c>.

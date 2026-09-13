@@ -284,6 +284,8 @@ Im Bedienblock rechts steht bei jeder Eingabe neu, '''wie groß das Raster wird'
 
 '''Es ist dieselbe Zählregel, mit der der Lauf annimmt oder abweist''' – nicht eine zweite Rechnung, die auseinanderlaufen könnte. Reißt das Raster die Grenze aus Schritt 2, färbt sich die Zeile, nennt den Grund im Klartext und '''sperrt den Rechenknopf''': Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze erhöhen. Ist ein Bereich leer, negativ oder ohne Schrittweite, sagt sie auch das.
 
+'''Ein geleertes Feld bleibt leer''' – die Zahl, die darin stand, wird nicht zurückgeschrieben, und Sie können ohne Umweg eine neue tippen. Solange es leer ist, gilt der Wert als '''fehlend''': Die Zeile meldet ''„Raster ungültig"'' und der Rechenknopf ist gesperrt, bis wieder eine Zahl darin steht. So rechnet kein Lauf mit einem Wert, der nicht mehr im Feld steht.
+
 Bei '''Stückzahl suchen''' ist die Zahl das Produkt der Stückzahlbereiche aller eingeschalteten Einheiten – bei ''Nur bewerten'' steht statt der Zeile der Satz ''„Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist."''
 
 Für das '''Feinraster''' nennt sie eine '''Obergrenze''' („bis zu n") und keine feste Zahl: Wie breit sein Fenster wird, hängt an der Lage des Grob-Optimums, und die steht vor dem Lauf nicht fest. Geprüft wird gegen den größtmöglichen Fall – damit ein zu großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
@@ -326,7 +328,7 @@ Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusam
 
 '''Steht mehr als ein Hinweis an''', fasst die Ansicht sie zu einem aufklappbaren Block ''„n Hinweise"'' zusammen – je eine Zeile mit Symbol statt je ein eigenes Band, damit die Leiste nicht unter den Meldungen verschwindet. Der Block ist zu Beginn offen.
 
-Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
+Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). Er steht '''unmittelbar unter dem Rechenknopf''' des Blattes ''„Optimierung"'' – dort, wo Sie den Lauf ausgelöst haben. '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
 
 ==== Bestes Ergebnis ====
 {{Anker|auslegung-bestes}}
