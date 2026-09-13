@@ -903,6 +903,8 @@ mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „E
 #221-Absätzen (Anwenderentscheid KI‑D‑E‑1: eine Marke je Bildschirm, die im Kopfband der Ansicht folgt und blau ausgefüllt bleibt, solange das
 Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher"; was der Assistent in der Simulation liest und setzt);
 die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.
+
+**Dazu am 13.09.2026 die Bereinigung aller Fachseiten der Rubrik** (Aufträge #250 und #251, Merges `f867255e`, `7846a234`, `be09f8e0`, `ef432b9f`, Gate sept61): 13 Rechenwegseiten samt Rubrikseite Berechnung Revisionen 568–581, zehn Bedienungsseiten Revisionen 582–591 (Stromspeicher 582, Simulation 583, Hilfe-Assistent 584, Varianten 585, Emissionen 586, Photovoltaik 587, Pufferspeicher 588, Simulationsergebnisse 589, Wirtschaftlichkeit 590, Kosten 591). Probe vor dem Upload: alle 24 Live-Stände gleich der Kopie vor der Bereinigung; Nachprobe per `action=raw`: alle 24 zeichengleich zur Quelle. Fassungsnummern der Rechenwegseiten unverändert (12 × Fassung 3, Stromspeicher Fassung 7); die Regeln dazu stehen in Abschnitt 13.
 **Dazu `Simulation` Revision 551** (11.09.2026, Merge `d5c8c98` — vor der Historienbereinigung `97dc344` —, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
 Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts das Ergebnis, ein Lauf zur Zeit); Nachprobe per
 `action=raw` findet den Anker. **Dazu `Hilfe-Assistent` Revision 553** (11.09.2026, Merge #227) mit dem Absatz zur Startzeile
