@@ -1,0 +1,35 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulationsergebnisse
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Detaillierte Simulation''' rechnet und wertet in einem Zug aus: Beim Öffnen startet der Jahreslauf von selbst, sofern für das Projekt eine Konfiguration hinterlegt ist. Die Reiter oben führen zu den Rechenparametern, zur Übersicht und zum Lauf; die Liste am linken Rand führt durch die Auswertung der einzelnen Komponenten. Das Ergebnisfenster nutzt nahezu die volle Bildschirmbreite.
+
+== Eingaben ==
+
+* '''Simulation starten ▶''' – wiederholt den Lauf nach jeder Änderung. ''Konfiguration …'' öffnet dazu die Simulationskonfiguration, ohne den Dialog zu verlassen, ''Ergebnis speichern'' hält den erreichten Stand fest.
+* {{Anker|uebersicht}}'''Übersicht''' – die Jahressummen in MWh/a: Wärmebedarf und Wärmeproduktion je Erzeuger bis zum Restwärmebedarf, daneben Strombedarf, der Stromverbrauch von Wärmepumpe, Heizstab und Spitzenkessel, die Stromproduktion von BHKW und Photovoltaik sowie der Reststrombedarf.
+* {{Anker|ringe}}'''Wärme- und Strombedarfsdeckung''' – zwei Ringdiagramme stehen nebeneinander: die Deckung des Wärmebedarfs und die des Strombedarfs. Die Legende nennt zu jedem Segment den Namen, den Wert in MWh und den Anteil in Prozent; der Prozentwert bezieht sich auf die Summe der gezeichneten Segmente. Besteht kein Wärme- beziehungsweise Strombedarf, steht an der Stelle des Rings ein Hinweis. Ein zusätzliches Kuchendiagramm gibt es nicht mehr – es zeigte dieselbe Deckung ein zweites Mal.
+* '''Komponentenliste''' – links stehen ''Energiebedarf'', danach die tatsächlich gerechneten Erzeuger – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Stromspeicher – und zuletzt ''Ergebnis''. Nicht vorhandene Komponenten erscheinen nicht.
+* '''Hinweise zum Lauf''' – nach dem Rechnen erscheint neben der Startschaltfläche eine bernsteinfarbene Zeile mit der Zahl der Hinweise; ein Klick öffnet den vollständigen Wortlaut.
+* '''Auslegungsprüfung Erdreich''' – auf der Seite ''Wärmepumpe'' steht je Erdreich-Anlage eine Zeile mit Jahresentzug, Spitzenleistung und Betriebsstunden sowie dem Befund nach VDI 4640; ist der Grenzwert überschritten oder droht Frost an der Quelle, steht die Zeile in Rot.
+* '''CSV Export''' – auf den Seiten ''Energiebedarf'', ''Wärmepumpe'', ''Heizkessel'' und ''Stromspeicher''. Geschrieben werden 8.760 Stundenzeilen mit Zeitstempel, Außentemperatur und den Werten der jeweiligen Seite.
+
+== Speicherauslegung mit Kosten und Zeitreihen ==
+{{Anker|speicherauslegung}}
+
+Unter '''Parameter → Stromspeicher → Auslegung optimieren''' werden Größe, C-Rate, spezifische Investitions- und Betriebskosten sowie Last-, PV- und Preisquellen gewählt. Quellen können aus EPOS-Plan oder aus getrennten CSV-Dateien mit Spaltenzuordnung stammen. Benannte Profile speichern die vollständige Auslegungskonfiguration.
+
+Nach einer Eingabeänderung wird das alte Ergebnis als veraltet gekennzeichnet. Die Heatmap verwendet Kapazität oder Leistung als gewählte Größenachse; Jahresüberschuss, Kapitalwert und Amortisation berücksichtigen die Betriebskosten. Neu berechnen liefert einen aktuellen Bestpunkt zur Übernahme der Dimensionierung. Die ausführliche Bedienung steht unter [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Stromspeicher: Auslegung optimieren]].
+
+== Siehe auch ==
+
+* [[Simulation]] – Erzeugerkaskade, Strombilanz und zeitliche Auflösung
+* [[Ergebnisdarstellung]] – Registerkarten, Kennzahlen und Diagramme im Einzelnen
+* [[Datenexport]] – Umfang und Aufbau der CSV-Dateien
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Woher die Zahlen der einzelnen Reiter stammen, steht je Gewerk in der Rubrik
+[[Programm Dokumentation/Berechnung|Berechnung]]; den Ablauf, der sie erzeugt, beschreibt
+[[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]].

@@ -771,9 +771,11 @@ Deshalb gilt seither:
    fortgeschrieben wird, bekommt eine Quelle unter `Projekte/Wiki/`.** Der Dateiname ist der
    Wikititel mit ` - ` statt `/`, also
    `Projekte/Wiki/Programm Dokumentation - <Kurzname>.wiki`.
-2. **Der Kopf der Datei ist ein Wiki-Kommentar** und nennt Wikititel, Repo-Pfad, Stand und die
-   Pflegeregel. Er ist auf der Wikiseite unsichtbar und beantwortet trotzdem die Frage, die
-   sonst niemand beantworten kann: *Wo ist die Quelle dieses Textes?*
+2. **Der Kopf der Datei ist ein Wiki-Kommentar** und nennt Wikititel, Repo-Pfad und die
+   Pflegeregel. Er trägt keinen Stand, keine Auftragsnummer und keinen Entscheidvermerk —
+   die Rubrik beschreibt nur die Funktion, so wie sie jetzt ist. Er ist auf der Wikiseite
+   unsichtbar und beantwortet trotzdem die Frage, die sonst niemand beantworten kann:
+   *Wo ist die Quelle dieses Textes?*
 3. **Vor dem Hochladen wird der Live-Stand gelesen und verglichen.** Ist er neuer, wird er
    ZUERST in die Repo-Quelle übernommen; erst dann wird ergänzt. Der Diff gehört in den
    Bericht des Auftrags.
@@ -789,13 +791,20 @@ Die Rubrik **Berechnung** bleibt davon unberührt: Ihre Quellen liegen weiterhin
 sie dort ausgeliefert und geprüft werden. `Projekte/Wiki/` ist ausdrücklich **kein** zweiter
 Ablageort für sie.
 
-Die ersten zwei Seiten dieser Art (Auftrag #203), die dritte mit Auftrag #207:
+Die Bedienungsseiten mit einer Quelle unter `Projekte/Wiki/` (die ersten drei mit den
+Aufträgen #203 und #207):
 
 | Wikititel | Repo-Quelle |
 |---|---|
 | `Programm Dokumentation/Stromspeicher` | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` |
 | `Programm Dokumentation/Hilfe-Assistent` | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` |
 | `Programm Dokumentation/Simulation` | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` |
+| `Programm Dokumentation/Varianten` | `Projekte/Wiki/Programm Dokumentation - Varianten.wiki` |
+| `Programm Dokumentation/Emissionen` | `Projekte/Wiki/Programm Dokumentation - Emissionen.wiki` |
+| `Programm Dokumentation/Photovoltaik` | `Projekte/Wiki/Programm Dokumentation - Photovoltaik.wiki` |
+| `Programm Dokumentation/Pufferspeicher` | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` |
+| `Programm Dokumentation/Simulationsergebnisse` | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` |
+| `Programm Dokumentation/Wirtschaftlichkeit` | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
