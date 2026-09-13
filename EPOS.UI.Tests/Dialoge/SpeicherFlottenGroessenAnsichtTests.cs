@@ -391,6 +391,77 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         Assert.Single(Zeilen(cut));
     }
 
+    // =====================================================================
+    //  Der Ausschnitt um das Optimum (Auftrag #255)
+    // =====================================================================
+
+    /// <summary>
+    /// OHNE zweite Suchphase steht der Ausschnitt nicht da: Die Sicht zeigt die drei
+    /// Bilder, die sie vorher zeigte, und keinen leeren Rahmen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Feinraster_steht_kein_Ausschnitt()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
+
+        Assert.False(cut.Instance.HatAusschnitt);
+        Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
+    }
+
+    /// <summary>
+    /// MIT zweiter Suchphase kommt ein viertes Bild dazu — und zwar in der LINKEN Spalte
+    /// unter der Rasterkarte, nicht neben den zwei Gesamtschnitten.
+    /// </summary>
+    [Fact]
+    public void Mit_Feinraster_steht_der_Ausschnitt_unter_der_Karte()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, MitFeinraster()));
+
+        Assert.True(cut.Instance.HatAusschnitt);
+        Assert.Equal(4, cut.FindAll("img.epos-chartbild").Count);
+
+        var linke = cut.FindAll(".epos-flotte-groessen-spalte img.epos-chartbild");
+        Assert.Equal(2, linke.Count);
+        Assert.StartsWith("data:image/png;base64,", linke[1].GetAttribute("src"),
+                          StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Der ALT-Text nennt Achse und festgehaltenen Wert, der Satz darunter Fenster,
+    /// Schrittweite und bestes Ergebnis — beide Texte kommen aus dem Kern, damit im Bild
+    /// und daneben dasselbe steht.
+    /// </summary>
+    [Fact]
+    public void Der_Ausschnitt_traegt_Alt_Text_und_Begleitsatz()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, MitFeinraster()));
+
+        string alt = cut.FindAll(".epos-flotte-groessen-spalte img.epos-chartbild")[1]
+                        .GetAttribute("alt")!;
+        Assert.StartsWith("Ausschnitt um das Optimum", alt, StringComparison.Ordinal);
+        Assert.Contains("200 kW", alt, StringComparison.Ordinal);
+
+        Assert.Contains("Feinrasters um das Grob-Optimum", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("100 kWh", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("300 kWh", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// DIE STÜCKZAHLSICHT kennt keinen Ausschnitt: Dort gibt es keine Größenachse, und
+    /// der Optimierer fährt unter dieser Methode gar keine zweite Phase.
+    /// </summary>
+    [Fact]
+    public void Unter_Stueckzahl_suchen_steht_kein_Ausschnitt()
+    {
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, MitFeinraster())
+            .Add(x => x.Methode, FlottenSuchmethode.Stueckzahl));
+
+        Assert.False(cut.Instance.HatAusschnitt);
+    }
+
     // ================================================================= Prüfstand
 
     private static System.Globalization.CultureInfo Kultur
@@ -465,6 +536,48 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
             BesterKandidat = bester
         };
     }
+
+    /// <summary>
+    /// DER FALL DES ANWENDERS (13.09.2026) mit zweiter Phase: ein Grobraster
+    /// 100/200/300 kWh × 100/200 kW und darüber das Feinraster, das der Optimierer um das
+    /// Grob-Optimum (200 kWh / 200 kW) legt — neunzehn Kapazitäten von 100 bis 300 kWh,
+    /// die Leistung festgehalten. Das Optimum des Laufs liegt bei 233,3 kWh und damit
+    /// ZWISCHEN zwei Stützstellen.
+    /// </summary>
+    private static FlottenAuslegungErgebnis MitFeinraster()
+    {
+        var kandidaten = new List<FlottenKandidatZusammenfassung>();
+        foreach (double kapazitaet in new[] { 100.0, 200.0, 300.0 })
+            foreach (double leistung in new[] { 100.0, 200.0 })
+                kandidaten.Add(Kandidat($"F-{kapazitaet}-{leistung}", kapazitaet, leistung,
+                                        Muldenwert(kapazitaet, leistung), true, 10 * kapazitaet));
+
+        FlottenKandidatZusammenfassung? bester = null;
+        for (int i = 0; i <= 18; i++)
+        {
+            double kapazitaet = Math.Round(100.0 + i * (100.0 / 9.0), 6);
+            var k = Kandidat($"FF-{i}", kapazitaet, 200.0,
+                             Muldenwert(kapazitaet, 200.0), true, 10 * kapazitaet);
+            k.Phase = FlottenKandidatPhase.Fein;
+            kandidaten.Add(k);
+            if (bester is null || k.KapitalwertEuro > bester.KapitalwertEuro) bester = k;
+        }
+
+        return new FlottenAuslegungErgebnis
+        {
+            Aussage = "Beste Variante im geprueften endlichen Raster",
+            Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+            Kandidaten = kandidaten,
+            BesterKandidat = bester,
+            FeinrasterGerechnet = true
+        };
+    }
+
+    /// <summary>Eine Mulde mit dem Scheitel bei 233 kWh / 200 kW — beide Phasen rechnen sie.</summary>
+    private static double Muldenwert(double kapazitaet, double leistung)
+        => 5000.0
+         - (kapazitaet - 233.0) * (kapazitaet - 233.0) / 10.0
+         - (leistung - 200.0) * (leistung - 200.0) / 20.0;
 
     private static FlottenAuslegungErgebnis Zweierflotte()
     {

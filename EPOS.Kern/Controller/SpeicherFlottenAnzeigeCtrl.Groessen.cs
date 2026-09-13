@@ -54,7 +54,17 @@ public enum Flottenachsengroesse
 /// <para><b>Ein Loch im Raster ist <c>double.NaN</c></b> — eine Stelle, an der kein
 /// Kandidat gerechnet wurde. Sie geht nicht in die Farbskala ein (der Renderer
 /// überspringt nicht endliche Werte, und seit #226 zeichnet er sie hellgrau statt in
-/// der Minimumfarbe) und ist etwas anderes als ein Kandidat mit dem Kapitalwert 0.</para>
+/// der Minimumfarbe) und ist etwas anderes als ein Kandidat mit dem Kapitalwert 0.
+/// Löcher bleiben überall dort, wo die Kandidaten über den zwei Achsen kein volles
+/// Gitter bilden — in den zwei C-Raten-Modi ist das der Regelfall, sobald eine Einheit
+/// einzeln gelesen wird; im Modus <c>KapazitaetUndLeistung</c> reißt das Raster selbst
+/// keines mehr.</para>
+/// <para><b>Die Karte zeigt NUR die ERSTE Phase</b> (Auftrag #255, Anwenderentscheid vom
+/// 13.09.2026). Die Punkte der zweiten Phase liegen ZWISCHEN den Stützstellen: Als eigene
+/// Zeilen ließen sie jede andere Spalte leer — im Modus <c>KapazitaetUndLeistung</c> stand
+/// damit die halbe Karte weiß da. Sie stehen jetzt in der Kurve „Ausschnitt um das
+/// Optimum" (<see cref="SpeicherFlottenAnzeigeCtrl.Ausschnittdaten"/>), und Zeilen und
+/// Spalten sind wieder genau die eingegebenen Stützstellen.</para>
 /// </remarks>
 /// <param name="Modus">Die Größenkopplung, aus der die Achsen folgen.</param>
 /// <param name="Spaltenwerte">Die Werte der Spaltenachse, aufsteigend.</param>
@@ -62,20 +72,16 @@ public enum Flottenachsengroesse
 /// <param name="Werte">Kapitalwert [€] je Stelle <c>[iZeile][iSpalte]</c>; <c>NaN</c> = Loch.</param>
 /// <param name="Unzulaessig">Je Stelle: Der dort stehende Kandidat verletzt eine harte Grenze.</param>
 /// <param name="BesteZeile">Zeile des Optimums, oder <c>-1</c>.</param>
-/// <param name="BesteSpalte">Spalte des Optimums, oder <c>-1</c>.</param>
-/// <param name="Feinraster">
-/// Je Stelle: Der dort stehende Kandidat stammt aus der ZWEITEN Phase (Auftrag #224);
-/// <c>null</c> = keine Auskunft, wie vor #224. Die zweite Phase legt ihre Punkte
-/// ZWISCHEN die Stuetzstellen des Grobrasters — sie bekommen deshalb eigene Zeilen, und
-/// die Schnittkurve zeichnet sie unterscheidbar.
+/// <param name="BesteSpalte">
+/// Spalte des Optimums, oder <c>-1</c>. Hat ein Feinpunkt den Lauf gewonnen, markiert die
+/// Karte die Stelle des GROB-Optimums — der Feinpunkt hat im Grobgitter keine (#255).
 /// </param>
 public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
                                         IReadOnlyList<double> Spaltenwerte,
                                         IReadOnlyList<double> Zeilenwerte,
                                         double[][] Werte,
                                         bool[][] Unzulaessig,
-                                        int BesteZeile, int BesteSpalte,
-                                        bool[][] Feinraster = null)
+                                        int BesteZeile, int BesteSpalte)
 {
     /// <summary>Es gibt keine Karte — kein Kandidat, oder nur die Nullvariante.</summary>
     public bool IstLeer => Spaltenwerte.Count == 0 || Zeilenwerte.Count == 0;
@@ -107,7 +113,9 @@ public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
 /// Je Stuetzstelle: Sie stammt aus der ZWEITEN Phase der Suche (Auftrag #224);
 /// <c>null</c> = keine Auskunft. Der Renderer zeichnet einen Feinpunkt in einer eigenen
 /// Farbe — „wo ist grob gerastert, wo ist nachgeschaerft?" ist genau die Frage, die die
-/// Mappe V7 mit ihren zwei Punktreihen beantwortet.
+/// Mappe V7 mit ihren zwei Punktreihen beantwortet. Belegt ist die Liste nur beim
+/// AUSSCHNITT um das Optimum (<see cref="SpeicherFlottenAnzeigeCtrl.Ausschnittdaten"/>);
+/// die zwei Gesamtschnitte laufen seit #255 über das reine Grobraster.
 /// </param>
 public sealed record FlottenSchnittdaten(IReadOnlyList<double> Achse,
                                          IReadOnlyList<double> Werte,
@@ -217,13 +225,20 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// die Werte BEDEUTEN, sagt dagegen der
     /// <see cref="FlottenAuslegungErgebnis.Achsenmodus"/> — und genau das fehlte bis
     /// Auftrag #226.</para>
+    /// <para><b>Die Karte trägt NUR das Grobraster</b> (Auftrag #255): Zeilen und Spalten
+    /// sind genau die eingegebenen Stützstellen. Ein Feinpunkt liegt zwischen ihnen und
+    /// bekäme eine eigene Zeile, in der jede andere Spalte leer bliebe; er steht deshalb
+    /// im <see cref="Ausschnittdaten">Ausschnitt um das Optimum</see>. Hat er den Lauf
+    /// gewonnen, markiert die Karte das GROB-Optimum — die Stelle, um die herum
+    /// verfeinert wurde.</para>
     /// </remarks>
     public static FlottenRasterdaten Rasterdaten(FlottenAuslegungErgebnis ergebnis,
                                                  int einheit = FLOTTE_GESAMT)
     {
         FlottenAuslegungsmodus modus = ergebnis?.Achsenmodus
                                        ?? FlottenAuslegungsmodus.KapazitaetUndCRate;
-        List<Rasterpunkt> punkte = Rasterpunkte(ergebnis, einheit, modus);
+        List<Rasterpunkt> punkte = Rasterpunkte(ergebnis, einheit, modus,
+                                                FlottenKandidatPhase.Grob);
         if (punkte.Count == 0) return FlottenRasterdaten.Leer;
 
         IReadOnlyList<double> zeilenwerte = Achse(punkte.Select(p => p.Zeilenwert));
@@ -232,13 +247,11 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         int zeilen = zeilenwerte.Count, spalten = spaltenwerte.Count;
         var werte = new double[zeilen][];
         var unzulaessig = new bool[zeilen][];
-        var feinraster = new bool[zeilen][];
         var belegt = new Rasterpunkt[zeilen][];
         for (int i = 0; i < zeilen; i++)
         {
             werte[i] = new double[spalten];
             unzulaessig[i] = new bool[spalten];
-            feinraster[i] = new bool[spalten];
             belegt[i] = new Rasterpunkt[spalten];
             for (int s = 0; s < spalten; s++) werte[i][s] = double.NaN;
         }
@@ -254,11 +267,10 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             werte[zeile][spalte] = double.IsFinite(p.Kandidat.KapitalwertEuro)
                 ? p.Kandidat.KapitalwertEuro : double.NaN;
             unzulaessig[zeile][spalte] = !p.Kandidat.Zulaessig;
-            feinraster[zeile][spalte] = p.Kandidat.Phase == FlottenKandidatPhase.Fein;
         }
 
         int besteZeile = -1, besteSpalte = -1;
-        if (ergebnis.BesterKandidat is { } bester)
+        if (Kartenoptimum(ergebnis) is { } bester)
         {
             for (int i = 0; i < zeilen && besteZeile < 0; i++)
                 for (int s = 0; s < spalten; s++)
@@ -271,8 +283,49 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         }
 
         return new FlottenRasterdaten(modus, spaltenwerte, zeilenwerte, werte, unzulaessig,
-                                      besteZeile, besteSpalte, feinraster);
+                                      besteZeile, besteSpalte);
     }
+
+    /// <summary>
+    /// DAS GROB-OPTIMUM eines Laufs: der beste Kandidat der ERSTEN Phase — die Stelle,
+    /// um die herum das Feinraster gelegt wurde. <c>null</c>, wenn es keine gibt.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Es steht an EINER Stelle</b> (Auftrag #255): Das Ergebnis führt nur den
+    /// besten Kandidaten BEIDER Phasen (<see cref="FlottenAuslegungErgebnis.BesterKandidat"/>);
+    /// das Grob-Optimum leitet sich daraus ab, dass die Rastersuche ihre Kandidaten in
+    /// der Rechenreihenfolge ablegt und die zweite Phase NACH der ersten läuft.</para>
+    /// <para><b>Die Ordnung ist die des <c>FlottenOptimierer</c></b> (Spezifikation 9.4):
+    /// nur zulässige Kandidaten, größter Kapitalwert, bei Gleichstand der ZUERST
+    /// gerechnete. Eine zweite Rangfolge hier gäbe eine Karte, die eine andere Stelle
+    /// markiert, als die Suche verfeinert hat.</para>
+    /// </remarks>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche; <c>null</c> = kein Optimum.</param>
+    public static FlottenKandidatZusammenfassung GrobOptimum(FlottenAuslegungErgebnis ergebnis)
+    {
+        if (ergebnis?.Kandidaten is not { Count: > 0 } kandidaten) return null;
+
+        FlottenKandidatZusammenfassung bester = null;
+        foreach (FlottenKandidatZusammenfassung k in kandidaten)
+        {
+            if (k.Phase != FlottenKandidatPhase.Grob) continue;
+            // Die Nullvariante hat keine Hardware und steht nicht im Raster; sie gewinnt
+            // den Lauf über FlottenAuslegungErgebnis.NullvarianteGewonnen, nicht hier.
+            if (k.KapazitaetKWh <= 0.0 || !double.IsFinite(k.KapazitaetKWh)) continue;
+            if (!k.Zulaessig || !double.IsFinite(k.KapitalwertEuro)) continue;
+            if (bester is null || k.KapitalwertEuro > bester.KapitalwertEuro) bester = k;
+        }
+        return bester;
+    }
+
+    /// <summary>
+    /// Der Kandidat, dessen Stelle die KARTE markiert: das beste Ergebnis des Laufs,
+    /// solange es im Grobraster steht — sonst das Grob-Optimum (Auftrag #255).
+    /// </summary>
+    private static FlottenKandidatZusammenfassung Kartenoptimum(FlottenAuslegungErgebnis ergebnis)
+        => ergebnis?.BesterKandidat is { } bester
+            ? bester.Phase == FlottenKandidatPhase.Fein ? GrobOptimum(ergebnis) : bester
+            : null;
 
     // =====================================================================
     //  Die zwei Schnitte
@@ -334,7 +387,31 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
             raster.Spaltenwerte, raster.Zeilenwerte, raster.Werte,
             raster.BesteZeile, raster.BesteSpalte,
-            raster.Unzulaessig, MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER);
+            raster.Unzulaessig, Rasterfusszeile(ergebnis, einheit));
+    }
+
+    /// <summary>
+    /// Die Fußzeile der Rasterkarte: der SP-O-4-Hinweis, und wenn ein FEINPUNKT den Lauf
+    /// gewonnen hat, der Zusatz, wo dieses beste Ergebnis steht (Auftrag #255).
+    /// </summary>
+    /// <remarks>
+    /// Die Karte markiert dann nicht das beste Ergebnis, sondern das Grob-Optimum — ohne
+    /// diesen Satz läse sich die markierte Stelle als das Beste des Laufs, und die
+    /// Kandidatentabelle darunter nennt einen anderen Kapitalwert.
+    /// </remarks>
+    private static string Rasterfusszeile(FlottenAuslegungErgebnis ergebnis, int einheit)
+    {
+        string fuss = MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER;
+        if (ergebnis?.BesterKandidat is not { Phase: FlottenKandidatPhase.Fein } bester)
+            return fuss;
+
+        FlottenSchnittdaten ausschnitt = Ausschnittdaten(ergebnis, einheit);
+        if (!double.IsFinite(ausschnitt.OptimumAchse)) return fuss;
+
+        return fuss + " " + string.Format(CultureInfo.CurrentCulture,
+            MyResource.Resource.FLOTTE_AUSSCHNITT_FUSS,
+            Zahl(bester.KapitalwertEuro, "N0"),
+            Werttext(Zeilengroesse(ergebnis.Achsenmodus), ausschnitt.OptimumAchse));
     }
 
     /// <summary>Die SCHNITTKURVE bei einem Spaltenwert als PNG; ohne Kurve <c>null</c>.</summary>
@@ -375,6 +452,115 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
             schnitt.Achse, schnitt.Werte, schnitt.OptimumAchse, schnitt.OptimumWert,
             schnitt.Feinpunkte);
+    }
+
+    // =====================================================================
+    //  Der Ausschnitt um das Optimum (Auftrag #255)
+    // =====================================================================
+
+    /// <summary>
+    /// DER AUSSCHNITT UM DAS OPTIMUM: die Punkte der ZWEITEN Suchphase als Kurve über der
+    /// Größenachse, begrenzt auf das Fenster des Feinrasters (Auftrag #255,
+    /// Anwenderentscheid vom 13.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum eine Kurve und keine zweite Karte.</b> Das Feinraster ist
+    /// EINDIMENSIONAL: Es läuft nur auf der ersten aktiven Größenachse — in Neunteln der
+    /// Grobschrittweite um das Grob-Optimum —, während der zweite Achsenwert auf dem des
+    /// Grob-Optimums stehen bleibt. Eine Ausschnittkarte wäre deshalb eine einzige Spalte.
+    /// Gezeichnet wird mit <see cref="ChartRenderer.Schnittkurve"/>; dessen y-Achse
+    /// skaliert sich auf die Werte des Fensters, und genau das ist die Vergrößerung, die
+    /// das Optimum genauer zeigt.</para>
+    /// <para><b>Was in der Kurve steht.</b> Alle Kandidaten der Phase
+    /// <see cref="FlottenKandidatPhase.Fein"/> und dazu die GROBpunkte desselben
+    /// festgehaltenen Wertes, deren Achsenwert im Fenster liegt — die Fensterränder und
+    /// die Mitte sind zugleich Grobpunkte. Fällt ein Achsenwert doppelt an, besetzt ihn
+    /// EIN Punkt: erst Zulässigkeit, dann Kapitalwert, bei Gleichstand der zuerst
+    /// gerechnete. Das ist die Rangfolge der Karte und zugleich die Regel, nach der das
+    /// Feinraster im <c>FlottenOptimierer</c> nur bei STRIKT besserem Kapitalwert
+    /// gewinnt.</para>
+    /// <para><b>Ohne zweite Phase gibt es den Ausschnitt nicht</b> — abgeschaltetes
+    /// Feinraster, Suchmethode <c>Stueckzahl</c> oder <c>Bewerten</c>, kein zulässiger
+    /// Grobpunkt zum Verfeinern: <see cref="FlottenSchnittdaten.Leer"/>, und
+    /// <see cref="Ausschnittbild"/> liefert <c>null</c>.</para>
+    /// </remarks>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche; <c>null</c> = leerer Ausschnitt.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static FlottenSchnittdaten Ausschnittdaten(FlottenAuslegungErgebnis ergebnis,
+                                                      int einheit = FLOTTE_GESAMT)
+        => Ausschnitt(ergebnis, einheit).Daten;
+
+    /// <summary>Der AUSSCHNITT als PNG; ohne Feinraster <c>null</c>.</summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static byte[] Ausschnittbild(FlottenAuslegungErgebnis ergebnis,
+                                        int einheit = FLOTTE_GESAMT)
+    {
+        Ausschnittstand stand = Ausschnitt(ergebnis, einheit);
+        if (stand.Daten.IstLeer) return null;
+
+        return ChartRenderer.Schnittkurve(
+            Ausschnitttitel(ergebnis, einheit),
+            Achsentext(Zeilengroesse(ergebnis.Achsenmodus)),
+            MyResource.Resource.FLOTTE_GROESSEN_SKALA,
+            stand.Daten.Achse, stand.Daten.Werte,
+            stand.Daten.OptimumAchse, stand.Daten.OptimumWert,
+            stand.Daten.Feinpunkte);
+    }
+
+    /// <summary>
+    /// Die Überschrift des Ausschnitts — worüber er läuft und bei welchem Wert der
+    /// zweiten Größe er steht (Muster <see cref="Schnitttitel"/>). Ohne Ausschnitt leer.
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static string Ausschnitttitel(FlottenAuslegungErgebnis ergebnis,
+                                         int einheit = FLOTTE_GESAMT)
+    {
+        Ausschnittstand stand = Ausschnitt(ergebnis, einheit);
+        if (stand.Daten.IstLeer) return "";
+
+        FlottenAuslegungsmodus modus = ergebnis.Achsenmodus;
+        return string.Format(CultureInfo.CurrentCulture,
+            Zeilengroesse(modus) == Flottenachsengroesse.Kapazitaet
+                ? Spaltengroesse(modus) == Flottenachsengroesse.CRate
+                    ? MyResource.Resource.FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_C
+                    : MyResource.Resource.FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_KW
+                : MyResource.Resource.FLOTTE_AUSSCHNITT_TITEL_LEI_BEI_C,
+            Zahl(stand.Gehalten, Zahlenformat(Spaltengroesse(modus))));
+    }
+
+    /// <summary>
+    /// Der Satz UNTER dem Ausschnitt: Fenster, Schrittweite, Zahl der Stützstellen und
+    /// das beste Ergebnis. Ohne Ausschnitt leer.
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static string Ausschnittbeschreibung(FlottenAuslegungErgebnis ergebnis,
+                                                int einheit = FLOTTE_GESAMT)
+    {
+        Ausschnittstand stand = Ausschnitt(ergebnis, einheit);
+        if (stand.Daten.IstLeer) return "";
+
+        Flottenachsengroesse achse = Zeilengroesse(ergebnis.Achsenmodus);
+        IReadOnlyList<double> werte = stand.Daten.Achse;
+        object[] fenster =
+        {
+            werte.Count,
+            Werttext(achse, werte[0]),
+            Werttext(achse, werte[werte.Count - 1]),
+            Werttext(achse, stand.Schrittweite)
+        };
+
+        if (!double.IsFinite(stand.Daten.OptimumWert))
+            return string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.FLOTTE_AUSSCHNITT_BESCHREIBUNG_OHNE, fenster);
+
+        return string.Format(CultureInfo.CurrentCulture,
+            MyResource.Resource.FLOTTE_AUSSCHNITT_BESCHREIBUNG,
+            fenster[0], fenster[1], fenster[2], fenster[3],
+            Zahl(stand.Daten.OptimumWert, "N0"),
+            Werttext(achse, stand.Daten.OptimumAchse));
     }
 
     // =====================================================================
@@ -721,14 +907,25 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// C-Rate — die Nullvariante und ein Kandidat ohne Einheit stehen deshalb nicht im
     /// Raster, sondern in der Tabelle darunter.
     /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    /// <param name="modus">Die Größenkopplung, aus der die zwei Achsen folgen.</param>
+    /// <param name="phase">
+    /// Nur Kandidaten DIESER Phase; <c>null</c> = beide. Die Karte und die zwei
+    /// Gesamtschnitte nehmen seit Auftrag #255 allein
+    /// <see cref="FlottenKandidatPhase.Grob"/>, der Ausschnitt beide.
+    /// </param>
     private static List<Rasterpunkt> Rasterpunkte(FlottenAuslegungErgebnis ergebnis, int einheit,
-                                                  FlottenAuslegungsmodus modus)
+                                                  FlottenAuslegungsmodus modus,
+                                                  FlottenKandidatPhase? phase = null)
     {
         var punkte = new List<Rasterpunkt>();
         if (ergebnis?.Kandidaten is not { Count: > 0 } kandidaten) return punkte;
 
         foreach (FlottenKandidatZusammenfassung k in kandidaten)
         {
+            if (phase is { } nur && k.Phase != nur) continue;
+
             double kapazitaet, leistung;
             if (einheit < 0)
             {
@@ -797,6 +994,103 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         return neu.Kandidat.KapitalwertEuro > alt.Kandidat.KapitalwertEuro;
     }
 
+    // ---------------------------------------------------------------------
+    //  Der Ausschnitt um das Optimum (Auftrag #255)
+    // ---------------------------------------------------------------------
+
+    /// <summary>Der gebaute Ausschnitt samt den Zahlen, die sein Begleitsatz nennt.</summary>
+    /// <param name="Daten">Die Kurve; <see cref="FlottenSchnittdaten.Leer"/> = kein Ausschnitt.</param>
+    /// <param name="Gehalten">
+    /// Der festgehaltene Wert der ZWEITEN Achse — der des Grob-Optimums, um das herum die
+    /// zweite Phase gelaufen ist.
+    /// </param>
+    /// <param name="Schrittweite">
+    /// Der kleinste Abstand zweier Stützstellen: die Schrittweite des Feinrasters (ein
+    /// Neuntel der Grobschrittweite). Die Grobpunkte des Fensters fallen mit Feinpunkten
+    /// zusammen und machen sie nicht kleiner.
+    /// </param>
+    private readonly record struct Ausschnittstand(FlottenSchnittdaten Daten, double Gehalten,
+                                                   double Schrittweite)
+    {
+        /// <summary>Kein Ausschnitt — es gibt keine zweite Phase.</summary>
+        public static Ausschnittstand Leer { get; } =
+            new(FlottenSchnittdaten.Leer, double.NaN, double.NaN);
+    }
+
+    /// <summary>
+    /// Baut den Ausschnitt aus den Kandidaten BEIDER Phasen; siehe
+    /// <see cref="Ausschnittdaten"/> für die Regeln.
+    /// </summary>
+    private static Ausschnittstand Ausschnitt(FlottenAuslegungErgebnis ergebnis, int einheit)
+    {
+        if (ergebnis is null || !ergebnis.FeinrasterGerechnet) return Ausschnittstand.Leer;
+
+        List<Rasterpunkt> alle = Rasterpunkte(ergebnis, einheit, ergebnis.Achsenmodus);
+        List<Rasterpunkt> fein = alle
+            .Where(p => p.Kandidat.Phase == FlottenKandidatPhase.Fein).ToList();
+        if (fein.Count == 0) return Ausschnittstand.Leer;
+
+        double unten = fein.Min(p => p.Zeilenwert);
+        double oben = fein.Max(p => p.Zeilenwert);
+
+        // DER FESTGEHALTENE WERT ist der des GROB-OPTIMUMS: Genau um dessen Stelle hat der
+        // FlottenOptimierer verfeinert. Fehlt es (ein Lauf aus fremder Quelle), tut es der
+        // Wert der Feinpunkte selbst - sie tragen ihn alle.
+        FlottenKandidatZusammenfassung grob = GrobOptimum(ergebnis);
+        double gehalten = alle.FirstOrDefault(p => ReferenceEquals(p.Kandidat, grob))?.Spaltenwert
+                          ?? fein[0].Spaltenwert;
+
+        // Erst die Grob-, dann die Feinpunkte - die Reihenfolge der Kandidatenliste. Sie
+        // entscheidet den Gleichstand: Bei gleichem Kapitalwert bleibt der Grobpunkt.
+        var fenster = new List<Rasterpunkt>(fein.Count * 2);
+        foreach (Rasterpunkt p in alle)
+        {
+            if (p.Kandidat.Phase == FlottenKandidatPhase.Fein) { fenster.Add(p); continue; }
+            if (!Gleich(p.Spaltenwert, gehalten)) continue;
+            if (p.Zeilenwert < unten && !Gleich(p.Zeilenwert, unten)) continue;
+            if (p.Zeilenwert > oben && !Gleich(p.Zeilenwert, oben)) continue;
+            fenster.Add(p);
+        }
+
+        IReadOnlyList<double> achse = Achse(fenster.Select(p => p.Zeilenwert));
+        if (achse.Count < 2) return Ausschnittstand.Leer;
+
+        var belegt = new Rasterpunkt[achse.Count];
+        foreach (Rasterpunkt p in fenster)
+        {
+            int i = Stelle(achse, p.Zeilenwert);
+            if (i < 0) continue;
+            if (belegt[i] is { } vorher && !IstBesser(p, vorher)) continue;
+            belegt[i] = p;
+        }
+
+        var werte = new double[achse.Count];
+        var feinmarken = new bool[achse.Count];
+        double optAchse = double.NaN, optWert = double.NaN;
+        double schritt = double.PositiveInfinity;
+        for (int i = 0; i < achse.Count; i++)
+        {
+            Rasterpunkt p = belegt[i];
+            werte[i] = p is not null && double.IsFinite(p.Kandidat.KapitalwertEuro)
+                ? p.Kandidat.KapitalwertEuro : double.NaN;
+            feinmarken[i] = p?.Kandidat.Phase == FlottenKandidatPhase.Fein;
+            if (i > 0) schritt = Math.Min(schritt, achse[i] - achse[i - 1]);
+
+            // DIE MARKE steht auf dem besten Ergebnis DES LAUFS, nicht auf dem groessten
+            // Wert der Kurve: Ein unzulaessiger Kandidat kann einen hoeheren Kapitalwert
+            // tragen, und markiert wird, was die Suche gewaehlt hat.
+            if (p is not null && ReferenceEquals(p.Kandidat, ergebnis.BesterKandidat))
+            {
+                optAchse = achse[i];
+                optWert = werte[i];
+            }
+        }
+
+        return new Ausschnittstand(
+            new FlottenSchnittdaten(achse, werte, optAchse, optWert, feinmarken),
+            gehalten, double.IsFinite(schritt) ? schritt : double.NaN);
+    }
+
     /// <summary>Der Schnitt bei einem Spaltenwert auf einer BEREITS gebauten Karte.</summary>
     private static FlottenSchnittdaten SchnittBeiSpalte(FlottenRasterdaten raster,
                                                         double spaltenwert)
@@ -805,13 +1099,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         if (spalte < 0) return FlottenSchnittdaten.Leer;
 
         var werte = new double[raster.Zeilenwerte.Count];
-        var fein = new bool[raster.Zeilenwerte.Count];
-        for (int i = 0; i < werte.Length; i++)
-        {
-            werte[i] = raster.Werte[i][spalte];
-            fein[i] = raster.Feinraster is { } f && f[i][spalte];
-        }
-        return Schnitt(raster.Zeilenwerte, werte, fein);
+        for (int i = 0; i < werte.Length; i++) werte[i] = raster.Werte[i][spalte];
+        return Schnitt(raster.Zeilenwerte, werte);
     }
 
     /// <summary>Der Schnitt bei einem Zeilenwert auf einer BEREITS gebauten Karte.</summary>
@@ -821,8 +1110,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         int zeile = Stelle(raster.Zeilenwerte, zeilenwert);
         if (zeile < 0) return FlottenSchnittdaten.Leer;
 
-        return Schnitt(Gegenachse(raster, raster.Zeilenwerte[zeile]), raster.Werte[zeile],
-                       raster.Feinraster?[zeile]);
+        return Schnitt(Gegenachse(raster, raster.Zeilenwerte[zeile]), raster.Werte[zeile]);
     }
 
     /// <summary>

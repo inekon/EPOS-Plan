@@ -17753,6 +17753,24 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" xml:space="preserve">
     <value>Section curve: net present value over discharge power at a fixed capacity</value>
   </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_KW" xml:space="preserve">
+    <value>Detail around the optimum: net present value over capacity at {0} kW</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_C" xml:space="preserve">
+    <value>Detail around the optimum: net present value over capacity at {0} C</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_LEI_BEI_C" xml:space="preserve">
+    <value>Detail around the optimum: net present value over discharge power at {0} C</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_BESCHREIBUNG" xml:space="preserve">
+    <value>The curve shows the fine-grid points around the coarse optimum: {0} sampling points from {1} to {2} in steps of {3}. Best result: {4} € at {5}.</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_BESCHREIBUNG_OHNE" xml:space="preserve">
+    <value>The curve shows the fine-grid points around the coarse optimum: {0} sampling points from {1} to {2} in steps of {3}.</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_FUSS" xml:space="preserve">
+    <value>The best result comes from the fine grid ({0} € at {1}) and lies between two sampling points; what is marked here is the coarse optimum, and the detail around the optimum shows it.</value>
+  </data>
   <data name="FLOTTE_GROESSEN_LBL_EINHEIT" xml:space="preserve">
     <value>Unit shown</value>
   </data>

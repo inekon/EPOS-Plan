@@ -414,6 +414,18 @@
     align-items: start;
 }
 
+/* Die LINKE Spalte traegt die Karte UND den Ausschnitt um das Optimum (#255).
+   Der Ausschnitt ist die Lupe auf die markierte Stelle; als eigene Rasterzelle
+   waere er unter die Schnitte gerutscht, sobald das Raster auf eine Spalte
+   faellt. Der Kasten haelt die Reihenfolge Karte - Ausschnitt in beiden
+   Breiten. */
+.epos-flotte-groessen-spalte {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    min-width: 0;
+}
+
 .epos-flotte-groessen-steuerung {
     display: flex;
     align-items: flex-end;

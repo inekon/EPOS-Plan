@@ -444,6 +444,200 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  Grobraster in der Gesamtheit, Feinraster im Ausschnitt (Auftrag #255)
+        // =================================================================
+
+        /// <summary>
+        /// DER ANWENDERENTSCHEID VOM 13.09.2026: Die Karte trägt NUR die Stützstellen des
+        /// Grobrasters. Bis dahin bekam jeder Feinpunkt eine eigene Zeile, in der nur die
+        /// eine Spalte des Feinrasters belegt war — im Modus Kapazität × Leistung stand
+        /// damit die halbe Karte weiß da.
+        /// </summary>
+        [Fact]
+        public void Die_Karte_traegt_nur_die_Stuetzstellen_des_Grobrasters()
+        {
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(MitFeinraster());
+
+            Assert.Equal(new[] { 100.0, 200.0, 300.0 }, raster.Zeilenwerte);
+            Assert.Equal(new[] { 100.0, 200.0 }, raster.Spaltenwerte);
+
+            // Kein Loch: Jede Stelle des eingegebenen Rasters ist gerechnet.
+            Assert.All(raster.Werte, zeile => Assert.All(zeile, w => Assert.True(double.IsFinite(w))));
+        }
+
+        /// <summary>
+        /// Hat ein FEINPUNKT den Lauf gewonnen, markiert die Karte die Stelle des
+        /// GROB-Optimums: Der Feinpunkt liegt zwischen den Stützstellen und hat im
+        /// Grobgitter keine Stelle. Die Fußzeile des Bildes sagt, wo er steht.
+        /// </summary>
+        [Fact]
+        public void Hat_ein_Feinpunkt_gewonnen_markiert_die_Karte_das_Grob_Optimum()
+        {
+            FlottenAuslegungErgebnis e = MitFeinraster();
+            Assert.Equal(FlottenKandidatPhase.Fein, e.BesterKandidat.Phase);
+
+            FlottenKandidatZusammenfassung grob = SpeicherFlottenAnzeigeCtrl.GrobOptimum(e);
+            Assert.Equal("F-200-200", grob.KandidatId);
+
+            FlottenRasterdaten raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(e);
+            Assert.Equal(1, raster.BesteZeile);     // 200 kWh
+            Assert.Equal(1, raster.BesteSpalte);    // 200 kW
+        }
+
+        /// <summary>
+        /// Das GROB-OPTIMUM ist der beste ZULÄSSIGE Kandidat der ersten Phase — die
+        /// Rangfolge des <c>FlottenOptimierer</c>. Die Nullvariante steht nicht im Raster
+        /// und zählt hier nicht mit.
+        /// </summary>
+        [Fact]
+        public void Das_Grob_Optimum_ist_der_beste_zulaessige_Grobpunkt()
+        {
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.GrobOptimum(null));
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.GrobOptimum(new FlottenAuslegungErgebnis()));
+
+            // Der Prüfstand ohne Feinraster: Bester zulässiger ist K-20-1,0 mit 2000 €;
+            // K-30-0,5 trägt 4000 €, ist aber unzulässig.
+            Assert.Equal("K-20-1,0", SpeicherFlottenAnzeigeCtrl.GrobOptimum(Ergebnis()).KandidatId);
+        }
+
+        /// <summary>
+        /// Die zwei GESAMTSCHNITTE führen keine Feinpunkte mehr: Sie entstehen aus der
+        /// Karte, und die trägt nur noch das Grobraster.
+        /// </summary>
+        [Fact]
+        public void Die_Gesamtschnitte_fuehren_keine_Feinpunkte()
+        {
+            FlottenAuslegungErgebnis e = MitFeinraster();
+
+            FlottenSchnittdaten spalte = SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiSpalte(e, 200.0);
+            FlottenSchnittdaten zeile = SpeicherFlottenAnzeigeCtrl.SchnittdatenBeiZeile(e, 200.0);
+
+            Assert.Equal(new[] { 100.0, 200.0, 300.0 }, spalte.Achse);
+            Assert.Null(spalte.Feinpunkte);
+            Assert.Equal(new[] { 100.0, 200.0 }, zeile.Achse);
+            Assert.Null(zeile.Feinpunkte);
+        }
+
+        /// <summary>
+        /// DER AUSSCHNITT: die Punkte des Feinrasters samt den Grobpunkten desselben
+        /// festgehaltenen Wertes im Fenster — aufsteigend, ohne Doppelung, und die drei
+        /// Stellen, an denen Grob und Fein zusammenfallen, bleiben GROB (das Feinraster
+        /// gewinnt nur bei strikt besserem Kapitalwert).
+        /// </summary>
+        [Fact]
+        public void Der_Ausschnitt_zeigt_das_Fenster_des_Feinrasters()
+        {
+            FlottenSchnittdaten a = SpeicherFlottenAnzeigeCtrl.Ausschnittdaten(MitFeinraster());
+
+            Assert.False(a.IstLeer);
+            Assert.Equal(19, a.Achse.Count);
+            Assert.Equal(100.0, a.Achse[0], 6);
+            Assert.Equal(300.0, a.Achse[18], 6);
+            for (int i = 1; i < a.Achse.Count; i++) Assert.True(a.Achse[i] > a.Achse[i - 1]);
+
+            Assert.NotNull(a.Feinpunkte);
+            Assert.Equal(16, a.Feinpunkte.Count(x => x));
+            Assert.False(a.Feinpunkte[0]);      // 100 kWh — Grobpunkt am Fensterrand
+            Assert.False(a.Feinpunkte[9]);      // 200 kWh — das Grob-Optimum in der Mitte
+            Assert.False(a.Feinpunkte[18]);     // 300 kWh — Grobpunkt am Fensterrand
+        }
+
+        /// <summary>
+        /// Die MARKE des Ausschnitts steht auf dem besten Ergebnis DES LAUFS — dem
+        /// Feinpunkt, der das Grob-Optimum geschlagen hat.
+        /// </summary>
+        [Fact]
+        public void Der_Ausschnitt_markiert_das_beste_Ergebnis_des_Laufs()
+        {
+            FlottenAuslegungErgebnis e = MitFeinraster();
+            FlottenSchnittdaten a = SpeicherFlottenAnzeigeCtrl.Ausschnittdaten(e);
+
+            Assert.Equal(e.BesterKandidat.KapazitaetKWh, a.OptimumAchse, 6);
+            Assert.Equal(e.BesterKandidat.KapitalwertEuro, a.OptimumWert, 6);
+
+            // Die Marke liegt auf einem Feinpunkt, und der Wert steht auch in der Kurve.
+            int stelle = a.Achse.ToList().FindIndex(x => Math.Abs(x - a.OptimumAchse) < 1e-9);
+            Assert.True(a.Feinpunkte[stelle]);
+            Assert.Equal(a.OptimumWert, a.Werte[stelle], 6);
+        }
+
+        /// <summary>
+        /// OHNE ZWEITE PHASE gibt es keinen Ausschnitt: abgeschaltetes Feinraster, ein
+        /// Lauf ohne Feinkandidaten, kein Ergebnis — überall der leere Schnitt und kein
+        /// Bild. Unter der Suchmethode „Stückzahl" rechnet der Optimierer gar keines.
+        /// </summary>
+        [Fact]
+        public void Ohne_Feinraster_gibt_es_keinen_Ausschnitt()
+        {
+            Assert.True(SpeicherFlottenAnzeigeCtrl.Ausschnittdaten(null).IstLeer);
+            Assert.True(SpeicherFlottenAnzeigeCtrl.Ausschnittdaten(Ergebnis()).IstLeer);
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.Ausschnittbild(Ergebnis()));
+            Assert.Equal("", SpeicherFlottenAnzeigeCtrl.Ausschnitttitel(Ergebnis()));
+            Assert.Equal("", SpeicherFlottenAnzeigeCtrl.Ausschnittbeschreibung(Ergebnis()));
+
+            // Die Marke allein macht keinen Ausschnitt: Ohne Feinkandidaten bleibt er leer
+            // (so steht ein Stueckzahllauf da, der nie eine zweite Phase faehrt).
+            FlottenAuslegungErgebnis behauptet = Ergebnis();
+            behauptet.FeinrasterGerechnet = true;
+            Assert.True(SpeicherFlottenAnzeigeCtrl.Ausschnittdaten(behauptet).IstLeer);
+        }
+
+        /// <summary>
+        /// Titel und Begleitsatz nennen Achse, festgehaltenen Wert, Fenster, Schrittweite
+        /// und das beste Ergebnis — die Zahlen, die ein Anwender aus der Kurve abliest.
+        /// </summary>
+        [Fact]
+        public void Titel_und_Begleitsatz_des_Ausschnitts_nennen_ihre_Zahlen()
+        {
+            FlottenAuslegungErgebnis e = MitFeinraster();
+
+            string titel = SpeicherFlottenAnzeigeCtrl.Ausschnitttitel(e);
+            Assert.StartsWith("Ausschnitt um das Optimum", titel, StringComparison.Ordinal);
+            Assert.Contains("Kapazität", titel, StringComparison.Ordinal);
+            Assert.Contains("200 kW", titel, StringComparison.Ordinal);
+
+            string satz = SpeicherFlottenAnzeigeCtrl.Ausschnittbeschreibung(e);
+            Assert.Contains("19", satz, StringComparison.Ordinal);
+            Assert.Contains("100 kWh", satz, StringComparison.Ordinal);
+            Assert.Contains("300 kWh", satz, StringComparison.Ordinal);
+            Assert.Contains("11,1 kWh", satz, StringComparison.Ordinal);   // ein Neuntel von 100
+        }
+
+        /// <summary>
+        /// Das Bild entsteht, ist deterministisch und trägt die Marken der zweiten Phase:
+        /// Dieselbe Kurve ohne Feinpunkte sähe anders aus.
+        /// </summary>
+        [Fact]
+        public void Das_Ausschnittbild_entsteht_und_ist_deterministisch()
+        {
+            FlottenAuslegungErgebnis e = MitFeinraster();
+
+            byte[] bild = SpeicherFlottenAnzeigeCtrl.Ausschnittbild(e);
+            Assert.NotNull(bild);
+            Assert.True(bild.Length > 1000);
+            Assert.Equal(bild, SpeicherFlottenAnzeigeCtrl.Ausschnittbild(e));
+
+            // Es ist ein ANDERES Bild als die Karte und als der Gesamtschnitt daneben.
+            Assert.NotEqual(bild, SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(e, 200.0));
+        }
+
+        /// <summary>
+        /// Die FUSSZEILE der Karte sagt es, wenn das beste Ergebnis aus dem Feinraster
+        /// stammt — sonst läse sich die markierte Stelle als das Beste des Laufs. Prüfbar
+        /// ist das am Bild: Derselbe Lauf mit einem Grob-Sieger sieht anders aus.
+        /// </summary>
+        [Fact]
+        public void Die_Fusszeile_der_Karte_nennt_den_Feinpunkt()
+        {
+            FlottenAuslegungErgebnis mitFein = MitFeinraster();
+            FlottenAuslegungErgebnis mitGrob = MitFeinraster();
+            mitGrob.BesterKandidat = SpeicherFlottenAnzeigeCtrl.GrobOptimum(mitGrob);
+
+            Assert.NotEqual(SpeicherFlottenAnzeigeCtrl.Rasterbild(mitFein),
+                            SpeicherFlottenAnzeigeCtrl.Rasterbild(mitGrob));
+        }
+
+        // =================================================================
         //  Die Texte je Achsengröße und Kopplung (Auftrag #226)
         // =================================================================
 
@@ -858,6 +1052,56 @@ namespace EPOS.Kern.Tests
             };
             return ergebnis;
         }
+
+        /// <summary>
+        /// DER FALL DES ANWENDERS (13.09.2026): ein Grobraster 100/200/300 kWh ×
+        /// 100/200 kW und darüber das Feinraster, das der <c>FlottenOptimierer</c> um das
+        /// Grob-Optimum (200 kWh / 200 kW) legt — neunzehn Kapazitäten von 100 bis 300 kWh
+        /// in Schritten von einem Neuntel der Grobschrittweite, die Leistung festgehalten.
+        /// </summary>
+        /// <remarks>
+        /// Die drei Stellen 100, 200 und 300 kWh kommen in BEIDEN Phasen vor und tragen
+        /// dort denselben Kapitalwert — genau so rechnet die Engine, und genau daran
+        /// zeigt sich, dass das Feinraster nur bei strikt besserem Wert gewinnt. Das
+        /// Optimum des Laufs liegt bei 233,3 kWh und damit ZWISCHEN zwei Stützstellen.
+        /// </remarks>
+        private static FlottenAuslegungErgebnis MitFeinraster()
+        {
+            var kandidaten = new List<FlottenKandidatZusammenfassung>
+            {
+                new() { KandidatId = "Nullvariante-ohne-Zusatzspeicher", Zulaessig = true }
+            };
+
+            foreach (double kapazitaet in new[] { 100.0, 200.0, 300.0 })
+                foreach (double leistung in new[] { 100.0, 200.0 })
+                    kandidaten.Add(Kandidat($"F-{kapazitaet}-{leistung}", kapazitaet, leistung,
+                                            Muldenwert(kapazitaet, leistung), true, 10 * kapazitaet));
+
+            FlottenKandidatZusammenfassung bester = null;
+            for (int i = 0; i <= 18; i++)
+            {
+                double kapazitaet = Math.Round(100.0 + i * (100.0 / 9.0), 6);
+                var k = Kandidat($"FF-{i}", kapazitaet, 200.0,
+                                 Muldenwert(kapazitaet, 200.0), true, 10 * kapazitaet);
+                k.Phase = FlottenKandidatPhase.Fein;
+                kandidaten.Add(k);
+                if (bester is null || k.KapitalwertEuro > bester.KapitalwertEuro) bester = k;
+            }
+
+            return new FlottenAuslegungErgebnis
+            {
+                Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                Kandidaten = kandidaten,
+                BesterKandidat = bester,
+                FeinrasterGerechnet = true
+            };
+        }
+
+        /// <summary>Eine Mulde mit dem Scheitel bei 233 kWh / 200 kW — beide Phasen rechnen sie.</summary>
+        private static double Muldenwert(double kapazitaet, double leistung)
+            => 5000.0
+             - (kapazitaet - 233.0) * (kapazitaet - 233.0) / 10.0
+             - (leistung - 200.0) * (leistung - 200.0) / 20.0;
 
         /// <summary>Vier Kandidaten mit je ZWEI gleich großen Einheiten.</summary>
         private static FlottenAuslegungErgebnis Zweierflotte()

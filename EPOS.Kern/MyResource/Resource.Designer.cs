@@ -8897,6 +8897,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kurve zeigt die Punkte des Feinrasters um das Grob-Optimum: {0} Stützstellen von {1} bis {2} in Schritten von {3}. Bestes Ergebnis: {4} € bei {5}. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kurve zeigt die Punkte des Feinrasters um das Grob-Optimum: {0} Stützstellen von {1} bis {2} in Schritten von {3}. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_BESCHREIBUNG_OHNE {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_BESCHREIBUNG_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das beste Ergebnis stammt aus dem Feinraster ({0} € bei {1}) und liegt zwischen zwei Stützstellen; markiert ist hier das Grob-Optimum, gezeigt wird es im Ausschnitt um das Optimum. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_FUSS {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausschnitt um das Optimum: Kapitalwert über der Kapazität bei {0} C ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausschnitt um das Optimum: Kapitalwert über der Kapazität bei {0} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_KW {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausschnitt um das Optimum: Kapitalwert über der Entladeleistung bei {0} C ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUSSCHNITT_TITEL_LEI_BEI_C {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUSSCHNITT_TITEL_LEI_BEI_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten: ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_BETRIEBSQUELLE {
