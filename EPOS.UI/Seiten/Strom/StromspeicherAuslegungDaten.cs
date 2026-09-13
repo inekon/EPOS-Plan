@@ -127,7 +127,25 @@ public sealed class StromspeicherAuslegungDienste
     /// <summary>
     /// Die VORPRÜFUNG vor dem Lauf (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.
     /// </summary>
+    /// <remarks>
+    /// <b>Die VOLLE Stufe</b>: Sie beschafft Kosten und Standortzeitreihen und prüft
+    /// damit auch das Peak-Ziel. Die Ansicht ruft sie beim Öffnen, beim Stationswechsel,
+    /// nach neuen Vorgaben, vor dem Lauf und — entprellt — kurz nach dem letzten
+    /// Tastendruck; je Tastendruck läuft <see cref="VorpruefenSchnell"/>.
+    /// </remarks>
     public Func<SpeicherOptimierungEingaben, IReadOnlyList<FlottenHinweis>>? Vorpruefen;
+
+    /// <summary>
+    /// Die SCHNELLE Stufe derselben Vorprüfung — <b>ohne Datenbank und ohne
+    /// Zeitreihen</b>, deshalb je Tastendruck bezahlbar.
+    /// </summary>
+    /// <remarks>
+    /// Dieselben Regeln wie <see cref="Vorpruefen"/>, nur ohne Standortreihe: Der
+    /// Betriebsaufwand und der Start-Ladezustand erscheinen sofort, die beiden
+    /// Peak-Ziel-Hinweise erst mit der vollen Stufe. <b>Kein Delegat ist kein Knopf</b>:
+    /// Fehlt er, bleibt die stehende Hinweisliste bis zur vollen Stufe unverändert.
+    /// </remarks>
+    public Func<SpeicherOptimierungEingaben, IReadOnlyList<FlottenHinweis>>? VorpruefenSchnell;
 
     /// <summary>Der hergeleitete Vorschlag für das Peak-Ziel H₀ (SD‑Q3).</summary>
     public Func<SpeicherOptimierungEingaben, FlottenPeakZielVorschlag>? PeakZielVorschlag;

@@ -1093,3 +1093,72 @@ je ein Fall in `ZahlenfeldTests` und `GanzzahlfeldTests` (ein geleertes Feld ble
 rot ohne die Behebung), acht Fälle in `SpeicherEngine.Tests/FlottenKandidatenzaehlungTests`
 (Zählung ohne Rasteraufbau, Schrittweite ≤ 0) und eine Wache in `SimulationSeiteTests`.
 **Der Referenzlauf ist nicht berührt** — die Zählregel und der Rechenweg sind unverändert.
+
+#### #254 — die Vorprüfung läuft in zwei Stufen (13.09.2026)
+
+**Der Befund, gemessen.** Jede Änderung eines Suchraumfelds in Station 4 rief über
+`Geaendert()` die **volle** Vorprüfung: `Dienste.Vorpruefen` →
+`StromspeicherAuslegungCtrl.Vorpruefen` → `SpeicherAuslegungCtrl.Vorbereiten` (Datenbank:
+Modulkosten, Strompreisprofil, Vergütungen; dazu die Standortzeitreihen aus dem Lauf) →
+`SpeicherFlottenStudieCtrl.Eingang` → `FlottenPlausibilitaet.Pruefe`. Am Prüfprojekt 1046 im
+EPOS-Weg kostete das **im Median 69,7 ms und sechs Datenbankvorgänge je Tastendruck**
+(100 Aufrufe, je ein geändertes Suchraumfeld). Die Aufschlüsselung nennt den Hauptposten: die
+Vorbereitung 3,9 ms, die Prüfung selbst 0,8 ms — und `Eingang` samt `Konfiguration` **64,7 ms**.
+Davon entfallen rund 2,7 ms auf den Aufbau der 35 040 Intervalle; der Rest sind die **zwei
+SHA-256-Kennungen** (`DatenId`, `KonfigurationId`), die `Eingang` über den JSON-Text der ganzen
+Reihe bildet. Der Kandidatenzähler des Blattes ist dagegen unter 1 ms (#253) und war nie das
+Problem.
+
+**Was von den Eingaben abhängt — und was nicht.** `Vorbereiten` liest aus dem Arbeitsstand die
+Quellenwahl, die Kostenquellen, den übernommenen Projektflottenstand, die **Einheiten** der
+Flotte (aus ihnen entsteht der aggregierte Parametersatz) und die Länge der Lastdatei. Den
+**Suchraum** — Achsen, Schrittweiten, Stückzahlen, Feinraster, Suchmethode — liest sie
+**nicht**. Genau daran setzt die Trennung an, und sie ist an EINER Stelle im Kern gezogen:
+`SpeicherAuslegungCtrl.QuellenBeschaffen` holt alles aus Datenbank und Lauf,
+`VorbereitenAusQuellen` setzt daraus den eingabenabhängigen Rest zusammen, und `Vorbereiten`
+ruft beides nacheinander. Studien- und Projektlauf gehen unverändert über `Vorbereiten`.
+
+**Der Zwischenspeicher.** `StromspeicherAuslegungCtrl` hält die beschafften Quellen samt
+Istreihe unter einem Schlüssel, in dem alles steht, was die Beschaffung liest — Lauf-Fassung,
+Projekt, Quellen- und Kostenwahl, Einheiten, Betriebsoptionen, Tarif, die Kennungen der
+Dateireihen —, aber nichts vom Suchraum. Betriebsoptionen und Tarif stehen **vollständig**
+darin, obwohl die Beschaffung nur einzelne Felder davon liest: Ein später hinzukommendes Feld
+verwirft den Speicher dann von selbst. Verworfen wird er bei neuem Lauf (`LaufUebernehmen`),
+bei neuen Vorgaben (`Vorgaben`) und in jedem Weg, der in die Projektdaten schreibt
+(Projektflotte aktivieren, Einheiten übernehmen, Größe und Leistungspreis schreiben). Die Wache
+ist der interne Zähler `Beschaffungen`, keine Zeitmessung: Vier Vorprüfungen mit geändertem
+Suchraum ergeben **eine** Beschaffung, eine geänderte Einheit eine zweite.
+
+**Die Istreihe ohne Kennungen.** `SpeicherFlottenStudieCtrl.Istwerte` baut die Standortreihe
+ohne die zwei Kennungen; `Eingang` setzt sie darauf und hängt die Kennungen, die Prognosen und
+die Projektjahre an. `FlottenPlausibilitaet.Pruefe` nimmt seither auch die Istreihe allein
+entgegen — von einem `FlottenEingang` liest die Prüfung ohnehin nur sie.
+
+**Zwei Stufen in der Ansicht.** Je Tastendruck läuft die **schnelle** Stufe
+(`VorpruefenSchnell`): dieselben Regeln, aber ohne Standortreihe — also ohne Datenbank und ohne
+Zeitreihen. Ohne Reihe entfallen genau die beiden Peak-Ziel-Prüfungen; der Betriebsaufwand und
+der Start-Ladezustand erscheinen sofort. Die Kostensätze nimmt sie aus der letzten vollen
+Prüfung, sonst aus dem gespeicherten Stand. Die **volle** Stufe läuft entprellt, 400 ms nach dem
+letzten Zeichen (`CancellationTokenSource` + `Task.Delay` + `InvokeAsync`, kein `Task.Run`), und
+außerdem sofort beim Öffnen, beim Stationswechsel, nach neuen Vorgaben und **vor dem Lauf** —
+so begleitet keine veraltete Hinweisliste einen Start. Die Entprellzeit ist der Seitenparameter
+`EntprellungMs` (Vorgabe 400, 0 = sofort), damit bunit sie abschalten kann; `Dispose` bricht eine
+offene Entprellung ab. Die Hinweisliste bleibt **eine** Liste mit stabiler Reihenfolge: Die volle
+Stufe ersetzt sie, sie ergänzt sie nicht.
+
+**Die Sperre des Rechenknopfs hängt an keiner der beiden Stufen.** `Eingabefehler` rechnet bei
+jedem Zeichenlauf neu aus der Konfiguration allein — Raster, Kandidatenzahl gegen die Grenze,
+SoC-Band, Projektlaufzeit — und sperrt unverzüglich (#224, #253).
+
+**Messung nach dem Umbau** (derselbe Messlauf): volle Stufe **Median 2,5 ms**, Mittel 3,0 ms,
+**null Datenbankvorgänge** und **eine einzige Beschaffung** statt einer je Aufruf; die schnelle
+Stufe liegt im Median bei **0,22 ms**.
+
+**Nachweise.** Der Messlauf ist `EPOS.Kern.Tests/VorpruefungMessungTests` mit
+`[Trait("Kategorie","Messung")]` — er prüft **keine** Zeitschranke, die Zahlen stehen im
+Prüfbericht. Dazu vier Fälle in `StromspeicherAuslegungCtrlTests` (Zähler bei geändertem
+Suchraum, Gleichheit der Hinweise gegenüber der frischen Beschaffung, Verwerfen bei neuem Lauf
+und neuen Vorgaben, schnelle Stufe ohne Datenbankvorgang), zwei in `FlottenPlausibilitaetTests`
+(ohne Reihe fehlen genau die Peak-Ziel-Hinweise; Eingang und Istreihe liefern dasselbe) und acht
+in `EPOS.UI.Tests/Seiten/Strom/VorpruefungEntprelltTests`. **Referenzlauf Projekt 1046 gegen
+`2026-09-11_R7_Speicherflotte`: PASS und byte-gleich** — der Rechenweg ist unverändert.

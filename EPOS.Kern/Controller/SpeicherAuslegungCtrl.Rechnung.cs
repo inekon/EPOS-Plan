@@ -6,6 +6,40 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Die BESCHAFFTEN Quellen einer Speicherauslegung: alles, was
+    /// <see cref="SpeicherAuslegungCtrl.QuellenBeschaffen"/> aus Datenbank und
+    /// Simulationslauf holt, bevor irgendetwas gerechnet wird (Auftrag #254).
+    /// </summary>
+    /// <remarks>
+    /// Sie hängen am PROJEKT, am Simulationslauf und an den Einheiten der Flotte —
+    /// nicht am Suchraum. Wer nur am Suchraum dreht, rechnet mit denselben Quellen
+    /// weiter; wer Lauf, Quellenwahl, Kosten oder Einheiten ändert, braucht neue.
+    /// </remarks>
+    internal sealed class SpeicherLaufQuellen
+    {
+        /// <summary>Der EPOS-Weg samt Standortzeitreihen; <c>null</c> bei reinen Dateiquellen.</summary>
+        public StromspeicherOptimierungVorbereitung Epos;
+
+        /// <summary>Der aggregierte Engine-Parametersatz der Flotte bzw. der Einzelanlage.</summary>
+        public SpeicherParameter Basis;
+
+        /// <summary>Der Laufkontext samt Variante, Preisversion und Netzladepreis.</summary>
+        public StromspeicherLaufKontext Kontext;
+
+        /// <summary>Die Sätze des Kostenmoduls; <c>null</c>, wenn keine Quelle sie verlangt.</summary>
+        public SpeicherKostensaetze Modulkosten;
+
+        /// <summary>Der wirksame Tarifaufschlag [ct/kWh] für die Preisprofilquelle.</summary>
+        public double ProfilAufschlagCtKwh;
+
+        /// <summary>Die projektbezogene PV-Vergütung für den Dateiweg; <c>null</c> sonst.</summary>
+        public double[] ProjektPvVerguetungCtKwh;
+
+        /// <summary>Die projektbezogene BHKW-Vergütung für den Dateiweg; <c>null</c> sonst.</summary>
+        public double[] ProjektBhkwVerguetungCtKwh;
+    }
+
+    /// <summary>
     /// Einmalige, vor dem Hintergrundlauf ausgefuehrte Aufloesung der Datenquellen
     /// einer Speicherauslegung.
     /// </summary>
@@ -30,6 +64,44 @@ namespace WindowsFormsApplication1
             SpeicherOptimierungEingaben snapshot = eingaben.Kopie();
             if (snapshot.Auslegung == null)
                 throw new ArgumentException("Die Quellen- und Kostenkonfiguration fehlt.", nameof(eingaben));
+
+            SpeicherLaufQuellen quellen = QuellenBeschaffen(sim, projektId, snapshot, kostenPflicht);
+            if (quellen == null) return null;
+
+            return VorbereitenAusQuellen(quellen, snapshot, kostenPflicht);
+        }
+
+        /// <summary>
+        /// <b>DIE EINE NAHT ZWISCHEN BESCHAFFUNG UND RECHNUNG</b> (Auftrag #254).
+        /// Alles, was Datenbank und Zeitreihen braucht, steht hier — und nur hier;
+        /// <see cref="VorbereitenAusQuellen"/> kommt danach ohne beides aus.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Was von den EINGABEN abhängt und was nicht.</b> Gelesen werden die
+        /// Quellenwahl (EPOS oder Datei), die Kostenquellen, der übernommene
+        /// Projektflottenstand, die Einheiten der Flotte (aus ihnen entsteht der
+        /// aggregierte Parametersatz) und die Länge der Lastdatei. <b>Der SUCHRAUM —
+        /// Achsen, Schrittweiten, Stückzahlen, Feinraster, Suchmethode — wird hier
+        /// NICHT gelesen.</b> Genau deshalb darf ein Aufrufer, der nur am Suchraum
+        /// dreht, dieselben Quellen weiterverwenden, statt die Datenbank ein zweites
+        /// Mal zu fragen.</para>
+        /// <para><b>Wer es gleich zweimal braucht, ruft es zweimal.</b> Der Studien-
+        /// und der Projektlauf gehen unverändert über <see cref="Vorbereiten"/>; nur die
+        /// Vorprüfung der Ansicht hält sich die Quellen zwischen zwei Tastendrücken.</para>
+        /// </remarks>
+        /// <param name="sim">Der abgeschlossene Simulationslauf; <c>null</c>, wenn keine EPOS-Reihe gebraucht wird.</param>
+        /// <param name="projektId">Das Projekt.</param>
+        /// <param name="snapshot">Der bereits kopierte Arbeitsstand.</param>
+        /// <param name="kostenPflicht">Wie streng fehlende Kostensätze genommen werden.</param>
+        /// <returns>Die beschafften Quellen; <c>null</c>, wenn das Projekt keinen brauchbaren Speicher führt.</returns>
+        internal static SpeicherLaufQuellen QuellenBeschaffen(
+            SimulationControl sim, int projektId, SpeicherOptimierungEingaben snapshot,
+            KostenPflicht kostenPflicht)
+        {
+            ArgumentNullException.ThrowIfNull(snapshot);
+            if (projektId <= 0) throw new ArgumentOutOfRangeException(nameof(projektId));
+            if (snapshot.Auslegung == null)
+                throw new ArgumentException("Die Quellen- und Kostenkonfiguration fehlt.", nameof(snapshot));
             PruefeQuellen(snapshot.Auslegung);
 
             bool brauchtEpos = snapshot.Auslegung.Lastquelle == SpeicherAuslegungQuelle.Epos ||
@@ -105,9 +177,44 @@ namespace WindowsFormsApplication1
                 projektVerguetung = new StromPreisCtrl().BaueVerguetungen(
                     projektId, dateiIntervalle);
 
-            return AusQuellenVorbereiten(epos, basis, kontext, snapshot, modulkosten,
-                profilAufschlagCtKwh, projektVerguetung?.PvCtKwh,
-                projektVerguetung?.BhkwCtKwh, kostenPflicht);
+            return new SpeicherLaufQuellen
+            {
+                Epos = epos,
+                Basis = basis,
+                Kontext = kontext,
+                Modulkosten = modulkosten,
+                ProfilAufschlagCtKwh = profilAufschlagCtKwh,
+                ProjektPvVerguetungCtKwh = projektVerguetung?.PvCtKwh,
+                ProjektBhkwVerguetungCtKwh = projektVerguetung?.BhkwCtKwh
+            };
+        }
+
+        /// <summary>
+        /// Setzt die Vorbereitung aus BEREITS beschafften Quellen zusammen — <b>ohne
+        /// Datenbank und ohne Zeitreihenbeschaffung</b> (Auftrag #254).
+        /// </summary>
+        /// <remarks>
+        /// <para>Der eingabenabhängige Rest: Kosten auflösen, Reihen der Quellen
+        /// zuordnen, Zeitachse prüfen, Laufkontext kopieren. Er ist derselbe Aufruf, den
+        /// <see cref="Vorbereiten"/> macht — deshalb rechnen beide Wege gleich.</para>
+        /// <para><b>Der übergebene Stand wird NICHT verändert:</b> Die Methode legt
+        /// sich selbst eine Tiefenkopie an und schreibt ausschließlich in diese; die
+        /// Rückgabe trägt sie als <c>Eingaben</c>. Ein Aufrufer braucht deshalb keine
+        /// eigene Kopie voranzustellen — eine zweite wäre je Aufruf ein
+        /// Serialize/Deserialize des ganzen Standes ohne Wirkung.</para>
+        /// </remarks>
+        /// <param name="quellen">Die Quellen aus <see cref="QuellenBeschaffen"/>.</param>
+        /// <param name="eingaben">Der Arbeitsstand; er bleibt unangetastet.</param>
+        /// <param name="kostenPflicht">Wie streng fehlende Kostensätze genommen werden.</param>
+        internal static StromspeicherOptimierungVorbereitung VorbereitenAusQuellen(
+            SpeicherLaufQuellen quellen, SpeicherOptimierungEingaben eingaben,
+            KostenPflicht kostenPflicht = KostenPflicht.Studienlauf)
+        {
+            ArgumentNullException.ThrowIfNull(quellen);
+            return AusQuellenVorbereiten(quellen.Epos, quellen.Basis, quellen.Kontext,
+                eingaben, quellen.Modulkosten, quellen.ProfilAufschlagCtKwh,
+                quellen.ProjektPvVerguetungCtKwh, quellen.ProjektBhkwVerguetungCtKwh,
+                kostenPflicht);
         }
 
         /// <summary>

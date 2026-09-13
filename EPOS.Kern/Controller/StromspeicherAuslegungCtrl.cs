@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using SpeicherEngine;
 
@@ -54,6 +56,15 @@ namespace WindowsFormsApplication1
         private SimulationControl _lauf;
         private StromspeicherVarianteModel _variante;
 
+        /// <summary>
+        /// Die Fassung des zugrunde liegenden Laufs — sie zählt bei jeder Übernahme um
+        /// eins hoch und geht in den Schlüssel des Zwischenspeichers ein (Auftrag #254).
+        /// </summary>
+        private int _laufFassung;
+
+        /// <summary>Der Zwischenspeicher der Vorprüfung; <c>null</c> = noch keiner.</summary>
+        private Vorpruefungsstand _stand;
+
         /// <summary>Legt den Controller für ein Projekt an.</summary>
         /// <param name="projektId">Das Projekt; 0 oder kleiner ist kein Projekt.</param>
         public StromspeicherAuslegungCtrl(int projektId)
@@ -83,6 +94,8 @@ namespace WindowsFormsApplication1
         public void LaufUebernehmen(SimulationControl sim)
         {
             _lauf = sim;
+            _laufFassung++;
+            ZwischenspeicherVerwerfen();
         }
 
         /// <summary>
@@ -214,6 +227,11 @@ namespace WindowsFormsApplication1
             // L_P kann im Parameterreiter unmittelbar geschrieben worden sein; vor der
             // Vorbelegung wird der aktive Variantensatz deshalb frisch gelesen.
             VarianteLesen();
+
+            // NEUE VORGABEN heissen neue Grundlage: Modulkosten, Tarife und Anlagen
+            // koennen sich geaendert haben, der Zwischenspeicher der Vorpruefung faellt
+            // damit (Auftrag #254).
+            ZwischenspeicherVerwerfen();
             SpeicherOptimierungVorgaben vorgaben =
                 SpeicherFlottenStudieCtrl.Vorbelegung(_projektId, BezugsspitzeKw(), _lauf);
             if (_variante != null)
@@ -269,7 +287,12 @@ namespace WindowsFormsApplication1
         /// <param name="stueckzahlen">Die Stückzahl je Einheit, in derselben Reihenfolge.</param>
         public FlottenUebernahmeErgebnis EinheitenInProjektUebernehmen(
             IReadOnlyList<FlottenEinheit> einheiten, IReadOnlyList<int> stueckzahlen)
-            => SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(_projektId, einheiten, stueckzahlen);
+        {
+            // Neue Anlagen im Projekt heissen neue Grundlage fuer Modulkosten und
+            // Parametersatz - der Zwischenspeicher der Vorpruefung faellt (#254).
+            ZwischenspeicherVerwerfen();
+            return SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(_projektId, einheiten, stueckzahlen);
+        }
 
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung <c>@Aktuell</c>.</summary>
         /// <param name="eingaben">Der Arbeitsstand.</param>
@@ -408,15 +431,182 @@ namespace WindowsFormsApplication1
             if (eingaben?.Auslegung?.Flotte == null) return new List<FlottenHinweis>();
             try
             {
+                Vorpruefungsstand stand = Zwischenstand(eingaben);
+                if (stand == null) return new List<FlottenHinweis>();
+
+                // Der EINGABENABHÄNGIGE Rest läuft weiterhin je Aufruf: Kosten
+                // auflösen, Reihen zuordnen, Konfiguration bauen. Er kommt ohne
+                // Datenbank aus, weil die Quellen schon dastehen (Auftrag #254).
+                //
+                // OHNE eigene Tiefenkopie: VorbereitenAusQuellen legt sich selbst eine
+                // an und schreibt nur in diese. Eine zweite wäre je Aufruf ein
+                // Serialize/Deserialize des ganzen Standes ohne Wirkung.
                 StromspeicherOptimierungVorbereitung v =
-                    SpeicherAuslegungCtrl.Vorbereiten(_lauf, _projektId, eingaben.Kopie());
+                    SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben);
                 if (v == null) return new List<FlottenHinweis>();
-                return FlottenPlausibilitaet.Pruefe(SpeicherFlottenStudieCtrl.Eingang(v),
+                return FlottenPlausibilitaet.Pruefe(stand.Istwerte,
                     SpeicherFlottenStudieCtrl.Konfiguration(v.Eingaben),
                     v.Eingaben.Auslegung?.VerwendeteKosten);
             }
             catch (Exception) { return new List<FlottenHinweis>(); }
         }
+
+        /// <summary>
+        /// Die SCHNELLE Stufe der Vorprüfung (Auftrag #254) — <b>ohne Datenbank, ohne
+        /// Zeitreihen</b>, deshalb je Tastendruck bezahlbar.
+        /// </summary>
+        /// <remarks>
+        /// <para>Sie fährt dieselben Regeln wie <see cref="Vorpruefen"/>, nur ohne
+        /// Standortreihe: Betriebsaufwand gegen Investition und Start-Ladezustand
+        /// erscheinen sofort, die beiden Peak-Ziel-Prüfungen erst mit der vollen Stufe
+        /// (<c>FlottenPlausibilitaet.Pruefe</c> ohne Reihe). Eine zweite Regelsammlung
+        /// gibt es ausdrücklich nicht.</para>
+        /// <para><b>Woher die Kostensätze kommen.</b> Aus dem Zwischenspeicher der
+        /// letzten vollen Prüfung; steht noch keiner, aus dem gespeicherten Stand. Neu
+        /// aufgelöste Sätze macht erst die volle Stufe sichtbar — und die läuft kurz
+        /// nach dem letzten Tastendruck ohnehin.</para>
+        /// </remarks>
+        /// <param name="eingaben">Der Arbeitsstand.</param>
+        /// <returns>Die Hinweise; nie <c>null</c>.</returns>
+        public List<FlottenHinweis> VorpruefenSchnell(SpeicherOptimierungEingaben eingaben)
+        {
+            if (eingaben?.Auslegung?.Flotte == null) return new List<FlottenHinweis>();
+            try
+            {
+                SpeicherKostensaetze kosten = _stand?.Kosten ?? eingaben.Auslegung.VerwendeteKosten;
+
+                // DIESE Kopie BLEIBT: Die Zeile darunter schreibt in den Stand, und der
+                // Arbeitsstand der Ansicht darf davon nichts merken.
+                SpeicherOptimierungEingaben stand = eingaben.Kopie();
+                stand.Auslegung.VerwendeteKosten = kosten ?? new SpeicherKostensaetze();
+                return FlottenPlausibilitaet.Pruefe(Array.Empty<FlottenNetzintervall>(),
+                    SpeicherFlottenStudieCtrl.Konfiguration(stand), kosten);
+            }
+            catch (Exception) { return new List<FlottenHinweis>(); }
+        }
+
+        // -----------------------------------------------------------------
+        //  Der Zwischenspeicher (Auftrag #254)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// Was die Vorprüfung EINMAL je Lauf-Stand beschafft und danach wiederverwendet.
+        /// </summary>
+        private sealed class Vorpruefungsstand
+        {
+            /// <summary>Der Schlüssel, unter dem er gilt.</summary>
+            public string Schluessel;
+
+            /// <summary>Die beschafften Quellen (Datenbank und Zeitreihen).</summary>
+            public SpeicherLaufQuellen Quellen;
+
+            /// <summary>Die Istreihe des Standorts, aus den Quellen gebaut.</summary>
+            public List<FlottenNetzintervall> Istwerte;
+
+            /// <summary>Die zuletzt aufgelösten Kostensätze — sie tragen die schnelle Stufe.</summary>
+            public SpeicherKostensaetze Kosten;
+        }
+
+        /// <summary>
+        /// Wie oft die Vorprüfung Quellen BESCHAFFT hat — die deterministische Wache
+        /// über den Zwischenspeicher (Auftrag #254).
+        /// </summary>
+        /// <remarks>
+        /// Zwei Vorprüfungen mit geändertem Suchraum ergeben EINE Beschaffung; ein neuer
+        /// Lauf, neue Vorgaben oder geänderte Einheiten, Quellen oder Kosten ergeben eine
+        /// weitere. Eine Zeitmessung wäre auf fremden Läufern flatterhaft, diese Zahl
+        /// nicht.
+        /// </remarks>
+        internal int Beschaffungen { get; private set; }
+
+        /// <summary>Wirft den Zwischenspeicher weg; die nächste Vorprüfung beschafft neu.</summary>
+        private void ZwischenspeicherVerwerfen() => _stand = null;
+
+        /// <summary>
+        /// Der gültige Zwischenstand für diesen Arbeitsstand — beschafft, wenn der
+        /// Schlüssel nicht mehr passt.
+        /// </summary>
+        /// <param name="eingaben">Der Arbeitsstand.</param>
+        /// <returns>Der Stand; <c>null</c>, wenn das Projekt keinen brauchbaren Speicher führt.</returns>
+        private Vorpruefungsstand Zwischenstand(SpeicherOptimierungEingaben eingaben)
+        {
+            string schluessel = Pruefschluessel(eingaben.Auslegung);
+            if (_stand != null && _stand.Schluessel == schluessel) return _stand;
+
+            SpeicherOptimierungEingaben snapshot = eingaben.Kopie();
+            SpeicherLaufQuellen quellen = SpeicherAuslegungCtrl.QuellenBeschaffen(
+                _lauf, _projektId, snapshot, KostenPflicht.Studienlauf);
+            Beschaffungen++;
+            if (quellen == null) { _stand = null; return null; }
+
+            StromspeicherOptimierungVorbereitung v =
+                SpeicherAuslegungCtrl.VorbereitenAusQuellen(quellen, snapshot);
+            if (v == null) { _stand = null; return null; }
+
+            _stand = new Vorpruefungsstand
+            {
+                Schluessel = schluessel,
+                Quellen = quellen,
+                Istwerte = SpeicherFlottenStudieCtrl.Istwerte(v),
+                Kosten = v.Eingaben.Auslegung?.VerwendeteKosten
+            };
+            return _stand;
+        }
+
+        /// <summary>
+        /// Der Schlüssel des Zwischenspeichers: <b>alles, was die Beschaffung liest —
+        /// und nichts vom SUCHRAUM</b> (Auftrag #254).
+        /// </summary>
+        /// <remarks>
+        /// <para>Darin stehen der Lauf, die Quellen- und Kostenwahl, der übernommene
+        /// Projektflottenstand, die Einheiten der Flotte samt Betriebsoptionen und
+        /// Tarif sowie die Kennung jeder Dateireihe. <b>Nicht darin stehen die Achsen,
+        /// Schrittweiten, Stückzahlen, das Feinraster und die Suchmethode</b> — genau
+        /// die Felder, an denen der Anwender in Station 4 Zeichen für Zeichen dreht.</para>
+        /// <para>Die Betriebsoptionen und der Tarif stehen VOLLSTÄNDIG darin, obwohl die
+        /// Beschaffung nur einzelne Felder davon liest: Ein später hinzukommendes Feld
+        /// verwirft den Zwischenspeicher dann von selbst, statt still einen alten Stand
+        /// weiterzureichen. Die Reihen der Dateiquellen gehen über Name, Rolle und Länge
+        /// ein und nicht über ihre 35 040 Werte — sonst kostete der Schlüssel mehr als
+        /// das, was er spart.</para>
+        /// </remarks>
+        /// <param name="a">Die Quellen- und Kostenkonfiguration des Arbeitsstands.</param>
+        /// <returns>Der Schlüssel als Hexfolge.</returns>
+        private string Pruefschluessel(SpeicherAuslegungKonfiguration a)
+        {
+            var teile = new
+            {
+                Lauf = _laufFassung,
+                LaufDa = _lauf != null,
+                Projekt = _projektId,
+                a.Lastquelle,
+                a.PvQuelle,
+                a.Preisquelle,
+                a.Investitionsquelle,
+                a.Betriebsquelle,
+                a.FlotteImProjektAktiv,
+                a.EposModelljahrZuordnen,
+                Uebernommen = a.FlotteImProjektAktiv ? a.VerwendeteKosten : null,
+                a.DirekteKosten,
+                a.Strompreisprofil,
+                Einheiten = a.Flotte?.Einheiten,
+                Optionen = a.Flotte?.Optionen,
+                Tarif = a.Flotte?.Tarif,
+                LastDatei = Reihenkennung(a.LastDatei),
+                PvDatei = Reihenkennung(a.PvDatei),
+                PreisDatei = Reihenkennung(a.PreisDatei)
+            };
+            byte[] roh = JsonSerializer.SerializeToUtf8Bytes(teile, SpeicherAuslegungKopie.JsonOptionen);
+            return Convert.ToHexString(SHA256.HashData(roh));
+        }
+
+        /// <summary>Name, Rolle und Länge EINER Dateireihe — ihre Kennung im Schlüssel.</summary>
+        /// <param name="reihe">Die Reihe; <c>null</c> = keine.</param>
+        private static string Reihenkennung(SpeicherZeitreihe reihe) =>
+            reihe == null
+                ? ""
+                : string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}",
+                    reihe.QuelleName, (int)reihe.Rolle, reihe.Werte?.Length ?? 0);
 
         /// <summary>
         /// Der hergeleitete Vorschlag für das Peak-Ziel H₀ (Konzept 2.4 Punkt 1,
@@ -435,13 +625,15 @@ namespace WindowsFormsApplication1
             {
                 if (flotte != null && flotte.Einheiten.Count > 0)
                 {
-                    StromspeicherOptimierungVorbereitung v =
-                        SpeicherAuslegungCtrl.Vorbereiten(_lauf, _projektId, eingaben.Kopie());
-                    if (v != null)
+                    // Derselbe Zwischenspeicher wie die Vorpruefung (Auftrag #254): Der
+                    // Vorschlag liest genau dieselbe Istreihe.
+                    Vorpruefungsstand stand = Zwischenstand(eingaben);
+                    if (stand != null && stand.Istwerte.Count > 0)
                     {
-                        FlottenEingang eingang = SpeicherFlottenStudieCtrl.Eingang(v);
-                        if (eingang?.Istwerte != null && eingang.Istwerte.Count > 0)
-                            return FlottenPeakZiel.Vorschlag(eingang.Istwerte,
+                        StromspeicherOptimierungVorbereitung v =
+                            SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben);
+                        if (v != null)
+                            return FlottenPeakZiel.Vorschlag(stand.Istwerte,
                                 SpeicherFlottenStudieCtrl.Konfiguration(v.Eingaben));
                     }
                 }
@@ -492,6 +684,9 @@ namespace WindowsFormsApplication1
         public string ProjektflotteAktivieren(SpeicherFlottenErgebnis ergebnis)
         {
             if (ergebnis == null) return MyResource.Resource.FLOTTE_DLG_KEIN_VERGLEICH;
+            // Der Projektstand wird geschrieben - der Zwischenspeicher der Vorpruefung
+            // faellt (#254).
+            ZwischenspeicherVerwerfen();
             try
             {
                 SpeicherFlottenProjektCtrl.Aktivieren(_projektId, ergebnis);
@@ -546,6 +741,9 @@ namespace WindowsFormsApplication1
         /// <returns>Der Meldungstext und ob es geklappt hat.</returns>
         public (bool Erfolg, string Text) AuslegungUebernehmen(double cNomKwh, double pKw)
         {
+            // Die Projektanlage bekommt eine neue Groesse - der Zwischenspeicher der
+            // Vorpruefung faellt (#254).
+            ZwischenspeicherVerwerfen();
             var ctrl = new StromspeicherSimCtrl();
             bool ok;
             try { ok = ctrl.UebernehmeAuslegung(_projektId, cNomKwh, pKw); }
@@ -578,6 +776,9 @@ namespace WindowsFormsApplication1
         /// <returns>Der Meldungstext und ob geschrieben wurde.</returns>
         public (bool Erfolg, string Text) LeistungspreisSchreiben(double leistungspreisEurProKwA)
         {
+            // Der Satz geht in die Wirtschaftlichkeit der Flotte - der Zwischenspeicher
+            // der Vorpruefung faellt (#254).
+            ZwischenspeicherVerwerfen();
             VarianteLesen();
             if (_variante == null)
                 return (false, MyResource.Resource.SP_PARAM_MSG_KEINE_VARIANTE);

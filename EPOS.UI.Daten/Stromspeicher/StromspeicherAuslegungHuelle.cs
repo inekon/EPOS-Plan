@@ -130,6 +130,7 @@ namespace WindowsFormsApplication1
                 ProjektflotteDeaktivieren = ProjektflotteDeaktivieren,
 
                 Vorpruefen = eingaben => _ctrl.Vorpruefen(eingaben),
+                VorpruefenSchnell = eingaben => _ctrl.VorpruefenSchnell(eingaben),
                 PeakZielVorschlag = eingaben => _ctrl.PeakZielVorschlag(eingaben),
                 PeakZielBestimmen = PeakZielBestimmen,
 

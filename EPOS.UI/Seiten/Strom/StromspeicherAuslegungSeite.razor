@@ -56,6 +56,7 @@
 
 @namespace EPOS.UI.Seiten.Strom
 @using System.Globalization
+@using System.Threading
 @using EPOS.UI.Dialoge.Strom
 @using EPOS.UI.Seiten.Assistent
 @using EPOS.UI.Seiten.Simulation
@@ -460,6 +461,19 @@
     [Parameter] public string ProjektText { get; set; } = "";
 
     /// <summary>
+    /// Die ENTPRELLZEIT der vollen Vorprüfung in Millisekunden (Auftrag #254);
+    /// <c>0</c> = sofort.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum die Zahl ein Parameter ist.</b> Ein bunit-Fall kann sie auf 0
+    /// setzen und die volle Prüfung damit im selben Zeichenlauf abnehmen, statt auf eine
+    /// Wanduhr zu warten. Im Betrieb bleibt es bei 400 ms: lange genug, dass eine
+    /// getippte Zahl zu Ende geschrieben wird, kurz genug, dass der Hinweis noch zur
+    /// Eingabe gehört.</para>
+    /// </remarks>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
     /// Die ANZEIGETEXTE kommen unmittelbar aus <c>MyResource</c> — dasselbe Muster,
     /// das #184 fuer die fuenf Flottenbausteine eingefuehrt hat. Ein Bündel aus
     /// dreissig <c>[Parameter] string</c> haette die Fachparameter der Seite zwischen
@@ -575,6 +589,16 @@
     /// </summary>
     private FlottenPeakZielErgebnis? _peakVorausschau;
     private bool _laeuft, _veraltet, _projektAktiv, _ungespeichert, _prognosenOffen;
+
+    /// <summary>
+    /// Die offene ENTPRELLUNG der vollen Vorprüfung (Auftrag #254); <c>null</c> = keine.
+    /// </summary>
+    /// <remarks>
+    /// Jeder Tastendruck bricht die vorige ab und legt eine neue auf — so läuft die
+    /// teure Prüfung einmal nach dem LETZTEN Zeichen und nicht nach jedem. Beim
+    /// Verlassen der Seite bricht <see cref="Dispose"/> sie ab.
+    /// </remarks>
+    private CancellationTokenSource? _entprellung;
 
     /// <summary>
     /// <b>Die Fassung des Arbeitsstandes</b> (Auftrag <b>#248</b>) — sie zählt bei JEDER
@@ -699,6 +723,10 @@
     private void SchrittGewaehlt(string schluessel)
     {
         _schritt = schluessel;
+
+        // DER STATIONSWECHSEL PRUEFT VOLL (Auftrag #254): Wer ein Blatt betritt, sieht
+        // den fertigen Befund und nicht den Zwischenstand der schnellen Stufe.
+        Vorpruefen();
         if (schluessel == AuslegungSchritt.Betrieb) PeakVorschlagHolen();
     }
 
@@ -861,6 +889,9 @@
     /// <inheritdoc/>
     public void Dispose()
     {
+        // Die Seite geht - eine offene Entprellung darf nicht mehr zeichnen wollen
+        // (Auftrag #254).
+        EntprellungAbbrechen();
         _kiMaske?.Dispose();
 
         // Die Ansicht geht - die Pille im Kopfband faellt auf den Schluessel des
@@ -884,6 +915,13 @@
     /// EINE Trichter, durch den jede gemeldete Änderung läuft; die drei Blätter mit
     /// eigener Arbeitskopie bekommen sie als Parameter und frischen daran auf.
     /// </remarks>
+    /// <remarks>
+    /// <b>Die Vorprüfung läuft hier in ZWEI Stufen</b> (Auftrag #254): Die schnelle
+    /// kommt sofort und ohne Datenbank, die volle — Kosten, Zeitreihen, Peak-Ziel —
+    /// erst <see cref="EntprellungMs"/> nach dem LETZTEN Tastendruck. Die Sperre des
+    /// Rechenknopfs hängt an keiner von beiden: <c>Eingabefehler</c> rechnet bei jedem
+    /// Zeichenlauf neu und sperrt unverzüglich.
+    /// </remarks>
     private void Geaendert()
     {
         _fassung++;
@@ -891,7 +929,8 @@
         _meldung = "";
         _ungespeichert = true;
         if (ErgebnisDa) _veraltet = true;
-        Vorpruefen();
+        VorpruefenSchnell();
+        VorpruefungEntprellen();
         StateHasChanged();
     }
 
@@ -1024,9 +1063,20 @@
     /// </remarks>
     private void FlotteGeschrieben() => Geaendert();
 
-    /// <summary>Die Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.</summary>
+    /// <summary>
+    /// Die VOLLE Vorprüfung (Konzept 2.4 Punkt 3) — sie warnt, sie sperrt nicht.
+    /// </summary>
+    /// <remarks>
+    /// Sie beschafft Kosten und Standortzeitreihen und prüft damit auch das Peak-Ziel.
+    /// Gerufen wird sie beim Öffnen, beim Stationswechsel, nach neuen Vorgaben, vor dem
+    /// Lauf — und entprellt nach dem letzten Tastendruck
+    /// (<see cref="VorpruefungEntprellen"/>). <b>Sie ersetzt die Liste ganz</b>, sodass
+    /// ein Hinweis der schnellen Stufe nicht doppelt erscheinen kann.
+    /// </remarks>
     private void Vorpruefen()
     {
+        // Eine laufende Entprellung ist ueberholt, sobald die volle Stufe hier steht.
+        EntprellungAbbrechen();
         if (Dienste?.Vorpruefen is null)
         {
             _vorpruefung = Array.Empty<FlottenHinweis>();
@@ -1034,6 +1084,69 @@
         }
         try { _vorpruefung = Dienste.Vorpruefen(_eingaben) ?? (IReadOnlyList<FlottenHinweis>)Array.Empty<FlottenHinweis>(); }
         catch (Exception) { _vorpruefung = Array.Empty<FlottenHinweis>(); }
+    }
+
+    /// <summary>
+    /// Die SCHNELLE Stufe — je Tastendruck, ohne Datenbank (Auftrag #254).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Delegat ist kein Knopf:</b> Fehlt der schnelle Weg, bleibt die stehende
+    /// Liste, bis die volle Stufe sie ersetzt — eine leere Liste wäre eine Aussage, die
+    /// niemand geprüft hat.
+    /// </remarks>
+    private void VorpruefenSchnell()
+    {
+        if (Dienste?.VorpruefenSchnell is null) return;
+        try { _vorpruefung = Dienste.VorpruefenSchnell(_eingaben) ?? (IReadOnlyList<FlottenHinweis>)Array.Empty<FlottenHinweis>(); }
+        catch (Exception) { _vorpruefung = Array.Empty<FlottenHinweis>(); }
+    }
+
+    /// <summary>
+    /// Legt die volle Vorprüfung auf <see cref="EntprellungMs"/> nach dem LETZTEN
+    /// Tastendruck (Auftrag #254).
+    /// </summary>
+    /// <remarks>
+    /// <para><c>CancellationTokenSource</c> und <c>Task.Delay</c>, kein <c>Task.Run</c>:
+    /// Die Prüfung selbst läuft am Bedienfaden über <c>InvokeAsync</c>, denn sie liest
+    /// die Datenbank (Hausregel und Wächter <c>ParallelitaetWacheTests</c>).</para>
+    /// <para>Bei <see cref="EntprellungMs"/> = 0 gibt es keine Wartezeit und keinen
+    /// Fadenwechsel — der Weg bleibt für bunit deterministisch.</para>
+    /// </remarks>
+    private void VorpruefungEntprellen()
+    {
+        EntprellungAbbrechen();
+        if (Dienste?.Vorpruefen is null) return;
+
+        var quelle = new CancellationTokenSource();
+        _entprellung = quelle;
+        _ = EntprellungAbwarten(quelle);
+    }
+
+    /// <summary>Wartet die Entprellzeit ab und prüft dann voll.</summary>
+    /// <param name="quelle">Die Marke DIESER Entprellung; ein neuer Tastendruck bricht sie ab.</param>
+    private async Task EntprellungAbwarten(CancellationTokenSource quelle)
+    {
+        try
+        {
+            if (EntprellungMs > 0) await Task.Delay(EntprellungMs, quelle.Token);
+            if (quelle.IsCancellationRequested) return;
+
+            // Vorpruefen() raeumt die Marke selbst weg - deshalb erst danach zeichnen.
+            Vorpruefen();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) { /* ein neuer Tastendruck war schneller */ }
+        catch (ObjectDisposedException) { /* die Seite ist gegangen */ }
+    }
+
+    /// <summary>Bricht eine offene Entprellung ab; ohne eine tut sie nichts.</summary>
+    private void EntprellungAbbrechen()
+    {
+        CancellationTokenSource? offen = _entprellung;
+        _entprellung = null;
+        if (offen is null) return;
+        try { offen.Cancel(); } catch (ObjectDisposedException) { }
+        offen.Dispose();
     }
 
     private void PeakVorschlagHolen()
@@ -1143,6 +1256,13 @@
         if (Dienste?.FlotteRechnen is null) return;
 
         if (FlotteEingabenPruefen().Length > 0) return;
+
+        // VOR DEM LAUF STEHT DIE VOLLE PRUEFUNG (Auftrag #254): Eine offene Entprellung
+        // bricht ab, und die Hinweisliste ist der Befund ZU DIESEM Stand - nicht der
+        // eines Standes von vor drei Zeichen. Der Lauf selbst prueft ohnehin erneut
+        // (SpeicherFlottenStudieCtrl.Rechnen); gesperrt hat er nie, und daran aendert
+        // sich nichts.
+        Vorpruefen();
 
         _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = Resource.FLOTTE_DLG_STATUS_PRUEFEN;
         try

@@ -83,12 +83,37 @@ namespace WindowsFormsApplication1
             FlottenStudieKonfiguration konfiguration,
             SpeicherKostensaetze kosten,
             FlottenDiagnose diagnose = null)
+            => Pruefe(eingang?.Istwerte, konfiguration, kosten, diagnose);
+
+        /// <summary>
+        /// Wie <see cref="Pruefe(FlottenEingang, FlottenStudieKonfiguration, SpeicherKostensaetze, FlottenDiagnose)"/>,
+        /// aber allein auf der ISTREIHE (Auftrag #254).
+        /// </summary>
+        /// <remarks>
+        /// <para>Von einem <c>FlottenEingang</c> liest diese Prüfung ausschließlich die
+        /// Istwerte — Prognosen, Projektjahre und die zwei Kennungen gehen sie nichts
+        /// an. Wer nur prüfen will, baut deshalb nur die Istreihe
+        /// (<c>SpeicherFlottenStudieCtrl.Istwerte</c>) und spart sich den teuren Rest.</para>
+        /// <para><b>Ohne Reihe entfallen die beiden Peak-Ziel-Prüfungen</b> — und nur
+        /// sie. Das ist die SCHNELLE Stufe der Vorprüfung: Sie braucht weder Datenbank
+        /// noch Zeitreihen und läuft deshalb bei jedem Tastendruck.</para>
+        /// </remarks>
+        /// <param name="istwerte">Die Istreihe des Standorts; <c>null</c> oder leer = ohne Reihe.</param>
+        /// <param name="konfiguration">Die Flotte samt Betriebsoptionen.</param>
+        /// <param name="kosten">Die aufgelösten Kostensätze; <c>null</c> = mit den Sätzen der Einheiten rechnen.</param>
+        /// <param name="diagnose">Die Diagnose eines bereits gerechneten Laufs; <c>null</c> vor dem Lauf.</param>
+        /// <returns>Die Hinweise in fester Reihenfolge; eine leere Liste, wenn nichts zu beanstanden ist.</returns>
+        public static List<FlottenHinweis> Pruefe(
+            IReadOnlyList<FlottenNetzintervall> istwerte,
+            FlottenStudieKonfiguration konfiguration,
+            SpeicherKostensaetze kosten,
+            FlottenDiagnose diagnose = null)
         {
             var hinweise = new List<FlottenHinweis>();
             if (konfiguration?.Optionen == null) return hinweise;
             CultureInfo k = CultureInfo.CurrentCulture;
 
-            PruefePeakZiel(hinweise, eingang, konfiguration, k);
+            PruefePeakZiel(hinweise, istwerte, konfiguration, k);
             PruefeBetriebskosten(hinweise, konfiguration, kosten, k);
             PruefeStartSoC(hinweise, konfiguration, diagnose);
             PruefeDiagnose(hinweise, diagnose, k);
@@ -97,16 +122,17 @@ namespace WindowsFormsApplication1
 
         /// <summary>Beide Prüfungen des Peak-Ziels gegen die Referenzzeitreihe.</summary>
         /// <param name="hinweise">Die Sammelliste.</param>
-        /// <param name="eingang">Die Standortzeitreihen; <c>null</c> oder leer = keine Prüfung.</param>
+        /// <param name="istwerte">Die Standortzeitreihe; <c>null</c> oder leer = keine Prüfung.</param>
         /// <param name="konfiguration">Die Flotte samt Betriebsoptionen.</param>
         /// <param name="k">Die Kultur der Zahlenformatierung.</param>
-        private static void PruefePeakZiel(List<FlottenHinweis> hinweise, FlottenEingang eingang,
+        private static void PruefePeakZiel(List<FlottenHinweis> hinweise,
+            IReadOnlyList<FlottenNetzintervall> istwerte,
             FlottenStudieKonfiguration konfiguration, CultureInfo k)
         {
             if (konfiguration.Optionen.WirtschaftlicherPeakZielwertKw is not double h) return;
-            if (eingang?.Istwerte == null || eingang.Istwerte.Count == 0) return;
+            if (istwerte == null || istwerte.Count == 0) return;
 
-            FlottenPeakZielVorschlag lage = FlottenPeakZiel.Vorschlag(eingang.Istwerte, konfiguration);
+            FlottenPeakZielVorschlag lage = FlottenPeakZiel.Vorschlag(istwerte, konfiguration);
             if (!konfiguration.Optionen.NetzladungErlaubt && h < lage.TagesminimumMaxKw)
                 hinweise.Add(new FlottenHinweis
                 {

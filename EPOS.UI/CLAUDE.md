@@ -129,6 +129,20 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Speichern, Übernahme eines Kandidaten); ein meldendes Blatt reicht seinen Stand als eigene Kopie
   heraus, der Wirt kopiert nicht ein zweites Mal. Wachen: `StromspeicherAuslegungFlotteTests` (keine
   neue Flotteninstanz je Eingabe, Netzblock und Betriebseditor schreiben denselben Stand).
+- **Eine Prüfung JE TASTENDRUCK fragt keine Datenbank; die teure Stufe läuft entprellt — und
+  sofort vor dem Lauf.** Was aus der Konfiguration allein entscheidbar ist (leeres Feld, gültiges
+  Raster, Kandidatenzahl gegen die Grenze, die Sperre des Rechenknopfs), steht im selben
+  Zeichenlauf. Was Datenbank, Zeitreihen oder einen gerechneten Lauf braucht, läuft erst rund
+  400 ms nach dem letzten Zeichen (`CancellationTokenSource` + `Task.Delay` +
+  `InvokeAsync(StateHasChanged)`, **kein `Task.Run`**) und außerdem unverzüglich beim Öffnen, beim
+  Blattwechsel, nach neuen Vorgaben und vor dem Start — sonst begleitet ein veralteter Befund
+  einen Lauf. Die Entprellzeit ist ein `[Parameter]` der Seite (Vorgabe 400 ms, 0 = sofort),
+  damit bunit sie abschaltet statt auf eine Wanduhr zu warten; `Dispose` bricht eine offene
+  Entprellung ab. **Die Meldungsliste bleibt EINE Liste mit stabiler Reihenfolge:** Die teure
+  Stufe ERSETZT sie, sie ergänzt sie nicht — sonst steht ein Hinweis zweimal da. Beide Stufen
+  fahren **dieselben Regeln** aus dem Kern; eine zweite Regelsammlung in der Oberfläche gibt es
+  nicht. Wache: `VorpruefungEntprelltTests`, dazu der Zähler des Kerns
+  (`StromspeicherAuslegungCtrl.Beschaffungen`) statt einer Zeitschranke.
 - **Ein Delegat, der Oberfläche der Plattform öffnet, wird `await`et und nie synchron
   ausgewertet** — synchron stürzt die WebView2 ab.
 - **Jede Wurzelkomponente steht in der `Fehlerschranke`** (über `Bausteine/Wurzel<T>`; eine
