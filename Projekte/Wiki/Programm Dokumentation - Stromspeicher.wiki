@@ -75,7 +75,7 @@ Die Einheiten dieser Liste sind '''Arbeitsstücke der Auslegung''': Woher ihre Z
 
 Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ Speicher hinzufügen"'' der Knopf '''„Ausgewählte Einheiten in Projekt übernehmen"'''. Er legt aus den angehakten Einheiten '''Speicheranlagen''' an – genau so, wie es der Projektdialog ''Stromspeicher'' tut.
 
-* '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Growatt WIT 1'', ''Growatt WIT 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
+* '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Speicher A 1'', ''Speicher A 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
 * '''Vertritt eine Einheit schon eine Anlage''', gehen ihre Werte in '''diese''' Anlage zurück; nur weitere Stück entstehen daneben neu. Der Bezeichner der vorhandenen Anlage bleibt, wie er ist.
 * '''Vorher wird gefragt''' – die Rückfrage nennt die zwei Zahlen: ''„2 Speicheranlagen werden angelegt, 1 geändert — fortfahren?"''. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
 * '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.

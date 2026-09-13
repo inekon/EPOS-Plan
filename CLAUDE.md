@@ -254,7 +254,14 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   veröffentlichten Funktionsänderung einen Logbuch-Eintrag vorschlagen und die
   Versionsnummer beim Anwender erfragen. Wiki-Entwürfe vor dem Veröffentlichen mit
   `seit (dem|der|W)|geändert|Entscheid|Befund|W\d+[a-z]?[‑-][A-Z][‑-]\d+|Stand:? *\d|bisher|früher|vorher|Bis dahin|Migrationsschritt`
-  gegenlesen. Repo-Quellen der Bedienungsseiten: `Projekte/Wiki/*.wiki`; Konzept und
+  gegenlesen.
+  **Keine Hersteller- und Produktdaten im Wiki:** kein Herstellername, keine Typbezeichnung,
+  keine Kennwerte, Preise oder Datenblattangaben eines konkreten Produkts — Beispiele tragen
+  neutrale Namen mit runden Werten („Speicher 1, 100 kWh"); Datenquellen, Normen und Formate
+  (VDI 3805, CEC-Liste, PVsyst-Formate) dürfen genannt werden. Der Wächter
+  `EPOS.Kern.Tests/WikiProduktdatenWacheTests` hält die Repo-Quellen gegen die Katalognamen
+  der Testdatenbank; Regel und Prüfung: Konzept Hilfesystem, Abschnitt 13.
+  Repo-Quellen der Bedienungsseiten: `Projekte/Wiki/*.wiki`; Konzept und
   Zuordnung der Hilfe: [`Konzept_Hilfesystem_Wikidokumentation.md`](Dokumentation/aktuell/Konzept_Hilfesystem_Wikidokumentation.md).
 - Weitere Einstiege: Lizenzierung
   [`EPOS-Plan_Konzept_Lizenzierung.md`](Dokumentation/aktuell/EPOS-Plan_Konzept_Lizenzierung.md),

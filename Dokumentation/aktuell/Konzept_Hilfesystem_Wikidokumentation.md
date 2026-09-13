@@ -741,6 +741,61 @@ Schätzung nur als Gerüst enthalten.
 - `WindowsFormsApplication1\Allgemein\KI\KiChatService.cs`, `HilfeWissen.cs`,
   `HilfeKontext.cs` — der heutige Prompt-Aufbau
 
+## 13. Inhaltsregeln für die Wiki-Seiten
+
+Die Wiki-Seiten sind Hilfe- und Grundlagentexte für jeden Anwender. Zwei Regeln gelten für
+alle Seiten der Rubrik „Programm Dokumentation" und sinngemäß für alle Hilfe- und
+Grundlagenseiten. Für Seiten mit Repo-Quelle halten die Wächter im Kern beide Regeln, für
+Seiten ohne Repo-Quelle prüft die Orchestrierung vor jedem Upload mit denselben Mustern.
+
+### 13.1 Nur der gültige Stand
+
+Eine Fachseite beschreibt die Funktion, wie sie jetzt ist. Was sich geändert hat, steht
+allein auf der Seite „Update-Logbuch" (Datum, Text, nach Version geordnet, neueste oben).
+Wortlaut, Tabuliste und Prüfmuster stehen im Abschnitt „Dokumentation" der Wurzel-`CLAUDE.md`.
+
+### 13.2 Keine Hersteller- und Produktdaten
+
+**Regel:** Keine Wiki-Seite nennt einen Hersteller, ein Produkt, eine Typbezeichnung oder
+Kennwerte, Preise und Datenblattangaben eines konkreten Produkts. Das gilt für Fließtext,
+Tabellen, Beispiele, Bildunterschriften, Menü- und Fehlertexte, Beispielausgaben des Programms
+und HTML-Kommentare.
+
+**Warum:** Die Kataloge von EPOS-Plan enthalten Herstellerdaten, die die Hersteller unter
+eigenen Bedingungen bereitstellen (Datenblätter, VDI-3805-Sätze, CEC- und PVsyst-Listen).
+Das Wiki ist öffentlich und beschreibt das Programm, nicht die Produkte. Ein Produktname im
+Beispiel wirkt wie eine Empfehlung, altert mit dem Katalog und kann Marken- und
+Nutzungsrechte berühren.
+
+**Was erlaubt bleibt:**
+
+- Datenquellen, Normen und Formate beim Namen: VDI 3805, VDI 4640, VDI 6002, DIN, EN, ISO,
+  die CEC-Listen der California Energy Commission, PVsyst-Formate `.PAN` und `.OND`, bslib,
+  GEMIS, UBA-Emissionsfaktoren, DWD und TRY, BDEW-Lastprofile. Sie beschreiben den Importweg
+  und die Herkunft, nicht ein Produkt.
+- Gattungsbegriffe und Technikklassen: Luft-Wasser-Wärmepumpe, Lithium-Eisen-Phosphat,
+  Brennwertkessel, Flachkollektor, monokristallines Modul.
+- Richtwerte ohne Produktbezug sowie die Konstanten und Vorgaben des Rechenwegs.
+- Software- und Plattformnamen, die Systemvoraussetzungen und Bedienung brauchen (Windows,
+  iOS, WebView2, MediaWiki), der Anbieter selbst und die Angaben in Impressum und Datenschutz.
+
+**Wie Beispiele geschrieben werden:** neutrale Namen mit rundem Kennwert — „Wärmepumpe A",
+„Modul B, 400 W", „Speicher 1, 100 kWh"; laufende Nummern statt Typnamen („Speicher 1",
+„Speicher 2"); Kennwerte als runde Zahlen, die keinem Datenblatt zuzuordnen sind. Wer ein
+Beispiel aus einem Referenzprojekt ableitet, schreibt die Katalogwerte nicht ab, sondern
+rundet und benennt um.
+
+**Prüfung:**
+
+- Der Wächter `EPOS.Kern.Tests/WikiProduktdatenWacheTests` hält die Repo-Quellen
+  `EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki` und `Projekte/Wiki/*.wiki` gegen die
+  Hersteller- und Typnamen der Kataloge in `Referenzlaeufe/Kenndaten_Test.sqlite` (Spalten
+  `Firma` und `Hersteller` der `Tab_*`-Kataloge ohne die Platzhalter „Muster", „test",
+  „meins", „EPOS-Plan Referenz") und gegen eine feste Liste bekannter Hersteller und
+  Typcode-Muster.
+- Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
+  die Orchestrierung vor jedem Upload mit derselben Liste.
+
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
 Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.
@@ -805,6 +860,7 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Pufferspeicher` | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` |
 | `Programm Dokumentation/Simulationsergebnisse` | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` |
 | `Programm Dokumentation/Wirtschaftlichkeit` | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` |
+| `Programm Dokumentation/Kosten` | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
