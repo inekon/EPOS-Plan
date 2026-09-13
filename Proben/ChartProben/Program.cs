@@ -762,6 +762,48 @@ namespace ChartProben
                             "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. "
                             + "Zwischen zwei Stützstellen ist nichts gerechnet."));
 
+            // =========================================================================
+            // 43/44 - die ZWEI BILDER DER STUECKZAHLSUCHE (#247, SD-E-10 / SD-Q17)
+            // =========================================================================
+            //
+            // „Stueckzahl suchen" laesst die Groesse der Einheit stehen und variiert, wie
+            // viele davon stehen. Das ist eine GANZE Zahl - deshalb Balken statt Kurve
+            // und deshalb kein Feinraster: Zwischen zwei Geraeten gibt es nichts.
+            //
+            // Die Reihe laeuft bewusst ins Negative (vier Geraete tragen ihren
+            // Kapitaldienst nicht mehr), damit die Nulllinie und die rote Saeule im Bild
+            // stehen; das dritte Stueck ist unzulaessig und traegt die Schraffur.
+            int[] stueckzahlen = { 1, 2, 3, 4, 5 };
+            double[] stueckwerte = { 28400.0, 41280.0, 33700.0, 8900.0, -14500.0 };
+            bool[] stuecksperre = { false, false, true, false, false };
+            const int STUECK_BESTE = 1;                      // 2 Stueck
+
+            Pruefe(ziel, "flotte_stueckzahlkurve", 720, 460,
+                   new[] { ChartRenderer.C_STAMM, ChartRenderer.C_RASTER_GUT,
+                           ChartRenderer.C_RASTER_SCHLECHT, SKColors.Black },
+                   () => ChartRenderer.Stueckzahlkurve(
+                            "Kapitalwert über Stückzahl — Growatt WIT-M+APX ESS",
+                            "Stückzahl [Stück]", "Kapitalwert [€]",
+                            stueckzahlen, stueckwerte, STUECK_BESTE, stuecksperre));
+
+            // Die Karte n1 x n2 ist DIESELBE Zeichnung wie die Groessenkarte, nur mit
+            // ganzzahligen Achsen - ein eigener Renderer waere eine zweite Wahrheit ueber
+            // dieselbe Flaeche. Geprueft wird, dass sie mit kleinen ganzen Achsen (0…3)
+            // dasselbe leistet wie mit Kapazitaeten in Tausendern.
+            double[] stueckAchse1 = { 1.0, 2.0, 3.0 };
+            double[] stueckAchse2 = { 0.0, 1.0, 2.0 };
+            double[][] stueckfeld = Stueckfeld(stueckAchse1, stueckAchse2);
+
+            Pruefe(ziel, "flotte_stueckzahlraster", 860, 560,
+                   new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
+                           ChartRenderer.C_RASTER_GUT, SKColors.Black },
+                   () => ChartRenderer.Optimierungsraster(
+                            "Kapitalwert über die Stückzahlen zweier Einheiten",
+                            "Stückzahl Einheit 2", "Stückzahl Einheit 1", "Kapitalwert [€]",
+                            stueckAchse2, stueckAchse1, stueckfeld, 1, 1, null,
+                            "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. "
+                            + "Zwischen zwei Stützstellen ist nichts gerechnet."));
+
             // --- Die JAHRESPROJEKTION der Speicherflotte (#184, P2) ------------------
             //
             // Saeulen je Projektjahr, Linie kumuliert, Ersatzjahre markiert. Das Bild
@@ -975,6 +1017,22 @@ namespace ChartProben
             Unterschiedlich("ring_null_prozent_vollring",
                 () => ChartRenderer.Ring("Stromdeckung", ringDeckung, 69.8, "%", "gedeckt", false),
                 () => ChartRenderer.Ring("Stromdeckung", ringNull, 0.0, "%", "Netzbezug 100 %", false));
+
+            // Und dasselbe fuer die BESTWERTMARKE der Stueckzahlkurve (#247): Masse,
+            // Farben und Determinismus stimmen auch dann, wenn die Marke stillschweigend
+            // an einer anderen Saeule stuende - oder gar nicht. Die Gegenprobe stellt
+            // DIESELBE Reihe zweimal nebeneinander, einmal ohne Marke und einmal mit ihr
+            // auf dem Optimum; ohne Marke traegt keine Saeule die gruene Farbe und das
+            // schwarze Quadrat fehlt.
+            Unterschiedlich("flotte_stueckzahl_bestmarke_wirkt",
+                () => ChartRenderer.Stueckzahlkurve(
+                        "Kapitalwert über Stückzahl — Growatt WIT-M+APX ESS",
+                        "Stückzahl [Stück]", "Kapitalwert [€]",
+                        stueckzahlen, stueckwerte, -1, stuecksperre),
+                () => ChartRenderer.Stueckzahlkurve(
+                        "Kapitalwert über Stückzahl — Growatt WIT-M+APX ESS",
+                        "Stückzahl [Stück]", "Kapitalwert [€]",
+                        stueckzahlen, stueckwerte, STUECK_BESTE, stuecksperre));
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -1219,6 +1277,25 @@ namespace ChartProben
                                - (c - 220.0) * (c - 220.0) / 100.0
                                - (p - 140.0) * (p - 140.0) / 50.0;
                 }
+            }
+            return feld;
+        }
+
+        /// <summary>
+        /// Das synthetische Feld der STUECKZAHLKARTE (#247): eine nach unten geoeffnete
+        /// Flaeche mit dem Scheitel bei 2 Stueck der ersten und 1 Stueck der zweiten
+        /// Einheit - so steht das Optimum in der Mitte und die Raender fallen ab.
+        /// </summary>
+        private static double[][] Stueckfeld(double[] erste, double[] zweite)
+        {
+            var feld = new double[erste.Length][];
+            for (int i = 0; i < erste.Length; i++)
+            {
+                feld[i] = new double[zweite.Length];
+                for (int s = 0; s < zweite.Length; s++)
+                    feld[i][s] = 42000.0
+                               - (erste[i] - 2.0) * (erste[i] - 2.0) * 9000.0
+                               - (zweite[s] - 1.0) * (zweite[s] - 1.0) * 6000.0;
             }
             return feld;
         }

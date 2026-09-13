@@ -113,6 +113,15 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   verschöbe alle folgenden Folgenummern.
 - **Die gewählte `<option>` trägt `selected`, und jede `<option>` ein `@key`** — Blazor setzt
   `element.value` nur beim Erzeugen nach.
+- **`@key` nie auf ein Objekt, das je Änderung neu erzeugt wird — Wertidentität nehmen**
+  (eine Kennung wie `ErsetztEinheitId ?? Vorlage.Id`, sonst die Zeilennummer innerhalb der
+  schon keyed Gruppe; doppelte Schlüssel brechen den Zeichenlauf ab). Ein Objektschlüssel
+  vergleicht die Referenz: Schreibt die Seite ihren Stand je Eingabe als Tiefenkopie zurück, ist
+  jede Zeile ein neuer Schlüssel, Blazor baut sie samt `<input>` neu, der Fokus geht verloren und
+  eine angefangene Dezimalzahl wird gekürzt. Ein Objektschlüssel bleibt nur, wo der Neuaufbau
+  gewollt ist (`WaermepumpenDialog`, `_gewaehlt`). Wachen: `OptimierungStationTests` (Zeile und
+  Felder bleiben stehen, angefangene Dezimalzahl bleibt), `StromspeicherAuslegungFlotteTests`
+  (Lebensdauerkurve); bunit misst dabei die Identität der Komponente, nicht des DOM-Knotens.
 - **Ein Delegat, der Oberfläche der Plattform öffnet, wird `await`et und nie synchron
   ausgewertet** — synchron stürzt die WebView2 ab.
 - **Jede Wurzelkomponente steht in der `Fehlerschranke`** (über `Bausteine/Wurzel<T>`; eine

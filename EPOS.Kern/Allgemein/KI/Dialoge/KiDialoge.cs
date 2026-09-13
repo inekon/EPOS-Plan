@@ -450,6 +450,13 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("groessen_optimieren", "StromspeicherKiSicht.GroessenOptimieren",
                                      KiDialogTexte.SpaSucheName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SpaSucheErl),
+                    // Seit Auftrag #247 (SD-E-10) sagt die METHODE, was variiert wird —
+                    // Groesse oder Stueckzahl. Nur lesend: Sie haengt an zwei Feldern
+                    // desselben Standes, und sie zu setzen ist die Aufgabe der
+                    // Optionsgruppe, die beide gleichzieht.
+                    new KiDialogFeld("suchmethode", "StromspeicherKiSicht.Suchmethode",
+                                     KiDialogTexte.SpaMethodeName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpaMethodeErl),
                     new KiDialogFeld("feinraster", "StromspeicherKiSicht.Feinraster",
                                      KiDialogTexte.SpaFeinrasterName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SpaFeinrasterErl),

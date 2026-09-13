@@ -1,33 +1,41 @@
-@* STATION 4 „OPTIMIERUNG" der Stromspeicher-Auslegung (Auftrag #224,
-   Anwenderentscheid SD-E-9 „Empfehlung" vom 11.09.2026, Konzept
-   „Stromspeicher-Dialoge" 7.4).
+@* STATION 4 „OPTIMIERUNG" der Stromspeicher-Auslegung (Auftrag #224, seit
+   Auftrag #247 mit ZWEI SUCHMETHODEN; Anwenderentscheide SD-E-9 vom 11.09.2026
+   und SD-E-10 vom 12.09.2026, Konzept „Stromspeicher-Dialoge" 7.4 und 8.3/8.4).
 
    DER BEFUND, DER SIE VERLANGT (Konzept 7.1/7.2). Der Anwender gab die Seite
    zurueck: „Es soll ein Bereich Stromspeicheroptimierung geben, der die
    wirtschaftlich beste ‚Groesse' des Stromspeichers berechnet und auch grafisch
-   darstellt. Dies war schon einmal vorhanden." Die Rastersuche gab es die ganze
-   Zeit — erreichbar nur ueber DREI Schalter an DREI Orten, und das Wort
-   „Optimierung" kam in der Ablaufleiste nicht vor. Station 4 hiess „Bewerten".
+   darstellt." Die Rastersuche gab es die ganze Zeit — erreichbar nur ueber DREI
+   Schalter an DREI Orten.
 
-   DER AUFBAU FOLGT DEM MAPPENBLATT V7 („Optimierung Speicher"):
-     1. Kopf — Ziel und die Wahl „nur bewerten" / „beste Groesse suchen";
-     2. Suchraum je Einheit als TABELLE, eine Zeile je Einheit;
-     3. die KANDIDATENZEILE, live gegen „Maximale Auslegungskandidaten";
-     4. der Schalter „Phase 2 Feinraster";
-     5. der Rechenknopf;
-     6. das Ergebnis der Suche: der Kasten „Bestes Ergebnis", darunter die
-        Groessen-Sicht mit Rasterkarte, Schnitten und Kandidatentabelle.
+   DER ZWEITE BEFUND (Konzept 8.1, SD-E-10): „Es ergibt keinen Sinn, die
+   Variation der Leistung, Kapazitaet … bei einem vorgegebenen Speicher
+   vorzunehmen" und „Fuer mehrere Speicher ist die Variante die Anzahl der
+   Speicher die Variation … Das waere eine zweite Methode." Seither gibt es DREI
+   Optionen statt zweier — nur bewerten · Groesse suchen · Stueckzahl suchen —
+   und je Lauf genau EINE Variationsart (SD-Q16): Unter G steht die Stueckzahl
+   fest, unter S die Groesse. Das Mischraster Stueckzahl x Groesse gibt es nicht
+   mehr.
+
+   WELCHE Einheiten variiert werden, sagt der Schalter „variieren" auf ihrer
+   Karte; WAS an ihnen variiert wird, sagt die Methode. Eine Herkunftsmarkierung
+   tragen die Einheiten ausdruecklich NICHT (SD-Q15) — „die Einheiten werden nur
+   temporaer fuer die Optimierung benoetigt"; wer aus ihnen ein Projekt machen
+   will, nimmt den Knopf „Ausgewaehlte Einheiten in Projekt uebernehmen" in
+   Schritt 1.
+
+   DER AUFBAU (Konzept 8.4):
+     1. Kopfblock zweispaltig — links die drei Optionen mit Erklaersatz, rechts
+        der Bedienblock mit Ziel, Kandidatenzeile, Feinraster und Rechenknopf;
+     2. Suchraum als EINE KARTE JE EINHEIT statt der Neun-Spalten-Tabelle;
+     3. der Kasten „Bestes Ergebnis";
+     4. die Groessen-Sicht mit Karte/Kurve und Kandidatentabelle.
 
    DIE KANDIDATENZAHL KOMMT AUS DEM KERN. FlottenOptimierer.Kandidatenzahl ist
-   dieselbe Rechnung, mit der der Lauf sein Raster annimmt oder abweist — eine
-   zweite Formel hier liefe beim ersten neuen Achsenmodus auseinander. Bis #224
-   erfuhr der Anwender erst BEIM START, dass sein Raster zu gross ist; jetzt
-   steht es an der Zeile, und der Rechenknopf ist gesperrt (der Grund kommt vom
-   Wirt, der ihn ohnehin als Banner fuehrt).
-
-   DIE GROESSEN-SICHT ZIEHT VON SCHRITT 5 HIERHER (Konzept 7.4): Sie gehoert zur
-   SUCHE — erst die Frage „welche Groesse traegt sich?", dann die Auswertung der
-   einen gewaehlten Flotte. Schritt 5 zeigt seither nur noch diese eine. *@
+   dieselbe Rechnung, mit der der Lauf sein Raster annimmt oder abweist — auch
+   die Fusszeile JEDER Karte fragt sie, mit einer Konfiguration aus genau dieser
+   einen Achse. Eine zweite Formel hier liefe beim ersten neuen Achsenmodus
+   auseinander. *@
 
 @namespace EPOS.UI.Seiten.Strom
 @using System.Globalization
@@ -40,17 +48,67 @@
     <Gruppenkopf Titel="@Resource.FLOTTE_OPT_TITEL" />
 
     <div class="epos-flotte-optimierung-kopf">
-        <p class="epos-flotte-optimierung-ziel">
-            <span class="epos-flotte-optimierung-ziel__name">@Resource.FLOTTE_OPT_ZIEL</span>
-            <strong>@Resource.FLOTTE_OPT_ZIEL_TEXT</strong>
-        </p>
-        <Optionsgruppe Bezeichnung="@Resource.FLOTTE_OPT_SUCHE" Eintraege="@Suchwahl"
-                       Auswahl="@(Suchen ? 1 : 0)" Aktiv="@Aktiv" AuswahlChanged="SuchwahlGesetzt" />
+
+        @* LINKS: die drei Suchoptionen. Eine Suchoption ist waehlbar, sobald
+           mindestens eine Einheit „variieren" traegt; sonst steht sie GEDIMMT
+           mit ihrer Abhilfe (Konzept 8.3). Weich gesperrt und nicht
+           `disabled`: Ein gesperrtes Bedienelement, das erklaeren soll, warum
+           es gesperrt ist, nimmt keine Zeigerereignisse an (Hausregel
+           W16b-E-6). *@
+        <fieldset class="epos-flotte-suche">
+            <Optionsgruppe Bezeichnung="@Resource.FLOTTE_OPT_SUCHE" Eintraege="@Suchwahl"
+                           Beschreibungen="@Erklaersaetze" WeichGesperrt="@Gesperrte"
+                           Auswahl="@((int)Methode)" Aktiv="@Aktiv"
+                           AuswahlChanged="MethodeGesetzt" Verweigert="Verweigert" />
+            @if (KeineAktiveAchse)
+            {
+                <p class="epos-flotte-abhilfe">
+                    <span aria-hidden="true">→</span>
+                    <span>@Resource.FLOTTE_OPT_ABHILFE</span>
+                </p>
+            }
+        </fieldset>
+
+        @* RECHTS: der Bedienblock fester Breite (Hausregel #233) — er soll nicht
+           mitwachsen, wenn die Optionstexte links laenger werden. *@
+        <div class="epos-flotte-bedienblock">
+            <p class="epos-flotte-optimierung-ziel">
+                <span class="epos-flotte-optimierung-ziel__name">@Resource.FLOTTE_OPT_ZIEL</span>
+                <strong>@Resource.FLOTTE_OPT_ZIEL_TEXT</strong>
+            </p>
+
+            @if (Methode == FlottenSuchmethode.Bewerten)
+            {
+                <Herleitungszeile Text="@Resource.FLOTTE_OPT_BEWERTEN_HINWEIS" />
+            }
+            else
+            {
+                <p class="@Kandidatenklasse" role="status">
+                    <span>@Kandidatentext</span>
+                    <strong>@Rasterurteil</strong>
+                </p>
+            }
+
+            @* PHASE 2 FEINRASTER — nur bei „Groesse suchen": Zwischen zwei ganzen
+               Stueckzahlen gibt es nichts zu verfeinern (Konzept 8.3). *@
+            @if (Methode == FlottenSuchmethode.Groesse)
+            {
+                <Schalter Bezeichnung="@Resource.FLOTTE_OPT_FEINRASTER" Wert="@Auslegung.Feinraster"
+                          Aktiv="@Aktiv" WertChanged="FeinrasterGesetzt" />
+                <Herleitungszeile Text="@Resource.FLOTTE_OPT_FEINRASTER_HINWEIS" />
+            }
+
+            <div class="epos-leiste epos-flotte-optimierung-lauf">
+                <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!RechnenFrei)"
+                        title="@(string.IsNullOrWhiteSpace(RechnenGrund) ? null : RechnenGrund)"
+                        @onclick="Starten">@RechnenText</button>
+            </div>
+        </div>
     </div>
 
-    @if (Suchen)
+    @* --------------------------------------------- Suchraum: eine Karte je Einheit *@
+    @if (Methode != FlottenSuchmethode.Bewerten)
     {
-        @* ------------------------------------------------ Suchraum je Einheit *@
         <section class="epos-flotte-abschnitt" aria-labelledby="flotte-suchraum-titel">
             <h3 id="flotte-suchraum-titel">@Resource.FLOTTE_OPT_SUCHRAUM</h3>
 
@@ -60,125 +118,113 @@
             }
             else
             {
-                <div class="epos-raster-huelle epos-raster-huelle--frei">
-                    <table class="epos-raster epos-flotte-suchraum">
-                        <thead>
-                            <tr>
-                                <th>@Resource.FLOTTE_OPT_SP_EINHEIT</th>
-                                <th>@Resource.FLOTTE_OPT_SP_VARIIEREN</th>
-                                <th>@Resource.FLOTTE_OPT_SP_KOPPLUNG</th>
-                                <th>@Resource.FLOTTE_OPT_SP_ANZAHL</th>
-                                <th>@Resource.FLOTTE_OPT_SP_KAPAZITAET</th>
-                                <th>@Resource.FLOTTE_OPT_SP_LEISTUNG</th>
-                                <th>@Resource.FLOTTE_OPT_SP_CRATE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (FlottenAuslegungsAchse achse in Achsen)
+                <div class="epos-flotte-einheitskarten">
+                    @* Der Schluessel der Karte ist eine WERTIDENTITAET, nie die Achse
+                       selbst — siehe Zeilenschluessel (Befund #245). *@
+                    @for (int zeile = 0; zeile < Achsen.Count; zeile++)
+                    {
+                        FlottenAuslegungsAchse a = Achsen[zeile];
+                        bool frei = Aktiv && a.Aktiv;
+                        <article class="@Kartenklasse(a)" @key="Zeilenschluessel(zeile)">
+
+                            <div class="epos-flotte-einheitskarte__kopf">
+                                <span class="epos-flotte-einheitskarte__name">@Achsenname(a)</span>
+                                <span class="epos-flotte-einheitskarte__kenndaten">@Kenndaten(a)</span>
+                                <span class="epos-flotte-einheitskarte__fueller"></span>
+                                <Schalter Bezeichnung="@Resource.FLOTTE_OPT_SP_VARIIEREN" Wert="@a.Aktiv"
+                                          Aktiv="@Aktiv" WertChanged="@(v => Setzen(() => a.Aktiv = v))" />
+                            </div>
+
+                            @if (a.Aktiv)
                             {
-                                FlottenAuslegungsAchse a = achse;
-                                bool frei = Aktiv && a.Aktiv;
-                                <tr @key="a">
-                                    <td>@Achsenname(a)</td>
-                                    <td>
-                                        <div class="epos-flotte-suchraum-zelle">
-                                            <Schalter Bezeichnung="" Wert="@a.Aktiv" Aktiv="@Aktiv"
-                                                      WertChanged="@(v => Setzen(() => a.Aktiv = v))" />
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="epos-flotte-suchraum-zelle">
-                                            <Auswahlfeld Bezeichnung="" Eintraege="@Kopplungen"
-                                                         Auswahl="@((int)a.Modus)" Aktiv="@frei"
-                                                         AuswahlChanged="@(v => KopplungGesetzt(a, v))" />
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="epos-flotte-suchraum-zelle">
-                                            <Ganzzahlfeld Bezeichnung="" Wert="@a.AnzahlVon" Min="0" Aktiv="@frei"
-                                                          WertChanged="@(v => GanzSetzen(x => a.AnzahlVon = x, v))" />
-                                            <Ganzzahlfeld Bezeichnung="" Wert="@a.AnzahlBis" Min="0" Aktiv="@frei"
-                                                          WertChanged="@(v => GanzSetzen(x => a.AnzahlBis = x, v))" />
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if (a.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
-                                        {
-                                            <div class="epos-flotte-suchraum-zelle">
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetVonKWh" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetVonKWh = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetBisKWh" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetBisKWh = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.KapazitaetSchrittKWh" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetSchrittKWh = x, v))" />
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate)
-                                        {
-                                            <div class="epos-flotte-suchraum-zelle">
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungVonKw" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungVonKw = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungBisKw" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungBisKw = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.LeistungSchrittKw" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungSchrittKw = x, v))" />
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung)
-                                        {
-                                            <div class="epos-flotte-suchraum-zelle">
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateVon" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateVon = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateBis" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateBis = x, v))" />
-                                                <Zahlenfeld Bezeichnung="" Wert="@a.CRateSchritt" Min="0" Aktiv="@frei"
-                                                            WertChanged="@(v => ZahlSetzen(x => a.CRateSchritt = x, v))" />
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="epos-flotte-suchraum-leer">@ABGELEITET</span>
-                                        }
-                                    </td>
-                                </tr>
+                                <div class="epos-flotte-einheitskarte__rumpf">
+                                    @if (Methode == FlottenSuchmethode.Groesse)
+                                    {
+                                        <Formularraster Einspaltig="false">
+                                            <KindInhalt>
+                                                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_AUSLEGUNGSMODUS"
+                                                             Eintraege="@Kopplungen" Auswahl="@((int)a.Modus)"
+                                                             Aktiv="@frei" AuswahlChanged="@(v => KopplungGesetzt(a, v))" />
+
+                                                @if (a.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
+                                                {
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_VON" Einheit="kWh"
+                                                                Wert="@a.KapazitaetVonKWh" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetVonKWh = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_BIS" Einheit="kWh"
+                                                                Wert="@a.KapazitaetBisKWh" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetBisKWh = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_SCHRITT" Einheit="kWh"
+                                                                Wert="@a.KapazitaetSchrittKWh" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetSchrittKWh = x, v))" />
+                                                }
+
+                                                @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate)
+                                                {
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_VON" Einheit="kW"
+                                                                Wert="@a.LeistungVonKw" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungVonKw = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_BIS" Einheit="kW"
+                                                                Wert="@a.LeistungBisKw" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungBisKw = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_SCHRITT" Einheit="kW"
+                                                                Wert="@a.LeistungSchrittKw" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungSchrittKw = x, v))" />
+                                                }
+
+                                                @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung)
+                                                {
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_VON" Einheit="1/h"
+                                                                Wert="@a.CRateVon" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateVon = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_BIS" Einheit="1/h"
+                                                                Wert="@a.CRateBis" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateBis = x, v))" />
+                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_SCHRITT" Einheit="1/h"
+                                                                Wert="@a.CRateSchritt" Min="0" Aktiv="@frei"
+                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateSchritt = x, v))" />
+                                                }
+                                            </KindInhalt>
+                                        </Formularraster>
+                                        <Herleitungszeile Text="@Resource.FLOTTE_OPT_KARTE_FEST_STUECK" />
+                                    }
+                                    else
+                                    {
+                                        <Formularraster Einspaltig="false">
+                                            <KindInhalt>
+                                                <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_ANZAHL_VON" Wert="@a.AnzahlVon"
+                                                              Min="0" Aktiv="@frei"
+                                                              WertChanged="@(v => GanzSetzen(x => a.AnzahlVon = x, v))" />
+                                                <Ganzzahlfeld Bezeichnung="@Resource.FLOTTE_ED_ANZAHL_BIS" Wert="@a.AnzahlBis"
+                                                              Min="0" Aktiv="@frei"
+                                                              WertChanged="@(v => GanzSetzen(x => a.AnzahlBis = x, v))" />
+                                            </KindInhalt>
+                                        </Formularraster>
+                                        <Herleitungszeile Text="@Stueckherleitung(a)" />
+                                        <Herleitungszeile Text="@Resource.FLOTTE_OPT_KARTE_FEST_GROESSE" />
+                                    }
+                                </div>
+
+                                <p class="epos-flotte-einheitskarte__fuss">
+                                    <span>@Resource.FLOTTE_OPT_KARTE_KANDIDATEN</span>
+                                    <b>@KandidatenDerEinheit(a).ToString("N0", Kultur)</b>
+                                </p>
                             }
-                        </tbody>
-                    </table>
+                            else
+                            {
+                                <p class="epos-flotte-fest">
+                                    <span>@Resource.FLOTTE_OPT_KARTE_FEST</span>
+                                    <b>@Kenndaten(a)</b>
+                                    <span>@Resource.FLOTTE_OPT_KARTE_AUS</span>
+                                </p>
+                            }
+                        </article>
+                    }
                 </div>
                 <p class="epos-flotte-hinweis">@Resource.FLOTTE_ED_ANZAHL_HINWEIS</p>
             }
-
-            @* ------------------------------------------- die Kandidatenzeile *@
-            <p class="@Kandidatenklasse" role="status">
-                <span>@Kandidatentext</span>
-                <strong>@Rasterurteil</strong>
-            </p>
-
-            @* ------------------------------------------ Phase 2 Feinraster *@
-            <Schalter Bezeichnung="@Resource.FLOTTE_OPT_FEINRASTER" Wert="@Auslegung.Feinraster"
-                      Aktiv="@Aktiv" WertChanged="FeinrasterGesetzt" />
-            <Herleitungszeile Text="@Resource.FLOTTE_OPT_FEINRASTER_HINWEIS" />
         </section>
     }
-
-    @* ------------------------------------------------------- Rechenknopf *@
-    <div class="epos-leiste epos-flotte-optimierung-lauf">
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!RechnenFrei)"
-                title="@(string.IsNullOrWhiteSpace(RechnenGrund) ? null : RechnenGrund)"
-                @onclick="Starten">@RechnenText</button>
-    </div>
 
     @* --------------------------------------------------- Ergebnis der Suche *@
     @if (Ergebnis is null)
@@ -190,7 +236,7 @@
         <section class="epos-flotte-abschnitt" aria-labelledby="flotte-bestes-titel">
             <h3 id="flotte-bestes-titel">
                 @Resource.FLOTTE_OPT_BESTES
-                @if (Bester is not null)
+                @if (Bester is not null && Methode == FlottenSuchmethode.Groesse)
                 {
                     <span class="@Phasenklasse">@Phasentext</span>
                 }
@@ -209,12 +255,23 @@
                         <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_ERSPARNIS,
                                               Zahl(Bester.ErsparnisEuroJahr, "N0"))</small>
                     </div>
+
+                    @* DIE ZWEITE KARTE nennt unter „Stueckzahl suchen" die BESTUECKUNG
+                       („2 x Growatt … = 258 kWh · 200 kW") statt Kapazitaet · C-Rate
+                       (Konzept 8.4): Unter S ist die Groesse fest, und die Antwort auf
+                       die gestellte Frage ist die Stueckzahl. *@
                     <div class="epos-flotte-bestes__karte">
-                        <small>@Resource.FLOTTE_OPT_BEST_GROESSE</small>
-                        <b>@Groessentext</b>
-                        <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_EINHEITEN,
-                                              Bester.Einheiten.Count)</small>
+                        <small>@(Stueckzahlsicht ? Resource.FLOTTE_OPT_BEST_BESTUECKUNG
+                                                 : Resource.FLOTTE_OPT_BEST_GROESSE)</small>
+                        <b>@(Stueckzahlsicht ? Bestueckungstext : Groessentext)</b>
+                        <small>@(Stueckzahlsicht
+                                 ? string.Format(Kultur, Resource.FLOTTE_OPT_BEST_SUMME,
+                                                 Zahl(Bester.KapazitaetKWh, "N0"),
+                                                 Zahl(Bester.EntladeleistungKw, "N0"))
+                                 : string.Format(Kultur, Resource.FLOTTE_OPT_BEST_EINHEITEN,
+                                                 Bester.Einheiten.Count))</small>
                     </div>
+
                     <div class="epos-flotte-bestes__karte">
                         <small>@Resource.FLOTTE_OPT_BEST_GEPRUEFT</small>
                         <b>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_KANDIDATEN, Geprueft)</b>
@@ -225,10 +282,10 @@
             }
         </section>
 
-        @* Die GROESSEN-SICHT — Rasterkarte, zwei Schnitte, Kandidatentabelle.
-           Sie ist derselbe Baustein wie bis #224 in Schritt 5 (Auftrag #193/#196),
-           nur an seinem fachlich richtigen Ort. *@
+        @* Die GROESSEN-SICHT — Rasterkarte bzw. Stueckzahlkurve, Schnitte,
+           Kandidatentabelle. Welche Bilder sie zeigt, sagt ihr die Methode. *@
         <SpeicherFlottenGroessenAnsicht Ergebnis="@Ergebnis" Einheiten="@Einheiten"
+                                        Methode="@Methode"
                                         KandidatUebernehmen="@KandidatUebernehmen"
                                         Csv="@Csv" />
     }
@@ -237,17 +294,17 @@
 @code {
     private static CultureInfo Kultur => CultureInfo.CurrentCulture;
 
-    /// <summary>Was in einer Zelle steht, die die Größenkopplung RECHNET statt zu rastern.</summary>
-    private const string ABGELEITET = "—";
-
     /// <summary>Die Studienkonfiguration; der Suchraum wird AN ORT UND STELLE beschrieben.</summary>
     [Parameter] public FlottenStudieKonfiguration Flotte { get; set; } = new();
 
-    /// <summary>Sucht der nächste Lauf die beste Größe? (<c>Auslegung.FlottenGroessenOptimieren</c>)</summary>
-    [Parameter] public bool Suchen { get; set; }
+    /// <summary>
+    /// WAS der nächste Lauf variiert (Auftrag #247, SD‑E‑10) — die dritte Wahl
+    /// „Bewerten" ersetzt den früheren Schalter <c>FlottenGroessenOptimieren</c>.
+    /// </summary>
+    [Parameter] public FlottenSuchmethode Methode { get; set; } = FlottenSuchmethode.Bewerten;
 
-    /// <summary>Die Wahl „bewerten" / „suchen" wurde umgestellt.</summary>
-    [Parameter] public EventCallback<bool> SuchenChanged { get; set; }
+    /// <summary>Die Suchmethode wurde umgestellt.</summary>
+    [Parameter] public EventCallback<FlottenSuchmethode> MethodeChanged { get; set; }
 
     /// <summary>Bedienbar? <c>false</c>, solange gerechnet wird.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
@@ -279,19 +336,82 @@
     /// <summary>Die Beschriftung des Rechenknopfs („Optimieren" bzw. „Bewerten").</summary>
     [Parameter] public string RechnenText { get; set; } = "";
 
+    /// <summary>Meldet den Versuch, eine gesperrte Suchoption zu wählen.</summary>
+    [Parameter] public EventCallback<string> MethodeVerweigert { get; set; }
+
     private FlottenAuslegungEingang Auslegung => Flotte.Auslegung ??= new FlottenAuslegungEingang();
 
     private List<FlottenAuslegungsAchse> Achsen => Auslegung.Achsen ??= new List<FlottenAuslegungsAchse>();
+
+    /// <summary>
+    /// Der <c>@@key</c> EINER Einheitenkarte — eine WERTIDENTITÄT, nie das Achsenobjekt
+    /// (Anwenderbefund <b>#245</b>, 12.09.2026: „bei jeder Tastatureingabe springt der
+    /// Fokus aus dem Feld").
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum kein <c>@@key="achse"</c>.</b> Jedes gemeldete Zeichen läuft über
+    /// <c>Geaendert</c> in <c>StromspeicherAuslegungSeite.FlotteGeschrieben</c>, und das
+    /// setzt die Flotte auf eine JSON-Tiefenkopie (<c>SpeicherAuslegungKopie.Von</c>) —
+    /// aus gutem Grund, denn vier Blätter schreiben an derselben Konfiguration.
+    /// <see cref="FlottenAuslegungsAchse"/> überschreibt <c>Equals</c> nicht; nach der
+    /// Kopie ist jede Achse also eine neue Instanz und damit ein NEUER Schlüssel. Blazor
+    /// riss die Karte samt <c>&lt;input&gt;</c> ab und baute sie neu — mit dem
+    /// abgerissenen Feld ging der Fokus.</para>
+    /// <para><b>Die Kennung</b> ist dieselbe, mit der auch der Optimierer die Achse ihrer
+    /// Einheit zuordnet (<c>FlottenOptimierer</c>: <c>ErsetztEinheitId ?? Vorlage.Id</c>).
+    /// Fehlt sie oder trägt eine zweite Achse dieselbe, entscheidet die ZEILENNUMMER — ein
+    /// doppelter Schlüssel wäre schlimmer als ein Neuaufbau, Blazor bricht darauf ab.</para>
+    /// </remarks>
+    private string Zeilenschluessel(int zeile)
+    {
+        string kennung = Achsenkennung(Achsen[zeile]);
+        if (kennung.Length > 0)
+            for (int i = 0; i < zeile; i++)
+                if (string.Equals(Achsenkennung(Achsen[i]), kennung, StringComparison.Ordinal))
+                { kennung = ""; break; }
+        return kennung.Length > 0 ? "id:" + kennung
+                                  : "#" + zeile.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string Achsenkennung(FlottenAuslegungsAchse a)
+        => (a.ErsetztEinheitId ?? a.Vorlage?.Id ?? "").Trim();
 
     private static readonly IReadOnlyList<(int Id, string Text)> Kopplungen = new[]
     {
         (0, "Kapazität und Leistung"), (1, "Kapazität und C-Rate"), (2, "Leistung und C-Rate")
     };
 
+    // =====================================================================
+    //  Die drei Suchoptionen (Konzept 8.3, SD-Q13)
+    // =====================================================================
+
     private static IReadOnlyList<(int Id, string Text)> Suchwahl => new[]
     {
-        (0, Resource.FLOTTE_OPT_SUCHE_AUS), (1, Resource.FLOTTE_OPT_SUCHE_AN)
+        ((int)FlottenSuchmethode.Bewerten, Resource.FLOTTE_OPT_SUCHE_AUS),
+        ((int)FlottenSuchmethode.Groesse, Resource.FLOTTE_OPT_METHODE_GROESSE),
+        ((int)FlottenSuchmethode.Stueckzahl, Resource.FLOTTE_OPT_METHODE_STUECKZAHL)
     };
+
+    private static IReadOnlyDictionary<int, string> Erklaersaetze => new Dictionary<int, string>
+    {
+        [(int)FlottenSuchmethode.Bewerten] = Resource.FLOTTE_OPT_METHODE_BEWERTEN_ERL,
+        [(int)FlottenSuchmethode.Groesse] = Resource.FLOTTE_OPT_METHODE_GROESSE_ERL,
+        [(int)FlottenSuchmethode.Stueckzahl] = Resource.FLOTTE_OPT_METHODE_STUECKZAHL_ERL
+    };
+
+    /// <summary>
+    /// Trägt KEINE Einheit den Schalter „variieren", stehen beide Suchoptionen gedimmt
+    /// mit ihrer Abhilfe (Konzept 8.3); „Nur bewerten" bleibt immer wählbar.
+    /// </summary>
+    public bool KeineAktiveAchse => !Achsen.Any(a => a is { Aktiv: true });
+
+    private IReadOnlyDictionary<int, string>? Gesperrte => KeineAktiveAchse
+        ? new Dictionary<int, string>
+          {
+              [(int)FlottenSuchmethode.Groesse] = Resource.FLOTTE_OPT_ABHILFE,
+              [(int)FlottenSuchmethode.Stueckzahl] = Resource.FLOTTE_OPT_ABHILFE
+          }
+        : null;
 
     // =====================================================================
     //  Die Kandidatenzeile — die Zaehlregel kommt aus dem Kern
@@ -299,6 +419,27 @@
 
     /// <summary>Die Zählregel des Optimierers; sie rechnet bei jedem Zeichenlauf neu.</summary>
     public FlottenKandidatenzahl Kandidatenzahl => FlottenOptimierer.Kandidatenzahl(Flotte);
+
+    /// <summary>
+    /// Die Kandidaten DIESER Einheit — dieselbe Zählregel, mit einer Konfiguration aus
+    /// genau ihrer Achse. Eine zweite Formel hier liefe beim ersten neuen Achsenmodus
+    /// auseinander.
+    /// </summary>
+    public long KandidatenDerEinheit(FlottenAuslegungsAchse achse)
+    {
+        var eine = new FlottenStudieKonfiguration
+        {
+            Auslegung = new FlottenAuslegungEingang
+            {
+                Suchmethode = Methode,
+                Feinraster = false,
+                MaximaleKandidaten = int.MaxValue,
+                Achsen = new List<FlottenAuslegungsAchse> { achse }
+            }
+        };
+        FlottenKandidatenzahl z = FlottenOptimierer.Kandidatenzahl(eine);
+        return z.Gueltig ? z.Grob : 0;
+    }
 
     private string Kandidatentext
     {
@@ -319,13 +460,47 @@
         {
             FlottenKandidatenzahl z = Kandidatenzahl;
             if (!z.Gueltig) return Resource.FLOTTE_OPT_RASTER_UNGUELTIG;
+            if (z.Befund == FlottenSuchbefund.KeineAktiveAchse) return Resource.FLOTTE_OPT_ABHILFE;
             return z.Zulaessig ? Resource.FLOTTE_OPT_RASTER_OK : Resource.FLOTTE_OPT_RASTER_ZUVIEL;
         }
     }
 
-    private string Kandidatenklasse => Kandidatenzahl.Zulaessig
+    private string Kandidatenklasse => Kandidatenzahl is { Zulaessig: true, Befund: FlottenSuchbefund.Inordnung }
         ? "epos-flotte-kandidatenzeile"
         : "epos-flotte-kandidatenzeile epos-flotte-kandidatenzeile--rot";
+
+    // =====================================================================
+    //  Die Karte EINER Einheit
+    // =====================================================================
+
+    private string Kartenklasse(FlottenAuslegungsAchse a)
+        => a.Aktiv ? "epos-flotte-einheitskarte"
+                   : "epos-flotte-einheitskarte epos-flotte-einheitskarte--gedimmt";
+
+    /// <summary>Die festen Kenndaten der Einheit: „129 kWh · 100 kW · 1 Stück".</summary>
+    public string Kenndaten(FlottenAuslegungsAchse a)
+    {
+        FlottenEinheit? v = a.Vorlage;
+        return string.Format(Kultur, Resource.FLOTTE_OPT_KARTE_KENNDATEN,
+            Zahl(v?.KapazitaetKWh ?? 0, "0.##"),
+            Zahl(Math.Max(v?.LadeleistungKw ?? 0, v?.EntladeleistungKw ?? 0), "0.##"),
+            Math.Max(a.AnzahlVon, 0).ToString("N0", Kultur));
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile der Stückzahlsuche: „= 129 – 516 kWh · 100 – 400 kW" — was
+    /// aus dem Stückzahlbereich an Kapazität und Leistung wird.
+    /// </summary>
+    public string Stueckherleitung(FlottenAuslegungsAchse a)
+    {
+        FlottenEinheit? v = a.Vorlage;
+        double kapazitaet = v?.KapazitaetKWh ?? 0;
+        double leistung = Math.Max(v?.LadeleistungKw ?? 0, v?.EntladeleistungKw ?? 0);
+        int von = Math.Max(a.AnzahlVon, 0), bis = Math.Max(a.AnzahlBis, von);
+        return string.Format(Kultur, Resource.FLOTTE_OPT_KARTE_HERLEITUNG,
+            Zahl(kapazitaet * von, "N0"), Zahl(kapazitaet * bis, "N0"),
+            Zahl(leistung * von, "N0"), Zahl(leistung * bis, "N0"));
+    }
 
     // =====================================================================
     //  Der Kasten „Bestes Ergebnis"
@@ -336,6 +511,10 @@
     private int Geprueft => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0) ?? 0;
 
     private int Zulaessige => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0 && k.Zulaessig) ?? 0;
+
+    /// <summary>Zeigt der Kasten die BESTÜCKUNG statt Kapazität · C-Rate · Leistung?</summary>
+    private bool Stueckzahlsicht => Methode == FlottenSuchmethode.Stueckzahl
+                                    && Bester is { Stueckzahlen.Count: > 0 };
 
     private string Phasentext => Bester?.Phase == FlottenKandidatPhase.Fein
         ? Resource.FLOTTE_OPT_MARKE_FEIN : Resource.FLOTTE_OPT_MARKE_GROB;
@@ -352,6 +531,24 @@
             if (k is null) return "";
             return string.Format(Kultur, "{0} kWh · {1} C · {2} kW",
                 Zahl(k.KapazitaetKWh, "N0"), Zahl(k.CRate, "0.##"), Zahl(k.EntladeleistungKw, "N0"));
+        }
+    }
+
+    /// <summary>Die Bestückung des Optimums: „2 × Growatt WIT" je variierter Einheit.</summary>
+    public string Bestueckungstext
+    {
+        get
+        {
+            FlottenKandidatZusammenfassung? k = Bester;
+            if (k?.Stueckzahlen is not { Count: > 0 } zahlen) return "";
+
+            var aktive = Achsen.Where(a => a.Aktiv).ToList();
+            var teile = new List<string>(zahlen.Count);
+            for (int i = 0; i < zahlen.Count; i++)
+                teile.Add(string.Format(Kultur, Resource.FLOTTE_OPT_BEST_STUECK, zahlen[i],
+                    i < aktive.Count ? Achsenname(aktive[i])
+                                     : string.Format(Kultur, Resource.FLOTTE_GROESSEN_EINHEIT, i + 1)));
+            return string.Join(" · ", teile);
         }
     }
 
@@ -374,8 +571,11 @@
 
     private Task Starten() => RechnenFrei ? Rechnen.InvokeAsync() : Task.CompletedTask;
 
-    private Task SuchwahlGesetzt(int? wert)
-        => wert.HasValue ? SuchenChanged.InvokeAsync(wert.Value == 1) : Task.CompletedTask;
+    private Task MethodeGesetzt(int? wert)
+        => wert.HasValue ? MethodeChanged.InvokeAsync((FlottenSuchmethode)wert.Value)
+                         : Task.CompletedTask;
+
+    private Task Verweigert(int _) => MethodeVerweigert.InvokeAsync(Resource.FLOTTE_OPT_ABHILFE);
 
     private Task FeinrasterGesetzt(bool wert) => Setzen(() => Auslegung.Feinraster = wert);
 

@@ -163,6 +163,9 @@ Nummerierte Aufträge, soweit sie in den Statusblöcken benannt sind. Alle Daten
 | **#242** | 12.09. | Repository aufräumen (`.work/`, `DB-Backup/`, `.bak`, Spike-Ordner) | umgesetzt: 31 Dateien / 70,2 MB entfernt, Wache `RepositoryOrdnungWacheTests`, Aufräumkonzept |
 | **#243** | 12.09. | Git LFS für VDI-Archive und Testdatenbank (AUF‑Q2), Fremdquellen nach `Quellen/` (AUF‑Q3) | umgesetzt: 69 LFS-Dateien (164 MiB), Zeiger-Schutz an drei Öffnungsstellen, Workflows mit Zwischenlager |
 | **#244** | 12.09. | Git-Geschichte umschreiben (AUF‑Q1, Variante 2 mit Access-Altbeständen) | umgesetzt: Pack 554 → 358 MiB, Bäume unverändert, **alle Commit-Kennungen sind neu** (Karte `commit-map_2026-09-12.txt`) |
+| **#245** | 12.09. | Fokus springt beim Tippen aus der Suchraum-Tabelle der Station „4 Optimierung“ | behoben: `@key` auf Wertidentität statt Objektreferenz, Hausregel in `EPOS.UI/CLAUDE.md`, drei bunit-Wachen |
+| **#246** | 12.09. | Konzept Stromspeicher-Dialoge Kapitel 8: zwei Suchmethoden „Größe suchen“ und „Stückzahl suchen“ (SD‑E‑10), Mockup v2 | umgesetzt im Konzept; Entscheid SD‑E‑10 getroffen |
+| **#247** | 12.09. | Station „4 Optimierung“ mit drei Suchoptionen, Karte je Einheit, Übernahme der Einheiten ins Projekt | umgesetzt (Engine, Kern, Oberfläche, Wiki); Windows-Abnahme steht aus |
 
 ---
 
@@ -199,3 +202,4 @@ Gesamtabnahme je Welle liegt nicht vor.**
   [`Entscheidungsregister_iOS_EPOS-Plan.md`](Entscheidungsregister_iOS_EPOS-Plan.md) § 1.
 - **Nach #243:** einmal `git lfs install` auf dem Windows-Rechner vor dem nächsten Pull.
 - **Nach #244:** jeder Rechner klont neu; aus einem alten Klon wird nie wieder gepusht.
+- **Nach #247:** Windows-Abnahme der Station „4 Optimierung“ und des Knopfs „Ausgewählte Einheiten in Projekt übernehmen“.

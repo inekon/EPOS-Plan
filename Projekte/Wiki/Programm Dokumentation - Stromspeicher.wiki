@@ -1,6 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Stromspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki
-     Stand: 2026-09-11 (Station 4 Optimierung als eigenes Blatt, Feinraster - SD-E-9 Option A)
+     Stand: 2026-09-12 (zwei Suchmethoden in Station 4, Uebernahme ausgewaehlter Einheiten
+     ins Projekt in Schritt 1 - SD-E-10)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
 Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
@@ -68,6 +69,21 @@ Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Ent
 * als '''leere Einheit''' – eine Einheit mit Vorgabewerten, die Sie selbst ausfüllen.
 
 '''Kopieren''' legt eine zweite Einheit mit denselben Werten an; sie gehört danach zu keiner Anlage des Projekts.
+
+==== Einheiten in das Projekt übernehmen ====
+{{Anker|auslegung-uebernahme}}
+
+Die Einheiten dieser Liste sind '''Arbeitsstücke der Auslegung''': Woher ihre Zahlen kommen – aus einer Anlage des Projekts, aus dem Katalog oder von Hand –, spielt für die Suche keine Rolle, und die Liste trägt deshalb auch keine Herkunftsmarkierung. Was Sie hier gefunden haben, wird erst dann ein Teil Ihres Projekts, wenn Sie es ausdrücklich übernehmen.
+
+Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ Speicher hinzufügen"'' der Knopf '''„Ausgewählte Einheiten in Projekt übernehmen"'''. Er legt aus den angehakten Einheiten '''Speicheranlagen''' an – genau so, wie es der Projektdialog ''Stromspeicher'' tut.
+
+* '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Growatt WIT 1'', ''Growatt WIT 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
+* '''Vertritt eine Einheit schon eine Anlage''', gehen ihre Werte in '''diese''' Anlage zurück; nur weitere Stück entstehen daneben neu. Der Bezeichner der vorhandenen Anlage bleibt, wie er ist.
+* '''Vorher wird gefragt''' – die Rückfrage nennt die zwei Zahlen: ''„2 Speicheranlagen werden angelegt, 1 geändert — fortfahren?"''. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
+* '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.
+* Übernommen werden Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und der Hilfsverbrauch. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; die tragen Sie bei Bedarf in der Anlage nach.
+
+Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet weiterhin allein ''„Als Projektflotte übernehmen"'' in Schritt 5.
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
@@ -220,31 +236,57 @@ Dieser Block stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehö
 Von oben nach unten:
 
 # '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
-# '''Suche''' – zwei Möglichkeiten: ''Nur die eingestellte Flotte bewerten'' oder '''''Wirtschaftlich beste Größe suchen'''''. Das ist der frühere Schalter ''Größen optimieren'' aus Schritt 1, an dem Ort, an dem er wirkt.
-# '''Suchraum je Einheit''' – eine Tabelle, eine Zeile je Einheit (siehe unten).
+# '''Suche''' – '''drei''' Möglichkeiten seit dem 12.09.2026: ''Nur die eingestellte Flotte bewerten'', '''''Größe suchen''''' und '''''Stückzahl suchen''''' (siehe unten).
+# '''Suchraum je Einheit''' – eine '''Karte''' je Einheit (siehe unten).
 # '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
-# '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile (siehe unten).
+# '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile; er steht nur bei ''Größe suchen'' (siehe unten).
 # '''Der Rechenknopf''' – ''Optimieren'' beziehungsweise ''Bewerten'', je nach Suchwahl.
 # '''„Bestes Ergebnis"''' – drei Karten mit dem Besten des Laufs (siehe unten).
-# '''Ergebnisse über der Speichergröße''' – Rasterkarte, Schnittkurven und Kandidatentabelle, seit dem 11.09.2026 hier statt in Schritt 5 (siehe unten).
+# '''Das Ergebnis der Suche''' – Rasterkarte und Schnittkurven bei ''Größe suchen'', die Kurve über der Stückzahl bei ''Stückzahl suchen'', darunter in beiden Fällen die Kandidatentabelle (siehe unten).
 
-==== Größe und C-Rate ====
+==== Die drei Suchmethoden ====
+{{Anker|auslegung-methoden}}
+
+Links im Kopf stehen '''drei Möglichkeiten''', jede mit einem Satz darunter:
+
+{| class="wikitable"
+! Wahl !! Was der Lauf variiert
+|-
+| '''Nur die eingestellte Flotte bewerten''' || Nichts. Es entsteht '''genau ein Kandidat''' – die Flotte, wie sie in Schritt 1 steht.
+|-
+| '''Größe suchen''' || An jeder eingeschalteten Einheit '''zwei der drei Größen''' Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die '''Stückzahl steht dabei fest'''.
+|-
+| '''Stückzahl suchen''' || An jeder eingeschalteten Einheit '''die Stückzahl''' von–bis (0 = die Einheit entfällt). Die '''Größe bleibt''', wie sie eingestellt ist; die Kosten sind die Kosten einer Einheit mal Stückzahl.
+|}
+
+'''Je Lauf wird genau eine Art variiert.''' Größe und Stückzahl zugleich gibt es nicht: Das hielte weder die Kandidatenzahl klein (266 Größen '''oder''' 4 Stückzahlen je Einheit statt 1 064) noch die Ergebnisbilder lesbar. Wer beides prüfen will, fährt zwei Läufe.
+
+Eine Suchmethode ist wählbar, sobald '''mindestens eine Einheit''' den Schalter ''variieren'' trägt. Sonst stehen beide Suchoptionen '''gedimmt''' da, und darunter steht, was zu tun ist: ''„Auf einer Einheitenkarte ‚variieren' einschalten — ohne sie gibt es nichts zu suchen."'' ''Nur bewerten'' bleibt immer wählbar.
+
+==== Der Suchraum: eine Karte je Einheit ====
 {{Anker|auslegung-groesse}}
 
-Der '''Suchraum''' steht je Einheit in einer Zeile: ein Häkchen '''variieren''', die '''Größenkopplung''' und dahinter ''Anzahl'', ''Kapazität [kWh]'', ''Leistung [kW]'' und ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt; die abgeleitete Spalte zeigt deshalb '''„—"''' statt leerer Felder.
+Jede Einheit hat eine '''eigene Karte'''. In ihrer Kopfzeile stehen der Name, die festen Kenndaten (''129 kWh · 100 kW · 1 Stück'') und rechts der Schalter '''variieren'''. Er entscheidet, '''welche''' Einheiten der Lauf anfasst; '''was''' er an ihnen ändert, sagt die Methode.
+
+* Bei '''Größe suchen''' trägt die Karte die '''Größenkopplung''' und dahinter ''Kapazität [kWh]'', ''Leistung [kW]'' beziehungsweise ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt – die abgeleitete Größe hat deshalb keine Felder.
+* Bei '''Stückzahl suchen''' trägt sie '''Stückzahl von''' und '''Stückzahl bis''' und darunter eine Zeile, was daraus wird: ''= 129 – 516 kWh · 100 – 400 kW''.
+* Unten steht in beiden Fällen, wie viele '''Kandidaten diese eine Einheit''' beisteuert.
+* Eine Einheit '''ohne''' ''variieren'' verschwindet nicht: Ihre Karte steht gedimmt da und sagt mit ''„fest: …"'', mit welchem Wert sie in jeden Kandidaten eingeht.
 
 Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
 
-Gibt es noch keine Einheit, steht statt der Tabelle die Zeile ''„Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an."''
+Gibt es noch keine Einheit, steht statt der Karten die Zeile ''„Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an."''
 
 ==== Wie viele Kandidaten es werden ====
 {{Anker|auslegung-kandidatenzahl}}
 
-Unter der Tabelle steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
+Im Bedienblock rechts steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
 
   240 Kandidaten im Grobraster, bis zu 18 im Feinraster — zusammen 258 von höchstens 500.
 
 '''Es ist dieselbe Zählregel, mit der der Lauf annimmt oder abweist''' – nicht eine zweite Rechnung, die auseinanderlaufen könnte. Reißt das Raster die Grenze aus Schritt 2, färbt sich die Zeile, nennt den Grund im Klartext und '''sperrt den Rechenknopf''': Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze erhöhen. Ist ein Bereich leer, negativ oder ohne Schrittweite, sagt sie auch das.
+
+Bei '''Stückzahl suchen''' ist die Zahl das Produkt der Stückzahlbereiche aller eingeschalteten Einheiten – bei ''Nur bewerten'' steht statt der Zeile der Satz ''„Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist."''
 
 Für das '''Feinraster''' nennt sie eine '''Obergrenze''' („bis zu n") und keine feste Zahl: Wie breit sein Fenster wird, hängt an der Lage des Grob-Optimums, und die steht vor dem Lauf nicht fest. Geprüft wird gegen den größtmöglichen Fall – damit ein zu großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
 
@@ -256,6 +298,8 @@ Ein Raster findet nur, was auf seinen Stützstellen liegt. Deshalb rechnet die S
 * Das Fenster reicht eine '''Grobschrittweite''' nach beiden Seiten, wird an den eingegebenen Grenzen '''gekappt''' (ein Optimum am Rand bekommt deshalb ein einseitiges Feinraster) und ist mindestens 1 kWh breit.
 * Gerechnet wird in Schritten von '''einem Neuntel''' der Grobschrittweite.
 * '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der Grobpunkt der Beste – der liegt auf einer Stützstelle, die Sie selbst gesetzt haben.
+
+'''Den Schalter gibt es nur bei „Größe suchen".''' Stückzahlen sind ganze Zahlen – zwischen zwei und drei Geräten liegt nichts, was sich verfeinern ließe.
 
 Der Schalter ist '''vorbelegt an''' und wird mit dem Profil gespeichert. Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt; der Rechenweg steht auf ''[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung/Stromspeicher]]'' im Abschnitt ''Rastersuche''.
 

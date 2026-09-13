@@ -4965,3 +4965,78 @@ steht aus und ist die eigentliche Aufgabe von
 | **iU10-7** | `IosProjektQuelle` — Projektliste, Energieträgerliste und der BHKW-Parametersatz über **dieselben** Kern-Controller wie die Windows-Hülle | ✅ Prüfstand gegen `Kenndaten_Test.sqlite` |
 | **iU10-CI** | Achter Lauf `ios.yml` (33748736894): Workload 23 s, Bau 57 s, Simulator, Erststart 73 MB, `SQLite 3.53.3`, `STRICT=114`, `Projekte=23`, Prüfmodus 5 s, **iZ6-Vergleich 1030 PASS und byte-gleich** | ✅ CI macOS, 5 min 44 s · **Neunter Lauf** (33785012663, 03.09.2026, 9 min 52 s) auf `f1d387b` nach W5/W6: grün · **Zehnter Lauf** (33809247370, 03.09.2026, 4 min 53 s) auf `21ab680` nach W7–W9: grün · **Elfter Lauf** (33826084944, 04.09.2026, 8 min 50 s) auf `a398c9a` nach W10a/W10b: grün · **Zwölfter Lauf** (33832613617, 04.09.2026, 9 min 02 s) auf `43fb9c3` nach W11a/W11b: grün · **Dreizehnter Lauf** (33838762108, 04.09.2026, 6 min 30 s) auf `62b3457` nach W12: grün · **Vierzehnter Lauf** (33844935661, 04.09.2026, 10 min 04 s) auf `29aecbc` nach W13: grün · **Fünfzehnter Lauf** (33852944072, 04.09.2026, 7 min 24 s) auf `ecd6cfe` nach W14a/W14b: grün · **Sechzehnter Lauf** (33861268537, 04.09.2026, 9 min 28 s) auf `0cc1495` nach W14c: grün · **Siebzehnter Lauf** (33867643966, 04.09.2026, 10 min 30 s) auf `c11f13d` nach W15a: grün · **Achtzehnter Lauf** (33876284942, 04.09.2026, 2 min 26 s) auf `f71853b` nach W15b: **rot** (CS0103 `IosHilfeDienst`, nur der macOS-Läufer übersetzt die iOS-Hülle; behoben `f0e23a4`) · **Neunzehnter Lauf** (33878903371, 04.09.2026, 6 min 27 s) auf `f0e23a4`: grün · **Zwanzigster Lauf** (33883210632, 04.09.2026, 10 min 14 s) auf `975ead5` nach W15c: grün · **Einundzwanzigster Lauf** (33890882150, 04.09.2026, 8 min 03 s) auf `84d7c16` nach W16a: grün · **Zweiundzwanzigster Lauf** (33898599945, 04.09.2026, 7 min 56 s) auf `c8fbd77` nach W16b: grün · **Vierundzwanzigster Lauf** (33904433007, 04.09.2026, 8 min 43 s) auf `555ef11` nach W16c: grün (Nr. 23 war eine abgebrochene Dublette) · **Fünfundzwanzigster Lauf** (33913313694, 04.09.2026, 6 min 29 s) auf `853b8c6` nach den W16-Nachträgen (E‑2/E‑3, LizenzTexte, W16b‑O‑3): grün · **Sechsundzwanzigster Lauf** (33975880961, 05.09.2026, 6 min 14 s) auf `7bec4ad` nach den Abnahmebefunden vom 05.09. (Baustein `Diagramm`, `epos-diagramm.js` über `import()`): grün · **Siebenundzwanzigster Lauf** (33982889724, 05.09.2026, 10 min 51 s) auf `c563a40` nach den sechs Nachmittagsbefunden vom 05.09. (W13‑B‑1: `…Async`-Zwillinge in `IDateiDienst`/`IDialogDienst`, Fehlerschranke `Wurzel<T>` in `EPOS.iOS/HauptSeite`; W9.8, W15a‑E‑1, W16b‑E‑7, iU8‑E‑1): grün · **Achtundzwanzigster Lauf** (33992594094, 05.09.2026, 6 min 53 s) auf `6eddd27` nach der Zusammenführung der Rechner-2-Linie: Bau, Start, Prüfmodus grün, **iZ6-Vergleich rot**, weil `ios.yml` noch gegen `2026-08-30_B3-Kaskade` hielt (8 711 Abweichungen = Paket-A-Zeitbasis; Basiswechsel `37dfebb`, Workflow `e3fd980`) · **Neunundzwanzigster Lauf** (33993379551, 05.09.2026, 6 min 32 s) auf `e3fd980` gegen `2026-09-05_R2_Zeitbasis`: grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; die Simulation meldet die Paket-A-Zeitbasis „Klimadaten: UTC → MEZ/MESZ, Referenzjahr 2025") · **Dreißigster Lauf** (34017405042, 06.09.2026, 5 min 54 s) auf `cb8379e` nach der Welle iF30 (Schreibnaht, Werkzeug-Freigabe im Prüfmodus, Lizenzbanner): grün, PASS und byte-gleich (236 670 Werte, `diff -rq` leer; das Vergleichswerkzeug meldet „Schreibnaht: freigegeben für EPOS.Referenzlauf (Rechennachweis ohne Lizenz)") |
 | **iU10-9** | der iL5-Wizard in `EPOS.UI/Seiten/` und `IosNavigation` vollständig | **offen** |
+
+## #245 — Fokus bleibt beim Tippen in der Suchraum-Tabelle (12.09.2026)
+
+> **#245 (12.09.2026, Anwenderbefund per Bildschirmfoto: in Station „4 Optimierung" springt bei jeder Tastatureingabe der Fokus aus den
+> Zahlenfeldern der Tabelle „Suchraum je Einheit") — umgesetzt (`7deecd56`, Merge `a35b1022`, Agent Opus; 5 Dateien, +208/−4).** Ursache
+> in jedem Glied am Code belegt: `Zahlenfeld`/`Ganzzahlfeld` melden per `@oninput` je Tastendruck, `OptimierungBlock` reicht über
+> `Geaendert` an `StromspeicherAuslegungSeite.FlotteGeschrieben()`, und das ersetzt die Flottenkonfiguration durch eine JSON-Tiefenkopie
+> (`SpeicherAuslegungKopie.Von`) — aus gutem Grund, vier Blätter schreiben an derselben Konfiguration; `FlottenAuslegungsAchse`
+> überschreibt `Equals` nicht, `<tr @key="a">` verglich also Referenzen, sah je Tastendruck einen neuen Schlüssel, und Blazor riss die
+> Zeile samt `<input>` ab. Zweite Hälfte des Befunds, die niemand gemeldet hatte: ein frisch aufgebautes `Zahlenfeld` hat keine
+> Texterinnerung und schrieb „640," zu „640" — das Dezimaltrennzeichen ging mitten in der Eingabe verloren. **Fix a) allein:** `@key` auf
+> Wertidentität — `OptimierungBlock.Zeilenschluessel` = „id:" + (`ErsetztEinheitId` ?? `Vorlage.Id`), dieselbe Zuordnung, mit der der
+> Optimierer die Achse ihrer Einheit zuordnet, als Text kopiefest; fehlt die Kennung oder trägt eine zweite Achse dieselbe, entscheidet
+> „#" + Zeilennummer (ein doppelter `@key` bricht den Zeichenlauf ab). **Fix b) geprüft und begründet verworfen:** die Tiefenkopie je
+> Tastendruck ist lasttragend — drei Editoren (`SpeicherFlottenEditor`, `SpeicherFlottenBetriebEditor`, `SpeicherAuslegungEditor`)
+> frischen ihre Arbeitskopie nur an einer geänderten REFERENZ auf; bliebe sie stehen, schriebe jeder beim nächsten Feld seinen alten Stand
+> zurück. Aufwandspunkt, kein Fehler: die Kopie serialisiert je Tastendruck die ganze Konfiguration; eine Fassungsnummer statt der
+> Referenzprüfung wäre der saubere Weg, falls es je spürbar wird. **Zweite Stelle desselben Musters** in `SpeicherFlottenEditor.razor`
+> (Lebensdauerkurve, `@key="punkt"` — `OnParametersSet` baut `_wert` je gemeldetem Feld neu auf): Schlüssel ist jetzt die Zeilennummer
+> innerhalb der per `einheit.Id` getrennten Einheit. Alle übrigen `@key` in EPOS.UI gesichtet und belassen — Wertidentitäten
+> (`einheit.Id`, `k.AnlageId`, `zeile.Id`, `z.Kennung`, `eintrag.Id`, `Rasterstand`) oder gewollte Neuaufbauten über Zähler (`_stand`,
+> `_wahlfeldSchluessel`, `_extrapolationSchluessel`, KiChat); die einzige verbleibende Objektreferenz `WaermepumpenDialog` (`_gewaehlt`)
+> wechselt nur bei Zeilenwahl und MUSS die Detailansicht neu aufbauen (W7‑B‑3). **Wachen:** drei bunit-Fälle, vor dem Fix rot
+> (`Assert.Same` „not the same instance", Erwartet „640," / Tatsächlich „640"), messen die Identität der KOMPONENTEN-Instanzen statt der
+> DOM-Knoten — bunit liest das Markup nach jeder Änderung neu ein, AngleSharp-Knoten sind danach immer neu; Hausregel in `EPOS.UI/CLAUDE.md`
+> nach dem #235-Absatz: „`@key` nie auf ein Objekt, das eine Kopie je Änderung neu erzeugt — Wertidentität nehmen". UI-Tests 3 958 → 3 961.
+> Kein Rechenweg, keine Ressource, kein SQL berührt. **Dazu #246 (Konzept, SD‑E‑10):** die Anwenderrückmeldung zur Suchsemantik
+> („Variation der Größe ergibt nur Sinn ohne vorgegebenen Speichertyp; für mehrere Speicher ist die Stückzahl die Variable — eine zweite
+> Methode; Dialog übersichtlicher") steht als Kapitel 8 im Konzept `Dokumentation/aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md`
+> (`a47e0f54`): zwei Suchmethoden „Größe suchen" (freie Einheit, Stückzahl fest 1) und „Stückzahl suchen" (Einheit aus Projektanlage oder
+> Katalog, Größe fest, Stückzahl von–bis je Einheit, Kandidaten = Produkt der Stückzahlbereiche × Ziele, kein Feinraster), Herkunftsfeld
+> `FlottenEinheit.Herkunft` (Altbestand: `AnlageId` → Projektanlage, sonst Katalog), Engine-Feld `FlottenAuslegungsAchse.Suchart`, Karten
+> je Einheit statt der Neun-Spalten-Tabelle, Fragen SD‑Q13…Q18 mit Empfehlung — **Entscheid offen**; das Mockup
+> `Mockups/stromspeicher-optimierung-v2.html` (Agent Opus, `ff2f12bb`, Merge `82f00552`) zeigt Kopfblock, Karten und Ergebniskasten für beide
+> Methoden. Der in 7.4 genannte Pfad `stromspeicher-optimierung.html` existierte nie, der Verweis ist berichtigt. **Gate sept55 auf
+> `a35b1022`** (#245-Merge; das Mockup kam danach hinzu und ändert nichts, was das Gate misst): Kern 2 743, UI 3 961, Engine 425, KiKern 488,
+> 5 eindeutige Warnungen, SQL 0 von 1 344, ChartProben 61 Bilder und 14 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün.
+
+## #246/#247 — Zwei Suchmethoden der Station „4 Optimierung“ (12.09.2026)
+
+> **#246/#247 (12.09.2026, Anwenderentscheid SD‑E‑10 zur Station „4 Optimierung": SD‑Q13 Empfehlung · SD‑Q14 „variierbar" · SD‑Q15 „die
+> Markierung einer Einheit ist nicht erforderlich, sie werden nur temporär für die Optimierung benötigt; ein Button ‚Einheiten in
+> Projekt übernehmen' für die ausgewählten Einheiten" · SD‑Q16 „nur Stückzahl variieren" · SD‑Q17/Q18 Empfehlung; „Größensuche
+> bleibt") — umgesetzt (Konzept `316152dd`; Engine `51166101`, Kern `d51c91d1`, Oberfläche `57baf809`, Doku `8e00629b`, Merge
+> `80e2788f`, Agent Opus; 37 Dateien, +4 564/−414).** Das Konzeptkapitel 8 ist auf die Entscheide umgeschrieben: Einheiten tragen keinen
+> Typ, je Einheitenkarte ein Schalter „variieren", die gewählte Methode bestimmt, WAS an den eingeschalteten Einheiten variiert —
+> **Größe suchen** (zwei der drei Größen nach Kopplung, Stückzahl fest auf dem Kartenwert, Feinraster erlaubt) oder **Stückzahl suchen**
+> (Stückzahl von–bis je Einheit, 0 = entfällt, Größe fest, Kandidaten = Π Stückzahlbereiche × Ziele, kein Feinraster, Kosten je Stück);
+> je Lauf EINE Variationsart, das Mischraster Stückzahl × Größe gibt es nicht mehr. Zwei Folgefragen entschied die Orchestrierung
+> (8.5): Übernahme je Stück EINE Projektanlage, Rückschreiben statt Dublette bei `AnlageId`. **Engine:** `FlottenAuslegungEingang.Suchmethode`
+> (Bewerten/Groesse/Stueckzahl, Vorgabe Groesse, damit ein Stand ohne Feld weiterrechnet — Bauart wie `Feinraster`), `Kandidatenzahl`,
+> `Achsengroesse`, `FeinrasterHoechstzahl`, `Feinrasterwerte`, `BildeAchse`, `BaueEinheiten` lesen sie; `FlottenSuchbefund` (keine
+> aktive Achse, Stückzahlbereich leer, Größenbereich unbrauchbar) als benannte Ablehnung VOR dem Bau der Achsen; Stückzahlen je Kandidat
+> in der Zusammenfassung; 12 Engine-Tests (266/4/1 Kandidaten am Konzeptbeispiel, zwei JSON-Rundläufe). **Kern:**
+> `SpeicherFlottenAnzeigeCtrl.Stueckzahl.cs` (Kurve „Kapitalwert über Stückzahl" mit Bestwertmarke und Schraffur, Rasterkarte n₁ × n₂
+> als dieselbe `Optimierungsraster`-Zeichnung mit ganzzahligen Achsen), `ChartRenderer.Stueckzahlkurve`, ChartProben 61 → **64 Bilder**
+> (+2) und **15 Gegenproben** (+1: die Bestwertmarke ändert das Bild); `SpeicherFlottenStudieCtrl.Uebernahme.cs` mit `Vorschau` und
+> `EinheitenInProjektUebernehmen` — je Stück eine Anlage über `Tab_Stromspeicher` UND `AnlagenSql.SQL_ANLAGE_INSERT` in EINEM
+> `DbVorgang`, Bezeichner im Vorgang eindeutig, acht Gerätewerte, Bezeichner bleibt beim Rückschreiben stehen; 16 Kern-Tests gegen eine
+> Kopie der Testdatenbank; KI-Maskenbrücke meldet „Suchmethode" (Katalogfelder 26 → 27). **Oberfläche:** `OptimierungBlock.razor` neu
+> nach 8.4 — Kopfblock zweispaltig (drei Optionen mit Erklärsatz, gedimmte Suchoption mit EINER Abhilfezeile und weicher Sperre
+> `Optionsgruppe.WeichGesperrt`; rechts Ziel, Kandidatenzeile live, Feinraster nur bei G, Rechenknopf), Suchraum als eine Karte je
+> Einheit (Kopf Name · Kenndaten · „variieren", Rumpf je Methode im `Formularraster` mit eigener Beschriftung je Feld statt der
+> Mockup-Kompaktzeile — iU8‑E‑2, Fußzeile „Kandidaten dieser Einheit", nicht eingeschaltet gedimmt „fest: …"), die Neun-Spalten-Tabelle
+> ist gefallen; „Bestes Ergebnis" nennt unter S die Bestückung; `SpeicherFlottenGroessenAnsicht.Methode` zeigt unter S Stückzahlkurve
+> bzw. n₁ × n₂-Karte, Rasterkarte/Schnitte/Schieber entstehen dann nicht; „Kandidat übernehmen" setzt unter S `AnzahlVon = AnzahlBis`;
+> Schritt 1 mit Auswahlkästchen je Karte und Knopf „Ausgewählte Einheiten in Projekt übernehmen" (Rückfrage mit den zwei Zahlen aus
+> `Vorschau`, Lesemodus als Delegat `Schreibgeschuetzt` aus der Hülle — Hausregel S‑2); 37 Ressourcen de/en; UI-Tests 3 961 → **3 973**.
+> Acht begründete Abweichungen in Konzept 8.8. Mockup v2 auf den Entscheid nachgezogen (Herkunftspille weg). **Wiki:** Bedienungsseite
+> Revision 565 (Schritt 1 Übernahme, Schritt 4 drei Suchmethoden, Karte je Einheit), Rechenwegseite Fassung 7 Revision 566
+> (Tabelle der drei Methoden mit Kandidatenzahl, Kostenregel je Stück, die drei Ablehnungen); drei Fassungs-Erwartungswerte der
+> H13-Wächter nachgezogen. Der Projektlauf ist nicht berührt (`SpeicherFlottenProjektCtrl` setzt `FlottenGroessenOptimieren` weiter auf
+> `false`), Referenzbasis R7 und Einfrierregel SP‑O‑8 bleiben. **Gate sept56 auf `80e2788f`:** Kern 2 759, UI 3 973, Engine 437,
+> KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf
+> grün. Windows-Abnahme der Station 4 und des Übernahmeknopfs beim Anwender offen.

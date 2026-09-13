@@ -4,6 +4,7 @@ using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using EPOS.UI.Seiten.Strom;
+using EPOS.UI.Standards;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
@@ -58,31 +59,83 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Schalter „Speicheranzahl und Größenbereiche optimieren" benennt den
-    /// Rechenknopf um — das ist die halbe Antwort auf Punkt 3 der Anwenderrückmeldung
-    /// („Wie wird die Lastspitzenkappung gestartet?").
+    /// Die WAHL DER SUCHMETHODE benennt den Rechenknopf um — das ist die halbe Antwort
+    /// auf Punkt 3 der Anwenderrückmeldung („Wie wird die Lastspitzenkappung
+    /// gestartet?").
     /// </summary>
+    /// <remarks>
+    /// Seit Auftrag <b>#247</b> (SD‑E‑10) sind es DREI Optionen: „Nur bewerten",
+    /// „Größe suchen", „Stückzahl suchen". Die zwei Suchoptionen sind nur wählbar,
+    /// solange mindestens eine Einheit „variieren" trägt — deshalb steht hier eine
+    /// Flotte mit einer aktiven Suchachse.
+    /// </remarks>
     [Fact]
-    public void Der_Suchlaufschalter_benennt_den_Rechenknopf_um()
+    public void Die_Suchmethode_benennt_den_Rechenknopf_um()
     {
         var cut = Ansicht(new StromspeicherAuslegungDienste
         {
-            Vorgaben = () => new SpeicherOptimierungVorgaben(),
+            Vorgaben = () => MitSuchachse(),
             FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
         });
 
         Assert.Equal(Resource.FLOTTE_SEITE_BTN_FLOTTE,
                      Auslegungshilfe.Rechenknopf(cut).TextContent.Trim());
 
-        // SEIT AUFTRAG #224 waehlt die WAHL im Kopf von Station 4 zwischen „nur
-        // bewerten" und „beste Groesse suchen" — statt eines Schalters unter der
-        // Einheitenliste in Schritt 1 (Zielbild 7.4).
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         cut.FindAll("input[type=radio]")
-           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_SUCHE_AN))
+           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_METHODE_GROESSE))
            .Change(true);
 
         Assert.Equal(Resource.FLOTTE_SEITE_BTN_GROESSEN,
                      Auslegungshilfe.Rechenknopf(cut).TextContent.Trim());
+    }
+
+    /// <summary>Eine Vorbelegung mit genau einer Einheit und ihrer aktiven Suchachse.</summary>
+    private static SpeicherOptimierungVorgaben MitSuchachse()
+    {
+        var einheit = new FlottenEinheit
+        {
+            Id = "a", Name = "A", KapazitaetKWh = 24, LadeleistungKw = 10, EntladeleistungKw = 12,
+            Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+            SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+        };
+        return new SpeicherOptimierungVorgaben
+        {
+            Eingaben = new SpeicherOptimierungEingaben
+            {
+                Auslegung = new SpeicherAuslegungKonfiguration
+                {
+                    Flotte = new FlottenStudieKonfiguration
+                    {
+                        Einheiten = { einheit },
+                        Optionen = new FlottenSimulationOptionen
+                        {
+                            Betriebsziel = FlottenBetriebsziel.PeakShaving,
+                            EnergieAusgleichEuroProKWh = 0.2
+                        },
+                        Wirtschaftlichkeit = new FlottenWirtschaftlichkeitEingang
+                        { ProjektjahreBeiWiederholung = 1 },
+                        Auslegung = new FlottenAuslegungEingang
+                        {
+                            MaximaleKandidaten = 10000,
+                            Feinraster = false,
+                            Achsen =
+                            {
+                                new FlottenAuslegungsAchse
+                                {
+                                    Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                                    AnzahlVon = 1, AnzahlBis = 1,
+                                    KapazitaetVonKWh = 20, KapazitaetBisKWh = 30, KapazitaetSchrittKWh = 10,
+                                    LeistungVonKw = 10, LeistungBisKw = 12, LeistungSchrittKw = 2,
+                                    CRateVon = 0.5, CRateBis = 1.0, CRateSchritt = 0.5,
+                                    Vorlage = einheit
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
 
     [Fact]
@@ -225,9 +278,65 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         Assert.Single(cut.FindComponents<SpeicherFlottenBetriebEditor>());
     }
 
+    /// <summary>
+    /// DIE LEBENSDAUERKURVE IST DIE ZWEITE STELLE DESSELBEN BEFUNDS <b>#245</b>: Auch
+    /// hier hing der <c>@@key</c> ihrer Zeilen am PUNKTOBJEKT, und
+    /// <c>SpeicherFlottenEditor.OnParametersSet</c> baut <c>_wert</c> nach jedem
+    /// gemeldeten Feld neu auf (der Wirt reicht eine frische Tiefenkopie herein, also
+    /// eine neue Referenz) — jeder Tastendruck riss die Zeile ab, der Fokus ging mit.
+    /// Seither ist der Schlüssel die ZEILENNUMMER.
+    /// </summary>
+    /// <remarks>
+    /// Gemessen wird wie in <c>OptimierungStationTests</c> die Instanz der
+    /// <c>Zahlenfeld</c>-Komponente, nicht der DOM-Knoten: bunit liest das Markup nach
+    /// jeder Änderung neu ein, AngleSharp-Knoten sind danach immer neu.
+    /// </remarks>
+    [Fact]
+    public void Eine_Eingabe_an_der_Lebensdauerkurve_laesst_ihre_Zeile_stehen()
+    {
+        FlottenStudieKonfiguration flotte = Einheitenflotte();
+        flotte.Einheiten[0].RainflowKurve = new()
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 6000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 3000 }
+        };
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => new SpeicherOptimierungVorgaben
+            {
+                Eingaben = new SpeicherOptimierungEingaben
+                {
+                    Auslegung = new SpeicherAuslegungKonfiguration { Flotte = flotte }
+                }
+            },
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
+        });
+
+        Zahlenfeld vorher = Kurvenfeld(cut, "Zyklen bis EOL Punkt 1:");
+
+        Kurveneingabe(cut, "Zyklen bis EOL Punkt 1:").Input("6500,");
+
+        Assert.Same(vorher, Kurvenfeld(cut, "Zyklen bis EOL Punkt 1:"));
+        Assert.Equal("6500,", Kurveneingabe(cut, "Zyklen bis EOL Punkt 1:").GetAttribute("value"));
+    }
+
     // =====================================================================
     //  Hilfen
     // =====================================================================
+
+    /// <summary>Die <c>Zahlenfeld</c>-KOMPONENTE mit dieser Beschriftung.</summary>
+    private static Zahlenfeld Kurvenfeld(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string bezeichnung)
+        => cut.FindComponents<Zahlenfeld>()
+              .Select(x => x.Instance)
+              .Single(x => x.Bezeichnung == bezeichnung);
+
+    /// <summary>Das Eingabefeld im Markup mit dieser Beschriftung.</summary>
+    private static AngleSharp.Dom.IElement Kurveneingabe(
+        IRenderedComponent<StromspeicherAuslegungSeite> cut, string bezeichnung)
+        => cut.FindAll("label")
+              .Single(x => x.TextContent.Contains(bezeichnung, StringComparison.Ordinal))
+              .QuerySelector("input")!;
 
     private static FlottenStudieKonfiguration Einheitenflotte() => new()
     {

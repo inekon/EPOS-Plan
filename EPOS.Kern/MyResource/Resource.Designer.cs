@@ -10454,6 +10454,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} für die Übernahme ins Projekt auswählen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_AUSWAHL_ARIA {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_AUSWAHL_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Batterieexport ins Netz erlauben ähnelt.
         /// </summary>
         public static string FLOTTE_ED_BATTERIEEXPORT {
@@ -11359,6 +11368,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ED_TITEL {
             get {
                 return ResourceManager.GetString("FLOTTE_ED_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgewählte Einheiten in Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Speicheranlagen angelegt, {1} geändert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME_ERFOLG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME_ERFOLG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Speicheranlagen werden angelegt, {1} geändert — fortfahren? ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME_FRAGE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Lesemodus lassen sich keine Speicheranlagen anlegen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME_GESPERRT {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuerst eine Einheit auswählen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME_KEINE {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten in das Projekt übernehmen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ED_UEBERNAHME_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_ED_UEBERNAHME_TITEL", resourceCulture);
             }
         }
         
@@ -12488,11 +12551,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf einer Einheitenkarte „variieren“ einschalten — ohne sie gibt es nichts zu suchen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_ABHILFE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_ABHILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bestes Ergebnis ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_BESTES {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_BESTES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestückung ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_BESTUECKUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_BESTUECKUNG", resourceCulture);
             }
         }
         
@@ -12551,11 +12632,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} × {1} ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_STUECK {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_STUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die = {0} kWh · {1} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEST_SUMME {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEST_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} zulässig · Rechendauer {1} s ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_BEST_ZULAESSIG {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_BEST_ZULAESSIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_BEWERTEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_BEWERTEN_HINWEIS", resourceCulture);
             }
         }
         
@@ -12596,6 +12704,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Einheit geht unverändert in jeden Kandidaten ein. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_AUS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest: ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_FEST {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Größe aus Schritt 1 bleibt stehen; variiert wird nur die Stückzahl. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_FEST_GROESSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_FEST_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stückzahl bleibt stehen; variiert wird nur die Größe. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_FEST_STUECK {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_FEST_STUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich dieser Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_GROESSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_GROESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die = {0} – {1} kWh · {2} – {3} kW ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidaten dieser Einheit: ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_KANDIDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_KANDIDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kWh · {1} kW · {2} Stück ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_KENNDATEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_KENNDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl dieser Einheit ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KARTE_STUECKZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KARTE_STUECKZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_KEINE_EINHEIT {
@@ -12628,6 +12817,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_OPT_MARKE_GROB {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_MARKE_GROB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Flotte aus Schritt 1 genau einmal — nichts wird variiert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_METHODE_BEWERTEN_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_METHODE_BEWERTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe suchen ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_METHODE_GROESSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_METHODE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_METHODE_GROESSE_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_METHODE_GROESSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl suchen ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_METHODE_STUECKZAHL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_METHODE_STUECKZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lässt jede Einheit so groß, wie sie eingestellt ist, und variiert, wie viele davon stehen (0 = Einheit entfällt). Die Kosten sind die Kosten einer Einheit mal Stückzahl. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_METHODE_STUECKZAHL_ERL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_METHODE_STUECKZAHL_ERL", resourceCulture);
             }
         }
         
@@ -13456,6 +13690,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_STATUS_NICHT_ERREICHT {
             get {
                 return ResourceManager.GetString("FLOTTE_STATUS_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl [Stück] ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_ACHSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stückzahl {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_ACHSE_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_ACHSE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über der Stückzahl, je Stückzahl eine Säule; die beste ist hervorgehoben ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_BILD_ALT {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_BILD_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte der Stückzahlen zweier Einheiten; unzulässige Punkte schraffiert ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_RASTER_ALT {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_RASTER_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über die Stückzahlen zweier Einheiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_RASTER_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_RASTER_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert über Stückzahl ähnelt.
+        /// </summary>
+        public static string FLOTTE_STUECK_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_STUECK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übernahme ist fehlgeschlagen; es wurde nichts geschrieben: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_FEHLER {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Einheit ausgewählt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_KEINE_EINHEIT {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_KEINE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne offenes Projekt lassen sich keine Speicheranlagen anlegen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_KEIN_PROJEKT", resourceCulture);
             }
         }
         
@@ -24124,6 +24439,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_MAXKAND_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_MAXKAND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was der nächste Lauf variiert: nur bewerten, die Größe suchen oder die Stückzahl suchen. Je Lauf wird genau eine Art variiert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_METHODE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_METHODE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchmethode ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_METHODE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_METHODE_NAME", resourceCulture);
             }
         }
         

@@ -623,7 +623,7 @@ nicht nur ein Rechenknopf:
   Block „Wirtschaftliche Jahresprojektion" wandert nach 2 (dort, wo die Wiki-Seite ihn beschreibt).
 - **Schritt 2 Daten & Kosten:** Zeitreihen, Kostensätze, dazu Zins, Jahresprojektion, Projektlaufzeit,
   Restwert der Studie, Energie-Ausgleichswert (jedes Expertenfeld mit Erklärzeile aus 7.3).
-- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt, Mockup `stromspeicher-optimierung.html`):
+- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt; das hier ursprünglich genannte Mockup `stromspeicher-optimierung.html` lag nie im Repository — Befund 12.09.2026; das Mockup zu Kapitel 8 ist `Mockups/stromspeicher-optimierung-v2.html`):
   1. Kopf: **Ziel** (Kapitalwert gegenüber „ohne Speicher" — die Mappe kannte drei Zielgrößen, das
      Programm legt seit P1 eine fest) und die Wahl **„Nur die eingestellte Flotte bewerten"** oder
      **„Wirtschaftlich beste Größe suchen"**.
@@ -749,3 +749,202 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
    („prüfen, heute steht es im Flotteneditor"). Bezugs- und Einspeisegrenze sind harte Grenzen des
    Anschlusses, die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht: Beides
    beschreibt den BETRIEB und nicht eine Einheit.
+
+## 8. Zwei Suchmethoden — Anwenderrückmeldung 12.09.2026 (SD‑E‑10)
+
+> **Umgesetzt mit Auftrag #247.** Zielbild 8.3 und Darstellung 8.4 vollständig, samt der
+> Übernahme ins Projekt aus 8.3. Was davon abweicht, steht in 8.8.
+
+### 8.1 Rückmeldung
+
+Zur Station „4 Optimierung" (Stand #224/#226, Bildschirmfoto mit dem Projekt „Stromspeicher Optimierung", eine Einheit
+„Shenzhen Growatt WIT‑M+APX ESS [100 kW, 129,0 kWh]" aus dem Katalog, Suchraum 1–1 Stück, Kapazität 40–300/20, Leistung 40–400/20):
+
+1. „Es ergibt keinen Sinn, die Variation der Leistung, Kapazität … bei einem vorgegebenen Speicher vorzunehmen. Die Variation ergibt
+   nur Sinn für einen ohne Vorgabe des Speichertyps."
+2. „Für mehrere Speicher ist die Variante die Anzahl der Speicher die Variation und nicht die Variation der Leistung, Kapazität …
+   Das wäre eine zweite Methode."
+3. „Stelle den Dialog für die Variation übersichtlicher dar und insgesamt ein verbessertes Design des Dialogs."
+
+Dazu der Fehler, dass jedes Zahlenfeld der Suchraum-Tabelle bei jedem Tastendruck den Fokus verliert — der geht als **#245** getrennt
+und vor diesem Kapitel (Ursache: die Seite ersetzt die Flottenkonfiguration je Änderung durch eine JSON-Tiefenkopie, und die Zeilen
+hängen per `@key` an den Objektreferenzen).
+
+### 8.2 Befund — was die Suche heute tut
+
+- Es gibt **eine** Suchart. Jede Einheit der Flotte bekommt eine Suchachse (`FlottenAuslegungsAchse`) mit **Stückzahl von–bis UND**
+  einem Größenraster aus zwei der drei Größen Kapazität, Leistung, C-Rate (Kopplung, die dritte folgt). Die Rastersuche
+  (`FlottenOptimierer.BildeAchse`) läuft heute schon Stückzahl × erste Größe × zweite Größe; ein Kandidat ist eine vollständige
+  Flotte je Betriebsziel.
+- Die **Vorlage** der Achse ist die konkrete Einheit. Beim Katalogspeicher aus dem Bildschirmfoto erzeugt das Raster damit
+  Fantasiegeräte von 40 bis 300 kWh mit den Kostensätzen des 129‑kWh‑Geräts — genau der Einwand aus 8.1 Punkt 1: Ein Katalog- oder
+  Projektspeicher HAT eine Größe; variieren lässt sich bei ihm nur, wie viele davon stehen.
+- Die **Herkunft** einer Einheit ist im Modell nur halb bekannt: `FlottenEinheit.AnlageId` unterscheidet Projektanlage von
+  „keine Projektanlage"; Katalogeinheit und freie Einheit (#239, dritte Quelle „leer") sind ununterscheidbar. Station 4 liest die
+  Herkunft nirgends — sie behandelt jede Einheit wie eine freie.
+- Die Suchraum-Tabelle hat neun Spalten mit sieben kleinen Zahlenfeldern je Zeile, alle gleich gewichtet, ohne sichtbaren Bezug
+  dazu, was die Einheit ist. Das ist Punkt 3.
+
+### 8.3 Zielbild — zwei Suchmethoden je Lauf, Einheiten ohne Typ (Entscheide SD‑Q13 … SD‑Q16 vom 12.09.2026)
+
+**Grundsatz (SD‑Q15):** Die Einheiten der Flotte tragen KEINE Herkunftsmarkierung. Sie sind Arbeitsstücke der Optimierung —
+woher ihre Zahlen kommen (Projektanlage, Katalog, Handeingabe über die dritte Quelle „leer" aus #239), spielt für die Suche keine
+Rolle. WELCHE Einheiten variiert werden, entscheidet der Anwender je Einheit mit dem Schalter „variieren" auf ihrer Karte; WAS an
+den variierten Einheiten variiert wird, entscheidet die gewählte Methode. Der Bezug `FlottenEinheit.AnlageId` bleibt, was er ist:
+die Verbindung zu einer Speicheranlage des Projekts (Badge „vertreten", Nachzugszeile in Schritt 1) — keine Typkennung.
+
+**Wahl in „Suche" (SD‑Q13, ausdrücklich):** drei Optionen untereinander — *Nur die eingestellte Flotte bewerten* · *Größe
+suchen* · *Stückzahl suchen*. Eine Suchoption ist wählbar, sobald mindestens eine Einheit „variieren" trägt; sonst steht sie gedimmt
+mit der Abhilfe „Auf einer Einheitenkarte ‚variieren' einschalten".
+
+**Methode G „Größe suchen".** Variiert an jeder eingeschalteten Einheit zwei der drei Größen nach Kopplung (Kapazität, Leistung,
+C-Rate — wie heute); die Stückzahl der Einheit steht fest auf dem Wert ihrer Karte. Kosten: die spezifischen Koeffizienten der
+Einheit (€/kWh, €/kW, fix, Betrieb, Ersatz) × Stückzahl. Feinraster erlaubt (erste eingeschaltete Einheit, wie heute). Ergebnis wie
+heute: Rasterkarte, Schnittkurve, Kandidatentabelle; „Kandidat übernehmen" setzt die gefundene Größe in die Karte(n).
+
+**Methode S „Stückzahl suchen" (SD‑Q14, SD‑Q16).** Variiert an jeder eingeschalteten Einheit die Stückzahl von–bis (0 = Einheit
+entfällt); die Größe steht fest auf dem Wert der Karte. Das gilt für Katalog- und Projektspeicher ebenso wie für eine von Hand
+eingegebene Einheit — SD‑Q14: „es kann auch mehrere Einheiten geben, die in der Summe etwas anderes sind als eine verfügbare
+größere." Kandidatenzahl = Π (Stückzahlbereiche der eingeschalteten Einheiten) × Betriebsziele. Kein Feinraster (ganze Zahlen).
+Kosten = Kosten einer Einheit × Stückzahl (Investition, Betrieb, Ersatz und Restwert je Stück). Ergebnis: bei EINER variierten
+Einheit die Kurve „Kapitalwert über Stückzahl" (Balken je Stückzahl, Bestwert hervorgehoben), bei ZWEI die Rasterkarte n₁ × n₂
+(dieselbe Karte wie heute, Achsen ganzzahlig), darüber hinaus die Kandidatentabelle; „Kandidat übernehmen" setzt die Stückzahlen in
+die Karten.
+
+**Je Lauf EINE Variationsart (SD‑Q16 „nur Stückzahl variieren").** Größe und Stückzahl werden nie im selben Lauf variiert: unter G
+ist die Stückzahl fest, unter S die Größe. Wer beides prüfen will, fährt zwei Läufe. So bleibt die Kandidatenzahl beherrschbar
+(266 Größen ODER 4 Stückzahlen je Einheit, nicht 1 064), und Karte und Kurve bleiben zweidimensional. Das ursprüngliche Zielbild
+„die Herkunft entscheidet die Methode" ist damit gegenstandslos.
+
+**Übernahme ins Projekt (SD‑Q15).** Neu in Schritt 1: je Einheitenkarte ein Auswahlkästchen und der Knopf „Ausgewählte Einheiten
+in Projekt übernehmen". Er macht aus den gewählten Einheiten Speicheranlagen des Projekts — **je Stück eine Anlage** (die
+Projekttabelle `Tab_Stromspeicher` kennt keine Stückzahl), benannt nach der Einheit, bei mehreren Stück mit laufender Nummer; die
+Werte gehen über die Umkehrung derselben Kern-Abbildung, mit der eine Projektanlage heute gelesen wird
+(`StromspeicherSimCtrl.LeseParameter` bzw. `SpeicherFlottenStudieCtrl.EinheitAusKatalog`: Energie, Leistung, Wirkungsgrad,
+Ladezustand, Modul-/Leistungskosten, Investition fix, Standby). Eine Einheit, die bereits eine Projektanlage vertritt (`AnlageId`
+gesetzt), schreibt ihre Werte in DIESE Anlage zurück statt eine zweite anzulegen; bei Stückzahl > 1 entstehen die weiteren als neue
+Anlagen. Die Übernahme fragt vorher nach („n Speicheranlagen werden angelegt, m geändert — fortfahren?") und läuft in einer
+Transaktion; danach tragen die Einheiten ihren Bezug, Badge und Nachzugszeile stimmen. Der gespeicherte Auslegungsstand bleibt davon
+unberührt — der Projektlauf rechnet weiterhin den aktivierten Stand `@Projektflotte` (SP‑O‑8), und die Referenzprojekte kennen den
+Knopf nicht.
+
+**Engine.** `FlottenAuslegungEingang.Suchmethode` = *Bewerten* | *Groesse* | *Stueckzahl* (serialisiert im Stand; alte Stände ohne
+Feld laden als *Groesse*, und ihre Stückzahlbereiche gelten als fest auf dem Von-Wert — ein alter Stand rechnet damit wie ein neuer
+unter G, das heutige Mischraster Stückzahl × Größe gibt es nicht mehr). `FlottenOptimierer.Kandidatenzahl`, `Achsengroesse`,
+`BildeAchse` und `Feinrasterwerte` lesen die Methode: unter *Groesse* zählt die Stückzahl als ein Stützpunkt (AnzahlVon), unter
+*Stueckzahl* zählen erste und zweite Größe je einen Stützpunkt (die Vorlage). Vorprüfung: eine Suchmethode ohne eingeschaltete
+Einheit lehnt benannt ab, ein Stückzahlbereich mit Bis < Von ebenso. Der Projektlauf (Stand `@Projektflotte`, Referenzprojekt 1046)
+ist nicht berührt; die Referenzbasis R7 bleibt.
+
+### 8.4 Darstellung — Karten je Einheit statt einer Neun-Spalten-Tabelle (SD‑Q18)
+
+- **Kopfblock zweispaltig:** links „Suche" als drei untereinanderstehende Optionen mit je einem Erklärsatz; rechts das Ziel
+  („Kapitalwert gegenüber ‚ohne Speicher' [€]"), die Kandidatenzeile („266 Kandidaten von höchstens 10 000 · Raster zulässig", rot
+  mit Abhilfesatz bei Überschreitung), der Feinraster-Schalter (nur bei G sichtbar) und der Rechenknopf.
+- **Suchraum als eine Karte je Einheit.** Kopfzeile: Name · feste Kenndaten („129 kWh · 100 kW · 1 Stück") · Schalter „variieren".
+  Rumpf bei eingeschaltetem Schalter je Methode: bei G die Kopplung und zwei Zeilen „Kapazität 40 – 300 kWh, Schritt 20" /
+  „Leistung 40 – 400 kW, Schritt 20" mit der Einheit hinter dem kurzen Zahlenfeld (Zeilenraster-Regel W6‑B‑4); bei S eine Zeile
+  „Stückzahl 1 – 4" und darunter die Herleitungszeile „= 129 – 516 kWh · 100 – 400 kW · Investition 45 000 – 180 000 €". Fußzeile
+  „Kandidaten dieser Einheit: 14". Einheiten ohne „variieren" stehen gedimmt mit „fest: 1 × 129 kWh · 100 kW". **Keine
+  Herkunftspille** (SD‑Q15).
+- **Bestes Ergebnis:** die drei Karten von 7.9 bleiben; bei S nennt die zweite Karte die Stückzahl je Einheit („2 × Growatt … =
+  258 kWh · 200 kW") statt Kapazität · C-Rate. Rasterkarte/Kurve/Kandidatentabelle wie 8.3.
+- **Schritt 1:** Auswahlkästchen je Einheitenkarte, Knopf „Ausgewählte Einheiten in Projekt übernehmen" neben „Speicher hinzufügen",
+  Rückfrage mit Anzahl, Erfolgsmeldung mit den angelegten Anlagen.
+- Formularraster-Regeln (iU8‑E‑2), Bedienblock fester Breite wie #233, Ablaufleiste unverändert. Das Mockup
+  `Mockups/stromspeicher-optimierung-v2.html` (Fassung vor dem Entscheid: Herkunftspillen, Methode an die Herkunft gebunden) wird auf
+  diesen Stand nachgezogen — Pillen fallen, jede Karte trägt den Schalter „variieren", unter S zeigt jede eingeschaltete Karte die
+  Stückzahlzeile, unter G die Größenzeilen; Schritt 1 wird als zweite Ansicht mit Auswahl und Übernahmeknopf skizziert.
+
+### 8.5 Fragen (SD‑Q13 … SD‑Q18) mit Empfehlung und Entscheid
+
+| Kennung | Frage | Empfehlung | Entscheid (Anwender, 12.09.2026) |
+|---|---|---|---|
+| SD‑Q13 | Methode ausdrücklich wählen (drei Optionen) oder automatisch aus der Herkunft ableiten? | Ausdrücklich wählen | **Empfehlung** — drei Optionen; die Bindung an eine Herkunft entfällt mit SD‑Q15 |
+| SD‑Q14 | Freie Einheit: Stückzahl fest 1 oder auch variierbar? | Fest 1 | **Variierbar** — „es kann auch mehrere Einheiten geben, die unterschiedlich in der Summe sind als eine verfügbare größere"; unter S variiert die Stückzahl JEDER eingeschalteten Einheit |
+| SD‑Q15 | Herkunftsfeld und Regel für Altbestände? | Feld mit drei Werten, Altbestandsregel, Pille | **Keine Markierung** — „die Einheiten werden nur temporär für die Optimierung benötigt"; stattdessen der Knopf „Ausgewählte Einheiten in Projekt übernehmen" in Schritt 1 |
+| SD‑Q16 | Größe und Stückzahl in EINEM Lauf kombinieren? | Nicht in S1 | **Nur Stückzahl variieren** — je Lauf eine Variationsart: G variiert die Größe bei fester Stückzahl, S die Stückzahl bei fester Größe |
+| SD‑Q17 | Ergebnisdarstellung bei Stückzahl? | Kurve/Balken über Stückzahl (eine Einheit), Rasterkarte n₁ × n₂ (zwei), Kandidatentabelle darüber hinaus | **Empfehlung** |
+| SD‑Q18 | Karten je Einheit statt Tabelle? | Ja, nach 8.4 und Mockup | **Empfehlung** |
+
+Zwei Folgefragen hat die Orchestrierung ohne Rückfrage entschieden, weil sie den Entscheid nur ausführen: **Übernahme je Stück eine
+Anlage** (die Projekttabelle kennt keine Stückzahl; eine n-fach große Anlage wäre eine andere Aussage als n Geräte) und
+**Rückschreiben statt Dublette**, wenn die Einheit schon eine Projektanlage vertritt. Beides steht in 8.3 und lässt sich in der
+Abnahme umkehren.
+
+### 8.6 Stufenplan
+
+- **#247 (Umsetzung, nach Entscheid):** Engine — `Suchmethode` mit Kandidatenzahl, Feinraster, `BildeAchse` und Vorprüfung je
+  Methode, Laden alter Stände; Kern — Ergebnisdaten „Kapitalwert über Stückzahl" und n₁ × n₂-Karte in `SpeicherFlottenAnzeigeCtrl`,
+  Übernahme ausgewählter Einheiten als Projektanlagen (Transaktion, Rückschreiben bei `AnlageId`, je Stück eine Anlage); ChartProben
+  +2 Bilder +1 Gegenprobe; Oberfläche — Methodenwahl mit Abhilfe, Karten je Einheit mit „variieren", Kandidatenzeile und Feinraster je
+  Methode, Ergebnissicht Stückzahl, „Kandidat übernehmen" für beide Methoden, Schritt 1 mit Auswahl und Übernahmeknopf; Ressourcen
+  de/en; SpeicherEngine-, Kern- und bunit-Tests; Mockup nachgezogen; Wiki-Bedienungsseite (Schritt 1 und 4) und Rechenweg-Absatz
+  „Rastersuche"; Referenzlauf 13/13 byte-gleich.
+- **Später, nur auf Anwenderwunsch:** Größe und Stückzahl im selben Lauf mit Kandidatengrenze.
+- **Erledigt davor:** #245 (Fokusverlust), Mockup v2 (#246).
+
+### 8.7 Anwenderentscheid SD‑E‑10
+
+**Entschieden am 12.09.2026** (Wortlaut in 8.5): SD‑Q13 Empfehlung · SD‑Q14 variierbar · SD‑Q15 keine Markierung, Übernahmeknopf ·
+SD‑Q16 nur Stückzahl variieren (je Lauf eine Variationsart) · SD‑Q17 Empfehlung · SD‑Q18 Empfehlung. Umsetzung als #247.
+
+### 8.8 Was #247 umgesetzt hat — und wo es vom Zielbild abweicht
+
+**Umgesetzt** (Zielbild 8.3, Darstellung 8.4, Anwenderentscheid SD‑E‑10):
+
+| Gegenstand | Wo es jetzt steht |
+|---|---|
+| Die drei Suchmethoden | `SpeicherEngine/FlottenModel.cs`: `FlottenSuchmethode` { `Bewerten`, `Groesse`, `Stueckzahl` }, `FlottenAuslegungEingang.Suchmethode` mit dem Eigenschaftsinitialisierer `Groesse` — ein Stand ohne das Feld lädt damit als Größensuche und rechnet weiter wie bisher (dieselbe Bauart wie `Feinraster` seit #224) |
+| Was die Methode am Raster ändert | `FlottenOptimierer`: `Kandidatenzahl`, `Achsengroesse`, `FeinrasterHoechstzahl`, `Feinrasterwerte`, `BildeAchse`, `BildeFeinachse`, `BaueEinheiten` lesen sie. Unter `Groesse` zählt die Stückzahl als EIN Stützpunkt (`AnzahlVon`, 0 gilt als 1), unter `Stueckzahl` zählen erste und zweite Größe je einen (die Vorlage), unter `Bewerten` gibt es keine Suchachse. **Das Mischraster Stückzahl × Größe existiert nicht mehr** |
+| Kein Feinraster unter S | `Kandidatenzahl` liefert `FeinHoechstens = 0`, `Feinrasterwerte` eine leere Liste, und `Rechne` startet Phase 2 nur unter `Groesse` — zwischen zwei ganzen Zahlen gibt es nichts zu verfeinern |
+| Die Vorprüfung mit benannter Ablehnung | `FlottenSuchbefund` { `Inordnung`, `KeineAktiveAchse`, `StueckzahlbereichLeer`, `GroessenbereichUnbrauchbar` } als fünfter Teil von `FlottenKandidatenzahl`; `Rechne` wirft für jeden der drei Befunde eine eigene Meldung, die Ansicht sperrt den Rechenknopf und zeigt die Abhilfe |
+| Die Stückzahl je Kandidat | `FlottenKandidatZusammenfassung.Stueckzahlen` — je aktiver Achse eine Zahl, vom Optimierer mitgeschrieben. Ohne sie ließe sich die Achse der Ergebnissicht nur aus Einheitenkennungen raten |
+| Ergebnisdaten und Bilder der Stückzahlsuche | `EPOS.Kern/Controller/SpeicherFlottenAnzeigeCtrl.Stueckzahl.cs`: `VariierteEinheiten`, `Stueckzahlkurve` (+ `KandidatZuStueckzahl`), `Stueckzahlraster`, `Stueckzahlbild`, `Stueckzahlrasterbild`. Die Kurve zeichnet der neue Renderer `ChartRenderer.Stueckzahlkurve` (Balken, vorzeichenfähige Achse, Bestwert in `C_RASTER_GUT` samt Optimum-Marke, Schraffur für unzulässige Stückzahlen); die Karte n₁ × n₂ ist **dieselbe** `Optimierungsraster`-Zeichnung mit ganzzahligen Achsen |
+| Übernahme ins Projekt | `SpeicherFlottenStudieCtrl.Uebernahme.cs`: `Vorschau` (die zwei Zahlen der Rückfrage, ohne Schreibzugriff) und `EinheitenInProjektUebernehmen` — je Stück eine Anlage über `Tab_Stromspeicher` **und** `AnlagenSql.SQL_ANLAGE_INSERT`, alles in EINEM `DbVorgang`, Bezeichner im Vorgang auf Eindeutigkeit geprüft, Rückgabe je Anlage samt Einheitenkennung |
+| Station 4 nach 8.4 | `EPOS.UI/Seiten/Strom/OptimierungBlock.razor`: Kopfblock zweispaltig (drei Optionen mit Erklärsatz links, Bedienblock fester Breite rechts), Suchraum als **eine Karte je Einheit** mit Kopfzeile, methodenabhängigem Rumpf und Fußzeile „Kandidaten dieser Einheit"; die Neun-Spalten-Tabelle ist gefallen |
+| Gedimmte Suchoption mit Abhilfe | `Optionsgruppe.WeichGesperrt` (aria‑disabled statt `disabled`, damit der Grund ankommt — W16b‑E‑6) plus die Zeile `.epos-flotte-abhilfe` unter der Gruppe |
+| Bestes Ergebnis unter S | Die zweite Karte nennt die **Bestückung** („2 × Growatt … = 258 kWh · 200 kW") statt Kapazität · C‑Rate; die Phasenmarke entfällt (es gibt keine zweite Phase) |
+| Ergebnissicht unter S | `SpeicherFlottenGroessenAnsicht.Methode`: bei einer variierten Einheit die Stückzahlkurve, bei zwei die Karte n₁ × n₂, darüber hinaus nur die Kandidatentabelle — Rasterkarte, Schnitte und ihre zwei Schieber entstehen dann gar nicht |
+| „Kandidat übernehmen" | Unter G wie bisher (der Kandidat wird die Flotte, die Achsen fallen); unter S setzt er `AnzahlVon = AnzahlBis = n` in die Karten der variierten Einheiten und lässt die Einheiten stehen |
+| Schritt 1 mit Auswahl und Übernahmeknopf | `SpeicherFlottenEditor`: Auswahlkästchen je Einheitenkarte, Knopf neben „Speicher hinzufügen", Rückfrage mit den zwei Zahlen aus `Vorschau`, danach steht die `AnlageId` an der Einheit; ohne Delegat gibt es weder Kästchen noch Knopf, im Lesemodus ist er weich gesperrt |
+| Ressourcen | 37 neue `FLOTTE_*`- und `KI_DLG_*`-Schlüssel de/en (`Werkzeuge/ResourceDesigner`), kein deutscher Literaltext in den zwei Razor-Dateien |
+| Nachweise | `SpeicherEngine.Tests/FlottenSuchmethodeTests` (12), `EPOS.Kern.Tests/SpeicherFlottenStueckzahlCtrlTests` (8) und `…/SpeicherFlottenUebernahmeTests` (8, gegen eine Kopie der Testdatenbank), `EPOS.UI.Tests/StueckzahlsucheTests` (7) und der umgeschriebene `OptimierungStationTests`; `Proben/ChartProben` +2 Bilder +1 Gegenprobe (die Bestwertmarke der Stückzahlkurve ändert das Bild) |
+
+**Abweichungen vom Zielbild und vom Mockup — mit Grund:**
+
+1. **Die Karte zeigt ihre Bereiche im `Formularraster` mit je EIGENER Beschriftung** („Kapazität
+   von", „Kapazität bis", „Schritt") und nicht als eine Zeile „Kapazität 40 – 300 kWh, Schritt 20".
+   Das Mockup zeichnet die kompakte Zeile von Hand; im Haus gibt es dafür keinen Baustein — drei
+   Eingaben in EINER `epos-feld`-Zeile müsste jeder Dialog selbst bauen, und genau das verbietet
+   die Formularrasterregel (iU8‑E‑2). Die Beschriftungsschlüssel sind die des Einheiteneditors,
+   also unverändert; die Kompaktheit kommt aus der Anordnung des Rasters.
+2. **Die Abhilfe steht EINMAL unter der Optionsgruppe**, nicht je gesperrter Option. Beide
+   Suchoptionen haben denselben einen Grund — es trägt keine Einheit „variieren" —, und zwei
+   gleichlautende Warnzeilen untereinander sind eine Wiederholung ohne Gewinn. Am Bedienelement
+   selbst steht der Grund zusätzlich als `title`/`aria-disabled` (weiche Sperre).
+3. **Die Suchmethode steht an ZWEI Feldern desselben Standes.** `FlottenAuslegungEingang.Suchmethode`
+   sagt, WAS variiert wird; `SpeicherAuslegungKonfiguration.FlottenGroessenOptimieren` bleibt der
+   Schalter, an dem der Kern entscheidet, ob überhaupt eine Rastersuche läuft
+   (`SpeicherFlottenStudieCtrl.Rechnen`). Die Ansicht zieht beide in EINEM Schreibweg gleich
+   (`SuchmethodeSetzen`), und die Leserichtung (`Suchmethode`) kehrt einen alten Stand
+   „optimieren = an, Methode = Bewerten" auf `Groesse` um. Ein einziges Feld hätte den
+   Gate-Ausdruck des Kerns und damit den Projektlauf berührt — dafür gab es keinen Anlass.
+4. **`Rechne` lehnt einen Lauf ohne aktive Achse ab, statt ihn als „ein Kandidat" zu rechnen.**
+   Das Zielbild spricht nur von der gedimmten Option; ohne die Ablehnung im Kern hinge die Regel
+   allein an der Oberfläche, und ein gespeicherter Stand mit abgeschalteten Achsen rechnete
+   klaglos etwas anderes als der Anwender gewählt hat.
+5. **Der LESEMODUS kommt als Delegat aus der Hülle** (`StromspeicherAuslegungDienste.Schreibgeschuetzt`),
+   nicht aus einem `Schreibnaht`-Aufruf in der Razor-Komponente: Der Lesemodus ist eine
+   Lizenzaussage, und eine Komponente stellt keine Lizenzfragen (Hausregel S‑2).
+6. **Beim Rückschreiben in eine vertretene Anlage bleibt der BEZEICHNER stehen.** Geschrieben
+   werden die acht Gerätewerte; ein Umbenennen zöge `Tab_Energieanlagen.Bezeichner` und die
+   Zuordnung der Betriebsführung (`Tab_StromspeicherVariante` über die Anlage) nach sich und wäre
+   eine zweite Aussage, die niemand verlangt hat.
+7. **`Typ`, `Firma`, `Degradation`, `Zyklen_Zugesichert` und `Verschleisskosten` schreibt die
+   Übernahme nicht** — sie sind genau die Spalten, die `EinheitAusKatalog` auch nicht LIEST
+   (Konzept 1.8). Beim Anlegen bleiben sie leer, beim Rückschreiben unverändert stehen.
+8. **Der Referenzlauf ist nicht berührt.** Der Projektlauf rechnet den aktivierten Stand
+   `@Projektflotte` über `SpeicherFlottenProjektCtrl`, und der ruft die Rastersuche nicht
+   (`FlottenGroessenOptimieren` wird dort ausdrücklich auf `false` gesetzt). Die Basis
+   `2026-09-11_R7_Speicherflotte` und die Einfrierregel SP‑O‑8 bleiben unangetastet.
