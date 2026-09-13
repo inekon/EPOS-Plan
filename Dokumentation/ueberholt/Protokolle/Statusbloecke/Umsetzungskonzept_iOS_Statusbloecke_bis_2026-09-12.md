@@ -5170,3 +5170,45 @@ steht aus und ist die eigentliche Aufgabe von
 > **Offen:** #254 (Vorprüfung je Tastendruck mit Tiefenkopien und Datenbankzugriffen in der Anwendung messen und entkoppeln;
 > Anwenderentscheid ausstehend). Ein geleertes Feld bleibt leer, auch wenn der Wirt von außen einen neuen Wert setzt, bis der
 > Anwender wieder tippt.
+
+## #255 — Feinraster nur als Ausschnitt um das Optimum (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderfrage 13.09.2026 (Bildschirmfoto Größen-Sicht, Projekt „Stromspeicher Optimierung", Kopplung Kapazität und
+> Leistung, Grobraster 50…500 kWh / 50…500 kW in Schritten von 50):** „Warum gibt es weiße Bereiche im Graf Kapitalwert über
+> Kapazität und Entladeleistung?" — Befund: Die Zeilen 305,6 … 394,4 kWh sind Feinrasterpunkte der zweiten Phase; das
+> Feinraster läuft nur auf der ersten Größenachse in Neunteln der Grobschrittweite um das Grob-Optimum (350 kWh bei 200 kW),
+> die zweite Achse bleibt fest. Die Karte nahm alle vorkommenden Kapazitätswerte als Zeilen, darum war in den Feinzeilen nur
+> die Spalte 200 kW besetzt, die übrigen Zellen Löcher (NaN, hell gezeichnet).
+>
+> **Anwenderentscheid 13.09.2026:** „Entferne das Feinraster in der Gesamtheit. Das Feinraster soll nur um das Optimum
+> (höchster Kapitalwert) herum als Ausschnitt dargestellt werden, um das Optimum genauer darzustellen. Evtl. ist eine andere
+> Darstellung besser geeignet."
+>
+> **Konzeptentscheid (Orchestrierung):** Weil das Feinraster eindimensional ist, wäre eine zweidimensionale Ausschnittkarte
+> eine einzige Spalte. Der Ausschnitt ist deshalb eine Kurve über der Feinraster-Achse im Fenster des Feinrasters. Engine
+> unverändert; ein zweidimensionales Feinraster wäre ein Rechenwegwechsel mit neuer Referenzbasis und bleibt ein eigener
+> Entscheid.
+>
+> **Umsetzung (Agent Opus, Worktree, Commits `46e4653b`, `47dfd1c6`; Merge `5dc7ca2a`):**
+> `SpeicherFlottenAnzeigeCtrl.Rasterdaten` nimmt nur Kandidaten der Phase Grob — Zeilen und Spalten sind wieder genau die
+> eingegebenen Stützstellen, die zwei Gesamtschnitte (aus dem Raster abgeleitet) führen keine Feinpunkte mehr;
+> `FlottenRasterdaten.Feinraster` samt Durchreichung entfernt, `FlottenSchnittdaten.Feinpunkte` und der Renderer-Parameter
+> bleiben (der Ausschnitt nutzt sie). Neu `Ausschnittdaten`/`Ausschnittbild`/`Ausschnitttitel`/`Ausschnittbeschreibung`:
+> alle Fein-Kandidaten plus die Grobpunkte desselben festgehaltenen Wertes im Fenster [min Fein, max Fein], aufsteigend,
+> Doppelstellen einfach (Zulässigkeit, Kapitalwert, bei Gleichstand der Grobpunkt — dieselbe Ordnung wie `IstBesser` und
+> „Feinraster gewinnt nur bei strikt besserem Wert"); Marke = `BesterKandidat`; Bild über `ChartRenderer.Schnittkurve`, dessen
+> y-Achse sich auf die Werte skaliert. Ohne zweite Phase (kein Feinraster, Suchmethode Stückzahl oder Bewerten) `Leer` und
+> kein Bild. Grob-Optimum an einer Stelle (`GrobOptimum`: bester zulässiger Grob-Kandidat, größter endlicher Kapitalwert, bei
+> Gleichstand der zuerst gerechnete — die Engine führt es nicht eigens); `Kartenoptimum` markiert den besten Kandidaten,
+> solange er im Grobraster steht, sonst das Grob-Optimum, und die SP-O-4-Fußzeile nennt dann Wert und Fundort. Ansicht:
+> Ausschnitt als eigener Block direkt unter der Karte (neue Regel `.epos-flotte-groessen-spalte`, damit die Reihenfolge Karte →
+> Ausschnitt auch unter 1000 px bleibt); Alt-Text = Ausschnitttitel. Ressourcen `FLOTTE_AUSSCHNITT_*` de/en. Tests:
+> `SpeicherFlottenGroessenCtrlTests` 34 → 44, `SpeicherFlottenGroessenAnsichtTests` 21 → 25; ChartProben 64 Bilder grün,
+> Proben `flottenschnitt_feinraster`/`flottenschnitt_feinpunkte_wirken` unverändert. Doku: Doku Mehrspeicher (Größen-Sicht,
+> Phase sichtbar im Ausschnitt), Konzept Stromspeicher-Dialoge 2.5/7.9/8.8; `Konzept_Stromspeicher_EPOS-Plan.md` bewusst
+> unberührt (Abschnitte 6.3/7.2 beschreiben den früheren Einzelspeicher-Optimierer). Wiki-Quelle Stromspeicher (Größen-Sicht,
+> Phase 2) fortgeschrieben, Upload gebündelt (Anwenderregel 13.09.: höchstens einmal je Woche, zusammengefasst); zwei
+> Logbuch-Einträge entworfen.
+> **Gate sept65 auf `5dc7ca2a`:** GRÜN auf `5dc7ca2a` — Kern 2 792, UI 4 000, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme; Sammel-Upload frühestens 20.09.2026 (Stromspeicher-Quelle aus #253 und #255, vier
+> Logbuch-Einträge); #254 auf Anwenderentscheid.
