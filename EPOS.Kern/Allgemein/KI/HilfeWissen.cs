@@ -556,6 +556,25 @@ namespace WindowsFormsApplication1
                     "WIKI: Programm Dokumentation/Stromspeicher.",
                     WIKI + "Stromspeicher"),
 
+                new WissensAbschnitt(KiMeldungskennung.FLOTTE_PROGNOSE_FEHLT,
+                    "Meldung FLOTTE_PROGNOSE_FEHLT: Planendes Betriebsziel ohne Prognose",
+                    KiChatKontext.B_STROMSPEICHER,
+                    "BEDEUTUNG: Das gewaehlte Betriebsziel PLANT - PV-Planung, Arbitrage oder Multi-Use -, "
+                    + "und der Informationsstand steht auf 'Archivierte Prognose-Snapshots'. Geladen ist "
+                    + "aber keiner. URSACHE: Ein planender Fahrplan entsteht je Planungsschritt aus dem "
+                    + "Wissen, das dem Planer zu diesem Zeitpunkt nachweislich vorlag. Fuer den "
+                    + "Informationsstand 'Archivierte Prognose-Snapshots' nimmt die Rechnung deshalb "
+                    + "ausschliesslich eingelesene Snapshots; die Istreihe des Projekts wird NIE still als "
+                    + "Prognose verwendet, sonst waere jeder Fahrplan heimlich hellsichtig. Ohne Snapshot "
+                    + "gibt es nichts zu planen, und der Lauf wird abgewiesen, statt eine Zahl zu erfinden. "
+                    + "ABHILFE: zwei Wege. Entweder in Schritt 3 'Betriebsfuehrung' den Informationsstand auf "
+                    + "'Idealwissen' setzen - dann rechnet der Lauf als ausdruecklich gekennzeichnete "
+                    + "optimistische Vergleichsgrenze aus der eigenen Reihe -, oder in Schritt 2 'Kosten' "
+                    + "ueber 'Prognosen und Projektjahre...' Prognosen laden. Ein reaktives Betriebsziel "
+                    + "(PV-Eigenverbrauch, Lastspitzenkappung) braucht beides nicht. "
+                    + "WIKI: Programm Dokumentation/Stromspeicher.",
+                    WIKI + "Stromspeicher"),
+
                 // ---- Simulationslauf: Erzeuger ohne Platz (#190) -------------------
                 new WissensAbschnitt(KiMeldungskennung.LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ,
                     "Meldung LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ: Wärmeerzeuger rechnet nicht mit",

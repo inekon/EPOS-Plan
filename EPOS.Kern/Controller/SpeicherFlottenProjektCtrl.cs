@@ -163,6 +163,14 @@ public static class SpeicherFlottenProjektCtrl
             probleme.Add(string.Format(CultureInfo.CurrentCulture,
                 MyResource.Resource.FLOTTE_PLANER_PROFIL, ziel));
 
+        // DIE PROGNOSEPFLICHT steht EINMAL in FlottenPlausibilitaet und wird hier
+        // gerufen, nicht abgeschrieben (Auftrag #256). Sie macht aus dem Abbruch der
+        // Engine eine Problemzeile: Aktivierung und Projektlauf scheitern benannt, BEVOR
+        // gerechnet wird, und der Abbruchtext des Projektlaufs trägt sie über
+        // FlottenProjektPruefung.Meldung weiter.
+        if (FlottenPlausibilitaet.Prognosepflicht(a.Flotte, a.FlottenPrognosen) is { } prognose)
+            probleme.Add(prognose.Text);
+
         if (SpeicherAuslegungCtrl.SpezifischeSaetzeGebraucht(a) && projektId > 0)
         {
             SpeicherKostensaetze kosten = null;

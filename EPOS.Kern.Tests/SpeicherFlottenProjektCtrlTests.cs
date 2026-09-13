@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -6,8 +6,17 @@ using Xunit;
 
 namespace EPOS.Kern.Tests;
 
-public sealed class SpeicherFlottenProjektCtrlTests
+public sealed class SpeicherFlottenProjektCtrlTests : IDisposable
 {
+    /// <summary>
+    /// Pinnt die Kultur: Die Vorprüfung meldet auf Deutsch, und die Ressourcen folgen
+    /// <c>CurrentUICulture</c> (Auftrag #230).
+    /// </summary>
+    private readonly Kulturvorrichtung _kultur = new();
+
+    /// <inheritdoc />
+    public void Dispose() => _kultur.Dispose();
+
     [Fact]
     public void Flottenkontext_BrauchtKeineEinzelanlage_und_aggregiert_physischeEinheiten()
     {
@@ -192,6 +201,87 @@ public sealed class SpeicherFlottenProjektCtrlTests
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
             () => SpeicherFlottenProjektCtrl.PruefeUebernahme(ergebnis));
         Assert.Contains("selben Auslegungsstand", ex.Message);
+    }
+
+    // =====================================================================
+    //  Die Prognosepflicht planender Ziele (Auftrag #256)
+    // =====================================================================
+
+    /// <summary>
+    /// DIE AKTIVIERUNG scheitert benannt: Ein planendes Betriebsziel auf dem
+    /// Informationsstand „Archivierte Prognose-Snapshots" ohne geladenen Snapshot ist
+    /// eine PROBLEMZEILE der Vorprüfung — der Lauf erreicht die Engine gar nicht.
+    /// </summary>
+    [Fact]
+    public void Aktivierung_MeldetDasPlanendeZielOhnePrognose_MitBeidenAuswegen()
+    {
+        SpeicherOptimierungEingaben eingaben = Projektflotte(FlottenBetriebsziel.PvPlanung);
+        eingaben.Auslegung.FlotteImProjektAktiv = true;
+
+        FlottenProjektPruefung pruefung = SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, true);
+
+        Assert.False(pruefung.Rechenbar);
+        Assert.Contains(pruefung.Probleme, x => x.Contains("Archivierte Prognose-Snapshots"));
+        // Der Text nennt BEIDE Auswege, und die Sammelmeldung traegt ihn weiter — genau
+        // sie wird im Projektlauf zu ex.Message und damit zum Abbruchtext.
+        Assert.Contains("Idealwissen", pruefung.Meldung);
+        Assert.Contains("Prognosen und Projektjahre", pruefung.Meldung);
+    }
+
+    /// <summary>
+    /// DER PROJEKTLAUF-SNAPSHOT (Aktivierung nicht gefordert) fährt dieselbe Regel — es
+    /// ist dieselbe Funktion, nicht eine zweite Abschrift.
+    /// </summary>
+    [Fact]
+    public void DerLaufSnapshot_MeldetDieselbeRegel()
+    {
+        SpeicherOptimierungEingaben eingaben = Projektflotte(FlottenBetriebsziel.MultiUse);
+
+        FlottenProjektPruefung pruefung = SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, false);
+
+        Assert.False(pruefung.Rechenbar);
+        Assert.Contains(pruefung.Probleme, x => x.Contains("Archivierte Prognose-Snapshots"));
+    }
+
+    /// <summary>
+    /// BEIDE AUSWEGE machen den Stand rechenbar: Idealwissen wählen ODER einen Snapshot
+    /// der verlangten Art laden. Ein reaktives Ziel ist ohnehin nicht betroffen.
+    /// </summary>
+    [Fact]
+    public void MitIdealwissen_MitGeladenerPrognose_undMitReaktivemZiel_BleibtDieRegelStumm()
+    {
+        SpeicherOptimierungEingaben idealwissen = Projektflotte(FlottenBetriebsziel.Arbitrage);
+        idealwissen.Auslegung.Flotte.Optionen.PrognoseArt = PrognoseArt.Oracle;
+        Assert.DoesNotContain(SpeicherFlottenProjektCtrl.Pruefe(idealwissen, 0, false).Probleme,
+            x => x.Contains("Archivierte Prognose-Snapshots"));
+
+        SpeicherOptimierungEingaben geladen = Projektflotte(FlottenBetriebsziel.Arbitrage);
+        DateTimeOffset t = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        geladen.Auslegung.FlottenPrognosen.Add(new FlottenPrognoseSnapshot(
+            "p1", t, t, PrognoseArt.VerifiziertBekannt,
+            new List<FlottenNetzintervall> { new() { Zeitstempel = t } }));
+        Assert.DoesNotContain(SpeicherFlottenProjektCtrl.Pruefe(geladen, 0, false).Probleme,
+            x => x.Contains("Archivierte Prognose-Snapshots"));
+
+        SpeicherOptimierungEingaben reaktiv = Projektflotte(FlottenBetriebsziel.PeakShaving);
+        Assert.True(SpeicherFlottenProjektCtrl.Pruefe(reaktiv, 0, false).Rechenbar);
+    }
+
+    /// <summary>Ein zulässiger Projektflottenstand mit dem gewünschten Betriebsziel.</summary>
+    private static SpeicherOptimierungEingaben Projektflotte(FlottenBetriebsziel ziel)
+    {
+        FlottenStudieKonfiguration flotte = Konfiguration();
+        flotte.Optionen.Betriebsziel = ziel;
+        return new SpeicherOptimierungEingaben
+        {
+            Auslegung = new SpeicherAuslegungKonfiguration
+            {
+                Lastquelle = SpeicherAuslegungQuelle.Epos,
+                PvQuelle = SpeicherAuslegungQuelle.Keine,
+                Preisquelle = SpeicherAuslegungQuelle.Epos,
+                Flotte = flotte
+            }
+        };
     }
 
     private static FlottenEingang Eingang(params FlottenNetzintervall[] intervalle)

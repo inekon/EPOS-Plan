@@ -8870,6 +8870,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Informationsstand auf Idealwissen setzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_ABHILFE_IDEALWISSEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_ABHILFE_IDEALWISSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzleistung vor und nach Speicherung, mit Peak-Ziel und Ladezustand ähnelt.
         /// </summary>
         public static string FLOTTE_ALT_NETZ {
@@ -12538,6 +12547,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_MSG_PEAK_NICHT_ERREICHT {
             get {
                 return ResourceManager.GetString("FLOTTE_MSG_PEAK_NICHT_ERREICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das planende Betriebsziel „{0}“ rechnet mit dem Informationsstand „Archivierte Prognose-Snapshots“, und es ist kein solcher Snapshot geladen. Ohne ihn lässt sich kein Fahrplan aufstellen. Abhilfe: den Informationsstand in Schritt 3 „Betriebsführung“ auf „Idealwissen“ setzen oder in Schritt 2 „Kosten“ über „Prognosen und Projektjahre…“ Prognosen laden. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_PROGNOSE_FEHLT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_PROGNOSE_FEHLT", resourceCulture);
             }
         }
         
@@ -25042,6 +25060,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM {
             get {
                 return ResourceManager.GetString("KI_FRAGE_FLOTTE_PEAKZIEL_UNTER_TAGESMINIMUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mein planendes Betriebsziel bricht ab, weil kein Prognose-Snapshot verfügbar ist. Was ist der Informationsstand, und welchen der beiden Auswege soll ich wählen? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_PROGNOSE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_PROGNOSE_FEHLT", resourceCulture);
             }
         }
         

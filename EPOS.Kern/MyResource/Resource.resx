@@ -16533,6 +16533,12 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="FLOTTE_MSG_PROJEKT_AUSWEG" xml:space="preserve">
     <value>Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die Eingaben vervollständigen.</value>
   </data>
+  <data name="FLOTTE_MSG_PROGNOSE_FEHLT" xml:space="preserve">
+    <value>Das planende Betriebsziel „{0}“ rechnet mit dem Informationsstand „Archivierte Prognose-Snapshots“, und es ist kein solcher Snapshot geladen. Ohne ihn lässt sich kein Fahrplan aufstellen. Abhilfe: den Informationsstand in Schritt 3 „Betriebsführung“ auf „Idealwissen“ setzen oder in Schritt 2 „Kosten“ über „Prognosen und Projektjahre…“ Prognosen laden.</value>
+  </data>
+  <data name="FLOTTE_ABHILFE_IDEALWISSEN" xml:space="preserve">
+    <value>Informationsstand auf Idealwissen setzen</value>
+  </data>
   <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
     <value>Der reservierte Projektflottenstand @Projektflotte fehlt.</value>
   </data>
@@ -18092,6 +18098,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="KI_FRAGE_FLOTTE_ARBEITSLOS" xml:space="preserve">
     <value>Die Speicherflotte hat im ganzen Zeitraum weder geladen noch entladen. Woran kann das liegen, und wie bekomme ich einen brauchbaren Lauf?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PROGNOSE_FEHLT" xml:space="preserve">
+    <value>Mein planendes Betriebsziel bricht ab, weil kein Prognose-Snapshot verfügbar ist. Was ist der Informationsstand, und welchen der beiden Auswege soll ich wählen?</value>
   </data>
   <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf?</value>

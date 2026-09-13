@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -221,7 +221,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jede_Kennung_hat_einen_Wissensabschnitt()
         {
-            Assert.Equal(15, KiMeldungskennung.Alle.Length);
+            Assert.Equal(16, KiMeldungskennung.Alle.Length);
 
             foreach (string kennung in KiMeldungskennung.Alle)
             {
@@ -299,7 +299,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(HilfeWissen.AbschnittFuerKennung(""));
         }
 
-        /// <summary>Die fünf Prüfhinweise der Flotte bilden auf ihre Kennungen ab.</summary>
+        /// <summary>Die sechs Prüfhinweise der Flotte bilden auf ihre Kennungen ab.</summary>
         [Fact]
         public void Jeder_Pruefhinweis_der_Flotte_hat_eine_Kennung()
         {

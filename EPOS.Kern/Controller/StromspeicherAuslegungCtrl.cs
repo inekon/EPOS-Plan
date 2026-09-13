@@ -446,7 +446,8 @@ namespace WindowsFormsApplication1
                 if (v == null) return new List<FlottenHinweis>();
                 return FlottenPlausibilitaet.Pruefe(stand.Istwerte,
                     SpeicherFlottenStudieCtrl.Konfiguration(v.Eingaben),
-                    v.Eingaben.Auslegung?.VerwendeteKosten);
+                    v.Eingaben.Auslegung?.VerwendeteKosten,
+                    null, v.Eingaben.Auslegung?.FlottenPrognosen);
             }
             catch (Exception) { return new List<FlottenHinweis>(); }
         }
@@ -479,8 +480,12 @@ namespace WindowsFormsApplication1
                 // Arbeitsstand der Ansicht darf davon nichts merken.
                 SpeicherOptimierungEingaben stand = eingaben.Kopie();
                 stand.Auslegung.VerwendeteKosten = kosten ?? new SpeicherKostensaetze();
+                // Die PROGNOSEPFLICHT braucht keine Zeitreihe — sie liest Betriebsziel,
+                // Informationsstand und die geladenen Snapshots. Deshalb liefert auch die
+                // SCHNELLE Stufe sie (Auftrag #256).
                 return FlottenPlausibilitaet.Pruefe(Array.Empty<FlottenNetzintervall>(),
-                    SpeicherFlottenStudieCtrl.Konfiguration(stand), kosten);
+                    SpeicherFlottenStudieCtrl.Konfiguration(stand), kosten,
+                    null, stand.Auslegung.FlottenPrognosen);
             }
             catch (Exception) { return new List<FlottenHinweis>(); }
         }

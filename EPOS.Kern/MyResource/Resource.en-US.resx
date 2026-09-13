@@ -16544,6 +16544,12 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="FLOTTE_MSG_PROJEKT_AUSWEG" xml:space="preserve">
     <value>Way out: deactivate the fleet in the sizing dialog or complete the inputs.</value>
   </data>
+  <data name="FLOTTE_MSG_PROGNOSE_FEHLT" xml:space="preserve">
+    <value>The planning operating target &quot;{0}&quot; runs on the information level &quot;Archived forecast snapshots&quot;, and no such snapshot is loaded. Without one no schedule can be drawn up. Remedy: set the information level to &quot;Perfect foresight&quot; in step 3 &quot;Operating strategy&quot;, or load forecasts in step 2 &quot;Costs&quot; via &quot;Forecasts and project years…&quot;.</value>
+  </data>
+  <data name="FLOTTE_ABHILFE_IDEALWISSEN" xml:space="preserve">
+    <value>Set information level to perfect foresight</value>
+  </data>
   <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
     <value>The reserved project fleet state @Projektflotte is missing.</value>
   </data>
@@ -18085,6 +18091,9 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="KI_FRAGE_FLOTTE_ARBEITSLOS" xml:space="preserve">
     <value>The storage fleet neither charged nor discharged over the whole period. What can cause that, and how do I get a usable run?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_PROGNOSE_FEHLT" xml:space="preserve">
+    <value>My planning operating target aborts because no forecast snapshot is available. What is the information level, and which of the two remedies should I choose?</value>
   </data>
   <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>A heat generator of the project holds no cascade slot and therefore does not take part in the run. How do I add it to the simulation?</value>
