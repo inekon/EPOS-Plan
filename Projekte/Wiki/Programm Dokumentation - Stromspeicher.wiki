@@ -329,6 +329,8 @@ Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusam
 
 '''Steht mehr als ein Hinweis an''', fasst die Ansicht sie zu einem aufklappbaren Block ''„n Hinweise"'' zusammen – je eine Zeile mit Symbol statt je ein eigenes Band, damit die Leiste nicht unter den Meldungen verschwindet. Der Block ist zu Beginn offen.
 
+'''Die Liste frischt sich in zwei Schritten auf.''' Was ohne Zeitreihen entscheidbar ist – die Kostenmeldung und der Start-Ladezustand –, erscheint unmittelbar mit Ihrer Eingabe; die beiden Meldungen zum Peak-Ziel brauchen den Lastgang und folgen kurz nach dem letzten getippten Zeichen, ebenso beim Öffnen der Ansicht, beim Wechsel des Blattes und beim Start des Laufs. Der Rechenknopf wartet darauf nicht: Er sperrt bei einem Eingabefehler im selben Augenblick.
+
 Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). Er steht '''unmittelbar unter dem Rechenknopf''' des Blattes ''„Optimierung"'' – dort, wo Sie den Lauf ausgelöst haben. '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
 
 ==== Bestes Ergebnis ====
