@@ -18,7 +18,7 @@ Der Dialog '''Kosten''' erfasst Investitions-, Betriebs- und Energiekosten je Ko
 
 Der Dialog '''Energieträgerverwaltung''' führt die Energieträger eines Projekts mit ihren Preisen und Emissionswerten. Er wird im Bereich ''Berichte & Kosten'' auf der Seite ''Kosten'' über ''Energieträgerverwaltung…'' geöffnet; im Katalogkontext steht er unter {{Menü|Administration|Kosten|Energieträgerverwaltung…}}.
 
-* '''Trägerliste''' – im Projektkontext stehen sowohl die dem Projekt zugeordneten als auch die tatsächlich verwendeten Träger. Zu jedem Eintrag nennt ein Kurztext, wer ihn verwendet, etwa ''verwendet von: Wärmepumpe „Wärmepumpe A", Photovoltaik „Modul B"''.
+* '''Trägerliste''' – im Projektkontext stehen sowohl die dem Projekt zugeordneten als auch die tatsächlich verwendeten Träger. Zu jedem Eintrag nennt ein Kurztext, wer ihn verwendet, etwa ''verwendet von: Wärmepumpe „Anlage A", Photovoltaik „Modul B"''.
 * {{Anker|nicht-zugeordnet}}'''⚠ nicht zugeordnet''' – ein verwendeter, aber noch nicht zugeordneter Träger ist so gekennzeichnet und lässt sich trotzdem wählen; ''Speichern'' ordnet ihn dann dem Projekt zu.
 * {{Anker|stromtraeger}}'''Strom für elektrische Anlagen''' – Wärmepumpe, Photovoltaik, Stromspeicher und Heizstab brauchen einen Stromträger. Führt das Projekt elektrische Anlagen und ist kein Stromträger zugeordnet, trägt das Programm den ausgelieferten Stromträger selbsttätig nach.
 * '''Aus Katalog übernehmen…''' – bietet die noch nicht zugeordneten Katalogträger zur Mehrfachauswahl an; nach der Übernahme stehen sie in der Liste.
