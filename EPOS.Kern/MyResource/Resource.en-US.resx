@@ -16745,6 +16745,18 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="FLOTTE_PROJ_INVEST" xml:space="preserve">
     <value>Investment: {0} € · net present value against “no storage”: {1} €</value>
   </data>
+  <data name="FLOTTE_PROJ_INVEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} € fixed + {1} kWh × {2} €/kWh + {3} kW × {4} €/kW = {5} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME" xml:space="preserve">
+    <value>Sum of all units</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME_FORMEL" xml:space="preserve">
+    <value>{0} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS" xml:space="preserve">
+    <value>Power = the larger of the two ratings (charge, discharge).</value>
+  </data>
   <data name="FLOTTE_PROJ_WIEDERHOLUNG" xml:space="preserve">
     <value>Projection: the reference year is explicitly repeated over the selected period.</value>
   </data>

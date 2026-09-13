@@ -162,6 +162,29 @@
             <p class="epos-flotte-hinweis">
                 @string.Format(Kultur, Resource.FLOTTE_PROJ_INVEST, N(w.InvestitionEuro), N(w.KapitalwertEuro))
             </p>
+
+            @* DIE HERLEITUNG DER INVESTITION (Auftrag #249, Anwenderfrage vom 12.09.2026:
+               „150 €/kWh mal 1 395 kWh - woher kommen 284 250 €?"). Die Summe allein
+               beantwortet die Frage nicht; die drei Anteile je Einheit tun es. Gerechnet
+               wird hier nichts - Zeilen und Summe kommen aus dem Kern
+               (SpeicherFlottenAnzeigeCtrl.Investitionsherleitung ueber
+               FlottenWirtschaftlichkeit.Investition), die Komponente formatiert nur. *@
+            @if (Investitionsherleitung is { Count: > 0 } herleitung)
+            {
+                foreach (FlottenInvestitionszeile zeile in herleitung)
+                {
+                    <Herleitungszeile Text="@zeile.Name" Formel="@Investitionsformel(zeile)" />
+                }
+                @* Die Summenzeile nur bei MEHREREN Einheiten - bei einer stuende dieselbe
+                   Zahl zweimal untereinander. *@
+                if (herleitung.Count > 1)
+                {
+                    <Herleitungszeile Text="@Resource.FLOTTE_PROJ_INVEST_SUMME"
+                                      Formel="@Investitionssumme(herleitung)" />
+                }
+                @* EINMAL unter der Gruppe, nicht je Einheit: Der Satz gilt fuer alle. *@
+                <Herleitungszeile Text="@Resource.FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS" />
+            }
             <p class="epos-flotte-hinweis">
                 @(w.IstWiederholteReferenzjahrProjektion
                     ? Resource.FLOTTE_PROJ_WIEDERHOLUNG : Resource.FLOTTE_PROJ_JAHRESKONTEN)
@@ -748,6 +771,30 @@
             ? N(k.RainflowSchaden) : "—";
 
     private static string N(double w) => w.ToString("N2", Kultur);
+
+    // --- Die Herleitung der Investition (Auftrag #249) -------------------------
+
+    /// <summary>
+    /// Die Herleitung der Investition je Einheit in der Reihenfolge der Konfiguration
+    /// (Prüfhilfe); leer, wenn der Lauf keine Einheiten führt.
+    /// </summary>
+    public IReadOnlyList<FlottenInvestitionszeile> Investitionsherleitung
+        => SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(Ergebnis);
+
+    /// <summary>Die Formel EINER Einheit: fester, kapazitäts- und leistungsbezogener Anteil.</summary>
+    private static string Investitionsformel(FlottenInvestitionszeile zeile)
+        => string.Format(Kultur, Resource.FLOTTE_PROJ_INVEST_HERLEITUNG,
+            N(zeile.FestEuro), N(zeile.KapazitaetKWh), Satz(zeile.SatzEuroProKWh),
+            N(zeile.LeistungKw), Satz(zeile.SatzEuroProKw), N(zeile.SummeEuro));
+
+    /// <summary>Die Summe der gezeigten Zeilen - dieselben Zahlen, die darüber stehen.</summary>
+    private static string Investitionssumme(IReadOnlyList<FlottenInvestitionszeile> zeilen)
+        => string.Format(Kultur, Resource.FLOTTE_PROJ_INVEST_SUMME_FORMEL,
+            N(zeilen.Sum(x => x.SummeEuro)));
+
+    // DIE ZWEI SÄTZE SIND PREISE, KEINE BETRÄGE: „150 €/kWh" statt „150,00 €/kWh"
+    // - bis zu zwei Nachkommastellen, wie der Zins in der Kapitalwertkachel.
+    private static string Satz(double w) => w.ToString("0.##", Kultur);
 
     /// <summary>Der Name eines Betriebsziels — DIESELBE Ressource wie im Betriebseditor.</summary>
     private static string Zieltext(FlottenBetriebsziel ziel) => ziel switch
