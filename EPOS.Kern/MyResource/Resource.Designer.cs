@@ -53484,6 +53484,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Schritt des Projektassistenten steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string WIZ_SEITE_NICHT_HIER {
+            get {
+                return ResourceManager.GetString("WIZ_SEITE_NICHT_HIER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt konnte nicht vollständig gespeichert werden.
         ///
         ///Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen. ähnelt.

@@ -14882,6 +14882,9 @@ The step "{0}" failed; the entries already written remain in place.</value>
   <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
     <value>Open project</value>
   </data>
+  <data name="WIZ_SEITE_NICHT_HIER" xml:space="preserve">
+    <value>This step of the project wizard is not yet available on this device.</value>
+  </data>
   <data name="WIZ_VERLASSEN_TITEL" xml:space="preserve">
     <value>Unsaved entries</value>
   </data>

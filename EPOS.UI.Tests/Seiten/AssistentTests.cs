@@ -792,4 +792,103 @@ public class AssistentTests : EposBunitContext
 
         Assert.False(cut.Instance.Ungespeichert);
     }
+
+    // =====================================================================
+    // Befund W16a-O-4 — der Assistent auf iOS
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Schritt, zu dem der Wirt keinen Parametersatz stellt, wird BENANNT
+    /// abgelehnt — nicht still leer gelassen. Das ist die Hausregel der
+    /// Simulationsnaht, auf den Assistenten angewandt: Auf iOS beantwortet die
+    /// Quelle nur die zwei plattformfreien Schritte, die elf übrigen liegen bis
+    /// iU11 in Hüllen mit Fensterbesitzer.
+    /// </summary>
+    [Fact]
+    public void Ein_nicht_bedienter_Schritt_wird_benannt_abgelehnt()
+    {
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 0)
+            .Add(x => x.SeiteGaben,
+                 new Func<int, IReadOnlyDictionary<string, object>?>(nr => nr == 0 ? Gaben(0) : null))
+            .Add(x => x.SeiteAktiv, new Func<int, bool>(nr => nr <= 2))
+            .Add(x => x.SeiteSperrgrundText, "Hier nicht."));
+
+        // Schritt 0 zeigt seinen Inhalt und KEINE Ablehnung.
+        Assert.DoesNotContain("Hier nicht.", cut.Markup);
+
+        Weiter(cut).Click();     // auf Schritt 1 - ohne Parametersatz
+
+        Assert.Contains("Hier nicht.", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Ohne Sperrgrund bleibt der Schritt leer wie bisher — der
+    /// Windows-Weg ändert sich nicht (dort beantwortet die Hülle jeden der dreizehn
+    /// Schritte, der Text bleibt leer).
+    /// </summary>
+    [Fact]
+    public void Ohne_Sperrgrund_bleibt_der_Schritt_leer()
+    {
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, 0)
+            .Add(x => x.SeiteGaben,
+                 new Func<int, IReadOnlyDictionary<string, object>?>(nr => nr == 0 ? Gaben(0) : null))
+            .Add(x => x.SeiteAktiv, new Func<int, bool>(nr => nr <= 2)));
+
+        Weiter(cut).Click();
+
+        Assert.Empty(cut.FindAll(".epos-assistent-inhalt .epos-warnbanner"));
+    }
+
+    /// <summary>
+    /// Die VORAUSWAHL des linken Bandes: Der iOS-Einstieg kommt aus der Zeile eines
+    /// Projekts und bringt es mit. Gemeldet wird es auf demselben Weg wie eine
+    /// Markierung von Hand — <c>ProjektMarkiert</c>, genau einmal.
+    /// </summary>
+    [Fact]
+    public void Die_Vorauswahl_markiert_das_Projekt_genau_einmal()
+    {
+        var gemeldet = new List<(int Id, string Name)>();
+
+        var projekte = new List<ProjektKopfZeile>
+        {
+            new ProjektKopfZeile(7, "Sieben"),
+            new ProjektKopfZeile(9, "Neun")
+        };
+
+        var cut = Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, AssistentSeite.BEARBEITEN)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, new Func<int, bool>(nr => nr <= 1))
+            .Add(x => x.Projekte, projekte)
+            .Add(x => x.ProjektMarkiert, new Action<int, string>((id, name) => gemeldet.Add((id, name))))
+            .Add(x => x.VorauswahlId, 9));
+
+        Assert.Single(gemeldet);
+        Assert.Equal((9, "Neun"), gemeldet[0]);
+
+        // Ein zweiter Zeichenlauf meldet sie NICHT noch einmal.
+        cut.Render();
+        Assert.Single(gemeldet);
+    }
+
+    /// <summary>
+    /// <b>Gegenprobe:</b> Ohne Vorauswahl wird nichts markiert — der Windows-Weg,
+    /// bei dem der Anwender im Band selbst wählt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Vorauswahl_wird_nichts_markiert()
+    {
+        var gemeldet = new List<int>();
+
+        Render<AssistentSeite>(p => p
+            .Add(x => x.Betriebsart, AssistentSeite.BEARBEITEN)
+            .Add(x => x.SeiteGaben, new Func<int, IReadOnlyDictionary<string, object>?>(Gaben))
+            .Add(x => x.SeiteAktiv, new Func<int, bool>(nr => nr <= 1))
+            .Add(x => x.Projekte, new List<ProjektKopfZeile> { new ProjektKopfZeile(7, "Sieben") })
+            .Add(x => x.ProjektMarkiert, new Action<int, string>((id, _) => gemeldet.Add(id))));
+
+        Assert.Empty(gemeldet);
+    }
 }

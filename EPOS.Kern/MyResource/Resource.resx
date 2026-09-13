@@ -14871,6 +14871,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
     <value>Projekt öffnen</value>
   </data>
+  <data name="WIZ_SEITE_NICHT_HIER" xml:space="preserve">
+    <value>Dieser Schritt des Projektassistenten steht auf diesem Gerät noch nicht zur Verfügung.</value>
+  </data>
   <data name="WIZ_VERLASSEN_TITEL" xml:space="preserve">
     <value>Ungespeicherte Eingaben</value>
   </data>

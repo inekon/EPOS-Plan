@@ -143,6 +143,22 @@
         Array.Empty<ProjektKopfZeile>();
 
     /// <summary>
+    /// Das Projekt, mit dem das linke Band aufmacht; <c>0</c> = keines (Befund
+    /// <b>W16a-O-4</b>).
+    ///
+    /// <para><b>Unter Windows bleibt sie 0</b> — dort führen die zwei Menüwege und
+    /// die zwei Startkacheln in den Assistenten, und der Anwender markiert im Band
+    /// selbst. Der iOS-Einstieg kommt dagegen aus der ZEILE eines Projekts; ohne
+    /// diese Vorauswahl müsste er dasselbe Projekt gleich darauf ein zweites Mal
+    /// suchen.</para>
+    ///
+    /// <para>Sie wirkt EINMAL, beim ersten Aufbau, und geht denselben Weg wie eine
+    /// Markierung von Hand (<c>ProjektMarkiert</c>) — es gibt keinen zweiten
+    /// Ladeweg.</para>
+    /// </summary>
+    [Parameter] public int VorauswahlId { get; set; }
+
+    /// <summary>
     /// Ein anderes Projekt wurde im linken Band markiert: Der Wirt liest den
     /// Komponentenbestand neu und schaltet die Seiten danach.
     /// </summary>
@@ -207,6 +223,19 @@
 
     /// <summary>Die leise Herkunftszeile (<c>PRJ_LIST_VARIANTE_VON</c>); <c>{0}</c> = Stammname.</summary>
     [Parameter] public string VarianteVonFormat { get; set; } = "Variante von {0}";
+
+    /// <summary>
+    /// Der Grund, aus dem ein Schritt auf DIESER Plattform noch nicht zu bedienen ist
+    /// (Befund <b>W16a-O-4</b>); leer = es gibt keinen solchen Schritt.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Liefert der Wirt zu einem Schritt keinen
+    /// Parametersatz, bliebe der Schritt LEER — und ein leerer Schritt sieht aus wie
+    /// ein Fehler. Die Hausregel der Simulationsnaht lautet deshalb: Ein Weg, den die
+    /// Plattform nicht anbietet, wird BENANNT abgelehnt und fällt nicht still aus.
+    /// Unter Windows ist der Text leer; dort beantwortet die Hülle jeden der dreizehn
+    /// Schritte.</para>
+    /// </summary>
+    [Parameter] public string SeiteSperrgrundText { get; set; } = "";
     [Parameter] public string HilfeSchluessel { get; set; } = "AssistentSeite.btn_Help";
 
     // =====================================================================
@@ -296,9 +325,38 @@
     /// <summary>Der aktuelle Schritt (Prüfhilfe für die Tests).</summary>
     public int Schritt => _schritt;
 
+    /// <summary>Wurde <see cref="VorauswahlId"/> schon verbraucht?</summary>
+    private bool _vorauswahlVerbraucht;
+
     protected override void OnParametersSet()
     {
+        Vorauswahl();
         SchritteBauen();
+    }
+
+    /// <summary>
+    /// Markiert EINMAL das Projekt, mit dem der Wirt hereingekommen ist (Befund
+    /// <b>W16a-O-4</b>) — auf demselben Weg wie eine Markierung von Hand, damit es
+    /// keinen zweiten Ladeweg gibt.
+    ///
+    /// <para>Sie greift nur im Bearbeiten-Zweig, nur solange nichts markiert ist und
+    /// nur, wenn die Liste das Projekt überhaupt führt; unter Windows ist
+    /// <see cref="VorauswahlId"/> <c>0</c> und die Methode tut nichts.</para>
+    /// </summary>
+    private void Vorauswahl()
+    {
+        if (_vorauswahlVerbraucht || VorauswahlId <= 0) return;
+        if (Betriebsart != BEARBEITEN || _markiertId > 0) return;
+        if (Projekte.Count == 0) return;   // die Liste steht noch nicht
+
+        _vorauswahlVerbraucht = true;
+
+        foreach (ProjektKopfZeile zeile in Projekte)
+        {
+            if (zeile.Id != VorauswahlId) continue;
+            BeiMarkierung(zeile);
+            return;
+        }
     }
 
     /// <summary>
@@ -371,14 +429,34 @@
 
         _inhaltSchritt = nr;
         _inhaltQuelle = SeiteGaben;
-        _inhalt = gaben is null
-            ? null
-            : builder =>
+
+        if (gaben is not null)
+        {
+            _inhalt = builder =>
             {
                 builder.OpenComponent(0, Seitentyp(nr));
                 builder.AddMultipleAttributes(1, gaben!);
                 builder.CloseComponent();
             };
+        }
+        else if (SeiteSperrgrundText.Length > 0)
+        {
+            // W16a-O-4: BENANNT abgelehnt statt still leer. Der Wirt dieser Plattform
+            // bedient den Schritt nicht - der Anwender liest, warum, statt vor einer
+            // leeren Flaeche zu stehen.
+            string grund = SeiteSperrgrundText;
+            _inhalt = builder =>
+            {
+                builder.OpenComponent<Warnbanner>(0);
+                builder.AddComponentParameter(1, nameof(Warnbanner.Stufe), WarnStufe.Hinweis);
+                builder.AddComponentParameter(2, nameof(Warnbanner.Text), grund);
+                builder.CloseComponent();
+            };
+        }
+        else
+        {
+            _inhalt = null;
+        }
 
         return _inhalt;
     }

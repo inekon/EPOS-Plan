@@ -86,6 +86,22 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? SimulationGaben(int idProjekt) => Simulation;
 
+    /// <summary>
+    /// Der Parametersatz des PROJEKTASSISTENTEN (Befund W16a-O-4) — <c>null</c> ist
+    /// die Vorgabe und heisst „steht auf diesem Geraet noch nicht zur Verfuegung",
+    /// genau der Zustand der iOS-Huelle VOR diesem Befund.
+    /// </summary>
+    internal Func<int, int, IReadOnlyDictionary<string, object>?>? Assistent { get; set; }
+
+    /// <summary>Was zuletzt nach <see cref="AssistentGaben"/> hereinkam.</summary>
+    internal (int Betriebsart, int IdProjekt)? AssistentRuf { get; private set; }
+
+    public IReadOnlyDictionary<string, object>? AssistentGaben(int betriebsart, int idProjekt)
+    {
+        AssistentRuf = (betriebsart, idProjekt);
+        return Assistent?.Invoke(betriebsart, idProjekt);
+    }
+
     /// <summary>Der Parametersatz der Ansicht „Stromspeicher-Auslegung" (#192).</summary>
     internal IReadOnlyDictionary<string, object>? Auslegung { get; set; }
 

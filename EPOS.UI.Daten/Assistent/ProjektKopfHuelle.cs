@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Seiten.Assistent;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der ersten Assistentenseite (iU9-W15a.6) — sie löst
+    /// Die HÜLLE der ersten Assistentenseite (iU9-W15a.6) — sie löst
     /// <c>Wizard_Projekt</c> ab.
+    ///
+    /// <para><b>Sie liegt seit W16a-O-4 in <c>EPOS.UI.Daten</c></b> und nicht mehr in
+    /// der Windows-Anwendung: Sie ruft ausschließlich Kern-Controller
+    /// (<c>ProjektCtrl.Kopf</c>, <c>KlimaregionStammCtrl</c>) und kennt keine
+    /// Plattform. Damit steht der Projektkopf des Assistenten auch auf dem iPad.</para>
     ///
     /// <para><b>Weg (a) der Vermessung § 13.5.</b> <c>Wizard_Projekt</c> war die einzige
     /// Assistentenseite mit einem <c>Get*</c>-Rückweg (Befund W15a-B42). Statt eines
@@ -24,8 +27,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class ProjektKopfHuelle
     {
-        /// <summary>Wunschmaß der Seite im Assistentenfenster (Vorläufer: 631 × 558).</summary>
-        private static readonly Size MASS = new Size(760, 560);
+        // iU9-W16a.5 / W16a-O-4: Das Wunschmass MASS (760 x 560) ist entfallen. Es
+        // beschrieb die Groesse des randlosen WinForms-Formulars, das es seit W16a.5
+        // nicht mehr gibt; im Assistenten steht die Seite als Razor-Komponente und
+        // richtet sich nach ihrem Wirt. Mit dem Umzug nach EPOS.UI.Daten (W16a-O-4)
+        // faellt damit auch die letzte System.Drawing-Zeile dieser Huelle.
 
         // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
         // Assistent ist selbst eine Razor-Seite und braucht kein randloses

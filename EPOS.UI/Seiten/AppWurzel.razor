@@ -213,7 +213,7 @@ else
         <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_statuszeile" />
     }
 
-    <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" />
+    <Projektliste Zeilen="@_projekte" Oeffnen="BeiOeffnen" NeuesProjekt="BeiNeuemProjekt" />
 }
 
 </CascadingValue>
@@ -836,6 +836,20 @@ else
         _projekt = wahl.Projekt;
         _statuszeile = "";
         Zeige(wahl.Maske);
+    }
+
+    /// <summary>
+    /// „Neues Projekt…" aus der Projektliste (Befund <b>W16a-O-4</b>) — der
+    /// Assistent im Zweig NEU.
+    ///
+    /// <para>Das offene Projekt bleibt dabei stehen: Ein neuer Lauf hängt an keinem,
+    /// und der Schlüssel <c>PROJEKT_NEU</c> setzt die Betriebsart schon von selbst
+    /// (dieselbe Unterscheidung wie <c>MenueCtrl.ProjektNeu</c> unter Windows).</para>
+    /// </summary>
+    private void BeiNeuemProjekt()
+    {
+        _statuszeile = "";
+        Zeige(Seitenschluessel.ProjektNeu);
     }
 
     /// <summary>

@@ -35,6 +35,17 @@
     <div class="epos-seite-kopf">
         <h1 class="epos-seite-titel">@TitelText</h1>
         <span class="epos-seite-anzahl">@Zeilen.Count</span>
+
+        @* Befund W16a-O-4: der Einstieg in den PROJEKTASSISTENTEN, Zweig „neues
+           Projekt". Er gehoert an den Seitenkopf und nicht in eine Zeile - ein neues
+           Projekt haengt an keinem vorhandenen. Der Zweig „bearbeiten" steht dagegen
+           je Zeile, weil er genau EIN Projekt meint (Knopf unten).
+
+           Unter Windows fuehren hierher die zwei Startkacheln und die zwei
+           Menuewege; auf iOS gibt es weder Startseite noch Menue, und diese Liste
+           IST die Startansicht (AppWurzel.Startansicht). *@
+        <button type="button" class="epos-knopf epos-projekt-neu"
+                @onclick="BeiNeuemProjekt">@KnopfNeuesProjekt</button>
     </div>
 
     <ProjektListe Zeilen="@Kopfzeilen"
@@ -60,6 +71,14 @@
             <button type="button" class="epos-knopf epos-projekt-simulation"
                     @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.Simulation))">
                 @KnopfSimulation
+            </button>
+            @* Befund W16a-O-4: der Assistent im Zweig „bearbeiten". Er geht denselben
+               Weg wie die drei anderen Knoepfe - die Liste oeffnet nichts, sie meldet
+               Projekt und Maskenschluessel an die Wurzel. Das gemeldete Projekt wird
+               dort zur Vorauswahl des linken Bandes. *@
+            <button type="button" class="epos-knopf epos-projekt-assistent"
+                    @onclick="@(() => Oeffne(kopf.Id, Seitenschluessel.ProjektBearbeiten))">
+                @KnopfAssistent
             </button>
         </Zeilenaktionen>
     </ProjektListe>
@@ -106,6 +125,19 @@
     /// <summary>Beschriftung des Knopfes „Simulation" (Auftrag #208).</summary>
     [Parameter] public string KnopfSimulation { get; set; } = "Simulation…";
 
+    /// <summary>Beschriftung des Zeilenknopfes „Projektassistent" (Befund W16a-O-4).</summary>
+    [Parameter] public string KnopfAssistent { get; set; } = "Bearbeiten…";
+
+    /// <summary>Beschriftung des Kopfknopfes „neues Projekt" (Befund W16a-O-4).</summary>
+    [Parameter] public string KnopfNeuesProjekt { get; set; } = "Neues Projekt…";
+
+    /// <summary>
+    /// Der Anwender will ein NEUES Projekt anlegen — der Assistent in Betriebsart
+    /// <c>BETRIEBSART_NEU</c> (Befund W16a-O-4). Er hängt an keinem Projekt und geht
+    /// deshalb nicht durch <see cref="Oeffnen"/>.
+    /// </summary>
+    [Parameter] public EventCallback NeuesProjekt { get; set; }
+
     /// <summary>
     /// Die Zeilen in der Form des Bausteins. Klimaregion und Ausstattung sind die zwei
     /// Zusatzfelder von <c>ProjektKopfZeile</c>, die es nur fuer diesen Einstieg gibt;
@@ -115,6 +147,8 @@
         => Zeilen.Select(z => new ProjektKopfZeile(z.Id, z.Name,
                                                    Klimazone: z.Klimazone,
                                                    Ausstattung: z.Ausstattung)).ToList();
+
+    private Task BeiNeuemProjekt() => NeuesProjekt.InvokeAsync();
 
     private Task Oeffne(int id, string maske)
     {

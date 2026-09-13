@@ -411,6 +411,72 @@ public class AppWurzelTests : EposBunitContext
         Assert.Contains("Projektassistent", cut.Find(".epos-warnbanner").TextContent);
     }
 
+    // =====================================================================
+    //  Der PROJEKTASSISTENT auf iOS (Befund W16a-O-4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der iOS-Weg.</b> Ohne Delegat der Huelle fragt die Wurzel
+    /// <c>IProjektQuelle.AssistentGaben</c> — und seit W16a-O-4 antwortet
+    /// <c>IosProjektQuelle</c> darauf. Geprueft wird, dass die Ansicht damit
+    /// aufgeht und dass Betriebsart UND Projekt an der Quelle ankommen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_geht_auch_ueber_die_Projektquelle_auf()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Assistent = (b, id) => new Dictionary<string, object>
+            {
+                ["Betriebsart"] = b,
+                ["SeiteAktiv"] = new Func<int, bool>(nr => nr <= 1),
+                ["SeiteGaben"] = new Func<int, IReadOnlyDictionary<string, object>?>(
+                    nr => new Dictionary<string, object>())
+            }
+        };
+
+        var cut = Aufbauen(quelle);
+
+        // Wie der Knopf „Bearbeiten…" der Projektliste: erst das Projekt melden,
+        // dann den Schluessel.
+        cut.Find(".epos-projekt-assistent").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Equal((1, ZweiProjekte[0].Id), quelle.AssistentRuf);
+    }
+
+    /// <summary>
+    /// Der Kopfknopf „Neues Projekt…" der Projektliste fuehrt in denselben
+    /// Assistenten, aber in Betriebsart NEU — der iOS-Ersatz fuer die Startkachel
+    /// „Projekt neu" (Befund W16a-O-4).
+    /// </summary>
+    [Fact]
+    public void Der_Kopfknopf_neues_Projekt_oeffnet_den_Assistenten_im_Neu_Zweig()
+    {
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Assistent = (b, id) => new Dictionary<string, object>
+            {
+                ["Betriebsart"] = b,
+                ["SeiteAktiv"] = new Func<int, bool>(nr => nr <= 1),
+                ["SeiteGaben"] = new Func<int, IReadOnlyDictionary<string, object>?>(
+                    nr => new Dictionary<string, object>())
+            }
+        };
+
+        var cut = Aufbauen(quelle);
+
+        cut.Find(".epos-projekt-neu").Click();
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Equal(0, quelle.AssistentRuf!.Value.Betriebsart);
+
+        // Der Neu-Zweig fuehrt kein linkes Band - der sichtbare Unterschied.
+        Assert.Empty(cut.FindAll(".epos-assistent-band"));
+    }
+
     /// <summary>
     /// <b>62b-E-1, Festlegung 1:</b> OHNE Aenderungen wechselt die Ansicht
     /// unmittelbar — keine Rueckfrage.
