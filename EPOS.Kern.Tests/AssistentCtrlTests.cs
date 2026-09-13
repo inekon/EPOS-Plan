@@ -342,7 +342,7 @@ namespace EPOS.Kern.Tests
                 Sprache("de-DE");
                 string text = AssistentCtrl.Meldungstext(e);
                 Assert.Contains("Add_Stromganglinie", text);
-                Assert.Contains("nicht vollständig gespeichert", text);
+                Assert.Contains("es wurde nichts gespeichert, das Projekt ist unverändert", text);
                 Assert.Equal("Speichern fehlgeschlagen", AssistentCtrl.Meldungstitel(e));
 
                 Sprache("en-US");

@@ -14846,9 +14846,9 @@ Wirklich entfernen?</value>
     <value>Projektname fehlt</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
-    <value>Das Projekt konnte nicht vollständig gespeichert werden.
+    <value>Das Projekt konnte nicht gespeichert werden.
 
-Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen.</value>
+Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert.</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Speichern fehlgeschlagen</value>

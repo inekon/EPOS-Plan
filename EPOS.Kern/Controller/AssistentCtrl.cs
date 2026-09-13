@@ -919,9 +919,9 @@ namespace WindowsFormsApplication1
                 case AssistentAusgang.Fehlgeschlagen:
                     return string.Format(
                         Text("WIZ_SPEICHERN_FEHLER",
-                             "Das Projekt konnte nicht vollständig gespeichert werden.\n\n" +
-                             "Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen " +
-                             "Angaben bleiben stehen."),
+                             "Das Projekt konnte nicht gespeichert werden.\n\n" +
+                             "Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts " +
+                             "gespeichert, das Projekt ist unverändert."),
                         ergebnis.Schritt);
                 default:
                     return "";

@@ -517,6 +517,32 @@ weg, der gemerkte Wert sagt aber „vorhanden“ — bis zum nächsten Programms
 trifft nur eine Datenbank, auf der die Schemamigration diese Spalten noch nicht
 angelegt hat.
 
+**Restpunkt W16a‑O‑1‑R2 (erledigt 13.09.2026):** `WIZ_SPEICHERN_FEHLER` endete auf
+„die bereits geschriebenen Angaben bleiben stehen." / „the entries already written
+remain in place." — seit der Transaktion oben nicht mehr wahr: Ein Fehlschlag rollt
+**alles** zurück, nichts bleibt geschrieben. Der Satz war bewusst unangetastet
+geblieben, weil die damalige Anweisung geänderte Meldetexte verbot; seine Neufassung
+war eine ausstehende Anwenderentscheidung. Anwenderentscheid 13.09.2026: Der Satz
+sagt jetzt, was zutrifft — in `Resource.resx`, `Resource.en-US.resx` **und** dem
+Rückfalltext in `AssistentCtrl.Meldungstext` (drei Stellen, sonst gälte im Rückfall
+weiter die Unwahrheit): „Das Projekt konnte nicht gespeichert werden.\n\nDer Schritt
+„{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert."
+bzw. „The project could not be saved.\n\nThe step "{0}" failed; nothing was saved,
+the project is unchanged." Der Titel `WIZ_SPEICHERN_FEHLER_TITEL` bleibt unverändert.
+
+**Dabei vermerkt (zwei vom Anwender am 13.09.2026 bestätigte Auslegungen aus #62b,
+nicht neu gebaut, im Bestand nachgeprüft):**
+
+- **62b‑A‑1:** „Abbrechen" geht durch dieselbe Rückfrage wie jeder andere Ausgang —
+  `AssistentSeite.BeiAbbrechen` ruft unbedingt `FrageVerlassen()`, und das fragt nur,
+  wenn `Ungespeichert` wahr ist (`AssistentSeite.razor:624‑636, 704‑707`).
+- **62b‑A‑2:** Ein Menüpunkt, der nur einen Dialog öffnet, statt die Ansicht zu
+  wechseln, fragt nicht — er verlässt den Assistenten nicht. Die Rückfrage hängt an
+  `AppWurzel.Zeige` (`AppWurzel.razor:874‑886`), die nur bei einem Wechsel des
+  `_ansicht`-Schlüssels prüft; ein Menüpunkt, den `HauptfensterHuelle.Weg` synchron
+  selbst als Dialog öffnet (`HauptfensterHuelle.cs:165‑204`), meldet dies der
+  `AppWurzel` gar nicht — `_ansicht` bleibt `Assistent`, `Zeige` wird nicht gerufen.
+
 
 ---
 

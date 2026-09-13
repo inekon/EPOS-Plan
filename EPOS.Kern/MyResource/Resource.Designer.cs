@@ -53529,9 +53529,9 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt konnte nicht vollständig gespeichert werden.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt konnte nicht gespeichert werden.
         ///
-        ///Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen. ähnelt.
+        ///Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert. ähnelt.
         /// </summary>
         public static string WIZ_SPEICHERN_FEHLER {
             get {
