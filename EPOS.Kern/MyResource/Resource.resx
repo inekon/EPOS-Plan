@@ -17742,6 +17742,24 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG" xml:space="preserve">
     <value>Schnittkurve: Kapitalwert über der Entladeleistung bei fester Kapazität</value>
   </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_KW" xml:space="preserve">
+    <value>Ausschnitt um das Optimum: Kapitalwert über der Kapazität bei {0} kW</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_KAP_BEI_C" xml:space="preserve">
+    <value>Ausschnitt um das Optimum: Kapitalwert über der Kapazität bei {0} C</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_TITEL_LEI_BEI_C" xml:space="preserve">
+    <value>Ausschnitt um das Optimum: Kapitalwert über der Entladeleistung bei {0} C</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_BESCHREIBUNG" xml:space="preserve">
+    <value>Die Kurve zeigt die Punkte des Feinrasters um das Grob-Optimum: {0} Stützstellen von {1} bis {2} in Schritten von {3}. Bestes Ergebnis: {4} € bei {5}.</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_BESCHREIBUNG_OHNE" xml:space="preserve">
+    <value>Die Kurve zeigt die Punkte des Feinrasters um das Grob-Optimum: {0} Stützstellen von {1} bis {2} in Schritten von {3}.</value>
+  </data>
+  <data name="FLOTTE_AUSSCHNITT_FUSS" xml:space="preserve">
+    <value>Das beste Ergebnis stammt aus dem Feinraster ({0} € bei {1}) und liegt zwischen zwei Stützstellen; markiert ist hier das Grob-Optimum, gezeigt wird es im Ausschnitt um das Optimum.</value>
+  </data>
   <data name="FLOTTE_GROESSEN_LBL_EINHEIT" xml:space="preserve">
     <value>Gezeigte Einheit</value>
   </data>

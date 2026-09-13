@@ -7,16 +7,26 @@
    Einzelspeicher zeichnet der Renderer Rasterkarte und Schnittkurve seit
    W11b-B-5, fuer die Flotte nicht.
 
-   DREI SICHTEN AUF DIESELBEN ZAHLEN, IN DIESER REIHENFOLGE:
+   VIER SICHTEN AUF DIESELBEN ZAHLEN, IN DIESER REIHENFOLGE:
      1. die RASTERKARTE - wo liegt das Gebiet, in dem es sich traegt?
      2. die zwei SCHNITTE - wie steil faellt es daneben ab?
-     3. die TABELLE - welche Variante genau, und mit welchen Kennzahlen?
+     3. der AUSSCHNITT um das Optimum - wie sieht es dort GENAU aus?
+     4. die TABELLE - welche Variante genau, und mit welchen Kennzahlen?
    Die Karte beantwortet die Frage zuerst, weil sie ALLE Punkte auf einmal
    zeigt; die Tabelle steht darunter, weil sie die einzige Stelle ist, an der
    man eine Variante UEBERNIMMT.
 
-   KEINE ZAHL WIRD HIER GERECHNET. Achsen, Matrix, Schraffur, Schnitte und die
-   drei Bilder kommen aus SpeicherFlottenAnzeigeCtrl; die Kennzahlen je
+   DIE GESAMTDARSTELLUNGEN ZEIGEN DAS GROBRASTER, DER AUSSCHNITT DAS FEINRASTER
+   (Auftrag #255, Anwenderentscheid vom 13.09.2026). Die zweite Suchphase laeuft
+   nur auf EINER Groessenachse; als eigene Zeilen der Karte liessen ihre Punkte
+   jede andere Spalte leer - im Modus Kapazitaet x Leistung stand damit die halbe
+   Karte weiss da. Der Ausschnitt ist deshalb eine KURVE ueber der Groessenachse,
+   begrenzt auf das Fenster des Feinrasters: Die y-Achse skaliert sich darauf,
+   und genau das ist die Vergroesserung. Er steht unter der Karte und erscheint
+   nur, wenn eine zweite Phase gelaufen ist.
+
+   KEINE ZAHL WIRD HIER GERECHNET. Achsen, Matrix, Schraffur, Schnitte,
+   Ausschnitt und die vier Bilder kommen aus SpeicherFlottenAnzeigeCtrl; die Kennzahlen je
    Kandidat hat der FlottenOptimierer waehrend der Suche gefuellt (#193, Schritt
    1). Die Hausregel dahinter ist dieselbe wie in der Ergebnisansicht (#184):
    Fachaussagen stehen im Kern, damit iOS sie nicht ein zweites Mal bekommt.
@@ -121,17 +131,36 @@
         {
             <div class="epos-flotte-groessen-bilder">
 
-                <section class="epos-simerg-block">
-                    @if (Einheiten > 1)
+                @* KARTE UND AUSSCHNITT TEILEN SICH DIE LINKE SPALTE (#255): Der
+                   Ausschnitt ist die Lupe auf die markierte Stelle und gehoert
+                   deshalb unter die Karte, nicht neben die zwei Schnitte. Der
+                   Kasten haelt diese Reihenfolge auch dann, wenn das Raster unter
+                   1000 px auf eine Spalte faellt. *@
+                <div class="epos-flotte-groessen-spalte">
+
+                    <section class="epos-simerg-block">
+                        @if (Einheiten > 1)
+                        {
+                            <div class="epos-flotte-groessen-steuerung">
+                                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_GROESSEN_LBL_EINHEIT"
+                                             Eintraege="@Einheitenwahl" Auswahl="@_einheit"
+                                             AuswahlChanged="EinheitGesetzt" />
+                            </div>
+                        }
+                        <ChartBild Png="@_rasterbild" Alt="@Rasterbeschreibung" />
+                    </section>
+
+                    @* OHNE ZWEITE PHASE KEIN BLOCK: Ein leerer Rahmen mit
+                       Platzhalterbild waere eine Aussage ueber ein Raster, das
+                       niemand gerechnet hat. *@
+                    @if (_ausschnittbild is not null)
                     {
-                        <div class="epos-flotte-groessen-steuerung">
-                            <Auswahlfeld Bezeichnung="@Resource.FLOTTE_GROESSEN_LBL_EINHEIT"
-                                         Eintraege="@Einheitenwahl" Auswahl="@_einheit"
-                                         AuswahlChanged="EinheitGesetzt" />
-                        </div>
+                        <section class="epos-simerg-block">
+                            <ChartBild Png="@_ausschnittbild" Alt="@Ausschnittalt" />
+                            <p class="epos-flotte-hinweis">@Ausschnittsatz</p>
+                        </section>
                     }
-                    <ChartBild Png="@_rasterbild" Alt="@Rasterbeschreibung" />
-                </section>
+                </div>
 
                 <section class="epos-simerg-block">
                     <div class="epos-flotte-groessen-steuerung">
@@ -365,6 +394,12 @@
     /// <summary>Die Größenkopplung, der die Achsen folgen (Prüfhilfe, Auftrag #226).</summary>
     public FlottenAuslegungsmodus Achsenmodus => _raster.Modus;
 
+    /// <summary>
+    /// Der AUSSCHNITT um das Optimum steht da (Prüfhilfe, Auftrag #255) — er entsteht
+    /// nur, wenn eine zweite Suchphase gelaufen ist.
+    /// </summary>
+    public bool HatAusschnitt => _ausschnittbild is not null;
+
     /// <summary>Die Kandidatenzeilen nach Filter und Sortierung (Prüfhilfe).</summary>
     public IReadOnlyList<Katalogfilterzeile> SichtbareZeilen => Zeilen;
 
@@ -375,6 +410,12 @@
     private FlottenAuslegungErgebnis? _gezeichnet;
     private FlottenRasterdaten _raster = FlottenRasterdaten.Leer;
     private byte[]? _rasterbild, _spaltenbild, _zeilenbild;
+
+    /// <summary>
+    /// Das Bild des AUSSCHNITTS um das Optimum (Auftrag #255); <c>null</c>, solange keine
+    /// zweite Suchphase gelaufen ist — dann steht der Block gar nicht da.
+    /// </summary>
+    private byte[]? _ausschnittbild;
 
     /// <summary>
     /// Die zwei Bilder der STÜCKZAHLSUCHE (Auftrag #247); höchstens eines ist belegt —
@@ -446,6 +487,7 @@
             _rasterbild = null;
             _spaltenbild = null;
             _zeilenbild = null;
+            _ausschnittbild = null;
             return;
         }
 
@@ -455,6 +497,7 @@
             _rasterbild = null;
             _spaltenbild = null;
             _zeilenbild = null;
+            _ausschnittbild = null;
             return;
         }
 
@@ -470,6 +513,11 @@
             Ergebnis, _raster.Spaltenwerte[_spalte], _einheit);
         _zeilenbild = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiZeile(
             Ergebnis, _raster.Zeilenwerte[_zeile], _einheit);
+
+        // DER AUSSCHNITT haengt NICHT an den Schiebern (#255): Sein Fenster und sein
+        // festgehaltener Wert stehen mit dem Lauf fest - es ist das Feinraster um das
+        // Grob-Optimum. Die Einheitenwahl wirkt wie auf die Karte.
+        _ausschnittbild = SpeicherFlottenAnzeigeCtrl.Ausschnittbild(Ergebnis, _einheit);
     }
 
     // --- Einheitenwahl und Schieber -------------------------------------------
@@ -562,6 +610,18 @@
     /// <summary>Der zweite Schnitt läuft über der GEGENgröße, festgehalten ist die Zeile.</summary>
     private string Zeilenbeschreibung => SpeicherFlottenAnzeigeCtrl.Schnittbeschreibung(
         SpeicherFlottenAnzeigeCtrl.Gegengroesse(_raster.Modus), _raster.Zeilengroesse);
+
+    /// <summary>
+    /// Der ALT-Text des Ausschnitts ist seine Überschrift: Sie nennt die Achse und den
+    /// festgehaltenen Wert und ist damit die Bildbeschreibung, die sie sein muss. Eine
+    /// zweite Ressource daneben liefe beim ersten neuen Achsenmodus davon.
+    /// </summary>
+    private string Ausschnittalt
+        => SpeicherFlottenAnzeigeCtrl.Ausschnitttitel(Ergebnis, _einheit);
+
+    /// <summary>Der Satz unter dem Ausschnitt: Fenster, Schrittweite, bestes Ergebnis.</summary>
+    private string Ausschnittsatz
+        => SpeicherFlottenAnzeigeCtrl.Ausschnittbeschreibung(Ergebnis, _einheit);
 
     // --- Filter, Sortierung, Tabelle ------------------------------------------
 

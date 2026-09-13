@@ -582,7 +582,9 @@ Reihenfolge: Aussage und SP‑O‑4-Hinweis, die **Rasterkarte** (Einheitenwahl 
 daneben die **zwei Schnitte** mit je einem Schieber über die STELLEN der Achse (die
 Stützstellen einer Rastersuche sind nicht gleichmäßig verteilt — ein Schieber, der dazwischen
 stehen bliebe, zeigte eine Kurve, die es nicht gibt; Vorbelegung ist die Stelle des Optimums),
-und darunter die **Kandidatentabelle**: Kapazität, Lade-/Entladeleistung, C-Rate, Kapitalwert,
+unter der Karte den **Ausschnitt um das Optimum** (nur wenn eine zweite Suchphase gelaufen
+ist; Bild, Alt-Text und Begleitsatz kommen aus `SpeicherFlottenAnzeigeCtrl.Ausschnittbild`
+/`.Ausschnitttitel`/`.Ausschnittbeschreibung`), und darunter die **Kandidatentabelle**: Kapazität, Lade-/Entladeleistung, C-Rate, Kapitalwert,
 Ersparnis/a, Vollzyklen/a, Bezugsspitze, zulässig mit Grund — sortierbar je Spalte, mit
 Spaltenfilter nach dem Katalogfilter-Muster, hervorgehobener Optimum-Zeile, benanntem
 Kennzeichen „arbeitslos" und „Übernehmen" je Zeile (`EventCallback<FlottenKandidatZusammenfassung>
@@ -687,12 +689,30 @@ das Makro `OptimiereSpeicher` der Anwendermappe V7):
 
 `FlottenAuslegungEingang.Feinraster` ist **vorbelegt an** und wird mit dem Profil gespeichert.
 
-**Sichtbar wird die Phase in der Schnittkurve**, nicht in der Rasterkarte:
-`ChartRenderer.Schnittkurve(..., IReadOnlyList<bool> feinpunkte)` zeichnet einen Feinpunkt kleiner
-und in `C_FEINRASTER`; ohne den Parameter bleibt jedes Bild byte-gleich zum Stand vor #224
-(ChartProbe `flottenschnitt_feinraster` samt Gegenprobe `flottenschnitt_feinpunkte_wirken`). In der
-Karte wäre eine zweite Farbe neben Dreifarbskala und Schraffur eine dritte Aussage in derselben
-Fläche; die Feinpunkte stehen dort als eigene Zeilen.
+**Sichtbar wird die Phase im AUSSCHNITT um das Optimum**, nicht in den Gesamtdarstellungen.
+Rasterkarte und die zwei Gesamtschnitte tragen allein das **Grobraster**
+(`SpeicherFlottenAnzeigeCtrl.Rasterdaten` nimmt nur Kandidaten der Phase `Grob`): Zeilen und
+Spalten sind damit genau die eingegebenen Stützstellen. Ein Feinpunkt liegt ZWISCHEN ihnen und
+bekäme in der Karte eine eigene Zeile, in der jede andere Spalte leer bliebe — im Modus
+Kapazität × Leistung stand so die halbe Karte weiß da.
+
+Die Punkte der zweiten Phase stehen deshalb in einer eigenen Kurve:
+`SpeicherFlottenAnzeigeCtrl.Ausschnittdaten`/`.Ausschnittbild` führen alle Kandidaten der Phase
+`Fein` und dazu die Grobpunkte desselben festgehaltenen Achsenwertes, die im Fenster
+[kleinster, größter Feinwert] liegen; fällt ein Achsenwert doppelt an, besetzt ihn ein Punkt
+(erst Zulässigkeit, dann Kapitalwert, bei Gleichstand der Grobpunkt — dieselbe Regel, nach der
+das Feinraster nur bei strikt besserem Wert gewinnt). Gezeichnet wird mit
+`ChartRenderer.Schnittkurve(..., IReadOnlyList<bool> feinpunkte)`, das einen Feinpunkt kleiner
+und in `C_FEINRASTER` zeichnet (ChartProbe `flottenschnitt_feinraster` samt Gegenprobe
+`flottenschnitt_feinpunkte_wirken`); die y-Achse skaliert sich auf das Fenster, und genau das
+ist die Vergrößerung, die das Optimum genau zeigt. Ein neuer Renderer ist dafür nicht nötig,
+und die Engine bleibt unberührt — am Rechenweg ändert sich nichts.
+
+Hat ein Feinpunkt den Lauf gewonnen, markiert die Karte das **Grob-Optimum**
+(`SpeicherFlottenAnzeigeCtrl.GrobOptimum`, die Rangfolge des Optimierers: zulässig, größter
+Kapitalwert, bei Gleichstand der zuerst gerechnete), und ihre SP‑O‑4-Fußzeile nennt Wert und
+Fundort des besten Ergebnisses. Eine zweite Farbe in der Karte wäre neben Dreifarbskala und
+Schraffur eine dritte Aussage in derselben Fläche.
 
 **Drei Blöcke haben mit #224 den Ort gewechselt**, weil sie nie zu einer Einheit gehörten:
 „Netz und Planung" (Anschlussgrenzen, Prognoseplanung, Endenergieziele) wird

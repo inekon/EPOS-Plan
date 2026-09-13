@@ -298,6 +298,7 @@ Ein Raster findet nur, was auf seinen Stützstellen liegt. Deshalb rechnet die S
 * Das Fenster reicht eine '''Grobschrittweite''' nach beiden Seiten, wird an den eingegebenen Grenzen '''gekappt''' (ein Optimum am Rand bekommt deshalb ein einseitiges Feinraster) und ist mindestens 1 kWh breit.
 * Gerechnet wird in Schritten von '''einem Neuntel''' der Grobschrittweite.
 * '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der Grobpunkt der Beste – der liegt auf einer Stützstelle, die Sie selbst gesetzt haben.
+* '''Zu sehen ist das Feinraster im Ausschnitt um das Optimum''' – der Kurve unter der Rasterkarte, siehe den Abschnitt ''Ergebnisse über der Speichergröße''.
 
 '''Den Schalter gibt es nur bei „Größe suchen".''' Stückzahlen sind ganze Zahlen – zwischen zwei und drei Geräten liegt nichts, was sich verfeinern ließe.
 
@@ -357,14 +358,17 @@ Wurde noch nichts gerechnet, steht dort ''„Noch keine Suche gerechnet."''
 Nach einer '''Rastersuche''' steht unter dem Kasten „Bestes Ergebnis" die Größen-Sicht:
 
 * die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
-* die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums. '''Punkte aus dem Feinraster''' zeichnet die Kurve kleiner und in einer eigenen Farbe – sie liegen zwischen den Stützstellen des Grobrasters;
+* die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
+* der '''Ausschnitt um das Optimum''' – die Kurve unter der Rasterkarte, sobald die Suche eine '''zweite Phase''' gerechnet hat: der Kapitalwert über der Größenachse, begrenzt auf das Fenster des Feinrasters. Die Werteachse stellt sich auf dieses Fenster ein und wirkt damit wie eine Lupe auf die Umgebung des Optimums. '''Punkte aus dem Feinraster''' zeichnet die Kurve kleiner und in einer eigenen Farbe; die Stützstellen des Grobrasters am Rand und in der Mitte des Fensters behalten ihre Darstellung. Unter dem Bild stehen Fenster, Schrittweite, Zahl der Stützstellen und das beste Ergebnis;
 * die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
 
 '''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
 
 '''Die Achsen folgen der Größenkopplung''' aus dem Suchraum: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
 
-'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird.
+'''Rasterkarte und Schnittkurven zeigen die Stützstellen des Suchraums''' – genau die Werte, die in Schritt 4 eingegeben sind. Die Punkte der zweiten Phase liegen zwischen ihnen und stehen im Ausschnitt um das Optimum.
+
+'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Stammt das beste Ergebnis aus dem Feinraster, markiert die Rasterkarte den besten Punkt des '''Grobrasters''' – der Feinpunkt hat dort keine Zelle –, und derselbe Hinweis nennt sein Ergebnis und wo es zu sehen ist.
 
 === Schritt 5 — Ergebnis ===
 {{Anker|auslegung-ergebnis}}
