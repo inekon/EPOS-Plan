@@ -131,6 +131,64 @@ namespace EPOS.Kern.Tests
             Assert.Contains(hinweise, x => x.Kennung == FlottenHinweisKennung.BetriebskostenSehrNiedrig);
         }
 
+        // ====================================== Die SCHNELLE Stufe (Auftrag #254)
+
+        /// <summary>
+        /// <b>Ohne Standortreihe entfallen die beiden Peak-Ziel-Prüfungen — und nur
+        /// sie.</b> Das ist die schnelle Stufe der Vorprüfung: Sie braucht weder
+        /// Datenbank noch Zeitreihen und läuft deshalb bei jedem Tastendruck.
+        /// </summary>
+        [Fact]
+        public void OhneStandortreihe_BleibenKostenUndStartSoC_UndDasPeakZielSchweigt()
+        {
+            // Ein Peak-Ziel, das MIT Reihe zwei Hinweise erzeugte (unter dem Maximum der
+            // Tagesminima), und Kostensätze, die den Betriebsaufwandshinweis auslösen.
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 10, netzladung: false);
+            f.Einheiten[0].SocStart = f.Einheiten[0].SocMin;
+            var kosten = new SpeicherKostensaetze
+            {
+                InvestEurProKwh = 350,
+                InvestEurProKw = 200,
+                BetriebEurProKwhJahr = 0.001,
+                BetriebEurProKwJahr = 0.001
+            };
+
+            List<FlottenHinweis> mitReihe = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, kosten);
+            List<FlottenHinweis> ohneReihe = FlottenPlausibilitaet.Pruefe(
+                Array.Empty<FlottenNetzintervall>(), f, kosten);
+
+            Assert.Contains(mitReihe, x => x.Kennung == FlottenHinweisKennung.PeakZielUnterTagesminimum);
+            Assert.DoesNotContain(ohneReihe, x => x.Kennung == FlottenHinweisKennung.PeakZielUnterTagesminimum);
+            Assert.DoesNotContain(ohneReihe, x => x.Kennung == FlottenHinweisKennung.PeakZielUeberReferenzspitze);
+
+            // Kosten- und Start-SoC-Hinweis stehen in BEIDEN Stufen, im selben Wortlaut
+            // und in derselben Reihenfolge - die Liste bleibt EINE Liste.
+            FlottenHinweisKennung[] ohnePeak = mitReihe
+                .Where(x => x.Kennung != FlottenHinweisKennung.PeakZielUnterTagesminimum &&
+                            x.Kennung != FlottenHinweisKennung.PeakZielUeberReferenzspitze)
+                .Select(x => x.Kennung).ToArray();
+            Assert.Equal(ohnePeak, ohneReihe.Select(x => x.Kennung).ToArray());
+            Assert.Contains(ohneReihe, x => x.Kennung == FlottenHinweisKennung.BetriebskostenSehrNiedrig);
+            Assert.Contains(ohneReihe, x => x.Kennung == FlottenHinweisKennung.StartSoCAufMinimum);
+        }
+
+        /// <summary>
+        /// Der Weg über den <c>FlottenEingang</c> und der über die Istreihe allein
+        /// liefern dasselbe — die Prüfung liest von einem Eingang nur die Istwerte.
+        /// </summary>
+        [Fact]
+        public void DerEingangUndSeineIstreiheLiefernDieselbenHinweise()
+        {
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 10, netzladung: false);
+            FlottenEingang eingang = Eingang(100, 50, 100, 60);
+
+            List<FlottenHinweis> ueberEingang = FlottenPlausibilitaet.Pruefe(eingang, f, null);
+            List<FlottenHinweis> ueberIstwerte = FlottenPlausibilitaet.Pruefe(eingang.Istwerte, f, null);
+
+            Assert.Equal(ueberEingang.Select(x => x.Kennung), ueberIstwerte.Select(x => x.Kennung));
+            Assert.Equal(ueberEingang.Select(x => x.Text), ueberIstwerte.Select(x => x.Text));
+        }
+
         // ============================================== SD‑Q4 und der Diagnosebefund
 
         [Fact]

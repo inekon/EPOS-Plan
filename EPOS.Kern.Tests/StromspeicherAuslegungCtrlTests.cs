@@ -137,6 +137,131 @@ public sealed class StromspeicherAuslegungCtrlTests
         Assert.All(hinweise, h => Assert.False(string.IsNullOrWhiteSpace(h.Text)));
     }
 
+    // =====================================================================
+    //  Der Zwischenspeicher der Vorprüfung (Auftrag #254)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Zwei Vorprüfungen mit geändertem SUCHRAUM ergeben EINE Beschaffung.</b> Die
+    /// Achsen, Schrittweiten und Stückzahlen der Station 4 ändern weder Zeitreihe noch
+    /// Kosten — die Datenbank ein zweites Mal zu fragen wäre Arbeit ohne Wirkung.
+    /// </summary>
+    [Fact]
+    public void Ein_geaenderter_Suchraum_beschafft_die_Quellen_nicht_neu()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Suchraumstand(ctrl);
+        FlottenAuslegungsAchse achse = eingaben.Auslegung!.Flotte!.Auslegung.Achsen[0];
+
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(1, ctrl.Beschaffungen);
+
+        achse.KapazitaetSchrittKWh = 25.0;
+        ctrl.Vorpruefen(eingaben);
+        achse.KapazitaetBisKWh = achse.KapazitaetVonKWh + 400.0;
+        ctrl.Vorpruefen(eingaben);
+        achse.AnzahlBis = 3;
+        eingaben.Auslegung.Flotte.Auslegung.Feinraster = true;
+        ctrl.Vorpruefen(eingaben);
+
+        Assert.Equal(1, ctrl.Beschaffungen);
+
+        // Eine geänderte EINHEIT ist etwas anderes: Sie trägt den aggregierten
+        // Parametersatz und damit die Grundlage der Reihe.
+        eingaben.Auslegung.Flotte.Einheiten[0].KapazitaetKWh += 1.0;
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(2, ctrl.Beschaffungen);
+    }
+
+    /// <summary>
+    /// Die Hinweise sind DIESELBEN, ob aus dem Zwischenspeicher oder frisch beschafft —
+    /// das ist die Gleichheitsprobe zum Umbau.
+    /// </summary>
+    [Fact]
+    public void Der_Zwischenspeicher_liefert_dieselben_Hinweise_wie_die_frische_Beschaffung()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var gecacht = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Suchraumstand(gecacht);
+        eingaben.Auslegung!.Flotte!.Optionen.NetzladungErlaubt = false;
+        eingaben.Auslegung.Flotte.Optionen.WirtschaftlicherPeakZielwertKw = 0.001;
+
+        gecacht.Vorpruefen(eingaben);
+        eingaben.Auslegung.Flotte.Auslegung.Achsen[0].KapazitaetSchrittKWh = 25.0;
+        IReadOnlyList<FlottenHinweis> ausSpeicher = gecacht.Vorpruefen(eingaben);
+        Assert.Equal(1, gecacht.Beschaffungen);
+
+        // Ein Controller, der diesen Stand zum ERSTEN Mal sieht: volle Beschaffung.
+        var frisch = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        IReadOnlyList<FlottenHinweis> ausBeschaffung = frisch.Vorpruefen(eingaben);
+
+        Assert.NotEmpty(ausBeschaffung);
+        Assert.Equal(ausBeschaffung.Select(h => h.Kennung), ausSpeicher.Select(h => h.Kennung));
+        Assert.Equal(ausBeschaffung.Select(h => h.Stufe), ausSpeicher.Select(h => h.Stufe));
+        Assert.Equal(ausBeschaffung.Select(h => h.Text), ausSpeicher.Select(h => h.Text));
+    }
+
+    /// <summary>
+    /// <b>Ein neuer Lauf verwirft den Zwischenspeicher</b> — er trägt neue Zeitreihen,
+    /// und ein alter Stand wäre eine stille Lüge. Dasselbe tun neue Vorgaben.
+    /// </summary>
+    [Fact]
+    public void Ein_neuer_Lauf_und_neue_Vorgaben_verwerfen_den_Zwischenspeicher()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Suchraumstand(ctrl);
+
+        ctrl.Vorpruefen(eingaben);
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(1, ctrl.Beschaffungen);
+
+        ctrl.LaufUebernehmen(null);
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(2, ctrl.Beschaffungen);
+
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(2, ctrl.Beschaffungen);
+
+        ctrl.Vorgaben();
+        ctrl.Vorpruefen(eingaben);
+        Assert.Equal(3, ctrl.Beschaffungen);
+    }
+
+    /// <summary>
+    /// Die SCHNELLE Stufe kommt ohne Datenbank aus: Sie fragt die Zugriffsschicht kein
+    /// einziges Mal — und liefert trotzdem die Hinweise, die ohne Standortreihe
+    /// entscheidbar sind.
+    /// </summary>
+    [Fact]
+    public void Die_schnelle_Stufe_fragt_die_Datenbank_nicht()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Suchraumstand(ctrl);
+        eingaben.Auslegung!.Flotte!.Optionen.Betriebsziel = FlottenBetriebsziel.PeakShaving;
+        foreach (FlottenEinheit e in eingaben.Auslegung.Flotte.Einheiten) e.SocStart = e.SocMin;
+
+        var zaehler = new Zaehlzugriff(DataRepository.Zugriff);
+        DataRepository.Zugriff = zaehler;
+        IReadOnlyList<FlottenHinweis> hinweise;
+        try { hinweise = ctrl.VorpruefenSchnell(eingaben); }
+        finally { DataRepository.Zugriff = zaehler.Innen; }
+
+        Assert.Equal(0, zaehler.Gesamt);
+        Assert.Contains(hinweise, h => h.Kennung == FlottenHinweisKennung.StartSoCAufMinimum);
+        Assert.DoesNotContain(hinweise, h => h.Kennung == FlottenHinweisKennung.PeakZielUnterTagesminimum);
+    }
+
     /// <summary>
     /// Der VORSCHLAG für das Peak-Ziel kommt aus der Referenzzeitreihe, nicht aus einer
     /// festen Zahl — die 50 kW des Bestands sind mit P1 gefallen.
@@ -349,6 +474,39 @@ public sealed class StromspeicherAuslegungCtrlTests
         a.PvDatei = null;
         a.PreisDatei = null;
         a.FlottenProjektjahre = new List<FlottenProjektjahr>();
+        return eingaben;
+    }
+
+    /// <summary>
+    /// Der Dateistand mit EINER Suchachse — der Arbeitsstand der Station 4
+    /// „Optimierung" (Auftrag #254). An ihr hängen die Felder, die der Anwender dort
+    /// Zeichen für Zeichen ändert.
+    /// </summary>
+    private static SpeicherOptimierungEingaben Suchraumstand(StromspeicherAuslegungCtrl ctrl)
+    {
+        SpeicherOptimierungEingaben eingaben = Dateistand(ctrl);
+        SpeicherAuslegungKonfiguration a = eingaben.Auslegung!;
+        FlottenStudieKonfiguration flotte = a.Flotte!;
+
+        a.FlottenGroessenOptimieren = true;
+        flotte.Auslegung.Suchmethode = FlottenSuchmethode.Groesse;
+        flotte.Auslegung.Achsen.Clear();
+        FlottenEinheit vorlage = SpeicherAuslegungKopie.Von(flotte.Einheiten[0]);
+        flotte.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+        {
+            Aktiv = true,
+            Vorlage = vorlage,
+            ErsetztEinheitId = vorlage.Id,
+            Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+            AnzahlVon = 1,
+            AnzahlBis = 1,
+            KapazitaetVonKWh = 100,
+            KapazitaetBisKWh = 200,
+            KapazitaetSchrittKWh = 50,
+            LeistungVonKw = 50,
+            LeistungBisKw = 100,
+            LeistungSchrittKw = 50
+        });
         return eingaben;
     }
 

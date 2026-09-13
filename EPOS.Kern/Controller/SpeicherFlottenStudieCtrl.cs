@@ -415,6 +415,51 @@ public static partial class SpeicherFlottenStudieCtrl
         return null;
     }
 
+    /// <summary>
+    /// NUR die Istreihe des Standorts — ohne archivierte Prognosen, ohne Projektjahre
+    /// und <b>ohne die zwei Kennungen</b> (Auftrag #254).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum es sie gibt.</b> <see cref="Eingang"/> hängt an seine Rückgabe
+    /// zwei SHA-256-Kennungen über den JSON-Text der ganzen Reihe; bei 35 040
+    /// Viertelstunden ist das der weitaus größte Posten des Aufrufs. Der LAUF braucht
+    /// die Kennungen (sie verbinden Zeitreihen und Zusammenfassung), die VORPRÜFUNG
+    /// braucht sie nicht: <c>FlottenPlausibilitaet</c> liest allein Last, PV, BHKW und
+    /// Zeitstempel dieser Liste.</para>
+    /// <para>Die Prüfungen bleiben dieselben und in derselben Reihenfolge — auch die
+    /// Forderung nach einem Verkaufspreis, sobald Batterieexport erlaubt ist.</para>
+    /// </remarks>
+    /// <param name="v">Die Vorbereitung mit Zeitreihen und Zeitachse.</param>
+    /// <returns>Die Istwerte im Viertelstundenraster.</returns>
+    public static List<FlottenNetzintervall> Istwerte(StromspeicherOptimierungVorbereitung v)
+    {
+        ArgumentNullException.ThrowIfNull(v);
+        var e = v.Eingang ?? throw new ArgumentException("Die Standortzeitreihen fehlen.");
+        var a = v.Eingaben?.Auslegung ?? throw new ArgumentException("Die Quellenkonfiguration fehlt.");
+        var zeiten = v.ZeitstempelUtc ?? EposModellZeitachse(e.Anzahl);
+        if (zeiten.Length != e.Anzahl) throw new ArgumentException("Zeitachse und Werte haben verschiedene Längen.");
+        double? verkauf = a.Flotte?.Tarif.BatterieVerkaufspreisEuroProKWh;
+        if (a.Flotte?.Optionen.BatterieexportErlaubt == true && (!verkauf.HasValue || !double.IsFinite(verkauf.Value)))
+            throw new ArgumentException("Für Batterieexport muss ein effektiver Verkaufspreis in €/kWh angegeben werden.");
+        var istwerte = new List<FlottenNetzintervall>(e.Anzahl);
+        for (int t = 0; t < e.Anzahl; t++)
+        {
+            // EPOS liefert ein gleichmäßiges Modelljahr. Auch an Sommerzeitwechseln
+            // bleibt jedes Modellintervall genau einmal erhalten. CSV-Daten sind
+            // bereits auf ihre gemeinsame UTC-Achse gebracht worden.
+            int i = t;
+            istwerte.Add(new FlottenNetzintervall
+            {
+                Zeitstempel = zeiten[t], LastKw = e.LastKw[i], PvKw = e.PvKw[i], BhkwKw = e.BhkwKw?[i] ?? 0,
+                BezugspreisEuroProKWh = e.PreisCtKwh[i] / 100.0,
+                PvVerkaufspreisEuroProKWh = (e.VerguetungPvCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
+                BhkwVerkaufspreisEuroProKWh = (e.VerguetungBhkwCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
+                BatterieVerkaufspreisEuroProKWh = verkauf ?? 0
+            });
+        }
+        return istwerte;
+    }
+
     public static FlottenEingang Eingang(StromspeicherOptimierungVorbereitung v)
     {
         ArgumentNullException.ThrowIfNull(v);
@@ -427,24 +472,7 @@ public static partial class SpeicherFlottenStudieCtrl
             Prognosen = SpeicherAuslegungKopie.Von(a.FlottenPrognosen) ?? new(),
             Projektjahre = SpeicherAuslegungKopie.Von(a.FlottenProjektjahre) ?? new()
         };
-        double? verkauf = a.Flotte?.Tarif.BatterieVerkaufspreisEuroProKWh;
-        if (a.Flotte?.Optionen.BatterieexportErlaubt == true && (!verkauf.HasValue || !double.IsFinite(verkauf.Value)))
-            throw new ArgumentException("Für Batterieexport muss ein effektiver Verkaufspreis in €/kWh angegeben werden.");
-        for (int t = 0; t < e.Anzahl; t++)
-        {
-            // EPOS liefert ein gleichmäßiges Modelljahr. Auch an Sommerzeitwechseln
-            // bleibt jedes Modellintervall genau einmal erhalten. CSV-Daten sind
-            // bereits auf ihre gemeinsame UTC-Achse gebracht worden.
-            int i = t;
-            input.Istwerte.Add(new FlottenNetzintervall
-            {
-                Zeitstempel = zeiten[t], LastKw = e.LastKw[i], PvKw = e.PvKw[i], BhkwKw = e.BhkwKw?[i] ?? 0,
-                BezugspreisEuroProKWh = e.PreisCtKwh[i] / 100.0,
-                PvVerkaufspreisEuroProKWh = (e.VerguetungPvCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
-                BhkwVerkaufspreisEuroProKWh = (e.VerguetungBhkwCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
-                BatterieVerkaufspreisEuroProKWh = verkauf ?? 0
-            });
-        }
+        input.Istwerte = Istwerte(v);
         if (a.Flotte?.Optionen.PrognoseArt == PrognoseArt.Oracle)
         {
             input.Prognosen = new() { new FlottenPrognoseSnapshot("Idealwissen-Standortreihe", zeiten[0], zeiten[0], PrognoseArt.Oracle, input.Istwerte) };

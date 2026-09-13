@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -24,7 +23,7 @@ namespace EPOS.Kern.Tests;
 ///
 /// <para><b>Er prüft KEINE Zeitschranke.</b> Eine Zeitgrenze wäre auf fremden Läufern
 /// flatterhaft; die Wache über die eingesparte Arbeit ist der deterministische Zähler
-/// <c>StromspeicherAuslegungCtrl.Vorbereitungen</c> in
+/// <c>StromspeicherAuslegungCtrl.Beschaffungen</c> in
 /// <see cref="StromspeicherAuslegungCtrlTests"/>. Hier stehen die Zahlen im
 /// Prüfbericht und sonst nirgends.</para>
 /// </summary>
@@ -88,9 +87,23 @@ public sealed class VorpruefungMessungTests
             }
         }
         finally { DataRepository.Zugriff = zugriffe.Innen; }
+        int beschaffungen = ctrl.Beschaffungen;
 
-        // --- Die Aufschluesselung: Vorbereiten / Eingang / Pruefe -----------
-        double vorbereiten = 0, eingang = 0, pruefen = 0;
+        // --- Die SCHNELLE Stufe: je Tastendruck, ohne Datenbank -------------
+        double[] schnell = new double[Laeufe];
+        for (int i = 0; i < Laeufe; i++)
+        {
+            achse.KapazitaetSchrittKWh = 10.0 + (i % 20);
+            var uhr = Stopwatch.StartNew();
+            ctrl.VorpruefenSchnell(eingaben);
+            uhr.Stop();
+            schnell[i] = uhr.Elapsed.TotalMilliseconds;
+        }
+
+        // --- Die Aufschluesselung OHNE Zwischenspeicher ---------------------
+        //  Sie misst den Weg, den jeder Tastendruck vor Auftrag #254 ging:
+        //  beschaffen, vollen Eingang samt Kennungen bauen, pruefen.
+        double vorbereiten = 0, eingang = 0, pruefen = 0, istwerte = 0;
         const int Teilproben = 10;
         for (int i = 0; i < Teilproben; i++)
         {
@@ -110,6 +123,12 @@ public sealed class VorpruefungMessungTests
             eingang += uhr.Elapsed.TotalMilliseconds;
 
             uhr.Restart();
+            List<FlottenNetzintervall> nur = SpeicherFlottenStudieCtrl.Istwerte(v);
+            uhr.Stop();
+            istwerte += uhr.Elapsed.TotalMilliseconds;
+            Assert.Equal(e.Istwerte.Count, nur.Count);
+
+            uhr.Restart();
             FlottenPlausibilitaet.Pruefe(e, k, v.Eingaben.Auslegung.VerwendeteKosten);
             uhr.Stop();
             pruefen += uhr.Elapsed.TotalMilliseconds;
@@ -118,8 +137,11 @@ public sealed class VorpruefungMessungTests
         CultureInfo k0 = CultureInfo.InvariantCulture;
         double[] sortiert = (double[])zeiten.Clone();
         Array.Sort(sortiert);
+        double[] sortiertSchnell = (double[])schnell.Clone();
+        Array.Sort(sortiertSchnell);
         _aus.WriteLine("Messlauf Vorpruefung, Projekt " + Pruefprojekt + ", EPOS-Weg, " +
                        Laeufe.ToString(k0) + " Aufrufe je ein geaendertes Suchraumfeld");
+        _aus.WriteLine("VOLLE Stufe (Vorpruefen):");
         _aus.WriteLine("  Mittel       : " + zeiten.Average().ToString("0.000", k0) + " ms");
         _aus.WriteLine("  Median       : " + Median(sortiert).ToString("0.000", k0) + " ms");
         _aus.WriteLine("  Kleinster    : " + sortiert[0].ToString("0.000", k0) + " ms");
@@ -127,9 +149,16 @@ public sealed class VorpruefungMessungTests
         _aus.WriteLine("  Summe        : " + zeiten.Sum().ToString("0.0", k0) + " ms");
         _aus.WriteLine("  DB-Vorgaenge : " + zugriffe.Gesamt.ToString(k0) + " gesamt, " +
                        (zugriffe.Gesamt / (double)Laeufe).ToString("0.00", k0) + " je Aufruf");
-        _aus.WriteLine("Aufschluesselung (" + Teilproben.ToString(k0) + " Teilproben, Mittel je Aufruf):");
+        _aus.WriteLine("  Beschaffungen: " + beschaffungen.ToString(k0) + " (samt Aufwaermen)");
+        _aus.WriteLine("SCHNELLE Stufe (VorpruefenSchnell):");
+        _aus.WriteLine("  Mittel       : " + schnell.Average().ToString("0.000", k0) + " ms");
+        _aus.WriteLine("  Median       : " + Median(sortiertSchnell).ToString("0.000", k0) + " ms");
+        _aus.WriteLine("  Groesster    : " + sortiertSchnell[^1].ToString("0.000", k0) + " ms");
+        _aus.WriteLine("Aufschluesselung OHNE Zwischenspeicher (" + Teilproben.ToString(k0) +
+                       " Teilproben, Mittel je Aufruf):");
         _aus.WriteLine("  Vorbereiten  : " + (vorbereiten / Teilproben).ToString("0.000", k0) + " ms");
         _aus.WriteLine("  Eingang+Konf : " + (eingang / Teilproben).ToString("0.000", k0) + " ms");
+        _aus.WriteLine("  davon Istwerte allein: " + (istwerte / Teilproben).ToString("0.000", k0) + " ms");
         _aus.WriteLine("  Pruefe       : " + (pruefen / Teilproben).ToString("0.000", k0) + " ms");
 
         // Die einzige Zusicherung des Falls ist eine FACHLICHE: Dieselben Eingaben
@@ -202,57 +231,5 @@ public sealed class VorpruefungMessungTests
             LeistungSchrittKw = 50
         });
         return eingaben;
-    }
-
-    /// <summary>
-    /// Ein zählender Mantel um die Zugriffsschicht — er reicht jeden Aufruf durch und
-    /// notiert nur, wie viele es waren.
-    /// </summary>
-    private sealed class Zaehlzugriff : IDatenzugriff
-    {
-        public Zaehlzugriff(IDatenzugriff innen) => Innen = innen;
-
-        public IDatenzugriff Innen { get; }
-
-        public int Gesamt { get; private set; }
-
-        private void Zaehle() => Gesamt++;
-
-        public DataTable GetDataTable(string sql, params DbParam[] parameter)
-        { Zaehle(); return Innen.GetDataTable(sql, parameter); }
-
-        public bool ExecuteSQL(string sql, params DbParam[] parameter)
-        { Zaehle(); return Innen.ExecuteSQL(sql, parameter); }
-
-        public int ExecuteNonQuery(string sql, params DbParam[] parameter)
-        { Zaehle(); return Innen.ExecuteNonQuery(sql, parameter); }
-
-        public int ExecuteInsertAndGetId(string insertSql, DbParam[] parameter)
-        { Zaehle(); return Innen.ExecuteInsertAndGetId(insertSql, parameter); }
-
-        public object ExecuteScalar(string sql, params DbParam[] parameter)
-        { Zaehle(); return Innen.ExecuteScalar(sql, parameter); }
-
-        public DbVorgang Vorgang()
-        { Zaehle(); return Innen.Vorgang(); }
-
-        public bool TabelleVorhanden(string name)
-        { Zaehle(); return Innen.TabelleVorhanden(name); }
-
-        public bool SpalteVorhanden(string tabelle, string spalte)
-        { Zaehle(); return Innen.SpalteVorhanden(tabelle, spalte); }
-
-        public List<string> SpaltenVonTabelle(string tabelle)
-        { Zaehle(); return Innen.SpaltenVonTabelle(tabelle); }
-
-        public DataTable IndexListe(string tabelle)
-        { Zaehle(); return Innen.IndexListe(tabelle); }
-
-        public DataTable FremdschluesselListe(string tabelle)
-        { Zaehle(); return Innen.FremdschluesselListe(tabelle); }
-
-        public bool DatenbankVorhanden() => Innen.DatenbankVorhanden();
-
-        public string DatenbankPfad => Innen.DatenbankPfad;
     }
 }
