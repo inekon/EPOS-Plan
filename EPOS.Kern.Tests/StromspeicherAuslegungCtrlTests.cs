@@ -236,6 +236,30 @@ public sealed class StromspeicherAuslegungCtrlTests
     }
 
     /// <summary>
+    /// <b>Der übergebene Arbeitsstand bleibt unangetastet.</b> Beide Stufen arbeiten auf
+    /// eigenen Kopien — die Ansicht hält denselben Stand weiter, und eine Vorprüfung ist
+    /// keine Schreiboperation.
+    /// </summary>
+    [Fact]
+    public void Die_Vorpruefung_veraendert_den_uebergebenen_Stand_nicht()
+    {
+        using var testDb = new TestDatenbank();
+        Assert.True(testDb.Vorhanden, "Die Testdatenbank ist für diesen Integrationstest erforderlich.");
+
+        var ctrl = new StromspeicherAuslegungCtrl(Pruefprojekt);
+        SpeicherOptimierungEingaben eingaben = Suchraumstand(ctrl);
+        string vorher = System.Text.Json.JsonSerializer.Serialize(
+            eingaben, SpeicherAuslegungKopie.JsonOptionen);
+
+        ctrl.Vorpruefen(eingaben);
+        ctrl.VorpruefenSchnell(eingaben);
+        ctrl.PeakZielVorschlag(eingaben);
+
+        Assert.Equal(vorher, System.Text.Json.JsonSerializer.Serialize(
+            eingaben, SpeicherAuslegungKopie.JsonOptionen));
+    }
+
+    /// <summary>
     /// Die SCHNELLE Stufe kommt ohne Datenbank aus: Sie fragt die Zugriffsschicht kein
     /// einziges Mal — und liefert trotzdem die Hinweise, die ohne Standortreihe
     /// entscheidbar sind.

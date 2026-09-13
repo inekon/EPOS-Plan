@@ -437,8 +437,12 @@ namespace WindowsFormsApplication1
                 // Der EINGABENABHÄNGIGE Rest läuft weiterhin je Aufruf: Kosten
                 // auflösen, Reihen zuordnen, Konfiguration bauen. Er kommt ohne
                 // Datenbank aus, weil die Quellen schon dastehen (Auftrag #254).
+                //
+                // OHNE eigene Tiefenkopie: VorbereitenAusQuellen legt sich selbst eine
+                // an und schreibt nur in diese. Eine zweite wäre je Aufruf ein
+                // Serialize/Deserialize des ganzen Standes ohne Wirkung.
                 StromspeicherOptimierungVorbereitung v =
-                    SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben.Kopie());
+                    SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben);
                 if (v == null) return new List<FlottenHinweis>();
                 return FlottenPlausibilitaet.Pruefe(stand.Istwerte,
                     SpeicherFlottenStudieCtrl.Konfiguration(v.Eingaben),
@@ -470,6 +474,9 @@ namespace WindowsFormsApplication1
             try
             {
                 SpeicherKostensaetze kosten = _stand?.Kosten ?? eingaben.Auslegung.VerwendeteKosten;
+
+                // DIESE Kopie BLEIBT: Die Zeile darunter schreibt in den Stand, und der
+                // Arbeitsstand der Ansicht darf davon nichts merken.
                 SpeicherOptimierungEingaben stand = eingaben.Kopie();
                 stand.Auslegung.VerwendeteKosten = kosten ?? new SpeicherKostensaetze();
                 return FlottenPlausibilitaet.Pruefe(Array.Empty<FlottenNetzintervall>(),
@@ -624,7 +631,7 @@ namespace WindowsFormsApplication1
                     if (stand != null && stand.Istwerte.Count > 0)
                     {
                         StromspeicherOptimierungVorbereitung v =
-                            SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben.Kopie());
+                            SpeicherAuslegungCtrl.VorbereitenAusQuellen(stand.Quellen, eingaben);
                         if (v != null)
                             return FlottenPeakZiel.Vorschlag(stand.Istwerte,
                                 SpeicherFlottenStudieCtrl.Konfiguration(v.Eingaben));

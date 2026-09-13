@@ -194,12 +194,17 @@ namespace WindowsFormsApplication1
         /// Datenbank und ohne Zeitreihenbeschaffung</b> (Auftrag #254).
         /// </summary>
         /// <remarks>
-        /// Der eingabenabhängige Rest: Kosten auflösen, Reihen der Quellen zuordnen,
-        /// Zeitachse prüfen, Laufkontext kopieren. Er ist derselbe Aufruf, den
-        /// <see cref="Vorbereiten"/> macht — deshalb rechnen beide Wege gleich.
+        /// <para>Der eingabenabhängige Rest: Kosten auflösen, Reihen der Quellen
+        /// zuordnen, Zeitachse prüfen, Laufkontext kopieren. Er ist derselbe Aufruf, den
+        /// <see cref="Vorbereiten"/> macht — deshalb rechnen beide Wege gleich.</para>
+        /// <para><b>Der übergebene Stand wird NICHT verändert:</b> Die Methode legt
+        /// sich selbst eine Tiefenkopie an und schreibt ausschließlich in diese; die
+        /// Rückgabe trägt sie als <c>Eingaben</c>. Ein Aufrufer braucht deshalb keine
+        /// eigene Kopie voranzustellen — eine zweite wäre je Aufruf ein
+        /// Serialize/Deserialize des ganzen Standes ohne Wirkung.</para>
         /// </remarks>
         /// <param name="quellen">Die Quellen aus <see cref="QuellenBeschaffen"/>.</param>
-        /// <param name="eingaben">Der Arbeitsstand; er wird hier erneut kopiert.</param>
+        /// <param name="eingaben">Der Arbeitsstand; er bleibt unangetastet.</param>
         /// <param name="kostenPflicht">Wie streng fehlende Kostensätze genommen werden.</param>
         internal static StromspeicherOptimierungVorbereitung VorbereitenAusQuellen(
             SpeicherLaufQuellen quellen, SpeicherOptimierungEingaben eingaben,
