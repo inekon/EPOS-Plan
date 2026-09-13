@@ -5212,3 +5212,45 @@ steht aus und ist die eigentliche Aufgabe von
 > **Gate sept65 auf `5dc7ca2a`:** GRÜN auf `5dc7ca2a` — Kern 2 792, UI 4 000, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** Windows-Abnahme; Sammel-Upload frühestens 20.09.2026 (Stromspeicher-Quelle aus #253 und #255, vier
 > Logbuch-Einträge); #254 auf Anwenderentscheid.
+
+## #254 — Vorprüfung in Station 4 ohne Datenbank je Tastendruck, entprellt (13.09.2026, Nachtrag aus dem Merge)
+
+> **Herkunft:** Befund des Agenten aus #253 (13.09.2026): Jede Eingabe in einem Suchraumfeld von Station 4 „Optimierung"
+> lief über `Geaendert()` der Auslegungsseite in `Dienste.Vorpruefen` → `StromspeicherAuslegungCtrl.Vorpruefen` →
+> `SpeicherAuslegungCtrl.Vorbereiten` — die volle Vorbereitung eines Laufs mit Tiefenkopien, Datenbankzugriffen und
+> Zeitreihenaufbau, obwohl ein Suchraumfeld weder Kosten noch Lastgang ändert. **Anwenderentscheid 13.09.2026:**
+> „#254: Empfehlung" (messen, billige Prüfung sofort, teure entprellt, Zwischenspeicher).
+>
+> **Messung (Agent Opus, headless gegen die Testdatenbank, Projekt 1046 mit gerechnetem Jahreslauf, 100 Aufrufe mit je
+> einem geänderten Suchraumfeld):** vorher Median 69,7 ms, Mittel 75,9 ms, sechs Datenbankvorgänge je Aufruf, 103
+> Beschaffungen auf 103 Aufrufe; davon Vorbereitung 3,9 ms, `Eingang`+`Konfiguration` 64,7 ms (nur 2,7 ms für die 35 040
+> Intervalle, der Rest zwei SHA-256-Kennungen über den JSON-Text der ganzen Reihe), Prüfung 0,8 ms. Nachher Median 2,5–2,9 ms,
+> null Datenbankvorgänge, eine Beschaffung auf 103 Aufrufe; schnelle Stufe 0,24 ms. Der Kandidatenzähler war nie das Problem.
+>
+> **Befund:** Eingabenabhängig in der Vorbereitung sind nur Quellenwahl, Kostenquellen, übernommener Projektflottenstand,
+> die Einheiten (daraus der aggregierte Parametersatz), Betriebsoptionen/Tarif und die Länge der Lastdatei; der Suchraum
+> (Achsen, Schritte, Stückzahlen, Feinraster, Suchmethode) wird von der Beschaffung nicht gelesen.
+> `FlottenPlausibilitaet.Pruefe` ist ohne Eingang aufrufbar (dann entfallen genau die zwei Peak-Ziel-Prüfungen); Raster- und
+> Kandidatenhinweise kamen schon immer aus `FlottenOptimierer.Kandidatenzahl` in der Seite.
+>
+> **Umsetzung (Commits `11db798e` Messlauf, `57feaf63` Kern, `a9238c4f` Seite, `2911d0db` Doku, `7a05b827` Tiefenkopie;
+> Merge `151949d7`):** Trennung an einer Stelle im Kern: `QuellenBeschaffen` (Datenbank und Zeitreihen) und
+> `VorbereitenAusQuellen` (eingabenabhängiger Rest); `Vorbereiten` ruft beides, Studien- und Projektlauf unverändert.
+> `StromspeicherAuslegungCtrl` speichert die beschafften Quellen samt Istreihe und aufgelösten Kostensätzen unter einem
+> Schlüssel aus Lauf-Fassung, Projekt, Quellen-/Kostenwahl, Einheiten, Betriebsoptionen, Tarif und den Kennungen der
+> Dateireihen (Name, Rolle, Länge); verworfen bei `LaufUebernehmen`, `Vorgaben` und jedem schreibenden Weg (Projektflotte
+> aktivieren, Einheiten übernehmen, Größe und Leistungspreis schreiben). Wache: interner Zähler `Beschaffungen` — zwei
+> Vorprüfungen mit geändertem Suchraum ergeben eine Beschaffung. `VorpruefenSchnell` (ohne Datenbank, ohne Eingang) als
+> zweiter plattformfreier Nahteintrag, die Hülle reicht durch, keine Schalenänderung. Die Seite ruft je Tastendruck nur die
+> schnelle Stufe; die volle Stufe läuft 400 ms nach dem letzten Zeichen (`CancellationTokenSource` + `Task.Delay` +
+> `InvokeAsync`, kein `Task.Run`) und sofort beim Öffnen, beim Blattwechsel, nach neuen Vorgaben und vor dem Lauf;
+> `EntprellungMs` ist Seitenparameter (400, 0 = sofort), `Dispose` bricht ab; die Hinweisliste bleibt eine Liste. Die
+> zusätzliche `eingaben.Kopie()` in `Vorpruefen`/`PeakZielVorschlag` ist gefallen (`VorbereitenAusQuellen` kopiert selbst;
+> Wache: der übergebene Stand bleibt zeichengleich). Tests: Kern 2 792 → 2 800 (`StromspeicherAuslegungCtrlTests`,
+> `FlottenPlausibilitaetTests`, `VorpruefungMessungTests` mit Trait „Messung" ohne Zeitschranke, `Zaehlzugriff`), bunit
+> 4 000 → 4 008 (`VorpruefungEntprelltTests`); #245/#253-Wachen grün. Referenzlauf 1046 byte-gleich (464 425 Werte).
+> Doku: `EPOS.UI/CLAUDE.md` (Hausregel zwei Stufen), Konzept Stromspeicher-Dialoge; Wiki-Quelle Stromspeicher ein Absatz
+> im Abschnitt „Der Lauf" (Upload gebündelt), Logbuch-Eintrag entworfen.
+> **Gate sept66 auf `151949d7`:** GRÜN auf `151949d7` — Kern 2 800, UI 4 008, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme; Messfall läuft im CI mit (rund 4 s), bei Bedarf nach `Proben/`; Sammel-Upload frühestens
+> 20.09.2026 (Stromspeicher-Quelle aus #253/#255/#254, fünf Logbuch-Einträge).
