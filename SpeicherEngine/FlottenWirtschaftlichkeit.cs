@@ -165,7 +165,26 @@ public static class FlottenWirtschaftlichkeit
         };
     }
 
-    internal static double Investition(FlottenEinheit b) => b.InvestitionEuro
+    /// <summary>
+    /// Die Investition EINER Einheit [EUR]:
+    /// <c>fest + EUR/kWh * Kapazitaet + EUR/kW * max(Ladeleistung, Entladeleistung)</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Seit Auftrag #249 oeffentlich</b> (Anwenderfrage vom 12.09.2026: „150 EUR/kWh mal
+    /// 1 395 kWh - woher kommen 284 250 EUR?"). Die Ergebnisansicht zeigt die Herleitung je
+    /// Einheit und holt die Summe aus GENAU DIESER Funktion, statt sie ein zweites Mal zu
+    /// bilden: Zwei Rechnungen fuer dieselbe Zahl liefen frueher oder spaeter auseinander.
+    /// </para>
+    /// <para>
+    /// Der leistungsbezogene Anteil haengt an der GROESSEREN der beiden Richtungsleistungen -
+    /// beschafft wird ein Geraet, nicht zwei. Die Summe ueber alle Einheiten ist der CAPEX,
+    /// den <see cref="Bewerte"/> vom Kapitalwert abzieht.
+    /// </para>
+    /// </remarks>
+    /// <param name="b">Die Einheit mit ihren drei Kostensaetzen.</param>
+    /// <returns>Die Investition dieser Einheit [EUR].</returns>
+    public static double Investition(FlottenEinheit b) => b.InvestitionEuro
         + b.InvestitionEuroProKWh * b.KapazitaetKWh
         + b.InvestitionEuroProKw * Math.Max(b.LadeleistungKw, b.EntladeleistungKw);
 

@@ -16734,6 +16734,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   <data name="FLOTTE_PROJ_INVEST" xml:space="preserve">
     <value>Investition: {0} € · Kapitalwert gegenüber „ohne Speicher“: {1} €</value>
   </data>
+  <data name="FLOTTE_PROJ_INVEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} € fest + {1} kWh × {2} €/kWh + {3} kW × {4} €/kW = {5} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME" xml:space="preserve">
+    <value>Summe der Einheiten</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME_FORMEL" xml:space="preserve">
+    <value>{0} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS" xml:space="preserve">
+    <value>Leistung = größere der beiden Leistungen (Laden, Entladen).</value>
+  </data>
   <data name="FLOTTE_PROJ_WIEDERHOLUNG" xml:space="preserve">
     <value>Projektion: Das Referenzjahr wird ausdrücklich über die gewählte Laufzeit wiederholt.</value>
   </data>
