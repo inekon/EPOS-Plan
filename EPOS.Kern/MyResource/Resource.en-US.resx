@@ -14857,9 +14857,9 @@ Really remove?</value>
     <value>Project name missing</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
-    <value>The project could not be saved completely.
+    <value>The project could not be saved.
 
-The step "{0}" failed; the entries already written remain in place.</value>
+The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Saving failed</value>
