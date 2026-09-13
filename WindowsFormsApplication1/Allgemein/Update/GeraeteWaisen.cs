@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
 using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite;
@@ -9,20 +8,14 @@ using Microsoft.Data.Sqlite;
 namespace WindowsFormsApplication1
 {
     // =====================================================================================
-    // ARBEITSPAKET S4b: ZWEI WEGE, WEIL ES ZWEI DATENBANKEN GIBT.
+    // EIN WEG: DIE ZUGRIFFSSCHICHT.
     //
-    // Diese Klasse hat ZWEI Aufruferkreise: den regulaeren Programmpfad (WErzeugerCtrl,
-    // WizardCtrl) OHNE Verbindung - der laeuft ab hier auf SQLite - und
-    // SchemaMigration (Schritt "Geraetewaisen"), der seine EIGENE, bereits offene
-    // OleDbConnection auf die Alt-.accdb hereinreicht. SchemaMigration ist der
-    // eingefrorene Access-Zweig (Arbeitspaket S6); seine oeffentlichen Signaturen
-    // - Aufraeumen(int, OleDbConnection) und ProjekteMitGeraetezeilen(OleDbConnection) -
-    // bleiben deshalb unveraendert stehen.
+    // Aufruferkreis ist der regulaere Programmpfad (WErzeugerCtrl, WizardCtrl). Die drei
+    // Zugriffsprimitiven ganz unten (Spalte, SpalteOhneTabelle, Loeschen) gehen
+    // ausschliesslich ueber die Zugriffsschicht; eine von aussen hereingereichte
+    // Verbindung gibt es nicht mehr.
     //
-    // Der Unterschied steckt ausschliesslich in den DREI Zugriffsprimitiven ganz unten
-    // (Spalte, SpalteOhneTabelle, Loeschen): conn == null heisst "Zugriffsschicht",
-    // conn != null heisst "auf DIESER Verbindung, wie bisher". Alles dazwischen -
-    // Waisenermittlung, Referenzmengen, Berichtstexte - ist unveraendert.
+    // ZUM ABGESCHALTETEN AUFRAEUMLAUF siehe die Begruendung bei <see cref="Waisen"/>.
     // =====================================================================================
 
     /// <summary>
@@ -85,6 +78,28 @@ namespace WindowsFormsApplication1
         /// <summary>Höchstens so viele IDs stehen in einer IN-Liste (Jet-Abfragelänge).</summary>
         private const int BLOCK = 200;
 
+        /// <summary>
+        /// Der Aufräumlauf ist ABGESCHALTET - und zwar unverändert, nicht neu.
+        ///
+        /// <para><see cref="Waisen"/> arbeitete nur auf einer von außen hereingereichten
+        /// ACE-Verbindung; ohne sie gab die Methode seit Arbeitspaket S4b eine LEERE Liste
+        /// mit <c>sicher = false</c> zurück, und <see cref="Aufraeumen"/> meldete
+        /// „unvollständig", statt zu löschen. Der reguläre Programmpfad reicht keine
+        /// Verbindung herein - der Lauf läuft dort also seit S4b leer. Mit dem Ausbau des
+        /// Access-Zweigs steht diese Bedingung hier, damit das Ergebnis genau dasselbe
+        /// bleibt.</para>
+        ///
+        /// <para>Die Zugriffsprimitiven darunter können den Lauf auf der Zugriffsschicht
+        /// fahren. Ob er scharf gestellt wird, ist ein Fachentscheid: Die Waisenerkennung
+        /// urteilte auf der Arbeitskopie vom 22.08.2026 bei vier von sechzehn Puffern zu
+        /// streng (siehe <see cref="Referenzen"/>), und der Migrationsschritt, der früher
+        /// nachzog, gibt es nicht mehr.</para>
+        ///
+        /// <para>Bewusst ein Feld und keine Konstante: Eine Konstante machte den Rumpf von
+        /// <see cref="Waisen"/> unerreichbar (CS0162).</para>
+        /// </summary>
+        private static readonly bool AUFRAEUMLAUF_SCHARF = false;
+
         /// <summary>Ergebnis eines Aufräumlaufs - Zahlen für Protokoll und Gegenmessung.</summary>
         public sealed class Bericht
         {
@@ -121,22 +136,16 @@ namespace WindowsFormsApplication1
         /// Projekt-Löschen bleiben genau diese Zeilen ohne Projekt zurück, und der
         /// Migrationsschritt räumt sie über dieselbe Methode.
         /// </param>
-        /// <param name="conn">
-        /// Offene Verbindung, die weiterbenutzt werden soll (der Migrationslauf hat
-        /// eine). <c>null</c> = eine eigene öffnen und wieder schließen.
-        /// </param>
-        public static Bericht Aufraeumen(int idProjekt, OleDbConnection conn = null)
+        public static Bericht Aufraeumen(int idProjekt)
         {
             var b = new Bericht();
             if (idProjekt <= 0) return b;
 
-            if (conn != null) { AufraeumenIntern(b, idProjekt, conn); return b; }
-
             try
             {
-                // ARBEITSPAKET S4b: keine eigene Verbindung mehr - die Zugriffsprimitiven
-                // holen sich je Abfrage eine aus dem Pool (conn == null).
-                AufraeumenIntern(b, idProjekt, null);
+                // ARBEITSPAKET S4b: keine eigene Verbindung - die Zugriffsprimitiven
+                // holen sich je Abfrage eine aus dem Pool.
+                AufraeumenIntern(b, idProjekt);
             }
             catch (Exception ex)
             {
@@ -155,15 +164,14 @@ namespace WindowsFormsApplication1
         /// Gerätetabellen hängt nur <c>Tab_Pufferspeicher</c> mit Löschweitergabe an
         /// <c>Tab_Projekt</c>; die übrigen sechs behalten ihre Zeilen).
         /// </summary>
-        public static List<int> ProjekteMitGeraetezeilen(OleDbConnection conn = null)
+        public static List<int> ProjekteMitGeraetezeilen()
         {
             var ids = new List<int>();
-            if (conn != null) { ProjekteSammeln(ids, conn); return ids; }
 
             try
             {
-                // ARBEITSPAKET S4b: siehe Aufraeumen - conn == null heisst Zugriffsschicht.
-                ProjekteSammeln(ids, null);
+                // ARBEITSPAKET S4b: siehe Aufraeumen - alles ueber die Zugriffsschicht.
+                ProjekteSammeln(ids);
             }
             catch (Exception ex)
             {
@@ -183,19 +191,19 @@ namespace WindowsFormsApplication1
         /// löschen", nie "nichts referenziert".
         /// </param>
         public static List<int> Waisen(KomponentenUebernahmeCtrl.GewerkPlan plan, int idProjekt,
-                                       OleDbConnection conn, out bool sicher)
+                                       out bool sicher)
         {
             sicher = false;
             var leer = new List<int>();
-            if (plan == null || idProjekt <= 0 || conn == null) return leer;
+            if (plan == null || idProjekt <= 0 || !AUFRAEUMLAUF_SCHARF) return leer;
 
-            List<int> vorhanden = Spalte(conn,
+            List<int> vorhanden = Spalte(
                 "SELECT [ID] FROM [" + plan.Geraetetabelle + "] WHERE [ID_Projekt] = ?",
                 Par(idProjekt));
             if (vorhanden == null) return leer;
             if (vorhanden.Count == 0) { sicher = true; return leer; }
 
-            HashSet<int> referenziert = Referenzen(plan, idProjekt, conn);
+            HashSet<int> referenziert = Referenzen(plan, idProjekt);
             if (referenziert == null) return leer;
 
             sicher = true;
@@ -209,12 +217,12 @@ namespace WindowsFormsApplication1
         // Innenleben
         // =================================================================================
 
-        private static void AufraeumenIntern(Bericht b, int idProjekt, OleDbConnection conn)
+        private static void AufraeumenIntern(Bericht b, int idProjekt)
         {
             foreach (KomponentenUebernahmeCtrl.GewerkPlan plan in KomponentenUebernahmeCtrl.Plaene.Values)
             {
                 bool sicher;
-                List<int> waisen = Waisen(plan, idProjekt, conn, out sicher);
+                List<int> waisen = Waisen(plan, idProjekt, out sicher);
 
                 if (!sicher)
                 {
@@ -236,7 +244,7 @@ namespace WindowsFormsApplication1
 
                 foreach (string kind in plan.Kindtabellen)
                 {
-                    int n = Loeschen(conn, kind, plan.KindFk, waisen);
+                    int n = Loeschen(kind, plan.KindFk, waisen);
                     if (n < 0) { kinderOk = false; break; }
                     kinder += n;
                 }
@@ -249,7 +257,7 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                int geraete = Loeschen(conn, plan.Geraetetabelle, "ID", waisen);
+                int geraete = Loeschen(plan.Geraetetabelle, "ID", waisen);
                 if (geraete < 0)
                 {
                     b.Unvollstaendig = true;
@@ -299,12 +307,11 @@ namespace WindowsFormsApplication1
         /// Puffer-Anlagenzeilen über den Del+Add-Weg.
         /// </para>
         /// </summary>
-        private static HashSet<int> Referenzen(KomponentenUebernahmeCtrl.GewerkPlan plan, int idProjekt,
-                                               OleDbConnection conn)
+        private static HashSet<int> Referenzen(KomponentenUebernahmeCtrl.GewerkPlan plan, int idProjekt)
         {
             var menge = new HashSet<int>();
 
-            List<int> direkt = Spalte(conn,
+            List<int> direkt = Spalte(
                 "SELECT [" + plan.AnlagenFk + "] FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                 "WHERE [ID_Projekt] = ? AND [" + plan.AnlagenFk + "] IS NOT NULL",
                 Par(idProjekt));
@@ -317,7 +324,7 @@ namespace WindowsFormsApplication1
 
             foreach (string spalte in KomponentenUebernahmeCtrl.PUFFER_VERWEISE)
             {
-                List<int> weitere = Spalte(conn,
+                List<int> weitere = Spalte(
                     "SELECT [" + spalte + "] FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
                     "WHERE [ID_Projekt] = ? AND [" + spalte + "] IS NOT NULL",
                     Par(idProjekt));
@@ -329,13 +336,13 @@ namespace WindowsFormsApplication1
             // Projekt-ID gar nicht, und ein Verweis von außerhalb wäre erst recht ein
             // Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer Datenbank vor
             // Migrationsschritt 14, gilt sie als leer - jeder andere Fehler bleibt einer.
-            List<int> verbund = SpalteOhneTabelle(conn, SchemaKatalog.Z_ANLAGEPUFFERVERBUND,
+            List<int> verbund = SpalteOhneTabelle(SchemaKatalog.Z_ANLAGEPUFFERVERBUND,
                 "SELECT [ID_Puffer] FROM [" + SchemaKatalog.Z_ANLAGEPUFFERVERBUND + "] " +
                 "WHERE [ID_Puffer] IS NOT NULL");
             if (verbund == null) return null;
             foreach (int id in verbund) menge.Add(id);
 
-            List<int> altZuordnung = SpalteOhneTabelle(conn, SchemaKatalog.Z_PROJEKTPUFFERSP,
+            List<int> altZuordnung = SpalteOhneTabelle(SchemaKatalog.Z_PROJEKTPUFFERSP,
                 "SELECT [ID_Pufferspeicher] FROM [" + SchemaKatalog.Z_PROJEKTPUFFERSP + "] " +
                 "WHERE [ID_Pufferspeicher] IS NOT NULL");
             if (altZuordnung == null) return null;
@@ -351,7 +358,7 @@ namespace WindowsFormsApplication1
             // fuehrt kein ID_Projekt, und ein Verweis von ausserhalb waere erst recht
             // ein Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer
             // Datenbank vor Schritt 50, gilt sie als leer.
-            List<int> senken = SpalteOhneTabelle(conn, SchemaKatalog.Z_ANLAGESENKE,
+            List<int> senken = SpalteOhneTabelle(SchemaKatalog.Z_ANLAGESENKE,
                 "SELECT [ID_Puffer] FROM [" + SchemaKatalog.Z_ANLAGESENKE + "] " +
                 "WHERE [ID_Puffer] IS NOT NULL");
             if (senken == null) return null;
@@ -360,13 +367,13 @@ namespace WindowsFormsApplication1
             return menge;
         }
 
-        private static void ProjekteSammeln(List<int> ids, OleDbConnection conn)
+        private static void ProjekteSammeln(List<int> ids)
         {
             var gesehen = new HashSet<int>();
 
             foreach (KomponentenUebernahmeCtrl.GewerkPlan plan in KomponentenUebernahmeCtrl.Plaene.Values)
             {
-                List<int> je = Spalte(conn,
+                List<int> je = Spalte(
                     "SELECT DISTINCT [ID_Projekt] FROM [" + plan.Geraetetabelle + "] " +
                     "WHERE [ID_Projekt] IS NOT NULL");
                 if (je == null) continue;
@@ -385,38 +392,20 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Erste Spalte einer Abfrage als Ganzzahlliste; <c>null</c> bei jedem Fehler.
         ///
-        /// ARBEITSPAKET S4b: <paramref name="conn"/> == null laeuft ueber die
-        /// Zugriffsschicht, sonst wie bisher auf der hereingereichten Verbindung
-        /// (Alt-Zweig SchemaMigration, S6). Der Fehlerpfad ist fuer beide DERSELBE -
-        /// gleicher Wortlaut, gleiche Rueckgabe.
+        /// ARBEITSPAKET S4b: laeuft ueber die Zugriffsschicht.
         /// </summary>
-        private static List<int> Spalte(OleDbConnection conn, string sql, params DbParam[] ps)
+        private static List<int> Spalte(string sql, params DbParam[] ps)
         {
             try
             {
                 var liste = new List<int>();
 
-                if (conn == null)
-                {
-                    using (Leihverbindung leihe = Vorgangsklammer.Leihe())
-                    using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, ps))
-                    using (SqliteDataReader r = cmd.ExecuteReader())
-                        while (r.Read())
-                            if (!r.IsDBNull(0))
-                                liste.Add(Convert.ToInt32(r.GetValue(0), CultureInfo.InvariantCulture));
-                    return liste;
-                }
-
-                using (var cmd = new OleDbCommand(sql, conn))
-                {
-                    // iU6: Datentraeger ist DbParam; der echte OleDbParameter entsteht
-                    // erst hier, unmittelbar vor der Bindung an die Access-Verbindung.
-                    if (ps != null && ps.Length > 0) cmd.Parameters.AddRange(DbParamOleDb.Nach(ps));
-                    using (OleDbDataReader r = cmd.ExecuteReader())
-                        while (r.Read())
-                            if (!r.IsDBNull(0))
-                                liste.Add(Convert.ToInt32(r.GetValue(0), CultureInfo.InvariantCulture));
-                }
+                using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, ps))
+                using (SqliteDataReader r = cmd.ExecuteReader())
+                    while (r.Read())
+                        if (!r.IsDBNull(0))
+                            liste.Add(Convert.ToInt32(r.GetValue(0), CultureInfo.InvariantCulture));
                 return liste;
             }
             catch (Exception ex)
@@ -433,63 +422,20 @@ namespace WindowsFormsApplication1
         /// heißt zweifelsfrei "sie enthält keinen Verweis". Jeder ANDERE Fehler bleibt ein
         /// Fehler und führt weiterhin zu <c>null</c>.
         ///
-        /// <para>ARBEITSPAKET S4b: Auf dem SQLite-Weg entscheidet eine VORABPROBE über die
-        /// Schema-Auskunft, ob es die Tabelle gibt - keine Deutung einer Fehlermeldung
-        /// mehr. Der Alt-Zweig (Verbindung von aussen, Arbeitspaket S6) behält seine
-        /// Textdeutung über <see cref="IstTabelleFehlt"/>; darum wird der Tabellenname
-        /// jetzt mitgegeben.</para>
+        /// <para>ARBEITSPAKET S4b: Eine VORABPROBE über die Schema-Auskunft entscheidet,
+        /// ob es die Tabelle gibt - keine Deutung einer Fehlermeldung mehr.</para>
         /// </summary>
-        private static List<int> SpalteOhneTabelle(OleDbConnection conn, string tabelle, string sql)
+        private static List<int> SpalteOhneTabelle(string tabelle, string sql)
         {
-            if (conn == null)
-            {
-                if (!StilleDb.TabelleVorhanden(tabelle)) return new List<int>();
-                return Spalte(null, sql);
-            }
-
-            try
-            {
-                var liste = new List<int>();
-                using (var cmd = new OleDbCommand(sql, conn))
-                using (OleDbDataReader r = cmd.ExecuteReader())
-                    while (r.Read())
-                        if (!r.IsDBNull(0))
-                            liste.Add(Convert.ToInt32(r.GetValue(0), CultureInfo.InvariantCulture));
-                return liste;
-            }
-            catch (Exception ex)
-            {
-                if (IstTabelleFehlt(ex)) return new List<int>();
-                Console.WriteLine("GeraeteWaisen: Abfrage fehlgeschlagen (" + ex.Message + "): " + sql);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// "Das Datenbankmodul konnte die Eingabetabelle nicht finden" - Jet/ACE-Fehler
-        /// 3078, ersatzweise am Text erkannt. <c>OleDbException.Errors</c> ist unter .NET 8
-        /// bei ACE-Fehlern leer (nachgewiesen in <c>SchemaMigration.IstBereitsVorhanden</c>),
-        /// tragend ist deshalb auch hier der Textvergleich.
-        ///
-        /// NUR NOCH FUER DEN ALT-ZWEIG (Verbindung von aussen). Der SQLite-Weg probt vorab.
-        /// </summary>
-        private static bool IstTabelleFehlt(Exception ex)
-        {
-            var oledb = ex as OleDbException;
-            if (oledb != null)
-                foreach (OleDbError e in oledb.Errors)
-                    if (e.SQLState == "3078") return true;
-
-            string m = (ex.Message ?? "").ToLowerInvariant();
-            return m.Contains("cannot find the input table")
-                || m.Contains("eingabetabelle");
+            if (!StilleDb.TabelleVorhanden(tabelle)) return new List<int>();
+            return Spalte(sql);
         }
 
         /// <summary>
         /// Löscht die Zeilen einer Tabelle zu einer ID-Liste, blockweise. Rückgabe: Zahl
         /// der gelöschten Zeilen, -1 sobald ein Block scheitert.
         /// </summary>
-        private static int Loeschen(OleDbConnection conn, string tabelle, string spalte, List<int> ids)
+        private static int Loeschen(string tabelle, string spalte, List<int> ids)
         {
             if (string.IsNullOrEmpty(tabelle) || string.IsNullOrEmpty(spalte)) return 0;
             if (ids == null || ids.Count == 0) return 0;
@@ -502,19 +448,12 @@ namespace WindowsFormsApplication1
                              IdListe(ids, von, BLOCK) + ")";
                 try
                 {
-                    // ARBEITSPAKET S4b: conn == null -> Zugriffsschicht, je Block eine
-                    // Verbindung aus dem Pool. KEINE Transaktion darum: Auch bisher stand
-                    // hier keine, und der Bericht zaehlt blockweise weiter.
-                    if (conn == null)
-                    {
-                        using (Leihverbindung leihe = Vorgangsklammer.Leihe())
-                        using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, null))
-                            summe += cmd.ExecuteNonQuery();
-                    }
-                    else
-                    {
-                        using (var cmd = new OleDbCommand(sql, conn)) summe += cmd.ExecuteNonQuery();
-                    }
+                    // ARBEITSPAKET S4b: Zugriffsschicht, je Block eine Verbindung aus dem
+                    // Pool. KEINE Transaktion darum: Auch bisher stand hier keine, und der
+                    // Bericht zaehlt blockweise weiter.
+                    using (Leihverbindung leihe = Vorgangsklammer.Leihe())
+                    using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, null))
+                        summe += cmd.ExecuteNonQuery();
                 }
                 catch (Exception ex)
                 {

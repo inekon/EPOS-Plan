@@ -150,9 +150,8 @@ namespace WindowsFormsApplication1
             // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
             // GeraeteWaisen zieht dafuer aber die Oberflaeche mit. Unter Windows soll sich
             // nichts aendern - deshalb hier, vor dem ersten moeglichen Loeschvorgang.
-            // Lambda, nicht Methodengruppe: Aufraeumen hat einen Vorgabeparameter
-            // (OleDbConnection) und liefert einen Bericht zurueck, den der Loeschweg
-            // wie bisher verwirft.
+            // Lambda, nicht Methodengruppe: Aufraeumen liefert einen Bericht zurueck,
+            // den der Loeschweg wie bisher verwirft.
             WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
 
             // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).

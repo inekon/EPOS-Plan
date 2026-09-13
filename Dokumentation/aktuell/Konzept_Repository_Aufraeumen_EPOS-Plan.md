@@ -138,9 +138,10 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
 - **Fremdquellen sammeln — entschieden 12.09.2026 (AUF‑Q3 „Empfehlung umsetzen"), umgesetzt #243 (Stufe 3).** `BHKWPlan/`,
   `PV-Konzept_PV-Now/` und `VALERI/` sind unter `Quellen/` gezogen (dort lagen die Emissionsfaktoren schon), `Mockups/` bleibt die eine
   Adresse für Entwürfe. Reine Verschiebung, Verweise nachgezogen.
-- **`WindowsFormsApplication1/Allgemein/Update/SchemaVersionAccess.cs` und `EposSqliteMigrator/`.** Die letzten Access-Bezüge im Code;
-  nach der Anwenderregel „nichts zu Access" prüfen, ob das Hauswerkzeug noch gebraucht wird (BETRIEB_SQLITE 1.1/7 sagt: für die Übernahme
-  eines Altbestands). Entscheid: behalten, solange ein Altbestand denkbar ist.
+- **Access im Code.** Der einzige Ort ist das Hauswerkzeug `EposSqliteMigrator/` mit eigener Projektmappe und eigener
+  `System.Data.OleDb`-Referenz. Entscheid: behalten, solange ein Altbestand denkbar ist (BETRIEB_SQLITE 1.1/7: Übernahme eines
+  Altbestands). Die Windows-Schale führt weder einen Access-Zweig noch das OleDb-Paket; die Hebung einer `.accdb` auf Schemastand 61
+  leistet die letzte Access-Fassung von EPOS-Plan (Git-Zweig `version_august_2026`).
 - **Fernzweige.** Zehn Zweige ohne Bewegung seit August bzw. dem Zweigwechsel (`Pufferspeicher`, `b5b_lokal`, `kostenformulare`,
   `lokal_dirk`, `pv-ertragsmodell-rechner2`, `sicherung-lokal`, `sqlite`, `version_august_2026`, `ios_migration`, zwei `claude/`-Zweige):
   vorerst nicht (Anwender 12.09.2026).

@@ -429,23 +429,6 @@ var
   G_LegacyOrdner:  Boolean;   { C:\ProgramData\EPOS_PLAN gab es schon vor dieser Installation }
 
 
-{ ---- KEINE Access-Engine mehr (Anwenderentscheid #157-E-1, Weg W3, 09.09.2026) ----
-  Bis hierher standen an dieser Stelle AceVorhanden, Office32Vorhanden,
-  Office32Hinweisen und AceNachpruefen: Das Setup schleppte den 64-Bit-Redist der
-  Microsoft Access Database Engine mit und installierte ihn still nach, damit die
-  Anwendung eine vorhandene Kenndaten.accdb uebernehmen konnte.
-
-  Access wurde beim Kunden nie produktiv eingesetzt. Die Uebernahme eines
-  Altbestands ist damit ein HAUSWERKZEUG (EposSqliteMigrator, Konsolenfassung) und
-  kein Kundenweg; die Anwendung selbst kommt ohne Fremdtreiber aus
-  (Microsoft.Data.Sqlite bringt die native Bibliothek mit). Die Datenbank einer
-  Neuinstallation entsteht aus der Vorlage Kenndaten.sqlite im Unterordner Vorlage
-  des Programmordners (Konstante app, ohne Klammern geschrieben - siehe den
-  Hinweis im naechsten Kommentar).
-
-  Der WebView2-Bootstrapper darunter bleibt: Ohne die Laufzeit startet EPOS-Plan
-  seit iU9-W15c gar nicht. }
-
 { ---- Voraussetzung: Microsoft Edge WebView2 Runtime (iU8) ----
   Die Evergreen-Laufzeit traegt ihre Fassung unter der festen Produkt-GUID
   F3017226-FE2A-4295-8BDF-00C3A9A7E4C5 im EdgeUpdate-Zweig (in den beiden

@@ -86,15 +86,20 @@ Wer trotzdem einen `.accdb`-Bestand übernehmen muss — eingeschickte Datenbank
 Prüfläufe, Wiederholungen —, nimmt das **Hauswerkzeug**: die Konsolenfassung
 `EposSqliteMigrator.exe` (Abschnitt 7). Sie enthält denselben Migrationskern, den der
 frühere Assistent benutzte, und braucht die 64-Bit-ACE-Engine auf dem Rechner, auf dem
-sie läuft. Die Alt-Hebung auf den letzten Access-Schemastand 61 besorgt weiterhin
-`SchemaMigration.HebeAltbestand`.
+sie läuft.
+
+**Die Quelle muss auf Schemastand 61 stehen.** Die Hebung dorthin leistet die letzte
+Access-Fassung von EPOS-Plan (Auslieferung August 2026, Git-Zweig
+`version_august_2026`): Sie wird auf die `.accdb` gestartet und fährt die Schritte 1
+bis 61. Im heutigen Programm gibt es keinen Access-Zweig mehr — weder die Alt-Hebung
+noch `System.Data.OleDb`; Access lebt allein im `EposSqliteMigrator`.
 
 **Was der frühere Assistent tat**, ist als Ablauf unverändert im Werkzeug abgebildet:
-Alt-Hebung auf Stand 61, Übertragung aller Tabellen mit Zeilen- und Prüfsummenvergleich,
-`integrity_check` und `foreign_key_check`, Migrationsbericht daneben; die Zieldatei
-entsteht erst nach nachgewiesenem Erfolg, die `.accdb` bleibt das Rollback. Der Schritt,
-den es NICHT mehr gibt, ist das automatische Umbenennen in `Kenndaten.vor-sqlite.accdb`
-beim Programmstart.
+Übertragung aller Tabellen mit Zeilen- und Prüfsummenvergleich, `integrity_check` und
+`foreign_key_check`, Migrationsbericht daneben; die Zieldatei entsteht erst nach
+nachgewiesenem Erfolg, die `.accdb` bleibt das Rollback. Der Schritt, den es NICHT mehr
+gibt, ist das automatische Umbenennen in `Kenndaten.vor-sqlite.accdb` beim
+Programmstart.
 
 ---
 
@@ -433,9 +438,9 @@ Gebaut wird es aus `EposSqliteMigrator\` (eigene Projektmappe); das Ergebnis lie
 **Voraussetzungen und Zusicherungen**
 
 * Die Quelle muss auf **Schemastand 61** stehen. Sonst bricht der Lauf ab mit dem
-  Hinweis, zuerst die letzte Access-Fassung von EPOS-Plan zu starten. Die Hebung dorthin
-  besorgt `SchemaMigration.HebeAltbestand` — der eingefrorene Access-Zweig der
-  Schemapflege; er bleibt als Hauswerkzeug erhalten.
+  Hinweis, zuerst die letzte Access-Fassung von EPOS-Plan zu starten. Genau die leistet
+  die Hebung dorthin: Auslieferung August 2026, Git-Zweig `version_august_2026`. Das
+  heutige Programm hat keinen Access-Zweig mehr.
 * Liegt eine `.laccdb` neben der Quelle, ist der Bestand geöffnet — der Lauf bricht ab.
   EPOS-Plan und Access schließen, auch auf anderen Rechnern.
 * Die `.accdb` wird **ausschließlich gelesen** (nur `SELECT`, nach Möglichkeit sogar

@@ -979,16 +979,11 @@ def vorbereite(sql, fuellung="0"):
 # 6. Hauptlauf
 # =====================================================================================
 
-# Der eingefrorene Access-Zweig der Schemapflege spricht Access-SQL, und die
-# ACE-Engine fuehrt es aus. Seit W3 (#157-E-1, 09.09.2026) ist er ein HAUSWERKZEUG:
-# ErststartMigration.cs ist geloescht - die Anwendung uebernimmt keinen .accdb-Bestand
-# mehr -, der Rest hebt einen eingeschickten Altbestand auf Stand 61.
-AUSGENOMMEN = (
-    "Allgemein/Update/SchemaMigration.cs",
-    "Allgemein/Update/GeraeteWaisen.cs",
-    "Allgemein/Update/SchemaVersionAccess.cs",
-    "Allgemein/DbParamOleDb.cs",
-)
+# Dateien, die Access-SQL sprechen duerfen - die Liste ist LEER: Im Programm gibt es
+# keinen Access-Zweig mehr. Wer sie erweitert, schreibt dazu, WARUM eine Datei Access
+# spricht. (Das Hauswerkzeug EposSqliteMigrator/ liegt ausserhalb von WURZELN und wird
+# ohnehin nicht geprueft.)
+AUSGENOMMEN = ()
 
 WURZELN = ("EPOS.Kern", "WindowsFormsApplication1", "EPOS.UI.Daten")
 

@@ -57,7 +57,12 @@
     <!-- AssemblyInfo.cs liefert die Attribute selbst -->
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
-    <!-- x64 - Microsoft.ACE.OLEDB.12.0 muss als 64-Bit-Engine vorliegen (Konzept_Umstellung_64Bit_EPOS-Plan.md, P2) -->
+    <!-- x64 (Konzept_Umstellung_64Bit_EPOS-Plan.md, P2). Die Schale zieht native
+         64-Bit-Bibliotheken, die es nur bitgenau passend gibt: SkiaSharp und
+         HarfBuzzSharp (NativeAssets.Win32), die SQLite-Engine aus
+         Microsoft.Data.Sqlite (SQLitePCLRaw e_sqlite3), WebView2Loader.dll aus der
+         Blazor-Huelle, Microsoft.ML.OnnxRuntime (CPU, x64) und - ueber
+         SpeicherPlanung - Google.OrTools. -->
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>x64</Platforms>
 
@@ -146,10 +151,6 @@
     <!-- Datenzugriff: SQLite (Arbeitspaket S4a). Gleiche Version wie der
          EposSqliteMigrator - beide muessen dieselbe SQLite-Engine mitbringen. -->
     <PackageReference Include="Microsoft.Data.Sqlite" />
-
-    <!-- BLEIBT: OleDbParameter ist nach der Umstellung nur noch DATENTRAEGER an den
-         ~2.300 Aufrufstellen; DataRepository uebersetzt innen (Konzept 2). -->
-    <PackageReference Include="System.Data.OleDb" />
 
     <!-- Konfiguration / Settings -->
     <PackageReference Include="System.Configuration.ConfigurationManager" />
@@ -245,11 +246,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <!-- ClickOnce-Signaturdatei nicht kompilieren -->
-  <ItemGroup>
-    <None Include="WindowsFormsApplication1_TemporaryKey.pfx" />
   </ItemGroup>
 
   <!-- Berichtsmodul: Word-Rahmenvorlage in den Ausgabeordner kopieren

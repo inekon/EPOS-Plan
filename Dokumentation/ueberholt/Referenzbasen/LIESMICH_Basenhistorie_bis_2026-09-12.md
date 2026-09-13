@@ -1,0 +1,1510 @@
+# Die Basenhistorie der Referenzlauf-Suite (bis 12.09.2026)
+
+**Herkunft.** Dieser Text stand bis zum **12.09.2026** in
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) — wortgetreu und in der
+Reihenfolge des Originals hierher ausgelagert. Dort stehen seither nur noch die Regeln, die
+Bedienung und die **aktuelle** Basis
+[`2026-09-11_R7_Speicherflotte`](../../../Referenzlaeufe/2026-09-11_R7_Speicherflotte/); hier
+steht, **welche Basis wann von welcher abgelöst wurde und warum**.
+
+**Was hier beschrieben wird, liegt nicht mehr im Arbeitsbaum.** Die Ordner der Basen sind am
+11.09.2026 aus `Referenzlaeufe/` gefallen (Anwenderentscheid **SYNC‑Q1**) und seit dem
+Umschreiben der Git-Geschichte vom 12.09.2026 (**AUF‑Q1**, Auftrag #244) auch dort nicht mehr
+enthalten. Ihre **Protokolle** sind vorher byte-gleich gesichert worden und liegen neben diesem
+Text — Wegweiser und Tabelle Basis → Datum → Zweck → Protokoll in
+[`LIESMICH.md`](LIESMICH.md). Die **Messdaten** (rund 7 700 CSV-Dateien, etwa 1 016,7 MB) sind
+endgültig weg; ein Vergleich gegen eine dieser Basen ist nicht mehr möglich.
+
+**Die Commit-Kennungen in diesem Text sind ALTE Kennungen.** Sie stammen aus der Zeit vor dem
+Umschreiben der Geschichte und finden sich in `git log` nicht mehr wieder; die Zuordnung alt →
+neu steht in
+[`../Geschichte/commit-map_2026-09-12.txt`](../Geschichte/commit-map_2026-09-12.txt). Ebenso
+sind alle Zeitangaben („seit", „inzwischen", „aktuell") als Stand **vom Tag des jeweiligen
+Abschnitts** zu lesen.
+
+**Am Text selbst ist nichts geändert** — mit zwei Ausnahmen: Die relativen Verweise sind auf
+diesen Ablageort nachgezogen (gleiches Ziel, neuer Pfad), und die Überschrift der Windows-Basis
+M7 trägt jetzt deren Namen statt „Aktuelle Basis". Die Nachträge zu den Schemaständen **72** und
+**73** stehen hier, weil sie die Basis R6 betreffen; der Nachtrag zum Schemastand **74** ist in
+`Referenzlaeufe/LIESMICH.md` geblieben, weil er die aktuelle Basis R7 betrifft.
+
+## Die abgelösten Basen
+
+### Windows-Basis: `2026-09-07_M7_nach-Merge7` (bis zum 12.09.2026 die „Aktuelle Basis")
+
+**`2026-09-07_M7_nach-Merge7/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **69**.
+Der Stand **nach dem siebten Merge von `origin/ios_migration`** (`d4edc85`, **14** Commits:
+W6‑B‑4 PV-Strangtabelle, W6‑B‑5 Schemaschritt 69 samt Linux-Basis R6) auf den Befund-Commit
+`159f3f8` (Windows-Abnahme V3 vom 07.09.2026, der PV-Reiter der Ergebnisseite, W11b‑B‑6 bis
+B‑10) — konfliktfrei, Merge-Commit `e6803a6`.
+
+> **Der Nachweis ist die Linux-Basis der Gegenseite.** Der Kern-Lauf des Merge-7-Baums mit dem
+> plattformfreien `EPOS.Referenzlauf` gegen `Kenndaten_Test.sqlite` (Schemastand 69, die zwölf
+> CI-Projekte) ist **312/312 byte-gleich zu `2026-09-07_R6_PvKoeffizienten`** — der
+> Windows-Build rechnet, was die CI rechnet. Sandbox: `WP-Plan.sln` 0 Fehler, `EPOS.Kern.Tests`
+> 1 995/1 995, `EPOS.UI.Tests` 3 216/3 217 (`KataloglisteTests.Zwanzigtausend_Zeilen…` flackert
+> unter Last und ist allein grün — **behoben am 07.09.2026 als O‑13**: ein Wettlauf im Test,
+> kein Fehler der `Katalogliste`; Herleitung im Protokoll `iU9_W15a_Blazor_Port_Protokoll.md`).
+> `pruefen` auf M7: plausibel, dieselben Bestandshinweise.
+>
+> **Gegen M5 ist sie NICHT byte-gleich (83 gleich, 272 ungleich, keine Datei einseitig;
+> Toleranzvergleich 14/14 FAIL, Projekt 1030 mit 10, die übrigen mit 22 000 bis 89 500
+> Abweichungen) — und das ist erwartet, nicht Befund dieses Merges.** Zwischen M5 (`4cdc462`,
+> Schemastand 64) und diesem Stand liegen die Kernänderungen der Gegenseite vom 06./07.09.2026,
+> auf Linux mit R3 → R4 → R5 → R6 nachgewiesen und dort mit denselben Vorzeichen: **R4** rechnet
+> und speichert den ganzen Weg in `double` statt `float` (W8‑O‑5d — deshalb weichen auch
+> `stundentemperatur.csv`, `waermebedarf*.csv` und `wp_*.csv` in allen vierzehn Projekten ab, und
+> auf Linux rissen elf von zwölf Projekten die Toleranz), **R5** der Zahlenrand der Betriebs-
+> schwellen und die zehn Emissionsskalare in `aggregate.csv` (Em‑9.8), **R6** Schemaschritt 69
+> (PV-Modulkoeffizienten; `T_NOCT` rechnet). Unverändert blieben die Reihen ohne Rechenweg im
+> Kern: `waermebedarf_extern.csv` (14/14) und `waermebedarf_prozess.csv` (13/13). Der
+> Befund-Commit `159f3f8` selbst trägt keinen Rechenweg — Anzeige-DTO in
+> `SimulationErgebnisCtrl`, `SimulationPV.FlaecheZurAnzeige` für die Ergebnisliste (steht in
+> keiner CSV), Hülle, Razor, Stilblatt.
+>
+> **Codestand:** Merge-Commit `e6803a6` (Eltern `159f3f8` lokal und `d4edc85` remote); Sicherung
+> `sicherung/vor-merge7-2026-09-07`, Anker `merge7/ios-2026-09-07`. Die produktive Datei blieb
+> unberührt; die Arbeitskopie des Laufs migriert **61 → 69**.
+>
+> ```powershell
+> & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-05_M5_nach-Merge5`
+
+**`2026-09-05_M5_nach-Merge5/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **64**.
+Der Stand **nach dem fünften Merge von `origin/ios_migration`** (`4cdc462`, **555** Commits:
+die iU9-Wellen W2 bis W16c, Entscheid #76 Zweispaltenauswahl, die Befunde der Windows-Abnahmen
+vom 04./05.09.2026) — und nach dem **Umzug der lokalen Arbeit auf die Razor-Struktur**: zwölf
+stillgelegte WinForms-Masken, ihre Deltas leben in `PhotovoltaikDialog` (`PvModellFelder`),
+`ModulKatalogDialog` (NOCT, Zelltechnologie), `PvModulImportDialog` (PAN-Koeffizienten,
+Plausibilität), `PhotovoltaikVerguetungDialog` (Degradation), `ProjektWahlDialog`/`ProjektListe`
+(Varianten, Mehrfachlöschen) und `ProjektKopfSeite` (Pflichtfelder). Die PV-Schritte 62/63
+heißen jetzt **63/64** — Schritt 62 gehört seit iU9‑W14c den Klimadaten-Waisen; Ziel 64.
+
+> **Sie ist byte-gleich zu M4 — und genau das ist ihr Zweck.** 555 Remote-Commits tauschen
+> Oberfläche aus und räumen Waisen ab; die Portierung trägt Dialogfelder um, keinen Rechenweg.
+> **355/355 byte-/MD5-gleich gegen M4, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`4cdc462`, ohne unsere
+> Pakete, Schemastand 62) ist **14/14 PASS zum THEIRS-Lauf von Merge 4** (`b0d3d86`). Beide
+> Achsen des Vergleichs sind exakt. THEIRS gegen MERGE weicht erwartet in den Temperaturreihen
+> ab (Ortszeit-Zeitbasis des Pakets A, wie PA0 → PA1).
+>
+> **Konflikte: 20** (zwölf Modify/Delete der stillgelegten Masken, acht Inhaltskonflikte), alle
+> vorab in der Sandbox aufgelöst und dort gebaut, getestet (`EPOS.UI.Tests` 2 491/2 491,
+> `EPOS.Kern.Tests` 1 077/1 077) und gefahren; die Arbeitskopie des Laufs migriert
+> **61 → 62 → 63 → 64**. Die produktive Datei blieb unberührt.
+>
+> **Merge 6 (05.09.2026, abends):** der Nachschub `ed71d73` (W12‑B‑1, nur Stilblatt, Wache und
+> Protokolle) ist konfliktfrei dazugekommen; der Lauf des Merge-6-Baums ist **355/355 byte-gleich**
+> zu dieser Basis — sie bleibt deshalb die aktuelle Basis (Protokoll Merge 5, Abschnitt 7).
+>
+> **Codestand:** Merge-Commit auf `ios_migration` (Eltern `9810d5b` lokal und `4cdc462` remote),
+> Protokoll `WindowsFormsApplication1/Allgemein/Simulation/Merge5_ios_2026-09-05_Protokoll.md`.
+>
+> ```powershell
+> & $exe lauf --quelle P:\pa0\Quelle\Kenndaten.sqlite --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-07_R6_PvKoeffizienten` (löste `2026-09-07_R5_Zahlenrand` ab)
+
+**`2026-09-07_R6_PvKoeffizienten/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018,
+1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, unverändert **1 792 Skalare**
+(kein Schlüssel neu, keiner entfallen), gerechnet mit dem plattformfreien `EPOS.Referenzlauf`
+auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 69**). Sie hielt bis zum 11.09.2026
+jeden Push (`.github/workflows/kern.yml` mit 1030, 1007, 1017, 1045) und den iZ6-Vergleich
+für 1030 in `ios.yml`; abgelöst hat sie `2026-09-11_R7_Speicherflotte` (Anwenderentscheid
+**SP‑O‑8**), zu der ihre zwölf Projekte **byte-gleich** sind. Sie bleibt zur Geschichte liegen.
+
+> **Anlass: der Befund W6‑B‑5 mit den drei Entscheiden Q1–Q3 vom 07.09.2026, alle
+> „Empfehlung"** — Schemaschritt **69** repariert die verdorbenen PV-Modulkoeffizienten
+> (Paket‑A‑Befund **A1**, `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md` N3.3): Der alte
+> Katalogeditor `Form_AdminPV` schrieb `alpha_SC`, `beta_OC` und `T_NOCT` mit 0 zurück, ein
+> älterer Schreibweg hatte sie mit dem Wert von `I_Kurzschluss` gefüllt. Der Schreibweg ist
+> seit Schemastand 62 repariert — die **Daten** waren es nie.
+>
+> **Elf der zwölf Projekte sind BYTE-GLEICH zu R5.** Nur **1007** weicht ab, und dort nur die
+> acht Dateien der PV-Kette (`aggregate`, `pv_produktion`, `pv_produktion_theoretisch`,
+> `pv_reststrom`, `pv_speicherfuellstand`, `pv_ueberschuss`, `reststrom_viertelstunde`,
+> `ssp_gespeichert_viertelstunde`); die 21 übrigen Dateien des Projekts sind byte-gleich.
+>
+> | Projekt | Werte | Abw. über Toleranz | Ursache |
+> |---|---|---|---|
+> | 1007 | 324 219 | 19 198 | `Tab_PV.T_NOCT` 9,34 (Rückfall 45 °C) → **47,4** aus der CEC-Liste |
+> | alle übrigen | — | **0** | byte-gleich |
+>
+> **Die Ursache ist genau eine Spalte.** Von den vier reparierten liest der Rechenweg nur
+> `T_NOCT`: `T_Zelle = T_amb + (G/800)·(NOCT − 20)`. Der Sprung 45 → 47,4 °C hebt die
+> Zelltemperatur bei 800 W/m² um 2,4 K; mit `gamma_PMP` = −0,4509 %/K sind das −1,08 % in
+> der vollen Sonne und über das Jahr **−0,69 %** theoretische Erzeugung (6 055,97 →
+> 6 014,29 kWh). `alpha_SC` und `beta_OC` liest **kein** Rechenweg — nur
+> `StrangPlausibilitaet` (die Ampel des PV-Dialogs) und die Importprüfung.
+>
+> | Skalar (Projekt 1007) | R5 | R6 | rel. |
+> |---|---|---|---|
+> | `Vektor.pv_produktion_theoretisch.Summe` | 6 055,971 | 6 014,289 | −6,88e‑3 |
+> | `Vektor.pv_produktion.Summe` | 5 148,297 | 5 126,662 | −4,20e‑3 |
+> | `Vektor.pv_ueberschuss.Summe` | 907,674 | 887,627 | −2,21e‑2 |
+> | `Vektor.pv_speicherfuellstand.Summe` | 13 949,031 | 13 879,119 | −5,01e‑3 |
+> | `Sim.Reststrom` | 50,5102403 | 50,5386766 | +5,63e‑4 |
+>
+> **Der Gegenbeweis:** Auf einer Kopie der reparierten Datenbank allein `T_NOCT` der zwei
+> Zeilen 1007005/1007006 zurück auf 45,0 gesetzt — `alpha_SC`, `beta_OC` und `gamma_PMP`
+> bleiben repariert. Ergebnis: **29 von 29 Dateien byte-gleich zu R5**. Die Abweichung dieser
+> Basis kommt ausschliesslich aus `T_NOCT`; der Rechenweg selbst ist unangetastet.
+>
+> **Warum 1040 und 1045 nicht abweichen, obwohl sie PV führen:** 1040 fährt das
+> Jinkosolar-Modul, dessen `T_NOCT` von 9,014 (ausserhalb des Fensters → Rückfall 45) auf
+> `NULL` geht — der Leseweg liest `NULL` als 0, und 0 liegt ebenfalls ausserhalb: derselbe
+> Rückfall vorher wie nachher. 1045 führt die zwei von Hand gepflegten Zeilen aus **W6‑O‑7**
+> (`T_NOCT` 45,0); sie sind gesund und werden vom Schritt nicht angefasst.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich**
+> (`diff -rq` ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS
+> (3 313 072 Werte). **Laufzeit** 00:00:04. Der Schemaschritt selbst ist ebenfalls
+> wiederholbar: Ein zweiter Lauf meldet „verdorbene Saetze vorher 0" und ändert keine Zeile.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R6_PvKoeffizienten
+> ```
+>
+> Die vollständige Vorher-/Nachher-Tabelle der 6 + 9 Katalogsätze, die Herleitung der
+> −0,69 % und der Gegenbeweis stehen im `protokoll.txt` der Basis.
+
+> **Nachtrag 09.09.2026 — Schemastand 72 (Auftrag #154), die Basis bleibt.** Die Schritte 70
+> (PV-Strangprüfung), 71 (zwölf Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`) und 72
+> (p_I in drei Spalten und der Freitext „Nicht monetäre Wirkungen") legen **ausschließlich
+> nullbare Spalten** an; `Kenndaten_Test.sqlite` ist byte-gleich nachgezogen, die Dateigröße
+> blieb bei 70 012 928 Byte. Kein Rechenwert ändert sich.
+
+> **Nachtrag 11.09.2026 — Schemastand 73 (Stromspeicher-Sync `4c3b521`), die Basis bleibt.**
+> Migrationsschritt **73** (`SCHRITT_73_SPEICHERAUSLEGUNG`) legt **eine einzige neue Tabelle**
+> an — `Tab_SpeicherAuslegung` samt dem eindeutigen Index `idx_SpeicherAuslegung` über
+> `ID_Projekt`, `COALESCE(ID_Energieanlage,0)` und `Bezeichner` — für die gespeicherten
+> Kostenprofile, Suchbereiche und importierten Zeitreihen der Speicherauslegung. **Er ändert
+> keine bestehende Spalte und legt keine Zeile an**; in der Referenzdatenbank steht die Tabelle
+> leer. Stand der Datei seither: **Schemastand 73**, **70 025 216 Byte** (66,8 MB; +12 288 Byte
+> gegenüber Stand 72, also drei Datenbankseiten zu 4 096 Byte), **119 Tabellen, davon
+> 117 STRICT**, **24 Projekte**. Der Kern-Referenzlauf
+> der CI-Projekte 1030, 1007, 1017 und 1045 ist im Linux-Gate auf `c51e839` **byte-gleich
+> gegen `2026-09-07_R6_PvKoeffizienten`** — kein Rechenwert ändert sich, die Basis wird nicht
+> neu eingefroren. Nachgezogen wie üblich mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`;
+> der SQL-Dialektprüfer meldet unverändert **0 Fundstellen**.
+>
+> **Keine der beiden Einfrierregeln ist berührt**: Der Schritt fasst weder einen
+> Emissionsfaktor (Em‑9.8‑Q4) noch einen PV-Modulkoeffizienten (W6‑B‑5‑Q3) an.
+
+### Vorgängerbasis: `2026-09-07_R5_Zahlenrand` (löste `2026-09-07_R4_Double` ab)
+
+**`2026-09-07_R5_Zahlenrand/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023,
+1024, 1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, **1 792 Skalare** (vorher 1 722),
+gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
+(Schemastand 67). Sie war bis zum 07.09.2026 die CI-Basis und bleibt zur Geschichte liegen;
+abgelöst hat sie `2026-09-07_R6_PvKoeffizienten` (Befund W6‑B‑5, Entscheide Q1–Q3).
+
+> **Anlass: drei Anwenderentscheide vom 07.09.2026, alle „Empfehlung".**
+>
+> * **W8‑O‑5d‑Q1** — die zwei Betriebsschwellen, die bei der Umstellung auf `double` am letzten
+>   Bit entschieden, tragen einen **Zahlenrand**
+>   (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs`: `1e-9 + 1e-12 · |Schwelle|`, absolut UND
+>   relativ, vier Größenordnungen unter der Vergleichstoleranz dieser Suite).
+> * **W8‑O‑5d‑Q2** — „keine Treue zur alten DLL": Die drei Physik-Funktionen des
+>   BHKW-Plan-Ports geben `double` zurück, die `(int)`-Abschneidung (Borland `_ftol`) fällt.
+> * **Em‑9.8** — die zehn Emissionsgrößen der Simulation kommen als Skalare in
+>   `aggregate.csv` (siehe „Die Einfrierregel" oben).
+>
+> **Diese Basis ist NICHT byte-gleich zur Vorgängerbasis — und die Ursache ist Q2.** Drei
+> Raster fallen weg: die Tagesheizlast auf ganze Wattstunden **nach** der Flächenskalierung,
+> die solaren Gewinne auf Hundertstel Watt und — die schwerste — der spezifische
+> Wärmeverlustkoeffizient auf **ganze W/K**. Bei ihm wirkte das Abschneiden doppelt: Die
+> Funktion gab `(int)(L · 100)`, und der Aufrufer teilte dieses `int` **ganzzahlig** durch 100.
+>
+> | Projekt | Werte | Abw. über Toleranz | größte rel. | größte abs. |
+> |---|---|---|---|---|
+> | 1007 | 324 219 | 78 561 | 1,00e+00 (`heizstab[168]` 0 → 0,00208) | 234 242 Wh |
+> | 1008 | 227 861 | 43 740 | 1,00e+00 (`puffer_soc[7]` 0 → 5,060) | 63 183 Wh |
+> | 1017 | 254 154 | 48 481 | 1,00e+00 (`bhkw_restwaerme[1368]` 0 → 0,00173) | 56 560 Wh |
+> | 1018 | 236 661 | 52 380 | 9,98e‑01 (`kessel_restwaerme[8687]` 0,0179 → 9,401) | 12 142 Wh |
+> | 1023 | 262 936 | 44 700 | 1,00e+00 (`heizstab[1728]` 0 → 0,328) | 66 814 Wh |
+> | 1024 | 271 717 | 52 571 | 1,00e+00 (`heizstab[176]` 0 → 0,00203) | 66 814 Wh |
+> | 1030 | 236 670 | **0** | — | **byte-gleich in 21 von 22 Dateien** |
+> | 1039 | 262 949 | 66 548 | 9,87e‑01 (`puffer_soc[7824]` 32,93 → 0,425) | 126 917 Wh |
+> | 1040 | 306 764 | 82 247 | 1,00e+00 (`kessel_leistung[410]` 0 → 0,00272) | 41 210 Wh |
+> | 1041 | 280 470 | 38 457 | 1,17e‑01 (`waermebedarf_gebaeude[2919]` 1 101,94 → 1 247,44 Wh) | 41 210 Wh |
+> | 1042 | 341 837 | 67 592 | 1,00e+00 (`kessel_leistung[233]` 0 → 0,00269) | 41 210 Wh |
+> | 1045 | 306 764 | 83 044 | 1,00e+00 (`kessel_leistung[410]` 0 → 0,00272) | 41 210 Wh |
+>
+> Die größte **absolute** Abweichung ist in jedem der elf Projekte dieselbe Größe: die
+> Jahressumme des Gebäudewärmebedarfs. Sie verschiebt sich um **−1,15e‑3 … +4,43e‑3** relativ,
+> und zwar umso stärker, je KLEINER das Gebäude ist — genau so, wie es die Abschneidung eines
+> Wärmeverlustkoeffizienten auf ganze W/K erwarten lässt: **1007** (74 m², L = 194,5722 →
+> 194 W/K, −0,29 %) verschiebt sich um +4,43e‑3, **1041** (201 m², L = 811,0302 → 811 W/K,
+> −0,004 %) nur um +6,95e‑4.
+>
+> Die größte **relative** Abweichung auf einem beidseitig echten Zahlenpaar steht in 1041 am
+> 2. Mai: Tagessumme 31 484 → 35 641 Wh (**+13,2 %**). Der Verstärker ist das instationäre
+> 24-Stunden-Modell — es trägt die Raumtemperatur über die TAGE fort und enthält die diskrete
+> Verzweigung „Sollwert < Vortemperatur → diese Stunde zählt nicht". An einem milden Tag sitzt
+> der Raum genau auf dieser Kante. Über das Jahr mittelt es sich weg: In 1041 liegt der Median
+> der Tagesabweichung bei 7,0e‑4 und nur **zwei** von 326 Bedarfstagen reißen 1 %.
+>
+> **Der Gegenbeweis:** Projekt **1030** ist das einzige ohne Gebäudewärmebedarf (der Bedarf
+> kommt aus einer Ganglinie). Q2 hat dort keinen Angriffspunkt — und prompt sind 21 der
+> 22 Dateien **byte-gleich** zu R4; die 22. (`aggregate.csv`) unterscheidet sich in genau den
+> zehn neuen Emissionszeilen. Der Zahlenrand allein bewegt also kein Projekt, dessen
+> Vergleiche nicht wirklich auf der Kante sitzen.
+>
+> **Was aus den zwei Verschiebungen der R4-Basis wurde:** Beide BLEIBEN — der Zahlenrand nimmt
+> sie nicht zurück, er macht sie eindeutig. In **1024** (BHKW +11,2 % gegen R3) bewegt sich von
+> R4 auf R5 nur noch, was der um 1,7e‑4 gewachsene Bedarf mitbringt (`bhkw_waerme`
+> 179 470,12 → 179 519,32 kWh, +2,7e‑4). In **1018** bleibt die Aufteilung des Puffers zwischen
+> Umsatz und Durchfluss die des R4-Standes (`Ladung_gesamt` 33 744,81 → 33 505,33,
+> `Durchsatz_Geladen` 14 292,62 → 14 544,23 kWh) — und sie ist jetzt zwingend statt zufällig:
+> Die Ladung fährt den Speicher auf genau `Q_max · SchwelleAus`, und der Zahlenrand sorgt
+> dafür, dass die Hysterese das auch dann als erreicht liest, wenn die Summe ihren Zielwert im
+> letzten Bit verfehlt.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich** (`diff -rq`
+> ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 072 Werte —
+> 70 mehr als in R4, das sind genau die zehn neuen Skalare über die zehn Projekte mit Kessel-
+> bzw. BHKW-Stufe). **Laufzeit** 00:00:04.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R5_Zahlenrand
+> ```
+>
+> Der Vergleich gegen R4 braucht `--ohne` für die zehn neuen Schlüssel — sonst meldet er sie
+> als „Eintrag nur im Vergleichslauf" und verdeckt die eigentliche Frage:
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- vergleich \
+>   Referenzlaeufe/2026-09-07_R4_Double Referenzlaeufe/2026-09-07_R5_Zahlenrand \
+>   --ohne Em.Kessel.Co2T,Em.Kessel.So2Kg,Em.Kessel.NoxKg,Em.Kessel.CoKg,Em.Kessel.StaubKg,\
+> Em.Bhkw.Co2T,Em.Bhkw.So2Kg,Em.Bhkw.NoxKg,Em.Bhkw.CoKg,Em.Bhkw.StaubKg
+> ```
+
+### Vorgängerbasis: `2026-09-07_R4_Double` (löste `2026-09-06_R3_Straenge` ab)
+
+**`2026-09-07_R4_Double/`** — **dieselben zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
+1030, 1039, 1040, 1041, 1042, 1045), **312 CSV**, gerechnet mit dem plattformfreien
+`EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 67). Sie war bis zum
+07.09.2026 die CI-Basis und bleibt zur Geschichte liegen; abgelöst hat sie
+`2026-09-07_R5_Zahlenrand` (Anwenderentscheide W8‑O‑5d‑Q1/Q2 und Em‑9.8).
+
+> **Anlass (Anwenderentscheid W8‑O‑5d vom 07.09.2026):** „alles in double, ist kein Nachteil und
+> systematisch. Summenfunktionen aus Original BHKW-Plan ebenfalls double." Der Rechenkern führte
+> seine Stundenreihen, Akkumulatoren und die Summenfunktionen des BHKW-Plan-Ports in `float` und
+> rechnete nur die Zwischenwerte in `double` — die bewusste Nachbildung des FPU-Verhaltens der
+> alten `BHKWPLAN.DLL`. Seit dem Entscheid rechnet und speichert der ganze Weg in `double`;
+> Codestand ist der Zweig `w135-double` auf `ios_migration` (`76fafe5`).
+>
+> **Diese Basis ist NICHT byte-gleich zur Vorgängerbasis — und das ist ihr Zweck.** Ein Projekt
+> (1030) bleibt auch unter der alten Toleranz PASS, die elf übrigen reißen sie:
+>
+> | Projekt | Werte | Abw. über Toleranz | größte rel. | größte abs. |
+> |---|---|---|---|---|
+> | 1007 | 324 219 | 306 | 2,57e‑01 (`Waermepumpe.Bivalenzpunkt` 18,11 → 24,36 °C) | 76,5 |
+> | 1008 | 227 861 | 1 287 | 9,49e‑01 (`puffer_entladung[952]` 0,348 → 6,877 kWh) | 35,0 |
+> | 1017 | 254 154 | 36 | 1,08e‑04 (`waermebedarf_gebaeude[2371]`) | 0,063 |
+> | 1018 | 236 661 | 9 619 | 1,00e+00 (`kessel_restwaerme[2169]` 9,375 → 0) | 18 770 |
+> | 1023 | 262 936 | 928 | 1,00e+00 (`puffer_soc[6147]` 7,525 → 0) | 620,6 |
+> | 1024 | 271 717 | 27 899 | 1,00e+00 (`bhkw_waerme[7337]` 0 → 8,874 kWh) | 70 251 |
+> | 1030 | 236 670 | **0** | 4,92e‑05 | 4,5e‑07 |
+> | 1039 | 262 949 | 1 574 | 1,00e+00 (`puffer_soc[1084]` 0 → 26,919) | 712,1 |
+> | 1040 | 306 764 | 334 | 4,65e‑02 (`kessel_leistung[509]`) | 129,9 |
+> | 1041 | 280 470 | 285 | 3,94e‑03 (`waermebedarf_gebaeude[525]` 30 998 → 30 876 W) | 129,9 |
+> | 1042 | 341 837 | 339 | 1,00e+00 (`kessel_restwaerme[7969]` 0 → 0,612) | 400 |
+> | 1045 | 306 764 | 334 | 4,65e‑02 (`kessel_leistung[509]`) | 129,9 |
+>
+> **Warum das kein Fehler, sondern die Verstärkung einer Nachkommastelle ist.** Die
+> EINGANGSGRÖSSEN ändern sich nur im letzten `float`-Bit: Die Jahressumme des Wärmebedarfs
+> bleibt in allen zwölf Projekten innerhalb **3e‑5** relativ (größte Abweichung 1007:
+> −1,98e‑05), die erste Differenz einer Stundenreihe liegt bei rund 1e‑7 — genau eine
+> `float`-Stufe (Projekt 1024, Stunde 0: 72,6195374 gegen 72,6195311 kWh). Verstärkt wird das
+> an **drei Schwellen des Modells**:
+>
+> 1. **Die Speicherhysterese.** `SimulationPufferspeicher.HystereseFortschreiben` vergleicht
+>    `SOC >= Q_max · SchwelleAus`. Die Ladung füllt den Speicher über `Ladefaehigkeit` auf
+>    **genau** `Q_max · grenze` — und in Gleitkomma ist `a + (b − a)` nicht bitgleich `b`. Der
+>    Vergleich entscheidet also am letzten Bit, er ist **bistabil** (Hysterese) und trägt das
+>    Ergebnis über Stunden weiter. Ursache in 1008, 1018, 1023, 1039 und 1042.
+> 2. **Die Volllast/Modulations-Grenze des BHKW.**
+>    `SimulationBHKW.Motorlauf_Waermegefuehrt` vergleicht `bhkwWaermeLeistung[motor] <
+>    restWaerme + restSpeicher`. Kippt sie, springt die Stundenproduktion — in 1024 ab
+>    Stunde 312 von 41,83 auf 46,00 kWh.
+> 3. **Die drei `int`-Rückgaben in `BhkwPlan`** (`TaeglHeizlastWG`, `SolareGewinneC`,
+>    `SpezWaermeverlusteC`; Borland `_ftol`, Abschneiden Richtung Null). Eine Stelle hinter dem
+>    Komma entscheidet über eine ganze Einheit; in 1041 verschiebt das die Tagesheizlast eines
+>    Januartags um 0,39 % (`waermebedarf_gebaeude` 30 998 → 30 876 W über den ganzen Tag).
+>
+> **Die Energie bleibt erhalten.** Projekt 1018 zeigt es am schärfsten: Wärmebedarf,
+> BHKW-Wärme, Kesselleistung, Puffer-SOC und Verluste sind identisch (7 bis 8 Stellen);
+> verschoben hat sich allein die Aufteilung des Puffers zwischen **Umsatz** und **Durchfluss** —
+> `Ladung_gesamt` 15 465,56 + `Durchsatz_Geladen` 32 571,87 = 48 037,43 kWh vorher wie nachher.
+> In **1024** verschiebt sich dagegen die Fahrweise wirklich: BHKW **+11,2 %**, Wärmepumpe
+> **−14,4 %**, Kessel **−10,8 %** bei unverändertem Gesamtbedarf (389 729,72 → 389 729,71 kWh).
+> Das Projekt führt WP, Kessel UND BHKW an einem Puffer und sitzt damit auf der Kante zwischen
+> zwei gleichwertigen Fahrweisen.
+>
+> **Welcher Stand richtig ist: der neue.** Die Entscheidungen fallen in beiden Fällen am letzten
+> Bit; der neue Lauf trifft sie auf ungerundeten Eingangswerten. Ein unabhängiger Beleg steht in
+> `EPOS.Kern.Tests/BedarfVerwaltungTests`: die Brauchwasser-Jahressumme trifft die Katalogmenge
+> jetzt **exakt** (742,9000 statt 742,9008 kWh bei 0,7429 MWh Katalogwert).
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes 12/12 **byte-gleich** (`diff -rq`
+> ohne einen einzigen Unterschied in 312 CSV), Toleranzvergleich 12/12 PASS (3 313 002 Werte).
+> **Laufzeit** 00:00:03 gegen 00:00:04 des R3-Standes auf demselben Läufer — `double` ist nicht
+> langsamer.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-07_R4_Double
+> ```
+
+### Ältere Basis: `2026-09-06_R3_Straenge` (löste `2026-09-05_R2_Zeitbasis` ab)
+
+**`2026-09-06_R3_Straenge/`** — **zwölf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030,
+1039, 1040, 1041, 1042 und **neu 1045**), **312 CSV** (282 + 30), gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (Schemastand 64).
+Sie war bis zum 07.09.2026 die CI-Basis und bleibt zur Geschichte liegen; abgelöst hat sie
+`2026-09-07_R4_Double` (Anwenderentscheid W8‑O‑5d, „alles in double").
+
+> **Anlass (Anwenderentscheid W6‑O‑7 vom 06.09.2026: „Empfehlung"):** Die elf Bestandsprojekte
+> führen **keine** Strangzeile — und genau das ist ihr Nachweis der Vorrangregel des
+> Wechselrichterkonzepts (Kapitel 3.5). Damit rechnete bis hierher **kein** Referenzlauf den
+> Strangweg der Stufe S3 mit; ihn hielt allein der Prüfstand
+> `EPOS.Kern.Tests/PvStrangRechnungTests`. Das zwölfte Projekt **1045 „Prüfprojekt Ost/West
+> Stränge"** hängt ihn ins Netz: Clipping, Wirkungsgradkennlinie, Nachtverbrauch und das Modul
+> je Strang (W6‑O‑6) laufen in jedem Push mit.
+>
+> **Die elf alten Projekte sind byte-gleich zur Vorgängerbasis** — und das ist der Beleg, dass
+> nur das zwölfte neu ist: `diff -rq` gegen `2026-09-05_R2_Zeitbasis` ohne einen einzigen
+> Unterschied in 282 Dateien, dazu der Toleranzvergleich **11/11 PASS (3 006 238 Werte)**.
+> Zweiter Lauf byte-gleich (Determinismus geprüft), `pruefen` **plausibel** mit denselben
+> Bestandshinweisen (drei Gewerke ohne Modul in 1007, 1041, 1042).
+>
+> **Das Prüfprojekt 1045** (Vorlage: Projekt **1040** „zwei Puffer je Kanal", deshalb dieselbe
+> Klimaregion Stuttgart, dasselbe Gebäude, dasselbe Standardlastprofil EFH\_3\_Pers und dieselbe
+> Wärmepumpe — Eigenverbrauch und Netzbezug haben etwas zu rechnen):
+>
+> | Stück | Wert |
+> |---|---|
+> | Anlagenzeile `Tab_Energieanlagen` 14926 | „PV Ost/West an einem Wechselrichter", `PV_Wechselrichterweg = KATALOG`, `PV_Modell = PV_MODELL_ERWEITERT`, `PV_Systemverluste = 3 %`, `PV_Leistung = 12` (Modulzahl, Bezugsgröße von P8), Neigung 10°, Azimut 0 |
+> | Gerät `Tab_Wechselrichter` 1 (Katalogsatz `Tab_Wechselrichter_STAMM` 1, `ReadOnly = 1`) | „Muster 2500TL" aus Anhang A des Konzepts: 2,50 kW AC, U\_Mpp 80…500 V, U\_Dc\_Max 600 V, I\_Dc\_Max 12,0 A, η 0,900/0,940/0,962/0,970/0,975/0,970, η\_euro 0,968, P\_Standby 10 W, **P\_Nacht 2 W**, Herkunft `HAND`, Kosten 1 200 € |
+> | Strang 1 `Z_AnlageStrang` 1 | „Dach Ost", Gerät 1, MPPT 1, 6 Module in Reihe × 1 parallel, Neigung 10°, **Azimut −90**, Modul `Tab_PV` 1015248 |
+> | Strang 2 `Z_AnlageStrang` 2 | „Dach West", Gerät 1, MPPT 2, 6 Module in Reihe × 1 parallel, Neigung 10°, **Azimut +90**, Modul `Tab_PV` **1015249 — sein eigenes** (W6‑O‑6) |
+> | Module `Tab_PV` 1015248 / 1015249 | Ablytek 6MN6A275 (275,1912 W) und 6MN6A290 (290,016 W); `alpha_SC`, `beta_OC` und `T_NOCT` sind **gepflegt** (im Katalog steht dort der Kurzschlussstrom, Paket-A-Befund A1), Technologie `C_SI` |
+>
+> **Zwei begründete Abweichungen von Anhang A**, beide im Kopf des Skripts nachgeschrieben:
+> **(1) zwei MPP-Tracker statt einem** — zwei Stränge an EINEM Tracker sind in Anhang A
+> ausdrücklich die Gegenprobe (`2 × 9,55 A = 19,1 A > 12,0 A`, P4 rot); die Clipping-Grenze
+> bleibt trotzdem eine, weil nach GERÄT gruppiert wird (Q7). **(2) Neigung 10° statt 30°** —
+> bei 30° überlappen die zwei Tagesgänge so wenig, dass die Anlagenspitze bei 2,33 kW bleibt
+> und das Gerät in **keiner** Stunde klippt. Zehn Grad ist die übliche
+> Ost/West-Flachdachaufständerung und der Grund, warum so ein Feld überhaupt an einem knapp
+> ausgelegten Gerät hängt.
+>
+> **Kennzahlen des Laufs** (aus dem Simulationsprotokoll, es steht auch auf der Konsole):
+> DC/AC **1,36** (3,39 kWp gegen 2,50 kW), Jahresertrag **3 545,5 kWh** (**1 418**
+> Volllaststunden AC), **Clipping-Verlust 2,0 kWh (0,06 %)**, Wechselrichter-Jahresnutzungsgrad
+> **0,9629**, **Nachtverbrauch 9,3 kWh in 4 669 Stunden**. In `pv_produktion.csv` stehen die
+> Kennzahlen als Struktur: **5 Stunden exakt auf 2,500000 kW** (das Clipping) und **4 669
+> negative Stunden zu −0,002 kW** (der Nachtverbrauch). Die Ampel des Projekts ist **grün**
+> (P1 bis P8; U\_oc(−10 °C) 258,6 / 266,8 V ≤ 600 V, MPP 154…211 bzw. 156…218 V im Fenster
+> 80…500 V, Strom je Tracker 9,63 / 9,89 A ≤ 12,0 A, DC/AC 1,3565 im Band 1,0…1,5, Modulsumme
+> 12 = Anlagenwert).
+>
+> **Warum das Clipping so klein ist** — und warum das kein Fehler ist: Solange die Ampel grün
+> bleiben soll, deckelt P6 das Verhältnis DC/AC bei 1,5; ein Ost/West-Feld erreicht in seiner
+> besten Stunde aber nur rund 0,69 kW je kWp (ein Südfeld gut 0,85). Beides zusammen lässt für
+> die Kappung wenig Raum. Das ist die Aussage des Falls, keine Schwäche des Prüfprojekts: Wer
+> ein Ost/West-Feld an ein knapp ausgelegtes Gerät hängt, verliert **fast nichts** — sichtbar
+> würde es erst bei DC/AC über 1,5 (7 + 7 Module ergäben 60,4 kWh und 1,46 %, dann meldet P6
+> aber Gelb).
+>
+> **Wiederholen** lässt sich das Projekt mit
+> `python3 Referenzlaeufe/Skripte/pruefprojekt_1045_ost_west.py Referenzlaeufe/Kenndaten_Test.sqlite`
+> (siehe unten, „Das Prüfprojekt 1045 neu anlegen"), der Lauf mit
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045 \
+>   --ziel Referenzlaeufe/2026-09-06_R3_Straenge
+> ```
+
+> **Nachtrag 07.09.2026 — Schemastand 67 (W6‑E‑7), die Basis bleibt.** Migrationsschritt 67
+> hebt `Tab_Einstellungen.Leistungsgrenze` von `NULL` auf **30** (nur `NULL`; eine gepflegte 0
+> bleibt 0) und ist damit der Gegenpart zum gefallenen stillen Fallback in `SimulationBHKW`.
+> In der Testdatenbank betrifft er **vier** Sätze — 1007, 1008, 1009 und 1017 —, und nur
+> **1017** davon führt ein BHKW; dessen Katalogzeile hat keine eigene Grenzleistung, greift
+> also auf den Projektwert durch. Vorher rechnete es über die Rücklage mit 0,30, nachher über
+> die gepflegten 30 % mit derselben 0,30. **Alle 312 CSV der zwölf Projekte sind byte-gleich**
+> (`diff -rq` gegen diese Basis ohne einen einzigen Unterschied; nur `protokoll.txt` weicht mit
+> seinem Zeitstempel ab). Die Datei `Kenndaten_Test.sqlite` steht seither auf **Schemastand 67**;
+> nachgezogen wie üblich mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -c Release -- Referenzlaeufe/Kenndaten_Test.sqlite`.
+
+> **Nachtrag 07.09.2026 — W14a‑E‑8‑B1 (eine Emissionsquelle), die Basis bleibt.** Der
+> Anwenderentscheid stellt Kessel und BHKW von zwei eigenen Emissionsquellen auf den
+> Emissionskatalog des Energieträgers um. Er ändert die Emissionsgrößen der Simulation —
+> beim BHKW erheblich (Projekt 1030: `Em_CO2_BHKW` 0 → 251,58 t/a, weil die Gerätespalte
+> `Tab_BHKW.CO2` dort 0 führt) —, **und trotzdem sind alle 312 CSV der zwölf Projekte
+> byte-gleich** (`diff -rq` ohne einen einzigen Unterschied; Toleranzvergleich 12/12 PASS,
+> 3 313 002 Werte).
+>
+> **Der Grund ist eine Lücke des Netzes, keine Wirkungslosigkeit der Änderung:** Weder
+> `aggregate.csv` noch eine Vektordatei führt eine Emissionsgröße — `Ergebnisexport.cs`
+> schreibt keine, und `Tab_Ergebnis*` hat keine Emissionsspalte. **Der Referenzlauf kann
+> eine Änderung an den Emissionsfaktoren nicht bemerken.** Eine neue Basis wäre deshalb
+> eine byte-gleiche Kopie ohne Aussage; `2026-09-06_R3_Straenge` bleibt die Basis, und
+> `kern.yml`, `ios.yml` und `CLAUDE.md` bleiben unverändert. Wer die Emissionsgrößen ins
+> Netz hängen will, erweitert zuerst den Export (offener Punkt § 9.8 des
+> Emissionsarten-Konzepts); der Nachweis der Änderung selbst steht in
+> `EPOS.Kern.Tests/EmissionsquelleTests.cs`.
+
+### Vorgängerbasis: `2026-09-05_R2_Zeitbasis` (löste `2026-08-30_B3-Kaskade` ab)
+
+**`2026-09-05_R2_Zeitbasis/`** — **elf Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042), **282 CSV**, gerechnet mit dem plattformfreien `EPOS.Referenzlauf` auf Linux
+gegen `Kenndaten_Test.sqlite` (Schemastand 64) auf dem zusammengeführten Stand nach der
+Rechner-2-Linie (`12aa3a5` ff.). Die Projekte 1011 und 1021 der B3-Basis stehen nicht in der
+reduzierten Testdatenbank und fallen deshalb weg (Warnung im `protokoll.txt`). Sie war bis zum
+06.09.2026 die CI-Basis und bleibt zur Geschichte liegen — ihre elf Projekte sind in
+`2026-09-06_R3_Straenge` byte-gleich enthalten.
+
+> **Anlass (Anwenderentscheid 05.09.2026: ja):** Die Zusammenführung der Rechner-2-Linie bringt
+> Paket A mit — die Solar-Zeitbasis der `Tab_Solar`-Leser wechselt von UTC auf Ortszeit. Damit
+> weicht der Linux-Lauf gewollt von `2026-08-30_B3-Kaskade` ab (1007: 16, 1008: 11, 1017: 2,
+> 1018: 2, 1023: 15, 1024: 15, 1030: 2, 1039: 13, 1040: 13, 1041: 7, 1042: 17 abweichende Dateien).
+> Zweiter Lauf byte-gleich (Determinismus geprüft). **Gegenprobe gegen M5** (die Windows-Basis oben,
+> `Referenzlauf.exe`, eigene Arbeitskopie): sechs der acht gemeinsamen Projekte (1007, 1008, 1017,
+> 1018, 1023, 1024) sind **byte-gleich**; 1030 (sieben BHKW-Dateien) und 1039 tragen die
+> Umgebungsdifferenz des zweiten Rechners, die schon zwischen B3 und PA0 bestand — nicht der
+> Rechenweg. Die Windows-Reihe M1–M5 und diese Linux-Basis bleiben zwei Reihen: M5 hält den
+> Rechner-2-Weg mit vierzehn Projekten, R2_Zeitbasis den plattformfreien CI-Weg.
+
+### Vorgängerbasis: `2026-09-03_M4_nach-Merge4`
+
+**`2026-09-03_M4_nach-Merge4/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem vierten Merge von `origin/ios_migration`** — nach **iU9 Welle 0**, der
+**Stilllegung** nach dem Anwenderentscheid **iF29**: neun Altmasken sind ersatzlos gelöscht
+(Kosteneditor `Form_Kosten` samt `ucKostenItem`, Betriebskostenpflege, Berichtsmaske,
+Kurzsimulation, Variantentest, KWKG-Module, Wirtschaftlichkeitsmaske), die Kostenstatics
+sind vorher nach `EPOS.Kern/Controller/KostenSummenCtrl.cs` gerettet. 25 Dateien weg,
+zwei neu — **90 Dateien, +860 / −10 877**.
+
+> **Sie ist byte-gleich zu M3 — und genau das ist ihr Zweck.** Welle 0 portiert nicht, sie
+> **löscht**; der einzige Code, der den Rechenweg berührt, ist die Rettung der Kostenstatics,
+> und die trägt `LiesKomponentenSummen`, `LiesAnlagenSummen` und `GetAllCarriers` unverändert
+> weiter.
+> **355/355 byte-/MD5-gleich gegen M3, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`b0d3d86`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 3**
+> (`908926a`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M3=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 20 und Remotes acht Commits
+> umfasst **sechs** Dateien (`SchemaKatalog.cs`, `WirtschaftlichkeitCtrl.cs`,
+> `HilfeKontext.cs`, `SchemaMigration.cs`, `WizardCtrl.cs`,
+> `Form_PhotovoltaikVerguetung.cs`), alle sechs automatisch zusammengelegt. Der Nachweis ist
+> hier schärfer als bei den Vorgängern: Für **jede** der sechs ist das Merge-Delta gegen
+> unseren Vorstand **zeilengleich** mit Remotes Delta gegen seinen — der Merge hat an ihnen
+> genau Remotes Änderung getan und **nichts** an unserer Seite. Keine der neun gelöschten
+> Masken stand in unserer Änderungsmenge.
+>
+> **Die Nummernprobe am Schema ist negativ ausgefallen — und das war die Sorge.** Remote
+> steht mit Welle 0 **weiter auf `ZIEL_VERSION = 61`** und führt **keinen** SQLite-Schritt;
+> seine 13 Zeilen an `SchemaMigration.cs` sind ausnahmslos Doku. **Keine Kollision** mit
+> unseren Schritten 62 (PV-Anlagenparameter) und 63 (PV-Modellwahl). Der Merge-Stand trägt
+> unverändert `ZIEL_VERSION = 63`, `FREEZE_VERSION_ACCESS = 61` und beide Schritte in
+> `SCHRITTE_SQLITE`.
+>
+> **Die eine echte Codeänderung an einer unserer Dateien:** `Form_PhotovoltaikVerguetung`
+> liest ihre Kostensummen jetzt über `KostenSummenCtrl.*` statt `Form_Kosten.*` (drei
+> Stellen; die Konstanten sind im Kern wertgleich definiert). Unser Degradationsfeld
+> (Stufe E2.4) sitzt in derselben Datei und ist unversehrt — 18 Fundstellen
+> `numDegradation` / `DegradationsfeldAnlegen` / `PVM_DEGRADATION`, und Remotes Hunks
+> berühren unsere nicht.
+>
+> **Codestand:** Merge-Commit `f6acb04` (Branch `ios_migration`; Eltern `83498dc` lokal und
+> `b0d3d86` remote), gebaut aus einem `git archive`-Export außerhalb des Repos
+> (`P:\merge4\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 22, NU1510 4,
+> CS0108 2, CS0109 2, WFO0003 1, CA2255 1), sondern in allen **30** datei- und
+> zeilengenauen Meldungen. Der Unterschied zu Merge 3 (34 / 29) ist restlos die
+> Stilllegung: die beiden `AlsDialog`-Meldungen aus `UcBericht` und `UcWirtschaftlichkeit`
+> entfallen mit den gelöschten Masken, zwei Meldungen in `UcBkKosten.cs` rücken um eine
+> Zeile (1304/1310 → 1305/1311).
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2/M3
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei den Merges 1–3. Weil Welle 0 `Form_PhotovoltaikVerguetung`
+> anfasst, sind die beiden Aussagen wieder eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und das Inventar der Stilllegung im
+> [Merge-4-Protokoll](../Protokolle/Simulation/Merge4_ios_2026-09-03_Protokoll.md).
+>
+> **Noch nicht gebaut: der Hauptbaum.** `bin\x64\Debug` ist bewusst nicht neu erzeugt worden
+> — Visual Studio war offen, mit ungespeicherten Designer-Änderungen. Der Nachweis hängt
+> nicht daran (drei Builds, 0 Fehler, zeilengleiches Profil), die lauffähigen Binärdateien
+> im Hauptbaum schon. **Nachholen, sobald VS zu ist.**
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M3_nach-Merge3`
+
+**`2026-09-03_M3_nach-Merge3/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem dritten Merge von `origin/ios_migration`** — nach **iU9 Welle 1**:
+sieben WinForms-Masken der Kosten- und Wirtschaftlichkeitsseite sind durch sechs
+Razor-Komponenten ersetzt und im selben Schritt gelöscht (Zeileneditor Vorlagenposition,
+Namensabfrage, Worst/Best Case, Übernahme ins Projekt, Kostenfaktor-Katalog,
+Kapitalwert-Verlauf).
+
+> **Sie ist byte-gleich zu M2 — und genau das ist ihr Zweck.** Die elf Remote-Commits
+> tauschen **Oberfläche** aus; der einzige neue Kern-Baustein (`KostenfaktorCtrl`) trägt die
+> drei SQL-Anweisungen aus `Form_KostenAdmin` zeichengleich weiter.
+> **355/355 byte-/MD5-gleich gegen M2, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (`908926a`, ohne
+> unsere Pakete, Schemastand 61) ist **355/355 byte-gleich zum THEIRS-Lauf von Merge 2**
+> (`71cde0c`). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M2=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Konflikte: keine.** Die Berührungsfläche zwischen unseren 18 und Remotes elf Commits
+> umfasst **vier** Dateien (`Resource.resx`, `Resource.en-US.resx`, `Resource.Designer.cs`,
+> `HilfeKontext.cs`), alle vier automatisch zusammengelegt und zeilenweise gegengeprüft.
+> Keine der sieben gelöschten Masken stand in unserer Änderungsmenge.
+>
+> **Codestand:** Merge-Commit `359b1cd` (Branch `ios_migration`; Eltern `533eb7b` lokal und
+> `908926a` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge3\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen, und diese 29 sind **zeilengleich zu Merge 2**.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1/M2 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1 und 2. Weil Welle 1 die Wirtschaftlichkeits-Dialoge
+> anfasst, sind zwei Aussagen eigens headless nachgemessen:
+> `PvErloesRechner.DegradationsFaktor(0.5, 20)` = **0.909156** (Konzept: 0,9092) und die
+> INEKON-Referenz „Schulung 01" mit **I3 −0,76 %** / **I4 −0,47 %**. Einzelheiten,
+> Berührungsfläche und die Liste der portierten Dialoge im
+> [Merge-3-Protokoll](../Protokolle/Simulation/Merge3_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG `core.longpaths` beim Worktree auf einem subst-Pfad.** Der Schalter muss bis
+> **nach** dem `git merge` stehen bleiben, nicht nur für `git worktree add`: Der Merge liest
+> den Baum erneut ein und scheitert sonst an `VDI-3805-Daten/…` mit
+> „Filename too long" / `fatal: read-tree failed` — das sieht wie ein Merge-Fehler aus, ist
+> aber keiner.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M2_nach-Merge2`
+
+**`2026-09-03_M2_nach-Merge2/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem zweiten Merge von `origin/ios_migration`** — nach iU9 (Blazor-Dialoge),
+iU10 (iOS-Hülle `EPOS.iOS` als eigene Projektmappe), dem **SQL-Dialekt-Audit** und den
+Wirtschaftlichkeitspaketen FX2–FX5/B5.
+
+> **Sie ist byte-gleich zu M1 — und genau das ist ihr Zweck.** Die 38 Remote-Commits sind
+> Oberfläche, Plattform und Dialektpflege, keine Fachänderung am Rechenkern.
+> **355/355 byte-/MD5-gleich gegen M1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu — und diesmal trägt er mehr als beim ersten Mal.** Remote hat mit
+> dem SQL-Dialekt-Audit **elf SQL-Stellen in sieben Dateien umgeschrieben**. Ein Lauf des
+> **reinen** `origin/ios_migration` (`71cde0c`, ohne unsere Pakete, Schemastand 61) ist
+> trotzdem **355/355 byte-gleich zum THEIRS-Lauf von Merge 1** (`430a864`). Die
+> umgeschriebenen Stellen liegen sämtlich auf Pfaden, die der Referenzlauf nicht betritt —
+> Schreibwege ohne Aufrufer, Katalogpflege, Preisreihen-Rückfallebene. **Genau deshalb
+> müssen diese vier Pfade von Hand geprüft werden** (siehe Merge-2-Protokoll, offene
+> Punkte). Beide Achsen des Vergleichs sind exakt; die Einordnungstabelle
+> „Datei | M1=MERGE? | THEIRS abweichend?" bleibt leer.
+>
+> **Codestand:** Merge-Commit `c2c64cb` (Branch `ios_migration`; Eltern `884ce7a` lokal und
+> `71cde0c` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge2\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** — nicht nur in den Zahlen (WFO1000 24, NU1510 4,
+> CS0109 2, CS0108 2, WFO0003 1, CA2255 1), sondern in allen **29** datei- und
+> zeilengenauen Meldungen. Aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1/M1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — zusammen **243 PASS, 0 FAIL**, Probe für Probe
+> dieselben Zahlen wie bei Merge 1. Einzelheiten, Konfliktliste und die Begründung des
+> Doppel-Fixes im
+> [Merge-2-Protokoll](../Protokolle/Simulation/Merge2_ios_2026-09-03_Protokoll.md).
+>
+> **ACHTUNG beim Nachbauen des `pv6`-Prüfstands.** Der Modus **migriert nicht**. Auf einer
+> Kopie im Stand 61 meldet er „no such column: Degradation" und liefert 24 PASS / 4 FAIL —
+> vier Folgefehler eines fehlgeschlagenen `Speichern`, kein Befund am Code. Er braucht eine
+> Kopie im Stand **63**.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_M1_nach-Merge`
+
+**`2026-09-03_M1_nach-Merge/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach dem Merge von `origin/ios_migration`** — also nach dem Umzug des
+Rechenkerns von `WindowsFormsApplication1/` nach **`EPOS.Kern/`** (und `EPOS.UI/`).
+
+> **Sie ist byte-gleich zu PB1 — und genau das ist ihr Zweck.** Der Umzug ist eine
+> Verlagerung, keine Fachänderung: Er verschiebt 237 Dateien, ersetzt `OleDbParameter`
+> durch den providerfreien `DbParam` (iU6), zieht die Anlagen-Einfügeanweisung nach
+> `AnlagenSql` (iU3) und die Maskensteuerung nach `Dienste.Navigation` (iU5).
+> **355/355 byte-/MD5-gleich gegen PB1, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**,
+> keine Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+>
+> **Der Gegenbeweis dazu:** Ein Lauf des **reinen** `origin/ios_migration` (ohne unsere
+> Pakete, Schemastand 61) ist seinerseits **355/355 byte-gleich zu
+> `2026-09-02_PA0_vor-PaketA`**. Die 81 Remote-Commits haben also keinen einzigen
+> gerechneten Wert verschoben — und weil MERGE = PB1 exakt gilt, hat auch die
+> Zusammenführung nichts verschoben. Beide Achsen sind exakt; die Einordnungstabelle
+> „Datei | PB1=MERGE? | THEIRS=PA0?" bleibt leer, weil es keine Abweichung gibt.
+>
+> **Codestand:** Merge-Commit `e428092` (Branch `ios_migration`; Eltern `b9c566f` lokal und
+> `430a864` remote), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\merge\src`; **0 Fehler**). Das Warnungsprofil ist zum Build des reinen
+> `origin/ios_migration` **identisch** (WFO1000 28, NU1510 4, CS0109 2, CS0108 2,
+> WFO0003 1, CA2255 1) — aus unseren Dateien kommt keine neue Warnung.
+> **Datenquelle:** derselbe Snapshot wie PA0/PA1/PB1 (`P:\pa0\Quelle\Kenndaten.sqlite`,
+> MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert **61 → 63**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36).
+>
+> **Harness Paket A/B gegen den Merge-Build:** `rein` 18 + 58 PASS, `zeitbasis` 115 PASS,
+> `migration` 24 PASS, INEKON `pv6` 28 PASS — durchgehend **0 FAIL**. Einzelheiten,
+> Konfliktliste und Entscheidungen im
+> [Merge-Protokoll](../Protokolle/Simulation/Merge_ios_2026-09-03_Protokoll.md).
+>
+> **Neue Pfade.** Wer die Suite nachbaut: Der Rechenkern liegt jetzt in `EPOS.Kern.dll`
+> (`DataRepository`, `DbParam`, `SimulationPV`, `SolarZeitbasis`, `PvErweitertesModell`,
+> `SolardatenCtrl`), die Anwendung mit `SchemaMigration` weiterhin in `EPOS_Plan.dll`.
+> Die **Namensräume sind unverändert** (`WindowsFormsApplication1`). Das Werkzeug unter
+> `Referenzlauf/` baut ohne Änderung, weil es die Anwendung referenziert und die
+> ihrerseits `EPOS.Kern`. Proben-Harnesse brauchen eine zusätzliche Referenz auf
+> `EPOS.Kern.dll` und setzen den DB-Pfad über `DataRepository.PfadUeberschreibung`
+> statt per Reflexion auf `Properties.Settings`.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorgängerbasis: `2026-09-03_PB1_nach-PaketB`
+
+**`2026-09-03_PB1_nach-PaketB/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **63**.
+Der Stand **nach** Paket B desselben Konzepts (Stufe **E2**, Nachtrag 2: Modellwahl je
+Anlage, Hay-Davies, Huld-Schwachlichtmodell, Wechselrichter-Teillastkennlinie mit
+Clipping, Degradation).
+
+> **Sie ist byte-gleich zu PA1 — und genau das ist ihr Zweck.** Paket B fügt eine
+> ZWEITE Rechentiefe hinzu, ohne die erste anzutasten: Alle Bestandsanlagen stehen auf
+> `PV_Modell = NULL`, und NULL heißt EINFACH, also der Rechenweg aus Paket A.
+> **355/355 byte-/MD5-gleich, Toleranzvergleich 14/14 PASS (3 882 476 Werte)**, keine
+> Datei nur auf einer Seite; `pruefen` plausibel mit denselben drei Bestandshinweisen.
+> Das ist Kriterium 1 der Abnahme (Konzept N2.5): „das vereinfachte Modell bleibt
+> zulässig".
+>
+> Der Nachweis deckt sechs Umbauten auf einmal ab, die alle den PV-Rechenweg berühren:
+> Migrationsschritt **63** (acht Spalten, kein DML), die **Modellweiche** in
+> `SimulationPV`, die Auslagerung der Sonnengeometrie in `SolarCalculator` (die
+> byte-gleichen CSV belegen, dass sie nicht einmal im letzten Bit etwas verschoben hat),
+> der **Degradationsfaktor** in `PvErloesRechner` (bei NULL exakt 1,0), fünf zusätzlich
+> gelesene und geschriebene Anlagenspalten und die neue Katalogspalte `Technologie`.
+>
+> **Codestand:** `36acbf1` (Branch `ios_migration`; Paketcommits `f1d16e3` → `4bd8752` →
+> `74f9acf` → `36acbf1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pb1\src`; **0 Fehler**). Das Warnungsprofil ist zum PA1-Export identisch — beide
+> wurden dafür mit demselben Befehl neu gebaut (CS0108 2, CS0109 2, NU1510 4, WFO0003 1,
+> WFO1000 30). **Datenquelle:** derselbe Snapshot wie PA0/PA1
+> (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5 `47bcefaca0f18d2180ba37786c6cb6b3`) — die
+> Arbeitskopie migriert **61 → 63**; die produktive Datei blieb unberührt (Zeitstempel
+> 02.09.2026 22:07:36).
+>
+> **Dass das neue Modell auch rechnet**, zeigen zwei Smoke-Läufe auf präparierten
+> Kopien (Projekt 1026, 5,20 kWp): mit `Technologie = C_SI` und 4,16 kW
+> Wechselrichter-Nennleistung **−3,94 %** Jahresertrag, DC/AC 1,25, Clipping 40,1 kWh,
+> Eigenverbrauchsquote **64,68 → 66,20 %**; ohne Technologie und ohne
+> Wechselrichterdaten **+3,37 %** (reiner Hay-Davies-Gewinn) und EVQ **62,97 %**. Alle
+> Rückfallebenen melden sich im Protokoll. Die Smoke-Ordner sind bewusst **nicht**
+> abgelegt — sie sind Wirkprobe, keine Basis; ihre Zahlen stehen im
+> [Laufprotokoll der Basis](2026-09-03_PB1_nach-PaketB/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert) und im
+> [Paket-B-Protokoll](../Protokolle/Simulation/PaketB_E2_Modellwahl_Protokoll.md).
+>
+> **Wirtschaftlichkeit:** Die P6-Referenz „INEKON Schulung 01" (Prüfstand `kd1runner`,
+> Modus `pv6`) ist gegen den Paket-B-Build **28 PASS / 0 FAIL** und Zahl für Zahl
+> unverändert (I3 −0,76 %, I4 −0,47 %) — die Degradation steht auf NULL.
+>
+> **ACHTUNG Schemastand 63.** `.wpx`-Pakete mit Stand 62 werden abgewiesen —
+> systemimmanent, wie bei jedem Migrationsschritt.
+>
+> **Diese Basis gilt, solange keine Anlage produktiv auf ERWEITERT steht.** Sobald der
+> Anwender das Modell umstellt, ist ein Basiswechsel fällig.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Vorvorgängerbasis: `2026-09-02_PA1_nach-PaketA`
+
+**`2026-09-02_PA1_nach-PaketA/`** — **vierzehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1026, 1028, 1029, 1030, 1039, 1043), **355 CSV**, Schemastand **62**.
+Der Stand **nach** Paket A des `Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`
+(Befund B1 Zeitbasis UTC→Ortszeit, Stufe E1 „Eine Wahrheit") — und **byte-gleich zu
+PB1**: Solange alle Anlagen im Modell EINFACH rechnen, sind beide Ordner austauschbar.
+
+> **Anlass: Paket A ändert den Rechenkern in ALLEN Projekten.** Die Solarreihe wird beim
+> Lesen von UTC auf Ortszeit verschoben (+1 h MEZ / +2 h MESZ,
+> `SolardatenCtrl.ReadOrtszeit`), und die Stundentemperatur speist COP, Erdreich und
+> Reporting — es gibt kein Projekt ohne Delta. Dazu E1.1 (P_STC statt Fläche×η), E1.2
+> (T_NOCT), E1.3 (Wechselrichter und Systemverluste als Anlagenparameter,
+> **Migrationsschritt 62**), E1.4 (1-basierter Tagindex) und E1.5.
+>
+> **Codestand:** `7c622b1` (Branch `ios_migration`; Paketcommits `36c5401` → `aced014` →
+> `7c622b1`), gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+> (`P:\pa1\src`; **0 Fehler**, Warnungsprofil identisch zum Vorstand).
+> **Datenquelle:** derselbe Snapshot wie PA0 (`P:\pa0\Quelle\Kenndaten.sqlite`, MD5
+> `47bcefaca0f18d2180ba37786c6cb6b3`) — die Arbeitskopie migriert dabei **61 → 62**; die
+> produktive Datei blieb unberührt (Zeitstempel 02.09.2026 22:07:36, SchemaVersion 61).
+> **Selbstvergleich 14/14 PASS (3 882 476 Werte), 355/355 byte-/MD5-gleich**; `pruefen`
+> plausibel.
+>
+> **Gegen `2026-09-02_PA0_vor-PaketA`: FAIL in allen 14 Projekten — und genau das ist das
+> erwartete Ergebnis.** 391 geänderte Skalare, jeder zugeordnet; kein Schlüssel neu oder
+> entfallen. Die vier Familien: (1) die Stundentemperatur selbst (Summe −8,85 K Stuttgart /
+> −4,48 K München = exakt die zwei Umstellstunden), (2) PV-Jahreserzeugung **+0,0013 bis
+> +0,0468 %** — höchstens der Katalogfaktor, (3) Eigenverbrauchsquote −0,95 bis +0,12 pp und
+> Speicherfüllstand bis −2,3 %, (4) temperaturabhängige Größen der Wärmeseite.
+> **1017, 1018, 1030 und 1039 ändern NUR die Temperaturreihen** — der Beweis, dass Paket A
+> außerhalb von PV, Solarthermie und Stundentemperatur nichts bewegt. Zahlen und Zuordnung im
+> [Laufprotokoll der Basis](2026-09-02_PA1_nach-PaketA/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert) und im
+> [Paket-A-Protokoll](../Protokolle/Simulation/PaketA_Zeitbasis_E1_Protokoll.md).
+>
+> **Diese Basis war die Bitgleichheits-Basis für Paket B** (Stufe E2): Das Modell
+> EINFACH musste gegen sie byte-gleich bleiben (Konzept N2.5, Kriterium 1) — **erfüllt,
+> 355/355** (siehe „Aktuelle Basis").
+>
+> **ACHTUNG Schemastand 62.** `.wpx`-Pakete mit Stand 61 werden von
+> `ProjektExportImportCtrl` abgewiesen — systemimmanent. Seit Paket B liegt der Zielstand
+> bei **63**.
+>
+> **Die feste Projektliste (vierzehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+
+### Ausgangsbasis vor Paket A: `2026-09-02_PA0_vor-PaketA`
+
+**`2026-09-02_PA0_vor-PaketA/`** — dieselben **vierzehn Projekte**, **355 CSV**,
+Schemastand **61**, Codestand `d46e200` (Ablage `df90063`). Der Stand **vor** Paket A und
+damit die einzige Quelle der Ganglinien im UTC-Raster.
+
+> **Anlass des Basiswechsels von B3-Kaskade auf PA0** (02.09.2026): (1) Der Anwender hat
+> **1040, 1041, 1042 und 1044 gelöscht** — die B3-Liste war nicht mehr lauffähig. (2) Paket A
+> verlangt **vollständige PV-/Solarthermie-Abdeckung**; **1026, 1028, 1029 und 1043** sind
+> deshalb neu aufgenommen (1043 ersetzt das gelöschte 1042 als Booster-Projekt und deckt den
+> Randfall „Gewerk aktiviert, kein Modul" ab). (3) Die Datenhaltung ist seit dem 02.09.2026
+> **SQLite**; die Quelle wurde über die SQLite-Backup-API konsistent entnommen (die Anwendung
+> lief während der Entnahme). **Selbstvergleich 14/14 PASS, 355/355 byte-/MD5-gleich.** Gegen
+> `2026-08-30_B3-Kaskade` waren acht Projekte byte-gleich; die Abweichungen bei 1030 und 1039
+> sind Datenänderungen des Anwenders. Vollständige Begründung im
+> [Laufprotokoll der Basis](2026-09-02_PA0_vor-PaketA/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
+
+### Frühere Fassung: `2026-08-30_B3-Kaskade`
+
+**`2026-08-30_B3-Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018,
+1021, 1023, 1024, 1030, 1039, 1040, 1041, 1042), **332 CSV**. **Seit dem 02.09.2026 nicht
+mehr lauffähig** — 1040 bis 1042 hat der Anwender gelöscht. Seinerzeit galt: **Die
+Datenbestände sind
+wieder zusammengeführt:** 1040–1042 stehen auf diesem Rechner wieder im Bestand, die
+Zweiteilung vom 29.08. (`Booster` für den Zweitstand, `E1E2` für diesen Stand) ist
+damit erledigt — es gilt wieder **eine** Basis.
+
+> **Anlass: Datenänderungen des Anwenders an 1030 und 1042.** Das zweite BHKW von
+> Projekt 1030 (Anlage 14921, „EC-POWER XRGI 9") hatte keine Senkenzeile und lief nicht
+> mehr in der Kaskade mit; der Anwender hat es in `Z_AnlageSenke` wieder eingehängt
+> (Rang 1 Heizkreis, Rang 2 PufferHeizung auf Puffer 1054170, Ladeprio 2) und dabei das
+> Gerät gewechselt — **die Zwei-Modul-Kaskade rechnet wieder, `aggregate.csv` führt
+> `BHKWModul[0]` und `BHKWModul[1]`**. Projekt 1042 ist nach der Löschung vom 28./29.08.
+> auf diesem Bestand neu aufgebaut (anderer Kessel, andere Speicher) und deshalb nicht
+> mehr mit dem 1042 der Booster-Basis vergleichbar.
+>
+> **Codestand:** `bad41f8` (Branch `Pufferspeicher`, B3-Serie), gebaut aus einem
+> `git archive HEAD`-Export außerhalb des Repos (`C:\Waermeplan\_basisbuild`; 0 Fehler).
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **30.08.2026 06:13:43**,
+> Schemastand **61**, nur gelesen (keine `laccdb`); die Migration der Arbeitskopie war
+> ein No-op. **Selbstvergleich 13/13 PASS (3 558 333 Werte), 332/332 byte-/MD5-gleich**;
+> `pruefen` 13/13 plausibel.
+>
+> Gegen `2026-08-29_Booster`: **297/332 byte-gleich**. Die 35 Abweichungen sind
+> vollständig zugeordnet — sieben `aggregate.csv` weichen **ausschließlich** um die neue
+> Ergebnisspalte `Hilfsenergie` ab (Migrationsschritt 61, Etappe B3 Paket a; Wert überall
+> 0), die übrigen 28 liegen in **1030** (7) und **1042** (21). Der Vergleich mit
+> `--ohne BHKWModul[0].Hilfsenergie,BHKWModul[1].Hilfsenergie,HeizkesselModul[0].Hilfsenergie`
+> meldet **elf Projekte PASS** und FAIL nur in 1030 und 1042 — der Rechenkern ist
+> unverändert. Zahlen und Zuordnung im
+> [Laufprotokoll der Basis](2026-08-30_B3-Kaskade/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
+>
+> **ACHTUNG bei 1030:** Das zweite Modul ist jetzt „EC-POWER XRGI 9" (9 kW el) statt
+> „Agenitor 306 (250 kw.el) Gas". Die Pfade bleiben abgedeckt (beide Module Erdgas, beide
+> unter 500 kW, alle drei Vollbenutzungsstunden-Aggregate belegt), **die Zahlen der
+> Vorbasen gelten aber nicht mehr** — u. a. ist die Summe thermisch nicht mehr
+> 12 860,72 h. Der Lauf trägt neu die Warnung, dass 14921 eine andere Senke führt als die
+> führende Anlage 14920 und deshalb die Senke der führenden Anlage gilt.
+>
+> Der Bestand führt inzwischen auch **1043** und **1044** (weitere Booster-Varianten).
+> Sie sind **bewusst nicht** Teil der Basis — ihre Aufnahme wäre ein eigener,
+> bewusster Basiswechsel.
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+### Frühere Fassung: die beiden Basen vom 29.08.2026
+
+*(Sie bleiben liegen; die Zweiteilung ist mit `B3-Kaskade` aufgehoben.)*
+
+**Zwei Basen vom 29.08.2026 — die beiden Produktiv-Datenbestände waren
+auseinandergelaufen.** Die Referenzarbeit lief am 29.08. parallel auf zwei Ständen:
+Auf dem **Zweitstand** (13 Projekte, 1042 mit scharfer Booster-Kopplung) entstand
+`2026-08-29_Booster/`; auf **diesem Stand** (1040–1042 vom Anwender gelöscht, 1039
+umgebaut) entstand `2026-08-29_E1E2/`. Für die **neun gemeinsamen, unveränderten
+Projekte (1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024, 1030) sind beide Basen
+byte-gleich zueinander** — jede ist dort byte-gleich zu B2; der Rechenkern-Kern ist
+EIN Stand.
+
+**`2026-08-29_Booster/`** — **dreizehn Projekte** (1007, 1008, 1011, 1017, 1018, 1021,
+1023, 1024, 1030, **1039, 1040, 1041, 1042**), **332 CSV** — die Referenz für den
+13-Projekte-Bestand (Zweitstand), abgelöst durch `2026-08-30_B3-Kaskade`.
+
+> **Anlass: Booster-Temperaturkopplung erstmals scharf im Referenznetz** (Codestand
+> `0787aec` = B3, rechnerisch identisch B2). Datenänderung: `WQ_Unbegrenzt = False` an
+> Anlage 14818 (mit Anwender-Freigabe per UPDATE gesetzt; Sicherung in `DB-Backup\`) —
+> das Häkchen hatte die B1/B2-Kopplung still abgeschaltet (Warnkriterium und Dialogrot
+> dazu: Paket B3). Die Basis trägt erstmals die Zeilen „Booster … GETEILTER Puffer …"
+> und **„Booster-Lesepunkt: DAVOR"** (Default aus Paket B2). Gegen `2026-08-28_B2`:
+> **319/332 byte-gleich, alle 13 Abweichungen in 1042** (gewollt — Booster-JAZ
+> 4,60 → 3,05, die 45-°C-Fiktion ist weg; Zahlen im
+> [Laufprotokoll der Basis](2026-08-29_Booster/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert)).
+> **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 29.08.2026 00:29).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+**`2026-08-29_E1E2/`** — **zehn Projekte** (1007, 1008, 1011, 1017, 1018, 1021, 1023,
+1024, 1030, 1039), **234 CSV** — die Referenz für den Bestand dieses Rechners.
+
+> **Etappe E5 (29.08.2026) — Basis bleibt, kein Wechsel.** Vorher-/Nachher-Lauf der
+> Emissionsetappe E5 (Modus CO₂/CO₂e, neue Faktor-Lesekette, `STROMMIX_CO2_G_JE_KWH`
+> 380 → 435): **10/10 PASS, 2 567 843 Werte**, und der Vorher-Lauf war zuvor gegen
+> diese Basis ebenfalls 10/10 PASS. Der Rechenkern ist unberührt — E5 sitzt
+> ausschließlich im Bericht-/Wirtschaftlichkeitsteil, den der Referenzumfang nicht
+> abdeckt. Die Emissionskennzahlen selbst wurden deshalb mit einem eigenen
+> Konsolentreiber gegen eine Arbeitskopie gemessen (26 Projekte): im Modus CO2
+> unverändert bis auf den angekündigten Strommix-Randfall bei 11 Projekten ohne
+> gepflegten Stromträger. Die beiden Beweisordner sind nach der Auswertung verworfen —
+> sie hätten nur die geltende Basis verdoppelt.
+
+> **Anlass: Etappen E1 (CO2-Saat der Katalogträger, Migrationsschritt 56) und E2
+> (Emissionsarten-Katalog, Migrationsschritt 57) + Datenänderung des Anwenders**
+> (`6694c7a`). Der Vergleich gegen B2 meldet **keine einzige CO2-bezogene Abweichung —
+> der Referenzumfang des Rechenkerns führt gar keine Emissionskennzahl** (kein
+> CSV-Schlüssel enthält CO2/Emission; die CO2-Rechnung liegt im
+> Bericht/Wirtschaftlichkeitsteil, den der Referenzlauf nicht abdeckt). E1+E2 sind für
+> den Rechenkern **empirisch wirkungsneutral belegt**: alle **216 CSV der neun
+> datenunveränderten Projekte byte-/MD5-gleich** zu B2. Die einzigen Abweichungen sind
+> **Datenänderungen des Anwenders** zwischen dem B2-Datenstand (28.08. 17:19) und dem
+> 29.08. 00:02: **1039 umgebaut** (Kessel und Puffer entfernt, „Simulation Mehrgebäude"
+> → „Wärmepumpe WG - BHKW", WP-Gewerk ohne Modul), **1040, 1041, 1042 gelöscht**.
+> Arbeitskopie migriert **54 → 57**; **Selbstvergleich 234/234 byte-/MD5-gleich**;
+> `pruefen` plausibel. Details im
+> [Laufprotokoll der Basis](2026-08-29_E1E2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
+> **ACHTUNG: Mit der Löschung von 1040–1042 und dem 1039-Umbau verliert dieser
+> Datenbestand die vier Konzept-11.1-Abdeckungen** (Mehrgebäude, zwei Puffer je
+> Kanal/Parallelverbund, Prozesswärme mit eigenem Puffer, Booster-Kette) — ihre
+> Ganglinien liegen in `2026-08-28_B2/` und (1042, scharf) in `2026-08-29_Booster/`.
+>
+> **Die feste Projektliste (zehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039
+> ```
+
+> *(Fassung vor Booster/E1E2 — Begründung der früheren Basis `2026-08-28_B2`:)*
+>
+> **Anlass: Paket B2 (Kessel-Temperaturmodus, wählbarer Booster-Lesepunkt, Schema 55) +
+> Datenänderung des Anwenders an 1042** (`4be1862`). E2 war durch die
+> 1042-Umverschaltung des Anwenders bereits überholt (Kontrolllauf des unveränderten
+> Codes: 321/332, alle 11 Abweichungen in 1042). B2 selbst ist per A/B auf gemeinsamer
+> Kopie **332/332 byte-gleich** belegt; gegen E2 ist die Basis für die zwölf übrigen
+> Projekte byte-gleich. Arbeitskopie auf Schemastand **55** (Vorbelegungen
+> „Berechnet"/„Davor" wirksam). **Selbstvergleich 332/332 byte-/MD5-gleich** (zwei
+> `projekt`-Läufe auf EINER festen Quellkopie, Datenstand 28.08.2026 17:19). Die
+> Booster-Temperaturkopplung war in dieser Basis **nicht scharf** (an Anlage 14818
+> stand noch `WQ_Unbegrenzt = True`, konstant 45 °C) — Details im
+> [Laufprotokoll der Basis](2026-08-28_B2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor B2 — Begründung der früheren Basis `2026-08-28_E2`:)*
+>
+> **Anlass: Booster-Kette produktiv scharf + Codestand E2/D-Check** (`babab27`). Der
+> Anwender hat in 1042 die Booster-Verschaltung konfiguriert (CS6800iAW + Kessel →
+> „Puffer 3000Ltr" → Booster-WP → Stora B) — die Basis trägt damit erstmals die
+> stundengekoppelte Booster-Rechnung samt `wp_quellentemperatur.csv` (drei neue Dateien,
+> alle 1042). Die Codepakete seit P1 (E2 Kanal-Ganglinien, D-Check-Layoutfixes) waren per
+> A/B byte-gleich belegt; alle CSV-Unterschiede zur P1-Basis sind die 1042-Datenänderung.
+> **Selbstvergleich 332/332 byte-gleich** (zwei `projekt`-Läufe auf EINER festen
+> Quellkopie, Datenstand 28.08.2026 09:05). Details:
+> [Laufprotokoll der Basis](2026-08-28_E2/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert).
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor E2 — Begründung der früheren Basis `2026-08-28_P1`:)*
+>
+> **Anlass: Paket P1 (Schichtspeichermodell, Migrationsschritt 53).** Das Multi-Node-Modell
+> ist eingebaut; die gesamte Referenzmenge rechnet mit N = 1 und ist **konstruktiv
+> byte-gleich** zum E1-Stand: alle 316 Ganglinien byte-/MD5-identisch, die einzige Änderung
+> sind die jetzt gefüllten Kennzahlen `Pufferspeicher[i].T_oben_Mittel`/`T_oben_Min`
+> (28 Einträge in 9 `aggregate.csv`; die Quellspeicherzeile von 1021 bleibt leer).
+> Toleranzvergleich mit `--ohne` dieser Schlüssel: **13/13 PASS (3 532 029 Werte)**.
+> Details und N>1-Wirkproben im
+> [P1-Protokoll](../Protokolle/Simulation/P1_Schichtmodell_Protokoll.md).
+> Datenquelle: produktive `Kenndaten.accdb` (27.08.2026 20:45, nur gelesen), Arbeitskopie
+> migriert auf Schemastand **53**.
+>
+> **Die feste Projektliste (dreizehn IDs):**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor P1 — Begründung der früheren Basis `2026-08-27_E1`:)*
+>
+> **Anlass: Paket E1 (Ergebnis je Kanal, Migrationsschritt 52) — Meilenstein Z3: Bedarf →
+> Kaskade → Ergebnis → Bericht durchgängig dreikanalig.** Gegenüber A1 wachsen die
+> `aggregate.csv` um **39 neue Kanal-Schlüssel** (Bedarf/Deckung/Entladung je Kanal,
+> Durchsatzsummen, `ID_Anlage`, `T_oben_*`-Vorgriff); geänderte Bestandswerte sind allein
+> die vier `Kapazitaet_Pufferspeicher` der dokumentierten `puffer_wp`-Ablösung (S-1) —
+> alle Ganglinien der zwölf unveränderten Projekte byte-gleich, Kanal-Summenprobe 54/54
+> (Details im [E1-Protokoll](../Protokolle/Simulation/E1_ErgebnisJeKanal_Protokoll.md)).
+> Projekt **1042** trägt zusätzlich eine **Datenänderung des Anwenders** (WP-Module 3 → 2,
+> Kombi-Speicher 1054195 entfernt — die Basis friert den neuen Stand ein; das
+> Warnkriterium `QUELLE_FEHLT` der unkonfigurierten Booster-Quelle steht im Protokoll).
+>
+> **Codestand:** Paket E1 auf `Pufferspeicher`. **Datenquelle:** produktive
+> `Kenndaten.accdb`, Zeitstempel **27.08.2026 20:45**, nur gelesen (keine `laccdb`, kein
+> App-Prozess); Arbeitskopie migriert auf Schemastand **52**. **Selbstvergleich:** zweiter
+> Lauf **329/329 byte-/MD5-gleich** — reproduzierbar. `pruefen`: 13/13 plausibel.
+>
+> **Die feste Projektliste umfasst dreizehn IDs:**
+>
+> ```powershell
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1030,1039,1040,1041,1042
+> ```
+
+> *(Fassung vor A1 — Begründung der früheren Basis `2026-08-27_K1`:)*
+>
+> **Anlass: Paket K1 (Dreikanal-Bedarf) — Entscheidungen F2 und F3.** Gegenüber V0 ändern sich
+> **sieben** Projekte gewollt: die Netzverluste werden je Stunde **anteilig** auf die Kanäle
+> Heizung/Brauchwasser/Prozess verteilt statt vollständig auf Heizung (F2), und alle
+> Profil-Bedarfe (Brauchwasser, Prozesswärme, Strom) kacheln ihr Wochenprofil am
+> **Klimadaten-Kalender** statt fest „1. Januar = Sonntag" (F3; produktiv ist der 1. Januar ein
+> Donnerstag — die Wochengänge verschieben sich um drei Tage). **Die Jahressummen sind in allen
+> neun Projekten exakt unverändert** (`Waermebedarf_Gesamt`, `Strombedarf_Gesamt` je Projekt
+> identisch — nur zeitliche Verteilung und Kanalzuordnung ändern sich). **PASS gegen V0: 1018
+> und 1030** — die einzigen Projekte ohne Profil-/Brauchwasser-/Prozessanteil. Die neue
+> **Energieprobe** (Kanalsumme gegen unabhängige Gesamtsumme, je Stunde, 8760 × 9 Projekte)
+> meldet **null Verletzungen**; das Laufprotokoll trägt 12 bekannte Bestandswarnungen
+> (Energieträger-Zuordnung, Rückfall-ΔT), 0 Fehler.
+>
+> **Codestand:** Paket K1 auf `Pufferspeicher` (Details
+> [K1-Protokoll](../Protokolle/Simulation/K1_Dreikanal_Protokoll.md)).
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel 26.08.2026 23:39, nur gelesen;
+> Arbeitskopie migriert auf Schemastand **48**. **Selbstvergleich:** zweiter Lauf
+> **216/216 byte-/MD5-gleich** — reproduzierbar.
+
+> **Anlass: Paket V0 (Bestandsfehler) des Konzepts Brauchwasser/Heizung/Pufferspeicher.**
+> Drei Projekte ändern sich durch die Fixes **gewollt** gegenüber B6 — **1008**
+> (Mehrgebäude-Doppelzählung V0-1: Wärmebedarf 98,26 → 54,88 MWh), **1007** und **1011**
+> (Stromprofile werden summiert statt überschrieben, V0-2: 12 → 24 bzw. 5 462 → 6 806 MWh) —
+> vollständig zugeordnet im
+> [V0-Protokoll](../Protokolle/Simulation/V0_Bestandsfehler_Protokoll.md)
+> über einen Vorher/Nachher-Lauf auf **gemeinsamer** Datenbankkopie (dort 6/9 byte-stabil).
+> Ein PASS/FAIL-Vergleich B6 → V0 wird bewusst **nicht** geführt: Zwischen beiden Ständen
+> liegen neben V0 auch der Merge des Branches `kostenformulare` (Migrationsschritte bis 44),
+> die x64-Umstellung und Datenpflege des Anwenders — Code und Daten haben sich gleichzeitig
+> geändert.
+>
+> **Codestand:** `2409996` (Branch `Pufferspeicher`), x64 Debug, 0 Fehler.
+> **Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **26.08.2026 23:39**, nur
+> gelesen; vor dem Lauf wurde eine **verwaiste** `Kenndaten.laccdb` dreier fensterloser
+> Access-Prozesse bereinigt. Die Migration auf den Schema-Zielstand lief ausschließlich auf
+> der Arbeitskopie. **Selbstvergleich:** zweiter Lauf desselben Codes auf derselben Quelle
+> **9/9 PASS (2 366 177 Werte), 216/216 byte-/MD5-gleich** — die Basis ist reproduzierbar.
+> `pruefen`: alle neun Projekte plausibel, keine NaN/Inf.
+>
+> **Neu sichtbar im Protokoll:** der V0-9-Hinweis zur oberen Kennlinienkappung meldet in
+> Projekt 1024 real **957 Kappungsstunden** (WP „CS6800iAW MB + AW 10 OR-T", oberste
+> Stützstelle 20,0 °C) — der Booster-relevante Fall existiert bereits im Bestand.
+>
+> **Was diese Basis weiterhin nicht absichert:** unverändert die Lücken der B6-Liste (u. a.
+> kein Projekt mit zwei Puffern je Kanal, kein Kessel an Quellpuffer mit Wert ≠ 0, keine
+> Wirtschaftlichkeit). Die **vier neuen Referenzprojekte** aus Konzept 11.1 (Mehrgebäude;
+> zwei Puffer je Kanal; Prozesswärme mit eigenem Puffer; Booster-Kette mit Kombi-Speicher)
+> stehen noch aus — 1008 deckt Mehrgebäude seit V0 immerhin rechnerisch korrekt ab.
+
+> **Der Referenzlauf deckt den Rechenkern ab, nicht die Wirtschaftlichkeit.** Er ruft
+> `WirtschaftlichkeitCtrl` nicht auf. Kapitalwert, KWK-Zuschlag, Steuergutschriften, Tarife und
+> Betriebskosten stehen in **keiner** eingefrorenen Basis; sie werden je Etappe als A/B gegen den
+> Vorgängerstand gemessen. Ein grünes 216/216 sagt über die Ausbaustufe W4 deshalb nur, dass sie den
+> Rechenkern nicht berührt hat.
+
+> **Die Projektliste ist FEST VORGEGEBEN und muss bei jedem Folgelauf mitgegeben
+> werden** — seit dem 30.08.2026 wieder **eine** Liste für einen Bestand (siehe
+> „Aktuelle Basis"):
+>
+> ```powershell
+> # Vergleich gegen 2026-09-02_PA1_nach-PaketA (und gegen PA0): vierzehn IDs
+> & $exe lauf --ziel <ordner> --projekte 1007,1008,1011,1017,1018,1021,1023,1024,1026,1028,1029,1030,1039,1043
+> ```
+>
+> *(Bis zum 02.09.2026 galten dreizehn IDs — 1040, 1041 und 1042 statt 1026, 1028, 1029
+> und 1043. Der Anwender hat 1040–1042 gelöscht; die Aufnahme der vier PV-/Booster-Projekte
+> war ein bewusster Basiswechsel für Paket A. 29.08.2026 bis 30.08.2026 galten zwei Listen
+> je Datenbestand — 13 Projekte gegen `Booster`, 10 gegen `E1E2`; diese Zweiteilung ist
+> aufgehoben.)*
+>
+> Ohne `--projekte` wählt die Suite datengetrieben — und diese Wahl **wandert mit dem
+> Projektbestand**. Mit den Beispielprojekten 1026–1029 zieht sie inzwischen 1012 und 1026
+> herein und lässt 1008 und 1018 fallen. Für eine über die Zeit vergleichbare Basis ist das
+> untauglich: Die Ordner ließen sich nicht mehr gegeneinander stellen. B5 friert deshalb die
+> acht Projekte von B4 **plus** das neue Kaskadenprojekt ein. Die automatische Auswahl bleibt
+> als Werkzeug erhalten (`liste`), taugt aber nur zum Sichten der Projektlandschaft, nicht
+> zum Einfrieren einer Basis.
+
+> **Projekt 1030 „Referenz BHKW-Kaskade (Regressionstest)" ist der Anker für
+> Mehrmodul-Kaskaden.** Zwei BHKW-Module, Spitzenkessel, Pufferspeicher, gepflegter
+> KWKG-Satz und gepflegte Energiepreise. Es deckt als **einziges** Projekt der
+> Referenzmenge ab: die drei Vollbenutzungsstunden-Aggregate aus Etappe E2, eine
+> **bindende** KWKG-Deckelung und die Positivseite beider KWKG-Guards (beide Module unter
+> der 500-kW-Ausschreibungsgrenze, beide Erdgas). Im übrigen Bestand steht `KWKG_Bonus`
+> auf 0 — ohne 1030 wäre dieser ganze Pfad ungetestet. **Wird 1030 verändert oder
+> gelöscht, verliert die Referenzmenge ihre einzige Abdeckung dieses Pfades.**
+>
+> **Genau das ist zwischenzeitlich passiert und seit `2026-08-30_B3-Kaskade` geheilt.**
+> Das zweite Modul war ohne Senkenzeile aus der Kaskade gefallen; der Anwender hat es
+> wieder eingehängt und dabei gewechselt: statt „Agenitor 306 (250 kw.el) Gas" fährt jetzt
+> **„EC-POWER XRGI 9"** mit. Die abgedeckten Pfade bleiben, **die Zahlen sind neue**:
+> Summe thermisch **13 977,95 h** (vorher 12 860,72 h), ungewichtetes Mittel **6 988,98 h**
+> (vorher 6 430,36 h), leistungsgewichtet elektrisch **7 327,17 h** (vorher 5 733,59 h).
+> Die frühere Zahl der KWKG-Deckelung (Erlös Jahr 1 44 265,13 € bei Jahresdeckel
+> 3 100 Vbh) gilt entsprechend nicht mehr; sie stammt ohnehin aus der
+> Wirtschaftlichkeit, die der Referenzlauf nicht abdeckt.
+
+> **Das Feature-Flag `Kaskade_Zweikanalig` beschreibt die Basis nicht mehr pauschal.** Für
+> **BHKW-Projekte** (1017, 1018, 1024, 1030) ist es seit Paket BHKW-Regulär **wirkungslos** —
+> sie rechnen immer über die Speicherstufe mit herausgelöster Ladephase, der einkanalige
+> BHKW-Altpfad ist entfallen; die Engine meldet das je Projekt als `Simulation Hinweis`. Für
+> die fünf übrigen Projekte steht das Flag auf **AUS**. Im Datenbestand steht es bei 1018
+> inzwischen auf WAHR — folgenlos, weil 1018 ein BHKW-Projekt ist.
+
+### Warum die Basis auf B6 gewechselt wurde
+
+**Nicht wegen geänderter Zahlen — es hat sich keine geändert.** Der Vergleich B5 → B6 ist
+**9/9 PASS und 216/216 byte-gleich**. Gewechselt wird wegen der **Zuordnung**: Zwischen beiden Ständen
+liegen die Etappen **E3 bis E7** der Ausbaustufe W4 (Migrationsschritte 19 bis 22) und der
+zusammengeführte Strang **KI-Assistent-Aufgabensteuerung**; die Quelldatenbank ist außerdem durch die
+Sitzung des Anwenders von Schemastand **17 auf 21** gewandert und einmal komprimiert worden. Ab B6
+ist die gültige Basis mit diesem Code- und Schemastand gerechnet, und eine spätere Abweichung lässt
+sich zweifelsfrei einer Folgeänderung zuschreiben statt W4.
+
+**Codestand:** `e94be10`, unverändert, gebaut aus einem `git archive HEAD`-Export außerhalb des Repos
+(`C:\Waermeplan\_e8`; 0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive `Kenndaten.accdb`,
+Zeitstempel **19.08.2026 14:46**, Schemastand **21**, nur gelesen (keine `Kenndaten.laccdb`). Die
+Migration **21 → 22** lief ausschließlich auf der Arbeitskopie. **Selbstvergleich:** zweiter Lauf
+desselben Codes auf derselben Quelle **9/9 PASS, 216/216 byte-gleich** — die Basis ist reproduzierbar.
+Vollständige Angaben und die Liste **„Was diese Basis nicht absichert"** im
+Laufprotokoll der Basis `2026-08-19_B6` (Basis gelöscht, Geschichte in diesem Dokument).
+
+### Warum die Basis auf B5 gewechselt wurde
+
+**B4 war als Maßstab ausgefallen.** Ein Lauf des unveränderten Codes gegen B4 endete zuletzt
+in **7 von 8 Projekten mit FAIL** — Ursache waren Datenänderungen des Anwenders, nicht der
+Code. Dazu kamen die Codeetappen seit dem 16.08.2026: Migrationsschritte **17 und 18**, der
+Katalog gesetzlicher Parameter (**E1**), die Vollbenutzungsstunden-Korrektur (**E2**), die
+500-kW-Grenze **je Anlage** und der Heizöl-Ausschluss **je Anlage**.
+
+**Codestand:** `ef8e537`, unverändert, gebaut aus einem `git archive HEAD`-Export außerhalb
+des Repos (`C:\Waermeplan\_b5`; 0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive
+`Kenndaten.accdb`, Zeitstempel **19.08.2026 02:51**, Schemastand **17**, nur gelesen (keine
+`Kenndaten.laccdb`). Die Migration **17 → 18** lief ausschließlich auf der Arbeitskopie; die
+produktive Datei steht nachweislich weiter auf Schemastand 17 (Zeitstempel, Größe und MD5 vor
+und nach dem Lauf identisch).
+
+**Ein Toleranzvergleich B4 → B5 wird bewusst NICHT als PASS/FAIL geführt** — Code und Daten
+haben sich gleichzeitig geändert, das Ergebnis wäre nicht zuordenbar. Die Einordnung, welche
+Größen sich unterscheiden und warum (neue E2-Kennzahlspalten, entfallener einkanaliger
+BHKW-Altpfad, Stromspeicher über die SpeicherEngine, Datenpflege des Anwenders), steht im
+Laufprotokoll der Basis `2026-08-19_B5` (Basis gelöscht, Geschichte in diesem Dokument). Zwei Projekte (1008, 1021) sind
+gegenüber B4 unverändert byte-gleich.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **9/9 PASS (2 366 177 Werte)** und **216/216 byte-/MD5-gleich** — die Basis ist
+reproduzierbar.
+
+## Frühere Stände
+
+`2026-09-02_PA0_vor-PaketA/` bleibt als **vorheriger Stand** liegen (Codestand `d46e200`,
+Schemastand 61, vierzehn Projekte, 355 CSV) — der Stand **vor** Paket A und damit die
+**einzige Quelle der Ganglinien im UTC-Raster**. Wer die Wirkung der Zeitbasis-Korrektur
+nachvollziehen will, stellt PA1 gegen diesen Ordner. Begründung im Abschnitt
+„Vorgängerbasis" oben.
+
+`2026-08-30_B3-Kaskade/` bleibt als **älterer Stand** liegen (Codestand `bad41f8`,
+Schemastand 61, dreizehn Projekte, 332 CSV) — die letzte Basis der B3-Linie und die
+einzige Quelle der Ganglinien von 1040, 1041 und 1042, die der Anwender inzwischen
+gelöscht hat. **Nicht mehr lauffähig** (drei ihrer IDs existieren nicht mehr); gegen PA0
+sind acht der gemeinsamen Projekte byte-gleich.
+
+`2026-08-29_Booster/` bleibt als **älterer Stand** liegen (Codestand `0787aec`,
+Schemastand 55, dreizehn Projekte, 332 CSV) — die letzte Basis **vor** der
+Wiederherstellung der 1030-Kaskade und dem Neuaufbau von 1042 und damit die einzige
+Quelle der Ganglinien des früheren zweiten Kaskadenmoduls „Agenitor 306 (250 kw.el) Gas"
+sowie des alten 1042. Gegen `2026-08-30_B3-Kaskade` ist sie in **elf von dreizehn
+Projekten wertgleich** (die sieben `aggregate.csv`-Byte-Unterschiede sind allein die neue
+Spalte `Hilfsenergie`). Begründung im Abschnitt „Frühere Fassung: die beiden Basen vom
+29.08.2026" darüber.
+
+`2026-08-29_E1E2/` bleibt als **älterer Stand** liegen (zehn Projekte, 234 CSV) — die
+Basis des zwischenzeitlichen 10-Projekte-Bestands dieses Rechners, überholt seit
+1040–1042 wieder im Bestand stehen.
+
+`2026-08-28_B2/` bleibt als **älterer Stand** liegen (Codestand `4be1862`, Schemastand
+55, dreizehn Projekte, 332 CSV) — der gemeinsame Ausgangspunkt beider 29.08.-Basen: auf
+dem Zweitstand der Stand unmittelbar vor dem Unbegrenzt-Fix (1042 dort mit
+abgeschalteter Kopplung, konstant 45 °C; für die zwölf übrigen Projekte byte-gleich mit
+der Booster-Basis), auf diesem Stand der letzte Stand **vor** der Anwender-Löschung von
+1040–1042 und dem 1039-Umbau — und damit die letzte Quelle der Ganglinien von
+Mehrgebäude-1039, Parallelverbund-1040 und Prozesswärme-1041. Begründung in den
+Abschnitten „(Fassung vor Booster/E1E2)" darüber.
+
+`2026-08-28_E2/` bleibt als **älterer Stand** liegen (Codestand babab27, Schemastand
+54, dreizehn Projekte, 332 CSV) — die erste Basis, in der die
+**Booster-Temperaturkopplung in 1042 scharf** war (frühere Verschaltung: geteilter
+Puffer 1054196, Lesepunkt implizit „Danach"); für die zwölf übrigen Projekte
+byte-gleich mit B2. Begründung im Abschnitt „(Fassung vor B2)" darüber.
+
+`2026-08-28_P1/` bleibt als **älterer Stand** liegen (Codestand P1, Schemastand 53,
+dreizehn Projekte, 329 CSV) — die Basis der Pakete B1/Q1/P2/L/E2 (alle je byte-gleich
+dagegen); 1042 dort noch mit unkonfigurierter Booster-Quelle. Begründung im Abschnitt
+„(Fassung vor E2)" darüber.
+
+`2026-08-27_E1/` bleibt als **älterer Stand** liegen (Codestand E1, Schemastand 52,
+dreizehn Projekte, 329 CSV) — die Basis des Meilensteins Z3; P1 war gegen sie in allen
+316 Ganglinien byte-gleich (einzige Änderung: T_oben-Füllung). Begründung im Abschnitt
+„(Fassung vor P1)" darüber.
+
+`2026-08-27_A1/` bleibt als **älterer Stand** liegen (Codestand A1, Schemastand 51,
+dreizehn Projekte, 329 CSV) — die erste Basis mit den vier Konzept-11.1-Projekten,
+Meilenstein „ein Rechenweg". A/B-Zuordnung des Altpfad-Abrisses im
+[Laufprotokoll](2026-08-27_A1/lauf_protokoll.md) (Ordner entfernt, Protokoll gesichert); 1042 dort noch mit drei WP-Modulen und
+Kombi-Speicher 1054195 (vor der Datenänderung des Anwenders).
+
+`2026-08-27_K1/` bleibt als **älterer Stand** liegen (Codestand K1 auf `Pufferspeicher`,
+Schemastand 48, neun Projekte, 216 CSV, 2 366 177 Werte) — die Basis der Pakete K1 bis S2;
+K2, S1 und S2 waren gegen sie jeweils **216/216 byte-gleich**, sie blieb deshalb bis A1
+unverändert gültig. Warum K1 seinerzeit gesetzt wurde, steht im Abschnitt darunter
+(Fassung vor A1) bzw. im K1-Protokoll.
+
+`2026-08-27_V0/` bleibt als **älterer Stand** liegen (Codestand `2409996`, Schemastand 47,
+neun Projekte, 216 CSV, 2 366 177 Werte) — der Stand nach den V0-Bestandsfehler-Fixes und vor
+der Dreikanal-Umstellung. Warum V0 seinerzeit gesetzt wurde, steht im Abschnitt darüber
+(Fassung vor K1) bzw. im V0-Protokoll.
+
+`2026-08-19_B6/` bleibt als **älterer Stand** liegen (Codestand `e94be10`, Schemastand 21,
+neun Projekte, 216 CSV, 2 366 177 Werte) — die letzte Basis **vor** dem `kostenformulare`-Merge
+und Paket V0. Warum B6 seinerzeit gesetzt wurde, steht im Abschnitt „Warum die Basis auf B6
+gewechselt wurde" darüber.
+
+`2026-08-19_B5/` bleibt als **älterer Stand** liegen (Codestand `ef8e537`, Quelle mit Schemastand
+17, neun Projekte, 216 CSV, 2 366 177 Werte) — **für alle 216 Dateien byte-gleich mit B6** und damit
+der Beleg des Standes vor den Etappen E3 bis E7. Warum B5 seinerzeit gesetzt wurde, steht im
+Abschnitt „Warum die Basis auf B5 gewechselt wurde" darüber.
+
+`2026-08-16_B4/` bleibt als **älterer Stand** liegen (Codestand `3fd2787`, Schemastand 10,
+acht Projekte, 190 CSV, 2 094 451 Werte, Feature-Flag `Kaskade_Zweikanalig` durchgehend AUS).
+Warum B4 seinerzeit gesetzt wurde:
+
+**Ein Anlass: die neue Ergebnisspalte aus Etappe D4.** Vollständige Zuordnung je Projekt im
+Laufprotokoll der Basis `2026-08-16_B4` (Basis gelöscht, Geschichte in diesem Dokument).
+
+Etappe **D4** hat `Tab_ErgebnisHeizkessel.Quellwaerme` eingeführt — **Migrationsschritt 10**,
+rein additives DDL, Schema-Zielstand **9 → 10**. Weil der Export `SELECT * FROM Tab_Ergebnis*`
+liest, führt `aggregate.csv` je Projekt mit Heizkessel-Ergebniszeile einen Schlüssel mehr.
+Gegen B3 meldete der Vergleich das als „Eintrag nur im Vergleichslauf" — fachlich richtig,
+aber dauerhaft erklärungsbedürftig. **B4 friert den D4-Stand einschließlich der neuen Spalte
+ein; künftige Vergleiche laufen wieder ohne `--ohne`.**
+
+**Codestand:** `3fd2787`, unverändert, gebaut aus einem `git archive`-Export außerhalb des
+Repos (0 Fehler, 6 Bestandswarnungen). **Datenquelle:** produktive `Kenndaten.accdb`,
+Zeitstempel **15.08.2026 22:50** (Datei 23:22), Schemastand **9**, nur gelesen (keine
+`Kenndaten.laccdb`). Schritt 10 lief ausschließlich auf der Arbeitskopie — die produktive
+Datei steht nachweislich weiter auf Schemastand 9.
+
+**Zuordnung B3 → B4, Projekt für Projekt:**
+
+| Projekt | Abweichung zu B3 | Ursache |
+|---|---|---|
+| 1007, 1008, 1011, 1021 | **keine — byte-/MD5-gleich** | kein Heizkessel-Ergebnisdatensatz |
+| 1017, 1018, 1023, 1024 | **je ein neuer Schlüssel** in `aggregate.csv` (`Heizkessel.Quellwaerme;0`) | Migrationsschritt 10 / Etappe D4 |
+
+Byte-Vergleich: **186 von 190 gleich**, die vier Abweichungen sind ausschließlich die
+`aggregate.csv` der vier Heizkessel-Projekte, Zeilendiff je genau eine eingefügte Zeile. Alle
+Ganglinien sind in allen acht Projekten byte-gleich.
+
+```
+vergleich 2026-08-15_B3 2026-08-16_B4 --ohne Heizkessel.Quellwaerme
+  → 8/8 PASS (2 094 451 Werte)
+```
+
+**Kein Altwert weicht ab** — D4 hat keinen Rechenweg verändert.
+
+> **Auffällig:** `Heizkessel.Quellwaerme` steht in allen vier Projekten auf **0** — kein Kessel
+> der Referenzmenge hängt an einem Quellpuffer. Die Spalte ist damit im Vergleich enthalten,
+> aber noch nicht mit einem Wert ungleich null abgedeckt (wie `Erdreich[i].*` seit Paket 7).
+> Für einen belastbaren Regressionstest dieses Pfades fehlt ein Referenzprojekt mit Kessel an
+> einem Quellpuffer.
+
+**Selbstvergleich von B4 seinerzeit:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergab **8/8 PASS (2 094 451 Werte)** und **190/190 byte-/MD5-gleich**.
+
+`2026-08-15_B3/` bleibt als **vorvorheriger Stand** liegen (Codestand `a0a623a` + K-3,
+Schemastand 9, acht Projekte, 190 CSV) — für alle Werte außer der neuen Spalte
+byte-gleich mit B4. Warum B3 seinerzeit gesetzt wurde:
+
+**Zwei Anlässe — beide getrennt nachgewiesen.** Vollständige Zuordnung je Projekt im
+Laufprotokoll der Basis `2026-08-15_B3` (Basis gelöscht, Geschichte in diesem Dokument).
+
+**(1) Ergebnisänderung K-3.** Die Bivalenz-Umschaltung des bivalent-alternativen
+Wärmepumpenbetriebs schaltet ab jetzt an der **Bivalenztemperatur**
+(`Tab_Energieanlagen.Abschaltpunkt`) statt stundenweise nach Leistungsunterdeckung — in
+beiden Rechenwegen. Umsetzung, Datenbefund, Regelentscheidung und alle Zahlen:
+[`../WindowsFormsApplication1/Allgemein/Simulation/K3_BivalenzTemperatur_Protokoll.md`](../Protokolle/Simulation/K3_BivalenzTemperatur_Protokoll.md).
+
+**Davon betroffene Referenzprojekte: keines.** Der Datenbefund vor dem Lauf zeigt, dass im
+gesamten Bestand **keine einzige** Anlage `Bivalenter_Betrieb = TRUE` **und**
+`Betriebsart = "Alternativbetrieb"` führt — der geänderte Zweig ist in keinem gespeicherten
+Projekt aktiv. (Die eine `Alternativbetrieb`-Zeile, Anlage 10132 in Projekt 1008, trägt
+`Bivalenter_Betrieb = False`; die Bedingung ist eine Und-Verknüpfung.) Dementsprechend:
+
+```
+A/B gegen a0a623a, Flag AUS : 9/9 PASS (2 295 987 Werte), 208/208 byte-/MD5-gleich
+A/B gegen a0a623a, Flag AN  : 9/9 PASS (2 295 998 Werte), 208/208 byte-/MD5-gleich
+```
+
+Der A/B-Lauf umfasst noch **neun** Projekte: Er lief auf einer gemeinsamen Datenbankkopie
+vom 22:26 Uhr — also vor der Löschung unten — und deckt Projekt 1010 damit mit ab.
+
+Wirksam ist K-3 sehr wohl — nachgewiesen an eigens präparierten Kopien der Projekte **1026**
+(WP + Kessel + Puffer, auf `Alternativbetrieb` gestellt: WP-Produktion 28,3 → 40,2 MWh,
+Kessel 36,4 → 24,6 MWh, WP-Ein/Aus-Wechsel einkanalig 2 962 → 2 524 und zweikanalig
+**1 126 → 140**, Frostbetrieb der WP 330 h → 0 h) und **1024** (Sommer-Warmwassermuster:
+**714 Sommerstunden**, in denen die WP bisher an Warmwasserspitzen ausfiel, laufen wieder mit
+der Wärmepumpe). Stundengenaue Bilanzproben schließen in allen Varianten (max. Abweichung
+7·10⁻⁶ kWh, 0 Stunden über 0,01 kWh).
+
+**(2) Projektlöschung durch den Anwender.** Am 15.08.2026 gegen 22:50 Uhr hat der Anwender
+die Projekte **1010, 1016, 1020 und 1025** aus der produktiven Datenbank gelöscht. Von der
+Referenzmenge trifft das **1010 „Kurs EE"** — es existiert nicht mehr. **B3 umfasst deshalb
+acht Projekte, B2 hatte neun.**
+
+> **Folgebedarf:** 1010 war in der Referenzmenge die Kategorie **„Wärmepumpe ohne weitere
+> Erzeuger"** (`Anlagen: WP`). Fällt sie dauerhaft weg, sollte ein Ersatzprojekt derselben
+> Kategorie nachrücken (`Projektauswahl.MAX_PROJEKTE` steht auf 9).
+
+**Zuordnung B2 → B3, Projekt für Projekt:**
+
+| Projekt | Abweichung zu B2 | Ursache |
+|---|---|---|
+| 1007, 1008, 1011, 1017, 1018, 1021, 1023, 1024 | **keine — alle 190 Dateien byte-/MD5-gleich** | — |
+| 1010 | **Ordner entfällt** (18 Dateien) | **Projektlöschung**, kein Codeeffekt |
+
+Für die acht verbliebenen Projekte ist B3 also wertgleich mit B2 bis auf das Byte; **kein
+einziger Wert weicht durch K-3 ab**. Der Basiswechsel erfolgt damit aus zwei Gründen, von
+denen keiner „geänderte Zahlen" heißt: die geschrumpfte Projektmenge und die **Zuordnung** —
+ab hier ist die gültige Basis mit dem K-3-Code gerechnet, und eine spätere Abweichung lässt
+sich zweifelsfrei einer Folgeänderung zuschreiben statt K-3.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **8/8 PASS (2 094 447 Werte)** und **190/190 byte-/MD5-gleich** — die Basis ist
+reproduzierbar.
+
+**Datenquelle:** produktive `Kenndaten.accdb`, Zeitstempel **15.08.2026 22:50**, nur gelesen
+(keine `Kenndaten.laccdb`).
+
+`2026-08-15_B2/` bleibt als **älterer Stand** liegen (Codestand `925c37f`, Datenstand
+15.08.2026 11:58, **neun** Projekte) — für die acht gemeinsamen Projekte byte-gleich mit B3
+und die einzige verbliebene Quelle für die Ganglinien des gelöschten Projekts 1010. Warum B2
+seinerzeit gesetzt wurde:
+
+Gerechnet auf Codestand **`925c37f`** (Paket 9, Etappe 2) und auf der produktiven
+`Kenndaten.accdb` mit Zeitstempel **15.08.2026 11:58**. Ein Codeeffekt liegt dem Wechsel
+**nicht** zugrunde — die Ursache sind **geänderte Projektdaten**:
+
+Der Anwender hat am 15.08.2026 um 11:58 in **Projekt 1024** das **zweite Wärmepumpenmodul**
+(`CS7800iLW 12`) entfernt. Damit fehlt im `aggregate.csv` der komplette Block
+`WaermepumpeModul[1]`, und die davon abhängigen Ganglinien (BHKW, Kessel, WP, Heizstab,
+Restwärme, Reststrom) verschieben sich. Der Vergleich der alten gegen die neue Basis zeigt
+das sauber abgegrenzt:
+
+```
+2026-08-14_B1-Fixes vs 2026-08-15_B2 : 193 byte-/MD5-gleich, 15 abweichend
+                                       (alle 15 in Projekt_1024)
+Toleranzvergleich                    : 8 x PASS, Projekt_1024 FAIL (75.575 Abweichungen)
+```
+
+Der Nachweis, dass das **nicht** vom Code kommt, steht in
+`../WindowsFormsApplication1/Allgemein/Simulation/Paket9_Lokalisierung_Protokoll.md`,
+Abschnitt 12.2: Ein Baselinelauf aus einem eigenen git-Arbeitsbaum auf `d49075e` — also
+**ohne** die Änderungen der Etappe 2 — zeigt gegen `B1-Fixes` **dieselben 15 Dateien**;
+gegen den Etappe-2-Lauf auf demselben Datenstand sind alle 208 Dateien byte-gleich.
+
+Solange `B1-Fixes` die Basis bliebe, schleppte jede Folgeprüfung diese eine
+erklärungsbedürftige Abweichung mit und Projekt 1024 wäre dauerhaft FAIL — der Regressionstest
+verlöre für dieses Projekt seine Aussagekraft. Deshalb der Basiswechsel.
+
+**Selbstvergleich der neuen Basis:** Ein zweiter Lauf desselben Codes auf derselben Quelle
+ergibt **9 von 9 PASS (2.295.987 Werte)** und **208 von 208 Dateien byte-/MD5-gleich** — die
+Basis ist reproduzierbar.
+
+Die Anwendung des Anwenders lief während des Laufs, hatte die Datenbank aber **nicht**
+geöffnet (keine `Kenndaten.laccdb`). Die produktive Datei wurde ausschließlich gelesen.
+
+`2026-08-14_B1-Fixes/` bleibt als **älterer Stand** liegen (Datenstand vom 14.08.2026,
+neun Projekte). Gegenüber `2026-08-14_Paket4` weichen dort **drei Projekte** ab, vollständig
+zugeordnet in
+`2026-08-14_B1-Fixes/vergleich_protokoll.md`: **1008** und **1011** durch die
+Bestandsfehler-Fixes **B1-F1/B1-F2** (Stromganglinien fließen erstmals in den Strombedarf
+ein; Prozesswärme war still 0 — B0-Protokoll, Nachtrag B1-F1/B1-F2), **1024** durch
+**geänderte Projektdaten** (Heizkessel nach dem Paket4-Snapshot in die Kaskade
+aufgenommen; Alt- vs. Neu-Code auf identischer DB ist für 1024 vollständig PASS —
+kein Code-Effekt). Die übrigen sechs Projekte: PASS.
+
+`2026-08-14_Paket4/` bleibt als **älterer Stand** liegen. Gegenüber
+`2026-08-14_Paket7` waren dort genau **drei** Werte neu, alle in Projekt 1021 und alle
+begründet in `2026-08-14_Paket4/lauf_protokoll.md`: die ID-Semantik des Quellspeichers
+(`Pufferspeicher[0].ID_Pufferspeicher` 8 → 1018014) und die beiden laufzeitbasierten
+Skalare aus dem Bestandsfehler **B0-13** (`WaermepumpeModul[0].Betriebsstunden`
+6692,41 → 4,41; `Waermepumpe.Vollbenutzungsstunden` 3846,66 → 502,66). Alle übrigen
+2.260.920 Werte sind byte-genau gleich.
+
+`2026-08-14_Paket7/` und `2026-08-14_B0/` bleiben als **historische Stände** liegen
+(Paket7: vor Paket 1/2/4, B0-12/13 und B1-Fixes; B0: vor Paket 1/3/7, acht Projekte).
+Ein Vergleich gegen B0
+meldet zwangsläufig FAIL — der Basiswechsel ist gewollt und in
+`2026-08-14_Paket7/vergleich_protokoll.md` sowie in
+`../WindowsFormsApplication1/Allgemein/Simulation/Paket7_Ergebnis_Anzeigen_Protokoll.md`
+begründet:
+
+| Was | Alt (B0) | Neu (Paket 7) |
+|---|---|---|
+| Projektmenge | acht | neun — **1021** kommt hinzu und deckt als einziges den Quellspeicher-Pfad ab |
+| `Waermepumpe.Kapazitaet_Pufferspeicher` | `Volumen · 1,16` aus dem WP-Datensatz (in allen Projekten 11,6) | `SimulationPufferspeicher.Q_max` des zugeordneten Puffers; 0 ohne Puffer |
+| Pufferspeicher-Persistenz | gab es nicht | `Pufferspeicher[i].*` je Speicher in `aggregate.csv` (aus `Tab_ErgebnisPufferspeicher`) |
+| Speicher-Kennzahlen | gab es nicht | `Puffer.SOC_Mittel`, `Puffer.SOC_Max`, `Puffer.Vollzyklen`, `Sim.Speicher_Anzahl` |
+| Quellspeicher-Ganglinien | gab es nicht | `quellspeicher_<AnlagenID>_{soc,ladung,entladung}.csv` (nur in 1021) |
+| Erdreich-Auslegungsprüfung | gab es nicht | `Erdreich[i].*` in `aggregate.csv` — **nur** bei Projekten mit `WQ_Typ = 'Erdreich'`, in der Referenzmenge also nirgends |
+
+Gerechnet wurde die neue Basis auf einer **eigenen, vollständig migrierten Kopie außerhalb
+des Repos** im Modus `projekt` (siehe `2026-08-14_Paket7/lauf_protokoll.md`).

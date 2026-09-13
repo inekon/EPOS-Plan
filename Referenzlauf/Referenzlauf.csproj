@@ -43,6 +43,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Migrationslauf.cs weist das Ergebnis AM ACCESS-SCHEMA nach und baut dafuer
+         eigene OleDb-Verbindungen (GetOleDbSchemaTable). Die Schale fuehrt das Paket
+         nicht mehr; dieses Werkzeug braucht es selbst. Fassung zentral aus
+         Directory.Packages.props. -->
+    <PackageReference Include="System.Data.OleDb" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WindowsFormsApplication1\WindowsFormsApplication1.csproj" />
   </ItemGroup>
 

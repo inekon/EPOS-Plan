@@ -25,6 +25,13 @@ name: iOS
 
 # Anwenderregel (03.09.2026): NUR auf Abruf und nur nach Rueckfrage beim Anwender -
 # der macOS-Laeufer zaehlt zehnfach auf das Actions-Kontingent. Kein Push-Ausloeser.
+# Ein zweiter Aufruf auf demselben Zweig verwirft einen noch WARTENDEN Doppellauf,
+# bricht aber keinen laufenden ab - ein angefangener macOS-Lauf ist bezahlt
+# (Anwenderentscheid 12.09.2026, "CI-Laeufe entkoppeln").
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
 

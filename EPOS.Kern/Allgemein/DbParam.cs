@@ -23,17 +23,10 @@ namespace WindowsFormsApplication1
     //
     // Bis T3a trug diese Datei den impliziten Operator aus OleDbParameter, Von() und
     // NachOleDb() samt Typabbildung - und mit ihnen ein "using System.Data.OleDb", das
-    // EPOS.Kern an ein Windows-Paket band. Alle drei sind in die ANWENDUNG gewandert:
-    //
-    //   WindowsFormsApplication1/Allgemein/DbParamOleDb.cs
-    //   [SupportedOSPlatform("windows")] internal static class DbParamOleDb
-    //       Aus(OleDbParameter) / Von(OleDbParameter[]) / Nach(DbParam[])
-    //
-    // Aus()/Von() haben dort keinen Nutzer mehr - der Sweep aus T3a hat die letzten
-    // Erbauer von OleDbParameter aus den Masken entfernt. Sie bleiben als Rueckfalltuer
-    // fuer Zweige stehen, die noch aus einer Access-Verbindung lesen. Nach() traegt
-    // weiterhin die vier Stellen des eingefrorenen Access-Zweigs (SchemaMigration:
-    // NonQuery/Skalar/Abfrage, GeraeteWaisen: Ids) und lebt genau so lange wie er.
+    // EPOS.Kern an ein Windows-Paket band. Alle drei sind zuerst in die Anwendung
+    // gewandert und mit deren Access-Zweig entfallen: Es gibt KEIN Access-Gegenstueck
+    // mehr. Einen Altbestand hebt allein das Hauswerkzeug EposSqliteMigrator (eigene
+    // Projektmappe, eigene System.Data.OleDb-Referenz).
     //
     // Was hier bleibt, ist damit der reine Datentraeger - kein Provider, kein
     // Plattformbezug, kein #pragma. EPOS.Kern nennt System.Data.OleDb nicht mehr, weder
@@ -44,8 +37,7 @@ namespace WindowsFormsApplication1
     /// Datentyp eines <see cref="DbParam"/>. Die Namen sind bewusst die des frueheren
     /// <c>OleDbType</c> - der Bestand nutzte genau diese elf Werte, und die
     /// Gleichnamigkeit macht den Umstieg lesbar. Fuer SQLite ist die Angabe nur dort
-    /// von Belang, wo ein Wert NULL sein kann; fuer den Access-Rueckweg
-    /// (<c>DbParamOleDb.Nach</c> in der Anwendung) ist sie es immer.
+    /// von Belang, wo ein Wert NULL sein kann.
     /// </summary>
     public enum DbParamTyp
     {
