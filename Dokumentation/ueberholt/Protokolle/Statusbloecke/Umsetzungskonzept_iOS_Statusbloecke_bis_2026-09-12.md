@@ -5254,3 +5254,47 @@ steht aus und ist die eigentliche Aufgabe von
 > **Gate sept66 auf `151949d7`:** GRÜN auf `151949d7` — Kern 2 800, UI 4 008, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** Windows-Abnahme; Messfall läuft im CI mit (rund 4 s), bei Bedarf nach `Proben/`; Sammel-Upload frühestens
 > 20.09.2026 (Stromspeicher-Quelle aus #253/#255/#254, fünf Logbuch-Einträge).
+
+## #256 — Prognosepflicht planender Betriebsziele benannt vor dem Lauf (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderbefund 13.09.2026 (Bildschirmfoto Visual Studio):** Projektlauf eines Projekts mit aktivierter Speicherflotte
+> bricht ab: „Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: Kein expliziter
+> Prognose-Snapshot der Art VerifiziertBekannt ist verfuegbar. Ausweg: die Flotte im Auslegungsdialog deaktivieren oder die
+> Eingaben vervollständigen." (`SimulationControl.SpeicherlaufAusfuehren` ← `Simulation_Stromspeicher_Ctrl` ←
+> `Do_Simulation` ← `SimulationLaufCtrl.Laufen` ← `SimulationErgebnisHuelle.Laufen` ← `Kulturweitergabe.Starten`).
+>
+> **Ursache (Orchestrierung, belegt):** Die drei planenden Betriebsziele verlangen im `FlottenSimulator` je Planungsschritt
+> einen Prognose-Snapshot der eingestellten Art (`WaehleSnapshot`). Vorgabe jeder Flotte ist `VerifiziertBekannt`; dafür
+> nimmt der Kern nur archivierte Snapshots aus dem CSV-Import „Prognosen und Projektjahre…", die EPOS-Projektzeitreihen
+> enthalten keine. Nur bei `Oracle` baut `SpeicherFlottenStudieCtrl.Eingang` den Snapshot „Idealwissen-Standortreihe" aus
+> der Istreihe (Spezifikation 9.4: die Istreihe wird nie still als Prognose verwendet — Engine-Regel bleibt). Lücke: weder
+> `FlottenPlausibilitaet.Pruefe` noch `SpeicherFlottenProjektCtrl.Pruefe` kannten die Regel, der Abbruchtext (#185-Muster)
+> nannte die Ursache nicht. Kein Zusammenhang mit #254 (Diff geprüft, Prognosen-Weg unverändert). Unter Visual Studio
+> erscheint der Wurf als „vom Benutzer nicht behandelte Ausnahme", weil er im Rechenthread liegt; die Anwendung fängt ihn
+> in `SimulationErgebnisHuelle.Laufen`.
+>
+> **Anwenderentscheid 13.09.2026:** „Empfehlung für Auftrag #256: Umsetzen" — Vorbelegung des Informationsstands bleibt
+> `VerifiziertBekannt` (bewusste Wahl des Wissensstands), Abhilfe per Knopf.
+>
+> **Umsetzung (Agent Opus, Worktree, Commits `445db7a1` Kern, `07f3111a` Oberfläche, `b4ed7ff7` Doku; Merge `c90cfe13`):**
+> `FlottenPlausibilitaet.Prognosepflicht(konfiguration, prognosen)`: planendes Ziel (`FlottenPlanerLage.IstPlanend`) und
+> `VerifiziertBekannt` und kein geladener Snapshot dieser Art (nur die Art, kein Horizont) → Hinweis `PrognoseFehlt` mit
+> neuer Stufe `Problem` (blockierend); Text nennt Ziel, Informationsstand und beide Auswege (Idealwissen in Schritt 3 oder
+> Prognosen laden in Schritt 2). Drei Wege rufen dieselbe Funktion: `FlottenPlausibilitaet.Pruefe` (beide Überladungen,
+> damit `Vorpruefen` und `VorpruefenSchnell` aus #254), `SpeicherFlottenProjektCtrl.Pruefe` als Problemzeile (Muster
+> `FLOTTE_PLANER_PROFIL`; Aktivierung und beide `Rechnen`-Wege scheitern benannt vor der Engine, der Abbruchtext des
+> Projektlaufs trägt die Ursache über `ex.Message`), `SpeicherFlottenStudieCtrl.Rechnen` weist den Optimierungslauf nach
+> der Vorprüfung ab (`FlotteRechnen` legt ihn als Meldung ab). Rechenknopf der Ansicht an der Stufe „Problem" gesperrt (mit
+> Befund als `title`). Oberfläche: vierter Abhilfeknopf `IdealwissenSetzen` im `FlottenDiagnosebanner` (setzt
+> `PrognoseArt = Oracle` über den Wirt → Fassung hoch, `Geaendert`, Vorprüfung frisch); derselbe Wortlaut als Zeile unter
+> dem Auswahlfeld „Informationsstand" im `SpeicherFlottenNetzBlock`; Hinweiszeilen mit eigenem Zeichen und Fehlerfarbe für
+> „Problem". Ressourcen `FLOTTE_MSG_PROGNOSE_FEHLT`, `FLOTTE_ABHILFE_IDEALWISSEN`, `KI_FRAGE_FLOTTE_PROGNOSE_FEHLT` de/en,
+> KI-Kennung `FLOTTE_PROGNOSE_FEHLT` mit Wissensabschnitt. Tests: Kern +8 (`FlottenPlausibilitaetTests`,
+> `SpeicherFlottenProjektCtrlTests`; `KiDialogaufrufTests` 15 → 16 Kennungen, `FlottenPlanerLageTests` mit Idealwissen),
+> bunit +4 (`StromspeicherAuslegungBannerTests`). Referenzlauf 1046 byte-gleich (464 425 Werte). Doku: Konzept
+> Stromspeicher-Dialoge (Diagnose und Abhilfen), Doku Mehrspeicher (Vorprüfungsregeln); Wiki-Quelle Stromspeicher
+> (Schritt 3, Tabelle der Betriebsziele; Upload gebündelt), Logbuch-Einträge entworfen.
+> **Gate sept67 auf `c90cfe13`:** GRÜN auf `c90cfe13` — Kern 2 811, UI 4 012, SpeicherEngine 445, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme am Projekt des Befunds; doppelter Ausweg-Satz im Abbruchtext (vorbestehend, Befund ohne
+> Auftrag); der vierte Abhilfeknopf wird nur mit einem Ergebnis sichtbar, der gewöhnliche Weg ist die Hinweiszeile in
+> Schritt 3; Sammel-Upload frühestens 20.09.2026.
