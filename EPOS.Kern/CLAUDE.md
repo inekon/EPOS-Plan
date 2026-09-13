@@ -15,7 +15,7 @@ referenzieren dieses Projekt, sie übersetzen seine Dateien nicht mit.
 | `Allgemein/Simulation/` | die Engine: `SimulationControl`, `SimulationRunner`, je ein Modul für Bedarf und Erzeuger, `Rechenrand`, `ProfilBedarf` |
 | `Allgemein/Wirtschaftlichkeit/` | Kapitalwert, KWKG, EEG, Steuer, Stromtarife, Emissionsbilanz, `Emissionsquelle` |
 | `Allgemein/Bericht/` | `ChartRenderer` (SkiaSharp), Word- und Excel-Erzeuger, `Bausteine/`, Kennzahlen |
-| `Allgemein/Dienste/`, `Datenbank/`, `Update/` | die neun Umgebungsschnittstellen; `Erstbereitstellung`, `Datenbanksicherung`, Schemapflege |
+| `Allgemein/Dienste/`, `Datenbank/`, `Update/` | die neun Umgebungsschnittstellen; `Erstbereitstellung`, `Datenbanksicherung`, Schemapflege, `GeraeteWaisen` (der Aufräumlauf der verwaisten Gerätezeilen, gerufen aus `WErzeugerCtrl.Delete` und `WizardCtrl`) |
 | `Allgemein/Import/`, `Katalog/`, `Export/` | Hersteller- und Klimadaten, Ganglinien; Register, Filter, Dubletten; CSV |
 | `Allgemein/Lizenz/`, `KI/`, `Hilfe/` | Lizenzlage und Token; KI-Zugang, Aufgabenregister, Semantik; Berechnungshilfe |
 | `Controller/`, `Model/`, `Properties/` | die Fachcontroller, ihre Datenklassen, `Settings` |
@@ -28,7 +28,7 @@ Einzige verlinkte Datei: `../sql/schema/SchemaTypKatalog.g.cs` (Quelle `sql/tool
 | Was | Warum |
 |---|---|
 | Oberflächenbausteine (`BaseForm`, `GrafikTools/*`, Hilfefenster, Blazor-Hülle) | WinForms und GDI+ — sie **sind** die Oberfläche |
-| `SchemaMigration` und `GeraeteWaisen` der Schale | Schemapflege und Aufräumlauf des Windows-Programmstarts; Access-Altbestände hebt allein das Hauswerkzeug `EposSqliteMigrator` |
+| `SchemaMigration` der Schale | Schemapflege des Windows-Programmstarts; Access-Altbestände hebt allein das Hauswerkzeug `EposSqliteMigrator` |
 | Belegung der `Dienste.*`, Datenbankbereitstellung der Schale | jede Schale beantwortet sie selbst |
 | `BerichtsDatenSammler`, `HilfeKontext`, `KiAusfuehrungWindows`, `KlimaregionStammCtrl`, `MenueCtrl`, `EnergietraegerKatalogCtrl` | hängen an einer WinForms-Ansicht, am aktiven Fenster, an `ComboBox`/`ListBox` oder der Navigation |
 | `Bericht/Vorlagen/Berichtsvorlage.docx` | keine Quelldatei: Sie liegt neben der EXE, dort sucht `WordBerichtGenerator.FindeVorlage()` |

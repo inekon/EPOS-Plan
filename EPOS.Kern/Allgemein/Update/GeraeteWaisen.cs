@@ -13,9 +13,7 @@ namespace WindowsFormsApplication1
     // Aufruferkreis ist der regulaere Programmpfad (WErzeugerCtrl, WizardCtrl). Die drei
     // Zugriffsprimitiven ganz unten (Spalte, SpalteOhneTabelle, Loeschen) gehen
     // ausschliesslich ueber die Zugriffsschicht; eine von aussen hereingereichte
-    // Verbindung gibt es nicht mehr.
-    //
-    // ZUM ABGESCHALTETEN AUFRAEUMLAUF siehe die Begruendung bei <see cref="Waisen"/>.
+    // Verbindung nimmt diese Klasse nicht.
     // =====================================================================================
 
     /// <summary>
@@ -25,21 +23,19 @@ namespace WindowsFormsApplication1
     /// <c>Tab_Energieanlagen</c> desselben Projekts mehr zeigt.
     ///
     /// <para>
-    /// <b>Warum es diese Zeilen überhaupt gibt.</b> Die Gerätetabellen sind keine
-    /// Bestandslisten, sondern Ablagen für PROJEKTKOPIEN eines Katalogsatzes
-    /// (Kopiersemantik, <c>KatalogRegistry</c>). Verbaut ist ausschließlich, worauf eine
-    /// Zeile in <c>Tab_Energieanlagen</c> zeigt. ANGELEGT werden die Kopien an vielen
-    /// Stellen (<c>CopyFromStamm</c> aus dem Schreibweg und aus den Geräte-Dialogen,
-    /// <c>AnlagenEindeutigkeit.ProjektkopieAnlegen</c>, <c>ProjektDuplizierenCtrl</c>) -
-    /// ENTFERNT wurden sie bis hierher nur an drei Stellen von Hand
-    /// (<c>Form_Heizkessel</c>, <c>Form_BHKWEing</c>, <c>Form_SolarKollektoren</c>). Die
-    /// übrigen Wege ließen sie liegen: Der Speicherweg aller Erzeuger ist Löschen +
+    /// <b>Warum es diese Zeilen gibt.</b> Die Gerätetabellen sind keine Bestandslisten,
+    /// sondern Ablagen für PROJEKTKOPIEN eines Katalogsatzes (Kopiersemantik,
+    /// <c>KatalogRegistry</c>). Verbaut ist ausschließlich, worauf eine Zeile in
+    /// <c>Tab_Energieanlagen</c> zeigt. ANGELEGT werden die Kopien an vielen Stellen
+    /// (<c>CopyFromStamm</c> aus dem Schreibweg und aus den Geräte-Dialogen,
+    /// <c>AnlagenEindeutigkeit.ProjektkopieAnlegen</c>, <c>ProjektDuplizierenCtrl</c>);
+    /// ENTFERNT werden sie allein hier. Der Speicherweg aller Erzeuger ist Löschen +
     /// Neuanlegen der ANLAGENZEILEN (<c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> +
-    /// <c>Add_WP_Waermeerzeuger</c>) und fasst die Gerätetabellen nicht an; das
+    /// <c>Add_WP_Waermeerzeuger</c>) und fasst die Gerätetabellen selbst nicht an; das
     /// Projekt-Löschen (<c>WErzeugerCtrl.Delete</c>) ebenso wenig, und eine Beziehung mit
     /// Löschweitergabe von <c>Tab_Projekt</c> hat von den sieben Tabellen nur
-    /// <c>Tab_Pufferspeicher</c>. Was einmal abgewählt, umgetauscht oder mit dem Projekt
-    /// gelöscht wurde, blieb also stehen und wuchs mit.
+    /// <c>Tab_Pufferspeicher</c>. Ohne diesen Lauf bliebe stehen und wüchse mit, was
+    /// abgewählt, umgetauscht oder mit dem Projekt gelöscht wird.
     /// </para>
     ///
     /// <para>
@@ -69,36 +65,22 @@ namespace WindowsFormsApplication1
     /// </para>
     ///
     /// <para>
-    /// <b>Idempotent.</b> Ein zweiter Lauf findet nichts mehr und ändert nichts - genau
-    /// das protokolliert der Migrationsschritt als Nachweis.
+    /// <b>Idempotent.</b> Ein zweiter Lauf findet nichts mehr und ändert nichts - „0
+    /// entfernt" im Bericht ist damit zugleich der Nachweis dafür.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Der Lauf gehört zum Kern.</b> Er braucht nur die Zugriffsschicht und die
+    /// Landkarte der Gewerke, keine Oberfläche und keine Windows-API; seine Aufrufer
+    /// (<see cref="WErzeugerCtrl.Delete"/> beim Projekt-Löschen,
+    /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> im Speicherweg) rufen ihn unmittelbar.
+    /// Damit räumt JEDE Schale auf - die Windows-Anwendung wie die iOS-App.
     /// </para>
     /// </summary>
     public static class GeraeteWaisen
     {
         /// <summary>Höchstens so viele IDs stehen in einer IN-Liste (Jet-Abfragelänge).</summary>
         private const int BLOCK = 200;
-
-        /// <summary>
-        /// Der Aufräumlauf ist ABGESCHALTET - und zwar unverändert, nicht neu.
-        ///
-        /// <para><see cref="Waisen"/> arbeitete nur auf einer von außen hereingereichten
-        /// ACE-Verbindung; ohne sie gab die Methode seit Arbeitspaket S4b eine LEERE Liste
-        /// mit <c>sicher = false</c> zurück, und <see cref="Aufraeumen"/> meldete
-        /// „unvollständig", statt zu löschen. Der reguläre Programmpfad reicht keine
-        /// Verbindung herein - der Lauf läuft dort also seit S4b leer. Mit dem Ausbau des
-        /// Access-Zweigs steht diese Bedingung hier, damit das Ergebnis genau dasselbe
-        /// bleibt.</para>
-        ///
-        /// <para>Die Zugriffsprimitiven darunter können den Lauf auf der Zugriffsschicht
-        /// fahren. Ob er scharf gestellt wird, ist ein Fachentscheid: Die Waisenerkennung
-        /// urteilte auf der Arbeitskopie vom 22.08.2026 bei vier von sechzehn Puffern zu
-        /// streng (siehe <see cref="Referenzen"/>), und der Migrationsschritt, der früher
-        /// nachzog, gibt es nicht mehr.</para>
-        ///
-        /// <para>Bewusst ein Feld und keine Konstante: Eine Konstante machte den Rumpf von
-        /// <see cref="Waisen"/> unerreichbar (CS0162).</para>
-        /// </summary>
-        private static readonly bool AUFRAEUMLAUF_SCHARF = false;
 
         /// <summary>Ergebnis eines Aufräumlaufs - Zahlen für Protokoll und Gegenmessung.</summary>
         public sealed class Bericht
@@ -116,7 +98,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             public bool Unvollstaendig;
 
-            /// <summary>Klartextzeilen für das Migrationsprotokoll.</summary>
+            /// <summary>Klartextzeilen für Protokoll und Meldung.</summary>
             public readonly List<string> Notizen = new List<string>();
 
             public bool EtwasGetan { get { return Geraete > 0 || Kindzeilen > 0; } }
@@ -133,8 +115,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="idProjekt">
         /// Projekt-ID. Sie muss NICHT in <c>Tab_Projekt</c> stehen: Nach einem
-        /// Projekt-Löschen bleiben genau diese Zeilen ohne Projekt zurück, und der
-        /// Migrationsschritt räumt sie über dieselbe Methode.
+        /// Projekt-Löschen bleiben genau diese Zeilen ohne Projekt zurück, und
+        /// <see cref="ProjekteMitGeraetezeilen"/> nennt auch sie.
         /// </param>
         public static Bericht Aufraeumen(int idProjekt)
         {
@@ -143,8 +125,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // ARBEITSPAKET S4b: keine eigene Verbindung - die Zugriffsprimitiven
-                // holen sich je Abfrage eine aus dem Pool.
+                // Keine eigene Verbindung - die Zugriffsprimitiven holen sich je
+                // Abfrage eine aus dem Pool.
                 AufraeumenIntern(b, idProjekt);
             }
             catch (Exception ex)
@@ -170,7 +152,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                // ARBEITSPAKET S4b: siehe Aufraeumen - alles ueber die Zugriffsschicht.
+                // Siehe Aufraeumen - alles ueber die Zugriffsschicht.
                 ProjekteSammeln(ids);
             }
             catch (Exception ex)
@@ -195,7 +177,7 @@ namespace WindowsFormsApplication1
         {
             sicher = false;
             var leer = new List<int>();
-            if (plan == null || idProjekt <= 0 || !AUFRAEUMLAUF_SCHARF) return leer;
+            if (plan == null || idProjekt <= 0) return leer;
 
             List<int> vorhanden = Spalte(
                 "SELECT [ID] FROM [" + plan.Geraetetabelle + "] WHERE [ID_Projekt] = ?",
@@ -281,8 +263,14 @@ namespace WindowsFormsApplication1
         /// <para>
         /// OHNE Typfilter auf <c>ID_Type</c>: Eine Anlagenzeile, die den Verweis führt,
         /// schützt die Gerätezeile - auch wenn ihr Typ nicht dazu passt. Beim Löschen ist
-        /// die vorsichtigere Lesart die richtige (auf der Arbeitskopie vom 22.08.2026
-        /// gibt es keine einzige typfremde Belegung, die Wahl kostet dort also nichts).
+        /// die vorsichtigere Lesart die richtige.
+        /// </para>
+        ///
+        /// <para>
+        /// PHOTOVOLTAIK: DAS MODUL JE STRANG ZÄHLT MIT. <c>Z_AnlageStrang.ID_PV</c> trägt
+        /// den abweichenden Modultyp EINES Strangs. Führt die Anlagenzeile ein anderes
+        /// Modul, ist die Strangzeile der EINZIGE Verweis auf diese Projektkopie - sie
+        /// zählt deshalb wie ein Verweis aus <c>Tab_Energieanlagen</c>.
         /// </para>
         ///
         /// <para>
@@ -295,16 +283,14 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
-        /// WAS DIESE MENGE NICHT LEISTET (FR-1, gemessen 27.08.2026). Ein Projekt-Puffer,
-        /// dessen EINZIGER Verweis das <c>ID_PUFFER</c> seiner eigenen Anlagenzeile
-        /// (<c>ID_Type = 12</c>) ist, wird in dem Augenblick zur Waise, in dem der
-        /// Del+Add-Speicherweg diese Zeile löscht und nicht zurückschreibt — und die
-        /// Verbundzeilen, die ihn sonst noch schützten, nimmt die Löschweitergabe
-        /// <c>FK_Verbund_Anlage</c> im selben DELETE mit. Auf der Arbeitskopie traf das
-        /// vier von sechzehn Puffern der vier Referenzprojekte. Die Lücke ist deshalb
-        /// NICHT hier zu schließen (der Aufräumlauf urteilt richtig über das, was er
-        /// sieht), sondern an der Quelle: <c>WizardCtrl</c> rettet die
-        /// Puffer-Anlagenzeilen über den Del+Add-Weg.
+        /// WAS DIESE MENGE NICHT LEISTET. Ein Projekt-Puffer, dessen EINZIGER Verweis
+        /// das <c>ID_PUFFER</c> seiner eigenen Anlagenzeile (<c>ID_Type = 12</c>) ist,
+        /// wird in dem Augenblick zur Waise, in dem der Del+Add-Speicherweg diese Zeile
+        /// löscht und nicht zurückschreibt — und die Verbundzeilen, die ihn sonst noch
+        /// schützten, nimmt die Löschweitergabe <c>FK_Verbund_Anlage</c> im selben DELETE
+        /// mit. Die Lücke ist deshalb NICHT hier zu schließen (der Aufräumlauf urteilt
+        /// richtig über das, was er sieht), sondern an der Quelle: <c>WizardCtrl</c>
+        /// rettet die Puffer-Anlagenzeilen über den Del+Add-Weg.
         /// </para>
         /// </summary>
         private static HashSet<int> Referenzen(KomponentenUebernahmeCtrl.GewerkPlan plan, int idProjekt)
@@ -317,6 +303,27 @@ namespace WindowsFormsApplication1
                 Par(idProjekt));
             if (direkt == null) return null;
             foreach (int id in direkt) menge.Add(id);
+
+            // PHOTOVOLTAIK: DAS MODUL JE STRANG IST EIN VERWEIS. Z_AnlageStrang.ID_PV
+            // traegt den abweichenden Modultyp EINES Strangs (Migrationsschritt 66).
+            // Fuehrt die Anlagenzeile ein anderes Modul, ist die Strangzeile der
+            // EINZIGE Verweis auf diese Projektkopie - ohne die Abfrage hier hielte der
+            // Aufraeumlauf sie fuer verwaist und loeschte sie beim naechsten Speichern.
+            //
+            // Ohne Projektfilter wie bei den Puffer-Zuordnungen darunter: Die Tabelle
+            // fuehrt kein ID_Projekt, und ein Verweis von ausserhalb waere erst recht
+            // ein Grund, die Zeile stehen zu lassen. Fehlt die Tabelle auf einer
+            // Datenbank vor Schritt 66, gilt sie als leer.
+            if (string.Equals(plan.Geraetetabelle, SchemaKatalog.TAB_PV,
+                              StringComparison.OrdinalIgnoreCase))
+            {
+                List<int> straenge = SpalteOhneTabelle(SchemaKatalog.Z_ANLAGESTRANG,
+                    "SELECT [ID_PV] FROM [" + SchemaKatalog.Z_ANLAGESTRANG + "] " +
+                    "WHERE [ID_PV] IS NOT NULL");
+                if (straenge == null) return null;
+                foreach (int id in straenge) menge.Add(id);
+                return menge;
+            }
 
             if (!string.Equals(plan.Geraetetabelle, SchemaKatalog.TAB_PUFFERSPEICHER,
                                StringComparison.OrdinalIgnoreCase))
@@ -348,7 +355,7 @@ namespace WindowsFormsApplication1
             if (altZuordnung == null) return null;
             foreach (int id in altZuordnung) menge.Add(id);
 
-            // PAKET S1 (Migrationsschritt 50): die SENKENLISTE. Sie ist die WICHTIGSTE
+            // Die SENKENLISTE (Migrationsschritt 50). Sie ist die WICHTIGSTE
             // der drei Zuordnungen, sobald sie gefuellt ist: Ab der dritten Senke einer
             // Anlage steht der Verweis auf den Puffer NUR NOCH hier - die beiden
             // WS_*-Slots oben fassen ihn gar nicht mehr. Ohne diese Abfrage haelte der
@@ -391,8 +398,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Erste Spalte einer Abfrage als Ganzzahlliste; <c>null</c> bei jedem Fehler.
-        ///
-        /// ARBEITSPAKET S4b: laeuft ueber die Zugriffsschicht.
+        /// Laeuft ueber die Zugriffsschicht.
         /// </summary>
         private static List<int> Spalte(string sql, params DbParam[] ps)
         {
@@ -417,13 +423,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wie <see cref="Spalte"/>, aber eine FEHLENDE TABELLE gilt als leer. Nur für die
-        /// beiden Puffer-Zuordnungstabellen: Auf einer Datenbank vor Migrationsschritt 14
-        /// gibt es <c>Z_AnlagePufferVerbund</c> noch nicht, und "die Tabelle ist nicht da"
-        /// heißt zweifelsfrei "sie enthält keinen Verweis". Jeder ANDERE Fehler bleibt ein
+        /// Zuordnungstabellen, die erst ein Migrationsschritt anlegt
+        /// (<c>Z_AnlagePufferVerbund</c> Schritt 14, <c>Z_AnlageSenke</c> Schritt 50,
+        /// <c>Z_AnlageStrang</c> Schritt 66): "die Tabelle ist nicht da" heißt dort
+        /// zweifelsfrei "sie enthält keinen Verweis". Jeder ANDERE Fehler bleibt ein
         /// Fehler und führt weiterhin zu <c>null</c>.
         ///
-        /// <para>ARBEITSPAKET S4b: Eine VORABPROBE über die Schema-Auskunft entscheidet,
-        /// ob es die Tabelle gibt - keine Deutung einer Fehlermeldung mehr.</para>
+        /// <para>Eine VORABPROBE über die Schema-Auskunft entscheidet, ob es die Tabelle
+        /// gibt - keine Deutung einer Fehlermeldung.</para>
         /// </summary>
         private static List<int> SpalteOhneTabelle(string tabelle, string sql)
         {
@@ -448,9 +455,8 @@ namespace WindowsFormsApplication1
                              IdListe(ids, von, BLOCK) + ")";
                 try
                 {
-                    // ARBEITSPAKET S4b: Zugriffsschicht, je Block eine Verbindung aus dem
-                    // Pool. KEINE Transaktion darum: Auch bisher stand hier keine, und der
-                    // Bericht zaehlt blockweise weiter.
+                    // Zugriffsschicht, je Block eine Verbindung aus dem Pool. KEINE
+                    // Transaktion darum - der Bericht zaehlt blockweise.
                     using (Leihverbindung leihe = Vorgangsklammer.Leihe())
                     using (SqliteCommand cmd = DataRepository.ErzeugeKommando(leihe.Verbindung, leihe.Transaktion, sql, null))
                         summe += cmd.ExecuteNonQuery();

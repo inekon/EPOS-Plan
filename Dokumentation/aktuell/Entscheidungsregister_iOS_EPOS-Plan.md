@@ -262,11 +262,12 @@ der Etappe (CA2255, 1 ×). Damit ein stillgelegter Haken auffiele, rechnet der C
 iU4-7 **1030, 1007 und 1017**; die beiden letzteren führen aktive Stromspeicher-Varianten. Alle
 drei sind hier byte-gleich zur Basis `2026-08-30_B3-Kaskade`.
 
-Umgekehrt läuft der **Geräte-Aufräumlauf** nach dem Löschen eines Projekts jetzt über den Haken
-`WErzeugerCtrl.GeraetewaisenAufraeumen` (`GeraeteWaisen` bleibt in der Anwendung). Vorbelegung
-`null` = kein Aufräumlauf; das ist zulässig, weil der Lauf ohnehin NACH dem erfolgreichen DELETE
-läuft, sein Ergebnis nicht in den Rückgabewert eingeht und der Migrationsschritt nachholt, was er
-liegen lässt.
+Der **Geräte-Aufräumlauf** `GeraeteWaisen` liegt im Kern (`EPOS.Kern/Allgemein/Update/`); er
+braucht nur die Zugriffsschicht und keine Oberfläche. `WErzeugerCtrl.Delete` und
+`WizardCtrl.Add_WP_Waermeerzeuger` rufen ihn unmittelbar — damit räumt jede Schale auf. Sein
+Ergebnis geht nicht in den Rückgabewert ein, das Löschen scheitert also nie am Aufräumen; einen
+nachholenden Migrationsschritt gibt es nicht, deshalb **meldet** `Delete` einen unvollständigen
+Lauf mit Projekt-Id und Grund. Nachweis: `EPOS.Kern.Tests/GeraeteWaisenTests`.
 
 **Die 1011/1021-Lücke.** Die CI deckt jetzt drei der 13 Referenzprojekte ab. `1011` und `1021`
 bleiben ungeprüft — sie stehen in `Referenzlaeufe/2026-08-30_B3-Kaskade/` bereit, sind hier aber
@@ -387,11 +388,11 @@ statischen Klasse `Dienste` gehalten. Das war eine Wahl gegen den ersten Reflex 
 
 1. **Es ist das Hausmuster.** `grep -rn "ServiceCollection\|BuildServiceProvider\|AddSingleton\|IServiceProvider"`
    über das ganze Repo: **0 Treffer**. `Microsoft.Extensions.Http`/`.Logging` stehen nur als
-   Mindestversionsforderung von `Mscc.GenerativeAI` in der `.csproj`. Dagegen tragen **acht**
+   Mindestversionsforderung von `Mscc.GenerativeAI` in der `.csproj`. Dagegen tragen **sieben**
    austauschbare Haken den Bestand: `Meldung.Zeigen/Hinweis/Warnung/Warten`,
    `KiTexte.Lieferant`, `KiEinwilligung.Nachfragen`, `KiAusfuehrer.Uhr/Schreibrecht/ModalerDialog`,
    `AnlagenEindeutigkeit.Frage/Hinweis`, `SimulationControl.Speicherlauf`,
-   `SimulationRunner.Speicherergebnismodell`, `WErzeugerCtrl.GeraetewaisenAufraeumen`.
+   `SimulationRunner.Speicherergebnismodell`.
 2. **Ein Container verlangt Konstruktoren.** Von den 22 Klassen, die `Program.*` riefen, sind
    etliche **rein statisch**: `AnlagenEindeutigkeit`, `BerichtTexte`, `DokuUebersetzung`,
    `WikiWissen`, `SemantikIndex`, `SemantikModell`, `KiChatService`, `KiEinwilligung`,

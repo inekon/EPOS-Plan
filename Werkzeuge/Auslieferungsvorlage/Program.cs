@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using WindowsFormsApplication1;
 
 namespace Auslieferungsvorlage
@@ -55,6 +56,23 @@ namespace Auslieferungsvorlage
 
         private static int Main(string[] args)
         {
+            // DIE AUSGABE IST UTF-8, AUF JEDER PLATTFORM.
+            //
+            // Der Prueflauf und die Schrittueberschriften fuehren Zeichen jenseits von
+            // ASCII - den Geviertstrich in "Schritt 2 — Projektdaten entfernen", Umlaute,
+            // das Anfuehrungspaar. Ohne diese Zeile schreibt Windows in der OEM-Codepage
+            // der Konsole (850/437); der Geviertstrich faellt dort auf einen Bindestrich
+            // zurueck, und wer die Ausgabe umleitet und als UTF-8 liest, bekommt Ersatz-
+            // zeichen. Auf ubuntu ist ohnehin alles UTF-8 - dort aendert die Zeile nichts.
+            //
+            // OHNE Vorspann (new UTF8Encoding(false)): Encoding.UTF8 schriebe eine BOM an
+            // den Anfang des Datenstroms, die jeder Leser als Textzeichen mitbekaeme.
+            // Console.InputEncoding bleibt unberuehrt - das Werkzeug liest nichts von der
+            // Konsole. Gekapselt wie in Referenzlauf/Program.cs und
+            // EPOS.Referenzlauf/Program.cs: Eine Umgebung ohne setzbare Konsolen-Codepage
+            // soll das Werkzeug nicht zu Fall bringen.
+            try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
+
             if (args.Length == 0 || args[0] == "--hilfe" || args[0] == "-h" || args[0] == "--help")
             {
                 Argumente.HilfeAusgeben();

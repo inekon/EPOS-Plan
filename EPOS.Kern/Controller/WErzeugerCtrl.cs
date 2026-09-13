@@ -4,33 +4,11 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
-    // Die Klasse ist seit iU3 partial: Der PROJEKT-LOESCHWEG (Delete) steht in
-    // WErzeugerCtrl.Aufraeumen.cs. Er zog ueber GeraeteWaisen die Oberflaeche mit;
-    // seit iU4-2 laeuft der Aufraeumlauf ueber den Haken GeraetewaisenAufraeumen,
-    // beide Haelften ziehen damit in den Kern.
+    // Die Klasse ist partial: Der PROJEKT-LOESCHWEG (Delete) steht in
+    // WErzeugerCtrl.Aufraeumen.cs, weil er als einziger Teil den Aufraeumlauf
+    // GeraeteWaisen ruft. Beide Haelften liegen im Kern.
     partial class WErzeugerCtrl : WErzeugerModel
     {
-        /// <summary>
-        /// Der HAKEN auf den Geraete-Aufraeumlauf (Umsetzungskonzept iU4, Schritt 2).
-        ///
-        /// <para><b>Warum ein Haken.</b> <see cref="Delete"/> - der Projekt-Loeschweg -
-        /// raeumt nach dem DELETE die verwaisten Geraetezeilen weg. Der Aufraeumlauf
-        /// <c>GeraeteWaisen</c> zieht dafuer die Oberflaeche mit und bleibt deshalb in
-        /// der Anwendung; die Loeschmethode selbst gehoert aber zum Controller und zieht
-        /// mit ihm in den Kern.</para>
-        ///
-        /// <para><b>Vorbelegung <c>null</c> = kein Aufraeumlauf - und das ist zulaessig.</b>
-        /// Der Aufraeumlauf darf das Loeschen ohnehin nicht scheitern lassen: Er laeuft
-        /// NACH dem erfolgreichen DELETE, sein Ergebnis geht nicht in den Rueckgabewert
-        /// ein, und was er nicht wegraeumt, holt der Migrationsschritt beim naechsten
-        /// Programmstart nach (siehe die Begruendung an <see cref="Delete"/>). Ohne
-        /// Oberflaeche - Referenzlauf - wird ohnehin kein Projekt geloescht.</para>
-        ///
-        /// <para><c>Program.Main</c> belegt ihn direkt nach den <c>Meldung</c>-Haken mit
-        /// <c>GeraeteWaisen.Aufraeumen</c>.</para>
-        /// </summary>
-        public static Action<int> GeraetewaisenAufraeumen = null;
-
         private List<WErzeugerModel> _internalList = new List<WErzeugerModel>();
         public int rows => _internalList.Count;
         public new List<WErzeugerModel> items => _internalList;

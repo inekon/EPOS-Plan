@@ -31,10 +31,9 @@ namespace WindowsFormsApplication1
     /// ungeschriebenen Stand des Laufs stuenden. Der SQL-Text und die Reihenfolge
     /// der Anweisungen sind dabei unveraendert geblieben.</para>
     ///
-    /// <para><b>Der Aufraeumlauf laeuft ueber den Haken.</b>
-    /// <c>GeraeteWaisen.Aufraeumen</c> zieht die Oberflaeche mit und bleibt in der
-    /// Anwendung; <see cref="WErzeugerCtrl.GeraetewaisenAufraeumen"/> ist die
-    /// Bruecke, die iU4-2 fuer denselben Zweck angelegt hat.</para>
+    /// <para><b>Der Aufraeumlauf gehoert zum Kern.</b>
+    /// <see cref="GeraeteWaisen.Aufraeumen"/> braucht keine Oberflaeche; der
+    /// Speicherweg ruft ihn unmittelbar, auf jeder Plattform.</para>
     /// </summary>
     class WizardCtrl
     {
@@ -1903,13 +1902,14 @@ namespace WindowsFormsApplication1
                 // (Begruendung im Block ueber SenkenSichern).
                 SenkenWiederherstellen(projektID);
 
-                // ST1: Die Stranglisten auf die NEUEN Anlagenzeilen zurueck. Die
-                // Reihenfolge ist hier gleichgueltig - Z_AnlageStrang traegt keinen
-                // Verweis, den GeraeteWaisen als Beleg zaehlt (Tab_Wechselrichter ist
-                // keine der sieben Geraetetabellen des Aufraeumlaufs). Sie steht
-                // trotzdem VOR dem Aufraeumlauf, damit alle vier Rettungen beieinander
-                // stehen und niemand spaeter raten muss, warum eine davon weiter unten
-                // steht.
+                // ST1: Die Stranglisten auf die NEUEN Anlagenzeilen zurueck - VOR dem
+                // Aufraeumlauf, und zwar zwingend: Z_AnlageStrang.ID_PV zaehlt fuer
+                // GeraeteWaisen als Verweis auf die Modul-Projektkopie, und bei einem
+                // vom Anlagenmodul abweichenden Strangmodul ist es der EINZIGE. Stuende
+                // die Rettung dahinter, loeschte der Aufraeumlauf genau die Module,
+                // deren Strangzeile eine Zeile spaeter zurueckkaeme. (ID_Wechselrichter
+                // ist dabei gleichgueltig - Tab_Wechselrichter ist keine der sieben
+                // Geraetetabellen des Aufraeumlaufs.)
                 StraengeWiederherstellen(projektID);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
@@ -1927,12 +1927,12 @@ namespace WindowsFormsApplication1
                 try { KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen(projektID); }
                 catch { }
 
-                // iU9-W16a.4: ueber den HAKEN, weil GeraeteWaisen die Oberflaeche
-                // mitzieht und in der Anwendung bleibt (dieselbe Bauart wie
-                // WErzeugerCtrl.Delete seit iU4-2). Program.Main belegt ihn;
-                // nicht belegt = kein Aufraeumlauf.
-                var aufraeumen = WErzeugerCtrl.GeraetewaisenAufraeumen;
-                if (aufraeumen != null) aufraeumen(projektID);
+                // Der Aufraeumlauf unmittelbar: GeraeteWaisen liegt im Kern und
+                // braucht keine Oberflaeche (dieselbe Bauart wie in
+                // WErzeugerCtrl.Delete). Sein Bericht geht wie dort nicht in den
+                // Rueckgabewert ein - ein gelungenes Speichern scheitert nicht am
+                // Aufraeumen.
+                GeraeteWaisen.Aufraeumen(projektID);
 
                 Console.WriteLine("Daten erfolgreich aktualisiert.");
                 return true;

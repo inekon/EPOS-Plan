@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
@@ -65,10 +65,12 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Kein dritter Fremdschlüssel auf <c>ID_PV</c>.</b> Die Spalte steht
     /// bereit (Konzept 3.4, Entwurfsentscheidung 3: ein abweichender Modultyp je
-    /// Strang), wird in Stufe S2 aber weder in der Oberfläche gezeigt noch geschrieben.
-    /// Eine erzwungene Beziehung auf <c>Tab_PV</c> wäre eine stille Verhaltensänderung
-    /// am Löschweg der Modul-Projektkopien (<c>GeraeteWaisen.Aufraeumen</c> räumt
-    /// unreferenzierte Gerätezeilen ab und kennt diese Tabelle nicht) — dieselbe
+    /// Strang): <c>ID_PV</c> wird von <c>AnlageStrangCtrl</c> gelesen und geschrieben,
+    /// und das Modul je Strang darf vom Modul der Anlagenzeile abweichen.
+    /// Eine erzwungene Beziehung auf <c>Tab_PV</c> braucht es dafür nicht: Der
+    /// Aufräumlauf zählt <c>ID_PV</c> dieser Tabelle als Verweis
+    /// (<c>GeraeteWaisen.Referenzen</c>) und lässt die Modul-Projektkopie deshalb auch
+    /// dann stehen, wenn die Anlagenzeile ein anderes Modul führt — dieselbe
     /// Zurückhaltung, mit der Schritt 65 auf den Fremdschlüssel über
     /// <c>ID_Projekt</c> verzichtet hat.</para>
     ///

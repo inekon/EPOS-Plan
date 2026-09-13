@@ -146,14 +146,6 @@ namespace WindowsFormsApplication1
             projektkontext = new ProjektKontextCtrl();
             Dienste.Projekt = projektkontext;
 
-            // Derselbe Gedanke fuer den Geraete-Aufraeumlauf (iU4-2): WErzeugerCtrl.Delete
-            // raeumt nach dem Loeschen eines Projekts die verwaisten Geraetezeilen weg,
-            // GeraeteWaisen zieht dafuer aber die Oberflaeche mit. Unter Windows soll sich
-            // nichts aendern - deshalb hier, vor dem ersten moeglichen Loeschvorgang.
-            // Lambda, nicht Methodengruppe: Aufraeumen liefert einen Bericht zurueck,
-            // den der Loeschweg wie bisher verwirft.
-            WErzeugerCtrl.GeraetewaisenAufraeumen = id => GeraeteWaisen.Aufraeumen(id);
-
             // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
             //
             // Bis hierher stand hier HighDpiMode.DpiUnaware, passend zum

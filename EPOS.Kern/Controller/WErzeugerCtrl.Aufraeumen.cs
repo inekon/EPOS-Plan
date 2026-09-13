@@ -4,19 +4,17 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Der PROJEKT-LOESCHWEG von <see cref="WErzeugerCtrl"/> - abgetrennt, weil er als
-    /// einziger Teil der Klasse den Aufraeumlauf <c>GeraeteWaisen</c> braucht und der
-    /// wiederum die Oberflaeche (Umsetzungskonzept iU3, Kante K6).
+    /// einziger Teil der Klasse den Aufraeumlauf <see cref="GeraeteWaisen"/> ruft.
     ///
-    /// <para><b>Seit iU4-2 laeuft der Aufraeumlauf ueber den Haken
-    /// <see cref="WErzeugerCtrl.GeraetewaisenAufraeumen"/>.</b> Damit haengt diese Datei
-    /// nicht mehr an der Oberflaeche und zieht mit dem uebrigen Controller in den
-    /// Kern.</para>
+    /// <para>Beide liegen im Kern, der Aufruf geht unmittelbar. Damit raeumt der
+    /// Loeschweg auf JEDER Plattform auf - in der Windows-Anwendung wie in der
+    /// iOS-App.</para>
     /// </summary>
     partial class WErzeugerCtrl
     {
         /// <summary>
-        /// Entfernt ALLE Anlagenzeilen eines Projekts - und seit dem 22.08.2026 auch die
-        /// Gerätezeilen, auf die danach nichts mehr zeigt.
+        /// Entfernt ALLE Anlagenzeilen eines Projekts - und die Gerätezeilen, auf die
+        /// danach nichts mehr zeigt.
         ///
         /// <para>
         /// DIESE METHODE IST DER PROJEKT-LÖSCHWEG, nicht der Speicherweg. Ihre beiden
@@ -30,17 +28,18 @@ namespace WindowsFormsApplication1
         /// <para>
         /// WARUM DAS NÖTIG IST. Von den sieben Gerätetabellen hängt nur
         /// <c>Tab_Pufferspeicher</c> mit Löschweitergabe an <c>Tab_Projekt</c>. Die
-        /// übrigen sechs behielten ihre Zeilen: Auf der Arbeitskopie standen am
-        /// 22.08.2026 Gerätezeilen zu sieben Projekt-IDs, die es in <c>Tab_Projekt</c>
-        /// längst nicht mehr gibt. Sie waren über keine Oberfläche mehr erreichbar und
-        /// wuchsen mit jedem gelöschten Projekt weiter.
+        /// übrigen sechs behalten ihre Zeilen: Ohne den Aufräumlauf stünden nach jedem
+        /// gelöschten Projekt Gerätezeilen zu einer Projekt-ID da, die es in
+        /// <c>Tab_Projekt</c> nicht mehr gibt - über keine Oberfläche erreichbar und mit
+        /// jedem weiteren Löschen wachsend.
         /// </para>
         ///
         /// <para>
         /// DER AUFRÄUMLAUF DARF DAS LÖSCHEN NICHT SCHEITERN LASSEN. Er läuft NACH dem
-        /// erfolgreichen DELETE und sein Ergebnis geht nicht in den Rückgabewert ein:
-        /// Was er nicht wegräumt, ist Altbestand wie bisher - der Migrationsschritt holt
-        /// ihn beim nächsten Programmstart nach.
+        /// erfolgreichen DELETE und sein Ergebnis geht nicht in den Rückgabewert ein.
+        /// Verschluckt wird es deshalb trotzdem nicht: Einen nachholenden Lauf gibt es
+        /// nicht, also MELDET diese Methode jeden unvollständigen Aufräumlauf mit
+        /// Projekt-Id und Grund - sonst bliebe der Rückstand unbemerkt stehen.
         /// </para>
         /// </summary>
         public bool Delete()
@@ -53,11 +52,14 @@ namespace WindowsFormsApplication1
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
 
-                // Ueber den Haken, weil GeraeteWaisen die Oberflaeche mitzieht und in der
-                // Anwendung bleibt (iU4-2). Nicht belegt = kein Aufraeumlauf; das ist
-                // nach der Begruendung oben zulaessig.
-                var aufraeumen = GeraetewaisenAufraeumen;
-                if (aufraeumen != null) aufraeumen(ID_Projekt);
+                // Unmittelbar: GeraeteWaisen liegt im Kern und braucht keine Oberflaeche.
+                // Der Bericht geht NICHT in den Rueckgabewert ein (siehe oben), ein
+                // unvollstaendiger Lauf wird aber gemeldet statt verschluckt.
+                GeraeteWaisen.Bericht bericht = GeraeteWaisen.Aufraeumen(ID_Projekt);
+                if (bericht != null && bericht.Unvollstaendig)
+                    Console.WriteLine("WARNUNG: Projekt " + ID_Projekt + ": Der Aufraeumlauf der " +
+                                      "verwaisten Geraetezeilen blieb unvollstaendig - " +
+                                      string.Join(" | ", bericht.Notizen));
                 return true;
             }
             catch (Exception ex)

@@ -340,10 +340,12 @@ repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`A
 73 `Tab_SpeicherAuslegung` für projekt- und anlagenbezogene Kostenprofile, Suchbereiche
 und importierte Zeitreihen samt Zuordnung; **74 dieselbe Tabelle als STRICT-Tabelle neu
 aufgebaut** — sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt
-kein `ALTER TABLE … STRICT`), **70 803 456 Byte (67,5 MB)**, **119 Tabellen, davon 118 STRICT**
-(die 119. ist die Systemtabelle `sqlite_sequence`), **25 Projekte**. Die Tabelle
-`Tab_SpeicherAuslegung` führt seit dem Prüfprojekt 1046 (Basis R7) genau eine Zeile, den
-reservierten Flottenstand `@Projektflotte`; Schritt 74 hat sie byte-gleich übernommen.
+kein `ALTER TABLE … STRICT`), **70 750 208 Byte (67,5 MB)**, **119 Tabellen, davon 118 STRICT**
+(die 119. ist die Systemtabelle `sqlite_sequence`), **25 Projekte**. Zu keinem Projekt
+außerhalb von `Tab_Projekt` stehen noch Gerätezeilen: `GeraeteWaisen.Aufraeumen` findet in
+den sieben Gerätetabellen keine verwaiste Zeile mehr, `PRAGMA foreign_key_check` bleibt leer.
+Die Tabelle `Tab_SpeicherAuslegung` führt seit dem Prüfprojekt 1046 (Basis R7) genau eine
+Zeile, den reservierten Flottenstand `@Projektflotte`; Schritt 74 hat sie byte-gleich übernommen.
 Nachzusehen ist der Stand jederzeit:
 
 ```
