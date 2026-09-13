@@ -13217,6 +13217,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} € fest + {1} kWh × {2} €/kWh + {3} kW × {4} €/kW = {5} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung = größere der beiden Leistungen (Laden, Entladen). ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Einheiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_SUMME {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_SUMME_FORMEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_SUMME_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung anhand der angegebenen Jahreskonten. ähnelt.
         /// </summary>
         public static string FLOTTE_PROJ_JAHRESKONTEN {

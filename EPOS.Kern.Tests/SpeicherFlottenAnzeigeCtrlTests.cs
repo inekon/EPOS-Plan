@@ -351,6 +351,122 @@ namespace EPOS.Kern.Tests
             => Assert.Empty(SpeicherFlottenAnzeigeCtrl.Vergleichszeilen(new SpeicherFlottenErgebnis()));
 
         // =================================================================
+        //  Die Herleitung der Investition (Auftrag #249)
+        //
+        //  Der Anwender fragte am 12.09.2026, warum „150 €/kWh mal 1 395 kWh"
+        //  als 284 250 € im Ergebnis stehen. Die Antwort ist der feste und der
+        //  leistungsbezogene Anteil - und die Ansicht zeigt sie seither.
+        // =================================================================
+
+        /// <summary>Eine Zeile je Einheit, in der Reihenfolge der Konfiguration.</summary>
+        [Fact]
+        public void Die_Herleitung_nennt_jede_Einheit_mit_ihren_drei_Anteilen()
+        {
+            SpeicherFlottenErgebnis e = Ergebnis();
+            e.Konfiguration.Einheiten[0].InvestitionEuro = 1000;
+            e.Konfiguration.Einheiten[0].InvestitionEuroProKWh = 150;
+            e.Konfiguration.Einheiten[0].InvestitionEuroProKw = 60;
+            e.Konfiguration.Einheiten[1].InvestitionEuro = 500;
+            e.Konfiguration.Einheiten[1].InvestitionEuroProKWh = 200;
+            e.Konfiguration.Einheiten[1].InvestitionEuroProKw = 0;
+
+            var zeilen = SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(e);
+
+            Assert.Equal(e.Konfiguration.Einheiten.Count, zeilen.Count);
+            Assert.Equal("Speicher A", zeilen[0].Name);
+            Assert.Equal("Speicher B", zeilen[1].Name);
+
+            Assert.Equal(1000.0, zeilen[0].FestEuro);
+            Assert.Equal(24.0, zeilen[0].KapazitaetKWh);
+            Assert.Equal(150.0, zeilen[0].SatzEuroProKWh);
+            Assert.Equal(60.0, zeilen[0].SatzEuroProKw);
+
+            // 1 000 + 24 * 150 + 12 * 60 = 5 320; 500 + 16 * 200 + 7 * 0 = 3 700
+            Assert.Equal(5320.0, zeilen[0].SummeEuro, 9);
+            Assert.Equal(3700.0, zeilen[1].SummeEuro, 9);
+        }
+
+        /// <summary>
+        /// Der leistungsbezogene Anteil hängt an der GRÖSSEREN der beiden
+        /// Richtungsleistungen - belegt mit Lade ≠ Entlade in beide Richtungen.
+        /// </summary>
+        [Fact]
+        public void Die_Leistung_der_Herleitung_ist_die_groessere_der_beiden()
+        {
+            SpeicherFlottenErgebnis e = Ergebnis();
+            e.Konfiguration.Einheiten[0].LadeleistungKw = 10;    // Entladen 12 ist größer
+            e.Konfiguration.Einheiten[0].EntladeleistungKw = 12;
+            e.Konfiguration.Einheiten[1].LadeleistungKw = 9;     // Laden ist größer
+            e.Konfiguration.Einheiten[1].EntladeleistungKw = 7;
+
+            var zeilen = SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(e);
+
+            Assert.Equal(12.0, zeilen[0].LeistungKw);
+            Assert.Equal(9.0, zeilen[1].LeistungKw);
+        }
+
+        /// <summary>
+        /// Die Summe der Zeilen ist der CAPEX der gerechneten Studie - nicht von Hand
+        /// gebildet, sondern von <c>FlottenWirtschaftlichkeit.Bewerte</c>.
+        /// </summary>
+        [Fact]
+        public void Die_Summe_der_Zeilen_ist_die_Investition_der_gerechneten_Studie()
+        {
+            SpeicherFlottenErgebnis e = Ergebnis();
+            e.Konfiguration.Einheiten[0].InvestitionEuro = 1000;
+            e.Konfiguration.Einheiten[0].InvestitionEuroProKWh = 150;
+            e.Konfiguration.Einheiten[0].InvestitionEuroProKw = 60;
+            e.Konfiguration.Einheiten[1].InvestitionEuro = 500;
+            e.Konfiguration.Einheiten[1].InvestitionEuroProKWh = 200;
+            e.Konfiguration.Einheiten[1].InvestitionEuroProKw = 35;
+
+            FlottenWirtschaftlichkeitErgebnis gerechnet = FlottenWirtschaftlichkeit.Bewerte(
+                new FlottenWirtschaftlichkeitEingang
+                {
+                    Einheiten = e.Konfiguration.Einheiten,
+                    Jahreskonten = e.Studie.Wirtschaftlichkeit.Jahreskonten,
+                    Kalkulationszins = 0.03
+                });
+
+            double summe = SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(e).Sum(z => z.SummeEuro);
+
+            Assert.Equal(gerechnet.InvestitionEuro, summe, 9);
+        }
+
+        /// <summary>Die Zahl aus der Anwenderfrage vom 12.09.2026.</summary>
+        [Fact]
+        public void Die_Zahl_des_Anwenders_zerfaellt_in_fest_Kapazitaet_und_Leistung()
+        {
+            SpeicherFlottenErgebnis e = Ergebnis();
+            e.Konfiguration.Einheiten.RemoveAt(1);
+            FlottenEinheit einheit = e.Konfiguration.Einheiten[0];
+            einheit.InvestitionEuro = 75000;
+            einheit.KapazitaetKWh = 1395;
+            einheit.InvestitionEuroProKWh = 150;
+            einheit.LadeleistungKw = 500;
+            einheit.EntladeleistungKw = 400;
+            einheit.InvestitionEuroProKw = 0;
+
+            var zeilen = SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(e);
+
+            FlottenInvestitionszeile zeile = Assert.Single(zeilen);
+            Assert.Equal(75000.0, zeile.FestEuro);
+            Assert.Equal(1395.0, zeile.KapazitaetKWh);
+            Assert.Equal(150.0, zeile.SatzEuroProKWh);
+            Assert.Equal(500.0, zeile.LeistungKw);
+            Assert.Equal(0.0, zeile.SatzEuroProKw);
+            Assert.Equal(284250.0, zeile.SummeEuro, 9);
+        }
+
+        /// <summary>Ohne Einheiten gibt es nichts herzuleiten.</summary>
+        [Fact]
+        public void Ohne_Einheiten_gibt_es_keine_Herleitung()
+        {
+            Assert.Empty(SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(new SpeicherFlottenErgebnis()));
+            Assert.Empty(SpeicherFlottenAnzeigeCtrl.Investitionsherleitung(null));
+        }
+
+        // =================================================================
         // Prüfstand
         // =================================================================
 

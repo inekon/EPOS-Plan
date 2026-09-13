@@ -327,6 +327,14 @@ Nach der Hausregel `Doku_Simulationsergebnis_Darstellung.md` § 1–4 und § 6:
    (grün = besser), Einheiten im Spaltenkopf, Nullzeilen (Einspeisung 0/0/0) einklappbar.
 4. **Jahresprojektion als Bild** (Balken Netto-Cashflow je Jahr, Linie kumuliert, Ersatzjahre
    markiert), die Tabelle darunter aufklappbar; CSV-Export wie bisher.
+   **Seit dem 13.09.2026 (#249) steht über dem Bild die HERLEITUNG der Investition** — je
+   Einheit eine `Herleitungszeile` `fest + kWh × €/kWh + kW × €/kW = Summe`, bei mehreren
+   Einheiten darunter die Summenzeile und einmal der Satz, dass die größere der beiden
+   Richtungsleistungen zählt; Anlass war die Anwenderfrage vom 12.09.2026, warum 150 €/kWh
+   mal 1 395 kWh als 284 250 € erscheinen. Gerechnet wird dafür nichts nach:
+   `SpeicherFlottenAnzeigeCtrl.Investitionsherleitung` liest die Anteile der Einheiten und holt
+   die Summe aus `FlottenWirtschaftlichkeit.Investition` — derselben Funktion, deren Summe der
+   CAPEX des Kapitalwerts ist.
 5. **Kandidaten** (nur Modus „Größen optimieren"): Rasterkarte und Schnittkurve (2.5) vor der Tabelle.
 6. **Diagramme** (2.3) als eigener Abschnitt am Ende, mit Zeitraumwahl.
 

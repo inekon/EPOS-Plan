@@ -167,6 +167,7 @@ Nummerierte Aufträge, soweit sie in den Statusblöcken benannt sind. Alle Daten
 | **#246** | 12.09. | Konzept Stromspeicher-Dialoge Kapitel 8: zwei Suchmethoden „Größe suchen“ und „Stückzahl suchen“ (SD‑E‑10), Mockup v2 | umgesetzt im Konzept; Entscheid SD‑E‑10 getroffen |
 | **#247** | 12.09. | Station „4 Optimierung“ mit drei Suchoptionen, Karte je Einheit, Übernahme der Einheiten ins Projekt | umgesetzt (Engine, Kern, Oberfläche, Wiki); Windows-Abnahme steht aus |
 | **#248** | 13.09. | Kleinpunkte ohne Auftrag: K1 Kommentare zur Zeilenhöhe der Katalog- und Projektliste auf die gemessenen Werte, K2 Fassungsnummer statt JSON-Tiefenkopie der Flotte je Tastendruck | umgesetzt; drei neue bunit-Wachen; Windows-Abnahme steht aus |
+| **#249** | 13.09. | Herleitungszeile der Investition je Einheit unter der Jahresprojektion (Station 5): fest + kWh × €/kWh + kW × €/kW = Summe, aus derselben Formel wie der Kapitalwert; Summenzeile ab zwei Einheiten; Wiki Station 5 | umgesetzt (Kern, Oberfläche, Wiki Revision 567); Windows-Abnahme steht aus |
 | **W16a‑O‑4** | 13.09. | `IosProjektQuelle.AssistentGaben`: der Projektassistent wird auf dem iPad bedienbar | umgesetzt: Parametersatz plattformfrei als `AssistentAnsichtQuelle` in `EPOS.UI.Daten`, Naht `AssistentPlattformwege` für die elf Seitenhüllen mit Fensterbesitzer (iU11), zwei Einstiege in der Projektliste, benannte Ablehnung statt leerer Schritte; Entscheid **W16a‑O‑4‑Q1** (13.09., Weg a): auf iOS wird IMMER gemerkt, der Windows-Weg bleibt unverändert; iOS-Teil ungebaut, Windows-Abnahme und iPad-Abnahme stehen aus |
 
 ---
@@ -206,4 +207,5 @@ Gesamtabnahme je Welle liegt nicht vor.**
 - **Nach #244:** jeder Rechner klont neu; aus einem alten Klon wird nie wieder gepusht.
 - **Nach #247:** Windows-Abnahme der Station „4 Optimierung“ und des Knopfs „Ausgewählte Einheiten in Projekt übernehmen“.
 - **Nach #248:** Windows-Abnahme der Kleinpunkte K1 (Listenhöhen) und K2 (Fassungsnummer).
+- **Nach #249:** Windows-Abnahme der Herleitungszeile unter „Investition: … €“ in Station 5.
 - **Nach W16a‑O‑4:** iPad-Abnahme des Projektassistenten (zwei Schritte bedienbar, elf benannt abgelehnt, Rückfrage beim Verlassen) und Windows-Gegenprobe, dass die zwei Startkacheln weiterhin merken und die zwei Menüwege weiterhin nicht.

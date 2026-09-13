@@ -5069,3 +5069,18 @@ steht aus und ist die eigentliche Aufgabe von
 > des Editors. Kein Rechenweg berührt. **Gate sept57 auf `d6dfe01d`:** Kern 2 759, UI 3 976, Engine 437, KiKern 488, 5 eindeutige
 > Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Windows-Abnahme beim
 > Anwender offen.
+
+## #249 — Herleitungszeile der Investition unter der Jahresprojektion (13.09.2026, Nachtrag aus dem Merge)
+
+> **#249 (13.09.2026, Anwender „Herleitungszeile Investition: ja") — umgesetzt (Merge `c0d85c39`, Agent Opus).** Anlass war die
+> Anwenderfrage vom 12.09.: 150 €/kWh × 1 395 kWh sind 209 250 €, die Station „5 Ergebnis" nannte unter der Jahresprojektion aber
+> 284 250 € — die Differenz steckte im festen und im Leistungsanteil, die die Summenzeile nicht auswies. Jetzt steht unter
+> „Investition: … €" je Einheit eine Herleitungszeile des Hauses (`Herleitungszeile`, Text = Name, Formel =
+> „fest + kWh × €/kWh + kW × €/kW = Summe"), ab zwei Einheiten eine Summenzeile darunter, einmal der Hinweis, dass die Leistung die
+> größere der beiden Leistungen ist. Die Zahlen liefert `SpeicherFlottenAnzeigeCtrl.Investitionsherleitung` aus der Formel
+> `FlottenWirtschaftlichkeit.Investition` (jetzt public), die auch den Kapitalwert speist — der Kern-Test hält die Summe der Zeilen
+> gegen `InvestitionEuro` der gerechneten Studie und führt den Fall des Anwenders (75 000 € fest, 1 395 kWh × 150, 500 kW × 0 =
+> 284 250). Ressourcen `FLOTTE_PROJ_INVEST_*` de/en, bunit-Fälle (eine Einheit ohne Summenzeile, zwei mit), Konzept
+> Stromspeicher-Dialoge 2.2, Wiki-Bedienungsseite Station 5 (Revision 567). Kein Rechenweg berührt. **Gate sept58 auf `c0d85c39`:**
+> Kern 2 764, UI 3 981, 5 eindeutige Warnungen, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Windows-Abnahme beim
+> Anwender offen.
