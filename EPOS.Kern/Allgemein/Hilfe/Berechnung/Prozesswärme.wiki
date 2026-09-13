@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Simulation/Init.cs,
      EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Energieeinheit.cs -->
@@ -159,9 +159,7 @@ daran anschliessend (siehe
 [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und
 Gleichung (21) dort).
 
-'''Die Einheit gehoert zum Wert''' (Anwenderentscheid vom 04.09.2026). Bis dahin trug der
-eine Weg den Teiler 1 000 aus (6) und der andere nicht — die Prozesswaerme stand in der
-Vorschau um den Faktor 1 000 zu hoch da. Die Umrechnung steht seither an EINER Stelle, und
+'''Die Einheit gehoert zum Wert.''' Die Umrechnung steht an EINER Stelle, und
 die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
 
 == Grenzen und Annahmen ==

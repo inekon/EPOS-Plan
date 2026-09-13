@@ -1,7 +1,7 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, WaermequelleClass.cs,
      WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
-     Kaskadenschleife.cs (Bivalenzpunkt, Phase F); Katalog/ParameterVerwendung.cs (Befund W14a-E-8-B2) -->
+     Kaskadenschleife.cs (Bivalenzpunkt, Phase F); Katalog/ParameterVerwendung.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -395,7 +395,7 @@ Die '''Jahresarbeitszahl''' wird aus den Jahressummen gebildet und schließt den
   die Wärmebilanz nicht ein.
 * '''Der Heizstab hat keinen eigenen Wirkungsgrad''' —
   <math>\operatorname{COP}_{\mathrm{HS}} = 1</math> nach (12).
-* '''Fünf Katalogspalten hat kein Leser''' (Befund W14a‑E‑8‑B2): Länge, Breite, Höhe, Gewicht und
+* '''Fünf Katalogspalten hat kein Leser''': Länge, Breite, Höhe, Gewicht und
   Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand
   nirgends gelesen. Sie sind die einzigen Spalten aller sieben Gerätekataloge ohne jede Verwendung.
 * '''Höchstens zehn Module''' je Projekt.

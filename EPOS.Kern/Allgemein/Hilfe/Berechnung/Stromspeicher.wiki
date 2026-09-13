@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Stand: 2026-09-12 (Fassung 7: zwei Suchmethoden der Rastersuche) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Stromspeicher | Fassung 7 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
@@ -56,8 +56,8 @@ Speicherwirkung weiter.
 
 === Datenimport ===
 
-Der Speicherkatalog lässt sich seit dem 07.09.2026 auch '''einlesen''' statt nur von
-Hand zu pflegen: '''Administration → Daten & Import → „Stromspeicher (CEC, bslib)…"'''.
+Der Speicherkatalog lässt sich auch '''einlesen''' statt nur von Hand zu pflegen:
+'''Administration → Daten & Import → „Stromspeicher (CEC, bslib)…"'''.
 Zwei Quellen stehen dort als Knöpfe nebeneinander.
 
 {| class="wikitable"
@@ -134,7 +134,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>\mathrm{SOC}(0)</math> || Startladezustand || kWh || Speichervariante; ohne Angabe <math>\mathrm{SOC}_{\mathrm{min}}</math>
 |-
-! colspan="4" | Erweiterte Auslegung (Fassung 3a)
+! colspan="4" | Erweiterte Auslegung
 |-
 | <math>r</math> || C-Rate — Verhältnis von Leistung zu Kapazität || 1/h || Suchbereich der Auslegung
 |-
@@ -142,7 +142,7 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>o_P</math>, <math>o_E</math>, <math>o_D</math> || Betriebskostensätze je Leistung, je Kapazität und je entladener AC-Kilowattstunde || €/(kW·a), €/(kWh·a), €/kWh || dieselbe Quelle wie die Investitionssätze, getrennt wählbar
 |-
-! colspan="4" | Speicherflotte (Fassung 4)
+! colspan="4" | Speicherflotte
 |-
 | <math>j</math>, <math>m</math> || Einheit der Flotte und Zahl der Einheiten || — || Flottenkonfiguration; <math>i</math> bleibt der Kapitalzins
 |-
@@ -242,13 +242,13 @@ Größen, die der Lauf je Intervall oder je Lauf bildet.
 |-
 | <math>t_{\mathrm{A}}</math> || Amortisationszeit || a || Ausgabe — Sekundärkennzahl je Auslegung
 |-
-! colspan="4" | Erweiterte Auslegung (Fassung 3a)
+! colspan="4" | Erweiterte Auslegung
 |-
 | <math>I</math>, <math>O</math> || Investition und jährlicher Betriebsaufwand eines Kandidaten || €, €/a || (24) und (25)
 |-
 | <math>Q_{\mathrm{Entladung}}</math> || simulierte AC-Entladeenergie des Jahres || kWh || Kandidatenlauf
 |-
-! colspan="4" | Speicherflotte (Fassung 4)
+! colspan="4" | Speicherflotte
 |-
 | <math>E_j(k)</math> || Energie der Einheit am Anfang des Intervalls || kWh || (26)
 |-
@@ -521,9 +521,9 @@ Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet
 
 Dieser Abschnitt beschreibt den '''Rechenweg des Einzelspeicher-Optimierers'''. Er erweitert die Auslegung um spezifische Kosten, gespeicherte Profile und getrennte Datenquellen.
 
-'''Seit dem 11.09.2026 (Anwenderentscheid SD-E-8) steht er nicht mehr in der Ansicht ''Stromspeicher-Auslegung''.''' Sie kennt nur noch EINEN Weg: die Flottenrechnung, und ein Einzelspeicher ist dort eine Flotte mit einer Einheit (siehe [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]]). An die Stelle der drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' treten dort die fünf Betriebsziele der Flotte.
+'''In der Ansicht ''Stromspeicher-Auslegung'' steht er nicht.''' Sie kennt EINEN Weg: die Flottenrechnung, und ein Einzelspeicher ist dort eine Flotte mit einer Einheit (siehe [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]]). An die Stelle der drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' treten dort die fünf Betriebsziele der Flotte.
 
-Der hier beschriebene Rechenweg bleibt '''unverändert in Betrieb''': Er trägt das Betriebsbild des Berichts und die Aktion ''speicher_optimieren'' des Hilfe-Assistenten. Die Formeln (24) bis (26) gelten deshalb weiter; nur eingegeben werden ihre Größen nicht mehr in der Ansicht.
+Der hier beschriebene Rechenweg ist '''in Betrieb''': Er trägt das Betriebsbild des Berichts und die Aktion ''speicher_optimieren'' des Hilfe-Assistenten. Die Formeln (24) bis (26) gelten deshalb; eingegeben werden ihre Größen aber nicht in dieser Ansicht.
 
 Als Größenachse wird entweder die Kapazität <math>E</math> in kWh oder die AC-Nennleistung <math>P</math> in kW vorgegeben. Die C-Rate <math>r</math> hat die Einheit 1/h. Es gilt <math>P = E \cdot r</math> beziehungsweise <math>E = P/r</math>. Unter- und Obergrenze sind einschließlich; gleiche Grenzen prüfen einen festen Wert. Die Feinphase bleibt innerhalb des vorgegebenen Bereichs.
 
@@ -549,7 +549,7 @@ Beispiel: 100 kWh zu 300 €/kWh und 50 kW zu 120 €/kW ergeben 36.000 € Inve
 
 Die Zielfunktion aus (23) wird um <math>O</math> vermindert. Der Kapitalwert wird um den Barwert des konstant angesetzten jährlichen Betriebskostenbetrags vermindert; die Amortisationswerte verwenden ebenfalls den Ertrag nach Betriebskosten. Der vorhandene Degradationsansatz bleibt auf der Ertragsseite wirksam. Der optionale Verschleißterm bleibt ein gesonderter Abzug in der Zielfunktion und darf nicht zugleich als derselbe Kostenanteil unter <math>o_D</math> angesetzt werden. Die vollständige Projektwirtschaftlichkeit bleibt eine eigene Bewertung.
 
-'''Lastspitzenkappung in der erweiterten Auslegung:''' Die Regelung verwendet die Residuallast am Netzanschluss, also Bruttolast minus PV und gegebenenfalls BHKW. Die Änderung des tatsächlichen Netzbezugs wird je Viertelstunde mit ihrem tatsächlichen Bezugspreis bewertet. Beim Laden aus Erzeugungsüberschüssen wird entgangene Einspeisevergütung berücksichtigt. Der bestehende Rechenweg ohne erweiterte Auslegungskonfiguration behält sein bisheriges Verhalten.
+'''Lastspitzenkappung in der erweiterten Auslegung:''' Die Regelung verwendet die Residuallast am Netzanschluss, also Bruttolast minus PV und gegebenenfalls BHKW. Die Änderung des tatsächlichen Netzbezugs wird je Viertelstunde mit ihrem tatsächlichen Bezugspreis bewertet. Beim Laden aus Erzeugungsüberschüssen wird entgangene Einspeisevergütung berücksichtigt.
 
 '''Zeitreihen:''' Last, PV und effektiver variabler Bezugspreis können aus getrennten CSV-Dateien mit frei zugeordneten Zeit- und Wertspalten stammen. Die Preisreihe in €/kWh wird einmal in die internen ct/kWh umgerechnet; zusätzliche Tarifaufschläge werden darauf nicht angewendet. Negative Preise sind gültig. Die PV-Einspeisevergütung wird auch bei Dateiquellen aus dem Projekt gelesen. In einer reinen Dateiauslegung wird keine zusätzliche BHKW-Erzeugung aus einem Simulationslauf hinzugefügt.
 
@@ -561,15 +561,15 @@ Gespeicherte Auslegungsprofile enthalten Eingabebereiche, Quellen, Kostensätze,
 == Mehrere Speicher (Speicherflotte) ==
 {{Anker|flotte}}
 
-Alles bis hierher rechnet '''einen''' Speicher. Seit dem 11.09.2026 kennt EPOS-Plan daneben die
+Alles bis hierher rechnet '''einen''' Speicher. Daneben kennt EPOS-Plan die
 '''Speicherflotte''': eine Liste physisch '''gleichzeitig''' betriebener AC-Speicher innerhalb
 '''einer''' Variante. Vergleichsvarianten werden nicht addiert — zwei Varianten sind zwei
 Rechnungen, eine Flotte ist eine.
 
 Jede Einheit hat einen eigenen Zustand, eigene Lade- und Entladeleistungen, eigene Wirkungsgrade,
 ein eigenes Ladezustandsband, eine eigene Reserve, einen eigenen Hilfsverbrauch und eigene Kosten.
-Der Einzelspeicherpfad der Abschnitte davor ist '''nicht ersetzt''': Ein Projekt ohne aktivierte
-Flotte rechnet unverändert weiter wie bisher. Die Bedienung steht unter
+Der Einzelspeicherpfad der Abschnitte davor gilt daneben: Ein Projekt ohne aktivierte
+Flotte rechnet nach ihm. Die Bedienung steht unter
 [[Programm Dokumentation/Stromspeicher#auslegung-ansicht|Stromspeicher-Auslegung]].
 
 Der Laufindex bleibt <math>k</math>, die Intervalldauer <math>\Delta t = 0{,}25</math>&nbsp;h. Die
@@ -958,7 +958,7 @@ Drei Regeln gelten für die zweite Phase:
 
 Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt (Grobraster 10 × 6, danach
 zehn Stützstellen im Fenster einer Grobschrittweite), und dieselbe, die der Einzelspeicher-Optimierer
-seit jeher fährt.
+fährt.
 
 === Diagnose „arbeitslose Flotte" ===
 

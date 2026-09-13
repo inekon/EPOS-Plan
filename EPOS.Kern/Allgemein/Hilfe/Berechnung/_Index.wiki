@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Berechnung | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Hilfe/BerechnungsHilfe.cs -->
 <!-- KEINE Themenseite, sondern die STARTSEITE der Rubrik. Der Anwender legt sie im Wiki
      unter "Programm Dokumentation/Berechnung" an und kopiert diesen Text hinein. Die
@@ -54,7 +54,7 @@ Jede Seite folgt derselben Gliederung:
 
 == Schreibweise ==
 
-Die Formeln dieser Rubrik stehen seit der '''Fassung 3''' in '''LaTeX''' innerhalb der
+Die Formeln dieser Rubrik stehen in '''LaTeX''' innerhalb der
 Auszeichnung <code>&lt;math&gt;…&lt;/math&gt;</code>. Die '''Math-Erweiterung''' dieses Wikis
 setzt sie in natives MathML um — Sie sehen also einen echten Bruchstrich, ein Summenzeichen mit
 Grenzen darueber und darunter und eine geschweifte Klammer ueber mehrere Zeilen, nicht deren
@@ -84,18 +84,18 @@ aufrecht (<math>P_{\mathrm{AC,nenn}}</math>), Hochzahlen als <code>^{…}</code>
 (<math>P_{\mathrm{AC}}(t)</math>). Der Dezimaltrenner ist das '''Komma'''
 (<math>0{,}95</math>), Tausender trennt ein schmales Leerzeichen (<math>8\,760</math>). Die
 Argumente von <math>\min</math> und <math>\max</math> trennt ein '''Komma''' —
-<math>\min(a, b)</math> —; die Semikolon-Regel der Fassung 2 ist damit hinfaellig, weil ein
-mehrteiliger Index in LaTeX innerhalb seiner eigenen Klammer steht und nichts mehr verwechselt
-werden kann.
+<math>\min(a, b)</math> —, denn ein mehrteiliger Index steht in LaTeX innerhalb seiner eigenen
+Klammer und laesst sich mit dem Trennzeichen nicht verwechseln.
 
 '''Fallunterscheidungen''' stehen als geschweifte Klammer (<code>cases</code>) — Wert links,
-Bedingung rechts. Sie ersetzt die Aufzaehlung „fuer … gilt …" der Fassung 2.
+Bedingung rechts.
 
 '''Warum eine kleine LaTeX-Teilmenge.''' Die Erweiterung prueft jede Formel mit WikiTexVC, und
 was sie nicht kennt, erscheint dem Leser als rote Fehlerzeile statt als Formel. Die Rubrik
-beschraenkt sich deshalb auf einen festen Vorrat: <code>\frac \sqrt \sum \int \prod \min \max
-\cdot \left \right \mathrm \text \operatorname \displaystyle \quad \cos \sin \ln \circ</code>, die
-Vergleichs- und Mengenzeichen <code>\le \ge \ne \approx \pm \to \infty \in \dots</code>, die
+beschraenkt sich deshalb auf einen festen Vorrat: <code>\frac \dfrac \sqrt \sum \int \prod \min \max
+\cdot \left \right \Big \lceil \rceil \lfloor \rfloor \mathrm \text \operatorname \displaystyle \quad \qquad
+\cos \sin \ln \circ</code>, die
+Vergleichs- und Mengenzeichen <code>\le \leq \ge \geq \ne \approx \pm \to \infty \in \dots</code>, die
 griechischen Buchstaben als Befehl (auch <code>\theta \chi \omega \kappa \Psi</code>), <code>\ell</code>, <code>\dot</code> und <code>\begin{cases}…\end{cases}</code>. Kein
 <code>\tag</code>, kein <code>\label</code>, kein <code>\newcommand</code>, kein
 <code>align</code> — und keine Umlaute innerhalb einer Formel. Zwei Waechter im Quellbaum
@@ -205,11 +205,6 @@ Hand weiterhin brauchbar.
   Rechenkerns'''. Er steht auf der Seite ausdruecklich als solcher da — in der
   Parametertabelle in der Spalte „Herkunft" —, damit Sie ihn wiedererkennen, wenn er in einem
   Ergebnis auftaucht.
-
-; Ausblick
-: Absaetze, die mit „in Umsetzung, Stand 06.09.2026" gekennzeichnet sind, beschreiben, was
-  ein Konzeptdokument vorsieht, aber '''noch nicht gerechnet wird'''. Sie sind kein Teil des
-  aktuellen Ergebnisses.
 
 ; Ingenieurvorbehalt
 : Die Rechenwege sind Planungsmodelle. Sie ersetzen keine Auslegung nach den einschlaegigen

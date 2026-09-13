@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Photovoltaik | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Photovoltaik | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs,
      EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
      EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
@@ -493,29 +493,26 @@ getrennt ausgewiesen — sonst würde er als PV-Einspeisung vergütet.
 == Wechselrichter ==
 {{Anker|wechselrichter}}
 
-Für den Wechselrichter gibt es zwei Wege. Welcher gilt, ist ein Anwenderentscheid (W6‑E‑3 vom
-06.09.2026).
+Für den Wechselrichter gibt es zwei Wege.
 
 === Option 1 — vereinfacht, ohne Wechselrichter, mit Pauschalen ===
 
 Das ist der heutige Weg und die Vorbelegung. Der Wechselrichter ist '''kein eigenes Gerät''', sondern
 ein Wirkungsgrad:
 
-* im '''einfachen''' Modell ein konstanter Faktor <math>\eta_{\mathrm{WR}}</math> (Vorgabe 0,95)
-  nach (17), dazu pauschale Systemverluste;
-* im '''erweiterten''' Modell die Dreipunkt-Kennlinie (20) mit einer frei eingebbaren
-  AC-Nennleistung, an der (22) klippt.
+* im '''einfachen''' Modell ein konstanter Faktor <math>\eta_{\mathrm{WR}}</math> (Vorgabe 0,95) nach (17), dazu pauschale Systemverluste;
 
+* im '''erweiterten''' Modell die Dreipunkt-Kennlinie (20) mit einer frei eingebbaren AC-Nennleistung, an der (22) klippt.
 Beides hängt an der '''Anlage''', nicht an einem Gerät aus einem Katalog. Es gibt keine Stränge,
 keine MPP-Tracker, keine Auslegungsprüfung und keine Nachtverbrauchsrechnung. Für eine Anlage mit
 einer Ausrichtung und einem Wechselrichtertyp ist das eine tragfähige Näherung.
 
-=== Option 2 — mit Wechselrichter (umgesetzt, Stand 06.09.2026) ===
+=== Option 2 — mit Wechselrichter ===
 
 Der Wechselrichter ist ein '''Katalogobjekt''' mit Projektkopie — wie Kessel, BHKW oder Modul —, und
 die Anlage bekommt eine '''Strangzuordnung''': je Strang die Zahl der Module in Reihe, die Zahl
 paralleler Stränge, das Gerät, die Gerätenummer, der MPP-Eingang, wahlweise eine eigene Neigung und
-ein eigener Azimut und — seit dem 06.09.2026 — wahlweise ein '''eigener Modultyp'''. Damit werden
+ein eigener Azimut und wahlweise ein '''eigener Modultyp'''. Damit werden
 das Ost/West-Feld und die um einen zweiten Modultyp erweiterte Anlage rechenbar.
 
 Der Katalog führt AC-Nennwirkleistung, maximale AC-Scheinleistung, maximale DC-Eingangsleistung,
@@ -655,7 +652,8 @@ Preis je Gerät × Zahl der Geräte dieses Typs. Gezählt werden nur Geräte an 
 „mit Wechselrichter" rechnen — eine Anlage, die vereinfacht rechnet, trägt auch keine
 Gerätekosten.
 
-Dazu kommen '''acht Auslegungsprüfungen''' als Ampel im Dialog und als Meldung beim Simulationsstart,
+Dazu kommen '''acht Auslegungsprüfungen''' als Ampel im Dialog — ausführlich mit Formeln, Zahlenbeispiel
+und Auslegungshilfe im Abschnitt [[#strangpruefung|Modul, Strang und Wechselrichter]] —,
 gerechnet für −10&nbsp;°C (kalter Fall, höchste Spannung) und 70&nbsp;°C Zelltemperatur (heißer Fall,
 niedrigste Spannung, höchster Strom):
 
@@ -688,61 +686,265 @@ MPP-Spannung führt der Modulkatalog nicht.
 steht '''und''' eine Strangzeile mit Gerät führt, rechnet sie Zeichen für Zeichen wie zuvor. Erst
 beide Bedingungen zusammen schalten den Strangweg ein.
 
+== Modul, Strang und Wechselrichter — Prüfung und Auslegung ==
+{{Anker|strangpruefung}}
+
+Sobald eine Anlage auf dem Weg „mit Wechselrichter" rechnet, prüft das Programm beim Bearbeiten
+der Strangtabelle, ob '''Modul und Gerät elektrisch zusammenpassen''': acht Regeln P1 bis P8,
+dargestellt als Ampel unter der Strangzeile und als Chip im Kopf des Abschnitts „Wechselrichter
+und Stränge". Die Prüfung '''entscheidet nichts''' — sie rechnet nicht mit, verhindert kein
+Speichern und verändert kein Ergebnis. Sie sagt etwas, und hinter jedem roten oder gelben Befund
+sagt sie zusätzlich, was passen würde.
+
+=== Was geprüft wird — und was nicht ===
+
+Geprüft werden '''Datenblattgrenzen des gewählten Geräts''': maximale DC-Spannung,
+MPP-Spannungsfenster, maximaler DC-Strom je MPP-Tracker, maximale DC-Eingangsleistung,
+AC-Nennleistung. Nicht geprüft werden Anlagen- und Personenschutz, Leitungsquerschnitte,
+Überspannungsschutz, Netzanschluss und Anmeldung; dafür ist die einschlägige Normenreihe
+maßgeblich und eine Elektrofachkraft zuständig. Auch eine absolute Systemspannungsgrenze
+(1&nbsp;000&nbsp;V beziehungsweise 1&nbsp;500&nbsp;V DC) prüft das Programm '''nicht''' — P1 misst
+allein gegen die maximale Eingangsspannung des gewählten Geräts.
+
+=== Begriffe ===
+
+{| class="wikitable"
+! Begriff !! Bedeutung
+|-
+| '''Modul''' || Ein Katalogeintrag mit <math>U_{\mathrm{OC}}</math>, <math>U_{\mathrm{MPP}}</math>, <math>I_{\mathrm{SC}}</math>, <math>\beta_{\mathrm{OC}}</math>, <math>\alpha_{\mathrm{SC}}</math> und der Nennleistung <math>P_{\mathrm{STC}}</math>
+|-
+| '''Strang''' || <math>n</math> Module '''in Reihe''' — die Spannungen addieren sich, der Strom bleibt der eines Moduls
+|-
+| '''parallele Stränge''' || <math>p</math> gleich aufgebaute Stränge an demselben MPP-Tracker — die Ströme addieren sich, die Spannung bleibt
+|-
+| '''MPP-Tracker''' || Ein Regeleingang des Geräts mit eigenem Spannungsfenster und eigener Stromgrenze
+|-
+| '''Gerät''' || Ein physischer Wechselrichter. Stränge mit derselben '''Gerätenummer''' hängen an demselben Gerät; ein zweites Gerät desselben Typs bekommt die Nummer 2. Leer heißt 1.
+|-
+| '''DC/AC-Verhältnis''' || Summe der Modulnennleistungen an einem Gerät geteilt durch dessen AC-Nennleistung
+|}
+
+=== Kennwerte und ihre Einheiten ===
+
+{| class="wikitable"
+! Größe !! Bedeutung !! Einheit !! Vorzeichen !! typisch
+|-
+| <math>U_{\mathrm{OC}}</math> || Leerlaufspannung bei STC || V || + || 30…50
+|-
+| <math>U_{\mathrm{MPP}}</math> || Spannung im Arbeitspunkt bei STC || V || + || 25…42
+|-
+| <math>I_{\mathrm{SC}}</math> || Kurzschlussstrom bei STC || A || + || 9…14
+|-
+| <math>\beta_{\mathrm{OC}}</math> || Temperaturkoeffizient der Leerlaufspannung || '''V/K''' || negativ || −0,10…−0,15
+|-
+| <math>\alpha_{\mathrm{SC}}</math> || Temperaturkoeffizient des Kurzschlussstroms || '''A/K''' || positiv || +0,002…+0,006
+|-
+| <math>P_{\mathrm{STC}}</math> || Nennleistung des Moduls || '''W''' || + || 260…600
+|}
+
+'''Achtung bei den Koeffizienten:''' Datenblätter geben sie häufig '''relativ''' in %/K an
+(typisch −0,25…−0,35&nbsp;%/K für die Spannung, +0,04…+0,06&nbsp;%/K für den Strom) oder in mV/K
+beziehungsweise mA/K. Der Modulkatalog von EPOS-Plan führt sie '''absolut''' in V/K und A/K. Ein
+ungerechnet übernommener Prozentwert verschiebt die Prüfungen P1 bis P4 um Größenordnungen. Die
+Umrechnung lautet
+
+: <math>\beta_{\mathrm{OC}}\;[\mathrm{V/K}] = \frac{\beta_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot U_{\mathrm{OC}}\;[\mathrm{V}]}{100} \qquad \alpha_{\mathrm{SC}}\;[\mathrm{A/K}] = \frac{\alpha_{\mathrm{rel}}\;[\%/\mathrm{K}] \cdot I_{\mathrm{SC}}\;[\mathrm{A}]}{100}</math>
+
+Der Import aus PVsyst-Dateien (.PAN) rechnet selbsttätig um; ein von Hand gepflegter Wert wird
+beim Speichern auf Plausibilität geprüft. Der Leistungskoeffizient
+<math>\gamma_{\mathrm{PMP}}</math> steht als einziger '''relativ''' in %/K — er geht nicht in die
+Auslegungsprüfung ein, sondern in die Ertragsrechnung ([[#rechenweg|Schritt 4]]).
+
+=== Die beiden Auslegungsfälle ===
+
+Alle Katalogwerte gelten unter Standard-Testbedingungen (STC: 1&nbsp;000&nbsp;W/m²,
+'''25&nbsp;°C Zelltemperatur''', AM&nbsp;1,5). Diese treten im Betrieb praktisch nie auf. Für die
+Auslegung zählt deshalb die Hüllkurve zweier fester Fälle:
+
+* '''kalter Fall, −10&nbsp;°C Zelltemperatur''' — Kälte hebt die Spannung. Der ungünstigste Zustand ist der klare Wintermorgen, bevor der Wechselrichter zuschaltet. Hier entscheidet sich,  ob das Gerät Schaden nimmt (P1) und ob das MPP-Fenster nach oben verlassen wird (P3).
+
+* '''heißer Fall, +70&nbsp;°C Zelltemperatur''' — Wärme senkt die Spannung deutlich und hebt den Strom leicht. Hier entscheidet sich, ob der Strang aus dem MPP-Fenster fällt (P2) und ob der Trackerstrom überschritten wird (P4).
+
+−10&nbsp;°C und +70&nbsp;°C sind die '''Vorgaben''';
+<math>T_{\mathrm{kalt}}</math> und <math>T_{\mathrm{heiss}}</math> sind '''Projektparameter''' und
+lassen sich in der Zeile ''Auslegungstemperaturen'' des Abschnitts „Wechselrichter und Stränge"
+ändern ([[Programm Dokumentation/Photovoltaik#auslegungstemperaturen|Bedienung]]). Der Knopf ''Vorschlag aus Klimadaten
+übernehmen'' schlägt kalt als Jahresminimum der Außentemperatur der Klimareihe des Projekts vor
+und heiß über dieselbe Zelltemperaturformel wie in [[#rechenweg|Schritt 3]] (9) bei
+Volleinstrahlung <math>G_{\mathrm{NOCT}} = 800</math>&nbsp;W/m² aus deren Jahresmaximum und der
+Nennbetriebstemperatur <math>T_{\mathrm{NOCT}}</math> des Anlagenmoduls (Rückfall 45&nbsp;°C
+außerhalb 20…60&nbsp;°C, wie in Schritt 3). Übernommen wird erst auf Knopfdruck; welche Zahl
+richtig ist, bleibt eine Entscheidung des Planers. Gerechnet wird linear um den STC-Punkt:
+
+: <math>\displaystyle U_{\mathrm{Strang}}(T) = n \cdot \left[ U_{\mathrm{STC}} + \beta_{\mathrm{OC}} \cdot (T - 25) \right]</math> &nbsp;&nbsp;(35)
+:: <math>U_{\mathrm{Strang}}(T)</math> – Spannung des Strangs bei der Zelltemperatur <math>T</math> [V]
+:: <math>n</math> – Zahl der Module in Reihe [–]
+:: <math>U_{\mathrm{STC}}</math> – <math>U_{\mathrm{OC}}</math> für P1, <math>U_{\mathrm{MPP}}</math> für P2 und P3 [V]
+:: <math>\beta_{\mathrm{OC}}</math> – Temperaturkoeffizient der Leerlaufspannung [V/K], negativ
+:: <math>T</math> – Zelltemperatur des betrachteten Falls: <math>T_{\mathrm{kalt}}</math> (Vorgabe −10&nbsp;°C) oder <math>T_{\mathrm{heiss}}</math> (Vorgabe +70&nbsp;°C), Projektparameter [°C]
+
+: <math>\displaystyle I_{\mathrm{Strang}}(T) = I_{\mathrm{SC}} + \alpha_{\mathrm{SC}} \cdot (T - 25)</math> &nbsp;&nbsp;(36)
+:: <math>I_{\mathrm{Strang}}(T)</math> – Strom '''eines''' Strangs bei der Zelltemperatur <math>T</math> [A]
+:: <math>\alpha_{\mathrm{SC}}</math> – Temperaturkoeffizient des Kurzschlussstroms [A/K], positiv
+
+Der Strom eines Strangs ist von der Zahl der Module in Reihe unabhängig; parallele Stränge
+addieren ihn. Für die MPP-Spannung führt der Modulkatalog '''keinen eigenen''' Koeffizienten —
+(35) setzt dafür <math>\beta_{\mathrm{OC}}</math> ein, wie es die Auslegungspraxis ebenfalls tut.
+Der Fehler liegt bei wenigen Prozent. Zu beachten ist die Richtung: Der relative Koeffizient der
+MPP-Spannung ist betragsmäßig größer als der der Leerlaufspannung, weshalb P2 im heißen Fall eher
+'''etwas zu günstig''' ausfällt und P3 im kalten Fall konservativ.
+
+=== Die acht Regeln ===
+{{Anker|regeln}}
+
+{| class="wikitable"
+! Nr. !! Prüfung !! Bedingung !! Ebene !! Verletzung
+|-
+| '''P1''' || Leerlaufspannung im kalten Fall || <math>n \cdot \left[ U_{\mathrm{OC}} + \beta_{\mathrm{OC}} \cdot (T_{\mathrm{kalt}} - 25) \right] \leq U_{\mathrm{DC,max}}</math> — ohne <math>\beta_{\mathrm{OC}}</math>: <math>n \cdot U_{\mathrm{OC}} \cdot 1{,}15 \leq U_{\mathrm{DC,max}}</math> || je Strang || '''rot''' — das Gerät kann bei Frost und Sonne Schaden nehmen
+|-
+| '''P2''' || MPP-Fenster im heißen Fall || <math>n \cdot \left[ U_{\mathrm{MPP}} + \beta_{\mathrm{OC}} \cdot (T_{\mathrm{heiss}} - 25) \right] \geq U_{\mathrm{MPP,min}}</math> || je Strang || '''rot''' — der Strang regelt im Sommer ab
+|-
+| '''P3''' || MPP-Fenster im kalten Fall || <math>n \cdot \left[ U_{\mathrm{MPP}} + \beta_{\mathrm{OC}} \cdot (T_{\mathrm{kalt}} - 25) \right] \leq U_{\mathrm{MPP,max}}</math> || je Strang || '''gelb''' — das Gerät regelt an der Grenze
+|-
+| '''P4''' || Eingangsstrom je MPP-Tracker || <math>\sum_{s \in \mathrm{MPPT}} p_{s} \cdot \left[ I_{\mathrm{SC}} + \alpha_{\mathrm{SC}} \cdot (T_{\mathrm{heiss}} - 25) \right] \leq I_{\mathrm{SC,max}}</math> und <math>\leq I_{\mathrm{DC,max}}</math> || je Tracker || '''rot''' über <math>I_{\mathrm{SC,max}}</math>; '''gelb''' nur über <math>I_{\mathrm{DC,max}}</math> — ohne <math>I_{\mathrm{SC,max}}</math>: '''rot''' über <math>I_{\mathrm{DC,max}}</math>
+|-
+| '''P5''' || Zahl paralleler Stränge je Tracker || <math>\sum_{s \in \mathrm{MPPT}} p_{s} \leq p_{\mathrm{zul}}</math> || je Tracker || '''gelb''' — mehr Stränge als Anschlussklemmen
+|-
+| '''P6''' || DC/AC-Verhältnis || <math>1{,}0 \leq \dfrac{\sum_{s \in \mathrm{Geraet}} P_{\mathrm{STC},s}}{P_{\mathrm{AC,nenn}}} \leq 1{,}5</math> || je Gerät || '''gelb''' in beide Richtungen
+|-
+| '''P7''' || DC-Eingangsleistung || <math>\sum_{s \in \mathrm{Geraet}} P_{\mathrm{STC},s} \leq P_{\mathrm{DC,max}}</math> || je Gerät || '''gelb''' — über der Anschlussgrenze des Herstellers
+|-
+| '''P8''' || Modulsumme || <math>\sum_{s} \left( n_{s} \cdot p_{s} \right) = n_{\mathrm{Anlage}}</math> || je Anlage || '''gelb''' — Strangtabelle und Anlagenwert laufen auseinander
+|}
+
+:: <math>T_{\mathrm{kalt}}</math>, <math>T_{\mathrm{heiss}}</math> – Auslegungstemperaturen, Projektparameter mit Vorgabe −10&nbsp;°C / +70&nbsp;°C [°C]
+:: <math>U_{\mathrm{DC,max}}</math> – maximale DC-Eingangsspannung des Geräts [V]
+:: <math>U_{\mathrm{MPP,min}}</math>, <math>U_{\mathrm{MPP,max}}</math> – Grenzen des MPP-Spannungsfensters [V]
+:: <math>I_{\mathrm{SC,max}}</math> – maximaler Kurzschlussstrom '''je MPP-Tracker''', optionales Katalogfeld [A]
+:: <math>I_{\mathrm{DC,max}}</math> – maximaler DC-Strom (Betriebsstrom) '''je MPP-Tracker''' [A]
+:: <math>p_{s}</math> – parallele Stränge der Zeile <math>s</math>, <math>p_{\mathrm{zul}}</math> – zulässige Stränge je Tracker [–]
+:: <math>P_{\mathrm{AC,nenn}}</math> – AC-Nennwirkleistung [kW], <math>P_{\mathrm{DC,max}}</math> – maximale DC-Eingangsleistung [kW]
+:: <math>n_{\mathrm{Anlage}}</math> – „Anzahl Module" der Anlagenzeile [–]
+
+'''Die Farbe eines Abschnitts ist die schlechteste seiner Zeilen.''' Rot bedeutet: so nicht
+zulässig — verhindert aber '''nicht''' das Speichern, weil ein Planer einen Zwischenstand ablegen
+können muss. Gelb bedeutet: möglich, aber nicht empfohlen.
+
+'''Ein fehlender Wert macht gelb, nicht grün und nicht rot''' — mit einer Ausnahme: Fehlt bei P1
+nur <math>\beta_{\mathrm{OC}}</math> (nicht aber <math>U_{\mathrm{OC}}</math>), rechnet sie über
+den Rückfall <math>1{,}15</math> weiter, statt zu entfallen (siehe „Grenzen dieser Prüfung"
+unten). Sonst gilt: Fehlt eine Angabe (0 oder leer), entfällt die betroffene Prüfung, die Zeile
+wird gelb, und die Meldung nennt '''jede''' fehlende Angabe einzeln — dazu bei Modulwerten den
+Pflegeweg. Eine Prüfung, die auf fehlenden Daten grün leuchtet, würde etwas behaupten. Fehlt die
+Zahl der MPP-Tracker, wird auf '''einem''' gerechnet: der konservative Fall, und die Meldung sagt
+es.
+
+'''P8 vergleicht gegen den gespeicherten Anlagenwert „Anzahl Module".''' Ein Bestand, dessen
+zwei Zahlen — Strangtabelle und Anlagenzeile — von Hand auseinandergelaufen sind, wird damit
+erkannt.
+
+=== Auslegungshilfe ===
+{{Anker|auslegungshilfe}}
+
+Hinter jedem roten oder gelben Befund steht, '''was passen würde''' — dieselben Regeln, rückwärts
+gerechnet und auf ganze Module gerundet, Untergrenzen auf, Obergrenzen ab:
+
+: <math>\displaystyle n_{\min} = \left\lceil \frac{U_{\mathrm{MPP,min}}}{U_{\mathrm{MPP}} + \beta_{\mathrm{OC}} \cdot 45} \right\rceil</math> &nbsp;&nbsp;(37)
+:: <math>n_{\min}</math> – kleinste Modulzahl in Reihe, aus P2 [–]
+
+: <math>\displaystyle n_{\max} = \left\lfloor \min\left( \frac{U_{\mathrm{DC,max}}}{U_{\mathrm{OC}} + \beta_{\mathrm{OC}} \cdot (-35)} \;,\; \frac{U_{\mathrm{MPP,max}}}{U_{\mathrm{MPP}} + \beta_{\mathrm{OC}} \cdot (-35)} \right) \right\rfloor</math> &nbsp;&nbsp;(38)
+:: <math>n_{\max}</math> – größte Modulzahl in Reihe, aus P1 und P3 [–]
+
+: <math>\displaystyle p_{\max} = \min\left( \left\lfloor \frac{I_{\mathrm{DC,max}}}{I_{\mathrm{SC}} + \alpha_{\mathrm{SC}} \cdot 45} \right\rfloor \;,\; p_{\mathrm{zul}} \right)</math> &nbsp;&nbsp;(39)
+:: <math>p_{\max}</math> – Stränge je MPP-Tracker, aus P4 und P5 [–]
+
+: <math>\displaystyle n_{\mathrm{Geraet,min}} = \left\lceil \frac{1{,}0 \cdot P_{\mathrm{AC,nenn}}}{P_{\mathrm{STC}}} \right\rceil \qquad n_{\mathrm{Geraet,max}} = \left\lfloor \min\left( 1{,}5 \cdot P_{\mathrm{AC,nenn}} \;,\; P_{\mathrm{DC,max}} \right) \Big/ P_{\mathrm{STC}} \right\rfloor</math> &nbsp;&nbsp;(40)
+:: <math>n_{\mathrm{Geraet,min}}</math>, <math>n_{\mathrm{Geraet,max}}</math> – Module je Gerät aus dem DC/AC-Band (P6) und der DC-Grenze (P7) [–]
+:: Leistungen in (40) in derselben Einheit einzusetzen
+
+Die Hilfe rechnet auf derselben Grundlage wie die Ampel: Die Zahlen 45 und
+−35 sind die Vorgabewerte <math>T_{\mathrm{heiss}} - 25</math> und
+<math>T_{\mathrm{kalt}} - 25</math> der projektweise einstellbaren Auslegungstemperaturen.
+Fehlt in (38) der Koeffizient <math>\beta_{\mathrm{OC}}</math>, tritt an die Stelle von
+<math>U_{\mathrm{OC}} + \beta_{\mathrm{OC}} \cdot (T_{\mathrm{kalt}} - 25)</math> derselbe Rückfall
+wie bei P1: <math>U_{\mathrm{OC}} \cdot 1{,}15</math>. In (39) tritt an die Stelle von
+<math>I_{\mathrm{DC,max}}</math> der Kurzschlussstrom <math>I_{\mathrm{SC,max}}</math> des
+MPP-Trackers, sobald der Katalog ihn führt — ist er nicht gepflegt, gilt weiterhin
+<math>I_{\mathrm{DC,max}}</math>.
+
+Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Reihe, einen Strang je
+Tracker und 10…13 Module je Gerät. Genau das steht dann in der Ampel: „''passend wären 4…14 Module
+in Reihe''" beziehungsweise „''passend wären 10…13 Module je Gerät''". Liegt die Untergrenze über
+der Obergrenze, gibt es zu diesem Gerät keine passende Reihe, und die Meldung rät zu einem anderen
+Gerät. Fehlen alle beteiligten Werte, rät die Hilfe nicht.
+
+'''Der Knopf „Auslegung vorschlagen".''' Aus Modul, gewähltem Katalogsatz und Modulzahl wird eine
+'''ganze''' Aufteilung gerechnet und die Strangtabelle damit '''ersetzt''': gleich lange Stränge,
+gleich belegte Geräte, die Stränge so gleichmäßig auf die MPP-Tracker verteilt, wie die Zahl es
+zulässt. Die Rangfolge ist dreistufig — '''möglichst wenige Geräte''', darunter '''DC/AC möglichst
+nahe 1,25''' (der Mitte des Bandes), darunter die '''längste Reihe''' (höhere Spannung, kleinerer
+Strom). Nach denselben Kriterien ist auch die Klappliste „Wechselrichter aus dem Katalog"
+sortiert; passende Geräte tragen ihr DC/AC-Verhältnis und ihre Gerätezahl im Text, unpassende den
+Zusatz „passt nicht". Gibt es keine Aufteilung, bleibt die Tabelle stehen, und der Grund wird
+genannt.
+
+=== Grenzen dieser Prüfung ===
+
+* '''Kein Sicherheitsfaktor auf den Strom.''' P4 rechnet allein die thermische Korrektur nach (36) — bei einem üblichen Modul rund +2&nbsp;%. Der in der Auslegungspraxis gebräuchliche Faktor 1,25 auf den Kurzschlussstrom (Wolkenrand- und Albedoeffekte) ist '''nicht''' enthalten.
+
+* '''<math>I_{\mathrm{SC,max}}</math> kommt aus keinem Import.''' Weder die CEC-Wechselrichterliste noch das OND-Format (PVsyst) führen einen Kurzschlussstrom je Eingang. Das Feld bleibt nach jedem Import leer und wird im Katalogdialog von Hand gepflegt; solange es leer ist, prüft P4 wie ohne die Zweistufigkeit — rot allein über <math>I_{\mathrm{DC,max}}</math>.
+
+* '''Die Auslegungstemperaturen sind eine Annahme, kein Messwert.''' Sie sind je Projekt einstellbar (Abschnitt „Die beiden Auslegungsfälle"), mit −10&nbsp;°C/+70&nbsp;°C als Vorgabe. Der Klimadatenvorschlag nennt das Jahresminimum eines Testreferenzjahres — das ist nicht dieselbe Größe wie die am Standort niedrigste zu erwartende Temperatur; welche Zahl richtig ist, entscheidet der Planer.
+
+* '''Der Rückfall ohne Koeffizienten ist eine Ersatzannahme.''' Fehlt <math>\beta_{\mathrm{OC}}</math>, rechnet P1 mit <math>U_{\mathrm{OC}} \cdot 1{,}15</math> weiter, statt zu entfallen; fehlt auch <math>U_{\mathrm{OC}}</math>, bleibt es bei „nicht prüfbar". Der Faktor 1,15 gilt für kristallines Silizium und ist an sehr kalten Standorten knapp; er ist bewusst nicht einstellbar — Ersatz für einen fehlenden Katalogwert, nicht ein zweiter Auslegungsparameter. Der richtige Weg bleibt, den Koeffizienten zu pflegen.
+
+* '''Die Einschaltspannung wird nicht geprüft.''' Sie steht im Gerätekatalog, geht aber in keine der acht Regeln ein.
+
+* '''Keine Verschattung, keine Leitungsverluste.''' Ein Strang an der unteren Grenze von P2 kann in der Wirklichkeit früher abregeln, als die Prüfung erwarten lässt.
+
+* '''Keine Mischung auf einem Tracker.''' P4 summiert die Ströme eines Trackers vollständig; ein Ost/West-Paar an einem Eingang wird dadurch strenger bewertet, als es der Wirklichkeit entspricht. Ein Modultyp gilt je Strang, nicht innerhalb eines Strangs.
+
+* '''Die Prüfung läuft im Dialog und beim Simulationsstart.''' Für jede Anlage im Weg „mit Wechselrichter" schreibt der Lauf denselben Ampelsatz in die Hinweise zum Lauf, mit dem Vorspann ''PV-Anlage „…":'' davor: rote Befunde als '''Warnung''', gelbe als '''Hinweis'''; grüne bleiben stumm. Das blockiert die Berechnung '''nicht''' — ein Projekt mit roter Auslegung rechnet weiter.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
 * '''Keine Verschattung.''' Weder Horizont noch Eigenverschattung der Modulreihen gehen ein.
-* '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und
-  <math>\gamma</math> hängen an der Anlagenzeile; im Strangweg trägt jeder Strang wahlweise eigene,
-  und damit ist das Ost/West-Feld eine Anlage (siehe Abschnitt „Wechselrichter", Option 2).
-* '''Kein Ein-Dioden-Modell.''' Spannungen und Ströme des Strangs werden nicht gerechnet. Die sechs
-  elektrischen Kenngrößen des Modulkatalogs (<math>U_{\mathrm{MPP}}</math>,
-  <math>U_{\mathrm{OC}}</math>, <math>I_{\mathrm{MPP}}</math>, <math>I_{\mathrm{SC}}</math>,
-  <math>\alpha_{\mathrm{SC}}</math>, <math>\beta_{\mathrm{OC}}</math>) gehen in die
-  '''Auslegungsprüfungen''' P1 bis P5 ein, aber in keine Stundenrechnung.
-* '''Keine Leistungsgrenze je MPP-Eingang.''' Der MPP-Eingang ist eine Prüfgröße; geklemmt wird am
-  Gerät.
-* '''Ein Modultyp je STRANG''' (seit dem 06.09.2026). Ein Strang rechnet mit genau einem Modultyp;
-  verschiedene Stränge derselben Anlage dürfen verschiedene tragen. Ohne eigene Angabe gilt das
-  Modul der Anlage. '''Was es nicht gibt:''' zwei Modultypen INNERHALB eines Strangs — dafür wären
-  zwei Stränge anzulegen.
-* '''Keine Kennzahlen je Strang.''' Ertrag und Volllaststunden werden je Gerät ausgewiesen, nicht je
-  Strang.
-* '''Keine Alterung im Stundenlauf.''' Die Degradation ist eine Größe der Wirtschaftlichkeit
-  (Jahresreihe), nicht der Stundensimulation.
-* '''Kein Clipping im einfachen Modell''' auf dem vereinfachten Weg, auch dann nicht, wenn eine
-  AC-Nennleistung gepflegt ist — sie wirkt dort nur im erweiterten Modell (22). Im Weg „mit
-  Wechselrichter" klemmt das Gerät dagegen in '''beiden''' Modellen (33): Ein Wechselrichter ist ein
-  Gerät, keine Modellverfeinerung.
+* '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und <math>\gamma</math> hängen an der Anlagenzeile; im Strangweg trägt jeder Strang wahlweise eigene,  und damit ist das Ost/West-Feld eine Anlage (siehe Abschnitt „Wechselrichter", Option 2).
+
+* '''Kein Ein-Dioden-Modell.''' Spannungen und Ströme des Strangs werden nicht gerechnet. Die sechs elektrischen Kenngrößen des Modulkatalogs (<math>U_{\mathrm{MPP}}</math>, <math>U_{\mathrm{OC}}</math>, <math>I_{\mathrm{MPP}}</math>, <math>I_{\mathrm{SC}}</math>,
+<math>\alpha_{\mathrm{SC}}</math>, <math>\beta_{\mathrm{OC}}</math>) gehen in die  '''Auslegungsprüfungen''' P1 bis P5 ein, aber in keine Stundenrechnung.
+
+* '''Keine Leistungsgrenze je MPP-Eingang.''' Der MPP-Eingang ist eine Prüfgröße; geklemmt wird am  Gerät.
+
+* '''Ein Modultyp je STRANG'''. Ein Strang rechnet mit genau einem Modultyp; verschiedene Stränge derselben Anlage dürfen verschiedene tragen. Ohne eigene Angabe gilt das  Modul der Anlage. '''Was es nicht gibt:''' zwei Modultypen INNERHALB eines Strangs — dafür wären  zwei Stränge anzulegen.
+
+* '''Keine Kennzahlen je Strang.''' Ertrag und Volllaststunden werden je Gerät ausgewiesen, nicht je Strang.
+
+* '''Keine Alterung im Stundenlauf.''' Die Degradation ist eine Größe der Wirtschaftlichkeit (Jahresreihe), nicht der Stundensimulation.
+
+* '''Kein Clipping im einfachen Modell''' auf dem vereinfachten Weg, auch dann nicht, wenn eine AC-Nennleistung gepflegt ist — sie wirkt dort nur im erweiterten Modell (22). Im Weg „mit  Wechselrichter" klemmt das Gerät dagegen in '''beiden''' Modellen (33): Ein Wechselrichter ist ein  Gerät, keine Modellverfeinerung.
+
 * '''Keine Netzeinspeisebegrenzung''' (etwa eine feste Kappung der Einspeiseleistung) im Stundenlauf.
 * Der '''Boden-Albedo <math>\rho</math> ist fest 0,2''' und nicht einstellbar.
 * Zwei Stunden im Jahr sind durch die Ortszeitumstellung doppelt beziehungsweise gar nicht belegt.
   Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null, die Jahressumme der
   Globalstrahlung bleibt unverändert.
-* Der '''Stromspeicher''' gehört nicht hierher: Er wird getrennt gerechnet und verändert den hier
-  ausgewiesenen PV-Ertrag nicht.
 
+* Der '''Stromspeicher''' gehört nicht hierher: Er wird getrennt gerechnet und verändert den hier ausgewiesenen PV-Ertrag nicht.
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Photovoltaik"''' — je Modulfeld Name, Gesamtfläche, Anzahl und
-  Jahresertrag; im erweiterten Modell zusätzlich das DC/AC-Verhältnis, der Clipping-Verlust und der
-  Wechselrichterverlust. Rechnet eine Anlage auf der Strangebene, steht darüber eine zweite Tabelle
-  mit einer Zeile je '''Gerät''' (DC/AC, Ertrag, Clipping in kWh und %, Volllaststunden AC,
-  Jahresnutzungsgrad, Nachtverbrauch).
-* '''Karte „Photovoltaik" der Simulationskonfiguration''' — Zahl der Geräte und Stränge sowie das
-  DC/AC-Verhältnis, sobald eine Strangzuordnung rechnet.
-* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauch, Einspeisung, Netzbezug und Autarkie.
-* '''Simulationsergebnis, Reiter „Stromgang"''' — die Ganglinien von Erzeugung, Direktverbrauch,
-  Überschuss und Reststrom, also <math>P_{\mathrm{PV}}</math>, <math>P_{\mathrm{direkt}}</math>,
-  <math>P_{\mathrm{ueber}}</math> und <math>P_{\mathrm{netz}}</math>.
-* '''Simulationsprotokoll''' — jeder Rückfallwert und jede Katalogunstimmigkeit im Klartext, dazu im
-  erweiterten Modell die Kennzahlen je Anlage (DC/AC, Jahresertrag, Volllaststunden,
-  Wechselrichter- und Clipping-Verlust) und im Weg „mit Wechselrichter" eine Zeile je Gerät und
-  eine je Anlage.
-* '''Bericht''' und '''Wirtschaftlichkeit''' — Jahreserträge, Eigenverbrauchsquote und die
-  Vergütungsrechnung bauen auf denselben Zahlen auf.
+* '''Simulationsergebnis, Reiter „Photovoltaik"''' — je Modulfeld Name, Gesamtfläche, Anzahl und Jahresertrag; im erweiterten Modell zusätzlich das DC/AC-Verhältnis, der Clipping-Verlust und der  Wechselrichterverlust. Rechnet eine Anlage auf der Strangebene, steht darüber eine zweite Tabelle  mit einer Zeile je '''Gerät''' (DC/AC, Ertrag, Clipping in kWh und %, Volllaststunden AC,  Jahresnutzungsgrad, Nachtverbrauch).
 
+* '''Karte „Photovoltaik" der Simulationskonfiguration''' — Zahl der Geräte und Stränge sowie das DC/AC-Verhältnis, sobald eine Strangzuordnung rechnet.
+
+* '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauch, Einspeisung, Netzbezug und Autarkie.
+* '''Simulationsergebnis, Reiter „Stromgang"''' — die Ganglinien von Erzeugung, Direktverbrauch, Überschuss und Reststrom, also <math>P_{\mathrm{PV}}</math>, <math>P_{\mathrm{direkt}}</math>, <math>P_{\mathrm{ueber}}</math> und <math>P_{\mathrm{netz}}</math>.
+
+* '''Simulationsprotokoll''' — jeder Rückfallwert und jede Katalogunstimmigkeit im Klartext, dazu im erweiterten Modell die Kennzahlen je Anlage (DC/AC, Jahresertrag, Volllaststunden,  Wechselrichter- und Clipping-Verlust) und im Weg „mit Wechselrichter" eine Zeile je Gerät und  eine je Anlage.
+
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Jahreserträge, Eigenverbrauchsquote und die Vergütungsrechnung bauen auf denselben Zahlen auf.
 == Bezüge ==
 {{Anker|bezuege}}
 

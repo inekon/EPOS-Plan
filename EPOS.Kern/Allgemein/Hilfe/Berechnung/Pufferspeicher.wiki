@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene),
      Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G),
      Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität) -->

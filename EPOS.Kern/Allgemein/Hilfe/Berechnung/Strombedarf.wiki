@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Strombedarf | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Strombedarf | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationStrombedarf.cs, EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Import/GanglinienImportAblauf.cs,
      EPOS.Kern/Controller/GanglinienAuswertungCtrl.cs, EPOS.Kern/Controller/PeakShavingCtrl.cs,
@@ -121,14 +121,13 @@ Die Formeln dazu stehen unter
 bis (5) — es sind dieselben, mit demselben Zeichenvorrat.
 
 '''Eine Abweichung gibt es''': Der Stromzweig filtert Kopf- und Typsaetze '''nicht''' auf
-das Projekt. Bei Brauchwasser und Prozesswaerme wurde dieser Pflichtfilter nachgezogen, beim
-Strom steht die Frage noch offen (in Umsetzung, Stand 06.09.2026). Praktisch heisst das:
-Traegt ein Stromverbraucherprofil in zwei Projekten denselben Namen bei verschiedenen
-Werten, kann die Rechnung den falschen Kopfsatz erwischen.
+das Projekt, waehrend Brauchwasser und Prozesswaerme diesen Pflichtfilter fuehren. Praktisch
+heisst das: Traegt ein Stromverbraucherprofil in zwei Projekten denselben Namen bei
+verschiedenen Werten, kann die Rechnung den falschen Kopfsatz erwischen.
 
 '''Bricht die Profilrechnung ab''' — kein Typbezug, unlesbare Monats- oder Wochenfelder —,
-'''bricht der ganze Simulationslauf ab'''. Bis dahin lief er mit leerem Stromprofil weiter
-und lieferte ein Ergebnis, das vollstaendig aussah und keines war.
+'''bricht der ganze Simulationslauf ab''': Ein Ergebnis mit leerem Stromprofil saehe
+vollstaendig aus und waere keines.
 
 === 2. Von Stunden auf Viertelstunden ===
 
@@ -258,7 +257,7 @@ Simulationsbedarf und kein Simulationsergebnis.
 * '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' P(k) ist Wirkleistung.
 * '''Kein Gleichzeitigkeitsfaktor.''' Die Summe in (2) ist ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
 * '''Der Wochengang ist starr''' und die Monatsmenge unantastbar — wie bei den beiden Waermeprofilen.
-* '''Kein Projektfilter im Stromzweig''' (siehe Schritt 1) — in Umsetzung, Stand 06.09.2026.
+* '''Kein Projektfilter im Stromzweig''' (siehe Schritt 1).
 * '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein, also (4) ohne den zweiten Summanden von (2). Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
 * '''Die Peak-Shaving-Maske schreibt nicht''' (siehe Schritt 7).
 

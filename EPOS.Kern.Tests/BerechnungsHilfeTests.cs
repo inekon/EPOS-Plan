@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using WindowsFormsApplication1;
 using Xunit;
@@ -13,9 +15,16 @@ namespace EPOS.Kern.Tests
     /// <para><b>Was hier geprüft wird — und warum.</b> Die Rechenwegseiten sind Texte, und
     /// Texte altern still. Der Prüfstand hält deshalb genau die Zusagen fest, die die
     /// Bauform des Pakets macht: Jede Seite trägt einen vollständigen KOPFBLOCK mit
-    /// Seitenname, Stand und den Kerndateien, gegen die sie belegt ist, und jede Seite hat
-    /// dieselben SECHS Abschnitte. Wer eine Seite ergänzt und den Kopf vergisst, sieht es
-    /// hier und nicht erst im Wiki.</para>
+    /// Seitenname, Fassungsnummer und den Kerndateien, gegen die sie belegt ist, und jede
+    /// Seite hat dieselben SECHS Abschnitte. Wer eine Seite ergänzt und den Kopf vergisst,
+    /// sieht es hier und nicht erst im Wiki.</para>
+    ///
+    /// <para><b>Keine Geschichte auf einer Seite der Rubrik.</b> Die Rubrik gehört zu
+    /// „Programm Dokumentation" und beschreibt ausschließlich die Funktion, so wie sie
+    /// jetzt ist; Änderungskommentare gehören in die Wikiseite „Update-Logbuch".
+    /// <see cref="Keine_Seite_der_Rubrik_traegt_einen_Aenderungshinweis"/> hält das für
+    /// jede Datei des Ordners fest — auch für den Kopfblock, der deshalb kein Datum und
+    /// keinen „Stand" mehr führt, sondern nur noch die Fassungsnummer.</para>
     ///
     /// <para><b>Fassung 2 (06.09.2026).</b> Der Anwender wünschte die Definition der
     /// Parameter und Variablen und die Formeln „in mathematischer Schreibweise". Daraus
@@ -152,6 +161,12 @@ namespace EPOS.Kern.Tests
         /// (Wärmebrückenverlustkoeffizient), <c>\ell</c> (Sondenmeter und
         /// Anschlusslängen) und <c>\dot</c> (der Massenstrom der Zeichentabelle auf
         /// der Rubrikstartseite). Alle sechs sind texvc-Kernbefehle.
+        /// <para>Die siebte Zeile trägt, was die Auslegungsprüfung der Photovoltaikseite
+        /// braucht: die Gauß-Klammern <c>\lceil \rceil \lfloor \rfloor</c> der Auf- und
+        /// Abrundung auf ganze Module, <c>\Big</c> für den Bruchstrich über einer
+        /// geklammerten Auswahl, <c>\dfrac</c>, <c>\qquad</c> für zwei Gleichungen in
+        /// einer Zeile und die Langformen <c>\leq \geq</c>. Auch sie sind
+        /// texvc-Kernbefehle.</para>
         /// </remarks>
         private static readonly HashSet<string> ErlaubteBefehle = new(StringComparer.Ordinal)
         {
@@ -162,7 +177,8 @@ namespace EPOS.Kern.Tests
             "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
             "varepsilon", "tau", "varphi", "Delta", "Sigma",
             "pi", "omega", "kappa", "Psi", "ell", "dot",
-            "theta", "cos", "sin", "circ", "ln", "chi"
+            "theta", "cos", "sin", "circ", "ln", "chi",
+            "dfrac", "lceil", "rceil", "lfloor", "rfloor", "Big", "qquad", "leq", "geq"
         };
 
         /// <summary>Die Kopfzeile der Parametertabelle.</summary>
@@ -240,9 +256,9 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Der Kopfblock ist die Beleglage: Er nennt die Seite, den Stand und die Dateien
-        /// des Rechenkerns, gegen die der Text geschrieben wurde. Fehlt eine der drei
-        /// Angaben, ist der Text nicht mehr nachprüfbar.
+        /// Der Kopfblock ist die Beleglage: Er nennt die Seite, ihre Fassung und die
+        /// Dateien des Rechenkerns, gegen die der Text geschrieben wurde. Fehlt eine der
+        /// drei Angaben, ist der Text nicht mehr nachprüfbar.
         /// </summary>
         [Fact]
         public void Jede_Seite_traegt_einen_vollstaendigen_Kopfblock()
@@ -252,42 +268,180 @@ namespace EPOS.Kern.Tests
             foreach (BerechnungsSeite seite in BerechnungsHilfe.Seiten)
             {
                 if (string.IsNullOrWhiteSpace(seite.Seitenname)) funde.Add("(ohne Namen): Feld 'Seite' fehlt");
-                if (string.IsNullOrWhiteSpace(seite.Stand)) funde.Add(seite.Seitenname + ": Feld 'Stand' fehlt");
+                if (!Fassungsnummer.IsMatch(Kopfzeile(seite)))
+                    funde.Add(seite.Seitenname + ": Angabe 'Fassung <n>' fehlt");
                 if (string.IsNullOrWhiteSpace(seite.Rechenkern))
                     funde.Add(seite.Seitenname + ": Feld 'Rechenkern' fehlt");
             }
 
             Assert.True(funde.Count == 0,
                 "Diese Seiten der Rubrik 'Berechnung' haben keinen vollständigen Kopfblock " +
-                "(Muster: <!-- EPOS-Plan Hilferubrik Berechnung | Seite: … | Stand: JJJJ-MM-TT | " +
+                "(Muster: <!-- EPOS-Plan Hilferubrik Berechnung | Seite: … | Fassung <n> | " +
                 "Rechenkern: … -->):\n" + string.Join("\n", funde));
         }
 
         /// <summary>
-        /// Der Stand BEGINNT mit einem Datum der Form <c>JJJJ-MM-TT</c> — sonst ist er
-        /// nicht sortierbar.
+        /// Der Kopfblock führt WEDER einen „Stand" NOCH ein Datum.
         ///
-        /// <para>Seit der Fassung 2 darf dahinter ein Zusatz in runden Klammern stehen
-        /// (<c>Stand: 2026-09-06 (Fassung 2: Formelzeichen und Notation)</c>). Er sagt dem
-        /// Leser der Wikiseite, WELCHE Überarbeitung er vor sich hat; das Datum bleibt die
-        /// sortierbare Angabe und steht deshalb vorn.</para>
+        /// <para>Die Rubrik gehört zur „Programm Dokumentation" des Wikis und beschreibt
+        /// allein die Funktion, so wie sie jetzt ist. Ein Datum im Kopf ist der erste
+        /// Schritt zur Geschichtsschreibung — und der Kopfblock wandert beim Hochladen
+        /// als unsichtbarer Kommentar in die Wikiseite mit. Was sich wann geändert hat,
+        /// steht in der Wikiseite „Update-Logbuch"; die Seite selbst trägt nur ihre
+        /// FASSUNGSNUMMER, die die Uploads zählt.</para>
         /// </summary>
         [Fact]
-        public void Der_Stand_beginnt_mit_einem_Datum()
+        public void Der_Kopfblock_traegt_weder_Stand_noch_Datum()
         {
+            var funde = new List<string>();
+
             foreach (BerechnungsSeite seite in BerechnungsHilfe.Seiten)
             {
-                Match datum = Regex.Match(seite.Stand ?? "", @"^(\d{4}-\d{2}-\d{2})(\s*\(.+\))?$");
+                if (!string.IsNullOrWhiteSpace(seite.Stand))
+                    funde.Add(seite.Seitenname + ": Feld 'Stand: " + seite.Stand + "'");
 
-                Assert.True(datum.Success,
-                    seite.Seitenname + ": '" + seite.Stand + "' ist kein Stand der Form " +
-                    "'JJJJ-MM-TT' oder 'JJJJ-MM-TT (Zusatz)'.");
-
-                Assert.True(DateTime.TryParseExact(datum.Groups[1].Value, "yyyy-MM-dd",
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.None, out _),
-                    seite.Seitenname + ": '" + datum.Groups[1].Value + "' ist kein gültiges Datum.");
+                Match datum = Regex.Match(Kopfzeile(seite), @"\d{4}-\d{2}-\d{2}|\d{2}\.\d{2}\.\d{4}");
+                if (datum.Success)
+                    funde.Add(seite.Seitenname + ": Datum '" + datum.Value + "' im Kopfblock");
             }
+
+            Assert.True(funde.Count == 0,
+                "Diese Kopfblöcke der Rubrik 'Berechnung' führen einen Stand oder ein Datum. " +
+                "Erlaubt sind Seitenname, Fassungsnummer und Rechenkern-Dateien; was sich " +
+                "geändert hat, gehört in die Wikiseite 'Update-Logbuch':\n" +
+                string.Join("\n", funde));
+        }
+
+        /// <summary>Der Kopfblock einer Seite als eine Zeile, Umbrüche zusammengefasst.</summary>
+        private static string Kopfzeile(BerechnungsSeite seite)
+        {
+            Match kommentar = Regex.Match(seite.Markup ?? "", @"<!--(.*?)-->", RegexOptions.Singleline);
+            return kommentar.Success
+                ? Regex.Replace(kommentar.Groups[1].Value, @"\s+", " ").Trim()
+                : "";
+        }
+
+        /// <summary>Die Fassungsangabe des Kopfblocks: <c>| Fassung 3 |</c>.</summary>
+        private static readonly Regex Fassungsnummer =
+            new(@"\|\s*Fassung (\d+)\s*\|", RegexOptions.Compiled);
+
+        // =====================================================================
+        //  Keine Geschichte auf der Seite
+        // =====================================================================
+
+        /// <summary>
+        /// Das Tabu-Muster der Hausregel („Dokumentation", Punkt „Wiki"): Wendungen,
+        /// mit denen sich ein Änderungshinweis in eine Funktionsbeschreibung
+        /// schleicht.
+        /// </summary>
+        private static readonly Regex Aenderungshinweis =
+            new(@"seit (dem|der|W)|geändert|Entscheid|Befund|W\d+[a-z]?[‑-][A-Z][‑-]\d+|" +
+                @"Stand:? *\d|bisher|früher|vorher|Bis dahin|Migrationsschritt",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Die benannten Ausnahmen: fachliche Wendungen, die das Tabu-Muster mitnimmt,
+        /// obwohl sie beschreiben, was das Programm JETZT tut. Jede mit ihrem Grund —
+        /// wer die Liste verlängert, soll sich rechtfertigen müssen.
+        /// </summary>
+        private static readonly (string Wendung, string Grund)[] FachlicheWendungen =
+        {
+            ("entscheidet",         "das Programm entscheidet etwas: „entscheidet die Betriebsart\""),
+            ("entscheiden",         "dieselbe Wendung im Plural: „die drei Fahrweisen entscheiden\""),
+            ("Entscheidung",        "Entscheidung/Entscheidungspreis/Entscheidungszeitpunkt der Rechnung"),
+            ("Befund",             "der Ampelbefund der PV-Auslegungsprüfung und die Spalte „Befund\" der Normtabelle"),
+            ("geändert werden",     "Katalogwerte, die sich im Projekt ändern lassen"),
+            ("geänderte Eingabe",   "die zuletzt geänderte der drei Investitionseingaben führt"),
+            ("vorher sicherstellt", "Überschrift: was der Import VOR dem Lauf sicherstellt"),
+            ("vorher gibt es",      "der Verlauf ist vor der ersten Vorschaurechnung gesperrt"),
+            ("vorherige Optimum",   "das Optimum der vorangegangenen lexikografischen Stufe"),
+            ("vorher → nachher",    "die Kachel „Bezugsspitze vorher → nachher\""),
+            ("vorher um",           "ein negativer Winkel wird vor der Auswertung um 2π angehoben"),
+            ("früher abregeln",     "ein Strang regelt im Betrieb früher ab als erwartet"),
+            ("Abstand 6 m",         "„Abstand\" enthält „stand\" — kein Stand, ein Sondenabstand")
+        };
+
+        /// <summary>
+        /// KEINE Seite der Rubrik trägt einen Änderungshinweis — Kopfblock
+        /// eingeschlossen.
+        ///
+        /// <para><b>Warum das ein Wächter sein muss.</b> Die Rubrik „Berechnung"
+        /// erscheint im Wiki unter „Programm Dokumentation", und diese Seiten
+        /// beschreiben ausschließlich die Funktion, so wie sie jetzt ist. Was sich
+        /// wann geändert hat, gehört in die Wikiseite „Update-Logbuch". Ein Satz wie
+        /// „seit dem 11.09.2026 ist … eine eigene Ansicht" veraltet in dem Augenblick,
+        /// in dem ihn jemand liest, und ein Klammerzusatz „(Befund W14a‑E‑8‑B1 vom
+        /// 06.09.2026)" sagt dem Anwender nichts. Beides schleicht sich wieder ein,
+        /// sobald eine Seite fortgeschrieben wird — deshalb steht hier ein Riegel und
+        /// keine Absichtserklärung.</para>
+        ///
+        /// <para>Geprüft werden ALLE Dateien des Ordners, auch die zwei mit führendem
+        /// Unterstrich: <c>_Index.wiki</c> ist die Rubrikstartseite und steht im Wiki
+        /// genauso, <c>_Bezuege.wiki</c> ist die Arbeitsvorlage, aus der Bezugsblöcke
+        /// in die Seiten wandern.</para>
+        /// </summary>
+        [Fact]
+        public void Keine_Seite_der_Rubrik_traegt_einen_Aenderungshinweis()
+        {
+            var funde = new List<string>();
+
+            foreach (KeyValuePair<string, string> datei in AlleDateienDerRubrik())
+            {
+                string[] zeilen = datei.Value.Replace("\r\n", "\n").Split('\n');
+
+                for (int i = 0; i < zeilen.Length; i++)
+                {
+                    string rest = zeilen[i];
+                    foreach ((string wendung, string _) in FachlicheWendungen)
+                        rest = Regex.Replace(rest, Regex.Escape(wendung), " ", RegexOptions.IgnoreCase);
+
+                    Match treffer = Aenderungshinweis.Match(rest);
+                    if (!treffer.Success) continue;
+
+                    string zeile = zeilen[i].Trim();
+                    if (zeile.Length > 120) zeile = zeile.Substring(0, 120) + "…";
+
+                    funde.Add(datei.Key + ", Zeile " + (i + 1) + ": '" + treffer.Value + "' in „" +
+                              zeile + "\"");
+                }
+            }
+
+            Assert.True(funde.Count == 0,
+                "Diese Zeilen der Rubrik 'Berechnung' lesen sich wie ein Änderungshinweis. " +
+                "Die Seiten beschreiben allein die Funktion, so wie sie jetzt ist; was sich " +
+                "geändert hat, gehört in die Wikiseite 'Update-Logbuch'. Ist ein Treffer " +
+                "fachlich, trägt er sich mit seinem Grund in " + nameof(FachlicheWendungen) +
+                " ein:\n" + string.Join("\n", funde));
+        }
+
+        /// <summary>
+        /// Alle <c>.wiki</c>-Dateien der Rubrik als Dateiname → Inhalt, gelesen aus den
+        /// eingebetteten Ressourcen des Kerns. <see cref="BerechnungsHilfe.Seiten"/>
+        /// liefert nur die dreizehn echten Seiten; hier sollen auch die zwei Dateien
+        /// mit führendem Unterstrich dabei sein.
+        /// </summary>
+        private static Dictionary<string, string> AlleDateienDerRubrik()
+        {
+            Assembly kern = typeof(BerechnungsHilfe).Assembly;
+            var dateien = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            foreach (string name in kern.GetManifestResourceNames())
+            {
+                if (!name.StartsWith(BerechnungsHilfe.RESSOURCE_VORSATZ, StringComparison.Ordinal)) continue;
+                if (!name.EndsWith(".wiki", StringComparison.Ordinal)) continue;
+
+                using Stream strom = kern.GetManifestResourceStream(name);
+                if (strom == null) continue;
+
+                using var leser = new StreamReader(strom, System.Text.Encoding.UTF8);
+                dateien[name.Substring(BerechnungsHilfe.RESSOURCE_VORSATZ.Length)] = leser.ReadToEnd();
+            }
+
+            Assert.True(dateien.Count >= SeitenDerRubrik.Length + 2,
+                "Die Rubrik 'Berechnung' liefert nur " + dateien.Count + " eingebettete Dateien; " +
+                "erwartet sind die dreizehn Seiten plus _Index.wiki und _Bezuege.wiki.");
+
+            return dateien;
         }
 
         /// <summary>
@@ -435,51 +589,51 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Fassung 3:</b> Der Kopfblock der Seiten dieses Teils nennt die Fassung.
-        /// Ohne diesen Zusatz stünde im Wiki eine Seite mit LaTeX-Formeln und einem
-        /// Stand, der genauso gut die Unicode-Fassung meinen könnte.
+        /// Der Kopfblock nennt die FASSUNG der Seite. Sie zählt die Uploads ins Wiki
+        /// und ist die einzige Angabe im Kopf, die etwas über den Werdegang der Seite
+        /// sagt — ohne Datum und ohne Beschreibung dessen, was zuletzt anders wurde.
         ///
-        /// <para><b>Nachtrag Auftrag #203 (11.09.2026).</b> Der Stand ist seither
-        /// nicht mehr für alle dreizehn Seiten DERSELBE: Die Stromspeicherseite
-        /// trägt die <b>Fassung 4</b> mit dem zweiten Hauptteil „Mehrere Speicher
-        /// (Speicherflotte)". Geprüft wird deshalb je Seite gegen den Stand, den sie
-        /// führen SOLL — eine Seite ohne Eintrag bleibt bei der Fassung 3. Der
-        /// Gedanke des Falls ist unverändert: Der Stand einer Seite ist eine Zusage
-        /// und keine Nebensache, und wer eine Seite überarbeitet, ohne ihn
-        /// mitzuziehen, sieht es hier.</para>
+        /// <para>Die Nummer ist nicht für alle dreizehn Seiten dieselbe: Die
+        /// Stromspeicherseite ist mehrfach fortgeschrieben worden und zählt deshalb
+        /// weiter. Geprüft wird je Seite gegen die Fassung, die sie führen SOLL — eine
+        /// Seite ohne eigenen Eintrag steht bei der Fassung 3. Wer eine Seite
+        /// überarbeitet und hochlädt, ohne die Nummer mitzuziehen, sieht es hier.</para>
         /// </summary>
         [Theory]
         [MemberData(nameof(AlleSeitenDerRubrik))]
-        public void Der_Stand_nennt_die_Fassung(string seitenname)
+        public void Der_Kopfblock_nennt_die_Fassung(string seitenname)
         {
             BerechnungsSeite seite = BerechnungsHilfe.Seite(seitenname);
             Assert.True(seite != null, "Seite '" + seitenname + "' nicht gefunden.");
 
-            string erwartet = StandDerSeite.TryGetValue(seitenname, out string eigener)
-                ? eigener
-                : STAND_FASSUNG_3;
+            int erwartet = FassungDerSeite.TryGetValue(seitenname, out int eigene)
+                ? eigene
+                : FASSUNG_REGEL;
 
-            Assert.Equal(erwartet, seite!.Stand);
+            Match gefunden = Fassungsnummer.Match(Kopfzeile(seite!));
+
+            Assert.True(gefunden.Success,
+                seitenname + ": Der Kopfblock nennt keine Fassung (Muster: '| Fassung 3 |').");
+            Assert.Equal(erwartet.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                         gefunden.Groups[1].Value);
         }
 
-        /// <summary>Der Stand, den die Seiten der Fassung 3 tragen.</summary>
-        private const string STAND_FASSUNG_3 = "2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden)";
+        /// <summary>Die Fassung, bei der eine nicht eigens fortgeschriebene Seite steht.</summary>
+        private const int FASSUNG_REGEL = 3;
 
         /// <summary>
-        /// Die Seiten, die einen EIGENEN Stand führen — jede mit ihrem Grund. Wer
-        /// eine Seite fortschreibt, trägt sie hier ein; wer sie vergisst, bekommt
-        /// den Fall rot und sieht sofort, welcher Stand fehlt.
+        /// Die Seiten, die eine EIGENE Fassungsnummer führen. Wer eine Seite
+        /// fortschreibt und hochlädt, zählt sie hier hoch; wer es vergisst, bekommt
+        /// den Fall rot und sieht sofort, welche Nummer fehlt.
         /// </summary>
-        private static readonly Dictionary<string, string> StandDerSeite =
+        private static readonly Dictionary<string, int> FassungDerSeite =
             new(StringComparer.Ordinal)
             {
-                // Auftrag #203: Live-Stand vom 10./11.09.2026 uebernommen und um den
-                // zweiten Hauptteil "Mehrere Speicher (Speicherflotte)" ergaenzt.
-                // Auftrag #215: Fassung 6 mit dem Abschnitt "Adaptive Entladeschwelle
-                // - die kausale Ratsche" (Spezifikation 5.1.1).
-                // Auftrag #247: Fassung 7 - der Abschnitt "Rastersuche" nennt die zwei
-                // Suchmethoden, ihre Kandidatenzahl und die drei benannten Ablehnungen.
-                { "Stromspeicher", "2026-09-12 (Fassung 7: zwei Suchmethoden der Rastersuche)" }
+                // Die Stromspeicherseite traegt den zweiten Hauptteil "Mehrere Speicher
+                // (Speicherflotte)", die adaptive Entladeschwelle und den Abschnitt
+                // "Rastersuche" mit den zwei Suchmethoden - vier Uploads mehr als die
+                // uebrigen Seiten.
+                { "Stromspeicher", 7 }
             };
 
         /// <summary>

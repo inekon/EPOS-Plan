@@ -95,19 +95,20 @@ public sealed class BerechnungsknopfTests
         "eta", "vartheta", "rho", "lambda", "alpha", "beta", "gamma",
         "varepsilon", "tau", "varphi", "Delta", "Sigma",
         "pi", "omega", "kappa", "Psi", "ell", "dot",
-        "theta", "cos", "sin", "circ", "ln", "chi"
+        "theta", "cos", "sin", "circ", "ln", "chi",
+        "dfrac", "lceil", "rceil", "lfloor", "rfloor", "Big", "qquad", "leq", "geq"
     };
 
     /// <summary>
-    /// Die Seiten, deren Kopfblock eine EIGENE Fassung nennt (Auftrag #203, seit
-    /// #215 die Fassung 6 mit der kausalen Ratsche, seit #247 die Fassung 7 mit
-    /// den zwei Suchmethoden der Rastersuche). Ohne Eintrag gilt die Fassung 3
-    /// der Rubrik.
+    /// Die Seiten, deren Kopfblock eine EIGENE Fassungsnummer nennt. Ohne Eintrag
+    /// gilt die Fassung 3 der Rubrik. Die Nummer zählt die Uploads ins Wiki; ein
+    /// Datum oder eine Beschreibung dessen, was zuletzt anders wurde, steht im
+    /// Kopfblock nicht — das gehört in die Wikiseite „Update-Logbuch".
     /// </summary>
     private static readonly Dictionary<string, string> FassungImKopf =
         new(StringComparer.Ordinal)
         {
-            { "Stromspeicher", "Fassung 7: zwei Suchmethoden der Rastersuche" }
+            { "Stromspeicher", "Fassung 7" }
         };
 
     /// <summary>
@@ -461,14 +462,12 @@ public sealed class BerechnungsknopfTests
 
         Assert.DoesNotContain("<big>", string.Join("\n", zeilen), StringComparison.Ordinal);
 
-        // Auftrag #203 (11.09.2026): Die Stromspeicherseite traegt seither die
-        // FASSUNG 4 (zweiter Hauptteil "Mehrere Speicher (Speicherflotte)"). Die
-        // BAUFORM prueft dieser Fall unveraendert weiter - Gleichung, Legende,
-        // kein <big> -; nur die Zahl im Kopfblock ist nicht mehr auf allen
-        // dreizehn Seiten dieselbe. Ohne Eintrag gilt die Fassung 3.
+        // Die BAUFORM prueft dieser Fall - Gleichung, Legende, kein <big> -; dazu
+        // die Fassungsnummer im Kopfblock, die nicht auf allen dreizehn Seiten
+        // dieselbe ist. Ohne Eintrag gilt die Fassung 3.
         string fassung = FassungImKopf.TryGetValue(seitenname, out string? eigene)
             ? eigene!
-            : "Fassung 3: LaTeX-Formeln und Legenden";
+            : "Fassung 3";
 
         Assert.Contains(fassung, zeilen[0], StringComparison.Ordinal);
 
@@ -609,7 +608,6 @@ public sealed class BerechnungsknopfTests
         Assert.Contains("displaystyle", ErlaubteBefehle);
         Assert.Contains("vartheta", ErlaubteBefehle);
 
-        Assert.DoesNotContain("dfrac", ErlaubteBefehle);
         Assert.DoesNotContain("tag", ErlaubteBefehle);
         Assert.DoesNotContain("label", ErlaubteBefehle);
         Assert.DoesNotContain("newcommand", ErlaubteBefehle);
