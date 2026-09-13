@@ -202,6 +202,8 @@ Sie wählen das '''Betriebsziel''' – bei einer Einheit genauso wie bei mehrere
 | '''Multi Use mit Peak-Priorität''' || erst die kleinste unvermeidbare Peak-Überschreitung, dann die Kosten || '''ja'''
 |}
 
+'''Ein planendes Ziel braucht außerdem eine Prognose.''' Es plant je Schritt aus dem Wissen, das zu diesem Zeitpunkt vorlag – entweder aus geladenen Prognosen oder aus dem ausdrücklich gewählten Idealwissen. Fehlt beides, sagt es die Vorprüfung mit der Abhilfe dazu, bevor gerechnet wird (siehe [[#auslegung-netz|Netz und Planung]]).
+
 Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kapazität'', ''Kaskade'' oder ''Nach Grenzkosten und Wirkungsgrad'' – und die '''Erzeuger-Reihenfolge''' der Direkteinspeisung (PV vor BHKW oder umgekehrt). Für ein planendes Ziel gilt die Verteilung nicht: Dort ist die Leistung jeder Einheit eine eigene Größe der Planung.
 
 '''Bei einer einzigen Einheit erscheint die Verteilung nicht''' – sie verteilt eine Lade- oder Entladeanforderung auf mehrere Speicher, und bei einem gibt es nichts zu verteilen. Eine Zeile unter dem Block sagt es. Legen Sie eine zweite Einheit an, ist sie wieder da; die gespeicherte Regel bleibt dabei unberührt.
@@ -222,7 +224,8 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 Dieser Block steht hier und nicht bei einer Einheit: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
 
 * '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze".
-* '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Oracle'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
+* '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Idealwissen'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
+** '''''Archivierte Prognose-Snapshots''''' ist die Vorbelegung und rechnet ausschließlich mit '''geladenen''' Prognosen – die tatsächliche Jahresreihe des Projekts wird nie als Prognose verwendet, sonst wäre jeder Fahrplan heimlich hellsichtig. Ist keine Prognose geladen, steht der Hinweis unter dem Feld, der Rechenknopf bleibt gesperrt und nennt den Grund. '''Zwei Auswege''': den Informationsstand auf ''Idealwissen'' setzen – ein Knopf tut das – oder in Schritt 2 über '''„Prognosen und Projektjahre…"''' Prognosen laden.
 * '''Endenergieziele''' – bei ''je Speicher ein Ziel'' eine Zeile je Einheit, mit dem '''Namen''' der Einheit davor.
 
 === Schritt 4 — Optimierung ===

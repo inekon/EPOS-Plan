@@ -322,7 +322,10 @@ Nach der Hausregel `Doku_Simulationsergebnis_Darstellung.md` § 1–4 und § 6:
 1. **Kennzahlkacheln** oben: Kapitalwert gegenüber „ohne Speicher", Bezugsspitze vorher → nachher
    (mit Peak-Ziel), Ersparnis Stromrechnung, Vollzyklen je Einheit — vier Kacheln, keine Tabelle.
 2. **Diagnosebanner** (2.4): „Die Flotte hat im gesamten Zeitraum weder geladen noch entladen"
-   mit den Gründen und je einem Knopf zur Abhilfe („Netzladung erlauben", „Peak-Ziel bestimmen").
+   mit den Gründen und je einem Knopf zur Abhilfe („Peak-Ziel bestimmen…", „Netzladung
+   erlauben", „Zu Schritt 3 Betriebsführung"). Ein vierter Knopf — „Informationsstand auf
+   Idealwissen setzen" — erscheint nur, wenn die Hinweisliste die Kennung `PrognoseFehlt`
+   trägt (2.4 Punkt 7).
 3. **Vergleichstabelle** mit **drei** Spalten „Ohne Speicher · Mit Flotte · Δ", Δ farbig
    (grün = besser), Einheiten im Spaltenkopf, Nullzeilen (Einspeisung 0/0/0) einklappbar.
 4. **Jahresprojektion als Bild** (Balken Netto-Cashflow je Jahr, Linie kumuliert, Ersatzjahre
@@ -377,6 +380,18 @@ zweites Bild, das zweite Bild bleibt wählbar. Reihen je Einheit („Speicher A"
 6. **Start-SoC**: Produktivstandard SoC-Minimum (AP0) bleibt für den Projektlauf; die Studie zeigt
    das Feld „Start-Ladezustand" mit dem Hinweis, dass ein leerer Speicher vor einer Spitze am
    1. Januar nichts kappen kann. Keine stille Änderung des Standards (SD‑Q4).
+7. **Prognosepflicht der planenden Betriebsziele** (`FlottenPlausibilitaet.Prognosepflicht`,
+   Kennung `PrognoseFehlt`, Stufe **Problem**): `PvPlanung`, `Arbitrage` und `MultiUse` planen
+   je Schritt aus einem Prognose-Snapshot. Für den vorbelegten Informationsstand „Archivierte
+   Prognose-Snapshots" nimmt der Kern ausschließlich geladene Snapshots — die Istreihe wird nie
+   still als Prognose verwendet. Ist keiner geladen, meldet die Vorprüfung es **vor** dem Lauf,
+   der Rechenknopf ist gesperrt und nennt den Grund, und Aktivierung wie Projektlauf scheitern
+   benannt statt in der Engine. Der Wortlaut nennt beide Auswege und steht an drei Stellen
+   derselben Ressource: als Hinweiszeile über der Ablaufleiste, als Zeile unter dem Auswahlfeld
+   „Informationsstand" in Schritt 3 und — nach einem Lauf, der ihn trägt — in der Liste des
+   Diagnosebanners samt viertem Abhilfeknopf. **Die Vorbelegung bleibt „Archivierte
+   Prognose-Snapshots"**: Der Informationsstand ist eine bewusste Wahl und wird nicht still
+   umgestellt; die Abhilfe ist ein Knopf.
 
 Keiner dieser Punkte ändert einen Rechenwert eines gespeicherten Standes: Vorbelegungen greifen
 nur bei neuen Studien, die Vorgabe „Netzladung" nur, wenn der Stand die Eigenschaft nicht trägt —
