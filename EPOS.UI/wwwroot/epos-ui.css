@@ -1593,13 +1593,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
-/* Die beiden Knoepfe je Projektzeile bleiben schmal, aber beruehrbar: Die
+/* Die Knoepfe je Projektzeile bleiben schmal, aber beruehrbar: Die
    Mindesthoehe kommt von .epos-knopf, die Mindestbreite von 88 px wuerde die
    Tabelle auf dem iPad sprengen. */
 .epos-projekt-energie,
-.epos-projekt-bhkw {
+.epos-projekt-bhkw,
+.epos-projekt-simulation,
+.epos-projekt-assistent {
     min-width: 0;
     margin-right: 6px;
+}
+
+/* „Neues Projekt…" steht im SEITENKOPF und nicht in einer Zeile - ein neues
+   Projekt haengt an keinem vorhandenen (Befund W16a-O-4). Es rueckt an den
+   rechten Rand, damit Ueberschrift und Zahl links beieinander bleiben. */
+.epos-projekt-neu {
+    margin-left: auto;
 }
 
 /* ==========================================================================

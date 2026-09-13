@@ -110,6 +110,13 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     /// installierte Math-Erweiterung von <c>wiki.epos-plan.de</c>: „Unbekannte
     /// Funktion \lvert" — WikiTexVC kennt sie nicht. Der Betragsstrich ist
     /// <c>\left| … \right|</c> oder schlicht <c>|</c>.</para>
+    ///
+    /// <para>Die letzten neun Einträge — <c>\dfrac</c>, <c>\lceil</c>, <c>\rceil</c>,
+    /// <c>\lfloor</c>, <c>\rfloor</c>, <c>\Big</c>, <c>\qquad</c>, <c>\leq</c>,
+    /// <c>\geq</c> — stammen aus dem Abschnitt „Modul, Strang und Wechselrichter"
+    /// der Photovoltaikseite (Auf- und Abrunden der Strangzahl, die beidseitigen
+    /// Schranken der Strangprüfung) und sind WikiTexVC-sicher;
+    /// <c>BerechnungsknopfTests.cs</c> führt dieselben neun.</para>
     /// </summary>
     private static readonly string[] ErlaubteBefehle =
     {
@@ -120,7 +127,9 @@ public sealed class BerechnungshilfeTests : EposBunitContext
         "\\varepsilon", "\\tau", "\\varphi", "\\Delta", "\\Sigma", "\\pi", "\\kappa", "\\theta",
         "\\cos", "\\sin", "\\ln", "\\circ", "\\chi", "\\omega", "\\Psi", "\\ell", "\\dot",
         "\\le", "\\ge", "\\ne", "\\approx", "\\pm", "\\to", "\\infty", "\\in", "\\dots",
-        "\\quad", "\\,", "\\;", "\\ ", "\\\\"
+        "\\quad", "\\,", "\\;", "\\ ", "\\\\",
+        "\\dfrac", "\\lceil", "\\rceil", "\\lfloor", "\\rfloor",
+        "\\Big", "\\qquad", "\\leq", "\\geq"
     };
 
     /// <summary>
@@ -156,9 +165,16 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Kopfblock steht in den ersten vier Zeilen und nennt Seite, Stand und
+    /// Der Kopfblock steht in den ersten vier Zeilen und nennt Seite, Fassung und
     /// die Fundstellen im Rechenkern. Er ist ein Wiki-KOMMENTAR und damit auf der
     /// Wikiseite unsichtbar — er gehört dem Entwickler, nicht dem Leser.
+    ///
+    /// <para>Ein „Stand" oder ein Datum steht NICHT im Kopf: Die Rubrik beschreibt
+    /// die Funktion, so wie sie jetzt ist, und der Kommentar wandert beim Hochladen
+    /// in die Wikiseite mit. Was sich wann geändert hat, steht in der Wikiseite
+    /// „Update-Logbuch"; die Seite selbst trägt nur ihre Fassungsnummer. Derselbe
+    /// Anspruch steht in <c>EPOS.Kern.Tests/BerechnungsHilfeTests.cs</c>
+    /// (<c>Der_Kopfblock_traegt_weder_Stand_noch_Datum</c>).</para>
     /// </summary>
     [Theory]
     [MemberData(nameof(Seitennamen))]
@@ -172,7 +188,8 @@ public sealed class BerechnungshilfeTests : EposBunitContext
         Assert.StartsWith("<!--", zeilen[0].TrimStart(), StringComparison.Ordinal);
         Assert.Contains("EPOS-Plan Hilferubrik Berechnung", kopf, StringComparison.Ordinal);
         Assert.Contains("Seite: " + seite, kopf, StringComparison.Ordinal);
-        Assert.Contains("Stand: 2026-", kopf, StringComparison.Ordinal);
+        Assert.Matches(@"Fassung \d+", kopf);
+        Assert.DoesNotContain("Stand:", kopf, StringComparison.Ordinal);
         Assert.Contains("Rechenkern:", kopf, StringComparison.Ordinal);
         Assert.Contains("-->", string.Join("\n", zeilen.Take(6)), StringComparison.Ordinal);
     }

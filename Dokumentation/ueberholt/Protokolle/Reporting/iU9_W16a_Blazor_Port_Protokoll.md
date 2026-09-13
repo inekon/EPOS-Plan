@@ -264,7 +264,7 @@ nach der Welle, danach `Referenzlauf.exe vergleich <vorher> <nachher>`.
 | ~~**W16a‑O‑1**~~ | **Die Transaktion des Speicherwegs** (E‑4, zweite Hälfte) — **umgesetzt am 11.09.2026**, siehe den Abschnitt „W16a‑O‑1“ am Ende dieses Protokolls. 23 Methoden in `WizardCtrl` nehmen einen `DbVorgang` entgegen, `AssistentCtrl.Speichern` klammert den ganzen Lauf. **Die Auflage bleibt:** der Windows-`projekt`-Vergleich aus § 8 ist NICHT gefahren — Risiko R‑W16‑6 ist offen |
 | **W16a‑O‑2** | **`WizardCtrl.speichern`** ist ein totes Feld (B7). Streichen, sobald jemand die Klasse ohnehin anfasst |
 | **W16a‑O‑3** | **Der Assistent ist modal.** Sobald die Startseite Razor ist (W16b), könnte er eine freie Ansicht derselben WebView werden — dieselbe Frage wie R‑W10b‑1/R‑W11‑1 |
-| **W16a‑O‑4** | **`IosProjektQuelle.AssistentGaben`** ist nicht umgesetzt; der Assistent ist auf iOS damit angekündigt, aber nicht bedienbar (iU11) |
+| ~~**W16a‑O‑4**~~ | **`IosProjektQuelle.AssistentGaben`** — **umgesetzt am 13.09.2026**, siehe den Abschnitt „W16a‑O‑4" am Ende dieses Protokolls. Der Parametersatz liegt plattformfrei in `EPOS.UI.Daten`, die Windows-Schale ist auf ihre Naht geschrumpft. **Die Auflage bleibt:** der iOS-Teil ist ungebaut (kein Mac), und elf der dreizehn Schritte werden auf dem iPad benannt abgelehnt, bis die Fachmasken mit iU11 umziehen |
 
 ---
 
@@ -516,3 +516,168 @@ innerhalb des Speicherlaufs und wird der Lauf zurückgerollt, ist die Spalte wie
 weg, der gemerkte Wert sagt aber „vorhanden“ — bis zum nächsten Programmstart. Das
 trifft nur eine Datenbank, auf der die Schemamigration diese Spalten noch nicht
 angelegt hat.
+
+**Restpunkt W16a‑O‑1‑R2 (erledigt 13.09.2026):** `WIZ_SPEICHERN_FEHLER` endete auf
+„die bereits geschriebenen Angaben bleiben stehen." / „the entries already written
+remain in place." — seit der Transaktion oben nicht mehr wahr: Ein Fehlschlag rollt
+**alles** zurück, nichts bleibt geschrieben. Der Satz war bewusst unangetastet
+geblieben, weil die damalige Anweisung geänderte Meldetexte verbot; seine Neufassung
+war eine ausstehende Anwenderentscheidung. Anwenderentscheid 13.09.2026: Der Satz
+sagt jetzt, was zutrifft — in `Resource.resx`, `Resource.en-US.resx` **und** dem
+Rückfalltext in `AssistentCtrl.Meldungstext` (drei Stellen, sonst gälte im Rückfall
+weiter die Unwahrheit): „Das Projekt konnte nicht gespeichert werden.\n\nDer Schritt
+„{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert."
+bzw. „The project could not be saved.\n\nThe step "{0}" failed; nothing was saved,
+the project is unchanged." Der Titel `WIZ_SPEICHERN_FEHLER_TITEL` bleibt unverändert.
+
+**Dabei vermerkt (zwei vom Anwender am 13.09.2026 bestätigte Auslegungen aus #62b,
+nicht neu gebaut, im Bestand nachgeprüft):**
+
+- **62b‑A‑1:** „Abbrechen" geht durch dieselbe Rückfrage wie jeder andere Ausgang —
+  `AssistentSeite.BeiAbbrechen` ruft unbedingt `FrageVerlassen()`, und das fragt nur,
+  wenn `Ungespeichert` wahr ist (`AssistentSeite.razor:624‑636, 704‑707`).
+- **62b‑A‑2:** Ein Menüpunkt, der nur einen Dialog öffnet, statt die Ansicht zu
+  wechseln, fragt nicht — er verlässt den Assistenten nicht. Die Rückfrage hängt an
+  `AppWurzel.Zeige` (`AppWurzel.razor:874‑886`), die nur bei einem Wechsel des
+  `_ansicht`-Schlüssels prüft; ein Menüpunkt, den `HauptfensterHuelle.Weg` synchron
+  selbst als Dialog öffnet (`HauptfensterHuelle.cs:165‑204`), meldet dies der
+  `AppWurzel` gar nicht — `_ansicht` bleibt `Assistent`, `Zeige` wird nicht gerufen.
+
+
+---
+
+## W16a‑O‑4 — der Projektassistent auf dem iPad (13.09.2026)
+
+### Der Befund
+
+`EPOS.UI/Dienste/IProjektQuelle.cs:213` führt seit W16b
+`AssistentGaben(int betriebsart, int idProjekt)` mit der Standardfassung `null`;
+`AppWurzel:1014` nimmt zuerst den Delegaten der Hülle (den Windows-Weg) und fällt
+sonst auf die Projektquelle zurück (den iOS-Weg). `IosProjektQuelle` setzte ihn
+nicht um — auf dem iPad meldete die Wurzel deshalb die Statuszeile „Der
+Projektassistent steht auf diesem Gerät noch nicht zur Verfügung."
+
+### Die Ursache, und warum sie nicht in der Hülle lag
+
+Nicht die iOS-Hülle fehlte, sondern der **Ort** des Parametersatzes: Er stand
+vollständig in `WindowsFormsApplication1/Views/Wizard/AssistentHuelle`. Gemessen an
+dieser Datei war davon **zweierlei** wirklich Windows — die elf Seitenhüllen mit
+`IWin32Window`-Fensterbesitzer und die zwei Kurzhinweise der Startseite. Alles
+Übrige ruft Kern-Controller und `Dienste.*`. Dieselbe Lage und dieselbe Antwort wie
+bei den Simulationshüllen (Auftrag #208): Der Parametersatz zieht nach
+`EPOS.UI.Daten`, was die Plattform beisteuert, kommt als **benannte Naht** herein.
+
+### Was entstanden ist
+
+| Datei | Was |
+|---|---|
+| `EPOS.UI.Daten/Assistent/AssistentAnsichtQuelle.cs` | der ganze Parametersatz eines Laufs — Betriebsart, Projektliste, die vier Ablaufdelegaten, `ProjektMarkiert`, `ProjektOeffnen`, `Speichern`, `HatAenderungen` und die achtzehn Texte |
+| `EPOS.UI.Daten/Assistent/AssistentPlattformwege.cs` | die Naht: `SeitenGaben` (die elf), `SeitenSperrgrund`, `Kurzhinweis`, `HinweisProjektGeoeffnet` |
+| `EPOS.UI.Daten/Assistent/KomponentenauswahlHuelle.cs` | verschoben aus `Views/Wizard/` — sie kennt keine Plattform (0 Windows-Zeilen) |
+| `EPOS.UI.Daten/Assistent/ProjektKopfHuelle.cs` | verschoben aus `Views/Wizard/`; das tote Wunschmaß `MASS` (`System.Drawing.Size`) und `using System.Windows.Forms` sind dabei gefallen |
+| `WindowsFormsApplication1/Views/Wizard/AssistentHuelle.cs` | 383 → 151 Zeilen: nur noch `Seitengaben` für die elf Schritte und die zwei Kurzhinweise |
+| `EPOS.iOS/Dienste/IosProjektQuelle.cs` | **+52 Zeilen**, davon 7 Anweisungen — der ganze iOS-Teil |
+
+Der **Speicherweg** (W16a‑O‑1, #62a) ist nicht angefasst worden: `Speichern` ruft
+unverändert `AssistentCtrl.Speichern`, und der klammert den ganzen Lauf in einen
+`DbVorgang`.
+
+### Die zwei Dinge, die leicht ausgefallen wären
+
+1. **`HatAenderungen` (62b‑E‑1).** Der Delegat ist Teil des Satzes; ohne ihn gilt
+   „nichts zu verlieren", und ein Lauf verlöre seine Eingaben beim Verlassen
+   schweigend. Der Entscheid gilt ausdrücklich auf beiden Plattformen, und die
+   Rückfrage „Speichern / Verwerfen / Bleiben" steht damit auch auf dem iPad.
+2. **`WizardCtrl.Aktueller`.** `AssistentCtrl.Speichern` holt ihn sich; gesetzt wird
+   er allein in `Program.Main` (Windows). Eine Schale ohne `Program` hätte keinen,
+   und der erste Speicherlauf auf dem iPad wäre mit `Fehlgeschlagen("WizardCtrl")`
+   gescheitert — ohne dass jemand den Zusammenhang gesehen hätte. Die Quelle legt
+   ihn deshalb an, wenn er fehlt, und lässt einen vorhandenen in Ruhe (zwei
+   Prüffälle).
+
+### Kein stiller Ausfall
+
+Elf der dreizehn Schritte werden auf dem iPad **benannt abgelehnt** statt leer zu
+bleiben: `AssistentSeite` nimmt einen `SeiteSperrgrundText` und zeigt ihn anstelle
+des fehlenden Inhalts (neuer Schlüssel `WIZ_SEITE_NICHT_HIER`, deutsch und
+englisch). Unter Windows ist der Text leer — dort beantwortet die Hülle jeden
+Schritt, und es gibt keinen abgelehnten. Dieselbe Hausregel wie bei
+`SimulationPlattformwege.Ohne`.
+
+### Zwei Einstiege, wo es vorher keinen gab
+
+Auf iOS gibt es weder Startseite noch Menü; die Projektliste **ist** die
+Startansicht. Sie führt seither zwei Wege in den Assistenten — im Seitenkopf
+„Neues Projekt…" (`PROJEKT_NEU`) und je Zeile „Bearbeiten…"
+(`PROJEKT_BEARBEITEN`). Der Zeilenweg bringt sein Projekt als **Vorauswahl** des
+linken Bandes mit (`AssistentSeite.VorauswahlId`, wirkt genau einmal und geht
+denselben Weg wie eine Markierung von Hand). Unter Windows bleibt sie `0`.
+
+### Anwenderentscheid W16a‑O‑4‑Q1 (13.09.2026) — Weg (a): auf iOS wird IMMER gemerkt
+
+Die Windows-Unterscheidung `ProjektKontextCtrl.Setzen` (nicht merken) gegen
+`…Uebernehmen` (merken) trennt **zwei Einstiege**: die zwei Startkacheln merken, die
+zwei Menüwege „Neu"/„Bearbeiten" nicht. Auf iOS gibt es diese zwei Einstiege nicht —
+die Regel hätte dort keinen Gegenstand. Der Entscheid lautet deshalb: Jeder
+Assistentenlauf auf dem iPad gilt als „Öffnen" und schreibt `Tab_Applikation` fort
+(`Dienste.Projekt.Uebernehmen`). Eine zweite, nicht merkende Variante gibt es auf
+iOS nicht.
+
+`IProjektKontext` wird dafür **nicht** um `Setzen` erweitert: Das ist eine
+Windows-Bedienregel und gehört nicht in die geteilte Dienste-Schnittstelle. Der
+Nachzug unterscheidet deshalb am Träger — liegt in `Dienste.Projekt` ein
+`ProjektKontextCtrl` (Windows, `Program.cs:146‑147`), gilt die bisherige
+Unterscheidung Wort für Wort; jeder andere Träger übernimmt. Eine Wache hält das
+fest (`Setzen_steht_am_Controller_und_nicht_an_der_Schnittstelle`).
+
+### Die `[ThreadStatic]`-Klammer aus #62a auf dem MAUI-Faden
+
+`Vorgangsklammer` meldet den laufenden `DbVorgang` am **Faden** an, nicht über
+`AsyncLocal` — begründet in der Datei: Eine `SqliteConnection` darf nicht von zwei
+Fäden zugleich bedient werden. Sie trägt auf MAUI aus zwei Gründen:
+
+* `AssistentCtrl.Speichern` ist von der ersten bis zur letzten Zeile **synchron** —
+  kein `await`, kein `Task.Run`. Zwischen `Setzen` und `Dispose` gibt es keinen
+  Punkt, an dem der Faden wechseln könnte.
+* Der Aufruf kommt aus einem Blazor-Ereignis der `BlazorWebView`, und das läuft auf
+  dem UI-Faden (unter MAUI wie unter WinForms). Der Delegat `Speichern` ist ein
+  `Func<(string,string)?>` — auch die Naht dorthin ist synchron.
+
+Ein `await` im Speicherweg — auch ein später hinzugefügtes — bräche das: Die
+Fortsetzung liefe auf einem Pool-Faden ohne angemeldeten Vorgang, und die
+Katalogcontroller darunter holten sich wieder eigene Verbindungen. Das ist keine
+iOS-Eigenheit, sondern gilt unter Windows genauso; **gemessen wurde es auf dem
+Gerät nicht** (kein Mac).
+
+### Nachweise
+
+* **Kern** 2 759 → 2 768 (neun Fälle in `EPOS.Kern.Tests/AssistentAnsichtQuelleTests.cs`),
+  **UI** 3 976 → 3 982 (sechs Fälle in `AssistentTests` und `AppWurzelTests`), beide
+  Kulturen; SpeicherEngine 437, KiKern 488, SpeicherPlanung 27 (+1 übersprungen).
+* **Referenzlauf** 1030/1007/1017/1045/1046 byte-gleich gegen
+  `2026-09-11_R7_Speicherflotte` — der Rechenweg ist nicht berührt.
+* **Übersetzungsprobe der iOS-Hülle**, soweit ohne Mac möglich: die geänderten
+  Dateien `Dienste/IosProjektQuelle.cs` und `Pruefung/Prueflauf.cs` (dazu
+  `Datenbankbereitstellung.cs` und die zwei verlinkten Referenzlauf-Bausteine) gegen
+  die echten Projekte `EPOS.Kern`, `EPOS.UI` und `EPOS.UI.Daten`, mit den
+  Einstellungen von `EPOS.iOS.csproj` (`Nullable`/`ImplicitUsings` enable,
+  Assemblyname `EPOS.iOS`) → **0 Fehler, 0 Warnungen**. **Das ist kein iOS-Bau:**
+  `MauiProgram`, `App`, `HauptSeite`, `Platforms/` und die sieben MAUI-Adapter sind
+  darin nicht enthalten, und `net10.0-ios` ist auf Linux nicht herstellbar
+  (NETSDK1147).
+* **Prüfmodus.** `Pruefung/Prueflauf.cs` deckt den neuen Weg ab: Nach dem
+  Rechennachweis baut er den Parametersatz auf der echten Datenbank in der Sandbox
+  und schreibt eine Zeile
+  `Assistent: Schluessel=… Komponenten=… Projektkopf=… Gebaeude=abgelehnt Sperrgrund=… HatAenderungen=…`
+  ins Protokoll. Damit **belegt** der iOS-Lauf die Sache, statt nur zu übersetzen.
+  Die Probe liest ausschließlich und lässt den Rechennachweis unberührt.
+
+### Was OFFEN bleibt
+
+* **Der iOS-Bau ist nicht gefahren** (Anwenderfreigabe steht aus, der macOS-Läufer
+  zählt zehnfach).
+* **Elf der dreizehn Schritte** stehen auf dem iPad bis **iU11**; bedienbar sind
+  Komponentenauswahl und Projektkopf — und damit der Weg, auf dem ein Projekt
+  entsteht und gespeichert wird.
+* **Die Windows-Gegenprobe** am Gerät: dass die zwei Startkacheln weiterhin merken
+  und die zwei Menüwege weiterhin nicht.

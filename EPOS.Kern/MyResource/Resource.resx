@@ -14846,9 +14846,9 @@ Wirklich entfernen?</value>
     <value>Projektname fehlt</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER" xml:space="preserve">
-    <value>Das Projekt konnte nicht vollständig gespeichert werden.
+    <value>Das Projekt konnte nicht gespeichert werden.
 
-Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen.</value>
+Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert.</value>
   </data>
   <data name="WIZ_SPEICHERN_FEHLER_TITEL" xml:space="preserve">
     <value>Speichern fehlgeschlagen</value>
@@ -14870,6 +14870,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="WIZ_BTN_PROJEKT_OEFFNEN" xml:space="preserve">
     <value>Projekt öffnen</value>
+  </data>
+  <data name="WIZ_SEITE_NICHT_HIER" xml:space="preserve">
+    <value>Dieser Schritt des Projektassistenten steht auf diesem Gerät noch nicht zur Verfügung.</value>
   </data>
   <data name="WIZ_VERLASSEN_TITEL" xml:space="preserve">
     <value>Ungespeicherte Eingaben</value>
@@ -16733,6 +16736,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben blei
   </data>
   <data name="FLOTTE_PROJ_INVEST" xml:space="preserve">
     <value>Investition: {0} € · Kapitalwert gegenüber „ohne Speicher“: {1} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} € fest + {1} kWh × {2} €/kWh + {3} kW × {4} €/kW = {5} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME" xml:space="preserve">
+    <value>Summe der Einheiten</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_SUMME_FORMEL" xml:space="preserve">
+    <value>{0} €</value>
+  </data>
+  <data name="FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS" xml:space="preserve">
+    <value>Leistung = größere der beiden Leistungen (Laden, Entladen).</value>
   </data>
   <data name="FLOTTE_PROJ_WIEDERHOLUNG" xml:space="preserve">
     <value>Projektion: Das Referenzjahr wird ausdrücklich über die gewählte Laufzeit wiederholt.</value>

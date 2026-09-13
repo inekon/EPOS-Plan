@@ -741,6 +741,79 @@ Schätzung nur als Gerüst enthalten.
 - `WindowsFormsApplication1\Allgemein\KI\KiChatService.cs`, `HilfeWissen.cs`,
   `HilfeKontext.cs` — der heutige Prompt-Aufbau
 
+## 13. Inhaltsregeln für die Wiki-Seiten
+
+Die Wiki-Seiten sind Hilfe- und Grundlagentexte für jeden Anwender. Zwei Regeln gelten für
+alle Seiten der Rubrik „Programm Dokumentation" und sinngemäß für alle Hilfe- und
+Grundlagenseiten. Für Seiten mit Repo-Quelle halten die Wächter im Kern beide Regeln, für
+Seiten ohne Repo-Quelle prüft die Orchestrierung vor jedem Upload mit denselben Mustern.
+
+### 13.1 Nur der gültige Stand
+
+Eine Fachseite beschreibt die Funktion, wie sie jetzt ist. Was sich geändert hat, steht
+allein auf der Seite „Update-Logbuch" (Datum, Text, nach Version geordnet, neueste oben).
+Wortlaut, Tabuliste und Prüfmuster stehen im Abschnitt „Dokumentation" der Wurzel-`CLAUDE.md`.
+
+### 13.2 Keine Hersteller- und Produktdaten
+
+**Regel:** Keine Wiki-Seite nennt einen Hersteller, ein Produkt, eine Typbezeichnung oder
+Kennwerte, Preise und Datenblattangaben eines konkreten Produkts. Das gilt für Fließtext,
+Tabellen, Beispiele, Bildunterschriften, Menü- und Fehlertexte, Beispielausgaben des Programms
+und HTML-Kommentare.
+
+**Warum:** Die Kataloge von EPOS-Plan enthalten Herstellerdaten, die die Hersteller unter
+eigenen Bedingungen bereitstellen (Datenblätter, VDI-3805-Sätze, CEC- und PVsyst-Listen).
+Das Wiki ist öffentlich und beschreibt das Programm, nicht die Produkte. Ein Produktname im
+Beispiel wirkt wie eine Empfehlung, altert mit dem Katalog und kann Marken- und
+Nutzungsrechte berühren.
+
+**Was erlaubt bleibt:**
+
+- Datenquellen, Normen und Formate beim Namen: VDI 3805, VDI 4640, VDI 6002, DIN, EN, ISO,
+  die CEC-Listen der California Energy Commission, PVsyst-Formate `.PAN` und `.OND`, bslib,
+  GEMIS, UBA-Emissionsfaktoren, DWD und TRY, BDEW-Lastprofile. Sie beschreiben den Importweg
+  und die Herkunft, nicht ein Produkt.
+- Gattungsbegriffe und Technikklassen: Luft-Wasser-Wärmepumpe, Lithium-Eisen-Phosphat,
+  Brennwertkessel, Flachkollektor, monokristallines Modul.
+- Richtwerte ohne Produktbezug sowie die Konstanten und Vorgaben des Rechenwegs.
+- Software- und Plattformnamen, die Systemvoraussetzungen und Bedienung brauchen (Windows,
+  iOS, WebView2, MediaWiki), der Anbieter selbst und die Angaben in Impressum und Datenschutz.
+
+**Wie Beispiele geschrieben werden:** neutrale Namen mit rundem Kennwert — „Wärmepumpe A",
+„Modul B, 400 W", „Speicher 1, 100 kWh"; laufende Nummern statt Typnamen („Speicher 1",
+„Speicher 2"); Kennwerte als runde Zahlen, die keinem Datenblatt zuzuordnen sind. Wer ein
+Beispiel aus einem Referenzprojekt ableitet, schreibt die Katalogwerte nicht ab, sondern
+rundet und benennt um.
+
+**Prüfung:**
+
+- Der Wächter `EPOS.Kern.Tests/WikiProduktdatenWacheTests` hält die Repo-Quellen
+  `EPOS.Kern/Allgemein/Hilfe/Berechnung/*.wiki` und `Projekte/Wiki/*.wiki` gegen die
+  Hersteller- und Typnamen der Kataloge in `Referenzlaeufe/Kenndaten_Test.sqlite` (Spalten
+  `Firma` und `Hersteller` der `Tab_*`-Kataloge ohne die Platzhalter „Muster", „test",
+  „meins", „EPOS-Plan Referenz") und gegen eine feste Liste bekannter Hersteller und
+  Typcode-Muster.
+- Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
+  die Orchestrierung vor jedem Upload mit derselben Liste.
+
+### 13.3 Veröffentlichung höchstens einmal je Woche
+
+**Regel:** Die Repo-Quellen der Wiki-Seiten werden mit jedem Auftrag fortgeschrieben und von den
+Wächtern geprüft; ins Wiki geladen wird gebündelt, höchstens einmal je Woche, für alle seit dem
+letzten Upload geänderten Seiten. Früher wird nur geladen, wenn eine Änderung wesentlich ist: eine
+neue oder geänderte Bedienung, die ein Anwender bereits in Händen hat, ein neuer Rechenweg oder eine
+Aussage auf einer Seite, die nicht mehr zutrifft.
+
+**Warum:** Jeder Upload kostet Probe, Nachprobe, Revisionsvermerk und Logbuchpflege; Zwischenstände
+einer Woche erreichen den Anwender ohnehin erst mit dem nächsten Programmstand. Ein gebündelter
+Upload hält Wiki und Auslieferung beieinander und erspart den Lesern halbfertige Seiten.
+
+**Ablauf:** Die Statusdatei führt ausstehende Seiten unter dem Punkt des jeweiligen Auftrags
+(„Upload ausstehend: <Seiten>"). Der Wochenupload nimmt alle, prüft je Seite den Live-Stand gegen
+die Quelle (Regel 3 des Abschnitts „Bedienungsseiten mit Repo-Quelle"), lädt, vermerkt die Revisionen
+in diesem Konzept und veröffentlicht die gesammelten Logbuch-Einträge in einem Zug; die Versionsnummer
+für das Logbuch erfragt die Orchestrierung beim Anwender.
+
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
 Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.
@@ -771,9 +844,11 @@ Deshalb gilt seither:
    fortgeschrieben wird, bekommt eine Quelle unter `Projekte/Wiki/`.** Der Dateiname ist der
    Wikititel mit ` - ` statt `/`, also
    `Projekte/Wiki/Programm Dokumentation - <Kurzname>.wiki`.
-2. **Der Kopf der Datei ist ein Wiki-Kommentar** und nennt Wikititel, Repo-Pfad, Stand und die
-   Pflegeregel. Er ist auf der Wikiseite unsichtbar und beantwortet trotzdem die Frage, die
-   sonst niemand beantworten kann: *Wo ist die Quelle dieses Textes?*
+2. **Der Kopf der Datei ist ein Wiki-Kommentar** und nennt Wikititel, Repo-Pfad und die
+   Pflegeregel. Er trägt keinen Stand, keine Auftragsnummer und keinen Entscheidvermerk —
+   die Rubrik beschreibt nur die Funktion, so wie sie jetzt ist. Er ist auf der Wikiseite
+   unsichtbar und beantwortet trotzdem die Frage, die sonst niemand beantworten kann:
+   *Wo ist die Quelle dieses Textes?*
 3. **Vor dem Hochladen wird der Live-Stand gelesen und verglichen.** Ist er neuer, wird er
    ZUERST in die Repo-Quelle übernommen; erst dann wird ergänzt. Der Diff gehört in den
    Bericht des Auftrags.
@@ -789,13 +864,21 @@ Die Rubrik **Berechnung** bleibt davon unberührt: Ihre Quellen liegen weiterhin
 sie dort ausgeliefert und geprüft werden. `Projekte/Wiki/` ist ausdrücklich **kein** zweiter
 Ablageort für sie.
 
-Die ersten zwei Seiten dieser Art (Auftrag #203), die dritte mit Auftrag #207:
+Die Bedienungsseiten mit einer Quelle unter `Projekte/Wiki/` (die ersten drei mit den
+Aufträgen #203 und #207):
 
 | Wikititel | Repo-Quelle |
 |---|---|
 | `Programm Dokumentation/Stromspeicher` | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` |
 | `Programm Dokumentation/Hilfe-Assistent` | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` |
 | `Programm Dokumentation/Simulation` | `Projekte/Wiki/Programm Dokumentation - Simulation.wiki` |
+| `Programm Dokumentation/Varianten` | `Projekte/Wiki/Programm Dokumentation - Varianten.wiki` |
+| `Programm Dokumentation/Emissionen` | `Projekte/Wiki/Programm Dokumentation - Emissionen.wiki` |
+| `Programm Dokumentation/Photovoltaik` | `Projekte/Wiki/Programm Dokumentation - Photovoltaik.wiki` |
+| `Programm Dokumentation/Pufferspeicher` | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` |
+| `Programm Dokumentation/Simulationsergebnisse` | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` |
+| `Programm Dokumentation/Wirtschaftlichkeit` | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` |
+| `Programm Dokumentation/Kosten` | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,
@@ -838,6 +921,8 @@ mit Rest-Segment und Erzeugertabelle; das zweite Übersichtsblatt im Reiter „E
 #221-Absätzen (Anwenderentscheid KI‑D‑E‑1: eine Marke je Bildschirm, die im Kopfband der Ansicht folgt und blau ausgefüllt bleibt, solange das
 Gespräch zu dieser Ansicht offen ist; Kontextzeile „Simulation · 3 Ergebnis · Stromspeicher"; was der Assistent in der Simulation liest und setzt);
 die Nachprobe per `action=raw` ist bis auf den fehlenden Zeilenumbruch am Dateiende zeichengleich mit der Quelle.
+
+**Dazu am 13.09.2026 die Bereinigung aller Fachseiten der Rubrik** (Aufträge #250 und #251, Merges `f867255e`, `7846a234`, `be09f8e0`, `ef432b9f`, Gate sept61): 13 Rechenwegseiten samt Rubrikseite Berechnung Revisionen 568–581, zehn Bedienungsseiten Revisionen 582–591 (Stromspeicher 582, Simulation 583, Hilfe-Assistent 584, Varianten 585, Emissionen 586, Photovoltaik 587, Pufferspeicher 588, Simulationsergebnisse 589, Wirtschaftlichkeit 590, Kosten 591). Probe vor dem Upload: alle 24 Live-Stände gleich der Kopie vor der Bereinigung; Nachprobe per `action=raw`: alle 24 zeichengleich zur Quelle. Fassungsnummern der Rechenwegseiten unverändert (12 × Fassung 3, Stromspeicher Fassung 7); die Regeln dazu stehen in Abschnitt 13.
 **Dazu `Simulation` Revision 551** (11.09.2026, Merge `d5c8c98` — vor der Historienbereinigung `97dc344` —, Gate sept34) mit dem #220-Abschnitt „Der Reiter Simulation der
 Startseite" (Anker `startreiter`: die Kachel rechnet an Ort und Stelle, rechts das Ergebnis, ein Lauf zur Zeit); Nachprobe per
 `action=raw` findet den Anker. **Dazu `Hilfe-Assistent` Revision 553** (11.09.2026, Merge #227) mit dem Absatz zur Startzeile
@@ -870,4 +955,4 @@ Probe vor dem Upload 5+/1− (Kopfkommentar und der eine Absatz), Nachprobe 561 
 ohne gültiges Ergebnis (nur die zwei Bedarfszahlen und ein Hinweis, woran es liegt; nach einer Änderung in der Speicher-Auslegung gilt das
 Ergebnis als veraltet); Probe 1+/0− gegen Revision 560, Nachprobe 562 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Dazu `Varianten` Revision 563** (12.09.2026, Merge `7c61416`, Gate sept48, #238): der Punkt „Variante" beschreibt
 das Auswahlfeld mit den Projektnamen (Stamm zuerst) statt der Tabelle von vor W5‑E‑1; Probe 3+/2− gegen Revision 561 (Kopfzeile und der
-eine Punkt), Nachprobe 563 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher, Revision 564 (12.09.2026, Auftrag #239):** die Bedienungsseite „Programm Dokumentation/Stromspeicher" trägt in Schritt 1 die drei Quellen des Knopfs „Speicher hinzufügen" (Speicheranlage des Projekts, Speicherkatalog, leere Einheit), das Kopieren und die Zeile „Speicheranlagen des Projekts sind nicht in der Flotte" mit „Aufnehmen" — der bisherige Satz „als Vorlage dient ein Satz aus dem Speicherkatalog" beschrieb etwas, das es im Programm nicht gab. Quelle `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki`; Probe 13+/1− gegen Revision 555 (nur Schritt 1, Live-Stand war zeichengleich zur Quelle, nichts zu übernehmen), Nachprobe 564 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher Revision 565 und Berechnung/Stromspeicher Revision 566 (12.09.2026, Merge `80e2788f`, Gate sept56, Auftrag #247):** Beide Quellen sind auf die zwei Suchmethoden der Station „4 Optimierung“ fortgeschrieben — `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` (Schritt 1 mit der Übernahme ausgewählter Einheiten ins Projekt, Schritt 4 mit den drei Suchmethoden, dem Suchraum als Karte je Einheit und der Kandidatenzeile je Methode) und `EPOS.Kern/Allgemein/Hilfe/Berechnung/Stromspeicher.wiki` **Fassung 7** (Abschnitt „Rastersuche“: je Lauf eine Variationsart, Kandidatenzahl je Methode, kein Feinraster über Stückzahlen, die drei benannten Ablehnungen). Probe vor dem Upload: beide Live-Seiten zeichengleich zur Quelle vor #247 (Revisionen 564 bzw. die Fassung 6), nichts zu übernehmen; Diff 54+/10− bzw. 30+/4−; Nachprobe 565 und 566 zeichengleich bis auf den Zeilenumbruch am Dateiende.
+eine Punkt), Nachprobe 563 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher, Revision 564 (12.09.2026, Auftrag #239):** die Bedienungsseite „Programm Dokumentation/Stromspeicher" trägt in Schritt 1 die drei Quellen des Knopfs „Speicher hinzufügen" (Speicheranlage des Projekts, Speicherkatalog, leere Einheit), das Kopieren und die Zeile „Speicheranlagen des Projekts sind nicht in der Flotte" mit „Aufnehmen" — der bisherige Satz „als Vorlage dient ein Satz aus dem Speicherkatalog" beschrieb etwas, das es im Programm nicht gab. Quelle `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki`; Probe 13+/1− gegen Revision 555 (nur Schritt 1, Live-Stand war zeichengleich zur Quelle, nichts zu übernehmen), Nachprobe 564 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher Revision 565 und Berechnung/Stromspeicher Revision 566 (12.09.2026, Merge `80e2788f`, Gate sept56, Auftrag #247):** Beide Quellen sind auf die zwei Suchmethoden der Station „4 Optimierung“ fortgeschrieben — `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` (Schritt 1 mit der Übernahme ausgewählter Einheiten ins Projekt, Schritt 4 mit den drei Suchmethoden, dem Suchraum als Karte je Einheit und der Kandidatenzeile je Methode) und `EPOS.Kern/Allgemein/Hilfe/Berechnung/Stromspeicher.wiki` **Fassung 7** (Abschnitt „Rastersuche“: je Lauf eine Variationsart, Kandidatenzahl je Methode, kein Feinraster über Stückzahlen, die drei benannten Ablehnungen). Probe vor dem Upload: beide Live-Seiten zeichengleich zur Quelle vor #247 (Revisionen 564 bzw. die Fassung 6), nichts zu übernehmen; Diff 54+/10− bzw. 30+/4−; Nachprobe 565 und 566 zeichengleich bis auf den Zeilenumbruch am Dateiende. **Stromspeicher Revision 567 (13.09.2026, Merge `c0d85c39`, Gate sept58, Auftrag #249):** die Bedienungsseite trägt im Listenpunkt „Jahresprojektion" der Station 5 den Satz zur Herleitung der Investition je Einheit (fester Anteil, Kapazitätsanteil kWh × €/kWh, Leistungsanteil kW × €/kW mit der größeren der beiden Leistungen, bei mehreren Einheiten die Summe) — das Programm zeigt diese Zeilen seit #249 unter „Investition: … €". Quelle `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki`; Probe vor dem Upload: Live-Stand zeichengleich zur Quelle vor #249 (Revision 565), nichts zu übernehmen; Diff 1+/1−; Nachprobe 567 zeichengleich bis auf den Zeilenumbruch am Dateiende.

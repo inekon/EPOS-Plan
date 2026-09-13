@@ -5069,3 +5069,76 @@ steht aus und ist die eigentliche Aufgabe von
 > des Editors. Kein Rechenweg berührt. **Gate sept57 auf `d6dfe01d`:** Kern 2 759, UI 3 976, Engine 437, KiKern 488, 5 eindeutige
 > Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Windows-Abnahme beim
 > Anwender offen.
+
+## #249 — Herleitungszeile der Investition unter der Jahresprojektion (13.09.2026, Nachtrag aus dem Merge)
+
+> **#249 (13.09.2026, Anwender „Herleitungszeile Investition: ja") — umgesetzt (Merge `c0d85c39`, Agent Opus).** Anlass war die
+> Anwenderfrage vom 12.09.: 150 €/kWh × 1 395 kWh sind 209 250 €, die Station „5 Ergebnis" nannte unter der Jahresprojektion aber
+> 284 250 € — die Differenz steckte im festen und im Leistungsanteil, die die Summenzeile nicht auswies. Jetzt steht unter
+> „Investition: … €" je Einheit eine Herleitungszeile des Hauses (`Herleitungszeile`, Text = Name, Formel =
+> „fest + kWh × €/kWh + kW × €/kW = Summe"), ab zwei Einheiten eine Summenzeile darunter, einmal der Hinweis, dass die Leistung die
+> größere der beiden Leistungen ist. Die Zahlen liefert `SpeicherFlottenAnzeigeCtrl.Investitionsherleitung` aus der Formel
+> `FlottenWirtschaftlichkeit.Investition` (jetzt public), die auch den Kapitalwert speist — der Kern-Test hält die Summe der Zeilen
+> gegen `InvestitionEuro` der gerechneten Studie und führt den Fall des Anwenders (75 000 € fest, 1 395 kWh × 150, 500 kW × 0 =
+> 284 250). Ressourcen `FLOTTE_PROJ_INVEST_*` de/en, bunit-Fälle (eine Einheit ohne Summenzeile, zwei mit), Konzept
+> Stromspeicher-Dialoge 2.2, Wiki-Bedienungsseite Station 5 (Revision 567). Kein Rechenweg berührt. **Gate sept58 auf `c0d85c39`:**
+> Kern 2 764, UI 3 981, 5 eindeutige Warnungen, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Windows-Abnahme beim
+> Anwender offen.
+
+## #250 — Wiki „Programm Dokumentation" ohne Änderungshinweise (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderauftrag 13.09.2026:** „entferne aus der wiki unter Programm Dokumentation die Änderungshinweise, weis zum
+> Beispiel "seit dem <datum>…"." — zusammen mit der neuen Wiki-Regel der Wurzel-`CLAUDE.md` (Fachseiten beschreiben nur
+> die Funktion, wie sie ist; Änderungskommentare nur im „Update-Logbuch").
+>
+> **Umsetzung (zwei Agenten Opus in Worktrees, Merges `f867255e` und `7846a234`):** Rubrik Berechnung — die 13
+> Rechenwegseiten und der Index aus `EPOS.Kern/Allgemein/Hilfe/Berechnung/` ohne Datums-, Auftrags-, Befund- und
+> Entscheidvermerke (rund 61 Stellen), Kopfblock `Seite | Fassung n | Rechenkern` ohne Stand; zuvor Live-Stand von
+> Heizkessel (Handbereinigung) und Photovoltaik (Abschnitt „Modul, Strang und Wechselrichter — Prüfung und Auslegung",
+> rund 200 Zeilen, nur im Wiki entstanden) in die Quellen übernommen. Wächter `BerechnungsHilfeTests`: Kopfblock ohne
+> Datum, neuer Fall `Keine_Seite_der_Rubrik_traegt_einen_Aenderungshinweis` mit 13 benannten fachlichen Ausnahmen;
+> Zwillingsliste in `EPOS.UI.Tests/BerechnungsknopfTests` nachgezogen. Bedienungsseiten — vier bestehende Quellen
+> unter `Projekte/Wiki/` (Stromspeicher, Simulation, Hilfe-Assistent, Varianten) bereinigt, fünf neue Quellen aus dem
+> Live-Stand (Emissionen, Photovoltaik, Pufferspeicher, Simulationsergebnisse, Wirtschaftlichkeit) plus Kosten (für
+> #251); Kopfblock dreizeilig ohne Stand; Konzept Hilfesystem Regel 2 und Quellentabelle (zehn Seiten). Fachliche
+> Treffer der Tabuliste („Vorschlag zur Entscheidung", Spalte „Geändert", „Bezugsspitze vorher → nachher") bleiben.
+> **Gate sept60 auf `ef432b9f`:** GRÜN — Kern 2 779, UI 3 987, SpeicherEngine 437, KiKern 488, SpeicherPlanung 27 (1 übersprungen), Formularkarte 122; 5 eindeutige Warnungen (alle vorbestehend); SQL-Dialektprüfer 0 von 1 362; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Gate sept60 auf `c212f259` war rot: 17 Fälle des Zwillingswächters `EPOS.UI.Tests/BerechnungshilfeTests` (Kopfblock erwartete „Stand: 2026-", neun LaTeX-Befehle des übernommenen PV-Abschnitts fehlten, eine unnummerierte Anzeigegleichung) — behoben mit #250C (Merge `ef432b9f`: Wächter auf „Fassung n", Befehlsliste ergänzt, Umrechnung der Temperaturkoeffizienten als Fließtext). **Upload (Bot-Konto, Kennwort nur als Umgebungsvariable):** 24 Seiten am 13.09.2026, Probe vor dem Upload alle 24 Live-Stände gleich der Kopie vor der Bereinigung, Nachprobe per `action=raw` alle 24 zeichengleich zur Quelle — Rechenwegseiten Revisionen 568–580 (BHKW 568, Brauchwasser 569, Heizkessel 570, Photovoltaik 571, Prozesswärme 572, Pufferspeicher 573, Simulationsablauf 574, Solarthermie 575, Strombedarf 576, Stromspeicher 577, Wärmebedarf 578, Wärmepumpe 579, Wärmequelle Erdreich 580), Rubrikseite Berechnung 581, Bedienungsseiten Stromspeicher 582, Simulation 583, Hilfe-Assistent 584, Varianten 585, Emissionen 586, Photovoltaik 587, Pufferspeicher 588, Simulationsergebnisse 589, Wirtschaftlichkeit 590, Kosten 591; Fassungsnummern der Rechenwegseiten unverändert (12 × Fassung 3, Stromspeicher Fassung 7).
+> **Logbuch:** 20 Einträge als Entwurf gesammelt; Versionsnummer beim Anwender erfragt, Upload erst nach Antwort.
+> **Befunde ohne Auftrag:** elf Live-Rechenwegseiten setzen eingerückte Fortsetzungszeilen als `<pre>`-Kästen (BHKW 16);
+> `BerechnungsSeite.Stand` ohne Leser; „Was ist neu"-Liste hinter `{{Anker|ablauf-neu}}` der Simulationsseite doppelt
+> Teile des Abschnitts darüber.
+
+## #251 — Wiki ohne Hersteller- und Produktdaten, Regel und Wächter (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderauftrag 13.09.2026:** „prüfe die Dokumentation auf der Wiki: es dürfen keine Herstellerdaten oder
+> Produktdaten enthalten sein. Schreibe die Regel auch in die wiki .md Dokumentation".
+>
+> **Prüfung:** alle 138 Seiten des Hauptnamensraums (Kopien über `action=raw`), Wortgrenzen-Scan gegen die 25 Firmen
+> und Typen der Katalogtabellen von `Kenndaten_Test.sqlite` plus bekannte Hersteller und Typcode-Muster, danach drei
+> Leseagenten (Sonnet) mit Urteil über jede Seite. Befund: genau zwei Fundstellen — Bedienungsseite Stromspeicher
+> („Growatt WIT 1", „Growatt WIT 2" als Beispiel laufender Nummern) und Bedienungsseite Kosten („Wärmepumpe
+> „CS6800iAW", Photovoltaik „Jinkosolar"" als Beispiel der Trägerliste). Datenquellen und Formate (VDI 3805, CEC-Liste,
+> PVsyst .PAN/.OND, bslib, GEMIS) sind keine Produktdaten und bleiben; ein Praxisbeispiel in Grundlagen/Hydraulikschemata
+> nennt weder Hersteller noch Typ.
+>
+> **Umsetzung (Agent Opus, Merge `be09f8e0`, Glättung `c212f259`):** beide Beispiele neutral („Speicher A 1", „Speicher
+> A 2"; „Wärmepumpe „Anlage A", Photovoltaik „Modul B""); Kosten bekam dafür eine Repo-Quelle aus dem Live-Stand
+> (`6f960c92`). Regel als Abschnitt 13 „Inhaltsregeln für die Wiki-Seiten" im Konzept Hilfesystem (13.1 nur der
+> gültige Stand, 13.2 keine Hersteller- und Produktdaten: Regel, Grund, was erlaubt bleibt, wie Beispiele geschrieben
+> werden, Prüfung) und als Sätze im Wiki-Punkt der Wurzel-`CLAUDE.md`. Wächter `EPOS.Kern.Tests/WikiProduktdatenWacheTests`
+> (5 Fälle) hält die 25 Repo-Wikiquellen gegen 257 Katalognamen der Testdatenbank (Firma/Hersteller/Bezeichner der acht
+> Kataloge, Platzhalter und Kurznamen ausgenommen), eine feste Liste von 55 Herstellern und ein Typcode-Muster mit
+> Normausnahmen; Seiten ohne Repo-Quelle prüft die Orchestrierung vor jedem Upload. **Gate sept60 auf `ef432b9f`:** siehe #250.
+> **Upload:** Stromspeicher und Kosten zusammen mit #250 (Revisionen 582 und 591).
+
+## #252 — Update-Logbuch 1.2.0.0 und Regel zum Upload-Rhythmus (13.09.2026, Nachtrag aus dem Merge)
+
+> **Anwender 13.09.2026:** Versionsnummer 1.2.0.0 für die 20 Logbuch-Einträge; „aktualisiere die wiki nicht nach jeder
+> änderung, maximal ein mal pro woche oder bei wesentlichen Änderungen. Nehme die Regel in die entsprechenden .md
+> Dokumentation auf."
+>
+> **Umsetzung:** Seite „Update-Logbuch" — Live-Stand gleich der Kopie, Abschnitt „Version 1.2.0.0 – September 2026" um die
+> 20 Einträge aus #250 (nach Datum, neueste zuerst) ergänzt, Einleitungssatz auf „An der Bedienung ändert die Umstellung
+> nichts." geschärft; Revision 592, Nachprobe per `action=raw` zeichengleich, 40 Listenpunkte gerendert ohne Fehler. Regel
+> als Abschnitt 13.3 im Konzept Hilfesystem (Regel, Warum, Ablauf mit „Upload ausstehend" in der Statusdatei) und als Absatz
+> im Wiki-Punkt der `CLAUDE.md`. Kein Code, kein Gate nötig; die zwei Dokumentationswachen laufen vor dem Push.

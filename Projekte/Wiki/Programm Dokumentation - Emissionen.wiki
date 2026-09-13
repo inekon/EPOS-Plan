@@ -1,0 +1,23 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Emissionen
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Emissionen.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Emissionsfaktor-Katalog''' verwaltet die Emissionsarten und die Faktoren, mit denen die Verbräuche eines Projekts bewertet werden. Links stehen die Arten – CO₂ als Pflichtart, dazu SO₂, NO<sub>x</sub>, Staub, Methan und Lachgas –, rechts die Werte der markierten Art für den aufgerufenen Energieträger sowie die trägerunabhängigen Vorlagen.
+
+== Eingaben ==
+
+* '''CO₂-Berechnung''' – die programmweite Vorgabe, ob mit reinem CO₂ oder mit dem CO₂-Äquivalent (GWP₁₀₀) gerechnet wird.
+* '''Emissionsarten''' – je Art Kürzel, Name, Einheit (g/kWh oder mg/kWh) und Äquivalenzfaktor. Das Kästchen davor entscheidet, ob die Art beim Energieträger als Feld erscheint und in die CO₂-Äquivalentsumme eingeht; CO₂ ist Pflichtart und nicht abwählbar.
+* '''Werte''' – je Zeile Quelle, Wert, die Angabe, ob der Wert bereits ein CO₂-Äquivalent ist, und der Stand ''geltend'', ''Träger'' oder ''Vorlage''. Ausgelieferte Quellen sind unter anderem die UBA-Liste der Emissionsfaktoren und GEMIS 5.2.
+* {{Anker|werte-je-traeger}}'''Werte des aufgerufenen Trägers''' – wird der Katalog aus einem Energieträger heraus geöffnet, zeigt die Liste nur die Werte dieses Trägers, den geltenden zuerst. Bei elektrischer Energie stehen also nur die Stromwerte, bei einem fossilen Träger nur dessen Werte. Die trägerunabhängigen Vorlagen erscheinen nur dann, wenn der Träger selbst keine Werte führt; ohne Trägerkontext – im Verwaltungsmodus – stehen die Arten und die Vorlagen.
+* '''Übernehmen''' – kopiert den markierten Katalogwert als geltenden Wert des Energieträgers und vermerkt die Herkunft; eine spätere Katalogänderung wirkt nicht auf das Projekt zurück.
+* '''Neu…''' und '''Bearbeiten…''' – für eigene Arten und eigene Werte; ein Wert ohne Trägerbindung gilt als Vorlage für alle Energieträger.
+* {{Anker|ausgeliefert}}'''Ausgelieferte Einträge''' – sind unveränderlich. ''Bearbeiten…'' und ''Löschen'' sind frei, sobald ein Wert markiert ist; bei einem ausgelieferten Wert erklärt der Klick, dass ausgelieferte Katalogwerte über neue Jahreszeilen fortgeschrieben werden und daneben ein eigener Wert anzulegen ist. Eigene Werte lassen sich ändern und löschen. Passt eine ganze Art nicht, wird sie abgewählt statt gelöscht.
+
+== Siehe auch ==
+
+* [[Grundlagen/Vergleich Energiebilanz]] – wie aus Brennstoff- und Stromverbrauch Emissionen werden
+* [[Kosten und Energiepreise]] – Energieträger, Preise und Emissionsfaktoren mit Gültigkeitsdatum
+* [[Programm Dokumentation/Kosten#energietraegerverwaltung|Kosten: Energieträgerverwaltung]] – die Energieträger des Projekts und ihre Zuordnung
+* [[Grundlagen/Wirtschaftlichkeitsrechnung]] – Bewertung von CO₂-Preis und Emissionsbilanz
+
+[[Kategorie:Programm Dokumentation]]

@@ -1,4 +1,4 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmequelle Erdreich | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmequelle Erdreich | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/ErdreichTemperatur.cs, EPOS.Kern/Allgemein/Simulation/VDI4640Pruefung.cs,
      EPOS.Kern/Allgemein/Simulation/ErdreichAuswertung.cs, EPOS.Kern/Allgemein/Simulation/WaermequelleClass.cs -->
 
@@ -388,7 +388,7 @@ Sondenzahl <math>n_{\mathrm{S}}</math> (Reihe, Abstand 6 m) und den Jahresvollla
 Zwischenwerte entstehen durch '''lineare Interpolation''' zwischen den Stuetzstellen. Liegt
 noch kein Lauf vor, tritt an die Stelle von <math>t_{\mathrm{V}}</math> der Zonenwert nach DIN 4710.
 
-'''Tabelle B2 ist nur als Auszug hinterlegt''' (in Umsetzung, Stand 06.09.2026):
+'''Tabelle B2 ist nur als Auszug hinterlegt''':
 Stuetzstellen sind <math>\lambda</math> = 1, 2, 3, 4 W/(m·K), <math>t_{\mathrm{V}}</math> = 1 200 / 1 800 / 2 400 h/a und
 <math>n_{\mathrm{S}}</math> = 1 bzw. 5 (bei 2 400 h: 1 bzw. 4). Ausserhalb wird auf den Randwert geklemmt —
 auf der Sondenzahl-Achse ist das '''nicht konservativ''', weil <math>q_{\mathrm{B,zul}}</math> mit der
@@ -435,8 +435,8 @@ eine ZUSAETZLICHE, strengere Anzeige.
 * '''Kein Sondenmodell.''' Bohrlochwiderstand, Sondenabstand, Verfuellung und Grundwasserstroemung kommen in (7) nicht vor; die Sonde ist eine Konstante.
 * '''Ein Bodentyp je Anlage.''' Geschichteter Untergrund wird nicht abgebildet — <math>\lambda</math> und <math>\rho \cdot c_{\mathrm{p}}</math> sind je Anlage EIN Wertepaar.
 * '''Die Randbedingungen der Normtabellen werden nicht geprueft.''' Tabelle A2 gilt fuer PE-Rohr 32 × 3,0 mm bei turbulenter Stroemung und Heizgrenztemperatur 12 °C, Tabelle B2 fuer eine Doppel-U-Sonde 32 × 3,0 mit Verfuellung <math>\lambda</math> = 0,8 W/(m·K), Bohrloch 150 mm und turbulenter Stroemung. Bei laminarer Stroemung sinkt die zulaessige Entzugsleistung um rund 10 % (A2) bzw. auf Faktor 0,79 bis 0,85 (B1) — das ist vom Anwender zu beruecksichtigen.
-* '''Nur der Standardfall „Heizen ohne Trinkwarmwasser".''' Die uebrigen Betriebsfaelle (Tabellen B3 bis B7) und die Kapillarrohrmatten (Tabelle A3) sind nicht hinterlegt — in Umsetzung, Stand 06.09.2026.
-* '''Tabelle B2 nur als Auszug''' (siehe Schritt 8) — in Umsetzung, Stand 06.09.2026.
+* '''Nur der Standardfall „Heizen ohne Trinkwarmwasser".''' Die uebrigen Betriebsfaelle (Tabellen B3 bis B7) und die Kapillarrohrmatten (Tabelle A3) sind nicht hinterlegt.
+* '''Tabelle B2 nur als Auszug''' (siehe Schritt 8).
 * '''Normstand Blatt 1 ist ein Entwurf''' (2021-12, Gruendruck). Ergebnisse sind als solche auszuweisen.
 * '''Die Ergebnisse der Pruefung werden nicht gespeichert.''' Sie gelten fuer den Lauf der laufenden Sitzung; nach einem Programmstart steht im Dialog wieder „noch kein Simulationslauf".
 

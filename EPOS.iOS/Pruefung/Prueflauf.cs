@@ -99,6 +99,9 @@ internal static class Prueflauf
             log.Leerzeile();
 
             dateien = Ergebnisexport.ProjektAusfuehren(PROJEKT, ziel, log);
+
+            log.Leerzeile();
+            AssistentProbe(log);
         }
         catch (Exception ex)
         {
@@ -112,6 +115,79 @@ internal static class Prueflauf
 
         Schreiben(log, wurzel, start, dauer, dateien);
         return dateien > 0;
+    }
+
+    /// <summary>
+    /// Die PROBE AUF DEN PROJEKTASSISTENTEN (Befund <b>W16a-O-4</b>): Sie baut auf
+    /// dem Geraet den Parametersatz, den <c>AssistentSeite</c> erwartet, und schreibt
+    /// EINE Zeile mit dem Befund.
+    ///
+    /// <para><b>Warum sie hierher gehoert.</b> Der iOS-Job kann ohne sie nur
+    /// UEBERSETZEN - dass <c>IosProjektQuelle.AssistentGaben</c> auf der echten
+    /// Datenbank in der Sandbox wirklich einen Satz liefert, saehe niemand. Die Probe
+    /// liest ausschliesslich; sie schreibt nichts und laesst den Rechennachweis
+    /// unberuehrt. Faellt sie aus, bleibt es bei einer Protokollzeile: Der
+    /// Rechennachweis ist der Zweck dieses Modus, nicht diese Probe.</para>
+    ///
+    /// <para>Gemessen wird, was der Befund verlangt: dass es den Satz gibt, dass die
+    /// zwei plattformfreien Schritte (Komponentenauswahl, Projektkopf) einen Inhalt
+    /// haben, dass die elf uebrigen BENANNT abgelehnt werden statt still leer zu
+    /// bleiben, und dass der Delegat <c>HatAenderungen</c> aus 62b-E-1 dabei
+    /// ist.</para>
+    /// </summary>
+    private static void AssistentProbe(Protokoll log)
+    {
+        try
+        {
+            var quelle = new IosProjektQuelle();
+            IReadOnlyDictionary<string, object>? gaben =
+                quelle.AssistentGaben(AssistentCtrl.BETRIEBSART_BEARBEITEN, PROJEKT);
+
+            if (gaben == null)
+            {
+                log.FehlerZeile("Assistent: kein Parametersatz.");
+                return;
+            }
+
+            // Das Projekt markieren - denselben Weg, den das linke Band der
+            // Assistentenseite geht. Danach steht der Komponentenbestand DIESES
+            // Projekts, und die dreizehn Seitenschalter sind danach gestellt.
+            (gaben["ProjektMarkiert"] as Action<int, string>)?.Invoke(PROJEKT, Projektname(PROJEKT));
+
+            var seiteGaben = gaben["SeiteGaben"] as Func<int, IReadOnlyDictionary<string, object>>;
+            var aenderungen = gaben["HatAenderungen"] as Func<bool>;
+            string sperrgrund = gaben["SeiteSperrgrundText"] as string ?? "";
+
+            bool seite0 = seiteGaben != null && seiteGaben(WizardItemClass.KOMPONENTEN_ITEM) != null;
+            bool seite1 = seiteGaben != null && seiteGaben(WizardItemClass.PROJEKT_ITEM) != null;
+            bool seite2 = seiteGaben != null && seiteGaben(WizardItemClass.GEBAEUDE_ITEM) != null;
+
+            log.Zeile("Assistent: Schluessel=" +
+                      gaben.Count.ToString(CultureInfo.InvariantCulture) +
+                      " Komponenten=" + (seite0 ? "ja" : "nein") +
+                      " Projektkopf=" + (seite1 ? "ja" : "nein") +
+                      " Gebaeude=" + (seite2 ? "ja" : "abgelehnt") +
+                      " Sperrgrund=" + (sperrgrund.Length > 0 ? "ja" : "nein") +
+                      " HatAenderungen=" + (aenderungen == null
+                                                ? "fehlt"
+                                                : aenderungen() ? "ja" : "nein"));
+        }
+        catch (Exception ex)
+        {
+            log.FehlerZeile("Assistent: " + ex.Message);
+        }
+    }
+
+    /// <summary>Der Projektname zur Nummer; leer, wenn unbekannt.</summary>
+    private static string Projektname(int idProjekt)
+    {
+        try
+        {
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(idProjekt);
+            return projekt.rows > 0 ? (projekt.m_szProjektname ?? "") : "";
+        }
+        catch { return ""; }
     }
 
     /// <summary>

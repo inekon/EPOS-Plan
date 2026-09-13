@@ -139,9 +139,12 @@ public sealed class ParametersatzTests
         Type? seite = Komponente("AssistentSeite");
         Assert.NotNull(seite);
 
-        List<HashSet<string>> saetze = SchluesselAus("AssistentHuelle", "Gaben");
+        // Seit Befund W16a-O-4 steht der Satz in AssistentAnsichtQuelle
+        // (EPOS.UI.Daten) und nicht mehr in AssistentHuelle: Der Assistent laeuft auf
+        // beiden Plattformen, und die Windows-Huelle ist nur noch seine Naht.
+        List<HashSet<string>> saetze = SchluesselAus("AssistentAnsichtQuelle", "Gaben");
         Assert.True(saetze.Any(satz => satz.Count >= 10),
-            "AssistentHuelle.Gaben wurde nicht gelesen — stimmt der Weg zum Quelltext noch?");
+            "AssistentAnsichtQuelle.Gaben wurde nicht gelesen — stimmt der Weg zum Quelltext noch?");
 
         string[] fremd = saetze.Select(satz => Fremdschluessel(seite!, satz))
                                .OrderBy(f => f.Length).First();
@@ -389,28 +392,44 @@ public sealed class ParametersatzTests
     /// (Nummer, Hülle, Gaben-Methode) — die Nummern kommen aus
     /// <c>WizardItemClass</c>.
     /// </summary>
+    /// <remarks>
+    /// Seit Befund <b>W16a-O-4</b> steht die Zuordnung an ZWEI Stellen: die zwei
+    /// plattformfreien Schritte in <c>AssistentAnsichtQuelle.Seitengaben</c>
+    /// (<c>EPOS.UI.Daten</c>), die elf Schritte mit Fensterbesitzer weiter in
+    /// <c>AssistentHuelle.Seitengaben</c>. Gelesen werden beide — sonst faende die
+    /// Wache nur noch einen Teil der dreizehn.
+    /// </remarks>
     private static IEnumerable<(int Nr, string Huelle, string Methode)> Assistentenseiten()
     {
-        string huelle = Path.Combine(Wurzel(), "WindowsFormsApplication1", "Views", "Wizard",
-                                     "AssistentHuelle.cs");
-        if (!File.Exists(huelle)) yield break;
+        string[] quellen =
+        {
+            Path.Combine(Wurzel(), "WindowsFormsApplication1", "Views", "Wizard",
+                         "AssistentHuelle.cs"),
+            Path.Combine(Wurzel(), "EPOS.UI.Daten", "Assistent", "AssistentAnsichtQuelle.cs")
+        };
 
         Dictionary<string, int> nummern = Itemnummern();
-        string quelltext = File.ReadAllText(huelle);
-        string rumpf = Methoden(quelltext).Where(m => m.Name == "Seitengaben")
-                                          .Select(m => m.Rumpf).FirstOrDefault() ?? "";
 
-        foreach (Match fall in Regex.Matches(
-                     rumpf, @"case WizardItemClass\.([A-Z_]+):(.*?)(?=case WizardItemClass\.|default:)",
-                     RegexOptions.Singleline))
+        foreach (string datei in quellen)
         {
-            if (!nummern.TryGetValue(fall.Groups[1].Value, out int nr)) continue;
+            if (!File.Exists(datei)) continue;
 
-            foreach (Match ruf in GabenRufRegex.Matches(fall.Groups[2].Value))
+            string quelltext = File.ReadAllText(datei);
+            string rumpf = Methoden(quelltext).Where(m => m.Name == "Seitengaben")
+                                              .Select(m => m.Rumpf).FirstOrDefault() ?? "";
+
+            foreach (Match fall in Regex.Matches(
+                         rumpf, @"case WizardItemClass\.([A-Z_]+):(.*?)(?=case WizardItemClass\.|default:)",
+                         RegexOptions.Singleline))
             {
-                if (!IstGabenRuf(ruf)) continue;
-                if (!ruf.Groups[1].Success || ruf.Groups[1].Value.Length == 0) continue;
-                yield return (nr, ruf.Groups[1].Value, ruf.Groups[2].Value);
+                if (!nummern.TryGetValue(fall.Groups[1].Value, out int nr)) continue;
+
+                foreach (Match ruf in GabenRufRegex.Matches(fall.Groups[2].Value))
+                {
+                    if (!IstGabenRuf(ruf)) continue;
+                    if (!ruf.Groups[1].Success || ruf.Groups[1].Value.Length == 0) continue;
+                    yield return (nr, ruf.Groups[1].Value, ruf.Groups[2].Value);
+                }
             }
         }
     }
@@ -448,6 +467,12 @@ public sealed class ParametersatzTests
     /// <c>EPOS.UI.Daten</c> (die plattformfreie Datenseite, die Windows UND iOS
     /// benutzen). Wer eine Huelle dorthin verlegt, soll sie nicht aus dieser Wache
     /// verlieren.
+    ///
+    /// <para>Seit Befund <b>W16a-O-4</b> zaehlen dazu auch die
+    /// <c>*AnsichtQuelle.cs</c>: Eine ANSICHT (Simulation, Projektassistent) baut
+    /// ihren Parametersatz nicht in einer <c>*Huelle</c>, sondern in der Quelle, die
+    /// den Lauf haelt — und derselbe Fehler, ein Schluessel ohne
+    /// <c>[Parameter]</c>, bricht dort genauso beim ersten Zeichnen.</para>
     /// </summary>
     private static string[] Huellen()
     {
@@ -457,18 +482,22 @@ public sealed class ParametersatzTests
             Path.Combine(Wurzel(), "EPOS.UI.Daten")
         };
 
+        var muster = new[] { "*Huelle.cs", "*AnsichtQuelle.cs" };
+
         var dateien = new List<string>();
         foreach (string o in ordner)
         {
             if (!Directory.Exists(o)) continue;
 
-            dateien.AddRange(Directory.GetFiles(o, "*Huelle.cs", SearchOption.AllDirectories)
-                                      .Where(d => !d.Contains(Path.DirectorySeparatorChar + "obj" +
-                                                              Path.DirectorySeparatorChar)
-                                               && !d.Contains(Path.DirectorySeparatorChar + "bin" +
-                                                              Path.DirectorySeparatorChar)));
+            foreach (string m in muster)
+                dateien.AddRange(Directory.GetFiles(o, m, SearchOption.AllDirectories)
+                                          .Where(d => !d.Contains(Path.DirectorySeparatorChar + "obj" +
+                                                                  Path.DirectorySeparatorChar)
+                                                   && !d.Contains(Path.DirectorySeparatorChar + "bin" +
+                                                                  Path.DirectorySeparatorChar)));
         }
 
-        return dateien.OrderBy(p => p, StringComparer.Ordinal).ToArray();
+        return dateien.Distinct(StringComparer.Ordinal)
+                      .OrderBy(p => p, StringComparer.Ordinal).ToArray();
     }
 }

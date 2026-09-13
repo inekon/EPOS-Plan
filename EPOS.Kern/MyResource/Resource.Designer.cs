@@ -13217,6 +13217,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} € fest + {1} kWh × {2} €/kWh + {3} kW × {4} €/kW = {5} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung = größere der beiden Leistungen (Laden, Entladen). ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_LEISTUNG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Einheiten ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_SUMME {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} € ähnelt.
+        /// </summary>
+        public static string FLOTTE_PROJ_INVEST_SUMME_FORMEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_PROJ_INVEST_SUMME_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung anhand der angegebenen Jahreskonten. ähnelt.
         /// </summary>
         public static string FLOTTE_PROJ_JAHRESKONTEN {
@@ -53484,9 +53520,18 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt konnte nicht vollständig gespeichert werden.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Schritt des Projektassistenten steht auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string WIZ_SEITE_NICHT_HIER {
+            get {
+                return ResourceManager.GetString("WIZ_SEITE_NICHT_HIER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt konnte nicht gespeichert werden.
         ///
-        ///Der Schritt „{0}“ ist fehlgeschlagen; die bereits geschriebenen Angaben bleiben stehen. ähnelt.
+        ///Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Projekt ist unverändert. ähnelt.
         /// </summary>
         public static string WIZ_SPEICHERN_FEHLER {
             get {

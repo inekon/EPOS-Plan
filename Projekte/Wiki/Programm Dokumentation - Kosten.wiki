@@ -1,0 +1,43 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Kosten
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Kosten.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Kosten''' erfasst Investitions-, Betriebs- und Energiekosten je Komponente. Sie sind die Eingangsgrößen der wirtschaftlichen Bewertung und beruhen damit auf demselben Datenstand wie die technische Simulation.
+
+== Eingaben ==
+
+* {{Anker|komponentenliste}}'''Komponentenliste des Projekts''' – die Liste am linken Rand führt die Komponenten des Projekts; die markierte Komponente bestimmt, welche Positionen rechts erscheinen. Sie steht auf der Investitions- und auf der Betriebskostenseite gleichermaßen.
+* {{Anker|investitionspositionen}}'''Investitionskosten''' – je Komponente eine oder mehrere Positionen mit Betrag, Einheit, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall.
+* {{Anker|betriebspositionen}}'''Betriebskosten''' – nach demselben Muster erfasst; ''Position hinzufügen'' legt eine neue Zeile an, ''Löschen'' entfernt sie wieder.
+* '''Energiekosten''' – je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren, jeweils mit Gültigkeitsdatum.
+* '''Energieträger auswählen''' – ordnet einer Kostenposition den Energieträger zu, über den sie abgerechnet wird.
+* '''Übernahme aus dem Technikmodul''' – die dort hinterlegten Anlagenkosten lassen sich auf Knopfdruck als Planwert übernehmen.
+* {{Anker|summen}}'''Summen''' – werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+
+== Energieträgerverwaltung ==
+{{Anker|energietraegerverwaltung|energietraeger}}
+
+Der Dialog '''Energieträgerverwaltung''' führt die Energieträger eines Projekts mit ihren Preisen und Emissionswerten. Er wird im Bereich ''Berichte & Kosten'' auf der Seite ''Kosten'' über ''Energieträgerverwaltung…'' geöffnet; im Katalogkontext steht er unter {{Menü|Administration|Kosten|Energieträgerverwaltung…}}.
+
+* '''Trägerliste''' – im Projektkontext stehen sowohl die dem Projekt zugeordneten als auch die tatsächlich verwendeten Träger. Zu jedem Eintrag nennt ein Kurztext, wer ihn verwendet, etwa ''verwendet von: Wärmepumpe „Anlage A", Photovoltaik „Modul B"''.
+* {{Anker|nicht-zugeordnet}}'''⚠ nicht zugeordnet''' – ein verwendeter, aber noch nicht zugeordneter Träger ist so gekennzeichnet und lässt sich trotzdem wählen; ''Speichern'' ordnet ihn dann dem Projekt zu.
+* {{Anker|stromtraeger}}'''Strom für elektrische Anlagen''' – Wärmepumpe, Photovoltaik, Stromspeicher und Heizstab brauchen einen Stromträger. Führt das Projekt elektrische Anlagen und ist kein Stromträger zugeordnet, trägt das Programm den ausgelieferten Stromträger selbsttätig nach.
+* '''Aus Katalog übernehmen…''' – bietet die noch nicht zugeordneten Katalogträger zur Mehrfachauswahl an; nach der Übernahme stehen sie in der Liste.
+* '''Entfernen''' – lehnt einen verwendeten Träger ab und nennt, wer ihn verwendet. So kann die Rechnung nicht stillschweigend auf einen Ersatzwert zurückfallen.
+* {{Anker|traeger-je-anlage}}'''Träger je Anlage''' – in den Dialogen [[Programm Dokumentation/Wärmepumpe#energietraeger|Wärmepumpe]], [[Programm Dokumentation/Photovoltaik#energietraeger|Photovoltaik]] und [[Programm Dokumentation/Stromspeicher#energietraeger|Stromspeicher]] wird der Träger der einzelnen Anlage in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Preis, Aufschläge und Emissionsfaktor des Strombezugs folgen dieser Wahl.
+
+== Kosten in der Speicherauslegung ==
+{{Anker|speicherauslegung-kosten}}
+
+Die [[Programm Dokumentation/Stromspeicher#auslegung-kosten|Speicherauslegung]] kann Investitions- und Betriebskostensätze der aktiven Speicheranlage unabhängig aus dem Kostenmodul übernehmen oder direkt im Auslegungsdialog erfassen. Es werden ausschließlich geeignete €/kW- und €/kWh-Bemessungen verwendet. Bei Betriebskosten werden installierte Kapazität je Jahr und tatsächlich entladene AC-Energie unterschieden.
+
+Die Rechnung verwendet den spezifischen Satz und die Größe beziehungsweise Entlademenge jedes Kandidaten. Sie übernimmt keinen möglicherweise veralteten Gesamtbetrag einer früheren Auslegung. Pauschalen, Prozentpositionen, Erlöse, Zuschüsse, fehlende Sätze und erst später beginnende Positionen werden mit Hinweis ausgeschlossen. Benannte Auslegungsprofile speichern die spezifischen Sätze zusammen mit Suchraum und Zeitreihenquellen.
+
+Die Übernahme einer gefundenen Dimensionierung ersetzt keine vollständige Prüfung der projektweiten Kostenpositionen. Entladeabhängige Betriebskosten dürfen denselben Verschleißanteil nicht zusätzlich zum optionalen Verschleißterm der Auslegung enthalten.
+
+== Siehe auch ==
+
+* [[Kosten und Energiepreise]] – Aufbau des Kostenmoduls und Pflege der Energiepreise
+* [[Grundlagen/Kostenrechnung]] – Bewertung des Mengengerüsts
+* [[Programm Dokumentation/Emissionen|Emissionen]] – Emissionsarten und die Werte je Energieträger
+
+[[Kategorie:Programm Dokumentation]]

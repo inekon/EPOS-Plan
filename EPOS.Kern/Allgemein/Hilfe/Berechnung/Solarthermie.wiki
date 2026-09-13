@@ -1,7 +1,7 @@
-<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Stand: 2026-09-06 (Fassung 3: LaTeX-Formeln und Legenden) | Rechenkern:
+<!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Fassung 3 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
      EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, Ladeordnung.cs;
-     Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs (Befund zu Kdfu) -->
+     Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}

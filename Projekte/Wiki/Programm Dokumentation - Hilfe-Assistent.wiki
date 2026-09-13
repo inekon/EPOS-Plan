@@ -1,9 +1,5 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Hilfe-Assistent
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki
-     Stand: 2026-09-11 (Abschnitte "Der Assistent aus einem Dialog heraus", Stufen S1-S3;
-     Auftrag #218 - die Hilfepille, Anwenderentscheid "KI-Knopf: Variante C + Variante D";
-     Auftrag #221 - eine Pille je Bildschirm, Anwenderentscheid KI-D-E-1;
-     Auftrag #227 - die Startzeile, Anwenderhinweis 11.09.2026)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und zur Rechenlogik. Es kennt den Programmbereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe und formuliert auf Wunsch – mit einem eigenen Zugangsschlüssel – frei formulierte Antworten.
 
@@ -19,12 +15,12 @@ Das Chatfenster des '''Hilfe-Assistenten''' beantwortet Fragen zur Bedienung und
 == Der Assistent aus einem Dialog heraus ==
 {{Anker|aus-dem-dialog}}
 
-Seit dem 11.09.2026 muss man den Assistenten nicht mehr suchen: Er ist dort erreichbar, wo gearbeitet wird.
+Den Assistenten muss man nicht suchen: Er ist dort erreichbar, wo gearbeitet wird.
 
 === Der KI-Knopf neben dem Fragezeichen ===
 {{Anker|ki-knopf}}
 
-'''Sie erreichen den Assistenten über die EPOS-Marke rechts neben dem i oben rechts in jeder Maske''' – die drei Felder des Programmlogos, farbig und mit einem Blitz in der Mitte. Beide Felder stehen in einem gemeinsamen Rahmen: Das i führt weiterhin auf die Hilfeseite dieses Dialogs, die Marke daneben ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
+'''Sie erreichen den Assistenten über die EPOS-Marke rechts neben dem i oben rechts in jeder Maske''' – die drei Felder des Programmlogos, farbig und mit einem Blitz in der Mitte. Beide Felder stehen in einem gemeinsamen Rahmen: Das i führt auf die Hilfeseite dieses Dialogs, die Marke daneben ins Gespräch – zwei Wege nebeneinander, keiner ersetzt den anderen.
 
 '''Die Marke steht oben rechts im Kopfband und folgt der Ansicht.''' Auf jedem Bildschirm gibt es genau eine: In einem Dialog oder einer Überlagerung steht sie im Kopf des Dialogs, sonst im Kopfband des Programmfensters – und dort meint sie immer das, was Sie gerade vor sich haben. Wechseln Sie in der Simulation von der Konfiguration zum Ergebnis, wechselt mit ihr auch der Programmbereich, den der Assistent kennt. Knöpfe mitten im Inhalt, die einen '''Rechenweg''' erklären, bleiben davon unberührt: Sie führen auf eine andere Hilfeseite.
 
@@ -68,12 +64,12 @@ Beim Öffnen aus einem Dialog gehen mit: der '''Programmbereich''', der '''Name 
 
 '''Die Feldwerte gehen nur mit, wenn Sie es anhaken.''' Im Chatfenster steht dafür der Schalter '''„Feldwerte mitsenden"'''. Er erscheint nur, solange eine der dafür freigegebenen Masken offen ist, und beim ersten Einschalten werden Sie einmal gefragt – die Zustimmung zum Rechtshinweis ist damit ''nicht'' erteilt. Zurücknehmen können Sie sie jederzeit unter '''Einstellungen…'''.
 
-Wie bisher gilt: '''„Was wird gesendet?"''' zeigt vor dem Absenden genau den Text, der übertragen würde – mit Schalter also einschließlich der Feldwerte –, und '''„Nur suchen"''' überträgt gar nichts.
+'''„Was wird gesendet?"''' zeigt vor dem Absenden genau den Text, der übertragen würde – mit Schalter also einschließlich der Feldwerte –, und '''„Nur suchen"''' überträgt gar nichts.
 
 === Der Assistent setzt Felder und rechnet ===
 {{Anker|setzen-und-rechnen}}
 
-Seit dem 11.09.2026 kann der Assistent in der offenen Maske '''mitarbeiten''': einen Wert eintragen, mehrere Felder auf einmal füllen, die Maske speichern, eine Maske öffnen und eine Rechnung anstoßen. Freigegeben sind dafür sechs Masken: '''Heizkessel bearbeiten''', '''Photovoltaik''', '''Pufferspeicher bearbeiten''', '''Wärmepumpen verwalten''', die Ansicht '''Stromspeicher-Auslegung''' und die Ansicht '''Simulation'''.
+Der Assistent kann in der offenen Maske '''mitarbeiten''': einen Wert eintragen, mehrere Felder auf einmal füllen, die Maske speichern, eine Maske öffnen und eine Rechnung anstoßen. Freigegeben sind dafür sechs Masken: '''Heizkessel bearbeiten''', '''Photovoltaik''', '''Pufferspeicher bearbeiten''', '''Wärmepumpen verwalten''', die Ansicht '''Stromspeicher-Auslegung''' und die Ansicht '''Simulation'''.
 
 In der '''Simulation''' liest er, was auf der Ansicht steht: die '''Kaskade''' samt Reihenfolge, die Anlagen, die das Projekt führt, die aber auf keinem Platz der Simulation stehen, die '''fünf Laufparameter''' (Netzwärmeverluste, Betriebsart und untere Leistungsgrenze der BHKW, Heizstab der Wärmepumpe, Betriebsbereitschaft des Heizkessels) und – nach einem Lauf – '''Bedarf, Deckung und Rest''' bei Wärme und Strom, die Speicherentladung, das SoC-Band und die Hinweise des Laufs. '''Setzen kann er dort nur die fünf Laufparameter'''; alles Übrige ist gerechnet und wird mit Begründung abgelehnt.
 
@@ -93,10 +89,10 @@ In der '''Simulation''' liest er, was auf der Ansicht steht: die '''Kaskade''' s
 
 '''Im Protokoll steht jeder Versuch.''' '''Protokoll anzeigen''' führt jede Feldsetzung mit Maske, Feld, altem und neuem Wert, jedes Speichern mit dem Pfad der Sicherungskopie und jeden Rechenlauf mit Dauer – auch die abgelehnten und die abgebrochenen.
 
-=== Menü und F1 bleiben ===
+=== Menü und F1 ===
 {{Anker|menue-und-f1}}
 
-Der Aufruf über das Menü und über '''F1''' ist unverändert. Beide Wege übergeben den Bereich, in dem Sie gerade arbeiten – der neue Knopf ist ein '''zusätzlicher''' Einstieg, kein Ersatz.
+Der Assistent lässt sich auch über das Menü und über '''F1''' aufrufen. Beide Wege übergeben den Bereich, in dem Sie gerade arbeiten – die Marke ist ein '''zusätzlicher''' Einstieg, kein Ersatz.
 
 == Siehe auch ==
 

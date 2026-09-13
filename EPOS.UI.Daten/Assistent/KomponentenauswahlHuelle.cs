@@ -5,8 +5,13 @@ using EPOS.UI.Dialoge.Bedarf;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Komponentenschritts (iU9-W16a.3) — sie löst
+    /// Die HÜLLE des Komponentenschritts (iU9-W16a.3) — sie löst
     /// <c>Wizard_Komponenten</c> ab.
+    ///
+    /// <para><b>Sie liegt seit W16a-O-4 in <c>EPOS.UI.Daten</c></b> und nicht mehr in
+    /// der Windows-Anwendung: Ihre einzige Quelle ist <see cref="KomponentenBestandCtrl"/>
+    /// im Kern, sie kennt keine Plattform. Damit steht der Komponentenschritt des
+    /// Assistenten auch auf dem iPad.</para>
     ///
     /// <para><b>Sie ist die Datenseite der Kacheln.</b> Der Bestand kommt aus
     /// <see cref="KomponentenBestandCtrl"/> (K1, seit iU9-W16a.0 im Kern) — derselben

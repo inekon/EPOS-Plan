@@ -1,7 +1,5 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Stromspeicher
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki
-     Stand: 2026-09-12 (zwei Suchmethoden in Station 4, Uebernahme ausgewaehlter Einheiten
-     ins Projekt in Schritt 1 - SD-E-10)
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt.
      Der Rechenweg steht auf Programm Dokumentation/Berechnung/Stromspeicher. -->
 Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er nimmt Überschüsse der Stromerzeugung auf und gibt sie zur Deckung des Reststrombedarfs wieder ab.
@@ -15,17 +13,17 @@ Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er 
 * '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
 * '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
-* {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort weiterhin unter ''Energiespeicher''.
+* {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''.
 
 == Stromspeicher-Auslegung ==
 {{Anker|auslegung-ansicht}}
 {{Anker|auslegung-optimieren}}
 
-Die '''Stromspeicher-Auslegung''' ist seit dem 11.09.2026 eine '''eigene Ansicht''' und kein Fenster mehr. Sie füllt das Programmfenster ganz aus: kein Rahmen im Rahmen, kein zweiter Rollbalken.
+Die '''Stromspeicher-Auslegung''' ist eine '''eigene Ansicht'''. Sie füllt das Programmfenster ganz aus: kein Rahmen im Rahmen, kein zweiter Rollbalken.
 
 Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechnet sie ein Raster von Kandidaten durch. Und '''wie fährt die Anlage?''' – dafür rechnet sie eine feste Bestückung mit einer gewählten Betriebsführung.
 
-'''Es gibt dafür genau einen Weg''' (seit dem 11.09.2026): Ein '''Einzelspeicher ist eine Flotte mit einer Einheit'''. Legen Sie eine Einheit an, rechnet die Ansicht Ihre einzelne Anlage; legen Sie mehrere an, rechnet sie deren Zusammenspiel. Die fünf Betriebsziele, das Peak-Ziel, die Diagnose und die Größen-Sicht gelten in beiden Fällen. Den früheren Umschalter ''Flotte / Einzelspeicher'' und die drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' gibt es nicht mehr – an ihre Stelle treten die '''Betriebsziele''' aus Schritt 3.
+'''Es gibt dafür genau einen Weg''': Ein '''Einzelspeicher ist eine Flotte mit einer Einheit'''. Legen Sie eine Einheit an, rechnet die Ansicht Ihre einzelne Anlage; legen Sie mehrere an, rechnet sie deren Zusammenspiel. Die fünf Betriebsziele, das Peak-Ziel, die Diagnose und die Größen-Sicht gelten in beiden Fällen. Wie die Flotte gefahren wird, bestimmen die '''Betriebsziele''' aus Schritt 3.
 
 === Erreichbarkeit ===
 {{Anker|auslegung-start}}
@@ -43,16 +41,16 @@ Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dies
 
   1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Optimierung · 5 Ergebnis
 
-'''Alle fünf Stationen sind Blätter''' – ein Klick blättert um. Die Nummer steht im '''Kreis''' vor dem Namen; eine erledigte Station trägt dort einen Haken. Einen '''Rechenknopf in der Leiste gibt es seit dem 11.09.2026 nicht mehr''': Station 4 hieß bis dahin ''4 Bewerten'' beziehungsweise ''4 Größen optimieren'' und war der einzige Platz, an dem gerechnet wurde. '''Sie ist jetzt das Blatt „Optimierung"''', und der Rechenknopf steht darauf – zusammen mit dem Suchraum, der Kandidatenzahl und dem Ergebnis der Suche.
+'''Alle fünf Stationen sind Blätter''' – ein Klick blättert um. Die Nummer steht im '''Kreis''' vor dem Namen; eine erledigte Station trägt dort einen Haken. Einen '''Rechenknopf in der Leiste gibt es nicht''': Gerechnet wird auf dem Blatt '''„Optimierung"''' – dort steht der Rechenknopf, zusammen mit dem Suchraum, der Kandidatenzahl und dem Ergebnis der Suche.
 
 '''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
 
-Einen '''Modusschalter''' gibt es seit dem 11.09.2026 nicht mehr. Was er unterschied, entscheidet jetzt die '''Zahl der Einheiten''' in Schritt 1:
+Einen '''Modusschalter''' gibt es nicht. Was gerechnet wird, entscheidet die '''Zahl der Einheiten''' in Schritt 1:
 
 {| class="wikitable"
 ! Einheiten !! Was Sie rechnen !! Was sich ändert
 |-
-| '''eine''' || die Auslegung ''einer'' Anlage – der frühere Modus ''Einzelspeicher'' || die '''Verteilung''' entfällt in Schritt 3; sie verteilt auf mehrere Speicher, und bei einem gibt es nichts zu verteilen
+| '''eine''' || die Auslegung ''einer'' Anlage || die '''Verteilung''' entfällt in Schritt 3; sie verteilt auf mehrere Speicher, und bei einem gibt es nichts zu verteilen
 |-
 | '''mehrere''' || mehrere physisch gleichzeitig betriebene Speicher in ''einer'' Variante || die '''Verteilung''' erscheint
 |}
@@ -77,13 +75,13 @@ Die Einheiten dieser Liste sind '''Arbeitsstücke der Auslegung''': Woher ihre Z
 
 Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ Speicher hinzufügen"'' der Knopf '''„Ausgewählte Einheiten in Projekt übernehmen"'''. Er legt aus den angehakten Einheiten '''Speicheranlagen''' an – genau so, wie es der Projektdialog ''Stromspeicher'' tut.
 
-* '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Growatt WIT 1'', ''Growatt WIT 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
+* '''Je Stück eine Anlage.''' Steht in Schritt 4 die Stückzahl 3, entstehen drei Anlagen; ihre Bezeichner tragen dann eine laufende Nummer (''Speicher A 1'', ''Speicher A 2'', …). Die Projekttabelle kennt keine Stückzahl – drei Geräte sind etwas anderes als ein dreimal so großes.
 * '''Vertritt eine Einheit schon eine Anlage''', gehen ihre Werte in '''diese''' Anlage zurück; nur weitere Stück entstehen daneben neu. Der Bezeichner der vorhandenen Anlage bleibt, wie er ist.
 * '''Vorher wird gefragt''' – die Rückfrage nennt die zwei Zahlen: ''„2 Speicheranlagen werden angelegt, 1 geändert — fortfahren?"''. Geschrieben wird alles '''in einem Zug''' oder gar nichts.
 * '''Danach''' tragen die übernommenen Einheiten ihren Anlagenbezug: Die Nachzugszeile über der Liste nennt sie nicht mehr, und beim Hinzufügen erscheinen sie als ''bereits in der Flotte''.
 * Übernommen werden Kapazität, Leistung, Umlaufwirkungsgrad, Start-Ladezustand, die drei Investitionssätze und der Hilfsverbrauch. '''Typ, Hersteller, Degradation, zugesicherte Zyklen und Verschleißkosten''' kennt die Flotteneinheit nicht; die tragen Sie bei Bedarf in der Anlage nach.
 
-Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet weiterhin allein ''„Als Projektflotte übernehmen"'' in Schritt 5.
+Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet allein ''„Als Projektflotte übernehmen"'' in Schritt 5.
 
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
@@ -91,16 +89,16 @@ Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeins
 
 '''Haben Sie Ihre Eingaben einmal gespeichert''', bleibt die Einheitenliste so, wie Sie sie hinterlassen haben: Eine Speicheranlage, die Sie später im Projekt anlegen, kommt nicht von selbst hinzu. Fehlt eine, sagt es eine Zeile über der Liste – etwa ''Eine Speicheranlage des Projekts ist nicht in der Flotte: Speicher Verwaltung''. Der Knopf '''Aufnehmen''' daneben holt alle fehlenden Anlagen als Einheiten herein. Dieselbe Zeile erscheint auch wieder, wenn Sie eine Anlageneinheit entfernt haben; eine entfernte Anlage lässt sich damit jederzeit zurückholen.
 
-'''Hier steht seit dem 11.09.2026 nur noch, WAS für Speicher es gibt''' – nicht mehr, in welchen Größen gesucht wird und nicht mehr, wie das Netz begrenzt ist. Drei Blöcke sind aus diesem Blatt ausgezogen:
+'''Hier steht nur, WAS für Speicher es gibt''' – nicht, in welchen Größen gesucht wird, und nicht, wie das Netz begrenzt ist. Drei verwandte Blöcke stehen auf anderen Blättern:
 
 {| class="wikitable"
-! Was !! Wohin !! Warum
+! Was !! Wo !! Warum
 |-
 | Suchbereiche (Anzahl, Kapazität, Leistung, C-Rate) und der Schalter ''Größen optimieren'' || '''Schritt 4 — Optimierung''' || Der Suchraum beschreibt die SUCHE, nicht eine Einheit
 |-
 | ''Netz und Planung'' (Bezugs- und Einspeisegrenze, Prognoseplanung, Endenergieziele) || '''Schritt 3 — Betriebsführung''' || Anschlussgrenzen und Planungswissen beschreiben den BETRIEB der Flotte
 |-
-| Zins, Projektionsart, Projektjahre, Ausgleichswert, Restwert, Kandidatengrenze || '''Schritt 2 — Daten & Kosten''' || Es ist die wirtschaftliche Jahresprojektion, und dort steht sie in dieser Dokumentation seit jeher
+| Zins, Projektionsart, Projektjahre, Ausgleichswert, Restwert, Kandidatengrenze || '''Schritt 2 — Daten & Kosten''' || Es ist die wirtschaftliche Jahresprojektion und betrifft die Studie, nicht eine Einheit
 |}
 
 Die Kostensätze '''einer Einheit''' bleiben hier und stehen unter der eigenen Überschrift '''„Kosten dieser Einheit"''' – damit sichtbar ist, dass sie nur diese eine Einheit betreffen und nicht die gemeinsamen Sätze aus Schritt 2.
@@ -138,7 +136,7 @@ Pauschalen, Prozentpositionen, Erlöse, Zuschüsse und erst später beginnende K
 ==== Wirtschaftliche Jahresprojektion ====
 {{Anker|auslegung-projektion}}
 
-Dieser Block sagt, '''über welchen Zeitraum und mit welchem Geld''' gerechnet wird. Er stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehört hierher: Er betrifft die Studie, nicht eine Einheit.
+Dieser Block sagt, '''über welchen Zeitraum und mit welchem Geld''' gerechnet wird. Er steht hier und nicht bei einer Einheit: Er betrifft die Studie, nicht eine Einheit.
 
 * '''Energie-Ausgleichswert''' in €/kWh – er bewertet die Änderung der gespeicherten Energie zwischen Anfang und Ende des Jahres. Der Speicher endet das Jahr selten auf demselben Ladezustand, auf dem er begonnen hat; ohne den Ausgleichswert wäre ein zu Beginn gefüllter Speicher ein kostenloser Ertrag. Ein Vorschlag ergibt sich aus dem mittleren Bezugspreis, sobald diese Quelle vorliegt. '''Eine bewusst geänderte Angabe wird nicht wieder durch eine Vorbelegung ersetzt.'''
 * '''Kalkulationszins''' in % – damit werden die Jahreswerte auf heute abgezinst.
@@ -146,7 +144,7 @@ Dieser Block sagt, '''über welchen Zeitraum und mit welchem Geld''' gerechnet w
 * '''Restwert der Studie''' in € – ein Betrag, der am '''Ende''' der Laufzeit als Einnahme angesetzt und abgezinst in den Kapitalwert eingeht, '''zusätzlich''' zu den Restwerten der einzelnen Einheiten. Gedacht für alles, was zur Studie und nicht zu einer Einheit gehört: Netzanschluss, Gebäude, Fläche, Weiterverkauf im Paket.
 * '''Maximale Auslegungskandidaten''' – die Obergrenze für die Rastersuche aus Schritt 4. Reißt ein Raster sie, wird der Lauf '''abgewiesen und nicht gekürzt'''; wo die Zahl steht, sagt Schritt 4 live.
 
-Unter den drei zuletzt genannten Feldern steht je '''eine Erklärzeile''' im Klartext – sie standen bis #224 ohne jede Erklärung neben Zins und Laufzeit.
+Unter den drei zuletzt genannten Feldern steht je '''eine Erklärzeile''' im Klartext.
 
 ==== Last, PV und Preis ====
 {{Anker|auslegung-quellen}}
@@ -221,7 +219,7 @@ Dazu die '''Leistungsverteilung''' auf die Einheiten – ''Nach verfügbarer Kap
 ==== Netz und Planung ====
 {{Anker|auslegung-netz}}
 
-Dieser Block stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehört hierher: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
+Dieser Block steht hier und nicht bei einer Einheit: '''Bezugs- und Einspeisegrenze''' sind harte Grenzen des '''Anschlusses''' und nicht Eigenschaften einer Einheit, und die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht.
 
 * '''Netzbezugsgrenze''' und '''Netzeinspeisegrenze''' in kW – leer heißt „keine Grenze".
 * '''Informationsstand''' und '''Planungshorizont''' – nur bei einem '''planenden''' Betriebsziel. Ohne Fahrplaner gibt es keinen Horizont, und ein Feld ohne Wirkung wäre eine Behauptung. Der Informationsstand ''Oracle'' (ganzes Jahr bekannt) ist ausdrücklich ein '''Vergleichslauf''', keine Betriebsweise.
@@ -231,12 +229,12 @@ Dieser Block stand bis zum 11.09.2026 im Einheiteneditor von Schritt 1 und gehö
 {{Anker|auslegung-rechnen}}
 {{Anker|auslegung-optimierung}}
 
-'''Hier wird gerechnet''' – und hier steht seit dem 11.09.2026 alles, was die Suche nach der wirtschaftlich besten Größe ausmacht. Bis dahin war die Optimierung über drei Schalter an drei Orten verteilt, und das Wort kam in der Ablaufleiste nicht vor.
+'''Hier wird gerechnet''' – und hier steht alles, was die Suche nach der wirtschaftlich besten Größe ausmacht.
 
 Von oben nach unten:
 
 # '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
-# '''Suche''' – '''drei''' Möglichkeiten seit dem 12.09.2026: ''Nur die eingestellte Flotte bewerten'', '''''Größe suchen''''' und '''''Stückzahl suchen''''' (siehe unten).
+# '''Suche''' – '''drei''' Möglichkeiten: ''Nur die eingestellte Flotte bewerten'', '''''Größe suchen''''' und '''''Stückzahl suchen''''' (siehe unten).
 # '''Suchraum je Einheit''' – eine '''Karte''' je Einheit (siehe unten).
 # '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
 # '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile; er steht nur bei ''Größe suchen'' (siehe unten).
@@ -369,7 +367,7 @@ Nach einer '''Rastersuche''' steht unter dem Kasten „Bestes Ergebnis" die Grö
 === Schritt 5 — Ergebnis ===
 {{Anker|auslegung-ergebnis}}
 
-'''Schritt 5 bewertet EINE Bestückung''' – die eingestellte oder die beste gefundene. Welche es ist, sagt eine Zeile über den Kacheln: ''Gezeigt wird die Bewertung von: …''. Das '''Raster''' selbst steht seit dem 11.09.2026 in Schritt 4, bei der Suche, aus der es stammt.
+'''Schritt 5 bewertet EINE Bestückung''' – die eingestellte oder die beste gefundene. Welche es ist, sagt eine Zeile über den Kacheln: ''Gezeigt wird die Bewertung von: …''. Das '''Raster''' selbst steht in Schritt 4, bei der Suche, aus der es stammt.
 
 Von oben nach unten:
 
@@ -377,7 +375,7 @@ Von oben nach unten:
 # '''Vier Kennzahlkacheln''' – Kapitalwert gegenüber „ohne Speicher" (mit Investition, Laufzeit und Zins), Bezugsspitze vorher → nachher (mit Peak-Ziel und Status), Stromrechnung mit Ersparnis, Vollzyklen je Einheit mit Lade- und Entladeenergie. Bei '''adaptivem''' Peak-Ziel nennt die Spitzenkachel statt „erreicht / nicht erreicht" den '''Startwert''' und die '''erreichte''' Schwelle – eine Schwelle, die auf das Erreichbare nachgezogen wird, kann nicht verfehlt werden.
 # '''Die zwei Schwellen''' – darunter steht „'''kausal erreicht'''" mit der Zahl der Nachzüge (Intervalle, in denen die Anlage die Spitze nicht halten konnte). Haben Sie in Schritt 3 „Mit Vorausschau erreichbares Ziel bestimmen…" gefahren, steht daneben „'''mit Vorausschau erreichbar'''" und die Differenz der beiden: der '''Wert der Vorausschau'''. Ist er klein, würde ein Prognoseregler wenig bringen.
 # '''Vergleichstabelle''' mit drei Spalten ''Ohne Speicher · Mit Flotte · Δ''. Δ ist ''Mit − Ohne''; ob ein negatives Δ gut ist, hängt an der Kennzahl – bei Kosten, Netzbezug und Spitze ist weniger besser, bei der Einspeisung mehr. Zeilen, in denen '''beide''' Seiten null sind, stehen hinter einem Aufklapper: Drei Nullen sind keine Aussage.
-# '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf.
+# '''Jahresprojektion''' als Bild – eine Säule je Projektjahr, die kumulierte Linie darüber, die Ersatzjahre markiert; der Schnittpunkt der kumulierten Linie mit der Nulllinie ist die Amortisation. Die Tabelle darunter klappt auf. Über dem Bild steht die Investition mit ihrer Herleitung je Einheit: fester Anteil, Kapazitätsanteil (kWh × €/kWh) und Leistungsanteil (kW × €/kW, mit der größeren der beiden Leistungen); bei mehreren Einheiten folgt die Summe.
 # '''Kennzahlen je Einheit''' – Lade- und Entladeenergie, Vollzyklen, Anfangs- und Endenergie, Rainflow-Zyklen und Schaden.
 # '''Diagramme''' – siehe unten.
 
@@ -386,7 +384,7 @@ Von oben nach unten:
 Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen Ergebnis) und '''„Beste Flotte übernehmen"''' (nur nach einer Rastersuche mit einem besseren Kandidaten als der Nullvariante). Die Übernahme prüft Zulässigkeit, vollständige Zeitreihen und die Herkunft der Daten; erst danach fährt der gewöhnliche Projektlauf diese Flotte.
 
 {{Anker|auslegung-anlage}}
-'''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Reiter ''Parameter'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet weiterhin die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.
+'''„Größe in die Projektanlage übernehmen…"''' steht daneben, solange '''genau eine''' Einheit die Speicheranlage des Projekts ist. Der Knopf schreibt deren Kapazität und Leistung in die Anlage zurück – dorthin, wo sie auch der Reiter ''Parameter'' pflegt. Vorher kommt eine Rückfrage mit beiden Zahlen. Das ist der Weg für den '''gewöhnlichen Projektlauf ohne aktivierte Flotte''': Er rechnet die Einzelanlage, und ohne diesen Knopf käme die ausgelegte Größe dort nie an. '''Neu gerechnet wird dabei nichts''' – die Simulation ist danach nicht mehr aktuell, und wann sie wiederholt wird, entscheiden Sie.
 
 Tragen '''zwei''' Einheiten einen Anlagenbezug, erscheint der Knopf nicht: Die Anlage trägt eine Kapazität und eine Leistung, und welche der beiden gemeint wäre, ließe sich nicht sagen.
 
