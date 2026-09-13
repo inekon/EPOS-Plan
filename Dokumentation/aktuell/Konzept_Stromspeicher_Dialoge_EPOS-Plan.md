@@ -392,13 +392,19 @@ Größen-Sicht des Einzelspeichers):
   Kandidaten schraffiert, Optimum markiert) — je Einheit wählbar, bei Anzahl > 1 die Summe;
 - **Schnittkurve** Kapitalwert über der Kapazität bei fester C-Rate (Wahl der C-Rate als Schieber),
   daneben dieselbe Kurve über der Leistung;
+- **Ausschnitt um das Optimum** — die Punkte der zweiten Suchphase als Kurve über der
+  Größenachse, begrenzt auf das Fenster des Feinrasters; er steht unter der Rasterkarte und
+  erscheint nur, wenn eine zweite Phase gelaufen ist;
 - **Kandidatentabelle** um Durchsatz (Vollzyklen/a), Bezugsspitze und Ersparnis erweitert, sortierbar,
   mit Spaltenfilter (Katalogfilter-Muster), „Kandidat übernehmen" je Zeile.
 
-Beide Bilder liefern `ChartRenderer.Optimierungsraster`/`.Schnittkurve` schon für den
-Einzelspeicher; die Flotte füttert sie aus `FlottenKandidatZusammenfassung`. Die Verfeinerung
-(Spezifikation 12.2, „Feinraster") kommt als eigener Schritt danach; SP‑O‑4 („endliches Raster ist
-nicht global optimal") wird im Bild benannt.
+**Die Gesamtdarstellungen zeigen das Grobraster, der Ausschnitt das Feinraster.** Rasterkarte und
+die zwei Schnitte tragen genau die eingegebenen Stützstellen; die Punkte der zweiten Phase liegen
+dazwischen und bekämen dort eigene Zeilen, in denen jede andere Spalte leer bliebe. Alle Bilder
+liefern `ChartRenderer.Optimierungsraster`/`.Schnittkurve`; die Flotte füttert sie aus
+`FlottenKandidatZusammenfassung`. SP‑O‑4 („endliches Raster ist nicht global optimal") wird im Bild
+benannt — und wenn ein Feinpunkt den Lauf gewonnen hat, nennt dieselbe Fußzeile Wert und Fundort
+des besten Ergebnisses, weil die Karte dann das Grob-Optimum markiert.
 
 **Die Achsen folgen der GRÖSSENKOPPLUNG der Suchachse** (Auftrag #226, Anwenderbefund vom
 11.09.2026). Bis dahin trug die Spaltenachse immer die C-Rate — auch bei einer Suche über
@@ -741,11 +747,14 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
    wiederholt. Das widerspricht SD‑Q10 („nur auf der Größenachse"): Hier bleibt die zweite Achse
    beim Wert des Grob-Optimums, das Feinraster hat deshalb so viele Punkte wie Stützstellen im
    Fenster.
-4. **Grob- und Feinpunkte sind in der SCHNITTKURVE unterscheidbar, nicht in der Rasterkarte.**
-   `ChartRenderer.Schnittkurve` zeichnet einen Feinpunkt in `C_FEINRASTER` und kleiner (ChartProbe
-   `flottenschnitt_feinraster` samt Gegenprobe). Die Karte zeigt die Feinpunkte als eigene Zeilen —
-   dort wäre eine zweite Farbe neben Dreifarbskala und Schraffur eine dritte Aussage in derselben
-   Fläche.
+4. **Das Feinraster steht im AUSSCHNITT um das Optimum, nicht in den Gesamtdarstellungen.**
+   Rasterkarte und die zwei Gesamtschnitte führen allein die Kandidaten der Phase `Grob`; der
+   Ausschnitt (`SpeicherFlottenAnzeigeCtrl.Ausschnittdaten`/`.Ausschnittbild`) ist eine Kurve über
+   der Größenachse, begrenzt auf das Fenster des Feinrasters, und `ChartRenderer.Schnittkurve`
+   zeichnet einen Feinpunkt darin in `C_FEINRASTER` und kleiner (ChartProbe
+   `flottenschnitt_feinraster` samt Gegenprobe). In der Karte wäre eine zweite Farbe neben
+   Dreifarbskala und Schraffur eine dritte Aussage in derselben Fläche; hat ein Feinpunkt gewonnen,
+   markiert sie das Grob-Optimum und sagt es in der Fußzeile.
 5. **Die Stationstitel geben ihre ZIFFER an den Kreis ab** („Speicher" statt „1 Speicher"), auch die
    der Simulationsansicht. Sonst stünde die Nummer zweimal nebeneinander. Lage und Reihenfolge der
    Simulationsleiste bleiben unverändert (`Kompakt`, #216).
@@ -913,7 +922,7 @@ SD‑Q16 nur Stückzahl variieren (je Lauf eine Variationsart) · SD‑Q17 Empfe
 | Station 4 nach 8.4 | `EPOS.UI/Seiten/Strom/OptimierungBlock.razor`: Kopfblock zweispaltig (drei Optionen mit Erklärsatz links, Bedienblock fester Breite rechts), Suchraum als **eine Karte je Einheit** mit Kopfzeile, methodenabhängigem Rumpf und Fußzeile „Kandidaten dieser Einheit"; die Neun-Spalten-Tabelle ist gefallen |
 | Gedimmte Suchoption mit Abhilfe | `Optionsgruppe.WeichGesperrt` (aria‑disabled statt `disabled`, damit der Grund ankommt — W16b‑E‑6) plus die Zeile `.epos-flotte-abhilfe` unter der Gruppe |
 | Bestes Ergebnis unter S | Die zweite Karte nennt die **Bestückung** („2 × Growatt … = 258 kWh · 200 kW") statt Kapazität · C‑Rate; die Phasenmarke entfällt (es gibt keine zweite Phase) |
-| Ergebnissicht unter S | `SpeicherFlottenGroessenAnsicht.Methode`: bei einer variierten Einheit die Stückzahlkurve, bei zwei die Karte n₁ × n₂, darüber hinaus nur die Kandidatentabelle — Rasterkarte, Schnitte und ihre zwei Schieber entstehen dann gar nicht |
+| Ergebnissicht unter S | `SpeicherFlottenGroessenAnsicht.Methode`: bei einer variierten Einheit die Stückzahlkurve, bei zwei die Karte n₁ × n₂, darüber hinaus nur die Kandidatentabelle — Rasterkarte, Schnitte, der Ausschnitt um das Optimum und die zwei Schieber entstehen dann gar nicht |
 | „Kandidat übernehmen" | Unter G wie bisher (der Kandidat wird die Flotte, die Achsen fallen); unter S setzt er `AnzahlVon = AnzahlBis = n` in die Karten der variierten Einheiten und lässt die Einheiten stehen |
 | Schritt 1 mit Auswahl und Übernahmeknopf | `SpeicherFlottenEditor`: Auswahlkästchen je Einheitenkarte, Knopf neben „Speicher hinzufügen", Rückfrage mit den zwei Zahlen aus `Vorschau`, danach steht die `AnlageId` an der Einheit; ohne Delegat gibt es weder Kästchen noch Knopf, im Lesemodus ist er weich gesperrt |
 | Ressourcen | 37 neue `FLOTTE_*`- und `KI_DLG_*`-Schlüssel de/en (`Werkzeuge/ResourceDesigner`), kein deutscher Literaltext in den zwei Razor-Dateien |
