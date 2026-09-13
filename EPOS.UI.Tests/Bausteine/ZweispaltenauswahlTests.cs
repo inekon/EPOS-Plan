@@ -261,7 +261,10 @@ public class ZweispaltenauswahlTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Projektliste ist höhenbegrenzt</b> (Konzept_Katalogfilter 5.6.5):
-    /// 12 rem = 192 px, bei 45 px Kopfzelle und 37 px Zeilenhöhe VIER Zeilen.
+    /// 12 rem = 192 px — der Rahmen zählt mit (border-box), innen bleiben
+    /// 190 px; bei 29,9 px Kopfzelle (ohne Trichter) und 53,0 px Zeilenhöhe
+    /// sind das DREI ganze Zeilen (im Browser gemessen, Auftrag #248; die
+    /// Mockup-Zahlen 45 px / 37 px / VIER Zeilen gelten seit #240 nicht mehr).
     /// Ohne die Grenze schöbe eine lange Projektliste den Katalog beliebig weit
     /// nach unten — genau der Grund, aus dem die Katalogliste ihre eigene Grenze
     /// aus dem <c>Katalograhmen</c> mitbringt. Die Zahl steht als Token, nicht

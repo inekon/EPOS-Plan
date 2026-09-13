@@ -31,8 +31,16 @@
 
    WAS DER RAHMEN TUT. Er ist die EINE Stelle, an der die drei Regeln stehen:
      * Die LISTE ist hoehenbegrenzt und rollt in sich: 1,3 x
-       --epos-listenhoehe = 458 px, bei 45 px Kopfzelle und 37 px Zeilenhoehe
-       ELF Zeilen. Bis W14a-E-10 nahm sie die verbleibende Hoehe, weil der
+       --epos-listenhoehe = 28,6 rem = 457,6 px; der Rahmen zaehlt mit
+       (border-box), innen bleiben 456 px. Bei 52,5 px Kopfzelle
+       (Spaltenkopf mit Sortierknopf und Trichter, klebend) und 53,0 px
+       Zeilenhoehe sind das SIEBEN ganze Zeilen (403,5 / 53 = 7,6).
+       DIE ZAHLEN SIND GEMESSEN, nicht gerechnet (Chromium, 1 300 x 900,
+       Auftrag #248 vom 13.09.2026, gleiche Messweise wie Proben/Rasterprobe).
+       Die frueher hier genannte ELF kam aus dem MOCKUP zu W14a-E-10 und
+       stimmt seit Auftrag #240 nicht mehr: Mit der Zellenpolsterung des
+       Hauses ist die Katalogzeile 53,0 px hoch - genau Raster.ZEILENHOEHE.
+       Bis W14a-E-10 nahm sie die verbleibende Hoehe, weil der
        Eingabeblock daneben stand und nichts geschoben wurde; jetzt steht er
        DARUNTER, und ohne diese Grenze schoebe eine lange Liste ihn beliebig
        weit nach unten. Die Ausnahme zu W9-B-2 faellt damit - die Hausregel
@@ -63,8 +71,8 @@
     /// <summary>
     /// Der OBERE Block: Suchzeile, Listenueberschrift und die Liste selbst,
     /// ueber die ganze Breite. Ihre <c>.epos-raster-huelle</c> traegt hier die
-    /// Hoechsthoehe 1,3 × <c>--epos-listenhoehe</c> (elf Zeilen) und rollt
-    /// darin.
+    /// Hoechsthoehe 1,3 × <c>--epos-listenhoehe</c> (sieben Zeilen, im
+    /// Browser gemessen — #248) und rollt darin.
     /// </summary>
     [Parameter] public RenderFragment? Liste { get; set; }
 

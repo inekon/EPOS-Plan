@@ -50,7 +50,7 @@ und `README.md`.
 | [`aktuell/Konzept_Hilfesystem_Wikidokumentation.md`](aktuell/Konzept_Hilfesystem_Wikidokumentation.md) | Hilfesystem auf die Wiki-Dokumentation — Katalog, Zuordnung, Wiki-Vermerke (wird fortgeschrieben) | 2026-09-12 |
 | [`aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md`](aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md) | KI-Assistent mit Aufgabensteuerung: Schutzstufen, Aktionen, Grenzen | 2026-09-11 |
 | [`aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md) | Der Hilfe-Assistent im Dialog: Aufruf, Kontext, Feldzustand, Steuerung | 2026-09-11 |
-| [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-09 |
+| [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-13 |
 | [`aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md) | PV-Ertragsmodell aus den Modulstammdaten (T_NOCT, Temperaturkoeffizienten) | 2026-09-07 |
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
 | [`aktuell/Konzept_Projektstammdaten_EPOS-Plan.md`](aktuell/Konzept_Projektstammdaten_EPOS-Plan.md) | Projektstammdaten: Datumspflege, Kunde und Bearbeiter | 2026-09-02 |
