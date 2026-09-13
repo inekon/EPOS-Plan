@@ -4324,6 +4324,33 @@ Baustellen; `Views/Kosten` allein sind 48 Dateien), zuletzt die ruhenden Admin- 
 > `false`), Referenzbasis R7 und Einfrierregel SP‑O‑8 bleiben. **Gate sept56 auf `80e2788f`:** Kern 2 759, UI 3 973, Engine 437,
 > KiKern 488, 5 eindeutige Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf
 > grün. Windows-Abnahme der Station 4 und des Übernahmeknopfs beim Anwender offen.
+>
+> **#248 (13.09.2026, Anwender: „Kleinpunkte ohne Auftrag: setze um") — umgesetzt (K1 `a1ae098a`, K2 `844efed0`, Merge `d6dfe01d`,
+> Agent Opus; 14 Dateien, +377/−51).** **K1:** Die Kommentare zur Höhe der Katalog- und Projektliste (`Katalograhmen.razor`,
+> `Zweispaltenauswahl.razor`, `epos-ui.css`) leiteten sie noch aus „45 px Kopfzelle und 37 px Zeilenhöhe" her — das waren die Maße des
+> Mockups zu W14a‑E‑10; seit #240 (Zellenpolsterung auch im QuickGrid) ist die Zeile 53,0 px hoch. Im Browser nachgemessen (Rasterprobe-Wirt,
+> Playwright, 1 300 × 900): Katalogliste 456 px innen, Kopfzelle 52,5 px, sieben ganze Zeilen (statt elf); Projektliste 190 px innen,
+> Kopfzelle 29,9 px, drei ganze Zeilen (statt vier). Nur Kommentare berichtigt, kein Maß geändert; `grep "37 px"` trifft in EPOS.UI nur
+> noch die ausdrückliche Rücknahme im Test; Katalogfilter-Konzept 5.6.5 und Anhang A datiert nachgetragen. **K2:** Der Rest aus #245 —
+> `StromspeicherAuslegungSeite.FlotteGeschrieben()` ersetzte die Flottenkonfiguration nach JEDER gemeldeten Eingabe durch eine
+> JSON-Tiefenkopie, nur damit drei Editoren an der neuen Referenz ihre Arbeitskopie auffrischen. Gemessen vor dem Umbau (Median über
+> 1 000 Aufrufe): 102–116 µs je Kopie bei zwei Einheiten, 527–783 µs bei zehn Einheiten mit je 20 Rainflow-Punkten, 3,3 ms und 1,6 MB
+> je Kopie der Auslegungseingaben mit eingelesener 8 760er Zeitreihe. Analyse: An der neuen Referenz hing NUR das Auffrischen der drei
+> Arbeitskopien — nicht das Veraltet-Signal (`Geaendert()`), nicht Kandidatenzähler und Vorprüfung der Station 4 (lesen unmittelbar),
+> nicht die Ergebnis-Entkopplung (`FlotteStarten()` kopiert zum Rechenzeitpunkt), nicht Speichern, Blattwechsel, „Kandidat übernehmen"
+> oder die Projektübernahme aus #247. Umbau: ein nicht serialisiertes `_fassung` auf der Seite, das allein `Geaendert()` hochzählt, als
+> Parameter `Fassung` an `SpeicherFlottenEditor`, `SpeicherFlottenBetriebEditor` (über `PeakZielBlock`) und `SpeicherAuslegungEditor`;
+> sie frischen auf, wenn Referenz ODER Fassung wechselt; `FlotteGeschrieben()` ist nur noch `Geaendert()`; zwei doppelte Kopien in den
+> Meldewegen gefallen. Nebenbefund behoben: `SpeicherAuslegungEditor.OnParametersSet` verglich `Wert` mit seiner eigenen Kopie und
+> kopierte deshalb bei JEDEM Zeichenlauf (mit Zeitreihe 3,3 ms), jetzt Eingangsreferenz und Fassung. Je Tastendruck bleibt nur die
+> handgeschriebene Kopie, die das meldende Blatt selbst herausgibt (Grenze „halbfertig ↔ gilt"). Drei neue bunit-Wachen (keine neue
+> Flotteninstanz je Eingabe per `Assert.Same`, Netzblock und Betriebseditor schreiben denselben Stand, ein Name aus Schritt 1 steht in
+> der Suchraumkarte), die drei #245-Wachen grün; UI-Tests 3 973 → **3 976**. Hausregel in `EPOS.UI/CLAUDE.md` ergänzt („wer eine Kopie
+> nur macht, damit eine Referenz sich ändert, nimmt eine Fassungsnummer"), Konzept Stromspeicher-Dialoge 8.8 mit Messtabelle. Offen
+> (kein Auftrag): die Kopie der Auslegungseingaben mit Zeitreihe (3,3 ms) bleibt einmal je Tastendruck auf Blatt 2 — die Meldegrenze
+> des Editors. Kein Rechenweg berührt. **Gate sept57 auf `d6dfe01d`:** Kern 2 759, UI 3 976, Engine 437, KiKern 488, 5 eindeutige
+> Warnungen, SQL 0 von 1 351, ChartProben 64 Bilder und 15 Gegenproben, 0 Verstöße, Referenzlauf 5/5 byte-gleich gegen R7; en-US-Lauf grün. Windows-Abnahme beim
+> Anwender offen.
 
 > **Statusblock iU9 — Welle 11a umgesetzt (04.09.2026, Basis `427fd59` nach W10a, zusammengeführt mit `a398c9a` nach W10b)**
 >
