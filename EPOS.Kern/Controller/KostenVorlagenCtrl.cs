@@ -43,6 +43,13 @@ namespace WindowsFormsApplication1
         /// Auto-Anlage (H1-3). false, wenn die Spalte in einer nie migrierten
         /// Datenbank fehlt.</summary>
         public bool IstPflicht;
+
+        /// <summary>STUFE S1 (Migrationsschritt 75): die POSITIONSART dieser Position —
+        /// ein Verweis auf <c>Tab_Nutzungsdauer</c> (Konzept Nutzungsdauer/AfA 2.3).
+        /// <c>null</c> heißt „keine Positionsart gepflegt" und fällt auf die
+        /// Standardzeile der Technik zurück; die Auflösung steht in
+        /// <see cref="NutzungsdauerCtrl.Vorgabe"/>.</summary>
+        public int? NutzungsdauerId;
     }
 
     /// <summary>
@@ -138,6 +145,9 @@ namespace WindowsFormsApplication1
             // ETAPPE H3: IstPflicht (Schritt 59) nur lesen, wo die Spalte existiert —
             // eine nie migrierte Datenbank lieferte sonst einen Abfragefehler.
             bool mitPflicht = PflichtSpalteVorhanden();
+            // STUFE S1 (Schritt 75): dieselbe tolerante Vorsorge fuer die Positionsart.
+            bool mitNutzungsdauerId = NutzungsdauerCtrl.VerweisSpalteVorhanden(
+                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT [ID], [" + SchemaKatalog.SPALTE_KVP_STAMMID + "], [" +
                 SchemaKatalog.SPALTE_KVP_BEZEICHNUNG + "], [" +
@@ -151,6 +161,7 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
                 SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]" +
                 (mitPflicht ? ", [" + SchemaKatalog.SPALTE_KVP_IST_PFLICHT + "]" : "") +
+                (mitNutzungsdauerId ? ", [" + NutzungsdauerSchema.SPALTE_VERWEIS + "]" : "") +
                 " FROM [" +
                 SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] WHERE [" +
                 SchemaKatalog.SPALTE_KVP_VORLAGEID + "] = ? ORDER BY [" +
@@ -173,6 +184,10 @@ namespace WindowsFormsApplication1
                     EmpfehlungBis = WertOderNull(r[10]),
                     Sortierung = r[11] == DBNull.Value ? 0 : Convert.ToInt32(r[11]),
                     IstPflicht = mitPflicht && r[12] != DBNull.Value && Convert.ToBoolean(r[12]),
+                    // Die Spaltennummer haengt davon ab, ob IstPflicht mitgelesen wurde -
+                    // beide Spalten stehen nur bedingt in der Auswahl.
+                    NutzungsdauerId = mitNutzungsdauerId
+                        ? ZahlOderNull(r[mitPflicht ? 13 : 12]) : null,
                 });
             return liste;
         }
@@ -296,7 +311,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Neue Position ans Rasterende (FK2: „+ Position hinzufügen").
-        /// Rückgabe ID oder 0; ReadOnly-Schutz.</summary>
+        /// Rückgabe ID oder 0; ReadOnly-Schutz.
+        ///
+        /// <para><b>STUFE S1 (Konzept Nutzungsdauer/AfA 2.4.1):</b> Eine neue
+        /// INVESTITIONSposition wird mit der Nutzungsdauer ihrer Technik vorbelegt —
+        /// ohne Positionsart also mit der Standardzeile. Belegt wird nur, was ohnehin
+        /// leer entstünde; ein gespeicherter Wert wird nirgends still ersetzt. Gibt es
+        /// die Tabelle oder die Standardzeile nicht, bleibt das Feld leer.</para></summary>
         public static int PositionNeu(int vorlageId, string bezeichnung, string kostenart,
                                       string bemessung)
         {
@@ -309,16 +330,63 @@ namespace WindowsFormsApplication1
                 Kostenart = kostenart ?? DbWerte.KOSTENART_SONSTIGE,
                 Bemessung = bemessung ?? DbWerte.BEMESSUNG_BETRAG,
                 Sortierung = NaechsteSortierung(vorlageId),
+                Nutzungsdauer = VorgabeDerVorlage(vorlageId),
             };
             int id = PositionAnlegen(p);
             if (id != 0) KopfBeruehren(vorlageId);
             return id;
         }
 
+        /// <summary>
+        /// Die Nutzungsdauer-Vorgabe einer Vorlage (Stufe S1): der Technik-Standard,
+        /// aber nur für eine INVESTITIONSvorlage — Betriebskosten kennen keinen Ersatz.
+        /// <c>null</c>, wenn die Vorlage unbekannt ist, die Kategorie nicht passt oder
+        /// die Technik keine Standardzeile hat.
+        /// </summary>
+        public static double? VorgabeDerVorlage(int vorlageId)
+        {
+            DataTable kopf = DataRepository.GetDataTable(
+                "SELECT [" + SchemaKatalog.SPALTE_KV_KOMPONENTENID + "], [" +
+                SchemaKatalog.SPALTE_KV_KATEGORIEID + "] FROM [" +
+                SchemaKatalog.TAB_KOSTENVORLAGE + "] WHERE [ID] = ?",
+                new DbParam("@id", vorlageId));
+            if (kopf.Rows.Count != 1) return null;
+
+            object kat = kopf.Rows[0][1];
+            if (kat == DBNull.Value ||
+                Convert.ToInt32(kat) != DbWerte.KOSTEN_KATEGORIE_INVESTITION) return null;
+
+            object kid = kopf.Rows[0][0];
+            if (kid == DBNull.Value) return null;
+
+            return NutzungsdauerCtrl.Vorgabe(Convert.ToInt32(kid), null).Wert;
+        }
+
         /// <summary>Alle Fachfelder einer Position schreiben; ReadOnly-Schutz.</summary>
         public static bool PositionSpeichern(KostenVorlagenPosition p)
         {
             if (p == null || IstNurLesen(p.VorlageId)) return false;
+
+            // STUFE S1 (Schritt 75): Die Positionsart wandert mit, wo die Spalte schon
+            // da ist. Eine nie migrierte Datenbank schreibt die neun Bestandsfelder -
+            // dieselbe tolerante Vorsorge wie bei IstPflicht.
+            bool mitArt = NutzungsdauerCtrl.VerweisSpalteVorhanden(
+                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
+
+            var parameter = new List<DbParam>
+            {
+                new DbParam("@b", p.Bezeichnung ?? ""),
+                new DbParam("@ka", p.Kostenart ?? ""),
+                new DbParam("@bm", p.Bemessung ?? ""),
+                Wert("@satz", p.Satz),
+                Wert("@betrag", p.BetragNetto),
+                new DbParam("@erl", p.IstErloes),
+                Wert("@nd", p.Nutzungsdauer),
+                Wert("@ev", p.EmpfehlungVon),
+                Wert("@eb", p.EmpfehlungBis),
+            };
+            if (mitArt) parameter.Add(Ganz("@art", p.NutzungsdauerId));
+            parameter.Add(new DbParam("@id", p.Id));
 
             int n = DataRepository.ExecuteNonQuery(
                 "UPDATE [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] SET [" +
@@ -330,17 +398,10 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_IST_ERLOES + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_NUTZUNGSDAUER + "] = ?, [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "] = ?, [" +
-                SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "] = ? WHERE [ID] = ?",
-                new DbParam("@b", p.Bezeichnung ?? ""),
-                new DbParam("@ka", p.Kostenart ?? ""),
-                new DbParam("@bm", p.Bemessung ?? ""),
-                Wert("@satz", p.Satz),
-                Wert("@betrag", p.BetragNetto),
-                new DbParam("@erl", p.IstErloes),
-                Wert("@nd", p.Nutzungsdauer),
-                Wert("@ev", p.EmpfehlungVon),
-                Wert("@eb", p.EmpfehlungBis),
-                new DbParam("@id", p.Id));
+                SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "] = ?" +
+                (mitArt ? ", [" + NutzungsdauerSchema.SPALTE_VERWEIS + "] = ?" : "") +
+                " WHERE [ID] = ?",
+                parameter.ToArray());
             if (n == 1) KopfBeruehren(p.VorlageId);
             return n == 1;
         }
@@ -381,6 +442,30 @@ namespace WindowsFormsApplication1
         private static int PositionAnlegen(KostenVorlagenPosition p)
         {
             int id = MaxId(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION) + 1;
+
+            // STUFE S1 (Schritt 75): Die Positionsart entsteht mit der Zeile - sonst
+            // verlöre "Speichern unter" sie bei jeder Kopie.
+            bool mitArt = NutzungsdauerCtrl.VerweisSpalteVorhanden(
+                SchemaKatalog.TAB_KOSTENVORLAGEPOSITION);
+
+            var parameter = new List<DbParam>
+            {
+                new DbParam("@id", id),
+                new DbParam("@vid", p.VorlageId),
+                Ganz("@sid", p.StammId),
+                new DbParam("@b", p.Bezeichnung ?? ""),
+                new DbParam("@ka", p.Kostenart ?? ""),
+                new DbParam("@bm", p.Bemessung ?? ""),
+                Wert("@satz", p.Satz),
+                Wert("@betrag", p.BetragNetto),
+                new DbParam("@erl", p.IstErloes),
+                Wert("@nd", p.Nutzungsdauer),
+                Wert("@ev", p.EmpfehlungVon),
+                Wert("@eb", p.EmpfehlungBis),
+                new DbParam("@so", p.Sortierung),
+            };
+            if (mitArt) parameter.Add(Ganz("@art", p.NutzungsdauerId));
+
             int n = DataRepository.ExecuteNonQuery(
                 "INSERT INTO [" + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION + "] ([ID], [" +
                 SchemaKatalog.SPALTE_KVP_VORLAGEID + "], [" +
@@ -394,21 +479,11 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KVP_NUTZUNGSDAUER + "], [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_VON + "], [" +
                 SchemaKatalog.SPALTE_KVP_EMPFEHLUNG_BIS + "], [" +
-                SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                new DbParam("@id", id),
-                new DbParam("@vid", p.VorlageId),
-                Ganz("@sid", p.StammId),
-                new DbParam("@b", p.Bezeichnung ?? ""),
-                new DbParam("@ka", p.Kostenart ?? ""),
-                new DbParam("@bm", p.Bemessung ?? ""),
-                Wert("@satz", p.Satz),
-                Wert("@betrag", p.BetragNetto),
-                new DbParam("@erl", p.IstErloes),
-                Wert("@nd", p.Nutzungsdauer),
-                Wert("@ev", p.EmpfehlungVon),
-                Wert("@eb", p.EmpfehlungBis),
-                new DbParam("@so", p.Sortierung));
+                SchemaKatalog.SPALTE_KVP_SORTIERUNG + "]" +
+                (mitArt ? ", [" + NutzungsdauerSchema.SPALTE_VERWEIS + "]" : "") +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+                (mitArt ? ", ?" : "") + ")",
+                parameter.ToArray());
             return n == 1 ? id : 0;
         }
 

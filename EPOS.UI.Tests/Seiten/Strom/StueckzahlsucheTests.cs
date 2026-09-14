@@ -264,8 +264,10 @@ public sealed class StueckzahlsucheTests : EposBunitContext
             })
             .Add(x => x.PlanerVerfuegbar, true));
 
+        // Nach dem Lauf steht Schritt 5 vorn; dort sitzen seit #273 der Kasten „Bestes
+        // Ergebnis" und die Groessen-Sicht.
         Auslegungshilfe.Rechenknopf(cut).Click();
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Flottenergebnis));
         return cut;
     }
 

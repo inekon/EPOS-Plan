@@ -76,6 +76,12 @@ namespace EPOS.UI.Tests.Bausteine;
 /// 13 aufklappend) — bis dahin war die Startseite der EINZIGE Weg in die
 /// Simulation.</para>
 ///
+/// <para>ANWENDERENTSCHEID ND-Q3 (14.09.2026, Auftrag #269): Der Punkt
+/// <b>„Nutzungsdauern (AfA)…"</b> (<c>MenuItem_Nutzungsdauer</c>, ND_MENUE)
+/// kommt als DRITTER Eintrag in die Rubrik „Kostenverwaltung", neben
+/// Kostenvorlagen und Energietraegern. Damit stehen <b>47 handelnde Punkte</b>
+/// (60 gesamt, 13 aufklappend).</para>
+///
 /// <para>Die Sprache wird JE FALL gepinnt (Regel seit iU9-W8): Die
 /// Beschriftungen kommen aus <c>MyResource</c>, und der Windows-Laeufer laeuft
 /// englisch. Der Zweisprachenfall setzt die Kultur selbst und stellt sie
@@ -154,7 +160,13 @@ public class MenuebandTests : EposBunitContext
         // Simulation ueberhaupt hat (bis dahin fuehrte nur die Startseite
         // dorthin, Konzept „Simulationsablauf" 1.1). Also 59 Punkte und
         // 46 Handlungen.
-        Assert.Equal(59, Punkte.Count);
+        //
+        // ANWENDERENTSCHEID ND-Q3 (14.09.2026, Auftrag #269): EIN handelnder
+        // Punkt kommt hinzu - „Nutzungsdauern (AfA)…" als DRITTER Eintrag der
+        // Rubrik „Kostenverwaltung", neben Kostenvorlagen und Energietraegern
+        // (Konzept „Nutzungsdauer je Technik und Positionsart", Stufe S1).
+        // Also 60 Punkte und 47 Handlungen.
+        Assert.Equal(60, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -730,7 +742,7 @@ public class MenuebandTests : EposBunitContext
         // verlorengegangen und keiner hinzugekommen. Geprueft wird die MENGE
         // der Ziele unter "Administration" - der Baum darueber darf sich
         // umsortieren, die Ziele nicht. Seit W6-E-2 sind es 30 statt 28, seit
-        // W13-E-2 sind es 31.
+        // W13-E-2 sind es 31 und seit ND-Q3 sind es 32.
         var ziele = Flach(Administration.Untereintraege)
                     .Where(p => !p.Trenner && !p.Klappt)
                     .Select(p => p.Ziel)
@@ -753,6 +765,10 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.Klimadaten,
             Seitenschluessel.Kostenverwaltung,
             Seitenschluessel.LizenzVerwaltung,
+            // ND-Q3 (14.09.2026, Auftrag #269): das NEUE Ziel dieser Menge -
+            // die Nutzungsdauern (AfA) als dritter Punkt der Rubrik
+            // "Kostenverwaltung". Kein aelteres Ziel ist entfallen.
+            Seitenschluessel.NutzungsdauerVerwaltung,
             Seitenschluessel.PeakShaving,
             Seitenschluessel.ProzesswaermeAdmin,
             Seitenschluessel.PufferSpAdmin,
@@ -906,8 +922,13 @@ public class MenuebandTests : EposBunitContext
         // SIM-Q3 (11.09.2026, Auftrag #207) legt den VIERTEN an: „Simulation…"
         // im Kopf „Projekt" (45 -> 46). Die Zahl der aufklappenden bleibt 13 -
         // der Punkt fuehrt kein Untermenue (Regel W16c-E-6).
+        //
+        // ND-Q3 (14.09.2026, Auftrag #269) legt den FUENFTEN an: „Nutzungsdauern
+        // (AfA)…" in der Rubrik „Kostenverwaltung" (46 -> 47). Die Zahl der
+        // aufklappenden bleibt wieder 13 - die Rubrik gibt es laengst, sie
+        // bekommt nur ein drittes Kind.
         Assert.Equal(13, Punkte.Count(p => p.Klappt));
-        Assert.Equal(46, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(47, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

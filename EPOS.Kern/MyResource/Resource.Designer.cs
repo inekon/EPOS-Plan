@@ -11642,6 +11642,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 „Optimierung“. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_NUR_BEWERTET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_NUR_BEWERTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Optimierung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_OPTIMIERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_OPTIMIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kausal erreicht: {0} kW — Schwelle in {1} von {2} Intervallen nachgezogen. ähnelt.
         /// </summary>
         public static string FLOTTE_ERG_PEAK_KAUSAL {
@@ -11665,6 +11683,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ERG_REAKTIVE_REFERENZ {
             get {
                 return ResourceManager.GetString("FLOTTE_ERG_REAKTIVE_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Simulation ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_SIMULATION {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_SIMULATION", resourceCulture);
             }
         }
         
@@ -12848,6 +12875,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GROESSE_UNABHAENGIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GROESSE_UNABHAENGIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_KANDIDATEN {
@@ -13001,7 +13037,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_METHODE_GROESSE_ERL {
             get {
@@ -31729,6 +31765,285 @@ namespace WindowsFormsApplication1.MyResource {
         public static string Name1 {
             get {
                 return ResourceManager.GetString("Name1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string ND_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ND_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte aller Auslieferungszeilen auf die Auslieferung zurücksetzen? Eigene Zeilen bleiben unberührt. ähnelt.
+        /// </summary>
+        public static string ND_FRAGE_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("ND_FRAGE_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer aus Nutzungsdauern (AfA): {0} · {1} {2} a ähnelt.
+        /// </summary>
+        public static string ND_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ND_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer aus Nutzungsdauern (AfA): {0} → wie Standardzeile {1} · {2} {3} a ähnelt.
+        /// </summary>
+        public static string ND_HERLEITUNG_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_HERLEITUNG_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard ähnelt.
+        /// </summary>
+        public static string ND_KENNZEICHEN_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_KENNZEICHEN_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnerische Nutzungsdauer je Technik und Positionsart — sie steuert Ersatzbeschaffung und Restwert im Kapitalwert. ähnelt.
+        /// </summary>
+        public static string ND_KONTEXT {
+            get {
+                return ResourceManager.GetString("ND_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine leere Nutzungsdauer heißt „wie die Standardzeile der Technik“. ähnelt.
+        /// </summary>
+        public static string ND_LEER_HINWEIS {
+            get {
+                return ResourceManager.GetString("ND_LEER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Zeile passt zur Suche. ähnelt.
+        /// </summary>
+        public static string ND_LEER_LISTE {
+            get {
+                return ResourceManager.GetString("ND_LEER_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ND_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ND_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Positionsart darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string ND_MELD_ART_LEER {
+            get {
+                return ResourceManager.GetString("ND_MELD_ART_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Technik gibt es die Positionsart „{0}“ bereits. ähnelt.
+        /// </summary>
+        public static string ND_MELD_DOPPELT {
+            get {
+                return ResourceManager.GetString("ND_MELD_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauertabelle gibt es in dieser Datenbank noch nicht. ähnelt.
+        /// </summary>
+        public static string ND_MELD_KEINE_TABELLE {
+            get {
+                return ResourceManager.GetString("ND_MELD_KEINE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ND_MELD_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ND_MELD_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungszeilen werden nicht gelöscht. Ihr Wert lässt sich ändern; „Auslieferungswerte wiederherstellen“ setzt ihn zurück. ähnelt.
+        /// </summary>
+        public static string ND_MELD_READONLY {
+            get {
+                return ResourceManager.GetString("ND_MELD_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern (AfA)… ähnelt.
+        /// </summary>
+        public static string ND_MENUE {
+            get {
+                return ResourceManager.GetString("ND_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string ND_NEU {
+            get {
+                return ResourceManager.GetString("ND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Wert ähnelt.
+        /// </summary>
+        public static string ND_QUELLE_EIGEN {
+            get {
+                return ResourceManager.GetString("ND_QUELLE_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich [a] ähnelt.
+        /// </summary>
+        public static string ND_SP_AFA {
+            get {
+                return ResourceManager.GetString("ND_SP_AFA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string ND_SP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("ND_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer [a] ähnelt.
+        /// </summary>
+        public static string ND_SP_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("ND_SP_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsart ähnelt.
+        /// </summary>
+        public static string ND_SP_POSITIONSART {
+            get {
+                return ResourceManager.GetString("ND_SP_POSITIONSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ND_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ND_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik ähnelt.
+        /// </summary>
+        public static string ND_SP_TECHNIK {
+            get {
+                return ResourceManager.GetString("ND_SP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Auslieferungszeile(n) zurückgesetzt. ähnelt.
+        /// </summary>
+        public static string ND_STATUS_WIEDERHERGESTELLT {
+            get {
+                return ResourceManager.GetString("ND_STATUS_WIEDERHERGESTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchen ähnelt.
+        /// </summary>
+        public static string ND_SUCHE {
+            get {
+                return ResourceManager.GetString("ND_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik, Positionsart oder Quelle ähnelt.
+        /// </summary>
+        public static string ND_SUCHE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("ND_SUCHE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die technikübergreifend ähnelt.
+        /// </summary>
+        public static string ND_TECHNIKUEBERGREIFEND {
+            get {
+                return ResourceManager.GetString("ND_TECHNIKUEBERGREIFEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungszeile: Der Wert ist änderbar, die Zeile wird nicht gelöscht. ähnelt.
+        /// </summary>
+        public static string ND_TIP_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ND_TIP_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardzeile der Technik — sie gilt, wenn eine Position keine Positionsart trägt. ähnelt.
+        /// </summary>
+        public static string ND_TIP_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_TIP_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern (AfA) ähnelt.
+        /// </summary>
+        public static string ND_TITEL {
+            get {
+                return ResourceManager.GetString("ND_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungswerte wiederherstellen ähnelt.
+        /// </summary>
+        public static string ND_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("ND_WIEDERHERSTELLEN", resourceCulture);
             }
         }
         

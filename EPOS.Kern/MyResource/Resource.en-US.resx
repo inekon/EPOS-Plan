@@ -17736,7 +17736,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Computes the fleet from step 1 exactly once — nothing is varied.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
-    <value>Varies two of the three sizes capacity, power and C rate on every unit switched on; the third follows from the coupling. The unit count stays fixed.</value>
+    <value>Varies two of the three sizes capacity, power and C rate on every unit; the third follows from the coupling. The unit count stays fixed.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
     <value>Keeps every unit at the size it is set to and varies how many of them there are (0 = unit is omitted). The cost is the cost of one unit times the count.</value>
@@ -19159,5 +19159,110 @@ Do you want to allow this?</value>
   </data>
   <data name="SIM_SP_KONFIG_VERWEIS_TIP" xml:space="preserve">
     <value>Opens step ① Configuration — “Size battery storage…” is there.</value>
+  </data>
+  <data name="ND_TITEL" xml:space="preserve">
+    <value>Service lives (depreciation)</value>
+  </data>
+  <data name="ND_MENUE" xml:space="preserve">
+    <value>Service lives (depreciation)…</value>
+  </data>
+  <data name="ND_KONTEXT" xml:space="preserve">
+    <value>Calculated service life per technology and item type — it drives replacement and residual value in the net present value.</value>
+  </data>
+  <data name="ND_SP_TECHNIK" xml:space="preserve">
+    <value>Technology</value>
+  </data>
+  <data name="ND_SP_POSITIONSART" xml:space="preserve">
+    <value>Item type</value>
+  </data>
+  <data name="ND_SP_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Service life [y]</value>
+  </data>
+  <data name="ND_SP_AFA" xml:space="preserve">
+    <value>Tax depreciation [y]</value>
+  </data>
+  <data name="ND_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ND_SP_AKTIONEN" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ND_SUCHE" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="ND_SUCHE_PLATZHALTER" xml:space="preserve">
+    <value>Technology, item type or source</value>
+  </data>
+  <data name="ND_NEU" xml:space="preserve">
+    <value>New</value>
+  </data>
+  <data name="ND_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ND_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Restore delivered values</value>
+  </data>
+  <data name="ND_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Reset the values of all delivered rows to the delivered state? Your own rows stay untouched.</value>
+  </data>
+  <data name="ND_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete row “{0}”?</value>
+  </data>
+  <data name="ND_TIP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Delivered row: the value can be changed, the row is not deleted.</value>
+  </data>
+  <data name="ND_TIP_STANDARD" xml:space="preserve">
+    <value>Default row of the technology — it applies when an item carries no item type.</value>
+  </data>
+  <data name="ND_KENNZEICHEN_STANDARD" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ND_TECHNIKUEBERGREIFEND" xml:space="preserve">
+    <value>across technologies</value>
+  </data>
+  <data name="ND_LEER_HINWEIS" xml:space="preserve">
+    <value>An empty service life means “as the default row of the technology”.</value>
+  </data>
+  <data name="ND_MELD_READONLY" xml:space="preserve">
+    <value>Delivered rows are not deleted. Their value can be changed; “Restore delivered values” resets it.</value>
+  </data>
+  <data name="ND_MELD_DOPPELT" xml:space="preserve">
+    <value>This technology already has the item type “{0}”.</value>
+  </data>
+  <data name="ND_MELD_ART_LEER" xml:space="preserve">
+    <value>The item type must not be empty.</value>
+  </data>
+  <data name="ND_MELD_KEINE_TABELLE" xml:space="preserve">
+    <value>This database does not have the service life table yet.</value>
+  </data>
+  <data name="ND_HERLEITUNG" xml:space="preserve">
+    <value>Service life from Service lives (depreciation): {0} · {1} {2} y</value>
+  </data>
+  <data name="ND_HERLEITUNG_STANDARD" xml:space="preserve">
+    <value>Service life from Service lives (depreciation): {0} → as default row {1} · {2} {3} y</value>
+  </data>
+  <data name="ND_STATUS_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>{0} delivered row(s) reset.</value>
+  </data>
+  <data name="ND_LEER_LISTE" xml:space="preserve">
+    <value>No row matches the search.</value>
+  </data>
+  <data name="ND_QUELLE_EIGEN" xml:space="preserve">
+    <value>own value</value>
+  </data>
+  <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The row could not be saved.</value>
+  </data>
+  <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
+    <value>Optimisation results</value>
+  </data>
+  <data name="FLOTTE_ERG_SIMULATION" xml:space="preserve">
+    <value>Simulation results</value>
+  </data>
+  <data name="FLOTTE_ERG_NUR_BEWERTET" xml:space="preserve">
+    <value>This run only evaluated the configured fleet — no size was searched for. Step 4 "Optimisation" starts a search.</value>
+  </data>
+  <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
+    <value>The size search does not depend on the selected storage unit; it looks for the most economical size.</value>
   </data>
 </root>

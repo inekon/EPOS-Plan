@@ -206,6 +206,7 @@ namespace WindowsFormsApplication1
             { "Form_EingStromTyp",             B_STROMVERBRAUCHER },
             { "Form_Emissionskatalog",         B_KOSTEN },
             { "Form_Energietraeger",           B_KOSTEN },
+            { "Form_Nutzungsdauer",            B_KOSTEN },
             { "Form_ErgBrauchwasserwaerme",    B_BRAUCHWASSER },
             { "Form_ErgProzesswaerme",         B_PROZESSWAERME },
             { "Form_ErgStromverbraucher",      B_STROMVERBRAUCHER },

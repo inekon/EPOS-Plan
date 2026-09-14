@@ -332,7 +332,7 @@ hier auf, nicht erst beim Anwender.
 
 ### 6.5 Die Messlatte selbst — `Referenzlaeufe/Kenndaten_Test.sqlite`
 
-**Stand 11.09.2026: Schemastand 74** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
+**Stand 14.09.2026: Schemastand 75** (`Tab_Applikation.SchemaVersion`; 65 Wechselrichterkatalog,
 66 Stränge, 67 BHKW-Leistungsgrenze, 68 `Firma` im Stromspeicherkatalog, 69 PV-Koeffizienten
 repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`Ausleg_T_Heiss` an
 `Tab_Einstellungen` —, 71 zwölf nullbare Szenario-Spalten an `Tab_ProjektWirtschaftlichkeit`,
@@ -340,8 +340,11 @@ repariert, 70 PV-Strangprüfung — Kurzschlussstrom je MPPT, `Ausleg_T_Kalt`/`A
 73 `Tab_SpeicherAuslegung` für projekt- und anlagenbezogene Kostenprofile, Suchbereiche
 und importierte Zeitreihen samt Zuordnung; **74 dieselbe Tabelle als STRICT-Tabelle neu
 aufgebaut** — sie war die einzige Fachtabelle des Zielschemas ohne `STRICT`, und SQLite kennt
-kein `ALTER TABLE … STRICT`), **70 750 208 Byte (67,5 MB)**, **119 Tabellen, davon 118 STRICT**
-(die 119. ist die Systemtabelle `sqlite_sequence`), **25 Projekte**. Zu keinem Projekt
+kein `ALTER TABLE … STRICT`; **75 die Nutzungsdauertabelle `Tab_Nutzungsdauer`** mit 28
+Auslieferungszeilen, der nullbaren Verweisspalte `NutzungsdauerID` an
+`Tab_KostenVorlagePosition` und `Tab_ProjektWerte` und der Saat-Zuordnung von 31 der 53
+Investitionspositionen), **70 762 496 Byte (67,5 MB)**, **120 Tabellen, davon 119 STRICT**
+(die 120. ist die Systemtabelle `sqlite_sequence`), **25 Projekte**. Zu keinem Projekt
 außerhalb von `Tab_Projekt` stehen noch Gerätezeilen: `GeraeteWaisen.Aufraeumen` findet in
 den sieben Gerätetabellen keine verwaiste Zeile mehr, `PRAGMA foreign_key_check` bleibt leer.
 Die Tabelle `Tab_SpeicherAuslegung` führt seit dem Prüfprojekt 1046 (Basis R7) genau eine

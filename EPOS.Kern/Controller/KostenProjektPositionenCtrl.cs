@@ -662,7 +662,64 @@ namespace WindowsFormsApplication1
                 Einheitpreis = null
             });
             if (idAnlage > 0) AnlageZuordnen(id, idAnlage);
+
+            // STUFE S1 (Konzept Nutzungsdauer/AfA 2.4.1): Eine neue INVESTITIONSposition
+            // bekommt die Nutzungsdauer ihrer Technik - ohne Positionsart also die
+            // Standardzeile. Sie entstuende sonst mit 0, und 0 rechnet im
+            // KapitalwertRechner still "wie Betrachtungszeitraum". Vorbelegt wird nur
+            // eine NEUE Zeile; kein gespeicherter Wert wird angefasst.
+            if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                NutzungsdauerVorbelegen(id, komponentenId, null);
+
             return id;
+        }
+
+        /// <summary>
+        /// Schreibt die Nutzungsdauer-Vorgabe in eine FRISCHE Projektzeile — den Wert
+        /// und beide Szenariospalten, wortgleich zur Vorlagenübernahme
+        /// (<c>KostenVorlagenUebernahmeCtrl.HerkunftUndNutzungsdauer</c>, FK4/FK10).
+        /// Gibt es keine Vorgabe, geschieht nichts: Es wird nichts erfunden.
+        /// </summary>
+        internal static void NutzungsdauerVorbelegen(int positionsId, int komponentenId,
+                                                     int? nutzungsdauerId)
+        {
+            if (positionsId <= 0) return;
+
+            NutzungsdauerVorgabe v = NutzungsdauerCtrl.Vorgabe(komponentenId, nutzungsdauerId);
+            if (!v.Wert.HasValue) return;
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWerte SET Nutzungsdauer = ?, " +
+                "BestCase_Nutzungsdauer = ?, WorstCase_Nutzungsdauer = ? WHERE ID = ?",
+                new DbParam("@n1", v.Wert.Value),
+                new DbParam("@n2", v.Wert.Value),
+                new DbParam("@n3", v.Wert.Value),
+                new DbParam("@id", positionsId));
+        }
+
+        /// <summary>
+        /// Trägt die POSITIONSART einer Projektzeile nach (Stufe S1, Schritt 75) —
+        /// <c>null</c> löscht sie. Still, wo es die Spalte noch nicht gibt: Die Zeile
+        /// fällt dann auf den Technik-Standard zurück, und das ist derselbe Ausgang.
+        /// </summary>
+        internal static void NutzungsdauerArtZuordnen(int positionsId, int? nutzungsdauerId)
+        {
+            if (positionsId <= 0) return;
+            if (!NutzungsdauerCtrl.VerweisSpalteVorhanden(SchemaKatalog.TAB_PROJEKTWERTE)) return;
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWerte SET [" + NutzungsdauerSchema.SPALTE_VERWEIS +
+                "] = ? WHERE ID = ?",
+                Ganzzahl("@art", nutzungsdauerId),
+                new DbParam("@id", positionsId));
+        }
+
+        /// <summary>Nullbarer LONG-Parameter (Muster <c>KostenVorlagenCtrl.Ganz</c>).</summary>
+        private static DbParam Ganzzahl(string name, int? wert)
+        {
+            var p = new DbParam(name, DbParamTyp.Integer);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            return p;
         }
 
         /// <summary>ETAPPE H3: Probe der Schritt-59-Spalte (Ergebnis je Prozess

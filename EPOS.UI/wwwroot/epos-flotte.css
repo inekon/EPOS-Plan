@@ -548,12 +548,21 @@
     gap: 1rem;
 }
 
+/* DIE RUBRIK „ERGEBNISSE DER OPTIMIERUNG" in Station 5 (Auftrag #273): Kasten
+   „Bestes Ergebnis" und Groessen-Sicht, im selben Abstandsmass wie Station 4. */
+.epos-flotte-optimierungsergebnis {
+    display: grid;
+    gap: 1rem;
+}
+
+/* DER KOPF STEHT EINSPALTIG (Auftrag #273): erst die Suche, darunter in VOLLER
+   BREITE der Bedienblock. Bis dahin war er eine Flexzeile mit dem Bedienblock als
+   zweiter Spalte; der Anwender hat ihn unter die Suche gestellt. Damit entfaellt
+   auch die Umbruchregel — ohne zweite Spalte gibt es nichts umzubrechen. */
 .epos-flotte-optimierung-kopf {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
 }
 
 .epos-flotte-optimierung-ziel {
@@ -567,13 +576,11 @@
 }
 
 /* ==================================================================== */
-/* DER KOPFBLOCK DER STATION 4 (Auftrag #247, Konzept 8.4): links die drei */
-/* Suchoptionen, rechts der BEDIENBLOCK fester Breite. Er soll nicht      */
-/* mitwachsen, wenn die Optionstexte links laenger werden (Hausregel      */
-/* #233: ein Zweispalten-Reiter bekommt einen Bedienblock).               */
+/* DER KOPFBLOCK DER STATION 4 (Konzept 8.4 in der Fassung von 7.10):    */
+/* oben die drei Suchoptionen, darunter der BEDIENBLOCK ueber die ganze  */
+/* Breite — Ziel, Kandidatenzeile, Feinraster, Rechenknopf, Fortschritt. */
 /* ==================================================================== */
 .epos-flotte-suche {
-    flex: 1 1 34rem;
     min-width: 0;
     margin: 0;
     padding: 0;
@@ -581,8 +588,6 @@
 }
 
 .epos-flotte-bedienblock {
-    flex: 0 0 26rem;
-    max-width: 100%;
     display: grid;
     gap: 0.4rem;
     padding: 0.7rem 0.8rem;

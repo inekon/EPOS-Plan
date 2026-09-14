@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -142,9 +142,53 @@ namespace Auslieferungsvorlage.Tests
 
             // 118 seit Schemaschritt 74 (Auftrag #178, 11.09.2026): Tab_SpeicherAuslegung
             // aus Schritt 73 war die EINZIGE Fachtabelle ohne STRICT und ist neu
-            // aufgebaut. Vorher 117. Die 119. Tabelle der Datei ist sqlite_sequence -
+            // aufgebaut. Vorher 117. Die letzte Tabelle der Datei ist sqlite_sequence -
             // eine Systemtabelle, die SQLite selbst anlegt und die nie STRICT traegt.
-            Assert.Equal(118, befund.Strict);
+            //
+            // 119 seit Schemaschritt 75 (Auftrag #269, 14.09.2026): Tab_Nutzungsdauer
+            // kommt hinzu und traegt STRICT von ihrer ersten Zeile an.
+            Assert.Equal(119, befund.Strict);
+        }
+
+        // =============================================================================
+        //  P6b — Die Nutzungsdauern bleiben in der Auslieferung
+        // =============================================================================
+        /// <summary>
+        /// <c>Tab_Nutzungsdauer</c> (Schemaschritt 75) haengt an keinem Projekt und ist
+        /// kein <c>*_STAMM</c>-Katalog — sie faellt also durch beide Regeln des
+        /// Vorlagenbaus und bleibt VOLLSTAENDIG stehen. Genau das soll sie: Die 28
+        /// Auslieferungszeilen sind der Grund, warum eine neue Position ueberhaupt eine
+        /// Nutzungsdauer bekommt.
+        ///
+        /// <para>Der Fall ist die Gegenprobe dazu. Faellt er rot aus, hat die
+        /// Projektbereinigung die Tabelle mitgenommen — dann fehlt der Auslieferung ihre
+        /// AfA-Tabelle, und jede neue Kostenposition entstuende wieder ohne
+        /// Nutzungsdauer.</para>
+        /// </summary>
+        [Fact]
+        public void P6b_Die_Nutzungsdauern_stehen_vollstaendig_in_der_Vorlage()
+        {
+            if (!_v.Vorhanden) return;
+
+            var befund = _v.Lesen(() => (
+                Zeilen: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    NutzungsdauerSchema.Zaehlung())),
+                Auslieferung: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Nutzungsdauer\" WHERE \"ReadOnly\" = 1")),
+                Standard: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"Tab_Nutzungsdauer\" WHERE \"IstStandard\" = 1")),
+                Verweise: Convert.ToInt64(DataRepository.ExecuteScalar(
+                    NutzungsdauerSchema.ZaehlungZuordnung()))));
+
+            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Zeilen);
+            Assert.Equal(NutzungsdauerSchema.Saat.Length, befund.Auslieferung);
+
+            // Genau eine Standardzeile je Technik - zehn Kostenkomponenten.
+            Assert.Equal(10, befund.Standard);
+
+            // Die Vorlagenpositionen behalten ihre Positionsart.
+            Assert.True(befund.Verweise > 0,
+                        "Keine Auslieferungsposition traegt mehr eine Positionsart.");
         }
 
         // =============================================================================

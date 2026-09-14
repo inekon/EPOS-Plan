@@ -2718,6 +2718,49 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_74_SPEICHERAUSLEGUNG_STRICT = 74;
 
+        /// <summary>
+        /// Schritt 75 — die <b>Nutzungsdauertabelle</b> (<c>Tab_Nutzungsdauer</c>), Stufe
+        /// S1 des Konzepts „Nutzungsdauer je Technik und Positionsart aus einer
+        /// AfA-Tabelle", Anwenderentscheide <b>ND‑Q1 bis ND‑Q8</b> vom 14.09.2026.
+        /// Anlass, Bauform der Tabelle, Saat und Ergebnisneutralität stehen vollständig
+        /// bei <see cref="NutzungsdauerSchema"/>; hier nur, was die Migration angeht.
+        ///
+        /// <para><b>Wozu.</b> Die Nutzungsdauer ist heute ein freies Feld je
+        /// Kostenposition; die Auslieferungsvorlagen lassen es leer, und ein leeres Feld
+        /// rechnet im <c>KapitalwertRechner</c> still „wie Betrachtungszeitraum" — ohne
+        /// Ersatzbeschaffung und ohne Restwert. Der Schritt legt die editierbare Tabelle
+        /// je Technik und Positionsart an, sät sie mit Richtwerten samt Quelle, hängt die
+        /// nullbare Spalte <c>NutzungsdauerID</c> an
+        /// <c>Tab_KostenVorlagePosition</c> und <c>Tab_ProjektWerte</c> und ordnet die
+        /// AUSLIEFERUNGSPOSITIONEN über ihren Namen zu.</para>
+        ///
+        /// <para><b>Vier Quellen, alle im KERN</b> und keine hier abgeschriebene DDL: der
+        /// <c>CREATE</c>-Text samt Index, die zwei Verweisspalten, die Saat und die
+        /// Saat-Zuordnung stehen in <see cref="NutzungsdauerSchema"/>. Aus derselben
+        /// Quelle bedient sich <c>Werkzeuge/Testdatenbankschema</c>, wenn die Messlatte
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird.</para>
+        ///
+        /// <para><b>Reihenfolge: erst die Tabelle, dann die Spalten, dann die Saat, dann
+        /// die Zuordnung.</b> Sie ist NICHT beliebig — das <c>ADD COLUMN</c> trägt einen
+        /// <c>REFERENCES</c>-Verweis auf die neue Tabelle, und die Zuordnung braucht die
+        /// gesäten Zeilen, um deren Ids zu finden.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> <c>Tab_ProjektWerte</c> bekommt die Spalte, aber
+        /// keinen Wert: Die Zeilen der Bestandsprojekte bleiben Zahl für Zahl, wie sie
+        /// waren, und kein Rechenweg liest die neue Tabelle. Der Referenzlauf bleibt
+        /// byte-gleich — das ist die Abnahme.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 75
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 74
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>IF NOT EXISTS</c> an Tabelle und Index,
+        /// <see cref="SqliteSpalteAnlegen"/> überspringt eine vorhandene Spalte, die Saat
+        /// übergeht eine Zeile, die schon dasteht, und die Zuordnung schreibt nur, wo der
+        /// Verweis <c>NULL</c> ist.</para>
+        /// </summary>
+        public const int SCHRITT_75_NUTZUNGSDAUER = 75;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3587,6 +3630,23 @@ namespace WindowsFormsApplication1
                         "waehrend jede andere Fachtabelle das abweist. Das STRICT-Gate der " +
                         "iOS-CI zaehlt eine Tabelle weniger als erwartet.",
                         Schritt_74_SpeicherauslegungStrict),
+
+            // AUFTRAG #269 vom 14.09.2026, Stufe S1 des Konzepts "Nutzungsdauer je
+            // Technik und Positionsart aus einer AfA-Tabelle" (Anwenderentscheide ND-Q1
+            // bis ND-Q8). Bauform, Saat, Saat-Zuordnung und Idempotenzzusage stehen in
+            // NutzungsdauerSchema - EINE Quelle fuer Migration, Testdatenbank und
+            // Nachweis. Ergebnisneutral: Tab_ProjektWerte bekommt die Spalte, aber
+            // keinen Wert.
+            new Schritt(SCHRITT_75_NUTZUNGSDAUER,
+                        "Die Nutzungsdauertabelle Tab_Nutzungsdauer anlegen, mit " +
+                        "Richtwerten saeen und die Auslieferungspositionen ihrer " +
+                        "Positionsart zuordnen (Konzept Nutzungsdauer/AfA, Stufe S1)",
+                        "Die Nutzungsdauer bliebe ein freies Feld ohne Vorbelegung: Ein " +
+                        "leeres Feld rechnet still \"wie Betrachtungszeitraum\" - ohne " +
+                        "Ersatzbeschaffung und ohne Restwert -, und es gaebe keine " +
+                        "editierbare Tabelle, aus der eine neue Position ihren Wert " +
+                        "bekommt.",
+                        Schritt_75_Nutzungsdauer),
         };
 
         /// <summary>
@@ -4725,6 +4785,75 @@ namespace WindowsFormsApplication1
                     (umgebaut ? " (neu aufgebaut, Zeilen und IDs uebernommen)" : "") +
                     "; der eindeutige Index idx_SpeicherAuslegung steht wieder. Es aendert " +
                     "sich kein Wert und kein Typ - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 75 - die Nutzungsdauertabelle (Konzept Nutzungsdauer/AfA, Stufe S1)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 75 — Anlass, Bauform, Saat und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_75_NUTZUNGSDAUER"/> und ausführlich bei
+        /// <see cref="NutzungsdauerSchema"/>.
+        ///
+        /// <para><b>Vier Handgriffe in fester Reihenfolge:</b> die Tabelle samt Index,
+        /// die zwei Verweisspalten (ihr <c>REFERENCES</c> zeigt auf die eben angelegte
+        /// Tabelle), die Saat und die Saat-Zuordnung (sie braucht die Ids der Saat).</para>
+        ///
+        /// <para><b>Saat und Zuordnung über den KERN, nicht über
+        /// <see cref="SqliteDml"/>.</b> Beide schreiben mit <c>?</c>-Parametern — die
+        /// Positionsnamen tragen Umlaute und ein kaufmännisches Und, und ein
+        /// zusammengesetzter SQL-Text wäre hier beides: ein Verstoß gegen die Hausregel
+        /// und eine Einladung an den nächsten Sonderfall. Deshalb ein <c>try</c> wie in
+        /// Schritt 74: Dieser Zweig läuft vor dem ersten Fenster und muss still
+        /// bleiben; der Fehlertext landet im Bericht.</para>
+        /// </summary>
+        private static bool Schritt_75_Nutzungsdauer(Lauf l)
+        {
+            int angelegt = 0;
+            foreach (KeyValuePair<string, string> a in NutzungsdauerSchema.Anweisungen)
+            {
+                bool vorher = SqliteTabelleVorhanden(NutzungsdauerSchema.TABELLE);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            foreach (KeyValuePair<string, string> s in NutzungsdauerSchema.Verweisspalten)
+                if (!SqliteSpalteAnlegen(l, s.Key, NutzungsdauerSchema.SPALTE_VERWEIS, s.Value))
+                    return false;
+
+            int gesaet, zugeordnet;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    gesaet = NutzungsdauerSchema.SaatSchreiben();
+                    zugeordnet = NutzungsdauerSchema.ZuordnungSchreiben();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("75: FEHLER - " + text);
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            l.Notiz("75: " + (angelegt > 0 ? "Tabelle " + NutzungsdauerSchema.TABELLE +
+                                             " samt Index angelegt" : "Tabelle war vorhanden") +
+                    ", 2 Verweisspalten sichergestellt, " + gesaet + " von " +
+                    NutzungsdauerSchema.Saat.Length + " Saatzeile(n) geschrieben, " +
+                    zugeordnet + " Auslieferungsposition(en) zugeordnet. " +
+                    "Tab_ProjektWerte bekommt die Spalte, aber KEINEN Wert - kein " +
+                    "gespeicherter Wert aendert sich, kein Rechenweg liest die neue " +
+                    "Tabelle. KEIN Rechenergebnis aendert sich.");
             return true;
         }
 
