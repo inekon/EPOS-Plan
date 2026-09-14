@@ -611,8 +611,8 @@ namespace WindowsFormsApplication1
             }
 
             StromAufschlagModel m = new StromAufschlagCtrl().Read(idProjekt, carrier);
-            bool gesamtwert = string.Equals(m.Modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
-                                            StringComparison.Ordinal);
+            SpeicherEngine.AufschlagsModus modus = StromAufschlagCtrl.Modus(m.Modus);
+            bool gesamtwert = modus == SpeicherEngine.AufschlagsModus.Gesamtwert;
 
             string grund = null;
             if (!lauf.AufschlaegeAnwenden)
@@ -621,6 +621,9 @@ namespace WindowsFormsApplication1
             else if (!m.AusDatenbank)
                 grund = T("KOH_GRUND_KEIN_STROMTRAEGER",
                     "dem Projekt ist kein Strom-Energieträger zugeordnet");
+            else if (modus == SpeicherEngine.AufschlagsModus.Keiner)
+                grund = T("KOH_GRUND_STROM_KEIN_AUFSCHLAG",
+                    "für den Strombezugspreis ist „kein Aufschlag\" gewählt");
             else if (gesamtwert)
                 grund = T("KOH_GRUND_STROM_GESAMTWERT",
                     "der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt");

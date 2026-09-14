@@ -2222,8 +2222,11 @@ namespace WindowsFormsApplication1
             catch { return; }
             if (ctKwh == 0)
             {
-                Melde(e, "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
-                         "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
+                Melde(e, StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Keiner
+                    ? "Aufschläge sollen berücksichtigt werden, für den Strombezugspreis ist " +
+                      "aber „kein Aufschlag\" gewählt — kein Aufschlagsbetrag."
+                    : "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
+                      "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
                 return;
             }
 
@@ -2232,8 +2235,8 @@ namespace WindowsFormsApplication1
             if (e.Energie.HasValue) e.Energie = e.Energie.Value + betrag;
 
             System.Globalization.CultureInfo k = BerichtTexte.Kultur;
-            string zerlegung = string.Equals(m.Modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
-                                             StringComparison.Ordinal)
+            string zerlegung =
+                StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Gesamtwert
                 ? "Gesamtwert " + m.Override.ToString("N3", k) + " ct/kWh"
                 : "Netzentgelt " + Komponente(m.Netzentgelt, m.Netzentgelt_Aktiv, k) +
                   " + Umlagen " + Komponente(m.Umlagen, m.Umlagen_Aktiv, k) +

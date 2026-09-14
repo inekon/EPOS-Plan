@@ -22,6 +22,22 @@ public sealed record Schnellwahlsatz(string Beschriftung, string Herkunft,
                                      double? CtKwh, bool Empfohlen = false);
 
 /// <summary>
+/// Die drei Modi des Aufschlagsblocks (Fachkonzept 4.2). Die Zahlenwerte sind
+/// zugleich die Ids der Optionsgruppe — die Reihenfolge der Maske.
+/// </summary>
+public enum StromAufschlagWahl
+{
+    /// <summary>Vorgabe: kein Aufschlag. Der Bezugspreis bleibt der Arbeitspreis.</summary>
+    Keiner = 0,
+
+    /// <summary>Ein Gesamtaufschlag; die Komponenten bleiben sichtbar, wirken aber nicht.</summary>
+    Gesamtwert = 1,
+
+    /// <summary>Die Summe der aktiven Komponenten ist der Aufschlag.</summary>
+    Aufgeschluesselt = 2
+}
+
+/// <summary>
 /// Der Bearbeitungsstand des Aufschlagsblocks eines STROM-Trägers
 /// (iU9-W4.3, Vorbild <c>ucStromAufschlaege</c>, Fachkonzept 4.2/4.3).
 ///
@@ -33,8 +49,14 @@ public sealed record Schnellwahlsatz(string Beschriftung, string Herkunft,
 /// </summary>
 public sealed class StromAufschlaegeStand
 {
-    /// <summary><c>true</c> = aufgeschlüsselt, <c>false</c> = Gesamtwert (Override).</summary>
-    public bool Aufgeschluesselt { get; set; } = true;
+    /// <summary>Der gewählte Modus; Vorgabe ist <see cref="StromAufschlagWahl.Keiner"/>.</summary>
+    public StromAufschlagWahl Wahl { get; set; } = StromAufschlagWahl.Keiner;
+
+    /// <summary>Die fünf Komponenten steuern den Aufschlag.</summary>
+    public bool Aufgeschluesselt => Wahl == StromAufschlagWahl.Aufgeschluesselt;
+
+    /// <summary>Der Gesamtaufschlag steuert den Aufschlag.</summary>
+    public bool Gesamtwert => Wahl == StromAufschlagWahl.Gesamtwert;
 
     public double Netzentgelt { get; set; }
     public double Umlagen { get; set; }

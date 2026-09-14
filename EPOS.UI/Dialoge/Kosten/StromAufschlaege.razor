@@ -3,12 +3,17 @@
    Vorbild: Views/Kosten/ucStromAufschlaege.cs (705 Z.) und .Designer.cs —
    Fachkonzept Stromspeicher 4.2/4.3, Arbeitspaket AP4, Etappe B4.
 
-   ZWEI MODI (Fachkonzept 4.2). „Aufgeschluesselt" pflegt fuenf Komponenten
-   (Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe, Vertrieb), jede mit
-   ihrem Schalter; „Gesamtwert" setzt stattdessen einen Override. Im
-   Override-Modus bleiben die Komponenten SICHTBAR und lesbar — „die
+   DREI MODI (Fachkonzept 4.2). „Kein Aufschlag" ist die VORGABE: Der
+   Bezugspreis bleibt der Arbeitspreis. „Gesamtwert" setzt einen Override,
+   „aufgeschluesselt" pflegt fuenf Komponenten (Netzentgelt, Umlagen,
+   Stromsteuer, Konzessionsabgabe, Vertrieb), jede mit ihrem Schalter. In den
+   ersten beiden Modi bleiben die Komponenten SICHTBAR und lesbar — „die
    Komponentenliste bleibt sichtbar und informativ" —, sie steuern den
-   Rechenweg nur nicht mehr.
+   Rechenweg nur nicht.
+
+   DIE RESTZEILE STEHT NUR IM MODUS GESAMTWERT. Nur dort gibt es zwei Zahlen,
+   die auseinanderlaufen koennen; in den anderen beiden waere sie eine Aussage
+   ueber Werte, die gerade nicht rechnen.
 
    DIE SCHNELLWAHL LIEST DEN KATALOG (Etappe B4, Befund A7). Die beiden
    Stromsteuerknoepfe tragen den Jahressatz aus Tab_Gesetzesparameter; welcher
@@ -24,7 +29,7 @@
 
 <Gruppenkopf Titel="@TitelAufschlag">
     <KindInhalt>
-        <Optionsgruppe Eintraege="@MODI" Auswahl="@(Stand.Aufgeschluesselt ? 1 : 0)"
+        <Optionsgruppe Eintraege="@MODI" Auswahl="@((int)Stand.Wahl)"
                        AuswahlChanged="BeiModus" />
 
         <div class="epos-preisblock">
@@ -47,14 +52,17 @@
         <Formularraster>
             <KindInhalt>
                 <Zahlenfeld Bezeichnung="@LabelGesamtaufschlag" Einheit="@Einheit"
-                            Wert="@Stand.Override" Aktiv="@(!Stand.Aufgeschluesselt)"
+                            Wert="@Stand.Override" Aktiv="@Stand.Gesamtwert"
                             WertChanged="@(w => Setzen(() => Stand.Override = w ?? Stand.Override))" />
             </KindInhalt>
         </Formularraster>
 
         <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
-        <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
-                                        : "epos-preisblock-rest")">@Anzeige.RestText</p>
+        @if (Stand.Gesamtwert)
+        {
+            <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
+                                            : "epos-preisblock-rest")">@Anzeige.RestText</p>
+        }
     </KindInhalt>
 </Gruppenkopf>
 
@@ -91,8 +99,9 @@
 
     [Parameter] public string TitelAufschlag { get; set; } = "Aufschläge auf den Strombezugspreis";
     [Parameter] public string TitelVerguetung { get; set; } = "Vergütung für eingespeisten Strom";
+    [Parameter] public string ModusKeiner { get; set; } = "kein Aufschlag";
     [Parameter] public string ModusAufgeschluesselt { get; set; } = "aufgeschlüsselt";
-    [Parameter] public string ModusGesamtwert { get; set; } = "Gesamtwert (Override)";
+    [Parameter] public string ModusGesamtwert { get; set; } = "Gesamtwert";
     [Parameter] public string LabelNetzentgelt { get; set; } = "Netzentgelt Arbeit";
     [Parameter] public string LabelUmlagen { get; set; } = "Umlagen (Summe)";
     [Parameter] public string LabelStromsteuer { get; set; } = "Stromsteuer";
@@ -104,11 +113,18 @@
     [Parameter] public string Einheit { get; set; } = "ct/kWh";
 
     private (int Id, string Text)[] MODI
-        => new[] { (0, ModusGesamtwert), (1, ModusAufgeschluesselt) };
+        => new[] { ((int)StromAufschlagWahl.Keiner,           ModusKeiner),
+                   ((int)StromAufschlagWahl.Gesamtwert,       ModusGesamtwert),
+                   ((int)StromAufschlagWahl.Aufgeschluesselt, ModusAufgeschluesselt) };
 
     private async Task BeiModus(int? id)
     {
-        Stand.Aufgeschluesselt = id == 1;
+        Stand.Wahl = id switch
+        {
+            (int)StromAufschlagWahl.Gesamtwert => StromAufschlagWahl.Gesamtwert,
+            (int)StromAufschlagWahl.Aufgeschluesselt => StromAufschlagWahl.Aufgeschluesselt,
+            _ => StromAufschlagWahl.Keiner
+        };
         await Geaendert.InvokeAsync();
     }
 
