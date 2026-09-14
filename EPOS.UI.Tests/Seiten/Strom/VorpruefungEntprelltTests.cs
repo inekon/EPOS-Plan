@@ -55,7 +55,7 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         int vollVorher = zaehler.Voll;
         int schnellVorher = zaehler.Schnell;
 
-        Schrittfeld(cut).Input("");
+        Tippen(cut, "");
 
         // SOFORT: das ungueltige Raster und die Sperre.
         Assert.Contains(Resource.FLOTTE_OPT_RASTER_UNGUELTIG,
@@ -76,19 +76,31 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
     public void Drei_schnelle_Tastendruecke_ergeben_genau_eine_volle_Pruefung()
     {
         var zaehler = new Pruefzaehler();
-        var cut = Station(zaehler, entprellungMs: 40);
+
+        // DIE ENTPRELLZEIT IST DER ZEITGEBER DES PRUEFSTANDS, nicht die Wanduhr. Die zwei
+        // ersten Tastendruecke legen je eine Entprellung auf, die im ganzen Lauf nicht
+        // ablaeuft — sie kann also nur verschwinden, weil der naechste Tastendruck sie
+        // abbricht. Erst der DRITTE bekommt eine kurze; er ist der einzige, der feuern darf.
+        // Frueher trugen alle drei 40 ms: Verzoegerte sich ein Tastendruck unter Last um
+        // mehr als diese 40 ms, feuerte eine ueberholte Entprellung doch noch mit, und der
+        // Fall war rot, ohne dass sich an der Seite etwas geaendert haette.
+        var cut = Station(zaehler, entprellungMs: 60000);
         int vollVorher = zaehler.Voll;
 
-        Schrittfeld(cut).Input("1");
-        Schrittfeld(cut).Input("10");
-        Schrittfeld(cut).Input("100");
+        Tippen(cut, "1");
+        Tippen(cut, "10");
+        Assert.Equal(vollVorher, zaehler.Voll);
+
+        cut.Render(p => p.Add(x => x.EntprellungMs, 1));
+        Tippen(cut, "100");
 
         Assert.Equal(3, zaehler.Schnell);
 
         // Auf den gezeichneten Zustand warten, nicht auf die Uhr.
         cut.WaitForAssertion(() => Assert.Equal(vollVorher + 1, zaehler.Voll));
 
-        // Die zwei ueberholten Entprellungen sind abgebrochen — danach kommt nichts mehr.
+        // Die zwei ueberholten Entprellungen sind abgebrochen — kaemen sie noch, stuende
+        // der Zaehler hier hoeher.
         Assert.Equal(vollVorher + 1, zaehler.Voll);
         Assert.Equal(100.0, Achse(cut).KapazitaetSchrittKWh);
     }
@@ -104,10 +116,10 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         var cut = Station(zaehler, entprellungMs: 0);
         int vollVorher = zaehler.Voll;
 
-        Schrittfeld(cut).Input("1");
+        Tippen(cut, "1");
         cut.WaitForAssertion(() => Assert.Equal(vollVorher + 1, zaehler.Voll));
 
-        Schrittfeld(cut).Input("10");
+        Tippen(cut, "10");
         cut.WaitForAssertion(() => Assert.Equal(vollVorher + 2, zaehler.Voll));
     }
 
@@ -143,12 +155,12 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         var zaehler = new Pruefzaehler();
         var cut = Station(zaehler, entprellungMs: 60000);
 
-        Schrittfeld(cut).Input("20");
+        Tippen(cut, "20");
         int vorher = zaehler.Voll;
 
         Auslegungshilfe.Rechenknopf(cut).Click();
 
-        Assert.Equal(vorher + 1, zaehler.Voll);
+        cut.WaitForAssertion(() => Assert.Equal(vorher + 1, zaehler.Voll));
     }
 
     /// <summary>
@@ -160,13 +172,20 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
     public async Task Die_verlassene_Seite_holt_die_offene_Vorpruefung_nicht_nach()
     {
         var zaehler = new Pruefzaehler();
-        var cut = Station(zaehler, entprellungMs: 40);
 
-        Schrittfeld(cut).Input("20");
+        // Ein NEGATIVER Befund braucht eine Schranke: „die Pruefung kommt nicht mehr" ist
+        // erst gezeigt, wenn die offene Entprellung laengst faellig gewesen waere. Die
+        // Schranke ist deshalb das Dreifache der Entprellzeit — und die Entprellzeit ist
+        // gross genug, dass sie zwischen dem gezeichneten Tastendruck und dem Verlassen der
+        // Seite nicht von selbst ablaufen kann.
+        const int entprellung = 200;
+        var cut = Station(zaehler, entprellungMs: entprellung);
+
+        Tippen(cut, "20");
         int vorher = zaehler.Voll;
 
         cut.Instance.Dispose();
-        await Task.Delay(200);
+        await Task.Delay(3 * entprellung);
 
         Assert.Equal(vorher, zaehler.Voll);
     }
@@ -190,7 +209,7 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         };
         var cut = Station(zaehler, entprellungMs: 0);
 
-        Schrittfeld(cut).Input("20");
+        Tippen(cut, "20");
 
         cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.Vorpruefung.Count));
         Assert.Equal(new[] { "Betrieb sehr niedrig", "Peak-Ziel zu klein" },
@@ -213,13 +232,84 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
 
         Assert.Single(cut.Instance.Vorpruefung);
 
-        Schrittfeld(cut).Input("20");
+        Tippen(cut, "20");
 
         Assert.Single(cut.Instance.Vorpruefung);
         Assert.Equal(0, zaehler.Schnell);
     }
 
+    // =====================================================================
+    //  Was der Zeitgeber NICHT darf
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Zeitgeber überschreibt kein Zahlenfeld.</b> Feuert die Entprellung mitten in
+    /// der Eingabefolge, zeichnet die Seite neu — und der Feldtext bleibt, was der Anwender
+    /// getippt hat: die frische Zahl ebenso wie das NICHTS. Sonst sähe ein Anwender, der
+    /// tippt, den Modellwert zurückspringen (das Muster des Befunds „1 bleibt stehen").
+    /// </summary>
+    /// <remarks>
+    /// Gewartet wird auf den ZÄHLER der vollen Stufe, nicht auf eine Wanduhr: Er zählt genau
+    /// dann hoch, wenn die Entprellung abgelaufen ist und die Seite danach neu zeichnet.
+    /// </remarks>
+    [Fact]
+    public void Der_Zeitgeber_zwischen_zwei_Eingaben_ueberschreibt_das_Feld_nicht()
+    {
+        var zaehler = new Pruefzaehler();
+        var cut = Station(zaehler, entprellungMs: 1);
+
+        TippenUndEntprellen(cut, zaehler, "100");
+        Assert.Equal("100", Schrittfeld(cut).GetAttribute("value"));
+        Assert.Equal(100.0, Achse(cut).KapazitaetSchrittKWh);
+
+        // Das GELEERTE Feld: Das Modell nimmt die 0, die Anzeige bleibt leer.
+        TippenUndEntprellen(cut, zaehler, "");
+        Assert.Equal("", Schrittfeld(cut).GetAttribute("value"));
+        Assert.Equal(0.0, Achse(cut).KapazitaetSchrittKWh);
+
+        // Und das naechste Zeichen landet vorn, nicht hinter einer zurueckgeschriebenen 0.
+        Tippen(cut, "2");
+        Assert.Equal(2.0, Achse(cut).KapazitaetSchrittKWh);
+    }
+
     // ================================================================= Prüfstand
+
+    /// <summary>
+    /// Tippt in das Schrittfeld und <b>wartet auf den gezeichneten Zustand</b>: Die Fassung
+    /// des Arbeitsstandes ist weitergezählt UND das Feld zeigt das Getippte.
+    /// </summary>
+    /// <remarks>
+    /// bunit gibt den Tastendruck in den Zeichenverteiler und kehrt zurück, ohne den
+    /// Zeichenlauf abzuwarten. Ist der Verteiler belegt — und genau das tut die Fortsetzung
+    /// einer abgelaufenen Entprellung, die aus dem Fadenvorrat zurückmeldet —, läuft der
+    /// Tastendruck erst danach, und eine Prüfung unmittelbar dahinter liest den Stand VOR
+    /// dem Zeichen. Die <c>Fassung</c> ist der verlässliche Merkposten: Sie zählt bei JEDER
+    /// gemeldeten Änderung hoch, auch dort, wo der Feldtext derselbe bleibt.
+    /// </remarks>
+    private static void Tippen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
+    {
+        int fassung = cut.Instance.Fassung;
+        Schrittfeld(cut).Input(text);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.True(cut.Instance.Fassung > fassung, "Der Tastendruck ist noch nicht angekommen.");
+            Assert.Equal(text, Schrittfeld(cut).GetAttribute("value"));
+        });
+    }
+
+    /// <summary>
+    /// Tippt und wartet, bis die Entprellung DIESES Tastendrucks abgelaufen ist und voll
+    /// geprüft hat. Der Zählerstand wird VOR dem Zeichen gemerkt — sonst käme der Merkwert
+    /// zu spät, wenn die Entprellung schon während des Wartens auf den Zeichenlauf feuert.
+    /// </summary>
+    private static void TippenUndEntprellen(IRenderedComponent<StromspeicherAuslegungSeite> cut,
+                                            Pruefzaehler zaehler, string text)
+    {
+        int vorher = zaehler.Voll;
+        Tippen(cut, text);
+        cut.WaitForAssertion(() => Assert.True(zaehler.Voll > vorher,
+                                               "Die Entprellung hat noch nicht gefeuert."));
+    }
 
     /// <summary>Zählt, welche Stufe der Vorprüfung wie oft gerufen wurde.</summary>
     private sealed class Pruefzaehler
