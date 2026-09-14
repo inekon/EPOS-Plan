@@ -98,6 +98,15 @@
     grid-column: 1 / -1;
 }
 
+/* EINE MARKIERTE PUNKTZEILE (Auftrag #257): Die Vorpruefung beanstandet GENAU
+   diesen Punkt der Lebensdauerkurve. Fehlerfarbe und Rahmen des Hauses wie am
+   Eingabefeld; die Aussage traegt aria-invalid MIT, nicht die Farbe allein. */
+.epos-flotte-feldraster--fehler {
+    padding: 0.35rem 0.5rem;
+    border-left: 4px solid var(--epos-senke-rahmen);
+    background: var(--epos-fehleingabe);
+}
+
 .epos-flotte-feldraster--kompakt {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
 }
@@ -256,7 +265,8 @@
     .epos-flotte-einheit,
     .epos-flotte-editor__zaehler,
     .epos-flotte-hinweis--warnung,
-    .epos-flotte-hinweis--problem {
+    .epos-flotte-hinweis--problem,
+    .epos-flotte-feldraster--fehler {
         border-color: CanvasText;
     }
 }

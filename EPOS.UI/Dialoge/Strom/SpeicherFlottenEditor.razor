@@ -180,10 +180,17 @@
                                     {
                                         <p class="epos-flotte-leer">@Texte.KeineRainflowKennlinie</p>
                                     }
+                                    @* DIE VORPRUEFUNG ZEIGT AUF DIE ZEILE (Auftrag #257): Die Bedingung
+                                       steht in der Engine, ihr Wortlaut im Kern; hier wird beides nur
+                                       GERUFEN. Der frisch angelegte Punkt bleibt im Modell 0/0 - das
+                                       Modell ist double, NaN braeche die JSON-Serialisierung der
+                                       Staende -, und genau deshalb markiert die Regel ihn sofort. *@
+                                    @{ FlottenKurvenbefund? kurvenbefund = FlottenPlausibilitaet.Kurvenbefund(einheit); }
                                     @for (int rainIndex = 0; rainIndex < einheit.RainflowKurve.Count; rainIndex++)
                                     {
                                         int index = rainIndex;
                                         FlottenRainflowPunkt punkt = einheit.RainflowKurve[index];
+                                        bool beanstandet = kurvenbefund?.Punktnummer == index + 1;
                                         @* Der Schluessel ist die ZEILENNUMMER, nicht der
                                            Punkt: OnParametersSet baut _wert nach jedem
                                            gemeldeten Feld neu auf, der Punkt ist danach
@@ -191,7 +198,8 @@
                                            Feld ginge der Fokus (Befund #245). Innerhalb
                                            der Einheit (article @@key=einheit.Id) ist die
                                            Nummer eindeutig. *@
-                                        <div class="epos-flotte-feldraster" @key="index">
+                                        <div class="epos-flotte-feldraster@(beanstandet ? " epos-flotte-feldraster--fehler" : "")"
+                                             aria-invalid="@(beanstandet ? "true" : null)" @key="index">
                                             <Zahlenfeld Bezeichnung="@string.Format(Texte.Entladetiefe, index + 1)" Einheit="%" Wert="@(punkt.Entladetiefe * 100.0)" Min="0" Max="100" Aktiv="@Aktiv"
                                                         WertChanged="@(v => RainflowZahlSetzen(einheit, punkt, x => punkt.Entladetiefe = x / 100.0, v))" />
                                             <Zahlenfeld Bezeichnung="@string.Format(Texte.ZyklenBisEol, index + 1)" Einheit="Zyklen" Wert="@punkt.ZyklenBisEol" Min="0" Aktiv="@Aktiv"
@@ -200,6 +208,11 @@
                                                     aria-label="@string.Format(Texte.RainflowPunktEntfernenAria, index + 1)"
                                                     @onclick="@(() => RainflowPunktEntfernen(einheit, punkt))">@Texte.PunktEntfernen</button>
                                         </div>
+                                        @if (beanstandet)
+                                        {
+                                            <p class="epos-flotte-hinweis epos-flotte-hinweis--problem"
+                                               role="status">@kurvenbefund!.Text</p>
+                                        }
                                     }
                                     <button type="button" class="epos-knopf epos-flotte-aktion" disabled="@(!Aktiv)"
                                             @onclick="@(() => RainflowPunktHinzufuegen(einheit))">@Texte.PunktHinzufuegen</button>
