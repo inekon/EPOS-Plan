@@ -30,7 +30,7 @@ Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechne
 
 Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück.
 
-'''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Simulation mit. Öffnen Sie die Ansicht ohne vorherigen Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
+'''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Simulation mit. Öffnen Sie die Ansicht ohne gerechneten Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
 
 Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dieses Projekt bereits eine Flotte aktiviert, steht darunter ein Band '''„Projektflotte aktiv"''' mit dem Knopf, sie wieder abzuschalten.
 
