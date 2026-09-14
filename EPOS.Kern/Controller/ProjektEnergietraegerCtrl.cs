@@ -250,6 +250,14 @@ namespace WindowsFormsApplication1
             public string Komponente = "";
             /// <summary><c>energy_carrier.id</c>; 0 = keiner.</summary>
             public int CarrierId;
+
+            /// <summary>
+            /// Die Gerätezeile eines Brenners (<c>Tab_Heizkessel.ID</c> bzw.
+            /// <c>Tab_BHKW.ID</c>); 0 = die Komponente führt kein Gerät. Sie sagt, welche
+            /// Brennstoffkategorie gilt — <see cref="EnergietraegerZulaessigkeit"/> engt
+            /// die Trägerauswahl darauf ein (Auftrag 268).
+            /// </summary>
+            public int GeraeteId;
         }
 
         /// <summary>Die Anlagenzeilen des Projekts in Anlagereihenfolge — leere
@@ -281,11 +289,13 @@ namespace WindowsFormsApplication1
                 if (geraet > 0)
                 {
                     e.Komponente = DbWerte.ERZEUGER_BHKW;
+                    e.GeraeteId = geraet;
                     e.CarrierId = BrennerTraeger(katalog, zugeordnet, idCarrier, bhkwBrennstoff, geraet);
                 }
                 else if ((geraet = Ganz(r, "ID_Kessel")) > 0)
                 {
                     e.Komponente = DbWerte.ERZEUGER_HEIZKESSEL;
+                    e.GeraeteId = geraet;
                     e.CarrierId = BrennerTraeger(katalog, zugeordnet, idCarrier, kesselBrennstoff, geraet);
                 }
                 else if (Ganz(r, "ID_WP") > 0) e.Komponente = DbWerte.ERZEUGER_WAERMEPUMPE;

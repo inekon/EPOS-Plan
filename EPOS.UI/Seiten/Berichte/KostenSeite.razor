@@ -275,8 +275,14 @@
     /// </summary>
     [Parameter] public Func<KostenZeile?, IReadOnlyDictionary<string, object>?>? VerwaltungGaben { get; set; }
 
-    /// <summary>Der Parametersatz der Energieträgerverwaltung.</summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? TraegerGaben { get; set; }
+    /// <summary>
+    /// Der Parametersatz der Energieträgerverwaltung. Die gewählte Anlagenzeile geht mit —
+    /// aus ihr nimmt die Hülle die Komponente und deren Gerät und engt die Trägerliste
+    /// darauf ein (Auftrag 268: Wärmepumpe → Strom, Heizkessel → Brennstoffkategorie
+    /// seines Geräts). Ohne gewählte Zeile kommt <c>null</c> herein, und es gilt wie
+    /// bisher kein Komponentenkontext.
+    /// </summary>
+    [Parameter] public Func<KostenZeile?, IReadOnlyDictionary<string, object>?>? TraegerGaben { get; set; }
 
     /// <summary>
     /// Die Frage vor dem Löschen der losen Positionen einer Zeile; leer =
@@ -417,15 +423,23 @@
     // Die zwei Einstiege
     // =====================================================================
 
+    /// <summary>
+    /// Die gewählte Anlagenzeile; <c>null</c> = keine. BEIDE Einstiege fragen sie —
+    /// die Kostenverwaltung wählt damit ihre Komponente vor (Ä19), die
+    /// Energieträgerverwaltung engt damit ihre Trägerliste ein (Auftrag 268).
+    /// </summary>
+    private KostenZeile? GewaehlteZeile()
+    {
+        foreach (KostenZeile z in _stand.Komponenten)
+            if (z.Schluessel == _anlage) return z;
+        return null;
+    }
+
     private void VerwaltungOeffnen()
     {
         if (!_stand.Bedienbar || VerwaltungGaben is null) return;
 
-        KostenZeile? gewaehlt = null;
-        foreach (KostenZeile z in _stand.Komponenten)
-            if (z.Schluessel == _anlage) { gewaehlt = z; break; }
-
-        IReadOnlyDictionary<string, object>? gaben = VerwaltungGaben(gewaehlt);
+        IReadOnlyDictionary<string, object>? gaben = VerwaltungGaben(GewaehlteZeile());
         if (gaben is null) return;
         _gaben = gaben;
         _offen = Unterdialog.Verwaltung;
@@ -435,7 +449,7 @@
     {
         if (!_stand.Bedienbar || TraegerGaben is null) return;
 
-        IReadOnlyDictionary<string, object>? gaben = TraegerGaben();
+        IReadOnlyDictionary<string, object>? gaben = TraegerGaben(GewaehlteZeile());
         if (gaben is null) return;
         _gaben = gaben;
         _offen = Unterdialog.Traeger;

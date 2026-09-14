@@ -1,11 +1,11 @@
 ﻿@* Die KOSTENLEISTE der Anlagen- und Geraetedialoge (iU9-W6.0f).
 
-   VORBILD. Views/Kosten/KostenKnoepfe.cs, Methode Leiste (Z. 39-77) - der
-   Serienbaustein der Etappe KD6 (Konzept Kostendialoge Paragraf 9): drei
-   Knoepfe "Investitionskosten…", "Betriebskosten…", "Energiekosten…" und
-   rechts daneben der rote FK8-Kurzhinweis mit dem Vollsatz als Tooltip.
-   Vier Masken haengen ihn an: Heizkessel (:116), Heizkessel-Katalogeditor
-   (:135), BHKW (:253) und BHKW-Katalogeditor (~:45).
+   VORBILD war der Serienbaustein der Etappe KD6 (Konzept Kostendialoge
+   Paragraf 9) in der geloeschten WinForms-Hilfsklasse Views/Kosten/
+   KostenKnoepfe: drei Knoepfe "Investitionskosten…", "Betriebskosten…",
+   "Energiekosten…" und rechts daneben der rote FK8-Kurzhinweis mit dem
+   Vollsatz als Tooltip. Vier Masken haengen die Leiste an: Heizkessel,
+   Heizkessel-Katalogeditor, BHKW und BHKW-Katalogeditor.
 
    WAS DIE LEISTE NICHT TUT. Sie oeffnet nichts. Wohin die drei Knoepfe fuehren,
    entscheidet die Huelle ueber zwei Delegaten - dasselbe Muster wie Sprung
@@ -44,8 +44,8 @@
 @code {
     /// <summary>
     /// Oeffnet den Kostendialog. Der Schalter ist <c>betrieb</c>: <c>false</c> =
-    /// Investitionskosten, <c>true</c> = Betriebskosten - genau der Parameter, den
-    /// <c>KostenKnoepfe.OeffneKosten</c> durchreichte. Ohne Delegat fehlen beide Knoepfe.
+    /// Investitionskosten, <c>true</c> = Betriebskosten - genau der Parameter, den der
+    /// WinForms-Vorlaeufer durchreichte. Ohne Delegat fehlen beide Knoepfe.
     /// </summary>
     [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
 

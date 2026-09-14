@@ -5,7 +5,8 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Die Kostenleiste (iU9-W6.0f). Soll ist <c>Views/Kosten/KostenKnoepfe.Leiste</c>:
+/// Die Kostenleiste (iU9-W6.0f). Soll ist die geloeschte WinForms-Leiste
+/// <c>Views/Kosten/KostenKnoepfe</c>:
 /// drei Knoepfe und ein optionaler roter Kurzhinweis mit Vollsatz als Tooltip.
 /// Der Vorlaeufer legte das Label nur an, wenn ein Hinweistext kam - hier ist
 /// dieselbe Regel auf alle vier Teile ausgeweitet: kein Delegat, kein Knopf.

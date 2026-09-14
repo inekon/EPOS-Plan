@@ -196,7 +196,7 @@ public class KostenSeiteTests : EposBunitContext
     {
         var cut = Zeige(p => p
             .Add(x => x.VerwaltungGaben, (KostenZeile? _) => LeererSatz())
-            .Add(x => x.TraegerGaben, () => LeererSatz()),
+            .Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz()),
             stand: Standard(bedienbar: false));
 
         foreach (IElement k in cut.FindAll(".epos-kostenkopf button"))
@@ -267,7 +267,7 @@ public class KostenSeiteTests : EposBunitContext
     [Fact]
     public void Die_Energietraegerverwaltung_oeffnet_ihren_Bereich()
     {
-        var cut = Zeige(p => p.Add(x => x.TraegerGaben, () => LeererSatz()));
+        var cut = Zeige(p => p.Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz()));
 
         cut.Find(".epos-kostenkopf button").Click();
 
@@ -277,7 +277,7 @@ public class KostenSeiteTests : EposBunitContext
     [Fact]
     public void Nach_dem_Schliessen_frischt_die_Seite_auf()
     {
-        var cut = Zeige(p => p.Add(x => x.TraegerGaben, () => LeererSatz()));
+        var cut = Zeige(p => p.Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz()));
 
         cut.Find(".epos-kostenkopf button").Click();
         cut.Find(".epos-ueberlagerung").KeyDown("Escape");
@@ -290,7 +290,7 @@ public class KostenSeiteTests : EposBunitContext
     public void Ohne_Parametersatz_bleibt_der_Bereich_zu()
     {
         var cut = Zeige(p => p.Add(x => x.TraegerGaben,
-            () => (IReadOnlyDictionary<string, object>?)null));
+            (KostenZeile? _) => (IReadOnlyDictionary<string, object>?)null));
 
         cut.Find(".epos-kostenkopf button").Click();
 
@@ -517,5 +517,53 @@ public class KostenSeiteTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-kostenvergleich"));
         Assert.Empty(cut.FindAll(".epos-vergleichswahl"));
+    }
+
+    // =====================================================================
+    // Komponentenkontext der Energietraegerverwaltung (Auftrag 268)
+    // =====================================================================
+
+    /// <summary>
+    /// Ist in „Anlagenkomponenten" eine Zeile gewählt, geht sie beim Öffnen der
+    /// Energieträgerverwaltung mit — aus ihr nimmt die Hülle Komponente und Gerät.
+    /// </summary>
+    [Fact]
+    public void Die_Energietraegerverwaltung_bekommt_die_gewaehlte_Anlage_mit()
+    {
+        KostenZeile? mitgegeben = null;
+        int gefragt = 0;
+        var cut = Zeige(p => p.Add(x => x.TraegerGaben, (KostenZeile? z) =>
+        {
+            mitgegeben = z; gefragt++;
+            return LeererSatz();
+        }));
+
+        Anlagenzeilen(cut)[1].QuerySelector(".epos-anlagenwahl")!.Click();
+        cut.Find(".epos-kostenkopf button").Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal(KostenSeite.Unterdialog.Traeger, cut.Instance.OffenerUnterdialog));
+        Assert.Equal(1, gefragt);
+        Assert.NotNull(mitgegeben);
+        // Zeile 12 ist der Heizkessel - seine Brennstoffkategorie engt die Liste ein.
+        Assert.Equal(12, mitgegeben!.Schluessel);
+    }
+
+    /// <summary>Ohne gewählte Zeile kommt <c>null</c> herein — dann gilt kein Kontext.</summary>
+    [Fact]
+    public void Ohne_gewaehlte_Anlage_oeffnet_die_Verwaltung_ohne_Kontext()
+    {
+        KostenZeile? mitgegeben = new KostenZeile { Schluessel = 99 };
+        var cut = Zeige(p => p.Add(x => x.TraegerGaben, (KostenZeile? z) =>
+        {
+            mitgegeben = z;
+            return LeererSatz();
+        }));
+
+        cut.Find(".epos-kostenkopf button").Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal(KostenSeite.Unterdialog.Traeger, cut.Instance.OffenerUnterdialog));
+        Assert.Null(mitgegeben);
     }
 }

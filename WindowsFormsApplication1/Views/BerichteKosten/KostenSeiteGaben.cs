@@ -83,7 +83,8 @@ namespace WindowsFormsApplication1
                 ["Laden"] = new Func<KostenStand>(Laden),
                 ["VerwaltungGaben"] = new Func<KostenZeile, IReadOnlyDictionary<string, object>>(
                     VerwaltungGaben),
-                ["TraegerGaben"] = new Func<IReadOnlyDictionary<string, object>>(TraegerGaben),
+                ["TraegerGaben"] = new Func<KostenZeile, IReadOnlyDictionary<string, object>>(
+                    TraegerGaben),
                 ["LoeschFrage"] = new Func<KostenZeile, string>(LoeschFrage),
                 ["Loeschen"] = new Func<KostenZeile, string>(Loeschen),
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
@@ -871,11 +872,27 @@ namespace WindowsFormsApplication1
                                                        false, a != null ? a.AnlageId : 0);
         }
 
-        /// <summary>KD6a: die Energieträgerverwaltung, vorgefiltert auf das Projekt.</summary>
-        private IReadOnlyDictionary<string, object> TraegerGaben()
+        /// <summary>
+        /// KD6a: die Energieträgerverwaltung, vorgefiltert auf das Projekt.
+        ///
+        /// <para><b>Auftrag 268:</b> Ist in „Anlagenkomponenten" eine Zeile gewählt, geht
+        /// ihre Komponente samt Gerät mit — die Verwaltung zeigt dann nur die Träger, die
+        /// zu ihr passen, und springt auf den Träger dieser Anlage. Ohne gewählte Zeile
+        /// (<paramref name="zeile"/> null) bleibt es beim Projektkontext ohne Einengung.
+        /// Welche Träger zulässig sind, entscheidet der Kern
+        /// (<c>EnergietraegerZulaessigkeit</c>), nicht diese Hülle.</para>
+        /// </summary>
+        private IReadOnlyDictionary<string, object> TraegerGaben(KostenZeile zeile)
         {
             if (_idProjekt <= 0) return null;
-            return new EnergietraegerHuelle(_idProjekt).Gaben();
+
+            ProjektEnergietraegerCtrl.AnlagenEintrag a = null;
+            if (zeile != null) _anlagen.TryGetValue(zeile.Schluessel, out a);
+
+            return new EnergietraegerHuelle(_idProjekt).Gaben(
+                a != null ? a.CarrierId : 0,
+                a != null ? a.Komponente : null,
+                a != null ? a.GeraeteId : 0);
         }
 
         /// <summary>Ä21: die Frage vor dem Löschen der losen Positionen.</summary>
