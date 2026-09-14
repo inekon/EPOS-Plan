@@ -36,6 +36,24 @@ Der Dialog '''Energieträgerverwaltung''' führt die Energieträger eines Projek
 *: In den beiden ersten Modi bleiben die Komponenten sichtbar und lesbar, sie rechnen nur nicht. Die Zeile ''Summe der aktiven Komponenten'' nennt daneben stets den wirksamen Aufschlag. Ob der Aufschlag auch in die Wirtschaftlichkeitsrechnung eingeht, entscheidet der Schalter unter dem Block; die Speicher- und Preisrechnung verwendet ihn unabhängig davon.
 * {{Anker|traeger-je-anlage}}'''Träger je Anlage''' – in den Dialogen [[Programm Dokumentation/Wärmepumpe#energietraeger|Wärmepumpe]], [[Programm Dokumentation/Photovoltaik#energietraeger|Photovoltaik]] und [[Programm Dokumentation/Stromspeicher#energietraeger|Stromspeicher]] wird der Träger der einzelnen Anlage in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Preis, Aufschläge und Emissionsfaktor des Strombezugs folgen dieser Wahl.
 
+== Nutzungsdauern (AfA) ==
+{{Anker|nutzungsdauern|afa}}
+
+Der Dialog '''Nutzungsdauern (AfA)''' führt die rechnerische Nutzungsdauer je Technik und Positionsart. Sie steuert in der Wirtschaftlichkeitsrechnung die Ersatzbeschaffung und den Restwert: Eine Position ohne Nutzungsdauer rechnet über den gesamten Betrachtungszeitraum – ohne Ersatzbeschaffung und ohne Restwert. Der Dialog steht unter {{Menü|Administration|Kosten|Nutzungsdauern (AfA)…}}.
+
+* {{Anker|nutzungsdauer-raster}}'''Zeilenraster''' – die Zeilen sind nach Technik gruppiert. Die Spalten nennen Technik, Positionsart, Nutzungsdauer in Jahren, steuerliche Nutzungsdauer und die Quelle des Werts.
+* {{Anker|nutzungsdauer-standard}}'''Standardzeile''' – sie steht in ihrer Gruppe zuerst, ist gekennzeichnet und gilt für jede Kostenposition, die keine eigene Positionsart trägt. Je Technik gibt es genau eine.
+* '''Technikübergreifende Zeilen''' – ''Montage'' und ''Planung / Baunebenkosten'' stehen am Ende der Liste und tragen keinen eigenen Wert: Solche Positionen werden zusammen mit der Hauptposition ersetzt und rechnen deshalb mit der Standardzeile ihrer Technik.
+* '''Rechnerische Nutzungsdauer und steuerliche AfA''' – gerechnet wird mit der rechnerischen Nutzungsdauer. Die steuerliche Spalte steht daneben zur Information und geht in keine Rechnung ein.
+* '''Quelle''' – jede Zeile nennt, worauf ihr Wert beruht. Die ausgelieferten Werte sind Richtwerte; maßgeblich für eine konkrete Anlage bleibt die Angabe des Planers.
+* '''Suchen''' – das Feld über der Liste schränkt die Anzeige über Technik, Positionsart und Quelle ein.
+* '''Neu''' – legt eine eigene Zeile an: Technik wählen, Positionsart benennen, Werte eintragen. Ohne Technik entsteht eine technikübergreifende Zeile. Je Technik kommt jede Positionsart nur einmal vor.
+* '''Löschen''' – entfernt eine eigene Zeile nach Rückfrage. Ausgelieferte Zeilen bleiben erhalten; ihr Wert lässt sich überschreiben.
+* '''Auslieferungswerte wiederherstellen''' – setzt die Werte aller ausgelieferten Zeilen nach Rückfrage auf den Auslieferungsstand zurück. Eigene Zeilen bleiben unberührt.
+* '''Speichern''' – Eingaben im Raster werden mit ''Speichern'' oder ''OK'' geschrieben; ''Abbrechen'' verwirft sie.
+
+Eine neu angelegte Investitionsposition und eine aus einer Kostenvorlage übernommene Position bekommen ihre Nutzungsdauer aus dieser Tabelle. Bereits erfasste Positionen behalten den Wert, der bei ihnen steht.
+
 == Kosten in der Speicherauslegung ==
 {{Anker|speicherauslegung-kosten}}
 
