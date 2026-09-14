@@ -40,8 +40,19 @@ namespace EPOS.Kern.Tests
     /// <see cref="DataRepository.PfadUeberschreibung"/> statisch ist.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class EnergiekostenGrundTests
+    public class EnergiekostenGrundTests : IDisposable
     {
+        /// <summary>
+        /// Pinnt die Kultur der ganzen Klasse auf <c>de-DE</c> (Hausmuster aus Auftrag #230):
+        /// <c>WirtschaftlichkeitErgebnis.Hinweis</c> kommt aus den Satellitenressourcen und folgt
+        /// <c>CurrentUICulture</c>; ohne Pinnung liest ein Lauf unter <c>en-US</c> den englischen
+        /// Text, und der Vergleich gegen den deutschen Wortlaut faellt.
+        /// </summary>
+        private readonly Kulturvorrichtung _kultur = new();
+
+        /// <summary>Stellt die vier Kulturwerte zurueck.</summary>
+        public void Dispose() => _kultur.Dispose();
+
         /// <summary>„Beispiel WP WG 1" — Wärmepumpe, PV und Stromspeicher ohne
         /// <c>ID_Carrier</c>, dem Projekt ist nur „Erdgas E" zugeordnet.</summary>
         private const int PROJEKT_WP = 1026;
