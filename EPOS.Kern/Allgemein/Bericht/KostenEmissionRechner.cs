@@ -415,9 +415,13 @@ namespace WindowsFormsApplication1
                 // zuordnen, dann bepreisen. Einen Preis „für Elektrische Energie"
                 // zu verlangen, den man mangels Zuordnung gar nicht eintragen kann,
                 // wäre eine Sackgasse.
-                else if (!stromKosten.HasValue && (stromCarrierKosten <= 0 || stromAusRueckfall))
+                // OHNE NETZBEZUG kein Stromgrund: Ein reines Kesselprojekt ohne
+                // Strombezug hat kein Stromloch, sondern ein Preisloch — der Zweig
+                // darunter nennt dann den Brennstoff beim Namen.
+                else if (netzbezugMWh > 0 && !stromKosten.HasValue &&
+                         (stromCarrierKosten <= 0 || stromAusRueckfall))
                     v.EnergiekostenGrund = GRUND_KEIN_STROMTRAEGER;
-                else if (!stromKosten.HasValue)
+                else if (netzbezugMWh > 0 && !stromKosten.HasValue)
                     v.EnergiekostenGrund = string.Format(GRUND_STROMPREIS_FEHLT,
                         stromPreisTraeger ?? "?");
                 else if (ohnePreis.Count > 0)
