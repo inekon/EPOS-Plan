@@ -229,7 +229,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Klartext für den Heizstab einer Anlagenzeile (kein Gewerk der Kostenlandkarte).</summary>
-        private const string HEIZSTAB = "Heizstab";
+        private const string HEIZSTAB = EnergietraegerZulaessigkeit.ERZEUGER_HEIZSTAB;
 
         // ================================================================= Ä19
 
