@@ -5333,3 +5333,77 @@ steht aus und ist die eigentliche Aufgabe von
 > **Gate sept68 auf `45daa16b`:** GRÜN auf `45daa16b` — Kern 2 819, UI 4 015, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** Windows-Abnahme am Projekt 1050; nur die erste beanstandete Einheit erzeugt einen Listenhinweis (Editor markiert
 > jede Zeile; Sammelliste wäre ein Folgeentscheid); Sammel-Upload frühestens 20.09.2026.
+
+## #258 — Energieträger-Trägerkarte: Einheiten, Preishistorie, Katalogwerte (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderbefund 14.09.2026 (drei Bildschirmfotos, Energieträger-Dialog):** Heizwert und Brennwert tragen die Einheit
+> „kWh/kWh" („sind mit Einheit kWh/Nm³"); im Block „Preishistorie" „funktioniert Speichern nicht", „die Eingaben werden nicht
+> gespeichert"; dazu der Wunsch, die Stammdaten-Kosten aus der Administration in das Projekt übernehmen zu können.
+>
+> **Ursache (Orchestrierung, belegt; Agent bestätigt):** Die Hülle `WindowsFormsApplication1/Views/Kosten/EnergietraegerHuelle.cs`
+> (1 819 Zeilen, ohne Test, vom Linux-Gate nicht gebaut) bildete die Einheit von Heizwert und Brennwert aus der gewählten
+> Preisbasis („kWh/" + Basis), teilte beim Basiswechsel Heizwert, Brennwert und Leistungspreis durch den Faktor und bildete in
+> `Nachziehen()` die Basiswerte als Anzeige × Faktor; `TraegerWaehlen()` setzte die gespeicherte Preisbasis, rechnete die
+> Anzeige aber nicht um. Zusätzlich zeigte `["Nachrechnen"]` auf `Ansicht()`, das `Nachziehen()` nicht rief — Basiswerte,
+> Formel und Effektivzeile blieben auf dem Stand des Ladens, gespeichert wurde der alte Wert. `Stand.Historie` wurde nirgends
+> befüllt (der Kern-Leser hatte außer dem Speicheroptimierer keinen Aufrufer; der WinForms-Vorläufer rief `LoadHistory` beim
+> Trägerwechsel und nach dem Speichern). Im Projektkontext fehlte jeder Weg zu den Katalogwerten.
+>
+> **Anwenderentscheid 14.09.2026:** „Empfehlung: Katalogübernahme eine einmalige Kopie", „Empfehlung #258: umsetzen".
+>
+> **Umsetzung (Agent Opus, Worktree, sieben Commits `15259039` … `2f1256a4`; Merge `c0ae674d`):** Heizwert und Brennwert sind
+> Stoffwerte je Abrechnungseinheit (`kWh/Nm³`, `kWh/L`, `kWh/kg`); nur der Arbeitspreis folgt der Preisbasis, der Leistungspreis
+> wird nicht mehr umgerechnet. Die Rechnung liegt als `EPOS.Kern/Controller/EnergietraegerPreiskarte.cs` ohne Datenbank im
+> Kern; Formelzeile und Effektivprüfung laufen über die Basiswerte und nennen die Einheiten; nach jeder Feldänderung wird
+> nachgezogen. Preishistorie: Laden beim Trägerwechsel und nach jedem erfolgreichen Speichern, Datum aus „Gültig ab", zweites
+> Speichern am selben Tag aktualisiert, Spaltenkopf mit `kWh/<Abrechnungseinheit>`; im Katalogkontext entsteht keine Zeile,
+> weil `energy_price.ID_Projekt` einen Fremdschlüssel auf `Tab_Projekt` trägt (Projekt 0 existiert nicht) — die Karte nennt den
+> Grund (`ETV_HISTORIE_NUR_PROJEKT`). Knopf „Katalogwerte übernehmen" im Fuß der Preisgruppe, nur im Projektkontext: holt
+> Arbeits-, Grund-, Leistungspreis, Heiz-, Brennwert und die drei Emissionswerte aus der Katalogzeile, setzt die Preisbasis auf
+> die Abrechnungseinheit, meldet „Katalogwerte übernommen — noch nicht gespeichert"; geschrieben wird erst mit Speichern/OK
+> (Historienzeile entsteht dabei). Bauweise: die Hülle liegt in `EPOS.UI.Daten/Kosten/` (Namensraum bleibt
+> `WindowsFormsApplication1` nach Hausregel des Projekts), Windows-Adapter `Views/Kosten/EnergietraegerFenster.cs` (58 Zeilen);
+> mitgezogen `EmissionskatalogHuelle`, `KostenprofilHuelle`, `SpotpreisImportHuelle`, `LeistungspreisReiheHuelle`,
+> `EnergietraegerKatalogCtrl` → `EPOS.Kern/Controller/`, `NamensabfrageGaben` als plattformfreier Parametersatz. Tests:
+> `EnergietraegerPreiskarteTests` (15), `EnergietraegerHuelleTests` (12, gegen die Arbeitskopie der Testdatenbank), sechs
+> bunit-Fälle; Kern 2 819 → 2 846, UI 4 015 → 4 021; Referenzlauf 5/5 PASS und byte-gleich; SQL-Dialektprüfer 0 von 1 363;
+> en-US-Lauf der betroffenen Klassen grün. Doku: Konzept Wirtschaftlichkeit konsolidiert, Wiki-Quelle Kosten (Upload
+> gebündelt), drei Logbuch-Einträge entworfen. Zwei einmalige Ausreißer in `EPOS.UI.Tests/Seiten/Strom`
+> (`VorpruefungEntprelltTests`, `SchrittfeldUndFortschrittTests`), einzeln und im Wiederholungslauf grün.
+> **Gates:** sept69 auf `c0ae674d` rot durch einen zeitabhängigen Ausreißer (`SchrittfeldUndFortschrittTests`), sept70 rot
+> durch den zweiten (`VorpruefungEntprelltTests`, en-US-Lauf) — beide Male alle übrigen Stufen grün, Referenzlauf 5/5
+> byte-gleich; nach #259 **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme der Nähte und fachlich an Erdgas E im Projekt; Preishistorie im Katalogkontext braucht einen
+> Schemaentscheid (Fremdschlüssel lösen oder NULL zulassen, nummerierter Migrationsschritt); `KernwerteSpiegeln()` liest die
+> Emissionswerte vor `EmissionenSpeichern()` — für Handeingaben der drei Kernarten ein Folgeauftrag; Sammel-Upload frühestens
+> 20.09.2026.
+
+## #259 — Strom-Prüfstände warten auf den gezeichneten Zustand (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Die Gates sept69 und sept70 zum Merge `c0ae674d` (#258) waren rot durch je einen Fall in
+> `EPOS.UI.Tests/Seiten/Strom`: `SchrittfeldUndFortschrittTests.Die_Eingabefolge_im_Schrittfeld_kommt_vollstaendig_im_Modell_an`
+> (de-Lauf) und `VorpruefungEntprelltTests.Drei_schnelle_Tastendruecke_ergeben_genau_eine_volle_Pruefung` (en-US-Lauf) — je 1 von
+> 4 021, acht Einzelläufe der ersten Klasse einmal rot, Projektwiederholung 4 021/4 021; beide Gates liefen parallel zu einem
+> Agentenbuild. Alle übrigen Stufen beider Gates grün, Referenzlauf 5/5 byte-gleich.
+>
+> **Ursache (Agent, belegt):** bunits synchrones `Input()`/`Click()` gibt das Ereignis in den Zeichenverteiler und kehrt zurück,
+> ohne den Zeichenlauf abzuwarten. Die Seite legt je gemeldeter Änderung eine entprellte Vorprüfung auf; deren Fortsetzung
+> meldet sich nach 400 ms aus dem Fadenvorrat über `InvokeAsync(StateHasChanged)` zurück und belegt den Verteiler. Unter Last
+> rutscht der nächste Tastendruck dahinter, und der Sofort-Assert liest den Stand **vor** dem Zeichen (gemessen: Feldwert genau
+> eine Eingabe zurück). Der Verdacht „der Zeitgeber schreibt den Modellwert ins Feld zurück" ist widerlegt: ein Fall, der den
+> Zeitgeber bewusst zwischen zwei Eingaben feuern lässt, zeigt Feld, `Zahlenfeld._text` und Modell vor und nach dem Feuern
+> gleich (Sperren in `Zahlenfeld.OnParametersSet`). Unter künstlicher Rechenlast (12 Fäden): mit Zeitgeber 7 Ausreißer in
+> 6 Ansichten, ohne Zeitgeber 0 in 420 Eingaben. Kein Bedienfehler, die Komponente bleibt unverändert.
+>
+> **Umsetzung (Agent Opus, Worktree, Commit `134ae715`; Merge `ffc8be4f`):** nur Prüfstände — `Auslegungshilfe.Schritt`
+> wartet auf das gezeichnete Blatt; beide Klassen tippen über eine `Tippen`-Hilfe, die auf `Fassung` und Feldtext wartet;
+> `SchrittfeldUndFortschrittTests` und `OptimierungStationTests` setzen `EntprellungMs = 0`; die überholten Entprellungen in
+> `Drei_schnelle_Tastendruecke…` tragen eine im Lauf nicht ablaufende Zeit, nur die dritte eine kurze; der `Dispose`-Fall
+> vergrößert Entprellzeit und Schranke im gleichen Verhältnis; neue Wache
+> `Der_Zeitgeber_zwischen_zwei_Eingaben_ueberschreibt_das_Feld_nicht`. Kein `Task.Delay`, kein übersprungener Fall, keine
+> geweitete Toleranz. Nachweis: 30/30 beide Klassen (de und `LANG=en_US.UTF-8`), 3 × 4 022/4 022 `EPOS.UI.Tests` (+1 unter
+> en-US), 12/12 unter Rechenlast; Kern-Filter grün (488 · 456 · 27+1 · 4 022 · 2 846); keine neue Warnung; kein Referenzlauf
+> nötig. Hausregel (Orchestrierung) in `EPOS.UI/CLAUDE.md`, Abschnitt Tests: nach `Input`/`Click` auf den gezeichneten Zustand
+> warten, wo ein Zeitgeber läuft.
+> **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** keine.

@@ -215,6 +215,10 @@ AKTIONSNAMEN denselben Weg wie der Knopf.
   `CultureInfo.CurrentUICulture` auf: Jede Klasse mit deutschem Text-Assert nimmt die
   Hausvorrichtung (`EposBunitContext`); Sammlungen laufen nicht parallel.
 - `RenderCount` taugt **nicht** als Zähler für Zeichenläufe.
+- **bunits synchrones `Input()`/`Click()` wartet den Zeichenlauf nicht ab.** Läuft in der
+  Komponente ein Zeitgeber (Entprellung), belegt dessen Fortsetzung den Verteiler, und ein
+  Sofort-Assert liest den Stand vor dem Zeichen: nach jeder Eingabe auf den gezeichneten Zustand
+  warten (`WaitForAssertion`/`WaitForState`) und die Entprellung im Prüfstand ausdrücklich setzen.
 
 ## Fallstricke der Virtualisierung
 
