@@ -4523,11 +4523,14 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
     <value>Surcharges on the electricity purchase price</value>
   </data>
+  <data name="PREIS_MODUS_KEINER" xml:space="preserve">
+    <value>no surcharge</value>
+  </data>
   <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
     <value>itemised</value>
   </data>
   <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>total value (override)</value>
+    <value>total value</value>
   </data>
   <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
     <value>Grid usage fee (energy)</value>
@@ -4565,11 +4568,14 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of active components: {0} ct/kWh   |   effective surcharge: {1} ct/kWh</value>
   </data>
-  <data name="PREIS_REST_NICHT_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>Non-itemised remainder: {0} ct/kWh</value>
+  <data name="PREIS_GESAMTWERT_UEBER" xml:space="preserve">
+    <value>Total value is {0} ct/kWh above the sum of the components</value>
   </data>
-  <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
-    <value>In "itemised" mode the effective surcharge is the sum of the active components.</value>
+  <data name="PREIS_GESAMTWERT_UNTER" xml:space="preserve">
+    <value>Total value is {0} ct/kWh below the sum of the components</value>
+  </data>
+  <data name="PREIS_GESAMTWERT_GLEICH" xml:space="preserve">
+    <value>Total value equals the sum of the components</value>
   </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Import spot market prices</value>
@@ -10071,6 +10077,9 @@ The switch is only shown if the project contains such a generator.</value>
   </data>
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>no electricity energy carrier is assigned to the project</value>
+  </data>
+  <data name="KOH_GRUND_STROM_KEIN_AUFSCHLAG" xml:space="preserve">
+    <value>the electricity purchase price is set to "no surcharge"</value>
   </data>
   <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
     <value>the surcharge is recorded as a total value and is not itemised</value>

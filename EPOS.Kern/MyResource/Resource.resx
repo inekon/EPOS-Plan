@@ -4539,11 +4539,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
     <value>Aufschlaege auf den Strombezugspreis</value>
   </data>
+  <data name="PREIS_MODUS_KEINER" xml:space="preserve">
+    <value>kein Aufschlag</value>
+  </data>
   <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
     <value>aufgeschluesselt</value>
   </data>
   <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>Gesamtwert (Override)</value>
+    <value>Gesamtwert</value>
   </data>
   <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
     <value>Netzentgelt Arbeit</value>
@@ -4581,11 +4584,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der aktiven Komponenten: {0} ct/kWh   |   wirksamer Aufschlag: {1} ct/kWh</value>
   </data>
-  <data name="PREIS_REST_NICHT_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>Nicht aufgeschluesselter Rest: {0} ct/kWh</value>
+  <data name="PREIS_GESAMTWERT_UEBER" xml:space="preserve">
+    <value>Gesamtwert liegt {0} ct/kWh ueber der Summe der Komponenten</value>
   </data>
-  <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
-    <value>Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die Summe der aktiven Komponenten.</value>
+  <data name="PREIS_GESAMTWERT_UNTER" xml:space="preserve">
+    <value>Gesamtwert liegt {0} ct/kWh unter der Summe der Komponenten</value>
+  </data>
+  <data name="PREIS_GESAMTWERT_GLEICH" xml:space="preserve">
+    <value>Gesamtwert entspricht der Summe der Komponenten</value>
   </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Spotmarktpreise importieren</value>
@@ -10078,6 +10084,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
+  </data>
+  <data name="KOH_GRUND_STROM_KEIN_AUFSCHLAG" xml:space="preserve">
+    <value>fuer den Strombezugspreis ist "kein Aufschlag" gewaehlt</value>
   </data>
   <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
     <value>der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt</value>

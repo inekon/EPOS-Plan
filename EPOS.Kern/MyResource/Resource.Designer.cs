@@ -28789,6 +28789,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fuer den Strombezugspreis ist &quot;kein Aufschlag&quot; gewaehlt ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_STROM_KEIN_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_STROM_KEIN_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer steht auf 0 ct/kWh ähnelt.
         /// </summary>
         public static string KOH_GRUND_STROM_NULL {
@@ -33832,6 +33841,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert entspricht der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_GLEICH {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh ueber der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_UEBER {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh unter der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_UNTER {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege auf den Strombezugspreis ähnelt.
         /// </summary>
         public static string PREIS_GRUPPE_AUFSCHLAG {
@@ -34264,11 +34300,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert (Override) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert ähnelt.
         /// </summary>
         public static string PREIS_MODUS_GESAMTWERT {
             get {
                 return ResourceManager.GetString("PREIS_MODUS_GESAMTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Aufschlag ähnelt.
+        /// </summary>
+        public static string PREIS_MODUS_KEINER {
+            get {
+                return ResourceManager.GetString("PREIS_MODUS_KEINER", resourceCulture);
             }
         }
         
@@ -34566,24 +34611,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_QUELLE_ANZEIGE_SPOTMARKT {
             get {
                 return ResourceManager.GetString("PREIS_QUELLE_ANZEIGE_SPOTMARKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Modus &quot;aufgeschluesselt&quot; ist der wirksame Aufschlag die Summe der aktiven Komponenten. ähnelt.
-        /// </summary>
-        public static string PREIS_REST_HINWEIS_MODUS {
-            get {
-                return ResourceManager.GetString("PREIS_REST_HINWEIS_MODUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgeschluesselter Rest: {0} ct/kWh ähnelt.
-        /// </summary>
-        public static string PREIS_REST_NICHT_AUFGESCHLUESSELT {
-            get {
-                return ResourceManager.GetString("PREIS_REST_NICHT_AUFGESCHLUESSELT", resourceCulture);
             }
         }
         

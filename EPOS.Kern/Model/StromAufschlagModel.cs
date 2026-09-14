@@ -127,8 +127,17 @@
 
         // --- Modus ---
 
-        /// <summary>Werte aus <see cref="DbWerte"/>.SP_AUFSCHLAG_MODUS_*.</summary>
-        public string Modus = DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT;
+        /// <summary>
+        /// Werte aus <see cref="DbWerte"/>.SP_AUFSCHLAG_MODUS_*.
+        ///
+        /// <para><b>Vorgabe ist KEIN Aufschlag</b> (Anwenderentscheid 14.09.2026). Die
+        /// fuenf Werte oben bleiben als VORSCHLAG stehen und die fuenf Haken auf true -
+        /// sie wirken erst, wenn jemand auf "aufgeschluesselt" umschaltet, und zeigen
+        /// dann sofort brauchbare Saetze. Ein Projekt, an dem niemand etwas eingestellt
+        /// hat, rechnet damit ohne Aufschlag statt mit den 11,746 ct/kWh der
+        /// Vorschlagssumme.</para>
+        /// </summary>
+        public string Modus = DbWerte.SP_AUFSCHLAG_MODUS_KEINER;
 
         /// <summary>Gesamtaufschlag im Override-Modus [ct/kWh].</summary>
         public double Override;

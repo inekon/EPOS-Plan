@@ -85,7 +85,8 @@ public class EnergietraegerDialogTests : EposBunitContext
         };
         if (strom)
         {
-            s.Aufschlaege = new StromAufschlaegeStand { Aufgeschluesselt = true };
+            s.Aufschlaege = new StromAufschlaegeStand
+            { Wahl = StromAufschlagWahl.Aufgeschluesselt };
             s.MitAufschlagSchalter = true;
             s.EffektivpreisText = "Bezugspreis inkl. Aufschläge: 21,50 ct/kWh";
         }

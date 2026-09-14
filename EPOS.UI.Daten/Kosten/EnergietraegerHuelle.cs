@@ -409,11 +409,8 @@ namespace WindowsFormsApplication1
                 a.AufschlagAnzeige = new PreisblockAnzeige(
                     string.Format(MyResource.Resource.PREIS_SUMME_AKTIV,
                                   Anzeige(satz.SummeAktivCtKwh), Anzeige(satz.WirksamCtKwh)),
-                    _stand.Aufschlaege.Aufgeschluesselt
-                        ? MyResource.Resource.PREIS_REST_HINWEIS_MODUS
-                        : string.Format(MyResource.Resource.PREIS_REST_NICHT_AUFGESCHLUESSELT,
-                                        Anzeige(satz.NichtAufgeschluesselterRestCtKwh)),
-                    satz.NichtAufgeschluesselterRestCtKwh < 0.0);
+                    Abweichungszeile(satz),
+                    false);
 
                 // Ä16: Bezugspreis = Arbeitspreis + wirksamer Aufschlag.
                 double arbeitCt = _stand.Arbeitspreis * 100.0;
@@ -709,7 +706,7 @@ namespace WindowsFormsApplication1
         {
             return new StromAufschlaegeStand
             {
-                Aufgeschluesselt = m.Modus != DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
+                Wahl = Wahl(m.Modus),
                 Netzentgelt = m.Netzentgelt, NetzentgeltAktiv = m.Netzentgelt_Aktiv,
                 Umlagen = m.Umlagen, UmlagenAktiv = m.Umlagen_Aktiv,
                 Stromsteuer = m.Stromsteuer, StromsteuerAktiv = m.Stromsteuer_Aktiv,
@@ -731,9 +728,59 @@ namespace WindowsFormsApplication1
             m.Override = s.Override;
             m.Verguetung_PV = s.VerguetungPv;
             m.Verguetung_BHKW = s.VerguetungBhkw;
-            m.Modus = s.Aufgeschluesselt
-                ? DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT
-                : DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
+            m.Modus = Modustext(s.Wahl);
+        }
+
+        /// <summary>
+        /// Der Persistenztext des Aufschlagsmodus als Wahl der Maske. Alles, was
+        /// nicht ausdrücklich einer der beiden Rechenmodi ist, heißt „kein Aufschlag"
+        /// — dieselbe Regel wie in <c>StromAufschlagCtrl.Modus</c>.
+        /// </summary>
+        private static StromAufschlagWahl Wahl(string modus)
+        {
+            if (string.Equals(modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
+                              StringComparison.Ordinal))
+                return StromAufschlagWahl.Gesamtwert;
+
+            if (string.Equals(modus, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT,
+                              StringComparison.Ordinal))
+                return StromAufschlagWahl.Aufgeschluesselt;
+
+            return StromAufschlagWahl.Keiner;
+        }
+
+        /// <summary>Die Wahl der Maske als Persistenztext.</summary>
+        private static string Modustext(StromAufschlagWahl wahl)
+        {
+            switch (wahl)
+            {
+                case StromAufschlagWahl.Gesamtwert:
+                    return DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
+                case StromAufschlagWahl.Aufgeschluesselt:
+                    return DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT;
+                default:
+                    return DbWerte.SP_AUFSCHLAG_MODUS_KEINER;
+            }
+        }
+
+        /// <summary>
+        /// Die Zeile unter der Summe: Nur im Modus „Gesamtwert" gibt es zwei Zahlen,
+        /// die auseinanderlaufen können; dort steht, um wie viel der Gesamtwert über
+        /// oder unter der Komponentensumme liegt. Beides ist zulässig und deshalb
+        /// keine Warnung — in den anderen beiden Modi bleibt die Zeile leer.
+        /// </summary>
+        private static string Abweichungszeile(SpeicherEngine.Aufschlagssatz satz)
+        {
+            if (satz.Modus != SpeicherEngine.AufschlagsModus.Gesamtwert) return "";
+
+            double abweichung = satz.NichtAufgeschluesselterRestCtKwh;
+            if (abweichung == 0.0) return MyResource.Resource.PREIS_GESAMTWERT_GLEICH;
+
+            return string.Format(
+                abweichung > 0.0
+                    ? MyResource.Resource.PREIS_GESAMTWERT_UEBER
+                    : MyResource.Resource.PREIS_GESAMTWERT_UNTER,
+                Anzeige(Math.Abs(abweichung)));
         }
 
         private static BrennstoffBestandteileStand AusBrennstoffModell(BrennstoffBestandteilModel m)
@@ -1988,6 +2035,7 @@ namespace WindowsFormsApplication1
             {
                 ["TitelAufschlag"] = MyResource.Resource.PREIS_GRUPPE_AUFSCHLAG,
                 ["TitelVerguetung"] = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG,
+                ["ModusKeiner"] = MyResource.Resource.PREIS_MODUS_KEINER,
                 ["ModusAufgeschluesselt"] = MyResource.Resource.PREIS_MODUS_AUFGESCHLUESSELT,
                 ["ModusGesamtwert"] = MyResource.Resource.PREIS_MODUS_GESAMTWERT,
                 ["LabelNetzentgelt"] = MyResource.Resource.PREIS_KOMP_NETZENTGELT,

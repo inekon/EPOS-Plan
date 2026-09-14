@@ -178,6 +178,14 @@ namespace WindowsFormsApplication1
         /// Zeile oder fehlen die Spalten, kommt ein Modell mit den Vorgabewerten
         /// zurueck und <see cref="StromAufschlagModel.AusDatenbank"/> steht auf false.
         /// </summary>
+        /// <remarks>
+        /// <b>Die Vorgabe ist "kein Aufschlag"</b> (Anwenderentscheid 14.09.2026): Eine
+        /// leere Modus-Spalte laesst <see cref="StromAufschlagModel.Modus"/> auf
+        /// <c>SP_AUFSCHLAG_MODUS_KEINER</c> stehen. Die fuenf Komponentenwerte kommen
+        /// weiterhin als VORSCHLAG mit - sie stehen in den Feldern, wirken aber erst im
+        /// Modus "aufgeschluesselt". Eine Zeile, in der ein Modus ausdruecklich steht,
+        /// behaelt ihn.
+        /// </remarks>
         public StromAufschlagModel Read(int idProjekt, int idEnergietraeger)
         {
             StromAufschlagModel m = new StromAufschlagModel();
@@ -269,7 +277,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@kzA", DbParamTyp.Boolean) { Wert = m.Konzession_Aktiv },
                 new DbParam("@vt", DbParamTyp.Double) { Wert = m.Vertrieb },
                 new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
-                new DbParam("@modus", DbParamTyp.VarWChar) { Wert = m.Modus ?? DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT },
+                new DbParam("@modus", DbParamTyp.VarWChar) { Wert = m.Modus ?? DbWerte.SP_AUFSCHLAG_MODUS_KEINER },
                 new DbParam("@over", DbParamTyp.Double) { Wert = m.Override },
                 new DbParam("@vpv", DbParamTyp.Double) { Wert = m.Verguetung_PV },
                 new DbParam("@vbhkw", DbParamTyp.Double) { Wert = m.Verguetung_BHKW },
@@ -308,11 +316,29 @@ namespace WindowsFormsApplication1
                 new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb, m.Vertrieb_Aktiv)
             };
 
-            AufschlagsModus modus = m.Modus == DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT
-                ? AufschlagsModus.Gesamtwert
-                : AufschlagsModus.Aufgeschluesselt;
+            return new Aufschlagssatz(k, Modus(m.Modus), m.Override);
+        }
 
-            return new Aufschlagssatz(k, modus, m.Override);
+        /// <summary>
+        /// Der Persistenztext der Modus-Spalte als Engine-Modus (Fachkonzept 4.2).
+        /// </summary>
+        /// <remarks>
+        /// <b>Nur die zwei ausdruecklichen Texte zaehlen.</b> Alles andere - leer,
+        /// <c>null</c>, ein unbekannter Bestandswert - ist "nicht gewaehlt" und heisst
+        /// <see cref="AufschlagsModus.Keiner"/>: kein Aufschlag. Die Leseseite setzt
+        /// denselben Vorgabewert, wenn die Zeile fehlt (Anwenderentscheid 14.09.2026).
+        /// </remarks>
+        public static AufschlagsModus Modus(string modusText)
+        {
+            if (string.Equals(modusText, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
+                              StringComparison.Ordinal))
+                return AufschlagsModus.Gesamtwert;
+
+            if (string.Equals(modusText, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT,
+                              StringComparison.Ordinal))
+                return AufschlagsModus.Aufgeschluesselt;
+
+            return AufschlagsModus.Keiner;
         }
 
         // =====================================================================
