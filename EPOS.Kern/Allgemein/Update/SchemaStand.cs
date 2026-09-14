@@ -72,11 +72,18 @@ namespace WindowsFormsApplication1
         /// SQLite-Zweigs (<c>CREATE</c> unter Hilfsnamen, <c>INSERT … SELECT</c>,
         /// <c>DROP</c>, <c>RENAME</c>, Index neu — alles in einer Transaktion); die
         /// Anweisungen stehen bei <see cref="SpeicherAuslegungStrict"/>, er ändert keinen
-        /// Wert und ist wiederholbar. Der Freeze-Stand
+        /// Wert und ist wiederholbar. Mit der NUTZUNGSDAUERTABELLE (Schritt 75, Stufe S1
+        /// des Konzepts „Nutzungsdauer je Technik und Positionsart", Anwenderentscheide
+        /// ND-Q1 bis ND-Q8 vom 14.09.2026) steht das Ziel auf <b>75</b>: eine neue
+        /// STRICT-Tabelle <c>Tab_Nutzungsdauer</c> samt Saat, zwei nullbare
+        /// Verweisspalten <c>NutzungsdauerID</c> und die Saat-Zuordnung der
+        /// Auslieferungspositionen; die Anweisungen stehen bei
+        /// <see cref="NutzungsdauerSchema"/>, <c>Tab_ProjektWerte</c> bleibt
+        /// wertgleich. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 74;
+        public const int Zielversion = 75;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
