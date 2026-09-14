@@ -158,6 +158,8 @@ namespace WindowsFormsApplication1
                 ["AufschlagAnwenden"] = EventCallback.Factory.Create<bool>(new object(), AufschlagAnwenden),
                 ["Speichern"] = new Func<bool>(Speichern),
                 ["SpeichernGrund"] = new Func<string>(SpeichernGrund),
+                ["HistorieLoeschen"] = new Func<PreishistorieZeile, bool>(HistorieLoeschen),
+                ["HistorieLoeschenGrund"] = new Func<string>(HistorieLoeschenGrund),
                 ["UnterdialogGeschlossen"] = EventCallback.Factory.Create(new object(),
                     (Action)UnterdialogGeschlossen),
 
@@ -1257,7 +1259,8 @@ namespace WindowsFormsApplication1
                         h.Basiseinheit ?? "",
                         Zahl(h.Arbeitspreis, "N4"),
                         Zahl(h.Grundpreis, "N2"),
-                        Zahl(h.Leistungspreis, "N2")));
+                        Zahl(h.Leistungspreis, "N2"),
+                        h.Id));
                 }
                 _stand.Historie = zeilen;
                 _stand.HistorieHinweis = Katalogkontext
@@ -1273,6 +1276,58 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Die Preishistorie konnte nicht gelesen werden: " + ex.Message);
                 _stand.Historie = Array.Empty<PreishistorieZeile>();
             }
+        }
+
+        private string _historieLoeschGrund = "";
+
+        /// <summary>Der Grund, wenn <see cref="HistorieLoeschen"/> abgelehnt hat.</summary>
+        private string HistorieLoeschenGrund() { return _historieLoeschGrund; }
+
+        /// <summary>
+        /// Löscht EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026,
+        /// „historische Energieträger werte sollen gelöscht werden können").
+        ///
+        /// <para><b>Nur im Projektkontext.</b> Im Katalog führt die Karte gar
+        /// keine Historie — dort gilt die Katalogzeile selbst; die Ablehnung
+        /// nennt denselben Satz, der unter der leeren Tabelle steht, statt
+        /// still nichts zu tun.</para>
+        ///
+        /// <para>Ein gesperrter Datenbestand (Lesemodus) meldet sich aus der
+        /// Schreibnaht als Ausnahme; ihr Text ist dann der Grund — dieselbe
+        /// Zusage wie beim Speichern.</para>
+        /// </summary>
+        /// <returns><c>true</c> = gelöscht, die Tabelle steht neu; sonst
+        /// <c>false</c> mit <see cref="HistorieLoeschenGrund"/>.</returns>
+        private bool HistorieLoeschen(PreishistorieZeile zeile)
+        {
+            _historieLoeschGrund = "";
+            if (zeile == null || _stand == null || _gewaehlt == null) return false;
+
+            if (Katalogkontext)
+            {
+                _historieLoeschGrund = T("ETV_HISTORIE_NUR_PROJEKT",
+                    "Die Preishistorie wird je Projekt geführt — im Katalog gilt die "
+                    + "Katalogzeile selbst.");
+                return false;
+            }
+
+            try
+            {
+                if (EnergietraegerPreisCtrl.HistorieLoeschen(zeile.Id, _gewaehlt.ID, _projektId) <= 0)
+                {
+                    _historieLoeschGrund = T("ETV_HISTORIE_LOESCH_FEHLT",
+                        "Dieser Preisstand ist nicht mehr vorhanden.");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _historieLoeschGrund = ex.Message;
+                return false;
+            }
+
+            HistorieLaden();
+            return true;
         }
 
         /// <summary>Eine Historienzahl; <c>null</c> bleibt leer statt „0,00" zu lesen.</summary>
@@ -1917,7 +1972,11 @@ namespace WindowsFormsApplication1
                 ["SpalteBasisEinheit"] = T("ETV_SP_BASISEINHEIT", "Basis Einheit"),
                 ["SpalteArbeitspreis"] = T("ETV_SP_ARBEITSPREIS", "Arbeitspreis"),
                 ["SpalteGrundpreis"] = T("ETV_SP_GRUNDPREIS", "Grundpreis [€/a]"),
-                ["SpalteLeistungspreis"] = T("ETV_SP_LEISTUNGSPREIS", "Leistungspreis")
+                ["SpalteLeistungspreis"] = T("ETV_SP_LEISTUNGSPREIS", "Leistungspreis"),
+                ["HistorieLoeschenText"] = T("ETV_HISTORIE_LOESCHEN", "Löschen"),
+                ["HistorieLoeschTitel"] = T("ETV_HISTORIE_LOESCH_TITEL", "Preisstand löschen"),
+                ["VorlageHistorieLoeschen"] = T("ETV_HISTORIE_LOESCHFRAGE",
+                    "Preisstand vom {0} löschen?")
             };
         }
 

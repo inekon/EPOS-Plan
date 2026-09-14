@@ -175,6 +175,8 @@
                                              AufschlagAnwenden="AufschlagAnwendenSetzen"
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
+                                             HistorieLoeschen="@HistorienzeileLoeschenWeg"
+                                             JaText="@JaText" NeinText="@NeinText"
                                              Speichern="BeiSpeichern" />
             }
         </div>
@@ -312,6 +314,15 @@
 
     /// <summary>Grund, wenn <see cref="Speichern"/> ablehnt.</summary>
     [Parameter] public Func<string>? SpeichernGrund { get; set; }
+
+    /// <summary>
+    /// Löscht EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026);
+    /// <c>true</c> = gelöscht. <c>null</c> = die Karte sperrt den Knopf.
+    /// </summary>
+    [Parameter] public Func<PreishistorieZeile, bool>? HistorieLoeschen { get; set; }
+
+    /// <summary>Grund, wenn <see cref="HistorieLoeschen"/> ablehnt.</summary>
+    [Parameter] public Func<string>? HistorieLoeschenGrund { get; set; }
 
     // ---- Katalogkontext ---------------------------------------------------
 
@@ -804,6 +815,31 @@
             return Task.CompletedTask;
         }
         return Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// Die Karte fragt, der Wirt schreibt und meldet — dieselbe Aufteilung wie
+    /// beim Speichern. Ohne Rückruf bleibt der Löschknopf der Karte gesperrt.
+    /// </summary>
+    private Func<PreishistorieZeile, bool>? HistorienzeileLoeschenWeg
+        => HistorieLoeschen is null ? null : HistorienzeileLoeschen;
+
+    private bool HistorienzeileLoeschen(PreishistorieZeile zeile)
+    {
+        if (HistorieLoeschen is null) return false;
+
+        if (!HistorieLoeschen(zeile))
+        {
+            Melden(HistorieLoeschenGrund is null ? "" : HistorieLoeschenGrund(),
+                   WarnStufe.Warnung);
+            return false;
+        }
+
+        // Die Hülle hat die Preishistorie neu gelesen; die Ansicht folgt, damit
+        // die Tabelle sofort ohne die Zeile dasteht.
+        Melden("");
+        Nachziehen();
+        return true;
     }
 
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
