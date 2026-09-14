@@ -67,6 +67,68 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const double STROMMIX_CO2_G_JE_KWH = Emissionsquelle.NETZSTROM_RUECKFALL_G_JE_KWH;
 
+        // =====================================================================
+        // DIE GRÜNDE, AUS DENEN DIE ENERGIEKOSTEN UNBESTIMMBAR BLEIBEN
+        // (Anwenderbefund 14.09.2026, Auftrag #267)
+        // =====================================================================
+        //
+        // Jeder Ausgang, der null liefert, benennt sich hier selbst — mit dem
+        // AUSWEG in derselben Zeile. Bis dahin lieferten alle Ausgänge dasselbe
+        // stumme null, und die Seite machte daraus „—" plus den pauschalen Satz
+        // „Arbeitspreise/Träger prüfen": Ein Anwender mit gepflegten Preisen und
+        // einer Wärmepumpe ohne Trägerzuordnung las damit genau das Gegenteil
+        // dessen, was zu tun war.
+        //
+        // DIE TEXTE STEHEN HIER, NICHT IN DER OBERFLÄCHE: Wer den Grund kennt,
+        // ist dieser Rechner. Die Oberfläche zeigt ihn nur an (Razor-Warnbanner),
+        // die Wirtschaftlichkeit reicht ihn als Fehlgrund durch. Ressourcenlage
+        // wie in WirtschaftlichkeitCtrl.T: deutscher Text jetzt, resx-Schlüssel
+        // mit dem nächsten Sammelnachtrag.
+
+        /// <summary>Der Netzbezug ist nicht bepreisbar, weil dem Projekt überhaupt
+        /// kein Stromträger zuzuordnen ist (auch der Katalog führt keinen).</summary>
+        internal const string GRUND_KEIN_STROMTRAEGER =
+            "Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, " +
+            "Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. " +
+            "Ausweg: unter „Berichte & Kosten › Energieträger\" einen Stromträger zuordnen.";
+
+        /// <summary>Der Stromträger steht, aber sein Arbeitspreis ist nirgends gepflegt.</summary>
+        internal const string GRUND_STROMPREIS_FEHLT =
+            "Energiekosten nicht bestimmbar: Für den Stromträger „{0}\" ist kein " +
+            "Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte & Kosten › " +
+            "Energieträger\" eintragen.";
+
+        /// <summary>Ein verbrauchender Träger ohne gepflegten Arbeitspreis.</summary>
+        internal const string GRUND_BRENNSTOFFPREIS_FEHLT =
+            "Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. " +
+            "Ausweg: den Arbeitspreis unter „Berichte & Kosten › Energieträger\" eintragen.";
+
+        /// <summary>Verbrauch, der keinem Energieträger zugeordnet ist.</summary>
+        internal const string GRUND_VERBRAUCH_OHNE_TRAEGER =
+            "Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs " +
+            "({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen " +
+            "Erzeugern unter „Anlagen\" einen Energieträger zuordnen.";
+
+        /// <summary>Weder Brennstoffverbrauch noch Netzbezug im Simulationsergebnis —
+        /// es gibt nichts zu bepreisen.</summary>
+        internal const string GRUND_KEIN_VERBRAUCH =
+            "Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder " +
+            "Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und " +
+            "erneut rechnen.";
+
+        /// <summary>Die Rechnung selbst ist gescheitert (Fangzaun in <see cref="Berechne"/>).</summary>
+        internal const string GRUND_RECHENFEHLER =
+            "Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. " +
+            "Ausweg: Preise und Heizwerte der Energieträger prüfen.";
+
+        /// <summary>Der Netzbezug wurde mit dem AUSLIEFERUNGSträger bepreist, weil das
+        /// Projekt selbst keinen zugeordnet hat — dieselbe Wahl, die die Kostenseite
+        /// anzeigt und der Assistent zuordnen würde.</summary>
+        internal const string HINWEIS_STROMTRAEGER_RUECKFALL =
+            "Netzbezug mit dem Energieträger „{0}\" bepreist — dem Projekt ist kein " +
+            "Stromträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger\" " +
+            "zuordnen.";
+
         public static void Berechne(VariantenDaten v)
         {
             if (v == null || v.Ergebnis == null) return;
@@ -81,12 +143,16 @@ namespace WindowsFormsApplication1
                 v.CO2StrommixRueckfall = false;
                 v.KesselVerbrauchFehlt = false;                  // B-1/N1
                 v.KesselOhneVerbrauch = new List<string>();
+                v.StromTraegerRueckfall = null;
+                v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
 
         private static void BerechneIntern(VariantenDaten v)
         {
             ErgebnisModel m = v.Ergebnis;
+            v.EnergiekostenGrund = null;         // Auftrag #267 — frischer Lauf
+            v.StromTraegerRueckfall = null;
 
             // BERECHNUNGSMODUS (F7) - EINMAL je Lauf gelesen und am Ergebnis vermerkt.
             // Der Vermerk ist der Grund, weshalb ein Bericht die Zahl richtig
@@ -165,6 +231,40 @@ namespace WindowsFormsApplication1
             bool leistungGepflegt = false;
             int stromCarrierId = Emissionsquelle.StromTraeger(v.IdProjekt);
 
+            // AUFTRAG #267 — der Träger, mit dem der NETZBEZUG BEPREIST wird.
+            //
+            // BEFUND (Anwenderbefund 14.09.2026, Projekt „Beispiel WP WG 1"). Eine
+            // Wärmepumpe trägt keinen eigenen ID_Carrier, und wer sie außerhalb des
+            // Assistenten anlegt, bekommt auch keine Zeile in energy_project_settings.
+            // Emissionsquelle.StromTraeger lieferte dann 0, stromKosten blieb null und
+            // damit die ganzen Energiekosten — obwohl die KOSTENSEITE dem Anwender
+            // längst einen Stromträger anzeigt und der Assistent genau diesen zuordnen
+            // würde. Drei Stellen, zwei Antworten.
+            //
+            // DIE REGEL IST JETZT DIESELBE WIE DORT: erst der zugeordnete bzw. an der
+            // Anlage gewählte Träger (Emissionsquelle.StromTraeger), sonst der
+            // Auslieferungsträger des Katalogs (ProjektEnergietraegerCtrl.
+            // StandardStromTraeger — die Fassung, die Anzeige und Automatik lesen).
+            // Der Rückfall wird an der Variante VERMERKT, nie stillschweigend
+            // verrechnet.
+            //
+            // NUR DIE KOSTEN. Der CO₂-Faktor unten bleibt am ZUGEORDNETEN Träger: Er
+            // hat mit STROMMIX_CO2_G_JE_KWH einen benannten Vorgabewert, der gerade
+            // deshalb gemeldet wird (v.CO2StrommixRueckfall) — und „kein Träger
+            // zugeordnet" ist genau die Aussage, die diese Fahne trägt. Die Kosten
+            // haben keinen solchen Vorgabewert und dürfen keinen erfinden; sie fragen
+            // deshalb den Träger, den die Kostenseite ohnehin nennt.
+            int stromCarrierKosten = stromCarrierId;
+            bool stromAusRueckfall = false;
+            if (stromCarrierKosten <= 0)
+            {
+                int rueckfall = StandardStromTraeger(v.IdProjekt);
+                if (rueckfall > 0) { stromCarrierKosten = rueckfall; stromAusRueckfall = true; }
+            }
+
+            // Träger MIT Verbrauch, aber OHNE Arbeitspreis — für den Grundtext unten.
+            var ohnePreis = new List<string>();
+
             foreach (KeyValuePair<int, double> kv in verbrauchJeTraeger)
             {
                 TraegerInfo info = LadeTraeger(v.IdProjekt, kv.Key);
@@ -191,7 +291,12 @@ namespace WindowsFormsApplication1
                     if (info.Grundpreis.HasValue) kosten += info.Grundpreis.Value;   // je Träger einmal p. a.
                     brennstoffKosten += kosten;
                 }
-                else kostenVollstaendig = false;
+                else
+                {
+                    kostenVollstaendig = false;
+                    string name = TraegerName(kv.Key);   // #267: den Träger beim Namen nennen
+                    if (!ohnePreis.Contains(name)) ohnePreis.Add(name);
+                }
 
                 // Leistungspreis (Etappe KD4/FK6): Basis ist die VORGEHALTENE
                 // Anschlussleistung aus den Gerätedaten (§ 7.1-Umsetzung); Modus
@@ -240,18 +345,34 @@ namespace WindowsFormsApplication1
             double? stromKosten = null;
             double stromCO2 = STROMMIX_CO2_G_JE_KWH;   // Vorgabewert, falls kein Träger gepflegt
             int stromCarrier = stromCarrierId;   // bereits vor der Brennstoffschleife bestimmt (KD4)
+            string stromPreisTraeger = null;     // #267: Name des bepreisenden Trägers
 
             // BEFUND 30.08.2026: Der Vorgabewert greift STILL. Er wird jetzt festgehalten
             // (v.CO2StrommixRueckfall) - siehe Feldkommentar in VariantenDaten.
             bool strommixRueckfall = true;
+
+            // #267: DIE KOSTENSEITE fragt den Träger mit Rückfall (stromCarrierKosten),
+            // die CO₂-Seite den ZUGEORDNETEN (stromCarrier). Sind beide gleich — der
+            // Regelfall —, wird auch nur EINMAL geladen.
+            if (stromCarrierKosten > 0)
+            {
+                TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten);
+                stromPreisTraeger = TraegerName(stromCarrierKosten);
+                if (preistraeger.PreisArbeit.HasValue)
+                {
+                    stromKosten = netzbezugMWh * 1000.0 * preistraeger.PreisArbeit.Value;
+                    if (preistraeger.Grundpreis.HasValue) stromKosten += preistraeger.Grundpreis.Value;
+
+                    // Der Vermerk steht NUR, wenn der Rückfall auch wirklich einen
+                    // Betrag getragen hat — sonst behauptete die Hinweiszeile eine
+                    // Bepreisung, die gar nicht stattgefunden hat.
+                    if (stromAusRueckfall) v.StromTraegerRueckfall = TraegerName(stromCarrierKosten);
+                }
+            }
+
             if (stromCarrier > 0)
             {
                 TraegerInfo strom = LadeTraeger(v.IdProjekt, stromCarrier);
-                if (strom.PreisArbeit.HasValue)
-                {
-                    stromKosten = netzbezugMWh * 1000.0 * strom.PreisArbeit.Value;
-                    if (strom.Grundpreis.HasValue) stromKosten += strom.Grundpreis.Value;
-                }
                 // Emissionsfaktor des Strom-Trägers über dieselbe Kette wie die
                 // Brennstoffe (EmissionsFaktorLader) und im selben MODUS (F7) — der
                 // Netzstrom-Anteil gehört zu CO2Gesamt und darf keine andere Methode
@@ -277,6 +398,34 @@ namespace WindowsFormsApplication1
                 ? (double?)(brennstoffKosten + stromKosten.Value)
                 : (kostenVollstaendig && verbrauchJeTraeger.Count > 0 && netzbezugMWh <= 0
                     ? (double?)brennstoffKosten : null);
+
+            // AUFTRAG #267 — KEIN STILLES NULL. Bleibt die Zahl aus, steht ab hier im
+            // Klartext, WORAN es liegt und WAS zu tun ist. Die Reihenfolge ist die der
+            // Behebung: erst der fehlende Träger (ohne ihn hilft kein Preis), dann der
+            // fehlende Preis, zuletzt der Verbrauch ohne Trägerzuordnung.
+            if (!v.Energiekosten.HasValue)
+            {
+                if (verbrauchJeTraeger.Count == 0 && verbrauchOhneTraeger <= 0 && netzbezugMWh <= 0)
+                    v.EnergiekostenGrund = GRUND_KEIN_VERBRAUCH;
+                else if (verbrauchOhneTraeger > 0)
+                    v.EnergiekostenGrund = string.Format(GRUND_VERBRAUCH_OHNE_TRAEGER,
+                        verbrauchOhneTraeger.ToString("N1", BerichtTexte.Kultur));
+                // Kein Träger — oder nur der aus dem Rückfall, und auch der trägt
+                // keinen Preis. Beides ist DIESELBE Aufgabe für den Anwender: erst
+                // zuordnen, dann bepreisen. Einen Preis „für Elektrische Energie"
+                // zu verlangen, den man mangels Zuordnung gar nicht eintragen kann,
+                // wäre eine Sackgasse.
+                else if (!stromKosten.HasValue && (stromCarrierKosten <= 0 || stromAusRueckfall))
+                    v.EnergiekostenGrund = GRUND_KEIN_STROMTRAEGER;
+                else if (!stromKosten.HasValue)
+                    v.EnergiekostenGrund = string.Format(GRUND_STROMPREIS_FEHLT,
+                        stromPreisTraeger ?? "?");
+                else if (ohnePreis.Count > 0)
+                    v.EnergiekostenGrund = string.Format(GRUND_BRENNSTOFFPREIS_FEHLT,
+                        string.Join(", ", ohnePreis));
+                else
+                    v.EnergiekostenGrund = GRUND_RECHENFEHLER;
+            }
 
             // KD4/FK6: Leistungsanteil getrennt ausweisen (in Energiekosten enthalten).
             v.EnergieLeistungsanteil = leistungGepflegt ? (double?)leistungsAnteil : null;
@@ -400,6 +549,79 @@ namespace WindowsFormsApplication1
             double e = eta.Value;
             if (e > 1.5) e /= 100.0;
             return (e > 0 && e <= 1.5) ? e : 0;
+        }
+
+        /// <summary>
+        /// Der ARBEITSPREIS aus der PREISHISTORIE des Projekts
+        /// (<c>energy_price.arbeitspreis</c>, je Abrechnungseinheit) — <c>null</c>, wenn
+        /// dort nichts Gepflegtes steht (Auftrag #267).
+        ///
+        /// <para><b>Die Stichtagsregel ist die des Kerns</b>
+        /// (<see cref="StromPreisCtrl.Stichtag"/>, Fachkonzept 4.1): die jüngste Version
+        /// mit <c>valid_from ≤ Stichtag</c>, sonst die ÄLTESTE überhaupt — besser ein
+        /// späterer Preis als gar keiner. Auf <c>valid_to</c> wird nicht gefiltert; die
+        /// Spalte ist im ganzen Bestand NULL (Begründung bei
+        /// <see cref="StromPreisCtrl"/>).</para>
+        ///
+        /// <para><b>0 zählt wie überall als NICHT GEPFLEGT</b> (Befund D5): Die Zeilen,
+        /// die <c>WizardCtrl.TraegerSatzAnlegen</c> bei der Zuordnung schreibt, tragen
+        /// den Stammwert — und der ist im Bestand durchweg 0.</para>
+        /// </summary>
+        private static double? Historienpreis(int idProjekt, int carrierId)
+        {
+            if (idProjekt <= 0 || carrierId <= 0) return null;
+            try
+            {
+                DateTime stichtag = StromPreisCtrl.Stichtag(null, 0);
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT arbeitspreis FROM energy_price " +
+                    "WHERE carrier_id = ? AND id_projekt = ? AND valid_from <= ? " +
+                    "ORDER BY valid_from DESC LIMIT 1",
+                    new DbParam("@c", DbParamTyp.Integer) { Wert = carrierId },
+                    new DbParam("@p", DbParamTyp.Integer) { Wert = idProjekt },
+                    new DbParam("@d", DbParamTyp.Date) { Wert = stichtag });
+
+                if (dt == null || dt.Rows.Count == 0)
+                    dt = DataRepository.GetDataTable(
+                        "SELECT arbeitspreis FROM energy_price " +
+                        "WHERE carrier_id = ? AND id_projekt = ? ORDER BY valid_from ASC LIMIT 1",
+                        new DbParam("@c", DbParamTyp.Integer) { Wert = carrierId },
+                        new DbParam("@p", DbParamTyp.Integer) { Wert = idProjekt });
+
+                if (dt == null || dt.Rows.Count == 0) return null;
+                double? preis = W(dt.Rows[0], "arbeitspreis");
+                return (preis.HasValue && preis.Value > 0) ? preis : null;
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Der Anzeigename eines Trägers — <see cref="Emissionsquelle.TraegerName"/>,
+        /// nicht eine zweite Abfrage (Auftrag #267).</summary>
+        private static string TraegerName(int carrierId)
+        {
+            return Emissionsquelle.TraegerName(carrierId);
+        }
+
+        /// <summary>
+        /// Der AUSLIEFERUNGS-Stromträger eines Projekts, wenn ihm keiner zugeordnet ist —
+        /// <see cref="ProjektEnergietraegerCtrl.StandardStromTraeger"/>, also genau die
+        /// Fassung, die auch die Kostenseite anzeigt und der Assistent zuordnet
+        /// (Auftrag #267). 0 = das Projekt führt keine elektrische Erzeugung, oder der
+        /// Katalog führt keinen Stromträger.
+        ///
+        /// <para><b>Nur für Projekte mit elektrischer Welt.</b> Ein reines Kesselprojekt
+        /// ohne Wärmepumpe, PV, Stromspeicher oder Heizstab bekommt keinen Rückfall:
+        /// Sein Netzbezug ist Haushaltsstrom der Bedarfsseite und keine Anlagengröße,
+        /// und ein Träger, den niemand zugeordnet hat, wäre dort eine Erfindung.</para>
+        /// </summary>
+        private static int StandardStromTraeger(int idProjekt)
+        {
+            try
+            {
+                if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return 0;
+                return ProjektEnergietraegerCtrl.StandardStromTraeger(idProjekt);
+            }
+            catch { return 0; }
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
@@ -542,9 +764,24 @@ namespace WindowsFormsApplication1
             // Der GRUNDPREIS bleibt bewusst unangetastet: 0 €/a ist dort ein üblicher und
             // gültiger Vertragswert.
             //
-            // Vorrangkette wie beim CO₂-Faktor: Projektwert → Katalogwert → null.
+            // Vorrangkette: Projektwert → PREISHISTORIE zum Stichtag → Katalogwert → null.
+            //
+            // AUFTRAG #267 — DIE HISTORIE FEHLTE HIER (Anwenderbefund 14.09.2026).
+            // Die Trägerkarte schreibt jeden Preisstand nach energy_price
+            // (EnergietraegerPreisCtrl.HistorieSchreiben), und der Strompreis-Weg der
+            // Speicherrechnung LIEST ihn seit AP4 auch von dort
+            // (StromPreisCtrl.ArbeitspreisCtKwh). Diese Kette kannte nur
+            // energy_project_settings und den Katalog: Ein Projekt, dessen Preis
+            // ausschließlich als Preisstand gepflegt ist, galt hier als „kein Preis" —
+            // die Energiekosten blieben „—", während dieselbe Datenbank an anderer
+            // Stelle mit dem Preis rechnete. Jetzt ist es EINE Wahrheit.
+            //
+            // ERGEBNISNEUTRAL, WO SCHON EIN PREIS STAND: Die Historie wird nur
+            // befragt, wenn Stufe 1 nichts liefert, und sie kommt VOR dem Katalog —
+            // der Projektstand ist die speziellere Angabe.
             info.PreisArbeit = (sPreis.HasValue && sPreis.Value > 0) ? sPreis
-                             : ((kPreis.HasValue && kPreis.Value > 0) ? kPreis : null);
+                             : (Historienpreis(idProjekt, carrierId)
+                                ?? ((kPreis.HasValue && kPreis.Value > 0) ? kPreis : null));
             info.Grundpreis = sGrund ?? kGrund;
             return info;
         }

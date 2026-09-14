@@ -311,7 +311,13 @@ namespace WindowsFormsApplication1
             return "Energieträger „" + name + "“ (" + quelle + ")";
         }
 
-        private static string TraegerName(int carrierId)
+        /// <summary>Der Anzeigename eines Energieträgers (<c>energy_carrier.name</c>);
+        /// „—" ohne Träger, „ID n" wenn die Katalogzeile fehlt.
+        /// <para>Seit Auftrag #267 <c>internal</c>: Der
+        /// <see cref="KostenEmissionRechner"/> nennt seine Fehlgründe beim
+        /// Trägernamen und braucht dieselbe Auskunft — eine zweite Abfrage wäre eine
+        /// zweite Schreibweise desselben Namens.</para></summary>
+        internal static string TraegerName(int carrierId)
         {
             if (carrierId <= 0) return "—";
             try
