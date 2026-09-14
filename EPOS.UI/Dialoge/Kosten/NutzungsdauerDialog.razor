@@ -126,7 +126,10 @@
 
                 @if (Gefiltert().Count == 0)
                 {
-                    <tr>
+                    @* Der LEERZUSTAND traegt eine eigene Klasse: Er ist keine
+                       Datenzeile, und weder Auge noch Probe sollen ihn dafuer
+                       halten. *@
+                    <tr class="epos-raster-leer">
                         <td colspan="6">@Texte.LeereListe</td>
                     </tr>
                 }

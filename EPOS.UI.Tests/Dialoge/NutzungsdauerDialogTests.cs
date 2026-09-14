@@ -1,0 +1,322 @@
+﻿using AngleSharp.Dom;
+using Bunit;
+using EPOS.UI.Dialoge.Kosten;
+using EPOS.UI.Dienste;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+
+namespace EPOS.UI.Tests.Dialoge;
+
+/// <summary>
+/// Der Administrationsdialog „Nutzungsdauern (AfA)" (Konzept „Nutzungsdauer je
+/// Technik und Positionsart", Stufe S1, Abschnitt 2.5).
+///
+/// <para>Soll ist die Feldkarte: Kopf mit Kontextzeile, Suchfeld und
+/// Wiederherstellen-Knopf, das nach Technik gruppierte Raster mit sechs Spalten,
+/// die Neuzeile und die Schlussleiste. Dazu die drei Regeln, die dieser Dialog
+/// mehr trägt als ein gewöhnlicher: Eine Auslieferungszeile ist im Wert änderbar
+/// und NICHT löschbar (ND‑Q5), das Wiederherstellen fragt zurück, und eine
+/// Eingabe lebt bis „Speichern" im Objekt.</para>
+///
+/// <para>Kulturpinnung über <see cref="EposBunitContext"/> — die Fälle prüfen
+/// deutschen Text, und der CI-Läufer steht auf en-US.</para>
+/// </summary>
+public class NutzungsdauerDialogTests : EposBunitContext
+{
+    public NutzungsdauerDialogTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+    }
+
+    // ---- Probendaten -----------------------------------------------------
+
+    private static NutzungsdauerZeileAnzeige Kessel => new()
+    {
+        Id = 1, TechnikId = 2, Technik = "Heizkessel", Positionsart = "Wärmeerzeuger",
+        IstStandard = true, Nutzungsdauer = 20, Quelle = "VDI 2067 Blatt 1, Tab. A2 (Richtwert)",
+        Auslieferung = true,
+    };
+
+    private static NutzungsdauerZeileAnzeige Abgas => new()
+    {
+        Id = 3, TechnikId = 2, Technik = "Heizkessel", Positionsart = "Abgasanlage / Schornstein",
+        Nutzungsdauer = 25, Quelle = "VDI 2067 Blatt 1, Tab. A2 (Richtwert)", Auslieferung = true,
+    };
+
+    private static NutzungsdauerZeileAnzeige Module => new()
+    {
+        Id = 17, TechnikId = 3, Technik = "Photovoltaik", Positionsart = "Module",
+        IstStandard = true, Nutzungsdauer = 25, AfaSteuerlich = 20,
+        Quelle = "VDI 2067 Blatt 1, Tab. A2 (Richtwert); AfA-Tabelle AV (Richtwert)",
+        Auslieferung = true,
+    };
+
+    private static NutzungsdauerZeileAnzeige Montage => new()
+    {
+        Id = 27, TechnikId = null, Technik = "", Positionsart = "Montage",
+        Nutzungsdauer = null, Quelle = "wie Standardzeile der Technik", Auslieferung = true,
+    };
+
+    /// <summary>Eine EIGENE Zeile — sie allein ist löschbar.</summary>
+    private static NutzungsdauerZeileAnzeige Eigene => new()
+    {
+        Id = 99, TechnikId = 2, Technik = "Heizkessel", Positionsart = "Eigene Art",
+        Nutzungsdauer = 7, Quelle = "eigener Wert", Auslieferung = false,
+    };
+
+    private static NutzungsdauerZeileAnzeige[] Zeilen()
+        => new[] { Kessel, Abgas, Eigene, Module, Montage };
+
+    // ---- Aufbau ----------------------------------------------------------
+
+    private IRenderedComponent<NutzungsdauerDialog> Zeige(
+        Action<ComponentParameterCollectionBuilder<NutzungsdauerDialog>>? mehr = null,
+        IReadOnlyList<NutzungsdauerZeileAnzeige>? zeilen = null)
+    {
+        IReadOnlyList<NutzungsdauerZeileAnzeige> stand = zeilen ?? Zeilen();
+        return Render<NutzungsdauerDialog>(p =>
+        {
+            p.Add(x => x.Zeilen, stand);
+            p.Add(x => x.Techniken, new[] { (2, "Heizkessel"), (3, "Photovoltaik") });
+            p.Add(x => x.Neuladen, () => stand);
+            mehr?.Invoke(p);
+        });
+    }
+
+    private static IReadOnlyList<IElement> Datenzeilen(IRenderedComponent<NutzungsdauerDialog> cut)
+        => cut.FindAll(".epos-raster tbody tr:not(.epos-raster-gruppe):not(.epos-raster-leer)");
+
+    private static IReadOnlyList<IElement> Gruppenzeilen(IRenderedComponent<NutzungsdauerDialog> cut)
+        => cut.FindAll(".epos-raster tbody tr.epos-raster-gruppe");
+
+    // =====================================================================
+    // Feldbestand
+    // =====================================================================
+
+    [Fact]
+    public void Der_Dialog_zeigt_Kopf_Suche_Raster_Neuzeile_und_Schlussleiste()
+    {
+        var cut = Zeige();
+
+        Assert.Equal("Nutzungsdauern (AfA)", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Contains("Ersatzbeschaffung", cut.Find(".epos-kontextzeile").TextContent);
+        Assert.Single(cut.FindAll(".epos-raster"));
+        Assert.Equal(6, cut.FindAll(".epos-raster thead th").Count);
+        Assert.Contains("Nutzungsdauer [a]", cut.Markup);
+        Assert.Contains("AfA steuerlich [a]", cut.Markup);
+        Assert.Contains("Auslieferungswerte wiederherstellen", cut.Markup);
+        Assert.Single(cut.FindAll(".epos-leiste"));
+    }
+
+    /// <summary>Ohne Gaben zeichnet die Seite trotzdem — jede Liste leer, jeder Delegat null.</summary>
+    [Fact]
+    public void Ohne_Gaben_zeichnet_der_Dialog_seinen_Leerzustand()
+    {
+        var cut = Render<NutzungsdauerDialog>();
+
+        Assert.Equal("Nutzungsdauern (AfA)", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Empty(Datenzeilen(cut));
+        Assert.Contains("Keine Zeile passt zur Suche.", cut.Markup);
+    }
+
+    // =====================================================================
+    // Gruppierung
+    // =====================================================================
+
+    /// <summary>
+    /// Das Raster ist nach TECHNIK gruppiert, und die technikübergreifenden Zeilen
+    /// stehen unter ihrem eigenen Kopf.
+    /// </summary>
+    [Fact]
+    public void Das_Raster_ist_nach_Technik_gruppiert()
+    {
+        var cut = Zeige();
+
+        var koepfe = Gruppenzeilen(cut);
+        Assert.Equal(3, koepfe.Count);
+        Assert.Equal("Heizkessel", koepfe[0].TextContent);
+        Assert.Equal("Photovoltaik", koepfe[1].TextContent);
+        Assert.Equal("technikübergreifend", koepfe[2].TextContent);
+        Assert.Equal(5, Datenzeilen(cut).Count);
+    }
+
+    /// <summary>Die Standardzeile ist gekennzeichnet — sie gilt ohne Positionsart.</summary>
+    [Fact]
+    public void Die_Standardzeile_traegt_ihr_Kennzeichen()
+    {
+        var cut = Zeige();
+
+        Assert.Equal(2, cut.FindAll(".epos-kennzeichen[title*='Standardzeile']").Count);
+    }
+
+    // =====================================================================
+    // Suche
+    // =====================================================================
+
+    [Fact]
+    public void Die_Suche_schraenkt_ueber_Technik_Positionsart_und_Quelle_ein()
+    {
+        var cut = Zeige();
+
+        cut.Find(".epos-kontextleiste input[type=text]").Input("Abgas");
+        cut.WaitForAssertion(() => Assert.Single(Datenzeilen(cut)));
+        Assert.Single(Gruppenzeilen(cut));
+
+        cut.Find(".epos-kontextleiste input[type=text]").Input("Photovoltaik");
+        cut.WaitForAssertion(() => Assert.Single(Datenzeilen(cut)));
+
+        cut.Find(".epos-kontextleiste input[type=text]").Input("gibtesnicht");
+        cut.WaitForAssertion(() => Assert.Contains("Keine Zeile passt zur Suche.", cut.Markup));
+    }
+
+    // =====================================================================
+    // Auslieferungszeilen (ND-Q5)
+    // =====================================================================
+
+    /// <summary>
+    /// Eine Auslieferungszeile ist NICHT löschbar — und ihr Knopf trägt die WEICHE
+    /// Sperre, damit der Grund überhaupt erscheinen kann.
+    /// </summary>
+    [Fact]
+    public void Die_Auslieferungszeile_ist_nicht_loeschbar_und_meldet_den_Grund()
+    {
+        int gerufen = 0;
+        var cut = Zeige(p => p.Add(x => x.LoeschenDelegat, id => { gerufen++; return null; }));
+
+        var gesperrt = cut.FindAll(".epos-zeilenknoepfe button[aria-disabled=true]");
+        Assert.Equal(4, gesperrt.Count);                       // vier Auslieferungszeilen
+        Assert.False(gesperrt[0].HasAttribute("disabled"));    // weiche Sperre, nicht disabled
+
+        gesperrt[0].Click();
+        cut.WaitForAssertion(() => Assert.Contains("nicht gelöscht", cut.Instance.Meldung));
+        Assert.Equal(0, gerufen);
+        Assert.Equal("", cut.Instance.OffeneFrage);
+    }
+
+    /// <summary>Eine EIGENE Zeile fragt zurück und löscht erst auf „Ja".</summary>
+    [Fact]
+    public void Die_eigene_Zeile_wird_nach_Rueckfrage_geloescht()
+    {
+        var geloescht = new List<int>();
+        var cut = Zeige(p => p.Add(x => x.LoeschenDelegat, id => { geloescht.Add(id); return null; }));
+
+        var frei = cut.FindAll(".epos-zeilenknoepfe button:not([aria-disabled])");
+        Assert.Single(frei);
+        frei[0].Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("Eigene Art", cut.Instance.OffeneFrage));
+        Assert.Empty(geloescht);
+
+        cut.Find(".epos-rueckfrage .epos-leiste button").Click();   // „Ja"
+        cut.WaitForAssertion(() => Assert.Equal(new[] { 99 }, geloescht.ToArray()));
+    }
+
+    // =====================================================================
+    // Wiederherstellen
+    // =====================================================================
+
+    [Fact]
+    public void Wiederherstellen_laeuft_erst_nach_der_Rueckfrage()
+    {
+        int laeufe = 0;
+        var cut = Zeige(p => p.Add(x => x.WiederherstellenDelegat, () => { laeufe++; return 28; }));
+
+        cut.FindAll(".epos-kontextleiste button")[0].Click();
+        cut.WaitForAssertion(() => Assert.Contains("zurücksetzen", cut.Instance.OffeneFrage));
+        Assert.Equal(0, laeufe);
+
+        cut.Find(".epos-rueckfrage .epos-leiste button").Click();   // „Ja"
+        cut.WaitForAssertion(() => Assert.Equal(1, laeufe));
+        Assert.Equal("", cut.Instance.OffeneFrage);
+    }
+
+    // =====================================================================
+    // Eingabe und Speichern
+    // =====================================================================
+
+    /// <summary>
+    /// Eine Eingabe lebt bis „Speichern" im Objekt: Der Speicherknopf ist erst danach
+    /// frei, und geschrieben wird nur die GEÄNDERTE Zeile.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_wird_erst_mit_Speichern_geschrieben()
+    {
+        var geschrieben = new List<int>();
+        var cut = Zeige(p => p.Add(x => x.Speichern, zeilen =>
+        {
+            foreach (NutzungsdauerZeileAnzeige z in zeilen) geschrieben.Add(z.Id);
+            return null;
+        }));
+
+        var speichern = cut.FindAll(".epos-leiste button")[0];
+        Assert.True(speichern.HasAttribute("disabled"));
+
+        cut.FindAll(".epos-raster tbody input")[0].Input("30");
+        cut.WaitForAssertion(() =>
+            Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled")));
+        Assert.Empty(geschrieben);
+
+        cut.FindAll(".epos-leiste button")[0].Click();
+        cut.WaitForAssertion(() => Assert.Equal(new[] { 1 }, geschrieben.ToArray()));
+    }
+
+    /// <summary>Eine Neuzeile ohne Positionsart wird benannt abgelehnt.</summary>
+    [Fact]
+    public void Eine_Neuzeile_ohne_Positionsart_wird_abgelehnt()
+    {
+        int gerufen = 0;
+        var cut = Zeige(p => p.Add(x => x.AnlegenDelegat, e => { gerufen++; return null; }));
+
+        var leisten = cut.FindAll(".epos-kontextleiste");
+        leisten[1].QuerySelectorAll("button")[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Positionsart darf nicht leer", cut.Instance.Meldung));
+        Assert.Equal(0, gerufen);
+    }
+
+    // =====================================================================
+    // Rückweg
+    // =====================================================================
+
+    /// <summary>„Abbrechen" ohne Schreibvorgang meldet <c>null</c> (Hausregel).</summary>
+    [Fact]
+    public void Abbrechen_meldet_null()
+    {
+        NutzungsdauerErgebnis? ergebnis = new NutzungsdauerErgebnis(true);
+        bool gemeldet = false;
+
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (NutzungsdauerErgebnis? e) =>
+        {
+            ergebnis = e;
+            gemeldet = true;
+        }));
+
+        var knoepfe = cut.FindAll(".epos-leiste button");
+        knoepfe[knoepfe.Count - 2].Click();      // Abbrechen steht vor OK
+
+        cut.WaitForAssertion(() => Assert.True(gemeldet));
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>„OK" speichert und meldet ein Ergebnis.</summary>
+    [Fact]
+    public void OK_speichert_und_meldet_ein_Ergebnis()
+    {
+        NutzungsdauerErgebnis? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Speichern, zeilen => null)
+            .Add(x => x.Geschlossen, (NutzungsdauerErgebnis? e) => ergebnis = e));
+
+        cut.FindAll(".epos-raster tbody input")[0].Input("30");
+        cut.WaitForAssertion(() =>
+            Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled")));
+
+        var knoepfe = cut.FindAll(".epos-leiste button");
+        knoepfe[knoepfe.Count - 1].Click();      // OK
+
+        cut.WaitForAssertion(() => Assert.True(ergebnis.HasValue));
+        Assert.True(ergebnis!.Value.Geaendert);
+    }
+}

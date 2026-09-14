@@ -9141,3 +9141,10 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     gap: 6px;
     align-items: center;
 }
+
+/* Der Leerzustand des Rasters: eine Zeile, die keine Datenzeile ist. Sie  */
+/* steht leise da und spannt ueber alle Spalten.                           */
+.epos-raster-leer td {
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
