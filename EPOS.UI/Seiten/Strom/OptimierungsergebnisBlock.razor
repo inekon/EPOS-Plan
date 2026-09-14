@@ -1,0 +1,181 @@
+@* DIE RUBRIK „ERGEBNISSE DER OPTIMIERUNG" in Station 5 (Auftrag #273,
+   Anwenderentscheid vom 14.09.2026; Konzept „Stromspeicher-Dialoge" 7.10).
+
+   WOHER SIE KOMMT. Bis #273 stand alles, was die Suche ausgibt, in Station 4:
+   der Kasten „Bestes Ergebnis" und darunter die Groessen-Sicht mit Rasterkarte,
+   Schnitten, Ausschnitt und Kandidatentabelle. Der Anwender gab die Ansicht
+   zurueck: „Die Ergebnisse aus Tab Optimierung sollen in den ‚Ergebnis' Tab
+   verschoben werden. Die Ergebnisse sollen im Ergebnis-Tab strukturiert
+   angezeigt werden: 1. Ergebnisse aus der Optimierung, 2. die Ergebnisse nach
+   Simulation." Station 4 ist seither reine EINGABE (Suche, Bedienblock,
+   Suchraum), Station 5 traegt beide Ergebnisarten — diese Rubrik ist die erste.
+
+   EIN ORT, EIN BAUSTEIN. Die Groessen-Sicht wird nur von hier gerufen; der
+   OptimierungBlock kennt sie nicht mehr. Zwei Orte fuer dieselbe Karte waeren
+   zwei Wahrheiten — derselbe Grund, aus dem #196 sie aus der einfachen
+   Kandidatentabelle der Ergebnisansicht genommen hat.
+
+   DIE METHODE IST DIE DES LAUFS, nicht die gerade gewaehlte. Wer nach dem Lauf
+   in Station 4 eine andere Suchoption stellt, aendert den naechsten Lauf, nicht
+   den gerechneten: Kasten und Bilder beschreiben das Raster, das gefahren wurde
+   (die Seite reicht ihre `_laufMethode` herein). *@
+
+@namespace EPOS.UI.Seiten.Strom
+@using System.Globalization
+@using EPOS.UI.Dialoge.Strom
+@using SpeicherEngine
+
+<div class="epos-flotte-optimierungsergebnis">
+
+    <Gruppenkopf Titel="@Resource.FLOTTE_ERG_OPTIMIERUNG" />
+
+    @* ------------------------------------------------- Bestes Ergebnis *@
+    <section class="epos-flotte-abschnitt" aria-labelledby="flotte-bestes-titel">
+        <h3 id="flotte-bestes-titel">
+            @Resource.FLOTTE_OPT_BESTES
+            @if (Bester is not null && Methode == FlottenSuchmethode.Groesse)
+            {
+                <span class="@Phasenklasse">@Phasentext</span>
+            }
+        </h3>
+
+        @if (Bester is null)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.FLOTTE_EMPF_NULLVARIANTE" />
+        }
+        else
+        {
+            <div class="epos-flotte-bestes">
+                <div class="epos-flotte-bestes__karte">
+                    <small>@Resource.FLOTTE_OPT_BEST_KAPITALWERT</small>
+                    <b>@Euro(Bester.KapitalwertEuro)</b>
+                    <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_ERSPARNIS,
+                                          Zahl(Bester.ErsparnisEuroJahr, "N0"))</small>
+                </div>
+
+                @* DIE ZWEITE KARTE nennt unter „Stueckzahl suchen" die BESTUECKUNG
+                   („2 x Growatt … = 258 kWh · 200 kW") statt Kapazitaet · C-Rate
+                   (Konzept 8.4): Unter S ist die Groesse fest, und die Antwort auf
+                   die gestellte Frage ist die Stueckzahl. *@
+                <div class="epos-flotte-bestes__karte">
+                    <small>@(Stueckzahlsicht ? Resource.FLOTTE_OPT_BEST_BESTUECKUNG
+                                             : Resource.FLOTTE_OPT_BEST_GROESSE)</small>
+                    <b>@(Stueckzahlsicht ? Bestueckungstext : Groessentext)</b>
+                    <small>@(Stueckzahlsicht
+                             ? string.Format(Kultur, Resource.FLOTTE_OPT_BEST_SUMME,
+                                             Zahl(Bester.KapazitaetKWh, "N0"),
+                                             Zahl(Bester.EntladeleistungKw, "N0"))
+                             : string.Format(Kultur, Resource.FLOTTE_OPT_BEST_EINHEITEN,
+                                             Bester.Einheiten.Count))</small>
+                </div>
+
+                <div class="epos-flotte-bestes__karte">
+                    <small>@Resource.FLOTTE_OPT_BEST_GEPRUEFT</small>
+                    <b>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_KANDIDATEN, Geprueft)</b>
+                    <small>@string.Format(Kultur, Resource.FLOTTE_OPT_BEST_ZULAESSIG, Zulaessige,
+                                          Zahl(Ergebnis?.Rechendauer.TotalSeconds ?? 0, "N2"))</small>
+                </div>
+            </div>
+        }
+    </section>
+
+    @* Die GROESSEN-SICHT — Rasterkarte bzw. Stueckzahlkurve, Schnitte, Ausschnitt
+       um das Optimum, Kandidatentabelle. Welche Bilder sie zeigt, sagt ihr die
+       Methode des Laufs. *@
+    <SpeicherFlottenGroessenAnsicht Ergebnis="@Ergebnis" Einheiten="@Einheiten"
+                                    Methode="@Methode"
+                                    KandidatUebernehmen="@KandidatUebernehmen"
+                                    Csv="@Csv" />
+</div>
+
+@code {
+    private static CultureInfo Kultur => CultureInfo.CurrentCulture;
+
+    /// <summary>Das Ergebnis der Rastersuche des letzten Laufs.</summary>
+    [Parameter] public FlottenAuslegungErgebnis? Ergebnis { get; set; }
+
+    /// <summary>
+    /// Der Arbeitsstand der Studie — aus seinen Achsen kommen die Namen, mit denen die
+    /// Bestückungszeile die gefundenen Stückzahlen benennt.
+    /// </summary>
+    [Parameter] public FlottenStudieKonfiguration Flotte { get; set; } = new();
+
+    /// <summary>Die Suchmethode, mit der DIESES Ergebnis gerechnet wurde.</summary>
+    [Parameter] public FlottenSuchmethode Methode { get; set; } = FlottenSuchmethode.Groesse;
+
+    /// <summary>Wie viele Einheiten die Größen-Sicht je Kandidat anbieten darf.</summary>
+    [Parameter] public int Einheiten { get; set; }
+
+    /// <summary>„Kandidat übernehmen" — der Wirt schreibt ihn nach Schritt 1.</summary>
+    [Parameter] public EventCallback<FlottenKandidatZusammenfassung> KandidatUebernehmen { get; set; }
+
+    /// <summary>Der Variantenvergleich als CSV; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback Csv { get; set; }
+
+    // =====================================================================
+    //  Der Kasten „Bestes Ergebnis"
+    // =====================================================================
+
+    private List<FlottenAuslegungsAchse> Achsen
+        => (Flotte.Auslegung ??= new FlottenAuslegungEingang()).Achsen
+           ??= new List<FlottenAuslegungsAchse>();
+
+    private FlottenKandidatZusammenfassung? Bester => Ergebnis?.BesterKandidat;
+
+    private int Geprueft => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0) ?? 0;
+
+    private int Zulaessige => Ergebnis?.Kandidaten?.Count(k => k.Einheiten.Count > 0 && k.Zulaessig) ?? 0;
+
+    /// <summary>Zeigt der Kasten die BESTÜCKUNG statt Kapazität · C-Rate · Leistung?</summary>
+    private bool Stueckzahlsicht => Methode == FlottenSuchmethode.Stueckzahl
+                                    && Bester is { Stueckzahlen.Count: > 0 };
+
+    private string Phasentext => Bester?.Phase == FlottenKandidatPhase.Fein
+        ? Resource.FLOTTE_OPT_MARKE_FEIN : Resource.FLOTTE_OPT_MARKE_GROB;
+
+    private string Phasenklasse => Bester?.Phase == FlottenKandidatPhase.Fein
+        ? "epos-flotte-phasenmarke epos-flotte-phasenmarke--fein"
+        : "epos-flotte-phasenmarke";
+
+    private string Groessentext
+    {
+        get
+        {
+            FlottenKandidatZusammenfassung? k = Bester;
+            if (k is null) return "";
+            return string.Format(Kultur, "{0} kWh · {1} C · {2} kW",
+                Zahl(k.KapazitaetKWh, "N0"), Zahl(k.CRate, "0.##"), Zahl(k.EntladeleistungKw, "N0"));
+        }
+    }
+
+    /// <summary>Die Bestückung des Optimums: „2 × Growatt WIT" je variierter Einheit.</summary>
+    public string Bestueckungstext
+    {
+        get
+        {
+            FlottenKandidatZusammenfassung? k = Bester;
+            if (k?.Stueckzahlen is not { Count: > 0 } zahlen) return "";
+
+            var aktive = Achsen.Where(a => a.Aktiv).ToList();
+            var teile = new List<string>(zahlen.Count);
+            for (int i = 0; i < zahlen.Count; i++)
+                teile.Add(string.Format(Kultur, Resource.FLOTTE_OPT_BEST_STUECK, zahlen[i],
+                    i < aktive.Count ? Achsenname(aktive[i])
+                                     : string.Format(Kultur, Resource.FLOTTE_GROESSEN_EINHEIT, i + 1)));
+            return string.Join(" · ", teile);
+        }
+    }
+
+    private static string Zahl(double wert, string format)
+        => double.IsFinite(wert) ? wert.ToString(format, Kultur) : "—";
+
+    private static string Euro(double wert)
+        => double.IsFinite(wert) ? wert.ToString("N0", Kultur) + " €" : "—";
+
+    private static string Achsenname(FlottenAuslegungsAchse a)
+    {
+        string name = a.Vorlage?.Name ?? "";
+        if (!string.IsNullOrWhiteSpace(name)) return name;
+        return string.IsNullOrWhiteSpace(a.Vorlage?.Id) ? Resource.FLOTTE_ED_UNBENANNT : a.Vorlage.Id;
+    }
+}

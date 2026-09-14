@@ -182,8 +182,9 @@ public sealed class StromspeicherAuslegungEinModusTests : EposBunitContext
         var cut = Ansicht(Dienste(flotte, ergebnis));
         Auslegungshilfe.Rechenknopf(cut).Click();
 
-        // Die Karte steht seit #224 in Station 4 (Auftrag #224, Zielbild 7.4).
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        // Die Karte steht seit #273 in Schritt 5, Rubrik „Ergebnisse der Optimierung"
+        // (Zielbild 7.10) — und dorthin fuehrt der gelungene Lauf von selbst.
+        cut.WaitForAssertion(() => Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt));
         Assert.Single(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
         Assert.Equal(1, cut.FindComponent<SpeicherFlottenGroessenAnsicht>().Instance.Einheiten);
     }

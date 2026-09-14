@@ -17724,7 +17724,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Computes the fleet from step 1 exactly once — nothing is varied.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
-    <value>Varies two of the three sizes capacity, power and C rate on every unit switched on; the third follows from the coupling. The unit count stays fixed.</value>
+    <value>Varies two of the three sizes capacity, power and C rate on every unit; the third follows from the coupling. The unit count stays fixed.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
     <value>Keeps every unit at the size it is set to and varies how many of them there are (0 = unit is omitted). The cost is the cost of one unit times the count.</value>
@@ -19117,5 +19117,17 @@ Do you want to allow this?</value>
   </data>
   <data name="ETV_HISTORIE_LOESCH_TITEL" xml:space="preserve">
     <value>Delete price record</value>
+  </data>
+  <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
+    <value>Optimisation results</value>
+  </data>
+  <data name="FLOTTE_ERG_SIMULATION" xml:space="preserve">
+    <value>Simulation results</value>
+  </data>
+  <data name="FLOTTE_ERG_NUR_BEWERTET" xml:space="preserve">
+    <value>This run only evaluated the configured fleet — no size was searched for. Step 4 "Optimisation" starts a search.</value>
+  </data>
+  <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
+    <value>The size search does not depend on the selected storage unit; it looks for the most economical size.</value>
   </data>
 </root>

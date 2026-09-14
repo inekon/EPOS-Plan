@@ -11642,6 +11642,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 „Optimierung“. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_NUR_BEWERTET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_NUR_BEWERTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Optimierung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_OPTIMIERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_OPTIMIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kausal erreicht: {0} kW — Schwelle in {1} von {2} Intervallen nachgezogen. ähnelt.
         /// </summary>
         public static string FLOTTE_ERG_PEAK_KAUSAL {
@@ -11665,6 +11683,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ERG_REAKTIVE_REFERENZ {
             get {
                 return ResourceManager.GetString("FLOTTE_ERG_REAKTIVE_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Simulation ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_SIMULATION {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_SIMULATION", resourceCulture);
             }
         }
         
@@ -12848,6 +12875,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GROESSE_UNABHAENGIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GROESSE_UNABHAENGIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_KANDIDATEN {
@@ -13001,7 +13037,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_METHODE_GROESSE_ERL {
             get {

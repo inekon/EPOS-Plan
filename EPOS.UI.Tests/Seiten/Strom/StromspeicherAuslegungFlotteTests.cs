@@ -368,6 +368,11 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
     /// <b>Eine Eingabe in Blatt 1 steht in Station 4</b> (Auftrag #248): Der Name der
     /// Einheit wird im Einheiteneditor geschrieben und benennt danach die Suchraumkarte
     /// der Station „Optimierung" — beide lesen denselben Stand.
+    ///
+    /// <para>Geprüft wird unter <b>„Stückzahl suchen"</b>: Seit Auftrag #273 nennt die
+    /// Karte unter „Größe suchen" kein Gerät mehr — dort variiert der Lauf Kapazität,
+    /// Leistung und C-Rate, und welches Produkt dahintersteht, beantwortet keine der
+    /// gestellten Fragen.</para>
     /// </summary>
     [Fact]
     public void Ein_Name_aus_Schritt_1_steht_in_der_Suchraumkarte()
@@ -382,7 +387,7 @@ public sealed class StromspeicherAuslegungFlotteTests : EposBunitContext
         // keine Karte, die einen Namen zeigen koennte (#247).
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         cut.FindAll("input[type=radio]")
-           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_METHODE_GROESSE))
+           .Single(x => x.ParentElement!.TextContent.Contains(Resource.FLOTTE_OPT_METHODE_STUECKZAHL))
            .Change(true);
 
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
