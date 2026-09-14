@@ -73,6 +73,9 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   zeichnen** — jeder Delegat `null`, jede Liste leer, jeder Text der Rückfall.
 - **Ein Parametersatz aus einer Hülle trifft nur `[Parameter]`** — ein unbekannter Schlüssel
   bricht beim ERSTEN Zeichnen im Blazor-Verteiler, ohne Namen.
+- **Ein Neuladen des Standes nach einer Zeilenaktion überträgt die ungespeicherten Eingaben der
+  bestehenden Zeilen** (gleiche Id, nur die eingebbaren Felder, danach Nachziehen und Summen);
+  ein echter Kontextwechsel lädt weiterhin ohne Übertrag.
 
 ### Anordnung: ein Dialog baut kein Hausmuster selbst nach, er nimmt den Baustein
 
