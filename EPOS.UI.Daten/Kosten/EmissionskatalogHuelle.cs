@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HUELLE des Dialogs „Emissionsfaktor-Katalog" (iU9-W3.3).
+    /// Die HÜLLE des Dialogs „Emissionsfaktor-Katalog" (iU9-W3.3).
     ///
     /// <para><b>Hier liegt die Datenseite.</b> Schon die WinForms-Maske kannte
     /// keine SQL-Zeile — alle Regeln stehen seit Etappe E4 in
@@ -27,11 +25,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class EmissionskatalogHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 920 × 519 mit
-        /// zwei Listen nebeneinander; die Blazor-Fassung stellt sie untereinander
-        /// (Befund 03.09.2026: lieber höher als umgebrochen).</summary>
-        private static readonly Size FENSTER = new Size(940, 860);
-
         /// <summary>Was der Dialog dem Aufrufer zurückgibt — die drei
         /// Eigenschaften der gelöschten Maske.</summary>
         internal sealed class Ergebnis

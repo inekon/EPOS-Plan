@@ -258,7 +258,7 @@ namespace WindowsFormsApplication1
                     return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.EnergietraegerVerwaltung:
-                    return () => EnergietraegerHuelle.Oeffnen(_besitzer?.Invoke(), 0);
+                    return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
 
                 case Seitenschluessel.Einstellungen:
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());

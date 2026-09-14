@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
@@ -34,11 +33,14 @@ namespace WindowsFormsApplication1
     /// desselben Fensters statt in einer zweiten <c>BlazorDialogForm</c>
     /// (Risiko R2).</para>
     /// </summary>
-    internal sealed class EnergietraegerHuelle
+    public sealed class EnergietraegerHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 1084 × 680;
+        /// <summary>Wunschbreite des Fensters — die Plattformhülle macht daraus ihr Maß.</summary>
+        public const int FENSTER_BREITE = 1140;
+
+        /// <summary>Wunschhöhe des Fensters. Die WinForms-Fassung maß 1084 × 680;
         /// die Trägerkarte steht jetzt untereinander statt in zwei Reitern.</summary>
-        private static readonly System.Drawing.Size FENSTER = new System.Drawing.Size(1140, 840);
+        public const int FENSTER_HOEHE = 840;
 
         private readonly int _projektId;
         private bool Katalogkontext { get { return _projektId <= 0; } }
@@ -84,7 +86,8 @@ namespace WindowsFormsApplication1
         private int _idBrennstoff;
         private string _abrechnungseinheit = "";
 
-        private EnergietraegerHuelle(int projektId)
+        /// <param name="projektId">0 = Katalogkontext (Stammdaten).</param>
+        public EnergietraegerHuelle(int projektId)
         {
             _projektId = projektId > 0 ? projektId : 0;
         }
@@ -93,16 +96,10 @@ namespace WindowsFormsApplication1
         // Einstieg
         // =====================================================================
 
-        /// <summary>
-        /// Zeigt die Energieträgerverwaltung.
-        /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
-        /// <param name="projektId">0 = Katalogkontext (Stammdaten).</param>
-        /// <param name="traegerId">Vorwahl (KD6 § 9: „Energiekosten…" springt
-        /// direkt auf den Träger der Komponente); 0 = der erste.</param>
-        internal static void Oeffnen(IWin32Window besitzer, int projektId, int traegerId = 0)
+        /// <summary>Der Fenstertitel — die Plattformhülle beschriftet damit ihr Fenster.</summary>
+        public static string Titel()
         {
-            new EnergietraegerHuelle(projektId).Zeigen(besitzer, traegerId);
+            return T("KDLG_ET_TITEL", "Energieträgerverwaltung");
         }
 
         /// <summary>
@@ -114,33 +111,9 @@ namespace WindowsFormsApplication1
         /// <para>Die Hüllen-INSTANZ hält den Bearbeitungsstand; sie lebt über
         /// die Rückrufe des Satzes so lange wie der Bereich.</para>
         /// </summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(int projektId, int traegerId = 0)
-        {
-            return new EnergietraegerHuelle(projektId).GabenIntern(traegerId);
-        }
-
-        private void Zeigen(IWin32Window besitzer, int traegerId)
-        {
-            BlazorDialogForm<EnergietraegerDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(GabenIntern(traegerId))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
-            };
-
-            dlg = new BlazorDialogForm<EnergietraegerDialog>(
-                T("KDLG_ET_TITEL", "Energieträgerverwaltung"), FENSTER, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-        }
-
-        private IReadOnlyDictionary<string, object> GabenIntern(int traegerId)
+        /// <param name="traegerId">Vorwahl (KD6 § 9: „Energiekosten…" springt
+        /// direkt auf den Träger der Komponente); 0 = der erste.</param>
+        public IReadOnlyDictionary<string, object> Gaben(int traegerId = 0)
         {
             ListeLaden();
             _katalogJahr = KatalogjahrErmitteln(_projektId, out _unternehmensart, out _co2PreisProjekt);
@@ -1231,7 +1204,7 @@ namespace WindowsFormsApplication1
 
         private IReadOnlyDictionary<string, object> NamensGaben()
         {
-            return NamensDialogHuelle.Gaben(
+            return NamensabfrageGaben.Gaben(
                 T("KDLG_ET_NEU_TITEL", "Neuer Energieträger"),
                 T("KDLG_ET_NEU_NAME", "Bezeichnung des neuen Trägers:"),
                 T("KDLG_ET_NEU_VORGABE", "Neuer Energieträger"),

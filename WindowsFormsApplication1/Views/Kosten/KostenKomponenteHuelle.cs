@@ -1006,7 +1006,7 @@ namespace WindowsFormsApplication1
                 ? _eintraege[_eintragIndex].Text : "";
             string vorschlag = basis + " — Variante " + _varianten.Count;
 
-            return NamensDialogHuelle.Gaben(
+            return NamensabfrageGaben.Gaben(
                 kopie ? T("KDLG_MSG_KOPIE_TITEL", "Speichern unter")
                       : T("KDLG_MSG_NEU_TITEL", "Neue Variante"),
                 T("KDLG_MSG_NEU_NAME", "Name der neuen Variante:"),

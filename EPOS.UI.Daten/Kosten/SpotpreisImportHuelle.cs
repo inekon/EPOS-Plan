@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
@@ -32,11 +30,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class SpotpreisImportHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 720 × 528 mit
-        /// einem 300 px hohen Protokollfeld; die Blazor-Fassung stellt Feld und
-        /// Beschriftung übereinander und braucht deshalb mehr Höhe.</summary>
-        private static readonly Size FENSTER = new Size(760, 720);
-
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
         /// Hülle ein eigenes Fenster; seit die Energieträgerverwaltung selbst
