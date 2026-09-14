@@ -107,6 +107,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   **Eine laufende Anwendung oder ein offenes Visual Studio sperrt diesen Ordner**; MSB3027
   nennt die sperrenden Prozesse. Der Hauptbaum wird nicht gebaut, solange ein Agent darin
   Dateien ändert — dann den committeten Stand in einem Worktree oder Nebenordner bauen.
+- Die Windows-Schale baut auch auf Linux:
+  `dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -p:Platform=x64 -p:EnableWindowsTargeting=true`
+  (0 Fehler, Warnungen Bestand). Wer eine Hülle oder Naht der Schale anfasst, prüft sie so
+  kompiliert, bevor der Auftrag abgenommen wird — der Kern-Filter sieht diese Dateien nicht.
 - Testsammlungen laufen **nicht parallel** (Kulturpinnung in vielen Testklassen), deshalb die
   xUnit-Schalter oben; das Gate und beide Workflows nehmen dieselben.
 - Ein roter Build kann fremd sein: Fehler nach Dateien aufschlüsseln, bevor man ihn sich
