@@ -16,7 +16,7 @@ Der Dialog '''Detaillierte Simulation''' rechnet und wertet in einem Zug aus: Be
 == Speicherauslegung mit Kosten und Zeitreihen ==
 {{Anker|speicherauslegung}}
 
-Unter '''Parameter → Stromspeicher → Auslegung optimieren''' werden Größe, C-Rate, spezifische Investitions- und Betriebskosten sowie Last-, PV- und Preisquellen gewählt. Quellen können aus EPOS-Plan oder aus getrennten CSV-Dateien mit Spaltenzuordnung stammen. Benannte Profile speichern die vollständige Auslegungskonfiguration.
+In der '''Stromspeicher-Auslegung''' – erreichbar über ''① Konfiguration → Stromspeicher auslegen…'' – werden Größe, C-Rate, spezifische Investitions- und Betriebskosten sowie Last-, PV- und Preisquellen gewählt. Quellen können aus EPOS-Plan oder aus getrennten CSV-Dateien mit Spaltenzuordnung stammen. Benannte Profile speichern die vollständige Auslegungskonfiguration.
 
 Nach einer Eingabeänderung wird das alte Ergebnis als veraltet gekennzeichnet. Die Heatmap verwendet Kapazität oder Leistung als gewählte Größenachse; Jahresüberschuss, Kapitalwert und Amortisation berücksichtigen die Betriebskosten. Neu berechnen liefert einen aktuellen Bestpunkt zur Übernahme der Dimensionierung. Die ausführliche Bedienung steht unter [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Stromspeicher: Auslegung optimieren]].
 
