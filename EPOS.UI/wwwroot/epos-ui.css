@@ -1932,6 +1932,23 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-variant-numeric: tabular-nums;
 }
 
+/* ANWENDERBEFUND 14.09.2026: Eine Zeile ohne Bezugsgroesse zeigt die 0 des
+   Anwenderentscheids I-2. Das Zeichen sagt, dass da etwas fehlt; den Grund
+   nennen Werkzeugtipp und der Hinweis unter dem Raster. Warnfarbe, kein Rot:
+   Es ist kein Fehler, sondern eine unvollstaendige Angabe. */
+.epos-zr-ohnebasis {
+    margin-right: 4px;
+    color: var(--epos-warn-text);
+}
+
+/* Die LEISE Zeile unter dem Raster (Hausregel: ein dauerhaftes Banner nur fuer
+   einen Zustand, den der Anwender sonst nicht sieht - das Zeichen in der Zeile
+   sieht er). Sie sammelt die Gruende der Zeilen ohne Bezugsgroesse. */
+.epos-zr-ohnebasis-zeile {
+    margin: 0 0 var(--epos-rand) 0;
+    color: var(--epos-text-leise);
+}
+
 .epos-ertragbonus {
     display: flex;
     flex-direction: column;
