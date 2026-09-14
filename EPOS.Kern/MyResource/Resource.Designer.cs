@@ -20830,6 +20830,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string KDLG_OHNE_BASIS_ZEILE {
+            get {
+                return ResourceManager.GetString("KDLG_OHNE_BASIS_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neue Position ähnelt.
         /// </summary>
         public static string KDLG_POS_NEU_VORGABE {
