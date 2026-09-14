@@ -5448,3 +5448,96 @@ steht aus und ist die eigentliche Aufgabe von
 > warten, wo ein Zeitgeber läuft.
 > **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** keine.
+
+## #261 — Preishistorie: einzelne Preisstände löschen, Upsert je Kalendertag (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 mit Bildschirmfoto der Trägerkarte: „historische Energieträger werte sollen
+> gelöscht werden können." Die Preishistorie zeigte zwei Zeilen mit demselben „Gültig ab 14.09.2026" (Basiseinheit m³ und
+> Nm³, Arbeitspreis 0,0000 und 0,0500).
+>
+> **Befund Doppelzeile (Agent, belegt):** `energy_price.valid_from` ist TEXT und trägt im Bestand zwei Schreibweisen:
+> Tagesstände (`2026-08-12 00:00:00`) aus der Trägerkarte und Zeitpunkte (`2026-08-09 20:33:16`) aus der Zuordnung —
+> `WizardCtrl` und `EnergietraegerVarianteCtrl` binden `DateTime.Now`. `SqliteDatenzugriff.NormalisiereWert` wertet
+> `DbParamTyp.Date` nicht aus; allein der CLR-Typ entscheidet (`DateTime` → `yyyy-MM-dd HH:mm:ss`). `HistorieSchreiben`
+> band `gueltigAb.Date`, verglich `valid_from = ?`, verfehlte den Zeitpunkt desselben Tages und fiel in den INSERT-Zweig; das
+> UNIQUE `unq_price_date` (Textgleichheit) ließ die zweite Zeile zu. In der Testdatenbank stehen beide Formen nebeneinander.
+>
+> **Umsetzung:** `Historienzeile.Id` aus `energy_price.id`; `EnergietraegerPreisCtrl.HistorieLoeschen(zeileId, traegerId,
+> projektId)` löscht genau eine Zeile (Träger und Projekt als Riegel, Rückgabe Zeilenzahl). Prüfung und UPDATE des Upserts
+> vergleichen den Kalendertag (`date(valid_from) = date(?)`); das Datum der getroffenen Zeile bleibt, neu angelegt wird zum
+> Tagesbeginn. Hülle `EnergietraegerHuelle.HistorieLoeschen(zeile)` mit `HistorieLoeschenGrund` als Gaben neben
+> `Speichern`/`SpeichernGrund`; Katalogkontext lehnt benannt ab (`ETV_HISTORIE_NUR_PROJEKT`), fehlende Zeile
+> `ETV_HISTORIE_LOESCH_FEHLT`; danach `HistorieLaden()`. Oberfläche: Aktionsspalte am Ende der Historientabelle mit
+> Löschknopf je Zeile, `Rueckfrage` mit Vorgabe Nein, Meldung wie beim Speichern. Windows-Schale unverändert (der volle
+> Gabensatz wird auf den Dialog gesplattet). Ressourcen `ETV_HISTORIE_LOESCHEN`, `ETV_HISTORIE_LOESCH_TITEL`,
+> `ETV_HISTORIE_LOESCHFRAGE`, `ETV_HISTORIE_LOESCH_FEHLT` de/en.
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; `EPOS.Kern.Tests ~Energietraeger` 52/52, `EPOS.UI.Tests ~Energietraeger`
+> 73/73 (je 6 neue Fälle), `EnergietraegerDialogTests` dreimal 52/52; Wachen 43/43; SqlDialektPruefer 1 363 Texte, 0 Fundstellen;
+> ResourceDesigner unverändert; Testdatenbank unberührt. `StromPreisCtrl.ArbeitspreisCtKwh` liest `energy_price` zum Stichtag —
+> unverändert, kein Referenzlauf. Merge `46282032`.
+>
+> **Offen:** Vereinheitlichung der Zuordnung auf den Tagesbeginn (Bestandsdaten) nur auf Zuruf; Logbuch-Eintrag entworfen
+> (Version 1.2.0.1), Upload gebündelt ab 20.09.
+
+## #262 — Wärmequelle Erdreich: Erdkollektor und Erdsonde als eigene Rubriken (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderrückmeldung 14.09.2026 mit Bildschirmfoto der Überlagerung „Wärmequelle Erdreich — <Wärmepumpe>" aus
+> der Simulationskonfiguration: „OK Button soll aus Dialog raus" und „Auswahl Erdkollektor und Erdsonde soll jeweils in einer
+> Rubrik sein mit den jeweils relevanten Parametern (nicht alle gemischt wie jetzt)". Die Gruppe „Quellsystem" trug die
+> `Optionsgruppe` und darunter Verlegetiefe, Fläche, Länge je Sonde und Anzahl Sonden in einem Formularraster; die Felder des
+> nicht gewählten Zweigs waren nur gesperrt (Abweichung A‑4: getrennte Felder je Zweig, Umschalten überschreibt nicht).
+>
+> **Umsetzung (Teil Rubriken):** `QuelleErdreichDialog.razor` zeichnet zwei Rubriken (`Gruppenkopf`) **Erdkollektor** und
+> **Erdsonde**, jede mit ihrem Optionsfeld als erster Zeile und nur ihren Feldern; die nicht gewählte Rubrik bleibt sichtbar,
+> gesperrt und behält ihre Werte, gedimmt über `epos-erdreich-zweig--ruht` (Farbe `--epos-text-sehr-leise`, keine neue Farbe).
+> Damit die Wahl EINE bleibt, bekam der Baustein `Optionsgruppe` die Gaben `NurEintrag` (zeichnet genau einen Eintrag,
+> `Eintraege` bleibt der Stand der Wahl) und `Gruppenname` (geteilter HTML-Name mehrerer Aufrufe); der Einzelaufruf meldet keine
+> eigene `radiogroup`, behält das `aria-label`. `SystemUmschalten`, `KOLLEKTOR`/`SONDE`, `Zweigfelder` und die Prüfmeldungen
+> unverändert; die übrigen 20 Wirte der `Optionsgruppe` ebenso. Ressourcen `SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL` und
+> `SIMQ_ERDREICH_RB_SONDE_WAHL` de/en über `QuelleErdreichHuelle`; `RB_KOLLEKTOR`/`RB_SONDE` sind Rubriktitel, `GB_QUELLSYSTEM`
+> bleibt Gruppenname der Wahl. Hausregel in `EPOS.UI/CLAUDE.md` („Eine Wahl darf über mehrere Rubriken laufen … nie ein nacktes
+> `<input type="radio">`"). Wiki-Quelle `EPOS.Kern/Allgemein/Hilfe/Berechnung/Wärmequelle Erdreich.wiki`: Herkunftsspalte nennt
+> die zwei Rubriken (kein Upload).
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; `QuelleErdreichDialogTests` 32 (3 neu), dreimal grün; `OptionsgruppeTests`
+> 16 (4 neu); `SimulationKonfig` 38; `EPOS.UI.Tests` 4 027 grün; Wachen Dokumentation-Link 7, Repository-Ordnung 10,
+> Wiki-Produktdaten 5 grün; ResourceDesigner unverändert. Kein Rechenweg, kein Referenzlauf. Merge `5b0df675`.
+>
+> **Offen:** Nachtrag OK-Knopf nach Anwenderentscheid (Lesart a/b, Reichweite auf die sieben Simulationsdialoge);
+> vorbestehende Tabuwörter der Wiki-Quelle („vorher", „Befund" als Prüfbefund) nur auf Zuruf; Logbuch-Eintrag entworfen
+> (Version 1.2.0.1), Upload gebündelt.
+
+## #263 — Kostenverwaltung: Zeilenaktionen behalten ungespeicherte Eingaben (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderbefund 14.09.2026 mit Bildschirmfoto der Kostenverwaltung (Administration): „Bei zufügen von Position
+> werden zuvor eingegebene Werte auf null gesetzt."
+>
+> **Ursache (belegt):** `PositionAnlegenMit` schreibt die neue Position sofort (`PositionNeu`, wie `btnPositionNeu_Click` im
+> Vorbild) und ruft danach `KontextLaden(_stand.VarianteId)`. Die Windows-Hülle `KostenKomponenteHuelle` baut in
+> `VorlagenRasterAufbauen`/`ProjektRasterAufbauen` bei jedem Laden `_bindungen` und `_zeilen` neu aus der Datenbank. Die Regel
+> Ä12/Ä19 („die Änderung lebt bis Speichern nur im Objekt") trug nur, solange niemand die Objekte austauschte — beim Auffrischen
+> war alles Ungespeicherte weg. Dieselben Zeilen stehen in `LoeschenFragen` und `UebernahmeFertigMachen`. Der Bestandsfake der
+> bunit-Tests gab stets dieselben Objekte zurück, deshalb blieb der Befund unsichtbar.
+>
+> **Beleg:** Fünf neue Fälle in `KostenKomponenteDialogTests` mit einem datenbankartigen Fake (Ablage, aus der jeder `Laden`-Aufruf
+> neue `KostenPositionZeile`-Objekte baut): vor dem Fix vier rot (Fußknopf „+ Position hinzufügen", Neuzeile, „Position löschen",
+> „In Projekt übernehmen" — Satz fällt von 1500 auf den Datenbankwert 1200, ebenso `Stand.Zeilen[0].Satz` und der Summenfuß);
+> der fünfte Fall (`Ein_Kontextwechsel_laedt_ohne_Uebertrag`) hält die gewollte Grenze fest.
+>
+> **Umsetzung:** Fix ausschließlich im plattformfreien `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor`:
+> `KontextLaden(int? varianteId, bool eingabenUebernehmen = false)`; `EingabenUebertragen` überträgt nach dem Laden die
+> ungespeicherten Eingaben bisheriger Zeilen auf die neu gebauten Objekte gleicher `Id` — nur `Bezeichnung`, `BemessungId`, `Satz`,
+> `Nutzungsdauer`, nur wo sie vom geladenen Stand abweichen; je Zeile `Nachziehen` (Einheit, Betrag, Kette, Kurztexte), danach
+> `SummenNachziehen()`; `ReferenceEquals`-Wächter gegen identische Objekte. Gesetzt für Hinzufügen (beide Wege), Löschen,
+> Übernehmen; Kontextwechsel (Eintrag, Kategorie, Variante, Variante neu/gelöscht) laden ohne Übertrag; „Abbrechen" verwirft weiter
+> alles; nichts wird still gespeichert; die neue Position kommt weiter mit Einheit, Betragstext, Kette und Kurztexten aus der
+> Hülle. `Zahlenfeld`: `@key="zeile.Id"` bleibt, Instanz wird wiederverwendet, Sperren `Fehlerhaft`/`_geleert` wirksam.
+> Kopfkommentar und Hausregel in `EPOS.UI/CLAUDE.md` (Abschnitt Zustand, Meldung, Leerzustand). Windows-Schale unverändert.
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; gefilterter Lauf 76/76; `KostenKomponenteDialogTests` dreimal 46/46;
+> `EPOS.UI.Tests` 4 025/4 025; Wachen 17/17. Kein Rechenweg, keine Ressourcen, kein Referenzlauf. Merge `84ea142d`.
+>
+> **Offen:** Kontextwechsel verwirft still (Rückfrage nur auf Zuruf); Zeileneditor und Gesetzeskatalog ohne Übertrag
+> (`EditorFertig` der Windows-Hülle zieht `z.Bezeichnung` nicht nach); Nachweis am laufenden Windows-Build; Logbuch-Eintrag
+> entworfen (Version 1.2.0.1), Upload gebündelt.
