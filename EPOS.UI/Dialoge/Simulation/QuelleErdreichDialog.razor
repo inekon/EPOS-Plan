@@ -8,8 +8,11 @@
    Jahresgang-Vorschau, die Bodenkennwerte und die Auslegungspruefung nach
    VDI 4640 Blatt 2.
 
-   VIER BLOECKE, wie im Vorlaeufer: Quellsystem, Standort (Bodentyp, Klimazone,
-   Spreizung), Vorschau, Auslegungspruefung.
+   FUENF BLOECKE: die zwei Quellsysteme als eigene Rubriken - ERDKOLLEKTOR
+   (Verlegetiefe, Flaeche) und ERDSONDE (Laenge je Sonde, Anzahl Sonden) -, dann
+   Standort (Bodentyp, Klimazone, Spreizung), Vorschau und Auslegungspruefung.
+   Jede der beiden Quellsystem-Rubriken traegt als erste Zeile ihr Optionsfeld;
+   beide Optionsfelder teilen sich einen HTML-Namen und sind damit EINE Wahl.
 
    WAS AUS DEM DIALOG VERSCHWINDET:
      * QuellsystemRasterAusrichten (:555-592) - vier Spalten, die zur Laufzeit
@@ -35,7 +38,9 @@
    Sondenbetrieb die Vorgabe (SetControls:750-758). Wer umschaltete, verlor
    damit still, was er im anderen Zweig gerade eingetippt hatte. Hier haelt der
    Dialog beide Zweige getrennt; das Umschalten sperrt nur, es ueberschreibt
-   nicht.
+   nicht. Die Felder der nicht gewaehlten Rubrik bleiben STEHEN - gesperrt und
+   leise (epos-erdreich-zweig--ruht), nie ausgeblendet: Sie sagen, was der
+   andere Zweig braucht, und sie halten ihre Werte.
 
    ABWEICHUNG A-5 (Befund W10-B9): DER SIMULATIONSLAUF LAEUFT ASYNCHRON. Der
    Vorlaeufer rechnete SYNCHRON im Oberflaechenfaden mit Sanduhr (:1039); in
@@ -68,14 +73,24 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Quellsystem ------------------------------------------------------- *@
-    <Gruppenkopf Titel="@GbQuellsystem">
+    @* --- Quellsystem: Erdkollektor ------------------------------------------ *@
+    @* Anwenderwunsch 14.09.2026: JEDE Quelle ihre eigene Rubrik mit den Feldern,
+       die zu ihr gehoeren - nicht alle vier gemischt unter einer Ueberschrift.
+       Die Wahl bleibt EINE: Beide Optionsfelder teilen sich einen HTML-Namen
+       (_quellsystemGruppe), also wandern die Pfeiltasten zwischen ihnen und die
+       Sprachausgabe liest sie als Alternative. *@
+    <Gruppenkopf Titel="@RbKollektor">
         <KindInhalt>
-            @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
-               Zahlenfelder kurz mit der Einheit dahinter. *@
-            <Formularraster>
-                <KindInhalt>
-            <Optionsgruppe Eintraege="@Quellsysteme" Auswahl="@(_sonde ? SONDE : KOLLEKTOR)"
+            <div class="epos-erdreich-zweig@(_sonde ? " epos-erdreich-zweig--ruht" : "")">
+                @* Formularraster (iU8-E-2, Paket P3): Beschriftung neben dem Feld,
+                   Zahlenfelder kurz mit der Einheit dahinter. Das Optionsfeld steht
+                   darin ueber die volle Breite (Regel .epos-formularraster >
+                   .epos-optionsgruppe). *@
+                <Formularraster>
+                    <KindInhalt>
+            <Optionsgruppe Bezeichnung="@GbQuellsystem" Eintraege="@Quellsysteme"
+                           Gruppenname="@_quellsystemGruppe" NurEintrag="KOLLEKTOR"
+                           Auswahl="@(_sonde ? SONDE : KOLLEKTOR)"
                            AuswahlChanged="SystemUmschalten" />
 
             <Zahlenfeld Bezeichnung="@LblVerlegetiefe" Einheit="m" Aktiv="@(!_sonde)"
@@ -84,14 +99,32 @@
             <Zahlenfeld Bezeichnung="@LblFlaeche" Einheit="m²" Aktiv="@(!_sonde)"
                         Feldname="@LblFlaeche" Wert="@_flaeche"
                         WertChanged="w => Setzen(() => _flaeche = w)" />
+                    </KindInhalt>
+                </Formularraster>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* --- Quellsystem: Erdsonde ---------------------------------------------- *@
+    <Gruppenkopf Titel="@RbSonde">
+        <KindInhalt>
+            <div class="epos-erdreich-zweig@(_sonde ? "" : " epos-erdreich-zweig--ruht")">
+                <Formularraster>
+                    <KindInhalt>
+            <Optionsgruppe Bezeichnung="@GbQuellsystem" Eintraege="@Quellsysteme"
+                           Gruppenname="@_quellsystemGruppe" NurEintrag="SONDE"
+                           Auswahl="@(_sonde ? SONDE : KOLLEKTOR)"
+                           AuswahlChanged="SystemUmschalten" />
+
             <Zahlenfeld Bezeichnung="@LblLaengeSonde" Einheit="m" Aktiv="@_sonde"
                         Feldname="@LblLaengeSonde" Wert="@_laenge"
                         WertChanged="w => Setzen(() => _laenge = w)" />
             <Ganzzahlfeld Bezeichnung="@LblAnzahlSonden" Aktiv="@_sonde"
                           Feldname="@LblAnzahlSonden" Wert="@_anzahl"
                           WertChanged="w => Setzen(() => _anzahl = w)" />
-                </KindInhalt>
-            </Formularraster>
+                    </KindInhalt>
+                </Formularraster>
+            </div>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -237,8 +270,21 @@
     [Parameter] public string GbStandort { get; set; } = "Standort und Boden";
     [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";
     [Parameter] public string GbPruefung { get; set; } = "Auslegungsprüfung nach VDI 4640 Blatt 2";
+    /// <summary>Titel der ersten Rubrik — zugleich der Name des Quellsystems.</summary>
     [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
+
+    /// <summary>Titel der zweiten Rubrik.</summary>
     [Parameter] public string RbSonde { get; set; } = "Erdsonde";
+
+    /// <summary>
+    /// Beschriftung des Optionsfeldes IN der Rubrik „Erdkollektor". Es wiederholt
+    /// den Rubriktitel nicht, es sagt, was die Wahl bewirkt — die Sprachausgabe
+    /// liest den Rubriktitel bereits als Überschrift.
+    /// </summary>
+    [Parameter] public string RbKollektorWahl { get; set; } = "Erdkollektor als Quellsystem";
+
+    /// <summary>Beschriftung des Optionsfeldes in der Rubrik „Erdsonde".</summary>
+    [Parameter] public string RbSondeWahl { get; set; } = "Erdsonde als Quellsystem";
     [Parameter] public string LblVerlegetiefe { get; set; } = "Verlegetiefe:";
     [Parameter] public string LblFlaeche { get; set; } = "Fläche:";
     [Parameter] public string LblLaengeSonde { get; set; } = "Länge je Sonde:";
@@ -342,6 +388,13 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    /// <summary>
+    /// Der HTML-Name, den sich die zwei Optionsfelder der Rubriken TEILEN — damit
+    /// bleiben sie für Browser, Tastatur und Sprachausgabe EINE Wahl. Je Instanz
+    /// eindeutig; zwei Dialoge nebeneinander schalteten einander sonst um.
+    /// </summary>
+    private readonly string _quellsystemGruppe = "erdreich-quellsystem-" + Guid.NewGuid().ToString("N");
+
     private bool _sonde;
     private double? _tiefe;
     private double? _flaeche;
@@ -420,10 +473,14 @@
         ? TitelText
         : string.Format(TitelMitWp, Daten.WPName);
 
+    /// <summary>
+    /// Die Wahl des Quellsystems — VOLLSTÄNDIG, obwohl jede Rubrik nur ihren
+    /// Eintrag zeigt: Die Liste ist der Stand der Wahl, nicht die Anzeigeliste.
+    /// </summary>
     private IReadOnlyList<(int Id, string Text)> Quellsysteme => new[]
     {
-        (KOLLEKTOR, RbKollektor),
-        (SONDE, RbSonde)
+        (KOLLEKTOR, RbKollektorWahl),
+        (SONDE, RbSondeWahl)
     };
 
     /// <summary>

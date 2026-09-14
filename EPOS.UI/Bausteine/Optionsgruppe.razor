@@ -16,18 +16,28 @@
 
    Alle Eintraege teilen sich einen Namen, damit der Browser die Gruppe kennt
    und die Pfeiltasten darin wandern. Der Name ist je Instanz eindeutig; sonst
-   wuerden zwei Gruppen auf derselben Seite einander umschalten. *@
+   wuerden zwei Gruppen auf derselben Seite einander umschalten.
 
-<fieldset class="epos-optionsgruppe" role="radiogroup" aria-label="@Bezeichnung">
-    @if (!string.IsNullOrEmpty(Bezeichnung))
+   EIN EINTRAG JE AUFRUF (NurEintrag). Manche Masken stellen die Alternativen
+   nicht untereinander, sondern in GETRENNTE RUBRIKEN: Jede Rubrik traegt ihre
+   eigenen Felder und als erste Zeile ihr Optionsfeld (Waermequelle Erdreich -
+   Erdkollektor und Erdsonde). Dafuer zeichnet der Baustein je Aufruf nur EINEN
+   Eintrag; die Instanzen teilen sich ueber Gruppenname den HTML-Namen und
+   bleiben damit fuer Browser, Tastatur und Sprachausgabe EINE Wahl. Der Rahmen
+   traegt dann kein role="radiogroup" - die Gruppe waere sonst je Rubrik eine
+   eigene; das aria-label bleibt und nennt in jeder Rubrik dieselbe Wahl. *@
+
+<fieldset class="@Klasse" role="@Rolle" aria-label="@Bezeichnung">
+    @if (NurEintrag is null && !string.IsNullOrEmpty(Bezeichnung))
     {
         <legend class="epos-optionsgruppe-titel">@Bezeichnung</legend>
     }
     @foreach (var eintrag in Eintraege)
     {
         int id = eintrag.Id;
+        if (NurEintrag is not null && id != NurEintrag.Value) continue;
         <label class="epos-option">
-            <input class="epos-option-kasten" type="radio" name="@_name"
+            <input class="epos-option-kasten" type="radio" name="@Gruppe"
                    value="@id" checked="@(Auswahl == id)"
                    disabled="@HartGesperrt(id)"
                    aria-disabled="@AriaGesperrt(id)"
@@ -115,8 +125,45 @@
     /// </summary>
     [Parameter] public EventCallback<int> Verweigert { get; set; }
 
+    /// <summary>
+    /// GETEILTER HTML-Name mehrerer Instanzen, die ZUSAMMEN eine Wahl bilden
+    /// (siehe Kopf, „Ein Eintrag je Aufruf"). Leer = der eigene, je Instanz
+    /// eindeutige Name.
+    ///
+    /// <para>Der Wirt vergibt ihn und haelt ihn je Fenster eindeutig — zwei
+    /// Wahlen mit demselben Namen auf derselben Seite schalteten einander
+    /// um.</para>
+    /// </summary>
+    [Parameter] public string Gruppenname { get; set; } = "";
+
+    /// <summary>
+    /// Zeichnet NUR den Eintrag mit dieser Id; <c>null</c> = alle (die Vorgabe).
+    ///
+    /// <para>Fuer Masken, die die Alternativen in getrennte Rubriken stellen:
+    /// Jede Rubrik ruft den Baustein mit ihrem Eintrag und dem gemeinsamen
+    /// <see cref="Gruppenname"/> auf. Die Liste <see cref="Eintraege"/> bleibt
+    /// in jedem Aufruf VOLLSTAENDIG — sie ist der Stand der Wahl, nicht die
+    /// Anzeigeliste.</para>
+    /// </summary>
+    [Parameter] public int? NurEintrag { get; set; }
+
     /// <summary>Je Instanz eindeutiger Gruppenname (siehe Kopf).</summary>
     private readonly string _name = "og" + Guid.NewGuid().ToString("N");
+
+    /// <summary>Der HTML-Name der Wahl: der geteilte, sonst der eigene.</summary>
+    private string Gruppe => string.IsNullOrEmpty(Gruppenname) ? _name : Gruppenname;
+
+    /// <summary>Der Rahmen; die Einzelzeile bekommt ihre eigene Stilklasse.</summary>
+    private string Klasse => NurEintrag is null
+        ? "epos-optionsgruppe"
+        : "epos-optionsgruppe epos-optionsgruppe--einzeln";
+
+    /// <summary>
+    /// Die Gruppenrolle traegt nur der vollstaendige Aufruf. Bei einem Eintrag je
+    /// Rubrik waere sie je Rubrik eine EIGENE Gruppe — die Wahl haelt dann der
+    /// gemeinsame HTML-Name zusammen.
+    /// </summary>
+    private string? Rolle => NurEintrag is null ? "radiogroup" : null;
 
     /// <summary>Der Sperrgrund einer Option, oder leer.</summary>
     private string Grund(int id)

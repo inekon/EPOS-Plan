@@ -1087,6 +1087,26 @@ body {
     color: var(--epos-text-sehr-leise);
 }
 
+/* EIN Eintrag je Rubrik: Der Rahmen haelt nur eine Zeile, also braucht er
+   keinen Abstand zwischen Zeilen. Zusammengehalten wird die Wahl vom
+   gemeinsamen HTML-Namen der Eintraege, nicht vom Rahmen. */
+.epos-optionsgruppe--einzeln {
+    gap: 0;
+}
+
+/* Eine RUBRIK, die gerade nicht gewaehlt ist (Waermequelle Erdreich:
+   Erdkollektor gegen Erdsonde). Ihre Felder bleiben STEHEN - sie sagen, was der
+   andere Zweig braucht, und sie halten ihre Werte fuer den Fall, dass wieder
+   umgeschaltet wird. Leise wie eine gesperrte Option, in derselben Farbe: Ein
+   Anwender unterscheidet "gesperrt" nicht nach der Bauart.
+
+   NUR DIE FELDER: Das Optionsfeld der Rubrik bleibt in voller Farbe - es ist
+   das eine Bedienelement, das hier gerade offensteht. */
+.epos-erdreich-zweig--ruht .epos-feld .epos-feld-text,
+.epos-erdreich-zweig--ruht .epos-feld .epos-einheit {
+    color: var(--epos-text-sehr-leise);
+}
+
 /* Die Erlaeuterung unter einer Option (iU9-W10a.1). Sie steht eingerueckt unter
    dem Wahlknopf, leise wie eine Herleitungszeile, und behaelt ihre Umbrueche:
    Der Vorlaeufer setzte sie mit "\n" von Hand (SIM_BM_TEXT_*). */

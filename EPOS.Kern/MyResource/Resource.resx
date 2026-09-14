@@ -3382,8 +3382,14 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Erdkollektor</value>
   </data>
+  <data name="SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL" xml:space="preserve">
+    <value>Erdkollektor als Quellsystem</value>
+  </data>
   <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
     <value>Erdsonde</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_SONDE_WAHL" xml:space="preserve">
+    <value>Erdsonde als Quellsystem</value>
   </data>
   <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
     <value>Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK" und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.</value>
