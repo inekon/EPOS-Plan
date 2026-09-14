@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
@@ -458,5 +459,148 @@ public class WirtschaftlichkeitSeiteTests : BunitContext
         Assert.Equal(1, angezeigt);
         Assert.Equal(new[] { 1030 }, cut.Instance.Gewaehlte);
         Assert.Contains("1 €", cut.Markup);
+    }
+
+    // =====================================================================
+    //  Das Warnband und der Rechenweg (Auftrag #267, Anwenderbefund 14.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Bänder des Warnbandes über den Kennzahlkarten.</summary>
+    private static IReadOnlyList<IElement> Warnbaender(IRenderedComponent<WirtschaftlichkeitSeite> cut)
+        => cut.FindAll(".epos-wirt-warnband .epos-warnbanner");
+
+    /// <summary>Eine Ansicht mit einer Hinweiszeile, wie die Hülle sie baut: der
+    /// Fehlgrund des Kerns, mit dem Warnzeichen davor, in jeder Spalte.</summary>
+    private static ErgebnisAnsicht MitWarnung(string text, string zweite = "")
+    {
+        ErgebnisAnsicht a = Ansicht();
+        var zeilen = new List<MatrixZeile>(a.Matrix.Zeilen)
+        {
+            new MatrixZeile
+            {
+                Titel = "Hinweis",
+                Zellen = new[] { ErgebnisMatrix.WARN_PRAEFIX + text, ErgebnisMatrix.WARN_PRAEFIX + text }
+            }
+        };
+        if (zweite.Length > 0)
+            zeilen.Add(new MatrixZeile
+            {
+                Titel = "Hinweis",
+                Zellen = new[] { ErgebnisMatrix.WARN_PRAEFIX + zweite, "" }
+            });
+        a.Matrix = new ErgebnisMatrix { Spalten = a.Matrix.Spalten, Zeilen = zeilen };
+        return a;
+    }
+
+    /// <summary>
+    /// <b>DER BEFUND.</b> „Die Energiekosten sind 0 auch nach Berechnung. Kosten sind
+    /// angegeben." Der Grund stand als letzte Zeile „Hinweis" unter zwanzig
+    /// Kennzahlzeilen — gelesen wurde er nicht. Jetzt steht er als Warnband GANZ OBEN,
+    /// vor den Karten, deren „—" er erklärt.
+    /// </summary>
+    [Fact]
+    public void Ein_Fehlgrund_der_Tabelle_steht_als_Warnband_ueber_den_Karten()
+    {
+        const string grund = "Energiekosten nicht bestimmbar: Der elektrischen Erzeugung " +
+                             "ist kein Energieträger zugeordnet.";
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung(grund);
+        var cut = Zeige(stand: stand);
+
+        IReadOnlyList<IElement> baender = Warnbaender(cut);
+        Assert.Single(baender);                       // je Meldung EINES, nicht je Spalte
+        Assert.Contains(grund, baender[0].TextContent);
+
+        // Vor den Karten — sonst liest der Anwender wieder zuerst das „—".
+        Assert.True(cut.Markup.IndexOf("epos-wirt-warnband", StringComparison.Ordinal) <
+                    cut.Markup.IndexOf("epos-kennzahlkachel", StringComparison.Ordinal));
+    }
+
+    /// <summary>Mehrere Hinweise des Kerns kommen mit „ | " aneinandergehängt an —
+    /// im Band wird daraus je eine eigene Zeile.</summary>
+    [Fact]
+    public void Mehrere_Hinweise_werden_zu_je_einem_Band()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Erster Grund. | Zweiter Grund.");
+        var cut = Zeige(stand: stand);
+
+        Assert.Equal(2, Warnbaender(cut).Count);
+        Assert.Equal(new[] { "Erster Grund.", "Zweiter Grund." }, cut.Instance.Warnungen);
+    }
+
+    /// <summary>
+    /// <b>Der Weg steht neben dem Grund.</b> Zweiter Befund derselben Abnahme: Die
+    /// Fußzeile verlangte „bitte neu berechnen", der Knopf „Berechnen" lag unter der
+    /// langen Tabelle außer Sicht. Der Knopf im Band startet denselben Lauf.
+    /// </summary>
+    [Fact]
+    public async Task Das_Warnband_traegt_den_Rechenknopf()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht = MitWarnung("Energiekosten nicht bestimmbar.");
+        int laeufe = 0;
+        var cut = Zeige(p => p.Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m)
+            => { laeufe++; return Task.FromResult(new LaufErgebnis()); }), stand);
+
+        IElement knopf = cut.Find(".epos-wirt-warnband .epos-leiste button");
+        Assert.Equal("Neu berechnen", knopf.TextContent.Trim());
+        await cut.InvokeAsync(() => knopf.Click());
+
+        Assert.Equal(1, laeufe);
+    }
+
+    /// <summary>
+    /// Ohne Warnung kein Band — und ohne Band kein zweiter Rechenknopf. Die Seite
+    /// bleibt ruhig, solange nichts zu sagen ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Warnung_gibt_es_kein_Band()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-wirt-warnband"));
+        Assert.Empty(cut.Instance.Warnungen);
+    }
+
+    /// <summary>
+    /// „Parameter gespeichert — bitte neu berechnen." war eine Aufforderung ohne Weg.
+    /// Nach dem Schließen eines Unterdialogs steht das Band mit dem Rechenknopf da,
+    /// auch wenn die Tabelle keine Warnung führt.
+    /// </summary>
+    [Fact]
+    public async Task Nach_dem_Speichern_eines_Unterdialogs_steht_der_Rechenknopf_oben()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) => LeererSatz())
+            .Add(x => x.Nachlauf, (WirtschaftlichkeitSeite.Unterdialog a, bool ok)
+                => ok ? "Parameter gespeichert — bitte neu berechnen." : "")
+            .Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m)
+                => Task.FromResult(new LaufErgebnis())));
+
+        Assert.Empty(cut.FindAll(".epos-wirt-warnband"));
+
+        Fussknoepfe(cut)[3].Click();                          // Parameter
+        var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();
+        await cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new WirtParameterErgebnis(true, WirtParameterSprung.Keiner)));
+
+        Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
+        Assert.Contains("bitte neu berechnen", cut.Find(".epos-wirt-warnband .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Eine veraltete Statuszeile (Warnzeichen der Hülle) stellt dasselbe Band auf —
+    /// die angezeigten Zahlen stammen dann aus einem älteren Lauf.
+    /// </summary>
+    [Fact]
+    public void Eine_veraltete_Statuszeile_stellt_den_Rechenknopf_auf()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Statuszeile = "⚠ Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand.";
+        var cut = Zeige(p => p.Add(x => x.Berechnen, (IReadOnlyList<int> v, Action<Laufschritt> m)
+            => Task.FromResult(new LaufErgebnis())), stand);
+
+        Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
     }
 }
