@@ -10673,6 +10673,12 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KDLG_BASIS_GRUND_KONSERVE" xml:space="preserve">
     <value>the reference quantity of this type is not derived, it has to be maintained</value>
   </data>
+  <data name="KDLG_HERLEITUNG_SOLAR_KW" xml:space="preserve">
+    <value>{0} kW/m² × {1} m² × {2} modules = {3} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_SOLAR_KW_FLAECHE" xml:space="preserve">
+    <value>{0} kW/m² × {1} m² aperture area = {2} kW</value>
+  </data>
   <data name="KFAK_TITEL" xml:space="preserve">
     <value>Cost factor administration</value>
   </data>

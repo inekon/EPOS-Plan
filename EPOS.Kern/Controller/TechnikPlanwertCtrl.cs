@@ -698,6 +698,18 @@ namespace WindowsFormsApplication1
                 return kwp > 0 ? kwp : (double?)null;
             }
 
+            // ------------------------------------------- ANWENDERBEFUND 14.09.2026
+            // Kostenverwaltung, Solarthermie, Bemessung „je kW Leistung", Satz
+            // 700 €/kW: Betrag netto 0. Grund war diese Landkarte — die
+            // Solarthermie führte hier NUR ihre Fläche, und eine Leistung gab es
+            // für sie nirgends. Die Kollektortabelle hat dafür auch keine Spalte
+            // (Modulflaeche, Aperturflaeche, h0, k1, k2, Kdir, Kdfu — keine
+            // Leistung), deshalb wird sie GERECHNET statt gelesen
+            // (<see cref="KollektorfeldKw"/>). Genau wie bei der Photovoltaik ist
+            // das ein eigener Zweig, kein Spaltenname.
+            if (IstSolarLeistungsart(komponentenID, bemessung))
+                return KollektorfeldKw(projektID, idAnlage);
+
             bool malModulanzahl;          // Gerätewert × Stückzahl der Anlagenzeile
             string geraetespalte = Geraetespalte(komponentenID, bemessung, out malModulanzahl);
             if (geraetespalte == null) return null;
@@ -801,6 +813,7 @@ namespace WindowsFormsApplication1
         internal static bool KenntBaugroesse(int komponentenID, string bemessung)
         {
             if (IstPvLeistungsart(komponentenID, bemessung)) return true;
+            if (IstSolarLeistungsart(komponentenID, bemessung)) return true;
 
             bool egal;
             return Geraetespalte(komponentenID, bemessung, out egal) != null;
@@ -817,6 +830,137 @@ namespace WindowsFormsApplication1
             return komponentenID == 3 &&
                    (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWP, StringComparison.Ordinal) ||
                     string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal));
+        }
+
+        // ================================================ ANWENDERBEFUND 14.09.2026
+        // DIE LEISTUNG DES KOLLEKTORFELDS — an EINER Stelle.
+        //
+        // Ein Solarkollektor trägt keine Nennleistung: Was er liefert, hängt an
+        // Einstrahlung und Temperaturen und wird im Lauf Stunde für Stunde
+        // gerechnet (SimulationSolarthermie, spezifische Leistung in W/m²). Die
+        // Gerätetabelle führt deshalb keine Leistungsspalte, und die Simulation
+        // kennt keine Nenngröße, die man hier übernehmen könnte — geprüft am
+        // 14.09.2026 gegen Tab_Solarkollektoren, SimulationSolarthermie und die
+        // Hilfeseite Berechnung/Solarthermie.
+        //
+        // Für Kosten je kW braucht es trotzdem eine feste Bezugsgröße. Dafür gilt
+        // die verbreitete Konvention der Solarthermie-Statistik (Solar Keymark /
+        // europäische Solarthermie-Statistik: „1 m² Kollektorfläche ≙ 0,7 kW_th"),
+        // mit der Fläche, Förderprogramme und Marktzahlen in Leistung umgerechnet
+        // werden. Sie ist eine VEREINBARUNG, keine Messgröße — deshalb steht sie
+        // hier als benannte Konstante mit Quelle und nicht als Zahl im Dialog, und
+        // deshalb nennt der Herleitungstext sie dem Anwender
+        // (<see cref="KollektorfeldHerleitung"/>).
+        // ==========================================================================
+
+        /// <summary>
+        /// Thermische Nennleistung je m² APERTURFLÄCHE [kW/m²] — die Konvention
+        /// „1 m² ≙ 0,7 kW_th" der europäischen Solarthermie-Statistik
+        /// (Solar Keymark). Sie ist die EINE Definition der Leistung eines
+        /// Kollektorfelds in EPOS-Plan.
+        /// </summary>
+        internal const double KOLLEKTOR_KW_JE_M2 = 0.7;
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> der Solarthermie — dieselbe feste
+        /// Nummer wie in <see cref="KomponentenName"/>.</summary>
+        private const int KOMPONENTE_SOLARTHERMIE = 4;
+
+        /// <summary>
+        /// Die thermische Nennleistung des Kollektorfelds [kW] — Aperturfläche je
+        /// Modul × Modulanzahl × <see cref="KOLLEKTOR_KW_JE_M2"/>; <c>null</c>, wenn
+        /// es kein Kollektorfeld gibt oder die Fläche 0 ist (dann gilt wie überall
+        /// der erfasste Betrag, und der Dialog nennt den Grund).
+        /// </summary>
+        /// <param name="idAnlage">&gt; 0 = nur diese Anlagenzeile; 0 = das ganze Projekt.</param>
+        internal static double? KollektorfeldKw(int projektID, int idAnlage)
+        {
+            double? m2 = BaugroesseSumme(projektID, KOMPONENTE_SOLARTHERMIE,
+                                         DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR, idAnlage);
+            return m2.HasValue ? m2.Value * KOLLEKTOR_KW_JE_M2 : (double?)null;
+        }
+
+        /// <summary>
+        /// Der HERLEITUNGSTEXT zur Leistung des Kollektorfelds — „0,7 kW/m² ×
+        /// 2,50 m² × 10 Module = 17,50 kW". Eine GERECHNETE Bezugsgröße muss
+        /// nachvollziehbar sein; ohne den Satz stünde im Dialog eine Zahl, die in
+        /// keiner Gerätemaske steht. Leer, wenn es nichts herzuleiten gibt.
+        /// <para>Mehrere Kollektorfelder (Projektsicht) werden zur Gesamtfläche
+        /// zusammengefasst — die Einzelmodule stünden sonst zu zehnt im Kurztext.</para>
+        /// </summary>
+        internal static string KollektorfeldHerleitung(int projektID, int idAnlage)
+        {
+            double? kw = KollektorfeldKw(projektID, idAnlage);
+            if (!kw.HasValue) return "";
+
+            double apertur = 0, anzahl = 0;
+            int felder = 0;
+            try
+            {
+                var ps = new List<DbParam> { new DbParam("@p", projektID) };
+                string sql = "SELECT g.[Aperturflaeche], a.[Kollektormodulanzahl] " +
+                             "FROM [Tab_Solarkollektoren] AS g " +
+                             "INNER JOIN Tab_Energieanlagen AS a ON g.ID = a.[ID_Solar] " +
+                             "WHERE a.ID_Projekt = ?";
+                if (idAnlage > 0) { sql += " AND a.ID = ?"; ps.Add(new DbParam("@a", idAnlage)); }
+
+                DataTable dt = DataRepository.GetDataTable(sql, ps.ToArray());
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        double a = r[0] == DBNull.Value ? 0 : Convert.ToDouble(r[0]);
+                        double n = r[1] == DBNull.Value ? 0 : Convert.ToDouble(r[1]);
+                        if (a <= 0 || n <= 0) continue;
+                        felder++; apertur = a; anzahl = n;
+                    }
+            }
+            catch { felder = 0; }
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string satz = KOLLEKTOR_KW_JE_M2.ToString("0.0#", k);
+            string leistung = kw.Value.ToString("#,##0.00", k);
+
+            // EIN Feld: die Herleitung Modul für Modul. Mehrere: die Gesamtfläche.
+            if (felder == 1)
+                return string.Format(k, MyResource.Resource.KDLG_HERLEITUNG_SOLAR_KW,
+                                     satz, apertur.ToString("#,##0.00", k),
+                                     anzahl.ToString("#,##0.###", k), leistung);
+
+            return string.Format(k, MyResource.Resource.KDLG_HERLEITUNG_SOLAR_KW_FLAECHE,
+                                 satz,
+                                 (kw.Value / KOLLEKTOR_KW_JE_M2).ToString("#,##0.00", k),
+                                 leistung);
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 14.09.2026: der HERLEITUNGSTEXT zu einer GERECHNETEN
+        /// Bezugsgröße — leer, wo die Größe unmittelbar am Gerät steht und sich
+        /// deshalb von selbst erklärt (Ptherm, Nennleistung, Energie, Aperturfläche).
+        /// <para>Die EINE Einstiegstür für Dialog und Nachweis: Wer eine Bezugsgröße
+        /// anzeigt, fragt hier nach ihrer Herkunft, statt die Formel ein zweites Mal
+        /// zu schreiben.</para>
+        /// </summary>
+        internal static string BaugroesseHerleitung(int projektID, int komponentenID,
+                                                    string bemessung, int idAnlage)
+        {
+            if (IstSolarLeistungsart(komponentenID, bemessung))
+                return KollektorfeldHerleitung(projektID, idAnlage);
+            return "";
+        }
+
+        /// <summary>
+        /// ANWENDERBEFUND 14.09.2026: Die beiden THERMISCHEN Leistungsarten an der
+        /// Solarthermie. Die Regel der H4c gilt unverändert — ein Gewerk rechnet,
+        /// wenn es GENAU EINE Größe führt, die die Art meint: Das Kollektorfeld hat
+        /// nur eine Leistung, und sie ist thermisch. „je kW Leistung" und „je kW
+        /// Heizleistung" meinen hier also dasselbe, so wie bei Kessel und Wärmepumpe.
+        /// „je kWp" und „je kW elektrisch" bleiben dagegen fremd — ein Kollektor
+        /// erzeugt keinen Strom.
+        /// </summary>
+        private static bool IstSolarLeistungsart(int komponentenID, string bemessung)
+        {
+            return komponentenID == KOMPONENTE_SOLARTHERMIE &&
+                   (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal));
         }
 
         /// <summary>Anzeigename einer Kostenbasis (lokalisiert).</summary>
