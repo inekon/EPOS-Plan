@@ -9002,6 +9002,15 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
     <value>Kontext: Projekt {0}</value>
   </data>
+  <data name="KDLG_ET_KONTEXT_KOMPONENTE" xml:space="preserve">
+    <value>für {0}: nur Gruppe {1}</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_OHNE_TRAEGER" xml:space="preserve">
+    <value>für {0}: kein eigener Energieträger</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_ALLE" xml:space="preserve">
+    <value>für {0}: alle Energieträger</value>
+  </data>
   <data name="KDLG_ET_LISTE" xml:space="preserve">
     <value>Energieträger</value>
   </data>
@@ -9514,6 +9523,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>nicht zugeordnet</value>
+  </data>
+  <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
+    <value>passt nicht zur Komponente</value>
   </data>
   <data name="KDLG_ET_VERWENDET_VON" xml:space="preserve">
     <value>verwendet von: {0}</value>

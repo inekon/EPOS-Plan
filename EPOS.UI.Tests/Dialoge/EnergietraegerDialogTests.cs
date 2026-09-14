@@ -979,4 +979,127 @@ public class EnergietraegerDialogTests : EposBunitContext
         cut.WaitForAssertion(() =>
             Assert.Contains("nicht mehr vorhanden", cut.Instance.Meldung));
     }
+
+    // =====================================================================
+    // Komponentenkontext (Anwenderwunsch 14.09.2026, Auftrag 268)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Kopfzeile nennt, wofür die Liste eingeengt ist — die Hülle baut den Text,
+    /// der Dialog zeigt ihn.
+    /// </summary>
+    [Fact]
+    public void Die_Kopfzeile_nennt_die_Komponente_und_ihre_Gruppe()
+    {
+        var cut = Zeige(katalog: false, mehr: p => p
+            .Add(x => x.KontextText, "Kontext: Projekt 1027 — für Wärmepumpe: nur Gruppe Strom"));
+
+        Assert.Contains("für Wärmepumpe: nur Gruppe Strom",
+                        cut.Find(".epos-kontextzeile").TextContent);
+    }
+
+    /// <summary>
+    /// Mit Komponentenkontext kommt die Liste bereits eingeengt herein — der Dialog
+    /// zeigt, was er bekommt, und die leere Gruppe fällt samt Kopf weg.
+    /// </summary>
+    [Fact]
+    public void Mit_Komponentenkontext_stehen_nur_die_zulaessigen_Traeger_in_der_Liste()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Strom"),
+            new(60, "Elektrische Energie")
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        Assert.Equal(new[] { "Elektrische Energie" }, Eintraege(cut));
+        Assert.Equal(new[] { "Strom" }, Gruppenkoepfe(cut));
+    }
+
+    /// <summary>
+    /// Ein zugeordneter Träger, der nicht zur Komponente passt, VERSCHWINDET NICHT — er
+    /// steht markiert da, samt Hinweis. Wegfiltern hieße, eine falsche Zuordnung zu
+    /// verstecken.
+    /// </summary>
+    [Fact]
+    public void Ein_unzulaessiger_zugeordneter_Traeger_steht_markiert_in_der_Liste()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Gas"),
+            new(63, "Erdgas E", "", true, false),
+            new(null, "Strom"),
+            new(60, "Elektrische Energie")
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.PasstNichtText, "passt nicht zur Komponente");
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        var eintraege = cut.FindAll(".epos-traeger-eintrag");
+        Assert.Equal(2, eintraege.Count);
+        Assert.Contains("Erdgas E ⚠ passt nicht zur Komponente", eintraege[0].TextContent);
+        Assert.Contains("epos-traeger-eintrag--offen", eintraege[0].ClassName);
+        Assert.DoesNotContain("passt nicht", eintraege[1].TextContent);
+
+        // Wählbar bleibt er - sonst käme man an seine Preise nicht mehr heran.
+        eintraege[0].Click();
+        Assert.Equal(63, _geladen);
+    }
+
+    /// <summary>
+    /// Beide Markierungen zugleich: nicht zugeordnet UND nicht passend.
+    /// </summary>
+    [Fact]
+    public void Nicht_zugeordnet_und_nicht_passend_stehen_nebeneinander()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Gas"),
+            new(63, "Erdgas E", "verwendet von: Heizkessel „Vitocrossal“", false, false)
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.NichtZugeordnetText, "nicht zugeordnet");
+            p.Add(x => x.PasstNichtText, "passt nicht zur Komponente");
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        string text = cut.FindAll(".epos-traeger-eintrag")[0].TextContent;
+        Assert.Contains("nicht zugeordnet", text);
+        Assert.Contains("passt nicht zur Komponente", text);
+    }
+
+    /// <summary>
+    /// „Aus Katalog übernehmen…" bietet nur, was die Hülle hereingibt — mit
+    /// Komponentenkontext also nur die zulässigen Katalogträger.
+    /// </summary>
+    [Fact]
+    public void Die_Uebernahme_bietet_nur_die_hereingegebenen_Traeger()
+    {
+        var cut = Zeige(katalog: false, mehr: p => p
+            .Add(x => x.FreieLaden, () => new[] { (58, "Strom › Elektrische Energie 2") }));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+
+        Assert.Single(cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]"));
+        Assert.Contains("Strom › Elektrische Energie 2", cut.Markup);
+        Assert.DoesNotContain("Erdgas", cut.Find(".epos-mehrfachauswahl-liste").TextContent);
+    }
 }

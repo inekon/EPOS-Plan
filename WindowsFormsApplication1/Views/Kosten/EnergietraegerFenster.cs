@@ -28,7 +28,15 @@ namespace WindowsFormsApplication1
         /// <param name="projektId">0 = Katalogkontext (Stammdaten).</param>
         /// <param name="traegerId">Vorwahl (KD6 § 9: „Energiekosten…" springt
         /// direkt auf den Träger der Komponente); 0 = der erste.</param>
-        internal static void Oeffnen(IWin32Window besitzer, int projektId, int traegerId = 0)
+        /// <param name="erzeugerart">Komponente, aus der heraus geöffnet wurde
+        /// (<c>DbWerte.ERZEUGER_*</c>); <c>null</c> = ohne Komponentenkontext — so ruft
+        /// der Katalogeinstieg des Menüs. Die Einengung auf die zulässigen Träger rechnet
+        /// die Hülle, nicht dieser Adapter (Auftrag 268); im Projektkontext geht der
+        /// Komponentenbezug über die Kostenseite, die die Hülle unmittelbar füllt.</param>
+        /// <param name="geraeteId">Gerätezeile des Brenners (<c>Tab_Heizkessel.ID</c>
+        /// bzw. <c>Tab_BHKW.ID</c>); 0 = unbekannt.</param>
+        internal static void Oeffnen(IWin32Window besitzer, int projektId, int traegerId = 0,
+                                     string erzeugerart = null, int geraeteId = 0)
         {
             // Die Hüllen-INSTANZ hält den Bearbeitungsstand; sie lebt über die
             // Rückrufe ihres Parametersatzes so lange wie das Fenster.
@@ -36,7 +44,8 @@ namespace WindowsFormsApplication1
 
             BlazorDialogForm<EnergietraegerDialog> dlg = null;
 
-            var werte = new Dictionary<string, object>(huelle.Gaben(traegerId))
+            var werte = new Dictionary<string, object>(
+                huelle.Gaben(traegerId, erzeugerart, geraeteId))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
                 {

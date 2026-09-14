@@ -14,21 +14,26 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class ErzeugerTraegerHuelle
     {
-        /// <summary>Der ganze Katalog, sortiert nach Gruppe und Name — wie die Verwaltung ihn listet.</summary>
-        internal static IReadOnlyList<EnergietraegerWahl.Eintrag> Katalog()
+        /// <summary>
+        /// Der Katalog für die Trägerwahl EINER Komponente, sortiert nach Gruppe und Name —
+        /// wie die Verwaltung ihn listet.
+        ///
+        /// <para><b>Auftrag 268:</b> Welche Gruppen eine Komponente überhaupt haben darf,
+        /// entscheidet der Kern (<c>EnergietraegerZulaessigkeit</c>) — eine Wärmepumpe
+        /// bekommt Strom, sonst nichts. Hier steht nur die Umsetzung in die Einträge des
+        /// Bausteins; ohne <paramref name="erzeugerart"/> bleibt der Katalog vollständig.</para>
+        /// </summary>
+        /// <param name="erzeugerart">Persistenzwert aus <c>DbWerte.ERZEUGER_*</c>;
+        /// <c>null</c> = keine Einengung.</param>
+        /// <param name="geraeteId">Gerätezeile des Brenners; 0 = unbekannt.</param>
+        internal static IReadOnlyList<EnergietraegerWahl.Eintrag> Katalog(
+            string erzeugerart = null, int geraeteId = 0)
         {
             var liste = new List<EnergietraegerWahl.Eintrag>();
             try
             {
-                List<EnergyCarrier> traeger = KostenSummenCtrl.GetAllCarriers(0);
-                traeger.Sort((a, b) =>
-                {
-                    int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
-                                           StringComparison.CurrentCultureIgnoreCase);
-                    return g != 0 ? g : string.Compare(a.Name ?? "", b.Name ?? "",
-                                           StringComparison.CurrentCultureIgnoreCase);
-                });
-                foreach (EnergyCarrier c in traeger)
+                foreach (EnergyCarrier c in
+                         EnergietraegerZulaessigkeit.ZulaessigerKatalog(erzeugerart, geraeteId))
                     liste.Add(new EnergietraegerWahl.Eintrag(c.ID, c.GroupCode ?? "", c.Name ?? ""));
             }
             catch { }
