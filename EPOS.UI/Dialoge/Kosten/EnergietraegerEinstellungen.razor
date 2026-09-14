@@ -104,6 +104,21 @@
                 <Kohaerenzzeile Text="@($"{LabelPreisJeKwh} {Stand.PreisJeKwh}")" />
                 <Herleitungszeile Text="@($"{LabelFormel} {Stand.FormelText}")" />
             }
+
+            @* B3: Die Katalogwerte der Administration in das Projekt holen — eine
+               einmalige Kopie. Geschrieben wird erst mit „Speichern"/„OK", damit
+               daraus eine Historienzeile wird. Muster: Knöpfe im Fuß der Gruppe. *@
+            @if (Stand.MitKatalogUebernahme)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => KatalogUebernehmen.InvokeAsync()">@KatalogUebernehmenText</button>
+                </div>
+                @if (!string.IsNullOrEmpty(Stand.UebernahmeHinweis))
+                {
+                    <Herleitungszeile Text="@Stand.UebernahmeHinweis" />
+                }
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -256,7 +271,7 @@
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
                                     Property="@(z => z.GueltigAb)" Title="@SpalteGueltigAb" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
-                                    Property="@(z => z.Heizwert)" Title="@SpalteHeizwert" />
+                                    Property="@(z => z.Heizwert)" Title="@SpalteHeizwertMitEinheit" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
                                     Property="@(z => z.Basiseinheit)" Title="@SpalteBasisEinheit" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
@@ -267,6 +282,11 @@
                                     Property="@(z => z.Leistungspreis)" Title="@SpalteLeistungspreis" />
                 </KindInhalt>
             </Raster>
+
+            @if (!string.IsNullOrEmpty(Stand.HistorieHinweis))
+            {
+                <Herleitungszeile Text="@Stand.HistorieHinweis" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 </div>
@@ -342,6 +362,12 @@
     /// <summary>„💾 Speichern" der Trägerkarte.</summary>
     [Parameter] public EventCallback Speichern { get; set; }
 
+    /// <summary>
+    /// B3: „Katalogwerte übernehmen" — holt die Werte der Administration in die
+    /// Felder. Eine einmalige Kopie; geschrieben wird erst mit „Speichern".
+    /// </summary>
+    [Parameter] public EventCallback KatalogUebernehmen { get; set; }
+
     // ---- Texte ----------------------------------------------------------
 
     /// <summary>Beschriftung des ersten Reiters (Vorlaeufer: Reiterseite 1).</summary>
@@ -394,10 +420,25 @@
     [Parameter] public string SpeichernText { get; set; } = "💾 Speichern";
     [Parameter] public string SpalteGueltigAb { get; set; } = "Gültig ab";
     [Parameter] public string SpalteHeizwert { get; set; } = "Heizwert";
+
+    /// <summary>Derselbe Spaltenkopf MIT Einheit — <c>{0}</c> ist kWh/&lt;Abrechnungseinheit&gt;.</summary>
+    [Parameter] public string SpalteHeizwertVorlage { get; set; } = "Heizwert [{0}]";
+
     [Parameter] public string SpalteBasisEinheit { get; set; } = "Basis Einheit";
     [Parameter] public string SpalteArbeitspreis { get; set; } = "Arbeitspreis";
     [Parameter] public string SpalteGrundpreis { get; set; } = "Grundpreis [€/a]";
     [Parameter] public string SpalteLeistungspreis { get; set; } = "Leistungspreis";
+    [Parameter] public string KatalogUebernehmenText { get; set; } = "Katalogwerte übernehmen";
+
+    /// <summary>
+    /// Der Spaltenkopf der Historie nennt die Einheit des Heizwerts
+    /// (<c>kWh/&lt;Abrechnungseinheit&gt;</c>) — ohne Heizwert bleibt es beim
+    /// nackten Wort, denn dann führt der Träger keinen.
+    /// </summary>
+    private string SpalteHeizwertMitEinheit
+        => Stand.MitHeizwert && !string.IsNullOrEmpty(Stand.EinheitHeizwert)
+            ? string.Format(SpalteHeizwertVorlage, Stand.EinheitHeizwert)
+            : SpalteHeizwert;
 
     private (int Id, string Text)[] LEISTUNGSMODI
         => new[] { (0, ModusJahrText), (1, ModusMonatText) };

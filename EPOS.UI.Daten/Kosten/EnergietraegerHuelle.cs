@@ -140,6 +140,8 @@ namespace WindowsFormsApplication1
                 ["RegelNeu"] = EventCallback.Factory.Create(new object(), (Action)RegelNeu),
                 ["RegelAbschalten"] = new Func<UmrechnungsregelZeile, bool, bool>(DarfAbschalten),
                 ["InArbeitspreis"] = EventCallback.Factory.Create(new object(), (Action)ArbeitspreisAusBestandteilen),
+                ["KatalogUebernehmen"] = EventCallback.Factory.Create(new object(),
+                    (Action)KatalogwerteUebernehmen),
                 ["AufschlagAnwenden"] = EventCallback.Factory.Create<bool>(new object(), AufschlagAnwenden),
                 ["Speichern"] = new Func<bool>(Speichern),
                 ["SpeichernGrund"] = new Func<string>(SpeichernGrund),
@@ -373,6 +375,13 @@ namespace WindowsFormsApplication1
             var a = new EnergietraegerAnsicht { Stand = _stand };
             if (_stand == null || _gewaehlt == null) return a;
 
+            // B1 (Anwenderbefund 14.09.2026, stehen gebliebene Formelzeile):
+            // Dies ist der Weg JEDER Feldaenderung - die Komponente meldet
+            // „Geaendert", der Wirt ruft „Nachrechnen". Ohne das Nachziehen hier
+            // blieben Basiswerte, Formel- und Effektivzeile auf dem Stand des
+            // Ladens stehen, und gespeichert wurde der ALTE Wert.
+            Nachziehen();
+
             a.ArbeitspreisCtKwh = ArbeitspreisCtKwh();
             a.StammName = _gewaehlt.Name ?? "";
             a.StammGruppe = GruppenIndex(_gewaehlt.GroupCode);
@@ -485,7 +494,10 @@ namespace WindowsFormsApplication1
                 MitFormel = _gewaehlt.HasHi,
                 Basiseinheit = _gewaehlt.BillingUnit ?? "",
                 GueltigAb = DateOnly.FromDateTime(DateTime.Now),
-                EinheitGrundpreis = "€/a"
+                EinheitGrundpreis = "€/a",
+                // B3: Katalogwerte holen kann nur, wer ein Projekt pflegt - im
+                // Katalog SIND die Felder die Katalogwerte.
+                MitKatalogUebernahme = _projektId > 0
             };
 
             _preisbasen = EnergietraegerPreisCtrl.Preisbasen(
@@ -512,9 +524,6 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = projekt.SO2 ?? _gewaehlt.SO2;
                 stand.AltNOx = projekt.NOx ?? _gewaehlt.NOx;
 
-                _baseHi = stand.Heizwert;
-                _baseHs = stand.Brennwert;
-
                 int idUmrechnung = projekt.IdUmrechnung ?? -1;
                 string ziel = idUmrechnung > 0 ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
                 stand.PreisbasisId = IndexZuEinheit(ziel);
@@ -530,11 +539,14 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = _gewaehlt.SO2;
                 stand.AltNOx = _gewaehlt.NOx;
 
-                _baseHi = stand.Heizwert;
-                _baseHs = stand.Brennwert;
                 stand.PreisbasisId = IndexZuEinheit(_gewaehlt.BillingUnit);
             }
 
+            // DIE BASISWERTE SIND, WAS IN DER DATENBANK STEHT - je
+            // ABRECHNUNGSEINHEIT. Heiz- und Brennwert bleiben es auch in der
+            // Anzeige (Stoffwerte); nur der Arbeitspreis folgt der Preisbasis.
+            _baseHi = stand.Heizwert;
+            _baseHs = stand.Brennwert;
             _baseWork = stand.Arbeitspreis;
             _basePower = stand.Leistungspreis;
             _baseGround = stand.Grundpreis;
@@ -543,17 +555,48 @@ namespace WindowsFormsApplication1
             _dbHi = _baseHi; _dbHs = _baseHs;
             _dbCO2 = stand.AltCO2; _dbSO2 = stand.AltSO2; _dbNOx = stand.AltNOx;
 
+            _stand = stand;
+            AnzeigeAusBasis();
+
             stand.LeistungsModusMonat = string.Equals(
                 EnergietraegerPreisCtrl.LeistungsModus(_gewaehlt.ID),
                 DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal);
 
             _regeln = EnergieEinheitenPruefung.RegelnDesBrennstoffs(_gewaehlt.ID_Brennstoff);
-            _stand = stand;
             stand.ReihenStatus = ReihenStatus();
 
             BloeckeAufbauen();
             EmissionenAufbauen();
+            HistorieLaden();
             Nachziehen();
+        }
+
+        /// <summary>
+        /// Die ANZEIGEWERTE aus den Basiswerten (B1): Heizwert, Brennwert,
+        /// Leistungspreis und Grundpreis stehen unverändert da — allein der
+        /// Arbeitspreis wird in die gewählte Preisbasis gerechnet.
+        /// </summary>
+        private void AnzeigeAusBasis()
+        {
+            if (_stand == null) return;
+
+            _stand.Heizwert = _baseHi;
+            _stand.Brennwert = _baseHs;
+            _stand.Leistungspreis = _basePower;
+            _stand.Grundpreis = _baseGround;
+            _stand.Arbeitspreis = EnergietraegerPreiskarte.AnzeigeArbeitspreis(_baseWork, Faktor());
+        }
+
+        /// <summary>
+        /// Der Faktor der gewählten Preisbasis — Abrechnungseinheit → Preisbasis.
+        /// Ein Träger ohne Heizwert rechnet unmittelbar in kWh ab und kennt
+        /// keinen Faktor.
+        /// </summary>
+        private double Faktor()
+        {
+            if (_gewaehlt == null || !_gewaehlt.HasHi) return 1.0;
+            EnergietraegerPreisCtrl.Preisbasis b = AktuelleBasis();
+            return b != null && b.Faktor != 0.0 ? b.Faktor : 1.0;
         }
 
         private int? IndexZuEinheit(string einheit)
@@ -806,22 +849,25 @@ namespace WindowsFormsApplication1
         {
             if (_stand == null || _gewaehlt == null) return;
 
-            EnergietraegerPreisCtrl.Preisbasis basis = AktuelleBasis();
-            string einheit = basis != null && !string.IsNullOrEmpty(basis.Einheit)
-                ? basis.Einheit : _stand.Basiseinheit;
-
-            _stand.EinheitArbeitspreis = _gewaehlt.HasHi ? "€/" + einheit : "€ / kWh";
-            _stand.EinheitHeizwert = "kWh/" + einheit;
-            _stand.EinheitBrennwert = "kWh/" + einheit;
-            _stand.EinheitLeistungspreis = _stand.LeistungsModusMonat ? "€/(kW·Monat)" : "€/(kW·a)";
+            // DIE EINHEITEN (B1): Heiz- und Brennwert tragen IMMER
+            // kWh/<Abrechnungseinheit> - sie sind Stoffwerte und folgen der
+            // Preisbasis nicht. Der Leistungspreis steht in €/(kW·a) bzw.
+            // €/(kW·Monat), der Grundpreis in €/a. Allein der ARBEITSPREIS
+            // folgt der Klappliste.
+            _stand.EinheitArbeitspreis = EnergietraegerPreiskarte.ArbeitspreisEinheit(
+                AktuelleEinheit(), _gewaehlt.HasHi);
+            _stand.EinheitHeizwert = EnergietraegerPreiskarte.HeizwertEinheit(_abrechnungseinheit);
+            _stand.EinheitBrennwert = _stand.EinheitHeizwert;
+            _stand.EinheitLeistungspreis = EnergietraegerPreiskarte.LeistungspreisEinheit(
+                _stand.LeistungsModusMonat);
 
             // Basiswerte aus den Anzeigewerten (der Vorläufer hielt sie in den
-            // Value-Changed-Handlern nach).
-            double faktor = basis != null ? basis.Faktor : 1.0;
-            _baseWork = _gewaehlt.HasHi ? _stand.Arbeitspreis * faktor : _stand.Arbeitspreis;
-            _baseHi = _stand.Heizwert * faktor;
-            _baseHs = _stand.Brennwert * faktor;
-            _basePower = _gewaehlt.HasPowerPrice ? _stand.Leistungspreis * faktor : _stand.Leistungspreis;
+            // Value-Changed-Handlern nach) - nur der Arbeitspreis wird dabei
+            // zurückgerechnet.
+            _baseWork = EnergietraegerPreiskarte.BasisArbeitspreis(_stand.Arbeitspreis, Faktor());
+            _baseHi = _stand.Heizwert;
+            _baseHs = _stand.Brennwert;
+            _basePower = _stand.Leistungspreis;
             _baseGround = _stand.Grundpreis;
 
             FormelSetzen();
@@ -830,43 +876,33 @@ namespace WindowsFormsApplication1
             EmissionsSummeSetzen();
         }
 
-        /// <summary>Wortgleich aus <c>UpdatePricePerKWh</c>.</summary>
+        /// <summary>
+        /// Die Formelgruppe — gerechnet wird über die BASISWERTE (Arbeitspreis
+        /// je Abrechnungseinheit ÷ Heizwert je Abrechnungseinheit), die Rechnung
+        /// selbst steht im Kern (<see cref="EnergietraegerPreiskarte.Formel"/>).
+        /// </summary>
         private void FormelSetzen()
         {
-            if (!_gewaehlt.HasHi)
-            {
-                _stand.PreisJeKwh = _stand.Arbeitspreis.ToString("N4", CultureInfo.CurrentCulture) + " €";
-                _stand.FormelText = "Direktabrechnung nach kWh";
-                return;
-            }
-            if (_stand.Heizwert <= 0) return;
+            EnergietraegerPreiskarte.Formelzeile z = EnergietraegerPreiskarte.Formel(
+                _gewaehlt.HasHi, _abrechnungseinheit, AktuelleEinheit(), _baseWork, _baseHi);
+            if (z == null) return;
 
-            double ergebnis = _stand.Arbeitspreis / _stand.Heizwert;
-            _stand.PreisJeKwh = ergebnis.ToString("N4", CultureInfo.CurrentCulture) + " €";
-            _stand.FormelText =
-                _stand.Arbeitspreis.ToString("N2", CultureInfo.CurrentCulture) + " € ÷ " +
-                _stand.Heizwert.ToString("N2", CultureInfo.CurrentCulture) + " kWh = " +
-                ergebnis.ToString("N4", CultureInfo.CurrentCulture) + " €/kWh";
+            _stand.PreisJeKwh = z.PreisJeKwh;
+            _stand.FormelText = z.Text;
         }
 
-        /// <summary>Wortgleich aus <c>AktualisiereEffektivUndVerstoss</c>.</summary>
+        /// <summary>
+        /// Effektivzeile und Verstosshinweis — beide über der ABRECHNUNGSEINHEIT,
+        /// denn dort stehen Heiz- und Brennwert (B1).
+        /// </summary>
         private void EffektivSetzen()
         {
-            string einheit = AktuelleEinheit();
-            double hi = _stand.Heizwert;
-            double hs = _stand.Brennwert;
-
-            _stand.EffektivText = string.Equals(einheit, DbWerte.EINHEIT_KWH,
-                                                StringComparison.OrdinalIgnoreCase)
-                ? MyResource.Resource.KOSTEN_UMRECHNUNG_EFFEKTIV_KWH
-                : string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KOSTEN_UMRECHNUNG_EFFEKTIV, einheit,
-                    hi.ToString("N2", CultureInfo.CurrentCulture),
-                    hs.ToString("N2", CultureInfo.CurrentCulture));
+            _stand.EffektivText = EnergietraegerPreiskarte.Effektivzeile(
+                _abrechnungseinheit, _baseHi, _baseHs);
 
             string grund;
-            _stand.VerstossText = EnergieEinheitenPruefung.ErreichtKwh(einheit, hi, hs, _regeln, out grund)
-                ? "" : grund;
+            _stand.VerstossText = EnergieEinheitenPruefung.ErreichtKwh(
+                _abrechnungseinheit, _baseHi, _baseHs, _regeln, out grund) ? "" : grund;
         }
 
         private void RegelnSetzen()
@@ -922,7 +958,7 @@ namespace WindowsFormsApplication1
                 Id = 0,
                 IdBrennstoff = _gewaehlt.ID_Brennstoff,
                 Name = gas ? DbWerte.UMRECHNUNG_NAME_Z_FAKTOR : DbWerte.UMRECHNUNG_NAME_STANDARD,
-                Von = AktuelleEinheit(),
+                Von = _abrechnungseinheit,
                 Nach = "",
                 Faktor = 1,
                 Aktiv = true,
@@ -943,8 +979,8 @@ namespace WindowsFormsApplication1
             RegelnUebernehmen();
 
             string grund;
-            if (EnergieEinheitenPruefung.DarfAbschalten(AktuelleEinheit(), _stand.Heizwert,
-                                                        _stand.Brennwert, _regeln, zeile.Nummer,
+            if (EnergieEinheitenPruefung.DarfAbschalten(_abrechnungseinheit, _baseHi,
+                                                        _baseHs, _regeln, zeile.Nummer,
                                                         out grund))
                 return true;
 
@@ -953,22 +989,19 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        /// <summary>
+        /// Die Preisbasis sagt, in welcher Einheit der ARBEITSPREIS eingegeben
+        /// wird — und nur er wird umgerechnet (B1). Heizwert, Brennwert,
+        /// Leistungspreis und Grundpreis bleiben, wo sie sind: Der Index zeigt in
+        /// die bereinigte Liste (W4-B-1) und verschiebt sich dabei nicht.
+        /// </summary>
         private void PreisbasisWechseln(int index)
         {
             if (_stand == null || index < 0 || index >= _preisbasen.Count) return;
-
-            // Wortgleich aus CmbUnit_SelectedIndexChanged: die Basiswerte bleiben,
-            // die Anzeigewerte werden umgerechnet. Der Index zeigt in die
-            // bereinigte Liste (W4-B-1) und verschiebt sich dabei nicht.
-            double faktor = _preisbasen[index].Faktor;
-            if (faktor == 0.0) return;
+            if (_preisbasen[index].Faktor == 0.0) return;
 
             _stand.PreisbasisId = index;
-            _stand.Arbeitspreis = _baseWork / faktor;
-            _stand.Heizwert = _baseHi / faktor;
-            if (_gewaehlt.HasPowerPrice) _stand.Leistungspreis = _basePower / faktor;
-            if (_gewaehlt.HasHs) _stand.Brennwert = _baseHs / faktor;
-
+            AnzeigeAusBasis();
             Nachziehen();
         }
 
@@ -1002,12 +1035,14 @@ namespace WindowsFormsApplication1
             if (!_gewaehlt.HasHi) jeEinheit = ctKwh / 100.0;
             else
             {
-                double hi = _stand.Heizwert;
-                if (hi <= 0.0) return;
-                jeEinheit = ctKwh / 100.0 * hi;
+                if (_baseHi <= 0.0) return;
+                jeEinheit = ctKwh / 100.0 * _baseHi;
             }
 
-            _stand.Arbeitspreis = jeEinheit;
+            // jeEinheit steht je ABRECHNUNGSEINHEIT; angezeigt wird es in der
+            // gewählten Preisbasis (B1).
+            _baseWork = jeEinheit;
+            _stand.Arbeitspreis = EnergietraegerPreiskarte.AnzeigeArbeitspreis(_baseWork, Faktor());
             Nachziehen();
         }
 
@@ -1043,8 +1078,8 @@ namespace WindowsFormsApplication1
 
             // ETAPPE K3: die BLOCKIERENDE Prüfung. Der Träger muss kWh erreichen.
             string grund;
-            if (!EnergieEinheitenPruefung.ErreichtKwh(AktuelleEinheit(), _stand.Heizwert,
-                                                      _stand.Brennwert, _regeln, out grund))
+            if (!EnergieEinheitenPruefung.ErreichtKwh(_abrechnungseinheit, _baseHi,
+                                                      _baseHs, _regeln, out grund))
             {
                 _stand.VerstossText = grund;
                 _speichernGrund = string.Format(CultureInfo.CurrentCulture,
@@ -1078,10 +1113,22 @@ namespace WindowsFormsApplication1
                 _speichernGrund = ex.Message;
                 return false;
             }
+
+            // B2: Die Tabelle zeigt nach dem Speichern den neuen Stand - der
+            // Vorlaeufer las die Historie ebenfalls nach jedem Schreiben neu.
+            _stand.UebernahmeHinweis = "";
+            HistorieLaden();
             return true;
         }
 
-        /// <summary>Wortgleich aus <c>SpeichereWerte</c>, nur über den Controller.</summary>
+        /// <summary>
+        /// Wortgleich aus <c>SpeichereWerte</c>, nur über den Controller.
+        ///
+        /// <para><b>Geschrieben werden die BASISWERTE</b> — Arbeitspreis, Heiz-
+        /// und Brennwert je Abrechnungseinheit (B1). Die Preisbasis ist eine
+        /// Eingabehilfe, keine Speichereinheit; sie geht nur als
+        /// <c>ID_Umrechnung</c> mit.</para>
+        /// </summary>
         private void WerteSpeichern()
         {
             KernwerteSpiegeln();
@@ -1089,8 +1136,8 @@ namespace WindowsFormsApplication1
             var preis = new EnergietraegerPreisCtrl.Preisstand
             {
                 Arbeitspreis = _baseWork,
-                Grundpreis = _stand.Grundpreis,
-                Leistungspreis = _stand.Leistungspreis,
+                Grundpreis = _baseGround,
+                Leistungspreis = _basePower,
                 Hi = _baseHi,
                 Hs = _baseHs,
                 CO2 = _stand.AltCO2,
@@ -1113,28 +1160,18 @@ namespace WindowsFormsApplication1
                 _gewaehlt.SO2 = preis.SO2;
                 _gewaehlt.NOx = preis.NOx;
 
+                // B2, BENANNTE ABLEHNUNG: Im Katalogkontext entsteht KEINE
+                // Historienzeile. energy_price.ID_Projekt trägt einen
+                // Fremdschlüssel auf Tab_Projekt.ID, und das Projekt 0 gibt es
+                // nicht — ein Schreibversuch endete in einem
+                // Fremdschlüsselfehler statt in einer Zeile. Die Karte sagt das
+                // unter der Tabelle, statt es still zu übergehen; die Werte
+                // selbst stehen in der Katalogzeile.
                 AnkerSetzen(preis);
                 return;
             }
 
-            // Vergleich auf Basis der unberührten DB-Urwerte.
-            bool geaendert = Math.Abs(preis.Arbeitspreis - _dbWork) > 0.0001 ||
-                             Math.Abs(preis.Hi - _dbHi) > 0.0001 ||
-                             Math.Abs(preis.Hs - _dbHs) > 0.0001 ||
-                             Math.Abs(preis.Grundpreis - _dbGround) > 0.01 ||
-                             Math.Abs(preis.Leistungspreis - _dbPower) > 0.01 ||
-                             Math.Abs(preis.CO2 - _dbCO2) > 0.01 ||
-                             Math.Abs(preis.SO2 - _dbSO2) > 0.01 ||
-                             Math.Abs(preis.NOx - _dbNOx) > 0.01;
-
-            if (geaendert)
-            {
-                DateTime datum = _stand.GueltigAb.HasValue
-                    ? _stand.GueltigAb.Value.ToDateTime(TimeOnly.MinValue) : DateTime.Now;
-                EnergietraegerPreisCtrl.HistorieSchreiben(_gewaehlt.ID, _projektId, datum, preis);
-                AnkerSetzen(preis);
-            }
-
+            HistorieSchreibenWennGeaendert(preis, _projektId);
             EnergietraegerPreisCtrl.Projektwerte(_projektId, _gewaehlt.ID, preis);
 
             // AP4/B2: Die beiden Blöcke schreiben in DIESELBE Zeile und deshalb
@@ -1156,6 +1193,139 @@ namespace WindowsFormsApplication1
             _dbWork = p.Arbeitspreis; _dbGround = p.Grundpreis; _dbPower = p.Leistungspreis;
             _dbHi = p.Hi; _dbHs = p.Hs;
             _dbCO2 = p.CO2; _dbSO2 = p.SO2; _dbNOx = p.NOx;
+        }
+
+        /// <summary>
+        /// B2: Eine Historienzeile entsteht nur, wenn sich gegenüber den
+        /// DB-Ankern etwas geändert hat — zum Datum aus dem Feld „Gültig ab".
+        /// Ein zweites Speichern am selben Tag AKTUALISIERT die Zeile
+        /// (<c>HistorieSchreiben</c>), es legt keine zweite an.
+        /// </summary>
+        private void HistorieSchreibenWennGeaendert(EnergietraegerPreisCtrl.Preisstand preis,
+                                                    int projektId)
+        {
+            bool geaendert = Math.Abs(preis.Arbeitspreis - _dbWork) > 0.0001 ||
+                             Math.Abs(preis.Hi - _dbHi) > 0.0001 ||
+                             Math.Abs(preis.Hs - _dbHs) > 0.0001 ||
+                             Math.Abs(preis.Grundpreis - _dbGround) > 0.01 ||
+                             Math.Abs(preis.Leistungspreis - _dbPower) > 0.01 ||
+                             Math.Abs(preis.CO2 - _dbCO2) > 0.01 ||
+                             Math.Abs(preis.SO2 - _dbSO2) > 0.01 ||
+                             Math.Abs(preis.NOx - _dbNOx) > 0.01;
+            if (!geaendert) return;
+
+            DateTime datum = _stand.GueltigAb.HasValue
+                ? _stand.GueltigAb.Value.ToDateTime(TimeOnly.MinValue) : DateTime.Now;
+            EnergietraegerPreisCtrl.HistorieSchreiben(_gewaehlt.ID, projektId, datum, preis);
+            AnkerSetzen(preis);
+        }
+
+        /// <summary>
+        /// B2 (Anwenderbefund 14.09.2026, „die Eingaben werden nicht gespeichert"):
+        /// Die Tabelle blieb leer, weil <c>Stand.Historie</c> NIE befüllt wurde —
+        /// <see cref="EnergietraegerPreisCtrl.Historie"/> hatte in der ganzen
+        /// Trägerkarte keinen Aufrufer. Sie wird jetzt beim Trägerwechsel und
+        /// nach jedem erfolgreichen Speichern gelesen, im Projektkontext die
+        /// Zeilen des Projekts, im Katalogkontext die unter <c>ID_Projekt = 0</c>.
+        /// </summary>
+        private void HistorieLaden()
+        {
+            if (_stand == null || _gewaehlt == null) return;
+            try
+            {
+                var zeilen = new List<PreishistorieZeile>();
+                foreach (EnergietraegerPreisCtrl.Historienzeile h in
+                         EnergietraegerPreisCtrl.Historie(_gewaehlt.ID, _projektId))
+                {
+                    zeilen.Add(new PreishistorieZeile(
+                        h.GueltigAb == DateTime.MinValue
+                            ? "" : h.GueltigAb.ToString("d", CultureInfo.CurrentCulture),
+                        Zahl(h.Heizwert, "N2"),
+                        h.Basiseinheit ?? "",
+                        Zahl(h.Arbeitspreis, "N4"),
+                        Zahl(h.Grundpreis, "N2"),
+                        Zahl(h.Leistungspreis, "N2")));
+                }
+                _stand.Historie = zeilen;
+                _stand.HistorieHinweis = Katalogkontext
+                    ? T("ETV_HISTORIE_NUR_PROJEKT",
+                        "Die Preishistorie wird je Projekt geführt — im Katalog gilt die "
+                        + "Katalogzeile selbst.")
+                    : "";
+            }
+            catch (Exception ex)
+            {
+                // Eine fehlende Historientabelle darf die Preispflege nicht
+                // blockieren — dieselbe Zusage wie beim Umrechnungsblock.
+                Console.WriteLine("Die Preishistorie konnte nicht gelesen werden: " + ex.Message);
+                _stand.Historie = Array.Empty<PreishistorieZeile>();
+            }
+        }
+
+        /// <summary>Eine Historienzahl; <c>null</c> bleibt leer statt „0,00" zu lesen.</summary>
+        private static string Zahl(double? wert, string format)
+        {
+            return wert.HasValue ? wert.Value.ToString(format, CultureInfo.CurrentCulture) : "";
+        }
+
+        /// <summary>
+        /// B3 (Anwenderwunsch 14.09.2026): Die Katalogwerte der Administration in
+        /// das Projekt holen — Arbeits-, Grund- und Leistungspreis, Heiz- und
+        /// Brennwert und die drei Emissionswerte des Trägers.
+        ///
+        /// <para><b>Eine einmalige KOPIE</b> (Anwenderentscheid 14.09.2026), kein
+        /// „dem Katalog folgen": Die Werte stehen danach in den Feldern und sind
+        /// dort änderbar; geschrieben wird erst mit „Speichern" bzw. „OK",
+        /// und dabei entsteht die Historienzeile.</para>
+        ///
+        /// <para>Die Preisbasis geht auf die ABRECHNUNGSEINHEIT zurück — in ihr
+        /// steht die Katalogzeile.</para>
+        /// </summary>
+        private void KatalogwerteUebernehmen()
+        {
+            if (_stand == null || _gewaehlt == null || _projektId <= 0) return;
+
+            _baseWork = _gewaehlt.price_work;
+            _baseGround = _gewaehlt.price_base;
+            _basePower = _gewaehlt.price_power;
+            _baseHi = _gewaehlt.HiKwhPerUnit;
+            _baseHs = _gewaehlt.HsKwhPerUnit;
+
+            _stand.PreisbasisId = IndexZuEinheit(_abrechnungseinheit);
+            AnzeigeAusBasis();
+
+            EmissionswerteUebernehmen();
+
+            _stand.UebernahmeHinweis = T("ETV_KATALOGWERTE_UEBERNOMMEN",
+                "Katalogwerte übernommen — noch nicht gespeichert.");
+            Nachziehen();
+        }
+
+        /// <summary>
+        /// Die drei Kernarten aus der Katalogzeile. Steht der Artenkatalog
+        /// (Migrationsschritt 57), geht der Wert durch <c>EmissionenCtrl</c> —
+        /// nur so liest ihn <see cref="KernwerteSpiegeln"/> beim Speichern
+        /// zurück; sonst zählen die drei Bestandsfelder.
+        /// </summary>
+        private void EmissionswerteUebernehmen()
+        {
+            _stand.AltCO2 = _gewaehlt.CO2;
+            _stand.AltSO2 = _gewaehlt.SO2;
+            _stand.AltNOx = _gewaehlt.NOx;
+
+            if (_emissionen == null || !_emissionen.Verfuegbar) return;
+
+            Uebernehmen(DbWerte.EMISSIONSART_CO2, _gewaehlt.CO2);
+            Uebernehmen(DbWerte.EMISSIONSART_SO2, _gewaehlt.SO2);
+            Uebernehmen(DbWerte.EMISSIONSART_NOX, _gewaehlt.NOx);
+            EmissionszeilenSetzen();
+        }
+
+        private void Uebernehmen(string kuerzel, double wert)
+        {
+            EmissionsZeile ziel = ZeileZuKuerzel(kuerzel);
+            if (ziel == null || ziel.NurLesend) return;
+            _emissionen.WertEingeben(ziel, wert.ToString("0.####", CultureInfo.CurrentCulture));
         }
 
         private void EmissionenSpeichern()
@@ -1729,6 +1899,8 @@ namespace WindowsFormsApplication1
                 ["SpeichernText"] = T("ETV_BTN_SPEICHERN", "💾 Speichern"),
                 ["SpalteGueltigAb"] = T("ETV_SP_GUELTIG_AB", "Gültig ab"),
                 ["SpalteHeizwert"] = T("ETV_SP_HEIZWERT", "Heizwert"),
+                ["SpalteHeizwertVorlage"] = T("ETV_SP_HEIZWERT_EINHEIT", "Heizwert [{0}]"),
+                ["KatalogUebernehmenText"] = T("ETV_BTN_KATALOGWERTE", "Katalogwerte übernehmen"),
                 ["SpalteBasisEinheit"] = T("ETV_SP_BASISEINHEIT", "Basis Einheit"),
                 ["SpalteArbeitspreis"] = T("ETV_SP_ARBEITSPREIS", "Arbeitspreis"),
                 ["SpalteGrundpreis"] = T("ETV_SP_GRUNDPREIS", "Grundpreis [€/a]"),

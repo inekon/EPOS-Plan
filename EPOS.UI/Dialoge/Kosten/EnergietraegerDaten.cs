@@ -169,6 +169,27 @@ public sealed class EnergietraegerStand
     public IReadOnlyList<PreishistorieZeile> Historie { get; set; }
         = Array.Empty<PreishistorieZeile>();
 
+    /// <summary>
+    /// Leise Zeile unter der Tabelle — im Katalogkontext der Grund, warum dort
+    /// keine Zeile entsteht. Leer = kein Hinweis.
+    /// </summary>
+    public string HistorieHinweis { get; set; } = "";
+
+    // ---- Katalogübernahme ------------------------------------------------
+
+    /// <summary>
+    /// Zeigt den Knopf „Katalogwerte übernehmen"? Nur im Projektkontext — im
+    /// Katalog SIND die Felder die Katalogwerte.
+    /// </summary>
+    public bool MitKatalogUebernahme { get; set; }
+
+    /// <summary>
+    /// „Katalogwerte übernommen — noch nicht gespeichert."; leer = kein Hinweis.
+    /// Die Übernahme ist eine einmalige Kopie: Geschrieben wird erst mit
+    /// „Speichern" bzw. „OK".
+    /// </summary>
+    public string UebernahmeHinweis { get; set; } = "";
+
     // ---- Emissionen (Etappe E3) -----------------------------------------
 
     /// <summary>Ist der Emissionsarten-Katalog verfügbar (Migrationsschritt 57)?</summary>
