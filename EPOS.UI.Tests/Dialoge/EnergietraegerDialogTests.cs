@@ -80,7 +80,7 @@ public class EnergietraegerDialogTests : EposBunitContext
             GueltigAb = new DateOnly(2026, 9, 3),
             Historie = new[]
             {
-                new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,62", "120,00", "12,00")
+                new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,62", "120,00", "12,00", 77)
             }
         };
         if (strom)
@@ -866,5 +866,116 @@ public class EnergietraegerDialogTests : EposBunitContext
         var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
 
         Assert.Contains("je Projekt geführt", cut.Markup);
+    }
+
+    // =====================================================================
+    // Preisstände löschen (Anwenderwunsch 14.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Löschknöpfe der Historientabelle — einer je Zeile.</summary>
+    private static IReadOnlyList<IElement> Loeschknoepfe(
+        IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf button[title]");
+
+    /// <summary>Zwei Stände — der zweite trägt einen anderen Schlüssel.</summary>
+    private static EnergietraegerStand ZweiStaende()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.Historie = new[]
+        {
+            new PreishistorieZeile("14.09.2026", "10,50", "Nm³", "0,9100", "0,00", "0,00", 12),
+            new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,6200", "120,00", "12,00", 7)
+        };
+        return stand;
+    }
+
+    [Fact]
+    public void Die_Historientabelle_hat_eine_Aktionsspalte_mit_Loeschknopf()
+    {
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => true),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        // Die Spalte trägt einen Kopf mit Beschriftung (Hausregel), der Knopf
+        // steht je Zeile und ist immer sichtbar.
+        var koepfe = cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf th");
+        Assert.Equal("Löschen", koepfe[^1].TextContent.Trim());
+        Assert.Equal(2, Loeschknoepfe(cut).Count);
+        Assert.Equal("Preisstand löschen", Loeschknoepfe(cut)[0].GetAttribute("title"));
+    }
+
+    /// <summary>Ohne Rückruf bleibt der Knopf gesperrt — kein Delegat, kein Knopf.</summary>
+    [Fact]
+    public void Ohne_Rueckruf_ist_der_Loeschknopf_gesperrt()
+    {
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Assert.All(Loeschknoepfe(cut), k => Assert.True(k.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public void Der_Loeschknopf_fragt_erst_nach()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => { geloescht++; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Preisstand vom 14.09.2026 löschen?", cut.Markup));
+        Assert.Equal(0, geloescht);
+    }
+
+    [Fact]
+    public void Ja_loescht_die_gewaehlte_Zeile()
+    {
+        PreishistorieZeile? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, z => { gemeldet = z; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        // Die ZWEITE Zeile — gemeldet werden muss ihr Schlüssel, nicht der der ersten.
+        Loeschknoepfe(cut)[1].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(gemeldet));
+        Assert.Equal(7, gemeldet!.Id);
+        Assert.Equal("01.01.2026", gemeldet.GueltigAb);
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-rueckfrage")));
+    }
+
+    [Fact]
+    public void Nein_laesst_den_Preisstand_stehen()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => { geloescht++; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[1].Click();
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-rueckfrage")));
+        Assert.Equal(0, geloescht);
+    }
+
+    /// <summary>Ein abgelehntes Löschen nennt den Grund — wie beim Speichern.</summary>
+    [Fact]
+    public void Ein_abgelehntes_Loeschen_nennt_den_Grund()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.HistorieLoeschen, _ => false)
+            .Add(x => x.HistorieLoeschenGrund, () => "Dieser Preisstand ist nicht mehr vorhanden."),
+            ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("nicht mehr vorhanden", cut.Instance.Meldung));
     }
 }

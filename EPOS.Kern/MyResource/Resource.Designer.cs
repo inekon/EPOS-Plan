@@ -8582,6 +8582,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisstand vom {0} löschen? ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCHFRAGE {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Preisstand ist nicht mehr vorhanden. ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCH_FEHLT {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCH_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisstand löschen ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCH_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCH_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Preishistorie wird je Projekt geführt — im Katalog gilt die Katalogzeile selbst. ähnelt.
         /// </summary>
         public static string ETV_HISTORIE_NUR_PROJEKT {

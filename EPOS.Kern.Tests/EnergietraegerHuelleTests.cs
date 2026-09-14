@@ -437,5 +437,196 @@ namespace EPOS.Kern.Tests
             EnergietraegerStand neu = Karte(new EnergietraegerHuelle(PROJEKT), ERDGAS_E);
             Assert.Equal(1.50, neu.Arbeitspreis, 4);
         }
+
+        // =================================================================
+        // Loeschen einzelner Preisstaende (Anwenderwunsch 14.09.2026)
+        // =================================================================
+
+        /// <summary>Legt einen Stand zum Tag an und gibt seine Id zurueck.</summary>
+        private static int StandSchreiben(DateTime tag, double arbeitspreis)
+        {
+            EnergietraegerPreisCtrl.HistorieSchreiben(ERDGAS_E, PROJEKT, tag,
+                new EnergietraegerPreisCtrl.Preisstand
+                {
+                    Arbeitspreis = arbeitspreis,
+                    Hi = 10.5,
+                    Basiseinheit = "Nm³"
+                });
+
+            foreach (EnergietraegerPreisCtrl.Historienzeile z in
+                     EnergietraegerPreisCtrl.Historie(ERDGAS_E, PROJEKT))
+                if (z.GueltigAb.Date == tag.Date) return z.Id;
+            return 0;
+        }
+
+        private static bool HistorieLoeschen(IReadOnlyDictionary<string, object> gaben,
+                                             PreishistorieZeile zeile)
+        {
+            return ((Func<PreishistorieZeile, bool>)gaben["HistorieLoeschen"])(zeile);
+        }
+
+        private static string HistorieLoeschenGrund(IReadOnlyDictionary<string, object> gaben)
+        {
+            return ((Func<string>)gaben["HistorieLoeschenGrund"])();
+        }
+
+        /// <summary>
+        /// Ohne Schlüssel ließe sich eine Zeile nicht einzeln löschen — zwei
+        /// Stände desselben Tages wären über (Träger, Projekt, Datum) nicht
+        /// auseinanderzuhalten.
+        /// </summary>
+        [Fact]
+        public void Die_Historie_liefert_den_Schluessel_jeder_Zeile()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            StandSchreiben(new DateTime(2026, 9, 14), 0.91);
+            StandSchreiben(new DateTime(2026, 9, 15), 0.92);
+
+            List<EnergietraegerPreisCtrl.Historienzeile> zeilen =
+                EnergietraegerPreisCtrl.Historie(ERDGAS_E, PROJEKT);
+
+            Assert.True(zeilen.Count >= 2);
+            Assert.All(zeilen, z => Assert.True(z.Id > 0));
+            Assert.Equal(zeilen.Count, new HashSet<int>(zeilen.ConvertAll(z => z.Id)).Count);
+        }
+
+        [Fact]
+        public void HistorieLoeschen_entfernt_genau_die_Zeile_und_laesst_die_Nachbarn()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int bleibt = StandSchreiben(new DateTime(2026, 9, 14), 0.91);
+            int weg = StandSchreiben(new DateTime(2026, 9, 15), 0.92);
+            Assert.True(bleibt > 0 && weg > 0 && bleibt != weg);
+
+            int vorher = HistorienZeilen(ERDGAS_E, PROJEKT);
+
+            Assert.Equal(1, EnergietraegerPreisCtrl.HistorieLoeschen(weg, ERDGAS_E, PROJEKT));
+
+            Assert.Equal(vorher - 1, HistorienZeilen(ERDGAS_E, PROJEKT));
+            List<EnergietraegerPreisCtrl.Historienzeile> zeilen =
+                EnergietraegerPreisCtrl.Historie(ERDGAS_E, PROJEKT);
+            Assert.DoesNotContain(zeilen, z => z.Id == weg);
+            Assert.Contains(zeilen, z => z.Id == bleibt);
+        }
+
+        /// <summary>
+        /// Träger und Projekt sind der Riegel: Ein veralteter Stand der Karte
+        /// darf nicht die Zeile eines anderen Trägers oder Projekts treffen.
+        /// </summary>
+        [Fact]
+        public void Eine_fremde_Traeger_oder_Projekt_Id_loescht_nichts()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int id = StandSchreiben(new DateTime(2026, 9, 14), 0.91);
+            Assert.True(id > 0);
+            int vorher = HistorienZeilen(ERDGAS_E, PROJEKT);
+
+            Assert.Equal(0, EnergietraegerPreisCtrl.HistorieLoeschen(id, ERDGAS_E + 1, PROJEKT));
+            Assert.Equal(0, EnergietraegerPreisCtrl.HistorieLoeschen(id, ERDGAS_E, PROJEKT + 1));
+            Assert.Equal(0, EnergietraegerPreisCtrl.HistorieLoeschen(0, ERDGAS_E, PROJEKT));
+
+            Assert.Equal(vorher, HistorienZeilen(ERDGAS_E, PROJEKT));
+        }
+
+        /// <summary>
+        /// BEFUND zur gemeldeten Doppelzeile: <c>valid_from</c> ist TEXT und
+        /// trägt im Bestand beides — Tagesstände aus dieser Karte und
+        /// ZEITPUNKTE aus der Zuordnung (<c>WizardCtrl</c> und
+        /// <c>EnergietraegerVarianteCtrl</c> schreiben <c>DateTime.Now</c>). Der
+        /// Vergleich auf Gleichheit verfehlte den Zeitpunkt desselben Tages und
+        /// legte eine ZWEITE Zeile an; die Karte zeigte zweimal dasselbe
+        /// „Gültig ab". Verglichen wird deshalb der Kalendertag.
+        /// </summary>
+        [Fact]
+        public void Ein_Stand_mit_Uhrzeit_wird_am_selben_Tag_aktualisiert_statt_gedoppelt()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Eine Bestandszeile MIT Uhrzeit, wie die Zuordnung sie schreibt.
+            DataRepository.ExecuteSQL(
+                "INSERT INTO energy_price (carrier_id, id_projekt, arbeitspreis, heizwert, " +
+                "grundpreis, valid_from, arbeitspreis_unit, leistungspreis) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                new DbParam[]
+                {
+                    new DbParam("@c", ERDGAS_E),
+                    new DbParam("@p", PROJEKT),
+                    new DbParam("@ap", 0.50),
+                    new DbParam("@hi", 10.5),
+                    new DbParam("@gp", 0.0),
+                    new DbParam("@d", new DateTime(2026, 9, 14, 20, 33, 16)),
+                    new DbParam("@au", "Nm³"),
+                    new DbParam("@lp", 0.0)
+                });
+
+            int vorher = HistorienZeilen(ERDGAS_E, PROJEKT);
+
+            StandSchreiben(new DateTime(2026, 9, 14), 0.91);
+
+            // Keine zweite Zeile desselben Tages - der Zeitpunkt wurde getroffen.
+            Assert.Equal(vorher, HistorienZeilen(ERDGAS_E, PROJEKT));
+            Assert.Equal(0.91, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT arbeitspreis FROM energy_price WHERE carrier_id = ? AND id_projekt = ? " +
+                "AND valid_from = ?",
+                new DbParam("@c", ERDGAS_E), new DbParam("@p", PROJEKT),
+                new DbParam("@d", new DateTime(2026, 9, 14, 20, 33, 16)))), 4);
+        }
+
+        [Fact]
+        public void Die_Huelle_loescht_im_Projekt_und_liest_die_Tabelle_neu()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT), ERDGAS_E, out stand);
+
+            stand.GueltigAb = new DateOnly(2026, 9, 14);
+            Feld(gaben, () => stand.Arbeitspreis = 0.91);
+            Assert.True(Speichern(gaben));
+
+            int vorher = HistorienZeilen(ERDGAS_E, PROJEKT);
+            Assert.True(stand.Historie.Count > 0);
+            PreishistorieZeile zeile = stand.Historie[0];
+            Assert.True(zeile.Id > 0);
+
+            Assert.True(HistorieLoeschen(gaben, zeile));
+            Assert.Equal("", HistorieLoeschenGrund(gaben));
+
+            Assert.Equal(vorher - 1, HistorienZeilen(ERDGAS_E, PROJEKT));
+            Assert.Equal(vorher - 1, stand.Historie.Count);
+            Assert.DoesNotContain(stand.Historie, z => z.Id == zeile.Id);
+        }
+
+        [Fact]
+        public void Der_Katalogkontext_lehnt_das_Loeschen_benannt_ab()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(0), ERDGAS_E, out stand);
+
+            var zeile = new PreishistorieZeile("14.09.2026", "10,50", "Nm³", "0,9100",
+                                               "0,00", "0,00", 4711);
+
+            Assert.False(HistorieLoeschen(gaben, zeile));
+            Assert.Contains("je Projekt", HistorieLoeschenGrund(gaben));
+        }
     }
 }

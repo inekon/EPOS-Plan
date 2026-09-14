@@ -280,6 +280,13 @@
                                     Property="@(z => z.Grundpreis)" Title="@SpalteGrundpreis" />
                     <PropertyColumn TGridItem="PreishistorieZeile" TProp="string"
                                     Property="@(z => z.Leistungspreis)" Title="@SpalteLeistungspreis" />
+                    @* Die Aktionsspalte steht HINTEN und traegt einen Kopf mit
+                       Beschriftung; der Knopf ist immer sichtbar (Hausregel). *@
+                    <TemplateColumn TGridItem="PreishistorieZeile" Title="@HistorieLoeschenText">
+                        <button type="button" class="epos-knopf" title="@HistorieLoeschTitel"
+                                disabled="@(HistorieLoeschen is null)"
+                                @onclick="@(() => LoeschenFragen(context))">@HistorieLoeschenText</button>
+                    </TemplateColumn>
                 </KindInhalt>
             </Raster>
 
@@ -289,6 +296,11 @@
             }
         </KindInhalt>
     </Gruppenkopf>
+
+    <Rueckfrage Offen="@(_loeschzeile is not null)" TitelText="@HistorieLoeschTitel"
+                JaText="@JaText" NeinText="@NeinText" VorgabeNein="true"
+                Frage="@(string.Format(VorlageHistorieLoeschen, _loeschzeile?.GueltigAb ?? ""))"
+                Beantwortet="BeiLoeschfrage" />
 </div>
 
 @code {
@@ -368,6 +380,13 @@
     /// </summary>
     [Parameter] public EventCallback KatalogUebernehmen { get; set; }
 
+    /// <summary>
+    /// Löscht EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026). Der Wirt
+    /// schreibt und meldet: <c>true</c> = gelöscht, <c>false</c> = abgelehnt, den
+    /// Grund nennt er selbst. <c>null</c> = die Karte zeigt den Knopf gesperrt.
+    /// </summary>
+    [Parameter] public Func<PreishistorieZeile, bool>? HistorieLoeschen { get; set; }
+
     // ---- Texte ----------------------------------------------------------
 
     /// <summary>Beschriftung des ersten Reiters (Vorlaeufer: Reiterseite 1).</summary>
@@ -429,6 +448,11 @@
     [Parameter] public string SpalteGrundpreis { get; set; } = "Grundpreis [€/a]";
     [Parameter] public string SpalteLeistungspreis { get; set; } = "Leistungspreis";
     [Parameter] public string KatalogUebernehmenText { get; set; } = "Katalogwerte übernehmen";
+    [Parameter] public string HistorieLoeschenText { get; set; } = "Löschen";
+    [Parameter] public string HistorieLoeschTitel { get; set; } = "Preisstand löschen";
+    [Parameter] public string VorlageHistorieLoeschen { get; set; } = "Preisstand vom {0} löschen?";
+    [Parameter] public string JaText { get; set; } = "Ja";
+    [Parameter] public string NeinText { get; set; } = "Nein";
 
     /// <summary>
     /// Der Spaltenkopf der Historie nennt die Einheit des Heizwerts
@@ -508,5 +532,30 @@
     {
         zeile.Wert = wert;
         Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Die Zeile, nach der gerade gefragt wird; <c>null</c> = keine Frage.</summary>
+    private PreishistorieZeile? _loeschzeile;
+
+    /// <summary>
+    /// Vor dem Löschen wird gefragt — ein Preisstand ist Geschichte, die sich
+    /// nicht zurückholen lässt. Vorgabeknopf ist „Nein" (Hausregel für Fragen,
+    /// deren „Ja" sofort löscht).
+    /// </summary>
+    private void LoeschenFragen(PreishistorieZeile zeile)
+    {
+        if (HistorieLoeschen is null) return;
+        _loeschzeile = zeile;
+    }
+
+    private void BeiLoeschfrage(bool? antwort)
+    {
+        PreishistorieZeile? zeile = _loeschzeile;
+        _loeschzeile = null;
+        if (antwort != true || zeile is null || HistorieLoeschen is null) return;
+
+        // Der Wirt schreibt und meldet; die Tabelle zeichnet danach den Stand,
+        // den die Hülle neu gelesen hat.
+        HistorieLoeschen(zeile);
     }
 }

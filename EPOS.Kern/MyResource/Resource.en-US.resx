@@ -19055,4 +19055,16 @@ Do you want to allow this?</value>
   <data name="ETV_HISTORIE_NUR_PROJEKT" xml:space="preserve">
     <value>Price history is kept per project — in the catalogue the catalogue row itself applies.</value>
   </data>
+  <data name="ETV_HISTORIE_LOESCHEN" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCHFRAGE" xml:space="preserve">
+    <value>Delete the price record of {0}?</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCH_FEHLT" xml:space="preserve">
+    <value>This price record no longer exists.</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCH_TITEL" xml:space="preserve">
+    <value>Delete price record</value>
+  </data>
 </root>

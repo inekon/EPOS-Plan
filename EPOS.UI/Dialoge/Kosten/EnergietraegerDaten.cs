@@ -29,9 +29,12 @@ public sealed class UmrechnungsregelZeile
 /// <param name="Arbeitspreis">Arbeitspreis je Abrechnungseinheit.</param>
 /// <param name="Grundpreis">Grundpreis [€/a].</param>
 /// <param name="Leistungspreis">Leistungspreis.</param>
+/// <param name="Id">Der Schlüssel der Zeile (<c>energy_price.id</c>); 0 = unbekannt.
+/// Er steht am Ende, damit er beim Bauen weggelassen werden darf — gebraucht wird
+/// er allein zum Löschen GENAU DIESER Zeile.</param>
 public sealed record PreishistorieZeile(string GueltigAb, string Heizwert, string Basiseinheit,
                                         string Arbeitspreis, string Grundpreis,
-                                        string Leistungspreis);
+                                        string Leistungspreis, int Id = 0);
 
 /// <summary>
 /// Eine Zeile des Emissions-Abschnitts (Etappe E3, Konzept
