@@ -10117,6 +10117,33 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
     <value>CO2 balance: no electricity energy carrier assigned — grid supply calculated with the default grid-mix value.</value>
   </data>
+  <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
+    <value>Grid supply priced with energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>Energy costs cannot be determined: no energy carrier is assigned to the electric generation (heat pump, photovoltaics, battery storage, heating element). Remedy: assign an electricity carrier under “Reports &amp; Costs › Energy carriers”.</value>
+  </data>
+  <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
+    <value>Energy costs cannot be determined: no energy price is maintained for the electricity carrier “{0}”. Remedy: enter the energy price under “Reports &amp; Costs › Energy carriers”.</value>
+  </data>
+  <data name="WIRT_GRUND_BRENNSTOFFPREIS_FEHLT" xml:space="preserve">
+    <value>Energy costs cannot be determined: no energy price is maintained for {0}. Remedy: enter the energy price under “Reports &amp; Costs › Energy carriers”.</value>
+  </data>
+  <data name="WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER" xml:space="preserve">
+    <value>Energy costs cannot be determined: part of the fuel consumption ({0} MWh/a) belongs to no energy carrier. Remedy: assign an energy carrier to the affected generators under “Units”.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_VERBRAUCH" xml:space="preserve">
+    <value>Energy costs cannot be determined: the simulation result shows neither fuel consumption nor grid supply. Remedy: check the simulation and calculate again.</value>
+  </data>
+  <data name="WIRT_GRUND_RECHENFEHLER" xml:space="preserve">
+    <value>Energy costs cannot be determined: the cost calculation was aborted. Remedy: check the prices and calorific values of the energy carriers.</value>
+  </data>
+  <data name="WIRT_BTN_NEU_BERECHNEN" xml:space="preserve">
+    <value>Recalculate</value>
+  </data>
+  <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
+    <value>The values shown come from an earlier run — please recalculate.</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>

@@ -51657,6 +51657,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
@@ -51770,6 +51779,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BTN_BHKW_TARIF {
             get {
                 return ResourceManager.GetString("WIRT_BTN_BHKW_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu berechnen ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_NEU_BERECHNEN {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_NEU_BERECHNEN", resourceCulture);
             }
         }
         
@@ -52103,6 +52121,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERGEBNIS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_ERGEBNIS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_BRENNSTOFFPREIS_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_BRENNSTOFFPREIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KEIN_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KEIN_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und erneut rechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KEIN_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KEIN_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. Ausweg: Preise und Heizwerte der Energieträger prüfen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_RECHENFEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_RECHENFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_STROMPREIS_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_STROMPREIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs ({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER", resourceCulture);
             }
         }
         
@@ -53030,6 +53102,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_STROMTRAEGER_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_STROMTRAEGER_RUECKFALL", resourceCulture);
             }
         }
         

@@ -10124,6 +10124,33 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
     <value>CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet.</value>
   </data>
+  <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
+    <value>Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
+  </data>
+  <data name="WIRT_GRUND_BRENNSTOFFPREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
+  </data>
+  <data name="WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs ({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_VERBRAUCH" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und erneut rechnen.</value>
+  </data>
+  <data name="WIRT_GRUND_RECHENFEHLER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. Ausweg: Preise und Heizwerte der Energieträger prüfen.</value>
+  </data>
+  <data name="WIRT_BTN_NEU_BERECHNEN" xml:space="preserve">
+    <value>Neu berechnen</value>
+  </data>
+  <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
+    <value>Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen.</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
   </data>

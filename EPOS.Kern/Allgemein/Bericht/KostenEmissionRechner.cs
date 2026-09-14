@@ -81,53 +81,115 @@ namespace WindowsFormsApplication1
         //
         // DIE TEXTE STEHEN HIER, NICHT IN DER OBERFLÄCHE: Wer den Grund kennt,
         // ist dieser Rechner. Die Oberfläche zeigt ihn nur an (Razor-Warnbanner),
-        // die Wirtschaftlichkeit reicht ihn als Fehlgrund durch. Ressourcenlage
-        // wie in WirtschaftlichkeitCtrl.T: deutscher Text jetzt, resx-Schlüssel
-        // mit dem nächsten Sammelnachtrag.
+        // die Wirtschaftlichkeit reicht ihn als Fehlgrund durch.
+        //
+        // JEDER TEXT KOMMT AUS MyResource (beide Sprachen), der deutsche Wortlaut
+        // daneben ist der RÜCKFALL für eine Ressourcendatei ohne den Schlüssel —
+        // dasselbe Muster wie WirtschaftlichkeitCtrl.T und KohaerenzPruefung.T.
+        // Eine Eigenschaft statt einer Konstanten, weil die Sprache erst zur
+        // LAUFZEIT feststeht: Eine Konstante wäre in der Sprache eingefroren, die
+        // beim Übersetzen galt.
 
         /// <summary>Der Netzbezug ist nicht bepreisbar, weil dem Projekt überhaupt
         /// kein Stromträger zuzuordnen ist (auch der Katalog führt keinen).</summary>
-        internal const string GRUND_KEIN_STROMTRAEGER =
-            "Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, " +
-            "Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. " +
-            "Ausweg: unter „Berichte & Kosten › Energieträger\" einen Stromträger zuordnen.";
+        internal static string GRUND_KEIN_STROMTRAEGER
+        {
+            get
+            {
+                return T("WIRT_GRUND_KEIN_STROMTRAEGER",
+                    "Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, " +
+                    "Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. " +
+                    "Ausweg: unter „Berichte & Kosten › Energieträger“ einen Stromträger zuordnen.");
+            }
+        }
 
         /// <summary>Der Stromträger steht, aber sein Arbeitspreis ist nirgends gepflegt.</summary>
-        internal const string GRUND_STROMPREIS_FEHLT =
-            "Energiekosten nicht bestimmbar: Für den Stromträger „{0}\" ist kein " +
-            "Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte & Kosten › " +
-            "Energieträger\" eintragen.";
+        internal static string GRUND_STROMPREIS_FEHLT
+        {
+            get
+            {
+                return T("WIRT_GRUND_STROMPREIS_FEHLT",
+                    "Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein " +
+                    "Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte & Kosten › " +
+                    "Energieträger“ eintragen.");
+            }
+        }
 
         /// <summary>Ein verbrauchender Träger ohne gepflegten Arbeitspreis.</summary>
-        internal const string GRUND_BRENNSTOFFPREIS_FEHLT =
-            "Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. " +
-            "Ausweg: den Arbeitspreis unter „Berichte & Kosten › Energieträger\" eintragen.";
+        internal static string GRUND_BRENNSTOFFPREIS_FEHLT
+        {
+            get
+            {
+                return T("WIRT_GRUND_BRENNSTOFFPREIS_FEHLT",
+                    "Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. " +
+                    "Ausweg: den Arbeitspreis unter „Berichte & Kosten › Energieträger“ eintragen.");
+            }
+        }
 
         /// <summary>Verbrauch, der keinem Energieträger zugeordnet ist.</summary>
-        internal const string GRUND_VERBRAUCH_OHNE_TRAEGER =
-            "Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs " +
-            "({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen " +
-            "Erzeugern unter „Anlagen\" einen Energieträger zuordnen.";
+        internal static string GRUND_VERBRAUCH_OHNE_TRAEGER
+        {
+            get
+            {
+                return T("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER",
+                    "Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs " +
+                    "({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen " +
+                    "Erzeugern unter „Anlagen“ einen Energieträger zuordnen.");
+            }
+        }
 
         /// <summary>Weder Brennstoffverbrauch noch Netzbezug im Simulationsergebnis —
         /// es gibt nichts zu bepreisen.</summary>
-        internal const string GRUND_KEIN_VERBRAUCH =
-            "Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder " +
-            "Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und " +
-            "erneut rechnen.";
+        internal static string GRUND_KEIN_VERBRAUCH
+        {
+            get
+            {
+                return T("WIRT_GRUND_KEIN_VERBRAUCH",
+                    "Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder " +
+                    "Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und " +
+                    "erneut rechnen.");
+            }
+        }
 
         /// <summary>Die Rechnung selbst ist gescheitert (Fangzaun in <see cref="Berechne"/>).</summary>
-        internal const string GRUND_RECHENFEHLER =
-            "Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. " +
-            "Ausweg: Preise und Heizwerte der Energieträger prüfen.";
+        internal static string GRUND_RECHENFEHLER
+        {
+            get
+            {
+                return T("WIRT_GRUND_RECHENFEHLER",
+                    "Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. " +
+                    "Ausweg: Preise und Heizwerte der Energieträger prüfen.");
+            }
+        }
 
         /// <summary>Der Netzbezug wurde mit dem AUSLIEFERUNGSträger bepreist, weil das
         /// Projekt selbst keinen zugeordnet hat — dieselbe Wahl, die die Kostenseite
         /// anzeigt und der Assistent zuordnen würde.</summary>
-        internal const string HINWEIS_STROMTRAEGER_RUECKFALL =
-            "Netzbezug mit dem Energieträger „{0}\" bepreist — dem Projekt ist kein " +
-            "Stromträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger\" " +
-            "zuordnen.";
+        internal static string HINWEIS_STROMTRAEGER_RUECKFALL
+        {
+            get
+            {
+                return T("WIRT_STROMTRAEGER_RUECKFALL",
+                    "Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein " +
+                    "Stromträger zugeordnet. Ausweg: unter „Berichte & Kosten › Energieträger“ " +
+                    "zuordnen.");
+            }
+        }
+
+        /// <summary>
+        /// MyResource mit deutschem Rückfall (Drei-Schichten-Regel) — dasselbe Muster
+        /// wie <c>WirtschaftlichkeitCtrl.T</c> und <c>KohaerenzPruefung.T</c>. Der
+        /// Rückfall greift auf einer Ressourcendatei ohne den Schlüssel.
+        /// </summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
+        }
 
         public static void Berechne(VariantenDaten v)
         {

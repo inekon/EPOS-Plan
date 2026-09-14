@@ -18,8 +18,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// die Sicht-Knöpfe (Photovoltaik, BHKW, Strombezug — je nach Ausstattung),
 /// „Parameter…", „Verlauf…", „Berechnen" und der Abbrechen-Knopf während
 /// eines Laufs.</para>
+///
+/// <para><b>Kulturpinnung</b> (Auftrag #267): Die Beschriftung des Rechenknopfs
+/// im Warnband kommt seit dem Ressourcennachtrag aus <c>MyResource</c>. Der
+/// CI-Läufer läuft unter <c>en-US</c>; die Hausvorrichtung
+/// <see cref="EposBunitContext"/> pinnt die Oberflächenkultur auf de-DE und
+/// stellt sie zurück.</para>
 /// </summary>
-public class WirtschaftlichkeitSeiteTests : BunitContext
+public class WirtschaftlichkeitSeiteTests : EposBunitContext
 {
     public WirtschaftlichkeitSeiteTests()
     {

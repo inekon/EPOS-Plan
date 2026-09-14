@@ -379,13 +379,14 @@
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
     /// <summary>Beschriftung des Rechenknopfs IM WARNBAND (Auftrag #267) — derselbe
-    /// Lauf wie „Berechnen", nur oben, wo die Meldung steht.</summary>
-    [Parameter] public string NeuBerechnenText { get; set; } = "Neu berechnen";
+    /// Lauf wie „Berechnen", nur oben, wo die Meldung steht. Der Text kommt aus
+    /// MyResource (beide Sprachen), damit er auch ohne Zutun der Hülle in der
+    /// Oberflächensprache steht.</summary>
+    [Parameter] public string NeuBerechnenText { get; set; } = Resource.WIRT_BTN_NEU_BERECHNEN;
 
     /// <summary>Der Satz des Warnbandes, wenn die gespeicherten Ergebnisse nicht mehr
     /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
-    [Parameter] public string NachrechnenText { get; set; }
-        = "Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen.";
+    [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
 
     /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen.</summary>
     [Parameter] public string MeldungStammReferenz { get; set; }

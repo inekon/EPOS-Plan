@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Globalization;
+using System.Resources;
+using System.Threading;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -219,6 +222,76 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(erg.Hinweis);
             Assert.Contains("Elektrische Energie", erg.Hinweis);
             Assert.Contains("kein Stromträger zugeordnet", erg.Hinweis);
+        }
+
+        // =================================================================
+        // 4 — Die Texte stehen in MyResource, in BEIDEN Sprachen
+        // =================================================================
+
+        /// <summary>
+        /// <b>Der Nachweis, dass die Schlüssel greifen.</b> Ein vertippter Schlüssel
+        /// fiele sonst nirgends auf: <c>T</c> lieferte klaglos den deutschen Rückfall,
+        /// und die englische Oberfläche zeigte deutschen Text. Geprüft wird deshalb
+        /// jeder der neun Schlüssel in der neutralen UND in der englischen
+        /// Ressourcendatei — und dass die Eigenschaft wirklich den Ressourcentext
+        /// liefert und nicht ihren Rückfall.
+        /// </summary>
+        [Theory]
+        [InlineData("WIRT_GRUND_KEIN_STROMTRAEGER")]
+        [InlineData("WIRT_GRUND_STROMPREIS_FEHLT")]
+        [InlineData("WIRT_GRUND_BRENNSTOFFPREIS_FEHLT")]
+        [InlineData("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER")]
+        [InlineData("WIRT_GRUND_KEIN_VERBRAUCH")]
+        [InlineData("WIRT_GRUND_RECHENFEHLER")]
+        [InlineData("WIRT_STROMTRAEGER_RUECKFALL")]
+        [InlineData("WIRT_BTN_NEU_BERECHNEN")]
+        [InlineData("WIRT_BAND_NACHRECHNEN")]
+        public void Jeder_Schluessel_steht_in_beiden_Ressourcendateien(string schluessel)
+        {
+            ResourceManager rm = WindowsFormsApplication1.MyResource.Resource.ResourceManager;
+            Assert.False(string.IsNullOrEmpty(rm.GetString(schluessel, new CultureInfo("de-DE"))),
+                         schluessel + " fehlt in Resource.resx");
+            Assert.False(string.IsNullOrEmpty(rm.GetString(schluessel, new CultureInfo("en-US"))),
+                         schluessel + " fehlt in Resource.en-US.resx");
+        }
+
+        /// <summary>
+        /// Die Gründe werden AUS DER RESSOURCE gelesen, nicht aus ihrem Rückfall —
+        /// sonst bliebe die Umstellung folgenlos.
+        /// </summary>
+        [Fact]
+        public void Die_Gruende_kommen_aus_der_Ressource()
+        {
+            using var kultur = new Kulturpinnung("de-DE");
+            ResourceManager rm = WindowsFormsApplication1.MyResource.Resource.ResourceManager;
+
+            Assert.Equal(rm.GetString("WIRT_GRUND_KEIN_STROMTRAEGER"),
+                         KostenEmissionRechner.GRUND_KEIN_STROMTRAEGER);
+            Assert.Equal(rm.GetString("WIRT_STROMTRAEGER_RUECKFALL"),
+                         KostenEmissionRechner.HINWEIS_STROMTRAEGER_RUECKFALL);
+        }
+
+        /// <summary>Pinnt die Oberflächenkultur und stellt sie zurück (Regel des
+        /// Kulturwächters: kein Test pinnt ohne Rückstellung).</summary>
+        private sealed class Kulturpinnung : IDisposable
+        {
+            private readonly CultureInfo _vorherUi;
+            private readonly CultureInfo _vorherDefaultUi;
+
+            public Kulturpinnung(string kultur)
+            {
+                _vorherUi = Thread.CurrentThread.CurrentUICulture;
+                _vorherDefaultUi = CultureInfo.DefaultThreadCurrentUICulture;
+                CultureInfo neu = new CultureInfo(kultur);
+                Thread.CurrentThread.CurrentUICulture = neu;
+                CultureInfo.DefaultThreadCurrentUICulture = neu;
+            }
+
+            public void Dispose()
+            {
+                Thread.CurrentThread.CurrentUICulture = _vorherUi;
+                CultureInfo.DefaultThreadCurrentUICulture = _vorherDefaultUi;
+            }
         }
 
         // =================================================================
