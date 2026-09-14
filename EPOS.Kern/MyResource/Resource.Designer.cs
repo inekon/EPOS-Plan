@@ -20496,6 +20496,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW/m² × {1} m² × {2} Module = {3} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_SOLAR_KW {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_SOLAR_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW/m² × {1} m² Aperturfläche = {2} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_SOLAR_KW_FLAECHE {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_SOLAR_KW_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
         /// </summary>
         public static string KDLG_KAT_BETRIEB {
@@ -20808,6 +20826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_MSG_STANDARD_LOESCHEN {
             get {
                 return ResourceManager.GetString("KDLG_MSG_STANDARD_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string KDLG_OHNE_BASIS_ZEILE {
+            get {
+                return ResourceManager.GetString("KDLG_OHNE_BASIS_ZEILE", resourceCulture);
             }
         }
         

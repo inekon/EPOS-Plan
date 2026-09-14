@@ -60,10 +60,19 @@
                     Aktiv="@(Schreibbar && !Neuzeile)" />
     </div>
 
-    <div class="epos-zr-zelle epos-zr-text" title="@BetragKurztext">
+    <div class="epos-zr-zelle epos-zr-text" title="@BetragTitel">
         @if (Kette)
         {
             <span class="epos-zr-kette" title="@KetteKurztext">🔗</span>
+        }
+        @* ANWENDERBEFUND 14.09.2026: KEIN STILLES 0. Ohne Bezugsgroesse stand hier
+           bisher nur die 0 des Anwenderentscheids I-2 - der Grund lag im
+           Werkzeugtipp und blieb damit unsichtbar. Das Zeichen macht ihn im
+           Raster sichtbar; den Satz dazu sammelt der Wirt unter dem Raster. *@
+        @if (OhneBasis)
+        {
+            <span class="epos-zr-ohnebasis" role="img"
+                  aria-label="@BetragKurztext" title="@BetragTitel">⚠</span>
         }
         <span class="epos-zr-betrag">@BetragText</span>
     </div>
@@ -178,6 +187,29 @@
 
     /// <summary>Kurztext des Betragsfeldes — je Kontext ein anderer.</summary>
     [Parameter] public string BetragKurztext { get; set; } = "";
+
+    /// <summary>
+    /// 14.09.2026: Die Zeile rechnet OHNE Bezugsgroesse - sie traegt dann ein
+    /// sichtbares Zeichen, und <see cref="BetragKurztext"/> nennt den Grund.
+    /// </summary>
+    [Parameter] public bool OhneBasis { get; set; }
+
+    /// <summary>
+    /// 14.09.2026: Die Herleitung einer GERECHNETEN Bezugsgroesse, fertig aus dem
+    /// Kern - sie steht im Werkzeugtipp des Betragsfeldes unter dem Kurztext.
+    /// Leer, wo die Groesse unmittelbar am Geraet steht.
+    /// </summary>
+    [Parameter] public string BasisHerleitung { get; set; } = "";
+
+    /// <summary>Der Werkzeugtipp des Betragsfeldes: Kurztext, und darunter die
+    /// Herleitung, wenn es eine gibt. Zwei Zeilen statt zweier Tipps - der
+    /// Anwender fragt an EINER Stelle, woher der Betrag kommt.</summary>
+    private string BetragTitel
+        => string.IsNullOrEmpty(BasisHerleitung)
+            ? BetragKurztext
+            : (string.IsNullOrEmpty(BetragKurztext)
+                ? BasisHerleitung
+                : BetragKurztext + "\n" + BasisHerleitung);
 
     /// <summary>Kurztext des Satzfeldes: der Empfehlungsbereich, wenn es einen gibt.</summary>
     [Parameter] public string EmpfehlungKurztext { get; set; } = "";

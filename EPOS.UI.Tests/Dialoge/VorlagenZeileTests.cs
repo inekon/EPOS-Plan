@@ -257,4 +257,67 @@ public class VorlagenZeileTests : BunitContext
         Assert.True(felder[1].HasAttribute("disabled"));    // Satz
         Assert.True(felder[2].HasAttribute("disabled"));    // Nutzungsdauer
     }
+
+    // =====================================================================
+    // Kein stilles 0 (Anwenderbefund 14.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Befund lautete: Betrag netto 0,00 € und kein Wort dazu. Den Grund
+    /// nannte der Werkzeugtipp — sichtbar war er damit nicht. Jetzt trägt die
+    /// Zeile ein Zeichen, und der Grund steht als Beschriftung daran, damit auch
+    /// eine Sprachausgabe ihn vorliest.
+    /// </summary>
+    [Fact]
+    public void Ohne_Bezugsgroesse_traegt_die_Zeile_ein_sichtbares_Zeichen()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.OhneBasis, true)
+            .Add(x => x.BetragKurztext,
+                 "Keine Bezugsgröße: kein Gerät mit dieser Baugröße im Projekt."));
+
+        var zeichen = cut.Find(".epos-zr-ohnebasis");
+        Assert.Equal("⚠", zeichen.TextContent);
+        Assert.Equal("Keine Bezugsgröße: kein Gerät mit dieser Baugröße im Projekt.",
+                     zeichen.GetAttribute("aria-label"));
+    }
+
+    /// <summary>Eine Zeile MIT Bezugsgröße bleibt ruhig — das Zeichen ist kein
+    /// Dauerschmuck.</summary>
+    [Fact]
+    public void Mit_Bezugsgroesse_bleibt_das_Zeichen_weg()
+    {
+        var cut = Zeige(p => p.Add(x => x.OhneBasis, false));
+
+        Assert.Empty(cut.FindAll(".epos-zr-ohnebasis"));
+    }
+
+    /// <summary>
+    /// Die Herleitung einer GERECHNETEN Bezugsgröße steht im selben Werkzeugtipp
+    /// wie der Kurztext — der Anwender fragt an EINER Stelle, woher der Betrag
+    /// kommt.
+    /// </summary>
+    [Fact]
+    public void Der_Werkzeugtipp_nennt_Kurztext_und_Herleitung()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.BetragKurztext, "Aus Satz und Bezugsgröße berechnet: 700,00 €/kW × 17,50 kW.")
+            .Add(x => x.BasisHerleitung, "0,7 kW/m² × 2,50 m² × 10 Module = 17,50 kW"));
+
+        string tipp = cut.Find(".epos-zr-text").GetAttribute("title") ?? "";
+
+        Assert.Contains("700,00 €/kW × 17,50 kW.", tipp);
+        Assert.Contains("0,7 kW/m² × 2,50 m² × 10 Module = 17,50 kW", tipp);
+    }
+
+    /// <summary>Ohne Herleitung bleibt der Werkzeugtipp genau der Kurztext — kein
+    /// angehängter Leerraum.</summary>
+    [Fact]
+    public void Ohne_Herleitung_bleibt_der_Werkzeugtipp_der_Kurztext()
+    {
+        var cut = Zeige(p => p.Add(x => x.BetragKurztext, "Aus Satz und Bezugsgröße berechnet."));
+
+        Assert.Equal("Aus Satz und Bezugsgröße berechnet.",
+                     cut.Find(".epos-zr-text").GetAttribute("title"));
+    }
 }

@@ -57,6 +57,27 @@ public sealed class KostenPositionZeile
     /// <summary>Kurztext des Betragsfeldes — je Kontext ein anderer.</summary>
     public string BetragKurztext { get; set; } = "";
 
+    /// <summary>
+    /// ANWENDERBEFUND 14.09.2026: Diese Zeile hat KEINE Bezugsgröße — ihr Betrag ist
+    /// der erfasste (Anwenderentscheid I-2), bei einer satzbasierten Zeile also 0.
+    ///
+    /// <para><b>Warum ein eigenes Kennzeichen.</b> Den Grund nennt seit H4c
+    /// <see cref="BetragKurztext"/> — aber nur als Werkzeugtipp des Betragsfeldes.
+    /// Der Anwender sah im Raster eine 0 und keinen Hinweis; er hätte mit der Maus
+    /// auf dem Feld stehen bleiben müssen, um zu erfahren, warum. Mit dem Kennzeichen
+    /// trägt die Zeile ein sichtbares Zeichen, und der Dialog sammelt die Gründe unter
+    /// dem Raster.</para>
+    /// </summary>
+    public bool OhneBasis { get; set; }
+
+    /// <summary>
+    /// 14.09.2026: WIE die Bezugsgröße entstanden ist, wenn sie GERECHNET und nicht
+    /// am Gerät abgelesen wurde — „0,7 kW/m² × 2,50 m² × 10 Module = 17,50 kW".
+    /// Leer, wo die Größe unmittelbar in einer Gerätemaske steht. Der Satz kommt
+    /// fertig aus dem Kern (<c>TechnikPlanwertCtrl.BaugroesseHerleitung</c>).
+    /// </summary>
+    public string BasisHerleitung { get; set; } = "";
+
     /// <summary>Empfehlungsbereich als Kurztext des Satzfeldes; leer = keiner.</summary>
     public string EmpfehlungKurztext { get; set; } = "";
 

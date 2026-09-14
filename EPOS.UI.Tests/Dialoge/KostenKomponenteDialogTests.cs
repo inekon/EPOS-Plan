@@ -1001,4 +1001,78 @@ public class KostenKomponenteDialogTests : BunitContext
 
         Assert.Equal(new[] { "Form_KostenKomponente.btn_Help" }, hilfe.Geoeffnet);
     }
+
+    // =====================================================================
+    // Kein stilles 0 (Anwenderbefund 14.09.2026)
+    // =====================================================================
+
+    private static KostenKomponenteStand StandOhneBasis()
+    {
+        var stand = new KostenKomponenteStand
+        {
+            Titel = "Kostenverwaltung Solarthermie — Musterprojekt",
+            Untertitel = "Investitionskosten nach VDI 2067",
+            Zeilen = new[]
+            {
+                Zeile(21, "Montage", 1200),
+                new KostenPositionZeile
+                {
+                    Id = 22,
+                    Bezeichnung = "Solarthermie",
+                    BemessungId = 2,
+                    Satz = 700,
+                    Einheit = "€/kW",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: kein Gerät mit dieser Baugröße "
+                                     + "im Projekt. Es gilt der erfasste Betrag.",
+                    Schreibbar = true
+                }
+            },
+            Bemessungen = BEMESSUNGEN,
+            SpalteBetrag = "Betrag netto [€]",
+            MitNutzungsdauer = true,
+            MitWorstBest = true,
+            PositionNeuMoeglich = true
+        };
+        return stand;
+    }
+
+    /// <summary>
+    /// DER BEFUND: Im Bildschirmfoto stand unter dem Raster nichts. Der Grund lag
+    /// allein im Werkzeugtipp des Betragsfeldes. Jetzt sammelt eine LEISE Zeile
+    /// unter dem Raster Bezeichnung und Grund jeder Zeile ohne Bezugsgröße.
+    /// </summary>
+    [Fact]
+    public void Zeilen_ohne_Bezugsgroesse_stehen_unter_dem_Raster()
+    {
+        var cut = Zeige(stand: StandOhneBasis());
+
+        string zeile = cut.Find(".epos-zr-ohnebasis-zeile").TextContent;
+
+        Assert.Contains("Solarthermie", zeile);
+        Assert.Contains("kein Gerät mit dieser Baugröße im Projekt", zeile);
+        Assert.DoesNotContain("Montage", zeile);
+    }
+
+    /// <summary>Hat jede Zeile ihre Bezugsgröße — der Regelfall —, bleibt die
+    /// Zeile weg; ein Dauerhinweis wäre Lärm.</summary>
+    [Fact]
+    public void Ohne_solche_Zeilen_bleibt_der_Hinweis_weg()
+    {
+        var cut = Zeige(stand: Standard(projekt: true));
+
+        Assert.Empty(cut.FindAll(".epos-zr-ohnebasis-zeile"));
+        Assert.Equal("", cut.Instance.OhneBasisText);
+    }
+
+    /// <summary>Und die Zeile selbst trägt das Zeichen — der Wirt reicht das
+    /// Kennzeichen durch.</summary>
+    [Fact]
+    public void Die_betroffene_Zeile_traegt_das_Zeichen_im_Raster()
+    {
+        var cut = Zeige(stand: StandOhneBasis());
+
+        Assert.Single(cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis"));
+    }
 }
