@@ -171,6 +171,7 @@
                                              RegelNeu="RegelAnlegen"
                                              RegelAbschalten="@RegelAbschalten"
                                              InArbeitspreis="ArbeitspreisUebernehmen"
+                                             KatalogUebernehmen="KatalogwerteHolen"
                                              AufschlagAnwenden="AufschlagAnwendenSetzen"
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
@@ -299,6 +300,9 @@
 
     /// <summary>„In Arbeitspreis übernehmen" der Preiszerlegung.</summary>
     [Parameter] public EventCallback InArbeitspreis { get; set; }
+
+    /// <summary>B3: „Katalogwerte übernehmen" der Trägerkarte (nur im Projektkontext).</summary>
+    [Parameter] public EventCallback KatalogUebernehmen { get; set; }
 
     /// <summary>Ä16: der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
     [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
@@ -614,6 +618,15 @@
         Nachziehen();
     }
 
+    /// <summary>B3: Die Hülle füllt die Felder aus der Katalogzeile; geschrieben
+    /// wird erst mit „Speichern" bzw. „OK".</summary>
+    private async Task KatalogwerteHolen()
+    {
+        Melden("");
+        await KatalogUebernehmen.InvokeAsync();
+        Nachziehen();
+    }
+
     private Task AufschlagAnwendenSetzen(bool an) => AufschlagAnwenden.InvokeAsync(an);
 
     // =====================================================================
@@ -777,6 +790,9 @@
             return;
         }
         Melden("");
+        // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
+        // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
+        Nachziehen();
         _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
     }
 

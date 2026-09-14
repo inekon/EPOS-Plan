@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
@@ -762,5 +763,108 @@ public class EnergietraegerDialogTests : EposBunitContext
         // Auch der unzugeordnete Traeger laesst sich waehlen - Speichern ordnet ihn zu.
         eintraege[1].Click();
         Assert.Equal(60, _geladen);
+    }
+
+    // =====================================================================
+    // Preishistorie und Katalogübernahme (Anwenderbefund 14.09.2026, B2/B3)
+    // =====================================================================
+
+    /// <summary>Der Knopf der Gruppe „Preise" — er steht nur im Projektkontext.</summary>
+    private static IElement? Uebernahmeknopf(IRenderedComponent<EnergietraegerDialog> cut)
+    {
+        foreach (IElement k in cut.FindAll(".epos-traegerkarte button"))
+        {
+            if (k.TextContent.Trim() == "Katalogwerte übernehmen") return k;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// B3: „Eine Übernahme der Stammdaten-Kosten (aus der Administration) soll
+    /// möglich sein." Der Knopf steht in der Preisgruppe — aber nur, wo es einen
+    /// Katalog GEGENÜBER gibt, also im Projektkontext.
+    /// </summary>
+    [Fact]
+    public void Der_Uebernahmeknopf_steht_nur_im_Projektkontext()
+    {
+        EnergietraegerStand mit = Stand();
+        mit.MitKatalogUebernahme = true;
+        Assert.NotNull(Uebernahmeknopf(Zeige(katalog: false,
+            ansicht: new EnergietraegerAnsicht { Stand = mit })));
+
+        EnergietraegerStand ohne = Stand();
+        ohne.MitKatalogUebernahme = false;
+        Assert.Null(Uebernahmeknopf(Zeige(ansicht: new EnergietraegerAnsicht { Stand = ohne })));
+    }
+
+    /// <summary>Der Klick ruft den Rückruf der Hülle — geschrieben wird erst mit „Speichern".</summary>
+    [Fact]
+    public void Ein_Klick_auf_Katalogwerte_uebernehmen_ruft_den_Rueckruf()
+    {
+        int gerufen = 0;
+        EnergietraegerStand stand = Stand();
+        stand.MitKatalogUebernahme = true;
+
+        var cut = Zeige(katalog: false, ansicht: new EnergietraegerAnsicht { Stand = stand },
+                        mehr: p => p.Add(x => x.KatalogUebernehmen, () => gerufen++));
+
+        Uebernahmeknopf(cut)!.Click();
+
+        Assert.Equal(1, gerufen);
+    }
+
+    /// <summary>Die Hinweiszeile sagt, dass die Werte noch nicht geschrieben sind.</summary>
+    [Fact]
+    public void Nach_der_Uebernahme_steht_die_Hinweiszeile_da()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.MitKatalogUebernahme = true;
+        stand.UebernahmeHinweis = "Katalogwerte übernommen — noch nicht gespeichert.";
+
+        var cut = Zeige(katalog: false, ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        Assert.Contains("noch nicht gespeichert", cut.Markup);
+    }
+
+    /// <summary>
+    /// B2: Der Spaltenkopf der Historie nennt die Einheit des Heizwerts —
+    /// kWh/&lt;Abrechnungseinheit&gt;, nicht „kWh/kWh".
+    /// </summary>
+    [Fact]
+    public void Der_Historien_Spaltenkopf_nennt_die_Einheit()
+    {
+        var cut = Zeige();
+
+        Assert.Contains("Heizwert [kWh/Nm³]", cut.Markup);
+    }
+
+    /// <summary>Ohne Heizwert bleibt es beim nackten Wort — der Träger führt keinen.</summary>
+    [Fact]
+    public void Ohne_Heizwert_bleibt_der_Spaltenkopf_ohne_Einheit()
+    {
+        EnergietraegerStand ohne = Stand();
+        ohne.MitHeizwert = false;
+        ohne.MitBrennwert = false;
+        ohne.MitFormel = false;
+
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = ohne });
+
+        Assert.DoesNotContain("kWh/Nm³", cut.Markup);
+        Assert.Contains("Heizwert", cut.Markup);
+    }
+
+    /// <summary>
+    /// Im Katalogkontext sagt die Karte, warum dort keine Historienzeile entsteht
+    /// — benannt abgelehnt statt still übergangen.
+    /// </summary>
+    [Fact]
+    public void Der_Katalogkontext_nennt_den_Grund_unter_der_Tabelle()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.HistorieHinweis = "Die Preishistorie wird je Projekt geführt.";
+
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        Assert.Contains("je Projekt geführt", cut.Markup);
     }
 }

@@ -237,6 +237,45 @@ sachliche Grund für den Auszug.
 | **Brennstoff-Bestandteile** (`ucBrennstoffBestandteile`, B2) | Energiesteuer · CO₂ · Netz-/Messentgelt · Vertrieb, Schnellwahl aus dem Katalog, „In Arbeitspreis übernehmen"; **ohne Preiswirkung** — reine Transparenz und Kohärenzgrundlage |
 | **Vergütungssätze** | `Verguetung_PV` 5,0 · `Verguetung_BHKW` 5,0 ct/kWh je Projekt und Träger |
 
+### Die Trägerkarte: Einheiten, Preishistorie, Katalogübernahme
+
+**Heizwert und Brennwert sind Stoffwerte je Abrechnungseinheit.** Sie stehen in
+`kWh/<Abrechnungseinheit>` (`energy_carrier.billing_unit`: Nm³, L, kg, kWh) und werden **nie** mit
+der Preisbasis umgerechnet — ein Brennstoff hat seinen Heizwert, gleichgültig worin man ihn
+abrechnet. Gespeichert werden `custom_hi`/`custom_hs` bzw. `hi_kwh_per_unit`/`hs_kwh_per_unit`
+immer in dieser Einheit.
+
+**Nur der Arbeitspreis folgt der Preisbasis.** Die Klappliste „Preisbasis" sagt, in welcher
+Einheit der Anwender ihn eingeben will; angezeigt wird `Basiswert ÷ Faktor`, gespeichert wird der
+Basiswert je Abrechnungseinheit, und die gewählte Basis geht als `ID_Umrechnung` mit. Beim
+Öffnen mit gespeicherter Preisbasis wird die Anzeige umgerechnet. Der **Leistungspreis** bleibt in
+`€/(kW·a)` bzw. `€/(kW·Monat)`, der **Grundpreis** in `€/a`; beide kennen die Preisbasis nicht.
+
+**Formelzeile und Effektivprüfung rechnen über die Basiswerte** — Arbeitspreis je
+Abrechnungseinheit ÷ Heizwert je Abrechnungseinheit — und nennen die Einheiten:
+„0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh"; bei Preisbasis kWh kommt „Direktabrechnung:
+0,0476 €/kWh" dazu. Rechnet der Träger unmittelbar nach kWh ab (Strom, Fernwärme), steht
+„Direktabrechnung nach kWh". Die Rechnung selbst liegt einmal im Kern
+(`EnergietraegerPreiskarte`); der Riegel `EnergieEinheitenPruefung.ErreichtKwh` fragt über
+derselben Abrechnungseinheit.
+
+**Die Preishistorie gehört dem Kontext.** Im Projektkontext zeigt die Tabelle die Zeilen des
+Projekts (`energy_price.ID_Projekt`); gelesen wird beim Trägerwechsel und nach jedem
+erfolgreichen Speichern. Eine Zeile entsteht, wenn sich ein Wert gegenüber dem gespeicherten
+Stand geändert hat, zum Datum aus dem Feld „Gültig ab"; ein zweites Speichern am selben Tag
+aktualisiert sie, statt eine zweite anzulegen. Die Spalte „Heizwert" trägt ihre Einheit im Kopf.
+Im **Katalogkontext** entsteht **keine** Historienzeile — `energy_price.ID_Projekt` trägt einen
+Fremdschlüssel auf `Tab_Projekt.ID`, und das Projekt 0 gibt es nicht; die Karte nennt den Grund
+unter der Tabelle, geschrieben wird dort die Katalogzeile selbst.
+
+**Die Katalogübernahme ist eine einmalige Kopie.** Der Knopf „Katalogwerte übernehmen" steht nur
+im Projektkontext und holt Arbeits-, Grund- und Leistungspreis, Heiz- und Brennwert sowie die drei
+Emissionswerte aus der Katalogzeile in die Felder; die Preisbasis geht dabei auf die
+Abrechnungseinheit zurück. Die Karte meldet „Katalogwerte übernommen — noch nicht gespeichert";
+geschrieben wird erst mit „Speichern" bzw. „OK", und dabei entsteht die Historienzeile. Das
+Projekt folgt dem Katalog danach **nicht** — eine spätere Änderung im Katalog lässt die
+Projektwerte, wo sie sind.
+
 ### Emissionsanzeige der Energieträgertabelle (Auftrag 30.08.2026)
 
 **Ist-Zustand.** Die Tabelle „Energieträger des Projekts" auf der Kostenseite führt **drei feste

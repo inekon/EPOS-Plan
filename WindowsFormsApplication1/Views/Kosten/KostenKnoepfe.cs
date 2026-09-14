@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             energie.Click += (s, e) =>
             {
                 int? traeger = carrierId != null ? carrierId() : null;
-                EnergietraegerHuelle.Oeffnen(eigner, projektId(), traeger ?? 0);
+                EnergietraegerFenster.Oeffnen(eigner, projektId(), traeger ?? 0);
             };
             leiste.Controls.Add(energie);
 

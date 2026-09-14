@@ -875,7 +875,7 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<string, object> TraegerGaben()
         {
             if (_idProjekt <= 0) return null;
-            return EnergietraegerHuelle.Gaben(_idProjekt);
+            return new EnergietraegerHuelle(_idProjekt).Gaben();
         }
 
         /// <summary>Ä21: die Frage vor dem Löschen der losen Positionen.</summary>

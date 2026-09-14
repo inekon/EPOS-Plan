@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
+using SpeicherEngine;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
@@ -32,11 +31,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class SpotpreisImportHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 720 × 528 mit
-        /// einem 300 px hohen Protokollfeld; die Blazor-Fassung stellt Feld und
-        /// Beschriftung übereinander und braucht deshalb mehr Höhe.</summary>
-        private static readonly Size FENSTER = new Size(760, 720);
-
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
         /// Hülle ein eigenes Fenster; seit die Energieträgerverwaltung selbst
@@ -63,7 +57,8 @@ namespace WindowsFormsApplication1
                     Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.PREIS_IMPORT_TITEL,
                                                     filter, null)),
 
-                ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(pfad => Task.Run(() =>
+                ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(
+                    pfad => Kulturweitergabe.Starten(() =>
                 {
                     lauf = ctrl.Pruefe(pfad);
                     return new SpotpreisPruefung(
@@ -73,7 +68,7 @@ namespace WindowsFormsApplication1
                 })),
 
                 ["Speichern"] = new Func<string, bool, Action<int>, Task<SpotpreisSpeicherung>>(
-                    (bezeichner, stamm, fortschritt) => Task.Run(() =>
+                    (bezeichner, stamm, fortschritt) => Kulturweitergabe.Starten(() =>
                     {
                         if (lauf == null || !lauf.Erfolgreich)
                             return new SpotpreisSpeicherung(0, 0);

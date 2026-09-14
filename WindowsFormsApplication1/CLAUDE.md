@@ -85,9 +85,8 @@ $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe
   Besitzer jeder `BlazorDialogForm`, `ProcessCmdKey` samt F1, Sprachwechsel über
   `Application.Restart` —, die Verteiler `HauptfensterHuelle`/`StartseiteHuelle` und
   `Help/Form_HelpPopup`.
-- **`Controller/`** — `MenueCtrl` (die zusammengesetzten Abläufe des Menüs) und
-  `EnergietraegerKatalogCtrl`. Die Menüpunkte selbst sind **Daten**:
-  `../EPOS.UI/Bausteine/Menuetabelle.cs`.
+- **`Controller/`** — `MenueCtrl` (die zusammengesetzten Abläufe des Menüs). Die
+  Menüpunkte selbst sind **Daten**: `../EPOS.UI/Bausteine/Menuetabelle.cs`.
 - **`Allgemein/` sonst** — `Update/` (`SchemaMigration` samt dem eingefrorenen Zweig für
   Altbestände); `Hilfe/` (`WikiHelpCatalog` lädt die Rubrik „Programm Dokumentation" von
   `wiki.epos-plan.de`, Basis-URL aus dem Einstellwert `WordPressUrl`; dazu `HilfeAutomatik`,
