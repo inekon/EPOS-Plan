@@ -628,5 +628,138 @@ namespace EPOS.Kern.Tests
             Assert.False(HistorieLoeschen(gaben, zeile));
             Assert.Contains("je Projekt", HistorieLoeschenGrund(gaben));
         }
+
+        // =================================================================
+        // Komponentenkontext (Anwenderwunsch 14.09.2026, Auftrag 268)
+        // =================================================================
+
+        /// <summary>„Elektrische Energie" (Gruppe Strom) — dem Projekt 1030 zugeordnet.</summary>
+        private const int STROM = 60;
+
+        /// <summary>Der Gasheizkessel des Projekts 1030 (Brennstoff Erdgas E).</summary>
+        private const int KESSEL_GAS = 1018330;
+
+        /// <summary>Die Trägerzeilen eines Parametersatzes (ohne Gruppenköpfe).</summary>
+        private static List<EnergietraegerDialog.EnergietraegerListe> Zeilen(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            var liste = new List<EnergietraegerDialog.EnergietraegerListe>();
+            foreach (EnergietraegerDialog.EnergietraegerListe e in
+                     (IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>)gaben["Liste"])
+                if (e.Traeger.HasValue) liste.Add(e);
+            return liste;
+        }
+
+        private static List<int> Ids(IReadOnlyDictionary<string, object> gaben)
+        {
+            var ids = new List<int>();
+            foreach (EnergietraegerDialog.EnergietraegerListe e in Zeilen(gaben)) ids.Add(e.Traeger.Value);
+            return ids;
+        }
+
+        [Fact]
+        public void Ohne_Komponentenkontext_bleibt_die_Liste_ungefiltert()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<int> ids = Ids(new EnergietraegerHuelle(PROJEKT).Gaben());
+
+            Assert.Contains(ERDGAS_E, ids);
+            Assert.Contains(STROM, ids);
+            Assert.DoesNotContain("für", (string)new EnergietraegerHuelle(PROJEKT).Gaben()["KontextText"]);
+        }
+
+        [Fact]
+        public void Eine_Waermepumpe_sieht_nur_die_Stromtraeger()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben =
+                new EnergietraegerHuelle(PROJEKT).Gaben(0, DbWerte.ERZEUGER_WAERMEPUMPE);
+
+            List<int> ids = Ids(gaben);
+            Assert.Contains(STROM, ids);
+            Assert.DoesNotContain(ERDGAS_E, ids);
+
+            string kopf = (string)gaben["KontextText"];
+            Assert.Contains(DbWerte.ERZEUGER_WAERMEPUMPE, kopf);
+            Assert.Contains("Strom", kopf);
+        }
+
+        [Fact]
+        public void Ein_Gaskessel_sieht_seine_Gastraeger_und_keinen_Strom()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<int> ids = Ids(new EnergietraegerHuelle(PROJEKT)
+                .Gaben(0, DbWerte.ERZEUGER_HEIZKESSEL, KESSEL_GAS));
+
+            Assert.Contains(ERDGAS_E, ids);
+            Assert.DoesNotContain(STROM, ids);
+        }
+
+        [Fact]
+        public void Der_zugeordnete_Traeger_bleibt_in_der_Liste_und_wird_markiert()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Erdgas E als Vorwahl einer WAERMEPUMPE: unzulaessig, aber zugeordnet -
+            // er verschwindet nicht, sondern steht mit Hinweis da.
+            IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(PROJEKT)
+                .Gaben(ERDGAS_E, DbWerte.ERZEUGER_WAERMEPUMPE);
+
+            List<EnergietraegerDialog.EnergietraegerListe> zeilen = Zeilen(gaben);
+            EnergietraegerDialog.EnergietraegerListe erdgas =
+                zeilen.Find(z => z.Traeger == ERDGAS_E);
+            EnergietraegerDialog.EnergietraegerListe strom = zeilen.Find(z => z.Traeger == STROM);
+
+            Assert.NotNull(erdgas);
+            Assert.False(erdgas.Passend);
+            Assert.NotNull(strom);
+            Assert.True(strom.Passend);
+        }
+
+        [Fact]
+        public void Die_Kataloguebernahme_bietet_nur_zulaessige_Traeger_an()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben =
+                new EnergietraegerHuelle(PROJEKT).Gaben(0, DbWerte.ERZEUGER_WAERMEPUMPE);
+
+            var freie = ((Func<IReadOnlyList<ValueTuple<int, string>>>)gaben["FreieLaden"])();
+            Assert.NotEmpty(freie);
+            foreach (ValueTuple<int, string> f in freie)
+                Assert.StartsWith("Strom ", f.Item2);
+        }
+
+        [Fact]
+        public void Solarthermie_engt_nicht_ein_sondern_sagt_es_in_der_Kopfzeile()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben =
+                new EnergietraegerHuelle(PROJEKT).Gaben(0, DbWerte.ERZEUGER_SOLARTHERMIE);
+
+            // Die Verwaltung pflegt die Traeger des PROJEKTS - eine leere Liste waere
+            // eine Sackgasse. Gesagt wird es trotzdem.
+            List<int> ids = Ids(gaben);
+            Assert.Contains(ERDGAS_E, ids);
+            Assert.Contains(STROM, ids);
+            Assert.Contains(DbWerte.ERZEUGER_SOLARTHERMIE, (string)gaben["KontextText"]);
+            Assert.Contains("kein eigener", (string)gaben["KontextText"]);
+        }
     }
 }

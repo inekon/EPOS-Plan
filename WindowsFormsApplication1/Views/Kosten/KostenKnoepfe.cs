@@ -36,9 +36,13 @@ namespace WindowsFormsApplication1
         /// Projekt oft erst nach dem Konstruktor); 0 = Stammkontext</param>
         /// <param name="carrierId">Träger-Vorfilter, zur Klickzeit; null = keiner</param>
         /// <param name="fk8Hinweis">optionaler FK8-Hinweistext rechts in der Leiste</param>
+        /// <param name="geraeteId">Gerätezeile des Brenners (<c>Tab_Heizkessel.ID</c>
+        /// bzw. <c>Tab_BHKW.ID</c>), zur Klickzeit; null = keine. Sie entscheidet, auf
+        /// welche Brennstoffkategorie „Energiekosten…" die Trägerliste einengt
+        /// (Auftrag 268).</param>
         public static Panel Leiste(Form eigner, string komponente,
                                    Func<int> projektId, Func<int?> carrierId,
-                                   string fk8Hinweis = null)
+                                   string fk8Hinweis = null, Func<int> geraeteId = null)
         {
             var leiste = new Panel { Height = 40 };
 
@@ -53,8 +57,12 @@ namespace WindowsFormsApplication1
             Button energie = Knopf(T("KDLG_KNOPF_ENERGIE", "Energiekosten…"), 8 + 316);
             energie.Click += (s, e) =>
             {
+                // Auftrag 268: Die Verwaltung bekommt die Komponente mit - sie zeigt dann
+                // nur die Traeger, die zu ihr passen. Die Regel steht im Kern
+                // (EnergietraegerZulaessigkeit), hier wird nur durchgereicht.
                 int? traeger = carrierId != null ? carrierId() : null;
-                EnergietraegerFenster.Oeffnen(eigner, projektId(), traeger ?? 0);
+                EnergietraegerFenster.Oeffnen(eigner, projektId(), traeger ?? 0,
+                                              komponente, geraeteId != null ? geraeteId() : 0);
             };
             leiste.Controls.Add(energie);
 

@@ -8995,6 +8995,15 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
     <value>Context: project {0}</value>
   </data>
+  <data name="KDLG_ET_KONTEXT_KOMPONENTE" xml:space="preserve">
+    <value>for {0}: group {1} only</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_OHNE_TRAEGER" xml:space="preserve">
+    <value>for {0}: no energy carrier of its own</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_ALLE" xml:space="preserve">
+    <value>for {0}: all energy carriers</value>
+  </data>
   <data name="KDLG_ET_LISTE" xml:space="preserve">
     <value>Energy carriers</value>
   </data>
@@ -9507,6 +9516,9 @@ To deactivate it, set its rate or amount to 0.</value>
   </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>not assigned</value>
+  </data>
+  <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
+    <value>does not match the component</value>
   </data>
   <data name="KDLG_ET_VERWENDET_VON" xml:space="preserve">
     <value>used by: {0}</value>

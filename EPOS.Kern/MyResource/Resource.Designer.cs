@@ -20253,11 +20253,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: alle Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_ALLE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Katalog (Stammdaten) ähnelt.
         /// </summary>
         public static string KDLG_ET_KONTEXT_KATALOG {
             get {
                 return ResourceManager.GetString("KDLG_ET_KONTEXT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: nur Gruppe {1} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: kein eigener Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_OHNE_TRAEGER", resourceCulture);
             }
         }
         
@@ -20330,6 +20357,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ET_NICHT_ZUGEORDNET {
             get {
                 return ResourceManager.GetString("KDLG_ET_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passt nicht zur Komponente ähnelt.
+        /// </summary>
+        public static string KDLG_ET_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("KDLG_ET_PASST_NICHT", resourceCulture);
             }
         }
         

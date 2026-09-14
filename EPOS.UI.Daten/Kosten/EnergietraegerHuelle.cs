@@ -99,6 +99,30 @@ namespace WindowsFormsApplication1
         private int _idBrennstoff;
         private string _abrechnungseinheit = "";
 
+        // ---- Komponentenkontext (Auftrag 268) ------------------------------
+
+        /// <summary>
+        /// Die Komponente, aus der heraus die Verwaltung geöffnet wurde
+        /// (<c>DbWerte.ERZEUGER_*</c>); leer = ohne Komponentenkontext.
+        /// </summary>
+        private string _erzeugerart = "";
+
+        /// <summary>Gerätezeile des Brenners (<c>Tab_Heizkessel.ID</c> / <c>Tab_BHKW.ID</c>); 0 = keine.</summary>
+        private int _geraeteId;
+
+        /// <summary>
+        /// Die zulässigen Gruppen (<see cref="EnergietraegerZulaessigkeit.ZulaessigeGruppen"/>);
+        /// <c>null</c> = keine Einengung. Eine LEERE Menge (Solarthermie, Pufferspeicher)
+        /// kommt hier nie an — siehe <see cref="KontextSetzen"/>.
+        /// </summary>
+        private IReadOnlyList<string> _zulaessigeGruppen;
+
+        /// <summary>true, wenn die Komponente gar keinen Energieträger bezieht (nur Hinweis).</summary>
+        private bool _ohneTraeger;
+
+        /// <summary>Der vorgewählte Träger der Komponente — er bleibt in der Liste, auch wenn er nicht passt.</summary>
+        private int _vorwahl;
+
         /// <param name="projektId">0 = Katalogkontext (Stammdaten).</param>
         public EnergietraegerHuelle(int projektId)
         {
@@ -126,8 +150,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="traegerId">Vorwahl (KD6 § 9: „Energiekosten…" springt
         /// direkt auf den Träger der Komponente); 0 = der erste.</param>
-        public IReadOnlyDictionary<string, object> Gaben(int traegerId = 0)
+        /// <param name="erzeugerart">Komponente, aus der heraus geöffnet wurde
+        /// (<c>DbWerte.ERZEUGER_*</c> bzw. <c>KOSTEN_KOMPONENTE_PUFFERSPEICHER</c>);
+        /// <c>null</c>/leer = ohne Komponentenkontext, dann ändert sich nichts
+        /// (Menü Administration, Knopf auf der Kostenseite).</param>
+        /// <param name="geraeteId">Gerätezeile des Brenners (<c>Tab_Heizkessel.ID</c>
+        /// bzw. <c>Tab_BHKW.ID</c>); 0 = unbekannt.</param>
+        public IReadOnlyDictionary<string, object> Gaben(int traegerId = 0,
+                                                         string erzeugerart = null,
+                                                         int geraeteId = 0)
         {
+            KontextSetzen(traegerId, erzeugerart, geraeteId);
             ListeLaden();
             _katalogJahr = KatalogjahrErmitteln(_projektId, out _unternehmensart, out _co2PreisProjekt);
 
@@ -192,10 +225,8 @@ namespace WindowsFormsApplication1
                 ["BestandteilTexte"] = BestandteilTexte(),
 
                 ["TitelText"] = T("KDLG_ET_TITEL", "Energieträgerverwaltung"),
-                ["KontextText"] = Katalogkontext
-                    ? T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)")
-                    : string.Format(CultureInfo.CurrentCulture,
-                        T("KDLG_ET_KONTEXT_PROJEKT", "Kontext: Projekt {0}"), _projektId),
+                ["KontextText"] = KontextText(),
+                ["PasstNichtText"] = T("KDLG_ET_PASST_NICHT", "passt nicht zur Komponente"),
                 ["ListenTitel"] = T("KDLG_ET_LISTE", "Energieträger"),
                 // Suche und Filter der Traegerliste (Anwenderwunsch 04.09.2026):
                 // WORTGLEICH mit den Importdialogen - dieselbe Beschriftung,
@@ -245,6 +276,73 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Komponentenkontext (Auftrag 268)
+        // =====================================================================
+
+        /// <summary>
+        /// Nimmt den Komponentenkontext auf und fragt den Kern, was zulässig ist
+        /// (<see cref="EnergietraegerZulaessigkeit"/> — die EINE Wahrheit; hier wird
+        /// keine zweite Regel gerechnet).
+        ///
+        /// <para><b>Solarthermie und Pufferspeicher werden GENANNT, nicht gefiltert.</b>
+        /// Sie beziehen keine Energie; eine leere Trägerliste wäre aber eine Sackgasse.
+        /// Die Kopfzeile sagt deshalb „kein eigener Energieträger", und die Verwaltung
+        /// bleibt vollständig — gepflegt werden die Träger des PROJEKTS, nicht die der
+        /// Komponente.</para>
+        /// </summary>
+        private void KontextSetzen(int traegerId, string erzeugerart, int geraeteId)
+        {
+            _erzeugerart = (erzeugerart ?? "").Trim();
+            _geraeteId = geraeteId > 0 ? geraeteId : 0;
+            _vorwahl = traegerId > 0 ? traegerId : 0;
+
+            IReadOnlyList<string> gruppen = null;
+            try { gruppen = EnergietraegerZulaessigkeit.ZulaessigeGruppen(_erzeugerart, _geraeteId); }
+            catch { gruppen = null; }
+
+            _ohneTraeger = gruppen != null && gruppen.Count == 0;
+            _zulaessigeGruppen = _ohneTraeger ? null : gruppen;
+        }
+
+        /// <summary>Gilt eine Einengung? (Nur dann werden Liste und Übernahme gefiltert.)</summary>
+        private bool Eingeengt { get { return _zulaessigeGruppen != null; } }
+
+        /// <summary>Passt dieser Träger zur Komponente?</summary>
+        private bool Passt(EnergyCarrier c)
+        {
+            return c != null && EnergietraegerZulaessigkeit.PasstGruppe(_zulaessigeGruppen, c.GroupCode);
+        }
+
+        /// <summary>
+        /// Die Kopfzeile: Kontext (Katalog oder Projekt) und — wenn die Verwaltung aus
+        /// einer Komponente heraus geöffnet wurde — wofür die Liste eingeengt ist.
+        /// </summary>
+        private string KontextText()
+        {
+            string kontext = Katalogkontext
+                ? T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)")
+                : string.Format(CultureInfo.CurrentCulture,
+                    T("KDLG_ET_KONTEXT_PROJEKT", "Kontext: Projekt {0}"), _projektId);
+
+            if (_erzeugerart.Length == 0) return kontext;
+
+            string zusatz;
+            if (_ohneTraeger)
+                zusatz = string.Format(CultureInfo.CurrentCulture,
+                    T("KDLG_ET_KONTEXT_OHNE_TRAEGER", "für {0}: kein eigener Energieträger"),
+                    _erzeugerart);
+            else if (Eingeengt)
+                zusatz = string.Format(CultureInfo.CurrentCulture,
+                    T("KDLG_ET_KONTEXT_KOMPONENTE", "für {0}: nur Gruppe {1}"),
+                    _erzeugerart, string.Join(", ", _zulaessigeGruppen));
+            else
+                zusatz = string.Format(CultureInfo.CurrentCulture,
+                    T("KDLG_ET_KONTEXT_ALLE", "für {0}: alle Energieträger"), _erzeugerart);
+
+            return kontext + " — " + zusatz;
+        }
+
+        // =====================================================================
         // Trägerliste (Ä13)
         // =====================================================================
 
@@ -289,6 +387,18 @@ namespace WindowsFormsApplication1
                 catch { _verwendung.Clear(); }
             }
 
+            // Auftrag 268: Mit Komponentenkontext bleiben nur die zulaessigen Traeger
+            // stehen - PLUS der bereits zugeordnete Traeger der Komponente, auch wenn er
+            // nicht passt. Ihn wegzufiltern hiesse, eine falsche Zuordnung zu verstecken,
+            // statt sie zu zeigen; die Liste markiert ihn stattdessen.
+            if (Eingeengt)
+            {
+                var behalten = new List<EnergyCarrier>();
+                foreach (EnergyCarrier c in _traeger)
+                    if (Passt(c) || c.ID == _vorwahl) behalten.Add(c);
+                _traeger = behalten;
+            }
+
             _traeger.Sort((a, b) =>
             {
                 int g = string.Compare(a.GroupCode ?? "", b.GroupCode ?? "",
@@ -312,7 +422,7 @@ namespace WindowsFormsApplication1
                     liste.Add(new EnergietraegerDialog.EnergietraegerListe(null, g));
                 }
                 liste.Add(new EnergietraegerDialog.EnergietraegerListe(
-                    c.ID, c.Name, ListenKurztext(c.ID), ListenZugeordnet(c.ID)));
+                    c.ID, c.Name, ListenKurztext(c.ID), ListenZugeordnet(c.ID), Passt(c)));
             }
             return liste;
         }
@@ -334,7 +444,12 @@ namespace WindowsFormsApplication1
             return _projektId <= 0 || !_verwendung.TryGetValue(id, out v) || v.Zugeordnet;
         }
 
-        /// <summary>ET‑1: die Katalogträger, die dem Projekt noch nicht zugeordnet sind, mit Gruppe.</summary>
+        /// <summary>
+        /// ET‑1: die Katalogträger, die dem Projekt noch nicht zugeordnet sind, mit Gruppe.
+        /// Auftrag 268: Mit Komponentenkontext bietet „Aus Katalog übernehmen…" nur die
+        /// zulässigen an — was die Liste nicht zeigt, soll auch die Übernahme nicht
+        /// hereinholen.
+        /// </summary>
         private IReadOnlyList<ValueTuple<int, string>> Freie()
         {
             var liste = new List<ValueTuple<int, string>>();
@@ -342,8 +457,11 @@ namespace WindowsFormsApplication1
             try
             {
                 foreach (EnergyCarrier c in EnergietraegerKatalogCtrl.NichtZugeordnete(_projektId))
+                {
+                    if (Eingeengt && !Passt(c)) continue;
                     liste.Add(new ValueTuple<int, string>(c.ID,
                         (string.IsNullOrEmpty(c.GroupCode) ? "" : c.GroupCode + " › ") + c.Name));
+                }
             }
             catch { }
             return liste;
