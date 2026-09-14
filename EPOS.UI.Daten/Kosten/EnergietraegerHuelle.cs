@@ -7,9 +7,16 @@ using Microsoft.AspNetCore.Components;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Energieträgerverwaltung (iU9-W4.4) — Nachfolge der
+    /// Die HÜLLE der Energieträgerverwaltung (iU9-W4.4) — Nachfolge der
     /// gelöschten Masken <c>Views/Kosten/Form_Energietraeger</c> (535 Z.) und
     /// <c>Views/Kosten/ucFuelSettings</c> (2 103 Z.).
+    ///
+    /// <para><b>Sie ist plattformfrei</b> und liegt in <c>EPOS.UI.Daten</c>:
+    /// Ihre Quellen sind Kern-Controller, sie kennt kein Fenster. Was Windows
+    /// beisteuert, steht in <c>Views/Kosten/EnergietraegerFenster.cs</c> —
+    /// eine <c>BlazorDialogForm</c> um <see cref="EnergietraegerDialog"/>,
+    /// gebaut aus <see cref="Gaben"/>. Auf iOS zeigt dieselbe Hülle dieselbe
+    /// Komponente ohne diesen Adapter.</para>
     ///
     /// <para><b>Hier liegt die Datenseite.</b> Die neun SQL-Anweisungen der
     /// Trägerkarte stehen seit dieser Welle im Kern-Controller
@@ -73,7 +80,13 @@ namespace WindowsFormsApplication1
         private StromAufschlagModel _aufschlagModell;
         private BrennstoffBestandteilModel _bestandteilModell;
 
-        /// <summary>Live-Werte, immer auf die Basiseinheit normiert (wie im Vorläufer).</summary>
+        /// <summary>
+        /// Die BASISWERTE — so, wie sie in der Datenbank stehen: Arbeitspreis,
+        /// Heiz- und Brennwert je ABRECHNUNGSEINHEIT, Leistungspreis in
+        /// €/(kW·a) bzw. €/(kW·Monat), Grundpreis in €/a. Von ihnen weicht in
+        /// der Anzeige allein der Arbeitspreis ab, und nur um den Faktor der
+        /// gewählten Preisbasis (B1).
+        /// </summary>
         private double _baseHi, _baseHs, _baseWork, _basePower, _baseGround;
 
         /// <summary>Der unberührte DB-Zustand für den Historienvergleich.</summary>

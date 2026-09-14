@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using EPOS.UI.Daten.Kosten;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
