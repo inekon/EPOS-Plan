@@ -5333,3 +5333,43 @@ steht aus und ist die eigentliche Aufgabe von
 > **Gate sept68 auf `45daa16b`:** GRÜN auf `45daa16b` — Kern 2 819, UI 4 015, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** Windows-Abnahme am Projekt 1050; nur die erste beanstandete Einheit erzeugt einen Listenhinweis (Editor markiert
 > jede Zeile; Sammelliste wäre ein Folgeentscheid); Sammel-Upload frühestens 20.09.2026.
+
+## #258 — Der alte Berichtsweg „Projektvergleich + Bericht (alt)" ist gefallen (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderauftrag 14.09.2026:** „EPOS-Plan Bericht alt entfernen" — und im Nachgang „alles Zugehörige entfernen, lokal".
+>
+> **Ausgangslage (belegt):** Die Berichtsseite trug neben „Erstellen" einen zweiten Knopf „Projektvergleich + Bericht (alt)"
+> (`BK_BTN_VERGLEICH_ALT`). Er führte über den Rückruf `VergleichAlt` in `BerichtSeiteGaben.cs` auf
+> `Views/Varianten/ProjektvergleichBericht.cs` — den Vorgängerbericht (OpenXML, eigene Vergleichslogik, eigene
+> Kuchendiagramme), der die ganze Projektgruppe synchron und ohne Abbruch neu simulierte und dabei schrieb. Fachlich ist er
+> seit dem Berichtsmodul (`BerichtCtrl`, `BerichtsDatenSammler`, `WordBerichtGenerator`, Bausteine im Kern) abgelöst; der
+> Prüfbericht des Berichtsmoduls führte ihn als offenen Restpunkt (Δ auf Rohwerten nur im neuen Weg behoben).
+>
+> **Umsetzung (Agent Opus im Klon des Arbeitszweigs, Commits `36343c6` Code und Ressourcen, `e55b4e3` KI-Konzept,
+> `e7c3539` verwaiste Reste):** `EPOS.UI/Seiten/Berichte/BerichtSeite.razor` ohne den Knopf, ohne die Parameter
+> `VergleichAlt`/`VergleichAltText`/`TitelVergleich` und ohne die Methoden `VergleichFragen`/`VergleichLaufen`; `Frageart`
+> führt nur noch `Keine, Erstellen, Oeffnen`. `WindowsFormsApplication1/Views/Bericht/BerichtSeiteGaben.cs` ohne die drei
+> Wörterbuchschlüssel und ohne die Methode `VergleichAlt` — Parametersatz und `[Parameter]` bleiben deckungsgleich
+> (`ParametersatzTests`). `Views/Varianten/ProjektvergleichBericht.cs` (822 Zeilen) gelöscht; `EnergieMengen.cs` bleibt, weil
+> `BerichtsDatenSammler` die Brennstoffmengen daraus zieht. Sechs Ressourcenschlüssel des alten Wegs fielen aus beiden
+> `.resx` (`BK_BTN_VERGLEICH_ALT`, `BK_BER_TITEL_VERGLEICH`, `BK_BER_TITEL_FEHLER_VERGLEICH`, `BK_BER_MSG_VERGLEICH_FERTIG`,
+> `BK_BER_STATUS_FEHLER`, `BK_BER_DLG_FILTER_WORD`), `Resource.Designer.cs` über `designer_neu.py schreiben` neu erzeugt
+> (6 214 → 6 208 Einträge, zweiter Lauf +0). **Die Grenze zieht der Knopf:** `BK_BER_BTN_SCHLIESSEN` und
+> `BK_BER_TITEL_FEHLER` sind ebenfalls ohne Verwender, gehören aber zur Berichtsseite selbst und bleiben deshalb stehen
+> (Anwenderentscheid 14.09.2026: nur entfernen, was am alten Weg hängt). Belegverfahren der Waisen: jeder
+> `BK_BER_*`/`BK_BTN_*`-Name gegen den Volltext aller kompilierten `.cs`/`.razor` gehalten, den string-basierten Zugriff
+> `ResourceManager.GetString` eingeschlossen; `Werkzeuge/Formularkarte.Tests/Pruefmuster/**` zählt nicht als Verwendung.
+> Die Paketreferenz `DocumentFormat.OpenXml` ist aus `WindowsFormsApplication1.csproj` gefallen — keine `.cs` der Schale
+> nutzt OpenXML mehr; der Kern behält das Paket, `Directory.Packages.props` ist unberührt. Doku: Lokalisierungskatalog
+> nachgezogen (Gruppenzahlen 37 → 30), `CLAUDE.md` der Schale ohne den OpenXML-Spiegelstrich, KI-Konzept ohne die Aktion
+> `variantenbericht_erstellen` (im Code nie gebaut) und mit Beleg auf `BerichtsDatenSammler.cs:345`.
+> **Abnahme:** `WP-Plan.Kern.slnf -c Release` grün, 0 Fehler, 4 vorbestehende Warnungen; KiKern 488, SpeicherEngine 456,
+> SpeicherPlanung 27 (+1 übersprungen), bunit 4 015 → 4 013 (die zwei Fälle des alten Wegs); gezielte Wachen grün
+> (`BerichtSeiteTests`, `ParametersatzTests`, `DokumentationLinkWacheTests`, Lokalisierung). `EPOS.Kern.Tests` ist in der
+> Cloud-Sitzung kein Gate: `Referenzlaeufe/Kenndaten_Test.sqlite` liegt dort nur als 133-Byte-LFS-Zeiger, `git lfs pull`
+> scheitert am Proxy — daher auch kein SQL-Dialekt-Lauf und kein Referenzlauf. Der Rechenweg ist unberührt.
+> **Offen:** Windows-Build der Schale und Gate am Gerät; `ProjektvergleichBericht.cs` ist im Arbeitsbaum des Anwenders von
+> Hand zu löschen (die Cloud-Sitzung kann dort schreiben, aber nicht löschen); der Katalogabschnitt führt die
+> Schlüsselfamilie weiter unter der Vorgängermaske `Views/Bericht/UcBericht.cs`, die es nicht mehr gibt — eigener Entscheid;
+> `BK_BTN_SIMULIEREN` ist ebenfalls eine Waise, gehört aber zu einer anderen Maske; Logbuch-Eintrag zum entfallenen Knopf
+> mit Versionsnummer beim Anwender zu erfragen.

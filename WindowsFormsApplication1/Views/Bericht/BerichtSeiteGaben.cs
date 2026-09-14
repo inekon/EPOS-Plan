@@ -14,9 +14,8 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Was hier liegt.</b> Konfiguration lesen und schreiben
     /// (<see cref="BerichtCtrl"/>), der Variantenstatus
-    /// (<see cref="BerichtsDatenSammler.ErmittleStatus"/>), der Berichtslauf
-    /// selbst (Sammeln, Word, Excel) und der Bestandsweg
-    /// „Projektvergleich + Bericht (alt)". Dazu die Ordnerwahl und das Öffnen
+    /// (<see cref="BerichtsDatenSammler.ErmittleStatus"/>) und der Berichtslauf
+    /// selbst (Sammeln, Word, Excel). Dazu die Ordnerwahl und das Öffnen
     /// einer erzeugten Datei über <c>Dienste.Datei</c> (iU7-9). Die Komponente
     /// <see cref="BerichtSeite"/> zeigt nur an.</para>
     ///
@@ -54,7 +53,6 @@ namespace WindowsFormsApplication1
             {
                 ["Laden"] = new Func<BerichtStand>(Laden),
                 ["Erstellen"] = new Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>(Erstellen),
-                ["VergleichAlt"] = new Func<BerichtAuftrag, Task<LaufErgebnis>>(VergleichAlt),
                 ["Abbrechen"] = new Action(Abbrechen),
                 ["OrdnerWaehler"] = new Func<string, Task<string>>(OrdnerWaehlen),
                 ["DateiOeffnen"] = new Func<string, Task>(DateiOeffnen),
@@ -77,7 +75,6 @@ namespace WindowsFormsApplication1
                 ["BeideText"] = MyResource.Resource.BK_BER_RB_BEIDE,
                 ["DurchsuchenText"] = MyResource.Resource.BK_BER_BTN_DURCHSUCHEN,
                 ["ErstellenText"] = MyResource.Resource.BK_BER_BTN_ERSTELLEN,
-                ["VergleichAltText"] = MyResource.Resource.BK_BTN_VERGLEICH_ALT,
                 ["AbbrechenText"] = MyResource.Resource.BK_BER_BTN_ABBRECHEN,
                 ["JaText"] = Text("BKS_BTN_JA", "Ja"),
                 ["NeinText"] = Text("BKS_BTN_NEIN", "Nein"),
@@ -86,7 +83,6 @@ namespace WindowsFormsApplication1
                 ["BausteinWirtschaft"] = BerichtsKonfiguration.B_WIRTSCHAFT,
                 ["FrageStart"] = MyResource.Resource.BK_BER_FRAGE_START,
                 ["TitelErstellen"] = MyResource.Resource.BK_BER_TITEL_ERSTELLEN,
-                ["TitelVergleich"] = MyResource.Resource.BK_BER_TITEL_VERGLEICH,
                 ["StatusAbgebrochen"] = MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN,
                 ["HilfeSchluessel"] = "UcBericht.btn_Help"
             };
@@ -228,81 +224,6 @@ namespace WindowsFormsApplication1
             {
                 _cts.Dispose();
                 _cts = null;
-            }
-        }
-
-        // =====================================================================
-        // Bestandsweg „Projektvergleich + Bericht (alt)"
-        // =====================================================================
-
-        private async Task<LaufErgebnis> VergleichAlt(BerichtAuftrag auftrag)
-        {
-            var gruppe = new List<ProjektvergleichBericht.Projekt>();
-            gruppe.Add(new ProjektvergleichBericht.Projekt
-            {
-                Id = _idStamm,
-                Name = _stammName,
-                Bezeichner = "",
-                IstStamm = true
-            });
-
-            var namen = new Dictionary<int, VarianteZeile>();
-            foreach (VarianteZeile z in Laden().Varianten) namen[z.IdProjekt] = z;
-            foreach (int id in auftrag.VariantenIds)
-            {
-                VarianteZeile z;
-                if (!namen.TryGetValue(id, out z)) continue;
-                gruppe.Add(new ProjektvergleichBericht.Projekt
-                {
-                    Id = z.IdProjekt,
-                    Name = z.Projektname,
-                    Bezeichner = z.Bezeichner,
-                    IstStamm = false
-                });
-            }
-
-            // iU7-9: Speicherziel ueber Dienste.Datei statt SaveFileDialog. Der
-            // Dateinamensvorschlag ist ein technischer Wert und deshalb bewusst
-            // nicht lokalisiert. Leer = abgebrochen.
-            string zieldatei = Dienste.Datei.DateiSpeichern(
-                null,
-                MyResource.Resource.BK_BER_DLG_FILTER_WORD,
-                "Projektvergleich_" + _stammName + ".docx");
-            if (string.IsNullOrEmpty(zieldatei))
-                return new LaufErgebnis { Abgebrochen = true };
-
-            try
-            {
-                var bericht = new ProjektvergleichBericht();
-                await Task.Run(() => bericht.Erzeuge(zieldatei, gruppe));
-
-                string meldung = MyResource.Resource.BK_BER_MSG_VERGLEICH_FERTIG;
-                if (bericht.Laufmeldungen.Count > 0)
-                    meldung += "\r\n\r\n" + MyResource.Resource.BK_BER_MSG_HINWEISE + "\r\n• " +
-                               string.Join("\r\n• ", bericht.Laufmeldungen);
-
-                return new LaufErgebnis
-                {
-                    Erfolg = true,
-                    Statuszeile = string.Format(MyResource.Resource.BK_BER_STATUS_ERSTELLT, zieldatei),
-                    Meldung = meldung,
-                    Frage = MyResource.Resource.BK_BER_FRAGE_OEFFNEN,
-                    Datei = zieldatei
-                };
-            }
-            catch (Exception ex)
-            {
-                // Vollstaendige Fehlermeldung inkl. inner exceptions (die
-                // Statuszeile kuerzt ab) — wortgleich zum Vorlaeufer.
-                string msg = ex.Message;
-                Exception inner = ex.InnerException;
-                while (inner != null) { msg += "\r\n→ " + inner.Message; inner = inner.InnerException; }
-
-                return new LaufErgebnis
-                {
-                    Statuszeile = MyResource.Resource.BK_BER_STATUS_FEHLER,
-                    Fehler = msg
-                };
             }
         }
 

@@ -351,8 +351,7 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Einzellisten
 
-        // Kompakte Fassung der Erzeuger-Einzelliste aus dem Bestandsbericht
-        // (ProjektvergleichBericht.ErzeugerEinzelTabelle).
+        // Kompakte Fassung der Erzeuger-Einzelliste des Vorgängerberichts.
         private static void SchreibeErzeugerListe(WordKontext k, ErgebnisModel m)
         {
             int[] w = { 2900, 1500, 1500, 1800, 1655 };

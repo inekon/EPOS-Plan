@@ -186,7 +186,6 @@ Nur, was die Schale selbst braucht; alles Übrige kommt über `EPOS.Kern`.
 - `System.Security.Cryptography.ProtectedData` — DPAPI hinter `Dienste.Lizenzablage`.
 - `System.Configuration.ConfigurationManager` — `Properties.Settings` hinter
   `SettingsEinstellungen`.
-- `DocumentFormat.OpenXml` — der Variantenvergleichsbericht in `Views/Varianten/`.
 - `Microsoft.Data.Sqlite` — dieselbe Fassung wie im Übernahmewerkzeug.
 - `Google.OrTools` hängt am Projekt `SpeicherPlanung`, das nur von hier referenziert wird;
   ohne die registrierte Fabrik sind `PvPlanung`, `Arbitrage`, `MultiUse` nicht verfügbar.

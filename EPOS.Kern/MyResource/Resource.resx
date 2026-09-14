@@ -5970,9 +5970,6 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="KOSTEN_LBL_PROJEKT_GESAMT" xml:space="preserve">
     <value>PROJEKT GESAMT ({0}): {1} €</value>
   </data>
-  <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
-    <value>Projektvergleich + Bericht (alt)</value>
-  </data>
   <data name="BK_BER_TITEL" xml:space="preserve">
     <value>Bericht erstellen — Projekt: {0}</value>
   </data>
@@ -6030,9 +6027,6 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_DLG_ZIELORDNER" xml:space="preserve">
     <value>Zielordner für den Bericht wählen</value>
   </data>
-  <data name="BK_BER_DLG_FILTER_WORD" xml:space="preserve">
-    <value>Word-Dokument (*.docx)|*.docx</value>
-  </data>
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Bericht erstellt: {0}</value>
   </data>
@@ -6045,14 +6039,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_BER_STATUS_ABGEBROCHEN" xml:space="preserve">
     <value>Vorgang abgebrochen.</value>
   </data>
-  <data name="BK_BER_STATUS_FEHLER" xml:space="preserve">
-    <value>Fehler beim Erstellen des Berichts.</value>
-  </data>
   <data name="BK_BER_MSG_HINWEISE" xml:space="preserve">
     <value>Hinweise:</value>
-  </data>
-  <data name="BK_BER_MSG_VERGLEICH_FERTIG" xml:space="preserve">
-    <value>Bericht wurde erstellt (alle Projekte neu simuliert).</value>
   </data>
   <data name="BK_BER_FRAGE_OEFFNEN" xml:space="preserve">
     <value>Jetzt öffnen?</value>
@@ -6074,14 +6062,8 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_BER_TITEL_ERSTELLEN" xml:space="preserve">
     <value>Bericht erstellen</value>
   </data>
-  <data name="BK_BER_TITEL_VERGLEICH" xml:space="preserve">
-    <value>Projektvergleich</value>
-  </data>
   <data name="BK_BER_TITEL_FEHLER" xml:space="preserve">
     <value>Fehler</value>
-  </data>
-  <data name="BK_BER_TITEL_FEHLER_VERGLEICH" xml:space="preserve">
-    <value>Fehler beim Erstellen des Berichts</value>
   </data>
   <data name="BK_BER_MSG_LAUFFEHLER" xml:space="preserve">
     <value>Fehler bei der Berichtserstellung: {0}</value>
