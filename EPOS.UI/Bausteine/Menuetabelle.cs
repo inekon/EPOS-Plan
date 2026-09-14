@@ -102,7 +102,7 @@ namespace EPOS.UI.Bausteine;
 /// <summary>
 /// Das Menue des Hauptfensters als DATEN (iU9-W16c.1).
 ///
-/// <para><b>59 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
+/// <para><b>60 Punkte</b> - 45 aus dem Designer des Vorlaeufers und
 /// 9, die dort programmatisch eingehaengt wurden ("damit Designer und
 /// .resx unberuehrt bleiben", MDIMainForm.cs:57, :95, :132, :174, :311, :414,
 /// :531). Der Grund dafuer entfaellt mit dem Designer; hier sind es
@@ -113,13 +113,14 @@ namespace EPOS.UI.Bausteine;
 /// MenuItem_ST_Bearbeiten weg, und mit W6-E-2 kommen die zwei
 /// Wechselrichterpunkte hinzu; mit W16c-O-7 faellt das dritte und letzte
 /// Ein-Punkt-Untermenue MenuItem_Klima, mit W13-E-2 kommt der
-/// Stromspeicherimport hinzu, mit SIM-Q3 der Punkt „Simulation…". Also
+/// Stromspeicherimport hinzu, mit SIM-Q3 der Punkt „Simulation…" und mit
+/// ND-Q3 der Punkt „Nutzungsdauern (AfA)…". Also
 /// 54 Bestandspunkte
-/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 = 59, dazu 8 Trennstriche.</para>
+/// + 2 - 2 + 2 + 2 - 1 + 1 + 1 + 1 = 60, dazu 8 Trennstriche.</para>
 ///
 /// <para><b>Vier Koepfe</b> in der obersten Ebene: Projekt, Administration,
 /// Hilfe und - ganz rechts, wo bis W16c-E-2 "Deutsch" stand - Sprache. Alle
-/// vier klappen nur auf; von den 59 Punkten handeln <b>46</b>, 13 klappen auf.
+/// vier klappen nur auf; von den 60 Punkten handeln <b>47</b>, 13 klappen auf.
 /// Die Zahl der HANDELNDEN Punkte ist mit W16c-E-6, mit W16c-E-7 und mit
 /// W16c-O-7 unveraendert geblieben: Es ist kein Ziel entfallen und keines
 /// hinzugekommen, es steht nur an einer anderen Stelle des Baumes. Gewachsen
@@ -263,6 +264,12 @@ public static class Menuetabelle
             {
                 new Menuepunkt("MenuItem_Kostenvorlagen", "KDLG_MENUE_VORLAGEN", Seitenschluessel.Kostenverwaltung),
                 new Menuepunkt("MenuItem_Energietraeger", "KDLG_MENUE_ENERGIETRAEGER", Seitenschluessel.EnergietraegerVerwaltung),
+                // ANWENDERENTSCHEID ND-Q3 (14.09.2026), Stufe S1 des Konzepts
+                // "Nutzungsdauer je Technik und Positionsart": die
+                // Nutzungsdauertabelle als DRITTER Eintrag der Rubrik, neben
+                // Kostenvorlagen und Energietraegern. Sie gehoert hierher, weil
+                // sie die Kostenpositionen vorbelegt - und nirgends sonst hin.
+                new Menuepunkt("MenuItem_Nutzungsdauer", "ND_MENUE", Seitenschluessel.NutzungsdauerVerwaltung),
             },
             new Menuepunkt("MenuItem_Gebaeude", "MENU_GEBAEUDE", "", bild: "Menue6")
             {

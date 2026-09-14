@@ -19137,4 +19137,97 @@ Möchten Sie das zulassen?</value>
   <data name="ETV_HISTORIE_LOESCH_TITEL" xml:space="preserve">
     <value>Preisstand löschen</value>
   </data>
+  <data name="ND_TITEL" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)</value>
+  </data>
+  <data name="ND_MENUE" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)…</value>
+  </data>
+  <data name="ND_KONTEXT" xml:space="preserve">
+    <value>Rechnerische Nutzungsdauer je Technik und Positionsart — sie steuert Ersatzbeschaffung und Restwert im Kapitalwert.</value>
+  </data>
+  <data name="ND_SP_TECHNIK" xml:space="preserve">
+    <value>Technik</value>
+  </data>
+  <data name="ND_SP_POSITIONSART" xml:space="preserve">
+    <value>Positionsart</value>
+  </data>
+  <data name="ND_SP_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer [a]</value>
+  </data>
+  <data name="ND_SP_AFA" xml:space="preserve">
+    <value>AfA steuerlich [a]</value>
+  </data>
+  <data name="ND_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ND_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="ND_SUCHE" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
+  <data name="ND_SUCHE_PLATZHALTER" xml:space="preserve">
+    <value>Technik, Positionsart oder Quelle</value>
+  </data>
+  <data name="ND_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="ND_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ND_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungswerte wiederherstellen</value>
+  </data>
+  <data name="ND_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Die Werte aller Auslieferungszeilen auf die Auslieferung zurücksetzen? Eigene Zeilen bleiben unberührt.</value>
+  </data>
+  <data name="ND_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Zeile „{0}“ löschen?</value>
+  </data>
+  <data name="ND_TIP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferungszeile: Der Wert ist änderbar, die Zeile wird nicht gelöscht.</value>
+  </data>
+  <data name="ND_TIP_STANDARD" xml:space="preserve">
+    <value>Standardzeile der Technik — sie gilt, wenn eine Position keine Positionsart trägt.</value>
+  </data>
+  <data name="ND_KENNZEICHEN_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="ND_TECHNIKUEBERGREIFEND" xml:space="preserve">
+    <value>technikübergreifend</value>
+  </data>
+  <data name="ND_LEER_HINWEIS" xml:space="preserve">
+    <value>Eine leere Nutzungsdauer heißt „wie die Standardzeile der Technik“.</value>
+  </data>
+  <data name="ND_MELD_READONLY" xml:space="preserve">
+    <value>Auslieferungszeilen werden nicht gelöscht. Ihr Wert lässt sich ändern; „Auslieferungswerte wiederherstellen“ setzt ihn zurück.</value>
+  </data>
+  <data name="ND_MELD_DOPPELT" xml:space="preserve">
+    <value>Für diese Technik gibt es die Positionsart „{0}“ bereits.</value>
+  </data>
+  <data name="ND_MELD_ART_LEER" xml:space="preserve">
+    <value>Die Positionsart darf nicht leer sein.</value>
+  </data>
+  <data name="ND_MELD_KEINE_TABELLE" xml:space="preserve">
+    <value>Die Nutzungsdauertabelle gibt es in dieser Datenbank noch nicht.</value>
+  </data>
+  <data name="ND_HERLEITUNG" xml:space="preserve">
+    <value>Nutzungsdauer aus Nutzungsdauern (AfA): {0} · {1} {2} a</value>
+  </data>
+  <data name="ND_HERLEITUNG_STANDARD" xml:space="preserve">
+    <value>Nutzungsdauer aus Nutzungsdauern (AfA): {0} → wie Standardzeile {1} · {2} {3} a</value>
+  </data>
+  <data name="ND_STATUS_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>{0} Auslieferungszeile(n) zurückgesetzt.</value>
+  </data>
+  <data name="ND_LEER_LISTE" xml:space="preserve">
+    <value>Keine Zeile passt zur Suche.</value>
+  </data>
+  <data name="ND_QUELLE_EIGEN" xml:space="preserve">
+    <value>eigener Wert</value>
+  </data>
+  <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zeile ließ sich nicht speichern.</value>
+  </data>
 </root>

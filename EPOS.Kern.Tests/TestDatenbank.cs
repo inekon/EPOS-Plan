@@ -215,6 +215,29 @@ namespace EPOS.Kern.Tests
                 // STRICT, tut der Aufruf nichts.
                 SpeicherAuslegungStrict.Umbauen();
 
+                // Schritt 75 (Auftrag #269, 14.09.2026): die Nutzungsdauertabelle samt
+                // Index, die zwei Verweisspalten, die Saat und die Saat-Zuordnung -
+                // alles aus DERSELBEN Quelle wie in der Migration und im Werkzeug.
+                // Jeder Handgriff ist fuer sich wiederholbar: IF NOT EXISTS an Tabelle
+                // und Index, die Spaltenprobe darunter, und Saat wie Zuordnung
+                // uebergehen, was schon dasteht.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in NutzungsdauerSchema.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+                foreach (System.Collections.Generic.KeyValuePair<string, string> s in NutzungsdauerSchema.Verweisspalten)
+                {
+                    // NICHT ueber SpalteSicherstellen: Dessen Typuebersetzung
+                    // (StilleDb.SqliteSpaltenTyp) kennt nur Access-Typnamen und schnitte
+                    // das REFERENCES weg. Die Kopie soll dieselbe Spalte bekommen wie die
+                    // Migration - samt Fremdschluessel.
+                    if (DataRepository.SpalteVorhanden(s.Key, NutzungsdauerSchema.SPALTE_VERWEIS)) continue;
+                    DataRepository.ExecuteNonQuery(
+                        "ALTER TABLE \"" + s.Key + "\" ADD COLUMN \"" +
+                        NutzungsdauerSchema.SPALTE_VERWEIS + "\" " + s.Value);
+                }
+                NutzungsdauerCtrl.ProbeVergessen();
+                NutzungsdauerSchema.SaatSchreiben();
+                NutzungsdauerSchema.ZuordnungSchreiben();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

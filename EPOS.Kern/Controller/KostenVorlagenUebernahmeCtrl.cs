@@ -177,7 +177,9 @@ namespace WindowsFormsApplication1
                     e.Meldungen.Add("Zusatzangaben zu \"" + p.Bezeichnung + "\" nicht schreibbar.");
                 }
 
-                HerkunftUndNutzungsdauer(id, vorlage.Id, p.Nutzungsdauer);
+                HerkunftUndNutzungsdauer(id, vorlage.Id, p.Nutzungsdauer,
+                                         p.NutzungsdauerId, vorlage.KomponentenId,
+                                         vorlage.KategorieId);
                 if (idAnlage > 0) KostenProjektPositionenCtrl.AnlageZuordnen(id, idAnlage);
                 // ETAPPE H3: Das Pflichtmerkmal wandert bei JEDER Übernahme mit —
                 // die H1-Saat markierte nur den Bestand; ohne die Durchreichung
@@ -483,9 +485,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Herkunftsvermerk (§ 4.2) und Nutzungsdauer-Vorbelegung (FK4/FK10:
-        /// alle drei Szenariospalten erben den Vorlagenwert).</summary>
+        /// alle drei Szenariospalten erben den Vorlagenwert).
+        ///
+        /// <para><b>STUFE S1 (Konzept Nutzungsdauer/AfA 2.4.4):</b> Die POSITIONSART der
+        /// Vorlagenzeile wandert in die Projektzeile mit — und der WERT kommt aus der
+        /// Vorlage, wenn sie einen führt, sonst aus der Nutzungsdauertabelle. Das ist
+        /// die Reihenfolge des Konzepts („Vorlagenwert, sonst Wert der Tabelle") und
+        /// nichts wird still ersetzt: Geschrieben wird in eine FRISCHE Zeile, die der
+        /// Aufrufer gerade angelegt hat.</para></summary>
         private static void HerkunftUndNutzungsdauer(int positionsId, int vorlageId,
-                                                     double? nutzungsdauer)
+                                                     double? nutzungsdauer,
+                                                     int? nutzungsdauerId,
+                                                     int komponentenId, int kategorieId)
         {
             DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_ProjektWerte SET [" + SchemaKatalog.SPALTE_PW_VORLAGEID + "] = ? " +
@@ -493,7 +504,10 @@ namespace WindowsFormsApplication1
                 new DbParam("@v", vorlageId),
                 new DbParam("@id", positionsId));
 
+            KostenProjektPositionenCtrl.NutzungsdauerArtZuordnen(positionsId, nutzungsdauerId);
+
             if (nutzungsdauer.HasValue)
+            {
                 DataRepository.ExecuteNonQuery(
                     "UPDATE Tab_ProjektWerte SET Nutzungsdauer = ?, " +
                     "BestCase_Nutzungsdauer = ?, WorstCase_Nutzungsdauer = ? WHERE ID = ?",
@@ -501,6 +515,14 @@ namespace WindowsFormsApplication1
                     new DbParam("@n2", nutzungsdauer.Value),
                     new DbParam("@n3", nutzungsdauer.Value),
                     new DbParam("@id", positionsId));
+                return;
+            }
+
+            // Ohne Vorlagenwert: die Tabelle - aber nur bei INVESTITIONSkosten.
+            // Betriebskosten kennen keinen Ersatz und keine Nutzungsdauer.
+            if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                KostenProjektPositionenCtrl.NutzungsdauerVorbelegen(
+                    positionsId, komponentenId, nutzungsdauerId);
         }
 
         /// <summary>Feldwert 1:1 als typisierter Parameter (NULL bleibt NULL).</summary>

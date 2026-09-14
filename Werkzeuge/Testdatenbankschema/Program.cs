@@ -66,6 +66,14 @@ namespace Testdatenbankschema
     /// <c>SchemaMigration.Schritt_74_SpeicherauslegungStrict</c> bedient. Beide Schritte
     /// sind ergebnisneutral: 73 legt keine Zeile an, 74 kopiert die vorhandenen samt
     /// ihrer <c>ID</c>.</para>
+    ///
+    /// <para><b>Schritt 75</b> (Auftrag #269) legt <c>Tab_Nutzungsdauer</c> samt
+    /// eindeutigem Index an, haengt die nullbare Verweisspalte <c>NutzungsdauerID</c> an
+    /// <c>Tab_KostenVorlagePosition</c> und <c>Tab_ProjektWerte</c>, saet die
+    /// Auslieferungszeilen und ordnet die Auslieferungspositionen ueber ihren Namen zu.
+    /// Alles aus <c>NutzungsdauerSchema</c> - wieder DIESELBE Quelle, aus der sich
+    /// <c>SchemaMigration.Schritt_75_Nutzungsdauer</c> bedient. Ergebnisneutral:
+    /// <c>Tab_ProjektWerte</c> bekommt die SPALTE, aber keinen Wert.</para>
     /// </summary>
     internal static class Program
     {
@@ -76,7 +84,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 74) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 75) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -251,6 +259,42 @@ namespace Testdatenbankschema
                       zeilenNachher + " nachher."
                     : "nichts zu tun - die Tabelle ist bereits STRICT."));
                 if (umgebaut) tabellen++;
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 75: die Nutzungsdauertabelle (Auftrag #269, Konzept
+            //      "Nutzungsdauer je Technik und Positionsart", Stufe S1). Vier
+            //      Handgriffe in fester Reihenfolge - Tabelle samt Index, die zwei
+            //      Verweisspalten (ihr REFERENCES zeigt auf die eben angelegte
+            //      Tabelle), die Saat und die Saat-Zuordnung (sie braucht die Ids der
+            //      Saat). Alle vier kommen aus NutzungsdauerSchema - DIESELBE Quelle,
+            //      aus der sich SchemaMigration.Schritt_75_Nutzungsdauer bedient.
+            //      Ergebnisneutral: Tab_ProjektWerte bekommt die Spalte, aber KEINEN
+            //      Wert. Wiederholbar ueber IF NOT EXISTS, die Spaltenprobe und die
+            //      Vorabfragen der Saat.
+            tabellen += TabelleSicherstellen(NutzungsdauerSchema.TABELLE,
+                                             NutzungsdauerSchema.SQL_CREATE, 75, trocken);
+            if (!trocken) DataRepository.ExecuteNonQuery(NutzungsdauerSchema.SQL_INDEX);
+
+            foreach (KeyValuePair<string, string> s in NutzungsdauerSchema.Verweisspalten)
+                angelegt += SpalteSicherstellen(s.Key, NutzungsdauerSchema.SPALTE_VERWEIS,
+                                                s.Value, 75, trocken);
+
+            if (!trocken)
+            {
+                int gesaet = NutzungsdauerSchema.SaatSchreiben();
+                int zugeordnet = NutzungsdauerSchema.ZuordnungSchreiben();
+                Console.WriteLine("Schritt 75 - Saat: " + gesaet + " von " +
+                                  NutzungsdauerSchema.Saat.Length + " Zeile(n) geschrieben, " +
+                                  "Tabelle jetzt " + Zahl(NutzungsdauerSchema.Zaehlung()) +
+                                  " Zeile(n).");
+                Console.WriteLine("Schritt 75 - Zuordnung: " + zugeordnet +
+                                  " Auslieferungsposition(en) gesetzt, insgesamt " +
+                                  Zahl(NutzungsdauerSchema.ZaehlungZuordnung()) +
+                                  " mit Verweis.");
+                Console.WriteLine("Schritt 75 - " + NutzungsdauerSchema.TABELLE +
+                                  " ohne STRICT: " + Zahl(NutzungsdauerSchema.ZaehlungOhneStrict()) +
+                                  " (erwartet 0).");
             }
             Console.WriteLine();
 
