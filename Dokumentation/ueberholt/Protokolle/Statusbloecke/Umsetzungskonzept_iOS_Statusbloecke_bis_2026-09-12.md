@@ -5298,3 +5298,38 @@ steht aus und ist die eigentliche Aufgabe von
 > **Offen:** Windows-Abnahme am Projekt des Befunds; doppelter Ausweg-Satz im Abbruchtext (vorbestehend, Befund ohne
 > Auftrag); der vierte Abhilfeknopf wird nur mit einem Ergebnis sichtbar, der gewöhnliche Weg ist die Hinweiszeile in
 > Schritt 3; Sammel-Upload frühestens 20.09.2026.
+
+## #257 — Lebensdauerkurve benannt geprüft vor dem Lauf (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderbefund 14.09.2026 (Bildschirmfoto Visual Studio, Projekt 1050):** Projektlauf mit aktivierter Speicherflotte
+> bricht ab: „Die Speicherflotte für diesen Projektlauf ist ungültig oder konnte nicht geplant werden: Rainflow-Kurve ist
+> ungueltig. Ausweg: …" — derselbe Abbruchweg wie #256, innere Ausnahme aus `SpeicherEngine/FlottenRainflow.cs`.
+>
+> **Ursache (Orchestrierung, belegt):** `FlottenRainflow.Auswerten` verlangt für eine nicht leere Lebensdauerkurve je Punkt
+> Endlichkeit, Entladetiefe in (0, 1], Zyklen bis EOL über 0 und keine doppelte Entladetiefe; eine leere Kurve ist zulässig.
+> Die Kurve kommt nur aus dem Editor (Schritt 1, Block „Alterung"): „Punkt hinzufügen" legt 0 % / 0 Zyklen an, die Felder
+> lassen 0 zu, zwei neue Punkte sind Duplikate. Weder `FlottenPlausibilitaet.Pruefe` noch `SpeicherFlottenProjektCtrl.Pruefe`
+> kannten die Regel; der Lauf scheiterte erst in der Engine. Kein Zusammenhang mit #254/#256.
+>
+> **Anwenderentscheid 14.09.2026:** „#257: Empfehlung".
+>
+> **Umsetzung (Agent Opus, Worktree, Commits `21ad7a2b` Kern, `f8dc8c9c` Oberfläche, `6ac5163d` Doku; Merge `45daa16b`):**
+> Die Bedingung steht einmal in der Engine — `FlottenRainflow.PruefeKurve(kurve)` liefert den ersten Mangel als
+> `FlottenRainflowBefund` (Index in gelieferter Reihenfolge, `FlottenRainflowMangel`: NichtAusgefuellt, Entladetiefe außerhalb,
+> Zyklen ≤ 0, Duplikat), `null` bei gültiger oder leerer Kurve; `Auswerten` ruft sie und wirft unverändert denselben Satz
+> (Rechenweg unberührt). Kern: `FlottenPlausibilitaet.Lebensdauerkurve(konfiguration)` mit Kennung
+> `LebensdauerkurveUngueltig`, Stufe `Problem`, gerufen aus `FlottenPlausibilitaet.Pruefe` (beide Stufen der Vorprüfung)
+> und `SpeicherFlottenProjektCtrl.Pruefe` (Aktivierung, Projektlauf; Abbruchtext trägt die Ursache); Abweisung des
+> Studienlaufs (`SpeicherFlottenStudieCtrl` ~543) und Rechenknopf-Sperre (`Vorpruefungssperre`) greifen generisch über die
+> Stufe „Problem" aus #256 — je ein Prüffall belegt es. Text nennt Einheit, Punktnummer (1-basiert), Grund und beide Auswege
+> (ausfüllen oder „Punkt entfernen"; leere Kurve zulässig); vier Gründe als Ressourcen de/en, KI-Kennung mit Wissensabschnitt
+> (17 Kennungen). Editor: `FlottenPlausibilitaet.Kurvenbefund(einheit)` markiert die Zeile (`epos-flotte-feldraster--fehler`,
+> `aria-invalid`) mit demselben Wortlaut darunter; der neue Punkt bleibt im Modell 0/0 (`double`, NaN bräche die
+> JSON-Serialisierung) und wird sofort als „nicht ausgefüllt" markiert. Tests: SpeicherEngine 449 → 456, Kern +6
+> (`FlottenPlausibilitaetTests`, `SpeicherFlottenProjektCtrlTests`, `KiDialogaufrufTests` 16 → 17), bunit +3
+> (`SpeicherFlottenEditorTests`, `StromspeicherAuslegungBannerTests`). Referenzlauf 1046 byte-gleich (464 425 Werte).
+> Doku: Konzept Stromspeicher-Dialoge und Doku Mehrspeicher (Vorprüfungsregeln), Wiki-Quelle Stromspeicher Schritt 1
+> „Alterung" (Upload gebündelt), Logbuch-Einträge entworfen.
+> **Gate sept68 auf `45daa16b`:** GRÜN auf `45daa16b` — Kern 2 819, UI 4 015, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme am Projekt 1050; nur die erste beanstandete Einheit erzeugt einen Listenhinweis (Editor markiert
+> jede Zeile; Sammelliste wäre ein Folgeentscheid); Sammel-Upload frühestens 20.09.2026.
