@@ -16550,6 +16550,21 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="FLOTTE_ABHILFE_IDEALWISSEN" xml:space="preserve">
     <value>Set information level to perfect foresight</value>
   </data>
+  <data name="FLOTTE_MSG_RAINFLOW_UNGUELTIG" xml:space="preserve">
+    <value>The service-life curve of unit &quot;{0}&quot; is incomplete: point {1} — {2}. Without a valid curve the rainflow damage cannot be computed and the run aborts. Remedy: complete the point — depth of discharge above 0 up to 100 %, cycles above 0, each depth of discharge only once — or delete it with &quot;Remove point&quot;. With no points at all the curve is valid; then only the cycles are counted.</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_LEER" xml:space="preserve">
+    <value>not filled in (depth of discharge 0 %, 0 cycles)</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_TIEFE" xml:space="preserve">
+    <value>the depth of discharge is not in the range above 0 up to 100 %</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_ZYKLEN" xml:space="preserve">
+    <value>the cycles to end of life are not greater than 0</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_DOPPELT" xml:space="preserve">
+    <value>this depth of discharge already appears in an earlier point</value>
+  </data>
   <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
     <value>The reserved project fleet state @Projektflotte is missing.</value>
   </data>
@@ -18094,6 +18109,9 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="KI_FRAGE_FLOTTE_PROGNOSE_FEHLT" xml:space="preserve">
     <value>My planning operating target aborts because no forecast snapshot is available. What is the information level, and which of the two remedies should I choose?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_RAINFLOW_UNGUELTIG" xml:space="preserve">
+    <value>The pre-check objects to a point of my storage unit&apos;s service-life curve. What is this curve for, and how do I fill the point in correctly?</value>
   </data>
   <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>A heat generator of the project holds no cascade slot and therefore does not take part in the run. How do I add it to the simulation?</value>

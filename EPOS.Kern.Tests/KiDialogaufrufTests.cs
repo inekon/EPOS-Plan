@@ -221,7 +221,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jede_Kennung_hat_einen_Wissensabschnitt()
         {
-            Assert.Equal(16, KiMeldungskennung.Alle.Length);
+            Assert.Equal(17, KiMeldungskennung.Alle.Length);
 
             foreach (string kennung in KiMeldungskennung.Alle)
             {

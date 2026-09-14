@@ -97,6 +97,110 @@ public sealed class FlottenWirtschaftlichkeitTests
             new[] { new FlottenRainflowPunkt { Entladetiefe = 0.2, ZyklenBisEol = 10000 } }));
     }
 
+    // =====================================================================
+    //  Die Gueltigkeit der Lebensdauerkurve (Auftrag #257)
+    // =====================================================================
+
+    /// <summary>
+    /// EINE GUELTIGE KURVE und eine LEERE Kurve sind beide in Ordnung: Ohne Punkte
+    /// zaehlt die Auswertung Zyklen und rechnet keinen Miner-Schaden.
+    /// </summary>
+    [Fact]
+    public void PruefeKurve_NimmtEineGueltigeUndEineLeereKurveAn()
+    {
+        Assert.Null(FlottenRainflow.PruefeKurve(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 4000 }
+        }));
+        Assert.Null(FlottenRainflow.PruefeKurve(new FlottenRainflowPunkt[0]));
+        Assert.Null(FlottenRainflow.PruefeKurve(null));
+    }
+
+    /// <summary>
+    /// JEDER EINZELNE GRUND mit seinem eigenen Namen. Der frisch angelegte Punkt 0/0
+    /// heisst NICHT AUSGEFUELLT und nicht Wertebereichsfehler - er ist ein leeres
+    /// Feldpaar, kein falscher Wert.
+    /// </summary>
+    [Theory]
+    [InlineData(0d, 0d, FlottenRainflowMangel.NichtAusgefuellt)]
+    [InlineData(0d, 1000d, FlottenRainflowMangel.EntladetiefeAusserhalb)]
+    [InlineData(1.5, 1000d, FlottenRainflowMangel.EntladetiefeAusserhalb)]
+    [InlineData(double.NaN, 1000d, FlottenRainflowMangel.EntladetiefeAusserhalb)]
+    [InlineData(0.5, 0d, FlottenRainflowMangel.ZyklenNichtPositiv)]
+    [InlineData(0.5, -3d, FlottenRainflowMangel.ZyklenNichtPositiv)]
+    [InlineData(0.5, double.NaN, FlottenRainflowMangel.ZyklenNichtPositiv)]
+    public void PruefeKurve_NenntDenGrundJedesMangels(double tiefe, double zyklen,
+        FlottenRainflowMangel erwartet)
+    {
+        FlottenRainflowBefund? befund = FlottenRainflow.PruefeKurve(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = tiefe, ZyklenBisEol = zyklen }
+        });
+
+        Assert.NotNull(befund);
+        Assert.Equal(0, befund.Index);
+        Assert.Equal(erwartet, befund.Mangel);
+    }
+
+    /// <summary>
+    /// EINE ENTLADETIEFE NUR EINMAL: Gemeldet wird der ZWEITE Punkt - der erste stand
+    /// schon da, der zweite ist der, den der Anwender wegnehmen oder aendern muss.
+    /// </summary>
+    [Fact]
+    public void PruefeKurve_MeldetDenZweitenPunktMitDerselbenEntladetiefe()
+    {
+        FlottenRainflowBefund? befund = FlottenRainflow.PruefeKurve(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 4000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 5000 }
+        });
+
+        Assert.NotNull(befund);
+        Assert.Equal(2, befund.Index);
+        Assert.Equal(FlottenRainflowMangel.EntladetiefeDoppelt, befund.Mangel);
+    }
+
+    /// <summary>
+    /// DER INDEX ZAEHLT DIE GELIEFERTE LISTE, nicht die sortierte: Der Editor zeigt
+    /// genau diese Reihenfolge, und der Befund soll auf die Zeile zeigen, die der
+    /// Anwender vor sich hat.
+    /// </summary>
+    [Fact]
+    public void PruefeKurve_ZaehltDieGelieferteReihenfolge()
+    {
+        FlottenRainflowBefund? befund = FlottenRainflow.PruefeKurve(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+            new FlottenRainflowPunkt()
+        });
+
+        Assert.NotNull(befund);
+        Assert.Equal(1, befund.Index);
+        Assert.Equal(FlottenRainflowMangel.NichtAusgefuellt, befund.Mangel);
+    }
+
+    /// <summary>
+    /// AUSWERTEN WIRFT UNVERAENDERT - derselbe Ausnahmetyp, derselbe Satz. Die
+    /// Bedingung ist nur herausgeloest, nicht geaendert.
+    /// </summary>
+    [Fact]
+    public void Rainflow_WirftFuerEineUngueltigeKurveWieBisher()
+    {
+        ArgumentException leer = Assert.Throws<ArgumentException>(() => FlottenRainflow.Auswerten(
+            new[] { 0d, 1d, 0d }, new[] { new FlottenRainflowPunkt() }));
+        Assert.Contains("Rainflow-Kurve ist ungueltig.", leer.Message);
+
+        ArgumentException doppelt = Assert.Throws<ArgumentException>(() => FlottenRainflow.Auswerten(
+            new[] { 0d, 1d, 0d }, new[]
+            {
+                new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+                new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 2000 }
+            }));
+        Assert.Contains("Rainflow-Kurve ist ungueltig.", doppelt.Message);
+    }
+
     [Fact]
     public void ZuGrossesKartesischesRaster_WirdAbgelehntUndNichtAbgeschnitten()
     {

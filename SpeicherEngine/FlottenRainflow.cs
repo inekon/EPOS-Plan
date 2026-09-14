@@ -68,15 +68,60 @@ public static class FlottenRainflow
 
         var result = new FlottenRainflowErgebnis { Zyklen = cycles };
         if (lebensdauerkurve.Count == 0) return result;
-        var curve = lebensdauerkurve.OrderBy(x => x.Entladetiefe).ToArray();
-        if (curve.Any(x => !double.IsFinite(x.Entladetiefe) || x.Entladetiefe <= 0 ||
-            x.Entladetiefe > 1 || !double.IsFinite(x.ZyklenBisEol) || x.ZyklenBisEol <= 0) ||
-            curve.Select(x => x.Entladetiefe).Distinct().Count() != curve.Length)
+        // DIE BEDINGUNG STEHT EINMAL - in PruefeKurve (Auftrag #257). Der Wortlaut der
+        // Ausnahme bleibt, was er war; die Vorpruefung des Kerns ruft dieselbe Funktion
+        // und sagt VORHER, welcher Punkt woran haengt.
+        if (PruefeKurve(lebensdauerkurve) is not null)
             throw new ArgumentException("Rainflow-Kurve ist ungueltig.");
+        var curve = lebensdauerkurve.OrderBy(x => x.Entladetiefe).ToArray();
         foreach (var cycle in cycles)
             result.Schaden += cycle.Anzahl / InterpoliereLogZyklen(cycle.Entladetiefe, curve);
         return result;
     }
+
+    /// <summary>
+    /// Prueft eine Lebensdauerkurve auf GENAU die Bedingungen, unter denen
+    /// <see cref="Auswerten"/> sie annimmt (Auftrag #257).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Zulaessig ist ein Punkt, dessen Entladetiefe endlich und groesser 0 bis
+    /// hoechstens 1 ist, dessen Zyklenzahl endlich und groesser 0 ist und dessen
+    /// Entladetiefe in der Kurve nur EINMAL vorkommt. Eine LEERE Kurve ist zulaessig:
+    /// Dann werden Zyklen gezaehlt und kein Miner-Schaden gerechnet.
+    /// </para>
+    /// <para>
+    /// Gemeldet wird der ERSTE Mangel in der Reihenfolge der GELIEFERTEN Liste, nicht
+    /// der sortierten: Der Editor zeigt genau diese Reihenfolge, und ein Befund soll auf
+    /// die Zeile zeigen, die der Anwender vor sich hat.
+    /// </para>
+    /// </remarks>
+    /// <param name="lebensdauerkurve">Die Stuetzstellen; <c>null</c> oder leer = zulaessig.</param>
+    /// <returns>Der erste Mangel; <c>null</c>, wenn die Kurve gilt oder leer ist.</returns>
+    public static FlottenRainflowBefund? PruefeKurve(IReadOnlyList<FlottenRainflowPunkt>? lebensdauerkurve)
+    {
+        if (lebensdauerkurve is null || lebensdauerkurve.Count == 0) return null;
+        for (var i = 0; i < lebensdauerkurve.Count; i++)
+        {
+            var punkt = lebensdauerkurve[i];
+            if (punkt is null) return Mangel(i, FlottenRainflowMangel.NichtAusgefuellt);
+            // DER FRISCH ANGELEGTE PUNKT ZUERST: 0/0 ist kein Wertebereichsfehler,
+            // sondern ein noch nicht ausgefuelltes Feldpaar - und genau so heisst es.
+            if (punkt.Entladetiefe == 0 && punkt.ZyklenBisEol == 0)
+                return Mangel(i, FlottenRainflowMangel.NichtAusgefuellt);
+            if (!double.IsFinite(punkt.Entladetiefe) || punkt.Entladetiefe <= 0 || punkt.Entladetiefe > 1)
+                return Mangel(i, FlottenRainflowMangel.EntladetiefeAusserhalb);
+            if (!double.IsFinite(punkt.ZyklenBisEol) || punkt.ZyklenBisEol <= 0)
+                return Mangel(i, FlottenRainflowMangel.ZyklenNichtPositiv);
+            for (var j = 0; j < i; j++)
+                if (lebensdauerkurve[j].Entladetiefe == punkt.Entladetiefe)
+                    return Mangel(i, FlottenRainflowMangel.EntladetiefeDoppelt);
+        }
+        return null;
+    }
+
+    private static FlottenRainflowBefund Mangel(int index, FlottenRainflowMangel mangel)
+        => new FlottenRainflowBefund { Index = index, Mangel = mangel };
 
     private static List<double> Wendepunkte(IReadOnlyList<double> values)
     {
@@ -124,4 +169,30 @@ public static class FlottenRainflow
         }
         return curve[^1].ZyklenBisEol;
     }
+}
+
+/// <summary>Der Grund, aus dem ein Punkt der Lebensdauerkurve nicht gilt (Auftrag #257).</summary>
+public enum FlottenRainflowMangel
+{
+    /// <summary>Der Punkt ist NICHT AUSGEFUELLT: Entladetiefe 0 UND Zyklen 0.</summary>
+    NichtAusgefuellt = 0,
+
+    /// <summary>Die Entladetiefe ist nicht endlich oder liegt nicht im Bereich groesser 0 bis 1.</summary>
+    EntladetiefeAusserhalb = 1,
+
+    /// <summary>Die Zyklen bis zum End-of-Life-Kriterium sind nicht endlich oder nicht groesser 0.</summary>
+    ZyklenNichtPositiv = 2,
+
+    /// <summary>Dieselbe Entladetiefe steht schon in einem frueheren Punkt der Kurve.</summary>
+    EntladetiefeDoppelt = 3
+}
+
+/// <summary>Der erste Mangel einer Lebensdauerkurve: welcher Punkt, welcher Grund.</summary>
+public sealed class FlottenRainflowBefund
+{
+    /// <summary>Der Punkt in der Reihenfolge der GELIEFERTEN Liste, 0-basiert.</summary>
+    public int Index { get; set; }
+
+    /// <summary>Der Grund, aus dem der Punkt nicht gilt.</summary>
+    public FlottenRainflowMangel Mangel { get; set; }
 }

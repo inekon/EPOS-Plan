@@ -415,6 +415,87 @@ namespace EPOS.Kern.Tests
             Assert.Contains(ohneReihe, x => x.Kennung == FlottenHinweisKennung.PrognoseFehlt);
         }
 
+        // ================================= Die Lebensdauerkurve der Einheiten (#257)
+
+        /// <summary>
+        /// DIE REGEL: Jeder Grund, an dem die Rainflow-Auswertung abbricht, ist ein
+        /// Befund der Stufe „Problem" — und der Text nennt die EINHEIT und die
+        /// PUNKTNUMMER, 1-basiert wie im Editor.
+        /// </summary>
+        [Theory]
+        [InlineData(0.0, 0.0, "nicht ausgefüllt")]
+        [InlineData(1.5, 1000.0, "Entladetiefe")]
+        [InlineData(0.5, 0.0, "Zyklen bis Lebensdauerende")]
+        public void EinUnvollstaendigerKurvenpunkt_IstEinProblem(
+            double tiefe, double zyklen, string teilsatz)
+        {
+            FlottenStudieKonfiguration f = MitKurve(
+                new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+                new FlottenRainflowPunkt { Entladetiefe = tiefe, ZyklenBisEol = zyklen });
+
+            List<FlottenHinweis> hinweise = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, null);
+
+            FlottenHinweis h = Assert.Single(hinweise,
+                x => x.Kennung == FlottenHinweisKennung.LebensdauerkurveUngueltig);
+            Assert.Equal(FlottenHinweisStufe.Problem, h.Stufe);
+            Assert.Contains("Speicher A", h.Text, StringComparison.Ordinal);
+            Assert.Contains("Punkt 2", h.Text, StringComparison.Ordinal);
+            Assert.Contains(teilsatz, h.Text, StringComparison.Ordinal);
+            // BEIDE AUSWEGE stehen im Satz — ausfüllen oder entfernen.
+            Assert.Contains("ausfüllen", h.Text, StringComparison.Ordinal);
+            Assert.Contains("Punkt entfernen", h.Text, StringComparison.Ordinal);
+        }
+
+        /// <summary>Dieselbe Entladetiefe zweimal: gemeldet wird der ZWEITE Punkt.</summary>
+        [Fact]
+        public void EineDoppelteEntladetiefe_ZeigtAufDenZweitenPunkt()
+        {
+            FlottenStudieKonfiguration f = MitKurve(
+                new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+                new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 4000 },
+                new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 5000 });
+
+            FlottenHinweis h = FlottenPlausibilitaet.Lebensdauerkurve(f);
+
+            Assert.NotNull(h);
+            Assert.Contains("Punkt 3", h.Text, StringComparison.Ordinal);
+            Assert.Contains("früheren Punkt", h.Text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// EINE LEERE KURVE IST ZULÄSSIG — sie ist der Normalfall: Ohne Punkte zählt der
+        /// Lauf die Zyklen und weist keinen Rainflow-Schaden aus. Eine vollständige Kurve
+        /// ebenso.
+        /// </summary>
+        [Fact]
+        public void EineLeereUndEineVollstaendigeKurve_SindInOrdnung()
+        {
+            Assert.Null(FlottenPlausibilitaet.Lebensdauerkurve(MitKurve()));
+            Assert.Null(FlottenPlausibilitaet.Lebensdauerkurve(MitKurve(
+                new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 },
+                new FlottenRainflowPunkt { Entladetiefe = 0.5, ZyklenBisEol = 4000 })));
+            Assert.DoesNotContain(FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), MitKurve(), null),
+                x => x.Kennung == FlottenHinweisKennung.LebensdauerkurveUngueltig);
+        }
+
+        /// <summary>
+        /// Die Regel braucht KEINE Zeitreihe — die schnelle Stufe der Vorprüfung trägt
+        /// sie deshalb genauso, und der Befund liefert dem Editor die Punktnummer.
+        /// </summary>
+        [Fact]
+        public void OhneReihe_StehtDerBefundGenauso_undNenntDiePunktnummer()
+        {
+            FlottenStudieKonfiguration f = MitKurve(new FlottenRainflowPunkt());
+
+            Assert.Contains(FlottenPlausibilitaet.Pruefe(Array.Empty<FlottenNetzintervall>(), f, null),
+                x => x.Kennung == FlottenHinweisKennung.LebensdauerkurveUngueltig);
+
+            FlottenKurvenbefund befund = FlottenPlausibilitaet.Kurvenbefund(f.Einheiten[0]);
+            Assert.NotNull(befund);
+            Assert.Equal(1, befund.Punktnummer);
+            Assert.Equal(FlottenPlausibilitaet.Lebensdauerkurve(f).Text, befund.Text);
+        }
+
         // ================================================================= Prüfstand
 
         private static FlottenEingang Eingang(params double[] lasten) => new()
@@ -431,6 +512,14 @@ namespace EPOS.Kern.Tests
                 BatterieVerkaufspreisEuroProKWh = 0.05
             }).ToList()
         };
+
+        /// <summary>Dieselbe Flotte, deren einzige Einheit die gegebene Kurve trägt.</summary>
+        private static FlottenStudieKonfiguration MitKurve(params FlottenRainflowPunkt[] punkte)
+        {
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 80, netzladung: true);
+            f.Einheiten[0].RainflowKurve = punkte.ToList();
+            return f;
+        }
 
         /// <summary>Dieselbe Flotte, aber mit einem anderen Betriebsziel.</summary>
         private static FlottenStudieKonfiguration Planend(FlottenBetriebsziel ziel)

@@ -267,6 +267,57 @@ public sealed class SpeicherFlottenProjektCtrlTests : IDisposable
         Assert.True(SpeicherFlottenProjektCtrl.Pruefe(reaktiv, 0, false).Rechenbar);
     }
 
+    // =====================================================================
+    //  Die Lebensdauerkurve der Einheiten (Auftrag #257)
+    // =====================================================================
+
+    /// <summary>
+    /// DIE AKTIVIERUNG scheitert benannt: Ein unvollständiger Punkt der Lebensdauerkurve
+    /// ist eine PROBLEMZEILE der Vorprüfung — mit Einheit, Punktnummer und Grund. Der
+    /// Lauf erreicht die Engine gar nicht, und der Abbruchtext trägt die Ursache.
+    /// </summary>
+    [Fact]
+    public void Aktivierung_MeldetDenUnvollstaendigenKurvenpunkt_MitPunktnummerUndAusweg()
+    {
+        SpeicherOptimierungEingaben eingaben = Projektflotte(FlottenBetriebsziel.PvGreedy);
+        eingaben.Auslegung.FlotteImProjektAktiv = true;
+        eingaben.Auslegung.Flotte.Einheiten[0].RainflowKurve.Add(new FlottenRainflowPunkt());
+
+        FlottenProjektPruefung pruefung = SpeicherFlottenProjektCtrl.Pruefe(eingaben, 0, true);
+
+        Assert.False(pruefung.Rechenbar);
+        Assert.Contains(pruefung.Probleme, x => x.Contains("Lebensdauerkurve"));
+        Assert.Contains("Speicher 1", pruefung.Meldung);
+        Assert.Contains("Punkt 1", pruefung.Meldung);
+        Assert.Contains("Punkt entfernen", pruefung.Meldung);
+    }
+
+    /// <summary>
+    /// DER PROJEKTLAUF-SNAPSHOT (Aktivierung nicht gefordert) fährt dieselbe Regel; eine
+    /// LEERE Kurve bleibt zulässig, und eine vollständige ebenso.
+    /// </summary>
+    [Fact]
+    public void DerLaufSnapshot_MeldetDieselbeRegel_undLaesstDieLeereKurveZu()
+    {
+        SpeicherOptimierungEingaben kaputt = Projektflotte(FlottenBetriebsziel.PvGreedy);
+        kaputt.Auslegung.Flotte.Einheiten[0].RainflowKurve.AddRange(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 3000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 4000 }
+        });
+        FlottenProjektPruefung mitMangel = SpeicherFlottenProjektCtrl.Pruefe(kaputt, 0, false);
+        Assert.False(mitMangel.Rechenbar);
+        Assert.Contains("Punkt 2", mitMangel.Meldung);
+
+        Assert.True(SpeicherFlottenProjektCtrl.Pruefe(
+            Projektflotte(FlottenBetriebsziel.PvGreedy), 0, false).Rechenbar);
+
+        SpeicherOptimierungEingaben ganz = Projektflotte(FlottenBetriebsziel.PvGreedy);
+        ganz.Auslegung.Flotte.Einheiten[0].RainflowKurve.Add(
+            new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 });
+        Assert.True(SpeicherFlottenProjektCtrl.Pruefe(ganz, 0, false).Rechenbar);
+    }
+
     /// <summary>Ein zulässiger Projektflottenstand mit dem gewünschten Betriebsziel.</summary>
     private static SpeicherOptimierungEingaben Projektflotte(FlottenBetriebsziel ziel)
     {
