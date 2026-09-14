@@ -46,6 +46,53 @@ public sealed class ErgebnisMatrix
 
     /// <summary>Die Zeilen in Anzeigereihenfolge.</summary>
     public IReadOnlyList<MatrixZeile> Zeilen { get; set; } = Array.Empty<MatrixZeile>();
+
+    /// <summary>
+    /// Das Zeichen, mit dem eine WARNZELLE der Matrix beginnt (Hinweis, Fehlgrund,
+    /// „nicht berechnet"). Die Hülle schreibt es seit W3 vor jede solche Zelle; seit
+    /// Auftrag #267 steht es hier als Konstante, statt an drei Stellen als Literal.
+    /// </summary>
+    public const string WARN_PRAEFIX = "⚠ ";
+
+    /// <summary>
+    /// <b>Die Warnungen der Tabelle, jede einmal</b> — Grundlage des Warnbandes über
+    /// der Seite (Auftrag #267, Anwenderbefund 14.09.2026).
+    ///
+    /// <para><b>Warum aus der Matrix und nicht aus einem eigenen Feld.</b> Die
+    /// Warnungen stehen längst in der Tabelle: Der Kern liefert je Ergebnis
+    /// <c>Hinweis</c> und <c>Fehlgrund</c>, die Hülle setzt sie als Zeile „Hinweis"
+    /// mit <see cref="WARN_PRAEFIX"/> davor. Ein zweites Feld daneben wäre eine
+    /// zweite Wahrheit, die auseinanderlaufen kann — und die ganz unten in einer
+    /// langen Tabelle stehende Zeile hat der Anwender schlicht nicht gesehen: Er las
+    /// „Energiekosten —" und schloss auf einen Programmfehler.</para>
+    ///
+    /// <para>Reihenfolge der Tabelle, Dubletten fallen weg (dieselbe Meldung steht in
+    /// jeder Spalte).</para>
+    /// </summary>
+    public IReadOnlyList<string> Warnungen()
+    {
+        var treffer = new List<string>();
+        foreach (MatrixZeile z in Zeilen)
+        {
+            if (z?.Zellen == null) continue;
+            foreach (string zelle in z.Zellen)
+            {
+                if (string.IsNullOrEmpty(zelle) || !zelle.StartsWith(WARN_PRAEFIX, StringComparison.Ordinal))
+                    continue;
+
+                // Der Kern hängt mehrere Hinweise mit " | " aneinander
+                // (WirtschaftlichkeitCtrl.Anhaengen). Im Band wird daraus je eine
+                // eigene Zeile — ein Band mit drei Sätzen hintereinander liest
+                // niemand zu Ende.
+                foreach (string teil in zelle.Substring(WARN_PRAEFIX.Length).Split('|'))
+                {
+                    string text = teil.Trim();
+                    if (text.Length > 0 && !treffer.Contains(text)) treffer.Add(text);
+                }
+            }
+        }
+        return treffer;
+    }
 }
 
 /// <summary>

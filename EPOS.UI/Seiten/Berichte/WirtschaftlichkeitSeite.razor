@@ -42,6 +42,46 @@
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
     }
 
+    @* ------------------------------------------- Warnband (Auftrag #267)
+
+       NIE EIN STUMMES "—". Anwenderbefund 14.09.2026: "die Energiekosten sind
+       0 auch nach berechnung. Kosten sind angegeben." Der Grund stand da - als
+       letzte Zeile "Hinweis" GANZ UNTEN in einer Tabelle mit zwanzig
+       Kennzahlzeilen. Gelesen wurde er nicht; gelesen wurde "—".
+
+       Der Grund kommt aus dem KERN (WirtschaftlichkeitErgebnis.Fehlgrund /
+       .Hinweis, seit #267 mit Ausweg im Text), die Seite zeigt ihn nur - ganz
+       oben, vor den Kacheln, deren "—" er erklaert. Die Tabellenzeile bleibt,
+       wo sie ist: Sie sagt, WELCHE Spalte betroffen ist.
+
+       DER RECHENWEG STEHT DANEBEN. Zweiter Befund derselben Abnahme: Die
+       Fusszeile verlangte "bitte neu berechnen", und der Knopf "Berechnen" lag
+       unterhalb der langen Tabelle ausser Sicht. Ein Weg, den man nicht findet,
+       ist keiner - deshalb derselbe Aufruf hier oben, wo die Meldung steht.
+       Gerechnet wird weiterhin NUR auf Zuruf (Vorbild UcWirtschaftlichkeit:
+       btn_Berechnen); eine Rechnung beim Oeffnen wuerde jeden Seitenwechsel zu
+       einem Simulationslauf machen. *@
+    @if (_warnungen.Count > 0 || _nachrechnen)
+    {
+        <div class="epos-wirt-warnband">
+            @if (_nachrechnen)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+            }
+            @foreach (string w in _warnungen)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@w" />
+            }
+            @if (Berechnen is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                            @onclick="BerechnenLaufen">@NeuBerechnenText</button>
+                </div>
+            }
+        </div>
+    }
+
     @* ------------------------------------------------- Kennzahl-Karten *@
     <Kachelraster Mindestbreite="240">
         <KindInhalt>
@@ -338,6 +378,16 @@
     [Parameter] public string BerechnenText { get; set; } = "Berechnen";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
+    /// <summary>Beschriftung des Rechenknopfs IM WARNBAND (Auftrag #267) — derselbe
+    /// Lauf wie „Berechnen", nur oben, wo die Meldung steht. Der Text kommt aus
+    /// MyResource (beide Sprachen), damit er auch ohne Zutun der Hülle in der
+    /// Oberflächensprache steht.</summary>
+    [Parameter] public string NeuBerechnenText { get; set; } = Resource.WIRT_BTN_NEU_BERECHNEN;
+
+    /// <summary>Der Satz des Warnbandes, wenn die gespeicherten Ergebnisse nicht mehr
+    /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
+    [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
+
     /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen.</summary>
     [Parameter] public string MeldungStammReferenz { get; set; }
         = "Das Stammprojekt ist die Referenz und immer enthalten.";
@@ -362,6 +412,16 @@
     private int _aktuell, _gesamt = 1;
     private string _status = "";
     private string _fehler = "";
+
+    /// <summary>Die Warnungen der Vergleichstabelle, jede einmal (Auftrag #267).</summary>
+    private IReadOnlyList<string> _warnungen = Array.Empty<string>();
+
+    /// <summary>Die gespeicherten Ergebnisse passen nicht mehr zum Stand — dann steht
+    /// der Rechenknopf oben im Warnband (Auftrag #267).</summary>
+    private bool _nachrechnen;
+
+    /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Warnungen => _warnungen;
 
     /// <summary>Läuft gerade eine Berechnung? (Prüfhilfe; der Wirt darf dann nicht schließen.)</summary>
     public bool Beschaeftigt => _laeuft;
@@ -395,7 +455,20 @@
             if (z.IstStamm && !_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt);
 
         _status = _stand.Statuszeile ?? "";
+
+        // AUFTRAG #267: Warnband und Rechenweg folgen dem frisch gelesenen Stand.
+        // Das Warnzeichen der Statuszeile ist die EINE Marke, mit der die Hülle
+        // „passt nicht mehr zum Simulationsstand" kennzeichnet — dieselbe, die auch
+        // die Warnzellen der Tabelle tragen.
+        WarnbandAuffrischen();
+        _nachrechnen = _status.Contains(ErgebnisMatrix.WARN_PRAEFIX.Trim());
         StateHasChanged();
+    }
+
+    /// <summary>Die Warnungen der Tabelle einsammeln (Auftrag #267).</summary>
+    private void WarnbandAuffrischen()
+    {
+        _warnungen = _stand.Ansicht?.Matrix?.Warnungen() ?? Array.Empty<string>();
     }
 
     // =====================================================================
@@ -417,12 +490,14 @@
         // Ergebnissen statt der Wahl.
         VergleichGewaehlt?.Invoke(new List<int>(_gewaehlt));
         if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
+        WarnbandAuffrischen();          // #267: die Spalten wechseln, die Warnungen mit
     }
 
     private void BeiSzenario(int? id)
     {
         _stand.SzenarioId = id ?? 0;
         if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
+        WarnbandAuffrischen();          // #267: jedes Szenario hat seine eigenen Gründe
     }
 
     // =====================================================================
@@ -460,6 +535,12 @@
         // Ergebnisse. Auffrischen tut beides in einem.
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+
+        // AUFTRAG #267: „… gespeichert — bitte neu berechnen." war bis hierher eine
+        // Aufforderung OHNE Weg: Der Knopf „Berechnen" liegt unter der langen
+        // Vergleichstabelle und war auf dem Bildschirm des Anwenders nicht zu sehen.
+        // Jetzt stellt dasselbe Speichern das Warnband mit dem Rechenknopf nach oben.
+        if (gespeichert) _nachrechnen = true;
     }
 
     // =====================================================================

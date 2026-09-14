@@ -458,6 +458,24 @@ body {
     color: rgb(24, 98, 24);
 }
 
+/* ---------------------------------------------------------------------------
+   Das WARNBAND der Wirtschaftlichkeitsseite (Auftrag #267, Anwenderbefund
+   14.09.2026: "die Energiekosten sind 0 auch nach berechnung").
+
+   Es steht GANZ OBEN, vor den Kennzahlkarten, deren "—" es erklaert - der
+   Grund stand bis dahin als letzte Zeile "Hinweis" unter zwanzig
+   Kennzahlzeilen und wurde nicht gelesen. Der Rechenknopf gehoert in dieselbe
+   Gruppe: Die Aufforderung "bitte neu berechnen" hatte keinen sichtbaren Weg,
+   weil "Berechnen" erst unterhalb der Tabelle steht.
+
+   Eine eigene Klasse und nicht .epos-seite-zeile: Die Banner stapeln sich
+   UNTEREINANDER (eine Meldung je Zeile), die Seitenzeile ist eine Reihe. */
+.epos-wirt-warnband {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 /* ==========================================================================
    Baustein: Fehlerschranke (Befund W13-B-1, Windows-Abnahme 05.09.2026)
    ==========================================================================
