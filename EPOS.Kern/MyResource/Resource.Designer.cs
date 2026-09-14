@@ -44173,6 +44173,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher auslegen… ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SP_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SP_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf Übersicht... ähnelt.
         /// </summary>
         public static string SIM_BTN_STROMBEDARF_UEBERSICHT {
@@ -46334,6 +46343,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt ist noch kein Stromspeicher angelegt. ähnelt.
+        /// </summary>
+        public static string SIM_SP_AUSLEGUNG_LEER {
+            get {
+                return ResourceManager.GetString("SIM_SP_AUSLEGUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet mit Speicherflotte: {0} · {1} Einheiten ähnelt.
+        /// </summary>
+        public static string SIM_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("SIM_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel {0} kW ({1}) ähnelt.
+        /// </summary>
+        public static string SIM_SP_HERKUNFT_PEAK {
+            get {
+                return ResourceManager.GetString("SIM_SP_HERKUNFT_PEAK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ändern → ① ähnelt.
+        /// </summary>
+        public static string SIM_SP_KONFIG_VERWEIS {
+            get {
+                return ResourceManager.GetString("SIM_SP_KONFIG_VERWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet Schritt ① Konfiguration — dort steht „Stromspeicher auslegen…“. ähnelt.
+        /// </summary>
+        public static string SIM_SP_KONFIG_VERWEIS_TIP {
+            get {
+                return ResourceManager.GetString("SIM_SP_KONFIG_VERWEIS_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrspeicherbetrieb aktiviert ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_AKTIV {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrspeicherbetrieb deaktiviert — der Projektlauf fährt die Einzelanlage ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_AUS {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} Einheiten ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_FLOTTE {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Mehrspeicherbetrieb eingerichtet — der Projektlauf fährt die Einzelanlage ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_OHNE {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_OHNE", resourceCulture);
             }
         }
         

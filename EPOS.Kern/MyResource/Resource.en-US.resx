@@ -19130,4 +19130,34 @@ Do you want to allow this?</value>
   <data name="ETV_HISTORIE_LOESCH_TITEL" xml:space="preserve">
     <value>Delete price record</value>
   </data>
+  <data name="SIM_BTN_SP_AUSLEGUNG" xml:space="preserve">
+    <value>Size battery storage…</value>
+  </data>
+  <data name="SIM_SP_AUSLEGUNG_LEER" xml:space="preserve">
+    <value>No battery storage has been set up for this project yet.</value>
+  </data>
+  <data name="SIM_SP_STAND_AKTIV" xml:space="preserve">
+    <value>Multi-storage operation enabled</value>
+  </data>
+  <data name="SIM_SP_STAND_AUS" xml:space="preserve">
+    <value>Multi-storage operation disabled — the project run uses the single unit</value>
+  </data>
+  <data name="SIM_SP_STAND_OHNE" xml:space="preserve">
+    <value>No multi-storage operation set up yet — the project run uses the single unit</value>
+  </data>
+  <data name="SIM_SP_STAND_FLOTTE" xml:space="preserve">
+    <value>{0} · {1} units</value>
+  </data>
+  <data name="SIM_SP_HERKUNFT" xml:space="preserve">
+    <value>Computed with storage fleet: {0} · {1} units</value>
+  </data>
+  <data name="SIM_SP_HERKUNFT_PEAK" xml:space="preserve">
+    <value>Peak target {0} kW ({1})</value>
+  </data>
+  <data name="SIM_SP_KONFIG_VERWEIS" xml:space="preserve">
+    <value>Change configuration → ①</value>
+  </data>
+  <data name="SIM_SP_KONFIG_VERWEIS_TIP" xml:space="preserve">
+    <value>Opens step ① Configuration — “Size battery storage…” is there.</value>
+  </data>
 </root>

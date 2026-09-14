@@ -108,6 +108,12 @@ public sealed class SimulationKonfigDaten
     public string SpeicherLeerText = "";
 
     /// <summary>
+    /// Der Kurzstand der Stromspeicher-Auslegung fuer die Spalte „Speicher im
+    /// Projekt" (Auftrag #274). Nie <c>null</c>.
+    /// </summary>
+    public StromspeicherStand Stromspeicherstand = new StromspeicherStand();
+
+    /// <summary>
     /// Der Booster-Lesepunkt erscheint erst, wenn das Projekt einen gekoppelten
     /// Booster fuehrt (PAKET B2).
     /// </summary>
@@ -118,6 +124,34 @@ public sealed class SimulationKonfigDaten
 
     /// <summary>true = im Projekt ist eine Photovoltaik aufgenommen (PV-Hinweis des Modus).</summary>
     public bool PvGewaehlt;
+}
+
+/// <summary>
+/// Der KURZSTAND der Stromspeicher-Auslegung, wie ihn die Spalte „Speicher im
+/// Projekt" zeigt (Auftrag <b>#274</b>, Anwenderwunsch 14.09.2026: „Der Dialog
+/// Stromspeicher soll in den Dialog Konfiguration verschoben werden").
+///
+/// <para><b>Fertiger Text, keine Kennung.</b> Wie bei den Kacheln und Chips baut die
+/// Huelle die Zeile — die Seite kennt weder <c>MyResource</c> noch
+/// <c>FlottenBetriebsziel</c>. Sie entscheidet nur, ob der Knopf oder die Erklaerzeile
+/// dasteht.</para>
+/// </summary>
+public sealed class StromspeicherStand
+{
+    /// <summary>
+    /// true = das Projekt fuehrt einen Stromspeicher oder einen Flottenstand; dann
+    /// steht der Knopf „Stromspeicher auslegen…" da.
+    /// </summary>
+    public bool Vorhanden;
+
+    /// <summary>Die Kurzzeile unter dem Knopf; leer = keine Zeile.</summary>
+    public string Standzeile = "";
+
+    /// <summary>
+    /// Die Erklaerzeile ANSTELLE des Knopfes, wenn es nichts auszulegen gibt — das
+    /// Gegenstueck zu „Fuer dieses Projekt ist noch kein Pufferspeicher angelegt".
+    /// </summary>
+    public string LeerText = "";
 }
 
 /// <summary>
@@ -229,6 +263,19 @@ public sealed class SimulationKonfigDienste
 
     /// <summary>Parametersatz der Pufferverwaltung (Puffer-ID; 0 = ohne Vorwahl).</summary>
     public Func<int, IReadOnlyDictionary<string, object>>? PufferVerwaltungGaben;
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Auftrag <b>#274</b>) — der
+    /// Knopf „Stromspeicher auslegen…" neben „Pufferspeicher anlegen / verwalten…".
+    /// </summary>
+    /// <remarks>
+    /// <b>Ohne Delegat kein Knopf</b> (Hausregel). Die Huelle meldet dabei erst den
+    /// Arbeitsgang der Auslegung an — sie braucht den gerechneten Simulationslauf fuer
+    /// ihre EPOS-Zeitreihen — und wechselt dann ueber
+    /// <c>Navigationsziel.Aktuell.OeffneMaske</c> die Ansicht. Der Rueckweg fuehrt
+    /// ueber den Rueckwegstapel der <c>AppWurzel</c> hierher zurueck, nach ①.
+    /// </remarks>
+    public Action? AuslegungOeffnen;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

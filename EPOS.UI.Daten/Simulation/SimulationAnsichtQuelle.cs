@@ -126,6 +126,14 @@ namespace WindowsFormsApplication1
             _idProjekt = idProjekt;
             _konfig = SimulationKonfigHuelle.Erzeugen(idProjekt);
             _ergebnis = SimulationErgebnisHuelle.Erzeugen(_wege, idProjekt, _bedarf);
+
+            // AUFTRAG #274: Der Einstieg in die Stromspeicher-Auslegung steht seit dem
+            // Anwenderwunsch vom 14.09.2026 in Schritt ①, nicht mehr im Ergebnisreiter.
+            // Gehen muss ihn trotzdem die ERGEBNISHUELLE: Die Auslegung zieht ihre
+            // EPOS-Zeitreihen aus dem gerechneten Lauf, und den haelt nur sie. Die
+            // Quelle ist die Stelle, die beide Huellen kennt - deshalb wird hier
+            // verknuepft und nicht in einer der beiden.
+            _konfig.AuslegungWegSetzen(_ergebnis.AuslegungOeffnen);
         }
 
         /// <summary>„Projekt „…"" — die Kopfzeile der Ansicht; leer ohne Namen.</summary>

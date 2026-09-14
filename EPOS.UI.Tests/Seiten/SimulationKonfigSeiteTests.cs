@@ -57,6 +57,15 @@ public class SimulationKonfigSeiteTests : BunitContext
     private readonly List<bool> _lesepunkt = new();
     private int _schemaGeholt;
 
+    /// <summary>#274: der Kurzstand der Stromspeicher-Auslegung; vorbelegt „nichts da".</summary>
+    private StromspeicherStand _spStand = new StromspeicherStand();
+
+    /// <summary>#274: Hat die Hülle einen Weg in die Auslegung eingelegt?</summary>
+    private bool _spWeg;
+
+    /// <summary>#274: Wie oft wurde die Auslegung geöffnet?</summary>
+    private int _spGeoeffnet;
+
     private static ErzeugerZeile Waerme(string dbWert, string rang, string titel,
                                         int idAnlage, bool erste, bool wp = false,
                                         params ChipDaten[] chips) => new ErzeugerZeile
@@ -183,6 +192,7 @@ public class SimulationKonfigSeiteTests : BunitContext
                 }
             },
             SpeicherLeerText = "Dieses Projekt führt keinen Pufferspeicher.",
+            Stromspeicherstand = _spStand,
             BoosterSichtbar = mitBooster,
             BoosterDavor = true,
             PvGewaehlt = true
@@ -193,6 +203,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         => new SimulationKonfigDienste
         {
             Laden = _ => Daten(gesperrt, mitBooster),
+            AuslegungOeffnen = _spWeg ? () => _spGeoeffnet++ : null,
             SchemaLaden = _ => { _schemaGeholt++; return SchemaBild.Leer; },
             Verschieben = (w, r) => _verschoben.Add(w + ":" + r),
             Aufnehmen = w => _aufgenommen.Add(w),
@@ -999,5 +1010,79 @@ public class SimulationKonfigSeiteTests : BunitContext
         var ueberlagerungstitel = cut.FindAll("h2.epos-ueberlagerung-titel");
         Assert.Single(ueberlagerungstitel);
         Assert.Equal("Pufferspeicher im Projekt", ueberlagerungstitel[0].TextContent);
+    }
+
+    // ==================================================================
+    //  AUFTRAG #274 — „Stromspeicher auslegen…" in der Speicherspalte
+    // ==================================================================
+
+    /// <summary>
+    /// <b>Anwenderwunsch 14.09.2026:</b> „Der Dialog Stromspeicher soll in den Dialog
+    /// Konfiguration verschoben werden. Ähnlich zu ‚Pufferspeicher anlegen/verwalten'
+    /// einen Konfigurationsbutton ‚Stromspeicher auslegen'." Er steht UNTER dem
+    /// Pufferknopf, trägt darunter die Kurzzeile zum Stand und öffnet die Ansicht
+    /// „Stromspeicher-Auslegung" über den Weg der Hülle.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_Stromspeicher_auslegen_steht_mit_Standzeile_unter_der_Pufferverwaltung()
+    {
+        _spWeg = true;
+        _spStand = new StromspeicherStand
+        {
+            Vorhanden = true,
+            Standzeile = "Mehrspeicherbetrieb aktiviert · Lastspitzenkappung · 2 Einheiten"
+        };
+
+        var cut = Seite();
+
+        var knoepfe = cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains("Pufferspeicher", knoepfe[0].TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
+                     knoepfe[1].TextContent.Trim());
+
+        Assert.Equal(_spStand.Standzeile,
+                     cut.Find("p.epos-simkonfig-flottenstand").TextContent.Trim());
+
+        cut.Find("section.epos-simkonfig-speicher button.epos-simkonfig-auslegung").Click();
+        Assert.Equal(1, _spGeoeffnet);
+    }
+
+    /// <summary>
+    /// Gibt es nichts auszulegen, steht statt des Knopfes eine Erklärzeile — dieselbe
+    /// Art Zeile wie „Für dieses Projekt ist noch kein Pufferspeicher angelegt".
+    /// </summary>
+    [Fact]
+    public void Ohne_Stromspeicher_steht_statt_des_Knopfes_die_Erklaerzeile()
+    {
+        _spWeg = true;
+        _spStand = new StromspeicherStand
+        {
+            Vorhanden = false,
+            LeerText = WindowsFormsApplication1.MyResource.Resource.SIM_SP_AUSLEGUNG_LEER
+        };
+
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-auslegung"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIM_SP_AUSLEGUNG_LEER,
+                        cut.Find("section.epos-simkonfig-speicher").TextContent);
+    }
+
+    /// <summary>
+    /// Kein Delegat, kein Knopf (Hausregel): Eine Schale ohne Weg in die Auslegung
+    /// zeichnet ihn gar nicht erst — die Seite bleibt vollständig bedienbar.
+    /// </summary>
+    [Fact]
+    public void Ohne_Weg_in_die_Auslegung_bleibt_der_Knopf_weg()
+    {
+        _spWeg = false;
+        _spStand = new StromspeicherStand { Vorhanden = true, Standzeile = "Eingabestand" };
+
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-auslegung"));
+        Assert.Empty(cut.FindAll("p.epos-simkonfig-flottenstand"));
+        Assert.Single(cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf"));
     }
 }

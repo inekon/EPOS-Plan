@@ -23,13 +23,20 @@ namespace WindowsFormsApplication1
     /// <see cref="StromspeicherAuslegungCtrl"/> — Hausregel: Datenbankseite in den
     /// Kern.</para>
     ///
-    /// <para><b>Geblieben sind vier Wege</b>, und alle vier gehören dem REITER
-    /// „Stromspeicher": Er zeigt die Flotte samt Betriebseditor an
-    /// (<see cref="OptimierungVorgaben"/>), speichert deren Optionen
-    /// (<see cref="OptimierungEinstellungenSpeichern"/>), schreibt die CSV
-    /// (<see cref="OptimierungCsv"/>) und fragt, ob es den Flotteneinstieg überhaupt
-    /// gibt (<see cref="OptimierungFlottenRechnen"/>). Dazu kommt der
-    /// ANSICHTSWECHSEL <see cref="AuslegungOeffnen"/>.</para>
+    /// <para><b>Seit Auftrag #274 sind es vier</b> (Anwenderwunsch 14.09.2026: „Der
+    /// Dialog Stromspeicher soll in den Dialog Konfiguration verschoben werden"). Der
+    /// Reiter „Stromspeicher" ist reines ERGEBNIS und braucht davon nur noch zwei: die
+    /// CSV der Flottenansicht (<see cref="OptimierungCsv"/>) und den Verweis zurück in
+    /// Schritt ① (<see cref="KonfigurationOeffnen"/>). Die anderen zwei gehören der
+    /// KONFIGURATION: <see cref="AuslegungOeffnen"/> ist ihr Knopf „Stromspeicher
+    /// auslegen…" (eingelegt von <c>SimulationAnsichtQuelle</c>, weil die Auslegung
+    /// den gerechneten Lauf DIESER Hülle braucht), und <see cref="OptimierungVorgaben"/>
+    /// bestückt den Projektlauf mit dem Flottenstand.</para>
+    ///
+    /// <para><b>Was mit #274 gefallen ist</b>: der Schreibweg der Betriebsoptionen
+    /// (<c>OptimierungEinstellungenSpeichern</c>) und die Flottenprobe
+    /// (<c>OptimierungFlottenRechnen</c>). Beide hingen am Betriebseditor des Reiters;
+    /// die Betriebsführung wird seither allein in der Auslegungsansicht gepflegt.</para>
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
@@ -41,9 +48,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>An der Projektflotte wurde geschrieben, ohne dass neu gerechnet wurde.</summary>
         private bool _flotteProjektGeaendert;
-
-        /// <summary>Die Abbruchmarke eines laufenden Hintergrundlaufs; <c>null</c> = keiner läuft.</summary>
-        private CancellationTokenSource _auslegungAbbruch;
 
         /// <summary>
         /// Der Controller mit dem AKTUELLEN Simulationslauf. Der Lauf wird nur
@@ -63,84 +67,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         private SpeicherOptimierungVorgaben OptimierungVorgaben() => Auslegung().Vorgaben();
 
-        /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung.</summary>
-        private Task<string> OptimierungEinstellungenSpeichern(SpeicherOptimierungEingaben eingaben)
-        {
-            string fehler = Auslegung().EinstellungenSpeichern(eingaben);
-            if (string.IsNullOrEmpty(fehler))
-            {
-                _flotteProjektGeaendert = true;
-
-                // #236: Das angezeigte Ergebnis ist damit VERALTET, nicht „leer" - und
-                // der Anlass steht dabei, damit die Uebersicht ihn nennen kann.
-                ZustandSetzen(ErgebnisZustand.Veraltet,
-                              MyResource.Resource.SIMERG_ZUSTAND_ANLASS_EINSTELLUNGEN);
-            }
-            return Task.FromResult(fehler);
-        }
-
-        /// <summary>
-        /// Rechnet die Flottenstudie: Datenbank auf dem Bedienfaden, Rechnung in
-        /// <c>Task.Run</c>.
-        /// </summary>
-        /// <remarks>
-        /// Der Reiter „Stromspeicher" fragt diesen Weg nur auf <c>null</c> ab — er
-        /// entscheidet damit, ob es den Flotteneinstieg gibt. Gerechnet wird in der
-        /// Ansicht STROMSPEICHER_AUSLEGUNG; dass der Weg trotzdem VOLLSTÄNDIG ist, hält
-        /// die Auskunft ehrlich.
-        /// </remarks>
-        private async Task<SpeicherFlottenErgebnis> OptimierungFlottenRechnen(
-            SpeicherOptimierungEingaben eingaben, Action<double?, string> melder)
-        {
-            if (_auslegungAbbruch != null)
-                return new SpeicherFlottenErgebnis { Meldung = MyResource.Resource.FLOTTE_DLG_MSG_LAEUFT };
-
-            StromspeicherAuslegungCtrl ctrl = Auslegung();
-            string meldung;
-            StromspeicherOptimierungVorbereitung vorbereitung = ctrl.FlotteVorbereiten(eingaben, out meldung);
-            if (vorbereitung == null) return new SpeicherFlottenErgebnis { Meldung = meldung };
-
-            _flotteProjektGeaendert = true;
-            ZustandSetzen(ErgebnisZustand.Veraltet,
-                          MyResource.Resource.SIMERG_ZUSTAND_ANLASS_FLOTTE);
-
-            _auslegungAbbruch = new CancellationTokenSource();
-            CancellationToken marke = _auslegungAbbruch.Token;
-            IProgress<FlottenFortschritt> fortschritt =
-                new Progress<FlottenFortschritt>(p => melder(
-                    p.Gesamt > 0 ? (double)p.Abgeschlossen / p.Gesamt : (double?)null,
-                    string.Format(MyResource.Resource.FLOTTE_DLG_STATUS_VARIANTE,
-                                  p.Abgeschlossen, p.Gesamt)));
-            try
-            {
-                return await Kulturweitergabe.Starten(
-                    () => ctrl.FlotteRechnen(vorbereitung, fortschritt, marke), marke);
-            }
-            catch (OperationCanceledException)
-            {
-                return new SpeicherFlottenErgebnis
-                { Abgebrochen = true, Meldung = MyResource.Resource.FLOTTE_DLG_MSG_ABGEBROCHEN };
-            }
-            finally
-            {
-                CancellationTokenSource quelle = _auslegungAbbruch;
-                _auslegungAbbruch = null;
-                if (quelle != null) quelle.Dispose();
-            }
-        }
-
         /// <summary>
         /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Muster W16c‑E‑3,
         /// „Ansicht wechseln statt Überlagerung").
         /// </summary>
         /// <remarks>
-        /// Zuerst wird der ARBEITSGANG angemeldet — mit dem Projekt, dem gerechneten
+        /// <para>Zuerst wird der ARBEITSGANG angemeldet — mit dem Projekt, dem gerechneten
         /// Simulationslauf und dem Nachzug für diese Seite —, dann meldet die Hülle den
         /// Seitenschlüssel an die Wurzel. Ohne angemeldete Wurzel (kein Blazor auf dem
         /// Bildschirm) geschieht nichts; das ist derselbe Ausgang wie bei jedem anderen
-        /// Navigationsweg.
+        /// Navigationsweg.</para>
+        /// <para><b>Gerufen wird er seit Auftrag #274 aus SCHRITT ①</b> (Anwenderwunsch
+        /// 14.09.2026): Der Knopf „Stromspeicher auslegen…" der Konfiguration steht neben
+        /// „Pufferspeicher anlegen / verwalten…", und <c>SimulationAnsichtQuelle</c> legt
+        /// diesen Weg dort ein. Der Ergebnisreiter „Stromspeicher" hat dafür keinen Knopf
+        /// mehr — er zeigt nur noch, womit gerechnet wurde.</para>
         /// </remarks>
-        private void AuslegungOeffnen()
+        internal void AuslegungOeffnen()
         {
             StromspeicherAuslegungHuelle.Anmelden(Auslegung(), () =>
             {
@@ -151,6 +94,23 @@ namespace WindowsFormsApplication1
 
             EPOS.UI.Dienste.Navigationsziel.Aktuell?.OeffneMaske(
                 EPOS.UI.Seiten.Seitenschluessel.StromspeicherAuslegung);
+        }
+
+        /// <summary>
+        /// Wechselt auf SCHRITT ① der Ansicht „Simulation" (Auftrag <b>#274</b>) — der
+        /// Verweis „Konfiguration ändern → ①" der Herkunftszeile im Reiter
+        /// „Stromspeicher".
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein Schlüssel, zwei Wirte.</b> <c>SIMULATION_KONFIGURATION</c> ist seit
+        /// Auftrag #207 eine EINSTIEGSMARKE: In der Ansicht SIMULATION blättert sie auf
+        /// Schritt ①, aus dem Startseiten-Reiter „Simulation" heraus öffnet sie die
+        /// Ansicht dort. Die Wurzel entscheidet das, nicht die Hülle.
+        /// </remarks>
+        private void KonfigurationOeffnen()
+        {
+            EPOS.UI.Dienste.Navigationsziel.Aktuell?.OeffneMaske(
+                EPOS.UI.Seiten.Seitenschluessel.SimulationKonfiguration);
         }
 
         /// <summary>
