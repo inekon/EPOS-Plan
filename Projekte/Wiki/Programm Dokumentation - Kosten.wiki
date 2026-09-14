@@ -13,6 +13,39 @@ Der Dialog '''Kosten''' erfasst Investitions-, Betriebs- und Energiekosten je Ko
 * '''Übernahme aus dem Technikmodul''' – die dort hinterlegten Anlagenkosten lassen sich auf Knopfdruck als Planwert übernehmen.
 * {{Anker|summen}}'''Summen''' – werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
 
+== Bemessung der Positionen ==
+{{Anker|bemessung}}
+
+Jede Position wird entweder als fester Betrag erfasst oder über einen Satz mal einer Bezugsgröße bemessen. Die Bezugsgröße liest das Programm beim Rechnen frisch aus dem Projekt – aus der Anlagentechnik, aus dem jüngsten Simulationslauf oder aus den Investitionskosten selbst. Welche Bezugsgröße zu welchem Gewerk gehört, ergibt die Anlage:
+
+{| class="wikitable"
+! Gewerk !! Bemessung !! Bezugsgröße aus der Anlagentechnik
+|-
+| Wärmepumpe || je kW Leistung, je kW Heizleistung || Nennleistung der Wärmepumpe
+|-
+| Heizkessel || je kW Leistung, je kW Heizleistung || thermische Leistung des Kessels
+|-
+| BHKW || je kW Heizleistung || thermische Leistung des Moduls
+|-
+| BHKW || je kW elektrisch || elektrische Leistung des Moduls
+|-
+| Photovoltaik || je kWp Leistung, je kW elektrisch || installierte Leistung: Modulanzahl × Modulleistung
+|-
+| Solarthermie || je m² Kollektorfläche || Aperturfläche je Modul × Modulanzahl
+|-
+| Solarthermie || je kW Leistung, je kW Heizleistung || thermische Leistung des Kollektorfelds: 0,7 kW je m² × Aperturfläche × Modulanzahl
+|-
+| Stromspeicher || je kW Leistung, je kW elektrisch || Lade- und Entladeleistung des Speichers
+|-
+| Stromspeicher || je kWh Kapazität || nutzbare Speicherkapazität
+|}
+
+Die thermische Leistung eines Kollektorfelds steht in keinem Datenblatt: Was ein Kollektor liefert, hängt an Einstrahlung und Temperaturen und wird in der Simulation Stunde für Stunde gerechnet. Für eine Bemessung je kW gilt deshalb die übliche Umrechnung der Solarthermie-Statistik, 0,7 kW thermisch je m² Aperturfläche. '''Beispiel:''' Ein Feld aus 10 Modulen zu je 2,5 m² Aperturfläche hat 25 m² und damit 0,7 kW/m² × 25 m² = 17,5 kW; bei einem Satz von 700 €/kW sind das 12.250 €. Der Kurztext am Betrag nennt diese Herleitung.
+
+Beim BHKW bleibt ''je kW Leistung'' ohne Bezugsgröße: Das Modul führt eine thermische und eine elektrische Leistung – welche gemeint ist, sagt erst die genauere Bemessung. Der Pufferspeicher trägt keine Kapazität in kWh, weil sie sich ohne ein Temperaturpaar nicht bestimmen lässt. Wärmezentrale, Bauliche Anlagen und Stromeinspeisung führen keine Anlagentechnik; dort gelten feste Beträge und Prozentbemessungen.
+
+* {{Anker|ohne-bezugsgroesse}}'''Ohne Bezugsgröße''' – findet das Programm zu einer Position keine, gilt der erfasste Betrag; bei einer satzbasierten Position ist das 0. Die Zeile trägt dann ein ⚠ am Betrag, und unter dem Raster steht der Grund: Die Bemessung passt nicht zu diesem Gewerk, es fehlt das Gerät oder seine Angabe, es fehlt ein Simulationslauf, oder es fehlen Investitionskosten.
+
 == Energieträgerverwaltung ==
 {{Anker|energietraegerverwaltung|energietraeger}}
 
