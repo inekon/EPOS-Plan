@@ -19059,4 +19059,25 @@ Möchten Sie das zulassen?</value>
   <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL" xml:space="preserve">
     <value>Alle fehlenden Speicheranlagen als Einheiten aufnehmen</value>
   </data>
+  <data name="ETV_FORMEL_JE_EINHEIT" xml:space="preserve">
+    <value>{0} €/{1} ÷ {2} kWh/{1} = {3} €/kWh</value>
+  </data>
+  <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
+    <value>Direktabrechnung nach kWh</value>
+  </data>
+  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
+    <value>Direktabrechnung: {0} €/kWh</value>
+  </data>
+  <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
+    <value>Heizwert [{0}]</value>
+  </data>
+  <data name="ETV_BTN_KATALOGWERTE" xml:space="preserve">
+    <value>Katalogwerte übernehmen</value>
+  </data>
+  <data name="ETV_KATALOGWERTE_UEBERNOMMEN" xml:space="preserve">
+    <value>Katalogwerte übernommen — noch nicht gespeichert.</value>
+  </data>
+  <data name="ETV_HISTORIE_NUR_PROJEKT" xml:space="preserve">
+    <value>Die Preishistorie wird je Projekt geführt — im Katalog gilt die Katalogzeile selbst.</value>
+  </data>
 </root>

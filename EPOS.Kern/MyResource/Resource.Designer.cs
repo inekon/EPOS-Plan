@@ -8591,11 +8591,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte übernehmen ähnelt.
+        /// </summary>
+        public static string ETV_BTN_KATALOGWERTE {
+            get {
+                return ResourceManager.GetString("ETV_BTN_KATALOGWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
         /// </summary>
         public static string ETV_BTN_SPEICHERN {
             get {
                 return ResourceManager.GetString("ETV_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung: {0} €/kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_DIREKT_BASIS {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_DIREKT_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung nach kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_DIREKT_KWH {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_DIREKT_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/{1} ÷ {2} kWh/{1} = {3} €/kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_JE_EINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preishistorie wird je Projekt geführt — im Katalog gilt die Katalogzeile selbst. ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte übernommen — noch nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string ETV_KATALOGWERTE_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("ETV_KATALOGWERTE_UEBERNOMMEN", resourceCulture);
             }
         }
         
@@ -8767,6 +8821,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_SP_HEIZWERT {
             get {
                 return ResourceManager.GetString("ETV_SP_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert [{0}] ähnelt.
+        /// </summary>
+        public static string ETV_SP_HEIZWERT_EINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_SP_HEIZWERT_EINHEIT", resourceCulture);
             }
         }
         
