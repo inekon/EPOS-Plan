@@ -59,17 +59,11 @@
         <p class="@(_meldungWarnung ? "epos-simerg-status epos-simerg-warn" : "epos-simerg-status")">@_meldung</p>
     }
 
-    @* DIE KNOPFZEILE, ebenfalls OBEN. „Kein Delegat ist kein Knopf" (Regel seit
-       W2.2): ohne Sprungdelegat keine Optimierung. Speichern und Verwerfen gibt
-       es nicht mehr — es ist nichts offen, was man speichern oder verwerfen
-       könnte. *@
-    @if (OptimierungMoeglich)
-    {
-        <div class="epos-simerg-knopfzeile">
-            <button type="button" class="epos-simerg-knopf" @onclick="Optimierung" disabled="@Gesperrt"
-                    title="@Resource.OPT_HINWEIS_ZIELFUNKTION">@Resource.OPT_BTN_OEFFNEN</button>
-        </div>
-    }
+    @* HIER STAND DIE KNOPFZEILE mit dem Sprung in die Auslegung. Sie ist mit
+       Auftrag #274 gefallen (Anwenderwunsch 14.09.2026): Der Einstieg steht in
+       Schritt ① neben „Pufferspeicher anlegen / verwalten…" — ein Einstieg, eine
+       Stelle. Speichern und Verwerfen gab es schon davor nicht mehr; es ist
+       nichts offen, was man speichern oder verwerfen könnte. *@
 
     <div class="epos-simerg-felder">
         <Formularraster Einspaltig="true">
@@ -211,12 +205,6 @@
 
     /// <summary>Gesperrt (Schemamigration) — die Felder bleiben sichtbar und lesbar.</summary>
     [Parameter] public bool Gesperrt { get; set; }
-
-    /// <summary>Ruft die Auslegungsoptimierung (Überlagerung); ohne Delegat kein Knopf.</summary>
-    [Parameter] public EventCallback Optimierung { get; set; }
-
-    /// <summary>Zeigt die Auslegungsoptimierung an? Ohne Rechendelegat bleibt sie weg.</summary>
-    [Parameter] public bool OptimierungMoeglich { get; set; }
 
     /// <summary>Die letzte Rückmeldung eines Schreibvorgangs (Prüfhilfe).</summary>
     public string Meldung => _meldung;

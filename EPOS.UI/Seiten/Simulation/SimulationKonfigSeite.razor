@@ -212,6 +212,38 @@
 
                     <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
                             @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
+
+                    @* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274,
+                       Anwenderwunsch 14.09.2026): „Der Dialog Stromspeicher soll in den
+                       Dialog Konfiguration verschoben werden. Aehnlich zu ‚Pufferspeicher
+                       anlegen/verwalten' einen Konfigurationsbutton ‚Stromspeicher
+                       auslegen'."
+
+                       Bis dahin fuehrte der Weg ueber den ERGEBNIS-Reiter „Stromspeicher":
+                       Wer die Betriebsfuehrung einstellen wollte, musste erst rechnen. Sie
+                       ist aber eine EINGABE - sie gehoert neben die Pufferverwaltung, in
+                       Schritt ①. Der Reiter zeigt seither nur noch, WOMIT gerechnet wurde.
+
+                       Der Knopf steht nur, wenn es etwas auszulegen gibt (Stromspeicher im
+                       Projekt oder ein Flottenstand); sonst steht dort dieselbe Art
+                       Erklaerzeile wie beim fehlenden Pufferspeicher. *@
+                    @if (_daten.Stromspeicherstand.Vorhanden && Dienste?.AuslegungOeffnen is not null)
+                    {
+                        <button type="button" class="epos-knopf epos-simkonfig-auslegung"
+                                disabled="@(IdProjekt <= 0)"
+                                @onclick="StromspeicherAuslegungOeffnen">@BtnStromspeicherAuslegen</button>
+
+                        @if (_daten.Stromspeicherstand.Standzeile.Length > 0)
+                        {
+                            <p class="epos-simkonfig-hinweis epos-simkonfig-flottenstand">
+                                @_daten.Stromspeicherstand.Standzeile
+                            </p>
+                        }
+                    }
+                    else if (_daten.Stromspeicherstand.LeerText.Length > 0)
+                    {
+                        <p class="epos-simkonfig-hinweis">@_daten.Stromspeicherstand.LeerText</p>
+                    }
                 </section>
             </div>
         }
@@ -480,6 +512,9 @@
     [Parameter] public string TipSpeicherBearbeiten { get; set; } = "Pufferspeicher bearbeiten";
     [Parameter] public string TipSpeicherAufklappen { get; set; } = "Einzelheiten anzeigen";
     [Parameter] public string BtnPufferVerwalten { get; set; } = "Pufferspeicher anlegen / verwalten…";
+
+    /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
+    [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
 
     [Parameter] public string LesepunktText { get; set; }
         = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
@@ -1042,6 +1077,22 @@
     {
         _auswahl = idPuffer > 0 ? PRAEFIX_SPEICHER + idPuffer : "";
         AnsichtszustandAnwenden();
+    }
+
+    /// <summary>
+    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Auftrag <b>#274</b>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Editor, kein Zustand hier.</b> Die Seite ruft nur den Weg der Hülle; was
+    /// dort geschieht (Arbeitsgang anmelden, Ansicht wechseln), steht in
+    /// <c>SimulationKonfigHuelle</c>. Der Rückweg führt über den Rückwegstapel der
+    /// <c>AppWurzel</c> hierher zurück — die Ansicht wird dabei neu aufgebaut und
+    /// liest ihre Speicherspalte samt Flottenstand frisch.
+    /// </remarks>
+    private void StromspeicherAuslegungOeffnen()
+    {
+        if (IdProjekt <= 0) return;
+        Dienste?.AuslegungOeffnen?.Invoke();
     }
 
     // =====================================================================

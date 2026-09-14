@@ -13,7 +13,7 @@ Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er 
 * '''Degradation''' – der jährliche Kapazitätsverlust in Prozent je Jahr.
 * '''Modulkosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht.
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
-* {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''.
+* {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''. Ausgelegt wird er über den Knopf ''Stromspeicher auslegen…'' derselben Spalte.
 
 == Stromspeicher-Auslegung ==
 {{Anker|auslegung-ansicht}}
@@ -28,9 +28,9 @@ Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechne
 === Erreichbarkeit ===
 {{Anker|auslegung-start}}
 
-Der Weg hinein führt über das '''Simulationsergebnis''': Reiter '''Stromspeicher''' → Karte ''Speicherflotte und Auslegung'' → '''„Speicherflotte & Auslegung öffnen"'''. Die Ansicht '''wechselt''' dann an die Stelle der Ergebnisseite; der Knopf ''← zurück'' oben rechts führt dorthin zurück, woher Sie kamen.
+Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück.
 
-'''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Ergebnisseite mit. Öffnen Sie die Ansicht ohne vorherigen Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
+'''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Simulation mit. Öffnen Sie die Ansicht ohne vorherigen Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
 
 Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dieses Projekt bereits eine Flotte aktiviert, steht darunter ein Band '''„Projektflotte aktiv"''' mit dem Knopf, sie wieder abzuschalten.
 

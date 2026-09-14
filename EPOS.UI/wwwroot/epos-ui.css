@@ -3515,6 +3515,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
+/* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274). Er steht UNTER
+   „Pufferspeicher anlegen / verwalten…" und sieht aus wie dieser Knopf - zwei
+   Wege derselben Art, beide in die Tiefe der Speicherspalte. Die Standzeile
+   darunter ist eine leise Zeile, kein Banner (Regel W16b-E-6): Sie sagt, womit
+   der naechste Projektlauf rechnet, und verlangt nichts. */
+.epos-simkonfig-auslegung {
+    margin-top: 6px;
+}
+
+.epos-simkonfig-flottenstand {
+    margin-top: 4px;
+}
+
 /* DIE FUENF LAUFPARAMETER (Windows-Abnahme #216, Punkt 3). Der Abschnitt
    „Waermebedarf" steht ueber den zwei Spalten, die drei Erzeugerwerte in ihrer
    Karte. Beide nehmen denselben schmalen Feldblock wie der Reiter, aus dem sie
@@ -3790,6 +3803,36 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 .epos-simerg-status { margin: 4px 0; font-weight: 600; }
+
+/* DIE HERKUNFTSZEILE DES STROMSPEICHER-REITERS (Auftrag #274): Sie sagt, womit
+   der angezeigte Lauf gerechnet wurde, und traegt rechts daneben den Verweis
+   zurueck in Schritt (1). Der Verweis ist ein KNOPF (er wechselt die Ansicht),
+   sieht aber aus wie ein Verweis - dieselbe Bauart wie die Textknoepfe der
+   Hinweisleisten. Er behaelt sein Beruehrungsziel von 44 px ueber die Hoehe der
+   Zeile. */
+.epos-simerg-herkunft {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.epos-simerg-verweis {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    min-height: var(--epos-touchziel);
+    font: inherit;
+    font-weight: 400;
+    color: var(--epos-marke);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-simerg-verweis:hover,
+.epos-simerg-verweis:focus-visible {
+    text-decoration-thickness: 2px;
+}
 .epos-simerg-warn { color: var(--epos-warn-text); }
 .epos-simerg-aequivalent { color: var(--epos-text-sehr-leise); }
 

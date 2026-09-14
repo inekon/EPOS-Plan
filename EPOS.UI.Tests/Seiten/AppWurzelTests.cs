@@ -586,7 +586,13 @@ public class AppWurzelTests : EposBunitContext
     /// Der Parametersatz der Ansicht SIMULATION in seiner schmalsten Form: zwei
     /// eingebettete Seiten, ein gerechneter Lauf und ein Blatt „Stromspeicher".
     /// </summary>
-    private static IReadOnlyDictionary<string, object> Simulationsgaben()
+    /// <param name="auslegungOeffnen">
+    /// Der Weg in die Stromspeicher-Auslegung (Auftrag <b>#274</b>): Er steht seither
+    /// in Schritt ① neben der Pufferverwaltung. <c>null</c> = die Schale bietet ihn
+    /// nicht an, dann zeichnet die Konfiguration den Knopf gar nicht erst.
+    /// </param>
+    private static IReadOnlyDictionary<string, object> Simulationsgaben(
+        Action? auslegungOeffnen = null)
         => new Dictionary<string, object>
         {
             ["Dienste"] = new EPOS.UI.Seiten.Simulation.SimulationAnsichtDienste
@@ -595,7 +601,16 @@ public class AppWurzelTests : EposBunitContext
                 {
                     ["Dienste"] = new EPOS.UI.Seiten.Simulation.SimulationKonfigDienste
                     {
-                        Laden = _ => new EPOS.UI.Seiten.Simulation.SimulationKonfigDaten()
+                        Laden = _ => new EPOS.UI.Seiten.Simulation.SimulationKonfigDaten
+                        {
+                            IdProjekt = 1030,
+                            Stromspeicherstand = new EPOS.UI.Seiten.Simulation.StromspeicherStand
+                            {
+                                Vorhanden = auslegungOeffnen is not null,
+                                Standzeile = "Mehrspeicherbetrieb aktiviert"
+                            }
+                        },
+                        AuslegungOeffnen = auslegungOeffnen
                     },
                     ["StartProjekt"] = 1030
                 },
@@ -618,16 +633,62 @@ public class AppWurzelTests : EposBunitContext
             ["ProjektText"] = "Projekt „B3-Kaskade“"
         };
 
-    private IRenderedComponent<AppWurzel> MitSimulation(TestProjektquelle quelle)
+    private IRenderedComponent<AppWurzel> MitSimulation(TestProjektquelle quelle,
+                                                       Action? auslegungOeffnen = null)
     {
         quelle.Startseite = new Dictionary<string, object>
         {
             ["ProjektId"] = new Func<int>(() => 1030)
         };
-        quelle.Simulation = Simulationsgaben();
+        quelle.Simulation = Simulationsgaben(auslegungOeffnen);
 
         Services.AddSingleton<IProjektQuelle>(quelle);
         return Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+    }
+
+    /// <summary>
+    /// <b>AUFTRAG #274</b> (Anwenderwunsch 14.09.2026): Der Einstieg in die
+    /// Stromspeicher-Auslegung steht in SCHRITT ① neben „Pufferspeicher anlegen /
+    /// verwalten…" — und der Rückweg führt über denselben Stapel dorthin zurück,
+    /// nicht mehr in ③ auf das Blatt „Stromspeicher".
+    /// </summary>
+    [Fact]
+    public void Der_Rueckweg_aus_der_Auslegung_landet_in_Schritt_1()
+    {
+        IRenderedComponent<AppWurzel>? wurzel = null;
+        var quelle = new TestProjektquelle(ZweiProjekte)
+        {
+            Auslegung = new Dictionary<string, object>
+            {
+                ["Dienste"] = new EPOS.UI.Seiten.Strom.StromspeicherAuslegungDienste(),
+                ["PlanerVerfuegbar"] = true
+            }
+        };
+        var cut = MitSimulation(quelle,
+            () => wurzel!.Instance.OeffneMaske(Seitenschluessel.StromspeicherAuslegung));
+        wurzel = cut;
+
+        // ① Die Simulation, auf Schritt ① geoeffnet (der Knopf der Startseite).
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.SimulationKonfiguration));
+        cut.Render();
+        Assert.Single(cut.FindAll("div.epos-simkonfig"));
+
+        // ② „Stromspeicher auslegen…" wechselt die Ansicht.
+        cut.Find("button.epos-simkonfig-auslegung").Click();
+        cut.Render();
+        Assert.Empty(cut.FindAll(".epos-simansicht"));
+        Assert.Single(cut.FindAll(".epos-spauslegung"));
+
+        // ③ „← zurueck" landet wieder in ① - nicht auf der Startseite und nicht in ③.
+        cut.FindAll("button").First(k => k.TextContent.Trim() == "← zurück").Click();
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-spauslegung"));
+        Assert.Empty(cut.FindAll(".epos-startseite"));
+        Assert.Single(cut.FindAll(".epos-simansicht"));
+        Assert.Single(cut.FindAll("div.epos-simkonfig"));
+        Assert.Equal(EPOS.UI.Seiten.Simulation.SimulationMarke.Schreiben(1, ""),
+                     MarkeDerSimulation(cut));
     }
 
     /// <summary>

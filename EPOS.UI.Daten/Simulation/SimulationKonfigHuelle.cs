@@ -5,6 +5,7 @@ using System.Text;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -95,6 +96,12 @@ namespace WindowsFormsApplication1
         private double[] _aussentempCache;
         private bool _aussentempGeladen;
 
+        /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
+        private Action _auslegungWeg;
+
+        /// <summary>Der gemerkte Kurzstand der Auslegung (#274); <c>null</c> = noch nicht gelesen.</summary>
+        private StromspeicherStand _stromspeicherstand;
+
         private SimulationKonfigHuelle(int idProjekt)
         {
             ProjektSetzen(idProjekt);
@@ -108,6 +115,7 @@ namespace WindowsFormsApplication1
         private void ProjektSetzen(int idProjekt)
         {
             m_ID_Projekt = idProjekt;
+            _stromspeicherstand = null;
 
             // Blockade bei nicht abgeschlossener Schema-Migration (ADR-001, Aufgabe 6):
             // auf halb migriertem Schema zu konfigurieren, führt zu stillen Datenfehlern.
@@ -236,6 +244,7 @@ namespace WindowsFormsApplication1
                 ["TipSpeicherBearbeiten"] = MyResource.Resource.PSP_KARTE_TIP_BEARBEITEN,
                 ["TipSpeicherAufklappen"] = MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN,
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
+                ["BtnStromspeicherAuslegen"] = MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
 
                 ["LesepunktText"] = MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER,
 
@@ -363,7 +372,12 @@ namespace WindowsFormsApplication1
                 WaermesenkeFertig = WaermesenkeFertig,
 
                 PufferVerwaltungGaben = idPuffer =>
-                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer)
+                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer),
+
+                // #274: „Stromspeicher auslegen…" neben der Pufferverwaltung. Ohne
+                // eingelegten Weg gibt es den Knopf nicht (Hausregel „kein Delegat,
+                // kein Knopf") - die Seite bleibt vollstaendig bedienbar.
+                AuslegungOeffnen = _auslegungWeg == null ? (Action)null : AuslegungOeffnen
             };
         }
 
@@ -418,6 +432,7 @@ namespace WindowsFormsApplication1
             d.SpeicherLeerText = m_ID_Projekt > 0
                 ? MyResource.Resource.PSP_KARTE_KEIN_SPEICHER
                 : MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT;
+            d.Stromspeicherstand = Stromspeicherstand();
 
             // W10b-B-3 (08.09.2026): Der Schalter "Extrapolation der WP-Kennlinie erlauben"
             // steht in der Detailansicht der Waermepumpe (WaermepumpeAnlageHuelle.Gaben);
@@ -1200,6 +1215,108 @@ namespace WindowsFormsApplication1
                 liste.Add(SpeicherKarteDaten(p));
 
             return liste;
+        }
+
+        // =================================================================
+        // Der Stromspeicher-Einstieg (Auftrag #274)
+        // =================================================================
+
+        /// <summary>
+        /// Der Kurzstand der Stromspeicher-Auslegung — <b>einmal je Besuch gelesen</b>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum gemerkt.</b> <see cref="Laden"/> läuft nach JEDER Bedienung der
+        /// Seite (neun Auffrischungsstellen wurden eine), der Flottenstand ändert sich
+        /// dabei aber nicht: Geschrieben wird er allein in der Ansicht
+        /// STROMSPEICHER_AUSLEGUNG. Ein <c>@Projektflotte</c>-Stand kann Prognosen und
+        /// Projektjahre führen — ihn bei jedem Kachelklick auszupacken wäre Arbeit für
+        /// nichts. Der Merker fällt deshalb genau dann, wenn der Einstieg benutzt wird
+        /// (<see cref="AuslegungOeffnen"/>) und beim Projektwechsel.</para>
+        /// </remarks>
+        private StromspeicherStand Stromspeicherstand()
+        {
+            if (_stromspeicherstand != null) return _stromspeicherstand;
+
+            StromspeicherStand stand = new StromspeicherStand();
+            if (m_ID_Projekt <= 0)
+            {
+                stand.LeerText = MyResource.Resource.PSP_FUSSZEILE_OHNE_PROJEKT;
+                return _stromspeicherstand = stand;
+            }
+
+            SpeicherAuslegungKonfiguration auslegung = null;
+            try
+            {
+                SpeicherAuslegungProfil profil = null;
+                foreach (SpeicherAuslegungProfil p in SpeicherAuslegungCtrl.Profile(m_ID_Projekt, 0))
+                    if (p.Name == SpeicherFlottenProjektCtrl.ProjektflottenStand) profil = p;
+                auslegung = profil != null ? profil.Eingaben?.Auslegung : null;
+            }
+            catch
+            {
+                // Ein unlesbarer Flottenstand darf die Konfiguration nicht aufhalten -
+                // dieselbe Regel wie bei der Anlagenvorwahl. Dann steht nur der Knopf
+                // ohne Kurzzeile da, und die Auslegung sagt selbst, was ihr fehlt.
+            }
+
+            bool speicherImProjekt =
+                TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_STROMSPEICHER);
+
+            stand.Vorhanden = speicherImProjekt || auslegung?.Flotte?.Einheiten?.Count > 0;
+            if (!stand.Vorhanden)
+            {
+                stand.LeerText = MyResource.Resource.SIM_SP_AUSLEGUNG_LEER;
+                return _stromspeicherstand = stand;
+            }
+
+            stand.Standzeile = Flottenzeile(auslegung);
+            return _stromspeicherstand = stand;
+        }
+
+        /// <summary>
+        /// Die Kurzzeile unter dem Knopf: Stand des Mehrspeicherbetriebs, Betriebsziel
+        /// und Einheitenzahl — dieselben Angaben, die bis #274 der Ergebnisreiter zeigte.
+        /// </summary>
+        private static string Flottenzeile(SpeicherAuslegungKonfiguration auslegung)
+        {
+            FlottenStudieKonfiguration flotte = auslegung?.Flotte;
+            if (flotte == null || flotte.Einheiten == null || flotte.Einheiten.Count == 0)
+                return MyResource.Resource.SIM_SP_STAND_OHNE;
+
+            string kopf = auslegung.FlotteImProjektAktiv
+                ? MyResource.Resource.SIM_SP_STAND_AKTIV
+                : MyResource.Resource.SIM_SP_STAND_AUS;
+
+            FlottenBetriebsziel ziel = flotte.Optionen != null
+                ? flotte.Optionen.Betriebsziel : FlottenBetriebsziel.PvGreedy;
+
+            return kopf + " · " + string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.SIM_SP_STAND_FLOTTE,
+                SpeicherFlottenAnzeigeCtrl.Zieltext(ziel), flotte.Einheiten.Count);
+        }
+
+        /// <summary>
+        /// Legt den Weg in die Ansicht „Stromspeicher-Auslegung" ein (Auftrag #274).
+        /// </summary>
+        /// <remarks>
+        /// <b>Er kommt von der Ergebnishülle</b> (<c>SimulationAnsichtQuelle</c> legt ihn
+        /// ein): Die Auslegung braucht den gerechneten Simulationslauf für ihre
+        /// EPOS-Zeitreihen, und den hält die Ergebnishülle. Ohne Weg — eine Schale, die
+        /// die Ansicht nicht führt — bleibt der Knopf weg, still fällt nichts aus.
+        /// </remarks>
+        internal void AuslegungWegSetzen(Action weg)
+        {
+            _auslegungWeg = weg;
+        }
+
+        private void AuslegungOeffnen()
+        {
+            if (_auslegungWeg == null) return;
+
+            // Der gemerkte Kurzstand gilt nur bis hierher: Was der Anwender drüben
+            // einstellt, steht beim Rückweg in der Zeile.
+            _stromspeicherstand = null;
+            _auslegungWeg();
         }
 
         /// <summary>Füllt eine Speicherkachel aus den Projektdaten (wörtlich :1923-2057).</summary>

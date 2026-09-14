@@ -298,14 +298,16 @@ namespace WindowsFormsApplication1
                 // einzigen Schluessel Sprungziel.SpeicherOptimierung, die
                 // Form_SpeicherOptimierung modal ueber der WebView oeffnete. Danach
                 // waren es zwoelf, die Datenseite der zwei Ueberlagerungen. Seit
-                // Paket P3 (#192) sind es FUENF: Die Auslegung ist eine eigene
-                // ANSICHT (STROMSPEICHER_AUSLEGUNG), und was hier bleibt, braucht
-                // der Reiter „Stromspeicher" selbst.
-                OptimierungVorgaben = OptimierungVorgaben,
-                OptimierungFlottenRechnen = OptimierungFlottenRechnen,
+                // Paket P3 (#192) waren es fuenf; seit Auftrag #274 sind es ZWEI.
+                //
+                // Der Einstieg in die Auslegung steht seither in Schritt ① neben der
+                // Pufferverwaltung (Anwenderwunsch 14.09.2026) - gegangen wird er
+                // weiterhin von HIER (AuslegungOeffnen, eingelegt von
+                // SimulationAnsichtQuelle), nur eben nicht mehr ueber diese Datenseite.
+                // Der Reiter „Stromspeicher" ist reines Ergebnis: Er braucht die CSV
+                // der Flottenansicht und den Verweis zurueck nach ①.
                 OptimierungCsv = OptimierungCsv,
-                OptimierungEinstellungenSpeichern = OptimierungEinstellungenSpeichern,
-                AuslegungOeffnen = AuslegungOeffnen,
+                KonfigurationOeffnen = KonfigurationOeffnen,
 
                 CsvBedarf = CsvBedarf,
                 CsvWaermepumpe = CsvWaermepumpe,

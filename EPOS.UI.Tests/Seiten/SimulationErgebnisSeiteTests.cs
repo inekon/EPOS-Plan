@@ -5,6 +5,7 @@ using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.Extensions.DependencyInjection;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 using Xunit;
@@ -444,23 +445,33 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// PAKET P3 (#192): Der Knopf zieht KEINE Überlagerung mehr auf, sondern WECHSELT
-    /// die Ansicht (Muster W16c‑E‑3). Die Seite meldet das über <c>AuslegungOeffnen</c>
-    /// an ihre Hülle; die kennt den gerechneten Simulationslauf und den Weg zur Wurzel.
+    /// <b>AUFTRAG #274</b> (Anwenderwunsch 14.09.2026): Der Reiter „Stromspeicher"
+    /// trägt keinen Einstieg in die Auslegung mehr — der steht in Schritt ① neben
+    /// „Pufferspeicher anlegen / verwalten…". Was von hier dorthin führt, ist der
+    /// VERWEIS der Herkunftszeile; die Seite meldet ihn über
+    /// <c>KonfigurationOeffnen</c> an ihre Hülle, die den Maskenschlüssel
+    /// <c>SIMULATION_KONFIGURATION</c> an die Wurzel gibt.
     /// </summary>
     [Fact]
-    public void Der_Auslegungsknopf_wechselt_die_Ansicht_statt_eine_Ueberlagerung_zu_oeffnen()
+    public void Der_Reiter_fuehrt_ueber_den_Verweis_in_die_Konfiguration()
     {
         int gewechselt = 0;
         var dienste = Dienste();
-        dienste.OptimierungVorgaben = () => new SpeicherOptimierungVorgaben();
-        dienste.AuslegungOeffnen = () => gewechselt++;
+        dienste.KonfigurationOeffnen = () => gewechselt++;
+        _daten.Speicher.FlotteImProjektAktiv = true;
+        _daten.Speicher.AktiveFlotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new() { new() { Id = "a", Name = "Speicher 1", KapazitaetKWh = 100 } }
+        };
 
         var seite = Zeichnen(dienste: dienste);
         seite.Find("button[role='tab'][id='reiter-STROMSPEICHER']").Click();
-        seite.FindAll("button").Single(b => b.TextContent.Trim() ==
-            WindowsFormsApplication1.MyResource.Resource.OPT_BTN_OEFFNEN).Click();
 
+        // Kein Knopf „Speicherflotte & Auslegung öffnen" mehr.
+        Assert.DoesNotContain(seite.FindAll("button"), b => b.TextContent.Trim() ==
+            WindowsFormsApplication1.MyResource.Resource.OPT_BTN_OEFFNEN);
+
+        seite.Find("button.epos-simerg-verweis").Click();
         Assert.Equal(1, gewechselt);
 
         // Die Ergebnisseite traegt die Auslegung nicht mehr in sich.

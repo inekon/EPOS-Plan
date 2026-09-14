@@ -1,4 +1,4 @@
-@* Der STROMSPEICHER-Reiter der Ergebnisseite (R10, iU9-W11b.9).
+﻿@* Der STROMSPEICHER-Reiter der Ergebnisseite (R10, iU9-W11b.9).
 
    VORBILD. tabPage_Stromspeicher hatte NULL Designer-Kinder - die ganze Seite
    entstand programmatisch (InitStromspeicherSeite :6687-7009, ein
@@ -29,11 +29,16 @@
    stand.
 
    SEIT W11b-B-29 SCHREIBT DER BLOCK JEDES FELD SOFORT (Anwenderentscheid 1
-   vom 10.09.2026), und der Optimierungsknopf steht an SEINEM Kopf, direkt
-   unter der Statuszeile - unten hat der Anwender ihn nicht gefunden. Der
-   Reiter reicht dafuer unveraendert Parameter, Dienste, Sperrzustand und den
-   Optimierungssprung durch; was der Block damit macht, steht in seinem
-   Dateikopf.
+   vom 10.09.2026). Der Reiter reicht dafuer Parameter, Dienste und
+   Sperrzustand durch; was der Block damit macht, steht in seinem Dateikopf.
+
+   DER REITER IST REINES ERGEBNIS (Auftrag #274, Anwenderwunsch 14.09.2026:
+   "Der Dialog Stromspeicher soll in den Dialog Konfiguration verschoben
+   werden"). Gefallen sind der Block "Speicherflotte und Auslegung" mit
+   Betriebseditor, Eingabetabelle und Datenstand, der Knopf "Speicherflotte &
+   Auslegung oeffnen" und der zweite Einstieg am Parameterblock. An ihrer
+   Stelle steht EINE Herkunftszeile: womit der angezeigte Lauf gerechnet wurde,
+   und ein Verweis nach Schritt (1), wo die Auslegung jetzt beginnt.
 
    EIN BILD STATT DES LADEZUSTANDS (Anwenderwunsch 10.09.2026, W11b-B-26):
    "Der Lastgang und die Kappung durch den Stromspeicher sowie der Ladezustand
@@ -54,71 +59,39 @@
 
 <div class="epos-simerg-block">
 
-    @if (!FlottenEinstiegMoeglich)
+    @* DIE HERKUNFTSZEILE STATT DES EDITORS (Auftrag #274, Anwenderwunsch 14.09.2026).
+
+       Hier stand der Block „Speicherflotte und Auslegung": Betriebseditor,
+       Eingabetabelle, Datenstand und der Knopf „Speicherflotte & Auslegung öffnen".
+       Er war eine EINGABEMASKE mitten im Ergebnis - wer die Betriebsführung
+       einstellen wollte, musste erst rechnen. Sie steht jetzt in Schritt ①
+       („Stromspeicher auslegen…", neben der Pufferverwaltung), gepflegt wird sie
+       allein in der Auslegungsansicht.
+
+       WAS HIER BLEIBT, IST DIE HERKUNFT: eine Zeile, die sagt, WOMIT der
+       angezeigte Lauf gerechnet wurde - Betriebsziel, Einheitenzahl, Peak-Ziel -,
+       und ein Verweis zurück nach ①. Anzeige, kein Editor. *@
+    @if (Daten.AktiveFlotte is { } flotte)
+    {
+        <p class="epos-simerg-status epos-simerg-herkunft">
+            <strong>@Herkunftszeile(flotte)</strong>
+            @if (KonfigurationOeffnen.HasDelegate)
+            {
+                <button type="button" class="epos-simerg-verweis" title="@KonfigVerweisTip"
+                        @onclick="KonfigurationOeffnen">@KonfigVerweisText</button>
+            }
+        </p>
+    }
+    else
     {
         <p class="@(Daten.LaufVorhanden ? "epos-simerg-status" : "epos-simerg-status epos-simerg-warn")">
             @Daten.Kopf
         </p>
     }
 
-    @if (FlottenEinstiegMoeglich || Daten.FlotteImProjektAktiv)
+    @if (Daten.FlottenAenderungOhneNeuenLauf)
     {
-        <section class="epos-flotte-abschnitt epos-flotten-dialog" aria-labelledby="speicherflotte-auslegung-titel">
-            <h2 id="speicherflotte-auslegung-titel">Speicherflotte und Auslegung</h2>
-            <p class="epos-simerg-status"><strong>@Flottenstatus</strong></p>
-            @if (_flottenEingaben?.Auslegung?.Flotte is { } flotte)
-            {
-                @* DIE VERTEILUNG ERST AB ZWEI EINHEITEN, auch hier (Anwenderentscheid
-                   11.09.2026, „zweiter Wirt von SD-E-8", Auftrag #213): Bis #213 zeigte
-                   dieser Reiter die Klappliste unbedingt (die Vorgabe des Editors ist
-                   `true`) - der Betriebseditor selbst kennt die Einheitenzahl nicht
-                   (sein Wert ist FlottenSimulationOptionen, ohne Einheitenliste), also
-                   entscheidet der WIRT, wie es die Auslegungsansicht seit #206 schon
-                   tut (StromspeicherAuslegungSeite ueber PeakZielBlock). *@
-                <SpeicherFlottenBetriebEditor Wert="@flotte.Optionen" WertChanged="FlottenbetriebGesetzt"
-                                               Aktiv="@(!Gesperrt && !_flottenSpeichert && Dienste?.OptimierungEinstellungenSpeichern is not null)"
-                                               PlanerVerfuegbar="@PlanerVerfuegbar"
-                                               VerteilungZeigen="@(flotte.Einheiten.Count >= 2)" />
-                @* DIE HERKUNFT STEHT AN DER EINHEIT (#210). Der Name IST der
-                   Anlagenbezeichner; ohne Anlagenbezug ist die Einheit im Editor
-                   von Hand entstanden und gehoert keiner Projektanlage. Ein
-                   Anwender mit zwei Speichern sieht damit, welche Zeile woher
-                   kommt - und ob eine fehlt. *@
-                <table class="epos-tabelle">
-                    <thead><tr><th>Speicher</th><th>Herkunft</th><th>Kapazität kWh</th><th>Laden kW</th><th>Entladen kW</th></tr></thead>
-                    <tbody>
-                        @foreach (var einheit in flotte.Einheiten)
-                        {
-                            <tr><td>@einheit.Name</td><td>@Herkunft(einheit)</td><td>@Zahl(einheit.KapazitaetKWh)</td><td>@Zahl(einheit.LadeleistungKw)</td><td>@Zahl(einheit.EntladeleistungKw)</td></tr>
-                        }
-                    </tbody>
-                </table>
-                @* DER MODUS DER SCHWELLE IN DER BETRIEBSZEILE (#215): Der Editor darüber
-                   zeigt die Wahl, diese Zeile sagt, was der gespeicherte Stand FÜHRT —
-                   ein Stand aus der Zeit vor der Ratsche rechnet „fest", und das steht
-                   da, statt stumm zu bleiben. *@
-                @if (Peakmodus.Length > 0)
-                {
-                    <p class="epos-flotte-hinweis">@Peakmodus</p>
-                }
-                <p class="epos-flotte-hinweis"><strong>Datenstand:</strong> @Provenienz</p>
-            }
-            else if (_flottenMeldung.Length == 0)
-            {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="Der aktuelle Flotten-Eingabestand konnte nicht geladen werden." />
-            }
-            @if (Daten.FlottenAenderungOhneNeuenLauf || _flottenLokalGeaendert)
-            {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf." />
-            }
-            @if (_flottenMeldung.Length > 0)
-            {
-                <Warnbanner Stufe="@(_flottenFehler ? WarnStufe.Fehler : WarnStufe.Hinweis)" Text="@_flottenMeldung" />
-            }
-            <p>Der nächste Simulationsstart prüft diesen Eingabestand und übernimmt ihn erst nach einer erfolgreichen Flottenrechnung in den Projektlauf.</p>
-            <button type="button" class="epos-knopf" disabled="@(!FlottenEinstiegMoeglich || Gesperrt || !Optimierung.HasDelegate)"
-                    @onclick="Optimierung">Speicherflotte &amp; Auslegung öffnen</button>
-        </section>
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf." />
     }
 
     @* W11b-B-28: DIE PARAMETER. Sie stehen VOR den Kacheln und AUCH OHNE Lauf:
@@ -134,27 +107,41 @@
        Projektlauf die Einzelanlage, und dann sind das seine Parameter. Mit
        aktivierter Flotte folgt die Betriebsart dem Haekchen „Netzladung" des
        Flotteneditors (StromspeicherSimCtrl), und zwei Pflegestellen desselben
-       Werts waeren eine zuviel. *@
+       Werts waeren eine zuviel.
+
+       KEIN OPTIMIERUNGSKNOPF MEHR (Auftrag #274): Der Block trug einen zweiten
+       Einstieg in die Auslegung, der auf beiden Plattformen ohnehin gesperrt war
+       (`!FlottenEinstiegMoeglich`). Es gibt genau EINEN Einstieg, und der steht
+       in Schritt ①. *@
     @if (!Daten.FlotteImProjektAktiv)
     {
         <section class="epos-simerg-block" aria-labelledby="speicher-einzelanlage-titel">
             <h3 id="speicher-einzelanlage-titel" class="epos-simerg-untertitel">
                 @Resource.SP_GRP_EINZELANLAGE
             </h3>
-            <SpeicherParameterBlock Daten="@Parameter" Dienste="@Dienste" Gesperrt="@Gesperrt"
-                                    OptimierungMoeglich="@(!FlottenEinstiegMoeglich && OptimierungMoeglich)"
-                                    Optimierung="@Optimierung" />
+            <SpeicherParameterBlock Daten="@Parameter" Dienste="@Dienste" Gesperrt="@Gesperrt" />
         </section>
     }
 
     @if (Daten.Flottenergebnis is not null)
     {
         <EPOS.UI.Dialoge.Strom.SpeicherFlottenErgebnisAnsicht Ergebnis="Daten.Flottenergebnis"
-            Veraltet="@(Daten.FlottenAenderungOhneNeuenLauf || _flottenLokalGeaendert)"
+            Veraltet="@Daten.FlottenAenderungOhneNeuenLauf"
             Csv="@(Dienste?.OptimierungCsv is null ? default : EventCallback.Factory.Create<string>(this, FlottenCsv))" />
+
+        @if (_csvMeldung.Length > 0)
+        {
+            <Warnbanner Stufe="@(_csvFehler ? WarnStufe.Fehler : WarnStufe.Hinweis)" Text="@_csvMeldung" />
+        }
     }
 
-    @if (Daten.LaufVorhanden && Daten.Flottenergebnis is null && !FlottenEinstiegMoeglich)
+    @* DIE KACHELN, DAS BILD UND DIE 39 KENNZAHLEN - das Ergebnis der Einzelanlage.
+       Bis #274 hing dieser Block zusaetzlich an `!FlottenEinstiegMoeglich`, also an
+       der Frage, ob die Plattform eine Flotte rechnen KANN; unter Windows und iOS
+       ist das immer der Fall, und damit war er dort unerreichbar. Er haengt jetzt
+       am Ergebnis: Gibt es ein Flottenergebnis, zeigt die Flottenansicht darueber
+       die Zahlen je Speicher; gibt es keines, sind das die Zahlen des Laufs. *@
+    @if (Daten.LaufVorhanden && Daten.Flottenergebnis is null)
     {
         <Kachelraster>
             <KindInhalt>
@@ -288,153 +275,49 @@
 </div>
 
 @code {
-    private string _flottenMeldung = "";
-    private bool _flottenFehler;
-    private bool _flottenSpeichert;
-    private bool _flottenLokalGeaendert;
-    private SpeicherOptimierungEingaben? _flottenEingaben;
-    private SpeicherErgebnisDaten? _geladeneDaten;
-    private SimulationErgebnisDienste? _geladeneDienste;
-    private bool FlottenEinstiegMoeglich => Dienste?.OptimierungFlottenRechnen is not null &&
-        Dienste.OptimierungVorgaben is not null && Dienste.OptimierungEinstellungenSpeichern is not null;
-    private string Flottenstatus => Daten.FlotteImProjektAktiv
-        ? "Mehrspeicherbetrieb aktiviert · Eingabestand @Aktuell"
-        : _flottenEingaben?.Auslegung?.FlottenProjektbetriebDeaktiviert == true
-            ? "Projektflottenbetrieb ausdrücklich deaktiviert · Eingabestand @Aktuell bleibt erhalten"
-            : "Eingabestand @Aktuell · wird beim nächsten Projektlauf geprüft";
+    /// <summary>
+    /// Die HERKUNFTSZEILE (Auftrag #274): Womit wurde der angezeigte Lauf gerechnet?
+    /// Betriebsziel, Einheitenzahl und - wo es eines gibt - das Peak-Ziel samt seinem
+    /// Modus (#215: „adaptiv (kausal)" oder „fest").
+    /// </summary>
+    /// <remarks>
+    /// <b>Anzeige, kein Editor.</b> Alles kommt aus <c>Daten.AktiveFlotte</c> - dem
+    /// Lesestand der aktivierten Projektflotte, den die Huelle ohnehin mitbringt. Der
+    /// Reiter liest damit KEINEN Eingabestand mehr nach; die Betriebsfuehrung wird in
+    /// der Auslegungsansicht gepflegt, erreichbar ueber Schritt ①.
+    /// </remarks>
+    public string Herkunftszeile(FlottenStudieKonfiguration flotte)
+    {
+        FlottenSimulationOptionen o = flotte.Optionen ?? new FlottenSimulationOptionen();
+        var kultur = System.Globalization.CultureInfo.CurrentCulture;
+        string zeile = string.Format(kultur, Resource.SIM_SP_HERKUNFT,
+            WindowsFormsApplication1.SpeicherFlottenAnzeigeCtrl.Zieltext(o.Betriebsziel),
+            flotte.Einheiten?.Count ?? 0);
+
+        if (o.Betriebsziel is (FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse)
+            && o.WirtschaftlicherPeakZielwertKw is { } peak)
+        {
+            zeile += " · " + string.Format(kultur, Resource.SIM_SP_HERKUNFT_PEAK,
+                Zahl(peak),
+                o.PeakZielAdaptiv ? Resource.FLOTTE_PEAKMODUS_ADAPTIV
+                                  : Resource.FLOTTE_PEAKMODUS_FEST);
+        }
+        return zeile;
+    }
+
     private static string Zahl(double wert) => wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture);
 
-    /// <summary>
-    /// Die Betriebszeile zum Peak-Ziel: „adaptiv (kausal)" oder „fest"; leer, wenn das
-    /// Betriebsziel gar kein Peak-Ziel führt (Spezifikation 5.1.1, #215).
-    /// </summary>
-    public string Peakmodus
-    {
-        get
-        {
-            FlottenSimulationOptionen? o = _flottenEingaben?.Auslegung?.Flotte?.Optionen;
-            if (o is null || o.Betriebsziel is not (FlottenBetriebsziel.PeakShaving
-                                                    or FlottenBetriebsziel.MultiUse)) return "";
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                Resource.FLOTTE_REITER_PEAKMODUS,
-                o.PeakZielAdaptiv ? Resource.FLOTTE_PEAKMODUS_ADAPTIV : Resource.FLOTTE_PEAKMODUS_FEST);
-        }
-    }
+    /// <summary>Die Rückmeldung des CSV-Schreibers (Pfad bzw. Fehlertext); leer = nichts zu melden.</summary>
+    private string _csvMeldung = "";
+    private bool _csvFehler;
 
-    /// <summary>Woher eine Einheit stammt (#210): Projektanlage oder Handeintrag.</summary>
-    /// <remarks>
-    /// Die Vorbelegung macht aus JEDER Speicheranlage des Projekts eine Einheit und
-    /// hinterlegt deren <c>AnlageId</c>. Eine Einheit ohne Anlagenbezug ist im
-    /// Flotteneditor entstanden — sie steht für kein Gerät der Projektdaten und wird bei
-    /// einem Variantenwechsel auch nicht nachgezogen.
-    /// </remarks>
-    private static string Herkunft(FlottenEinheit einheit)
-        => string.IsNullOrWhiteSpace(einheit.AnlageId)
-            ? "nur im Eingabestand"
-            : "Projektanlage " + einheit.AnlageId;
-
-    protected override void OnParametersSet()
-    {
-        if (!FlottenEinstiegMoeglich ||
-            ReferenceEquals(_geladeneDaten, Daten) && ReferenceEquals(_geladeneDienste, Dienste)) return;
-        _geladeneDaten = Daten;
-        _geladeneDienste = Dienste;
-        _flottenLokalGeaendert = false;
-        FlottenstandLaden();
-    }
-
-    private void FlottenstandLaden()
-    {
-        try
-        {
-            _flottenEingaben = Dienste?.OptimierungVorgaben?.Invoke()?.Eingaben?.Kopie();
-            _flottenMeldung = "";
-            _flottenFehler = false;
-        }
-        catch (Exception ex)
-        {
-            _flottenEingaben = null;
-            _flottenMeldung = ex.Message;
-            _flottenFehler = true;
-        }
-    }
-
-    private async Task FlottenbetriebGesetzt(FlottenSimulationOptionen optionen)
-    {
-        if (_flottenSpeichert || _flottenEingaben?.Auslegung?.Flotte is null ||
-            Dienste?.OptimierungEinstellungenSpeichern is null) return;
-
-        SpeicherOptimierungEingaben arbeitsstand = _flottenEingaben.Kopie();
-        arbeitsstand.Auslegung.Flotte.Optionen = SpeicherAuslegungKopie.Von(optionen);
-        _flottenSpeichert = true;
-        _flottenMeldung = "";
-        try
-        {
-            string fehler = await Dienste.OptimierungEinstellungenSpeichern(arbeitsstand) ?? "";
-            if (fehler.Length > 0)
-            {
-                FlottenstandLaden();
-                _flottenMeldung = fehler;
-                _flottenFehler = true;
-                return;
-            }
-
-            _flottenEingaben = Dienste.OptimierungVorgaben?.Invoke()?.Eingaben?.Kopie() ?? arbeitsstand;
-            _flottenLokalGeaendert = true;
-            _flottenMeldung = "Betriebsführung im Eingabestand @Aktuell gespeichert.";
-            _flottenFehler = false;
-        }
-        catch (Exception ex)
-        {
-            FlottenstandLaden();
-            _flottenMeldung = ex.Message;
-            _flottenFehler = true;
-        }
-        finally { _flottenSpeichert = false; }
-    }
-
-    private string Provenienz
-    {
-        get
-        {
-            SpeicherAuslegungKonfiguration? a = _flottenEingaben?.Auslegung;
-            if (a is null) return "nicht verfügbar";
-            string last = Quelltext(a.Lastquelle, a.LastDatei);
-            string pv = Quelltext(a.PvQuelle, a.PvDatei);
-            string preis = Quelltext(a.Preisquelle, a.PreisDatei);
-            string prognose = string.IsNullOrWhiteSpace(a.FlottenPrognoseDatei)
-                ? $"{a.FlottenPrognosen?.Count ?? 0} gespeicherte Prognosen"
-                : $"Prognose-CSV {a.FlottenPrognoseDatei}";
-            string jahre = string.IsNullOrWhiteSpace(a.FlottenJahresdatenDatei)
-                ? $"{a.FlottenProjektjahre?.Count ?? 0} einzelne Projektjahre"
-                : $"Jahresdaten-CSV {a.FlottenJahresdatenDatei}";
-            string kosten = $"Investition {Kostenquelle(a.Investitionsquelle)}, Betrieb {Kostenquelle(a.Betriebsquelle)}";
-            string? herkunft = a.VerwendeteKosten?.Herkunft;
-            if (string.IsNullOrWhiteSpace(herkunft)) herkunft = a.DirekteKosten?.Herkunft;
-            if (!string.IsNullOrWhiteSpace(herkunft)) kosten += $" ({herkunft})";
-            return $"Last {last}; PV {pv}; Bezugspreis {preis}; Kosten {kosten}; {prognose}; {jahre}; Revision {a.Revision}.";
-        }
-    }
-
-    private static string Quelltext(SpeicherAuslegungQuelle quelle, SpeicherZeitreihe? datei) => quelle switch
-    {
-        SpeicherAuslegungQuelle.Epos => "EPOS-Projektreihe",
-        SpeicherAuslegungQuelle.Datei => string.IsNullOrWhiteSpace(datei?.QuelleName)
-            ? "CSV" : $"CSV {datei.QuelleName}",
-        SpeicherAuslegungQuelle.Preisprofil => "Kostenprofil",
-        SpeicherAuslegungQuelle.Keine => "keine",
-        _ => quelle.ToString()
-    };
-
-    private static string Kostenquelle(SpeicherKostenQuelle quelle) => quelle switch
-    {
-        SpeicherKostenQuelle.Dialog => "direkte Eingabe",
-        SpeicherKostenQuelle.Kostenmodul => "Kostenmodul",
-        _ => quelle.ToString()
-    };
     private async Task FlottenCsv(string csv)
     {
-        if (Dienste?.OptimierungCsv is not null) _flottenMeldung = (await Dienste.OptimierungCsv(csv)).Text;
+        if (Dienste?.OptimierungCsv is null) return;
+
+        Rueckmeldung r = await Dienste.OptimierungCsv(csv);
+        _csvMeldung = r.Text;
+        _csvFehler = !r.Erfolg;
     }
     private static readonly string[] GRUPPEN =
     {
@@ -455,11 +338,17 @@
     /// <summary>Gesperrt (Schemamigration) — die Parameterfelder bleiben sichtbar und lesbar.</summary>
     [Parameter] public bool Gesperrt { get; set; }
 
-    /// <summary>Ruft die Auslegungsoptimierung (Überlagerung); ohne Delegat kein Knopf.</summary>
-    [Parameter] public EventCallback Optimierung { get; set; }
+    /// <summary>
+    /// Der Verweis „Konfiguration ändern → ①" der Herkunftszeile (Auftrag #274);
+    /// ohne Delegat kein Verweis.
+    /// </summary>
+    [Parameter] public EventCallback KonfigurationOeffnen { get; set; }
 
-    /// <summary>Zeigt die Auslegungsoptimierung an? Ohne Rechendelegat bleibt sie weg.</summary>
-    [Parameter] public bool OptimierungMoeglich { get; set; }
+    /// <summary>Beschriftung des Verweises; SIM_SP_KONFIG_VERWEIS.</summary>
+    [Parameter] public string KonfigVerweisText { get; set; } = Resource.SIM_SP_KONFIG_VERWEIS;
+
+    /// <summary>Werkzeugtipp des Verweises; SIM_SP_KONFIG_VERWEIS_TIP.</summary>
+    [Parameter] public string KonfigVerweisTip { get; set; } = Resource.SIM_SP_KONFIG_VERWEIS_TIP;
 
     /// <summary>Liefert das Bild „Lastgang und Speicherbetrieb"; ohne ihn bleibt es leer.</summary>
     [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
@@ -469,14 +358,6 @@
 
     /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Vergleich { get; set; }
-
-    /// <summary>
-    /// Durchreiche an <see cref="EPOS.UI.Dialoge.Strom.SpeicherFlottenBetriebEditor.PlanerVerfuegbar"/>:
-    /// <c>null</c> = die Auskunft des Kerns fragen (Betriebsfall, Auftrag #170c). Ohne
-    /// Fahrplan-Löser stehen die drei planenden Betriebsziele gesperrt in der Liste, und ein
-    /// gespeichertes planendes Profil erklärt sich mit einem Banner.
-    /// </summary>
-    [Parameter] public bool? PlanerVerfuegbar { get; set; }
 
     /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
     public Diagrammbereich? Bereich => _bereich;
