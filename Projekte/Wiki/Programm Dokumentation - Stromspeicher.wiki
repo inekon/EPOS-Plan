@@ -41,9 +41,9 @@ Der Kopf der Ansicht zeigt links den Titel und das offene Projekt. Ist für dies
 
   1 Speicher · 2 Daten & Kosten · 3 Betriebsführung · 4 Optimierung · 5 Ergebnis
 
-'''Alle fünf Stationen sind Blätter''' – ein Klick blättert um. Die Nummer steht im '''Kreis''' vor dem Namen; eine erledigte Station trägt dort einen Haken. Einen '''Rechenknopf in der Leiste gibt es nicht''': Gerechnet wird auf dem Blatt '''„Optimierung"''' – dort steht der Rechenknopf, zusammen mit dem Suchraum, der Kandidatenzahl und dem Ergebnis der Suche.
+'''Alle fünf Stationen sind Blätter''' – ein Klick blättert um. Die Nummer steht im '''Kreis''' vor dem Namen; eine erledigte Station trägt dort einen Haken. Einen '''Rechenknopf in der Leiste gibt es nicht''': Gerechnet wird auf dem Blatt '''„Optimierung"''' – dort steht der Rechenknopf, zusammen mit der Suchwahl, der Kandidatenzahl und dem Suchraum. '''Das Ergebnis steht auf dem Blatt „Ergebnis"''', gegliedert in ''Ergebnisse der Optimierung'' und ''Ergebnisse der Simulation''.
 
-'''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
+'''Station 5 steht erst offen, wenn einmal gerechnet wurde'''; sie bleibt bis dahin anklickbar, sagt aber im Kurzhinweis, warum sie noch nichts zeigt. '''Ein gelungener Lauf blättert von selbst dorthin.''' Ändern Sie danach eine Eingabe, wird Station 5 als '''veraltet''' gekennzeichnet – das Ergebnis gehört dann noch zum vorigen Stand.
 
 Einen '''Modusschalter''' gibt es nicht. Was gerechnet wird, entscheidet die '''Zahl der Einheiten''' in Schritt 1:
 
@@ -234,18 +234,17 @@ Dieser Block steht hier und nicht bei einer Einheit: '''Bezugs- und Einspeisegre
 {{Anker|auslegung-rechnen}}
 {{Anker|auslegung-optimierung}}
 
-'''Hier wird gerechnet''' – und hier steht alles, was die Suche nach der wirtschaftlich besten Größe ausmacht.
+'''Hier wird gerechnet''' – Schritt 4 sagt, '''was''' gesucht werden soll. '''Das Ergebnis steht in Schritt 5''' unter der Rubrik ''Ergebnisse der Optimierung''.
 
-Von oben nach unten:
+Von oben nach unten, alles in '''einer Spalte''':
 
-# '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
 # '''Suche''' – '''drei''' Möglichkeiten: ''Nur die eingestellte Flotte bewerten'', '''''Größe suchen''''' und '''''Stückzahl suchen''''' (siehe unten).
+# '''Der Bedienblock''' darunter, über die ganze Breite:
+## '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
+## '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
+## '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile; er steht nur bei ''Größe suchen'' (siehe unten).
+## '''Der Rechenknopf''' – ''Optimieren'' beziehungsweise ''Bewerten'', je nach Suchwahl, mit Fortschritt und ''Abbrechen'' darunter.
 # '''Suchraum je Einheit''' – eine '''Karte''' je Einheit (siehe unten).
-# '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
-# '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile; er steht nur bei ''Größe suchen'' (siehe unten).
-# '''Der Rechenknopf''' – ''Optimieren'' beziehungsweise ''Bewerten'', je nach Suchwahl.
-# '''„Bestes Ergebnis"''' – drei Karten mit dem Besten des Laufs (siehe unten).
-# '''Das Ergebnis der Suche''' – Rasterkarte und Schnittkurven bei ''Größe suchen'', die Kurve über der Stückzahl bei ''Stückzahl suchen'', darunter in beiden Fällen die Kandidatentabelle (siehe unten).
 
 ==== Die drei Suchmethoden ====
 {{Anker|auslegung-methoden}}
@@ -264,17 +263,18 @@ Links im Kopf stehen '''drei Möglichkeiten''', jede mit einem Satz darunter:
 
 '''Je Lauf wird genau eine Art variiert.''' Größe und Stückzahl zugleich gibt es nicht: Das hielte weder die Kandidatenzahl klein (266 Größen '''oder''' 4 Stückzahlen je Einheit statt 1 064) noch die Ergebnisbilder lesbar. Wer beides prüfen will, fährt zwei Läufe.
 
-Eine Suchmethode ist wählbar, sobald '''mindestens eine Einheit''' den Schalter ''variieren'' trägt. Sonst stehen beide Suchoptionen '''gedimmt''' da, und darunter steht, was zu tun ist: ''„Auf einer Einheitenkarte ‚variieren' einschalten — ohne sie gibt es nichts zu suchen."'' ''Nur bewerten'' bleibt immer wählbar.
+'''Größe suchen''' ist wählbar, sobald es '''mindestens eine Einheit''' gibt – sie variiert ohnehin jede. '''Stückzahl suchen''' braucht mindestens eine Einheit mit dem Schalter ''variieren''; sonst steht die Option '''gedimmt''' da, und darunter steht, was zu tun ist: ''„Auf einer Einheitenkarte ‚variieren' einschalten — ohne sie gibt es nichts zu suchen."'' Gibt es gar keine Einheit, sind beide Suchoptionen gedimmt und die Abhilfe verweist auf Schritt 1. ''Nur bewerten'' bleibt immer wählbar.
 
 ==== Der Suchraum: eine Karte je Einheit ====
 {{Anker|auslegung-groesse}}
 
-Jede Einheit hat eine '''eigene Karte'''. In ihrer Kopfzeile stehen der Name, die festen Kenndaten (''129 kWh · 100 kW · 1 Stück'') und rechts der Schalter '''variieren'''. Er entscheidet, '''welche''' Einheiten der Lauf anfasst; '''was''' er an ihnen ändert, sagt die Methode.
+Jede Einheit hat eine '''eigene Karte'''. Wie sie aussieht, hängt an der Suchart.
 
-* Bei '''Größe suchen''' trägt die Karte die '''Größenkopplung''' und dahinter ''Kapazität [kWh]'', ''Leistung [kW]'' beziehungsweise ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt – die abgeleitete Größe hat deshalb keine Felder.
-* Bei '''Stückzahl suchen''' trägt sie '''Stückzahl von''' und '''Stückzahl bis''' und darunter eine Zeile, was daraus wird: ''= 129 – 516 kWh · 100 – 400 kW''.
-* Unten steht in beiden Fällen, wie viele '''Kandidaten diese eine Einheit''' beisteuert.
-* Eine Einheit '''ohne''' ''variieren'' verschwindet nicht: Ihre Karte steht gedimmt da und sagt mit ''„fest: …"'', mit welchem Wert sie in jeden Kandidaten eingeht.
+'''Bei „Größe suchen" nennt die Karte kein Gerät.''' Gesucht wird die wirtschaftlich beste Größe; welcher Speicher eingestellt ist, spielt dafür keine Rolle – es gibt deshalb weder Hersteller- und Typzeile noch feste Kenndaten noch den Schalter ''variieren''. Über den Karten steht der Satz ''„Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe."'' '''Variiert wird jede Einheit'''; bei mehreren heißen die Karten ''Einheit 1'', ''Einheit 2''. Die Karte trägt die '''Größenkopplung''' und dahinter ''Kapazität [kWh]'', ''Leistung [kW]'' beziehungsweise ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt – die abgeleitete Größe hat deshalb keine Felder.
+
+'''Bei „Stückzahl suchen" zählt die konkrete Einheit.''' In der Kopfzeile stehen der Name, die festen Kenndaten (''100 kWh · 50 kW · 1 Stück'') und rechts der Schalter '''variieren'''. Er entscheidet, '''welche''' Einheiten der Lauf anfasst. Die Karte trägt '''Stückzahl von''' und '''Stückzahl bis''' und darunter eine Zeile, was daraus wird: ''= 100 – 400 kWh · 50 – 200 kW''. Eine Einheit '''ohne''' ''variieren'' verschwindet nicht: Ihre Karte steht gedimmt da und sagt mit ''„fest: …"'', mit welchem Wert sie in jeden Kandidaten eingeht.
+
+Unten steht in beiden Fällen, wie viele '''Kandidaten diese eine Einheit''' beisteuert.
 
 Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
 
@@ -283,7 +283,7 @@ Gibt es noch keine Einheit, steht statt der Karten die Zeile ''„Ohne Speichere
 ==== Wie viele Kandidaten es werden ====
 {{Anker|auslegung-kandidatenzahl}}
 
-Im Bedienblock rechts steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
+Im Bedienblock unter der Suche steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
 
   240 Kandidaten im Grobraster, bis zu 18 im Feinraster — zusammen 258 von höchstens 500.
 
@@ -338,7 +338,21 @@ Ein '''Eingabefehler''' ist etwas anderes: Ein Ladezustandsband, das nicht zusam
 
 Während der Rechnung läuft ein '''Fortschrittsbalken''' mit Klartextzeile (bei der Rastersuche mit Kandidatennummer, über '''beide''' Phasen durchgezählt). Er steht '''unmittelbar unter dem Rechenknopf''' des Blattes ''„Optimierung"'' – dort, wo Sie den Lauf ausgelöst haben. '''„Abbrechen"''' hält an, ohne den bisherigen Stand zu verwerfen – auch mitten in der zweiten Phase; dann gilt das Beste der ersten.
 
-==== Bestes Ergebnis ====
+'''Ein gelungener Lauf stellt Schritt 5 vor''' – dort stehen beide Ergebnisarten. Bricht der Lauf ab oder hält ihn ein Hinweis der Vorprüfung an, bleibt Schritt 4 stehen und nennt den Grund.
+
+=== Schritt 5 — Ergebnis ===
+{{Anker|auslegung-ergebnis}}
+
+'''Schritt 5 zeigt beide Ergebnisarten''' – erst, was die '''Optimierung''' gefunden hat, dann, was die '''Simulation''' der einen gewählten Bestückung ergibt. Jede Rubrik trägt ihre eigene Überschrift.
+
+==== Ergebnisse der Optimierung ====
+{{Anker|auslegung-optimierungsergebnis}}
+
+Diese Rubrik steht nach einem '''Suchlauf''' – ''Größe suchen'' oder ''Stückzahl suchen''. Hat der Lauf nur bewertet, steht statt ihrer eine Zeile: ''„Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 ‚Optimierung'."''
+
+Sie beschreibt den '''gefahrenen''' Lauf: Stellen Sie in Schritt 4 danach eine andere Suchart ein, ändert das den nächsten Lauf, nicht diese Rubrik.
+
+===== Bestes Ergebnis =====
 {{Anker|auslegung-bestes}}
 
 Nach dem Lauf steht der Kasten '''„Bestes Ergebnis"''' mit drei Karten:
@@ -357,30 +371,28 @@ Neben der Überschrift steht die '''Marke''', aus welcher Phase der beste Kandid
 
 '''Der Kapitalwert ist das Ziel, die jährliche Ersparnis steht daneben.''' Wer aus einer Tabellenkalkulation kommt, sucht oft den Jahresüberschuss nach Kapitaldienst – der ist hier die zweite Zahl derselben Karte; optimiert wird gegen den Kapitalwert, weil er Laufzeit und Zins enthält.
 
-Wurde noch nichts gerechnet, steht dort ''„Noch keine Suche gerechnet."''
-
-==== Ergebnisse über der Speichergröße ====
+===== Ergebnisse über der Speichergröße =====
 {{Anker|auslegung-groessen}}
 
-Nach einer '''Rastersuche''' steht unter dem Kasten „Bestes Ergebnis" die Größen-Sicht:
+Unter dem Kasten „Bestes Ergebnis" steht die Größen-Sicht:
 
 * die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
 * die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
 * der '''Ausschnitt um das Optimum''' – die Kurve unter der Rasterkarte, sobald die Suche eine '''zweite Phase''' gerechnet hat: der Kapitalwert über der Größenachse, begrenzt auf das Fenster des Feinrasters. Die Werteachse stellt sich auf dieses Fenster ein und wirkt damit wie eine Lupe auf die Umgebung des Optimums. '''Punkte aus dem Feinraster''' zeichnet die Kurve kleiner und in einer eigenen Farbe; die Stützstellen des Grobrasters am Rand und in der Mitte des Fensters behalten ihre Darstellung. Unter dem Bild stehen Fenster, Schrittweite, Zahl der Stützstellen und das beste Ergebnis;
 * die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
 
-'''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert Schritt 5 als veraltet – bewerten Sie danach neu. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
+'''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert das Ergebnis als veraltet – bewerten Sie danach neu. Nach einer '''Stückzahlsuche''' setzt derselbe Knopf die '''Stückzahlen''' der Einheiten; welche der beiden Übernahmen es ist, entscheidet der Lauf, aus dem der Kandidat stammt. Ungespeicherte Eingaben werden vorher abgefragt; die Ersetzung ist nicht rückgängig zu machen.
 
 '''Die Achsen folgen der Größenkopplung''' aus dem Suchraum: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
 
-'''Rasterkarte und Schnittkurven zeigen die Stützstellen des Suchraums''' – genau die Werte, die in Schritt 4 eingegeben sind. Die Punkte der zweiten Phase liegen zwischen ihnen und stehen im Ausschnitt um das Optimum.
+'''Rasterkarte und Schnittkurven zeigen die Stützstellen des Suchraums''' – genau die Werte, die beim Start des Laufs in Schritt 4 standen. Die Punkte der zweiten Phase liegen zwischen ihnen und stehen im Ausschnitt um das Optimum.
 
 '''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Stammt das beste Ergebnis aus dem Feinraster, markiert die Rasterkarte den besten Punkt des '''Grobrasters''' – der Feinpunkt hat dort keine Zelle –, und derselbe Hinweis nennt sein Ergebnis und wo es zu sehen ist.
 
-=== Schritt 5 — Ergebnis ===
-{{Anker|auslegung-ergebnis}}
+==== Ergebnisse der Simulation ====
+{{Anker|auslegung-simulationsergebnis}}
 
-'''Schritt 5 bewertet EINE Bestückung''' – die eingestellte oder die beste gefundene. Welche es ist, sagt eine Zeile über den Kacheln: ''Gezeigt wird die Bewertung von: …''. Das '''Raster''' selbst steht in Schritt 4, bei der Suche, aus der es stammt.
+'''Diese Rubrik bewertet EINE Bestückung''' – die eingestellte oder die beste gefundene. Welche es ist, sagt eine Zeile über den Kacheln: ''Gezeigt wird die Bewertung von: …''.
 
 Von oben nach unten:
 
@@ -401,7 +413,7 @@ Unten stehen '''„Als Projektflotte übernehmen"''' (nur bei einem zulässigen 
 
 Tragen '''zwei''' Einheiten einen Anlagenbezug, erscheint der Knopf nicht: Die Anlage trägt eine Kapazität und eine Leistung, und welche der beiden gemeint wäre, ließe sich nicht sagen.
 
-==== Diagnose: die Flotte hat nichts getan ====
+===== Diagnose: die Flotte hat nichts getan =====
 {{Anker|auslegung-diagnose}}
 
 Eine Flotte kann ein ganzes Jahr rechnen, ohne ein einziges Mal zu laden oder zu entladen. Dann sind „Mit Flotte" und „Ohne Speicher" zahlengleich, und die Kacheln zeigen zwölf Nullen. Damit das niemand für ein Ergebnis hält, steht '''über''' den Kacheln das Diagnosebanner: '''„Die Flotte hat im gesamten Zeitraum weder geladen noch entladen."''' – mit den gezählten Gründen im Klartext.

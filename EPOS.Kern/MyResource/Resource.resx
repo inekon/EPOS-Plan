@@ -17725,7 +17725,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Rechnet die Flotte aus Schritt 1 genau einmal — nichts wird variiert.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
-    <value>Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest.</value>
+    <value>Variiert an jeder Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
     <value>Lässt jede Einheit so groß, wie sie eingestellt ist, und variiert, wie viele davon stehen (0 = Einheit entfällt). Die Kosten sind die Kosten einer Einheit mal Stückzahl.</value>
@@ -19229,5 +19229,17 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Zeile ließ sich nicht speichern.</value>
+  </data>
+  <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
+    <value>Ergebnisse der Optimierung</value>
+  </data>
+  <data name="FLOTTE_ERG_SIMULATION" xml:space="preserve">
+    <value>Ergebnisse der Simulation</value>
+  </data>
+  <data name="FLOTTE_ERG_NUR_BEWERTET" xml:space="preserve">
+    <value>Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 „Optimierung“.</value>
+  </data>
+  <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
+    <value>Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe.</value>
   </data>
 </root>

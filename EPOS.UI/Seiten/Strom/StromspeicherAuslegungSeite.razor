@@ -260,16 +260,13 @@
         }
         else if (_schritt == AuslegungSchritt.Optimierung)
         {
+            @* STATION 4 IST SEIT #273 REINE EINGABE (Anwenderentscheid 14.09.2026,
+               Konzept 7.10): Suche, Bedienblock, Suchraum. Das Ergebnis der Suche —
+               Kasten „Bestes Ergebnis" und Größen-Sicht — steht in Station 5. *@
             <OptimierungBlock Flotte="@Flotte" Methode="@Suchmethode"
                               MethodeChanged="SuchmethodeSetzen" Aktiv="@(!_laeuft)"
                               MethodeVerweigert="MethodeVerweigert"
                               Geaendert="FlotteGeschrieben"
-                              Ergebnis="@_flottenErgebnis?.Auslegung"
-                              Einheiten="@Einheitenzahl"
-                              KandidatUebernehmen="@(EventCallback.Factory
-                                  .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
-                              Csv="@(Dienste?.Csv is null ? default
-                                     : EventCallback.Factory.Create(this, KandidatenCsv))"
                               Rechnen="Starten" RechnenFrei="@RechnenFrei"
                               RechnenGrund="@Laufsperre" RechnenText="@RechnenText"
                               Laeuft="@_laeuft" Anteil="@_anteil" Fortschrittstext="@_fortschritt"
@@ -284,6 +281,35 @@
             }
             else
             {
+                @* ------------------------------ 1. Ergebnisse der Optimierung *@
+                @* STATION 5 IST SEIT #273 ZWEIGETEILT (Anwenderentscheid 14.09.2026,
+                   Konzept 7.10): erst, was die SUCHE gefunden hat, dann, was die
+                   SIMULATION der gewaehlten Flotte ergibt. Der Anwender: „Die
+                   Ergebnisse sollen im Ergebnis-Tab strukturiert angezeigt werden:
+                   1. Ergebnisse aus der Optimierung, 2. die Ergebnisse nach
+                   Simulation."
+
+                   OHNE SUCHE KEINE RUBRIK: Hat der Lauf nur bewertet, gibt es kein
+                   Raster — dann steht hier EINE Zeile statt eines leeren Kastens
+                   (Hausregel Leerzustand). *@
+                @if (_flottenErgebnis.Auslegung is not null)
+                {
+                    <OptimierungsergebnisBlock Ergebnis="@_flottenErgebnis.Auslegung"
+                                               Flotte="@Flotte" Methode="@_laufMethode"
+                                               Einheiten="@Einheitenzahl"
+                                               KandidatUebernehmen="@(EventCallback.Factory
+                                                   .Create<FlottenKandidatZusammenfassung>(this, KandidatUebernehmen))"
+                                               Csv="@(Dienste?.Csv is null ? default
+                                                      : EventCallback.Factory.Create(this, KandidatenCsv))" />
+                }
+                else
+                {
+                    <p class="epos-flotte-hinweis">@Resource.FLOTTE_ERG_NUR_BEWERTET</p>
+                }
+
+                @* -------------------------------- 2. Ergebnisse der Simulation *@
+                <Gruppenkopf Titel="@Resource.FLOTTE_ERG_SIMULATION" />
+
                 @* DAS DIAGNOSEBANNER STEHT UEBER DEN KACHELN (Konzept 2.2 Punkt 2):
                    Wer die Kacheln liest, bevor er weiss, dass die Flotte nichts
                    getan hat, liest zwoelf Nullen als Ergebnis. *@
@@ -302,11 +328,10 @@
                                        BetriebsfuehrungText="@ZuBetriebText"
                                        IdealwissenText="@IdealwissenText" />
 
-                @* DIE GROESSEN-SICHT IST MIT #224 NACH STATION 4 GEZOGEN (Zielbild
-                   7.4): Schritt 5 bewertet die GEWAEHLTE Flotte — Kacheln, Delta-Tabelle,
-                   Diagramme, Jahresprojektion —, die Frage „welche Groesse traegt sich?"
-                   beantwortet die Optimierung. Zwei Orte fuer dieselbe Karte waeren zwei
-                   Wahrheiten. Die Hinweiszeile sagt, WELCHER Kandidat hier steht. *@
+                @* DIE HINWEISZEILE SAGT, WELCHER KANDIDAT HIER BEWERTET IST. Die
+                   Groessen-Sicht steht seit #273 in der Rubrik darueber; hier folgt
+                   die Bewertung der EINEN gewaehlten Flotte — Kacheln, Delta-Tabelle,
+                   Diagramme, Jahresprojektion. *@
                 @if (_flottenErgebnis.Auslegung?.BesterKandidat is { } gezeigt)
                 {
                     <p class="epos-flotte-hinweis">@string.Format(Kultur, ErgebnisKandidatFormat,
@@ -582,6 +607,20 @@
     private SpeicherOptimierungVorgaben _vorgaben = new();
     private SpeicherOptimierungEingaben _eingaben = new();
     private SpeicherFlottenErgebnis? _flottenErgebnis;
+
+    /// <summary>
+    /// Die Suchmethode, mit der <see cref="_flottenErgebnis"/> gerechnet wurde
+    /// (Auftrag #273).
+    /// </summary>
+    /// <remarks>
+    /// <b>Nicht die gerade gewählte.</b> Station 5 zeigt seit #273 die Rubrik
+    /// „Ergebnisse der Optimierung"; wer danach in Station 4 auf eine andere Suchart
+    /// stellt, ändert den NÄCHSTEN Lauf — Kasten, Bilder und die Übernahme eines
+    /// Kandidaten beschreiben aber das Raster, das gefahren wurde. Gesetzt wird das
+    /// Feld an genau einer Stelle: beim gelungenen Lauf.
+    /// </remarks>
+    private FlottenSuchmethode _laufMethode = FlottenSuchmethode.Bewerten;
+
     private IReadOnlyList<FlottenHinweis> _vorpruefung = Array.Empty<FlottenHinweis>();
     private FlottenPeakZielVorschlag? _peakVorschlag;
     private FlottenPeakZielErgebnis? _peakErgebnis;
@@ -1305,6 +1344,11 @@
         // abweisen - das hier spart den Weg dorthin und laesst den Befund stehen.
         if (Vorpruefungssperre.Length > 0) return;
 
+        // DIE METHODE DIESES LAUFS wird VOR dem Start festgehalten (Auftrag #273):
+        // Station 5 beschreibt damit das gefahrene Raster, auch wenn in Station 4
+        // danach eine andere Suchart gewaehlt wird.
+        FlottenSuchmethode gefahren = Suchmethode;
+
         _laeuft = true; _fehler = ""; _anteil = null; _fortschritt = Resource.FLOTTE_DLG_STATUS_PRUEFEN;
         try
         {
@@ -1316,8 +1360,13 @@
             else
             {
                 _flottenErgebnis = e;
+                _laufMethode = gefahren;
                 _veraltet = false;
                 _ungespeichert = false;
+
+                // NACH EINEM GELUNGENEN LAUF STEHT STATION 5 VORN (Zielbild 7.10): Dort
+                // stehen seit #273 beide Ergebnisarten. Ein Abbruch und ein
+                // Vorpruefungsbefund lassen Station 4 stehen — mit ihrer Meldung.
                 _schritt = AuslegungSchritt.Ergebnis;
             }
         }
@@ -1620,7 +1669,11 @@
             // KARTEN — AnzahlVon = AnzahlBis = n je variierter Einheit. Die Einheiten
             // selbst bleiben, wie sie sind; ihre Groesse hat der Lauf gar nicht
             // variiert.
-            if (Suchmethode == FlottenSuchmethode.Stueckzahl &&
+            // GELESEN WIRD DIE METHODE DES LAUFS, nicht die gerade gewaehlte
+            // (Auftrag #273): Der Kandidat stammt aus dem gefahrenen Raster, und die
+            // Kandidatentabelle steht seit #273 in Station 5 — zwischen Lauf und
+            // Uebernahme kann in Station 4 eine andere Suchart gewaehlt worden sein.
+            if (_laufMethode == FlottenSuchmethode.Stueckzahl &&
                 kandidat.Stueckzahlen is { Count: > 0 } zahlen)
             {
                 StueckzahlenUebernehmen(zahlen);

@@ -596,7 +596,8 @@ Ins Register § 8 des Umsetzungskonzepts (Block „Offene Punkte des Mehrspeiche
 ## 7. Optimierung als eigener Bereich — Anwenderrückmeldung 11.09.2026 (SD‑E‑9)
 
 > **Umgesetzt mit Auftrag #224.** Option A vollständig, samt P6 (Feinraster) und 7.8
-> (Darstellung). Was von diesem Kapitel abweicht, steht in 7.9.
+> (Darstellung). Was von diesem Kapitel abweicht, steht in 7.9. **Die Lage der Blöcke ist mit
+> Auftrag #273 neu geordnet — es gilt 7.10.**
 
 ### 7.1 Rückmeldung
 
@@ -676,13 +677,13 @@ nicht nur ein Rechenknopf:
      Grob-Optimum auf der Größenachse, Schrittweite/9 wie in der Mappe und im alten Einzelspeicher
      (`SpeicherOptimierer.FeinrasterBereich`) — das ist Paket P6, vorgezogen.
   5. **Rechenknopf** „Optimieren" (bzw. „Bewerten"), Fortschritt und Abbrechen wie heute.
-  6. **Ergebnis der Suche**, direkt darunter: Kasten **„Bestes Ergebnis"** (Kapitalwert, Kapazität,
-     C-Rate, Leistung, Anzahl; geprüfte / zulässige Kandidaten; Rechendauer), daneben die
-     **Rasterkarte** und die **Kurve Kapitalwert über der Größe** (Grob- und Feinpunkte unterscheidbar),
-     darunter die **Kandidatentabelle** — das ist die heutige Größen-Sicht, sie zieht von 5 nach 4.
-     „Kandidat übernehmen" schreibt die Größe in Schritt 1 und markiert das Ergebnis in 5 als veraltet.
-- **Schritt 5 Ergebnis:** nur noch die Bewertung der GEWÄHLTEN Flotte (Kacheln, Δ-Tabelle, Diagramme,
-  Jahresprojektion) — ohne Größen-Sicht.
+  6. **Ergebnis der Suche** — ~~direkt darunter~~ **seit 7.10 in Station 5**: Kasten
+     **„Bestes Ergebnis"** (Kapitalwert, Kapazität, C-Rate, Leistung, Anzahl; geprüfte / zulässige
+     Kandidaten; Rechendauer), die **Rasterkarte** und die **Kurve Kapitalwert über der Größe**
+     (Grob- und Feinpunkte unterscheidbar), darunter die **Kandidatentabelle**.
+     „Kandidat übernehmen" schreibt die Größe in Schritt 1 und markiert das Ergebnis als veraltet.
+- **Schritt 5 Ergebnis:** die Bewertung der GEWÄHLTEN Flotte (Kacheln, Δ-Tabelle, Diagramme,
+  Jahresprojektion) — **und seit 7.10 davor die Ergebnisse der Optimierung**.
 
 **Abbildung Mappe ↔ Programm**
 
@@ -754,7 +755,7 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
 | Phase 2 Feinraster | `FlottenAuslegungEingang.Feinraster` (Vorgabe an, serialisiert), `FlottenOptimierer.Feinrasterwerte`; Regel und Gewinnbedingung im Rechenweg-Wiki, Abschnitt „Rastersuche" |
 | Rechenknopf „Optimieren"/„Bewerten" | in der Seite von Schritt 4; `FLOTTE_SEITE_BTN_GROESSEN`/`_FLOTTE` tragen keine Ziffer mehr (die Stufenleiste zählt) |
 | Kasten „Bestes Ergebnis" | drei Karten: Kapitalwert + jährliche Ersparnis (SD‑Q11), Kapazität · C-Rate · Leistung + Einheitenzahl, geprüfte/zulässige Kandidaten + Rechendauer; daneben die Marke Grob/Fein |
-| Größen-Sicht von 5 nach 4 | `SpeicherFlottenGroessenAnsicht` steht im `OptimierungBlock`; Schritt 5 trägt stattdessen eine Hinweiszeile, welcher Kandidat dort bewertet ist |
+| Größen-Sicht von 5 nach 4 | **Mit #273 zurückgenommen (7.10):** `SpeicherFlottenGroessenAnsicht` steht wieder in Schritt 5, jetzt in der Rubrik „Ergebnisse der Optimierung" (`OptimierungsergebnisBlock`); die Hinweiszeile, welcher Kandidat bewertet ist, bleibt |
 | Schritt 1 nur Einheiten | Größenbereich → Station 4, „Netz und Planung" → `SpeicherFlottenNetzBlock` (Schritt 3), Jahresprojektion → `SpeicherFlottenWirtschaftBlock` (Schritt 2, SD‑Q12); Kostenblock unter eigener Überschrift „Kosten dieser Einheit" |
 | Drei Erklärzeilen (7.3) | `FLOTTE_ED_AUSGLEICH_ERL`, `FLOTTE_ED_RESTWERT_ERL`, `FLOTTE_ED_KANDIDATEN_ERL` de/en |
 | Stufenleiste, Zahlenrundung, kompakte Hinweise, Herleitungszeile, neutrale Pille, Kartenkopf | 7.8 vollständig; `Zahlen.HOECHSTE_NACHKOMMASTELLEN` gilt hausweit, `Seiten/Strom/Hinweiszeilen.razor` trägt die Vorprüfung |
@@ -793,6 +794,68 @@ dazu, **SD‑Q12** der Block „Wirtschaftliche Jahresprojektion" wandert nach S
    („prüfen, heute steht es im Flotteneditor"). Bezugs- und Einspeisegrenze sind harte Grenzen des
    Anschlusses, die Prognoseplanung sagt, mit welchem Wissen ein Fahrplan entsteht: Beides
    beschreibt den BETRIEB und nicht eine Einheit.
+
+### 7.10 Anwenderentscheid SD‑E‑11 (14.09.2026): Ergebnisse gebündelt in Station 5, Bedienblock unter der Suche
+
+> **Umgesetzt mit Auftrag #273.** Er nimmt den Teil von #224 zurück, der die Größen-Sicht nach
+> Station 4 gezogen hat (7.4 Punkt 6, 7.9 Zeile „Größen-Sicht von 5 nach 4").
+
+**Die Rückmeldung** (drei Bildschirmfotos der Station 4): *„Die Ergebnisse aus Tab Optimierung
+(Größenabhängigkeit: Karte, Schnitte, Ausschnitt um das Optimum, Kacheln jährliche
+Ersparnis/Einheiten/zulässig·Rechendauer) sollen in den ‚Ergebnis' Tab verschoben werden. Die
+Ergebnisse sollen im Ergebnis-Tab strukturiert angezeigt werden: 1. Ergebnisse aus der
+Optimierung, 2. die Ergebnisse nach Simulation. Der rechte Bereich ‚Optimierung' (Ziel,
+Kandidatenzeile, Phase 2 Feinraster, Knopf Optimieren) soll auf die linke Seite unter die
+‚Suche'-Auswahl."* Dazu am selben Tag: *„Bei der Suchart ‚Größe suchen' ist eine Speicherauswahl
+nicht sinnvoll."*
+
+**Das Zielbild.**
+
+| Ort | Was dort steht |
+|---|---|
+| **Station 4 „Optimierung"** — reine EINGABE | 1. die **Suche** (drei Optionen mit Erklärsatz); 2. darunter, in **voller Breite**, der **Bedienblock** (Ziel, Kandidatenzeile, Schalter „Phase 2: Feinraster", Knopf „Optimieren" mit Fortschritt und Abbrechen); 3. der **Suchraum je Einheit**. Kein Ergebnis mehr |
+| **Station 5 „Ergebnis"**, Rubrik 1 | **„Ergebnisse der Optimierung"**: Kasten „Bestes Ergebnis" (jährliche Ersparnis, Einheiten, zulässige Kandidaten · Rechendauer) und die **Größenabhängigkeit** (Rasterkarte bzw. Stückzahlkurve, Schnitte mit Schiebern, Ausschnitt um das Optimum, Kandidatentabelle mit „übernehmen" und CSV). Nur nach einem **Suchlauf**; nach „Nur bewerten" steht statt der Rubrik **eine Erklärzeile** |
+| **Station 5**, Rubrik 2 | **„Ergebnisse der Simulation"**: Diagnosebanner, Hinweiszeile „welcher Kandidat steht hier", Ergebnisansicht (Kacheln, Δ-Tabelle, Diagramme, Jahresprojektion), Fußleiste (Projektflotte aktivieren, beste Flotte übernehmen, Größe in die Projektanlage) |
+
+**Weitere Festlegungen.**
+
+1. **Ein gelungener Lauf stellt Station 5 vorn** — dort stehen beide Ergebnisarten. Ein **Abbruch**
+   und ein **Vorprüfungsbefund der Stufe „Problem"** lassen Station 4 mit ihrer Meldung stehen. Der
+   Fortschritt bleibt während des Laufs unter dem Rechenknopf (Muster #220).
+2. **Kein Baustein zweimal.** Die Größen-Sicht wird nur aus der Rubrik „Ergebnisse der Optimierung"
+   gerufen; Station 4 kennt sie nicht mehr. „Kandidat übernehmen" führt weiter nach Schritt 1 und
+   markiert das Ergebnis als veraltet.
+3. **Die Rubrik beschreibt den GEFAHRENEN Lauf, nicht die gerade gewählte Suchart.** Die Ansicht
+   hält die Suchmethode des Laufs fest; wer danach in Station 4 umstellt, ändert den nächsten Lauf.
+   Davon hängt auch ab, ob „Kandidat übernehmen" eine Stückzahl oder eine Größe schreibt.
+4. **Unter „Größe suchen" nennt der Suchraum kein Gerät.** Keine Kopfzeile mit Hersteller, Typ und
+   festen Kenndaten, kein Schalter „variieren": Dort variiert der Lauf Kapazität, Leistung und
+   C-Rate, und welches Produkt dahintersteht, beantwortet keine der gestellten Fragen. **Jede
+   Einheit wird variiert** — die Station gleicht den Stand entsprechend an —, mehrere Einheiten
+   heißen neutral „Einheit 1", „Einheit 2", und eine Erklärzeile sagt, warum das Gerät hier keine
+   Rolle spielt. Die Größensuche ist damit nur noch gesperrt, wenn es gar keine Einheit gibt.
+   **„Stückzahl suchen" und „Nur bewerten" bleiben unverändert** — dort zählt die konkrete Einheit.
+
+**Was vom Gerät trotzdem in den Größenlauf eingeht** (Befund am Rechenweg, `FlottenOptimierer`
+und `SpeicherFlottenStudieCtrl.Konfiguration`): Der Kandidat entsteht als **Kopie der
+Achsenvorlage**; überschrieben werden nur Kapazität und die beiden Leistungen. Es bleiben
+**Lade- und Entladewirkungsgrad**, das **SoC-Band**, **Peak-Reserve** und **Hilfsverbrauch** (beide
+ungeskaliert), die **Grenzverschleißkosten je entladener kWh**, die **Rainflow-Kurve** der Alterung
+und das **Verhältnis von Lade- zu Entladeleistung** (beide werden mit demselben Faktor skaliert, die
+Asymmetrie des Geräts bleibt also an jedem Rasterpunkt). Die **Investitions- und Betriebskosten
+kommen aus Schritt 2** (€/kW, €/kWh, Betrieb) und werden mit der gesuchten Größe skaliert —
+**außer** die Einheit trägt „eigene Kosten"; dann gelten ihre Werte, und die Pauschalen
+(Investition, fixer Betrieb, Ersatzkosten, Ersatzintervall, Restwert) gehen ungeskaliert in jeden
+Kandidaten ein. Ein Größenlauf braucht außerdem eine Vorlage mit **positiver Richtungsleistung**,
+sonst weist der Optimierer ihn benannt ab. Ob diese Größen neutralisiert werden sollen, ist eine
+offene Frage an den Anwender; die Anzeige ist davon unberührt.
+
+**Umsetzung:** Auftrag **#273** — `OptimierungBlock` (Kopf einspaltig, Suchraum ohne Produktzeile
+unter G), neuer Baustein `OptimierungsergebnisBlock`, Station 5 mit zwei `Gruppenkopf`-Rubriken,
+`.epos-flotte-optimierung-kopf` einspaltig, Ressourcen de/en, bunit-Fälle, Mockup und Wiki-Quelle
+nachgezogen.
+
+---
 
 ## 8. Zwei Suchmethoden — Anwenderrückmeldung 12.09.2026 (SD‑E‑10)
 
@@ -882,17 +945,20 @@ ist nicht berührt; die Referenzbasis R7 bleibt.
 
 ### 8.4 Darstellung — Karten je Einheit statt einer Neun-Spalten-Tabelle (SD‑Q18)
 
-- **Kopfblock zweispaltig:** links „Suche" als drei untereinanderstehende Optionen mit je einem Erklärsatz; rechts das Ziel
+> Die Lage der Blöcke ist mit **7.10** neu geordnet: Kopfblock **einspaltig**, Ergebnis in Station 5.
+> Was hier über die Bestandteile steht, gilt unverändert.
+
+- **Kopfblock:** oben „Suche" als drei untereinanderstehende Optionen mit je einem Erklärsatz; **darunter in voller Breite** das Ziel
   („Kapitalwert gegenüber ‚ohne Speicher' [€]"), die Kandidatenzeile („266 Kandidaten von höchstens 10 000 · Raster zulässig", rot
   mit Abhilfesatz bei Überschreitung), der Feinraster-Schalter (nur bei G sichtbar) und der Rechenknopf.
-- **Suchraum als eine Karte je Einheit.** Kopfzeile: Name · feste Kenndaten („129 kWh · 100 kW · 1 Stück") · Schalter „variieren".
-  Rumpf bei eingeschaltetem Schalter je Methode: bei G die Kopplung und zwei Zeilen „Kapazität 40 – 300 kWh, Schritt 20" /
-  „Leistung 40 – 400 kW, Schritt 20" mit der Einheit hinter dem kurzen Zahlenfeld (Zeilenraster-Regel W6‑B‑4); bei S eine Zeile
-  „Stückzahl 1 – 4" und darunter die Herleitungszeile „= 129 – 516 kWh · 100 – 400 kW · Investition 45 000 – 180 000 €". Fußzeile
-  „Kandidaten dieser Einheit: 14". Einheiten ohne „variieren" stehen gedimmt mit „fest: 1 × 129 kWh · 100 kW". **Keine
-  Herkunftspille** (SD‑Q15).
-- **Bestes Ergebnis:** die drei Karten von 7.9 bleiben; bei S nennt die zweite Karte die Stückzahl je Einheit („2 × Growatt … =
-  258 kWh · 200 kW") statt Kapazität · C-Rate. Rasterkarte/Kurve/Kandidatentabelle wie 8.3.
+- **Suchraum als eine Karte je Einheit.** Bei **S** trägt die Kopfzeile Name · feste Kenndaten („129 kWh · 100 kW · 1 Stück") ·
+  Schalter „variieren"; bei **G** gibt es sie nicht (7.10). Rumpf je Methode: bei G die Kopplung und zwei Zeilen
+  „Kapazität 40 – 300 kWh, Schritt 20" / „Leistung 40 – 400 kW, Schritt 20" mit der Einheit hinter dem kurzen Zahlenfeld
+  (Zeilenraster-Regel W6‑B‑4); bei S eine Zeile „Stückzahl 1 – 4" und darunter die Herleitungszeile
+  „= 129 – 516 kWh · 100 – 400 kW · Investition 45 000 – 180 000 €". Fußzeile „Kandidaten dieser Einheit: 14". Einheiten ohne
+  „variieren" stehen unter S gedimmt mit „fest: 1 × 129 kWh · 100 kW". **Keine Herkunftspille** (SD‑Q15).
+- **Bestes Ergebnis** (in Station 5, 7.10): die drei Karten von 7.9 bleiben; bei S nennt die zweite Karte die Stückzahl je Einheit
+  („2 × … = 258 kWh · 200 kW") statt Kapazität · C-Rate. Rasterkarte/Kurve/Kandidatentabelle wie 8.3.
 - **Schritt 1:** Auswahlkästchen je Einheitenkarte, Knopf „Ausgewählte Einheiten in Projekt übernehmen" neben „Speicher hinzufügen",
   Rückfrage mit Anzahl, Erfolgsmeldung mit den angelegten Anlagen.
 - Formularraster-Regeln (iU8‑E‑2), Bedienblock fester Breite wie #233, Ablaufleiste unverändert. Das Mockup
