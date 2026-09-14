@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Kosten;
+using SpeicherEngine;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
@@ -56,7 +57,8 @@ namespace WindowsFormsApplication1
                     Dienste.Datei.DateiOeffnenAsync(MyResource.Resource.PREIS_IMPORT_TITEL,
                                                     filter, null)),
 
-                ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(pfad => Task.Run(() =>
+                ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(
+                    pfad => Kulturweitergabe.Starten(() =>
                 {
                     lauf = ctrl.Pruefe(pfad);
                     return new SpotpreisPruefung(
@@ -66,7 +68,7 @@ namespace WindowsFormsApplication1
                 })),
 
                 ["Speichern"] = new Func<string, bool, Action<int>, Task<SpotpreisSpeicherung>>(
-                    (bezeichner, stamm, fortschritt) => Task.Run(() =>
+                    (bezeichner, stamm, fortschritt) => Kulturweitergabe.Starten(() =>
                     {
                         if (lauf == null || !lauf.Erfolgreich)
                             return new SpotpreisSpeicherung(0, 0);

@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
 
                 // ChartAktualisieren: Engine rechnen lassen, Kern zeichnen lassen.
                 ["Vorschau"] = new Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]>>(
-                    (m, w) => Task.Run(() =>
+                    (m, w) => Kulturweitergabe.Starten(() =>
                     {
                         double[] mm = Feld(m, 12);
                         double[] ww = Feld(w, 168);
