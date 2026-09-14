@@ -392,6 +392,18 @@ zweites Bild, das zweite Bild bleibt wählbar. Reihen je Einheit („Speicher A"
    Diagnosebanners samt viertem Abhilfeknopf. **Die Vorbelegung bleibt „Archivierte
    Prognose-Snapshots"**: Der Informationsstand ist eine bewusste Wahl und wird nicht still
    umgestellt; die Abhilfe ist ein Knopf.
+8. **Gültigkeit der Lebensdauerkurve** (`FlottenPlausibilitaet.Lebensdauerkurve`, Kennung
+   `LebensdauerkurveUngueltig`, Stufe **Problem**): Die Bedingung steht in der Engine
+   (`FlottenRainflow.PruefeKurve`) — genau die, an der die Rainflow-Auswertung abbricht:
+   Entladetiefe über 0 bis 100 %, Zyklen über 0, jede Entladetiefe nur einmal; eine **leere
+   Kurve ist zulässig**, dann zählt der Lauf nur die Zyklen. Ein im Einheiteneditor angelegter
+   Punkt steht auf 0 %/0 Zyklen und ist damit „nicht ausgefüllt" — die Vorprüfung sagt es
+   sofort und nennt Einheit, Punktnummer und Grund. Der Wortlaut steht an zwei Stellen derselben
+   Ressource: als Hinweiszeile über der Ablaufleiste und als Zeile unter der beanstandeten
+   Punktzeile im Block „Alterung und Grenzkosten", die dafür die Fehlerfarbe des Hauses und
+   `aria-invalid` trägt. Der Rechenknopf ist gesperrt und nennt den Grund; Aktivierung und
+   Projektlauf scheitern benannt statt in der Engine. Der Satz nennt beide Auswege: den Punkt
+   ausfüllen oder ihn mit „Punkt entfernen" löschen.
 
 Keiner dieser Punkte ändert einen Rechenwert eines gespeicherten Standes: Vorbelegungen greifen
 nur bei neuen Studien, die Vorgabe „Netzladung" nur, wenn der Stand die Eigenschaft nicht trägt —
