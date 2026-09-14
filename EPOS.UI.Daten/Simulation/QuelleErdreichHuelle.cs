@@ -63,6 +63,8 @@ namespace WindowsFormsApplication1
                 ["GbPruefung"] = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
                 ["RbKollektor"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 ["RbSonde"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
+                ["RbKollektorWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL,
+                ["RbSondeWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE_WAHL,
                 ["LblVerlegetiefe"] = MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE,
                 ["LblFlaeche"] = MyResource.Resource.SIMQ_ERDREICH_FLAECHE,
                 ["LblLaengeSonde"] = MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE,

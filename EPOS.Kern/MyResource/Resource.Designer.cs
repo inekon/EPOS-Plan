@@ -42025,11 +42025,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdkollektor als Quellsystem ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_RB_SONDE {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_RB_SONDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde als Quellsystem ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_RB_SONDE_WAHL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_RB_SONDE_WAHL", resourceCulture);
             }
         }
         

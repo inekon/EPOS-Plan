@@ -89,7 +89,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Equal("Wärmequelle Erdreich — WP Erdgeschoss",
                      cut.Find("h1.epos-dialog-titel").TextContent);
 
-        // Zwei Wahlknoepfe (Kollektor/Sonde).
+        // Zwei Wahlknoepfe (Kollektor/Sonde), je einer in seiner Rubrik.
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
 
         // Vier Zweigfelder + Spreizung = fuenf Zahlenfelder (davon eins ganzzahlig).
@@ -200,6 +200,104 @@ public class QuelleErdreichDialogTests : EposBunitContext
         felder = cut.FindAll("input.epos-eingabe");
         Assert.True(felder[0].HasAttribute("disabled"));
         Assert.False(felder[2].HasAttribute("disabled"));
+    }
+
+    // ===================================================================== Rubriken
+
+    /// <summary>
+    /// Anwenderwunsch 14.09.2026: Erdkollektor und Erdsonde sind ZWEI Rubriken mit je
+    /// ihren Parametern - nicht alle vier Felder gemischt unter einer Ueberschrift.
+    /// Jede Rubrik traegt als erste Zeile ihr Optionsfeld.
+    /// </summary>
+    [Fact]
+    public void Erdkollektor_und_Erdsonde_sind_zwei_Rubriken_mit_ihren_Feldern()
+    {
+        var cut = Zeige(Kollektor());
+        var rubriken = cut.FindAll("section.epos-gruppenkopf");
+
+        Assert.Equal("Erdkollektor", rubriken[0].QuerySelector(".epos-gruppenkopf-titel")!.TextContent);
+        Assert.Equal("Erdsonde", rubriken[1].QuerySelector(".epos-gruppenkopf-titel")!.TextContent);
+
+        // Rubrik 1: ein Optionsfeld, dann Verlegetiefe und Flaeche - sonst nichts.
+        Assert.Single(rubriken[0].QuerySelectorAll("input[type=radio]"));
+        string[] kollektor = Feldnamen(rubriken[0]);
+        Assert.Equal(new[] { "Verlegetiefe:", "Fläche:" }, kollektor);
+
+        // Rubrik 2: ein Optionsfeld, dann Laenge je Sonde und Anzahl Sonden.
+        Assert.Single(rubriken[1].QuerySelectorAll("input[type=radio]"));
+        string[] sonde = Feldnamen(rubriken[1]);
+        Assert.Equal(new[] { "Länge je Sonde:", "Anzahl Sonden:" }, sonde);
+    }
+
+    /// <summary>Die Beschriftungen der Felder einer Rubrik, in Anzeigereihenfolge.</summary>
+    private static string[] Feldnamen(AngleSharp.Dom.IElement rubrik)
+    {
+        var namen = new List<string>();
+        foreach (var feld in rubrik.QuerySelectorAll(".epos-feld"))
+        {
+            var text = feld.QuerySelector(".epos-feld-text");
+            if (text is not null) namen.Add(text.TextContent);
+        }
+        return namen.ToArray();
+    }
+
+    /// <summary>
+    /// Die zwei Optionsfelder sind EINE Wahl: gleicher HTML-Name (Browser, Tastatur und
+    /// Sprachausgabe lesen sie als Alternative) und immer GENAU EINES gewaehlt.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Optionsfelder_sind_eine_einzige_Wahl()
+    {
+        var cut = Zeige(Kollektor());
+        var wahl = cut.FindAll("input[type=radio]");
+
+        string name = wahl[0].GetAttribute("name")!;
+        Assert.False(string.IsNullOrEmpty(name));
+        Assert.Equal(name, wahl[1].GetAttribute("name"));
+
+        Assert.True(wahl[0].HasAttribute("checked"));
+        Assert.False(wahl[1].HasAttribute("checked"));
+
+        wahl[1].Change("1");
+        cut.WaitForAssertion(() =>
+        {
+            var neu = cut.FindAll("input[type=radio]");
+            Assert.False(neu[0].HasAttribute("checked"));
+            Assert.True(neu[1].HasAttribute("checked"));
+        });
+    }
+
+    /// <summary>
+    /// Die nicht gewaehlte Rubrik bleibt STEHEN: ihre Felder sind da, gesperrt und
+    /// leise gestellt (epos-erdreich-zweig--ruht). Umschalten wandert die Kennzeichnung
+    /// mit, die Werte bleiben (A-4).
+    /// </summary>
+    [Fact]
+    public void Die_ruhende_Rubrik_bleibt_stehen_und_wird_leise()
+    {
+        var cut = Zeige(Kollektor());
+        var zweige = cut.FindAll(".epos-erdreich-zweig");
+
+        Assert.Equal(2, zweige.Count);
+        Assert.False(zweige[0].ClassList.Contains("epos-erdreich-zweig--ruht"));
+        Assert.True(zweige[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
+
+        // Die Felder der ruhenden Rubrik stehen weiter da - gesperrt, nicht verborgen.
+        Assert.Equal(2, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
+        foreach (var feld in zweige[1].QuerySelectorAll("input.epos-eingabe"))
+            Assert.True(feld.HasAttribute("disabled"));
+
+        cut.FindAll("input[type=radio]")[1].Change("1");
+        cut.WaitForAssertion(() =>
+        {
+            var neu = cut.FindAll(".epos-erdreich-zweig");
+            Assert.True(neu[0].ClassList.Contains("epos-erdreich-zweig--ruht"));
+            Assert.False(neu[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
+        });
+
+        // Die Werte des ruhenden Zweigs bleiben unangetastet.
+        Assert.Equal(1.8, cut.Instance.Zweigfelder.Tiefe);
+        Assert.Equal(250.0, cut.Instance.Zweigfelder.Flaeche);
     }
 
     // ================================================================== Bodenkennwerte
@@ -589,7 +687,8 @@ public class QuelleErdreichDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Quellsystem und Standort stehen im Formularraster - der Standort einspaltig, weil unter jedem Wert seine Herleitungszeile steht.
+    /// Die zwei Quellsystem-Rubriken und der Standort stehen im Formularraster - der
+    /// Standort einspaltig, weil unter jedem Wert seine Herleitungszeile steht.
     ///
     /// <para>Geprueft wird das MARKUP: Der Block traegt
     /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
@@ -602,7 +701,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     {
         var cut = Zeige(Kollektor());
 
-        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+        Assert.Equal(3, cut.FindAll(".epos-formularraster").Count);
         Assert.Single(cut.FindAll(".epos-formularraster--einspaltig"));
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));

@@ -3366,8 +3366,14 @@ annual full-load hours from a simulation run.</value>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Horizontal ground collector</value>
   </data>
+  <data name="SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL" xml:space="preserve">
+    <value>Horizontal ground collector as source system</value>
+  </data>
   <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
     <value>Borehole heat exchanger</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_SONDE_WAHL" xml:space="preserve">
+    <value>Borehole heat exchanger as source system</value>
   </data>
   <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
     <value>The run used the SAVED source data — the inputs changed here take effect only after "OK" and a new run. Limit value and probe metres are already calculated with the changed inputs.</value>

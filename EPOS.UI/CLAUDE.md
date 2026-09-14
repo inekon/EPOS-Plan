@@ -89,6 +89,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Ein PARAMETERBLOCK steht im `Formularraster`:** Beschriftung neben dem Feld, und ein Feld
   sagt **selbst**, wie lang es ist (`epos-feld--kurz` an Zahlenfeldern, `epos-feld--breit` am
   mehrzeiligen Textfeld; ein `Datumsfeld` nie kurz).
+- **Eine Wahl darf über mehrere RUBRIKEN laufen:** `Optionsgruppe` zeichnet mit `NurEintrag`
+  einen Eintrag je Aufruf, und die Aufrufe teilen sich über `Gruppenname` den HTML-Namen — damit
+  bleiben sie für Browser, Tastatur und Sprachausgabe EINE Wahl. Nie ein nacktes
+  `<input type="radio">` im Dialog.
 - **Ein Kachelraster gehört in einen Reiter mit DREI Spalten; ein Zweispalten-Reiter bekommt
   einen BEDIENBLOCK:** feste Breite, **ein** Hauptknopf (`epos-knopf--primaer`) mit leiser
   Erklärzeile, darunter Zweitknöpfe und Sperrgründe. Die Kachel fällt nur als BAUFORM; Text und
