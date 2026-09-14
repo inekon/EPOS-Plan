@@ -54,24 +54,20 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         Assert.Equal("10", Schrittfeld(cut).GetAttribute("value"));
 
         // „10" rueckwaerts geloescht: erst die 1 …
-        Schrittfeld(cut).Input("1");
-        Assert.Equal("1", Schrittfeld(cut).GetAttribute("value"));
+        Tippen(cut, "1");
         Assert.Equal(1.0, Achse(cut).KapazitaetSchrittKWh);
 
         // … dann ganz leer. DAS Feld bleibt leer (der Befund: hier blieb die 1 stehen).
-        Schrittfeld(cut).Input("");
-        Assert.Equal("", Schrittfeld(cut).GetAttribute("value"));
+        Tippen(cut, "");
 
         // Ein zweites Loeschen aendert daran nichts.
-        Schrittfeld(cut).Input("");
-        Assert.Equal("", Schrittfeld(cut).GetAttribute("value"));
+        Tippen(cut, "");
 
         // Und jetzt die neue Schrittweite, Zeichen fuer Zeichen.
         foreach ((string getippt, double erwartet) in new[]
                  { ("1", 1.0), ("10", 10.0), ("100", 100.0), ("1000", 1000.0) })
         {
-            Schrittfeld(cut).Input(getippt);
-            Assert.Equal(getippt, Schrittfeld(cut).GetAttribute("value"));
+            Tippen(cut, getippt);
             Assert.Equal(erwartet, Achse(cut).KapazitaetSchrittKWh);
         }
     }
@@ -86,7 +82,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     {
         var cut = Station();
 
-        Schrittfeld(cut).Input("");
+        Tippen(cut, "");
 
         Assert.Equal(0.0, Achse(cut).KapazitaetSchrittKWh);
         Assert.Contains(Resource.FLOTTE_OPT_RASTER_UNGUELTIG,
@@ -95,7 +91,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         Assert.True(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
 
         // Die frische Schrittweite gibt den Lauf wieder frei.
-        Schrittfeld(cut).Input("1000");
+        Tippen(cut, "1000");
         Assert.False(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
     }
 
@@ -146,7 +142,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
 
         Task klick = Auslegungshilfe.Rechenknopf(cut).ClickAsync(new());
 
-        Assert.True(cut.Instance.Laeuft);
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Laeuft));
         // GENAU EINER — und er steht im Bedienblock der Station, nicht im Seitenkopf.
         Assert.Single(cut.FindAll(".epos-fortschritt"));
         Assert.Single(cut.FindAll(".epos-flotte-bedienblock .epos-fortschritt"));
@@ -178,6 +174,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         var cut = Station(d => d.FlotteRechnen = (_, _) => quelle.Task, schritt: 1000);
 
         Task klick = Auslegungshilfe.Rechenknopf(cut).ClickAsync(new());
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Laeuft));
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
 
         Assert.Single(cut.FindAll(".epos-fortschritt"));
@@ -188,6 +185,28 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     }
 
     // ================================================================= Prüfstand
+
+    /// <summary>
+    /// Tippt ein Zeichen in das Schrittfeld und <b>wartet auf den gezeichneten Zustand</b>:
+    /// die Fassung des Arbeitsstandes ist weitergezählt UND das Feld zeigt das Getippte.
+    /// </summary>
+    /// <remarks>
+    /// bunit gibt den Tastendruck in den Zeichenverteiler und kehrt zurück, ohne den
+    /// Zeichenlauf abzuwarten; eine Prüfung unmittelbar dahinter liest sonst den Stand VOR
+    /// dem Zeichen (Hausmuster: auf den gezeichneten Zustand warten, nie sofort prüfen).
+    /// Die <c>Fassung</c> ist der verlässliche Merkposten — sie zählt bei JEDER gemeldeten
+    /// Änderung hoch, auch dort, wo der Feldtext derselbe bleibt (zweimal leeren).
+    /// </remarks>
+    private static void Tippen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
+    {
+        int fassung = cut.Instance.Fassung;
+        Schrittfeld(cut).Input(text);
+        cut.WaitForAssertion(() =>
+        {
+            Assert.True(cut.Instance.Fassung > fassung, "Der Tastendruck ist noch nicht angekommen.");
+            Assert.Equal(text, Schrittfeld(cut).GetAttribute("value"));
+        });
+    }
 
     private static FlottenAuslegungsAchse Achse(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen[0];
@@ -270,7 +289,13 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
 
         var cut = Render<StromspeicherAuslegungSeite>(p => p
             .Add(x => x.Dienste, dienste)
-            .Add(x => x.PlanerVerfuegbar, true));
+            .Add(x => x.PlanerVerfuegbar, true)
+            // OHNE ENTPRELLUNG: Die volle Vorpruefung laeuft im selben Zeichenlauf statt
+            // aus einem Zeitgeber. Sonst meldet sich ihre Fortsetzung mitten in der
+            // Eingabefolge aus dem Fadenvorrat zurueck, belegt den Zeichenverteiler und
+            // schiebt den naechsten Tastendruck hinter die Pruefung. Die Entprellung
+            // selbst pruefen die VorpruefungEntprelltTests.
+            .Add(x => x.EntprellungMs, 0));
 
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         return cut;

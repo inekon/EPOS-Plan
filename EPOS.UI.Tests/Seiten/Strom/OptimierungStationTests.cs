@@ -606,7 +606,12 @@ public sealed class OptimierungStationTests : EposBunitContext
                 FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
                 Vorpruefen = _ => hinweise ?? Array.Empty<FlottenHinweis>()
             })
-            .Add(x => x.PlanerVerfuegbar, true));
+            .Add(x => x.PlanerVerfuegbar, true)
+            // OHNE ENTPRELLUNG: Die volle Vorpruefung laeuft im selben Zeichenlauf statt aus
+            // einem Zeitgeber. Sonst meldet sich ihre Fortsetzung aus dem Fadenvorrat
+            // zurueck, belegt den Zeichenverteiler und schiebt den naechsten Tastendruck
+            // hinter die Pruefung — ein lastabhaengiger Ausreisser.
+            .Add(x => x.EntprellungMs, 0));
 
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         return cut;
@@ -655,6 +660,9 @@ public sealed class OptimierungStationTests : EposBunitContext
             .Add(x => x.PlanerVerfuegbar, true));
 
         Auslegungshilfe.Rechenknopf(cut).Click();
+        // Auf den gezeichneten Lauf warten, nicht sofort pruefen: bunit gibt den Klick in
+        // den Zeichenverteiler und kehrt zurueck, ohne den Zeichenlauf abzuwarten.
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Flottenergebnis));
         return cut;
     }
 

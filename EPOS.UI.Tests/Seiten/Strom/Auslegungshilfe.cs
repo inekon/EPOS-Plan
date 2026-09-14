@@ -3,6 +3,7 @@ using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Seiten.Strom;
+using Xunit;
 
 namespace EPOS.UI.Tests.Seiten.Strom;
 
@@ -45,9 +46,28 @@ internal static class Auslegungshilfe
         return cut.FindAll("button.epos-ablaufleiste-knopf")[index];
     }
 
-    /// <summary>Wechselt auf ein Blatt.</summary>
+    /// <summary>
+    /// Wechselt auf ein Blatt und <b>wartet auf den gezeichneten Zustand</b>.
+    ///
+    /// <para><b>Warum gewartet wird.</b> bunit gibt ein Ereignis in den Zeichenverteiler
+    /// und kehrt zurück, ohne den Zeichenlauf abzuwarten. Ist der Verteiler gerade belegt
+    /// — die Ansicht legt je Tastendruck eine entprellte Vorprüfung auf, deren Fortsetzung
+    /// aus dem Fadenvorrat zurückmeldet —, läuft der Klick erst danach ab, und eine Prüfung
+    /// unmittelbar hinter dem Aufruf liest den Stand VOR dem Klick. Das ist die lastabhängige
+    /// Fallgrube; das Hausmuster dagegen heißt: auf den gezeichneten Zustand warten, nie
+    /// sofort prüfen.</para>
+    ///
+    /// <para>Ein WEICH GESPERRTES Blatt (<c>aria-disabled</c>) wechselt nicht — dort ist der
+    /// Klick abgearbeitet, sobald die Sperre am Knopf steht.</para>
+    /// </summary>
     internal static void Schritt(IRenderedComponent<StromspeicherAuslegungSeite> cut, string schluessel)
-        => Schrittknopf(cut, schluessel).Click();
+    {
+        Schrittknopf(cut, schluessel).Click();
+        cut.WaitForAssertion(() => Assert.True(
+            string.Equals(cut.Instance.Schritt, schluessel, StringComparison.Ordinal)
+            || Schrittknopf(cut, schluessel).HasAttribute("aria-disabled"),
+            "Das Blatt „" + schluessel + "“ steht nach dem Klick nicht."));
+    }
 
     /// <summary>
     /// Der Rechenknopf — er steht seit #224 IN Station 4 („Optimierung"), und die
