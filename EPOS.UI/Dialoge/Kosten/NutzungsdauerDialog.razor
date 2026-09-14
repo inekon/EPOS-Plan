@@ -1,0 +1,469 @@
+﻿@* Nutzungsdauern (AfA) — der Administrationsdialog der Nutzungsdauertabelle
+   (Konzept "Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle",
+   Stufe S1, Abschnitt 2.5).
+
+   WOZU. Die Nutzungsdauer steuert Ersatzbeschaffung und Restwert im Kapitalwert.
+   Sie stand bisher nur als freies Feld je Kostenposition da; hier ist die eine
+   Tabelle, aus der jede neue Position ihren Wert bekommt.
+
+   EINE ZEILE GEHOERT EINER TECHNIK UND EINER POSITIONSART. Das Raster ist nach
+   Technik GRUPPIERT, die Standardzeile steht in ihrer Gruppe zuerst - sie gilt
+   fuer jede Position ohne eigene Positionsart. Die zwei technikuebergreifenden
+   Zeilen (Montage, Planung) stehen am Ende und tragen bewusst KEINEN eigenen
+   Wert: Sie werden mit ihrer Hauptposition ersetzt.
+
+   AUSLIEFERUNGSZEILEN SIND EDITIERBAR, ABER NICHT LOESCHBAR (ND-Q5). Ihr
+   Loeschknopf traegt deshalb die WEICHE SPERRE (aria-disabled plus Handler, der
+   den Grund MELDET) - ein disabled-Knopf zeigte seinen Tooltip nie. Zurueck zum
+   Auslieferungsstand fuehrt "Auslieferungswerte wiederherstellen", mit
+   Rueckfrage.
+
+   EINE AENDERUNG LEBT BIS "SPEICHERN" NUR IM OBJEKT - dieselbe Regel wie in der
+   Kostenverwaltung (Ae12). "Abbrechen" verwirft alles; "Neu", "Loeschen" und
+   "Wiederherstellen" schreiben sofort und laden den Stand danach neu.
+
+   TASTATUR: Esc schliesst zuerst eine offene Rueckfrage, dann den Dialog. Enter
+   ist nicht belegt - drei Knoepfe schreiben sofort. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+@using System.Globalization
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+    </div>
+
+    <p class="epos-kontextzeile">@Texte.Kontext</p>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    <div class="epos-kontextleiste">
+        <Textfeld Bezeichnung="@Texte.Suche" Wert="@_suche" WertChanged="SucheSetzen"
+                  Platzhalter="@Texte.SuchePlatzhalter" Kurz="true" />
+        <button type="button" class="epos-knopf" @onclick="WiederherstellenFragen">
+            @Texte.Wiederherstellen
+        </button>
+    </div>
+
+    <p class="epos-leisezeile">@Texte.LeerHinweis</p>
+
+    <div class="epos-raster-huelle">
+        <table class="epos-raster">
+            <thead>
+                <tr>
+                    <th>@Texte.SpalteTechnik</th>
+                    <th>@Texte.SpaltePositionsart</th>
+                    <th>@Texte.SpalteNutzungsdauer</th>
+                    <th>@Texte.SpalteAfa</th>
+                    <th>@Texte.SpalteQuelle</th>
+                    <th>@Texte.SpalteAktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (string gruppe in Gruppen())
+                {
+                    <tr class="epos-raster-gruppe">
+                        <th colspan="6" scope="colgroup">@gruppe</th>
+                    </tr>
+
+                    @foreach (NutzungsdauerZeileAnzeige z in ZeilenDerGruppe(gruppe))
+                    {
+                        NutzungsdauerZeileAnzeige zeile = z;
+                        <tr @key="zeile.Id">
+                            <td>@Gruppenname(zeile)</td>
+                            <td>
+                                @zeile.Positionsart
+                                @if (zeile.IstStandard)
+                                {
+                                    <span class="epos-kennzeichen" title="@Texte.TipStandard">@Texte.KennzeichenStandard</span>
+                                }
+                                @if (zeile.Auslieferung)
+                                {
+                                    <span class="epos-kennzeichen" title="@Texte.TipAuslieferung">◆</span>
+                                }
+                            </td>
+                            <td>
+                                <Zahlenfeld Wert="@zeile.Nutzungsdauer" Min="0" Max="200"
+                                            Nachkommastellen="1"
+                                            WertChanged="@(w => Feld(zeile, () => zeile.Nutzungsdauer = w))" />
+                            </td>
+                            <td>
+                                <Zahlenfeld Wert="@zeile.AfaSteuerlich" Min="0" Max="200"
+                                            Nachkommastellen="1"
+                                            WertChanged="@(w => Feld(zeile, () => zeile.AfaSteuerlich = w))" />
+                            </td>
+                            <td>
+                                <Textfeld Wert="@zeile.Quelle"
+                                          WertChanged="@(w => Feld(zeile, () => zeile.Quelle = w ?? ""))" />
+                            </td>
+                            <td>
+                                <div class="epos-zeilenknoepfe">
+                                    @if (zeile.Auslieferung)
+                                    {
+                                        @* Weiche Sperre: Der Grund soll erscheinen, wenn
+                                           der Anwender es versucht - ein disabled-Knopf
+                                           zeigte seinen Tooltip nie. *@
+                                        <button type="button" class="epos-knopf epos-zr-knopf"
+                                                aria-disabled="true" title="@Texte.TipAuslieferung"
+                                                @onclick="() => AuslieferungMelden()">@Texte.Loeschen</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="epos-knopf epos-zr-knopf"
+                                                title="@Texte.Loeschen"
+                                                @onclick="() => LoeschenFragen(zeile)">@Texte.Loeschen</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+
+                @if (Gefiltert().Count == 0)
+                {
+                    <tr>
+                        <td colspan="6">@Texte.LeereListe</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ---------------------------------------------------------- Neuzeile *@
+    <div class="epos-kontextleiste">
+        <Auswahlfeld Bezeichnung="@Texte.SpalteTechnik" Eintraege="@TechnikEintraege()"
+                     Auswahl="@_neuTechnik" AuswahlChanged="@(w => _neuTechnik = w)"
+                     Platzhalter="@Texte.Technikuebergreifend" />
+        <Textfeld Bezeichnung="@Texte.SpaltePositionsart" Wert="@_neuArt"
+                  WertChanged="@(w => _neuArt = w ?? "")" />
+        <Zahlenfeld Bezeichnung="@Texte.SpalteNutzungsdauer" Wert="@_neuWert" Min="0" Max="200"
+                    Nachkommastellen="1" WertChanged="@(w => _neuWert = w)" />
+        <Zahlenfeld Bezeichnung="@Texte.SpalteAfa" Wert="@_neuAfa" Min="0" Max="200"
+                    Nachkommastellen="1" WertChanged="@(w => _neuAfa = w)" />
+        <button type="button" class="epos-knopf" @onclick="Anlegen">@Texte.Neu</button>
+    </div>
+
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="true" SatzMarkiert="true"
+                     Geaendert="@Geaendert" Gespeichertwerden="SpeichernKlick"
+                     OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen"
+                     SpeichernText="@Texte.Speichern" Ergebnis="Beenden" />
+
+    <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@Texte.Titel"
+                Beantwortet="FrageBeantwortet" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben
+    // =====================================================================
+
+    /// <summary>Das Textbündel; ohne Gaben stehen die deutschen Rückfälle.</summary>
+    [Parameter] public NutzungsdauerTexte Texte { get; set; } = new();
+
+    /// <summary>Die Zeilen der Tabelle, bereits gruppiert und sortiert.</summary>
+    [Parameter] public IReadOnlyList<NutzungsdauerZeileAnzeige> Zeilen { get; set; }
+        = Array.Empty<NutzungsdauerZeileAnzeige>();
+
+    /// <summary>Die wählbaren Techniken für die Neuzeile.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Techniken { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Holt den Stand neu aus der Datenbank.</summary>
+    [Parameter] public Func<IReadOnlyList<NutzungsdauerZeileAnzeige>>? Neuladen { get; set; }
+
+    /// <summary>Schreibt die geänderten Zeilen; Rückgabe <c>null</c> = gelungen,
+    /// sonst der Grund im Klartext.</summary>
+    [Parameter] public Func<IReadOnlyList<NutzungsdauerZeileAnzeige>, string?>? Speichern { get; set; }
+
+    /// <summary>Legt eine eigene Zeile an; Rückgabe <c>null</c> = gelungen.</summary>
+    [Parameter] public Func<NutzungsdauerNeuEingabe, string?>? AnlegenDelegat { get; set; }
+
+    /// <summary>Löscht eine eigene Zeile; Rückgabe <c>null</c> = gelungen.</summary>
+    [Parameter] public Func<int, string?>? LoeschenDelegat { get; set; }
+
+    /// <summary>Setzt die Auslieferungszeilen zurück; Rückgabe = Zahl der Zeilen.</summary>
+    [Parameter] public Func<int>? WiederherstellenDelegat { get; set; }
+
+    /// <summary><c>null</c> = Abbrechen (Hausregel).</summary>
+    [Parameter] public EventCallback<NutzungsdauerErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>Der Hilfeschlüssel des Infoknopfs.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Nutzungsdauer.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private List<NutzungsdauerZeileAnzeige> _zeilen = new();
+    private Dictionary<int, NutzungsdauerZeileAnzeige> _stand = new();
+
+    private string _suche = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private bool _geschrieben;
+
+    private int? _neuTechnik;
+    private string _neuArt = "";
+    private double? _neuWert;
+    private double? _neuAfa;
+
+    private string _frage = "";
+    private Func<Task>? _frageJa;
+
+    private SpeichernLeiste? _leiste;
+
+    /// <summary>Der Text im Suchfeld (Prüfhilfe für Tests).</summary>
+    public string Suchtext => _suche;
+
+    /// <summary>Die Meldung im Banner (Prüfhilfe für Tests).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Steht eine Rückfrage (Prüfhilfe für Tests)?</summary>
+    public string OffeneFrage => _frage;
+
+    /// <summary>Hat sich seit dem letzten Speichern etwas geändert?</summary>
+    private bool Geaendert
+    {
+        get
+        {
+            foreach (NutzungsdauerZeileAnzeige z in _zeilen)
+            {
+                NutzungsdauerZeileAnzeige? alt;
+                _stand.TryGetValue(z.Id, out alt);
+                if (z.WeichtAb(alt)) return true;
+            }
+            return false;
+        }
+    }
+
+    protected override void OnInitialized() => Uebernehmen(Zeilen);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <summary>Den Stand übernehmen und den Vergleichsstand daneben legen.</summary>
+    private void Uebernehmen(IReadOnlyList<NutzungsdauerZeileAnzeige> neu)
+    {
+        _zeilen = new List<NutzungsdauerZeileAnzeige>(neu ?? Array.Empty<NutzungsdauerZeileAnzeige>());
+        _stand = new Dictionary<int, NutzungsdauerZeileAnzeige>();
+        foreach (NutzungsdauerZeileAnzeige z in _zeilen) _stand[z.Id] = z.Kopie();
+    }
+
+    private void Nachladen()
+    {
+        if (Neuladen is null) return;
+        Uebernehmen(Neuladen());
+    }
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    private void SucheSetzen(string wert) => _suche = wert ?? "";
+
+    /// <summary>Der Gruppenname einer Zeile — die Technik oder „technikübergreifend".</summary>
+    private string Gruppenname(NutzungsdauerZeileAnzeige z)
+        => string.IsNullOrEmpty(z.Technik) ? Texte.Technikuebergreifend : z.Technik;
+
+    /// <summary>Die gefilterten Zeilen in der Reihenfolge, in der sie hereinkamen.</summary>
+    private List<NutzungsdauerZeileAnzeige> Gefiltert()
+    {
+        if (_suche.Length == 0) return _zeilen;
+
+        var treffer = new List<NutzungsdauerZeileAnzeige>();
+        foreach (NutzungsdauerZeileAnzeige z in _zeilen)
+            if (Passt(z)) treffer.Add(z);
+        return treffer;
+    }
+
+    /// <summary>Teilzeichenkette über Technik, Positionsart und Quelle; Groß- und
+    /// Kleinschreibung gleichgültig.</summary>
+    private bool Passt(NutzungsdauerZeileAnzeige z)
+    {
+        string s = _suche.Trim();
+        if (s.Length == 0) return true;
+        return Gruppenname(z).Contains(s, StringComparison.OrdinalIgnoreCase)
+            || z.Positionsart.Contains(s, StringComparison.OrdinalIgnoreCase)
+            || z.Quelle.Contains(s, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Die Gruppen in der Reihenfolge ihres ersten Treffers.</summary>
+    private List<string> Gruppen()
+    {
+        var namen = new List<string>();
+        foreach (NutzungsdauerZeileAnzeige z in Gefiltert())
+        {
+            string g = Gruppenname(z);
+            if (!namen.Contains(g)) namen.Add(g);
+        }
+        return namen;
+    }
+
+    private List<NutzungsdauerZeileAnzeige> ZeilenDerGruppe(string gruppe)
+    {
+        var treffer = new List<NutzungsdauerZeileAnzeige>();
+        foreach (NutzungsdauerZeileAnzeige z in Gefiltert())
+            if (string.Equals(Gruppenname(z), gruppe, StringComparison.Ordinal)) treffer.Add(z);
+        return treffer;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> TechnikEintraege() => Techniken;
+
+    /// <summary>Eine Feldänderung: Sie lebt im Objekt, bis „Speichern" sie schreibt.</summary>
+    private void Feld(NutzungsdauerZeileAnzeige zeile, Action setzen)
+    {
+        setzen();
+        _meldung = "";
+        _leiste?.Leeren();
+    }
+
+    // =====================================================================
+    // Schreibwege
+    // =====================================================================
+
+    private void SpeichernKlick()
+    {
+        if (Speichern is null) return;
+
+        var geaendert = new List<NutzungsdauerZeileAnzeige>();
+        foreach (NutzungsdauerZeileAnzeige z in _zeilen)
+        {
+            NutzungsdauerZeileAnzeige? alt;
+            _stand.TryGetValue(z.Id, out alt);
+            if (z.WeichtAb(alt)) geaendert.Add(z);
+        }
+        if (geaendert.Count == 0) return;
+
+        string? grund = Speichern(geaendert);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund!, WarnStufe.Warnung);
+            _leiste?.Fehler();
+            return;
+        }
+
+        _geschrieben = true;
+        _meldung = "";
+        Nachladen();
+        _leiste?.Gespeichert();
+    }
+
+    private void Anlegen()
+    {
+        if (AnlegenDelegat is null) return;
+
+        if (string.IsNullOrWhiteSpace(_neuArt))
+        {
+            Melden(Texte.MeldungArtLeer, WarnStufe.Warnung);
+            return;
+        }
+
+        string? grund = AnlegenDelegat(new NutzungsdauerNeuEingabe(
+            _neuTechnik, _neuArt.Trim(), _neuWert, _neuAfa));
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund!, WarnStufe.Warnung);
+            return;
+        }
+
+        _geschrieben = true;
+        _meldung = "";
+        _neuArt = "";
+        _neuWert = null;
+        _neuAfa = null;
+        Nachladen();
+    }
+
+    /// <summary>Der Versuch, eine Auslieferungszeile zu löschen — er MELDET den Grund.</summary>
+    private void AuslieferungMelden() => Melden(Texte.TipAuslieferung, WarnStufe.Hinweis);
+
+    private void LoeschenFragen(NutzungsdauerZeileAnzeige zeile)
+    {
+        _frage = string.Format(CultureInfo.CurrentCulture, Texte.FrageLoeschen, zeile.Positionsart);
+        _frageJa = () =>
+        {
+            if (LoeschenDelegat is not null)
+            {
+                string? grund = LoeschenDelegat(zeile.Id);
+                if (!string.IsNullOrEmpty(grund)) Melden(grund!, WarnStufe.Warnung);
+                else { _geschrieben = true; Nachladen(); }
+            }
+            return Task.CompletedTask;
+        };
+    }
+
+    private void WiederherstellenFragen()
+    {
+        _frage = Texte.FrageWiederherstellen;
+        _frageJa = () =>
+        {
+            if (WiederherstellenDelegat is not null)
+            {
+                WiederherstellenDelegat();
+                _geschrieben = true;
+                _meldung = "";
+                Nachladen();
+            }
+            return Task.CompletedTask;
+        };
+    }
+
+    private async Task FrageBeantwortet(bool? antwort)
+    {
+        Func<Task>? ja = _frageJa;
+        _frage = "";
+        _frageJa = null;
+        if (antwort == true && ja is not null) await ja();
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    // =====================================================================
+    // Ausgänge
+    // =====================================================================
+
+    private async Task Beenden(bool ok)
+    {
+        if (!ok)
+        {
+            // Abbrechen verwirft die ungespeicherten Eingaben; was „Neu",
+            // „Löschen" und „Wiederherstellen" geschrieben haben, bleibt - das
+            // waren ausdrückliche Handlungen.
+            await Geschlossen.InvokeAsync(_geschrieben
+                ? new NutzungsdauerErgebnis(true) : (NutzungsdauerErgebnis?)null);
+            return;
+        }
+
+        SpeichernKlick();
+        await Geschlossen.InvokeAsync(new NutzungsdauerErgebnis(_geschrieben));
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (!string.Equals(e.Key, "Escape", StringComparison.Ordinal)) return;
+
+        if (_frage.Length > 0)
+        {
+            _frage = "";
+            _frageJa = null;
+            return;
+        }
+        await Beenden(false);
+    }
+}

@@ -31778,6 +31778,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ND_MELD_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ND_MELD_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungszeilen werden nicht gelöscht. Ihr Wert lässt sich ändern; „Auslieferungswerte wiederherstellen“ setzt ihn zurück. ähnelt.
         /// </summary>
         public static string ND_MELD_READONLY {
@@ -31801,6 +31810,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ND_NEU {
             get {
                 return ResourceManager.GetString("ND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Wert ähnelt.
+        /// </summary>
+        public static string ND_QUELLE_EIGEN {
+            get {
+                return ResourceManager.GetString("ND_QUELLE_EIGEN", resourceCulture);
             }
         }
         

@@ -9094,3 +9094,50 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ====================================================================== */
+/* NUTZUNGSDAUERN (AfA) - der Administrationsdialog der Nutzungsdauern.   */
+/*                                                                        */
+/* Vier Regeln, alle flach (kein Nesting - StilblattTests). Sie tragen    */
+/* das, was das Raster dieses Dialogs mehr braucht als ein gewoehnliches: */
+/* eine Gruppenzeile je Technik, ein Kennzeichen an der Positionsart und  */
+/* eine Aktionsspalte, deren Knopf IMMER sichtbar ist (Hausregel: nie     */
+/* erst bei :hover).                                                      */
+/* ====================================================================== */
+
+/* Die leise Zeile unter der Kopfleiste: ein Hinweis, den der Anwender    */
+/* liest, wo er ohnehin hinsieht - kein Banner (Hausregel "Zustand,       */
+/* Meldung, Leerzustand").                                                */
+.epos-leisezeile {
+    margin: 0 0 var(--epos-rand) 0;
+    color: var(--epos-text-leise);
+}
+
+/* Die Gruppenzeile im Raster. Sie spannt ueber alle Spalten und traegt   */
+/* dieselbe Flaeche wie der Spaltenkopf - so ist sie als Gliederung zu    */
+/* erkennen und nicht als Datenzeile.                                     */
+.epos-raster-gruppe th {
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+    font-weight: 600;
+    border-top: 2px solid var(--epos-rahmen-leise);
+}
+
+/* Das Kennzeichen an der Positionsart ("Standard", das Auslieferungs-    */
+/* zeichen). Es steht NEBEN dem Namen, nicht an seiner Stelle.            */
+.epos-kennzeichen {
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 999px;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
+/* Die Aktionsspalte: Der Flexkasten gehoert IN die Zelle, nicht auf das  */
+/* td - sonst verliert die Zelle ihre Rolle (Hausregel).                  */
+.epos-zeilenknoepfe {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}

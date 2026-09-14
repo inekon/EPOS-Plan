@@ -19176,4 +19176,10 @@ Möchten Sie das zulassen?</value>
   <data name="ND_LEER_LISTE" xml:space="preserve">
     <value>Keine Zeile passt zur Suche.</value>
   </data>
+  <data name="ND_QUELLE_EIGEN" xml:space="preserve">
+    <value>eigener Wert</value>
+  </data>
+  <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zeile ließ sich nicht speichern.</value>
+  </data>
 </root>

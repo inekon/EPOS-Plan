@@ -19169,4 +19169,10 @@ Do you want to allow this?</value>
   <data name="ND_LEER_LISTE" xml:space="preserve">
     <value>No row matches the search.</value>
   </data>
+  <data name="ND_QUELLE_EIGEN" xml:space="preserve">
+    <value>own value</value>
+  </data>
+  <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The row could not be saved.</value>
+  </data>
 </root>
