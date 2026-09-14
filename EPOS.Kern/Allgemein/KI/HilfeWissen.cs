@@ -575,6 +575,27 @@ namespace WindowsFormsApplication1
                     + "WIKI: Programm Dokumentation/Stromspeicher.",
                     WIKI + "Stromspeicher"),
 
+                new WissensAbschnitt(KiMeldungskennung.FLOTTE_RAINFLOW_UNGUELTIG,
+                    "Meldung FLOTTE_RAINFLOW_UNGUELTIG: Lebensdauerkurve unvollstaendig",
+                    KiChatKontext.B_STROMSPEICHER,
+                    "BEDEUTUNG: Ein Punkt der Lebensdauerkurve einer Speichereinheit - Block 'Alterung und "
+                    + "Grenzkosten' im Einheiteneditor - ist nicht ausgefuellt oder traegt einen Wert, mit "
+                    + "dem die Rainflow-Auswertung nicht rechnen kann. URSACHE: Die Kurve sagt, wie viele "
+                    + "Zyklen die Zelle bei einer bestimmten Entladetiefe bis zum vereinbarten "
+                    + "End-of-Life-Kriterium aushaelt; daraus entsteht der Miner-Schaden des Laufs. "
+                    + "Gueltig ist ein Punkt nur mit einer Entladetiefe UEBER 0 bis hoechstens 100 Prozent "
+                    + "und einer Zyklenzahl UEBER 0, und jede Entladetiefe darf nur EINMAL vorkommen - "
+                    + "zwischen den Stuetzstellen wird logarithmisch interpoliert, und zwei Zyklenzahlen zu "
+                    + "derselben Tiefe waeren zwei Antworten auf dieselbe Frage. Ein frisch angelegter Punkt "
+                    + "steht auf 0 Prozent und 0 Zyklen und ist damit noch kein Wert, sondern ein leeres "
+                    + "Feldpaar. ABHILFE: zwei Wege. Entweder den beanstandeten Punkt ausfuellen - die "
+                    + "Zahlenpaare stehen im Datenblatt des Herstellers, oft als Zyklenzahl bei 100, 80, 50 "
+                    + "und 20 Prozent Entladetiefe -, oder ihn mit 'Punkt entfernen' loeschen. Eine Einheit "
+                    + "GANZ OHNE Punkte ist zulaessig: Dann zaehlt der Lauf die Zyklen und weist keinen "
+                    + "Rainflow-Schaden aus. "
+                    + "WIKI: Programm Dokumentation/Stromspeicher.",
+                    WIKI + "Stromspeicher"),
+
                 // ---- Simulationslauf: Erzeuger ohne Platz (#190) -------------------
                 new WissensAbschnitt(KiMeldungskennung.LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ,
                     "Meldung LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ: Wärmeerzeuger rechnet nicht mit",

@@ -16539,6 +16539,21 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="FLOTTE_ABHILFE_IDEALWISSEN" xml:space="preserve">
     <value>Informationsstand auf Idealwissen setzen</value>
   </data>
+  <data name="FLOTTE_MSG_RAINFLOW_UNGUELTIG" xml:space="preserve">
+    <value>Die Lebensdauerkurve der Einheit „{0}“ ist unvollständig: Punkt {1} — {2}. Ohne gültige Kurve lässt sich der Rainflow-Schaden nicht rechnen, und der Lauf bricht ab. Abhilfe: den Punkt ausfüllen — Entladetiefe über 0 bis 100 %, Zyklen über 0, jede Entladetiefe nur einmal — oder ihn mit „Punkt entfernen“ löschen. Ganz ohne Punkte ist die Kurve zulässig; dann werden nur die Zyklen gezählt.</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_LEER" xml:space="preserve">
+    <value>nicht ausgefüllt (Entladetiefe 0 %, 0 Zyklen)</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_TIEFE" xml:space="preserve">
+    <value>die Entladetiefe liegt nicht im Bereich über 0 bis 100 %</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_ZYKLEN" xml:space="preserve">
+    <value>die Zyklen bis Lebensdauerende sind nicht größer als 0</value>
+  </data>
+  <data name="FLOTTE_MSG_RAINFLOW_GRUND_DOPPELT" xml:space="preserve">
+    <value>diese Entladetiefe steht schon in einem früheren Punkt</value>
+  </data>
   <data name="FLOTTE_MSG_STAND_FEHLT" xml:space="preserve">
     <value>Der reservierte Projektflottenstand @Projektflotte fehlt.</value>
   </data>
@@ -18101,6 +18116,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="KI_FRAGE_FLOTTE_PROGNOSE_FEHLT" xml:space="preserve">
     <value>Mein planendes Betriebsziel bricht ab, weil kein Prognose-Snapshot verfügbar ist. Was ist der Informationsstand, und welchen der beiden Auswege soll ich wählen?</value>
+  </data>
+  <data name="KI_FRAGE_FLOTTE_RAINFLOW_UNGUELTIG" xml:space="preserve">
+    <value>Die Vorprüfung beanstandet einen Punkt der Lebensdauerkurve meines Speichers. Wofür ist diese Kurve da, und wie fülle ich den Punkt richtig aus?</value>
   </data>
   <data name="KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ" xml:space="preserve">
     <value>Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf?</value>

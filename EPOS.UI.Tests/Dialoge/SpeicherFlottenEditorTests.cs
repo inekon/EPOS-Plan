@@ -1,6 +1,7 @@
 ﻿using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using SpeicherEngine;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -215,6 +216,64 @@ public sealed class SpeicherFlottenEditorTests : EposBunitContext
 
         Assert.Contains("Investition Kapazität", cut.Markup);
         Assert.Contains("Betriebskosten Leistung", cut.Markup);
+    }
+
+    // =====================================================================
+    //  Die Lebensdauerkurve (Auftrag #257)
+    // =====================================================================
+
+    /// <summary>
+    /// EIN FRISCH ANGELEGTER PUNKT IST UNVOLLSTÄNDIG (0 %, 0 Zyklen) — und sagt es
+    /// sofort: Die Zeile trägt die Fehlerklasse und <c>aria-invalid</c>, darunter steht
+    /// der Befund des Kerns im Wortlaut. Beide Fülle machen ihn wieder gut.
+    /// </summary>
+    [Fact]
+    public void Ein_neuer_Kennlinienpunkt_markiert_seine_Zeile_und_nennt_den_Befund()
+    {
+        var cut = Render<SpeicherFlottenEditor>(p => p
+            .Add(x => x.Wert, KonfigurationMitEinheit()));
+
+        Assert.Empty(cut.FindAll(".epos-flotte-feldraster--fehler"));
+
+        cut.FindAll("button").Single(x => x.TextContent.Trim() == "+ Kennlinienpunkt").Click();
+
+        AngleSharp.Dom.IElement zeile = Assert.Single(cut.FindAll(".epos-flotte-feldraster--fehler"));
+        Assert.Equal("true", zeile.GetAttribute("aria-invalid"));
+
+        // DER WORTLAUT KOMMT AUS DEM KERN — der Editor schreibt keinen zweiten.
+        string befund = FlottenPlausibilitaet
+            .Kurvenbefund(cut.Instance.AktuellerSnapshot.Einheiten[0])!.Text;
+        Assert.Equal(befund, cut.Find("p.epos-flotte-hinweis--problem").TextContent.Trim());
+        Assert.Contains("Punkt 1", befund, StringComparison.Ordinal);
+
+        // BEIDE FELDER GEFÜLLT: Markierung und Hinweis sind weg.
+        Eingabe(cut, "Entladetiefe Punkt 1:").Input("80");
+        Eingabe(cut, "Zyklen bis EOL Punkt 1:").Input("3000");
+
+        Assert.Empty(cut.FindAll(".epos-flotte-feldraster--fehler"));
+        Assert.Empty(cut.FindAll("p.epos-flotte-hinweis--problem"));
+        Assert.Null(FlottenPlausibilitaet.Kurvenbefund(cut.Instance.AktuellerSnapshot.Einheiten[0]));
+    }
+
+    /// <summary>
+    /// DIE MARKIERUNG ZEIGT AUF DEN BEANSTANDETEN PUNKT — nicht auf die ganze Kurve:
+    /// Ein zweiter Punkt mit derselben Entladetiefe markiert genau die ZWEITE Zeile.
+    /// </summary>
+    [Fact]
+    public void Eine_doppelte_Entladetiefe_markiert_die_zweite_Zeile()
+    {
+        FlottenStudieKonfiguration eingang = KonfigurationMitEinheit();
+        eingang.Einheiten[0].RainflowKurve.AddRange(new[]
+        {
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 3000 },
+            new FlottenRainflowPunkt { Entladetiefe = 0.8, ZyklenBisEol = 4000 }
+        });
+
+        var cut = Render<SpeicherFlottenEditor>(p => p.Add(x => x.Wert, eingang));
+
+        Assert.Single(cut.FindAll(".epos-flotte-feldraster--fehler"));
+        Assert.Contains("Punkt 2", cut.Find("p.epos-flotte-hinweis--problem").TextContent,
+                        StringComparison.Ordinal);
     }
 
     private static FlottenStudieKonfiguration KonfigurationMitEinheit()

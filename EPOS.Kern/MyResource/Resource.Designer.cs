@@ -12578,6 +12578,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die diese Entladetiefe steht schon in einem früheren Punkt ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_RAINFLOW_GRUND_DOPPELT {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_RAINFLOW_GRUND_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ausgefüllt (Entladetiefe 0 %, 0 Zyklen) ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_RAINFLOW_GRUND_LEER {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_RAINFLOW_GRUND_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Entladetiefe liegt nicht im Bereich über 0 bis 100 % ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_RAINFLOW_GRUND_TIEFE {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_RAINFLOW_GRUND_TIEFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Zyklen bis Lebensdauerende sind nicht größer als 0 ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_RAINFLOW_GRUND_ZYKLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_RAINFLOW_GRUND_ZYKLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lebensdauerkurve der Einheit „{0}“ ist unvollständig: Punkt {1} — {2}. Ohne gültige Kurve lässt sich der Rainflow-Schaden nicht rechnen, und der Lauf bricht ab. Abhilfe: den Punkt ausfüllen — Entladetiefe über 0 bis 100 %, Zyklen über 0, jede Entladetiefe nur einmal — oder ihn mit „Punkt entfernen“ löschen. Ganz ohne Punkte ist die Kurve zulässig; dann werden nur die Zyklen gezählt. ähnelt.
+        /// </summary>
+        public static string FLOTTE_MSG_RAINFLOW_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_MSG_RAINFLOW_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der reservierte Projektflottenstand @Projektflotte fehlt. ähnelt.
         /// </summary>
         public static string FLOTTE_MSG_STAND_FEHLT {
@@ -25069,6 +25114,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_FLOTTE_PROGNOSE_FEHLT {
             get {
                 return ResourceManager.GetString("KI_FRAGE_FLOTTE_PROGNOSE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorprüfung beanstandet einen Punkt der Lebensdauerkurve meines Speichers. Wofür ist diese Kurve da, und wie fülle ich den Punkt richtig aus? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_FLOTTE_RAINFLOW_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_FLOTTE_RAINFLOW_UNGUELTIG", resourceCulture);
             }
         }
         

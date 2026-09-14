@@ -68,6 +68,8 @@ Hier stehen die '''Einheiten''': je Zeile Name, Kapazität in kWh, Lade- und Ent
 
 '''Kopieren''' legt eine zweite Einheit mit denselben Werten an; sie gehört danach zu keiner Anlage des Projekts.
 
+'''Alterung und Grenzkosten.''' Neben dem Grenzverschleiß trägt jede Einheit eine '''Lebensdauerkurve''': Stützstellen aus Entladetiefe und Zyklen bis Lebensdauerende, angelegt mit ''„+ Kennlinienpunkt"'' und gelöscht mit ''„Punkt entfernen"''. Eine Einheit '''ganz ohne Punkte''' ist zulässig – dann zählt der Lauf die Zyklen und weist keinen Rainflow-Schaden aus. Trägt sie Punkte, gilt für jeden: Entladetiefe '''über 0 bis 100 %''', Zyklen '''über 0''', und jede Entladetiefe nur '''einmal'''. Ein angefangener Punkt – ein neuer steht auf 0 % und 0 Zyklen – wird in der Liste hervorgehoben und mit seinem Grund benannt; solange er so steht, bleibt der Rechenknopf gesperrt.
+
 ==== Einheiten in das Projekt übernehmen ====
 {{Anker|auslegung-uebernahme}}
 

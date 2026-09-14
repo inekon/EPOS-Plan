@@ -171,6 +171,12 @@ public static class SpeicherFlottenProjektCtrl
         if (FlottenPlausibilitaet.Prognosepflicht(a.Flotte, a.FlottenPrognosen) is { } prognose)
             probleme.Add(prognose.Text);
 
+        // DIE LEBENSDAUERKURVE ebenso (Auftrag #257): Ein unvollständiger Rainflow-Punkt
+        // ließ den Projektlauf erst in der Engine auflaufen. Jetzt ist er eine Problemzeile
+        // — mit Einheit, Punktnummer und Grund.
+        if (FlottenPlausibilitaet.Lebensdauerkurve(a.Flotte) is { } kurve)
+            probleme.Add(kurve.Text);
+
         if (SpeicherAuslegungCtrl.SpezifischeSaetzeGebraucht(a) && projektId > 0)
         {
             SpeicherKostensaetze kosten = null;

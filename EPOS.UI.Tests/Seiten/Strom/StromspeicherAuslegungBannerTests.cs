@@ -419,6 +419,57 @@ public sealed class StromspeicherAuslegungBannerTests : EposBunitContext
             }))
         };
 
+    // =====================================================================
+    //  Die Lebensdauerkurve der Einheiten (Auftrag #257)
+    // =====================================================================
+
+    /// <summary>
+    /// DIE REGEL SPERRT: Ein unvollständiger Punkt der Lebensdauerkurve ist ein Befund
+    /// der Stufe „Problem" — der Rechenknopf ist daran gesperrt und nennt ihn als
+    /// Grund. Eine vollständige Kurve gibt ihn wieder frei.
+    /// </summary>
+    [Fact]
+    public void Ein_unvollstaendiger_Kurvenpunkt_sperrt_den_Rechenknopf_mit_seinem_Grund()
+    {
+        FlottenStudieKonfiguration flotte = Flotte();
+        flotte.Einheiten[0].RainflowKurve.Add(new FlottenRainflowPunkt());
+        var cut = Ansicht(Kurvendienste(flotte));
+
+        FlottenHinweis befund = Assert.Single(cut.Instance.Vorpruefung,
+            x => x.Kennung == FlottenHinweisKennung.LebensdauerkurveUngueltig);
+        Assert.Equal(FlottenHinweisStufe.Problem, befund.Stufe);
+
+        AngleSharp.Dom.IElement knopf = Auslegungshilfe.Rechenknopf(cut);
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Contains(befund.Text, knopf.GetAttribute("title") ?? "", StringComparison.Ordinal);
+
+        FlottenStudieKonfiguration ganz = Flotte();
+        ganz.Einheiten[0].RainflowKurve.Add(
+            new FlottenRainflowPunkt { Entladetiefe = 1, ZyklenBisEol = 1000 });
+        var frei = Ansicht(Kurvendienste(ganz));
+
+        Assert.Empty(frei.Instance.Vorpruefung);
+        Assert.False(Auslegungshilfe.Rechenknopf(frei).HasAttribute("disabled"));
+    }
+
+    /// <summary>Die Regel des KERNS — die Ansicht schreibt sie nicht ab.</summary>
+    private static IReadOnlyList<FlottenHinweis> Kurvenregel(SpeicherOptimierungEingaben e)
+    {
+        FlottenHinweis h = FlottenPlausibilitaet.Lebensdauerkurve(e?.Auslegung?.Flotte);
+        return h is null ? Array.Empty<FlottenHinweis>() : new[] { h };
+    }
+
+    /// <summary>Beide Stufen der Vorprüfung fahren dieselbe Regel des Kerns.</summary>
+    private static StromspeicherAuslegungDienste Kurvendienste(FlottenStudieKonfiguration flotte)
+        => new()
+        {
+            Vorgaben = () => Vorgaben(flotte),
+            Vorpruefen = Kurvenregel,
+            VorpruefenSchnell = Kurvenregel,
+            FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis
+            { Erfolg = true, Konfiguration = flotte })
+        };
+
     private static int Vorkommen(string text, string teil)
     {
         int zahl = 0, ab = 0;

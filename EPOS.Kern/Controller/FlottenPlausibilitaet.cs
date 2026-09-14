@@ -48,7 +48,31 @@ namespace WindowsFormsApplication1
         /// Ein planendes Betriebsziel soll auf dem Informationsstand „Archivierte
         /// Prognose-Snapshots" rechnen, ohne dass ein solcher Snapshot geladen ist.
         /// </summary>
-        PrognoseFehlt = 5
+        PrognoseFehlt = 5,
+
+        /// <summary>
+        /// Die Lebensdauerkurve einer Einheit trägt einen Punkt, mit dem die
+        /// Rainflow-Auswertung nicht rechnen kann.
+        /// </summary>
+        LebensdauerkurveUngueltig = 6
+    }
+
+    /// <summary>
+    /// Der Befund zu EINER Lebensdauerkurve: auf welchen Punkt er zeigt und wie er
+    /// lautet (Auftrag #257).
+    /// </summary>
+    /// <remarks>
+    /// Der Editor braucht beides: die Punktnummer, um die Zeile zu markieren, und den
+    /// Text, um ihn darunter zu setzen. Beides kommt aus DIESER Quelle — die
+    /// Oberfläche baut weder eine eigene Bedingung noch einen zweiten Wortlaut.
+    /// </remarks>
+    public sealed class FlottenKurvenbefund
+    {
+        /// <summary>Die Nummer des beanstandeten Punktes, 1-basiert wie im Editor.</summary>
+        public int Punktnummer { get; set; }
+
+        /// <summary>Der Befund im Klartext — derselbe Satz, den die Vorprüfung meldet.</summary>
+        public string Text { get; set; } = "";
     }
 
     /// <summary>Ein Vorprüfungshinweis zu einer Flottenstudie.</summary>
@@ -128,10 +152,13 @@ namespace WindowsFormsApplication1
             if (konfiguration?.Optionen == null) return hinweise;
             CultureInfo k = CultureInfo.CurrentCulture;
 
-            // DIE PROGNOSEPFLICHT STEHT VORN: Sie ist der einzige Befund der Stufe
-            // „Problem" — ohne Snapshot rechnet der Lauf nicht, alles Weitere wäre ein
-            // Hinweis zu einem Lauf, den es nicht gibt.
+            // DIE BLOCKIERENDEN BEFUNDE STEHEN VORN: Was den Lauf gar nicht erst
+            // zustande kommen lässt, gehört an den Anfang der Liste — alles Weitere
+            // wäre ein Hinweis zu einem Lauf, den es nicht gibt.
             if (Prognosepflicht(konfiguration, prognosen) is { } fehlt) hinweise.Add(fehlt);
+            // DIE LEBENSDAUERKURVE EBENSO: ein unvollständiger Punkt bricht den Lauf in
+            // der Engine ab, also steht der Befund vor allem Übrigen (Auftrag #257).
+            if (Lebensdauerkurve(konfiguration) is { } kurve) hinweise.Add(kurve);
 
             PruefePeakZiel(hinweise, istwerte, konfiguration, k);
             PruefeBetriebskosten(hinweise, konfiguration, kosten, k);
@@ -180,6 +207,77 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.FLOTTE_MSG_PROGNOSE_FEHLT, o.Betriebsziel)
             };
         }
+
+        /// <summary>
+        /// DIE LEBENSDAUERKURVE — die EINE Regel zu den Rainflow-Stützstellen (Auftrag #257).
+        /// </summary>
+        /// <remarks>
+        /// <para>Die Bedingung selbst steht in der ENGINE
+        /// (<see cref="FlottenRainflow.PruefeKurve"/>) — genau die, an der
+        /// <c>FlottenRainflow.Auswerten</c> abbricht. Hier wird sie gerufen, nicht
+        /// abgeschrieben; gemeldet wird die ERSTE Einheit mit einem Mangel, damit die
+        /// Hinweisliste nicht fünfmal dasselbe sagt.</para>
+        /// <para>Eine LEERE Kurve ist zulässig: Dann zählt die Auswertung Zyklen und
+        /// rechnet keinen Miner-Schaden. Beanstandet wird nur, was der Anwender angefangen
+        /// und nicht zu Ende gebracht hat — der frisch angelegte Punkt 0/0 zuerst.</para>
+        /// </remarks>
+        /// <param name="konfiguration">Die Flotte samt ihren Einheiten.</param>
+        /// <returns>Der blockierende Hinweis; <c>null</c>, wenn jede Kurve gilt.</returns>
+        public static FlottenHinweis Lebensdauerkurve(FlottenStudieKonfiguration konfiguration)
+        {
+            if (konfiguration?.Einheiten == null) return null;
+            foreach (FlottenEinheit einheit in konfiguration.Einheiten)
+            {
+                FlottenKurvenbefund befund = Kurvenbefund(einheit);
+                if (befund == null) continue;
+                return new FlottenHinweis
+                {
+                    Kennung = FlottenHinweisKennung.LebensdauerkurveUngueltig,
+                    Stufe = FlottenHinweisStufe.Problem,
+                    Text = befund.Text
+                };
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Der Befund zur Lebensdauerkurve EINER Einheit — Punktnummer und Wortlaut
+        /// (Auftrag #257).
+        /// </summary>
+        /// <remarks>
+        /// Der Einheiteneditor ruft diese Funktion, um die betroffene Zeile zu markieren
+        /// und den Satz darunter zu setzen. Er bekommt damit denselben Wortlaut, den die
+        /// Vorprüfung meldet — ein zweiter entsteht nicht.
+        /// </remarks>
+        /// <param name="einheit">Die Einheit; <c>null</c> oder ohne Kurve = kein Befund.</param>
+        /// <returns>Der Befund; <c>null</c>, wenn die Kurve gilt oder leer ist.</returns>
+        public static FlottenKurvenbefund Kurvenbefund(FlottenEinheit einheit)
+        {
+            if (einheit?.RainflowKurve == null || einheit.RainflowKurve.Count == 0) return null;
+            FlottenRainflowBefund mangel = FlottenRainflow.PruefeKurve(einheit.RainflowKurve);
+            if (mangel == null) return null;
+
+            int nummer = mangel.Index + 1;
+            string name = string.IsNullOrWhiteSpace(einheit.Name) ? einheit.Id : einheit.Name;
+            return new FlottenKurvenbefund
+            {
+                Punktnummer = nummer,
+                Text = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.FLOTTE_MSG_RAINFLOW_UNGUELTIG,
+                    name ?? "", nummer, Mangeltext(mangel.Mangel))
+            };
+        }
+
+        /// <summary>Der Grund eines Kurvenmangels im Klartext.</summary>
+        /// <param name="mangel">Der sprachneutrale Mangel aus der Engine.</param>
+        /// <returns>Der Teilsatz, den der Befundtext einsetzt.</returns>
+        private static string Mangeltext(FlottenRainflowMangel mangel) => mangel switch
+        {
+            FlottenRainflowMangel.NichtAusgefuellt => MyResource.Resource.FLOTTE_MSG_RAINFLOW_GRUND_LEER,
+            FlottenRainflowMangel.EntladetiefeAusserhalb => MyResource.Resource.FLOTTE_MSG_RAINFLOW_GRUND_TIEFE,
+            FlottenRainflowMangel.ZyklenNichtPositiv => MyResource.Resource.FLOTTE_MSG_RAINFLOW_GRUND_ZYKLEN,
+            _ => MyResource.Resource.FLOTTE_MSG_RAINFLOW_GRUND_DOPPELT
+        };
 
         /// <summary>Beide Prüfungen des Peak-Ziels gegen die Referenzzeitreihe.</summary>
         /// <param name="hinweise">Die Sammelliste.</param>
