@@ -4555,15 +4555,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Word-Dokument (*.docx)|*.docx ähnelt.
-        /// </summary>
-        public static string BK_BER_DLG_FILTER_WORD {
-            get {
-                return ResourceManager.GetString("BK_BER_DLG_FILTER_WORD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zielordner für den Bericht wählen ähnelt.
         /// </summary>
         public static string BK_BER_DLG_ZIELORDNER {
@@ -4692,15 +4683,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht wurde erstellt (alle Projekte neu simuliert). ähnelt.
-        /// </summary>
-        public static string BK_BER_MSG_VERGLEICH_FERTIG {
-            get {
-                return ResourceManager.GetString("BK_BER_MSG_VERGLEICH_FERTIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit: wird für diesen Bericht neu berechnet (Kapitalwertmethode, alle Szenarien) — verlängert den Lauf. ähnelt.
         /// </summary>
         public static string BK_BER_MSG_WIRTSCHAFT_HINWEIS {
@@ -4773,15 +4755,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Erstellen des Berichts. ähnelt.
-        /// </summary>
-        public static string BK_BER_STATUS_FEHLER {
-            get {
-                return ResourceManager.GetString("BK_BER_STATUS_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuge Word-Bericht… ähnelt.
         /// </summary>
         public static string BK_BER_STATUS_WORD {
@@ -4818,24 +4791,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Erstellen des Berichts ähnelt.
-        /// </summary>
-        public static string BK_BER_TITEL_FEHLER_VERGLEICH {
-            get {
-                return ResourceManager.GetString("BK_BER_TITEL_FEHLER_VERGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvergleich ähnelt.
-        /// </summary>
-        public static string BK_BER_TITEL_VERGLEICH {
-            get {
-                return ResourceManager.GetString("BK_BER_TITEL_VERGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante anlegen ähnelt.
         /// </summary>
         public static string BK_BTN_ANLEGEN {
@@ -4868,15 +4823,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_BTN_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("BK_BTN_UEBERNEHMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projektvergleich + Bericht (alt) ähnelt.
-        /// </summary>
-        public static string BK_BTN_VERGLEICH_ALT {
-            get {
-                return ResourceManager.GetString("BK_BTN_VERGLEICH_ALT", resourceCulture);
             }
         }
         

@@ -122,8 +122,6 @@
     }
 
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" disabled="@_laeuft"
-                @onclick="VergleichFragen">@VergleichAltText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
                 @onclick="ErstellenFragen">@ErstellenText</button>
         @if (_laeuft)
@@ -151,9 +149,6 @@
     /// die Hülle ruft ihn aus ihrem <c>Progress&lt;T&gt;</c>.
     /// </summary>
     [Parameter] public Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>? Erstellen { get; set; }
-
-    /// <summary>Der Bestandsweg „Projektvergleich + Bericht (alt)".</summary>
-    [Parameter] public Func<BerichtAuftrag, Task<LaufErgebnis>>? VergleichAlt { get; set; }
 
     /// <summary>Bricht einen laufenden Lauf ab (die Hülle kennt die Marke).</summary>
     [Parameter] public Action? Abbrechen { get; set; }
@@ -193,7 +188,6 @@
     [Parameter] public string BeideText { get; set; } = "Beide";
     [Parameter] public string DurchsuchenText { get; set; } = "Durchsuchen…";
     [Parameter] public string ErstellenText { get; set; } = "Erstellen";
-    [Parameter] public string VergleichAltText { get; set; } = "Projektvergleich + Bericht (alt)";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
@@ -215,9 +209,6 @@
     /// <summary>Titel der Startrückfrage (BK_BER_TITEL_ERSTELLEN).</summary>
     [Parameter] public string TitelErstellen { get; set; } = "Bericht erstellen";
 
-    /// <summary>Titel der Vergleichsrückfrage (BK_BER_TITEL_VERGLEICH).</summary>
-    [Parameter] public string TitelVergleich { get; set; } = "Projektvergleich";
-
     /// <summary>Meldung „abgebrochen" (BK_BER_STATUS_ABGEBROCHEN).</summary>
     [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
 
@@ -238,7 +229,7 @@
     private string _meldung = "";
     private string _fehler = "";
 
-    private enum Frageart { Keine, Erstellen, Oeffnen, Vergleich }
+    private enum Frageart { Keine, Erstellen, Oeffnen }
     private Frageart _frage = Frageart.Keine;
     private string _fragetext = "";
     private string _fragetitel = "";
@@ -401,14 +392,6 @@
         _fragetext = string.Format(FrageStart, Auftrag().AnzahlMitStamm);
     }
 
-    private void VergleichFragen()
-    {
-        if (_laeuft || VergleichAlt is null) return;
-        // Der Vorlaeufer fragte hier NICHT vor dem Lauf, sondern erst danach
-        // ("oeffnen?"). Der Weg beginnt deshalb sofort.
-        _ = VergleichLaufen();
-    }
-
     private async Task Beantwortet(bool? antwort)
     {
         Frageart war = _frage;
@@ -438,19 +421,6 @@
             LaufErgebnis erg = await Erstellen(Auftrag(), Melden);
             Auffrischen();          // Zeitstempel in der Liste auffrischen
             ErgebnisZeigen(erg);    // NACH dem Auffrischen, das die Statuszeile leert
-        }
-        finally { LaufBeenden(); }
-    }
-
-    private async Task VergleichLaufen()
-    {
-        if (VergleichAlt is null) return;
-
-        LaufBeginnen();
-        try
-        {
-            LaufErgebnis erg = await VergleichAlt(Auftrag());
-            ErgebnisZeigen(erg);
         }
         finally { LaufBeenden(); }
     }

@@ -1648,16 +1648,14 @@ optisch dasselbe Ergebnis hat.
 ## Nachtrag Berichtsseite — `BK_BER_*` (21.08.2026)
 
 Die Designer-Umstellung von `Views/Bericht/UcBericht.cs` holt zugleich dessen Lokalisierung nach:
-Die Seite war bis auf den Knopf „Projektvergleich + Bericht (alt)" (`BK_BTN_VERGLEICH_ALT`)
-**vollständig hart deutsch**. **37 Schlüssel** kommen neu hinzu, **sieben vorhandene werden
-mitbenutzt**, **kein vorhandener Wert ändert sich**. Alle drei Dateien (`Resource.resx`,
+Die Seite war **vollständig hart deutsch**. **32 Schlüssel** kommen neu hinzu,
+**sechs vorhandene werden mitbenutzt**, **kein vorhandener Wert ändert sich**. Alle drei Dateien (`Resource.resx`,
 `Resource.en-US.resx`, `Resource.Designer.cs`) führen jeden Schlüssel genau einmal; das Control hat
 weiterhin **keine eigene `.resx`** — die Texte setzt `TexteSetzen()` nach `InitializeComponent()`,
 im Designer stehen nur Platzhalter (Hausmuster `Form_SpotpreisImport`).
 
 **Präfix `BK_BER_` statt eines eigenen `BER_`.** `UcBericht` ist die Seite „Bericht" des Reiters
-„Berichte &amp; Kosten" und trug mit `BK_BTN_VERGLEICH_ALT` schon vor dieser Etappe einen `BK_*`-
-Schlüssel. Die `BK_*`-Gruppe führt bereits seitenweise Unterpräfixe — `BK_KOSTEN_*` für `UcBkKosten`,
+„Berichte &amp; Kosten". Die `BK_*`-Gruppe führt bereits seitenweise Unterpräfixe — `BK_KOSTEN_*` für `UcBkKosten`,
 `BK_UEB_*` für den Übernahme-Dialog, `BK_KOMP_*` für die Komponenten-Übernahme; die Nabe selbst
 benutzt die flachen `BK_NAV_*`, `BK_KOPF_*`, `BK_SP_*`, `BK_ART_*`, `BK_MSG_*`. `BK_BER_*` reiht sich
 genau dort ein. Ein eigenständiges `BER_*` hätte die vier Seiten desselben Reiters auf zwei
@@ -1669,11 +1667,10 @@ Katalogfamilien verteilt.
 | Variantenliste (5) | `BK_BER_LBL_VARIANTEN`, `BK_BER_SP_SIMULATION`, `BK_BER_BTN_ALLE`, `BK_BER_BTN_KEINE`, `BK_BER_MSG_STAMM_REFERENZ` | Überschrift, vierter Spaltenkopf, die beiden Auswahlknöpfe und der Hinweis, dass die Stammzeile angehakt bleibt. `BK_BER_SP_SIMULATION` ist **„Simulation"** und damit nicht dasselbe wie `BK_SP_SIMSTAND` („Simulationsstand") der Übersichtsseite. |
 | Bausteine (2) | `BK_BER_LBL_BAUSTEINE`, `BK_BER_LBL_RECHNEN` | Überschrift der Baustein-Checkliste und der graue Rechenhinweis darunter (Hinweis statt Option, Nutzeranforderung 15.08.2026). |
 | Ausgabe und Ziel (6) | `BK_BER_LBL_AUSGABE`, `BK_BER_RB_WORD`, `BK_BER_RB_EXCEL`, `BK_BER_RB_BEIDE`, `BK_BER_LBL_ZIEL`, `BK_BER_BTN_DURCHSUCHEN` | Die drei Auswahlknöpfe des Ausgabeformats sowie Zielordnerzeile und „Durchsuchen…". **Nur die Beschriftungen** — die Steuerwerte bleiben Persistenz (siehe unten). |
-| Schaltflächen (3) | `BK_BER_BTN_ERSTELLEN`, `BK_BER_BTN_SCHLIESSEN`, `BK_BER_BTN_ABBRECHEN` | „Erstellen" und der Doppelknopf rechts unten: `SetBusy` schaltet ihn während eines Laufs von „Schließen" auf „Abbrechen" um. |
-| Statuszeile (5) | `BK_BER_STATUS_ERSTELLT`, `BK_BER_STATUS_WORD`, `BK_BER_STATUS_EXCEL`, `BK_BER_STATUS_ABGEBROCHEN`, `BK_BER_STATUS_FEHLER` | Alles, was durch `Melde()` in `lblStatus` läuft. `BK_BER_STATUS_ERSTELLT` trägt `{0}` für den Dateipfad und wird von beiden Wegen (regulär und „Vergleich (alt)") benutzt. |
-| Meldungen und Fragen (10) | `BK_BER_MSG_WIRTSCHAFT_HINWEIS`, `BK_BER_MSG_HINWEISE`, `BK_BER_MSG_VERGLEICH_FERTIG`, `BK_BER_MSG_ERSTELLT_KOPF`, `BK_BER_MSG_LAUFFEHLER`, `BK_BER_FRAGE_START`, `BK_BER_FRAGE_OEFFNEN`, `BK_BER_FRAGE_OEFFNEN_WORD`, `BK_BER_FRAGE_OEFFNEN_BERICHT`, `BK_BER_DLG_ZIELORDNER` | Sämtliche `MessageBox`-Inhalte plus die Beschreibung des Ordnerdialogs. `BK_BER_FRAGE_START` trägt `{0}` für die Anzahl der Projekte, `BK_BER_MSG_LAUFFEHLER` `{0}` für die Ausnahmemeldung. `BK_BER_MSG_HINWEISE` („Hinweise:") steht in beiden Meldungen als eigener Baustein, weil der Aufzählungspunkt `• ` und die Umbrüche im Code bleiben. |
-| Dateidialog (1) | `BK_BER_DLG_FILTER_WORD` | Filterzeichenkette des `SaveFileDialog` im Bestandsweg; behält ihre Pipe-Syntax. |
-| Fenstertitel der Meldungen (4) | `BK_BER_TITEL_ERSTELLEN`, `BK_BER_TITEL_VERGLEICH`, `BK_BER_TITEL_FEHLER`, `BK_BER_TITEL_FEHLER_VERGLEICH` | Die vier Titelzeilen der `MessageBox`-Aufrufe. „Fehler" und „Fehler beim Erstellen des Berichts" sind zwei verschiedene Titel und bleiben deshalb zwei Schlüssel. |
+| Schaltflächen (3) | `BK_BER_BTN_ERSTELLEN`, `BK_BER_BTN_SCHLIESSEN`, `BK_BER_BTN_ABBRECHEN` | „Erstellen", der Abbruchknopf, der während eines Laufs neben ihm erscheint, und „Schließen". |
+| Statuszeile (4) | `BK_BER_STATUS_ERSTELLT`, `BK_BER_STATUS_WORD`, `BK_BER_STATUS_EXCEL`, `BK_BER_STATUS_ABGEBROCHEN` | Alles, was durch `Melde()` in die Statuszeile läuft. `BK_BER_STATUS_ERSTELLT` trägt `{0}` für den Dateipfad. |
+| Meldungen und Fragen (9) | `BK_BER_MSG_WIRTSCHAFT_HINWEIS`, `BK_BER_MSG_HINWEISE`, `BK_BER_MSG_ERSTELLT_KOPF`, `BK_BER_MSG_LAUFFEHLER`, `BK_BER_FRAGE_START`, `BK_BER_FRAGE_OEFFNEN`, `BK_BER_FRAGE_OEFFNEN_WORD`, `BK_BER_FRAGE_OEFFNEN_BERICHT`, `BK_BER_DLG_ZIELORDNER` | Sämtliche `MessageBox`-Inhalte plus die Beschreibung des Ordnerdialogs. `BK_BER_FRAGE_START` trägt `{0}` für die Anzahl der Projekte, `BK_BER_MSG_LAUFFEHLER` `{0}` für die Ausnahmemeldung. `BK_BER_MSG_HINWEISE` („Hinweise:") steht als eigener Baustein, weil der Aufzählungspunkt `• ` und die Umbrüche im Code bleiben. |
+| Fenstertitel (2) | `BK_BER_TITEL_ERSTELLEN`, `BK_BER_TITEL_FEHLER` | Die Titelzeile der beiden Rückfragen der Seite — Start des Laufs und „Datei öffnen?" — sowie der Titel „Fehler". |
 
 **Mitbenutzte Schlüssel** (der Katalog führt gleiche deutsche Texte innerhalb einer Gruppe unter
 einem Schlüssel — Etappe 1, Abschnitt 5.1). `UcBericht` zeigt dieselbe Variantenliste wie
@@ -1683,7 +1680,6 @@ einem Schlüssel — Etappe 1, Abschnitt 5.1). `UcBericht` zeigt dieselbe Varian
 |---|---|
 | `BK_SP_ART`, `BK_SP_BEZEICHNER`, `BK_SP_PROJEKTNAME` | die ersten drei Spaltenköpfe von `lvVarianten` |
 | `BK_ART_STAMM`, `BK_ART_VARIANTE`, `BK_ART_STAMMPROJEKT` | die Zellwerte der Spalten „Art" und „Bezeichner" in `LadeDaten` |
-| `BK_BTN_VERGLEICH_ALT` | unverändert; wandert nur aus `InitializeComponent` nach `TexteSetzen()` |
 
 **Zeilenumbrüche.** Der einzige mehrzeilige Wert (`BK_BER_FRAGE_START`) steht als **echter Umbruch
 im `<value>`**, nicht als `\n`-Escape; zur Laufzeit liefert die Ressource `CRLF` — exakt das, was

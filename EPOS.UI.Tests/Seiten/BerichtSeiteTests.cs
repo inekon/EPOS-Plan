@@ -14,7 +14,7 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Soll ist die Feldkarte: Variantenliste mit vier Spalten und
 /// „Alle"/„Keine", Bausteinliste, der Hinweis „Jeder Bericht rechnet neu",
 /// Ausgabeformat (drei Optionen), Zielordner mit „Durchsuchen…",
-/// „Erstellen", „Projektvergleich + Bericht (alt)", die Fortschrittsanzeige
+/// „Erstellen", die Fortschrittsanzeige
 /// und der Abbrechen-Knopf während eines Laufs.</para>
 /// </summary>
 public class BerichtSeiteTests : BunitContext
@@ -103,8 +103,8 @@ public class BerichtSeiteTests : BunitContext
         // Zielordner mit Waehler.
         Assert.Single(cut.FindAll(".epos-dateiwahl"));
 
-        // Alle / Keine / Vergleich (alt) / Erstellen.
-        Assert.Equal(4, cut.FindAll(".epos-leiste button").Count);
+        // Alle / Keine / Erstellen.
+        Assert.Equal(3, cut.FindAll(".epos-leiste button").Count);
     }
 
     [Fact]
@@ -242,7 +242,7 @@ public class BerichtSeiteTests : BunitContext
             .Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m)
                 => Task.FromResult(new LaufErgebnis { Erfolg = true })));
 
-        cut.FindAll(".epos-leiste button")[3].Click();   // „Erstellen"
+        cut.FindAll(".epos-leiste button")[2].Click();   // „Erstellen"
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Contains("3 Version(en)", cut.Find(".epos-rueckfrage-text").TextContent);
@@ -258,7 +258,7 @@ public class BerichtSeiteTests : BunitContext
             return Task.FromResult(new LaufErgebnis { Erfolg = true });
         }));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[1].Click();   // Nein
 
         Assert.Equal(0, laeufe);
@@ -276,7 +276,7 @@ public class BerichtSeiteTests : BunitContext
         }));
 
         cut.FindAll(".epos-optionsgruppe input[type=radio]")[2].Change(true);   // „Beide"
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();          // Ja
 
         Assert.NotNull(auftrag);
@@ -296,7 +296,7 @@ public class BerichtSeiteTests : BunitContext
             return Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "fertig" });
         }));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();
 
         // Nach dem Lauf steht die Schlussmeldung; der Balken ist weg.
@@ -310,7 +310,7 @@ public class BerichtSeiteTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m)
             => Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "fertig" })));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();
 
         Assert.Equal(2, _geladen);   // Aufbau + nach dem Lauf
@@ -332,7 +332,7 @@ public class BerichtSeiteTests : BunitContext
                     Datei = @"C:\Berichte\Bericht.docx"
                 })));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();   // Ja zum Start
 
         Assert.Contains("öffnen", cut.Find(".epos-rueckfrage-text").TextContent);
@@ -347,7 +347,7 @@ public class BerichtSeiteTests : BunitContext
         var cut = Zeige(p => p.Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m)
             => Task.FromResult(new LaufErgebnis { Fehler = "Word war nicht erreichbar." })));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();
 
         Assert.Contains("Word war nicht erreichbar", cut.Find(".epos-warnbanner").TextContent);
@@ -361,42 +361,10 @@ public class BerichtSeiteTests : BunitContext
             .Add(x => x.Erstellen, (BerichtAuftrag a, Action<Laufschritt> m)
                 => Task.FromResult(new LaufErgebnis { Abgebrochen = true })));
 
-        cut.FindAll(".epos-leiste button")[3].Click();
+        cut.FindAll(".epos-leiste button")[2].Click();
         cut.FindAll(".epos-rueckfrage .epos-leiste button")[0].Click();
 
         Assert.Equal("Vorgang abgebrochen.", cut.Instance.Status);
-    }
-
-    // =====================================================================
-    // Projektvergleich (alt)
-    // =====================================================================
-
-    [Fact]
-    public void Der_Bestandsweg_laeuft_ohne_Rueckfrage_und_meldet_sein_Ergebnis()
-    {
-        BerichtAuftrag? auftrag = null;
-        var cut = Zeige(p => p.Add(x => x.VergleichAlt, (BerichtAuftrag a) =>
-        {
-            auftrag = a;
-            return Task.FromResult(new LaufErgebnis { Erfolg = true, Statuszeile = "Vergleich fertig" });
-        }));
-
-        cut.FindAll(".epos-leiste button")[2].Click();   // „Projektvergleich + Bericht (alt)"
-
-        Assert.NotNull(auftrag);
-        Assert.Equal(new[] { 1031, 1032 }, auftrag!.VariantenIds);
-        Assert.Equal("Vergleich fertig", cut.Instance.Status);
-    }
-
-    [Fact]
-    public void Ohne_Delegat_tut_der_Bestandsweg_nichts()
-    {
-        var cut = Zeige();
-
-        cut.FindAll(".epos-leiste button")[2].Click();
-
-        Assert.False(cut.Instance.Beschaeftigt);
-        Assert.Equal("", cut.Instance.Status);
     }
 
     [Fact]

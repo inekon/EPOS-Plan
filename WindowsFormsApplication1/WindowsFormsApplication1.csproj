@@ -139,7 +139,6 @@
   <!-- NuGet-Pakete -->
   <ItemGroup>
     <!-- Chart-Ersatz: Port mit identischem Namespace System.Windows.Forms.DataVisualization.Charting -->
-    <PackageReference Include="DocumentFormat.OpenXml" />
     <PackageReference Include="WinForms.DataVisualization" />
 
     <!-- Berichtsmodul Phase 4: Excel-Ausgabe ohne Office (MIT-Lizenz).

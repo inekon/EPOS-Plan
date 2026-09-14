@@ -5954,9 +5954,6 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="KOSTEN_LBL_PROJEKT_GESAMT" xml:space="preserve">
     <value>PROJECT TOTAL ({0}): {1} €</value>
   </data>
-  <data name="BK_BTN_VERGLEICH_ALT" xml:space="preserve">
-    <value>Project comparison + report (legacy)</value>
-  </data>
   <data name="BK_BER_TITEL" xml:space="preserve">
     <value>Create report — project: {0}</value>
   </data>
@@ -6014,9 +6011,6 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_DLG_ZIELORDNER" xml:space="preserve">
     <value>Select the target folder for the report</value>
   </data>
-  <data name="BK_BER_DLG_FILTER_WORD" xml:space="preserve">
-    <value>Word document (*.docx)|*.docx</value>
-  </data>
   <data name="BK_BER_STATUS_ERSTELLT" xml:space="preserve">
     <value>Report created: {0}</value>
   </data>
@@ -6029,14 +6023,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_BER_STATUS_ABGEBROCHEN" xml:space="preserve">
     <value>Operation cancelled.</value>
   </data>
-  <data name="BK_BER_STATUS_FEHLER" xml:space="preserve">
-    <value>Error while creating the report.</value>
-  </data>
   <data name="BK_BER_MSG_HINWEISE" xml:space="preserve">
     <value>Notes:</value>
-  </data>
-  <data name="BK_BER_MSG_VERGLEICH_FERTIG" xml:space="preserve">
-    <value>The report has been created (all projects were simulated again).</value>
   </data>
   <data name="BK_BER_FRAGE_OEFFNEN" xml:space="preserve">
     <value>Open it now?</value>
@@ -6058,14 +6046,8 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_BER_TITEL_ERSTELLEN" xml:space="preserve">
     <value>Create report</value>
   </data>
-  <data name="BK_BER_TITEL_VERGLEICH" xml:space="preserve">
-    <value>Project comparison</value>
-  </data>
   <data name="BK_BER_TITEL_FEHLER" xml:space="preserve">
     <value>Error</value>
-  </data>
-  <data name="BK_BER_TITEL_FEHLER_VERGLEICH" xml:space="preserve">
-    <value>Error while creating the report</value>
   </data>
   <data name="BK_BER_MSG_LAUFFEHLER" xml:space="preserve">
     <value>Error during report creation: {0}</value>

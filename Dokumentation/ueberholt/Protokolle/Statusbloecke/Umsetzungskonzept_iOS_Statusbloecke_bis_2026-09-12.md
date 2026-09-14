@@ -5334,7 +5334,47 @@ steht aus und ist die eigentliche Aufgabe von
 > **Offen:** Windows-Abnahme am Projekt 1050; nur die erste beanstandete Einheit erzeugt einen Listenhinweis (Editor markiert
 > jede Zeile; Sammelliste wäre ein Folgeentscheid); Sammel-Upload frühestens 20.09.2026.
 
-## #258 — Energieträger-Trägerkarte: Einheiten, Preishistorie, Katalogwerte (14.09.2026, Nachtrag aus dem Merge)
+## #258 — Der alte Berichtsweg „Projektvergleich + Bericht (alt)" ist gefallen (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderauftrag 14.09.2026:** „EPOS-Plan Bericht alt entfernen" — und im Nachgang „alles Zugehörige entfernen, lokal".
+>
+> **Ausgangslage (belegt):** Die Berichtsseite trug neben „Erstellen" einen zweiten Knopf „Projektvergleich + Bericht (alt)"
+> (`BK_BTN_VERGLEICH_ALT`). Er führte über den Rückruf `VergleichAlt` in `BerichtSeiteGaben.cs` auf
+> `Views/Varianten/ProjektvergleichBericht.cs` — den Vorgängerbericht (OpenXML, eigene Vergleichslogik, eigene
+> Kuchendiagramme), der die ganze Projektgruppe synchron und ohne Abbruch neu simulierte und dabei schrieb. Fachlich ist er
+> seit dem Berichtsmodul (`BerichtCtrl`, `BerichtsDatenSammler`, `WordBerichtGenerator`, Bausteine im Kern) abgelöst; der
+> Prüfbericht des Berichtsmoduls führte ihn als offenen Restpunkt (Δ auf Rohwerten nur im neuen Weg behoben).
+>
+> **Umsetzung (Agent Opus im Klon des Arbeitszweigs, Commits `36343c6` Code und Ressourcen, `e55b4e3` KI-Konzept,
+> `e7c3539` verwaiste Reste):** `EPOS.UI/Seiten/Berichte/BerichtSeite.razor` ohne den Knopf, ohne die Parameter
+> `VergleichAlt`/`VergleichAltText`/`TitelVergleich` und ohne die Methoden `VergleichFragen`/`VergleichLaufen`; `Frageart`
+> führt nur noch `Keine, Erstellen, Oeffnen`. `WindowsFormsApplication1/Views/Bericht/BerichtSeiteGaben.cs` ohne die drei
+> Wörterbuchschlüssel und ohne die Methode `VergleichAlt` — Parametersatz und `[Parameter]` bleiben deckungsgleich
+> (`ParametersatzTests`). `Views/Varianten/ProjektvergleichBericht.cs` (822 Zeilen) gelöscht; `EnergieMengen.cs` bleibt, weil
+> `BerichtsDatenSammler` die Brennstoffmengen daraus zieht. Sechs Ressourcenschlüssel des alten Wegs fielen aus beiden
+> `.resx` (`BK_BTN_VERGLEICH_ALT`, `BK_BER_TITEL_VERGLEICH`, `BK_BER_TITEL_FEHLER_VERGLEICH`, `BK_BER_MSG_VERGLEICH_FERTIG`,
+> `BK_BER_STATUS_FEHLER`, `BK_BER_DLG_FILTER_WORD`), `Resource.Designer.cs` über `designer_neu.py schreiben` neu erzeugt
+> (6 214 → 6 208 Einträge, zweiter Lauf +0). **Die Grenze zieht der Knopf:** `BK_BER_BTN_SCHLIESSEN` und
+> `BK_BER_TITEL_FEHLER` sind ebenfalls ohne Verwender, gehören aber zur Berichtsseite selbst und bleiben deshalb stehen
+> (Anwenderentscheid 14.09.2026: nur entfernen, was am alten Weg hängt). Belegverfahren der Waisen: jeder
+> `BK_BER_*`/`BK_BTN_*`-Name gegen den Volltext aller kompilierten `.cs`/`.razor` gehalten, den string-basierten Zugriff
+> `ResourceManager.GetString` eingeschlossen; `Werkzeuge/Formularkarte.Tests/Pruefmuster/**` zählt nicht als Verwendung.
+> Die Paketreferenz `DocumentFormat.OpenXml` ist aus `WindowsFormsApplication1.csproj` gefallen — keine `.cs` der Schale
+> nutzt OpenXML mehr; der Kern behält das Paket, `Directory.Packages.props` ist unberührt. Doku: Lokalisierungskatalog
+> nachgezogen (Gruppenzahlen 37 → 30), `CLAUDE.md` der Schale ohne den OpenXML-Spiegelstrich, KI-Konzept ohne die Aktion
+> `variantenbericht_erstellen` (im Code nie gebaut) und mit Beleg auf `BerichtsDatenSammler.cs:345`.
+> **Abnahme:** `WP-Plan.Kern.slnf -c Release` grün, 0 Fehler, 4 vorbestehende Warnungen; KiKern 488, SpeicherEngine 456,
+> SpeicherPlanung 27 (+1 übersprungen), bunit 4 015 → 4 013 (die zwei Fälle des alten Wegs); gezielte Wachen grün
+> (`BerichtSeiteTests`, `ParametersatzTests`, `DokumentationLinkWacheTests`, Lokalisierung). `EPOS.Kern.Tests` ist in der
+> Cloud-Sitzung kein Gate: `Referenzlaeufe/Kenndaten_Test.sqlite` liegt dort nur als 133-Byte-LFS-Zeiger, `git lfs pull`
+> scheitert am Proxy — daher auch kein SQL-Dialekt-Lauf und kein Referenzlauf. Der Rechenweg ist unberührt.
+> **Offen:** Windows-Build der Schale und Gate am Gerät; `ProjektvergleichBericht.cs` ist im Arbeitsbaum des Anwenders von
+> Hand zu löschen (die Cloud-Sitzung kann dort schreiben, aber nicht löschen); der Katalogabschnitt führt die
+> Schlüsselfamilie weiter unter der Vorgängermaske `Views/Bericht/UcBericht.cs`, die es nicht mehr gibt — eigener Entscheid;
+> `BK_BTN_SIMULIEREN` ist ebenfalls eine Waise, gehört aber zu einer anderen Maske; Logbuch-Eintrag zum entfallenen Knopf
+> mit Versionsnummer beim Anwender zu erfragen.
+
+## #259 — Energieträger-Trägerkarte: Einheiten, Preishistorie, Katalogwerte (14.09.2026, Nachtrag aus dem Merge)
 
 > **Anwenderbefund 14.09.2026 (drei Bildschirmfotos, Energieträger-Dialog):** Heizwert und Brennwert tragen die Einheit
 > „kWh/kWh" („sind mit Einheit kWh/Nm³"); im Block „Preishistorie" „funktioniert Speichern nicht", „die Eingaben werden nicht
@@ -5349,9 +5389,10 @@ steht aus und ist die eigentliche Aufgabe von
 > befüllt (der Kern-Leser hatte außer dem Speicheroptimierer keinen Aufrufer; der WinForms-Vorläufer rief `LoadHistory` beim
 > Trägerwechsel und nach dem Speichern). Im Projektkontext fehlte jeder Weg zu den Katalogwerten.
 >
-> **Anwenderentscheid 14.09.2026:** „Empfehlung: Katalogübernahme eine einmalige Kopie", „Empfehlung #258: umsetzen".
+> **Anwenderentscheid 14.09.2026:** „Empfehlung: Katalogübernahme eine einmalige Kopie", „Empfehlung #259: umsetzen".
 >
-> **Umsetzung (Agent Opus, Worktree, sieben Commits `15259039` … `2f1256a4`; Merge `c0ae674d`):** Heizwert und Brennwert sind
+> **Umsetzung (Agent Opus, Worktree, sieben Commits `15259039` … `2f1256a4`; Merge `c0ae674d`, dessen Betreff die Nummer #258 aus der Zählung vor der
+> Windows-Synchronisation vom selben Tag trägt):** Heizwert und Brennwert sind
 > Stoffwerte je Abrechnungseinheit (`kWh/Nm³`, `kWh/L`, `kWh/kg`); nur der Arbeitspreis folgt der Preisbasis, der Leistungspreis
 > wird nicht mehr umgerechnet. Die Rechnung liegt als `EPOS.Kern/Controller/EnergietraegerPreiskarte.cs` ohne Datenbank im
 > Kern; Formelzeile und Effektivprüfung laufen über die Basiswerte und nennen die Einheiten; nach jeder Feldänderung wird
@@ -5372,15 +5413,15 @@ steht aus und ist die eigentliche Aufgabe von
 > (`VorpruefungEntprelltTests`, `SchrittfeldUndFortschrittTests`), einzeln und im Wiederholungslauf grün.
 > **Gates:** sept69 auf `c0ae674d` rot durch einen zeitabhängigen Ausreißer (`SchrittfeldUndFortschrittTests`), sept70 rot
 > durch den zweiten (`VorpruefungEntprelltTests`, en-US-Lauf) — beide Male alle übrigen Stufen grün, Referenzlauf 5/5
-> byte-gleich; nach #259 **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> byte-gleich; nach #260 **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
 > **Offen:** Windows-Abnahme der Nähte und fachlich an Erdgas E im Projekt; Preishistorie im Katalogkontext braucht einen
 > Schemaentscheid (Fremdschlüssel lösen oder NULL zulassen, nummerierter Migrationsschritt); `KernwerteSpiegeln()` liest die
 > Emissionswerte vor `EmissionenSpeichern()` — für Handeingaben der drei Kernarten ein Folgeauftrag; Sammel-Upload frühestens
 > 20.09.2026.
 
-## #259 — Strom-Prüfstände warten auf den gezeichneten Zustand (14.09.2026, Nachtrag aus dem Merge)
+## #260 — Strom-Prüfstände warten auf den gezeichneten Zustand (14.09.2026, Nachtrag aus dem Merge)
 
-> **Anlass:** Die Gates sept69 und sept70 zum Merge `c0ae674d` (#258) waren rot durch je einen Fall in
+> **Anlass:** Die Gates sept69 und sept70 zum Merge `c0ae674d` (#259) waren rot durch je einen Fall in
 > `EPOS.UI.Tests/Seiten/Strom`: `SchrittfeldUndFortschrittTests.Die_Eingabefolge_im_Schrittfeld_kommt_vollstaendig_im_Modell_an`
 > (de-Lauf) und `VorpruefungEntprelltTests.Drei_schnelle_Tastendruecke_ergeben_genau_eine_volle_Pruefung` (en-US-Lauf) — je 1 von
 > 4 021, acht Einzelläufe der ersten Klasse einmal rot, Projektwiederholung 4 021/4 021; beide Gates liefen parallel zu einem
@@ -5395,7 +5436,7 @@ steht aus und ist die eigentliche Aufgabe von
 > gleich (Sperren in `Zahlenfeld.OnParametersSet`). Unter künstlicher Rechenlast (12 Fäden): mit Zeitgeber 7 Ausreißer in
 > 6 Ansichten, ohne Zeitgeber 0 in 420 Eingaben. Kein Bedienfehler, die Komponente bleibt unverändert.
 >
-> **Umsetzung (Agent Opus, Worktree, Commit `134ae715`; Merge `ffc8be4f`):** nur Prüfstände — `Auslegungshilfe.Schritt`
+> **Umsetzung (Agent Opus, Worktree, Commit `134ae715`; Merge `ffc8be4f`, Betreff mit #259 aus derselben alten Zählung):** nur Prüfstände — `Auslegungshilfe.Schritt`
 > wartet auf das gezeichnete Blatt; beide Klassen tippen über eine `Tippen`-Hilfe, die auf `Fassung` und Feldtext wartet;
 > `SchrittfeldUndFortschrittTests` und `OptimierungStationTests` setzen `EntprellungMs = 0`; die überholten Entprellungen in
 > `Drei_schnelle_Tastendruecke…` tragen eine im Lauf nicht ablaufende Zeit, nur die dritte eine kurze; der `Dispose`-Fall
