@@ -790,6 +790,9 @@
             return;
         }
         Melden("");
+        // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
+        // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
+        Nachziehen();
         _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
     }
 
