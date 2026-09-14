@@ -1,6 +1,7 @@
 # Konzept: Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle
 
-Stand 14.09.2026 — Konzept mit Fragen; Umsetzung nach Anwenderentscheid.
+Stand 14.09.2026 — Konzept; Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. Umsetzung in zwei
+Aufträgen (Abschnitt 6).
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
@@ -199,6 +200,10 @@ S1 und S2 lassen sich als ein Auftrag fahren; S3 nur nach Entscheid.
 
 ## 4. Fragen mit Empfehlung
 
+**Entscheid 14.09.2026:** alle acht Fragen nach Empfehlung. Zu ND-Q8 gilt: Die Werte der Tabelle 2.6 werden als
+Saat mit Quellenangabe „Richtwert" ausgeliefert, sind im Dialog editierbar und lassen sich mit „Auslieferungswerte
+wiederherstellen" zurücksetzen; der Abgleich mit dem Wortlaut der Norm bleibt Sache des Anwenders.
+
 | Frage | Optionen | Empfehlung |
 |---|---|---|
 | **ND-Q1** Quelle der Vorbelegung | (a) VDI 2067 Blatt 1, (b) steuerliche AfA, (c) beide Spalten, gerechnet wird mit (a) | (c): VDI 2067 rechnet, die AfA-Spalte informiert |
@@ -214,3 +219,12 @@ S1 und S2 lassen sich als ein Auftrag fahren; S3 nur nach Entscheid.
 
 Zinssatz, Preissteigerung und Betrachtungszeitraum bleiben Projektgrößen im Dialog
 Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 bleiben bis S3 Konstanten.
+
+## 6. Umsetzung
+
+| Auftrag | Inhalt | Voraussetzung |
+|---|---|---|
+| A (Stufe S1) | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
+| B (Stufe S2) | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen", Positionsart im Zeileneditor, Herleitungszeile; dafür die Hülle der Kostenverwaltung plattformfrei nach `EPOS.UI.Daten` (Windows-Adapter bleibt dünn); Wiki „Programm Dokumentation/Kosten", Logbuch | nach A |
+| S3 | Instandsetzung/Wartung, Gerätekataloge | eigener Entscheid |
+
