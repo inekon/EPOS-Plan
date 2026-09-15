@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     /// <summary>
     /// EIN Strang einer PV-Anlage — eine Zeile aus <c>Z_AnlageStrang</c> (Stufe S2,

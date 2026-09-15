@@ -1,4 +1,4 @@
-using WindowsFormsApplication1;
+﻿using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Bausteine;

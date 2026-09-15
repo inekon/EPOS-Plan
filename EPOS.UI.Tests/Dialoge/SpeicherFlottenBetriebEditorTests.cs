@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using SpeicherEngine;

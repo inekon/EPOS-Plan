@@ -1,4 +1,4 @@
-// Der AUFRUFKONTEXT des Hilfe-Assistenten: Wer ruft ihn, aus welchem Dialog, wegen
+﻿// Der AUFRUFKONTEXT des Hilfe-Assistenten: Wer ruft ihn, aus welchem Dialog, wegen
 // welcher Meldung? (Auftrag #199, Stufe S1 des Konzepts "Der Hilfe-Assistent im
 // Dialog", 3.1 und 3.2)
 //

@@ -1,4 +1,4 @@
-namespace EPOS.UI.Bausteine;
+﻿namespace EPOS.UI.Bausteine;
 
 /// <summary>
 /// Der Ausschnitt, den der Anwender in einem Diagramm aufgezogen hat — als

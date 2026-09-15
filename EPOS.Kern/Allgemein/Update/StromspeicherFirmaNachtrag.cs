@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // Der HERSTELLER des Stromspeicherkatalogs (Anwenderentscheid W14a-E-10-Q7 vom

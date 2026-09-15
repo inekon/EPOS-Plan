@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// Ein Gebäudetyp samt seinen Tagesverteilungen (iU9-W8.4) — das plattformfreie Abbild

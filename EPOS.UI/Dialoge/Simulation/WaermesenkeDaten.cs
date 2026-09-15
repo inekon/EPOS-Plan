@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Simulation;
+﻿namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// EINE Zeile der Senkenliste — die Blazor-Fassung von <c>Z_AnlageSenkeModel</c>

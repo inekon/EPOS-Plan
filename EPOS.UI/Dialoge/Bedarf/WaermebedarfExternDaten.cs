@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// EINE Zuordnung „externe Wärmebedarfsganglinie ↔ Projekt" (iU9-W9.4) — das

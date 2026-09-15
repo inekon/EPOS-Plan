@@ -1,4 +1,4 @@
-// Der Wirt der Rasterprobe (#235) — Blazor Server, eine Seite, kein Zustand.
+﻿// Der Wirt der Rasterprobe (#235) — Blazor Server, eine Seite, kein Zustand.
 //
 // Blazor SERVER und nicht WebAssembly: Der Rechenweg der Komponenten soll
 // derselbe .NET-Code sein, den auch die Anwendung faehrt, und der Browser soll

@@ -188,10 +188,13 @@ $script:Fehler = New-Object System.Collections.Generic.List[string]
 function Melde-Fehler { param([string] $Text) $script:Fehler.Add($Text) | Out-Null }
 
 function Schreibe-Datei {
-    param([string] $Pfad, [string] $Inhalt)
-    # LF-Zeilenenden wie im uebrigen Repo; UTF-8 OHNE BOM.
+    param([string] $Pfad, [string] $Inhalt, [switch] $MitBom)
+    # LF-Zeilenenden wie im uebrigen Repo. UTF-8 OHNE BOM fuer .sql und .json;
+    # MIT BOM fuer C#-Quelltext - die .editorconfig verlangt fuer *.cs utf-8-bom,
+    # und eine erzeugte Datei, deren Erzeuger ohne BOM schreibt, verliert das BOM
+    # beim naechsten Lauf wieder (Auftrag #290).
     $norm = $Inhalt -replace "`r`n", "`n" -replace "`r", "`n"
-    [System.IO.File]::WriteAllText($Pfad, $norm, (New-Object System.Text.UTF8Encoding($false)))
+    [System.IO.File]::WriteAllText($Pfad, $norm, (New-Object System.Text.UTF8Encoding($MitBom.IsPresent)))
     return (Get-Item -LiteralPath $Pfad)
 }
 
@@ -921,7 +924,7 @@ $geschrieben = @()
 $geschrieben += Schreibe-Datei (Join-Path $ziel '001_grundschema.sql')   (((Als-Array $zeilen001) -join "`n"))
 $geschrieben += Schreibe-Datei (Join-Path $ziel '002_views.sql')         (((Als-Array $zeilen002) -join "`n"))
 $geschrieben += Schreibe-Datei (Join-Path $ziel '003_indizes_fk.sql')    (((Als-Array $zeilen003) -join "`n"))
-$geschrieben += Schreibe-Datei (Join-Path $ziel 'SchemaTypKatalog.g.cs') ($csharp + "`n")
+$geschrieben += Schreibe-Datei (Join-Path $ziel 'SchemaTypKatalog.g.cs') ($csharp + "`n") -MitBom
 $geschrieben += Schreibe-Json  (Join-Path $ziel 'typkatalog.json')       $typkatalogJson
 $geschrieben += Schreibe-Json  (Join-Path $ziel 'inventar.json')         $inventar
 

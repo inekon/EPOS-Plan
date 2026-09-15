@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Ein Berichtskapitel (Konzept Kap. 8.3). Bausteine schreiben ihren Inhalt über

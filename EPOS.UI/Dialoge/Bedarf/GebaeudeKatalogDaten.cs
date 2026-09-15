@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// Der Feldsatz EINES Gebäude-Katalogsatzes (iU9-W9.1) — das plattformfreie Abbild von

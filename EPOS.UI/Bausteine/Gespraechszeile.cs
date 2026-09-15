@@ -1,4 +1,4 @@
-namespace EPOS.UI.Bausteine;
+﻿namespace EPOS.UI.Bausteine;
 
 /// <summary>
 /// Eine Zeile des <c>Gespraechsverlauf</c>s.

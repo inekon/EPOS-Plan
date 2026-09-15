@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Waermepumpe;
+﻿namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
 /// Eine Stützstelle der Wärmepumpen-Kennlinie im EDITOR (iU9-W7.2) — eine Zeile aus

@@ -1,4 +1,4 @@
-// Die MASKENBRUECKE: der Weg vom offenen Razor-Dialog zum Hilfe-Assistenten
+﻿// Die MASKENBRUECKE: der Weg vom offenen Razor-Dialog zum Hilfe-Assistenten
 // (Auftrag #200, Stufe S2 des Konzepts "Der Hilfe-Assistent im Dialog", 3.3 / Weg 4).
 //
 // WOZU SIE DA IST. Der Dialogkatalog (KiKern.KiDialogKatalog) sagt, WELCHE Felder eine

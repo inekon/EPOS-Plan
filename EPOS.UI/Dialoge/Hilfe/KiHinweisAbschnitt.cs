@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Hilfe;
+﻿namespace EPOS.UI.Dialoge.Hilfe;
 
 /// <summary>
 /// Ein Abschnitt des Rechtshinweises: eine Ueberschrift und ein Absatz.

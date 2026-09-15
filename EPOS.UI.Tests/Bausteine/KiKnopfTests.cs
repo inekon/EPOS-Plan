@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components;

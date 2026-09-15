@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// Das Ergebnis von <c>GebaeudeWohnflaecheDialog</c> (iU9-W9.3) — die vier Werte, die
