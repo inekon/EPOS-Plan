@@ -682,6 +682,52 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.NotNull(ergebnis);          // der Dialog steht noch
     }
 
+    /// <summary>
+    /// Das ✕ der Karte wirkt wie Abbrechen (Hausmuster): Es schliesst die
+    /// Ueberlagerung, OHNE eine Zone zu uebernehmen - die gewaehlte Zone bleibt, was
+    /// sie war, und der Dialog darunter steht weiter.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_der_Karte_verwirft_die_Zone()
+    {
+        QuelleErdreichDaten? ergebnis = null;
+        var cut = Zeige(Kollektor(), d => ergebnis = d);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("…")).Click();
+        cut.FindAll("path.epos-bildkarte-flaeche")[7].Click();      // Zone 8 nur MARKIERT
+
+        cut.Find("button.epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.KarteOffen);
+        Assert.Equal(6, cut.Instance.Klimazone);                    // unveraendert
+        Assert.Null(ergebnis);                                      // der Dialog steht noch
+    }
+
+    /// <summary>
+    /// Waehrend des Simulationslaufs uebernimmt nichts (Abweichung A-5): Der
+    /// OK-Knopf ist gesperrt, und Esc drueckt den Wartezustand nicht weg.
+    /// </summary>
+    [Fact]
+    public void Der_Wartezustand_sperrt_das_Uebernehmen()
+    {
+        var haenger = new TaskCompletionSource<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>();
+        QuelleErdreichDaten? ergebnis = null;
+
+        var cut = Zeige(Kollektor(), d => ergebnis = d, simulieren: _ => haenger.Task);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+        cut.WaitForState(() => cut.Instance.Laeuft);
+
+        Assert.True(cut.Find("button.epos-knopf--primaer").HasAttribute("disabled"));
+
+        cut.Find("div.epos-dialog").KeyDown("Escape");
+        Assert.Null(ergebnis);
+        Assert.True(cut.Instance.Laeuft);
+
+        haenger.SetResult((MitLauf(), null));               // den Lauf sauber beenden
+        cut.WaitForState(() => !cut.Instance.Laeuft);
+    }
+
     // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================

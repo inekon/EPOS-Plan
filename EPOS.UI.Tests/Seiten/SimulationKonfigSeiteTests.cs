@@ -1085,4 +1085,247 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(cut.FindAll("p.epos-simkonfig-flottenstand"));
         Assert.Single(cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf"));
     }
+    // ==================================================================
+    //  Hausmuster der Dialoge: OK speichert, Abbrechen und ✕ verwerfen
+    // ==================================================================
+
+    /// <summary>
+    /// Jeder Schreibweg der eingebetteten Dialoge vermerkt sich hier. Ein Ausgang,
+    /// der VERWERFEN soll, lässt die Liste leer.
+    /// </summary>
+    private readonly List<string> _dialogSchreiben = new();
+
+    /// <summary>
+    /// Eine Seite mit EINER Wärmepumpe, deren Chips in den Betriebsmodus, die
+    /// Wärmesenke und die Quellenwahl führen, und mit Schreibwegen, die jeden
+    /// Schreibversuch vermerken. Der gespeicherte Quelltyp ist „Außenluft"; welcher
+    /// Quelldialog aufgeht, entscheidet der Knopf in der Quellenwahl.
+    /// </summary>
+    private IRenderedComponent<SimulationKonfigSeite> SeiteMitDialogen()
+        => Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, new SimulationKonfigDienste
+            {
+                Laden = _ => new SimulationKonfigDaten
+                {
+                    IdProjekt = 1030,
+                    Gruppen = new List<KachelGruppe>
+                    {
+                        new KachelGruppe
+                        {
+                            Titel = "Wärmeerzeuger",
+                            Zeilen = new List<ErzeugerZeile>
+                            {
+                                Waerme("Wärmepumpe", "1", "WP 1", 10353, true, true,
+                                       new ChipDaten("Modus: Laufzeit", ChipStil.Neutral,
+                                                     "", ChipZiel.Modus),
+                                       new ChipDaten("Senke: Puffer A", ChipStil.Senke,
+                                                     "", ChipZiel.Senke),
+                                       new ChipDaten("Quelle: Außenluft", ChipStil.Quelle,
+                                                     "", ChipZiel.Quelle))
+                            }
+                        }
+                    },
+                    Speicher = new List<SpeicherKachelDaten>
+                    {
+                        new SpeicherKachelDaten
+                        {
+                            IdPuffer = 1008007, Bezeichner = "Puffer A", Verwendung = "Heizung"
+                        }
+                    }
+                },
+                BetriebsmodusGaben = _ => new Dictionary<string, object>
+                {
+                    ["Bezeichner"] = "WP 1", ["AktuellerModus"] = ""
+                },
+                BetriebsmodusSchreiben = (a, m) => _dialogSchreiben.Add("modus:" + a + ":" + m),
+                WaermesenkeGaben = _ => new Dictionary<string, object>
+                {
+                    ["Daten"] = new EPOS.UI.Dialoge.Simulation.WaermesenkeDaten()
+                },
+                WaermesenkeFertig = (a, e) =>
+                {
+                    // null = abgebrochen; dann hat der Dialog nichts geschrieben.
+                    if (e is not null) _dialogSchreiben.Add("senke:" + a);
+                    return Rueckmeldung.Still;
+                },
+                PufferVerwaltungGaben = _ => new Dictionary<string, object>
+                {
+                    ["IdProjekt"] = 1030
+                },
+                Quellentypen = _ => new List<Quellentyp>
+                {
+                    new Quellentyp("Außenluft", "Außenluft"),
+                    new Quellentyp("Pufferspeicher", "Pufferspeicher"),
+                    new Quellentyp("Profil", "Profil"),
+                    new Quellentyp("Erdreich", "Erdreich")
+                },
+                QuelleTyp = _ => "Außenluft",
+                QuellePufferGaben = _ => new Dictionary<string, object>(),
+                QuellePufferSchreiben = (a, d) =>
+                {
+                    _dialogSchreiben.Add("quellpuffer:" + a);
+                    return Rueckmeldung.Still;
+                },
+                QuellprofilGaben = _ => new Dictionary<string, object>(),
+                QuellprofilSchreiben = (a, id) => _dialogSchreiben.Add("quellprofil:" + a),
+                QuelleErdreichGaben = _ => new Dictionary<string, object>
+                {
+                    ["Daten"] = new EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten
+                    {
+                        WPName = "WP 1",
+                        IdProjekt = 1030,
+                        IdAnlage = 10353,
+                        Tiefe = 1.8,
+                        Flaeche = 250,
+                        Klimazone = 6,
+                        Spreizung = 4
+                    }
+                },
+                QuelleErdreichSchreiben = (a, d) => _dialogSchreiben.Add("erdreich:" + a)
+            })
+            .Add(x => x.StartProjekt, 1030));
+
+    /// <summary>Öffnet den Chip, dessen Text den Anfang trägt (Modus, Senke, Quelle).</summary>
+    private static void ChipOeffnen(IRenderedComponent<SimulationKonfigSeite> cut, string anfang)
+        => cut.FindAll("button.epos-chip--ziel")
+              .First(b => b.TextContent.StartsWith(anfang, StringComparison.Ordinal))
+              .DoubleClick();
+
+    /// <summary>Wählt in der Quellenwahl den Zweig mit diesem Text.</summary>
+    private static void QuellzweigWaehlen(IRenderedComponent<SimulationKonfigSeite> cut, string text)
+        => cut.FindAll("div.epos-simkonfig-quellenwahl button")
+              .First(b => b.TextContent.Contains(text, StringComparison.Ordinal))
+              .Click();
+
+    /// <summary>Das ✕ der Überlagerung — der Ausgang, der wie Abbrechen wirken muss.</summary>
+    private static void Kreuz(IRenderedComponent<SimulationKonfigSeite> cut)
+        => cut.Find("button.epos-ueberlagerung-zu").Click();
+
+    /// <summary>
+    /// <b>Anwenderentscheid 15.09.2026:</b> „Der OK Button soll in jedem Dialog
+    /// vorhanden sein und diesen mit Speichern verlassen, Abbrechen Button ohne
+    /// Speichern den Dialog verlassen." Das ✕ der Überlagerung gehört zum Abbrechen:
+    /// Es schließt, und geschrieben wird dabei nichts.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_ueber_dem_Betriebsmodus_verwirft()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Modus");
+        Assert.Equal("Betriebsmodus", cut.Instance.OffenerEditor);
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerEditor);
+        Assert.Empty(_dialogSchreiben);
+    }
+
+    [Fact]
+    public void Das_Kreuz_ueber_der_Waermesenke_verwirft()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Senke");
+        Assert.Equal("Waermesenke", cut.Instance.OffenerEditor);
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerEditor);
+        Assert.Empty(_dialogSchreiben);
+    }
+
+    [Fact]
+    public void Das_Kreuz_ueber_der_Quelle_Pufferspeicher_verwirft()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Pufferspeicher");
+        Assert.Equal("QuellePuffer", cut.Instance.OffenerUntereditor);
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+        Assert.Empty(_dialogSchreiben);
+    }
+
+    [Fact]
+    public void Das_Kreuz_ueber_dem_Quellprofil_verwirft()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Profil");
+        Assert.Equal("Quellprofil", cut.Instance.OffenerUntereditor);
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+        Assert.Empty(_dialogSchreiben);
+    }
+
+    /// <summary>
+    /// Der Erdreich-Dialog trägt wieder seine Knopfleiste: OK prüft, übernimmt und
+    /// schließt — hier durch die Seite hindurch bis zum Schreibweg.
+    /// </summary>
+    [Fact]
+    public void OK_im_Erdreich_Dialog_speichert_und_schliesst()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Erdreich");
+        Assert.Equal("QuelleErdreich", cut.Instance.OffenerUntereditor);
+
+        cut.Find("div.epos-ueberlagerung button.epos-knopf--primaer").Click();
+
+        Assert.Equal(new[] { "erdreich:10353" }, _dialogSchreiben);
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+    }
+
+    /// <summary>
+    /// Abbrechen schließt den Erdreich-Dialog ohne zu speichern — und ohne Prüfung:
+    /// Die Verlegetiefe 0 verletzt eine der acht Regeln, der Weg hinaus steht
+    /// trotzdem offen.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_im_Erdreich_Dialog_verwirft_ohne_Pruefung()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Erdreich");
+
+        cut.FindAll("input.epos-eingabe")[0].Input("0");
+        cut.FindAll("div.epos-ueberlagerung .epos-leiste button")[0].Click();
+
+        Assert.Empty(_dialogSchreiben);
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+    }
+
+    [Fact]
+    public void Das_Kreuz_ueber_dem_Erdreich_Dialog_verwirft()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Erdreich");
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+        Assert.Empty(_dialogSchreiben);
+    }
+
+    /// <summary>
+    /// Die Pufferverwaltung ist die eine benannte Ausnahme: Sie SCHREIBT schon beim
+    /// Übernehmen und kennt deshalb kein Verwerfen — ihre Leiste trägt „Übernehmen"
+    /// und „Schließen", kein Abbrechen. Das ✕ wirkt wie dieses Schließen.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_ueber_der_Pufferverwaltung_schliesst_wie_ihr_Schliessen()
+    {
+        var cut = SeiteMitDialogen();
+        cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf")[0].Click();
+        Assert.Equal("Pufferverwaltung", cut.Instance.OffenerEditor);
+
+        Kreuz(cut);
+
+        Assert.Equal("Keine", cut.Instance.OffenerEditor);
+        Assert.Empty(_dialogSchreiben);
+    }
 }
