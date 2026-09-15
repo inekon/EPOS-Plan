@@ -1,4 +1,4 @@
-// WOHIN dialog_oeffnen FUEHRT (Auftrag #201, Stufe S3, Punkt 3).
+﻿// WOHIN dialog_oeffnen FUEHRT (Auftrag #201, Stufe S3, Punkt 3).
 //
 // Der Dialogkatalog nennt fuenf Masken unter ihren KATALOGSCHLUESSELN
 // (Form_Heizkessel_Bearbeiten, Form_PV, Form_PufferSp_Bearbeiten, Form_WP,

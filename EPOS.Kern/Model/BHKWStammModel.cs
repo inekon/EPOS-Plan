@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     // Stammdaten-Model als Spiegel der Tabelle Tab_BHKW_STAMM.
     // Unterschiede zu BHKWModel (Projekt):

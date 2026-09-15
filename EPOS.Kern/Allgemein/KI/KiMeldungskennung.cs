@@ -1,4 +1,4 @@
-// Die sprachneutralen KENNUNGEN der Meldungen, die sich vom Assistenten erklaeren
+﻿// Die sprachneutralen KENNUNGEN der Meldungen, die sich vom Assistenten erklaeren
 // lassen (Auftrag #199, Stufe S1, Weg 2).
 //
 // WARUM SIE AN EINER STELLE STEHEN. Eine Kennung ist DREIMAL dieselbe Zeichenkette:

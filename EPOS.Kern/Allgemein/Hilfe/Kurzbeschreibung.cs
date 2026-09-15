@@ -1,4 +1,4 @@
-// Umbruch der Kurzbeschreibung des Hilfepopups (H11 7.6) - seit iU9-W15b.0e im Kern.
+﻿// Umbruch der Kurzbeschreibung des Hilfepopups (H11 7.6) - seit iU9-W15b.0e im Kern.
 //
 // Die Rechnung lag bis dahin als "internal static" in
 // WindowsFormsApplication1\Views\Help\Form_HelpPopup.cs (:186-231). Ihr Kommentarkopf

@@ -1,4 +1,4 @@
-// Die Kulturgrenze der Werkzeugliste (iU9-W15b.7).
+﻿// Die Kulturgrenze der Werkzeugliste (iU9-W15b.7).
 //
 // Der Vorlaeufer hatte diese Rechnung als private Methode WerteSammeln im
 // Formular (Form_KiChat.cs:1365-1393) - und mit ihr die eine Zeile, an der die

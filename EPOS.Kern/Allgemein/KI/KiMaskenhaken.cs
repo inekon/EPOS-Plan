@@ -1,4 +1,4 @@
-// WAS EIN DIALOG AUSSER SEINEN FELDERN BEISTEUERT (Auftrag #201, Stufe S3).
+﻿// WAS EIN DIALOG AUSSER SEINEN FELDERN BEISTEUERT (Auftrag #201, Stufe S3).
 //
 // Mit S2 meldete ein Razor-Dialog eine Feldliste an - Getter und (unbenutzte) Setter.
 // Zum SETZEN gehoert mehr, und zwar genau das, was ein Anwender an der Maske ohnehin

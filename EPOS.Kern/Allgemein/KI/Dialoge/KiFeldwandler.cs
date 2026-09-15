@@ -1,4 +1,4 @@
-// VOM TEXT DES MODELLS ZUM WERT DER EIGENSCHAFT (Auftrag #201, Stufe S3).
+﻿// VOM TEXT DES MODELLS ZUM WERT DER EIGENSCHAFT (Auftrag #201, Stufe S3).
 //
 // Der Setzweg der Maskenbruecke schreibt in eine Eigenschaft des Daten-Objekts - also in
 // double?, int, bool, string. Was aus der Modellantwort kommt, ist TEXT (KiParameterTyp.Text
