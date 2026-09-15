@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// EINE Zeile der Projektliste des Gebäudedialogs (iU9-W9.2) — das plattformfreie Abbild

@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Waermepumpe;
+﻿namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
 /// Der Feldsatz der Wärmepumpen-ANLAGE — das plattformfreie Abbild von

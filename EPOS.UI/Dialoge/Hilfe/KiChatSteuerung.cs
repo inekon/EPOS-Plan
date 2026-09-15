@@ -1,4 +1,4 @@
-using KiKern;
+﻿using KiKern;
 
 namespace EPOS.UI.Dialoge.Hilfe;
 

@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Simulation;
+﻿namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Eine Zeile des AUSLIEFERUNGSKATALOGS, so weit der Projektdialog sie braucht:

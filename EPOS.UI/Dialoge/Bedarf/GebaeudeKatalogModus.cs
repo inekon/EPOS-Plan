@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Bedarf;
+﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
 /// Die drei Betriebsarten des Gebäude-Katalogeditors (iU9-W9.1) — wörtlich aus

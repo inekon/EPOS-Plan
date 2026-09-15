@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Simulation;
+﻿namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Die Übergabefelder des Erdreich-Quellendialogs (iU9-W10a.3) — hinein und, nach

@@ -1,4 +1,4 @@
-namespace EPOS.UI.Bausteine;
+﻿namespace EPOS.UI.Bausteine;
 
 /// <summary>
 /// Die Rolle einer Zeile im <c>Gespraechsverlauf</c> — sie bestimmt Farbe,
