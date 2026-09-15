@@ -3,6 +3,7 @@ using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
+using EPOS.UI.Tests.Dialoge;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -1096,6 +1097,14 @@ public class SimulationKonfigSeiteTests : BunitContext
     private readonly List<string> _dialogSchreiben = new();
 
     /// <summary>
+    /// Die Datenseite der eingebetteten Pufferverwaltung. Sie schreibt nicht, sie
+    /// zaehlt mit - so laesst sich hier pruefen, dass ueber diese Einbettungsstelle
+    /// allein der OK-Weg in die Datenbank fuehrt.
+    /// </summary>
+    private readonly PufferSpProjektDialogTests.Pruefstand _pufferstand =
+        PufferSpProjektDialogTests.MitZwei();
+
+    /// <summary>
     /// Eine Seite mit EINER Wärmepumpe, deren Chips in den Betriebsmodus, die
     /// Wärmesenke und die Quellenwahl führen, und mit Schreibwegen, die jeden
     /// Schreibversuch vermerken. Der gespeicherte Quelltyp ist „Außenluft"; welcher
@@ -1148,10 +1157,7 @@ public class SimulationKonfigSeiteTests : BunitContext
                     if (e is not null) _dialogSchreiben.Add("senke:" + a);
                     return Rueckmeldung.Still;
                 },
-                PufferVerwaltungGaben = _ => new Dictionary<string, object>
-                {
-                    ["IdProjekt"] = 1030
-                },
+                PufferVerwaltungGaben = _ => PufferSpProjektDialogTests.Gaben(_pufferstand),
                 Quellentypen = _ => new List<Quellentyp>
                 {
                     new Quellentyp("Außenluft", "Außenluft"),
@@ -1312,20 +1318,69 @@ public class SimulationKonfigSeiteTests : BunitContext
     }
 
     /// <summary>
-    /// Die Pufferverwaltung ist die eine benannte Ausnahme: Sie SCHREIBT schon beim
-    /// Übernehmen und kennt deshalb kein Verwerfen — ihre Leiste trägt „Übernehmen"
-    /// und „Schließen", kein Abbrechen. Das ✕ wirkt wie dieses Schließen.
+    /// <b>Dritte Einbettungsstelle (Auftrag #282).</b> Die Pufferverwaltung traegt das
+    /// Hausmuster: Das ✕ ueber ihr wirkt wie Abbrechen — die Ueberlagerung schliesst,
+    /// und die Datenbank steht so da wie vorher, auch wenn im Dialog vorher eine Zeile
+    /// uebernommen wurde.
     /// </summary>
     [Fact]
-    public void Das_Kreuz_ueber_der_Pufferverwaltung_schliesst_wie_ihr_Schliessen()
+    public void Das_Kreuz_ueber_der_Pufferverwaltung_verwirft_wie_Abbrechen()
     {
         var cut = SeiteMitDialogen();
         cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf")[0].Click();
         Assert.Equal("Pufferverwaltung", cut.Instance.OffenerEditor);
 
+        PufferUebernehmen(cut);
+        Assert.Equal(0, _pufferstand.Schreibzugriffe);
+
         Kreuz(cut);
 
         Assert.Equal("Keine", cut.Instance.OffenerEditor);
         Assert.Empty(_dialogSchreiben);
+        Assert.Equal(0, _pufferstand.Schreibzugriffe);
+    }
+
+    /// <summary>Abbrechen in der Pufferverwaltung schreibt ebenso wenig.</summary>
+    [Fact]
+    public void Abbrechen_in_der_Pufferverwaltung_schreibt_nichts()
+    {
+        var cut = SeiteMitDialogen();
+        cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf")[0].Click();
+
+        PufferUebernehmen(cut);
+        cut.FindAll(".epos-ueberlagerung .epos-leiste button")
+           .First(b => b.TextContent == "Abbrechen").Click();
+
+        Assert.Equal("Keine", cut.Instance.OffenerEditor);
+        Assert.Equal(0, _pufferstand.Schreibzugriffe);
+    }
+
+    /// <summary>
+    /// OK schreibt den Arbeitsstand und schliesst — das ist der einzige Weg, auf dem
+    /// ueber diese Einbettungsstelle etwas in die Datenbank kommt.
+    /// </summary>
+    [Fact]
+    public void OK_in_der_Pufferverwaltung_schreibt_und_schliesst()
+    {
+        var cut = SeiteMitDialogen();
+        cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf")[0].Click();
+
+        PufferUebernehmen(cut);
+        cut.Find(".epos-ueberlagerung .epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.Equal("Keine", cut.Instance.OffenerEditor);
+        Assert.NotNull(_pufferstand.Angelegt);
+        Assert.Equal("Neuer Speicher", _pufferstand.Angelegt!.Bezeichner);
+    }
+
+    /// <summary>In der eingebetteten Verwaltung einen neuen Speicher uebernehmen.</summary>
+    private static void PufferUebernehmen(IRenderedComponent<SimulationKonfigSeite> cut)
+    {
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Neuer Pufferspeicher")).Click();
+        cut.Find(".epos-ueberlagerung input.epos-eingabe[type=text]").Input("Neuer Speicher");
+        cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Anlegen")).Click();
     }
 }

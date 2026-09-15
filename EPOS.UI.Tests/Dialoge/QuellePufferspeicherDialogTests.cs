@@ -62,12 +62,14 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
         QuellePufferspeicherDaten daten,
         Action<QuellePufferspeicherDaten?>? geschlossen = null,
         IReadOnlyList<QuellPufferzeile>? puffer = null,
-        IReadOnlyDictionary<string, object>? verwaltung = null)
+        IReadOnlyDictionary<string, object>? verwaltung = null,
+        Func<IReadOnlyList<QuellPufferzeile>>? neuladen = null)
     {
         return Render<QuellePufferspeicherDialog>(p =>
         {
             p.Add(x => x.Daten, daten);
             p.Add(x => x.Puffer, puffer ?? Zwei());
+            if (neuladen is not null) p.Add(x => x.Neuladen, neuladen);
             p.Add(x => x.SteuerwertBerechnet, BERECHNET);
             p.Add(x => x.SteuerwertFest, FEST);
             p.Add(x => x.Kapazitaet, (v, dt) => v * 1.16 * dt / 1000.0);
@@ -389,6 +391,71 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
         Assert.False(cut.Instance.VerwaltungOffen);
         cut.FindAll("button").First(b => b.TextContent.Contains("anlegen")).Click();
         Assert.True(cut.Instance.VerwaltungOffen);
+    }
+
+    /// <summary>
+    /// <b>Erste Einbettungsstelle (Auftrag #282).</b> Die Pufferverwaltung schreibt
+    /// erst beim OK — und genau dort entsteht die Id, die dieser Wirt danach
+    /// uebernimmt. Der Wirt sitzt also nicht mehr auf einem fruehen Schreiben: Er
+    /// liest die Liste NACH dem Rueckruf und nimmt die gelieferte Id.
+    /// </summary>
+    [Fact]
+    public void Die_Pufferverwaltung_liefert_ihre_neue_Id_erst_nach_dem_OK()
+    {
+        var stand = PufferSpProjektDialogTests.MitZwei();
+        stand.AnlegenErgebnis = 77;
+
+        IReadOnlyList<QuellPufferzeile> liste = Zwei();
+        var cut = Zeige(Wp(), verwaltung: PufferSpProjektDialogTests.Gaben(stand),
+                        neuladen: () => liste);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("anlegen")).Click();
+
+        // Im eingebetteten Dialog einen Speicher anlegen und OK druecken.
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Neuer Pufferspeicher")).Click();
+        cut.Find(".epos-ueberlagerung input.epos-eingabe[type=text]").Input("Neuer Speicher");
+        cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Anlegen")).Click();
+
+        Assert.Equal(0, stand.Schreibzugriffe);          // bis hierher: nichts geschrieben
+
+        liste = liste.Append(new QuellPufferzeile(77, "Neuer Speicher", "Neuer Speicher",
+                                                  "Heizung, 900 l", 900)).ToList();
+        cut.Find(".epos-ueberlagerung .epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.NotNull(stand.Angelegt);
+        Assert.False(cut.Instance.VerwaltungOffen);
+        Assert.Equal(77, cut.Instance.GewaehlterPuffer);
+    }
+
+    /// <summary>
+    /// Abbrechen in der eingebetteten Verwaltung laesst die Datenbank unberuehrt, und
+    /// der Wirt behaelt seine Auswahl.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_in_der_Pufferverwaltung_schreibt_nichts()
+    {
+        var stand = PufferSpProjektDialogTests.MitZwei();
+        var cut = Zeige(Wp(), verwaltung: PufferSpProjektDialogTests.Gaben(stand),
+                        neuladen: Zwei);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("anlegen")).Click();
+
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Neuer Pufferspeicher")).Click();
+        cut.Find(".epos-ueberlagerung input.epos-eingabe[type=text]").Input("Neuer Speicher");
+        cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Anlegen")).Click();
+
+        cut.FindAll(".epos-ueberlagerung .epos-leiste button")
+           .First(b => b.TextContent == "Abbrechen").Click();
+
+        Assert.Equal(0, stand.Schreibzugriffe);
+        Assert.False(cut.Instance.VerwaltungOffen);
+        Assert.Equal(11, cut.Instance.GewaehlterPuffer);
     }
 
     // ============================================================ Schluss

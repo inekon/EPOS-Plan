@@ -2108,9 +2108,6 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="PSP_BTN_PUFFER_VERWALTEN" xml:space="preserve">
     <value>Pufferspeicher anlegen / verwalten…</value>
   </data>
-  <data name="PSP_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Schließen</value>
-  </data>
   <data name="PSP_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
   </data>

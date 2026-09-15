@@ -8,11 +8,14 @@
    Kontrollanzeigen "Ladereihenfolge dieses Speichers" und "Wird als n. von m …
    entladen".
 
-   KEIN ABBRECHEN (Befund W10-B29). Anlegen, Aendern und Entfernen wirken SOFORT;
-   der Dialog hat nur "Schliessen", und Esc nimmt nichts zurueck. Ein zweiter
-   Knopf, der nichts anderes taete als der erste, waere eine Behauptung, die
-   nicht stimmt - dieselbe Ueberlegung wie beim Dialog "BHKW-Wirtschaftlichkeit"
-   (B5b).
+   OK UND ABBRECHEN, GESCHRIEBEN WIRD IM OK-WEG. Der Dialog fuehrt einen
+   ARBEITSSTAND: "Anlegen"/"Uebernehmen" prueft die Felder und legt sie in die
+   Liste, "Entfernen" nimmt eine Zeile heraus - alles im Hauptspeicher. Erst OK
+   schreibt, und zwar in der Reihenfolge Entfernen, Aendern, Anlegen; dort
+   entsteht auch die Id eines neuen Speichers, die der Wirt danach liest.
+   Abbrechen, das Kreuz der Ueberlagerung und Esc verlassen den Dialog, ohne dass
+   eine Zeile geschrieben wurde. Eine vorlaeufige Zeile traegt bis zum OK eine
+   NEGATIVE Nummer; nur eine positive Id hat eine Entsprechung in der Datenbank.
 
    DREI ROLLEN, EIN DELEGATENSATZ. Der Dialog erscheint als eigenes Fenster (aus
    der Simulationskonfiguration), als Ueberlagerung im Quellendialog (W10a.5) und
@@ -31,10 +34,9 @@
    {Heizung} auf {Brauchwasser} umstellt, muss zwischendurch durch das leere Set
    gehen (Kommentar KlassenSet_Geaendert).
 
-   WOERTLICH TROTZ BEFUND: W10-B29 (kein Abbrechen), W10-B32 (die
-   Klassen-Set-Rueckfrage sitzt im DIALOG und nicht im Controller - die
-   Ctrl-Bausteine sind dialogfrei, damit Referenzlauf und Proben headless
-   laufen).
+   WOERTLICH TROTZ BEFUND: W10-B32 (die Klassen-Set-Rueckfrage sitzt im DIALOG
+   und nicht im Controller - die Ctrl-Bausteine sind dialogfrei, damit
+   Referenzlauf und Proben headless laufen).
 
    ENTFALLEN (Befund W10-B30): Verwendung war Ein- UND Ausgabefeld, wurde aber
    von keinem der drei Aufrufer zurueckgelesen. Sie geht nur noch hinein.
@@ -53,8 +55,10 @@
    draussen, denn eine Liste ist kein Formularblock (Grenze aus Paket P3). Kein
    Feld umbenannt, keines verschoben - die Reihenfolge im Markup ist der Tab-Weg.
 
-   TASTATUR: Esc schliesst - erst eine Rueckfrage, dann der Dialog. Enter ist
-   NICHT belegt: "Uebernehmen" schreibt sofort. *@
+   TASTATUR: Esc raeumt erst eine stehende Rueckfrage weg und wirkt dann wie
+   Abbrechen - der Arbeitsstand faellt, geschrieben wurde nichts. Enter ist NICHT
+   belegt: In einer Maske mit einundzwanzig Feldern und drei Knoepfen waere ein
+   versehentliches Enter kein Bestaetigen, sondern ein Zufall. *@
 
 @namespace EPOS.UI.Dialoge.Simulation
 
@@ -79,7 +83,7 @@
             <Zeilenraster Bezeichnung="@LabelBestand" Spaltenmass="44px 1fr"
                           Spalten="@Bestandsspalten" MitZeilenwahl="false">
                 <KindInhalt>
-                    @foreach (PspProjektzeile z in _projekt)
+                    @foreach (Entwurf z in _bestand)
                     {
                         <div class="epos-zr-zeile">
                             <div class="epos-zr-zelle">
@@ -95,7 +99,7 @@
 
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" @onclick="NeuVorbereiten">@BtnNeu</button>
-                <button type="button" class="epos-knopf" disabled="@(_bearbeiteteId <= 0)"
+                <button type="button" class="epos-knopf" disabled="@(_bearbeiteteId == 0)"
                         @onclick="EntfernenStarten">@BtnEntfernen</button>
                 @if (VerwaltungGaben is not null)
                 {
@@ -133,7 +137,7 @@
                                  Aktiv="@(_bearbeiteteId <= 0)" />
 
                     <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                              WertChanged="w => _bezeichner = w" />
+                              WertChanged="w => Merken(() => _bezeichner = w)" />
 
                     @* Die Mehrfachauswahl spannt ueber alle Spalten (Stilblatt,
                        Nachzug iU8-O-1) - drei Haekchen untereinander in einer
@@ -149,7 +153,7 @@
                                           Wert="@_volumen" WertChanged="w => Setzen(() => _volumen = w)" />
                             <Zahlenfeld Bezeichnung="@LabelBereitschaftsverluste" Einheit="kWh/24h"
                                         Feldname="@LabelBereitschaftsverluste" Wert="@_verluste"
-                                        WertChanged="w => _verluste = w" />
+                                        WertChanged="w => Merken(() => _verluste = w)" />
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -166,13 +170,13 @@
                     <Formulargruppe Titel="@GruppeSchwellen">
                         <KindInhalt>
                             <Zahlenfeld Bezeichnung="@LabelEinschaltschwelle" Einheit="%" Feldname="@LabelEinschaltschwelle"
-                                        Wert="@_schwelleEin" WertChanged="w => _schwelleEin = w" />
+                                        Wert="@_schwelleEin" WertChanged="w => Merken(() => _schwelleEin = w)" />
                             <Zahlenfeld Bezeichnung="@LabelAbschaltschwelle" Einheit="%" Feldname="@LabelAbschaltschwelle"
-                                        Wert="@_schwelleAus" WertChanged="w => _schwelleAus = w" />
+                                        Wert="@_schwelleAus" WertChanged="w => Merken(() => _schwelleAus = w)" />
                             <Zahlenfeld Bezeichnung="@LabelSchwelleNachrangig" Einheit="%" Feldname="@LabelSchwelleNachrangig"
-                                        Wert="@_schwelleNachrang" WertChanged="w => _schwelleNachrang = w" />
+                                        Wert="@_schwelleNachrang" WertChanged="w => Merken(() => _schwelleNachrang = w)" />
                             <Zahlenfeld Bezeichnung="@LabelMindestfuellstand" Einheit="%" Feldname="@LabelMindestfuellstand"
-                                        Wert="@_schwelleReserve" WertChanged="w => _schwelleReserve = w" />
+                                        Wert="@_schwelleReserve" WertChanged="w => Merken(() => _schwelleReserve = w)" />
                         </KindInhalt>
                     </Formulargruppe>
                 </KindInhalt>
@@ -195,9 +199,9 @@
                     <Formulargruppe Titel="@GruppeLeistungsgrenzen">
                         <KindInhalt>
                             <Zahlenfeld Bezeichnung="@LabelLadeleistung" Einheit="kW" Feldname="@LabelLadeleistung"
-                                        Wert="@_ladeleistung" WertChanged="w => _ladeleistung = w" />
+                                        Wert="@_ladeleistung" WertChanged="w => Merken(() => _ladeleistung = w)" />
                             <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
-                                        Wert="@_entladeleistung" WertChanged="w => _entladeleistung = w" />
+                                        Wert="@_entladeleistung" WertChanged="w => Merken(() => _entladeleistung = w)" />
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -209,11 +213,11 @@
                         <Formulargruppe Titel="@GruppeSchichtmodell">
                             <KindInhalt>
                                 <Zahlenfeld Bezeichnung="@LabelHoehe" Einheit="m" Feldname="@LabelHoehe"
-                                            Wert="@_hoehe" WertChanged="w => _hoehe = w" />
+                                            Wert="@_hoehe" WertChanged="w => Merken(() => _hoehe = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelLambda" Einheit="W/(m·K)" Feldname="@LabelLambda"
-                                            Wert="@_lambda" WertChanged="w => _lambda = w" />
+                                            Wert="@_lambda" WertChanged="w => Merken(() => _lambda = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
-                                            Wert="@_tNutzBW" WertChanged="w => _tNutzBW = w" />
+                                            Wert="@_tNutzBW" WertChanged="w => Merken(() => _tNutzBW = w)" />
                             </KindInhalt>
                         </Formulargruppe>
 
@@ -225,11 +229,11 @@
                         <Formulargruppe Titel="@LabelEntnahmeKopf">
                             <KindInhalt>
                                 <Zahlenfeld Bezeichnung="@LabelEntnahmeHeizung" Feldname="@LabelEntnahmeHeizung"
-                                            Wert="@_entnahmeHeizung" WertChanged="w => _entnahmeHeizung = w" />
+                                            Wert="@_entnahmeHeizung" WertChanged="w => Merken(() => _entnahmeHeizung = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelEntnahmeBW" Feldname="@LabelEntnahmeBW"
-                                            Wert="@_entnahmeBW" WertChanged="w => _entnahmeBW = w" />
+                                            Wert="@_entnahmeBW" WertChanged="w => Merken(() => _entnahmeBW = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelEntnahmeProzess" Feldname="@LabelEntnahmeProzess"
-                                            Wert="@_entnahmeProzess" WertChanged="w => _entnahmeProzess = w" />
+                                            Wert="@_entnahmeProzess" WertChanged="w => Merken(() => _entnahmeProzess = w)" />
                             </KindInhalt>
                         </Formulargruppe>
                     }
@@ -274,15 +278,20 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    @* Nur SCHLIESSEN neben "Uebernehmen" - ein Abbrechen gibt es nicht
-       (Befund W10-B29). SatzMarkiert und Geaendert stehen fest auf true: Der
+    @* Drei Ausgaenge, wie in jedem Dialog des Hauses: der nicht schliessende
+       "Anlegen"/"Uebernehmen" legt die geprueften Felder in die LISTE, OK schreibt
+       den ganzen Arbeitsstand und schliesst, Abbrechen verlaesst ihn ohne zu
+       schreiben. Der mittlere Knopf behaelt seinen Wortlaut: Er speichert nicht,
+       er uebernimmt in die Liste - "Speichern" waere dort eine Behauptung, die
+       nicht stimmt. SatzMarkiert und Geaendert stehen fest auf true: Der
        Uebernehmen-Knopf des Vorlaeufers war NIE gesperrt, und die Pruefkette sitzt
        hinter ihm, nicht davor. *@
-    <SpeichernLeiste OkText="@BtnSchliessen" MitAbbrechen="false"
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     MitAbbrechen="true"
                      MitSpeichern="true" SpeichernText="@Uebernehmentext"
                      SatzMarkiert="true" Geaendert="true"
                      Gespeichertwerden="Uebernehmen"
-                     Ergebnis="_ => Schliessen()" />
+                     Ergebnis="BeiErgebnis" />
 
     @* --- Rückfragen --------------------------------------------------------- *@
     <Rueckfrage Offen="@(_frage != Frageart.Keine)" Frage="@_fragetext"
@@ -345,8 +354,10 @@
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
     /// <summary>
-    /// Der Dialog ist zu Ende. Geliefert wird der ZULETZT angelegte oder gewählte
-    /// Speicher (<c>ID_Puffer</c>), <c>0</c> wenn keiner (mehr) dasteht.
+    /// Der Dialog ist zu Ende. Nach OK ist der Arbeitsstand geschrieben und geliefert
+    /// wird der ZULETZT angelegte oder gewählte Speicher (<c>ID_Puffer</c>), <c>0</c>
+    /// wenn keiner (mehr) dasteht. Nach Abbrechen (auch Esc) kommt <c>0</c>: Es wurde
+    /// nichts geschrieben, also gibt es auch nichts zu melden.
     /// </summary>
     [Parameter] public EventCallback<int> Geschlossen { get; set; }
 
@@ -414,7 +425,8 @@
     [Parameter] public string SpalteLaedtBis { get; set; } = "lädt bis";
     [Parameter] public string BtnAnlegen { get; set; } = "Anlegen";
     [Parameter] public string BtnUebernehmen { get; set; } = "Übernehmen";
-    [Parameter] public string BtnSchliessen { get; set; } = "Schließen";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
 
@@ -508,8 +520,24 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    /// <summary>
+    /// EINE Zeile des Arbeitsstands. Sie steht für einen vorhandenen Speicher
+    /// (<see cref="Id"/> &gt; 0) oder für eine vorläufige, noch nicht geschriebene
+    /// Zeile (<see cref="Id"/> &lt; 0). <see cref="Eingaben"/> ist das, was im
+    /// OK-Weg geschrieben wird; <c>null</c> heißt „unverändert aus der Datenbank".
+    /// </summary>
+    private sealed class Entwurf
+    {
+        internal int Id;
+        internal string Anzeige = "";
+        internal PspEingaben? Eingaben;
+        internal bool Neu;
+    }
+
     private IReadOnlyList<PspKatalogzeile> _katalog = Array.Empty<PspKatalogzeile>();
-    private IReadOnlyList<PspProjektzeile> _projekt = Array.Empty<PspProjektzeile>();
+    private readonly List<Entwurf> _bestand = new();
+    private readonly List<int> _entfernt = new();
+    private int _naechsteVorlaeufigeId = -1;
     private IReadOnlyList<PspLadezeile> _laden = Array.Empty<PspLadezeile>();
 
     /// <summary><c>0</c> = Neuanlage, sonst die Id des gerade bearbeiteten Speichers.</summary>
@@ -517,6 +545,16 @@
 
     /// <summary>Das Ergebnis: zuletzt angelegter oder gewählter Speicher.</summary>
     private int _idPuffer;
+
+    /// <summary>
+    /// Wurde an der OFFENEN Zeile seit der letzten Übernahme etwas geändert? Nur dann
+    /// prüft und übernimmt OK sie noch; sonst schriebe ein OK auf einem unberührten
+    /// Altbestand dessen Prüfregeln fest und der Dialog ließe sich nicht mehr schließen.
+    /// </summary>
+    private bool _geaendert;
+
+    /// <summary>Wartet der OK-Weg auf die Antwort der Nutzungsrückfrage?</summary>
+    private bool _okNachFrage;
 
     private int? _katalogzeile = -1;
     private string _bezeichner = "";
@@ -561,6 +599,12 @@
     /// <summary>Der Rückgabewert des Dialogs.</summary>
     public int Ergebnis => _idPuffer;
 
+    /// <summary>Die Ids des Arbeitsstands in Listenreihenfolge (negativ = vorläufig).</summary>
+    public IReadOnlyList<int> Bestandszeilen => _bestand.Select(z => z.Id).ToList();
+
+    /// <summary>Steht im Arbeitsstand etwas, das der OK-Weg schreiben müsste?</summary>
+    public bool Offen => _entfernt.Count > 0 || _bestand.Any(z => z.Eingaben is not null);
+
     /// <summary>Die stehende Meldung.</summary>
     public string Meldung => _meldung;
 
@@ -600,8 +644,12 @@
 
     // --- Listen -----------------------------------------------------------------
 
-    /// <summary>Beschriftung des Übernahmeknopfes — „Anlegen" oder „Übernehmen".</summary>
-    public string Uebernehmentext => _bearbeiteteId <= 0 ? BtnAnlegen : BtnUebernehmen;
+    /// <summary>
+    /// Beschriftung des Übernahmeknopfes — „Anlegen" für eine Zeile, die noch gar nicht
+    /// in der Liste steht, sonst „Übernehmen". Eine vorläufige Zeile (negative Nummer)
+    /// steht bereits darin und wird deshalb ÜBERNOMMEN, nicht noch einmal angelegt.
+    /// </summary>
+    public string Uebernehmentext => _bearbeiteteId == 0 ? BtnAnlegen : BtnUebernehmen;
 
     /// <summary>Der Spaltenkopf der Bestandsliste: Wahlspalte und Bezeichnung.</summary>
     private IReadOnlyList<string> Bestandsspalten => new[] { "", LabelBestand };
@@ -679,11 +727,15 @@
         if (Dienste is null) return;
 
         _katalog = Dienste.Katalogzeilen();
-        _projekt = Dienste.Projektliste();
+
+        _bestand.Clear();
+        foreach (PspProjektzeile z in Dienste.Projektliste())
+            _bestand.Add(new Entwurf { Id = z.Id, Anzeige = z.Anzeige });
+
         _idPuffer = IdPuffer;
 
         int gewaehlt = 0;
-        if (IdPuffer > 0 && _projekt.Any(z => z.Id == IdPuffer))
+        if (IdPuffer > 0 && _bestand.Any(z => z.Id == IdPuffer))
         {
             gewaehlt = IdPuffer;
         }
@@ -694,9 +746,9 @@
             // Speicher voran (siehe ErsterMitVerwendung in der Huelle).
             gewaehlt = ErsterPassender();
         }
-        else if (_projekt.Count > 0)
+        else if (_bestand.Count > 0)
         {
-            gewaehlt = _projekt[0].Id;
+            gewaehlt = _bestand[0].Id;
         }
 
         if (gewaehlt > 0) PufferWaehlen(gewaehlt);
@@ -712,21 +764,32 @@
 
     private int ErsterPassender()
     {
-        foreach (PspProjektzeile z in _projekt)
+        foreach (Entwurf z in _bestand)
             if (PasstZurVerwendung.Contains(z.Id)) return z.Id;
         return 0;
     }
 
     // --- Bestand ----------------------------------------------------------------
 
-    /// <summary>Einen vorhandenen Speicher laden (<c>PufferAnzeigen</c>:1242-1300).</summary>
+    /// <summary>
+    /// Eine Zeile des Arbeitsstands in die Felder laden (<c>PufferAnzeigen</c>
+    /// :1242-1300). Eine schon übernommene Zeile kommt aus dem Arbeitsstand, eine
+    /// unberührte aus der Datenbank — sonst stünde nach dem Zeilenwechsel wieder der
+    /// alte Stand da, obwohl der Anwender ihn längst übernommen hat.
+    /// </summary>
     private void PufferWaehlen(int id)
     {
+        Entwurf? z = _bestand.FirstOrDefault(e => e.Id == id);
+        if (z is null) return;
+
+        if (z.Eingaben is not null) { AusEntwurf(z); return; }
+
         PspPufferstand? p = Dienste?.PufferLesen(id);
         if (p is null) return;
 
         _bearbeiteteId = p.Id;
         _idPuffer = p.Id;
+        _geaendert = false;
 
         _katalogzeile = -1;                        // ein vorhandener Speicher wird nicht neu uebernommen
         _bezeichner = p.Bezeichner;
@@ -747,6 +810,34 @@
         AnzeigenAktualisieren();
     }
 
+    /// <summary>Die Felder aus einer bereits übernommenen Zeile des Arbeitsstands.</summary>
+    private void AusEntwurf(Entwurf z)
+    {
+        PspEingaben e = z.Eingaben!;
+
+        _bearbeiteteId = z.Id;
+        _idPuffer = z.Id;
+        _geaendert = false;
+
+        _katalogzeile = e.Katalogzeile;
+        _bezeichner = e.Bezeichner;
+        _volumen = e.Volumen;
+        _verluste = e.Verluste;
+        _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess);
+
+        _vorlauf = e.Vorlauf;
+        _ruecklauf = e.Ruecklauf;
+
+        _schwelleEin = e.SchwelleEin;
+        _schwelleAus = e.SchwelleAus;
+        _schwelleNachrang = e.SchwelleNachrang;
+        _schwelleReserve = e.SchwelleReserve;
+        _entladeprio = e.Entladeprio;
+
+        SchichtdatenAnzeigen(e.Schicht);
+        AnzeigenAktualisieren();
+    }
+
     /// <summary>
     /// <c>NeuVorbereiten</c>:1178-1239 — die Vorbelegung eines neuen Speichers,
     /// wörtlich: Verluste „0", Vorlauf/Rücklauf aus den Systemvorgaben oder LEER,
@@ -755,6 +846,7 @@
     private void NeuVorbereiten()
     {
         _bearbeiteteId = 0;
+        _geaendert = false;
         _katalogzeile = -1;
         _bezeichner = "";
         _volumen = null;
@@ -820,6 +912,7 @@
     private void KatalogWaehlen(int? zeile)
     {
         _katalogzeile = zeile;
+        _geaendert = true;
         if (zeile is null || zeile.Value < 0 || zeile.Value >= _katalog.Count) return;
 
         // cbKatalog_SelectedIndexChanged:1566-1591 - drei Felder aus der Katalogzeile.
@@ -837,19 +930,33 @@
         // Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Die
         // Pflichtpruefung sitzt im Uebernehmen.
         _klassenSet = set;
+        _geaendert = true;
         AnzeigenAktualisieren();
     }
 
     private void PrioWaehlen(int? prio)
     {
         _entladeprio = prio ?? 0;
+        _geaendert = true;
         AnzeigenAktualisieren();
     }
 
+    /// <summary>Ein Feld setzen, das die Anzeigen nachzieht (Volumen, Temperaturen …).</summary>
     private void Setzen(Action was)
     {
         was();
+        _geaendert = true;
         AnzeigenAktualisieren();
+    }
+
+    /// <summary>
+    /// Ein Feld setzen, das keine Anzeige nachzieht. Es MERKT die Änderung trotzdem —
+    /// daran hängt, ob OK die offene Zeile noch einmal prüft und übernimmt.
+    /// </summary>
+    private void Merken(Action was)
+    {
+        was();
+        _geaendert = true;
     }
 
     /// <summary>
@@ -895,19 +1002,27 @@
 
     // --- Übernehmen -------------------------------------------------------------
 
+    /// <summary>Der Knopf „Anlegen"/„Übernehmen" — er bleibt im Dialog.</summary>
+    private Task Uebernehmen() => Anwenden(false);
+
     /// <summary>
     /// <c>btnUebernehmen_Click</c>:1605-1684 — Prüfkette, dann Kriterium W6 (hart),
-    /// dann Anlegen oder Ändern, dann Kriterium W4 (weich, NACH dem Speichern).
+    /// dann die Zeile in den Arbeitsstand, dann Kriterium W4 (weich, NACH der
+    /// Übernahme). Geschrieben wird hier NICHTS; das tut allein <see cref="Schreiben"/>.
     /// </summary>
-    private Task Uebernehmen()
+    /// <param name="dannSchliessen">
+    /// <c>true</c>, wenn der Weg von OK kommt: Dann folgt auf die Übernahme das
+    /// Schreiben und das Schließen — auch nach einer Rückfrage, die dazwischenkommt.
+    /// </param>
+    private async Task Anwenden(bool dannSchliessen)
     {
-        if (Dienste is null) return Task.CompletedTask;
+        if (Dienste is null) return;
 
         PspEingaben? eingaben = EingabenLesen(out string? fehler);
         if (eingaben is null)
         {
             Melden(fehler ?? "", WarnStufe.Warnung);
-            return Task.CompletedTask;
+            return;
         }
 
         // KRITERIUM W6 - HART, ABGEWIESEN (Konzept 6.2/6.3, Entscheidung F8).
@@ -915,20 +1030,21 @@
             Dienste.IstLeitspeicher(_bearbeiteteId))
         {
             Melden(string.Format(FehlerSchichtungAmVerbund, eingaben.Bezeichner), WarnStufe.Fehler);
-            return Task.CompletedTask;
+            return;
         }
 
         if (_bearbeiteteId > 0 && WechselBraucthRueckfrage(eingaben, out string frage))
         {
             _wartendeEingaben = eingaben;
+            _okNachFrage = dannSchliessen;
             _fragetext = frage;
             _fragetitel = TitelKlassenSetAendern;
             _frage = Frageart.Klassenset;
-            return Task.CompletedTask;
+            return;
         }
 
-        Speichern(eingaben);
-        return Task.CompletedTask;
+        InDenStand(eingaben);
+        if (dannSchliessen) await Schreiben();
     }
 
     /// <summary>
@@ -957,58 +1073,120 @@
         return true;
     }
 
-    private void Speichern(PspEingaben eingaben)
+    /// <summary>
+    /// Die geprüfte Zeile in den Arbeitsstand legen — eine neue kommt hinzu, eine
+    /// vorhandene bekommt ihre Eingaben. Die Liste zeigt sie danach mit derselben
+    /// Beschriftung, die die Datenbankzeile tragen wird.
+    /// </summary>
+    private void InDenStand(PspEingaben eingaben)
     {
         if (Dienste is null) return;
 
-        if (_bearbeiteteId <= 0)
+        Entwurf z;
+        if (_bearbeiteteId == 0)
         {
-            int neueId = Dienste.Anlegen(eingaben);
-            if (neueId <= 0) { Melden(MeldungAnlegenFehlgeschlagen, WarnStufe.Warnung); return; }
-
-            _idPuffer = neueId;
-            _bearbeiteteId = neueId;
+            z = new Entwurf { Id = _naechsteVorlaeufigeId--, Neu = true };
+            _bestand.Add(z);
             Melden(StatusAngelegt, WarnStufe.Erfolg);
         }
         else
         {
-            if (!Dienste.Aendern(_bearbeiteteId, eingaben))
-            { Melden(MeldungAendernFehlgeschlagen, WarnStufe.Warnung); return; }
-
-            _idPuffer = _bearbeiteteId;
+            Entwurf? vorhanden = _bestand.FirstOrDefault(e => e.Id == _bearbeiteteId);
+            if (vorhanden is null) return;
+            z = vorhanden;
             Melden(StatusAenderungenUebernommen, WarnStufe.Erfolg);
         }
 
-        BestandNeuLaden(_idPuffer);
+        z.Eingaben = eingaben;
+        z.Anzeige = Dienste.Listentext(eingaben);
 
-        // KRITERIUM W4 - WEICH, NACH dem Speichern (Konzept 7.2). Die Angabe ist
-        // zulaessig und wurde gespeichert; der Anwender erfaehrt nur, was der Lauf
-        // damit macht.
-        string? klemm = Dienste.Klemmhinweis(_idPuffer, eingaben);
+        _bearbeiteteId = z.Id;
+        _idPuffer = z.Id;
+        _geaendert = false;
+
+        AnzeigenAktualisieren();
+
+        // KRITERIUM W4 - WEICH, NACH der Uebernahme (Konzept 7.2). Die Angabe ist
+        // zulaessig und steht im Arbeitsstand; der Anwender erfaehrt nur, was der Lauf
+        // damit macht. Der Hinweis haengt allein an den Eingaben, nicht an der
+        // Datenbankzeile - er kommt deshalb hier und nicht erst beim Schreiben.
+        string? klemm = Dienste.Klemmhinweis(z.Id > 0 ? z.Id : 0, eingaben);
         if (!string.IsNullOrEmpty(klemm)) Melden(klemm, WarnStufe.Warnung);
     }
 
-    private void BestandNeuLaden(int auswahlId)
+    /// <summary>
+    /// Die Auswahl nach einer Listenänderung: die genannte Zeile, sonst die Neuanlage.
+    /// </summary>
+    private void NachAuswahl(int auswahlId)
     {
-        if (Dienste is null) return;
-        _projekt = Dienste.Projektliste();
-
-        if (auswahlId > 0 && _projekt.Any(z => z.Id == auswahlId)) PufferWaehlen(auswahlId);
+        if (auswahlId != 0 && _bestand.Any(z => z.Id == auswahlId)) PufferWaehlen(auswahlId);
         else NeuVorbereiten();
+    }
+
+    // --- Schreiben (nur im OK-Weg) ----------------------------------------------
+
+    /// <summary>
+    /// Der EINZIGE Schreibweg des Dialogs. Die Reihenfolge ist Absicht: Erst fallen
+    /// die entfernten Zeilen — damit ein Bezeichner wieder frei ist, den eine neue
+    /// Zeile tragen soll —, dann die Änderungen, zuletzt die Neuanlagen. Hier entsteht
+    /// die Id eines neuen Speichers; sie geht als Ergebnis an den Wirt, der danach
+    /// liest. Scheitert ein Schritt, bleibt der Dialog OFFEN und nennt den Grund; was
+    /// schon geschrieben ist, gilt und wird bei einem zweiten OK nicht wiederholt.
+    /// </summary>
+    private async Task Schreiben()
+    {
+        if (Dienste is null) { await Geschlossen.InvokeAsync(0); return; }
+
+        foreach (int id in _entfernt.ToList())
+        {
+            if (!Dienste.Entfernen(id))
+            { Melden(MeldungEntfernenFehlgeschlagen, WarnStufe.Warnung); return; }
+            _entfernt.Remove(id);
+        }
+
+        foreach (Entwurf z in _bestand)
+        {
+            if (z.Neu || z.Eingaben is null) continue;
+            if (!Dienste.Aendern(z.Id, z.Eingaben))
+            { Melden(MeldungAendernFehlgeschlagen, WarnStufe.Warnung); return; }
+            z.Eingaben = null;
+        }
+
+        foreach (Entwurf z in _bestand)
+        {
+            if (!z.Neu || z.Eingaben is null) continue;
+
+            int neueId = Dienste.Anlegen(z.Eingaben);
+            if (neueId <= 0) { Melden(MeldungAnlegenFehlgeschlagen, WarnStufe.Warnung); return; }
+
+            if (_idPuffer == z.Id) _idPuffer = neueId;
+            if (_bearbeiteteId == z.Id) _bearbeiteteId = neueId;
+            z.Id = neueId;
+            z.Neu = false;
+            z.Eingaben = null;
+        }
+
+        if (_idPuffer < 0) _idPuffer = 0;
+        await Geschlossen.InvokeAsync(_idPuffer);
     }
 
     // --- Entfernen --------------------------------------------------------------
 
     private void EntfernenStarten()
     {
-        if (Dienste is null || _bearbeiteteId <= 0) return;
+        if (Dienste is null || _bearbeiteteId == 0) return;
 
-        IReadOnlyList<string> referenzen = Dienste.Referenzen(_bearbeiteteId);
-        if (referenzen.Count > 0)
+        // Eine vorlaeufige Zeile (negative Nummer) hat keine Datenbankzeile und deshalb
+        // auch keine Anlage, die auf sie zeigt - gefragt wird nur nach vorhandenen.
+        if (_bearbeiteteId > 0)
         {
-            Melden(string.Format(MeldungEntfernenBlockiert, _bezeichner,
-                                 string.Join("\n  • ", referenzen)), WarnStufe.Warnung);
-            return;
+            IReadOnlyList<string> referenzen = Dienste.Referenzen(_bearbeiteteId);
+            if (referenzen.Count > 0)
+            {
+                Melden(string.Format(MeldungEntfernenBlockiert, _bezeichner,
+                                     string.Join("\n  • ", referenzen)), WarnStufe.Warnung);
+                return;
+            }
         }
 
         _fragetext = string.Format(MeldungEntfernenBestaetigen, _bezeichner);
@@ -1016,10 +1194,13 @@
         _frage = Frageart.Entfernen;
     }
 
-    private void Beantwortet(bool? ja)
+    private async Task Beantwortet(bool? ja)
     {
         Frageart was = _frage;
+        bool dannSchliessen = _okNachFrage;
+
         _frage = Frageart.Keine;
+        _okNachFrage = false;
 
         if (ja != true) { _wartendeEingaben = null; return; }
 
@@ -1027,19 +1208,31 @@
         {
             PspEingaben? e = _wartendeEingaben;
             _wartendeEingaben = null;
-            if (e is not null) Speichern(e);
+            if (e is null) return;
+
+            InDenStand(e);
+            if (dannSchliessen) await Schreiben();
             return;
         }
 
-        if (was == Frageart.Entfernen && Dienste is not null)
-        {
-            if (!Dienste.Entfernen(_bearbeiteteId))
-            { Melden(MeldungEntfernenFehlgeschlagen, WarnStufe.Warnung); return; }
+        if (was == Frageart.Entfernen) EntfernenAusfuehren();
+    }
 
-            if (_idPuffer == _bearbeiteteId) _idPuffer = 0;
-            Melden(StatusEntfernt, WarnStufe.Erfolg);
-            BestandNeuLaden(0);
-        }
+    /// <summary>
+    /// Die Zeile fällt aus dem Arbeitsstand. Eine vorhandene wird zum Vormerk für den
+    /// OK-Weg, eine vorläufige verschwindet einfach — sie stand nie in der Datenbank.
+    /// </summary>
+    private void EntfernenAusfuehren()
+    {
+        Entwurf? z = _bestand.FirstOrDefault(e => e.Id == _bearbeiteteId);
+        if (z is null) return;
+
+        _bestand.Remove(z);
+        if (!z.Neu) _entfernt.Add(z.Id);
+
+        if (_idPuffer == z.Id) _idPuffer = 0;
+        Melden(StatusEntfernt, WarnStufe.Erfolg);
+        NachAuswahl(0);
     }
 
     // --- Katalog ----------------------------------------------------------------
@@ -1206,16 +1399,35 @@
         _meldungStufe = stufe;
     }
 
-    private Task Schliessen() => Geschlossen.InvokeAsync(_idPuffer);
+    /// <summary>
+    /// Der Rückruf der Leiste. <b>OK</b> prüft die offene Zeile — aber nur, wenn an ihr
+    /// etwas geändert wurde —, übernimmt sie, schreibt den Arbeitsstand und schließt;
+    /// eine verletzte Regel meldet und hält den Dialog offen. <b>Abbrechen</b> verlässt
+    /// ihn ohne Prüfung und ohne zu schreiben.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (!ok) return Verwerfen();
+        return _geaendert ? Anwenden(true) : Schreiben();
+    }
+
+    /// <summary>Ohne zu schreiben hinaus. <c>0</c>: Es gibt nichts zu melden.</summary>
+    private Task Verwerfen() => Geschlossen.InvokeAsync(0);
 
     /// <summary>
-    /// Esc: erst eine stehende Rückfrage, dann der Dialog. Zurückgenommen wird nichts
-    /// (Befund W10‑B29) — der Dialog hat sein Werk längst geschrieben.
+    /// Esc: erst eine stehende Rückfrage, dann der Dialog — und zwar wie Abbrechen.
+    /// Der Arbeitsstand fällt; geschrieben wurde nichts.
     /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_frage != Frageart.Keine) { _frage = Frageart.Keine; _wartendeEingaben = null; return Task.CompletedTask; }
-        return Schliessen();
+        if (_frage != Frageart.Keine)
+        {
+            _frage = Frageart.Keine;
+            _wartendeEingaben = null;
+            _okNachFrage = false;
+            return Task.CompletedTask;
+        }
+        return Verwerfen();
     }
 }

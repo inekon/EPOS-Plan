@@ -36641,15 +36641,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string PSP_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("PSP_BTN_SCHLIESSEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
         /// </summary>
         public static string PSP_BTN_UEBERNEHMEN {

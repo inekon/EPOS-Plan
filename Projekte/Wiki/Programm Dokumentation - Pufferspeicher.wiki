@@ -16,7 +16,7 @@ Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus u
 
 === Pufferspeicher im Projekt ===
 
-* {{Anker|speicherliste}}'''Pufferspeicher im Projekt''' – die Liste führt die Speicher des Projekts mit ihren Kennzahlen; der markierte Eintrag bestimmt, was die Gruppen darunter zeigen. Von hier aus lassen sich Speicher anlegen, übernehmen und entfernen.
+* {{Anker|speicherliste}}'''Pufferspeicher im Projekt''' – die Liste führt die Speicher des Projekts mit ihren Kennzahlen; der markierte Eintrag bestimmt, was die Gruppen darunter zeigen. ''Neuer Pufferspeicher'' beginnt eine leere Zeile, ''Anlegen'' bzw. ''Übernehmen'' prüft die Felder und stellt die Zeile in die Liste, ''Entfernen'' nimmt die markierte Zeile wieder heraus. Alle drei wirken in der Liste; gespeichert wird sie mit ''OK''.
 * {{Anker|eigenschaften}}'''Eigenschaften des gewählten Speichers''' – die Gruppe fasst zusammen, womit die Simulation rechnet: Bezeichner, Volumen, Bereitschaftsverluste, Nutzung, Temperaturen und Schaltschwellen.
 * {{Anker|nutzung}}'''Nutzung (Klassen-Set): Heizung, Brauchwasser, Prozesswärme''' – drei Häkchen bestimmen, welche der drei Kanäle dieser Speicher bedient; mindestens einer muss gesetzt sein. Das Klassen-Set bestimmt allein, wofür der Speicher zur Verfügung steht.
 * {{Anker|temperaturen}}'''Vorlauf- und Rücklauftemperatur''' – in °C. Aus der Differenz und dem Volumen ergibt sich die nutzbare Kapazität des Speichers.
@@ -26,6 +26,7 @@ Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus u
 * {{Anker|entnahmehoehe}}'''Entnahmehöhe je Kanal''' – bei geschichtetem Speicher je Kanal die Höhe, aus der entnommen wird (0 = unten, 1 = oben; leer = Standard). Angeboten werden nur die Kanäle des eingestellten Klassen-Sets.
 * {{Anker|ladeordnung}}'''Ladereihenfolge dieses Speichers''' – die Gruppe zeigt, welche Erzeuger diesen Speicher laden und in welcher Reihenfolge. Sie ist eine Anzeige: Gepflegt wird die Reihenfolge über die Wärmesenken der Erzeuger im Dialog ''Simulation Konfiguration''.
 * {{Anker|entladeprioritaet}}'''Entladepriorität''' – bestimmt, an welcher Stelle dieser Speicher entladen wird, wenn mehrere Speicher denselben Kanal bedienen. Ein Hinweis daneben nennt die sich daraus ergebende Position.
+* {{Anker|uebernehmen-verwerfen}}'''Übernehmen oder verwerfen''' – ''OK'' prüft die offene Zeile, speichert die ganze Liste und schließt den Dialog. Ist eine Eingabe unzulässig – fehlender Bezeichner, keine angehakte Nutzung, Gesamtvolumen 0, eine Schaltschwelle außerhalb von 0 bis 100 % oder Ein- und Abschaltschwelle in der falschen Reihenfolge –, bleibt der Dialog offen und nennt den Grund als Hinweis über den Feldern; die eingetippten Werte stehen weiter da. ''Abbrechen'' schließt den Dialog, ohne zu speichern; ✕ und ''Esc'' wirken ebenso. Angelegte, übernommene und entfernte Zeilen gelten dann nicht.
 
 == Siehe auch ==
 

@@ -20,9 +20,11 @@ namespace WindowsFormsApplication1
     /// den vollständigen Parametersatz, den die beiden Überlagerungen splatten
     /// (Risiko R‑W10a‑5).</para>
     ///
-    /// <para><b>Alle drei Aufrufer ignorieren das <c>DialogResult</c></b> — der Dialog
-    /// schreibt sofort (Befund W10‑B29). Zurück kommt der zuletzt angelegte oder
-    /// gewählte Speicher; wer ihn nicht braucht, wirft ihn weg.</para>
+    /// <para><b>Geschrieben wird erst beim OK.</b> Der Dialog führt bis dahin einen
+    /// Arbeitsstand; Abbrechen, das Kreuz und Escape verlassen ihn, ohne dass eine
+    /// Zeile geschrieben wurde. Zurück kommt nach OK der zuletzt angelegte oder
+    /// gewählte Speicher — dort entsteht auch die Id einer neuen Zeile —, nach
+    /// Abbrechen <c>0</c>; wer ihn nicht braucht, wirft ihn weg.</para>
     /// </summary>
     internal static class PufferSpProjektHuelle
     {
@@ -108,7 +110,8 @@ namespace WindowsFormsApplication1
                 ["SpalteLaedtBis"] = MyResource.Resource.PSP_SPALTE_LAEDT_BIS,
                 ["BtnAnlegen"] = MyResource.Resource.PSP_BTN_ANLEGEN,
                 ["BtnUebernehmen"] = MyResource.Resource.PSP_BTN_UEBERNEHMEN,
-                ["BtnSchliessen"] = MyResource.Resource.PSP_BTN_SCHLIESSEN,
+                ["OkText"] = MyResource.Resource.SIM_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
 
@@ -167,7 +170,7 @@ namespace WindowsFormsApplication1
         }
 
         // =============================================================================
-        // Die Datenseite - sechzehn Delegaten
+        // Die Datenseite - siebzehn Delegaten
         // =============================================================================
 
         /// <summary>
@@ -184,6 +187,8 @@ namespace WindowsFormsApplication1
                     .ToList(),
 
                 Projektliste: () => Projektliste(idProjekt),
+
+                Listentext: Listentext,
 
                 PufferLesen: id => Pufferstand(id),
 
@@ -239,6 +244,21 @@ namespace WindowsFormsApplication1
                     (p.VerwendungFehlt ? MyResource.Resource.PSP_LISTE_VERWENDUNG_FEHLT : "")));
             }
             return l;
+        }
+
+        /// <summary>
+        /// Die Listenzeile zu einem Satz, den es in der Datenbank noch nicht gibt: derselbe
+        /// Aufbau wie in <see cref="Projektliste"/>, nur aus den Eingaben statt aus
+        /// <c>PufferInfo</c>. Der Zusatz „Verwendung fehlt" entfällt — die Prüfkette des
+        /// Dialogs lässt ein leeres Klassen-Set gar nicht durch.
+        /// </summary>
+        private static string Listentext(PspEingaben e)
+        {
+            var set = new PufferSpCtrl.KlassenSet(e.Heizung, e.Brauchwasser, e.Prozess);
+            return string.Format(MyResource.Resource.PSP_LISTE_EINTRAG,
+                                 e.Bezeichner,
+                                 WaermesenkeClass.VerwendungAnzeige(set.Verwendung),
+                                 e.Volumen);
         }
 
         /// <summary>
