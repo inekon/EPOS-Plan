@@ -6370,3 +6370,70 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Offen:** der Sprung-Entscheid und drei Befunde aus derselben Messung (siehe Statusdatei
 > „Nach #286").
+
+## #287 — Die Auswahl folgt der Bezugsgröße, auch bei der PV-Zeile (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Zwei Anwenderentscheide vom 15.09.2026 auf die offenen Punkte aus #284 — die
+> Filterung der Bemessungsarten auf die übrigen neun Gewerke ausweiten, und die
+> PV-Vorlagenzeile „Batteriespeicher" (Vorlage 5, Komponente 3) mit `EUR_PRO_KWH_KAPAZITAET`
+> auflösen. Wieder dieselben zwei Hälften: die Auswahl, die dem Anwender angeboten wird, und
+> die Zeile, die schon ausgeliefert wird.
+>
+> **Die Matrix wurde neu ausgezählt, bevor sie scharf geschaltet wurde** — je Gewerk **und je
+> Raster**, aus `WirtschaftlichkeitCtrl.BasisGrund`, also derselben Landkarte, dazu der
+> Bestand. Der Grund: Eine Filterung, die nur ein Gewerk traf, war billig zu belegen; jetzt
+> trifft sie alle zehn, und ein Fehler wäre nicht mehr auf eine Maske begrenzt.
+>
+> **Kein Gewerk wird leergeräumt, keines behält nur die Pauschale.** Die dünnsten Listen sind
+> die Betriebsraster der vier Gewerke ohne Geräte- und Laufgrößen (Pufferspeicher,
+> Wärmezentrale, Bauliche Anlagen, Stromeinspeisung): fester Jahresbetrag **und** „% der
+> Investition". Die zweite trägt dort wirklich — ihre Basis ist die Investitionskaskade, nicht
+> ein Gerät. Für den Pufferspeicher ist genau das seit #284 ausgeliefert; die drei übrigen
+> landen auf demselben Bild. Die dünnste Investitionsliste hat drei Arten.
+>
+> **Genau eine Bestandszeile fiel heraus** — und zwar dieselbe, um die es in der zweiten
+> Hälfte geht: `Tab_KostenVorlagePosition` 33, Satz `NULL`. Sonst nichts: weder in den zwanzig
+> Auslieferungsvorlagen noch irgendwo in `Tab_ProjektWerte` (175 Zeilen, alle zehn Gewerke),
+> und in **keinem** Referenzprojekt. Der Bestandsschutz aus #284 greift unverändert und ist je
+> Gewerk × gewerksfremder Art einzeln geprüft.
+>
+> **Die PV-Zeile wird ein fester Betrag, nicht „je kWp".** Die Begründung ist gemessen, nicht
+> geraten, und sie ist der Kern dieser Hälfte:
+>
+> - Die Photovoltaik führt im Investitionsraster genau **zwei** Arten mit echter Baugröße —
+>   `EUR_PRO_KWP` und `EUR_PRO_KW_ELEKTRISCH` —, und **beide liefern dieselbe Zahl**
+>   (`PhotovoltaikCtrl.KwpSumme`, Modulanzahl × Modulleistung). Ein Batteriespeicher-Satz je
+>   kWp bemäße den **Preis eines Geräts an der Größe eines anderen**: eine erfundene
+>   Bezugsgröße anstelle der alten, nicht die richtige.
+> - Die Vorlage sagt selbst, wie sie Gerätepositionen ohne eigene Baugröße bemisst:
+>   „Wechselrichter", „Montagesystem / Unterkonstruktion" und „Bauliche Anlagen" stehen **alle**
+>   auf festem Betrag; nur die Modulzeile trägt den kWp-Satz. Der Batteriespeicher reiht sich
+>   ein.
+> - Ein fester Betrag ist absolut — der erfasste Wert **ist** der Betrag. Es gibt keine Menge,
+>   die fehlen könnte, also auch keinen stillen Betrag 0. Genau das war der Mechanismus, den
+>   #271 an der Solarthermie und #284 am Pufferspeicher gefunden hat.
+> - Die kapazitätsbemessene Zeile geht nicht verloren: Sie steht am Gewerk **Stromspeicher**
+>   („Speicher", Bezugsgröße `Tab_Stromspeicher.Energie`) — unverändert.
+>
+> **Schemaschritt 78** nach dem Muster 77: eine Quelle (`PvVorlageBatteriespeicher`), aus der
+> Kern, Migration, das Werkzeug `Testdatenbankschema`, der Nachweis und die Saat der zwanzig
+> Auslieferungsvorlagen lesen. Die Anweisung filtert am **Gewerk**, nicht am Positionsnamen —
+> ein Name ist keine Zusicherung —, und fasst nur eine Zeile mit `Satz IS NULL` an. Eine Zeile
+> mit gepflegtem Satz wird gezählt (`ZaehlungGepflegt`), nicht geändert: Ein Satz je kWh darf
+> nicht stillschweigend zu einem festen Betrag werden.
+>
+> **Testdatenbank nachgezogen:** Schemastand 78, 70 766 592 Byte (unverändert), 119
+> STRICT-Tabellen, `integrity_check` ok, `foreign_key_check` leer. Tabellenweiser
+> Fingerabdruck gegen den Git-Stand: **genau zwei** Tabellen ändern sich — `Tab_Applikation`
+> (77 → 78) und `Tab_KostenVorlagePosition` (Zeile 33; die übrigen 120 Zeilen unverändert).
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 144
+> Tests grün, davon 27 neue in `BemessungsauswahlJeGewerkTests` (je Gewerk ein Fall mit
+> vollständiger Invest- und Betriebsliste, „kein Gewerk ohne Auswahl", Bestandsschutz je
+> Gewerk) und `PvBatteriespeicherBemessungTests` (Landkarte, Saat = Nachzug, gepflegte vs.
+> ungepflegte Zeile, Wiederholbarkeit); `SqlDialektPruefer` 1 409 Texte, 0 Fundstellen;
+> Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und **135 von 135 Dateien
+> byte-gleich** (sha256-weise nachgezählt); Gate sept88 grün. Keine Einfrierregel berührt, die
+> Basis bleibt. Merge `4cf8efe1`.
+>
+> **Offen:** ein flatterhafter Fremdtest und eine Datei ohne BOM (siehe Statusdatei „Nach #287").
