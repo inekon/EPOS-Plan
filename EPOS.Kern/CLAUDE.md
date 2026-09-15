@@ -101,6 +101,23 @@ Die Emissionsspalten der Kessel- und BHKW-Kataloge sind **„nur Anzeige"**
 (`ParameterVerwendung`, Stufe `Dialog`). **Nachweis: `EmissionsquelleTests`** — keine
 Referenz-CSV führt eine Emissionsgröße.
 
+## Ein geliehener Wert wird nie still gesetzt
+
+Fehlt einer Größe ihr Wert — ein CO₂-Faktor, ein Arbeits- oder Leistungspreis —, ist das eine
+**Datenlücke** und keine Aufforderung an den Rechenweg, sich bei einem Nachbarn zu bedienen.
+`Emissionsquelle` liefert dann 0 mit `Co2Gepflegt = false`, `KostenEmissionRechner` einen
+benannten Fehlgrund; beides bleibt so.
+
+Der Wert eines fachlich verwandten Datensatzes darf nur über einen **Bedienweg** einfließen:
+`Controller/EnergietraegerRueckfall.cs` legt die Träger derselben Kategorie
+(`energy_carrier.pricing_model`) mit ihrem Wert und dessen Einheit vor, und **erst die
+Bestätigung des Anwenders schreibt** — auch dann, wenn es nur einen Kandidaten gibt. Geschrieben
+wird in die **Projektübersteuerung**, nie in den Katalog, und die Oberfläche trägt eine
+Herleitungszeile, an der ein geliehener Wert als geliehen erkennbar bleibt.
+
+**Nachweis: `EnergietraegerRueckfallTests`** samt dem Fall, dass die Emissionsquelle weiterhin
+nicht auf die Kategorie zurückfällt.
+
 ## Die Anzeigeeinheit einer Energiemenge
 
 `Allgemein/Energieeinheit.cs` (ohne Datenbank, ohne Oberfläche) trägt **MWh (Vorgabe)** und
