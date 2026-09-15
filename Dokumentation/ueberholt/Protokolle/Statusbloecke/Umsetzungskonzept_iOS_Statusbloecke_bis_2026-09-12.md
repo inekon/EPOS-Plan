@@ -6526,3 +6526,68 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Offen:** die Umbenennung der drei DTO-Typen als eigener Schritt (siehe Statusdatei
 > „Nach #288").
+
+## #289 — Die Wache lernt sehen, der Sprung lernt schweigen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Fünf Kleinpunkte** aus den Messungen zu #286 und #287, vom Anwender freigegeben.
+>
+> **K1 — vier doppelte Titel, und die Lücke dahinter.** `TarifstrukturDialog`,
+> `PhotovoltaikVerguetungDialog`, `WirtschaftlichkeitParameterDialog` und
+> `KapitalwertVerlaufDialog` zeichneten ihren `epos-dialog-titel` unbedingt, obwohl die
+> Überlagerung denselben Titel schon trägt. Sie führen jetzt `TitelAnzeigen` (Vorgabe `true`,
+> Bestand unverändert); die vier Einbettungsstellen in `WirtschaftlichkeitSeite.razor` setzen
+> `false`. Alle Einbettungsstellen geprüft: je Dialog genau zwei Wirte — die Überlagerung und
+> die Windows-Hülle (eigenes Fenster, behält ihren Kopf).
+>
+> Der eigentliche Punkt ist die **Lücke**: Die Wache `UeberlagerungstitelTests` verglich
+> Titel**ausdrücke** und griff deshalb nicht, weil die vier ihren Text aus `@_t.Titel`,
+> `@_t.Titel(Sicht)` und `@TitelText` beziehen. Die neue Prüfung `StrukturFunde` kommt **ohne
+> jeden Textvergleich** aus: Wer in einer betitelten `Ueberlagerung` steckt, darf keinen
+> unbedingten Dialogtitel zeichnen — gleich, woher sein Text kommt. Belegt an einem
+> nachgebauten Vorstand: Die geschärfte Wache meldet dort alle vier, nach der Behebung
+> nichts; die alten Bauarten melden in beiden Fassungen nichts. Dazu acht bunit-Fälle je
+> Dialog und eine Theory über alle fünf Bereiche.
+>
+> **K2 — der Befund traf nur halb zu.** Der Auftrag ging davon aus, `WPAR_SPRUNG_HINWEIS`
+> („bitte vorher speichern") sei seit #282/#286 überholt. Die Nachprüfung, wie der
+> Parameterdialog seine Sprünge **wirklich** abwickelt, ergab das Gegenteil: `BhkwKlick()`
+> meldet den Sprungwunsch und schließt — `Speichern` läuft **nicht**. Anders als der
+> BHKW-Dialog nimmt dieser Sprung nicht den OK-Weg; nicht gespeicherte Eingaben sind fort,
+> weil die Hülle beim nächsten Öffnen frisch lädt. Deshalb **nicht** der Wortlaut des
+> BHKW-Dialogs übernommen, sondern der Text sagt, was **dieser** Dialog tut: „Der Sprung
+> schließt diesen Dialog, ohne die Eingaben zu speichern — bitte vorher speichern." Beide
+> Sprachen, Designer wiederholbar gezogen.
+>
+> **K3 — Sprung schreibt nur bei Änderung** (Anwenderentscheid 15.09.2026, Empfehlung
+> angenommen). Die zwei Sprungknöpfe des BHKW-Dialogs bleiben beim OK-Weg — ein Sprung ist
+> kein Abbruch, und ohne Schreiben wären die Eingaben verloren. Aber sie schreiben nur bei
+> Unterschied: `BhkwAnlagenstand.Gleicht` (elf Felder) und `BhkwVorgabenstand.Gleicht`
+> (siebzehn Felder) vergleichen **Werte** gegen das hereingereichte Objekt — **kein
+> Merkflag**, denn ein Flag kippt schon bei einer Bedienung ohne Wertänderung. Ohne
+> Unterschied: Sprung ohne einen einzigen Schreibaufruf, `Gespeichert` bleibt `false`, der
+> Wirt hat keinen Grund neu zu rechnen; der Hinweissatz steht nur, wenn wirklich geschrieben
+> würde. Begründung im Kommentar: Wer nur nachschlägt, soll keinen Schreibzugriff auslösen —
+> ein Schreiben ohne Änderung überschriebe in einer Mehrbenutzerlage fremde Änderungen mit
+> dem eigenen geladenen Stand. Dass ein Fehlschlag den Sprung verhindert und die Maske offen
+> hält (Muster Ae25), hielt der Bestand schon; jetzt mit Testfall belegt. Fünf bunit-Fälle.
+>
+> **K4 — der sechste Flatterer.** Ursache: Der Messpunkt wurde **sofort** nach dem Klick auf
+> den Spaltenkopf genommen, das virtualisierte QuickGrid holt seine Zeilen aber über einen
+> `ItemsProvider` nach — der Messpunkt lag in der Einschwingphase. Neuer Helfer `ZurRuhe`:
+> zeichnet, bis zwei Läufe in Folge dieselbe Rechnung, Datenquelle **und** Menge zeigen; kommt
+> die Liste nach zwanzig Läufen nicht zur Ruhe, fällt der Fall mit klarem Grund — die Prüfung
+> bleibt scharf. Drei weitere Zeilenklicks derselben Klasse ohne Wartepunkt bekamen den
+> vorhandenen Helfer. **Nachweis: 30 Klassenläufe, je 59 von 59 grün.**
+>
+> **K5 — BOM.** `EPOS.Kern/Controller/KostenVorlagenCtrl.cs`: vorher `75 73 69`, 44 530 Byte,
+> 0 CR, 875 LF — nachher `ef bb bf`, 44 533 Byte, 0 CR, 875 LF, Rest byte-identisch. Genau das
+> BOM, keine Zeile sonst.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen (Bestand); Windows-Schale 0 Fehler, 5
+> Warnungen (Bestand); **8 023 Tests grün**, 1 übersprungen, 0 rot (EPOS.UI 4 136 → 4 151);
+> Referenzlauf 1030/1007/1017/1045/1046 byte-gleich; Gate a289 grün. Kein Rechenweg berührt.
+> Merge `6245e330`.
+>
+> **Offen:** vier Entscheide — der Sprungknopf, den niemand auswertet; 37 weitere doppelte
+> Titel; 332 Dateien ohne BOM; die Schreibbedingung des OK-Wegs (siehe Statusdatei
+> „Nach #289").
