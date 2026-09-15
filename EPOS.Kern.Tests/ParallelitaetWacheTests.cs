@@ -184,11 +184,13 @@ namespace EPOS.Kern.Tests
                             "Aus " + projekt + " steht keine Datei im geprueften Bestand.");
             }
 
-            // Vier bekannte umgestellte Stellen - sie belegen, dass der Bestand die
-            // wirklich betroffenen Dateien enthaelt. Die vierte ist eine RAZOR-Datei
+            // Vier bekannte Stellen - sie belegen, dass der Bestand die wirklich
+            // betroffenen Dateien enthaelt. Die letzte ist eine RAZOR-Datei
             // (Auftrag #240): Ohne sie liefe der Waechter ueber EPOS.UI, ohne den
-            // Programmtext dieses Projekts je zu sehen.
-            Assert.Contains(dateien, d => Path.GetFileName(d) == "SpeicherOptimierer.cs");
+            // Programmtext dieses Projekts je zu sehen. Die erste ist die
+            // rechenschwerste Datei der Engine - ohne sie liefe der Waechter ueber
+            // SpeicherEngine, ohne dessen Rechenweg je zu sehen.
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "FlottenOptimierer.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "KiAusfuehrung.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "StromspeicherAuslegungHuelle.cs");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "ProjektTransferDialog.razor");

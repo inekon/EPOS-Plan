@@ -960,7 +960,7 @@ Leistung. Jeder Speicher führt eigenen Ladezustand, eigene Zyklenzählung und e
 ### 8.1 SpeicherEngine — UI-freie Klassenbibliothek
 
 Struktur: `SpeicherParameter`, `PreisZeitreihe`, `SpeicherEingang`, `SpeicherErgebnis`, `ISpeicherStrategie` mit
-den Implementierungen `Dauernutzung`, `PeakShaving`, `Arbitrage`, dazu `SpeicherOptimierer` und
+den Implementierungen `Dauernutzung`, `PeakShaving`, `Arbitrage`, dazu `FlottenOptimierer` und
 `Wirtschaftlichkeit`.
 
 **Harte Randbedingungen (aus der Code-Prüfung):**

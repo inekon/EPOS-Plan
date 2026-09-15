@@ -476,78 +476,21 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // Auslegungsoptimierung (AP8, Fachkonzept 6.3)
+        // Vorbereitung des Auslegungslaufs (Fachkonzept 6.3)
         // =================================================================
 
         /// <summary>
-        /// Startet die Rastersuche über Kapazität und C-Rate für die aktive
-        /// Speichervariante des Projekts.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Die eine Regel dieser Methode: Datenbank vor Parallelität.</b>
-        /// Lastreihe, Erzeugungsreihen, Preisreihen und Parametersatz werden
-        /// <b>einmal</b> und <b>vollständig vor</b> dem Aufruf des Optimierers
-        /// beschafft — genau wie in <see cref="RechneKern"/>, nur eben nicht für einen,
-        /// sondern für alle Rasterpunkte. Danach passiert kein Datenbankzugriff mehr.
-        /// Das ist keine Optimierung, sondern Bedingung: Der dialogfreie
-        /// <see cref="DataRepository.EngineModus"/> ist <b>prozessweit und nicht
-        /// threadgebunden</b>; ein Zugriff aus dem <c>Parallel.For</c> der Rastersuche
-        /// heraus könnte deshalb in einem beliebigen anderen Thread einen Dialog
-        /// öffnen oder den Modus eines Nebenlaufs zurücksetzen. Die
-        /// <c>using</c>-Blöcke innerhalb von <see cref="LeseParameter(int,int)"/> und
-        /// <see cref="StromPreisCtrl"/> sind vor dem Optimiererlauf zu Ende.
-        /// </para>
-        /// <para>
-        /// <b>Synchron.</b> Die Methode rechnet im aufrufenden Thread. Der
-        /// Hintergrund-Task (<c>Task.Run</c>), die Fortschrittsanzeige und der
-        /// Abbruchknopf liegen in der Formularschicht
-        /// (<see cref="Form_SpeicherOptimierung"/>) — Fachkonzept 6.3.
-        /// </para>
-        /// <para>
-        /// <b>N_zyk.</b> Die zugesicherten Volladezyklen stehen am Gerät und nicht im
-        /// Engine-Parametersatz. Führt <paramref name="optionen"/> keinen eigenen Wert,
-        /// reicht diese Methode den aus <see cref="LetzterKontext"/> gelesenen weiter;
-        /// die Rastersuche kann dadurch je Punkt bewerten, ob das Zyklenbudget hält
-        /// (Fachkonzept 5.4).
-        /// </para>
-        /// </remarks>
-        /// <param name="sim">Bereits gelaufene Simulation (Quelle der Zeitreihen).</param>
-        /// <param name="idProjekt">Projekt-ID für Parameter- und Preisbeschaffung.</param>
-        /// <param name="optionen">Suchraum und Schalter; <c>null</c> = Vorbelegung des Fachkonzepts.</param>
-        /// <param name="fortschritt">Meldung je fertigem Rasterpunkt, oder <c>null</c>.</param>
-        /// <param name="abbruch">Abbruchmarke; ein Abbruch endet mit <see cref="OperationCanceledException"/>.</param>
-        /// <returns>
-        /// Das Ergebnis der Rastersuche, oder <c>null</c>, wenn das Projekt keinen
-        /// brauchbaren Speicher führt (Grund in <see cref="LetzterHinweis"/>).
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Wenn <paramref name="sim"/> <c>null</c> ist.</exception>
-        /// <exception cref="OperationCanceledException">Bei Abbruch über <paramref name="abbruch"/>.</exception>
-        public OptimiererErgebnis StarteOptimierung(
-            SimulationControl sim,
-            int idProjekt,
-            OptimiererOptionen optionen,
-            IProgress<OptimiererFortschritt> fortschritt,
-            CancellationToken abbruch)
-        {
-            StromspeicherOptimierungVorbereitung vorbereitung = BereiteOptimierungVor(sim, idProjekt);
-            if (vorbereitung == null) return null;
-
-            return FuehreOptimierungAus(vorbereitung, optionen, fortschritt, abbruch);
-        }
-
-        /// <summary>
-        /// Erste Hälfte der Optimierung: <b>alles, was die Datenbank braucht</b> —
+        /// Erste Hälfte des Auslegungslaufs: <b>alles, was die Datenbank braucht</b> —
         /// Parametersatz, Zeitreihen, Preisreihen.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Getrennt von <see cref="FuehreOptimierungAus"/>, damit der Aufrufer die
-        /// beiden Hälften auf <b>verschiedene Threads</b> legen kann: Der Dialog ruft
+        /// Getrennt von der Rechnung, damit der Aufrufer die
+        /// beiden Hälften auf <b>verschiedene Threads</b> legen kann: Die Ansicht ruft
         /// diese Methode auf dem UI-Thread und erst die zweite in <c>Task.Run</c>. Die
         /// Trennung ist damit nicht mehr nur dokumentiert, sondern durch die Signatur
-        /// erzwungen — es gibt schlicht keinen Datenbankcode mehr, der während des
-        /// <c>Parallel.For</c> laufen könnte. Zwei Gründe:
+        /// erzwungen — es gibt schlicht keinen Datenbankcode mehr, der während der
+        /// nebenläufigen Rechnung laufen könnte. Zwei Gründe:
         /// </para>
         /// <list type="number">
         ///   <item><description><see cref="DataRepository.EngineModus"/> ist prozessweit
@@ -655,40 +598,6 @@ namespace WindowsFormsApplication1
                 Eingang = sim == null ? null : BaueEingang(sim, idProjekt, variante),
                 Kontext = kontext
             };
-        }
-
-        /// <summary>
-        /// Zweite Hälfte der Optimierung: die reine Rechnung, <b>ohne jeden
-        /// Datenbankzugriff</b>. Darf in einem Hintergrund-Task laufen.
-        /// </summary>
-        /// <param name="vorbereitung">Ergebnis von <see cref="BereiteOptimierungVor"/>.</param>
-        /// <param name="optionen">Suchraum und Schalter; <c>null</c> = Vorbelegung des Fachkonzepts.</param>
-        /// <param name="fortschritt">Meldung je fertigem Rasterpunkt, oder <c>null</c>.</param>
-        /// <param name="abbruch">Abbruchmarke.</param>
-        /// <remarks>
-        /// Die zugesicherten Volladezyklen N_zyk stehen am Gerät und nicht im
-        /// Engine-Parametersatz. Führt <paramref name="optionen"/> keinen eigenen Wert,
-        /// reicht diese Methode den aus der Vorbereitung gelesenen weiter; die
-        /// Rastersuche kann dadurch je Punkt bewerten, ob das Zyklenbudget hält
-        /// (Fachkonzept 5.4).
-        /// </remarks>
-        /// <exception cref="OperationCanceledException">Bei Abbruch über <paramref name="abbruch"/>.</exception>
-        public static OptimiererErgebnis FuehreOptimierungAus(
-            StromspeicherOptimierungVorbereitung vorbereitung,
-            OptimiererOptionen optionen,
-            IProgress<OptimiererFortschritt> fortschritt,
-            CancellationToken abbruch)
-        {
-            if (vorbereitung == null) throw new ArgumentNullException(nameof(vorbereitung));
-
-            OptimiererOptionen opt = optionen ?? new OptimiererOptionen();
-
-            double zyklen = vorbereitung.Kontext != null ? vorbereitung.Kontext.ZyklenZugesichert : 0.0;
-            if (opt.ZyklenZugesichert <= 0.0 && zyklen > 0.0)
-                opt = opt with { ZyklenZugesichert = zyklen };
-
-            return new SpeicherOptimierer().Optimiere(
-                vorbereitung.Eingang, vorbereitung.Basis, opt, fortschritt, abbruch);
         }
 
         /// <summary>
@@ -1907,16 +1816,17 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Alles, was die Auslegungsoptimierung aus der Datenbank braucht — fertig
-    /// beschafft und ab hier unveränderlich (AP8).
+    /// Alles, was der Auslegungslauf aus der Datenbank braucht — fertig
+    /// beschafft und ab hier unveränderlich.
     /// </summary>
     /// <remarks>
     /// Der Typ ist die Nahtstelle zwischen dem Datenbankteil
-    /// (<see cref="StromspeicherSimCtrl.BereiteOptimierungVor"/>, UI-Thread) und dem
-    /// Rechenteil (<see cref="StromspeicherSimCtrl.FuehreOptimierungAus"/>,
+    /// (<see cref="StromspeicherSimCtrl.BereiteOptimierungVor"/> bzw.
+    /// <see cref="StromspeicherSimCtrl.BereiteProjektflotteVor"/>, UI-Thread) und dem
+    /// Rechenteil der Flotte (<c>SpeicherFlottenStudieCtrl.Rechnen</c>,
     /// Hintergrund-Task). <see cref="SpeicherEingang"/> und
     /// <see cref="SpeicherParameter"/> sind ihrerseits unveränderlich und dürfen
-    /// deshalb von allen Rasterpunkten gleichzeitig gelesen werden.
+    /// deshalb von allen Kandidaten gleichzeitig gelesen werden.
     /// </remarks>
     public class StromspeicherOptimierungVorbereitung
     {

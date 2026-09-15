@@ -297,8 +297,9 @@ Bleiben" beim Verlassen mit ungespeicherten Eingaben (wie 62b‑E‑1) und die P
 > **Modus-Umschalter Flotte / Einzelspeicher ist gefallen** — die Ansicht rechnet immer die
 > Flotte, und ein Einzelspeicher ist eine Flotte mit genau einer Einheit. Die Absätze unten,
 > die einen Modus nennen, sind in diesem Sinn zu lesen; was sie dem Modus „Flotte" zuschreiben,
-> gilt seither für jede Einheitenzahl. Der Einzelspeicher-**Optimierer** bleibt: Er trägt weiter
-> das Betriebsbild des Berichts und die KI-Aktion `speicher_optimieren`. Einzelheiten in 4.1.
+> gilt seither für jede Einheitenzahl. Der Einzelspeicher-**Optimierer** ist inzwischen ganz
+> gefallen; das Betriebsbild des Berichts (`SpeicherBetriebsbild`) steht eigenständig und wird
+> vom Stromspeicher-Reiter der Ergebnisseite gezeichnet. Einzelheiten in 4.1.
 
 Dasselbe Muster bekam bis #206 die **Einzelspeicher-Optimierung** (`SpeicherOptimierungDialog`,
 2 Bilder mit Reihenwahl schon vorhanden): Sie wurde Modus „Einzelspeicher" derselben Ansicht. Ob
@@ -520,10 +521,11 @@ Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als
 - **Gelöscht** sind `EinzelspeicherSuchraum/-Betrieb/-Ergebnis.razor`, der Suchraum-Teil des
   `SpeicherAuslegungEditor` samt `NurQuellenKostenProfile`, der `Modusknopf` der `Ablaufleiste`,
   `AuslegungModus` und im Kern der Einzelweg des `StromspeicherAuslegungCtrl`
-  (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`). **Nicht gelöscht** sind
-  `SpeicherOptimierungCtrl` und `SpeicherOptimierer`: Sie haben weitere Aufrufer (Bericht
-  `SpeicherBetriebsbild`, `SpeicherAuslegungCtrl.Vorbelegung`, KI-Aktion `speicher_optimieren`
-  über `StromspeicherSimCtrl`).
+  (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`). `SpeicherOptimierungCtrl`
+  und `SpeicherOptimierer` blieben damals stehen; sie sind inzwischen ebenfalls gefallen. Vom
+  alten Umfeld bleiben der gespeicherte Stand und die Leistungspreis-Quellen
+  (`SpeicherAuslegungVorgabenCtrl`) sowie das eigenständige Betriebsbild des Berichts
+  (`SpeicherBetriebsbild`).
 
 ### 4.2 Anwenderbefund 11.09.2026: Lastspitzenkappung entlädt zu früh (Ratsche)
 

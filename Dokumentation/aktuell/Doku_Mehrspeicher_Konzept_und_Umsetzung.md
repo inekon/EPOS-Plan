@@ -118,12 +118,11 @@ Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal der Zahl der Betriebs
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
 **Nebenläufigkeit und Sprache (Auftrag #232, 12.09.2026).** Die Flotten-Rastersuche
-(`FlottenOptimierer`) rechnet **sequenziell**; parallel läuft allein die Rastersuche der
-Einzelspeicher-Auslegung (`SpeicherOptimierer.RechnePhase`), und die tut es seit #232 über
-`SpeicherEngine/Kulturweitergabe.For` statt über ein nacktes `Parallel.For` — jedes
+(`FlottenOptimierer`) rechnet **sequenziell**; mit dem Wegfall des Einzelspeicher-Optimierers
+führt die `SpeicherEngine` überhaupt keine Rechenparallelität mehr. Wird die Flottensuche eines
+Tages parallelisiert, gilt die Hausregel: nur über `SpeicherEngine/Kulturweitergabe` — jedes
 Arbeitspaket trägt damit die Kultur des Aufrufers, statt den veränderlichen prozessweiten
-Vorgabewert bei jedem Zugriff neu zu lesen. Wird die Flottensuche eines Tages ebenfalls
-parallelisiert, gilt dieselbe Hausregel: nur über die Vorrichtung — der Wächter
+Vorgabewert bei jedem Zugriff neu zu lesen; der Wächter
 `EPOS.Kern.Tests/ParallelitaetWacheTests` lässt in `SpeicherEngine` kein nacktes
 `Parallel.For`, `Task.Run` oder `new Thread` mehr zu.
 
@@ -480,9 +479,9 @@ zwei Pfade führt (SD‑Q2): das **Rückschreiben in die Projektanlage** in Schr
 mit Rückfrage für die eine Einheit mit Anlagenbezug, ohne den die ausgelegte Größe beim
 klassischen Projektlauf nie ankäme — und der **Leistungspreis** als EINE Eingabe in Schritt 2
 (`LeistungspreisBlock`; derselbe Wert für `FlottenTarif.LeistungspreisEuroProKw`, den Suchraum
-und die Projektvariante). Der Einzelspeicher-**Optimierer** selbst ist nicht gelöscht: Er
-trägt das Betriebsbild des Berichts (`SpeicherBetriebsbild`), die Vorbelegung in
-`SpeicherAuslegungCtrl` und die KI-Aktion `speicher_optimieren`.
+und die Projektvariante). Der Einzelspeicher-**Optimierer** ist gefallen; das Betriebsbild des
+Berichts (`SpeicherBetriebsbild`) steht eigenständig, und die Vorbelegung in
+`SpeicherAuslegungCtrl` zieht `SpeicherAuslegungVorgabenCtrl`.
 
 **Der Weg dorthin und zurück.** Der Reiter „Stromspeicher" der Ergebnisseite **wechselt die
 Ansicht**, statt eine Überlagerung aufzuziehen (Muster W16c‑E‑3). Die Ergebnisseite selbst

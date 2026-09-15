@@ -5018,23 +5018,14 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>The storage cannot hold the target threshold: the new peak is {0} kW. Increase capacity or power, or raise the threshold.</value>
   </data>
-  <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
-    <value>Result</value>
-  </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Current sizing: {0} kWh / {1} kW ({2} C)</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
-    <value>The objective is the annual surplus after capital service ΔJ = E_a,eq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Payback time is deliberately a secondary indicator, not an objective.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Demand charge L_P</value>
   </data>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Take from</value>
-  </data>
-  <data name="OPT_MSG_LP_FEHLT" xml:space="preserve">
-    <value>Demand charge missing — enter it or take it from a source.</value>
   </data>
   <data name="OPT_QUELLE_TARIF" xml:space="preserve">
     <value>Tariff structure (economics): {0} €/(kW·a) — {1}</value>
@@ -5051,35 +5042,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Electricity carrier: {0} €/(kW·a)</value>
   </data>
-  <data name="OPT_KZ_GRUPPE_KAPPUNG" xml:space="preserve">
-    <value>Peak shaving</value>
-  </data>
-  <data name="OPT_KZ_SPITZE_OHNE" xml:space="preserve">
-    <value>Peak load without storage</value>
-  </data>
-  <data name="OPT_KZ_SPITZE_MIT" xml:space="preserve">
-    <value>Peak load with storage</value>
-  </data>
-  <data name="OPT_KZ_KAPPUNG" xml:space="preserve">
-    <value>Shaving ΔP_max</value>
-  </data>
-  <data name="OPT_KZ_LP_ERSPARNIS" xml:space="preserve">
-    <value>Demand charge saving</value>
-  </data>
-  <data name="OPT_KZ_SCHWELLE" xml:space="preserve">
-    <value>Threshold reached</value>
-  </data>
-  <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
-    <value>The target threshold was exceeded — the storage cannot hold it.</value>
-  </data>
-  <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
-    <value>Default: 500 … 5,000 kWh with 10 grid points; if the current capacity is outside, 0.25 … 2.5 × the current capacity instead. C rate 0.5 … 3.0 in 0.5 steps.</value>
-  </data>
   <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
     <value>Optimise sizing …</value>
-  </data>
-  <data name="OPT_BTN_START" xml:space="preserve">
-    <value>Start optimisation</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Cancel</value>
@@ -5089,45 +5053,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="OPT_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Close</value>
-  </data>
-  <data name="OPT_STATUS_BEREIT" xml:space="preserve">
-    <value>Ready.</value>
-  </data>
-  <data name="OPT_STATUS_PUNKT" xml:space="preserve">
-    <value>Grid point {0} of {1}</value>
-  </data>
-  <data name="OPT_STATUS_PUNKT_FEIN" xml:space="preserve">
-    <value>Grid point {0} of {1} (refinement)</value>
-  </data>
-  <data name="OPT_STATUS_FERTIG" xml:space="preserve">
-    <value>{0} grid points in {1} s — optimum {2} kWh / {3} C</value>
-  </data>
-  <data name="OPT_STATUS_ABGEBROCHEN" xml:space="preserve">
-    <value>Cancelled — no complete grid available.</value>
-  </data>
-  <data name="OPT_CHART_HEATMAP_TITEL" xml:space="preserve">
-    <value>Annual surplus ΔJ [EUR/a]</value>
-  </data>
-  <data name="OPT_CHART_X_CRATE" xml:space="preserve">
-    <value>C rate [1/h]</value>
-  </data>
-  <data name="OPT_CHART_Y_KAPAZITAET" xml:space="preserve">
-    <value>Capacity [kWh]</value>
-  </data>
-  <data name="OPT_CHART_SCHNITT_TITEL" xml:space="preserve">
-    <value>Cut at {0} C</value>
-  </data>
-  <data name="OPT_CHART_SCHNITT_Y" xml:space="preserve">
-    <value>ΔJ [EUR/a]</value>
-  </data>
-  <data name="OPT_CHART_BETRIEB_TITEL" xml:space="preserve">
-    <value>Load profile and storage operation [kW] — {0}</value>
-  </data>
-  <data name="OPT_BETRIEB_WOCHE" xml:space="preserve">
-    <value>week of the annual peak</value>
-  </data>
-  <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
-    <value>whole year</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Grid draw without storage</value>
@@ -5141,116 +5066,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_BETRIEB_R_LEISTUNG" xml:space="preserve">
     <value>Storage power (discharge +, charge −)</value>
   </data>
-  <data name="OPT_CHART_FARBSKALA" xml:space="preserve">
-    <value>ΔJ [EUR/a]</value>
-  </data>
-  <data name="OPT_ZELLE_LEER" xml:space="preserve">
-    <value>Hover a cell to see its values.</value>
-  </data>
-  <data name="OPT_ZELLE" xml:space="preserve">
-    <value>{0} kWh · {1} C · P = {2} kW · ΔJ = {3} EUR/a · T_stat = {4}</value>
-  </data>
-  <data name="OPT_WARN_RAND" xml:space="preserve">
-    <value>Optimum at the edge — extend the search range ({0}).</value>
-  </data>
-  <data name="OPT_WARN_RAND_C_UNTEN" xml:space="preserve">
-    <value>capacity at the lower bound</value>
-  </data>
-  <data name="OPT_WARN_RAND_C_OBEN" xml:space="preserve">
-    <value>capacity at the upper bound</value>
-  </data>
-  <data name="OPT_WARN_RAND_R_UNTEN" xml:space="preserve">
-    <value>C rate at the lower bound</value>
-  </data>
-  <data name="OPT_WARN_RAND_R_OBEN" xml:space="preserve">
-    <value>C rate at the upper bound</value>
-  </data>
-  <data name="OPT_WARN_CPOW" xml:space="preserve">
-    <value>The power related investment c_pow is 0 — the C rate axis is cost neutral. Which C rate wins is then decided by the benefit alone; if more power brings none, a tie goes to the SMALLEST C rate, because the best point is searched in a fixed order.</value>
-  </data>
-  <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
-    <value>The project has neither PV nor CHP generation. Continuous use values the generation surplus actually used — without generation it is 0, and every grid point yields the same return. For this project the calculation mode „peak shaving“ is the fitting one.</value>
-  </data>
-  <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
-    <value>The capacity related investment c_cap is 0 — larger storages then cost nothing and the capacity axis carries no decision. Maintain the module cost at the storage device (storage dialog, field „module cost [€/kWh]“).</value>
-  </data>
-  <data name="OPT_WARN_ALLE_GLEICH" xml:space="preserve">
-    <value>All grid points yield the same value, there is no optimum — the design shown is merely the first point of the grid.</value>
-  </data>
-  <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
-    <value>K_ver is included in ΔJ (specification 5.4).</value>
-  </data>
-  <data name="OPT_WARN_ZYKLEN" xml:space="preserve">
-    <value>The best point yields {0} full cycles over the service life against {1} guaranteed.</value>
-  </data>
-  <data name="OPT_SP_GROESSE" xml:space="preserve">
-    <value>Quantity</value>
-  </data>
-  <data name="OPT_SP_WERT" xml:space="preserve">
-    <value>Value</value>
-  </data>
-  <data name="OPT_SP_EINHEIT" xml:space="preserve">
-    <value>Unit</value>
-  </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nominal capacity C_nom</value>
-  </data>
-  <data name="OPT_KZ_CRATE" xml:space="preserve">
-    <value>C rate</value>
-  </data>
-  <data name="OPT_KZ_LEISTUNG" xml:space="preserve">
-    <value>Charge/discharge power P</value>
-  </data>
-  <data name="OPT_KZ_ZIELFUNKTION" xml:space="preserve">
-    <value>Objective ΔJ</value>
-  </data>
-  <data name="OPT_KZ_UEBERSCHUSS" xml:space="preserve">
-    <value>Annual surplus without K_ver</value>
-  </data>
-  <data name="OPT_KZ_ERTRAG1" xml:space="preserve">
-    <value>Reference year yield E_a,1</value>
-  </data>
-  <data name="OPT_KZ_ERTRAGAEQ" xml:space="preserve">
-    <value>Equivalent yield E_a,eq</value>
-  </data>
-  <data name="OPT_KZ_INVEST" xml:space="preserve">
-    <value>Investment I</value>
-  </data>
-  <data name="OPT_KZ_ANNUITAET" xml:space="preserve">
-    <value>Annuity A</value>
-  </data>
-  <data name="OPT_KZ_NPV" xml:space="preserve">
-    <value>Net present value</value>
-  </data>
-  <data name="OPT_KZ_AMORT_STAT" xml:space="preserve">
-    <value>Static payback</value>
-  </data>
-  <data name="OPT_KZ_AMORT_DYN" xml:space="preserve">
-    <value>Dynamic payback</value>
-  </data>
-  <data name="OPT_KZ_ZYKLEN" xml:space="preserve">
-    <value>Equivalent full cycles</value>
-  </data>
-  <data name="OPT_KZ_ZYKLEN_N" xml:space="preserve">
-    <value>Cycles over the service life</value>
-  </data>
-  <data name="OPT_KZ_KVER" xml:space="preserve">
-    <value>Wear cost K_ver</value>
-  </data>
-  <data name="OPT_KZ_EIGENVERBRAUCH" xml:space="preserve">
-    <value>Self consumption ratio</value>
-  </data>
-  <data name="OPT_KZ_AUTARKIE" xml:space="preserve">
-    <value>Self sufficiency</value>
-  </data>
-  <data name="OPT_KZ_LADEENERGIE" xml:space="preserve">
-    <value>Charged energy</value>
-  </data>
-  <data name="OPT_KZ_ENTLADEENERGIE" xml:space="preserve">
-    <value>Discharged energy</value>
-  </data>
-  <data name="OPT_KZ_VERLUSTE" xml:space="preserve">
-    <value>Storage losses</value>
   </data>
   <data name="OPT_AMORT_UEBER" xml:space="preserve">
     <value>&gt; service life</value>
@@ -5258,38 +5075,11 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_AMORT_NIE" xml:space="preserve">
     <value>not amortisable</value>
   </data>
-  <data name="OPT_MSG_KEIN_LAUF" xml:space="preserve">
-    <value>The simulation has not been run yet. Sizing optimisation needs the load profile and the generation series of a complete run.</value>
-  </data>
   <data name="OPT_MSG_KEIN_ERGEBNIS" xml:space="preserve">
     <value>There is no optimisation result yet.</value>
   </data>
   <data name="OPT_MSG_FEHLER" xml:space="preserve">
     <value>The optimisation failed: {0}</value>
-  </data>
-  <data name="OPT_MSG_CMIN" xml:space="preserve">
-    <value>The lower capacity bound must be greater than 0.</value>
-  </data>
-  <data name="OPT_MSG_CMAX" xml:space="preserve">
-    <value>The upper capacity bound must be above the lower one.</value>
-  </data>
-  <data name="OPT_MSG_STUETZSTELLEN" xml:space="preserve">
-    <value>The capacity axis needs at least 2 grid points.</value>
-  </data>
-  <data name="OPT_MSG_STUETZSTELLEN_MAX" xml:space="preserve">
-    <value>The capacity axis takes at most {0} grid points — each one is a complete annual run.</value>
-  </data>
-  <data name="OPT_MSG_PUNKTE_MAX" xml:space="preserve">
-    <value>The search space yields {0} grid points; at most {1} are allowed. Please reduce the number of grid points or increase the C rate step.</value>
-  </data>
-  <data name="OPT_MSG_RMIN" xml:space="preserve">
-    <value>The lower C rate must be greater than 0.</value>
-  </data>
-  <data name="OPT_MSG_RMAX" xml:space="preserve">
-    <value>The upper C rate must not be below the lower one.</value>
-  </data>
-  <data name="OPT_MSG_RSCHRITT" xml:space="preserve">
-    <value>The C rate step must be greater than 0.</value>
   </data>
   <data name="OPT_MSG_MEHRERE_ANLAGEN" xml:space="preserve">
     <value>The project holds several storage units. The optimisation works on their sum; splitting an optimum across several devices is not unambiguous. Please enter the values manually.</value>
@@ -5310,15 +5100,6 @@ The simulation will not be recalculated.</value>
   </data>
   <data name="OPT_CSV_TITEL" xml:space="preserve">
     <value>CSV export</value>
-  </data>
-  <data name="OPT_CSV_PHASE" xml:space="preserve">
-    <value>Phase</value>
-  </data>
-  <data name="OPT_CSV_PHASE_GROB" xml:space="preserve">
-    <value>Coarse grid</value>
-  </data>
-  <data name="OPT_CSV_PHASE_FEIN" xml:space="preserve">
-    <value>Refinement</value>
   </data>
   <data name="OPT_CSV_GESCHRIEBEN" xml:space="preserve">
     <value>The file has been created:

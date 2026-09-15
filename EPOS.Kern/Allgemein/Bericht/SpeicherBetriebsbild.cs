@@ -19,18 +19,18 @@ namespace WindowsFormsApplication1
     /// Netzbezug, wann tut er es, und wie voll ist er dabei? Das steht erst da, wo alle
     /// Kurven über DERSELBEN Zeitachse liegen.</para>
     ///
-    /// <para><b>Warum diese Klasse neben <see cref="SpeicherOptimierungCtrl"/> steht.</b>
-    /// Dort entsteht dasselbe Bild für den BESTPUNKT einer Rastersuche — aus einem
-    /// eigens nachgerechneten Lauf, weil ein <c>OptimiererPunkt</c> bewusst keine
-    /// Zeitreihen hält. Hier gibt es den Lauf schon: Er steht als
-    /// <see cref="SpeicherErgebnis"/> in der Simulation. Gemeinsam ist beiden die
-    /// RECHNUNG — Vorzeichen der Speicherleistung, Residuallast, Netzbezug —, und die
-    /// steht deshalb genau einmal, nämlich hier (<see cref="LeistungKw"/>,
-    /// <see cref="Netzbezug"/>); der Optimierungscontroller ruft sie.</para>
+    /// <para><b>Wer sie ruft.</b> Diese Klasse ist eigenständig: Sie bekommt einen
+    /// fertigen Lauf (<see cref="SpeicherErgebnis"/>) und zeichnet daraus. Ihr
+    /// Produktionsaufrufer ist der Stromspeicher-Reiter der Ergebnisseite
+    /// (<c>SimulationErgebnisHuelle.Bilder.cs</c>), ihr Vokabular
+    /// (<see cref="REIHE_OHNE"/> und die anderen Reihenschlüssel) benutzt daneben die
+    /// Flottenansicht (<c>SpeicherFlottenAnzeigeCtrl</c>). Die RECHNUNG — Vorzeichen
+    /// der Speicherleistung, Residuallast, Netzbezug — steht genau einmal, nämlich hier
+    /// (<see cref="LeistungKw"/>, <see cref="Netzbezug"/>).</para>
     ///
     /// <para><b>Der Ergebnisreiter kennt keine Schwelle.</b> Die Reihe
-    /// <see cref="REIHE_SCHWELLE"/> gehört zur Lastspitzenkappung, und die ist eine
-    /// Berechnungsart der AUSLEGUNGSOPTIMIERUNG (W11b‑E‑3) bzw. die eigene Maske
+    /// <see cref="REIHE_SCHWELLE"/> gehört zur Lastspitzenkappung, und die ist ein
+    /// Betriebsziel der FLOTTENRECHNUNG bzw. die eigene Maske
     /// <c>PeakShaving</c> — der Simulationslauf fährt Dauernutzung oder
     /// Preissteuerung (<c>StromspeicherSimCtrl.BaueStrategie</c>). <see cref="Zeichnen"/>
     /// nimmt die Schwelle trotzdem entgegen: Eine Berechnungsart mit Kappung hätte sonst
@@ -38,10 +38,9 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class SpeicherBetriebsbild
     {
-        // Die sprachneutralen REIHENSCHLUESSEL des Bildes. Sie standen bis W11b-B-26 in
-        // SpeicherOptimierungCtrl; dort ruft sie jetzt der Dialog weiter ab
-        // (SpeicherOptimierungCtrl.REIHE_* verweisen hierher), denn das Vokabular
-        // gehört zum BILD und nicht zu einem seiner beiden Aufrufer.
+        // Die sprachneutralen REIHENSCHLUESSEL des Bildes. Das Vokabular gehört zum
+        // BILD und nicht zu einem seiner Aufrufer; SpeicherFlottenAnzeigeCtrl.REIHE_*
+        // verweisen hierher.
 
         /// <summary>Reihenschlüssel: Netzbezug ohne Speicher.</summary>
         public const string REIHE_OHNE = "OHNE_SPEICHER";

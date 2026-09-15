@@ -616,7 +616,7 @@ Pflichtangaben führt; der Assistent bietet deshalb nur `maske_oeffnen("Projekt 
 | `simulation_rechnen` | `projekt_id`, `speichern` (bool) | `SimulationRunner.Simuliere` — `Allgemein\Simulation\SimulationRunner.cs:64` (ohne Speichern) bzw. `SimuliereUndSpeichere` `:766` | Migration abgeschlossen (`SchemaMigration.SimulationGesperrt`, `:3430`, geprüft in `:105`); Satz in `Tab_Einstellungen`; gültige `ID_Klimaregion`; `DarfSchreiben()` bei `speichern` | Setzt `EngineModus` selbst (`:66`, `:772`); Meldungen in `Protokoll` (`:40`) und `LaufOk` (`:52`). **Speichern ersetzt den Vorgängerlauf** — gehört in die Bestätigung |
 | `wirtschaftlichkeit_rechnen` | `stamm_id`, `varianten_ids[]` | `BerichtsDatenSammler.SammleFuerBericht` — `Allgemein\Bericht\BerichtsDatenSammler.cs:137` (mit `IProgress`/`CancellationToken`), danach `WirtschaftlichkeitCtrl.Berechne` `:606` | Parametersatz vorhanden (`:271`) | Rechnet **alle** gewählten Projekte neu; persistiert die Ergebnisse (`:606`). Läuft im Bestand in `Task.Run` (`:358`) — Einläufigkeit beachten (3.4) |
 | `bericht_erstellen` | `stamm_id`, `varianten_ids[]`, `format` | `BerichtCtrl.ErzeugeWord` — `Controller\BerichtCtrl.cs:25` bzw. `ErzeugeExcel` `:60`; Konfiguration `Lade` `:95` | Datenstand aus `SammleFuerBericht`; Zielpfad **vom Anwender** über `SaveFileDialog` | Rückgabe ist der Dateipfad; Vorlage `Vorlagen\Berichtsvorlage.docx` |
-| `speicher_optimieren` | `projekt_id`, Rasteroptionen | zweistufig: `StromspeicherSimCtrl.BereiteOptimierungVor` — `Controller\StromspeicherSimCtrl.cs:536` (**UI-Thread, DB**) und `FuehreOptimierungAus` `:571` (**`Task.Run`, keine DB**); Kern `SpeicherEngine\SpeicherOptimierer.cs:93` | `SimulationControl` vorhanden und gelaufen; Projekt führt eine brauchbare Speicheranlage | `null` + `LetzterHinweis`; Abbruch endet mit `OperationCanceledException` **ohne Teilergebnis**. Ergebnisübernahme ist eine **eigene** Stufe-2-Aktion (5.2) |
+| `speicher_auslegen` | `projekt_id`, Suchraum | zweistufig: `StromspeicherSimCtrl.BereiteOptimierungVor` (**UI-Thread, DB**) und `SpeicherFlottenStudieCtrl.Rechnen` (**`Task.Run`, keine DB**) | `SimulationControl` vorhanden und gelaufen; Projekt führt eine brauchbare Speicheranlage | `null` + `LetzterHinweis`; Abbruch endet mit `OperationCanceledException` **ohne Teilergebnis**. Ergebnisübernahme ist eine **eigene** Stufe-2-Aktion (5.2) |
 | `peak_shaving_rechnen` | `ganglinie_id`, Speicherparameter, Schwelle | `SpeicherEngine\PeakShaving.cs:131` `BerechnePeakShaving(double[], SpeicherParameter)`; Vorbelegung `Controller\PeakShavingCtrl.cs:242` | Lastgang vorhanden; `p.Pruefe()` | reine Rechnung, keine DB — darf vollständig in `Task.Run` |
 
 ### 5.4 Ausdrücklich nicht im Register
@@ -846,9 +846,10 @@ Tabellen; ein Testfall je Fehlerpfad (Namenskollision, mehrdeutige Anlagenlage, 
 
 ### Etappe 4 — Rechenaktionen (L)
 
-* `simulation_rechnen`, `wirtschaftlichkeit_rechnen`, `speicher_optimieren`, `peak_shaving_rechnen`,
-  `bericht_erstellen` (5.3).
-* Fortschritt und Abbruch im Chat nach dem Muster `Form_SpeicherOptimierung` (3.4).
+* `simulation_rechnen`, `wirtschaftlichkeit_rechnen`, `speicher_auslegen`, `peak_shaving_rechnen`,
+  `bericht_erstellen` (5.3). **Keine davon ist registriert** — der Katalog beschreibt den
+  Andockpunkt, den eine künftige Aktion nähme, nicht den Bestand.
+* Fortschritt und Abbruch im Chat nach dem Muster der Auslegungsansicht (3.4).
 * Harte Einläufigkeit gegen die prozessweiten Zustände; `BhkwPlan.ResetState()` nach Abbruch.
 
 **Abnahme:** Ein Lauf lässt sich abbrechen und hinterlässt keinen halben Zustand; zwei gleichzeitige Anforderungen

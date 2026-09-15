@@ -21,7 +21,7 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
     public void Ein_Profil_wird_als_unabhaengige_Kopie_geladen()
     {
         SpeicherOptimierungEingaben? gemeldet = null;
-        var original = new SpeicherOptimierungEingaben { PMinKw = 77, Auslegung = new SpeicherAuslegungKonfiguration() };
+        var original = new SpeicherOptimierungEingaben { LeistungspreisEurProKwA = 77, Auslegung = new SpeicherAuslegungKonfiguration() };
         var cut = Render<SpeicherAuslegungEditor>(p => p
             .Add(x => x.Wert, new SpeicherOptimierungEingaben())
             .Add(x => x.Auslegungsprofile, new[] { new SpeicherAuslegungProfil { Name = "Industrie", Eingaben = original } })
@@ -29,7 +29,7 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
 
         cut.FindAll("select").Single(x => x.TextContent.Contains("Industrie")).Change("0");
 
-        Assert.Equal(77, gemeldet!.PMinKw);
+        Assert.Equal(77, gemeldet!.LeistungspreisEurProKwA);
         Assert.NotSame(original, gemeldet);
         Assert.NotSame(original.Auslegung, gemeldet.Auslegung);
     }
