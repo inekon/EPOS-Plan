@@ -8631,6 +8631,9 @@ The seat becomes available for another device; a new activation is required to c
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>No controllable form is open. Controllable are: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
+    <value>The named fields belong to the form "{0}". It is not open right now — the action dialog_oeffnen ({1}) opens it; then select the row and the values can be set.</value>
+  </data>
   <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
     <value>Several controllable forms are open ({0}). Please name the form explicitly.</value>
   </data>
@@ -15426,6 +15429,9 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Continue</value>
   </data>
   <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="SCHLIESSKREUZ_TOOLTIP" xml:space="preserve">
     <value>Close</value>
   </data>
   <data name="STROMGL_BTN_IMPORTIEREN" xml:space="preserve">

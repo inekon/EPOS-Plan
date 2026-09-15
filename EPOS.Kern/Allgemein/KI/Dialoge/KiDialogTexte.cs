@@ -183,6 +183,12 @@
         /// <summary>{0} = freigegebene Masken.</summary>
         internal static string KeineOffen => MyResource.Resource.KI_DLG_KEINE_OFFEN;
 
+        /// <summary>
+        /// Die gemeinte Maske ist bekannt, aber nicht offen - mit dem Weg dorthin
+        /// (Anwenderbefund 15.09.2026). {0} = Anzeigename, {1} = Maskenschluessel.
+        /// </summary>
+        internal static string MaskeNichtOffen => MyResource.Resource.KI_DLG_MASKE_NICHT_OFFEN;
+
         /// <summary>{0} = die offenen Masken.</summary>
         internal static string MehrereOffen => MyResource.Resource.KI_DLG_MEHRERE_OFFEN;
 

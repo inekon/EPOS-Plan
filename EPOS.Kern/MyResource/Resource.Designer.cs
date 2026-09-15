@@ -24101,6 +24101,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_NICHT_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher bearbeiten ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PUFFERSP {
@@ -40881,6 +40890,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PV_MODUL_TIP_TNOCT {
             get {
                 return ResourceManager.GetString("PV_MODUL_TIP_TNOCT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string SCHLIESSKREUZ_TOOLTIP {
+            get {
+                return ResourceManager.GetString("SCHLIESSKREUZ_TOOLTIP", resourceCulture);
             }
         }
         

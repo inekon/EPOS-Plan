@@ -168,13 +168,13 @@ namespace WindowsFormsApplication1
                 parameter: new[] { MaskeParameter(), FeldParameter() },
                 vorbedingung: a =>
                 {
-                    string grund = BrueckenGrund(a.Text("maske"));
+                    string grund = BrueckenGrund(a.Text("maske"), a.Text("feld"));
                     if (grund != null) return grund;
                     return FeldzugangGrund(a.Text("maske"), a.Text("feld"));
                 },
                 ausfuehren: a =>
                 {
-                    string grund = BrueckenGrund(a.Text("maske"));
+                    string grund = BrueckenGrund(a.Text("maske"), a.Text("feld"));
                     if (grund != null) return KiErgebnis.Abgelehnt(grund);
 
                     string maske = Maskenschluessel(a.Text("maske"));
@@ -710,24 +710,133 @@ namespace WindowsFormsApplication1
         /// Warum die Bruecke diese Maske nicht liefern kann; <c>null</c> = sie kann.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Die Ablehnung NENNT, was es gibt — dieselbe Regel wie beim alten Weg
         /// (Fachkonzept 11.4): Ein „geht nicht" ohne Liste zwaenge das Modell zum Raten.
+        /// </para>
+        /// <para>
+        /// <b>Seit dem 15.09.2026 nennt sie auch den WEG</b> (Anwenderbefund: „setze die
+        /// Vorlauftemperatur Heizkessel auf 65°C" im Bereich Heizkessel). Die Absage
+        /// lautete bis dahin „Es ist keine steuerbare Maske geoeffnet. Steuerbar sind:
+        /// Form_Heizkessel_Bearbeiten, Form_PV, …" - eine Liste von TYPNAMEN, aus der
+        /// weder Anwender noch Modell einen Menueweg ableiten koennen. Dabei stand die
+        /// Antwort bereit: Der Katalog kennt alle Masken samt Feldern UNABHAENGIG davon,
+        /// ob eine offen ist. Wer <c>vorlauf</c> und <c>ruecklauf</c> nennt, meint
+        /// erkennbar die Heizkesselmaske - und genau das sagt die Absage jetzt, mitsamt
+        /// dem Hinweis auf <c>dialog_oeffnen</c>.
+        /// </para>
         /// </remarks>
-        private static string BrueckenGrund(string genannt)
+        /// <param name="genannt">Der genannte Maskenschluessel; leer = die zuletzt angemeldete.</param>
+        /// <param name="felder">
+        /// Die Feldnamen, die der Aufruf nennt. Aus ihnen wird die gemeinte Maske
+        /// erschlossen, wenn keine offen ist; ohne sie bleibt es bei der Liste.
+        /// </param>
+        private static string BrueckenGrund(string genannt, params string[] felder)
         {
             string gesucht = (genannt ?? "").Trim();
 
             if (gesucht.Length > 0 && !KiDialoge.Katalog.Kennt(gesucht))
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
-                                     gesucht, Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+                                     gesucht, Aufzaehlen(Anzeigenamen()));
 
             string maske = Maskenschluessel(gesucht);
 
             if (maske.Length == 0 || !KiMaskenbruecke.IstAngemeldet(maske))
+            {
+                // ZUERST der Weg, dann die Liste: Wenn sich aus den genannten Feldern
+                // (oder aus dem genannten Maskennamen) EINE Maske erschliessen laesst,
+                // ist die Liste der uebrigen sechs nur Rauschen.
+                KiDialog gemeint = GemeinteMaske(gesucht, felder);
+                if (gemeint != null)
+                    return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNichtOffen,
+                                         gemeint.Anzeigename, gemeint.Maskenname);
+
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
-                                     Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+                                     Aufzaehlen(Anzeigenamen()));
+            }
 
             return null;
+        }
+
+        /// <summary>
+        /// Die Maske, die der Aufruf ERKENNBAR meint - genannt oder aus den Feldnamen
+        /// erschlossen. <c>null</c>, wenn sie sich nicht eindeutig bestimmen laesst.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eindeutig heisst eindeutig.</b> Fuehren zwei Masken ein Feld desselben
+        /// Namens (etwa <c>nutzungsdauer</c>), liefert die Suche <c>null</c> - dann bleibt
+        /// es bei der Liste, statt eine der beiden zu raten. Genannt wird nur, was sicher
+        /// ist.
+        /// </para>
+        /// <para>
+        /// <b>Gesucht wird im KATALOG, nicht an der Bruecke</b> - und das ist der Punkt:
+        /// Zu diesem Zeitpunkt ist gerade KEINE Maske angemeldet, die Bruecke wuesste also
+        /// nichts. Der Katalog dagegen fuehrt alle sieben Masken samt Feldern, immer.
+        /// </para>
+        /// </remarks>
+        private static KiDialog GemeinteMaske(string genannt, string[] felder)
+        {
+            if (genannt.Length > 0)
+            {
+                KiDialog ausName = KiDialoge.Katalog.Finde(genannt);
+                if (ausName != null) return ausName;
+            }
+
+            if (felder == null) return null;
+
+            KiDialog treffer = null;
+
+            foreach (string feld in felder)
+            {
+                if (string.IsNullOrWhiteSpace(feld)) continue;
+
+                foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                {
+                    if (!d.KenntFeld(feld.Trim())) continue;
+
+                    // Ein zweiter, ANDERER Treffer macht die Sache mehrdeutig.
+                    if (treffer != null && !ReferenceEquals(treffer, d)) return null;
+                    treffer = d;
+                }
+            }
+
+            return treffer;
+        }
+
+        /// <summary>
+        /// Die blossen FELDNAMEN einer Zuweisungsliste („vorlauf=65; ruecklauf=55").
+        /// </summary>
+        /// <remarks>
+        /// Bewusst nachsichtig und ohne Beanstandung: Hier geht es nur darum, die gemeinte
+        /// Maske zu erraten, bevor ueberhaupt eine offen ist. Die richtige Zerlegung samt
+        /// Fehlermeldung macht <see cref="Zerlegen"/> - aber erst, wenn es eine Maske gibt.
+        /// </remarks>
+        private static string[] Feldnamen(string werte)
+        {
+            if (string.IsNullOrWhiteSpace(werte)) return Array.Empty<string>();
+
+            var namen = new List<string>();
+            foreach (string teil in werte.Split(ZUWEISUNGSTRENNER))
+            {
+                int gleich = teil.IndexOf(ZUWEISUNGSZEICHEN);
+                string name = (gleich > 0 ? teil.Substring(0, gleich) : teil).Trim();
+                if (name.Length > 0) namen.Add(name);
+            }
+            return namen.ToArray();
+        }
+
+        /// <summary>Die Anzeigenamen aller Katalogmasken - fuer Absagen an den ANWENDER.</summary>
+        /// <remarks>
+        /// Der Typname (<c>Form_PufferSp_Bearbeiten</c>) gehoert in das Protokoll und in
+        /// die Parameter des Modells; in einem Satz, den der Anwender liest, hat er nichts
+        /// zu suchen.
+        /// </remarks>
+        private static IReadOnlyList<string> Anzeigenamen()
+        {
+            var namen = new List<string>();
+            foreach (KiDialog d in KiDialoge.Katalog.Alle) namen.Add(d.Anzeigename);
+            return namen;
         }
 
         /// <summary>Warum <c>dialog_oeffnen</c> diese Maske nicht kennt; <c>null</c> = es geht.</summary>
@@ -774,7 +883,7 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static string EinzelfeldGrund(KiAufruf a)
         {
-            string grund = BrueckenGrund(a.Text("maske"));
+            string grund = BrueckenGrund(a.Text("maske"), a.Text("feld"));
             if (grund != null) return grund;
 
             string maske = Maskenschluessel(a.Text("maske"));
@@ -798,7 +907,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static string MehrfeldGrund(KiAufruf a)
         {
-            string grund = BrueckenGrund(a.Text("maske"));
+            // Die Feldnamen gehen in die Bruecke MIT: Ist keine Maske offen, erschliesst
+            // sie daraus die gemeinte und nennt sie - „vorlauf; ruecklauf" heisst
+            // erkennbar Heizkessel (Anwenderbefund 15.09.2026).
+            string grund = BrueckenGrund(a.Text("maske"), Feldnamen(a.Text("werte")));
             if (grund != null) return grund;
 
             string maske = Maskenschluessel(a.Text("maske"));

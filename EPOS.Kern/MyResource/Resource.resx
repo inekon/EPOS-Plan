@@ -8638,6 +8638,9 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_KEINE_OFFEN" xml:space="preserve">
     <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
+    <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen.</value>
+  </data>
   <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
     <value>Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich.</value>
   </data>
@@ -15415,6 +15418,9 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Weiter</value>
   </data>
   <data name="FEHLERSCHRANKE_BTN_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="SCHLIESSKREUZ_TOOLTIP" xml:space="preserve">
     <value>Schließen</value>
   </data>
   <data name="STROMGL_BTN_IMPORTIEREN" xml:space="preserve">

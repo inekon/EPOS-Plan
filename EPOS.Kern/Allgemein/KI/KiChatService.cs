@@ -722,6 +722,16 @@ namespace WindowsFormsApplication1
                               "Projektangabe fuer das gerade geoeffnete Projekt.");
                 sb.AppendLine("Fehlt eine Projektangabe in der Frage, lass den Parameter WEG - das " +
                               "Programm nimmt dann das geoeffnete Projekt. Rate keinen Namen.");
+                // Anwenderbefund 15.09.2026: „setze die Vorlauftemperatur Heizkessel auf
+                // 65°C" im Bereich Heizkessel. Der Aufruf war richtig, nur die MASKE war
+                // zu - und das Modell liess es dabei bewenden, obwohl dialog_oeffnen
+                // bereitsteht und ohne Bestaetigung laeuft. Die Sackgasse wird damit zum
+                // gefuehrten Weg.
+                sb.AppendLine("Wird feld_setzen oder formular_ausfuellen abgelehnt, weil die Maske nicht " +
+                              "geoeffnet ist, nenne die Absage die gemeinte Maske: Rufe dann " +
+                              "dialog_oeffnen fuer sie auf (das aendert nichts und braucht keine " +
+                              "Bestaetigung) und sage dem Anwender, dass er dort den Satz auswaehlen " +
+                              "muss, bevor du die Werte setzen kannst.");
                 sb.AppendLine("Behaupte NIE, ein Projekt gebe es nicht, nur weil sein Name in Platzhalterzeilen nicht auftaucht.");
             }
             else
