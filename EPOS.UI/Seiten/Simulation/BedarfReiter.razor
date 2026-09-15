@@ -84,8 +84,11 @@
             }
 
             <div class="epos-simerg-schalter">
-                @* PAKET E2: „Gesamt" plus je vorhandenem Kanal ein Schalter. *@
-                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_GESAMT" Wert="@_gesamtAn"
+                @* PAKET E2: die Summenlinie plus je vorhandenem Kanal ein Schalter.
+                   Der Schalter traegt DENSELBEN Text wie die Legende der Linie
+                   („Summe Waermebedarf") - „Gesamt" bleibt dort, wo es eine Auswahl
+                   benennt und keine Summenlinie: in der Klappliste „Bedarfsart:". *@
+                <Schalter Bezeichnung="@Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF" Wert="@_gesamtAn"
                           WertChanged="GesamtGesetzt" />
                 @for (int k = 0; k < Daten.KanalMwh.Count; k++)
                 {

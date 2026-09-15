@@ -7736,6 +7736,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Stromverbrauch ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SUMME_STROMVERBRAUCH {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SUMME_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Wärmebedarf ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SUMME_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SUMME_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Wärmeerzeugung ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SUMME_WAERMEERZEUGUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SUMME_WAERMEERZEUGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_UEBERSCHUSS {

@@ -38,6 +38,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
     {
         Erzeuger = new[]
         {
+            new Ganglinienreihe("GESAMT", "Summe Wärmeerzeugung", true),
             new Ganglinienreihe("WAERMEPUMPE", "Wärmepumpe", true),
             new Ganglinienreihe("HEIZSTAB", "Heizstab", true),
             new Ganglinienreihe("HEIZKESSEL", "Heizkessel", true),
@@ -109,7 +110,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         var seite = WaermeZeichnen();
         var haken = seite.FindAll("input[type='checkbox']");
 
-        // 2 Schalter + 3 Erzeuger + 1 Speicher (die Mehrfachauswahl hat je Eintrag einen)
+        // 2 Schalter + Summe + 3 Erzeuger + 1 Speicher (je Eintrag einer)
         Assert.True(haken.Count >= 2);
 
         _auftraege.Clear();
@@ -150,7 +151,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         _auftraege.Clear();
         var seite = WaermeZeichnen();
 
-        Assert.Equal(new[] { "WAERMEPUMPE", "HEIZSTAB", "HEIZKESSEL" },
+        Assert.Equal(new[] { "GESAMT", "WAERMEPUMPE", "HEIZSTAB", "HEIZKESSEL" },
                      seite.Instance.GewaehlteErzeuger);
         Assert.Equal(new[] { "PUFFER_1018023" }, seite.Instance.GewaehlteSpeicher);
         Assert.True(seite.Instance.Bedarfslinie);
@@ -160,7 +161,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         // Der Bildauftrag traegt alle Schluessel plus die Bedarfslinie.
         Bildauftrag auftrag = _auftraege[_auftraege.Count - 1];
         Assert.NotNull(auftrag.Reihen);
-        Assert.Equal(new[] { "WAERMEPUMPE", "HEIZSTAB", "HEIZKESSEL",
+        Assert.Equal(new[] { "GESAMT", "WAERMEPUMPE", "HEIZSTAB", "HEIZKESSEL",
                              "PUFFER_1018023", "WAERMEBEDARF" }, auftrag.Reihen);
     }
 
@@ -175,11 +176,12 @@ public class GangUndErgebnisReiterTests : EposBunitContext
     {
         var erste = WaermeZeichnen();
 
-        // Anwenderwahl: Bedarfslinie aus, nur noch der Heizstab, kein Speicher.
+        // Anwenderwahl: Bedarfslinie aus, Summe aus, nur noch der Heizstab, kein Speicher.
         erste.FindAll("input[type='checkbox']")[1].Change(false);   // Bedarfslinie
-        erste.FindAll("input[type='checkbox']")[2].Change(false);   // Waermepumpe
-        erste.FindAll("input[type='checkbox']")[4].Change(false);   // Heizkessel
-        erste.FindAll("input[type='checkbox']")[5].Change(false);   // Puffer 1
+        erste.FindAll("input[type='checkbox']")[2].Change(false);   // Summe Waermeerzeugung
+        erste.FindAll("input[type='checkbox']")[3].Change(false);   // Waermepumpe
+        erste.FindAll("input[type='checkbox']")[5].Change(false);   // Heizkessel
+        erste.FindAll("input[type='checkbox']")[6].Change(false);   // Puffer 1
 
         Assert.Equal(new[] { "HEIZSTAB" }, erste.Instance.GewaehlteErzeuger);
 
@@ -189,6 +191,85 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Equal(new[] { "HEIZSTAB" }, zweite.Instance.GewaehlteErzeuger);
         Assert.Empty(zweite.Instance.GewaehlteSpeicher);
         Assert.False(zweite.Instance.Bedarfslinie);
+    }
+
+    // ------------------------------------------- 15.09.2026: die Summenlinie
+
+    /// <summary>
+    /// <b>Anwenderwunsch 15.09.2026.</b> Die gruene Summenlinie des
+    /// Produktionsdiagramms hatte kein Kaestchen: Sie war da, ob der Anwender sie
+    /// wollte oder nicht. Jetzt steht sie als ERSTER Eintrag der Erzeugerliste —
+    /// die Summe ueber ihren Summanden —, von ihnen durch eine Trennlinie
+    /// abgesetzt, und traegt denselben Namen wie die Legende.
+    /// </summary>
+    [Fact]
+    public void Die_Summenlinie_steht_abgesetzt_ueber_den_Erzeugern()
+    {
+        var seite = WaermeZeichnen();
+        string text = seite.Markup;
+
+        Assert.Contains("Summe Wärmeerzeugung", text);
+        Assert.True(text.IndexOf("Summe Wärmeerzeugung", StringComparison.Ordinal)
+                    < text.IndexOf("Wärmepumpe", StringComparison.Ordinal),
+                    "Die Summe gehoert UEBER ihre Summanden.");
+
+        // Sichtbar abgesetzt: genau eine Trennlinie, und zwar in der Erzeugerliste.
+        Assert.Single(seite.FindAll("hr.epos-mehrfachauswahl-absatz"));
+    }
+
+    /// <summary>
+    /// „Alle" und „Keine" fassen die Summenlinie mit — sie liegt in DERSELBEN
+    /// Liste wie ihre Summanden und nicht als Einzelschalter daneben.
+    /// </summary>
+    [Fact]
+    public void Alle_und_Keine_fassen_die_Summenlinie_mit()
+    {
+        var seite = WaermeZeichnen();
+        // Nur die Erzeugerliste traegt Sammelknoepfe (die Speicherliste hat einen Eintrag).
+        var knoepfe = seite.FindAll("button.epos-knopf");
+
+        knoepfe[1].Click();                                   // Keine
+        Assert.Empty(seite.Instance.GewaehlteErzeuger);
+
+        seite.FindAll("button.epos-knopf")[0].Click();        // Alle
+        Assert.Contains("GESAMT", seite.Instance.GewaehlteErzeuger);
+    }
+
+    /// <summary>
+    /// Der Schalter WIRKT: Abgewaehlt faellt „GESAMT" aus dem Bildauftrag, wieder
+    /// angehakt steht es darin. Die Huelle zeichnet die Kontur nur bei
+    /// <c>wahl.Contains("GESAMT")</c>.
+    /// </summary>
+    [Fact]
+    public void Die_abgeschaltete_Summenlinie_faellt_aus_dem_Bildauftrag()
+    {
+        var seite = WaermeZeichnen();
+        Assert.Contains("GESAMT", _auftraege[^1].Reihen!);
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[2].Change(false);   // Summe aus
+        Assert.DoesNotContain("GESAMT", _auftraege[^1].Reihen!);
+        Assert.DoesNotContain("GESAMT", seite.Instance.GewaehlteErzeuger);
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[2].Change(true);    // Summe wieder an
+        Assert.Contains("GESAMT", _auftraege[^1].Reihen!);
+    }
+
+    /// <summary>
+    /// Die neue Reihe faellt in dasselbe Sitzungsgedaechtnis wie jede andere (#234):
+    /// Ein Blattwechsel verliert die Wahl nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_der_Summenlinie_uebersteht_den_Blattwechsel()
+    {
+        var erste = WaermeZeichnen();
+        erste.FindAll("input[type='checkbox']")[2].Change(false);   // Summe aus
+
+        var zweite = WaermeZeichnen();
+
+        Assert.DoesNotContain("GESAMT", zweite.Instance.GewaehlteErzeuger);
+        Assert.Contains("WAERMEPUMPE", zweite.Instance.GewaehlteErzeuger);
     }
 
     /// <summary>
@@ -245,7 +326,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
     {
         Reihen = new[]
         {
-            new Ganglinienreihe("GESAMT", "Gesamt", true),
+            new Ganglinienreihe("GESAMT", "Summe Stromverbrauch", true),
             new Ganglinienreihe("PROFIL_LASTGANG", "Lastgangprofil", true),
             new Ganglinienreihe("WAERMEPUMPE", "Wärmepumpe", true),
             new Ganglinienreihe("HEIZSTAB", "Heizstab", false),

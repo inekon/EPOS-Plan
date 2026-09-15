@@ -116,6 +116,16 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
 - **Jedes Renderer-Bild steht im Baustein `Diagramm`**, einziger Weg dorthin ist `ChartBild` —
   sonst fehlt der Zoom; `Rund="true"` reicht `OhneZoom` durch.
+- **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
+  Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
+  Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein
+  eigener Ressourcenschlüssel (`CHART_LEGENDE_SUMME_*`), und wo „Gesamt" eine AUSWAHL
+  benennt (Klapplisteneintrag), bleibt es stehen. Die Summe führt eine eigene Reihe in
+  derselben Wahl wie ihre Summanden, steht dort als ERSTER Eintrag, ist über `AbsatzNach`
+  der `Mehrfachauswahl` sichtbar abgesetzt, vorbelegt an, und „Alle"/„Keine" fassen sie mit;
+  die Schalterbeschriftung ist wörtlich der Legendentext. Wo eine Summenlinie das Diagramm
+  TRÄGT und nicht abschaltbar sein darf, wird das begründet, statt sie stillschweigend
+  festzunageln.
 
 ### Zeichenläufe, Fokus, JS-Interop
 

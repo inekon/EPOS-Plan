@@ -399,7 +399,11 @@ public sealed record Ganglinienreihe(string Schluessel, string Text, bool Vorhan
 /// <summary>Der Waermegang-Reiter (<c>NavigatorWaerme</c>).</summary>
 public sealed class WaermegangDaten
 {
-    /// <summary>Die bis zu fuenf Erzeugerreihen in Kaskadenreihenfolge.</summary>
+    /// <summary>
+    /// Die Summenlinie „GESAMT" und dahinter die bis zu fuenf Erzeugerreihen in
+    /// Kaskadenreihenfolge. Die Summe steht UEBER ihren Summanden und ist
+    /// abschaltbar wie jeder einzelne Erzeuger.
+    /// </summary>
     public IReadOnlyList<Ganglinienreihe> Erzeuger = Array.Empty<Ganglinienreihe>();
 
     /// <summary>Die Speicherfuellstaende; leer = das Projekt fuehrt keinen Speicher.</summary>
@@ -415,7 +419,10 @@ public sealed class WaermegangDaten
 /// <summary>Der Stromgang-Reiter (<c>NavigatorStrom</c>).</summary>
 public sealed class StromgangDaten
 {
-    /// <summary>Verbrauchsstapel, Erzeugungslinien und die Kontrolllinie „Gesamt".</summary>
+    /// <summary>
+    /// Verbrauchsstapel, Erzeugungslinien und die Kontrolllinie
+    /// „Summe Stromverbrauch" (Schluessel „GESAMT").
+    /// </summary>
     public IReadOnlyList<Ganglinienreihe> Reihen = Array.Empty<Ganglinienreihe>();
 }
 

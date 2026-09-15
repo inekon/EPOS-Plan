@@ -209,7 +209,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
 
             if (wahl.Count == 0 || wahl.Contains("GESAMT"))
-                reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_GESAMT,
+                reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF,
                                  _waermebedarf.Waermebedarf, F_BEDARF));
 
             for (int k = 0; k < Kanal.ANZAHL; k++)
@@ -791,16 +791,22 @@ namespace WindowsFormsApplication1
                 nummer++;
             }
 
-            // Die KONTUR „Gesamt" liegt UNTER dem Stapel - sie ist die Summe und darf
-            // ihn nicht überdecken (NavigatorWaerme :631-635).
+            // Die KONTUR „Summe Wärmeerzeugung" liegt UNTER dem Stapel - sie ist die
+            // Summe und darf ihn nicht überdecken (NavigatorWaerme :631-635).
+            //
+            // SIE IST ABSCHALTBAR WIE IHRE SUMMANDEN (Anwenderwunsch 15.09.2026): Bis
+            // hierher entstand sie allein daraus, dass der Stapel eine Reihe trug - ein
+            // Schalter dafür fehlte. Jetzt hängt sie am Schlüssel „GESAMT" wie im
+            // Stromgang. Der Zeichenweg bleibt Zeile für Zeile derselbe; bei gewählter
+            // Summe ist das Bild dasselbe wie zuvor.
             ChartRenderer.Reihe kontur = null;
-            if (stapel.Count > 0)
+            if (stapel.Count > 0 && wahl.Contains("GESAMT"))
             {
                 double[] gesamt = new double[Kanalsatz.STUNDEN_JAHR];
                 foreach (ChartRenderer.Reihe r in stapel)
                     for (int h = 0; h < gesamt.Length && h < r.Werte.Length; h++) gesamt[h] += r.Werte[h];
 
-                kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_GESAMT,
+                kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEERZEUGUNG,
                                                  gesamt, F_GESAMT,
                                                  ChartRenderer.Stapelart.Keine, false, 4f);
             }
@@ -837,7 +843,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Stromgang (B2): der Verbrauchsstapel, die Erzeugungslinien darüber und
-        /// die Kontrolllinie „Gesamt" — im Viertelstundenraster.
+        /// die Kontrolllinie „Summe Stromverbrauch" — im Viertelstundenraster.
         /// </summary>
         private byte[] BildStromgang(Bildauftrag a)
         {
@@ -870,7 +876,10 @@ namespace WindowsFormsApplication1
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stromproduktion_viertelstunde, F_PV));
 
-            // „GESAMT" ist die Kontrolllinie über allem (:220-221).
+            // „GESAMT" ist die Kontrolllinie über allem (:220-221). Sie addiert
+            // Lastgang, Wärmepumpe, Heizstab und Heizkessel - das ist der
+            // STROMVERBRAUCH und nicht die Stromerzeugung; BHKW und Photovoltaik
+            // stehen als Erzeugungslinien daneben und gehen gerade nicht ein.
             ChartRenderer.Reihe kontur = null;
             if (wahl.Contains("GESAMT"))
             {
@@ -880,7 +889,7 @@ namespace WindowsFormsApplication1
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
                                             Viertel(sim.simulation_spk.Strombedarf_stuendlich)));
 
-                kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_GESAMT,
+                kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), F_GESAMT,
                                                  ChartRenderer.Stapelart.Keine, false, 2f);
             }

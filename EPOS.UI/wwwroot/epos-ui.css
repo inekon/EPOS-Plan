@@ -2191,6 +2191,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     overflow: auto;
 }
 
+/* Die Trennlinie unter einer Summenreihe (Mehrfachauswahl.AbsatzNach): Sie steht
+   ueber ihren Summanden und gehoert sichtbar abgesetzt, aber in dieselbe Liste -
+   „Alle"/„Keine" fassen sie mit. */
+.epos-mehrfachauswahl-absatz {
+    margin: 2px 0 4px 0;
+    border: 0;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
 /* ==================================================================== */
 /* KOSTENLEISTE (iU9-W6.0f)                                             */
 /*                                                                      */

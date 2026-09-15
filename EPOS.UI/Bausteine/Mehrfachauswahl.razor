@@ -8,7 +8,9 @@
    nicht zugeordneten Traeger zur Auswahl stellt.
 
    BAUWEISE. Je Eintrag ein Schalter; sie stehen in einem rollenden Bereich,
-   damit eine lange Liste den Dialog nicht sprengt. Alles auswaehlen bzw.
+   damit eine lange Liste den Dialog nicht sprengt. AbsatzNach setzt nach den
+   ersten n Eintraegen eine Trennlinie - so steht eine Summenreihe sichtbar
+   abgesetzt ueber ihren Summanden, ohne aus der Auswahl herauszufallen. Alles auswaehlen bzw.
    nichts auswaehlen sind zwei Knoepfe — die CheckedListBox konnte das nicht,
    und bei zwanzig Traegern ist es der Unterschied zwischen einem Klick und
    zwanzig.
@@ -33,12 +35,17 @@
     }
 
     <div class="epos-mehrfachauswahl-liste" role="group" aria-label="@Bezeichnung">
-        @foreach ((int id, string text) in Eintraege)
+        @for (int i = 0; i < Eintraege.Count; i++)
         {
-            int eintragId = id;
-            <Schalter Bezeichnung="@text" Wert="@Gewaehlt.Contains(eintragId)"
+            int eintragId = Eintraege[i].Id;
+            <Schalter Bezeichnung="@Eintraege[i].Text" Wert="@Gewaehlt.Contains(eintragId)"
                       Aktiv="@Aktiv"
                       WertChanged="@(w => Umschalten(eintragId, w))" />
+
+            @if (AbsatzNach > 0 && i == AbsatzNach - 1 && i < Eintraege.Count - 1)
+            {
+                <hr class="epos-mehrfachauswahl-absatz" />
+            }
         }
     </div>
 
@@ -64,6 +71,14 @@
 
     /// <summary>Bedienbar? <c>false</c> sperrt die ganze Liste.</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Setzt nach so vielen Eintraegen eine Trennlinie; 0 = ohne. Damit steht eine
+    /// SUMMENreihe sichtbar abgesetzt ueber ihren Summanden, ohne aus der Liste
+    /// herauszufallen - „Alle" und „Keine" fassen sie weiter mit. Hinter dem letzten
+    /// Eintrag wird nicht getrennt.
+    /// </summary>
+    [Parameter] public int AbsatzNach { get; set; }
 
     /// <summary>Zeigt „Alle" und „Keine" ueber der Liste.</summary>
     [Parameter] public bool MitSammelknoepfen { get; set; } = true;
