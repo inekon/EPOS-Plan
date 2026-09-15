@@ -72,6 +72,15 @@ Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über se
 * {{Anker|extrapolation}}'''Extrapolation der WP-Kennlinie''' – der Schalter ''Extrapolation der WP-Kennlinie erlauben'' steht in der Detailansicht der Wärmepumpe unter ''Kenndaten Kennlinien''; siehe [[Programm Dokumentation/Wärmepumpe#extrapolation|Wärmepumpe: Extrapolation]]. Er ist eine Projekteinstellung für alle Wärmepumpen des Projekts.
 * '''Konfiguration speichern''' – die Konfiguration bleibt dem Projekt erhalten; eine Statuszeile bestätigt das Speichern.
 
+=== Wärmequelle Erdreich ===
+
+* {{Anker|quelle-erdreich}}'''Wärmequelle Erdreich''' – der Dialog gehört zu einer Wärmepumpe, die ihre Wärme aus dem Erdreich holt: Doppelklick auf den Quellen-Eintrag der Anlage, dann ''Erdreich'' in der Quellenwahl.
+* '''Quellsystem''' – zwei Rubriken stehen zur Wahl: ''Erdkollektor'' mit Verlegetiefe und Fläche oder ''Erdsonde'' mit Länge je Sonde und Anzahl der Sonden. Die Felder der nicht gewählten Rubrik bleiben stehen und behalten ihre Werte; sie sind nur gesperrt.
+* '''Standort und Boden''' – Bodentyp, Klimazone und die nutzbare Spreizung. Die Klimazone lässt sich mit dem Knopf daneben auch auf der Karte wählen; unter den Feldern stehen die Kennwerte des gewählten Bodens.
+* '''Jahresgang der Quelltemperatur''' – die Vorschau zeichnet die Quelltemperatur über das Jahr, beim Erdkollektor gedämpft und zeitlich verschoben gegenüber der Außentemperatur.
+* '''Auslegungsprüfung nach VDI 4640 Blatt 2''' – sie braucht die Ergebnisse eines Simulationslaufs: Jahresentzugsarbeit, maximale Entzugsleistung und Jahresvolllaststunden. Mit ''Simulation starten'' rechnen Sie den Lauf aus dem Dialog heraus; solange er läuft, bleibt der Dialog stehen und nimmt keine Eingabe an.
+* '''Der Dialog hat keinen Knopf OK – das Schließen übernimmt''' – mit ✕ oder ''Esc'' werden die Eingaben geprüft und übernommen. Ist eine Eingabe unzulässig – eine Verlegetiefe von 0 m oder über 10 m, eine fehlende Kollektorfläche, eine Sondenlänge von 0 m, weniger als eine Sonde oder eine Spreizung von 0 K –, bleibt der Dialog offen und nennt den Grund als Hinweis über den Feldern. Verloren geht dabei nichts: Die eingetippten Werte stehen weiter da.
+
 === Wärmesenken einer Anlage ===
 
 * {{Anker|senkenliste}}'''Wärmesenken in Reihenfolge der Belieferung''' – die Liste führt die Senken einer Anlage nach Rang: Die oberste wird zuerst beliefert, die folgenden bekommen, was übrig bleibt. Die Pfeilschaltflächen daneben verschieben die markierte Zeile im Rang.

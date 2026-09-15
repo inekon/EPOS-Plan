@@ -45,6 +45,14 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**
+- **Ein Dialog ohne Knopfleiste schließt PRÜFEND** (einziger Fall: `QuelleErdreichDialog`): Er
+  hat kein OK, das Schließen der `Ueberlagerung` (✕ oder Esc) ÜBERNIMMT und läuft dabei durch
+  dieselben Prüfregeln; eine verletzte Regel meldet und hält den Dialog offen — Schließen darf
+  keine Eingabe still verwerfen. Der Wirt schließt dafür nicht selbst, sondern ruft aus dem
+  `Geschlossen`-Rückruf seiner `Ueberlagerung` über einen `@ref` die **eine** öffentliche
+  Methode des Dialogs; der Dialog hält Esc an seiner Wurzel an
+  (`@onkeydown:stopPropagation`), damit der Tastendruck nicht zusätzlich die Überlagerung
+  auslöst. Der Baustein `Ueberlagerung` bleibt dafür unverändert.
 
 ### Stilblatt
 
