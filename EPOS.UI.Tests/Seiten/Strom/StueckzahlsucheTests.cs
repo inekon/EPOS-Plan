@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -336,6 +336,20 @@ public sealed class StueckzahlsucheTests : EposBunitContext
         }).ToList()
     };
 
+    /// <summary>EIN Gerät des Prüfbestands der Größensuche.</summary>
+    private static FlottenGeraetekandidat Geraet(double kWh, double kW) => new()
+    {
+        Quellkennung = kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+        Geraet = new FlottenEinheit
+        {
+            Id = "G" + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+            Name = "Speicher " + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+            KapazitaetKWh = kWh, LadeleistungKw = kW, EntladeleistungKw = kW,
+            Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+            SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+        }
+    };
+
     private static FlottenStudieKonfiguration Flotte(FlottenSuchmethode methode)
     {
         var einheit = new FlottenEinheit
@@ -366,9 +380,9 @@ public sealed class StueckzahlsucheTests : EposBunitContext
                     {
                         Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
                         AnzahlVon = 2, AnzahlBis = 4,
-                        KapazitaetVonKWh = 100, KapazitaetBisKWh = 200, KapazitaetSchrittKWh = 50,
-                        LeistungVonKw = 80, LeistungBisKw = 120, LeistungSchrittKw = 20,
-                        CRateVon = 0.5, CRateBis = 1.5, CRateSchritt = 0.5,
+                        KapazitaetVonKWh = 100, KapazitaetBisKWh = 200,
+                        LeistungVonKw = 80, LeistungBisKw = 120,
+                        Geraete = { Geraet(100, 80), Geraet(150, 100), Geraet(200, 120) },
                         Vorlage = einheit
                     }
                 }

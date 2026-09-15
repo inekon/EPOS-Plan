@@ -17,15 +17,18 @@ namespace EPOS.UI.Tests.Seiten.Strom;
 /// <summary>
 /// WINDOWS-ABNAHME 13.09.2026 — die zwei Befunde der Station 4 „Optimierung".
 ///
-/// <para><b>Befund 1: „Fehler in Eingabefeld ‚Kapazität Schritt': 1 bleibt stehen,
-/// Eingabe nicht korrekt möglich."</b> Wer die „10" im Schrittfeld rückwärts löscht,
-/// meldet erst „1" — der Suchraum nimmt sie — und dann die LEERE Eingabe. Ein leeres
-/// Feld meldet <c>null</c>; der Suchraum übernahm <c>null</c> nicht, behielt seine 1,
-/// und das Feld schrieb sie in die Anzeige zurück. Die 1 ließ sich nicht mehr
-/// entfernen, jedes weitere Zeichen landete dahinter. Seither bleibt ein geleertes Feld
-/// leer (<c>Zahlenfeld</c>), und die leere Eingabe ist im Suchraum die 0 — also ein
-/// benannt ungültiges Raster, das den Lauf sperrt, statt ihn mit einer Zahl rechnen zu
-/// lassen, die niemand mehr sieht.</para>
+/// <para><b>Befund 1: „1 bleibt stehen, Eingabe nicht korrekt möglich."</b> Wer eine
+/// Zahl in einem Feld des Suchraums rückwärts löscht, meldet erst „1" — der Suchraum
+/// nimmt sie — und dann die LEERE Eingabe. Ein leeres Feld meldet <c>null</c>; der
+/// Suchraum übernahm <c>null</c> nicht, behielt seine 1, und das Feld schrieb sie in die
+/// Anzeige zurück. Die 1 ließ sich nicht mehr entfernen, jedes weitere Zeichen landete
+/// dahinter. Seither bleibt ein geleertes Feld leer (<c>Zahlenfeld</c>), und die leere
+/// Eingabe ist im Suchraum die 0 — also ein benannt ungültiger Bereich, der den Lauf
+/// sperrt, statt ihn mit einer Zahl rechnen zu lassen, die niemand mehr sieht.</para>
+///
+/// <para><b>Gemessen wird am Feld „Kapazität bis".</b> Die Größensuche wählt unter
+/// vorhandenen Geräten und kennt keine Schrittweite mehr; die Befundlage ist dieselbe —
+/// ein Zahlenfeld des Suchraums, dessen geleerte Eingabe im Modell ankommen muss.</para>
 ///
 /// <para><b>Befund 2: „Progress bar bei Berechnung nicht mehr vorhanden."</b> Der
 /// Fortschrittsbalken der Ansicht steht über der Ablaufleiste, ganz oben; der
@@ -40,7 +43,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
 
     // =====================================================================
-    //  1. Das Schrittfeld
+    //  1. Das Zahlenfeld des Suchraums
     // =====================================================================
 
     /// <summary>
@@ -48,14 +51,14 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     /// zeigt nach JEDEM Zeichen das Getippte — auch das Nichts.
     /// </summary>
     [Fact]
-    public void Die_Eingabefolge_im_Schrittfeld_kommt_vollstaendig_im_Modell_an()
+    public void Die_Eingabefolge_im_Suchraumfeld_kommt_vollstaendig_im_Modell_an()
     {
         var cut = Station();
-        Assert.Equal("10", Schrittfeld(cut).GetAttribute("value"));
+        Assert.Equal("10", Kapazitaetsfeld(cut).GetAttribute("value"));
 
         // „10" rueckwaerts geloescht: erst die 1 …
         Tippen(cut, "1");
-        Assert.Equal(1.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal(1.0, Achse(cut).KapazitaetBisKWh);
 
         // … dann ganz leer. DAS Feld bleibt leer (der Befund: hier blieb die 1 stehen).
         Tippen(cut, "");
@@ -63,53 +66,56 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         // Ein zweites Loeschen aendert daran nichts.
         Tippen(cut, "");
 
-        // Und jetzt die neue Schrittweite, Zeichen fuer Zeichen.
+        // Und jetzt die neue Obergrenze, Zeichen fuer Zeichen.
         foreach ((string getippt, double erwartet) in new[]
                  { ("1", 1.0), ("10", 10.0), ("100", 100.0), ("1000", 1000.0) })
         {
             Tippen(cut, getippt);
-            Assert.Equal(erwartet, Achse(cut).KapazitaetSchrittKWh);
+            Assert.Equal(erwartet, Achse(cut).KapazitaetBisKWh);
         }
     }
 
     /// <summary>
-    /// <b>Ein geleertes Schrittfeld ist die 0 und damit ein ungültiges Raster</b> — die
+    /// <b>Ein geleertes Feld ist die 0 und damit ein ungültiger Bereich</b> — die
     /// Kandidatenzeile sagt es, und der Rechenknopf ist gesperrt. Der alte Wert bleibt
     /// NICHT unsichtbar im Suchraum stehen.
     /// </summary>
     [Fact]
-    public void Ein_geleertes_Schrittfeld_macht_das_Raster_ungueltig_und_sperrt_den_Lauf()
+    public void Ein_geleertes_Suchraumfeld_macht_den_Bereich_ungueltig_und_sperrt_den_Lauf()
     {
         var cut = Station();
 
         Tippen(cut, "");
 
-        Assert.Equal(0.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal(0.0, Achse(cut).KapazitaetBisKWh);
         Assert.Contains(Resource.FLOTTE_OPT_RASTER_UNGUELTIG,
                         cut.Find("p.epos-flotte-kandidatenzeile").TextContent,
                         StringComparison.Ordinal);
         Assert.True(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
 
-        // Die frische Schrittweite gibt den Lauf wieder frei.
+        // Die frische Obergrenze gibt den Lauf wieder frei.
         Tippen(cut, "1000");
         Assert.False(Auslegungshilfe.Rechenknopf(cut).HasAttribute("disabled"));
     }
 
     /// <summary>
-    /// <b>Die Zahl des Bildschirmfotos</b>: Kapazität 50…5000 in Schritten von 10 kWh,
-    /// Leistung 50…5000 in Schritten von 20 kW — 496 × 249 = 123 504 Grobpunkte, bis zu
-    /// 19 im Feinraster, zusammen 123 523 von höchstens 10 000. Anzeige und Vorprüfung
-    /// führen dieselbe Zahl, und der Lauf wird abgewiesen.
+    /// <b>Anzeige und Vorprüfung führen DIESELBE Zahl.</b> Sechs Geräte im Bereich gegen
+    /// eine Grenze von drei: Die Kandidatenzeile nennt beide Zahlen, färbt sich rot, und
+    /// die Vorprüfung sperrt den Lauf mit derselben Begründung.
     /// </summary>
+    /// <remarks>
+    /// <b>Die Kandidatenzahl kann nicht mehr explodieren</b> — sie ist höchstens so groß
+    /// wie der Gerätebestand der Quelle. Die Grenze bleibt trotzdem stehen und fängt einen
+    /// sehr großen Bestand ab; genau das misst dieser Fall.
+    /// </remarks>
     [Fact]
-    public void Die_Kandidatenzeile_der_Abnahme_nennt_dieselbe_Zahl_wie_die_Vorpruefung()
+    public void Die_Kandidatenzeile_nennt_dieselbe_Zahl_wie_die_Vorpruefung()
     {
-        var cut = Station();
+        var cut = Station(kapazitaetBis: 5000, maximaleKandidaten: 3);
 
         string zeile = cut.Find("p.epos-flotte-kandidatenzeile").TextContent;
-        Assert.Contains("123504", zeile, StringComparison.Ordinal);
-        Assert.Contains("19", zeile, StringComparison.Ordinal);
-        Assert.Contains("123523", zeile, StringComparison.Ordinal);
+        Assert.Contains("6", zeile, StringComparison.Ordinal);
+        Assert.Contains("3", zeile, StringComparison.Ordinal);
         Assert.Contains(Resource.FLOTTE_OPT_RASTER_ZUVIEL, zeile, StringComparison.Ordinal);
 
         // Die Vorpruefung der Seite sperrt den Lauf mit derselben Begruendung.
@@ -136,7 +142,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
         {
             d.FlotteRechnen = (_, meldung) => { melder = meldung; return quelle.Task; };
             d.Abbrechen = () => { };
-        }, schritt: 1000);
+        }, kapazitaetBis: 1000);
 
         Assert.Empty(cut.FindAll(".epos-fortschritt"));
 
@@ -171,7 +177,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     {
         var quelle = new TaskCompletionSource<SpeicherFlottenErgebnis>();
 
-        var cut = Station(d => d.FlotteRechnen = (_, _) => quelle.Task, schritt: 1000);
+        var cut = Station(d => d.FlotteRechnen = (_, _) => quelle.Task, kapazitaetBis: 1000);
 
         Task klick = Auslegungshilfe.Rechenknopf(cut).ClickAsync(new());
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Laeuft));
@@ -187,7 +193,7 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     // ================================================================= Prüfstand
 
     /// <summary>
-    /// Tippt ein Zeichen in das Schrittfeld und <b>wartet auf den gezeichneten Zustand</b>:
+    /// Tippt ein Zeichen in das Feld „Kapazität bis" und <b>wartet auf den gezeichneten Zustand</b>:
     /// die Fassung des Arbeitsstandes ist weitergezählt UND das Feld zeigt das Getippte.
     /// </summary>
     /// <remarks>
@@ -200,33 +206,51 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
     private static void Tippen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
     {
         int fassung = cut.Instance.Fassung;
-        Schrittfeld(cut).Input(text);
+        Kapazitaetsfeld(cut).Input(text);
         cut.WaitForAssertion(() =>
         {
             Assert.True(cut.Instance.Fassung > fassung, "Der Tastendruck ist noch nicht angekommen.");
-            Assert.Equal(text, Schrittfeld(cut).GetAttribute("value"));
+            Assert.Equal(text, Kapazitaetsfeld(cut).GetAttribute("value"));
         });
     }
 
     private static FlottenAuslegungsAchse Achse(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen[0];
 
-    private static IElement Schrittfeld(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+    /// <summary>Sechs Geräte von 10 bis 5000 kWh, alle mit 100 kW.</summary>
+    private static List<FlottenGeraetekandidat> Bestand()
+        => new[] { 10.0, 50.0, 100.0, 500.0, 1000.0, 5000.0 }
+            .Select(kWh => new FlottenGeraetekandidat
+            {
+                Quellkennung = kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                Geraet = new FlottenEinheit
+                {
+                    Id = "G" + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                    Name = "Speicher " + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                    KapazitaetKWh = kWh, LadeleistungKw = 100, EntladeleistungKw = 100,
+                    Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+                    SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+                }
+            }).ToList();
+
+    private static IElement Kapazitaetsfeld(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Find("article.epos-flotte-einheitskarte")
               .QuerySelectorAll("label.epos-feld")
-              .Single(x => x.TextContent.Contains(Resource.FLOTTE_ED_KAPAZITAET_SCHRITT,
+              .Single(x => x.TextContent.Contains(Resource.FLOTTE_ED_KAPAZITAET_BIS,
                                                   StringComparison.Ordinal))
               .QuerySelector("input")!;
 
     /// <summary>
-    /// Die Ansicht auf Station 4, mit dem Suchraum des Bildschirmfotos: eine Einheit
-    /// 4180 kWh / 125 kW / 1 Stück, Kopplung „Kapazität und Leistung", Kapazität 50…5000,
-    /// Leistung 50…5000 in Schritten von 20 kW, Feinraster an.
+    /// Die Ansicht auf Station 4: eine Einheit 4180 kWh / 125 kW / 1 Stück, Kapazität
+    /// 1…<paramref name="kapazitaetBis"/> kWh, Leistung 1…5000 kW — und ein Bestand von
+    /// SECHS Geräten von 10 bis 5000 kWh.
     /// </summary>
     /// <param name="anpassen">Zusätzliche Wege der Ansicht.</param>
-    /// <param name="schritt">Die Kapazitäts-Schrittweite; 10 kWh wie im Bildschirmfoto.</param>
+    /// <param name="kapazitaetBis">Die Obergrenze der Kapazität; 10 kWh lässt genau ein Gerät übrig.</param>
+    /// <param name="maximaleKandidaten">Die Schranke der Kandidatenzahl.</param>
     private IRenderedComponent<StromspeicherAuslegungSeite> Station(
-        Action<StromspeicherAuslegungDienste>? anpassen = null, double schritt = 10)
+        Action<StromspeicherAuslegungDienste>? anpassen = null, double kapazitaetBis = 10,
+        int maximaleKandidaten = 10000)
     {
         var einheit = new FlottenEinheit
         {
@@ -250,18 +274,17 @@ public sealed class SchrittfeldUndFortschrittTests : EposBunitContext
             },
             Auslegung = new FlottenAuslegungEingang
             {
-                MaximaleKandidaten = 10000,
+                MaximaleKandidaten = maximaleKandidaten,
                 Suchmethode = FlottenSuchmethode.Groesse,
-                Feinraster = true,
                 Achsen = new List<FlottenAuslegungsAchse>
                 {
                     new()
                     {
                         Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
                         AnzahlVon = 1, AnzahlBis = 1,
-                        KapazitaetVonKWh = 50, KapazitaetBisKWh = 5000, KapazitaetSchrittKWh = schritt,
-                        LeistungVonKw = 50, LeistungBisKw = 5000, LeistungSchrittKw = 20,
-                        CRateVon = 0.5, CRateBis = 2.0, CRateSchritt = 0.5,
+                        KapazitaetVonKWh = 1, KapazitaetBisKWh = kapazitaetBis,
+                        LeistungVonKw = 1, LeistungBisKw = 5000,
+                        Geraete = Bestand(),
                         Vorlage = einheit
                     }
                 }

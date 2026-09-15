@@ -172,8 +172,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 10.0, 20.0 }, erste.Zeilenwerte);
             Assert.Equal(erste.Zeilenwerte, zweite.Zeilenwerte);
 
-            // Die C-Rate ist eine VERHAELTNISgröße und bleibt deshalb dieselbe.
-            Assert.Equal(summe.Spaltenwerte, erste.Spaltenwerte);
+            // Die Spalte traegt die ENTLADELEISTUNG und halbiert sich mit: Beide Achsen
+            // der Karte sind absolute Groessen, keine Verhaeltnisse.
+            Assert.Equal(new[] { 10.0, 20.0, 40.0 }, summe.Spaltenwerte);
+            Assert.Equal(new[] { 5.0, 10.0, 20.0 }, erste.Spaltenwerte);
+
+            // Dieselbe Zelle, derselbe Kandidat: unten links steht der kleinste Speicher.
             Assert.Equal(summe.Werte[0][0], erste.Werte[0][0], 9);
         }
 
@@ -706,16 +710,23 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>
-        /// Das Filterprofil trägt die zwölf Spalten der Kandidatentabelle; die
-        /// Zahlenspalten stehen rechtsbündig und tragen einen Trichter, das Kennzeichen
-        /// „zulässig" nur den Sortierpfeil (Konzept_Katalogfilter 5.6.2).
+        /// Das Filterprofil trägt die vierzehn Spalten der Kandidatentabelle; die
+        /// Zahlenspalten stehen rechtsbündig und tragen einen Trichter, die Kennzeichen
+        /// „zulässig" und „neutrale Kennwerte" nur den Sortierpfeil
+        /// (Konzept_Katalogfilter 5.6.2).
         /// </summary>
+        /// <remarks>
+        /// <b>Die ABWEICHUNG ist die dreizehnte, die NEUTRALEN KENNWERTE die vierzehnte
+        /// Spalte.</b> Die Größensuche rechnet Geräte; trifft keines den vorgegebenen
+        /// Bereich, kommen die nächstliegenden — der Anwender muss sehen, wie weit ein
+        /// Gerät von seiner Vorgabe entfernt ist, statt es für einen Treffer zu halten.
+        /// </remarks>
         [Fact]
-        public void Das_Filterprofil_nennt_zwoelf_Spalten()
+        public void Das_Filterprofil_nennt_vierzehn_Spalten()
         {
             Katalogfilterprofil profil = SpeicherFlottenAnzeigeCtrl.Kandidatenprofil();
 
-            Assert.Equal(12, profil.Spalten.Count);
+            Assert.Equal(14, profil.Spalten.Count);
             Assert.Equal("FLOTTE_KANDIDATEN", profil.Schluessel);
 
             Katalogspalte zulaessig = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_ZULAESSIG);
@@ -727,6 +738,46 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Katalogspaltenart.Zahl, spitze.Art);
             Assert.True(spitze.Rechtsbuendig);
             Assert.True(spitze.Filterbar);
+
+            Katalogspalte abweichung = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_ABWEICHUNG);
+            Assert.Equal(Katalogspaltenart.Zahl, abweichung.Art);
+            Assert.True(abweichung.Rechtsbuendig);
+
+            Katalogspalte neutral = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_NEUTRAL);
+            Assert.Equal(Katalogspaltenart.JaNein, neutral.Art);
+            Assert.True(neutral.Sortierbar);
+            Assert.False(neutral.Filterbar);
+        }
+
+        /// <summary>
+        /// <b>Die Zeile nennt die Abweichung in PROZENT und die neutralen Kennwerte als
+        /// Kennzeichen.</b> Eine Zahl zwischen 0 und 1 läse sich als Anteil; der Anwender
+        /// vergleicht sie aber mit seiner eigenen Vorgabe.
+        /// </summary>
+        [Fact]
+        public void Die_Kandidatenzeile_nennt_Abweichung_und_neutrale_Kennwerte()
+        {
+            var ergebnis = new FlottenAuslegungErgebnis
+            {
+                Kandidaten = new List<FlottenKandidatZusammenfassung>
+                {
+                    new()
+                    {
+                        KandidatId = "K", Zulaessig = true, KapazitaetKWh = 100,
+                        EntladeleistungKw = 100, Abweichung = 0.125, NeutraleKennwerte = true,
+                        Einheiten = new List<FlottenKandidatEinheit>
+                        {
+                            new() { Id = "A", KapazitaetKWh = 100, EntladeleistungKw = 100 }
+                        }
+                    }
+                }
+            };
+
+            Katalogfilterzeile zeile =
+                Assert.Single(SpeicherFlottenAnzeigeCtrl.Kandidatenzeilen(ergebnis));
+
+            Assert.Equal(12.5, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_ABWEICHUNG).Value, 6);
+            Assert.Equal(1.0, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_NEUTRAL).Value, 6);
         }
 
         /// <summary>
@@ -1035,6 +1086,11 @@ namespace EPOS.Kern.Tests
             var bester = Kandidat("K-20-1,0", 20, 20, 2000, true, 220);
             var ergebnis = new FlottenAuslegungErgebnis
             {
+                // DIE ALTE KOPPLUNGSMARKE, AUSGESCHRIEBEN: Ein Ergebnis, das sie noch
+                // traegt, soll sich weiterhin zeichnen lassen - Zeilen Kapazitaet,
+                // Spalten C-Rate. Die Vorbelegung eines frischen Ergebnisses ist
+                // KapazitaetUndLeistung, die einzige Kopplung, die eine Suche erzeugt.
+                Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate,
                 Aussage = "Beste Variante im geprueften endlichen Raster",
                 Kandidaten = new List<FlottenKandidatZusammenfassung>
                 {

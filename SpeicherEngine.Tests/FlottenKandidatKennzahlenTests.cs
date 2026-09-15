@@ -28,8 +28,8 @@ namespace SpeicherEngine.Tests;
 /// <para><b>Der Prüfstand</b> ist der der Diagnoseprobe (#183): acht Viertelstunden,
 /// die Last springt zwischen 20 kW und 4 kW, das Peak-Ziel steht auf 10 kW, der
 /// Speicher startet auf seinem SoC-Minimum. Mit freigegebener Netzladung arbeitet die
-/// Flotte, ohne sie ist sie arbeitslos. Gerastert werden zwei Kapazitäten und zwei
-/// C-Raten — vier Kandidaten, ein 2 × 2-Raster.</para>
+/// Flotte, ohne sie ist sie arbeitslos. Gesucht wird unter VIER Geräten: 10 kWh mit
+/// 5 und mit 10 kW, 20 kWh mit 10 und mit 20 kW.</para>
 /// </summary>
 public sealed class FlottenKandidatKennzahlenTests : IDisposable
 {
@@ -54,11 +54,18 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
     // =====================================================================
 
     /// <summary>
-    /// Das 2 × 2-Raster liefert vier Kandidaten, jeden genau einmal — und die
-    /// Nullvariante davor, die keine Stelle im Raster hat.
+    /// <b>Jedes Gerät besetzt genau eine Stelle</b> — und die Nullvariante davor hat
+    /// keine.
     /// </summary>
+    /// <remarks>
+    /// <b>Die Karte ist DÜNN besetzt.</b> Geräte bilden kein Gitter: Vier Geräte mit zwei
+    /// verschiedenen Kapazitäten (10, 20) und DREI verschiedenen Entladeleistungen
+    /// (5, 10, 20) ergeben ein 2 × 3-Feld mit vier belegten Zellen. Jede leere Zelle ist
+    /// eine Größenkombination, die niemand baut — das ist die wahre Auskunft, ein
+    /// lückenloses Gitter wäre eine erfundene.
+    /// </remarks>
     [Fact]
-    public void Das_Raster_liefert_jede_Stelle_genau_einmal()
+    public void Jedes_Geraet_besetzt_genau_eine_Stelle()
     {
         FlottenAuslegungErgebnis ergebnis = Suche(netzladung: true);
 
@@ -71,20 +78,24 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
         var stellen = Gerastert(ergebnis).Select(k => (k.Rasterzeile, k.Rasterspalte)).ToArray();
         Assert.Equal(4, stellen.Distinct().Count());
         Assert.All(stellen, s => Assert.InRange(s.Rasterzeile, 0, 1));
-        Assert.All(stellen, s => Assert.InRange(s.Rasterspalte, 0, 1));
+        Assert.All(stellen, s => Assert.InRange(s.Rasterspalte, 0, 2));
     }
 
     /// <summary>
-    /// Die Zeile ist die KAPAZITÄT, die Spalte die C-RATE — in der Reihenfolge, in der
-    /// die Achse sie führt. Ohne diese Zuordnung stünde die Rasterkarte gespiegelt.
+    /// Die Zeile ist die KAPAZITÄT, die Spalte die ENTLADELEISTUNG — beide aus den
+    /// aufsteigend sortierten verschiedenen Werten der gefundenen Geräte. Ohne diese
+    /// Zuordnung stünde die Rasterkarte gespiegelt.
     /// </summary>
     [Fact]
-    public void Zeile_ist_die_Kapazitaet_und_Spalte_die_CRate()
+    public void Zeile_ist_die_Kapazitaet_und_Spalte_die_Leistung()
     {
+        double[] zeilen = { 10.0, 20.0 };
+        double[] spalten = { 5.0, 10.0, 20.0 };
+
         foreach (FlottenKandidatZusammenfassung k in Gerastert(Suche(netzladung: true)))
         {
-            Assert.Equal(k.Rasterzeile == 0 ? 10.0 : 20.0, k.KapazitaetKWh, 9);
-            Assert.Equal(k.Rasterspalte == 0 ? 0.5 : 1.0, k.CRate, 9);
+            Assert.Equal(zeilen[k.Rasterzeile], k.KapazitaetKWh, 9);
+            Assert.Equal(spalten[k.Rasterspalte], k.EntladeleistungKw, 9);
         }
     }
 
@@ -178,26 +189,26 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
     }
 
     /// <summary>
-    /// DAS ERGEBNIS TRÄGT DIE GRÖSSENKOPPLUNG der Suchachse (Auftrag #226,
-    /// Anwenderbefund 11.09.2026). Ohne sie weiß die Größen-Sicht nicht, was ihre
-    /// Achsen bedeuten, und legte die Kandidaten eines Kapazität × Leistung-Gitters
-    /// auf eine C-Raten-Achse — dort sind sie kein Gitter mehr, sondern Löcher.
+    /// <b>Das Ergebnis trägt IMMER die Kopplung Kapazität × Leistung</b> — auch wenn der
+    /// Suchraum aus einem älteren Stand eine C-Rate-Kopplung mitbringt: Der Lauf setzt
+    /// sie benannt um, statt sie stillschweigend weiterzureichen.
     /// </summary>
-    /// <param name="modus">Die eingestellte Kopplung der einzigen aktiven Achse.</param>
+    /// <param name="modus">Die gespeicherte Kopplung der einzigen aktiven Achse.</param>
     [Theory]
     [InlineData(FlottenAuslegungsmodus.KapazitaetUndCRate)]
     [InlineData(FlottenAuslegungsmodus.KapazitaetUndLeistung)]
     [InlineData(FlottenAuslegungsmodus.LeistungUndCRate)]
-    public void Das_Ergebnis_traegt_die_Groessenkopplung_der_Suchachse(FlottenAuslegungsmodus modus)
-        => Assert.Equal(modus, Suche(netzladung: true, modus).Achsenmodus);
+    public void Das_Ergebnis_traegt_immer_Kapazitaet_und_Leistung(FlottenAuslegungsmodus modus)
+        => Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                        Suche(netzladung: true, modus).Achsenmodus);
 
     /// <summary>
     /// OHNE aktive Suchachse gibt es kein Raster — dann bleibt die Vorbelegung stehen,
-    /// und ein Ergebnis aus fremder Quelle wird gelesen wie vor #226.
+    /// und die ist die einzige gültige Kopplung.
     /// </summary>
     [Fact]
     public void Ohne_Suchachse_bleibt_die_Vorbelegung_stehen()
-        => Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndCRate,
+        => Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndLeistung,
                         new FlottenAuslegungErgebnis().Achsenmodus);
 
     // ================================================================= Prüfstand
@@ -215,15 +226,18 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
                                  && Math.Abs(k.CRate - cRate) < 1e-9);
 
     /// <summary>
-    /// Die Rastersuche über zwei Kapazitäten und zwei C-Raten — und, seit Auftrag #226,
-    /// wahlweise über eine andere Größenkopplung. Die Leistungsgrenzen stehen deshalb
-    /// mit da; in den zwei C-Raten-Modi liest sie niemand.
+    /// Die Gerätesuche über VIER Geräte: 10 kWh mit 5 und mit 10 kW, 20 kWh mit 10 und
+    /// mit 20 kW. Alle liegen in den Bereichen 10…20 kWh und 5…20 kW.
     /// </summary>
     /// <param name="netzladung">Darf die Flotte aus dem Netz laden?</param>
-    /// <param name="modus">Die Größenkopplung der einzigen aktiven Achse.</param>
+    /// <param name="modus">
+    /// Die GESPEICHERTE Kopplung der einzigen aktiven Achse; eine C-Rate-Kopplung wird
+    /// vom Lauf benannt umgesetzt. Die Bereiche sind so gewählt, dass die Umrechnung sie
+    /// nicht enger macht.
+    /// </param>
     private static FlottenAuslegungErgebnis Suche(
         bool netzladung,
-        FlottenAuslegungsmodus modus = FlottenAuslegungsmodus.KapazitaetUndCRate)
+        FlottenAuslegungsmodus modus = FlottenAuslegungsmodus.KapazitaetUndLeistung)
     {
         FlottenStudieKonfiguration config = Config(netzladung);
         config.Einheiten.Clear();
@@ -231,12 +245,6 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
         config.Auslegung = new FlottenAuslegungEingang
         {
             MaximaleKandidaten = 100,
-            // OHNE die zweite Phase (Auftrag #224): Diese Prüffälle messen das GROBRASTER —
-            // seine Stellen, seine Kennzahlen und die Gegenrechnung je Rasterpunkt. Das
-            // Feinraster legt Kandidaten ZWISCHEN die Stützstellen und auf den Optimalpunkt
-            // noch einmal; „jede Stelle genau einmal" wäre danach keine Aussage mehr.
-            // Geprüft wird es in FlottenFeinrasterTests.
-            Feinraster = false,
             Achsen = new List<FlottenAuslegungsAchse>
             {
                 new()
@@ -247,19 +255,27 @@ public sealed class FlottenKandidatKennzahlenTests : IDisposable
                     AnzahlBis = 1,
                     KapazitaetVonKWh = 10,
                     KapazitaetBisKWh = 20,
-                    KapazitaetSchrittKWh = 10,
                     LeistungVonKw = 5,
-                    LeistungBisKw = 10,
-                    LeistungSchrittKw = 5,
+                    LeistungBisKw = 20,
+                    // Fuer die zwei Altstands-Kopplungen: 0,5 bis 1 C ergibt aus
+                    // 10...20 kWh die Leistungen 5...20 kW und umgekehrt.
                     CRateVon = 0.5,
                     CRateBis = 1.0,
-                    CRateSchritt = 0.5,
+                    Geraete = new List<FlottenGeraetekandidat>
+                    {
+                        Geraet("a", 10, 5), Geraet("b", 10, 10),
+                        Geraet("c", 20, 10), Geraet("d", 20, 20)
+                    },
                     Vorlage = Einheit(10, 10)
                 }
             }
         };
         return FlottenOptimierer.Rechne(Eingang(), config);
     }
+
+    /// <summary>EIN Gerät des Prüfbestands — dieselbe Einheit wie im Einzellauf.</summary>
+    private static FlottenGeraetekandidat Geraet(string id, double kapazitaet, double leistung)
+        => new() { Quellkennung = id, Geraet = Einheit(kapazitaet, leistung) };
 
     /// <summary>Dieselbe Hardware EINZELN gerechnet — die unabhängige Gegenrechnung.</summary>
     private static FlottenStudienErgebnis Einzellauf(bool netzladung, double kapazitaet, double leistung)

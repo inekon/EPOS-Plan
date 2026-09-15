@@ -17181,9 +17181,6 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="FLOTTE_DLG_PRUEF_LEISTUNG" xml:space="preserve">
     <value>Größenbereich '{0}' – Leistung [kW]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein.</value>
   </data>
-  <data name="FLOTTE_DLG_PRUEF_CRATE" xml:space="preserve">
-    <value>Größenbereich '{0}' – C-Rate [1/h]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein.</value>
-  </data>
   <data name="FLOTTE_ED_TITEL" xml:space="preserve">
     <value>Speicherflotte</value>
   </data>
@@ -17933,6 +17930,51 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="FLOTTE_GROESSEN_SP_SPITZE" xml:space="preserve">
     <value>Bezugsspitze</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ABWEICHUNG" xml:space="preserve">
+    <value>Abweichung</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_NEUTRAL" xml:space="preserve">
+    <value>Neutrale Kennwerte</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE" xml:space="preserve">
+    <value>Geräte aus</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Projektkatalog</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_STAMM" xml:space="preserve">
+    <value>Stammdaten</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_HINWEIS" xml:space="preserve">
+    <value>Gesucht wird unter den Speichern der gewählten Quelle. Ein aus den Stammdaten gefundenes Gerät lässt sich in Schritt 1 in das Projekt übernehmen.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_TITEL" xml:space="preserve">
+    <value>Gefundene Geräte</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_LEER" xml:space="preserve">
+    <value>Die gewählte Quelle führt kein Gerät, das sich rechnen ließe.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_TREFFER" xml:space="preserve">
+    <value>Alle aufgeführten Geräte liegen in beiden Bereichen.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_NAEHE" xml:space="preserve">
+    <value>Kein Gerät liegt in beiden Bereichen. Gerechnet werden die {0} nächstliegenden; die Abweichung steht in der vorletzten Spalte.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_NEUTRAL" xml:space="preserve">
+    <value>Neutrale Kennwerte: Lade- und Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung.</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_NAME" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_ABWEICHUNG" xml:space="preserve">
+    <value>Abweichung</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_NEUTRAL" xml:space="preserve">
+    <value>Neutrale Kennwerte</value>
+  </data>
+  <data name="FLOTTE_OPT_KEINE_GERAETE" xml:space="preserve">
+    <value>Kein Gerät gefunden: die andere Quelle wählen oder den Speicherbestand pflegen.</value>
   </data>
   <data name="FLOTTE_GROESSEN_SP_ZULAESSIG" xml:space="preserve">
     <value>Zulässig</value>
@@ -18963,9 +19005,6 @@ Möchten Sie das zulassen?</value>
   <data name="FLOTTE_OPT_FEINRASTER" xml:space="preserve">
     <value>Phase 2: Feinraster um das Grob-Optimum</value>
   </data>
-  <data name="FLOTTE_OPT_FEINRASTER_HINWEIS" xml:space="preserve">
-    <value>Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Das Feinraster gewinnt nur bei streng besserem Kapitalwert.</value>
-  </data>
   <data name="FLOTTE_OPT_SUCHRAUM" xml:space="preserve">
     <value>Suchraum je Einheit</value>
   </data>
@@ -18992,9 +19031,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="FLOTTE_OPT_KEINE_EINHEIT" xml:space="preserve">
     <value>Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an.</value>
-  </data>
-  <data name="FLOTTE_OPT_KANDIDATEN" xml:space="preserve">
-    <value>{0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}.</value>
   </data>
   <data name="FLOTTE_OPT_KANDIDATEN_OHNE" xml:space="preserve">
     <value>{0} Kandidaten von höchstens {1}.</value>

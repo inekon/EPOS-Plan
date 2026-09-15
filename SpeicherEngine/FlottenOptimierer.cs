@@ -12,24 +12,6 @@ public static class FlottenOptimierer
     private const string NullId = "Nullvariante-ohne-Zusatzspeicher";
 
     /// <summary>
-    /// Die Mindestbreite des Feinrasterfensters [kWh] — woertlich aus der Mappe V7 und aus
-    /// <see cref="SpeicherOptimierer"/> uebernommen (Auftrag #224).
-    /// </summary>
-    /// <remarks>
-    /// Sie greift nur bei einem Suchraum, der schmaler als 1 kWh ist; dort kann das Fenster
-    /// den Suchraum nach oben um bis zu 1 kWh verlassen. Das ist Vorlagentreue und praktisch
-    /// bedeutungslos.
-    /// </remarks>
-    public const double FEINRASTER_MINDESTBREITE = 1.0;
-
-    /// <summary>
-    /// Die TEILUNG der zweiten Phase: Das Feinraster laeuft in Schritten von
-    /// <c>Schrittweite / 9</c> (Mappe V7: zehn Stuetzstellen ueber einem Fenster von einer
-    /// Grobschrittweite ergeben neun Teilintervalle).
-    /// </summary>
-    public const int FEINRASTER_TEILUNG = 9;
-
-    /// <summary>
     /// Prueft das VOLLSTAENDIGE endliche Raster aus Hardwarevarianten und Betriebszielen
     /// und nennt die beste zulaessige Variante (Spezifikation 12.2).
     /// </summary>
@@ -51,14 +33,19 @@ public static class FlottenOptimierer
     /// es nicht mehr.
     /// </para>
     /// <para>
-    /// <b>Seit Auftrag #224 in ZWEI PHASEN</b> (Anwenderentscheid SD-E-9, SD-Q10): Auf das
-    /// Grobraster folgt — wenn <see cref="FlottenAuslegungEingang.Feinraster"/> es sagt —
-    /// ein zweites Raster um das Grob-Optimum, NUR auf der Groessenachse der ersten aktiven
-    /// Suchachse (Kapazitaet; im Modus <see cref="FlottenAuslegungsmodus.LeistungUndCRate"/>
-    /// die Leistung). Die zweite Achse, die Stueckzahl, alle uebrigen Achsen und das
-    /// Betriebsziel bleiben beim Wert des Grob-Optimums. <b>Das Feinraster gewinnt nur bei
-    /// STRIKT besserem Kapitalwert</b> — bei Gleichstand bleibt das Grobraster massgeblich
-    /// (dieselbe Regel wie <see cref="SpeicherOptimierer"/>, Z. 143).
+    /// <b>Die GROESSENSUCHE rechnet GERAETE</b> (Anwenderentscheid vom 15.09.2026): Der
+    /// Anwender gibt Bereiche fuer Kapazitaet und Leistung vor, und
+    /// <see cref="FlottenGeraetewahl.Waehle"/> waehlt daraufhin unter den Saetzen der
+    /// <see cref="FlottenAuslegungsAchse.Quelle"/>. Es wird nichts mehr skaliert und nichts
+    /// mehr gerastert; die Kandidatenzahl ist die Zahl der gefundenen Geraete.
+    /// </para>
+    /// <para>
+    /// <b>Es gibt nur EINE Phase.</b> Die frueher zweite verfeinerte die Groessenachse
+    /// ZWISCHEN ihren Stuetzstellen — das setzte eine frei skalierbare Groesse voraus.
+    /// Zwischen zwei Geraeten liegt kein drittes; eine zwischengerechnete Groesse waere ein
+    /// Speicher, den es nicht gibt. <see cref="FlottenAuslegungEingang.Feinraster"/> ist
+    /// deshalb wirkungslos, und <see cref="FlottenKandidatenzahl.FeinHoechstens"/> ist
+    /// immer 0.
     /// </para>
     /// <para>
     /// Rangfolge: technisch ZULAESSIGE Varianten nach hoechstem Kapitalwert, daneben die
@@ -93,6 +80,12 @@ public static class FlottenOptimierer
         // DIE SUCHMETHODE ENTSCHEIDET, WAS VARIIERT WIRD (Auftrag #247, SD-E-10): Unter
         // „Bewerten" gibt es keine Suchachse — die eingestellte Flotte wird genau einmal
         // je Betriebsziel gerechnet, auch wenn Achsen im Stand stehen.
+        // AELTERE STAENDE WERDEN BENANNT UMGESETZT (Anwenderentscheid vom 15.09.2026):
+        // Ein Stand mit C-Rate-Kopplung traegt seine Absicht in den C-Raten-Grenzen; sie
+        // wird in Kapazitaets- und Leistungsgrenzen umgerechnet, nicht verworfen. Danach
+        // gibt es im ganzen Lauf nur noch KapazitaetUndLeistung.
+        FlottenAltstand.Normalisiere(basis.Auslegung);
+
         FlottenSuchmethode methode = basis.Auslegung.Suchmethode;
         var aktiveAchsen = methode == FlottenSuchmethode.Bewerten
             ? Array.Empty<FlottenAuslegungsAchse>()
@@ -115,8 +108,12 @@ public static class FlottenOptimierer
                 "Die Stueckzahl zaehlt in ganzen Schritten ab dem Von-Wert.");
         if (zahl.Befund == FlottenSuchbefund.GroessenbereichUnbrauchbar)
             throw new ArgumentException(
-                "Ein Groessenbereich der Suche ist unbrauchbar: „bis“ liegt unter „von“, " +
-                "ein Wert ist nicht positiv, oder die Schrittweite fehlt bei einer echten Spanne.");
+                "Ein Groessenbereich der Suche ist unbrauchbar: „bis“ liegt unter „von“ " +
+                "oder ein Wert ist nicht positiv.");
+        if (zahl.Befund == FlottenSuchbefund.KeineGeraete)
+            throw new ArgumentException(
+                "Die gewaehlte Quelle fuehrt kein Geraet, das gerechnet werden koennte. " +
+                "Die Groessensuche rechnet vorhandene Speicher; ohne Bestand gibt es keine Kandidaten.");
         if (zahl.Befund == FlottenSuchbefund.KeineAktiveAchse)
             throw new ArgumentException(
                 "Die gewaehlte Suchmethode braucht mindestens eine Einheit mit „variieren“; " +
@@ -124,9 +121,8 @@ public static class FlottenOptimierer
 
         if (!zahl.Zulaessig)
             throw new ArgumentException(
-                $"Das vollstaendige Raster umfasst {zahl.Grob} Kandidaten im Grobraster" +
-                (zahl.FeinHoechstens > 0 ? $" und bis zu {zahl.FeinHoechstens} im Feinraster" : "") +
-                $" und ueberschreitet die Grenze {zahl.Grenze}. Das Raster wurde nicht gekuerzt.");
+                $"Der Suchraum umfasst {zahl.Grob} Kandidaten und ueberschreitet die Grenze " +
+                $"{zahl.Grenze}. Er wurde nicht gekuerzt.");
 
         var achsenwahlen = aktiveAchsen.Select((achse, index) => BildeAchse(achse, index, methode)).ToArray();
         var festeEinheiten = FesteEinheiten(basis, aktiveAchsen);
@@ -135,9 +131,10 @@ public static class FlottenOptimierer
             ? new[] { basis.Optionen.Betriebsziel }
             : basis.Auslegung.Betriebsziele.Distinct().ToArray();
 
-        // Die Groessenkopplung der ERSTEN aktiven Suchachse geht ins Ergebnis (Auftrag
-        // #226): Sie sagt der Groessen-Sicht, welche zwei Groessen die Karte aufspannt.
-        // Ohne aktive Achse gibt es kein Raster - dann bleibt die Vorbelegung stehen.
+        // Die Groessenkopplung geht ins Ergebnis (Auftrag #226): Sie sagt der
+        // Groessen-Sicht, welche zwei Groessen die Karte aufspannt. Seit der Umstellung auf
+        // Geraetekandidaten ist es immer Kapazitaet x Leistung - die Achse traegt es
+        // trotzdem weiter, damit ein aufbewahrtes Ergebnis seine eigene Auskunft behaelt.
         var result = new FlottenAuslegungErgebnis();
         var ersteAchse = aktiveAchsen.FirstOrDefault();
         if (ersteAchse is not null) result.Achsenmodus = ersteAchse.Modus;
@@ -152,28 +149,9 @@ public static class FlottenOptimierer
             Gesamt = zahl.Gesamt
         };
 
+        // ES GIBT NUR EINE PHASE: Zwischen zwei Geraeten liegt kein drittes (siehe
+        // FlottenAuslegungEingang.Feinraster). FeinrasterGerechnet bleibt damit false.
         RechnePhase(lauf, hardware, ziele, FlottenKandidatPhase.Grob, cancellationToken);
-
-        // ---------------------------------------------------------------- Phase 2
-        if (basis.Auslegung.Feinraster && methode == FlottenSuchmethode.Groesse
-            && ersteAchse is not null && lauf.BesteVariante is { } beste
-            && beste.Wahlen.Count > 0 && beste.Wahlen[0].Anzahl > 0)
-        {
-            var feinwerte = Feinrasterwerte(ersteAchse, beste.Wahlen[0].ErsterWert, methode);
-            if (feinwerte.Count > 0)
-            {
-                var feinAchsen = new List<Achsenwahl>[achsenwahlen.Length];
-                feinAchsen[0] = BildeFeinachse(ersteAchse, 0, beste.Wahlen[0], feinwerte, methode);
-                for (int a = 1; a < achsenwahlen.Length; a++)
-                    feinAchsen[a] = new List<Achsenwahl> { beste.Wahlen[a] };
-
-                var feinVarianten = Kombiniere(festeEinheiten, feinAchsen);
-                lauf.Gesamt = zahl.Grob + feinVarianten.Count;
-                result.FeinrasterGerechnet = true;
-                RechnePhase(lauf, feinVarianten, new[] { lauf.BestesZiel }, FlottenKandidatPhase.Fein,
-                            cancellationToken);
-            }
-        }
 
         if (lauf.Auswertungen == 0)
             throw new InvalidOperationException("Kein Kandidat konnte fachlich ausgewertet werden; Eingaben, Prognosen und Endenergiebewertung pruefen.",
@@ -215,14 +193,18 @@ public static class FlottenOptimierer
     /// Wie viele Kandidaten dieser Suchraum ergibt — OHNE einen einzigen zu rechnen.
     /// </summary>
     /// <remarks>
-    /// <para>Sie baut keine Einheiten, sondern zaehlt die Stuetzstellen: je aktiver Achse
-    /// <c>(Anzahl 0 ja/nein) + Stueckzahlen × erste Groesse × zweite Groesse</c>, alles
-    /// multipliziert und mit der Zahl der Betriebsziele mal genommen. Dazu die Obergrenze
-    /// des Feinrasters aus der ERSTEN aktiven Achse.</para>
-    /// <para><b>Sie wirft nicht.</b> Ein unbrauchbarer Bereich (leer, negativ, Schritt 0 bei
-    /// echter Spanne) liefert <see cref="FlottenKandidatenzahl.Gueltig"/> = <c>false</c>;
-    /// die Seite zeigt dann den Eingabefehler, den sie ohnehin schon rechnet, und keine
-    /// erfundene Zahl.</para>
+    /// <para>Sie baut keine Einheiten: Unter <see cref="FlottenSuchmethode.Groesse"/>
+    /// zaehlt sie die GERAETE, die <see cref="FlottenGeraetewahl.Waehle"/> waehlt, unter
+    /// <see cref="FlottenSuchmethode.Stueckzahl"/> die Stueckzahlen — je Achse, alles
+    /// multipliziert und mit der Zahl der Betriebsziele mal genommen.</para>
+    /// <para><b>Die Kandidatenzahl kann nicht mehr explodieren.</b> Sie war das Produkt
+    /// zweier Rasterachsen und wuchs mit jeder feineren Schrittweite; jetzt ist sie
+    /// hoechstens so gross wie der Geraetebestand der Quelle. Die Schranke
+    /// <see cref="FlottenAuslegungEingang.MaximaleKandidaten"/> bleibt trotzdem stehen —
+    /// sie zaehlt weiter Geraete × Betriebsziele und faengt einen sehr grossen Bestand ab.</para>
+    /// <para><b>Sie wirft nicht.</b> Ein unbrauchbarer Bereich (leer, negativ, nicht positiv)
+    /// liefert <see cref="FlottenKandidatenzahl.Gueltig"/> = <c>false</c>; eine Quelle ohne
+    /// passendes Geraet ebenso, mit dem Befund <see cref="FlottenSuchbefund.KeineGeraete"/>.</para>
     /// </remarks>
     /// <param name="config">Die Studienkonfiguration samt Suchraum; <c>null</c> = leeres Raster.</param>
     public static FlottenKandidatenzahl Kandidatenzahl(FlottenStudieKonfiguration? config)
@@ -254,6 +236,14 @@ public static class FlottenOptimierer
                         : FlottenSuchbefund.GroessenbereichUnbrauchbar;
                 break;
             }
+            // KEIN GERAET IST EINE BENANNTE ABLEHNUNG, keine Null: Ein Lauf ohne Kandidaten
+            // rechnete nichts und meldete doch „in Ordnung".
+            if (n == 0)
+            {
+                gueltig = false;
+                if (befund == FlottenSuchbefund.Inordnung) befund = FlottenSuchbefund.KeineGeraete;
+                break;
+            }
             if (hardware > long.MaxValue / Math.Max(1L, n)) { gueltig = false; break; }
             hardware *= n;
         }
@@ -262,26 +252,25 @@ public static class FlottenOptimierer
             ? 1 : auslegung.Betriebsziele!.Distinct().Count();
         long grob = gueltig ? hardware * ziele : 0;
 
-        // KEIN FEINRASTER AUSSER UNTER „Groesse" (Auftrag #247): Zwischen zwei ganzen
-        // Stueckzahlen gibt es nichts zu verfeinern, und „Bewerten" rastert gar nicht.
-        long fein = gueltig && auslegung.Feinraster && aktive.Length > 0
-                    && methode == FlottenSuchmethode.Groesse
-            ? FeinrasterHoechstzahl(aktive[0]) : 0;
+        // KEIN FEINRASTER MEHR: Die Groessensuche waehlt unter vorhandenen Geraeten,
+        // zwischen zweien liegt kein drittes (siehe FlottenAuslegungEingang.Feinraster).
+        const long fein = 0;
 
         return new FlottenKandidatenzahl(grob, fein, auslegung.MaximaleKandidaten, gueltig, befund);
     }
 
     /// <summary>
     /// Die Zahl der Hardwarevarianten EINER Achse unter der gewaehlten Suchmethode;
-    /// <c>-1</c> = unbrauchbarer Bereich.
+    /// <c>-1</c> = unbrauchbarer Bereich, <c>0</c> = kein Geraet.
     /// </summary>
     /// <remarks>
-    /// <para><b>Unter <see cref="FlottenSuchmethode.Groesse"/></b> zaehlt die Stueckzahl
-    /// als EIN Stuetzpunkt (<see cref="FlottenAuslegungsAchse.AnzahlVon"/>, 0 gilt als 1):
-    /// erste Groesse × zweite Groesse.</para>
-    /// <para><b>Unter <see cref="FlottenSuchmethode.Stueckzahl"/></b> zaehlen erste und
-    /// zweite Groesse je EINEN Stuetzpunkt (die Vorlage): Von…Bis Stueck, die 0
-    /// eingeschlossen — sie bedeutet „diese Einheit entfaellt".</para>
+    /// <para><b>Unter <see cref="FlottenSuchmethode.Groesse"/></b> ist es die Zahl der
+    /// GERAETE, die <see cref="FlottenGeraetewahl.Waehle"/> waehlt — dieselbe Regel, die
+    /// auch den Lauf und die Kandidatentabelle fuellt. Die Stueckzahl zaehlt als EIN
+    /// Stuetzpunkt (<see cref="FlottenAuslegungsAchse.AnzahlVon"/>, 0 gilt als 1).</para>
+    /// <para><b>Unter <see cref="FlottenSuchmethode.Stueckzahl"/></b> ist es die Zahl der
+    /// Stueckzahlen Von…Bis, die 0 eingeschlossen — sie bedeutet „diese Einheit
+    /// entfaellt"; die Groesse bleibt die der Vorlage.</para>
     /// </remarks>
     private static long Achsengroesse(FlottenAuslegungsAchse achse, FlottenSuchmethode methode)
     {
@@ -291,92 +280,8 @@ public static class FlottenOptimierer
         if (methode == FlottenSuchmethode.Stueckzahl)
             return achse.AnzahlBis - achse.AnzahlVon + 1L;
 
-        long erste = Rasterzahl(GroesseVon(achse), GroesseBis(achse), GroesseSchritt(achse));
-        long zweite = Rasterzahl(ZweitVon(achse), ZweitBis(achse), ZweitSchritt(achse));
-        if (erste < 0 || zweite < 0) return -1;
-        return erste * zweite;
-    }
-
-    /// <summary>
-    /// Die Hoechstzahl der Feinrasterpunkte dieser Achse — der groesstmoegliche Fall ueber
-    /// alle Lagen des Grob-Optimums.
-    /// </summary>
-    /// <remarks>
-    /// Das Fenster ist hoechstens zwei Grobschritte breit (eine Schrittweite nach jeder
-    /// Seite) und nie breiter als der Suchraum selbst; gerastert wird es mit
-    /// <c>Schrittweite / 9</c>.
-    /// </remarks>
-    private static long FeinrasterHoechstzahl(FlottenAuslegungsAchse achse)
-    {
-        double von = GroesseVon(achse), bis = GroesseBis(achse), schritt = GroesseSchritt(achse);
-        if (!double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von) return 0;
-        if (bis - von <= 1e-12) return 0;                       // ein einziger Stuetzwert
-        if (!double.IsFinite(schritt) || schritt <= 0) return 0;
-
-        double breite = Math.Min(2.0 * schritt, bis - von);
-        if (breite < FEINRASTER_MINDESTBREITE) breite = FEINRASTER_MINDESTBREITE;
-        return Stuetzstellen(breite, schritt / FEINRASTER_TEILUNG);
-    }
-
-    /// <summary>Die Feinrasterwerte um <paramref name="bestGroesse"/> — die Regel der Mappe V7.</summary>
-    /// <remarks>
-    /// <code>
-    /// unten = max(von, best - schritt)
-    /// oben  = min(bis, best + schritt)
-    /// if (oben - unten &lt; 1 kWh) oben = unten + 1 kWh     // Mindestbreite
-    /// Werte im Abstand schritt / 9, die Obergrenze immer dabei
-    /// </code>
-    /// Die Klemmung ist der Grund, warum ein Grob-Optimum am Rand ein EINSEITIGES
-    /// Feinraster bekommt: Die Suche laeuft nicht ueber die vom Anwender gesetzten Grenzen
-    /// hinaus.
-    /// </remarks>
-    public static List<double> Feinrasterwerte(FlottenAuslegungsAchse achse, double bestGroesse,
-                                               FlottenSuchmethode methode = FlottenSuchmethode.Groesse)
-    {
-        // Auftrag #247: Nur die Groessensuche hat eine Groessenachse zu verfeinern.
-        if (methode != FlottenSuchmethode.Groesse) return new List<double>();
-
-        double von = GroesseVon(achse), bis = GroesseBis(achse), schritt = GroesseSchritt(achse);
-        if (!double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von) return new List<double>();
-        if (bis - von <= 1e-12) return new List<double>();
-        if (!double.IsFinite(schritt) || schritt <= 0) return new List<double>();
-        if (!double.IsFinite(bestGroesse)) return new List<double>();
-
-        double unten = Math.Max(von, bestGroesse - schritt);
-        double oben = Math.Min(bis, bestGroesse + schritt);
-        if (oben - unten < FEINRASTER_MINDESTBREITE) oben = unten + FEINRASTER_MINDESTBREITE;
-
-        return Raster(unten, oben, schritt / FEINRASTER_TEILUNG, "Feinraster");
-    }
-
-    private static double GroesseVon(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? a.LeistungVonKw : a.KapazitaetVonKWh;
-    private static double GroesseBis(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? a.LeistungBisKw : a.KapazitaetBisKWh;
-    private static double GroesseSchritt(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? a.LeistungSchrittKw : a.KapazitaetSchrittKWh;
-    private static double ZweitVon(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung ? a.LeistungVonKw : a.CRateVon;
-    private static double ZweitBis(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung ? a.LeistungBisKw : a.CRateBis;
-    private static double ZweitSchritt(FlottenAuslegungsAchse a) =>
-        a.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung ? a.LeistungSchrittKw : a.CRateSchritt;
-
-    /// <summary>Die Zahl der Stuetzstellen eines Bereichs; <c>-1</c> = unbrauchbar.</summary>
-    private static long Rasterzahl(double von, double bis, double schritt)
-    {
-        if (!double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von) return -1;
-        if (Math.Abs(bis - von) <= 1e-12) return 1;
-        if (!double.IsFinite(schritt) || schritt <= 0) return -1;
-        return Stuetzstellen(bis - von, schritt);
-    }
-
-    /// <summary>Wie viele Punkte <see cref="Raster"/> ueber dieser Spanne legt.</summary>
-    private static long Stuetzstellen(double spanne, double schritt)
-    {
-        long n = (long)Math.Floor(spanne / schritt + 1e-9) + 1;
-        if ((n - 1) * schritt < spanne - 1e-9) n++;             // die Obergrenze kommt dazu
-        return n;
+        if (!FlottenGeraetewahl.BereichBrauchbar(achse)) return -1;
+        return FlottenGeraetewahl.Waehle(achse).Count;
     }
 
     // =====================================================================
@@ -536,6 +441,12 @@ public static class FlottenOptimierer
         // Die Stueckzahl je aktiver Achse (Auftrag #247) — sie traegt die Achsen der
         // Ergebnissicht unter „Stueckzahl suchen" (SD-Q17).
         Stueckzahlen = variante.Wahlen.Select(w => w.Anzahl).ToList(),
+        // DIE HERKUNFT DES GERAETS: Sie steht bei genau EINER Suchachse da — bei mehreren
+        // gaebe es mehrere Geraete und damit mehrere Abstaende, und eine Zahl fuer zwei
+        // Geraete waere schlimmer als keine. Die Kandidatentabelle zeigt sie.
+        Quellkennung = variante.Wahlen.Count == 1 ? variante.Wahlen[0].Quellkennung : "",
+        Abweichung = variante.Wahlen.Count == 1 ? variante.Wahlen[0].Abweichung : 0.0,
+        NeutraleKennwerte = variante.Wahlen.Any(w => w.NeutraleKennwerte),
         Einheiten = units.Select(x => new FlottenKandidatEinheit
         {
             Id = x.Id,
@@ -615,12 +526,21 @@ public static class FlottenOptimierer
     /// Werte, aus denen sie entstanden sind.
     /// </summary>
     /// <remarks>
-    /// Die zwei WERTE sind seit Auftrag #224 dabei: Das Feinraster baut die Achse mit einem
-    /// anderen Groessenwert, aber DERSELBEN Stueckzahl und DEMSELBEN zweiten Wert noch
-    /// einmal auf — ohne sie muesste es aus den fertigen Einheiten zurueckrechnen.
+    /// Unter <see cref="FlottenSuchmethode.Groesse"/> steht hinter jeder Wahl EIN GERAET;
+    /// seine Herkunft und sein Abstand zur Vorgabe wandern in die Zusammenfassung des
+    /// Kandidaten und von dort in die Kandidatentabelle.
     /// </remarks>
     private sealed class Achsenwahl
     {
+        /// <summary>Kennung des Geraets in seiner Quelle; leer unter „Stueckzahl suchen".</summary>
+        public string Quellkennung { get; init; } = string.Empty;
+
+        /// <summary>Der normierte Abstand des Geraets zur Vorgabe; 0 = Treffer.</summary>
+        public double Abweichung { get; init; }
+
+        /// <summary>Am Geraet musste wenigstens eine neutrale Vorgabe greifen.</summary>
+        public bool NeutraleKennwerte { get; init; }
+
         public List<FlottenEinheit> Einheiten { get; init; } = new();
 
         /// <summary>Stelle auf der ERSTEN Achse (Kapazitaet bzw. Leistung); -1 = keine.</summary>
@@ -711,17 +631,23 @@ public static class FlottenOptimierer
     }
 
     /// <summary>
-    /// Die Wahlen EINER Suchachse unter der gewaehlten Methode (Auftrag #247).
+    /// Die Wahlen EINER Suchachse unter der gewaehlten Methode.
     /// </summary>
     /// <remarks>
-    /// <para><b>Unter <see cref="FlottenSuchmethode.Groesse"/></b> laeuft das Raster ueber
-    /// erste × zweite Groesse; die Stueckzahl steht fest auf
+    /// <para><b>Unter <see cref="FlottenSuchmethode.Groesse"/></b> ist jede Wahl EIN GERAET
+    /// aus <see cref="FlottenGeraetewahl.Waehle"/>; die Stueckzahl steht fest auf
     /// <see cref="FlottenAuslegungsAchse.AnzahlVon"/> (0 gilt als 1 — eine Einheit, deren
-    /// Groesse gesucht wird, muss es geben).</para>
+    /// Geraet gesucht wird, muss es geben).</para>
+    /// <para><b>Die Rasterstelle kommt aus den vorkommenden WERTEN.</b> Geraete bilden kein
+    /// Gitter: Die Zeilen sind die aufsteigend sortierten VERSCHIEDENEN Kapazitaeten der
+    /// gewaehlten Geraete, die Spalten ihre verschiedenen Entladeleistungen. Die Karte der
+    /// Groessen-Sicht wird damit DUENN besetzt — jede belegte Zelle ist ein Geraet, das es
+    /// wirklich gibt, jede leere eine Groessenkombination, die niemand baut. Das ist die
+    /// wahre Auskunft; ein lueckenloses Gitter waere eine erfundene.</para>
     /// <para><b>Unter <see cref="FlottenSuchmethode.Stueckzahl"/></b> laeuft es ueber die
     /// Stueckzahl Von…Bis; die Groesse bleibt Zeichen fuer Zeichen die der Vorlage. Eine
-    /// Rasterstelle gibt es dabei NICHT (<c>-1</c>): Das Grobgitter der Groessen-Sicht
-    /// spannen zwei Groessenachsen auf, und die Stueckzahl steht seit #247 in
+    /// Rasterstelle gibt es dabei NICHT (<c>-1</c>): Das Gitter der Groessen-Sicht spannen
+    /// zwei Groessenachsen auf, und die Stueckzahl steht in
     /// <see cref="FlottenKandidatZusammenfassung.Stueckzahlen"/>.</para>
     /// </remarks>
     private static List<Achsenwahl> BildeAchse(FlottenAuslegungsAchse axis, int axisIndex,
@@ -732,34 +658,66 @@ public static class FlottenOptimierer
 
         if (methode == FlottenSuchmethode.Stueckzahl) return BildeStueckzahlachse(axis, axisIndex);
 
-        var firstAxis = axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate
-            ? Raster(axis.LeistungVonKw, axis.LeistungBisKw, axis.LeistungSchrittKw, "Leistung")
-            : Raster(axis.KapazitaetVonKWh, axis.KapazitaetBisKWh, axis.KapazitaetSchrittKWh, "Kapazitaet");
-        var secondAxis = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndLeistung
-            ? Raster(axis.LeistungVonKw, axis.LeistungBisKw, axis.LeistungSchrittKw, "Leistung")
-            : Raster(axis.CRateVon, axis.CRateBis, axis.CRateSchritt, "C-Rate");
+        IReadOnlyList<FlottenGeraetekandidat> geraete = FlottenGeraetewahl.Waehle(axis);
+        if (geraete.Count == 0)
+            throw new ArgumentException(
+                "Die Groessensuche fand kein Geraet: Die gewaehlte Quelle fuehrt keinen Satz, " +
+                "der sich rechnen liesse.");
 
-        // DIE STUECKZAHL IST EIN STUETZPUNKT (SD-Q16): Unter „Groesse suchen" steht sie
-        // fest auf dem Von-Wert der Karte; 0 waere „die Einheit entfaellt" und liesse
-        // nichts uebrig, dessen Groesse zu suchen waere.
+        // DIE STUECKZAHL IST EIN STUETZPUNKT: Unter „Groesse suchen" steht sie fest auf dem
+        // Von-Wert der Karte; 0 waere „die Einheit entfaellt" und liesse nichts uebrig,
+        // dessen Geraet zu suchen waere.
         int count = Math.Max(axis.AnzahlVon, 1);
 
-        var result = new List<Achsenwahl>();
-        for (var ersteStelle = 0; ersteStelle < firstAxis.Count; ersteStelle++)
-        for (var zweiteStelle = 0; zweiteStelle < secondAxis.Count; zweiteStelle++)
+        var zeilenwerte = geraete.Select(g => g.KapazitaetKWh).Distinct().OrderBy(x => x).ToList();
+        var spaltenwerte = geraete.Select(g => g.LeistungKw).Distinct().OrderBy(x => x).ToList();
+
+        var result = new List<Achsenwahl>(geraete.Count);
+        foreach (FlottenGeraetekandidat g in geraete)
         {
-            double first = firstAxis[ersteStelle], second = secondAxis[zweiteStelle];
+            List<FlottenEinheit> einheiten = BaueGeraeteeinheiten(g, axisIndex, count,
+                                                                  out bool neutral);
             result.Add(new Achsenwahl
             {
-                Einheiten = BaueEinheiten(axis, axisIndex, count, first, second, FlottenSuchmethode.Groesse),
-                Rasterzeile = ersteStelle,
-                Rasterspalte = zweiteStelle,
+                Einheiten = einheiten,
+                Rasterzeile = zeilenwerte.IndexOf(g.KapazitaetKWh),
+                Rasterspalte = spaltenwerte.IndexOf(g.LeistungKw),
                 Anzahl = count,
-                ErsterWert = first,
-                ZweiterWert = second
+                ErsterWert = g.KapazitaetKWh,
+                ZweiterWert = g.LeistungKw,
+                Quellkennung = g.Quellkennung ?? "",
+                Abweichung = g.Abweichung,
+                NeutraleKennwerte = g.NeutraleKennwerte || neutral
             });
         }
         return result;
+    }
+
+    /// <summary>
+    /// Die Einheiten EINER Geraetewahl: <paramref name="count"/> Stueck DESSELBEN Geraets,
+    /// unveraendert in Kapazitaet, Leistung, Wirkungsgraden und SoC-Band.
+    /// </summary>
+    /// <remarks>
+    /// <b>Hier wird nichts skaliert.</b> Die Parameter kommen vom Geraet — dafuer sind es
+    /// Geraete. Fehlt einem Satz etwas, greifen die neutralen Vorgaben aus
+    /// <see cref="FlottenGeraetevorgaben"/> an EINER Stelle, und
+    /// <paramref name="neutral"/> sagt es der Kandidatentabelle.
+    /// </remarks>
+    private static List<FlottenEinheit> BaueGeraeteeinheiten(FlottenGeraetekandidat kandidat,
+                                                             int axisIndex, int count,
+                                                             out bool neutral)
+    {
+        neutral = false;
+        var einheiten = new List<FlottenEinheit>(count);
+        for (var n = 0; n < count; n++)
+        {
+            var b = FlottenKopie.Einheit(kandidat.Geraet);
+            b.Id = $"{(string.IsNullOrWhiteSpace(b.Id) ? "Speicher" : b.Id)}-A{axisIndex + 1}-N{n + 1}";
+            b.Name = $"{(string.IsNullOrWhiteSpace(b.Name) ? "Speicher" : b.Name)} {n + 1}";
+            neutral |= FlottenGeraetevorgaben.LueckenFuellen(b);
+            einheiten.Add(b);
+        }
+        return einheiten;
     }
 
     /// <summary>Die Wahlen der Methode „Stueckzahl suchen": Von…Bis Stueck der Vorlage.</summary>
@@ -775,7 +733,7 @@ public static class FlottenOptimierer
             }
             result.Add(new Achsenwahl
             {
-                Einheiten = BaueEinheiten(axis, axisIndex, count, 0.0, 0.0, FlottenSuchmethode.Stueckzahl),
+                Einheiten = BaueEinheiten(axis, axisIndex, count),
                 Anzahl = count,
                 ErsterWert = axis.Vorlage?.KapazitaetKWh ?? 0.0,
                 ZweiterWert = axis.Vorlage?.EntladeleistungKw ?? 0.0
@@ -785,78 +743,22 @@ public static class FlottenOptimierer
     }
 
     /// <summary>
-    /// Die Achse der ZWEITEN Phase: dieselbe Stueckzahl, derselbe zweite Wert, nur andere
-    /// Groessenwerte (Auftrag #224, SD-Q10).
+    /// Die Einheiten EINER Stueckzahlwahl: die Groesse der Vorlage bleibt stehen — ein
+    /// Katalog- oder Projektspeicher HAT eine Groesse. Skaliert wird nichts, vervielfacht
+    /// die Einheit.
     /// </summary>
-    private static List<Achsenwahl> BildeFeinachse(FlottenAuslegungsAchse axis, int axisIndex,
-                                                   Achsenwahl beste, IReadOnlyList<double> groessen,
-                                                   FlottenSuchmethode methode)
-    {
-        var result = new List<Achsenwahl>(groessen.Count);
-        foreach (double groesse in groessen)
-            result.Add(new Achsenwahl
-            {
-                Einheiten = BaueEinheiten(axis, axisIndex, beste.Anzahl, groesse, beste.ZweiterWert, methode),
-                Anzahl = beste.Anzahl,
-                ErsterWert = groesse,
-                ZweiterWert = beste.ZweiterWert
-            });
-        return result;
-    }
-
-    /// <summary>Die Einheiten EINER Achsenwahl — dieselbe Rechnung fuer Grob- und Feinraster.</summary>
     private static List<FlottenEinheit> BaueEinheiten(FlottenAuslegungsAchse axis, int axisIndex,
-                                                      int count, double first, double second,
-                                                      FlottenSuchmethode methode)
+                                                      int count)
     {
-        // STUECKZAHLSUCHE: Die Groesse der Vorlage bleibt stehen — ein Katalog- oder
-        // Projektspeicher HAT eine Groesse (Konzept 8.2/8.3). Skaliert wird nichts,
-        // vervielfacht die Einheit (SD-Q14).
-        if (methode == FlottenSuchmethode.Stueckzahl)
-        {
-            var stueck = new List<FlottenEinheit>(count);
-            for (var n = 0; n < count; n++)
-            {
-                var v = FlottenKopie.Einheit(axis.Vorlage);
-                v.Id = $"{(string.IsNullOrWhiteSpace(v.Id) ? "Speicher" : v.Id)}-A{axisIndex + 1}-N{n + 1}";
-                v.Name = $"{(string.IsNullOrWhiteSpace(v.Name) ? "Speicher" : v.Name)} {n + 1}";
-                stueck.Add(v);
-            }
-            return stueck;
-        }
-
-        var capacity = axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first / second : first;
-        var power = axis.Modus == FlottenAuslegungsmodus.KapazitaetUndCRate ? first * second :
-            axis.Modus == FlottenAuslegungsmodus.LeistungUndCRate ? first : second;
-        var templatePower = Math.Max(axis.Vorlage.LadeleistungKw, axis.Vorlage.EntladeleistungKw);
-        if (!double.IsFinite(templatePower) || templatePower <= 0)
-            throw new ArgumentException("Die Auslegungsvorlage braucht mindestens eine positive Richtungsleistung.");
-        var powerScale = power / templatePower;
-        var units = new List<FlottenEinheit>(count);
+        var stueck = new List<FlottenEinheit>(count);
         for (var n = 0; n < count; n++)
         {
-            var b = FlottenKopie.Einheit(axis.Vorlage);
-            b.Id = $"{(string.IsNullOrWhiteSpace(b.Id) ? "Speicher" : b.Id)}-A{axisIndex + 1}-N{n + 1}";
-            b.Name = $"{(string.IsNullOrWhiteSpace(b.Name) ? "Speicher" : b.Name)} {n + 1}";
-            b.KapazitaetKWh = capacity;
-            b.LadeleistungKw = axis.Vorlage.LadeleistungKw * powerScale;
-            b.EntladeleistungKw = axis.Vorlage.EntladeleistungKw * powerScale;
-            units.Add(b);
+            var v = FlottenKopie.Einheit(axis.Vorlage);
+            v.Id = $"{(string.IsNullOrWhiteSpace(v.Id) ? "Speicher" : v.Id)}-A{axisIndex + 1}-N{n + 1}";
+            v.Name = $"{(string.IsNullOrWhiteSpace(v.Name) ? "Speicher" : v.Name)} {n + 1}";
+            stueck.Add(v);
         }
-        return units;
-    }
-
-    private static List<double> Raster(double from, double to, double step, string name)
-    {
-        if (!double.IsFinite(from) || !double.IsFinite(to) || from <= 0 || to < from)
-            throw new ArgumentException($"Ungueltiger {name}sbereich.");
-        if (Math.Abs(to - from) <= 1e-12) return new List<double> { from };
-        if (!double.IsFinite(step) || step <= 0) throw new ArgumentException($"{name}sschritt muss positiv sein.");
-        var count = (int)Math.Floor((to - from) / step + 1e-9) + 1;
-        var result = new List<double>(count);
-        for (var n = 0; n < count; n++) result.Add(from + n * step);
-        if (result[^1] < to - 1e-9) result.Add(to);
-        return result;
+        return stueck;
     }
 
     private static string KandidatId(IReadOnlyList<FlottenEinheit> units, FlottenBetriebsziel ziel) =>
@@ -883,6 +785,15 @@ public static class FlottenOptimierer
             KapazitaetSchrittKWh = a.KapazitaetSchrittKWh, LeistungVonKw = a.LeistungVonKw,
             LeistungBisKw = a.LeistungBisKw, LeistungSchrittKw = a.LeistungSchrittKw,
             CRateVon = a.CRateVon, CRateBis = a.CRateBis, CRateSchritt = a.CRateSchritt,
+            Quelle = a.Quelle,
+            Geraete = (a.Geraete ?? new List<FlottenGeraetekandidat>())
+                .Select(g => new FlottenGeraetekandidat
+                {
+                    Quellkennung = g.Quellkennung,
+                    NeutraleKennwerte = g.NeutraleKennwerte,
+                    Abweichung = g.Abweichung,
+                    Geraet = FlottenKopie.Einheit(g.Geraet)
+                }).ToList(),
             Vorlage = FlottenKopie.Einheit(a.Vorlage)
         }).ToList()
     };

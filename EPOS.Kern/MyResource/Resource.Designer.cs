@@ -10544,15 +10544,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – C-Rate [1/h]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein. ähnelt.
-        /// </summary>
-        public static string FLOTTE_DLG_PRUEF_CRATE {
-            get {
-                return ResourceManager.GetString("FLOTTE_DLG_PRUEF_CRATE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Größenbereich '{0}' – Kapazität [kWh]: Von muss positiv, Bis mindestens Von und der Schritt bei einem Bereich positiv sein. ähnelt.
         /// </summary>
         public static string FLOTTE_DLG_PRUEF_KAPAZITAET {
@@ -12245,6 +12236,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_SP_AKTION {
@@ -12331,6 +12331,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_GROESSEN_SP_LADEN {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_SP_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neutrale Kennwerte ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_NEUTRAL {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_NEUTRAL", resourceCulture);
             }
         }
         
@@ -13073,11 +13082,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nach dem Grobraster wird ein zweites, engeres Raster um den besten Grobpunkt gerechnet — nur auf der Größenachse, in Schritten von einem Neuntel der Schrittweite. Das Feinraster gewinnt nur bei streng besserem Kapitalwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Quelle führt kein Gerät, das sich rechnen ließe. ähnelt.
         /// </summary>
-        public static string FLOTTE_OPT_FEINRASTER_HINWEIS {
+        public static string FLOTTE_OPT_GERAETE_LEER {
             get {
-                return ResourceManager.GetString("FLOTTE_OPT_FEINRASTER_HINWEIS", resourceCulture);
+                return ResourceManager.GetString("FLOTTE_OPT_GERAETE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Gerät liegt in beiden Bereichen. Gerechnet werden die {0} nächstliegenden; die Abweichung steht in der vorletzten Spalte. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GERAETE_NAEHE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GERAETE_NAEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neutrale Kennwerte: Lade- und Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GERAETE_NEUTRAL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GERAETE_NEUTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gefundene Geräte ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GERAETE_TITEL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GERAETE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle aufgeführten Geräte liegen in beiden Bereichen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GERAETE_TREFFER {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GERAETE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GER_SP_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GER_SP_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GER_SP_NAME {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GER_SP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neutrale Kennwerte ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GER_SP_NEUTRAL {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GER_SP_NEUTRAL", resourceCulture);
             }
         }
         
@@ -13087,15 +13159,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_OPT_GROESSE_UNABHAENGIG {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_GROESSE_UNABHAENGIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}. ähnelt.
-        /// </summary>
-        public static string FLOTTE_OPT_KANDIDATEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_OPT_KANDIDATEN", resourceCulture);
             }
         }
         
@@ -13199,6 +13262,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Gerät gefunden: die andere Quelle wählen oder den Speicherbestand pflegen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_KEINE_GERAETE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_KEINE_GERAETE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Suche gerechnet. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_KEIN_ERGEBNIS {
@@ -13267,6 +13339,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_OPT_METHODE_STUECKZAHL_ERL {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_METHODE_STUECKZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geräte aus ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_QUELLE {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesucht wird unter den Speichern der gewählten Quelle. Ein aus den Stammdaten gefundenes Gerät lässt sich in Schritt 1 in das Projekt übernehmen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_QUELLE_HINWEIS {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_QUELLE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkatalog ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_QUELLE_PROJEKT {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammdaten ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_QUELLE_STAMM {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_QUELLE_STAMM", resourceCulture);
             }
         }
         

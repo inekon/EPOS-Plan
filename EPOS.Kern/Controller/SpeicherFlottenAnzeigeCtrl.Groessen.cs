@@ -96,7 +96,7 @@ public sealed record FlottenRasterdaten(FlottenAuslegungsmodus Modus,
 
     /// <summary>Die leere Karte; sie ersetzt jedes <c>null</c> bei den Aufrufern.</summary>
     public static FlottenRasterdaten Leer { get; } =
-        new(FlottenAuslegungsmodus.KapazitaetUndCRate,
+        new(FlottenAuslegungsmodus.KapazitaetUndLeistung,
             Array.Empty<double>(), Array.Empty<double>(), Array.Empty<double[]>(),
             Array.Empty<bool[]>(), -1, -1);
 }
@@ -236,7 +236,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                                                  int einheit = FLOTTE_GESAMT)
     {
         FlottenAuslegungsmodus modus = ergebnis?.Achsenmodus
-                                       ?? FlottenAuslegungsmodus.KapazitaetUndCRate;
+                                       ?? FlottenAuslegungsmodus.KapazitaetUndLeistung;
         List<Rasterpunkt> punkte = Rasterpunkte(ergebnis, einheit, modus,
                                                 FlottenKandidatPhase.Grob);
         if (punkte.Count == 0) return FlottenRasterdaten.Leer;
@@ -704,6 +704,19 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     public const string SP_GRUND = "GRUND";
 
     /// <summary>
+    /// Spaltenschlüssel: die ABWEICHUNG des Geräts von der Vorgabe [%].
+    /// </summary>
+    /// <remarks>
+    /// Sie steht da, damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird:
+    /// 0 % heißt „liegt in beiden Bereichen", jede andere Zahl nennt den normierten
+    /// Abstand nach der Regel in <c>FlottenGeraetewahl</c>.
+    /// </remarks>
+    public const string SP_ABWEICHUNG = "ABWEICHUNG";
+
+    /// <summary>Spaltenschlüssel: das Gerät rechnet mit neutralen Vorgaben (Kennzeichen).</summary>
+    public const string SP_NEUTRAL = "NEUTRAL";
+
+    /// <summary>
     /// Das Filterprofil der Kandidatentabelle (Konzept 2.5: „sortierbar, mit
     /// Spaltenfilter (Katalogfilter-Muster)").
     /// </summary>
@@ -739,6 +752,10 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                               "kW", Katalogspaltenart.Zahl),
             // Kennzeichen: nur der Sortierpfeil (Konzept_Katalogfilter 5.6.2) - ein Feld
             // "enthaelt ja" fuer zwei Werte ist ein Bedienelement ohne Gewinn.
+            new Katalogspalte(SP_ABWEICHUNG, MyResource.Resource.FLOTTE_GROESSEN_SP_ABWEICHUNG,
+                              "%", Katalogspaltenart.Zahl),
+            new Katalogspalte(SP_NEUTRAL, MyResource.Resource.FLOTTE_GROESSEN_SP_NEUTRAL,
+                              "", Katalogspaltenart.JaNein),
             new Katalogspalte(SP_ZULAESSIG, MyResource.Resource.FLOTTE_GROESSEN_SP_ZULAESSIG,
                               "", Katalogspaltenart.JaNein),
             new Katalogspalte(SP_GRUND, MyResource.Resource.FLOTTE_GROESSEN_SP_GRUND)
@@ -773,6 +790,10 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             zeile.MitZahl(SP_ERSPARNIS, k.ErsparnisEuroJahr, 0);
             zeile.MitZahl(SP_VOLLZYKLEN, k.Vollzyklen, 1);
             zeile.MitZahl(SP_SPITZE, k.BezugsspitzeKw, 2);
+            // Die Abweichung steht in PROZENT — eine Zahl zwischen 0 und 1 läse sich als
+            // Anteil, und der Anwender vergleicht sie mit seiner eigenen Vorgabe.
+            zeile.MitZahl(SP_ABWEICHUNG, k.Einheiten.Count > 0 ? k.Abweichung * 100.0 : (double?)null, 1);
+            zeile.MitKennzeichen(SP_NEUTRAL, k.NeutraleKennwerte);
             zeile.MitKennzeichen(SP_ZULAESSIG, k.Zulaessig);
             zeile.MitText(SP_GRUND, k.Grund);
             zeilen.Add(zeile);

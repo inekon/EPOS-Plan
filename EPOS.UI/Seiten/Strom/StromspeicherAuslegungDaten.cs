@@ -192,6 +192,18 @@ public sealed class StromspeicherAuslegungDienste
     public Func<int, FlottenEinheit?>? EinheitAusKatalog;
 
     /// <summary>
+    /// <b>Frischt den Gerätebestand des Suchraums auf</b> — jede Suchachse bekommt die
+    /// Geräte ihrer <see cref="FlottenKandidatenquelle"/>
+    /// (<c>SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen</c>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Delegat ist keine Gerätesuche</b>: Ohne ihn bleibt der Bestand jeder Achse
+    /// leer, die Kandidatenzeile meldet „kein Gerät", und der Rechenknopf ist gesperrt.
+    /// So verhält sich das Blatt im Reiter „Stromspeicher", das ohne Projektwege läuft.
+    /// </remarks>
+    public Action<FlottenAuslegungEingang>? GeraetebestandAuffrischen;
+
+    /// <summary>
     /// <b>„Ausgewählte Einheiten in Projekt übernehmen"</b> (Auftrag #247, SD‑Q15) —
     /// je Stück eine Speicheranlage, alles in EINER Transaktion
     /// (<c>SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen</c>).
