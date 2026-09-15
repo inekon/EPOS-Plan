@@ -417,13 +417,13 @@ Größen-Sicht des Einzelspeichers):
 
 - **Rasterkarte** Kapazität × Leistung (Farbe = Kapitalwert gegenüber „ohne Speicher", unzulässige
   Kandidaten schraffiert, Optimum markiert) — je Einheit wählbar, bei Anzahl > 1 die Summe;
-- **Schnittkurve** Kapitalwert über der Kapazität bei fester C-Rate (Wahl der C-Rate als Schieber),
+- **Schnittkurve** Kapitalwert über der Kapazität bei fester Entladeleistung (Wahl als Schieber),
   daneben dieselbe Kurve über der Leistung;
-- **Ausschnitt um das Optimum** — die Punkte der zweiten Suchphase als Kurve über der
-  Größenachse, begrenzt auf das Fenster des Feinrasters; er steht unter der Rasterkarte und
-  erscheint nur, wenn eine zweite Phase gelaufen ist;
-- **Kandidatentabelle** um Durchsatz (Vollzyklen/a), Bezugsspitze und Ersparnis erweitert, sortierbar,
-  mit Spaltenfilter (Katalogfilter-Muster), „Kandidat übernehmen" je Zeile.
+- **Ausschnitt um das Optimum** — die Kurve über der Größenachse; sie erscheint nur, wenn ein
+  Lauf Punkte außerhalb des Grobgitters geführt hat. Die Gerätesuche tut das nicht (siehe 8.9);
+- **Kandidatentabelle** um Durchsatz (Vollzyklen/a), Bezugsspitze, Ersparnis, **Abweichung [%]**
+  und das Kennzeichen **neutrale Kennwerte** erweitert, sortierbar, mit Spaltenfilter
+  (Katalogfilter-Muster), „Kandidat übernehmen" je Zeile.
 
 **Die Gesamtdarstellungen zeigen das Grobraster, der Ausschnitt das Feinraster.** Rasterkarte und
 die zwei Schnitte tragen genau die eingegebenen Stützstellen; die Punkte der zweiten Phase liegen
@@ -433,16 +433,14 @@ liefern `ChartRenderer.Optimierungsraster`/`.Schnittkurve`; die Flotte füttert 
 benannt — und wenn ein Feinpunkt den Lauf gewonnen hat, nennt dieselbe Fußzeile Wert und Fundort
 des besten Ergebnisses, weil die Karte dann das Grob-Optimum markiert.
 
-**Die Achsen folgen der GRÖSSENKOPPLUNG der Suchachse** (Auftrag #226, Anwenderbefund vom
-11.09.2026). Bis dahin trug die Spaltenachse immer die C-Rate — auch bei einer Suche über
-Kapazität UND Leistung, wo P/C gar kein Gitter bildet: Aus 13 × 13 = 169 Kandidaten (20…500 kWh
-und kW, Schritt 40) wurde eine Karte mit 137 krummen C-Raten-Spalten, in der über neun Zehntel
-der Zellen leer blieben — und ein Loch zeichnete der Renderer in der MINIMUMFARBE, also rot.
-Seither trägt `FlottenAuslegungErgebnis.Achsenmodus` die Kopplung der ersten aktiven Suchachse,
-und die Sicht liest sie: `KapazitaetUndLeistung` → Zeilen Kapazität [kWh], Spalten
-Entladeleistung [kW], Schnitte über Kapazität und Leistung; `KapazitaetUndCRate` → wie bisher;
-`LeistungUndCRate` → Zeilen Leistung, Spalten C-Rate, Schnitte über Leistung und über der
-Kapazität `E = P / C`. Titel, Achsen-, Schieber- und Bildbeschreibungstexte liefert je Kopplung
+**Die Achsen sind Kapazität [kWh] und Entladeleistung [kW]** — die einzige Größenkopplung, die
+eine Suche erzeugt (siehe 8.9). `FlottenAuslegungErgebnis.Achsenmodus` trägt sie weiter, damit ein
+aufbewahrtes Ergebnis seine eigene Auskunft behält; ein Ergebnis, das noch eine C-Rate-Marke trägt,
+liest die Sicht wie bisher (Zeilen Kapazität, Spalten C-Rate beziehungsweise Zeilen Leistung,
+Spalten C-Rate). **Die Karte ist dünn besetzt**, weil Geräte kein Gitter bilden: Zeilen sind die
+verschiedenen Kapazitäten der gefundenen Geräte, Spalten ihre verschiedenen Entladeleistungen, und
+nur besetzte Zellen tragen einen Wert. Jede leere Zelle ist eine Größenkombination, die niemand
+baut — das ist die wahre Auskunft, ein lückenloses Gitter wäre eine erfundene. Titel, Achsen-, Schieber- und Bildbeschreibungstexte liefert je Kopplung
 der Kern (`SpeicherFlottenAnzeigeCtrl.Rastertitel`/`Achsentext`/`Schiebertext`/`Werttext`/
 `Schnitttitel`/`Schnittbeschreibung`) — eine Quelle für Bild und Markup. **Ein Loch ist seither
 hellgrau** (`ChartRenderer.C_RASTER_LOCH`): „nicht gerechnet" ist keine Aussage über einen
@@ -981,6 +979,78 @@ Zwei Folgefragen hat die Orchestrierung ohne Rückfrage entschieden, weil sie de
 Anlage** (die Projekttabelle kennt keine Stückzahl; eine n-fach große Anlage wäre eine andere Aussage als n Geräte) und
 **Rückschreiben statt Dublette**, wenn die Einheit schon eine Projektanlage vertritt. Beides steht in 8.3 und lässt sich in der
 Abnahme umkehren.
+
+### 8.9 Die Größensuche wählt GERÄTE — Anwenderentscheid vom 15.09.2026
+
+> „Größensuch Stromspeicher nur über Kapazität und Leistung im Katalog des Projektes oder
+> wahlweise aus Stammdaten. Bei Such aus Stammdaten mit Möglichkeit der Übernahme aus Stammdaten
+> in Projekt."
+
+**Dieser Abschnitt gilt vor 8.2 und 8.3, wo diese vom Rastern einer freien Größe sprechen.**
+
+**Was gesucht wird.** Der Anwender gibt je einen Bereich für Kapazität [kWh] und Leistung [kW] vor
+und wählt die Quelle — **Projektkatalog** (`Tab_Stromspeicher` des offenen Projekts) oder
+**Stammdaten** (`Tab_Stromspeicher_STAMM`). Gerechnet werden die Speicher, die es wirklich gibt;
+es wird nichts skaliert und nichts gerastert. Es kommt heraus, was man kaufen kann.
+
+**Die C-Rate ist keine Achse mehr.** Sie ist die abgeleitete Kennzahl `C = P / E` jedes Geräts und
+steht in der Geräteliste und in der Kandidatentabelle, aber in keinem Eingabefeld.
+`FlottenAuslegungsmodus.KapazitaetUndLeistung` ist die einzige gültige Kopplung; die zwei
+C-Rate-Kopplungen sind Lesewerte älterer Stände. `FlottenAltstand.Normalisiere` setzt sie benannt
+um: Der Leistungsbereich entsteht aus den Ecken `P = E · C`, der Kapazitätsbereich als `E = P / C`
+(die schnellste C-Rate ergibt die kleinste Kapazität). Die Absicht des Anwenders bleibt damit
+erhalten, statt still verworfen zu werden; ohne brauchbare C-Raten bleibt der gespeicherte Bereich
+stehen, und die Vorprüfung sagt, was fehlt.
+
+**Die Auswahlregel** (`FlottenGeraetewahl.Waehle`, eine Stelle für Kandidatenzeile, Geräteliste,
+Kandidatentabelle und Lauf):
+
+1. Ein Gerät ist ein **Treffer**, wenn seine Kapazität im Kapazitätsbereich **und** seine
+   Entladeleistung im Leistungsbereich liegt (Grenzen eingeschlossen). Sein Abstand ist 0.
+2. **Gibt es Treffer, gibt es nur Treffer** — wer einen Bereich vorgibt und Geräte darin findet,
+   will nicht daneben rechnen.
+3. Sonst kommen die **nächstliegenden**, höchstens fünf (`NAECHSTLIEGENDE_HOECHSTENS`).
+
+Der Abstand je Größe ist der Überstand über den Bereich, bezogen auf die **Bereichsmitte**; beide
+Anteile werden addiert:
+
+```text
+ueberstand(x) = x < von ? von − x : x > bis ? x − bis : 0
+bezug         = (von + bis) / 2
+Abstand       = ueberstand(E)/bezug_E + ueberstand(P)/bezug_P
+```
+
+Normiert wird, weil kWh und kW sonst nicht vergleichbar wären; die **Mitte** statt der Breite, weil
+ein Bereich zu einem Punkt zusammenfallen darf (`von == bis`) und die Breite dort 0 wäre; die
+**Summe** statt des Euklid, weil ein Gerät, das in beiden Größen danebenliegt, schlechter passt als
+eines, das nur in einer danebenliegt — und weil sie ohne Wurzel auskommt. Sortiert wird nach
+Abstand, Kapazität, Leistung und zuletzt der je Quelle eindeutigen Quellkennung; zwei Läufe auf
+derselben Datenbank liefern dieselbe Reihenfolge. **Die Abweichung steht in der Kandidatentabelle**
+(Spalte in Prozent), damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird.
+
+**Kandidatenzahl, Schranke, Feinraster.** Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal
+der Zahl der Betriebsziele — nicht mehr das Produkt zweier Rasterachsen. Sie kann nicht mehr
+explodieren; die Schranke „Maximale Auslegungskandidaten" bleibt als Fangnetz für einen sehr großen
+Bestand stehen. **Die zweite Suchphase entfällt**: Sie verfeinerte die Größenachse zwischen ihren
+Stützstellen, was eine frei skalierbare Größe voraussetzt. Zwischen zwei Geräten liegt kein
+drittes; eine zwischengerechnete Größe wäre ein Speicher, den es nicht gibt — dieselbe Begründung
+wie bei „Stückzahl suchen" (SD‑Q16). `FlottenAuslegungEingang.Feinraster` bleibt als Lesefeld
+älterer Stände erhalten und wirkt nicht mehr.
+
+**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung; dafür sind es Geräte.
+Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und
+Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. Der Kandidat wird dabei
+gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung (das SoC-Fenster steht nirgends in
+`Tab_Stromspeicher_STAMM`) und trägt die Kennzeichnung deshalb immer.
+
+**Die Übernahme ins Projekt** nimmt den Weg aus #247
+(`SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen`, SD‑Q15): Aus den gewählten Einheiten
+werden Speicheranlagen des Projekts, je Stück eine, alles in einer Transaktion. Ein zweiter Weg
+wird nicht gebaut — er wäre eine zweite Wahrheit darüber, was „in das Projekt übernehmen" heißt.
+Die Stammdaten bleiben dabei unberührt.
+
+**„Stückzahl suchen" bleibt unverändert** (#246/#247): Dort ist das Gerät fest und die Stückzahl die
+Variable. Die beiden Methoden ergeben das Paar **welches** Gerät und **wie viele** davon.
 
 ### 8.6 Stufenplan
 

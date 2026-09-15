@@ -140,7 +140,7 @@ public sealed class FlottenGeraetesucheTests
         Assert.Empty(FlottenGeraetewahl.Waehle(Achse(0, 100, 100, 200, Bestand())));     // von = 0
         Assert.Empty(FlottenGeraetewahl.Waehle(Achse(100, 300, 50, 200,
                                                      new List<FlottenGeraetekandidat>())));
-        Assert.Empty(FlottenGeraetewahl.Waehle(null));
+        Assert.Empty(FlottenGeraetewahl.Waehle(null!));
     }
 
     // =====================================================================

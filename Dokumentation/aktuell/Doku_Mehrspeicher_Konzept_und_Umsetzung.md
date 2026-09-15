@@ -105,9 +105,15 @@ Hinweise erläutern Eingaben und Annahmen. Vor dem Vergleich werden fehlende Jah
 
 ## Nullvariante, Suchraum, Speichergrenze und Abbruch
 
-Eine Suchachse ersetzt über `ErsetztEinheitId` genau ihre Einheit; andere bleiben fest. Anzahl kann auch null sein. Möglich sind Kapazität plus Leistung, Kapazität plus C-Rate (`P=E·C`) oder Leistung plus C-Rate (`E=P/C`). Beim Skalieren bleibt das Lade-/Entladeleistungsverhältnis der Vorlage erhalten; eine Nullrichtung bleibt null.
+Eine Suchachse ersetzt über `ErsetztEinheitId` genau ihre Einheit; andere bleiben fest. Anzahl kann auch null sein.
 
-Das vollständige endliche kartesische Raster wird mit den ausgewählten Zielen kombiniert. Übersteigt es `MaximaleKandidaten`, wird es abgewiesen und nicht gekürzt — **seit #224 zählt die Grenze BEIDE Phasen** (Grobraster plus Obergrenze des Feinrasters, siehe unten). Rangfolge: technisch zulässige Varianten nach höchstem NPV, daneben die technisch zulässige Nullvariante mit NPV 0. Ist die Referenz wegen einer harten Netzgrenze unzulässig, kann eine technisch nötige Variante trotz negativem NPV gewinnen. Sind alle Rechnungen fachlich ungültig, entsteht ein Konfigurationsfehler statt einer falschen Null-Empfehlung.
+**Die Größensuche rechnet GERÄTE.** Der Anwender gibt je einen Bereich für Kapazität [kWh] und Leistung [kW] vor und wählt die `FlottenKandidatenquelle` — Projektkatalog oder Stammdaten. Gerechnet werden die Speicher, die es wirklich gibt; skaliert wird nichts. Die C-Rate ist keine Suchachse, sondern die abgeleitete Kennzahl `C = P / E` jedes Geräts. `FlottenAuslegungsmodus.KapazitaetUndLeistung` ist damit die einzige gültige Kopplung; die zwei C-Rate-Kopplungen sind reine Lesewerte älterer Stände und werden von `FlottenAltstand.Normalisiere` benannt umgesetzt — der Leistungsbereich entsteht aus den Ecken `P = E · C`, der Kapazitätsbereich als `E = P / C`.
+
+**Welche Geräte gerechnet werden, sagt `FlottenGeraetewahl.Waehle`** — dieselbe Regel für die Kandidatenzeile der Station „Optimierung", für die Geräteliste, für die Kandidatentabelle und für den Lauf. Ein Gerät ist ein TREFFER, wenn Kapazität und Entladeleistung in ihren Bereichen liegen (Grenzen eingeschlossen); gibt es Treffer, sind nur sie die Kandidaten. Sonst kommen höchstens `NAECHSTLIEGENDE_HOECHSTENS` = 5 Geräte nach steigendem Abstand. Der Abstand je Größe ist der Überstand über den Bereich, bezogen auf die **Bereichsmitte** (sie ist auch bei `von == bis` definiert und macht kW und kWh vergleichbar); beide Anteile werden ADDIERT, damit ein Gerät, das in beiden Größen danebenliegt, schlechter dasteht als eines, das nur in einer danebenliegt. Sortiert wird nach Abstand, Kapazität, Leistung und zuletzt der je Quelle eindeutigen Quellkennung — zwei Läufe auf derselben Datenbank liefern dieselbe Reihenfolge. Die Abweichung steht in der Kandidatentabelle, damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird.
+
+**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung. Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und Entladewirkungsgrad je 0,95, SoC-Fenster 0,10 bis 0,90, keine Alterung (leere Rainflow-Kurve, Grenzverschleiß 0). Der Kandidat wird dabei gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung und trägt die Kennzeichnung deshalb immer.
+
+Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal der Zahl der Betriebsziele — nicht mehr das Produkt zweier Rasterachsen; sie kann nicht mehr explodieren. Übersteigt sie `MaximaleKandidaten`, wird der Suchraum abgewiesen und nicht gekürzt; die Schranke bleibt als Fangnetz für einen sehr großen Bestand. Rangfolge: technisch zulässige Varianten nach höchstem NPV, daneben die technisch zulässige Nullvariante mit NPV 0. Ist die Referenz wegen einer harten Netzgrenze unzulässig, kann eine technisch nötige Variante trotz negativem NPV gewinnen. Sind alle Rechnungen fachlich ungültig, entsteht ein Konfigurationsfehler statt einer falschen Null-Empfehlung.
 
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
@@ -653,7 +659,7 @@ den löst nach der Regel vom 09.09.2026 der Anwender aus.
 Felder ändern keinen Rechenwert (1030 und 1046 byte-gleich gegen
 `Referenzlaeufe/2026-09-11_R7_Speicherflotte`).
 
-## Station 4 „Optimierung" und das Feinraster (P6 + P8, #224)
+## Station 4 „Optimierung" (P6 + P8, #224)
 
 **Die Rastersuche war vollständig und trotzdem unauffindbar.** Sie hing an drei Schaltern an drei
 Orten — dem Häkchen „Größen optimieren" in Schritt 1, den Suchbereichen im Einheiteneditor und der
@@ -663,17 +669,25 @@ Der Anwenderentscheid **SD‑E‑9 (Option A)** macht sie zur eigenen **Station 
 Rechenknopf mehr (`Ablaufleiste.MitAktion="false"`, nummerierte Kreise statt Ziffern im Titel).
 
 **Was Station 4 trägt** (`EPOS.UI/Seiten/Strom/OptimierungBlock.razor`): das genannte Ziel
-(Kapitalwert gegenüber „ohne Speicher"), die Wahl *bewerten* / *beste Größe suchen*, den
-**Suchraum je Einheit** als Tabelle (eine Zeile je `FlottenAuslegungsAchse`, „—" für die aus der
-Größenkopplung abgeleitete Spalte), die **live mitzählende Kandidatenzeile**, den
-Feinraster-Schalter, den Rechenknopf, den Kasten **„Bestes Ergebnis"** und darunter die
-Größen-Sicht aus P4 — die damit von Schritt 5 nach Schritt 4 zieht, zu der Suche, aus der sie
-stammt. Schritt 5 bewertet seither **eine** Bestückung und sagt in einer Zeile, welche.
+(Kapitalwert gegenüber „ohne Speicher"), die drei Suchmethoden, den **Suchraum als Karte je
+Einheit** — unter „Größe suchen" mit der Quellenwahl, den Bereichen für Kapazität und Leistung und
+der Liste der **gefundenen Geräte** samt C-Rate, Abweichung und Kennzeichnung neutraler Kennwerte
+—, die **live mitzählende Kandidatenzeile** und den Rechenknopf. Die Ergebnisse stehen seit #273 in
+Station 5.
 
 **Die Zählregel ist eine einzige.** `FlottenOptimierer.Kandidatenzahl(config)` liefert
-`(Grob, FeinHoechstens, Grenze, Gueltig)`; dieselbe Struktur prüft der Lauf, bevor er die erste
-Phase rechnet, und dieselbe schreibt die Oberfläche in ihre Zeile. Eine zweite Rechnung in der
-Maske könnte von der des Laufs abweichen — hier kann sie es nicht.
+`(Grob, FeinHoechstens, Grenze, Gueltig, Befund)`; dieselbe Struktur prüft der Lauf, bevor er
+rechnet, und dieselbe schreibt die Oberfläche in ihre Zeile. Eine zweite Rechnung in der Maske
+könnte von der des Laufs abweichen — hier kann sie es nicht. Eine Quelle ohne rechenbares Gerät ist
+eine BENANNTE Ablehnung (`FlottenSuchbefund.KeineGeraete`), keine Null: Ein Lauf ohne Kandidaten
+rechnete nichts und meldete doch „in Ordnung".
+
+**`FeinHoechstens` ist immer 0 — es gibt keine zweite Suchphase mehr.** Sie verfeinerte die
+Größenachse ZWISCHEN ihren Stützstellen; das setzte eine frei skalierbare Größe voraus. Zwischen
+zwei Geräten liegt kein drittes, und eine zwischengerechnete Größe wäre ein Speicher, den es nicht
+gibt — dieselbe Begründung, mit der „Stückzahl suchen" seit jeher ohne Feinraster auskommt.
+`FlottenAuslegungEingang.Feinraster` bleibt als Lesefeld älterer Stände erhalten und wirkt nicht
+mehr; `FeinrasterGerechnet` bleibt `false`, und jeder Kandidat trägt die Phase `Grob`.
 
 **Phase 2 — das Feinraster** (`FlottenOptimierer.Feinrasterwerte`, Spezifikation 12.2, Vorbild ist
 das Makro `OptimiereSpeicher` der Anwendermappe V7):

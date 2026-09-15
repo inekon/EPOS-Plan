@@ -846,9 +846,13 @@ ausdrücklich eingeschaltet ist — und dann als vereinfachte '''Projektion''' g
 === Rastersuche über Kapazität und Leistung ===
 
 Wie beim Einzelspeicher ist die Größensuche ein '''eigener Rechenlauf'''. Eine Suchachse ersetzt
-genau '''eine''' Einheit der Flotte durch Abwandlungen ihrer Vorlage; die übrigen bleiben fest, und
-die Anzahl darf auch null sein. Beim Skalieren bleibt das Verhältnis von Lade- zu Entladeleistung
-der Vorlage erhalten, eine Nullrichtung bleibt null.
+genau '''eine''' Einheit der Flotte; die übrigen bleiben fest, und die Anzahl darf auch null sein.
+
+'''Die Größensuche rechnet Geräte.''' Vorgegeben werden ein Bereich für die Kapazität in kWh und
+einer für die Entladeleistung in kW sowie die '''Quelle''': der Speicherbestand des Projekts oder
+die Stammdaten. Gerechnet wird, was in diesem Bestand steht — es wird nichts skaliert und nichts
+gerastert. Die C-Rate nach (46) ist damit keine Suchgröße, sondern eine Kennzahl, die sich aus
+jedem Gerät ergibt.
 
 '''Je Lauf wird genau eine Größe variiert.''' Welche, sagt die '''Suchmethode''':
 
@@ -857,7 +861,7 @@ der Vorlage erhalten, eine Nullrichtung bleibt null.
 |-
 | '''Nur bewerten''' || nichts — es gibt keine Suchachse || <math>1</math>
 |-
-| '''Größe suchen''' || zwei der drei Größen Kapazität, Leistung und C-Rate, siehe (46); die '''Stückzahl steht fest''' auf dem Von-Wert der Einheit (0 gilt als 1) || <math>n_{1} \cdot n_{2}</math> — die Stützstellen der zwei Größen
+| '''Größe suchen''' || die '''Geräte''' der gewählten Quelle, die in beide Bereiche passen; die '''Stückzahl steht fest''' auf dem Von-Wert der Einheit (0 gilt als 1) || die Zahl der gefundenen Geräte
 |-
 | '''Stückzahl suchen''' || die '''Stückzahl''' von–bis; '''Kapazität und Leistung bleiben''' die der Vorlage, es wird nichts skaliert || <math>a_{\max} - a_{\min} + 1</math>
 |}
@@ -872,18 +876,60 @@ Ein Mischraster Stückzahl × Größe in EINEM Lauf gibt es nicht: Es vervielfac
 und ließe sich weder als Karte noch als Kurve zeichnen. Wer beides prüfen will, fährt zwei Läufe.
 
 Eine Suchmethode ohne eine einzige eingeschaltete Achse wird '''benannt abgewiesen''' — ebenso ein
-Stückzahlbereich, dessen „bis" unter seinem „von" liegt, und ein unbrauchbarer Größenbereich.
+Stückzahlbereich, dessen „bis" unter seinem „von" liegt, ein unbrauchbarer Größenbereich und eine
+Quelle, die kein rechenbares Gerät führt.
 
 : <math>\displaystyle P = E \cdot r \quad \text{bzw.} \quad E = \frac{P}{r}</math> &nbsp;&nbsp;(46)
 :: <math>P</math> – AC-Nennleistung der Einheit [kW]
 :: <math>E</math> – Nennkapazität der Einheit [kWh]
 :: <math>r</math> – C-Rate [1/h]
 
-Bei '''„Größe suchen"''' spannt eine Achse zwei der drei Größen auf, die dritte folgt aus (46):
-Kapazität und Leistung, Kapazität und C-Rate oder Leistung und C-Rate. Das '''vollständige endliche kartesische Raster'''
-wird mit den ausgewählten Betriebszielen kombiniert. Übersteigt es die eingestellte Höchstzahl an
-Kandidaten, wird es '''abgewiesen und nicht gekürzt''' — ein stillschweigend beschnittenes Raster
-wäre eine Aussage über einen Suchraum, der nie geprüft wurde.
+==== Welche Geräte gerechnet werden ====
+
+Ein Gerät ist ein '''Treffer''', wenn seine Kapazität im Kapazitätsbereich '''und''' seine
+Entladeleistung im Leistungsbereich liegt; die Grenzen zählen mit, und gleiche Grenzen nageln eine
+Größe fest. Gibt es Treffer, sind genau sie die Kandidaten. Trifft '''kein''' Gerät beide Bereiche,
+werden die '''fünf nächstliegenden''' gerechnet — mit ihrer Abweichung, damit ein naheliegendes
+Gerät nicht für einen Treffer gehalten wird.
+
+Die Abweichung misst je Größe, wie weit das Gerät '''außerhalb''' seines Bereichs liegt, bezogen auf
+die Mitte des Bereichs; beide Anteile werden addiert:
+
+: <math>\displaystyle \delta(x) = \frac{\max(0,\; x_{\min} - x) + \max(0,\; x - x_{\max})}{(x_{\min} + x_{\max})/2}</math> &nbsp;&nbsp;(47)
+:: <math>x</math> – Kapazität [kWh] beziehungsweise Entladeleistung [kW] des Geräts
+:: <math>x_{\min}, x_{\max}</math> – Unter- und Obergrenze des zugehörigen Bereichs
+
+: <math>\displaystyle d = \delta(E) + \delta(P)</math> &nbsp;&nbsp;(48)
+:: <math>d</math> – Abweichung des Geräts von der Vorgabe [-]; <math>d = 0</math> heißt Treffer
+:: <math>E</math> – Kapazität des Geräts [kWh]
+:: <math>P</math> – Entladeleistung des Geräts [kW]
+
+Bezogen wird auf die '''Bereichsmitte''', weil Kilowattstunden und Kilowatt sonst nicht vergleichbar
+wären und weil ein Bereich zu einem Punkt zusammenfallen darf — seine Breite wäre dort null.
+'''Addiert''' wird, damit ein Gerät, das in beiden Größen danebenliegt, schlechter dasteht als eines,
+das nur in einer danebenliegt. Geordnet wird nach Abweichung, dann Kapazität, dann Entladeleistung,
+zuletzt nach der Kennung des Satzes in seiner Quelle: Zwei Läufe auf demselben Bestand liefern
+dieselbe Reihenfolge.
+
+Die Kandidatenzahl ist damit die Zahl der gefundenen Geräte, mal der Zahl der ausgewählten
+Betriebsziele:
+
+: <math>\displaystyle N = z \cdot \prod_{a} g_{a}</math> &nbsp;&nbsp;(49)
+:: <math>N</math> – Zahl der zu rechnenden Kandidaten
+:: <math>g_{a}</math> – Zahl der gefundenen Geräte der Suchachse <math>a</math>
+:: <math>z</math> – Zahl der ausgewählten Betriebsziele, mindestens 1
+
+Übersteigt <math>N</math> die eingestellte Höchstzahl an Kandidaten, wird der Suchraum
+'''abgewiesen und nicht gekürzt''' — ein stillschweigend beschnittener Bestand wäre eine Aussage über
+einen Suchraum, der nie geprüft wurde. Anders als ein Raster kann <math>N</math> nicht anwachsen,
+indem eine Schrittweite feiner wird: Mehr Kandidaten gibt es nur, wenn es mehr Geräte gibt.
+
+==== Wo die Kennwerte herkommen ====
+
+Wirkungsgrade, SoC-Fenster und Alterung stehen '''am Gerät''' — dafür sind es Geräte. Führt ein Satz
+sie nicht, gelten '''neutrale Vorgaben''': Lade- und Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis
+90 %, keine Alterung. Ein so gerechneter Kandidat ist in der Kandidatentabelle gekennzeichnet. Ein
+Satz aus den Stammdaten führt keine Betriebsführung und trägt die Kennzeichnung deshalb immer.
 
 Je Kandidat entstehen ohne zweiten Lauf:
 
@@ -919,48 +965,16 @@ Null-Empfehlung.
 kann ein besserer Punkt liegen, den niemand gerechnet hat. Der Hinweis steht deshalb '''im Bild''' der
 Rasterkarte — das Bild wird exportiert, der Text daneben nicht.
 
-==== Phase 2: das Feinraster um das Grob-Optimum ====
+==== Warum es keine zweite Suchphase gibt ====
 
-Genau gegen diesen Vorbehalt läuft die '''zweite Phase'''. Sie gehört zur Methode
-'''„Größe suchen"''' und nur zu ihr: Stückzahlen sind ganze Zahlen, und zwischen zwei und drei
-Geräten liegt nichts, was sich verfeinern ließe. Nach dem Grobraster wird um seinen besten
-Punkt ein zweites, engeres Raster gerechnet — '''nur auf der Größenachse''' (Kapazität; bei der
-Kopplung „Leistung und C-Rate" die Leistung). Die zweite Achse, die Stückzahl und das Betriebsziel
-bleiben beim Wert des Grob-Optimums; die C-Rate ändert oberhalb von etwa 1,0 C nichts mehr, eine
-Verfeinerung dort kostete Kandidaten ohne Erkenntnis.
+Eine zweite, engere Phase um das beste Ergebnis setzt eine frei wählbare Größe voraus: Sie legt
+Stützstellen '''zwischen''' die Punkte der ersten. Zwischen zwei Geräten liegt kein drittes — eine
+zwischengerechnete Größe wäre ein Speicher, den es nicht gibt. Dieselbe Begründung gilt seit jeher
+für „Stückzahl suchen": Zwischen zwei ganzen Zahlen ist nichts zu verfeinern.
 
-: <math>\displaystyle u = \max(E_{\min},\; E^{*} - \Delta E)</math> &nbsp;&nbsp;(47)
-:: <math>u</math> – untere Grenze des Feinrasterfensters [kWh bzw. kW]
-:: <math>E^{*}</math> – Größe des Grob-Optimums [kWh bzw. kW]
-:: <math>\Delta E</math> – Schrittweite des Grobrasters auf dieser Achse [kWh bzw. kW]
-:: <math>E_{\min}</math> – untere Grenze des Suchraums, vom Anwender gesetzt [kWh bzw. kW]
-
-: <math>\displaystyle o = \min(E_{\max},\; E^{*} + \Delta E)</math> &nbsp;&nbsp;(48)
-:: <math>o</math> – obere Grenze des Feinrasterfensters [kWh bzw. kW]
-:: <math>E_{\max}</math> – obere Grenze des Suchraums, vom Anwender gesetzt [kWh bzw. kW]
-
-: <math>\displaystyle \Delta E_{\text{fein}} = \frac{\Delta E}{9}</math> &nbsp;&nbsp;(49)
-:: <math>\Delta E_{\text{fein}}</math> – Schrittweite des Feinrasters auf dieser Achse [kWh bzw. kW]
-
-Ist das Fenster schmaler als '''1 kWh''', wird es auf 1 kWh aufgeweitet. Die '''Klemmung''' auf
-<math>[E_{\min}, E_{\max}]</math> ist der Grund, warum ein Grob-Optimum am Rand ein '''einseitiges'''
-Feinraster bekommt: Die Suche läuft nicht über die gesetzten Grenzen hinaus.
-
-Drei Regeln gelten für die zweite Phase:
-
-* '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der
-  Grobpunkt der Beste — der Punkt, der ohnehin auf einer Stützstelle liegt, die der Anwender selbst
-  gesetzt hat.
-* '''Die Kandidatengrenze zählt beide Phasen.''' Vor dem Lauf steht nur die Obergrenze des
-  Feinrasters fest (sie hängt an der Lage des Grob-Optimums); geprüft wird gegen sie, damit ein zu
-  großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
-* '''Jeder Kandidat trägt seine Phase.''' Die Kandidatentabelle und die Schnittkurve unterscheiden
-  Grob- und Feinpunkte; ein Feinpunkt liegt zwischen den Stützstellen des Grobrasters und hat
-  deshalb keine Stelle im Grobgitter.
-
-Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt (Grobraster 10 × 6, danach
-zehn Stützstellen im Fenster einer Grobschrittweite), und dieselbe, die der Einzelspeicher-Optimierer
-fährt.
+Der Vorbehalt bleibt damit derselbe: '''Die Aussage gilt für die geprüften Geräte.''' Ein Speicher,
+der im Bestand fehlt, wird nicht gerechnet — Abhilfe ist die andere Quelle oder ein gepflegter
+Bestand, nicht ein feineres Raster.
 
 === Diagnose „arbeitslose Flotte" ===
 
