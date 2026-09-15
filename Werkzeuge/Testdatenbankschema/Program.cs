@@ -81,6 +81,13 @@ namespace Testdatenbankschema
     /// <c>ProjektEnergietraegerEindeutig</c>, wieder DIESELBE Quelle, aus der sich
     /// <c>SchemaMigration.Schritt_76_TraegersatzEindeutig</c> bedient. Ergebnisneutral:
     /// Der Index aendert keinen Wert, und die Messlatte hat nichts zu entdoppeln.</para>
+    ///
+    /// <para><b>Schritt 77</b> (Auftrag #284) stellt die ausgelieferte
+    /// Investitionsvorlage des Pufferspeichers auf die Bemessung je LITER
+    /// Gesamtvolumen um - aus <c>PufferspeicherBemessungVolumen</c>, wieder DIESELBE
+    /// Quelle, aus der sich <c>SchemaMigration.Schritt_77_PufferVolumenbemessung</c>
+    /// bedient. Ergebnisneutral: Umgestellt wird nur eine Zeile OHNE gepflegten Satz;
+    /// sie gibt allein die Art vor, keine Zahl.</para>
     /// </summary>
     internal static class Program
     {
@@ -325,6 +332,28 @@ namespace Testdatenbankschema
                                   ": " + Zahl(ProjektEnergietraegerEindeutig.ZaehlungIndex()) +
                                   " (erwartet 1), ueberzaehlig jetzt " +
                                   Zahl(ProjektEnergietraegerEindeutig.Zaehlung()) + ".");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 77: das Volumen ist die einzige Bezugsgroesse des
+            //      Pufferspeichers (Auftrag #284). Die eine Anweisung kommt aus
+            //      PufferspeicherBemessungVolumen - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_77_PufferVolumenbemessung bedient.
+            //      Ergebnisneutral: Umgestellt wird nur eine Vorlagenzeile OHNE
+            //      gepflegten Satz - sie gibt allein die Art vor, keine Zahl. Eine Zeile
+            //      MIT Satz bliebe eine Zahl je kWh und wuerde durch die Umstellung zu
+            //      einer Zahl je Liter; genau das ist ausgeschlossen.
+            if (!trocken)
+            {
+                long offen = Zahl(PufferspeicherBemessungVolumen.Zaehlung());
+                long gepflegt = Zahl(PufferspeicherBemessungVolumen.ZaehlungGepflegt());
+                Console.WriteLine("Schritt 77 - Pufferspeicher-Vorlage: umzustellen " + offen +
+                                  ", mit gepflegtem Satz (bleibt) " + gepflegt + ".");
+                if (offen > 0)
+                    DataRepository.ExecuteNonQuery(PufferspeicherBemessungVolumen.SQL_UMSTELLEN);
+                Console.WriteLine("Schritt 77 - offen jetzt " +
+                                  Zahl(PufferspeicherBemessungVolumen.Zaehlung()) +
+                                  " (erwartet 0).");
             }
             Console.WriteLine();
 
