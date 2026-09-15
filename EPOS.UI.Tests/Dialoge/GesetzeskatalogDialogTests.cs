@@ -417,6 +417,60 @@ public class GesetzeskatalogDialogTests : EposBunitContext
         Assert.False(antwort);
     }
 
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: Das Kreuz der Kopfzeile wirkt wie Esc — hier also
+    /// wie „abgebrochen" (<c>false</c>), NICHT wie der Knopf „Schließen" (der OK liefert).
+    /// </summary>
+    [Fact]
+    public void Kreuz_schliesst_den_Katalog_wie_Esc()
+    {
+        bool? antwort = null;
+        var cut = Aufbauen(geschlossen: b => antwort = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(antwort);
+    }
+
+    /// <summary>
+    /// Das ✕ der Ueberlagerung „Neu"/„Ändern" bricht NUR die Ebene ab — der Katalog
+    /// bleibt offen, es wird nichts angelegt (derselbe Weg wie „Abbrechen" im
+    /// Zeilendialog, vgl. <see cref="Esc_schliesst_den_Katalog_aber_nicht_ueber_eine_offene_Ebene"/>).
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_des_Zeilendialogs_bricht_die_Zeile_ab()
+    {
+        bool angelegt = false;
+        var cut = Aufbauen(anlegen: _ => { angelegt = true; return Task.FromResult(true); });
+
+        cut.FindAll("div.epos-leiste button")[0].Click();       // Neu
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+        Assert.False(angelegt);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne TitelText kein Titel und kein Kreuz.</summary>
+    [Fact]
+    public void Ohne_TitelText_zeigt_der_Katalog_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<GesetzeskatalogDialog>(p => p
+            .Add(x => x.Klassen, () => Task.FromResult((IReadOnlyList<(string, string)>)KLASSEN.ToList()))
+            .Add(x => x.Zeilen, k => Task.FromResult(
+                (IReadOnlyList<GesetzeskatalogDialog.Zeile>)Zeilen().Where(z => z.Klasse == k).ToList()))
+            .Add(x => x.Klassenvorrat, VORRAT.ToList())
+            .Add(x => x.Einheiten, EINHEITEN)
+            .Add(x => x.Statuswerte, STATUS)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     // =====================================================================
     //  Der Zeilendialog (Feldkarte Form_GesetzparameterZeile, 10 Zeilen)
     // =====================================================================

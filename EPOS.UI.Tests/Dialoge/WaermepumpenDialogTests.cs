@@ -326,6 +326,34 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.False(zweites);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<WaermepumpenDialog>(p => p
+            .Add(x => x.Zeilen, new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
+            .Add(x => x.Katalog, () => Katalog)
+            .Add(x => x.Katalogprofil, Katalogprofil)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     // =====================================================================
     //  W7-B-3 Nachtrag (08.09.2026): Umstellen statt Innenliste
     // =====================================================================

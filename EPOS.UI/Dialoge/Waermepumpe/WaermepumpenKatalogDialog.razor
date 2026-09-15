@@ -59,9 +59,20 @@
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Modul-Katalog..."
+       (WaermepumpeAnlageDialog) traegt DIE den Titel, hier kommt TitelText=""
+       herein - dann bleiben Titel und Kreuz hier aus, die Ueberlagerung traegt
+       beides (Anwenderentscheid 15.09.2026: das Kreuz steht beim Titel). *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     @* DIE EINE KATALOGLISTE - Suchzeile, Trefferzahl, Spaltenkoepfe mit
@@ -137,6 +148,7 @@
 
     // --- Texte -----------------------------------------------------------------
 
+    /// <summary>Kopfzeile; leer = kein eigener Kopf, die <c>Ueberlagerung</c> trägt den Titel.</summary>
     [Parameter] public string TitelText { get; set; } = Resource.WPK_TITEL;
     [Parameter] public string BtnUebernehmenText { get; set; } = Resource.WPK_BTN_UEBERNEHMEN;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;

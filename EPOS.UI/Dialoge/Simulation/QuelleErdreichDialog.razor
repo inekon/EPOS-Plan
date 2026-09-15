@@ -63,9 +63,28 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Titel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Wärmequelle Erdreich…"
+       der SimulationKonfigSeite traegt DIE den Titel; der Wirt setzt dort
+       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+       Ueberlagerung traegt beides (Anwenderbefund 15.09.2026: "Doppeltes Kreuz
+       duerfen nicht sein!"). TitelText bleibt gesetzt: Er ist der Rueckfall des
+       berechneten Titels (TitelMitWp) - Bauart b der Hausregel.
+
+       ZWEI BEDINGUNGEN AM KREUZ, und sie sagen Verschiedenes: TitelAnzeigen sagt,
+       WEM das Kreuz gehoert (hier oder der Ueberlagerung), _laeuft sagt, OB gerade
+       ueberhaupt geschlossen werden darf - waehrend eines Erdreich-Laufs nicht, so
+       wie auch die Warte-Ueberlagerung dann nicht zugeht. Der <h1> kennt nur die
+       erste Frage: Ein Titel stoert einen Lauf nicht. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen && !_laeuft)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(null))" />
+        }
     </div>
 
     @if (_meldung.Length > 0)
@@ -266,6 +285,15 @@
 
     [Parameter] public string TitelText { get; set; } = "Wärmequelle Erdreich";
     [Parameter] public string TitelMitWp { get; set; } = "Wärmequelle Erdreich — {0}";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt — er speist den berechneten Titel weiter.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string GbQuellsystem { get; set; } = "Quellsystem";
     [Parameter] public string GbStandort { get; set; } = "Standort und Boden";
     [Parameter] public string GbVorschau { get; set; } = "Jahresgang der Quelltemperatur";

@@ -40,9 +40,21 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der betitelten Ueberlagerung der
+       Kostenseite traegt DIE den Titel; der Wirt setzt dort TitelAnzeigen="false",
+       dann bleiben Titel und Kreuz hier aus. TitelText bleibt dabei gesetzt: Er
+       beschriftet auch die Rueckfrage weiter unten - Bauart b der Hausregel. Der
+       Hilfeknopf bleibt unbedingt, er haengt nicht am Titel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="BeiAbbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KontextText@_status</p>
@@ -191,12 +203,14 @@
     </div>
 
     @* ------------------------------------------------------ Unterdialoge *@
-    <Ueberlagerung Offen="@(_namensGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_namensGaben is not null)"
                    Titel="@NeuTitel" Geschlossen="() => NeuFertig(null)">
         <KindInhalt>
             @if (_namensGaben is not null)
             {
-                <NamensDialog @attributes="_namensGaben" Geschlossen="NeuFertig" />
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
+                <NamensDialog @attributes="_namensGaben" TitelText="" Geschlossen="NeuFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -217,6 +231,9 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* Das Kreuz steht beim Titel: Diese Ueberlagerung traegt ihn (@_unterTitel), also
+       traegt sie auch das ✕ - jedes der vier Blaetter bekommt darum TitelText=""
+       hinter seinem Parametersatz und zeigt weder Titel noch eigenes Kreuz. *@
     <Ueberlagerung Offen="@(_unterGaben is not null)" Schliessbar="true"
                    Titel="@_unterTitel" Geschlossen="UnterSchliessen">
         <KindInhalt>
@@ -225,19 +242,19 @@
                 @switch (_unterArt)
                 {
                     case Unterdialog.Kostenprofil:
-                        <KostenprofilDialog @attributes="_unterGaben"
+                        <KostenprofilDialog @attributes="_unterGaben" TitelText=""
                                             Geschlossen="@((bool ok) => UnterSchliessen())" />
                         break;
                     case Unterdialog.Spotpreis:
-                        <SpotpreisImportDialog @attributes="_unterGaben"
+                        <SpotpreisImportDialog @attributes="_unterGaben" TitelText=""
                                                Geschlossen="@((bool ok) => UnterSchliessen())" />
                         break;
                     case Unterdialog.Saisonreihe:
-                        <LeistungspreisReiheDialog @attributes="_unterGaben"
+                        <LeistungspreisReiheDialog @attributes="_unterGaben" TitelText=""
                                                    Geschlossen="@((bool ok) => UnterSchliessen())" />
                         break;
                     case Unterdialog.Emissionskatalog:
-                        <EmissionskatalogDialog @attributes="_unterGaben"
+                        <EmissionskatalogDialog @attributes="_unterGaben" TitelText=""
                                                 Geschlossen="EmissionskatalogFertig" />
                         break;
                 }
@@ -412,6 +429,14 @@
     // =====================================================================
 
     [Parameter] public string TitelText { get; set; } = "Energieträgerverwaltung";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string KontextText { get; set; } = "";
     [Parameter] public string ListenTitel { get; set; } = "Energieträger";
 

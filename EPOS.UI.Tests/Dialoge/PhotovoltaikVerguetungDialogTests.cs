@@ -373,6 +373,39 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
         Assert.Equal(0, gerufen);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_ohne_zu_speichern()
+    {
+        PvVerguetungErgebnis? ergebnis = null;
+        int gerufen = 0;
+        var cut = Aufbauen(Satz(), speichern: () => { gerufen++; return true; },
+                           geschlossen: e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(0, gerufen);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<PhotovoltaikVerguetungDialog>(p => p
+            .Add(x => x.Modell, Satz())
+            .Add(x => x.KwpRechnerisch, 30)
+            .Add(x => x.Katalog, Katalog)
+            .Add(x => x.Speichern, () => true)
+            .Add(x => x.Geschlossen, (PvVerguetungErgebnis _) => { })
+            .Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     [Fact]
     public void Enter_bleibt_unbelegt_und_der_Infoknopf_traegt_den_Schluessel()
     {

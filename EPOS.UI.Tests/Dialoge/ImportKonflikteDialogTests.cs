@@ -286,6 +286,20 @@ public class ImportKonflikteDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es meldet <c>null</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_meldet_ebenfalls_null()
+    {
+        List<KonfliktEntscheidung>? ergebnis = new();
+        var cut = Zeige(geschlossen: l => ergebnis = l);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+    }
+
     /// <summary>Befund W12-B20: Der Dialog hat einen Infoknopf mit der vorhandenen Zeile.</summary>
     [Fact]
     public void Der_Infoknopf_zeigt_auf_die_Zeile_der_Projektverwaltung()

@@ -77,7 +77,8 @@ public class WaermesenkeDialogTests : EposBunitContext
         Action<WaermesenkeErgebnis?>? geschlossen = null,
         bool pvModus = false,
         IReadOnlyList<int>? verbund = null,
-        Func<string, IReadOnlyDictionary<string, object>>? verwaltung = null)
+        Func<string, IReadOnlyDictionary<string, object>>? verwaltung = null,
+        bool titelAnzeigen = true)
     {
         return Render<WaermesenkeDialog>(p =>
         {
@@ -100,6 +101,7 @@ public class WaermesenkeDialogTests : EposBunitContext
             p.Add(x => x.Bedarfsarten, new[] { BEIDES, WARMWASSER, HEIZUNG });
             p.Add(x => x.Bedarfsarttexte, new[] { "beides", "nur Warmwasser", "nur Heizwärme" });
             if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
+            if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
     }
@@ -577,6 +579,31 @@ public class WaermesenkeDialogTests : EposBunitContext
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.Null(ergebnis);
         Assert.Null(stand.Geschrieben);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen: kein Schreiben.</summary>
+    [Fact]
+    public void Kreuz_liefert_null_ohne_zu_schreiben()
+    {
+        var stand = MitPuffern();
+        WaermesenkeErgebnis? ergebnis = new(true, Array.Empty<SenkenzeileDaten>(), Array.Empty<int>());
+        var cut = Zeige(stand, e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+        Assert.Null(stand.Geschrieben);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(MitPuffern(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     // ============================================================ Hilfsgriffe

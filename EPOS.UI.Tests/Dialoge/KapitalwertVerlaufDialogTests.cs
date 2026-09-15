@@ -53,7 +53,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         Assert.Single(cut.FindAll("input[type=text]"));        // Zeitraum
         Assert.Single(cut.FindAll("select"));                  // Szenario
         // Aktualisieren + Schliessen.
-        Assert.Equal(2, cut.FindAll("button.epos-knopf").Count);
+        Assert.Equal(2, cut.FindAll("button.epos-knopf:not(.epos-dialog-zu)").Count);
         // Zwei Bilder (nach dem Lauf beim Oeffnen).
         Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
     }
@@ -68,7 +68,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         var texte = cut.FindAll(".epos-feld-text");
         Assert.Equal("Zeitraum [Jahre]:", texte[0].TextContent);
         Assert.Equal("Szenario:", texte[1].TextContent);
-        Assert.Equal("Aktualisieren", cut.FindAll("button.epos-knopf")[0].TextContent);
+        Assert.Equal("Aktualisieren", cut.Find(".epos-neuzeile button.epos-knopf").TextContent);
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
 
         cut.Find("input[type=text]").Input("30");
         cut.Find("select").Change("2");
-        cut.FindAll("button.epos-knopf")[0].Click();
+        cut.Find(".epos-neuzeile button.epos-knopf").Click();
 
         Assert.Equal(30, erhalteneJahre);
         Assert.Equal(2, erhaltenesSzenario);
@@ -154,7 +154,7 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         var cut = Aufbauen(berechnen: (_, _, _) => tor.Task);
 
         Assert.True(cut.Instance.Laeuft);
-        Assert.True(cut.FindAll("button.epos-knopf")[0].HasAttribute("disabled"));
+        Assert.True(cut.Find(".epos-neuzeile button.epos-knopf").HasAttribute("disabled"));
         Assert.True(cut.Find("select").HasAttribute("disabled"));
         Assert.Equal("Abbrechen", cut.Find(".epos-knopf--primaer").TextContent);
         Assert.Equal("Berechnung läuft …", cut.Instance.Status);
@@ -210,6 +210,38 @@ public class KapitalwertVerlaufDialogTests : BunitContext
         // Enter bleibt unbelegt.
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.Equal(2, gemeldet);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_das_Ende()
+    {
+        int gemeldet = 0;
+        var cut = Aufbauen(beimSchliessen: () => gemeldet++);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>> berechnen =
+            (jahre, szenario, _) => Task.FromResult(Ergebnis(jahre, Szenarien[szenario].Text));
+
+        var cut = Render<KapitalwertVerlaufDialog>(p => p
+            .Add(x => x.Szenarien, Szenarien)
+            .Add(x => x.JahreVorgabe, 20)
+            .Add(x => x.Berechnen, berechnen)
+            .Add(x => x.Geschlossen, () => { })
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     [Fact]

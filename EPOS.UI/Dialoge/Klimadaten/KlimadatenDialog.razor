@@ -59,6 +59,11 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* Waehrend eines Laufs steht KEIN Kreuz - wie Esc, der dann nicht schliesst. *@
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     @if (_meldung.Length > 0)
@@ -498,10 +503,13 @@
 
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne Uebernahme. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrageOffen || _laeuft) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Schliessen();
     }
 }

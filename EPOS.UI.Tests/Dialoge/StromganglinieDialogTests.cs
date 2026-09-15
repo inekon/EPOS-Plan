@@ -334,6 +334,17 @@ public class StromganglinieDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: meldet false.</summary>
+    [Fact]
+    public void Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
+
     /// <summary>
     /// Assistentenbetrieb (seit iU9-W16a.1 die Assistentenseite 6, vorher der
     /// Zwilling <c>Wizard_Stromlastgang</c>): keine Schlussleiste, und Esc meldet
@@ -350,6 +361,19 @@ public class StromganglinieDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Im Assistentenbetrieb faellt auch das Kreuz weg wie die Schlussleiste: Der
+    /// Dialog schliesst sich als Wizard-Seite nicht selbst, ein Kreuz ohne Wirkung
+    /// darf es dafuer nicht geben.
+    /// </summary>
+    [Fact]
+    public void Im_Assistentenbetrieb_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Zeige(wizard: true);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     /// <summary>

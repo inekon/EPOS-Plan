@@ -640,6 +640,36 @@ public class EnergietraegerDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Abbrechen()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// Die Neu-Überlagerung war <c>Schliessbar="false"</c> — seit dem
+    /// Anwenderentscheid 15.09.2026 trägt sie ihr eigenes Kreuz, das denselben
+    /// Weg wie Abbrechen der Namensabfrage geht.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_der_Neu_Ueberlagerung_schliesst_sie_wieder()
+    {
+        var cut = Zeige(p => p.Add(x => x.NamensGaben, () => new Dictionary<string, object>()));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
     /// <summary>
     /// Befund W4‑B‑1 (Windows-Abnahme 04.09.2026): „Die Preisbasis wird
     /// teilweise nicht angezeigt oder doppelt."
@@ -1101,5 +1131,103 @@ public class EnergietraegerDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]"));
         Assert.Contains("Strom › Elektrische Energie 2", cut.Markup);
         Assert.DoesNotContain("Erdgas", cut.Find(".epos-mehrfachauswahl-liste").TextContent);
+    }
+
+    // =====================================================================
+    //  „Das Kreuz steht beim Titel" (Anwenderentscheid 15.09.2026)
+    // =====================================================================
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
+    /// <summary>Die Prüfung je Überlagerung: genau EIN ✕, kein zweiter Titel darunter.</summary>
+    private static void NurEinKreuz(IRenderedComponent<EnergietraegerDialog> cut)
+    {
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Neuer_Traeger_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.NamensGaben, () => new Dictionary<string, object>()));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Kostenprofil_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(katalog: false,
+            ansicht: new EnergietraegerAnsicht
+            {
+                Stand = Stand(strom: true), MitStromkarten = true, MitKostenprofil = true
+            },
+            mehr: p => p.Add(x => x.KostenprofilGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Bezeichner"] = "Standard",
+                    ["Monatswerte"] = (IReadOnlyList<double>)new double[12],
+                    ["Wochenwerte"] = (IReadOnlyList<double>)new double[168]
+                }));
+
+        cut.FindAll(".epos-kachel")[0].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Spotpreis_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(katalog: false,
+            ansicht: new EnergietraegerAnsicht
+            {
+                Stand = Stand(strom: true), MitStromkarten = true, MitKostenprofil = true
+            },
+            mehr: p => p.Add(x => x.SpotpreisGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>()));
+
+        cut.FindAll(".epos-kachel")[1].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Saisonreihe_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.SaisonGaben, () =>
+            (IReadOnlyDictionary<string, object>)new Dictionary<string, object>()));
+
+        cut.FindAll("button").Single(x => x.TextContent.Contains("Saisonale Sätze")).Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Emissionskatalog_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.EmissionskatalogGaben, (string k) =>
+            (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+            {
+                ["Arten"] = (IReadOnlyList<EmissionsartZeile>)Array.Empty<EmissionsartZeile>()
+            }));
+
+        ZeigeEmissionen(cut);
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0]
+           .QuerySelector("button")!.Click();
+
+        NurEinKreuz(cut);
     }
 }

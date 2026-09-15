@@ -1773,8 +1773,12 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* Das Kreuz ist quadratisch - die Mindestbreite der Knoepfe wuerde es zu
-   einem Balken machen. */
-.epos-ueberlagerung-zu {
+   einem Balken machen. Gilt fuer das Kreuz der Ueberlagerung UND das der
+   Dialogkopfzeile (Baustein Schliesskreuz, Anwenderentscheid 15.09.2026
+   "Das Kreuz steht beim Titel"): dieselbe Form, dieselbe Groesse, damit die
+   beiden Kreuze nicht verschieden aussehen, wo sie uebereinander stehen. */
+.epos-ueberlagerung-zu,
+.epos-dialog-zu {
     min-width: var(--epos-touchziel);
     padding: 0;
 }

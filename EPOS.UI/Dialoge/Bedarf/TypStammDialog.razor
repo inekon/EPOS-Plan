@@ -38,9 +38,16 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     <Gruppenkopf Titel="@GruppeKopf">
@@ -93,7 +100,7 @@
                 disabled="@(Modus != KatalogModus.Neu)"
                 @onclick="BeiSpeichern">@BtnSpeichernText</button>
         <button type="button" class="epos-knopf"
-                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+                @onclick="Schliessen">@BtnBeendenText</button>
     </div>
 
     @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
@@ -358,6 +365,12 @@
     {
         // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(true);
+        return Schliessen();
     }
+
+    /// <summary>
+    /// Schließen — von „Beenden", Esc und dem Schliesskreuz gleichermaßen gerufen,
+    /// immer mit <c>true</c> (das Kreuz kopiert Esc, es erfindet keine neue Semantik).
+    /// </summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
 }

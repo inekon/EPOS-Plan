@@ -37,6 +37,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
         <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -538,12 +539,15 @@
     private Task BeiBeenden() =>
         Geschlossen.InvokeAsync(new ModulErgebnis(true, _gewaehlt));
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(new ModulErgebnis(false, _gewaehlt));
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_namensfrage || _loeschfrage) return Task.CompletedTask;
 
-        return Geschlossen.InvokeAsync(new ModulErgebnis(false, _gewaehlt));
+        return Abbrechen();
     }
 
     // =====================================================================

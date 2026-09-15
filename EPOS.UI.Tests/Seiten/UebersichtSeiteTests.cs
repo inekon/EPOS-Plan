@@ -862,6 +862,26 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
     }
 
+    /// <summary>
+    /// Ein Titel, eine Stelle (Befund „Doppeltes Kreuz dürfen nicht sein!",
+    /// 15.09.2026): Die Überlagerung trägt Titel UND Kreuz, der eingebettete
+    /// <c>BkUebernahmeDialog</c> keins von beiden — <c>TitelText=""</c> steht RECHTS
+    /// vom Parametersatz der Hülle und gilt deshalb auch dann, wenn dieser einen
+    /// Titel mitbrächte.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Uebernahme_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.UebernahmeGaben, (VergleichZeile _) => LeererSatz()),
+                        stand: Unterschiedsansicht());
+
+        Vergleichszeilen(cut)[0].QuerySelector(".epos-zellenaktionen button")!.Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Ein_Abbruch_im_Uebernahmedialog_schreibt_nichts()
     {

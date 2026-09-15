@@ -54,6 +54,12 @@
         {
             <InfoKnopf Schluessel="@HilfeSchluessel" />
         }
+        @* Waehrend eines Laufs schliesst auch Esc nicht (BeiTaste/Schliessen,
+           Wache _laeuft) - das Kreuz gilt derselben Wache. *@
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@TitelText">

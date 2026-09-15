@@ -54,6 +54,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   stimmt:** Ein Dialog, der eine Liste führt, sammelt sie als Arbeitsstand (`MitSpeichern="true"`
   für den nicht schließenden „Anlegen"/„Übernehmen"-Knopf) und schreibt sie erst beim OK — dort
   entsteht auch die Id einer neuen Zeile, die der Wirt danach liest.
+  **Jeder Dialogkopf trägt rechts außen das `Schliesskreuz`** (✕ = Esc = Abbrechen,
+  `Geschlossen` bekommt die Esc-Aktion des Dialogs); **das Kreuz steht beim Titel** — trägt die
+  `Ueberlagerung` den Titel, trägt sie auch das Kreuz (`Schliessbar`), die eingebettete
+  Komponente dann keins. Wache: `SchliesskreuzWacheTests`.
 
 ### Stilblatt
 
@@ -111,7 +115,8 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Bild bleiben im Kachelregister.
 - **Ein Titel, eine Stelle:** Trägt die `Ueberlagerung` einen Titel, zeigt die eingebettete
   Komponente keinen eigenen (`epos-dialog-kopf--ohnetitel`) — über `TitelText=""` oder ein
-  eigenes `TitelAnzeigen`.
+  eigenes `TitelAnzeigen`, am Tag der Einbettung RECHTS von `@attributes`. Wache:
+  `UeberlagerungstitelTests`; ein `@attributes`-Satz bleibt dort Handarbeit (bunit-Fall im Wirt).
 - **Ein Dialog IN einem Dialog:** Unterdialoge erscheinen als `Ueberlagerung` im selben Fenster,
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
 - **Jedes Renderer-Bild steht im Baustein `Diagramm`**, einziger Weg dorthin ist `ChartBild` —

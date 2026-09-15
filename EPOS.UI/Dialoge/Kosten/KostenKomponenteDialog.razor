@@ -47,9 +47,21 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@_stand.Titel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der betitelten Ueberlagerung der
+       Kostenseite traegt DIE den Titel; der Wirt setzt dort TitelAnzeigen="false",
+       dann bleiben Titel und Kreuz hier aus. Der Titel kommt hier aus dem Stand
+       (@_stand.Titel), nicht aus einem TitelText - Bauart b der Hausregel. Der
+       Hilfeknopf bleibt unbedingt, er haengt nicht am Titel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@_stand.Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="BeiAbbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@_stand.Untertitel</p>
@@ -200,53 +212,60 @@
     </div>
 
     @* ------------------------------------------------------ Unterdialoge *@
-    <Ueberlagerung Offen="@(_caseZeile is not null)" Schliessbar="false"
+    @* Das Kreuz steht beim Titel: Jede dieser sechs Ueberlagerungen traegt ihren
+       Titel, also traegt sie auch das ✕ - das eingebettete Blatt bekommt darum
+       TitelText="" hinter seinem Parametersatz und zeigt weder Titel noch Kreuz. *@
+    <Ueberlagerung Offen="@(_caseZeile is not null)"
                    Titel="@CaseTitel" Geschlossen="() => CaseFertigMachen(null)">
         <KindInhalt>
             @if (_caseGaben is not null)
             {
-                <CaseEingabeDialog @attributes="_caseGaben" Geschlossen="CaseFertigMachen" />
+                <CaseEingabeDialog @attributes="_caseGaben" TitelText=""
+                                   Geschlossen="CaseFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_editorZeile is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_editorZeile is not null)"
                    Titel="@EditorTitel" Geschlossen="() => EditorFertigMachen(null)">
         <KindInhalt>
             @if (_editorGaben is not null)
             {
-                <VorlagenPositionDialog @attributes="_editorGaben" Geschlossen="EditorFertigMachen" />
+                <VorlagenPositionDialog @attributes="_editorGaben" TitelText=""
+                                        Geschlossen="EditorFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_variantenGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_variantenGaben is not null)"
                    Titel="@VarianteTitel" Geschlossen="() => VarianteFertigMachen(null)">
         <KindInhalt>
             @if (_variantenGaben is not null)
             {
-                <NamensDialog @attributes="_variantenGaben" Geschlossen="VarianteFertigMachen" />
+                <NamensDialog @attributes="_variantenGaben" TitelText=""
+                              Geschlossen="VarianteFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_uebernahmeGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_uebernahmeGaben is not null)"
                    Titel="@UebernahmeTitel" Geschlossen="() => UebernahmeFertigMachen(false)">
         <KindInhalt>
             @if (_uebernahmeGaben is not null)
             {
-                <VorlagenUebernahmeDialog @attributes="_uebernahmeGaben"
+                <VorlagenUebernahmeDialog @attributes="_uebernahmeGaben" TitelText=""
                                           Geschlossen="UebernahmeFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_katalogGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_katalogGaben is not null)"
                    Titel="@KatalogTitel" Geschlossen="KatalogFertigMachen">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
-                <KostenfaktorKatalogDialog @attributes="_katalogGaben" Geschlossen="KatalogFertigMachen" />
+                <KostenfaktorKatalogDialog @attributes="_katalogGaben" TitelText=""
+                                           Geschlossen="KatalogFertigMachen" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -254,12 +273,12 @@
     @* Die SECHSTE Ueberlagerung (iU9-W14c.3): der Gesetzeskatalog. Bis W14c
        sprang ErtragBonus dorthin ueber die Sprungbruecke; das Ziel ist jetzt
        selbst Razor, und zwei WebViews uebereinander sind Risiko R2. *@
-    <Ueberlagerung Offen="@(_gesetzeGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_gesetzeGaben is not null)"
                    Titel="@GesetzeTitel" Geschlossen="() => GesetzeFertigMachen(false)">
         <KindInhalt>
             @if (_gesetzeGaben is not null)
             {
-                <GesetzeskatalogDialog @attributes="_gesetzeGaben"
+                <GesetzeskatalogDialog @attributes="_gesetzeGaben" TitelText=""
                                        Geschlossen="GesetzeFertigMachen" />
             }
         </KindInhalt>
@@ -360,6 +379,13 @@
     // =====================================================================
     // Texte
     // =====================================================================
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     [Parameter] public string BannerText { get; set; } = "Alle Beträge und alle Bezugsgrößen sind NETTO.";
     [Parameter] public string BannerZuKurztext { get; set; } = "Hinweis ausblenden";

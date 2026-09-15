@@ -63,7 +63,8 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
         Action<QuellePufferspeicherDaten?>? geschlossen = null,
         IReadOnlyList<QuellPufferzeile>? puffer = null,
         IReadOnlyDictionary<string, object>? verwaltung = null,
-        Func<IReadOnlyList<QuellPufferzeile>>? neuladen = null)
+        Func<IReadOnlyList<QuellPufferzeile>>? neuladen = null,
+        bool titelAnzeigen = true)
     {
         return Render<QuellePufferspeicherDialog>(p =>
         {
@@ -74,6 +75,7 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
             p.Add(x => x.SteuerwertFest, FEST);
             p.Add(x => x.Kapazitaet, (v, dt) => v * 1.16 * dt / 1000.0);
             if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
+            if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
     }
@@ -472,6 +474,29 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
         ergebnis = Wp();
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        QuellePufferspeicherDaten? ergebnis = Wp();
+        var cut = Zeige(Wp(), d => ergebnis = d);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(Wp(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     private static void Hoehe(IRenderedComponent<QuellePufferspeicherDialog> cut, string wert)

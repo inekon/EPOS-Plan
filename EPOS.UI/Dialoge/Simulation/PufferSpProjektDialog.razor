@@ -70,6 +70,10 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Verwerfen" />
+        }
     </div>
 
     @if (_meldung.Length > 0)

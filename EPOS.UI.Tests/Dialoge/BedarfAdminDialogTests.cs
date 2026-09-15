@@ -96,7 +96,9 @@ public class BedarfAdminDialogTests : EposBunitContext
         Func<string, bool>? exists = null,
         Func<string, string>? jahressumme = null,
         Func<string, IReadOnlyDictionary<string, object>?>? vorschau = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<string, string, string, bool, IReadOnlyDictionary<string, object>>? typStammGaben = null,
+        Func<IReadOnlyDictionary<string, object>>? typProfilGaben = null)
     {
         Beschriftung t = Texte(art);
         IReadOnlyList<string> liste = katalog ?? KATALOG;
@@ -112,6 +114,8 @@ public class BedarfAdminDialogTests : EposBunitContext
             .Add(x => x.Loeschen, loeschen ?? (_ => BedarfLoeschAusgang.Geloescht))
             .Add(x => x.Exists, exists ?? (_ => false))
             .Add(x => x.Vorschau, vorschau)
+            .Add(x => x.TypStammGaben, typStammGaben)
+            .Add(x => x.TypProfilGaben, typProfilGaben)
             .Add(x => x.TitelText, t.Titel)
             .Add(x => x.LabelKatalog, t.Katalog)
             .Add(x => x.LabelJahressumme, t.Jahressumme)
@@ -458,5 +462,97 @@ public class BedarfAdminDialogTests : EposBunitContext
         Knopf(cut, "Nein").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(antwort);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? antwort = null;
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme, geschlossen: b => antwort = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(antwort);
+    }
+
+    /// <summary>
+    /// Die drei Ueberlagerungen (Stammkopf, Profil, Ergebnis) trugen bislang kein ✕
+    /// (<c>Schliessbar="false"</c>) — jetzt schließt ihr Kreuz wie „Abbrechen": Die
+    /// Ueberlagerung geht wieder zu.
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_schliesst_den_Ergebnisdialog()
+    {
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme,
+                           vorschau: n => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new BedarfErgebnisDaten(),
+                               ["TitelText"] = "Simulation Ergebnisse"
+                           });
+
+        Knopf(cut, "Grafik").Click();
+        Assert.True(cut.Instance.ErgebnisOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.ErgebnisOffen);
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Ergebnis-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>BedarfErgebnisDialog</c> (<c>TitelAnzeigen="false"</c>) keins von
+    /// beidem — sonst stünden zwei Kreuze und zwei Titel übereinander.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Ergebnis_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme,
+                           vorschau: _ => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new BedarfErgebnisDaten(),
+                               ["TitelText"] = "Simulation Ergebnisse"
+                           });
+
+        Knopf(cut, "Grafik").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Stammkopf-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>TypStammDialog</c> (<c>TitelText=""</c>) keins von beidem.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Stammkopf_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme,
+                           typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
+
+        Knopf(cut, "Prozess ändern").Click();
+        Assert.True(cut.Instance.TypStammOffen);
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Profil-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>TypProfilDialog</c> (<c>TitelAnzeigen="false"</c>) keins von beidem.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Typprofil_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(BedarfsArt.Prozesswaerme,
+                           typProfilGaben: () => new Dictionary<string, object>());
+
+        Knopf(cut, "Typ ändern").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 }

@@ -56,8 +56,10 @@ public class GebaeudetypDialogTests : EposBunitContext
         Func<string, string, int>? anlegen = null,
         Func<int, bool>? loeschen = null,
         Func<double[], byte[]>? bild = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        string titel = "Gebäudetypen Verwaltung")
         => Render<GebaeudetypDialog>(p => p
+            .Add(x => x.TitelText, titel)
             .Add(x => x.Typen, typen ?? (() => TYPEN))
             .Add(x => x.Lies, lies ?? (n => Typ(n, n.StartsWith("Wohn") ? 5 : 8)))
             .Add(x => x.Speichern, speichern ?? ((_, _) => true))
@@ -317,5 +319,29 @@ public class GebaeudetypDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Equal(1, gemeldet);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„OK": schließt mit <c>true</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(titel: "");
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

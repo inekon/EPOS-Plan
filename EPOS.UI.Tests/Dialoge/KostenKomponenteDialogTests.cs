@@ -912,6 +912,18 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Abbrechen()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
     /// <summary>
     /// <b>Esc schliesst immer nur die OBERSTE Ebene</b> (R-W14c-3): Steht eine
     /// Ueberlagerung, bleibt der Wirt stehen - je Ebene geprueft, auch fuer die neue
@@ -976,6 +988,75 @@ public class KostenKomponenteDialogTests : BunitContext
 
         cut.Find(".epos-dialog").KeyDown(key: "Escape");
 
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Die sechs Unterdialog-Überlagerungen waren <c>Schliessbar="false"</c> — seit dem
+    /// Anwenderentscheid 15.09.2026 tragen sie ihr eigenes Kreuz (Titel jeweils gesetzt).
+    /// Es schliesst NUR die Überlagerung, wie Esc es auch tut (R-W14c-3) — der Wirt
+    /// bleibt stehen.
+    /// </summary>
+    [Theory]
+    [InlineData("editor")]
+    [InlineData("uebernahme")]
+    [InlineData("katalog")]
+    [InlineData("gesetze")]
+    public void Das_Kreuz_der_Ueberlagerung_schliesst_nur_sie_selbst(string ebene)
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object> { ["IstBhkw"] = true };
+
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok)
+            .Add(x => x.EditorGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Bezeichnung"] = z.Bezeichnung,
+                    ["Kostenarten"] = (IReadOnlyList<(int, string)>)new[] { (0, "kapitalgebunden") }
+                })
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") }
+                })
+            .Add(x => x.KatalogGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zeilen"] = (IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>)
+                        new[] { new KostenfaktorKatalogDialog.KostenfaktorZeile(1, "Faktor") }
+                })
+            .Add(x => x.GesetzeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Klassenvorrat"] = (IReadOnlyList<(string, string)>)new[] { ("KWKG", "KWK-Gesetz") }
+                }),
+            stand: mit);
+
+        switch (ebene)
+        {
+            case "editor":
+                cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[0].Click();
+                break;
+            case "uebernahme":
+                cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();
+                break;
+            case "katalog":
+                cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[2].Click();
+                break;
+            case "gesetze":
+                cut.FindAll(".epos-reiter-knopf")[1].Click();
+                cut.Find(".epos-ertragbonus button").Click();
+                break;
+        }
+
+        Assert.True(cut.Instance.UeberlagerungOffen, "Die Ebene " + ebene + " steht nicht.");
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.UeberlagerungOffen);
         Assert.Null(ergebnis);
     }
 
@@ -1074,5 +1155,128 @@ public class KostenKomponenteDialogTests : BunitContext
         var cut = Zeige(stand: StandOhneBasis());
 
         Assert.Single(cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis"));
+    }
+
+    // =====================================================================
+    //  „Das Kreuz steht beim Titel" (Anwenderentscheid 15.09.2026): Die
+    //  Ueberlagerung traegt Titel UND ✕, das eingebettete Blatt keins von
+    //  beidem — je Einbettungsstelle ein Fall.
+    // =====================================================================
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
+    /// <summary>Die Prüfung je Überlagerung: genau EIN ✕, kein zweiter Titel darunter.</summary>
+    private static void NurEinKreuz(IRenderedComponent<KostenKomponenteDialog> cut)
+    {
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Worst_Best_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.CaseGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Betrag"] = 1200.0
+                }),
+            stand: Standard(projekt: true));
+
+        cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[2].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Zeileneditor_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.EditorGaben, (KostenPositionZeile z) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Bezeichnung"] = z.Bezeichnung,
+                    ["Kostenarten"] = (IReadOnlyList<(int, string)>)new[] { (0, "kapitalgebunden") }
+                }));
+
+        cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll("button")[0].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Namensabfrage_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.VariantenGaben, (bool k) =>
+            (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+            {
+                ["TitelText"] = "Neue Variante",
+                ["FrageText"] = "Name der neuen Variante:"
+            }));
+
+        cut.FindAll(".epos-kontextleiste")[1].QuerySelectorAll("button")[0].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Uebernahme_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") }
+                }));
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Kostenfaktorkatalog_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.KatalogGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zeilen"] = (IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>)
+                        new[] { new KostenfaktorKatalogDialog.KostenfaktorZeile(1, "Faktor") }
+                }));
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[2].Click();
+
+        NurEinKreuz(cut);
+    }
+
+    [Fact]
+    public void Die_Ueberlagerung_Gesetzeskatalog_zeigt_nur_ein_Kreuz()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object> { ["IstBhkw"] = true };
+
+        var cut = Zeige(p => p.Add(x => x.GesetzeGaben, () =>
+            (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+            {
+                ["Klassenvorrat"] = (IReadOnlyList<(string, string)>)new[] { ("KWKG", "KWK-Gesetz") }
+            }), stand: mit);
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();          // Reiter Ertrag/Bonus
+        cut.Find(".epos-ertragbonus button").Click();          // „Gesetzesparameter…"
+
+        NurEinKreuz(cut);
     }
 }

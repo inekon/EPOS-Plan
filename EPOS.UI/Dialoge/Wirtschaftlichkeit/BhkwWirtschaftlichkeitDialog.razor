@@ -37,9 +37,22 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Kopftitel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "BHKW-Wirtschaftlichkeit"
+       (WirtschaftlichkeitSeite) traegt DIE den Titel; der Wirt setzt dort
+       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+       Ueberlagerung traegt beides. Der Titel ist hier ein gerechneter Kopftitel
+       (Textbuendel plus Stammname), kein leerbares TitelText - Bauart b der
+       Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Kopftitel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Schliessen(BhkwSprung.Keiner))" />
+        }
     </div>
 
     @* ------------------------------------------------ Gruppe 1: Anlagen *@
@@ -434,6 +447,13 @@
 
     /// <summary>Schluessel des Hilfeknopfes - die Zeile in <c>help_mapping.txt</c>.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_BhkwWirtschaftlichkeit.btn_Help";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Rueckfallgrenze der Ausschreibungswarnung [kW], wenn der Katalog
     /// schweigt (<c>WirtschaftlichkeitCtrl.KWKG_MAX_LEISTUNG_KW</c> = 500).</summary>

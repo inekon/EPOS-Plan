@@ -108,9 +108,11 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         string reiterGrafik = "Grafik",
         Action<bool>? geschlossen = null,
         Energieeinheit? einheit = null,
-        Action<Energieeinheit>? einheitGewaehlt = null)
+        Action<Energieeinheit>? einheitGewaehlt = null,
+        bool titelAnzeigen = true)
         => Render<BedarfErgebnisDialog>(p => p
             .Add(x => x.Daten, daten)
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.ReiterKennzahlen, reiterKennzahlen)
             .Add(x => x.ReiterMonate, reiterMonate)
             .Add(x => x.ReiterGrafik, reiterGrafik)
@@ -315,6 +317,34 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Aufbauen(Waerme(false), geschlossen: _ => enter++)
             .Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.Equal(1, enter);
+    }
+
+    /// <summary>
+    /// Das Kreuz im Dialogkopf wirkt wie Esc/Enter: Es schließt mit <c>true</c>, denn
+    /// dieser reine Anzeigedialog kennt kein Abbrechen — das Kreuz erfindet keine neue
+    /// Semantik.
+    /// </summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(Waerme(false), geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(Waerme(false), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     [Fact]

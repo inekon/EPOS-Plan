@@ -35,9 +35,19 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Kennliniendaten
+       Ansicht/Bearbeiten..." (WaermepumpeStammDialog) traegt DIE den Titel, hier
+       kommt TitelText="" herein - dann bleiben Titel und Kreuz hier aus. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     @if (NurLesen)
@@ -331,6 +341,9 @@
     private Task BeiErgebnis(bool ok)
         => Geschlossen.InvokeAsync(ok ? Zeilen : null);
 
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne Ergebnis.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" ? Geschlossen.InvokeAsync(null) : Task.CompletedTask;
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
 }

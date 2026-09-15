@@ -54,9 +54,21 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Titel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in einer betitelten Ueberlagerung traegt
+       DIE den Titel; der Wirt setzt dort TitelAnzeigen="false" - dann bleiben Titel
+       und Kreuz hier aus. TitelText bleibt dabei gesetzt: Er speist den berechneten
+       Titel samt Zusatz und beschriftet auch das Reiterblatt - Bauart b der
+       Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     @* Die Einheit gilt fuer ALLE drei Reiter - Kennzahlen, Monatstabelle und
@@ -232,6 +244,15 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Simulation Ergebnisse";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt, denn es hat im Rumpf noch eine zweite Aufgabe.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string ReiterKennzahlen { get; set; } = "Wärmebedarf Ergebnisse";
     [Parameter] public string ReiterMonate { get; set; } = "Übersicht monatlich";
     [Parameter] public string ReiterGrafik { get; set; } = "Grafik";
@@ -509,9 +530,16 @@
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(true);
 
     /// <summary>
+    /// Schließen — von Esc, Enter und dem Schliesskreuz gleichermaßen gerufen. Der
+    /// Dialog zeigt nur an und trägt einen einzigen Knopf, deshalb immer <c>true</c>:
+    /// Das Kreuz kopiert Esc, es erfindet keine neue Semantik.
+    /// </summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
+
+    /// <summary>
     /// Esc UND Enter schließen. Der Dialog zeigt nur an und trägt einen einzigen Knopf —
     /// hier kann Enter nichts versehentlich schreiben (Regel aus <c>EPOS.UI/CLAUDE.md</c>).
     /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
-        => (e.Key == "Escape" || e.Key == "Enter") ? Geschlossen.InvokeAsync(true) : Task.CompletedTask;
+        => (e.Key == "Escape" || e.Key == "Enter") ? Schliessen() : Task.CompletedTask;
 }

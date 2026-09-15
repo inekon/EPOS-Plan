@@ -78,9 +78,20 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in einer betitelten Ueberlagerung traegt
+       DIE den Titel; der Wirt setzt dort TitelAnzeigen="false" - dann bleiben Titel
+       und Kreuz hier aus. TitelText bleibt dabei gesetzt: Er beschriftet auch das
+       Reiterblatt unten - Bauart b der Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     @* Kopfzeile: links die Typliste, rechts die Beschreibung - Label1/listBox_Typname
@@ -203,15 +214,19 @@
         <button type="button" class="epos-knopf"
                 @onclick="() => OeffneNamensfrage(false)">@BtnNeuText</button>
         <button type="button" class="epos-knopf"
-                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnSchliessenText</button>
+                @onclick="Schliessen">@BtnSchliessenText</button>
     </div>
 
     @* "Neu" und "Speichern unter" fragen den Namen im SELBEN Fenster (Risiko R2).
-       Pruefung haelt die Abfrage bei einem belegten Namen OFFEN (Befund W8-B-2). *@
+       Pruefung haelt die Abfrage bei einem belegten Namen OFFEN (Befund W8-B-2).
+       Der Titel steht an EINER Stelle (CLAUDE.md „Ein Titel, eine Stelle"): Die
+       Ueberlagerung traegt ihn (und damit ihr eigenes Kreuz); der eingebettete
+       NamensDialog zeigt keinen eigenen (TitelText=""), sonst staenden zwei
+       Kreuze uebereinander. *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
                    Geschlossen="() => _namensfrage = false">
         <KindInhalt>
-            <NamensDialog TitelText="@(_alsKopie ? BtnSpeichernUnterText : BtnNeuText)"
+            <NamensDialog TitelText=""
                           FrageText="@LabelName" MeldungLeer="@MeldungNameFehlt"
                           Pruefung="NamePruefen"
                           OkText="@OkText" AbbrechenText="@AbbrechenText"
@@ -267,6 +282,15 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Stromverbrauchertyp Stundenverteilung";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt, denn es hat im Rumpf noch eine zweite Aufgabe.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string LabelTypliste { get; set; } = "Liste der Typen in der DB:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung des ausgewählten Typs:";
     [Parameter] public string LabelWochentag { get; set; } = "Auswahl Wochentag";
@@ -575,6 +599,12 @@
     {
         // Ueberlagerung und Rueckfrage werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _namensfrage || _loeschfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(true);
+        return Schliessen();
     }
+
+    /// <summary>
+    /// Schließen — von „Schließen", Esc und dem Schliesskreuz gleichermaßen gerufen,
+    /// immer mit <c>true</c> (das Kreuz kopiert Esc, es erfindet keine neue Semantik).
+    /// </summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
 }

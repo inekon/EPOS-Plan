@@ -40,6 +40,18 @@ namespace EPOS.UI.Tests;
 /// überhaupt gesetzt wird. Das prüft
 /// <see cref="Die_Markup_Wache_findet_die_Pufferverwaltung_vor_194"/>.</para>
 ///
+/// <para><b>Nachtrag 15.09.2026 (Bauart C, Restfall aus dem Kreuz-Umbau):</b> Eine
+/// Komponente OHNE <c>TitelAnzeigen</c> wird eingebettet, ohne dass das Tag einen
+/// Parametersatz (<c>@attributes</c>) oder ein <c>TitelText</c> trägt — dann zeichnet
+/// sie ihren Kopf mit ihrer eigenen <c>TitelText</c>-Vorgabe, und die ist bei einem
+/// Dialog nie leer (<c>WaermepumpenKatalogDialog</c> in <c>WaermepumpeAnlageDialog</c>).
+/// Auch das prüft <see cref="MarkupFunde"/> seither (Helfer
+/// <see cref="OhneSatzMitEigenerVorgabe"/>); Probe:
+/// <see cref="Die_Markup_Wache_findet_den_Modulkatalog_der_Detailansicht_vor_dem_Nachtrag"/>.
+/// Ein Tag MIT <c>@attributes</c> bleibt Handarbeit: Den Satz kann die Hülle leeren
+/// (#187), das sieht die Markup-Wache nicht — dafür stehen die bunit-Fälle im Wirt
+/// (<c>WaermepumpeAnlageDialogTests</c>, <c>WirtschaftlichkeitParameterDialogTests</c>).</para>
+///
 /// <para><b>Bauart B (neun Stellen, die Kosten-, Gesetzes-, Klimazonen- und
 /// Pufferspeicherdialoge):</b> die Überlagerung und die Komponente bekommen
 /// ihren Text aus ZWEI verschiedenen Ausdrücken, die aber in derselben
@@ -233,6 +245,98 @@ public sealed class UeberlagerungstitelTests
         Assert.Empty(MarkupFunde(dateienLeererTitelText));
     }
 
+    /// <summary>
+    /// Nachtrag 15.09.2026 (Bauart C): Die Detailansicht der Wärmepumpe bettete den
+    /// <c>WaermepumpenKatalogDialog</c> in die Ueberlagerung „Modul-Katalog..." ein —
+    /// OHNE Parametersatz und OHNE <c>TitelText</c>; die Komponente zeichnete ihren Kopf
+    /// mit ihrer eigenen Vorgabe (<c>Resource.WPK_TITEL</c>), und beide Bauarten oben
+    /// sahen es nicht: kein wortgleicher Bezeichner, kein <c>TitelAnzeigen</c>. Der
+    /// eingefrorene Bestand muss als Fund erscheinen — auch mit BEDINGTEM Kopf, denn
+    /// ohne <c>TitelText</c> am Tag gilt die Vorgabe. Die HEUTIGE Fassung
+    /// (<c>TitelText=""</c> an der Einbettungsstelle) meldet nichts mehr; ebenso wenig
+    /// ein Tag, das seinen Satz per <c>@attributes</c> bezieht (den kann die Hülle leeren,
+    /// #187 — Handarbeit), oder eine Komponente, deren Vorgabe selbst leer ist.
+    /// </summary>
+    [Fact]
+    public void Die_Markup_Wache_findet_den_Modulkatalog_der_Detailansicht_vor_dem_Nachtrag()
+    {
+        const string wirtVorher =
+            "<Ueberlagerung Offen=\"@_katalogOffen\"\n" +
+            "               Titel=\"@BtnKatalogText\" Geschlossen=\"() => _katalogOffen = false\">\n" +
+            "    <KindInhalt>\n" +
+            "        @if (_katalogOffen)\n" +
+            "        {\n" +
+            "            <WaermepumpenKatalogDialog Zeilen=\"@_katalog\" Profil=\"@Katalogprofil\"\n" +
+            "                                       Geschlossen=\"KatalogFertig\" />\n" +
+            "        }\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n";
+        const string kindVorher =
+            "<div class=\"epos-dialog-kopf\">\n" +
+            "    <h1 class=\"epos-dialog-titel\">@TitelText</h1>\n" +
+            "    <InfoKnopf Schluessel=\"@HilfeSchluessel\" />\n" +
+            "</div>\n" +
+            "@code {\n" +
+            "    [Parameter] public string TitelText { get; set; } = Resource.WPK_TITEL;\n" +
+            "}\n";
+
+        MarkupFund fund = Assert.Single(MarkupFunde(new Dictionary<string, string>
+        {
+            ["WaermepumpeAnlageDialog.razor"] = wirtVorher,
+            ["WaermepumpenKatalogDialog.razor"] = kindVorher
+        }));
+        Assert.Equal("BtnKatalogText", fund.Bezeichner);
+        Assert.Equal("WaermepumpenKatalogDialog", fund.Kind);
+
+        // Ein bedingter Kopf allein hilft nicht: Ohne TitelText am Tag gilt die Vorgabe.
+        const string kindHeute =
+            "<div class=\"epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? \"epos-dialog-kopf--ohnetitel\" : \"\")\">\n" +
+            "    @if (!string.IsNullOrEmpty(TitelText))\n" +
+            "    {\n" +
+            "        <h1 class=\"epos-dialog-titel\">@TitelText</h1>\n" +
+            "    }\n" +
+            "    <InfoKnopf Schluessel=\"@HilfeSchluessel\" />\n" +
+            "</div>\n" +
+            "@code {\n" +
+            "    [Parameter] public string TitelText { get; set; } = Resource.WPK_TITEL;\n" +
+            "}\n";
+        Assert.Single(MarkupFunde(new Dictionary<string, string>
+        {
+            ["WaermepumpeAnlageDialog.razor"] = wirtVorher,
+            ["WaermepumpenKatalogDialog.razor"] = kindHeute
+        }));
+
+        // Die HEUTIGE Einbettung (TitelText="" am Tag) meldet nichts mehr.
+        string wirtHeute = wirtVorher.Replace(
+            "Geschlossen=\"KatalogFertig\"", "TitelText=\"\" Geschlossen=\"KatalogFertig\"");
+        Assert.Empty(MarkupFunde(new Dictionary<string, string>
+        {
+            ["WaermepumpeAnlageDialog.razor"] = wirtHeute,
+            ["WaermepumpenKatalogDialog.razor"] = kindHeute
+        }));
+
+        // Ein Parametersatz per @attributes bleibt Handarbeit (die Huelle kann ihn leeren).
+        const string wirtSatz =
+            "<Ueberlagerung Offen=\"@_offen\" Titel=\"@KatalogTitel\">\n" +
+            "    <KindInhalt>\n" +
+            "        <WaermepumpenKatalogDialog @attributes=\"_gaben\" Geschlossen=\"KatalogFertig\" />\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n";
+        Assert.Empty(MarkupFunde(new Dictionary<string, string>
+        {
+            ["Wirt.razor"] = wirtSatz,
+            ["WaermepumpenKatalogDialog.razor"] = kindHeute
+        }));
+
+        // Eine Komponente mit LEERER Vorgabe und bedingtem Kopf zeichnet nichts: kein Fund.
+        string kindLeereVorgabe = kindHeute.Replace("= Resource.WPK_TITEL;", "= \"\";");
+        Assert.Empty(MarkupFunde(new Dictionary<string, string>
+        {
+            ["WaermepumpeAnlageDialog.razor"] = wirtVorher,
+            ["WaermepumpenKatalogDialog.razor"] = kindLeereVorgabe
+        }));
+    }
+
     private static List<MarkupFund> MarkupFunde(IReadOnlyDictionary<string, string> dateien)
     {
         var funde = new List<MarkupFund>();
@@ -292,8 +396,6 @@ public sealed class UeberlagerungstitelTests
 
                     if (!dateien.TryGetValue(kind + ".razor", out string? kindDatei))
                         continue;                       // Kind nicht Teil dieses Laufs/Baums
-                    if (!FuehrtTitelAnzeigenParameter(kindDatei))
-                        continue;                       // keine Bauart-b-Komponente
 
                     int kindTagEnde = FindeTagEnde(block, kindM.Index);
                     if (kindTagEnde < 0) continue;
@@ -303,6 +405,11 @@ public sealed class UeberlagerungstitelTests
                         Regex.IsMatch(kindTag, "TitelAnzeigen=\"@?false\"") ||
                         Regex.IsMatch(kindTag, "TitelText=\"\"");
                     if (titelAbgeschaltet) continue;
+
+                    // Bauart b: die Komponente fuehrt TitelAnzeigen, das Tag setzt es nicht.
+                    // Bauart C: das Tag bringt weder Satz noch TitelText - die Vorgabe zeichnet.
+                    if (!FuehrtTitelAnzeigenParameter(kindDatei) && !OhneSatzMitEigenerVorgabe(kindTag, kindDatei))
+                        continue;                       // weder Bauart b noch Bauart C
 
                     int zeile = 1 + CountNewlines(s, m.Index);
                     funde.Add(new MarkupFund(datei.Key, zeile, bezeichner, kind));
@@ -319,6 +426,35 @@ public sealed class UeberlagerungstitelTests
     /// </summary>
     private static bool FuehrtTitelAnzeigenParameter(string kindText)
         => Regex.IsMatch(kindText, @"\[Parameter\]\s*public\s+bool\s+TitelAnzeigen\b");
+
+    /// <summary>
+    /// Bauart C (Nachtrag 15.09.2026): Das Tag bringt WEDER einen Parametersatz
+    /// (<c>@attributes</c>) NOCH ein <c>TitelText</c> mit — dann zeichnet die Komponente
+    /// ihren Dialogkopf mit ihrer eigenen <c>TitelText</c>-VORGABE, und die ist bei einem
+    /// Dialog nie leer (<c>WaermepumpenKatalogDialog</c> in der Detailansicht der
+    /// Wärmepumpe). Ein Satz per <c>@attributes</c> bleibt dagegen Handarbeit: Ihn kann die
+    /// Hülle leeren (#187), das sieht die Markup-Wache nicht — dafür stehen die
+    /// bunit-Fälle im jeweiligen Wirt.
+    /// </summary>
+    private static bool OhneSatzMitEigenerVorgabe(string kindTag, string kindText)
+        => !kindTag.Contains("@attributes=", StringComparison.Ordinal)
+           && !Regex.IsMatch(kindTag, @"\bTitelText=")
+           && kindText.Contains("<h1 class=\"epos-dialog-titel\">@TitelText</h1>", StringComparison.Ordinal)
+           && (ZeigtKopfUnbedingt(kindText) || TitelTextVorgabeNichtLeer(kindText));
+
+    /// <summary>
+    /// Ist die VORGABE von <c>TitelText</c> nicht leer? Ohne Zuweisung am Tag zeichnet die
+    /// Komponente ihren Kopf mit genau dieser Vorgabe — bei einem Dialog ein Ressourcentext
+    /// oder ein Literal. Leer ist nur <c>= ""</c> oder gar keine Vorgabe.
+    /// </summary>
+    private static bool TitelTextVorgabeNichtLeer(string kindText)
+    {
+        Match m = Regex.Match(kindText,
+            @"\[Parameter\]\s*public\s+string\??\s+TitelText\s*\{\s*get;\s*set;\s*\}\s*(=\s*([^;]+))?;");
+        if (!m.Success) return false;                   // kein Parameter: kein eigener Titel
+        if (!m.Groups[1].Success) return false;         // keine Vorgabe: null, also leer
+        return m.Groups[2].Value.Trim() != "\"\"";
+    }
 
     /// <summary>
     /// Zeichnet <paramref name="kindText"/> seinen eigenen

@@ -155,6 +155,20 @@ public class ProjektVarianteDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf meldet ebenfalls nichts.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_nichts()
+    {
+        bool gemeldet = false;
+        ProjektVarianteWahl? ergebnis = null;
+        var cut = Aufbauen(w => { gemeldet = true; ergebnis = w; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gemeldet);
+        Assert.Null(ergebnis);
+    }
+
     // =====================================================================
     //  Mit Haken: das Quellprojekt
     // =====================================================================
@@ -417,5 +431,8 @@ public class ProjektVarianteDialogTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
         Assert.Single(cut.FindAll(".epos-dialog-kopf--ohnetitel"));
+        // Anwenderentscheid 15.09.2026: ohne eigenen Titel auch kein eigenes Kreuz -
+        // das traegt dann die Ueberlagerung.
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 }

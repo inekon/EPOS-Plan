@@ -200,6 +200,30 @@ public class VorlagenPositionDialogTests : BunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_wie_Esc()
+    {
+        VorlagenPositionErgebnis? ergebnis = new("x", 1, false, null, null);
+        int gemeldet = 0;
+        var cut = Aufbauen(e => { ergebnis = e; gemeldet++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+        Assert.Null(ergebnis);
+    }
+
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
     [Fact]
     public void Der_Hilfeknopf_traegt_den_Schluessel_der_Maske()
     {

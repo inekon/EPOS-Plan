@@ -318,6 +318,32 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Abbrechen/Esc: schliesst mit false.</summary>
+    [Fact]
+    public void Kreuz_liefert_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<SolarkollektorKatalogDialog>(p => p
+            .Add(x => x.Daten, Voll())
+            .Add(x => x.Modus, KatalogModus.Bearbeiten)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     [Fact]
     public void Esc_schliesst_bei_offener_Namensfrage_nur_diese()
     {

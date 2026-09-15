@@ -186,6 +186,38 @@ public class KlimazonenkarteDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: Abbrechen ohne Ergebnis.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        int? ergebnis = 7;
+        var cut = Zeige(3, z => ergebnis = z);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Traegt die umschliessende Ueberlagerung den Titel (TitelAnzeigen="false"),
+    /// zeigt der Dialog auch kein eigenes Kreuz - Hausregel "Ein Titel, eine Stelle":
+    /// Das Kreuz steht dann bei der Ueberlagerung.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Dialog_kein_Kreuz()
+    {
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+
+        var cut = Render<KlimazonenkarteDialog>(p =>
+        {
+            p.Add(x => x.AktuelleZone, 3);
+            p.Add(x => x.Zonen, Zonen());
+            p.Add(x => x.ViewBox, "0 0 1303.65 1349.50");
+            p.Add(x => x.TitelAnzeigen, false);
+        });
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
     /// <summary>
     /// Ohne Zonen steht die LADEFEHLERZEILE ueber dem Bild, und die Auswahl bleibt
     /// ueber die Liste des Erdreich-Dialogs moeglich - woertlich das Verhalten des

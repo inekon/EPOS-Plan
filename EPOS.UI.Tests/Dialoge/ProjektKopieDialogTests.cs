@@ -235,6 +235,18 @@ public class ProjektKopieDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf meldet ebenfalls false.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(new Kern(), p => p.Add(x => x.Geschlossen, (bool b) => ergebnis = b));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
     [Fact]
     public void Ohne_Kopierdelegat_geschieht_nichts()
     {

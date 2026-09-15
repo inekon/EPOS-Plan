@@ -47,6 +47,12 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* Das Kreuz steht beim Titel: Ohne Titel traegt ihn die umschliessende
+           Ueberlagerung — und mit ihm das Kreuz. *@
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <Gruppenkopf Titel="@GruppeBezeichnung">
@@ -364,6 +370,9 @@
         await Geschlossen.InvokeAsync(ergebnis.Name);
     }
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
     /// <summary>
     /// Esc schliesst. Enter bleibt unbelegt: Drei Knoepfe schreiben sofort in den
     /// Katalog. Die Ueberlagerung wertet Esc zuerst fuer sich aus.
@@ -371,6 +380,6 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(null);
+        return Abbrechen();
     }
 }

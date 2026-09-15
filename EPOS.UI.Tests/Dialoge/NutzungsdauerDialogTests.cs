@@ -300,6 +300,28 @@ public class NutzungsdauerDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: Das Kreuz im Kopf geht denselben Weg wie
+    /// Abbrechen — ohne Schreibvorgang meldet es <c>null</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_meldet_null()
+    {
+        NutzungsdauerErgebnis? ergebnis = new NutzungsdauerErgebnis(true);
+        bool gemeldet = false;
+
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (NutzungsdauerErgebnis? e) =>
+        {
+            ergebnis = e;
+            gemeldet = true;
+        }));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.True(gemeldet));
+        Assert.Null(ergebnis);
+    }
+
     /// <summary>„OK" speichert und meldet ein Ergebnis.</summary>
     [Fact]
     public void OK_speichert_und_meldet_ein_Ergebnis()

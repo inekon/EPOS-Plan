@@ -45,9 +45,22 @@
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Parameter Bearbeiten..."
+       (WaermepumpeAnlageDialog) traegt DIE den Titel; der Wirt setzt dort
+       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+       Ueberlagerung traegt beides. TitelText bleibt dabei gesetzt: Er nennt die
+       Maske auch in der Assistentenmeldung ohne Speicherweg (KiSpeichern) - Bauart
+       b der Hausregel, wie PufferSpProjektDialog. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -231,13 +244,14 @@
     </div>
 
     @* --- Ueberlagerung 1: der Kennlinieneditor ------------------------------- *@
-    <Ueberlagerung Offen="@(_kennlinien is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_kennlinien is not null)"
                    Titel="@BtnKenndatenText" Geschlossen="() => _kennlinien = null">
         <KindInhalt>
             @if (_kennlinien is not null)
             {
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
                 <KennlinienEditorDialog Zeilen="_kennlinien" IdWp="@Daten.Id"
-                                        NurLesen="@Daten.NurLesen"
+                                        NurLesen="@Daten.NurLesen" TitelText=""
                                         Geschlossen="KenndatenFertig" />
             }
         </KindInhalt>
@@ -347,6 +361,14 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Datenbank Wärmepumpen";
+
+    /// <summary>
+    /// Zeichnet der Dialog seinen eigenen Kopf (Titel und Schliesskreuz)? <c>false</c>,
+    /// wenn eine <c>Ueberlagerung</c> den Titel trägt (Hausregel „Ein Titel, eine Stelle";
+    /// so bettet ihn <c>WaermepumpeAnlageDialog</c> ein). <see cref="TitelText"/> bleibt
+    /// dabei gesetzt — er nennt die Maske auch in der Assistentenmeldung ohne Speicherweg.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
     [Parameter] public string KopfbandText { get; set; } = "Verwaltung Daten zu Wärmepumpen und deren Kennlinien";
     [Parameter] public string LabelListe { get; set; } = "Wärmepumpen Auswahl:";
     [Parameter] public string SpalteWahl { get; set; } = "Wahl";
@@ -750,11 +772,14 @@
         BilderNeuZeichnen();                            // Chart aktualisieren (Z. 549)
     }
 
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne "Beenden".</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage)
             return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

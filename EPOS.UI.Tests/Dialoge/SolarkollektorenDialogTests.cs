@@ -366,6 +366,46 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Assert.False(neu);
     }
 
+    /// <summary>
+    /// Die Katalogeditor-Ueberlagerung ist seit dem Anwenderentscheid 15.09.2026
+    /// ("das Kreuz steht beim Titel") nicht mehr Schliessbar="false": Ihr eigenes
+    /// Kreuz verwirft den Editor - derselbe Weg wie ihr <c>Geschlossen</c>
+    /// (<c>_editorGaben = null</c>).
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_verwirft_den_Katalogeditor()
+    {
+        var cut = Aufbauen(editorGaben: (n, b) =>
+            new Dictionary<string, object> { ["Daten"] = new SolarkollektorKatalogDaten { Name = n } });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0].Click();
+        Knopf(cut, "Kollektor in DB ändern...").Click();
+        Assert.True(cut.Instance.EditorOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.EditorOffen);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (Befund „Doppeltes Kreuz dürfen nicht sein!"): Die
+    /// Ueberlagerung trägt Titel UND Kreuz, der eingebettete Katalogeditor keins von
+    /// beiden — <c>TitelText=""</c> steht RECHTS vom Parametersatz der Hülle und gilt
+    /// deshalb auch dann, wenn dieser einen Titel mitbrächte.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Katalogeditor_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(editorGaben: (n, b) =>
+            new Dictionary<string, object> { ["Daten"] = new SolarkollektorKatalogDaten { Name = n } });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0].Click();
+        Knopf(cut, "Kollektor in DB ändern...").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Kollektor_neu_fragt_erst_den_Namen()
     {
@@ -435,6 +475,17 @@ public class SolarkollektorenDialogTests : EposBunitContext
         Knopf(cut, "Kollektor in DB löschen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Abbrechen/Esc: schliesst mit false.</summary>
+    [Fact]
+    public void Kreuz_schliesst_mit_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
     }
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)

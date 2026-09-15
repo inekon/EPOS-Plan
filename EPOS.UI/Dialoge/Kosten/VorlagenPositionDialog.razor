@@ -32,6 +32,10 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
     </div>
 
     @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld,

@@ -688,6 +688,24 @@ public class KiChatDialogTests : EposBunitContext
         Assert.Equal(1, gemeldet);
     }
 
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ in der
+    /// Kopfzeile geht denselben Weg wie der Knopf „Schließen" — es meldet sich beim
+    /// Wirt und schließt nichts selbst.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_meldet_sich_wie_Schliessen()
+    {
+        int gemeldet = 0;
+
+        var cut = Zeigen(p => p.Add(x => x.Geschlossen,
+            EventCallback.Factory.Create(this, () => gemeldet++)));
+
+        cut.Find(".epos-kichat-kopf .epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+    }
+
     // ==================================================================
     //  Die Semantikzeile und ihr Tooltip (Entscheid W15b-O-2, 04.09.2026)
     // ==================================================================

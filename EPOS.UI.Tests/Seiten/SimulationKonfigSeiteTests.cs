@@ -1226,6 +1226,22 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(_dialogSchreiben);
     }
 
+    /// <summary>
+    /// <b>Anwenderbefund 15.09.2026:</b> „Doppeltes Kreuz dürfen nicht sein!" Die
+    /// betitelte Überlagerung trägt Titel und ✕; die eingebettete Komponente zeigt
+    /// beides nicht mehr (<c>TitelAnzeigen="false"</c> an der Einbettungsstelle).
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Betriebsmodus_zeigt_nur_ein_Kreuz()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Modus");
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Das_Kreuz_ueber_der_Waermesenke_verwirft()
     {
@@ -1237,6 +1253,18 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         Assert.Equal("Keine", cut.Instance.OffenerEditor);
         Assert.Empty(_dialogSchreiben);
+    }
+
+    /// <summary>Ein Titel, ein Kreuz — beide trägt die Überlagerung.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Waermesenke_zeigt_nur_ein_Kreuz()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Senke");
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
     [Fact]
@@ -1253,6 +1281,19 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Empty(_dialogSchreiben);
     }
 
+    /// <summary>Ein Titel, ein Kreuz — beide trägt die Überlagerung.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Quelle_Pufferspeicher_zeigt_nur_ein_Kreuz()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Pufferspeicher");
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Das_Kreuz_ueber_dem_Quellprofil_verwirft()
     {
@@ -1265,6 +1306,36 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
         Assert.Empty(_dialogSchreiben);
+    }
+
+    /// <summary>Ein Titel, ein Kreuz — beide trägt die Überlagerung.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Quellprofil_zeigt_nur_ein_Kreuz()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Profil");
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// Ein Titel, ein Kreuz — beide trägt die Überlagerung. Der Erdreich-Dialog band
+    /// sein Kreuz schon an <c>!_laeuft</c>; jetzt kommt <c>TitelAnzeigen</c> dazu, und
+    /// im Ruhezustand der Einbettung zeigt er keins.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Quelle_Erdreich_zeigt_nur_ein_Kreuz()
+    {
+        var cut = SeiteMitDialogen();
+        ChipOeffnen(cut, "Quelle");
+        QuellzweigWaehlen(cut, "Erdreich");
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
     /// <summary>

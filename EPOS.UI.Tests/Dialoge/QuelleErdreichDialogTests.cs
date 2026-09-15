@@ -64,12 +64,14 @@ public class QuelleErdreichDialogTests : EposBunitContext
         QuelleErdreichDaten daten,
         Action<QuelleErdreichDaten?>? geschlossen = null,
         ErdreichAuswertung.ErdreichLaufErgebnis? lauf = null,
-        Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null)
+        Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
+        bool titelAnzeigen = true)
     {
         return Render<QuelleErdreichDialog>(p =>
         {
             p.Add(x => x.Daten, daten);
             p.Add(x => x.Lauf, lauf ?? ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
+            if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
             if (simulieren is not null) p.Add(x => x.Simulieren, simulieren);
         });
@@ -665,6 +667,29 @@ public class QuelleErdreichDialogTests : EposBunitContext
         ergebnis = Kollektor();
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        QuelleErdreichDaten? ergebnis = Kollektor();
+        var cut = Zeige(Kollektor(), d => ergebnis = d);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(Kollektor(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     /// <summary>Esc schliesst zuerst die KARTE, nicht den Dialog (Hausregel).</summary>

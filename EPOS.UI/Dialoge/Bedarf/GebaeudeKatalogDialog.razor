@@ -59,9 +59,20 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in einer betitelten Ueberlagerung traegt
+       DIE den Titel; der Wirt setzt dort TitelAnzeigen="false" - dann bleiben Titel
+       und Kreuz hier aus. TitelText bleibt dabei gesetzt: Er beschriftet auch das
+       Reiterblatt unten - Bauart b der Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     @if (_meldung.Length > 0)
@@ -335,12 +346,12 @@
     </Reiter>
 
     @* --- Ueberlagerung: die Brauchwasser-Profilliste des Projekts (W9.5) ---- *@
-    <Ueberlagerung Offen="@(_brauchwasserGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_brauchwasserGaben is not null)"
                    Titel="@BtnBrauchwasserText" Geschlossen="() => BrauchwasserGeschlossen(false)">
         <KindInhalt>
             @if (_brauchwasserGaben is not null)
             {
-                <BedarfsProfileDialog @attributes="_brauchwasserGaben"
+                <BedarfsProfileDialog @attributes="_brauchwasserGaben" TitelText=""
                                       Geschlossen="BrauchwasserGeschlossen" />
             }
         </KindInhalt>
@@ -354,7 +365,7 @@
                 disabled="@(Modus == GebaeudeKatalogModus.Admin)"
                 @onclick="BeiSpeichern">@SpeichernKnopftext</button>
         <button type="button" class="epos-knopf"
-                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+                @onclick="Schliessen">@BtnBeendenText</button>
     </div>
 </div>
 
@@ -406,6 +417,15 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Gebäudedaten: Flächen, U-Werte";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt, denn es hat im Rumpf noch eine zweite Aufgabe.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string ReiterFlaechen { get; set; } = "Flächen und U-Werte";
     [Parameter] public string ReiterTemperaturen { get; set; } = "Temperaturen, Ferien, Luftwechsel";
 
@@ -924,8 +944,16 @@
     {
         // Die Ueberlagerung wertet Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _brauchwasserGaben is not null) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(true);
+        return Schliessen();
     }
+
+    /// <summary>
+    /// Schließen — von „Beenden", Esc und dem Schliesskreuz gleichermaßen gerufen.
+    /// Der Dialog schreibt über „Überschreiben"/„Speichern" sofort; das Schließen
+    /// verwirft nichts und meldet deshalb immer <c>true</c> (das Kreuz kopiert Esc,
+    /// es erfindet keine neue Semantik).
+    /// </summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
 
     // =================================================================================
     // Die 17 FELDNAMEN der Pflichtmeldung - sie sind NICHT die Beschriftungen

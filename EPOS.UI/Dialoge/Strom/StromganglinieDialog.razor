@@ -127,6 +127,10 @@
            Projekts eingeht (Raster, Spreizung, Kennzahlen). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
                    StandardKurztext="@HilfeKurztextBerechnung" />
+        @if (!Wizard)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))

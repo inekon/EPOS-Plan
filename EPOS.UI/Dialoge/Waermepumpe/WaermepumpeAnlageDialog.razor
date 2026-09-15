@@ -99,6 +99,12 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* Eingebettet (W7-B-3): der Wirt schliesst, nicht der Dialog selbst - dann
+           kein Kreuz, so wie schon kein Esc und kein eigener Dialograhmen. *@
+        @if (!string.IsNullOrEmpty(TitelText) && !Eingebettet)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <div class="epos-wp-spalten">
@@ -427,25 +433,31 @@
     </div>
 
     @* --- Ueberlagerung 1: der Stammdialog ("Parameter Bearbeiten...") ------- *@
-    <Ueberlagerung Offen="@(_stammGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_stammGaben is not null)"
                    Titel="@BtnParameterText" Geschlossen="() => _stammGaben = null">
         <KindInhalt>
             @if (_stammGaben is not null)
             {
-                <WaermepumpeStammDialog @attributes="_stammGaben" Geschlossen="StammdialogFertig" />
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. Der Satz
+                   der Huelle (WaermepumpeStammHuelle.Gaben, derselbe wie fuer das eigene
+                   Fenster) bringt seinen TitelText mit und bleibt unveraendert - hier
+                   bleibt nur der Kopf des Stammdialogs aus. *@
+                <WaermepumpeStammDialog @attributes="_stammGaben" TitelAnzeigen="false"
+                                        Geschlossen="StammdialogFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: der Modulkatalog ---------------------------------- *@
-    <Ueberlagerung Offen="@_katalogOffen" Schliessbar="false"
+    <Ueberlagerung Offen="@_katalogOffen"
                    Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
         <KindInhalt>
             @if (_katalogOffen)
             {
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
                 <WaermepumpenKatalogDialog Zeilen="@_katalog" Profil="@Katalogprofil"
                                            Vergleichsparameter="@Vergleichsparameter"
-                                           Geschlossen="KatalogFertig" />
+                                           TitelText="" Geschlossen="KatalogFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -1079,10 +1091,13 @@
         await Geschlossen.InvokeAsync(true);
     }
 
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne zu speichern.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || Eingebettet || _stammGaben is not null || _katalogOffen) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

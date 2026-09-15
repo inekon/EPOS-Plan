@@ -388,6 +388,17 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Fussknopf: es kommt immer false heraus.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_ebenfalls_false()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
+
     // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================

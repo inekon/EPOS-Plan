@@ -39,9 +39,22 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Titel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Betriebsmodus…" der
+       SimulationKonfigSeite traegt DIE den Titel; der Wirt setzt dort
+       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+       Ueberlagerung traegt beides (Anwenderbefund 15.09.2026: "Doppeltes Kreuz
+       duerfen nicht sein!"). TitelText bleibt gesetzt: Er ist die Vorlage des
+       berechneten Titels - Bauart b der Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(null))" />
+        }
     </div>
 
     @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Die Wahl HIER
@@ -108,6 +121,14 @@
 
     /// <summary>Fenstertitel mit <c>{0}</c> für den Anlagennamen.</summary>
     [Parameter] public string TitelText { get; set; } = "Betriebsmodus - {0}";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt — er speist den berechneten Titel weiter.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Die Kopfzeile über der Auswahl (im Vorläufer FETT).</summary>
     [Parameter] public string KopfText { get; set; } = "Leistungssteuerung der Wärmepumpe:";

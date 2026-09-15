@@ -108,6 +108,13 @@
            des Projekts eingeht (Raster, Kanal, Netzverlustanteil). *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
                    StandardKurztext="@HilfeKurztextBerechnung" />
+        @* Im Assistentenbetrieb (Wizard) schliesst nicht einmal Esc diese Seite -
+           die Navigation gehoert dem Rahmen. Ein Kreuz, das dann stumm nichts
+           taete, entfaellt (Hausregel: nie ein wirkungsloses Kreuz). *@
+        @if (!Wizard)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -917,6 +924,9 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
@@ -926,6 +936,6 @@
         if (_loeschfrage || _verwaltungOffen || _kopieOffen
             || _import?.EtwasOffen == true) return Task.CompletedTask;
 
-        return Wizard ? Task.CompletedTask : Geschlossen.InvokeAsync(false);
+        return Wizard ? Task.CompletedTask : Abbrechen();
     }
 }

@@ -397,6 +397,22 @@ public class KostenprofilDialogTests : BunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Abbrechen/Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_false_und_speichert_nicht()
+    {
+        bool gespeichert = false;
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Speichern, (b, m, w) => { gespeichert = true; return true; })
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+        Assert.False(gespeichert);
+    }
+
     [Fact]
     public void Enter_ist_nicht_belegt()
     {
@@ -443,5 +459,17 @@ public class KostenprofilDialogTests : BunitContext
         // Die Wertetafel bleibt ausserhalb.
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-zahlenraster"));
         Assert.True(cut.FindAll(".epos-zahlenraster").Count >= 1);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

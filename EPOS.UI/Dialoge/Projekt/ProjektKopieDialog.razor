@@ -47,6 +47,12 @@
         {
             <InfoKnopf Schluessel="@HilfeSchluessel" />
         }
+        @* Waehrend des Kopierlaufs schliesst auch Esc nicht (BeiTaste, Wache
+           _laeuft) - das Kreuz gilt derselben Wache. *@
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
     </div>
 
     <div class="epos-projektkopie-raster">

@@ -56,9 +56,19 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Das Kreuz steht beim Titel: Eingebettet (TitelText="") traegt die
+       Ueberlagerung Titel UND Kreuz, hier bleiben beide weg - der Hilfeknopf
+       bleibt, er haengt nicht am Titel. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <Gruppenkopf Titel="@GruppeBezeichnung">
@@ -739,10 +749,13 @@
         await Geschlossen.InvokeAsync(ergebnis.Name);
     }
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
     /// <summary>Esc schliesst; Enter bleibt unbelegt. Die Ueberlagerungen zuerst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _namensfrage || _schutzfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(null);
+        return Abbrechen();
     }
 }

@@ -163,6 +163,43 @@ public class BetriebsmodusDialogTests : BunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: Abbrechen ohne Ergebnis.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        string? ergebnis = "unveraendert";
+        bool gerufen = false;
+
+        var cut = Zeige(PV, m => { ergebnis = m; gerufen = true; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gerufen);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+
+        var cut = Render<BetriebsmodusDialog>(p =>
+        {
+            p.Add(x => x.Bezeichner, "WP Erdgeschoss");
+            p.Add(x => x.AktuellerModus, PV);
+            p.Add(x => x.SteuerwertLaufzeit, LAUFZEIT);
+            p.Add(x => x.SteuerwertLeistung, LEISTUNG);
+            p.Add(x => x.SteuerwertPv, PV);
+            p.Add(x => x.TitelAnzeigen, false);
+        });
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     /// <summary>
     /// Enter IST belegt: Der Dialog entscheidet nur und schreibt nichts; im Vorlaeufer
     /// war AcceptButton gesetzt.

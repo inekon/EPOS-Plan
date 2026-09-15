@@ -483,6 +483,54 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Null(ergebnis);          // der Dialog steht noch
     }
 
+    /// <summary>Das ✕ der Katalog-Ueberlagerung bricht NUR die Ebene ab.</summary>
+    [Fact]
+    public void Ueberlagerungskreuz_des_Katalogs_schliesst_nur_die_Ebene()
+    {
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(Satz(), brennstoff: true, geschlossen: e => ergebnis = e,
+                           gesetzeGaben: () => new Dictionary<string, object>());
+
+        cut.Find("button.epos-sprung").Click();
+        Assert.True(cut.Instance.KatalogOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.KatalogOffen);
+        Assert.Null(ergebnis);          // der Dialog selbst steht noch
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung trägt Titel und Kreuz; der
+    /// Gesetzeskatalog darin zeichnet keinen zweiten Kopf. Der Parametersatz der Hülle
+    /// (<c>GesetzeskatalogHuelle.Gaben</c>, derselbe wie für das eigene Fenster) bleibt
+    /// unverändert — <c>TitelText=""</c> an der Einbettungsstelle gilt auch dann, wenn
+    /// der Satz einen Titel mitbringt (hier absichtlich einen gesetzt).
+    /// </summary>
+    [Fact]
+    public void Der_Titel_des_Gesetzeskatalogs_erscheint_genau_einmal()
+    {
+        var cut = Aufbauen(Satz(), brennstoff: true,
+                           gesetzeGaben: () => new Dictionary<string, object>
+                           {
+                               ["TitelText"] = "Gesetzliche Parameter"
+                           });
+        string titel = cut.Find("button.epos-sprung").TextContent.Trim();
+
+        cut.Find("button.epos-sprung").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal(titel, cut.Find(".epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+
+        // Der Kopf des Parameterdialogs selbst steht weiterhin genau einmal.
+        Assert.Single(cut.FindAll(".epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+    }
+
     [Fact]
     public void Ohne_Gaben_fehlt_der_Katalogknopf()
     {
@@ -519,6 +567,40 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(ergebnis!.Gespeichert);
         Assert.Equal(0, gerufen);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_ohne_zu_speichern()
+    {
+        int gerufen = 0;
+        WirtParameterErgebnis? ergebnis = null;
+        var cut = Aufbauen(Satz(), speichern: () => { gerufen++; return true; },
+                           geschlossen: e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(0, gerufen);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<WirtschaftlichkeitParameterDialog>(p => p
+            .Add(x => x.Parameter, Satz())
+            .Add(x => x.Kraftwerksparks, new[] { (0, "(keine Emissionsbilanz)"), (3, "Netzmix 2030") })
+            .Add(x => x.ReferenzkesselZeile, "Referenzkessel (aus Projekt): Kessel A — η 92 %, Erdgas")
+            .Add(x => x.Co2PrognoseAb, 2028)
+            .Add(x => x.Speichern, () => true)
+            .Add(x => x.Geschlossen, (WirtParameterErgebnis _) => { })
+            .Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     [Fact]

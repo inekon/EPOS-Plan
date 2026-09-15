@@ -36,6 +36,10 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(null))" />
+        }
     </div>
 
     <Bildkarte BildUrl="@BildUrl" Bildbeschreibung="@TitelText" ViewBox="@ViewBox"

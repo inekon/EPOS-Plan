@@ -31,9 +31,21 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Wärmepumpe" der
+       SimulationErgebnisSeite traegt DIE den Titel; der Wirt setzt dort TitelText=""
+       - dann bleiben Titel und Kreuz hier aus, die Ueberlagerung traegt beides
+       (Anwenderbefund 15.09.2026: "Doppeltes Kreuz duerfen nicht sein!"). TitelText
+       hat im Rumpf keine zweite Aufgabe, also genuegt Bauart a der Hausregel. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -373,9 +385,12 @@
         return Geschlossen.InvokeAsync(ok);
     }
 
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne zu speichern.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

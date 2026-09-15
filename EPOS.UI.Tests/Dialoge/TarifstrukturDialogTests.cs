@@ -97,7 +97,7 @@ public class TarifstrukturDialogTests : EposBunitContext
         Assert.Single(cut.FindAll("input[type=checkbox]"));      // aktiv
         Assert.Single(cut.FindAll("input[type=date]"));          // Preisstand
         Assert.Equal(3, cut.FindAll("select").Count);            // Modus + 2 Leistungsmodelle
-        Assert.Equal(2, cut.FindAll("button.epos-knopf").Count); // Speichern, Abbrechen
+        Assert.Equal(2, cut.FindAll("button.epos-knopf:not(.epos-dialog-zu)").Count); // Speichern, Abbrechen
     }
 
     [Fact]
@@ -310,6 +310,39 @@ public class TarifstrukturDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(ergebnis);
         Assert.Equal(0, gerufen);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_false_und_schreibt_nicht()
+    {
+        TarifParameter satz = Satz();
+        int gerufen = 0;
+        bool? ergebnis = null;
+        var cut = Aufbauen(satz, speichern: () => { gerufen++; return true; },
+                           geschlossen: e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+        Assert.Equal(0, gerufen);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<TarifstrukturDialog>(p => p
+            .Add(x => x.Tarif, Satz())
+            .Add(x => x.Sicht, TarifSicht.Komplett)
+            .Add(x => x.Speichern, () => true)
+            .Add(x => x.Geschlossen, (bool _) => { })
+            .Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     [Fact]

@@ -382,6 +382,19 @@ public class ProjektTransferDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf geht denselben Weg wie „Schließen".</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_wie_Schliessen()
+    {
+        var kern = new Kern();
+        bool? ergebnis = null;
+        var cut = Aufbauen(kern, p => p.Add(x => x.Geschlossen, (bool b) => ergebnis = b));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
     // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================

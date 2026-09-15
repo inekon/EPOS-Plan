@@ -1168,6 +1168,22 @@ public class KatalogImportDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile schließt wie Esc — ohne Schreiben in dieser Sitzung mit <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
+            geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    /// <summary>
     /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Wurde in dieser Sitzung
     /// schon geschrieben, meldet Esc beim wirklichen Schliessen <c>true</c> -
     /// analog zum Fussknopf „OK".

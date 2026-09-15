@@ -567,4 +567,60 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
             Resource.SIMERG_ZUSTAND_ABGEBROCHEN_MELDUNG,
             seite.Find("p.epos-simueb-leerkarte").TextContent.Trim()));
     }
+
+    // =====================================================================
+    //  „Das Kreuz steht beim Titel" — die beiden Ueberlagerungen der Seite
+    //  (Anwenderbefund 15.09.2026: „Doppeltes Kreuz duerfen nicht sein!")
+    // =====================================================================
+
+    /// <summary>
+    /// Die betitelte Überlagerung „Wärme-/Strombedarf" trägt Titel und ✕; der
+    /// eingebettete <c>BedarfErgebnisDialog</c> zeigt beides nicht mehr
+    /// (<c>TitelAnzeigen="false"</c> an der Einbettungsstelle).
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Bedarf_zeigt_nur_ein_Kreuz()
+    {
+        var dienste = Dienste();
+        dienste.BedarfGaben = _ => new Dictionary<string, object>();
+
+        var seite = Zeichnen(dienste: dienste);
+        seite.Find("button[role='tab'][id='reiter-BEDARF']").Click();
+        seite.FindAll("button.epos-simerg-knopf")
+             .First(b => b.TextContent.Trim() == Resource.SIMERG_BTN_DETAILS)
+             .Click();
+
+        Assert.Single(seite.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(seite.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(seite.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// Die betitelte Überlagerung „Wärmepumpe" trägt Titel und ✕; der eingebettete
+    /// <c>WaermepumpenDialog</c> zeigt beides nicht mehr (<c>TitelText=""</c> an der
+    /// Einbettungsstelle — Bauart a, sein <c>TitelText</c> hat keine zweite Aufgabe).
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Waermepumpe_zeigt_nur_ein_Kreuz()
+    {
+        _daten = Voll();
+        _daten.Waermepumpe = new SimulationErgebnisCtrl.WaermepumpeErgebnis
+        {
+            Module =
+            {
+                new SimulationErgebnisCtrl.WpModulZeile("WP 1", 12, 400, 100, 0, 1800)
+            }
+        };
+
+        var dienste = Dienste();
+        dienste.WaermepumpenGaben = () => new Dictionary<string, object>();
+
+        var seite = Zeichnen(dienste: dienste);
+        seite.Find("button[role='tab'][id='reiter-WAERMEPUMPE']").Click();
+        seite.Find("table.epos-raster tbody tr").DoubleClick();
+
+        Assert.Single(seite.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(seite.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(seite.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
 }

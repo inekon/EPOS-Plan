@@ -341,6 +341,18 @@ public class ProjektWahlDialogTests : EposBunitContext
         Assert.NotNull(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf bricht ab wie Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_bricht_ab()
+    {
+        ProjektKopfZeile? ergebnis = new ProjektKopfZeile(1, "x");
+
+        var cut = Oeffnen(p => p.Add(x => x.Geschlossen, (ProjektKopfZeile? z) => ergebnis = z));
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Null(ergebnis);
+    }
+
     [Fact]
     public void Die_Vorauswahl_der_Kachel_stellt_das_gemerkte_Projekt_scharf()
     {

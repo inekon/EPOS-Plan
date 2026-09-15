@@ -172,6 +172,28 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.Contains("New", cut.FindAll("button").Select(b => b.TextContent.Trim()));
     }
 
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b-B-9): Eingebettet in die Ueberlagerung „Parameter
+    /// Bearbeiten..." der Detailansicht trägt DIE den Titel — <c>TitelAnzeigen="false"</c>
+    /// lässt Titel und Kreuz hier aus (Anwenderentscheid 15.09.2026: das Kreuz steht beim
+    /// Titel). <c>TitelText</c> bleibt gesetzt; er nennt die Maske in der Assistentenmeldung.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelAnzeigen_zeigt_der_Dialog_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Liste, () => Liste)
+            .Add(x => x.Satz, Satz)
+            .Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+        Assert.Single(cut.FindAll(".epos-dialog-kopf--ohnetitel"));
+    }
+
     // =================================================================================
     // Liste und Auswahl
     // =================================================================================
@@ -523,6 +545,32 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>Das ✕ der Ueberlagerung "Kennliniendaten..." bricht NUR die Ebene ab.</summary>
+    [Fact]
+    public void Ueberlagerungskreuz_des_Kennlinieneditors_schliesst_nur_die_Ebene()
+    {
+        var cut = Aufbauen();
+
+        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Assert.True(cut.Instance.KennlinieneditorOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.KennlinieneditorOffen);
     }
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)

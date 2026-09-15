@@ -142,4 +142,81 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
         Assert.Contains("2026-01-01 00:15", cut.Markup);
         Assert.False(cut.FindAll("button").Single(x => x.TextContent.Contains("Übernehmen")).HasAttribute("disabled"));
     }
+
+    // =====================================================================
+    //  „Das Kreuz steht beim Titel" (Anwenderentscheid 15.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Zeitreihendialog steht ausschließlich als Inhalt der BETITELTEN Überlagerung
+    /// des Auslegungseditors — die trägt Titel und ✕. Sein eigener Kopf ist deshalb
+    /// ersatzlos gestrichen; den Dateinamen nennt weiterhin die Herleitungszeile.
+    /// </summary>
+    [Fact]
+    public void Der_Zeitreihendialog_zeichnet_keinen_eigenen_Kopf()
+    {
+        byte[] csv = Encoding.UTF8.GetBytes("Zeit;Wert\n2026-01-01 00:00;1,5\n");
+        var cut = Render<SpeicherZeitreihenDialog>(p => p
+            .Add(x => x.Datei, new SpeicherImportDatei { Dateiname = "last.csv", Inhalt = csv })
+            .Add(x => x.Rolle, SpeicherZeitreihenRolle.Last));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-kopf"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        // Der Dateiname bleibt sichtbar - in der Herleitungszeile.
+        Assert.Contains("last.csv", cut.Markup);
+    }
+
+    /// <summary>
+    /// Und in der Überlagerung selbst steht genau EIN ✕ — das der Überlagerung.
+    /// Befund des Anwenders: „Doppeltes Kreuz dürfen nicht sein!"
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Zeitreihenimport_zeigt_nur_ein_Kreuz()
+    {
+        byte[] csv = Encoding.UTF8.GetBytes("Zeit;Wert\n2026-01-01 00:00;1,5\n");
+        var eingaben = new SpeicherOptimierungEingaben
+        {
+            Auslegung = new SpeicherAuslegungKonfiguration
+            {
+                Lastquelle = SpeicherAuslegungQuelle.Datei
+            }
+        };
+
+        var cut = Render<SpeicherAuslegungEditor>(p => p
+            .Add(x => x.Wert, eingaben)
+            .Add(x => x.DateiWaehlen, () => Task.FromResult(
+                new SpeicherImportDatei { Dateiname = "last.csv", Inhalt = csv })));
+
+        cut.FindAll("button").Single(x => x.TextContent.Contains("Lastdatei")).Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// Dasselbe über dem eingebetteten <c>KostenprofilDialog</c>: Die Überlagerung
+    /// „Preisprofil bearbeiten" trägt Titel und ✕, das Blatt zeigt beides nicht
+    /// (<c>TitelText=""</c> am Tag der Einbettung).
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Kostenprofil_zeigt_nur_ein_Kreuz()
+    {
+        var eingaben = new SpeicherOptimierungEingaben
+        {
+            Auslegung = new SpeicherAuslegungKonfiguration
+            {
+                Preisquelle = SpeicherAuslegungQuelle.Preisprofil
+            }
+        };
+
+        var cut = Render<SpeicherAuslegungEditor>(p => p.Add(x => x.Wert, eingaben));
+
+        cut.FindAll("button").Single(x => x.TextContent.Contains("Preisprofil")).Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
 }

@@ -68,6 +68,7 @@
         @* Ohne KI-Knopf (#199): Der Vertragstext ist kein Bedienthema, und der
            Dialog steht auch VOR der ersten Zustimmung. *@
         <InfoKnopf Schluessel="Form_Lizenz.btn_Help" MitAssistent="false" />
+        <Schliesskreuz Geschlossen="KreuzGeklickt" />
     </header>
 
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@Texte.KopfTitel">
@@ -418,4 +419,16 @@
     private Task Ablehnen() => Geschlossen.InvokeAsync(false);
 
     private Task Schliessen() => Geschlossen.InvokeAsync(true);
+
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: Das Kreuz im Kopf geht denselben Weg wie die
+    /// sichtbaren Knöpfe der Fußzeile. Im Zustimmungsmodus gibt es kein
+    /// „Schließen", nur „Ablehnen"/„Zustimmen" — das Kreuz lehnt ab, GENAU wie
+    /// das Windows-Kreuz des besitzerlosen Fensters es heute schon tut: Ohne
+    /// ausdrückliches Zustimmen bleibt das Ergebnis von
+    /// <c>LizenzHuelle.ZustimmungSicherstellen</c> bei <c>false</c>, und das
+    /// beendet das Programm (<see cref="Zustimmungsmodus"/>). Außerhalb des
+    /// Zustimmungsmodus entspricht es dem schlichten „Schließen" der Menüansicht.
+    /// </summary>
+    private Task KreuzGeklickt() => Zustimmungsmodus ? Ablehnen() : Schliessen();
 }

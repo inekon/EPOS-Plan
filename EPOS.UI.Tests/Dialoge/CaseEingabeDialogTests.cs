@@ -266,6 +266,31 @@ public class CaseEingabeDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: Das Kreuz im Dialogkopf wirkt wie Esc —
+    /// Abbrechen ohne zu speichern.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_wie_Esc()
+    {
+        CaseEingabeErgebnis? ergebnis = new(1, 2, 3, 4, 5, true);
+        int gemeldet = 0;
+        var cut = Aufbauen(e => { ergebnis = e; gemeldet++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+        Assert.Null(ergebnis);
+    }
+
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<CaseEingabeDialog>(p => p.Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
     [Fact]
     public void Der_Hilfeknopf_traegt_den_Schluessel_der_Maske()
     {

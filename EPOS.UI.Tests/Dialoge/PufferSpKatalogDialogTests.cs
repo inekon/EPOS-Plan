@@ -306,6 +306,40 @@ public class PufferSpKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>null</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc()
+    {
+        string? gemeldet = "noch nicht";
+        bool gerufen = false;
+        var cut = Aufbauen(geschlossen: n => { gemeldet = n; gerufen = true; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gerufen);
+        Assert.Null(gemeldet);
+    }
+
+    /// <summary>
+    /// Die Kehrseite derselben Regel: Ohne eigenen Titel trägt ihn die umschließende
+    /// <c>Ueberlagerung</c> (Hausregel „Ein Titel, eine Stelle") — dann steht das
+    /// Kreuz dort und NICHT ein zweites Mal im Dialogkopf.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_traegt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<PufferSpKatalogDialog>(p => p
+            .Add(x => x.Daten, Bestand())
+            .Add(x => x.Speichertypen, Speichertypen)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
+    /// <summary>
     /// Esc bei offener Namensabfrage schließt nur die Überlagerung, nicht den Dialog —
     /// die Regel „Esc schließt immer nur die oberste Ebene" (iU9-W7.5).
     /// </summary>

@@ -589,4 +589,40 @@ public class KatalogDublettenDialogTests : EposBunitContext
         cut.Find("div.epos-katalogdubletten").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(antwort);
     }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu schließen.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? antwort = null;
+        var cut = Zeige(geschlossen: b => antwort = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(antwort);
+    }
+
+    /// <summary>
+    /// Die Umbenennen-Überlagerung trug bislang kein ✕ (<c>Schliessbar="false"</c>
+    /// ohne <c>Geschlossen</c>) — jetzt schließt ihr Kreuz wie „Abbrechen" im
+    /// eingebetteten Namensdialog: nichts wird geschrieben.
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_bricht_das_Umbenennen_ab()
+    {
+        int umbenannt = 0;
+        var cut = Zeige(umbenennen: (_, _) =>
+        {
+            umbenannt++;
+            return Task.FromResult(Aktionsergebnis.Nichts());
+        });
+        Gescannt(cut);
+        SatzWaehlen(cut, "K:WP/N/0/7");
+        cut.FindAll(".epos-leiste button")[2].Click();        // Umbenennen oeffnet die Ueberlagerung
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.Equal(0, umbenannt);
+        Assert.Empty(cut.FindComponents<EPOS.UI.Dialoge.Allgemein.NamensDialog>());
+    }
 }

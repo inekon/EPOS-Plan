@@ -103,7 +103,8 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Pruefstand stand, string? verwendung = null, int idPuffer = 0,
         Action<int>? geschlossen = null,
         Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
-        IReadOnlyList<int>? passt = null)
+        IReadOnlyList<int>? passt = null,
+        bool titelAnzeigen = true)
     {
         return Render<PufferSpProjektDialog>(p =>
         {
@@ -114,6 +115,7 @@ public class PufferSpProjektDialogTests : EposBunitContext
             if (passt is not null) p.Add(x => x.PasstZurVerwendung, passt);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
             if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
+            p.Add(x => x.TitelAnzeigen, titelAnzeigen);
         });
     }
 
@@ -820,6 +822,35 @@ public class PufferSpProjektDialogTests : EposBunitContext
 
         Assert.Equal(0, ergebnis);
         Assert.Equal(0, stand.Schreibzugriffe);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen: hinaus, ohne zu schreiben.</summary>
+    [Fact]
+    public void Kreuz_verwirft_wie_Abbrechen()
+    {
+        int? ergebnis = null;
+        var stand = MitZwei();
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        Volumen(cut, 1200);
+        Uebernehmen(cut);
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(0, ergebnis);
+        Assert.Equal(0, stand.Schreibzugriffe);
+    }
+
+    /// <summary>
+    /// Traegt die umschliessende Ueberlagerung den Titel (TitelAnzeigen="false"),
+    /// zeigt der Dialog auch kein eigenes Kreuz - Hausregel "Ein Titel, eine Stelle".
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Dialog_kein_Kreuz()
+    {
+        var stand = MitZwei();
+        var cut = Zeige(stand, titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     // ============================================================ Formularraster

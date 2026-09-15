@@ -31,6 +31,10 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="BeiSchliessen" />
+        }
     </div>
 
     <Herleitungszeile Text="@EinleitungText" />

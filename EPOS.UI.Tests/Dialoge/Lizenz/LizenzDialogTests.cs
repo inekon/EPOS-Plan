@@ -313,6 +313,43 @@ public class LizenzDialogTests : EposBunitContext
     }
 
     // ==================================================================
+    //  Das Kreuz im Kopf (Anwenderentscheid 15.09.2026)
+    // ==================================================================
+
+    /// <summary>
+    /// Im Zustimmungsmodus gibt es kein „Schließen" — das Kreuz geht denselben
+    /// Weg wie „Ablehnen" (<c>false</c>, nichts gemerkt). Das entspricht dem
+    /// Windows-Kreuz des besitzerlosen Fensters von heute: Ohne ausdrückliches
+    /// Zustimmen bleibt das Ergebnis <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_lehnt_im_Zustimmungsmodus_ab()
+    {
+        int gemerkt = 0;
+        var ergebnisse = new List<bool>();
+        var cut = Zeigen(zustimmungsmodus: true,
+                         zugestimmt: EventCallback.Factory.Create(new object(), () => gemerkt++),
+                         geschlossen: EventCallback.Factory.Create<bool>(new object(), ergebnisse.Add));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(0, gemerkt);
+        Assert.Equal(new[] { false }, ergebnisse);
+    }
+
+    /// <summary>Im Normalmodus geht das Kreuz denselben Weg wie „Schließen" (<c>true</c>).</summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_im_Normalmodus_mit_true()
+    {
+        var ergebnisse = new List<bool>();
+        var cut = Zeigen(geschlossen: EventCallback.Factory.Create<bool>(new object(), ergebnisse.Add));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(new[] { true }, ergebnisse);
+    }
+
+    // ==================================================================
     //  Die Fußzeile und ihre Knopfreihenfolge
     // ==================================================================
 
@@ -449,6 +486,36 @@ public class LizenzDialogTests : EposBunitContext
 
         Assert.Single(cut.FindComponents<LizenzVerwaltungDialog>());
         Assert.Contains("Lizenzstatus auf diesem Arbeitsplatz", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die betitelte
+    /// Überlagerung „Lizenz aktivieren…" trägt GENAU EIN ✕ — ihr eigenes. Die
+    /// eingebettete Verwaltung zeigt seither keins mehr (ihr Fußzeilen-Kreuz ist
+    /// entfallen); ihr Weg hinaus bleibt der Hauptknopf „Schließen".
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Lizenzverwaltung_zeigt_nur_ein_Kreuz()
+    {
+        var gaben = new Dictionary<string, object>
+        {
+            ["Lage"] = new LizenzGaben("GUELTIG", "Firmenlizenz", "Lizenz EPOS-2026-00001", true, ""),
+            ["Texte"] = new LizenzTexte
+            {
+                Verwaltung =
+                {
+                    GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
+                    KnopfSchliessen = "Schließen",
+                }
+            },
+        };
+        var cut = Zeigen(verwaltung: gaben);
+
+        Knopf(cut, "Lizenz aktivieren...").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
     // ==================================================================

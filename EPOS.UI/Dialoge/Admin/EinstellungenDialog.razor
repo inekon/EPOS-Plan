@@ -57,6 +57,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -371,6 +372,9 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _frageOffen) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
+
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
 }

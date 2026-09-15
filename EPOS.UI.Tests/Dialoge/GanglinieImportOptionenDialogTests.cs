@@ -260,6 +260,17 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Kreuz_meldet_ebenfalls_null()
+    {
+        GanglinienImportOptionen? ergebnis = new();
+        var cut = Zeige(geschlossen: o => ergebnis = o);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+    }
+
     // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================

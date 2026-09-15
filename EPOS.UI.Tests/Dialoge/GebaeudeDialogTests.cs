@@ -530,6 +530,113 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.False(gerufen);
     }
 
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// Die vier Ueberlagerungen (Katalogeditor, Wohnfläche, Gebäudetypen, Bedarf)
+    /// trugen bislang kein ✕ (<c>Schliessbar="false"</c>) — jetzt schließt ihr Kreuz
+    /// wie „Abbrechen": Die Ueberlagerung geht wieder zu.
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_schliesst_den_Bedarfsdialog()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(4711) },
+                           bedarfGaben: z => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name }
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+        Assert.True(cut.Instance.BedarfOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.BedarfOffen);
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Katalogeditor-Überlagerung trägt Titel und ✕,
+    /// der eingebettete <c>GebaeudeKatalogDialog</c> (<c>TitelAnzeigen="false"</c>) keins
+    /// von beidem — sonst stünden zwei Kreuze und zwei Titel übereinander.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Katalogeditor_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(katalogGaben: _ => new Dictionary<string, object>());
+
+        Knopf(cut, "Gebäude in DB neu...").Click();
+        Assert.True(cut.Instance.KatalogeditorOffen);
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Wohnflächen-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>GebaeudeWohnflaecheDialog</c> (<c>TitelText=""</c>) keins von beidem.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Wohnflaeche_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(wohnflaecheGaben: _ => new Dictionary<string, object>());
+
+        Knopf(cut, "Ändern").Click();
+        Assert.True(cut.Instance.WohnflaecheOffen);
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Gebäudetypen-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>GebaeudetypDialog</c> (<c>TitelText=""</c>) keins von beidem.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Gebaeudetypen_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(gebaeudetypGaben: () => new Dictionary<string, object>());
+
+        Knopf(cut, "Gebäudetyp in DB ändern...").Click();
+        Assert.True(cut.Instance.GebaeudetypOffen);
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Bedarfs-Überlagerung trägt Titel und ✕, der
+    /// eingebettete <c>GebaeudeBedarfDialog</c> (<c>TitelText=""</c>) keins von beidem.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Bedarf_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile> { Zeile(4711) },
+                           bedarfGaben: z => new Dictionary<string, object>
+                           {
+                               ["Daten"] = new GebaeudeBedarfDaten { Name = z.Name }
+                           });
+
+        Knopf(cut, "Simulation...").Click();
+        Assert.True(cut.Instance.BedarfOffen);
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void OK_meldet_true()
     {

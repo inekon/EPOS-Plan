@@ -268,6 +268,18 @@ public class SpotpreisImportDialogTests : BunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf meldet ebenfalls false.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: ok => ergebnis = ok);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
     [Fact]
     public void Enter_ist_nicht_belegt()
     {
@@ -314,5 +326,20 @@ public class SpotpreisImportDialogTests : BunitContext
 
         Assert.Single(cut.FindAll(".epos-formularraster.epos-formularraster--einspaltig"));
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 3);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<SpotpreisImportDialog>(p => p
+            .Add(x => x.Waehlen, (Func<string, Task<string?>>)(f => Task.FromResult<string?>(@"C:\Daten\spot2026.csv")))
+            .Add(x => x.Pruefen, (Func<string, Task<SpotpreisPruefung>>)(pfad => Task.FromResult(Gut())))
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

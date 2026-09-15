@@ -86,6 +86,12 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @* Waehrend eines Laufs steht KEIN Kreuz: Esc bricht dann den Lauf ab,
+           statt zu schliessen - ein Kreuz haette dort eine zweite Bedeutung. *@
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="BeiSchliessen" />
+        }
     </div>
 
     @if (_meldung.Length > 0)

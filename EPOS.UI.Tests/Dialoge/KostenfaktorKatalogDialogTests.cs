@@ -56,7 +56,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         Assert.Single(cut.FindAll("input[type=text]"));            // Bezeichner (frueher Unterdialog)
         Assert.Single(cut.FindAll(".epos-raster"));                // die Liste
         // Neu, zwei Wahlknoepfe der Zeilen, Löschen, OK.
-        Assert.Equal(5, cut.FindAll("button.epos-knopf").Count);
+        Assert.Equal(5, cut.FindAll("button.epos-knopf:not(.epos-dialog-zu)").Count);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         var cut = Aufbauen();
 
         Assert.Null(cut.Instance.Gewaehlt);
-        Assert.True(cut.FindAll("button.epos-knopf")[3].HasAttribute("disabled"));
+        Assert.True(cut.FindAll(".epos-leiste button.epos-knopf")[0].HasAttribute("disabled"));
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         var cut = Aufbauen(neu: _ => { gerufen = true; return 1; });
 
         cut.Find("input[type=text]").Input("   ");
-        cut.FindAll("button.epos-knopf")[0].Click();
+        cut.Find(".epos-neuzeile button.epos-knopf").Click();
 
         Assert.False(gerufen);
     }
@@ -114,7 +114,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
             neuLaden: () => bestand);
 
         cut.Find("input[type=text]").Input("  Gerüst  ");
-        cut.FindAll("button.epos-knopf")[0].Click();
+        cut.Find(".epos-neuzeile button.epos-knopf").Click();
 
         Assert.Equal("Gerüst", erhalten);
         Assert.Equal("", cut.Find("input[type=text]").GetAttribute("value"));
@@ -129,7 +129,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         var cut = Aufbauen(neu: _ => 0);
 
         cut.Find("input[type=text]").Input("Gerüst");
-        cut.FindAll("button.epos-knopf")[0].Click();
+        cut.Find(".epos-neuzeile button.epos-knopf").Click();
 
         Assert.Equal("Der Kostenfaktor konnte nicht angelegt werden.",
                      cut.Find(".epos-warnbanner-text").TextContent);
@@ -145,7 +145,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
             loeschen: _ => { geloescht = true; return true; });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll("button.epos-knopf")[3].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.Equal("Kostenfaktor 'Montage' wirklich löschen?", frage);
         Assert.True(geloescht);
@@ -160,7 +160,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
             loeschen: _ => { geloescht = true; return true; });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll("button.epos-knopf")[3].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.False(geloescht);
         Assert.Equal(3, cut.Instance.Gewaehlt);
@@ -178,7 +178,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
             neuLaden: () => bestand);
 
         cut.FindAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll("button.epos-knopf")[3].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.Equal(7, erhalten);
         Assert.Single(cut.Instance.Angezeigt);
@@ -192,7 +192,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         var cut = Aufbauen(loeschen: _ => { geloescht = true; return true; });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll("button.epos-knopf")[3].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.True(geloescht);
     }
@@ -212,6 +212,28 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         // Enter bleibt unbelegt (A-7): "Neu" und "Löschen" schreiben sofort.
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.Equal(2, gemeldet);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf schliesst wie OK/Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_den_Dialog()
+    {
+        int gemeldet = 0;
+        var cut = Aufbauen(beimSchliessen: () => gemeldet++);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+    }
+
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<KostenfaktorKatalogDialog>(p => p
+            .Add(x => x.Zeilen, Bestand)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     [Fact]

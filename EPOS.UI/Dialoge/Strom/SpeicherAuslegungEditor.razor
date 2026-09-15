@@ -139,7 +139,9 @@
 @if (_kostenprofilOffen && Auslegung.Strompreisprofil is not null)
 {
     <Ueberlagerung Offen="true" Titel="@Texte.PreisprofilBearbeiten" Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="@(() => _kostenprofilOffen = false)">
-        <KindInhalt><EPOS.UI.Dialoge.Kosten.KostenprofilDialog Bezeichner="@Auslegung.Strompreisprofil.Bezeichner"
+        @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt sie auch
+           das ✕ - TitelText="" schaltet Titel und Kreuz im Blatt ab. *@
+        <KindInhalt><EPOS.UI.Dialoge.Kosten.KostenprofilDialog TitelText="" Bezeichner="@Auslegung.Strompreisprofil.Bezeichner"
             Monatswerte="@Zahlen(Auslegung.Strompreisprofil.Monatswerte)" Wochenwerte="@Zahlen(Auslegung.Strompreisprofil.Wochenwerte)"
             Speichern="KostenprofilSpeichern" Geschlossen="KostenprofilGeschlossen" /></KindInhalt>
     </Ueberlagerung>

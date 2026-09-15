@@ -336,6 +336,30 @@ public class TypStammDialogTests : EposBunitContext
         Assert.Equal(0, gemeldet);
     }
 
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„Beenden": schließt mit <c>true</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher), geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher), titel: "");
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     // =====================================================================
     //  Formularraster (Anwenderwunsch iU8-E-2, Paket P3, 05.09.2026)
     // =====================================================================

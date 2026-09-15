@@ -45,14 +45,21 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @* H13: der Rechenweg der Auspraegung - Monatswerte mal Wochenprofil, die
            Skalierung auf die Jahressumme und die monatsweise Normierung. Die Huelle
            setzt den Schluessel je Auspraegung. *@
         <InfoKnopf Schluessel="@HilfeSchluesselBerechnung"
                    StandardKurztext="@HilfeKurztextBerechnung" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -172,35 +179,36 @@
     }
 
     @* --- Ueberlagerung 1: der Ergebnisdialog (W8.2) ------------------------ *@
-    <Ueberlagerung Offen="@(_ergebnisGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_ergebnisGaben is not null)"
                    Titel="@BtnVerlaufText" Geschlossen="() => _ergebnisGaben = null">
         <KindInhalt>
             @if (_ergebnisGaben is not null)
             {
-                <BedarfErgebnisDialog @attributes="_ergebnisGaben"
+                <BedarfErgebnisDialog @attributes="_ergebnisGaben" TitelAnzeigen="false"
                                       Geschlossen="_ => _ergebnisGaben = null" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: der Stammkopf (W8.1) ----------------------------- *@
-    <Ueberlagerung Offen="@(_typStammGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_typStammGaben is not null)"
                    Titel="@BtnDbAendernText" Geschlossen="TypStammFertig">
         <KindInhalt>
             @if (_typStammGaben is not null)
             {
-                <TypStammDialog @attributes="_typStammGaben" Geschlossen="_ => TypStammFertig()" />
+                <TypStammDialog @attributes="_typStammGaben" TitelText=""
+                                Geschlossen="_ => TypStammFertig()" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 3: das Wochen-Stundenprofil (W8.3) ------------------ *@
-    <Ueberlagerung Offen="@_typProfilOffen" Schliessbar="false"
+    <Ueberlagerung Offen="@_typProfilOffen"
                    Titel="@BtnTypAendernText" Geschlossen="() => _typProfilOffen = false">
         <KindInhalt>
             @if (_typProfilOffen && TypProfilGaben is not null)
             {
-                <TypProfilDialog @attributes="TypProfilGaben()"
+                <TypProfilDialog @attributes="TypProfilGaben()" TitelAnzeigen="false"
                                  Geschlossen="_ => _typProfilOffen = false" />
             }
         </KindInhalt>
@@ -825,10 +833,13 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _ergebnisGaben is not null || _typStammGaben is not null ||
             _typProfilOffen || _namensfrage || _loeschfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

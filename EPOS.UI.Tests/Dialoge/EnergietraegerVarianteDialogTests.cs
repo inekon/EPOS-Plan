@@ -181,11 +181,39 @@ public class EnergietraegerVarianteDialogTests : BunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Abbrechen.</summary>
+    [Fact]
+    public void Das_Kreuz_wirkt_wie_Abbrechen()
+    {
+        EnergietraegerVarianteErgebnis? ergebnis = new(1, "x", "y");
+        bool gemeldet = false;
+        var cut = Aufbauen(e => { ergebnis = e; gemeldet = true; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gemeldet);
+        Assert.Null(ergebnis);
+    }
+
     [Fact]
     public void Das_Wurzelelement_nimmt_den_Fokus_auf()
     {
         var cut = Aufbauen(_ => { });
 
         Assert.Equal("-1", cut.Find("div.epos-dialog").GetAttribute("tabindex"));
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<EnergietraegerVarianteDialog>(p => p
+            .Add(x => x.Energietraeger, Traeger)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

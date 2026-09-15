@@ -1,0 +1,85 @@
+﻿@* Das Schliesskreuz (✕) rechts aussen in der Kopfzeile eines Dialogs.
+
+   WOZU. "Alle Dialoge sollten mit einem Kreuz zu schliessen sein und nicht
+   erst ganz unten mit den Buttons" (Anwenderentscheid 15.09.2026). Die
+   Oberdialoge laufen unter Windows in einem Fenster mit Titelleiste und haben
+   dort ihr Kreuz; die Unterdialoge liegen als <Ueberlagerung> im selben
+   Fenster und unterdrueckten es fast ueberall mit Schliessbar="false", und auf
+   iOS gibt es gar keine Titelleiste. Der Weg nach draussen stand damit nur
+   unten in der SpeichernLeiste - nach dem Rollen.
+
+   DIE REGEL LAUTET: DAS KREUZ STEHT BEIM TITEL. Jeder Dialogkopf traegt
+   rechts aussen dieses Kreuz. Es wirkt genau wie Esc in diesem Dialog, also
+   wie ABBRECHEN: schliessen ohne zu speichern und ohne Pruefung. Zeigt ein
+   Dialog seinen Titel NICHT (weil die umschliessende Ueberlagerung ihn
+   traegt, Hausregel "Ein Titel, eine Stelle"), zeigt er auch kein Kreuz -
+   dann traegt die Ueberlagerung das Kreuz (Schliessbar, Vorgabe true).
+
+   WARUM stopPropagation AUF @onkeydown. Der Knopf faengt Escape selbst ab und
+   meldet Geschlossen; alles andere laesst er liegen (Enter und Leertaste
+   erzeugen auf einem <button> ohnehin den nativen Klick). OHNE die Sperre
+   liefe ein Enter auf dem fokussierten Kreuz weiter bis zum @onkeydown der
+   Dialogwurzel, wo Enter in reinen OK-Dialogen OK ausloest - dann feuerten OK
+   (keydown) UND Abbrechen (click) zugleich. Der Tabulator bleibt frei:
+   stopPropagation verhindert keine Vorgabeaktion, nur das Aufsteigen.
+
+   WAS ER NICHT TUT. Er schliesst nichts selbst und kennt kein Ergebnis - er
+   meldet nur, dass gedrueckt wurde; was daraufhin geschieht, gehoert dem
+   Dialog. Er prueft nichts und speichert nichts (das waere OK). Er weiss auch
+   nicht, ob ein Titel danebensteht: Wer ihn setzt, setzt ihn unter derselben
+   Bedingung wie den <h1>.
+
+   VERWENDUNG (der Vertrag):
+
+       <div class="epos-dialog-kopf">
+           <h1 class="epos-dialog-titel">@TitelText</h1>
+           <InfoKnopf Schluessel="@HilfeSchluessel" />
+           <Schliesskreuz Geschlossen="Abbrechen" />
+       </div>
+
+   Immer als LETZTES Kind des Kopfes, unter derselben Bedingung wie der <h1>;
+   Geschlossen bekommt die Esc-Aktion des Dialogs. Rechts aussen steht es ohne
+   weitere Regel: .epos-dialog-kopf ist ein Flexkasten, und der Titel traegt
+   flex: 1 1 auto. *@
+
+@namespace EPOS.UI.Bausteine
+
+<button type="button" class="epos-knopf epos-dialog-zu" title="@Kurztext" aria-label="@Kurztext"
+        @onclick="Geschlossen" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">✕</button>
+
+@code {
+    /// <summary>
+    /// Das Kreuz wurde gedrückt. OHNE Ergebnis, denn es ist <b>Abbrechen</b> — der
+    /// Dialog hängt hier dieselbe Aktion ein, die auch Esc auslöst.
+    /// </summary>
+    [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>
+    /// Tooltip und <c>aria-label</c> des Kreuzes; Vorgabe ist der Ressourcentext
+    /// <c>SCHLIESSKREUZ_TOOLTIP</c> mit deutschem Rückfall „Schließen".
+    /// </summary>
+    [Parameter] public string Kurztext { get; set; } = Text("SCHLIESSKREUZ_TOOLTIP", "Schließen");
+
+    /// <summary>
+    /// Escape auf dem Kreuz wirkt wie ein Klick darauf. Alles andere bleibt liegen:
+    /// Enter und Leertaste erzeugen auf einem <c>&lt;button&gt;</c> den nativen Klick,
+    /// eine zweite Behandlung hier feuerte doppelt.
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Escape" => Geschlossen.InvokeAsync(),
+        _ => Task.CompletedTask
+    };
+
+    /// <summary>
+    /// Ein Ressourcentext mit deutschem Rückfall — dieselbe Regel wie bei jedem
+    /// <c>[Parameter] string</c> dieser Bibliothek (EPOS.UI/CLAUDE.md, „Texte über
+    /// Ressourcen"). Er steht als Vorgabewert hier, weil der Baustein in jedem
+    /// Dialogkopf ohne eigenen Textparameter gesetzt wird.
+    /// </summary>
+    private static string Text(string schluessel, string rueckfall)
+    {
+        try { return Resource.ResourceManager.GetString(schluessel) ?? rueckfall; }
+        catch (Exception) { return rueckfall; }
+    }
+}

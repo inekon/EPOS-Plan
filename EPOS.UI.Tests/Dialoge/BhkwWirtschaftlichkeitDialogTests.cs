@@ -812,6 +812,42 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal(BhkwSprung.Keiner, ergebnis!.Sprung);
     }
 
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: das Kreuz wirkt wie Esc — hier also wie "Schließen"
+    /// (der Dialog hat kein Abbrechen, MitAbbrechen="false").
+    /// </summary>
+    [Fact]
+    public void Kreuz_schliesst_ebenfalls()
+    {
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(BhkwSprung.Keiner, ergebnis!.Sprung);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<BhkwWirtschaftlichkeitDialog>(p => p
+            .Add(x => x.IdStamm, STAMM)
+            .Add(x => x.StammName, "Musterprojekt")
+            .Add(x => x.Anlagen, ZweiAnlagen())
+            .Add(x => x.Parameter, new WirtschaftlichkeitParameter())
+            .Add(x => x.Doppelpflege, Array.Empty<KohaerenzHinweis>())
+            .Add(x => x.ErgebnisseAusLauf, Array.Empty<WirtschaftlichkeitErgebnis>())
+            .Add(x => x.Geschlossen, (BhkwWirtschaftlichkeitErgebnis _) => { })
+            .Add(x => x.TitelAnzeigen, false));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     [Fact]
     public void Die_beiden_Sprungknoepfe_melden_ihr_Ziel_an_die_Huelle()
     {

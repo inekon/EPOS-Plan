@@ -33,9 +33,16 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     <Gruppenkopf Titel="@GruppeInfo">
@@ -270,5 +277,8 @@
     }
 
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" ? Geschlossen.InvokeAsync(null) : Task.CompletedTask;
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
 }

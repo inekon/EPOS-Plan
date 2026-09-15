@@ -342,6 +342,32 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
     }
 
+    /// <summary>
+    /// Ein Titel, eine Stelle (Befund „Doppeltes Kreuz dürfen nicht sein!",
+    /// 15.09.2026): Jede der fünf Überlagerungen trägt Titel UND Kreuz, der
+    /// eingebettete Dialog darin keins von beiden — die vier Bauart-b-Dialoge über
+    /// <c>TitelAnzeigen="false"</c>, der Kapitalwert-Verlauf über <c>TitelText=""</c>;
+    /// beide stehen RECHTS vom Parametersatz der Hülle und gelten deshalb auch dann,
+    /// wenn dieser einen Titel mitbrächte.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]   // Photovoltaik
+    [InlineData(1)]   // BHKW
+    [InlineData(2)]   // Strombezug
+    [InlineData(3)]   // Parameter
+    [InlineData(4)]   // Kapitalwert-Verlauf
+    public void Jede_Ueberlagerung_zeigt_nur_ein_Kreuz_und_einen_Titel(int knopf)
+    {
+        var cut = Zeige(p => p.Add(x => x.Gaben,
+            (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
+
+        Fussknoepfe(cut)[knopf].Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Ohne_Parametersatz_bleibt_der_Bereich_zu_und_die_Huelle_meldet()
     {

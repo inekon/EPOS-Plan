@@ -253,7 +253,7 @@
     {
         <Ueberlagerung Offen="true" Titel="@Resource.SIMERG_TAB_BEDARF" Geschlossen="() => _bedarf = null">
             <KindInhalt>
-                <EPOS.UI.Dialoge.Bedarf.BedarfErgebnisDialog @attributes="_bedarf"
+                <EPOS.UI.Dialoge.Bedarf.BedarfErgebnisDialog @attributes="_bedarf" TitelAnzeigen="false"
                                                              Geschlossen="() => _bedarf = null" />
             </KindInhalt>
         </Ueberlagerung>
@@ -264,7 +264,7 @@
         <Ueberlagerung Offen="true" Titel="@Resource.SIM_ERZEUGERNAME_WAERMEPUMPE"
                        Geschlossen="() => _waermepumpe = null">
             <KindInhalt>
-                <EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog @attributes="_waermepumpe"
+                <EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog @attributes="_waermepumpe" TitelText=""
                                                                 Geschlossen="WaermepumpeFertig" />
             </KindInhalt>
         </Ueberlagerung>

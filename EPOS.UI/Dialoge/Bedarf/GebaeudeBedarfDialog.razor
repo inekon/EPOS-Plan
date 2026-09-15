@@ -37,9 +37,16 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@Daten.Name</p>
@@ -302,9 +309,16 @@
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(true);
 
     /// <summary>
+    /// Schließen — von Esc, Enter und dem Schliesskreuz gleichermaßen gerufen. Der
+    /// Dialog zeigt nur an und trägt einen einzigen Knopf, deshalb immer <c>true</c>:
+    /// Das Kreuz kopiert Esc, es erfindet keine neue Semantik.
+    /// </summary>
+    private Task Schliessen() => Geschlossen.InvokeAsync(true);
+
+    /// <summary>
     /// Esc UND Enter schließen. Der Dialog zeigt nur an und trägt einen einzigen Knopf —
     /// hier kann Enter nichts versehentlich schreiben (Regel aus <c>EPOS.UI/CLAUDE.md</c>).
     /// </summary>
     private Task BeiTaste(KeyboardEventArgs e)
-        => (e.Key == "Escape" || e.Key == "Enter") ? Geschlossen.InvokeAsync(true) : Task.CompletedTask;
+        => (e.Key == "Escape" || e.Key == "Enter") ? Schliessen() : Task.CompletedTask;
 }

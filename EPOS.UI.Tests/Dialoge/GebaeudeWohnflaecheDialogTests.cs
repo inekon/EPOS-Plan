@@ -38,8 +38,10 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         double wert = 120.5,
         double nutzungsgrad = 0.85,
         bool dezentral = false,
-        Action<GebaeudeWohnflaecheErgebnis?>? geschlossen = null)
+        Action<GebaeudeWohnflaecheErgebnis?>? geschlossen = null,
+        string titel = "Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes")
         => Render<GebaeudeWohnflaecheDialog>(p => p
+            .Add(x => x.TitelText, titel)
             .Add(x => x.Gebaeudename, "Haus 1")
             .Add(x => x.Beschreibung, "Ein Mehrfamilienhaus")
             .Add(x => x.Gebaeudeart, "Mehrfamilienhaus")
@@ -236,6 +238,32 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
 
         Assert.True(gerufen);
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: liefert <c>null</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool gerufen = false;
+        GebaeudeWohnflaecheErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => { ergebnis = e; gerufen = true; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gerufen);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(titel: "");
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     // =====================================================================

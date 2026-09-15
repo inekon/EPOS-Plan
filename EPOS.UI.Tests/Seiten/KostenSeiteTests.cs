@@ -566,4 +566,41 @@ public class KostenSeiteTests : EposBunitContext
             Assert.Equal(KostenSeite.Unterdialog.Traeger, cut.Instance.OffenerUnterdialog));
         Assert.Null(mitgegeben);
     }
+
+    // =====================================================================
+    //  „Das Kreuz steht beim Titel" (Anwenderentscheid 15.09.2026): Beide
+    //  Überlagerungen der Seite tragen Titel UND ✕, das eingebettete Blatt
+    //  keins von beidem — es bekommt dafür TitelAnzeigen="false".
+    // =====================================================================
+
+    /// <summary>Die Kostenverwaltung: genau EIN ✕, kein zweiter Titel darunter.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Kostenverwaltung_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.VerwaltungGaben, (KostenZeile? _) => LeererSatz()));
+
+        Anlagenzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
+        cut.Find(".epos-kostenkopf button").Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal(KostenSeite.Unterdialog.Verwaltung, cut.Instance.OffenerUnterdialog));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>Die Energieträgerverwaltung: genau EIN ✕, kein zweiter Titel darunter.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Energietraeger_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TraegerGaben, (KostenZeile? _) => LeererSatz()));
+
+        cut.Find(".epos-kostenkopf button").Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal(KostenSeite.Unterdialog.Traeger, cut.Instance.OffenerUnterdialog));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
 }

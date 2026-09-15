@@ -542,6 +542,105 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         Assert.Null(ergebnis);
     }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// Das ✕ der Ueberlagerung "Parameter Bearbeiten..." bricht NUR die Ebene ab - der
+    /// Stammdialog schreibt ohnehin sofort, das Kreuz uebernimmt hier nichts weiter.
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_des_Stammdialogs_schliesst_nur_die_Ebene()
+    {
+        var cut = Aufbauen(stammGaben: () => new Dictionary<string, object>());
+
+        Knopf(cut, "Parameter Bearbeiten...").Click();
+        Assert.True(cut.Instance.StammdialogOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.StammdialogOffen);
+    }
+
+    /// <summary>Das ✕ der Ueberlagerung "Modul-Katalog..." bricht ab, ohne zu uebernehmen.</summary>
+    [Fact]
+    public void Ueberlagerungskreuz_des_Katalogs_schliesst_ohne_Wahl_zu_uebernehmen()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        Knopf(cut, "📋  Modul-Katalog...").Click();
+        Assert.True(cut.Instance.KatalogOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.KatalogOffen);
+        Assert.Equal("WP Alpha", daten.Bezeichner);
+        Assert.Equal(77, daten.IdWp);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung „Parameter Bearbeiten..."
+    /// trägt Titel und Kreuz; der Stammdialog darin zeichnet keinen zweiten Kopf —
+    /// obwohl sein Parametersatz (<c>WaermepumpeStammHuelle.Gaben</c>, derselbe wie
+    /// für das eigene Fenster) einen <c>TitelText</c> mitbringt. Der Wirt setzt
+    /// <c>TitelAnzeigen="false"</c>; <c>TitelText</c> bleibt für die
+    /// Assistentenmeldung erhalten.
+    /// </summary>
+    [Fact]
+    public void Der_Titel_des_Stammdialogs_erscheint_genau_einmal()
+    {
+        var cut = Aufbauen(stammGaben: () => new Dictionary<string, object>
+        {
+            ["TitelText"] = "Datenbank Wärmepumpen"      // wie WaermepumpeStammHuelle.Gaben
+        });
+
+        Knopf(cut, "Parameter Bearbeiten...").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Parameter Bearbeiten...", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+
+        // Der Kopf der Detailansicht selbst steht weiterhin genau einmal.
+        Assert.Single(cut.FindAll(".epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle: Die Ueberlagerung „Modul-Katalog..." trägt Titel und
+    /// Kreuz; der Katalogdialog darin bekommt <c>TitelText=""</c> und zeichnet keinen
+    /// zweiten Kopf.
+    /// </summary>
+    [Fact]
+    public void Der_Titel_des_Modulkatalogs_erscheint_genau_einmal()
+    {
+        var cut = Aufbauen();
+
+        Knopf(cut, "📋  Modul-Katalog...").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("📋  Modul-Katalog...", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
+        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
+
+        Assert.Single(cut.FindAll(".epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+    }
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
     // =====================================================================
@@ -821,6 +920,9 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+        // Anwenderentscheid 15.09.2026: ohne Titel auch kein Kreuz - die Ueberlagerung
+        // traegt beides.
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     /// <summary>
@@ -1013,6 +1115,17 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Eingebettet schliesst der WIRT (Waermepumpen Verwaltung), nicht der Dialog selbst -
+    /// wie schon kein Esc, so hier auch kein Kreuz, das still nichts täte.
+    /// </summary>
+    [Fact]
+    public void Eingebettet_zeigt_kein_Schliesskreuz()
+    {
+        var cut = Aufbauen(eingebettet: true);
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     [Fact]

@@ -57,6 +57,10 @@
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     @* Die Kernregel - im Vorlaeufer ein blaues Label ueber der Liste. *@
@@ -113,7 +117,7 @@
 
     @* --- Der Zeilendialog als Ueberlagerung (Risiko R2) ------------------- *@
     <Ueberlagerung Offen="@_zeileOffen" Titel="@(_zeileNeu ? TitelNeu : TitelAendern)"
-                   Schliessbar="false">
+                   Geschlossen="@(() => ZeileGeschlossen(null))">
         <KindInhalt>
             <GesetzeskatalogZeileDialog IstNeu="@_zeileNeu" Id="@_zeileId"
                                         Schluessel="@_zeileSchluessel" Klasse="@_zeileKlasse"
@@ -497,11 +501,14 @@
     /// </summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
 
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen (anders als "Schließen" OHNE OK).</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     /// <summary>Esc schließt die OBERSTE Ebene — Rückfrage, Zeilendialog, Katalog.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_frageNeueZeileOffen || _loeschfrageOffen || _zeileOffen) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

@@ -210,23 +210,30 @@
        der Kostenverwaltung — und damit auch ueber jedem ihrer Unterdialoge —
        „Kostenverwaltung oeffnen…". Der volle Titel samt Gewerk und Projekt steht
        in der Maske selbst; hier waere er ein zweites Mal dasselbe. *@
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Verwaltung)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Verwaltung)"
                    Titel="@VerwaltungTitel" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <KostenKomponenteDialog @attributes="_gaben"
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelAnzeigen="false" hinter dem Satz schaltet Titel
+                   und Kreuz im Blatt ab (Bauart b: der Titel kommt dort aus dem Stand). *@
+                <KostenKomponenteDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((bool ok) => Fertig(ok))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Traeger)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Traeger)"
                    Titel="@TraegerText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <EnergietraegerDialog @attributes="_gaben"
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelAnzeigen="false" hinter dem Satz schaltet Titel
+                   und Kreuz im Blatt ab (Bauart b: TitelText beschriftet dort weiter die
+                   Rueckfrage). *@
+                <EnergietraegerDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((bool ok) => Fertig(ok))" />
             }
         </KindInhalt>

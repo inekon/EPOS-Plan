@@ -150,6 +150,36 @@ public sealed class SpeicherFlottenFehlerpfadeTests : EposBunitContext
         Assert.Single(cut.FindComponents<SpeicherFlottenCsvDialog>());
     }
 
+    /// <summary>
+    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die betitelte
+    /// Überlagerung des CSV-Imports (Titel = der Dateiname) trägt Titel und ✕; der
+    /// eingebettete <c>SpeicherFlottenCsvDialog</c> zeichnet seither GAR KEINEN
+    /// eigenen Kopf mehr — er steht nur an dieser einen Stelle.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_CsvImport_zeigt_nur_ein_Kreuz()
+    {
+        byte[] json = Encoding.UTF8.GetBytes("[{\"Jahr\":2026,\"Istwerte\":[]},{\"Jahr\":2026,\"Istwerte\":[]}]");
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = Vorgaben,
+            DateiWaehlen = () => Task.FromResult(new SpeicherImportDatei
+            {
+                Dateiname = "projektjahre.json",
+                Inhalt = json
+            })
+        });
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Daten);
+        cut.FindAll("button")
+           .Single(x => x.TextContent.Trim() == Resource.FLOTTE_SEITE_BTN_PROGNOSEN).Click();
+        cut.FindAll("button").Single(x => x.TextContent.Contains("Projektjahre-CSV importieren")).Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     [Fact]
     public void Fehlerhafte_CSV_Spalten_werden_im_Importdialog_angezeigt()
     {

@@ -35,9 +35,19 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Das Kreuz steht beim Titel (Anwenderentscheid 15.09.2026): Eingebettet
+       (TitelText="") traegt die Ueberlagerung Titel UND Kreuz, hier bleiben dann
+       beide weg. Der Hilfeknopf bleibt - er haengt nicht am Titel. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="BeiAbbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KontextText</p>
@@ -164,7 +174,7 @@
        muessen. Seit es die Ueberlagerung gibt, stehen sie da, wo der
        Vorlaeufer sie hatte: ueber dem Dialog, im selben Fenster. Der Rest
        ruht weiterhin (EditorOffen), und Esc schliesst zuerst sie. *@
-    <Ueberlagerung Offen="@(_artEditor is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_artEditor is not null)"
                    Titel="@(_artNeu ? ArtDialogNeu : ArtDialogBearbeiten)"
                    Geschlossen="EditorSchliessen">
         <KindInhalt>
@@ -208,7 +218,7 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_wertEditor is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_wertEditor is not null)"
                    Titel="@(_wertNeu ? WertDialogNeu : WertDialogBearbeiten)"
                    Geschlossen="EditorSchliessen">
         <KindInhalt>

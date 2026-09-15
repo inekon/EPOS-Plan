@@ -314,6 +314,17 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: meldet false.</summary>
+    [Fact]
+    public void Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
+
     /// <summary>
     /// Steht eine Überlagerung, schließt Esc NUR sie — der Wirt wertet die Taste
     /// erst danach für sich aus (Muster W7.5).

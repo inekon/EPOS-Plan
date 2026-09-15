@@ -3,7 +3,11 @@
 @using WindowsFormsApplication1
 
 <div class="epos-dialog" role="dialog" aria-modal="true">
-    <div class="epos-dialog-kopf"><h1 class="epos-dialog-titel">@Titel</h1></div>
+    @* Ein Titel, eine Stelle: dieser Dialog steht ausschliesslich als Ueberlagerung im
+       SpeicherAuslegungEditor, und DIE traegt Titel und Schliesskreuz schon
+       (Anwenderentscheid 15.09.2026) - ein eigener Kopf haette den Dateinamen zweimal
+       uebereinander stehen und zwei Kreuze gezeigt. Den Dateinamen nennt weiterhin die
+       Herleitungszeile darunter. *@
     <Herleitungszeile Text="@Datei.Dateiname" />
 
     <Formularraster>
@@ -85,7 +89,6 @@
     private string _fehler = "";
     private bool _getrennteZeit;
     private bool _initialisiert;
-    private string Titel => Rolle switch { SpeicherZeitreihenRolle.Last=>"Last-Zeitreihe importieren", SpeicherZeitreihenRolle.Pv=>"PV-Zeitreihe importieren", _=>"Bezugspreise importieren" };
     private static readonly IReadOnlyList<(int Id,string Text)> Trennzeichen=new[]{(0,"Semikolon (;)"),(1,"Komma (,)"),(2,"Tabulator")};
     private static readonly IReadOnlyList<(int Id,string Text)> Dezimaltrenner=new[]{(0,"Komma (,)"),(1,"Punkt (.)")};
     private static readonly IReadOnlyList<(int Id,string Text)> Kodierungen=new[]{(0,"UTF-8"),(1,"Windows-1252")};

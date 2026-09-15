@@ -429,4 +429,21 @@ public class KlimadatenDialogTests : EposBunitContext
         // ueber den Renderer-Dispatcher - derselbe Wettlauf wie bei Beenden_liefert_OK.
         cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
     }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne Übernahme und meldet
+    /// <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc()
+    {
+        bool? antwort = null;
+        var cut = Zeige(geschlossen: b => antwort = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        // Derselbe Wettlauf wie oben: Geschlossen.InvokeAsync laeuft ueber den Dispatcher.
+        cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
+    }
 }

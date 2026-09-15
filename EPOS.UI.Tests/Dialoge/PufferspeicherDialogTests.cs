@@ -331,6 +331,25 @@ public class PufferspeicherDialogTests : EposBunitContext
         Assert.Equal(1, rufe);
         Assert.False(gemeldet);
     }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_bricht_ab_wie_Esc()
+    {
+        int rufe = 0;
+        bool? gemeldet = null;
+        var cut = Aufbauen(geschlossen: ok => { gemeldet = ok; rufe++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.False(gemeldet);
+    }
+
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
     // =====================================================================

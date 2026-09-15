@@ -44,9 +44,23 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Titel</h1>
+    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Quellprofil…" der
+       SimulationKonfigSeite traegt DIE den Titel; der Wirt setzt dort
+       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+       Ueberlagerung traegt beides (Anwenderbefund 15.09.2026: "Doppeltes Kreuz
+       duerfen nicht sein!"). TitelText bleibt gesetzt: Er speist den berechneten
+       Titel, und DER betitelt auch die CSV-Rueckfrage weiter unten - Bauart b der
+       Hausregel. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(null))" />
+        }
     </div>
 
     <Herleitungszeile Text="@InfoText" />
@@ -254,6 +268,15 @@
 
     [Parameter] public string TitelText { get; set; } = "Quellprofil";
     [Parameter] public string TitelMitWp { get; set; } = "Quellprofil — {0}";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
+    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
+    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>. <see cref="TitelText"/>
+    /// bleibt dabei gesetzt — er speist den berechneten Titel weiter.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     [Parameter] public string InfoText { get; set; } = "";
     [Parameter] public string LabelProfil { get; set; } = "Profil:";
     [Parameter] public string ProfilNeu { get; set; } = "<neues Profil>";

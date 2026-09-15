@@ -45,6 +45,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -199,48 +200,48 @@
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W9.1) ------------------------- *@
-    <Ueberlagerung Offen="@(_katalogGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_katalogGaben is not null)"
                    Titel="@BtnDbAendernText" Geschlossen="KatalogeditorFertig">
         <KindInhalt>
             @if (_katalogGaben is not null)
             {
-                <GebaeudeKatalogDialog @attributes="_katalogGaben"
+                <GebaeudeKatalogDialog @attributes="_katalogGaben" TitelAnzeigen="false"
                                        Geschlossen="_ => KatalogeditorFertig()" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: die Wohnflaechenangabe (W9.3) -------------------- *@
-    <Ueberlagerung Offen="@(_wohnflaecheGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_wohnflaecheGaben is not null)"
                    Titel="@BtnAendernText" Geschlossen="() => WohnflaecheFertig(null)">
         <KindInhalt>
             @if (_wohnflaecheGaben is not null)
             {
-                <GebaeudeWohnflaecheDialog @attributes="_wohnflaecheGaben"
+                <GebaeudeWohnflaecheDialog @attributes="_wohnflaecheGaben" TitelText=""
                                            Geschlossen="WohnflaecheFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 3: die Gebaeudetypen-Verwaltung (W8.4) -------------- *@
-    <Ueberlagerung Offen="@_gebaeudetypOffen" Schliessbar="false"
+    <Ueberlagerung Offen="@_gebaeudetypOffen"
                    Titel="@BtnGebTypText" Geschlossen="() => _gebaeudetypOffen = false">
         <KindInhalt>
             @if (_gebaeudetypOffen && GebaeudetypGaben is not null)
             {
-                <GebaeudetypDialog @attributes="GebaeudetypGaben()"
+                <GebaeudetypDialog @attributes="GebaeudetypGaben()" TitelText=""
                                    Geschlossen="_ => _gebaeudetypOffen = false" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 4: der Waermebedarf des Gebaeudes (W9-E-2) ---------- *@
-    <Ueberlagerung Offen="@(_bedarfGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_bedarfGaben is not null)"
                    Titel="@BtnSimulationText" Geschlossen="BedarfFertig">
         <KindInhalt>
             @if (_bedarfGaben is not null)
             {
-                <GebaeudeBedarfDialog @attributes="_bedarfGaben"
+                <GebaeudeBedarfDialog @attributes="_bedarfGaben" TitelText=""
                                       Geschlossen="_ => BedarfFertig()" />
             }
         </KindInhalt>
@@ -814,11 +815,14 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || _katalogGaben is not null || _wohnflaecheGaben is not null ||
             _bedarfGaben is not null || _gebaeudetypOffen || _loeschfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

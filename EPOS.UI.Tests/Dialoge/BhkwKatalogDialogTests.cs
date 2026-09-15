@@ -543,6 +543,44 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.Equal(1, rufe);
         Assert.Null(gemeldet);
     }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>null</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_bricht_ab_wie_Esc()
+    {
+        string? gemeldet = "noch nicht";
+        int rufe = 0;
+        var cut = Aufbauen(geschlossen: n => { gemeldet = n; rufe++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.Null(gemeldet);
+    }
+
+    /// <summary>
+    /// Die Kehrseite derselben Regel: Eingebettet trägt die <c>Ueberlagerung</c> den
+    /// Titel (<c>TitelText=""</c>, Hausregel „Ein Titel, eine Stelle") — dann steht
+    /// das Kreuz dort und NICHT ein zweites Mal im Dialogkopf.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_traegt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<BhkwKatalogDialog>(p => p
+            .Add(x => x.Daten, Bestand())
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
     // =====================================================================

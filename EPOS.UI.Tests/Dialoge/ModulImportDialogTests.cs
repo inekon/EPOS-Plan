@@ -172,14 +172,15 @@ public class ModulImportDialogTests : EposBunitContext
         Func<ImportQuelle, Task<string?>>? dateiWaehlen = null,
         Func<ImportQuelle, string, Task<ImportLeseErgebnis>>? dateiLaden = null,
         Action<bool>? geschlossen = null,
-        Func<ImportQuelle, Task<IReadOnlyList<string>>>? dateienWaehlen = null)
+        Func<ImportQuelle, Task<IReadOnlyList<string>>>? dateienWaehlen = null,
+        Func<string, IProgress<CecFortschritt>, CancellationToken, Task<ImportLeseErgebnis>>? netz = null)
     {
         var wege = new ModulImportWege
         {
             DateienWaehlen = dateienWaehlen,
-            Netz = (_, __, ___) => Task.FromResult(new ImportLeseErgebnis(
+            Netz = netz ?? ((_, __, ___) => Task.FromResult(new ImportLeseErgebnis(
                 true, saetze ?? new List<object>(),
-                new CecFortschritt("CEC_MSG_GELADEN", "3"))),
+                new CecFortschritt("CEC_MSG_GELADEN", "3")))),
             DateiWaehlen = dateiWaehlen,
             DateiLaden = dateiLaden,
             Vorpruefen = vorpruefen,
@@ -730,6 +731,39 @@ public class ModulImportDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(saetze: DreiModule(), geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.False(ergebnis));
+    }
+
+    /// <summary>
+    /// Während eines Laufs schliesst sich der Dialog nicht selbst — Esc bricht ihn
+    /// nur ab (:949). Das Kreuz gilt derselben Wache und steht solange gar nicht;
+    /// sonst risse ein Klick darauf den Netzabruf unvermittelt weg.
+    /// </summary>
+    [Fact]
+    public void Waehrend_eines_Laufs_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var tcs = new TaskCompletionSource<ImportLeseErgebnis>();
+        var cut = Bauen(netz: (_, __, ___) => tcs.Task);
+
+        Knopf(cut, "CEC laden").Click();
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-dialog-zu")));
+
+        tcs.SetResult(new ImportLeseErgebnis(true, DreiModule(),
+            new CecFortschritt("CEC_MSG_GELADEN", "3")));
+        Geladen(cut);
+
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
     }
 
     /// <summary>

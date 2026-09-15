@@ -35,6 +35,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))

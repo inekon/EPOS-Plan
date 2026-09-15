@@ -201,12 +201,17 @@
     }
 
     @* ---------------------------------------------------- Unterdialoge *@
-    <Ueberlagerung Offen="@(_gaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_gaben is not null)"
                    Titel="@UebernehmenText" Geschlossen="() => UebernahmeFertig(null)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <BkUebernahmeDialog @attributes="_gaben" Geschlossen="UebernahmeFertig" />
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog keinen eigenen Kopf. TitelText="" steht
+                   RECHTS vom Satz und gilt deshalb auch dann, wenn er einen Titel
+                   mitbraechte. *@
+                <BkUebernahmeDialog @attributes="_gaben" TitelText=""
+                                    Geschlossen="UebernahmeFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>

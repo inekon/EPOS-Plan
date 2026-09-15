@@ -322,6 +322,37 @@ public class KennlinienEditorDialogTests : EposBunitContext
         cut2.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
     }
+
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        object? ergebnis = "nicht gerufen";
+        var cut = Aufbauen(geschlossen: l => ergebnis = l);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Kennliniendaten
+    /// Ansicht/Bearbeiten..." (WaermepumpeStammDialog) traegt DIE Titel und Kreuz -
+    /// mit leerem TitelText zeigt der Editor selbst keins von beiden.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelText_zeigt_der_Editor_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<KennlinienEditorDialog>(p => p
+            .Add(x => x.Zeilen, Proben())
+            .Add(x => x.IdWp, 42)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
     // =====================================================================

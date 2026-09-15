@@ -39,6 +39,7 @@
         {
             <InfoKnopf Schluessel="@HilfeSchluessel" />
         }
+        <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
     </div>
 
     @if (Mehrfach && !string.IsNullOrEmpty(HinweisText))

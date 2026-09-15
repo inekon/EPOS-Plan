@@ -77,9 +77,11 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>? speichern = null,
         Func<string, GebaeudeKatalogDaten?>? lies = null,
         Func<IReadOnlyDictionary<string, object>>? brauchwasser = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        bool titelAnzeigen = true)
         => Render<GebaeudeKatalogDialog>(p => p
             .Add(x => x.Daten, daten ?? Satz())
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Modus, modus)
             .Add(x => x.Gebaeudetypen, () => TYPEN)
             .Add(x => x.Gebaeudearten, () => ARTEN)
@@ -542,6 +544,64 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Knopf(cut, "Beenden").Click();
 
         Assert.True(gerufen);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„Beenden": schließt mit <c>true</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Die Brauchwasser-Ueberlagerung trug bislang kein ✕ (<c>Schliessbar="false"</c>)
+    /// — jetzt schließt ihr Kreuz wie „Abbrechen" im eingebetteten Profildialog.
+    /// </summary>
+    [Fact]
+    public void Ueberlagerungskreuz_schliesst_den_Brauchwasserdialog()
+    {
+        var cut = Aufbauen(brauchwasser: () => new Dictionary<string, object>());
+        ReiterWaehlen(cut, "Temperaturen, Ferien, Luftwechsel");
+        Knopf(cut, "Brauchwasser...").Click();
+        Assert.True(cut.Instance.BrauchwasserOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.BrauchwasserOffen);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
+    /// <summary>
+    /// „Das Kreuz steht beim Titel": Die Brauchwasser-Überlagerung trägt Titel und ✕,
+    /// der eingebettete <c>BedarfsProfileDialog</c> (<c>TitelText=""</c>) keins von
+    /// beidem — sonst stünden zwei Kreuze und zwei Titel übereinander.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Brauchwasser_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(brauchwasser: () => new Dictionary<string, object>());
+        ReiterWaehlen(cut, "Temperaturen, Ferien, Luftwechsel");
+        Knopf(cut, "Brauchwasser...").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
     // =====================================================================

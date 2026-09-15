@@ -234,56 +234,62 @@
     </div>
 
     @* ---------------------------------------------------- Unterdialoge *@
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Photovoltaik)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Photovoltaik)"
                    Titel="@PhotovoltaikText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <PhotovoltaikVerguetungDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog keinen eigenen Kopf. TitelAnzeigen="false"
+                   steht RECHTS vom Satz und gilt deshalb auch dann, wenn er den
+                   Schluessel mitbraechte. *@
+                <PhotovoltaikVerguetungDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((PvVerguetungErgebnis e) => Fertig(e is not null))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Bhkw)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Bhkw)"
                    Titel="@BhkwText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <BhkwWirtschaftlichkeitDialog @attributes="_gaben"
+                <BhkwWirtschaftlichkeitDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((BhkwWirtschaftlichkeitErgebnis e) => Fertig(e is { Gespeichert: true }))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Strombezug)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Strombezug)"
                    Titel="@StrombezugText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <TarifstrukturDialog @attributes="_gaben"
+                <TarifstrukturDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((bool ok) => Fertig(ok))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Parameter)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Parameter)"
                    Titel="@ParameterText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <WirtschaftlichkeitParameterDialog @attributes="_gaben"
+                <WirtschaftlichkeitParameterDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((WirtParameterErgebnis e) => Fertig(e is not null))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Verlauf)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_offen == Unterdialog.Verlauf)"
                    Titel="@VerlaufText" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <KapitalwertVerlaufDialog @attributes="_gaben"
+                @* Bauart a: der Dialog haengt seinen Kopf an TitelText, also leert ihn
+                   der Wirt - RECHTS vom Satz, damit es auch bei gesetztem Titel gilt. *@
+                <KapitalwertVerlaufDialog @attributes="_gaben" TitelText=""
                     Geschlossen="@(() => Fertig(true))" />
             }
         </KindInhalt>

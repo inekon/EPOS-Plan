@@ -186,6 +186,17 @@ public class GanglinieProtokollDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: schliesst mit Abbruch.</summary>
+    [Fact]
+    public void Kreuz_schliesst_mit_Abbruch()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
+
     // =====================================================================
     // Die Stufenklassen (frueher drei Color.FromArgb)
     // =====================================================================

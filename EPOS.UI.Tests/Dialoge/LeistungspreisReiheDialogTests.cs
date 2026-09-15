@@ -268,6 +268,18 @@ public class LeistungspreisReiheDialogTests : BunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf meldet ebenfalls false.</summary>
+    [Fact]
+    public void Das_Kreuz_meldet_false()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
     /// <summary>Enter ist unbelegt — „Übernehmen" schreibt sofort (A-7 aus B5b).</summary>
     [Fact]
     public void Enter_ist_nicht_belegt()
@@ -295,5 +307,17 @@ public class LeistungspreisReiheDialogTests : BunitContext
         cut.Find(".epos-infoknopf").Click();
 
         Assert.Equal(new[] { "Form_LeistungspreisReihe.btn_Help" }, hilfe.Geoeffnet);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

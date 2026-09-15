@@ -41,6 +41,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -168,12 +169,17 @@
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W7.6) --------------------------- *@
-    <Ueberlagerung Offen="@(_editorGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_editorGaben is not null)"
                    Titel="@BtnKatalogAendernText" Geschlossen="() => _editorGaben = null">
         <KindInhalt>
             @if (_editorGaben is not null)
             {
-                <SolarkollektorKatalogDialog @attributes="_editorGaben" Geschlossen="EditorFertig" />
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Editor keinen eigenen Kopf. TitelText="" steht
+                   RECHTS vom Satz und gilt deshalb auch dann, wenn er einen Titel
+                   mitbraechte. *@
+                <SolarkollektorKatalogDialog @attributes="_editorGaben" TitelText=""
+                                             Geschlossen="EditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>

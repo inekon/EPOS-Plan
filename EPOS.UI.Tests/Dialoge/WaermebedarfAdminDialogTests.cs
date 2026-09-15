@@ -384,6 +384,18 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
     /// <summary>Esc schließt zuerst die Rückfrage, nicht den Dialog.</summary>
     [Fact]
     public void Esc_laesst_die_untere_Ebene_stehen()

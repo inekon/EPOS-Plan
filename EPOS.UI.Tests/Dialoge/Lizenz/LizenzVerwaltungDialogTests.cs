@@ -474,6 +474,38 @@ public class LizenzVerwaltungDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die Fußzeile
+    /// trägt KEIN Schließkreuz mehr. Der Dialog hat gar keinen eigenen Kopf (die
+    /// h2-Überschriften gehören den drei Gruppen), und jeder Weg zu ihm bringt sein
+    /// Kreuz schon mit — als Überlagerung „Lizenz aktivieren…" im <c>LizenzDialog</c>
+    /// trägt die Überlagerung Titel und ✕, als eigenes Fenster
+    /// (<c>LizenzVerwaltungHuelle</c>, <c>FormBorderStyle.Sizable</c> mit
+    /// <c>ControlBox</c>) die Fenstertitelleiste. Der Weg hinaus bleibt der Hauptknopf
+    /// „Schließen"; der Hilfeknopf bleibt ebenfalls, er hängt nicht am Titel.
+    /// </summary>
+    [Fact]
+    public void Die_Fusszeile_traegt_kein_Kreuz_mehr()
+    {
+        int rufe = 0;
+        var cut = Render<LizenzVerwaltungDialog>(p =>
+        {
+            p.Add(x => x.Lage, Lage())
+             .Add(x => x.Texte, Texte())
+             .Add(x => x.Geschlossen, EventCallback.Factory.Create(new object(), () => rufe++));
+        });
+
+        Assert.Empty(cut.FindAll(".epos-lizverw-fuss .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-lizverw-fuss .epos-infoknopf"));
+
+        // Der Weg hinaus steht weiter offen - der Hauptknopf meldet genau einmal.
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Schließen").Click();
+
+        Assert.Equal(1, rufe);
+    }
+
+    /// <summary>
     /// Die E-Mail wird aus dem Token vorbelegt; der SCHLÜSSEL nie (Regel S-4 — er ist
     /// wie ein Passwort zu behandeln).
     /// </summary>

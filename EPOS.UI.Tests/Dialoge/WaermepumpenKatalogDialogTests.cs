@@ -400,6 +400,39 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    [Fact]
+    public void Kreuz_schliesst_mit_null()
+    {
+        string? ergebnis = "nicht gerufen";
+        var cut = Aufbauen(n => ergebnis = n);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b-B-9): Eingebettet in die Ueberlagerung „Modul-Katalog..."
+    /// der Detailansicht trägt DIE den Titel — mit <c>TitelText=""</c> lässt der Katalog
+    /// Titel und Kreuz aus (Anwenderentscheid 15.09.2026: das Kreuz steht beim Titel).
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelText_zeigt_der_Katalog_weder_Titel_noch_Kreuz()
+    {
+        var cut = Render<WaermepumpenKatalogDialog>(p => p
+            .Add(x => x.Zeilen, Katalogzeilen())
+            .Add(x => x.Profil, Profil)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+        Assert.Single(cut.FindAll(".epos-dialog-kopf--ohnetitel"));
+    }
+
     /// <summary>
     /// Ein leerer Katalog zeigt „Kein Treffer." statt einer leeren Liste
     /// (<c>ETV_SUCHE_LEER</c>, wie im <c>EnergietraegerDialog</c>).

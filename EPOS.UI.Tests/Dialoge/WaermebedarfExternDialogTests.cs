@@ -717,6 +717,30 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         Assert.False(ergebnis);
     }
 
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// Im Assistentenbetrieb schließt nicht einmal Esc diese Seite — die Navigation
+    /// gehört dem Rahmen. Das Kreuz entfällt dann (nie ein wirkungsloses Kreuz).
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_gibt_es_kein_Kreuz()
+    {
+        var cut = Aufbauen(wizard: true);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
     /// <summary>Esc schließt zuerst die Rückfrage, nicht den Dialog.</summary>
     [Fact]
     public void Esc_laesst_die_untere_Ebene_stehen()

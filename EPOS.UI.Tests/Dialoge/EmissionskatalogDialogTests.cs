@@ -319,6 +319,37 @@ public class EmissionskatalogDialogTests : BunitContext
         Assert.False(erg!.Bestaetigt);
     }
 
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Abbrechen.</summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Abbrechen()
+    {
+        EmissionskatalogErgebnis? erg = null;
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (EmissionskatalogErgebnis e) => erg = e));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.NotNull(erg);
+        Assert.False(erg!.Bestaetigt);
+    }
+
+    /// <summary>
+    /// Die beiden Untereditoren waren <c>Schliessbar="false"</c> — seit dem
+    /// Anwenderentscheid 15.09.2026 tragen betitelte Überlagerungen ihr eigenes
+    /// Kreuz, das denselben Weg wie Abbrechen des Editors geht.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_der_Ueberlagerung_schliesst_den_offenen_Artenditor()
+    {
+        var cut = Zeige();
+
+        ArtenKnoepfe(cut)[0].Click();
+        Assert.True(cut.Instance.EditorOffen);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+    }
+
     // =====================================================================
     // Artenlöschen und „abwählen statt löschen"
     // =====================================================================
@@ -651,5 +682,17 @@ public class EmissionskatalogDialogTests : BunitContext
 
         // Kein Raster um die Tabellen.
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-zeilenraster"));
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(p => p.Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

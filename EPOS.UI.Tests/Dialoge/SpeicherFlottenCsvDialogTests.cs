@@ -19,6 +19,25 @@ public sealed class SpeicherFlottenCsvDialogTests : EposBunitContext
     /// </summary>
     public SpeicherFlottenCsvDialogTests() => Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
 
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026 ("das Kreuz steht beim Titel"), Anwenderbefund
+    /// desselben Tages ("Doppeltes Kreuz duerfen nicht sein!"): Dieser Dialog steht
+    /// ausschliesslich als Inhalt der betitelten Ueberlagerung der
+    /// StromspeicherAuslegungSeite, und DIE traegt Titel und ✕. Er zeichnet deshalb
+    /// GAR KEINEN eigenen Kopf mehr - der Weg hinaus steht in der Ueberlagerung und
+    /// im Abbrechen-Knopf der Fusszeile.
+    /// </summary>
+    [Fact]
+    public void Der_CsvDialog_zeichnet_keinen_eigenen_Kopf()
+    {
+        var cut = Render<SpeicherFlottenCsvDialog>(p => p
+            .Add(x => x.Datei, PrognoseCsv()));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-kopf"));
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+    }
+
     [Fact]
     public void Kopfzeile_belegt_Zeit_Werte_und_Prognosemetadaten_vor()
     {

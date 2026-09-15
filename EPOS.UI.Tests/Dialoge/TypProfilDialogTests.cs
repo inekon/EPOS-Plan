@@ -57,10 +57,12 @@ public class TypProfilDialogTests : EposBunitContext
         Func<string, bool>? existiert = null,
         Action<bool>? geschlossen = null,
         string titel = "Stromverbrauchertyp Stundenverteilung",
-        string labelListe = "Liste der Typen in der DB:")
+        string labelListe = "Liste der Typen in der DB:",
+        bool titelAnzeigen = true)
         => Render<TypProfilDialog>(p => p
             .Add(x => x.Daten, new TypProfilDaten { Art = art })
             .Add(x => x.TitelText, titel)
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.LabelTypliste, labelListe)
             .Add(x => x.Feldnamen, Feldnamen(art))
             .Add(x => x.Typen, typen ?? (() => TYPEN))
@@ -549,6 +551,49 @@ public class TypProfilDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Equal(0, gemeldet);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„Schließen": schließt mit <c>true</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
+    /// <summary>
+    /// Der Titel steht an EINER Stelle (CLAUDE.md „Ein Titel, eine Stelle"): Die
+    /// Namensabfrage-Überlagerung zeigt ihn samt Kreuz, der eingebettete Namensdialog
+    /// keinen eigenen — sonst stünden zwei Kreuze übereinander.
+    /// </summary>
+    [Fact]
+    public void Die_Namensabfrage_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen();
+
+        Knopf(cut, "Neu").Click();
+
+        // Genau EIN Kreuz gehört dem TypProfilDialog selbst - der eingebettete
+        // Namensdialog (TitelText="") legt kein zweites daneben; die Ueberlagerung
+        // traegt ihr eigenes.
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
     }
 
     // =================================================================================

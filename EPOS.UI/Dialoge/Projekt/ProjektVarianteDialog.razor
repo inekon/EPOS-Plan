@@ -48,6 +48,10 @@
         {
             <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
         }
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
     </div>
 
     <Herleitungszeile Text="@HinweisZeile" />

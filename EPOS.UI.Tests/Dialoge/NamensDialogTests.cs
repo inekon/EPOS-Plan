@@ -40,7 +40,9 @@ public class NamensDialogTests : BunitContext
         var cut = Aufbauen(_ => { });
 
         Assert.Single(cut.FindAll("input[type=text]"));
-        Assert.Equal(2, cut.FindAll("button.epos-knopf").Count);   // Abbrechen und OK
+        // Abbrechen und OK der SpeichernLeiste - das Schliesskreuz im Kopf zaehlt
+        // eigens (Kreuz_schliesst_wie_Esc), es gehoert nicht zur historischen Karte.
+        Assert.Equal(2, cut.FindAll(".epos-leiste button.epos-knopf").Count);
     }
 
     [Fact]
@@ -128,7 +130,9 @@ public class NamensDialogTests : BunitContext
         bool gemeldet = false;
         var cut = Aufbauen(e => { ergebnis = e; gemeldet = true; }, vorbelegung: "Vorschlag");
 
-        cut.FindAll("button.epos-knopf")[0].Click();
+        // Index 0 innerhalb der SpeichernLeiste - das Schliesskreuz im Kopf steht
+        // ausserhalb von .epos-leiste und zaehlt hier nicht mit.
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.True(gemeldet);
         Assert.Null(ergebnis);
@@ -148,6 +152,31 @@ public class NamensDialogTests : BunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Equal(2, gemeldet);
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen liefert <c>null</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        string? ergebnis = "noch nicht gesetzt";
+        var cut = Aufbauen(e => ergebnis = e, vorbelegung: "Vorschlag");
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Ohne eigenen Titel (Einbettung in eine betitelte Überlagerung, z. B.
+    /// <c>KatalogDublettenDialog</c>) zeigt der Dialog auch kein eigenes Kreuz — die
+    /// Überlagerung trägt dann beides.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_gibt_es_kein_Kreuz()
+    {
+        var cut = Aufbauen(_ => { }, titel: "");
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     [Fact]

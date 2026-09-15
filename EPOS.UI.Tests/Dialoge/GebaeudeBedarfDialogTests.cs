@@ -54,12 +54,14 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         List<Auftrag>? auftraege = null,
         Energieeinheit? einheit = null,
         Action<Energieeinheit>? einheitGewaehlt = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        string titel = "Wärmebedarf Gebäude")
     {
         List<Auftrag> liste = auftraege ?? new List<Auftrag>();
 
         return Render<GebaeudeBedarfDialog>(p => p
             .Add(x => x.Daten, daten ?? Daten())
+            .Add(x => x.TitelText, titel)
             .Add(x => x.Bildauftrag, (sortiert, bereich) =>
             {
                 liste.Add(new Auftrag(sortiert, bereich));
@@ -279,5 +281,29 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = taste });
 
         Assert.True(ergebnis);
+    }
+
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/Enter: schließt mit <c>true</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Aufbauen(titel: "");
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 }

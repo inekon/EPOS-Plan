@@ -115,6 +115,14 @@
            er darf Lizenz und Einstellungen nicht anfassen
            (Aufgabensteuerungskonzept 1.2). *@
         <InfoKnopf Schluessel="Form_LizenzVerwaltung.btn_Help" MitAssistent="false" />
+        @* HIER STAND EIN SCHLIESSKREUZ, und es war eines zu viel (Anwenderbefund
+           15.09.2026: "Doppeltes Kreuz duerfen nicht sein!"). Dieser Dialog hat gar
+           keine Kopfzeile - das Kreuz sass in der Fusszeile -, und JEDER Weg zu ihm
+           bringt sein Kreuz schon mit: als Ueberlagerung "Lizenz aktivieren…" im
+           LizenzDialog traegt die Ueberlagerung Titel und ✕, und als eigenes Fenster
+           (LizenzVerwaltungHuelle, FormBorderStyle.Sizable mit ControlBox) traegt die
+           Fenstertitelleiste ihr ✕. Der Weg hinaus steht daneben unveraendert als
+           Hauptknopf "Schliessen"; der Hilfeknopf bleibt, er haengt nicht am Titel. *@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@Wortlaut.KnopfSchliessen</button>
     </div>

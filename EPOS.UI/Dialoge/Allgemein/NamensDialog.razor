@@ -43,6 +43,10 @@
         {
             <InfoKnopf Schluessel="@HilfeSchluessel" />
         }
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     @if (!string.IsNullOrEmpty(HinweisText))
@@ -228,7 +232,10 @@
         // Enter tut nichts, solange OK gesperrt ist - sonst umginge die Taste
         // genau die Regel, die der Knopf sichtbar macht.
         "Enter" => OkErlaubt ? BeiErgebnis(true) : Task.CompletedTask,
-        "Escape" => BeiErgebnis(false),
+        "Escape" => Abbrechen(),
         _ => Task.CompletedTask
     };
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => BeiErgebnis(false);
 }

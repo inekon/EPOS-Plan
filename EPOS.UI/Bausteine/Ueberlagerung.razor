@@ -29,6 +29,12 @@
    - Esc schliesst den Bereich. Der Wirt darf Esc erst danach fuer sich selbst
      auswerten (Muster EmissionskatalogDialog: erst der Editor, dann der
      Dialog).
+   - DAS KREUZ STEHT BEIM TITEL (Anwenderentscheid 15.09.2026): Traegt die
+     Ueberlagerung den Titel, traegt sie auch das Kreuz - Schliessbar bleibt
+     dann auf seiner Vorgabe true, und die eingebettete Komponente zeigt kein
+     eigenes Schliesskreuz. Ein Schliessbar="false" an einer BETITELTEN
+     Ueberlagerung braucht einen Grund und steht in der Ausnahmeliste der
+     Wache SchliesskreuzWacheTests.
 
    WAS DER BAUSTEIN NICHT TUT. Er schliesst sich nicht selbst und er kennt kein
    Ergebnis: Offen gehoert dem Wirt, Geschlossen ist die Bitte, es auf false zu
@@ -99,8 +105,13 @@
     /// <summary>Schliesst ein Klick auf die Abdunkelung? Vorgabe <c>false</c> (siehe Kopf).</summary>
     [Parameter] public bool SchliessenBeiHintergrund { get; set; }
 
-    /// <summary>Kurztext des ✕-Knopfes.</summary>
-    [Parameter] public string SchliessenText { get; set; } = "Schließen";
+    /// <summary>
+    /// Kurztext des ✕-Knopfes (<c>SCHLIESSKREUZ_TOOLTIP</c>, deutscher Rückfall
+    /// „Schließen"). DERSELBE Text wie am <c>Schliesskreuz</c> der Dialogkopfzeile:
+    /// Beide Kreuze tun dasselbe, also heißen sie auch gleich.
+    /// </summary>
+    [Parameter] public string SchliessenText { get; set; } =
+        Text("SCHLIESSKREUZ_TOOLTIP", "Schließen");
 
     private ElementReference _wurzel;
     private bool _warOffen;
@@ -140,4 +151,15 @@
         "Escape" => BeiSchliessen(),
         _ => Task.CompletedTask
     };
+
+    /// <summary>
+    /// Ein Ressourcentext mit deutschem Rückfall — dieselbe Regel und dieselbe
+    /// Bauart wie in <c>InfoKnopf</c> und <c>Schliesskreuz</c> (EPOS.UI/CLAUDE.md,
+    /// „Texte über Ressourcen").
+    /// </summary>
+    private static string Text(string schluessel, string rueckfall)
+    {
+        try { return Resource.ResourceManager.GetString(schluessel) ?? rueckfall; }
+        catch (Exception) { return rueckfall; }
+    }
 }

@@ -33,6 +33,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Texte.Titel</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        <Schliesskreuz Geschlossen="@(() => Beenden(false))" />
     </div>
 
     <p class="epos-kontextzeile">@Texte.Kontext</p>

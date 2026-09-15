@@ -35,12 +35,16 @@
     @* Ae25: Die Ueberschrift steht nur, wo sie nicht schon ueber der Maske
        steht. Als Bereich einer Ueberlagerung traegt DEREN Kopf den Titel; der
        Wirt setzt TitelText dann leer, und hier bleibt der Hilfeknopf. *@
-    <div class="epos-dialog-kopf">
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
         {
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="BeiAbbrechen" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@KontextText</p>

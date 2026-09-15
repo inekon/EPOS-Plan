@@ -50,7 +50,8 @@ public class QuellprofilDialogTests : EposBunitContext
         QuellprofilDaten daten, Pruefstand stand,
         Action<int?>? geschlossen = null,
         IReadOnlyList<QuellprofilZeile>? profile = null,
-        bool mitCsv = true)
+        bool mitCsv = true,
+        bool titelAnzeigen = true)
     {
         return Render<QuellprofilDialog>(p =>
         {
@@ -66,6 +67,7 @@ public class QuellprofilDialogTests : EposBunitContext
                     stand.CsvSoll = soll;
                     return Task.FromResult(stand.CsvErgebnis);
                 });
+            if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
     }
@@ -453,6 +455,32 @@ public class QuellprofilDialogTests : EposBunitContext
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.Null(ergebnis);
         Assert.Null(stand.Gespeichert);
+    }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc/Abbrechen: kein Speichern.</summary>
+    [Fact]
+    public void Kreuz_liefert_null()
+    {
+        int? ergebnis = 7;
+        var stand = new Pruefstand();
+        var cut = Zeige(Neu(), stand, id => ergebnis = id);
+
+        Bezeichner(cut, "Profil A");
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.Null(ergebnis);
+        Assert.Null(stand.Gespeichert);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        var cut = Zeige(Neu(), new Pruefstand(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     // ================================================================== Hilfsgriffe

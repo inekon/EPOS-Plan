@@ -56,6 +56,10 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        @if (!_laeuft)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
     </div>
 
     @if (_meldung.Length > 0)
@@ -112,7 +116,8 @@
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschenBeantwortet" />
 
     @* --- Umbenennen als NamensDialog-Ueberlagerung MIT Pruefung (B46) ------ *@
-    <Ueberlagerung Offen="@_umbenennenOffen" Titel="@UmbenennenText" Schliessbar="false">
+    <Ueberlagerung Offen="@_umbenennenOffen" Titel="@UmbenennenText"
+                   Geschlossen="@(() => UmbenennenGeschlossen(null))">
         <KindInhalt>
             <NamensDialog TitelText="" FrageText="@LabelNameNeu"
                           Vorbelegung="@_alterName" MeldungLeer="@MeldungNameLeer"
@@ -568,12 +573,15 @@
 
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
 
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     /// <summary>Esc schließt die OBERSTE Ebene.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_bereinigenFrageOffen || _verwendungFrageOffen || _loeschFrageOffen ||
             _umbenennenOffen || _laeuft) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

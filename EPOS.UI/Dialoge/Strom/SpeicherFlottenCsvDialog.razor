@@ -3,7 +3,12 @@
 @using WindowsFormsApplication1
 
 <div class="epos-dialog" role="dialog" aria-modal="true">
-    <div class="epos-dialog-kopf"><h1 class="epos-dialog-titel">@Titel</h1></div>
+    @* Ein Titel, eine Stelle: dieser Dialog steht ausschliesslich als Ueberlagerung in
+       der StromspeicherAuslegungSeite, und DIE traegt Titel (den Dateinamen) und
+       Schliesskreuz schon (Anwenderentscheid 15.09.2026) - ein eigener Kopf haette
+       zwei Titel und zwei Kreuze uebereinander gezeigt ("Doppeltes Kreuz duerfen
+       nicht sein!"). Ein Hilfeknopf stand hier nie, es faellt also keiner weg. *@
+
     <Herleitungszeile Text="@Datei.Dateiname" />
     <p class="epos-herleitung">@Texte.Hinweis</p>
 

@@ -63,7 +63,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
 
         Assert.Equal(4, cut.FindAll("select").Count);          // Ziel + 3 Quelllisten
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
-        Assert.Equal(2, cut.FindAll("button.epos-knopf").Count);
+        Assert.Equal(2, cut.FindAll(".epos-leiste button.epos-knopf").Count);
         Assert.Equal("BHKW · Betriebskosten", cut.Find(".epos-kontextzeile").TextContent);
     }
 
@@ -78,7 +78,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal("Aus Vorlage/Variante:", texte[1].TextContent);
         Assert.Equal("Aus Projekt/Anlage:", texte[2].TextContent);
         Assert.Equal("OK", cut.Find(".epos-knopf--primaer").TextContent);
-        Assert.Equal("Abbrechen", cut.FindAll("button.epos-knopf")[1].TextContent);
+        Assert.Equal("Abbrechen", cut.FindAll(".epos-leiste button.epos-knopf")[1].TextContent);
     }
 
     /// <summary>
@@ -295,7 +295,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         var cut = Aufbauen(beimSchliessen: e => erfolg = e,
                            uebernehmen: _ => { laeufe++; return new VorlagenUebernahmeAntwort(false, "x"); });
 
-        cut.FindAll("button.epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[1].Click();
 
         Assert.Equal(0, laeufe);
         Assert.False(erfolg);
@@ -314,6 +314,30 @@ public class VorlagenUebernahmeDialogTests : BunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Equal(1, gemeldet);
+    }
+
+    /// <summary>Anwenderentscheid 15.09.2026: Das Kreuz im Kopf wirkt wie Esc/Abbrechen.</summary>
+    [Fact]
+    public void Das_Kreuz_schliesst_wie_Esc()
+    {
+        int gemeldet = 0;
+        var cut = Aufbauen(beimSchliessen: _ => gemeldet++);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, gemeldet);
+    }
+
+    [Fact]
+    public void Ohne_Titeltext_zeigt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<VorlagenUebernahmeDialog>(p => p
+            .Add(x => x.TitelText, "")
+            .Add(x => x.Zielprojekte, Projekte)
+            .Add(x => x.Quellvorlagen, Vorlagen)
+            .Add(x => x.Quellprojekte, Projekte));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
 
     [Fact]

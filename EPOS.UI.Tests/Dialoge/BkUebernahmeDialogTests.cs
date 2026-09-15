@@ -248,6 +248,46 @@ public class BkUebernahmeDialogTests : BunitContext
         Assert.Null(ergebnis);
     }
 
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: meldet <c>null</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_wie_Esc()
+    {
+        BkUebernahmeErgebnis? ergebnis = new BkUebernahmeErgebnis(1);
+        bool gemeldet = false;
+        var cut = Zeige(p => p.Add(x => x.Geschlossen, (BkUebernahmeErgebnis? e) =>
+        {
+            ergebnis = e; gemeldet = true;
+        }));
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.True(gemeldet);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
+    [Fact]
+    public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
+    {
+        // Derselbe Aufbau wie in Zeige(), nur mit leerem TitelText - der Prüfstand
+        // kann ihn dort nicht überschreiben (bunit lehnt einen zweiten Eintrag ab).
+        Func<int, UebernahmeVorschau> lader = id => Moeglich(id);
+
+        var cut = Render<BkUebernahmeDialog>(p =>
+        {
+            p.Add(x => x.TitelText, "");
+            p.Add(x => x.Gegenstand, "Wärmepumpe · Nennleistung");
+            p.Add(x => x.ZielName, "Kessel groß");
+            p.Add(x => x.Quellen, QUELLEN);
+            p.Add(x => x.Lader, lader);
+        });
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+
     /// <summary>A-7 aus B5b: „OK" schreibt sofort, Enter bleibt unbelegt.</summary>
     [Fact]
     public void Enter_ist_nicht_belegt()

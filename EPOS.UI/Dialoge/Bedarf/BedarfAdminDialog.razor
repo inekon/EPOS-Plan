@@ -54,6 +54,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -117,35 +118,36 @@
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
 
     @* --- Ueberlagerung 1: der Stammkopf (W8.1), Modi Bearbeiten und Neu --- *@
-    <Ueberlagerung Offen="@(_typStammGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_typStammGaben is not null)"
                    Titel="@BtnAendernText" Geschlossen="TypStammFertig">
         <KindInhalt>
             @if (_typStammGaben is not null)
             {
-                <TypStammDialog @attributes="_typStammGaben" Geschlossen="_ => TypStammFertig()" />
+                <TypStammDialog @attributes="_typStammGaben" TitelText=""
+                                Geschlossen="_ => TypStammFertig()" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: das Wochen-Stundenprofil (W8.3) ----------------- *@
-    <Ueberlagerung Offen="@_typProfilOffen" Schliessbar="false"
+    <Ueberlagerung Offen="@_typProfilOffen"
                    Titel="@BtnTypAendernText" Geschlossen="() => _typProfilOffen = false">
         <KindInhalt>
             @if (_typProfilOffen && TypProfilGaben is not null)
             {
-                <TypProfilDialog @attributes="TypProfilGaben()"
+                <TypProfilDialog @attributes="TypProfilGaben()" TitelAnzeigen="false"
                                  Geschlossen="_ => _typProfilOffen = false" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 3: der Ergebnisdialog (W8.2) ----------------------- *@
-    <Ueberlagerung Offen="@(_ergebnisGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_ergebnisGaben is not null)"
                    Titel="@BtnGrafikText" Geschlossen="() => _ergebnisGaben = null">
         <KindInhalt>
             @if (_ergebnisGaben is not null)
             {
-                <BedarfErgebnisDialog @attributes="_ergebnisGaben"
+                <BedarfErgebnisDialog @attributes="_ergebnisGaben" TitelAnzeigen="false"
                                       Geschlossen="_ => _ergebnisGaben = null" />
             }
         </KindInhalt>
@@ -523,11 +525,14 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrage || _namensfrage || _typProfilOffen
             || _typStammGaben is not null || _ergebnisGaben is not null) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

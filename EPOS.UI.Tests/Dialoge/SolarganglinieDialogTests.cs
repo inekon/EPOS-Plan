@@ -257,4 +257,15 @@ public class SolarganglinieDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(ergebnis);
     }
+
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: schliesst mit <c>false</c>.</summary>
+    [Fact]
+    public void Kreuz_schliesst_mit_false()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        cut.Find(".epos-dialog-zu").Click();
+        Assert.False(ergebnis);
+    }
 }
