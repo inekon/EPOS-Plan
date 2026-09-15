@@ -6742,3 +6742,53 @@ Zur Wiki-Quelle: Die Fußleiste der Seite „Wirtschaftlichkeit" nannte einen Kn
 „Tarifstruktur…", den es seit Ä16 nicht mehr gibt. Er heißt dort jetzt „Strombezug…",
 mit seiner Bedingung, und daneben steht „BHKW-Wirtschaftlichkeit…" als das, was es nach
 dieser Welle ist: der einzige Weg in jenen Dialog.
+
+## #293 — Der Rückfall setzt an der Zuordnung an, nicht am Wert (15.09.2026, Nachtrag aus dem Merge)
+
+Der Anwenderentscheid lautete:
+
+> „bereits zugewiesen CO-Zahlen nicht überschreiben"
+
+Das verlangt, eine Lücke von einem Wert zu unterscheiden. Die Messung zeigt zuerst,
+dass der heutige Datenstand genau das **nicht kann**.
+
+**Eine gepflegte 0 ist heute nicht von „nie ausgefüllt" zu unterscheiden.** Im Code
+zählt jede der vier Ebenen der Lesekette einen Wert erst ab *größer als 0* als gepflegt;
+eine 0 fällt durch auf die nächste Ebene. Im Schema stehen `energy_project_settings.co2`,
+`energy_carrier.co2` und `Tab_Brennstoff_Stamm.CO2` auf `DEFAULT 0` statt `NULL` — in der
+Testdatenbank finden sich dort 2 / 3 / 2 Zeilen mit exakt 0 und **keine einzige** `NULL`,
+dazu 41 Nullen in `emissionswert.wert`. Projekt 1017 ist das lebende Beispiel: zwei
+Stromträger zugeordnet, beide mit Projektwert 0. Ob das „Ökostrom, bewusst 0" heißen soll
+oder „nie gepflegt", steht nirgends.
+
+**Die Folgerung war, nicht zu raten.** Der Rückfall setzt an der **Trägerzuordnung** an:
+Er greift nur, wenn dem Projekt gar kein Stromträger zugeordnet ist — das ist eine
+Tatsache der Struktur und braucht keine Deutung. Ist ein Träger zugeordnet, gilt sein
+Faktor, auch wenn er 0 ist. Damit stellt sich die 0-Frage im umgesetzten Weg nicht.
+
+`Emissionsquelle.Netzstrom` ist nun die eine Stelle für den Netzstromfaktor: zugeordneter
+Träger über die Lesekette, sonst der Auslieferungsträger des Katalogs, sonst der
+Vorgabewert. `KostenEmissionRechner` liest von dort statt aus einer eigenen Kette — die
+zweite Wahrheit aus #267 ist weg, wo Kosten- und Emissionsseite dieselbe Lage
+verschieden beantwortet haben. Wo der Rückfall greift, nennt eine Herleitungszeile den
+geliehenen Träger.
+
+**Kein einziger Emissionsskalar ändert sich** — gemessen je Projekt, nicht geschätzt:
+1030 (10 Skalare, 0 Abweichungen), 1017 (10, 0), 1045 (5, 0); 1007 und 1046 führen keine.
+1030 und 1017 haben einen Träger zugeordnet, der Rückfall greift dort nicht. Bei 1007,
+1045 und 1046 greift er und trifft auf Träger 60 „Elektrische Energie" mit 435 g/kWh —
+genau die Zahl, mit der diese Projekte vorher als anonymer Vorgabewert gerechnet haben.
+Die Lücke wird gefüllt, die ausgewiesene Zahl bleibt gleich. Das Gate bestätigt es
+unabhängig: Referenzlauf 5/5 byte-gleich.
+
+Zwei Stellen blieben bewusst unberührt. Eine BHKW- oder Kesselzeile ohne Trägerbezug
+lässt `CO2Gesamt` weiterhin auf `null` laufen („—"); ihr den **Strom**träger zu leihen
+wäre fachlich falsch, dafür gibt es den Brennstoff-Rückfall. Und `Emissionsquelle.Fuer`
+samt `StromTraeger` bleibt, wie sie war, damit Simulation, Strompreis und Aufschläge
+unverändert rechnen und der Wächter aus #280 weiter gilt.
+
+Eine Nebenwirkung gehört genannt: Dieselbe Stelle speist die Autarkie-Kachel. In einem
+Projekt ohne zugeordneten Stromträger bekommt sie künftig den Katalogfaktor statt des
+Vorgabewerts. In der Testdatenbank sind beide 435, deshalb kein Unterschied; in einer
+Datenbank mit abweichend gepflegtem Auslieferungsträger verschiebt sie sich um dessen
+Differenz. Das war der Preis dafür, aus zwei Fassungen derselben Frage eine zu machen.
