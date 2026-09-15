@@ -6303,3 +6303,70 @@ steht aus und ist die eigentliche Aufgabe von
 > gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate sept86 grün. Merge `cafa6313`.
 > Konzept „Stromspeicher-Dialoge" Abschnitt 8.9, Doku Mehrspeicher und die beiden Wiki-Quellen
 > (Bedienung, Rechenweg) nachgezogen — noch nicht hochgeladen.
+
+## #286 — Die letzte Maske ohne Abbrechen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 auf den offenen Punkt aus #282: Der
+> `BhkwWirtschaftlichkeitDialog` war die letzte Maske ohne Abbrechen und bekommt denselben
+> Umbau wie die Pufferverwaltung. Wieder gilt: Das ist keine Frage der Beschriftung, sondern
+> des Schreibzeitpunkts. Wer Abbrechen anbietet, darf vorher nichts geschrieben haben.
+>
+> **Die Messung fiel anders aus als bei #282.** Geschrieben wurde **nicht** beim Tippen und
+> nicht beim Verlassen eines Feldes, sondern erst beim Klick auf den nicht schließenden
+> „Speichern"-Knopf: Dialog → Rückruf `Speichern` → `BhkwWirtschaftlichkeitHuelle.Speichern`
+> bzw. `IosProjektQuelle.Speichern` → `KwkgAnlagenCtrl.Speichere` je Anlagenzeile und
+> `WirtschaftlichkeitCtrl.SpeichereParameter`. Kein zweiter Weg, kein Inline-SQL. Der Dialog
+> schrieb aber **jede Eingabe sofort in die vom Wirt hereingereichten Objekte**, und genau
+> die gingen in den Schreibweg. Nach einem Klick auf Speichern gab es kein Zurück — deshalb
+> trug die Leiste „Speichern"/„Schließen" statt OK/Abbrechen, und `SpeichernLeiste.MitAbbrechen`
+> nannte diesen Dialog namentlich als die eine Ausnahme des Hauses.
+>
+> **Am frühen Schreiben hing niemand.** Beide Wirte werfen ihren Gabensatz nach dem
+> Schließen weg und laden neu (`WirtschaftlichkeitSeite.Fertig`, `AppWurzel.ZurueckZurListe`);
+> gebraucht wird allein die Kennzeichnung, ob gespeichert wurde, für die Aufforderung zum
+> Nachrechnen. Anders als bei #282, wo die neue Id aufzulösen war, gab es hier **keine**
+> Abhängigkeit zu behandeln. Einbettungsstellen: zwei, dazu das eigenständige Fenster.
+>
+> **Der Arbeitsstand ist bewusst kein Vollabbild.** `BhkwAnlagenstand` führt je Zeile die elf
+> gepflegten Felder, `BhkwVorgabenstand` die 17 Projektfelder — nicht die Kern-Objekte im
+> Ganzen. Der Grund ist die Fehlerquelle, die ein Vollabbild mitbringt: Ein beim Kopieren
+> vergessenes Feld ginge beim Schreiben verloren. Was der Dialog nicht pflegt, bleibt in der
+> geladenen Zeile stehen. Anlagentabelle, Warn- und Herleitungszeilen und der Knopf
+> „Vorschlag übernehmen" lesen und schreiben denselben Stand, damit Tabelle und Felder nicht
+> auseinanderlaufen.
+>
+> **OK schreibt**, in der Reihenfolge Anlagenzeilen (Listenreihenfolge) vor Projektvorgaben —
+> so steht der Projektwert nie vor den Zeilen, die ihn überschreiben. Scheitert ein Schritt,
+> bleibt der Dialog offen und nennt die Zahl der gescheiterten Sätze im bisherigen Wortlaut;
+> Geschriebenes wird bei einem zweiten OK nicht wiederholt.
+>
+> **Dafür musste die Schreibnaht aufgetrennt werden.** `Speichern` als `Func<int>` sagte
+> nicht, welcher Schritt durch war; an seine Stelle treten `SpeichereAnlage` und
+> `SpeichereVorgaben`, beide mit Rückgabe. `BhkwDialogDaten` und beide Hüllen sind
+> nachgezogen, die Fehlerklammer liegt jetzt in den Hüllen. Ohne diesen Schnitt wäre „nicht
+> zweimal schreiben" nicht einlösbar gewesen.
+>
+> **Abbrechen, ✕ und Esc** verlassen ohne einen Schreibzugriff — und ohne dass sich ein
+> hereingereichtes Objekt geändert hätte. Der OK-Knopf heißt „Speichern": Hier stimmt es, er
+> schreibt und schließt. In #282 blieb der mittlere Knopf bei „Anlegen"/„Übernehmen", weil
+> „Speichern" dort eine Behauptung gewesen wäre, die nicht zutrifft.
+>
+> **Der Sprung nimmt jetzt den OK-Weg.** Die zwei Sprungknöpfe schreiben und schließen. Ohne
+> das wären Eingaben mit dem Sprung verloren: Die Hülle lädt beim Zurückbringen neu, und
+> einen nicht schließenden Speichern-Knopf gibt es nicht mehr. Ein Hinweis sagt es in beiden
+> Sprachen (siehe Statusdatei „Nach #286").
+>
+> **Eine Wache gegen den Rückfall.** `FussleisteAusgaengeTests` lässt keine `SpeichernLeiste`
+> im Haus mit „Speichern", aber ohne „Abbrechen" zu — genau die Paarung, bei der ein nicht
+> schließender Knopf ohne Verwerfen dasteht. Sie prüft jede Razor-Datei, nicht diesen Dialog,
+> und ist am eingefrorenen Bestand von vorher rot (Gegenprobe nach Lehre W6-B-1). Ein reiner
+> Ansichtsdialog mit nur „Schließen" bleibt erlaubt: Dort gibt es nichts zu verwerfen.
+> `EPOS.UI/CLAUDE.md` hält die Regel jetzt ohne Ausnahme.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); 136 Fälle der betroffenen Klassen dreimal grün ohne Flattern; voller Kern-Lauf
+> 8 129 grün; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate
+> sept87 grün. Kein Rechenweg berührt, kein SQL angefasst. Merge `3f2c70b9`.
+>
+> **Offen:** der Sprung-Entscheid und drei Befunde aus derselben Messung (siehe Statusdatei
+> „Nach #286").
