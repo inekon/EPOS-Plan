@@ -895,14 +895,15 @@ Gerät nicht für einen Treffer gehalten wird.
 Die Abweichung misst je Größe, wie weit das Gerät '''außerhalb''' seines Bereichs liegt, bezogen auf
 die Mitte des Bereichs; beide Anteile werden addiert:
 
-: <math>\displaystyle \delta(x) = \frac{\max(0,\; x_{\min} - x) + \max(0,\; x - x_{\max})}{(x_{\min} + x_{\max})/2}</math> &nbsp;&nbsp;(47)
+: <math>\displaystyle d_{x} = \frac{\max(0,\; x_{\min} - x) + \max(0,\; x - x_{\max})}{(x_{\min} + x_{\max}) / 2}</math> &nbsp;&nbsp;(47)
+:: <math>d_{x}</math> – normierter Abstand der Größe <math>x</math> von ihrem Bereich [-]
 :: <math>x</math> – Kapazität [kWh] beziehungsweise Entladeleistung [kW] des Geräts
 :: <math>x_{\min}, x_{\max}</math> – Unter- und Obergrenze des zugehörigen Bereichs
 
-: <math>\displaystyle d = \delta(E) + \delta(P)</math> &nbsp;&nbsp;(48)
+: <math>\displaystyle d = d_{E} + d_{P}</math> &nbsp;&nbsp;(48)
 :: <math>d</math> – Abweichung des Geräts von der Vorgabe [-]; <math>d = 0</math> heißt Treffer
-:: <math>E</math> – Kapazität des Geräts [kWh]
-:: <math>P</math> – Entladeleistung des Geräts [kW]
+:: <math>d_{E}</math> – Abstand der Kapazität nach (47)
+:: <math>d_{P}</math> – Abstand der Entladeleistung nach (47)
 
 Bezogen wird auf die '''Bereichsmitte''', weil Kilowattstunden und Kilowatt sonst nicht vergleichbar
 wären und weil ein Bereich zu einem Punkt zusammenfallen darf — seine Breite wäre dort null.

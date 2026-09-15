@@ -871,7 +871,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         var neue = new List<FlottenEinheit>(kandidat.Einheiten?.Count ?? 0);
         foreach (FlottenKandidatEinheit teil in kandidat.Einheiten ?? new List<FlottenKandidatEinheit>())
         {
-            FlottenEinheit einheit = SpeicherAuslegungKopie.Von(Einheitenvorlage(ziel, teil.Id))
+            FlottenEinheit einheit = SpeicherAuslegungKopie.Von(
+                                         Einheitenvorlage(ziel, teil.Id, kandidat.Quellkennung))
                                      ?? new FlottenEinheit();
             einheit.Id = teil.Id;
             if (string.IsNullOrWhiteSpace(einheit.Name)) einheit.Name = teil.Id;
@@ -892,11 +893,37 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// Arbeitsstands, sonst die Vorlage der ersten aktiven Suchachse, sonst die erste
     /// Einheit. <c>null</c>, wenn es nichts davon gibt.
     /// </summary>
-    private static FlottenEinheit Einheitenvorlage(FlottenStudieKonfiguration stand, string id)
+    /// <summary>
+    /// Die Vorlage EINER zurückgebildeten Einheit — in dieser Reihenfolge: die Einheit
+    /// gleicher Kennung im Arbeitsstand, das GERÄT des Kandidaten, die Vorlage der ersten
+    /// aktiven Suchachse, die erste Einheit des Arbeitsstands.
+    /// </summary>
+    /// <remarks>
+    /// <b>Das Gerät steht vor der Achsenvorlage.</b> Unter „Größe suchen" bringt jeder
+    /// Kandidat seine eigenen Kennwerte mit — Wirkungsgrade, SoC-Band, Hilfsverbrauch,
+    /// Kostensätze. Käme die Vorlage aus der Achse, übernähme der Anwender ein Gerät mit
+    /// den Kennwerten eines anderen: dieselben Zahlen im Bild, andere im nächsten Lauf.
+    /// Gefunden wird es über die <see cref="FlottenKandidatZusammenfassung.Quellkennung"/>
+    /// im Gerätebestand der Suchachsen.
+    /// </remarks>
+    /// <param name="stand">Der Arbeitsstand.</param>
+    /// <param name="id">Die Kennung der Einheit im Kandidaten.</param>
+    /// <param name="quellkennung">Die Herkunft des Geräts; leer bei Stückzahlsuche und reiner Bewertung.</param>
+    private static FlottenEinheit Einheitenvorlage(FlottenStudieKonfiguration stand, string id,
+                                                   string quellkennung)
     {
         FlottenEinheit gleich = stand.Einheiten
             .FirstOrDefault(x => string.Equals(x.Id, id, StringComparison.Ordinal));
         if (gleich != null) return gleich;
+
+        if (!string.IsNullOrWhiteSpace(quellkennung) && stand.Auslegung?.Achsen is { } achsen)
+            foreach (FlottenAuslegungsAchse a in achsen)
+            {
+                FlottenGeraetekandidat treffer = a?.Geraete?.FirstOrDefault(
+                    g => g?.Geraet != null
+                      && string.Equals(g.Quellkennung, quellkennung, StringComparison.Ordinal));
+                if (treffer != null) return treffer.Geraet;
+            }
 
         FlottenEinheit vorlage = stand.Auslegung?.Achsen?
             .FirstOrDefault(a => a.Aktiv && a.Vorlage != null)?.Vorlage;

@@ -987,6 +987,54 @@ namespace EPOS.Kern.Tests
             Assert.Equal(20.0, einheit.KapazitaetKWh, 9);
         }
 
+        /// <summary>
+        /// <b>Ein übernommener Kandidat bringt die Kennwerte SEINES Geräts mit.</b> Unter
+        /// „Größe suchen" führt jeder Kandidat ein eigenes Gerät; käme die Vorlage aus der
+        /// Achse, übernähme der Anwender ein Gerät mit den Kennwerten eines anderen —
+        /// dieselben Zahlen im Bild, andere im nächsten Lauf.
+        /// </summary>
+        [Fact]
+        public void Ein_uebernommener_Kandidat_traegt_die_Kennwerte_seines_Geraets()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-30-0,5");
+            kandidat.Quellkennung = "G30";
+            kandidat.Einheiten[0].Id = "A-A1-N1";
+
+            FlottenStudieKonfiguration stand = Arbeitsstand();
+            stand.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+            {
+                Aktiv = true,
+                Vorlage = new FlottenEinheit { Id = "A", Name = "Achsenvorlage",
+                                               Ladewirkungsgrad = 0.5, SocMin = 0.25 },
+                Geraete =
+                {
+                    new FlottenGeraetekandidat
+                    {
+                        Quellkennung = "G30",
+                        Geraet = new FlottenEinheit
+                        {
+                            Id = "G30", Name = "Speicher 30",
+                            KapazitaetKWh = 30, LadeleistungKw = 15, EntladeleistungKw = 15,
+                            Ladewirkungsgrad = 0.88, Entladewirkungsgrad = 0.87,
+                            SocMin = 0.05, SocMax = 0.95
+                        }
+                    }
+                }
+            });
+
+            FlottenStudieKonfiguration neu =
+                SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(ergebnis, stand, kandidat);
+
+            FlottenEinheit einheit = Assert.Single(neu.Einheiten);
+            Assert.Equal("Speicher 30", einheit.Name);
+            Assert.Equal(0.88, einheit.Ladewirkungsgrad, 9);      // vom GERAET
+            Assert.Equal(0.87, einheit.Entladewirkungsgrad, 9);
+            Assert.Equal(0.05, einheit.SocMin, 9);
+            Assert.Equal(30.0, einheit.KapazitaetKWh, 9);         // die Groesse des Kandidaten
+        }
+
         /// <summary>Ohne Kandidat gibt es nichts zu übernehmen.</summary>
         [Fact]
         public void Ohne_Kandidat_kommt_keine_Konfiguration()
