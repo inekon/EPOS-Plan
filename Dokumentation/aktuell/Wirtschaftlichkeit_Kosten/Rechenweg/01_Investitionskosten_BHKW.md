@@ -60,8 +60,10 @@ Zuschuss — NACH der Positionsschleife
 Mengenquellen der direkten Arten: `EUR_PRO_KW_ELEKTRISCH` → `Tab_BHKW.Pel` · `EUR_PRO_KW_LEISTUNG`
 → `Tab_Heizkessel.Ptherm` · `EUR_PRO_KW_HEIZLEISTUNG` → `Tab_WP.Nennleistung` · `EUR_PRO_KWP` →
 `Tab_Energieanlagen.PV_Leistung` (⚠ I-1, siehe `03`) · `EUR_PRO_KWH_KAPAZITAET` →
-`Tab_Stromspeicher.Energie` · `EUR_PRO_M2_KOLLEKTOR` → Aperturfläche × Modulanzahl. Pufferspeicher
-liefert immer null (ohne Temperaturpaar keine belastbare kWh).
+`Tab_Stromspeicher.Energie` · `EUR_PRO_M2_KOLLEKTOR` → Aperturfläche × Modulanzahl ·
+`EUR_PRO_KW_LEISTUNG` am Pufferspeicher → `Tab_Pufferspeicher.Gesamtvolumen` [l], der Satz ist
+damit ein €/Ltr.-Satz. `EUR_PRO_KWH_KAPAZITAET` liefert am Pufferspeicher null: Ohne
+Temperaturpaar gibt es dort keine belastbare kWh.
 
 Zuschuss: Kennzeichen `Kostenart = "ZUSCHUSS"` (getrimmt, ohne Groß-/Kleinschreibung), Erfassung
 positiv. Zuschusszeilen erzeugen keine Ersatzbeschaffung, keinen Restwert und stehen in keiner
