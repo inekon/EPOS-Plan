@@ -263,7 +263,11 @@ def main():
         print("KlimazonenPfade.cs weicht von der SVG ab - erzeugen.py ohne --pruefen laufen lassen.")
         return 1
 
-    with open(ZIEL, "w", encoding="utf-8", newline="\n") as f:
+    # utf-8-sig: mit BOM. Die .editorconfig verlangt fuer *.cs utf-8-bom; ein
+    # Erzeuger, der ohne BOM schreibt, nimmt es der Datei beim naechsten Lauf
+    # wieder weg (Auftrag #290). Der Pruefzweig liest mit utf-8-sig und
+    # vergleicht deshalb unveraendert gegen den BOM-freien erzeugten Text.
+    with open(ZIEL, "w", encoding="utf-8-sig", newline="\n") as f:
         f.write(text)
 
     laengen = [len(p) for p in zuordnung]
