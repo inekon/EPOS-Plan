@@ -6437,3 +6437,92 @@ steht aus und ist die eigentliche Aufgabe von
 > Basis bleibt. Merge `4cf8efe1`.
 >
 > **Offen:** ein flatterhafter Fremdtest und eine Datei ohne BOM (siehe Statusdatei „Nach #287").
+
+## #288 — Zwei Wege werden einer, eine Betriebsart fällt (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderwunsch und Entscheid.** „‚Nachtnutzung' herausnehmen und nicht mehr verwenden."
+> Die Messung ergab, dass der Name zwei verschiedene Dinge trägt: eine **tote**
+> Auslegungsstrategie des Einzelspeicher-Optimierers und eine **lebende** Berechnungsart des
+> Simulationslaufs (`StromspeicherSimCtrl.BaueStrategie`, Klappliste im Ergebnis, gespeichert
+> in `Tab_StromspeicherVariante.Berechnungsart`). Auf die Rückfrage, ob beides oder nur das
+> tote Stück fallen soll: „(a) Beides raus". Dazu der offene Punkt aus #281 — die Gegenprobe
+> bestätigte, dass `SpeicherOptimierungCtrl.Rechnen` außerhalb der Tests **keinen Aufrufer**
+> hat: Die einzige Produktionsreferenz auf die Klasse war `Vorbelegung`, gezogen aus
+> `SpeicherAuslegungCtrl.cs:119`; alle übrigen Treffer waren Kommentare. Ebenso ohne
+> Produktionsaufrufer: `StromspeicherSimCtrl.StarteOptimierung` und `.FuehreOptimierungAus`.
+>
+> **Teil 1 — Nachtnutzung.** Entfernt: `SpeicherEngine/Nachtnutzung.cs` (350 Zeilen),
+> `NachtnutzungTests.cs` (757 Zeilen, 17 Methoden), `OptimiererStrategie.Nachtnutzung`, der
+> Zweig in `BaueStrategie`, der Klapplisteneintrag des Simulationsergebnisses und drei
+> Ressourcenschlüssel in beiden Sprachen. Die drei Vergleichslauf-Texte bleiben — sie tragen
+> die Vergleichsspalte der Preissteuerung.
+>
+> Ein gespeicherter Stand wird **benannt** umgesetzt statt still: `SpeicherAltstand` trägt den
+> entfallenen Persistenzwert und die Regel an einer Stelle (Muster
+> `FlottenAltstand.Normalisiere`). Gesagt wird es zweimal — im Protokoll des Laufs
+> (`SP_ALTSTAND_BERECHNUNGSART`) und in jedem Anzeigetext
+> (`SP_BERECHNUNG_ANZEIGE_ALTSTAND`, `SpeicherAnzeigeCtrl.BerechnungsartText`). **Kein
+> Schemaschritt, Testdatenbank nicht angefasst**; der gespeicherte Text wird auch nicht
+> überschrieben. Alle 13 Zeilen der Testdatenbank stehen ohnehin auf Dauernutzung — kein
+> Einfluss auf den Referenzlauf, keine neue Basis.
+>
+> **Eine Berichtigung, die im Auftrag nicht stand:** Der Excel-Kompatibilitätsmodus hing an
+> der Nachtnutzung (`SimulationErgebnisHuelle.cs:721`, `SpeicherParameterBlock.razor:279`),
+> obwohl er nach Fachkonzept 5.2 allein zur Dauernutzung gehört — nur sie hat eine
+> Excel-Vorlage. Ohne diese Berichtigung wäre der Schalter dauerhaft gesperrt gewesen. Er
+> hängt jetzt an der Dauernutzung.
+>
+> **Teil 2 — der tote Weg.** Entfernter Produktionscode: `SpeicherOptimierer.cs` (555),
+> `OptimiererOptionen.cs` (419), `OptimiererErgebnis.cs` (444), `SpeicherOptimierungCtrl.cs`
+> (1 619) = **3 037 Zeilen**, dazu `StarteOptimierung` und `FuehreOptimierungAus`; acht
+> Testdateien mit **3 095 Zeilen**.
+>
+> Nach dem Löschen bestand die Klasse nur noch aus dem gespeicherten Stand und den
+> Leistungspreis-Quellen — der Name stimmte nicht mehr. Sie heißt jetzt
+> **`SpeicherAuslegungVorgabenCtrl`** (drei Methoden: `Vorbelegung`, `Leistungspreisquellen`,
+> `TarifQuelle`). Die drei DTO-Typen behalten ihre Namen: Sie sind der **serialisierte** Stand
+> von `Tab_SpeicherAuslegung` und stehen an über achtzig Stellen; ihr Umbenennen ist ein
+> eigener Schritt. `SpeicherOptimierungEingaben` verliert die zwölf Felder des
+> Einzelspeicher-Suchraums samt zwei Aufzählungen, die sonst als Zombies weitergelebt hätten;
+> ein älterer JSON-Stand trägt sie noch, der Leser überliest sie
+> (`UnmappedMemberHandling.Skip`) — **kein Schemaschritt**.
+>
+> Nachgezogen: `ParallelitaetWacheTests` (Belegdatei), `KulturweitergabeTests` (der Beleg am
+> echten Rechenweg fällt — die `SpeicherEngine` führt jetzt überhaupt keine
+> Rechenparallelität mehr; die synthetischen Belege bleiben), **73 verwaiste `OPT_*`-Ressourcen**
+> in beiden Sprachen, der KI-Aktionskatalog, vier Konzeptpapiere, die Hilfeseite
+> `Berechnung/Stromspeicher.wiki` und die offene Statuszeile „Nach #281". Berichtigt: Der
+> Kopfkommentar von `SpeicherBetriebsbild` stellte die Abhängigkeit umgekehrt dar.
+>
+> **Die Bilderzahl sinkt nicht — sie bleibt 64.** `ChartRenderer.Optimierungsraster` und
+> `.Schnittkurve` haben weiterhin Aufrufer: die Größen- und Stückzahlsicht der Flotte. Nur
+> `RasterCsvText` ist mit dem Controller gefallen, und die ChartProben kennen es nicht.
+>
+> **Teil 3 — die Flottenlücke.** `FlottenOptimierer.BaueGeraeteeinheiten` ersetzte die Vorlage
+> bisher vollständig durch das Gerät. Die eine Entscheidung (`FlottenGeraeteuebernahme` in
+> `SpeicherEngine/FlottenModel.cs`): Was der Gerätesatz **führt**, kommt vom Gerät; was der
+> Anwender in Schritt 1 gesetzt hat, bleibt seins. Kapazität und Lade-/Entladeleistung immer
+> vom Gerät (Gegenstand der Suche); Wirkungsgrade, SoC-Band, Hilfsverbrauch und
+> Investitionssätze vom Gerät, **wenn sein Satz sie führt**; Peak-Reserve, Grenzverschleiß,
+> Betriebs- und Durchsatzkosten, Ersatz, Restwert und Alterungskurve **immer vom Anwender** —
+> ein Gerätesatz führt sie nie.
+>
+> Was „geführt" heißt, entscheidet der **Kern** (`FlottenGeraeteuebernahme.Gefuehrt`, gesetzt
+> in `SpeicherFlottenStudieCtrl.Geraetekandidaten`): brauchbar **und** nicht genau auf der
+> neutralen Vorgabe — nach `LueckenFuellen` ist an der Zahl allein nicht mehr zu sehen, woher
+> sie kommt. Die Engine rät nichts. Sichtbar an einer Stelle: neue Spalte „Herleitung" der
+> Kandidatentabelle, eine Zeile je Kandidat („Gerät: … · eigene Eingabe: …"), leer, wo kein
+> Gerät dahintersteht oder mehrere Achsen mehrere Geräte liefern. Nebenbefund erledigt:
+> `SpeicherFlottenEditor.razor` zieht die vier neutralen Vorgaben jetzt aus
+> `FlottenGeraetevorgaben`.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); Tests grün in beiden Kulturen — die Laufzahlen sinken um **125 Fälle** mit dem
+> entfernten Weg, davon 6 gerettet; ChartProben 64 Bilder, 0 Verstöße; SqlDialektPrüfer 0
+> Fundstellen von 1 407; Referenzlauf 1030/1007/1017/1045/1046 gegen
+> `2026-09-11_R7_Speicherflotte` **byte-gleich**; Gate a288 grün. Entfernt: rund 3 390 Zeilen
+> Produktionscode und 3 852 Zeilen Testcode. Keine Einfrierregel berührt, die Basis bleibt.
+> Merge `4372f51a`.
+>
+> **Offen:** die Umbenennung der drei DTO-Typen als eigener Schritt (siehe Statusdatei
+> „Nach #288").
