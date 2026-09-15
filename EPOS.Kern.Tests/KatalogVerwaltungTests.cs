@@ -1166,8 +1166,11 @@ namespace EPOS.Kern.Tests
             {
                 "PSPK_TITEL", "PSPK_GRP_BEZEICHNUNG", "PSPK_LBL_NAME", "PSPK_LBL_HERSTELLER",
                 "PSPK_LBL_SPEICHERTYP", "PSPK_GRP_TECHNIK", "PSPK_LBL_VERLUSTE",
-                "PSPK_LBL_VOLUMEN", "PSPK_GRP_KOSTEN", "PSPK_LBL_INVEST",
-                "PSPK_FELD_VOLUMEN", "PSPK_FELD_VERLUSTE", "PSPK_FELD_INVEST",
+                "PSPK_LBL_VOLUMEN", "PSPK_LBL_INVEST",
+                "PSPK_FELD_VOLUMEN", "PSPK_FELD_VERLUSTE",
+                // PSPK_GRP_KOSTEN und PSPK_FELD_INVEST sind mit der Kostengruppe des
+                // Editors gefallen (15.09.2026); PSPK_LBL_INVEST bleibt, weil
+                // ParameterVerwendung die Investitionskosten weiterhin damit beschriftet.
                 "PSPK_TYP_SOLAR", "PSPK_TYP_PUFFER", "PSPK_TYP_KOMBI", "PSPK_MSG_SCHUTZ",
                 "BHKWK_MSG_SCHUTZ", "MODK_MSG_SCHUTZ", "MODK_MSG_TYP_FEHLT",
                 "KBROW_BTN_NEU", "KBROW_BTN_BEARBEITEN", "KBROW_BTN_LOESCHEN",

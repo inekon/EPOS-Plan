@@ -1128,9 +1128,6 @@
   <data name="PEAK_MSG_SUCHE" xml:space="preserve">
     <value>Die kleinste haltbare Zielschwelle wird gesucht …</value>
   </data>
-  <data name="PSPK_FELD_INVEST" xml:space="preserve">
-    <value>Investitionskosten</value>
-  </data>
   <data name="PSPK_FELD_VERLUSTE" xml:space="preserve">
     <value>Betriebsbereitschaftsverluste</value>
   </data>
@@ -1139,9 +1136,6 @@
   </data>
   <data name="PSPK_GRP_BEZEICHNUNG" xml:space="preserve">
     <value>Bezeichnung</value>
-  </data>
-  <data name="PSPK_GRP_KOSTEN" xml:space="preserve">
-    <value>Eingabedaten zur Berechnung der Kosten</value>
   </data>
   <data name="PSPK_GRP_TECHNIK" xml:space="preserve">
     <value>Technische Daten</value>
@@ -8335,57 +8329,6 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   <data name="KI_DLG_HK_BB_VERLUST_ERL" xml:space="preserve">
     <value>Anteil der Nennleistung, der allein durch das Bereithalten des Kessels verloren geht.</value>
   </data>
-  <data name="KI_DLG_HK_INVEST_NAME" xml:space="preserve">
-    <value>Investitionskosten</value>
-  </data>
-  <data name="KI_DLG_HK_INVEST_ERL" xml:space="preserve">
-    <value>Anschaffungskosten des Kessels; sie gehen in die Wirtschaftlichkeitsrechnung ein.</value>
-  </data>
-  <data name="KI_DLG_HK_WARTUNG_ERL" xml:space="preserve">
-    <value>Wartungsaufwand des Kessels; die Bezugsgröße (Jahresbetrag oder je Leistungseinheit) wählt die Einheitenliste daneben.</value>
-  </data>
-  <data name="KI_DLG_HK_RAUMBEDARF_NAME" xml:space="preserve">
-    <value>Raumbedarf</value>
-  </data>
-  <data name="KI_DLG_HK_RAUMBEDARF_ERL" xml:space="preserve">
-    <value>Aufstellvolumen des Kessels im Heizraum.</value>
-  </data>
-  <data name="KI_DLG_HK_NUTZUNGSDAUER_NAME" xml:space="preserve">
-    <value>Nutzungsdauer</value>
-  </data>
-  <data name="KI_DLG_HK_NUTZUNGSDAUER_ERL" xml:space="preserve">
-    <value>Kalkulatorische Lebensdauer; sie bestimmt den Abschreibungszeitraum.</value>
-  </data>
-  <data name="KI_DLG_HK_CO2_NAME" xml:space="preserve">
-    <value>CO2</value>
-  </data>
-  <data name="KI_DLG_HK_CO2_ERL" xml:space="preserve">
-    <value>Kohlendioxid-Emission je erzeugter Wärmemenge; der Knopf „CO2 BEHG“ leitet sie aus dem gewählten Energieträger ab.</value>
-  </data>
-  <data name="KI_DLG_HK_SO2_NAME" xml:space="preserve">
-    <value>SO2</value>
-  </data>
-  <data name="KI_DLG_HK_SO2_ERL" xml:space="preserve">
-    <value>Schwefeldioxid-Emission je erzeugter Wärmemenge.</value>
-  </data>
-  <data name="KI_DLG_HK_NOX_NAME" xml:space="preserve">
-    <value>NOx</value>
-  </data>
-  <data name="KI_DLG_HK_NOX_ERL" xml:space="preserve">
-    <value>Stickoxid-Emission je erzeugter Wärmemenge.</value>
-  </data>
-  <data name="KI_DLG_HK_CO_NAME" xml:space="preserve">
-    <value>CO</value>
-  </data>
-  <data name="KI_DLG_HK_CO_ERL" xml:space="preserve">
-    <value>Kohlenmonoxid-Emission je erzeugter Wärmemenge.</value>
-  </data>
-  <data name="KI_DLG_HK_STAUB_NAME" xml:space="preserve">
-    <value>Staub</value>
-  </data>
-  <data name="KI_DLG_HK_STAUB_ERL" xml:space="preserve">
-    <value>Staubemission je erzeugter Wärmemenge.</value>
-  </data>
   <data name="KI_DLG_HK_VORLAUF_NAME" xml:space="preserve">
     <value>Vorlauf</value>
   </data>
@@ -11229,59 +11172,20 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="HZKK_FELD_RUECKLAUF" xml:space="preserve">
     <value>Rücklauf</value>
   </data>
-  <data name="HZKK_GRP_KOSTEN" xml:space="preserve">
-    <value>Eingabedaten zur Berechnung der Kosten</value>
-  </data>
   <data name="HZKK_LBL_INVEST" xml:space="preserve">
     <value>Investitionskosten:</value>
-  </data>
-  <data name="HZKK_FELD_INVEST" xml:space="preserve">
-    <value>Investitionskosten</value>
   </data>
   <data name="HZKK_LBL_RAUMBEDARF" xml:space="preserve">
     <value>Raumbedarf:</value>
   </data>
-  <data name="HZKK_FELD_RAUMBEDARF" xml:space="preserve">
-    <value>Raumbedarf</value>
-  </data>
   <data name="HZKK_LBL_NUTZUNGSDAUER" xml:space="preserve">
     <value>Nutzungsdauer:</value>
-  </data>
-  <data name="HZKK_FELD_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Nutzungsdauer</value>
   </data>
   <data name="HZKK_EINHEIT_JAHRE" xml:space="preserve">
     <value>Jahre</value>
   </data>
-  <data name="HZKK_GRP_BEHG" xml:space="preserve">
-    <value>Emissionen nach BEHG-V</value>
-  </data>
-  <data name="HZKK_BEHG_ZEILE" xml:space="preserve">
-    <value>für Heizzwecke in t CO2 / GJ</value>
-  </data>
-  <data name="HZKK_BEHG_OEL" xml:space="preserve">
-    <value>Heizöl: 0,0808</value>
-  </data>
-  <data name="HZKK_BEHG_FLUESSIGGAS" xml:space="preserve">
-    <value>Flüssiggas: 0,0663</value>
-  </data>
-  <data name="HZKK_BEHG_ERDGAS" xml:space="preserve">
-    <value>Erdgas: 0,056</value>
-  </data>
-  <data name="HZKK_BTN_CO2" xml:space="preserve">
-    <value>CO2 BEHG</value>
-  </data>
-  <data name="HZKK_EMISSION_INFO" xml:space="preserve">
-    <value>Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog.</value>
-  </data>
-  <data name="HZKK_GRP_EMISSIONEN" xml:space="preserve">
-    <value>Emissionsfaktoren bezogen auf den Brennstoffverbrauch</value>
-  </data>
   <data name="HZKK_LBL_STAUB" xml:space="preserve">
     <value>Staub:</value>
-  </data>
-  <data name="HZKK_FELD_STAUB" xml:space="preserve">
-    <value>Staub</value>
   </data>
   <data name="HZKK_BTN_UEBERSCHREIBEN" xml:space="preserve">
     <value>Überschreiben</value>
@@ -11376,38 +11280,20 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHKWK_FELD_RUECKLAUF" xml:space="preserve">
     <value>Rücklauftemperatur</value>
   </data>
-  <data name="BHKWK_GRP_KOSTEN" xml:space="preserve">
-    <value>Eingabedaten zur Berechnung der Kosten</value>
-  </data>
   <data name="BHKWK_LBL_MODUL" xml:space="preserve">
     <value>Modul:</value>
-  </data>
-  <data name="BHKWK_FELD_MODUL" xml:space="preserve">
-    <value>Kosten Modul</value>
   </data>
   <data name="BHKWK_LBL_MONTAGE" xml:space="preserve">
     <value>Montage und Inbetriebnahme:</value>
   </data>
-  <data name="BHKWK_FELD_MONTAGE" xml:space="preserve">
-    <value>Kosten Montage und Inbetriebnahme</value>
-  </data>
   <data name="BHKWK_LBL_LIEFERUNG" xml:space="preserve">
     <value>Lieferung (50 km Umkreis):</value>
-  </data>
-  <data name="BHKWK_FELD_LIEFERUNG" xml:space="preserve">
-    <value>Kosten Lieferung</value>
   </data>
   <data name="BHKWK_LBL_SCHALLSCHUTZ" xml:space="preserve">
     <value>Schallschutzhaube:</value>
   </data>
-  <data name="BHKWK_FELD_SCHALLSCHUTZ" xml:space="preserve">
-    <value>Kosten Schallschutzhaube</value>
-  </data>
   <data name="BHKWK_LBL_ABGASREINIGUNG" xml:space="preserve">
     <value>Abgasreinigung, z. B. Kat:</value>
-  </data>
-  <data name="BHKWK_FELD_ABGASREINIGUNG" xml:space="preserve">
-    <value>Kosten Abgasreinigung</value>
   </data>
   <data name="BHKWK_LBL_INVEST" xml:space="preserve">
     <value>Investition je kW elektrisch:</value>
@@ -11421,35 +11307,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHKWK_LBL_RAUMBEDARF" xml:space="preserve">
     <value>Raumbedarf:</value>
   </data>
-  <data name="BHKWK_FELD_RAUMBEDARF" xml:space="preserve">
-    <value>Raumbedarf</value>
-  </data>
   <data name="BHKWK_LBL_WARTUNG" xml:space="preserve">
     <value>Wartungskosten:</value>
   </data>
-  <data name="BHKWK_FELD_WARTUNG" xml:space="preserve">
-    <value>Wartungskosten</value>
-  </data>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
     <value>Nutzungsdauer:</value>
-  </data>
-  <data name="BHKWK_FELD_NUTZUNGSDAUER" xml:space="preserve">
-    <value>Nutzungsdauer</value>
-  </data>
-  <data name="BHKWK_EINHEIT_JAHRE" xml:space="preserve">
-    <value>Jahre</value>
-  </data>
-  <data name="BHKWK_GRP_BEHG" xml:space="preserve">
-    <value>Emissionen nach BEHG-V</value>
-  </data>
-  <data name="BHKWK_FELD_STAUB" xml:space="preserve">
-    <value>Staub-Emission</value>
-  </data>
-  <data name="BHKWK_LBL_SCR" xml:space="preserve">
-    <value>mit SCR</value>
-  </data>
-  <data name="BHKWK_BTN_EINTRAGEN" xml:space="preserve">
-    <value>Eintragen</value>
   </data>
   <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
     <value>Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
@@ -11814,9 +11676,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="PVD_GRP_MODUL" xml:space="preserve">
     <value>Modul Eigenschaften:</value>
-  </data>
-  <data name="PVD_AUFKLAPP_PARAMETER" xml:space="preserve">
-    <value>Alle Modulparameter anzeigen</value>
   </data>
   <data name="PVD_LBL_HERSTELLER" xml:space="preserve">
     <value>Hersteller:</value>

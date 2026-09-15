@@ -132,8 +132,13 @@ namespace WindowsFormsApplication1
                 // (Anwenderentscheid 15.09.2026). Die Gruppen sind aus dem Katalogeditor
                 // ersatzlos entfallen, also fallen auch ihre Schlüssel — ein Schlüssel
                 // ohne [Parameter] bricht sonst beim ersten Zeichnen (ParametersatzTests).
-                // Die Ressourcenschlüssel selbst bleiben in der .resx: Dieselben Texte
-                // beschriften die Felder des Aufklappers über das Katalogbrowser-Profil.
+                // Die BHKWK_LBL_* bleiben in der .resx: Dieselben Texte beschriften die
+                // Felder des Aufklappers über das Katalogbrowser-Profil. Die Gruppen-
+                // und Feldnamen der drei Blöcke (BHKWK_GRP_KOSTEN, BHKWK_GRP_BEHG,
+                // BHKWK_FELD_MODUL/LIEFERUNG/MONTAGE/ABGASREINIGUNG/SCHALLSCHUTZ/
+                // RAUMBEDARF/WARTUNG/NUTZUNGSDAUER/STAUB, BHKWK_EINHEIT_JAHRE,
+                // BHKWK_BTN_EINTRAGEN, BHKWK_LBL_SCR) hatten danach keinen Leser mehr
+                // und sind aus beiden .resx gefallen.
 
                 ["BtnUeberschreibenText"] = Text_("HZKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("HZKK_BTN_SPEICHERN_UNTER", "Speichern unter"),

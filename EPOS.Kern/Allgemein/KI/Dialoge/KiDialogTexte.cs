@@ -18,7 +18,7 @@
     /// </para>
     /// <para>
     /// <b>Warum die Einheiten hier als Konstanten stehen und nicht in der Ressource.</b>
-    /// „kW", „%", „€", „m³", „°C", „l", „°" und „g / MWh" sind Einheitenzeichen und keine
+    /// „kW", „%", „€", „°C", „l" und „°" sind Einheitenzeichen und keine
     /// Uebersetzung; sie stehen auf der deutschen wie auf der englischen Oberflaeche gleich
     /// - genau wie die eingefrorenen Persistenzwerte in <see cref="DbWerte"/>. Nur „Jahre"
     /// ist ein Wort und kommt deshalb aus der Ressource.
@@ -37,9 +37,6 @@
         /// <summary>Einheit eines Geldbetrags.</summary>
         internal const string EINHEIT_EURO = "€";
 
-        /// <summary>Einheit eines Rauminhalts in Kubikmetern.</summary>
-        internal const string EINHEIT_M3 = "m³";
-
         /// <summary>Einheit eines Rauminhalts in Litern.</summary>
         internal const string EINHEIT_LITER = "l";
 
@@ -48,9 +45,6 @@
 
         /// <summary>Einheit eines Winkels.</summary>
         internal const string EINHEIT_GRAD = "°";
-
-        /// <summary>Einheit einer massenbezogenen Emission.</summary>
-        internal const string EINHEIT_G_MWH = "g / MWh";
 
         /// <summary>Einheit einer Energiemenge in Kilowattstunden (Auftrag #200).</summary>
         internal const string EINHEIT_KWH = "kWh";
@@ -115,32 +109,17 @@
         internal static string HkWgOelErl => MyResource.Resource.KI_DLG_HK_WG_OEL_ERL;
         internal static string HkBbVerlustName => MyResource.Resource.KI_DLG_HK_BB_VERLUST_NAME;
         internal static string HkBbVerlustErl => MyResource.Resource.KI_DLG_HK_BB_VERLUST_ERL;
-        internal static string HkInvestName => MyResource.Resource.KI_DLG_HK_INVEST_NAME;
-        internal static string HkInvestErl => MyResource.Resource.KI_DLG_HK_INVEST_ERL;
 
-        /// <summary>
-        /// Der Anzeigename des Wartungsfeldes kommt aus dem Bestand: Genau diesen Text
-        /// traegt die Beschriftung, die <c>WartungsfeldAufbauen</c> zur Laufzeit setzt, und
-        /// genau ihn nennt auch die Pruefmeldung von <c>EingabenPruefen</c>. Ein zweiter
-        /// Eintrag waere eine zweite Pflegestelle fuer dasselbe Wort.
-        /// </summary>
-        internal static string HkWartungName => MyResource.Resource.KESSEL_WARTUNG_LBL;
-        internal static string HkWartungErl => MyResource.Resource.KI_DLG_HK_WARTUNG_ERL;
+        // HIER STANDEN DIE TEXTE der Felder Investition, Wartung, Raumbedarf,
+        // Nutzungsdauer und der fuenf Emissionsfaktoren. Der Heizkessel-Katalogeditor
+        // fuehrt sie seit dem Anwenderentscheid vom 15.09.2026 nicht mehr, also kennt
+        // KiDialoge.Heizkessel() sie auch nicht mehr - ein Text ohne Feld ist eine
+        // Pflegestelle ohne Leser. Mit ihnen sind die Schluessel KI_DLG_HK_INVEST_*,
+        // KI_DLG_HK_WARTUNG_ERL, KI_DLG_HK_RAUMBEDARF_*, KI_DLG_HK_NUTZUNGSDAUER_*,
+        // KI_DLG_HK_CO2_*, KI_DLG_HK_SO2_*, KI_DLG_HK_NOX_*, KI_DLG_HK_CO_* und
+        // KI_DLG_HK_STAUB_* aus beiden .resx gefallen. KESSEL_WARTUNG_LBL bleibt:
+        // Diesen Text setzt WartungsfeldAufbauen zur Laufzeit als Beschriftung.
 
-        internal static string HkRaumbedarfName => MyResource.Resource.KI_DLG_HK_RAUMBEDARF_NAME;
-        internal static string HkRaumbedarfErl => MyResource.Resource.KI_DLG_HK_RAUMBEDARF_ERL;
-        internal static string HkNutzungsdauerName => MyResource.Resource.KI_DLG_HK_NUTZUNGSDAUER_NAME;
-        internal static string HkNutzungsdauerErl => MyResource.Resource.KI_DLG_HK_NUTZUNGSDAUER_ERL;
-        internal static string HkCo2Name => MyResource.Resource.KI_DLG_HK_CO2_NAME;
-        internal static string HkCo2Erl => MyResource.Resource.KI_DLG_HK_CO2_ERL;
-        internal static string HkSo2Name => MyResource.Resource.KI_DLG_HK_SO2_NAME;
-        internal static string HkSo2Erl => MyResource.Resource.KI_DLG_HK_SO2_ERL;
-        internal static string HkNoxName => MyResource.Resource.KI_DLG_HK_NOX_NAME;
-        internal static string HkNoxErl => MyResource.Resource.KI_DLG_HK_NOX_ERL;
-        internal static string HkCoName => MyResource.Resource.KI_DLG_HK_CO_NAME;
-        internal static string HkCoErl => MyResource.Resource.KI_DLG_HK_CO_ERL;
-        internal static string HkStaubName => MyResource.Resource.KI_DLG_HK_STAUB_NAME;
-        internal static string HkStaubErl => MyResource.Resource.KI_DLG_HK_STAUB_ERL;
         internal static string HkVorlaufName => MyResource.Resource.KI_DLG_HK_VORLAUF_NAME;
         internal static string HkVorlaufErl => MyResource.Resource.KI_DLG_HK_VORLAUF_ERL;
         internal static string HkRuecklaufName => MyResource.Resource.KI_DLG_HK_RUECKLAUF_NAME;

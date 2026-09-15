@@ -244,9 +244,14 @@
     // "Emissionsfaktoren" (GruppeEmissionen, EmissionHinweis, LabelStaub,
     // LabelStaubKurz). Sie sind mit ihren Gruppen gefallen (15.09.2026); ein Parameter
     // ohne Markup ist ein Schluessel, den die Huelle weiterhin fuellen darf, ohne dass
-    // ihn jemand liest - deshalb fallen sie in demselben Schritt. Die Ressourcen
-    // (HZKK_GRP_KOSTEN, HZKK_LBL_INVEST, HZKK_BEHG_*, HZKK_LBL_STAUB …) bleiben: Der
-    // BhkwKatalogDialog fuehrt dieselben Gruppen weiter und liest einen Teil davon.
+    // ihn jemand liest - deshalb fallen sie in demselben Schritt. Von den Ressourcen
+    // bleiben die HZKK_LBL_* (HZKK_LBL_INVEST, HZKK_LBL_WARTUNG, HZKK_LBL_STAUB …):
+    // Mit ihnen beschriftet das Katalogbrowser-Profil die Felder des Aufklappers
+    // "Alle Daten anzeigen". Die Gruppen- und Feldnamen der drei Bloecke
+    // (HZKK_GRP_KOSTEN, HZKK_GRP_BEHG, HZKK_GRP_EMISSIONEN, HZKK_BEHG_*, HZKK_BTN_CO2,
+    // HZKK_EMISSION_INFO, HZKK_FELD_INVEST/RAUMBEDARF/NUTZUNGSDAUER/STAUB) hatten
+    // danach keinen Leser mehr - auch der BhkwKatalogDialog hat denselben Schnitt
+    // hinter sich - und sind aus beiden .resx gefallen.
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";

@@ -169,10 +169,14 @@ namespace WindowsFormsApplication1
                 // EmissionHinweis, LabelStaub…) samt Co2Vorgabe und WartungEinheiten.
                 // Der Dialog führt diese [Parameter] seit dem Anwenderentscheid vom
                 // 15.09.2026 nicht mehr, und ein Schlüssel ohne Parameter ist genau
-                // das, was ParametersatzTests findet. Die Ressourcen selbst bleiben:
-                // Der BHKW-Katalogeditor führt dieselben Gruppen weiter und liest
-                // HZKK_BEHG_*, HZKK_BTN_CO2, HZKK_EMISSION_INFO, HZKK_GRP_EMISSIONEN
-                // und HZKK_LBL_STAUB mit.
+                // das, was ParametersatzTests findet. Von den Ressourcen bleiben die
+                // HZKK_LBL_*: Mit ihnen beschriftet das Katalogbrowser-Profil die
+                // Felder des Aufklappers „Alle Daten anzeigen". Die Gruppen- und
+                // Feldnamen der drei Blöcke (HZKK_GRP_KOSTEN, HZKK_GRP_BEHG,
+                // HZKK_GRP_EMISSIONEN, HZKK_BEHG_*, HZKK_BTN_CO2, HZKK_EMISSION_INFO,
+                // HZKK_FELD_INVEST/RAUMBEDARF/NUTZUNGSDAUER/STAUB) sind ohne Leser
+                // geblieben — der BHKW-Katalogeditor hat denselben Schnitt hinter
+                // sich — und aus beiden .resx gefallen.
 
                 ["BtnUeberschreibenText"] = Text_("HZKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("HZKK_BTN_SPEICHERN_UNTER", "Speichern unter"),

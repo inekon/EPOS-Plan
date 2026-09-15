@@ -393,21 +393,12 @@ namespace EPOS.Kern.Tests
             });
         }
 
-        /// <summary>
-        /// Der Aufklapper trägt in beiden Sprachen einen Text — der Schlüssel
-        /// <c>PVD_AUFKLAPP_PARAMETER</c> ist in beiden Katalogen gepflegt.
-        /// </summary>
-        [Fact]
-        public void Die_Beschriftung_des_Aufklappers_steht_in_beiden_Sprachen()
-        {
-            MitSprache("de-DE", () =>
-                Assert.Equal("Alle Modulparameter anzeigen",
-                             WindowsFormsApplication1.MyResource.Resource.PVD_AUFKLAPP_PARAMETER));
-
-            MitSprache("en-US", () =>
-                Assert.Equal("Show all module parameters",
-                             WindowsFormsApplication1.MyResource.Resource.PVD_AUFKLAPP_PARAMETER));
-        }
+        // HIER STAND die Zusicherung „Die_Beschriftung_des_Aufklappers_steht_in_beiden_
+        // Sprachen" auf den Schlüssel PVD_AUFKLAPP_PARAMETER. Der Aufklapper der
+        // Photovoltaik trägt seit dem 15.09.2026 denselben Text wie die übrigen fünf
+        // Erzeugerdialoge (HZK_LBL_ALLE_DATEN); der eigene Schlüssel hatte danach keinen
+        // Leser mehr und ist aus beiden .resx gefallen. Die Zeilen des Aufklappers prüfen
+        // die Fälle oberhalb weiterhin über PhotovoltaikStammCtrl.Parameterzeilen.
 
         // =================================================================================
         // 5 - W6-O-5: „Gesamtleistung in kW"

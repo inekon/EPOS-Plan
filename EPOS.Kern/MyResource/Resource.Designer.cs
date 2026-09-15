@@ -2402,74 +2402,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eintragen ähnelt.
-        /// </summary>
-        public static string BHKWK_BTN_EINTRAGEN {
-            get {
-                return ResourceManager.GetString("BHKWK_BTN_EINTRAGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
-        /// </summary>
-        public static string BHKWK_EINHEIT_JAHRE {
-            get {
-                return ResourceManager.GetString("BHKWK_EINHEIT_JAHRE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Abgasreinigung ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_ABGASREINIGUNG {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_ABGASREINIGUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die untere Grenzleistung ähnelt.
         /// </summary>
         public static string BHKWK_FELD_GRENZLEISTUNG {
             get {
                 return ResourceManager.GetString("BHKWK_FELD_GRENZLEISTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Lieferung ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_LIEFERUNG {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_LIEFERUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Modul ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_MODUL {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_MODUL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Montage und Inbetriebnahme ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_MONTAGE {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_MONTAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_NUTZUNGSDAUER {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_NUTZUNGSDAUER", resourceCulture);
             }
         }
         
@@ -2492,15 +2429,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_RAUMBEDARF {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_RAUMBEDARF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur ähnelt.
         /// </summary>
         public static string BHKWK_FELD_RUECKLAUF {
@@ -2510,38 +2438,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten Schallschutzhaube ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_SCHALLSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_SCHALLSCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Staub-Emission ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_STAUB {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_STAUB", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur ähnelt.
         /// </summary>
         public static string BHKWK_FELD_VORLAUF {
             get {
                 return ResourceManager.GetString("BHKWK_FELD_VORLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungskosten ähnelt.
-        /// </summary>
-        public static string BHKWK_FELD_WARTUNG {
-            get {
-                return ResourceManager.GetString("BHKWK_FELD_WARTUNG", resourceCulture);
             }
         }
         
@@ -2566,29 +2467,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen nach BEHG-V ähnelt.
-        /// </summary>
-        public static string BHKWK_GRP_BEHG {
-            get {
-                return ResourceManager.GetString("BHKWK_GRP_BEHG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string BHKWK_GRP_BEZEICHNUNG {
             get {
                 return ResourceManager.GetString("BHKWK_GRP_BEZEICHNUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
-        /// </summary>
-        public static string BHKWK_GRP_KOSTEN {
-            get {
-                return ResourceManager.GetString("BHKWK_GRP_KOSTEN", resourceCulture);
             }
         }
         
@@ -2760,15 +2643,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_LBL_SCHALLSCHUTZ {
             get {
                 return ResourceManager.GetString("BHKWK_LBL_SCHALLSCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die mit SCR ähnelt.
-        /// </summary>
-        public static string BHKWK_LBL_SCR {
-            get {
-                return ResourceManager.GetString("BHKWK_LBL_SCR", resourceCulture);
             }
         }
         
@@ -16761,51 +16635,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Erdgas: 0,056 ähnelt.
-        /// </summary>
-        public static string HZKK_BEHG_ERDGAS {
-            get {
-                return ResourceManager.GetString("HZKK_BEHG_ERDGAS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Flüssiggas: 0,0663 ähnelt.
-        /// </summary>
-        public static string HZKK_BEHG_FLUESSIGGAS {
-            get {
-                return ResourceManager.GetString("HZKK_BEHG_FLUESSIGGAS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizöl: 0,0808 ähnelt.
-        /// </summary>
-        public static string HZKK_BEHG_OEL {
-            get {
-                return ResourceManager.GetString("HZKK_BEHG_OEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die für Heizzwecke in t CO2 / GJ ähnelt.
-        /// </summary>
-        public static string HZKK_BEHG_ZEILE {
-            get {
-                return ResourceManager.GetString("HZKK_BEHG_ZEILE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO2 BEHG ähnelt.
-        /// </summary>
-        public static string HZKK_BTN_CO2 {
-            get {
-                return ResourceManager.GetString("HZKK_BTN_CO2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern unter ähnelt.
         /// </summary>
         public static string HZKK_BTN_SPEICHERN_UNTER {
@@ -16833,38 +16662,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog. ähnelt.
-        /// </summary>
-        public static string HZKK_EMISSION_INFO {
-            get {
-                return ResourceManager.GetString("HZKK_EMISSION_INFO", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
         /// </summary>
         public static string HZKK_FELD_BBVERLUST {
             get {
                 return ResourceManager.GetString("HZKK_FELD_BBVERLUST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
-        /// </summary>
-        public static string HZKK_FELD_INVEST {
-            get {
-                return ResourceManager.GetString("HZKK_FELD_INVEST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
-        /// </summary>
-        public static string HZKK_FELD_NUTZUNGSDAUER {
-            get {
-                return ResourceManager.GetString("HZKK_FELD_NUTZUNGSDAUER", resourceCulture);
             }
         }
         
@@ -16878,29 +16680,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
-        /// </summary>
-        public static string HZKK_FELD_RAUMBEDARF {
-            get {
-                return ResourceManager.GetString("HZKK_FELD_RAUMBEDARF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
         /// </summary>
         public static string HZKK_FELD_RUECKLAUF {
             get {
                 return ResourceManager.GetString("HZKK_FELD_RUECKLAUF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Staub ähnelt.
-        /// </summary>
-        public static string HZKK_FELD_STAUB {
-            get {
-                return ResourceManager.GetString("HZKK_FELD_STAUB", resourceCulture);
             }
         }
         
@@ -16932,38 +16716,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen nach BEHG-V ähnelt.
-        /// </summary>
-        public static string HZKK_GRP_BEHG {
-            get {
-                return ResourceManager.GetString("HZKK_GRP_BEHG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kessel ähnelt.
         /// </summary>
         public static string HZKK_GRP_BEZEICHNUNG {
             get {
                 return ResourceManager.GetString("HZKK_GRP_BEZEICHNUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren bezogen auf den Brennstoffverbrauch ähnelt.
-        /// </summary>
-        public static string HZKK_GRP_EMISSIONEN {
-            get {
-                return ResourceManager.GetString("HZKK_GRP_EMISSIONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
-        /// </summary>
-        public static string HZKK_GRP_KOSTEN {
-            get {
-                return ResourceManager.GetString("HZKK_GRP_KOSTEN", resourceCulture);
             }
         }
         
@@ -24002,60 +23759,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kohlendioxid-Emission je erzeugter Wärmemenge; der Knopf „CO2 BEHG“ leitet sie aus dem gewählten Energieträger ab. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_CO2_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_CO2_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO2 ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_CO2_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_CO2_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kohlenmonoxid-Emission je erzeugter Wärmemenge. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_CO_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_CO_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_CO_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_CO_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten des Kessels; sie gehen in die Wirtschaftlichkeitsrechnung ein. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_INVEST_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_INVEST_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_INVEST_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_INVEST_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennwärmeleistung des Kessels; Grundlage der Auslegung und der Kostenkennwerte. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_LEISTUNG_ERL {
@@ -24070,60 +23773,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_LEISTUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_LEISTUNG_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stickoxid-Emission je erzeugter Wärmemenge. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_NOX_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_NOX_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die NOx ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_NOX_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_NOX_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulatorische Lebensdauer; sie bestimmt den Abschreibungszeitraum. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_NUTZUNGSDAUER_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_NUTZUNGSDAUER_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_NUTZUNGSDAUER_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_NUTZUNGSDAUER_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufstellvolumen des Kessels im Heizraum. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_RAUMBEDARF_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_RAUMBEDARF_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Raumbedarf ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_RAUMBEDARF_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_RAUMBEDARF_NAME", resourceCulture);
             }
         }
         
@@ -24146,42 +23795,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schwefeldioxid-Emission je erzeugter Wärmemenge. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_SO2_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_SO2_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die SO2 ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_SO2_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_SO2_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Staubemission je erzeugter Wärmemenge. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_STAUB_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_STAUB_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Staub ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_STAUB_NAME {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_STAUB_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungstemperatur des Heizungsvorlaufs. ähnelt.
         /// </summary>
         public static string KI_DLG_HK_VORLAUF_ERL {
@@ -24196,15 +23809,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_VORLAUF_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_VORLAUF_NAME", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wartungsaufwand des Kessels; die Bezugsgröße (Jahresbetrag oder je Leistungseinheit) wählt die Einheitenliste daneben. ähnelt.
-        /// </summary>
-        public static string KI_DLG_HK_WARTUNG_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_HK_WARTUNG_ERL", resourceCulture);
             }
         }
         
@@ -36155,15 +35759,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
-        /// </summary>
-        public static string PSPK_FELD_INVEST {
-            get {
-                return ResourceManager.GetString("PSPK_FELD_INVEST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaftsverluste ähnelt.
         /// </summary>
         public static string PSPK_FELD_VERLUSTE {
@@ -36187,15 +35782,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSPK_GRP_BEZEICHNUNG {
             get {
                 return ResourceManager.GetString("PSPK_GRP_BEZEICHNUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabedaten zur Berechnung der Kosten ähnelt.
-        /// </summary>
-        public static string PSPK_GRP_KOSTEN {
-            get {
-                return ResourceManager.GetString("PSPK_GRP_KOSTEN", resourceCulture);
             }
         }
         
@@ -38151,15 +37737,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_TITEL {
             get {
                 return ResourceManager.GetString("PTR_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Modulparameter anzeigen ähnelt.
-        /// </summary>
-        public static string PVD_AUFKLAPP_PARAMETER {
-            get {
-                return ResourceManager.GetString("PVD_AUFKLAPP_PARAMETER", resourceCulture);
             }
         }
         

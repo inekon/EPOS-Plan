@@ -130,24 +130,12 @@ public sealed record KatalogZeile(int Id, string Bezeichner, string Eigenschafte
 /// Ein Ja/Nein-Merkmal mit Beschriftung, <c>null</c> = keines. Beim Heizkessel ist das
 /// „Brennwertkessel".
 /// </param>
-/// <param name="Parameter">
-/// <b>Alle übrigen Eigenschaften des Katalogsatzes</b>, hinter einem Aufklapper
-/// (Anwenderwunsch <b>W6‑E‑1</b>, Windows-Abnahme 05.09.2026). <c>null</c> oder leer
-/// heißt: Es gibt keinen Aufklapper — so ist es heute bei allen Erzeugerarten außer
-/// der Photovoltaik. Die Werte kommen wie die von <paramref name="Felder"/> FERTIG
-/// FORMATIERT herein; ein nicht gepflegter Wert steht als „–" darin und nicht als 0.
-/// </param>
 public sealed record ErzeugerDetail(
     string Bezeichner,
     string Beschreibung,
     IReadOnlyList<(string Feld, string Wert)> Felder,
-    (string Feld, bool Wert)? Schalter = null,
-    IReadOnlyList<Modulparameter>? Parameter = null)
+    (string Feld, bool Wert)? Schalter = null)
 {
-    /// <summary>Die Parameterzeilen ohne <c>null</c> — die Anzeige fragt nur nach der Anzahl.</summary>
-    public IReadOnlyList<Modulparameter> Parameterzeilen
-        => Parameter ?? Array.Empty<Modulparameter>();
-
     /// <summary>
     /// Ist der Anzeigewert eine ZAHL? Dann bekommt sein Feld im
     /// <c>Formularraster</c> die kurze Breite — „290" hinter
@@ -173,22 +161,14 @@ public sealed record ErzeugerDetail(
                || double.TryParse(wert, NumberStyles.Any, CultureInfo.InvariantCulture, out _));
 }
 
-/// <summary>
-/// Eine Zeile des Parameterblocks eines Katalogsatzes (Anwenderwunsch <b>W6‑E‑1</b>,
-/// Windows-Abnahme 05.09.2026: „optional sollten beim ausgewählten PV-Modul alle
-/// Eigenschaften/Parameter angezeigt werden").
-///
-/// <para>Sie trägt dasselbe wie ein Paar aus <see cref="ErzeugerDetail.Felder"/>, dazu
-/// die EINHEIT als eigenes Stück — dann steht sie im <c>Formularraster</c> unmittelbar
-/// hinter dem kurzen Wertfeld statt am rechten Rand des Blocks (iU8‑E‑2). Woher
-/// Beschriftung und Einheit kommen, entscheidet die Hülle; bei der Photovoltaik ist es
-/// <c>PhotovoltaikStammCtrl.Parameterzeilen</c> und damit dieselbe Quelle wie im
-/// Katalogdialog.</para>
-/// </summary>
-/// <param name="Feld">Beschriftung, bereits übersetzt und mit „:".</param>
-/// <param name="Wert">Der fertig formatierte Wert; „–" heißt „nicht gepflegt".</param>
-/// <param name="Einheit">Einheit hinter dem Feld; leer = keine.</param>
-public sealed record Modulparameter(string Feld, string Wert, string Einheit = "");
+// HIER STAND DER SATZ „Modulparameter" samt ErzeugerDetail.Parameter und
+// ErzeugerDetail.Parameterzeilen — der Aufklapper „Alle Modulparameter anzeigen" des
+// Photovoltaik-Projektdialogs (W6‑E‑1). Seit dem 15.09.2026 füllt ihn der Baustein
+// „Katalogfelder" aus dem Katalogbrowser-Profil, wortgleich zu den übrigen fünf
+// Erzeugerdialogen; die Zeilen dieses Aufklappers sind seither Parameterwert
+// (Baustein Parameteruebersicht) und kommen aus
+// PhotovoltaikStammCtrl.Parameterzeilen. Der Detailblock trug sie nur noch,
+// ohne dass eine Hülle sie belegte.
 
 /// <summary>
 /// Was der Kern beisteuert, bevor eine Zeile aufgenommen werden kann — die Werte, die
