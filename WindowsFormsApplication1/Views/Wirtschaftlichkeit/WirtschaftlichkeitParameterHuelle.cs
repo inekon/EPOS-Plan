@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-using EPOS.UI.Dialoge.Wirtschaftlichkeit;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -11,11 +7,14 @@ namespace WindowsFormsApplication1
     /// Die WINDOWS-HÜLLE des Dialogs „Wirtschaftlichkeits-Parameter" (iU9-W2.5).
     ///
     /// <para>Der Dialog lebt als Razor-Komponente
-    /// <see cref="WirtschaftlichkeitParameterDialog"/> in <c>EPOS.UI</c>; die
+    /// <c>WirtschaftlichkeitParameterDialog</c> in <c>EPOS.UI</c>; die
     /// WinForms-Fassung <c>Form_WirtschaftlichkeitParameter</c> ist mit
     /// demselben Schritt GELÖSCHT (Regel M1).</para>
     ///
-    /// <para><b>Hier liegt die Datenseite.</b> Geladen wird mit denselben
+    /// <para><b>Hier liegt nur noch die Datenseite.</b> Der Dialog erscheint als
+    /// <c>Ueberlagerung</c> IN der Wirtschaftlichkeitsseite — dasselbe Fenster,
+    /// dieselbe WebView (Risiko R2) —, deshalb baut diese Hülle allein den
+    /// Parametersatz und zeigt kein eigenes Fenster. Geladen wird mit denselben
     /// Aufrufen wie im Konstruktor der Maske —
     /// <c>WirtschaftlichkeitCtrl.LadeParameter</c> und
     /// <c>ErzeugerDerGruppe</c> —, dazu die drei Größen, die die Maske selbst
@@ -25,82 +24,22 @@ namespace WindowsFormsApplication1
     /// (<c>GesetzKatalog.AlleDerKlasse</c>). Geschrieben wird über
     /// <c>SpeichereParameter</c>.</para>
     ///
-    /// <para><b>Zwei Wege, keiner mehr über die Brücke.</b> Der Gesetzeskatalog ist
-    /// seit iU9-W14c.2 selbst eine Razor-Komponente und erscheint als
-    /// <c>Ueberlagerung</c> IM Dialog — mit der Vorwahl CO₂-Preis, die bis dahin
-    /// <c>Sprungziel.GesetzesparameterCo2</c> setzte. Der
-    /// Sammeldialog „BHKW-Wirtschaftlichkeit" ist selbst eine Blazor-Hülle und
-    /// bleibt nachgelagert (Risiko R2): Die Komponente meldet den Wunsch im
-    /// Ergebnis, diese Hülle schließt den Dialog, zeigt das Ziel und lädt danach
-    /// neu — der Sammeldialog schreibt denselben Parametersatz.</para>
+    /// <para><b>Ein einziger Unterdialog.</b> Der Gesetzeskatalog ist selbst eine
+    /// Razor-Komponente und erscheint als <c>Ueberlagerung</c> IM Dialog — mit
+    /// der Vorwahl CO₂-Preis, die bis dahin <c>Sprungziel.GesetzesparameterCo2</c>
+    /// setzte. Ein Folgefenster meldet der Dialog nicht; in den Sammeldialog
+    /// „BHKW-Wirtschaftlichkeit" führt der eigene Knopf der Fußleiste.</para>
     /// </summary>
     internal static class WirtschaftlichkeitParameterHuelle
     {
-        /// <summary>Gewünschtes Innenmaß. Die Maske maß 445 px breit.</summary>
-        private const int FENSTER_BREITE = 720;
-
         /// <summary>Rückfalljahr der CO₂-Prognose — das Jahr der Entscheidung E5,
         /// falls der Katalog (noch) keine Prognosezeile führt.</summary>
         private const int CO2_PROGNOSE_RUECKFALL = 2028;
 
         /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn gespeichert wurde — dann
-        /// rechnet die Wirtschaftlichkeitsseite neu.
-        /// </summary>
-        internal static bool Oeffnen(IWin32Window besitzer, int idStamm)
-        {
-            bool gespeichert = false;
-
-            // Der Sprung in den BHKW-Dialog schliesst dieses Fenster und bringt
-            // es danach zurueck; deshalb eine Schleife statt eines Aufrufs.
-            while (true)
-            {
-                WirtParameterErgebnis ergebnis = EinmalZeigen(besitzer, idStamm);
-                if (ergebnis == null) return gespeichert;
-                if (ergebnis.Gespeichert) gespeichert = true;
-                if (ergebnis.Sprung == WirtParameterSprung.Keiner) return gespeichert;
-
-                // Der Sammeldialog schreibt selbst; sein Ergebnis zaehlt wie ein
-                // eigenes Speichern (die Wirtschaftlichkeit muss dann neu rechnen).
-                if (BhkwWirtschaftlichkeitHuelle.Oeffnen(besitzer, idStamm, null))
-                    gespeichert = true;
-            }
-        }
-
-        /// <summary>Ein Durchgang: laden, zeigen, Ergebnis melden.</summary>
-        private static WirtParameterErgebnis EinmalZeigen(IWin32Window besitzer, int idStamm)
-        {
-            WirtParameterErgebnis ergebnis = null;
-            BlazorDialogForm<WirtschaftlichkeitParameterDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(idStamm))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<WirtParameterErgebnis>(
-                    new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
-            };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<WirtschaftlichkeitParameterDialog>(
-                new WirtschaftlichkeitParameterTexte().Titel,
-                new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
-        }
-
-        /// <summary>
-        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
-        /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
-        /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
-        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung
-        /// in die BHKW-Sicht wertet er selbst aus (<c>WirtParameterSprung</c>).
+        /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). <c>Geschlossen</c> setzt der
+        /// Wirt — die Wirtschaftlichkeitsseite, in deren <c>Ueberlagerung</c> der
+        /// Dialog steht.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(int idStamm)
         {

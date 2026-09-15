@@ -3547,15 +3547,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)… ähnelt.
-        /// </summary>
-        public static string BHW_PARAM_KNOPF {
-            get {
-                return ResourceManager.GetString("BHW_PARAM_KNOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
         /// </summary>
         public static string BHW_PARAM_VERWEIS {
@@ -55111,15 +55102,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_REFKESSEL_VORGABE {
             get {
                 return ResourceManager.GetString("WPAR_REFKESSEL_VORGABE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung schließt diesen Dialog, ohne die Eingaben zu speichern — bitte vorher speichern. ähnelt.
-        /// </summary>
-        public static string WPAR_SPRUNG_HINWEIS {
-            get {
-                return ResourceManager.GetString("WPAR_SPRUNG_HINWEIS", resourceCulture);
             }
         }
         
