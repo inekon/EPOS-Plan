@@ -2101,9 +2101,6 @@ Without a source buffer this reads 0.00.</value>
   <data name="PSP_BTN_PUFFER_VERWALTEN" xml:space="preserve">
     <value>Create / manage buffer storage…</value>
   </data>
-  <data name="PSP_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Close</value>
-  </data>
   <data name="PSP_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
   </data>

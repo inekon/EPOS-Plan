@@ -50,8 +50,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   **Abbrechen** schließt ohne zu speichern und ohne Prüfung, und **✕ der `Ueberlagerung` sowie
   Esc** wirken wie Abbrechen — der Wirt schließt dafür selbst, er fragt den Dialog nicht.
   Die Prüfregeln stehen genau **einmal**, im Rückruf der Leiste, und gelten auf jedem Weg, der
-  speichert. Die eine Ausnahme ist der Dialog, der schon beim Speichern schreibt: Er trägt
-  „Speichern" und „Schließen" (`MitAbbrechen="false"`), weil es dort nichts zu verwerfen gibt.
+  speichert. **Geschrieben wird im OK-Weg, sonst ist Abbrechen eine Behauptung, die nicht
+  stimmt:** Ein Dialog, der eine Liste führt, sammelt sie als Arbeitsstand (`MitSpeichern="true"`
+  für den nicht schließenden „Anlegen"/„Übernehmen"-Knopf) und schreibt sie erst beim OK — dort
+  entsteht auch die Id einer neuen Zeile, die der Wirt danach liest.
 
 ### Stilblatt
 

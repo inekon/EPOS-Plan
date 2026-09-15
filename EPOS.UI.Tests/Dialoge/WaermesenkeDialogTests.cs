@@ -482,6 +482,71 @@ public class WaermesenkeDialogTests : EposBunitContext
         Assert.True(cut.Instance.VerwaltungOffen);
     }
 
+    /// <summary>
+    /// <b>Zweite Einbettungsstelle (Auftrag #282).</b> Die Pufferverwaltung schreibt
+    /// erst beim OK. Der Wirt uebernimmt die gelieferte Id in die markierte
+    /// Senkenzeile — das geht weiterhin, weil die Id im OK-Weg entsteht und der Wirt
+    /// danach liest.
+    /// </summary>
+    [Fact]
+    public void Die_Pufferverwaltung_setzt_ihre_neue_Id_erst_nach_dem_OK()
+    {
+        var puffer = PufferSpProjektDialogTests.MitZwei();
+        puffer.AnlegenErgebnis = 77;
+
+        var stand = MitPuffern();
+        stand.Bestand.Add(new SenkenzeileDaten { Ziel = P_HEIZUNG, IdPuffer = 11, Bedarfsart = BEIDES });
+        var cut = Zeige(stand, verwaltung: _ => PufferSpProjektDialogTests.Gaben(puffer));
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("anlegen")).Click();
+        Assert.True(cut.Instance.VerwaltungOffen);
+
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Neuer Pufferspeicher")).Click();
+        cut.Find(".epos-ueberlagerung input.epos-eingabe[type=text]").Input("Neuer Speicher");
+        cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Anlegen")).Click();
+
+        Assert.Equal(0, puffer.Schreibzugriffe);
+
+        cut.Find(".epos-ueberlagerung .epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.NotNull(puffer.Angelegt);
+        Assert.False(cut.Instance.VerwaltungOffen);
+        Assert.Equal(77, cut.Instance.Zeilen[cut.Instance.Index].IdPuffer);
+    }
+
+    /// <summary>
+    /// Abbrechen in der eingebetteten Verwaltung schreibt nichts, und die Senkenzeile
+    /// behaelt ihren Puffer.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_in_der_Pufferverwaltung_laesst_die_Senkenzeile_stehen()
+    {
+        var puffer = PufferSpProjektDialogTests.MitZwei();
+        var stand = MitPuffern();
+        stand.Bestand.Add(new SenkenzeileDaten { Ziel = P_HEIZUNG, IdPuffer = 11, Bedarfsart = BEIDES });
+        var cut = Zeige(stand, verwaltung: _ => PufferSpProjektDialogTests.Gaben(puffer));
+
+        int vorher = cut.Instance.Zeilen[cut.Instance.Index].IdPuffer;
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("anlegen")).Click();
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Neuer Pufferspeicher")).Click();
+        cut.Find(".epos-ueberlagerung input.epos-eingabe[type=text]").Input("Neuer Speicher");
+        cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
+        cut.FindAll(".epos-ueberlagerung button")
+           .First(b => b.TextContent.Contains("Anlegen")).Click();
+
+        cut.FindAll(".epos-ueberlagerung .epos-leiste button")
+           .First(b => b.TextContent == "Abbrechen").Click();
+
+        Assert.Equal(0, puffer.Schreibzugriffe);
+        Assert.False(cut.Instance.VerwaltungOffen);
+        Assert.Equal(vorher, cut.Instance.Zeilen[cut.Instance.Index].IdPuffer);
+    }
+
     /// <summary>Ohne Absprungkennzeichen bleibt es bei der Meldung.</summary>
     [Fact]
     public void Ein_sonstiger_Pruefungsfehler_meldet_nur()

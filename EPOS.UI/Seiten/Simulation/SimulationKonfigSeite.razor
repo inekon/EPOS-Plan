@@ -1568,9 +1568,10 @@
     {
         Ebene1Schliessen();
 
-        // Die Verwaltung schreibt sofort; deshalb unabhaengig vom Ausgang neu
-        // aufbauen. Ein entfernter Puffer kann ausserdem Senken der Anlagen
-        // betreffen (ReferenzenLoesen).
+        // Die Verwaltung schreibt im OK-Weg; nach Abbrechen steht die Datenbank so da
+        // wie vorher. Neu aufgebaut wird trotzdem unabhaengig vom Ausgang - das ist der
+        // billigere Weg als zwei Faelle zu unterscheiden, und ein entfernter Puffer kann
+        // ausserdem Senken der Anlagen betreffen (ReferenzenLoesen).
         Neuladen();
     }
 }

@@ -12,9 +12,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// PufferSpProjektDialog (iU9-W10a.4) - der Ersatz fuer Form_PufferSp_Projekt, die
 /// groesste Maske der Welle.
 ///
-/// <para>Die Datenseite ist ein Pruefstand: sechzehn Delegaten, die mitschreiben,
+/// <para>Die Datenseite ist ein Pruefstand: siebzehn Delegaten, die mitschreiben,
 /// womit sie gerufen wurden. Damit laesst sich pruefen, WAS der Dialog speichern
 /// will, ohne dass eine Datenbank in der Naehe ist.</para>
+///
+/// <para><b>Der Kern dieser Faelle ist der DATENBANKSTAND, nicht der Dialogzustand.</b>
+/// Geschrieben wird allein im OK-Weg; <c>Schreibzugriffe</c> zaehlt jeden Aufruf von
+/// Anlegen, Aendern und Entfernen. Nach Abbrechen, Esc und dem Kreuz muss er auf 0
+/// stehen - egal, was im Dialog vorher geschah.</para>
 /// </summary>
 public class PufferSpProjektDialogTests : EposBunitContext
 {
@@ -25,8 +30,12 @@ public class PufferSpProjektDialogTests : EposBunitContext
 
     // ============================================================ Pruefstand
 
-    /// <summary>Ein Delegatensatz, der mitschreibt statt zu schreiben.</summary>
-    private sealed class Pruefstand
+    /// <summary>
+    /// Ein Delegatensatz, der mitschreibt statt zu schreiben. Er ist <c>internal</c>,
+    /// weil ihn auch die drei EINBETTUNGSSTELLEN brauchen: Nur mit ihm laesst sich dort
+    /// pruefen, dass der Wirt nicht mehr auf einem fruehen Schreiben sitzt.
+    /// </summary>
+    internal sealed class Pruefstand
     {
         internal List<PspPufferstand> Bestand { get; } = new();
         internal List<PspKatalogzeile> Katalog { get; } = new();
@@ -44,9 +53,16 @@ public class PufferSpProjektDialogTests : EposBunitContext
         internal int GeaendertId;
         internal int Entfernt;
 
+        /// <summary>Jeder Aufruf von Anlegen, Aendern oder Entfernen - der Datenbankstand.</summary>
+        internal int Schreibzugriffe;
+
+        /// <summary>Die Schreibzugriffe in ihrer Reihenfolge, als Text.</summary>
+        internal List<string> Schreibfolge { get; } = new();
+
         internal PufferSpProjektDienste Dienste() => new(
             Katalogzeilen: () => Katalog,
             Projektliste: () => Bestand.Select(p => new PspProjektzeile(p.Id, p.Bezeichner)).ToList(),
+            Listentext: e => e.Bezeichner,
             PufferLesen: id => Bestand.FirstOrDefault(p => p.Id == id),
             Systemvorgaben: () => Systemvorgaben,
             Ladereihenfolge: _ => new[] { new PspLadezeile("1.", "WP 1", "Wärmepumpe", "Hauptsenke", "3", "80 %") },
@@ -57,14 +73,27 @@ public class PufferSpProjektDialogTests : EposBunitContext
             IstLeitspeicher: _ => Leitspeicher,
             Referenzen: _ => Referenzen,
             TemperaturenPruefen: (_, _) => Temperaturfehler,
-            Anlegen: e => { Angelegt = e; return AnlegenErgebnis; },
-            Aendern: (id, e) => { GeaendertId = id; Geaendert = e; return AendernErgebnis; },
-            Entfernen: id => { Entfernt = id; return EntfernenErgebnis; },
+            Anlegen: e =>
+            {
+                Angelegt = e; Schreibzugriffe++; Schreibfolge.Add("anlegen " + e.Bezeichner);
+                return AnlegenErgebnis;
+            },
+            Aendern: (id, e) =>
+            {
+                GeaendertId = id; Geaendert = e; Schreibzugriffe++;
+                Schreibfolge.Add("aendern " + id);
+                return AendernErgebnis;
+            },
+            Entfernen: id =>
+            {
+                Entfernt = id; Schreibzugriffe++; Schreibfolge.Add("entfernen " + id);
+                return EntfernenErgebnis;
+            },
             Klemmhinweis: (_, _) => KlemmText,
             Kapazitaet: (v, dt) => v * 1.16 * dt / 1000.0);
     }
 
-    private static PspPufferstand Speicher(int id, string name, bool h = true, bool b = false,
+    internal static PspPufferstand Speicher(int id, string name, bool h = true, bool b = false,
                                            bool p = false, int vorlauf = 70, int ruecklauf = 50,
                                            int schichten = 1)
         => new(id, name, 800, 1.5, vorlauf, ruecklauf, 10, 95, 95, 10, 0, h, b, p,
@@ -88,7 +117,7 @@ public class PufferSpProjektDialogTests : EposBunitContext
         });
     }
 
-    private static Pruefstand MitZwei()
+    internal static Pruefstand MitZwei()
     {
         var s = new Pruefstand();
         s.Bestand.Add(Speicher(11, "Heizungsspeicher"));
@@ -96,6 +125,18 @@ public class PufferSpProjektDialogTests : EposBunitContext
         s.Katalog.Add(new PspKatalogzeile(5, "Vitocell 600", 600, 2.5));
         return s;
     }
+
+    /// <summary>
+    /// Der Parametersatz, den die drei Einbettungsstellen splatten — so klein wie
+    /// moeglich, aber mit der Datenseite: ohne sie schriebe der eingebettete Dialog
+    /// nirgendwohin, und genau das ist dort die Frage.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, object> Gaben(Pruefstand stand)
+        => new Dictionary<string, object>
+        {
+            ["IdProjekt"] = 1030,
+            ["Dienste"] = stand.Dienste()
+        };
 
     // ============================================================ Vorwahlregel
 
@@ -378,47 +419,69 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Null(stand.Geaendert);
     }
 
-    // ============================================================ Speichern
+    // ============================================================ Arbeitsstand
 
+    /// <summary>
+    /// „Anlegen" schreibt NICHT - es legt die geprueften Felder als vorlaeufige Zeile in
+    /// die Liste. Ihre Nummer ist negativ; die echte Id entsteht erst im OK-Weg, und
+    /// genau sie bekommt der Wirt danach.
+    /// </summary>
     [Fact]
-    public void Anlegen_liefert_die_neue_Id_und_meldet_Erfolg()
+    public void Anlegen_legt_eine_vorlaeufige_Zeile_an_die_Id_kommt_erst_beim_OK()
     {
+        int? ergebnis = null;
         var stand = new Pruefstand { AnlegenErgebnis = 77 };
-        var cut = Zeige(stand);
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
 
         Bezeichner(cut, "Neuer Speicher");
         Volumen(cut, 900);
         Uebernehmen(cut);
 
+        Assert.Equal(0, stand.Schreibzugriffe);                 // noch nichts in der Datenbank
+        Assert.Single(cut.Instance.Bestandszeilen);
+        Assert.True(cut.Instance.Bestandszeilen[0] < 0);        // vorlaeufig
+        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Assert.Null(ergebnis);
+
+        Ok(cut);
+
         Assert.NotNull(stand.Angelegt);
         Assert.Equal("Neuer Speicher", stand.Angelegt!.Bezeichner);
         Assert.Equal(900, stand.Angelegt.Volumen);
         Assert.True(stand.Angelegt.Heizung);
-        Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+        Assert.Equal(77, ergebnis);
         Assert.Equal(77, cut.Instance.Ergebnis);
     }
 
+    /// <summary>
+    /// Ein gescheitertes Anlegen im OK-Weg meldet und HAELT den Dialog offen - der
+    /// Arbeitsstand bleibt stehen, damit der Anwender ihn nicht verliert.
+    /// </summary>
     [Fact]
-    public void Ein_gescheitertes_Anlegen_meldet_und_liefert_nichts()
+    public void Ein_gescheitertes_Anlegen_meldet_und_schliesst_nicht()
     {
+        int? ergebnis = null;
         var stand = new Pruefstand { AnlegenErgebnis = 0 };
-        var cut = Zeige(stand);
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
 
         Bezeichner(cut, "Neu");
         Volumen(cut, 500);
         Uebernehmen(cut);
+        Ok(cut);
 
         Assert.Contains("nicht angelegt", cut.Instance.Meldung);
         Assert.NotEqual(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
-        Assert.Equal(0, cut.Instance.Ergebnis);
+        Assert.Null(ergebnis);
+        Assert.True(cut.Instance.Offen);
     }
 
     /// <summary>
-    /// Kriterium W4 ist WEICH und kommt NACH dem Speichern: Gespeichert wird trotzdem,
-    /// der Anwender erfaehrt nur, was der Lauf mit der Angabe macht.
+    /// Kriterium W4 ist WEICH und kommt NACH der Uebernahme: Die Angabe steht im
+    /// Arbeitsstand, der Anwender erfaehrt nur, was der Lauf mit ihr macht. Der Hinweis
+    /// haengt allein an den Eingaben - er braucht keine geschriebene Zeile.
     /// </summary>
     [Fact]
-    public void Der_Klemmhinweis_kommt_nach_dem_Speichern()
+    public void Der_Klemmhinweis_kommt_nach_dem_Uebernehmen()
     {
         var stand = MitZwei();
         stand.KlemmText = "Die Nutztemperatur wird geklemmt.";
@@ -426,8 +489,9 @@ public class PufferSpProjektDialogTests : EposBunitContext
 
         Uebernehmen(cut);
 
-        Assert.NotNull(stand.Geaendert);                       // gespeichert wurde
-        Assert.Contains("geklemmt", cut.Instance.Meldung);     // und dann gemeldet
+        Assert.True(cut.Instance.Offen);                       // uebernommen wurde
+        Assert.Equal(0, stand.Schreibzugriffe);                // geschrieben nicht
+        Assert.Contains("geklemmt", cut.Instance.Meldung);     // und gemeldet
     }
 
     // ============================================================ Rückfragen
@@ -446,7 +510,7 @@ public class PufferSpProjektDialogTests : EposBunitContext
         cut.FindAll("input[type=checkbox]")[2].Change(true);    // Prozess dazu
         Uebernehmen(cut);
         Assert.False(cut.Instance.FrageSteht);
-        Assert.NotNull(stand.Geaendert);
+        Assert.True(cut.Instance.Offen);
 
         // mit Referenzen: Rueckfrage
         stand = MitZwei();
@@ -456,19 +520,20 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Uebernehmen(cut);
         Assert.True(cut.Instance.FrageSteht);
         Assert.Contains("WP 1", cut.Instance.Fragetext);
-        Assert.Null(stand.Geaendert);
+        Assert.False(cut.Instance.Offen);
     }
 
     [Fact]
-    public void Ja_auf_die_Nutzungsfrage_speichert_Nein_nicht()
+    public void Ja_auf_die_Nutzungsfrage_uebernimmt_Nein_nicht()
     {
         var stand = MitZwei();
         stand.Referenzen.Add("WP 1");
         var cut = Zeige(stand);
         cut.FindAll("input[type=checkbox]")[2].Change(true);
         Uebernehmen(cut);
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent == "Ja").Click();
-        Assert.NotNull(stand.Geaendert);
+        Ja(cut);
+        Assert.True(cut.Instance.Offen);
+        Assert.Equal(0, stand.Schreibzugriffe);
 
         stand = MitZwei();
         stand.Referenzen.Add("WP 1");
@@ -476,7 +541,43 @@ public class PufferSpProjektDialogTests : EposBunitContext
         cut.FindAll("input[type=checkbox]")[2].Change(true);
         Uebernehmen(cut);
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent == "Nein").Click();
-        Assert.Null(stand.Geaendert);
+        Assert.False(cut.Instance.Offen);
+    }
+
+    /// <summary>
+    /// Kommt die Nutzungsfrage im OK-Weg, fuehrt das Ja den Weg zu Ende: uebernehmen,
+    /// schreiben, schliessen. Das Nein haelt den Dialog offen und schreibt nichts -
+    /// sonst waere die Rueckfrage eine Formalie.
+    /// </summary>
+    [Fact]
+    public void Die_Nutzungsfrage_fuehrt_den_OK_Weg_zu_Ende()
+    {
+        int? ergebnis = null;
+        var stand = MitZwei();
+        stand.Referenzen.Add("WP 1");
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        cut.FindAll("input[type=checkbox]")[2].Change(true);
+        Ok(cut);
+        Assert.True(cut.Instance.FrageSteht);
+        Assert.Equal(0, stand.Schreibzugriffe);
+
+        Ja(cut);
+        Assert.Equal(11, stand.GeaendertId);
+        Assert.Equal(11, ergebnis);
+
+        // ... und dasselbe mit Nein
+        stand = MitZwei();
+        stand.Referenzen.Add("WP 1");
+        ergebnis = null;
+        cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        cut.FindAll("input[type=checkbox]")[2].Change(true);
+        Ok(cut);
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent == "Nein").Click();
+
+        Assert.Equal(0, stand.Schreibzugriffe);
+        Assert.Null(ergebnis);
     }
 
     /// <summary>
@@ -497,19 +598,51 @@ public class PufferSpProjektDialogTests : EposBunitContext
         Assert.Equal(0, stand.Entfernt);
     }
 
+    /// <summary>
+    /// Das Ja nimmt die Zeile aus der LISTE; die Datenbankzeile faellt erst im OK-Weg.
+    /// Bis dahin ist das Entfernen ruecknehmbar - genau darum geht es beim Abbrechen.
+    /// </summary>
     [Fact]
     public void Ohne_Referenzen_fragt_das_Entfernen_zurueck()
     {
         var stand = MitZwei();
         var cut = Zeige(stand);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Entfernen")).Click();
+        Entfernen(cut);
         Assert.True(cut.Instance.FrageSteht);
         Assert.Contains("Heizungsspeicher", cut.Instance.Fragetext);
 
-        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent == "Ja").Click();
-        Assert.Equal(11, stand.Entfernt);
+        Ja(cut);
+        Assert.Equal(new[] { 12 }, cut.Instance.Bestandszeilen);
+        Assert.Equal(0, stand.Entfernt);
+        Assert.Equal(0, stand.Schreibzugriffe);
         Assert.Equal(WarnStufe.Erfolg, cut.Instance.MeldungStufe);
+
+        Ok(cut);
+        Assert.Equal(11, stand.Entfernt);
+    }
+
+    /// <summary>
+    /// Eine vorlaeufige Zeile hat keine Datenbankzeile: Ihr Entfernen erreicht die
+    /// Datenbank nie - auch nicht im OK-Weg.
+    /// </summary>
+    [Fact]
+    public void Eine_vorlaeufige_Zeile_faellt_ohne_Datenbankweg()
+    {
+        var stand = new Pruefstand();
+        var cut = Zeige(stand);
+
+        Bezeichner(cut, "Nur kurz");
+        Volumen(cut, 400);
+        Uebernehmen(cut);
+        Assert.Single(cut.Instance.Bestandszeilen);
+
+        Entfernen(cut);
+        Ja(cut);
+        Assert.Empty(cut.Instance.Bestandszeilen);
+
+        Ok(cut);
+        Assert.Equal(0, stand.Schreibzugriffe);
     }
 
     // ============================================================ Sprung / Schluss
@@ -540,31 +673,153 @@ public class PufferSpProjektDialogTests : EposBunitContext
         };
 
     /// <summary>
-    /// Der Dialog hat KEIN Abbrechen (Befund W10-B29) - nur "Schliessen", und das
-    /// liefert den zuletzt angelegten oder gewaehlten Speicher.
+    /// Der Dialog traegt das Hausmuster: OK und Abbrechen neben dem nicht schliessenden
+    /// „Anlegen"/„Uebernehmen". Ohne Aenderung an der offenen Zeile schreibt OK nichts
+    /// und liefert den gewaehlten Speicher.
     /// </summary>
     [Fact]
-    public void Es_gibt_nur_Schliessen_und_es_liefert_die_Id()
+    public void Die_Leiste_traegt_OK_Abbrechen_und_Uebernehmen()
     {
         int? ergebnis = null;
-        var cut = Zeige(MitZwei(), geschlossen: id => ergebnis = id);
+        var stand = MitZwei();
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
 
-        Assert.DoesNotContain(cut.FindAll(".epos-leiste button"),
-                              b => b.TextContent == "Abbrechen");
+        var knoepfe = cut.FindAll(".epos-leiste button").Select(b => b.TextContent).ToList();
+        Assert.Contains("OK", knoepfe);
+        Assert.Contains("Abbrechen", knoepfe);
+        Assert.Contains("Übernehmen", knoepfe);
 
-        cut.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        Ok(cut);
         Assert.Equal(11, ergebnis);
+        Assert.Equal(0, stand.Schreibzugriffe);
     }
 
-    /// <summary>Esc schliesst und nimmt NICHTS zurueck — der Dialog hat laengst geschrieben.</summary>
+    /// <summary>
+    /// DER KERN DES MUSTERS: Abbrechen verlaesst den Dialog, ohne dass irgendetwas
+    /// geschrieben wurde - auch dann nicht, wenn vorher eine Zeile angelegt, eine
+    /// zweite geaendert und eine dritte entfernt wurde. Geprueft wird der
+    /// DATENBANKSTAND, nicht der Dialogzustand.
+    /// </summary>
     [Fact]
-    public void Esc_schliesst_ohne_Ruecknahme()
+    public void Abbrechen_laesst_die_Datenbank_unveraendert()
     {
         int? ergebnis = null;
-        var cut = Zeige(MitZwei(), geschlossen: id => ergebnis = id);
+        var stand = MitZwei();
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
 
-        cut.Find("div.epos-dialog").KeyDown("Escape");
+        // 11 aendern
+        Volumen(cut, 1200);
+        Uebernehmen(cut);
+
+        // 12 entfernen
+        cut.FindAll(".epos-zr-zeile button")[1].Click();
+        Entfernen(cut);
+        Ja(cut);
+
+        // eine dritte Zeile anlegen
+        Bezeichner(cut, "Ganz neu");
+        Volumen(cut, 700);
+        Uebernehmen(cut);
+
+        Assert.Equal(0, stand.Schreibzugriffe);
+
+        Abbrechen(cut);
+
+        Assert.Equal(0, stand.Schreibzugriffe);
+        Assert.Empty(stand.Schreibfolge);
+        Assert.Null(stand.Angelegt);
+        Assert.Null(stand.Geaendert);
+        Assert.Equal(0, stand.Entfernt);
+        Assert.Equal(0, ergebnis);
+    }
+
+    /// <summary>
+    /// OK schreibt denselben Arbeitsstand - und zwar in der Reihenfolge Entfernen,
+    /// Aendern, Anlegen: Erst dann ist ein Bezeichner wieder frei, den eine neue Zeile
+    /// tragen soll.
+    /// </summary>
+    [Fact]
+    public void OK_schreibt_den_ganzen_Arbeitsstand_und_schliesst()
+    {
+        int? ergebnis = null;
+        var stand = MitZwei();
+        stand.AnlegenErgebnis = 99;
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        Volumen(cut, 1200);
+        Uebernehmen(cut);
+
+        cut.FindAll(".epos-zr-zeile button")[1].Click();
+        Entfernen(cut);
+        Ja(cut);
+
+        Bezeichner(cut, "Ganz neu");
+        Volumen(cut, 700);
+        Uebernehmen(cut);
+
+        Ok(cut);
+
+        Assert.Equal(new[] { "entfernen 12", "aendern 11", "anlegen Ganz neu" },
+                     stand.Schreibfolge);
+        Assert.Equal(1200, stand.Geaendert!.Volumen);
+        Assert.Equal(99, ergebnis);
+    }
+
+    /// <summary>
+    /// OK prueft die offene Zeile, wenn an ihr etwas geaendert wurde: Eine verletzte
+    /// Regel meldet, schreibt nicht und haelt den Dialog offen.
+    /// </summary>
+    [Fact]
+    public void OK_prueft_die_offene_Zeile_und_haelt_bei_Fehler()
+    {
+        int? ergebnis = null;
+        var stand = MitZwei();
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        Schwelle(cut, 0, 96);          // Einschaltschwelle ueber der Abschaltschwelle
+        Ok(cut);
+
+        Assert.Contains("Einschaltschwelle muss kleiner", cut.Instance.Meldung);
+        Assert.Equal(0, stand.Schreibzugriffe);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// … eine UNBERUEHRTE Zeile prueft OK dagegen NICHT. Sonst koennte ein Altbestand,
+    /// der die heutigen Regeln verletzt, den Dialog verriegeln: Der Anwender kaeme nur
+    /// noch ueber Abbrechen hinaus.
+    /// </summary>
+    [Fact]
+    public void OK_prueft_eine_unberuehrte_Zeile_nicht()
+    {
+        int? ergebnis = null;
+        var stand = new Pruefstand();
+        stand.Bestand.Add(new PspPufferstand(11, "Altbestand", 800, 1.5, 70, 50,
+                                             10, 95, 95, 10, 0,
+                                             false, false, false,     // leeres Klassen-Set
+                                             new PspSchichtdaten()));
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        Ok(cut);
+
         Assert.Equal(11, ergebnis);
+        Assert.Equal(0, stand.Schreibzugriffe);
+    }
+
+    /// <summary>Esc wirkt wie Abbrechen: hinaus, ohne zu schreiben.</summary>
+    [Fact]
+    public void Esc_verwirft_wie_Abbrechen()
+    {
+        int? ergebnis = null;
+        var stand = MitZwei();
+        var cut = Zeige(stand, geschlossen: id => ergebnis = id);
+
+        Volumen(cut, 1200);
+        Uebernehmen(cut);
+        cut.Find("div.epos-dialog").KeyDown("Escape");
+
+        Assert.Equal(0, ergebnis);
+        Assert.Equal(0, stand.Schreibzugriffe);
     }
 
     // ============================================================ Formularraster
@@ -668,6 +923,19 @@ public class PufferSpProjektDialogTests : EposBunitContext
         => cut.FindAll("button")
               .First(b => b.TextContent.Contains("Übernehmen") || b.TextContent.Contains("Anlegen"))
               .Click();
+
+    /// <summary>OK — der einzige Weg, auf dem geschrieben wird.</summary>
+    private static void Ok(IRenderedComponent<PufferSpProjektDialog> cut)
+        => cut.Find(".epos-leiste button.epos-knopf--primaer").Click();
+
+    private static void Abbrechen(IRenderedComponent<PufferSpProjektDialog> cut)
+        => cut.FindAll(".epos-leiste button").First(b => b.TextContent == "Abbrechen").Click();
+
+    private static void Entfernen(IRenderedComponent<PufferSpProjektDialog> cut)
+        => cut.FindAll("button").First(b => b.TextContent.Contains("Entfernen")).Click();
+
+    private static void Ja(IRenderedComponent<PufferSpProjektDialog> cut)
+        => cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent == "Ja").Click();
 
     private static void Bezeichner(IRenderedComponent<PufferSpProjektDialog> cut, string wert)
         => cut.Find("input.epos-eingabe[type=text]").Input(wert);

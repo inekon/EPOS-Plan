@@ -52,10 +52,11 @@
     /// Zeigt den Abbrechen-Knopf.
     ///
     /// <para>Nicht jede Maske hat zwei Ausgaenge. Eine Maske, die schon beim
-    /// Speichern schreibt - der Dialog "BHKW-Wirtschaftlichkeit" ist die erste -,
+    /// Speichern schreibt - der Dialog "BHKW-Wirtschaftlichkeit" ist der einzige -,
     /// kennt kein Verwerfen mehr: Sie hat nur "Speichern" und "Schliessen". Ein
     /// zweiter Knopf, der nichts anderes tut als der erste, waere dort eine
-    /// Behauptung, die nicht stimmt.</para>
+    /// Behauptung, die nicht stimmt. Das Hausmuster ist das andere: sammeln und
+    /// erst im OK-Weg schreiben, dann traegt die Leiste alle drei Knoepfe.</para>
     /// </summary>
     [Parameter] public bool MitAbbrechen { get; set; } = true;
 

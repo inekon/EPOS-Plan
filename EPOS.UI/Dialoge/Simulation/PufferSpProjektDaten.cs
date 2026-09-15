@@ -98,7 +98,7 @@ public sealed record PspLadezeile(string Nummer, string Bezeichner, string Erzeu
                                   string Rolle, string Ladeprio, string Obergrenze);
 
 /// <summary>
-/// Die Datenseite des Pufferspeicher-Projektdialogs — SECHZEHN Delegaten, die die
+/// Die Datenseite des Pufferspeicher-Projektdialogs — SIEBZEHN Delegaten, die die
 /// Hülle einmal baut und an alle drei Rollen des Dialogs durchreicht (eigenes
 /// Fenster, Überlagerung im Quellendialog, Überlagerung im Senkendialog).
 ///
@@ -114,6 +114,12 @@ public sealed record PspLadezeile(string Nummer, string Bezeichner, string Erzeu
 /// </summary>
 /// <param name="Katalogzeilen">Der Auslieferungskatalog, nach Bezeichner sortiert.</param>
 /// <param name="Projektliste">Die Puffer DIESES Projekts, fertig beschriftet.</param>
+/// <param name="Listentext">
+/// Der Listentext zu einem noch nicht geschriebenen Satz — dieselbe Zeile, die
+/// <paramref name="Projektliste"/> aus der Datenbank baut. Der Dialog sammelt seine
+/// Eingaben bis zum OK; bis dahin gibt es keine Datenbankzeile, aus der sich die
+/// Beschriftung lesen ließe.
+/// </param>
 /// <param name="PufferLesen">Der vollständige Stand eines Puffers; <c>null</c> = gibt es nicht.</param>
 /// <param name="Systemvorgaben">Kleinster Vorlauf und größter Rücklauf der Erzeuger; je <c>null</c> = nicht gepflegt.</param>
 /// <param name="Ladereihenfolge">Wer diesen Speicher lädt, in welcher Reihenfolge.</param>
@@ -123,14 +129,15 @@ public sealed record PspLadezeile(string Nummer, string Bezeichner, string Erzeu
 /// <param name="IstLeitspeicher">Ist der Speicher Leitspeicher eines Parallelverbunds (Kriterium W6)?</param>
 /// <param name="Referenzen">Welche Anlagen den Speicher zugeordnet haben; leer = keine.</param>
 /// <param name="TemperaturenPruefen">Prüft das Temperaturpaar; <c>null</c> = in Ordnung, sonst der Fehlertext.</param>
-/// <param name="Anlegen">Legt an und liefert die neue Id; <c>&lt;= 0</c> = fehlgeschlagen.</param>
-/// <param name="Aendern">Ändert den Speicher; <c>false</c> = fehlgeschlagen.</param>
-/// <param name="Entfernen">Entfernt den Speicher; <c>false</c> = fehlgeschlagen.</param>
-/// <param name="Klemmhinweis">Kriterium W4 NACH dem Speichern; <c>null</c> = nichts zu sagen.</param>
+/// <param name="Anlegen">Legt an und liefert die neue Id; <c>&lt;= 0</c> = fehlgeschlagen. NUR im OK-Weg.</param>
+/// <param name="Aendern">Ändert den Speicher; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
+/// <param name="Entfernen">Entfernt den Speicher; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
+/// <param name="Klemmhinweis">Kriterium W4 NACH dem Übernehmen; <c>null</c> = nichts zu sagen.</param>
 /// <param name="Kapazitaet">Nutzbare Kapazität [kWh] aus Volumen [l] und Spreizung [K].</param>
 public sealed record PufferSpProjektDienste(
     Func<IReadOnlyList<PspKatalogzeile>> Katalogzeilen,
     Func<IReadOnlyList<PspProjektzeile>> Projektliste,
+    Func<PspEingaben, string> Listentext,
     Func<int, PspPufferstand?> PufferLesen,
     Func<(int? Vorlauf, int? Ruecklauf)> Systemvorgaben,
     Func<int, IReadOnlyList<PspLadezeile>> Ladereihenfolge,
