@@ -653,10 +653,11 @@ namespace WindowsFormsApplication1
         /// [kWp] über <see cref="PhotovoltaikCtrl.KwpSumme"/> (Anwenderentscheid
         /// 30.08.2026, Befund I-1) · Stromspeicher <c>Energie</c> [kWh] · Solar
         /// <c>Aperturflaeche</c> [m² je Modul] × <c>Kollektormodulanzahl</c> der
-        /// Anlagenzeile. Der PUFFERSPEICHER hat
+        /// Anlagenzeile. Pufferspeicher <c>Gesamtvolumen</c> [l]. Der PUFFERSPEICHER hat
         /// bewusst KEINE kWh-Kapazität hier: Ohne Temperaturpaar gibt es keine
         /// belastbare Umrechnung des Volumens (Speicher-Registry-Warnung) — die
-        /// Definition gehört zur Speicherrechnung, nicht in eine Kostenformel.</para>
+        /// Definition gehört zur Speicherrechnung, nicht in eine Kostenformel; seine
+        /// Baugröße ist deshalb das Volumen selbst (Anwenderentscheid 15.09.2026).</para>
         /// <para><b>ANWENDERBEFUND 10.09.2026 (H4c):</b> Die Zuordnung Art↔Gewerk stand
         /// bis dahin je Gewerk auf GENAU EINER Art — dem Stromspeicher fehlte damit
         /// jede Leistungsgröße, und ein Satz „je kW" blieb dort ohne Bezugsgröße
@@ -747,9 +748,16 @@ namespace WindowsFormsApplication1
         /// die Doppelungen mit: Die Wärmepumpe hat nur EINE Nennleistung, also meint
         /// „je kW Leistung" dort dasselbe wie „je kW Heizleistung"; der Kessel führt nur
         /// <c>Ptherm</c>, also ist das seine Heizleistung; die kWp der Photovoltaik SIND
-        /// ihre elektrische Leistung. Deshalb bleibt umgekehrt das BHKW bei
-        /// „je kW Leistung" ohne Bezugsgröße: Es führt <c>Pel</c> UND <c>Ptherm</c> —
-        /// welche gemeint ist, sagt erst die qualifizierte Art.</para>
+        /// ihre elektrische Leistung.</para>
+        ///
+        /// <para><b>ANWENDERENTSCHEID 15.09.2026 — die zwei Gewerke, die die Regel
+        /// allein nicht entscheiden konnte.</b> Das BHKW führt <c>Pel</c> UND
+        /// <c>Ptherm</c>, der Pufferspeicher gar keine Leistung; „je kW Leistung" blieb
+        /// dort ohne Bezugsgröße. Der Entscheid legt sie fest: beim BHKW die
+        /// ELEKTRISCHE Leistung <c>Pel</c>, beim Pufferspeicher das VOLUMEN
+        /// <c>Gesamtvolumen</c> [l] — sein Satz ist damit ein €/Ltr.-Satz. Die
+        /// Beschriftung folgt der Größe (<c>BemessungKatalog.Anzeige</c>/<c>Einheit</c>
+        /// je Komponente).</para>
         ///
         /// <para><b>Der Stromspeicher war die Lücke des Befundes.</b> Er führte hier nur
         /// seine Kapazität; ein Satz „je kW" traf keine Zeile und ergab über den
@@ -780,7 +788,29 @@ namespace WindowsFormsApplication1
                 if (komponentenID == 2) return "Ptherm";         // Kessel: nur diese eine
                 if (komponentenID == 1) return "Nennleistung";   // WP: nur diese eine
                 if (komponentenID == 5) return "Leistung";       // Speicher: nur diese eine [kW]
-                return null;                                     // BHKW: Pel ODER Ptherm — offen
+
+                // ANWENDERENTSCHEID 15.09.2026 — die beiden offenen Gewerke, wortgleich:
+                // „‚je kW Leistung' beim BHKW ist ‚je kW elektr. Leistung', beim
+                // Pufferspeicher soll das Volumen die Bezugsgröße sein (€/Ltr.)".
+                //
+                // BHKW: Das Modul führt Pel UND Ptherm; welche gemeint ist, sagte bis
+                // dahin erst die qualifizierte Art, und „je kW Leistung" blieb ohne
+                // Bezugsgröße. Der Entscheid setzt sie fest — Pel, die ELEKTRISCHE
+                // Leistung (Tab_BHKW.Pel [kW el], belegt über BHKWStammCtrl
+                // „Elektrische Leistung [kW]", AbweichungsErmittler „el. Leistung, kW"
+                // und SimulationBHKW, wo Pel die Stromerzeugung trägt). Damit meint
+                // „je kW Leistung" am BHKW dasselbe wie „je kW elektrisch" — zwei
+                // Namen, EINE Größe, genau wie bei Wärmepumpe und Kessel.
+                if (komponentenID == 7) return "Pel";
+                // PUFFERSPEICHER: Er führt überhaupt keine Leistung, und eine kWh-
+                // Kapazität lässt sich ohne Temperaturpaar nicht bilden (siehe
+                // BaugroesseSumme). Seine eine Baugröße ist das VOLUMEN —
+                // Tab_Pufferspeicher.Gesamtvolumen in LITER (belegt über
+                // PufferSpStammCtrl „Gesamtvolumen: Liter" und AbweichungsErmittler
+                // „Gesamtvolumen, l"). Der Satz ist damit ein €/Ltr.-Satz; die
+                // Beschriftung folgt der Größe (BemessungKatalog).
+                if (komponentenID == 6) return "Gesamtvolumen";
+                return null;
             }
 
             if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal))

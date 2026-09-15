@@ -553,7 +553,13 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
         public const string BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH = "EUR_PRO_KWH_ELEKTRISCH";
 
-        /// <summary>Je kW thermischer Nennleistung [€/kW] (Heizkessel).
+        /// <summary>Je Einheit der EINEN Baugröße, die das Gewerk führt — die
+        /// Bezugsgröße bestimmt <c>TechnikPlanwertCtrl.Geraetespalte</c> je Komponente:
+        /// Heizkessel und Wärmepumpe ihre thermische Nennleistung [€/kW], Solarthermie
+        /// die Leistung des Kollektorfelds [€/kW], Stromspeicher seine Lade-/Entlade-
+        /// leistung [€/kW], BHKW seine ELEKTRISCHE Leistung [€/kW], Pufferspeicher sein
+        /// VOLUMEN [€/Ltr.] (Anwenderentscheid 15.09.2026). Anzeigetext und Einheit
+        /// folgen der Größe (<c>BemessungKatalog</c>).
         /// <inheritdoc cref="BEMESSUNG_BETRAG" path="/summary/text()[last()]"/></summary>
         public const string BEMESSUNG_EUR_PRO_KW_LEISTUNG = "EUR_PRO_KW_LEISTUNG";
 

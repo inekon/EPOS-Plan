@@ -622,15 +622,104 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        /// <summary>Anzeigetext (MyResource, deutscher Rückfall).</summary>
+        /// <summary>Anzeigetext (MyResource, deutscher Rückfall) — OHNE Gewerk, also
+        /// der allgemeine Name der Art. Wo das Gewerk bekannt ist, gilt
+        /// <see cref="Anzeige(string,int)"/>.</summary>
         public static string Anzeige(string persistenz)
         {
+            return Anzeige(persistenz, 0);
+        }
+
+        // =====================================================================
+        // ANWENDERENTSCHEID 15.09.2026 — DIE BESCHRIFTUNG FOLGT DER BEZUGSGRÖSSE
+        //
+        //   „je kW Leistung" bemisst sich je Gewerk an dessen EINER Baugröße
+        //   (TechnikPlanwertCtrl.Geraetespalte). Für zwei Gewerke ist diese Größe
+        //   seit dem Entscheid eine andere als eine thermische Leistung: beim BHKW
+        //   die ELEKTRISCHE Leistung, beim Pufferspeicher das VOLUMEN in Litern.
+        //   Ein Satzfeld mit „€/kW" hinter einem Literwert wäre dort schlicht
+        //   falsch, und „je kW Leistung" über einer Pel-Bemessung mehrdeutig.
+        //
+        //   EIN Persistenzwert, ZWEI Beschriftungen: Der gespeicherte Wert bleibt
+        //   EUR_PRO_KW_LEISTUNG (Drei-Schichten-Regel, eingefroren); nur Name und
+        //   Einheit der ANZEIGE hängen am Gewerk. Die Texte stehen in MyResource
+        //   (beide Sprachen), die Einheitenzeichen nicht — dokumentierte Ausnahme
+        //   wie bei BetriebskostenCtrl.SatzEinheit.
+        // =====================================================================
+
+        /// <summary>Gewerk-eigene Beschriftung: Persistenzwert + <c>Tab_KostenKomponente.ID</c>
+        /// → Ressourcenschlüssel und Einheit.</summary>
+        private sealed class Sonderbeschriftung
+        {
+            public string Persistenz;
+            public int KomponentenId;
+            public string ResourceKey;
+            public string AnzeigeDe;
+            public string Einheit;
+        }
+
+        private static readonly Sonderbeschriftung[] Sonderfaelle =
+        {
+            new Sonderbeschriftung
+            {
+                Persistenz = DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                KomponentenId = BetriebskostenCtrl.KOMPONENTE_BHKW,
+                ResourceKey = "BM_KW_LEISTUNG_BHKW",
+                AnzeigeDe = "je kW elektr. Leistung",
+                Einheit = "€/kW",
+            },
+            new Sonderbeschriftung
+            {
+                Persistenz = DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                KomponentenId = BetriebskostenCtrl.KOMPONENTE_PUFFERSPEICHER,
+                ResourceKey = "BM_LITER",
+                AnzeigeDe = "je Liter",
+                Einheit = "€/Ltr.",
+            },
+        };
+
+        private static Sonderbeschriftung Sonderfall(string persistenz, int komponentenId)
+        {
+            if (komponentenId <= 0) return null;
+            foreach (Sonderbeschriftung s in Sonderfaelle)
+                if (s.KomponentenId == komponentenId &&
+                    string.Equals(s.Persistenz, persistenz, StringComparison.Ordinal)) return s;
+            return null;
+        }
+
+        /// <summary>
+        /// Anzeigetext der Bemessungsart IN DIESEM GEWERK (<c>Tab_KostenKomponente.ID</c>;
+        /// 0 = Gewerk unbekannt, dann der allgemeine Name).
+        /// </summary>
+        public static string Anzeige(string persistenz, int komponentenId)
+        {
+            Sonderbeschriftung s = Sonderfall(persistenz, komponentenId);
+            if (s != null) return Text(s.ResourceKey, s.AnzeigeDe);
+
             Info i = Finde(persistenz);
             if (i == null) return persistenz ?? "";
+            return Text(i.ResourceKey, i.AnzeigeDe);
+        }
+
+        /// <summary>
+        /// Einheiten-Suffix hinter dem Satzfeld IN DIESEM GEWERK — beim Pufferspeicher
+        /// „€/Ltr.", sonst die Einheit des Katalogs. <c>komponentenId</c> 0 = unbekannt.
+        /// </summary>
+        public static string Einheit(string persistenz, int komponentenId)
+        {
+            Sonderbeschriftung s = Sonderfall(persistenz, komponentenId);
+            if (s != null) return s.Einheit;
+
+            Info i = Finde(persistenz);
+            return i != null ? i.Einheit : "";
+        }
+
+        private static string Text(string schluessel, string rueckfallDe)
+        {
             string text = null;
-            try { text = MyResource.Resource.ResourceManager.GetString(i.ResourceKey); }
+            try { text = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
-            return string.IsNullOrEmpty(text) ? i.AnzeigeDe : text;
+            return string.IsNullOrEmpty(text) ? rueckfallDe : text;
         }
 
         private static Info N(string persistenz, string key, string de, string einheit,

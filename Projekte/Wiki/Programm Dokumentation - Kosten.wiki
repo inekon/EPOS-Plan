@@ -27,7 +27,9 @@ Jede Position wird entweder als fester Betrag erfasst oder über einen Satz mal 
 |-
 | BHKW || je kW Heizleistung || thermische Leistung des Moduls
 |-
-| BHKW || je kW elektrisch || elektrische Leistung des Moduls
+| BHKW || je kW elektr. Leistung, je kW elektrisch || elektrische Leistung des Moduls
+|-
+| Pufferspeicher || je Liter || Gesamtvolumen des Speichers
 |-
 | Photovoltaik || je kWp Leistung, je kW elektrisch || installierte Leistung: Modulanzahl × Modulleistung
 |-
@@ -42,7 +44,7 @@ Jede Position wird entweder als fester Betrag erfasst oder über einen Satz mal 
 
 Die thermische Leistung eines Kollektorfelds steht in keinem Datenblatt: Was ein Kollektor liefert, hängt an Einstrahlung und Temperaturen und wird in der Simulation Stunde für Stunde gerechnet. Für eine Bemessung je kW gilt deshalb die übliche Umrechnung der Solarthermie-Statistik, 0,7 kW thermisch je m² Aperturfläche. '''Beispiel:''' Ein Feld aus 10 Modulen zu je 2,5 m² Aperturfläche hat 25 m² und damit 0,7 kW/m² × 25 m² = 17,5 kW; bei einem Satz von 700 €/kW sind das 12.250 €. Der Kurztext am Betrag nennt diese Herleitung.
 
-Beim BHKW bleibt ''je kW Leistung'' ohne Bezugsgröße: Das Modul führt eine thermische und eine elektrische Leistung – welche gemeint ist, sagt erst die genauere Bemessung. Der Pufferspeicher trägt keine Kapazität in kWh, weil sie sich ohne ein Temperaturpaar nicht bestimmen lässt. Wärmezentrale, Bauliche Anlagen und Stromeinspeisung führen keine Anlagentechnik; dort gelten feste Beträge und Prozentbemessungen.
+Die Bemessung heißt in jedem Gewerk nach der Größe, an der sie sich bemisst: Weil das BHKW eine thermische und eine elektrische Leistung führt, steht dort ''je kW elektr. Leistung''; der Pufferspeicher bemisst sich an seinem Volumen, und der Satz ist ein Preis je Liter (€/Ltr.). '''Beispiel:''' Ein Speicher mit 1.000 Litern und ein Satz von 1,50 €/Ltr. ergeben 1.500 €. Eine Kapazität in kWh trägt der Pufferspeicher nicht, weil sie sich ohne ein Temperaturpaar nicht bestimmen lässt. Wärmezentrale, Bauliche Anlagen und Stromeinspeisung führen keine Anlagentechnik; dort gelten feste Beträge und Prozentbemessungen.
 
 * {{Anker|ohne-bezugsgroesse}}'''Ohne Bezugsgröße''' – findet das Programm zu einer Position keine, gilt der erfasste Betrag; bei einer satzbasierten Position ist das 0. Die Zeile trägt dann ein ⚠ am Betrag, und unter dem Raster steht der Grund: Die Bemessung passt nicht zu diesem Gewerk, es fehlt das Gerät oder seine Angabe, es fehlt ein Simulationslauf, oder es fehlen Investitionskosten.
 

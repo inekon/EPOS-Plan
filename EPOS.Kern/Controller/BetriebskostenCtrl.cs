@@ -360,12 +360,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string SatzEinheit(string bemessung)
         {
+            return SatzEinheit(bemessung, 0);
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 15.09.2026: dieselbe Einheit, aber IN DIESEM GEWERK
+        /// (<c>Tab_KostenKomponente.ID</c>; 0 = unbekannt). „je kW Leistung" trägt am
+        /// Pufferspeicher „€/Ltr.", weil seine Bezugsgröße das Volumen ist — eine
+        /// Herleitung „1.000,00 × 0,700 €/kW" wäre dort schlicht falsch.
+        /// <inheritdoc cref="SatzEinheit(string)" path="/summary/text()[last()]"/>
+        /// </summary>
+        internal static string SatzEinheit(string bemessung, int komponente)
+        {
             // Die KD-Bemessungen (Etappe KD1+) tragen ihre Einheit im BemessungKatalog —
             // EINE Wahrheit für Alt-Dialog und Komponenten-Kostendialog.
             BemessungKatalog.Info kd = BemessungKatalog.Finde(bemessung);
             if (kd != null &&
                 !string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
-                return kd.Einheit;
+                return BemessungKatalog.Einheit(bemessung, komponente);
 
             if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                 string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))
@@ -379,7 +391,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Einheitenzeichen der BEZUGSMENGE einer Bemessungsart („€", „h/a", „kWh/a").
-        /// <inheritdoc cref="SatzEinheit" path="/summary/text()[last()]"/>
+        /// <inheritdoc cref="SatzEinheit(string)" path="/summary/text()[last()]"/>
         /// </summary>
         internal static string MengenEinheit(string bemessung)
         {
@@ -454,6 +466,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int KOMPONENTE_HEIZKESSEL = 2;
         internal const int KOMPONENTE_BHKW = 7;
+
+        /// <summary>ANWENDERENTSCHEID 15.09.2026: der Pufferspeicher (6) — Quelle wie
+        /// oben. Er bemisst sich seither an seinem VOLUMEN, und Landkarte wie
+        /// Beschriftung fragen ihn beim Namen.</summary>
+        internal const int KOMPONENTE_PUFFERSPEICHER = 6;
 
         /// <summary>
         /// ANWENDERENTSCHEID W5‑B‑8 (09.09.2026): die Kaskadensummen eines Projekts,

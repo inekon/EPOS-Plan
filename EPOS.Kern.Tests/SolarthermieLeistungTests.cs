@@ -268,16 +268,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Und die kW-Arten bleiben an den ÜBRIGEN Gewerken, wie sie waren
-        /// — die Festlegung greift nur an der Komponente 4.</summary>
+        /// — die Festlegung greift nur an der Komponente 4. BHKW und Pufferspeicher
+        /// haben ihre Bezugsgröße erst mit dem ANWENDERENTSCHEID 15.09.2026 bekommen
+        /// (<see cref="BemessungBhkwPufferspeicherTests"/>), nicht mit dieser
+        /// Festlegung; für die Photovoltaik bleibt eine Heizleistung fremd.</summary>
         [Fact]
         public void Die_Festlegung_beruehrt_kein_anderes_Gewerk()
         {
             Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(
-                7, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG));        // BHKW: Pel ODER Ptherm
-            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(
-                6, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG));        // Pufferspeicher
-            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(
                 3, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG));    // Photovoltaik
+            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(
+                6, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET));     // Pufferspeicher: keine kWh
+            Assert.False(TechnikPlanwertCtrl.KenntBaugroesse(
+                2, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH));      // Heizkessel
         }
 
         // =====================================================================

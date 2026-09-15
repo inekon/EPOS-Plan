@@ -9005,6 +9005,12 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="BM_KW_LEISTUNG" xml:space="preserve">
     <value>je kW Leistung</value>
   </data>
+  <data name="BM_KW_LEISTUNG_BHKW" xml:space="preserve">
+    <value>je kW elektr. Leistung</value>
+  </data>
+  <data name="BM_LITER" xml:space="preserve">
+    <value>je Liter</value>
+  </data>
   <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
     <value>je kW Heizleistung</value>
   </data>

@@ -8998,6 +8998,12 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="BM_KW_LEISTUNG" xml:space="preserve">
     <value>per kW capacity</value>
   </data>
+  <data name="BM_KW_LEISTUNG_BHKW" xml:space="preserve">
+    <value>per kW electric capacity</value>
+  </data>
+  <data name="BM_LITER" xml:space="preserve">
+    <value>per litre</value>
+  </data>
   <data name="BM_KW_HEIZLEISTUNG" xml:space="preserve">
     <value>per kW heating capacity</value>
   </data>
