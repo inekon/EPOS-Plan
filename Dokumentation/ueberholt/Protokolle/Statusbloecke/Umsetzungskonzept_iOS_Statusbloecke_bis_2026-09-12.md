@@ -6116,3 +6116,59 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Offen:** Ausweitung der Filterung auf die übrigen neun Gewerke und die gleich gelagerte PV-Vorlagenzeile
 > „Batteriespeicher" (beides Anwenderentscheid, siehe Statusdatei „Nach #284").
+
+## #285 — Summenlinien heißen nach ihrer Summe und sind abschaltbar (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 15.09.2026 mit Bildschirmfoto des Blatts „Wärme Produktion Chart": Die grüne
+> Linie „Gesamt" soll „Summe Wärmeerzeugung" heißen und ein Kästchen bekommen wie die Wärmepumpe daneben;
+> gleichartige Darstellungen sollen mitgeändert werden.
+>
+> **Der Name war nur die Oberfläche.** Darunter lag ein Schlüssel für drei Dinge: `CHART_LEGENDE_GESAMT`
+> beschriftete die Summenlinie des Wärmegangs, die des Stromgangs, die des Bedarfsreiters **und** den ersten
+> Eintrag der Klappliste „Bedarfsart". Eine globale Umbenennung hätte aus einer Verbrauchssumme eine
+> Erzeugung gemacht und den Auswahleintrag gleich mit umbenannt.
+>
+> **Deshalb zuerst gemessen, was jede Linie addiert** — nicht, wie sie heißt:
+>
+> | Diagramm | Summanden im Code | Name |
+> |---|---|---|
+> | Wärmegang | die gestapelten Erzeugerreihen | Summe Wärmeerzeugung |
+> | Stromgang | Lastgang + Wärmepumpe + Heizstab + Heizkessel | Summe Stromverbrauch |
+> | Bedarfsreiter | der gesamte Wärmebedarf über alle Bedarfsarten | Summe Wärmebedarf |
+>
+> Dass der Stromgang eine **Verbrauchs**summe führt, ist zweifach belegt: Der Bildtitel heißt „Strombedarf,
+> Stromverbrauch Jahresganglinie", und BHKW wie Photovoltaik stehen als Erzeugungslinien NEBEN dem Stapel
+> und gehen in die Kontur ausdrücklich nicht ein. „Summe Stromerzeugung" wäre dort schlicht falsch gewesen.
+>
+> **`CHART_LEGENDE_GESAMT` bleibt** — an der einen Stelle, an der „Gesamt" zutrifft: der Klappliste
+> „Bedarfsart". Dort benennt es eine Auswahl, keine Linie; die Trennung der Schlüssel verhindert, dass die
+> Umbenennung dorthin durchschlägt.
+>
+> **Warum der Schalter fehlte.** Die Kontur des Wärmegangs hing nicht an der Reihenwahl: Sie entstand,
+> sobald `stapel.Count > 0`. Es gab also nichts zu schalten, und `WaermegangDaten` führte die Reihe gar
+> nicht erst. Jetzt ist sie eine Reihe wie die anderen — als erster Eintrag der Erzeugerliste, vorbelegt an,
+> und `Vorhanden` hängt daran, dass es überhaupt einen Erzeuger gibt, damit kein Schalter ohne Wirkung
+> erscheint. Die Kontur entsteht nur noch bei gewählter Reihe; sonst ist am Zeichenweg nichts geändert —
+> gleiche Reihenfolge, gleiche Farbe, gleiche Strichstärke.
+>
+> **Die Summe steht über ihren Summanden, nicht neben ihnen.** Dafür bekam der Baustein `Mehrfachauswahl`
+> den Parameter `AbsatzNach`: eine Trennlinie nach n Einträgen. Die Summe bleibt damit IN der Liste —
+> „Alle" und „Keine" fassen sie mit, und sie fällt in dasselbe Sitzungsgedächtnis wie die Erzeuger — ist aber
+> sichtbar abgesetzt. Der Stromgang bekam dieselbe Anordnung.
+>
+> **Was bewusst nicht angefasst wurde, je mit Grund:** die CSV-Schlüssel der Referenzbasis (sonst kein
+> Vergleich gegen die eingefrorene Basis mehr möglich); die Speicherreihe „Speicher gesamt" im Netzbild (der
+> Name sagt schon, was sie summiert, und sie ist längst abschaltbar — dazu eine Linie unter Linien, keine
+> Kontur über einem Stapel); die kumulierte Linie der Jahresprojektion (eine Zeitkumulierte, keine
+> Spaltensumme); Peak-Shaving- und Speicherbetriebsbild (übergeben ausdrücklich keine Kontur); die
+> Fachreiter der Erzeuger (keine Kontur, ihre Linien sind Bezugsgrößen und einzeln abwählbar); der Bericht
+> (benutzt keinen der drei Schlüssel). Eine Summenlinie, die das Diagramm trägt und deshalb nicht
+> abschaltbar sein dürfte, gibt es nirgends.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 101 Tests grün;
+> ChartProben 64 Bilder, 0 Verstöße, und im Vergleich zweier Läufe vor und nach der Änderung **alle 49 PNG
+> byte-gleich** — der Renderer zeichnet die Kontur mit eigenem Text, nicht über die Ressource, also ist der
+> Zeichenweg nachweislich unberührt; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und alle 135
+> CSV byte-gleich; Gate sept84 grün. Vier neue Prüfungen in `GangUndErgebnisReiterTests`. Merge `19b3ca8b`.
+>
+> **Offen:** `CHART_CSV_GESAMT` ohne Verwender (siehe Statusdatei „Nach #285").
